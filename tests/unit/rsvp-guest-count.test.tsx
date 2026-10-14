@@ -241,9 +241,9 @@ describe('RSVP phone country code preservation', () => {
 		expect(getHook()!.countryCode).toBe('+1');
 
 		act(() => {
-			getHook()!.handlePhoneChange('9150011122');
+			getHook()!.handlePhoneChange('1000000007');
 		});
-		expect(getHook()!.phone).toBe('9150011122');
+		expect(getHook()!.phone).toBe('1000000007');
 		expect(getHook()!.countryCode).toBe('+1');
 	});
 
@@ -255,7 +255,7 @@ describe('RSVP phone country code preservation', () => {
 		});
 
 		act(() => {
-			getHook()!.handlePhoneChange('9150011122');
+			getHook()!.handlePhoneChange('1000000007');
 		});
 		expect(getHook()!.countryCode).not.toBe(DEFAULT_COUNTRY_CODE);
 		expect(getHook()!.countryCode).toBe('+1');
@@ -265,9 +265,9 @@ describe('RSVP phone country code preservation', () => {
 		const { getHook } = createTestHarness();
 
 		act(() => {
-			getHook()!.handlePhoneChange('+52 669 123 4567');
+			getHook()!.handlePhoneChange('+52 100 000 0001');
 		});
-		expect(getHook()!.phone).toBe('6691234567');
+		expect(getHook()!.phone).toBe('1000000001');
 		expect(getHook()!.countryCode).toBe('+52');
 	});
 
@@ -275,9 +275,9 @@ describe('RSVP phone country code preservation', () => {
 		const { getHook } = createTestHarness();
 
 		act(() => {
-			getHook()!.handlePhoneChange('+1 915 001 1122');
+			getHook()!.handlePhoneChange('+1 100 000 0007');
 		});
-		expect(getHook()!.phone).toBe('9150011122');
+		expect(getHook()!.phone).toBe('1000000007');
 		expect(getHook()!.countryCode).toBe('+1');
 	});
 });

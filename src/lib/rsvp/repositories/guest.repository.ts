@@ -272,19 +272,3 @@ export async function submitGuestRsvpPublicRpc(input: {
 	}
 	return guest;
 }
-
-export async function updateGuestByInviteIdPublic(
-	inviteId: string,
-	body: Record<string, unknown>,
-): Promise<GuestInvitationRecord> {
-	if (!body.attendance_status) {
-		throw new Error('Failed to update guest_invitations');
-	}
-	return submitGuestRsvpPublicRpc({
-		inviteId,
-		attendanceStatus: body.attendance_status as AttendanceStatus,
-		attendeeCount: (body.attendee_count as number) ?? 1,
-		guestComment: (body.guest_comment as string) ?? null,
-		responseSource: (body.last_response_source as ResponseSource) ?? 'link',
-	});
-}

@@ -2,7 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — Page Stability & Audit Preparation
 // =============================================================================
 
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import {
 	type ScreenshotSelectorConfig,
 	DEFAULT_NETWORK_IDLE_TIMEOUT,
@@ -25,7 +25,7 @@ import { getDefaultHideSelectors } from './utils.js';
  *  4. Visible images loaded
  *  5. Small settle delay for layout shifts
  */
-export async function waitForCustomElements(page: Page): Promise<void> {
+async function waitForCustomElements(page: Page): Promise<void> {
 	try {
 		await page.evaluate(async () => {
 			if (typeof window.customElements === 'undefined') return;
@@ -41,7 +41,7 @@ export async function waitForCustomElements(page: Page): Promise<void> {
 	}
 }
 
-export async function waitForBackgroundImages(page: Page): Promise<void> {
+async function waitForBackgroundImages(page: Page): Promise<void> {
 	try {
 		await page.evaluate(async (timeoutMs) => {
 			// Prefer invitation/landing surfaces over a full DOM scan; dedupe URLs.
@@ -119,7 +119,7 @@ export async function waitForHeroReady(page: Page): Promise<void> {
 	}
 }
 
-export async function waitForPageStability(page: Page): Promise<void> {
+async function waitForPageStability(page: Page): Promise<void> {
 	await page.waitForLoadState('domcontentloaded');
 	await waitForCustomElements(page);
 
@@ -138,7 +138,7 @@ export async function waitForPageStability(page: Page): Promise<void> {
 	await page.waitForTimeout(DEFAULT_STABILITY_DELAY);
 }
 
-export async function waitForFonts(page: Page): Promise<void> {
+async function waitForFonts(page: Page): Promise<void> {
 	try {
 		await page.evaluate(() => document.fonts.ready);
 	} catch {
@@ -232,7 +232,7 @@ export async function scrollForLazyLoad(
 	}
 }
 
-export async function waitForLayoutHeightStable(page: Page): Promise<void> {
+async function waitForLayoutHeightStable(page: Page): Promise<void> {
 	try {
 		await page.waitForFunction(
 			async () => {

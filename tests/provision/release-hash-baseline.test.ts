@@ -1,24 +1,29 @@
 import { describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import {
+	buildValidUntil,
 	diffReleaseHashes,
+	findPrematureDefinitionRemovals,
 	formatReleaseHashReport,
 	ownsChangedFile,
 	readReleaseHashBaseline,
 	RELEASE_HASH_BASELINE_PATH,
 } from '../../scripts/provision/release-hash-baseline.ts';
-import { listActiveInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
+import {
+	listActiveInvitationDefinitions,
+	listInvitationDefinitions,
+} from '../../scripts/provision/invitations/registry.ts';
 
 const A = 'a'.repeat(64);
 const B = 'b'.repeat(64);
 
 describe('release hash baseline', () => {
-	const definitions = [{ slug: 'renata' }, { slug: 'leah-lexa' }, { slug: 'nueva' }];
+	const definitions = [{ slug: 'renata' }, { slug: 'norma-hernandez' }, { slug: 'nueva' }];
 
 	it('flags hashes moved by a global change as collateral', () => {
 		const report = diffReleaseHashes({
-			baseline: { packageHashes: { renata: A, 'leah-lexa': A, retirada: A } },
-			current: { renata: B, 'leah-lexa': A, nueva: A },
+			baseline: { packageHashes: { renata: A, 'norma-hernandez': A, retirada: A } },
+			current: { renata: B, 'norma-hernandez': A, nueva: A },
 			definitions,
 			changedFiles: ['scripts/provision/invitation-package.ts'],
 		});
@@ -34,16 +39,16 @@ describe('release hash baseline', () => {
 
 	it('treats a move with the invitation own definition or assets as expected', () => {
 		const report = diffReleaseHashes({
-			baseline: { packageHashes: { renata: A, 'leah-lexa': A } },
-			current: { renata: B, 'leah-lexa': B },
+			baseline: { packageHashes: { renata: A, 'norma-hernandez': A } },
+			current: { renata: B, 'norma-hernandez': B },
 			definitions,
 			changedFiles: [
 				'scripts\\provision\\invitations\\renata.ts',
-				'src/assets/invitations/leah-lexa/hero.webp',
+				'src/assets/invitations/norma-hernandez/hero.webp',
 			],
 		});
 		expect(report.collateral).toEqual([]);
-		expect(report.expected.map((move) => move.slug)).toEqual(['leah-lexa', 'renata']);
+		expect(report.expected.map((move) => move.slug)).toEqual(['norma-hernandez', 'renata']);
 	});
 
 	it('honours a custom asset directory', () => {
@@ -66,5 +71,50 @@ describe('release hash baseline', () => {
 		for (const hash of Object.values(baseline.packageHashes)) {
 			expect(hash).toMatch(/^[a-f0-9]{64}$/);
 		}
+	});
+
+	it('pins the validity window of every active definition', () => {
+		expect(readReleaseHashBaseline().validUntil).toEqual(
+			buildValidUntil(listActiveInvitationDefinitions()),
+		);
+	});
+
+	it('never loses a definition before its invitation expires', () => {
+		// A failure here means a definition file was deleted while its invitation is still
+		// public (event date + 1 year): restore it until the window closes.
+		expect(
+			findPrematureDefinitionRemovals(
+				readReleaseHashBaseline(),
+				listInvitationDefinitions().map((definition) => definition.slug),
+			),
+		).toEqual([]);
+	});
+
+	it('flags removed slugs whose window is open or unknown, never expired ones', () => {
+		const baseline = {
+			packageHashes: { kept: A, expired: A, open: A, undated: A },
+			validUntil: {
+				kept: '2026-01-01T05:59:59.999Z',
+				expired: '2026-01-01T05:59:59.999Z',
+				open: '2027-06-21T05:59:59.999Z',
+			},
+		};
+		expect(
+			findPrematureDefinitionRemovals(baseline, ['kept'], new Date('2026-10-13T00:00:00Z')),
+		).toEqual(['open', 'undated']);
+		expect(
+			findPrematureDefinitionRemovals(
+				baseline,
+				['kept'],
+				new Date('2027-06-21T05:59:59.999Z'),
+			),
+		).toEqual(['open', 'undated']);
+		expect(
+			findPrematureDefinitionRemovals(
+				baseline,
+				['kept'],
+				new Date('2027-06-21T06:00:00.000Z'),
+			),
+		).toEqual(['undated']);
 	});
 });

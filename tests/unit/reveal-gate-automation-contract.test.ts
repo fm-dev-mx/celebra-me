@@ -31,7 +31,9 @@ describe('reveal gate automation contract', () => {
 
 	it('routes every real Reveal control through the canonical requestOpen path', () => {
 		expect(componentSource).toContain('const requestOpen = () =>');
-		expect(componentSource).toContain("querySelectorAll<HTMLButtonElement>('[data-envelope-open]')");
+		expect(componentSource).toContain(
+			"querySelectorAll<HTMLButtonElement>('[data-envelope-open]')",
+		);
 		expect(componentSource).toContain('setControlsDisabled(true);');
 		expect(componentSource).not.toContain('data-envelope-open-letter');
 		expect(componentSource).toContain('focusRevealedDestination');
@@ -72,12 +74,15 @@ describe('reveal gate automation contract', () => {
 
 	it('keeps the documented bypass parameters and storage key', () => {
 		expect(managerSource).toContain("params.get('skipEnvelope') === 'true'");
-		expect(managerSource).toContain("params.get('forceEnvelope') !== 'true'");
-		expect(managerSource).toContain('`envelope-opened-${this.eventSlug}`');
+		expect(managerSource).toContain("forceEnvelope: params.get('forceEnvelope') === 'true'");
+		expect(managerSource).toContain('`envelope-opened-${eventSlug}`');
 	});
 
 	it('never applies the stored open flag to demo invitations', () => {
 		expect(managerSource).toContain('if (this.isDemoInvitation) return;');
-		expect(managerSource).toContain('!this.isDemoInvitation &&');
+		expect(managerSource).toContain('isDemo: this.isDemoInvitation');
+		expect(managerSource).toContain(
+			'!input.isDemo && !input.forceEnvelope && input.storedOpened',
+		);
 	});
 });

@@ -89,7 +89,7 @@ describe('Canonical Envelope Route Inventory Audit', () => {
 		const slugs = inventory.map((i) => i.slug);
 		expect(slugs).toContain('demo-xv-enchanted-rose');
 		expect(slugs).toContain('demo-xv-celestial-blue');
-		expect(slugs).toContain('demo-bautismo-angelic-presence');
+		expect(slugs).toContain('demo-bautizo-angelic-presence');
 	});
 
 	it('assigns every inventoried route a valid renderer type', () => {
@@ -106,9 +106,9 @@ describe('Canonical Envelope Route Inventory Audit', () => {
 	});
 
 	it('validates that real client routes with raster seals resolve their image assets', () => {
-		const leahLexaPng = path.resolve(
-			'src/assets/images/events/leah-lexa-baby-shower/rose-wax-seal-ll.png',
+		const allisonSeal = path.resolve(
+			'src/assets/invitations/allison-scarlett/seal-delivery.webp',
 		);
-		expect(fs.existsSync(leahLexaPng)).toBe(true);
+		expect(fs.existsSync(allisonSeal)).toBe(true);
 	});
 });

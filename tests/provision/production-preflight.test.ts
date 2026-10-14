@@ -11,22 +11,21 @@ import {
 	runProductionPreflight,
 } from '../../scripts/provision/production-preflight.ts';
 import {
-	PREVIEW_APPROVAL_SCHEMA_VERSION,
-	type PreviewApprovalArtifact,
-} from '../../scripts/provision/preview-approval-service.ts';
-import {
 	createMemoryPreviewApprovalStore,
 	setDefaultPreviewApprovalStoreForTests,
 } from '../../scripts/provision/preview-approval-store.ts';
+import {
+	assetManifestHash,
+	metadataHash,
+	packageHash,
+	previewPlanId,
+	productionProjectRef,
+	projectionHash,
+	sourceHash,
+	writeApproval,
+} from '../helpers/preview-approval-fixture.ts';
 
 const now = new Date('2026-07-23T12:00:00.000Z');
-const packageHash = 'a'.repeat(64);
-const sourceHash = 'b'.repeat(64);
-const metadataHash = 'c'.repeat(64);
-const projectionHash = 'd'.repeat(32);
-const assetManifestHash = 'e'.repeat(64);
-const previewPlanId = 'preview-plan-executed';
-const productionProjectRef = 'productionproject';
 
 afterEach(() => {
 	setDefaultPreviewApprovalStoreForTests(null);
@@ -42,45 +41,6 @@ function packageData(content: Record<string, unknown> = {}): InvitationPackageDa
 		invitation: { slug: 'fixture', eventType: 'xv' },
 		publishedContent: { content },
 	} as InvitationPackageData;
-}
-
-function approval(overrides: Partial<PreviewApprovalArtifact> = {}): PreviewApprovalArtifact {
-	return {
-		approvalState: 'approved',
-		schemaVersion: PREVIEW_APPROVAL_SCHEMA_VERSION,
-		packageHash,
-		sourceHash,
-		metadataHash,
-		canonicalProjectionHash: projectionHash,
-		materializedProjectionHash: 'e'.repeat(32),
-		assetManifestHash,
-		planId: previewPlanId,
-		slug: 'fixture',
-		previewProjectRef: 'iwipdvisoyerfdytuhwi',
-		createdAt: '2026-07-23T11:00:00.000Z',
-		approvedAt: '2026-07-23T11:30:00.000Z',
-		approvedBy: 'qa@celebra-me.test',
-		intendedProductionProjectRef: productionProjectRef,
-		route: '/xv/fixture',
-		expectedAssetHashes: {},
-		hostedValidation: {
-			packageHash,
-			previewProjectRef: 'iwipdvisoyerfdytuhwi',
-			route: '/xv/fixture',
-			projectionHash: 'e'.repeat(32),
-			planId: previewPlanId,
-			reviewedAt: '2026-07-23T11:30:00.000Z',
-			reviewedBy: 'qa@celebra-me.test',
-			intendedProductionProjectRef: productionProjectRef,
-			checklistResults: { route: true, database: true, storage: true },
-			storageHashVerification: {},
-		},
-		...overrides,
-	};
-}
-
-function writeApproval(artifact = approval()): void {
-	setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore([artifact]));
 }
 
 function productionPlan(): OperationalPlan {

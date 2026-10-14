@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 
-export const PREVIEW_FIXTURE_CONTENT_PATH = 'tests/fixtures/content/xv-jewelry-box.json';
+const PREVIEW_FIXTURE_CONTENT_PATH = 'tests/fixtures/content/xv-jewelry-box.json';
 
 export function buildPreviewFixtureContent(): Record<string, unknown> {
 	const source = JSON.parse(readFileSync(PREVIEW_FIXTURE_CONTENT_PATH, 'utf8')) as Record<

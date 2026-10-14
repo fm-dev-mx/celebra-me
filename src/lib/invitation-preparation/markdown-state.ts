@@ -30,14 +30,8 @@ import { isEventType, type EventType } from '@/lib/theme/theme-contract';
 
 const READINESS_LINE =
 	/\*\*Preparation Readiness(?:\s*\(prepReadiness\))?:\*\*\s*`?(NOT_READY|READY_WITH_PLACEHOLDERS|READY_FOR_IMPLEMENTATION)`?/i;
-
-export const CREATIVE_ACCEPTANCE_OUTCOMES = [
-	'PENDING',
-	'ACCEPTED',
-	'ACCEPTED_WITH_BLOCKERS',
-	'REJECTED',
-] as const;
-export type CreativeAcceptanceOutcome = (typeof CREATIVE_ACCEPTANCE_OUTCOMES)[number];
+export type CreativeAcceptanceOutcome =
+	'PENDING' | 'ACCEPTED' | 'ACCEPTED_WITH_BLOCKERS' | 'REJECTED';
 
 const CREATIVE_ACCEPTANCE_PATTERNS = [
 	/\*\*Human creative outcome:\*\*\s*`?(PENDING|ACCEPTED_WITH_BLOCKERS|ACCEPTED|REJECTED)`?(?![A-Z_])/iu,
@@ -274,30 +268,30 @@ export function hasUniquenessTableInMarkdown(markdown: string): boolean {
 	return false;
 }
 
-/** Accepts legacy "Client-selected demo" and owner-resolved "Owner-selected base demo". */
-const DEMO_CLASS_ROW =
-	/\|\s*(?:Client-selected demo|Owner-selected base demo)\s*\|\s*([^|]*)\|\s*`?([a-z_()+/\s.-]+)`?\s*\|/iu;
+/** Design Direction row recording the selected theme preset (invitations do not depend on demos). */
+const PRESET_CLASS_ROW =
+	/\|\s*Selected theme preset\s*\|\s*([^|]*)\|\s*`?([a-z_()+/\s.-]+)`?\s*\|/iu;
 
 function parseDesignDecisionSummaryFromMarkdown(markdown: string): DesignDecisionSummary {
 	const section = extractSection(markdown, /^##\s+Design Direction\b/iu);
-	const match = (section || markdown).match(DEMO_CLASS_ROW);
-	let demoClassification: InfoClassification = 'missing';
+	const match = (section || markdown).match(PRESET_CLASS_ROW);
+	let presetClassification: InfoClassification = 'missing';
 	if (match) {
 		const raw = match[2].trim().toLowerCase();
 		const base = raw.split(/\s+|\(/u)[0];
 		if (isInfoClassification(base)) {
-			demoClassification = base;
+			presetClassification = base;
 		} else if (raw.includes('verified')) {
-			demoClassification = 'verified';
+			presetClassification = 'verified';
 		} else if (raw.includes('requires_owner')) {
-			demoClassification = 'requires_owner_decision';
+			presetClassification = 'requires_owner_decision';
 		} else if (raw.includes('missing')) {
-			demoClassification = 'missing';
+			presetClassification = 'missing';
 		}
 	}
 
 	return {
-		demoClassification,
+		presetClassification,
 		blockingUnresolvedDecisions: [],
 	};
 }

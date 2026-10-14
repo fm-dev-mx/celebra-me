@@ -7,7 +7,7 @@
  * Read-only. No database connections. Does not own migration or audit semantics.
  */
 
-export const DATABASE_SENSITIVE_PREFIXES = [
+const DATABASE_SENSITIVE_PREFIXES = [
 	'supabase/migrations/',
 	'supabase/test/',
 	'supabase/tests/',
@@ -18,7 +18,7 @@ export const DATABASE_SENSITIVE_PREFIXES = [
 	'docs/domains/database/',
 ] as const;
 
-export const DATABASE_SENSITIVE_EXACT_PATHS = new Set([
+const DATABASE_SENSITIVE_EXACT_PATHS = new Set([
 	'supabase/config.toml',
 	'docs/database-workflow.md',
 	'.agent/rules/database.md',

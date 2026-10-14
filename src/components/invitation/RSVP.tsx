@@ -7,14 +7,13 @@ import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
 import '@/styles/invitation/_rsvp.scss';
 
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
-import type { LocationVisibility } from '@/lib/adapters/types';
+import type { LocationVisibility, WhatsAppConfig } from '@/lib/adapters/types';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
 	getDefaultRsvpSubcopy,
 	ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 	type RsvpResponseMessages,
-	type WhatsAppConfig,
 } from '@/components/invitation/rsvp-logic';
 import RsvpContext from '@/components/invitation/rsvp-context';
 import {

@@ -16,19 +16,17 @@
  *   to the canonical `venues[]` schema and no draft intake mappers receive legacy `ceremony`/`reception` objects.
  */
 
+import { isRecord } from '@/lib/shared/data-utils';
+
 export type LocationRecord = Record<string, unknown>;
 
-export class LocationNormalizationError extends Error {
+class LocationNormalizationError extends Error {
 	readonly code = 'LOCATION_NORMALIZATION_ERROR';
 
 	constructor(message: string) {
 		super(message);
 		this.name = 'LocationNormalizationError';
 	}
-}
-
-function isRecord(value: unknown): value is LocationRecord {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function hasValue(record: LocationRecord, key: string): boolean {
@@ -143,7 +141,7 @@ function normalizeLegacyAccessPolicy(location: LocationRecord): LocationRecord {
 	const visibility =
 		parts.policyVisibility === 'after-rsvp' || parts.policyVisibility === 'public'
 			? parts.policyVisibility
-			: parts.legacyVisibility ?? (parts.legacyRevealPlacement ? 'after-rsvp' : 'public');
+			: (parts.legacyVisibility ?? (parts.legacyRevealPlacement ? 'after-rsvp' : 'public'));
 	const revealPlacement = parts.suppliedRevealPlacement ?? parts.legacyRevealPlacement;
 	const {
 		visibility: _visibility,
@@ -165,10 +163,7 @@ function normalizeLegacyAccessPolicy(location: LocationRecord): LocationRecord {
 	};
 }
 
-function normalizeLegacyVenue(
-	value: unknown,
-	type: 'ceremony' | 'reception',
-): LocationRecord {
+function normalizeLegacyVenue(value: unknown, type: 'ceremony' | 'reception'): LocationRecord {
 	if (!isRecord(value)) {
 		throw new LocationNormalizationError(
 			`location.${type} must be an object before it can be converted to location.venues[].`,

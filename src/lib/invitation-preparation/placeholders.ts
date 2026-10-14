@@ -4,9 +4,9 @@
  */
 
 /** Matches [[PENDIENTE:FIELD_ID]] tokens. */
-export const PLACEHOLDER_TOKEN_PATTERN = /\[\[PENDIENTE:([A-Z0-9_]+)\]\]/g;
+const PLACEHOLDER_TOKEN_PATTERN = /\[\[PENDIENTE:([A-Z0-9_]+)\]\]/g;
 
-export function toPlaceholderFieldKey(fieldId: string): string {
+function toPlaceholderFieldKey(fieldId: string): string {
 	return fieldId
 		.trim()
 		.replace(/([a-z0-9])([A-Z])/g, '$1_$2')

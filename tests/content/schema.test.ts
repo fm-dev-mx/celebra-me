@@ -2,18 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
-import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
 import { eventContentSchema as eventSchema } from '@/lib/schemas/content/base-event.schema';
 
 const contentRoots = ['src/content/event-demos'];
 const primeraComunionDemoPath = path.resolve(
 	process.cwd(),
-	'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
+	'src/content/event-demos/primera-comunion/demo-primera-comunion-angelic-presence.json',
 );
 const primeraComunionAssetIndexPath = path.resolve(
 	process.cwd(),
-	'src/assets/images/events/demo-primera-comunion-illustrated/index.ts',
+	'src/assets/images/events/demo-primera-comunion-angelic-presence/index.ts',
 );
 
 function getJsonContentFiles(root: string): string[] {
@@ -244,75 +243,9 @@ describe('Event content schema (real contract)', () => {
 		}
 	});
 
-	it('keeps the Baby Shower preset record that the Leah Lexa invitation references', () => {
-		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-baby-shower-celestial');
-
-		expect(preset).toMatchObject({
-			id: 'demo-baby-shower-celestial',
-			eventType: 'baby-shower',
-			displayName: 'Baby Shower — Celestial Demo',
-			themeId: 'celestial-blue',
-			previewSlug: 'demo-baby-shower-celestial',
-		});
-	});
-
-	it('registers the Primera Comunión demo in the preset catalog', () => {
-		const preset = DEMO_PRESET_CATALOG.find(
-			(item) => item.id === 'demo-primera-comunion-illustrated',
-		);
-
-		expect(preset).toMatchObject({
-			id: 'demo-primera-comunion-illustrated',
-			eventType: 'primera-comunion',
-			displayName: 'Primera Comunión — Ilustrada',
-			themeId: 'angelic-presence',
-			previewSlug: 'demo-primera-comunion-illustrated',
-		});
-		expect(preset?.requiredAssets).toEqual(['hero', 'family', 'gallery01', 'gallery02']);
-	});
-
-	it('keeps the Editorial Magazine preset record that published invitations reference', () => {
-		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-xv-editorial-magazine');
-
-		expect(preset).toMatchObject({
-			id: 'demo-xv-editorial-magazine',
-			eventType: 'xv',
-			displayName: 'XV Años — Revista Editorial',
-			themeId: 'editorial-magazine',
-			previewSlug: 'demo-xv-editorial-magazine',
-		});
-		expect(preset?.requiredAssets).toEqual([
-			'hero',
-			'portrait',
-			'family',
-			'gallery01',
-			'gallery02',
-			'gallery03',
-		]);
-	});
-
-	it('registers the Cumpleaños Editorial Magazine preset record for managed birthdays', () => {
-		const preset = DEMO_PRESET_CATALOG.find(
-			(item) => item.id === 'demo-cumple-editorial-magazine',
-		);
-
-		expect(preset).toMatchObject({
-			id: 'demo-cumple-editorial-magazine',
-			eventType: 'cumple',
-			displayName: 'Cumpleaños — Revista Editorial',
-			themeId: 'editorial-magazine',
-			previewSlug: 'demo-cumple-editorial-magazine',
-		});
-		expect(preset?.requiredAssets).toEqual(['hero', 'portrait', 'gallery01', 'gallery02']);
-	});
-
 	it('resolves Primera Comunión demo assets through its explicit asset slug', () => {
 		const content = JSON.parse(fs.readFileSync(primeraComunionDemoPath, 'utf8'));
-		const preset = DEMO_PRESET_CATALOG.find(
-			(item) => item.id === 'demo-primera-comunion-illustrated',
-		);
-
-		expect(content._assetSlug).toBe('demo-primera-comunion-illustrated');
+		expect(content._assetSlug).toBe('demo-primera-comunion-angelic-presence');
 		expect(fs.existsSync(primeraComunionAssetIndexPath)).toBe(true);
 
 		const referencedAssetKeys = [
@@ -325,9 +258,7 @@ describe('Event content schema (real contract)', () => {
 		].filter((key): key is EventAssetKey => typeof key === 'string' && isEventAssetKey(key));
 
 		const assetIndexSource = fs.readFileSync(primeraComunionAssetIndexPath, 'utf8');
-		for (const key of [
-			...new Set([...referencedAssetKeys, ...(preset?.requiredAssets ?? [])]),
-		]) {
+		for (const key of new Set(referencedAssetKeys)) {
 			expect(assetIndexSource).toContain(key);
 		}
 	});

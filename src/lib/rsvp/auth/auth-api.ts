@@ -8,6 +8,7 @@ import {
 	type AuthOperation,
 	type AuthRequestErrorKind,
 } from '@/lib/rsvp/core/errors';
+import { isRecord } from '@/lib/shared/data-utils';
 
 export const AUTH_REQUEST_TIMEOUT_MS = 5_000;
 
@@ -53,10 +54,6 @@ type AuthTokenResponse = {
 };
 
 type CreateAuthUserResponse = { user: AuthAdminUserRecord } | AuthAdminUserRecord;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function hasStringId(value: unknown): value is { id: string } & Record<string, unknown> {
 	return isRecord(value) && typeof value.id === 'string' && value.id.length > 0;

@@ -8,6 +8,7 @@ import {
 	type StructuralValueState,
 } from '../../src/lib/intake/mutations/structural-operation.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 export type UpdateScope = 'content-only' | 'content-and-assets' | 'assets-only';
 
@@ -35,10 +36,6 @@ export interface SemanticPatchResult {
 	hasAssetChanges: boolean;
 	blocked: boolean;
 	blockReason?: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isAssetReference(value: unknown): boolean {
@@ -73,7 +70,7 @@ function childState(parent: StructuralValueState, key: string): StructuralValueS
 export type ConflictResolutionChoice = 'package' | 'target';
 export type ConflictResolutions = Record<string, ConflictResolutionChoice>;
 
-export function resolvePathPolicy(
+function resolvePathPolicy(
 	path: string,
 	resolutions: ConflictResolutions,
 ): ConflictResolutionChoice | undefined {

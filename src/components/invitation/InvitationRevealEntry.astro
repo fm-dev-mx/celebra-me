@@ -1,0 +1,51 @@
+---
+// Opening experience of an invitation page (editorial cover or envelope), shared by the public
+// and the dashboard preview routes so both render it from the same page context.
+import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.astro';
+import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
+import { buildCoverContents } from '@/lib/invitation/cover-contents';
+import type { InvitationPageContext } from '@/lib/invitation/page-data';
+
+interface Props {
+	page: InvitationPageContext;
+	previewState?: 'closed' | 'opened' | 'letter';
+}
+
+const { page, previewState } = Astro.props;
+const { envelope, viewModel } = page;
+---
+
+{
+	envelope?.revealVariant === 'editorial-cover' ? (
+		<EditorialCoverReveal
+			coverEdition={envelope.coverEdition}
+			coverEditionLabel={envelope.coverEditionLabel}
+			coverVolume={envelope.coverVolume}
+			coverIssue={envelope.coverIssue}
+			coverLines={envelope.coverLines}
+			microcopy={envelope.microcopy}
+			eventSlug={envelope.eventSlug}
+			variant={envelope.variant}
+			heroName={viewModel.hero.name}
+			heroSecondaryName={viewModel.hero.secondaryName}
+			heroLabel={viewModel.hero.label}
+			heroDate={viewModel.hero.date}
+			heroVenueName={page.heroVenueName}
+			coverContents={buildCoverContents(viewModel)}
+			spreadImage={viewModel.hero.backgroundImage}
+			coverOrnament={envelope.coverOrnament}
+			spreadOrnaments={envelope.spreadOrnaments}
+			guestName={page.guestName}
+			guestSeats={page.guestContext?.guest.maxAllowedAttendees}
+			coverExperience={envelope.coverExperience}
+			coverImage={envelope.backdropImage}
+			backgroundImage={viewModel.hero.backgroundImage}
+			portrait={viewModel.hero.portrait}
+			focalPoint={viewModel.hero.focalPoint}
+			focalPointMobile={viewModel.hero.focalPointMobile}
+			previewState={previewState}
+		/>
+	) : envelope ? (
+		<EnvelopeReveal {...envelope} previewState={previewState} />
+	) : null
+}

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { INVITATION_STATUSES } from '@/lib/intake/types';
 
-export const UpdateInvitationSchema = z.object({
+const UpdateInvitationSchema = z.object({
 	title: z.string().min(1).max(200).trim().optional(),
 	slug: z
 		.string()

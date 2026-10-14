@@ -9,14 +9,14 @@
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 
-export type ManagedIdentityFindingCode =
+type ManagedIdentityFindingCode =
 	| 'HISTORICAL_SLUG_ACTIVE'
 	| 'MANAGED_IDENTITY_CONFLICT'
 	| 'ARCHIVED_PARENT_ACTIVE_CHILD'
 	| 'MISSING_MANAGED_IDENTITY'
 	| 'DIAGNOSTIC_PROBE_FAILED';
 
-export interface ManagedIdentityFinding {
+interface ManagedIdentityFinding {
 	code: ManagedIdentityFindingCode;
 	severity: 'error' | 'warning';
 	slug: string;
@@ -72,7 +72,7 @@ function probeJsonArray(
 	return parsed;
 }
 
-export function collectDefinitionAliasMap(): Array<{
+function collectDefinitionAliasMap(): Array<{
 	slug: string;
 	managedIdentityId: string;
 	previousSlugs: string[];

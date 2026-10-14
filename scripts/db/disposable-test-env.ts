@@ -24,15 +24,9 @@
 
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-	BASELINE_CUTOFF_VERSION,
-	DISPOSABLE_DB_URL,
-	DISPOSABLE_TEST,
-	fail,
-	redactCredentials,
-	runCommand,
-} from './db-workflow-lib.ts';
+import { BASELINE_CUTOFF_VERSION, fail, runCommand } from './db-workflow-lib.ts';
 import { invalidateDisposableMigrationProof } from './disposable-migration-proof.ts';
+import { DISPOSABLE_DB_URL, DISPOSABLE_TEST, redactCredentials } from './db-target-config.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -111,7 +105,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
   tsx scripts/db/disposable-test-env.ts run-system-concurrency-test  Exercise Editor/managed/publication/asset contention
   tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test  Exercise event memories transaction races
-  tsx scripts/db/disposable-test-env.ts run-memories-db-contracts  Reset disposable DB, run event memories pgTAP files and races
+  tsx scripts/db/disposable-test-env.ts run-memories-db-contracts  Reset disposable DB, run every pgTAP file and the memories races
   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
   tsx scripts/db/disposable-test-env.ts stop        Stop the disposable container
   tsx scripts/db/disposable-test-env.ts cleanup     Full cleanup (stop + remove container)
@@ -410,7 +404,7 @@ function printReady(): void {
 function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: string }): void {
 	// Full and cutoff applies share the disposable migrate policy/executor.
 	const applyArgs = [
-		'-y',
+		'exec',
 		'tsx',
 		'scripts/db/migrate-cli.ts',
 		'--target',
@@ -423,7 +417,7 @@ function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: 
 	} else if (options.maxVersion) {
 		applyArgs.push('--max-version', options.maxVersion);
 	}
-	const applyResult = runCommand('npx', applyArgs);
+	const applyResult = runCommand('pnpm', applyArgs);
 	if (applyResult.status !== 0) {
 		fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
 	}
@@ -555,27 +549,27 @@ as $fn$ select extensions.gen_random_bytes($1) $fn$;
 	}
 }
 
-const MEMORIES_PGTAP_FILES = [
+/** Every pgTAP file; each one runs inside its own transaction and rolls back. */
+const PGTAP_FILES = [
+	'account_role_sync.test.sql',
+	'invitation_workflow.test.sql',
+	'atomic_invitation_publication.test.sql',
+	'publication_archived_rsvp.test.sql',
+	'invitation_original_image_delivery.test.sql',
+	'managed_identity_archive_cascade.test.sql',
 	'event_memories_catalog.test.sql',
 	'event_memories_lifecycle.test.sql',
+	'guest_invitation_rls.test.sql',
+	'guest_engagement_events.test.sql',
+	'invitation_engagement_snapshots.test.sql',
+	'invitation_engagement_ranking.test.sql',
+	'invitation_engagement_ranking_v2.test.sql',
+	'invitation_access_controls.test.sql',
 ];
 
 function cmdRunTests(): void {
 	console.info('=== Disposable Test Environment: Run Tests ===\n');
-	runPgTapFiles([
-		'account_role_sync.test.sql',
-		'invitation_workflow.test.sql',
-		'atomic_invitation_publication.test.sql',
-		'publication_archived_rsvp.test.sql',
-		'invitation_original_image_delivery.test.sql',
-		'managed_identity_archive_cascade.test.sql',
-		...MEMORIES_PGTAP_FILES,
-		'guest_invitation_rls.test.sql',
-		'guest_engagement_events.test.sql',
-		'invitation_engagement_snapshots.test.sql',
-		'invitation_engagement_ranking.test.sql',
-		'invitation_access_controls.test.sql',
-	]);
+	runPgTapFiles(PGTAP_FILES);
 }
 
 function runPgTapFiles(testFiles: string[]): void {
@@ -818,7 +812,11 @@ function cmdRunManagedDbContracts(): void {
 
 function cmdRunConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Concurrent Publication ===\n');
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/publication-concurrency-test.ts']);
+	const result = runCommand('pnpm', [
+		'exec',
+		'tsx',
+		'scripts/db/publication-concurrency-test.ts',
+	]);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
@@ -833,7 +831,7 @@ function cmdRunConcurrencyTest(): void {
 
 function cmdRunPhase3ConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Phase 3 System Concurrency ===\n');
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/system-concurrency-test.ts']);
+	const result = runCommand('pnpm', ['exec', 'tsx', 'scripts/db/system-concurrency-test.ts']);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
@@ -848,7 +846,7 @@ function cmdRunPhase3ConcurrencyTest(): void {
 
 function cmdRunMemoriesConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Event Memories Concurrency ===\n');
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/memories-concurrency-test.ts']);
+	const result = runCommand('pnpm', ['exec', 'tsx', 'scripts/db/memories-concurrency-test.ts']);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
@@ -860,22 +858,22 @@ function cmdRunMemoriesConcurrencyTest(): void {
 }
 
 /**
- * Reset the disposable database and run every event memories database contract:
- * the pgTAP catalog and lifecycle files, then the transaction races.
+ * Reset the disposable database once, run every pgTAP file (CI has no other pgTAP step), then
+ * the event memories transaction races.
  */
 function cmdRunMemoriesDbContracts(): void {
-	console.info('=== Disposable Test Environment: Event Memories DB Contracts ===\n');
+	console.info('=== Disposable Test Environment: pgTAP and Event Memories DB Contracts ===\n');
 	ensureDisposableReset(
 		'Event memories DB contracts require a reachable disposable database on port 54332.',
 	);
-	runPgTapFiles(MEMORIES_PGTAP_FILES);
+	runPgTapFiles(PGTAP_FILES);
 	cmdRunMemoriesConcurrencyTest();
 }
 
 function cmdRunStaleBaselineTest(): void {
 	console.info('=== Disposable Test Environment: Publication Stale Baselines ===\n');
-	const result = runCommand('npx', [
-		'-y',
+	const result = runCommand('pnpm', [
+		'exec',
 		'tsx',
 		'scripts/db/publication-stale-baseline-test.ts',
 	]);

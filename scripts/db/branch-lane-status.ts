@@ -13,7 +13,7 @@ export const BRANCH_LANE_STATUSES = [
 	'Skipped',
 ] as const;
 
-export type BranchLaneStatus = (typeof BRANCH_LANE_STATUSES)[number];
+type BranchLaneStatus = (typeof BRANCH_LANE_STATUSES)[number];
 
 export type FindingSeverity = 'info' | 'warning' | 'error' | 'hard_block';
 
@@ -39,7 +39,7 @@ export function createFinding(
 	};
 }
 
-export function severityForStatus(status: BranchLaneStatus): FindingSeverity {
+function severityForStatus(status: BranchLaneStatus): FindingSeverity {
 	switch (status) {
 		case 'Hard blocked':
 			return 'hard_block';
@@ -56,7 +56,7 @@ export function severityForStatus(status: BranchLaneStatus): FindingSeverity {
 	}
 }
 
-export type BranchLaneMode =
+type BranchLaneMode =
 	| 'promote-develop-to-main'
 	| 'sync-main-into-develop'
 	| 'release-prepare'

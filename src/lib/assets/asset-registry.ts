@@ -28,12 +28,12 @@ export interface ImageAsset {
  * Standard schema for event-specific assets.
  * All events must implement this interface to ensure UI compatibility.
  */
-export type EventAssets = Record<EventAssetKey, ImageMetadata | undefined>;
+type EventAssets = Record<EventAssetKey, ImageMetadata | undefined>;
 
 /**
  * Schema for common/shared assets.
  */
-export type CommonAssets = Record<CommonAssetKey, ImageAsset>;
+type CommonAssets = Record<CommonAssetKey, ImageAsset>;
 
 interface Registry {
 	events: Record<string, EventAssets>;
@@ -83,7 +83,7 @@ const EVENT_REGISTRY: Record<string, EventAssets> = Object.entries(EVENT_ASSET_M
 	{} as Record<string, EventAssets>,
 );
 
-export const ImageRegistry: Registry = {
+const ImageRegistry: Registry = {
 	events: EVENT_REGISTRY,
 	common: {
 		logo: {

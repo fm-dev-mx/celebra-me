@@ -186,7 +186,7 @@
         "confirmationMessage": "Gracias por confirmar. Los esperamos con mucha emoción.",
         "confirmationMode": "both",
         "whatsappConfig": {
-            "phone": "5218112345678",
+            "phone": "5211000000008",
             "confirmedTemplate": "Hola, soy {name}. Ya registré mi confirmación para la celebración de Lucía. Asistiremos {guestCount} persona(s).",
             "declinedTemplate": "Hola, soy {name}. Ya registré mi respuesta para la celebración de Lucía, pero no podré asistir."
         },

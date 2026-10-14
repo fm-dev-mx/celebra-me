@@ -30,3 +30,19 @@ export function parseEnvironmentList(raw: string): EnvironmentTarget[] {
 	}
 	return ENVIRONMENT_TARGETS.filter((target) => values.includes(target));
 }
+
+/** `--target` value (default `local`); anything other than local|preview|production throws. */
+export function requireEnvironmentTarget(args: readonly string[]): EnvironmentTarget {
+	const target = flagValue(args, '--target') ?? 'local';
+	if (!(ENVIRONMENT_TARGETS as readonly string[]).includes(target)) {
+		throw new Error('TARGET_INVALID: --target must be local, preview or production.');
+	}
+	return target as EnvironmentTarget;
+}
+
+/** `--slug` value; throws SLUG_REQUIRED when it is missing. */
+export function requireSlug(args: readonly string[]): string {
+	const slug = flagValue(args, '--slug');
+	if (!slug) throw new Error('SLUG_REQUIRED: pass --slug <invitation-slug>.');
+	return slug;
+}

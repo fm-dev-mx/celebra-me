@@ -449,9 +449,9 @@ test.describe('Demo Routing Parity', () => {
 });
 
 for (const route of [
-	'/bautizo/demo-bautismo-angelic-presence',
+	'/bautizo/demo-bautizo-angelic-presence',
 	'/boda/demo-boda-jewelry-box-wedding',
-	'/primera-comunion/demo-primera-comunion-illustrated',
+	'/primera-comunion/demo-primera-comunion-angelic-presence',
 ]) {
 	for (const viewport of [
 		{ width: 390, height: 844 },

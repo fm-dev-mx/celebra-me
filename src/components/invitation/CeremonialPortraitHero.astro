@@ -1,5 +1,7 @@
 ---
+import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
+import { resolveExplicitImageDelivery } from '@/lib/assets/image-delivery.server';
 import type { ImageDelivery } from '@/lib/assets/image-delivery';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
@@ -34,7 +36,25 @@ const words = name.trim().split(/\s+/);
 const split = Math.ceil(words.length / 2);
 const lines = [words.slice(0, split).join(' '), words.slice(split).join(' ')].filter(Boolean);
 const delivery = backgroundImage && 'delivery' in backgroundImage ? backgroundImage.delivery : undefined;
-const formattedDate = new Date(date).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const formattedDate = formatSpanishLongDate(date);
+// Art-directed sources honor their declared delivery, like the other hero variants.
+const resolveSource = async (
+	image: { src: string | ImageMetadata; delivery?: ImageDelivery } | undefined,
+	width: number,
+): Promise<string | null> => {
+	if (!image) return null;
+	return image.delivery
+		? resolveExplicitImageDelivery(image.src, image.delivery, { width, quality: 84, format: 'webp' })
+		: plainImgSrc(image.src);
+};
+const desktopSrc = await resolveSource(backgroundImageDesktop, 1920);
+const mobileSrc = await resolveSource(
+	backgroundImageMobile && {
+		src: backgroundImageMobile.src,
+		delivery: 'delivery' in backgroundImageMobile ? backgroundImageMobile.delivery : undefined,
+	},
+	1080,
+);
 ---
 <section id="inicio" class="invitation-hero ceremonial-portrait-hero" data-variant="ceremonial-portrait" data-screenshot="invitation-open-hero" data-screenshot-section="hero">
 
@@ -51,12 +71,8 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', { day: 'numeric
 	</div>
 	{backgroundImage && (
 		<figure class="ceremonial-portrait-hero__photograph ceremonial-portrait-hero__media"><picture>
-			{backgroundImageDesktop && (
-				<source media="(min-width: 64rem)" srcset={plainImgSrc(backgroundImageDesktop.src)} />
-			)}
-			{backgroundImageMobile && (
-				<source media="(max-width: 63.999rem)" srcset={plainImgSrc(backgroundImageMobile.src)} />
-			)}
+			{desktopSrc && <source media="(min-width: 64rem)" srcset={desktopSrc} />}
+			{mobileSrc && <source media="(max-width: 63.999rem)" srcset={mobileSrc} />}
 			<CacheSafeImage
 				src={backgroundImage.src}
 				delivery={delivery}

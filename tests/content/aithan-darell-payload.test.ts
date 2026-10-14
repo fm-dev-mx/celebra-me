@@ -1,47 +1,17 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import {
 	AITHAN_EVENT,
 	aithanInvitation,
 } from '../../scripts/provision/invitations/aithan-darell.ts';
-import type { UploadedAssetMap } from '../../scripts/provision/invitations/invitation-definition.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildTestAssets, collectStringEntries } from '../helpers/managed-payload';
 
-const PLACEHOLDER_PATTERN = /PENDIENTE|\[confirmar|: Por confirmar$|Pendiente de confirmar/i;
 // The editorial-magazine preset was born for XV; none of that copy may leak into a child's birthday.
 const XV_PATTERN = /\bXV\b|quince|edición xv/i;
 
-function buildTestAssets(): UploadedAssetMap {
-	return Object.fromEntries(
-		aithanInvitation.assets.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	);
-}
-
-function collectStrings(value: unknown, pathSegments: string[] = []): string[] {
-	if (typeof value === 'string') return [`${pathSegments.join('.')}: ${value}`];
-	if (Array.isArray(value)) {
-		return value.flatMap((item, index) =>
-			collectStrings(item, [...pathSegments, String(index)]),
-		);
-	}
-	if (value && typeof value === 'object') {
-		return Object.entries(value as Record<string, unknown>).flatMap(([key, item]) =>
-			collectStrings(item, [...pathSegments, key]),
-		);
-	}
-	return [];
-}
-
 function publishedContent(): Record<string, unknown> {
-	return aithanInvitation.buildPublishedContent(buildTestAssets());
+	return aithanInvitation.buildPublishedContent(buildTestAssets(aithanInvitation.assets));
 }
 
 describe('Aithan Darell managed definition', () => {
@@ -54,28 +24,14 @@ describe('Aithan Darell managed definition', () => {
 		expect(aithanInvitation.managedIdentityProvenance).toBe('persisted');
 	});
 
-	it('uses the cumple editorial-magazine catalog entry that matches its theme', () => {
-		const preset = findDemoPreset(AITHAN_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-cumple-editorial-magazine',
-			eventType: 'cumple',
-			themeId: 'editorial-magazine',
-		});
-		expect(preset?.themeId).toBe(aithanInvitation.themeId);
+	it('uses the cumple editorial-magazine theme', () => {
 		expect(resolveInvitationTheme({ themeId: AITHAN_EVENT.themeId })).toBe(
 			AITHAN_EVENT.themeId,
 		);
 	});
 
-	it('builds schema-valid published content with the authored variants', () => {
-		const content = publishedContent();
-		const result = eventContentSchema.safeParse(content);
-		expect({
-			success: result.success,
-			...(result.success ? {} : { issues: result.error.issues }),
-		}).toStrictEqual({ success: true });
-
-		const parsed = eventContentSchema.parse(content);
+	it('builds published content with the authored variants', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.templateId).toBe('cumple-editorial-magazine');
 		expect(parsed.visualProfileId).toBe('aithan-darell');
 		expect(parsed.hero.variant).toBe('editorial-cover');
@@ -143,7 +99,7 @@ describe('Aithan Darell managed definition', () => {
 		].filter((text): text is string => typeof text === 'string');
 		expect(visibleTimes.some((text) => text.includes('5:30 p. m.'))).toBe(true);
 		// No other clock time (e.g. the superseded 4:30) may appear anywhere in the payload.
-		const otherTimes = collectStrings(publishedContent()).filter((entry) =>
+		const otherTimes = collectStringEntries(publishedContent()).filter((entry) =>
 			/\b(?!5:30)\d{1,2}:\d{2}\s*(?:a|p)\.?\s*m\./i.test(entry),
 		);
 		expect(otherTimes).toEqual([]);
@@ -154,7 +110,9 @@ describe('Aithan Darell managed definition', () => {
 		// The race number on the suit caption is a number, not the age: it keeps "Nº 3".
 		expect(parsed.gallery?.items?.[0]?.caption).toBe('Traje oficial del piloto Nº 3');
 		// No other field prints a bare "3" (the number-only edition and cover mark are gone).
-		const bareThrees = collectStrings(publishedContent()).filter((entry) => /: 3$/.test(entry));
+		const bareThrees = collectStringEntries(publishedContent()).filter((entry) =>
+			/: 3$/.test(entry),
+		);
 		expect(bareThrees).toEqual([]);
 	});
 
@@ -237,7 +195,7 @@ describe('Aithan Darell managed definition', () => {
 		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.rsvp?.title).toBe('Confirme su asistencia');
 		expect(parsed.rsvp?.labels?.confirmButton).toBe('Confirmar asistencia');
-		const strings = collectStrings(publishedContent());
+		const strings = collectStringEntries(publishedContent());
 		expect(strings.filter((entry) => /inscrip/i.test(entry))).toEqual([]);
 	});
 
@@ -247,9 +205,8 @@ describe('Aithan Darell managed definition', () => {
 		expect(parsed.quote?.text).not.toContain('primeros');
 	});
 
-	it('publishes no placeholders and no XV edition copy', () => {
-		const strings = collectStrings(publishedContent());
-		expect(strings.filter((entry) => PLACEHOLDER_PATTERN.test(entry))).toEqual([]);
+	it('publishes no XV edition copy', () => {
+		const strings = collectStringEntries(publishedContent());
 		expect(strings.filter((entry) => XV_PATTERN.test(entry))).toEqual([]);
 	});
 

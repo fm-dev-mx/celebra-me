@@ -13,7 +13,7 @@ import type {
 
 export const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 
-export const CANONICAL_STATUS_CACHE_TTL_MS = 60_000;
+const CANONICAL_STATUS_CACHE_TTL_MS = 60_000;
 
 /**
  * Aggregate evidence authority. Incomplete evidence must never become globally LIVE.

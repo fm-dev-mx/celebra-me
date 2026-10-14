@@ -57,7 +57,7 @@ export class TestFixedLengthStream {
 	}
 }
 
-export function installWorkerRuntimeGlobals(): void {
+function installWorkerRuntimeGlobals(): void {
 	Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
 	Object.defineProperty(globalThis, 'ReadableStream', {
 		configurable: true,
@@ -106,7 +106,7 @@ export function sha256Hex(bytes: Uint8Array): string {
 // R2 ---------------------------------------------------------------------------------
 
 /** Stores real bytes and enforces what R2 enforces: checksum and `onlyIf`. */
-export class InMemoryBucket {
+class InMemoryBucket {
 	readonly objects = new Map<string, Uint8Array>();
 
 	readonly binding: Bucket & RetrieveEnv['MEMORIES_BUCKET'] = {
@@ -533,7 +533,7 @@ function createRateLimiter(): MemoriesSignEnv['SIGN_RATE_LIMITER'] {
 	};
 }
 
-export type NetworkFault = 'none' | 'drop_request' | 'lose_response';
+type NetworkFault = 'none' | 'drop_request' | 'lose_response';
 
 export interface MemoriesStack {
 	bucket: InMemoryBucket;

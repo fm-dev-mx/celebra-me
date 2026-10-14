@@ -11,7 +11,7 @@ import { createTheme, promptTheme, stripAnsi, type Theme } from './cli-theme.ts'
 
 const MENU_SEPARATOR = 'separator' as const;
 
-export interface MenuItem<T extends string> {
+interface MenuItem<T extends string> {
 	value: T;
 	label: string;
 	/** Short dim hint shown under the highlighted item. */

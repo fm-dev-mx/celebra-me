@@ -1,10 +1,4 @@
-import {
-	resolveLocationShowFlourishes as resolveCanonicalLocationShowFlourishes,
-	resolveLocationShowNavigationButtons as resolveCanonicalLocationShowNavigationButtons,
-	type LocationPresentationOptions,
-} from './location-presentation';
-
-export type { LocationPresentationOptions } from './location-presentation';
+import type { LocationPresentationOptions } from './location-presentation';
 
 /**
  * Reports a conflict between the canonical Location option and its historical
@@ -41,28 +35,4 @@ export function foldLocationPresentationOptions<T extends Record<string, unknown
 			...(showNavigationButtons !== undefined ? { showNavigationButtons } : {}),
 		},
 	};
-}
-
-/** Compatibility wrapper retaining the historical resolver signature. */
-export function resolveLocationShowFlourishes(
-	options: LocationPresentationOptions | undefined,
-	legacySectionStylesShowFlourishes?: boolean,
-): boolean {
-	return (
-		options?.showFlourishes ??
-		legacySectionStylesShowFlourishes ??
-		resolveCanonicalLocationShowFlourishes(options)
-	);
-}
-
-/** Compatibility wrapper retaining the historical resolver signature. */
-export function resolveLocationShowNavigationButtons(
-	options: LocationPresentationOptions | undefined,
-	legacySectionStylesShowNavigationButtons?: boolean,
-): boolean {
-	return (
-		options?.showNavigationButtons ??
-		legacySectionStylesShowNavigationButtons ??
-		resolveCanonicalLocationShowNavigationButtons(options)
-	);
 }

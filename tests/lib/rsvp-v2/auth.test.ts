@@ -59,6 +59,21 @@ describe('rsvp auth', () => {
 		expect(session?.accessToken).toBe('token-123');
 	});
 
+	it('returns empty token when request has no auth headers', () => {
+		expect(resolveAccessTokenFromRequest(createRequest({}))).toBe('');
+	});
+
+	it('returns null session for invalid token response', async () => {
+		process.env.SUPABASE_URL = 'https://project.supabase.co';
+		process.env.SUPABASE_ANON_KEY = 'anon';
+		global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 401 }) as typeof fetch;
+
+		const session = await getHostSessionFromRequest(
+			createRequest({ authorization: 'Bearer invalid' }),
+		);
+		expect(session).toBeNull();
+	});
+
 	it('makes no Auth call when the request has no token', async () => {
 		global.fetch = jest.fn() as typeof fetch;
 

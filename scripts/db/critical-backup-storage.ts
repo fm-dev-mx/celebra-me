@@ -11,8 +11,9 @@ import {
 	type StorageObjectArchive,
 	type StorageObjectArchiveEntry,
 } from './storage-object-archive.ts';
+import { mapPool } from '../status-core/probe-runner.ts';
 
-export const STORAGE_DOWNLOAD_CONCURRENCY = 6;
+const STORAGE_DOWNLOAD_CONCURRENCY = 6;
 
 export const STORAGE_INVENTORY_SQL = `select coalesce(json_agg(source order by "bucketId", name), '[]'::json)::text
 		 from (
@@ -40,26 +41,6 @@ function parseNumeric(value: number | string | null): number | null {
 
 function storageObjectRef(bucketId: string, name: string): string {
 	return createHash('sha256').update(`${bucketId}/${name}`).digest('hex').slice(0, 16);
-}
-
-async function mapPool<T, R>(
-	items: readonly T[],
-	concurrency: number,
-	fn: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-	const limit = Math.max(1, Math.min(concurrency, items.length || 1));
-	const results = new Array<R>(items.length);
-	let next = 0;
-	async function worker(): Promise<void> {
-		for (;;) {
-			const index = next;
-			next += 1;
-			if (index >= items.length) return;
-			results[index] = await fn(items[index]!, index);
-		}
-	}
-	await Promise.all(Array.from({ length: limit }, () => worker()));
-	return results;
 }
 
 export async function downloadStorageInventory(input: {

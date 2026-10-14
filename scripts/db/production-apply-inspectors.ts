@@ -18,7 +18,7 @@ import {
 	lifecycleReleaseBlockFor,
 } from '../provision/invitations/lifecycle-gate.ts';
 import {
-	listArchivedInvitationDefinitions,
+	listExpiredInvitationDefinitions,
 	listAuthoringInvitationDefinitions,
 	listInvitationDefinitions,
 	listPublishedInvitationDefinitions,
@@ -124,7 +124,7 @@ export async function inspectSchema(
  * Retry an unpublished-draft divergence only after an explicit CLI acknowledgement.
  * Managed-baseline drift is never eligible for this recovery path.
  */
-export async function resolveWithDiscardIfDraftDivergence(
+async function resolveWithDiscardIfDraftDivergence(
 	first: PromotionPreflightReport,
 	runPreflight: (
 		data: InvitationPackageData,
@@ -152,13 +152,13 @@ function sortedSlugs(definitions: readonly { slug: string }[]): string[] {
 /** Discovery (`--all-ready`, inspect-all): published definitions plan; the rest are reported apart. */
 export function discoverProductionApplySlugs(deps: ProductionApplyAssemblerDeps): {
 	slugs: string[];
-	archivedSlugs: string[];
+	expiredSlugs: string[];
 	authoringSlugs: string[];
 } {
 	return {
 		slugs: (deps.listSlugs ?? (() => sortedSlugs(listPublishedInvitationDefinitions())))(),
-		archivedSlugs: (
-			deps.listArchivedSlugs ?? (() => sortedSlugs(listArchivedInvitationDefinitions()))
+		expiredSlugs: (
+			deps.listExpiredSlugs ?? (() => sortedSlugs(listExpiredInvitationDefinitions()))
 		)(),
 		authoringSlugs: (
 			deps.listAuthoringSlugs ?? (() => sortedSlugs(listAuthoringInvitationDefinitions()))

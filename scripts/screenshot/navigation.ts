@@ -2,7 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — URL Construction & Navigation
 // =============================================================================
 
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import {
 	type ScreenshotMode,
 	type ScreenshotSelectorConfig,

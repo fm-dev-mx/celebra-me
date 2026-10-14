@@ -17,8 +17,7 @@ implementation passes, and asset audits live in Git history.
 ## Preset and variants
 
 - Theme preset `editorial-magazine`; visual profile `valentina-hernandez` (frozen by digest in
-  `tests/unit/invitation-profile-boundary.test.ts`); legacy `baseDemoId`
-  `demo-xv-editorial-magazine` (catalog-only).
+  `tests/unit/invitation-profile-boundary.test.ts`).
 - Envelope `revealVariant: editorial-cover`.
 - Variants: hero `editorial-cover`, family `standard`, countdown `magazine-folio`, itinerary
   `editorial-program`, location `standard`, gallery `magazine-spread`, gifts `editorial-catalog`,
@@ -42,4 +41,4 @@ implementation passes, and asset audits live in Git history.
   were never supplied.
 - Ceremony and reception share Finca Las Palmas; the Maps link is a search URL, not a pinned
   entrance.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

@@ -220,7 +220,7 @@ function attendingOf(item: DashboardGuestItem): number {
 	return Math.min(passesOf(item), Math.max(0, item.attendeeCount || 0));
 }
 
-export interface GuestStageCount {
+interface GuestStageCount {
 	invitations: number;
 	passes: number;
 }
@@ -423,7 +423,7 @@ export function getGuestListSubtitle(item: DashboardGuestItem, now: Date = new D
 	return `${passes} · ${sentAgo ? `Enviada ${sentAgo}` : 'Enviada'}`;
 }
 
-export type GuestProgressState = 'done' | 'current' | 'upcoming';
+type GuestProgressState = 'done' | 'current' | 'upcoming';
 
 export interface GuestProgressStep {
 	label: string;
@@ -574,13 +574,13 @@ export function filterGuestsForReview(
 
 /** Filter value for invitations without any visible group. */
 export const NO_GROUP_FILTER = '__no-group__';
-export const NO_GROUP_LABEL = 'Sin grupo';
+const NO_GROUP_LABEL = 'Sin grupo';
 
 export function getGuestGroups(item: DashboardGuestItem): string[] {
 	return getVisibleTags(item.tags);
 }
 
-export function matchesGuestGroup(item: DashboardGuestItem, group: string): boolean {
+function matchesGuestGroup(item: DashboardGuestItem, group: string): boolean {
 	if (group === 'all') return true;
 	const groups = getGuestGroups(item);
 	return group === NO_GROUP_FILTER ? groups.length === 0 : groups.includes(group);

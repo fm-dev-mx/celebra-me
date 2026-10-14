@@ -7,7 +7,7 @@ import {
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
 	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),
-	isEventInvitationDisabled: jest.fn().mockResolvedValue(false),
+	isEventInvitationUnavailable: jest.fn().mockResolvedValue(false),
 }));
 
 const findGuestByInviteIdPublicMock = findGuestByInviteIdPublic as jest.MockedFunction<
@@ -24,7 +24,7 @@ describe('rsvp service limits', () => {
 			inviteId: 'invite-1',
 			eventId: 'evt-1',
 			fullName: 'Invitado',
-			phone: '6680000000',
+			phone: '1000000004',
 			maxAllowedAttendees: 2,
 			attendanceStatus: 'pending',
 			attendeeCount: 0,
@@ -45,7 +45,7 @@ describe('rsvp service limits', () => {
 			inviteId: 'invite-1',
 			eventId: 'evt-1',
 			fullName: 'Invitado',
-			phone: '6680000000',
+			phone: '1000000004',
 			maxAllowedAttendees: 2,
 			attendanceStatus: 'confirmed',
 			attendeeCount: 2,

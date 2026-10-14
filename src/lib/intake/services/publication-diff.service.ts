@@ -21,7 +21,7 @@ function optimisticLockHash(content: string): string {
 	return createHash('md5').update(content).digest('hex');
 }
 
-export interface PublicationChange {
+interface PublicationChange {
 	path: string;
 	sectionId: string;
 	sectionLabel: string;
@@ -43,9 +43,7 @@ export function hashPublicationProjection(projection: Record<string, unknown>): 
 }
 
 /** Fingerprint of the persisted jsonb document, without publication normalization. */
-export function hashPublishedContentFingerprint(
-	content: Record<string, unknown> | undefined,
-): string {
+function hashPublishedContentFingerprint(content: Record<string, unknown> | undefined): string {
 	return optimisticLockHash(toPostgresJsonbText(content ?? {}));
 }
 

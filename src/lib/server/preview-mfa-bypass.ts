@@ -18,7 +18,6 @@
 
 import { readBuildIdentity } from '@/lib/environment';
 import {
-	isProductionDeployment,
 	readHostedDeployEnvironment,
 	type HostedDeployEnvironment,
 } from '@/lib/server/deploy-identity';
@@ -101,22 +100,4 @@ export function isPreviewMfaBypassEnabled(
 	if (!isAllowlistedAdmin(env.userEmail, env.adminEmails)) return false;
 
 	return true;
-}
-
-/**
- * Check whether the bypass would be active on Production even with all
- * variables set (fail-closed verification).
- */
-export function isProductionWithPreviewBypassVarsSet(): boolean {
-	if (!isProductionDeployment()) return false;
-
-	// Production must remain fail-closed even if someone sets these vars
-	const bypass = getEnv('PREVIEW_MFA_BYPASS');
-	const branch = readBuildIdentity().gitRef;
-	const emails = getEnv('PREVIEW_ADMIN_EMAILS');
-	const supabaseUrl = getEnv('SUPABASE_URL');
-
-	return (
-		bypass === 'true' || branch === 'develop' || !!emails || isPreviewSupabaseUrl(supabaseUrl)
-	);
 }

@@ -17,6 +17,9 @@ jest.mock('@inquirer/prompts', () => ({
 jest.mock('../../scripts/db/migrate-orchestrator.ts', () => ({
 	preflightMigrate: (...args: unknown[]) => mockPreflightMigrate(...args),
 	orchestrateMigrate: (...args: unknown[]) => mockOrchestrateMigrate(...args),
+}));
+
+jest.mock('../../scripts/db/migrate-plan-format.ts', () => ({
 	formatPlanReview: () => 'plan-review',
 	formatPlanReviewCompact: () => 'plan-compact',
 }));

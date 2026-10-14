@@ -10,6 +10,7 @@ import {
 	assertRuntimeSupabaseIdentity,
 	bootstrapCelebraRuntimeEnv,
 	classifySupabaseUrl,
+	parseDeployEnvironment,
 	PREVIEW_PROJECT_REF,
 	PRODUCTION_PROJECT_REF,
 	resolveRuntimeTarget,
@@ -127,6 +128,22 @@ describe('celebra runtime env bootstrap', () => {
 	it('resolves Preview runtime from the dev-preview worktree without a deploy identity', () => {
 		const cwd = writeLane('dev-preview');
 		expect(resolveRuntimeTarget({ cwd }).target).toBe('preview');
+	});
+
+	it('parses CELEBRA_DEPLOY_ENV exactly, like the runtime deploy identity', () => {
+		expect(parseDeployEnvironment(undefined)).toBeNull();
+		expect(parseDeployEnvironment('')).toBeNull();
+		expect(parseDeployEnvironment('production')).toBe('production');
+		expect(parseDeployEnvironment('preview')).toBe('preview');
+		for (const invalid of ['Production', ' preview', 'PREVIEW', 'staging', ' ']) {
+			expect(() => parseDeployEnvironment(invalid)).toThrow(/must be exactly/);
+		}
+		expect(() =>
+			resolveRuntimeTarget({
+				cwd: writeLane('dev-local'),
+				env: { CELEBRA_DEPLOY_ENV: 'Production' },
+			}),
+		).toThrow(/must be exactly/);
 	});
 
 	it('rejects mixed Local/Preview public and server URLs', () => {

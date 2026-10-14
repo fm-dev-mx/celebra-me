@@ -3,90 +3,11 @@ export const INVITATION_DEFERRED_CSS_PROMOTION_FALLBACK_MS = 8000;
 export const ENVELOPE_OPENED_EVENT = 'envelope:opened';
 export const FIRST_CONTENTFUL_PAINT = 'first-contentful-paint';
 
-export type DeferredCssPaintEntry = { name: string };
-
-export function shouldPromoteDeferredCssImmediately(input: {
-	skipEnvelope: boolean;
-	forceEnvelope: boolean;
-	isDemo: boolean;
-	storedOpened: boolean;
-}): boolean {
-	return input.skipEnvelope || (!input.isDemo && !input.forceEnvelope && input.storedOpened);
-}
-
-export function paintEntriesIncludeFirstContentfulPaint(
-	entries: readonly DeferredCssPaintEntry[],
-): boolean {
-	return entries.some((entry) => entry.name === FIRST_CONTENTFUL_PAINT);
-}
-
-export interface DeferredCssPromotionHooks {
-	apply: () => void;
-	isAlreadyRevealed: () => boolean;
-	getPaintEntries: () => readonly DeferredCssPaintEntry[];
-	observePaint?: (
-		onEntries: (entries: readonly DeferredCssPaintEntry[]) => void,
-	) => (() => void) | null;
-	onEnvelopeOpened: (onOpen: () => void) => void;
-	scheduleTimeout: (onTimeout: () => void, ms: number) => void;
-	scheduleAnimationFrameFallback: (onFrame: () => void) => void;
-	fallbackMs?: number;
-}
-
 /**
- * Idempotent promotion scheduler. First-visit CSS stays deferred until FCP when the
- * paint timeline is available. Reveal and a bounded timeout are secondary so deferred
+ * Inline promotion script (runs before hydration). First-visit CSS stays deferred until FCP
+ * when the paint timeline is available. Reveal and a bounded timeout are secondary so deferred
  * sheets cannot remain at `media="not all"` while invitation content is visible.
  */
-export function startInvitationDeferredCssPromotion(hooks: DeferredCssPromotionHooks): {
-	promote: () => void;
-} {
-	let applied = false;
-	const promote = () => {
-		if (applied) return;
-		applied = true;
-		hooks.apply();
-	};
-
-	try {
-		if (hooks.isAlreadyRevealed()) {
-			promote();
-			return { promote };
-		}
-	} catch {
-		// localStorage / search parsing can fail; continue to paint and reveal paths.
-	}
-
-	hooks.onEnvelopeOpened(promote);
-
-	if (paintEntriesIncludeFirstContentfulPaint(hooks.getPaintEntries())) {
-		promote();
-		return { promote };
-	}
-
-	if (typeof hooks.observePaint === 'function') {
-		try {
-			const disconnect = hooks.observePaint((entries) => {
-				if (!paintEntriesIncludeFirstContentfulPaint(entries)) return;
-				disconnect?.();
-				promote();
-			});
-			if (disconnect) {
-				hooks.scheduleTimeout(
-					promote,
-					hooks.fallbackMs ?? INVITATION_DEFERRED_CSS_PROMOTION_FALLBACK_MS,
-				);
-				return { promote };
-			}
-		} catch {
-			// Fall through to animation-frame fallback.
-		}
-	}
-
-	hooks.scheduleAnimationFrameFallback(promote);
-	return { promote };
-}
-
 export function buildInvitationDeferredCssPromotionInlineScript(input: {
 	storageKey: string;
 	isDemo: boolean;

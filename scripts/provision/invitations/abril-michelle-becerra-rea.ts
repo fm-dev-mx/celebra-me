@@ -8,17 +8,12 @@
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 export const ABRIL_EVENT = {
 	eventType: 'xv',
 	slug: 'abril-michelle-becerra-rea',
 	assetSlug: 'abril-michelle-becerra-rea',
-	baseDemoId: 'demo-xv-premiere-floral',
 	themeId: 'premiere-floral',
 	visualProfileId: 'abril-michelle-becerra-rea',
 	title: 'XV años de Abril Michelle Becerra Rea',
@@ -130,7 +125,6 @@ export const ABRIL_ASSET_SPECS = [
 ] as const;
 
 export type AbrilAssetKey = (typeof ABRIL_ASSET_SPECS)[number]['key'];
-export type AbrilAssetMap = Record<AbrilAssetKey, UploadedAssetRef>;
 
 const ceremonyAddress =
 	'Agustín Rivera 433-C, Colonia Centro, C.P. 47400, Lagos de Moreno, Jalisco';
@@ -481,10 +475,8 @@ export const abrilInvitation: InvitationDefinition<AbrilAssetKey> = defineInvita
 	title: ABRIL_EVENT.title,
 	clientName: 'Abril Michelle Becerra Rea',
 	hostLoginAlias: 'abril_becerra',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: ABRIL_EVENT.baseDemoId,
 	themeId: ABRIL_EVENT.themeId,
 	visualProfileId: ABRIL_EVENT.visualProfileId,
 	eventTiming: {

@@ -52,7 +52,7 @@ for (const variant of ['editorial-press-pass', 'formal-register']) {
 	});
 }
 
-for (const slug of ['romina-rios-chaparro', 'valentina-hernandez', 'ximena-meza-trasvina']) {
+for (const slug of ['romina-rios-chaparro', 'valentina-hernandez']) {
 	for (const viewport of [
 		{ width: 390, height: 844 },
 		{ width: 414, height: 896 },
@@ -68,58 +68,6 @@ for (const slug of ['romina-rios-chaparro', 'valentina-hernandez', 'ximena-meza-
 			await page.evaluate(() => document.fonts.ready);
 			await page.waitForTimeout(500);
 			expect(await page.locator('body').evaluate(auditCriticalLayout)).toEqual([]);
-			if (slug === 'ximena-meza-trasvina' && viewport.width < 860) {
-				const textSpacing = await page
-					.locator('.invitation-hero__title')
-					.evaluate((title) => {
-						const style = getComputedStyle(title);
-						const context = document.createElement('canvas').getContext('2d')!;
-						context.font = [
-							style.fontStyle,
-							style.fontWeight,
-							style.fontSize,
-							style.fontFamily,
-						].join(' ');
-						const metrics = context.measureText(
-							(title.textContent ?? '').toUpperCase(),
-						);
-						return {
-							lineHeight: parseFloat(style.lineHeight),
-							inkHeight:
-								metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent,
-						};
-					});
-				expect(textSpacing.lineHeight).toBeGreaterThan(textSpacing.inkHeight);
-				const ratios = await page
-					.locator('.invitation-hero__details p')
-					.evaluateAll((elements) => {
-						const luminance = (color: string): number => {
-							const channels = color
-								.match(/[\d.]+/g)!
-								.slice(0, 3)
-								.map(Number)
-								.map((value) => {
-									const c = value / 255;
-									return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-								});
-							return (
-								channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722
-							);
-						};
-						return elements.map((element) => {
-							const foreground = luminance(getComputedStyle(element).color);
-							const background = luminance(
-								getComputedStyle(element.parentElement!).backgroundColor,
-							);
-							return (
-								(Math.max(foreground, background) + 0.05) /
-								(Math.min(foreground, background) + 0.05)
-							);
-						});
-					});
-				expect(ratios.length).toBeGreaterThan(0);
-				for (const ratio of ratios) expect(ratio).toBeGreaterThanOrEqual(4.5);
-			}
 			const play = page.locator('.music-player__button--play');
 			if (await play.count()) {
 				const box = await play.boundingBox();
@@ -128,6 +76,71 @@ for (const slug of ['romina-rios-chaparro', 'valentina-hernandez', 'ximena-meza-
 			}
 		});
 	}
+}
+
+// Premiere-floral standard hero with a portrait: the mobile composition guarded on a retired
+// invitation. The synthetic harness reproduces the same preset, variant and portrait.
+for (const viewport of [
+	{ width: 390, height: 844 },
+	{ width: 414, height: 896 },
+]) {
+	test(
+		'premiere-floral standard hero keeps mobile text spacing and contrast at ' + viewport.width,
+		async ({ page }) => {
+			await page.setViewportSize(viewport);
+			const response = await page.goto(
+				'/test/variant?section=hero&variant=standard&preset=premiere-floral',
+			);
+			expect(response?.ok()).toBe(true);
+			await expect(page.locator('.invitation-hero__title')).toBeVisible();
+			await page.evaluate(() => document.fonts.ready);
+			await waitForVisualHydration(page);
+			expect(await page.locator('body').evaluate(auditCriticalLayout)).toEqual([]);
+			const textSpacing = await page.locator('.invitation-hero__title').evaluate((title) => {
+				const style = getComputedStyle(title);
+				const context = document.createElement('canvas').getContext('2d')!;
+				context.font = [
+					style.fontStyle,
+					style.fontWeight,
+					style.fontSize,
+					style.fontFamily,
+				].join(' ');
+				const metrics = context.measureText((title.textContent ?? '').toUpperCase());
+				return {
+					lineHeight: parseFloat(style.lineHeight),
+					inkHeight: metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent,
+				};
+			});
+			expect(textSpacing.lineHeight).toBeGreaterThan(textSpacing.inkHeight);
+			const ratios = await page
+				.locator('.invitation-hero__details p')
+				.evaluateAll((elements) => {
+					const luminance = (color: string): number => {
+						const channels = color
+							.match(/[\d.]+/g)!
+							.slice(0, 3)
+							.map(Number)
+							.map((value) => {
+								const c = value / 255;
+								return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+							});
+						return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+					};
+					return elements.map((element) => {
+						const foreground = luminance(getComputedStyle(element).color);
+						const background = luminance(
+							getComputedStyle(element.parentElement!).backgroundColor,
+						);
+						return (
+							(Math.max(foreground, background) + 0.05) /
+							(Math.min(foreground, background) + 0.05)
+						);
+					});
+				});
+			expect(ratios.length).toBeGreaterThan(0);
+			for (const ratio of ratios) expect(ratio).toBeGreaterThanOrEqual(4.5);
+		},
+	);
 }
 
 test('complete-page capture reaches the footer in a body scroll container', async ({ page }) => {

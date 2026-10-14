@@ -3,7 +3,7 @@
  * Neutral module: no runtime build-time registry dependency.
  */
 
-/** Asset namespace for the Xareni client media registry (not a presentation authority). */
+/** Asset namespace for the client media registry (not a presentation authority). */
 
 export const EVENT_KEYS = [
 	'hero',
@@ -40,7 +40,7 @@ export const EVENT_KEYS = [
 	'thankYouPortrait',
 ] as const;
 
-export const COMMON_KEYS = ['logo', 'heroBgDesktop', 'heroBgMobile', 'headerLogo'] as const;
+const COMMON_KEYS = ['logo', 'heroBgDesktop', 'heroBgMobile', 'headerLogo'] as const;
 
 export type EventAssetKey = (typeof EVENT_KEYS)[number];
 export type CommonAssetKey = (typeof COMMON_KEYS)[number];

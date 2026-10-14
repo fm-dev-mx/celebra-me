@@ -7,7 +7,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { buildManagedHostEmail, parseHostLoginAlias } from '../../src/lib/auth/login-alias.ts';
-export type HostOwnerAction =
+type HostOwnerAction =
 	'OWNER_PRESERVE' | 'OWNER_EXPLICIT' | 'OWNER_REUSE' | 'OWNER_CREATE_PLANNED' | 'OWNER_CONFLICT';
 
 export interface HostOwnerPlan {
@@ -155,7 +155,7 @@ export function planInvitationHostOwner(input: {
 	};
 }
 
-export function findAuthUserIdByEmail(dbUrl: string, email: string): string | null {
+function findAuthUserIdByEmail(dbUrl: string, email: string): string | null {
 	const result = runPsql(
 		`select id::text from auth.users where lower(email) = lower(${sqlLiteral(email)}) limit 2;`,
 		dbUrl,
@@ -169,7 +169,7 @@ export function findAuthUserIdByEmail(dbUrl: string, email: string): string | nu
 	return lines[0] ?? null;
 }
 
-export function findOtherActiveInvitationSlugOwnedBy(
+function findOtherActiveInvitationSlugOwnedBy(
 	dbUrl: string,
 	ownerUserId: string,
 	slug: string,
@@ -188,7 +188,7 @@ export function findOtherActiveInvitationSlugOwnedBy(
 	return value || null;
 }
 
-export function authUserExists(dbUrl: string, userId: string): boolean {
+function authUserExists(dbUrl: string, userId: string): boolean {
 	const result = runPsql(
 		`select id from auth.users where id = ${sqlLiteral(userId)}::uuid;`,
 		dbUrl,
@@ -197,7 +197,7 @@ export function authUserExists(dbUrl: string, userId: string): boolean {
 	return Boolean(result.stdout.trim());
 }
 
-export function ensureHostClientRole(dbUrl: string, userId: string): void {
+function ensureHostClientRole(dbUrl: string, userId: string): void {
 	runPsql(
 		`insert into public.app_user_roles (user_id, role)
 		 values (${sqlLiteral(userId)}::uuid, 'host_client')
@@ -211,7 +211,7 @@ function buildTemporaryHostPassword(): string {
 }
 
 /** Create Auth user via GoTrue Admin API (creates identity). Does not print the password. */
-export async function createInvitationHostAuthUser(input: {
+async function createInvitationHostAuthUser(input: {
 	supabaseUrl: string;
 	serviceRoleKey: string;
 	userId: string;

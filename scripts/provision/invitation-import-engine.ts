@@ -38,7 +38,6 @@ import {
 	hashPublicationProjection,
 } from '../../src/lib/intake/services/publication-diff.service.ts';
 import {
-	rewritePackageStorageUrls,
 	checkTargetDivergenceConflict,
 	buildResourceActions,
 	assertAppliedHostedTargetIdentity,
@@ -799,7 +798,6 @@ interface DatabaseUpsertParams {
 	slug: string;
 	eventType: string;
 	pkg: InvitationPackageData;
-	targetSnapshot: Record<string, unknown>;
 	targetDraftContent: Record<string, unknown>;
 	targetPublishedContent: Record<string, unknown>;
 	existingInv: Record<string, unknown> | null;
@@ -1069,7 +1067,6 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 		slug,
 		eventType,
 		pkg,
-		targetSnapshot,
 		targetDraftContent,
 		existingInv,
 		existingDraft,
@@ -1110,7 +1107,9 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 				`Package for "${slug}" is missing invitation.managedIdentityId; regenerate the package from the current managed definition.`,
 			);
 		}
-		const invUpsertSql = `insert into public.invitations (id, slug, managed_identity_id, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(effectiveSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlLiteral(effectiveTitle)}, ${sqlLiteral(eventType)}, ${sqlLiteral(effectiveStatus)}, ${sqlLiteral(pkg.invitation.baseDemoId)}, ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(JSON.stringify(targetSnapshot))}::jsonb, ${sqlLiteral(effectiveClientName)}, ${sqlLiteral(effectiveClientEmail)}, ${sqlLiteral(effectiveClientWhatsapp)}, ${effectivePhotosReceived ? 'true' : 'false'}, '${effectiveOwner}'::uuid) on conflict (id) do update set slug = excluded.slug, managed_identity_id = coalesce(public.invitations.managed_identity_id, excluded.managed_identity_id), event_type = excluded.event_type, base_demo_id = excluded.base_demo_id, theme_id = excluded.theme_id, kind = excluded.kind, snapshot = excluded.snapshot, updated_at = now() returning id;`;
+		// base_demo_id is NOT NULL until its contract migration drops it; new rows get the empty
+		// string and existing rows keep their value. snapshot keeps its column default.
+		const invUpsertSql = `insert into public.invitations (id, slug, managed_identity_id, title, event_type, status, base_demo_id, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(effectiveSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlLiteral(effectiveTitle)}, ${sqlLiteral(eventType)}, ${sqlLiteral(effectiveStatus)}, '', ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(effectiveClientName)}, ${sqlLiteral(effectiveClientEmail)}, ${sqlLiteral(effectiveClientWhatsapp)}, ${effectivePhotosReceived ? 'true' : 'false'}, '${effectiveOwner}'::uuid) on conflict (id) do update set slug = excluded.slug, managed_identity_id = coalesce(public.invitations.managed_identity_id, excluded.managed_identity_id), event_type = excluded.event_type, theme_id = excluded.theme_id, kind = excluded.kind, updated_at = now() returning id;`;
 		runPsql(invUpsertSql, targetDbUrl, { tuplesOnly: true });
 		count++;
 	}
@@ -1836,7 +1835,7 @@ function resolveTargetAssetRefs(
 	);
 }
 
-export function computeTargetAssetFingerprint(targetDbUrl: string, invitationId: string): string {
+function computeTargetAssetFingerprint(targetDbUrl: string, invitationId: string): string {
 	const dbRows = runPsql(
 		`select id::text, display_name, storage_path, mime_type, file_size from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null order by display_name;`,
 		targetDbUrl,
@@ -2550,10 +2549,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			slug: drift.slug,
 			eventType: drift.eventType,
 			pkg,
-			targetSnapshot: rewritePackageStorageUrls(
-				pkg.invitation.snapshot,
-				targetStorageUrl,
-			) as Record<string, unknown>,
 			targetDraftContent,
 			targetPublishedContent,
 			existingInv: drift.existingInv,

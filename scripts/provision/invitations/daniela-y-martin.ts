@@ -8,17 +8,12 @@
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 export const DANIELA_EVENT = {
 	eventType: 'boda',
 	slug: 'daniela-y-martin',
 	assetSlug: 'daniela-y-martin',
-	baseDemoId: 'demo-boda-jewelry-box-wedding',
 	themeId: 'jewelry-box-wedding',
 	visualProfileId: 'daniela-y-martin',
 	title: 'Boda de Daniela y Martín',
@@ -111,7 +106,6 @@ export const DANIELA_ASSET_SPECS = [
 ] as const;
 
 export type DanielaAssetKey = (typeof DANIELA_ASSET_SPECS)[number]['key'];
-export type DanielaAssetMap = Record<DanielaAssetKey, UploadedAssetRef>;
 
 export function buildDanielaPublishedContent(
 	assets: UploadedAssetMap<DanielaAssetKey>,
@@ -399,10 +393,8 @@ export const danielaInvitation: InvitationDefinition<DanielaAssetKey> = defineIn
 	title: DANIELA_EVENT.title,
 	clientName: 'Daniela Medina',
 	hostLoginAlias: 'daniela_medina',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: DANIELA_EVENT.baseDemoId,
 	themeId: DANIELA_EVENT.themeId,
 	visualProfileId: DANIELA_EVENT.visualProfileId,
 	eventTiming: {

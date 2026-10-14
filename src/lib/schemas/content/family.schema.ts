@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
-import { FAMILY_PRESENTATIONS } from '@/lib/invitation/presentation-options';
+import { FAMILY_PRESENTATIONS } from '@/lib/invitation/family-presentation';
 import { FAMILY_VARIANTS } from '@/lib/invitation/section-variants';
 
 const familyMemberSchema = z.object({ name: z.string(), role: z.string().optional() });

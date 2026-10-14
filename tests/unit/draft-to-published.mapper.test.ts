@@ -749,7 +749,7 @@ describe('mapDraftToPublished', () => {
 	it('preserves presentation options through draft-to-published mapping', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
-			assetSlug: 'xv-xareni-iyarit',
+			assetSlug: 'xv-paula-fixture',
 			draftContent: {
 				...baseInput.draftContent,
 				envelope: {
@@ -1398,7 +1398,7 @@ describe('mapDraftToPublished', () => {
 			draftContent: {
 				...baseInput.draftContent,
 				gallery: {
-					title: 'Instantes de Ayrin',
+					title: 'Instantes de Valeria',
 					items: [{ image: 'gallery01', caption: 'Primer recuerdo' }],
 				},
 			},
@@ -1406,7 +1406,9 @@ describe('mapDraftToPublished', () => {
 
 		const gallery = result.gallery as Record<string, unknown> | undefined;
 		expect((gallery as Record<string, unknown> | undefined)?.eyebrow).toBeUndefined();
-		expect((gallery as Record<string, unknown> | undefined)?.title).toBe('Instantes de Ayrin');
+		expect((gallery as Record<string, unknown> | undefined)?.title).toBe(
+			'Instantes de Valeria',
+		);
 	});
 
 	it('uses itinerary from draft content when the admin edits the program', () => {
@@ -1578,10 +1580,10 @@ describe('mapDraftToPublished', () => {
 	it('emits _assetSlug from the explicit assetSlug', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
-			assetSlug: 'ana-sofia-cota-guillen',
+			assetSlug: 'lucia-fixture',
 		});
 
-		expect(result._assetSlug).toBe('ana-sofia-cota-guillen');
+		expect(result._assetSlug).toBe('lucia-fixture');
 	});
 
 	it('maps family section label fields into published labels object', () => {
@@ -2133,13 +2135,13 @@ describe('sharing section mapping', () => {
 			...baseInput,
 			draftContent: {
 				sharing: {
-					ogDescription: 'Acompáñanos a celebrar los XV años de Ayrin Samantha.',
+					ogDescription: 'Acompáñanos a celebrar los XV años de Valeria Ruiz.',
 				},
 			},
 		});
 
 		const sharing = result.sharing as Record<string, unknown>;
-		expect(sharing.ogDescription).toBe('Acompáñanos a celebrar los XV años de Ayrin Samantha.');
+		expect(sharing.ogDescription).toBe('Acompáñanos a celebrar los XV años de Valeria Ruiz.');
 	});
 
 	it('preserves ogDescription alongside shareMessages', () => {

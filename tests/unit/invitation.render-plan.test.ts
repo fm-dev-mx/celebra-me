@@ -1,7 +1,6 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationRenderPlan } from '@/lib/invitation/page-data';
+import { loadFixture } from '../helpers/json-fixture';
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
@@ -15,11 +14,6 @@ jest.mock('@/lib/assets/asset-registry', () => {
 		})),
 	};
 });
-
-function loadFixture(relativePath: string) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
 
 describe('buildInvitationRenderPlan', () => {
 	it('inserts interludes after their specified sections', () => {
@@ -101,10 +95,8 @@ describe('buildInvitationRenderPlan', () => {
 
 	it('uses cinematic interludes in the baptism angelic presence demo', () => {
 		const event = {
-			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
-			data: loadFixture(
-				'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
-			),
+			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
+			data: loadFixture('src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
@@ -216,9 +208,9 @@ describe('buildInvitationRenderPlan', () => {
 
 describe('published demo interlude placement', () => {
 	it.each([
-		'bautizo/demo-bautismo-angelic-presence',
+		'bautizo/demo-bautizo-angelic-presence',
 		'boda/demo-boda-jewelry-box-wedding',
-		'primera-comunion/demo-primera-comunion-illustrated',
+		'primera-comunion/demo-primera-comunion-angelic-presence',
 	])('keeps the first interlude after personalized access in %s', (fixture) => {
 		const event = {
 			id: `event-demos/${fixture}`,

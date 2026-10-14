@@ -2,7 +2,7 @@ import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
 /** Owner-authorized local draft. Guest cap and time zone remain provisional. */
-export const ALLISON_TIMING = {
+const ALLISON_TIMING = {
 	localDateTime: '2026-11-27T18:00',
 	timeZone: 'America/Mexico_City',
 	startsAtUtc: '2026-11-28T00:00:00.000Z',
@@ -181,7 +181,6 @@ export const allisonInvitation = defineCanonicalInvitation({
 	eventType: 'xv',
 	title: 'Mis XV años — Allison Scarlett',
 	clientName: 'Erika Mejia',
-	baseDemoId: 'demo-xv-celestial-blue',
 	themeId: 'celestial-blue',
 	visualProfileId: 'allison-scarlett',
 	eventTiming: ALLISON_TIMING,

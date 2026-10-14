@@ -41,7 +41,7 @@ function buildReadOnlyEnv(base: NodeJS.ProcessEnv, readOnly: boolean): NodeJS.Pr
 }
 
 /** Redact connection strings from probe stdout/stderr without truncating query payloads. */
-export function redactProbeIo(text: string, secrets: readonly string[] = []): string {
+function redactProbeIo(text: string, secrets: readonly string[] = []): string {
 	let out = text;
 	for (const secret of secrets) {
 		if (secret) out = out.split(secret).join('<redacted>');

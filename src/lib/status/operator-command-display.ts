@@ -8,16 +8,11 @@
  * (that task is still piped).
  */
 
-export const OPERATOR_TASK_SCRIPTS = [
-	'invitation:release',
-	'prod:apply',
-	'db:migrate',
-	'dbs',
-] as const;
+const OPERATOR_TASK_SCRIPTS = ['invitation:release', 'prod:apply', 'db:migrate', 'dbs'] as const;
 
-export type OperatorTaskScript = (typeof OPERATOR_TASK_SCRIPTS)[number];
+type OperatorTaskScript = (typeof OPERATOR_TASK_SCRIPTS)[number];
 
-export const OPERATOR_ENTER_PROMPT = '(Enter)';
+const OPERATOR_ENTER_PROMPT = '(Enter)';
 
 export interface OperatorCommandDisplay {
 	task: OperatorTaskScript | null;

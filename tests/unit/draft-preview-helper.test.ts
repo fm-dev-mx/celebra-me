@@ -45,8 +45,8 @@ const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 	id: 'test-invitation-id',
 	kind: 'client',
 	sourceInvitationId: null,
-	slug: 'ayrin-samantha',
-	title: 'XV Años — Ayrin Samantha',
+	slug: 'valeria-fixture',
+	title: 'XV Años — Valeria Ruiz',
 	eventType: 'xv',
 	status: 'in_production',
 	baseDemoId: 'xv-enchanted-rose',
@@ -64,11 +64,11 @@ const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 });
 
 const validDraftContent = {
-	title: 'XV Años — Ayrin Samantha',
+	title: 'XV Años — Valeria Ruiz',
 	description: 'Una celebración especial',
 	sectionOrder: ['quote'],
 	hero: {
-		name: 'Ayrin Samantha',
+		name: 'Valeria Ruiz',
 		secondaryName: '',
 		label: 'Mis XV Años',
 		nickname: '',
@@ -95,10 +95,10 @@ const previewOptions = {
 
 const mockViewModel = {
 	id: 'test-slug',
-	title: 'XV Años — Ayrin Samantha',
+	title: 'XV Años — Valeria Ruiz',
 	theme: { preset: 'enchanted-rose', themeClass: 'theme-preset--enchanted-rose' },
 	hero: {
-		name: 'Ayrin Samantha',
+		name: 'Valeria Ruiz',
 		date: '2026-06-15T20:00:00.000Z',
 		backgroundImage: { src: '/hero.webp', alt: 'Portada' },
 	},
@@ -135,7 +135,7 @@ describe('buildDraftPreviewPageContext', () => {
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
-			expect(result.invitationTitle).toBe('XV Años — Ayrin Samantha');
+			expect(result.invitationTitle).toBe('XV Años — Valeria Ruiz');
 			expect(result.eventType).toBe('xv');
 			expect(result.pageContext).toBeDefined();
 		}
@@ -174,19 +174,17 @@ describe('buildDraftPreviewPageContext', () => {
 
 		await buildDraftPreviewPageContext(invitation, validDraftContent, {
 			...previewOptions,
-			assetLookupSlug: 'ayrin-samantha',
+			assetLookupSlug: 'valeria-fixture',
 		});
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
-		expect(callArgs.slug).toBe('ayrin-samantha');
-		expect(callArgs.eventType).toBe('xv');
-		expect(callArgs.isDemo).toBe(false);
-		expect(callArgs.assetSlug).toBe('ayrin-samantha');
+		expect(callArgs.slug).toBe('valeria-fixture');
+		expect(callArgs.assetSlug).toBe('valeria-fixture');
 		expect(callArgs.content).toMatchObject({
 			isDemo: false,
 			theme: { preset: 'enchanted-rose' },
-			_assetSlug: 'ayrin-samantha',
+			_assetSlug: 'valeria-fixture',
 		});
 	});
 
@@ -199,7 +197,6 @@ describe('buildDraftPreviewPageContext', () => {
 		const callArgs = mockBuildPageContext.mock.calls[0][0];
 		expect(callArgs.viewModel).toBe(mockViewModel);
 		expect(callArgs.eventType).toBe('xv');
-		expect(callArgs.slug).toBe('ayrin-samantha');
 	});
 
 	it('returns RENDER_FAILED when adaptDbEvent throws', async () => {
@@ -221,25 +218,25 @@ describe('buildDraftPreviewPageContext', () => {
 	});
 
 	it('uses the invitation slug for content identity and no asset slug without a lookup slug', async () => {
-		const invitation = makeProject({ slug: 'ana-sofia-cota-guillen' });
+		const invitation = makeProject({ slug: 'lucia-fixture' });
 
 		await buildDraftPreviewPageContext(invitation, validDraftContent, previewOptions);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
-		expect(callArgs.slug).toBe('ana-sofia-cota-guillen');
+		expect(callArgs.slug).toBe('lucia-fixture');
 		expect(callArgs.assetSlug).toBeUndefined();
 		expect(callArgs.content).not.toHaveProperty('_assetSlug');
 	});
 
 	it('prefers the draft _assetSlug over the asset lookup slug', async () => {
-		const invitation = makeProject({ slug: 'ana-sofia-cota-guillen' });
+		const invitation = makeProject({ slug: 'lucia-fixture' });
 
 		await buildDraftPreviewPageContext(
 			invitation,
 			{
 				...validDraftContent,
-				_assetSlug: 'ana-sofia-cota-guillen',
+				_assetSlug: 'lucia-fixture',
 				hero: { name: 'Ana Sofía', backgroundImage: 'hero', portrait: 'portrait' },
 			},
 			{ ...previewOptions, assetLookupSlug: 'other-asset-slug' },
@@ -247,21 +244,21 @@ describe('buildDraftPreviewPageContext', () => {
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
-		expect(callArgs.slug).toBe('ana-sofia-cota-guillen');
-		expect(callArgs.assetSlug).toBe('ana-sofia-cota-guillen');
+		expect(callArgs.slug).toBe('lucia-fixture');
+		expect(callArgs.assetSlug).toBe('lucia-fixture');
 	});
 
 	it('uses an explicit asset lookup slug for non-empty draft content', async () => {
-		const invitation = makeProject({ slug: 'ximena-meza-trasvina' });
+		const invitation = makeProject({ slug: 'elena-fixture' });
 
 		await buildDraftPreviewPageContext(
 			invitation,
 			{ ...validDraftContent, hero: { name: 'Ximena', backgroundImage: 'hero' } },
-			{ ...previewOptions, assetLookupSlug: 'ximena-meza-trasvina' },
+			{ ...previewOptions, assetLookupSlug: 'elena-fixture' },
 		);
 
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
-		expect(callArgs.assetSlug).toBe('ximena-meza-trasvina');
+		expect(callArgs.assetSlug).toBe('elena-fixture');
 		expect((callArgs.content.hero as Record<string, unknown>).name).toBe('Ximena');
 	});
 
@@ -325,8 +322,8 @@ describe('content mapping behavior', () => {
 
 		expect(result.ok).toBe(true);
 		const callContent = mockAdaptDbEvent.mock.calls[0][0].content as Record<string, unknown>;
-		expect(callContent.title).toBe('XV Años — Ayrin Samantha');
-		expect((callContent.hero as Record<string, unknown>).name).toBe('Ayrin Samantha');
+		expect(callContent.title).toBe('XV Años — Valeria Ruiz');
+		expect((callContent.hero as Record<string, unknown>).name).toBe('Valeria Ruiz');
 	});
 
 	it('returns error when adaptDbEvent throws during build', async () => {

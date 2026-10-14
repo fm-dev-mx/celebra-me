@@ -23,7 +23,7 @@ export type ManagedOnlySectionKey = (typeof MANAGED_ONLY_SECTION_KEYS)[number];
 export function isManagedOnlySectionKey(value: string): value is ManagedOnlySectionKey {
 	return (MANAGED_ONLY_SECTION_KEYS as readonly string[]).includes(value);
 }
-export type EditorSidebarGroup = 'public' | 'config';
+type EditorSidebarGroup = 'public' | 'config';
 export type EditorSectionId =
 	| PublicSectionId
 	| 'metadata'
@@ -342,10 +342,6 @@ export function getEditorSectionForPublishedPath(
 		...Object.values(PUBLIC_SECTION_DEFINITIONS),
 		...Object.values(CONFIG_SECTION_DEFINITIONS),
 	].find((section) => section.draftContentKeys.includes(key));
-}
-
-export function getPreviewAnchorForSection(sectionId: string): string {
-	return getEditorSectionById(sectionId)?.previewAnchor ?? '';
 }
 
 export function deriveOrderedPublicSections(sectionOrder?: string[]): EditorSectionDefinition[] {

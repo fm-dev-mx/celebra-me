@@ -54,7 +54,7 @@ describe('normalized managed release semantics & roundtrip parity', () => {
 	it('blocks target release generation before owner-approved identity verification', async () => {
 		await expect(
 			buildNormalizedInvitationRelease({
-				slug: 'america-johana',
+				slug: 'renata',
 				sourceDir: 'unused',
 				purpose: 'target',
 			}),
@@ -64,7 +64,7 @@ describe('normalized managed release semantics & roundtrip parity', () => {
 	it('rejects a managed identity preflight without a matching target row', async () => {
 		await expect(
 			buildNormalizedInvitationRelease({
-				slug: 'america-johana',
+				slug: 'renata',
 				sourceDir: 'unused',
 				purpose: 'target',
 				identityPreflight: {

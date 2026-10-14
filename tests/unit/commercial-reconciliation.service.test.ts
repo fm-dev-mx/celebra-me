@@ -54,19 +54,19 @@ describe('findCommercialIdentityCandidates', () => {
 
 		const result = await findCommercialIdentityCandidates({
 			leadCode: ' CM-ABC123 ',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 			email: ' Client@Example.COM ',
 			eventType: 'xv',
 			packageInterest: 'premium',
 		});
 
-		expect(result.normalizedPhone?.e164).toBe('+526141234567');
+		expect(result.normalizedPhone?.e164).toBe('+521000000005');
 		expect(result.byLeadCode?.leadCode).toBe('CM-ABC123');
 		expect(result.byPhone).toHaveLength(1);
 		expect(result.byEmail).toHaveLength(1);
 		expect(result.recentContext).toHaveLength(1);
 		expect(mockFindByCode).toHaveBeenCalledWith('CM-ABC123');
-		expect(mockFindByPhone).toHaveBeenCalledWith('+526141234567');
+		expect(mockFindByPhone).toHaveBeenCalledWith('+521000000005');
 		expect(mockFindByEmail).toHaveBeenCalledWith('client@example.com');
 		expect(mockFindRecent).toHaveBeenCalledWith({
 			eventType: 'xv',

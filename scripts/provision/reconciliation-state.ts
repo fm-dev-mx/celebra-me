@@ -24,12 +24,8 @@
 import { isManagedInvitationPath } from '../../src/lib/intake/mutations/ownership.ts';
 import type { SemanticDelta } from './semantic-delta.ts';
 
-export type ReconciliationState =
-	| 'CLEAN'
-	| 'DIVERGED'
-	| 'RECONCILIATION_REQUIRED'
-	| 'SOURCE_UPDATE_REQUIRED'
-	| 'DEFERRED';
+type ReconciliationState =
+	'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
 
 export type ReconciliationDecisionOutcome = 'KEEP_CANONICAL' | 'KEEP_ENVIRONMENT' | 'DEFER';
 
@@ -42,7 +38,7 @@ export interface ManagedFieldDiff {
 	isDestructive?: boolean;
 }
 
-export interface SourceUpdateItem {
+interface SourceUpdateItem {
 	semanticPath: string;
 	canonicalFile: string;
 	currentCanonicalValue: unknown;
@@ -87,7 +83,8 @@ export function filterManagedDivergenceDeltas(
 				canonicalValue: delta.currentCanonicalValue,
 				environmentValue: delta.currentTargetValue,
 				previousCanonicalValue: delta.previousCanonicalValue,
-				isDestructive: delta.currentTargetValue === undefined || delta.currentTargetValue === null,
+				isDestructive:
+					delta.currentTargetValue === undefined || delta.currentTargetValue === null,
 			};
 		});
 }

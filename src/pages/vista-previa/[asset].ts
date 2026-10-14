@@ -4,13 +4,16 @@ import type { APIRoute } from 'astro';
 import { parsePreviewMediaAsset } from '@/lib/invitation/preview/preview-media-token';
 import { renderPreviewMedia } from '@/lib/invitation/preview/preview-media-renderer';
 import { resolvePreviewMediaSource } from '@/lib/invitation/preview/preview-media-source';
-import { findInvitationAccessRecord } from '@/lib/invitation/access/invitation-access.repository';
+import {
+	findInvitationAccessRecord,
+	isPublishedInvitationExpired,
+} from '@/lib/invitation/access/invitation-access.repository';
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
 
 /**
  * Watermarked bytes of an unpaid invitation's photo. The sealed token is the only
  * input; each URL is content-addressed, so a shared cache may keep it (30 days at the
- * CDN, one day in browsers). Paid or disabled invitations get nothing here: their pages
+ * CDN, one day in browsers). Paid, disabled or expired invitations get nothing here: their pages
  * reference the original photos or no photos at all.
  */
 const SHARED_CACHE_CONTROL = 'public, max-age=86400, s-maxage=2592000';
@@ -39,6 +42,7 @@ export const GET: APIRoute = async ({ params, url }) => {
 	if (!access || access.paymentStatus !== 'unpaid' || access.publicAccess !== 'enabled') {
 		return emptyResponse(404);
 	}
+	if (await isPublishedInvitationExpired(reference.invitationId)) return emptyResponse(404);
 
 	let bytes: Uint8Array;
 	try {

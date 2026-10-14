@@ -12,12 +12,6 @@
  * Probe I/O is owned by scripts/status-core (execution-local memoization).
  */
 
-import {
-	getSecretFromEnvOrFiles,
-	PREVIEW_SECRET_FILES,
-	getProdDbUrl,
-} from '../db/db-workflow-lib.ts';
-import { LOCAL_DB_URL, classifyDbTarget, redactDbUrl } from '../db/db-guard.ts';
 import { assertCurrentDisposableMigrationProof } from '../db/disposable-migration-proof.ts';
 import type { SchemaLifecycleState } from '../db/schema-lifecycle-state.ts';
 import {
@@ -30,6 +24,7 @@ import {
 	type StatusProbeDebugCounters,
 } from '../status-core/index.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
+import { classifyDbTarget, redactDbUrl, resolveTargetDbUrl } from '../db/db-target-config.ts';
 
 export { listExpectedMigrationVersions };
 
@@ -58,7 +53,7 @@ export type StatusVocabulary =
 
 export type TargetEnv = 'local' | 'preview' | 'production';
 
-export type SchemaOperationReadiness =
+type SchemaOperationReadiness =
 	| 'READY'
 	| 'NEEDS_DISPOSABLE_PROOF'
 	| 'PENDING_MIGRATIONS'
@@ -197,30 +192,18 @@ function deriveGlobalSchemaNextAction(
 }
 
 export function resolveDbUrlForEnv(env: TargetEnv): { dbUrl: string | null; error?: string } {
-	if (env === 'local') {
-		const url = process.env.LOCAL_DB_URL?.trim() || LOCAL_DB_URL;
-		return { dbUrl: url };
+	if (env !== 'local' && env !== 'preview' && env !== 'production') {
+		return { dbUrl: null, error: 'Unknown environment' };
 	}
-	if (env === 'preview') {
-		const url = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES).trim();
-		if (!url) return { dbUrl: null, error: 'PREVIEW_DB_URL not configured' };
-		return { dbUrl: url };
-	}
-	if (env === 'production') {
-		try {
-			const prodInfo = getProdDbUrl();
-			if (!prodInfo?.url) return { dbUrl: null, error: 'PROD_DB_URL not configured' };
-			return { dbUrl: prodInfo.url };
-		} catch {
-			const url = process.env.PROD_DB_URL?.trim();
-			if (!url) return { dbUrl: null, error: 'PROD_DB_URL not configured' };
-			return { dbUrl: url };
-		}
-	}
-	return { dbUrl: null, error: 'Unknown environment' };
+	const dbUrl = resolveTargetDbUrl(env === 'local' ? 'persistent-local' : env);
+	if (dbUrl) return { dbUrl };
+	return {
+		dbUrl: null,
+		error: `${env === 'preview' ? 'PREVIEW_DB_URL' : 'PROD_DB_URL'} not configured`,
+	};
 }
 
-export interface GeneralEnvStatusOptions {
+interface GeneralEnvStatusOptions {
 	/** Include managed invitation row counts (full matrix). Compact skips this. */
 	includeManagedCounts?: boolean;
 	session?: StatusProbeSession;

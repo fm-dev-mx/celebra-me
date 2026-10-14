@@ -20,10 +20,31 @@
 	min-height: 100svh;
 	background: var(--hero-section-background, var(--color-surface-dark));
 	color: var(--hero-section-color, var(--color-text-on-dark));
+	isolation: var(--hero-isolation, auto);
+
+	// Optional constellation layer over the photograph: a profile opts in with
+	// `--hero-constellation-display: block` and paints it with `--hero-constellation`.
+	&::before {
+		content: '';
+		display: var(--hero-constellation-display, none);
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		opacity: var(--hero-constellation-opacity, 100%);
+		background: var(--hero-constellation, none);
+		mix-blend-mode: screen;
+		pointer-events: none;
+
+		@media (prefers-reduced-motion: no-preference) {
+			animation: celestial-constellation-reveal var(--motion-hero-media-duration)
+				var(--ease-premium) both;
+		}
+	}
 
 	.invitation-hero__background {
 		&::after {
-			background:
+			background: var(
+				--hero-veil,
 				linear-gradient(
 					100deg,
 					rgb(var(--color-deep-blue-graphite-rgb) / 48%) 0%,
@@ -41,12 +62,19 @@
 					transparent 38%,
 					rgb(var(--color-warm-ivory-rgb, 255 255 245) / 8%) 62%,
 					rgb(var(--color-deep-blue-graphite-rgb) / 62%) 100%
-				);
+				)
+			);
 		}
 
 		img {
 			filter: var(--theme-image-filter-hero, saturate(1.02) contrast(1.02));
 			object-position: var(--hero-focal-point-default, center 30%);
+
+			// Optional photograph reveal (`--hero-media-reveal-animation`, default none).
+			@media (prefers-reduced-motion: no-preference) {
+				animation: var(--hero-media-reveal-animation, none)
+					var(--motion-hero-media-duration) var(--ease-premium) both;
+			}
 
 			@media (width <= 991px) {
 				object-position: var(
@@ -117,6 +145,21 @@
 		text-shadow: 0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%);
 	}
 
+	// Optional thread under the name (`--hero-title-thread-display: block`).
+	.invitation-hero__title-wrapper::after {
+		content: '';
+		display: var(--hero-title-thread-display, none);
+		width: clamp(2.75rem, 8vw, 5.25rem);
+		height: 1px;
+		margin-top: clamp(0.9rem, 2.3vw, 1.45rem);
+		background: linear-gradient(
+			90deg,
+			var(--hero-title-thread-color, transparent),
+			transparent
+		);
+		box-shadow: 0 0 18px var(--hero-title-thread-glow, transparent);
+	}
+
 	.invitation-hero__portrait {
 		display: none;
 	}
@@ -143,7 +186,10 @@
 		gap: 0.35rem;
 		color: var(--color-text-on-dark);
 		margin-bottom: 5rem;
-		margin-left: 1.5rem;
+		margin-left: var(--hero-details-margin-left, 1.5rem);
+		margin-right: var(--hero-details-margin-right, 0);
+		padding-left: var(--hero-details-padding-left, 0);
+		border-left: var(--hero-details-rule, 0);
 	}
 
 	.invitation-hero__date,
@@ -180,7 +226,8 @@
 	@include mixins.respond-below(sm) {
 		.invitation-hero__background {
 			&::after {
-				background:
+				background: var(
+					--hero-veil,
 					linear-gradient(
 						180deg,
 						var(--hero-overlay-top, rgb(var(--color-deep-blue-graphite-rgb) / 4%)) 0%,
@@ -192,7 +239,8 @@
 						0deg,
 						rgb(var(--color-warm-ivory-rgb, 255 255 245) / 10%) 0%,
 						transparent 46%
-					);
+					)
+				);
 			}
 		}
 
@@ -224,6 +272,28 @@
 		.invitation-hero__content {
 			padding-block: clamp(3rem, 7svh, 5rem);
 		}
+	}
+}
+
+@keyframes celestial-hero-media-reveal {
+	from {
+		opacity: 0%;
+		scale: 1.055;
+	}
+
+	to {
+		opacity: 100%;
+		scale: 1;
+	}
+}
+
+@keyframes celestial-constellation-reveal {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: var(--hero-constellation-opacity, 100%);
 	}
 }
 

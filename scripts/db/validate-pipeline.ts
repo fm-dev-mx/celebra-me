@@ -15,8 +15,12 @@
 
 import { readdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { runCommand, fail, PROJECT_ROOT, redactCredentials } from './db-workflow-lib.ts';
-import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles } from './db-guard.ts';
+import { runCommand, fail, PROJECT_ROOT } from './db-workflow-lib.ts';
+import {
+	redactCredentials,
+	PREVIEW_SECRET_FILES,
+	getSecretFromEnvOrFiles,
+} from './db-target-config.ts';
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
@@ -61,9 +65,13 @@ function runDisposableTestCommand(
 	action: string,
 	args: string[] = [],
 ): { status: number | null; stdout: string } {
-	const res = runCommand('npx', ['tsx', 'scripts/db/disposable-test-env.ts', action, ...args], {
-		throwOnError: false,
-	});
+	const res = runCommand(
+		'pnpm',
+		['exec', 'tsx', 'scripts/db/disposable-test-env.ts', action, ...args],
+		{
+			throwOnError: false,
+		},
+	);
 	if (res.status !== 0) {
 		console.error(`\n--- disposable-test-env.ts ${action} failed (exit ${res.status}) ---`);
 		if (res.stdout) console.error(`stdout:\n${redactCredentials(res.stdout)}`);
@@ -75,9 +83,13 @@ function runDisposableTestCommand(
 }
 
 function runAudit(target: string): string {
-	const auditRes = runCommand('npx', ['tsx', 'scripts/db/audit-db.ts', '--target', target], {
-		throwOnError: false,
-	});
+	const auditRes = runCommand(
+		'pnpm',
+		['exec', 'tsx', 'scripts/db/audit-db.ts', '--target', target],
+		{
+			throwOnError: false,
+		},
+	);
 	if (auditRes.status !== 0) {
 		fail(`Schema audit failed for target ${target}.`);
 	}
@@ -145,8 +157,8 @@ function main(): void {
 		console.info(`Preview database URL detected. Running hosted preview validations...`);
 		// Run audit check on preview target
 		const previewAuditRes = runCommand(
-			'npx',
-			['tsx', 'scripts/db/audit-db.ts', '--target', 'preview'],
+			'pnpm',
+			['exec', 'tsx', 'scripts/db/audit-db.ts', '--target', 'preview'],
 			{
 				throwOnError: false,
 			},

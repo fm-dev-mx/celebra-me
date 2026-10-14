@@ -21,7 +21,7 @@ const LeadCodeSchema = z
 	.optional()
 	.or(z.literal(''));
 
-export const ContactLeadSubmissionSchema = z.object({
+const ContactLeadSubmissionSchema = z.object({
 	name: z.string().trim().min(2).max(160),
 	email: z.email().optional().or(z.literal('')),
 	phone: z.string().trim().max(40).optional().or(z.literal('')),

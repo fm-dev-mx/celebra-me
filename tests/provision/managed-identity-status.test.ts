@@ -172,14 +172,14 @@ describe('Managed Identity: Regression Protection (No Fuzzy Identity Inference)'
 
 	it('fails closed for owner-approved definitions when the target slug has another identity', () => {
 		const decision = resolveIdentityWithoutRekey({
-			slug: 'america-johana',
+			slug: 'camila-fixture',
 			managedIdentityId: MANAGED_ID,
 			provenance: 'owner-approved',
 			invitationByManagedIdentity: null,
 			provenanceInvitationId: null,
 			invitationBySlug: {
 				id: '99999999-9999-9999-9999-999999999999',
-				slug: 'america-johana',
+				slug: 'camila-fixture',
 				managedIdentityId: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
 			},
 			activeInvitationByPreviousSlug: null,

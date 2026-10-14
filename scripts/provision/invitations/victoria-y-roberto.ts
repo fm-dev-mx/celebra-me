@@ -8,17 +8,12 @@
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 export const VICTORIA_EVENT = {
 	eventType: 'boda',
 	slug: 'victoria-y-roberto',
 	assetSlug: 'victoria-y-roberto',
-	baseDemoId: 'demo-boda-jewelry-box-wedding',
 	themeId: 'jewelry-box-wedding',
 	visualProfileId: 'victoria-y-roberto',
 	title: 'Boda de Victoria y Roberto',
@@ -30,7 +25,7 @@ export const VICTORIA_EVENT = {
 } as const;
 
 /** Confirmed preparation details for navigation map URLs and itinerary times. */
-export const VICTORIA_SCHEDULE_DETAILS = {
+const VICTORIA_SCHEDULE_DETAILS = {
 	ceremonyMapUrl: 'https://maps.app.goo.gl/Ahdb29SrPRNwXzpQ9',
 	receptionMapUrl: 'https://maps.app.goo.gl/dV5r1BrBvC3t5C1o6',
 	ceremonyTime: '19:00',
@@ -50,7 +45,7 @@ const EVENT_DATE_LONG = '30 de octubre de 2026';
 const EVENT_DATE_HEADING = 'Viernes, 30 de octubre de 2026';
 
 /** Confirmed Production music; keep the existing Cloudinary delivery URL. */
-export const VICTORIA_MUSIC = {
+const VICTORIA_MUSIC = {
 	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
 	title: 'Stephen Sanchez — Until I Found You',
 	autoPlay: true,
@@ -132,7 +127,6 @@ export const VICTORIA_ASSET_SPECS = [
 ] as const;
 
 export type VictoriaAssetKey = (typeof VICTORIA_ASSET_SPECS)[number]['key'];
-export type VictoriaAssetMap = Record<VictoriaAssetKey, UploadedAssetRef>;
 
 export function buildVictoriaPublishedContent(
 	assets: UploadedAssetMap<VictoriaAssetKey>,
@@ -490,10 +484,8 @@ export const victoriaInvitation: InvitationDefinition<VictoriaAssetKey> = define
 	title: VICTORIA_EVENT.title,
 	clientName: 'Victoria Armenta',
 	hostLoginAlias: 'victoria_armenta',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: VICTORIA_EVENT.baseDemoId,
 	themeId: VICTORIA_EVENT.themeId,
 	visualProfileId: VICTORIA_EVENT.visualProfileId,
 	eventTiming: {

@@ -1,10 +1,6 @@
 import type { EventType } from '@/lib/theme/theme-contract';
-
-export const FIELD_REQUIREMENTS = ['required', 'conditional', 'recommended', 'optional'] as const;
-export type FieldRequirement = (typeof FIELD_REQUIREMENTS)[number];
-
-export const CONTRACT_MATURITIES = ['evidence-backed', 'partial'] as const;
-export type ContractMaturity = (typeof CONTRACT_MATURITIES)[number];
+export type FieldRequirement = 'required' | 'conditional' | 'recommended' | 'optional';
+export type ContractMaturity = 'evidence-backed' | 'partial';
 
 export interface CompletenessFieldDefinition {
 	id: string;

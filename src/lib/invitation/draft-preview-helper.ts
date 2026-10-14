@@ -99,15 +99,12 @@ export async function buildDraftPreviewPageContext(
 
 		const viewModel = adaptDbEvent({
 			slug: contentSlug,
-			eventType: invitation.eventType,
-			isDemo: false,
 			content: publishedData,
 			assetSlug: assetLookupSlug,
 		});
 
 		const pageContext = buildPageContextFromViewModel({
 			viewModel,
-			slug: contentSlug,
 			eventType: invitation.eventType,
 		});
 

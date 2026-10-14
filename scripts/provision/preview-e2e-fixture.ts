@@ -13,16 +13,16 @@ import {
 	PREVIEW_FIXTURE_SLUG,
 	PREVIEW_FIXTURE_TITLE,
 } from '../playwright/preview-environment.ts';
-import { classifyDbTarget, redactDbUrl } from '../db/db-guard.ts';
-import {
-	getSecretFromEnvOrFiles,
-	PREVIEW_SECRET_FILES,
-	runPsql,
-	sqlLiteral,
-} from '../db/db-workflow-lib.ts';
+import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import { resolvePreviewAdminUser, PREVIEW_ADMIN_EMAIL } from '../db/preview-sync-guards.ts';
 import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
 import { buildPreviewFixtureContent } from './preview-e2e-fixture-content.ts';
+import {
+	classifyDbTarget,
+	redactDbUrl,
+	resolveTargetDbUrl,
+	validateEnvironmentUrlsPreflight,
+} from '../db/db-target-config.ts';
 
 export const PREVIEW_E2E_FIXTURE_OPERATION = 'e2e-fixture';
 /** The fixture remains publishable without letting E2E mutate real invitation content. */
@@ -49,10 +49,7 @@ export interface PreviewE2eFixtureResult {
 }
 
 export function resolvePreviewFixtureDbUrl(env: NodeJS.ProcessEnv = process.env): string {
-	const url = (
-		env.PREVIEW_DB_URL?.trim() ||
-		getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES)
-	).trim();
+	const url = resolveTargetDbUrl('preview', env);
 	if (!url) {
 		throw new Error(
 			'PREVIEW_E2E_FIXTURE_CREDENTIALS: PREVIEW_DB_URL is required to provision the Preview E2E fixture.',
@@ -68,6 +65,15 @@ export function resolvePreviewFixtureDbUrl(env: NodeJS.ProcessEnv = process.env)
 	if (classification.target !== 'preview') {
 		throw new Error(
 			`PREVIEW_E2E_FIXTURE_TARGET_REJECTED: Expected Preview database target, got "${classification.target}" (${redactDbUrl(url)}).`,
+		);
+	}
+	// classifyDbTarget trusts PREVIEW_DB_URL itself; also require the canonical Preview project.
+	try {
+		validateEnvironmentUrlsPreflight({ target: 'preview', targetDbUrl: url });
+	} catch (error: unknown) {
+		throw new Error(
+			`PREVIEW_E2E_FIXTURE_TARGET_REJECTED: ${error instanceof Error ? error.message : String(error)} (${redactDbUrl(url)}).`,
+			{ cause: error },
 		);
 	}
 	return url;

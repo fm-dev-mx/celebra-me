@@ -91,7 +91,7 @@ describe('resolveGatedLocationPayload', () => {
 	it('returns Luna y Estrella location by resolving event identity from inviteId only', async () => {
 		mockGetInvitationContextByInviteId.mockResolvedValue({
 			...confirmedContext,
-			eventSlug: 'luna-y-estrella',
+			eventSlug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 		});
 		mockResolvePublicInvitation.mockResolvedValue({
@@ -100,11 +100,11 @@ describe('resolveGatedLocationPayload', () => {
 			access: { paymentStatus: 'paid', publicAccess: 'enabled' },
 			invitationId: 'invitation-1',
 			rawContent: {
-				_assetSlug: 'luna-y-estrella-primera-comunion',
+				_assetSlug: 'gemelas-fixture-primera-comunion',
 				location: protectedLocation,
 			},
 			viewModel: {
-				id: 'luna-y-estrella',
+				id: 'gemelas-fixture',
 				isDemo: false,
 				title: 'Primera Comunión de Luna y Estrella',
 				theme: { preset: 'angelic-presence', themeClass: 'theme-preset--angelic-presence' },
@@ -132,7 +132,7 @@ describe('resolveGatedLocationPayload', () => {
 		});
 
 		expect(mockResolvePublicInvitation).toHaveBeenCalledWith(
-			'luna-y-estrella',
+			'gemelas-fixture',
 			'primera-comunion',
 		);
 		expect(payload.location.venues.find((venue) => venue.type === 'ceremony')?.venueName).toBe(
@@ -215,7 +215,7 @@ describe('resolveGatedLocationPayload', () => {
 			resolveGatedLocationPayload({
 				inviteId: '11111111-1111-4111-1111-111111111111',
 				eventType: 'primera-comunion',
-				slug: 'luna-y-estrella-primera-comunion',
+				slug: 'gemelas-fixture-primera-comunion',
 			}),
 		).rejects.toMatchObject({
 			status: 403,

@@ -1,40 +1,25 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-import { isDevEnvironment } from '@/lib/environment';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
-import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import {
 	LESLIE_ASSET_SPECS,
 	LESLIE_EVENT,
 	buildLesliePublishedContent,
-	type LeslieAssetMap,
 } from '../../scripts/provision/invitations/leslie-perez.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
-
-function buildTestAssets(): LeslieAssetMap {
-	return Object.fromEntries(
-		LESLIE_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as LeslieAssetMap;
-}
+import { asHostedDeploy } from '../helpers/deploy-identity';
+import { buildTestAssets } from '../helpers/managed-payload';
 
 describe('Leslie Perez provision contract', () => {
-	const content = buildLesliePublishedContent(buildTestAssets());
+	const content = buildLesliePublishedContent(buildTestAssets(LESLIE_ASSET_SPECS));
 
 	it('registers the published celestial definition with a rhythm profile stylesheet', () => {
 		const definition = getInvitationDefinition('leslie-perez');
 		expect(definition.slug).toBe('leslie-perez');
 		expect(definition.hostLoginAlias).toBe('leslie_perez');
-		expect(definition.baseDemoId).toBe('demo-xv-celestial-blue');
 		expect(definition.themeId).toBe('celestial-blue');
 		expect(definition.visualProfileId).toBe('leslie-perez');
 		expect(definition.lifecycle).toBe('published');
@@ -171,13 +156,7 @@ describe('Leslie Perez provision contract', () => {
 		expect(content.location).not.toHaveProperty('presentationOptions');
 	});
 
-	it('parses as canonical event content and renders the closed section sequence', () => {
-		const parsed = eventContentSchema.safeParse(content);
-		if (!parsed.success) {
-			console.error(parsed.error.issues);
-		}
-		expect(parsed.success).toBe(true);
-
+	it('renders the closed section sequence', () => {
 		const viewModel = adaptEvent({
 			id: `events/${LESLIE_EVENT.slug}`,
 			data: content,
@@ -229,39 +208,25 @@ describe('Leslie Perez provision contract', () => {
 			id: `events/${LESLIE_EVENT.slug}`,
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
-		const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-		const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
+		asHostedDeploy('production', { isDevServer: true });
 
-		isDev.mockReturnValue(true);
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
-
-		try {
-			const page = buildPageContextFromViewModel({
-				viewModel,
-				slug: LESLIE_EVENT.slug,
-				eventType: LESLIE_EVENT.eventType,
-			});
-			expect(viewModel.music).toEqual({
-				url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
-				autoPlay: true,
-				revealMode: 'envelope',
-				title: undefined,
-			});
-			expect(page.musicPlayer).toEqual({
-				url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
-				autoPlay: true,
-				title: undefined,
-				revealMode: 'envelope',
-				variant: 'standard',
-			});
-		} finally {
-			isDev.mockReturnValue(false);
-			if (originalDeployEnv === undefined) {
-				delete process.env.CELEBRA_DEPLOY_ENV;
-			} else {
-				process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
-			}
-		}
+		const page = buildPageContextFromViewModel({
+			viewModel,
+			eventType: LESLIE_EVENT.eventType,
+		});
+		expect(viewModel.music).toEqual({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+			autoPlay: true,
+			revealMode: 'envelope',
+			title: undefined,
+		});
+		expect(page.musicPlayer).toEqual({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1787101349/Taylor_Swift_-_Fifteen_opt_n5gqpq.mp3',
+			autoPlay: true,
+			title: undefined,
+			revealMode: 'envelope',
+			variant: 'standard',
+		});
 	});
 
 	it('does not assemble a music player on hosted Production when no music is published', () => {
@@ -270,27 +235,13 @@ describe('Leslie Perez provision contract', () => {
 			id: `events/${LESLIE_EVENT.slug}`,
 			data: unpublished,
 		} as Parameters<typeof adaptEvent>[0]);
-		const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-		const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
+		asHostedDeploy('production', { isDevServer: true });
 
-		isDev.mockReturnValue(true);
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
-
-		try {
-			const page = buildPageContextFromViewModel({
-				viewModel,
-				slug: LESLIE_EVENT.slug,
-				eventType: LESLIE_EVENT.eventType,
-			});
-			expect(viewModel.music).toBeUndefined();
-			expect(page.musicPlayer).toBeUndefined();
-		} finally {
-			isDev.mockReturnValue(false);
-			if (originalDeployEnv === undefined) {
-				delete process.env.CELEBRA_DEPLOY_ENV;
-			} else {
-				process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
-			}
-		}
+		const page = buildPageContextFromViewModel({
+			viewModel,
+			eventType: LESLIE_EVENT.eventType,
+		});
+		expect(viewModel.music).toBeUndefined();
+		expect(page.musicPlayer).toBeUndefined();
 	});
 });

@@ -7,14 +7,14 @@ jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 }));
 
 jest.mock('@/lib/rsvp/repositories/engagement.repository', () => ({
-	listInvitationEngagementRankingRpc: jest.fn(),
+	listInvitationEngagementRankingV2Rpc: jest.fn(),
 }));
 
 import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
-import { listInvitationEngagementRankingRpc } from '@/lib/rsvp/repositories/engagement.repository';
+import { listInvitationEngagementRankingV2Rpc } from '@/lib/rsvp/repositories/engagement.repository';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { GET as getRanking } from '@/pages/api/dashboard/admin/engagement/ranking';
 import { createMockRequest } from '../helpers/api-mocks';
@@ -25,8 +25,8 @@ const mockStrongSession = requireAdminStrongSession as jest.MockedFunction<
 const mockAdminRateLimit = requireAdminRateLimit as jest.MockedFunction<
 	typeof requireAdminRateLimit
 >;
-const mockRpc = listInvitationEngagementRankingRpc as jest.MockedFunction<
-	typeof listInvitationEngagementRankingRpc
+const mockRpc = listInvitationEngagementRankingV2Rpc as jest.MockedFunction<
+	typeof listInvitationEngagementRankingV2Rpc
 >;
 
 type RouteContext = Parameters<typeof getRanking>[0];
@@ -62,38 +62,42 @@ beforeEach(() => {
 describe('GET /api/dashboard/admin/engagement/ranking', () => {
 	it('throttles, requires a strong admin session and returns a private report', async () => {
 		const response = await getRanking(
-			context(`${BASE}?eventType=boda&groupBy=templateId&metric=openRate`),
+			context(
+				`${BASE}?eventType=boda&groupBy=rsvpAccessMode&metric=openRate&eventStatus=upcoming&includeDisabled=true`,
+			),
 		);
 
 		expect(response.status).toBe(200);
 		const body = (await response.json()) as { ranking: Record<string, unknown> };
 		expect(body.ranking).toMatchObject({
 			eventType: 'boda',
-			groupKey: 'templateId',
+			groupKey: 'rsvpAccessMode',
 			metric: 'openRate',
+			filters: { eventStatus: 'upcoming', includeDisabled: true },
 			designs: [],
 			invitations: [],
 		});
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(mockAdminRateLimit).toHaveBeenCalledWith(expect.anything(), 'engagement:ranking');
 		expect(mockStrongSession).toHaveBeenCalled();
-		expect(mockRpc).toHaveBeenCalledWith('boda', 'templateId');
+		expect(mockRpc).toHaveBeenCalledWith('boda');
 	});
 
-	it('defaults the grouping and metric', async () => {
-		const response = await getRanking(context(`${BASE}?eventType=xv`));
+	it('lists every event type by default and sorts by response rate', async () => {
+		const response = await getRanking(context(BASE));
 		expect(response.status).toBe(200);
-		expect(mockRpc).toHaveBeenCalledWith('xv', 'themePreset');
-		const body = (await response.json()) as { ranking: { metric: string } };
-		expect(body.ranking.metric).toBe('rsvpConversion');
+		expect(mockRpc).toHaveBeenCalledWith(null);
+		const body = (await response.json()) as { ranking: { eventType: string; metric: string } };
+		expect(body.ranking).toMatchObject({ eventType: 'all', metric: 'responseRate' });
 	});
 
-	it('rejects an unknown event type, grouping or metric with 400 before reading', async () => {
+	it('rejects an unknown event type, grouping, metric or filter with 400 before reading', async () => {
 		for (const url of [
-			BASE,
 			`${BASE}?eventType=fiesta`,
-			`${BASE}?eventType=boda&groupBy=colour`,
-			`${BASE}?eventType=boda&metric=reopenRatio`,
+			`${BASE}?groupBy=templateId`,
+			`${BASE}?metric=reopenRatio`,
+			`${BASE}?confirmation=sms`,
+			`${BASE}?includeDisabled=yes`,
 		]) {
 			const response = await getRanking(context(url));
 			expect(response.status).toBe(400);
@@ -107,7 +111,7 @@ describe('GET /api/dashboard/admin/engagement/ranking', () => {
 		expect(response.status).toBe(503);
 	});
 
-	it('answers a host or weak session with 403 without reading snapshots', async () => {
+	it('answers a host or weak session with 403 without reading', async () => {
 		mockStrongSession.mockRejectedValue(new ApiError(403, 'forbidden', 'Sin acceso.'));
 		const response = await getRanking(context(`${BASE}?eventType=boda`));
 		expect(response.status).toBe(403);

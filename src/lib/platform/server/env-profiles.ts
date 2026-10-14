@@ -11,7 +11,7 @@ import type {
 	PlatformMissingVar,
 	PlatformScope,
 } from '@/lib/platform/contract/types';
-import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
+import { isLocalProcess, readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { PLATFORM_ENV, PLATFORM_ENV_BY_ENVIRONMENT } from './config';
 
@@ -26,13 +26,14 @@ export interface ResolvedProfileVar {
 }
 
 export function isLocalPanel(): boolean {
-	return readHostedDeployEnvironment() === null;
+	return isLocalProcess();
 }
 
-/** Environments this panel is scoped to; Local shows both. */
+/** Environments this panel is scoped to; Local shows both, an unverified deployment none. */
 export function resolvePanelEnvironments(): PlatformEnvironmentId[] {
 	const hosted = readHostedDeployEnvironment();
-	return hosted ? [hosted] : ['preview', 'production'];
+	if (hosted) return [hosted];
+	return isLocalProcess() ? ['preview', 'production'] : [];
 }
 
 function evaluate(

@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto';
-import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { reconcileAssets } from '../provision/asset-reconciliation.ts';
@@ -11,7 +10,7 @@ import {
 	type TargetPreconditions,
 } from '../provision/invitation-update-plan.ts';
 import { DISPOSABLE_DB_URL } from './db-target-config.ts';
-import { runCommand, sqlLiteral } from './db-workflow-lib.ts';
+import { runCommand, runPsql as psql, runPsqlAsync, sqlLiteral } from './db-workflow-lib.ts';
 
 interface ScenarioEvidence {
 	name: string;
@@ -20,55 +19,19 @@ interface ScenarioEvidence {
 }
 
 function runPsql(sql: string): string {
-	const result = runCommand(
-		'psql',
-		[
-			'--set',
-			'ON_ERROR_STOP=1',
-			'--tuples-only',
-			'--no-align',
-			'--no-psqlrc',
-			'--dbname',
-			DISPOSABLE_DB_URL,
-			'--command',
-			sql,
-		],
-		{ redact: [DISPOSABLE_DB_URL] },
-	);
-	return result.stdout.trim();
+	return psql(sql, DISPOSABLE_DB_URL, { asCommand: true, noPsqlrc: true }).stdout.trim();
 }
 
-function runConcurrentPsql(sql: string): Promise<string> {
-	return new Promise((resolvePromise, reject) => {
-		const child = spawn(
-			'psql',
-			[
-				'--set',
-				'ON_ERROR_STOP=1',
-				'--tuples-only',
-				'--no-align',
-				'--no-psqlrc',
-				'--dbname',
-				DISPOSABLE_DB_URL,
-				'--command',
-				sql,
-			],
-			{ stdio: ['ignore', 'pipe', 'pipe'] },
-		);
-		let stdout = '';
-		let stderr = '';
-		child.stdout.on('data', (chunk: Buffer) => {
-			stdout += chunk.toString();
-		});
-		child.stderr.on('data', (chunk: Buffer) => {
-			stderr += chunk.toString();
-		});
-		child.on('error', reject);
-		child.on('close', (code) => {
-			if (code === 0) resolvePromise(stdout.trim());
-			else reject(new Error(stderr || stdout || `psql exited ${String(code)}`));
-		});
+async function runConcurrentPsql(sql: string): Promise<string> {
+	const result = await runPsqlAsync(sql, DISPOSABLE_DB_URL, {
+		asCommand: true,
+		noPsqlrc: true,
+		throwOnError: false,
 	});
+	if (result.status !== 0) {
+		throw new Error(result.stderr || result.stdout || `psql exited ${String(result.status)}`);
+	}
+	return result.stdout.trim();
 }
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -94,7 +57,7 @@ function makePlan(preconditions: TargetPreconditions): OperationalPlan {
 }
 
 async function main(): Promise<void> {
-	runCommand('npx', ['-y', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
+	runCommand('pnpm', ['exec', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
 	const invitationId = randomUUID();
 	const draftId = randomUUID();
 	const slug = `phase3-${invitationId.slice(0, 8)}`;

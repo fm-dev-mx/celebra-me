@@ -432,8 +432,7 @@ export type CountdownVariant = (typeof COUNTDOWN_VARIANTS)[number];
 export const MEMORIES_VARIANTS = variantsFor('memories');
 export type MemoriesVariant = (typeof MEMORIES_VARIANTS)[number];
 
-/** Sections without a layout/skin choice emit this closed value. */
-export const STANDARD_SECTION_VARIANTS = ['standard'] as const;
-export type StandardSectionVariant = (typeof STANDARD_SECTION_VARIANTS)[number];
+/** Sections without a layout/skin choice emit this closed value. */ type StandardSectionVariant =
+	'standard';
 export type QuoteVariant = StandardSectionVariant;
 export type SharedSectionVariant = StandardSectionVariant;

@@ -177,7 +177,6 @@ export function resolveEffectiveTarget(targetEnv?: string): 'local' | 'preview' 
 
 	const celebraTarget = getEnv('CELEBRA_RUNTIME_TARGET').trim().toLowerCase();
 	if (celebraTarget === 'preview') return 'preview';
-	if (celebraTarget === 'production') return 'production';
 	if (celebraTarget === 'local') return 'local';
 
 	return 'local';

@@ -9,14 +9,14 @@ import {
 } from '@/lib/intake/services/draft-content-mapper';
 import { isRecord } from '@/lib/shared/data-utils';
 
-export type DraftContractViolationKind =
+type DraftContractViolationKind =
 	| 'published_only_field'
 	| 'nested_family_structure'
 	| 'schema_invalid'
 	| 'normalization_unsupported'
 	| 'hybrid_shape';
 
-export interface DraftContractViolation {
+interface DraftContractViolation {
 	kind: DraftContractViolationKind;
 	path: string;
 	detail: string;
@@ -29,32 +29,33 @@ export interface DraftContractAuditResult {
 	removedPublishedOnlyKeys: string[];
 }
 
-const NESTED_FAMILY_MARKERS: ReadonlyArray<{ path: string; test: (family: Record<string, unknown>) => boolean }> =
-	[
-		{ path: 'family.parents', test: (f) => f.parents !== undefined },
-		{ path: 'family.labels', test: (f) => f.labels !== undefined },
-		{ path: 'family.spouse', test: (f) => f.spouse !== undefined },
-		{
-			path: 'family.children[]',
-			test: (f) => Array.isArray(f.children),
-		},
-		{
-			path: 'family.godparents[]',
-			test: (f) => Array.isArray(f.godparents),
-		},
-		{
-			path: 'family.groups[].items',
-			test: (f) =>
-				Array.isArray(f.groups) &&
-				f.groups.some((g) => isRecord(g) && g.items !== undefined),
-		},
-		{
-			path: 'family.godparentGroups[].godparents',
-			test: (f) =>
-				Array.isArray(f.godparentGroups) &&
-				f.godparentGroups.some((g) => isRecord(g) && g.godparents !== undefined),
-		},
-	];
+const NESTED_FAMILY_MARKERS: ReadonlyArray<{
+	path: string;
+	test: (family: Record<string, unknown>) => boolean;
+}> = [
+	{ path: 'family.parents', test: (f) => f.parents !== undefined },
+	{ path: 'family.labels', test: (f) => f.labels !== undefined },
+	{ path: 'family.spouse', test: (f) => f.spouse !== undefined },
+	{
+		path: 'family.children[]',
+		test: (f) => Array.isArray(f.children),
+	},
+	{
+		path: 'family.godparents[]',
+		test: (f) => Array.isArray(f.godparents),
+	},
+	{
+		path: 'family.groups[].items',
+		test: (f) =>
+			Array.isArray(f.groups) && f.groups.some((g) => isRecord(g) && g.items !== undefined),
+	},
+	{
+		path: 'family.godparentGroups[].godparents',
+		test: (f) =>
+			Array.isArray(f.godparentGroups) &&
+			f.godparentGroups.some((g) => isRecord(g) && g.godparents !== undefined),
+	},
+];
 
 /**
  * Deterministic, non-mutating audit of a persisted draft document against the
@@ -123,7 +124,8 @@ export function auditDraftContract(
 	}
 
 	return {
-		canonical: violations.length === 0 && !canonicalized.changed && canonicalized.issues.length === 0,
+		canonical:
+			violations.length === 0 && !canonicalized.changed && canonicalized.issues.length === 0,
 		violations,
 		normalizationIssues: canonicalized.issues,
 		removedPublishedOnlyKeys: canonicalized.removedPublishedOnlyKeys,

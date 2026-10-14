@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 
-export interface EditorDivergenceBannerProps {
+interface EditorDivergenceBannerProps {
 	divergenceState?:
 		'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
 	targetEnvironment?: string;

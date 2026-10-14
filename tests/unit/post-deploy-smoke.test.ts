@@ -323,7 +323,7 @@ describe('post-deploy smoke', () => {
 		expect(workflow).not.toContain('continue-on-error');
 		expect(
 			workflow.match(
-				/vercel\/repository-dispatch\/actions\/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd/gu,
+				/vercel\/repository-dispatch\/actions\/status@bad8e8a0bbca4c5f5fa22483d080cb71ee5aad11/gu,
 			),
 		).toHaveLength(2);
 		expect(workflow).not.toContain('vercel/repository-dispatch/actions/status@v1');

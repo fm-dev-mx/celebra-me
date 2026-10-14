@@ -8,9 +8,10 @@ import {
 	readSharedVar,
 	resolvePanelEnvironments,
 } from '@/lib/platform/server/env-profiles';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 const ENV_NAMES = [
-	'CELEBRA_DEPLOY_ENV',
+	'SUPABASE_URL',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
@@ -34,6 +35,7 @@ afterAll(() => {
 
 beforeEach(() => {
 	for (const name of ENV_NAMES) delete process.env[name];
+	process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
 });
 
 describe('panel scoping', () => {
@@ -41,12 +43,18 @@ describe('panel scoping', () => {
 		expect(resolvePanelEnvironments()).toEqual(['preview', 'production']);
 		expect(isLocalPanel()).toBe(true);
 
-		process.env.CELEBRA_DEPLOY_ENV = 'preview';
+		asHostedDeploy('preview');
 		expect(resolvePanelEnvironments()).toEqual(['preview']);
 		expect(isLocalPanel()).toBe(false);
 
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production');
 		expect(resolvePanelEnvironments()).toEqual(['production']);
+	});
+
+	it('shows no environment when a deployment does not declare its identity', () => {
+		delete process.env.SUPABASE_URL;
+		expect(resolvePanelEnvironments()).toEqual([]);
+		expect(isLocalPanel()).toBe(false);
 	});
 });
 
@@ -89,7 +97,7 @@ describe('readProfileVar', () => {
 		expect(local.value).toBeNull();
 		expect(local.missing?.name).toBe('MEMORIES_R2_BUCKET_NAME_PREVIEW');
 
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production');
 		const deployment = readProfileVar('r2BucketName', 'production', {
 			allowPlainFallback: false,
 		});

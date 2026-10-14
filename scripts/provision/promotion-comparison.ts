@@ -13,6 +13,7 @@ import {
 } from '../../src/lib/intake/services/publication-canonicalize.ts';
 import { ASSET_KEY_PREFIX, semanticAssetRef } from './normalized-invitation-release.ts';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Canonical publication projection
@@ -50,10 +51,6 @@ export function isSemanticallyEqual(a: unknown, b: unknown, targetStorageUrl?: s
 	);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
 /** Uploaded ref rewritten to a managed semantic key (src may already be stripped). */
 export function isSemanticUploadedAssetRef(
 	value: unknown,
@@ -69,7 +66,7 @@ export function isSemanticUploadedAssetRef(
 /**
  * Hosted external asset URL string (Cloudinary, Storage host, or storage placeholder).
  */
-export function isExternalHostedAssetString(value: unknown): value is string {
+function isExternalHostedAssetString(value: unknown): value is string {
 	if (typeof value !== 'string' || value.length === 0) return false;
 	if (value.includes(STORAGE_URL_PLACEHOLDER)) return true;
 	return /^https?:\/\//i.test(value);
@@ -229,10 +226,9 @@ export function semanticInvitationContentEqual(
 // Individual check functions
 // ---------------------------------------------------------------------------
 
-export function checkInvitationMetadataIdentical(
+function checkInvitationMetadataIdentical(
 	pkgInv: InvitationPackageData['invitation'],
 	existingInv: Record<string, unknown> | null,
-	targetStorageUrl: string,
 ): boolean {
 	if (!existingInv) return false;
 	const existingManagedIdentity =
@@ -245,14 +241,12 @@ export function checkInvitationMetadataIdentical(
 	}
 	return (
 		existingInv.event_type === pkgInv.eventType &&
-		existingInv.base_demo_id === pkgInv.baseDemoId &&
 		existingInv.theme_id === pkgInv.themeId &&
-		existingInv.kind === pkgInv.kind &&
-		isSemanticallyEqual(pkgInv.snapshot, existingInv.snapshot, targetStorageUrl)
+		existingInv.kind === pkgInv.kind
 	);
 }
 
-export function checkDraftContentIdentical(
+function checkDraftContentIdentical(
 	pkgDraftContent: Record<string, unknown>,
 	existingDraft: Record<string, unknown> | null,
 	targetStorageUrl: string,
@@ -277,7 +271,7 @@ function hasIdenticalUploadedDeliveryRefs(expected: unknown, actual: unknown): b
 	return JSON.stringify(identity(expected)) === JSON.stringify(identity(actual));
 }
 
-export function checkPublishedContentIdentical(
+function checkPublishedContentIdentical(
 	pkgPublishedContent: Record<string, unknown>,
 	existingPub: Record<string, unknown> | null,
 	targetStorageUrl: string,
@@ -290,7 +284,7 @@ export function checkPublishedContentIdentical(
 	);
 }
 
-export function checkEventAndMembershipIdentical(
+function checkEventAndMembershipIdentical(
 	pkg: InvitationPackageData,
 	ownerUserId: string,
 	targetInvitationId: string,
@@ -343,7 +337,6 @@ export function evaluateAppliedHostedTargetIdentity(
 	const isInvMetadataIdentical = checkInvitationMetadataIdentical(
 		input.pkg.invitation,
 		input.existingInv,
-		input.targetStorageUrl,
 	);
 	return {
 		isInvMetadataIdentical,
@@ -378,28 +371,6 @@ export function assertAppliedHostedTargetIdentity(input: AppliedHostedTargetIden
 	) {
 		throw new FinalTargetVerificationError(APPLIED_HOSTED_TARGET_IDENTITY_FAILURE);
 	}
-}
-
-// ---------------------------------------------------------------------------
-// Storage URL rewriting
-// ---------------------------------------------------------------------------
-
-export function rewritePackageStorageUrls(val: unknown, targetStorageUrl: string): unknown {
-	if (typeof val === 'string')
-		return val.replaceAll(`${STORAGE_URL_PLACEHOLDER}/`, `${targetStorageUrl}/`);
-	if (Array.isArray(val))
-		return val.map((item) => rewritePackageStorageUrls(item, targetStorageUrl));
-	if (val !== null && typeof val === 'object') {
-		const result: Record<string, unknown> = {};
-		for (const key of Object.keys(val as Record<string, unknown>)) {
-			result[key] = rewritePackageStorageUrls(
-				(val as Record<string, unknown>)[key],
-				targetStorageUrl,
-			);
-		}
-		return result;
-	}
-	return val;
 }
 
 // ---------------------------------------------------------------------------

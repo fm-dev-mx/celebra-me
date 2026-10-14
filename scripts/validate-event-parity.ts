@@ -2,7 +2,8 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { parseEnvContent, PROJECT_ROOT } from './db/db-workflow-lib.ts';
+import { PROJECT_ROOT } from './db/db-workflow-lib.ts';
+import { LOCAL_HOSTS, parseEnvContent } from './shared/celebra-runtime-env.ts';
 
 const ROUTABLE_CONTENT_DIRS = [path.join(PROJECT_ROOT, 'src', 'content', 'event-demos')];
 
@@ -68,7 +69,7 @@ function requireRemoteServiceRoleConfirmation(supabaseUrl: string, scriptName: s
 	let isLocal: boolean;
 	try {
 		const host = new URL(supabaseUrl).hostname.toLowerCase();
-		isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+		isLocal = LOCAL_HOSTS.includes(host);
 	} catch {
 		isLocal = false;
 	}

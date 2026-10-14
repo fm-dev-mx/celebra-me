@@ -67,7 +67,7 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 
 	it('plans all 5 reveal steps for standard envelope invitations (Abril Michelle / Boda Jewelry Box)', async () => {
 		const tasks = await resolveCapturePlan(
-			mockPageWithEnvelope as unknown as import('playwright').Page,
+			mockPageWithEnvelope as unknown as import('@playwright/test').Page,
 			baseJob,
 		);
 		expect(tasks.length).toBe(5);
@@ -84,7 +84,7 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 
 	it('plans only valid cover and full-open tasks for editorial cover variants (skipping letter 03/04)', async () => {
 		const tasks = await resolveCapturePlan(
-			mockPageWithEditorialCover as unknown as import('playwright').Page,
+			mockPageWithEditorialCover as unknown as import('@playwright/test').Page,
 			baseJob,
 		);
 		expect(tasks.length).toBe(3);
@@ -119,7 +119,7 @@ describe('Screenshot workflow sequence & capability contracts', () => {
 
 	it('plans optional reveal steps distinctly from required captures', async () => {
 		const tasks = await resolveCapturePlan(
-			mockPageWithEnvelope as unknown as import('playwright').Page,
+			mockPageWithEnvelope as unknown as import('@playwright/test').Page,
 			baseJob,
 		);
 		expect(tasks.find((t) => t.id === '02-reveal-closed')?.requirement).toBe('optional');

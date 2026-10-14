@@ -125,7 +125,7 @@ const published = {
 			title: 'Confirma P',
 			guestCap: 4,
 			confirmationMode: 'api',
-			whatsappConfig: { phone: '5215550000' },
+			whatsappConfig: { phone: '1000000022' },
 		},
 		music: { url: 'https://example.com/song.mp3', title: 'Canción P' },
 		gifts: { title: 'Regalos P', items: [{ type: 'cash', title: 'Sobres' }] },
@@ -177,40 +177,40 @@ describe('getInvitationEditorContext', () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
 		(findInvitationById as jest.Mock).mockResolvedValue({
 			...invitation,
-			slug: 'ana-sofia-cota-guillen',
+			slug: 'lucia-fixture',
 		});
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
 			...published,
 			content: {
 				...published.content,
-				_assetSlug: 'ana-sofia-cota-guillen',
+				_assetSlug: 'lucia-fixture',
 				hero: { backgroundImage: 'hero', portrait: 'portrait' },
 			},
 		});
 
 		const result = await getInvitationEditorContext('proj-1');
 
-		expect(result.assetLookupSlug).toBe('ana-sofia-cota-guillen');
+		expect(result.assetLookupSlug).toBe('lucia-fixture');
 	});
 
 	it('uses published _assetSlug as the editor asset lookup slug when an empty draft exists', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({ ...draft, content: {} });
 		(findInvitationById as jest.Mock).mockResolvedValue({
 			...invitation,
-			slug: 'ximena-meza-trasvina',
+			slug: 'elena-fixture',
 		});
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
 			...published,
 			content: {
 				...published.content,
-				_assetSlug: 'ximena-meza-trasvina',
+				_assetSlug: 'elena-fixture',
 				hero: { backgroundImage: 'hero', portrait: 'portrait' },
 			},
 		});
 
 		const result = await getInvitationEditorContext('proj-1');
 
-		expect(result.assetLookupSlug).toBe('ximena-meza-trasvina');
+		expect(result.assetLookupSlug).toBe('elena-fixture');
 	});
 
 	it('hydrates all keys with draft priority over published', async () => {

@@ -69,12 +69,13 @@ Do not use for pure demos, performance audits, or staged code review.
 ## Self-sufficiency
 
 A real invitation has no demo counterpart. Its theme comes from `theme_id`, its structure from the
-canonical section contracts and variant registry, and its media from its own `_assetSlug` namespace
+canonical section contracts and variant registry, and its media from its own asset directory
+(`src/assets/invitations/<slug>/`; legacy definitions keep an `_assetSlug` namespace)
 (`.agent/rules/invitation-preset-source-of-truth.md`). `isDemo` is `false` on real content, and a
 demo never points at a real asset directory.
 
-Route slug, `_assetSlug`, and `baseDemoId` are distinct concepts — do not collapse them.
-`baseDemoId` is legacy, scheduled for removal; provisioning still requires it.
+Route slug and `_assetSlug` are distinct concepts — do not collapse them. Definitions carry no
+`baseDemoId`; the legacy `base_demo_id` column is no longer written by provisioning.
 
 ## Info-hygiene (prep)
 
@@ -132,9 +133,10 @@ Require HR URL / explicit asset root first. Produce role assignments, **photo un
 and a role-aware optimization plan (`planImageOptimization`). Preserve originals. Note double-encode
 risk for managed WebP delivery.
 
-### Phase P3 — Demo / design / identity freeze (script C5)
+### Phase P3 — Preset / design / identity freeze (script C5)
 
-- Client-selected demo → `verified`.
+- Client-selected preset (or a chosen demo, which identifies its preset) → `verified`; record it in
+  the Design Direction row `Selected theme preset`.
 - No selection → recommend a theme preset (`THEME_PRESETS`) and section variants, citing routable
   demos as visual references; leave final selection as `requires_owner_decision`.
 - Colors: preserve client colors; otherwise recommend separately.
@@ -177,8 +179,8 @@ Inventory for `<slug>`:
 - `src/assets/images/events` / `src/assets/invitations`
 - slug-scoped SCSS under `src/styles`
 
-Complete this table: route slug, `_assetSlug`, base demo, theme preset, DB published?, static JSON?,
-SQL patch?, assets?, SCSS override?, current 404 risk.
+Complete this table: route slug, `_assetSlug` (legacy only), theme preset, DB published?, static
+JSON?, SQL patch?, assets?, SCSS override?, current 404 risk.
 
 ### Phase 2 — Theme and preset
 

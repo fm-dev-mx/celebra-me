@@ -9,12 +9,12 @@ import { badRequest, errorResponse, readBoundedRequestText } from '@/lib/rsvp/co
 /**
  * Successful validation result.
  */
-export interface ValidationResult<T> {
+interface ValidationResult<T> {
 	success: true;
 	data: T;
 }
 
-export interface ValidationError {
+interface ValidationError {
 	success: false;
 	errors: Array<{
 		path: string;
@@ -23,7 +23,7 @@ export interface ValidationError {
 	status?: number;
 }
 
-export type ValidationOutcome<T> = ValidationResult<T> | ValidationError;
+type ValidationOutcome<T> = ValidationResult<T> | ValidationError;
 
 /**
  * Maps a ZodError into the shared validation error shape.
@@ -38,7 +38,7 @@ function extractZodErrors(error: z.ZodError): ValidationError['errors'] {
 /**
  * Validates a request body against a Zod schema.
  */
-export async function validateBody<T>(
+async function validateBody<T>(
 	request: Request,
 	schema: z.ZodType<T>,
 	maxBytes = 256 * 1024,
@@ -120,7 +120,7 @@ export async function validateBodyOrRespond<T>(
 /**
  * Validates query params against a Zod schema.
  */
-export function validateQuery<T>(
+function validateQuery<T>(
 	searchParams: URLSearchParams,
 	schema: z.ZodType<T>,
 ): ValidationOutcome<T> {

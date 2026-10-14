@@ -15,8 +15,7 @@ notes, photo-role audits, and refinement records live in Git history.
 
 ## Preset and variants
 
-- Theme preset `luxury-hacienda`; visual profile `alba-rosa-quinonez` (frozen by digest); legacy
-  `baseDemoId` `demo-cumple-luxury-hacienda`.
+- Theme preset `luxury-hacienda`; visual profile `alba-rosa-quinonez` (frozen by digest).
 - Variants: hero `standard`, location `split-map`, countdown `standard`, gallery `feature-stack`,
   gifts `standard` (legend only), RSVP `standard` with personalized access `ornamented`, family
   `standard`, thank-you `standard`.
@@ -35,4 +34,4 @@ notes, photo-role audits, and refinement records live in Git history.
 - Several assigned photographs came from provisional (WhatsApp-class) sources; preparation never
   reached production-ready assets.
 - Music and itinerary were intentionally omitted.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

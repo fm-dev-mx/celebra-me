@@ -1,7 +1,5 @@
 import {
 	INVITATION_FIELD_OWNERSHIP,
-	isRsvpOwnedField,
-	resolveManagedHostAlias,
 	resolveManagedInvitationMetadata,
 } from '@/lib/intake/mutations/ownership';
 import {
@@ -68,15 +66,9 @@ describe('invitation mutation ownership contract', () => {
 		});
 	});
 
-	it('treats the definition alias as a seed only', () => {
-		expect(resolveManagedHostAlias('definition_alias', 'admin_alias')).toBe('admin_alias');
-		expect(resolveManagedHostAlias('definition_alias', null)).toBe('definition_alias');
-	});
-
 	it('marks guest confirmations as RSVP-owned', () => {
 		expect(INVITATION_FIELD_OWNERSHIP.guestConfirmations).toBe('rsvp_owned');
-		expect(isRsvpOwnedField('guestConfirmations')).toBe(true);
-		expect(isRsvpOwnedField('draftContent')).toBe(false);
+		expect(INVITATION_FIELD_OWNERSHIP.draftContent).not.toBe('rsvp_owned');
 	});
 });
 

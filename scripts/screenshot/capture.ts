@@ -2,7 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — Capture Facade (compatibility re-exports)
 // =============================================================================
 
-import { chromium, type Browser, type BrowserContext } from 'playwright';
+import { chromium, type Browser, type BrowserContext } from '@playwright/test';
 import * as path from 'node:path';
 import { DEFAULT_STORAGE_STATE_PATH, type AuthMethod, type Viewport } from './types.js';
 

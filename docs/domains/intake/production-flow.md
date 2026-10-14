@@ -81,17 +81,19 @@ complete apply phase across all targets.
 Production draft discard is never automatic. A target draft that diverges from both the selected
 package and published content requires an explicit selected `--slug`/`--slugs` scope plus
 `--acknowledge-discard-unpublished-draft`; the read-only plan and owner TTY confirmation identify
-which unpublished draft will be replaced. `--all-ready` excludes these items and owner-archived
-definitions (see "Archived definitions" below). Manual/editor managed baseline drift remains
-`BLOCKED`, even with the acknowledgement. Publication version/hash, partial operation, and newer
-managed-receipt guards remain mandatory.
+which unpublished draft will be replaced. `--all-ready` excludes these items and expired definitions
+(see "Expired definitions" below). Manual/editor managed baseline drift remains `BLOCKED`, even with
+the acknowledgement. Publication version/hash, partial operation, and newer managed-receipt guards
+remain mandatory.
 
-### Archived definitions and approval-bound hashes
+### Expired definitions and approval-bound hashes
 
-- A past invitation leaves release planning only by owner decision: add
-  `archive: { decidedOn: 'YYYY-MM-DD', reason }` to its definition (published definitions only;
-  never inferred from the event date). `prod:apply` discovery, `invitation:release --status`
-  (`--include-archived` lists them) and the hash baseline skip it; database rows are untouched.
+- A definition leaves release planning when its invitation expires: event date + 1 year, end of that
+  day in the event time zone (`eventTiming`; rule in
+  [the creation contract](../../core/invitation-creation-contract.md)). There is no manual archive
+  field. `prod:apply` discovery, `invitation:release --status` (`--include-expired` lists them) and
+  the hash baseline skip it; database rows are untouched. The definition file may be deleted only
+  after that instant (`validUntil` in the hash baseline guards it).
 - A Preview approval binds to the exact `packageHash`.
   `scripts/provision/release-hash-baseline.json` pins the hash of every active definition;
   `pnpm validate:changed` runs `pnpm invitation:hash-baseline` (advisory) for

@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { deriveStartsAtUtc } from '@/lib/time/event-time';
@@ -8,31 +7,19 @@ import {
 	RENATA_ASSET_SPECS,
 	RENATA_EVENT,
 	buildRenataPublishedContent,
-	type RenataAssetMap,
 } from '../../scripts/provision/invitations/renata.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
 const profilePath = path.join(process.cwd(), 'src/styles/invitation-profiles/renata.scss');
 const assetDir = path.join(process.cwd(), 'src/assets/invitations/renata');
 const prepPath = path.join(process.cwd(), 'docs/invitations/renata.md');
 
-function buildTestAssets(): RenataAssetMap {
-	return Object.fromEntries(
-		RENATA_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as RenataAssetMap;
-}
-
 describe('XV Renata provision contract', () => {
 	it('keeps parents and godparents in their original blocks without duplicate groups', () => {
-		const content = eventContentSchema.parse(buildRenataPublishedContent(buildTestAssets()));
-		expect(eventContentSchema.safeParse(content).success).toBe(true);
+		const content = eventContentSchema.parse(
+			buildRenataPublishedContent(buildTestAssets(RENATA_ASSET_SPECS)),
+		);
 		expect(content.family?.groups).toBeUndefined();
 		expect(content.family?.godparents).toHaveLength(2);
 		expect(content.family?.labels?.parentsTitle).toBe('Junto a mis padres');
@@ -42,7 +29,6 @@ describe('XV Renata provision contract', () => {
 		const definition = getInvitationDefinition('renata');
 		expect(definition.slug).toBe('renata');
 		expect(definition.hostLoginAlias).toBe('renata');
-		expect(definition.baseDemoId).toBe('demo-xv-editorial');
 		expect(definition.themeId).toBe('editorial');
 		expect(definition.visualProfileId).toBe('renata');
 		expect(definition.lifecycle).toBe('published');
@@ -51,12 +37,6 @@ describe('XV Renata provision contract', () => {
 			deriveStartsAtUtc('2026-09-05T19:00', 'America/Mazatlan'),
 		);
 
-		const preset = findDemoPreset(RENATA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-xv-editorial',
-			eventType: 'xv',
-			themeId: 'editorial',
-		});
 		expect(resolveInvitationTheme({ themeId: RENATA_EVENT.themeId })).toBe(
 			RENATA_EVENT.themeId,
 		);
@@ -162,11 +142,8 @@ describe('XV Renata provision contract', () => {
 		);
 	});
 
-	it('builds schema-valid published content without inventing RSVP operations or a surname', () => {
-		const content = buildRenataPublishedContent(buildTestAssets());
-		const result = eventContentSchema.safeParse(content);
-		expect(result.success).toBe(true);
-
+	it('builds published content without inventing RSVP operations or a surname', () => {
+		const content = buildRenataPublishedContent(buildTestAssets(RENATA_ASSET_SPECS));
 		expect(content.quote).toBeUndefined();
 		expect(content.music).toBeUndefined();
 		expect((content.hero as { name: string }).name).toBe('Renata');

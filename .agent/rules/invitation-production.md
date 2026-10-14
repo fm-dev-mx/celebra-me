@@ -192,9 +192,10 @@ execution-boundary separation.
 - **Owner-only Production apply:** Canonical human path is `pnpm prod:apply` (plan by default;
   `--schema` / `--slug` / `--slugs` / `--all-ready` / `--patch` + `--apply`). It delegates to
   `db:migrate` and `orchestrateInvitationPromotion`. Agents must not execute Production `--apply`.
-  Owner-archived definitions are excluded from discovery plans; agents never add an `archive` record
-  without the owner's explicit choice. Schema incompatibility is applied first in a mixed plan, or
-  pointed to `--schema` (never auto-migrated from `invitation:release`).
+  Expired definitions (event date + 1 year) are excluded from discovery plans; agents never delete a
+  definition, profile or preset of an invitation that has not expired
+  (`docs/core/invitation-creation-contract.md`). Schema incompatibility is applied first in a mixed
+  plan, or pointed to `--schema` (never auto-migrated from `invitation:release`).
 
 ## Schema lifecycle contract
 

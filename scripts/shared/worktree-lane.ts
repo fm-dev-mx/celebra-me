@@ -25,7 +25,7 @@ export interface WorktreeLaneDefinition {
 	segment: string | null;
 }
 
-export const WORKTREE_LANES: readonly WorktreeLaneDefinition[] = Object.freeze([
+const WORKTREE_LANES: readonly WorktreeLaneDefinition[] = Object.freeze([
 	{
 		id: 'integration',
 		displayName: 'Integration',

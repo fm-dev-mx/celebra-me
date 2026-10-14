@@ -1,17 +1,15 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
-import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
 	VICTORIA_ASSET_SPECS,
 	VICTORIA_EVENT,
 	buildVictoriaPublishedContent,
-	type VictoriaAssetMap,
 } from '../../scripts/provision/invitations/victoria-y-roberto.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
 const profilePath = path.join(
 	process.cwd(),
@@ -24,35 +22,15 @@ const singleKeepsakeStylesPath = path.join(
 
 const assetDir = path.join(process.cwd(), 'src/assets/invitations/victoria-y-roberto');
 
-function buildTestAssets(): VictoriaAssetMap {
-	return Object.fromEntries(
-		VICTORIA_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as VictoriaAssetMap;
-}
-
 describe('Boda Victoria y Roberto provision contract', () => {
 	it('registers the managed definition with jewelry-box catalog identity', () => {
 		const definition = getInvitationDefinition('victoria-y-roberto');
 		expect(definition.slug).toBe('victoria-y-roberto');
 		expect(definition.hostLoginAlias).toBe('victoria_armenta');
-		expect(definition.baseDemoId).toBe('demo-boda-jewelry-box-wedding');
 		expect(definition.themeId).toBe('jewelry-box-wedding');
 		expect(definition.visualProfileId).toBe('victoria-y-roberto');
 		expect(definition.eventTiming.timeZone).toBe('America/Mazatlan');
 
-		const preset = findDemoPreset(VICTORIA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-boda-jewelry-box-wedding',
-			eventType: 'boda',
-			themeId: 'jewelry-box-wedding',
-		});
 		expect(resolveInvitationTheme({ themeId: VICTORIA_EVENT.themeId })).toBe(
 			VICTORIA_EVENT.themeId,
 		);
@@ -117,14 +95,8 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		).toBe(true);
 	});
 
-	it('builds schema-valid published content with Victoria structural contracts', () => {
-		const content = buildVictoriaPublishedContent(buildTestAssets());
-		const result = eventContentSchema.safeParse(content);
-		expect(result.success).toBe(true);
-		if (!result.success) {
-			console.error(result.error.issues);
-		}
-
+	it('builds published content with Victoria structural contracts', () => {
+		const content = buildVictoriaPublishedContent(buildTestAssets(VICTORIA_ASSET_SPECS));
 		expect(content.isDemo).toBe(false);
 		expect(content.templateId).toBe('boda-jewelry-box-wedding');
 		expect(content._assetSlug).toBe('victoria-y-roberto');
@@ -367,7 +339,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 	});
 
 	it('keeps Lane A hero focals synchronized between provision content and profile CSS', () => {
-		const content = buildVictoriaPublishedContent(buildTestAssets());
+		const content = buildVictoriaPublishedContent(buildTestAssets(VICTORIA_ASSET_SPECS));
 		const hero = content.hero as {
 			focalPoint: string;
 			focalPointMobile: string;
@@ -396,7 +368,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 	});
 
 	it('keys the first invitation section handoff to source=hero without encoding a fixed successor', () => {
-		const content = buildVictoriaPublishedContent(buildTestAssets());
+		const content = buildVictoriaPublishedContent(buildTestAssets(VICTORIA_ASSET_SPECS));
 		const viewModel = adaptEvent({
 			id: 'events/victoria-y-roberto',
 			data: content,
@@ -417,7 +389,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 });
 
 it('retains Production note styling and photographic crops', () => {
-	const content = buildVictoriaPublishedContent(buildTestAssets());
+	const content = buildVictoriaPublishedContent(buildTestAssets(VICTORIA_ASSET_SPECS));
 	expect(content).toMatchObject({
 		location: { indications: [{ styleVariant: 'default' }, { styleVariant: 'default' }] },
 		gallery: { items: [{ focalPoint: '50% 40%' }] },

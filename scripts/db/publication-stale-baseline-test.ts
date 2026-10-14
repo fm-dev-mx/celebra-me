@@ -1,25 +1,12 @@
 /** Exercises every mutable public baseline field against the real publication RPC. */
 import { randomUUID } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { DISPOSABLE_DB_URL } from './db-target-config.ts';
+import { runPsql } from './db-workflow-lib.ts';
 
-const dbUrl = 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres';
 const content = `'{"title":"Baseline publication"}'::jsonb`;
 
 function query(sql: string): string {
-	const result = spawnSync(
-		'psql',
-		[
-			'--set',
-			'ON_ERROR_STOP=1',
-			'--tuples-only',
-			'--no-align',
-			'--dbname',
-			dbUrl,
-			'--command',
-			sql,
-		],
-		{ encoding: 'utf8' },
-	);
+	const result = runPsql(sql, DISPOSABLE_DB_URL, { asCommand: true, throwOnError: false });
 	if (result.status !== 0) throw new Error(result.stderr || result.stdout);
 	return result.stdout.trim();
 }
@@ -83,7 +70,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'contact-only metadata',
 		mutation: (id) =>
-			`update public.invitations set client_email = 'contact-only@example.test', client_whatsapp = '5551234567' where id = '${id}';`,
+			`update public.invitations set client_email = 'contact-only@example.test', client_whatsapp = '1000000002' where id = '${id}';`,
 		shouldPublish: true,
 	},
 ];

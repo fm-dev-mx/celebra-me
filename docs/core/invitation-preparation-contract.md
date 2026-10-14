@@ -214,9 +214,13 @@ Helpers: `planImageOptimization`, `summarizeAssetQuality`, `isProductionAuthorit
 
 ---
 
-## 8. Demo and visual decisions
+## 8. Theme preset and visual decisions
 
-- Client-selected demo ⇒ `verified`.
+Invitations do not depend on demos: a demo is only a visual reference for its theme preset, and the
+preparation record carries no base demo (`baseDemoId` is not a preparation field).
+
+- Record the decision in the Design Direction row `Selected theme preset`; it gates readiness.
+- Client-selected preset (or a chosen demo, which identifies its preset) ⇒ `verified`.
 - No selection ⇒ recommend options; final choice `requires_owner_decision`.
 - Client colors preserved when stated; otherwise recommend separately until approved.
 

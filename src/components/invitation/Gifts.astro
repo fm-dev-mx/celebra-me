@@ -62,6 +62,8 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	folioMark?: string;
+	/** Edition wording of the event type, printed beside the catalog folio mark. */
+	editionLabel?: string;
 	/** Decorative cutout above the heading. */
 	ornament?: ImageAsset;
 	labels?: {
@@ -82,6 +84,7 @@ const {
 	eyebrow,
 	title = 'Mesa de Regalos',
 	folioMark,
+	editionLabel = 'EDICIÓN XV',
 	ornament,
 	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
 	labels = {
@@ -229,7 +232,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 									{showEditorialFolio && (
 										<div class="gift-card__folio" aria-hidden="true">
 											<span>{folioMark}</span>
-											<span>EDICIÓN XV</span>
+											<span>{editionLabel}</span>
 										</div>
 									)}
 									{isEditorialCatalog && (
@@ -350,6 +353,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 	</div>
 </section>
 <script>
+	import { copyToClipboard } from '@/utils/clipboard';
 
 	document.querySelectorAll('.copy-icon-button').forEach((button) => {
 		button.addEventListener('click', async () => {
@@ -360,7 +364,9 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 
 			const normalizedText = textToCopy.replace(/\s+/g, '').trim();
 			try {
-				await navigator.clipboard.writeText(normalizedText);
+				if (!(await copyToClipboard(normalizedText))) {
+					throw new Error('Clipboard API unavailable');
+				}
 				button.classList.add('copy-success', 'copy-button--success');
 				window.setTimeout(() => {
 					button.classList.remove('copy-success', 'copy-button--success');

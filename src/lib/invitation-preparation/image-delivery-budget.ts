@@ -1,16 +1,13 @@
-export const IMAGE_SECTION_ROLES = [
-	'hero',
-	'portrait-family',
-	'gallery-visible',
-	'gallery-expanded',
-	'interlude',
-	'venue',
-	'raster-map',
-	'closing',
-	'decorative',
-] as const;
-
-export type ImageSectionRole = (typeof IMAGE_SECTION_ROLES)[number];
+export type ImageSectionRole =
+	| 'hero'
+	| 'portrait-family'
+	| 'gallery-visible'
+	| 'gallery-expanded'
+	| 'interlude'
+	| 'venue'
+	| 'raster-map'
+	| 'closing'
+	| 'decorative';
 export type ImageBudgetViewport = 'mobile' | 'desktop';
 
 export interface ImageDeliveryBudget {
@@ -69,25 +66,11 @@ export const IMAGE_DELIVERY_BUDGETS: Readonly<Record<ImageSectionRole, ImageDeli
 	},
 };
 
-export const INITIAL_IMAGE_BUDGET_BYTES = kib(1536);
-export const PRE_LCP_IMAGE_BUDGET_BYTES: Readonly<Record<ImageBudgetViewport, number>> = {
+const INITIAL_IMAGE_BUDGET_BYTES = kib(1536);
+const PRE_LCP_IMAGE_BUDGET_BYTES: Readonly<Record<ImageBudgetViewport, number>> = {
 	mobile: kib(350),
 	desktop: kib(600),
 };
-
-export function classifyImageSectionRole(pathOrKey: string): ImageSectionRole {
-	const value = pathOrKey.toLowerCase();
-	if (value.includes('portrait') || value.includes('family')) return 'portrait-family';
-	if (value.includes('backgroundimagemobile') || value.includes('hero')) return 'hero';
-	if (value.includes('map')) return 'raster-map';
-	if (value.includes('venue') || value.includes('location')) return 'venue';
-	if (value.includes('interlude')) return 'interlude';
-	if (value.includes('thankyou') || value.includes('thank-you') || value.includes('closing'))
-		return 'closing';
-	if (value.includes('expanded') || value.includes('lightbox')) return 'gallery-expanded';
-	if (value.includes('gallery')) return 'gallery-visible';
-	return 'decorative';
-}
 
 export interface DeliveredImageMeasurement {
 	identity: string;

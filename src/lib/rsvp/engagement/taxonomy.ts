@@ -20,8 +20,6 @@ export type ClientEngagementEvent =
 	| { eventName: 'rsvp_form_viewed'; properties: Record<string, never> }
 	| { eventName: 'rsvp_form_started'; properties: Record<string, never> };
 
-export type ClientEngagementEventName = ClientEngagementEvent['eventName'];
-
 /** Wire envelope posted by the browser to /api/invitacion/:inviteId/events. */
 export type ClientEngagementEnvelope = ClientEngagementEvent & {
 	clientEventId: string;

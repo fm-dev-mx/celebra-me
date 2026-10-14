@@ -15,8 +15,7 @@ reference role; earlier notes live in Git history.
 
 ## Preset and variants
 
-- Theme preset `premiere-floral`; visual profile `romina-rios-chaparro` (frozen by digest); legacy
-  `baseDemoId` `demo-xv-premiere-floral` (catalog-only).
+- Theme preset `premiere-floral`; visual profile `romina-rios-chaparro` (frozen by digest).
 - Variants: hero `split-cover`, family `standard`, countdown `standard`, location `standard`,
   itinerary `standard`, gallery `editorial-mosaic`, RSVP `standard` with personalized access
   `ornamented`, thank-you `standard`. `composition.intersections` is explicit.
@@ -43,4 +42,4 @@ fixture without her profile or assets ([variant system](../domains/theme/variant
 - Desktop and mobile hero use distinct uploaded keys (`hero` / `hero-mobile`) encoded from one
   source photograph; focals `50% 42%` (mobile/tablet) and `58% 46%` (desktop).
 - Ceremony and reception coordinates are inferred, not client-stated.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

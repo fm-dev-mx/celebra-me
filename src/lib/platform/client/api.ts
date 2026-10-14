@@ -6,9 +6,9 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import type { PlatformUsageReport } from '@/lib/platform/contract/types';
 
-export const PLATFORM_ADMIN_API_PATH = '/api/dashboard/admin/platform';
+const PLATFORM_ADMIN_API_PATH = '/api/dashboard/admin/platform';
 
-export class PlatformRequestError extends Error {
+class PlatformRequestError extends Error {
 	readonly status: number | null;
 
 	constructor(status: number | null) {

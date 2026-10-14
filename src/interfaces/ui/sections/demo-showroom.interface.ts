@@ -4,17 +4,17 @@ import type { EventAssetKey } from '@/lib/assets/asset-keys';
 export type DemoShowroomPublicSlug =
 	'xv' | 'boda' | 'bautizo' | 'bautismo' | 'cumple' | 'cumpleanos';
 
-export type DemoShowroomVisibility = 'featured' | 'hidden';
-export type DemoShowroomReviewStatus = 'approved' | 'needs-review';
+type DemoShowroomVisibility = 'featured' | 'hidden';
+type DemoShowroomReviewStatus = 'approved' | 'needs-review';
 
-export interface DemoShowroomThumbnail {
+interface DemoShowroomThumbnail {
 	assetSlug: string;
 	key: EventAssetKey;
 	alt: string;
 	objectPosition?: string;
 }
 
-export interface DemoShowroomQuoteCta {
+interface DemoShowroomQuoteCta {
 	label: string;
 	message: string;
 	promoCode: string;
@@ -23,7 +23,7 @@ export interface DemoShowroomQuoteCta {
 	packageInterest?: string;
 }
 
-export interface DemoShowroomHomeSelector {
+interface DemoShowroomHomeSelector {
 	/** Alt text for the real demo screen shown in the landing phone frame. */
 	screenAlt: string;
 	quoteCta: DemoShowroomQuoteCta;

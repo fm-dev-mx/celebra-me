@@ -6,14 +6,9 @@
  * `--` after that strip is malformed. Pasted `pnpm <script>` prefixes stay errors.
  */
 
-export const OPERATOR_TASK_SCRIPTS = [
-	'invitation:release',
-	'prod:apply',
-	'db:migrate',
-	'dbs',
-] as const;
+const OPERATOR_TASK_SCRIPTS = ['invitation:release', 'prod:apply', 'db:migrate', 'dbs'] as const;
 
-export const PASTED_COMMAND_TOKENS = new Set<string>(['pnpm', ...OPERATOR_TASK_SCRIPTS]);
+const PASTED_COMMAND_TOKENS = new Set<string>(['pnpm', ...OPERATOR_TASK_SCRIPTS]);
 
 export function normalizeTaskPrompt(input: string): string {
 	const trimmed = input.trim();

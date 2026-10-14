@@ -1,7 +1,7 @@
 import { RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
 import { MAX_GUEST_COMMENT_LEN } from '@/lib/rsvp/core/guest-message';
 
-export const MAX_TEXT_LEN = 500;
+const MAX_TEXT_LEN = 500;
 export { MAX_GUEST_COMMENT_LEN };
 
 /**
@@ -144,55 +144,6 @@ export function normalizeOptionalNationalPhone(
 	}
 
 	return { ok: true, phone: stripped };
-}
-
-/**
- * Normalizes an imported phone number with an explicit country calling code.
- *
- * Rules:
- *  - If phone is empty/null/whitespace → returns '' (caller decides whether to accept).
- *  - If phone starts with '+': clean formatting and preserve the international number.
- *    If countryCode is also provided and the phone does NOT start with that code → throws.
- *  - If phone does NOT start with '+': countryCode is required.
- *    Combines as countryCode + cleaned(phone) → returns '+<cc><digits>'.
- *  - Never infers country. Never prepends a default prefix.
- *  - Never replaces a usable phone with a PENDING_ placeholder.
- *
- * @throws {Error} with a descriptive message if validation fails.
- */
-export function normalizeImportedPhone(phone: string, countryCode?: string): string {
-	const trimmed = phone?.trim() ?? '';
-	if (!trimmed) return '';
-
-	// PENDING_ placeholders are a data-model concern, not a real phone — pass through as-is.
-	if (trimmed.startsWith('PENDING_')) return trimmed;
-
-	if (trimmed.startsWith('+')) {
-		const cleaned = '+' + trimmed.slice(1).replace(/[^\d]/g, '');
-		if (countryCode) {
-			const cc = countryCode.startsWith('+') ? countryCode : '+' + countryCode;
-			if (!cleaned.startsWith(cc)) {
-				throw new Error(
-					`El teléfono internacional (${cleaned}) no coincide con el código de país proporcionado (${cc}).`,
-				);
-			}
-		}
-		return cleaned;
-	}
-
-	// Local phone — countryCode is required.
-	const cc = (countryCode ?? '').trim();
-	if (!cc) {
-		throw new Error(
-			'El teléfono no tiene código de país. Agrega el código de país o escribe el número completo empezando con +.',
-		);
-	}
-
-	const digits = trimmed.replace(/[^\d]/g, '');
-	if (!digits) return '';
-
-	const prefix = cc.startsWith('+') ? cc : '+' + cc;
-	return prefix + digits;
 }
 
 /**

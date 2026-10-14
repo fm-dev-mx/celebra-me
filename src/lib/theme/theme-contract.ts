@@ -91,15 +91,7 @@ export const INDICATION_STYLE_VARIANTS = ['default', 'reserved'] as const;
 
 export type IndicationStyleVariant = (typeof INDICATION_STYLE_VARIANTS)[number];
 
-export const INVITATION_REVEAL_RECIPES = [
-	'none',
-	'fade',
-	'fade-up',
-	'media-scale',
-	'stagger-group',
-] as const;
-
-export type InvitationRevealRecipe = (typeof INVITATION_REVEAL_RECIPES)[number];
+export type InvitationRevealRecipe = 'none' | 'fade' | 'fade-up' | 'media-scale' | 'stagger-group';
 
 export const SECTION_INTERSECTION_FAMILIES = [
 	'neutral',

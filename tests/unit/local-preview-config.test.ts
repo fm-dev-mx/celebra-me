@@ -1,4 +1,3 @@
-import { isDevEnvironment } from '@/lib/environment';
 import {
 	LOCAL_INVITATION_PREVIEW,
 	hasPlayableMusicUrl,
@@ -6,31 +5,11 @@ import {
 	shouldShowLocalPersonalizedAccessPreview,
 	shouldShowMusicPlayer,
 } from '@/lib/invitation/local-preview-config';
-
-jest.mock('@/lib/environment', () => ({
-	isDevEnvironment: jest.fn(() => false),
-}));
-
-const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+import { asHostedDeploy, asLocalDevServer } from '@tests/helpers/deploy-identity';
 
 const PLAYABLE_URL = 'https://cdn.example/song.mp3';
 
 describe('local invitation preview config', () => {
-	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
-
-	beforeEach(() => {
-		isDev.mockReturnValue(false);
-		delete process.env.CELEBRA_DEPLOY_ENV;
-	});
-
-	afterEach(() => {
-		if (originalDeployEnv === undefined) {
-			delete process.env.CELEBRA_DEPLOY_ENV;
-		} else {
-			process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
-		}
-	});
-
 	describe('hasPlayableMusicUrl', () => {
 		it.each([
 			['undefined', undefined],
@@ -94,8 +73,7 @@ describe('local invitation preview config', () => {
 		});
 
 		it('still shows a playable URL on hosted Preview and Production', () => {
-			isDev.mockReturnValue(true);
-			process.env.CELEBRA_DEPLOY_ENV = 'production';
+			asHostedDeploy('production', { isDevServer: true });
 			expect(shouldShowMusicPlayer(PLAYABLE_URL)).toBe(true);
 			expect(
 				resolveInvitationMusicPlayer({
@@ -106,7 +84,7 @@ describe('local invitation preview config', () => {
 		});
 
 		it('honors local preview constants only inside astro dev', () => {
-			isDev.mockReturnValue(true);
+			asLocalDevServer();
 			expect(shouldShowMusicPlayer('')).toBe(
 				LOCAL_INVITATION_PREVIEW.showMusicPlayerWithoutUrl,
 			);
@@ -150,8 +128,7 @@ describe('local invitation preview config', () => {
 		it.each([['production'], ['preview']])(
 			'ignores local preview switches when hosted as %s even if DEV is true',
 			(deployEnvironment) => {
-				isDev.mockReturnValue(true);
-				process.env.CELEBRA_DEPLOY_ENV = deployEnvironment;
+				asHostedDeploy(deployEnvironment, { isDevServer: true });
 
 				expect(shouldShowMusicPlayer('')).toBe(false);
 				expect(shouldShowMusicPlayer('   ')).toBe(false);
@@ -173,8 +150,7 @@ describe('local invitation preview config', () => {
 	});
 
 	it('never enables local previews in a hosted runtime', () => {
-		isDev.mockReturnValue(true);
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production', { isDevServer: true });
 
 		expect(shouldShowMusicPlayer('')).toBe(false);
 		expect(shouldShowLocalPersonalizedAccessPreview()).toBe(false);

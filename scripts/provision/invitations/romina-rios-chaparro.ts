@@ -18,7 +18,6 @@ export const ROMINA_EVENT = {
 	eventType: 'xv',
 	slug: 'romina-rios-chaparro',
 	assetSlug: 'romina-rios-chaparro',
-	baseDemoId: 'demo-xv-premiere-floral',
 	themeId: 'premiere-floral',
 	visualProfileId: 'romina-rios-chaparro',
 	title: 'XV años de Romina Ríos Chaparro',
@@ -401,10 +400,8 @@ export const rominaInvitation: InvitationDefinition<RominaAssetKey> = defineInvi
 	title: ROMINA_EVENT.title,
 	clientName: 'Romina Ríos Chaparro',
 	hostLoginAlias: 'romina_rios_chaparro',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: ROMINA_EVENT.baseDemoId,
 	themeId: ROMINA_EVENT.themeId,
 	visualProfileId: ROMINA_EVENT.visualProfileId,
 	eventTiming: {

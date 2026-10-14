@@ -31,7 +31,6 @@ export const DESTENID_EVENT = {
 	eventType: 'xv',
 	slug: 'destenid-sofia',
 	assetSlug: 'destenid-sofia',
-	baseDemoId: 'demo-xv-editorial-magazine',
 	themeId: 'editorial-magazine',
 	visualProfileId: 'destenid-sofia',
 	title: 'XV Años — Destenid Sofía',
@@ -178,7 +177,7 @@ export const DESTENID_ASSET_SPECS = [
 ] as const;
 
 export type DestenidAssetKey = (typeof DESTENID_ASSET_SPECS)[number]['key'];
-export type DestenidAssetMap = Record<DestenidAssetKey, UploadedAssetRef>;
+type DestenidAssetMap = Record<DestenidAssetKey, UploadedAssetRef>;
 
 const ASSET_ALT = Object.fromEntries(
 	DESTENID_ASSET_SPECS.map((spec) => [spec.key, spec.alt]),
@@ -469,10 +468,8 @@ export const destenidInvitation: InvitationDefinition<DestenidAssetKey> = define
 	title: DESTENID_EVENT.title,
 	clientName: CELEBRANT_NAME,
 	hostLoginAlias: 'destenid_sofia',
-	clientEmail: '',
 	clientWhatsapp: RSVP_WHATSAPP,
 	photosReceived: true,
-	baseDemoId: DESTENID_EVENT.baseDemoId,
 	themeId: DESTENID_EVENT.themeId,
 	visualProfileId: DESTENID_EVENT.visualProfileId,
 	eventTiming: {

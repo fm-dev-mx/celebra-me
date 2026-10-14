@@ -1,24 +1,12 @@
-import { z } from 'zod';
-
-export const MUTATION_OUTCOME_STATUSES = ['not_applied', 'applied', 'partial', 'replayed'] as const;
-
-export const MutationOutcomeStatusSchema = z.enum(MUTATION_OUTCOME_STATUSES);
-export type MutationOutcomeStatus = z.infer<typeof MutationOutcomeStatusSchema>;
-
-export const MUTATION_ACTOR_TYPES = ['admin', 'host', 'operator', 'system', 'recovery'] as const;
-export const MutationActorTypeSchema = z.enum(MUTATION_ACTOR_TYPES);
-export type MutationActorType = z.infer<typeof MutationActorTypeSchema>;
-
-export const MUTATION_ORIGINS = [
-	'editor',
-	'legacy_dashboard',
-	'managed_cli_local',
-	'managed_cli_hosted',
-	'system',
-	'recovery',
-] as const;
-export const MutationOriginSchema = z.enum(MUTATION_ORIGINS);
-export type MutationOrigin = z.infer<typeof MutationOriginSchema>;
+export type MutationOutcomeStatus = 'not_applied' | 'applied' | 'partial' | 'replayed';
+export type MutationActorType = 'admin' | 'host' | 'operator' | 'system' | 'recovery';
+export type MutationOrigin =
+	| 'editor'
+	| 'legacy_dashboard'
+	| 'managed_cli_local'
+	| 'managed_cli_hosted'
+	| 'system'
+	| 'recovery';
 
 /** Stable UUID representation used to correlate a deterministic managed plan with its receipt. */
 export function operationIdFromPlanId(planId: string): string {

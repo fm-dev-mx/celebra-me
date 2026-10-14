@@ -16,7 +16,7 @@ const LEAH_LEXA_PUBLISHED_CONTENT = {
 	title: 'Baby Shower de Leah Lexa',
 	description:
 		'Invitacion real para celebrar el Baby Shower de Leah Lexa. Los recursos visuales incluyen imagenes oficiales del cliente.',
-	_assetSlug: 'leah-lexa-baby-shower',
+	_assetSlug: 'emma-fixture-baby-shower',
 	theme: { fontFamily: 'serif', preset: 'celestial-blue' },
 	eventTiming: {
 		localDateTime: '2026-06-21T14:00',

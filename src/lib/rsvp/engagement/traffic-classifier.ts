@@ -1,3 +1,4 @@
+import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import { isSocialCrawler } from '@/lib/social/social-crawler';
 import type { DeviceClass, ServerTrafficClass } from './taxonomy';
 
@@ -12,23 +13,19 @@ export function isAutomatedUserAgent(userAgent: string): boolean {
 }
 
 export interface TrafficEnvironment {
-	deployEnvironment: string | null;
-}
-
-/** Only hosted Production counts; Local and Preview traffic is labeled non_production. */
-export function isProductionEngagementEnvironment(env: TrafficEnvironment): boolean {
-	return env.deployEnvironment === 'production';
+	deployEnvironment: HostedDeployEnvironment | null;
 }
 
 /**
  * Server-side class, first match wins: non_production, bot, guest. Host and test are resolved by
- * the database from the signed-in viewer and the guest flag.
+ * the database from the signed-in viewer and the guest flag. Only hosted Production counts;
+ * Local and Preview traffic is labeled non_production.
  */
 export function classifyServerTraffic(
 	userAgent: string,
 	env: TrafficEnvironment,
 ): ServerTrafficClass {
-	if (!isProductionEngagementEnvironment(env)) return 'non_production';
+	if (env.deployEnvironment !== 'production') return 'non_production';
 	if (isAutomatedUserAgent(userAgent)) return 'bot';
 	return 'guest';
 }

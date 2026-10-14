@@ -1,5 +1,4 @@
 import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
-import { getPublicSlug } from '@/lib/intake/slug';
 import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 
 export type StatusBadgeVariant =
@@ -17,11 +16,6 @@ export interface DisplayStatusInfo {
 	label: string;
 	variant: StatusBadgeVariant;
 	warning: string | null;
-}
-
-export interface PrimaryAction {
-	text: string;
-	href?: string;
 }
 
 export interface RepairAction {
@@ -126,43 +120,4 @@ export function resolveDisplayInfo(invitation: InvitationDTO): DisplayStatusInfo
 export function resolveRepairAction(invitation: InvitationDTO): RepairAction | null {
 	const rule = findMatchingRule(invitation);
 	return rule ? rule.getRepair(invitation) : null;
-}
-
-export function resolvePrimaryAction(invitation: InvitationDTO): PrimaryAction | null {
-	const rule = findMatchingRule(invitation);
-	if (rule) {
-		return {
-			text: 'Resolver inconsistencia',
-			href: `/dashboard/invitaciones/${invitation.id}`,
-		};
-	}
-
-	switch (invitation.status) {
-		case 'draft':
-			return {
-				text: 'Editar datos base',
-				href: invitation.internalEditUrl,
-			};
-		case 'in_production':
-			return {
-				text: 'Administrar invitación',
-				href: `/dashboard/invitaciones/${invitation.id}`,
-			};
-		case 'preview_sent':
-			return { text: 'Esperando aprobación final' };
-		case 'approved':
-			return {
-				text: 'Crear contenido',
-				href: `/dashboard/invitaciones/${invitation.id}/draft`,
-			};
-		case 'published':
-			return {
-				text: 'Ver invitación pública',
-				href: `/${invitation.eventType}/${getPublicSlug(invitation)}`,
-			};
-		case 'archived':
-			return { text: 'Archivada' };
-		default:
-			return null;
-	}
 }

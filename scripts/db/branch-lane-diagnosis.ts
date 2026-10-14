@@ -8,7 +8,7 @@
 
 import { createFinding, type Finding } from './branch-lane-status.ts';
 
-export type LocalDriftClassification =
+type LocalDriftClassification =
 	| 'disposable_stale_or_incomplete'
 	| 'local_unversioned_drift'
 	| 'migration_history_mismatch'

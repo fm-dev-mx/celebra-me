@@ -1,15 +1,12 @@
 import type { APIContext } from 'astro';
 import { readBuildIdentity } from '@/lib/environment';
 import { GET } from '@/pages/api/health';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 const mockReadBuildIdentity = readBuildIdentity as jest.MockedFunction<typeof readBuildIdentity>;
 
 describe('GET /api/health', () => {
-	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
-
 	afterEach(() => {
-		if (originalDeployEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
-		else process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
 		mockReadBuildIdentity.mockReturnValue({ commitSha: null, gitRef: null });
 	});
 
@@ -26,7 +23,7 @@ describe('GET /api/health', () => {
 
 	it('exposes the build identity and the declared deploy environment', async () => {
 		mockReadBuildIdentity.mockReturnValue({ commitSha: 'a'.repeat(40), gitRef: 'develop' });
-		process.env.CELEBRA_DEPLOY_ENV = 'preview';
+		asHostedDeploy('preview');
 
 		const body = (await (await GET({} as unknown as APIContext)).json()) as Record<
 			string,
@@ -36,15 +33,13 @@ describe('GET /api/health', () => {
 		expect(body.build).toEqual({
 			commitSha: 'a'.repeat(40),
 			gitRef: 'develop',
-			deploymentId: null,
 			environment: 'preview',
 		});
 	});
 
 	it('reports a null environment when the deploy identity is missing or invalid', async () => {
 		for (const value of [undefined, 'staging']) {
-			if (value === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
-			else process.env.CELEBRA_DEPLOY_ENV = value;
+			if (value !== undefined) asHostedDeploy(value);
 
 			const body = (await (await GET({} as unknown as APIContext)).json()) as Record<
 				string,
@@ -54,7 +49,6 @@ describe('GET /api/health', () => {
 			expect(body.build).toEqual({
 				commitSha: null,
 				gitRef: null,
-				deploymentId: null,
 				environment: null,
 			});
 		}

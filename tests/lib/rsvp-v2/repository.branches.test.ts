@@ -1,4 +1,3 @@
-import { appendGuestAuditPublic } from '@/lib/rsvp/repositories/audit.repository';
 import {
 	findEventByIdService,
 	findEventBySlugService,
@@ -14,7 +13,6 @@ import {
 	findGuestById,
 	findGuestsByEvent,
 	updateGuestById,
-	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
@@ -38,7 +36,7 @@ describe('rsvp repository branches', () => {
 				invite_id: 'i1',
 				event_id: 'e1',
 				full_name: 'Name',
-				phone: '6680000000',
+				phone: '1000000004',
 				max_allowed_attendees: 2,
 				attendance_status: 'pending',
 				attendee_count: 0,
@@ -79,7 +77,7 @@ describe('rsvp repository branches', () => {
 				{
 					eventId: 'evt',
 					fullName: 'Name',
-					phone: '6680000000',
+					phone: '1000000004',
 					maxAllowedAttendees: 2,
 				},
 				'token',
@@ -95,13 +93,6 @@ describe('rsvp repository branches', () => {
 				'token',
 			),
 		).rejects.toThrow('Failed to update guest_invitations');
-
-		await expect(updateGuestByInviteIdPublic('invite', {})).rejects.toThrow(
-			'Failed to update guest_invitations',
-		);
-		await expect(appendGuestAuditPublic('g', 'viewed', {})).rejects.toThrow(
-			'No se pudo registrar auditoría.',
-		);
 	});
 
 	it('updateGuestById omits phone when input has no phone', async () => {
@@ -111,7 +102,7 @@ describe('rsvp repository branches', () => {
 				invite_id: 'i1',
 				event_id: 'e1',
 				full_name: 'Updated Name',
-				phone: '6680000000',
+				phone: '1000000004',
 				country_code: null,
 				max_allowed_attendees: 2,
 				attendance_status: 'confirmed',

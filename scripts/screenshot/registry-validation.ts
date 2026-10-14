@@ -13,6 +13,7 @@ import type {
 	ViewportProfileType,
 } from './types.js';
 import { KNOWN_SECTIONS, VIEWPORT_PROFILES } from './types.js';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 export const VALID_PAGE_TYPES: readonly PageType[] = [
 	'invitation',
@@ -31,7 +32,7 @@ export const VALID_TARGETS: readonly CaptureTarget[] = [
 	'reveal-only',
 ];
 
-export const VALID_VIEWPORT_PROFILES: readonly ViewportProfileType[] = [
+const VALID_VIEWPORT_PROFILES: readonly ViewportProfileType[] = [
 	'invitation',
 	'site',
 	'full',
@@ -39,13 +40,13 @@ export const VALID_VIEWPORT_PROFILES: readonly ViewportProfileType[] = [
 ];
 
 export const VALID_MODES: readonly ScreenshotMode[] = ['audit', 'raw'];
-export const VALID_INVITATION_SETS: readonly InvitationSet[] = [
+const VALID_INVITATION_SETS: readonly InvitationSet[] = [
 	'essential',
 	'full-qa',
 	'reveal-only',
 	'full-page',
 ];
-export const VALID_GENERAL_SETS: readonly GeneralSet[] = ['basic', 'full-qa'];
+const VALID_GENERAL_SETS: readonly GeneralSet[] = ['basic', 'full-qa'];
 export const VALID_OUTPUT_FORMATS = ['png', 'jpeg', 'webp', 'pdf'] as const;
 export const VALID_OUTPUT_FOLDER_STYLES = [
 	'default',
@@ -118,10 +119,6 @@ export class ScreenshotConfigurationError extends Error {
 
 function fail(message: string, code?: string): never {
 	throw new ScreenshotConfigurationError(message, code);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function assertString(value: unknown, label: string, allowEmpty = false): asserts value is string {

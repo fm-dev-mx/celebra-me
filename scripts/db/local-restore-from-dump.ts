@@ -33,24 +33,14 @@
 
 import { existsSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { spawnSync, type SpawnSyncOptions } from 'node:child_process';
+import { validateDumpIntegrity } from './db-guard.ts';
 import {
 	classifyDbTarget,
 	LOCAL_DB_URL,
 	redactCredentials,
-	validateDumpIntegrity,
 	PERSISTENT_LOCAL,
-} from './db-guard.ts';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface CommandResult {
-	status: number | null;
-	stdout: string;
-	stderr: string;
-}
+} from './db-target-config.ts';
+import { fail, runCommand, runPsql as psql, type CommandResult } from './db-workflow-lib.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -91,50 +81,12 @@ const PRIMARY_KEY_OVERRIDES: Record<string, string> = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function fail(message: string): never {
-	console.error(`ERROR: ${message}`);
-	process.exit(1);
-}
-
-function runCommand(
-	command: string,
-	args: string[],
-	options: SpawnSyncOptions & { redact?: string[] } = {},
-): CommandResult {
-	const isShellRequired = ['npx', 'supabase', 'pnpm', 'npm'].includes(command);
-	const result = spawnSync(command, args, {
-		cwd: process.cwd(),
-		encoding: 'utf8',
-		stdio: 'pipe',
-		shell: isShellRequired && process.platform === 'win32',
-		...options,
-	});
-	return {
-		status: result.status,
-		stdout: typeof result.stdout === 'string' ? result.stdout : '',
-		stderr: typeof result.stderr === 'string' ? result.stderr : (result.error?.message ?? ''),
-	};
-}
-
 function runPsql(sql: string): CommandResult {
-	return runCommand('psql', [
-		'--set',
-		'ON_ERROR_STOP=1',
-		'--no-align',
-		'--tuples-only',
-		'--dbname',
-		LOCAL_DB_URL,
-		'--command',
-		sql,
-	]);
+	return psql(sql, LOCAL_DB_URL, { asCommand: true, throwOnError: false });
 }
 
 function runPsqlFile(filePath: string): CommandResult {
-	return runCommand(
-		'psql',
-		['--set', 'ON_ERROR_STOP=1', '--dbname', LOCAL_DB_URL, '--file', filePath],
-		{ redact: [LOCAL_DB_URL] },
-	);
+	return psql(filePath, LOCAL_DB_URL, { isFile: true, tuplesOnly: false, throwOnError: false });
 }
 
 function printStep(step: string): void {
@@ -171,7 +123,7 @@ function phase1Preflight(dumpPath: string, authDumpPath?: string, storageDumpPat
 		fail(`Restore target is not persistent-local (got "${classification.target}"). Aborting.`);
 	}
 
-	const supabaseStatus = runCommand('supabase', ['status']);
+	const supabaseStatus = runCommand('supabase', ['status'], { throwOnError: false });
 	if (supabaseStatus.status !== 0) {
 		fail('Local Supabase is not running. Run `supabase start` first.');
 	}
@@ -431,7 +383,9 @@ function phase6CreateLocalAdmin(): void {
 	}
 
 	// Use the existing bootstrap script (does not modify copied business records)
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/bootstrap-local-admin.ts']);
+	const result = runCommand('pnpm', ['exec', 'tsx', 'scripts/db/bootstrap-local-admin.ts'], {
+		throwOnError: false,
+	});
 	if (result.status !== 0) {
 		console.warn(`  WARN: Local admin bootstrap failed: ${result.stderr}`);
 		return;

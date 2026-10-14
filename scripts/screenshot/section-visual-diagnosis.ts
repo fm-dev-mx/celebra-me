@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { chromium, type Browser, type Page } from 'playwright';
+import { chromium, type Browser, type Page } from '@playwright/test';
 import sharp from 'sharp';
 import { buildVisualPageCases, VISUAL_VIEWPORTS } from './visual-coverage-contract';
 import { assertManifestIntegrity, listPngFiles } from './visual-manifest-integrity';

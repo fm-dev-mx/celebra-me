@@ -58,8 +58,8 @@ async function encodeInvitationImage(
 
 export const ASSET_POLICY_VERSION = 1;
 export const ROLE_AWARE_ASSET_POLICY_VERSION = 2;
-export const ORIGINAL_ASSET_POLICY_VERSION = 3;
-export const ROLE_AWARE_ORIGINAL_ASSET_POLICY_VERSION = 4;
+const ORIGINAL_ASSET_POLICY_VERSION = 3;
+const ROLE_AWARE_ORIGINAL_ASSET_POLICY_VERSION = 4;
 
 export function isRoleAwareAssetPolicy(version: number): boolean {
 	return (
@@ -86,8 +86,8 @@ export const OUTPUT_MIME_TYPE = 'image/webp';
 export const MAX_OUTPUT_BYTES = 2_500_000;
 export const MAX_OUTPUT_DIMENSION = 2560;
 // Explicit original preservation is bounded separately from normalized output sizing.
-export const MAX_PRESERVED_DIMENSION = 6000;
-export const MAX_PRESERVED_PIXELS = 24_000_000;
+const MAX_PRESERVED_DIMENSION = 6000;
+const MAX_PRESERVED_PIXELS = 24_000_000;
 const MAX_INPUT_PIXELS = 40_000_000;
 const MIN_INPUT_DIMENSION = 480;
 

@@ -1,7 +1,7 @@
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { InvitationContentDraftContentSchema } from '../../src/lib/intake/schemas/invitation-content-draft.schema.ts';
 
-export class ManagedContentSchemaError extends Error {
+class ManagedContentSchemaError extends Error {
 	readonly code = 'MANAGED_CONTENT_SCHEMA_INVALID';
 
 	constructor(readonly paths: string[]) {

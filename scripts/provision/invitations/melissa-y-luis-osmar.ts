@@ -8,17 +8,12 @@
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 export const MELISSA_EVENT = {
 	eventType: 'boda',
 	slug: 'melissa-y-luis-osmar',
 	assetSlug: 'melissa-y-luis-osmar',
-	baseDemoId: 'demo-boda-jewelry-box-wedding',
 	themeId: 'jewelry-box-wedding',
 	visualProfileId: 'melissa-y-luis-osmar',
 	title: 'Boda de Melissa Landell Osuna y Luis Osmar Muñoz Rodríguez',
@@ -76,7 +71,6 @@ export const MELISSA_ASSET_SPECS = [
 ] as const;
 
 export type MelissaAssetKey = (typeof MELISSA_ASSET_SPECS)[number]['key'];
-export type MelissaAssetMap = Record<MelissaAssetKey, UploadedAssetRef>;
 
 export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAssetKey>) {
 	return {
@@ -365,7 +359,6 @@ export const melissaInvitation: InvitationDefinition<MelissaAssetKey> = defineIn
 	clientName: 'Melissa Landell Osuna',
 	hostLoginAlias: 'melissa_landell',
 	photosReceived: true,
-	baseDemoId: MELISSA_EVENT.baseDemoId,
 	themeId: MELISSA_EVENT.themeId,
 	visualProfileId: MELISSA_EVENT.visualProfileId,
 	eventTiming: {

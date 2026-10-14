@@ -8,7 +8,7 @@ export interface RenderedImageDelivery {
 	naturalWidth: number;
 }
 
-export function redactImageUrl(value: string): string {
+function redactImageUrl(value: string): string {
 	const url = new URL(value);
 	return url.hostname + url.pathname;
 }

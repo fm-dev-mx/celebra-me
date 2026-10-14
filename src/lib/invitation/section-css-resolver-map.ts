@@ -1,5 +1,4 @@
-import { resolveInvitationProfileCssUrl } from './invitation-profile-css';
-import { CANONICAL_VARIANT_REGISTRY } from './section-variants';
+import { CANONICAL_VARIANT_REGISTRY, type CanonicalVariantSection } from './section-variants';
 
 type CssModule = { default: string };
 
@@ -12,24 +11,12 @@ export type InvitationProfileUrlMap = Record<string, string>;
 
 export type InvitationCssResolverInput = {
 	themePreset: string;
-	sectionVariants?: {
-		hero?: string;
-		thankYou?: string;
-		gifts?: string;
-		rsvp?: string;
-		personalizedAccess?: string;
-		family?: string;
-		location?: string;
-		itinerary?: string;
-		gallery?: string;
-		countdown?: string;
-		memories?: string;
-	};
+	sectionVariants?: Partial<Record<CanonicalVariantSection, string>>;
 	envelopeVariant?: string;
 	visualProfileId?: string;
 };
 
-export type InvitationCssOwner =
+type InvitationCssOwner =
 	'section-bundle' | 'envelope-reveal' | 'section-variant' | 'visual-profile';
 
 export interface InvitationCssLoadItem {
@@ -109,6 +96,14 @@ export function resolveSectionCssUrl(
 	return sectionUrlMap[section]?.[entrypoint];
 }
 
+/** Only an explicitly declared visual profile loads; the slug is never an implicit profile. */
+function resolveVisualProfileCssUrl(
+	profileUrlMap: InvitationProfileUrlMap,
+	input: InvitationCssResolverInput,
+): string | undefined {
+	return input.visualProfileId ? profileUrlMap[input.visualProfileId] : undefined;
+}
+
 function resolveSectionVariantLoadItems(
 	sectionUrlMap: SectionUrlMap,
 	input: InvitationCssResolverInput,
@@ -168,7 +163,7 @@ export function resolveInvitationCssLoadPlan(
 		push(item);
 	}
 
-	const profileUrl = resolveInvitationProfileCssUrl(profileUrlMap, input);
+	const profileUrl = resolveVisualProfileCssUrl(profileUrlMap, input);
 	push(profileUrl ? { href: profileUrl, owner: 'visual-profile', blocking: true } : undefined);
 
 	return items;

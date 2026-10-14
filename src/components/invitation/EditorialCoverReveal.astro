@@ -1,5 +1,6 @@
 ---
 // Editorial Cover Reveal — replaces the envelope when revealVariant === 'editorial-cover'.
+import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import type { ImageMetadata } from 'astro';
@@ -123,12 +124,7 @@ const coverLines =
 		? coverLinesProp
 		: ['Una noche de estreno', 'Retrato de una celebración'];
 const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
-const formattedDate = heroDateValue.toLocaleDateString('es-MX', {
-	day: 'numeric',
-	month: 'long',
-	year: 'numeric',
-	timeZone: 'UTC',
-});
+const formattedDate = formatSpanishLongDate(heroDateValue);
 
 // Build magazine-style metadata for the cover rail.
 const issueParts: { label: string; value: string }[] = [];
@@ -295,7 +291,7 @@ const shouldRenderHidden =
 									</span>
 								))}
 							</span>
-							<span class="ec-inside__mark">{coverEdition ?? 'XV'}</span>
+							<span class="ec-inside__mark">{coverEdition}</span>
 							<span class="ec-inside__folio">pág. 02</span>
 						</div>
 					</div>
@@ -433,6 +429,7 @@ const shouldRenderHidden =
 <script>
 	import { setupCollectorReveal } from './editorial-cover/collector-reveal';
 	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
+	import { buildRevealStorageKey, shouldRespectStoredReveal } from '@/lib/invitation/reveal-manager';
 
 	const EXIT_ANIMATION_MS = 1600;
 	const EXIT_COMPLETION_FALLBACK_MS = EXIT_ANIMATION_MS + 600;
@@ -533,10 +530,10 @@ const shouldRenderHidden =
 			const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 			// Capture tooling must not meet a timer-scheduled idle cue mid-animation.
 			const collectorReducedMotion = motionPreference || isVisualCaptureMode();
-			const storageKey = 'envelope-opened-' + eventSlug;
-			const stored = (() => {
+			const storageKey = buildRevealStorageKey(eventSlug);
+			const storedOpened = (() => {
 				try {
-					return !isDemoInvitation && localStorage.getItem(storageKey) === 'true';
+					return localStorage.getItem(storageKey) === 'true';
 				} catch {
 					return false;
 				}
@@ -551,7 +548,7 @@ const shouldRenderHidden =
 				return;
 			}
 
-			if (stored && !forceEnvelope) {
+			if (shouldRespectStoredReveal({ isDemo: isDemoInvitation, forceEnvelope, storedOpened })) {
 				completeReveal();
 				this.hidden = true;
 				return;

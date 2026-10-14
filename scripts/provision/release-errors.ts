@@ -3,19 +3,16 @@
  * class and `failure`, never by matching message text.
  */
 
-export const PRECONDITION_FAILURES = [
-	'PACKAGE_SOURCE_CHANGED',
-	'PACKAGE_CHANGED',
-	'ASSET_MANIFEST_CHANGED',
-	'PROJECT_CHANGED',
-	'INVITATION_ID_CHANGED',
-	'OWNER_CHANGED',
-	'DRAFT_CHANGED',
-	'PUBLISHED_VERSION_CHANGED',
-	'PLAN_CHANGED',
-] as const;
-
-export type PreconditionFailure = (typeof PRECONDITION_FAILURES)[number];
+export type PreconditionFailure =
+	| 'PACKAGE_SOURCE_CHANGED'
+	| 'PACKAGE_CHANGED'
+	| 'ASSET_MANIFEST_CHANGED'
+	| 'PROJECT_CHANGED'
+	| 'INVITATION_ID_CHANGED'
+	| 'OWNER_CHANGED'
+	| 'DRAFT_CHANGED'
+	| 'PUBLISHED_VERSION_CHANGED'
+	| 'PLAN_CHANGED';
 
 /** The confirmed plan no longer matches the target, the source or the package. */
 export class PreconditionFailedError extends Error {

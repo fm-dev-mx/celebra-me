@@ -12,10 +12,11 @@ import { join } from 'node:path';
 import {
 	SUPABASE_PROJECT_REFS,
 	extractApiProjectRef,
+	type InvitationMutationEnvironment,
 } from '@/lib/intake/mutations/environment-identity';
 import { isManagedInvitationPath } from '@/lib/intake/mutations/ownership';
 
-export type EditorManagedEnvironment = 'local' | 'preview' | 'production';
+export type EditorManagedEnvironment = InvitationMutationEnvironment;
 
 export type EditorDivergenceState =
 	'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';

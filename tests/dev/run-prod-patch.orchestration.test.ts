@@ -182,8 +182,14 @@ describe('run-prod-patch orchestration', () => {
 				}),
 			).resolves.toEqual({ state: 'APPLIED_AND_VERIFIED' });
 			expect(mockRunCommand).toHaveBeenCalledWith(
-				'npx',
-				['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', 'production'],
+				'pnpm',
+				[
+					'exec',
+					'tsx',
+					'scripts/db/verify-mutation-schema-contract.ts',
+					'--target',
+					'production',
+				],
 				expect.objectContaining({ throwOnError: false, timeoutMs: 30_000 }),
 			);
 			expect(mockRunPsql).toHaveBeenCalledTimes(3);

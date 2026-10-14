@@ -3,6 +3,7 @@ import { resolveExplicitImageDelivery } from '@/lib/assets/image-delivery.server
 import type { ImageDelivery } from '@/lib/assets/image-delivery';
 import { getImage } from 'astro:assets';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
+import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 import type { ImageMetadata } from 'astro';
 import {
 	plainImgSrc,
@@ -21,6 +22,8 @@ interface Props {
 	ambience?: ImageAsset;
 	name: string;
 	nameLeadWords?: number;
+	/** Short edition mark of the event type (editorial cover watermark default). */
+	editionMark?: string;
 	coverMark?: string;
 	coverPage?: string;
 	designCredit?: boolean;
@@ -84,14 +87,13 @@ let fpMobile = fpDefault;
 let fpTablet = fpDefault;
 let fpDesktop = fpDefault;
 
-if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
+// Editorial cover and standard heroes share one image resolution; portrait variants own theirs.
+if (!isFramedPortrait && !isCeremonialPortrait) {
 	displayLabel =
 		label &&
 		(label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
 			? 'CAPÍTULO XV'
 			: label;
-
-	ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;
 
 	const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata | string =>
 		'src' in image ? image.src : image;
@@ -135,13 +137,12 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 		desktopBgSrc = await resolveExplicitImageDelivery(backgroundImageDesktop.src, backgroundImageDesktop.delivery, { width: 1920, quality: 84, format: 'webp' });
 	}
 	portraitSrc = portrait ? resolveImage(portrait) : null;
+}
 
-	formattedDate = new Date(date).toLocaleDateString('es-MX', {
-		day: 'numeric',
-		month: 'long',
-		year: 'numeric',
-		timeZone: 'UTC',
-	});
+if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
+	ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;
+
+	formattedDate = formatSpanishLongDate(date);
 
 	const names = name.trim().split(/\s+/);
 	firstName = names.slice(0, 2).join(' ');
@@ -161,7 +162,11 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	) : isFramedPortrait ? (
 	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' ? 'bleed-portrait' : 'framed-portrait'} />
 	) : isEditorialCover ? (
-	<EditorialCoverHero {...Astro.props} />
+	<EditorialCoverHero
+		{...Astro.props}
+		imageSources={{ bgSrc: bgSrc!, mobileBgSrc, desktopBgSrc, portraitSrc }}
+		displayLabel={displayLabel}
+	/>
 	) : (
 	<section
 		id="inicio"

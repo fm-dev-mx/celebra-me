@@ -6,17 +6,12 @@ const galleryStyles = readFileSync(
 	resolve(process.cwd(), 'src/styles/themes/sections/gallery/_single-keepsake.scss'),
 	'utf8',
 );
-const singleVariantStart = galleryStyles.indexOf(".gallery-section[data-variant='single-keepsake']");
+const singleVariantStart = galleryStyles.indexOf(
+	".gallery-section[data-variant='single-keepsake']",
+);
 const singleVariantStyles = galleryStyles.slice(singleVariantStart);
-const profileSources = [
-	'daniela-y-martin',
-	'leah-lexa',
-	'victoria-y-roberto',
-].map((profile) =>
-	readFileSync(
-		resolve(process.cwd(), `src/styles/invitation-profiles/${profile}.scss`),
-		'utf8',
-	),
+const profileSources = ['daniela-y-martin', 'victoria-y-roberto'].map((profile) =>
+	readFileSync(resolve(process.cwd(), `src/styles/invitation-profiles/${profile}.scss`), 'utf8'),
 );
 
 describe('Gallery single cross-preset style contract', () => {
@@ -33,8 +28,12 @@ describe('Gallery single cross-preset style contract', () => {
 
 	it('keeps profile-specific single-keepsake adjustments token-only', () => {
 		for (const profileStyles of profileSources) {
-			expect(profileStyles).not.toMatch(/\.gallery-section__eyebrow\s*\{|\.gallery-grid\s*\{/u);
-			expect(profileStyles).not.toMatch(/\.gallery-grid__item(?:--feature)?\s*\{|\.gallery-grid__item img\s*\{/u);
+			expect(profileStyles).not.toMatch(
+				/\.gallery-section__eyebrow\s*\{|\.gallery-grid\s*\{/u,
+			);
+			expect(profileStyles).not.toMatch(
+				/\.gallery-grid__item(?:--feature)?\s*\{|\.gallery-grid__item img\s*\{/u,
+			);
 			expect(profileStyles).not.toContain('--gallery-single-max-width');
 		}
 	});

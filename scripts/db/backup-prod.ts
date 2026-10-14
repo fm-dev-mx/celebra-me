@@ -3,9 +3,9 @@ import {
 	assertProductionDbUrl,
 	createProdBackup,
 	getProdDbUrl,
-	redactDbUrl,
 	timestamp,
 } from './db-workflow-lib.ts';
+import { redactDbUrl } from './db-target-config.ts';
 
 const schemaOnly = process.argv.includes('--schema-only');
 const { url: prodDbUrl, source } = getProdDbUrl();

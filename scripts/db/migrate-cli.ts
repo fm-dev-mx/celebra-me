@@ -8,6 +8,7 @@
 import { select } from '@inquirer/prompts';
 import { parseMigrateCliArgs, printMigrateHelp, type MigrateCliArgs } from './migrate-cli-args.ts';
 import { planToJson, type MigrationPlan } from './migration-plan.ts';
+import { formatPlanReview, formatPlanReviewCompact } from './migrate-plan-format.ts';
 import {
 	formatEnvAssignment,
 	PREVIEW_MIGRATE_TASK_SCOPE,
@@ -18,11 +19,8 @@ import {
 	operatorSymbol,
 	renderOperatorError,
 	writeHuman,
+	writeJson,
 } from './operator-cli-ux.ts';
-
-function writeJson(value: unknown): void {
-	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-}
 
 function writeError(error: unknown, target: MigrateCliArgs['target'] = null): void {
 	renderOperatorError(error, {
@@ -95,15 +93,8 @@ function writeApplyHint(
 
 type OrchestratorModule = typeof import('./migrate-orchestrator.ts');
 
-function emitPlan(
-	orchestrator: OrchestratorModule,
-	plan: MigrationPlan,
-	json: boolean,
-	compact: boolean,
-): void {
-	writeHuman(
-		compact ? orchestrator.formatPlanReviewCompact(plan) : orchestrator.formatPlanReview(plan),
-	);
+function emitPlan(plan: MigrationPlan, json: boolean, compact: boolean): void {
+	writeHuman(compact ? formatPlanReviewCompact(plan) : formatPlanReview(plan));
 	if (json) writeJson(planToJson(plan));
 }
 
@@ -134,7 +125,6 @@ function shouldUseGuidedMenu(parsed: MigrateCliArgs, isTty: boolean): boolean {
 }
 
 async function runGuidedReview(options: {
-	orchestrator: OrchestratorModule;
 	plan: MigrationPlan;
 	baseInput: BaseMigrateInput;
 	json: boolean;
@@ -148,7 +138,7 @@ async function runGuidedReview(options: {
 			return;
 		}
 		if (action === 'review') {
-			emitPlan(options.orchestrator, options.plan, options.json, false);
+			emitPlan(options.plan, options.json, false);
 			continue;
 		}
 		writeApplyHint(options.baseInput.target, options.baseInput.expectedPin);
@@ -166,7 +156,7 @@ async function runPreflightOrGuided(options: {
 		...options.baseInput,
 		mode: 'preflight',
 	});
-	emitPlan(options.orchestrator, plan, options.json, true);
+	emitPlan(plan, options.json, true);
 	writeHuman(
 		`${operatorSymbol('ok')} Preflight de solo lectura completado. No se escribió schema.`,
 	);
@@ -182,7 +172,6 @@ async function runPreflightOrGuided(options: {
 	}
 	if (options.guided) {
 		await runGuidedReview({
-			orchestrator: options.orchestrator,
 			plan,
 			baseInput: options.baseInput,
 			json: options.json,
@@ -325,7 +314,7 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 		}
 
 		const result = await orchestrator.orchestrateMigrate({ ...baseInput, mode: 'apply' });
-		emitPlan(orchestrator, result.plan, parsed.json, true);
+		emitPlan(result.plan, parsed.json, true);
 		writeApplyCompleted(result.wrote);
 	} catch (error: unknown) {
 		writeError(error, parsed.target);

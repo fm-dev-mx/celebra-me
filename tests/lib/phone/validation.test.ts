@@ -158,22 +158,22 @@ describe('buildWhatsAppNumber', () => {
 	});
 
 	it('preserves +1 country code for US number', () => {
-		expect(buildWhatsAppNumber('9150011122', '+1')).toBe('19150011122');
+		expect(buildWhatsAppNumber('2025550123', '+1')).toBe('12025550123');
 	});
 
 	it('preserves +52 country code for MX number', () => {
-		expect(buildWhatsAppNumber('9150011122', '+52')).toBe('529150011122');
+		expect(buildWhatsAppNumber('1000000102', '+52')).toBe('521000000102');
 	});
 });
 
 describe('parsePhoneInput — international detection', () => {
 	it('detects +1 from explicit international input', () => {
-		const result = parsePhoneInput('+1 915 001 1122');
-		expect(result).toEqual({ ok: true, phone: '9150011122', countryCode: '+1' });
+		const result = parsePhoneInput('+1 202 555 0123');
+		expect(result).toEqual({ ok: true, phone: '2025550123', countryCode: '+1' });
 	});
 
 	it('returns default +52 for plain digits without prefix', () => {
-		const result = parsePhoneInput('9150011122');
-		expect(result).toEqual({ ok: true, phone: '9150011122', countryCode: '+52' });
+		const result = parsePhoneInput('1000000102');
+		expect(result).toEqual({ ok: true, phone: '1000000102', countryCode: '+52' });
 	});
 });

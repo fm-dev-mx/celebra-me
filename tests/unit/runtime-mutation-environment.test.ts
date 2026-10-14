@@ -1,11 +1,9 @@
-import { isDevEnvironment } from '@/lib/environment';
 import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
 import {
 	assertRuntimeMutationEnvironment,
 	resetRuntimeMutationEnvironmentCacheForTests,
 } from '@/lib/server/runtime-mutation-environment';
-
-const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+import { asHostedDeploy, asLocalDevServer } from '@tests/helpers/deploy-identity';
 
 function jwtForProject(projectRef: string): string {
 	const payload = Buffer.from(JSON.stringify({ ref: projectRef })).toString('base64url');
@@ -18,13 +16,11 @@ describe('runtime mutation environment guard', () => {
 	beforeEach(() => {
 		resetRuntimeMutationEnvironmentCacheForTests();
 		process.env = { ...originalEnv };
-		delete process.env.CELEBRA_DEPLOY_ENV;
 		delete process.env.CELEBRA_RUNTIME_TARGET;
 	});
 
 	afterEach(() => {
 		jest.restoreAllMocks();
-		mockIsDevEnvironment.mockReturnValue(false);
 	});
 
 	afterAll(() => {
@@ -47,7 +43,7 @@ describe('runtime mutation environment guard', () => {
 	});
 
 	it('rejects a credential encoded for a different project before any network call', async () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'preview';
+		asHostedDeploy('preview');
 		process.env.SUPABASE_URL = `https://${SUPABASE_PROJECT_REFS.preview}.supabase.co`;
 		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.production);
 		const fetchSpy = jest.spyOn(globalThis, 'fetch');
@@ -67,7 +63,7 @@ describe('runtime mutation environment guard', () => {
 	});
 
 	it('rejects an invalid declared deploy identity', async () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'Production';
+		asHostedDeploy('Production');
 		process.env.SUPABASE_URL = `https://${SUPABASE_PROJECT_REFS.production}.supabase.co`;
 		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.production);
 
@@ -75,7 +71,7 @@ describe('runtime mutation environment guard', () => {
 	});
 
 	it('accepts an explicit local Preview runtime on the dev server', async () => {
-		mockIsDevEnvironment.mockReturnValue(true);
+		asLocalDevServer();
 		process.env.CELEBRA_RUNTIME_TARGET = 'preview';
 		process.env.SUPABASE_URL = `https://${SUPABASE_PROJECT_REFS.preview}.supabase.co`;
 		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.preview);
@@ -87,7 +83,7 @@ describe('runtime mutation environment guard', () => {
 	});
 
 	it('rejects CELEBRA_RUNTIME_TARGET=preview against a non-Preview project', async () => {
-		mockIsDevEnvironment.mockReturnValue(true);
+		asLocalDevServer();
 		process.env.CELEBRA_RUNTIME_TARGET = 'preview';
 		process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
 		process.env.SUPABASE_SERVICE_ROLE_KEY = 'opaque-local-key';
@@ -98,7 +94,7 @@ describe('runtime mutation environment guard', () => {
 	});
 
 	it('rejects CELEBRA_RUNTIME_TARGET=preview against Production Supabase', async () => {
-		mockIsDevEnvironment.mockReturnValue(true);
+		asLocalDevServer();
 		process.env.CELEBRA_RUNTIME_TARGET = 'preview';
 		process.env.SUPABASE_URL = `https://${SUPABASE_PROJECT_REFS.production}.supabase.co`;
 		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.production);
@@ -109,7 +105,7 @@ describe('runtime mutation environment guard', () => {
 	});
 
 	it('rejects Production runtime configured with Preview Supabase', async () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production');
 		process.env.SUPABASE_URL = `https://${SUPABASE_PROJECT_REFS.preview}.supabase.co`;
 		process.env.SUPABASE_SERVICE_ROLE_KEY = jwtForProject(SUPABASE_PROJECT_REFS.preview);
 

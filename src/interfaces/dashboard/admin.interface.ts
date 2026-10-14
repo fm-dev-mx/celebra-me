@@ -16,7 +16,7 @@ export interface DashboardEventListItem {
 	brandingRemovalEnabled: boolean;
 }
 
-export interface DashboardEventSessionDebug {
+interface DashboardEventSessionDebug {
 	hasAccessToken: boolean;
 	tokenSource: 'authorization' | 'cookie' | 'none';
 	reason: 'missing_access_token' | 'invalid_supabase_user' | 'session_role_resolved';
@@ -26,7 +26,7 @@ export interface DashboardEventSessionDebug {
 	isSuperAdmin: boolean;
 }
 
-export interface DashboardEventSlugDebug {
+interface DashboardEventSlugDebug {
 	requestedSlug: string;
 	slugExistsInDb: boolean;
 	eventId: string | null;

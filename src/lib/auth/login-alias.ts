@@ -1,7 +1,7 @@
 export const HOST_LOGIN_DOMAIN = 'clientes.celebra.invalid';
-export const HOST_LOGIN_ALIAS_MIN_LENGTH = 3;
-export const HOST_LOGIN_ALIAS_MAX_LENGTH = 60;
-export const HOST_LOGIN_ALIAS_PATTERN = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
+const HOST_LOGIN_ALIAS_MIN_LENGTH = 3;
+const HOST_LOGIN_ALIAS_MAX_LENGTH = 60;
+const HOST_LOGIN_ALIAS_PATTERN = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
 
 export function normalizeHostLoginAlias(value: unknown): string {
 	if (typeof value !== 'string') return '';
@@ -24,11 +24,6 @@ export function isCanonicalHostLoginAlias(value: string): boolean {
 	);
 }
 
-export function isValidHostLoginAliasInput(value: unknown): boolean {
-	if (typeof value !== 'string' || value.includes('@')) return false;
-	return isCanonicalHostLoginAlias(normalizeHostLoginAlias(value));
-}
-
 export function parseHostLoginAlias(value: unknown): string {
 	const normalized = normalizeHostLoginAlias(value);
 	if (!isCanonicalHostLoginAlias(normalized)) {
@@ -43,7 +38,6 @@ export function buildManagedHostEmail(alias: unknown): string {
 
 export function isManagedHostEmail(value: unknown): boolean {
 	return (
-		typeof value === 'string' &&
-		value.trim().toLowerCase().endsWith(`@${HOST_LOGIN_DOMAIN}`)
+		typeof value === 'string' && value.trim().toLowerCase().endsWith(`@${HOST_LOGIN_DOMAIN}`)
 	);
 }

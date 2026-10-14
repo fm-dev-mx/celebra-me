@@ -270,19 +270,10 @@
 	--location-card-hover-border-color: rgb(var(--color-sacred-gold-rgb) / 42%);
 	--location-image-aspect-ratio: 1 / 0.82;
 	--location-image-filter: saturate(0.94) contrast(1.02) brightness(1.03) sepia(0.04);
-	--location-outer-frame-padding: 0;
-	--location-outer-frame-bg: transparent;
-	--location-outer-frame-border: none;
-	--location-outer-frame-shadow: none;
-	--location-outer-frame-margin-bottom: 0;
 	--location-outer-frame-border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
 	--location-outer-frame-overflow: hidden;
-	--location-inner-frame-padding: 0;
-	--location-inner-frame-bg: transparent;
 	--location-inner-frame-border-radius: 14px 14px 0 0;
-	--location-ceremony-image-focus-x: 50%;
 	--location-ceremony-image-focus-y: 48%;
-	--location-reception-image-focus-x: 50%;
 	--location-reception-image-focus-y: 42%;
 	--location-content-padding: clamp(1.5rem, 3.5vw, 2.1rem) clamp(1.35rem, 3.5vw, 1.75rem);
 	--location-title-color: var(--color-sacred-gold-readable);
@@ -293,17 +284,11 @@
 	--location-place-color: var(--color-eternal-ink);
 	--location-place-font-family: var(--font-display);
 	--location-place-font-size: clamp(2rem, 4.5vw, 2.6rem);
-	--location-place-font-weight: 400;
 	--location-place-margin: 0 0 0.55rem;
-	--location-place-letter-spacing: 0;
 	--location-place-line-height: 1.06;
 	--location-date-color: var(--color-sacred-gold-readable);
 	--location-date-font-family: var(--font-body);
 	--location-date-font-size: 0.68rem;
-	--location-date-font-weight: 600;
-	--location-date-font-style: normal;
-	--location-date-letter-spacing: 0.18em;
-	--location-date-text-transform: uppercase;
 	--location-date-margin-bottom: 0.15rem;
 	--location-hour-color: rgb(var(--color-eternal-ink-rgb) / 58%);
 	--location-hour-font-family: var(--font-body);
@@ -313,21 +298,17 @@
 	--location-address-color: rgb(var(--color-eternal-ink-rgb) / 72%);
 	--location-address-font-family: var(--font-body);
 	--location-address-font-size: 0.86rem;
-	--location-address-letter-spacing: 0.02em;
-	--location-address-line-height: 1.5;
 	--location-address-padding-top: 1.1rem;
 	--location-address-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
 	--location-flourish-color: var(--color-sacred-gold);
 	--location-flourish-margin-bottom: 1.5rem;
 	--location-flourish-opacity: 54%;
 	--location-flourish-diamond-size: 4px;
-	--location-divider-display: none;
 	--location-copy-button-bg: rgb(var(--color-pure-ivory-rgb) / 64%);
 	--location-copy-button-color: var(--color-sacred-gold-readable);
 	--location-copy-button-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 42%);
 	--location-copy-button-radius: 50%;
 	--location-copy-button-padding: 0;
-	--location-copy-button-opacity: 100%;
 	--location-copy-button-width: 30px;
 	--location-copy-button-height: 30px;
 	--location-nav-bg: linear-gradient(
@@ -346,7 +327,6 @@
 	--location-nav-hover-border-color: var(--color-eternal-ink);
 	--location-nav-hover-shadow: 0 12px 26px rgb(var(--color-eternal-ink-rgb) / 34%);
 	--location-nav-hover-transform: translateY(-2px);
-	--location-nav-hover-filter: none;
 	--location-nav-after-display: none;
 	--location-nav-primary-bg: linear-gradient(
 		to right,
@@ -358,37 +338,21 @@
 	--location-nav-buttons-margin-top: 1.75rem;
 	--location-indications-spacing: clamp(1.5rem, 3vh, 2.5rem);
 	--location-indications-container-max-width: 480px;
-	--location-indications-grid-template: initial;
-	--location-indications-gap: 1rem;
-	--location-indications-panel-bg: transparent;
-	--location-indications-panel-border: none;
-	--location-indications-panel-padding: 0;
-	--location-indications-backdrop-filter: none;
-	--location-indications-before-display: none;
 	--location-indications-heading-color: rgb(var(--color-sacred-gold-rgb) / 84%);
 	--location-indications-heading-letter-spacing: 0.25em;
 	--location-indications-heading-font-weight: 600;
-	--location-indication-item-bg: transparent;
-	--location-indication-item-border: none;
-	--location-indication-item-radius: 0;
 	--location-indication-item-padding: 1.25rem 0;
 	--location-indication-item-gap: 1rem;
-	--location-indication-item-min-height: auto;
-	--location-indication-item-box-shadow: none;
 	--location-indication-icon-bg: rgb(var(--color-pure-ivory-rgb) / 85%);
 	--location-indication-icon-color: var(--color-sacred-gold-readable);
 	--location-indication-icon-size: 40px;
 	--location-indication-icon-radius: 50%;
-	--location-indication-icon-shadow: none;
 	--location-indication-icon-svg-size: 18px;
-	--location-indication-icon-svg-stroke: 1px;
 	--location-indication-text-color: rgb(var(--color-eternal-ink-rgb) / 78%);
 	--location-indication-text-font-family: var(--font-body);
 	--location-indication-text-font-size: 0.9rem;
-	--location-indication-text-letter-spacing: 0.01em;
 	--location-indication-text-line-height: 1.5;
 	--location-indication-strong-color: rgb(var(--color-sacred-gold-rgb) / 94%);
-	--location-indication-strong-font-weight: 600;
 
 	// Persistent divider between indication items.
 	// Base ::after uses scaleX(0) (hover-only); this override makes it always visible.
@@ -396,7 +360,6 @@
 	--location-indication-item-after-width: 70px;
 	--location-indication-item-after-height: 1px;
 	--location-indication-item-after-scale: 1;
-	--location-indication-item-after-hover-scale: 1;
 
 	// ---------------------------------------------------------------------
 	// Personalized Access Section

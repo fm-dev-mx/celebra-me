@@ -3,8 +3,9 @@
  * A stopped container (e.g. `Exited (255)` after a Docker restart) is started with the same
  * mechanism as `pnpm db:disposable:start`.
  */
-import { DISPOSABLE_TEST, fail } from './db-workflow-lib.ts';
+import { fail } from './db-workflow-lib.ts';
 import { cmdStart, isDisposableDbReady } from './disposable-test-env.ts';
+import { DISPOSABLE_TEST } from './db-target-config.ts';
 
 export const DISPOSABLE_START_COMMAND = 'pnpm db:disposable:start';
 

@@ -3,7 +3,6 @@
  * Equality evidence is live/canonical content + asset digests only.
  */
 import { createHash } from 'node:crypto';
-import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
 	buildSemanticAssetMap,
 	canonicalize,
@@ -14,7 +13,6 @@ import {
 } from './normalized-invitation-release.ts';
 import {
 	areEquivalentAssetRepresentations,
-	canonicalizeValue,
 	hashManagedInvitationContent,
 	isSemanticUploadedAssetRef,
 	rewriteUploadedAssetReferences,
@@ -38,7 +36,7 @@ export interface PromotionalAssetDigest {
 	sha256: string;
 }
 
-export interface LiveAssetEvidence {
+interface LiveAssetEvidence {
 	id: string | null;
 	managedSourceKey: string | null;
 	managedSha256: string | null;
@@ -49,9 +47,7 @@ export interface LiveInvitationRow {
 	slug: string;
 	eventType: string | null;
 	kind: string | null;
-	baseDemoId: string | null;
 	themeId: string | null;
-	snapshot: unknown;
 	managedIdentityId: string | null;
 	definitionSlug: string | null;
 	draftContent: unknown;
@@ -108,10 +104,8 @@ function assetDigest(managedSha256: string | null, sha256: string | null): strin
 
 export function computePromotionalFingerprint(input: {
 	eventType: string;
-	baseDemoId: string;
 	themeId: string;
 	kind: string;
-	snapshot: unknown;
 	content: Record<string, unknown>;
 	assets: readonly PromotionalAssetDigest[];
 }): string {
@@ -121,10 +115,8 @@ export function computePromotionalFingerprint(input: {
 		.sort((left, right) => left.key.localeCompare(right.key));
 	return sha256Canonical({
 		eventType: input.eventType,
-		baseDemoId: input.baseDemoId,
 		themeId: input.themeId,
 		kind: input.kind,
-		snapshot: canonicalizeValue(input.snapshot),
 		contentDigest,
 		assets,
 	});
@@ -135,7 +127,7 @@ export function computePromotionalFingerprint(input: {
  * Only rewrites strings that sit where the canonical tree already has an uploaded
  * ref (so section names like `family` are not mistaken for asset keys).
  */
-export function alignExternalAssetsToCanonical(live: unknown, canonical: unknown): unknown {
+function alignExternalAssetsToCanonical(live: unknown, canonical: unknown): unknown {
 	if (isSemanticUploadedAssetRef(canonical)) {
 		const key = canonical.assetId.slice(ASSET_KEY_PREFIX.length);
 		if (typeof live === 'string' && areEquivalentAssetRepresentations(canonical, live)) {
@@ -285,7 +277,6 @@ export function buildLivePromotionalFingerprint(
 
 	if (
 		typeof row.eventType !== 'string' ||
-		typeof row.baseDemoId !== 'string' ||
 		typeof row.themeId !== 'string' ||
 		typeof row.kind !== 'string'
 	) {
@@ -296,10 +287,8 @@ export function buildLivePromotionalFingerprint(
 		ok: true,
 		fingerprint: computePromotionalFingerprint({
 			eventType: row.eventType,
-			baseDemoId: row.baseDemoId,
 			themeId: row.themeId,
 			kind: row.kind,
-			snapshot: row.snapshot,
 			content: publishedRewrite.value,
 			assets: [...liveAssetByKey.values()],
 		}),
@@ -316,8 +305,6 @@ export async function buildCanonicalPromotionalFingerprint(
 	},
 ): Promise<CanonicalFingerprintResult | CanonicalFingerprintFailure> {
 	try {
-		const snapshot = findDemoPreset(definition.baseDemoId);
-		if (!snapshot || snapshot.themeId !== definition.themeId) return { ok: false };
 		const content = definition.buildPublishedContent(buildSemanticAssetMap(definition));
 		if (!isRecord(content)) return { ok: false };
 		const draftResult = InvitationContentDraftContentSchema.safeParse(
@@ -341,10 +328,8 @@ export async function buildCanonicalPromotionalFingerprint(
 			ok: true,
 			fingerprint: computePromotionalFingerprint({
 				eventType: definition.eventType,
-				baseDemoId: definition.baseDemoId,
 				themeId: definition.themeId,
 				kind: 'client',
-				snapshot,
 				content,
 				assets: assetDigests,
 			}),

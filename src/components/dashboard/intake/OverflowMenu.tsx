@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 
-export interface OverflowAction {
+interface OverflowAction {
 	label: string;
 	onClick: () => void;
 	destructive?: boolean;

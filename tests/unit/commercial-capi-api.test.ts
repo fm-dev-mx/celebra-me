@@ -22,6 +22,7 @@ import {
 } from '@/lib/commercial/meta-capi/service';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { POST, GET } from '@/pages/api/dashboard/commercial/meta-conversions/process';
+import { createApiContext } from '../helpers/api-mocks';
 
 const mockRequireAdminMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
@@ -36,22 +37,6 @@ const mockDeliverMetaConversionEvent = deliverMetaConversionEvent as jest.Mocked
 	typeof deliverMetaConversionEvent
 >;
 const mockRestRequest = supabaseRestRequest as jest.MockedFunction<typeof supabaseRestRequest>;
-
-function createContext(request: Request) {
-	return {
-		request,
-		url: new URL(request.url),
-		params: {},
-		props: {},
-		locals: {},
-		cookies: {} as never,
-		redirect: jest.fn() as never,
-		rewrite: jest.fn() as never,
-		site: undefined,
-		generator: 'Astro',
-		clientAddress: '127.0.0.1',
-	};
-}
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -90,7 +75,7 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 				{ method: 'POST' },
 			);
 
-			const response = await POST(createContext(request) as never);
+			const response = await POST(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
@@ -118,7 +103,7 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 				},
 			);
 
-			const response = await POST(createContext(request) as never);
+			const response = await POST(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
@@ -149,7 +134,7 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 				{ method: 'GET' },
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
@@ -182,7 +167,7 @@ describe('/api/dashboard/commercial/meta-conversions/process', () => {
 				{ method: 'GET' },
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(200);

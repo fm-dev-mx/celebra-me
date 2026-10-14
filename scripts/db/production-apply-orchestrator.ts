@@ -73,8 +73,8 @@ const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 export interface ProductionApplyAssemblerDeps {
 	preflightSchema?: () => MigrationPlan;
 	listSlugs?: () => string[];
-	/** Owner-archived slugs reported apart from --all-ready / inspection plans. */
-	listArchivedSlugs?: () => string[];
+	/** Expired slugs (event date + 1 year) reported apart from --all-ready / inspection plans. */
+	listExpiredSlugs?: () => string[];
 	/** Definitions still in authoring (lifecycle in_progress); Local only. */
 	listAuthoringSlugs?: () => string[];
 	/** Block reason when a definition's lifecycle keeps it off a hosted target. */
@@ -129,13 +129,11 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 	verifiedReleaseSha?: string;
 }
 
-export type { ReleaseReadiness } from './production-release-readiness.ts';
-
 function defaultAssertReleaseReadiness(options: { remote: boolean }): ReleaseReadiness {
 	return assertReleaseReadinessFailFast(options);
 }
 
-export interface ProductionApplyOutcomeRow {
+interface ProductionApplyOutcomeRow {
 	id: string;
 	outcome: ProductionApplyItemOutcome;
 	detail?: string;
@@ -165,11 +163,11 @@ export async function buildProductionApplyPlan(
 	const schemaItem = await inspectSchema(scope.schema, deps, args.expectedPin);
 	const schemaReadyInPlan = schemaItem.readiness === 'READY';
 
-	// Explicit --slug keeps archived invitations addressable; only discovery leaves them out.
+	// Explicit --slug keeps expired invitations addressable; only discovery leaves them out.
 	const discovered =
 		scope.inspectAll || scope.allReady ? discoverProductionApplySlugs(deps) : null;
 	const slugList = discovered?.slugs ?? [...scope.slugs];
-	const archivedSlugs = discovered?.archivedSlugs ?? [];
+	const expiredSlugs = discovered?.expiredSlugs ?? [];
 	const authoringSlugs = discovered?.authoringSlugs ?? [];
 
 	const invitationItems: ProductionApplyPlanItem[] = [];
@@ -194,7 +192,7 @@ export async function buildProductionApplyPlan(
 			slugs: slugList,
 		},
 		items,
-		{ archivedSlugs, authoringSlugs },
+		{ expiredSlugs, authoringSlugs },
 	);
 }
 

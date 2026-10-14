@@ -8,12 +8,13 @@
 import { describe, it, expect } from '@jest/globals';
 import {
 	defineInvitation,
-	isArchivedInvitation,
+	isExpiredInvitationDefinition,
+	resolveDefinitionValidityWindow,
 } from '../../scripts/provision/invitations/invitation-definition.ts';
 import {
 	getInvitationDefinition,
 	listActiveInvitationDefinitions,
-	listArchivedInvitationDefinitions,
+	listExpiredInvitationDefinitions,
 	listInvitationDefinitions,
 } from '../../scripts/provision/invitations/registry.ts';
 import {
@@ -53,7 +54,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				title: 'Test Title',
 				clientName: 'Client Name',
 				hostLoginAlias: 'client_name',
-				baseDemoId: 'demo-cumple-luxury-hacienda',
 				themeId: 'luxury-hacienda',
 				visualProfileId: 'test-invitation',
 				eventTiming: {
@@ -120,7 +120,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -143,7 +142,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'daniela_medina',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -166,7 +164,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'Bad Alias!',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -189,7 +186,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client_name',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -212,7 +208,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client_name',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -235,7 +230,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client_name',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -245,74 +239,53 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			).toThrow(/lifecycle/);
 		});
 
-		describe('archive record', () => {
-			const publishedBase = {
-				slug: 'past-invitation',
-				managedIdentityId: TEST_MANAGED_IDENTITY_ID,
-				managedIdentityProvenance: 'persisted' as const,
-				createdAt: '2026-07-20T00:00:00.000Z',
-				lifecycle: 'published' as const,
-				deliveryScope: 'content-and-assets' as const,
-				eventType: 'xv',
-				title: 'Title',
-				clientName: 'Client',
-				hostLoginAlias: 'past_client',
-				baseDemoId: 'demo',
-				themeId: 'theme',
-				visualProfileId: 'profile',
-				eventTiming: {
-					localDateTime: '2026-06-20T19:00:00',
-					timeZone: 'America/Mexico_City',
-					startsAtUtc: '2026-06-21T01:00:00.000Z',
-				},
-				assets: [],
-				buildPublishedContent: () => ({}),
+		describe('validity window', () => {
+			const timing = {
+				localDateTime: '2026-06-20T19:00:00',
+				timeZone: 'America/Mexico_City',
+				startsAtUtc: '2026-06-21T01:00:00.000Z',
 			};
 
-			it('accepts an owner archive record on a published definition', () => {
-				expect(rominaInvitation.lifecycle).toBe('published');
-				const definition = defineInvitation({
-					...rominaInvitation,
-					archive: { decidedOn: '2026-10-08', reason: 'Reemplazada por demo' },
-				});
-				expect(isArchivedInvitation(definition)).toBe(true);
-				expect(isArchivedInvitation(rominaInvitation)).toBe(false);
+			it('expires a definition after the end of its event anniversary day', () => {
+				expect(
+					resolveDefinitionValidityWindow({
+						eventTiming: timing,
+					}).expiresAt?.toISOString(),
+				).toBe('2027-06-21T05:59:59.999Z');
+				expect(
+					isExpiredInvitationDefinition(
+						{ eventTiming: timing },
+						new Date('2027-06-21T05:59:59.999Z'),
+					),
+				).toBe(false);
+				expect(
+					isExpiredInvitationDefinition(
+						{ eventTiming: timing },
+						new Date('2027-06-21T06:00:00.000Z'),
+					),
+				).toBe(true);
 			});
 
-			it('rejects archiving an in-progress definition', () => {
-				expect(() =>
-					defineInvitation({
-						...publishedBase,
-						lifecycle: 'in_progress',
-						archive: { decidedOn: '2026-10-08', reason: 'x' },
-					}),
-				).toThrow(/Only published/);
+			it('never expires a definition without an event date', () => {
+				expect(
+					isExpiredInvitationDefinition(
+						{ eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' } },
+						new Date('2999-01-01T00:00:00.000Z'),
+					),
+				).toBe(false);
 			});
 
-			it('requires a decision date and a reason', () => {
-				expect(() =>
-					defineInvitation({
-						...publishedBase,
-						archive: { decidedOn: '08/10/2026', reason: 'x' },
-					}),
-				).toThrow(/decidedOn/);
-				expect(() =>
-					defineInvitation({
-						...publishedBase,
-						archive: { decidedOn: '2026-10-08', reason: ' ' },
-					}),
-				).toThrow(/reason/);
-			});
-
-			it('partitions the registry into active and archived definitions', () => {
+			it('partitions the registry into active and expired definitions', () => {
+				const now = new Date('2030-01-01T00:00:00.000Z');
 				const all = listInvitationDefinitions()
 					.map((d) => d.slug)
 					.sort();
 				const split = [
-					...listActiveInvitationDefinitions().map((d) => d.slug),
-					...listArchivedInvitationDefinitions().map((d) => d.slug),
+					...listActiveInvitationDefinitions(now).map((d) => d.slug),
+					...listExpiredInvitationDefinitions(now).map((d) => d.slug),
 				].sort();
 				expect(split).toEqual(all);
+				expect(listExpiredInvitationDefinitions(now).length).toBeGreaterThan(0);
 			});
 		});
 
@@ -330,7 +303,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client_name',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -351,7 +323,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client_name',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -374,7 +345,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client_name',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },
@@ -404,7 +374,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					title: 'Title',
 					clientName: 'Client',
 					hostLoginAlias: 'client',
-					baseDemoId: 'demo',
 					themeId: 'theme',
 					visualProfileId: 'profile',
 					eventTiming: { localDateTime: '', timeZone: '', startsAtUtc: '' },

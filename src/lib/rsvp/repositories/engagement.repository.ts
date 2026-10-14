@@ -98,49 +98,48 @@ export async function anonymizeGuestEngagementEventsRpc(batchSize: number): Prom
 	});
 }
 
-/** Raw row of list_invitation_engagement_ranking; numerics arrive as strings from PostgREST. */
-export interface EngagementRankingRow {
+/** Raw row of list_invitation_engagement_ranking_v2; numerics arrive as strings from PostgREST. */
+export interface EngagementRankingV2Row {
+	invitation_id: string;
 	event_id: string | null;
-	invitation_project_id: string | null;
-	title: string | null;
-	slug: string | null;
+	title: string;
+	slug: string;
 	event_type: string;
 	event_date: string | null;
-	event_deleted: boolean;
-	snapshot_kind: 'rolling' | 'final';
-	computed_at: string;
-	metrics_version: number;
+	event_status: 'upcoming' | 'past' | 'unknown';
+	activity_state: 'measured' | 'none';
+	public_access: 'enabled' | 'disabled';
+	confirmation_mode: string;
+	design: Record<string, unknown> | null;
+	snapshot_kind: 'rolling' | 'final' | null;
+	computed_at: string | null;
 	guests_total: number;
 	guests_shared: number;
-	guests_opened: number;
 	guests_responded: number;
-	opens_total: number;
+	guests_responded_self: number;
+	guests_opened: number;
+	guests_opened_inferred: number;
+	response_rate: string | number | null;
+	conversion_upper: string | number | null;
 	open_rate: string | number | null;
 	completion_rate: string | number | null;
-	rsvp_conversion: string | number | null;
 	reopen_ratio: string | number | null;
 	median_seconds_to_open: string | number | null;
 	median_seconds_to_respond: string | number | null;
 	mobile_share: string | number | null;
 	share_lead_days: number | null;
 	reminder_coverage: string | number | null;
-	design: Record<string, unknown> | null;
-	design_schema_version: number | null;
-	group_value: string | null;
 	sample_state: 'eligible' | 'insufficient';
-	group_size: number;
-	group_eligible: number;
 }
 
-/** Admin-only ranking rows (service role); the routine enforces the comparison rules. */
-export async function listInvitationEngagementRankingRpc(
-	eventType: string,
-	groupKey: string,
-): Promise<EngagementRankingRow[]> {
-	return await supabaseRestRequest<EngagementRankingRow[]>({
-		pathWithQuery: 'rpc/list_invitation_engagement_ranking',
+/** Admin-only ranking v2 rows (service role): every published client invitation. */
+export async function listInvitationEngagementRankingV2Rpc(
+	eventType: string | null,
+): Promise<EngagementRankingV2Row[]> {
+	return await supabaseRestRequest<EngagementRankingV2Row[]>({
+		pathWithQuery: 'rpc/list_invitation_engagement_ranking_v2',
 		method: 'POST',
 		useServiceRole: true,
-		body: { p_event_type: eventType, p_group_key: groupKey },
+		body: { p_event_type: eventType },
 	});
 }

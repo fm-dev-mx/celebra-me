@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminMutationAccess: jest.fn(),
 	requireAdminStrongSession: jest.fn(),
@@ -6,17 +9,9 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
 }));
 
-import { Request as NodeRequest } from 'undici';
 import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { POST } from '@/pages/api/dashboard/commercial/classifications';
-
-function nodeRequest(
-	input: string,
-	init?: ConstructorParameters<typeof NodeRequest>[1],
-): Request {
-	return new NodeRequest(input, init) as unknown as Request;
-}
 
 const mockAuth = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
@@ -38,7 +33,7 @@ describe('commercial test classifications API', () => {
 			.mockResolvedValueOnce([{ id: '11111111-1111-4111-8111-111111111111' }])
 			.mockResolvedValueOnce([])
 			.mockResolvedValueOnce([{ id: 'classification-id' }]);
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/classifications',
 			{
 				method: 'POST',
@@ -68,7 +63,7 @@ describe('commercial test classifications API', () => {
 		mockRest
 			.mockResolvedValueOnce([{ id: '11111111-1111-4111-8111-111111111111' }])
 			.mockResolvedValueOnce([{ id: 'classification-id', reason: 'Validación CAPI' }]);
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/classifications',
 			{
 				method: 'POST',
@@ -91,7 +86,7 @@ describe('commercial test classifications API', () => {
 		mockRest
 			.mockResolvedValueOnce([{ id: '11111111-1111-4111-8111-111111111111' }])
 			.mockResolvedValueOnce([{ id: 'classification-id', reason: 'Otro motivo' }]);
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/classifications',
 			{
 				method: 'POST',
@@ -113,7 +108,7 @@ describe('commercial test classifications API', () => {
 		mockRest.mockResolvedValueOnce([
 			{ id: 'classification-id', revoked_at: '2026-07-11T19:00:00Z' },
 		]);
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/classifications',
 			{
 				method: 'POST',

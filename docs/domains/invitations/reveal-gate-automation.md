@@ -236,9 +236,9 @@ reported exactly that before the cause was understood.
   keeps the whole measurement comfortably inside the 8 s window.
 - Assert `.has-motion` is non-zero **before** trusting any `.is-visible` reading. A count of `0` on
   an invitation that should animate means the fail-open already fired; fail the run instead of
-  reporting the numbers. Under `prefers-reduced-motion: reduce`, `initSectionReveal` reveals
-  everything up front and never creates an observer, so it produces the same `0` signature
-  legitimately — pin the emulated motion preference in the probe so the two cannot be confused.
+  reporting the numbers. Under `prefers-reduced-motion: reduce`, the section reveal shows everything
+  up front and never creates an observer, so it produces the same `0` signature legitimately — pin
+  the emulated motion preference in the probe so the two cannot be confused.
 - Scroll and sample in one pass immediately after the reveal-state check. Never `waitForTimeout()`
   between opening the gate and measuring.
 - If a run genuinely needs more than 8 s, reload once per section rather than stretching a single

@@ -1,0 +1,214 @@
+// Jewelry Box Wedding boda demo — a restrained ivory stationery set. A directional veil reserves the
+// generated hero's left negative space for text; the ledger, venue plates, envelope and reply card
+// are retinted in warm walnut ink. Section owners keep the geometry; this profile sets tokens only.
+
+.event--demo-boda-jewelry-box-wedding.theme-preset--jewelry-box-wedding {
+	.invitation-hero[data-variant='standard'] {
+		--hero-overlay: transparent;
+		--hero-overlay-gradient:
+			linear-gradient(
+				90deg,
+				rgb(33 24 17 / 78%) 0%,
+				rgb(33 24 17 / 64%) 30%,
+				rgb(33 24 17 / 18%) 54%,
+				transparent 74%
+			),
+			linear-gradient(0deg, rgb(24 17 12 / 52%) 0%, transparent 46%);
+		--hero-badge-text: rgb(255 250 240);
+		--hero-label-color: rgb(255 250 240);
+		--hero-scroll-indicator-color: rgb(255 250 240 / 88%);
+		--hero-scroll-z-index: 1;
+		--hero-copy-shadow: 0 2px 12px rgb(0 0 0 / 34%);
+		--hero-align: flex-start;
+		--hero-text-align: left;
+		--hero-content-z-index: 1;
+		--hero-content-width: min(42rem, 48vw);
+		--hero-content-margin: 0 0 clamp(6.5rem, 13vh, 9rem) clamp(1.8rem, 7vw, 7rem);
+		--hero-eyebrow-font: var(--font-label);
+		--hero-eyebrow-size: 0.7rem;
+		--hero-eyebrow-weight: 600;
+		--hero-eyebrow-tracking: 0.28em;
+		--hero-heading-size: clamp(3rem, 5.6vw, 5.75rem);
+		--hero-heading-weight: 500;
+		--hero-heading-line-height: 0.98;
+		--hero-heading-paint: none;
+		--hero-heading-fill: currentcolor;
+		--hero-divider-margin: 1.5rem 0;
+		--hero-divider-fill: rgb(216 186 134);
+		--hero-details-align: flex-start;
+		--hero-date-font: var(--font-label);
+		--hero-date-size: clamp(0.72rem, 1.2vw, 0.84rem);
+		--hero-date-weight: 600;
+		--hero-date-tracking: 0.18em;
+		--hero-date-transform: uppercase;
+
+		@media (width <= 61.9375rem) {
+			--hero-overlay-gradient: linear-gradient(
+				0deg,
+				rgb(26 18 13 / 72%) 0%,
+				rgb(26 18 13 / 28%) 58%,
+				transparent 100%
+			);
+			--hero-align: center;
+			--hero-text-align: center;
+			--hero-content-width: min(100% - 2.5rem, 30rem);
+			--hero-content-margin: 0 auto 6.75rem;
+			--hero-content-rail: 6.75rem;
+			--hero-heading-size: clamp(3rem, 14vw, 4.6rem);
+			--hero-divider-margin: 1.5rem auto;
+			--hero-details-align: center;
+		}
+	}
+
+	.itinerary[data-variant='editorial-ledger'] {
+		--editorial-ledger-rule: rgb(90 62 39 / 18%);
+		--editorial-ledger-spine: rgb(90 62 39 / 28%);
+		--itinerary-item-label-color: rgb(67 46 32);
+		--itinerary-item-time-color: rgb(141 101 65);
+		--itinerary-item-time-font: var(--font-label);
+		--itinerary-item-time-weight: 600;
+		--itinerary-item-time-tracking: 0.14em;
+		--itinerary-item-desc-color: rgb(67 46 32 / 72%);
+	}
+
+	.event-location[data-variant='stacked-venue-plates'] {
+		--location-bg: linear-gradient(180deg, rgb(247 240 228) 0%, rgb(252 248 240) 100%);
+		--location-container-max-width: 62rem;
+		--location-card-bg: rgb(251 247 238);
+		--location-card-border: 1px solid rgb(106 75 46 / 22%);
+		--location-card-shadow: none;
+		--location-place-color: rgb(64 44 30);
+		--location-title-color: rgb(132 97 63);
+		--location-address-color: rgb(64 44 30 / 76%);
+		--location-flourish-color: rgb(178 138 88);
+		--location-indication-icon-color: rgb(118 80 52);
+		--location-indication-icon-border: 1px solid rgb(118 80 52 / 28%);
+		--location-indication-icon-bg: transparent;
+		--location-plates-intro-max-width: 38rem;
+		--location-intro-heading-color: rgb(64 44 30);
+		--location-outer-frame-padding: 0;
+		--location-outer-frame-bg: transparent;
+		--location-outer-frame-shadow: none;
+		--location-inner-frame-padding: 0;
+		--location-image-aspect-ratio: 4 / 3;
+		--location-image-border-bottom: 1px solid rgb(106 75 46 / 18%);
+		--location-content-padding: clamp(1.35rem, 3vw, 1.85rem);
+		--location-plates-content-align: left;
+		--location-date-font-family: var(--font-label);
+		--location-date-font-size: 0.7rem;
+		--location-date-font-weight: 600;
+		--location-date-letter-spacing: 0.16em;
+		--location-date-color: rgb(118 80 52);
+		--location-hour-font-family: var(--font-label);
+		--location-hour-font-size: 0.7rem;
+		--location-hour-font-weight: 600;
+		--location-hour-letter-spacing: 0.16em;
+		--location-hour-color: rgb(118 80 52);
+		--location-plates-notes-max-width: 46rem;
+		--location-plates-notes-border-inline: 0;
+		--location-plates-notes-bg: transparent;
+
+		.event-location__card-title {
+			--location-title-font-family: var(--font-label);
+			--location-title-font-size: 0.7rem;
+			--location-title-font-weight: 600;
+			--location-title-letter-spacing: 0.25em;
+			--location-title-color: rgb(118 80 52);
+		}
+	}
+
+	// A restrained ivory stationery object; the reveal state machine stays untouched.
+	.envelope-wrapper[data-variant='jewelry-box-wedding'] {
+		--env-bg:
+			radial-gradient(circle at 50% 28%, rgb(255 252 244 / 92%), transparent 42%),
+			linear-gradient(
+				145deg,
+				rgb(217 199 170) 0%,
+				rgb(238 228 209) 49%,
+				rgb(205 184 145) 100%
+			);
+		--env-paper-bg:
+			linear-gradient(154deg, rgb(255 253 246 / 98%), rgb(244 236 219 / 96%)),
+			repeating-linear-gradient(0deg, transparent 0 3px, rgb(74 53 35 / 2%) 3px 4px);
+		--env-paper-sheen: none;
+		--env-paper-border: rgb(112 82 52 / 30%);
+		--env-text-primary: rgb(72 52 33);
+		--env-text-secondary: rgb(72 52 33 / 72%);
+		--env-seal-accent: rgb(115 80 52);
+		--env-seal-visual-filter: drop-shadow(0 7px 10px rgb(63 38 21 / 30%));
+		--env-shadow-container: 0 24px 54px rgb(70 47 26 / 22%), 0 4px 10px rgb(70 47 26 / 12%);
+		--env-pocket-shadow: inset 0 16px 26px rgb(75 53 33 / 9%);
+		--env-name-font-weight: 500;
+		--env-name-tracking: 0.05em;
+		--env-name-color: var(--env-text-primary);
+		--env-name-text-shadow: 0 1px 0 rgb(255 255 255 / 65%);
+		--reveal-card-bg: rgb(249 243 231);
+		--reveal-card-text-primary: rgb(67 45 30);
+		--reveal-card-text-secondary: rgb(67 45 30 / 68%);
+		--reveal-card-border: rgb(126 91 53 / 42%);
+		--reveal-card-accent: rgb(168 129 82);
+		--reveal-card-radius: 1px;
+		--reveal-card-grain-opacity: 0.7;
+		--reveal-card-shadow:
+			0 2px 3px rgb(56 39 24 / 8%), 0 22px 48px rgb(56 39 24 / 18%),
+			inset 0 0 0 1px rgb(255 255 255 / 62%);
+
+		// Inner hairline frame (0.62rem inset) drawn as four background lines over the paper.
+		--reveal-card-sheen:
+			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) left 0.62rem top
+				0.62rem / calc(100% - 1.24rem) 1px no-repeat,
+			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) left 0.62rem
+				bottom 0.62rem / calc(100% - 1.24rem) 1px no-repeat,
+			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) left 0.62rem top
+				0.62rem / 1px calc(100% - 1.24rem) no-repeat,
+			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) right 0.62rem top
+				0.62rem / 1px calc(100% - 1.24rem) no-repeat,
+			radial-gradient(circle at 18% 15%, rgb(255 255 255 / 62%), transparent 28%),
+			repeating-linear-gradient(0deg, transparent 0 3px, rgb(77 53 33 / 2.4%) 3px 4px);
+		--reveal-card-inner-gap: 0.42rem;
+		--reveal-card-inner-padding: clamp(2rem, 6vw, 2.8rem) clamp(1.65rem, 5vw, 2.6rem);
+		--reveal-card-meta-font: var(--font-label);
+		--reveal-card-meta-size: clamp(0.58rem, 1.7vw, 0.68rem);
+		--reveal-card-meta-tracking: 0.28em;
+		--reveal-card-name-size: clamp(2rem, 8vw, 2.8rem);
+		--reveal-card-name-line-height: 1.04;
+		--reveal-card-ampersand-color: var(--reveal-card-accent);
+		--reveal-card-tagline-margin: 0.35rem 0 0;
+		--reveal-card-tagline-font: var(--font-display);
+		--reveal-card-tagline-color: var(--reveal-card-text-secondary);
+		--reveal-card-divider-width: min(8rem, 48%);
+		--reveal-card-divider-margin: 0.65rem 0 0;
+
+		.envelope-flap {
+			--env-paper-grain:
+				linear-gradient(144deg, rgb(110 78 45 / 12%), transparent 40%),
+				repeating-linear-gradient(0deg, transparent 0 3px, rgb(70 49 29 / 2%) 3px 4px);
+			--env-paper-grain-opacity: 100%;
+		}
+
+		.envelope-details {
+			--env-meta-font: var(--font-label);
+			--env-details-font-weight: 500;
+			--env-details-tracking: 0.25em;
+		}
+
+		.envelope-seal-hint {
+			--env-meta-font: var(--font-label);
+			--env-open-label-spacing: 0.25em;
+			--env-open-label-spacing-compact: 0.25em;
+			--env-seal-hint-color: var(--env-text-secondary);
+		}
+	}
+
+	.rsvp-section {
+		--formal-chapter-band: rgb(56 39 29);
+		--formal-chapter-band-rgb: 56 39 29;
+		--formal-chapter-cream: rgb(248 240 226);
+		--formal-chapter-cream-rgb: 248 240 226;
+		--formal-chapter-metal: rgb(208 170 117);
+		--formal-chapter-metal-rgb: 208 170 117;
+		--formal-chapter-padding-end: 1.5rem;
+		--formal-chapter-footer-margin-end: 0;
+		--rsvp-section-min-height: auto;
+	}
+}

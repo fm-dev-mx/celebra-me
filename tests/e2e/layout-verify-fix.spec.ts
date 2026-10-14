@@ -250,11 +250,14 @@ test('Non-editorial: scrolling to #rsvp positions section at top at 375x667', as
 });
 
 /* ------------------------------------------------------------------ */
-/*  Regression: cesar-ramses desktop — no oscillation after decline    */
+/*  Regression: bautizo desktop — no oscillation after decline          */
+/*  (originally guarded on a retired bautizo invitation)                */
 /* ------------------------------------------------------------------ */
-test('cesar-ramses desktop no oscillation after selecting No podré', async ({ page }) => {
+test('bautizo demo desktop no oscillation after selecting No podré', async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 800 });
-	await page.goto('/bautizo/cesar-ramses#!/rsvp', { waitUntil: 'networkidle' });
+	await page.goto('/bautizo/demo-bautizo-angelic-presence#!/rsvp', {
+		waitUntil: 'networkidle',
+	});
 	await openInvitation(page);
 	await page.waitForSelector('.rsvp-section', { timeout: 5000 });
 
@@ -321,17 +324,27 @@ const RSVP_EVENT_SLUGS = [
 		width: 375,
 		height: 667,
 	},
-	{ name: 'cesar-ramses 375x667', slug: '/bautizo/cesar-ramses', width: 375, height: 667 },
-	{ name: 'cesar-ramses desktop', slug: '/bautizo/cesar-ramses', width: 1365, height: 768 },
 	{
-		name: 'ana-sofia-cota-guillen 375x667',
-		slug: '/xv/ana-sofia-cota-guillen',
+		name: 'bautizo-angelic-presence 375x667',
+		slug: '/bautizo/demo-bautizo-angelic-presence',
 		width: 375,
 		height: 667,
 	},
 	{
-		name: 'ana-sofia-cota-guillen desktop',
-		slug: '/xv/ana-sofia-cota-guillen',
+		name: 'bautizo-angelic-presence desktop',
+		slug: '/bautizo/demo-bautizo-angelic-presence',
+		width: 1365,
+		height: 768,
+	},
+	{
+		name: 'primera-comunion-angelic-presence 375x667',
+		slug: '/primera-comunion/demo-primera-comunion-angelic-presence',
+		width: 375,
+		height: 667,
+	},
+	{
+		name: 'primera-comunion-angelic-presence desktop',
+		slug: '/primera-comunion/demo-primera-comunion-angelic-presence',
 		width: 1365,
 		height: 768,
 	},

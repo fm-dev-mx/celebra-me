@@ -10,8 +10,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { InvitationAccessCommandSchema } from '@/lib/invitation/access/invitation-access-command';
 import { findInvitationAccessRecord } from '@/lib/invitation/access/invitation-access.repository';
 import { setInvitationAccessControl } from '@/lib/invitation/access/invitation-access.service';
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { UUID_PATTERN } from '@/lib/intake/constants';
 
 function requireInvitationId(id: string | undefined): string {
 	if (!id || !UUID_PATTERN.test(id)) {

@@ -1,11 +1,19 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 
 jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
-	getSecretFromEnvOrFiles: jest.fn(() => ''),
-	PREVIEW_SECRET_FILES: ['.env.preview.local'],
 	PROJECT_ROOT: process.cwd(),
 	runPsql: jest.fn(),
 	sqlLiteral: (value: string) => `'${value.replaceAll("'", "''")}'`,
+}));
+
+jest.mock('../../scripts/db/db-target-config.ts', () => ({
+	...jest.requireActual<typeof import('../../scripts/db/db-target-config.ts')>(
+		'../../scripts/db/db-target-config.ts',
+	),
+	getSecretFromEnvOrFiles: jest.fn(() => ''),
+	// Never fall back to a real gitignored secret file under test.
+	resolveTargetDbUrl: (_target: string, env: NodeJS.ProcessEnv = process.env) =>
+		env.PREVIEW_DB_URL?.trim() ?? '',
 	redactDbUrl: (url: string) => url.replace(/\/\/.*@/, '//***@'),
 	classifyDbTarget: jest.fn(),
 }));
@@ -17,12 +25,13 @@ jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
 	})),
 }));
 
-import { classifyDbTarget, runPsql } from '../../scripts/db/db-workflow-lib.ts';
+import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
 import { verifyPreviewWriteAuthorization } from '../../scripts/provision/preview-write-auth.ts';
 import {
 	resolvePreviewPurgeDbUrl,
 	runInvitationIdPurge,
 } from '../../scripts/provision/invitation-id-purge.ts';
+import { classifyDbTarget } from '../../scripts/db/db-target-config.ts';
 
 const mockedClassify = classifyDbTarget as jest.MockedFunction<typeof classifyDbTarget>;
 const mockedPsql = runPsql as jest.MockedFunction<typeof runPsql>;
@@ -30,7 +39,7 @@ const mockedAuth = verifyPreviewWriteAuthorization as jest.MockedFunction<
 	typeof verifyPreviewWriteAuthorization
 >;
 
-const PREVIEW_URL = 'postgresql://user:pass@db.example.supabase.co:5432/postgres';
+const PREVIEW_URL = 'postgresql://user:pass@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres';
 const INCORRECT_ID = '07327188-51d8-4b6e-8739-f2b835272386';
 const CANONICAL_ID = '03c6a1fc-f663-4551-8fd9-8495eda9cdb2';
 
@@ -44,12 +53,8 @@ function deps(overrides: Record<string, number> = {}) {
 		provenance: 1,
 		publicationIdempotency: 4,
 		mutationReceipts: 3,
-		legacyAdoption: 0,
-		intakeRequests: 0,
-		intakeSubmissions: 0,
 		sourcedInvitations: 0,
 		guests: 1,
-		claimCodes: 0,
 		memberships: 1,
 		guestAudit: 13,
 		...overrides,
@@ -130,6 +135,16 @@ describe('invitation-id-purge', () => {
 		mockedClassify.mockReturnValue({ target: 'preview', reason: 'preview host' } as never);
 	});
 
+	it('rejects a Preview-classified URL outside the canonical Preview project', () => {
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'self-match' } as never);
+		expect(() =>
+			resolvePreviewPurgeDbUrl({
+				PREVIEW_DB_URL:
+					'postgresql://user:pass@db.abcdefghijklmnopqrst.supabase.co:5432/postgres',
+			}),
+		).toThrow(/INVITATION_ID_PURGE_TARGET_REJECTED/);
+	});
+
 	it('rejects production targets', () => {
 		mockedClassify.mockReturnValue({ target: 'production', reason: 'prod' } as never);
 		expect(() => resolvePreviewPurgeDbUrl({ PREVIEW_DB_URL: 'postgresql://x' })).toThrow(
@@ -201,7 +216,9 @@ describe('invitation-id-purge', () => {
 		});
 		expect(audit.blocked).toBe(true);
 		expect(
-			audit.blockReasons.some((reason) => reason.includes('ARCHIVED_INCONSISTENT_ACK_REQUIRED')),
+			audit.blockReasons.some((reason) =>
+				reason.includes('ARCHIVED_INCONSISTENT_ACK_REQUIRED'),
+			),
 		).toBe(true);
 	});
 
@@ -213,9 +230,9 @@ describe('invitation-id-purge', () => {
 		);
 		const audit = await runInvitationIdPurge(baseInput);
 		expect(audit.blocked).toBe(true);
-		expect(audit.blockReasons.some((reason) => reason.includes('STORAGE_OWNERSHIP_VIOLATION'))).toBe(
-			true,
-		);
+		expect(
+			audit.blockReasons.some((reason) => reason.includes('STORAGE_OWNERSHIP_VIOLATION')),
+		).toBe(true);
 	});
 
 	it('blocks exclusive non-synthetic guests', async () => {

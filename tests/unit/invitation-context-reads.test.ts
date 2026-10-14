@@ -25,7 +25,7 @@ function makeGuest(): GuestInvitationRecord {
 		inviteId: 'invite-1',
 		eventId: 'evt-1',
 		fullName: 'Invitada',
-		phone: '6680000000',
+		phone: '1000000004',
 		maxAllowedAttendees: 4,
 		attendanceStatus: 'pending',
 		attendeeCount: 0,

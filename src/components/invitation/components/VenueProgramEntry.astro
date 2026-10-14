@@ -6,22 +6,13 @@
   text links (map, calendar, copy address) with 44 px targets. The calendar keeps the native
   <details> so it works without JavaScript.
 */
-import { resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
+import CalendarOptions from './CalendarOptions.astro';
+import { resolveVenueMapPreviewUrl, type GroupedVenue } from '@/lib/invitation/location-helper';
 import { formatVenueTimeInWords } from '@/lib/invitation/venue-datetime';
 import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 
 interface Props {
-	venue: {
-		venueEvent: string;
-		venueName: string;
-		address: string;
-		time: string;
-		mapUrl?: string;
-		googleMapsUrl?: string;
-		appleMapsUrl?: string;
-		wazeUrl?: string;
-		events?: { name: string; time: string }[];
-	};
+	venue: GroupedVenue;
 	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
 	calendar?: VenueCalendarLinks | null;
 }
@@ -87,17 +78,7 @@ const mapUrl = resolveVenueMapPreviewUrl(venue);
 		{calendar && (
 			<details class="event-location__calendar event-location__program-calendar">
 				<summary class="event-location__program-link">Agendar</summary>
-				<ul class="event-location__calendar-options">
-					<li>
-						<a href={calendar.googleUrl} target="_blank" rel="noopener noreferrer">Google Calendar</a>
-					</li>
-					<li>
-						<a href={calendar.icsHref} download={calendar.icsFileName}>Apple Calendar (.ics)</a>
-					</li>
-					<li>
-						<a href={calendar.outlookUrl} target="_blank" rel="noopener noreferrer">Outlook</a>
-					</li>
-				</ul>
+				<CalendarOptions calendar={calendar} />
 			</details>
 		)}
 		{!addressPending && (

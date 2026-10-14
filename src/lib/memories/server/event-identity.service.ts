@@ -26,7 +26,7 @@ function isThemePreset(value: unknown): value is ThemePreset {
 	return typeof value === 'string' && (THEME_PRESETS as readonly string[]).includes(value);
 }
 
-export function fallbackMemoriesEventIdentity(
+function fallbackMemoriesEventIdentity(
 	space: Pick<MemoriesSpaceRecord, 'eventTitle'>,
 ): MemoriesEventIdentity {
 	return {

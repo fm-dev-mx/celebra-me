@@ -101,14 +101,17 @@ describe('Quote and family presentation controls', () => {
 		expect(profileRule!.style.getPropertyValue('--intersection-blend')).toContain('68% 0%');
 		expect(heroHeightRule).toBeDefined();
 		expect(heroHeightRule!.style.getPropertyValue('min-height')).toBe('100svh');
+		// The profile only retokenizes the incoming quote surface; the quote base paints it.
+		const quoteSurfaceRule = quoteRules.find(
+			(candidate) => candidate.selectorText === '.quote-section',
+		);
+		expect(quoteSurfaceRule!.style.getPropertyValue('background')).toBe('var(--quote-bg)');
 		expect(heroPaintRule).toBeDefined();
-		expect(heroPaintRule!.style.getPropertyValue('margin-top')).toBe('');
-		expect(heroPaintRule!.style.getPropertyValue('background-image')).toContain(
-			'var(--intersection-blend)',
-		);
-		expect(heroPaintRule!.style.getPropertyValue('background-size')).toBe(
-			'100% var(--intersection-depth)',
-		);
+		const paintDeclarations = Array.from(heroPaintRule!.style);
+		expect(paintDeclarations).toEqual(['--quote-bg']);
+		const paint = heroPaintRule!.style.getPropertyValue('--quote-bg');
+		expect(paint).toContain('var(--intersection-blend) top / 100% var(--intersection-depth)');
+		expect(paint).toMatch(/top \/ 100% var\(--intersection-depth\) no-repeat,\s*var\(/u);
 	});
 
 	it('scopes the editorial overrides to Celestial Blue without a blur or compositing workaround', () => {

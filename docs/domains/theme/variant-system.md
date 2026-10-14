@@ -170,12 +170,15 @@ invitation profiles.
   a gold hairline along the flap, a sparkle liner shown while the flap opens, a gold wax `sunburst`
   seal with `sealInitials` pressed in, and a deckle-edged cream card with three rising paper
   lanterns over a plait. Original line art, no characters. Profiles tune it only through optional
-  `--storybook-*` tokens. Proven on the unlisted `demo-xv-storybook-lilac`.
-- composition.ornaments storybook-lanterns: a plait with small flowers at the quote opening, family
-  close and location close; two fields of paper sky lanterns behind the countdown and one above the
-  closing print, drifting only without `prefers-reduced-motion`; a tower under the venues heading, a
-  flower sprig under the gallery heading, and the closing plait tied with a bow under the signature.
-  Ink follows `--color-ornament-gold`; tuned through `--ornament-*`.
+  `--storybook-*` tokens. Proven on the America invitation (`/xv/america`); the e2e harness renders
+  it through `/test/variant?full=1&eventType=xv&slug=america`, without a synthetic portability
+  fixture.
+- composition.ornaments storybook-lanterns: the tale told with light — a single gold-leaf thread at
+  the quote opening, family close and location close and under the closing signature; lantern-light
+  fields in three depths behind the countdown and the closing that kindle as they scroll in and
+  drift only without `prefers-reduced-motion`; generic dividers and venue drawings hidden. Ink
+  follows `--color-ornament-gold`; tuned through `--ornament-*` (`--ornament-lights-*`,
+  `--ornament-thread-*`).
 - countdown.presentationOptions.dayUnit nights: the day segment reads "noches" (same value) for
   evening celebrations, e.g. "Faltan 43 noches".
 - interludes[].presentation framed: the whole photograph on paper inside a hairline double frame, so

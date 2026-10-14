@@ -40,7 +40,7 @@ import {
 	operatorCommandWriteLabel,
 } from '../../src/lib/status/operator-command-display.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
-import { createTheme, padVisible } from '../lib/cli-theme.ts';
+import { createTheme, environmentName, padVisible } from '../lib/cli-theme.ts';
 import {
 	evaluateCriticalBackupHealth,
 	type CriticalBackupHealth,
@@ -58,12 +58,6 @@ function styleBySemantic(
 	if (semantic === 'blocked') return c.red(`${glyph('fail')} ${text}`);
 	if (semantic === 'neutral') return c.dim(text);
 	return c.brightYellow(`${glyph('warn')} ${text}`);
-}
-
-function envLabel(env: TargetEnv): string {
-	if (env === 'local') return 'Local';
-	if (env === 'preview') return 'Preview';
-	return 'Production';
 }
 
 function getColors(options?: { env?: NodeJS.ProcessEnv }) {
@@ -130,7 +124,7 @@ function formatWhyLine(row: CanonicalPromotionRow): string {
 	return reason;
 }
 
-export function formatAttentionCard(
+function formatAttentionCard(
 	row: CanonicalPromotionRow,
 	verbose: boolean,
 	index?: number,
@@ -394,7 +388,8 @@ function formatManualPatchesSection(
 	for (const patch of view.manualPatches) {
 		const envs = (view.selectedTargets ?? ENVS)
 			.map(
-				(env) => `${envLabel(env)}=${formatPatchStatus(patch.environments[env].status, c)}`,
+				(env) =>
+					`${environmentName(env)}=${formatPatchStatus(patch.environments[env].status, c)}`,
 			)
 			.join(' ');
 		const production = patch.environments.production;
@@ -531,7 +526,7 @@ function formatVerboseSchemaDetails(
 	for (const env of view.selectedTargets ?? ENVS) {
 		const row = view.environments[env];
 		lines.push('');
-		lines.push(`  ${c.bold(`[${envLabel(env)} schema detail]`)}`);
+		lines.push(`  ${c.bold(`[${environmentName(env)} schema detail]`)}`);
 		lines.push(`    head: ${row.migrationHead ?? '(none)'}`);
 		lines.push(`    pending: ${row.pendingMigrations.join(', ') || '(none)'}`);
 		lines.push(`    extra: ${row.extraMigrations.join(', ') || '(none)'}`);
@@ -553,7 +548,9 @@ function formatRegistrySummarySection(
 		`  Registry invitations: ${c.bold(String(view.registryCount))}    In sync: ${c.green(String(view.inSyncCount))}    Attention: ${attention > 0 ? c.brightYellow(String(attention)) : c.green('0')}`,
 		'  Active DB rows (not registry): ' +
 			(view.selectedTargets ?? ENVS)
-				.map((env) => envLabel(env) + ' ' + c.bold(String(view.activeRowCounts[env])))
+				.map(
+					(env) => environmentName(env) + ' ' + c.bold(String(view.activeRowCounts[env])),
+				)
 				.join(' · '),
 	];
 

@@ -1,3 +1,5 @@
+import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
+
 export type TrackingRouteClass =
 	| 'commercial'
 	| 'demo'
@@ -17,8 +19,7 @@ export interface TrackingRoutePolicy {
 }
 
 export interface AnalyticsEnvironment {
-	deployEnvironment?: string | null;
-	gaId?: string;
+	deployEnvironment: HostedDeployEnvironment | null;
 }
 
 export const DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE = 0.1;
@@ -166,21 +167,11 @@ export function classifyTrackingRoute(input: string | URL): TrackingRoutePolicy 
 	};
 }
 
-export function isProductionAnalyticsEnvironment(env: AnalyticsEnvironment): boolean {
-	return env.deployEnvironment === 'production';
-}
-
-export function shouldLoadGoogleAnalytics(input: string | URL, env: AnalyticsEnvironment): boolean {
-	const gaId = env.gaId?.trim();
-	if (!gaId || !isProductionAnalyticsEnvironment(env)) return false;
-	return classifyTrackingRoute(input).gaAllowed;
-}
-
 export function resolveSpeedInsightsConfig(
 	input: string | URL,
 	env: AnalyticsEnvironment,
 ): SpeedInsightsConfig {
-	if (!isProductionAnalyticsEnvironment(env)) {
+	if (env.deployEnvironment !== 'production') {
 		return { enabled: false, sampleRate: 0 };
 	}
 

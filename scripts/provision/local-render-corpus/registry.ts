@@ -11,9 +11,9 @@ import { join } from 'node:path';
 import { getInvitationAssetSourceDir } from '../invitations/invitation-definition.ts';
 import { getInvitationDefinition, listInvitationDefinitions } from '../invitations/registry.ts';
 
-export type CorpusClassification = 'canonical';
-export type CorpusSourceStrategy = 'canonical_definition';
-export type CorpusAssetStrategy = 'VERSIONED_MANAGED_ASSET' | 'VERSIONED_LOCAL_ASSET';
+type CorpusClassification = 'canonical';
+type CorpusSourceStrategy = 'canonical_definition';
+type CorpusAssetStrategy = 'VERSIONED_MANAGED_ASSET' | 'VERSIONED_LOCAL_ASSET';
 
 export interface LocalRenderCorpusEntry {
 	readonly slug: string;
@@ -62,9 +62,9 @@ function deriveEntry(
 	};
 }
 
-export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 25;
+export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 16;
 
-export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] =
+const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] =
 	listInvitationDefinitions().map(deriveEntry);
 
 export function listLocalRenderCorpus(): readonly LocalRenderCorpusEntry[] {

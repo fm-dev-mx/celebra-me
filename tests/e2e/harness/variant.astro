@@ -10,13 +10,9 @@ import globalCssUrl from '@/styles/global.scss?url';
 import invitationCssUrl from '@/styles/invitation.scss?url';
 import variantHarnessCssUrl from './variant-harness.scss?url';
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
-import { canonicalEventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { adaptEvent } from '@/lib/adapters/event';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
-import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
-import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resolver';
-import { buildInvitationCssResolverInput } from '@/lib/invitation/invitation-css-input';
-import { buildInvitationStylesheetHeadLinks } from '@/lib/invitation/invitation-css-head-links';
+import { buildInvitationHeadLinks } from '@/lib/invitation/invitation-head-links';
 import { buildSyntheticVariantEvent } from '../../fixtures/structural-variants/synthetic-variant-fixtures';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { listInvitationDefinitions } from '../../../scripts/provision/invitations/registry';
@@ -73,7 +69,7 @@ if (fullPage) {
 				];
 			}),
 		);
-		const data = canonicalEventContentSchema.parse(
+		const data = eventContentSchema.parse(
 			definition.buildPublishedContent(syntheticAssets),
 		);
 		eventEntry = {
@@ -86,7 +82,6 @@ if (fullPage) {
 	}
 	if (!eventEntry) return new Response(`Unknown visual parity source: ${slug}`, { status: 404 });
 
-	const viewModel = adaptEvent(eventEntry);
 	const guestSeats = Number.parseInt(Astro.url.searchParams.get('guestSeats') ?? '', 10);
 	const guestName = Astro.url.searchParams.get('guestName')?.trim();
 	const syntheticGuestContext: InvitationGuestContext | undefined =
@@ -109,19 +104,10 @@ if (fullPage) {
 			: undefined;
 	const builtPage = prepareInvitationPageContext({
 		eventEntry,
-		slug,
 		guestContext: syntheticGuestContext,
 	});
 	if (syntheticGuestContext) builtPage.isDemoPreview = true;
-	const activePresetUrl = resolvePresetCssUrl(builtPage.viewModel.theme.preset);
-	const activeSectionCssPlan = resolveInvitationCssLoadPlan(
-		buildInvitationCssResolverInput({ page: builtPage, viewModel }),
-	);
-	fullPageHeadLinks = buildInvitationStylesheetHeadLinks({
-		presetUrl: activePresetUrl,
-		plan: activeSectionCssPlan,
-		forceBlocking: true,
-	});
+	fullPageHeadLinks = buildInvitationHeadLinks({ page: builtPage, forceBlocking: true });
 	page = builtPage;
 	fullPageContext = builtPage;
 } else {
@@ -134,28 +120,16 @@ const rawEvent = buildSyntheticVariantEvent({ section, variant, themePreset: pre
 	longContent: Astro.url.searchParams.get('longContent') === '1',
 	...(Astro.url.searchParams.get('imageDelivery') === 'optimized' ? { imageDelivery: {mode: 'optimized' as const, width: 640, height: 800, quality: 77, format: 'webp' as const} } : {}),
 });
-const validated = canonicalEventContentSchema.parse(rawEvent.data);
+const validated = eventContentSchema.parse(rawEvent.data);
 const eventEntry = {
 	id: rawEvent.id,
 	collection: 'event-demos',
 	data: validated,
 } as unknown as EventContentEntry;
-const viewModel = adaptEvent(eventEntry);
-	page = prepareInvitationPageContext({
+page = prepareInvitationPageContext({
 	eventEntry,
-	slug: 'test-synthetic-variant',
 });
-
-const activePresetUrl = resolvePresetCssUrl(preset);
-const activeSectionCssPlan = resolveInvitationCssLoadPlan(
-	buildInvitationCssResolverInput({ page, viewModel }),
-);
-
-	headLinks = buildInvitationStylesheetHeadLinks({
-	presetUrl: activePresetUrl,
-	plan: activeSectionCssPlan,
-	forceBlocking: true,
-});
+headLinks = buildInvitationHeadLinks({ page, forceBlocking: true });
 }
 ---
 <!DOCTYPE html>
@@ -176,12 +150,12 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 			<>
 				{showEnvelope && page.envelope && <EnvelopeReveal {...page.envelope} />}
 				{showEnvelope && <EventHeader links={page.viewModel.navigation ?? []} variant="standard" initials={page.viewModel.envelope?.data?.sealInitials} eventName={page.viewModel.hero.name} eventSubtitle={page.viewModel.hero.label} isDemo={false} />}
-				<Hero {...fullPageContext.viewModel.hero} venueName={fullPageContext.heroVenueName} time={fullPageContext.heroTime} highPriority={true} />
+				<Hero {...fullPageContext.viewModel.hero} venueName={fullPageContext.heroVenueName} time={fullPageContext.heroTime} editionMark={fullPageContext.edition?.mark} highPriority={true} />
 				<InvitationSections pageContext={fullPageContext} />
 				{showMusic && page.musicPlayer && <MusicPlayer {...page.musicPlayer} />}
 			</>
 		) : section === 'hero' ? (
-			<Hero {...page.viewModel.hero} venueName={page.heroVenueName} time={page.heroTime} highPriority={true} />
+			<Hero {...page.viewModel.hero} venueName={page.heroVenueName} time={page.heroTime} editionMark={page.edition?.mark} highPriority={true} />
 		) : (
 			<InvitationSections pageContext={page} />
 		)}

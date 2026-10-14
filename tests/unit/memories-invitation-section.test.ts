@@ -120,7 +120,6 @@ describe('memories render data', () => {
 				id: 'event-demos/xv/demo-xv-jewelry-box',
 				data: eventContentSchema.parse(data),
 			} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'],
-			slug: 'demo-xv-jewelry-box',
 		});
 		expect(
 			buildInvitationSectionRenderDescriptors(page).some(

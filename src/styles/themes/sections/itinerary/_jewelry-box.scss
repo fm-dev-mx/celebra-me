@@ -72,8 +72,10 @@
 
 	.itinerary__item-time {
 		padding-top: 0.2rem;
+		font-family: var(--itinerary-item-time-font, inherit);
 		font-size: clamp(0.78rem, 1.8vw, 0.9rem);
-		letter-spacing: 0.08em;
+		font-weight: var(--itinerary-item-time-weight, 500);
+		letter-spacing: var(--itinerary-item-time-tracking, 0.08em);
 		text-transform: uppercase;
 	}
 

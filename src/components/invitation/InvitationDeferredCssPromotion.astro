@@ -1,5 +1,6 @@
 ---
 import { buildInvitationDeferredCssPromotionInlineScript } from '@/lib/invitation/invitation-deferred-css-promotion';
+import { buildRevealStorageKey } from '@/lib/invitation/reveal-manager';
 
 interface Props {
 	eventSlug: string;
@@ -8,7 +9,7 @@ interface Props {
 
 const { eventSlug, isDemo } = Astro.props;
 const promotionScript = buildInvitationDeferredCssPromotionInlineScript({
-	storageKey: `envelope-opened-${eventSlug}`,
+	storageKey: buildRevealStorageKey(eventSlug),
 	isDemo,
 });
 ---

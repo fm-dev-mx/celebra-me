@@ -6,7 +6,7 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import sharp from 'sharp';
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import type { OutputFormat, CaptureResult } from './types.js';
 import { deriveSectionInventory } from './inventory.js';
 import {

@@ -103,8 +103,6 @@ describe('event type structure contract', () => {
 			const content = parse(entry);
 			const viewModel = adaptDbEvent({
 				slug: entry.id,
-				eventType: content.eventType,
-				isDemo: content.isDemo,
 				content: content as unknown as Record<string, unknown>,
 			});
 			const record = content as unknown as Record<string, { variant?: string } | undefined>;

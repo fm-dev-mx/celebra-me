@@ -131,7 +131,9 @@ describe('migration / deployment compatibility contract', () => {
 			registry,
 		});
 		expect(result.status).toBe('block');
-		expect(result.reasons.join(' ')).toMatch(/Unable to classify SQL risk|Migration file not found/);
+		expect(result.reasons.join(' ')).toMatch(
+			/Unable to classify SQL risk|Migration file not found/,
+		);
 	});
 
 	it('blocks a migration absent from the authorized target release', () => {
@@ -224,12 +226,15 @@ describe('migration / deployment compatibility contract', () => {
 		expect(result.status).toBe('allow');
 	});
 
-	it('loads the repository rollout registry and keeps RSVP expand/contract semantics', () => {
+	it('loads the repository rollout registry and keeps expand/contract semantics', () => {
 		const live = loadMigrationRolloutRegistry();
 		expect(live.migrations['20260730220544']?.phase).toBe('expand');
-		expect(live.migrations['__historical_rsvp_dml_revoke__']?.phase).toBe('contract');
-		expect(
-			live.migrations['__historical_rsvp_dml_revoke__']?.requiresDeployedAppCapabilities,
-		).toEqual(['public_guest_rsvp_rpc_client']);
+		expect(live.migrations['20260905000000']?.phase).toBe('contract');
+		expect(live.migrations['20260905000000']?.requiresDeployedAppCapabilities).toEqual([
+			'published_content_service_role_renderer',
+		]);
+		expect(Object.keys(live.migrations).every((version) => /^\d{14}$/.test(version))).toBe(
+			true,
+		);
 	});
 });

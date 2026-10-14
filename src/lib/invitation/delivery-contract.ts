@@ -126,7 +126,7 @@ export function vercelImageSourceUrl(rawUrl: string): string | null {
 	}
 }
 
-export function extractDocumentUrls(html: string): string[] {
+function extractDocumentUrls(html: string): string[] {
 	const urls: string[] = [];
 	for (const match of html.matchAll(/\b(?:src|href)=["']([^"']+)["']/gi)) {
 		urls.push(decodeHtmlEntities(match[1]));

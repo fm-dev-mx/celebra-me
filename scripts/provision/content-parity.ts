@@ -15,6 +15,7 @@ import {
 	semanticInvitationContentEqual,
 } from './promotion-comparison.ts';
 import { ASSET_KEY_PREFIX } from './normalized-invitation-release.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 export type ContentParityEnvironment = 'local' | 'preview' | 'production';
 
@@ -31,13 +32,13 @@ export function isExcludedFromContentParity(entity: string): boolean {
 	);
 }
 
-export interface SemanticAssetDigest {
+interface SemanticAssetDigest {
 	/** managed_source_key or display_name fallback — semantic identity, not UUID */
 	semanticKey: string;
 	sha256: string;
 }
 
-export interface SemanticEventProjection {
+interface SemanticEventProjection {
 	slug: string;
 	eventType: string;
 	/** True when a non-deleted events row is linked for this invitation. */
@@ -80,10 +81,6 @@ export interface ContentParityCompareResult {
 	environments: ContentParityEnvironment[];
 	drifts: ContentParityDrift[];
 	ok: boolean;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isUploadedAssetReference(

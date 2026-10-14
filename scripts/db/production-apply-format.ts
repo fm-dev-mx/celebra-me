@@ -60,18 +60,18 @@ const READINESS_GROUPS: ReadonlyArray<{
 
 function invitationCountsLine(plan: ProductionApplyPlan): string | null {
 	const invitations = plan.items.filter((item) => item.domain === 'invitation');
-	const archived = plan.excluded?.archivedSlugs.length ?? 0;
+	const expired = plan.excluded?.expiredSlugs.length ?? 0;
 	const authoring = plan.excluded?.authoringSlugs?.length ?? 0;
-	if (invitations.length === 0 && archived === 0 && authoring === 0) return null;
+	if (invitations.length === 0 && expired === 0 && authoring === 0) return null;
 	const parts = READINESS_GROUPS.map(({ readiness }) => ({
 		readiness,
 		count: invitations.filter((item) => item.readiness === readiness).length,
 	}))
 		.filter(({ count }) => count > 0)
 		.map(({ readiness, count }) => `${count} ${readiness}`);
-	if (archived > 0) {
+	if (expired > 0) {
 		parts.push(
-			`${archived} archivada${archived === 1 ? '' : 's'} (excluida${archived === 1 ? '' : 's'})`,
+			`${expired} vencida${expired === 1 ? '' : 's'} (excluida${expired === 1 ? '' : 's'})`,
 		);
 	}
 	if (authoring > 0) {
@@ -82,12 +82,12 @@ function invitationCountsLine(plan: ProductionApplyPlan): string | null {
 
 function excludedDefinitionLines(plan: ProductionApplyPlan): string[] {
 	const lines: string[] = [];
-	const archivedSlugs = plan.excluded?.archivedSlugs ?? [];
-	if (archivedSlugs.length > 0) {
+	const expiredSlugs = plan.excluded?.expiredSlugs ?? [];
+	if (expiredSlugs.length > 0) {
 		lines.push(
 			'',
-			`${operatorSymbol('info')} Archivadas por decisión del propietario (fuera del plan): ${archivedSlugs.join(', ')}`,
-			'  Para revisar una archivada: pnpm prod:apply -- --slug <slug>',
+			`${operatorSymbol('info')} Vencidas (fecha del evento + 1 año; fuera del plan): ${expiredSlugs.join(', ')}`,
+			'  Para revisar una vencida: pnpm prod:apply -- --slug <slug>',
 		);
 	}
 	const authoringSlugs = plan.excluded?.authoringSlugs ?? [];
@@ -184,7 +184,7 @@ export function toPublicProductionApplyPlan(plan: ProductionApplyPlan): Producti
 		planId: plan.planId,
 		scope: { ...plan.scope, slugs: [...plan.scope.slugs] },
 		excluded: {
-			archivedSlugs: [...(plan.excluded?.archivedSlugs ?? [])],
+			expiredSlugs: [...(plan.excluded?.expiredSlugs ?? [])],
 			authoringSlugs: [...(plan.excluded?.authoringSlugs ?? [])],
 		},
 		items: plan.items.map((item) => {

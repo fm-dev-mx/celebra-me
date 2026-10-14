@@ -37,7 +37,7 @@ export interface BuildShareMessageInput {
 	attendanceStatus?: AttendanceStatus;
 }
 
-export function resolveOrigin(providedOrigin?: string): string {
+function resolveOrigin(providedOrigin?: string): string {
 	if (providedOrigin) {
 		try {
 			new URL(providedOrigin);

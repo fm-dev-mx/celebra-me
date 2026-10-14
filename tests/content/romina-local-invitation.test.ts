@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
@@ -7,37 +6,18 @@ import {
 	buildRominaPublishedContent,
 	ROMINA_ASSET_SPECS,
 	ROMINA_EVENT,
-	type RominaAssetMap,
 } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
-
-function buildTestAssets(): RominaAssetMap {
-	return Object.fromEntries(
-		ROMINA_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as RominaAssetMap;
-}
+import { buildTestAssets } from '../helpers/managed-payload';
 
 describe('Romina local invitation content', () => {
-	it('uses an internally consistent Premiere Floral catalog entry', () => {
-		const preset = findDemoPreset(ROMINA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-xv-premiere-floral',
-			eventType: 'xv',
-			themeId: 'premiere-floral',
-		});
+	it('uses an internally consistent Premiere Floral theme', () => {
 		expect(resolveInvitationTheme({ themeId: ROMINA_EVENT.themeId })).toBe(
 			ROMINA_EVENT.themeId,
 		);
 	});
 
 	it('builds schema-valid published content without visible pending placeholders', () => {
-		const content = buildRominaPublishedContent(buildTestAssets());
+		const content = buildRominaPublishedContent(buildTestAssets(ROMINA_ASSET_SPECS));
 		const result = eventContentSchema.safeParse(content);
 		expect(result.success).toBe(true);
 		expect(JSON.stringify(content)).not.toMatch(/PENDING_|PROVISIONAL_/);
@@ -104,17 +84,14 @@ describe('Romina local invitation content', () => {
 	});
 
 	it('builds a public page context from uploaded images without an internal asset registry pack', () => {
-		const content = buildRominaPublishedContent(buildTestAssets());
+		const content = buildRominaPublishedContent(buildTestAssets(ROMINA_ASSET_SPECS));
 		const viewModel = adaptDbEvent({
 			slug: ROMINA_EVENT.slug,
-			eventType: ROMINA_EVENT.eventType,
-			isDemo: false,
 			content,
 			assetSlug: ROMINA_EVENT.assetSlug,
 		});
 		const page = buildPageContextFromViewModel({
 			viewModel,
-			slug: ROMINA_EVENT.slug,
 			eventType: ROMINA_EVENT.eventType,
 		});
 

@@ -18,6 +18,7 @@ import {
 	getIncompatiblePrerequisiteExpectation,
 	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
 } from '../fixtures/structural-variants/synthetic-variant-fixtures';
+import { loadFixture } from '../helpers/json-fixture';
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
@@ -31,11 +32,6 @@ jest.mock('@/lib/assets/asset-registry', () => {
 		})),
 	};
 });
-
-function loadFixture(relativePath: string) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
 
 function readSource(relativePath: string) {
 	return fs.readFileSync(path.resolve(process.cwd(), relativePath), 'utf8');
@@ -158,7 +154,6 @@ describe('registry-driven canonical variant portability', () => {
 				eventEntry: event as Parameters<
 					typeof prepareInvitationPageContext
 				>[0]['eventEntry'],
-				slug: 'demo-xv-jewelry-box',
 			});
 			const renderPlan = buildInvitationRenderPlan(viewModel);
 			const expectedView =
@@ -474,7 +469,6 @@ describe('registry-driven canonical variant portability', () => {
 		});
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: event as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'],
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(pageContext.viewModel.hero.variant).toBe('split-cover');

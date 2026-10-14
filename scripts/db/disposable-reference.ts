@@ -36,7 +36,7 @@ export const CANONICAL_REFERENCE_TABLES = [
 	'visitor_sessions',
 ] as const;
 
-export type ReferenceInvalidCause =
+type ReferenceInvalidCause =
 	| 'unreachable'
 	| 'wrong_target'
 	| 'introspection_failed'
@@ -65,7 +65,7 @@ export interface DisposableReferenceVerdict {
 	missingTables: string[];
 }
 
-export const DISPOSABLE_REFERENCE_REMEDIATION =
+const DISPOSABLE_REFERENCE_REMEDIATION =
 	'Rebuild the canonical disposable reference with `pnpm db:disposable:reset`, then re-run the audit. Do not plan or apply Production schema changes until the reference is VALID.';
 
 function versionsEqual(left: readonly string[], right: readonly string[]): boolean {

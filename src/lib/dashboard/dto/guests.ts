@@ -3,7 +3,7 @@ import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.in
 
 export type GuestsListResponse = DashboardGuestListResponse;
 
-export interface BulkImportGuestDTO {
+interface BulkImportGuestDTO {
 	full_name: string;
 	phone?: string | null;
 	country_code?: string | null;

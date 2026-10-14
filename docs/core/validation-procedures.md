@@ -181,8 +181,8 @@ Opt-in browser suites outside `pnpm test:e2e:ci`: `pnpm test:e2e:extended` runs 
 (motion, progressive visibility, gallery rail, raster seal, managed countdown, location navigation,
 RSVP flow, login labels) and the authoring guards of invitations that are still active or in
 progress. Run it when a change touches those surfaces or before publishing one of those invitations,
-and delete a client guard when its invitation is archived. `pnpm test:e2e:ga4` covers the consent
-banner and `gtag` loader (see
+and delete a client guard when its invitation expires (event date + 1 year). `pnpm test:e2e:ga4`
+covers the consent banner and `gtag` loader (see
 [commercial attribution](../domains/tracking/commercial-attribution.md#ga4-status)).
 
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was

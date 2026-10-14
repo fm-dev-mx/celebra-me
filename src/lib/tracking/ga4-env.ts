@@ -6,7 +6,3 @@
 export function getGaMeasurementId(): string {
 	return import.meta.env.PUBLIC_GA_MEASUREMENT_ID || '';
 }
-
-export function getLegacyAnalyticsId(): string {
-	return import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || '';
-}

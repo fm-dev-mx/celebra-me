@@ -1,14 +1,14 @@
 import type { FieldCompletenessResult } from '@/lib/invitation-preparation/event-completeness';
 import type { InfoClassification } from '@/lib/invitation-preparation/classification';
 
-export type OwnerDecisionCategory =
+type OwnerDecisionCategory =
 	| 'missing-client-facts'
 	| 'ambiguous-data'
 	| 'demo-design-decisions'
 	| 'photograph-acceptance'
 	| 'other-blocking';
 
-export interface OwnerDecisionItem {
+interface OwnerDecisionItem {
 	id: string;
 	category: OwnerDecisionCategory;
 	issue: string;
@@ -37,7 +37,7 @@ type DecisionInput = {
 function categorizeBlockingGap(gap: FieldCompletenessResult): OwnerDecisionCategory {
 	if (gap.status === 'ambiguous') return 'ambiguous-data';
 	if (gap.status === 'requires-owner-decision') {
-		if (gap.fieldId === 'baseDemoId' || gap.fieldId === 'clientColors') {
+		if (gap.fieldId === 'clientColors') {
 			return 'demo-design-decisions';
 		}
 		return 'other-blocking';
@@ -55,9 +55,7 @@ function whyForBlockingGap(gap: FieldCompletenessResult): string {
 	return 'Required client information is missing from supplied materials.';
 }
 
-function itemsFromBlockingGaps(
-	gaps: readonly FieldCompletenessResult[],
-): OwnerDecisionItem[] {
+function itemsFromBlockingGaps(gaps: readonly FieldCompletenessResult[]): OwnerDecisionItem[] {
 	return gaps.map((gap) => ({
 		id: gap.fieldId,
 		category: categorizeBlockingGap(gap),

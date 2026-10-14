@@ -21,7 +21,6 @@ import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import { MEMORIES_SECTION_DEFAULTS } from '@/lib/memories/copy';
 import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-presentation';
-import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import { resolvePersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
@@ -151,8 +150,7 @@ function requireAsset(
 	return asset;
 }
 
-function pickPreset(candidate: string | undefined): ThemePreset {
-	if (!candidate) return THEME_PRESETS[0];
+function pickPreset(candidate: string): ThemePreset {
 	if ((THEME_PRESETS as readonly string[]).includes(candidate)) return candidate as ThemePreset;
 	throw new Error(
 		`[ThemePreset] Invalid preset "${candidate}". Expected one of: ${THEME_PRESETS.join(', ')}.`,
@@ -480,7 +478,6 @@ function buildGallerySectionData(context: AdaptationContext) {
 		...data.gallery,
 		items,
 		variant: data.gallery.variant,
-		mobileBrowse: resolveGalleryMobileBrowse(data.gallery.variantOptions),
 	};
 }
 

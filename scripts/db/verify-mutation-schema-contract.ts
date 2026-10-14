@@ -53,6 +53,8 @@ const expectedTrue = [
 	'engagementSummaryRpc',
 	'rankingRpc',
 	'serviceRoleRankingExecute',
+	'rankingV2Rpc',
+	'serviceRoleRankingV2Execute',
 	'serviceRoleMetadataExecute',
 	'serviceRoleRestoreExecute',
 	'serviceRoleSubmitRsvpExecute',
@@ -94,8 +96,11 @@ const expectedFalse = [
 	'anonEngagementSummaryExecute',
 	'anonRankingExecute',
 	'authenticatedRankingExecute',
+	'anonRankingV2Execute',
+	'authenticatedRankingV2Execute',
 	'serviceRoleEngagementLedgerUpdate',
 	'serviceRoleEngagementLedgerDelete',
+	'legacyTrackViewRpc',
 ];
 const failures = [
 	...expectedTrue.filter((key) => evidence[key] !== true).map((key) => `${key}=false`),

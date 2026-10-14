@@ -42,37 +42,6 @@ export const PREVIEW_DESIGN_PATHS = [
 
 type ImageLike = { src: string | ImageMetadata; delivery?: unknown; alt?: string };
 
-function isImageLike(value: unknown): value is ImageLike {
-	if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-	const src = (value as { src?: unknown }).src;
-	return (
-		typeof src === 'string' ||
-		(Boolean(src) &&
-			typeof src === 'object' &&
-			typeof (src as { src?: unknown }).src === 'string')
-	);
-}
-
-/** Paths (array indexes as `*`) of every image-shaped value in a view model. */
-export function collectImageAssetPaths(viewModel: unknown): string[] {
-	const found = new Set<string>();
-	const walk = (value: unknown, path: string[]) => {
-		if (isImageLike(value)) {
-			found.add(path.join('.'));
-			return;
-		}
-		if (Array.isArray(value)) {
-			for (const item of value) walk(item, [...path, '*']);
-			return;
-		}
-		if (value && typeof value === 'object') {
-			for (const [key, child] of Object.entries(value)) walk(child, [...path, key]);
-		}
-	};
-	walk(viewModel, []);
-	return [...found].sort();
-}
-
 function sourceOf(image: ImageLike): string | null {
 	const src = typeof image.src === 'string' ? image.src : image.src.src;
 	return src.trim() && !src.startsWith('data:') ? src : null;

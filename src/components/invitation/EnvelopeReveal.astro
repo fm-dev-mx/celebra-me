@@ -31,7 +31,6 @@ interface Props {
 	eventSlug: string;
 	tooltipText?: string;
 	variant?: string;
-	audioUrl?: string;
 	teaserDetails?: string;
 	card: RevealCardData;
 	previewState?: 'closed' | 'opened' | 'letter';
@@ -55,7 +54,6 @@ const {
 	eventSlug,
 	tooltipText,
 	variant,
-	audioUrl,
 	teaserDetails,
 	card,
 	previewState,
@@ -96,7 +94,6 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	data-variant={resolveEnvelopeDataVariant(revealVariant, variant)}
 	data-seal-variant={sealVariant || ''}
 	data-seal-skin={sealPresentation.skin || ''}
-	data-audio-url={audioUrl || ''}
 	data-dev-skip={String(import.meta.env.DEV)}
 	data-preview-state={previewState}
 	data-open-chime={isStorybook ? 'true' : undefined}
@@ -281,7 +278,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 	class DsEnvelopeReveal extends HTMLElement {
 		connectedCallback() {
-			const { eventSlug, audioUrl } = this.dataset;
+			const { eventSlug } = this.dataset;
 			if (!eventSlug) return;
 
 			const invitationRoot = this.closest('.event-theme-wrapper[data-event-slug]');
@@ -292,7 +289,6 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 			const manager = new RevealManager({
 				eventSlug,
-				audioUrl: audioUrl || '',
 				isDemoInvitation,
 				devSkipEnabled,
 			});
@@ -393,9 +389,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 				window.requestAnimationFrame(() => {
 					const hero = document.getElementById('inicio');
-					const prefersReducedMotion = window.matchMedia(
-						'(prefers-reduced-motion: reduce)',
-					).matches;
+					const prefersReducedMotion = getMotionPreference();
 					const scrollBehavior: ScrollBehavior = prefersReducedMotion
 						? 'auto'
 						: 'smooth';
@@ -490,7 +484,6 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					new CustomEvent('envelope:open-requested', { detail: { eventSlug } }),
 				);
 
-				manager.playOpenSound();
 				manager.setStoredFlag();
 
 				// Screenshot capture intentionally holds the letter instead of hiding the host.

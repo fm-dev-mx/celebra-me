@@ -1,62 +1,22 @@
 /** Proves two concurrent same-key RPC requests create one publication receipt. */
 import { randomUUID } from 'node:crypto';
-import { spawn, spawnSync } from 'node:child_process';
+import { DISPOSABLE_DB_URL } from './db-target-config.ts';
+import { runPsql as psql, runPsqlAsync } from './db-workflow-lib.ts';
 
-const dbUrl = 'postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres';
+const PSQL_OPTIONS = { asCommand: true, throwOnError: false } as const;
 
 function runPsql(sql: string): string {
-	const result = spawnSync(
-		'psql',
-		[
-			'--set',
-			'ON_ERROR_STOP=1',
-			'--tuples-only',
-			'--no-align',
-			'--dbname',
-			dbUrl,
-			'--command',
-			sql,
-		],
-		{
-			encoding: 'utf8',
-		},
-	);
+	const result = psql(sql, DISPOSABLE_DB_URL, PSQL_OPTIONS);
 	if (result.status !== 0) throw new Error(result.stderr || result.stdout);
 	return result.stdout.trim();
 }
 
-function runConcurrentPsql(sql: string): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const process = spawn(
-			'psql',
-			[
-				'--set',
-				'ON_ERROR_STOP=1',
-				'--tuples-only',
-				'--no-align',
-				'--dbname',
-				dbUrl,
-				'--command',
-				sql,
-			],
-			{
-				stdio: ['ignore', 'pipe', 'pipe'],
-			},
-		);
-		let stdout = '';
-		let stderr = '';
-		process.stdout.on('data', (chunk: Buffer) => {
-			stdout += chunk.toString();
-		});
-		process.stderr.on('data', (chunk: Buffer) => {
-			stderr += chunk.toString();
-		});
-		process.on('error', reject);
-		process.on('close', (code) => {
-			if (code === 0) resolve(stdout.trim());
-			else reject(new Error(stderr || stdout || `psql exited ${code}`));
-		});
-	});
+async function runConcurrentPsql(sql: string): Promise<string> {
+	const result = await runPsqlAsync(sql, DISPOSABLE_DB_URL, PSQL_OPTIONS);
+	if (result.status !== 0) {
+		throw new Error(result.stderr || result.stdout || `psql exited ${String(result.status)}`);
+	}
+	return result.stdout.trim();
 }
 
 async function main(): Promise<void> {

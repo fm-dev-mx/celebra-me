@@ -11,7 +11,7 @@ type RenderPlanMetadata = {
 	intersection: RenderPlanIntersection;
 };
 
-export type InterludeRenderItem = RenderPlanMetadata & {
+type InterludeRenderItem = RenderPlanMetadata & {
 	type: 'interlude';
 	afterSection: InvitationRenderSectionKey;
 	image: ImageAsset;

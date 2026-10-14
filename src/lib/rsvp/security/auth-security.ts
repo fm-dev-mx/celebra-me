@@ -118,7 +118,7 @@ export function assertSameOrigin(request: Request, expectedOrigin: string): void
 	}
 }
 
-export function readClientIp(request: Request): string {
+function readClientIp(request: Request): string {
 	const forwardedFor = sanitize(request.headers.get('x-forwarded-for'), 200);
 	if (forwardedFor) return forwardedFor.split(',')[0]?.trim() || 'unknown';
 	const realIp = sanitize(request.headers.get('x-real-ip'), 120);

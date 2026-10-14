@@ -1,12 +1,7 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import {
-	EVENT_COLUMNS,
-	EVENT_MUTATION_COLUMNS,
-	type EventRow,
-	toEventRecord,
-} from '@/lib/rsvp/repositories/shared/rows';
+import { EVENT_COLUMNS, type EventRow, toEventRecord } from '@/lib/rsvp/repositories/shared/rows';
 
 const ACTIVE_EVENT_FILTER = 'deleted_at=is.null';
 /** Service-role defense in depth beside DB archive cascade. Host tokens cannot read invitations. */
@@ -88,32 +83,6 @@ export async function listAllEventsService(): Promise<EventRecord[]> {
 		useServiceRole: true,
 	});
 	return toActiveEventRecords(rows);
-}
-
-export async function createEventService(input: {
-	ownerUserId: string;
-	slug: string;
-	eventType: EventRecord['eventType'];
-	title: string;
-	status?: EventRecord['status'];
-	invitationId?: string | null;
-}): Promise<EventRecord> {
-	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=${EVENT_MUTATION_COLUMNS}&${ACTIVE_EVENT_FILTER}`,
-		method: 'POST',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body: {
-			owner_user_id: input.ownerUserId,
-			slug: input.slug,
-			event_type: input.eventType,
-			title: input.title,
-			status: input.status || 'draft',
-			invitation_project_id: input.invitationId ?? null,
-		},
-	});
-	if (!rows[0]) throw new Error('Failed to create event.');
-	return toEventRecord(rows[0]);
 }
 
 export async function updateEventService(input: {

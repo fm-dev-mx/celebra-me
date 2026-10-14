@@ -33,14 +33,15 @@ export function createMockRequest(
 
 	return {
 		url,
-		body: rawBody === null
-			? null
-			: new NodeReadableStream({
-					start(controller) {
-						controller.enqueue(new TextEncoder().encode(rawBody));
-						controller.close();
-					},
-				}),
+		body:
+			rawBody === null
+				? null
+				: new NodeReadableStream({
+						start(controller) {
+							controller.enqueue(new TextEncoder().encode(rawBody));
+							controller.close();
+						},
+					}),
 		json: async () => payload,
 		text: async () => {
 			return rawBody ?? '';
@@ -63,4 +64,24 @@ export async function resolveAfterMicrotasks<T>(value: T, turns: number): Promis
 	}
 	await pending;
 	return value;
+}
+
+/** Minimal Astro `APIContext` for invoking route handlers directly in tests. */
+export function createApiContext(
+	request: { url: string },
+	params: Record<string, string | undefined> = {},
+) {
+	return {
+		request,
+		url: new URL(request.url),
+		params,
+		props: {},
+		locals: {},
+		cookies: {} as never,
+		redirect: jest.fn() as never,
+		rewrite: jest.fn() as never,
+		site: undefined,
+		generator: 'Astro',
+		clientAddress: '127.0.0.1',
+	};
 }

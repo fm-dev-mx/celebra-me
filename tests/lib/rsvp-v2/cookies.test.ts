@@ -1,15 +1,16 @@
 import {
 	buildIdleActivityCookie,
-	buildMfaRefreshCookie,
-	buildMfaSessionCookie,
 	buildRefreshTokenCookie,
 	buildSessionCookie,
+	buildTrustedDeviceCookie,
 	clearIdleActivityCookie,
 	clearMfaRefreshCookie,
 	clearMfaSessionCookie,
 	clearRefreshTokenCookie,
 	clearSessionCookie,
+	clearTrustedDeviceCookie,
 } from '@/lib/rsvp/auth/cookies';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 describe('rsvp cookies', () => {
 	it('builds hardened access token cookie with ttl', () => {
@@ -39,17 +40,40 @@ describe('rsvp cookies', () => {
 		expect(clearMfaRefreshCookie()).toContain('Max-Age=0');
 		expect(clearIdleActivityCookie()).toContain('Max-Age=0');
 	});
+});
 
-	it('builds temporary MFA cookies with 5-minute ttl', () => {
-		const sessionCookie = buildMfaSessionCookie('mfa-token');
-		const refreshCookie = buildMfaRefreshCookie('mfa-refresh');
+describe('cookie transport security', () => {
+	const originalSupabaseUrl = process.env.SUPABASE_URL;
+	const cookies = (): string[] => [
+		buildSessionCookie('t'),
+		buildRefreshTokenCookie('t'),
+		buildIdleActivityCookie(1),
+		buildTrustedDeviceCookie('t'),
+		clearSessionCookie(),
+		clearRefreshTokenCookie(),
+		clearMfaSessionCookie(),
+		clearMfaRefreshCookie(),
+		clearIdleActivityCookie(),
+		clearTrustedDeviceCookie(),
+	];
 
-		expect(sessionCookie).toContain('sb-mfa-session=mfa-token');
-		expect(sessionCookie).toContain('Path=/dashboard/mfa-setup');
-		expect(sessionCookie).toContain('Max-Age=300');
+	afterEach(() => {
+		if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
+		else process.env.SUPABASE_URL = originalSupabaseUrl;
+	});
 
-		expect(refreshCookie).toContain('sb-mfa-refresh=mfa-refresh');
-		expect(refreshCookie).toContain('Path=/dashboard/mfa-setup');
-		expect(refreshCookie).toContain('Max-Age=300');
+	it('marks every cookie Secure on a hosted deployment', () => {
+		asHostedDeploy('preview');
+		for (const cookie of cookies()) expect(cookie).toContain('; Secure');
+	});
+
+	it('marks every cookie Secure when the deploy identity is ambiguous', () => {
+		delete process.env.SUPABASE_URL;
+		for (const cookie of cookies()) expect(cookie).toContain('; Secure');
+	});
+
+	it('omits Secure only for a positively local process', () => {
+		process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
+		for (const cookie of cookies()) expect(cookie).not.toContain('Secure');
 	});
 });

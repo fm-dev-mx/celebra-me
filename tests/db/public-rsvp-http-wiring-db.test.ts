@@ -1,12 +1,9 @@
-import { Request as NodeRequest } from 'undici';
+/**
+ * @jest-environment node
+ */
 import { DISPOSABLE_TEST, resolveDbUrl } from '../../scripts/db/db-target-config.ts';
 import { runCommand } from '../../scripts/db/db-workflow-lib.ts';
 import { disposablePostgrestFetch } from '../helpers/disposable-postgrest-fetch.ts';
-
-/** Use undici Request so body is a proper ReadableStream under the jsdom test environment. */
-function nodeRequest(input: string, init?: ConstructorParameters<typeof NodeRequest>[1]): Request {
-	return new NodeRequest(input, init) as unknown as Request;
-}
 
 /**
  * HTTP → service → RPC wiring contracts against disposable PostgREST.
@@ -85,7 +82,7 @@ describe('public rsvp & engagement HTTP API wiring (real DB)', () => {
 	});
 
 	it('submits RSVP via HTTP API route and atomically updates DB without 42501 permission error', async () => {
-		const request = nodeRequest(`http://localhost/api/invitacion/${testInviteId}/rsvp`, {
+		const request = new Request(`http://localhost/api/invitacion/${testInviteId}/rsvp`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
@@ -122,7 +119,7 @@ describe('public rsvp & engagement HTTP API wiring (real DB)', () => {
 
 	it('records guest engagement via HTTP API route into the ledger', async () => {
 		const clientEventId = '7b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e';
-		const request = nodeRequest(`http://localhost/api/invitacion/${testInviteId}/events`, {
+		const request = new Request(`http://localhost/api/invitacion/${testInviteId}/events`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

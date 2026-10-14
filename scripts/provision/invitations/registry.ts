@@ -4,7 +4,10 @@
  * Central sitemap/registry for single-file invitation definitions.
  */
 
-import { isArchivedInvitation, type InvitationDefinition } from './invitation-definition.ts';
+import {
+	isExpiredInvitationDefinition,
+	type InvitationDefinition,
+} from './invitation-definition.ts';
 import { allisonInvitation } from './allison-scarlett.ts';
 import { normaInvitation } from './norma-hernandez.ts';
 import { albaInvitation } from './alba-rosa-quinonez.ts';
@@ -17,15 +20,6 @@ import { renataInvitation } from './renata.ts';
 import { leslieInvitation } from './leslie-perez.ts';
 import { valentinaInvitation } from './valentina-hernandez.ts';
 import { destenidInvitation } from './destenid-sofia.ts';
-import { americaInvitation } from './america-johana.ts';
-import { anaSofiaInvitation } from './ana-sofia-cota-guillen.ts';
-import { ayrinInvitation } from './ayrin-samantha-lerma-castro.ts';
-import { cesarInvitation } from './cesar-ramses.ts';
-import { gerardoInvitation } from './gerardo-sesenta.ts';
-import { leahInvitation } from './leah-lexa.ts';
-import { lunaInvitation } from './luna-y-estrella.ts';
-import { xareniInvitation } from './xareni-iyarit.ts';
-import { ximenaInvitation } from './ximena-meza-trasvina.ts';
 import { miaInvitation } from './mia-pintor.ts';
 import { naydelinInvitation } from './naydelin-paredes.ts';
 import { aithanInvitation } from './aithan-darell.ts';
@@ -91,15 +85,6 @@ registerInvitation(renataInvitation);
 registerInvitation(leslieInvitation);
 registerInvitation(valentinaInvitation);
 registerInvitation(destenidInvitation);
-registerInvitation(americaInvitation);
-registerInvitation(anaSofiaInvitation);
-registerInvitation(ayrinInvitation);
-registerInvitation(cesarInvitation);
-registerInvitation(gerardoInvitation);
-registerInvitation(leahInvitation);
-registerInvitation(lunaInvitation);
-registerInvitation(xareniInvitation);
-registerInvitation(ximenaInvitation);
 registerInvitation(naydelinInvitation);
 registerInvitation(miaInvitation);
 registerInvitation(aithanInvitation);
@@ -127,26 +112,30 @@ export function listInvitationDefinitions(): InvitationDefinition[] {
 	return Array.from(registry.values());
 }
 
-/** Definitions that still take part in release planning (owner has not archived them). */
-export function listActiveInvitationDefinitions(): InvitationDefinition[] {
-	return listInvitationDefinitions().filter((definition) => !isArchivedInvitation(definition));
+/** Definitions that still take part in release planning (their validity window is open). */
+export function listActiveInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listInvitationDefinitions().filter(
+		(definition) => !isExpiredInvitationDefinition(definition, now),
+	);
 }
 
-/** Owner-archived definitions, reported apart from release planning. */
-export function listArchivedInvitationDefinitions(): InvitationDefinition[] {
-	return listInvitationDefinitions().filter(isArchivedInvitation);
+/** Definitions past their validity window (event date + 1 year), reported apart from planning. */
+export function listExpiredInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listInvitationDefinitions().filter((definition) =>
+		isExpiredInvitationDefinition(definition, now),
+	);
 }
 
 /** Active definitions that hosted targets may receive. */
-export function listPublishedInvitationDefinitions(): InvitationDefinition[] {
-	return listActiveInvitationDefinitions().filter(
+export function listPublishedInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listActiveInvitationDefinitions(now).filter(
 		(definition) => definition.lifecycle === 'published',
 	);
 }
 
 /** Active definitions still in authoring; Local only, reported apart from release planning. */
-export function listAuthoringInvitationDefinitions(): InvitationDefinition[] {
-	return listActiveInvitationDefinitions().filter(
+export function listAuthoringInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listActiveInvitationDefinitions(now).filter(
 		(definition) => definition.lifecycle === 'in_progress',
 	);
 }

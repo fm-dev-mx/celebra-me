@@ -6,7 +6,7 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
  * Owner-authorized local draft. The ten client photographs are the definitive selection;
  * delivery WebP files are prepared from the supplied messaging-app sources.
  */
-export const NAYDELIN_TIMING = {
+const NAYDELIN_TIMING = {
 	localDateTime: '2026-10-17T19:00',
 	timeZone: 'America/Mazatlan',
 	startsAtUtc: '2026-10-18T02:00:00.000Z',
@@ -271,7 +271,6 @@ export const naydelinInvitation = defineCanonicalInvitation({
 	eventType: 'xv',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	clientName: 'Mary Cota',
-	baseDemoId: 'demo-xv-jewelry-box',
 	themeId: 'jewelry-box',
 	visualProfileId: 'naydelin-paredes',
 	eventTiming: NAYDELIN_TIMING,

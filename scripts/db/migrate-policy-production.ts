@@ -18,14 +18,8 @@ import {
 	ensureCriticalProductionBackup,
 	revalidateCriticalProductionBackup,
 } from './critical-production-backup.ts';
-import { classifyDbTarget, guardProduction } from './db-guard.ts';
-import {
-	fail,
-	getProdDbUrl,
-	assertProductionDbUrl,
-	redactDbUrl,
-	runCommand,
-} from './db-workflow-lib.ts';
+import { guardProduction } from './db-guard.ts';
+import { fail, getProdDbUrl, assertProductionDbUrl, runCommand } from './db-workflow-lib.ts';
 import { requireCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
 import {
 	assertHostedCompatibilityOrFail,
@@ -47,14 +41,14 @@ import { comparePendingSetToExpected } from './migration-pending-set.ts';
 import { inferWorktreeLabel, writeOwnerApplyRecord } from './owner-apply-record.ts';
 import { OperatorError, operatorSymbol, shortSha, writeHuman } from './operator-cli-ux.ts';
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
-import { extractSupabaseProjectRef } from './db-target-config.ts';
+import { extractSupabaseProjectRef, classifyDbTarget, redactDbUrl } from './db-target-config.ts';
 import { matchProductionWritePermit } from './production-write-permit.ts';
 import { assertCleanGitWorktree, readGitWorktreeState } from './release-check.ts';
 import { loadMigrationRolloutRegistry } from './migration-deployment-compatibility.ts';
 import { loadRemoteChecks, requireReleaseChecks } from '../ops/release-readiness.ts';
 import { resolveContractDeploymentEvidence } from './contract-deployment-evidence.ts';
 
-export const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
+const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
 
 function beginPlanBuild(session?: MigratePolicySession): number {
 	const prior = session?.buildPlanCount ?? 0;
@@ -109,8 +103,8 @@ function runProductionAudit(ctx: { session?: MigratePolicySession }, quiet: bool
 		writeHuman(`${operatorSymbol('info')} Preflight: auditoría de solo lectura…`);
 	}
 	const auditResult = runCommand(
-		'npx',
-		['tsx', 'scripts/db/audit-db.ts', '--target', 'production'],
+		'pnpm',
+		['exec', 'tsx', 'scripts/db/audit-db.ts', '--target', 'production'],
 		{ throwOnError: false },
 	);
 	const auditOutput = `${auditResult.stdout}\n${auditResult.stderr}`;

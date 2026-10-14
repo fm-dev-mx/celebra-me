@@ -7,7 +7,7 @@
 /* Semantic Folios for Editorial Magazine Theme
  * Folio labels resolve from per-section custom properties so a visual profile can relabel them
  * (--editorial-folio-countdown | -family | -location | -gallery | -gifts | -rsvp). The fallbacks
- * keep the original XV edition copy for profiles that do not override them. */
+ * print the event type's edition (`--invitation-edition-label`, see `invitation/_edition-labels`). */
 .theme-preset--editorial-magazine .countdown-section,
 .theme-preset--editorial-magazine .event-location,
 .theme-preset--editorial-magazine .gifts-section,
@@ -44,23 +44,38 @@
 }
 
 .theme-preset--editorial-magazine .countdown-section::before {
-	content: var(--editorial-folio-countdown, 'CELEBRA-ME | EDICIÓN XV · SAVE THE DATE');
+	content: var(
+		--editorial-folio-countdown,
+		'CELEBRA-ME | ' var(--invitation-edition-label, 'EDICIÓN XV') ' · SAVE THE DATE'
+	);
 }
 
 .theme-preset--editorial-magazine .family::before {
-	content: var(--editorial-folio-family, 'CELEBRA-ME | EDICIÓN XV · CRÉDITOS');
+	content: var(
+		--editorial-folio-family,
+		'CELEBRA-ME | ' var(--invitation-edition-label, 'EDICIÓN XV') ' · CRÉDITOS'
+	);
 }
 
 .theme-preset--editorial-magazine .event-location::before {
-	content: var(--editorial-folio-location, 'CELEBRA-ME | EDICIÓN XV · CRÓNICA DE LA JORNADA');
+	content: var(
+		--editorial-folio-location,
+		'CELEBRA-ME | ' var(--invitation-edition-label, 'EDICIÓN XV') ' · CRÓNICA DE LA JORNADA'
+	);
 }
 
 .theme-preset--editorial-magazine .gallery-section::before {
-	content: var(--editorial-folio-gallery, 'CELEBRA-ME | EDICIÓN XV · EDITORIAL DE MODA');
+	content: var(
+		--editorial-folio-gallery,
+		'CELEBRA-ME | ' var(--invitation-edition-label, 'EDICIÓN XV') ' · EDITORIAL DE MODA'
+	);
 }
 
 .theme-preset--editorial-magazine .gifts-section::before {
-	content: var(--editorial-folio-gifts, 'CELEBRA-ME | EDICIÓN XV · GUÍA DE REGALOS');
+	content: var(
+		--editorial-folio-gifts,
+		'CELEBRA-ME | ' var(--invitation-edition-label, 'EDICIÓN XV') ' · GUÍA DE REGALOS'
+	);
 }
 
 .theme-preset--editorial-magazine .rsvp {
@@ -69,7 +84,10 @@
 	}
 
 	&::before {
-		content: var(--editorial-folio-rsvp, 'CELEBRA-ME | EDICIÓN XV · CONFIRMACIÓN');
+		content: var(
+			--editorial-folio-rsvp,
+			'CELEBRA-ME | ' var(--invitation-edition-label, 'EDICIÓN XV') ' · CONFIRMACIÓN'
+		);
 		color: rgb(var(--editorial-magazine-white-rgb) / var(--editorial-folio-alpha, 48%));
 	}
 }

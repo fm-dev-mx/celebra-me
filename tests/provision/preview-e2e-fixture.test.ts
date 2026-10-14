@@ -4,13 +4,17 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 
 jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
-	getSecretFromEnvOrFiles: jest.fn(() => ''),
-	PREVIEW_SECRET_FILES: [],
 	runPsql: jest.fn(),
 	sqlLiteral: (value: string) => `'${value.replaceAll("'", "''")}'`,
 }));
 
-jest.mock('../../scripts/db/db-guard.ts', () => ({
+jest.mock('../../scripts/db/db-target-config.ts', () => ({
+	...jest.requireActual<typeof import('../../scripts/db/db-target-config.ts')>(
+		'../../scripts/db/db-target-config.ts',
+	),
+	// Never fall back to a real gitignored secret file under test.
+	resolveTargetDbUrl: (_target: string, env: NodeJS.ProcessEnv = process.env) =>
+		env.PREVIEW_DB_URL?.trim() ?? '',
 	classifyDbTarget: jest.fn(),
 	redactDbUrl: (url: string) => url.replace(/\/\/.*@/, '//***@'),
 }));
@@ -27,7 +31,6 @@ jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
 	})),
 }));
 
-import { classifyDbTarget } from '../../scripts/db/db-guard.ts';
 import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
 import { verifyPreviewWriteAuthorization } from '../../scripts/provision/preview-write-auth.ts';
 import {
@@ -39,6 +42,7 @@ import {
 	PREVIEW_FIXTURE_SLUG,
 	PREVIEW_FIXTURE_TITLE,
 } from '../../scripts/playwright/preview-environment.ts';
+import { classifyDbTarget } from '../../scripts/db/db-target-config.ts';
 
 const mockedClassify = classifyDbTarget as jest.MockedFunction<typeof classifyDbTarget>;
 const mockedPsql = runPsql as jest.MockedFunction<typeof runPsql>;
@@ -73,6 +77,16 @@ describe('preview-e2e-fixture', () => {
 		expect(() => resolvePreviewFixtureDbUrl({ PREVIEW_DB_URL: PREVIEW_URL })).toThrow(
 			/PREVIEW_E2E_FIXTURE_TARGET_REJECTED/,
 		);
+	});
+
+	it('rejects a Preview-classified URL outside the canonical Preview project', () => {
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'self-match' } as never);
+		expect(() =>
+			resolvePreviewFixtureDbUrl({
+				PREVIEW_DB_URL:
+					'postgresql://user:pass@db.abcdefghijklmnopqrst.supabase.co:5432/postgres',
+			}),
+		).toThrow(/PREVIEW_E2E_FIXTURE_TARGET_REJECTED/);
 	});
 
 	it('allows Preview target resolution', () => {

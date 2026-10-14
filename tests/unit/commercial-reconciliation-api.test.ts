@@ -14,6 +14,7 @@ import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { findCommercialIdentityCandidates } from '@/lib/commercial/reconciliation.service';
 import { GET } from '@/pages/api/dashboard/commercial/reconciliation';
+import { createApiContext } from '../helpers/api-mocks';
 
 const mockRequireAdminStrongSession = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
@@ -24,22 +25,6 @@ const mockRequireAdminRateLimit = requireAdminRateLimit as jest.MockedFunction<
 const mockFindCandidates = findCommercialIdentityCandidates as jest.MockedFunction<
 	typeof findCommercialIdentityCandidates
 >;
-
-function createContext(request: Request) {
-	return {
-		request,
-		url: new URL(request.url),
-		params: {},
-		props: {},
-		locals: {},
-		cookies: {} as never,
-		redirect: jest.fn() as never,
-		rewrite: jest.fn() as never,
-		site: undefined,
-		generator: 'Astro',
-		clientAddress: '127.0.0.1',
-	};
-}
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -60,7 +45,7 @@ describe('/api/dashboard/commercial/reconciliation', () => {
 			'https://www.celebra-me.com/api/dashboard/commercial/reconciliation?leadCode=CM-ABC123&phone=%2B526141234567&email=Client%40Example.com&name=Valentina',
 		);
 
-		const response = await GET(createContext(request) as never);
+		const response = await GET(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(200);

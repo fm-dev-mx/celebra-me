@@ -1,6 +1,6 @@
 import { fromZonedTime } from 'date-fns-tz';
 
-export const COMMERCIAL_TIME_ZONE = 'America/Chihuahua';
+const COMMERCIAL_TIME_ZONE = 'America/Chihuahua';
 export function commercialPeriod(days: 30 | 60 = 30, now = new Date()) {
 	const parts = new Intl.DateTimeFormat('en-CA', {
 		timeZone: COMMERCIAL_TIME_ZONE,

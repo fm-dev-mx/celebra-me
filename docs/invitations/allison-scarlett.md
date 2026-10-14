@@ -11,6 +11,10 @@
 
 **Preparation Readiness (prepReadiness):** `NOT_READY`
 
+Delivery status: published. The definition has `lifecycle: published` and a `persisted` managed
+identity since `67e82367d` (2026-09-14). The preparation sections below are the historical record of
+the local draft; prepReadiness was not re-evaluated after delivery.
+
 Current owner clarification (2026-09-12): the existing photographs are definitive. Preserve the
 configured RSVP behavior and guest allocations; do not request or invent a new global capacity. The
 existing `guestCap: 2` is a fallback, while personalized passes use the persisted guest's
@@ -50,7 +54,6 @@ persist raw chat exports, source-directory paths, or business screenshots as inv
 | eventTime            | 18:00                                                                                       | verified       | wa-export     | Religious ceremony                                                           |
 | receptionTime        | 19:00                                                                                       | inferred       | wa-export     | Client wrote 7:00; owner chose p.m. from ceremony context                    |
 | timeZone             | America/Mexico_City                                                                         | inferred       | owner-session | Based on owner-supplied CDMX address                                         |
-| baseDemoId           | demo-xv-celestial-blue                                                                      | inferred       | owner-session | Technical base of accepted working plan, not a client-selected demo          |
 | sourceAssetPath      | source:wa-export                                                                            | verified       | owner-session | Only available photographs; provisional quality                              |
 | sectionOrder         | family, personalizedAccess, countdown, location, gallery, gifts, rsvp, thankYou             | inferred       | owner-session | Working design; opening and hero precede these sections                      |
 | primaryVenueName     | Salón Jardín Luigi                                                                          | verified       | wa-export     | Both ceremony and reception                                                  |
@@ -157,10 +160,11 @@ mobile hero 350 KB, desktop hero 500 KB and gallery 180 KB.
 The owner repeatedly and explicitly authorized local draft creation with temporary data after the
 preparation limitation was explained. This task uses that bounded authorization for local authoring
 only; preparation helpers and publication safeguards are unchanged. Do not classify dummy facts as
-real or publish them. The draft uses the canonical managed definition and registry,
-`lifecycle: in_progress`, typed semantic asset keys and section-owned variants. Profile SCSS owns
-palette and rhythm only. No new API, database schema, RSVP implementation, or third-party dependency
-is planned. Persistent Local, Preview, Storage and Production operations remain separately gated.
+real or publish them. The draft used the canonical managed definition and registry,
+`lifecycle: in_progress` (now `published`), typed semantic asset keys and section-owned variants.
+Profile SCSS owns palette and rhythm only. No new API, database schema, RSVP implementation, or
+third-party dependency is planned. Persistent Local, Preview, Storage and Production operations
+remain separately gated.
 
 ## Creative Direction & Acceptance
 
@@ -216,14 +220,14 @@ with another preset, no Allison profile and no photograph.
 | Typography             | Outlined and crowded              | Oversized serif name     | Pinyon name, Cormorant headings, Instrument instructions            |
 | Continuity             | Dense repeated borders            | Generic separated blocks | Blue family paper, admission card, clock dial and deep-blue closing |
 
-Local evidence lives in `.agent/tmp/allison-review/` (ephemeral, not published):
-`final-{390,414,1440}-{closed,hero,full}.png`, `portable-no-photo.png`, `reduced-motion.png`,
-`no-javascript.png`, capture and validation logs. Captures wait for fonts, images and section
-reveal. Keyboard opening, replay, immediate reduced-motion access and the no-JavaScript fallback
-were exercised. The three requested viewport sizes had no horizontal overflow. All three photographs
-loaded with their source proportions. November 27 and the ceremony countdown instant were checked.
-Computed-color checks supplement visual review; they do not certify every gradient pixel or replace
-human accessibility assessment. Decorative separators are excluded from text-contrast requirements.
+Local evidence (final captures at 390, 414 and 1440 pixels, no-photo, reduced-motion and
+no-JavaScript captures, and logs) was kept in a gitignored working folder and is not retained.
+Captures wait for fonts, images and section reveal. Keyboard opening, replay, immediate
+reduced-motion access and the no-JavaScript fallback were exercised. The three requested viewport
+sizes had no horizontal overflow. All three photographs loaded with their source proportions.
+November 27 and the ceremony countdown instant were checked. Computed-color checks supplement visual
+review; they do not certify every gradient pixel or replace human accessibility assessment.
+Decorative separators are excluded from text-contrast requirements.
 
 The fixture accepts reads only. No RSVP submission, persistent write, album integration or
 deployment was performed. Automated checks do not constitute aesthetic approval: final human
@@ -260,7 +264,7 @@ registry is added. The client accepted in-invitation RSVP after asking about tel
 The owner later removed the QR requirement. Host operations and live RSVP remain unverified locally.
 
 The previous direction is owner-approved. Human acceptance of this refinement remains pending.
-Visual evidence: `.agent/tmp/allison-review/refined-{390,414,1440}-{closed,hero,full}.png`. The
+Visual evidence (refined captures at 390, 414 and 1440 pixels) was not retained in the tree. The
 review now uses the existing development-only `/test/variant` full-page harness, including an
 explicit synthetic pass. The normal unpublished route has no persisted invitation; no database was
 modified to make it available. This harness does not authorize publication or real confirmations.

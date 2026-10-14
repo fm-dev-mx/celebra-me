@@ -5,13 +5,13 @@ import {
 	type SemanticFieldDelta,
 } from './semantic-delta.ts';
 
-export type PromotionDifferenceClass =
+type PromotionDifferenceClass =
 	| 'SAFE_MANAGED_CHANGE'
 	| 'TARGET_OWNED_DIFFERENCE'
 	| 'MANAGED_DIVERGENCE'
 	| 'CONFLICT_REQUIRES_REVIEW';
 
-export interface PromotionDifference {
+interface PromotionDifference {
 	classification: PromotionDifferenceClass;
 	path: string;
 	detail: string;

@@ -155,7 +155,7 @@ describe('SalesWorkspace', () => {
 						channel: 'whatsapp',
 						status: 'new',
 						name: 'María Ejemplo',
-						phone: '6141234567',
+						phone: '1000000005',
 						eventType: 'xv',
 					},
 				]}
@@ -231,8 +231,8 @@ describe('SalesWorkspace', () => {
 						channel: 'whatsapp',
 						status: 'contacted',
 						name: 'Ana Ejemplo',
-						phone: '55 1234 5678',
-						phoneE164: '+525512345678',
+						phone: '10 0000 0011',
+						phoneE164: '+521000000011',
 					},
 				]}
 			/>,
@@ -242,7 +242,7 @@ describe('SalesWorkspace', () => {
 
 		expect(screen.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveAttribute(
 			'href',
-			'https://wa.me/525512345678',
+			'https://wa.me/521000000011',
 		);
 	});
 
@@ -256,7 +256,7 @@ describe('SalesWorkspace', () => {
 						channel: 'manual',
 						status: 'new',
 						name: 'Luis Incompleto',
-						phone: '6141234567',
+						phone: '1000000005',
 					},
 				]}
 			/>,
@@ -276,7 +276,7 @@ describe('SalesWorkspace', () => {
 						channel: 'whatsapp',
 						status: 'contacted',
 						name: 'Sofía Masked',
-						phone: '55 0000 0103',
+						phone: '10 0000 0023',
 						phoneE164: '+525****0103',
 					},
 				]}

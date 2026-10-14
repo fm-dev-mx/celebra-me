@@ -1,0 +1,18 @@
+// Edition wording per event type for editorial variants. Mirrors `editionLabel` in
+// `src/lib/invitation/event-type-contract.ts`; `tests/unit/edition-labels.test.ts` keeps both equal.
+// The invitation wrapper carries `data-event-type`; editorial folios print
+// `--invitation-edition-label` (absent, they keep the XV edition).
+$edition-labels: (
+	'xv': 'EDICIÓN XV',
+	'boda': 'EDICIÓN BODA',
+	'cumple': 'EDICIÓN CUMPLEAÑOS',
+	'bautizo': 'EDICIÓN BAUTIZO',
+	'baby-shower': 'EDICIÓN BABY SHOWER',
+	'primera-comunion': 'EDICIÓN PRIMERA COMUNIÓN',
+);
+
+@each $event-type, $label in $edition-labels {
+	.event-theme-wrapper[data-event-type='#{$event-type}'] {
+		--invitation-edition-label: '#{$label}';
+	}
+}

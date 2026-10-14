@@ -11,7 +11,6 @@ export interface CanonicalInvitationOptions {
 	slug: string;
 	eventType: string;
 	title: string;
-	baseDemoId: string;
 	themeId: string;
 	visualProfileId: string;
 	eventTiming: { localDateTime: string; timeZone: string; startsAtUtc: string };
@@ -27,8 +26,6 @@ export interface CanonicalInvitationOptions {
 	>;
 	/** Explicit: hosted targets only receive `published` definitions, so no default is implied. */
 	lifecycle: InvitationDefinition['lifecycle'];
-	/** Owner-decided release-planning archive; never inferred from the event date. */
-	archive?: InvitationDefinition['archive'];
 	deliveryScope?: InvitationDefinition['deliveryScope'];
 }
 
@@ -99,16 +96,13 @@ export function defineCanonicalInvitation(
 		managedIdentityProvenance: options.managedIdentityProvenance,
 		createdAt: '2026-08-29T00:00:00.000Z',
 		lifecycle: options.lifecycle,
-		...(options.archive ? { archive: options.archive } : {}),
 		deliveryScope: options.deliveryScope ?? 'content-only',
 		eventType: options.eventType,
 		title: options.title,
 		clientName: options.clientName ?? options.title,
 		hostLoginAlias: options.hostLoginAlias,
-		clientEmail: '',
 		clientWhatsapp: '',
 		photosReceived: true,
-		baseDemoId: options.baseDemoId,
 		themeId: options.themeId,
 		visualProfileId: options.visualProfileId,
 		eventTiming: options.eventTiming,
@@ -125,6 +119,9 @@ export function defineCanonicalInvitation(
 			) as Record<string, unknown>;
 			if (options.visualProfileId && !published.visualProfileId) {
 				published.visualProfileId = options.visualProfileId;
+			}
+			if (!published.templateId) {
+				published.templateId = `${options.eventType}-${options.content.theme.preset}`;
 			}
 			return published;
 		},

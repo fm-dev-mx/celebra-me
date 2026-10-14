@@ -30,6 +30,8 @@
 //   --itinerary-paper-time-caps       Time small caps (default normal)
 //   --itinerary-paper-num-{mask,ink,box,align,margin}
 //                                     Draw a motif instead of the row number (mask, default none)
+//   --itinerary-paper-num-mask-{1…8,last}
+//                                     Per-position markers (default --itinerary-paper-num-mask)
 //   --itinerary-paper-rail-{display,mask,ink,width,left,top,bottom}
 //                                     A line joining the rows' markers (default none)
 // ==========================================================================
@@ -296,6 +298,19 @@
 		grid-area: content;
 	}
 
+	// Marker sequence: `--itinerary-paper-num-mask-<n>` (n = 1…8) draws the nth moment's marker and
+	// `--itinerary-paper-num-mask-last` the closing one; unset positions keep
+	// `--itinerary-paper-num-mask`.
+	@for $position from 1 through 8 {
+		.itinerary__program-row:nth-child(#{$position}) {
+			--itinerary-paper-nth-num-mask: var(--itinerary-paper-num-mask-#{$position});
+		}
+	}
+
+	.itinerary__program-row:last-child {
+		--itinerary-paper-last-num-mask: var(--itinerary-paper-num-mask-last);
+	}
+
 	// Handwritten Number
 	.itinerary__program-row-num {
 		grid-area: num;
@@ -304,7 +319,11 @@
 		height: var(--itinerary-paper-num-box, auto);
 		margin: var(--itinerary-paper-num-margin, 0);
 		background-color: var(--itinerary-paper-num-ink, transparent);
-		mask: var(--itinerary-paper-num-mask, none) center / contain no-repeat;
+		mask: var(
+				--itinerary-paper-last-num-mask,
+				var(--itinerary-paper-nth-num-mask, var(--itinerary-paper-num-mask, none))
+			)
+			center / contain no-repeat;
 		font-family: var(--font-display);
 		font-size: var(--itinerary-paper-num-size, 0.85rem);
 		font-weight: 400;

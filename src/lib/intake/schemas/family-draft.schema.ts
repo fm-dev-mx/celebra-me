@@ -1,15 +1,15 @@
 import { z } from 'zod';
 import { optionalText, editableAssetSchema } from '@/lib/intake/schemas/shared-content.schema';
 import { focalPointSchema } from '@/lib/schemas/content/shared.schema';
-import { FAMILY_PRESENTATIONS } from '@/lib/invitation/presentation-options';
+import { FAMILY_PRESENTATIONS } from '@/lib/invitation/family-presentation';
 import { FAMILY_VARIANTS } from '@/lib/invitation/section-variants';
 
-export const familyGroupDraftSchema = z.object({
+const familyGroupDraftSchema = z.object({
 	title: optionalText(200),
 	names: optionalText(),
 });
 
-export const godparentGroupDraftSchema = z.object({
+const godparentGroupDraftSchema = z.object({
 	honoreeName: optionalText(200),
 	label: optionalText(200),
 	names: optionalText(),
@@ -33,7 +33,7 @@ export const FAMILY_LABEL_KEYS = [
 	'sectionMessage',
 ] as const;
 
-export type FamilyLabelKey = (typeof FAMILY_LABEL_KEYS)[number];
+type FamilyLabelKey = (typeof FAMILY_LABEL_KEYS)[number];
 
 export const familyDraftSchema = z.object({
 	fatherName: optionalText(200),

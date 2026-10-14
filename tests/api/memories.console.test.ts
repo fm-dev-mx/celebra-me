@@ -45,6 +45,7 @@ import { GET as getAdminQr } from '@/pages/api/dashboard/admin/memories/[eventId
 import { GET as getHostSummary } from '@/pages/api/dashboard/memories/[eventId]/summary';
 import { GET as getHostQr } from '@/pages/api/dashboard/memories/[eventId]/qr';
 import { createMockRequest } from '../helpers/api-mocks';
+import { asHostedDeploy } from '../helpers/deploy-identity';
 import {
 	ADMIN_USER_ID,
 	EVENT_ID,
@@ -247,14 +248,8 @@ describe('GET /api/dashboard/memories/[eventId]/qr', () => {
 	});
 
 	describe('printed origin', () => {
-		const savedVercelEnv = process.env.CELEBRA_DEPLOY_ENV;
-		afterEach(() => {
-			if (savedVercelEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
-			else process.env.CELEBRA_DEPLOY_ENV = savedVercelEnv;
-		});
-
 		it('prints the identical canonical SVG in Production whatever host serves the panel', async () => {
-			process.env.CELEBRA_DEPLOY_ENV = 'production';
+			asHostedDeploy('production');
 			const response = await getHostQr(
 				context(`https://www.celebra-me.com/api/dashboard/memories/${EVENT_ID}/qr`, {
 					eventId: EVENT_ID,
@@ -266,7 +261,7 @@ describe('GET /api/dashboard/memories/[eventId]/qr', () => {
 		});
 
 		it('encodes the Preview deployment in a Preview QR', async () => {
-			process.env.CELEBRA_DEPLOY_ENV = 'preview';
+			asHostedDeploy('preview');
 			const previewOrigin = 'https://celebra-me-git-develop.vercel.app';
 			const response = await getAdminQr(
 				context(`${previewOrigin}/api/dashboard/admin/memories/${EVENT_ID}/qr`, {

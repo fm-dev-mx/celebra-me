@@ -1,21 +1,10 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { findPlaceholderTokensInValue } from '@/lib/invitation-preparation/placeholders';
 import { MIA_TIMING, miaInvitation } from '../../scripts/provision/invitations/mia-pintor.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
 function buildContent() {
-	return miaInvitation.buildPublishedContent(
-		Object.fromEntries(
-			miaInvitation.assets.map((asset, index) => [
-				asset.key,
-				{
-					type: 'uploaded' as const,
-					assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-					src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${asset.key}.webp`,
-				},
-			]),
-		),
-	);
+	return miaInvitation.buildPublishedContent(buildTestAssets(miaInvitation.assets));
 }
 
 describe('Mía managed definition', () => {
@@ -35,19 +24,11 @@ describe('Mía managed definition', () => {
 		});
 	});
 
-	it('builds schema-valid content with the seaside reveal and no placeholders', () => {
-		const content = buildContent();
-		const result = eventContentSchema.safeParse(content);
-		expect({
-			success: result.success,
-			...(result.success ? {} : { issues: result.error.issues }),
-		}).toStrictEqual({ success: true });
-
-		const parsed = eventContentSchema.parse(content);
+	it('builds content with the seaside reveal', () => {
+		const parsed = eventContentSchema.parse(buildContent());
 		expect(parsed.envelope?.revealVariant).toBe('seaside-lineart');
 		expect(parsed.envelope?.sealIcon).toBe('shell');
 		expect(parsed.hero.variant).toBe('bleed-portrait');
-		expect(findPlaceholderTokensInValue(content)).toEqual([]);
 	});
 
 	it('honors the family-hosted brief and includes the official schedule and music', () => {

@@ -3,7 +3,7 @@
  * Worktree path alone is never authorization.
  */
 
-import { readDeployEnvironment } from '@/lib/server/deploy-identity';
+import { isLocalProcess, isLocalSupabaseUrl } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 
 /**
@@ -11,13 +11,9 @@ import { getEnv } from '@/lib/server/env';
  * Accepts both process-style keys and camelCase aliases.
  */
 export interface ObservabilityRuntimeEnv {
-	NODE_ENV?: string;
 	SUPABASE_URL?: string;
 	CELEBRA_RUNTIME_TARGET?: string;
-	/** Test-only declared deploy identity; omitted means the real one. */
-	deployEnv?: string;
-	/** Test / alias fields */
-	nodeEnv?: string;
+	/** Alias fields */
 	supabaseUrl?: string;
 	celebraRuntimeTarget?: string;
 }
@@ -41,36 +37,14 @@ function fromInput(
 	return getEnv(processKey).trim();
 }
 
-function isLocalSupabaseUrl(url: string): boolean {
-	if (!url) return false;
-	try {
-		const parsed = new URL(url);
-		const host = parsed.hostname.toLowerCase();
-		const port = parsed.port || (parsed.protocol === 'https:' ? '443' : '80');
-		const isLoopback = host === '127.0.0.1' || host === 'localhost';
-		return isLoopback && port === '54321';
-	} catch {
-		return /https?:\/\/(127\.0\.0\.1|localhost):54321\b/i.test(url);
-	}
-}
-
 /**
  * Approved Local observability runtime:
  * - a positively local deploy identity (never hosted, missing or invalid)
  * - reject CELEBRA_RUNTIME_TARGET=preview
- * - Local Supabase URL (127.0.0.1|localhost:54321)
+ * - Local Supabase URL (http://127.0.0.1|localhost:54321)
  */
 export function isLocalObservabilityRuntime(env?: ObservabilityRuntimeEnv): boolean {
-	const declaredDeployEnv =
-		env && Object.prototype.hasOwnProperty.call(env, 'deployEnv')
-			? (env.deployEnv ?? '')
-			: undefined;
-	const deployEnvironment = readDeployEnvironment(
-		declaredDeployEnv === undefined
-			? undefined
-			: { deployEnv: declaredDeployEnv, isDevServer: true },
-	);
-	if (deployEnvironment !== 'local') return false;
+	if (!isLocalProcess()) return false;
 
 	const celebraTarget = fromInput(env, 'CELEBRA_RUNTIME_TARGET', [
 		'CELEBRA_RUNTIME_TARGET',
@@ -87,10 +61,8 @@ export function readObservabilityRuntimeEnv(
 	source: NodeJS.ProcessEnv = process.env,
 ): ObservabilityRuntimeEnv {
 	return {
-		NODE_ENV: source.NODE_ENV,
 		SUPABASE_URL: source.SUPABASE_URL ?? source.PUBLIC_SUPABASE_URL,
 		CELEBRA_RUNTIME_TARGET: source.CELEBRA_RUNTIME_TARGET,
-		nodeEnv: source.NODE_ENV,
 		supabaseUrl: source.SUPABASE_URL ?? source.PUBLIC_SUPABASE_URL,
 		celebraRuntimeTarget: source.CELEBRA_RUNTIME_TARGET,
 	};

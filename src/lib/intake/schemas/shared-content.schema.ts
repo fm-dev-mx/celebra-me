@@ -9,16 +9,16 @@ import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { safeHttpUrlSchema } from '@/lib/schemas/content/gifts.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
+import { envelopeRevealVariantSchema } from '@/lib/schemas/content/envelope.schema';
+import { COUNTDOWN_DAY_UNITS, COUNTDOWN_UNITS } from '@/lib/invitation/countdown-presentation';
 import {
-	COUNTDOWN_DAY_UNITS,
-	COUNTDOWN_UNITS,
 	GALLERY_LAYOUT_ROLES,
 	GALLERY_MOBILE_BROWSE_MODES,
 	GALLERY_PAIRED_ARRANGEMENTS,
 	GALLERY_PRESENTATIONS,
-	GIFTS_PRESENTATIONS,
 	assertSupportedGalleryPresentation,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/gallery-presentation';
+import { GIFTS_PRESENTATIONS } from '@/lib/invitation/gifts-presentation';
 import {
 	GALLERY_VARIANTS,
 	GIFTS_VARIANTS,
@@ -35,7 +35,7 @@ export const optionalUrl = z
 	})
 	.optional();
 
-export const uploadedRefSchema = z
+const uploadedRefSchema = z
 	.object({
 		type: z.literal('uploaded'),
 		assetId: z.uuid(),
@@ -45,7 +45,7 @@ export const uploadedRefSchema = z
 /** Accept raw strings (UUIDs, URLs, keys) that `AssetSchema` normalizes into structured objects, matching the `AssetField` type. */
 export const editableAssetSchema = z.union([AssetSchema, z.string(), uploadedRefSchema]);
 
-export const venueSchema = z
+const venueSchema = z
 	.object({
 		venueName: optionalText(200),
 		address: optionalText(500),
@@ -246,22 +246,6 @@ export const eventTimingEditorSchema = z
 	})
 	.strict();
 
-export const rsvpResponseMessageSchema = z
-	.object({
-		title: optionalText(500),
-		subtitle: optionalText(500),
-	})
-	.strict()
-	.optional();
-
-export const rsvpResponseMessagesSchema = z
-	.object({
-		confirmed: rsvpResponseMessageSchema,
-		declined: rsvpResponseMessageSchema,
-	})
-	.strict()
-	.optional();
-
 export const envelopeSchema = z
 	.object({
 		disabled: z.boolean().optional(),
@@ -300,15 +284,7 @@ export const envelopeSchema = z
 		tooltipText: z.string().max(100).optional(),
 		teaserDetails: z.string().trim().max(500).optional(),
 		variant: z.enum(THEME_PRESETS).optional(),
-		revealVariant: z
-			.enum([
-				'celestial-blue',
-				'editorial-cover',
-				'satin-filigree',
-				'seaside-lineart',
-				'storybook-lanterns',
-			])
-			.optional(),
+		revealVariant: envelopeRevealVariantSchema.optional(),
 		coverEdition: z.string().trim().max(80).optional(),
 		coverEditionLabel: z.string().trim().max(16).optional(),
 		coverVolume: z.string().trim().max(40).optional(),

@@ -8,10 +8,10 @@ import type { CompatibilityStatus, RolloutPhase } from './migration-deployment-c
 
 export type MigrateTarget = 'local' | 'preview' | 'production' | 'disposable-test';
 export type MigrateMode = 'preflight' | 'apply';
-export type AuthRequirement = 'none' | 'preview_scope_or_tty' | 'production_owner_tty';
-export type BackupRequirement = 'none' | 'prod_critical_pre_post';
-export type ExecutorKind = 'supabase_cli_push' | 'psql_atomic';
-export type VerificationRequirement = 'none' | 'history' | 'history_and_mutation_contract';
+type AuthRequirement = 'none' | 'preview_scope_or_tty' | 'production_owner_tty';
+type BackupRequirement = 'none' | 'prod_critical_pre_post';
+type ExecutorKind = 'supabase_cli_push' | 'psql_atomic';
+type VerificationRequirement = 'none' | 'history' | 'history_and_mutation_contract';
 
 export type PlanRolloutPhase = RolloutPhase | 'unspecified';
 

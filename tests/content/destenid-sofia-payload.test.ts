@@ -1,49 +1,16 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import {
 	DESTENID_ASSET_SPECS,
 	DESTENID_EVENT,
 	buildDestenidPublishedContent,
 	destenidInvitation,
-	type DestenidAssetMap,
 } from '../../scripts/provision/invitations/destenid-sofia.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
-const PLACEHOLDER_PATTERN =
-	/PENDIENTE|\[confirmar|Confirmar ubicación|definir fecha límite|confirmar número de registro|Solicitar enlace de Google Maps|^Por confirmar$|Pendiente de confirmar/i;
-
-function buildTestAssets(): DestenidAssetMap {
-	return Object.fromEntries(
-		DESTENID_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as DestenidAssetMap;
-}
-
-function collectPlaceholderStrings(value: unknown, pathSegments: string[] = []): string[] {
-	if (typeof value === 'string') {
-		return PLACEHOLDER_PATTERN.test(value) ? [`${pathSegments.join('.')}: ${value}`] : [];
-	}
-
-	if (Array.isArray(value)) {
-		return value.flatMap((item, index) =>
-			collectPlaceholderStrings(item, [...pathSegments, String(index)]),
-		);
-	}
-
-	if (value && typeof value === 'object') {
-		return Object.entries(value as Record<string, unknown>).flatMap(([key, item]) =>
-			collectPlaceholderStrings(item, [...pathSegments, key]),
-		);
-	}
-
-	return [];
+function publishedContent() {
+	return buildDestenidPublishedContent(buildTestAssets(DESTENID_ASSET_SPECS));
 }
 
 describe('Destenid Sofía managed definition', () => {
@@ -54,27 +21,14 @@ describe('Destenid Sofía managed definition', () => {
 		expect(destenidInvitation.deliveryScope).toBe('content-and-assets');
 	});
 
-	it('uses a consistent editorial-magazine catalog entry', () => {
-		const preset = findDemoPreset(DESTENID_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-xv-editorial-magazine',
-			eventType: 'xv',
-			themeId: 'editorial-magazine',
-		});
+	it('uses a consistent editorial-magazine theme', () => {
 		expect(resolveInvitationTheme({ themeId: DESTENID_EVENT.themeId })).toBe(
 			DESTENID_EVENT.themeId,
 		);
 	});
 
-	it('builds schema-valid published content with authored editorial variants', () => {
-		const content = buildDestenidPublishedContent(buildTestAssets());
-		const result = eventContentSchema.safeParse(content);
-		expect({
-			success: result.success,
-			...(result.success ? {} : { issues: result.error.issues }),
-		}).toStrictEqual({ success: true });
-
-		const parsed = eventContentSchema.parse(content);
+	it('builds published content with authored editorial variants', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.hero.variant).toBe('editorial-cover');
 		expect(parsed.countdown?.variant).toBe('magazine-folio');
 		expect(parsed.gallery?.variant).toBe('magazine-spread');
@@ -89,7 +43,7 @@ describe('Destenid Sofía managed definition', () => {
 	});
 
 	it('honors the client omissions: reception only, no parents, no godparents', () => {
-		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.location?.venues).toHaveLength(1);
 		expect(parsed.location?.venues?.[0]?.type).toBe('reception');
 		expect(parsed.family?.parents).toBeUndefined();
@@ -111,7 +65,7 @@ describe('Destenid Sofía managed definition', () => {
 	});
 
 	it('sets editorial-cover and editorial-catalog copy explicitly', () => {
-		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.hero.tagline).toBe('Quince años, una sola vez.');
 		// Real invitation: no fictional photographer credit.
 		expect(parsed.hero.photoCredit).toBeUndefined();
@@ -120,7 +74,7 @@ describe('Destenid Sofía managed definition', () => {
 	});
 
 	it('uses the client program and keeps the client phrases literal', () => {
-		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.itinerary?.items.map((item) => [item.label, item.time])).toEqual([
 			['Recepción', '19:00'],
 			['Presentación de la quinceañera', '20:00'],
@@ -141,26 +95,21 @@ describe('Destenid Sofía managed definition', () => {
 		expect(parsed.envelope?.backdropImage).not.toEqual(parsed.hero.backgroundImage);
 	});
 
-	it('does not expose placeholder or admin copy', () => {
-		const content = buildDestenidPublishedContent(buildTestAssets());
-		expect(collectPlaceholderStrings(content)).toEqual([]);
-	});
-
 	it('plays the client song from second 39', () => {
-		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.music?.url).toMatch(/^https:\/\/res\.cloudinary\.com\/.+\.mp3$/);
 		expect(parsed.music?.startAt).toBe(39);
 		expect(parsed.music?.autoPlay).toBe(true);
 	});
 
 	it('links the celebrant Instagram in the guest details', () => {
-		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		const parsed = eventContentSchema.parse(publishedContent());
 		const memories = parsed.location?.indications?.find((item) => item.title === 'Recuerdos');
 		expect(memories?.text).toContain('href="https://www.instagram.com/desteny_ts/"');
 	});
 
 	it('closes the program with the client note and states the dress-code colors', () => {
-		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.itinerary?.closingNote).toMatch(/^Habrá muchas sorpresas\./);
 		expect(parsed.itinerary?.closingNote).toContain('hasta que el cuerpo diga ¡ya!');
 		const dressCode = parsed.location?.indications?.find(

@@ -16,8 +16,12 @@ const { title, variant } = Astro.props;
 		data-state="locked"
 	>
 		<header class="rsvp__header">
-			<p class="rsvp__eyebrow">RSVP</p>
-			<span class="rsvp__separator" aria-hidden="true">◆</span>
+			{variant !== 'reply-card' && (
+				<>
+					<p class="rsvp__eyebrow">RSVP</p>
+					<span class="rsvp__separator" aria-hidden="true">◆</span>
+				</>
+			)}
 			<h2 class="rsvp__title">{title}</h2>
 		</header>
 		<div class="rsvp__locked-card" role="status" aria-live="polite" aria-atomic="true">

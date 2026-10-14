@@ -1,15 +1,14 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import {
 	buildInvitationSectionRenderDescriptors,
 	type InvitationSectionRenderDescriptor,
-	DEMO_GUEST_NAME,
 } from '@/lib/invitation/section-render-data';
+import { DEMO_GUEST_NAME } from '@/components/invitation/rsvp-logic';
 import {
 	buildPageContextFromViewModel,
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { loadFixture } from '../helpers/json-fixture';
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
@@ -42,11 +41,6 @@ function isPersonalizedAccessDescriptor(
 	return descriptor.component === 'personalized-access';
 }
 
-function loadFixture(relativePath: string) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
-
 const JEWELRY_BOX_SLUG = 'demo-xv-jewelry-box';
 
 function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
@@ -61,7 +55,6 @@ function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 
 	return prepareInvitationPageContext({
 		eventEntry,
-		slug: fixtureSlug,
 		guestContext: null,
 	});
 }
@@ -124,7 +117,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -163,7 +155,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -204,7 +195,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -238,7 +228,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 			guestContext: {
 				inviteId: 'invite-zero',
 				eventSlug: 'demo-xv-jewelry-box',
@@ -282,11 +271,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			},
 		};
 		const pageContext = buildPageContextFromViewModel({
-			slug: 'luna-y-estrella',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,
@@ -301,7 +289,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				},
 			},
 			viewModel: {
-				id: 'luna-y-estrella',
+				id: 'gemelas-fixture',
 				isDemo: false,
 				title: 'Primera Comunión de Luna y Estrella',
 				theme: {
@@ -328,7 +316,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 						personalizedAccess: { variant: 'standard' },
 						title: 'Confirma tu asistencia',
 						accessMode: 'hybrid',
-						eventSlug: 'luna-y-estrella',
+						eventSlug: 'gemelas-fixture',
 						eventType: 'primera-comunion',
 						confirmationMessage: 'Gracias por confirmar.',
 					},
@@ -380,7 +368,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		]);
 	});
 
-	it('includes interludes in ana-sofia-cota-guillen descriptors', () => {
+	it('includes interludes in lucia-fixture descriptors', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
@@ -388,7 +376,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-enchanted-rose',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -407,10 +394,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 	it('passes thank-you overlay composition metadata to the render descriptor', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
+			'src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json',
 		);
 		const eventEntry = {
-			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
+			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
 			data: {
 				...fixture,
 				thankYou: {
@@ -428,7 +415,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-bautismo-angelic-presence',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -494,7 +480,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -519,7 +504,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const buildTestContext = (isDemo: boolean) => {
 			return buildPageContextFromViewModel({
-				slug: 'test-event',
 				eventType: 'xv',
 				viewModel: {
 					id: 'test-event',
@@ -562,7 +546,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		it('overrides phone number with business phone when isDemo is true and business phone is real', () => {
 			const mockGetContactPhone = jest.mocked(getContactPhone);
 			const mockIsPlaceholderContactPhone = jest.mocked(isPlaceholderContactPhone);
-			mockGetContactPhone.mockReturnValue('5218112345678');
+			mockGetContactPhone.mockReturnValue('5211000000008');
 			mockIsPlaceholderContactPhone.mockReturnValue(false);
 
 			const pageContext = buildTestContext(true);
@@ -570,7 +554,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
 
 			expect(rsvpDescriptor).toBeDefined();
-			expect(rsvpDescriptor?.props.whatsappConfig?.phone).toBe('5218112345678');
+			expect(rsvpDescriptor?.props.whatsappConfig?.phone).toBe('5211000000008');
 			expect(rsvpDescriptor?.props.confirmationMode).toBe('both');
 		});
 

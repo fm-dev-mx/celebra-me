@@ -264,11 +264,11 @@ confirmation and before any write, schema included; read-only plans still work w
    ```
 
    No arguments prints a read-only Production plan and does not write. `--all-ready` includes only
-   evidence-backed READY schema and invitations; it never includes draft discards. Definitions the
-   owner archived (`archive` record in the definition) and definitions still in authoring
-   (`lifecycle: 'in_progress'`) are left out of no-argument and `--all-ready` plans and counted
-   apart in the summary; `--slug <slug>` still inspects an archived one, while an authoring one is
-   `BLOCKED` with `LIFECYCLE_NOT_PUBLISHED` until its definition is published. The read-only
+   evidence-backed READY schema and invitations; it never includes draft discards. Expired
+   definitions (event date + 1 year, end of day in the event time zone) and definitions still in
+   authoring (`lifecycle: 'in_progress'`) are left out of no-argument and `--all-ready` plans and
+   counted apart in the summary; `--slug <slug>` still inspects an expired one, while an authoring
+   one is `BLOCKED` with `LIFECYCLE_NOT_PUBLISHED` until its definition is published. The read-only
    Production dry-run runs before the approval is enforced: a package identical to Production is
    `IN_SYNC` without an approval, and a package that would write is `MISSING_PREVIEW_APPROVAL` with
    the reason (never approved, approval of another hash, pending, or expired after 7 days without a
@@ -750,9 +750,9 @@ tsx scripts/db/disposable-test-env.ts stop        # Stop the test environment
 tsx scripts/db/disposable-test-env.ts cleanup     # Full cleanup (stop + remove config/data)
 ```
 
-Configuration: `supabase/test/config.toml` (project ID `celebra-me-test`; ports API 54331, DB 54332,
-Studio 54333, Shadow 54330), seed data `supabase/test/seed-test-data.sql`, migrations copied from
-`supabase/migrations/` on first start.
+Configuration: `DISPOSABLE_TEST` in `scripts/db/db-target-config.ts` (project ID `celebra-me-test`;
+ports API 54331, DB 54332, Studio 54333, Shadow 54330), seed data
+`supabase/test/seed-test-data.sql`, migrations copied from `supabase/migrations/` on first start.
 
 ### Disposable migration proof
 

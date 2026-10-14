@@ -9,7 +9,7 @@ import {
 	type PreparationReadiness,
 } from '../../src/lib/invitation-preparation/index.ts';
 
-export type PublicationTransitionReasonCode =
+type PublicationTransitionReasonCode =
 	| 'READY'
 	| 'NOT_A_TRANSITION'
 	| 'DOCUMENT_MISSING'

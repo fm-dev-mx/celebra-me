@@ -45,7 +45,6 @@ describe('Theme Delivery Integration', () => {
 	it('should deliver preset identity without injecting preset color overrides', () => {
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(baseData),
-			slug: 'boda-demo',
 		});
 
 		expect(pageContext.wrapper.dataAttributes['data-theme-preset']).toBe('luxury-hacienda');
@@ -70,7 +69,6 @@ describe('Theme Delivery Integration', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(data),
-			slug: 'boda-demo',
 		});
 
 		const styles = pageContext.wrapper.scopedStyles;
@@ -95,7 +93,6 @@ describe('Theme Delivery Integration', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(data),
-			slug: 'boda-demo',
 		});
 
 		const styles = pageContext.wrapper.scopedStyles;
@@ -134,8 +131,7 @@ describe('Theme Delivery Integration', () => {
 		});
 
 		const pageContext = prepareInvitationPageContext({
-			eventEntry: makeEventEntry(data, 'events/demo-bautismo-angelic-presence'),
-			slug: 'demo-bautismo-angelic-presence',
+			eventEntry: makeEventEntry(data, 'events/demo-bautizo-angelic-presence'),
 		});
 
 		expect(pageContext.wrapper.dataAttributes['data-theme-preset']).toBe('angelic-presence');
@@ -171,8 +167,7 @@ describe('Theme Delivery Integration', () => {
 		});
 
 		const pageContext = prepareInvitationPageContext({
-			eventEntry: makeEventEntry(data, 'events/demo-bautismo-angelic-presence'),
-			slug: 'demo-bautismo-angelic-presence',
+			eventEntry: makeEventEntry(data, 'events/demo-bautizo-angelic-presence'),
 		});
 
 		const themePresetClasses = pageContext.wrapper.className
@@ -213,8 +208,7 @@ describe('Theme Delivery Integration', () => {
 		});
 
 		const pageContext = prepareInvitationPageContext({
-			eventEntry: makeEventEntry(celestialBlueData, 'events/ana-sofia-cota-guillen'),
-			slug: 'ana-sofia-cota-guillen',
+			eventEntry: makeEventEntry(celestialBlueData, 'events/lucia-fixture'),
 		});
 
 		expect(pageContext.wrapper.dataAttributes['data-theme-preset']).toBe('celestial-blue');

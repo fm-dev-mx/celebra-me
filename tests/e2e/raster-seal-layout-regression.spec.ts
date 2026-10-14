@@ -24,8 +24,9 @@ function doBoxesIntersect(r1: Rect, r2: Rect): boolean {
 
 const INVENTORIED_ROUTES = [
 	{
-		route: '/baby-shower/leah-lexa?forceEnvelope=true',
-		name: 'Leah Lexa (Real)',
+		// The only remaining consumer of an image (`sealImage`) seal.
+		route: '/xv/allison-scarlett?forceEnvelope=true',
+		name: 'Allison Scarlett (Real)',
 		renderer: 'raster',
 	},
 	{
@@ -39,7 +40,7 @@ const INVENTORIED_ROUTES = [
 		renderer: 'wax-medallion',
 	},
 	{
-		route: '/bautizo/demo-bautismo-angelic-presence?forceEnvelope=true',
+		route: '/bautizo/demo-bautizo-angelic-presence?forceEnvelope=true',
 		name: 'Angelic Presence (Demo)',
 		renderer: 'monogram',
 	},
@@ -54,7 +55,7 @@ const INVENTORIED_ROUTES = [
 		renderer: 'wax-organic',
 	},
 	{
-		route: '/primera-comunion/demo-primera-comunion-illustrated?forceEnvelope=true',
+		route: '/primera-comunion/demo-primera-comunion-angelic-presence?forceEnvelope=true',
 		name: 'Illustrated Communion (Demo)',
 		renderer: 'wax-organic',
 	},
@@ -81,8 +82,12 @@ test.describe('Seal Sizing, Tier Selection & Layout Contract Regression', () => 
 			const envelopeWrapper = page.locator('.envelope-wrapper');
 			await expect(envelopeWrapper).toBeVisible();
 
-			const trigger = page.locator('[data-envelope-open]');
+			const trigger = page.locator('.envelope-seal-button[data-envelope-open]');
 			await expect(trigger).toBeVisible();
+			// Pin the image-seal consumer so a content change cannot silently drop raster coverage.
+			if (item.renderer === 'raster') {
+				await expect(trigger).toHaveAttribute('data-seal-renderer', 'raster');
+			}
 
 			// Verify layout bounding boxes
 			const rects = await page.evaluate(() => {
@@ -150,7 +155,7 @@ test.describe('Seal Sizing, Tier Selection & Layout Contract Regression', () => 
 
 		test(`${item.name} pointer and keyboard open interaction`, async ({ page }) => {
 			await page.goto(item.route, { waitUntil: 'domcontentloaded' });
-			const trigger = page.locator('[data-envelope-open]');
+			const trigger = page.locator('.envelope-seal-button[data-envelope-open]');
 			await expect(trigger).toBeVisible();
 
 			// Test click opening
@@ -163,7 +168,7 @@ test.describe('Seal Sizing, Tier Selection & Layout Contract Regression', () => 
 
 	// Expanded Responsive Viewport Matrix on representative consumer routes
 	const REPRESENTATIVE_ROUTES = [
-		{ route: '/baby-shower/leah-lexa?forceEnvelope=true', name: 'Leah Lexa (Raster)' },
+		{ route: '/xv/allison-scarlett?forceEnvelope=true', name: 'Allison Scarlett (Raster)' },
 		{
 			route: '/xv/demo-xv-enchanted-rose?forceEnvelope=true',
 			name: 'Enchanted Rose (Wax Organic)',

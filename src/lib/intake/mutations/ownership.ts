@@ -8,9 +8,7 @@ export type InvitationOwnershipMode =
 
 export const INVITATION_FIELD_OWNERSHIP = {
 	eventType: 'definition_managed',
-	baseDemoId: 'definition_managed',
 	themeId: 'definition_managed',
-	snapshot: 'definition_managed',
 	kind: 'definition_managed',
 	title: 'definition_seed_target_owned',
 	slug: 'definition_seed_target_owned',
@@ -29,15 +27,13 @@ export const INVITATION_FIELD_OWNERSHIP = {
 	guestConfirmations: 'rsvp_owned',
 } as const satisfies Record<string, InvitationOwnershipMode>;
 
-export type InvitationOwnedField = keyof typeof INVITATION_FIELD_OWNERSHIP;
+type InvitationOwnedField = keyof typeof INVITATION_FIELD_OWNERSHIP;
 
 export interface ManagedInvitationMetadataIntent {
 	title: string;
 	slug: string;
 	eventType: string;
-	baseDemoId: string;
 	themeId: string;
-	snapshot: Record<string, unknown>;
 	clientName: string;
 	clientEmail: string;
 	clientWhatsapp: string;
@@ -72,18 +68,6 @@ export function resolveManagedInvitationMetadata(
 		ownerUserId: existing.ownerUserId,
 		status: existing.status,
 	};
-}
-
-/** Definitions seed aliases only. Once a target alias exists, managed updates preserve it. */
-export function resolveManagedHostAlias(
-	definitionAlias: string,
-	targetAlias: string | null | undefined,
-): string {
-	return targetAlias?.trim() || definitionAlias;
-}
-
-export function isRsvpOwnedField(field: InvitationOwnedField): boolean {
-	return INVITATION_FIELD_OWNERSHIP[field] === 'rsvp_owned';
 }
 
 const PATH_OWNERSHIP_ALIASES: Record<string, InvitationOwnedField> = {

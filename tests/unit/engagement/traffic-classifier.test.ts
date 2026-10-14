@@ -2,7 +2,6 @@ import {
 	classifyServerTraffic,
 	deviceClassFromRequest,
 	isAutomatedUserAgent,
-	isProductionEngagementEnvironment,
 } from '@/lib/rsvp/engagement/traffic-classifier';
 
 const IPHONE_SAFARI =
@@ -18,7 +17,7 @@ const INSTAGRAM_IN_APP =
 const FACEBOOK_IN_APP =
 	'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/129.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/480.0.0.0;]';
 
-const PRODUCTION = { deployEnvironment: 'production' };
+const PRODUCTION = { deployEnvironment: 'production' } as const;
 
 describe('guest engagement traffic classifier', () => {
 	it.each([
@@ -52,9 +51,9 @@ describe('guest engagement traffic classifier', () => {
 	});
 
 	it('counts only hosted Production as production', () => {
-		expect(isProductionEngagementEnvironment({ deployEnvironment: 'production' })).toBe(true);
-		expect(isProductionEngagementEnvironment({ deployEnvironment: 'preview' })).toBe(false);
-		expect(isProductionEngagementEnvironment({ deployEnvironment: null })).toBe(false);
+		expect(classifyServerTraffic(IPHONE_SAFARI, { deployEnvironment: null })).toBe(
+			'non_production',
+		);
 	});
 
 	it('derives a coarse device class', () => {

@@ -3,6 +3,7 @@
     "isDemo": true,
     "templateId": "boda-jewelry-box-wedding",
     "_assetSlug": "demo-boda-jewelry-box-wedding",
+    "visualProfileId": "demo-boda-jewelry-box-wedding",
     "title": "Sofía & Alejandro",
     "description": "Una invitación editorial de preboda en Puebla: arquitectura, papelería y retratos que anticipan una celebración íntima.",
     "theme": {
@@ -105,7 +106,7 @@
             "variant": "ornamented"
         },
         "whatsappConfig": {
-            "phone": "5212221234567",
+            "phone": "5210000000001",
             "confirmedTemplate": "Hola. Somos {name}. Confirmamos con mucho gusto nuestra asistencia a la boda de Sofía y Alejandro. Asistentes: {guestCount}.",
             "declinedTemplate": "Hola. Somos {name}. Lamentamos no poder acompañarles, pero les enviamos nuestros mejores deseos.",
             "omitTitle": true

@@ -99,13 +99,11 @@ afterEach(() => {
 	globalThis.fetch = originalFetch;
 });
 
-import { isDevEnvironment } from '@/lib/environment';
+import { asLocalDevServer } from '@tests/helpers/deploy-identity';
 
 // This suite models a local Astro process, whose storage target follows the local
 // deploy identity (a built bundle without CELEBRA_DEPLOY_ENV would fail closed).
-const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-beforeEach(() => mockIsDevEnvironment.mockReturnValue(true));
-afterEach(() => mockIsDevEnvironment.mockReturnValue(false));
+beforeEach(asLocalDevServer);
 
 describe('importBundledAsset', () => {
 	it('rejects invalid bundledKey', async () => {
@@ -230,9 +228,9 @@ describe('importBundledAsset', () => {
 				kind: 'demo',
 				slug: null,
 				eventType: 'bautizo',
-				snapshot: { previewSlug: 'demo-bautismo-angelic-presence' },
+				snapshot: { previewSlug: 'demo-bautizo-angelic-presence' },
 			});
-			mockResolveAssetSlug.mockReturnValue('demo-bautismo-angelic-presence');
+			mockResolveAssetSlug.mockReturnValue('demo-bautizo-angelic-presence');
 			mockGetEventAsset.mockReturnValue({
 				src: '/assets/interlude-02.webp',
 				width: 1080,
@@ -249,7 +247,7 @@ describe('importBundledAsset', () => {
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);
 			expect(mockResolveAssetSlug).toHaveBeenCalled();
 			expect(mockGetEventAsset).toHaveBeenCalledWith(
-				'demo-bautismo-angelic-presence',
+				'demo-bautizo-angelic-presence',
 				'interlude02',
 			);
 		});
@@ -258,11 +256,11 @@ describe('importBundledAsset', () => {
 			mockFindInvitation.mockResolvedValue({
 				id: INVITATION_ID,
 				kind: 'client',
-				slug: 'luna-y-estrella',
+				slug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				snapshot: { previewSlug: 'demo-xv-jewelry-box' },
 			});
-			mockResolveAssetSlug.mockReturnValue('luna-y-estrella-primera-comunion');
+			mockResolveAssetSlug.mockReturnValue('gemelas-fixture-primera-comunion');
 			mockGetEventAsset.mockReturnValue({
 				src: '/assets/interlude-02.webp',
 				width: 1080,
@@ -278,7 +276,7 @@ describe('importBundledAsset', () => {
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(mockResolveAssetSlug).toHaveBeenCalled();
 			expect(mockGetEventAsset).toHaveBeenCalledWith(
-				'luna-y-estrella-primera-comunion',
+				'gemelas-fixture-primera-comunion',
 				'interlude02',
 			);
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);

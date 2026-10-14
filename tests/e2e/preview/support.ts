@@ -141,7 +141,7 @@ export async function readSessionIdentity(page: Page): Promise<SessionIdentity> 
 	return { userId: payload.userId, email: payload.email, role: payload.role };
 }
 
-export async function readCsrfToken(page: Page): Promise<string> {
+async function readCsrfToken(page: Page): Promise<string> {
 	const token = await page.locator('meta[name="csrf-token"]').getAttribute('content');
 	if (!token) throw new Error('Authenticated dashboard did not provide a CSRF token.');
 	return token;

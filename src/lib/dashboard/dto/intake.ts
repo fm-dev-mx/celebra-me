@@ -1,3 +1,4 @@
+import type { InvitationWorkflow } from '@/lib/intake/workflow';
 import type { InvitationStatus } from '@/lib/intake/types';
 import type { InvitationValidity } from '@/lib/intake/invitation-validity';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
@@ -5,7 +6,7 @@ import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation
 import type { InvitationAccessRecord } from '@/lib/invitation/access/invitation-access-command';
 
 export interface InvitationDTO {
-	workflow?: import('@/lib/intake/workflow').InvitationWorkflow;
+	workflow?: InvitationWorkflow;
 	id: string;
 	kind: 'demo' | 'client';
 	sourceInvitationId: string | null;
@@ -13,6 +14,7 @@ export interface InvitationDTO {
 	title: string;
 	eventType: string;
 	status: InvitationStatus;
+	/** Mirrors the legacy DB column `base_demo_id`; leaves with its contract migration. */
 	baseDemoId: string;
 	themeId: string;
 	clientName: string;
@@ -83,7 +85,7 @@ export interface DraftResponse {
 	draft: InvitationContentDraftDTO | null;
 }
 
-export interface InvitationEditorPublicationDTO {
+interface InvitationEditorPublicationDTO {
 	hasPublishedContent: boolean;
 	version: number | null;
 	publishedAt: string | null;

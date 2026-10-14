@@ -14,7 +14,7 @@ export interface DbRow {
 	[key: string]: unknown;
 }
 
-export interface UpsertFailure {
+interface UpsertFailure {
 	primaryKey: string;
 	message: string;
 }

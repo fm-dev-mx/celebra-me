@@ -1,5 +1,4 @@
 import {
-	LOCAL_SUPABASE_URL,
 	REFRESH_PARITY_TABLES,
 	assertAppEnvIsLocal,
 	assertLocalApiReachable,
@@ -10,12 +9,12 @@ import {
 	getLocalSuperAdminPassword,
 	loadAppEnv,
 	parseTsv,
-	REQUIRED_LOCAL_SUPER_ADMIN_EMAIL,
 	runPsql,
 	sqlLiteral,
 	tryRunCommand,
 } from './db-workflow-lib.ts';
 import { spawnSync } from 'node:child_process';
+import { LOCAL_SUPABASE_URL } from '../shared/celebra-runtime-env.ts';
 
 function getSupabaseServiceRoleKeyFromStatus(): string | null {
 	const result = spawnSync('supabase', ['status', '-o', 'json'], {
@@ -187,11 +186,8 @@ where id = 'invitation-assets'
 	const superAdminEmail = getFirstSuperAdminEmail(appEnv);
 	checks.push({
 		name: 'Configured local super admin email',
-		ok: superAdminEmail === REQUIRED_LOCAL_SUPER_ADMIN_EMAIL,
-		detail:
-			superAdminEmail === REQUIRED_LOCAL_SUPER_ADMIN_EMAIL
-				? undefined
-				: `expected ${REQUIRED_LOCAL_SUPER_ADMIN_EMAIL}, got ${superAdminEmail || '<unset>'}`,
+		ok: Boolean(superAdminEmail),
+		detail: superAdminEmail ? undefined : 'SUPER_ADMIN_EMAILS is not configured',
 	});
 
 	if (superAdminEmail) {

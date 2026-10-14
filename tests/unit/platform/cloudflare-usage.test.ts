@@ -11,7 +11,7 @@ const ACCOUNT_ID = '0123456789abcdef0123456789abcdef';
 const TOKEN = 'synthetic-analytics-token';
 const NOW = new Date('2026-10-24T12:00:00.000Z');
 const ENV_NAMES = [
-	'CELEBRA_DEPLOY_ENV',
+	'SUPABASE_URL',
 	'MEMORIES_CLOUDFLARE_ACCOUNT_ID',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
@@ -108,6 +108,7 @@ afterAll(() => {
 beforeEach(() => {
 	resetCloudflareUsageCache();
 	for (const name of ENV_NAMES) delete process.env[name];
+	process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
 	process.env.MEMORIES_CLOUDFLARE_ACCOUNT_ID = ACCOUNT_ID;
 	process.env.MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN = TOKEN;
 });

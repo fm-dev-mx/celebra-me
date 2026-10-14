@@ -149,6 +149,38 @@ function validateRetiredTablesClient(root: string): string[] {
 	return errors;
 }
 
+const GUEST_ENGAGEMENT_ONLY_CAPABILITY = 'guest_engagement_only_client';
+export const ENGAGEMENT_RECORDER_PATH = 'src/lib/rsvp/repositories/engagement.repository.ts';
+const RETIRED_GUEST_VIEW_ROUTE = 'src/pages/api/invitacion/[inviteId]/view.ts';
+/** Schema audit tooling checks that the retired RPC is gone, so it may name it. */
+const RETIRED_GUEST_VIEW_AUDIT_PATHS = new Set([
+	'scripts/db/mutation-schema-contract-query.ts',
+	'scripts/db/validate-deployed-app-capabilities.ts',
+]);
+
+/** Guests are recorded only through the engagement RPC; the legacy view route and RPC are gone. */
+function validateGuestEngagementOnlyClient(root: string): string[] {
+	const errors: string[] = [];
+	const recorder = read(root, ENGAGEMENT_RECORDER_PATH, errors);
+	if (recorder && !recorder.includes('rpc/record_guest_engagement_events_public')) {
+		errors.push(
+			`Capability proof is missing the engagement RPC in ${ENGAGEMENT_RECORDER_PATH}.`,
+		);
+	}
+	if (existsSync(resolve(root, RETIRED_GUEST_VIEW_ROUTE))) {
+		errors.push(`Retired guest view route still exists: ${RETIRED_GUEST_VIEW_ROUTE}.`);
+	}
+	for (const path of listExecutableFiles(root)) {
+		if (RETIRED_GUEST_VIEW_AUDIT_PATHS.has(path)) continue;
+		if (
+			readFileSync(resolve(root, path), 'utf8').includes('track_guest_invitation_view_public')
+		) {
+			errors.push(`Retired guest view RPC is still referenced by ${path}.`);
+		}
+	}
+	return errors;
+}
+
 export function validateDeployedAppCapabilities(root = process.cwd()): string[] {
 	const errors: string[] = [];
 	const manifestPath = resolve(root, 'supabase/deployed-app-capabilities.json');
@@ -174,6 +206,9 @@ export function validateDeployedAppCapabilities(root = process.cwd()): string[] 
 	}
 	if (capabilities.includes(RETIRED_TABLES_CAPABILITY)) {
 		errors.push(...validateRetiredTablesClient(root));
+	}
+	if (capabilities.includes(GUEST_ENGAGEMENT_ONLY_CAPABILITY)) {
+		errors.push(...validateGuestEngagementOnlyClient(root));
 	}
 	return errors;
 }

@@ -253,7 +253,6 @@ are not a temporary fallback for real/client invitations.
   - `src/styles/auth/` for authentication surface styles
   - `src/styles/home/` for landing page styles
   - `src/styles/ui/` for base UI component styles
-  - `src/styles/common/` for shared common styles
   - `src/styles/global/` for global/reset styles
   - `src/styles/layout/` for layout shell styles
   - `src/styles/tools/` for SCSS tools and functions

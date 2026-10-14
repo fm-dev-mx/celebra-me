@@ -18,15 +18,15 @@ import type {
 	ValidationRunStatus,
 } from './types.ts';
 
-export const VALIDATION_EVIDENCE_SCHEMA_VERSION = 1 as const;
+const VALIDATION_EVIDENCE_SCHEMA_VERSION = 1 as const;
 
 const PROJECT_ROOT = process.cwd();
 
-export function validationEvidenceRelativePath(type: ValidationEvidenceType): string {
+function validationEvidenceRelativePath(type: ValidationEvidenceType): string {
 	return `.tmp/observability/validation/${type}.json`;
 }
 
-export function validationEvidenceAbsolutePath(type: ValidationEvidenceType): string {
+function validationEvidenceAbsolutePath(type: ValidationEvidenceType): string {
 	return resolve(PROJECT_ROOT, validationEvidenceRelativePath(type));
 }
 
@@ -54,7 +54,7 @@ function isValidationEvidenceSnapshot(value: unknown): value is ValidationEviden
  * May throw on filesystem errors — callers must catch write failures separately
  * so a failed validation is never converted into a pass.
  */
-export function writeValidationEvidenceSnapshot(snapshot: ValidationEvidenceSnapshot): void {
+function writeValidationEvidenceSnapshot(snapshot: ValidationEvidenceSnapshot): void {
 	if (snapshot.schemaVersion !== VALIDATION_EVIDENCE_SCHEMA_VERSION) {
 		throw new Error(
 			`Unsupported validation evidence schemaVersion: ${String(snapshot.schemaVersion)}`,
@@ -119,7 +119,7 @@ export interface WriteValidationEvidenceInput {
 	failures?: ValidationFailureRecord[];
 }
 
-export function buildValidationEvidenceSnapshot(
+function buildValidationEvidenceSnapshot(
 	input: WriteValidationEvidenceInput,
 ): ValidationEvidenceSnapshot {
 	const source = readObservabilitySourceState();
@@ -149,7 +149,7 @@ export function buildValidationEvidenceSnapshot(
  * Build + write evidence. Returns the snapshot on success.
  * Throws on write failure — callers must not reinterpret validation status.
  */
-export function writeRegressionOrScreenshotEvidence(
+function writeRegressionOrScreenshotEvidence(
 	input: WriteValidationEvidenceInput,
 ): ValidationEvidenceSnapshot {
 	const snapshot = buildValidationEvidenceSnapshot(input);

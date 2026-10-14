@@ -65,7 +65,6 @@ function definition(slug: string): InvitationDefinition {
 		title: 'Título',
 		clientName: 'Cliente',
 		hostLoginAlias: `${slug}-host`,
-		baseDemoId: 'demo-boda-jewelry-box-wedding',
 		themeId: 'jewelry-box-wedding',
 		visualProfileId: slug,
 		eventTiming: {

@@ -49,7 +49,7 @@ export interface GuestExperienceData {
 	};
 }
 
-export interface PricingTierDetail {
+interface PricingTierDetail {
 	label: string;
 	value: string;
 }
@@ -58,7 +58,7 @@ export interface PricingTierDetail {
  * Package card copy. Names, prices, promo codes and WhatsApp messages are resolved from
  * `src/data/promo-campaign.data.ts` through `packageId`.
  */
-export interface PricingTier {
+interface PricingTier {
 	packageId: PromoPackageId;
 	badge?: string;
 	isPrimary?: boolean;

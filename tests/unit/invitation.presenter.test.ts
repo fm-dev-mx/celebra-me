@@ -1,20 +1,13 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import {
 	type InvitationRenderPlanItem,
 	buildPageContextFromViewModel,
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
 import { isEventAssetKey } from '@/lib/assets/asset-keys';
+import { loadFixture } from '../helpers/json-fixture';
 
 function describeRenderPlan(items: InvitationRenderPlanItem[]): string[] {
 	return items.map((item) => (item.type === 'section' ? item.section : item.type));
-}
-
-function loadFixture(relativePath: string) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
 describe('prepareInvitationPageContext', () => {
@@ -28,7 +21,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 			guestContext: {
 				inviteId: 'invite-123',
 				eventSlug: 'demo-xv-jewelry-box',
@@ -74,7 +66,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.layout.title).toBe(fixture.title);
@@ -123,7 +114,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-enchanted-rose',
 		});
 
 		expect(context.viewModel.sectionOrder).toBeDefined();
@@ -165,7 +155,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.envelope?.name).toBe('Luna Yamileth y Estrella Abigail');
@@ -185,7 +174,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-enchanted-rose',
 		});
 
 		expect(context.viewModel.hero.focalPointMobile).toBe('50% 32%');
@@ -226,7 +214,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.guestContext).toBeUndefined();
@@ -252,7 +239,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.viewModel.sections.location?.indicationsHeading).toBe('Indicaciones');
@@ -300,7 +286,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'my-invitation',
 			eventType: 'xv',
 		});
 
@@ -323,7 +308,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'ordered-invitation',
 			eventType: 'xv',
 		});
 
@@ -347,7 +331,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'default-invitation',
 			eventType: 'boda',
 		});
 
@@ -365,7 +348,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'reveal-sealed',
 			eventType: 'xv',
 		});
 
@@ -394,7 +376,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'venues-hero-test',
 			eventType: 'baby-shower',
 		});
 
@@ -416,8 +397,7 @@ describe('buildPageContextFromViewModel', () => {
 				},
 			},
 		} as any;
-		const build = () =>
-			buildPageContextFromViewModel({ viewModel, slug: 'venue-selection', eventType: 'xv' });
+		const build = () => buildPageContextFromViewModel({ viewModel, eventType: 'xv' });
 		expect(build()).toMatchObject({ heroVenueName: 'Recepción', heroTime: '17:00' });
 		expect(viewModel.sections.location.venues[0].venueName).toBe('Ceremonia');
 		viewModel.sections.location.venues[1].isVisible = false;
@@ -442,7 +422,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'legacy-hero-test',
 			eventType: 'xv',
 		});
 
@@ -460,7 +439,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'no-location-test',
 			eventType: 'xv',
 		});
 
@@ -471,7 +449,7 @@ describe('buildPageContextFromViewModel', () => {
 	it('omits location from render plan when absent (Luna y Estrella scenario)', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			title: 'Primera Comunión de Luna y Estrella',
 			sectionOrder: ['countdown', 'quote', 'rsvp', 'thankYou'],
 			sections: {
@@ -480,7 +458,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 				thankYou: { message: 'Gracias.' },
@@ -489,7 +467,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
 			eventType: 'primera-comunion',
 		});
 
@@ -507,7 +484,7 @@ describe('buildPageContextFromViewModel', () => {
 	it('keeps Luna y Estrella protected location out of anonymous page data', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			title: 'Primera Comunión de Luna y Estrella',
 			sectionOrder: [
 				'quote',
@@ -552,7 +529,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 				thankYou: { message: 'Gracias.' },
@@ -566,7 +543,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
 			eventType: 'primera-comunion',
 		});
 
@@ -602,7 +578,7 @@ describe('buildPageContextFromViewModel', () => {
 		};
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			title: 'Primera Comunión de Luna y Estrella',
 			sectionOrder: [
 				'quote',
@@ -617,7 +593,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 			},
@@ -630,11 +606,10 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,
@@ -667,13 +642,13 @@ describe('buildPageContextFromViewModel', () => {
 	it('keeps Luna y Estrella response editing enabled even before protected location data is patched', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			sectionOrder: ['rsvp'],
 			sections: {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 			},
@@ -681,11 +656,10 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,
@@ -707,7 +681,7 @@ describe('buildPageContextFromViewModel', () => {
 	it('keeps Luna y Estrella protected location hidden for declined guests', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			sections: {
 				location: {
 					variant: 'standard',
@@ -724,7 +698,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 			},
@@ -732,11 +706,10 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-declined',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,
@@ -804,7 +777,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'regression-after-rsvp-test',
 			eventType: 'primera-comunion',
 		});
 
@@ -854,7 +826,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'regression-after-rsvp-test',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',

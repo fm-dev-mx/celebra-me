@@ -55,12 +55,6 @@ function xvFacts(overrides: PreparationFact[] = []): PreparationFact[] {
 			notes: 'Default for MX invites; not explicitly stated.',
 		},
 		{
-			fieldId: 'baseDemoId',
-			value: 'demo-xv-jewelry-box',
-			classification: 'requires_owner_decision',
-			source: 'agent-recommendation',
-		},
-		{
 			fieldId: 'sourceAssetPath',
 			value: 'tests/fixtures/invitation-preparation/sofia-demo-prep/assets',
 			classification: 'verified',
@@ -99,12 +93,12 @@ function xvFacts(overrides: PreparationFact[] = []): PreparationFact[] {
 		{
 			fieldId: 'rsvpGuestCap',
 			value: '4',
-			classification: 'verified',
-			source: 'whatsapp',
+			classification: 'requires_owner_decision',
+			source: 'agent-recommendation',
 		},
 		{
 			fieldId: 'rsvpWhatsappPhone',
-			value: '5215512345678',
+			value: '5211000000011',
 			classification: 'verified',
 			source: 'whatsapp',
 		},
@@ -154,12 +148,6 @@ function bodaFacts(overrides: PreparationFact[] = []): PreparationFact[] {
 			value: '2026-10-30',
 			classification: 'verified',
 			source: 'whatsapp',
-		},
-		{
-			fieldId: 'baseDemoId',
-			value: 'demo-boda-jewelry-box-wedding',
-			classification: 'verified',
-			source: 'owner-decision',
 		},
 		{
 			fieldId: 'sourceAssetPath',
@@ -239,10 +227,10 @@ describe('invitation preparation — event completeness', () => {
 		expect(listEventCompletenessContracts()).toHaveLength(6);
 	});
 
-	it('distinguishes blocking demo decision from non-blocking dress code', () => {
+	it('distinguishes a blocking owner decision from non-blocking dress code', () => {
 		const evaluation = evaluateEventCompleteness('xv', xvFacts());
 		expect(evaluation.sufficientToPrepare).toBe(false);
-		expect(evaluation.blockingGaps.map((gap) => gap.fieldId)).toContain('baseDemoId');
+		expect(evaluation.blockingGaps.map((gap) => gap.fieldId)).toContain('rsvpGuestCap');
 		expect(evaluation.nonBlockingGaps.map((gap) => gap.fieldId)).toContain('dressCode');
 		expect(
 			evaluation.fields.find((field) => field.fieldId === 'receptionVenueName')?.status,
@@ -254,8 +242,8 @@ describe('invitation preparation — event completeness', () => {
 			'xv',
 			xvFacts([
 				{
-					fieldId: 'baseDemoId',
-					value: 'demo-xv-jewelry-box',
+					fieldId: 'rsvpGuestCap',
+					value: '4',
 					classification: 'verified',
 					source: 'owner-decision',
 				},
@@ -437,7 +425,7 @@ describe('invitation preparation — placeholders and readiness', () => {
 				blockingIssues: [],
 			},
 			design: {
-				demoClassification: 'requires_owner_decision',
+				presetClassification: 'requires_owner_decision',
 				blockingUnresolvedDecisions: [],
 			},
 		});
@@ -449,8 +437,8 @@ describe('invitation preparation — placeholders and readiness', () => {
 			'xv',
 			xvFacts([
 				{
-					fieldId: 'baseDemoId',
-					value: 'demo-xv-jewelry-box',
+					fieldId: 'rsvpGuestCap',
+					value: '4',
 					classification: 'verified',
 					source: 'owner',
 				},
@@ -476,7 +464,7 @@ describe('invitation preparation — placeholders and readiness', () => {
 				blockingIssues: [],
 			},
 			design: {
-				demoClassification: 'verified',
+				presetClassification: 'verified',
 				blockingUnresolvedDecisions: [],
 			},
 		});
@@ -495,7 +483,7 @@ describe('invitation preparation — placeholders and readiness', () => {
 				blockingIssues: [],
 			},
 			design: {
-				demoClassification: 'verified',
+				presetClassification: 'verified',
 				blockingUnresolvedDecisions: [],
 			},
 		});
@@ -586,7 +574,7 @@ describe('invitation preparation — markdown resume', () => {
 | field | value | classification | source | notes |
 | ----- | ----- | -------------- | ------ | ----- |
 | celebrantName | Sofía Martínez | verified | whatsapp |  |
-| baseDemoId | demo-xv-jewelry-box | verified | owner |  |
+| rsvpGuestCap | 4 | verified | owner |  |
 | dressCode | [[PENDIENTE:DRESS_CODE]] | missing |  | non-blocking |
 
 Placeholder: [[PENDIENTE:DRESS_CODE]]

@@ -31,7 +31,7 @@ import type {
 	InvitationAccessRecord,
 } from '@/lib/invitation/access/invitation-access-command';
 
-export class AdminApi {
+class AdminApi {
 	private readonly passwordMutationRoots = new Map<string, string>();
 	private readonly aliasMutationRoots = new Map<string, string>();
 	private readonly metadataMutationRoots = new Map<string, string>();

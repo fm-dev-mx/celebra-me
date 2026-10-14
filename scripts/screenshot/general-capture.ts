@@ -2,7 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — General Page Screenshot Orchestration
 // =============================================================================
 
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import type { ScreenshotJob, CaptureResult } from './types.js';
 import {
 	type CaptureTask,

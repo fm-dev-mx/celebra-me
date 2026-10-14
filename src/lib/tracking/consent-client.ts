@@ -18,7 +18,7 @@ export interface ConsentState {
 
 const STORAGE_KEY = 'cm_consent';
 
-export const CONSENT_DEFAULT: ConsentState = {
+const CONSENT_DEFAULT: ConsentState = {
 	necessary: true as const,
 	analytics: false,
 	marketing: false,

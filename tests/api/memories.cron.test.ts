@@ -46,7 +46,6 @@ interface EvidenceLine {
 		completedAt: string | null;
 		payload: Record<string, unknown>;
 		commitSha?: string;
-		deploymentId?: string;
 	};
 }
 
@@ -131,7 +130,7 @@ describe('GET /api/cron/memories-cleanup', () => {
 				reasonCode: 'cleanup_started',
 				environment: 'preview',
 				completedAt: null,
-				payload: { invocation_id: null, claimed: null },
+				payload: { claimed: null },
 			},
 		});
 		expect(completed).toMatchObject({
@@ -143,7 +142,6 @@ describe('GET /api/cron/memories-cleanup', () => {
 				environment: 'preview',
 				commitSha: 'b'.repeat(40),
 				payload: {
-					invocation_id: null,
 					claimed: 3,
 					deleted: 3,
 					failed: 0,
@@ -223,11 +221,18 @@ describe('GET /api/cron/memories-cleanup', () => {
 		]);
 
 		infoSpy.mockClear();
-		resetEnv({ CELEBRA_DEPLOY_ENV: '' });
+		resetEnv({ CELEBRA_DEPLOY_ENV: '', SUPABASE_URL: 'http://127.0.0.1:54321' });
 		await GET(context(`Bearer ${CRON_SECRET}`));
 		expect(evidenceLines(infoSpy).map((line) => line.evidence.environment)).toEqual([
 			'local',
 			'local',
 		]);
+	});
+
+	it('refuses to run when the deploy identity is not declared', async () => {
+		resetEnv({ CELEBRA_DEPLOY_ENV: '' });
+		const response = await GET(context(`Bearer ${CRON_SECRET}`));
+		expect(response.status).toBe(503);
+		expect(mockRunCleanup).not.toHaveBeenCalled();
 	});
 });

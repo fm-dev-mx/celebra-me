@@ -5,11 +5,10 @@ import {
 	type UploadedAssetMap,
 } from './invitation-definition.ts';
 
-export const NORMA_EVENT = {
+const NORMA_EVENT = {
 	slug: 'norma-hernandez',
 	eventType: 'cumple',
 	title: '65 años de Norma Hernandez',
-	baseDemoId: 'demo-cumple-luxury-hacienda',
 	themeId: 'luxury-hacienda',
 	localDateTime: '2026-11-14T17:00',
 	timeZone: 'America/Mazatlan',
@@ -30,7 +29,7 @@ export const NORMA_COPY = {
 		'Gracias por acompañarnos en este día tan especial para mí y mi familia. Su presencia hará de esta noche un momento inolvidable.',
 } as const;
 
-export const NORMA_PHOTOGRAPHS = [
+const NORMA_PHOTOGRAPHS = [
 	{
 		key: 'childhood',
 		width: 900,
@@ -76,7 +75,7 @@ export const NORMA_PHOTOGRAPHS = [
 ] as const;
 
 export type NormaAssetKey = (typeof NORMA_PHOTOGRAPHS)[number]['key'];
-export const NORMA_ASSETS: readonly InvitationAssetSpec[] = NORMA_PHOTOGRAPHS.map((photo) => ({
+const NORMA_ASSETS: readonly InvitationAssetSpec[] = NORMA_PHOTOGRAPHS.map((photo) => ({
 	...photo,
 	relativePath: `${photo.key}.webp`,
 	displayName: photo.alt,
@@ -103,7 +102,7 @@ const venueData = [
 	},
 ] as const;
 
-export function buildNormaPublishedContent(
+function buildNormaPublishedContent(
 	assets: UploadedAssetMap<NormaAssetKey>,
 ): Record<string, unknown> {
 	return {
@@ -290,7 +289,6 @@ export const normaInvitation = defineInvitation<NormaAssetKey>({
 	clientName: 'Norma Hernandez',
 	hostLoginAlias: 'norma_hernandez',
 	photosReceived: true,
-	baseDemoId: NORMA_EVENT.baseDemoId,
 	themeId: NORMA_EVENT.themeId,
 	visualProfileId: NORMA_EVENT.slug,
 	eventTiming: {

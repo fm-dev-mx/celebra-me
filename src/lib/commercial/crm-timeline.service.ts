@@ -9,7 +9,7 @@ export interface CrmTimelineEntry {
 	metadata?: Record<string, unknown>;
 }
 
-export type CrmTimelineEventType =
+type CrmTimelineEventType =
 	| 'lead_created'
 	| 'order_created'
 	| 'deposit_paid'

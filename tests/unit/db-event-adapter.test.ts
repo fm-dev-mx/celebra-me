@@ -1,13 +1,6 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
-
-function loadFixture(relativePath: string) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-}
+import { loadFixture } from '../helpers/json-fixture';
 
 function makeDbSource(slug: string, eventType: string, fixturePath: string) {
 	const data = loadFixture(fixturePath);

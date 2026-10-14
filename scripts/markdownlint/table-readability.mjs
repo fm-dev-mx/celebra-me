@@ -53,7 +53,7 @@ const MACHINE_PARSED_ROW_LABELS = new Set([
 
 const PLACEHOLDER_TOKEN = /^\[\[PENDIENTE:[A-Z0-9_]+\]\]$/u;
 
-function normalizePath(file) {
+export function normalizePath(file) {
 	const candidate = path.isAbsolute(file) ? path.relative(process.cwd(), file) : file;
 	return candidate.replaceAll('\\', '/').replace(/^\.\//u, '');
 }
