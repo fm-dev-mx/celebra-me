@@ -2,12 +2,12 @@
 
 ## Identity
 
-| Parameter              | Value                               |
-| ---------------------- | ----------------------------------- |
-| **Slug**               | `norma-hernandez`                   |
-| **Host Login Alias**   | `norma_hernandez`                   |
-| **Event Type**         | `cumple`                            |
-| **Preparation Status** | `READY_WITH_PLACEHOLDERS`           |
+| Parameter              | Value                     |
+| ---------------------- | ------------------------- |
+| **Slug**               | `norma-hernandez`         |
+| **Host Login Alias**   | `norma_hernandez`         |
+| **Event Type**         | `cumple`                  |
+| **Preparation Status** | `READY_WITH_PLACEHOLDERS` |
 
 **Preparation Readiness (prepReadiness):** `READY_WITH_PLACEHOLDERS`
 
@@ -25,36 +25,35 @@ are provisional until human acceptance; this record does not grant environment r
 
 ## Fact Register
 
-| field                 | value                                                                   | classification | source        | notes                                                                                  |
-| --------------------- | ----------------------------------------------------------------------- | -------------- | ------------- | -------------------------------------------------------------------------------------- |
-| slug                  | norma-hernandez                                                         | verified       | approved-plan | Orthography confirmed by supplied material and owner plan                              |
-| celebrantName         | Norma Margarita Hernández Zabalsa                                       | verified       | approved-plan | Display name: Norma Margarita                                                          |
-| eventLabel            | 65 años                                                                 | verified       | client-packet | Birthday                                                                               |
-| eventDate             | 2026-11-14                                                              | verified       | client-packet | Saturday                                                                               |
-| eventTime             | 17:00                                                                   | verified       | client-packet | Ceremony; reception at 18:00                                                           |
-| timeZone              | America/Mazatlan                                                        | verified       | approved-plan | Ceremony UTC 2026-11-15T00:00:00Z                                                      |
-| baseDemoId            | demo-cumple-luxury-hacienda                                             | verified       | approved-plan | Owner-selected technical base, not client demo selection                               |
-| sourceAssetPath       | source:client-packet                                                    | verified       | approved-plan | Explicitly authorized provisional photo sources; no high-resolution originals supplied |
-| sectionOrder          | quote, gallery, countdown, location, gifts, personalizedAccess, rsvp, thankYou | verified       | approved-plan | Envelope and hero precede sections; gifts added 2026-09-09                             |
-| primaryVenueName      | Nuestra Señora de Guadalupe, La Lomita                                  | verified       | client-packet | Ceremony                                                                               |
-| primaryVenueAddress   | Av. Juan Pablo II s/n, colonia Lomas de Guadalupe, Culiacán             | verified       | client-packet | Venue card                                                                             |
-| receptionVenueName    | Salón El Conquistador, Hotel San Luis Lindavista                        | verified       | approved-plan | Reception                                                                              |
-| receptionVenueAddress | Av. Obregón y Río Sinaloa n.º 1, colonia Guadalupe, Culiacán            | verified       | approved-plan | Official venue reference                                                               |
-| rsvpConfirmationMode  | api                                                                     | verified       | approved-plan | Personalized-only access; existing assigned passes                                     |
-| dressCode             | Formal                                                                  | verified       | client-packet | No adults-only restriction                                                             |
-| clientColors          | Ivory, dusty pink, plum, deep rose                                      | verified       | approved-plan | Pastel pink originated with client                                                     |
-| musicUrl              | —                                                                       | missing        | client-packet | A mi manera; exact recording pending, omit music until supplied                        |
-| gifts                 | cash-envelope; variant: standard; no navigation link                    | verified       | approved-plan | Lluvia de sobres; added 2026-09-09; #regalos omitted from navigation (location + rsvp only) |
+| field                 | value                                                                          | classification | source        | notes                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------ | -------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| slug                  | norma-hernandez                                                                | verified       | approved-plan | Orthography confirmed by supplied material and owner plan                                   |
+| celebrantName         | Norma Margarita Hernández Zabalsa                                              | verified       | approved-plan | Display name: Norma Margarita                                                               |
+| eventLabel            | 65 años                                                                        | verified       | client-packet | Birthday                                                                                    |
+| eventDate             | 2026-11-14                                                                     | verified       | client-packet | Saturday                                                                                    |
+| eventTime             | 17:00                                                                          | verified       | client-packet | Ceremony; reception at 18:00                                                                |
+| timeZone              | America/Mazatlan                                                               | verified       | approved-plan | Ceremony UTC 2026-11-15T00:00:00Z                                                           |
+| sourceAssetPath       | source:client-packet                                                           | verified       | approved-plan | Explicitly authorized provisional photo sources; no high-resolution originals supplied      |
+| sectionOrder          | quote, gallery, countdown, location, gifts, personalizedAccess, rsvp, thankYou | verified       | approved-plan | Envelope and hero precede sections; gifts added 2026-09-09                                  |
+| primaryVenueName      | Nuestra Señora de Guadalupe, La Lomita                                         | verified       | client-packet | Ceremony                                                                                    |
+| primaryVenueAddress   | Av. Juan Pablo II s/n, colonia Lomas de Guadalupe, Culiacán                    | verified       | client-packet | Venue card                                                                                  |
+| receptionVenueName    | Salón El Conquistador, Hotel San Luis Lindavista                               | verified       | approved-plan | Reception                                                                                   |
+| receptionVenueAddress | Av. Obregón y Río Sinaloa n.º 1, colonia Guadalupe, Culiacán                   | verified       | approved-plan | Official venue reference                                                                    |
+| rsvpConfirmationMode  | api                                                                            | verified       | approved-plan | Personalized-only access; existing assigned passes                                          |
+| dressCode             | Formal                                                                         | verified       | client-packet | No adults-only restriction                                                                  |
+| clientColors          | Ivory, dusty pink, plum, deep rose                                             | verified       | approved-plan | Pastel pink originated with client                                                          |
+| musicUrl              | —                                                                              | missing        | client-packet | A mi manera; exact recording pending, omit music until supplied                             |
+| gifts                 | cash-envelope; variant: standard; no navigation link                           | verified       | approved-plan | Lluvia de sobres; added 2026-09-09; #regalos omitted from navigation (location + rsvp only) |
 
 ## Design Direction
 
-| decision                 | value                                                                 | classification |
-| ------------------------ | --------------------------------------------------------------------- | -------------- |
-| Owner-selected base demo | demo-cumple-luxury-hacienda                                           | verified       |
-| Visual profile           | norma-hernandez                                                       | verified       |
-| Hero                     | framed-portrait, full childhood photograph and separate text          | verified       |
-| Album                    | narrative-stack, four ordered photographs with permanent captions     | verified       |
-| Closing                  | portrait-letter, blue dress composite with original portrait fallback | verified       |
+| decision              | value                                                                 | classification |
+| --------------------- | --------------------------------------------------------------------- | -------------- |
+| Selected theme preset | `luxury-hacienda` (owner-selected)                                    | verified       |
+| Visual profile        | norma-hernandez                                                       | verified       |
+| Hero                  | framed-portrait, full childhood photograph and separate text          | verified       |
+| Album                 | narrative-stack, four ordered photographs with permanent captions     | verified       |
+| Closing               | portrait-letter, blue dress composite with original portrait fallback | verified       |
 
 Ivory `#FAF6F0`, dusty pink `#E8C9D0`, plum `#4B303B`, rose `#925D70`. Cormorant Garamond for
 display and dedications; Montserrat for practical information. Light paper surfaces, a single NM
@@ -115,10 +114,10 @@ Review version: `norma-v1-a309cfc1fa72`. The base checkout is
 `7314f849483cd82681e930a56351b2f5e1e0388c`; this candidate is not a commit or a published release.
 The local review manifest records exact source-file and asset SHA-256 hashes.
 
-The local comparison is `.agent/tmp/norma-art-review/index.html`. It includes each original,
-retained v1 PNG master, and both source photographs for the closing composite. `manifest.json`
-records intrinsic dimensions, bytes, quality and hashes. These private review resources remain
-outside public content.
+The local comparison page (a gitignored working folder, not retained) included each original,
+retained v1 PNG master, and both source photographs for the closing composite; its manifest recorded
+intrinsic dimensions, bytes, quality and hashes. These private review resources remain outside
+public content.
 
 | Candidate          | Dimensions  | Bytes  | WebP quality |
 | ------------------ | ----------- | ------ | ------------ |
@@ -135,9 +134,9 @@ reused for social sharing, without adding a repeated narrative chapter. All othe
 photographic roles have separate sources.
 
 Review the local presentation at
-`/test/variant?full=1&presentation=1&eventType=cumple&slug=norma-hernandez&envelope=1`.
-This is an existing dev-only harness extended with opt-in envelope presentation; it is absent from
-production builds. The intended public route remains `/cumple/norma-hernandez`.
+`/test/variant?full=1&presentation=1&eventType=cumple&slug=norma-hernandez&envelope=1`. This is an
+existing dev-only harness extended with opt-in envelope presentation; it is absent from production
+builds. The intended public route remains `/cumple/norma-hernandez`.
 
 ## Validation and History
 
@@ -186,9 +185,9 @@ and supported runtime must also be resolved before claiming release readiness.
 
 ## Layout refinement — September 8, 2026
 
-Current layout review: `norma-v2-6a263f3c7937`; `.agent/tmp/norma-art-review/layout-v2.json` records
-the changed source hashes. The earlier v1 record above describes the photograph candidates and
-historical validation.
+Current layout review: `norma-v2-6a263f3c7937`; its local record of the changed source hashes was
+not retained. The earlier v1 record above describes the photograph candidates and historical
+validation.
 
 Owner authorization: proceed with the visual critique. Preserve all six photographs, their order,
 approved dedications, event facts and personalized RSVP. Human photograph and whole-invitation
@@ -314,38 +313,78 @@ the real Local route returned HTTP 200 with the new name. This content apply doe
 uncommitted SCSS/Astro changes to the hosted Preview application. No Production operation or Git
 write was performed.
 
-
 ## Visual review v6 — 2026-09-08
 
 Candidate: norma-v6-20260908. Human visual and photographic acceptance remains pending.
 
 - Envelope: clean lower pocket; triangular upper flap and NH seal retained.
-- Hero: viewport-aware portrait height, full image, compact spacing; venue and time remain in Location.
+- Hero: viewport-aware portrait height, full image, compact spacing; venue and time remain in
+  Location.
 - Quote: 26–32 px, weight 500, 1.5 line height; decorative dividers removed.
-- Album: alternating placement, rose backing for grandchildren, ivory family caption surface; original images preserved.
-- Patio: the latest explicit user instruction supersedes the earlier three-line copy. Only “Smile at life” remains, inside the lower ground area with a dark contrast transition. Enlarged text reflows below the image when needed.
-- Direct URL simulation: only Norma in Local and Preview, without any invite parameter. “Familia de ejemplo”, two places, no API writes; reload resets the simulated response. Valid personalized links keep the real flow. Empty or invalid invite parameters never enable simulation.
-- Editorial-light tonal arc retained: hero to quote Bridge, quote to album Neutral; album background variation is internal to narrative-stack; subsequent section cadence unchanged.
+- Album: alternating placement, rose backing for grandchildren, ivory family caption surface;
+  original images preserved.
+- Patio: the latest explicit user instruction supersedes the earlier three-line copy. Only “Smile at
+  life” remains, inside the lower ground area with a dark contrast transition. Enlarged text reflows
+  below the image when needed.
+- Direct URL simulation: only Norma in Local and Preview, without any invite parameter. “Familia de
+  ejemplo”, two places, no API writes; reload resets the simulated response. Valid personalized
+  links keep the real flow. Empty or invalid invite parameters never enable simulation.
+- Editorial-light tonal arc retained: hero to quote Bridge, quote to album Neutral; album background
+  variation is internal to narrative-stack; subsequent section cadence unchanged.
 
-Evidence: output/playwright/norma-v6-{360,390,440,768,1440}.png; dedicated norma-v6-hero.png, norma-v6-quote.png, norma-v6-patio.png and norma-v6-envelope.png. Prior v5 captures remain available for comparison.
+Evidence: output/playwright/norma-v6-{360,390,440,768,1440}.png; dedicated norma-v6-hero.png,
+norma-v6-quote.png, norma-v6-patio.png and norma-v6-envelope.png. Prior v5 captures remain available
+for comparison.
 
-Verification: 11 visual/accessibility Norma tests and 4 real-route simulation/exclusion tests passed. Astro check: 1,725 files with zero diagnostics; native TypeScript check passed. validate:changed passed with 103 suites / 1,351 tests and 24 render-corpus cases. The temporary harness runtime had an outdated Vite dependency during the first simulation run; the real local runtime passed both confirmation and declination without API writes.
+Verification: 11 visual/accessibility Norma tests and 4 real-route simulation/exclusion tests
+passed. Astro check: 1,725 files with zero diagnostics; native TypeScript check passed.
+validate:changed passed with 103 suites / 1,351 tests and 24 render-corpus cases. The temporary
+harness runtime had an outdated Vite dependency during the first simulation run; the real local
+runtime passed both confirmation and declination without API writes.
 
-Managed content was applied to Local and Preview as public v3; semantic parity passed, with no Storage changes. This is not a deployment of the visual/runtime code to hosted Preview. Production was not changed. Live personalized guest writes were not performed; the existing real RSVP flow is preserved. Exact “A mi manera” recording, human acceptance, native browser-menu zoom certification and hosted code deployment remain pending.
+Managed content was applied to Local and Preview as public v3; semantic parity passed, with no
+Storage changes. This is not a deployment of the visual/runtime code to hosted Preview. Production
+was not changed. Live personalized guest writes were not performed; the existing real RSVP flow is
+preserved. Exact “A mi manera” recording, human acceptance, native browser-menu zoom certification
+and hosted code deployment remain pending.
 
-Shared regression follow-up: 16 envelope/neutral-variant browser tests passed (31 distinct browser cases including Norma). pnpm type-check passed. Full CI was not run for this local review. Node 26.7.0 / pnpm 11.19.0 differ from the declared supported toolchain; the existing toolchain warning remains.
-
+Shared regression follow-up: 16 envelope/neutral-variant browser tests passed (31 distinct browser
+cases including Norma). pnpm type-check passed. Full CI was not run for this local review. Node
+26.7.0 / pnpm 11.19.0 differ from the declared supported toolchain; the existing toolchain warning
+remains.
 
 ## Browser refinement v7 — 2026-09-08
 
-The user requested the grandchildren dedication entirely inside its rose backing, a single-line italic “Smile at life”, clearer venue hierarchy, smaller section navigation with an animated chevron, and senior-readable pass contrast. Implemented in canonical SCSS and Norma profile tokens without content or RSVP changes. Pass copy uses opaque ivory on solid plum (10.93:1 measured contrast); count uses the inverse pair. Navigation is 16 px and only its chevron moves, disabled for reduced motion. Verified at 360, 390, 430, 768 and 1440 px, including 200% text without overflow. Review images: output/playwright/norma-refine-grandchildren-430.png, norma-refine-life-430.png, norma-refine-location-430.png, norma-refine-navigation-430.png and norma-refine-access-430.png. This remains a local code review, pending human visual acceptance and hosted code deployment.
-
+The user requested the grandchildren dedication entirely inside its rose backing, a single-line
+italic “Smile at life”, clearer venue hierarchy, smaller section navigation with an animated
+chevron, and senior-readable pass contrast. Implemented in canonical SCSS and Norma profile tokens
+without content or RSVP changes. Pass copy uses opaque ivory on solid plum (10.93:1 measured
+contrast); count uses the inverse pair. Navigation is 16 px and only its chevron moves, disabled for
+reduced motion. Verified at 360, 390, 430, 768 and 1440 px, including 200% text without overflow.
+Review images: output/playwright/norma-refine-grandchildren-430.png, norma-refine-life-430.png,
+norma-refine-location-430.png, norma-refine-navigation-430.png and norma-refine-access-430.png. This
+remains a local code review, pending human visual acceptance and hosted code deployment.
 
 ## Photo and pass refinement v8 — 2026-09-08
 
-Latest user feedback removes the patio gradient entirely. “Smile at life” is dark italic HTML directly over the original photograph, with a subpixel light edge around the letterforms for variable stone texture. No raster edits or image filters. The pass now uses a raised ivory guest/quota panel between plum header and footer, a larger sentence-case title and quota, and no small quota box. High-contrast ivory/plum pair remains intact. Browser checks at 360, 430, 768 and 1440 px plus 200% text found no overflow. Local review screenshots: output/playwright/norma-paper-life-430.png and output/playwright/norma-paper-pass-430.png. Human aesthetic acceptance and hosted code deployment remain pending.
-
+Latest user feedback removes the patio gradient entirely. “Smile at life” is dark italic HTML
+directly over the original photograph, with a subpixel light edge around the letterforms for
+variable stone texture. No raster edits or image filters. The pass now uses a raised ivory
+guest/quota panel between plum header and footer, a larger sentence-case title and quota, and no
+small quota box. High-contrast ivory/plum pair remains intact. Browser checks at 360, 430, 768 and
+1440 px plus 200% text found no overflow. Local review screenshots:
+output/playwright/norma-paper-life-430.png and output/playwright/norma-paper-pass-430.png. Human
+aesthetic acceptance and hosted code deployment remain pending.
 
 ## Final polish v9 — 2026-09-08
 
-Reviewed the real invitation at mobile and desktop sizes. Kept the palette, asymmetry, photos, copy and section order. Reduced heavy header/closing shadows, tightened the gap before the pass, increased narrative type weight, removed quote text glow and excessive signature tracking, and refined the RSVP title, border radius and field contrast. Venue headings now wrap safely at 200% text, and address copy targets measure 44 by 44 px. Real-route confirmation/declination simulations and invalid/empty invite exclusion: four browser tests passed. Five viewport checks (360, 390, 430, 768, 1440) retained full-height hero without normal-scale overflow. Evidence: output/playwright/norma-final-before-mobile.png, norma-final-before-desktop.png, norma-final-after-mobile.png, norma-final-after-desktop.png and norma-final-rsvp-after.png. Local review only; human visual acceptance and hosted deployment remain outstanding.
+Reviewed the real invitation at mobile and desktop sizes. Kept the palette, asymmetry, photos, copy
+and section order. Reduced heavy header/closing shadows, tightened the gap before the pass,
+increased narrative type weight, removed quote text glow and excessive signature tracking, and
+refined the RSVP title, border radius and field contrast. Venue headings now wrap safely at 200%
+text, and address copy targets measure 44 by 44 px. Real-route confirmation/declination simulations
+and invalid/empty invite exclusion: four browser tests passed. Five viewport checks (360, 390, 430,
+768, 1440) retained full-height hero without normal-scale overflow. Evidence:
+output/playwright/norma-final-before-mobile.png, norma-final-before-desktop.png,
+norma-final-after-mobile.png, norma-final-after-desktop.png and norma-final-rsvp-after.png. Local
+review only; human visual acceptance and hosted deployment remain outstanding.

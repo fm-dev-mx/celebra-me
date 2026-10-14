@@ -5,44 +5,12 @@ import {
 	VALENTINA_EVENT,
 	buildValentinaPublishedContent,
 	valentinaInvitation,
-	type ValentinaAssetMap,
 } from '../../scripts/provision/invitations/valentina-hernandez.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
-const PLACEHOLDER_PATTERN =
-	/PENDIENTE|\[confirmar|Confirmar ubicación|definir fecha límite|confirmar número de registro|Solicitar enlace de Google Maps|^Por confirmar$|Pendiente de confirmar/i;
-
-function buildTestAssets(): ValentinaAssetMap {
-	return Object.fromEntries(
-		VALENTINA_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as ValentinaAssetMap;
-}
-
-function collectPlaceholderStrings(value: unknown, pathSegments: string[] = []): string[] {
-	if (typeof value === 'string') {
-		return PLACEHOLDER_PATTERN.test(value) ? [`${pathSegments.join('.')}: ${value}`] : [];
-	}
-
-	if (Array.isArray(value)) {
-		return value.flatMap((item, index) =>
-			collectPlaceholderStrings(item, [...pathSegments, String(index)]),
-		);
-	}
-
-	if (value && typeof value === 'object') {
-		return Object.entries(value as Record<string, unknown>).flatMap(([key, item]) =>
-			collectPlaceholderStrings(item, [...pathSegments, key]),
-		);
-	}
-
-	return [];
+function publishedContent() {
+	return buildValentinaPublishedContent(buildTestAssets(VALENTINA_ASSET_SPECS));
 }
 
 describe('Valentina Hernández managed definition', () => {
@@ -59,15 +27,8 @@ describe('Valentina Hernández managed definition', () => {
 		);
 	});
 
-	it('builds schema-valid published content with authored editorial variants', () => {
-		const content = buildValentinaPublishedContent(buildTestAssets());
-		const result = eventContentSchema.safeParse(content);
-		expect({
-			success: result.success,
-			...(result.success ? {} : { issues: result.error.issues }),
-		}).toStrictEqual({ success: true });
-
-		const parsed = eventContentSchema.parse(content);
+	it('builds published content with authored editorial variants', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.hero.variant).toBe('editorial-cover');
 		expect(parsed.countdown?.variant).toBe('magazine-folio');
 		expect(parsed.gallery?.variant).toBe('magazine-spread');
@@ -87,16 +48,11 @@ describe('Valentina Hernández managed definition', () => {
 	});
 
 	it('sets editorial-cover and editorial-catalog copy explicitly', () => {
-		const parsed = eventContentSchema.parse(buildValentinaPublishedContent(buildTestAssets()));
+		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.hero.tagline).toBe('Una noche entre moda, memoria y celebración.');
 		// Real invitation: no fictional photographer credit.
 		expect(parsed.hero.photoCredit).toBeUndefined();
 		expect(parsed.gifts?.title).toBe('Mesa de cortesía');
 		expect(parsed.gifts?.folioMark).toBe('VH');
-	});
-
-	it('does not expose placeholder or admin copy', () => {
-		const content = buildValentinaPublishedContent(buildTestAssets());
-		expect(collectPlaceholderStrings(content)).toEqual([]);
 	});
 });

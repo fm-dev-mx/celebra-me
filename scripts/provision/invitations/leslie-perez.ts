@@ -9,11 +9,7 @@
 
 import { deriveStartsAtUtc } from '../../../src/lib/time/event-time.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 const EVENT_DATE_LONG = '26 de septiembre de 2026';
 const EVENT_DATE_ISO = '2026-09-26T19:00:00.000Z';
@@ -195,7 +191,6 @@ export const LESLIE_ASSET_SPECS = [
 ] as const;
 
 export type LeslieAssetKey = (typeof LESLIE_ASSET_SPECS)[number]['key'];
-export type LeslieAssetMap = Record<LeslieAssetKey, UploadedAssetRef>;
 
 function galleryItem(
 	assets: UploadedAssetMap<LeslieAssetKey>,
@@ -511,7 +506,6 @@ export const leslieInvitation: InvitationDefinition<LeslieAssetKey> = defineInvi
 	title: LESLIE_EVENT.title,
 	clientName: 'Leslie',
 	hostLoginAlias: 'leslie_perez',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
 	themeId: LESLIE_EVENT.themeId,

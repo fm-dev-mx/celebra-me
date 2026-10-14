@@ -3,23 +3,55 @@
 ## Overview
 
 Event content schemas are assembled in `src/content.config.ts` (Astro content collections entry
-point) from modular Zod definitions under `src/lib/schemas/content`.
+point) from modular Zod definitions under `src/lib/schemas/content`. The schemas are the source of
+truth; per-section fields are summarized in
+[Section Contracts](../domains/content/section-contracts.md).
 
 ## Module Boundaries
 
-- `base-event.schema.ts`: top-level event assembly
+- `base-event.schema.ts`: top-level event assembly and cross-section rules (`countdown` and
+  `memories` must have data when `sectionOrder` lists them)
+- `shared.schema.ts`: assets, focal points, theme, root fields (`sectionOrder`, `eventTiming`,
+  `composition`, `_assetSlug`), and the `quote`, `countdown`, `thankYou`, `music`, `sharing`, and
+  `navigation` sections
 - `hero.schema.ts`: hero and celebrant metadata
-- `location.schema.ts`: canonical venue array (`venues[]`), map, indication, and structural variant
-  schemas (`standard`, `split-map`, `stacked-venue-plates`). Legacy `ceremony` and `reception` root
-  properties are rejected in canonical content and converted exclusively at ingress.
-- `family.schema.ts`: family and relationship groups
-- `rsvp.schema.ts`: RSVP payload, canonical section variant, and label overrides
-- `gifts.schema.ts`: gift option variants
-- `shared.schema.ts`: asset, theme, and shared section primitives
 - `envelope.schema.ts`: envelope/reveal configuration
-- `gallery.schema.ts`: gallery image items
-- `interludes.schema.ts`: interlude section configuration
+- `location.schema.ts`: canonical venue array (`venues[]`), map, indication, and structural variant
+  schemas. Legacy `ceremony` and `reception` root properties are rejected in canonical content and
+  converted exclusively at ingress.
+- `family.schema.ts`: family and relationship groups
 - `itinerary.schema.ts`: itinerary event schedule
+- `gallery.schema.ts`: gallery image items
+- `gifts.schema.ts`: gift option variants
+- `rsvp.schema.ts`: RSVP payload, personalized access pass, canonical section variant, and label
+  overrides
+- `memories.schema.ts`: entry point to the event memory space (`publicSlug`)
+- `interludes.schema.ts`: interlude section configuration
+
+## Root Fields
+
+| Field              | Status    | Notes                                                                       |
+| ------------------ | --------- | --------------------------------------------------------------------------- |
+| `eventType`        | Required  | One of `EVENT_TYPES` (`src/lib/theme/theme-contract.ts`)                    |
+| `title`            | Required  | Event title                                                                 |
+| `theme.preset`     | Required  | One of `THEME_PRESETS`; no default                                          |
+| `theme.fontFamily` | Defaulted | `serif` \| `sans`, default `serif`                                          |
+| `sectionOrder`     | Required  | Non-empty array of render section keys; see [Section Order](#section-order) |
+| `composition`      | Required  | `{}` is valid; `intersections` defaults to `{}`, `ornaments` optional       |
+| `hero`             | Required  | Only required section                                                       |
+| `isDemo`           | Defaulted | `false`                                                                     |
+| `eventTiming`      | Optional  | `localDateTime`, `timeZone`, `startsAtUtc`                                  |
+| `_assetSlug`       | Optional  | Legacy asset namespace; see below                                           |
+
+Other optional root fields: `description`, `templateId`, `visualProfileId`, `navigation`, and every
+section key except `hero`. The root object is strict: unknown keys are rejected.
+
+- **Theme preset**: the event adapter (`src/lib/adapters/event.ts`) throws on a preset outside
+  `THEME_PRESETS`. `envelope.variant` falls back to `theme.preset`; see the envelope precedence in
+  [Section Contracts](../domains/content/section-contracts.md#2-envelope-envelope).
+- **`_assetSlug`**: optional. Demos and legacy definitions that predate
+  `src/assets/invitations/<slug>/` use it to name their asset namespace; new definitions do not
+  declare it.
 
 ## Deprecation Policy
 
@@ -44,11 +76,12 @@ The following fields are used to control the presentation of images across vario
 Defines the `object-position` of the focal area of an image.
 
 - **Supported in**: `hero`, `interludes`, `family`, `thankYou`, `location` (venue images), and
-  `gallery` (per item).
+  `gallery` (per item). `hero` and gallery items also accept `focalPointMobile`, `focalPointTablet`,
+  and `focalPointDesktop`; interludes accept `focalPointDesktop`.
 - **Valid values**: CSS `object-position` compatible strings.
   - Percentages: `"50% 38%"`
   - Keywords: `"center top"`, `"left 20%"`
-  - Single values: `"center"`, `"top"`
+  - Single values: `"center"`, `"left"`
 - **Default**: `"center"`
 
 ### `overlayAnchor` and `overlaySafeArea` (Thank You only)
@@ -80,8 +113,10 @@ Defines the minimum height of the interlude section.
 
 ## Section Order
 
-The optional `sectionOrder` field controls the render order of invitation sections. It is defined in
-`shared.schema.ts` via `INVITATION_RENDER_SECTION_KEYS` (exported from `theme-contract.ts`).
+The required `sectionOrder` field controls the render order of invitation sections. It is a
+non-empty array defined in `shared.schema.ts` over `INVITATION_RENDER_SECTION_KEYS` (exported from
+`src/lib/theme/theme-contract.ts`): `quote`, `family`, `gallery`, `countdown`, `location`,
+`itinerary`, `rsvp`, `gifts`, `thankYou`, `memories`, and `personalizedAccess`.
 
 ```jsonc
 // Example section order (`personalizedAccess` must be explicit)
@@ -90,8 +125,10 @@ The optional `sectionOrder` field controls the render order of invitation sectio
 
 ### Rules
 
-- **Required**. The renderer follows the array verbatim; `personalizedAccess` must be explicitly
-  listed to appear.
+- **Required** (at least one entry). The renderer follows the array verbatim; `personalizedAccess`
+  must be explicitly listed to appear.
+- Listing `countdown` requires `countdown.variant`; listing `memories` requires `memories` data.
+  Other listed sections without data render nothing.
 - Interludes are appended after their `afterSection` parent regardless of the section's position in
   the order.
 - Only listed sections are rendered. Unlisted sections with data are silently skipped.
@@ -101,3 +138,20 @@ The optional `sectionOrder` field controls the render order of invitation sectio
 - Order follows the event narrative; there is no implicit default.
 - Keeping Gifts → PersonalizedAccess → RSVP → ThankYou together is a recommendation, not a schema
   rule: some demos deliberately open with the access pass.
+
+## Key Naming
+
+Content keys are camelCase: section keys, `sectionOrder` entries, `interludes[].afterSection`, and
+the variant registry's `section` field (`thankYou`, `personalizedAccess`). Render-only identifiers
+are kebab-case: stylesheet paths, `cssOwner` values in `src/lib/invitation/section-variants.ts`,
+anchor ids, and the access pass render target. No renames are planned. Keys where the two differ:
+
+| Content key          | Render / CSS identifiers                                                                                                         |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `thankYou`           | `sections/thank-you/`, `_thank-you.scss`, `section-base:thank-you`, `#thank-you-section`                                         |
+| `personalizedAccess` | `sections/personalized-access/`, `section-base:personalized-access`, render target and `data-section-kind` `personalized-access` |
+
+`thankYou` keeps its camelCase key as `data-section-kind` and as a `composition.intersections` key;
+`personalizedAccess` uses `personalized-access` there
+(`src/lib/invitation/composition-contract.ts`). Interlude targets follow the content key
+(`interlude-after-thankYou`, `interlude-after-personalizedAccess`).

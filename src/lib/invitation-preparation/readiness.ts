@@ -35,7 +35,7 @@ export interface AssetPreparationSummary {
 }
 
 export interface DesignDecisionSummary {
-	demoClassification: InfoClassification;
+	presetClassification: InfoClassification;
 	/** Unresolved design items that must block readiness (e.g. palette, layout forks). */
 	blockingUnresolvedDecisions: string[];
 }
@@ -58,11 +58,11 @@ export interface PreparationReadinessResult {
 function designBlocksImplementation(design: DesignDecisionSummary): string[] {
 	const issues: string[] = [...design.blockingUnresolvedDecisions];
 	if (
-		design.demoClassification === 'missing' ||
-		design.demoClassification === 'ambiguous' ||
-		design.demoClassification === 'requires_owner_decision'
+		design.presetClassification === 'missing' ||
+		design.presetClassification === 'ambiguous' ||
+		design.presetClassification === 'requires_owner_decision'
 	) {
-		issues.push(`Demo/design selection is ${design.demoClassification}`);
+		issues.push(`Theme preset selection is ${design.presetClassification}`);
 	}
 	return issues;
 }
@@ -178,7 +178,7 @@ export function evaluatePreparationReadiness(
 		reasons: [
 			'Required information is verified or validly resolved.',
 			'Required assets are inventoried and production-ready.',
-			'Material demo/design decisions are resolved.',
+			'Theme preset and material design decisions are resolved.',
 			'No blocking or non-blocking placeholders remain.',
 		],
 		allowsImplementation: true,

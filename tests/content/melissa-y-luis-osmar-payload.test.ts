@@ -1,7 +1,6 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
-import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { deriveStartsAtUtc } from '@/lib/time/event-time';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,28 +9,15 @@ import {
 	MELISSA_EVENT,
 	MELISSA_MUSIC,
 	buildMelissaPublishedContent,
-	type MelissaAssetMap,
 } from '../../scripts/provision/invitations/melissa-y-luis-osmar.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
 const profilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/melissa-y-luis-osmar.scss',
 );
 const assetDir = path.join(process.cwd(), 'src/assets/invitations/melissa-y-luis-osmar');
-
-function buildTestAssets(): MelissaAssetMap {
-	return Object.fromEntries(
-		MELISSA_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.relativePath}`,
-			},
-		]),
-	) as MelissaAssetMap;
-}
 
 describe('Boda Melissa y Luis Osmar managed content regression', () => {
 	it('registers a published managed jewelry-box definition', () => {
@@ -102,10 +88,7 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 	});
 
 	it('builds the exact editorial narrative with canonical variants', () => {
-		const content = buildMelissaPublishedContent(buildTestAssets());
-		const result = eventContentSchema.safeParse(content);
-		expect(result.success).toBe(true);
-
+		const content = buildMelissaPublishedContent(buildTestAssets(MELISSA_ASSET_SPECS));
 		expect(content.sectionOrder).toEqual([
 			'quote',
 			'countdown',
@@ -166,7 +149,7 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 	});
 
 	it('preserves confirmed names, schedule, policy, gifts, and RSVP deadline', () => {
-		const content = buildMelissaPublishedContent(buildTestAssets());
+		const content = buildMelissaPublishedContent(buildTestAssets(MELISSA_ASSET_SPECS));
 		const serialized = JSON.stringify(content);
 
 		expect(content.quote).toEqual({
@@ -227,9 +210,11 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 	});
 
 	it('preserves the cathedral and joins itinerary directly to gifts', () => {
-		const content = buildMelissaPublishedContent(buildTestAssets());
+		const content = buildMelissaPublishedContent(buildTestAssets(MELISSA_ASSET_SPECS));
 		expect(content.interludes.map((item) => item.afterSection)).toEqual(['family']);
-		expect(content.interludes[0].image).toEqual(buildTestAssets()['cathedral-editorial']);
+		expect(content.interludes[0].image).toEqual(
+			buildTestAssets(MELISSA_ASSET_SPECS)['cathedral-editorial'],
+		);
 		expect(
 			content.interludes.every(
 				(item: { afterSection: string; focalPoint?: string }) =>

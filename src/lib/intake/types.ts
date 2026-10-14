@@ -46,8 +46,10 @@ export interface Invitation {
 	title: string;
 	eventType: EventType;
 	status: InvitationStatus;
+	/** Legacy DB column `base_demo_id`, read by no runtime path; leaves with its migration. */
 	baseDemoId: string;
 	themeId: string;
+	/** Legacy DB column `snapshot`; leaves with the same contract migration as `baseDemoId`. */
 	snapshot: DemoPreset;
 	clientName: string;
 	clientEmail: string;

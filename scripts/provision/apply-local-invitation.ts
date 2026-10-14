@@ -38,7 +38,10 @@ import {
 	type NormalizedInvitationAsset,
 } from './normalized-invitation-release.ts';
 import { serializeInvitationPackage } from './invitation-package.ts';
-import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
+import {
+	DEFINITION_CLIENT_EMAIL,
+	type UploadedAssetMap,
+} from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import { assertManagedMemoriesReference } from './managed-memories-reference.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
@@ -507,7 +510,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			eventType: definition.eventType,
 			themeId: definition.themeId,
 			clientName: definition.clientName,
-			clientEmail: definition.clientEmail ?? '',
+			clientEmail: DEFINITION_CLIENT_EMAIL,
 			clientWhatsapp: definition.clientWhatsapp ?? '',
 			photosReceived: definition.photosReceived ?? true,
 			ownerUserId,

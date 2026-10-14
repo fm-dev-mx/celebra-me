@@ -61,6 +61,12 @@ type ManagedIdentityProvenance = 'persisted' | 'owner-approved';
 const MANAGED_IDENTITY_UUID_RE =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+/**
+ * Definitions carry no client email (docs/core/sensitive-data-guide.md). New rows still receive the
+ * empty value the NOT NULL `invitations.client_email` column defaults to; existing rows keep theirs.
+ */
+export const DEFINITION_CLIENT_EMAIL = '';
+
 export interface InvitationDefinition<K extends string = string> {
 	slug: string;
 	/**
@@ -95,7 +101,6 @@ export interface InvitationDefinition<K extends string = string> {
 	clientName: string;
 	/** Dedicated host Auth login alias (not derived from slug). */
 	hostLoginAlias: string;
-	clientEmail?: string;
 	clientWhatsapp?: string;
 	photosReceived?: boolean;
 	themeId: string;

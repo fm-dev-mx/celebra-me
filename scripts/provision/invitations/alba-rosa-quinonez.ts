@@ -7,11 +7,7 @@
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 export const ALBA_EVENT = {
 	eventType: 'cumple',
@@ -116,7 +112,6 @@ export const ALBA_ASSET_SPECS = [
 ] as const;
 
 export type AlbaAssetKey = (typeof ALBA_ASSET_SPECS)[number]['key'];
-export type AlbaAssetMap = Record<AlbaAssetKey, UploadedAssetRef>;
 
 export function buildAlbaPublishedContent(
 	assets: UploadedAssetMap<AlbaAssetKey>,
@@ -361,7 +356,6 @@ export const albaInvitation: InvitationDefinition<AlbaAssetKey> = defineInvitati
 	title: ALBA_EVENT.title,
 	clientName: 'Lucero Ramírez',
 	hostLoginAlias: 'alba_quinonez',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
 	themeId: ALBA_EVENT.themeId,

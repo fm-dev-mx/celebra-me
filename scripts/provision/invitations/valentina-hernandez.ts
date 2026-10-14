@@ -141,7 +141,7 @@ export const VALENTINA_ASSET_SPECS = [
 ] as const;
 
 export type ValentinaAssetKey = (typeof VALENTINA_ASSET_SPECS)[number]['key'];
-export type ValentinaAssetMap = Record<ValentinaAssetKey, UploadedAssetRef>;
+type ValentinaAssetMap = Record<ValentinaAssetKey, UploadedAssetRef>;
 
 function galleryItem(assets: ValentinaAssetMap, key: ValentinaAssetKey) {
 	return { image: assets[key] };
@@ -469,7 +469,6 @@ export const valentinaInvitation: InvitationDefinition<ValentinaAssetKey> = defi
 	title: VALENTINA_EVENT.title,
 	clientName: 'Valentina Hernández Almaguer',
 	hostLoginAlias: 'valentina_hernandez',
-	clientEmail: '',
 	clientWhatsapp: '525518323934',
 	photosReceived: true,
 	themeId: VALENTINA_EVENT.themeId,

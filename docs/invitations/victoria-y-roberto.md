@@ -73,8 +73,7 @@ Canonical route (creation contract): `/boda/victoria-y-roberto` — slug must no
 | dressCode             | formal                                                                                                            | verified       | wa-export         | “FORMAL”                                                                                                    |
 | photosRequested       | true                                                                                                              | verified       | wa-export         | Client: “Fotos … SIII”                                                                                      |
 | sourceAssetPath       | source:hr-photos                                                                                                  | verified       | owner             | Opaque label; authorized folder is session-only                                                             |
-| baseDemoId            | demo-boda-jewelry-box-wedding                                                                                     | verified       | owner             | Owner decision (client reacted positively to demo; did not explicitly select)                               |
-| themePreset           | jewelry-box-wedding                                                                                               | verified       | owner / catalog   | Corresponding preset for baseDemoId                                                                         |
+| themePreset           | jewelry-box-wedding                                                                                               | verified       | owner / catalog   | Corresponding preset of chosen demo                                                                         |
 | sectionOrder          | hero, quote, countdown, location, itinerary, family, gallery, gifts, personalizedAccess, rsvp, memories, thankYou | verified       | owner             | Full functional wedding set; `memories` added by OD9; interludes planned separately (see Sections)          |
 | interludes            | 2 (roles: interlude01, interlude02)                                                                               | verified       | owner             | Count + photograph roles accepted; exact `afterSection` placement not owner-decided (art direction)         |
 | rsvpConfirmationMode  | api                                                                                                               | verified       | owner             | Canonical product mechanism                                                                                 |
@@ -100,8 +99,8 @@ Rules:
 Contract maturity for this event type: `partial` (`getEventCompletenessContract('boda')`)
 
 - **requirement:** required
-  - **fields:** slug, celebrantName, secondaryName, eventDate, baseDemoId, sourceAssetPath,
-    sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode
+  - **fields:** slug, celebrantName, secondaryName, eventDate, sourceAssetPath, sectionOrder,
+    primaryVenueName, primaryVenueAddress, rsvpConfirmationMode
   - **status:** satisfied
 - **requirement:** conditional
   - **fields:** receptionVenueName, receptionVenueAddress (`distinctVenues=true`)
@@ -253,14 +252,14 @@ facts as client-confirmed; keep placeholders until manually corrected.
 
 ## Design Direction
 
-| decision                          | value                                                                                         | classification |
-| --------------------------------- | --------------------------------------------------------------------------------------------- | -------------- |
-| Owner-selected base demo          | `demo-boda-jewelry-box-wedding` (WA positive reaction only; not an explicit client selection) | verified       |
-| Recommended demo alternatives     | —                                                                                             | not_applicable |
-| Selected variant / visual profile | `jewelry-box-wedding` / `victoria-y-roberto`                                                  | verified       |
-| Client color requirements         | terracota                                                                                     | verified       |
-| Recommended palette               | terracota + restrained neutrals/gold (Lane A)                                                 | recommendation |
-| Unresolved visual decisions       | —                                                                                             | —              |
+| decision                          | value                                                                               | classification |
+| --------------------------------- | ----------------------------------------------------------------------------------- | -------------- |
+| Selected theme preset             | `jewelry-box-wedding` (WA positive reaction only; not an explicit client selection) | verified       |
+| Recommended preset alternatives   | —                                                                                   | not_applicable |
+| Selected variant / visual profile | `jewelry-box-wedding` / `victoria-y-roberto`                                        | verified       |
+| Client color requirements         | terracota                                                                           | verified       |
+| Recommended palette               | terracota + restrained neutrals/gold (Lane A)                                       | recommendation |
+| Unresolved visual decisions       | —                                                                                   | —              |
 
 Direction:
 
