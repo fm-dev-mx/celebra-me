@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
+import { resolveInvitationValidityWindow } from '../../src/lib/invitation/access/invitation-validity-window.ts';
 
 const PROFILES_DIR = path.join(process.cwd(), 'src/styles/invitation-profiles');
 const DEMOS_DIR = path.join(process.cwd(), 'src/content/event-demos');
@@ -17,9 +18,12 @@ const FROZEN_PROFILE_SHA256: Record<string, string> = {
 		'0d9b1d89193c3ac696604d98b7300ffe0c4785a87c66e3036d47a24f70ba8fdc',
 	'alba-rosa-quinonez': '3ac7a0b5bc7bb3ea4d2f4b53c8f3db4478f38be7561fb009988e02aa73d61bcc',
 	'allison-scarlett': '6d7212a2b87605534c3b11d5901f000f1c1492998edec25d6fdcebd236beda9a',
+	'america-johana': '996031dc4049d002ba8d3957111f1a67cccb4bab215e1df85bd08f4cd5e297e5',
 	'daniela-y-martin': 'f7981960de0bc93da6458c6938ea809598dda9ead3cd7a9d3aa6118b6b5f7adb',
 	'destenid-sofia': 'd5b267b22f03db0b7e8fbd20110c5623bb919b60e32e910479a6cfeda8284237',
+	'leah-lexa': '111de6c9850ae7bad10045e42cdbf6e17faa42864f22e2f28765fae0e3080ffb',
 	'leslie-perez': 'e61995a014b5d74edc09f57c2ade061823e1eacc67a09474a43e717dfcb61afe',
+	'luna-y-estrella': 'b20b5b032d972f15c07427a1d8d4746d2e3ffce3b27433e121ddd061e13799a4',
 	'melissa-y-luis-osmar': '26facacb79e20a14fc7c8b06577b556ea8a1df3b2a5e7baf9fd6a968df36e7b3',
 	'naydelin-paredes': '0ec34ca3c58f968fc4ade0374ae66c3f21eb4f2d2cfa8d95fa9bc228a51ff446',
 	'norma-hernandez': '53b57ed8ffbc94cd334d7a0118fb7fdb143c8c557687b3fa18a9e2ef4623dc19',
@@ -27,6 +31,21 @@ const FROZEN_PROFILE_SHA256: Record<string, string> = {
 	'romina-rios-chaparro': '017e52614e9ca5f4111ef13d018e1466a2cff33258a61dded61d20c62a9d290f',
 	'valentina-hernandez': '22d31e5071b86a5ecddeac75073d98ffbd0c0c768285d956d3597f1a6f4763bc',
 	'victoria-y-roberto': 'c136bf2a53fe6e50871f8f4a0a6a269c362cff10c09f4c8dc72c14f8e43d1364',
+	'xareni-iyarit': 'af48b689a3d9a0a488fe12c08a3908980264e8ed2052ad1087a27159387341c5',
+};
+
+/**
+ * Published invitations whose definitions left the repository while they are still public. Their
+ * profile stays (frozen above) until the validity window closes (event date + 1 year, end of day in
+ * the event time zone; docs/core/invitation-creation-contract.md). Never add an entry: a definition
+ * may only be retired after its invitation expires. Once an entry expires, delete it, its profile
+ * and its frozen digest.
+ */
+const RETAINED_UNTIL_EXPIRY: Record<string, { eventDate: string; timeZone: string }> = {
+	'america-johana': { eventDate: '2026-08-29', timeZone: 'America/Mexico_City' },
+	'leah-lexa': { eventDate: '2026-06-21', timeZone: 'America/Mexico_City' },
+	'luna-y-estrella': { eventDate: '2026-08-01', timeZone: 'America/Mexico_City' },
+	'xareni-iyarit': { eventDate: '2026-09-12', timeZone: 'America/Mexico_City' },
 };
 
 function profileIds(): string[] {
@@ -172,6 +191,29 @@ describe('invitation profile boundary', () => {
 			.filter((id): id is string => typeof id === 'string'),
 	);
 	const demoProfiles = demoProfileIds();
+	const retainedProfiles = new Set(Object.keys(RETAINED_UNTIL_EXPIRY));
+
+	it('keeps retained profiles of retired definitions only until their invitation expires', () => {
+		const now = new Date();
+		for (const [id, { eventDate, timeZone }] of Object.entries(RETAINED_UNTIL_EXPIRY)) {
+			const { expiresAt, expired } = resolveInvitationValidityWindow(
+				eventDate,
+				timeZone,
+				now,
+			);
+			expect({ id, hasWindow: expiresAt !== null, expired }).toEqual({
+				id,
+				hasWindow: true,
+				expired: false,
+			});
+			expect({ id, managed: managedProfiles.has(id), exists: ids.includes(id) }).toEqual({
+				id,
+				managed: false,
+				exists: true,
+			});
+			expect({ id, frozen: id in FROZEN_PROFILE_SHA256 }).toEqual({ id, frozen: true });
+		}
+	});
 
 	it('keeps every frozen profile byte-identical', () => {
 		for (const [id, digest] of Object.entries(FROZEN_PROFILE_SHA256)) {
@@ -288,7 +330,11 @@ describe('invitation profile boundary', () => {
 
 	it('keeps no profile without a consumer', () => {
 		for (const id of ids) {
-			expect({ id, consumed: managedProfiles.has(id) || demoProfiles.has(id) }).toEqual({
+			expect({
+				id,
+				consumed:
+					managedProfiles.has(id) || demoProfiles.has(id) || retainedProfiles.has(id),
+			}).toEqual({
 				id,
 				consumed: true,
 			});

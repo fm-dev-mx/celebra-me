@@ -63,7 +63,7 @@ const EVENT_TYPE_CONTRACTS: Record<EventType, EventTypeStructureContract> = {
 	bautizo: {
 		eventType: 'bautizo',
 		requiredSections: ['family', 'location', ...CORE_SECTIONS],
-		presets: ['angelic-presence'],
+		presets: ['angelic-presence', 'sacred-keepsake'],
 		editionLabel: 'EDICIÓN BAUTIZO',
 		editionMark: 'BAUTIZO',
 	},

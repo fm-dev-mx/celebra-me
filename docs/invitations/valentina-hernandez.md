@@ -41,4 +41,4 @@ implementation passes, and asset audits live in Git history.
   were never supplied.
 - Ceremony and reception share Finca Las Palmas; the Maps link is a search URL, not a pinned
   entrance.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

@@ -3,7 +3,7 @@ import { ENVIRONMENT_TARGETS, flagValue, parseEnvironmentList } from '../lib/cli
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import {
-	isArchivedInvitation,
+	isExpiredInvitationDefinition,
 	type InvitationDefinition,
 } from './invitations/invitation-definition.ts';
 import type { UpdateScope } from './semantic-delta.ts';
@@ -185,7 +185,7 @@ const VALID_FLAGS = new Set([
 	'--prune-assets',
 	'--no-prune-assets',
 	'--include-unmanaged',
-	'--include-archived',
+	'--include-expired',
 	'--include-demos',
 	'--confirm-destructive',
 	'--acknowledge-discard-unpublished-draft',
@@ -234,7 +234,7 @@ export interface StatusReportOptions {
 	slug?: string;
 	targets?: InvitationUpdateTarget[];
 	includeUnmanaged?: boolean;
-	includeArchived?: boolean;
+	includeExpired?: boolean;
 	includeDemos?: boolean;
 }
 
@@ -248,7 +248,7 @@ export function parseStatusOptions(input: StatusReportOptions): StatusReportOpti
 		slug: input.slug,
 		targets: input.targets && input.targets.length > 0 ? input.targets : undefined,
 		includeUnmanaged: Boolean(input.includeUnmanaged),
-		includeArchived: Boolean(input.includeArchived),
+		includeExpired: Boolean(input.includeExpired),
 		includeDemos: Boolean(input.includeDemos),
 	};
 }
@@ -274,14 +274,15 @@ export function buildStatusReport(
 	const matching = (sources.listDefinitions ?? listInvitationDefinitions)().filter(
 		(definition) => !requestedSlug || definition.slug === requestedSlug,
 	);
-	// An explicit slug always resolves; otherwise archived definitions are counted apart.
-	const archivedSlugs = matching
-		.filter((definition) => isArchivedInvitation(definition))
+	// An explicit slug always resolves; otherwise expired definitions are counted apart.
+	const now = new Date();
+	const expiredSlugs = matching
+		.filter((definition) => isExpiredInvitationDefinition(definition, now))
 		.map((definition) => definition.slug)
 		.sort((a, b) => a.localeCompare(b));
-	const showArchived = Boolean(requestedSlug) || Boolean(opts.includeArchived);
+	const showExpired = Boolean(requestedSlug) || Boolean(opts.includeExpired);
 	const definitions = matching
-		.filter((definition) => showArchived || !isArchivedInvitation(definition))
+		.filter((definition) => showExpired || !isExpiredInvitationDefinition(definition, now))
 		.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 		.map((definition) => {
 			const envEntries = targets.map((target) => {
@@ -305,7 +306,7 @@ export function buildStatusReport(
 				slug: definition.slug,
 				title: definition.title,
 				createdAt: definition.createdAt,
-				archived: isArchivedInvitation(definition),
+				expired: isExpiredInvitationDefinition(definition, now),
 				classification: {
 					status: 'UNVERIFIED' as const,
 					domain: 'inventory' as const,
@@ -330,14 +331,14 @@ export function buildStatusReport(
 			slug: requestedSlug ?? null,
 			targets,
 			includeUnmanaged: opts.includeUnmanaged ?? false,
-			includeArchived: opts.includeArchived ?? false,
+			includeExpired: opts.includeExpired ?? false,
 			includeDemos: opts.includeDemos ?? false,
 		},
 		definitions,
-		archived: {
-			count: archivedSlugs.length,
-			slugs: archivedSlugs,
-			included: showArchived,
+		expired: {
+			count: expiredSlugs.length,
+			slugs: expiredSlugs,
+			included: showExpired,
 		},
 		unmanaged: unmanagedUnprobed
 			? {

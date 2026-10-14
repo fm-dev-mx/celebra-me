@@ -18,7 +18,7 @@ import {
 	lifecycleReleaseBlockFor,
 } from '../provision/invitations/lifecycle-gate.ts';
 import {
-	listArchivedInvitationDefinitions,
+	listExpiredInvitationDefinitions,
 	listAuthoringInvitationDefinitions,
 	listInvitationDefinitions,
 	listPublishedInvitationDefinitions,
@@ -152,13 +152,13 @@ function sortedSlugs(definitions: readonly { slug: string }[]): string[] {
 /** Discovery (`--all-ready`, inspect-all): published definitions plan; the rest are reported apart. */
 export function discoverProductionApplySlugs(deps: ProductionApplyAssemblerDeps): {
 	slugs: string[];
-	archivedSlugs: string[];
+	expiredSlugs: string[];
 	authoringSlugs: string[];
 } {
 	return {
 		slugs: (deps.listSlugs ?? (() => sortedSlugs(listPublishedInvitationDefinitions())))(),
-		archivedSlugs: (
-			deps.listArchivedSlugs ?? (() => sortedSlugs(listArchivedInvitationDefinitions()))
+		expiredSlugs: (
+			deps.listExpiredSlugs ?? (() => sortedSlugs(listExpiredInvitationDefinitions()))
 		)(),
 		authoringSlugs: (
 			deps.listAuthoringSlugs ?? (() => sortedSlugs(listAuthoringInvitationDefinitions()))

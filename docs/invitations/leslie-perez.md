@@ -33,4 +33,4 @@ handoffs, and review criteria live in Git history.
 ## Known constraints
 
 - Ceremony and godparents were intentionally omitted; there is no song URL.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

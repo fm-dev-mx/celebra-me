@@ -1,13 +1,18 @@
 import { describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'node:fs';
 import {
+	buildValidUntil,
 	diffReleaseHashes,
+	findPrematureDefinitionRemovals,
 	formatReleaseHashReport,
 	ownsChangedFile,
 	readReleaseHashBaseline,
 	RELEASE_HASH_BASELINE_PATH,
 } from '../../scripts/provision/release-hash-baseline.ts';
-import { listActiveInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
+import {
+	listActiveInvitationDefinitions,
+	listInvitationDefinitions,
+} from '../../scripts/provision/invitations/registry.ts';
 
 const A = 'a'.repeat(64);
 const B = 'b'.repeat(64);
@@ -66,5 +71,50 @@ describe('release hash baseline', () => {
 		for (const hash of Object.values(baseline.packageHashes)) {
 			expect(hash).toMatch(/^[a-f0-9]{64}$/);
 		}
+	});
+
+	it('pins the validity window of every active definition', () => {
+		expect(readReleaseHashBaseline().validUntil).toEqual(
+			buildValidUntil(listActiveInvitationDefinitions()),
+		);
+	});
+
+	it('never loses a definition before its invitation expires', () => {
+		// A failure here means a definition file was deleted while its invitation is still
+		// public (event date + 1 year): restore it until the window closes.
+		expect(
+			findPrematureDefinitionRemovals(
+				readReleaseHashBaseline(),
+				listInvitationDefinitions().map((definition) => definition.slug),
+			),
+		).toEqual([]);
+	});
+
+	it('flags removed slugs whose window is open or unknown, never expired ones', () => {
+		const baseline = {
+			packageHashes: { kept: A, expired: A, open: A, undated: A },
+			validUntil: {
+				kept: '2026-01-01T05:59:59.999Z',
+				expired: '2026-01-01T05:59:59.999Z',
+				open: '2027-06-21T05:59:59.999Z',
+			},
+		};
+		expect(
+			findPrematureDefinitionRemovals(baseline, ['kept'], new Date('2026-10-13T00:00:00Z')),
+		).toEqual(['open', 'undated']);
+		expect(
+			findPrematureDefinitionRemovals(
+				baseline,
+				['kept'],
+				new Date('2027-06-21T05:59:59.999Z'),
+			),
+		).toEqual(['open', 'undated']);
+		expect(
+			findPrematureDefinitionRemovals(
+				baseline,
+				['kept'],
+				new Date('2027-06-21T06:00:00.000Z'),
+			),
+		).toEqual(['undated']);
 	});
 });

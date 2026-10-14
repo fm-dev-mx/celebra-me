@@ -13,12 +13,18 @@
  *   pnpm invitation:hash-baseline -- --strict          # exit 1 on collateral moves
  *   pnpm invitation:hash-baseline -- --update          # rewrite the baseline after a release
  *
+ * The baseline also pins each active invitation's validity window (`validUntil`, event date +
+ * 1 year). A definition may leave the repository only after that instant: `--update` refuses to
+ * drop a slug whose window is still open, and tests/provision/release-hash-baseline.test.ts fails
+ * while such a slug is in the baseline but no longer in the registry.
+ *
  * validate:changed runs the report (advisory) whenever provisioning or serializer paths change;
  * the trigger list lives in scripts/validation-runner.mjs.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import {
 	getInvitationAssetSourceDir,
+	resolveDefinitionValidityWindow,
 	type InvitationDefinition,
 } from './invitations/invitation-definition.ts';
 
@@ -26,8 +32,10 @@ export const RELEASE_HASH_BASELINE_PATH = 'scripts/provision/release-hash-baseli
 export const RELEASE_HASH_UPDATE_COMMAND = 'pnpm invitation:hash-baseline -- --update';
 
 export interface ReleaseHashBaseline {
-	/** slug → packageHash of every active (non-archived) invitation definition. */
+	/** slug → packageHash of every active (not yet expired) invitation definition. */
 	packageHashes: Record<string, string>;
+	/** slug → last public instant (ISO); absent for an invitation that never expires. */
+	validUntil?: Record<string, string>;
 }
 
 export interface ReleaseHashMove {
@@ -92,6 +100,42 @@ export function diffReleaseHashes(input: {
 	return report;
 }
 
+/**
+ * Baseline slugs whose definition left the registry while the invitation is still public
+ * (validity window open, or no event date at all). Retiring them requires restoring the
+ * definition until it expires.
+ */
+export function findPrematureDefinitionRemovals(
+	baseline: ReleaseHashBaseline,
+	registrySlugs: readonly string[],
+	now = new Date(),
+): string[] {
+	const registered = new Set(registrySlugs);
+	return Object.keys(baseline.packageHashes)
+		.filter((slug) => !registered.has(slug))
+		.filter((slug) => {
+			const validUntil = baseline.validUntil?.[slug];
+			return validUntil === undefined || !(Date.parse(validUntil) < now.getTime());
+		})
+		.sort((a, b) => a.localeCompare(b));
+}
+
+/** slug → validity window end for the baseline; definitions that never expire are omitted. */
+export function buildValidUntil(
+	definitions: ReadonlyArray<Pick<InvitationDefinition, 'slug' | 'eventTiming'>>,
+): Record<string, string> {
+	const entries: Array<[string, string]> = [];
+	for (const definition of definitions) {
+		const { expiresAt } = resolveDefinitionValidityWindow(definition);
+		if (expiresAt) entries.push([definition.slug, expiresAt.toISOString()]);
+	}
+	return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
+}
+
+function prematureRemovalMessage(slugs: readonly string[]): string {
+	return `✗ Definiciones eliminadas antes de su vencimiento (fecha del evento + 1 año): ${slugs.join(', ')}. Restáurelas hasta que venzan.`;
+}
+
 export function formatReleaseHashReport(report: ReleaseHashReport): string {
 	const short = (hash: string) => `${hash.slice(0, 12)}…`;
 	const lines: string[] = [];
@@ -122,7 +166,7 @@ export function formatReleaseHashReport(report: ReleaseHashReport): string {
 	}
 	if (report.removed.length > 0) {
 		lines.push(
-			`ℹ Fuera de la línea base (archivadas o eliminadas): ${report.removed.join(', ')}.`,
+			`ℹ Fuera de la línea base (vencidas o eliminadas): ${report.removed.join(', ')}.`,
 		);
 	}
 	if (lines.length === 0) lines.push('✓ packageHash de invitaciones activas sin cambios.');
@@ -161,27 +205,40 @@ function parseFilesArg(argv: readonly string[]): string[] {
 
 export async function runReleaseHashBaselineCli(argv = process.argv.slice(2)): Promise<number> {
 	const { hashes, definitions } = await computeActivePackageHashes();
+	const { listInvitationDefinitions } = await import('./invitations/registry.ts');
+	const baseline = readReleaseHashBaseline();
+	const premature = findPrematureDefinitionRemovals(
+		baseline,
+		listInvitationDefinitions().map((definition) => definition.slug),
+	);
 	if (argv.includes('--update')) {
+		if (premature.length > 0) {
+			console.error(prematureRemovalMessage(premature));
+			return 1;
+		}
 		const sorted = Object.fromEntries(
 			Object.entries(hashes).sort(([a], [b]) => a.localeCompare(b)),
 		);
 		writeFileSync(
 			RELEASE_HASH_BASELINE_PATH,
-			`${JSON.stringify({ packageHashes: sorted }, null, 4)}\n`,
+			`${JSON.stringify({ packageHashes: sorted, validUntil: buildValidUntil(definitions) }, null, 4)}\n`,
 		);
 		console.log(
 			`✓ Línea base actualizada (${Object.keys(sorted).length} invitaciones activas).`,
 		);
 		return 0;
 	}
+	if (premature.length > 0) console.log(prematureRemovalMessage(premature));
 	const report = diffReleaseHashes({
-		baseline: readReleaseHashBaseline(),
+		baseline,
 		current: hashes,
 		definitions,
 		changedFiles: parseFilesArg(argv),
 	});
 	console.log(formatReleaseHashReport(report));
-	return argv.includes('--strict') && report.collateral.length > 0 ? 1 : 0;
+	return argv.includes('--strict') && (report.collateral.length > 0 || premature.length > 0)
+		? 1
+		: 0;
 }
 
 function isMain(): boolean {

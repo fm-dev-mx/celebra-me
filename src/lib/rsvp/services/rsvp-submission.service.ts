@@ -25,7 +25,7 @@ import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import {
 	invitationUnavailableError,
-	isEventInvitationDisabled,
+	isEventInvitationUnavailable,
 } from '@/lib/invitation/access/invitation-access.repository';
 
 type InviteRsvpIdentity = {
@@ -71,7 +71,7 @@ async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTa
 		if (isInviteIdentity(identity)) {
 			const invitation = await findGuestByInviteIdPublic(sanitize(identity.inviteId, 64));
 			if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
-			if (await isEventInvitationDisabled(invitation.eventId)) {
+			if (await isEventInvitationUnavailable(invitation.eventId)) {
 				throw invitationUnavailableError();
 			}
 			return {

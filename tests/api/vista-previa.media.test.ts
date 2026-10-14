@@ -1,13 +1,18 @@
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
 	findInvitationAccessRecord: jest.fn(),
+	isPublishedInvitationExpired: jest.fn(),
 }));
 
 import sharp from 'sharp';
 import { GET } from '@/pages/vista-previa/[asset]';
-import { findInvitationAccessRecord } from '@/lib/invitation/access/invitation-access.repository';
+import {
+	findInvitationAccessRecord,
+	isPublishedInvitationExpired,
+} from '@/lib/invitation/access/invitation-access.repository';
 import { buildPreviewMediaPath } from '@/lib/invitation/preview/preview-media-token';
 
 const findAccess = jest.mocked(findInvitationAccessRecord);
+const isExpired = jest.mocked(isPublishedInvitationExpired);
 const INVITATION_ID = '11111111-1111-4111-8111-111111111111';
 const SOURCE = 'https://abc.supabase.co/storage/v1/object/public/invitation-assets/x/hero.webp';
 
@@ -76,6 +81,7 @@ describe('GET /vista-previa/[asset]', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		findAccess.mockResolvedValue(accessRecord('unpaid', 'enabled'));
+		isExpired.mockResolvedValue(false);
 		global.fetch = jest.fn().mockResolvedValue(upstream(200, photo)) as unknown as typeof fetch;
 	});
 
@@ -114,6 +120,14 @@ describe('GET /vista-previa/[asset]', () => {
 		const response = await call(photoPath());
 		expect(response.status).toBe(404);
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(global.fetch).not.toHaveBeenCalled();
+	});
+
+	it('serves nothing for an invitation past its validity window', async () => {
+		isExpired.mockResolvedValue(true);
+		const response = await call(photoPath());
+		expect(response.status).toBe(404);
+		expect(isExpired).toHaveBeenCalledWith(INVITATION_ID);
 		expect(global.fetch).not.toHaveBeenCalled();
 	});
 

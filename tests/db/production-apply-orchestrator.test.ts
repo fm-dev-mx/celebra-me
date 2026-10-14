@@ -106,7 +106,7 @@ function baseDeps(options?: {
 	return {
 		preflightSchema: () => schemaPlan(options?.pending ?? ['20260807120000']),
 		listSlugs: () => Object.keys(preflights).sort((a, b) => a.localeCompare(b)),
-		listArchivedSlugs: () => [],
+		listExpiredSlugs: () => [],
 		listAuthoringSlugs: () => [],
 		lifecycleReleaseBlock: () => null,
 		resolvePackage: async (slug) => pkg(slug),
@@ -170,24 +170,22 @@ describe('production apply planning', () => {
 		expect(JSON.stringify(toPublicProductionApplyPlan(plan))).not.toContain('super-secret');
 	});
 
-	it('leaves owner-archived invitations out of --all-ready and counts them apart', async () => {
+	it('leaves expired invitations out of --all-ready and counts them apart', async () => {
 		const runInvitationPreflight = jest.fn(async (packageData: InvitationPackageData) =>
 			invitationPreflight(packageData.invitation.slug),
 		);
 		const plan = await buildProductionApplyPlan(cli(['--all-ready']), {
 			...baseDeps({ preflights: { alpha: invitationPreflight('alpha') } }),
-			listArchivedSlugs: () => ['past-event'],
+			listExpiredSlugs: () => ['past-event'],
 			runInvitationPreflight,
 		});
 		expect(plan.items.map((item) => item.id)).not.toContain('past-event');
 		expect(runInvitationPreflight).toHaveBeenCalledTimes(1);
-		expect(plan.excluded.archivedSlugs).toEqual(['past-event']);
-		expect(toPublicProductionApplyPlan(plan).excluded.archivedSlugs).toEqual(['past-event']);
+		expect(plan.excluded.expiredSlugs).toEqual(['past-event']);
+		expect(toPublicProductionApplyPlan(plan).excluded.expiredSlugs).toEqual(['past-event']);
 		const text = formatProductionApplyPlan(plan);
-		expect(text).toContain('1 archivada (excluida)');
-		expect(text).toContain(
-			'Archivadas por decisión del propietario (fuera del plan): past-event',
-		);
+		expect(text).toContain('1 vencida (excluida)');
+		expect(text).toContain('Vencidas (fecha del evento + 1 año; fuera del plan): past-event');
 	});
 
 	it('leaves authoring definitions out of --all-ready and counts them apart', async () => {
@@ -223,15 +221,15 @@ describe('production apply planning', () => {
 		expect(resolvePackage).not.toHaveBeenCalled();
 	});
 
-	it('keeps an archived invitation addressable by explicit --slug', async () => {
-		const listArchivedSlugs = jest.fn(() => ['past-event']);
+	it('keeps an expired invitation addressable by explicit --slug', async () => {
+		const listExpiredSlugs = jest.fn(() => ['past-event']);
 		const plan = await buildProductionApplyPlan(cli(['--slug', 'past-event']), {
 			...baseDeps(),
-			listArchivedSlugs,
+			listExpiredSlugs,
 		});
 		expect(plan.items.map((item) => item.id)).toContain('past-event');
-		expect(plan.excluded.archivedSlugs).toEqual([]);
-		expect(listArchivedSlugs).not.toHaveBeenCalled();
+		expect(plan.excluded.expiredSlugs).toEqual([]);
+		expect(listExpiredSlugs).not.toHaveBeenCalled();
 	});
 
 	it('revalidates only invitations that would write, never IN_SYNC ones', async () => {

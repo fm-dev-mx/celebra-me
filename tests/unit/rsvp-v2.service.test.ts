@@ -8,13 +8,13 @@ import {
 	RSVP_SUBMIT_BY_INVITE_SERVICE_LOOKUPS,
 } from '@/lib/rsvp/rsvp-operation-contract';
 import { assertObservedOperationCount } from '@/lib/invitation/delivery-contract';
-import { isEventInvitationDisabled } from '@/lib/invitation/access/invitation-access.repository';
+import { isEventInvitationUnavailable } from '@/lib/invitation/access/invitation-access.repository';
 import type { GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
 
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
 	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),
-	isEventInvitationDisabled: jest.fn().mockResolvedValue(false),
+	isEventInvitationUnavailable: jest.fn().mockResolvedValue(false),
 }));
 
 const findGuestByInviteIdPublicMock = findGuestByInviteIdPublic as jest.MockedFunction<
@@ -57,7 +57,7 @@ describe('rsvp service unit', () => {
 
 	it('rejects an RSVP when the administrator disabled the invitation', async () => {
 		findGuestByInviteIdPublicMock.mockResolvedValue(makeGuestRecord());
-		(isEventInvitationDisabled as jest.Mock).mockResolvedValueOnce(true);
+		(isEventInvitationUnavailable as jest.Mock).mockResolvedValueOnce(true);
 
 		await expect(
 			submitGuestRsvpByInviteId('invite-1', {

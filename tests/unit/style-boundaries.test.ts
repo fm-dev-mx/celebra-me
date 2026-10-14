@@ -62,6 +62,7 @@ const PA_PRESET_NAMES = [
 	'enchanted-rose',
 	'luxury-hacienda',
 	'angelic-presence',
+	'sacred-keepsake',
 ];
 
 const PA_REQUIRED_VARS = [

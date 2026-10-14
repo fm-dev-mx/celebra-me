@@ -4,7 +4,10 @@
  * Central sitemap/registry for single-file invitation definitions.
  */
 
-import { isArchivedInvitation, type InvitationDefinition } from './invitation-definition.ts';
+import {
+	isExpiredInvitationDefinition,
+	type InvitationDefinition,
+} from './invitation-definition.ts';
 import { allisonInvitation } from './allison-scarlett.ts';
 import { normaInvitation } from './norma-hernandez.ts';
 import { albaInvitation } from './alba-rosa-quinonez.ts';
@@ -109,26 +112,30 @@ export function listInvitationDefinitions(): InvitationDefinition[] {
 	return Array.from(registry.values());
 }
 
-/** Definitions that still take part in release planning (owner has not archived them). */
-export function listActiveInvitationDefinitions(): InvitationDefinition[] {
-	return listInvitationDefinitions().filter((definition) => !isArchivedInvitation(definition));
+/** Definitions that still take part in release planning (their validity window is open). */
+export function listActiveInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listInvitationDefinitions().filter(
+		(definition) => !isExpiredInvitationDefinition(definition, now),
+	);
 }
 
-/** Owner-archived definitions, reported apart from release planning. */
-export function listArchivedInvitationDefinitions(): InvitationDefinition[] {
-	return listInvitationDefinitions().filter(isArchivedInvitation);
+/** Definitions past their validity window (event date + 1 year), reported apart from planning. */
+export function listExpiredInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listInvitationDefinitions().filter((definition) =>
+		isExpiredInvitationDefinition(definition, now),
+	);
 }
 
 /** Active definitions that hosted targets may receive. */
-export function listPublishedInvitationDefinitions(): InvitationDefinition[] {
-	return listActiveInvitationDefinitions().filter(
+export function listPublishedInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listActiveInvitationDefinitions(now).filter(
 		(definition) => definition.lifecycle === 'published',
 	);
 }
 
 /** Active definitions still in authoring; Local only, reported apart from release planning. */
-export function listAuthoringInvitationDefinitions(): InvitationDefinition[] {
-	return listActiveInvitationDefinitions().filter(
+export function listAuthoringInvitationDefinitions(now = new Date()): InvitationDefinition[] {
+	return listActiveInvitationDefinitions(now).filter(
 		(definition) => definition.lifecycle === 'in_progress',
 	);
 }

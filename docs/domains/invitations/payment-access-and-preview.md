@@ -2,7 +2,7 @@
 title: Invitation Payment Status, Public Access and Preview Protection
 lifecycle: evergreen
 domain: invitation-delivery
-last_reviewed: 2026-10-10
+last_reviewed: 2026-10-13
 ---
 
 # Invitation payment status, public access and preview protection
@@ -22,9 +22,15 @@ invitation behaves for guests and how the administrator controls it.
 | `enabled`       | `unpaid`         | The full invitation as a preview: banner, seals, watermarked photos and card  |
 | `disabled`      | any              | Neutral page «Esta invitación no está disponible por el momento.», HTTP `403` |
 
-Demos never carry access state. New invitations start unpaid and enabled; every invitation that
-existed before `20261010150000` was backfilled as paid. Re-enabling restores the previous payment
-state because the values are independent.
+A client invitation past its validity window — its own event date + 1 year, end of that day in the
+event time zone ([creation contract](../../core/invitation-creation-contract.md)) — is **expired**:
+guests get exactly what a disabled invitation gets, whatever both values say. Expiry is computed at
+request time from the published event date; no row changes, the administrator cannot extend it, and
+an invitation without a resolvable event date never expires.
+
+Demos never carry access state and never expire. New invitations start unpaid and enabled; every
+invitation that existed before `20261010150000` was backfilled as paid. Re-enabling restores the
+previous payment state because the values are independent.
 
 Only `super_admin` changes them (row menu in `/dashboard/invitaciones` or the invitation detail),
 through `PATCH /api/dashboard/intake/[id]/access` and the audited RPC. Governance:
@@ -32,15 +38,19 @@ through `PATCH /api/dashboard/intake/[id]/access` and the audited RPC. Governanc
 
 ## Server control points
 
-- `resolvePublicInvitation` reads the access state in the single published-content read. Disabled →
-  `unavailable`; unpaid → the view model's photographs are rewritten to watermarked previews before
-  anything renders. `resolveInvitationContent` maps `unavailable` to `null`, so location, RSVP,
-  memories identity and social metadata treat a disabled invitation as missing.
+- `resolvePublicInvitation` reads the access state in the single published-content read. Disabled or
+  expired → `unavailable`; unpaid → the view model's photographs are rewritten to watermarked
+  previews before anything renders. `resolveInvitationContent` maps `unavailable` to `null`, so
+  location, RSVP, memories identity and social metadata treat a disabled or expired invitation as
+  missing.
+- Event-keyed checks (personalized RSVP, memories space) use `isEventInvitationUnavailable`: the
+  access row first, then the published event timing (one extra read when enabled). Preview media
+  (`/vista-previa/*`) also refuses an expired invitation.
 - A missing access row is served as the unpaid preview, never as the clean invitation.
 - No query parameter (`screenshot`, `skipEnvelope`, `animations`) bypasses either state.
-- Disabled invitations: page `403`; short links answer crawlers with an empty `403` and redirect
-  guests to the neutral page; location and both RSVP APIs answer `403 invitation_unavailable`; the
-  memories space resolves as unknown.
+- Disabled and expired invitations: page `403`; short links answer crawlers with an empty `403` and
+  redirect guests to the neutral page; location and both RSVP APIs answer
+  `403 invitation_unavailable`; the memories space resolves as unknown.
 
 Response headers and the shared cache of preview media:
 [`public-response-cache-policy.md`](public-response-cache-policy.md).

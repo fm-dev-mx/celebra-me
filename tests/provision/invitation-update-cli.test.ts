@@ -10,13 +10,18 @@ import {
 	formatApplyResult,
 } from '../../scripts/provision/invitation-update-presenter.ts';
 
-function statusDefinition(slug: string, archived: boolean): InvitationDefinition {
+function statusDefinition(slug: string, expired: boolean): InvitationDefinition {
 	return {
 		slug,
 		title: slug,
 		createdAt: '2026-07-20T00:00:00.000Z',
 		lifecycle: 'published',
-		...(archived ? { archive: { decidedOn: '2026-10-08', reason: 'Demo publicado' } } : {}),
+		// Validity window: event date + 1 year, end of day in the event time zone.
+		eventTiming: {
+			localDateTime: expired ? '2020-05-01T18:00' : '2999-05-01T18:00',
+			timeZone: 'America/Mexico_City',
+			startsAtUtc: '',
+		},
 	} as InvitationDefinition;
 }
 
@@ -27,38 +32,38 @@ const statusSources = {
 	],
 };
 
-describe('invitation:release --status archived definitions', () => {
-	type ArchivedReport = {
-		definitions: Array<{ slug: string; archived: boolean }>;
-		archived: { count: number; slugs: string[]; included: boolean };
+describe('invitation:release --status expired definitions', () => {
+	type ExpiredReport = {
+		definitions: Array<{ slug: string; expired: boolean }>;
+		expired: { count: number; slugs: string[]; included: boolean };
 	};
 
-	it('leaves archived definitions out and counts them apart', () => {
-		const report = buildStatusReport({ targets: ['local'] }, statusSources) as ArchivedReport;
+	it('leaves expired definitions out and counts them apart', () => {
+		const report = buildStatusReport({ targets: ['local'] }, statusSources) as ExpiredReport;
 		expect(report.definitions.map((d) => d.slug)).toEqual(['active-one']);
-		expect(report.archived).toEqual({ count: 1, slugs: ['past-one'], included: false });
+		expect(report.expired).toEqual({ count: 1, slugs: ['past-one'], included: false });
 	});
 
-	it('lists them with --include-archived or an explicit slug', () => {
+	it('lists them with --include-expired or an explicit slug', () => {
 		const included = buildStatusReport(
-			{ targets: ['local'], includeArchived: true },
+			{ targets: ['local'], includeExpired: true },
 			statusSources,
-		) as ArchivedReport;
+		) as ExpiredReport;
 		expect(included.definitions.map((d) => d.slug).sort()).toEqual(['active-one', 'past-one']);
 		const bySlug = buildStatusReport(
 			{ slug: 'past-one', targets: ['local'] },
 			statusSources,
-		) as ArchivedReport;
+		) as ExpiredReport;
 		expect(bySlug.definitions).toEqual([
-			expect.objectContaining({ slug: 'past-one', archived: true }),
+			expect.objectContaining({ slug: 'past-one', expired: true }),
 		]);
 	});
 
-	it('prints the archived count in Spanish', () => {
+	it('prints the expired count in Spanish', () => {
 		const report = buildStatusReport({ targets: ['local'] }, statusSources);
 		const formatted = formatStatusReport(report as never);
 		expect(formatted).toContain(
-			'Archivadas            : 1 (excluidas; use --include-archived para listarlas) — past-one',
+			'Vencidas              : 1 (excluidas; use --include-expired para listarlas) — past-one',
 		);
 	});
 });

@@ -4,7 +4,7 @@ jest.mock('@/lib/memories/server/settings.repository', () => ({
 }));
 
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
-	isEventInvitationDisabled: jest.fn().mockResolvedValue(false),
+	isEventInvitationUnavailable: jest.fn().mockResolvedValue(false),
 }));
 
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -21,7 +21,7 @@ import {
 	resolvePublicMemorySpace,
 	toMemorySpaceSummary,
 } from '@/lib/memories/server/space.service';
-import { isEventInvitationDisabled } from '@/lib/invitation/access/invitation-access.repository';
+import { isEventInvitationUnavailable } from '@/lib/invitation/access/invitation-access.repository';
 import { EVENT_ID, NOW, PUBLIC_SLUG, buildSpace } from './fixtures';
 
 const mockFindBySlug = findMemorySpaceByPublicSlug as jest.MockedFunction<
@@ -43,9 +43,9 @@ describe('findPublicMemorySpace', () => {
 	it('hides a space whose invitation the administrator disabled', async () => {
 		const space = buildSpace();
 		mockFindBySlug.mockResolvedValueOnce(space);
-		(isEventInvitationDisabled as jest.Mock).mockResolvedValueOnce(true);
+		(isEventInvitationUnavailable as jest.Mock).mockResolvedValueOnce(true);
 		await expect(findPublicMemorySpace(PUBLIC_SLUG)).resolves.toBeNull();
-		expect(isEventInvitationDisabled).toHaveBeenCalledWith(space.eventId);
+		expect(isEventInvitationUnavailable).toHaveBeenCalledWith(space.eventId);
 	});
 
 	it('rejects malformed slugs without touching the repository', async () => {

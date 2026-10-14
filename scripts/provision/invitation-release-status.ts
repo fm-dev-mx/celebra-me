@@ -13,7 +13,7 @@ export interface StatusReportRequest {
 	slug?: string;
 	targets: InvitationUpdateTarget[];
 	includeUnmanaged?: boolean;
-	includeArchived?: boolean;
+	includeExpired?: boolean;
 	includeDemos?: boolean;
 	json?: boolean;
 }
@@ -25,12 +25,12 @@ export async function printStatusReport(request: StatusReportRequest): Promise<v
 		slug,
 		targets: targets.length > 0 ? targets : undefined,
 		includeUnmanaged: request.includeUnmanaged,
-		includeArchived: request.includeArchived,
+		includeExpired: request.includeExpired,
 		includeDemos: request.includeDemos,
 	}) as StatusReportData & Record<string, unknown>;
 
 	if (targets.includes('local')) {
-		// Archived definitions excluded from the report are not probed either.
+		// Expired definitions excluded from the report are not probed either.
 		const definitionSlugs = slug ? [slug] : report.definitions.map((d) => d.slug);
 		const fastInventory = readFastInvitationInventory(LOCAL_DB_URL, definitionSlugs, slug);
 		report.inventory = { local: fastInventory };

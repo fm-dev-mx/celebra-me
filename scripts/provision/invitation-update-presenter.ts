@@ -26,14 +26,14 @@ export interface StatusReportData {
 		slug: string;
 		title: string;
 		createdAt: string;
-		archived?: boolean;
+		expired?: boolean;
 		classification: string;
 		environments: Record<
 			string,
 			{ status: string; managedStatus?: string; syncStatus?: string; reason?: string }
 		>;
 	}>;
-	archived?: { count: number; slugs: string[]; included: boolean };
+	expired?: { count: number; slugs: string[]; included: boolean };
 	inventory?: Record<
 		string,
 		{
@@ -170,12 +170,12 @@ export function formatStatusReport(data: StatusReportData): string {
 		lines.push(`Filtro de Invitación : ${colors.bold(data.filters.slug)}`);
 	}
 	lines.push(`Entornos Seleccionados : ${data.filters.targets.join(', ')}`);
-	if (data.archived && data.archived.count > 0) {
-		const archivedSuffix = data.archived.included
+	if (data.expired && data.expired.count > 0) {
+		const expiredSuffix = data.expired.included
 			? 'incluidas abajo'
-			: 'excluidas; use --include-archived para listarlas';
+			: 'excluidas; use --include-expired para listarlas';
 		lines.push(
-			`Archivadas            : ${data.archived.count} (${archivedSuffix}) — ${data.archived.slugs.join(', ')}`,
+			`Vencidas              : ${data.expired.count} (${expiredSuffix}) — ${data.expired.slugs.join(', ')}`,
 		);
 	}
 	lines.push('');
@@ -190,8 +190,8 @@ export function formatStatusReport(data: StatusReportData): string {
 	}
 
 	for (const def of data.definitions) {
-		const archivedTag = def.archived ? ` ${colors.yellow('[archivada]')}` : '';
-		lines.push(`${colors.bold(def.title)} (${colors.dim(def.slug)})${archivedTag}`);
+		const expiredTag = def.expired ? ` ${colors.yellow('[vencida]')}` : '';
+		lines.push(`${colors.bold(def.title)} (${colors.dim(def.slug)})${expiredTag}`);
 		lines.push(`   Definición Canónica : Encontrada (Creada: ${def.createdAt.slice(0, 10)})`);
 
 		for (const target of data.filters.targets) {

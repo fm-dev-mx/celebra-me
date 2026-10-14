@@ -7,7 +7,7 @@ import {
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
 	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),
-	isEventInvitationDisabled: jest.fn().mockResolvedValue(false),
+	isEventInvitationUnavailable: jest.fn().mockResolvedValue(false),
 }));
 
 const findGuestByInviteIdPublicMock = findGuestByInviteIdPublic as jest.MockedFunction<
