@@ -42,4 +42,4 @@ fixture without her profile or assets ([variant system](../domains/theme/variant
 - Desktop and mobile hero use distinct uploaded keys (`hero` / `hero-mobile`) encoded from one
   source photograph; focals `50% 42%` (mobile/tablet) and `58% 46%` (desktop).
 - Ceremony and reception coordinates are inferred, not client-stated.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

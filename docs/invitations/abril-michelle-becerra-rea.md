@@ -33,4 +33,4 @@ changelog, two-lane spec, and QA snapshots live in Git history.
 - The reception street spelling (`Macedio` vs `Macedonio Ayala`) was never confirmed by the client.
 - The venue preview is the in-house `StaticVenueMap` illustration; no map tiles are loaded.
 - `clientEmail` and `clientWhatsapp` are empty in the definition.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

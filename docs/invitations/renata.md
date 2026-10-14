@@ -45,4 +45,4 @@ delivered RSVP is a presentation shell without `confirmationMode`, `accessMode`,
 ## Known constraints
 
 - The parish name is inferred from the Maps page title; the address is client-stated.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

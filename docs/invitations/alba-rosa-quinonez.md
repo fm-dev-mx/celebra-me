@@ -34,4 +34,4 @@ notes, photo-role audits, and refinement records live in Git history.
 - Several assigned photographs came from provisional (WhatsApp-class) sources; preparation never
   reached production-ready assets.
 - Music and itinerary were intentionally omitted.
-- Leaving release planning requires an owner `archive` record in the definition.
+- Leaves release planning when it expires (event date + 1 year); the definition stays until then.

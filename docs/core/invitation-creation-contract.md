@@ -83,7 +83,7 @@ Every managed digital invitation must define:
   is expected. This metadata is explicit and is not inferred from timestamps or environment
   presence. Hosted targets enforce it: `invitation:release --targets preview` and `prod:apply`
   reject an `in_progress` definition with `LIFECYCLE_NOT_PUBLISHED`, and `prod:apply --all-ready`
-  leaves authoring definitions out of discovery (counted apart, like archived ones). Local remains
+  leaves authoring definitions out of discovery (counted apart, like expired ones). Local remains
   open for authoring.
 - **Delivery Scope** (`deliveryScope`): `content-only`, `content-and-assets`, or `assets-only`.
   Three-way reconciliation must use this declared scope and report out-of-scope changes rather than
@@ -109,6 +109,28 @@ Every managed digital invitation must define:
     default owner for new client invitations.
 - **Event Date & Time Zone**: ISO date string (`hero.date`) and IANA time zone (e.g.
   `America/Mexico_City`).
+- **Validity window**: a client invitation stays public until the end of the anniversary of its own
+  event date — event date + 1 year, 23:59:59.999 in the event time zone (Feb 29 → Feb 28) — as
+  promised in the Terms (§8). One rule decides it
+  (`src/lib/invitation/access/invitation-validity-window.ts`); the event date is the one
+  `public.invitation_event_date()` derives (`eventTiming.localDateTime`, then `startsAtUtc`, then
+  the legacy `hero.date`; default zone `America/Chihuahua`). There is no separate archive date and
+  no manual override. An invitation without a resolvable event date never expires; demos never
+  expire.
+  - **Guests:** after that instant an invitation behaves exactly like a disabled one (neutral `403`
+    page, same robots policy, `403 invitation_unavailable` from location and RSVP, memories space
+    unknown; [payment and access](../domains/invitations/payment-access-and-preview.md)). Dashboard,
+    admin and host views are unaffected, and no database row changes.
+  - **Release planning:** expired definitions leave `prod:apply` discovery, `--all-ready`,
+    `invitation:release --status` (`--include-expired` lists them) and the hash baseline; an
+    explicit `--slug` still resolves them.
+  - **Retirement from the repository:** a definition, its profile, its assets and a preset whose
+    last consumer it is may be deleted only after the invitation expires.
+    `scripts/provision/release-hash-baseline.json` pins each active invitation's `validUntil`;
+    `pnpm invitation:hash-baseline -- --update` refuses to drop a slug whose window is still open,
+    and `tests/provision/release-hash-baseline.test.ts` fails while such a slug is missing from the
+    registry. When an invitation expires, the baseline test asks for `--update`; the definition may
+    then leave the repository.
 - **Section Inclusions & Omissions**: Explicit list of included sections; omitted optional sections
   must be completely omitted without empty renderable structures.
 - **Section Order**: Array of section keys defining exact publication sequence.
@@ -244,13 +266,14 @@ code on 2026-10-13; lists only shrink, and an entry leaves when its exit conditi
 
 These definitions build their own `buildPublishedContent` and still declare `_assetSlug`. Migrating
 them moves their `sourceHash` and forces a re-release, so the owner decided to document them rather
-than migrate them. Each leaves together with its definition, assets and profile when it is archived.
+than migrate them. Each leaves together with its definition, assets and profile once its invitation
+expires (validity window above).
 
 - Active: `daniela-y-martin`, `melissa-y-luis-osmar`, `norma-hernandez`, `victoria-y-roberto`, and
   `destenid-sofia` (`in_progress`).
-- Past events kept until the owner archives them: `abril-michelle-becerra-rea`,
-  `alba-rosa-quinonez`, `leslie-perez`, `renata`, `romina-rios-chaparro`, `valentina-hernandez` (its
-  assets still live under `src/assets/images/events/xv-valentina-hernandez/`).
+- Past events kept until they expire: `abril-michelle-becerra-rea`, `alba-rosa-quinonez`,
+  `leslie-perez`, `renata`, `romina-rios-chaparro`, `valentina-hernandez` (its assets still live
+  under `src/assets/images/events/xv-valentina-hernandez/`).
 
 New invitations always use `defineCanonicalInvitation`.
 
@@ -261,12 +284,38 @@ belong to `in_progress` definitions (`destenid-sofia`, `naydelin-paredes`), and 
 (`demo-xv-celestial-blue`). A frozen profile may not change until it is rewritten token-only; the
 digest list only shrinks, and an entry leaves with its invitation or with that rewrite.
 
+### Published invitations retired from the repository before expiry
+
+Nine published invitations lost their definitions before the validity window existed (commit
+`43000fc7e`). Their published content still renders, so what their pages need stays until each
+expires; definitions, assets, baselines and dedicated tests are not restored. Profiles and the
+preset are resolved by file name (`import.meta.glob` in `src/lib/invitation/section-css-resolver.ts`
+and `preset-css-resolver.ts`), so keeping the stylesheet is enough.
+
+| Invitation                    | Expires (end of day, event zone)   | Kept in the repository                                       |
+| ----------------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| `gerardo-sesenta`             | 2027-02-21 (`America/Mazatlan`)    | nothing (preset `luxury-hacienda` is shared)                 |
+| `ximena-meza-trasvina`        | 2027-04-11 (`America/Mazatlan`)    | nothing (preset `premiere-floral` is shared)                 |
+| `ana-sofia-cota-guillen`      | 2027-05-23 (`America/Mazatlan`)    | nothing (preset `celestial-blue` is shared)                  |
+| `cesar-ramses`                | 2027-06-20 (`America/Mexico_City`) | preset `sacred-keepsake` (all its SCSS and contract entries) |
+| `leah-lexa`                   | 2027-06-21 (`America/Mexico_City`) | profile `leah-lexa.scss` (frozen digest)                     |
+| `ayrin-samantha-lerma-castro` | 2027-08-01 (`America/Mazatlan`)    | nothing (preset `enchanted-rose` stays with its demo)        |
+| `luna-y-estrella`             | 2027-08-01 (`America/Mexico_City`) | profile `luna-y-estrella.scss` (frozen digest)               |
+| `america-johana`              | 2027-08-29 (`America/Mexico_City`) | profile `america-johana.scss` (frozen digest)                |
+| `xareni-iyarit`               | 2027-09-12 (`America/Mexico_City`) | profile `xareni-iyarit.scss` (frozen digest)                 |
+
+`tests/unit/invitation-profile-boundary.test.ts` (`RETAINED_UNTIL_EXPIRY`) fails once a retained
+profile's window has closed, so it is removed with its digest. Remove `sacred-keepsake` after
+2027-06-20 together with its entries in `THEME_PRESETS`, `PORTRAIT_SUPPORTED_THEMES`, the bautizo
+presets and `tests/unit/style-boundaries.test.ts`. This list only shrinks.
+
 ### Presets and their consumers
 
 A new preset needs two consumers (invitations or demos) when it is created; otherwise use a section
 variant or a visual profile. An existing preset may remain while at least one live invitation or
 demo uses it, and leaves with its last consumer. Single-consumer presets today: `jewelry-box`
-(`naydelin-paredes`), `storybook-lilac` (`america`) and `enchanted-rose` (its demo). This wording
+(`naydelin-paredes`), `storybook-lilac` (`america`), `enchanted-rose` (its demo) and
+`sacred-keepsake` (the published `cesar-ramses` until it expires; see above). This wording
 supersedes the "≥2 consumers" existence rule in the
 [theme architecture](../domains/theme/architecture.md) for presets that already exist.
 

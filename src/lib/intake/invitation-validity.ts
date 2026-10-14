@@ -1,4 +1,8 @@
 import { isValidIanaTimeZone, isValidUtcIso, parseEventLocalDateTime } from '@/lib/time/event-time';
+import {
+	resolveInvitationValidityWindow,
+	type InvitationValidityWindow,
+} from '@/lib/invitation/access/invitation-validity-window';
 
 export type InvitationValidity = 'upcoming' | 'past' | 'unknown' | 'not_applicable';
 
@@ -82,5 +86,31 @@ export function resolveInvitationSchedule(
 		eventDate,
 		eventTimeZone,
 		validity: classifyInvitationDate(kind, eventDate, eventTimeZone, now),
+	};
+}
+
+/**
+ * Public validity window from the same event date `resolveInvitationSchedule` (and
+ * `public.invitation_event_date`) derives: event timing first, then the legacy hero date.
+ */
+export function resolveInvitationContentValidity(
+	kind: 'client' | 'demo',
+	content: InvitationTimingProjection | undefined,
+	now = new Date(),
+): InvitationValidityWindow {
+	const schedule = resolveInvitationSchedule(kind, content, now);
+	return resolveInvitationValidityWindow(schedule.eventDate, schedule.eventTimeZone, now, {
+		isDemo: kind === 'demo',
+	});
+}
+
+/** Timing projection of a published content document (`content.eventTiming`, `content.hero.date`). */
+export function toInvitationTimingProjection(content: unknown): InvitationTimingProjection {
+	if (!content || typeof content !== 'object') return {};
+	const record = content as Record<string, unknown>;
+	const hero = record.hero && typeof record.hero === 'object' ? record.hero : undefined;
+	return {
+		eventTiming: record.eventTiming,
+		heroDate: (hero as Record<string, unknown> | undefined)?.date,
 	};
 }

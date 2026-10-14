@@ -92,6 +92,28 @@ const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.Mocked
 	typeof isInvitationArchivedBySlug
 >;
 
+// The published fixture has a fixed event date (2026-11-21): pin only the clock inside its
+// validity window so the suite does not start failing once that window closes.
+const PINNED_NOW = new Date('2026-10-13T12:00:00.000Z');
+beforeAll(() => {
+	jest.useFakeTimers({
+		now: PINNED_NOW,
+		doNotFake: [
+			'nextTick',
+			'queueMicrotask',
+			'setImmediate',
+			'clearImmediate',
+			'setTimeout',
+			'clearTimeout',
+			'setInterval',
+			'clearInterval',
+			'hrtime',
+			'performance',
+		],
+	});
+});
+afterAll(() => jest.useRealTimers());
+
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockIsInvitationArchivedBySlug.mockResolvedValue(false);

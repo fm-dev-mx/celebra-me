@@ -874,7 +874,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			slug,
 			targets,
 			includeUnmanaged: args.includes('--include-unmanaged'),
-			includeArchived: args.includes('--include-archived'),
+			includeExpired: args.includes('--include-expired'),
 			includeDemos: args.includes('--include-demos'),
 			json,
 		});

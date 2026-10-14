@@ -13,6 +13,10 @@ import {
 	type InvitationAccessState,
 } from '@/lib/invitation/access/invitation-access';
 import { applyPreviewMediaPolicy } from '@/lib/invitation/preview/preview-media-policy';
+import {
+	resolveInvitationContentValidity,
+	toInvitationTimingProjection,
+} from '@/lib/intake/invitation-validity';
 
 export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
@@ -25,7 +29,10 @@ export type ContentResolution =
 			access: InvitationAccessState;
 	  };
 
-/** A client invitation the administrator disabled: no content, no event data. */
+/**
+ * A client invitation the administrator disabled, or one past its validity window
+ * (event date + 1 year): no content, no event data.
+ */
 interface UnavailableInvitationResolution {
 	source: 'unavailable';
 }
@@ -105,9 +112,9 @@ function logInvalidPublishedContent(input: {
 }
 
 /**
- * Content for callers that only need renderable content. A disabled invitation
- * resolves to null, so every consumer (location, RSVP, memories identity, social
- * metadata) treats it as missing unless it opts into `resolvePublicInvitation`.
+ * Content for callers that only need renderable content. A disabled or expired
+ * invitation resolves to null, so every consumer (location, RSVP, memories identity,
+ * social metadata) treats it as missing unless it opts into `resolvePublicInvitation`.
  */
 export async function resolveInvitationContent(
 	slug: string,
@@ -131,8 +138,9 @@ function resolvePublishedAccess(entry: {
 }
 
 /**
- * Public route resolution, including the administrator's access decision for
- * DB-published client invitations. Static demos are always reachable.
+ * Public route resolution, including the administrator's access decision and the
+ * validity window (event date + 1 year) for DB-published client invitations. Static
+ * demos are always reachable.
  */
 export async function resolvePublicInvitation(
 	slug: string,
@@ -146,7 +154,13 @@ export async function resolvePublicInvitation(
 			const publishedEntry = await findPublishedWithAccessBySlugAndEventType(slug, eventType);
 			if (publishedEntry && publishedEntry.isDemo !== true) {
 				const access = resolvePublishedAccess(publishedEntry);
-				if (isInvitationPubliclyDisabled(access)) {
+				if (
+					isInvitationPubliclyDisabled(access) ||
+					resolveInvitationContentValidity(
+						'client',
+						toInvitationTimingProjection(publishedEntry.content),
+					).expired
+				) {
 					return { source: 'unavailable' };
 				}
 				const normalizedContent = normalizeLegacyLocationInContent(publishedEntry.content);

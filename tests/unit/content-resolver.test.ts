@@ -74,6 +74,28 @@ const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.Mocked
 	typeof isInvitationArchivedBySlug
 >;
 
+// The published fixture has a fixed event date (2026-11-21): pin only the clock inside its
+// validity window so the suite does not start failing once that window closes.
+const PINNED_NOW = new Date('2026-10-13T12:00:00.000Z');
+beforeAll(() => {
+	jest.useFakeTimers({
+		now: PINNED_NOW,
+		doNotFake: [
+			'nextTick',
+			'queueMicrotask',
+			'setImmediate',
+			'clearImmediate',
+			'setTimeout',
+			'clearTimeout',
+			'setInterval',
+			'clearInterval',
+			'hrtime',
+			'performance',
+		],
+	});
+});
+afterAll(() => jest.useRealTimers());
+
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockIsInvitationArchivedBySlug.mockResolvedValue(false);
@@ -396,6 +418,30 @@ describe('resolvePublicInvitation access state', () => {
 		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 		expect(mockGetRoutable).not.toHaveBeenCalled();
 		expect(mockIsInvitationArchivedBySlug).not.toHaveBeenCalled();
+	});
+
+	it('resolves an invitation past its validity window as unavailable', async () => {
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'paid', publicAccess: 'enabled' }),
+		);
+		try {
+			// Event date 2026-11-21 (legacy hero date, America/Chihuahua): last public
+			// instant is 2027-11-21T23:59:59.999-06:00.
+			jest.setSystemTime(new Date('2027-11-22T05:59:59.999Z'));
+			expect((await resolvePublicInvitation('my-invitation', 'xv'))?.source).toBe(
+				'published',
+			);
+
+			mockAdaptDbEvent.mockClear();
+			jest.setSystemTime(new Date('2027-11-22T06:00:00.000Z'));
+			expect(await resolvePublicInvitation('my-invitation', 'xv')).toEqual({
+				source: 'unavailable',
+			});
+			expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+			await expect(resolveInvitationContent('my-invitation', 'xv')).resolves.toBeNull();
+		} finally {
+			jest.setSystemTime(PINNED_NOW);
+		}
 	});
 
 	it('hides a disabled invitation from content-only callers', async () => {

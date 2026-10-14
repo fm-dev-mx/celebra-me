@@ -12,7 +12,7 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import {
 	findEventInvitationAccess,
-	isEventInvitationDisabled,
+	isEventInvitationUnavailable,
 	readEmbeddedInvitationAccess,
 } from '@/lib/invitation/access/invitation-access.repository';
 
@@ -91,12 +91,58 @@ describe('invitation access repository', () => {
 		mockSupabaseRequest.mockResolvedValueOnce([
 			{ invitation: { access: { payment_status: 'unpaid', public_access: 'disabled' } } },
 		]);
-		await expect(isEventInvitationDisabled('event-1')).resolves.toBe(true);
+		await expect(isEventInvitationUnavailable('event-1')).resolves.toBe(true);
+		expect(mockSupabaseRequest).toHaveBeenCalledTimes(1);
 
 		mockSupabaseRequest.mockResolvedValueOnce([{ invitation: null }]);
-		await expect(isEventInvitationDisabled('event-2')).resolves.toBe(false);
+		await expect(isEventInvitationUnavailable('event-2')).resolves.toBe(false);
 
 		mockSupabaseRequest.mockResolvedValueOnce([]);
-		await expect(isEventInvitationDisabled('event-3')).resolves.toBe(false);
+		await expect(isEventInvitationUnavailable('event-3')).resolves.toBe(false);
+	});
+
+	const enabledEvent = {
+		invitation_project_id: 'inv-1',
+		invitation: { access: { payment_status: 'paid', public_access: 'enabled' } },
+	};
+	const timing = (localDateTime: string) => ({
+		is_demo: false,
+		eventTiming: { localDateTime, timeZone: 'America/Mazatlan' },
+		heroDate: null,
+	});
+
+	it('reports an enabled invitation past its validity window as unavailable', async () => {
+		mockSupabaseRequest
+			.mockResolvedValueOnce([enabledEvent])
+			.mockResolvedValueOnce([timing('2025-10-01T18:00')]);
+		await expect(
+			isEventInvitationUnavailable('event-1', new Date('2026-10-13T12:00:00Z')),
+		).resolves.toBe(true);
+		const [request] = mockSupabaseRequest.mock.calls[1];
+		expect(request.useServiceRole).toBe(true);
+		expect(request.pathWithQuery).toContain('published_invitation_content?select=is_demo,');
+		expect(request.pathWithQuery).toContain('invitation_project_id=eq.inv-1');
+		expect(request.pathWithQuery).toContain('deleted_at=is.null');
+	});
+
+	it('keeps an enabled invitation inside its window, a demo and an undated one reachable', async () => {
+		const now = new Date('2026-10-13T12:00:00Z');
+		mockSupabaseRequest
+			.mockResolvedValueOnce([enabledEvent])
+			.mockResolvedValueOnce([timing('2025-10-13T18:00')]);
+		await expect(isEventInvitationUnavailable('event-1', now)).resolves.toBe(false);
+
+		mockSupabaseRequest
+			.mockResolvedValueOnce([enabledEvent])
+			.mockResolvedValueOnce([{ ...timing('2020-01-01T18:00'), is_demo: true }]);
+		await expect(isEventInvitationUnavailable('event-1', now)).resolves.toBe(false);
+
+		mockSupabaseRequest
+			.mockResolvedValueOnce([enabledEvent])
+			.mockResolvedValueOnce([{ is_demo: false, eventTiming: null, heroDate: null }]);
+		await expect(isEventInvitationUnavailable('event-1', now)).resolves.toBe(false);
+
+		mockSupabaseRequest.mockResolvedValueOnce([enabledEvent]).mockResolvedValueOnce([]);
+		await expect(isEventInvitationUnavailable('event-1', now)).resolves.toBe(false);
 	});
 });
