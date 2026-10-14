@@ -11,6 +11,7 @@ overrides:
     'ajv-draft-04>ajv': '8.18.0'
     'ajv@^8.0.0': '8.18.0'
     yaml: '>=2.8.3'
+    'handlebars@<4.7.10': '4.7.10'
 
 allowBuilds:
     '@parcel/watcher': true
