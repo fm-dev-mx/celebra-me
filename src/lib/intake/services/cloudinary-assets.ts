@@ -7,13 +7,13 @@ import sharp from 'sharp';
  * Astro client islands must not import this module.
  */
 
-import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
+import {
+	createCloudinaryRestClient,
+	type CloudinaryRestClient,
+	type CloudinaryRestConfig,
+} from './cloudinary-rest';
 
-interface CloudinaryConfig {
-	cloudName: string;
-	apiKey: string;
-	apiSecret: string;
-}
+type CloudinaryConfig = CloudinaryRestConfig;
 
 export type CloudinaryTargetEnvironment = 'preview' | 'production';
 
@@ -124,14 +124,15 @@ export async function readCloudinaryQuota(): Promise<unknown> {
 }
 
 async function readResource(
+	client: CloudinaryRestClient,
 	publicId: string,
 	observer?: CloudinaryAdminObserver,
 ): Promise<CloudinaryResourceData> {
 	await observer?.beforeRequest();
 	try {
-		const result = await cloudinary.api.resource(publicId, { context: true });
+		const result = await client.getResource(publicId, { context: true });
 		observer?.observe(result);
-		return result as CloudinaryResourceData;
+		return result as unknown as CloudinaryResourceData;
 	} catch (error) {
 		observer?.failed(getCloudinaryErrorStatus(error));
 		throw safeProviderError(error);
@@ -164,8 +165,6 @@ export async function verifyCloudinaryDelivery(
 	return bytes;
 }
 
-let configuredSignature = '';
-
 function resolveCloudinaryConfigFromEnv(): CloudinaryConfig {
 	return {
 		cloudName: process.env.CLOUDINARY_CLOUD_NAME?.trim() || '',
@@ -194,20 +193,6 @@ function assertCloudinaryCredentials(config: CloudinaryConfig): void {
 			'Stop before mutation: Cloudinary credentials (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are missing. Configure server-only environment values before uploading invitation images.',
 		);
 	}
-}
-
-function initCloudinary(config: CloudinaryConfig): void {
-	const signature = `${config.cloudName}:${config.apiKey}:${config.apiSecret}`;
-	if (configuredSignature === signature) return;
-	if (config.apiKey && config.apiSecret && config.cloudName) {
-		cloudinary.config({
-			cloud_name: config.cloudName,
-			api_key: config.apiKey,
-			api_secret: config.apiSecret,
-			secure: true,
-		});
-	}
-	configuredSignature = signature;
 }
 
 function sanitizePublicIdSegment(value: string): string {
@@ -380,9 +365,9 @@ export async function readVerifiedCloudinaryAsset(
 ): Promise<{ asset: CloudinaryAssetResult; bytes: Uint8Array }> {
 	const config = resolveCloudinaryConfigFromEnv();
 	assertCloudinaryCredentials(config);
-	initCloudinary(config);
+	const client = createCloudinaryRestClient(config);
 	try {
-		const resource = await readResource(input.publicId, observer);
+		const resource = await readResource(client, input.publicId, observer);
 		assertCloudinaryResourceMatches(resource, input);
 		const secureUrl =
 			resource.secure_url ??
@@ -414,7 +399,7 @@ export async function readVerifiedCloudinaryAsset(
 	}
 }
 
-/** Cloudinary Node SDK may put http_code on the root or on a nested `error` object. */
+/** The REST client puts `http_code` on the root; older callers may still pass a nested `error`. */
 export function getCloudinaryErrorStatus(error: unknown): number | undefined {
 	if (typeof error !== 'object' || error === null) return undefined;
 	if ('http_code' in error && typeof error.http_code === 'number') {
@@ -439,13 +424,14 @@ function isCollisionError(error: unknown): boolean {
 }
 
 async function findExistingAsset(
+	client: CloudinaryRestClient,
 	publicId: string,
 	input: CloudinaryAssetUploadInput,
 	canonicalSecureUrl: string,
 	observer?: CloudinaryAdminObserver,
 ): Promise<CloudinaryAssetResult | null> {
 	try {
-		const resource = await readResource(publicId, observer);
+		const resource = await readResource(client, publicId, observer);
 		if (!resource) throw new Error('Cloudinary returned no resource without a confirmed 404.');
 
 		try {
@@ -503,6 +489,7 @@ function buildPredictedAssetResult(
 }
 
 async function uploadCloudinaryAsset(
+	client: CloudinaryRestClient,
 	publicId: string,
 	input: CloudinaryAssetUploadInput,
 	canonicalSecureUrl: string,
@@ -512,8 +499,8 @@ async function uploadCloudinaryAsset(
 		input.assetFolder ??
 		`${input.targetEnvironment}/${sanitizePublicIdSegment(input.eventType)}/${sanitizePublicIdSegment(input.slug)}/assets`;
 
-	const uploadResult: UploadApiResponse = await cloudinary.uploader
-		.upload(dataUri, {
+	const uploadResult = (await client
+		.uploadImage(dataUri, {
 			public_id: publicId,
 			asset_folder: targetFolder,
 			overwrite: false,
@@ -523,7 +510,7 @@ async function uploadCloudinaryAsset(
 		})
 		.catch((error: unknown) => {
 			throw safeProviderError(error);
-		});
+		})) as unknown as CloudinaryResourceData;
 
 	assertCloudinaryResourceMatches(uploadResult, { ...input, publicId });
 	if (
@@ -539,7 +526,7 @@ export async function uploadOrReconcileCloudinaryAsset(
 	observer?: CloudinaryAdminObserver,
 ): Promise<CloudinaryAssetResult> {
 	const config = resolveCloudinaryConfigFromEnv();
-	initCloudinary(config);
+	const client = createCloudinaryRestClient(config);
 
 	const publicId = buildCloudinaryPublicId(input);
 	assertCloudinaryPublicIdEnvironment(publicId, input.targetEnvironment);
@@ -554,7 +541,7 @@ export async function uploadOrReconcileCloudinaryAsset(
 		isUsableCredential(config.apiSecret);
 
 	const existingResult = canQueryCloudinary
-		? await findExistingAsset(publicId, input, canonicalSecureUrl, observer)
+		? await findExistingAsset(client, publicId, input, canonicalSecureUrl, observer)
 		: null;
 	if (existingResult) return existingResult;
 
@@ -563,5 +550,5 @@ export async function uploadOrReconcileCloudinaryAsset(
 	}
 
 	assertCloudinaryCredentials(config);
-	return uploadCloudinaryAsset(publicId, input, canonicalSecureUrl);
+	return uploadCloudinaryAsset(client, publicId, input, canonicalSecureUrl);
 }

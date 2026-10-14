@@ -22,6 +22,23 @@ import {
 } from '../../scripts/provision/invitations/abril-michelle-becerra-rea.ts';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 
+/** Admin API JSON reply the REST client parses. */
+function adminResponse(body: unknown, status = 200): Response {
+	return new Response(JSON.stringify(body), {
+		status,
+		headers: { 'content-type': 'application/json' },
+	});
+}
+
+/** Route the Admin API (JSON) and the delivery CDN (bytes) through one fetch mock. */
+function mockCloudinaryFetch(handlers: { resource: () => Response; delivery?: () => Response }) {
+	return jest.spyOn(global, 'fetch').mockImplementation(async (url) => {
+		if (String(url).includes('api.cloudinary.com')) return handlers.resource();
+		if (!handlers.delivery) throw new Error(`Unexpected fetch: ${String(url)}`);
+		return handlers.delivery();
+	});
+}
+
 describe('Cloudinary Adapter & Managed Asset Provider', () => {
 	const originalEnv = process.env;
 
@@ -87,7 +104,11 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			).not.toThrow();
 		});
 		it('blocks mutation of legacy, cross-environment, and other invitation assets', () => {
-			const target = { environment: 'preview' as const, eventType: 'xv', slug: 'valentina-hernandez' };
+			const target = {
+				environment: 'preview' as const,
+				eventType: 'xv',
+				slug: 'valentina-hernandez',
+			};
 			expect(() =>
 				assertCloudinaryMutationTarget(
 					'preview/xv/valentina-hernandez/assets/hero-abc',
@@ -199,10 +220,10 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 		it('returns predicted outcome without error during dryRun even when credentials are missing', async () => {
 			const dummyBytes = new Uint8Array([1, 2, 3, 4]);
 			const dummySha = createHash('sha256').update(dummyBytes).digest('hex');
-			const cloudinaryModule = await import('cloudinary');
-			const resourceSpy = jest
-				.spyOn(cloudinaryModule.v2.api, 'resource')
-				.mockRejectedValue(Object.assign(new Error('Not Found'), { http_code: 404 }));
+			// Without credentials the provider must not be queried at all.
+			const fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(async (url) => {
+				throw new Error(`Unexpected fetch without credentials: ${String(url)}`);
+			});
 
 			try {
 				const res = await uploadOrReconcileCloudinaryAsset({
@@ -224,8 +245,9 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 				expect(res.publicId).toBe(
 					`preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
 				);
+				expect(fetchSpy).not.toHaveBeenCalled();
 			} finally {
-				resourceSpy.mockRestore();
+				fetchSpy.mockRestore();
 			}
 		});
 	});
@@ -288,7 +310,7 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 		});
 	});
 
-	describe('Cloudinary SDK Interaction & Reconciliation Mock Tests', () => {
+	describe('Cloudinary REST Interaction & Reconciliation Mock Tests', () => {
 		beforeEach(() => {
 			process.env.CLOUDINARY_CLOUD_NAME = 'mock-cloud';
 			process.env.CLOUDINARY_API_KEY = 'mock-key';
@@ -299,19 +321,20 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			const dummyBytes = new Uint8Array([1, 2, 3]);
 			const dummySha = createHash('sha256').update(dummyBytes).digest('hex');
 
-			const cloudinaryModule = await import('cloudinary');
-			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockImplementation(async () => ({
-				public_id: `preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
-				version: 1,
-				secure_url: undefined,
-				width: 1000,
-				height: 1000,
-				bytes: 3,
-				format: 'webp',
-				resource_type: 'image',
-				created_at: '2026-07-25T00:00:00Z',
-				context: { custom: { sha256: dummySha } },
-			}));
+			const resourceSpy = mockCloudinaryFetch({
+				resource: () =>
+					adminResponse({
+						public_id: `preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+						version: 1,
+						width: 1000,
+						height: 1000,
+						bytes: 3,
+						format: 'webp',
+						resource_type: 'image',
+						created_at: '2026-07-25T00:00:00Z',
+						context: { custom: { sha256: dummySha } },
+					}),
+			});
 
 			try {
 				const res = await uploadOrReconcileCloudinaryAsset({
@@ -333,6 +356,13 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 						res.publicId +
 						'.webp',
 				);
+				const [url, init] = resourceSpy.mock.calls[0];
+				expect(String(url)).toBe(
+					`https://api.cloudinary.com/v1_1/mock-cloud/resources/image/upload/${res.publicId}?context=true`,
+				);
+				expect((init?.headers as Record<string, string>).Authorization).toBe(
+					`Basic ${Buffer.from('mock-key:mock-secret').toString('base64')}`,
+				);
 			} finally {
 				resourceSpy.mockRestore();
 			}
@@ -342,19 +372,20 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			const dummyBytes = new Uint8Array([1, 2, 3]);
 			const dummySha = createHash('sha256').update(dummyBytes).digest('hex');
 
-			const cloudinaryModule = await import('cloudinary');
-			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockImplementation(async () => ({
-				public_id: `preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
-				version: 1,
-				secure_url: undefined,
-				width: 1000,
-				height: 1000,
-				bytes: 3,
-				format: 'webp',
-				resource_type: 'image',
-				created_at: '2026-07-25T00:00:00Z',
-				context: { custom: { sha256: 'different-sha256-hash' } },
-			}));
+			const resourceSpy = mockCloudinaryFetch({
+				resource: () =>
+					adminResponse({
+						public_id: `preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+						version: 1,
+						width: 1000,
+						height: 1000,
+						bytes: 3,
+						format: 'webp',
+						resource_type: 'image',
+						created_at: '2026-07-25T00:00:00Z',
+						context: { custom: { sha256: 'different-sha256-hash' } },
+					}),
+			});
 
 			try {
 				await expect(
@@ -379,64 +410,81 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 		it('verifies the delivered binary instead of trusting provider SHA context alone', async () => {
 			const canonical = await sharp({
 				create: { width: 2, height: 2, channels: 3, background: '#ffffff' },
-			}).webp().toBuffer();
+			})
+				.webp()
+				.toBuffer();
 			const sha256 = createHash('sha256').update(canonical).digest('hex');
 			const publicId = 'preview/xv/example/assets/hero-' + sha256.slice(0, 12);
-			const cloudinaryModule = await import('cloudinary');
-			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockResolvedValue({
-				public_id: publicId,
-				version: 1,
-				width: 2,
-				height: 2,
-				bytes: canonical.length,
-				format: 'webp',
-				resource_type: 'image',
-				created_at: '2026-09-01T00:00:00Z',
-				context: { custom: { sha256 } },
-			} as never);
-			const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
-				ok: true,
-				status: 200,
-				headers: { get: () => 'image/webp' },
-				arrayBuffer: async () => Uint8Array.from(canonical).buffer,
-			} as unknown as Response);
-			try {
-				await expect(verifyCloudinaryAsset({
-					publicId, sha256, mimeType: 'image/webp', width: 2, height: 2,
-				})).resolves.toMatchObject({ publicId, sha256 });
-				fetchSpy.mockResolvedValue({
+			const resource = () =>
+				adminResponse({
+					public_id: publicId,
+					version: 1,
+					width: 2,
+					height: 2,
+					bytes: canonical.length,
+					format: 'webp',
+					resource_type: 'image',
+					created_at: '2026-09-01T00:00:00Z',
+					context: { custom: { sha256 } },
+				});
+			const delivered = (bytes: Uint8Array) =>
+				({
 					ok: true,
 					status: 200,
 					headers: { get: () => 'image/webp' },
-					arrayBuffer: async () => Uint8Array.from([1, 2, 3]).buffer,
-				} as unknown as Response);
-				await expect(verifyCloudinaryAsset({
-					publicId, sha256, mimeType: 'image/webp', width: 2, height: 2,
-				})).rejects.toThrow('delivered binary SHA-256');
-			} finally {
-				resourceSpy.mockRestore();
+					arrayBuffer: async () => Uint8Array.from(bytes).buffer,
+				}) as unknown as Response;
+			const fetchSpy = mockCloudinaryFetch({
+				resource,
+				delivery: () => delivered(canonical),
+			});
+			try {
+				await expect(
+					verifyCloudinaryAsset({
+						publicId,
+						sha256,
+						mimeType: 'image/webp',
+						width: 2,
+						height: 2,
+					}),
+				).resolves.toMatchObject({ publicId, sha256 });
 				fetchSpy.mockRestore();
+				mockCloudinaryFetch({
+					resource,
+					delivery: () => delivered(Uint8Array.from([1, 2, 3])),
+				});
+				await expect(
+					verifyCloudinaryAsset({
+						publicId,
+						sha256,
+						mimeType: 'image/webp',
+						width: 2,
+						height: 2,
+					}),
+				).rejects.toThrow('delivered binary SHA-256');
+			} finally {
+				jest.restoreAllMocks();
 			}
 		});
 		it('rejects a preserved asset when provider metadata or delivery no longer matches', async () => {
 			const sha256 = createHash('sha256').update('canonical').digest('hex');
-			const cloudinaryModule = await import('cloudinary');
-			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockResolvedValue({
-				public_id: 'xv/valentina-hernandez/assets/hero-test',
-				version: 1,
-				secure_url:
-					'https://res.cloudinary.com/mock-cloud/image/upload/v1/xv/valentina-hernandez/assets/hero-test.webp',
-				width: 1000,
-				height: 1200,
-				bytes: 100,
-				format: 'webp',
-				resource_type: 'image',
-				created_at: '2026-09-01T00:00:00Z',
-				context: { custom: { sha256 } },
-			} as never);
-			const fetchSpy = jest
-				.spyOn(global, 'fetch')
-				.mockResolvedValue(new Response('', { status: 404 }));
+			const fetchSpy = mockCloudinaryFetch({
+				resource: () =>
+					adminResponse({
+						public_id: 'xv/valentina-hernandez/assets/hero-test',
+						version: 1,
+						secure_url:
+							'https://res.cloudinary.com/mock-cloud/image/upload/v1/xv/valentina-hernandez/assets/hero-test.webp',
+						width: 1000,
+						height: 1200,
+						bytes: 100,
+						format: 'webp',
+						resource_type: 'image',
+						created_at: '2026-09-01T00:00:00Z',
+						context: { custom: { sha256 } },
+					}),
+				delivery: () => new Response('', { status: 404 }),
+			});
 
 			try {
 				await expect(
@@ -449,7 +497,6 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 					}),
 				).rejects.toThrow('delivery failed (HTTP 404)');
 			} finally {
-				resourceSpy.mockRestore();
 				fetchSpy.mockRestore();
 			}
 		});
