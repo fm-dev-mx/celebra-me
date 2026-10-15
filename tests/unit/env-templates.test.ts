@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
+import { PLATFORM_ENV_BY_ENVIRONMENT } from '@/lib/platform/server/config';
 import { ENV_FILES, compareEnvFile, readTemplateNames } from '../../scripts/agent/env-files.ts';
 
 const ROOT = process.cwd();
@@ -69,6 +70,13 @@ describe('env file templates', () => {
 			templateNames('.env.preview.local.example').filter((name) =>
 				/PRODUCTION|^PROD_/.test(name),
 			),
+		).toEqual([]);
+		// Local-only diagnostics: deployments read the plain names.
+		const localOnly = new Set(
+			Object.values(PLATFORM_ENV_BY_ENVIRONMENT).flatMap((entry) => Object.values(entry)),
+		);
+		expect(
+			templateNames('.env.preview.local.example').filter((name) => localOnly.has(name)),
 		).toEqual([]);
 	});
 
