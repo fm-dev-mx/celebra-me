@@ -1,12 +1,16 @@
 // personalized-access section — base layout & visual contract
-// Presets set --pa-* tokens at higher specificity; defaults are var() fallbacks.
+// Profiles set --pa-* tokens; presets and variants set --pa-*-fallback (see theme architecture).
 
 .personalized-access {
-	padding: var(--pa-padding-block, clamp(4rem, 8vw, 5.5rem)) var(--pa-padding-inline, 1.25rem);
+	padding: var(--pa-padding-block, var(--pa-padding-block-fallback, clamp(4rem, 8vw, 5.5rem)))
+		var(--pa-padding-inline, 1.25rem);
 	background: transparent;
 
 	@media (width >= 768px) {
-		padding: var(--pa-padding-block-lg, clamp(6rem, 10vw, 8.5rem))
+		padding: var(
+				--pa-padding-block-lg,
+				var(--pa-padding-block-lg-fallback, clamp(6rem, 10vw, 8.5rem))
+			)
 			var(--pa-padding-inline, 1.25rem);
 	}
 
@@ -23,18 +27,27 @@
 	overflow: hidden;
 	isolation: isolate;
 	border-radius: var(--pa-card-border-radius, 0.875rem);
-	border: var(--pa-card-border, 1px solid var(--color-border-premium));
-	background-color: var(--pa-card-bg-color, var(--color-surface-elevated));
-	background-image: var(--pa-card-bg-image, none);
+	border: var(
+		--pa-card-border,
+		var(--pa-card-border-fallback, 1px solid var(--color-border-premium))
+	);
+	background-color: var(
+		--pa-card-bg-color,
+		var(--pa-card-bg-color-fallback, var(--color-surface-elevated))
+	);
+	background-image: var(--pa-card-bg-image, var(--pa-card-bg-image-fallback, none));
 	background-position: var(--pa-card-bg-position, center);
 	background-size: var(--pa-card-bg-size, auto);
-	box-shadow: var(--pa-card-shadow, none);
+	box-shadow: var(--pa-card-shadow, var(--pa-card-shadow-fallback, none));
 
 	&::before {
 		content: '';
 		position: absolute;
 		inset: var(--pa-card-inset, 0.625rem);
-		border: var(--pa-card-inner-border, 1px solid rgb(255 255 255 / 52%));
+		border: var(
+			--pa-card-inner-border,
+			var(--pa-card-inner-border-fallback, 1px solid rgb(255 255 255 / 52%))
+		);
 		border-radius: var(--pa-card-inner-radius, 0.625rem);
 		pointer-events: none;
 		z-index: 0;
@@ -44,7 +57,7 @@
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: var(--pa-card-glow, none);
+		background: var(--pa-card-glow, var(--pa-card-glow-fallback, none));
 		pointer-events: none;
 		z-index: 0;
 	}
@@ -67,8 +80,11 @@
 		position: absolute;
 		width: var(--pa-corner-size, 1.25rem);
 		height: var(--pa-corner-size, 1.25rem);
-		border-color: var(--pa-corner-color, var(--color-action-accent));
-		opacity: var(--pa-corner-opacity, 45%);
+		border-color: var(
+			--pa-corner-color,
+			var(--pa-corner-color-fallback, var(--color-action-accent))
+		);
+		opacity: var(--pa-corner-opacity, var(--pa-corner-opacity-fallback, 45%));
 
 		&::before {
 			content: '';
@@ -77,7 +93,8 @@
 			height: var(--pa-corner-dot-size, 0.25rem);
 			background: currentcolor;
 			border-radius: 50%;
-			box-shadow: 0 0 var(--pa-corner-glow-blur, 0) var(--pa-corner-color);
+			box-shadow: 0 0 var(--pa-corner-glow-blur, var(--pa-corner-glow-blur-fallback, 0))
+				var(--pa-corner-color, var(--pa-corner-color-fallback));
 		}
 
 		&--tl {
@@ -143,7 +160,7 @@
 		line-height: 1;
 		letter-spacing: var(--pa-eyebrow-tracking, 0.24em);
 		text-transform: uppercase;
-		color: var(--pa-eyebrow-color, var(--color-text-muted));
+		color: var(--pa-eyebrow-color, var(--pa-eyebrow-color-fallback, var(--color-text-muted)));
 
 		&[data-demo-label] {
 			display: var(--pa-demo-label-display, inline);
@@ -198,9 +215,9 @@
 		font-size: var(--pa-title-size, clamp(1.35rem, 2vw + 1rem, 1.9rem));
 		font-weight: 500;
 		line-height: 1.1;
-		letter-spacing: var(--pa-title-tracking, 0.18em);
+		letter-spacing: var(--pa-title-tracking, var(--pa-title-tracking-fallback, 0.18em));
 		text-transform: var(--pa-title-transform, uppercase);
-		color: var(--pa-title-color, var(--color-text-emphasis));
+		color: var(--pa-title-color, var(--pa-title-color-fallback, var(--color-text-emphasis)));
 		text-shadow: var(--pa-title-shadow, none);
 	}
 
@@ -211,7 +228,10 @@
 		font-weight: var(--pa-subtitle-weight, 600);
 		font-size: 0.85rem;
 		line-height: 1.6;
-		color: var(--pa-subtitle-color, var(--color-text-secondary));
+		color: var(
+			--pa-subtitle-color,
+			var(--pa-subtitle-color-fallback, var(--color-text-secondary))
+		);
 		font-style: var(--pa-subtitle-font-style, normal);
 	}
 
@@ -239,7 +259,7 @@
 		line-height: 1.2;
 		letter-spacing: var(--pa-label-tracking, 0.24em);
 		text-transform: uppercase;
-		color: var(--pa-label-color, var(--color-text-muted));
+		color: var(--pa-label-color, var(--pa-label-color-fallback, var(--color-text-muted)));
 		opacity: var(--pa-label-opacity, 100%);
 	}
 
@@ -250,7 +270,7 @@
 		font-size: clamp(1.9rem, 4vw + 1rem, 2.6rem);
 		font-weight: var(--pa-guest-weight, 400);
 		line-height: 0.95;
-		color: var(--pa-guest-color, var(--color-text-primary));
+		color: var(--pa-guest-color, var(--pa-guest-color-fallback, var(--color-text-primary)));
 		letter-spacing: var(--pa-guest-tracking, 0);
 		text-wrap: balance;
 		overflow-wrap: anywhere;
@@ -262,12 +282,15 @@
 		margin: 0.25rem 0;
 		background: var(
 			--pa-divider-gradient,
-			linear-gradient(
-				90deg,
-				transparent 0%,
-				var(--hero-divider-color) 18%,
-				var(--hero-divider-color) 82%,
-				transparent 100%
+			var(
+				--pa-divider-gradient-fallback,
+				linear-gradient(
+					90deg,
+					transparent 0%,
+					var(--hero-divider-color) 18%,
+					var(--hero-divider-color) 82%,
+					transparent 100%
+				)
 			)
 		);
 		opacity: var(--pa-divider-opacity, 90%);
@@ -280,9 +303,19 @@
 			width: 0.55rem;
 			height: 0.55rem;
 			transform: translate(-50%, -50%) rotate(45deg);
-			background: var(--pa-divider-diamond-bg, var(--color-surface-elevated));
-			border: 1px solid var(--pa-divider-diamond-border-color, var(--hero-divider-color));
-			box-shadow: var(--pa-divider-diamond-shadow, 0 0 0 0.2rem rgb(255 255 255 / 28%));
+			background: var(
+				--pa-divider-diamond-bg,
+				var(--pa-divider-diamond-bg-fallback, var(--color-surface-elevated))
+			);
+			border: 1px solid
+				var(
+					--pa-divider-diamond-border-color,
+					var(--pa-divider-diamond-border-color-fallback, var(--hero-divider-color))
+				);
+			box-shadow: var(
+				--pa-divider-diamond-shadow,
+				var(--pa-divider-diamond-shadow-fallback, 0 0 0 0.2rem rgb(255 255 255 / 28%))
+			);
 		}
 	}
 
@@ -291,21 +324,33 @@
 		padding: 1rem 1.5rem 1.1rem;
 		position: relative;
 		overflow: hidden;
-		border-radius: var(--pa-count-frame-radius, 1.125rem);
-		border: var(--pa-count-frame-border, 1px solid rgb(255 255 255 / 54%));
+		border-radius: var(
+			--pa-count-frame-radius,
+			var(--pa-count-frame-radius-fallback, 1.125rem)
+		);
+		border: var(
+			--pa-count-frame-border,
+			var(--pa-count-frame-border-fallback, 1px solid rgb(255 255 255 / 54%))
+		);
 		background: var(
 			--pa-count-frame-bg,
-			linear-gradient(180deg, rgb(255 255 255 / 44%), rgb(255 255 255 / 12%))
+			var(
+				--pa-count-frame-bg-fallback,
+				linear-gradient(180deg, rgb(255 255 255 / 44%), rgb(255 255 255 / 12%))
+			)
 		);
 
 		// Two-declaration cascade for multi-value shadow (top-level commas invalid in var())
-		box-shadow: var(--pa-count-frame-shadow);
+		box-shadow: var(--pa-count-frame-shadow, var(--pa-count-frame-shadow-fallback));
 
 		&::before {
 			content: '';
 			position: absolute;
 			inset: var(--pa-count-frame-inner-inset, 4px);
-			border: var(--pa-count-frame-inner-border, 0.5px solid rgb(255 255 255 / 15%));
+			border: var(
+				--pa-count-frame-inner-border,
+				var(--pa-count-frame-inner-border-fallback, 0.5px solid rgb(255 255 255 / 15%))
+			);
 			pointer-events: none;
 			display: var(--pa-count-frame-inner-display, none);
 		}
@@ -316,7 +361,7 @@
 		font-family: var(--font-display, serif);
 		font-size: var(--pa-count-size, clamp(3.25rem, 9vw, 4.75rem));
 		line-height: 0.85;
-		color: var(--pa-count-color, var(--color-text-emphasis));
+		color: var(--pa-count-color, var(--pa-count-color-fallback, var(--color-text-emphasis)));
 		text-shadow: var(--pa-count-shadow, none);
 	}
 
@@ -333,8 +378,11 @@
 	&__footer {
 		padding: 1.25rem 1.75rem 1.75rem;
 		text-align: center;
-		border-top: var(--pa-footer-border-top, 1px solid rgb(255 255 255 / 42%));
-		background: var(--pa-footer-bg, none);
+		border-top: var(
+			--pa-footer-border-top,
+			var(--pa-footer-border-top-fallback, 1px solid rgb(255 255 255 / 42%))
+		);
+		background: var(--pa-footer-bg, var(--pa-footer-bg-fallback, none));
 
 		p {
 			max-width: 22rem;
@@ -342,7 +390,10 @@
 			font-family: var(--font-body, serif);
 			font-size: 0.9rem;
 			line-height: 1.65;
-			color: var(--pa-footer-text-color, var(--color-text-secondary));
+			color: var(
+				--pa-footer-text-color,
+				var(--pa-footer-text-color-fallback, var(--color-text-secondary))
+			);
 			font-style: var(--pa-footer-text-font-style, italic);
 			letter-spacing: var(--pa-footer-text-tracking, 0);
 		}

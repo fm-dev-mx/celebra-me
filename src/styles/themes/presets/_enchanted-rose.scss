@@ -460,50 +460,50 @@
 	// ---------------------------------------------------------------------
 	// Personalized Access Section
 	// ---------------------------------------------------------------------
-	--pa-card-bg-image: var(--rose-velvet-wash);
-	--pa-card-border: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
-	--pa-card-shadow:
+	--pa-card-bg-image-fallback: var(--rose-velvet-wash);
+	--pa-card-border-fallback: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
+	--pa-card-shadow-fallback:
 		0 24px 70px rgb(var(--color-rose-shadow-rgb) / 40%),
 		inset 0 0 42px rgb(var(--color-candle-gold-rgb) / 8%);
-	--pa-card-glow: radial-gradient(
+	--pa-card-glow-fallback: radial-gradient(
 		circle at top center,
 		rgb(var(--color-candle-gold-rgb) / 16%),
 		transparent 52%
 	);
-	--pa-card-inner-border: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
 	--pa-card-inner-radius: 0.5rem;
-	--pa-corner-opacity: 58%;
-	--pa-corner-glow-blur: 8px;
-	--pa-eyebrow-color: var(--color-candle-gold);
+	--pa-corner-opacity-fallback: 58%;
+	--pa-corner-glow-blur-fallback: 8px;
+	--pa-eyebrow-color-fallback: var(--color-candle-gold);
 	--pa-eyebrow-tracking: 0.32em;
 	--pa-title-font: var(--font-display);
-	--pa-title-tracking: 0.2em;
-	--pa-title-color: var(--color-candle-gold);
+	--pa-title-tracking-fallback: 0.2em;
+	--pa-title-color-fallback: var(--color-candle-gold);
 	--pa-guest-weight: 400;
-	--pa-guest-color: var(--color-warm-ivory);
-	--pa-divider-gradient: var(--rose-gold-divider);
+	--pa-guest-color-fallback: var(--color-warm-ivory);
+	--pa-divider-gradient-fallback: var(--rose-gold-divider);
 	--pa-divider-opacity: 70%;
-	--pa-divider-diamond-bg: var(--color-velvet-burgundy);
-	--pa-divider-diamond-border-color: var(--color-antique-gold);
-	--pa-divider-diamond-shadow: 0 0 10px rgb(var(--color-candle-gold-rgb) / 28%);
-	--pa-count-frame-radius: 0.5rem;
-	--pa-count-frame-border: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
-	--pa-count-frame-bg: linear-gradient(
+	--pa-divider-diamond-bg-fallback: var(--color-velvet-burgundy);
+	--pa-divider-diamond-border-color-fallback: var(--color-antique-gold);
+	--pa-divider-diamond-shadow-fallback: 0 0 10px rgb(var(--color-candle-gold-rgb) / 28%);
+	--pa-count-frame-radius-fallback: 0.5rem;
+	--pa-count-frame-border-fallback: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
+	--pa-count-frame-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-candle-gold-rgb) / 12%),
 		rgb(var(--color-velvet-burgundy-rgb) / 24%)
 	);
-	--pa-count-frame-shadow:
+	--pa-count-frame-shadow-fallback:
 		0 12px 30px rgb(var(--color-rose-shadow-rgb) / 28%),
 		inset 0 0 15px rgb(var(--color-candle-gold-rgb) / 10%);
-	--pa-count-color: var(--color-candle-gold);
+	--pa-count-color-fallback: var(--color-candle-gold);
 	--pa-count-frame-inner-display: block;
-	--pa-footer-border-top: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
-	--pa-footer-text-color: rgb(var(--color-warm-ivory-rgb) / 88%);
-	--pa-label-color: rgb(var(--color-candle-gold-rgb) / 86%);
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--color-antique-gold-rgb) / 18%);
+	--pa-footer-text-color-fallback: rgb(var(--color-warm-ivory-rgb) / 88%);
+	--pa-label-color-fallback: rgb(var(--color-candle-gold-rgb) / 86%);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
-	--pa-subtitle-color: rgb(var(--color-warm-ivory-rgb) / 82%);
-	--pa-padding-block: clamp(3.4rem, 7vw, 4.8rem);
-	--pa-padding-block-lg: clamp(4rem, 7vw, 6rem);
+	--pa-subtitle-color-fallback: rgb(var(--color-warm-ivory-rgb) / 82%);
+	--pa-padding-block-fallback: clamp(3.4rem, 7vw, 4.8rem);
+	--pa-padding-block-lg-fallback: clamp(4rem, 7vw, 6rem);
 }

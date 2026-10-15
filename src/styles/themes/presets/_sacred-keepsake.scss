@@ -364,7 +364,7 @@
 	// ---------------------------------------------------------------------
 	// Personalized Access Section
 	// ---------------------------------------------------------------------
-	--pa-card-bg-image:
+	--pa-card-bg-image-fallback:
 		linear-gradient(
 			170deg,
 			var(--color-pure-ivory) 0%,
@@ -372,56 +372,56 @@
 			var(--color-soft-sand) 100%
 		),
 		var(--texture-silk, none);
-	--pa-card-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--pa-card-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
 	--pa-card-border-radius: 0.875rem;
-	--pa-card-shadow:
+	--pa-card-shadow-fallback:
 		0 20px 50px -34px rgb(var(--color-eternal-ink-rgb) / 26%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 	--pa-card-inset: 0.5rem;
-	--pa-card-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
 	--pa-card-inner-radius: 0.625rem;
-	--pa-card-glow:
+	--pa-card-glow-fallback:
 		radial-gradient(
 			circle at top center,
 			rgb(var(--color-sacred-blue-rgb) / 12%),
 			transparent 50%
 		),
 		linear-gradient(180deg, rgb(var(--color-pure-ivory-rgb) / 90%), transparent 40%);
-	--pa-corner-color: var(--color-sacred-gold);
-	--pa-corner-opacity: 48%;
-	--pa-corner-glow-blur: 6px;
-	--pa-eyebrow-color: var(--color-sacred-gold-readable);
+	--pa-corner-color-fallback: var(--color-sacred-gold);
+	--pa-corner-opacity-fallback: 48%;
+	--pa-corner-glow-blur-fallback: 6px;
+	--pa-eyebrow-color-fallback: var(--color-sacred-gold-readable);
 	--pa-eyebrow-tracking: 0.3em;
 	--pa-title-font: var(--font-display);
-	--pa-title-tracking: 0.2em;
-	--pa-title-color: var(--color-sacred-gold);
-	--pa-subtitle-color: var(--color-text-secondary);
+	--pa-title-tracking-fallback: 0.2em;
+	--pa-title-color-fallback: var(--color-sacred-gold);
+	--pa-subtitle-color-fallback: var(--color-text-secondary);
 	--pa-guest-weight: 400;
-	--pa-guest-color: var(--color-text-primary);
-	--pa-divider-gradient: linear-gradient(
+	--pa-guest-color-fallback: var(--color-text-primary);
+	--pa-divider-gradient-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		var(--color-sacred-gold) 50%,
 		transparent 100%
 	);
 	--pa-divider-opacity: 50%;
-	--pa-divider-diamond-bg: var(--color-pure-ivory);
-	--pa-divider-diamond-border-color: var(--color-sacred-gold);
-	--pa-divider-diamond-shadow: 0 0 6px rgb(var(--color-sacred-gold-rgb) / 20%);
-	--pa-count-frame-radius: 0.75rem;
-	--pa-count-frame-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
-	--pa-count-frame-bg: linear-gradient(
+	--pa-divider-diamond-bg-fallback: var(--color-pure-ivory);
+	--pa-divider-diamond-border-color-fallback: var(--color-sacred-gold);
+	--pa-divider-diamond-shadow-fallback: 0 0 6px rgb(var(--color-sacred-gold-rgb) / 20%);
+	--pa-count-frame-radius-fallback: 0.75rem;
+	--pa-count-frame-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--pa-count-frame-bg-fallback: linear-gradient(
 		180deg,
 		var(--color-pure-ivory) 0%,
 		var(--color-sacred-white) 100%
 	);
-	--pa-count-frame-shadow:
+	--pa-count-frame-shadow-fallback:
 		0 8px 22px rgb(var(--color-eternal-ink-rgb) / 6%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
-	--pa-count-color: var(--color-sacred-gold);
-	--pa-footer-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
-	--pa-footer-text-color: var(--color-text-secondary);
-	--pa-label-color: var(--color-sacred-gold-readable);
+	--pa-count-color-fallback: var(--color-sacred-gold);
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
+	--pa-footer-text-color-fallback: var(--color-text-secondary);
+	--pa-label-color-fallback: var(--color-sacred-gold-readable);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
 }
