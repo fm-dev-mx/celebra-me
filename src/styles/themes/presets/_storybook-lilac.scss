@@ -275,14 +275,14 @@
 	// ---------------------------------------------------------------------
 	--hero-section-background: var(--color-surface-primary);
 	--hero-section-color: var(--color-text-primary);
-	--hero-split-plane-bg: var(--color-surface-dark);
-	--hero-split-overlay-strong: rgb(var(--color-violet-night-rgb) / 92%);
-	--hero-split-overlay-mid: rgb(var(--color-violet-night-rgb) / 70%);
-	--hero-split-overlay-soft: rgb(var(--color-violet-night-rgb) / 18%);
-	--hero-title-color-start: var(--color-candle-cream);
-	--hero-title-color-mid: var(--color-candle-gold);
-	--hero-title-color-end: var(--color-night-lilac);
-	--hero-badge-text: var(--color-text-on-dark);
+	--hero-split-plane-bg-fallback: var(--color-surface-dark);
+	--hero-split-overlay-strong-fallback: rgb(var(--color-violet-night-rgb) / 92%);
+	--hero-split-overlay-mid-fallback: rgb(var(--color-violet-night-rgb) / 70%);
+	--hero-split-overlay-soft-fallback: rgb(var(--color-violet-night-rgb) / 18%);
+	--hero-title-color-start-fallback: var(--color-candle-cream);
+	--hero-title-color-mid-fallback: var(--color-candle-gold);
+	--hero-title-color-end-fallback: var(--color-night-lilac);
+	--hero-badge-text-fallback: var(--color-text-on-dark);
 	--hero-label-color: var(--color-gold-ink);
 	--hero-bleed-bg: transparent;
 	--hero-bleed-muted: var(--color-violet-ink-soft);

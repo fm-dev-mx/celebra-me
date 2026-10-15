@@ -58,7 +58,7 @@
 		color-mix(in srgb, var(--color-action-accent) 40%, var(--color-surface-dark)) 70%,
 		var(--color-action-accent) 100%
 	);
-	--light-sweep: linear-gradient(
+	--light-sweep-fallback: linear-gradient(
 		-45deg,
 		transparent 0%,
 		transparent 40%,
@@ -89,7 +89,7 @@
 	--section-padding-block: clamp(5rem, 12vw, 8rem);
 
 	// Hero Section
-	--hero-overlay: linear-gradient(
+	--hero-overlay-fallback: linear-gradient(
 		180deg,
 		#{color.change(sys.$sys-color-onyx-950, $alpha: 0.32)} 0%,
 		transparent 40%,
@@ -176,7 +176,7 @@
 	--location-card-hover-shadow-fallback:
 		0 70px 140px -30px rgb(0 0 0 / 95%), 0 0 40px rgb(var(--color-action-accent-rgb) / 15%);
 	--location-card-hover-border-color: rgb(var(--color-action-accent-rgb) / 50%);
-	--location-card-before-bg: var(--light-sweep);
+	--location-card-before-bg: var(--light-sweep, var(--light-sweep-fallback));
 	--location-card-before-bg-size: 300% 300%;
 	--location-card-before-bg-pos: -100% -100%;
 	--location-card-before-z-index: 2;

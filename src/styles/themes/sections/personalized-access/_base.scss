@@ -287,8 +287,8 @@
 				linear-gradient(
 					90deg,
 					transparent 0%,
-					var(--hero-divider-color) 18%,
-					var(--hero-divider-color) 82%,
+					var(--hero-divider-color, var(--hero-divider-color-fallback)) 18%,
+					var(--hero-divider-color, var(--hero-divider-color-fallback)) 82%,
 					transparent 100%
 				)
 			)
@@ -310,7 +310,10 @@
 			border: 1px solid
 				var(
 					--pa-divider-diamond-border-color,
-					var(--pa-divider-diamond-border-color-fallback, var(--hero-divider-color))
+					var(
+						--pa-divider-diamond-border-color-fallback,
+						var(--hero-divider-color, var(--hero-divider-color-fallback))
+					)
 				);
 			box-shadow: var(
 				--pa-divider-diamond-shadow,

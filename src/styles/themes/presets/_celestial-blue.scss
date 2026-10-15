@@ -389,14 +389,14 @@
 	// ---------------------------------------------------------------------
 	// Hero section
 	// ---------------------------------------------------------------------
-	--hero-split-plane-bg: var(--color-surface-dark);
-	--hero-split-overlay-strong: rgb(var(--color-deep-blue-graphite-rgb) / 94%);
-	--hero-split-overlay-mid: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
-	--hero-split-overlay-soft: rgb(var(--color-deep-blue-graphite-rgb) / 18%);
-	--hero-title-color-start: rgb(var(--color-cool-ivory-rgb) / 92%);
-	--hero-title-color-mid: var(--color-satin-blue);
-	--hero-title-color-end: rgb(var(--color-pearl-gray-rgb) / 75%);
-	--hero-badge-text: var(--color-text-on-dark);
+	--hero-split-plane-bg-fallback: var(--color-surface-dark);
+	--hero-split-overlay-strong-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 94%);
+	--hero-split-overlay-mid-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
+	--hero-split-overlay-soft-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 18%);
+	--hero-title-color-start-fallback: rgb(var(--color-cool-ivory-rgb) / 92%);
+	--hero-title-color-mid-fallback: var(--color-satin-blue);
+	--hero-title-color-end-fallback: rgb(var(--color-pearl-gray-rgb) / 75%);
+	--hero-badge-text-fallback: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-diamond-white-rgb) / 58%);
 
 	// ---------------------------------------------------------------------

@@ -8,10 +8,6 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--hero-badge-text",
-        "--hero-divider-color",
-        "--hero-meta-color",
-        "--hero-overlay-gradient",
         "--intersection-arch-height",
         "--intersection-depth",
         "--itinerary-accent",
@@ -61,11 +57,6 @@
         "--footer-control-min-height",
         "--footer-replay-opacity"
     ],
-    "america-johana": [
-        "--hero-title-color-end",
-        "--hero-title-color-mid",
-        "--hero-title-color-start"
-    ],
     "daniela-y-martin": [
         "--color-glass-bg",
         "--color-glass-border",
@@ -90,10 +81,7 @@
         "--color-text-primary-rgb",
         "--color-text-secondary",
         "--gifts-icon-color",
-        "--gifts-subtitle-color",
-        "--hero-image-filter",
-        "--hero-portrait-filter",
-        "--rsvp-bg"
+        "--gifts-subtitle-color"
     ],
     "melissa-y-luis-osmar": [
         "--color-glass-bg",
@@ -130,8 +118,7 @@
         "--gallery-section-bg",
         "--gallery-title-color",
         "--gallery-title-font",
-        "--quote-text-color",
-        "--rsvp-title-color"
+        "--quote-text-color"
     ],
     "renata": [
         "--color-border-subtle",
@@ -160,18 +147,7 @@
         "--header-nav-cta-shadow",
         "--header-nav-hover-color",
         "--header-nav-title-color",
-        "--hero-badge-text",
-        "--hero-divider-color",
-        "--hero-image-filter",
-        "--hero-meta-color",
-        "--hero-overlay",
-        "--hero-portrait-filter",
-        "--hero-title-color-end",
-        "--hero-title-color-mid",
-        "--hero-title-color-start",
-        "--hero-title-size",
         "--intersection-depth",
-        "--light-sweep",
         "--mobile-drawer-cta-bg",
         "--mobile-drawer-cta-border",
         "--mobile-drawer-cta-color",
@@ -195,18 +171,7 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--hero-badge-text",
-        "--hero-divider-color",
-        "--hero-overlay",
-        "--hero-overlay-gradient",
-        "--hero-split-overlay-mid",
-        "--hero-split-overlay-soft",
-        "--hero-split-overlay-strong",
-        "--hero-split-plane-bg",
         "--hero-split-title-offset-block",
-        "--hero-title-color-end",
-        "--hero-title-color-mid",
-        "--hero-title-color-start",
         "--quote-accent-color",
         "--quote-author-color",
         "--quote-bg",
@@ -225,10 +190,7 @@
         "--color-text-primary-rgb",
         "--color-text-secondary",
         "--gifts-icon-color",
-        "--gifts-subtitle-color",
-        "--hero-image-filter",
-        "--hero-portrait-filter",
-        "--rsvp-bg"
+        "--gifts-subtitle-color"
     ],
     "victoria-y-roberto": [
         "--color-glass-bg",
@@ -251,7 +213,6 @@
         "--gallery-single-label-letter-spacing",
         "--gallery-title-color",
         "--gifts-title-color",
-        "--hero-badge-text",
         "--quote-content-font",
         "--quote-content-line-height",
         "--quote-content-size",
@@ -269,9 +230,6 @@
         "--color-text-primary-rgb",
         "--color-text-secondary",
         "--gallery-section-bg",
-        "--hero-title-color-end",
-        "--hero-title-color-mid",
-        "--hero-title-color-start",
         "--quote-author-color",
         "--quote-text-color"
     ]

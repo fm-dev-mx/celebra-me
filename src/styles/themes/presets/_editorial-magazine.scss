@@ -45,16 +45,16 @@
 	--section-padding-block: clamp(3.5rem, 6vw, 6.5rem);
 	--section-card-radius: 0;
 	--section-card-border-alt: 1px solid rgb(var(--editorial-magazine-red-rgb) / 88%);
-	--hero-overlay: linear-gradient(
+	--hero-overlay-fallback: linear-gradient(
 		90deg,
 		rgb(var(--editorial-magazine-ink-rgb) / 72%) 0%,
 		rgb(var(--editorial-magazine-ink-rgb) / 22%) 48%,
 		rgb(var(--editorial-magazine-ink-rgb) / 14%) 100%
 	);
 	--editorial-image-filter: grayscale(0.6) contrast(1.1) brightness(0.95);
-	--hero-title-size: clamp(3.2rem, 7vw, 5.2rem);
-	--hero-image-filter: var(--editorial-image-filter);
-	--hero-portrait-filter: var(--editorial-image-filter);
+	--hero-title-size-fallback: clamp(3.2rem, 7vw, 5.2rem);
+	--hero-image-filter-fallback: var(--editorial-image-filter);
+	--hero-portrait-filter-fallback: var(--editorial-image-filter);
 	--hero-label-color: var(--editorial-magazine-red);
 	--quote-bg: var(--editorial-magazine-ink);
 	--quote-text-color: var(--editorial-magazine-white);
@@ -96,7 +96,7 @@
 	--location-address-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 64%);
 	--location-indication-text-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 76%);
 	--location-image-filter: var(--editorial-image-filter);
-	--rsvp-bg: var(--editorial-magazine-ink);
+	--rsvp-bg-fallback: var(--editorial-magazine-ink);
 	--gifts-bg: var(--editorial-magazine-paper);
 	--gifts-title-color: var(--editorial-magazine-ink);
 	--gifts-subtitle-color: rgb(var(--editorial-magazine-ink-rgb) / 68%);

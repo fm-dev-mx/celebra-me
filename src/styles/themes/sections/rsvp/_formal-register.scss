@@ -32,7 +32,7 @@
 // `.rsvp-section` wrappers used by the interactive island. A child combinator
 // would leave the outer shell on the shared full-viewport RSVP padding.
 .rsvp-section:has(.rsvp[data-variant='formal-register']) {
-	--rsvp-bg: var(--formal-chapter-band);
+	--rsvp-bg-fallback: var(--formal-chapter-band);
 
 	display: grid;
 	grid-template-columns: minmax(0, var(--formal-register-shell-width, 64rem));
@@ -40,7 +40,7 @@
 	justify-items: start;
 	min-block-size: auto;
 	padding-block: var(--formal-register-shell-padding, clamp(3rem, 6vh, 4.75rem));
-	background: var(--rsvp-bg);
+	background: var(--rsvp-bg, var(--rsvp-bg-fallback));
 }
 
 .rsvp[data-variant='formal-register'] {

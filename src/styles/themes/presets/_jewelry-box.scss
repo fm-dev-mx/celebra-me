@@ -134,10 +134,10 @@
 	// ---------------------------------------------------------------------
 	// Hero tokens
 	// ---------------------------------------------------------------------
-	--hero-title-color-start: var(--color-action-accent);
-	--hero-title-color-mid: rgb(255 255 255);
-	--hero-title-color-end: var(--color-action-accent);
-	--hero-badge-text: var(--color-action-accent);
+	--hero-title-color-start-fallback: var(--color-action-accent);
+	--hero-title-color-mid-fallback: rgb(255 255 255);
+	--hero-title-color-end-fallback: var(--color-action-accent);
+	--hero-badge-text-fallback: var(--color-action-accent);
 	--hero-label-color: var(--color-text-emphasis);
 
 	// ---------------------------------------------------------------------
@@ -169,7 +169,7 @@
 	--texture-silk:
 		radial-gradient(circle at 50% 50%, rgb(255 255 255 / 80%) 0%, rgb(255 249 245 / 40%) 100%),
 		repeating-linear-gradient(135deg, rgb(255 255 255 / 12%) 0 1px, transparent 1px 4px);
-	--light-sweep: linear-gradient(
+	--light-sweep-fallback: linear-gradient(
 		-45deg,
 		rgb(255 255 255 / 0%) 0%,
 		rgb(255 255 255 / 0%) 40%,

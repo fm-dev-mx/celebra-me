@@ -149,12 +149,12 @@
 	// ---------------------------------------------------------------------
 	// Hero section
 	// ---------------------------------------------------------------------
-	--hero-title-color-start: rgb(255 245 235 / 96%);
-	--hero-title-color-mid: rgb(240 200 122 / 90%);
-	--hero-title-color-end: rgb(240 190 200 / 86%);
-	--hero-badge-text: var(--color-warm-ivory);
+	--hero-title-color-start-fallback: rgb(255 245 235 / 96%);
+	--hero-title-color-mid-fallback: rgb(240 200 122 / 90%);
+	--hero-title-color-end-fallback: rgb(240 190 200 / 86%);
+	--hero-badge-text-fallback: var(--color-warm-ivory);
 	--hero-label-color: var(--color-candle-gold);
-	--hero-image-filter: saturate(1.02) contrast(1.18) brightness(1.02);
+	--hero-image-filter-fallback: saturate(1.02) contrast(1.18) brightness(1.02);
 
 	// Tokenized hero overlays — consumed by sections/hero/_enchanted-rose.scss
 	--hero-overlay-cinematic: linear-gradient(
