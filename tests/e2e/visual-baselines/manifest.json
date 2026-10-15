@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-15T00:47:38.782Z",
+    "generatedAt": "2026-10-15T07:05:46.738Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,9 +11,9 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "e04fb4bbcb85cb2906fa61bf0ff88ff4b12dbfb84cb0bbc6661e8c0865661528",
-        "cssSha256": "21ff4b81abd783fc088bdde2503ec1338c558be9c829736040568fb310109d62",
-        "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
+        "lockfileSha256": "e2370c499d498fd5cac4b88eb9d1a096f5b5435f2ab46587f763f982460633cd",
+        "cssSha256": "dfd47797750e865bc9ca854d2d7881132a3bb1499e2c682bb97f02321f6711b4",
+        "assetSha256": "8355f023bd2cd2108293776d3c1e8e254595900b5b0fc311e6da8889078efdf6",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -2079,9 +2079,9 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-mobile.png",
-            "sha256": "d6f3e2394ab7d54cd25f8342f226878809c968a6658727112343f42e51ab4c21",
-            "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-            "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+            "sha256": "6bb7847d4faed4711b7e31b2c57667ceade2d3fd2a54110d82edc185e7a533c4",
+            "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+            "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2091,9 +2091,9 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-desktop.png",
-            "sha256": "9cdd3ee355326658e8cf693451bba60947241198fe66750ac7486b7e33629057",
-            "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-            "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+            "sha256": "eede160db2b95f2f55ca9ba57bfe26464170ee5c711a3564e8312e0807c9973a",
+            "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+            "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2265,9 +2265,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "21622305d426ca7b45cf4adbe6c1f18b57db82b1",
+    "referenceSha": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5",
     "variantManifest": {
-        "generatedAt": "2026-10-15T00:47:38.782Z",
+        "generatedAt": "2026-10-15T07:05:46.738Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2279,9 +2279,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "e04fb4bbcb85cb2906fa61bf0ff88ff4b12dbfb84cb0bbc6661e8c0865661528",
-            "cssSha256": "21ff4b81abd783fc088bdde2503ec1338c558be9c829736040568fb310109d62",
-            "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
+            "lockfileSha256": "e2370c499d498fd5cac4b88eb9d1a096f5b5435f2ab46587f763f982460633cd",
+            "cssSha256": "dfd47797750e865bc9ca854d2d7881132a3bb1499e2c682bb97f02321f6711b4",
+            "assetSha256": "8355f023bd2cd2108293776d3c1e8e254595900b5b0fc311e6da8889078efdf6",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4029,10 +4029,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "21622305d426ca7b45cf4adbe6c1f18b57db82b1"
+        "referenceSha": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-15T00:47:38.790Z",
+        "generatedAt": "2026-10-15T07:05:46.743Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4044,9 +4044,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "e04fb4bbcb85cb2906fa61bf0ff88ff4b12dbfb84cb0bbc6661e8c0865661528",
-            "cssSha256": "21ff4b81abd783fc088bdde2503ec1338c558be9c829736040568fb310109d62",
-            "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
+            "lockfileSha256": "e2370c499d498fd5cac4b88eb9d1a096f5b5435f2ab46587f763f982460633cd",
+            "cssSha256": "dfd47797750e865bc9ca854d2d7881132a3bb1499e2c682bb97f02321f6711b4",
+            "assetSha256": "8355f023bd2cd2108293776d3c1e8e254595900b5b0fc311e6da8889078efdf6",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4375,9 +4375,9 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-mobile.png",
-                "sha256": "d6f3e2394ab7d54cd25f8342f226878809c968a6658727112343f42e51ab4c21",
-                "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-                "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+                "sha256": "6bb7847d4faed4711b7e31b2c57667ceade2d3fd2a54110d82edc185e7a533c4",
+                "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+                "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4387,9 +4387,9 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-desktop.png",
-                "sha256": "9cdd3ee355326658e8cf693451bba60947241198fe66750ac7486b7e33629057",
-                "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-                "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+                "sha256": "eede160db2b95f2f55ca9ba57bfe26464170ee5c711a3564e8312e0807c9973a",
+                "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+                "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4561,9 +4561,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "21622305d426ca7b45cf4adbe6c1f18b57db82b1"
+        "referenceSha": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5"
     },
-    "candidateManifestSha256": "a445e7c0b71f7e4c623c19e9b4760461fe24c147f57693880b17335f22a9d128",
-    "acceptedFromCommit": "21622305d426ca7b45cf4adbe6c1f18b57db82b1",
-    "acceptedAt": "2026-10-15T01:08:48.224Z"
+    "candidateManifestSha256": "40b06bb430d429a183c1d44748481695caf428342fd079618ef030057312c57b",
+    "acceptedFromCommit": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5",
+    "acceptedAt": "2026-10-15T07:17:23.680Z"
 }
