@@ -6,10 +6,10 @@ select plan(8);
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-0000000000a1', 'authenticated', 'authenticated', 'archived-rsvp@example.test', now(), now());
 
-insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
+insert into public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind)
 values
-  ('20000000-0000-0000-0000-0000000000a1', 'archived-rsvp', 'RSVP desactivado', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-0000000000a1', 'client'),
-  ('20000000-0000-0000-0000-0000000000a2', 'draft-rsvp', 'RSVP en borrador', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-0000000000a1', 'client');
+  ('20000000-0000-0000-0000-0000000000a1', 'archived-rsvp', 'RSVP desactivado', 'xv', 'in_production', 'jewelry-box', '10000000-0000-0000-0000-0000000000a1', 'client'),
+  ('20000000-0000-0000-0000-0000000000a2', 'draft-rsvp', 'RSVP en borrador', 'xv', 'in_production', 'jewelry-box', '10000000-0000-0000-0000-0000000000a1', 'client');
 
 insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 values
@@ -28,7 +28,7 @@ language sql
 as $$
   select public.publish_invitation_atomic(
     i.id, d.id, d.updated_at, null,
-    md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'baseDemoId', i.base_demo_id, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'snapshot', i.snapshot, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text)),
+    md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text)),
     md5(d.content::text),
     p_idempotency_key, i.slug, i.event_type, false, d.content
   )

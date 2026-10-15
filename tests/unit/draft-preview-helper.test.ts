@@ -2,7 +2,7 @@ import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-hel
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
-import type { Invitation, DemoPreset } from '@/lib/intake/types';
+import type { Invitation } from '@/lib/intake/types';
 
 jest.mock('@/lib/intake/repositories/asset.repository', () => ({
 	findAssetsByInvitationId: jest.fn(),
@@ -29,17 +29,6 @@ const mockBuildPageContext = buildPageContextFromViewModel as jest.MockedFunctio
 >;
 
 // Required by the Invitation type; the preview helper does not read it.
-const snapshot: DemoPreset = {
-	id: 'xv-enchanted-rose',
-	eventType: 'xv',
-	displayName: 'XV Años — Enchanted Rose',
-	themeId: 'enchanted-rose',
-	defaultSections: ['quote'],
-	supportedBlocks: [],
-	recommendedBlocks: [],
-	requiredAssets: [],
-	previewSlug: 'xv-enchanted-rose',
-};
 
 const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 	id: 'test-invitation-id',
@@ -49,9 +38,7 @@ const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 	title: 'XV Años — Valeria Ruiz',
 	eventType: 'xv',
 	status: 'in_production',
-	baseDemoId: 'xv-enchanted-rose',
 	themeId: 'enchanted-rose',
-	snapshot,
 	clientName: '',
 	clientEmail: '',
 	clientWhatsapp: '',

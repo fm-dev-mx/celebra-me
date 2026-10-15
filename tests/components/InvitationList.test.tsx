@@ -37,7 +37,6 @@ function makeItem(overrides: Record<string, unknown> = {}): InvitationDTO {
 		title: 'Invitación test',
 		eventType: 'xv',
 		status: 'draft',
-		baseDemoId: 'demo-xv-jewelry-box',
 		themeId: 'jewelry-box',
 		clientName: '',
 		clientEmail: '',

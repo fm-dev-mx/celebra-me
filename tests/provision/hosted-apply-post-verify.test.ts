@@ -61,10 +61,8 @@ function matchingRows(): AppliedHostedTargetIdentityInput {
 			id: INVITATION_ID,
 			managed_identity_id: INVITATION_ID,
 			event_type: 'xv',
-			base_demo_id: 'demo',
 			theme_id: 'theme',
 			kind: 'client',
-			snapshot: { title: 'Romina' },
 		},
 		existingDraft: {
 			id: 'draft-1',

@@ -11,7 +11,6 @@ export function toInvitationDTO(invitation: Invitation): InvitationDTO {
 		title: invitation.title,
 		eventType: invitation.eventType,
 		status: invitation.status,
-		baseDemoId: invitation.baseDemoId,
 		themeId: invitation.themeId,
 		clientName: invitation.clientName,
 		clientEmail: invitation.clientEmail,
@@ -35,7 +34,6 @@ export function toInvitationContentDraftDTO(
 	return {
 		id: draft.id,
 		invitationId: draft.invitationId,
-		submissionId: draft.submissionId,
 		content: draft.content,
 		status: draft.status,
 		createdAt: draft.createdAt,

@@ -21,7 +21,6 @@ function makeDraftContent(overrides: Record<string, unknown> = {}) {
 	return {
 		id: 'draft-1',
 		invitationId: 'proj-1',
-		submissionId: 'sub-1',
 		status: 'draft',
 		createdAt: '2026-05-28T14:00:00Z',
 		updatedAt: '2026-05-28T14:00:00Z',
@@ -280,7 +279,6 @@ describe('DraftReview', () => {
 		mockCurrentDraft = {
 			id: 'draft-empty',
 			invitationId: 'proj-1',
-			submissionId: 'sub-1',
 			status: 'draft',
 			createdAt: '2026-05-28T14:00:00Z',
 			updatedAt: '2026-05-28T14:00:00Z',

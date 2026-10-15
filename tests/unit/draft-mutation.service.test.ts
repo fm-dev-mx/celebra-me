@@ -61,7 +61,6 @@ describe('applyDraftMutation', () => {
 			status: 'draft',
 			updatedAt: '2026-07-27T17:22:00.216614+00:00',
 			createdAt: '2026-07-27T17:00:00.000Z',
-			submissionId: null,
 		});
 
 		await expect(
@@ -88,7 +87,6 @@ describe('applyDraftMutation', () => {
 			status: 'draft',
 			updatedAt: '2026-07-27T17:22:00.216614+00:00',
 			createdAt: '2026-07-27T17:00:00.000Z',
-			submissionId: null,
 		});
 
 		await expect(
@@ -116,7 +114,6 @@ describe('applyDraftMutation', () => {
 			status: 'draft',
 			updatedAt: '2026-07-27T17:22:00.216614+00:00',
 			createdAt: '2026-07-27T17:00:00.000Z',
-			submissionId: null,
 		});
 		updateDraftMock.mockImplementation(async (_id, _expected, input) => ({
 			id: 'draft-1',
@@ -125,7 +122,6 @@ describe('applyDraftMutation', () => {
 			status: 'draft',
 			updatedAt: '2026-07-27T18:00:00.000Z',
 			createdAt: '2026-07-27T17:00:00.000Z',
-			submissionId: null,
 		}));
 
 		const result = await applyDraftMutation({
@@ -156,7 +152,6 @@ describe('applyDraftMutation', () => {
 			status: 'draft',
 			updatedAt: '2026-07-27T17:22:00.216614+00:00',
 			createdAt: '2026-07-27T17:00:00.000Z',
-			submissionId: null,
 		});
 		updateDraftMock.mockImplementation(async (_id, _expected, input) => ({
 			id: 'draft-1',
@@ -165,7 +160,6 @@ describe('applyDraftMutation', () => {
 			status: 'draft',
 			updatedAt: '2026-07-27T18:00:00.000Z',
 			createdAt: '2026-07-27T17:00:00.000Z',
-			submissionId: null,
 		}));
 
 		await applyDraftMutation({
@@ -206,7 +200,6 @@ describe('applyDraftMutation', () => {
 			status: 'approved',
 			updatedAt: '2026-08-13T21:18:05.000Z',
 			createdAt: '2026-08-11T20:30:00.000Z',
-			submissionId: null,
 		});
 		findPublishedMock.mockResolvedValue({
 			id: 'pub-1',
@@ -231,7 +224,6 @@ describe('applyDraftMutation', () => {
 			status: 'draft',
 			updatedAt: '2026-08-13T21:37:15.000Z',
 			createdAt: '2026-08-11T20:30:00.000Z',
-			submissionId: null,
 		}));
 
 		await applyDraftMutation({

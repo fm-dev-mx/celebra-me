@@ -11,14 +11,13 @@ select has_column('public', 'managed_invitation_release_provenance', 'previous_s
   'provenance.previous_slugs exists');
 
 insert into public.invitations (
-  id, slug, title, event_type, status, base_demo_id, theme_id, kind, created_by, managed_identity_id
+  id, slug, title, event_type, status, theme_id, kind, created_by, managed_identity_id
 ) values (
   'aaaaaaaa-bbbb-4ccc-8ddd-000000000001',
   'archive-cascade-fixture',
   'Archive Cascade Fixture',
   'boda',
   'draft',
-  'demo-boda-jewelry-box-wedding',
   'jewelry-box-wedding',
   'client',
   (select id from auth.users limit 1),

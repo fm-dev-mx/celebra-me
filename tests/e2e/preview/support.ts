@@ -20,7 +20,6 @@ export interface InvitationSummary {
 	slug: string | null;
 	title: string;
 	eventType: string;
-	baseDemoId: string;
 	clientName: string;
 	clientEmail: string;
 	clientWhatsapp: string;
@@ -34,7 +33,6 @@ export interface EditorContext {
 	invitation: InvitationSummary & {
 		status: string;
 		updatedAt: string;
-		snapshot: { previewSlug: string };
 	};
 	content: Record<string, unknown>;
 	draftUpdatedAt: string | null;
