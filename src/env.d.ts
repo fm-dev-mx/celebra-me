@@ -48,10 +48,6 @@ interface ImportMetaEnv {
 	readonly SUPABASE_PROJECT_REF_PREVIEW: string;
 	/** Non-secret Supabase project ref of the Production environment. */
 	readonly SUPABASE_PROJECT_REF_PRODUCTION: string;
-	/** Server-only read-only Vercel token (billing read) for the platform usage console. */
-	readonly VERCEL_API_TOKEN: string;
-	/** Non-secret Vercel team id used by the billing usage query. */
-	readonly VERCEL_TEAM_ID: string;
 	/** Server-only restricted Cloudinary key for the usage report (falls back to the upload key). */
 	readonly CLOUDINARY_USAGE_API_KEY: string;
 	/** Server-only restricted Cloudinary secret for the usage report. */

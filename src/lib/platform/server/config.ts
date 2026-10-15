@@ -12,8 +12,6 @@ export const PLATFORM_ENV = {
 	supabaseManagementToken: 'SUPABASE_MANAGEMENT_TOKEN',
 	supabaseProjectRefPreview: 'SUPABASE_PROJECT_REF_PREVIEW',
 	supabaseProjectRefProduction: 'SUPABASE_PROJECT_REF_PRODUCTION',
-	vercelApiToken: 'VERCEL_API_TOKEN',
-	vercelTeamId: 'VERCEL_TEAM_ID',
 	/** Restricted read-only key; falls back to the upload key when unset. */
 	cloudinaryUsageApiKey: 'CLOUDINARY_USAGE_API_KEY',
 	cloudinaryUsageApiSecret: 'CLOUDINARY_USAGE_API_SECRET',

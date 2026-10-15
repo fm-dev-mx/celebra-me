@@ -356,7 +356,7 @@ describe('validate-structure script', () => {
 					"const c = request.headers.get('x-vercel-id');",
 					"const d = getEnv('CELEBRA_DEPLOY_ENV');",
 					"const e = getEnv('NODE_ENV');",
-					"const f = getEnv('VERCEL_API_TOKEN');",
+					"const f = getEnv('VERCEL_AUTOMATION_BYPASS_SECRET');",
 					"const g = 'message that names CELEBRA_DEPLOY_ENV';",
 					"const h = process.env.NODE_ENV === 'production';",
 					"const i = process.env.NODE_ENV === 'test';",

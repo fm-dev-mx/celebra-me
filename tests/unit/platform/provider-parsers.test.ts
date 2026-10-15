@@ -1,10 +1,5 @@
 import { parseDiskUsedBytes } from '@/lib/platform/server/supabase-usage';
 import {
-	getVercelPlatformUsage,
-	parseBillingChargesUsd,
-	resetVercelUsageCache,
-} from '@/lib/platform/server/vercel-usage';
-import {
 	parseCloudinaryUsage,
 	readCreditsPair,
 	readUsagePair,
@@ -25,44 +20,6 @@ describe('supabase disk parsing', () => {
 		expect(parseDiskUsedBytes(null)).toBeNull();
 		expect(parseDiskUsedBytes({ metrics: { fs_used_bytes: 'huge' } })).toBeNull();
 		expect(parseDiskUsedBytes({ metrics: { fs_used_bytes: -5 } })).toBeNull();
-	});
-});
-
-describe('vercel billing parsing', () => {
-	it('sums FOCUS rows and rounds to cents', () => {
-		const payload = [
-			'{"BilledCost":"0.00","ServiceCategory":"Compute"}',
-			'{"BilledCost":"1.235","ServiceCategory":"Storage"}',
-			'',
-		].join('\n');
-		expect(parseBillingChargesUsd(payload)).toBe(1.24);
-	});
-
-	it('returns null for empty or unrecognized payloads instead of reporting $0', () => {
-		expect(parseBillingChargesUsd('')).toBeNull();
-		expect(parseBillingChargesUsd('{"note":"nothing billable"}')).toBeNull();
-		expect(parseBillingChargesUsd('not json')).toBeNull();
-	});
-
-	it('returns unavailable when the billing endpoint fails with an HTTP error', async () => {
-		const originalToken = process.env.VERCEL_API_TOKEN;
-		process.env.VERCEL_API_TOKEN = 'test-token';
-		resetVercelUsageCache();
-		try {
-			const mockFetch = jest.fn().mockResolvedValue({
-				ok: false,
-				status: 500,
-			} as unknown as Response);
-			const usage = await getVercelPlatformUsage(NOW, mockFetch as unknown as typeof fetch);
-			expect(usage).toEqual({ kind: 'unavailable' });
-		} finally {
-			resetVercelUsageCache();
-			if (originalToken === undefined) {
-				delete process.env.VERCEL_API_TOKEN;
-			} else {
-				process.env.VERCEL_API_TOKEN = originalToken;
-			}
-		}
 	});
 });
 

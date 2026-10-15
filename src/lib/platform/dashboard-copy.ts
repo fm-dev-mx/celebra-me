@@ -69,14 +69,12 @@ export const platformCopy = {
 export const platformProviderTitle: Record<PlatformProviderId, string> = {
 	cloudflare: 'Cloudflare · cuenta compartida',
 	supabase: 'Supabase · un proyecto por entorno',
-	vercel: 'Vercel · proyecto (plan Hobby)',
 	cloudinary: 'Cloudinary · cuenta compartida',
 };
 
 export const platformProviderLink: Record<PlatformProviderId, string> = {
 	cloudflare: 'https://dash.cloudflare.com/',
 	supabase: 'https://supabase.com/dashboard',
-	vercel: 'https://vercel.com/dashboard',
 	cloudinary: 'https://console.cloudinary.com/',
 };
 
@@ -85,7 +83,6 @@ export const platformProviderCostNote: Record<PlatformProviderId, string> = {
 	cloudflare: 'Costo del periodo: $0 (plan gratuito). Solo se factura si se supera una cuota.',
 	supabase:
 		'Costo del periodo: $0 (plan gratuito). No hay excedentes facturables: el límite es duro.',
-	vercel: 'Costo del periodo: $0 (plan Hobby). No hay precios on-demand en este plan.',
 	cloudinary: 'Costo del periodo: $0 (plan gratuito). Sin excedentes facturables verificados.',
 };
 
@@ -144,10 +141,6 @@ const MISSING_INFO: Record<string, MissingInfo> = {
 	SUPABASE_PROJECT_REF_PRODUCTION: {
 		description: 'Referencia del proyecto Supabase de Producción (ajustes del proyecto).',
 		setupUrl: 'https://supabase.com/dashboard',
-	},
-	VERCEL_API_TOKEN: {
-		description: 'Token de solo lectura de facturación de Vercel.',
-		setupUrl: 'https://vercel.com/account/tokens',
 	},
 	CLOUDINARY_USAGE_API_KEY: {
 		description:

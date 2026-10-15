@@ -17,7 +17,6 @@ import type {
 import { getCloudflarePlatformUsage, type CloudflareUsageSnapshot } from './cloudflare-usage';
 import { getCloudinaryPlatformUsage } from './cloudinary-usage';
 import { getSupabasePlatformUsage } from './supabase-usage';
-import { getVercelPlatformUsage } from './vercel-usage';
 import { resolvePanelEnvironments } from './env-profiles';
 
 async function safe(read: () => Promise<PlatformProviderUsage>): Promise<PlatformProviderUsage> {
@@ -58,7 +57,7 @@ export async function getPlatformUsageReport(
 	fetchImpl: typeof fetch = fetch,
 ): Promise<PlatformUsageReport> {
 	const environments = resolvePanelEnvironments();
-	const [cloudflare, supabase, vercel, cloudinary] = await Promise.all([
+	const [cloudflare, supabase, cloudinary] = await Promise.all([
 		getCloudflarePlatformUsage(now, fetchImpl).catch((): CloudflareUsageSnapshot => ({
 			kind: 'unavailable',
 			fetchedAt: null,
@@ -70,7 +69,6 @@ export async function getPlatformUsageReport(
 				safe(() => getSupabasePlatformUsage(environment, now, fetchImpl)),
 			),
 		),
-		safe(() => getVercelPlatformUsage(now, fetchImpl)),
 		safe(() => getCloudinaryPlatformUsage(now, fetchImpl)),
 	]);
 	const sections: PlatformSection[] = environments.map((environment, index) => ({
@@ -84,7 +82,6 @@ export async function getPlatformUsageReport(
 		id: 'shared',
 		cards: [
 			cloudflareCard(cloudflare, 'shared', now),
-			{ provider: 'vercel', usage: vercel },
 			{ provider: 'cloudinary', usage: cloudinary },
 		],
 	});

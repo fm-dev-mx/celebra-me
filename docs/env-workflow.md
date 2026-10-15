@@ -217,8 +217,6 @@ managed from the super-admin dashboard.
 | `SUPABASE_MANAGEMENT_TOKEN`                      | Optional; usually empty            | Vercel Preview secret (optional)                                                    | Vercel Production secret, independent                | Read-only Management PAT (`analytics_usage_read`, `infra_disk_config_read`)                |
 | `SUPABASE_PROJECT_REF_PREVIEW`                   | Preview project ref                | Vercel Preview config                                                               | Vercel Production config                             | Non-secret Supabase project ref shown on the platform console                              |
 | `SUPABASE_PROJECT_REF_PRODUCTION`                | Production project ref             | Vercel Preview config                                                               | Vercel Production config                             | Non-secret Supabase project ref shown on the platform console                              |
-| `VERCEL_API_TOKEN`                               | Optional; usually empty            | Vercel Preview secret (optional)                                                    | Vercel Production secret, independent                | Read-only billing token for the platform usage console                                     |
-| `VERCEL_TEAM_ID`                                 | Team id                            | Vercel Preview config                                                               | Vercel Production config                             | Non-secret team id for the billing usage query                                             |
 | `CLOUDINARY_USAGE_API_KEY`                       | Optional; falls back to upload key | Vercel Preview secret (optional)                                                    | Vercel Production secret (optional)                  | Restricted read-only key for the Cloudinary usage report                                   |
 | `CLOUDINARY_USAGE_API_SECRET`                    | Optional; falls back to upload key | Vercel Preview secret (optional)                                                    | Vercel Production secret (optional)                  | Secret of the restricted usage key                                                         |
 | `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW`    | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Per-environment token status for the local platform console                                |
@@ -239,15 +237,15 @@ Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_I
 memories values in Cloudflare Secrets Store. The platform usage console reads its own
 `MEMORIES_CLOUDFLARE_*` names so Wrangler never mistakes the read-only analytics token for deploy
 credentials; without them the console reports "sin configurar" and keeps working. The same console
-reads `SUPABASE_MANAGEMENT_TOKEN`, `VERCEL_API_TOKEN` and the optional `CLOUDINARY_USAGE_*` pair,
-each read-only and least-privilege. The console is scoped per environment: the Preview deployment
-shows only Preview, the Production deployment only Production, and Local shows both (the panel
-labels shared account/project quotas explicitly). To diagnose each environment's configuration from
-Local, load the optional `*_PREVIEW` / `*_PRODUCTION` overrides above in `.env.local`; Local only
-reflects what is loaded there. Interactive deployment authentication is owned by `wrangler login`;
-Worker runtime secrets are applied to the exact environment with
-`wrangler secret put --env <environment>`. Never place API tokens, capability secrets, object keys,
-signed URLs, or reusable secret values in tracked templates, documentation, logs, or evidence.
+reads `SUPABASE_MANAGEMENT_TOKEN` and the optional `CLOUDINARY_USAGE_*` pair, each read-only and
+least-privilege. The console is scoped per environment: the Preview deployment shows only Preview,
+the Production deployment only Production, and Local shows both (the panel labels shared
+account/project quotas explicitly). To diagnose each environment's configuration from Local, load
+the optional `*_PREVIEW` / `*_PRODUCTION` overrides above in `.env.local`; Local only reflects what
+is loaded there. Interactive deployment authentication is owned by `wrangler login`; Worker runtime
+secrets are applied to the exact environment with `wrangler secret put --env <environment>`. Never
+place API tokens, capability secrets, object keys, signed URLs, or reusable secret values in tracked
+templates, documentation, logs, or evidence.
 
 ## Rules
 

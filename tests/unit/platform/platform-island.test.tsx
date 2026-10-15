@@ -100,7 +100,7 @@ const REPORT: PlatformUsageReport = [
 				usage: {
 					kind: 'ok',
 					fetchedAt: NOW,
-					spendUsd: null,
+					spendUsd: 0,
 					missing: [],
 					metrics: [
 						metric('cfR2StorageAccount', 9_500_000_000, 10_000_000_000, {
@@ -114,10 +114,6 @@ const REPORT: PlatformUsageReport = [
 						}),
 					],
 				},
-			},
-			{
-				provider: 'vercel',
-				usage: { kind: 'ok', fetchedAt: NOW, metrics: [], spendUsd: 0, missing: [] },
 			},
 			{ provider: 'cloudinary', usage: { kind: 'unavailable' } },
 		],
