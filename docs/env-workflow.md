@@ -14,8 +14,10 @@ issues, logs, and chat.
 
 ## Contract Roles
 
-- `.env.example` is the secret-free inventory and local template. It tracks supported variable names
-  with non-sensitive placeholders, including selected operational script inputs.
+- `.env.example` is the secret-free template for `.env.local`. It tracks supported variable names
+  with non-sensitive placeholders, including selected operational script inputs. The Preview,
+  Production and hosted test runner files have their own templates (see
+  [Per-worktree `.env*` files](#per-worktree-env-files)).
 - `src/env.d.ts` is the app/runtime type surface. It declares variables used by code under `src/`
   and intentionally omits variables used only by operational scripts.
 - This guide owns variable categories, source policy, and precedence. It explains intentional
@@ -23,7 +25,8 @@ issues, logs, and chat.
 
 ## Source Hierarchy
 
-- `.env.example`: tracked, secret-free inventory and local template.
+- `.env.example`, `.env.preview.local.example`, `.env.production.local.example`,
+  `.env.e2e.local.example`: tracked, secret-free templates.
 - `.env`: ignored local values only.
 - `.env.local`: ignored local overrides only; never point it at production.
 - `.env.*.local`: ignored, machine-specific or one-off local files.
@@ -169,10 +172,10 @@ substitute for the other.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category         | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Relationship                                          |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only` | `CELEBRA_STATUS_CACHE_PATH`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS`, `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET` | Present in `.env.example`; omitted from typing.       |
-| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Present in app/runtime typing; omitted from template. |
+| Contract category         | Variables                                                                        | Relationship                                          |
+| ------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `operational-script-only` | `CELEBRA_STATUS_CACHE_PATH`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD` | Present in `.env.example`; omitted from typing.       |
+| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                   | Present in app/runtime typing; omitted from template. |
 
 `SUPER_ADMIN_EMAILS` is a server-only runtime list. Its first entry is the project owner: the only
 account that may confirm or clear owner review in the invitation workflow, and the local super admin
@@ -295,15 +298,39 @@ templates, documentation, logs, or evidence.
 - Older operational scripts still load env files locally and are guarded case-by-case. Broad
   precedence normalization is intentionally deferred to avoid changing deployment behavior.
 
-### Per-worktree `.env*` expectations
+### Per-worktree `.env*` files
 
-| Worktree      | Primary runtime files                                                  | Preview ops file                      | Notes                   |
-| ------------- | ---------------------------------------------------------------------- | ------------------------------------- | ----------------------- |
-| Integration   | `.env.local` (Local)                                                   | optional `.env.preview.local` for ops | Local default           |
-| `dev-local`   | `.env.local` (Local)                                                   | usually absent                        | Local default           |
-| `dev-preview` | `.env.local` (non-Supabase shared) + **required** `.env.preview.local` | same file holds `PREVIEW_*` ops keys  | Preview runtime default |
-| `dev-extra`   | `.env.local` (Local)                                                   | usually absent                        | Local default           |
-| Preview E2E   | `.env.e2e.local`                                                       | —                                     | Hosted Playwright only  |
+Four ignored files, one purpose each, each with a tracked secret-free template that lists every
+allowed name (`pnpm env:check` compares a checkout with the templates; names only, never values):
+
+| Ignored file            | Purpose                                                                                           | Template                        | Values come from                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------ |
+| `.env.local`            | Local development against Local Supabase                                                          | `.env.example`                  | Local Supabase, Local Workers, owner-held test secrets |
+| `.env.preview.local`    | Preview lane overlay, Preview DB workflows, source of the Cloudflare Preview Worker secrets       | `.env.preview.local.example`    | Preview Supabase project, owner-held Preview secrets   |
+| `.env.production.local` | Production operator workflows only (critical backup, guarded refresh, `prod:apply` owner gate)    | `.env.production.local.example` | Production Supabase project                            |
+| `.env.e2e.local`        | Hosted test runner (Preview Playwright configs, smoke scripts) and hosting-protection credentials | `.env.e2e.local.example`        | Test host account, Vercel bypass, Access service token |
+
+Rules:
+
+- The Integration checkout (repository root) holds the canonical copies. Development lanes receive
+  identical copies with `pnpm env:sync -- --all --apply` (without `--apply` it is a dry run). The
+  command refuses to copy when an Integration file has a name its template does not allow. Restart
+  running dev servers after a sync.
+- A name lives in exactly one template, except the Preview overlay, which repeats the runtime names
+  it overrides. A unit test (`tests/unit/env-templates.test.ts`) fails when a template lists a name
+  that no code reads, or when test runner and Production names leak into another template.
+- No other copies: no `.env` files under `.vercel/`, `.secrets/`, `.tmp/` or `.agent/tmp/`, and no
+  ad hoc pulls of hosted environments. Hosted values stay in the host (Vercel, Cloudflare Worker
+  secrets, GitHub Actions secrets).
+- Ephemeral agent worktrees (for example under `.claude/worktrees/`) never receive env files.
+
+| Worktree      | Files used at runtime                                    | Notes                   |
+| ------------- | -------------------------------------------------------- | ----------------------- |
+| Integration   | `.env.local`                                             | Canonical copies        |
+| `dev-local`   | `.env.local`                                             | Local default           |
+| `dev-preview` | `.env.local` + **required** `.env.preview.local` overlay | Preview runtime default |
+| `dev-extra`   | `.env.local`                                             | Local default           |
+| Any lane      | `.env.e2e.local` only for Preview Playwright and smoke   | Hosted test runner      |
 
 ## External Vercel Preview E2E
 

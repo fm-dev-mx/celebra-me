@@ -154,7 +154,8 @@ function checkEnvironment(cwd: string, lane: WorktreeLaneDefinition): Finding[] 
 			category: 'Environment',
 			severity: 'warning',
 			title: 'Missing .env.local',
-			remediation: 'Copy .env.example to .env.local and fill in Local values.',
+			remediation:
+				'Run pnpm env:sync -- --apply to copy the Integration files, or copy .env.example.',
 		});
 	} else {
 		const content = readFileSync(envLocal, 'utf8');
@@ -173,7 +174,8 @@ function checkEnvironment(cwd: string, lane: WorktreeLaneDefinition): Finding[] 
 			category: 'Environment',
 			severity: 'error',
 			title: 'Missing .env.preview.local (required by the Preview lane)',
-			remediation: 'Copy .env.preview.local.example to .env.preview.local.',
+			remediation:
+				'Run pnpm env:sync -- --apply to copy the Integration files, or copy .env.preview.local.example.',
 		});
 	}
 	return findings;
