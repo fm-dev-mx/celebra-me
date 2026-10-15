@@ -51,7 +51,9 @@ const GLYPHS: Readonly<Record<string, Glyph>> = {
 export const PREVIEW_MARK_TEXT = 'VISTA PREVIA · CELEBRA-ME';
 
 const TRACKING = 1.9;
-const STROKE = 1.15;
+export const STROKE = 1.15;
+/** Rotation of the tiled pattern in degrees (SVG `rotate`, counter-clockwise on screen). */
+export const PREVIEW_MARK_ANGLE = -28;
 const DOT_RADIUS = 0.8;
 
 interface MarkGeometry {
@@ -81,9 +83,9 @@ function round(value: number): number {
 	return Math.round(value * 100) / 100;
 }
 
-const MARK = layoutMark(PREVIEW_MARK_TEXT);
+export const MARK = layoutMark(PREVIEW_MARK_TEXT);
 
-function markGroup(
+export function markGroup(
 	x: number,
 	y: number,
 	scale: number,
@@ -105,6 +107,23 @@ function markGroup(
 	);
 }
 
+/** Pattern metrics for an image of this width: cap height, glyph scale and tile size in pixels. */
+export function previewMarkMetrics(width: number): {
+	capPx: number;
+	scale: number;
+	tileW: number;
+	tileH: number;
+} {
+	const capPx = Math.min(72, Math.max(16, Math.round(width * 0.032)));
+	const scale = capPx / 10;
+	return {
+		capPx,
+		scale,
+		tileW: Math.round(MARK.width * scale * 1.55),
+		tileH: Math.round(capPx * 6.4),
+	};
+}
+
 export interface PreviewMarkOptions {
 	width: number;
 	height: number;
@@ -117,11 +136,7 @@ export interface PreviewMarkOptions {
  */
 export function buildPreviewMarkSvg({ width, height }: PreviewMarkOptions): string {
 	if (!(width > 0 && height > 0)) throw new Error('Preview mark needs a positive size.');
-	const capPx = Math.min(72, Math.max(16, Math.round(width * 0.032)));
-	const scale = capPx / 10;
-	const textPx = MARK.width * scale;
-	const tileW = Math.round(textPx * 1.55);
-	const tileH = Math.round(capPx * 6.4);
+	const { capPx, scale, tileW, tileH } = previewMarkMetrics(width);
 	// The staggered row overflows the tile; its wrapped copy completes it across tiles.
 	const rows = [
 		{ x: 0, y: capPx * 1.2 },
@@ -137,7 +152,7 @@ export function buildPreviewMarkSvg({ width, height }: PreviewMarkOptions): stri
 	return (
 		`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
 		`<defs><pattern id="preview-mark" patternUnits="userSpaceOnUse" width="${tileW}" height="${tileH}" ` +
-		`patternTransform="rotate(-28)">${layers}</pattern></defs>` +
+		`patternTransform="rotate(${PREVIEW_MARK_ANGLE})">${layers}</pattern></defs>` +
 		`<rect width="${width}" height="${height}" fill="url(#preview-mark)"/></svg>`
 	);
 }
