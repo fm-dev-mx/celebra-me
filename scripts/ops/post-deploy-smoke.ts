@@ -14,6 +14,8 @@ import {
 	PREVIEW_SUPABASE_PROJECT_REF,
 	validateReadOnlyPreviewEnvironment,
 } from '../playwright/preview-environment.ts';
+import { listPublishedInvitationDefinitions } from '../provision/invitations/registry.ts';
+import { discoverDemoCases } from '../screenshot/visual-coverage-contract.ts';
 
 export type PostDeployEnvironment = 'preview' | 'production';
 
@@ -40,9 +42,30 @@ export interface ValidatedVercelDispatch {
 }
 
 export type PostDeployProbeId =
-	'homepage' | 'login' | 'demo' | 'auth_boundary' | 'runtime_health' | 'header_policy' | 'asset';
+	| 'homepage'
+	| 'login'
+	| 'invitation'
+	| 'demo'
+	| 'auth_boundary'
+	| 'runtime_health'
+	| 'header_policy'
+	| 'asset';
+/** Page probes target `{eventType}:{slug}`; evidence tokens cannot carry a path. */
 export type PostDeployProbeTarget =
-	'root' | 'login' | 'demo' | 'auth_session' | 'health' | 'root_headers' | 'astro_asset';
+	| 'root'
+	| 'login'
+	| 'auth_session'
+	| 'health'
+	| 'root_headers'
+	| 'astro_asset'
+	| `${string}:${string}`;
+
+/** A public invitation or demo page the smoke opens. */
+export interface SmokePageRoute {
+	kind: 'invitation' | 'demo';
+	eventType: string;
+	slug: string;
+}
 export type PostDeployProbeFailureClass =
 	'none' | 'network_error' | 'http_status' | 'json_invalid' | 'contract_mismatch';
 
@@ -86,6 +109,37 @@ const TRANSIENT_STATUSES = new Set([502, 503, 504]);
 const PRODUCTION_HOSTS = new Set(['celebra-me.com', 'www.celebra-me.com']);
 const VERCEL_ID_PATTERN = /^(?:dpl_|prj_)[A-Za-z0-9_-]+$/;
 const SHA_PATTERN = /^[0-9a-f]{40}$/i;
+
+/**
+ * Pages come from the repository catalog: published, non-expired invitation definitions and
+ * every demo under `src/content/event-demos`. Nothing is listed by hand.
+ */
+export function listSmokePageRoutes(now = new Date()): SmokePageRoute[] {
+	return [
+		...listPublishedInvitationDefinitions(now).map((definition) => ({
+			kind: 'invitation' as const,
+			eventType: definition.eventType,
+			slug: definition.slug,
+		})),
+		...discoverDemoCases().map((demo) => ({
+			kind: 'demo' as const,
+			eventType: demo.eventType,
+			slug: demo.slug,
+		})),
+	];
+}
+
+const PAGE_TITLE_PATTERN = /<title>[^<]+<\/title>/i;
+
+/**
+ * A rendered page is 200 with a non-empty title. An invitation may also answer 403: that is
+ * the neutral page for an invitation the administrator disabled (for example /xv/mia-pintor),
+ * a database state the catalog cannot know.
+ */
+function isExpectedPageResponse(route: SmokePageRoute, status: number, html: string): boolean {
+	if (status === 200) return PAGE_TITLE_PATTERN.test(html);
+	return route.kind === 'invitation' && status === 403;
+}
 
 function requireValue(value: string, name: string): string {
 	const trimmed = value.trim();
@@ -304,7 +358,11 @@ function hasExpectedSecurityHeaders(headers: Headers): boolean {
 export async function runProductionSmoke(
 	baseUrl: string,
 	fetchImpl: FetchLike = fetch,
-	access: { approvedHost?: string; bypassSecret?: string } = {},
+	access: {
+		approvedHost?: string;
+		bypassSecret?: string;
+		pages?: readonly SmokePageRoute[];
+	} = {},
 ): Promise<ProductionSmokeResult> {
 	const origin = parseDeploymentOrigin(baseUrl, 'production');
 	const bypassSecret = access.bypassSecret?.trim();
@@ -392,18 +450,22 @@ export async function runProductionSmoke(
 			retryCount,
 		};
 	});
-	await probe('demo_failed', 'demo', 'demo', async () => {
-		const { response, retryCount } = await fetchWithOneRetry(
-			request,
-			`${baseUrl}/xv/demo-xv-editorial`,
-		);
-		return {
-			passed: response.status === 200,
-			statusCode: response.status,
-			failureClass: 'http_status',
-			retryCount,
-		};
-	});
+	for (const route of access.pages ?? listSmokePageRoutes()) {
+		const target = `${route.eventType}:${route.slug}` as const;
+		await probe(`${route.kind}_failed:${target}`, route.kind, target, async () => {
+			const { response, retryCount } = await fetchWithOneRetry(
+				request,
+				`${baseUrl}/${route.eventType}/${route.slug}`,
+			);
+			const html = await response.text();
+			return {
+				passed: isExpectedPageResponse(route, response.status, html),
+				statusCode: response.status,
+				failureClass: response.status === 200 ? 'contract_mismatch' : 'http_status',
+				retryCount,
+			};
+		});
+	}
 	await probe('auth_boundary_failed', 'auth_boundary', 'auth_session', async () => {
 		const { response, retryCount } = await fetchWithOneRetry(
 			request,
