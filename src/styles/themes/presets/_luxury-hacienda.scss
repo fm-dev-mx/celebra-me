@@ -195,9 +195,13 @@
 	// ---------------------------------------------------------------------
 	// Header tokens
 	// ---------------------------------------------------------------------
-	--header-bg-scrolled: linear-gradient(180deg, rgb(29 20 14 / 92%) 0%, rgb(42 31 22 / 88%) 100%);
+	--header-bg-scrolled-fallback: linear-gradient(
+		180deg,
+		rgb(29 20 14 / 92%) 0%,
+		rgb(42 31 22 / 88%) 100%
+	);
 	--header-border-scrolled: 1px solid rgb(207 168 95 / 20%);
-	--header-nav-color: rgb(241 223 187 / 92%);
+	--header-nav-color-fallback: rgb(241 223 187 / 92%);
 	--header-cta-glow: 0 10px 26px rgb(0 0 0 / 30%), 0 1px 0 rgb(255 241 214 / 8%);
 
 	// ---------------------------------------------------------------------

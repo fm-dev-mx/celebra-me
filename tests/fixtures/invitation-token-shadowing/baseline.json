@@ -17,9 +17,7 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--font-calligraphy",
-        "--header-bg-scrolled",
-        "--header-nav-color"
+        "--font-calligraphy"
     ],
     "allison-scarlett": [
         "--color-glass-bg",
@@ -91,26 +89,6 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--hamburger-color",
-        "--hamburger-color-menu-open",
-        "--header-nav-color",
-        "--header-nav-color-transparent",
-        "--header-nav-cta-bg",
-        "--header-nav-cta-border",
-        "--header-nav-cta-color",
-        "--header-nav-cta-hover-bg",
-        "--header-nav-cta-hover-border",
-        "--header-nav-cta-hover-color",
-        "--header-nav-cta-shadow",
-        "--header-nav-hover-color",
-        "--header-nav-title-color",
-        "--mobile-drawer-cta-bg",
-        "--mobile-drawer-cta-border",
-        "--mobile-drawer-cta-color",
-        "--mobile-drawer-cta-hover-bg",
-        "--mobile-drawer-cta-hover-color",
-        "--mobile-drawer-link-color",
-        "--mobile-drawer-link-hover",
         "--shadow-premium"
     ],
     "romina-rios-chaparro": [
