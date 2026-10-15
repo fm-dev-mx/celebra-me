@@ -62,8 +62,8 @@ profiles and contracts.
   the memories cleanup cron answers 503.
 - Preview purge and fixture scripts reject any project other than the canonical Preview one.
 - The RSVP island no longer bundles the server WhatsApp helper.
-- Family group titles hide a role they already name, pending itinerary times read "Por confirmar",
-  and the locked reply-card RSVP drops the eyebrow and separator.
+- Pending itinerary times read "Por confirmar", and the locked reply-card RSVP drops the eyebrow and
+  separator.
 - `@astrojs/vercel` 11.0.13 crashed Preview functions on a static import; 11.0.14 fixes it.
 
 ### Verification
