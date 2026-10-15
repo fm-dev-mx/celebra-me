@@ -75,6 +75,9 @@ describe('Theme Delivery Integration', () => {
 		expect(styles).toContain('--env-bg: var(--color-surface-dark);');
 		expect(styles).toContain('--env-paper-bg: var(--color-surface-dark);');
 		expect(styles).toContain('--env-text-primary: var(--color-surface-primary);');
+		expect(styles).toContain(
+			'--env-instruction-color: color-mix(in srgb, var(--color-surface-primary) 78%, var(--color-surface-primary));',
+		);
 		expect(pageContext.wrapper.dataAttributes['data-env-variant']).toBeUndefined();
 	});
 
@@ -98,6 +101,7 @@ describe('Theme Delivery Integration', () => {
 		const styles = pageContext.wrapper.scopedStyles;
 		expect(styles).not.toContain('--env-bg:');
 		expect(styles).not.toContain('--env-paper-bg:');
+		expect(styles).not.toContain('--env-instruction-color:');
 		expect(styles).toContain('--env-text-primary: var(--color-surface-primary);');
 	});
 

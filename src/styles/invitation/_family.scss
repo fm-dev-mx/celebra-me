@@ -15,9 +15,15 @@
 	position: relative;
 	isolation: isolate;
 	overflow: hidden;
-	padding-block: var(--family-padding-block, clamp(5rem, 9vw, 8rem));
-	background: var(--family-bg, var(--color-surface-primary));
-	color: var(--family-text-primary, var(--color-text-primary));
+	padding-block: var(
+		--family-padding-block,
+		var(--family-padding-block-fallback, clamp(5rem, 9vw, 8rem))
+	);
+	background: var(--family-bg, var(--family-bg-fallback, var(--color-surface-primary)));
+	color: var(
+		--family-text-primary,
+		var(--family-text-primary-fallback, var(--color-text-primary))
+	);
 	mask: var(--family-section-mask, none);
 
 	&::before {
@@ -26,7 +32,7 @@
 		inset: 0;
 		z-index: -1;
 		pointer-events: none;
-		background: var(--family-vignette-bg, transparent);
+		background: var(--family-vignette-bg, var(--family-vignette-bg-fallback, transparent));
 	}
 
 	&__bg-texture {
@@ -34,7 +40,7 @@
 		inset: 0;
 		z-index: -1;
 		pointer-events: none;
-		opacity: var(--family-texture-opacity, 0%);
+		opacity: var(--family-texture-opacity, var(--family-texture-opacity-fallback, 0%));
 		background-image: var(--family-texture-image, none);
 	}
 
@@ -50,7 +56,7 @@
 		max-width: var(--family-header-max-width, 46rem);
 		margin: 0 auto clamp(1.8rem, 4vw, 2.8rem);
 		text-align: center;
-		filter: var(--family-header-filter, none);
+		filter: var(--family-header-filter, var(--family-header-filter-fallback, none));
 	}
 
 	&__header-inner {
@@ -67,21 +73,39 @@
 		font-weight: var(--family-eyebrow-weight, 600);
 		letter-spacing: var(--family-eyebrow-letter-spacing, 0.22em);
 		text-transform: var(--family-eyebrow-text-transform, uppercase);
-		color: var(--family-eyebrow-color, var(--family-accent, var(--color-action-accent)));
-		opacity: var(--family-eyebrow-opacity, 88%);
+		color: var(
+			--family-eyebrow-color,
+			var(
+				--family-eyebrow-color-fallback,
+				var(--family-accent, var(--family-accent-fallback, var(--color-action-accent)))
+			)
+		);
+		opacity: var(--family-eyebrow-opacity, var(--family-eyebrow-opacity-fallback, 88%));
 	}
 
 	&__title {
 		max-width: var(--family-title-max-width, 15ch);
 		margin: var(--family-title-margin, 0 auto);
-		font-family: var(--family-title-font, var(--font-display));
-		font-size: var(--family-title-size, clamp(2rem, 5vw, 3.55rem));
+		font-family: var(
+			--family-title-font,
+			var(--family-title-font-fallback, var(--font-display))
+		);
+		font-size: var(
+			--family-title-size,
+			var(--family-title-size-fallback, clamp(2rem, 5vw, 3.55rem))
+		);
 		font-style: var(--family-title-style, inherit);
 		font-weight: var(--family-title-weight, 400);
-		line-height: var(--family-title-line-height, 1.08);
+		line-height: var(
+			--family-title-line-height,
+			var(--family-title-line-height-fallback, 1.08)
+		);
 		letter-spacing: var(--family-title-letter-spacing, 0.02em);
-		color: var(--family-title-color, currentcolor);
-		text-shadow: var(--family-title-text-shadow, none);
+		color: var(--family-title-color, var(--family-title-color-fallback, currentcolor));
+		text-shadow: var(
+			--family-title-text-shadow,
+			var(--family-title-text-shadow-fallback, none)
+		);
 		text-wrap: balance;
 	}
 
@@ -101,7 +125,13 @@
 		line-height: var(--family-message-line-height, 1.7);
 		color: var(
 			--family-message-color,
-			var(--family-text-muted, rgb(var(--color-text-primary-rgb) / 72%))
+			var(
+				--family-message-color-fallback,
+				var(
+					--family-text-muted,
+					var(--family-text-muted-fallback, rgb(var(--color-text-primary-rgb) / 72%))
+				)
+			)
 		);
 		text-wrap: pretty;
 	}
@@ -114,20 +144,35 @@
 		width: var(--family-panel-width, 100%);
 		max-width: var(--family-panel-max-width, none);
 		margin-inline: auto;
-		margin-top: var(--family-panel-margin-top, 0);
+		margin-top: var(--family-panel-margin-top, var(--family-panel-margin-top-fallback, 0));
 		display: grid;
 		gap: clamp(1.8rem, 4vw, 3.4rem);
-		padding: var(--family-panel-spacing, clamp(1.15rem, 3.5vw, 2.4rem));
-		border: var(--family-panel-border, 1px solid rgb(var(--color-text-primary-rgb) / 14%));
+		padding: var(
+			--family-panel-spacing,
+			var(--family-panel-spacing-fallback, clamp(1.15rem, 3.5vw, 2.4rem))
+		);
+		border: var(
+			--family-panel-border,
+			var(--family-panel-border-fallback, 1px solid rgb(var(--color-text-primary-rgb) / 14%))
+		);
 		border-radius: var(--family-panel-radius, 16px);
-		background: var(--family-panel-bg, rgb(var(--color-surface-primary-rgb) / 72%));
-		box-shadow: var(--family-panel-shadow, var(--shadow-subtle));
-		transform: var(--family-panel-rotate, none);
+		background: var(
+			--family-panel-bg,
+			var(--family-panel-bg-fallback, rgb(var(--color-surface-primary-rgb) / 72%))
+		);
+		box-shadow: var(
+			--family-panel-shadow,
+			var(--family-panel-shadow-fallback, var(--shadow-subtle))
+		);
+		transform: var(--family-panel-rotate, var(--family-panel-rotate-fallback, none));
 
 		&::before {
 			content: '';
 			position: absolute;
-			display: var(--family-panel-shadow-extra-display, none);
+			display: var(
+				--family-panel-shadow-extra-display,
+				var(--family-panel-shadow-extra-display-fallback, none)
+			);
 			bottom: 15px;
 			left: 10px;
 			right: 10px;
@@ -156,7 +201,10 @@
 		z-index: 0;
 		border-radius: inherit;
 		pointer-events: none;
-		background: var(--family-panel-surface-bg, transparent);
+		background: var(
+			--family-panel-surface-bg,
+			var(--family-panel-surface-bg-fallback, transparent)
+		);
 		opacity: var(--family-panel-surface-opacity, 100%);
 		filter: var(--family-panel-surface-filter, none);
 		border: var(--family-panel-edge-border, none);
@@ -177,10 +225,16 @@
 			position: absolute;
 			inset: 0;
 			z-index: 1;
-			opacity: var(--family-panel-surface-after-opacity, var(--family-noise-opacity, 0%));
+			opacity: var(
+				--family-panel-surface-after-opacity,
+				var(--family-panel-surface-after-opacity-fallback, var(--family-noise-opacity, 0%))
+			);
 			background: var(
 				--family-panel-surface-after-bg,
-				url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")
+				var(
+					--family-panel-surface-after-bg-fallback,
+					url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")
+				)
 			);
 			border: var(--family-panel-surface-after-border, none);
 			box-shadow: var(--family-panel-surface-after-shadow, none);
@@ -197,7 +251,10 @@
 		line-height: 1;
 		font-weight: 400;
 		color: var(--family-panel-watermark-color, transparent);
-		opacity: var(--family-panel-watermark-opacity, 100%);
+		opacity: var(
+			--family-panel-watermark-opacity,
+			var(--family-panel-watermark-opacity-fallback, 100%)
+		);
 		font-family: var(--family-panel-watermark-font, var(--font-display));
 		font-size: var(--family-panel-watermark-size, clamp(5.5rem, 13vw, 9rem));
 		inset: var(--family-panel-watermark-top, auto) var(--family-panel-watermark-right, auto)
@@ -259,7 +316,7 @@
 				--family-media-image-radius,
 				calc(var(--family-media-radius, 12px) - 2px)
 			);
-			filter: var(--family-media-filter, none);
+			filter: var(--family-media-filter, var(--family-media-filter-fallback, none));
 
 			// Print area while the photograph loads (default: the frame shows through).
 			background-color: var(--family-media-image-bg, transparent);
@@ -281,7 +338,7 @@
 		padding: var(--family-group-padding, clamp(0.9rem, 2vw, 1.35rem) 0);
 		border-left: var(--family-group-border-left, none);
 		text-align: var(--family-group-text-align, center);
-		filter: var(--family-group-filter, none);
+		filter: var(--family-group-filter, var(--family-group-filter-fallback, none));
 	}
 
 	&__group + &__group::before {
@@ -305,7 +362,13 @@
 		letter-spacing: var(--family-group-title-letter-spacing, 0.18em);
 		text-transform: var(--family-group-title-text-transform, uppercase);
 		overflow-wrap: anywhere;
-		color: var(--family-group-title-color, var(--family-accent, var(--color-action-accent)));
+		color: var(
+			--family-group-title-color,
+			var(
+				--family-group-title-color-fallback,
+				var(--family-accent, var(--family-accent-fallback, var(--color-action-accent)))
+			)
+		);
 		opacity: var(--family-group-title-opacity, 90%);
 	}
 
@@ -368,7 +431,7 @@
 		text-transform: uppercase;
 		color: var(
 			--family-godparent-label-color,
-			var(--family-accent, var(--color-action-accent))
+			var(--family-accent, var(--family-accent-fallback, var(--color-action-accent)))
 		);
 		white-space: nowrap;
 	}
@@ -415,13 +478,16 @@
 		gap: 0.2em;
 		max-width: var(--family-name-max-width, 18ch);
 		margin: var(--family-name-margin, 0);
-		font-family: var(--family-name-font, var(--font-display));
-		font-size: var(--family-name-size, clamp(1.45rem, 3vw, 2.05rem));
+		font-family: var(--family-name-font, var(--family-name-font-fallback, var(--font-display)));
+		font-size: var(
+			--family-name-size,
+			var(--family-name-size-fallback, clamp(1.45rem, 3vw, 2.05rem))
+		);
 		font-weight: var(--family-name-weight, 400);
 		line-height: var(--family-name-line-height, 1.12);
 		letter-spacing: var(--family-name-letter-spacing, 0.01em);
 		color: var(--family-name-color, currentcolor);
-		text-shadow: var(--family-name-text-shadow, none);
+		text-shadow: var(--family-name-text-shadow, var(--family-name-text-shadow-fallback, none));
 		text-wrap: balance;
 		overflow-wrap: anywhere;
 	}
@@ -445,7 +511,13 @@
 		text-transform: var(--family-meta-text-transform, uppercase);
 		color: var(
 			--family-meta-color,
-			var(--family-text-muted, rgb(var(--color-text-primary-rgb) / 68%))
+			var(
+				--family-meta-color-fallback,
+				var(
+					--family-text-muted,
+					var(--family-text-muted-fallback, rgb(var(--color-text-primary-rgb) / 68%))
+				)
+			)
 		);
 	}
 

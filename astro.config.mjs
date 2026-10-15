@@ -5,6 +5,7 @@ import sitemap from '@astrojs/sitemap'; // Automatic site map generation for SEO
 import robotsTxt from 'astro-robots-txt'; // Automatic robots.txt generation for SEO
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
+import cloudflare from '@astrojs/cloudflare';
 import { fileURLToPath } from 'url';
 import {
 	bootstrapCelebraRuntimeEnv,
@@ -12,8 +13,18 @@ import {
 } from './scripts/shared/celebra-runtime-env.ts';
 import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
+import { SECURITY_HEADERS } from './src/lib/server/security-headers.ts';
+import { appendStaticSecurityHeaders } from './scripts/shared/cloudflare-static-headers.ts';
+import { readFile, writeFile } from 'node:fs/promises';
 
 const isBuildCommand = process.argv.includes('build');
+// Temporary dual hosting target while Preview moves to Cloudflare Workers: `vercel` (default)
+// or `cloudflare`. The Cloudflare build reads wrangler.jsonc and bundles src/worker.ts.
+const buildTarget = process.env.CELEBRA_BUILD_TARGET || 'vercel';
+if (buildTarget !== 'vercel' && buildTarget !== 'cloudflare') {
+	throw new Error('CELEBRA_BUILD_TARGET must be "vercel" or "cloudflare" when set.');
+}
+const isCloudflareBuild = buildTarget === 'cloudflare';
 // Hosted builds declare their deploy identity; local processes never do. An invalid
 // declaration fails the build instead of producing a bundle that throws at runtime.
 const isHostedBuild = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV) !== null;
@@ -137,6 +148,27 @@ function supabaseDevPreflightIntegration() {
 	};
 }
 
+/**
+ * Cloudflare build only: prerendered pages are static assets that skip the middleware, so
+ * their security headers come from a `_headers` rule (Vercel applies vercel.json instead).
+ */
+function cloudflareStaticSecurityHeadersIntegration() {
+	return {
+		name: 'cloudflare-static-security-headers',
+		hooks: {
+			'astro:build:done': async ({ dir }) => {
+				if (!isCloudflareBuild) return;
+				const headersPath = new URL('./_headers', dir);
+				const existing = await readFile(headersPath, 'utf8').catch(() => '');
+				await writeFile(
+					headersPath,
+					appendStaticSecurityHeaders(existing, SECURITY_HEADERS),
+				);
+			},
+		},
+	};
+}
+
 export default defineConfig({
 	// The base URL for the site.
 	site:
@@ -164,6 +196,7 @@ export default defineConfig({
 		robotsTxt({ policy: buildRobotsPolicy() }),
 		testVariantHarnessIntegration(),
 		supabaseDevPreflightIntegration(),
+		cloudflareStaticSecurityHeadersIntegration(),
 	],
 	server: {
 		port: devServerPort,
@@ -216,27 +249,29 @@ export default defineConfig({
 			// Vercel's serverless loader cannot safely load sanitize-html's runtime graph:
 			// bare requires in its bundled CommonJS entrypoint are not traced into the
 			// function, and htmlparser2@12 is ESM-only. Bundle the bounded SSR chain.
-			noExternal: isBuildCommand
-				? [
-						'sanitize-html',
-						'escape-string-regexp',
-						'is-plain-object',
-						'deepmerge',
-						'parse-srcset',
-						'postcss',
-						'picocolors',
-						'source-map-js',
-						'nanoid',
-						'launder',
-						'dayjs',
-						'htmlparser2',
-						'entities',
-						'domhandler',
-						'domelementtype',
-						'domutils',
-						'dom-serializer',
-					]
-				: undefined,
+			// The Cloudflare adapter bundles every dependency itself.
+			noExternal:
+				isBuildCommand && !isCloudflareBuild
+					? [
+							'sanitize-html',
+							'escape-string-regexp',
+							'is-plain-object',
+							'deepmerge',
+							'parse-srcset',
+							'postcss',
+							'picocolors',
+							'source-map-js',
+							'nanoid',
+							'launder',
+							'dayjs',
+							'htmlparser2',
+							'entities',
+							'domhandler',
+							'domelementtype',
+							'domutils',
+							'dom-serializer',
+						]
+					: undefined,
 		},
 		define: {
 			'import.meta.env.CELEBRA_BUILD_SHA': JSON.stringify(buildCommitSha),
@@ -258,12 +293,20 @@ export default defineConfig({
 	},
 
 	output: 'server',
-	adapter: vercel({
-		maxDuration: 30, // Increase limit for serverless functions
-		imageService: true, // Enable Vercel's image optimization for local images
-		imagesConfig: {
-			sizes: [320, 640, 960, 1200, 1600, 1800],
-			domains: externalImageDomains, // Allow external images
-		},
-	}),
+	// The app never uses Astro.session; without this the Cloudflare adapter provisions a KV
+	// session namespace on every deploy.
+	...(isCloudflareBuild ? { session: false } : {}),
+	adapter: isCloudflareBuild
+		? cloudflare({
+				// Image transforms through the IMAGES binding declared in wrangler.jsonc.
+				imageService: 'cloudflare-binding',
+			})
+		: vercel({
+				maxDuration: 30, // Increase limit for serverless functions
+				imageService: true, // Enable Vercel's image optimization for local images
+				imagesConfig: {
+					sizes: [320, 640, 960, 1200, 1600, 1800],
+					domains: externalImageDomains, // Allow external images
+				},
+			}),
 });

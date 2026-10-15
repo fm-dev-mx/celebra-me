@@ -1,7 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--sacred-keepsake .gallery-section {
-	--gallery-section-bg:
+	--gallery-section-bg-fallback:
 		radial-gradient(
 			ellipse at 12% 8%,
 			rgb(var(--color-sacred-blue-rgb) / 18%) 0%,

@@ -22,7 +22,7 @@
 // ==========================================================================
 
 .rsvp {
-	--rsvp-bg: var(--color-surface-dark);
+	--rsvp-bg-fallback: var(--color-surface-dark);
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
 	--color-glass-border: var(--color-border-premium, rgb(var(--color-action-accent-rgb) / 18%));
 	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb) / 18%));

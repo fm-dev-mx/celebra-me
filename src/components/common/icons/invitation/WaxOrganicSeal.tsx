@@ -142,9 +142,18 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 					x2="96"
 					y2="106"
 				>
-					<stop offset="0%" stopColor="var(--wax-seal-highlight, #f7ddd4)" />
-					<stop offset="26%" stopColor="var(--wax-seal-mid, #e8b4a8)" />
-					<stop offset="100%" stopColor="var(--wax-seal-deep, #c4897c)" />
+					<stop
+						offset="0%"
+						stopColor="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #f7ddd4))"
+					/>
+					<stop
+						offset="26%"
+						stopColor="var(--wax-seal-mid, var(--wax-seal-mid-fallback, #e8b4a8))"
+					/>
+					<stop
+						offset="100%"
+						stopColor="var(--wax-seal-deep, var(--wax-seal-deep-fallback, #c4897c))"
+					/>
 				</linearGradient>
 				<filter
 					id={softShadowId}
@@ -158,14 +167,14 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 						dx="0"
 						dy="4"
 						stdDeviation="3.2"
-						floodColor="var(--wax-seal-shadow, #4a2a24)"
+						floodColor="var(--wax-seal-shadow, var(--wax-seal-shadow-fallback, #4a2a24))"
 						floodOpacity="0.5"
 					/>
 					<feDropShadow
 						dx="0"
 						dy="1.2"
 						stdDeviation="1.1"
-						floodColor="var(--wax-seal-shadow, #4a2a24)"
+						floodColor="var(--wax-seal-shadow, var(--wax-seal-shadow-fallback, #4a2a24))"
 						floodOpacity="0.28"
 					/>
 				</filter>
@@ -180,7 +189,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 					<feGaussianBlur in="SourceAlpha" stdDeviation="0.7" result="blur" />
 					<feOffset dx="0.55" dy="0.9" result="offsetBlur" />
 					<feFlood
-						floodColor="var(--wax-seal-emboss-shadow, #5c322c)"
+						floodColor="var(--wax-seal-emboss-shadow, var(--wax-seal-emboss-shadow-fallback, #5c322c))"
 						floodOpacity="0.52"
 						result="shadowColor"
 					/>
@@ -199,14 +208,14 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 						dx="0.15"
 						dy="0.75"
 						stdDeviation="0.42"
-						floodColor="var(--wax-seal-emboss-shadow, #5c322c)"
+						floodColor="var(--wax-seal-emboss-shadow, var(--wax-seal-emboss-shadow-fallback, #5c322c))"
 						floodOpacity="0.42"
 					/>
 					<feDropShadow
 						dx="0"
 						dy="-0.3"
 						stdDeviation="0.28"
-						floodColor="var(--wax-seal-highlight, #f7ddd4)"
+						floodColor="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #f7ddd4))"
 						floodOpacity="0.2"
 					/>
 				</filter>
@@ -221,7 +230,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 			<path
 				d={WAX_BODY_D}
 				fill="none"
-				stroke="var(--wax-seal-deep, #b8796c)"
+				stroke="var(--wax-seal-deep, var(--wax-seal-deep-fallback, #b8796c))"
 				strokeWidth="0.95"
 				opacity="0.24"
 			/>
@@ -229,7 +238,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 			{/* Recessed monogram plate */}
 			<path
 				d={WAX_BODY_D}
-				fill="var(--wax-seal-emboss-shadow, #5c322c)"
+				fill="var(--wax-seal-emboss-shadow, var(--wax-seal-emboss-shadow-fallback, #5c322c))"
 				opacity="0.09"
 				transform={DIE_MAIN_TRANSFORM}
 			/>
@@ -238,7 +247,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 			<path
 				d={WAX_BODY_D}
 				fill="none"
-				stroke="var(--wax-seal-deep, #c4897c)"
+				stroke="var(--wax-seal-deep, var(--wax-seal-deep-fallback, #c4897c))"
 				strokeWidth="1.4"
 				opacity="0.82"
 				transform={DIE_MAIN_TRANSFORM}
@@ -249,7 +258,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 			<path
 				d={WAX_BODY_D}
 				fill="none"
-				stroke="var(--wax-seal-highlight, #f7ddd4)"
+				stroke="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #f7ddd4))"
 				strokeWidth="1.1"
 				strokeLinecap="round"
 				opacity="0.15"
@@ -263,7 +272,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 			<path
 				d={WAX_BODY_D}
 				fill="none"
-				stroke="var(--wax-seal-emboss-shadow, #5c322c)"
+				stroke="var(--wax-seal-emboss-shadow, var(--wax-seal-emboss-shadow-fallback, #5c322c))"
 				strokeWidth="0.8"
 				opacity="0.26"
 				transform={DIE_ECHO_TRANSFORM}
@@ -278,7 +287,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 					fontFamily="var(--wax-seal-font-family, 'EB Garamond Variable', 'EB Garamond', Georgia, 'Times New Roman', serif)"
 					fontWeight="400"
 					letterSpacing={`${letterSpacingEm}em`}
-					fill="var(--wax-seal-letter, #5c322c)"
+					fill="var(--wax-seal-letter, var(--wax-seal-letter-fallback, #5c322c))"
 					filter={`url(#${letterId})`}
 				>
 					{monogramRuns.length > 1
@@ -293,7 +302,7 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 				<path
 					d={WAX_BODY_D}
 					fill="none"
-					stroke="var(--wax-seal-letter, #5c322c)"
+					stroke="var(--wax-seal-letter, var(--wax-seal-letter-fallback, #5c322c))"
 					strokeWidth="1.1"
 					opacity="0.45"
 					transform={`translate(${PLATE_CENTER.x} ${PLATE_CENTER.y}) scale(0.14) translate(${-BODY_CENTER.x} ${-BODY_CENTER.y})`}

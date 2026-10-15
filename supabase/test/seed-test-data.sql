@@ -18,10 +18,10 @@ VALUES
 ON CONFLICT (user_id) DO NOTHING;
 
 -- 3. Create public/demo and private/client invitation projects
-INSERT INTO public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
+INSERT INTO public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind)
 VALUES
-  ('f0000000-0000-0000-0000-000000000001', 'demo-xv-jewelry-box', 'Demo XV Jewelry Box', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'a0000000-0000-0000-0000-000000000001', 'demo'),
-  ('f0000000-0000-0000-0000-000000000002', 'test-client-wedding', 'Test Client Wedding', 'boda', 'draft', 'demo-wedding-classic', 'classic', '{}'::jsonb, 'a0000000-0000-0000-0000-000000000002', 'client')
+  ('f0000000-0000-0000-0000-000000000001', 'demo-xv-jewelry-box', 'Demo XV Jewelry Box', 'xv', 'published', 'jewelry-box', 'a0000000-0000-0000-0000-000000000001', 'demo'),
+  ('f0000000-0000-0000-0000-000000000002', 'test-client-wedding', 'Test Client Wedding', 'boda', 'draft', 'classic', 'a0000000-0000-0000-0000-000000000002', 'client')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3b. Seeded invitations behave as existing ones: paid and enabled (new invitations start unpaid)

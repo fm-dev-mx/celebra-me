@@ -7,24 +7,24 @@
 // Default Header Variables (Safe Fallbacks)
 
 .theme-preset--jewelry-box .header-base {
-	--header-bg-scrolled: rgb(var(--color-surface-primary-rgb) / 95%);
-	--header-nav-color: var(--color-surface-dark);
-	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-bg-scrolled-fallback: rgb(var(--color-surface-primary-rgb) / 95%);
+	--header-nav-color-fallback: var(--color-surface-dark);
+	--header-nav-color-transparent-fallback: var(--color-text-on-dark);
 	--header-nav-shadow-transparent: 0 1px 4px rgb(0 0 0 / 15%);
 	--header-nav-filter-transparent: none;
 	--mobile-drawer-bg: var(--color-surface-dark);
 	--mobile-drawer-border: rgb(var(--color-action-accent-rgb) / 36%);
-	--mobile-drawer-link-hover: var(--color-action-accent);
-	--mobile-drawer-cta-color: var(--color-surface-dark);
-	--mobile-drawer-cta-border: 1px solid var(--color-text-on-dark);
+	--mobile-drawer-link-hover-fallback: var(--color-action-accent);
+	--mobile-drawer-cta-color-fallback: var(--color-surface-dark);
+	--mobile-drawer-cta-border-fallback: 1px solid var(--color-text-on-dark);
 	--mobile-drawer-cta-shadow: 0 4px 20px rgb(0 0 0 / 40%);
-	--mobile-drawer-cta-hover-bg: var(--color-action-accent);
-	--mobile-drawer-cta-hover-color: var(--color-surface-dark);
+	--mobile-drawer-cta-hover-bg-fallback: var(--color-action-accent);
+	--mobile-drawer-cta-hover-color-fallback: var(--color-surface-dark);
 	--mobile-drawer-cta-hover-border: 1px solid var(--color-action-accent);
 	--mobile-drawer-cta-hover-shadow: 0 8px 25px rgb(0 0 0 / 50%);
 	--mobile-drawer-footer-copy: rgb(255 255 255 / 50%);
 	--mobile-signature-color: rgb(255 255 255 / 70%);
 	--mobile-close-button-color: var(--color-text-on-dark);
-	--hamburger-color: var(--color-surface-dark);
-	--hamburger-color-menu-open: var(--color-text-on-dark);
+	--hamburger-color-fallback: var(--color-surface-dark);
+	--hamburger-color-menu-open-fallback: var(--color-text-on-dark);
 }

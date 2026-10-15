@@ -1,12 +1,15 @@
 .personalized-access[data-variant='ornamented'] {
 	.access-card__corner {
-		opacity: var(--pa-corner-opacity, 72%);
+		opacity: var(--pa-corner-opacity, var(--pa-corner-opacity-fallback, 72%));
 	}
 
 	.access-card::after {
 		background: var(
 			--pa-card-glow,
-			radial-gradient(circle at 50% 0%, rgb(255 255 255 / 18%), transparent 62%)
+			var(
+				--pa-card-glow-fallback,
+				radial-gradient(circle at 50% 0%, rgb(255 255 255 / 18%), transparent 62%)
+			)
 		);
 	}
 }

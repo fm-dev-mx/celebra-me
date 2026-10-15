@@ -1,18 +1,18 @@
 // Gifts Section Styles
 
 .gifts-section {
-	--gifts-bg: var(--color-surface-primary);
+	--gifts-bg-fallback: var(--color-surface-primary);
 	--gifts-text-color: var(--color-text-primary);
-	--gifts-title-color: var(--color-text-emphasis);
-	--gifts-subtitle-color: var(--color-text-primary);
-	--gifts-padding-block: var(--spacing-section-gap, 8rem);
-	--gifts-padding-inline: var(--spacing-md);
+	--gifts-title-color-fallback: var(--color-text-emphasis);
+	--gifts-subtitle-color-fallback: var(--color-text-primary);
+	--gifts-padding-block-fallback: var(--spacing-section-gap, 8rem);
+	--gifts-padding-inline-fallback: var(--spacing-md);
 	--gifts-card-bg: var(--color-glass-bg);
 	--gifts-card-border: 1px solid var(--color-glass-border);
 	--gifts-card-radius: 12px;
 	--gifts-card-shadow: var(--shadow-subtle);
 	--gifts-card-title-color: var(--color-text-primary);
-	--gifts-icon-color: var(--color-action-accent);
+	--gifts-icon-color-fallback: var(--color-action-accent);
 	--gifts-button-color: var(--color-action-accent);
 	--gifts-button-border: 1px solid var(--color-action-accent);
 	--gifts-button-border-radius: 4px;
@@ -42,10 +42,11 @@
 	// ---------------------------------------------------------------------
 	// Base Structural Styles
 	// ---------------------------------------------------------------------
-	padding: var(--gifts-padding-block) var(--gifts-padding-inline);
+	padding: var(--gifts-padding-block, var(--gifts-padding-block-fallback))
+		var(--gifts-padding-inline, var(--gifts-padding-inline-fallback));
 	position: relative;
 	overflow: hidden;
-	background: var(--gifts-bg);
+	background: var(--gifts-bg, var(--gifts-bg-fallback));
 	color: var(--gifts-text-color);
 
 	&__container {
@@ -96,7 +97,7 @@
 		font-style: var(--gifts-title-style, inherit);
 		text-transform: var(--gifts-title-transform, uppercase);
 		letter-spacing: var(--gifts-title-letter-spacing, 0.15em);
-		color: var(--gifts-title-color);
+		color: var(--gifts-title-color, var(--gifts-title-color-fallback));
 		overflow-wrap: anywhere;
 		text-wrap: balance;
 	}
@@ -131,7 +132,7 @@
 		max-width: 600px;
 		margin: 0 auto;
 		opacity: 90%;
-		color: var(--gifts-subtitle-color);
+		color: var(--gifts-subtitle-color, var(--gifts-subtitle-color-fallback));
 	}
 
 	&__separator {
@@ -225,7 +226,7 @@
 	&__icon-inner {
 		width: 24px;
 		height: 24px;
-		color: var(--gifts-icon-color);
+		color: var(--gifts-icon-color, var(--gifts-icon-color-fallback));
 		display: flex;
 		align-items: center;
 		justify-content: center;

@@ -16,8 +16,8 @@
 	// Section container
 	// ---------------------------------------------------------------------
 	--location-text-color: inherit;
-	--location-bg: var(--color-surface-primary);
-	--location-padding-block: clamp(1.5rem, 3vh, 3rem) clamp(4rem, 6vh, 6rem);
+	--location-bg-fallback: var(--color-surface-primary);
+	--location-padding-block-fallback: clamp(1.5rem, 3vh, 3rem) clamp(4rem, 6vh, 6rem);
 	--location-padding-inline: 0;
 	--location-container-max-width: 1100px;
 	--location-container-max-width-sm: var(--location-container-max-width);
@@ -36,20 +36,20 @@
 	// ---------------------------------------------------------------------
 	// Card surface
 	// ---------------------------------------------------------------------
-	--location-card-bg: var(--color-surface-elevated);
-	--location-card-border: 1px solid var(--color-border-subtle);
+	--location-card-bg-fallback: var(--color-surface-elevated);
+	--location-card-border-fallback: 1px solid var(--color-border-subtle);
 	--location-card-radius: 4px;
 	--location-card-radius-xs: var(--location-card-radius);
-	--location-card-shadow: 0 8px 24px rgb(0 0 0 / 6%);
+	--location-card-shadow-fallback: 0 8px 24px rgb(0 0 0 / 6%);
 	--location-card-backdrop-filter: none;
 	--location-card-isolation: initial;
 	--location-card-overflow: hidden;
-	--location-card-hover-transform: translateY(-2px);
-	--location-card-hover-shadow: 0 12px 32px rgb(0 0 0 / 8%);
+	--location-card-hover-transform-fallback: translateY(-2px);
+	--location-card-hover-shadow-fallback: 0 12px 32px rgb(0 0 0 / 8%);
 	--location-card-hover-border-color: currentcolor;
 
 	// Card ::before overlay (editorial/premiere light sweep)
-	--location-card-padding: 0;
+	--location-card-padding-fallback: 0;
 	--location-card-before-bg: none;
 	--location-card-before-bg-size: auto;
 	--location-card-before-bg-pos: 0 0;
@@ -106,23 +106,26 @@
 
 	// Title (eyebrow)
 	--location-title-color: var(--color-text-secondary);
-	--location-title-font-family: var(--font-body);
-	--location-title-font-size: 0.85rem;
-	--location-title-font-weight: 600;
-	--location-title-letter-spacing: 0.25em;
+	--location-title-font-family-fallback: var(--font-body);
+	--location-title-font-size-fallback: 0.85rem;
+	--location-title-font-weight-fallback: 600;
+	--location-title-letter-spacing-fallback: 0.25em;
 	--location-title-margin-bottom: 0.35rem;
 	--location-title-margin-bottom-xs: var(--location-title-margin-bottom);
 
 	// Place (venue name)
-	--location-place-color: var(--color-text-primary);
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: 1.65rem;
-	--location-place-font-weight: 400;
-	--location-place-margin: 0 0 0.7rem;
+	--location-place-color-fallback: var(--color-text-primary);
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: 1.65rem;
+	--location-place-font-weight-fallback: 400;
+	--location-place-margin-fallback: 0 0 0.7rem;
 	--location-place-letter-spacing: 0;
-	--location-place-line-height: 1.1;
-	--location-place-margin-xs: var(--location-place-margin);
-	--location-place-font-size-sm: var(--location-place-font-size);
+	--location-place-line-height-fallback: 1.1;
+	--location-place-margin-xs: var(--location-place-margin, var(--location-place-margin-fallback));
+	--location-place-font-size-sm: var(
+		--location-place-font-size,
+		var(--location-place-font-size-fallback)
+	);
 
 	// Date
 	--location-date-color: var(--color-action-accent);
@@ -137,26 +140,26 @@
 	--location-date-display: block;
 
 	// Hour
-	--location-hour-color: var(--color-text-secondary);
+	--location-hour-color-fallback: var(--color-text-secondary);
 	--location-hour-font-family: var(--font-body);
-	--location-hour-font-size: 0.85rem;
-	--location-hour-font-weight: 500;
-	--location-hour-letter-spacing: 0.12em;
+	--location-hour-font-size-fallback: 0.85rem;
+	--location-hour-font-weight-fallback: 500;
+	--location-hour-letter-spacing-fallback: 0.12em;
 	--location-hour-text-transform: none;
 	--location-hour-margin-bottom: 0.85rem;
 	--location-hour-margin-bottom-xs: var(--location-hour-margin-bottom);
 
 	// Address
-	--location-address-color: var(--color-text-primary);
+	--location-address-color-fallback: var(--color-text-primary);
 	--location-address-font-family: var(--font-body);
-	--location-address-font-size: 0.85rem;
+	--location-address-font-size-fallback: 0.85rem;
 	--location-address-letter-spacing: 0.02em;
 	--location-address-line-height: 1.5;
 	--location-address-padding-top: 0.75rem;
 	--location-address-border-top: 1px solid transparent;
 	--location-address-align-items: center;
 	--location-address-justify: center;
-	--location-address-text-align: center;
+	--location-address-text-align-fallback: center;
 	--location-address-gap: 0.8rem;
 	--location-address-text-max-width: 80%;
 	--location-address-align-items-xs: var(--location-address-align-items);
@@ -168,7 +171,7 @@
 	--location-content-list-margin-bottom-xs: var(--location-content-list-margin-bottom);
 
 	// Flourish
-	--location-flourish-color: var(--color-action-accent);
+	--location-flourish-color-fallback: var(--color-action-accent);
 	--location-flourish-margin-bottom: 1.25rem;
 	--location-flourish-margin-bottom-xs: var(--location-flourish-margin-bottom);
 	--location-flourish-opacity: 80%;
@@ -188,8 +191,8 @@
 	--location-copy-button-padding: 0.4rem;
 	--location-copy-button-margin: 1rem;
 	--location-copy-button-opacity: 100%;
-	--location-copy-button-width: auto;
-	--location-copy-button-height: auto;
+	--location-copy-button-width-fallback: auto;
+	--location-copy-button-height-fallback: auto;
 	--location-copy-button-display: block;
 
 	// Navigation / CTA buttons
@@ -242,10 +245,10 @@
 	--location-indications-spacing: 2rem;
 	--location-indications-spacing-xs: var(--location-indications-spacing);
 	--location-indications-grid-template: initial;
-	--location-indications-gap: 1rem;
-	--location-indications-panel-bg: transparent;
-	--location-indications-panel-border: none;
-	--location-indications-panel-padding: 0;
+	--location-indications-gap-fallback: 1rem;
+	--location-indications-panel-bg-fallback: transparent;
+	--location-indications-panel-border-fallback: none;
+	--location-indications-panel-padding-fallback: 0;
 	--location-indications-backdrop-filter: none;
 	--location-indications-border-radius: 0;
 	--location-indications-margin-bottom: 0;
@@ -256,12 +259,12 @@
 	--location-indications-container-margin-bottom: 0;
 
 	// Indications heading
-	--location-indications-heading-color: var(--color-text-secondary);
-	--location-indications-heading-font-family: var(--font-label);
-	--location-indications-heading-font-size: 0.65rem;
-	--location-indications-heading-letter-spacing: 0.2em;
+	--location-indications-heading-color-fallback: var(--color-text-secondary);
+	--location-indications-heading-font-family-fallback: var(--font-label);
+	--location-indications-heading-font-size-fallback: 0.65rem;
+	--location-indications-heading-letter-spacing-fallback: 0.2em;
 	--location-indications-heading-margin-bottom: 1rem;
-	--location-indications-heading-font-weight: 400;
+	--location-indications-heading-font-weight-fallback: 400;
 	--location-indications-heading-text-align: center;
 
 	// Indication item
@@ -269,7 +272,7 @@
 	--location-indication-item-border: none;
 	--location-indication-item-radius: 0;
 	--location-indication-item-padding: 0.5rem 0;
-	--location-indication-item-gap: 0.9rem;
+	--location-indication-item-gap-fallback: 0.9rem;
 	--location-indication-item-min-height: auto;
 	--location-indication-item-box-shadow: none;
 	--location-indication-item-transition: opacity var(--duration-snappy) var(--ease-standard);
@@ -291,7 +294,7 @@
 	// Indication icon
 	--location-indication-icon-bg: transparent;
 	--location-indication-icon-border: none;
-	--location-indication-icon-color: var(--color-action-accent);
+	--location-indication-icon-color-fallback: var(--color-action-accent);
 	--location-indication-icon-opacity: 100%;
 	--location-indication-icon-radius: 999px;
 	--location-indication-icon-size: 2rem;
@@ -301,9 +304,9 @@
 	--location-indication-icon-svg-stroke: 1px;
 
 	// Indication text
-	--location-indication-text-color: var(--color-text-primary);
+	--location-indication-text-color-fallback: var(--color-text-primary);
 	--location-indication-text-font-family: var(--font-body);
-	--location-indication-text-font-size: clamp(0.88rem, 1.2vw, 0.98rem);
+	--location-indication-text-font-size-fallback: clamp(0.88rem, 1.2vw, 0.98rem);
 	--location-indication-text-line-height: 1.65;
 	--location-indication-text-letter-spacing: 0.01em;
 	--location-indication-strong-color: var(--color-text-primary);
@@ -312,7 +315,7 @@
 
 .event-location {
 	min-height: auto;
-	padding: var(--location-padding-block);
+	padding: var(--location-padding-block, var(--location-padding-block-fallback));
 	padding-inline: var(--location-padding-inline);
 	position: relative;
 	text-align: center;
@@ -320,7 +323,7 @@
 	// `clip` (opt-in) clips the same way without making the section a scroll container, so
 	// scroll-linked (`view()`) art inside it follows the page instead of standing still.
 	overflow: var(--location-section-overflow, hidden);
-	background: var(--location-bg);
+	background: var(--location-bg, var(--location-bg-fallback));
 	color: var(--location-text-color);
 
 	&__container {
@@ -348,10 +351,10 @@
 		width: min(100% - 2rem, 560px);
 		margin: 0 auto;
 		padding: clamp(1.5rem, 5vw, 2.5rem);
-		border: var(--location-card-border);
+		border: var(--location-card-border, var(--location-card-border-fallback));
 		border-radius: var(--location-card-radius);
-		background: var(--location-card-bg);
-		box-shadow: var(--location-card-shadow);
+		background: var(--location-card-bg, var(--location-card-bg-fallback));
+		box-shadow: var(--location-card-shadow, var(--location-card-shadow-fallback));
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -408,20 +411,20 @@
 
 	&__locked-title {
 		margin: 0;
-		font-family: var(--location-place-font-family);
+		font-family: var(--location-place-font-family, var(--location-place-font-family-fallback));
 		font-size: clamp(1.4rem, 5vw, 2rem);
-		font-weight: var(--location-place-font-weight);
+		font-weight: var(--location-place-font-weight, var(--location-place-font-weight-fallback));
 		line-height: 1.15;
-		color: var(--location-place-color);
+		color: var(--location-place-color, var(--location-place-color-fallback));
 		letter-spacing: 0;
 	}
 
 	&__locked-message {
 		max-width: 34rem;
 		margin: 0;
-		color: var(--location-address-color);
+		color: var(--location-address-color, var(--location-address-color-fallback));
 		font-family: var(--location-address-font-family);
-		font-size: var(--location-address-font-size);
+		font-size: var(--location-address-font-size, var(--location-address-font-size-fallback));
 		line-height: 1.6;
 	}
 
@@ -476,13 +479,16 @@
 		width: var(--location-title-width, auto);
 		padding-inline: var(--location-title-inset, 0);
 		text-align: var(--location-card-text-align, center);
-		font-family: var(--location-title-font-family);
-		font-size: var(--location-title-font-size);
+		font-family: var(--location-title-font-family, var(--location-title-font-family-fallback));
+		font-size: var(--location-title-font-size, var(--location-title-font-size-fallback));
 		color: var(--location-title-color);
-		letter-spacing: var(--location-title-letter-spacing);
+		letter-spacing: var(
+			--location-title-letter-spacing,
+			var(--location-title-letter-spacing-fallback)
+		);
 		text-transform: uppercase;
 		margin-bottom: var(--location-title-margin-bottom);
-		font-weight: var(--location-title-font-weight);
+		font-weight: var(--location-title-font-weight, var(--location-title-font-weight-fallback));
 	}
 
 	&__card-flourish {
@@ -496,23 +502,31 @@
 		.flourish-line {
 			width: 20px;
 			height: 1px;
-			background: linear-gradient(90deg, transparent, var(--location-flourish-color));
+			background: linear-gradient(
+				90deg,
+				transparent,
+				var(--location-flourish-color, var(--location-flourish-color-fallback))
+			);
 
 			&:last-child {
-				background: linear-gradient(-90deg, transparent, var(--location-flourish-color));
+				background: linear-gradient(
+					-90deg,
+					transparent,
+					var(--location-flourish-color, var(--location-flourish-color-fallback))
+				);
 			}
 		}
 
 		.flourish-diamond {
 			width: var(--location-flourish-diamond-size);
 			height: var(--location-flourish-diamond-size);
-			background: var(--location-flourish-color);
+			background: var(--location-flourish-color, var(--location-flourish-color-fallback));
 			transform: rotate(45deg);
 		}
 	}
 
 	&__card {
-		padding: var(--location-card-padding);
+		padding: var(--location-card-padding, var(--location-card-padding-fallback));
 		border-radius: var(--location-card-radius);
 		width: 100%;
 		display: flex;
@@ -521,9 +535,9 @@
 		opacity: 100%;
 		position: relative;
 		overflow: var(--location-card-overflow);
-		background: var(--location-card-bg);
-		border: var(--location-card-border);
-		box-shadow: var(--location-card-shadow);
+		background: var(--location-card-bg, var(--location-card-bg-fallback));
+		border: var(--location-card-border, var(--location-card-border-fallback));
+		box-shadow: var(--location-card-shadow, var(--location-card-shadow-fallback));
 		backdrop-filter: var(--location-card-backdrop-filter);
 		isolation: var(--location-card-isolation);
 		transition:
@@ -564,8 +578,15 @@
 		}
 
 		&:hover {
-			transform: var(--location-card-hover-transform) rotateX(0deg);
-			box-shadow: var(--location-card-hover-shadow);
+			transform: var(
+					--location-card-hover-transform,
+					var(--location-card-hover-transform-fallback)
+				)
+				rotateX(0deg);
+			box-shadow: var(
+				--location-card-hover-shadow,
+				var(--location-card-hover-shadow-fallback)
+			);
 			border-color: var(--location-card-hover-border-color);
 
 			&::before {
@@ -741,7 +762,10 @@
 		font-size: 0.78rem;
 		font-weight: 600;
 		line-height: 1.2;
-		color: var(--location-map-preview-link-color, var(--color-action-accent));
+		color: var(
+			--location-map-preview-link-color,
+			var(--location-map-preview-link-color-fallback, var(--color-action-accent))
+		);
 		text-decoration: underline;
 		text-decoration-color: rgb(var(--color-action-accent-rgb) / 45%);
 		text-underline-offset: 0.2em;
@@ -768,12 +792,12 @@
 	}
 
 	&__card-content-place {
-		font-family: var(--location-place-font-family);
-		font-size: var(--location-place-font-size);
-		font-weight: var(--location-place-font-weight);
-		color: var(--location-place-color);
-		margin: var(--location-place-margin);
-		line-height: var(--location-place-line-height);
+		font-family: var(--location-place-font-family, var(--location-place-font-family-fallback));
+		font-size: var(--location-place-font-size, var(--location-place-font-size-fallback));
+		font-weight: var(--location-place-font-weight, var(--location-place-font-weight-fallback));
+		color: var(--location-place-color, var(--location-place-color-fallback));
+		margin: var(--location-place-margin, var(--location-place-margin-fallback));
+		line-height: var(--location-place-line-height, var(--location-place-line-height-fallback));
 		letter-spacing: var(--location-place-letter-spacing);
 		overflow-wrap: break-word;
 	}
@@ -793,19 +817,22 @@
 
 	&__card-content-hour {
 		font-family: var(--location-hour-font-family);
-		font-size: var(--location-hour-font-size);
-		letter-spacing: var(--location-hour-letter-spacing);
-		font-weight: var(--location-hour-font-weight);
+		font-size: var(--location-hour-font-size, var(--location-hour-font-size-fallback));
+		letter-spacing: var(
+			--location-hour-letter-spacing,
+			var(--location-hour-letter-spacing-fallback)
+		);
+		font-weight: var(--location-hour-font-weight, var(--location-hour-font-weight-fallback));
 		text-transform: var(--location-hour-text-transform);
-		color: var(--location-hour-color);
+		color: var(--location-hour-color, var(--location-hour-color-fallback));
 		margin-bottom: var(--location-hour-margin-bottom);
 		display: block;
 	}
 
 	&__card-content-address {
 		font-family: var(--location-address-font-family);
-		font-size: var(--location-address-font-size);
-		color: var(--location-address-color);
+		font-size: var(--location-address-font-size, var(--location-address-font-size-fallback));
+		color: var(--location-address-color, var(--location-address-color-fallback));
 		line-height: var(--location-address-line-height);
 		display: flex;
 		align-items: var(--location-address-align-items);
@@ -815,12 +842,12 @@
 		letter-spacing: var(--location-address-letter-spacing);
 		padding-top: var(--location-address-padding-top);
 		border-top: var(--location-address-border-top);
-		text-align: var(--location-address-text-align);
+		text-align: var(--location-address-text-align, var(--location-address-text-align-fallback));
 	}
 
 	&__card-content-address-text {
 		max-width: var(--location-address-text-max-width);
-		text-align: var(--location-address-text-align);
+		text-align: var(--location-address-text-align, var(--location-address-text-align-fallback));
 	}
 
 	&__card-content-copy-button {
@@ -831,8 +858,8 @@
 		padding: var(--location-copy-button-padding);
 		border-radius: var(--location-copy-button-radius);
 		opacity: var(--location-copy-button-opacity);
-		width: var(--location-copy-button-width);
-		height: var(--location-copy-button-height);
+		width: var(--location-copy-button-width, var(--location-copy-button-width-fallback));
+		height: var(--location-copy-button-height, var(--location-copy-button-height-fallback));
 		display: var(--location-copy-button-display);
 		margin-right: var(--location-copy-button-margin);
 		align-items: center;
@@ -1027,20 +1054,39 @@
 	}
 
 	&__indications-heading {
-		font-family: var(--location-indications-heading-font-family);
-		font-size: var(--location-indications-heading-font-size);
-		letter-spacing: var(--location-indications-heading-letter-spacing);
+		font-family: var(
+			--location-indications-heading-font-family,
+			var(--location-indications-heading-font-family-fallback)
+		);
+		font-size: var(
+			--location-indications-heading-font-size,
+			var(--location-indications-heading-font-size-fallback)
+		);
+		letter-spacing: var(
+			--location-indications-heading-letter-spacing,
+			var(--location-indications-heading-letter-spacing-fallback)
+		);
 		font-style: var(--location-indications-heading-style, inherit);
 		text-transform: var(--location-indications-heading-transform, uppercase);
-		color: var(--location-indications-heading-color);
-		font-weight: var(--location-indications-heading-font-weight);
+		color: var(
+			--location-indications-heading-color,
+			var(--location-indications-heading-color-fallback)
+		);
+		font-weight: var(
+			--location-indications-heading-font-weight,
+			var(--location-indications-heading-font-weight-fallback)
+		);
 		margin-bottom: var(--location-indications-heading-margin-bottom);
 		text-align: var(--location-indications-heading-text-align);
 	}
 
 	&__divider {
 		height: 1px;
-		background: radial-gradient(circle, var(--location-flourish-color) 0%, transparent 70%);
+		background: radial-gradient(
+			circle,
+			var(--location-flourish-color, var(--location-flourish-color-fallback)) 0%,
+			transparent 70%
+		);
 		opacity: 30%;
 		margin-bottom: 4rem;
 		display: var(--location-divider-display);
@@ -1048,11 +1094,20 @@
 
 	&__indications {
 		display: grid;
-		gap: var(--location-indications-gap);
-		padding: var(--location-indications-panel-padding);
-		background: var(--location-indications-panel-bg);
+		gap: var(--location-indications-gap, var(--location-indications-gap-fallback));
+		padding: var(
+			--location-indications-panel-padding,
+			var(--location-indications-panel-padding-fallback)
+		);
+		background: var(
+			--location-indications-panel-bg,
+			var(--location-indications-panel-bg-fallback)
+		);
 		backdrop-filter: var(--location-indications-backdrop-filter);
-		border: var(--location-indications-panel-border);
+		border: var(
+			--location-indications-panel-border,
+			var(--location-indications-panel-border-fallback)
+		);
 		border-radius: var(--location-indications-border-radius);
 		position: relative;
 		grid-template-columns: var(--location-indications-grid-template);
@@ -1071,7 +1126,7 @@
 	&__indication-item {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
-		gap: var(--location-indication-item-gap);
+		gap: var(--location-indication-item-gap, var(--location-indication-item-gap-fallback));
 		align-items: start;
 		min-height: var(--location-indication-item-min-height);
 		padding: var(--location-indication-item-padding);
@@ -1113,7 +1168,10 @@
 	}
 
 	&__indication-icon {
-		color: var(--location-indication-icon-color);
+		color: var(
+			--location-indication-icon-color,
+			var(--location-indication-icon-color-fallback)
+		);
 		opacity: var(--location-indication-icon-opacity);
 		flex-shrink: 0;
 		font-size: var(--location-indication-icon-font-size);
@@ -1138,9 +1196,15 @@
 
 	&__indication-text {
 		margin: 0;
-		color: var(--location-indication-text-color);
+		color: var(
+			--location-indication-text-color,
+			var(--location-indication-text-color-fallback)
+		);
 		font-family: var(--location-indication-text-font-family);
-		font-size: var(--location-indication-text-font-size);
+		font-size: var(
+			--location-indication-text-font-size,
+			var(--location-indication-text-font-size-fallback)
+		);
 		line-height: var(--location-indication-text-line-height);
 		letter-spacing: var(--location-indication-text-letter-spacing);
 		text-align: left;

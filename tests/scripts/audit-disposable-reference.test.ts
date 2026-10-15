@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
 	buildSchemaAuditVerdict,
 	compareTargetToCanonicalReference,
+	extractDroppedColumnsFromSql,
 	extractDroppedPoliciesFromSql,
 	extractDroppedRelationsFromSql,
 	parseSchemaAuditVerdictFromOutput,
@@ -382,6 +383,44 @@ describe('runCanonicalObjectAudit', () => {
 		]);
 	});
 
+	it('accepts a target-only column that a pending migration drops', () => {
+		const column = (tableName: string, columnName: string) => ({
+			tableName,
+			columnName,
+			dataType: 'text',
+			isNullable: 'YES',
+			columnDefault: null,
+		});
+		const referenceSchema = {
+			...emptySchema(CANONICAL_REFERENCE_TABLES),
+			columns: [column('invitations', 'slug')],
+		};
+		const targetSchema = {
+			...emptySchema(CANONICAL_REFERENCE_TABLES),
+			columns: [
+				column('invitations', 'slug'),
+				column('invitations', 'base_demo_id'),
+				column('invitations', 'snapshot'),
+			],
+		};
+		const result = runCanonicalObjectAudit({
+			target: 'production',
+			historyLifecycle: 'BEHIND',
+			extraRemoteCount: 0,
+			reference: validReferenceInput(),
+			targetSchema,
+			referenceSchema,
+			allowedDroppedColumns: new Set(['invitations.base_demo_id']),
+		});
+		expect(result.comparison?.infos).toContain(
+			'Column "invitations.base_demo_id" is target-only (expected drop in pending migrations).',
+		);
+		expect(result.comparison?.errors).toEqual([
+			'Column "invitations.snapshot" exists in target but is missing locally!',
+		]);
+		expect(result.errorCount).toBe(1);
+	});
+
 	it('fails closed when reference creation/start does not produce a reachable database', () => {
 		const result = runCanonicalObjectAudit({
 			target: 'production',
@@ -478,5 +517,33 @@ describe('extractDroppedRelationsFromSql', () => {
 			drop policy if exists p on public.t;
 		`;
 		expect(extractDroppedRelationsFromSql(sql)).toEqual(new Set());
+	});
+});
+
+describe('extractDroppedColumnsFromSql', () => {
+	it('extracts every dropped column of an alter table statement', () => {
+		const sql = `
+			alter table public.invitations drop column base_demo_id, drop column snapshot;
+			ALTER TABLE IF EXISTS ONLY "public"."invitation_content_drafts" DROP COLUMN IF EXISTS "submission_id" CASCADE;
+		`;
+		expect(extractDroppedColumnsFromSql(sql)).toEqual(
+			new Set([
+				'invitations.base_demo_id',
+				'invitations.snapshot',
+				'invitation_content_drafts.submission_id',
+			]),
+		);
+	});
+
+	it('ignores other alterations, comments and non-public schemas', () => {
+		const sql = `
+			alter table public.invitations alter column base_demo_id set default '';
+			alter table public.invitations drop constraint invitations_slug_key;
+			alter table public.invitations add column kept text, drop not null;
+			-- alter table public.invitations drop column commented;
+			/* alter table public.events drop column also_commented; */
+			alter table storage.objects drop column owner_id;
+		`;
+		expect(extractDroppedColumnsFromSql(sql)).toEqual(new Set());
 	});
 });

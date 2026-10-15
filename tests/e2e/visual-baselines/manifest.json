@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-15T07:05:46.738Z",
+    "generatedAt": "2026-10-15T06:55:41.568Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,9 +11,9 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "e2370c499d498fd5cac4b88eb9d1a096f5b5435f2ab46587f763f982460633cd",
-        "cssSha256": "dfd47797750e865bc9ca854d2d7881132a3bb1499e2c682bb97f02321f6711b4",
-        "assetSha256": "8355f023bd2cd2108293776d3c1e8e254595900b5b0fc311e6da8889078efdf6",
+        "lockfileSha256": "f6460a93877e20a15788cabfc1c4ab44f8abcd41c9890d4f850eff46f4bc97b7",
+        "cssSha256": "4495881e05fa58976157c1d572960718e57cb8b5f0e6cd1ac71c55d42da1f573",
+        "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -1839,7 +1839,7 @@
             "preset": "premiere-floral",
             "viewport": "mobile",
             "file": "pages/invitation-xv-abril-michelle-becerra-rea-mobile.png",
-            "sha256": "245f3341ad8207fa72cfd05a2b82b87aaefeb7421af45214cca9227552329533",
+            "sha256": "0edabccf6c30386ba83e67418f226fa50f61b93406b9f3e2d79a03d6d321863d",
             "contentHash": "d870bc85e2964aac4730450c048b526b35336df109efe42b7a8d7fc8f7285b4a",
             "assetHash": "9be5150137c574ef5e9f926fc4c03bb001ffe2921ef4c9adb39cc4e0aeed50f9",
             "comparisonResult": "ACCEPTED"
@@ -1863,7 +1863,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-daniela-y-martin-mobile.png",
-            "sha256": "bb5d7277351a55a57bb0ddf67645d42813b480d6f7c04eeaca99d461a824c9bf",
+            "sha256": "54122f3aadada1bb890a4bb5fc0c3c9ebfffeb437cff9cd2f89862609ed508c5",
             "contentHash": "7a5bc22c8c496d49d74cab96b260b5a6a5059bd8cd99b3f58e275f5a58cc70a5",
             "assetHash": "a816d06e8bf2322f98066402b50857c34c8d4168b160b0cdee851993461c087f",
             "comparisonResult": "ACCEPTED"
@@ -1875,7 +1875,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-daniela-y-martin-desktop.png",
-            "sha256": "c4d3f62328ea36a9edfc3fa5da0bae1d7b80de56a9da056bad98f804c1424ede",
+            "sha256": "ff949aeccba95ea7f72baf4b72b7c39fee4d806d9b8cfbb1a9931975674e88d2",
             "contentHash": "7a5bc22c8c496d49d74cab96b260b5a6a5059bd8cd99b3f58e275f5a58cc70a5",
             "assetHash": "a816d06e8bf2322f98066402b50857c34c8d4168b160b0cdee851993461c087f",
             "comparisonResult": "ACCEPTED"
@@ -1887,7 +1887,7 @@
             "preset": "premiere-floral",
             "viewport": "mobile",
             "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
-            "sha256": "2f0a268bcf9c9e318f18edc3a0b2c0c9053cfcd512daa78f1d814cf27365c3f0",
+            "sha256": "a0c326a33899c1ce4d05fc1309ea8f3893d170e7843c4a0deb467d1c4a8d78bb",
             "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
             "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
             "comparisonResult": "ACCEPTED"
@@ -1899,7 +1899,7 @@
             "preset": "premiere-floral",
             "viewport": "desktop",
             "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
-            "sha256": "332d9835c152dfb6a7568351eaa0a10d746c2b73deb03732d5da0b2f03c57aa5",
+            "sha256": "6d1c8da1137594aca8dbe4acd84813cebef667951c64296be30f65412f1f0b05",
             "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
             "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
             "comparisonResult": "ACCEPTED"
@@ -1911,7 +1911,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
-            "sha256": "9dc7b38d29958d7fef424961208fa8bd9cfb44b69dedad025daf7570399cf1a4",
+            "sha256": "2d35e0dbade68d7fade108a007a5a9682cb3a2f3bd46cbb784266b853f36336c",
             "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
             "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
             "comparisonResult": "ACCEPTED"
@@ -1923,7 +1923,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
-            "sha256": "e1eb171054574d58b159ae96c9498ec45665dc8b1ea28c9d066dec3e7cd6fe1c",
+            "sha256": "d4e09adbcfa292d413f45f5c9db9806b2523cc7c92588b8927a3c115e0860914",
             "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
             "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
             "comparisonResult": "ACCEPTED"
@@ -1959,7 +1959,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/invitation-xv-renata-mobile.png",
-            "sha256": "e7fba7fa7abf51e2037ed66a1815f2af15a10723ebf7207f31273b696729cf69",
+            "sha256": "7a164307ded68b9f9d85165a8470faa1f2b3086c1fb65538dfc6e9ac3c12c8b2",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
             "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
@@ -1971,7 +1971,7 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/invitation-xv-renata-desktop.png",
-            "sha256": "88e3594968361d1fdcf48a47be3bfead60391b0674407ed7f0b693a7a0fc68c7",
+            "sha256": "20d5d27cb44d02919045c6f5f7705298fa4499b0e5926413dff1f56c6345437d",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
             "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
@@ -2265,9 +2265,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5",
+    "referenceSha": "a7f8d37bc2572552d144b6150aee578c06f51744",
     "variantManifest": {
-        "generatedAt": "2026-10-15T07:05:46.738Z",
+        "generatedAt": "2026-10-15T06:55:41.568Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2279,9 +2279,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "e2370c499d498fd5cac4b88eb9d1a096f5b5435f2ab46587f763f982460633cd",
-            "cssSha256": "dfd47797750e865bc9ca854d2d7881132a3bb1499e2c682bb97f02321f6711b4",
-            "assetSha256": "8355f023bd2cd2108293776d3c1e8e254595900b5b0fc311e6da8889078efdf6",
+            "lockfileSha256": "f6460a93877e20a15788cabfc1c4ab44f8abcd41c9890d4f850eff46f4bc97b7",
+            "cssSha256": "4495881e05fa58976157c1d572960718e57cb8b5f0e6cd1ac71c55d42da1f573",
+            "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4029,10 +4029,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5"
+        "referenceSha": "a7f8d37bc2572552d144b6150aee578c06f51744"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-15T07:05:46.743Z",
+        "generatedAt": "2026-10-15T06:55:41.589Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4044,9 +4044,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "e2370c499d498fd5cac4b88eb9d1a096f5b5435f2ab46587f763f982460633cd",
-            "cssSha256": "dfd47797750e865bc9ca854d2d7881132a3bb1499e2c682bb97f02321f6711b4",
-            "assetSha256": "8355f023bd2cd2108293776d3c1e8e254595900b5b0fc311e6da8889078efdf6",
+            "lockfileSha256": "f6460a93877e20a15788cabfc1c4ab44f8abcd41c9890d4f850eff46f4bc97b7",
+            "cssSha256": "4495881e05fa58976157c1d572960718e57cb8b5f0e6cd1ac71c55d42da1f573",
+            "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4135,7 +4135,7 @@
                 "preset": "premiere-floral",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-abril-michelle-becerra-rea-mobile.png",
-                "sha256": "245f3341ad8207fa72cfd05a2b82b87aaefeb7421af45214cca9227552329533",
+                "sha256": "0edabccf6c30386ba83e67418f226fa50f61b93406b9f3e2d79a03d6d321863d",
                 "contentHash": "d870bc85e2964aac4730450c048b526b35336df109efe42b7a8d7fc8f7285b4a",
                 "assetHash": "9be5150137c574ef5e9f926fc4c03bb001ffe2921ef4c9adb39cc4e0aeed50f9",
                 "comparisonResult": "CANDIDATE"
@@ -4159,7 +4159,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-daniela-y-martin-mobile.png",
-                "sha256": "bb5d7277351a55a57bb0ddf67645d42813b480d6f7c04eeaca99d461a824c9bf",
+                "sha256": "54122f3aadada1bb890a4bb5fc0c3c9ebfffeb437cff9cd2f89862609ed508c5",
                 "contentHash": "7a5bc22c8c496d49d74cab96b260b5a6a5059bd8cd99b3f58e275f5a58cc70a5",
                 "assetHash": "a816d06e8bf2322f98066402b50857c34c8d4168b160b0cdee851993461c087f",
                 "comparisonResult": "CANDIDATE"
@@ -4171,7 +4171,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-daniela-y-martin-desktop.png",
-                "sha256": "c4d3f62328ea36a9edfc3fa5da0bae1d7b80de56a9da056bad98f804c1424ede",
+                "sha256": "ff949aeccba95ea7f72baf4b72b7c39fee4d806d9b8cfbb1a9931975674e88d2",
                 "contentHash": "7a5bc22c8c496d49d74cab96b260b5a6a5059bd8cd99b3f58e275f5a58cc70a5",
                 "assetHash": "a816d06e8bf2322f98066402b50857c34c8d4168b160b0cdee851993461c087f",
                 "comparisonResult": "CANDIDATE"
@@ -4183,7 +4183,7 @@
                 "preset": "premiere-floral",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
-                "sha256": "2f0a268bcf9c9e318f18edc3a0b2c0c9053cfcd512daa78f1d814cf27365c3f0",
+                "sha256": "a0c326a33899c1ce4d05fc1309ea8f3893d170e7843c4a0deb467d1c4a8d78bb",
                 "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
                 "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
                 "comparisonResult": "CANDIDATE"
@@ -4195,7 +4195,7 @@
                 "preset": "premiere-floral",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
-                "sha256": "332d9835c152dfb6a7568351eaa0a10d746c2b73deb03732d5da0b2f03c57aa5",
+                "sha256": "6d1c8da1137594aca8dbe4acd84813cebef667951c64296be30f65412f1f0b05",
                 "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
                 "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
                 "comparisonResult": "CANDIDATE"
@@ -4207,7 +4207,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
-                "sha256": "9dc7b38d29958d7fef424961208fa8bd9cfb44b69dedad025daf7570399cf1a4",
+                "sha256": "2d35e0dbade68d7fade108a007a5a9682cb3a2f3bd46cbb784266b853f36336c",
                 "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
                 "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
                 "comparisonResult": "CANDIDATE"
@@ -4219,7 +4219,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
-                "sha256": "e1eb171054574d58b159ae96c9498ec45665dc8b1ea28c9d066dec3e7cd6fe1c",
+                "sha256": "d4e09adbcfa292d413f45f5c9db9806b2523cc7c92588b8927a3c115e0860914",
                 "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
                 "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
                 "comparisonResult": "CANDIDATE"
@@ -4255,7 +4255,7 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-renata-mobile.png",
-                "sha256": "e7fba7fa7abf51e2037ed66a1815f2af15a10723ebf7207f31273b696729cf69",
+                "sha256": "7a164307ded68b9f9d85165a8470faa1f2b3086c1fb65538dfc6e9ac3c12c8b2",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
                 "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
@@ -4267,7 +4267,7 @@
                 "preset": "editorial",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-renata-desktop.png",
-                "sha256": "88e3594968361d1fdcf48a47be3bfead60391b0674407ed7f0b693a7a0fc68c7",
+                "sha256": "20d5d27cb44d02919045c6f5f7705298fa4499b0e5926413dff1f56c6345437d",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
                 "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
@@ -4561,9 +4561,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5"
+        "referenceSha": "a7f8d37bc2572552d144b6150aee578c06f51744"
     },
-    "candidateManifestSha256": "40b06bb430d429a183c1d44748481695caf428342fd079618ef030057312c57b",
-    "acceptedFromCommit": "232ff9ee0552e2f9b341e2ebf49b1ec657eb78e5",
-    "acceptedAt": "2026-10-15T07:17:23.680Z"
+    "candidateManifestSha256": "c4ef73dd10d741e8c9329ad1f2cf9ed68217ac33b3cd4bb1d781eedf80f5de07",
+    "acceptedFromCommit": "a7f8d37bc2572552d144b6150aee578c06f51744",
+    "acceptedAt": "2026-10-15T07:05:53.426Z"
 }

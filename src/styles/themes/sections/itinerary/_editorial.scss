@@ -4,7 +4,7 @@
 
 .theme-preset--editorial .itinerary {
 	--itinerary-line-color: var(--color-action-primary);
-	--itinerary-accent: var(--color-action-accent);
+	--itinerary-accent-fallback: var(--color-action-accent);
 
 	background: var(--itinerary-bg, var(--section-bg));
 	padding-block: var(--section-padding-block);
@@ -21,7 +21,7 @@
 
 	.itinerary__item-time {
 		font-family: var(--font-label);
-		color: var(--itinerary-accent);
+		color: var(--itinerary-accent, var(--itinerary-accent-fallback));
 		font-size: 0.8rem;
 		padding-left: 0.5rem;
 	}
@@ -53,7 +53,7 @@
 	}
 
 	.itinerary__item-icon-inner {
-		color: var(--itinerary-accent);
+		color: var(--itinerary-accent, var(--itinerary-accent-fallback));
 		filter: var(--gold-glow);
 	}
 
