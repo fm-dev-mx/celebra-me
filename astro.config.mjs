@@ -13,6 +13,9 @@ import {
 } from './scripts/shared/celebra-runtime-env.ts';
 import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
+import { SECURITY_HEADERS } from './src/lib/server/security-headers.ts';
+import { appendStaticSecurityHeaders } from './scripts/shared/cloudflare-static-headers.ts';
+import { readFile, writeFile } from 'node:fs/promises';
 
 const isBuildCommand = process.argv.includes('build');
 // Temporary dual hosting target while Preview moves to Cloudflare Workers: `vercel` (default)
@@ -145,6 +148,27 @@ function supabaseDevPreflightIntegration() {
 	};
 }
 
+/**
+ * Cloudflare build only: prerendered pages are static assets that skip the middleware, so
+ * their security headers come from a `_headers` rule (Vercel applies vercel.json instead).
+ */
+function cloudflareStaticSecurityHeadersIntegration() {
+	return {
+		name: 'cloudflare-static-security-headers',
+		hooks: {
+			'astro:build:done': async ({ dir }) => {
+				if (!isCloudflareBuild) return;
+				const headersPath = new URL('./_headers', dir);
+				const existing = await readFile(headersPath, 'utf8').catch(() => '');
+				await writeFile(
+					headersPath,
+					appendStaticSecurityHeaders(existing, SECURITY_HEADERS),
+				);
+			},
+		},
+	};
+}
+
 export default defineConfig({
 	// The base URL for the site.
 	site:
@@ -172,6 +196,7 @@ export default defineConfig({
 		robotsTxt({ policy: buildRobotsPolicy() }),
 		testVariantHarnessIntegration(),
 		supabaseDevPreflightIntegration(),
+		cloudflareStaticSecurityHeadersIntegration(),
 	],
 	server: {
 		port: devServerPort,
