@@ -439,14 +439,14 @@ These are present in `.env.example` and the lane bootstrap allowlist
 
 ### Build and local server
 
-| Name                          | Read by                                   | Notes                                                   |
-| ----------------------------- | ----------------------------------------- | ------------------------------------------------------- |
-| `ASTRO_PORT`                  | `astro.config.mjs`, `scripts/screenshot/` | Port override; lanes set their own port                 |
-| `PROD_SUPABASE_HOST`          | `astro.config.mjs`                        | Image `remotePatterns` host override                    |
-| `CELEBRA_ENV_BOOTSTRAP_LOG`   | `astro.config.mjs`                        | `1` logs lane bootstrap decisions (names only)          |
-| `ENABLE_TEST_VARIANT_HARNESS` | `astro.config.mjs`                        | `1` enables the visual variant harness in `astro dev`   |
-| `CELEBRA_BUILD_TARGET`        | `astro.config.mjs`                        | `vercel` (default) or `cloudflare`: selects the adapter |
-| `CLOUDFLARE_ENV`              | `@astrojs/cloudflare`, `wrangler`         | Wrangler environment of a Cloudflare build (`preview`)  |
+| Name                          | Read by                                   | Notes                                                                  |
+| ----------------------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
+| `ASTRO_PORT`                  | `astro.config.mjs`, `scripts/screenshot/` | Port override; lanes set their own port                                |
+| `PROD_SUPABASE_HOST`          | `astro.config.mjs`                        | Image `remotePatterns` host override                                   |
+| `CELEBRA_ENV_BOOTSTRAP_LOG`   | `astro.config.mjs`                        | `1` logs lane bootstrap decisions (names only)                         |
+| `ENABLE_TEST_VARIANT_HARNESS` | `astro.config.mjs`                        | `1` enables the visual variant harness in `astro dev`                  |
+| `CELEBRA_BUILD_TARGET`        | `astro.config.mjs`                        | `vercel` (default) or `cloudflare`: selects the adapter                |
+| `CLOUDFLARE_ENV`              | `@astrojs/cloudflare`, `wrangler`         | Wrangler environment of a Cloudflare build (`preview` or `production`) |
 
 ### Local DB tooling and disposable test environment
 
@@ -502,20 +502,49 @@ tagged with the commit SHA, smokes it behind Cloudflare Access and then routes t
 records a GitHub Deployment (environment `Preview`, URL = the immutable version URL) and the commit
 status `Cloudflare - celebra-me preview smoke`; `pnpm ops:release-status` reads both.
 
-| Name                                                                                                                               | Read by                                                                    | Notes                                                          |
-| ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`                                                                                    | `wrangler` (workflow secrets)                                              | Token scoped to Workers Scripts edit on the Celebra-me account |
-| `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET`                                                                   | `scripts/ops/cloudflare-preview-smoke.ts`, `scripts/ops/release-status.ts` | Access service token; sent only to the Preview Worker origin   |
-| `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_META_PIXEL_ENABLED` | `astro build` (workflow `vars.*` / secrets)                                | Browser-visible values inlined at build time                   |
+| Name                                                                                                                               | Read by                                                                   | Notes                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`                                                                                    | `wrangler` (workflow secrets)                                             | Token scoped to Workers Scripts edit on the Celebra-me account  |
+| `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET`                                                                   | `scripts/ops/cloudflare-worker-smoke.ts`, `scripts/ops/release-status.ts` | Access service token; sent only to the Worker origin under test |
+| `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_META_PIXEL_ENABLED` | `astro build` (workflow `vars.*` / secrets)                               | Browser-visible values inlined at build time                    |
 
 Worker-side configuration lives in `wrangler.jsonc` (`env.preview`): `CELEBRA_DEPLOY_ENV`,
 `SUPABASE_URL`, `PUBLIC_SUPABASE_URL` and `BASE_URL` are `vars`; every other runtime name is a
 Worker secret uploaded from the lane's `.env.preview.local` (names in `.env.preview.local.example`)
 with `pnpm ops:cloudflare:preview:secrets` (allow-list in
-`scripts/ops/cloudflare-preview-secrets.ts`; `--dry-run` prints the names only). Rate limits are
+`scripts/ops/cloudflare-worker-secrets.ts`; `--dry-run` prints the names only). Rate limits are
 `RATE_LIMIT_*` bindings, one per `(namespace, maxHits, windowSec)` pair that
 `src/lib/rsvp/security/rate-limit-provider.ts` uses, and the two daily jobs are `triggers.crons`
 handled by `src/worker.ts` → `src/lib/server/scheduled-jobs.ts`.
+
+### Cloudflare Production upload (`.github/workflows/deploy-production.yml`)
+
+Manual only (`workflow_dispatch` from `main`). It builds the Cloudflare target for Production,
+uploads a Worker version tagged with the commit SHA and smokes that version URL behind Cloudflare
+Access with `pnpm ops:cloudflare:production:smoke`, which also fails when the version URL answers
+without the service token. It never routes traffic: `env.production` in `wrangler.jsonc` has no
+routes, no `workers.dev` host and no crons; the cutover adds the zone routes by hand
+(`docs/operations/cloudflare-production-cutover.md`). The first run creates the Worker with
+`wrangler deploy`, because `wrangler versions upload` cannot create one. Evidence is a GitHub
+Deployment in the `Cloudflare Production` environment and the commit status
+`Cloudflare - celebra-me production candidate smoke`; no release gate reads either, so a candidate
+never stands in for what the domain serves.
+
+| Name                                                                                                                                                         | Where                                         | Notes                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET`                                            | Repository secrets (shared with Preview)      | The service token must be allowed by the Production version URL Access app |
+| `PRODUCTION_PUBLIC_SUPABASE_ANON_KEY`                                                                                                                        | `Cloudflare Production` environment secret    | Required; a JWT naming another Supabase project fails the run              |
+| `PRODUCTION_PUBLIC_GA_MEASUREMENT_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ENABLED`, `PRODUCTION_PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `Cloudflare Production` environment variables | Same values as Vercel Production; empty disables that tracker              |
+
+The `PRODUCTION_` prefix keeps a missing value from falling back to the repository-level Preview
+value of the same plain name. `PUBLIC_SUPABASE_URL` and `BASE_URL` are fixed in the workflow.
+
+Worker secrets: Production has no lane file. Export the Vercel Production variables to a one-off
+file outside the repository, upload with
+`pnpm ops:cloudflare:production:secrets -- --env-file <path> --dry-run` (names only), then again
+without `--dry-run`, and delete the file. The script refuses lane files and any file whose
+`SUPABASE_URL` or `PUBLIC_SUPABASE_URL` names another project; `PREVIEW_MFA_BYPASS`,
+`PREVIEW_ADMIN_EMAILS` and `SUPABASE_PROJECT_REF_PREVIEW` never reach Production.
 
 ### CI validation (`.github/workflows/commit-validation.yml`)
 

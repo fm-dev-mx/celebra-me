@@ -1,10 +1,12 @@
 /**
- * Smoke of one Cloudflare Preview Worker URL (stable host or immutable version URL) for one
- * exact SHA. Runs the public probes shared with the Vercel smoke, then verifies the serving
- * build identity (`/api/health`: commit SHA and `preview` deploy environment). The Cloudflare
- * Access service token travels only to that origin. Read-only: it never deploys anything.
+ * Smoke of one Cloudflare application Worker URL for one exact SHA: on Preview the stable host or
+ * a version URL, on Production a version URL only (that Worker has no `workers.dev` host and no
+ * traffic before the cutover). Runs the public probes shared with the Vercel smoke, then verifies
+ * the serving build identity (`/api/health`: commit SHA and deploy environment). On Production it
+ * also proves the version URL is closed without the Cloudflare Access service token. The token
+ * travels only to that origin. Read-only: it never deploys anything.
  *
- * Usage: tsx scripts/ops/cloudflare-preview-smoke.ts --url <https://...workers.dev> --sha <sha> [--version-id <id>]
+ * Usage: tsx scripts/ops/cloudflare-worker-smoke.ts [--env preview|production] --url <https://...workers.dev> --sha <sha> [--version-id <id>]
  * Reads CLOUDFLARE_ACCESS_CLIENT_ID and CLOUDFLARE_ACCESS_CLIENT_SECRET from the environment.
  */
 import { randomUUID } from 'node:crypto';
@@ -18,12 +20,14 @@ import {
 } from '../../src/lib/operations/operational-evidence.ts';
 import {
 	CLOUDFLARE_PREVIEW_HOST_PATTERN,
+	CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN,
 	buildCloudflareAccessHeaders,
 } from '../playwright/preview-environment.ts';
 import {
 	formatEvidenceSummary,
 	runDeploymentSmoke,
 	toPostDeployPayload,
+	type PostDeployEnvironment,
 	type PostDeployEvidence,
 	type ProductionSmokeResult,
 } from './post-deploy-smoke.ts';
@@ -32,24 +36,34 @@ type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/i;
 
-export interface CloudflarePreviewSmokeResult {
+const HOST_PATTERNS: Readonly<Record<PostDeployEnvironment, RegExp>> = {
+	preview: CLOUDFLARE_PREVIEW_HOST_PATTERN,
+	production: CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN,
+};
+
+export interface CloudflareWorkerSmokeResult {
 	probes: ProductionSmokeResult;
 	identity: {
 		commitSha: string | null;
 		environment: string | null;
 		verified: boolean;
 	};
+	/** Production only: the version URL refused a request without the service token. */
+	accessEnforced: boolean | null;
 	passed: boolean;
 	failureCodes: string[];
 }
 
-/** Accepts only an HTTPS origin on the Preview Worker hosts; anything else is refused. */
-export function parseCloudflarePreviewOrigin(rawUrl: string): URL {
+/** Accepts only an HTTPS origin on the environment's Worker hosts; anything else is refused. */
+export function parseCloudflareWorkerOrigin(
+	rawUrl: string,
+	environment: PostDeployEnvironment = 'preview',
+): URL {
 	let url: URL;
 	try {
 		url = new URL(rawUrl.trim());
 	} catch {
-		throw new Error('Preview Worker URL must be an absolute URL.');
+		throw new Error('Worker URL must be an absolute URL.');
 	}
 	if (
 		url.protocol !== 'https:' ||
@@ -59,14 +73,31 @@ export function parseCloudflarePreviewOrigin(rawUrl: string): URL {
 		url.hash ||
 		(url.pathname !== '/' && url.pathname !== '')
 	) {
-		throw new Error('Preview Worker URL must contain only an HTTPS origin.');
+		throw new Error('Worker URL must contain only an HTTPS origin.');
 	}
-	if (!CLOUDFLARE_PREVIEW_HOST_PATTERN.test(url.hostname.toLowerCase())) {
+	if (!HOST_PATTERNS[environment].test(url.hostname.toLowerCase())) {
 		throw new Error(
-			'Preview Worker URL must be the Preview Worker host or one of its version URLs.',
+			environment === 'preview'
+				? 'Worker URL must be the Preview Worker host or one of its version URLs.'
+				: 'Worker URL must be a Production Worker version URL.',
 		);
 	}
 	return url;
+}
+
+/** True when the origin answers `/api/health` without credentials with anything but a 200. */
+async function isAccessEnforced(origin: URL, fetchImpl: FetchLike): Promise<boolean> {
+	try {
+		const response = await fetchImpl(`${origin.origin}/api/health`, {
+			method: 'GET',
+			redirect: 'manual',
+			signal: AbortSignal.timeout(10_000),
+			headers: { 'User-Agent': 'celebra-me-post-deploy-smoke/1' },
+		});
+		return response.status !== 200;
+	} catch {
+		return false;
+	}
 }
 
 async function readBuildIdentity(
@@ -91,38 +122,47 @@ async function readBuildIdentity(
 	}
 }
 
-export async function runCloudflarePreviewSmoke(
-	input: { url: string; sha: string },
+export async function runCloudflareWorkerSmoke(
+	input: { url: string; sha: string; environment?: PostDeployEnvironment },
 	fetchImpl: FetchLike,
 	accessHeaders: Record<string, string> | undefined,
-): Promise<CloudflarePreviewSmokeResult> {
-	const origin = parseCloudflarePreviewOrigin(input.url);
+): Promise<CloudflareWorkerSmokeResult> {
+	const environment = input.environment ?? 'preview';
+	const origin = parseCloudflareWorkerOrigin(input.url, environment);
 	const sha = input.sha.trim().toLowerCase();
 	if (!SHA_PATTERN.test(sha)) throw new Error('An exact 40-character commit SHA is required.');
 	if (!accessHeaders)
 		throw new Error(
-			'CLOUDFLARE_ACCESS_CLIENT_ID and CLOUDFLARE_ACCESS_CLIENT_SECRET are required for the protected Preview Worker.',
+			'CLOUDFLARE_ACCESS_CLIENT_ID and CLOUDFLARE_ACCESS_CLIENT_SECRET are required for the protected Worker.',
 		);
 	const probes = await runDeploymentSmoke(origin, fetchImpl, accessHeaders);
 	const identity = await readBuildIdentity(origin, fetchImpl, accessHeaders);
 	const verified =
-		identity.commitSha?.toLowerCase() === sha && identity.environment === 'preview';
-	const failureCodes = [...probes.failureCodes, ...(verified ? [] : ['build_identity_failed'])];
+		identity.commitSha?.toLowerCase() === sha && identity.environment === environment;
+	const accessEnforced =
+		environment === 'production' ? await isAccessEnforced(origin, fetchImpl) : null;
+	const failureCodes = [
+		...probes.failureCodes,
+		...(verified ? [] : ['build_identity_failed']),
+		...(accessEnforced === false ? ['access_not_enforced'] : []),
+	];
 	return {
 		probes,
 		identity: { ...identity, verified },
+		accessEnforced,
 		passed: failureCodes.length === 0,
 		failureCodes,
 	};
 }
 
 function createEvidence(input: {
+	environment: PostDeployEnvironment;
 	sha: string;
 	versionId: string | null;
 	runId: string;
 	startedAt: string;
 	completedAt: string | null;
-	result: CloudflarePreviewSmokeResult | null;
+	result: CloudflareWorkerSmokeResult | null;
 }): PostDeployEvidence {
 	const status =
 		input.result === null ? 'UNVERIFIED' : input.result.passed ? 'VERIFIED' : 'FAILED';
@@ -145,7 +185,7 @@ function createEvidence(input: {
 	const evidence: PostDeployEvidence = {
 		schemaVersion: OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
 		check: 'post_deploy_smoke',
-		environment: 'preview',
+		environment: input.environment,
 		runId: input.runId,
 		startedAt: input.startedAt,
 		completedAt: input.completedAt,
@@ -180,20 +220,26 @@ function emit(evidence: PostDeployEvidence, phase: 'started' | 'completed'): voi
 	else console.info(serialized);
 }
 
-function parseArgs(argv: string[]): { url: string; sha: string; versionId: string | null } {
+function parseArgs(argv: string[]): {
+	environment: PostDeployEnvironment;
+	url: string;
+	sha: string;
+	versionId: string | null;
+} {
 	const value = (name: string) => {
 		const inline = argv.find((arg) => arg.startsWith(`${name}=`));
 		if (inline) return inline.slice(name.length + 1);
 		const index = argv.indexOf(name);
 		return index >= 0 ? argv[index + 1] : undefined;
 	};
+	const environment = value('--env') ?? 'preview';
 	const url = value('--url');
 	const sha = value('--sha');
-	if (!url || !sha)
+	if ((environment !== 'preview' && environment !== 'production') || !url || !sha)
 		throw new Error(
-			'Usage: cloudflare-preview-smoke.ts --url <origin> --sha <sha> [--version-id <id>]',
+			'Usage: cloudflare-worker-smoke.ts [--env preview|production] --url <origin> --sha <sha> [--version-id <id>]',
 		);
-	return { url, sha, versionId: value('--version-id') ?? null };
+	return { environment, url, sha, versionId: value('--version-id') ?? null };
 }
 
 async function main(): Promise<void> {
@@ -203,6 +249,7 @@ async function main(): Promise<void> {
 	const sha = options.sha.trim().toLowerCase();
 	emit(
 		createEvidence({
+			environment: options.environment,
 			sha,
 			versionId: options.versionId,
 			runId,
@@ -212,12 +259,13 @@ async function main(): Promise<void> {
 		}),
 		'started',
 	);
-	const result = await runCloudflarePreviewSmoke(
-		{ url: options.url, sha },
+	const result = await runCloudflareWorkerSmoke(
+		{ url: options.url, sha, environment: options.environment },
 		fetch,
 		buildCloudflareAccessHeaders(process.env),
 	);
 	const evidence = createEvidence({
+		environment: options.environment,
 		sha,
 		versionId: options.versionId,
 		runId,
@@ -234,9 +282,9 @@ async function main(): Promise<void> {
 	}
 }
 
-if (process.argv[1] && /^cloudflare-preview-smoke\.(?:ts|js)$/.test(basename(process.argv[1]))) {
+if (process.argv[1] && /^cloudflare-worker-smoke\.(?:ts|js)$/.test(basename(process.argv[1]))) {
 	main().catch((error: unknown) => {
-		console.error(error instanceof Error ? error.message : 'Cloudflare Preview smoke failed.');
+		console.error(error instanceof Error ? error.message : 'Cloudflare Worker smoke failed.');
 		process.exitCode = 1;
 	});
 }

@@ -1,0 +1,185 @@
+name: Cloudflare Production Upload
+
+# Manual only, from main. Builds the Cloudflare target for Production, uploads an immutable Worker
+# version tagged with the commit SHA and smokes that version URL behind Cloudflare Access. It never
+# routes traffic: the Production Worker has no workers.dev host, no routes and no crons, and the
+# cutover adds the zone routes by hand (docs/operations/cloudflare-production-cutover.md).
+# Evidence: a GitHub Deployment in the `Cloudflare Production` environment (kept apart from the
+# Vercel `Production` environment that `pnpm ops:release-status` reads) and the commit status
+# `Cloudflare - celebra-me production candidate smoke`, which no release gate accepts: it proves a
+# version, not what the domain serves.
+
+permissions:
+    contents: read
+    deployments: write
+    statuses: write
+
+on:
+    workflow_dispatch:
+
+concurrency:
+    group: cloudflare-production-upload
+    cancel-in-progress: false
+
+env:
+    SMOKE_CONTEXT: Cloudflare - celebra-me production candidate smoke
+    PRODUCTION_BASE_URL: https://www.celebra-me.com
+    PRODUCTION_SUPABASE_REF: ineitkdkyrxqyressllp
+
+jobs:
+    production:
+        name: Cloudflare production upload
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        environment:
+            name: Cloudflare Production
+            url: ${{ steps.upload.outputs.version_url }}
+        env:
+            GH_TOKEN: ${{ github.token }}
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+            CLOUDFLARE_ENV: production
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            # Production build inputs use PRODUCTION_* names so a missing value can never fall back
+            # to the repository-level Preview value of the same plain name.
+            - name: Check Production build inputs
+              env:
+                  ANON_KEY: ${{ secrets.PRODUCTION_PUBLIC_SUPABASE_ANON_KEY }}
+              run: |
+                  if [ -z "$ANON_KEY" ]; then
+                      echo "PRODUCTION_PUBLIC_SUPABASE_ANON_KEY is missing in the Cloudflare Production environment." >&2
+                      exit 1
+                  fi
+                  payload=$(printf '%s' "$ANON_KEY" | cut -d. -f2)
+                  if [ -n "$payload" ] && [ "$payload" != "$ANON_KEY" ]; then
+                      # JWT keys carry the project ref; base64url needs its padding back to decode.
+                      while [ $(( ${#payload} % 4 )) -ne 0 ]; do payload="$payload="; done
+                      ref=$(printf '%s' "$payload" | tr '_-' '/+' | base64 -d 2>/dev/null | jq -r '.ref // empty' 2>/dev/null || true)
+                      if [ -n "$ref" ] && [ "$ref" != "$PRODUCTION_SUPABASE_REF" ]; then
+                          echo "PRODUCTION_PUBLIC_SUPABASE_ANON_KEY belongs to another Supabase project." >&2
+                          exit 1
+                      fi
+                  fi
+
+            - name: Publish pending smoke status
+              run: |
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+                      -f state=pending \
+                      -f context="$SMOKE_CONTEXT" \
+                      -f description="Production Worker version pending" \
+                      -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
+
+            - name: Build Cloudflare target
+              env:
+                  CELEBRA_BUILD_TARGET: cloudflare
+                  CELEBRA_DEPLOY_ENV: production
+                  BASE_URL: ${{ env.PRODUCTION_BASE_URL }}
+                  PUBLIC_SUPABASE_URL: https://${{ env.PRODUCTION_SUPABASE_REF }}.supabase.co
+                  PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PRODUCTION_PUBLIC_SUPABASE_ANON_KEY }}
+                  PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PRODUCTION_PUBLIC_GA_MEASUREMENT_ID }}
+                  PUBLIC_META_PIXEL_ID: ${{ vars.PRODUCTION_PUBLIC_META_PIXEL_ID }}
+                  PUBLIC_META_PIXEL_ENABLED: ${{ vars.PRODUCTION_PUBLIC_META_PIXEL_ENABLED }}
+                  PUBLIC_CF_WEB_ANALYTICS_TOKEN: ${{ vars.PRODUCTION_PUBLIC_CF_WEB_ANALYTICS_TOKEN }}
+              run: pnpm build:app
+
+            - name: Create GitHub deployment
+              id: deployment
+              run: |
+                  id=$(jq -n --arg ref "$GITHUB_SHA" '{
+                      ref: $ref,
+                      environment: "Cloudflare Production",
+                      auto_merge: false,
+                      required_contexts: [],
+                      transient_environment: false,
+                      production_environment: false,
+                      description: "Cloudflare Production Worker version (no traffic)"
+                  }' | gh api "repos/$GITHUB_REPOSITORY/deployments" --input - --jq '.id')
+                  echo "id=$id" >> "$GITHUB_OUTPUT"
+                  gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" \
+                      -f state=in_progress \
+                      -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                      -f description="Uploading Worker version" > /dev/null
+
+            # `wrangler versions upload` cannot create a Worker. The first run creates it with
+            # `wrangler deploy`, which stays unreachable: no routes, no workers.dev host, no crons.
+            - name: Create the Worker on the first run
+              run: |
+                  if pnpm exec wrangler deployments list --env production > .tmp-deployments.log 2>&1; then
+                      echo "Production Worker exists."
+                  elif grep -qiE '10007|not found|does not exist' .tmp-deployments.log; then
+                      pnpm exec wrangler deploy --env production \
+                          --message "create celebra-me ${GITHUB_SHA:0:9} (run $GITHUB_RUN_ID)"
+                  else
+                      cat .tmp-deployments.log >&2
+                      exit 1
+                  fi
+
+            - name: Upload Worker version
+              id: upload
+              run: |
+                  pnpm exec wrangler versions upload --env production \
+                      --tag "$GITHUB_SHA" \
+                      --message "main ${GITHUB_SHA:0:9} (run $GITHUB_RUN_ID)" | tee .tmp-versions-upload.log
+                  version_id=$(grep -oE 'Worker Version ID: [0-9a-f-]+' .tmp-versions-upload.log | head -n1 | awk '{print $4}')
+                  version_url=$(grep -oE 'https://[a-z0-9]+-celebra-me\.celebra-me-com\.workers\.dev' .tmp-versions-upload.log | head -n1)
+                  if [ -z "$version_id" ] || [ -z "$version_url" ]; then
+                      echo "Could not read the version id or its version URL from the upload output." >&2
+                      exit 1
+                  fi
+                  echo "version_id=$version_id" >> "$GITHUB_OUTPUT"
+                  echo "version_url=$version_url" >> "$GITHUB_OUTPUT"
+
+            - name: Smoke the uploaded version
+              env:
+                  CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+                  CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
+              run: |
+                  pnpm ops:cloudflare:production:smoke -- \
+                      --url "${{ steps.upload.outputs.version_url }}" \
+                      --sha "$GITHUB_SHA" \
+                      --version-id "${{ steps.upload.outputs.version_id }}"
+
+            - name: Record success
+              run: |
+                  gh api "repos/$GITHUB_REPOSITORY/deployments/${{ steps.deployment.outputs.id }}/statuses" \
+                      -f state=success \
+                      -f environment_url="${{ steps.upload.outputs.version_url }}" \
+                      -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                      -f description="Version ${{ steps.upload.outputs.version_id }} smoked, no traffic" > /dev/null
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+                      -f state=success \
+                      -f context="$SMOKE_CONTEXT" \
+                      -f description="Production Worker version smoke passed" \
+                      -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
+
+            - name: Record failure
+              if: failure() || cancelled()
+              run: |
+                  if [ -n "${{ steps.deployment.outputs.id }}" ]; then
+                      gh api "repos/$GITHUB_REPOSITORY/deployments/${{ steps.deployment.outputs.id }}/statuses" \
+                          -f state=failure \
+                          -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                          -f description="Production Worker upload failed" > /dev/null || true
+                  fi
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+                      -f state=failure \
+                      -f context="$SMOKE_CONTEXT" \
+                      -f description="Production Worker smoke failed" \
+                      -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null || true

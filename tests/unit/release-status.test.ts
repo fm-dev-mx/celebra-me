@@ -2,6 +2,7 @@ import {
 	classifyCheck,
 	classifyDeployment,
 	collectReleaseStatus,
+	deploymentProvider,
 	loadDeploymentForSha,
 	loadIgnoredPreviewBuild,
 	probeHealth,
@@ -550,5 +551,17 @@ describe('waitForReleaseStatus', () => {
 			now: () => clock,
 		});
 		expect(result.state).toBe('PENDING');
+	});
+});
+
+describe('deploymentProvider', () => {
+	it('recognizes both Cloudflare Workers and leaves every other host to Vercel', () => {
+		expect(deploymentProvider(cloudflareVersionUrl)).toBe('cloudflare');
+		expect(deploymentProvider('https://9f8e7d6c-celebra-me.celebra-me-com.workers.dev')).toBe(
+			'cloudflare',
+		);
+		expect(deploymentProvider(productionUrl)).toBe('vercel');
+		expect(deploymentProvider('https://www.celebra-me.com')).toBe('vercel');
+		expect(deploymentProvider(null)).toBeNull();
 	});
 });
