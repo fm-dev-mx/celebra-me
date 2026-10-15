@@ -217,6 +217,11 @@
             "phase": "contract",
             "revokes": ["list_invitation_engagement_ranking", "invitation_projects"],
             "notes": "Drops list_invitation_engagement_ranking (v1) and the invitation_projects compatibility view. The admin ranking reads list_invitation_engagement_ranking_v2 and no application path reads the view. Apply only after the Production deployment that serves the v2 ranking client passed smoke."
+        },
+        "20261014150000": {
+            "phase": "expand",
+            "provides": ["publication_metadata_hash_without_legacy_columns"],
+            "notes": "Redefines publish_invitation_atomic (same eleven-argument signature, security invoker, empty search_path and grants) so p_public_metadata_hash may be either the legacy baseline (with baseDemoId and snapshot) or the current baseline (archivedAt, eventType, kind, slug, status, themeId, title), and drops submissionId from the result draft. The deployed application keeps publishing with the legacy hash. Apply before deploying the application that sends the current hash; the column contract that drops base_demo_id, snapshot and submission_id comes later."
         }
     },
     "appCapabilities": {
@@ -249,6 +254,9 @@
         },
         "invitation_access_controls_client": {
             "requiresDbCapabilities": ["invitation_access_controls"]
+        },
+        "legacy_invitation_columns_retired_client": {
+            "requiresDbCapabilities": ["publication_metadata_hash_without_legacy_columns"]
         }
     }
 }
