@@ -200,6 +200,10 @@
 		--env-paper-border: rgb(var(--olivia-slate-rgb) / 30%);
 		--env-text-primary: var(--olivia-navy);
 		--env-text-secondary: rgb(var(--olivia-navy-rgb) / 72%);
+
+		// The closed palette's ivory is meant for a dark content background; this variant keeps the
+		// light blue stationery, so the open label below the envelope stays navy.
+		--env-instruction-color: var(--env-text-secondary);
 		--env-seal-accent: var(--olivia-navy);
 		--env-seal-visual-filter: drop-shadow(0 7px 10px rgb(var(--olivia-navy-deep-rgb) / 30%));
 		--env-shadow-container:
