@@ -2,7 +2,7 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-10-09
+**Last Updated:** 2026-10-14
 
 ## Overview
 
@@ -65,20 +65,25 @@ mutation authorization.
 
    ```bash
    git pull --ff-only origin develop
-   git merge --ff-only <task-branch>   # task with exactly one commit
-   git merge --no-ff <task-branch>     # task with two or more commits
+   git merge --no-ff <task-branch>
    git push origin develop
    ```
 
-   A single-commit task lands as that commit (rebase the never-pushed task branch onto `develop`
-   first if `--ff-only` is refused); a merge commit around one commit only adds noise. A
-   multi-commit task keeps Git's default merge message
-   (`Merge branch '<task-branch>' into develop`). Either way `git log --first-parent develop` lists
-   one entry per task, reverted as a unit with `git revert <commit>` or `git revert -m 1 <merge>`.
-   Group a multi-step program into one task branch per phase with several commits rather than one
-   task per commit. Resolve conflicts deliberately in the merge (never automatic `ours`/`theirs`),
-   then run the applicable checks before pushing. Pushing a task branch to `origin` is optional; CI
-   does not run on task branches.
+   Every task lands as one merge commit with Git's default message
+   (`Merge branch '<task-branch>' into develop`), including single-commit tasks, so
+   `git log --first-parent develop` lists one entry per task, named after its branch, and every task
+   reverts the same way: `git revert -m 1 <merge>`. Group a multi-step program into one task branch
+   per step with several commits rather than one task per commit. Resolve conflicts deliberately in
+   the merge (never automatic `ours`/`theirs`), then run the applicable checks before pushing.
+   Pushing a task branch to `origin` is optional; CI does not run on task branches.
+
+   Merge rules:
+   - Merge task branches only into `develop`. Never merge one task branch into another: when a task
+     needs another task's work, integrate that task first and bring it in with `pnpm lane:sync`.
+   - A sync merge (`origin/develop` into a task branch) that resolved conflicts replaces Git's
+     `# Conflicts:` list with one line per file saying how the conflict was resolved.
+   - Each Dependabot pull request lands as its own task (its `dependabot/*` branch, merged on its
+     own), never inside an unrelated task branch.
 
    History rules: never force-push or rewrite `develop`, `main` or any branch already on `origin`.
    Rebase is allowed only for a branch that was never pushed. Squash merges are not used, because
@@ -99,10 +104,11 @@ override it with `ASTRO_PORT`. Local-runtime lanes share the persistent Local Su
 Every commit in this repository must follow these rules:
 
 1. Keep the commit atomic.
-2. Use a conventional-commit header with a required scope.
-3. Make the subject describe the most relevant change in concrete terms.
-4. Keep the body concise and precise when the change spans multiple files or modules.
-5. Avoid generic or process-oriented language such as `wip`, `misc`, `tmp`, `fix stuff`, or similar
+2. Keep the commit within the [size limits](#commit-size).
+3. Use a conventional-commit header with a required scope from the [scope list](#scopes).
+4. Make the subject describe the most relevant change in concrete terms.
+5. Explain what changes and why in the body when the change spans multiple files or modules.
+6. Avoid generic or process-oriented language such as `wip`, `misc`, `tmp`, `fix stuff`, or similar
    phrasing.
 
 ### What "Atomic" Means Here
@@ -123,29 +129,83 @@ Non-atomic commits:
 - Bundling documentation, config, schema, and app changes that are not required for the same intent.
 - Sweeping cross-domain edits that should have been split into smaller commits.
 
+Signals that a commit must be split before it is pushed:
+
+- The subject joins two outcomes with `and`, or lists three or more things:
+  `retire past invitations and decouple definitions from demos` is two commits.
+- A `refactor` also changes what guests, hosts, the database or the build see, such as dropping an
+  environment variable fallback or making an optional schema field required.
+- A configuration or security change rides inside a documentation commit, such as a `.gitignore`
+  entry inside `docs(plans)`.
+- A later commit of the same task undoes part of an earlier one. Fold it into the earlier commit
+  while the branch was never pushed; otherwise write it as a `revert` that names the original commit
+  (see [Revert commits](#revert-commits)).
+
+## Commit Size
+
+Size counts reviewable files and lines. `pnpm-lock.yaml`, binary files, images, visual snapshot
+folders (`*-snapshots/`) and exact renames are not counted.
+
+| Limit   | Reviewable files | Changed lines | Effect                                            |
+| ------- | ---------------- | ------------- | ------------------------------------------------- |
+| Warning | more than 15     | more than 600 | `validate-commits.mjs` warns; review the shape    |
+| Hard    | more than 40     | —             | `pre-push` refuses the push; CI reports a warning |
+
+The limits come from the commits between `v0.23.1-beta.1` and `v0.24.0-beta.1`: the median commit
+changes 6 files and 123 lines, the 75th percentile 14 files and about 570 lines, and the 90th
+percentile 42 files. Every commit above 40 files in that range mixed several intents or was a
+mechanical sweep. Lines have no hard limit because a feature with its tests can be one intent at
+2,000 lines; above 600 lines, prefer splitting by layer (data, API, UI).
+
+A commit that must stay above the hard limit declares why with one trailer:
+
+```text
+Large-Change: rename
+```
+
+| Category    | Use it for                                                              |
+| ----------- | ----------------------------------------------------------------------- |
+| `rename`    | Moves or renames with only the import and path edits they require       |
+| `format`    | An automatic formatter run with no logic change                         |
+| `sweep`     | One mechanical replacement across many files (for example fixture data) |
+| `retire`    | Deleting retired content and its tests, with no other change            |
+| `generated` | Generated output that the tool rewrites as a whole (types, baselines)   |
+
+The trailer only lifts the hard limit; the warning stays. Supabase migrations are written by hand in
+this repository, so they always count.
+
 ## Commit Message Format
 
 The repository uses Conventional Commits with a required scope:
 
 ```text
 type(scope): specific subject
+type(scope)!: specific subject      # breaking change
 ```
 
 Supported types are enforced by `commitlint`.
 
 ### Header Rules
 
-- Use the commit type that best matches the main change.
-- Use a concrete `scope` in `kebab-case`.
-- Do not reference internal task numbers, phase identifiers, or project goals (e.g., `Goal 1`,
-  `Goal 2`, `Phase 1`, `Sprint 3`). Commits must focus strictly on technical behavioral changes to
-  the code.
+- At most 100 characters (`commitlint` blocks longer headers); aim for 72 so `git log --oneline`
+  stays readable.
+- Use the [type](#types) that matches the main change and a [scope](#scopes) from the list.
+- Write the subject in the imperative with a lowercase first word and no final period: `add`,
+  `drop`, `reject`, not `added`, `adds` or `Adding`.
+- Name the concrete thing that changed and, when it fits, the effect:
+  `fail closed when a deployment does not declare its identity`.
+- Mark a breaking change with `!` before the colon and a `BREAKING CHANGE:` footer.
+- Do not reference internal task numbers, phase identifiers, plan decision or step codes, or project
+  goals (e.g., `Goal 1`, `Phase 2.1`, `Sprint 3`, `D5`, `F7`, `T0`) in the header, the body or the
+  footers. Name what the code does instead: `mark the Workers migration decisions as taken`, not
+  `Mark D1-D19 as decided`. `commitlint` blocks a process word followed by a number and warns on
+  plan codes.
 
 Examples:
 
 ```text
 feat(rsvp): add guest dietary restrictions to submission flow
-fix(theme-editor): prevent duplicate palette saves
+fix(dashboard): prevent duplicate palette saves
 docs(git): document advisory commit warnings
 refactor(theme): split invitation token parsing from page loader
 ```
@@ -161,25 +221,159 @@ feat(observability): close Goal 1 contracts
 fix(db): resolve Goal 2 audit findings
 ```
 
+### Types
+
+| Type       | Use it when the commit…                                                        |
+| ---------- | ------------------------------------------------------------------------------ |
+| `feat`     | adds a capability guests, hosts, the owner or a script user can see or call    |
+| `fix`      | corrects behavior that was wrong, including security and data-safety defects   |
+| `refactor` | changes code structure with no behavior change anyone can observe              |
+| `perf`     | makes something faster or lighter with no other behavior change                |
+| `style`    | changes only the look: SCSS, tokens or profiles, no logic, copy or content     |
+| `test`     | changes only tests, fixtures or accepted visual baselines                      |
+| `docs`     | changes only documentation, plans or agent guidance                            |
+| `build`    | changes the build output or toolchain: Astro/Vite config, adapters, `tsconfig` |
+| `ci`       | changes the gates: workflows, hooks, `scripts/validate-*` and their wiring     |
+| `chore`    | maintains the repository with no runtime effect: dependency bumps, retirements |
+| `revert`   | undoes an earlier commit, fully or in part                                     |
+
+`style` here means visual design changes, which is how this repository has always used it. A
+formatter-only run is `chore(tooling)` with a `Large-Change: format` trailer when it is large.
+
+Frequent ambiguous cases:
+
+- **Database migrations:** `feat(db)` when the migration adds something the application reads,
+  `fix(db)` when it corrects a grant, policy or routine, and `refactor(db)` when it drops objects
+  nothing reads. Add `!` and a `BREAKING CHANGE:` footer when any deployed version or external
+  caller still uses the dropped or renamed object. Name the migration and its rollout phase (expand
+  or contract) in the body. A pgTAP-only change is `test(db)`.
+- **Invitation presets and profiles:** a new preset is `feat(theme)`; a visual adjustment is
+  `style(theme)`; a preset or profile that a published invitation still uses is never deleted
+  without checking its validity window.
+- **Invitation content:** a new or corrected invitation definition is `feat(content)` or
+  `fix(content)` with the slug in the subject; retiring past invitations is `chore(content)`.
+- **Agent guidance and plans:** `.agent/**` and `AGENTS.md` are `docs(agent)` or `docs(plans)`, even
+  when the text changes how agents work.
+- **CI workflows and validators:** `.github/workflows/**`, `.husky/**` and `scripts/validate-*` are
+  `ci(<area>)`; a contract test that pins a workflow is `test(ci)`.
+- **Dependencies:** routine bumps are `chore(deps)` or `chore(deps-dev)`; a bump that fixes a
+  production defect is `fix(deps)` and its body names the defect.
+- **Behavior removed on purpose:** removing a user-visible capability is `feat!` or `fix`, not
+  `refactor`; renaming public URLs with redirects is `fix` or `feat`, not `refactor`.
+
+### Scopes
+
+Use one scope from this list. `commitlint` warns on any other scope.
+
+| Scope                    | Covers                                                            |
+| ------------------------ | ----------------------------------------------------------------- |
+| `invitation`             | Public invitation rendering: routes, sections, components         |
+| `invitation-access`      | Validity window, disabled invitations, access gates               |
+| `invitation-preparation` | Preparation contracts, readiness and owner decision packs         |
+| `content`                | Invitation definitions and per-invitation data (slug in subject)  |
+| `demos`                  | Demo catalog and demo routes                                      |
+| `theme`                  | Presets, tokens, profiles and shared SCSS                         |
+| `rsvp`                   | RSVP flow and confirmation                                        |
+| `guests`                 | Guest lists and guest management                                  |
+| `memories`               | Event memories add-on (application side)                          |
+| `dashboard`              | Host and admin dashboard                                          |
+| `engagement`             | Engagement analytics and ranking                                  |
+| `tracking`               | Event capture, GA4 and CAPI delivery                              |
+| `intake`                 | Client intake and invitation status workflow                      |
+| `landing`                | Public marketing site                                             |
+| `commercial`             | Orders, leads and payments                                        |
+| `auth`                   | Sessions, login and CSRF                                          |
+| `security`               | Headers, secrets, PII guards and owner identity                   |
+| `seo`                    | Metadata, sitemap, robots and social previews                     |
+| `runtime`                | Deploy identity, middleware, server platform helpers              |
+| `hosting`                | Vercel and Cloudflare adapters and platform configuration         |
+| `workers`                | Cloudflare Workers under `workers/`                               |
+| `db`                     | Migrations, policies, routines, pgTAP and the rollout registry    |
+| `env`                    | Environment variables and their documentation                     |
+| `provisioning`           | Definition-to-database publishing: release, apply, hash baselines |
+| `release`                | Version, CHANGELOG and release checks                             |
+| `ops`                    | Operations CLI: status, database menus, worktree reports          |
+| `git`                    | Hooks, `commitlint`, lane sync and git-safety tooling             |
+| `ci`                     | Workflows and their contract tests                                |
+| `validation`             | Static validators (`scripts/validate-*`)                          |
+| `testing`                | Jest and Playwright configuration, fixtures and helpers           |
+| `visual`                 | Visual parity tooling and accepted baselines                      |
+| `tooling`                | Shared scripts and developer tooling not covered above            |
+| `deps`, `deps-dev`       | Dependency updates (Dependabot uses these)                        |
+| `agent`                  | `AGENTS.md`, `.agent/rules`, skills and templates                 |
+| `plans`                  | `.agent/plans/**`                                                 |
+| `governance`             | Policy documents under `docs/core/`                               |
+
+Avoid the synonyms the history accumulated: `invitations` (use `content` or `invitation`),
+`provision` (`provisioning`), `database` or `supabase` (`db`), `plan` (`plans`), `styles` or
+`themes` (`theme`), `playwright` or `fixtures` (`testing`), `visual-parity` (`visual`), `server`,
+`platform` or `middleware` (`runtime`), `vercel` or `cloudflare` (`hosting`), and client names such
+as `america` (`content`). Add a scope to this list and to `commitlint.config.cjs` in the same commit
+when a new domain appears.
+
 ## Commit Body Policy
 
-The body should explain the meaningful changes, not narrate how the work was done.
+The body explains what changes and why, compared with the parent commit, not how the work was done.
+Prose paragraphs and bullets are both fine; wrap lines at 72 characters (`commitlint` blocks lines
+above 100) and leave one blank line after the header.
 
 - `1-2` changed files: body is optional unless the intent is not obvious from the header.
-- `3-5` changed files: include one bullet per changed file.
-- `6+` changed files: include one bullet per coherent file group or module.
+- `3+` changed files: body is required.
 
-Recommended format:
+Include these when they apply:
+
+| Situation                   | The body says                                                         |
+| --------------------------- | --------------------------------------------------------------------- |
+| Runtime or environment      | Which behavior or variable changes and where it must now be declared  |
+| Database                    | The migration file, its rollout phase (expand or contract) and grants |
+| UI or visual                | What guests or hosts now see differently and which baselines changed  |
+| Breaking change             | `BREAKING CHANGE:` footer: what breaks and what callers do instead    |
+| Change to an earlier commit | `Refs: <sha>` footer and what part of it changes                      |
+| Pull request or issue       | Optional `Refs: #<number>` footer                                     |
+
+Footers go last, one per line: `BREAKING CHANGE:`, `Refs:`, `Large-Change:`, `Co-Authored-By:`.
+
+Good example, from this repository's history:
 
 ```text
-feat(scope): short specific subject
+fix(security): read the owner review identity from SUPER_ADMIN_EMAILS
 
-- src/path: concrete change made
-- tests/path: supporting coverage added
-- docs/module: behavior note or usage update
+The owner allowed to confirm or clear owner review was a personal email
+literal in application code and in the local DB scripts. The first
+SUPER_ADMIN_EMAILS entry is now that owner: the runtime reads it on the
+server, an unset list lets nobody record owner review, and the local
+bootstrap only requires the list to be configured.
+
+SUPER_ADMIN_EMAILS moves from the script-only category to typed server
+runtime, so Preview and Production must declare it.
 ```
 
-Acceptable body examples:
+Poor example, from this repository's history: the type says `refactor`, but the commit undoes the
+Family fix its own task had added twelve minutes earlier, and "nothing renders differently" is true
+only against production, not against its parent:
+
+```text
+refactor(invitation): always print family roles and drop the unused hiding helper
+
+The role-hiding helper never received the group title, so every delivered
+invitation shows Madre, Padre, Madrina and Padrino under their group titles
+and the owner keeps that. The helper and its call sites are removed instead
+of fixing the call, so nothing renders differently.
+```
+
+The same change written correctly:
+
+```text
+revert(invitation): print family roles under their group titles again
+
+The owner keeps "Padrino" under "Padrinos", as every delivered invitation
+shows it, so the role-hiding call, its helper and its test are removed. The
+itinerary and reply-card fixes of the same commit stay.
+
+Refs: 18932b3cb
+```
+
+Acceptable bulleted body:
 
 ```text
 fix(rsvp): guard duplicate confirmation emails
@@ -187,13 +381,6 @@ fix(rsvp): guard duplicate confirmation emails
 - src/pages/api/rsvp.ts: skip resend when the RSVP already has a delivered receipt
 - src/lib/email/rsvp-confirmation.ts: return a duplicate-send outcome instead of throwing
 - tests/rsvp-confirmation.test.ts: cover duplicate confirmation requests
-```
-
-```text
-docs(git): document commit body expectations
-
-- docs/core/git-governance.md: define atomic commits and body rules for multi-file changes
-- CONTRIBUTING.md: link contributors to the detailed commit policy
 ```
 
 Poor body examples:
@@ -211,16 +398,42 @@ chore(repo): tweak project files
 - more fixes
 ```
 
+## Merge, Release and Revert Commits
+
+### Merge commits
+
+Integration and sync merges keep Git's default header (`commitlint` ignores merge commits); see the
+merge rules in [Task Lifecycle](#task-lifecycle). The release pull request is titled
+`release: vX.Y.Z - <primary outcome>`, and GitHub keeps that title as the body of its
+`Merge pull request #<n>` commit.
+
+### Release commits
+
+The checkpoint commit is `chore(release): publish vX.Y.Z checkpoint`, with one bullet for
+`package.json` and one for `CHANGELOG.md`. Before writing it, complete the
+[pre-tag checklist](release-process.md#release-checkpoint-discipline), which also checks every
+CHANGELOG line against the final code of the range.
+
+### Revert commits
+
+Write reverts as `revert(<scope>): <what the code does again>` with the reverted commit in a
+`Refs: <sha>` footer and the reason in the body. A partial revert says which part of the original
+commit goes and which part stays. Reverting a task as a whole stays `git revert -m 1 <merge>` on a
+new task branch; its header may keep Git's default `Revert "<original header>"`, followed by the
+reason.
+
 ## Advisory Warnings
 
-Subjective quality checks remain advisory. The repository warns, but does not block, when a commit:
+Subjective quality checks remain advisory. `scripts/validate-commits.mjs` warns, but does not block,
+when a commit:
 
-- touches `3+` files and has no body,
-- touches `3+` files and uses a non-bulleted body,
-- spans multiple top-level repository areas such as `src/`, `docs/`, `tests/`, `supabase/`, or root
-  config files,
-- changes `10+` files and looks too broad for a single atomic intent.
+- touches `3+` files and has no body other than footers,
+- spans three or more primary areas such as `src/`, `scripts/`, `supabase/`, `.agent/` or root
+  config files (`tests/` and `docs/` accompany a change and are not counted),
+- goes above the warning [size limit](#commit-size).
 
+The hard size limit is the only shape rule that blocks, and only in `pre-push`, while the commits
+can still be split. Repository CI reports it as a warning because pushed history is never rewritten.
 Warnings are prompts to review the commit shape before pushing. They do not replace engineering
 judgment.
 
@@ -232,9 +445,9 @@ judgment.
 | `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                                       |
 | `.agent/rules/git-safety.md`              | Git-write authorization and `path ≠ privilege`                                      |
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                                         |
-| `scripts/validate-commits.mjs`            | Commit-range commitlint replay plus advisory hygiene warnings                       |
+| `scripts/validate-commits.mjs`            | Commit-range commitlint replay, size limits and advisory hygiene warnings           |
 | `.husky/pre-commit`                       | Detached-HEAD and `main` guard, staged-file checks                                  |
-| `.husky/pre-push`                         | Commit-range validation and Git LFS handoff                                         |
+| `.husky/pre-push`                         | Commit-range validation with the hard size limit and Git LFS handoff                |
 | `.github/workflows/commit-validation.yml` | Policy, static/build, unit, database and browser jobs, aggregate result and metrics |
 
 ## Active Hooks and CI Sequence
@@ -243,10 +456,10 @@ judgment.
    `pnpm test:changed`.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
 3. `pre-push` replays commitlint over the pushed range in one process with
-   `scripts/validate-commits.mjs` (hygiene warnings stay advisory), then hands the ref updates to
-   Git LFS. New task branches use the common ancestor with `origin/develop` as the range base.
-   Exact-SHA visual certification belongs to Repository CI on the `develop` push;
-   `pnpm validate:prepush` is an optional local preview.
+   `scripts/validate-commits.mjs --strict-size` (the hard size limit blocks; other hygiene warnings
+   stay advisory), then hands the ref updates to Git LFS. New task branches use the common ancestor
+   with `origin/develop` as the range base. Exact-SHA visual certification belongs to Repository CI
+   on the `develop` push; `pnpm validate:prepush` is an optional local preview.
 4. `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to `develop`, on pull
    requests targeting `develop` or `main`, and by manual dispatch. See the
    [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for scope and
@@ -264,7 +477,7 @@ step from Integration:
 ```bash
 # 1. Open the release PR from a current develop and wait for the required checks
 git pull --ff-only origin develop
-gh pr create --base main --head develop --title "release: <primary outcome>"
+gh pr create --base main --head develop --title "release: vX.Y.Z - <primary outcome>"
 
 # 2. Merge it in GitHub (merge commit), verify the deployment, then back-merge
 git pull --ff-only origin develop
@@ -282,8 +495,8 @@ Rules:
   merge commit. If it is refused, `develop` and `main` diverged: merge `origin/main` into `develop`
   (no rebase, no reset), resolve deliberately, validate, and push (`branch-lane` mode
   `sync-main-into-develop`).
-- Release PR titles describe the primary shipped outcome. Bodies list included changes, material
-  risks, visual/schema/content impact and separately authorized operations.
+- Release PR titles name the version and the primary shipped outcome. Bodies list included changes,
+  material risks, visual/schema/content impact and separately authorized operations.
 - Never rewrite or force-push `main` or `develop`; never use a bypass.
 - Land hotfixes on `develop` first, then release.
 - Rollback: revert on a task branch, integrate into `develop`, and release normally.

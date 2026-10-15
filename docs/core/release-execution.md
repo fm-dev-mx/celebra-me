@@ -69,8 +69,8 @@ implementing these skills is never a live-release invocation.
 1. Stage only named scope, commit only when needed, and inspect resulting commit/working tree.
    Already committed scope requires neither staging nor a new commit. A needed commit (for example
    accepted visual baselines) goes on a task branch created from `develop` and is then integrated
-   per [Git governance](git-governance.md#task-lifecycle) (a single commit fast-forwards); never
-   author it directly on `develop`.
+   per [Git governance](git-governance.md#task-lifecycle) (one `--no-ff` merge, even for a single
+   commit); never author it directly on `develop`.
 2. Push only the validated `develop` ref with normal hooks and Git LFS. If origin already points at
    the intended SHA, skip the push and discover the existing CI/deployment.
 3. Run `pnpm ops:release-status -- --sha <exact-sha> --target preview --wait` once, in the
