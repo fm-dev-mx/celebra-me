@@ -72,7 +72,7 @@ describe('env file templates', () => {
 			),
 		).toEqual([]);
 		// Local-only diagnostics: deployments read the plain names.
-		const localOnly = new Set(
+		const localOnly = new Set<string>(
 			Object.values(PLATFORM_ENV_BY_ENVIRONMENT).flatMap((entry) => Object.values(entry)),
 		);
 		expect(
