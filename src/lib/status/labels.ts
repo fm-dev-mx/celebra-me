@@ -1,11 +1,7 @@
-/** Spanish operator labels for the canonical status dashboard. */
+/** Spanish operator labels for the status CLI (`pnpm dbs`, `pnpm ops:release-status`). */
 import type {
-	AuthorizationIntegrity,
 	DiagnosticCode,
-	DisposableProofStatus,
 	EvidenceState,
-	MigrationPresence,
-	PromotionAction,
 	PromotionReasonCode,
 	SchemaOperationReadiness,
 	StatusSemantic,
@@ -37,20 +33,6 @@ export const READINESS_LABELS: Record<SchemaOperationReadiness, string> = {
 	UNVERIFIED: 'Sin verificar',
 };
 
-export const DISPOSABLE_LABELS: Record<DisposableProofStatus, string> = {
-	valid: 'VÁLIDA',
-	missing: 'AUSENTE',
-	stale: 'OBSOLETA',
-};
-
-export const AUTHORIZATION_LABELS: Record<AuthorizationIntegrity, string> = {
-	RECORDED: 'Registrada',
-	MISSING: 'Ausente',
-	GRANDFATHERED: 'Previa al libro',
-	NOT_APPLICABLE: 'No aplica',
-	UNVERIFIED: 'Sin verificar',
-};
-
 export const SEMANTIC_LABELS: Record<StatusSemantic, string> = {
 	verified: 'Verificado',
 	unverified: 'Sin verificar',
@@ -62,30 +44,6 @@ export const EVIDENCE_LABELS: Record<EvidenceState, string> = {
 	LIVE: 'En vivo',
 	CACHED: 'En caché',
 	UNVERIFIED: 'Sin verificar',
-};
-
-export const FRESHNESS_LABELS: Record<
-	'LIVE' | 'CACHED' | 'STALE' | 'REVALIDATING' | 'UNVERIFIED',
-	string
-> = {
-	LIVE: 'En vivo',
-	CACHED: 'En caché',
-	STALE: 'Obsoleta',
-	REVALIDATING: 'Revalidando',
-	UNVERIFIED: 'Sin verificar',
-};
-
-export const MIGRATION_PRESENCE_LABELS: Record<MigrationPresence, string> = {
-	APPLIED: 'Aplicada',
-	NOT_APPLIED: 'No aplicada',
-	UNVERIFIED: 'Sin verificar',
-};
-
-export const PUBLICATION_ACTION_LABELS: Record<Exclude<PromotionAction, 'NONE'>, string> = {
-	PROMOTE_PREVIEW: 'Promover a Preview',
-	PROMOTE_PRODUCTION: 'Promover a Production',
-	BLOCKED: 'Bloqueado',
-	UNKNOWN: 'Sin clasificar',
 };
 
 export const PUBLICATION_REASON_LABELS: Record<PromotionReasonCode, string> = {
