@@ -39,7 +39,11 @@ export interface MemoriesCleanupContext {
 	startedAt: string;
 	completedAt: string | null;
 	commitSha?: string | null;
+	/** Trigger of the run; defaults to the scheduled cron. */
+	source?: string;
 }
+
+const DEFAULT_SOURCE = 'scheduled_cron';
 
 const REVIEW_ACTION =
 	'Busque el runId de esta ejecución en los registros del hosting y revise el resumen; no invoque manualmente la limpieza.';
@@ -83,7 +87,7 @@ function build(
 		observedAt: context.completedAt ?? context.startedAt,
 		status,
 		reasonCode,
-		source: 'scheduled_cron',
+		source: context.source ?? DEFAULT_SOURCE,
 		ownerAction,
 		...(commitSha && /^[0-9a-f]{40}$/i.test(commitSha) ? { commitSha } : {}),
 		payload: {

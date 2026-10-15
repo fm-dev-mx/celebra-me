@@ -114,7 +114,8 @@ export interface InvitationEditorContextDTO {
 			| 'DIVERGED'
 			| 'RECONCILIATION_REQUIRED'
 			| 'SOURCE_UPDATE_REQUIRED'
-			| 'DEFERRED';
+			| 'DEFERRED'
+			| 'NOT_APPLICABLE';
 		targetEnvironment: 'local' | 'preview' | 'production';
 		affectedFieldCount: number;
 		affectedSections: string[];

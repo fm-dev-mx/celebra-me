@@ -210,6 +210,21 @@ describe('InvitationEditor', () => {
 		expect(screen.queryByTestId('editor-divergence-banner')).not.toBeInTheDocument();
 	});
 
+	it('hides divergence banner when a hosted runtime skipped detection', () => {
+		mockContext = createContext({
+			divergence: {
+				state: 'NOT_APPLICABLE',
+				targetEnvironment: 'preview',
+				affectedFieldCount: 0,
+				affectedSections: [],
+				affectedSectionCount: 0,
+				isReleaseBlocked: false,
+			},
+		});
+		render(<InvitationEditor initialContext={mockContext} />);
+		expect(screen.queryByTestId('editor-divergence-banner')).not.toBeInTheDocument();
+	});
+
 	it('shows Spanish divergence warning from server contract', () => {
 		mockContext = createContext({
 			divergence: {
