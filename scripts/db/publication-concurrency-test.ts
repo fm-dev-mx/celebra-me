@@ -25,7 +25,7 @@ async function main(): Promise<void> {
 	const key = randomUUID();
 	const slug = `concurrent-${invitationId.slice(0, 8)}`;
 	const content = `'{"title":"Concurrent publication"}'::jsonb`;
-	const metadataHash = `md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'baseDemoId', i.base_demo_id, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'snapshot', i.snapshot, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text))`;
+	const metadataHash = `md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text))`;
 
 	runPsql(`
 		insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, kind)

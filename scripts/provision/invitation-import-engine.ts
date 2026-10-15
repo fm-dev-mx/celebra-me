@@ -1028,7 +1028,7 @@ function buildPublicationRpcSql(
 ): string {
 	const { targetDbUrl, targetInvitationId, slug, eventType, targetPublishedContent } = params;
 	const liveInvRes = runPsql(
-		`select row_to_json(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, archived_at from public.invitations where id = '${targetInvitationId}'::uuid) t;`,
+		`select row_to_json(t) from (select id, slug, title, event_type, status, theme_id, kind, archived_at from public.invitations where id = '${targetInvitationId}'::uuid) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true },
 	);
@@ -1046,10 +1046,8 @@ function buildPublicationRpcSql(
 			slug: liveInv.slug as string,
 			title: liveInv.title as string,
 			eventType: liveInv.event_type as string,
-			baseDemoId: liveInv.base_demo_id as string,
 			themeId: liveInv.theme_id as string,
 			kind: liveInv.kind as string,
-			snapshot: (liveInv.snapshot as Record<string, unknown>) ?? {},
 			status: liveInv.status as string,
 			archivedAt: (liveInv.archived_at as string) ?? null,
 		},

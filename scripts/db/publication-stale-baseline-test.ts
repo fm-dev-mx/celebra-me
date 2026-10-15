@@ -39,11 +39,6 @@ const scenarios: Scenario[] = [
 		mutation: (id) => `update public.invitations set event_type = 'boda' where id = '${id}';`,
 	},
 	{
-		name: 'base demo',
-		mutation: (id) =>
-			`update public.invitations set base_demo_id = 'demo-xv-editorial' where id = '${id}';`,
-	},
-	{
 		name: 'theme',
 		mutation: (id) =>
 			`update public.invitations set theme_id = 'editorial' where id = '${id}';`,
@@ -51,11 +46,6 @@ const scenarios: Scenario[] = [
 	{
 		name: 'kind',
 		mutation: (id) => `update public.invitations set kind = 'client' where id = '${id}';`,
-	},
-	{
-		name: 'snapshot',
-		mutation: (id) =>
-			`update public.invitations set snapshot = '{"previewSlug":"changed"}'::jsonb where id = '${id}';`,
 	},
 	{
 		name: 'availability',
@@ -77,7 +67,7 @@ const scenarios: Scenario[] = [
 
 function metadataHash(invitationId: string): string {
 	return query(
-		`select md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'baseDemoId', i.base_demo_id, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'snapshot', i.snapshot, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5(coalesce((select p.content from public.published_invitation_content p where p.invitation_project_id = i.id and p.deleted_at is null limit 1), '{}'::jsonb)::text)) from public.invitations i where i.id = '${invitationId}';`,
+		`select md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5(coalesce((select p.content from public.published_invitation_content p where p.invitation_project_id = i.id and p.deleted_at is null limit 1), '{}'::jsonb)::text)) from public.invitations i where i.id = '${invitationId}';`,
 	);
 }
 

@@ -12,7 +12,6 @@ function makeProject(overrides: Partial<InvitationDTO>): InvitationDTO {
 		title: 'Test Project',
 		eventType: 'boda',
 		status: 'draft',
-		baseDemoId: 'demo-1',
 		themeId: 'theme-1',
 		clientName: 'Test Client',
 		clientEmail: '',

@@ -1596,9 +1596,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		if (!isPubContentIdentical || !existingPub) {
 			const { data: pubBaseline } = await supabase
 				.from('invitations')
-				.select(
-					'slug, title, event_type, base_demo_id, theme_id, kind, snapshot, status, archived_at',
-				)
+				.select('slug, title, event_type, theme_id, kind, status, archived_at')
 				.eq('id', invitationId)
 				.single();
 
@@ -1607,10 +1605,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					slug: pubBaseline!.slug as string,
 					title: pubBaseline!.title as string,
 					eventType: pubBaseline!.event_type as string,
-					baseDemoId: pubBaseline!.base_demo_id as string,
 					themeId: pubBaseline!.theme_id as string,
 					kind: pubBaseline!.kind as string,
-					snapshot: pubBaseline!.snapshot,
 					status: pubBaseline!.status as string,
 					archivedAt: (pubBaseline!.archived_at as string) ?? null,
 				},
