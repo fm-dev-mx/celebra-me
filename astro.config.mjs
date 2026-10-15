@@ -5,6 +5,7 @@ import sitemap from '@astrojs/sitemap'; // Automatic site map generation for SEO
 import robotsTxt from 'astro-robots-txt'; // Automatic robots.txt generation for SEO
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
+import cloudflare from '@astrojs/cloudflare';
 import { fileURLToPath } from 'url';
 import {
 	bootstrapCelebraRuntimeEnv,
@@ -14,6 +15,13 @@ import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
 
 const isBuildCommand = process.argv.includes('build');
+// Temporary dual hosting target while Preview moves to Cloudflare Workers: `vercel` (default)
+// or `cloudflare`. The Cloudflare build reads wrangler.jsonc and bundles src/worker.ts.
+const buildTarget = process.env.CELEBRA_BUILD_TARGET || 'vercel';
+if (buildTarget !== 'vercel' && buildTarget !== 'cloudflare') {
+	throw new Error('CELEBRA_BUILD_TARGET must be "vercel" or "cloudflare" when set.');
+}
+const isCloudflareBuild = buildTarget === 'cloudflare';
 // Hosted builds declare their deploy identity; local processes never do. An invalid
 // declaration fails the build instead of producing a bundle that throws at runtime.
 const isHostedBuild = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV) !== null;
@@ -216,27 +224,29 @@ export default defineConfig({
 			// Vercel's serverless loader cannot safely load sanitize-html's runtime graph:
 			// bare requires in its bundled CommonJS entrypoint are not traced into the
 			// function, and htmlparser2@12 is ESM-only. Bundle the bounded SSR chain.
-			noExternal: isBuildCommand
-				? [
-						'sanitize-html',
-						'escape-string-regexp',
-						'is-plain-object',
-						'deepmerge',
-						'parse-srcset',
-						'postcss',
-						'picocolors',
-						'source-map-js',
-						'nanoid',
-						'launder',
-						'dayjs',
-						'htmlparser2',
-						'entities',
-						'domhandler',
-						'domelementtype',
-						'domutils',
-						'dom-serializer',
-					]
-				: undefined,
+			// The Cloudflare adapter bundles every dependency itself.
+			noExternal:
+				isBuildCommand && !isCloudflareBuild
+					? [
+							'sanitize-html',
+							'escape-string-regexp',
+							'is-plain-object',
+							'deepmerge',
+							'parse-srcset',
+							'postcss',
+							'picocolors',
+							'source-map-js',
+							'nanoid',
+							'launder',
+							'dayjs',
+							'htmlparser2',
+							'entities',
+							'domhandler',
+							'domelementtype',
+							'domutils',
+							'dom-serializer',
+						]
+					: undefined,
 		},
 		define: {
 			'import.meta.env.CELEBRA_BUILD_SHA': JSON.stringify(buildCommitSha),
@@ -258,15 +268,23 @@ export default defineConfig({
 	},
 
 	output: 'server',
-	adapter: vercel({
-		// Vercel Web Analytics is mounted via <Analytics /> in Layout.astro.
-		// Keeping adapter-level webAnalytics off avoids duplicate client script injection
-		// with @vercel/analytics 2.x.
-		maxDuration: 30, // Increase limit for serverless functions
-		imageService: true, // Enable Vercel's image optimization for local images
-		imagesConfig: {
-			sizes: [320, 640, 960, 1200, 1600, 1800],
-			domains: externalImageDomains, // Allow external images
-		},
-	}),
+	// The app never uses Astro.session; without this the Cloudflare adapter provisions a KV
+	// session namespace on every deploy.
+	...(isCloudflareBuild ? { session: false } : {}),
+	adapter: isCloudflareBuild
+		? cloudflare({
+				// Image transforms through the IMAGES binding declared in wrangler.jsonc.
+				imageService: 'cloudflare-binding',
+			})
+		: vercel({
+				// Vercel Web Analytics is mounted via <Analytics /> in Layout.astro.
+				// Keeping adapter-level webAnalytics off avoids duplicate client script injection
+				// with @vercel/analytics 2.x.
+				maxDuration: 30, // Increase limit for serverless functions
+				imageService: true, // Enable Vercel's image optimization for local images
+				imagesConfig: {
+					sizes: [320, 640, 960, 1200, 1600, 1800],
+					domains: externalImageDomains, // Allow external images
+				},
+			}),
 });
