@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-14T06:08:07.967Z",
+    "generatedAt": "2026-10-15T00:47:38.782Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,8 +11,8 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "51d421fa3e8a4254b58c14f420ce75f6a3e9d53d56b85bde1dd38b0b839e059a",
-        "cssSha256": "53f1a4ea31ced0304bb5d8ad7b7375bdf8730e6d9f14c6022e8bd414e74b73f9",
+        "lockfileSha256": "e04fb4bbcb85cb2906fa61bf0ff88ff4b12dbfb84cb0bbc6661e8c0865661528",
+        "cssSha256": "21ff4b81abd783fc088bdde2503ec1338c558be9c829736040568fb310109d62",
         "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -313,7 +313,7 @@
             "cssOwner": "section-base:location",
             "fixtureIdentity": "synthetic:location.standard",
             "file": "jewelry-box-mobile-location-standard.png",
-            "sha256": "4954e8fc81ff5879e6c9d7cda8050c27955614990e77e580229f6456b04ba2d6",
+            "sha256": "a663cd5fb107b49f1fec755acd56738ed93ae76a75222ba7f6680801ed32d6a3",
             "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -327,7 +327,7 @@
             "cssOwner": "section-base:location",
             "fixtureIdentity": "synthetic:location.standard",
             "file": "jewelry-box-desktop-location-standard.png",
-            "sha256": "2bb6a98cdf6235b8a9fc748aee67bd5a796bd03cb7218eef455049207446c21e",
+            "sha256": "eb40c0b1dfcbdde78f051b82d04447610244cadf0e64462f2f64abb4ae0e7970",
             "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -341,7 +341,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "jewelry-box-mobile-location-split-map.png",
-            "sha256": "f3ec2882fc716caf90b19e80ed63d73b52409f037471bb7d80f8485611ab704a",
+            "sha256": "ebe87b6ba9ab51003d76288493ac761fc2fc75e673e791035cdfea1f614744bf",
             "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -355,7 +355,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "jewelry-box-desktop-location-split-map.png",
-            "sha256": "d327ffe179b672a79ff2aa44d06df3d0feac64adf585868f5f4bd6465d2d1126",
+            "sha256": "e3a39e511954c01626ca28f8f6e578563b1412603872d4d7cedc5599066ae6cc",
             "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -397,7 +397,7 @@
             "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
             "fixtureIdentity": "synthetic:location.program-sheet",
             "file": "jewelry-box-mobile-location-program-sheet.png",
-            "sha256": "2fb874db0ce9942016f5103a271ac0ef122801fe955dc4d02806c3182f46d136",
+            "sha256": "bfb6bc61fc35dd01b3907ed6135766ee621aea8612c45023f165f9d2b6014689",
             "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -411,7 +411,7 @@
             "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
             "fixtureIdentity": "synthetic:location.program-sheet",
             "file": "jewelry-box-desktop-location-program-sheet.png",
-            "sha256": "f45466e96517b2ea6f02d9c9ec8709bef4c40083df83513b2dfb7b22e330c2e7",
+            "sha256": "811570f651259395b12cdf90b7b40da216c8110121ddf2505e88c96af0ef0266",
             "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1545,7 +1545,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "celestial-blue-mobile-location-split-map.png",
-            "sha256": "8ea654c3d0d483e86c05de2b3a6d29c13b10986e18112e6c14f439864a5a2a40",
+            "sha256": "4422ba7ced2c53944967493ff2d4a6e79de806fbfe45090eda559a6c171c2b8d",
             "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1559,7 +1559,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "celestial-blue-desktop-location-split-map.png",
-            "sha256": "84c7dceef0a5a77bec16d1a7a1b11341d565302141bf737672053df4e0a501ba",
+            "sha256": "f2872e853e1f38ac4c60b066330e50fee27e5f7706263b7cac4309f61e0fc6f5",
             "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -2079,7 +2079,7 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-mobile.png",
-            "sha256": "7ca3d44f775263b3162480d72a542921be77551ce9d4fd521328eb00c828cd27",
+            "sha256": "d6f3e2394ab7d54cd25f8342f226878809c968a6658727112343f42e51ab4c21",
             "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
             "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
             "comparisonResult": "ACCEPTED"
@@ -2091,7 +2091,7 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-desktop.png",
-            "sha256": "b7ed639134f1dd0352a6234de6ec923b1e07f2f1b86b2f52c611d4ec96356681",
+            "sha256": "9cdd3ee355326658e8cf693451bba60947241198fe66750ac7486b7e33629057",
             "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
             "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
             "comparisonResult": "ACCEPTED"
@@ -2265,9 +2265,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "fafaedd5dbe8758055a4b87b8f6163a80227eae2",
+    "referenceSha": "21622305d426ca7b45cf4adbe6c1f18b57db82b1",
     "variantManifest": {
-        "generatedAt": "2026-10-14T06:08:07.967Z",
+        "generatedAt": "2026-10-15T00:47:38.782Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2279,8 +2279,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "51d421fa3e8a4254b58c14f420ce75f6a3e9d53d56b85bde1dd38b0b839e059a",
-            "cssSha256": "53f1a4ea31ced0304bb5d8ad7b7375bdf8730e6d9f14c6022e8bd414e74b73f9",
+            "lockfileSha256": "e04fb4bbcb85cb2906fa61bf0ff88ff4b12dbfb84cb0bbc6661e8c0865661528",
+            "cssSha256": "21ff4b81abd783fc088bdde2503ec1338c558be9c829736040568fb310109d62",
             "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2581,7 +2581,7 @@
                 "cssOwner": "section-base:location",
                 "fixtureIdentity": "synthetic:location.standard",
                 "file": "jewelry-box-mobile-location-standard.png",
-                "sha256": "4954e8fc81ff5879e6c9d7cda8050c27955614990e77e580229f6456b04ba2d6",
+                "sha256": "a663cd5fb107b49f1fec755acd56738ed93ae76a75222ba7f6680801ed32d6a3",
                 "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2595,7 +2595,7 @@
                 "cssOwner": "section-base:location",
                 "fixtureIdentity": "synthetic:location.standard",
                 "file": "jewelry-box-desktop-location-standard.png",
-                "sha256": "2bb6a98cdf6235b8a9fc748aee67bd5a796bd03cb7218eef455049207446c21e",
+                "sha256": "eb40c0b1dfcbdde78f051b82d04447610244cadf0e64462f2f64abb4ae0e7970",
                 "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2609,7 +2609,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "jewelry-box-mobile-location-split-map.png",
-                "sha256": "f3ec2882fc716caf90b19e80ed63d73b52409f037471bb7d80f8485611ab704a",
+                "sha256": "ebe87b6ba9ab51003d76288493ac761fc2fc75e673e791035cdfea1f614744bf",
                 "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2623,7 +2623,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "jewelry-box-desktop-location-split-map.png",
-                "sha256": "d327ffe179b672a79ff2aa44d06df3d0feac64adf585868f5f4bd6465d2d1126",
+                "sha256": "e3a39e511954c01626ca28f8f6e578563b1412603872d4d7cedc5599066ae6cc",
                 "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2665,7 +2665,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
                 "fixtureIdentity": "synthetic:location.program-sheet",
                 "file": "jewelry-box-mobile-location-program-sheet.png",
-                "sha256": "2fb874db0ce9942016f5103a271ac0ef122801fe955dc4d02806c3182f46d136",
+                "sha256": "bfb6bc61fc35dd01b3907ed6135766ee621aea8612c45023f165f9d2b6014689",
                 "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2679,7 +2679,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
                 "fixtureIdentity": "synthetic:location.program-sheet",
                 "file": "jewelry-box-desktop-location-program-sheet.png",
-                "sha256": "f45466e96517b2ea6f02d9c9ec8709bef4c40083df83513b2dfb7b22e330c2e7",
+                "sha256": "811570f651259395b12cdf90b7b40da216c8110121ddf2505e88c96af0ef0266",
                 "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3813,7 +3813,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "celestial-blue-mobile-location-split-map.png",
-                "sha256": "8ea654c3d0d483e86c05de2b3a6d29c13b10986e18112e6c14f439864a5a2a40",
+                "sha256": "4422ba7ced2c53944967493ff2d4a6e79de806fbfe45090eda559a6c171c2b8d",
                 "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -3827,7 +3827,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "celestial-blue-desktop-location-split-map.png",
-                "sha256": "84c7dceef0a5a77bec16d1a7a1b11341d565302141bf737672053df4e0a501ba",
+                "sha256": "f2872e853e1f38ac4c60b066330e50fee27e5f7706263b7cac4309f61e0fc6f5",
                 "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -4029,10 +4029,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "fafaedd5dbe8758055a4b87b8f6163a80227eae2"
+        "referenceSha": "21622305d426ca7b45cf4adbe6c1f18b57db82b1"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-14T06:08:07.970Z",
+        "generatedAt": "2026-10-15T00:47:38.790Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4044,8 +4044,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "51d421fa3e8a4254b58c14f420ce75f6a3e9d53d56b85bde1dd38b0b839e059a",
-            "cssSha256": "53f1a4ea31ced0304bb5d8ad7b7375bdf8730e6d9f14c6022e8bd414e74b73f9",
+            "lockfileSha256": "e04fb4bbcb85cb2906fa61bf0ff88ff4b12dbfb84cb0bbc6661e8c0865661528",
+            "cssSha256": "21ff4b81abd783fc088bdde2503ec1338c558be9c829736040568fb310109d62",
             "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4375,7 +4375,7 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-mobile.png",
-                "sha256": "7ca3d44f775263b3162480d72a542921be77551ce9d4fd521328eb00c828cd27",
+                "sha256": "d6f3e2394ab7d54cd25f8342f226878809c968a6658727112343f42e51ab4c21",
                 "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
                 "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
                 "comparisonResult": "CANDIDATE"
@@ -4387,7 +4387,7 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-desktop.png",
-                "sha256": "b7ed639134f1dd0352a6234de6ec923b1e07f2f1b86b2f52c611d4ec96356681",
+                "sha256": "9cdd3ee355326658e8cf693451bba60947241198fe66750ac7486b7e33629057",
                 "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
                 "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
                 "comparisonResult": "CANDIDATE"
@@ -4561,9 +4561,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "fafaedd5dbe8758055a4b87b8f6163a80227eae2"
+        "referenceSha": "21622305d426ca7b45cf4adbe6c1f18b57db82b1"
     },
-    "candidateManifestSha256": "1da182dc014e799d4e56537695c56491cc72ae67696f106f2de4a5cb7c468253",
-    "acceptedFromCommit": "fafaedd5dbe8758055a4b87b8f6163a80227eae2",
-    "acceptedAt": "2026-10-14T06:08:39.731Z"
+    "candidateManifestSha256": "a445e7c0b71f7e4c623c19e9b4760461fe24c147f57693880b17335f22a9d128",
+    "acceptedFromCommit": "21622305d426ca7b45cf4adbe6c1f18b57db82b1",
+    "acceptedAt": "2026-10-15T01:08:48.224Z"
 }
