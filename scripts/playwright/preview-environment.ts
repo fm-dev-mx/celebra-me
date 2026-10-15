@@ -29,6 +29,12 @@ export const IMMUTABLE_PREVIEW_HOST_PATTERN =
  */
 export const CLOUDFLARE_PREVIEW_HOST_PATTERN =
 	/^(?:[a-z0-9]+-)?celebra-me-preview\.celebra-me-com\.workers\.dev$/;
+/**
+ * Cloudflare Production Worker version URLs (`<version-prefix>-celebra-me...`). The Worker has no
+ * stable `workers.dev` host; its traffic arrives only through the zone routes.
+ */
+export const CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN =
+	/^[a-z0-9]+-celebra-me\.celebra-me-com\.workers\.dev$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export interface PreviewFixtureIdentity {

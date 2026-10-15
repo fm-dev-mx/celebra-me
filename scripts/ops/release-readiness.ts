@@ -8,6 +8,13 @@ export const PREVIEW_DEPLOYMENT_SMOKE = 'Vercel - celebra-me preview smoke';
 /** Commit statuses published by `.github/workflows/deploy.yml` for the Cloudflare Workers. */
 export const CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE = 'Cloudflare - celebra-me production smoke';
 export const CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE = 'Cloudflare - celebra-me preview smoke';
+/**
+ * Smoke of a Production Worker version that serves no traffic yet
+ * (`.github/workflows/deploy-production.yml`). Deliberately not a Production deployment smoke:
+ * no release gate accepts it, because it proves a candidate, not what the domain serves.
+ */
+export const CLOUDFLARE_PRODUCTION_CANDIDATE_SMOKE =
+	'Cloudflare - celebra-me production candidate smoke';
 /** Either hosting provider's smoke proves the deployed SHA for its environment. */
 export const PRODUCTION_DEPLOYMENT_SMOKES = [
 	PRODUCTION_DEPLOYMENT_SMOKE,

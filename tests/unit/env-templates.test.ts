@@ -10,7 +10,7 @@ const CODE_FILES_AT_ROOT = ['astro.config.mjs', 'wrangler.jsonc'];
 /** Files that only enumerate names (allow-lists), so they do not prove that a name is read. */
 const NAME_LIST_FILES = new Set([
 	'scripts/agent/env-files.ts',
-	'scripts/ops/cloudflare-preview-secrets.ts',
+	'scripts/ops/cloudflare-worker-secrets.ts',
 ]);
 
 function collectCodeFiles(directory: string): string[] {
