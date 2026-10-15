@@ -3,7 +3,7 @@
  * data only: no imports, so contract, server and UI can share them.
  */
 
-export type PlatformProviderId = 'cloudflare' | 'supabase' | 'vercel' | 'cloudinary';
+export type PlatformProviderId = 'cloudflare' | 'supabase' | 'cloudinary';
 
 /**
  * Whose quota a figure belongs to. Shared figures are labeled as account or

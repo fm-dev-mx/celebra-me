@@ -33,8 +33,6 @@ import InvitationUnavailable from '@/components/invitation/InvitationUnavailable
 import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
 import { isEventType } from '@/lib/theme/theme-contract';
 
-import { performance } from 'node:perf_hooks';
-
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
 
@@ -57,12 +55,6 @@ const previewState =
 			? 'letter'
 			: undefined;
 
-// Server-Timing instrumentation
-let resolveContentDur: number | null = null;
-let routePersonalizationDur: number | null = null;
-let pagePrepareDur: number | null = null;
-const renderStart = performance.now();
-
 let page: ReturnType<typeof prepareInvitationPageContext> | null = null;
 let guestContext: InvitationGuestContext | null = null;
 let renderError: string | null = null;
@@ -73,7 +65,6 @@ let accessMode: PublicInvitationMode | null = null;
 let provenanceReference: string | null = null;
 
 try {
-	const resolveContentStart = performance.now();
 	const resolution = await resolvePublicInvitation(slug, eventType);
 	contentSource = resolution && resolution.source !== 'unavailable' ? resolution.source : null;
 	contentVersion = resolution?.source === 'published' ? resolution.version : null;
@@ -83,7 +74,6 @@ try {
 		resolution?.source === 'published'
 			? invitationProvenanceReference(resolution.invitationId)
 			: null;
-	resolveContentDur = performance.now() - resolveContentStart;
 
 	if (!resolution) {
 		Astro.response.status = 404;
@@ -123,7 +113,6 @@ try {
 
 		if (resolution.source !== 'static' || eventEntry) {
 			if (inviteId) {
-				const personalizationStart = performance.now();
 				const personalization = await resolveRoutePersonalization({
 					inviteId,
 					currentPathWithQuery,
@@ -131,7 +120,6 @@ try {
 					routeSlug: slug,
 					routeIsDemo,
 				});
-				routePersonalizationDur = performance.now() - personalizationStart;
 				if (personalization.redirectPath) {
 					Astro.response.headers.set('Cache-Control', 'no-store, private');
 					return Astro.redirect(personalization.redirectPath, 302);
@@ -140,21 +128,17 @@ try {
 			}
 
 			if (resolution.source === 'static') {
-				const prepareStart = performance.now();
 				page = prepareInvitationPageContext({
 					eventEntry: eventEntry!,
 					guestContext,
 				});
-				pagePrepareDur = performance.now() - prepareStart;
 			} else {
-				const prepareStart = performance.now();
 				page = buildPageContextFromViewModel({
 					viewModel,
 					guestContext,
 					eventType: routeEventType,
 					screenshotMode,
 				});
-				pagePrepareDur = performance.now() - prepareStart;
 			}
 		}
 	}
@@ -183,29 +167,6 @@ const robotsPolicy = isUnavailablePage
 		? CLIENT_INVITATION_ROBOTS
 		: undefined;
 if (robotsPolicy) Astro.response.headers.set('X-Robots-Tag', robotsPolicy);
-
-// Render-Timing — always set a simple baseline to confirm header survives Vercel
-Astro.response.headers.set('X-Render-Timing', 'active');
-
-// Extended timing header with detailed spans — only for successful pages
-if (page && viewModel) {
-	try {
-		const entries: string[] = [];
-		if (resolveContentDur !== null) {
-			entries.push(`resolveContent;dur=${resolveContentDur.toFixed(2)}`);
-		}
-		if (routePersonalizationDur !== null) {
-			entries.push(`routePersonalization;dur=${routePersonalizationDur.toFixed(2)}`);
-		}
-		if (pagePrepareDur !== null) {
-			entries.push(`pagePrepare;dur=${pagePrepareDur.toFixed(2)}`);
-		}
-		entries.push(`total;dur=${(performance.now() - renderStart).toFixed(2)}`);
-		Astro.response.headers.set('X-Render-Timing-Detail', entries.join(', '));
-	} catch (e) {
-		console.warn('[slug] Failed to set timing header:', e);
-	}
-}
 
 const forceBlockingInvitationCss =
 	skipEnvelope || screenshotMode || !page?.wrapper.showEnvelope || !page?.envelope;

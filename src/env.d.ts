@@ -48,10 +48,6 @@ interface ImportMetaEnv {
 	readonly SUPABASE_PROJECT_REF_PREVIEW: string;
 	/** Non-secret Supabase project ref of the Production environment. */
 	readonly SUPABASE_PROJECT_REF_PRODUCTION: string;
-	/** Server-only read-only Vercel token (billing read) for the platform usage console. */
-	readonly VERCEL_API_TOKEN: string;
-	/** Non-secret Vercel team id used by the billing usage query. */
-	readonly VERCEL_TEAM_ID: string;
 	/** Server-only restricted Cloudinary key for the usage report (falls back to the upload key). */
 	readonly CLOUDINARY_USAGE_API_KEY: string;
 	/** Server-only restricted Cloudinary secret for the usage report. */
@@ -71,9 +67,6 @@ interface ImportMetaEnv {
 	readonly TRUST_DEVICE_SECRET: string;
 	readonly PREVIEW_MEDIA_SECRET?: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
-	readonly UPSTASH_REDIS_REST_URL: string;
-	readonly UPSTASH_REDIS_REST_TOKEN: string;
-	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
 	readonly DEV_MFA_BYPASS: string;
 	readonly PREVIEW_MFA_BYPASS: string;
@@ -86,8 +79,6 @@ interface ImportMetaEnv {
 	readonly CELEBRA_BUILD_REF: string;
 	/** Local-process runtime target: `local` | `preview`. Never forges hosted identity. */
 	readonly CELEBRA_RUNTIME_TARGET: string;
-	/** Optional override for the durable canonical-status cache file. */
-	readonly CELEBRA_STATUS_CACHE_PATH: string;
 	readonly BASE_URL: string;
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;

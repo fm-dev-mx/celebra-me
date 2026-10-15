@@ -1,7 +1,7 @@
 import {
 	isCloudinaryDeliveryHostname,
 	isMutableInPlaceMediaUrl,
-} from '@/lib/assets/vercel-image-policy';
+} from '@/lib/assets/image-delivery-policy';
 
 export type DeliveryResourceKind =
 	'vercel-image' | 'supabase-storage' | 'cloudinary' | 'astro-hashed' | 'other';

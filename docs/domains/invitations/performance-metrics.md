@@ -232,7 +232,7 @@ Versioned Cloudinary and hashed `/_astro` remain eligible.
 **Why it matters.** Vercel image transforms can cache a derived byte stream after the Storage object
 is replaced.
 
-**Measurement.** `tests/unit/vercel-image-policy.test.ts`, HTML inventory in `delivery-contract`
+**Measurement.** `tests/unit/image-delivery-policy.test.ts`, HTML inventory in `delivery-contract`
 tests. Live production HTML may still wrap Storage until that policy is deployed; hermetic tests
 guard the code.
 
@@ -258,7 +258,7 @@ changes when `sha256` changes.
 **Why it matters.** Versioned media can be cached long-lived; a new hash is a new object, so
 replacements are not stale.
 
-**Measurement.** `tests/unit/vercel-image-policy.test.ts`,
+**Measurement.** `tests/unit/image-delivery-policy.test.ts`,
 `tests/provision/cloudinary-adapter.test.ts`.
 
 **Enforcement.** Hard CI.
@@ -458,7 +458,7 @@ picture/srcset path — not HTML cache TTLs.
 Insights weekly review.
 
 **Action.** Identify the LCP URL (hero vs font vs section). Check bytes and delivery path (hashed
-Cloudinary vs Storage). Check `X-Render-Timing-Detail` only if the document itself is slow.
+Cloudinary vs Storage). Check TTFB only if the document itself is slow.
 
 ### CLS
 
@@ -504,16 +504,14 @@ size.
 
 **Action.** Profile the island. Keep the duplicate-submit guard. Do not add a CI INP threshold.
 
-### TTFB and server render timing
+### TTFB
 
-**Definition.** Time to first HTML byte, plus `X-Render-Timing` / `X-Render-Timing-Detail`
-(`resolveContent`, `routePersonalization`, `pagePrepare`).
+**Definition.** Time to first HTML byte.
 
 **Why it matters.** Origin work (DB, personalization) shows up here. It is a poor CI signal: two
 5-sample runs on 2026-08-16 showed Renata TTFB medians of 341 ms and 663 ms (range 306–1494 ms).
 
-**Measurement.** Baseline script (per-sample TTFB); Speed Insights TTFB; `X-Render-Timing` /
-`X-Render-Timing-Detail`.
+**Measurement.** Baseline script (per-sample TTFB); Speed Insights TTFB.
 
 **Repeatability (lab, 2026-08-16).** Environment: unthrottled `fetch` from a developer workstation
 to production `www.celebra-me.com/xv/renata`. Two independent 5-sample runs. Statistic: median of
@@ -538,8 +536,7 @@ cold-start mix change — confirm with query-count tests before “optimizing”
 
 **Use case.** Slow HTML with a fast LCP image; personalization work.
 
-**Action.** Read `X-Render-Timing-Detail`. Compare anonymous vs `?invite=`. Check resolver call
-counts.
+**Action.** Compare anonymous vs `?invite=` TTFB. Check resolver call counts.
 
 ### Hero / LCP resource bytes
 
@@ -671,7 +668,7 @@ investigate.
 | Metric           | Where                                     | Trigger                                                             | Response                                |
 | ---------------- | ----------------------------------------- | ------------------------------------------------------------------- | --------------------------------------- |
 | LCP, CLS, INP    | Vercel Speed Insights                     | Sustained p75 worsening on invitation routes (days, not one sample) | Hero/path, layout, islands              |
-| TTFB             | Speed Insights + `X-Render-Timing-Detail` | Sustained origin-time rise vs traffic                               | Query-count tests, personalization span |
+| TTFB             | Speed Insights + baseline script          | Sustained origin-time rise vs traffic                               | Query-count tests, personalization span |
 | Document cache   | Baseline script; deploy checks            | Public TTL or document HIT                                          | Restore origin-revalidate / no-store    |
 | RSVP API errors  | Vercel runtime logs / errors              | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
 | Usage vs traffic | Vercel / Supabase / Cloudinary dashboards | Consumption rising faster than opens/RSVPs                          | Operation contracts, media path         |
@@ -687,7 +684,7 @@ These may fail automated validation immediately:
 - Anonymous HTML origin-revalidate helpers and `[slug].astro` source (no positive `s-maxage`, no
   SWR; `?invite=` forces `no-store, private`).
 - Private-path `no-store` for dashboard/auth (`private-cache-path`).
-- `shouldOptimizeThroughVercelImage` false for mutable Storage; true for Cloudinary and hashed
+- `shouldOptimizeThroughImageService` false for mutable Storage; true for Cloudinary and hashed
   `/_astro`.
 - Cloudinary public ID changes when `sha256` changes.
 - Published resolver: one content read on hit; no extra invitation-row read.
@@ -709,7 +706,7 @@ provider invoices.
 - Measure documents: `pnpm invitation:delivery:baseline --slug <eventType>/<slug>`
 - Assert HTML budget: `pnpm invitation:delivery:baseline --slug <eventType>/<slug> --assert-budget`
 - Hermetic contracts: `pnpm test -- tests/unit/delivery-contract.test.ts` (plus
-  `vercel-image-policy`, `invitation-context-reads`)
+  `image-delivery-policy`, `invitation-context-reads`)
 - Persistence reads: `tests/unit/invitation-context-reads.test.ts`
 - Media diagnostic (opt-in): `DELIVERY_DIAGNOSTICS_ORIGIN` + Playwright file
   `tests/e2e/invitation-delivery-media.diagnostic.spec.ts`

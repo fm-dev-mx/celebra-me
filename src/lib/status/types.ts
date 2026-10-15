@@ -227,7 +227,7 @@ export interface RecentMigrationRecord {
 	};
 }
 
-export interface FreshnessMeta {
+interface FreshnessMeta {
 	status: 'LIVE' | 'CACHED' | 'STALE' | 'REVALIDATING' | 'UNVERIFIED';
 	lastVerifiedAt: string;
 }

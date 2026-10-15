@@ -1,10 +1,13 @@
 import { createHash } from 'node:crypto';
-import { getEnv } from '@/lib/server/env';
 
 interface RateLimitBackend {
 	allow(key: string, maxHits: number, windowSec: number): Promise<boolean>;
 }
 
+/**
+ * Per-instance in-memory buckets. Hosted deployments share nothing between
+ * instances until the runtime exposes a distributed rate-limit binding.
+ */
 class InMemoryBackend implements RateLimitBackend {
 	private readonly buckets = new Map<string, { count: number; resetAt: number }>();
 
@@ -23,52 +26,10 @@ class InMemoryBackend implements RateLimitBackend {
 	}
 }
 
-class UpstashRestBackend implements RateLimitBackend {
-	constructor(
-		private readonly baseUrl: string,
-		private readonly token: string,
-	) {}
-
-	private async command(path: string): Promise<unknown> {
-		const response = await fetch(`${this.baseUrl}${path}`, {
-			headers: {
-				Authorization: `Bearer ${this.token}`,
-			},
-		});
-
-		if (!response.ok) {
-			throw new Error(`Upstash rate limit error (${response.status}).`);
-		}
-
-		return response.json();
-	}
-
-	async allow(key: string, maxHits: number, windowSec: number): Promise<boolean> {
-		const incrRaw = (await this.command(`/incr/${encodeURIComponent(key)}`)) as {
-			result?: number;
-		};
-		const count = Number(incrRaw?.result ?? 0);
-		if (count <= 1) {
-			await this.command(`/expire/${encodeURIComponent(key)}/${windowSec}`);
-		}
-		return count <= maxHits;
-	}
-}
-
 let cachedBackend: RateLimitBackend | null = null;
 
 function resolveBackend(): RateLimitBackend {
 	if (cachedBackend) return cachedBackend;
-
-	const url = getEnv('UPSTASH_REDIS_REST_URL');
-	const token = getEnv('UPSTASH_REDIS_REST_TOKEN');
-	const distributedEnabled = getEnv('RSVP_V2_DISTRIBUTED_RATELIMIT') === 'true';
-
-	if (distributedEnabled && url && token) {
-		cachedBackend = new UpstashRestBackend(url.replace(/\/+$/, ''), token);
-		return cachedBackend;
-	}
-
 	cachedBackend = new InMemoryBackend();
 	return cachedBackend;
 }

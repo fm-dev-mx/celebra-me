@@ -4,8 +4,8 @@ import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import {
 	plainImgSrc,
-	shouldOptimizeThroughVercelImage,
-} from '@/lib/assets/vercel-image-policy';
+	shouldOptimizeThroughImageService,
+} from '@/lib/assets/image-delivery-policy';
 
 interface Props {
 	delivery?: ImageDelivery;
@@ -44,7 +44,7 @@ const width = delivery?.width ?? defaultWidth;
 const height = delivery?.height ?? defaultHeight;
 const format = delivery?.format ?? defaultFormat;
 const quality = delivery?.quality ?? defaultQuality;
-const optimize = shouldOptimizeThroughVercelImage(src, delivery);
+const optimize = shouldOptimizeThroughImageService(src, delivery);
 ---
 
 {

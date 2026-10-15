@@ -4,7 +4,7 @@ import { rominaInvitation } from '../../scripts/provision/invitations/romina-rio
 import { buildCloudinaryDeliveryUrl } from '@/lib/intake/services/cloudinary-assets';
 import { ImageDeliverySchema } from '@/lib/assets/image-delivery';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
-import { shouldOptimizeThroughVercelImage } from '@/lib/assets/vercel-image-policy';
+import { shouldOptimizeThroughImageService } from '@/lib/assets/image-delivery-policy';
 import {
 	materializeAssetReferences,
 	semanticAssetRef,
@@ -65,7 +65,7 @@ test('explicit original delivery is independent of storage provider', () => {
 		'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
 		'http://127.0.0.1:54321/storage/v1/object/public/images/hero.webp',
 	]) {
-		expect(shouldOptimizeThroughVercelImage(url, { mode: 'original' })).toBe(false);
+		expect(shouldOptimizeThroughImageService(url, { mode: 'original' })).toBe(false);
 	}
 });
 
@@ -73,9 +73,9 @@ test('explicit optimization requires immutable local objects and keeps legacy ca
 	const base = 'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/';
 	const mutable = base + localManagedStoragePath('demo', 'hero');
 	const immutable = base + localManagedStoragePath('demo', 'hero', sha256);
-	expect(shouldOptimizeThroughVercelImage(mutable)).toBe(false);
-	expect(() => shouldOptimizeThroughVercelImage(mutable, delivery)).toThrow('versioned');
-	expect(shouldOptimizeThroughVercelImage(immutable, delivery)).toBe(true);
+	expect(shouldOptimizeThroughImageService(mutable)).toBe(false);
+	expect(() => shouldOptimizeThroughImageService(mutable, delivery)).toThrow('versioned');
+	expect(shouldOptimizeThroughImageService(immutable, delivery)).toBe(true);
 	expect(
 		isAcceptableLocalFinalAssetRow({
 			provider: 'supabase',
