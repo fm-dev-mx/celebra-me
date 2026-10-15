@@ -8,6 +8,10 @@
  * wins over the inherited value and the profile token does nothing. Base defaults belong in the
  * `var()` fallback at the point of use (`letter-spacing: var(--gifts-title-letter-spacing, 0.15em)`).
  *
+ * Shared design tokens (`--color-*`, `--font-*`, `--shadow-*`) are exempt: sections remap them on
+ * purpose, for example light text on a dark section, so the section value is meant to win there.
+ * A profile that needs to style one section gets a section-specific token instead.
+ *
  * The baseline lists the shadowed pairs that existed when the guard was introduced. It may only
  * shrink: a new pair fails, and so does a listed pair that no longer shadows anything.
  */
@@ -23,6 +27,7 @@ const PROFILE_ROOT_SELECTOR = /^\.event--([\w-]+)(?:\.theme-preset--([\w-]+))?$/
 // Declarations on these selectors sit on (or above) the wrapper, so a profile token still wins.
 const WRAPPER_LEVEL_SELECTOR =
 	/^(?::root|html|body)\b|^\.theme-preset--[\w-]+$|event-theme-wrapper/u;
+const SHARED_DESIGN_TOKEN = /^--(?:color|font|shadow)-/u;
 
 interface Declaration {
 	token: string;
@@ -105,6 +110,7 @@ function readBaseSectionDeclarations(): BaseDeclaration[] {
 	return BASE_DIRS.flatMap((dir) => listScss(path.join(ROOT, dir))).flatMap((file) => {
 		const relative = path.relative(ROOT, file).split(path.sep).join('/');
 		return readDeclarations(fs.readFileSync(file, 'utf8')).flatMap(({ token, chain }) => {
+			if (SHARED_DESIGN_TOKEN.test(token)) return [];
 			const selector = chain[0];
 			if (selector.startsWith('@') || WRAPPER_LEVEL_SELECTOR.test(selector)) return [];
 			const presets = [...selector.matchAll(/theme-preset--([\w-]+)/gu)].map((m) => m[1]);
@@ -170,7 +176,7 @@ describe('invitation profile tokens are not shadowed by base section defaults', 
 	});
 
 	it('lets the America gifts title tokens reach the section', () => {
-		expect(shadowed.get('america')?.has('--gifts-title-letter-spacing')).toBe(false);
-		expect(shadowed.get('america')?.has('--gifts-title-size')).toBe(false);
+		expect(shadowed.get('america')?.has('--gifts-title-letter-spacing') ?? false).toBe(false);
+		expect(shadowed.get('america')?.has('--gifts-title-size') ?? false).toBe(false);
 	});
 });

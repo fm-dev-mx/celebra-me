@@ -57,7 +57,7 @@
 // ==========================================================================
 
 :where(.invitation-hero)[data-variant='bleed-portrait'] {
-	--hero-title-size: clamp(3.2rem, 10vw, 5.5rem);
+	--hero-title-size-fallback: clamp(3.2rem, 10vw, 5.5rem);
 }
 
 // Side-by-side layout: wide screens and phones held sideways.
@@ -246,7 +246,8 @@
 	.framed-portrait-hero__name {
 		max-width: 100%;
 		margin: var(--hero-bleed-name-margin, 0);
-		font: var(--hero-name-font-weight, 400) var(--hero-title-size) /
+		font: var(--hero-name-font-weight, 400)
+			var(--hero-title-size, var(--hero-title-size-fallback)) /
 			var(--hero-name-line-height, 1.15) var(--hero-name-font-family, var(--font-display));
 		letter-spacing: var(--hero-name-letter-spacing, 0);
 		text-wrap: balance;

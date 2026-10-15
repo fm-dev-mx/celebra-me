@@ -1,7 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
 .gallery-section[data-variant='feature-mosaic'] {
-	--gallery-section-bg:
+	--gallery-section-bg-fallback:
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-action-accent-rgb) / 12%),
@@ -15,13 +15,13 @@
 	--gallery-grid-columns-tablet: 2;
 	--gallery-grid-columns-desktop: 3;
 	--gallery-item-aspect-ratio: 4 / 5;
-	--gallery-title-font: var(--font-display, 'Special Elite', cursive);
+	--gallery-title-font-fallback: var(--font-display, 'Special Elite', cursive);
 	--gallery-title-size: clamp(2.2rem, 4.6vw, 3.25rem);
-	--gallery-title-color: var(--color-action-accent);
+	--gallery-title-color-fallback: var(--color-action-accent);
 	--gallery-title-letter-spacing: 0.1em;
 	--gallery-subtitle-font: var(--font-body, 'Montserrat Variable', sans-serif);
 	--gallery-subtitle-size: clamp(0.86rem, 1.6vw, 1rem);
-	--gallery-subtitle-color: rgb(245 228 188 / 68%);
+	--gallery-subtitle-color-fallback: rgb(245 228 188 / 68%);
 	--gallery-subtitle-transform: uppercase;
 	--gallery-subtitle-letter-spacing: 0.13em;
 	--gallery-item-bg: rgb(36 29 23 / 92%);
@@ -83,7 +83,7 @@
 	--gallery-lightbox-footer-size: 1.45rem;
 
 	position: relative;
-	background: var(--gallery-section-bg);
+	background: var(--gallery-section-bg, var(--gallery-section-bg-fallback));
 	box-shadow:
 		inset 0 1px 0 rgb(255 241 214 / 4%),
 		inset 0 0 90px rgb(0 0 0 / 58%);
@@ -99,7 +99,7 @@
 	}
 
 	.gallery-section__title {
-		color: var(--gallery-title-color);
+		color: var(--gallery-title-color, var(--gallery-title-color-fallback));
 		text-shadow: 0 3px 10px rgb(0 0 0 / 55%);
 		background: none;
 		-webkit-text-fill-color: currentcolor;

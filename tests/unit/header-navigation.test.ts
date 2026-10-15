@@ -8,8 +8,9 @@ function read(relativePath: string): string {
 	return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
 }
 
+// Shared styles may publish a token's default as `<token>-fallback` (profiles own `<token>`).
 function expectToken(source: string, token: string): void {
-	expect(source).toContain(`${token}:`);
+	expect(source).toMatch(new RegExp(`${token}(?:-fallback)?:`, 'u'));
 }
 
 describe('Invitation header navigation contract', () => {
@@ -188,9 +189,9 @@ describe('Invitation header navigation contract', () => {
 
 		// Header atmosphere is owned by theme preset scope, never data-variant=theme.
 		expect(source).toMatch(/\.theme-preset--celestial-blue\s+\.header-base/);
-		expect(source).toMatch(/--header-bg-scrolled:/);
-		expect(source).toMatch(/--header-border-color:/);
-		expect(source).toMatch(/--mobile-drawer-bg:/);
+		expectToken(source, '--header-bg-scrolled');
+		expectToken(source, '--header-border-color');
+		expectToken(source, '--mobile-drawer-bg');
 	});
 
 	it('publishes the navigation token contract from _header-base.scss', () => {
@@ -214,11 +215,11 @@ describe('Invitation header navigation contract', () => {
 	it('keeps mobile navigation colors behind the shared token contract', () => {
 		const source = read('src/styles/layout/_header-base.scss');
 
-		expect(source).toContain('color: var(--mobile-drawer-link-color)');
-		expect(source).toContain('color: var(--mobile-drawer-login-color)');
-		expect(source).toContain('background: var(--mobile-drawer-cta-bg)');
-		expect(source).toContain('color: var(--mobile-drawer-cta-color)');
-		expect(source).toContain('color: var(--mobile-signature-color)');
+		expect(source).toContain('color: var(--mobile-drawer-link-color');
+		expect(source).toContain('color: var(--mobile-drawer-login-color');
+		expect(source).toContain('background: var(--mobile-drawer-cta-bg');
+		expect(source).toContain('color: var(--mobile-drawer-cta-color');
+		expect(source).toContain('color: var(--mobile-signature-color');
 		expect(source).not.toContain('color: rgb(255 255 255 / 60%)');
 	});
 

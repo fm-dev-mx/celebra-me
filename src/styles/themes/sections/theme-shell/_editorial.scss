@@ -43,7 +43,11 @@
 
 	.event-location__card {
 		&:hover {
-			transform: var(--location-card-hover-transform) rotateX(2deg);
+			transform: var(
+					--location-card-hover-transform,
+					var(--location-card-hover-transform-fallback)
+				)
+				rotateX(2deg);
 		}
 
 		&::before {

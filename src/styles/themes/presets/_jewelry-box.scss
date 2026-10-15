@@ -50,10 +50,10 @@
 	// ---------------------------------------------------------------------
 	// Quote section tokens
 	// ---------------------------------------------------------------------
-	--quote-bg: var(--color-surface-dark);
-	--quote-text-color: var(--color-text-on-dark);
-	--quote-author-color: var(--color-action-accent);
-	--quote-accent-color: var(--color-action-accent);
+	--quote-bg-fallback: var(--color-surface-dark);
+	--quote-text-color-fallback: var(--color-text-on-dark);
+	--quote-author-color-fallback: var(--color-action-accent);
+	--quote-accent-color-fallback: var(--color-action-accent);
 
 	// ---------------------------------------------------------------------
 	// Music Player
@@ -96,61 +96,61 @@
 	// ---------------------------------------------------------------------
 	// Family section tokens
 	// ---------------------------------------------------------------------
-	--family-bg: radial-gradient(
+	--family-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--family-texture-opacity: 0.3;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 0.3;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
 		rgb(var(--color-action-accent-rgb) / 3%) 100%
 	);
-	--family-panel-bg: rgb(255 255 255 / 48%);
-	--family-panel-border: 1px solid var(--color-glass-border);
-	--family-panel-shadow: var(--shadow-premium);
+	--family-panel-bg-fallback: rgb(255 255 255 / 48%);
+	--family-panel-border-fallback: 1px solid var(--color-glass-border);
+	--family-panel-shadow-fallback: var(--shadow-premium);
 	--family-panel-radius: 16px;
-	--family-text-primary: var(--color-surface-dark);
-	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 60%);
-	--family-accent: var(--color-action-accent);
+	--family-text-primary-fallback: var(--color-surface-dark);
+	--family-text-muted-fallback: rgb(var(--color-surface-dark-rgb) / 60%);
+	--family-accent-fallback: var(--color-action-accent);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		var(--color-action-accent) 50%,
 		transparent 100%
 	);
-	--family-title-font: var(--font-display);
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-title-font-fallback: var(--font-display);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.45rem, 3vw, 2.05rem);
 	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
 	--family-media-bg: var(--color-frame-bg);
 	--family-media-radius: 14px;
 	--family-media-border: var(--border-image);
 	--family-media-shadow: var(--shadow-premium);
 	--family-media-inner-border: 1px solid rgb(255 255 255 / 42%);
-	--family-media-filter: sepia(0.12) contrast(1.04) brightness(1.01);
+	--family-media-filter-fallback: sepia(0.12) contrast(1.04) brightness(1.01);
 
 	// ---------------------------------------------------------------------
 	// Hero tokens
 	// ---------------------------------------------------------------------
-	--hero-title-color-start: var(--color-action-accent);
-	--hero-title-color-mid: rgb(255 255 255);
-	--hero-title-color-end: var(--color-action-accent);
-	--hero-badge-text: var(--color-action-accent);
+	--hero-title-color-start-fallback: var(--color-action-accent);
+	--hero-title-color-mid-fallback: rgb(255 255 255);
+	--hero-title-color-end-fallback: var(--color-action-accent);
+	--hero-badge-text-fallback: var(--color-action-accent);
 	--hero-label-color: var(--color-text-emphasis);
 
 	// ---------------------------------------------------------------------
 	// Gallery tokens
 	// ---------------------------------------------------------------------
-	--gallery-section-bg: radial-gradient(
+	--gallery-section-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-action-accent);
-	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb) / 72%);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-action-accent);
+	--gallery-subtitle-color-fallback: rgb(var(--color-surface-dark-rgb) / 72%);
 	--gallery-caption-bg: rgb(255 255 255 / 90%);
 	--gallery-caption-color: var(--color-action-accent);
 	--gallery-caption-font: #{sys-type.$sys-font-display-hacienda};
@@ -169,7 +169,7 @@
 	--texture-silk:
 		radial-gradient(circle at 50% 50%, rgb(255 255 255 / 80%) 0%, rgb(255 249 245 / 40%) 100%),
 		repeating-linear-gradient(135deg, rgb(255 255 255 / 12%) 0 1px, transparent 1px 4px);
-	--light-sweep: linear-gradient(
+	--light-sweep-fallback: linear-gradient(
 		-45deg,
 		rgb(255 255 255 / 0%) 0%,
 		rgb(255 255 255 / 0%) 40%,
@@ -196,25 +196,29 @@
 	// Location Section (framed card style)
 	// ---------------------------------------------------------------------
 	--location-outer-frame-padding: 2px;
-	--location-outer-frame-bg: var(--location-flourish-color);
+	--location-outer-frame-bg: var(
+		--location-flourish-color,
+		var(--location-flourish-color-fallback)
+	);
 	--location-outer-frame-shadow: var(--shadow-standard);
 	--location-outer-frame-margin-bottom: 0.75rem;
 	--location-inner-frame-padding: 8px;
 	--location-inner-frame-bg: var(--color-surface-elevated);
 	--location-inner-frame-border-radius: 2px;
 	--location-card-radius: 12px;
-	--location-card-shadow: var(--shadow-premium);
-	--location-card-padding: 3rem 2rem;
+	--location-card-shadow-fallback: var(--shadow-premium);
+	--location-card-padding-fallback: 3rem 2rem;
 	--location-content-padding: 0;
 	--location-divider-display: block;
-	--location-indications-panel-bg: rgb(var(--color-surface-primary-rgb) / 50%);
-	--location-indications-panel-border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
-	--location-indications-panel-padding: 3rem 2rem;
+	--location-indications-panel-bg-fallback: rgb(var(--color-surface-primary-rgb) / 50%);
+	--location-indications-panel-border-fallback: 1px solid
+		rgb(var(--color-action-accent-rgb) / 20%);
+	--location-indications-panel-padding-fallback: 3rem 2rem;
 	--location-indications-backdrop-filter: blur(10px);
-	--location-indications-gap: 2.5rem;
+	--location-indications-gap-fallback: 2.5rem;
 	--location-indications-before-display: block;
 	--location-indication-item-padding: 0;
-	--location-indication-item-gap: 1.2rem;
+	--location-indication-item-gap-fallback: 1.2rem;
 	--location-indication-icon-size: 2.2rem;
 	--location-indication-icon-svg-size: 22px;
 	--location-indication-icon-svg-stroke: 0.75px;
@@ -229,17 +233,17 @@
 	--location-nav-padding: 1rem 1.4rem;
 	--location-nav-buttons-gap: 0.8rem;
 	--location-date-font-family: var(--font-calligraphy);
-	--location-hour-letter-spacing: 0.35em;
+	--location-hour-letter-spacing-fallback: 0.35em;
 	--location-flourish-margin-bottom: 2rem;
 	--location-title-margin-bottom: 0.5rem;
-	--location-place-margin: 1rem 0;
+	--location-place-margin-fallback: 1rem 0;
 	--location-place-letter-spacing: -0.5px;
 
 	// ---------------------------------------------------------------------
 	// Personalized Access Section
 	// ---------------------------------------------------------------------
-	--pa-card-bg-color: var(--color-surface-dark);
-	--pa-card-bg-image:
+	--pa-card-bg-color-fallback: var(--color-surface-dark);
+	--pa-card-bg-image-fallback:
 		linear-gradient(
 			155deg,
 			var(--color-surface-dark) 0%,
@@ -253,52 +257,52 @@
 			rgb(212 175 55 / 3%) 2px,
 			rgb(212 175 55 / 3%) 4px
 		);
-	--pa-card-border: 1.5px solid rgb(var(--color-action-accent-rgb) / 40%);
+	--pa-card-border-fallback: 1.5px solid rgb(var(--color-action-accent-rgb) / 40%);
 	--pa-card-border-radius: 0.75rem;
-	--pa-card-shadow:
+	--pa-card-shadow-fallback:
 		0 20px 50px rgb(0 0 0 / 40%), inset 0 0 60px rgb(var(--color-action-accent-rgb) / 10%);
 	--pa-card-inset: 0.75rem;
-	--pa-card-inner-border: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
 	--pa-card-inner-radius: 0.375rem;
-	--pa-card-glow: radial-gradient(
+	--pa-card-glow-fallback: radial-gradient(
 		circle at top center,
 		rgb(var(--color-action-accent-rgb) / 15%),
 		transparent 50%
 	);
 	--pa-corner-size: 1.5rem;
 	--pa-corner-dot-size: 0.3rem;
-	--pa-corner-opacity: 60%;
-	--pa-corner-glow-blur: 10px;
-	--pa-eyebrow-color: var(--color-action-accent);
+	--pa-corner-opacity-fallback: 60%;
+	--pa-corner-glow-blur-fallback: 10px;
+	--pa-eyebrow-color-fallback: var(--color-action-accent);
 	--pa-eyebrow-tracking: 0.35em;
 	--pa-title-font: var(--font-display-formal);
-	--pa-title-tracking: 0.25em;
-	--pa-title-color: var(--color-action-accent);
+	--pa-title-tracking-fallback: 0.25em;
+	--pa-title-color-fallback: var(--color-action-accent);
 	--pa-title-shadow: 0 2px 8px rgb(0 0 0 / 30%);
-	--pa-subtitle-color: var(--color-text-on-dark);
+	--pa-subtitle-color-fallback: var(--color-text-on-dark);
 	--pa-guest-weight: 500;
-	--pa-guest-color: var(--color-text-on-dark);
-	--pa-divider-gradient: linear-gradient(
+	--pa-guest-color-fallback: var(--color-text-on-dark);
+	--pa-divider-gradient-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		var(--color-action-accent) 50%,
 		transparent 100%
 	);
 	--pa-divider-opacity: 75%;
-	--pa-divider-diamond-bg: var(--color-surface-dark);
-	--pa-divider-diamond-border-color: var(--color-action-accent);
-	--pa-divider-diamond-shadow: 0 0 12px rgb(var(--color-action-accent-rgb) / 40%);
-	--pa-count-frame-radius: 0.5rem;
-	--pa-count-frame-border: 1.5px solid rgb(var(--color-action-accent-rgb) / 45%);
-	--pa-count-frame-bg: linear-gradient(
+	--pa-divider-diamond-bg-fallback: var(--color-surface-dark);
+	--pa-divider-diamond-border-color-fallback: var(--color-action-accent);
+	--pa-divider-diamond-shadow-fallback: 0 0 12px rgb(var(--color-action-accent-rgb) / 40%);
+	--pa-count-frame-radius-fallback: 0.5rem;
+	--pa-count-frame-border-fallback: 1.5px solid rgb(var(--color-action-accent-rgb) / 45%);
+	--pa-count-frame-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-action-accent-rgb) / 20%),
 		rgb(var(--color-action-accent-rgb) / 8%)
 	);
-	--pa-count-frame-shadow:
+	--pa-count-frame-shadow-fallback:
 		0 12px 30px rgb(0 0 0 / 30%), inset 0 0 20px rgb(var(--color-action-accent-rgb) / 10%);
-	--pa-count-color: var(--color-action-accent);
+	--pa-count-color-fallback: var(--color-action-accent);
 	--pa-count-shadow: 0 3px 10px rgb(0 0 0 / 25%);
-	--pa-footer-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
-	--pa-footer-text-color: var(--color-text-on-dark);
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
+	--pa-footer-text-color-fallback: var(--color-text-on-dark);
 }

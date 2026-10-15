@@ -85,7 +85,7 @@
 		}
 
 		img {
-			filter: var(--hero-image-filter);
+			filter: var(--hero-image-filter, var(--hero-image-filter-fallback));
 		}
 	}
 

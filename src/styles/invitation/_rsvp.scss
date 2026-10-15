@@ -98,7 +98,7 @@
 }
 
 .rsvp {
-	--rsvp-bg: var(--color-surface-dark);
+	--rsvp-bg-fallback: var(--color-surface-dark);
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
 	--color-glass-border: var(--color-border-premium, rgb(var(--color-action-accent-rgb) / 18%));
 	--color-glass-shadow: rgb(var(--color-action-accent-rgb) / 18%);
@@ -154,7 +154,7 @@
 	--rsvp-error-bg: rgb(var(--color-state-danger-rgb) / 10%);
 	--rsvp-error-border: rgb(var(--color-state-danger-rgb) / 28%);
 	--rsvp-title-font: var(--font-display);
-	--rsvp-title-color: var(--color-action-accent);
+	--rsvp-title-color-fallback: var(--color-action-accent);
 	--rsvp-title-size: clamp(1.45rem, 5vw, 2rem);
 	--rsvp-title-margin: 0 0 0.85rem;
 	--rsvp-title-line-height: normal;
@@ -201,7 +201,7 @@
 		line-height: var(--rsvp-title-line-height);
 		letter-spacing: var(--rsvp-title-letter-spacing);
 		text-transform: var(--rsvp-title-transform);
-		color: var(--rsvp-title-color);
+		color: var(--rsvp-title-color, var(--rsvp-title-color-fallback));
 		text-align: center;
 	}
 
@@ -684,7 +684,7 @@
 		font-family: var(--font-display);
 		font-size: 1.2rem;
 		line-height: 1.25;
-		color: var(--rsvp-title-color);
+		color: var(--rsvp-title-color, var(--rsvp-title-color-fallback));
 		text-align: center;
 	}
 
@@ -757,7 +757,7 @@
 			margin-bottom: 1rem;
 			display: flex;
 			justify-content: center;
-			color: var(--rsvp-title-color);
+			color: var(--rsvp-title-color, var(--rsvp-title-color-fallback));
 		}
 
 		&-message {

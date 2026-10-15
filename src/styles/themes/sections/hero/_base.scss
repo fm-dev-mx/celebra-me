@@ -1,21 +1,21 @@
 :where(.invitation-hero) {
-	--hero-overlay: rgb(0 0 0 / 40%);
-	--hero-overlay-gradient: linear-gradient(
+	--hero-overlay-fallback: rgb(0 0 0 / 40%);
+	--hero-overlay-gradient-fallback: linear-gradient(
 		to bottom,
 		transparent 0%,
 		rgb(0 0 0 / 20%) 50%,
 		rgb(0 0 0 / 60%) 100%
 	);
-	--hero-title-size: clamp(4rem, 12vw, 8rem);
-	--hero-image-filter: grayscale(0.3) brightness(0.85);
-	--hero-portrait-filter: contrast(1.1) saturate(1.1) brightness(0.9);
-	--hero-title-color-start: var(--color-action-accent);
-	--hero-title-color-mid: var(--color-surface-elevated, white);
-	--hero-title-color-end: var(--color-action-accent);
-	--hero-divider-color: var(--color-action-accent);
-	--hero-meta-color: var(--color-text-on-dark);
-	--hero-badge-text: var(--color-action-accent);
-	--light-sweep: linear-gradient(
+	--hero-title-size-fallback: clamp(4rem, 12vw, 8rem);
+	--hero-image-filter-fallback: grayscale(0.3) brightness(0.85);
+	--hero-portrait-filter-fallback: contrast(1.1) saturate(1.1) brightness(0.9);
+	--hero-title-color-start-fallback: var(--color-action-accent);
+	--hero-title-color-mid-fallback: var(--color-surface-elevated, white);
+	--hero-title-color-end-fallback: var(--color-action-accent);
+	--hero-divider-color-fallback: var(--color-action-accent);
+	--hero-meta-color-fallback: var(--color-text-on-dark);
+	--hero-badge-text-fallback: var(--color-action-accent);
+	--light-sweep-fallback: linear-gradient(
 		115deg,
 		transparent 20%,
 		rgb(255 255 255 / 25%) 40%,

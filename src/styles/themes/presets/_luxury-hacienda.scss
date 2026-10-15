@@ -53,31 +53,31 @@
 	// ---------------------------------------------------------------------
 	// Quote section
 	// ---------------------------------------------------------------------
-	--quote-bg:
+	--quote-bg-fallback:
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-action-accent-rgb) / 8%),
 			transparent 58%
 		),
 		linear-gradient(180deg, rgb(246 240 226) 0%, var(--color-surface-primary) 100%);
-	--quote-text-color: rgb(var(--color-text-primary-rgb) / 90%);
-	--quote-author-color: rgb(var(--color-action-accent-rgb) / 90%);
-	--quote-accent-color: var(--color-action-accent);
+	--quote-text-color-fallback: rgb(var(--color-text-primary-rgb) / 90%);
+	--quote-author-color-fallback: rgb(var(--color-action-accent-rgb) / 90%);
+	--quote-accent-color-fallback: var(--color-action-accent);
 	--quote-padding-block: clamp(6.5rem, 12vw, 10rem);
 	--quote-padding-inline: clamp(1.25rem, 4vw, 2rem);
 	--quote-content-max-width: 820px;
-	--quote-content-font: var(--font-body-hacienda, var(--font-body-narrative));
-	--quote-content-size: clamp(1.55rem, 4.2vw, 2.45rem);
-	--quote-content-line-height: 1.55;
+	--quote-content-font-fallback: var(--font-body-hacienda, var(--font-body-narrative));
+	--quote-content-size-fallback: clamp(1.55rem, 4.2vw, 2.45rem);
+	--quote-content-line-height-fallback: 1.55;
 	--quote-content-style: italic;
-	--quote-divider-color: var(--color-action-accent);
+	--quote-divider-color-fallback: var(--color-action-accent);
 	--quote-divider-opacity: 0.28;
 	--quote-ornament-opacity: 0.45;
 
 	// ---------------------------------------------------------------------
 	// Gifts section
 	// ---------------------------------------------------------------------
-	--gifts-bg:
+	--gifts-bg-fallback:
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-action-accent-rgb) / 10%),
@@ -85,16 +85,16 @@
 		),
 		linear-gradient(145deg, rgb(46 32 23) 0%, rgb(25 18 13) 100%);
 	--gifts-text-color: rgb(248 235 205 / 92%);
-	--gifts-title-color: rgb(231 205 155 / 92%);
-	--gifts-subtitle-color: rgb(248 235 205 / 68%);
+	--gifts-title-color-fallback: rgb(231 205 155 / 92%);
+	--gifts-subtitle-color-fallback: rgb(248 235 205 / 68%);
 	--gifts-title-letter-spacing: 0.13em;
-	--gifts-padding-block: clamp(6rem, 10vw, 8.5rem);
+	--gifts-padding-block-fallback: clamp(6rem, 10vw, 8.5rem);
 	--gifts-card-bg: rgb(63 46 35 / 62%);
 	--gifts-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
 	--gifts-card-radius: 7px;
 	--gifts-card-shadow: 0 18px 42px rgb(0 0 0 / 28%), inset 0 1px 0 rgb(255 241 214 / 8%);
 	--gifts-card-title-color: rgb(231 205 155 / 92%);
-	--gifts-icon-color: rgb(224 185 112 / 86%);
+	--gifts-icon-color-fallback: rgb(224 185 112 / 86%);
 	--gifts-button-color: rgb(241 219 177 / 92%);
 	--gifts-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 42%);
 	--gifts-button-hover-bg: rgb(224 185 112 / 88%);
@@ -112,26 +112,26 @@
 	// ---------------------------------------------------------------------
 	// Section specific tokens (still using variables, but cleaned up)
 	// ---------------------------------------------------------------------
-	--family-bg: linear-gradient(
+	--family-bg-fallback: linear-gradient(
 		155deg,
 		#{color.adjust(sys.$sys-color-parchment-100, $lightness: 2%)} 0%,
 		#{sys.$sys-color-parchment-100} 54%,
 		#{color.adjust(sys.$sys-color-parchment-300, $lightness: 4%)} 100%
 	);
 	--family-texture-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23926d48' fill-opacity='0.03' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
-	--family-texture-opacity: 1;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 1;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		rgb(255 255 255 / 0%) 0%,
 		rgb(var(--color-action-accent-rgb) / 6%) 100%
 	);
-	--family-panel-bg: rgb(248 241 224 / 18%);
-	--family-panel-border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
-	--family-panel-shadow: none;
+	--family-panel-bg-fallback: rgb(248 241 224 / 18%);
+	--family-panel-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+	--family-panel-shadow-fallback: none;
 	--family-panel-radius: 0;
-	--family-text-primary: var(--color-text-primary);
-	--family-text-muted: rgb(var(--color-text-primary-rgb) / 76%);
-	--family-accent: var(--color-action-accent);
+	--family-text-primary-fallback: var(--color-text-primary);
+	--family-text-muted-fallback: rgb(var(--color-text-primary-rgb) / 76%);
+	--family-accent-fallback: var(--color-action-accent);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
@@ -140,9 +140,9 @@
 		rgb(var(--color-action-accent-rgb) / 14%) 70%,
 		transparent 100%
 	);
-	--family-title-font: #{sys-type.$sys-font-display-formal};
-	--family-name-font: #{sys-type.$sys-font-display-hacienda};
-	--family-name-size: clamp(1.6rem, 3vw, 2.15rem);
+	--family-title-font-fallback: #{sys-type.$sys-font-display-formal};
+	--family-name-font-fallback: #{sys-type.$sys-font-display-hacienda};
+	--family-name-size-fallback: clamp(1.6rem, 3vw, 2.15rem);
 	--family-lead-name-size: clamp(2.05rem, 4vw, 2.7rem);
 	--family-media-bg: rgb(248 241 224 / 78%);
 	--family-media-radius: 0;
@@ -156,7 +156,7 @@
 	--family-media-corner-size: 18px;
 	--family-media-corner-width: 1.5px;
 	--family-media-corner-opacity: 100%;
-	--family-media-filter: sepia(0.05) contrast(1.02) brightness(0.99);
+	--family-media-filter-fallback: sepia(0.05) contrast(1.02) brightness(0.99);
 	--family-deceased-symbol-color: rgb(var(--color-action-accent-rgb) / 82%);
 	--family-deceased-symbol-size: 0.9em;
 	--family-deceased-symbol-opacity: 80%;
@@ -165,13 +165,13 @@
 	// ---------------------------------------------------------------------
 	// Hero tokens (refined for softer editorial feel)
 	// ---------------------------------------------------------------------
-	--hero-title-color-start: rgb(185 150 85 / 88%);
-	--hero-title-color-mid: rgb(235 220 190 / 90%);
-	--hero-title-color-end: rgb(165 130 72 / 85%);
+	--hero-title-color-start-fallback: rgb(185 150 85 / 88%);
+	--hero-title-color-mid-fallback: rgb(235 220 190 / 90%);
+	--hero-title-color-end-fallback: rgb(165 130 72 / 85%);
 	--hero-label-color: rgb(221 184 115 / 82%);
-	--hero-meta-color: rgb(238 220 181 / 84%);
-	--hero-badge-text: rgb(240 212 157 / 94%);
-	--hero-divider-color: linear-gradient(
+	--hero-meta-color-fallback: rgb(238 220 181 / 84%);
+	--hero-badge-text-fallback: rgb(240 212 157 / 94%);
+	--hero-divider-color-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(193 151 77 / 16%) 22%,
@@ -195,36 +195,40 @@
 	// ---------------------------------------------------------------------
 	// Header tokens
 	// ---------------------------------------------------------------------
-	--header-bg-scrolled: linear-gradient(180deg, rgb(29 20 14 / 92%) 0%, rgb(42 31 22 / 88%) 100%);
+	--header-bg-scrolled-fallback: linear-gradient(
+		180deg,
+		rgb(29 20 14 / 92%) 0%,
+		rgb(42 31 22 / 88%) 100%
+	);
 	--header-border-scrolled: 1px solid rgb(207 168 95 / 20%);
-	--header-nav-color: rgb(241 223 187 / 92%);
+	--header-nav-color-fallback: rgb(241 223 187 / 92%);
 	--header-cta-glow: 0 10px 26px rgb(0 0 0 / 30%), 0 1px 0 rgb(255 241 214 / 8%);
 
 	// ---------------------------------------------------------------------
 	// Location Section
 	// ---------------------------------------------------------------------
 	--location-text-color: var(--color-text-primary);
-	--location-bg:
+	--location-bg-fallback:
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-action-accent-rgb) / 10%),
 			transparent 46%
 		),
 		linear-gradient(180deg, var(--color-surface-primary) 0%, rgb(242 235 219) 100%);
-	--location-padding-block: clamp(5.5rem, 10vw, 8.5rem) clamp(4rem, 6vh, 6rem);
+	--location-padding-block-fallback: clamp(5.5rem, 10vw, 8.5rem) clamp(4rem, 6vh, 6rem);
 	--location-padding-inline: clamp(1rem, 4vw, 1.5rem);
 	--location-container-max-width: min(1040px, calc(100vw - 2rem));
 	--location-container-max-width-sm: 34rem;
 	--location-gap: clamp(2.5rem, 5vw, 4rem);
 	--location-card-max-width: 31rem;
-	--location-card-bg: rgb(250 244 229 / 78%);
-	--location-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
+	--location-card-bg-fallback: rgb(250 244 229 / 78%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
 	--location-card-radius: 7px;
-	--location-card-shadow:
+	--location-card-shadow-fallback:
 		0 24px 58px rgb(var(--color-text-primary-rgb) / 11%), inset 0 1px 0 rgb(255 255 255 / 58%);
 	--location-card-backdrop-filter: blur(10px) saturate(120%);
-	--location-card-hover-transform: translateY(-4px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-4px);
+	--location-card-hover-shadow-fallback:
 		0 32px 68px rgb(var(--color-text-primary-rgb) / 14%), inset 0 1px 0 rgb(255 255 255 / 62%);
 	--location-card-hover-border-color: rgb(var(--color-action-accent-rgb) / 42%);
 	--location-image-aspect-ratio: 16 / 9;
@@ -239,30 +243,30 @@
 	--location-reception-image-focus-y: 46%;
 	--location-content-padding: clamp(1.4rem, 3vw, 2.1rem);
 	--location-title-color: rgb(var(--color-text-primary-rgb) / 76%);
-	--location-title-font-family: var(--font-body-hacienda);
-	--location-title-font-size: 0.72rem;
-	--location-title-letter-spacing: 0.26em;
+	--location-title-font-family-fallback: var(--font-body-hacienda);
+	--location-title-font-size-fallback: 0.72rem;
+	--location-title-letter-spacing-fallback: 0.26em;
 	--location-title-margin-bottom: 0.8rem;
-	--location-place-color: var(--color-text-primary);
-	--location-place-font-family: var(--font-display-hacienda);
-	--location-place-font-size: clamp(1.8rem, 3.4vw, 2.45rem);
+	--location-place-color-fallback: var(--color-text-primary);
+	--location-place-font-family-fallback: var(--font-display-hacienda);
+	--location-place-font-size-fallback: clamp(1.8rem, 3.4vw, 2.45rem);
 	--location-place-letter-spacing: 0.02em;
-	--location-place-line-height: 1;
+	--location-place-line-height-fallback: 1;
 	--location-date-color: rgb(var(--color-action-accent-rgb) / 90%);
 	--location-date-font-family: var(--font-body-hacienda);
 	--location-date-font-size: 0.72rem;
-	--location-hour-color: rgb(var(--color-text-primary-rgb) / 66%);
+	--location-hour-color-fallback: rgb(var(--color-text-primary-rgb) / 66%);
 	--location-hour-font-family: var(--font-body-hacienda);
-	--location-hour-font-size: 0.84rem;
+	--location-hour-font-size-fallback: 0.84rem;
 	--location-hour-margin-bottom: 1.2rem;
-	--location-address-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--location-address-color-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 	--location-address-font-family: var(--font-body-hacienda);
-	--location-address-font-size: 0.88rem;
+	--location-address-font-size-fallback: 0.88rem;
 	--location-address-letter-spacing: 0.01em;
 	--location-address-line-height: 1.55;
 	--location-address-padding-top: 1.15rem;
 	--location-address-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
-	--location-flourish-color: var(--color-action-accent);
+	--location-flourish-color-fallback: var(--color-action-accent);
 	--location-flourish-margin-bottom: clamp(1rem, 2vw, 1.35rem);
 	--location-flourish-opacity: 72%;
 	--location-flourish-diamond-size: 5px;
@@ -292,19 +296,19 @@
 	--location-indications-spacing: clamp(3rem, 6vw, 4.5rem);
 	--location-indications-container-max-width: 48rem;
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-gap: clamp(0.9rem, 2vw, 1.2rem);
+	--location-indications-gap-fallback: clamp(0.9rem, 2vw, 1.2rem);
 	--location-indication-item-bg: rgb(250 244 229 / 56%);
 	--location-indication-item-border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 	--location-indication-item-radius: 7px;
 	--location-indication-item-padding: clamp(1rem, 2vw, 1.2rem);
 	--location-indication-icon-bg: rgb(255 250 238 / 66%);
-	--location-indication-icon-color: var(--color-action-accent);
+	--location-indication-icon-color-fallback: var(--color-action-accent);
 	--location-indication-icon-size: 1.8rem;
 	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-action-accent-rgb) / 22%);
 	--location-indication-icon-svg-size: 15px;
-	--location-indication-text-color: rgb(var(--color-text-primary-rgb) / 78%);
+	--location-indication-text-color-fallback: rgb(var(--color-text-primary-rgb) / 78%);
 	--location-indication-text-font-family: var(--font-body-hacienda);
-	--location-indication-text-font-size: 0.92rem;
+	--location-indication-text-font-size-fallback: 0.92rem;
 	--location-indication-text-line-height: 1.55;
 	--location-indication-strong-color: var(--color-text-primary);
 
@@ -334,8 +338,8 @@
 	// ---------------------------------------------------------------------
 	// Personalized Access Section
 	// ---------------------------------------------------------------------
-	--pa-card-bg-color: var(--color-surface-elevated);
-	--pa-card-bg-image:
+	--pa-card-bg-color-fallback: var(--color-surface-elevated);
+	--pa-card-bg-image-fallback:
 		linear-gradient(165deg, rgb(63 46 35 / 92%) 0%, rgb(25 18 13 / 96%) 100%),
 		repeating-linear-gradient(
 			45deg,
@@ -344,68 +348,68 @@
 			rgb(90 70 45 / 4%) 3px,
 			rgb(90 70 45 / 4%) 6px
 		);
-	--pa-card-border: 1.5px solid rgb(148 123 78);
+	--pa-card-border-fallback: 1.5px solid rgb(148 123 78);
 	--pa-card-border-radius: 0.75rem;
-	--pa-card-shadow:
+	--pa-card-shadow-fallback:
 		0 25px 60px rgb(0 0 0 / 45%), inset 0 0 30px rgb(var(--color-surface-dark-rgb) / 50%);
 	--pa-card-inset: 0.75rem;
-	--pa-card-inner-border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
 	--pa-card-inner-radius: 0.25rem;
-	--pa-card-glow: radial-gradient(
+	--pa-card-glow-fallback: radial-gradient(
 		circle at top center,
 		rgb(var(--color-action-accent-rgb) / 12%),
 		transparent 45%
 	);
 	--pa-corner-size: 1.75rem;
 	--pa-corner-dot-size: 0.35rem;
-	--pa-corner-color: rgb(186 158 108);
-	--pa-corner-opacity: 75%;
-	--pa-corner-glow-blur: 12px;
-	--pa-eyebrow-color: rgb(186 158 108);
+	--pa-corner-color-fallback: rgb(186 158 108);
+	--pa-corner-opacity-fallback: 75%;
+	--pa-corner-glow-blur-fallback: 12px;
+	--pa-eyebrow-color-fallback: rgb(186 158 108);
 	--pa-eyebrow-tracking: 0.45em;
 	--pa-title-font: var(--font-display, serif);
 	--pa-title-size: clamp(0.72rem, 2.4vw, 0.88rem);
-	--pa-title-tracking: 0.28em;
-	--pa-title-color: rgb(186 158 108 / 65%);
+	--pa-title-tracking-fallback: 0.28em;
+	--pa-title-color-fallback: rgb(186 158 108 / 65%);
 	--pa-title-shadow: 0 1px 2px rgb(0 0 0 / 35%);
-	--pa-subtitle-color: rgb(var(--color-text-on-dark-rgb) / 80%);
+	--pa-subtitle-color-fallback: rgb(var(--color-text-on-dark-rgb) / 80%);
 	--pa-subtitle-font: var(--font-body, serif);
-	--pa-label-color: rgb(186 158 108 / 72%);
+	--pa-label-color-fallback: rgb(186 158 108 / 72%);
 	--pa-label-tracking: 0.22em;
 	--pa-guest-font: var(--font-display, serif);
 	--pa-guest-weight: 400;
-	--pa-guest-color: rgb(205 176 122);
+	--pa-guest-color-fallback: rgb(205 176 122);
 	--pa-guest-tracking: 0.04em;
-	--pa-divider-gradient: linear-gradient(
+	--pa-divider-gradient-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(148 123 78) 50%,
 		transparent 100%
 	);
 	--pa-divider-opacity: 100%;
-	--pa-divider-diamond-bg: var(--color-surface-dark);
-	--pa-divider-diamond-border-color: rgb(148 123 78);
-	--pa-divider-diamond-shadow: 0 0 10px rgb(var(--color-action-accent-rgb) / 15%);
-	--pa-count-frame-radius: 0.25rem;
-	--pa-count-frame-border: 1.5px solid rgb(148 123 78);
-	--pa-count-frame-bg: linear-gradient(
+	--pa-divider-diamond-bg-fallback: var(--color-surface-dark);
+	--pa-divider-diamond-border-color-fallback: rgb(148 123 78);
+	--pa-divider-diamond-shadow-fallback: 0 0 10px rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-count-frame-radius-fallback: 0.25rem;
+	--pa-count-frame-border-fallback: 1.5px solid rgb(148 123 78);
+	--pa-count-frame-bg-fallback: linear-gradient(
 		to bottom,
 		rgb(var(--color-surface-dark-rgb) / 40%),
 		rgb(var(--color-surface-elevated-rgb) / 20%)
 	);
-	--pa-count-frame-shadow: 0 15px 35px rgb(0 0 0 / 25%), inset 0 0 20px rgb(0 0 0 / 20%);
+	--pa-count-frame-shadow-fallback: 0 15px 35px rgb(0 0 0 / 25%), inset 0 0 20px rgb(0 0 0 / 20%);
 	--pa-count-frame-inner-display: block;
 	--pa-count-frame-inner-inset: 4px;
-	--pa-count-frame-inner-border: 0.5px solid rgb(var(--color-action-accent-rgb) / 15%);
-	--pa-count-color: rgb(204 195 164 / 78%);
+	--pa-count-frame-inner-border-fallback: 0.5px solid rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-count-color-fallback: rgb(204 195 164 / 78%);
 	--pa-count-shadow: 0 2px 6px rgb(0 0 0 / 22%);
-	--pa-footer-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
-	--pa-footer-bg: linear-gradient(
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-footer-bg-fallback: linear-gradient(
 		to bottom,
 		transparent,
 		rgb(var(--color-action-accent-rgb) / 3%)
 	);
-	--pa-footer-text-color: rgb(var(--color-surface-secondary-rgb) / 78%);
+	--pa-footer-text-color-fallback: rgb(var(--color-surface-secondary-rgb) / 78%);
 	--pa-footer-text-font-style: normal;
 	--pa-footer-text-tracking: 0.02em;
 	--pa-demo-label-display: none;

@@ -5,35 +5,35 @@
  */
 
 .theme-preset--sacred-keepsake .header-base {
-	--header-bg-scrolled: rgb(var(--color-ivory-warm-rgb) / 86%);
+	--header-bg-scrolled-fallback: rgb(var(--color-ivory-warm-rgb) / 86%);
 	--header-border-scrolled: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
-	--header-nav-title-color: rgb(var(--color-sacred-gold-rgb) / 90%);
-	--header-nav-color: rgb(var(--color-eternal-ink-rgb) / 68%);
-	--header-nav-color-transparent: rgb(var(--color-eternal-ink-rgb) / 72%);
-	--header-nav-hover-color: rgb(var(--color-eternal-ink-rgb) / 90%);
+	--header-nav-title-color-fallback: rgb(var(--color-sacred-gold-rgb) / 90%);
+	--header-nav-color-fallback: rgb(var(--color-eternal-ink-rgb) / 68%);
+	--header-nav-color-transparent-fallback: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--header-nav-hover-color-fallback: rgb(var(--color-eternal-ink-rgb) / 90%);
 	--header-border-color: rgb(var(--color-sacred-gold-rgb) / 14%);
 	--header-nav-shadow-transparent: 0 1px 10px rgb(var(--color-pure-ivory-rgb) / 38%);
-	--header-nav-cta-bg: rgb(var(--color-pure-ivory-rgb) / 28%);
-	--header-nav-cta-color: rgb(var(--color-eternal-ink-rgb) / 86%);
-	--header-nav-cta-border: rgb(var(--color-sacred-gold-rgb) / 42%);
-	--header-nav-cta-shadow:
+	--header-nav-cta-bg-fallback: rgb(var(--color-pure-ivory-rgb) / 28%);
+	--header-nav-cta-color-fallback: rgb(var(--color-eternal-ink-rgb) / 86%);
+	--header-nav-cta-border-fallback: rgb(var(--color-sacred-gold-rgb) / 42%);
+	--header-nav-cta-shadow-fallback:
 		0 16px 36px -30px rgb(var(--color-eternal-ink-rgb) / 55%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 48%);
-	--header-nav-cta-hover-bg: rgb(var(--color-pure-ivory-rgb) / 42%);
-	--header-nav-cta-hover-color: rgb(var(--color-eternal-ink-rgb) / 92%);
-	--header-nav-cta-hover-border: rgb(var(--color-sacred-gold-rgb) / 58%);
+	--header-nav-cta-hover-bg-fallback: rgb(var(--color-pure-ivory-rgb) / 42%);
+	--header-nav-cta-hover-color-fallback: rgb(var(--color-eternal-ink-rgb) / 92%);
+	--header-nav-cta-hover-border-fallback: rgb(var(--color-sacred-gold-rgb) / 58%);
 	--mobile-drawer-bg: rgb(var(--color-ivory-warm-rgb) / 99%);
 	--mobile-drawer-border: rgb(var(--color-sacred-gold-rgb) / 26%);
-	--mobile-drawer-link-color: rgb(var(--color-eternal-ink-rgb) / 88%);
-	--mobile-drawer-link-hover: rgb(var(--color-eternal-ink-rgb) / 96%);
+	--mobile-drawer-link-color-fallback: rgb(var(--color-eternal-ink-rgb) / 88%);
+	--mobile-drawer-link-hover-fallback: rgb(var(--color-eternal-ink-rgb) / 96%);
 	--mobile-drawer-login-color: rgb(var(--color-eternal-ink-rgb) / 72%);
 	--mobile-drawer-login-hover-color: rgb(var(--color-eternal-ink-rgb) / 96%);
-	--mobile-drawer-cta-bg: var(--color-eternal-ink);
-	--mobile-drawer-cta-color: var(--color-pure-ivory);
-	--mobile-drawer-cta-border: 1px solid var(--color-eternal-ink);
+	--mobile-drawer-cta-bg-fallback: var(--color-eternal-ink);
+	--mobile-drawer-cta-color-fallback: var(--color-pure-ivory);
+	--mobile-drawer-cta-border-fallback: 1px solid var(--color-eternal-ink);
 	--mobile-drawer-cta-shadow: 0 14px 34px rgb(var(--color-eternal-ink-rgb) / 16%);
-	--mobile-drawer-cta-hover-bg: var(--color-sacred-gold);
-	--mobile-drawer-cta-hover-color: var(--color-eternal-ink);
+	--mobile-drawer-cta-hover-bg-fallback: var(--color-sacred-gold);
+	--mobile-drawer-cta-hover-color-fallback: var(--color-eternal-ink);
 	--mobile-drawer-cta-hover-border: 1px solid var(--color-sacred-gold);
 	--mobile-drawer-footer-copy: rgb(var(--color-eternal-ink-rgb) / 58%);
 	--mobile-drawer-shadow: 20px 0 60px rgb(var(--color-eternal-ink-rgb) / 7%);
@@ -47,11 +47,11 @@
 	--mobile-overlay-bg: rgb(55 51 45 / 32%);
 	--mobile-overlay-blur: 6px;
 	--mobile-close-button-color: rgb(var(--color-eternal-ink-rgb) / 85%);
-	--hamburger-color: rgb(var(--color-eternal-ink-rgb) / 85%);
-	--hamburger-color-menu-open: rgb(var(--color-eternal-ink-rgb) / 85%);
+	--hamburger-color-fallback: rgb(var(--color-eternal-ink-rgb) / 85%);
+	--hamburger-color-menu-open-fallback: rgb(var(--color-eternal-ink-rgb) / 85%);
 
 	.event-header__title {
-		color: var(--header-nav-title-color);
+		color: var(--header-nav-title-color, var(--header-nav-title-color-fallback));
 		font-size: clamp(0.74rem, 2vw, 0.9rem);
 		font-weight: 500;
 		letter-spacing: 0.16em;

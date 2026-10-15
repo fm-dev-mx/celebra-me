@@ -2,7 +2,7 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--jewelry-box-wedding .gallery-section {
-	--gallery-section-bg: linear-gradient(
+	--gallery-section-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-primary-rgb) / 96%) 0%,
 		rgb(var(--color-surface-soft-rgb, var(--color-surface-primary-rgb)) / 84%) 100%

@@ -72,7 +72,7 @@ describe('Quote and family presentation controls', () => {
 		expect(rule!.style.getPropertyValue('--intersection-surface')).toBe(
 			'var(--color-surface-primary)',
 		);
-		expect(rule!.style.getPropertyValue('--intersection-arch-height')).toBe(
+		expect(rule!.style.getPropertyValue('--intersection-arch-height-fallback')).toBe(
 			'clamp(1.5rem, 3vw, 2.75rem)',
 		);
 		expect(rule!.style.getPropertyValue('--intersection-arch-mask')).toContain('32 7C44 3');
@@ -105,7 +105,9 @@ describe('Quote and family presentation controls', () => {
 		const quoteSurfaceRule = quoteRules.find(
 			(candidate) => candidate.selectorText === '.quote-section',
 		);
-		expect(quoteSurfaceRule!.style.getPropertyValue('background')).toBe('var(--quote-bg)');
+		expect(quoteSurfaceRule!.style.getPropertyValue('background')).toBe(
+			'var(--quote-bg, var(--quote-bg-fallback))',
+		);
 		expect(heroPaintRule).toBeDefined();
 		const paintDeclarations = Array.from(heroPaintRule!.style);
 		expect(paintDeclarations).toEqual(['--quote-bg']);

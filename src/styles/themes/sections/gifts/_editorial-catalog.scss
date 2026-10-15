@@ -1,7 +1,7 @@
 // Editorial catalog: flat gift-guide layout.
 
 .gifts-section[data-variant='editorial-catalog'] {
-	background: var(--gifts-bg);
+	background: var(--gifts-bg, var(--gifts-bg-fallback));
 
 	.gifts-section__header {
 		text-align: left;
@@ -19,7 +19,7 @@
 		font-size: clamp(3rem, 9vw, 7rem);
 		font-weight: 800;
 		line-height: 0.86;
-		color: var(--gifts-title-color);
+		color: var(--gifts-title-color, var(--gifts-title-color-fallback));
 		text-transform: uppercase;
 		letter-spacing: 0;
 	}
@@ -29,7 +29,7 @@
 	}
 
 	.gifts-section__subtitle {
-		color: var(--gifts-subtitle-color);
+		color: var(--gifts-subtitle-color, var(--gifts-subtitle-color-fallback));
 		font-family: var(--font-body);
 		font-size: clamp(0.92rem, 1.6vw, 1.08rem);
 		text-align: left;
@@ -74,7 +74,7 @@
 	}
 
 	.gift-card__icon-inner {
-		color: var(--gifts-icon-color);
+		color: var(--gifts-icon-color, var(--gifts-icon-color-fallback));
 	}
 
 	.gift-card__title {

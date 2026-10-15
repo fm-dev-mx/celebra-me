@@ -8,20 +8,20 @@
 	// invitation may lay drawn art over the paper (`--storybook-quote-art`, background layers) and
 	// open room for it (`--storybook-quote-padding-block`); both default to the plain page.
 	.quote-section {
-		--quote-bg: var(--storybook-quote-art, none), var(--storybook-paper);
-		--quote-text-color: var(--color-violet-ink);
-		--quote-author-color: var(--color-gold-ink);
-		--quote-accent-color: var(--color-leaf-gold);
+		--quote-bg-fallback: var(--storybook-quote-art, none), var(--storybook-paper);
+		--quote-text-color-fallback: var(--color-violet-ink);
+		--quote-author-color-fallback: var(--color-gold-ink);
+		--quote-accent-color-fallback: var(--color-leaf-gold);
 		--quote-padding-block: var(--storybook-quote-padding-block, clamp(4.5rem, 12vh, 7.5rem));
 
 		// 30rem keeps the closing words of a two-sentence quote together on desktop.
 		--quote-content-max-width: 30rem;
-		--quote-content-font: var(--font-display);
-		--quote-content-size: clamp(1.55rem, 4.4vw, 2.35rem);
-		--quote-content-line-height: 1.35;
-		--quote-content-letter-spacing: 0;
-		--quote-divider-display: none;
-		--quote-ornament-color: var(--color-leaf-gold);
+		--quote-content-font-fallback: var(--font-display);
+		--quote-content-size-fallback: clamp(1.55rem, 4.4vw, 2.35rem);
+		--quote-content-line-height-fallback: 1.35;
+		--quote-content-letter-spacing-fallback: 0;
+		--quote-divider-display-fallback: none;
+		--quote-ornament-color-fallback: var(--color-leaf-gold);
 		--quote-ornament-opacity: 0.6;
 		--quote-texture-bg: none;
 		--quote-texture-opacity: 0;
@@ -44,27 +44,27 @@
 
 	// Header over the night: cream links, candle hover.
 	.header-base {
-		--header-bg-scrolled: rgb(var(--color-violet-night-rgb) / 92%);
+		--header-bg-scrolled-fallback: rgb(var(--color-violet-night-rgb) / 92%);
 		--header-border-color: rgb(var(--color-candle-gold-rgb) / 18%);
-		--header-nav-title-color: var(--color-candle-cream);
-		--header-nav-color: var(--color-candle-cream);
-		--header-nav-color-transparent: var(--color-candle-cream);
-		--header-nav-hover-color: var(--color-candle-gold);
+		--header-nav-title-color-fallback: var(--color-candle-cream);
+		--header-nav-color-fallback: var(--color-candle-cream);
+		--header-nav-color-transparent-fallback: var(--color-candle-cream);
+		--header-nav-hover-color-fallback: var(--color-candle-gold);
 		--header-nav-shadow-transparent: 0 1px 6px rgb(var(--color-violet-night-rgb) / 34%);
-		--header-nav-cta-bg: rgb(var(--color-candle-cream-rgb) / 10%);
-		--header-nav-cta-color: var(--color-candle-cream);
-		--header-nav-cta-border: rgb(var(--color-candle-gold-rgb) / 50%);
-		--header-nav-cta-hover-bg: rgb(var(--color-candle-gold-rgb) / 18%);
-		--header-nav-cta-hover-color: var(--color-candle-cream);
-		--header-nav-cta-hover-border: rgb(var(--color-candle-gold-rgb) / 70%);
+		--header-nav-cta-bg-fallback: rgb(var(--color-candle-cream-rgb) / 10%);
+		--header-nav-cta-color-fallback: var(--color-candle-cream);
+		--header-nav-cta-border-fallback: rgb(var(--color-candle-gold-rgb) / 50%);
+		--header-nav-cta-hover-bg-fallback: rgb(var(--color-candle-gold-rgb) / 18%);
+		--header-nav-cta-hover-color-fallback: var(--color-candle-cream);
+		--header-nav-cta-hover-border-fallback: rgb(var(--color-candle-gold-rgb) / 70%);
 		--mobile-drawer-bg: rgb(var(--color-violet-night-rgb) / 97%);
 		--mobile-drawer-border: rgb(var(--color-candle-gold-rgb) / 18%);
-		--mobile-drawer-link-color: var(--color-candle-cream);
-		--mobile-drawer-link-hover: var(--color-candle-gold);
-		--mobile-drawer-cta-bg: var(--color-candle-gold);
-		--mobile-drawer-cta-color: var(--color-violet-night);
-		--hamburger-color: var(--color-candle-cream);
-		--hamburger-color-menu-open: var(--color-candle-cream);
+		--mobile-drawer-link-color-fallback: var(--color-candle-cream);
+		--mobile-drawer-link-hover-fallback: var(--color-candle-gold);
+		--mobile-drawer-cta-bg-fallback: var(--color-candle-gold);
+		--mobile-drawer-cta-color-fallback: var(--color-violet-night);
+		--hamburger-color-fallback: var(--color-candle-cream);
+		--hamburger-color-menu-open-fallback: var(--color-candle-cream);
 	}
 
 	// Night band: from the countdown on, every section kind (and every framed print) reads
@@ -85,7 +85,7 @@
 		--section-band-paper: var(--storybook-night);
 		--intersection-surface: var(--color-violet-night);
 		--intersection-surface-fill: var(--storybook-night);
-		--intersection-blend: radial-gradient(
+		--intersection-blend-fallback: radial-gradient(
 			ellipse 140% 100% at 50% 0%,
 			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
 			transparent 72%
