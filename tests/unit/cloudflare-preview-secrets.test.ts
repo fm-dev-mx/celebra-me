@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { parseEnv } from 'node:util';
 import {
 	CLOUDFLARE_PREVIEW_SECRET_NAMES,
 	selectCloudflarePreviewSecrets,
@@ -51,6 +54,25 @@ describe('Cloudflare Preview secret selection', () => {
 		}
 		expect(new Set(CLOUDFLARE_PREVIEW_SECRET_NAMES).size).toBe(
 			CLOUDFLARE_PREVIEW_SECRET_NAMES.length,
+		);
+	});
+
+	it('lists every allow-listed name in the Preview lane template and no Production name', () => {
+		const template = parseEnv(
+			readFileSync(resolve(process.cwd(), '.env.preview.local.example'), 'utf8'),
+		) as Record<string, string>;
+		const names = Object.keys(template);
+		expect(CLOUDFLARE_PREVIEW_SECRET_NAMES.filter((name) => !names.includes(name))).toEqual([]);
+		expect(names.filter((name) => /PRODUCTION|^PROD_/.test(name))).toEqual([]);
+		expect(selectCloudflarePreviewSecrets(template).skipped).toEqual(
+			[
+				'CELEBRA_RUNTIME_TARGET',
+				'PREVIEW_DB_URL',
+				'PREVIEW_SUPABASE_SERVICE_ROLE_KEY',
+				'PREVIEW_SUPABASE_URL',
+				'PUBLIC_SUPABASE_URL',
+				'SUPABASE_URL',
+			].sort(),
 		);
 	});
 });

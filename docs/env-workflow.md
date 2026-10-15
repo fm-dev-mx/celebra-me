@@ -109,7 +109,8 @@ execution:
   status cache file used by the status CLI (`pnpm dbs`). Default is `.cache/canonical-status.json`.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
   `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
-  live in `.env.preview.local` (no tracked template), not ordinary Local `.env.local` files.
+  live in `.env.preview.local` (template: `.env.preview.local.example`), not ordinary Local
+  `.env.local` files.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
   workflow inputs, and one-off script filters. These can use script-owned local file loaders and are
   intentionally omitted from `ImportMetaEnv`. `pnpm invitation:release` treats Preview and
@@ -168,10 +169,10 @@ substitute for the other.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category         | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                            | Relationship                                          |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only` | `CELEBRA_STATUS_CACHE_PATH`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                                                       | Present in app/runtime typing; omitted from template. |
+| Contract category         | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Relationship                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `operational-script-only` | `CELEBRA_STATUS_CACHE_PATH`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS`, `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET` | Present in `.env.example`; omitted from typing.       |
+| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Present in app/runtime typing; omitted from template. |
 
 `SUPER_ADMIN_EMAILS` is a server-only runtime list. Its first entry is the project owner: the only
 account that may confirm or clear owner review in the invitation workflow, and the local super admin
@@ -470,12 +471,12 @@ status `Cloudflare - celebra-me preview smoke`; `pnpm ops:release-status` reads 
 
 Worker-side configuration lives in `wrangler.jsonc` (`env.preview`): `CELEBRA_DEPLOY_ENV`,
 `SUPABASE_URL`, `PUBLIC_SUPABASE_URL` and `BASE_URL` are `vars`; every other runtime name is a
-Worker secret uploaded from the lane's `.env.preview.local` with
-`pnpm ops:cloudflare:preview:secrets` (allow-list in `scripts/ops/cloudflare-preview-secrets.ts`;
-`--dry-run` prints the names only). Rate limits are `RATE_LIMIT_*` bindings, one per
-`(namespace, maxHits, windowSec)` pair that `src/lib/rsvp/security/rate-limit-provider.ts` uses, and
-the two daily jobs are `triggers.crons` handled by `src/worker.ts` →
-`src/lib/server/scheduled-jobs.ts`.
+Worker secret uploaded from the lane's `.env.preview.local` (names in `.env.preview.local.example`)
+with `pnpm ops:cloudflare:preview:secrets` (allow-list in
+`scripts/ops/cloudflare-preview-secrets.ts`; `--dry-run` prints the names only). Rate limits are
+`RATE_LIMIT_*` bindings, one per `(namespace, maxHits, windowSec)` pair that
+`src/lib/rsvp/security/rate-limit-provider.ts` uses, and the two daily jobs are `triggers.crons`
+handled by `src/worker.ts` → `src/lib/server/scheduled-jobs.ts`.
 
 ### CI validation (`.github/workflows/commit-validation.yml`)
 
