@@ -99,7 +99,7 @@
             },
             "vars": {
                 "MEMORIES_STORAGE_TARGET": "staging",
-                "MEMORIES_ALLOWED_ORIGINS": "https://celebra-me.vercel.app"
+                "MEMORIES_ALLOWED_ORIGINS": "https://celebra-me.vercel.app,https://celebra-me-preview.celebra-me-com.workers.dev"
             },
             "ratelimits": [
                 {

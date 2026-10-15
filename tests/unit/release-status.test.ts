@@ -9,6 +9,7 @@ import {
 	type ReleaseStatus,
 } from '../../scripts/ops/release-status.ts';
 import {
+	CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
 	PREVIEW_DEPLOYMENT_SMOKE,
 	PRODUCTION_DEPLOYMENT_SMOKE,
 	REQUIRED_RELEASE_CHECKS,
@@ -18,6 +19,7 @@ const sha = 'a'.repeat(40);
 const previewUrl = 'https://celebra-abc123-francisco-mendoza-s-projects.vercel.app';
 const productionUrl = 'https://celebra-ar4swgfjq-francisco-mendoza-s-projects.vercel.app';
 const vercelCreator = { login: 'vercel[bot]' };
+const cloudflareVersionUrl = 'https://1a2b3c4d-celebra-me-preview.celebra-me-com.workers.dev';
 
 function ghRunner(responses: Record<string, unknown>): (args: string[]) => string {
 	return (args) => {
@@ -93,6 +95,28 @@ describe('release status classification', () => {
 		);
 		expect(classifyDeployment('preview', { ...ready, state: 'in_progress' })).toBe('pending');
 		expect(classifyDeployment('preview', { ...ready, state: 'failure' })).toBe('failed');
+	});
+
+	it('accepts the Cloudflare Preview Worker host and its version URLs', () => {
+		const ready = {
+			id: 1,
+			environment: 'Preview',
+			state: 'success',
+			url: cloudflareVersionUrl,
+		};
+		expect(classifyDeployment('preview', ready)).toBe('passed');
+		expect(
+			classifyDeployment('preview', {
+				...ready,
+				url: 'https://celebra-me-preview.celebra-me-com.workers.dev',
+			}),
+		).toBe('passed');
+		expect(
+			classifyDeployment('preview', {
+				...ready,
+				url: 'https://other.celebra-me-com.workers.dev',
+			}),
+		).toBe('failed');
 	});
 
 	it('correlates the serving build with the release SHA', async () => {
@@ -291,6 +315,58 @@ describe('collectReleaseStatus', () => {
 			{ url: `${productionUrl}/api/health`, headers: protectionHeaders },
 			{ url: 'https://www.celebra-me.com/api/health', headers: undefined },
 		]);
+	});
+
+	it('verifies a Cloudflare Preview deployment with its own smoke and Access headers', async () => {
+		const run = ghRunner({
+			...responses({
+				...allPassed,
+				[PREVIEW_DEPLOYMENT_SMOKE]: 'failure',
+				[CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'success',
+			}),
+			'deployments/7/statuses?per_page=100': [
+				{ state: 'success', environment_url: cloudflareVersionUrl },
+			],
+		});
+		const probes: Array<{ url: string; headers?: Record<string, string> }> = [];
+		const accessHeaders = { 'CF-Access-Client-Id': 'id', 'CF-Access-Client-Secret': 'secret' };
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run,
+			accessHeaders,
+			protectionHeaders: { 'x-vercel-protection-bypass': 'vercel-only' },
+			fetchImpl: async (url, init) => {
+				probes.push({ url, headers: init?.headers });
+				return healthy(sha)();
+			},
+		});
+		expect(status.state).toBe('VERIFIED');
+		expect(status.smoke).toMatchObject({
+			name: CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
+			progress: 'passed',
+		});
+		expect(probes).toEqual([
+			{ url: `${cloudflareVersionUrl}/api/health`, headers: accessHeaders },
+		]);
+	});
+
+	it('reports the most advanced provider smoke while no deployment is recorded', async () => {
+		const run = ghRunner({
+			...responses({
+				...allPassed,
+				[PREVIEW_DEPLOYMENT_SMOKE]: 'failure',
+				[CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'in_progress',
+			}),
+			[`deployments?sha=${sha}&per_page=100`]: [],
+		});
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run,
+			fetchImpl: healthy(sha),
+		});
+		expect(status.state).toBe('PENDING');
+		expect(status.smoke).toMatchObject({
+			name: CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
+			progress: 'pending',
+		});
 	});
 
 	it('verifies Preview from the record with an environment_url behind newer smoke records', async () => {

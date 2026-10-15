@@ -28,6 +28,12 @@ const PREVIEW_FIXTURE_EVENT_TIMING = {
 	timeZone: 'America/Monterrey',
 } as const;
 
+/** Draft-only timing used when the reference timing is already the published version. */
+const PREVIEW_FIXTURE_DIVERGENT_EVENT_TIMING = {
+	...PREVIEW_FIXTURE_EVENT_TIMING,
+	localDateTime: '2026-11-21T19:00',
+} as const;
+
 test('provisions or verifies the deterministic Preview-only publication fixture', async ({
 	page,
 }) => {
@@ -97,7 +103,31 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 	}
 
 	await draftRateLimiter.beforeRequest();
-	const baselinePreflight = await readPublicationPreflight(page, fixture.id);
+	let baselinePreflight = await readPublicationPreflight(page, fixture.id);
+	if (
+		fixtureContext.publication.hasPublishedContent &&
+		baselinePreflight.changedPaths.length === 0
+	) {
+		// The reference content itself is published (the opt-in publication spec ran), so
+		// reconciling to it leaves no divergence. Save the alternate event time instead; the
+		// next provisioning run restores the reference time, which then diverges again.
+		await draftRateLimiter.beforeRequest();
+		await mutateJson<{ draftUpdatedAt: string }>(
+			page,
+			`/api/dashboard/intake/${encodeURIComponent(fixture.id)}/editor/sections/location`,
+			'PATCH',
+			{
+				expectedUpdatedAt: expectedDraftRevision,
+				value: {
+					...(getSectionValue(fixtureContent, 'location') as Record<string, unknown>),
+					eventTiming: PREVIEW_FIXTURE_DIVERGENT_EVENT_TIMING,
+				},
+			},
+			'Synthetic fixture draft divergence',
+		);
+		await draftRateLimiter.beforeRequest();
+		baselinePreflight = await readPublicationPreflight(page, fixture.id);
+	}
 	// Postcondition: published public version exists with intentional draft divergence.
 	// Proven without a second editor read (rate-limit contract).
 	expect(fixtureContext.publication.hasPublishedContent).toBe(true);
@@ -109,12 +139,15 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 	);
 	expect(detailResponse.status()).toBe(200);
 	const detail = (await detailResponse.json()) as {
-		request: unknown;
-		submission: unknown;
+		item: { id: string; slug: string; kind: string; published: boolean };
 		rsvpEvent: null | { guestCount: number };
 	};
-	expect(detail.request).toBeNull();
-	expect(detail.submission).toBeNull();
+	expect(detail.item).toMatchObject({
+		id: fixture.id,
+		slug: PREVIEW_FIXTURE_SLUG,
+		kind: 'client',
+		published: true,
+	});
 	if (detail.rsvpEvent) {
 		expect(detail.rsvpEvent.guestCount).toBe(0);
 	}

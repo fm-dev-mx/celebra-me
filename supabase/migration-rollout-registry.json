@@ -222,6 +222,12 @@
             "phase": "expand",
             "provides": ["publication_metadata_hash_without_legacy_columns"],
             "notes": "Redefines publish_invitation_atomic (same eleven-argument signature, security invoker, empty search_path and grants) so p_public_metadata_hash may be either the legacy baseline (with baseDemoId and snapshot) or the current baseline (archivedAt, eventType, kind, slug, status, themeId, title), and drops submissionId from the result draft. Gives invitations.base_demo_id an empty-string default so inserts can omit it. The deployed application keeps publishing with the legacy hash. Apply before deploying the application that sends the current hash; the column contract that drops base_demo_id, snapshot and submission_id comes later."
+        },
+        "20261015120000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["legacy_invitation_columns_retired_client"],
+            "revokes": ["legacy_publication_metadata_baseline", "legacy_invitation_columns"],
+            "notes": "Drops invitations.base_demo_id, invitations.snapshot and invitation_content_drafts.submission_id. Redefines publish_invitation_atomic to accept only the current public-metadata baseline (archivedAt, eventType, kind, slug, status, themeId, title), and save_invitation_metadata_atomic and restore_invitation_from_published_atomic to insert drafts without submission_id; signatures and grants are unchanged. Apply only after the Production deployment that claims legacy_invitation_columns_retired_client passed smoke."
         }
     },
     "appCapabilities": {

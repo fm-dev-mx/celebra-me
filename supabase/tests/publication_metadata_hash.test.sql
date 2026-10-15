@@ -1,18 +1,17 @@
 begin;
 select plan(9);
 
--- publish_invitation_atomic accepts the current public-metadata baseline (without baseDemoId and
--- snapshot) and, until the column contract, the legacy baseline the deployed application sends.
--- Either baseline still rejects a metadata edit made after it was computed, and the result no
--- longer carries the draft submissionId.
+-- publish_invitation_atomic accepts only the current public-metadata baseline (without baseDemoId
+-- and snapshot). The legacy baseline, retired with the column contract, is rejected, a metadata
+-- edit made after the baseline was computed is rejected, and the result carries no submissionId.
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-0000000000b1', 'authenticated', 'authenticated', 'metadata-hash@example.test', now(), now());
 
-insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
+insert into public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind)
 values
-  ('20000000-0000-0000-0000-0000000000b1', 'hash-current', 'Hash actual', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{"previewSlug":"legacy"}'::jsonb, '10000000-0000-0000-0000-0000000000b1', 'client'),
-  ('20000000-0000-0000-0000-0000000000b2', 'hash-legacy', 'Hash anterior', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{"previewSlug":"legacy"}'::jsonb, '10000000-0000-0000-0000-0000000000b1', 'client'),
-  ('20000000-0000-0000-0000-0000000000b3', 'hash-stale', 'Hash vencido', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-0000000000b1', 'client');
+  ('20000000-0000-0000-0000-0000000000b1', 'hash-current', 'Hash actual', 'xv', 'in_production', 'jewelry-box', '10000000-0000-0000-0000-0000000000b1', 'client'),
+  ('20000000-0000-0000-0000-0000000000b2', 'hash-legacy', 'Hash anterior', 'xv', 'in_production', 'jewelry-box', '10000000-0000-0000-0000-0000000000b1', 'client'),
+  ('20000000-0000-0000-0000-0000000000b3', 'hash-stale', 'Hash vencido', 'xv', 'in_production', 'jewelry-box', '10000000-0000-0000-0000-0000000000b1', 'client');
 
 insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 values
@@ -32,7 +31,7 @@ create function pg_temp.legacy_metadata_hash(p_invitation_id uuid)
 returns text
 language sql
 as $$
-  select md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'baseDemoId', i.base_demo_id, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'snapshot', i.snapshot, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text))
+  select md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'baseDemoId', 'demo-xv-jewelry-box', 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'snapshot', '{"previewSlug":"legacy"}'::jsonb, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text))
   from public.invitations i where i.id = p_invitation_id;
 $$;
 
@@ -70,13 +69,14 @@ select ok(
   'content published with the current baseline is live'
 );
 
-select lives_ok(
+select throws_ok(
   $$select pg_temp.publish_with_hash('20000000-0000-0000-0000-0000000000b2', pg_temp.legacy_metadata_hash('20000000-0000-0000-0000-0000000000b2'), '40000000-0000-0000-0000-0000000000b2')$$,
-  'publication still accepts the legacy baseline sent by the deployed application'
+  'P0001', 'publish_stale_public_metadata',
+  'publication rejects the retired legacy baseline'
 );
 select ok(
-  exists (select 1 from public.published_invitation_content where invitation_project_id = '20000000-0000-0000-0000-0000000000b2' and deleted_at is null),
-  'content published with the legacy baseline is live'
+  not exists (select 1 from public.published_invitation_content where invitation_project_id = '20000000-0000-0000-0000-0000000000b2'),
+  'nothing is published with the legacy baseline'
 );
 
 -- Both baselines are computed first, then a public field changes before the publication.

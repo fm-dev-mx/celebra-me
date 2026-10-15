@@ -4,8 +4,9 @@ import path from 'node:path';
 describe('Astro SSR dependency bundling', () => {
 	it('keeps the complete sanitize-html runtime graph inside the server bundle', () => {
 		const config = fs.readFileSync(path.resolve(process.cwd(), 'astro.config.mjs'), 'utf8');
+		// The list applies to the Vercel build only; the Cloudflare adapter bundles everything.
 		const noExternalList = config.match(
-			/noExternal:\s*isBuildCommand\s*\?\s*\[([\s\S]*?)\]\s*:\s*undefined/,
+			/noExternal:\s*isBuildCommand\s*&&\s*!isCloudflareBuild\s*\?\s*\[([\s\S]*?)\]\s*:\s*undefined/,
 		)?.[1];
 
 		expect(noExternalList).toBeDefined();

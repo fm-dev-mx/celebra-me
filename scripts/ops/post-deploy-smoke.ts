@@ -399,12 +399,31 @@ export async function runProductionSmoke(
 		);
 	if (bypassSecret && access.approvedHost !== origin.hostname)
 		throw new Error('Protection bypass requires the exact approved deployment host.');
+	// No bypass cookie: the application session probe must remain anonymous.
+	return runDeploymentSmoke(
+		origin,
+		fetchImpl,
+		bypassSecret ? { 'x-vercel-protection-bypass': bypassSecret } : {},
+		access.pages,
+	);
+}
+
+/**
+ * Public probes of one deployment origin. `accessHeaders` (a provider's protection bypass or
+ * Cloudflare Access service token) travel only to that origin; redirects are never followed.
+ */
+export async function runDeploymentSmoke(
+	origin: URL,
+	fetchImpl: FetchLike,
+	accessHeaders: Record<string, string>,
+	pages: readonly SmokePageRoute[] = listSmokePageRoutes(),
+): Promise<ProductionSmokeResult> {
+	const baseUrl = origin.origin;
 	const request: FetchLike = (url, init) => {
 		if (new URL(url).origin !== origin.origin)
 			throw new Error('Smoke request rejected a different origin.');
 		const headers = new Headers(init?.headers);
-		if (bypassSecret) headers.set('x-vercel-protection-bypass', bypassSecret);
-		// No bypass cookie: the application session probe must remain anonymous.
+		for (const [name, value] of Object.entries(accessHeaders)) headers.set(name, value);
 		return fetchImpl(url, { ...init, headers, redirect: 'manual' });
 	};
 	const failures: string[] = [];
@@ -477,7 +496,7 @@ export async function runProductionSmoke(
 			retryCount,
 		};
 	});
-	for (const route of access.pages ?? listSmokePageRoutes()) {
+	for (const route of pages) {
 		const target = `${route.eventType}:${route.slug}` as const;
 		await probe(`${route.kind}_failed:${target}`, route.kind, target, async () => {
 			const { response, retryCount } = await fetchWithOneRetry(
@@ -592,7 +611,7 @@ export async function runProductionSmoke(
 	};
 }
 
-function resultPayload(result: ProductionSmokeResult): PostDeployPayload {
+export function toPostDeployPayload(result: ProductionSmokeResult): PostDeployPayload {
 	return {
 		probe_count: result.probeCount,
 		failed_probe_count: result.failedProbeCount,
@@ -704,7 +723,7 @@ async function productionCommand(): Promise<void> {
 		completedAt: new Date().toISOString(),
 		status: passed ? 'VERIFIED' : 'FAILED',
 		reasonCode: passed ? 'post_deploy_smoke_passed' : 'post_deploy_smoke_failed',
-		payload: resultPayload(result),
+		payload: toPostDeployPayload(result),
 	});
 	emitEvidence(evidence, 'completed');
 	writeEvidenceSummary(evidence);
@@ -754,7 +773,7 @@ async function checkCommand(args: readonly string[]): Promise<void> {
 		completedAt: new Date().toISOString(),
 		status: passed ? 'VERIFIED' : 'FAILED',
 		reasonCode: passed ? 'url_smoke_passed' : 'url_smoke_failed',
-		payload: resultPayload(result),
+		payload: toPostDeployPayload(result),
 	});
 	emitEvidence(evidence, 'completed');
 	writeEvidenceSummary(evidence);

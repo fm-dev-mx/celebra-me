@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.25.0-beta.1",
+    "version": "0.26.0-beta.1",
     "engines": {
         "node": ">=22.13.0 <25"
     },
@@ -85,6 +85,8 @@
         "invitation:delivery:baseline": "tsx scripts/invitation/measure-delivery-baseline.ts",
         "invitation:media:verify": "tsx scripts/invitation/verify-published-images.ts",
         "db:disposable:system-concurrency": "tsx scripts/db/disposable-test-env.ts run-system-concurrency-test",
+        "env:check": "tsx scripts/agent/env-files.ts check",
+        "env:sync": "tsx scripts/agent/env-files.ts sync",
         "lane:sync": "tsx scripts/agent/lane-sync.ts",
         "db:validate:pipeline": "tsx scripts/db/validate-pipeline.ts",
         "db:local:refresh-from-prod-preserve-local": "echo 'BLOCKED: pnpm db:local:refresh-from-prod-preserve-local runs supabase db reset. Use pnpm db:prod:backup + pnpm db:local:restore-from-dump instead.' && exit 1",
@@ -95,6 +97,9 @@
         "ops:release-checks": "tsx scripts/ops/release-readiness.ts",
         "ops:release-status": "tsx scripts/ops/release-status.ts",
         "ops:classify-release": "tsx scripts/ops/classify-release.ts",
+        "ops:cloudflare:preview:secrets": "tsx scripts/ops/cloudflare-preview-secrets.ts",
+        "ops:cloudflare:preview:smoke": "tsx scripts/ops/cloudflare-preview-smoke.ts",
+        "cloudflare:preview:dry-run": "wrangler versions upload --env preview --dry-run --outdir .tmp/wrangler/preview/app",
         "validate:deployed-app-capabilities": "tsx scripts/db/validate-deployed-app-capabilities.ts",
         "agent:git-safety:start": "node scripts/agent/git-safety.mjs start",
         "agent:git-safety:check": "node scripts/agent/git-safety.mjs check",
@@ -170,6 +175,7 @@
     },
     "devDependencies": {
         "@astrojs/check": "^0.9.10",
+        "@astrojs/cloudflare": "14.3.4",
         "@astrojs/react": "6.0.6",
         "@astrojs/sitemap": "^3.7.4",
         "@axe-core/playwright": "^4.13.0",
@@ -220,7 +226,7 @@
         "typescript": "npm:@typescript/typescript6@6.0.2",
         "typescript-eslint": "^8.70.1",
         "vite": "8.3.4",
-        "wrangler": "4.125.0"
+        "wrangler": "4.151.0"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],

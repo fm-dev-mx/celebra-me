@@ -12,6 +12,51 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.26.0-beta.1] - 2026-10-15
+
+Release checkpoint that stops the application from reading the legacy invitation columns
+`base_demo_id`, `snapshot` and `submission_id` ahead of the column contract, and widens Production
+monitoring: the health endpoint checks the database and a read-only smoke covers every published
+invitation every 15 minutes.
+
+### Added
+
+- `/api/health` reads one row from Supabase with a 3-second timeout and answers 503 `unhealthy`
+  (without error details) when the read fails; the build identity is still reported.
+- Read-only Production uptime smoke every 15 minutes; two consecutive failures open one alert issue
+  and the next passing run closes it.
+- `ops:post-deploy -- check` runs the smoke against a configurable host (`--base-url` or
+  `SMOKE_BASE_URL`, default `www.celebra-me.com`).
+
+### Changed
+
+- Publication sends the public-metadata hash without `baseDemoId` and `snapshot`; repositories,
+  types, DTOs and mappers no longer read or write the three legacy columns, and publishing scripts
+  use the same hash. Requires expand migration `20261014150000` (applied in Preview and Production).
+- The post-deploy smoke opens every published, non-expired invitation and every demo; a disabled
+  invitation may answer 403.
+
+### Fixed
+
+- The disposable restore drill adds the newer Supabase Storage columns present in a Production dump
+  before loading Storage metadata, so the restore fingerprints match.
+
+### Verification
+
+| Check            | Result                                                                              |
+| :--------------- | :---------------------------------------------------------------------------------- |
+| Database         | Expand `20261014150000` applied in Preview and Production; Production audit CURRENT |
+| Disposable tests | pgTAP 492/492, system concurrency and managed contracts passed                      |
+| Preview          | Test invitation published with the new hash on develop; public smoke 70/70          |
+| Production       | `pnpm dbs` 104/104 and site smoke 37/37 before the release                          |
+
+### Known issues
+
+- The column contract (`20261015120000`) is written on its own branch and is applied only after this
+  release passes the Production smoke.
+- Two authenticated Preview E2E assertions are stale (replay `idempotent` flag and intake detail
+  fields); the fix is on its own branch.
+
 ## [0.25.0-beta.1] - 2026-10-14
 
 Release checkpoint that makes the application runtime platform neutral ahead of the Cloudflare
