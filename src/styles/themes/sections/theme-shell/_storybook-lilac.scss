@@ -106,6 +106,10 @@
 		--color-border-subtle: rgb(var(--color-candle-gold-rgb) / 18%);
 		--color-border-premium: rgb(var(--color-candle-gold-rgb) / 54%);
 		--color-ornament-gold: var(--color-candle-gold);
+
+		// The elevated surface stays cream, so the calendar menu needs its own night pair.
+		--location-calendar-menu-bg: var(--color-violet-midnight);
+		--location-calendar-menu-ink: var(--color-candle-cream);
 	}
 
 	// Radio rings read as controls on the cream card (lilac deep, above 3:1), and the chosen answer
