@@ -18,6 +18,8 @@ interface ImportMetaEnv {
 	readonly PUBLIC_GA_MEASUREMENT_ID: string;
 	readonly PUBLIC_META_PIXEL_ID: string;
 	readonly PUBLIC_META_PIXEL_ENABLED: string;
+	/** Cloudflare Web Analytics site token; blank disables the beacon (cookieless, no consent gate). */
+	readonly PUBLIC_CF_WEB_ANALYTICS_TOKEN: string;
 	/** Server-only PKCS#8 P-256 private key for upload-control requests. */
 	readonly MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY: string;
 	/** Server-only PKCS#8 P-256 private key for retrieval-control requests. */
