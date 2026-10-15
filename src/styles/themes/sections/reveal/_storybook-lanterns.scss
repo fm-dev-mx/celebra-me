@@ -2,15 +2,13 @@
 
 // Storybook lanterns reveal: a letter from the tower. Lilac paper with a fine grain on a soft
 // field, a gold hairline along the flap, a liner of small gold sparkles revealed as the flap
-// turns, a gold wax sun seal with the honoree's monogram pressed in, and a deckle-edged cream card
-// carrying three rising lanterns over a plait. Colors resolve through semantic tokens; profiles
+// turns, a gold wax sun seal with the honoree's monogram pressed in, and a cream letter with one
+// gold hairline inset, set in the album's type roles (label, name, rule, date, guest). Colors resolve through semantic tokens; profiles
 // may override the optional `--storybook-*` hooks, which this skin consumes with fallbacks and
 // never declares.
 
 $storybook-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.29 0 0 0 0 0.22 0 0 0 0 0.4 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url%28%23n%29'/%3E%3C/svg%3E");
 $storybook-liner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M9 4c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5ZM27 22c.3 2.2 1.2 3.1 3.4 3.4-2.2.3-3.1 1.2-3.4 3.4-.3-2.2-1.2-3.1-3.4-3.4 2.2-.3 3.1-1.2 3.4-3.4Z' fill='%23b0883a' fill-opacity='.55'/%3E%3C/svg%3E");
-$storybook-sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 0c.7 5.6 3.4 8.3 10 10-6.6 1.7-9.3 4.4-10 10-.7-5.6-3.4-8.3-10-10 6.6-1.7 9.3-4.4 10-10Z'/%3E%3C/svg%3E");
-$storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M0 3L14 1L31 4L52 2L70 5L93 1L118 3L140 0L163 4L188 2L210 5L236 1L259 3L281 0L305 4L330 2L352 5L377 1L401 3L423 0L448 4L472 2L494 5L519 1L543 3L565 0L590 4L614 2L637 5L661 1L686 3L708 0L733 4L757 2L779 5L804 1L828 3L851 0L875 4L899 2L922 5L946 1L970 3L997 0L999 22L996 47L1000 71L997 96L999 120L995 145L998 169L1000 194L996 218L999 243L997 268L1000 292L995 317L998 341L1000 366L996 390L999 415L997 440L1000 464L995 489L998 513L1000 538L996 562L999 587L997 612L1000 636L995 661L998 685L1000 710L996 734L999 759L997 784L1000 808L995 833L998 857L1000 882L996 906L999 931L997 956L1000 998L976 996L951 1000L928 997L903 999L879 995L855 998L830 1000L806 996L782 999L757 997L733 1000L709 995L684 998L660 1000L636 996L611 999L587 997L563 1000L538 995L514 998L490 1000L465 996L441 999L417 997L392 1000L368 995L344 998L319 1000L295 996L271 999L246 997L222 1000L198 995L173 998L149 1000L125 996L100 999L76 997L52 1000L27 995L3 999L1 975L4 951L0 926L3 902L1 878L5 853L2 829L0 805L4 780L1 756L3 732L0 707L5 683L2 659L0 634L4 610L1 586L3 561L0 537L5 513L2 488L0 464L4 440L1 415L3 391L0 367L5 342L2 318L0 294L4 269L1 245L3 221L0 196L5 172L2 148L0 123L4 99L1 75L3 50L0 26Z'/%3E%3C/svg%3E");
 
 // ---------------------------------------------------------------------------------------------
 // Lantern sky: three depth planes behind the envelope (far stars, mid glows, near lanterns). It is
@@ -83,10 +81,12 @@ $sky-glows: (
 //   200–1150ms  the flap turns, showing its sparkle liner past 90°
 //   450–1100ms  warm light spills from inside
 //   750–2250ms  the letter rises out of the pocket, then comes forward and settles
-//   950ms→      the letter's lines arrive one by one as it rises
+//   750ms→      the letter is legible from its first frame (no line-by-line arrival)
 //   900–1550ms  the envelope drops away beneath it, clearing the pocket before the letter
 //               comes forward, and fades out
 //   2100ms→     a gold sheen crosses the paper
+// Hand-over: the letter lifts away first, and only then does the night fade off the cover, so
+// the letter and the cover never show the name at the same time.
 // ---------------------------------------------------------------------------------------------
 
 $sb-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -95,7 +95,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 
 .envelope-wrapper[data-variant='storybook-lanterns'] {
 	--storybook-gold: var(--storybook-ink, var(--color-ornament-gold, var(--color-border-premium)));
-	--env-bg:
+	--env-bg-fallback:
 		#{$storybook-grain},
 		radial-gradient(
 			ellipse 80% 55% at 50% 100%,
@@ -109,7 +109,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	--env-paper-border: color-mix(in srgb, var(--storybook-gold) 55%, transparent);
 	--env-text-primary: var(--color-text-primary);
 	--env-text-secondary: var(--color-text-secondary);
-	--env-accent: var(--storybook-gold);
+	--env-accent-fallback: var(--storybook-gold);
 	--env-seal-accent: var(--storybook-gold);
 	--env-seal-bg: radial-gradient(
 		circle at 36% 30%,
@@ -126,13 +126,13 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		0 4px 8px color-mix(in srgb, var(--color-text-primary) 18%, transparent),
 		inset 1px 1px 0 color-mix(in srgb, white 55%, transparent),
 		inset -1px -2px 3px color-mix(in srgb, black 22%, transparent);
-	--env-shadow-container:
+	--env-shadow-container-fallback:
 		0 1px 2px color-mix(in srgb, var(--color-text-primary) 14%, transparent),
 		0 26px 52px -28px color-mix(in srgb, var(--color-text-primary) 32%, transparent);
-	--env-container-radius: 2px;
-	--env-container-width: min(86vw, 40rem);
-	--env-container-ratio: 1.18;
-	--env-container-max-height: 60svh;
+	--env-container-radius-fallback: 2px;
+	--env-container-width-fallback: min(86vw, 40rem);
+	--env-container-ratio-fallback: 1.18;
+	--env-container-max-height-fallback: 60svh;
 	--env-grid: 36% 24% 40%;
 	--env-seal-size-min: 72px;
 	--env-seal-size-max: 100px;
@@ -141,14 +141,8 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	--env-title-size: clamp(2.6rem, 11cqw, 3.9rem);
 	--env-font-display: var(--font-calligraphy), cursive;
 	--env-identity-padding: 1.25rem;
-	--reveal-card-bg:
-		var(--storybook-paper-grain, #{$storybook-grain}),
-		radial-gradient(
-			ellipse 85% 75% at 50% 42%,
-			transparent 55%,
-			color-mix(in srgb, var(--storybook-gold) 11%, transparent) 100%
-		),
-		var(--storybook-card-bg, var(--color-surface-elevated));
+	--reveal-card-bg: var(--storybook-card-bg, var(--color-surface-elevated));
+	--reveal-card-sheen: none;
 	--reveal-card-text-primary: var(--color-text-primary);
 	--reveal-card-text-secondary: var(--color-text-secondary);
 	--reveal-card-border: transparent;
@@ -157,7 +151,10 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	--reveal-card-radius: 0;
 	--reveal-card-shadow: 0 1px 2px color-mix(in srgb, var(--color-text-primary) 16%, transparent);
 	--reveal-card-grain-opacity: 0;
-	--reveal-card-width: var(--storybook-card-width, min(86vw, 27rem));
+	--reveal-card-width: var(--storybook-card-width, min(76vw, 22rem));
+
+	// The letter rests on the middle of the screen once the envelope has dropped away.
+	--reveal-card-rest-y: var(--storybook-card-rest-y, clamp(32px, 7svh, 72px));
 
 	.envelope-flap {
 		height: 54%;
@@ -317,7 +314,10 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		font-size: var(--env-open-label-size, 0.86rem);
 		letter-spacing: var(--storybook-instruction-tracking, 0.18em);
 		text-transform: uppercase;
-		color: var(--storybook-instruction-ink, var(--env-text-secondary));
+		color: var(
+			--env-instruction-color,
+			var(--storybook-instruction-ink, var(--env-text-secondary))
+		);
 		opacity: 100%;
 	}
 
@@ -325,14 +325,14 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		display: none;
 	}
 
-	// Card: cream paper with a deckle edge and an inner gold hairline. The mask clips the card's
-	// own shadow, so a contact shadow on the stage follows the deckle instead.
+	// Letter: a true rectangle of cream paper (5:7) with one gold hairline inset. A contact shadow
+	// on the stage follows its edge.
 	.envelope-reveal-stage {
 		filter: var(
 			--storybook-card-edge-shadow,
 			drop-shadow(0 1px 1px color-mix(in srgb, var(--color-text-primary) 22%, transparent))
 				drop-shadow(
-					0 8px 14px color-mix(in srgb, var(--color-text-primary) 10%, transparent)
+					0 14px 24px color-mix(in srgb, var(--color-text-primary) 18%, transparent)
 				)
 		);
 		padding: 0;
@@ -341,46 +341,24 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	}
 
 	.invitation-reveal-card {
-		mask: $storybook-deckle center / 100% 100% no-repeat;
+		aspect-ratio: 5 / 7;
 		border: 0;
 	}
 
 	.invitation-reveal-card__inner {
 		position: relative;
-		gap: 0.25rem;
-		padding-top: clamp(1.5rem, 5vw, 2.1rem);
+		height: 100%;
+		justify-content: center;
+		gap: 0.6rem;
+		padding: 12%;
 
-		&::before,
-		&::after {
+		&::before {
 			content: '';
 			position: absolute;
+			inset: var(--storybook-card-rule-inset, 0.65rem);
+			border: 1px solid
+				color-mix(in srgb, var(--color-leaf-gold, var(--storybook-gold)) 55%, transparent);
 			pointer-events: none;
-		}
-
-		// Double rule: the inner hairline and a fainter outer one, a hair apart.
-		&::before {
-			inset: var(--storybook-card-rule-inset, clamp(0.65rem, 2.6vw, 0.9rem));
-			border: 1px solid color-mix(in srgb, var(--storybook-gold) 70%, transparent);
-			outline: 1px solid color-mix(in srgb, var(--storybook-gold) 32%, transparent);
-			outline-offset: 3px;
-		}
-
-		// A gold sparkle pinned on each corner of the rule.
-		&::after {
-			--storybook-corner: 0.8rem;
-
-			inset: calc(
-				var(--storybook-card-rule-inset, clamp(0.65rem, 2.6vw, 0.9rem)) - var(
-						--storybook-corner
-					) /
-					2 + 2px
-			);
-			background: var(--storybook-gold);
-			mask:
-				#{$storybook-sparkle} left top / var(--storybook-corner) no-repeat,
-				#{$storybook-sparkle} right top / var(--storybook-corner) no-repeat,
-				#{$storybook-sparkle} left bottom / var(--storybook-corner) no-repeat,
-				#{$storybook-sparkle} right bottom / var(--storybook-corner) no-repeat;
 		}
 	}
 
@@ -407,49 +385,59 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	}
 
 	.invitation-reveal-card__label {
-		font-family: var(--font-label, var(--font-body));
-		font-size: 0.82rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--color-text-secondary);
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		font-weight: 500;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.2em;
+		text-transform: none;
+		color: var(--color-gold-ink, var(--color-text-secondary));
 	}
 
 	.invitation-reveal-card__name {
-		font-size: clamp(4.2rem, 22vw, 5.9rem);
+		margin-block: 0.1em;
+		font-size: clamp(3.6rem, 16vw, 5.2rem);
 		font-weight: 400;
-		line-height: 1.12;
+		line-height: 0.95;
 	}
 
-	// A gold rule with a sparkle at its center parts the name from the date.
+	// A short gold rule parts the name from the date.
 	.invitation-reveal-card__date::before {
 		content: '';
 		display: block;
-		width: min(7.5rem, 46%);
-		height: 0.7rem;
-		margin: 0.15rem auto 0.6rem;
-		background: color-mix(in srgb, var(--storybook-gold) 85%, transparent);
-		mask:
-			#{$storybook-sparkle} center / 0.7rem no-repeat,
-			linear-gradient(
-					to right,
-					transparent,
-					black 30%,
-					black 40%,
-					transparent 43%,
-					transparent 57%,
-					black 60%,
-					black 70%,
-					transparent
-				)
-				center / 100% 1px no-repeat;
+		width: 2.6rem;
+		margin: 0 auto 0.75rem;
+		border-top: 1px solid var(--color-leaf-gold, var(--storybook-gold));
 	}
 
 	.invitation-reveal-card__date {
-		font-family: var(--font-label, var(--font-body));
-		font-size: clamp(0.86rem, 3.4vw, 0.98rem);
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		letter-spacing: 0.08em;
+		color: var(--color-text-primary);
+	}
+
+	// "Para" and the guest's name read as one line under the date.
+	.invitation-reveal-card__guest {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0 0.3em;
+		margin-top: 0.4rem;
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		font-style: italic;
+		line-height: 1.3;
 		color: var(--color-text-secondary);
+	}
+
+	.invitation-reveal-card__guest-label,
+	.invitation-reveal-card__guest-name {
+		margin: 0;
+		font: inherit;
+		letter-spacing: 0;
+		text-transform: none;
+		color: inherit;
 	}
 
 	.invitation-reveal-card__tagline {
@@ -464,9 +452,9 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	}
 
 	@include mixins.respond-below(sm) {
-		--env-container-width: min(88vw, 344px);
-		--env-container-ratio: 0.74;
-		--env-container-max-height: min(74svh, 560px);
+		--env-container-width-fallback: min(88vw, 344px);
+		--env-container-ratio-fallback: 0.74;
+		--env-container-max-height-fallback: min(74svh, 560px);
 		--env-grid: 38% 22% 40%;
 		--env-title-size: clamp(2.6rem, 14cqw, 3.2rem);
 
@@ -695,34 +683,6 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 			animation: envCardRiseStorybook 1500ms linear 750ms both;
 		}
 
-		.invitation-reveal-card__label,
-		.invitation-reveal-card__name,
-		.invitation-reveal-card__date,
-		.invitation-reveal-card__tagline,
-		.invitation-reveal-card__guest {
-			animation: storybook-sheet-line 520ms $sb-ease-out both;
-		}
-
-		.invitation-reveal-card__label {
-			animation-delay: 950ms;
-		}
-
-		.invitation-reveal-card__name {
-			animation-delay: 1040ms;
-		}
-
-		.invitation-reveal-card__date {
-			animation-delay: 1130ms;
-		}
-
-		.invitation-reveal-card__tagline {
-			animation-delay: 1220ms;
-		}
-
-		.invitation-reveal-card__guest {
-			animation-delay: 1310ms;
-		}
-
 		.invitation-reveal-card::after {
 			animation: storybook-sheet-sheen 1100ms $sb-ease-out 2100ms both;
 		}
@@ -771,6 +731,18 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		opacity: 0%;
 		transform: translateX(-110%);
 		pointer-events: none;
+	}
+}
+
+// Hand-over: the letter lifts away while the night still covers the page, and the night starts
+// to fade only once the letter is gone, so the cover never shows through a letter that carries
+// the same name.
+.event-theme-wrapper[data-reveal-state='revealed']
+	.envelope-wrapper[data-variant='storybook-lanterns'] {
+	--env-exit-delay: var(--storybook-letter-exit, 320ms);
+
+	.envelope-reveal-stage {
+		animation: storybook-letter-away var(--storybook-letter-exit, 320ms) $sb-ease-in forwards;
 	}
 }
 
@@ -965,15 +937,15 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	}
 }
 
-@keyframes storybook-sheet-line {
+@keyframes storybook-letter-away {
 	from {
-		opacity: 0%;
-		transform: translateY(6px);
+		opacity: 100%;
+		transform: translate3d(0, var(--reveal-card-rest-y), 36px) scale(0.97);
 	}
 
 	to {
-		opacity: 100%;
-		transform: none;
+		opacity: 0%;
+		transform: translate3d(0, calc(var(--reveal-card-rest-y) - 2rem), 36px) scale(0.97);
 	}
 }
 

@@ -21,26 +21,26 @@
 	);
 	--location-er-focus-ring: 2px solid rgb(var(--color-candle-gold-rgb) / 90%);
 	--location-er-route-line: var(--rose-gold-divider);
-	--location-bg:
+	--location-bg-fallback:
 		linear-gradient(180deg, rgb(var(--color-warm-ivory-rgb) / 4%) 0%, transparent 12%),
 		var(--location-er-candle-glow), var(--enchanted-section-dark-bg);
 	--location-text-color: var(--color-text-on-dark);
-	--location-padding-block: clamp(3.5rem, 6vw, 5rem) clamp(3rem, 6vw, 5rem);
+	--location-padding-block-fallback: clamp(3.5rem, 6vw, 5rem) clamp(3rem, 6vw, 5rem);
 	--location-container-max-width: min(1120px, calc(100vw - 2rem));
 	--location-container-max-width-sm: min(34rem, calc(100vw - 2rem));
 	--location-gap: clamp(2.4rem, 5vw, 4.8rem);
 	--location-container-gap-sm: clamp(2rem, 8vw, 3rem);
 	--location-card-max-width: 28rem;
-	--location-card-bg: var(--location-er-frame-bg);
-	--location-card-border: 1px solid var(--location-er-frame-border);
+	--location-card-bg-fallback: var(--location-er-frame-bg);
+	--location-card-border-fallback: 1px solid var(--location-er-frame-border);
 	--location-card-radius: 8px;
-	--location-card-shadow:
+	--location-card-shadow-fallback:
 		0 20px 56px rgb(var(--color-rose-shadow-rgb) / 34%),
 		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 8%);
 	--location-card-backdrop-filter: blur(6px) saturate(130%);
 	--location-card-overflow: hidden;
-	--location-card-hover-transform: translateY(-3px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-3px);
+	--location-card-hover-shadow-fallback:
 		0 24px 64px rgb(var(--color-rose-shadow-rgb) / 40%),
 		0 0 28px rgb(var(--color-candle-gold-rgb) / 8%),
 		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 10%);
@@ -84,14 +84,14 @@
 	--location-container-overlay-after: transparent;
 	--location-content-padding: clamp(1.25rem, 2.5vw, 1.75rem);
 	--location-title-color: rgb(var(--color-candle-gold-rgb) / 88%);
-	--location-title-font-size: clamp(0.66rem, 1vw, 0.74rem);
-	--location-title-letter-spacing: 0.34em;
-	--location-place-color: var(--color-warm-ivory);
-	--location-place-font-size: clamp(1.7rem, 3vw, 2.4rem);
-	--location-place-line-height: 0.98;
+	--location-title-font-size-fallback: clamp(0.66rem, 1vw, 0.74rem);
+	--location-title-letter-spacing-fallback: 0.34em;
+	--location-place-color-fallback: var(--color-warm-ivory);
+	--location-place-font-size-fallback: clamp(1.7rem, 3vw, 2.4rem);
+	--location-place-line-height-fallback: 0.98;
 	--location-date-color: rgb(var(--color-candle-gold-rgb) / 88%);
-	--location-hour-color: rgb(var(--color-warm-ivory-rgb) / 74%);
-	--location-address-color: rgb(var(--color-warm-ivory-rgb) / 88%);
+	--location-hour-color-fallback: rgb(var(--color-warm-ivory-rgb) / 74%);
+	--location-address-color-fallback: rgb(var(--color-warm-ivory-rgb) / 88%);
 	--location-address-border-top: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
 	--location-address-text-max-width: 100%;
 	--location-address-align-items: flex-start;
@@ -101,8 +101,8 @@
 	--location-copy-button-border: 1px solid rgb(var(--color-candle-gold-rgb) / 30%);
 	--location-copy-button-hover-bg: rgb(var(--color-candle-gold-rgb) / 18%);
 	--location-copy-button-hover-color: var(--color-warm-ivory);
-	--location-copy-button-width: 2.5rem;
-	--location-copy-button-height: 2.5rem;
+	--location-copy-button-width-fallback: 2.5rem;
+	--location-copy-button-height-fallback: 2.5rem;
 	--location-copy-button-margin: 0;
 	--location-nav-primary-bg: linear-gradient(
 		135deg,
@@ -131,19 +131,19 @@
 	--location-indications-spacing: clamp(2.5rem, 6vw, 4.5rem);
 	--location-indications-container-max-width: min(62rem, calc(100vw - 2rem));
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-gap: clamp(0.9rem, 2vw, 1.25rem);
-	--location-indications-heading-color: rgb(var(--color-candle-gold-rgb) / 80%);
-	--location-indication-item-gap: 0.7rem;
+	--location-indications-gap-fallback: clamp(0.9rem, 2vw, 1.25rem);
+	--location-indications-heading-color-fallback: rgb(var(--color-candle-gold-rgb) / 80%);
+	--location-indication-item-gap-fallback: 0.7rem;
 	--location-indication-item-bg: rgb(var(--color-rose-shadow-rgb) / 14%);
 	--location-indication-item-border: 1px solid rgb(var(--color-antique-gold-rgb) / 12%);
 	--location-indication-item-radius: 6px;
 	--location-indication-item-padding: clamp(0.65rem, 1.6vw, 0.9rem);
 	--location-indication-item-box-shadow: none;
 	--location-indication-icon-bg: rgb(var(--color-warm-ivory-rgb) / 5%);
-	--location-indication-icon-color: rgb(var(--color-candle-gold-rgb) / 70%);
+	--location-indication-icon-color-fallback: rgb(var(--color-candle-gold-rgb) / 70%);
 	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-candle-gold-rgb) / 10%);
 	--location-indication-icon-size: 1.75rem;
-	--location-indication-text-color: rgb(var(--color-warm-ivory-rgb) / 80%);
+	--location-indication-text-color-fallback: rgb(var(--color-warm-ivory-rgb) / 80%);
 	--location-indication-strong-color: var(--color-warm-ivory);
 
 	padding-inline: clamp(1rem, 4vw, 2rem);
@@ -359,7 +359,7 @@
 	}
 
 	@include mixins.respond-below(md) {
-		--location-padding-block: clamp(3.5rem, 10vw, 4.5rem) clamp(3rem, 8vw, 4rem);
+		--location-padding-block-fallback: clamp(3.5rem, 10vw, 4.5rem) clamp(3rem, 8vw, 4rem);
 		--location-indications-grid-template: 1fr;
 
 		.event-location__intro {

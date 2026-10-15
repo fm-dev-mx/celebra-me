@@ -62,6 +62,16 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 - **Enforcement:** `tests/unit/invitation-profile-boundary.test.ts` (token-only declarations,
   positional selectors, and `.event--*` selectors outside the profile directory).
 
+### Token layering
+
+A section token `--T` has one public writer: the invitation profile, on the wrapper. Every other
+stylesheet (section base, section variant, preset, `:root`) writes its default to `--T-fallback` on
+its own selector, and consumers read `var(--T, var(--T-fallback, <literal>))`. A profile value
+therefore reaches the section even when a base or variant rule sets a default there, and pages
+without a profile value render exactly as before. Declaring `--T` itself outside a profile shadows
+the profile; `tests/unit/invitation-token-shadowing.test.ts` rejects new pairs, and its baseline
+only shrinks.
+
 ### Frozen delivered profiles
 
 Profiles delivered before the token-only rule are closed deliverables, listed with their digest in

@@ -5,6 +5,25 @@ import { assessExactEvidence } from './operational-evidence.ts';
 export const STATIC_CAPABILITY_CHECK = 'Application / static';
 export const PRODUCTION_DEPLOYMENT_SMOKE = 'Vercel - celebra-me production smoke';
 export const PREVIEW_DEPLOYMENT_SMOKE = 'Vercel - celebra-me preview smoke';
+/** Commit statuses published by `.github/workflows/deploy.yml` for the Cloudflare Workers. */
+export const CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE = 'Cloudflare - celebra-me production smoke';
+export const CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE = 'Cloudflare - celebra-me preview smoke';
+/**
+ * Smoke of a Production Worker version that serves no traffic yet
+ * (`.github/workflows/deploy-production.yml`). Deliberately not a Production deployment smoke:
+ * no release gate accepts it, because it proves a candidate, not what the domain serves.
+ */
+export const CLOUDFLARE_PRODUCTION_CANDIDATE_SMOKE =
+	'Cloudflare - celebra-me production candidate smoke';
+/** Either hosting provider's smoke proves the deployed SHA for its environment. */
+export const PRODUCTION_DEPLOYMENT_SMOKES = [
+	PRODUCTION_DEPLOYMENT_SMOKE,
+	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
+] as const;
+export const PREVIEW_DEPLOYMENT_SMOKES = [
+	PREVIEW_DEPLOYMENT_SMOKE,
+	CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
+] as const;
 export const REQUIRED_RELEASE_CHECKS = [
 	'Repository Policy',
 	'Application Suite',
@@ -88,16 +107,20 @@ export function createGitHubClient(run: GhRunner): {
 export function requireProductionDeploymentSmoke(sha: string, checks: RemoteCheckRun[]): void {
 	if (!/^[a-f0-9]{40}$/.test(sha))
 		throw new RemoteEvidenceError('invalid', 'An exact deployed SHA is required.');
-	const assessment = assessExactEvidence({
-		sha,
-		environment: 'production',
-		records: checks.filter((check) => check.name === PRODUCTION_DEPLOYMENT_SMOKE),
-		missingAction: 'Collect the trusted Production smoke result for the exact deployed SHA.',
-	});
-	if (assessment.status !== 'VERIFIED')
+	const verified = PRODUCTION_DEPLOYMENT_SMOKES.some(
+		(name) =>
+			assessExactEvidence({
+				sha,
+				environment: 'production',
+				records: checks.filter((check) => check.name === name),
+				missingAction:
+					'Collect the trusted Production smoke result for the exact deployed SHA.',
+			}).status === 'VERIFIED',
+	);
+	if (!verified)
 		throw new RemoteEvidenceError(
 			'invalid',
-			`Production deployment smoke blocked: ${PRODUCTION_DEPLOYMENT_SMOKE}`,
+			`Production deployment smoke blocked: ${PRODUCTION_DEPLOYMENT_SMOKES.join(' or ')}`,
 		);
 }
 
@@ -147,8 +170,8 @@ export function loadRemoteChecks(sha: string, run: GhRunner = defaultGhRunner): 
 		throw new RemoteEvidenceError('unavailable', 'Status result page is incomplete.');
 	const names = new Set([
 		...REQUIRED_RELEASE_CHECKS,
-		PRODUCTION_DEPLOYMENT_SMOKE,
-		PREVIEW_DEPLOYMENT_SMOKE,
+		...PRODUCTION_DEPLOYMENT_SMOKES,
+		...PREVIEW_DEPLOYMENT_SMOKES,
 	]);
 	return [...names].flatMap((name) => {
 		const run = runs.check_runs

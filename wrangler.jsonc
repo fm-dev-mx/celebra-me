@@ -1,0 +1,277 @@
+// Cloudflare Workers configuration for the Celebra-me application.
+// Only the Cloudflare build reads it (CELEBRA_BUILD_TARGET=cloudflare). The build selects an
+// environment with CLOUDFLARE_ENV=<name>; wrangler commands pass the same name with --env.
+// The top-level entry is the local target (wrangler dev); it is never deployed.
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "celebra-me-local",
+    "main": "./src/worker.ts",
+    "account_id": "05cb212a366549f0f93e7101c4ca3692",
+    "compatibility_date": "2026-10-06",
+    "compatibility_flags": ["nodejs_compat"],
+    "workers_dev": false,
+    "preview_urls": false,
+    "observability": { "enabled": true, "head_sampling_rate": 1 },
+    "vars": {
+        "CELEBRA_DEPLOY_ENV": "",
+        "BASE_URL": "http://127.0.0.1:4321"
+    },
+    "images": { "binding": "IMAGES" },
+    "env": {
+        "preview": {
+            "name": "celebra-me-preview",
+            "workers_dev": true,
+            "preview_urls": true,
+            "observability": { "enabled": true, "head_sampling_rate": 1 },
+            // Secrets come from `pnpm ops:cloudflare:preview:secrets` (scripts/ops/cloudflare-worker-secrets.ts).
+            // Only non-secret identity lives here.
+            "vars": {
+                "CELEBRA_DEPLOY_ENV": "preview",
+                "SUPABASE_URL": "https://iwipdvisoyerfdytuhwi.supabase.co",
+                "PUBLIC_SUPABASE_URL": "https://iwipdvisoyerfdytuhwi.supabase.co",
+                "BASE_URL": "https://celebra-me-preview.celebra-me-com.workers.dev"
+            },
+            "images": { "binding": "IMAGES" },
+            // Same schedules as vercel.json; src/lib/server/scheduled-jobs.ts maps each expression.
+            "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
+            // One binding per (namespace, maxHits, windowSec) that src/lib/rsvp/security/rate-limit-provider.ts
+            // resolves by name. namespace_id 2001-2099 belongs to the Preview application Worker
+            // (the memories Workers use 1000-1002; Production takes 3001-3099).
+            "ratelimits": [
+                {
+                    "name": "RATE_LIMIT_CTX_20_60",
+                    "namespace_id": "2001",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_RSVP_20_60",
+                    "namespace_id": "2002",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_RSVP_PUBLIC_10_60",
+                    "namespace_id": "2003",
+                    "simple": { "limit": 10, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_5_60",
+                    "namespace_id": "2004",
+                    "simple": { "limit": 5, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_10_60",
+                    "namespace_id": "2005",
+                    "simple": { "limit": 10, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_12_60",
+                    "namespace_id": "2006",
+                    "simple": { "limit": 12, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_20_60",
+                    "namespace_id": "2007",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_30_60",
+                    "namespace_id": "2008",
+                    "simple": { "limit": 30, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_60_60",
+                    "namespace_id": "2009",
+                    "simple": { "limit": 60, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_AUTH_6_60",
+                    "namespace_id": "2010",
+                    "simple": { "limit": 6, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_AUTH_8_60",
+                    "namespace_id": "2011",
+                    "simple": { "limit": 8, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_AUTH_20_60",
+                    "namespace_id": "2012",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_TRACKING_10_60",
+                    "namespace_id": "2013",
+                    "simple": { "limit": 10, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_TRACKING_120_60",
+                    "namespace_id": "2014",
+                    "simple": { "limit": 120, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_5_60",
+                    "namespace_id": "2015",
+                    "simple": { "limit": 5, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_6_60",
+                    "namespace_id": "2016",
+                    "simple": { "limit": 6, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_30_60",
+                    "namespace_id": "2017",
+                    "simple": { "limit": 30, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_60_60",
+                    "namespace_id": "2018",
+                    "simple": { "limit": 60, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_300_60",
+                    "namespace_id": "2019",
+                    "simple": { "limit": 300, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_600_60",
+                    "namespace_id": "2020",
+                    "simple": { "limit": 600, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_ENGAGEMENT_60_60",
+                    "namespace_id": "2021",
+                    "simple": { "limit": 60, "period": 60 }
+                }
+            ]
+        },
+        "production": {
+            "name": "celebra-me",
+            // No public workers.dev host. Version URLs stay on so a candidate can be smoked behind
+            // Cloudflare Access before any traffic reaches it; they must never be left unprotected.
+            "workers_dev": false,
+            "preview_urls": true,
+            // Traffic arrives only through zone routes that the cutover adds by hand
+            // (docs/operations/cloudflare-production-cutover.md); none are declared here.
+            "observability": { "enabled": true, "head_sampling_rate": 1 },
+            // Secrets come from `pnpm ops:cloudflare:production:secrets` (scripts/ops/cloudflare-worker-secrets.ts).
+            "vars": {
+                "CELEBRA_DEPLOY_ENV": "production",
+                "SUPABASE_URL": "https://ineitkdkyrxqyressllp.supabase.co",
+                "PUBLIC_SUPABASE_URL": "https://ineitkdkyrxqyressllp.supabase.co",
+                "BASE_URL": "https://www.celebra-me.com"
+            },
+            "images": { "binding": "IMAGES" },
+            // Scheduled jobs keep running on Vercel until it is retired: one cron runner at a time.
+            "triggers": { "crons": [] },
+            // namespace_id 3001-3099 belongs to the Production application Worker.
+            "ratelimits": [
+                {
+                    "name": "RATE_LIMIT_CTX_20_60",
+                    "namespace_id": "3001",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_RSVP_20_60",
+                    "namespace_id": "3002",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_RSVP_PUBLIC_10_60",
+                    "namespace_id": "3003",
+                    "simple": { "limit": 10, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_5_60",
+                    "namespace_id": "3004",
+                    "simple": { "limit": 5, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_10_60",
+                    "namespace_id": "3005",
+                    "simple": { "limit": 10, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_12_60",
+                    "namespace_id": "3006",
+                    "simple": { "limit": 12, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_20_60",
+                    "namespace_id": "3007",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_30_60",
+                    "namespace_id": "3008",
+                    "simple": { "limit": 30, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_DASHBOARD_60_60",
+                    "namespace_id": "3009",
+                    "simple": { "limit": 60, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_AUTH_6_60",
+                    "namespace_id": "3010",
+                    "simple": { "limit": 6, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_AUTH_8_60",
+                    "namespace_id": "3011",
+                    "simple": { "limit": 8, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_AUTH_20_60",
+                    "namespace_id": "3012",
+                    "simple": { "limit": 20, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_TRACKING_10_60",
+                    "namespace_id": "3013",
+                    "simple": { "limit": 10, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_TRACKING_120_60",
+                    "namespace_id": "3014",
+                    "simple": { "limit": 120, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_5_60",
+                    "namespace_id": "3015",
+                    "simple": { "limit": 5, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_6_60",
+                    "namespace_id": "3016",
+                    "simple": { "limit": 6, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_30_60",
+                    "namespace_id": "3017",
+                    "simple": { "limit": 30, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_60_60",
+                    "namespace_id": "3018",
+                    "simple": { "limit": 60, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_300_60",
+                    "namespace_id": "3019",
+                    "simple": { "limit": 300, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_MEMORIES_600_60",
+                    "namespace_id": "3020",
+                    "simple": { "limit": 600, "period": 60 }
+                },
+                {
+                    "name": "RATE_LIMIT_ENGAGEMENT_60_60",
+                    "namespace_id": "3021",
+                    "simple": { "limit": 60, "period": 60 }
+                }
+            ]
+        }
+    }
+}

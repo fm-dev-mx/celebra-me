@@ -2,7 +2,7 @@
 .envelope-wrapper[data-variant='enchanted-rose'],
 .envelope-wrapper[data-variant='jewelry-box'],
 .envelope-wrapper[data-variant='jewelry-box-wedding'] {
-	--env-bg: radial-gradient(
+	--env-bg-fallback: radial-gradient(
 		ellipse at 50% 40%,
 		var(--color-surface-primary) 0%,
 		color-mix(in srgb, var(--color-surface-primary) 92%, var(--color-surface-soft)) 100%
@@ -15,7 +15,7 @@
 	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 18%, transparent);
 	--env-text-primary: var(--color-action-primary);
 	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 28%, transparent);
-	--env-shadow-container:
+	--env-shadow-container-fallback:
 		0 24px 48px color-mix(in srgb, var(--color-surface-dark) 14%, transparent),
 		0 6px 14px color-mix(in srgb, var(--color-surface-dark) 6%, transparent);
 	--reveal-card-bg: color-mix(
@@ -29,9 +29,15 @@
 	--reveal-card-accent: color-mix(in srgb, var(--color-action-accent) 28%, transparent);
 }
 
+// The wedding stationery keeps light paper and dark ink whatever the content closed palette says, so
+// the open label below the envelope follows the envelope ink instead of the palette's primary color.
+.envelope-wrapper[data-variant='jewelry-box-wedding'] {
+	--env-instruction-color: var(--env-text-secondary);
+}
+
 // Soft night stationery — satin-blue field, cold paper envelope, deep wax jewel.
 .envelope-wrapper[data-variant='celestial-blue'] {
-	--env-bg:
+	--env-bg-fallback:
 		radial-gradient(
 			ellipse 72% 54% at 50% 36%,
 			color-mix(in srgb, var(--color-ice-blue) 62%, var(--color-satin-blue)) 0%,
@@ -58,8 +64,12 @@
 		var(--color-soft-graphite) 68%,
 		var(--color-cold-silver)
 	);
-	--env-accent: color-mix(in srgb, var(--color-satin-blue) 45%, var(--color-deep-blue-graphite));
-	--env-shadow-container:
+	--env-accent-fallback: color-mix(
+		in srgb,
+		var(--color-satin-blue) 45%,
+		var(--color-deep-blue-graphite)
+	);
+	--env-shadow-container-fallback:
 		0 40px 80px rgb(var(--color-deep-blue-graphite-rgb) / 32%),
 		0 14px 32px rgb(var(--color-deep-blue-graphite-rgb) / 18%),
 		0 2px 0 rgb(var(--color-diamond-white-rgb) / 28%);
@@ -71,30 +81,30 @@
 	);
 
 	// Deep satin wax — richer than the paper field so the seal reads as pressed cera.
-	--wax-seal-highlight: color-mix(
+	--wax-seal-highlight-fallback: color-mix(
 		in srgb,
 		var(--color-diamond-white) 32%,
 		var(--color-satin-blue)
 	);
-	--wax-seal-mid: color-mix(
+	--wax-seal-mid-fallback: color-mix(
 		in srgb,
 		var(--color-satin-blue) 82%,
 		var(--color-deep-blue-graphite)
 	);
-	--wax-seal-deep: color-mix(
+	--wax-seal-deep-fallback: color-mix(
 		in srgb,
 		var(--color-deep-blue-graphite) 52%,
 		var(--color-satin-blue)
 	);
 
 	// Darker wax, not ink: keeps the monogram inside the seal's material family.
-	--wax-seal-letter: color-mix(
+	--wax-seal-letter-fallback: color-mix(
 		in srgb,
 		var(--color-deep-blue-graphite) 86%,
 		var(--color-satin-blue)
 	);
-	--wax-seal-shadow: var(--color-deep-blue-graphite);
-	--wax-seal-emboss-shadow: color-mix(
+	--wax-seal-shadow-fallback: var(--color-deep-blue-graphite);
+	--wax-seal-emboss-shadow-fallback: color-mix(
 		in srgb,
 		var(--color-deep-blue-graphite) 78%,
 		var(--color-satin-blue)
@@ -248,7 +258,7 @@
 
 	.envelope-container {
 		&::after {
-			box-shadow: var(--env-shadow-container);
+			box-shadow: var(--env-shadow-container, var(--env-shadow-container-fallback));
 		}
 	}
 

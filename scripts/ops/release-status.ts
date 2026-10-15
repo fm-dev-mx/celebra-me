@@ -5,11 +5,16 @@
  */
 import { basename } from 'node:path';
 import {
+	buildCloudflareAccessHeaders,
 	buildVercelProtectionHeaders,
+	CLOUDFLARE_PREVIEW_HOST_PATTERN,
+	CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN,
 	IMMUTABLE_PREVIEW_HOST_PATTERN,
 	loadPlaywrightEnvironment,
 } from '../playwright/preview-environment.ts';
 import {
+	CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
+	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
 	createGitHubClient,
 	defaultGhRunner,
 	type GhRunner,
@@ -21,6 +26,7 @@ import {
 } from './release-readiness.ts';
 
 export type ReleaseTarget = 'preview' | 'production';
+export type HostingProvider = 'vercel' | 'cloudflare';
 export type SmokeMode = 'ci' | 'skip';
 export type Progress = 'passed' | 'pending' | 'failed';
 
@@ -110,9 +116,23 @@ export function classifyDeployment(
 	if (deployment.state !== 'success' || !deployment.url) return 'pending';
 	if (target === 'preview') {
 		const host = new URL(deployment.url).hostname;
-		if (!IMMUTABLE_PREVIEW_HOST_PATTERN.test(host)) return 'failed';
+		if (
+			!IMMUTABLE_PREVIEW_HOST_PATTERN.test(host) &&
+			!CLOUDFLARE_PREVIEW_HOST_PATTERN.test(host)
+		)
+			return 'failed';
 	}
 	return 'passed';
+}
+
+/** The provider that served a deployment URL; `null` when there is no URL yet. */
+export function deploymentProvider(url: string | null | undefined): HostingProvider | null {
+	if (!url) return null;
+	const host = new URL(url).hostname;
+	return CLOUDFLARE_PREVIEW_HOST_PATTERN.test(host) ||
+		CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN.test(host)
+		? 'cloudflare'
+		: 'vercel';
 }
 
 export interface HealthEvidence {
@@ -280,25 +300,48 @@ export interface ReleaseStatus {
 export interface StatusDependencies {
 	run?: GhRunner;
 	fetchImpl?: FetchLike;
-	/** Sent to the immutable deployment URL only; Vercel Authentication guards it on both targets. */
+	/** Sent to the immutable Vercel deployment URL only; Vercel Authentication guards it on both targets. */
 	protectionHeaders?: Record<string, string>;
+	/** Sent to the Cloudflare Worker URL only; Cloudflare Access guards it. */
+	accessHeaders?: Record<string, string>;
 }
 
+function smokeCheckName(target: ReleaseTarget, provider: HostingProvider): string {
+	if (provider === 'cloudflare')
+		return target === 'preview'
+			? CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE
+			: CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE;
+	return target === 'preview' ? PREVIEW_DEPLOYMENT_SMOKE : PRODUCTION_DEPLOYMENT_SMOKE;
+}
+
+/**
+ * The smoke that proves the deployment on screen. With a provider deployment the smoke is that
+ * provider's; before one is recorded, the most advanced of both providers' smokes is reported.
+ */
 function describeSmoke(
 	sha: string,
 	target: ReleaseTarget,
 	mode: SmokeMode,
 	remote: ReleaseCheck[],
 	run: GhRunner,
+	provider: HostingProvider | null,
 ): ReleaseStatus['smoke'] {
-	const name = target === 'preview' ? PREVIEW_DEPLOYMENT_SMOKE : PRODUCTION_DEPLOYMENT_SMOKE;
-	if (mode === 'skip') return { name, mode, state: 'skipped', progress: 'passed' };
-	const check = remote.find((entry) => entry.name === name);
+	const names = provider
+		? [smokeCheckName(target, provider)]
+		: [smokeCheckName(target, 'vercel'), smokeCheckName(target, 'cloudflare')];
+	if (mode === 'skip') return { name: names[0], mode, state: 'skipped', progress: 'passed' };
+	const candidates = names.map((name) => {
+		const check = remote.find((entry) => entry.name === name);
+		return { name, check, progress: classifyCheck(sha, check) };
+	});
+	const rank: Record<Progress, number> = { passed: 0, pending: 1, failed: 2 };
+	const best = [...candidates].sort((a, b) => rank[a.progress] - rank[b.progress])[0];
+	const { name, check } = best;
 	const smoke = {
 		name,
 		mode,
 		state: check?.state ?? 'missing',
-		progress: classifyCheck(sha, check),
+		progress: best.progress,
 	};
 	// A failed attempt being re-run is not terminal: wait for the new attempt's result.
 	if (smoke.progress === 'failed' && check?.trusted && check.sha.toLowerCase() === sha) {
@@ -366,6 +409,7 @@ export async function collectReleaseStatus(
 		? { ...evidence, progress: classifyDeployment(target, evidence) }
 		: null;
 
+	const provider = deploymentProvider(deployment?.url);
 	const health: HealthEvidence[] = [];
 	if (deployment?.progress === 'passed' && deployment.url) {
 		health.push(
@@ -373,7 +417,9 @@ export async function collectReleaseStatus(
 				deployment.url,
 				sha,
 				fetchImpl,
-				dependencies.protectionHeaders,
+				provider === 'cloudflare'
+					? dependencies.accessHeaders
+					: dependencies.protectionHeaders,
 				target,
 			),
 		);
@@ -393,7 +439,7 @@ export async function collectReleaseStatus(
 		target,
 		checks,
 		deployment,
-		smoke: describeSmoke(sha, target, smokeMode, remote, run),
+		smoke: describeSmoke(sha, target, smokeMode, remote, run, provider),
 		health,
 		ignoredBuild,
 	};
@@ -471,8 +517,12 @@ async function main(): Promise<void> {
 	// The set-cookie variant answers with a redirect; a single probe needs only the bypass header.
 	const bypass = buildVercelProtectionHeaders(process.env)?.['x-vercel-protection-bypass'];
 	const protectionHeaders = bypass ? { 'x-vercel-protection-bypass': bypass } : undefined;
+	const accessHeaders = buildCloudflareAccessHeaders(process.env);
 	const collect = () =>
-		collectReleaseStatus(options.sha, options.target, options.smoke, { protectionHeaders });
+		collectReleaseStatus(options.sha, options.target, options.smoke, {
+			protectionHeaders,
+			accessHeaders,
+		});
 	const status = options.wait
 		? await waitForReleaseStatus(collect, { timeoutMs: options.timeoutMs, intervalMs: 30_000 })
 		: await collect();

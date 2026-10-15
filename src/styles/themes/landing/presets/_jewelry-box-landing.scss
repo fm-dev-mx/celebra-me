@@ -94,7 +94,7 @@
 	// ==========================================
 
 	// Header Section
-	--header-bg-scrolled: rgb(8 7 6 / 78%);
+	--header-bg-scrolled-fallback: rgb(8 7 6 / 78%);
 	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
 	--header-border-scrolled: var(--border-fine-gold, 1px solid var(--color-glass-border));
 	--header-cta-glow: 0 0 20px rgb(var(--color-action-accent-rgb) / 20%);
@@ -131,16 +131,16 @@
 		rgb(210 170 88 / 4%) 100%
 	);
 	--mobile-drawer-border: rgb(210 170 88 / 24%);
-	--mobile-drawer-link-color: rgb(248 244 236);
-	--mobile-drawer-link-hover: rgb(205 164 84);
+	--mobile-drawer-link-color-fallback: rgb(248 244 236);
+	--mobile-drawer-link-hover-fallback: rgb(205 164 84);
 	--mobile-drawer-login-color: rgb(248 244 236 / 68%);
 	--mobile-drawer-login-hover-color: rgb(205 164 84);
-	--mobile-drawer-cta-bg: linear-gradient(135deg, rgb(218 181 102), rgb(184 138 64));
-	--mobile-drawer-cta-color: rgb(18 15 10);
-	--mobile-drawer-cta-border: 1px solid rgb(205 164 84 / 40%);
+	--mobile-drawer-cta-bg-fallback: linear-gradient(135deg, rgb(218 181 102), rgb(184 138 64));
+	--mobile-drawer-cta-color-fallback: rgb(18 15 10);
+	--mobile-drawer-cta-border-fallback: 1px solid rgb(205 164 84 / 40%);
 	--mobile-drawer-cta-shadow: 0 12px 28px rgb(184 138 64 / 18%);
-	--mobile-drawer-cta-hover-bg: rgb(18 15 10);
-	--mobile-drawer-cta-hover-color: rgb(218 181 102);
+	--mobile-drawer-cta-hover-bg-fallback: rgb(18 15 10);
+	--mobile-drawer-cta-hover-color-fallback: rgb(218 181 102);
 	--mobile-drawer-cta-hover-border: 1px solid rgb(218 181 102 / 60%);
 	--mobile-drawer-cta-hover-shadow: 0 14px 32px rgb(0 0 0 / 40%);
 	--mobile-drawer-footer-copy: rgb(248 244 236 / 50%);

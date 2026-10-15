@@ -118,7 +118,7 @@
 }
 
 .whatsapp-button {
-	min-height: var(--footer-control-min-height, 44px);
+	min-height: var(--footer-control-min-height, var(--footer-control-min-height-fallback, 44px));
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -164,7 +164,7 @@
 }
 
 .footer__replay-link {
-	min-height: var(--footer-control-min-height, 44px);
+	min-height: var(--footer-control-min-height, var(--footer-control-min-height-fallback, 44px));
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -181,7 +181,7 @@
 	transition:
 		opacity var(--duration-snappy) var(--ease-standard),
 		color var(--duration-snappy) var(--ease-standard);
-	opacity: var(--footer-replay-opacity, 70%);
+	opacity: var(--footer-replay-opacity, var(--footer-replay-opacity-fallback, 70%));
 
 	&:hover {
 		color: var(--color-text-secondary);

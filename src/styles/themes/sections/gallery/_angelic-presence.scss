@@ -4,14 +4,14 @@
 .theme-preset--angelic-presence .gallery-section {
 	@include primitives.normalized-section-spacing;
 
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-eternal-ink);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-eternal-ink);
 	--gallery-title-transform: none;
 	--gallery-title-letter-spacing: 0.02em;
 	--gallery-title-size: clamp(2rem, 5vw, 3.5rem);
 	--gallery-subtitle-font: var(--font-body);
 	--gallery-subtitle-size: var(--section-subtitle-size);
-	--gallery-subtitle-color: rgb(var(--color-eternal-ink-rgb) / 80%);
+	--gallery-subtitle-color-fallback: rgb(var(--color-eternal-ink-rgb) / 80%);
 	--gallery-subtitle-transform: uppercase;
 	--gallery-subtitle-letter-spacing: 0.12em;
 	--gallery-item-bg: rgb(var(--color-pure-ivory-rgb) / 74%);

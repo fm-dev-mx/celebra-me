@@ -11,69 +11,69 @@
 	--location-gap: clamp(1.75rem, 4.5vw, 2.85rem);
 	--location-plate-row: minmax(8rem, min(18vw, 16rem));
 	--location-stack-gap: clamp(3rem, 7vw, 4.5rem);
-	--location-padding-block: clamp(4.75rem, 9vw, 7rem);
-	--location-bg: linear-gradient(
+	--location-padding-block-fallback: clamp(4.75rem, 9vw, 7rem);
+	--location-bg-fallback: linear-gradient(
 		180deg,
 		var(--color-surface-elevated) 0%,
 		var(--color-surface-primary) 56%,
 		var(--color-surface-soft) 100%
 	);
-	--location-card-padding: 0;
-	--location-card-bg: linear-gradient(
+	--location-card-padding-fallback: 0;
+	--location-card-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-elevated-rgb, var(--color-surface-primary-rgb)) / 95%) 0%,
 		rgb(var(--color-surface-primary-rgb) / 72%) 100%
 	);
-	--location-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 	--location-card-radius: 6px;
 	--location-card-radius-xs: 6px;
 	--location-card-overflow: hidden;
-	--location-card-shadow: 0 12px 28px rgb(var(--color-text-primary-rgb) / 8%);
+	--location-card-shadow-fallback: 0 12px 28px rgb(var(--color-text-primary-rgb) / 8%);
 	--location-card-backdrop-filter: none;
 	--location-card-before-bg: none;
-	--location-card-hover-transform: none;
-	--location-card-hover-shadow: 0 14px 28px rgb(var(--color-text-primary-rgb) / 12%);
+	--location-card-hover-transform-fallback: none;
+	--location-card-hover-shadow-fallback: 0 14px 28px rgb(var(--color-text-primary-rgb) / 12%);
 	--location-card-hover-border-color: rgb(
 		var(--color-action-primary-rgb, var(--color-action-accent-rgb)) / 40%
 	);
 	--location-content-padding: clamp(1.1rem, 2.6vw, 1.6rem);
-	--location-title-font-family: var(--font-label);
-	--location-title-font-size: 0.7rem;
-	--location-title-font-weight: 500;
-	--location-title-letter-spacing: 0.22em;
+	--location-title-font-family-fallback: var(--font-label);
+	--location-title-font-size-fallback: 0.7rem;
+	--location-title-font-weight-fallback: 500;
+	--location-title-letter-spacing-fallback: 0.22em;
 	--location-title-margin-bottom: 0;
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: clamp(1.3rem, 3vw, 1.7rem);
-	--location-place-font-weight: 500;
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: clamp(1.3rem, 3vw, 1.7rem);
+	--location-place-font-weight-fallback: 500;
 	--location-place-letter-spacing: -0.5px;
-	--location-place-line-height: 1.12;
-	--location-place-margin: 0 0 0.35rem;
-	--location-place-color: var(--color-text-primary);
+	--location-place-line-height-fallback: 1.12;
+	--location-place-margin-fallback: 0 0 0.35rem;
+	--location-place-color-fallback: var(--color-text-primary);
 	--location-hour-font-family: var(--font-display);
-	--location-hour-font-size: clamp(1.15rem, 3vw, 1.45rem);
-	--location-hour-font-weight: 500;
-	--location-hour-letter-spacing: 0.01em;
+	--location-hour-font-size-fallback: clamp(1.15rem, 3vw, 1.45rem);
+	--location-hour-font-weight-fallback: 500;
+	--location-hour-letter-spacing-fallback: 0.01em;
 	--location-hour-text-transform: none;
-	--location-hour-color: var(--location-title-color, var(--color-text-secondary));
+	--location-hour-color-fallback: var(--location-title-color, var(--color-text-secondary));
 	--location-hour-margin-bottom: 1rem;
 	--location-address-font-family: var(--font-body);
-	--location-address-font-size: 0.88rem;
+	--location-address-font-size-fallback: 0.88rem;
 	--location-address-line-height: 1.55;
-	--location-address-color: rgb(var(--color-text-primary-rgb) / 80%);
+	--location-address-color-fallback: rgb(var(--color-text-primary-rgb) / 80%);
 	--location-address-padding-top: 1rem;
 	--location-address-border-top: 1px solid
 		rgb(var(--color-action-primary-rgb, var(--color-action-accent-rgb)) / 16%);
 	--location-address-align-items: flex-start;
 	--location-address-justify: flex-start;
-	--location-address-text-align: left;
+	--location-address-text-align-fallback: left;
 	--location-address-gap: 0.65rem;
 	--location-address-text-max-width: 100%;
 	--location-content-list-margin-bottom: 0;
-	--location-flourish-color: var(--color-action-accent);
+	--location-flourish-color-fallback: var(--color-action-accent);
 	--location-flourish-opacity: 70%;
 	--location-flourish-margin-bottom: 0;
-	--location-copy-button-width: 2.75rem;
-	--location-copy-button-height: 2.75rem;
+	--location-copy-button-width-fallback: 2.75rem;
+	--location-copy-button-height-fallback: 2.75rem;
 	--location-copy-button-display: flex;
 	--location-copy-button-margin: 0;
 	--location-copy-button-padding: 0.55rem;
@@ -99,7 +99,10 @@
 	--location-map-preview-copy-border: rgb(
 		var(--color-action-primary-rgb, var(--color-action-accent-rgb)) / 20%
 	);
-	--location-map-preview-link-color: var(--color-action-primary, var(--color-action-accent));
+	--location-map-preview-link-color-fallback: var(
+		--color-action-primary,
+		var(--color-action-accent)
+	);
 	--location-map-preview-artwork-color: var(--color-action-primary, var(--color-action-accent));
 	--location-map-preview-artwork-detail: var(--color-surface-elevated);
 	--location-map-preview-artwork-horizon: var(--color-action-accent);
@@ -117,22 +120,25 @@
 	--location-indications-spacing: clamp(3rem, 6vw, 4.25rem);
 	--location-indications-container-max-width: 42rem;
 	--location-indications-grid-template: 1fr;
-	--location-indications-gap: 0;
-	--location-indications-panel-bg: transparent;
-	--location-indications-panel-border: none;
-	--location-indications-panel-padding: 0;
+	--location-indications-gap-fallback: 0;
+	--location-indications-panel-bg-fallback: transparent;
+	--location-indications-panel-border-fallback: none;
+	--location-indications-panel-padding-fallback: 0;
 	--location-indications-backdrop-filter: blur(10px);
-	--location-indications-heading-font-family: var(--font-label);
-	--location-indications-heading-font-size: clamp(0.68rem, 1.3vw, 0.75rem);
-	--location-indications-heading-font-weight: 500;
-	--location-indications-heading-letter-spacing: 0.24em;
+	--location-indications-heading-font-family-fallback: var(--font-label);
+	--location-indications-heading-font-size-fallback: clamp(0.68rem, 1.3vw, 0.75rem);
+	--location-indications-heading-font-weight-fallback: 500;
+	--location-indications-heading-letter-spacing-fallback: 0.24em;
 	--location-indications-heading-margin-bottom: 0.5rem;
-	--location-indications-heading-color: var(--location-title-color, var(--color-text-secondary));
+	--location-indications-heading-color-fallback: var(
+		--location-title-color,
+		var(--color-text-secondary)
+	);
 	--location-indication-item-bg: none;
 	--location-indication-item-border: 0;
 	--location-indication-item-radius: 0;
 	--location-indication-item-padding: 1.25rem 0;
-	--location-indication-item-gap: 0.95rem;
+	--location-indication-item-gap-fallback: 0.95rem;
 	--location-indication-item-box-shadow: none;
 	--location-indication-item-hover-bg: none;
 	--location-indication-item-hover-border-color: transparent;
@@ -145,16 +151,19 @@
 	--location-indication-icon-bg: rgb(var(--color-surface-primary-rgb) / 52%);
 	--location-indication-icon-border: 1px solid rgb(var(--color-action-accent-rgb) / 28%);
 	--location-indication-icon-radius: 50%;
-	--location-indication-icon-color: var(--color-action-primary, var(--color-action-accent));
+	--location-indication-icon-color-fallback: var(
+		--color-action-primary,
+		var(--color-action-accent)
+	);
 	--location-indication-icon-font-size: 1.1rem;
 	--location-indication-icon-svg-size: 22px;
 	--location-indication-icon-svg-stroke: 0.75px;
 	--location-indication-icon-opacity: 90%;
 	--location-indication-text-font-family: var(--font-body);
-	--location-indication-text-font-size: clamp(0.88rem, 1.5vw, 0.98rem);
+	--location-indication-text-font-size-fallback: clamp(0.88rem, 1.5vw, 0.98rem);
 	--location-indication-text-line-height: 1.5;
 	--location-indication-text-letter-spacing: 0.01em;
-	--location-indication-text-color: var(--color-text-secondary);
+	--location-indication-text-color-fallback: var(--color-text-secondary);
 	--location-divider-display: none;
 
 	.event-location__intro {
@@ -361,7 +370,10 @@
 		font-weight: 500;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: var(--location-map-preview-link-color, var(--color-action-accent));
+		color: var(
+			--location-map-preview-link-color,
+			var(--location-map-preview-link-color-fallback, var(--color-action-accent))
+		);
 		transition:
 			background-color var(--motion-interaction-duration, 0.2s) var(--ease-premium),
 			color var(--motion-interaction-duration, 0.2s) var(--ease-premium);

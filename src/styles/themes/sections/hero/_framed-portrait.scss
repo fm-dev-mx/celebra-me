@@ -1,7 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
 :where(.invitation-hero)[data-variant='framed-portrait'] {
-	--hero-title-size: clamp(4rem, 10vw, 6.5rem);
+	--hero-title-size-fallback: clamp(4rem, 10vw, 6.5rem);
 }
 
 .invitation-hero.framed-portrait-hero[data-variant='framed-portrait'] {
@@ -87,7 +87,8 @@
 	.framed-portrait-hero__name {
 		max-width: var(--hero-title-max-width, 9ch);
 		margin: var(--hero-name-margin, 0);
-		font: var(--hero-name-font-weight, 500) var(--hero-title-size) /
+		font: var(--hero-name-font-weight, 500)
+			var(--hero-title-size, var(--hero-title-size-fallback)) /
 			var(--hero-name-line-height, 1) var(--hero-name-font-family, var(--font-display));
 		letter-spacing: var(--hero-name-letter-spacing, -0.035em);
 		text-transform: none;

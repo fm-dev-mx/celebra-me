@@ -139,8 +139,14 @@
 		letter-spacing: 0.01em;
 		text-align: left;
 		text-transform: none;
-		color: var(--hero-title-color-mid, var(--color-diamond-white));
-		-webkit-text-fill-color: var(--hero-title-color-mid, var(--color-diamond-white));
+		color: var(
+			--hero-title-color-mid,
+			var(--hero-title-color-mid-fallback, var(--color-diamond-white))
+		);
+		-webkit-text-fill-color: var(
+			--hero-title-color-mid,
+			var(--hero-title-color-mid-fallback, var(--color-diamond-white))
+		);
 		-webkit-text-stroke: 0;
 		text-shadow: 0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%);
 	}
@@ -308,10 +314,10 @@
 
 .theme-preset--celestial-blue .invitation-hero[data-variant='split-cover'] {
 	// Align the plane and overlay colors with celestial-blue's dark surface tokens.
-	--hero-split-plane-bg: var(--color-deep-blue-graphite, rgb(16 24 32));
-	--hero-split-overlay-strong: rgb(16 24 32 / 88%);
-	--hero-split-overlay-mid: rgb(16 24 32 / 65%);
-	--hero-split-overlay-soft: rgb(16 24 32 / 18%);
+	--hero-split-plane-bg-fallback: var(--color-deep-blue-graphite, rgb(16 24 32));
+	--hero-split-overlay-strong-fallback: rgb(16 24 32 / 88%);
+	--hero-split-overlay-mid-fallback: rgb(16 24 32 / 65%);
+	--hero-split-overlay-soft-fallback: rgb(16 24 32 / 18%);
 
 	// Ensure the title uses the on-dark text color rather than the default.
 	.invitation-hero__title {

@@ -32,7 +32,7 @@
 	--location-board-icon-color: var(--color-action-accent);
 	--location-board-title-font: var(--font-body);
 	--location-board-title-size: clamp(1rem, 3.6vw, 1.15rem);
-	--location-indication-text-color: var(--location-board-muted);
+	--location-indication-text-color-fallback: var(--location-board-muted);
 	--location-indication-strong-color: var(--location-board-color);
 
 	display: grid;
