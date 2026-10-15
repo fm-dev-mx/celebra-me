@@ -35,7 +35,7 @@ function ascii(bytes: Uint8Array, offset: number, length: number): string {
 }
 
 /** Little-endian TIFF block with three ASCII tags in IFD0, sorted by tag number. */
-export function buildExifTiff(exif: ProvenanceMetadata['exif']): Uint8Array {
+function buildExifTiff(exif: ProvenanceMetadata['exif']): Uint8Array {
 	const tags: Array<[number, Uint8Array]> = [
 		[0x010e, encoder.encode(exif.description)],
 		[0x013b, encoder.encode(exif.artist)],

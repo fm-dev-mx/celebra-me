@@ -3,7 +3,7 @@
  * single-mark PNG the Cloudflare Images binding scales and repeats (it cannot rasterize SVG).
  * Run after changing `preview-mark-svg.ts`; a unit test fails while the two disagree.
  *
- * Usage: pnpm exec tsx scripts/invitation/generate-preview-mark-master.ts
+ * Usage: pnpm invitation:preview-mark:generate
  */
 import { writeFileSync } from 'node:fs';
 import sharp from 'sharp';

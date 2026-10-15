@@ -14,7 +14,7 @@ async function alpha(input: Buffer): Promise<Buffer> {
 
 describe('preview mark instances', () => {
 	it('keeps the prerendered mark in sync with the SVG geometry', async () => {
-		// Regenerate with `pnpm exec tsx scripts/invitation/generate-preview-mark-master.ts`.
+		// Regenerate with `pnpm invitation:preview-mark:generate`.
 		const fresh = await alpha(
 			await sharp(Buffer.from(buildPreviewMarkInstanceSvg(PREVIEW_MARK_MASTER_PX_PER_UNIT)))
 				.png()
