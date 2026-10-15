@@ -230,9 +230,10 @@
             "notes": "Drops invitations.base_demo_id, invitations.snapshot and invitation_content_drafts.submission_id. Redefines publish_invitation_atomic to accept only the current public-metadata baseline (archivedAt, eventType, kind, slug, status, themeId, title), and save_invitation_metadata_atomic and restore_invitation_from_published_atomic to insert drafts without submission_id; signatures and grants are unchanged. Apply only after the Production deployment that claims legacy_invitation_columns_retired_client passed smoke."
         },
         "20261015220000": {
-            "phase": "expand",
+            "phase": "contract",
             "provides": ["invitation_assets_r2_provider"],
-            "notes": "Widens invitation_assets_provider_valid and invitation_assets_cloudinary_fields_complete so invitation_assets.provider also accepts 'r2', with the same provider_public_id and secure_url requirement as Cloudinary rows. Both checks are re-added NOT VALID and only widen; no rows, URLs or asset bytes change. The deployed application keeps writing 'supabase' and 'cloudinary' only. Apply before any task that writes R2 asset rows."
+            "notes": "Replaces invitation_assets_provider_valid and invitation_assets_cloudinary_fields_complete with supersets so invitation_assets.provider also accepts 'r2', with the same provider_public_id and secure_url requirement as Cloudinary rows. Registered as contract only because the CHECK swap uses DROP CONSTRAINT; both checks are re-added NOT VALID and only widen, so no rows, URLs or asset bytes change and the deployed application keeps working. Apply before any task that writes R2 asset rows.",
+            "revokes": ["invitation_assets_supabase_cloudinary_only_provider"]
         }
     },
     "appCapabilities": {
