@@ -71,9 +71,6 @@ interface ImportMetaEnv {
 	readonly TRUST_DEVICE_SECRET: string;
 	readonly PREVIEW_MEDIA_SECRET?: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
-	readonly UPSTASH_REDIS_REST_URL: string;
-	readonly UPSTASH_REDIS_REST_TOKEN: string;
-	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
 	readonly DEV_MFA_BYPASS: string;
 	readonly PREVIEW_MFA_BYPASS: string;
