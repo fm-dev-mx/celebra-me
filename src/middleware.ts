@@ -17,6 +17,7 @@ import {
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 import { isLocalProcess } from '@/lib/server/deploy-identity';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
+import { resolvePermanentRedirect, withSecurityHeaders } from '@/lib/server/security-headers';
 
 interface CookieStore {
 	get(name: string): { value: string } | undefined;
@@ -580,54 +581,60 @@ function isScannerRequest(pathname: string): boolean {
 	return false;
 }
 
-export const onRequest = defineMiddleware(
-	async ({ url, cookies, redirect, request, locals }, next) => {
-		if (isScannerRequest(url.pathname)) {
-			return new Response(null, { status: 404 });
-		}
+type MiddlewareContext = Parameters<Parameters<typeof defineMiddleware>[0]>[0];
+type MiddlewareNext = Parameters<Parameters<typeof defineMiddleware>[0]>[1];
 
-		if (!shouldHandleAuth(url.pathname)) {
+async function handleRequest(
+	{ url, cookies, redirect, request, locals }: MiddlewareContext,
+	next: MiddlewareNext,
+): Promise<Response> {
+	if (isScannerRequest(url.pathname)) {
+		return new Response(null, { status: 404 });
+	}
+
+	if (!shouldHandleAuth(url.pathname)) {
+		const response = await next();
+		return finalizeMiddlewareResponse(url.pathname, response);
+	}
+
+	let authRedirect: Response | null;
+	try {
+		authRedirect = await handleProtectedAuthRequest(url, cookies, redirect, request, locals);
+	} catch (error) {
+		if (url.pathname === '/login') {
 			const response = await next();
 			return finalizeMiddlewareResponse(url.pathname, response);
 		}
 
-		let authRedirect: Response | null;
-		try {
-			authRedirect = await handleProtectedAuthRequest(
-				url,
-				cookies,
-				redirect,
-				request,
-				locals,
+		const isApiRoute = url.pathname.startsWith('/api/dashboard');
+		if (isAuthRequestError(error)) {
+			return isApiRoute
+				? finalizeMiddlewareResponse(url.pathname, errorResponse(error))
+				: authHtmlFailure(error.retryable ? 503 : 502);
+		}
+
+		if (isApiRoute) {
+			const response = errorResponse(
+				new ApiError(500, 'internal_error', 'No fue posible validar la sesión.'),
 			);
-		} catch (error) {
-			if (url.pathname === '/login') {
-				const response = await next();
-				return finalizeMiddlewareResponse(url.pathname, response);
-			}
-
-			const isApiRoute = url.pathname.startsWith('/api/dashboard');
-			if (isAuthRequestError(error)) {
-				return isApiRoute
-					? finalizeMiddlewareResponse(url.pathname, errorResponse(error))
-					: authHtmlFailure(error.retryable ? 503 : 502);
-			}
-
-			if (isApiRoute) {
-				const response = errorResponse(
-					new ApiError(500, 'internal_error', 'No fue posible validar la sesión.'),
-				);
-				response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
-				return response;
-			}
-			return authHtmlFailure(500);
+			response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+			return response;
 		}
+		return authHtmlFailure(500);
+	}
 
-		if (authRedirect) {
-			return finalizeMiddlewareResponse(url.pathname, authRedirect);
-		}
+	if (authRedirect) {
+		return finalizeMiddlewareResponse(url.pathname, authRedirect);
+	}
 
-		const response = await next();
-		return finalizeMiddlewareResponse(url.pathname, response);
-	},
-);
+	const response = await next();
+	return finalizeMiddlewareResponse(url.pathname, response);
+}
+
+export const onRequest = defineMiddleware(async (context, next) => {
+	const permanentRedirect = resolvePermanentRedirect(context.url);
+	if (permanentRedirect) return withSecurityHeaders(context.url.pathname, permanentRedirect);
+
+	const response = await handleRequest(context, next);
+	return withSecurityHeaders(context.url.pathname, response);
+});
