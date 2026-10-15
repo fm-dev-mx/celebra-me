@@ -51,10 +51,9 @@
 	--location-intro-heading-style: normal;
 
 	// Grounds of the sections whose variants paint their own background (the preset paints them
-	// with the night).
+	// with the night). The gallery and gifts grounds are set on their sections below, where the
+	// base section styles declare them.
 	--location-bg: var(--color-lilac-mist);
-	--gallery-section-bg: var(--color-lilac-mist);
-	--gifts-bg: var(--color-lilac-paper);
 
 	// Place: plain mist, the program as type on the page.
 	--location-program-art-display: none;
@@ -153,10 +152,15 @@
 	// The contact sheet keeps the page gutter and a narrow gap between prints;
 	// its title is set in the ink of the other chapter titles.
 	.gallery-section {
+		--gallery-section-bg: var(--color-lilac-mist);
 		--gallery-title-style: normal;
 		--gallery-title-color: var(--color-violet-ink);
 		--gallery-mosaic-gap: 0.5rem;
 		--gallery-mosaic-max-width: min(calc(100% - 2 * var(--america-gutter)), 60rem);
+	}
+
+	.gifts-section {
+		--gifts-bg: var(--color-lilac-paper);
 	}
 
 	// Every section after the night returns to the day: its own ground (paper or mist, below) and
