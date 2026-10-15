@@ -214,7 +214,7 @@
 	// ---------------------------------------------------------------------
 	// Family section
 	// ---------------------------------------------------------------------
-	--family-bg:
+	--family-bg-fallback:
 		radial-gradient(
 			circle at 50% 0%,
 			rgb(var(--color-blush-pink-rgb) / 28%) 0%,
@@ -225,25 +225,25 @@
 			var(--color-warm-ivory) 0%,
 			rgb(var(--color-antique-gold-rgb) / 10%) 100%
 		);
-	--family-texture-opacity: 0.1;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 0.1;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
 		rgb(var(--color-velvet-burgundy-rgb) / 5%) 100%
 	);
-	--family-panel-bg: rgb(var(--color-warm-ivory-rgb) / 72%);
-	--family-panel-border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
-	--family-panel-shadow: 0 24px 64px rgb(var(--color-rose-shadow-rgb) / 10%);
+	--family-panel-bg-fallback: rgb(var(--color-warm-ivory-rgb) / 72%);
+	--family-panel-border-fallback: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
+	--family-panel-shadow-fallback: 0 24px 64px rgb(var(--color-rose-shadow-rgb) / 10%);
 	--family-panel-radius: 18px;
-	--family-panel-spacing: clamp(2.2rem, 5vw, 4.4rem) clamp(1.2rem, 4vw, 4rem);
+	--family-panel-spacing-fallback: clamp(2.2rem, 5vw, 4.4rem) clamp(1.2rem, 4vw, 4rem);
 	--family-content-gap: clamp(2.4rem, 5vw, 4rem);
-	--family-accent: var(--color-antique-gold);
-	--family-text-primary: var(--color-velvet-burgundy);
-	--family-text-muted: rgb(var(--color-walnut-brown-rgb) / 66%);
+	--family-accent-fallback: var(--color-antique-gold);
+	--family-text-primary-fallback: var(--color-velvet-burgundy);
+	--family-text-muted-fallback: rgb(var(--color-walnut-brown-rgb) / 66%);
 	--family-divider: var(--rose-gold-divider);
-	--family-title-font: var(--font-calligraphy);
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-title-font-fallback: var(--font-calligraphy);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.45rem, 3vw, 2.05rem);
 	--family-lead-name-size: clamp(2.2rem, 4.7vw, 3rem);
 	--family-media-bg: rgb(var(--color-warm-ivory-rgb) / 82%);
 	--family-media-radius: 18px;
@@ -252,7 +252,7 @@
 		0 18px 48px rgb(var(--color-rose-shadow-rgb) / 12%),
 		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 90%);
 	--family-media-inner-border: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
-	--family-media-filter: saturate(0.98) contrast(1.03) brightness(0.98) sepia(0.04);
+	--family-media-filter-fallback: saturate(0.98) contrast(1.03) brightness(0.98) sepia(0.04);
 	--family-focal-point: center;
 	--family-deceased-symbol-color: var(--color-antique-gold);
 	--family-deceased-symbol-size: 0.9em;

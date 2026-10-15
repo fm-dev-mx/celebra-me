@@ -96,40 +96,40 @@
 	// ---------------------------------------------------------------------
 	// Family section tokens
 	// ---------------------------------------------------------------------
-	--family-bg: radial-gradient(
+	--family-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--family-texture-opacity: 0.3;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 0.3;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
 		rgb(var(--color-action-accent-rgb) / 3%) 100%
 	);
-	--family-panel-bg: rgb(255 255 255 / 48%);
-	--family-panel-border: 1px solid var(--color-glass-border);
-	--family-panel-shadow: var(--shadow-premium);
+	--family-panel-bg-fallback: rgb(255 255 255 / 48%);
+	--family-panel-border-fallback: 1px solid var(--color-glass-border);
+	--family-panel-shadow-fallback: var(--shadow-premium);
 	--family-panel-radius: 16px;
-	--family-text-primary: var(--color-surface-dark);
-	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 60%);
-	--family-accent: var(--color-action-accent);
+	--family-text-primary-fallback: var(--color-surface-dark);
+	--family-text-muted-fallback: rgb(var(--color-surface-dark-rgb) / 60%);
+	--family-accent-fallback: var(--color-action-accent);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		var(--color-action-accent) 50%,
 		transparent 100%
 	);
-	--family-title-font: var(--font-display);
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-title-font-fallback: var(--font-display);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.45rem, 3vw, 2.05rem);
 	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
 	--family-media-bg: var(--color-frame-bg);
 	--family-media-radius: 14px;
 	--family-media-border: var(--border-image);
 	--family-media-shadow: var(--shadow-premium);
 	--family-media-inner-border: 1px solid rgb(255 255 255 / 42%);
-	--family-media-filter: sepia(0.12) contrast(1.04) brightness(1.01);
+	--family-media-filter-fallback: sepia(0.12) contrast(1.04) brightness(1.01);
 
 	// ---------------------------------------------------------------------
 	// Hero tokens

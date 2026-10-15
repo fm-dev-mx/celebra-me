@@ -112,26 +112,26 @@
 	// ---------------------------------------------------------------------
 	// Section specific tokens (still using variables, but cleaned up)
 	// ---------------------------------------------------------------------
-	--family-bg: linear-gradient(
+	--family-bg-fallback: linear-gradient(
 		155deg,
 		#{color.adjust(sys.$sys-color-parchment-100, $lightness: 2%)} 0%,
 		#{sys.$sys-color-parchment-100} 54%,
 		#{color.adjust(sys.$sys-color-parchment-300, $lightness: 4%)} 100%
 	);
 	--family-texture-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23926d48' fill-opacity='0.03' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
-	--family-texture-opacity: 1;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 1;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		rgb(255 255 255 / 0%) 0%,
 		rgb(var(--color-action-accent-rgb) / 6%) 100%
 	);
-	--family-panel-bg: rgb(248 241 224 / 18%);
-	--family-panel-border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
-	--family-panel-shadow: none;
+	--family-panel-bg-fallback: rgb(248 241 224 / 18%);
+	--family-panel-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+	--family-panel-shadow-fallback: none;
 	--family-panel-radius: 0;
-	--family-text-primary: var(--color-text-primary);
-	--family-text-muted: rgb(var(--color-text-primary-rgb) / 76%);
-	--family-accent: var(--color-action-accent);
+	--family-text-primary-fallback: var(--color-text-primary);
+	--family-text-muted-fallback: rgb(var(--color-text-primary-rgb) / 76%);
+	--family-accent-fallback: var(--color-action-accent);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
@@ -140,9 +140,9 @@
 		rgb(var(--color-action-accent-rgb) / 14%) 70%,
 		transparent 100%
 	);
-	--family-title-font: #{sys-type.$sys-font-display-formal};
-	--family-name-font: #{sys-type.$sys-font-display-hacienda};
-	--family-name-size: clamp(1.6rem, 3vw, 2.15rem);
+	--family-title-font-fallback: #{sys-type.$sys-font-display-formal};
+	--family-name-font-fallback: #{sys-type.$sys-font-display-hacienda};
+	--family-name-size-fallback: clamp(1.6rem, 3vw, 2.15rem);
 	--family-lead-name-size: clamp(2.05rem, 4vw, 2.7rem);
 	--family-media-bg: rgb(248 241 224 / 78%);
 	--family-media-radius: 0;
@@ -156,7 +156,7 @@
 	--family-media-corner-size: 18px;
 	--family-media-corner-width: 1.5px;
 	--family-media-corner-opacity: 100%;
-	--family-media-filter: sepia(0.05) contrast(1.02) brightness(0.99);
+	--family-media-filter-fallback: sepia(0.05) contrast(1.02) brightness(0.99);
 	--family-deceased-symbol-color: rgb(var(--color-action-accent-rgb) / 82%);
 	--family-deceased-symbol-size: 0.9em;
 	--family-deceased-symbol-opacity: 80%;

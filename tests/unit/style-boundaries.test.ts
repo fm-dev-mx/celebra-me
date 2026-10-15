@@ -467,8 +467,8 @@ describe('Style boundary governance', () => {
 	it('family panel contract variables are active base variables', () => {
 		const familyBase = read('src/styles/invitation/_family.scss');
 
-		expect(familyBase).toContain('border: var(--family-panel-border');
-		expect(familyBase).toContain('box-shadow: var(--family-panel-shadow');
+		expect(familyBase).toMatch(/border: var\(\s*--family-panel-border/u);
+		expect(familyBase).toMatch(/box-shadow: var\(\s*--family-panel-shadow/u);
 	});
 
 	it('no orphaned family variant partials', () => {

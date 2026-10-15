@@ -115,29 +115,29 @@
 	--hero-badge-text: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-pure-ivory-rgb) / 72%);
 	--hero-image-filter: brightness(1.02) contrast(0.96) saturate(0.9) sepia(0.04);
-	--family-bg: radial-gradient(
+	--family-bg-fallback: radial-gradient(
 		circle at 50% 12%,
 		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
 		var(--color-surface-primary) 64%,
 		rgb(var(--color-soft-sand-rgb) / 72%) 100%
 	);
-	--family-texture-opacity: 0.12;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 0.12;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
 		rgb(var(--color-sacred-gold-rgb) / 4%) 100%
 	);
-	--family-panel-bg: var(--sacred-surface-mist);
-	--family-panel-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
-	--family-panel-shadow: var(--sacred-soft-shadow);
+	--family-panel-bg-fallback: var(--sacred-surface-mist);
+	--family-panel-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--family-panel-shadow-fallback: var(--sacred-soft-shadow);
 	--family-panel-radius: 24px;
-	--family-text-primary: var(--color-text-primary);
-	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
-	--family-accent: var(--color-sacred-gold);
+	--family-text-primary-fallback: var(--color-text-primary);
+	--family-text-muted-fallback: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--family-accent-fallback: var(--color-sacred-gold);
 	--family-divider: var(--sacred-divider);
-	--family-title-font: var(--font-display);
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-title-font-fallback: var(--font-display);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.45rem, 3vw, 2.05rem);
 	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
 	--family-media-bg:
 		linear-gradient(
@@ -151,7 +151,7 @@
 	--family-media-shadow:
 		var(--shadow-editorial), inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
 	--family-media-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
-	--family-media-filter: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.03);
+	--family-media-filter-fallback: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.03);
 	--family-meta-display: none;
 	--gallery-section-bg: radial-gradient(
 		circle at 50% 10%,
