@@ -2,10 +2,11 @@ import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
 /**
- * XV invitation "La noche de las linternas" on the storybook-lilac preset: lilac paper at the
- * tower door (hero, quote, family) and a violet night with rising lanterns from the countdown on,
- * because the misa starts after sunset and the reception is a night garden. Original
- * storybook-lanterns envelope and ornaments, no characters. Map links are address searches until
+ * XV invitation "La noche de las linternas" on the storybook-lilac preset, set as an editorial
+ * photo album: lilac paper and mist alternate section by section, and the countdown is the one
+ * night band, because the misa starts after sunset. The photographs lead (one color grade baked
+ * into every derivative); no ornament set or painted art. Original storybook-lanterns envelope,
+ * no characters. Map links are address searches until
  * the client sends pins; the song is omitted until supplied. The program uses the moments and
  * hours most common across our XV invitations (owner-approved placeholder until the client
  * confirms them), gifts are an envelope shower, and replies close 15 days before the event.
@@ -41,34 +42,26 @@ const content: CanonicalEventContentInput = {
 		'thankYou',
 	],
 	composition: {
-		ornaments: 'storybook-lanterns',
 		intersections: {
-			// Two doors bound the story: the paper rises into the tower door under an arch, and the
-			// closing returns to the door under the mirrored arch, drawn in gold over the night.
-			// Between them, two light handoffs: nightfall out of the door photograph, and the reply
-			// card opening out of the gifts note. Three pages of the storybook turn between them,
-			// alternating sides: the blessing over the quote paper, the save-the-date print out of
-			// the countdown sky, and the contact sheet out of the program night. The castle and the
-			// program, and the contact sheet and the gifts note, share one night and meet without a
-			// boundary.
-			quote: { family: 'arch', source: 'hero' },
-			family: { family: 'folio', source: 'quote' },
-			countdown: { family: 'atmospheric-blend', source: 'interlude-after-family' },
-			'interlude-after-countdown': { family: 'folio', source: 'countdown' },
-			gallery: { family: 'folio', source: 'itinerary' },
-			'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
+			// Three joins out of eleven boundaries, bridge, bridge, climax; every other boundary is
+			// a clean cut between paper and mist. The night rises on a diagonal (deep on the left)
+			// under the patio photograph, the save-the-date print hangs out of the night into the
+			// paper, and the closing door rises into the reply card under the mirrored arch (crown
+			// on the right, against the diagonal). The profile draws the diagonal and reserves
+			// each depth.
+			countdown: { family: 'overlap', source: 'interlude-after-family' },
+			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
 	interludes: [
 		{
-			// Seated at the iron door: she has left the tower. Phones keep her face in frame.
-			image: 'interludeDoor',
+			// The lilac look in the brick patio, laid on the mist as a plate before the night.
+			image: 'gallery01',
 			afterSection: 'family',
-			alt: 'América con vestido lila, sentada frente a una puerta de hierro forjado.',
+			alt: 'América con vestido lila en un patio de ladrillo, junto a una reja.',
 			height: 'medium',
-			focalPoint: '52% 30%',
-			focalPointDesktop: '52% 26%',
+			presentation: 'framed',
 		},
 		{
 			// The save-the-date paper she holds announces the night, framed like a print.
@@ -100,7 +93,6 @@ const content: CanonicalEventContentInput = {
 		envelopeName: CELEBRANT_NAME,
 		cardName: CELEBRANT_NAME,
 		cardLabel: 'Mis XV años',
-		cardTagline: 'Tengo una noticia que darle',
 		guestLabel: 'Para',
 		microcopy: 'Toque el sello para abrir',
 	},
@@ -235,17 +227,13 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gallery: {
-		// Contact sheet of the four looks; the tower door stays for the hero and the closing.
+		// Contact sheet of the four looks; the door stays for the hero and the closing, and the
+		// patio plate opens the night.
 		variant: 'mirrored-mosaic',
 		eyebrow: '',
 		title: 'Mis cuatro looks',
 		subtitle: 'Rosa, lila, amarillo… y unos lentes de corazón.',
 		items: [
-			{
-				image: 'gallery01',
-				alt: 'América con vestido lila en un patio de ladrillo, junto a una reja.',
-				focalPoint: '55% 30%',
-			},
 			{
 				image: 'gallery02',
 				alt: 'América con vestido rosa en un café con flores y un espejo dorado.',
@@ -317,10 +305,10 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	thankYou: {
-		// Back at the same door, closer and smiling: the story ends where it began.
+		// Back at the same door, now seated: the story ends where it began, framed differently.
 		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
-		focalPoint: '50% 30%',
+		focalPoint: '50% 40%',
 		message:
 			'Gracias por llegar hasta el final. Lo demás se lo cuento el 21 de noviembre… en persona.',
 		closingName: CELEBRANT_NAME,
@@ -355,12 +343,12 @@ export const americaSolisInvitation = defineCanonicalInvitation({
 	lifecycle: 'published',
 	hostLoginAlias: 'america_solis',
 	assetDir: 'src/assets/invitations/america',
-	// One role per photograph; the og crop is a separate derivative of the bleed interlude.
+	// One role per photograph; the closing and og crops are separate derivatives of the seated
+	// door photograph.
 	assetFiles: {
 		hero: 'hero-tower-door.webp',
-		interludeDoor: 'interlude-door.webp',
 		interludePregon: 'interlude-pregon.webp',
-		thankYouPortrait: 'thank-you-door.webp',
+		thankYouPortrait: 'thank-you-door-seated.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',

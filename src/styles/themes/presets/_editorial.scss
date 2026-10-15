@@ -58,7 +58,7 @@
 		color-mix(in srgb, var(--color-action-accent) 40%, var(--color-surface-dark)) 70%,
 		var(--color-action-accent) 100%
 	);
-	--light-sweep: linear-gradient(
+	--light-sweep-fallback: linear-gradient(
 		-45deg,
 		transparent 0%,
 		transparent 40%,
@@ -89,7 +89,7 @@
 	--section-padding-block: clamp(5rem, 12vw, 8rem);
 
 	// Hero Section
-	--hero-overlay: linear-gradient(
+	--hero-overlay-fallback: linear-gradient(
 		180deg,
 		#{color.change(sys.$sys-color-onyx-950, $alpha: 0.32)} 0%,
 		transparent 40%,
@@ -97,7 +97,7 @@
 	);
 
 	// Quote Section
-	--quote-bg:
+	--quote-bg-fallback:
 		radial-gradient(circle at center, transparent 0%, rgb(0 0 0 / 40%) 100%),
 		radial-gradient(
 			ellipse at center,
@@ -106,77 +106,77 @@
 		),
 		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E"),
 		var(--color-surface-dark);
-	--quote-text-color: var(--color-text-secondary);
-	--quote-author-color: var(--color-text-on-dark);
-	--quote-content-font: var(--font-body-narrative);
-	--quote-content-size: clamp(1.6rem, 5.5vw, 2.4rem);
-	--quote-content-line-height: 1.5;
+	--quote-text-color-fallback: var(--color-text-secondary);
+	--quote-author-color-fallback: var(--color-text-on-dark);
+	--quote-content-font-fallback: var(--font-body-narrative);
+	--quote-content-size-fallback: clamp(1.6rem, 5.5vw, 2.4rem);
+	--quote-content-line-height-fallback: 1.5;
 	--quote-content-style: italic;
-	--quote-content-letter-spacing: 0;
-	--quote-divider-color: var(--color-action-accent);
+	--quote-content-letter-spacing-fallback: 0;
+	--quote-divider-color-fallback: var(--color-action-accent);
 	--quote-divider-opacity: 1;
-	--quote-ornament-color: var(--color-text-on-dark);
+	--quote-ornament-color-fallback: var(--color-text-on-dark);
 	--quote-ornament-opacity: 0.3;
 
 	// Family Section
-	--family-bg: radial-gradient(
+	--family-bg-fallback: radial-gradient(
 		circle at bottom right,
 		#{sys.$sys-color-onyx-900},
 		#{sys.$sys-color-onyx-950}
 	);
-	--family-texture-opacity: 0;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 0;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		rgb(var(--color-action-accent-rgb) / 10%) 0%,
 		transparent 68%
 	);
-	--family-panel-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.02)};
-	--family-panel-border: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
-	--family-panel-shadow: 0 34px 90px rgb(0 0 0 / 42%);
+	--family-panel-bg-fallback: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.02)};
+	--family-panel-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
+	--family-panel-shadow-fallback: 0 34px 90px rgb(0 0 0 / 42%);
 	--family-panel-radius: 24px;
-	--family-accent: var(--color-action-accent);
-	--family-text-primary: var(--color-text-primary);
-	--family-text-muted: rgb(var(--color-text-primary-rgb) / 72%);
+	--family-accent-fallback: var(--color-action-accent);
+	--family-text-primary-fallback: var(--color-text-primary);
+	--family-text-muted-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(var(--color-action-accent-rgb) / 72%) 50%,
 		transparent 100%
 	);
-	--family-title-font: var(--font-display);
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.35rem, 2.8vw, 1.85rem);
+	--family-title-font-fallback: var(--font-display);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.35rem, 2.8vw, 1.85rem);
 	--family-lead-name-size: clamp(2rem, 4.2vw, 2.6rem);
 	--family-media-bg: var(--gold-metallic);
 	--family-media-radius: 400px 400px 24px 24px;
 	--family-media-border: 1px solid var(--section-card-border-alt);
 	--family-media-shadow: 0 40px 100px rgb(0 0 0 / 50%), 0 0 30px rgb(0 0 0 / 40%);
 	--family-media-inner-border: 1px solid rgb(255 255 255 / 15%);
-	--family-media-filter: contrast(1.1) saturate(1.1) brightness(0.9);
+	--family-media-filter-fallback: contrast(1.1) saturate(1.1) brightness(0.9);
 
 	// Gifts Section
-	--gifts-bg: var(--color-surface-dark);
-	--gifts-subtitle-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--gifts-bg-fallback: var(--color-surface-dark);
+	--gifts-subtitle-color-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 
 	// Gallery Section
-	--gallery-section-bg: #{sys.$sys-color-onyx-950};
+	--gallery-section-bg-fallback: #{sys.$sys-color-onyx-950};
 	--gallery-caption-bg: #{color.change(sys.$sys-color-onyx-950, $alpha: 0.88)};
 
 	// ---------------------------------------------------------------------
 	// Location Section
 	// ---------------------------------------------------------------------
 	--location-text-color: var(--color-text-primary);
-	--location-bg: var(--color-surface-dark);
-	--location-card-bg: rgb(var(--color-surface-dark-rgb) / 88%);
-	--location-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
-	--location-card-shadow:
+	--location-bg-fallback: var(--color-surface-dark);
+	--location-card-bg-fallback: rgb(var(--color-surface-dark-rgb) / 88%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
+	--location-card-shadow-fallback:
 		0 50px 100px -20px rgb(0 0 0 / 80%), inset 0 0 40px rgb(var(--color-action-accent-rgb) / 5%);
 	--location-card-backdrop-filter: blur(30px);
-	--location-card-hover-transform: translateY(-12px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-12px);
+	--location-card-hover-shadow-fallback:
 		0 70px 140px -30px rgb(0 0 0 / 95%), 0 0 40px rgb(var(--color-action-accent-rgb) / 15%);
 	--location-card-hover-border-color: rgb(var(--color-action-accent-rgb) / 50%);
-	--location-card-before-bg: var(--light-sweep);
+	--location-card-before-bg: var(--light-sweep, var(--light-sweep-fallback));
 	--location-card-before-bg-size: 300% 300%;
 	--location-card-before-bg-pos: -100% -100%;
 	--location-card-before-z-index: 2;
@@ -194,25 +194,25 @@
 	--location-reception-image-focus-y: 30%;
 	--location-content-padding: 3rem 2.5rem;
 	--location-title-color: var(--color-action-accent);
-	--location-title-font-family: var(--section-subtitle-font);
-	--location-title-font-size: var(--section-subtitle-size);
-	--location-title-letter-spacing: 0.5em;
+	--location-title-font-family-fallback: var(--section-subtitle-font);
+	--location-title-font-size-fallback: var(--section-subtitle-size);
+	--location-title-letter-spacing-fallback: 0.5em;
 	--location-title-margin-bottom: 1.5rem;
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: 2.4rem;
-	--location-place-color: var(--color-text-primary);
-	--location-place-margin: 0 0 0.75rem;
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: 2.4rem;
+	--location-place-color-fallback: var(--color-text-primary);
+	--location-place-margin-fallback: 0 0 0.75rem;
 	--location-place-letter-spacing: -0.01em;
 	--location-date-font-family: var(--font-label);
 	--location-date-font-size: 0.8rem;
 	--location-date-letter-spacing: 0.3em;
 	--location-date-margin-bottom: 1.5rem;
 	--location-date-color: var(--color-action-accent);
-	--location-hour-color: rgb(var(--color-text-primary-rgb) / 50%);
-	--location-hour-letter-spacing: 0.15em;
-	--location-hour-font-size: 0.9rem;
+	--location-hour-color-fallback: rgb(var(--color-text-primary-rgb) / 50%);
+	--location-hour-letter-spacing-fallback: 0.15em;
+	--location-hour-font-size-fallback: 0.9rem;
 	--location-hour-margin-bottom: 2.5rem;
-	--location-address-color: rgb(var(--color-text-primary-rgb) / 60%);
+	--location-address-color-fallback: rgb(var(--color-text-primary-rgb) / 60%);
 	--location-address-font-family: var(--font-label);
 	--location-address-letter-spacing: 0.12em;
 	--location-address-padding-top: 2rem;
@@ -224,7 +224,7 @@
 	--location-indication-item-border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
 	--location-indication-item-radius: 16px;
 	--location-indication-item-padding: 0 2.5rem;
-	--location-indication-item-gap: 0.1rem;
+	--location-indication-item-gap-fallback: 0.1rem;
 	--location-indication-item-box-shadow:
 		0 10px 30px -10px rgb(var(--color-surface-dark-rgb) / 5%),
 		inset 0 0 40px rgb(var(--color-action-accent-rgb) / 3%);
@@ -238,13 +238,13 @@
 	--location-indication-item-after-height: 1px;
 	--location-indication-item-reserved-border-color: rgb(var(--color-action-accent-rgb) / 12%);
 	--location-indication-icon-font-size: 2.4rem;
-	--location-indication-icon-color: transparent;
+	--location-indication-icon-color-fallback: transparent;
 	--location-indication-icon-size: auto;
 	--location-indication-icon-radius: 0;
 	--location-indication-text-font-family: var(--font-label);
-	--location-indication-text-font-size: 0.78rem;
+	--location-indication-text-font-size-fallback: 0.78rem;
 	--location-indication-text-letter-spacing: 0.15em;
-	--location-indication-text-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--location-indication-text-color-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 	--location-indication-text-line-height: 1.8;
 	--location-indication-strong-color: var(--color-text-primary);
 	--location-nav-bg: var(--color-action-accent);
@@ -272,8 +272,8 @@
 	// ---------------------------------------------------------------------
 	// Personalized Access Section
 	// ---------------------------------------------------------------------
-	--pa-card-bg-color: var(--color-surface-dark);
-	--pa-card-bg-image:
+	--pa-card-bg-color-fallback: var(--color-surface-dark);
+	--pa-card-bg-image-fallback:
 		linear-gradient(165deg, var(--color-surface-dark) 0%, var(--color-surface-primary) 100%),
 		repeating-linear-gradient(
 			90deg,
@@ -282,63 +282,63 @@
 			rgb(212 175 55 / 2%) 4px,
 			rgb(212 175 55 / 2%) 8px
 		);
-	--pa-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
-	--pa-card-shadow: 0 12px 40px rgb(0 0 0 / 40%);
+	--pa-card-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
+	--pa-card-shadow-fallback: 0 12px 40px rgb(0 0 0 / 40%);
 	--pa-card-inset: 0.5rem;
-	--pa-card-inner-border: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
 	--pa-card-inner-radius: 0.5rem;
-	--pa-card-glow: radial-gradient(
+	--pa-card-glow-fallback: radial-gradient(
 		circle at top center,
 		rgb(var(--color-action-accent-rgb) / 8%),
 		transparent 50%
 	);
 	--pa-corner-size: 1.25rem;
 	--pa-corner-dot-size: 0.25rem;
-	--pa-corner-opacity: 50%;
-	--pa-corner-glow-blur: 6px;
-	--pa-eyebrow-color: var(--color-action-accent);
+	--pa-corner-opacity-fallback: 50%;
+	--pa-corner-glow-blur-fallback: 6px;
+	--pa-eyebrow-color-fallback: var(--color-action-accent);
 	--pa-eyebrow-tracking: 0.3em;
 	--pa-title-font: var(--font-display-formal);
-	--pa-title-tracking: 0.2em;
-	--pa-title-color: var(--color-text-primary);
-	--pa-subtitle-color: var(--color-text-secondary);
+	--pa-title-tracking-fallback: 0.2em;
+	--pa-title-color-fallback: var(--color-text-primary);
+	--pa-subtitle-color-fallback: var(--color-text-secondary);
 	--pa-guest-font: var(--font-display);
 	--pa-guest-weight: 500;
-	--pa-guest-color: var(--color-text-emphasis);
+	--pa-guest-color-fallback: var(--color-text-emphasis);
 	--pa-guest-tracking: 0;
-	--pa-divider-gradient: linear-gradient(
+	--pa-divider-gradient-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		var(--color-action-accent) 50%,
 		transparent 100%
 	);
 	--pa-divider-opacity: 60%;
-	--pa-divider-diamond-bg: var(--color-surface-dark);
-	--pa-divider-diamond-border-color: var(--color-action-accent);
-	--pa-divider-diamond-shadow: none;
-	--pa-count-frame-radius: 0.75rem;
-	--pa-count-frame-border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
-	--pa-count-frame-bg: linear-gradient(
+	--pa-divider-diamond-bg-fallback: var(--color-surface-dark);
+	--pa-divider-diamond-border-color-fallback: var(--color-action-accent);
+	--pa-divider-diamond-shadow-fallback: none;
+	--pa-count-frame-radius-fallback: 0.75rem;
+	--pa-count-frame-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
+	--pa-count-frame-bg-fallback: linear-gradient(
 		180deg,
 		var(--color-surface-dark) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--pa-count-frame-shadow: 0 8px 24px rgb(0 0 0 / 30%);
+	--pa-count-frame-shadow-fallback: 0 8px 24px rgb(0 0 0 / 30%);
 	--pa-count-frame-inner-display: none;
 	--pa-count-frame-inner-inset: 4px;
-	--pa-count-frame-inner-border: 0.5px solid rgb(var(--color-action-accent-rgb) / 15%);
-	--pa-count-color: var(--color-text-emphasis);
+	--pa-count-frame-inner-border-fallback: 0.5px solid rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-count-color-fallback: var(--color-text-emphasis);
 	--pa-count-shadow: none;
-	--pa-footer-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
-	--pa-footer-bg: linear-gradient(
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
+	--pa-footer-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-dark-rgb) / 60%),
 		rgb(var(--color-surface-dark-rgb) / 80%)
 	);
-	--pa-footer-text-color: var(--color-text-secondary);
+	--pa-footer-text-color-fallback: var(--color-text-secondary);
 	--pa-footer-text-font-style: italic;
 	--pa-footer-text-tracking: 0;
-	--pa-label-color: rgb(var(--color-action-accent-rgb) / 80%);
+	--pa-label-color-fallback: rgb(var(--color-action-accent-rgb) / 80%);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
 

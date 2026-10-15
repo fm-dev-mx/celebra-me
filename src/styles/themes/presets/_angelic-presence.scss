@@ -99,7 +99,7 @@
 	// ---------------------------------------------------------------------
 	// Quote section
 	// ---------------------------------------------------------------------
-	--quote-bg:
+	--quote-bg-fallback:
 		linear-gradient(180deg, var(--color-pure-ivory) 0%, transparent 100px),
 		linear-gradient(0deg, rgb(var(--color-angelic-mist-rgb) / 50%) 0%, transparent 90px),
 		radial-gradient(
@@ -119,19 +119,19 @@
 			var(--color-angelic-white) 65%,
 			rgb(var(--color-angelic-mist-rgb) / 60%) 100%
 		);
-	--quote-text-color: var(--color-text-primary);
-	--quote-author-color: var(--color-sacred-gold-readable);
-	--quote-accent-color: var(--color-sacred-gold);
+	--quote-text-color-fallback: var(--color-text-primary);
+	--quote-author-color-fallback: var(--color-sacred-gold-readable);
+	--quote-accent-color-fallback: var(--color-sacred-gold);
 	--quote-padding-block: clamp(4rem, 10vw, 8.5rem);
 	--quote-content-max-width: 35rem;
-	--quote-content-font: var(--font-display);
-	--quote-content-size: clamp(1.45rem, 4.5vw, 2.05rem);
-	--quote-content-line-height: 1.6;
+	--quote-content-font-fallback: var(--font-display);
+	--quote-content-size-fallback: clamp(1.45rem, 4.5vw, 2.05rem);
+	--quote-content-line-height-fallback: 1.6;
 	--quote-content-style: italic;
-	--quote-content-letter-spacing: 0.01em;
-	--quote-divider-color: var(--color-sacred-gold);
+	--quote-content-letter-spacing-fallback: 0.01em;
+	--quote-divider-color-fallback: var(--color-sacred-gold);
 	--quote-divider-opacity: 0.5;
-	--quote-ornament-color: var(--color-sacred-gold);
+	--quote-ornament-color-fallback: var(--color-sacred-gold);
 	--quote-ornament-opacity: 0.7;
 	--quote-texture-bg: var(--texture-silk);
 	--quote-texture-opacity: 0.05;
@@ -160,45 +160,45 @@
 	--hero-title-shadow:
 		0 10px 28px rgb(var(--color-pure-ivory-rgb) / 46%),
 		0 18px 42px rgb(var(--color-eternal-ink-rgb) / 11%);
-	--hero-badge-text: var(--color-text-on-dark);
+	--hero-badge-text-fallback: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-pure-ivory-rgb) / 72%);
 
 	// Angelic image filter — warm but preserves skin tones
-	--hero-image-filter: brightness(1.02) contrast(0.96) saturate(0.9) sepia(0.04);
+	--hero-image-filter-fallback: brightness(1.02) contrast(0.96) saturate(0.9) sepia(0.04);
 
 	// ---------------------------------------------------------------------
 	// Family section
 	// ---------------------------------------------------------------------
-	--family-bg: radial-gradient(
+	--family-bg-fallback: radial-gradient(
 		circle at 50% 12%,
 		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
 		var(--color-surface-primary) 64%,
 		rgb(var(--color-soft-sand-rgb) / 72%) 100%
 	);
-	--family-texture-opacity: 0.12;
-	--family-vignette-bg: radial-gradient(
+	--family-texture-opacity-fallback: 0.12;
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
 		rgb(var(--color-sacred-gold-rgb) / 4%) 100%
 	);
-	--family-panel-bg: var(--angelic-surface-mist);
-	--family-panel-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
-	--family-panel-shadow:
+	--family-panel-bg-fallback: var(--angelic-surface-mist);
+	--family-panel-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--family-panel-shadow-fallback:
 		0 22px 58px rgb(var(--color-eternal-ink-rgb) / 8%),
 		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
 	--family-panel-radius: 24px;
-	--family-text-primary: var(--color-text-primary);
-	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
-	--family-accent: var(--color-sacred-gold);
+	--family-text-primary-fallback: var(--color-text-primary);
+	--family-text-muted-fallback: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--family-accent-fallback: var(--color-sacred-gold);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(var(--color-sacred-gold-rgb) / 42%) 50%,
 		transparent 100%
 	);
-	--family-title-font: var(--font-display);
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-title-font-fallback: var(--font-display);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.45rem, 3vw, 2.05rem);
 	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
 	--family-media-bg:
 		linear-gradient(
@@ -214,20 +214,20 @@
 		0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 8%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
 	--family-media-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
-	--family-media-filter: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.03);
+	--family-media-filter-fallback: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.03);
 
 	// ---------------------------------------------------------------------
 	// Gallery section
 	// ---------------------------------------------------------------------
-	--gallery-section-bg: radial-gradient(
+	--gallery-section-bg-fallback: radial-gradient(
 		circle at 50% 10%,
 		rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
 		var(--color-surface-primary) 56%,
 		rgb(var(--color-soft-sand-rgb) / 72%) 100%
 	);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-text-primary);
-	--gallery-subtitle-color: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-text-primary);
+	--gallery-subtitle-color-fallback: rgb(var(--color-eternal-ink-rgb) / 72%);
 
 	// ---------------------------------------------------------------------
 	// Texture and light effects
@@ -247,7 +247,7 @@
 		rgb(45 42 38) 100%
 	);
 	--gold-glow: 0 0 18px rgb(var(--color-sacred-gold-rgb) / 22%);
-	--light-sweep: linear-gradient(
+	--light-sweep-fallback: linear-gradient(
 		120deg,
 		rgb(var(--color-pure-ivory-rgb) / 0%) 0%,
 		rgb(var(--color-pure-ivory-rgb) / 34%) 46%,
@@ -326,7 +326,7 @@
 	// Location Section
 	// ---------------------------------------------------------------------
 	--location-text-color: var(--color-eternal-ink);
-	--location-bg:
+	--location-bg-fallback:
 		radial-gradient(
 			circle at 50% 8%,
 			rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
@@ -343,16 +343,16 @@
 	--location-gap: clamp(2rem, 4vw, 3.5rem);
 	--location-card-max-width: 28rem;
 	--location-content-alignment: stretch;
-	--location-card-bg: rgb(var(--color-pure-ivory-rgb) / 72%);
-	--location-card-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+	--location-card-bg-fallback: rgb(var(--color-pure-ivory-rgb) / 72%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
 	--location-card-radius: 8px;
-	--location-card-shadow:
+	--location-card-shadow-fallback:
 		0 24px 70px -42px rgb(var(--color-eternal-ink-rgb) / 34%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 	--location-card-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 	--location-card-isolation: isolate;
-	--location-card-hover-transform: translateY(-5px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-5px);
+	--location-card-hover-shadow-fallback:
 		0 32px 82px -44px rgb(var(--color-eternal-ink-rgb) / 38%),
 		0 0 28px rgb(var(--color-sacred-gold-rgb) / 10%);
 	--location-card-hover-border-color: rgb(var(--color-sacred-gold-rgb) / 46%);
@@ -369,30 +369,30 @@
 	--location-reception-image-focus-y: 42%;
 	--location-content-padding: clamp(1.35rem, 3vw, 2.1rem);
 	--location-title-color: var(--color-sacred-gold-readable);
-	--location-title-font-family: var(--font-label);
-	--location-title-font-size: 0.68rem;
-	--location-title-letter-spacing: 0.28em;
+	--location-title-font-family-fallback: var(--font-label);
+	--location-title-font-size-fallback: 0.68rem;
+	--location-title-letter-spacing-fallback: 0.28em;
 	--location-title-margin-bottom: 0.75rem;
-	--location-place-color: var(--color-eternal-ink);
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: clamp(1.7rem, 3.4vw, 2.4rem);
-	--location-place-line-height: 1;
+	--location-place-color-fallback: var(--color-eternal-ink);
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: clamp(1.7rem, 3.4vw, 2.4rem);
+	--location-place-line-height-fallback: 1;
 	--location-date-color: var(--color-sacred-gold-readable);
 	--location-date-font-family: var(--font-body);
 	--location-date-font-size: 0.72rem;
 	--location-date-letter-spacing: 0.16em;
-	--location-hour-color: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--location-hour-color-fallback: rgb(var(--color-eternal-ink-rgb) / 64%);
 	--location-hour-font-family: var(--font-body);
-	--location-hour-font-size: 0.82rem;
-	--location-hour-letter-spacing: 0.14em;
+	--location-hour-font-size-fallback: 0.82rem;
+	--location-hour-letter-spacing-fallback: 0.14em;
 	--location-hour-margin-bottom: 1.25rem;
-	--location-address-color: rgb(var(--color-eternal-ink-rgb) / 68%);
+	--location-address-color-fallback: rgb(var(--color-eternal-ink-rgb) / 68%);
 	--location-address-font-family: var(--font-body);
-	--location-address-font-size: 0.86rem;
+	--location-address-font-size-fallback: 0.86rem;
 	--location-address-letter-spacing: 0.01em;
 	--location-address-padding-top: 1.1rem;
 	--location-address-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
-	--location-flourish-color: var(--color-sacred-gold);
+	--location-flourish-color-fallback: var(--color-sacred-gold);
 	--location-flourish-margin-bottom: clamp(1rem, 2vw, 1.5rem);
 	--location-flourish-opacity: 70%;
 	--location-flourish-diamond-size: 5px;
@@ -416,33 +416,33 @@
 	--location-indications-spacing: clamp(3rem, 6vw, 4.5rem);
 	--location-indications-container-max-width: 54rem;
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-gap: clamp(1rem, 2.6vw, 1.5rem);
-	--location-indications-heading-color: var(--color-sacred-gold-readable);
-	--location-indications-heading-letter-spacing: 0.3em;
+	--location-indications-gap-fallback: clamp(1rem, 2.6vw, 1.5rem);
+	--location-indications-heading-color-fallback: var(--color-sacred-gold-readable);
+	--location-indications-heading-letter-spacing-fallback: 0.3em;
 	--location-indications-heading-margin-bottom: 1.3rem;
-	--location-indications-heading-font-weight: 600;
+	--location-indications-heading-font-weight-fallback: 600;
 	--location-indication-item-bg: rgb(var(--color-pure-ivory-rgb) / 56%);
 	--location-indication-item-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
 	--location-indication-item-radius: 8px;
 	--location-indication-item-padding: clamp(1rem, 2vw, 1.25rem);
-	--location-indication-item-gap: 1rem;
+	--location-indication-item-gap-fallback: 1rem;
 	--location-indication-item-box-shadow: 0 18px 46px -36px rgb(var(--color-eternal-ink-rgb) / 28%);
 	--location-indication-icon-bg: rgb(var(--color-pure-ivory-rgb) / 76%);
-	--location-indication-icon-color: var(--color-sacred-gold);
+	--location-indication-icon-color-fallback: var(--color-sacred-gold);
 	--location-indication-icon-shadow:
 		inset 0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 26%),
 		0 2px 8px rgb(var(--color-eternal-ink-rgb) / 8%);
 	--location-indication-icon-svg-stroke: 1.2px;
-	--location-indication-text-color: rgb(var(--color-eternal-ink-rgb) / 74%);
+	--location-indication-text-color-fallback: rgb(var(--color-eternal-ink-rgb) / 74%);
 	--location-indication-text-font-family: var(--font-body);
-	--location-indication-text-font-size: clamp(0.86rem, 1.2vw, 0.95rem);
+	--location-indication-text-font-size-fallback: clamp(0.86rem, 1.2vw, 0.95rem);
 	--location-indication-text-line-height: 1.58;
 	--location-indication-strong-color: var(--color-eternal-ink);
 
 	// ---------------------------------------------------------------------
 	// Personalized Access Section
 	// ---------------------------------------------------------------------
-	--pa-card-bg-image:
+	--pa-card-bg-image-fallback:
 		linear-gradient(
 			170deg,
 			var(--color-pure-ivory) 0%,
@@ -450,53 +450,53 @@
 			var(--color-soft-sand) 100%
 		),
 		var(--texture-silk, none);
-	--pa-card-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+	--pa-card-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
 	--pa-card-border-radius: 8px;
-	--pa-card-shadow:
+	--pa-card-shadow-fallback:
 		0 24px 70px -44px rgb(var(--color-eternal-ink-rgb) / 28%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 	--pa-card-inset: 0.5rem;
-	--pa-card-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
 	--pa-card-inner-radius: 6px;
-	--pa-card-glow: radial-gradient(
+	--pa-card-glow-fallback: radial-gradient(
 		circle at top center,
 		rgb(var(--color-sacred-gold-rgb) / 8%),
 		transparent 50%
 	);
-	--pa-corner-color: var(--color-sacred-gold);
-	--pa-corner-opacity: 50%;
-	--pa-corner-glow-blur: 8px;
-	--pa-eyebrow-color: var(--color-sacred-gold-readable);
+	--pa-corner-color-fallback: var(--color-sacred-gold);
+	--pa-corner-opacity-fallback: 50%;
+	--pa-corner-glow-blur-fallback: 8px;
+	--pa-eyebrow-color-fallback: var(--color-sacred-gold-readable);
 	--pa-eyebrow-tracking: 0.35em;
 	--pa-title-font: var(--font-display);
-	--pa-title-tracking: 0.22em;
-	--pa-title-color: var(--color-text-primary);
+	--pa-title-tracking-fallback: 0.22em;
+	--pa-title-color-fallback: var(--color-text-primary);
 	--pa-guest-weight: 500;
-	--pa-guest-color: var(--color-text-primary);
-	--pa-divider-gradient: linear-gradient(
+	--pa-guest-color-fallback: var(--color-text-primary);
+	--pa-divider-gradient-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		var(--color-sacred-gold) 50%,
 		transparent 100%
 	);
 	--pa-divider-opacity: 45%;
-	--pa-divider-diamond-bg: var(--color-pure-ivory);
-	--pa-divider-diamond-border-color: var(--color-sacred-gold);
-	--pa-divider-diamond-shadow: 0 0 8px rgb(var(--color-sacred-gold-rgb) / 30%);
-	--pa-count-frame-radius: 8px;
-	--pa-count-frame-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
-	--pa-count-frame-bg: linear-gradient(
+	--pa-divider-diamond-bg-fallback: var(--color-pure-ivory);
+	--pa-divider-diamond-border-color-fallback: var(--color-sacred-gold);
+	--pa-divider-diamond-shadow-fallback: 0 0 8px rgb(var(--color-sacred-gold-rgb) / 30%);
+	--pa-count-frame-radius-fallback: 8px;
+	--pa-count-frame-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+	--pa-count-frame-bg-fallback: linear-gradient(
 		180deg,
 		var(--color-pure-ivory) 0%,
 		var(--color-angelic-white) 100%
 	);
-	--pa-count-frame-shadow:
+	--pa-count-frame-shadow-fallback:
 		0 8px 24px rgb(var(--color-eternal-ink-rgb) / 6%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
-	--pa-count-color: var(--color-text-primary);
-	--pa-footer-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
-	--pa-footer-text-color: var(--color-text-secondary);
-	--pa-label-color: var(--color-sacred-gold-readable);
+	--pa-count-color-fallback: var(--color-text-primary);
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
+	--pa-footer-text-color-fallback: var(--color-text-secondary);
+	--pa-label-color-fallback: var(--color-sacred-gold-readable);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.24em;
 }

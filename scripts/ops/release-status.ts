@@ -8,6 +8,7 @@ import {
 	buildCloudflareAccessHeaders,
 	buildVercelProtectionHeaders,
 	CLOUDFLARE_PREVIEW_HOST_PATTERN,
+	CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN,
 	IMMUTABLE_PREVIEW_HOST_PATTERN,
 	loadPlaywrightEnvironment,
 } from '../playwright/preview-environment.ts';
@@ -127,7 +128,11 @@ export function classifyDeployment(
 /** The provider that served a deployment URL; `null` when there is no URL yet. */
 export function deploymentProvider(url: string | null | undefined): HostingProvider | null {
 	if (!url) return null;
-	return CLOUDFLARE_PREVIEW_HOST_PATTERN.test(new URL(url).hostname) ? 'cloudflare' : 'vercel';
+	const host = new URL(url).hostname;
+	return CLOUDFLARE_PREVIEW_HOST_PATTERN.test(host) ||
+		CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN.test(host)
+		? 'cloudflare'
+		: 'vercel';
 }
 
 export interface HealthEvidence {

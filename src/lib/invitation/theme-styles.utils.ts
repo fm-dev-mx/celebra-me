@@ -28,6 +28,12 @@ export function generateThemeScopedStyles(
 		}
 		if (colors.primary) overrides['--env-text-primary'] = colors.primary;
 		if (colors.accent) overrides['--env-accent'] = colors.accent;
+		// A content background replaces the theme surface, so the open label below the envelope
+		// follows the content text color instead of the theme's secondary text.
+		if (colors.background && colors.primary) {
+			overrides['--env-instruction-color'] =
+				`color-mix(in srgb, ${colors.primary} 78%, ${colors.accent ?? colors.primary})`;
+		}
 		if (colors.sealAccent) {
 			overrides['--env-seal-accent'] = colors.sealAccent;
 			overrides['--env-seal-icon-override'] =

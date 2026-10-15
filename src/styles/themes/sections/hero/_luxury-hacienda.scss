@@ -59,9 +59,9 @@
 		text-shadow: 0 4px 12px rgb(0 0 0 / 60%);
 		background: linear-gradient(
 			to bottom,
-			var(--hero-title-color-start) 0%,
-			var(--hero-title-color-mid) 45%,
-			var(--hero-title-color-end) 100%
+			var(--hero-title-color-start, var(--hero-title-color-start-fallback)) 0%,
+			var(--hero-title-color-mid, var(--hero-title-color-mid-fallback)) 45%,
+			var(--hero-title-color-end, var(--hero-title-color-end-fallback)) 100%
 		);
 		background-clip: text;
 		color: transparent;
@@ -118,7 +118,7 @@
 	.invitation-hero__divider {
 		width: 40px;
 		height: 1px;
-		background: var(--hero-divider-color);
+		background: var(--hero-divider-color, var(--hero-divider-color-fallback));
 		margin: 2rem auto;
 		opacity: 60%;
 
@@ -139,7 +139,7 @@
 		font-weight: 400;
 		text-transform: none;
 		font-style: italic;
-		color: var(--hero-meta-color);
+		color: var(--hero-meta-color, var(--hero-meta-color-fallback));
 		opacity: 90%;
 		letter-spacing: 0.02em;
 		transition:
@@ -176,7 +176,7 @@
 	.invitation-hero__date,
 	.invitation-hero__time,
 	.invitation-hero__badge {
-		color: var(--hero-meta-color);
+		color: var(--hero-meta-color, var(--hero-meta-color-fallback));
 		text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
 	}
 
@@ -207,7 +207,7 @@
 		font-size: clamp(1rem, 2.8vw, 1.15rem);
 		letter-spacing: 0.02em;
 		font-weight: 400;
-		color: var(--hero-meta-color);
+		color: var(--hero-meta-color, var(--hero-meta-color-fallback));
 		text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
 
 		@media (width <= 480px) {
@@ -222,7 +222,7 @@
 
 	.invitation-hero__scroll-indicator {
 		bottom: 2.5rem;
-		color: var(--hero-meta-color);
+		color: var(--hero-meta-color, var(--hero-meta-color-fallback));
 		opacity: 70%;
 
 		@media (width <= 480px) {

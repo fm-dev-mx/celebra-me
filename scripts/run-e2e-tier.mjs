@@ -20,6 +20,7 @@ const TIERS = {
 		'tests/e2e/destenid-cover-hero-distinct.spec.ts',
 		'tests/e2e/destenid-face-safety.spec.ts',
 		'tests/e2e/editorial-cover-collector.spec.ts',
+		'tests/e2e/america-invitation.spec.ts',
 		'tests/e2e/melissa-y-luis-osmar.spec.ts',
 		'tests/e2e/norma-invitation.spec.ts',
 		'tests/e2e/xv-demo-premium-audit.spec.ts',

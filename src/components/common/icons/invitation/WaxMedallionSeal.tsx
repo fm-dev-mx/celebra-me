@@ -48,14 +48,32 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 		>
 			<defs>
 				<radialGradient id={gradId} cx="34%" cy="30%" r="72%">
-					<stop offset="0%" stopColor="var(--wax-seal-highlight, #f7ddd4)" />
-					<stop offset="42%" stopColor="var(--wax-seal-mid, #e8b4a8)" />
-					<stop offset="100%" stopColor="var(--wax-seal-deep, #c4897c)" />
+					<stop
+						offset="0%"
+						stopColor="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #f7ddd4))"
+					/>
+					<stop
+						offset="42%"
+						stopColor="var(--wax-seal-mid, var(--wax-seal-mid-fallback, #e8b4a8))"
+					/>
+					<stop
+						offset="100%"
+						stopColor="var(--wax-seal-deep, var(--wax-seal-deep-fallback, #c4897c))"
+					/>
 				</radialGradient>
 				<linearGradient id={rimGradId} x1="20%" y1="10%" x2="85%" y2="95%">
-					<stop offset="0%" stopColor="var(--wax-seal-highlight, #f7ddd4)" />
-					<stop offset="55%" stopColor="var(--wax-seal-mid, #e8b4a8)" />
-					<stop offset="100%" stopColor="var(--wax-seal-deep, #b8796c)" />
+					<stop
+						offset="0%"
+						stopColor="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #f7ddd4))"
+					/>
+					<stop
+						offset="55%"
+						stopColor="var(--wax-seal-mid, var(--wax-seal-mid-fallback, #e8b4a8))"
+					/>
+					<stop
+						offset="100%"
+						stopColor="var(--wax-seal-deep, var(--wax-seal-deep-fallback, #b8796c))"
+					/>
 				</linearGradient>
 				<filter
 					id={softShadowId}
@@ -69,7 +87,7 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 						dx="0"
 						dy="3"
 						stdDeviation="2.4"
-						floodColor="var(--wax-seal-shadow, #4a2a24)"
+						floodColor="var(--wax-seal-shadow, var(--wax-seal-shadow-fallback, #4a2a24))"
 						floodOpacity="0.45"
 					/>
 				</filter>
@@ -84,7 +102,7 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 					<feGaussianBlur in="SourceAlpha" stdDeviation="0.7" result="blur" />
 					<feOffset dx="0.6" dy="0.9" result="offsetBlur" />
 					<feFlood
-						floodColor="var(--wax-seal-emboss-shadow, #5c322c)"
+						floodColor="var(--wax-seal-emboss-shadow, var(--wax-seal-emboss-shadow-fallback, #5c322c))"
 						floodOpacity="0.45"
 						result="shadowColor"
 					/>
@@ -128,14 +146,14 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 						dx="0"
 						dy="0.9"
 						stdDeviation="0.5"
-						floodColor="var(--wax-seal-shadow, #4a2a24)"
+						floodColor="var(--wax-seal-shadow, var(--wax-seal-shadow-fallback, #4a2a24))"
 						floodOpacity="0.4"
 					/>
 					<feDropShadow
 						dx="0"
 						dy="-0.35"
 						stdDeviation="0.3"
-						floodColor="var(--wax-seal-highlight, #fff8f4)"
+						floodColor="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #fff8f4))"
 						floodOpacity="0.28"
 					/>
 				</filter>
@@ -156,13 +174,19 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 			</g>
 
 			{/* Recessed basin */}
-			<circle cx="60" cy="60" r="38" fill="var(--wax-seal-deep, #c4897c)" opacity="0.18" />
+			<circle
+				cx="60"
+				cy="60"
+				r="38"
+				fill="var(--wax-seal-deep, var(--wax-seal-deep-fallback, #c4897c))"
+				opacity="0.18"
+			/>
 			<circle
 				cx="60"
 				cy="60"
 				r="38"
 				fill="none"
-				stroke="var(--wax-seal-highlight, #f7ddd4)"
+				stroke="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #f7ddd4))"
 				strokeWidth="1.1"
 				opacity="0.35"
 			/>
@@ -174,7 +198,7 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 					cy="60"
 					r="33.5"
 					fill="none"
-					stroke="var(--wax-seal-highlight, #f7ddd4)"
+					stroke="var(--wax-seal-highlight, var(--wax-seal-highlight-fallback, #f7ddd4))"
 					strokeWidth="1.35"
 				/>
 				<circle
@@ -182,7 +206,7 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 					cy="60"
 					r="29.5"
 					fill="none"
-					stroke="var(--wax-seal-mid, #e8b4a8)"
+					stroke="var(--wax-seal-mid, var(--wax-seal-mid-fallback, #e8b4a8))"
 					strokeWidth="0.7"
 					opacity="0.85"
 				/>
@@ -201,7 +225,7 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 					fontFamily="var(--wax-seal-font-family, var(--font-label, var(--font-display, Georgia, 'Times New Roman', serif)))"
 					fontWeight="400"
 					letterSpacing={label.length <= 2 ? '0.06em' : '0.03em'}
-					fill="var(--wax-seal-letter, #5c322c)"
+					fill="var(--wax-seal-letter, var(--wax-seal-letter-fallback, #5c322c))"
 					filter={`url(#${letterId})`}
 				>
 					{label}
@@ -212,7 +236,7 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 					cy="60"
 					r="8"
 					fill="none"
-					stroke="var(--wax-seal-letter, #5c322c)"
+					stroke="var(--wax-seal-letter, var(--wax-seal-letter-fallback, #5c322c))"
 					strokeWidth="1.2"
 					opacity="0.55"
 					filter={`url(#${letterId})`}

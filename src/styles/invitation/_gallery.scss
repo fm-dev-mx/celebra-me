@@ -3,21 +3,21 @@
 .gallery-section {
 	--gallery-section-padding-block: clamp(5rem, 9vw, 8rem);
 	--gallery-section-padding-inline: clamp(1rem, 4vw, 2rem);
-	--gallery-section-bg: linear-gradient(
+	--gallery-section-bg-fallback: linear-gradient(
 		to bottom,
 		transparent,
 		rgb(var(--color-surface-primary-rgb) / 30%)
 	);
 	--gallery-container-max-width: 1200px;
 	--gallery-header-gap: clamp(2rem, 4vw, 4rem);
-	--gallery-title-font: var(--font-display);
+	--gallery-title-font-fallback: var(--font-display);
 	--gallery-title-size: clamp(2.2rem, 5vw, 3.5rem);
-	--gallery-title-color: var(--color-action-accent);
+	--gallery-title-color-fallback: var(--color-action-accent);
 	--gallery-title-transform: uppercase;
 	--gallery-title-letter-spacing: 0.18em;
 	--gallery-subtitle-font: var(--font-body);
 	--gallery-subtitle-size: clamp(1.05rem, 2.4vw, 1.4rem);
-	--gallery-subtitle-color: rgb(var(--color-text-primary-rgb) / 75%);
+	--gallery-subtitle-color-fallback: rgb(var(--color-text-primary-rgb) / 75%);
 	--gallery-subtitle-transform: none;
 	--gallery-subtitle-letter-spacing: 0.03em;
 	--gallery-subtitle-opacity: 1;
@@ -63,7 +63,7 @@
 	padding: var(--gallery-section-padding-block) var(--gallery-section-padding-inline);
 	position: relative;
 	overflow: hidden;
-	background: var(--gallery-section-bg);
+	background: var(--gallery-section-bg, var(--gallery-section-bg-fallback));
 
 	&__container {
 		max-width: var(--gallery-container-max-width);
@@ -78,10 +78,10 @@
 	}
 
 	&__title {
-		font-family: var(--gallery-title-font);
+		font-family: var(--gallery-title-font, var(--gallery-title-font-fallback));
 		font-size: var(--gallery-title-size);
 		font-style: var(--gallery-title-style, inherit);
-		color: var(--gallery-title-color);
+		color: var(--gallery-title-color, var(--gallery-title-color-fallback));
 		margin-bottom: 0.75rem;
 		text-transform: var(--gallery-title-transform);
 		letter-spacing: var(--gallery-title-letter-spacing);
@@ -92,7 +92,7 @@
 		margin-inline: var(--gallery-subtitle-margin-inline, 0);
 		font-family: var(--gallery-subtitle-font);
 		font-size: var(--gallery-subtitle-size);
-		color: var(--gallery-subtitle-color);
+		color: var(--gallery-subtitle-color, var(--gallery-subtitle-color-fallback));
 		text-transform: var(--gallery-subtitle-transform);
 		letter-spacing: var(--gallery-subtitle-letter-spacing);
 		opacity: var(--gallery-subtitle-opacity);

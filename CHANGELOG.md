@@ -12,6 +12,58 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.27.0-beta.1] - 2026-10-15
+
+Release checkpoint that prepares the move of Production to Cloudflare Workers without sending it any
+traffic, adds an encrypted off-site copy of the daily Production backups, lets invitation profile
+tokens reach every section style and ships the América photo-album restyle. It carries the legacy
+invitation column contract `20261015120000`, already applied in Production.
+
+### Added
+
+- **Cloudflare Preview pipeline**: `CELEBRA_BUILD_TARGET=cloudflare` builds with
+  `@astrojs/cloudflare`; on every `develop` push `deploy.yml` uploads a SHA-tagged Preview Worker
+  version, smokes it behind Cloudflare Access and records the
+  `Cloudflare - celebra-me preview smoke` status. The Vercel Preview keeps running unchanged.
+- **Cloudflare Production Worker without traffic**: `wrangler.jsonc` `env.production` (no routes, no
+  `workers.dev` host, no crons) and `deploy-production.yml` (`workflow_dispatch` from `main`) that
+  uploads and smokes a version. Its `Cloudflare - celebra-me production candidate smoke` status is
+  not accepted by any release gate, so Vercel Production gates are unaffected.
+- `ops:cloudflare:*` secrets and smoke scripts take `--env preview|production`; Production refuses
+  lane env files and never uploads Preview-only names.
+- **Off-site backups**: `db:prod:backup:daily` encrypts each verified recovery point with age and
+  uploads it to Cloudflare R2; without settings it reports `offsite.status = "not_configured"` and
+  still succeeds. New `db:offsite:keygen`, `db:offsite:upload`, `db:offsite:list` and
+  `db:offsite:restore` commands.
+- One env template per local file, with `pnpm env:check` and `pnpm env:sync`.
+
+### Changed
+
+- Invitation token layering: only invitation profiles write the public `--T` custom properties;
+  bases, variants, presets and header styles write `--T-fallback`. Profile colors now reach
+  personalized access, family, location, hero, RSVP, envelope, quote, gallery, gifts, itinerary,
+  transitions, demo footer and header sections (562 → 1 shadowed pair). Published invitations whose
+  profile sets those tokens change look on this release.
+- `/xv/america` restyled as an editorial photo album (profile, America-only envelope variant,
+  definition and graded photographs).
+- Contract migration `20261015120000` drops `invitations.base_demo_id`, `invitations.snapshot` and
+  `invitation_content_drafts.submission_id`, and the publication RPCs accept only the current
+  public-metadata hash.
+
+### Fixed
+
+- The Production object audit accepts columns dropped by pending migrations while history is BEHIND,
+  so the guarded contract apply no longer fails on them.
+- Authenticated Preview E2E specs match the current publication replay and intake detail APIs.
+
+### Known issues
+
+- Production still serves from Vercel; the Cloudflare cutover is a separate, scheduled operation.
+- América content is published in Local and Preview only; its Production publication is a separate
+  step after this release is verified.
+- The off-site copy stays `not_configured` until the owner sets the `PROD_OFFSITE_*` settings on the
+  operator PC.
+
 ## [0.26.0-beta.1] - 2026-10-15
 
 Release checkpoint that stops the application from reading the legacy invitation columns

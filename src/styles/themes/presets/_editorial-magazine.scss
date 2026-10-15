@@ -45,39 +45,39 @@
 	--section-padding-block: clamp(3.5rem, 6vw, 6.5rem);
 	--section-card-radius: 0;
 	--section-card-border-alt: 1px solid rgb(var(--editorial-magazine-red-rgb) / 88%);
-	--hero-overlay: linear-gradient(
+	--hero-overlay-fallback: linear-gradient(
 		90deg,
 		rgb(var(--editorial-magazine-ink-rgb) / 72%) 0%,
 		rgb(var(--editorial-magazine-ink-rgb) / 22%) 48%,
 		rgb(var(--editorial-magazine-ink-rgb) / 14%) 100%
 	);
 	--editorial-image-filter: grayscale(0.6) contrast(1.1) brightness(0.95);
-	--hero-title-size: clamp(3.2rem, 7vw, 5.2rem);
-	--hero-image-filter: var(--editorial-image-filter);
-	--hero-portrait-filter: var(--editorial-image-filter);
+	--hero-title-size-fallback: clamp(3.2rem, 7vw, 5.2rem);
+	--hero-image-filter-fallback: var(--editorial-image-filter);
+	--hero-portrait-filter-fallback: var(--editorial-image-filter);
 	--hero-label-color: var(--editorial-magazine-red);
-	--quote-bg: var(--editorial-magazine-ink);
-	--quote-text-color: var(--editorial-magazine-white);
-	--quote-author-color: var(--editorial-magazine-red);
-	--quote-accent-color: var(--editorial-magazine-red);
-	--quote-content-font: var(--font-display);
-	--quote-content-size: clamp(1.8rem, 3.8vw, 3.2rem);
-	--quote-content-line-height: 1.15;
+	--quote-bg-fallback: var(--editorial-magazine-ink);
+	--quote-text-color-fallback: var(--editorial-magazine-white);
+	--quote-author-color-fallback: var(--editorial-magazine-red);
+	--quote-accent-color-fallback: var(--editorial-magazine-red);
+	--quote-content-font-fallback: var(--font-display);
+	--quote-content-size-fallback: clamp(1.8rem, 3.8vw, 3.2rem);
+	--quote-content-line-height-fallback: 1.15;
 	--quote-content-style: normal;
-	--quote-content-letter-spacing: 0;
-	--quote-divider-color: var(--editorial-magazine-red);
+	--quote-content-letter-spacing-fallback: 0;
+	--quote-divider-color-fallback: var(--editorial-magazine-red);
 	--quote-divider-opacity: 1;
 	--quote-padding-block: clamp(3.5rem, 6vw, 6.5rem);
 	--quote-content-max-width: 900px;
-	--family-bg: var(--editorial-magazine-paper);
-	--family-text-primary: var(--editorial-magazine-ink);
-	--family-text-muted: rgb(var(--editorial-magazine-ink-rgb) / 62%);
-	--family-accent: var(--editorial-magazine-red);
-	--family-panel-bg: var(--editorial-magazine-white);
+	--family-bg-fallback: var(--editorial-magazine-paper);
+	--family-text-primary-fallback: var(--editorial-magazine-ink);
+	--family-text-muted-fallback: rgb(var(--editorial-magazine-ink-rgb) / 62%);
+	--family-accent-fallback: var(--editorial-magazine-red);
+	--family-panel-bg-fallback: var(--editorial-magazine-white);
 	--family-image-filter: var(--editorial-image-filter);
-	--family-title-font: var(--font-display);
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.4rem, 2.8vw, 2.2rem);
+	--family-title-font-fallback: var(--font-display);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.4rem, 2.8vw, 2.2rem);
 	--family-lead-name-size: clamp(1.75rem, 3.5vw, 2.8rem);
 	--countdown-bg: var(--editorial-magazine-white);
 	--countdown-title-color: var(--editorial-magazine-ink);
@@ -88,24 +88,24 @@
 
 	// Magazine-folio footer line: italic as accepted; profiles may set normal (Aithan Darell).
 	--countdown-footer-style: italic;
-	--location-bg: var(--editorial-magazine-paper);
+	--location-bg-fallback: var(--editorial-magazine-paper);
 	--location-text-color: var(--editorial-magazine-ink);
-	--location-card-bg: var(--editorial-magazine-white);
-	--location-place-color: var(--editorial-magazine-ink);
-	--location-hour-color: rgb(var(--editorial-magazine-ink-rgb) / 66%);
-	--location-address-color: rgb(var(--editorial-magazine-ink-rgb) / 64%);
-	--location-indication-text-color: rgb(var(--editorial-magazine-ink-rgb) / 76%);
+	--location-card-bg-fallback: var(--editorial-magazine-white);
+	--location-place-color-fallback: var(--editorial-magazine-ink);
+	--location-hour-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 66%);
+	--location-address-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 64%);
+	--location-indication-text-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 76%);
 	--location-image-filter: var(--editorial-image-filter);
-	--rsvp-bg: var(--editorial-magazine-ink);
-	--gifts-bg: var(--editorial-magazine-paper);
-	--gifts-title-color: var(--editorial-magazine-ink);
-	--gifts-subtitle-color: rgb(var(--editorial-magazine-ink-rgb) / 68%);
+	--rsvp-bg-fallback: var(--editorial-magazine-ink);
+	--gifts-bg-fallback: var(--editorial-magazine-paper);
+	--gifts-title-color-fallback: var(--editorial-magazine-ink);
+	--gifts-subtitle-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 68%);
 	--gifts-card-bg: var(--editorial-magazine-white);
 	--gifts-card-border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 18%);
 	--gifts-card-radius: 0;
-	--gifts-icon-color: var(--editorial-magazine-ink);
-	--gallery-section-bg: var(--editorial-magazine-paper);
-	--gallery-title-color: var(--editorial-magazine-ink);
+	--gifts-icon-color-fallback: var(--editorial-magazine-ink);
+	--gallery-section-bg-fallback: var(--editorial-magazine-paper);
+	--gallery-title-color-fallback: var(--editorial-magazine-ink);
 	--gallery-caption-bg: rgb(var(--editorial-magazine-white-rgb) / 92%);
 	--gallery-caption-color: var(--editorial-magazine-ink);
 	--gallery-image-filter: var(--editorial-image-filter);

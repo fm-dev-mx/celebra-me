@@ -1,5 +1,5 @@
 .theme-preset--editorial-magazine .event-location {
-	background: var(--location-bg);
+	background: var(--location-bg, var(--location-bg-fallback));
 	color: var(--location-text-color);
 
 	.event-location__eyebrow,
@@ -33,7 +33,7 @@
 	.venue-card {
 		border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 22%);
 		border-radius: 0;
-		background: var(--location-card-bg);
+		background: var(--location-card-bg, var(--location-card-bg-fallback));
 		box-shadow: none;
 	}
 
@@ -59,7 +59,7 @@
 	.venue-card__name,
 	.event-location__venue-name,
 	.event-location__card-content-place {
-		color: var(--location-place-color);
+		color: var(--location-place-color, var(--location-place-color-fallback));
 		font-family: var(--font-display);
 		font-size: clamp(1.8rem, 4.5vw, 3.4rem);
 		font-weight: 700;
@@ -83,7 +83,7 @@
 	.venue-card__address,
 	.event-location__address,
 	.event-location__card-content-address {
-		color: var(--location-address-color);
+		color: var(--location-address-color, var(--location-address-color-fallback));
 		font-family: var(--font-body);
 		line-height: 1.6;
 	}

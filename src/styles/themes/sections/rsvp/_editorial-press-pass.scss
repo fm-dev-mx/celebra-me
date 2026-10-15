@@ -5,7 +5,7 @@
 	position: relative;
 	border: 1px solid rgb(var(--color-text-on-dark-rgb) / 18%);
 	border-radius: 0;
-	background: var(--rsvp-bg);
+	background: var(--rsvp-bg, var(--rsvp-bg-fallback));
 	box-shadow: none;
 	color: var(--color-text-on-dark);
 	overflow: hidden;

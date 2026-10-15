@@ -1,7 +1,7 @@
 import {
-	parseCloudflarePreviewOrigin,
-	runCloudflarePreviewSmoke,
-} from '../../scripts/ops/cloudflare-preview-smoke.ts';
+	parseCloudflareWorkerOrigin,
+	runCloudflareWorkerSmoke,
+} from '../../scripts/ops/cloudflare-worker-smoke.ts';
 import { listSmokePageRoutes } from '../../scripts/ops/post-deploy-smoke.ts';
 
 const sha = 'a'.repeat(40);
@@ -19,9 +19,15 @@ function response(status: number, body = '', headers: Record<string, string> = {
 	return new Response(body, { status, headers });
 }
 
-function previewFetch(build: { commitSha: string; environment: string | null }) {
-	return jest.fn(async (input: string, _init?: RequestInit) => {
+function previewFetch(
+	build: { commitSha: string; environment: string | null },
+	options: { openWithoutToken?: boolean } = {},
+) {
+	return jest.fn(async (input: string, init?: RequestInit) => {
 		const pathname = new URL(input).pathname;
+		const authorized = new Headers(init?.headers).has('cf-access-client-id');
+		if (!authorized && !options.openWithoutToken)
+			return response(302, '', { location: 'https://team.cloudflareaccess.com/login' });
 		if (pathname === '/') {
 			return response(200, '<script src="/_astro/app.abc123.js"></script>', {
 				'x-content-type-options': 'nosniff',
@@ -48,8 +54,8 @@ function previewFetch(build: { commitSha: string; environment: string | null }) 
 
 describe('Cloudflare Preview smoke', () => {
 	it('accepts only the Preview Worker host or one of its version URLs', () => {
-		expect(parseCloudflarePreviewOrigin(`https://${stableHost}`).hostname).toBe(stableHost);
-		expect(parseCloudflarePreviewOrigin(`https://${versionHost}/`).hostname).toBe(versionHost);
+		expect(parseCloudflareWorkerOrigin(`https://${stableHost}`).hostname).toBe(stableHost);
+		expect(parseCloudflareWorkerOrigin(`https://${versionHost}/`).hostname).toBe(versionHost);
 		for (const rejected of [
 			`http://${stableHost}`,
 			`https://${stableHost}/login`,
@@ -59,13 +65,13 @@ describe('Cloudflare Preview smoke', () => {
 			'https://evil-celebra-me-preview.celebra-me-com.workers.dev.example',
 			'not a url',
 		]) {
-			expect(() => parseCloudflarePreviewOrigin(rejected)).toThrow();
+			expect(() => parseCloudflareWorkerOrigin(rejected)).toThrow();
 		}
 	});
 
 	it('sends the Access service token only to the deployment and verifies the build identity', async () => {
 		const fetchMock = previewFetch({ commitSha: sha, environment: 'preview' });
-		const result = await runCloudflarePreviewSmoke(
+		const result = await runCloudflareWorkerSmoke(
 			{ url: `https://${versionHost}`, sha: sha.toUpperCase() },
 			fetchMock,
 			accessHeaders,
@@ -85,7 +91,7 @@ describe('Cloudflare Preview smoke', () => {
 	});
 
 	it('fails on another SHA or a missing Preview deploy identity', async () => {
-		const otherSha = await runCloudflarePreviewSmoke(
+		const otherSha = await runCloudflareWorkerSmoke(
 			{ url: `https://${stableHost}`, sha },
 			previewFetch({ commitSha: 'b'.repeat(40), environment: 'preview' }),
 			accessHeaders,
@@ -93,7 +99,7 @@ describe('Cloudflare Preview smoke', () => {
 		expect(otherSha.passed).toBe(false);
 		expect(otherSha.failureCodes).toEqual(['build_identity_failed']);
 
-		const noIdentity = await runCloudflarePreviewSmoke(
+		const noIdentity = await runCloudflareWorkerSmoke(
 			{ url: `https://${stableHost}`, sha },
 			previewFetch({ commitSha: sha, environment: null }),
 			accessHeaders,
@@ -105,15 +111,65 @@ describe('Cloudflare Preview smoke', () => {
 	it('refuses to run without the service token or with an inexact SHA', async () => {
 		const fetchMock = previewFetch({ commitSha: sha, environment: 'preview' });
 		await expect(
-			runCloudflarePreviewSmoke({ url: `https://${stableHost}`, sha }, fetchMock, undefined),
+			runCloudflareWorkerSmoke({ url: `https://${stableHost}`, sha }, fetchMock, undefined),
 		).rejects.toThrow('CLOUDFLARE_ACCESS_CLIENT_ID');
 		await expect(
-			runCloudflarePreviewSmoke(
+			runCloudflareWorkerSmoke(
 				{ url: `https://${stableHost}`, sha: 'abc123' },
 				fetchMock,
 				accessHeaders,
 			),
 		).rejects.toThrow('exact');
 		expect(fetchMock).not.toHaveBeenCalled();
+	});
+});
+
+describe('Cloudflare Production smoke', () => {
+	const productionVersionHost = '9f8e7d6c-celebra-me.celebra-me-com.workers.dev';
+
+	it('accepts only Production version URLs', () => {
+		expect(
+			parseCloudflareWorkerOrigin(`https://${productionVersionHost}`, 'production').hostname,
+		).toBe(productionVersionHost);
+		for (const rejected of [
+			'https://celebra-me.celebra-me-com.workers.dev',
+			`https://${stableHost}`,
+			`https://${versionHost}`,
+			'https://www.celebra-me.com',
+			'https://9f8e7d6c-celebra-me.other-account.workers.dev',
+		]) {
+			expect(() => parseCloudflareWorkerOrigin(rejected, 'production')).toThrow();
+		}
+		expect(() => parseCloudflareWorkerOrigin(`https://${productionVersionHost}`)).toThrow();
+	});
+
+	it('passes a closed version URL that serves the SHA as production', async () => {
+		const result = await runCloudflareWorkerSmoke(
+			{ url: `https://${productionVersionHost}`, sha, environment: 'production' },
+			previewFetch({ commitSha: sha, environment: 'production' }),
+			accessHeaders,
+		);
+		expect(result.failureCodes).toEqual([]);
+		expect(result.accessEnforced).toBe(true);
+		expect(result.passed).toBe(true);
+	});
+
+	it('fails a version URL that answers without the Access token', async () => {
+		const result = await runCloudflareWorkerSmoke(
+			{ url: `https://${productionVersionHost}`, sha, environment: 'production' },
+			previewFetch({ commitSha: sha, environment: 'production' }, { openWithoutToken: true }),
+			accessHeaders,
+		);
+		expect(result.accessEnforced).toBe(false);
+		expect(result.failureCodes).toEqual(['access_not_enforced']);
+	});
+
+	it('fails a Production version that reports the Preview identity', async () => {
+		const result = await runCloudflareWorkerSmoke(
+			{ url: `https://${productionVersionHost}`, sha, environment: 'production' },
+			previewFetch({ commitSha: sha, environment: 'preview' }),
+			accessHeaders,
+		);
+		expect(result.failureCodes).toEqual(['build_identity_failed']);
 	});
 });

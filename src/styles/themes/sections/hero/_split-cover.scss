@@ -3,10 +3,10 @@
 // Split-cover defaults use `var(--font-display)`. Profiles that need a custom
 // title face must re-set `--hero-split-title-*` on this same selector (or later).
 .invitation-hero[data-variant='split-cover'] {
-	--hero-split-plane-bg: var(--color-surface-dark, rgb(28 36 32));
-	--hero-split-overlay-strong: rgb(0 0 0 / 92%);
-	--hero-split-overlay-mid: rgb(0 0 0 / 72%);
-	--hero-split-overlay-soft: rgb(0 0 0 / 18%);
+	--hero-split-plane-bg-fallback: var(--color-surface-dark, rgb(28 36 32));
+	--hero-split-overlay-strong-fallback: rgb(0 0 0 / 92%);
+	--hero-split-overlay-mid-fallback: rgb(0 0 0 / 72%);
+	--hero-split-overlay-soft-fallback: rgb(0 0 0 / 18%);
 	--hero-split-photo-width: min(58vw, 760px);
 	--hero-split-content-width: min(42vw, 560px);
 	--hero-split-content-inline-start: clamp(3rem, 7vw, 8rem);
@@ -86,7 +86,7 @@
 		align-items: flex-start;
 		justify-content: center;
 		text-align: left;
-		background: var(--hero-split-plane-bg);
+		background: var(--hero-split-plane-bg, var(--hero-split-plane-bg-fallback));
 
 		.invitation-hero__background img {
 			display: block;
@@ -100,9 +100,9 @@
 		.invitation-hero__background::after {
 			background: linear-gradient(
 				90deg,
-				var(--hero-split-overlay-strong) 0%,
-				var(--hero-split-overlay-mid) 34%,
-				var(--hero-split-overlay-soft) 68%,
+				var(--hero-split-overlay-strong, var(--hero-split-overlay-strong-fallback)) 0%,
+				var(--hero-split-overlay-mid, var(--hero-split-overlay-mid-fallback)) 34%,
+				var(--hero-split-overlay-soft, var(--hero-split-overlay-soft-fallback)) 68%,
 				transparent 100%
 			);
 		}

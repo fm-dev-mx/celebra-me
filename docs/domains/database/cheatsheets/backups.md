@@ -14,6 +14,10 @@ pnpm db:prod:backup                      # public dump only — local refresh, n
 pnpm db:backup:verify-manifest -- --manifest=<path>
 pnpm db:backup:create-manifest           # assemble manifest from artifacts (no integrity)
 pnpm db:restore:verify-disposable -- --manifest=<path>   # target: supabase_admin@127.0.0.1:54332
+pnpm db:offsite:keygen -- --out=<path outside repo>      # age key pair; private key leaves the PC
+pnpm db:offsite:list [-- --prefix=test]                  # encrypted copies in R2, newest first
+pnpm db:offsite:upload -- --manifest=<path> --prefix=test # manual/drill upload (daily job uploads)
+pnpm db:offsite:restore -- --identity=<file> [--key=<k>] # download + decrypt + verify into .tmp/
 pnpm db:local:restore-from-dump -- …     # persistent-local only; never Preview
 ```
 
@@ -26,4 +30,6 @@ coverage when identity/history match and age ≤ RPO. `pnpm dbs` shows daily age
 **Failures:** Identity mismatch, capture-window drift, EFS failure, `BACKUP_COVERAGE_EXPIRED`.
 
 **Recovery:** Re-capture critical set; verify with disposable drill. Stale RPO blocks hosted writes
-— treat as blocking incident, not a skip. Local machine/EFS is not off-site DR.
+— treat as blocking incident, not a skip. Local machine/EFS is not off-site DR; the daily job's
+age-encrypted R2 copy is (30-day lifecycle + Bucket Lock; see `docs/database-workflow.md` → Off-site
+copy).

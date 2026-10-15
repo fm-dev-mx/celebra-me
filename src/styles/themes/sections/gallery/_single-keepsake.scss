@@ -16,10 +16,10 @@
 	--gallery-item-image-radius: 0;
 	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5rem);
 	--gallery-container-max-width: min(62rem, calc(100vw - 2rem));
-	--gallery-single-item-max-width: 30rem;
+	--gallery-single-item-max-width-fallback: 30rem;
 	--gallery-single-item-cursor: zoom-in;
 	--gallery-single-grid-place-items: normal;
-	--gallery-single-label-letter-spacing: 0.22em;
+	--gallery-single-label-letter-spacing-fallback: 0.22em;
 	--gallery-single-title-text-wrap: balance;
 
 	.gallery-section__container {
@@ -32,7 +32,10 @@
 
 	.gallery-grid {
 		display: grid;
-		grid-template-columns: minmax(0, var(--gallery-single-item-max-width));
+		grid-template-columns: minmax(
+			0,
+			var(--gallery-single-item-max-width, var(--gallery-single-item-max-width-fallback))
+		);
 		justify-content: center;
 		gap: 0;
 		margin-inline: 0;
@@ -42,7 +45,10 @@
 	.gallery-grid__item,
 	.gallery-grid__item--feature {
 		width: 100%;
-		max-width: var(--gallery-single-item-max-width);
+		max-width: var(
+			--gallery-single-item-max-width,
+			var(--gallery-single-item-max-width-fallback)
+		);
 		margin-inline: auto;
 		cursor: var(--gallery-single-item-cursor);
 	}
@@ -56,7 +62,10 @@
 	.gallery-section__eyebrow {
 		font-family: var(--gallery-single-label-font, var(--font-label, var(--font-body)));
 		font-size: 0.68rem;
-		letter-spacing: var(--gallery-single-label-letter-spacing);
+		letter-spacing: var(
+			--gallery-single-label-letter-spacing,
+			var(--gallery-single-label-letter-spacing-fallback)
+		);
 		color: var(--gallery-single-label-color, inherit);
 		text-transform: uppercase;
 	}

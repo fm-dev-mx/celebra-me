@@ -5,10 +5,10 @@
 	--motion-reveal-blur: 6px;
 	--motion-ambient-scale-to: 1.035;
 	--motion-ambient-duration: 16s;
-	--intersection-depth: clamp(3rem, 7vw, 6rem);
-	--intersection-arch-height: clamp(2.5rem, 4.5vw, 5rem);
+	--intersection-depth-fallback: clamp(3rem, 7vw, 6rem);
+	--intersection-arch-height-fallback: clamp(2.5rem, 4.5vw, 5rem);
 	--intersection-surface: rgb(var(--color-deep-blue-graphite-rgb));
-	--intersection-blend: radial-gradient(
+	--intersection-blend-fallback: radial-gradient(
 		ellipse 150% 100% at 36% 0%,
 		rgb(var(--color-liquid-silver-rgb) / 26%) 0%,
 		rgb(var(--color-satin-blue-rgb) / 12%) 34%,
@@ -166,7 +166,7 @@
 	// ---------------------------------------------------------------------
 	// Quote section
 	// ---------------------------------------------------------------------
-	--quote-bg:
+	--quote-bg-fallback:
 		linear-gradient(
 			180deg,
 			rgb(var(--color-deep-blue-graphite-rgb) / 60%) 0%,
@@ -195,17 +195,17 @@
 			transparent 72%
 		),
 		var(--color-deep-blue-graphite);
-	--quote-text-color: rgb(var(--color-text-on-dark-rgb) / 88%);
-	--quote-author-color: var(--color-liquid-silver);
-	--quote-accent-color: var(--color-liquid-silver);
+	--quote-text-color-fallback: rgb(var(--color-text-on-dark-rgb) / 88%);
+	--quote-author-color-fallback: var(--color-liquid-silver);
+	--quote-accent-color-fallback: var(--color-liquid-silver);
 	--quote-padding-block: clamp(4rem, 12vh, 7.5rem);
 	--quote-content-max-width: 640px;
-	--quote-content-font: var(--font-calligraphy);
-	--quote-content-size: clamp(1.6rem, 4.6vw, 2.95rem);
-	--quote-content-line-height: 1.35;
-	--quote-content-letter-spacing: -0.01em;
-	--quote-divider-display: none;
-	--quote-ornament-color: var(--color-liquid-silver);
+	--quote-content-font-fallback: var(--font-calligraphy);
+	--quote-content-size-fallback: clamp(1.6rem, 4.6vw, 2.95rem);
+	--quote-content-line-height-fallback: 1.35;
+	--quote-content-letter-spacing-fallback: -0.01em;
+	--quote-divider-display-fallback: none;
+	--quote-ornament-color-fallback: var(--color-liquid-silver);
 	--quote-ornament-opacity: 0.35;
 	--quote-texture-bg: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 	--quote-texture-opacity: 0.06;
@@ -213,19 +213,19 @@
 	// ---------------------------------------------------------------------
 	// Gifts section
 	// ---------------------------------------------------------------------
-	--gifts-bg: linear-gradient(
+	--gifts-bg-fallback: linear-gradient(
 		180deg,
 		var(--color-cool-ivory) 0%,
 		rgb(var(--color-pearl-gray-rgb) / 56%) 100%
 	);
 	--gifts-text-color: var(--color-text-primary);
-	--gifts-title-color: var(--color-deep-blue-graphite);
-	--gifts-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--gifts-title-color-fallback: var(--color-deep-blue-graphite);
+	--gifts-subtitle-color-fallback: rgb(var(--color-soft-graphite-rgb) / 72%);
 	--gifts-card-bg: rgb(var(--color-diamond-white-rgb) / 54%);
 	--gifts-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
 	--gifts-card-radius: 8px;
 	--gifts-card-title-color: var(--color-deep-blue-graphite);
-	--gifts-icon-color: var(--color-satin-blue);
+	--gifts-icon-color-fallback: var(--color-satin-blue);
 	--gifts-account-bg: rgb(var(--color-text-primary-rgb) / 5%);
 	--gifts-account-color: var(--color-text-primary);
 
@@ -239,15 +239,15 @@
 	// ---------------------------------------------------------------------
 	// Family section
 	// ---------------------------------------------------------------------
-	--family-bg:
+	--family-bg-fallback:
 		radial-gradient(circle at 50% 0%, rgb(var(--color-ice-blue-rgb) / 62%) 0%, transparent 44%),
 		linear-gradient(
 			180deg,
 			var(--color-surface-primary) 0%,
 			rgb(var(--color-pearl-gray-rgb) / 58%) 100%
 		);
-	--family-padding-block: clamp(5rem, 9vw, 8.5rem);
-	--family-texture-opacity: 0.12;
+	--family-padding-block-fallback: clamp(5rem, 9vw, 8.5rem);
+	--family-texture-opacity-fallback: 0.12;
 	--family-texture-image:
 		radial-gradient(
 			circle at 20% 10%,
@@ -259,7 +259,7 @@
 			rgb(var(--color-action-accent-rgb) / 10%) 0%,
 			transparent 45%
 		);
-	--family-vignette-bg: radial-gradient(
+	--family-vignette-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
 		rgb(var(--color-satin-blue-rgb) / 7%) 100%
@@ -267,16 +267,16 @@
 	--family-noise-opacity: 0.03;
 
 	// Panel
-	--family-panel-bg: transparent;
-	--family-panel-border: none;
-	--family-panel-shadow: none;
+	--family-panel-bg-fallback: transparent;
+	--family-panel-border-fallback: none;
+	--family-panel-shadow-fallback: none;
 	--family-panel-radius: clamp(20px, 5vw, 35px);
-	--family-panel-spacing: clamp(2.2rem, 5vw, 4.6rem) clamp(1.15rem, 4vw, 4.25rem);
+	--family-panel-spacing-fallback: clamp(2.2rem, 5vw, 4.6rem) clamp(1.15rem, 4vw, 4.25rem);
 	--family-panel-max-width: clamp(38rem, 72vw, 42rem);
 	--family-panel-width: min(calc(100% - clamp(2rem, 8vw, 7rem)), var(--family-panel-max-width));
-	--family-panel-margin-top: clamp(2.3rem, 5vw, 4.5rem);
-	--family-panel-rotate: rotate(-0.5deg);
-	--family-panel-shadow-extra-display: block;
+	--family-panel-margin-top-fallback: clamp(2.3rem, 5vw, 4.5rem);
+	--family-panel-rotate-fallback: rotate(-0.5deg);
+	--family-panel-shadow-extra-display-fallback: block;
 	--family-panel-shadow-extra-opacity: 12%;
 	--family-panel-shadow-extra-blur: 12px;
 	--family-panel-shadow-extra-rotate: -1.5deg;
@@ -288,27 +288,27 @@
 	--family-media-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
 	--family-media-shadow: 0 18px 44px rgb(var(--color-deep-blue-graphite-rgb) / 10%);
 	--family-media-inner-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 30%);
-	--family-media-filter: saturate(0.96) contrast(1.02) brightness(1.03);
+	--family-media-filter-fallback: saturate(0.96) contrast(1.02) brightness(1.03);
 
 	// General text
-	--family-text-primary: var(--color-text-primary);
-	--family-text-muted: rgb(var(--color-soft-graphite-rgb) / 64%);
-	--family-accent: var(--color-satin-blue);
+	--family-text-primary-fallback: var(--color-text-primary);
+	--family-text-muted-fallback: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--family-accent-fallback: var(--color-satin-blue);
 
 	// Header
 	--family-header-max-width: 50rem;
-	--family-header-filter: url('#ink-bleed-filter');
+	--family-header-filter-fallback: url('#ink-bleed-filter');
 
 	// Title
-	--family-title-font: var(--font-calligraphy);
+	--family-title-font-fallback: var(--font-calligraphy);
 	--family-title-max-width: none;
-	--family-title-size: clamp(3.25rem, 8vw, 6.7rem);
-	--family-title-line-height: 0.88;
-	--family-title-color: var(--color-deep-blue-graphite);
-	--family-title-text-shadow: 0.5px 0.5px 0 rgb(255 255 255 / 40%);
+	--family-title-size-fallback: clamp(3.25rem, 8vw, 6.7rem);
+	--family-title-line-height-fallback: 0.88;
+	--family-title-color-fallback: var(--color-deep-blue-graphite);
+	--family-title-text-shadow-fallback: 0.5px 0.5px 0 rgb(255 255 255 / 40%);
 
 	// Eyebrow
-	--family-eyebrow-color: rgb(var(--color-soft-graphite-rgb) / 58%);
+	--family-eyebrow-color-fallback: rgb(var(--color-soft-graphite-rgb) / 58%);
 	--family-eyebrow-size: 0.68rem;
 	--family-eyebrow-letter-spacing: 0.24em;
 	--family-eyebrow-margin: clamp(0.8rem, 1.8vw, 1.15rem);
@@ -326,41 +326,41 @@
 	--family-divider-margin: clamp(1.25rem, 2.6vw, 1.8rem) auto 0;
 
 	// Message
-	--family-message-color: rgb(var(--color-soft-graphite-rgb) / 74%);
+	--family-message-color-fallback: rgb(var(--color-soft-graphite-rgb) / 74%);
 	--family-message-size: clamp(1rem, 1.8vw, 1.16rem);
 	--family-message-line-height: 1.75;
 	--family-message-max-width: 39rem;
 	--family-message-margin: clamp(1.4rem, 3vw, 2rem) auto 0;
 
 	// Group Title
-	--family-group-title-color: rgb(var(--color-soft-graphite-rgb) / 62%);
+	--family-group-title-color-fallback: rgb(var(--color-soft-graphite-rgb) / 62%);
 	--family-group-title-size: 0.68rem;
 	--family-group-title-letter-spacing: 0.22em;
 	--family-group-title-margin: 0 0 clamp(1.35rem, 2.8vw, 2rem);
 
 	// Name
-	--family-name-font: var(--font-display);
-	--family-name-size: clamp(1.45rem, 3.2vw, 2.1rem);
+	--family-name-font-fallback: var(--font-display);
+	--family-name-size-fallback: clamp(1.45rem, 3.2vw, 2.1rem);
 	--family-lead-name-size: clamp(2.2rem, 4.8vw, 3rem);
 	--family-name-color: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
 	--family-name-line-height: 1.08;
-	--family-name-text-shadow: 0.5px 0.5px 0 rgb(255 255 255 / 40%);
+	--family-name-text-shadow-fallback: 0.5px 0.5px 0 rgb(255 255 255 / 40%);
 	--family-name-letter-spacing: 0;
 
 	// Meta
-	--family-meta-color: rgb(var(--color-soft-graphite-rgb) / 62%);
+	--family-meta-color-fallback: rgb(var(--color-soft-graphite-rgb) / 62%);
 	--family-meta-size: 0.64rem;
 	--family-meta-letter-spacing: 0.18em;
 	--family-content-gap: clamp(2.6rem, 5vw, 4.2rem);
 
 	// Groups
-	--family-group-filter: url('#ink-bleed-filter');
+	--family-group-filter-fallback: url('#ink-bleed-filter');
 	--family-group-padding: 0;
 	--family-group-border-left: 0;
 
 	// Surface & Watermark — no SVG displacement filters on this panel.
 	// Deckle / artisan feDisplacementMap remesh at some widths and leave stray ticks/streaks over text.
-	--family-panel-surface-bg: radial-gradient(
+	--family-panel-surface-bg-fallback: radial-gradient(
 		circle at 30% 20%,
 		rgb(var(--color-diamond-white-rgb) / 94%) 0%,
 		rgb(var(--color-cool-ivory-rgb) / 90%) 100%
@@ -374,14 +374,14 @@
 	// Grain only via tiled noise background (no displacement)
 	--family-panel-surface-after-border: none;
 	--family-panel-surface-after-shadow: none;
-	--family-panel-surface-after-opacity: 0.045;
-	--family-panel-surface-after-bg: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	--family-panel-surface-after-opacity-fallback: 0.045;
+	--family-panel-surface-after-bg-fallback: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 	--family-panel-watermark-color: rgb(var(--color-satin-blue-rgb) / 15%);
 	--family-panel-watermark-font: var(--font-display);
 	--family-panel-watermark-size: clamp(5.5rem, 13vw, 9rem);
 	--family-panel-watermark-top: clamp(1.2rem, 3vw, 2rem);
 	--family-panel-watermark-right: clamp(2rem, 5vw, 4rem);
-	--family-panel-watermark-opacity: 1;
+	--family-panel-watermark-opacity-fallback: 1;
 	--family-godparents-list-columns: repeat(2, 1fr);
 
 	// Animations
@@ -389,28 +389,28 @@
 	// ---------------------------------------------------------------------
 	// Hero section
 	// ---------------------------------------------------------------------
-	--hero-split-plane-bg: var(--color-surface-dark);
-	--hero-split-overlay-strong: rgb(var(--color-deep-blue-graphite-rgb) / 94%);
-	--hero-split-overlay-mid: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
-	--hero-split-overlay-soft: rgb(var(--color-deep-blue-graphite-rgb) / 18%);
-	--hero-title-color-start: rgb(var(--color-cool-ivory-rgb) / 92%);
-	--hero-title-color-mid: var(--color-satin-blue);
-	--hero-title-color-end: rgb(var(--color-pearl-gray-rgb) / 75%);
-	--hero-badge-text: var(--color-text-on-dark);
+	--hero-split-plane-bg-fallback: var(--color-surface-dark);
+	--hero-split-overlay-strong-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 94%);
+	--hero-split-overlay-mid-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
+	--hero-split-overlay-soft-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 18%);
+	--hero-title-color-start-fallback: rgb(var(--color-cool-ivory-rgb) / 92%);
+	--hero-title-color-mid-fallback: var(--color-satin-blue);
+	--hero-title-color-end-fallback: rgb(var(--color-pearl-gray-rgb) / 75%);
+	--hero-badge-text-fallback: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-diamond-white-rgb) / 58%);
 
 	// ---------------------------------------------------------------------
 	// Gallery section
 	// ---------------------------------------------------------------------
-	--gallery-section-bg: radial-gradient(
+	--gallery-section-bg-fallback: radial-gradient(
 		circle at 50% 10%,
 		rgb(var(--color-ice-blue-rgb) / 62%) 0%,
 		var(--color-surface-primary) 56%,
 		rgb(var(--color-pearl-gray-rgb) / 72%) 100%
 	);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-text-primary);
-	--gallery-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-text-primary);
+	--gallery-subtitle-color-fallback: rgb(var(--color-soft-graphite-rgb) / 72%);
 	--gallery-caption-bg: rgb(var(--color-diamond-white-rgb) / 86%);
 	--gallery-caption-color: var(--color-soft-graphite);
 	--gallery-caption-font: var(--font-body);
@@ -503,7 +503,7 @@
 	// Location Section
 	// ---------------------------------------------------------------------
 	--location-text-color: var(--color-text-primary);
-	--location-bg:
+	--location-bg-fallback:
 		radial-gradient(
 			circle at 18% 8%,
 			rgb(var(--color-ice-blue-rgb) / 42%) 0%,
@@ -514,7 +514,7 @@
 			var(--color-cool-ivory) 0%,
 			rgb(var(--color-pearl-gray-rgb) / 54%) 100%
 		);
-	--location-padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vh, 6rem);
+	--location-padding-block-fallback: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vh, 6rem);
 	--location-padding-inline: clamp(1rem, 4vw, 1.5rem);
 	--location-container-max-width: min(1120px, calc(100vw - 2rem));
 	--location-container-max-width-sm: 34rem;
@@ -523,21 +523,21 @@
 	--location-card-max-width: 29rem;
 	--location-second-card-offset: clamp(1.25rem, 3vw, 2.25rem);
 	--location-content-alignment: stretch;
-	--location-card-bg: linear-gradient(
+	--location-card-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-diamond-white-rgb) / 62%) 0%,
 		rgb(var(--color-cool-ivory-rgb) / 28%) 100%
 	);
-	--location-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 44%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-liquid-silver-rgb) / 44%);
 	--location-card-radius: 8px;
 	--location-card-radius-xs: 6px;
-	--location-card-shadow:
+	--location-card-shadow-fallback:
 		0 28px 72px -36px rgb(var(--color-deep-blue-graphite-rgb) / 36%),
 		0 1px 0 rgb(var(--color-diamond-white-rgb) / 78%);
 	--location-card-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 	--location-card-isolation: isolate;
-	--location-card-hover-transform: translateY(-5px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-5px);
+	--location-card-hover-shadow-fallback:
 		0 34px 86px -40px rgb(var(--color-deep-blue-graphite-rgb) / 46%),
 		0 0 36px rgb(var(--color-satin-blue-rgb) / 10%);
 	--location-card-hover-border-color: rgb(var(--color-satin-blue-rgb) / 55%);
@@ -578,36 +578,36 @@
 		clamp(1.35rem, 3vw, 2rem);
 	--location-content-padding-xs: 1rem 1.15rem 1.15rem;
 	--location-title-color: rgb(var(--color-soft-graphite-rgb) / 72%);
-	--location-title-font-family: var(--font-body);
-	--location-title-font-size: clamp(0.68rem, 1vw, 0.76rem);
-	--location-title-letter-spacing: 0.28em;
+	--location-title-font-family-fallback: var(--font-body);
+	--location-title-font-size-fallback: clamp(0.68rem, 1vw, 0.76rem);
+	--location-title-letter-spacing-fallback: 0.28em;
 	--location-title-margin-bottom: clamp(0.75rem, 1.6vw, 1rem);
 	--location-title-margin-bottom-xs: 0.55rem;
-	--location-place-color: var(--color-deep-blue-graphite);
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: clamp(1.9rem, 3.2vw, 2.55rem);
+	--location-place-color-fallback: var(--color-deep-blue-graphite);
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: clamp(1.9rem, 3.2vw, 2.55rem);
 	--location-place-margin-xs: 0 0 0.55rem;
-	--location-place-line-height: 0.98;
+	--location-place-line-height-fallback: 0.98;
 	--location-place-font-size-sm: clamp(1.65rem, 8vw, 2.25rem);
 	--location-date-color: rgb(var(--color-satin-blue-rgb) / 95%);
 	--location-date-font-family: var(--font-body);
 	--location-date-font-size: clamp(0.68rem, 1.1vw, 0.76rem);
 	--location-date-margin-bottom: 0.35rem;
-	--location-hour-color: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--location-hour-color-fallback: rgb(var(--color-soft-graphite-rgb) / 64%);
 	--location-hour-font-family: var(--font-body);
-	--location-hour-font-size: clamp(0.78rem, 1.2vw, 0.88rem);
+	--location-hour-font-size-fallback: clamp(0.78rem, 1.2vw, 0.88rem);
 	--location-hour-margin-bottom: clamp(1.1rem, 2vw, 1.5rem);
 	--location-hour-margin-bottom-xs: 1rem;
-	--location-address-color: rgb(var(--color-soft-graphite-rgb) / 66%);
+	--location-address-color-fallback: rgb(var(--color-soft-graphite-rgb) / 66%);
 	--location-address-font-family: var(--font-body);
-	--location-address-font-size: clamp(0.78rem, 1.1vw, 0.86rem);
+	--location-address-font-size-fallback: clamp(0.78rem, 1.1vw, 0.86rem);
 	--location-address-padding-top: clamp(1rem, 2vw, 1.25rem);
 	--location-address-border-top: 1px solid rgb(var(--color-liquid-silver-rgb) / 30%);
 	--location-address-gap-xs: 0.7rem;
 	--location-address-text-max-width-xs: 72%;
 	--location-content-list-margin-bottom: clamp(1.1rem, 2vw, 1.45rem);
 	--location-content-list-margin-bottom-xs: 0.95rem;
-	--location-flourish-color: var(--color-liquid-silver);
+	--location-flourish-color-fallback: var(--color-liquid-silver);
 	--location-flourish-margin-bottom: clamp(1.15rem, 2vw, 1.8rem);
 	--location-flourish-margin-bottom-xs: 0.95rem;
 	--location-flourish-opacity: 70%;
@@ -659,11 +659,11 @@
 	--location-indications-spacing: clamp(2.8rem, 6vw, 5rem);
 	--location-indications-spacing-xs: 2.5rem;
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-gap: clamp(1rem, 2.6vw, 1.6rem);
+	--location-indications-gap-fallback: clamp(1rem, 2.6vw, 1.6rem);
 	--location-indications-container-max-width: 58rem;
 	--location-indications-container-margin-bottom: clamp(3.5rem, 7vw, 5rem);
-	--location-indications-heading-color: rgb(var(--color-soft-graphite-rgb) / 58%);
-	--location-indications-heading-letter-spacing: 0.34em;
+	--location-indications-heading-color-fallback: rgb(var(--color-soft-graphite-rgb) / 58%);
+	--location-indications-heading-letter-spacing-fallback: 0.34em;
 	--location-indications-heading-margin-bottom: clamp(1.2rem, 2.5vw, 1.8rem);
 	--location-indication-item-bg:
 		linear-gradient(135deg, rgb(var(--color-diamond-white-rgb) / 58%), transparent 72%),
@@ -671,7 +671,7 @@
 	--location-indication-item-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 34%);
 	--location-indication-item-radius: 8px;
 	--location-indication-item-padding: clamp(1.1rem, 2.4vw, 1.45rem) clamp(1rem, 2.4vw, 1.35rem);
-	--location-indication-item-gap: clamp(0.9rem, 2vw, 1.2rem);
+	--location-indication-item-gap-fallback: clamp(0.9rem, 2vw, 1.2rem);
 	--location-indication-item-min-height: 100%;
 	--location-indication-item-box-shadow: 0 18px 46px -34px
 		rgb(var(--color-deep-blue-graphite-rgb) / 34%);
@@ -682,21 +682,21 @@
 	--location-indication-item-hover-transform: translateY(-2px);
 	--location-indication-item-reserved-border-color: rgb(var(--color-satin-blue-rgb) / 42%);
 	--location-indication-icon-bg: rgb(var(--color-diamond-white-rgb) / 62%);
-	--location-indication-icon-color: var(--color-satin-blue);
+	--location-indication-icon-color-fallback: var(--color-satin-blue);
 	--location-indication-icon-size: 1.9rem;
 	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-satin-blue-rgb) / 28%);
 	--location-indication-icon-svg-stroke: 0.8px;
-	--location-indication-text-color: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+	--location-indication-text-color-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
 	--location-indication-text-font-family: var(--font-body);
-	--location-indication-text-font-size: clamp(0.86rem, 1.15vw, 0.95rem);
+	--location-indication-text-font-size-fallback: clamp(0.86rem, 1.15vw, 0.95rem);
 	--location-indication-text-line-height: 1.6;
 	--location-indication-strong-color: var(--color-deep-blue-graphite);
 
 	// ---------------------------------------------------------------------
 	// Personalized Access Section — soft paper credential (not a glass tile)
 	// ---------------------------------------------------------------------
-	--pa-card-bg-color: var(--color-cool-ivory);
-	--pa-card-bg-image:
+	--pa-card-bg-color-fallback: var(--color-cool-ivory);
+	--pa-card-bg-image-fallback:
 		radial-gradient(
 			ellipse 90% 70% at 28% 12%,
 			rgb(var(--color-diamond-white-rgb) / 92%) 0%,
@@ -713,61 +713,61 @@
 			var(--color-cool-ivory) 48%,
 			rgb(var(--color-pearl-gray-rgb) / 55%) 100%
 		);
-	--pa-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 36%);
+	--pa-card-border-fallback: 1px solid rgb(var(--color-liquid-silver-rgb) / 36%);
 	--pa-card-border-radius: clamp(1.35rem, 3.5vw, 1.85rem);
-	--pa-card-shadow:
+	--pa-card-shadow-fallback:
 		0 1px 0 rgb(var(--color-diamond-white-rgb) / 78%),
 		0 18px 40px -28px rgb(var(--color-deep-blue-graphite-rgb) / 28%),
 		0 42px 72px -40px rgb(var(--color-deep-blue-graphite-rgb) / 18%);
 	--pa-card-inset: 0.7rem;
-	--pa-card-inner-border: 1px solid rgb(var(--color-satin-blue-rgb) / 12%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--color-satin-blue-rgb) / 12%);
 	--pa-card-inner-radius: clamp(1rem, 2.8vw, 1.35rem);
-	--pa-card-glow: none;
+	--pa-card-glow-fallback: none;
 	--pa-corner-size: 1.1rem;
 	--pa-corner-dot-size: 0.2rem;
-	--pa-corner-color: rgb(var(--color-satin-blue-rgb) / 72%);
-	--pa-corner-opacity: 0%;
-	--pa-corner-glow-blur: 0;
-	--pa-eyebrow-color: rgb(var(--color-soft-graphite-rgb) / 48%);
+	--pa-corner-color-fallback: rgb(var(--color-satin-blue-rgb) / 72%);
+	--pa-corner-opacity-fallback: 0%;
+	--pa-corner-glow-blur-fallback: 0;
+	--pa-eyebrow-color-fallback: rgb(var(--color-soft-graphite-rgb) / 48%);
 	--pa-eyebrow-tracking: 0.28em;
 	--pa-title-font: var(--font-display);
 	--pa-title-size: clamp(1.05rem, 1.4vw + 0.85rem, 1.35rem);
-	--pa-title-tracking: 0.2em;
-	--pa-title-color: var(--color-deep-blue-graphite);
+	--pa-title-tracking-fallback: 0.2em;
+	--pa-title-color-fallback: var(--color-deep-blue-graphite);
 	--pa-title-shadow: none;
 	--pa-subtitle-font: var(--font-body);
-	--pa-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 62%);
+	--pa-subtitle-color-fallback: rgb(var(--color-soft-graphite-rgb) / 62%);
 	--pa-guest-font: var(--font-display);
 	--pa-guest-weight: 400;
-	--pa-guest-color: var(--color-deep-blue-graphite);
+	--pa-guest-color-fallback: var(--color-deep-blue-graphite);
 	--pa-guest-tracking: 0.01em;
-	--pa-divider-gradient: linear-gradient(
+	--pa-divider-gradient-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(var(--color-liquid-silver-rgb) / 58%) 50%,
 		transparent 100%
 	);
 	--pa-divider-opacity: 100%;
-	--pa-divider-diamond-bg: var(--color-cool-ivory);
-	--pa-divider-diamond-border-color: rgb(var(--color-satin-blue-rgb) / 48%);
-	--pa-divider-diamond-shadow: 0 0 0 0.22rem rgb(var(--color-cool-ivory-rgb) / 88%);
-	--pa-count-frame-radius: 0;
-	--pa-count-frame-border: none;
-	--pa-count-frame-bg: transparent;
-	--pa-count-frame-shadow: none;
+	--pa-divider-diamond-bg-fallback: var(--color-cool-ivory);
+	--pa-divider-diamond-border-color-fallback: rgb(var(--color-satin-blue-rgb) / 48%);
+	--pa-divider-diamond-shadow-fallback: 0 0 0 0.22rem rgb(var(--color-cool-ivory-rgb) / 88%);
+	--pa-count-frame-radius-fallback: 0;
+	--pa-count-frame-border-fallback: none;
+	--pa-count-frame-bg-fallback: transparent;
+	--pa-count-frame-shadow-fallback: none;
 	--pa-count-frame-inner-display: none;
-	--pa-count-color: var(--color-satin-blue);
+	--pa-count-color-fallback: var(--color-satin-blue);
 	--pa-count-shadow: none;
-	--pa-footer-border-top: none;
-	--pa-footer-bg: linear-gradient(
+	--pa-footer-border-top-fallback: none;
+	--pa-footer-bg-fallback: linear-gradient(
 		180deg,
 		transparent 0%,
 		rgb(var(--color-ice-blue-rgb) / 16%) 100%
 	);
-	--pa-footer-text-color: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--pa-footer-text-color-fallback: rgb(var(--color-soft-graphite-rgb) / 64%);
 	--pa-footer-text-font-style: normal;
 	--pa-footer-text-tracking: 0.01em;
-	--pa-label-color: rgb(var(--color-soft-graphite-rgb) / 48%);
+	--pa-label-color-fallback: rgb(var(--color-soft-graphite-rgb) / 48%);
 	--pa-label-opacity: 1;
 	--pa-label-tracking: 0.22em;
 
