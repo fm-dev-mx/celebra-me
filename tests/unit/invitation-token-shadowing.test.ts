@@ -170,7 +170,7 @@ describe('invitation profile tokens are not shadowed by base section defaults', 
 	});
 
 	it('lets the America gifts title tokens reach the section', () => {
-		expect(shadowed.get('america')?.has('--gifts-title-letter-spacing')).toBe(false);
-		expect(shadowed.get('america')?.has('--gifts-title-size')).toBe(false);
+		expect(shadowed.get('america')?.has('--gifts-title-letter-spacing') ?? false).toBe(false);
+		expect(shadowed.get('america')?.has('--gifts-title-size') ?? false).toBe(false);
 	});
 });

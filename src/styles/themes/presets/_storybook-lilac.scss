@@ -446,28 +446,28 @@
 	// ---------------------------------------------------------------------
 	// Location (night): the program sheet reads in candle cream with gold rules.
 	// ---------------------------------------------------------------------
-	--location-bg: var(--storybook-night);
+	--location-bg-fallback: var(--storybook-night);
 	--location-text-color: var(--color-candle-cream);
 	--location-enclosure-swatch: var(--color-lilac);
 	--location-enclosure-ink: var(--color-violet-ink);
 	--location-enclosure-muted: var(--color-violet-ink-soft);
 	--location-enclosure-rule: rgb(var(--color-leaf-gold-rgb) / 50%);
-	--location-padding-block: clamp(3.5rem, 8vw, 6rem) clamp(4rem, 8vh, 6rem);
+	--location-padding-block-fallback: clamp(3.5rem, 8vw, 6rem) clamp(4rem, 8vh, 6rem);
 	--location-padding-inline: clamp(1rem, 4vw, 1.5rem);
-	--location-card-bg: rgb(var(--color-story-cream-rgb) / 5%);
-	--location-card-border: 1px solid rgb(var(--color-candle-gold-rgb) / 30%);
+	--location-card-bg-fallback: rgb(var(--color-story-cream-rgb) / 5%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-candle-gold-rgb) / 30%);
 	--location-card-radius: 2px;
-	--location-card-shadow: none;
+	--location-card-shadow-fallback: none;
 	--location-image-aspect-ratio: 4 / 3.35;
 	--location-title-color: var(--color-night-lilac);
-	--location-title-font-family: var(--font-label);
-	--location-place-color: var(--color-candle-cream);
-	--location-place-font-family: var(--font-display);
+	--location-title-font-family-fallback: var(--font-label);
+	--location-place-color-fallback: var(--color-candle-cream);
+	--location-place-font-family-fallback: var(--font-display);
 	--location-date-color: var(--color-candle-gold);
-	--location-hour-color: var(--color-night-lilac);
-	--location-address-color: var(--color-night-lilac);
+	--location-hour-color-fallback: var(--color-night-lilac);
+	--location-address-color-fallback: var(--color-night-lilac);
 	--location-address-border-top: 1px solid rgb(var(--color-candle-gold-rgb) / 24%);
-	--location-flourish-color: var(--color-candle-gold);
+	--location-flourish-color-fallback: var(--color-candle-gold);
 	--location-copy-button-color: var(--color-candle-gold);
 	--location-copy-button-border: 1px solid rgb(var(--color-candle-gold-rgb) / 42%);
 	--location-nav-bg: transparent;
@@ -477,13 +477,13 @@
 	--location-nav-hover-color: var(--color-violet-night);
 	--location-nav-hover-border-color: var(--color-candle-gold);
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-heading-color: var(--color-night-lilac);
+	--location-indications-heading-color-fallback: var(--color-night-lilac);
 	--location-indication-item-bg: rgb(var(--color-story-cream-rgb) / 5%);
 	--location-indication-item-border: 1px solid rgb(var(--color-candle-gold-rgb) / 26%);
 	--location-indication-item-radius: 2px;
 	--location-indication-item-reserved-border-color: rgb(var(--color-lilac-rgb) / 70%);
-	--location-indication-icon-color: var(--color-candle-gold);
-	--location-indication-text-color: var(--color-candle-cream);
+	--location-indication-icon-color-fallback: var(--color-candle-gold);
+	--location-indication-text-color-fallback: var(--color-candle-cream);
 	--location-indication-strong-color: var(--color-candle-gold);
 
 	// ---------------------------------------------------------------------

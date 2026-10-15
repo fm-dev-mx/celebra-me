@@ -130,23 +130,23 @@
 	--family-media-inner-border: 1px solid #{color.change(sys.$sys-color-neutral-0, $alpha: 0.58)};
 	--family-media-filter-fallback: saturate(1.04) contrast(1.02) brightness(1.01);
 	--location-text-color: var(--color-text-primary);
-	--location-bg: linear-gradient(
+	--location-bg-fallback: linear-gradient(
 		180deg,
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 0%,
 		#{color.change(sys.$sys-color-floral-50, $alpha: 0.5)} 50%,
 		#{color.change(sys.$sys-color-floral-50, $alpha: 0.8)} 100%
 	);
-	--location-card-bg: linear-gradient(
+	--location-card-bg-fallback: linear-gradient(
 		165deg,
 		#{sys.$sys-color-neutral-0} 0%,
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 100%
 	);
-	--location-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
-	--location-card-shadow:
+	--location-card-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
+	--location-card-shadow-fallback:
 		0 50px 100px -20px rgb(0 0 0 / 80%), inset 0 0 40px rgb(var(--color-action-accent-rgb) / 5%);
 	--location-card-backdrop-filter: blur(30px);
-	--location-card-hover-transform: translateY(-12px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-12px);
+	--location-card-hover-shadow-fallback:
 		0 70px 140px -30px rgb(0 0 0 / 95%), 0 0 40px rgb(var(--color-action-accent-rgb) / 15%);
 	--location-card-hover-border-color: rgb(var(--color-action-accent-rgb) / 50%);
 	--location-card-before-bg: var(--light-sweep);
@@ -167,25 +167,25 @@
 	--location-reception-image-focus-y: 30%;
 	--location-content-padding: 3rem 2.5rem;
 	--location-title-color: var(--color-action-accent);
-	--location-title-font-family: var(--section-subtitle-font);
-	--location-title-font-size: var(--section-subtitle-size);
-	--location-title-letter-spacing: 0.5em;
+	--location-title-font-family-fallback: var(--section-subtitle-font);
+	--location-title-font-size-fallback: var(--section-subtitle-size);
+	--location-title-letter-spacing-fallback: 0.5em;
 	--location-title-margin-bottom: 1.5rem;
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: 2.4rem;
-	--location-place-color: var(--color-text-primary);
-	--location-place-margin: 0 0 0.75rem;
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: 2.4rem;
+	--location-place-color-fallback: var(--color-text-primary);
+	--location-place-margin-fallback: 0 0 0.75rem;
 	--location-place-letter-spacing: -0.01em;
 	--location-date-font-family: var(--font-label);
 	--location-date-font-size: 0.8rem;
 	--location-date-letter-spacing: 0.3em;
 	--location-date-margin-bottom: 1.5rem;
 	--location-date-color: var(--color-action-accent);
-	--location-hour-color: rgb(var(--color-text-primary-rgb) / 50%);
-	--location-hour-letter-spacing: 0.15em;
-	--location-hour-font-size: 0.9rem;
+	--location-hour-color-fallback: rgb(var(--color-text-primary-rgb) / 50%);
+	--location-hour-letter-spacing-fallback: 0.15em;
+	--location-hour-font-size-fallback: 0.9rem;
 	--location-hour-margin-bottom: 2.5rem;
-	--location-address-color: rgb(var(--color-text-primary-rgb) / 60%);
+	--location-address-color-fallback: rgb(var(--color-text-primary-rgb) / 60%);
 	--location-address-font-family: var(--font-label);
 	--location-address-letter-spacing: 0.12em;
 	--location-address-padding-top: 2rem;
@@ -198,7 +198,7 @@
 	--location-indication-item-border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
 	--location-indication-item-radius: 16px;
 	--location-indication-item-padding: 0 2.5rem;
-	--location-indication-item-gap: 0.1rem;
+	--location-indication-item-gap-fallback: 0.1rem;
 	--location-indication-item-box-shadow:
 		0 10px 30px -10px rgb(var(--color-surface-dark-rgb) / 5%),
 		inset 0 0 40px rgb(var(--color-action-accent-rgb) / 3%);
@@ -211,13 +211,13 @@
 	--location-indication-item-after-width: 40px;
 	--location-indication-item-after-height: 1px;
 	--location-indication-icon-font-size: 2.4rem;
-	--location-indication-icon-color: transparent;
+	--location-indication-icon-color-fallback: transparent;
 	--location-indication-icon-size: auto;
 	--location-indication-icon-radius: 0;
 	--location-indication-text-font-family: var(--font-label);
-	--location-indication-text-font-size: 0.82rem;
+	--location-indication-text-font-size-fallback: 0.82rem;
 	--location-indication-text-letter-spacing: 0.12em;
-	--location-indication-text-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--location-indication-text-color-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 	--location-indication-text-line-height: 1.7;
 	--location-indication-strong-color: var(--color-text-primary);
 	--location-nav-bg: #{color.change(sys.$sys-color-floral-500, $alpha: 0.1)};
@@ -377,7 +377,8 @@
 }
 
 .theme-preset--premiere-floral .event-location__card:hover {
-	transform: var(--location-card-hover-transform) rotateX(2deg);
+	transform: var(--location-card-hover-transform, var(--location-card-hover-transform-fallback))
+		rotateX(2deg);
 }
 
 .theme-preset--premiere-floral .event-location__card::before {

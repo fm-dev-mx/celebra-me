@@ -252,19 +252,19 @@
 	// ---------------------------------------------------------------------
 	--location-container-max-width: min(800px, calc(100vw - 2.5rem));
 	--location-card-max-width: 30rem;
-	--location-card-bg: linear-gradient(
+	--location-card-bg-fallback: linear-gradient(
 		168deg,
 		rgb(var(--color-pure-ivory-rgb) / 94%) 0%,
 		rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
 		rgb(var(--color-sacred-mist-rgb) / 38%) 100%
 	);
-	--location-card-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
 	--location-card-radius: 14px;
-	--location-card-shadow:
+	--location-card-shadow-fallback:
 		0 18px 48px -30px rgb(var(--color-eternal-ink-rgb) / 28%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
-	--location-card-hover-transform: translateY(-3px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-3px);
+	--location-card-hover-shadow-fallback:
 		0 24px 56px -32px rgb(var(--color-eternal-ink-rgb) / 32%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 	--location-card-hover-border-color: rgb(var(--color-sacred-gold-rgb) / 42%);
@@ -277,30 +277,30 @@
 	--location-reception-image-focus-y: 42%;
 	--location-content-padding: clamp(1.5rem, 3.5vw, 2.1rem) clamp(1.35rem, 3.5vw, 1.75rem);
 	--location-title-color: var(--color-sacred-gold-readable);
-	--location-title-font-family: var(--font-label);
-	--location-title-font-size: 0.62rem;
-	--location-title-letter-spacing: 0.28em;
+	--location-title-font-family-fallback: var(--font-label);
+	--location-title-font-size-fallback: 0.62rem;
+	--location-title-letter-spacing-fallback: 0.28em;
 	--location-title-margin-bottom: 0.5rem;
-	--location-place-color: var(--color-eternal-ink);
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: clamp(2rem, 4.5vw, 2.6rem);
-	--location-place-margin: 0 0 0.55rem;
-	--location-place-line-height: 1.06;
+	--location-place-color-fallback: var(--color-eternal-ink);
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: clamp(2rem, 4.5vw, 2.6rem);
+	--location-place-margin-fallback: 0 0 0.55rem;
+	--location-place-line-height-fallback: 1.06;
 	--location-date-color: var(--color-sacred-gold-readable);
 	--location-date-font-family: var(--font-body);
 	--location-date-font-size: 0.68rem;
 	--location-date-margin-bottom: 0.15rem;
-	--location-hour-color: rgb(var(--color-eternal-ink-rgb) / 58%);
+	--location-hour-color-fallback: rgb(var(--color-eternal-ink-rgb) / 58%);
 	--location-hour-font-family: var(--font-body);
-	--location-hour-font-size: 0.76rem;
-	--location-hour-letter-spacing: 0.18em;
+	--location-hour-font-size-fallback: 0.76rem;
+	--location-hour-letter-spacing-fallback: 0.18em;
 	--location-hour-margin-bottom: 1.4rem;
-	--location-address-color: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--location-address-color-fallback: rgb(var(--color-eternal-ink-rgb) / 72%);
 	--location-address-font-family: var(--font-body);
-	--location-address-font-size: 0.86rem;
+	--location-address-font-size-fallback: 0.86rem;
 	--location-address-padding-top: 1.1rem;
 	--location-address-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
-	--location-flourish-color: var(--color-sacred-gold);
+	--location-flourish-color-fallback: var(--color-sacred-gold);
 	--location-flourish-margin-bottom: 1.5rem;
 	--location-flourish-opacity: 54%;
 	--location-flourish-diamond-size: 4px;
@@ -309,8 +309,8 @@
 	--location-copy-button-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 42%);
 	--location-copy-button-radius: 50%;
 	--location-copy-button-padding: 0;
-	--location-copy-button-width: 30px;
-	--location-copy-button-height: 30px;
+	--location-copy-button-width-fallback: 30px;
+	--location-copy-button-height-fallback: 30px;
 	--location-nav-bg: linear-gradient(
 		180deg,
 		var(--color-pure-ivory) 0%,
@@ -338,19 +338,19 @@
 	--location-nav-buttons-margin-top: 1.75rem;
 	--location-indications-spacing: clamp(1.5rem, 3vh, 2.5rem);
 	--location-indications-container-max-width: 480px;
-	--location-indications-heading-color: rgb(var(--color-sacred-gold-rgb) / 84%);
-	--location-indications-heading-letter-spacing: 0.25em;
-	--location-indications-heading-font-weight: 600;
+	--location-indications-heading-color-fallback: rgb(var(--color-sacred-gold-rgb) / 84%);
+	--location-indications-heading-letter-spacing-fallback: 0.25em;
+	--location-indications-heading-font-weight-fallback: 600;
 	--location-indication-item-padding: 1.25rem 0;
-	--location-indication-item-gap: 1rem;
+	--location-indication-item-gap-fallback: 1rem;
 	--location-indication-icon-bg: rgb(var(--color-pure-ivory-rgb) / 85%);
-	--location-indication-icon-color: var(--color-sacred-gold-readable);
+	--location-indication-icon-color-fallback: var(--color-sacred-gold-readable);
 	--location-indication-icon-size: 40px;
 	--location-indication-icon-radius: 50%;
 	--location-indication-icon-svg-size: 18px;
-	--location-indication-text-color: rgb(var(--color-eternal-ink-rgb) / 78%);
+	--location-indication-text-color-fallback: rgb(var(--color-eternal-ink-rgb) / 78%);
 	--location-indication-text-font-family: var(--font-body);
-	--location-indication-text-font-size: 0.9rem;
+	--location-indication-text-font-size-fallback: 0.9rem;
 	--location-indication-text-line-height: 1.5;
 	--location-indication-strong-color: rgb(var(--color-sacred-gold-rgb) / 94%);
 

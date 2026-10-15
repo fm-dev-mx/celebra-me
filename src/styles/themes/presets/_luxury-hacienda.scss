@@ -204,27 +204,27 @@
 	// Location Section
 	// ---------------------------------------------------------------------
 	--location-text-color: var(--color-text-primary);
-	--location-bg:
+	--location-bg-fallback:
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-action-accent-rgb) / 10%),
 			transparent 46%
 		),
 		linear-gradient(180deg, var(--color-surface-primary) 0%, rgb(242 235 219) 100%);
-	--location-padding-block: clamp(5.5rem, 10vw, 8.5rem) clamp(4rem, 6vh, 6rem);
+	--location-padding-block-fallback: clamp(5.5rem, 10vw, 8.5rem) clamp(4rem, 6vh, 6rem);
 	--location-padding-inline: clamp(1rem, 4vw, 1.5rem);
 	--location-container-max-width: min(1040px, calc(100vw - 2rem));
 	--location-container-max-width-sm: 34rem;
 	--location-gap: clamp(2.5rem, 5vw, 4rem);
 	--location-card-max-width: 31rem;
-	--location-card-bg: rgb(250 244 229 / 78%);
-	--location-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
+	--location-card-bg-fallback: rgb(250 244 229 / 78%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
 	--location-card-radius: 7px;
-	--location-card-shadow:
+	--location-card-shadow-fallback:
 		0 24px 58px rgb(var(--color-text-primary-rgb) / 11%), inset 0 1px 0 rgb(255 255 255 / 58%);
 	--location-card-backdrop-filter: blur(10px) saturate(120%);
-	--location-card-hover-transform: translateY(-4px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-4px);
+	--location-card-hover-shadow-fallback:
 		0 32px 68px rgb(var(--color-text-primary-rgb) / 14%), inset 0 1px 0 rgb(255 255 255 / 62%);
 	--location-card-hover-border-color: rgb(var(--color-action-accent-rgb) / 42%);
 	--location-image-aspect-ratio: 16 / 9;
@@ -239,30 +239,30 @@
 	--location-reception-image-focus-y: 46%;
 	--location-content-padding: clamp(1.4rem, 3vw, 2.1rem);
 	--location-title-color: rgb(var(--color-text-primary-rgb) / 76%);
-	--location-title-font-family: var(--font-body-hacienda);
-	--location-title-font-size: 0.72rem;
-	--location-title-letter-spacing: 0.26em;
+	--location-title-font-family-fallback: var(--font-body-hacienda);
+	--location-title-font-size-fallback: 0.72rem;
+	--location-title-letter-spacing-fallback: 0.26em;
 	--location-title-margin-bottom: 0.8rem;
-	--location-place-color: var(--color-text-primary);
-	--location-place-font-family: var(--font-display-hacienda);
-	--location-place-font-size: clamp(1.8rem, 3.4vw, 2.45rem);
+	--location-place-color-fallback: var(--color-text-primary);
+	--location-place-font-family-fallback: var(--font-display-hacienda);
+	--location-place-font-size-fallback: clamp(1.8rem, 3.4vw, 2.45rem);
 	--location-place-letter-spacing: 0.02em;
-	--location-place-line-height: 1;
+	--location-place-line-height-fallback: 1;
 	--location-date-color: rgb(var(--color-action-accent-rgb) / 90%);
 	--location-date-font-family: var(--font-body-hacienda);
 	--location-date-font-size: 0.72rem;
-	--location-hour-color: rgb(var(--color-text-primary-rgb) / 66%);
+	--location-hour-color-fallback: rgb(var(--color-text-primary-rgb) / 66%);
 	--location-hour-font-family: var(--font-body-hacienda);
-	--location-hour-font-size: 0.84rem;
+	--location-hour-font-size-fallback: 0.84rem;
 	--location-hour-margin-bottom: 1.2rem;
-	--location-address-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--location-address-color-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 	--location-address-font-family: var(--font-body-hacienda);
-	--location-address-font-size: 0.88rem;
+	--location-address-font-size-fallback: 0.88rem;
 	--location-address-letter-spacing: 0.01em;
 	--location-address-line-height: 1.55;
 	--location-address-padding-top: 1.15rem;
 	--location-address-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
-	--location-flourish-color: var(--color-action-accent);
+	--location-flourish-color-fallback: var(--color-action-accent);
 	--location-flourish-margin-bottom: clamp(1rem, 2vw, 1.35rem);
 	--location-flourish-opacity: 72%;
 	--location-flourish-diamond-size: 5px;
@@ -292,19 +292,19 @@
 	--location-indications-spacing: clamp(3rem, 6vw, 4.5rem);
 	--location-indications-container-max-width: 48rem;
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-gap: clamp(0.9rem, 2vw, 1.2rem);
+	--location-indications-gap-fallback: clamp(0.9rem, 2vw, 1.2rem);
 	--location-indication-item-bg: rgb(250 244 229 / 56%);
 	--location-indication-item-border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
 	--location-indication-item-radius: 7px;
 	--location-indication-item-padding: clamp(1rem, 2vw, 1.2rem);
 	--location-indication-icon-bg: rgb(255 250 238 / 66%);
-	--location-indication-icon-color: var(--color-action-accent);
+	--location-indication-icon-color-fallback: var(--color-action-accent);
 	--location-indication-icon-size: 1.8rem;
 	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-action-accent-rgb) / 22%);
 	--location-indication-icon-svg-size: 15px;
-	--location-indication-text-color: rgb(var(--color-text-primary-rgb) / 78%);
+	--location-indication-text-color-fallback: rgb(var(--color-text-primary-rgb) / 78%);
 	--location-indication-text-font-family: var(--font-body-hacienda);
-	--location-indication-text-font-size: 0.92rem;
+	--location-indication-text-font-size-fallback: 0.92rem;
 	--location-indication-text-line-height: 1.55;
 	--location-indication-strong-color: var(--color-text-primary);
 

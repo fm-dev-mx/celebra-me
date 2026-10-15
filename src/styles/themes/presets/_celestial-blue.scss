@@ -503,7 +503,7 @@
 	// Location Section
 	// ---------------------------------------------------------------------
 	--location-text-color: var(--color-text-primary);
-	--location-bg:
+	--location-bg-fallback:
 		radial-gradient(
 			circle at 18% 8%,
 			rgb(var(--color-ice-blue-rgb) / 42%) 0%,
@@ -514,7 +514,7 @@
 			var(--color-cool-ivory) 0%,
 			rgb(var(--color-pearl-gray-rgb) / 54%) 100%
 		);
-	--location-padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vh, 6rem);
+	--location-padding-block-fallback: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vh, 6rem);
 	--location-padding-inline: clamp(1rem, 4vw, 1.5rem);
 	--location-container-max-width: min(1120px, calc(100vw - 2rem));
 	--location-container-max-width-sm: 34rem;
@@ -523,21 +523,21 @@
 	--location-card-max-width: 29rem;
 	--location-second-card-offset: clamp(1.25rem, 3vw, 2.25rem);
 	--location-content-alignment: stretch;
-	--location-card-bg: linear-gradient(
+	--location-card-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-diamond-white-rgb) / 62%) 0%,
 		rgb(var(--color-cool-ivory-rgb) / 28%) 100%
 	);
-	--location-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 44%);
+	--location-card-border-fallback: 1px solid rgb(var(--color-liquid-silver-rgb) / 44%);
 	--location-card-radius: 8px;
 	--location-card-radius-xs: 6px;
-	--location-card-shadow:
+	--location-card-shadow-fallback:
 		0 28px 72px -36px rgb(var(--color-deep-blue-graphite-rgb) / 36%),
 		0 1px 0 rgb(var(--color-diamond-white-rgb) / 78%);
 	--location-card-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 	--location-card-isolation: isolate;
-	--location-card-hover-transform: translateY(-5px);
-	--location-card-hover-shadow:
+	--location-card-hover-transform-fallback: translateY(-5px);
+	--location-card-hover-shadow-fallback:
 		0 34px 86px -40px rgb(var(--color-deep-blue-graphite-rgb) / 46%),
 		0 0 36px rgb(var(--color-satin-blue-rgb) / 10%);
 	--location-card-hover-border-color: rgb(var(--color-satin-blue-rgb) / 55%);
@@ -578,36 +578,36 @@
 		clamp(1.35rem, 3vw, 2rem);
 	--location-content-padding-xs: 1rem 1.15rem 1.15rem;
 	--location-title-color: rgb(var(--color-soft-graphite-rgb) / 72%);
-	--location-title-font-family: var(--font-body);
-	--location-title-font-size: clamp(0.68rem, 1vw, 0.76rem);
-	--location-title-letter-spacing: 0.28em;
+	--location-title-font-family-fallback: var(--font-body);
+	--location-title-font-size-fallback: clamp(0.68rem, 1vw, 0.76rem);
+	--location-title-letter-spacing-fallback: 0.28em;
 	--location-title-margin-bottom: clamp(0.75rem, 1.6vw, 1rem);
 	--location-title-margin-bottom-xs: 0.55rem;
-	--location-place-color: var(--color-deep-blue-graphite);
-	--location-place-font-family: var(--font-display);
-	--location-place-font-size: clamp(1.9rem, 3.2vw, 2.55rem);
+	--location-place-color-fallback: var(--color-deep-blue-graphite);
+	--location-place-font-family-fallback: var(--font-display);
+	--location-place-font-size-fallback: clamp(1.9rem, 3.2vw, 2.55rem);
 	--location-place-margin-xs: 0 0 0.55rem;
-	--location-place-line-height: 0.98;
+	--location-place-line-height-fallback: 0.98;
 	--location-place-font-size-sm: clamp(1.65rem, 8vw, 2.25rem);
 	--location-date-color: rgb(var(--color-satin-blue-rgb) / 95%);
 	--location-date-font-family: var(--font-body);
 	--location-date-font-size: clamp(0.68rem, 1.1vw, 0.76rem);
 	--location-date-margin-bottom: 0.35rem;
-	--location-hour-color: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--location-hour-color-fallback: rgb(var(--color-soft-graphite-rgb) / 64%);
 	--location-hour-font-family: var(--font-body);
-	--location-hour-font-size: clamp(0.78rem, 1.2vw, 0.88rem);
+	--location-hour-font-size-fallback: clamp(0.78rem, 1.2vw, 0.88rem);
 	--location-hour-margin-bottom: clamp(1.1rem, 2vw, 1.5rem);
 	--location-hour-margin-bottom-xs: 1rem;
-	--location-address-color: rgb(var(--color-soft-graphite-rgb) / 66%);
+	--location-address-color-fallback: rgb(var(--color-soft-graphite-rgb) / 66%);
 	--location-address-font-family: var(--font-body);
-	--location-address-font-size: clamp(0.78rem, 1.1vw, 0.86rem);
+	--location-address-font-size-fallback: clamp(0.78rem, 1.1vw, 0.86rem);
 	--location-address-padding-top: clamp(1rem, 2vw, 1.25rem);
 	--location-address-border-top: 1px solid rgb(var(--color-liquid-silver-rgb) / 30%);
 	--location-address-gap-xs: 0.7rem;
 	--location-address-text-max-width-xs: 72%;
 	--location-content-list-margin-bottom: clamp(1.1rem, 2vw, 1.45rem);
 	--location-content-list-margin-bottom-xs: 0.95rem;
-	--location-flourish-color: var(--color-liquid-silver);
+	--location-flourish-color-fallback: var(--color-liquid-silver);
 	--location-flourish-margin-bottom: clamp(1.15rem, 2vw, 1.8rem);
 	--location-flourish-margin-bottom-xs: 0.95rem;
 	--location-flourish-opacity: 70%;
@@ -659,11 +659,11 @@
 	--location-indications-spacing: clamp(2.8rem, 6vw, 5rem);
 	--location-indications-spacing-xs: 2.5rem;
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-gap: clamp(1rem, 2.6vw, 1.6rem);
+	--location-indications-gap-fallback: clamp(1rem, 2.6vw, 1.6rem);
 	--location-indications-container-max-width: 58rem;
 	--location-indications-container-margin-bottom: clamp(3.5rem, 7vw, 5rem);
-	--location-indications-heading-color: rgb(var(--color-soft-graphite-rgb) / 58%);
-	--location-indications-heading-letter-spacing: 0.34em;
+	--location-indications-heading-color-fallback: rgb(var(--color-soft-graphite-rgb) / 58%);
+	--location-indications-heading-letter-spacing-fallback: 0.34em;
 	--location-indications-heading-margin-bottom: clamp(1.2rem, 2.5vw, 1.8rem);
 	--location-indication-item-bg:
 		linear-gradient(135deg, rgb(var(--color-diamond-white-rgb) / 58%), transparent 72%),
@@ -671,7 +671,7 @@
 	--location-indication-item-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 34%);
 	--location-indication-item-radius: 8px;
 	--location-indication-item-padding: clamp(1.1rem, 2.4vw, 1.45rem) clamp(1rem, 2.4vw, 1.35rem);
-	--location-indication-item-gap: clamp(0.9rem, 2vw, 1.2rem);
+	--location-indication-item-gap-fallback: clamp(0.9rem, 2vw, 1.2rem);
 	--location-indication-item-min-height: 100%;
 	--location-indication-item-box-shadow: 0 18px 46px -34px
 		rgb(var(--color-deep-blue-graphite-rgb) / 34%);
@@ -682,13 +682,13 @@
 	--location-indication-item-hover-transform: translateY(-2px);
 	--location-indication-item-reserved-border-color: rgb(var(--color-satin-blue-rgb) / 42%);
 	--location-indication-icon-bg: rgb(var(--color-diamond-white-rgb) / 62%);
-	--location-indication-icon-color: var(--color-satin-blue);
+	--location-indication-icon-color-fallback: var(--color-satin-blue);
 	--location-indication-icon-size: 1.9rem;
 	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-satin-blue-rgb) / 28%);
 	--location-indication-icon-svg-stroke: 0.8px;
-	--location-indication-text-color: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+	--location-indication-text-color-fallback: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
 	--location-indication-text-font-family: var(--font-body);
-	--location-indication-text-font-size: clamp(0.86rem, 1.15vw, 0.95rem);
+	--location-indication-text-font-size-fallback: clamp(0.86rem, 1.15vw, 0.95rem);
 	--location-indication-text-line-height: 1.6;
 	--location-indication-strong-color: var(--color-deep-blue-graphite);
 

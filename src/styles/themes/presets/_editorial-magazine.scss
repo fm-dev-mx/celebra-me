@@ -88,13 +88,13 @@
 
 	// Magazine-folio footer line: italic as accepted; profiles may set normal (Aithan Darell).
 	--countdown-footer-style: italic;
-	--location-bg: var(--editorial-magazine-paper);
+	--location-bg-fallback: var(--editorial-magazine-paper);
 	--location-text-color: var(--editorial-magazine-ink);
-	--location-card-bg: var(--editorial-magazine-white);
-	--location-place-color: var(--editorial-magazine-ink);
-	--location-hour-color: rgb(var(--editorial-magazine-ink-rgb) / 66%);
-	--location-address-color: rgb(var(--editorial-magazine-ink-rgb) / 64%);
-	--location-indication-text-color: rgb(var(--editorial-magazine-ink-rgb) / 76%);
+	--location-card-bg-fallback: var(--editorial-magazine-white);
+	--location-place-color-fallback: var(--editorial-magazine-ink);
+	--location-hour-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 66%);
+	--location-address-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 64%);
+	--location-indication-text-color-fallback: rgb(var(--editorial-magazine-ink-rgb) / 76%);
 	--location-image-filter: var(--editorial-image-filter);
 	--rsvp-bg: var(--editorial-magazine-ink);
 	--gifts-bg: var(--editorial-magazine-paper);
