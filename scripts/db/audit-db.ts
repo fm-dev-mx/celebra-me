@@ -560,15 +560,51 @@ export function extractDroppedRelationsFromSql(sql: string): Set<string> {
 	return dropped;
 }
 
+function unquotePublicName(name: string): string {
+	return name
+		.trim()
+		.replace(/^(?:"?public"?)\./i, '')
+		.replace(/^"([^"]+)"$/, '$1');
+}
+
+/**
+ * Columns (`table.column`, public schema) that a migration drops with `alter table ... drop
+ * column`. Only explicit drops count: a pending contract migration explains why the target still
+ * has them while the disposable reference does not.
+ */
+export function extractDroppedColumnsFromSql(sql: string): Set<string> {
+	const dropped = new Set<string>();
+	const sanitizedSql = sql.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+	const alterRegex =
+		/alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?((?:"[^"]+"|[\w$]+)(?:\.(?:"[^"]+"|[\w$]+))?)\s+([^;]+);/gi;
+	let alter: RegExpExecArray | null;
+	while ((alter = alterRegex.exec(sanitizedSql)) !== null) {
+		const tableName = unquotePublicName(alter[1]!);
+		if (tableName.includes('.')) continue;
+		const dropRegex =
+			/(?:^|,)\s*drop\s+column\s+(?:if\s+exists\s+)?("[^"]+"|[\w$]+)\s*(?:cascade|restrict)?\s*(?=,|$)/gi;
+		let drop: RegExpExecArray | null;
+		while ((drop = dropRegex.exec(alter[2]!)) !== null) {
+			dropped.add(`${tableName}.${unquotePublicName(drop[1]!)}`);
+		}
+	}
+	return dropped;
+}
+
 export interface PendingDroppedObjects {
 	policies: Set<string>;
 	relations: Set<string>;
+	columns: Set<string>;
 }
 
 export function loadPendingDroppedObjects(
 	pendingVersions: readonly string[],
 ): PendingDroppedObjects {
-	const dropped: PendingDroppedObjects = { policies: new Set(), relations: new Set() };
+	const dropped: PendingDroppedObjects = {
+		policies: new Set(),
+		relations: new Set(),
+		columns: new Set(),
+	};
 	if (pendingVersions.length === 0) return dropped;
 	const pendingSet = new Set(pendingVersions);
 	const files = readdirSync(MIGRATIONS_DIR).filter((f) => {
@@ -580,6 +616,7 @@ export function loadPendingDroppedObjects(
 			const content = readFileSync(resolve(MIGRATIONS_DIR, file), 'utf8');
 			for (const key of extractDroppedPoliciesFromSql(content)) dropped.policies.add(key);
 			for (const name of extractDroppedRelationsFromSql(content)) dropped.relations.add(name);
+			for (const key of extractDroppedColumnsFromSql(content)) dropped.columns.add(key);
 		} catch {
 			// ignore read errors
 		}
@@ -632,6 +669,7 @@ function runSchemaAudit(
 		referenceSchema: evidence.referenceSchema,
 		allowedDroppedPolicies: pendingDrops?.policies,
 		allowedDroppedRelations: pendingDrops?.relations,
+		allowedDroppedColumns: pendingDrops?.columns,
 	});
 
 	if (!audit.reference.ok || !audit.comparison) {

@@ -118,6 +118,7 @@ function collectColumnFindings(
 	prodTableNames: Set<string>,
 	localTableNames: Set<string>,
 	target: string,
+	allowedDroppedColumns?: ReadonlySet<string>,
 ): { errors: string[]; infos: string[] } {
 	const errors: string[] = [];
 	const infos: string[] = [];
@@ -134,7 +135,10 @@ function collectColumnFindings(
 		const key = `${col.tableName}.${col.columnName}`;
 		const localCol = localColMap.get(key);
 		if (!localCol) {
-			if (localTableNames.has(col.tableName)) {
+			if (!localTableNames.has(col.tableName)) continue;
+			if (allowedDroppedColumns?.has(key)) {
+				infos.push(`Column "${key}" is target-only (expected drop in pending migrations).`);
+			} else {
 				errors.push(`Column "${key}" exists in target but is missing locally!`);
 			}
 			continue;
@@ -221,6 +225,7 @@ export function compareTargetToCanonicalReference(
 	options?: {
 		allowedDroppedPolicies?: ReadonlySet<string>;
 		allowedDroppedRelations?: ReadonlySet<string>;
+		allowedDroppedColumns?: ReadonlySet<string>;
 	},
 ): SchemaComparisonResult {
 	const prodTableNames = new Set(actual.tables.map((t) => t.tableName));
@@ -239,6 +244,7 @@ export function compareTargetToCanonicalReference(
 		prodTableNames,
 		localTableNames,
 		target,
+		options?.allowedDroppedColumns,
 	);
 	const policies = collectPolicyFindings(
 		actual.policies,
@@ -266,6 +272,7 @@ export interface CanonicalObjectAuditInput {
 	referenceSchema: SchemaMetadata | null;
 	allowedDroppedPolicies?: ReadonlySet<string>;
 	allowedDroppedRelations?: ReadonlySet<string>;
+	allowedDroppedColumns?: ReadonlySet<string>;
 }
 
 export interface CanonicalObjectAuditResult {
@@ -316,6 +323,7 @@ export function runCanonicalObjectAudit(
 		{
 			allowedDroppedPolicies: input.allowedDroppedPolicies,
 			allowedDroppedRelations: input.allowedDroppedRelations,
+			allowedDroppedColumns: input.allowedDroppedColumns,
 		},
 	);
 	return {
