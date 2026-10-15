@@ -131,14 +131,24 @@ jobs:
                   CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
                   CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
               run: |
-                  served=$(curl -fsS \
-                      -H "CF-Access-Client-Id: $CLOUDFLARE_ACCESS_CLIENT_ID" \
-                      -H "CF-Access-Client-Secret: $CLOUDFLARE_ACCESS_CLIENT_SECRET" \
-                      "$PREVIEW_WORKER_URL/api/health" | jq -r '.build.commitSha // empty')
-                  if [ "$served" != "$GITHUB_SHA" ]; then
-                      echo "Stable host reports '${served:-unreported}', expected $GITHUB_SHA." >&2
-                      exit 1
-                  fi
+                  # Routing propagates to the stable host a few seconds after the
+                  # triggers deploy, so poll for up to ~90 s before failing.
+                  served=""
+                  for attempt in $(seq 1 18); do
+                      served=$(curl -fsS \
+                          -H "CF-Access-Client-Id: $CLOUDFLARE_ACCESS_CLIENT_ID" \
+                          -H "CF-Access-Client-Secret: $CLOUDFLARE_ACCESS_CLIENT_SECRET" \
+                          -H "Cache-Control: no-cache" \
+                          "$PREVIEW_WORKER_URL/api/health" | jq -r '.build.commitSha // empty') || served=""
+                      if [ "$served" = "$GITHUB_SHA" ]; then
+                          echo "Stable host serves $GITHUB_SHA (attempt $attempt)."
+                          exit 0
+                      fi
+                      echo "Attempt $attempt: stable host reports '${served:-unreported}', waiting for $GITHUB_SHA."
+                      sleep 5
+                  done
+                  echo "Stable host reports '${served:-unreported}', expected $GITHUB_SHA." >&2
+                  exit 1
 
             - name: Record success
               run: |
