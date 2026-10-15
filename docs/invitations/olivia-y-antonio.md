@@ -38,46 +38,56 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `not_applicable` |
 `requires_owner_decision`.
 
-| field                 | value                                                          | classification | source                      | notes                                               |
-| --------------------- | -------------------------------------------------------------- | -------------- | --------------------------- | --------------------------------------------------- |
-| slug                  | olivia-y-antonio                                               | verified       | owner-session               | Follows `<nombre>-y-<nombre>` wedding practice      |
-| celebrantName         | Olivia Martínez                                                | verified       | source:wa-export            | Second surname not supplied                         |
-| secondaryName         | Antonio Vázquez                                                | verified       | source:wa-export            | Second surname not supplied                         |
-| eventDate             | 2026-12-18                                                     | verified       | source:wa-export            | Friday; read from the client's save-the-date print  |
-| eventTime             | 19:00                                                          | verified       | source:wa-export            | Religious ceremony start                            |
-| timeZone              | America/Mazatlan                                               | inferred       | venue city                  | Los Mochis, Sinaloa; reconfirm before publication   |
-| sourceAssetPath       | src/assets/invitations/olivia-y-antonio                        | verified       | source:wa-export            | Repository derivatives of the chat photos           |
-| sectionOrder          | see Sections                                                   | verified       | owner-session               | Approved with the plan on 2026-10-15                |
-| primaryVenueName      | Parroquia del Santo Niño de la Salud                           | verified       | source:wa-export            | Religious ceremony                                  |
-| primaryVenueAddress   | Lic. Benito Juárez S/N, 81257 Los Mochis, Sinaloa              | verified       | source:wa-export            | Google Maps pin pending                             |
-| receptionVenueName    | Liarah Salón de Eventos                                        | verified       | source:wa-export            | Reception 21:00                                     |
-| receptionVenueAddress | Carretera Topolobampo-Choix 4731, Los Mochis, Sinaloa          | verified       | source:wa-export            | City inferred; colonia, postal code and pin pending |
-| distinctVenues        | true                                                           | verified       | source:wa-export            | Ceremony and reception at different venues          |
-| receptionTime         | 21:00                                                          | verified       | source:wa-export            | Reception start                                     |
-| rsvpConfirmationMode  | api                                                            | verified       | owner-session               | Canonical RSVP API                                  |
-| rsvpAccessMode        | personalized-only                                              | verified       | owner-session               | Passes assigned from the host dashboard             |
-| rsvpDeadline          |                                                                | missing        |                             | Suggested 2026-11-18 (30 days before); ask client   |
-| brideParents          | Irma Miranda; Guadalupe Martínez                               | verified       | source:wa-export            |                                                     |
-| groomParents          | Josefa Flores                                                  | verified       | source:wa-export            | Only one name supplied; confirm whether intentional |
-| godparentsVelacion    | Flor Martínez y Manuel Valenzuela; Karla Osobampo y Alfredo M. | verified       | source:wa-export            | Bride side first, groom side second                 |
-| godparentsLazo        | Marisela Lerma; Guadalupe Martinez                             | ambiguous      | source:wa-export            | Same name as a bride parent; confirm same person    |
-| godparentsArras       | Liliana Domínguez; Yuliana Domínguez                           | verified       | source:wa-export            |                                                     |
-| godparentsBiblia      | Lizbeth Miranda; Raúl López                                    | verified       | source:wa-export            | Biblia y rosario                                    |
-| dressCode             | Formal                                                         | verified       | source:wa-export            | White and red reserved (not allowed for guests)     |
-| childPolicy           |                                                                | missing        |                             | Ask client                                          |
-| gifts                 |                                                                | missing        |                             | Registry or envelopes not yet stated                |
-| musicUrl              | YouTube link supplied                                          | verified       | source:wa-export            | Needs a direct audio source before implementation   |
-| clientColors          | azul marino, azul pizarra, azul cielo, champagne, marfil       | verified       | source:wa-palette-reference | Client asked for advice; owner confirmed the fit    |
+| field                 | value                                                          | classification | source                      | notes                                             |
+| --------------------- | -------------------------------------------------------------- | -------------- | --------------------------- | ------------------------------------------------- |
+| slug                  | olivia-y-antonio                                               | verified       | owner-session               | Follows `<nombre>-y-<nombre>` wedding practice    |
+| celebrantName         | Olivia Martínez                                                | verified       | source:wa-export            | Second surname not supplied                       |
+| secondaryName         | Antonio Vázquez                                                | verified       | source:wa-export            | Second surname not supplied                       |
+| eventDate             | 2026-12-18                                                     | verified       | owner-session               | Friday; save-the-date print, owner confirmed      |
+| eventTime             | 19:00                                                          | verified       | source:wa-export            | Religious ceremony start                          |
+| timeZone              | America/Mazatlan                                               | inferred       | venue city                  | Los Mochis, Sinaloa; reconfirm before publication |
+| sourceAssetPath       | src/assets/invitations/olivia-y-antonio                        | verified       | source:wa-export            | Repository derivatives of the chat photos         |
+| sectionOrder          | see Sections                                                   | verified       | owner-session               | Approved with the plan on 2026-10-15              |
+| primaryVenueName      | Parroquia del Santo Niño de la Salud                           | verified       | source:wa-export            | Religious ceremony                                |
+| primaryVenueAddress   | Lic. Benito Juárez S/N, 81257 Los Mochis, Sinaloa              | verified       | source:wa-export            | Matches the Google Maps listing                   |
+| ceremonyMapUrl        | Google Maps place link (see notes)                             | verified       | owner-session               | Pin found by agent, owner approved                |
+| receptionVenueName    | Liarah Salón de Eventos                                        | verified       | source:wa-export            | Reception 21:00                                   |
+| receptionVenueAddress | Carretera Topolobampo-Choix 4731, Los Mochis, Sinaloa          | verified       | owner-session               | Client wording kept; Maps lists another street    |
+| receptionMapUrl       | Google Maps place link (see notes)                             | verified       | owner-session               | Pin found by agent, owner approved                |
+| distinctVenues        | true                                                           | verified       | source:wa-export            | Ceremony and reception at different venues        |
+| receptionTime         | 21:00                                                          | verified       | source:wa-export            | Reception start                                   |
+| rsvpConfirmationMode  | api                                                            | verified       | owner-session               | Canonical RSVP API                                |
+| rsvpAccessMode        | personalized-only                                              | verified       | owner-session               | Passes assigned from the host dashboard           |
+| rsvpDeadline          | 2026-11-18                                                     | verified       | owner-session               | Thirty days before the event                      |
+| brideParents          | Irma Miranda; Guadalupe Martínez                               | verified       | source:wa-export            |                                                   |
+| groomParents          | Josefa Flores                                                  | verified       | owner-session               | Only this name; owner confirmed                   |
+| godparentsVelacion    | Flor Martínez y Manuel Valenzuela; Karla Osobampo y Alfredo M. | verified       | source:wa-export            | Bride side first, groom side second               |
+| godparentsLazo        | Marisela Lerma; Guadalupe Martínez                             | verified       | owner-session               | Shown as supplied, also listed as a bride parent  |
+| godparentsArras       | Liliana Domínguez; Yuliana Domínguez                           | verified       | source:wa-export            |                                                   |
+| godparentsBiblia      | Lizbeth Miranda; Raúl López                                    | verified       | source:wa-export            | Biblia y rosario                                  |
+| dressCode             | Formal                                                         | verified       | source:wa-export            | White and red reserved (not allowed for guests)   |
+| childPolicy           | none shown                                                     | not_applicable | owner-session               | No line about children; passes control attendance |
+| gifts                 | Lluvia de sobres                                               | verified       | owner-session               | Envelopes only; no registry                       |
+| musicUrl              | YouTube link supplied                                          | verified       | source:wa-export            | Needs a direct audio source before implementation |
+| clientColors          | azul marino, azul pizarra, azul cielo, champagne, marfil       | verified       | source:wa-palette-reference | Client asked for advice; owner confirmed the fit  |
 
 Notes:
 
 - Full godparent row for velación: bride side Flor Martínez y Manuel Valenzuela; groom side Karla
   Osobampo y Alfredo Martínez.
-- The event date appears only in the save-the-date print; the chat text says "diciembre". The print
-  is clear and was designed by the couple, so it is recorded as `verified`; reconfirmation is still
-  part of the client question round.
+- The event date appears only in the save-the-date print; the chat text says "diciembre". The owner
+  confirmed Friday 18 December 2026 on 2026-10-15.
 - Public Facebook pages were supplied for both venues instead of map pins; they are not used as
-  navigation links.
+  navigation links. The owner chose agent-found Google Maps pins instead of asking the client.
+- Ceremony pin:
+  `https://www.google.com/maps/place/Parroquia+del+Santo+Ni%C3%B1o+de+la+Salud/@25.7804807,-108.9757035,17z/data=!4m6!3m5!1s0x86ba2f40212114a9:0x399dcabc76e64840!8m2!3d25.7804807!4d-108.9757035`
+- Reception pin:
+  `https://www.google.com/maps/place/Liarah+Sal%C3%B3n+de+Eventos/@25.733151,-109.0161631,17z/data=!4m6!3m5!1s0x86ba2576fa86f683:0x887cfeffa331e57c!8m2!3d25.733151!4d-109.0161631`
+- The Maps listing for Liarah reads "Blvd. Gral. Macario Gaxiola 13, Residencial Las Misiones, 81294
+  Los Mochis" (the road out to Topolobampo). The owner kept the client's wording as visible text and
+  the Maps pin for navigation.
+- Guadalupe Martínez appears as a bride parent and as a lazo godparent; the owner chose to show both
+  as supplied without asking the client.
 
 ## Event Completeness
 
@@ -96,37 +106,32 @@ Contract maturity for `boda`: `partial` (from `getEventCompletenessContract`).
 
 ### Non-blocking gaps
 
-- RSVP deadline, child policy, gifts, venue map pins, music audio source, groom-parent confirmation
-  and the lazo godparent identity (see Placeholders and Owner Decisions).
+- Music audio source (see Placeholders). Every other gap was closed by the owner on 2026-10-15.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**
 Answer: `yes` (from `evaluateEventCompleteness`).
 
 ## Placeholders
 
-| token                             | missing datum     | blocking | reason                    | replacement requirement                       |
-| --------------------------------- | ----------------- | -------- | ------------------------- | --------------------------------------------- |
-| `[[PENDIENTE:RSVP_DEADLINE]]`     | RSVP_DEADLINE     | no       | Not in chat               | Client date, or owner default of 30 days      |
-| `[[PENDIENTE:CHILD_POLICY]]`      | CHILD_POLICY      | no       | Not in chat               | Client answer; omit line if no restriction    |
-| `[[PENDIENTE:GIFTS]]`             | GIFTS             | no       | Not in chat               | Registry store and number, envelopes, or omit |
-| `[[PENDIENTE:CEREMONY_MAP_URL]]`  | CEREMONY_MAP_URL  | no       | Only a Facebook page sent | Google Maps pin from the client               |
-| `[[PENDIENTE:RECEPTION_MAP_URL]]` | RECEPTION_MAP_URL | no       | Only a Facebook page sent | Google Maps pin from the client               |
-| `[[PENDIENTE:MUSIC_AUDIO]]`       | MUSIC_AUDIO       | no       | YouTube link only         | Direct audio file hosted like prior weddings  |
+| token                       | missing datum | blocking | reason            | replacement requirement                      |
+| --------------------------- | ------------- | -------- | ----------------- | -------------------------------------------- |
+| `[[PENDIENTE:MUSIC_AUDIO]]` | MUSIC_AUDIO   | no       | YouTube link only | Direct audio file hosted like prior weddings |
 
 ## Owner Decisions
 
-Single consolidated round, to forward to the client in one message.
+Single round answered by the owner on 2026-10-15; no client round was needed.
 
-| id  | category              | issue                               | evidence                       | options                               | recommendation                |
-| --- | --------------------- | ----------------------------------- | ------------------------------ | ------------------------------------- | ----------------------------- |
-| Q1  | missing-client-facts  | Confirm Friday 18 December 2026     | Date only on the save-the-date | confirm / correct                     | Confirm                       |
-| Q2  | missing-client-facts  | Google Maps pins for both venues    | Facebook pages only            | pins / address-only search links      | Ask for pins                  |
-| Q3  | ambiguous-data        | Groom parents: only Josefa Flores   | Single name in the list        | as given / add a second name          | Ask                           |
-| Q4  | ambiguous-data        | Guadalupe Martínez: parent and lazo | Same name in two roles         | same person / different person        | Ask                           |
-| Q5  | missing-client-facts  | Gifts                               | Not mentioned                  | registry / envelopes / both / omit    | Ask                           |
-| Q6  | missing-client-facts  | Adults-only event                   | Not mentioned                  | adults only / no restriction          | Ask                           |
-| Q7  | missing-client-facts  | RSVP deadline                       | Not mentioned                  | client date / 2026-11-18              | 2026-11-18                    |
-| Q8  | photograph-acceptance | Original photographer files         | Chat copies have stripped EXIF | request originals / accept chat files | Request; chat files are 11 MP |
+| id  | category              | issue                               | evidence                       | options                               | outcome                           |
+| --- | --------------------- | ----------------------------------- | ------------------------------ | ------------------------------------- | --------------------------------- |
+| Q1  | missing-client-facts  | Confirm Friday 18 December 2026     | Date only on the save-the-date | confirm / correct                     | Confirmed                         |
+| Q2  | missing-client-facts  | Google Maps pins for both venues    | Facebook pages only            | agent search / ask client             | Agent pins, approved              |
+| Q3  | ambiguous-data        | Groom parents: only Josefa Flores   | Single name in the list        | as given / add a second name          | As given                          |
+| Q4  | ambiguous-data        | Guadalupe Martínez: parent and lazo | Same name in two roles         | show as supplied / ask client         | Show as supplied                  |
+| Q5  | missing-client-facts  | Gifts                               | Not mentioned                  | registry / envelopes / omit           | Lluvia de sobres                  |
+| Q6  | missing-client-facts  | Adults-only event                   | Not mentioned                  | no line / adults only / ask client    | No line                           |
+| Q7  | missing-client-facts  | RSVP deadline                       | Not mentioned                  | 2026-11-18 / 2026-12-01 / ask client  | 2026-11-18                        |
+| Q8  | photograph-acceptance | Original photographer files         | Chat copies have stripped EXIF | request originals / accept chat files | Chat files accepted as definitive |
+| Q9  | ambiguous-data        | Liarah address differs on Maps      | Client street vs Maps listing  | client text / Maps text / ask client  | Client text with the Maps pin     |
 
 ## Agent Recommendations
 
@@ -141,9 +146,9 @@ Single consolidated round, to forward to the client in one message.
 | bucket                 | section keys                                                    |
 | ---------------------- | --------------------------------------------------------------- |
 | requested              | countdown, family, location, itinerary, gallery, rsvp, thankYou |
-| inferred / recommended | quote, personalizedAccess, gifts (pending answer), music        |
+| inferred / recommended | quote, personalizedAccess, gifts (lluvia de sobres), music      |
 | omitted                | —                                                               |
-| unresolved             | gifts content                                                   |
+| unresolved             | music (audio source pending)                                    |
 
 Planned order: quote, countdown, family, location, itinerary, gallery, gifts, personalizedAccess,
 rsvp, thankYou. The dress code lives in the itinerary/location details per preset practice.
@@ -211,8 +216,9 @@ image is the palette screenshot (reference only).
 Derivatives are encoded once from the chat files within the role targets: hero desktop 468 KB at
 2048×1365, hero mobile 233 KB at 1080×1620, family 275 KB, interludes 123–190 KB, thank-you 96 KB,
 og 138 KB at 1200×630, gallery 40–180 KB. Two foliage-dense gallery frames (chat-35, chat-32) are
-capped at 1400 px to stay inside the gallery target without dropping below quality 68. If originals
-arrive, re-encode every derivative from them with the same names and roles.
+capped at 1400 px to stay inside the gallery target without dropping below quality 68. The owner
+accepted the chat files as the definitive set (2026-10-15); they stay `provisional-whatsapp` by
+rule. If originals ever arrive, re-encode every derivative from them with the same names and roles.
 
 ### Uniqueness table (required before READY_*)
 
@@ -238,6 +244,7 @@ arrive, re-encode every derivative from them with the same names and roles.
 
 ## Preparation Readiness History
 
-| date       | readiness                 | helper basis                   | notes                                                         |
-| ---------- | ------------------------- | ------------------------------ | ------------------------------------------------------------- |
-| 2026-10-15 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | Completeness satisfied; chat photos provisional; 6 open items |
+| date       | readiness                 | helper basis                   | notes                                                                      |
+| ---------- | ------------------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| 2026-10-15 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | Completeness satisfied; chat photos provisional; 6 open items              |
+| 2026-10-15 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | Owner answered 9 questions; only MUSIC_AUDIO open; photos stay provisional |
