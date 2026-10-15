@@ -7,8 +7,8 @@ import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 import type { ImageMetadata } from 'astro';
 import {
 	plainImgSrc,
-	shouldOptimizeThroughVercelImage,
-} from '@/lib/assets/vercel-image-policy';
+	shouldOptimizeThroughImageService,
+} from '@/lib/assets/image-delivery-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { HeroVariant } from '@/lib/invitation/section-variants';
 import '@/styles/invitation/_hero.scss';
@@ -114,7 +114,7 @@ if (!isFramedPortrait && !isCeremonialPortrait) {
 	mobileBgSrc = resolvedMobileBg && !mobileDelivery
 		? remoteMobileBgSrc
 			? remoteMobileBgSrc
-			: shouldOptimizeThroughVercelImage(resolvedMobileBg)
+			: shouldOptimizeThroughImageService(resolvedMobileBg)
 				? (
 						await getImage({
 							src: resolvedMobileBg,

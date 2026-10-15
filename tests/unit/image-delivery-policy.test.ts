@@ -5,8 +5,8 @@ import {
 	isCloudinaryDeliveryHostname,
 	isMutableInPlaceMediaUrl,
 	plainImgSrc,
-	shouldOptimizeThroughVercelImage,
-} from '@/lib/assets/vercel-image-policy';
+	shouldOptimizeThroughImageService,
+} from '@/lib/assets/image-delivery-policy';
 
 const readSource = (relativePath: string) =>
 	readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -32,7 +32,7 @@ describe('vercel image optimization policy', () => {
 				'https://xyz.supabase.co/storage/v1/object/public/invitations/hero.webp?v=2',
 			),
 		).toBe(true);
-		expect(shouldOptimizeThroughVercelImage(`${SUPABASE_STORAGE_URL}#fragment`)).toBe(false);
+		expect(shouldOptimizeThroughImageService(`${SUPABASE_STORAGE_URL}#fragment`)).toBe(false);
 	});
 
 	it('rejects malformed URLs and similar but unrelated hosts', () => {
@@ -54,9 +54,9 @@ describe('vercel image optimization policy', () => {
 	});
 
 	it('bypasses /_vercel/image for mutable Storage URLs including ImageMetadata.src', () => {
-		expect(shouldOptimizeThroughVercelImage(SUPABASE_STORAGE_URL)).toBe(false);
+		expect(shouldOptimizeThroughImageService(SUPABASE_STORAGE_URL)).toBe(false);
 		expect(
-			shouldOptimizeThroughVercelImage({
+			shouldOptimizeThroughImageService({
 				src: SUPABASE_STORAGE_URL,
 				width: 1080,
 				height: 1920,
@@ -67,19 +67,19 @@ describe('vercel image optimization policy', () => {
 	});
 
 	it('keeps repository-owned data URLs on a plain img path', () => {
-		expect(shouldOptimizeThroughVercelImage('data:image/webp;base64,AAAA')).toBe(false);
+		expect(shouldOptimizeThroughImageService('data:image/webp;base64,AAAA')).toBe(false);
 	});
 
 	it('optimizes bundled ImageMetadata but delivers prepared Cloudinary media directly', () => {
 		expect(
-			shouldOptimizeThroughVercelImage({
+			shouldOptimizeThroughImageService({
 				src: '/_astro/hero.hash.webp',
 				width: 1080,
 				height: 1920,
 				format: 'webp',
 			} as ImageMetadata),
 		).toBe(true);
-		expect(shouldOptimizeThroughVercelImage(CLOUDINARY_VERSIONED_URL)).toBe(false);
+		expect(shouldOptimizeThroughImageService(CLOUDINARY_VERSIONED_URL)).toBe(false);
 	});
 
 	it.each([
@@ -91,11 +91,13 @@ describe('vercel image optimization policy', () => {
 			'b'.repeat(64) +
 			'.webp',
 	])('delivers prepared managed media directly without explicit encoding: %s', (src) => {
-		expect(shouldOptimizeThroughVercelImage(src)).toBe(false);
+		expect(shouldOptimizeThroughImageService(src)).toBe(false);
 		expect(
-			shouldOptimizeThroughVercelImage({ src, width: 960, height: 1440, format: 'webp' }),
+			shouldOptimizeThroughImageService({ src, width: 960, height: 1440, format: 'webp' }),
 		).toBe(false);
-		expect(shouldOptimizeThroughVercelImage(src, { mode: 'optimized', width: 640 })).toBe(true);
+		expect(shouldOptimizeThroughImageService(src, { mode: 'optimized', width: 640 })).toBe(
+			true,
+		);
 	});
 });
 
@@ -112,7 +114,7 @@ describe('cache-safe invitation image owners', () => {
 		for (const file of owners) {
 			const source = readSource(file);
 			if (file.endsWith('CacheSafeImage.astro')) {
-				expect(source).toContain('shouldOptimizeThroughVercelImage');
+				expect(source).toContain('shouldOptimizeThroughImageService');
 				expect(source).toContain('<img');
 				continue;
 			}

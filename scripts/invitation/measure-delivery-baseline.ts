@@ -24,7 +24,7 @@ import {
 	selectHeroResource,
 	type InvitationHtmlInventory,
 } from '../../src/lib/invitation/delivery-contract.ts';
-import { isMutableInPlaceMediaUrl } from '../../src/lib/assets/vercel-image-policy.ts';
+import { isMutableInPlaceMediaUrl } from '../../src/lib/assets/image-delivery-policy.ts';
 import { evaluateImageDeliveryBudget } from '../../src/lib/invitation-preparation/image-delivery-budget.ts';
 import {
 	assertDeliveryBudgets,

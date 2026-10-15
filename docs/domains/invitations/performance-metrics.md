@@ -232,7 +232,7 @@ Versioned Cloudinary and hashed `/_astro` remain eligible.
 **Why it matters.** Vercel image transforms can cache a derived byte stream after the Storage object
 is replaced.
 
-**Measurement.** `tests/unit/vercel-image-policy.test.ts`, HTML inventory in `delivery-contract`
+**Measurement.** `tests/unit/image-delivery-policy.test.ts`, HTML inventory in `delivery-contract`
 tests. Live production HTML may still wrap Storage until that policy is deployed; hermetic tests
 guard the code.
 
@@ -258,7 +258,7 @@ changes when `sha256` changes.
 **Why it matters.** Versioned media can be cached long-lived; a new hash is a new object, so
 replacements are not stale.
 
-**Measurement.** `tests/unit/vercel-image-policy.test.ts`,
+**Measurement.** `tests/unit/image-delivery-policy.test.ts`,
 `tests/provision/cloudinary-adapter.test.ts`.
 
 **Enforcement.** Hard CI.
@@ -684,7 +684,7 @@ These may fail automated validation immediately:
 - Anonymous HTML origin-revalidate helpers and `[slug].astro` source (no positive `s-maxage`, no
   SWR; `?invite=` forces `no-store, private`).
 - Private-path `no-store` for dashboard/auth (`private-cache-path`).
-- `shouldOptimizeThroughVercelImage` false for mutable Storage; true for Cloudinary and hashed
+- `shouldOptimizeThroughImageService` false for mutable Storage; true for Cloudinary and hashed
   `/_astro`.
 - Cloudinary public ID changes when `sha256` changes.
 - Published resolver: one content read on hit; no extra invitation-row read.
@@ -706,7 +706,7 @@ provider invoices.
 - Measure documents: `pnpm invitation:delivery:baseline --slug <eventType>/<slug>`
 - Assert HTML budget: `pnpm invitation:delivery:baseline --slug <eventType>/<slug> --assert-budget`
 - Hermetic contracts: `pnpm test -- tests/unit/delivery-contract.test.ts` (plus
-  `vercel-image-policy`, `invitation-context-reads`)
+  `image-delivery-policy`, `invitation-context-reads`)
 - Persistence reads: `tests/unit/invitation-context-reads.test.ts`
 - Media diagnostic (opt-in): `DELIVERY_DIAGNOSTICS_ORIGIN` + Playwright file
   `tests/e2e/invitation-delivery-media.diagnostic.spec.ts`
