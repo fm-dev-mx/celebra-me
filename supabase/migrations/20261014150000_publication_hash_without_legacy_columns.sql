@@ -7,10 +7,14 @@
 -- Both are compared under the same invitation lock, so a concurrent metadata edit still fails as
 -- publish_stale_public_metadata. Everything else is the definition from 20261010180000:
 -- signature, security invoker, search_path, grants, lock order and replay receipts are unchanged.
--- The draft object in the result no longer includes submissionId; no client reads it. A later
--- contract migration drops the legacy columns and the legacy baseline together.
+-- The draft object in the result no longer includes submissionId; no client reads it.
+-- base_demo_id gets an empty-string default so new rows can omit it, as they already omit snapshot
+-- and submission_id. A later contract migration drops the legacy columns and the legacy baseline
+-- together.
 
 begin;
+
+alter table public.invitations alter column base_demo_id set default '';
 
 create or replace function public.publish_invitation_atomic(
   p_invitation_id uuid,

@@ -3,11 +3,11 @@ select plan(30);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('11000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'access-controls@example.test', now(), now());
-insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
+insert into public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind)
 values
-  ('21000000-0000-0000-0000-000000000001', 'access-client', 'Control de acceso', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '11000000-0000-0000-0000-000000000001', 'client'),
-  ('21000000-0000-0000-0000-000000000002', 'access-demo', 'Demo de acceso', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '11000000-0000-0000-0000-000000000001', 'demo'),
-  ('21000000-0000-0000-0000-000000000003', 'access-archived', 'Archivada', 'boda', 'in_production', 'demo-wedding-classic', 'classic', '{}'::jsonb, '11000000-0000-0000-0000-000000000001', 'client');
+  ('21000000-0000-0000-0000-000000000001', 'access-client', 'Control de acceso', 'xv', 'in_production', 'jewelry-box', '11000000-0000-0000-0000-000000000001', 'client'),
+  ('21000000-0000-0000-0000-000000000002', 'access-demo', 'Demo de acceso', 'xv', 'published', 'jewelry-box', '11000000-0000-0000-0000-000000000001', 'demo'),
+  ('21000000-0000-0000-0000-000000000003', 'access-archived', 'Archivada', 'boda', 'in_production', 'classic', '11000000-0000-0000-0000-000000000001', 'client');
 
 -- Structure and privileges.
 select has_table('public', 'invitation_access_controls', 'access control table exists');

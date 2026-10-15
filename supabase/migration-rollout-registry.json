@@ -221,7 +221,7 @@
         "20261014150000": {
             "phase": "expand",
             "provides": ["publication_metadata_hash_without_legacy_columns"],
-            "notes": "Redefines publish_invitation_atomic (same eleven-argument signature, security invoker, empty search_path and grants) so p_public_metadata_hash may be either the legacy baseline (with baseDemoId and snapshot) or the current baseline (archivedAt, eventType, kind, slug, status, themeId, title), and drops submissionId from the result draft. The deployed application keeps publishing with the legacy hash. Apply before deploying the application that sends the current hash; the column contract that drops base_demo_id, snapshot and submission_id comes later."
+            "notes": "Redefines publish_invitation_atomic (same eleven-argument signature, security invoker, empty search_path and grants) so p_public_metadata_hash may be either the legacy baseline (with baseDemoId and snapshot) or the current baseline (archivedAt, eventType, kind, slug, status, themeId, title), and drops submissionId from the result draft. Gives invitations.base_demo_id an empty-string default so inserts can omit it. The deployed application keeps publishing with the legacy hash. Apply before deploying the application that sends the current hash; the column contract that drops base_demo_id, snapshot and submission_id comes later."
         }
     },
     "appCapabilities": {
