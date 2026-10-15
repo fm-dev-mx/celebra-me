@@ -1,4 +1,5 @@
-import type { Metadata } from 'sharp';
+import { resolveImageTransformer } from '@/lib/images/image-transformer-provider';
+import type { ImageInspection, ImageTransformer } from '@/lib/images/image-transformer';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/intake/constants';
 import {
@@ -8,20 +9,15 @@ import {
 	type ImageOptimizationRole,
 } from '@/lib/invitation-preparation/image-optimization';
 
-/** Lazy-load so read-only importers (mime sniffing, observability) do not require native sharp at module eval. */
-async function loadSharp() {
-	const mod = await import('sharp');
-	return mod.default;
-}
-
 interface EncodedInvitationImage {
-	data: Buffer;
+	data: Uint8Array;
 	info: { width: number; height: number; size: number };
 	maxBytes: number;
 }
 
 async function encodeInvitationImage(
-	input: Buffer,
+	transformer: ImageTransformer,
+	input: Uint8Array,
 	optimizationRole?: ImageOptimizationRole,
 ): Promise<EncodedInvitationImage> {
 	const maxBytes = optimizationRole ? getWeightTargetBytes(optimizationRole) : MAX_OUTPUT_BYTES;
@@ -29,26 +25,21 @@ async function encodeInvitationImage(
 		? getImageDimensionCandidates(optimizationRole)
 		: [MAX_OUTPUT_DIMENSION];
 	const qualityCandidates = optimizationRole ? IMAGE_ENCODING_QUALITIES : [84, 76, 68];
-	const sharp = await loadSharp();
 	let output: EncodedInvitationImage | undefined;
 
 	for (const quality of qualityCandidates) {
 		for (const dimension of dimensionCandidates) {
-			const result = await sharp(input, {
-				failOn: 'error',
+			const result = await transformer.encodeWebp(input, {
+				maxDimension: dimension,
+				quality,
 				limitInputPixels: MAX_INPUT_PIXELS,
-			})
-				.rotate()
-				.resize({
-					width: dimension,
-					height: dimension,
-					fit: 'inside',
-					withoutEnlargement: true,
-				})
-				.webp({ quality, effort: 4 })
-				.toBuffer({ resolveWithObject: true });
-			output = { ...result, maxBytes };
-			if (result.info.size <= maxBytes) return output;
+			});
+			output = {
+				data: result.data,
+				info: { width: result.width, height: result.height, size: result.size },
+				maxBytes,
+			};
+			if (result.size <= maxBytes) return output;
 		}
 	}
 
@@ -90,12 +81,6 @@ const MAX_PRESERVED_DIMENSION = 6000;
 const MAX_PRESERVED_PIXELS = 24_000_000;
 const MAX_INPUT_PIXELS = 40_000_000;
 const MIN_INPUT_DIMENSION = 480;
-
-const FORMAT_MIME: Record<string, string> = {
-	jpeg: 'image/jpeg',
-	png: 'image/png',
-	webp: 'image/webp',
-};
 
 export function detectFileMimeType(filePath: string, sourceBytes?: Uint8Array): string {
 	const ext = filePath.split('.').pop()?.toLowerCase();
@@ -165,20 +150,20 @@ export async function extractBlobRawBytes(file: Blob): Promise<Uint8Array | unde
 }
 
 async function preserveValidatedImage(
-	input: Buffer,
-	metadata: Metadata & { width: number; height: number },
+	transformer: ImageTransformer,
+	input: Uint8Array,
+	metadata: ImageInspection & { width: number; height: number },
 	detectedMime: string,
 	originalFileSize: number,
 	optimizationRole?: ImageOptimizationRole,
 ): Promise<NormalizedInvitationImage> {
-	const sharp = await loadSharp();
 	const maxBytes = optimizationRole ? getWeightTargetBytes(optimizationRole) : MAX_OUTPUT_BYTES;
 	if (
 		input.byteLength > maxBytes ||
 		Math.max(metadata.width, metadata.height) > MAX_PRESERVED_DIMENSION ||
 		metadata.width * metadata.height > MAX_PRESERVED_PIXELS ||
 		(metadata.orientation !== undefined && metadata.orientation !== 1) ||
-		(metadata.pages !== undefined && metadata.pages !== 1)
+		metadata.pages !== 1
 	) {
 		throw new ApiError(
 			422,
@@ -187,7 +172,7 @@ async function preserveValidatedImage(
 		);
 	}
 	// Decode fully so preservation cannot admit a truncated or corrupt payload.
-	await sharp(input, { failOn: 'error', limitInputPixels: MAX_INPUT_PIXELS }).raw().toBuffer();
+	await transformer.assertDecodable(input, { limitInputPixels: MAX_INPUT_PIXELS });
 	return {
 		blob: new Blob([Uint8Array.from(input)], { type: detectedMime }),
 		width: metadata.width,
@@ -232,13 +217,10 @@ export async function normalizeInvitationImage(
 		if (!rawBytes) {
 			throw new ApiError(422, 'validation_error', 'La imagen está vacía o dañada.');
 		}
-		const input = Buffer.from(rawBytes);
-		const sharp = await loadSharp();
-		const metadata = await sharp(input, {
-			failOn: 'error',
-			limitInputPixels: MAX_INPUT_PIXELS,
-		}).metadata();
-		const detectedMime = metadata.format ? FORMAT_MIME[metadata.format] : undefined;
+		const input = rawBytes;
+		const transformer = await resolveImageTransformer();
+		const metadata = await transformer.inspect(input, { limitInputPixels: MAX_INPUT_PIXELS });
+		const detectedMime = metadata.mimeType;
 
 		if (!detectedMime) {
 			throw new ApiError(
@@ -273,6 +255,7 @@ export async function normalizeInvitationImage(
 
 		if (sourcePolicy === 'preserve') {
 			return await preserveValidatedImage(
+				transformer,
 				input,
 				{ ...metadata, width: metadata.width, height: metadata.height },
 				detectedMime,
@@ -280,7 +263,7 @@ export async function normalizeInvitationImage(
 				optimizationRole,
 			);
 		}
-		const output = await encodeInvitationImage(input, optimizationRole);
+		const output = await encodeInvitationImage(transformer, input, optimizationRole);
 
 		if (output.info.size > MAX_OUTPUT_BYTES) {
 			throw new ApiError(

@@ -41,7 +41,7 @@ export const INVITATION_PREVIEW_SECURITY_HEADERS: readonly HeaderEntry[] = [
 
 const INVITATION_PREVIEW_PATH = /^\/dashboard\/invitaciones\/[^/]+\/preview$/;
 
-export function isInvitationPreviewPath(pathname: string): boolean {
+function isInvitationPreviewPath(pathname: string): boolean {
 	return INVITATION_PREVIEW_PATH.test(pathname);
 }
 
