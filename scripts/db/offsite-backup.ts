@@ -23,11 +23,11 @@ export const OFFSITE_PREFIXES = ['daily', 'test'] as const;
 export type OffsitePrefix = (typeof OFFSITE_PREFIXES)[number];
 
 export const OFFSITE_ENV = {
-	accountId: 'CELEBRA_OFFSITE_R2_ACCOUNT_ID',
-	bucket: 'CELEBRA_OFFSITE_R2_BUCKET',
-	accessKeyId: 'CELEBRA_OFFSITE_R2_ACCESS_KEY_ID',
-	secretAccessKey: 'CELEBRA_OFFSITE_R2_SECRET_ACCESS_KEY',
-	recipient: 'CELEBRA_OFFSITE_AGE_RECIPIENT',
+	accountId: 'PROD_OFFSITE_R2_ACCOUNT_ID',
+	bucket: 'PROD_OFFSITE_R2_BUCKET',
+	accessKeyId: 'PROD_OFFSITE_R2_ACCESS_KEY_ID',
+	secretAccessKey: 'PROD_OFFSITE_R2_SECRET_ACCESS_KEY',
+	recipient: 'PROD_OFFSITE_AGE_RECIPIENT',
 } as const;
 
 export interface OffsiteConfig {

@@ -72,7 +72,7 @@ describe('off-site backup configuration', () => {
 			readOffsiteConfig((name) =>
 				name === OFFSITE_ENV.bucket ? 'celebra-me-prod-backups' : '',
 			),
-		).toThrow(/partially configured.*CELEBRA_OFFSITE_R2_ACCOUNT_ID/);
+		).toThrow(/partially configured.*PROD_OFFSITE_R2_ACCOUNT_ID/);
 	});
 
 	it('rejects a recipient that is not an age public key', () => {

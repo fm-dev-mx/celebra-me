@@ -140,18 +140,18 @@ is the independent failure domain.
 
 After the daily capture verifies its manifest, and before local retention runs, the job packs the
 manifest plus every artifact into one bundle, encrypts it with [age](https://age-encryption.org) for
-the public key in `CELEBRA_OFFSITE_AGE_RECIPIENT`, and uploads it to the R2 bucket named by
-`CELEBRA_OFFSITE_R2_BUCKET` as `daily/<YYYY-MM-DD>/critical-<recovery point>.bundle.age`. The upload
+the public key in `PROD_OFFSITE_AGE_RECIPIENT`, and uploads it to the R2 bucket named by
+`PROD_OFFSITE_R2_BUCKET` as `daily/<YYYY-MM-DD>/critical-<recovery point>.bundle.age`. The upload
 never overwrites a key (`If-None-Match: *`) and re-reads the stored size. Settings live in
 gitignored `.env.production.local` next to `PROD_DB_URL`:
 
-| Variable                               | Value                                                      |
-| -------------------------------------- | ---------------------------------------------------------- |
-| `CELEBRA_OFFSITE_R2_ACCOUNT_ID`        | Cloudflare account id (32 hex characters)                  |
-| `CELEBRA_OFFSITE_R2_BUCKET`            | Bucket name                                                |
-| `CELEBRA_OFFSITE_R2_ACCESS_KEY_ID`     | R2 API token Access Key ID (Object Read & Write, 1 bucket) |
-| `CELEBRA_OFFSITE_R2_SECRET_ACCESS_KEY` | R2 API token Secret Access Key                             |
-| `CELEBRA_OFFSITE_AGE_RECIPIENT`        | age public key (`age1...`)                                 |
+| Variable                            | Value                                                      |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `PROD_OFFSITE_R2_ACCOUNT_ID`        | Cloudflare account id (32 hex characters)                  |
+| `PROD_OFFSITE_R2_BUCKET`            | Bucket name                                                |
+| `PROD_OFFSITE_R2_ACCESS_KEY_ID`     | R2 API token Access Key ID (Object Read & Write, 1 bucket) |
+| `PROD_OFFSITE_R2_SECRET_ACCESS_KEY` | R2 API token Secret Access Key                             |
+| `PROD_OFFSITE_AGE_RECIPIENT`        | age public key (`age1...`)                                 |
 
 With none set, the daily report records `offsite.status = "not_configured"` and the job still
 succeeds; a partial set, an upload failure, or a size mismatch fails the run with
