@@ -1,18 +1,8 @@
 import type { InvitationWorkflow } from '@/lib/intake/workflow';
-import type { ContentSectionKey, EventType, ThemePreset } from '@/lib/theme/theme-contract';
+import type { EventType } from '@/lib/theme/theme-contract';
 import type { EventAssetKey } from '@/lib/assets/asset-keys';
 
 type InvitationKind = 'demo' | 'client';
-
-type IntakeBlockType =
-	| 'event-details'
-	| 'main-people'
-	| 'date-locations'
-	| 'photos'
-	| 'rsvp-config'
-	| 'music'
-	| 'gifts'
-	| 'special-messages';
 
 export const INVITATION_STATUSES = [
 	'draft',
@@ -25,18 +15,6 @@ export const INVITATION_STATUSES = [
 
 export type InvitationStatus = (typeof INVITATION_STATUSES)[number];
 
-export interface DemoPreset {
-	id: string;
-	eventType: EventType;
-	displayName: string;
-	themeId: ThemePreset;
-	defaultSections: ContentSectionKey[];
-	supportedBlocks: IntakeBlockType[];
-	recommendedBlocks: IntakeBlockType[];
-	requiredAssets: EventAssetKey[];
-	previewSlug: string;
-}
-
 export interface Invitation {
 	workflow?: InvitationWorkflow;
 	id: string;
@@ -46,11 +24,7 @@ export interface Invitation {
 	title: string;
 	eventType: EventType;
 	status: InvitationStatus;
-	/** Legacy DB column `base_demo_id`, read by no runtime path; leaves with its migration. */
-	baseDemoId: string;
 	themeId: string;
-	/** Legacy DB column `snapshot`; leaves with the same contract migration as `baseDemoId`. */
-	snapshot: DemoPreset;
 	clientName: string;
 	clientEmail: string;
 	clientWhatsapp: string;
@@ -101,7 +75,6 @@ export interface InvitationAsset {
 export interface InvitationContentDraft {
 	id: string;
 	invitationId: string;
-	submissionId: string | null;
 	content: Record<string, unknown>;
 	status: InvitationContentDraftStatus;
 	createdAt: string;

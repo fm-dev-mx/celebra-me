@@ -64,8 +64,8 @@ async function main(): Promise<void> {
 	const evidence: ScenarioEvidence[] = [];
 
 	runPsql(`
-		insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, kind, created_by)
-		values ('${invitationId}', '${slug}', 'Phase 3 concurrency', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'client', 'a0000000-0000-0000-0000-000000000001');
+		insert into public.invitations (id, slug, title, event_type, status, theme_id, kind, created_by)
+		values ('${invitationId}', '${slug}', 'Phase 3 concurrency', 'xv', 'in_production', 'jewelry-box', 'client', 'a0000000-0000-0000-0000-000000000001');
 		insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 		values ('${draftId}', '${invitationId}', '{"title":"Initial"}'::jsonb, 'draft');
 		create or replace function public.phase3_pause_invitation_update() returns trigger language plpgsql as $$
@@ -221,7 +221,7 @@ async function main(): Promise<void> {
 		});
 
 		const publicationKey = randomUUID();
-		const metadataHash = `md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'baseDemoId', i.base_demo_id, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'snapshot', i.snapshot, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text))`;
+		const metadataHash = `md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text))`;
 		runPsql(
 			`select public.publish_invitation_atomic(i.id, d.id, d.updated_at, null, ${metadataHash}, md5(d.content::text), '${publicationKey}', i.slug, i.event_type, false, d.content) from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.id = '${invitationId}';`,
 		);

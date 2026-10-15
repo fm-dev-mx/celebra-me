@@ -8,7 +8,6 @@
 
 import { createHash, randomUUID } from 'node:crypto';
 import {
-	PREVIEW_FIXTURE_DEMO_ID,
 	PREVIEW_FIXTURE_EVENT_TYPE,
 	PREVIEW_FIXTURE_SLUG,
 	PREVIEW_FIXTURE_TITLE,
@@ -84,7 +83,6 @@ function loadActiveFixture(dbUrl: string): {
 	slug: string;
 	title: string;
 	event_type: string;
-	base_demo_id: string;
 	created_by: string;
 	client_name: string;
 	client_email: string;
@@ -92,7 +90,7 @@ function loadActiveFixture(dbUrl: string): {
 } | null {
 	const res = runPsql(
 		`select row_to_json(t) from (
-			select id::text, slug, title, event_type, base_demo_id, created_by::text,
+			select id::text, slug, title, event_type, created_by::text,
 				coalesce(client_name, '') as client_name,
 				coalesce(client_email, '') as client_email,
 				coalesce(client_whatsapp, '') as client_whatsapp
@@ -115,7 +113,6 @@ function loadActiveFixture(dbUrl: string): {
 		slug: string;
 		title: string;
 		event_type: string;
-		base_demo_id: string;
 		created_by: string;
 		client_name: string;
 		client_email: string;
@@ -131,7 +128,6 @@ function assertCanonicalExisting(
 		row.slug === PREVIEW_FIXTURE_SLUG &&
 		row.title === PREVIEW_FIXTURE_TITLE &&
 		row.event_type === PREVIEW_FIXTURE_EVENT_TYPE &&
-		row.base_demo_id === PREVIEW_FIXTURE_DEMO_ID &&
 		row.created_by === ownerUserId &&
 		row.client_name === '' &&
 		row.client_email === '' &&
@@ -176,8 +172,8 @@ function ensureDraft(dbUrl: string, invitationId: string, apply: boolean): void 
 	}
 	const draftId = randomUUID();
 	const insert = runPsql(
-		`insert into public.invitation_content_drafts (id, invitation_project_id, submission_id, content, status)
-		 values (${sqlLiteral(draftId)}::uuid, ${sqlLiteral(invitationId)}::uuid, null, ${sqlLiteral(divergentDraft)}::jsonb, 'draft');`,
+		`insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
+		 values (${sqlLiteral(draftId)}::uuid, ${sqlLiteral(invitationId)}::uuid, ${sqlLiteral(divergentDraft)}::jsonb, 'draft');`,
 		dbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
@@ -235,7 +231,7 @@ function createFixtureRow(input: {
 }): void {
 	const insert = runPsql(
 		`insert into public.invitations (
-			id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot,
+			id, slug, title, event_type, status, theme_id, kind,
 			client_name, client_email, client_whatsapp, photos_received, created_by
 		) values (
 			${sqlLiteral(input.invitationId)}::uuid,
@@ -243,10 +239,8 @@ function createFixtureRow(input: {
 			${sqlLiteral(PREVIEW_FIXTURE_TITLE)},
 			${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)},
 			'draft',
-			${sqlLiteral(PREVIEW_FIXTURE_DEMO_ID)},
 			${sqlLiteral(input.themeId)},
 			'client',
-			'{}'::jsonb,
 			'',
 			'',
 			'',

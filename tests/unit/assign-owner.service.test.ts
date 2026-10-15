@@ -1,5 +1,3 @@
-import type { DemoPreset } from '@/lib/intake/types';
-
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 	findInvitationById: jest.fn(),
 	assignInvitationOwner: jest.fn(),
@@ -18,26 +16,6 @@ const mockAssignOwner = jest.mocked(assignInvitationOwner);
 const VALID_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
 const OTHER_USER_ID = '550e8400-e29b-41d4-a716-446655440099';
 
-const demoPreset: DemoPreset = {
-	id: 'demo-xv',
-	eventType: 'xv',
-	displayName: 'Test Demo',
-	themeId: 'jewelry-box',
-	defaultSections: ['gallery', 'location', 'rsvp'],
-	supportedBlocks: [
-		'event-details',
-		'main-people',
-		'date-locations',
-		'photos',
-		'rsvp-config',
-		'gifts',
-		'special-messages',
-	],
-	recommendedBlocks: ['event-details', 'main-people', 'date-locations'],
-	requiredAssets: ['hero', 'portrait', 'gallery01', 'gallery02', 'gallery03'],
-	previewSlug: 'test',
-};
-
 function clientInvitation(overrides?: Partial<Invitation>): Invitation {
 	return {
 		id: 'inv-1',
@@ -47,9 +25,7 @@ function clientInvitation(overrides?: Partial<Invitation>): Invitation {
 		title: 'Test',
 		eventType: 'xv',
 		status: 'draft',
-		baseDemoId: 'demo-xv',
 		themeId: 'jewelry-box',
-		snapshot: demoPreset,
 		clientName: '',
 		clientEmail: '',
 		clientWhatsapp: '',

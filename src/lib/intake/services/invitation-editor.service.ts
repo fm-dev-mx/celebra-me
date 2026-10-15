@@ -314,7 +314,6 @@ export async function saveInvitationEditorMetadata(
 				...(draft ?? {
 					id: atomic.draftId,
 					invitationId,
-					submissionId: null,
 					createdAt: atomic.draftUpdatedAt!,
 				}),
 				id: atomic.draftId,

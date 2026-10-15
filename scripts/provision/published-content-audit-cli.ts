@@ -100,7 +100,7 @@ function runUsageReport(target: PersistedContentTarget, dbUrl: string): void {
 		const shapes = Object.keys(row.published?.supersededShapes ?? {});
 		const verdict = row.published ? (row.published.strictParse.ok ? 'ok' : 'FAILS') : 'none';
 		console.log(
-			`  - ${row.slug} [${row.kind}] base=${row.baseDemoId} theme=${row.themeId} strict=${verdict} superseded=${shapes.length ? shapes.join(',') : 'none'}`,
+			`  - ${row.slug} [${row.kind}] theme=${row.themeId} strict=${verdict} superseded=${shapes.length ? shapes.join(',') : 'none'}`,
 		);
 	}
 }

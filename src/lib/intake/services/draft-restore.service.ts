@@ -220,7 +220,6 @@ export async function restoreEntireDraft(input: RestoreEntireDraftInput): Promis
 			...(draft ?? {
 				id: atomic.draftId!,
 				invitationId: input.invitationId,
-				submissionId: null,
 				createdAt: atomic.draftUpdatedAt!,
 			}),
 			id: atomic.draftId!,

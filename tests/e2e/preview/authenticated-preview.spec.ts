@@ -5,7 +5,6 @@ import {
 	assertExpectedPreviewAccountEmail,
 	assertExpectedPreviewAccountRole,
 	assertPreviewPublicationTarget,
-	PREVIEW_FIXTURE_DEMO_ID,
 	PREVIEW_FIXTURE_EVENT_TYPE,
 	PREVIEW_FIXTURE_SLUG,
 	PREVIEW_FIXTURE_TITLE,
@@ -40,7 +39,6 @@ async function assertFixtureGuards(page: Parameters<typeof readSessionIdentity>[
 		slug: PREVIEW_FIXTURE_SLUG,
 		title: PREVIEW_FIXTURE_TITLE,
 		eventType: PREVIEW_FIXTURE_EVENT_TYPE,
-		baseDemoId: PREVIEW_FIXTURE_DEMO_ID,
 		clientName: '',
 		clientEmail: '',
 		clientWhatsapp: '',
@@ -99,9 +97,7 @@ test.describe.serial('Authenticated external Preview', () => {
 		await expect(page).toHaveURL(/\/login/);
 	});
 
-	test('handles 20 concurrent anonymous and invalid session validations', async ({
-		browser,
-	}) => {
+	test('handles 20 concurrent anonymous and invalid session validations', async ({ browser }) => {
 		test.setTimeout(120_000);
 		const contexts: BrowserContext[] = [];
 		const clients: Array<{ context: BrowserContext; index: number; page: Page }> = [];

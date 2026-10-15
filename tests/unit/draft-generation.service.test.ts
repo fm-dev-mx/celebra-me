@@ -18,7 +18,6 @@ const mockUpdateStatus = updateDraftStatus as jest.MockedFunction<typeof updateD
 const draftRow: InvitationContentDraft = {
 	id: 'draft-1',
 	invitationId: 'proj-1',
-	submissionId: null,
 	content: { title: 'XV Años — Ana Sofía' },
 	status: 'approved',
 	createdAt: '2026-01-01T00:00:00Z',

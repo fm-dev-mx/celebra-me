@@ -211,7 +211,6 @@ export async function applyDraftMutation(
 			})
 		: await upsertDraft({
 				invitationId: input.invitationId,
-				submissionId: null,
 				content: nextContent,
 			});
 
