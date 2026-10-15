@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import {
 	formatEvidenceSummary,
 	listSmokePageRoutes,
+	resolveSmokeBaseUrl,
 	runProductionSmoke,
 	validateVercelDispatch,
 	type PostDeployEvidence,
@@ -262,6 +263,50 @@ describe('post-deploy smoke', () => {
 				}),
 			]),
 		);
+	});
+
+	it('resolves a configurable base host limited to approved origins', () => {
+		expect(resolveSmokeBaseUrl([], {})).toBe('https://www.celebra-me.com');
+		expect(
+			resolveSmokeBaseUrl([], { SMOKE_BASE_URL: 'https://celebra.example.workers.dev' }),
+		).toBe('https://celebra.example.workers.dev');
+		expect(
+			resolveSmokeBaseUrl(['--base-url=https://staging.celebra-me.com/'], {
+				SMOKE_BASE_URL: 'https://celebra.example.workers.dev',
+			}),
+		).toBe('https://staging.celebra-me.com');
+		expect(() => resolveSmokeBaseUrl(['--base-url=https://example.com'], {})).toThrow(
+			'unapproved host',
+		);
+		expect(() => resolveSmokeBaseUrl(['--base-url=http://www.celebra-me.com'], {})).toThrow(
+			'HTTPS origin',
+		);
+		expect(() =>
+			validateVercelDispatch({
+				event: 'vercel.deployment.promoted',
+				environment: 'production',
+				projectId: 'prj_abcdef123456',
+				expectedProjectId: 'prj_abcdef123456',
+				deploymentId: 'dpl_abcdef123456',
+				url: 'https://celebra.example.workers.dev',
+				commitSha: 'a'.repeat(40),
+				gitRef: 'main',
+			}),
+		).toThrow('unapproved host');
+	});
+
+	it('runs the same probes against a Cloudflare Worker host without a bypass secret', async () => {
+		const fetchMock = productionFetch();
+		const result = await runProductionSmoke('https://celebra.example.workers.dev', fetchMock);
+
+		expect(result.failedProbeCount).toBe(0);
+		expect(
+			fetchMock.mock.calls.every(
+				([url, init]) =>
+					new URL(url).hostname === 'celebra.example.workers.dev' &&
+					!new Headers(init?.headers).has('x-vercel-protection-bypass'),
+			),
+		).toBe(true);
 	});
 
 	it('performs only one retry for a transient network response', async () => {

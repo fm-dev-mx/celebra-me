@@ -162,7 +162,23 @@ function validateDispatchProject(projectId: string, expectedProjectId: string): 
 	return projectId;
 }
 
-function parseDeploymentOrigin(rawUrl: string, environment: PostDeployEnvironment): URL {
+/**
+ * Hosts a URL smoke may target: the Production domain and its subdomains, protected Vercel
+ * deployments (bypass secret required), and Cloudflare Workers preview hosts.
+ */
+function isApprovedSmokeHost(hostname: string): boolean {
+	return (
+		PRODUCTION_HOSTS.has(hostname) ||
+		hostname.endsWith('.celebra-me.com') ||
+		hostname.endsWith('.vercel.app') ||
+		hostname.endsWith('.workers.dev')
+	);
+}
+
+function parseDeploymentOrigin(
+	rawUrl: string,
+	environment: PostDeployEnvironment | 'url_check',
+): URL {
 	let url: URL;
 	try {
 		url = new URL(requireValue(rawUrl, 'Deployment URL'));
@@ -186,6 +202,9 @@ function parseDeploymentOrigin(rawUrl: string, environment: PostDeployEnvironmen
 		!hostname.endsWith('.vercel.app')
 	) {
 		throw new Error('Production smoke rejected an unapproved host.');
+	}
+	if (environment === 'url_check' && !isApprovedSmokeHost(hostname)) {
+		throw new Error('URL smoke rejected an unapproved host.');
 	}
 	return url;
 }
@@ -266,7 +285,10 @@ function appendSummary(markdown: string): void {
 }
 
 function createPostDeployEvidence(input: {
-	dispatch: ValidatedVercelDispatch;
+	dispatch: Pick<ValidatedVercelDispatch, 'environment'> &
+		Partial<Pick<ValidatedVercelDispatch, 'deploymentId' | 'commitSha'>>;
+	source?: string;
+	failureOwnerAction?: string;
 	runId: string;
 	startedAt: string;
 	completedAt: string | null;
@@ -275,8 +297,11 @@ function createPostDeployEvidence(input: {
 	payload: PostDeployPayload;
 }): PostDeployEvidence {
 	const observedAt = input.completedAt ?? input.startedAt;
-	const deploymentId = sanitizeOperationalCorrelationId(input.dispatch.deploymentId);
-	if (!deploymentId) throw new Error('Deployment correlation id is invalid.');
+	const deploymentId =
+		input.dispatch.deploymentId === undefined
+			? undefined
+			: sanitizeOperationalCorrelationId(input.dispatch.deploymentId);
+	if (deploymentId === null) throw new Error('Deployment correlation id is invalid.');
 	const evidence: PostDeployEvidence = {
 		schemaVersion: OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
 		check: 'post_deploy_smoke',
@@ -287,15 +312,17 @@ function createPostDeployEvidence(input: {
 		observedAt,
 		status: input.status,
 		reasonCode: input.reasonCode,
-		source: 'github_actions',
+		source: input.source ?? 'github_actions',
 		ownerAction:
 			input.status === 'VERIFIED'
 				? 'No se requiere acción; conserve el Job Summary como evidencia.'
-				: input.dispatch.environment === 'preview'
-					? 'Revise el Job Summary y corrija el SHA exacto antes de la promoción humana.'
-					: 'Abra el deployment exacto en Vercel y revise el Job Summary; no ejecute rollback automático.',
-		commitSha: input.dispatch.commitSha,
-		deploymentId,
+				: input.failureOwnerAction
+					? input.failureOwnerAction
+					: input.dispatch.environment === 'preview'
+						? 'Revise el Job Summary y corrija el SHA exacto antes de la promoción humana.'
+						: 'Abra el deployment exacto en Vercel y revise el Job Summary; no ejecute rollback automático.',
+		...(input.dispatch.commitSha ? { commitSha: input.dispatch.commitSha } : {}),
+		...(deploymentId ? { deploymentId } : {}),
 		payload: input.payload,
 	};
 	assertOperationalEvidenceSafe(evidence);
@@ -364,7 +391,7 @@ export async function runProductionSmoke(
 		pages?: readonly SmokePageRoute[];
 	} = {},
 ): Promise<ProductionSmokeResult> {
-	const origin = parseDeploymentOrigin(baseUrl, 'production');
+	const origin = parseDeploymentOrigin(baseUrl, 'url_check');
 	const bypassSecret = access.bypassSecret?.trim();
 	if (origin.hostname.endsWith('.vercel.app') && !bypassSecret)
 		throw new Error(
@@ -687,13 +714,69 @@ async function productionCommand(): Promise<void> {
 	}
 }
 
+export const DEFAULT_SMOKE_BASE_URL = 'https://www.celebra-me.com';
+
+/**
+ * Base URL of a URL smoke: `--base-url=<origin>`, else `SMOKE_BASE_URL`, else Production.
+ * Example: `check --base-url=https://celebra-me.example.workers.dev` for a Cloudflare Worker.
+ */
+export function resolveSmokeBaseUrl(
+	args: readonly string[],
+	env: NodeJS.ProcessEnv = process.env,
+): string {
+	const flag = args.find((arg) => arg.startsWith('--base-url='));
+	const raw =
+		flag?.slice('--base-url='.length) || env.SMOKE_BASE_URL?.trim() || DEFAULT_SMOKE_BASE_URL;
+	return parseDeploymentOrigin(raw, 'url_check').origin;
+}
+
+/** Read-only smoke against an approved host, outside a Vercel dispatch. */
+async function checkCommand(args: readonly string[]): Promise<void> {
+	const baseUrl = resolveSmokeBaseUrl(args);
+	const hostname = new URL(baseUrl).hostname;
+	const startedAt = new Date().toISOString();
+	// The Vercel bypass secret only ever goes to a protected Vercel deployment.
+	const result = await runProductionSmoke(
+		baseUrl,
+		fetch,
+		hostname.endsWith('.vercel.app')
+			? { approvedHost: hostname, bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET }
+			: {},
+	);
+	const passed = result.failedProbeCount === 0;
+	const evidence = createPostDeployEvidence({
+		dispatch: { environment: 'production' },
+		source: process.env.GITHUB_ACTIONS === 'true' ? 'github_actions' : 'operator_cli',
+		failureOwnerAction:
+			'Revise el Job Summary y abra la página que falló en el host revisado; no ejecute rollback automático.',
+		runId: randomUUID(),
+		startedAt,
+		completedAt: new Date().toISOString(),
+		status: passed ? 'VERIFIED' : 'FAILED',
+		reasonCode: passed ? 'url_smoke_passed' : 'url_smoke_failed',
+		payload: resultPayload(result),
+	});
+	emitEvidence(evidence, 'completed');
+	writeEvidenceSummary(evidence);
+	appendSummary(`\nChecked host: \`${hostname}\`\n`);
+	if (!passed) {
+		console.error(`POST_DEPLOY_FAILURE_CODES=${result.failureCodes.join(',')}`);
+		process.exitCode = 1;
+	}
+}
+
 async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	if (args[0] === '--') args.shift();
+	if (args[0] === 'check' && args.slice(1).every((arg) => arg.startsWith('--base-url='))) {
+		return checkCommand(args.slice(1));
+	}
 	const command = args.length === 1 ? args[0] : undefined;
 	if (command === 'validate') return validateCommand();
 	if (command === 'production') return productionCommand();
-	throw new Error('Usage: post-deploy-smoke.ts <validate|production>');
+	throw new Error(
+		'Usage: post-deploy-smoke.ts <validate|production|check [--base-url=<origin>]>',
+	);
 }
 
 if (process.argv[1] && /^post-deploy-smoke\.(?:ts|js)$/.test(basename(process.argv[1]))) {

@@ -453,6 +453,13 @@ Set by `.github/workflows/post-deploy-smoke.yml` from the dispatch payload and r
   `POST_DEPLOY_STARTED_AT` (validated outputs exported through `GITHUB_ENV`).
 - `VERCEL_PROJECT_ID` is a repository variable (`vars.*`) consumed by the same workflow.
 
+The same probes run outside a dispatch with `pnpm ops:post-deploy -- check`, which reads only public
+pages. `--base-url=<origin>` (or `SMOKE_BASE_URL`) picks the host, defaulting to
+`https://www.celebra-me.com`; approved hosts are the Production domain and its subdomains,
+`*.vercel.app` (needs `VERCEL_AUTOMATION_BYPASS_SECRET`) and `*.workers.dev`. Example for a
+Cloudflare Worker:
+`pnpm ops:post-deploy -- check --base-url=https://celebra-me.example.workers.dev`.
+
 ### CI validation (`.github/workflows/commit-validation.yml`)
 
 | Name                                               | Read by                                                               | Notes                             |
