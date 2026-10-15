@@ -1,0 +1,169 @@
+name: Cloudflare Preview Deploy
+
+# Builds the Cloudflare target, uploads an immutable Worker version tagged with the commit SHA,
+# smokes that version behind Cloudflare Access, and only then routes traffic to it. Evidence:
+# a GitHub Deployment (environment Preview, URL = the version URL) and the commit status
+# `Cloudflare - celebra-me preview smoke`, both read by `pnpm ops:release-status`.
+
+permissions:
+    contents: read
+    deployments: write
+    statuses: write
+
+on:
+    push:
+        branches:
+            - develop
+    workflow_dispatch:
+
+# Versions are immutable; deployments of the same Worker stay sequential and are never cancelled
+# mid-flight, so a smoked version is always the one routed.
+concurrency:
+    group: cloudflare-preview-deploy
+    cancel-in-progress: false
+
+env:
+    SMOKE_CONTEXT: Cloudflare - celebra-me preview smoke
+    PREVIEW_WORKER_URL: https://celebra-me-preview.celebra-me-com.workers.dev
+
+jobs:
+    preview:
+        name: Cloudflare preview deploy
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        environment:
+            name: Preview
+            url: ${{ steps.upload.outputs.version_url }}
+        env:
+            GH_TOKEN: ${{ github.token }}
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+            CLOUDFLARE_ENV: preview
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Publish pending smoke status
+              run: |
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+                      -f state=pending \
+                      -f context="$SMOKE_CONTEXT" \
+                      -f description="Preview Worker version pending" \
+                      -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
+
+            - name: Build Cloudflare target
+              env:
+                  CELEBRA_BUILD_TARGET: cloudflare
+                  CELEBRA_DEPLOY_ENV: preview
+                  BASE_URL: ${{ env.PREVIEW_WORKER_URL }}
+                  PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+                  PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+                  PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
+                  PUBLIC_META_PIXEL_ID: ${{ vars.PUBLIC_META_PIXEL_ID }}
+                  PUBLIC_META_PIXEL_ENABLED: ${{ vars.PUBLIC_META_PIXEL_ENABLED }}
+              run: pnpm build:app
+
+            - name: Create GitHub deployment
+              id: deployment
+              run: |
+                  id=$(jq -n --arg ref "$GITHUB_SHA" '{
+                      ref: $ref,
+                      environment: "Preview",
+                      auto_merge: false,
+                      required_contexts: [],
+                      transient_environment: false,
+                      production_environment: false,
+                      description: "Cloudflare Preview Worker"
+                  }' | gh api "repos/$GITHUB_REPOSITORY/deployments" --input - --jq '.id')
+                  echo "id=$id" >> "$GITHUB_OUTPUT"
+                  gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" \
+                      -f state=in_progress \
+                      -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                      -f description="Uploading Worker version" > /dev/null
+
+            - name: Upload Worker version
+              id: upload
+              run: |
+                  pnpm exec wrangler versions upload --env preview \
+                      --tag "$GITHUB_SHA" \
+                      --message "develop ${GITHUB_SHA:0:9} (run $GITHUB_RUN_ID)" | tee .tmp-versions-upload.log
+                  version_id=$(grep -oE 'Worker Version ID: [0-9a-f-]+' .tmp-versions-upload.log | head -n1 | awk '{print $4}')
+                  version_url=$(grep -oE 'https://[a-z0-9-]+\.celebra-me-com\.workers\.dev' .tmp-versions-upload.log | head -n1)
+                  if [ -z "$version_id" ] || [ -z "$version_url" ]; then
+                      echo "Could not read the version id or its preview URL from the upload output." >&2
+                      exit 1
+                  fi
+                  echo "version_id=$version_id" >> "$GITHUB_OUTPUT"
+                  echo "version_url=$version_url" >> "$GITHUB_OUTPUT"
+
+            - name: Smoke the uploaded version
+              env:
+                  CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+                  CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
+              run: |
+                  pnpm ops:cloudflare:preview:smoke -- \
+                      --url "${{ steps.upload.outputs.version_url }}" \
+                      --sha "$GITHUB_SHA" \
+                      --version-id "${{ steps.upload.outputs.version_id }}"
+
+            - name: Route traffic to the smoked version
+              run: |
+                  pnpm exec wrangler versions deploy --env preview -y \
+                      --message "develop ${GITHUB_SHA:0:9}" \
+                      "${{ steps.upload.outputs.version_id }}@100%"
+                  pnpm exec wrangler triggers deploy --env preview
+
+            - name: Verify the stable host serves the release
+              env:
+                  CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+                  CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
+              run: |
+                  served=$(curl -fsS \
+                      -H "CF-Access-Client-Id: $CLOUDFLARE_ACCESS_CLIENT_ID" \
+                      -H "CF-Access-Client-Secret: $CLOUDFLARE_ACCESS_CLIENT_SECRET" \
+                      "$PREVIEW_WORKER_URL/api/health" | jq -r '.build.commitSha // empty')
+                  if [ "$served" != "$GITHUB_SHA" ]; then
+                      echo "Stable host reports '${served:-unreported}', expected $GITHUB_SHA." >&2
+                      exit 1
+                  fi
+
+            - name: Record success
+              run: |
+                  gh api "repos/$GITHUB_REPOSITORY/deployments/${{ steps.deployment.outputs.id }}/statuses" \
+                      -f state=success \
+                      -f environment_url="${{ steps.upload.outputs.version_url }}" \
+                      -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                      -f description="Version ${{ steps.upload.outputs.version_id }} routed" > /dev/null
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+                      -f state=success \
+                      -f context="$SMOKE_CONTEXT" \
+                      -f description="Preview Worker smoke passed" \
+                      -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
+
+            - name: Record failure
+              if: failure() || cancelled()
+              run: |
+                  if [ -n "${{ steps.deployment.outputs.id }}" ]; then
+                      gh api "repos/$GITHUB_REPOSITORY/deployments/${{ steps.deployment.outputs.id }}/statuses" \
+                          -f state=failure \
+                          -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                          -f description="Preview Worker deploy failed" > /dev/null || true
+                  fi
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+                      -f state=failure \
+                      -f context="$SMOKE_CONTEXT" \
+                      -f description="Preview Worker smoke failed" \
+                      -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null || true

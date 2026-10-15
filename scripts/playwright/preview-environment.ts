@@ -24,6 +24,12 @@ const APPROVED_PREVIEW_ALIASES = new Set([
 const PRODUCTION_DOMAINS = new Set(['celebra-me.com', 'www.celebra-me.com']);
 export const IMMUTABLE_PREVIEW_HOST_PATTERN =
 	/^celebra-[a-z0-9]+-francisco-mendoza-s-projects\.vercel\.app$/;
+/**
+ * Cloudflare Preview Worker: the stable `workers.dev` host and the immutable version URLs
+ * (`<version-prefix>-celebra-me-preview...`) that `wrangler versions upload` creates per SHA.
+ */
+export const CLOUDFLARE_PREVIEW_HOST_PATTERN =
+	/^(?:[a-z0-9]+-)?celebra-me-preview\.celebra-me-com\.workers\.dev$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export interface PreviewFixtureIdentity {
@@ -181,6 +187,19 @@ export function buildVercelProtectionHeaders(
 	return {
 		'x-vercel-protection-bypass': bypassSecret,
 		'x-vercel-set-bypass-cookie': 'true',
+	};
+}
+
+/** Cloudflare Access service token headers; the Preview Worker sits behind Access. */
+export function buildCloudflareAccessHeaders(
+	env: NodeJS.ProcessEnv,
+): Record<string, string> | undefined {
+	const clientId = env.CLOUDFLARE_ACCESS_CLIENT_ID?.trim();
+	const clientSecret = env.CLOUDFLARE_ACCESS_CLIENT_SECRET?.trim();
+	if (!clientId || !clientSecret) return undefined;
+	return {
+		'CF-Access-Client-Id': clientId,
+		'CF-Access-Client-Secret': clientSecret,
 	};
 }
 

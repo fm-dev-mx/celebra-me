@@ -1,4 +1,5 @@
 import {
+	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
 	PRODUCTION_DEPLOYMENT_SMOKE,
 	STATIC_CAPABILITY_CHECK,
 	isRemoteEvidenceUnavailable,
@@ -83,6 +84,16 @@ describe('release check evidence', () => {
 		checks[0].sha = sha;
 		checks[0].trusted = false;
 		expect(() => requireProductionDeploymentSmoke(sha, checks)).toThrow();
+	});
+
+	it('accepts the Cloudflare Production smoke as deployment evidence', () => {
+		const checks = [
+			{ name: PRODUCTION_DEPLOYMENT_SMOKE, sha, state: 'failure', trusted: true },
+			{ name: CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE, sha, state: 'success', trusted: true },
+		];
+		expect(() => requireProductionDeploymentSmoke(sha, checks)).not.toThrow();
+		checks[1].trusted = false;
+		expect(() => requireProductionDeploymentSmoke(sha, checks)).toThrow('Cloudflare');
 	});
 
 	it('requires trusted static capability evidence for the deployed SHA', () => {
