@@ -297,7 +297,7 @@ function loadTargetInvitationRows(
 		: '';
 	return parsePsqlJsonArray(
 		runPsql(
-			`select json_agg(t) from (select distinct i.id, i.slug, i.title, i.event_type, i.status, i.base_demo_id, i.theme_id, i.kind, i.snapshot, i.client_name, i.client_email, i.client_whatsapp, i.photos_received, i.created_by, i.archived_at, i.managed_identity_id, p.definition_slug, p.managed_identity_id as provenance_managed_identity_id from public.invitations i left join public.managed_invitation_release_provenance p on p.invitation_id = i.id where i.slug in (${slugList}) or p.definition_slug in (${slugList})${identityClause} order by i.archived_at nulls first, i.id) t;`,
+			`select json_agg(t) from (select distinct i.id, i.slug, i.title, i.event_type, i.status, i.theme_id, i.kind, i.client_name, i.client_email, i.client_whatsapp, i.photos_received, i.created_by, i.archived_at, i.managed_identity_id, p.definition_slug, p.managed_identity_id as provenance_managed_identity_id from public.invitations i left join public.managed_invitation_release_provenance p on p.invitation_id = i.id where i.slug in (${slugList}) or p.definition_slug in (${slugList})${identityClause} order by i.archived_at nulls first, i.id) t;`,
 			targetDbUrl,
 			{ tuplesOnly: true, throwOnError: false },
 		).stdout,
@@ -992,8 +992,8 @@ function upsertDraftSql(
 	const content = `${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb`;
 	const draftId = existingDraft ? (existingDraft.id as string) : randomUUID();
 	return (
-		`update public.invitation_content_drafts set status = 'draft', content = ${content}, submission_id = null, updated_at = now(), deleted_at = null where invitation_project_id = '${targetInvitationId}'::uuid;\n` +
-		`insert into public.invitation_content_drafts (id, invitation_project_id, submission_id, content, status) select '${draftId}'::uuid, '${targetInvitationId}'::uuid, null, ${content}, 'draft' where not exists (select 1 from public.invitation_content_drafts where invitation_project_id = '${targetInvitationId}'::uuid);`
+		`update public.invitation_content_drafts set status = 'draft', content = ${content}, updated_at = now(), deleted_at = null where invitation_project_id = '${targetInvitationId}'::uuid;\n` +
+		`insert into public.invitation_content_drafts (id, invitation_project_id, content, status) select '${draftId}'::uuid, '${targetInvitationId}'::uuid, ${content}, 'draft' where not exists (select 1 from public.invitation_content_drafts where invitation_project_id = '${targetInvitationId}'::uuid);`
 	);
 }
 
@@ -1105,9 +1105,7 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 				`Package for "${slug}" is missing invitation.managedIdentityId; regenerate the package from the current managed definition.`,
 			);
 		}
-		// base_demo_id is NOT NULL until its contract migration drops it; new rows get the empty
-		// string and existing rows keep their value. snapshot keeps its column default.
-		const invUpsertSql = `insert into public.invitations (id, slug, managed_identity_id, title, event_type, status, base_demo_id, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(effectiveSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlLiteral(effectiveTitle)}, ${sqlLiteral(eventType)}, ${sqlLiteral(effectiveStatus)}, '', ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(effectiveClientName)}, ${sqlLiteral(effectiveClientEmail)}, ${sqlLiteral(effectiveClientWhatsapp)}, ${effectivePhotosReceived ? 'true' : 'false'}, '${effectiveOwner}'::uuid) on conflict (id) do update set slug = excluded.slug, managed_identity_id = coalesce(public.invitations.managed_identity_id, excluded.managed_identity_id), event_type = excluded.event_type, theme_id = excluded.theme_id, kind = excluded.kind, updated_at = now() returning id;`;
+		const invUpsertSql = `insert into public.invitations (id, slug, managed_identity_id, title, event_type, status, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by) values ('${targetInvitationId}'::uuid, ${sqlLiteral(effectiveSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlLiteral(effectiveTitle)}, ${sqlLiteral(eventType)}, ${sqlLiteral(effectiveStatus)}, ${sqlLiteral(pkg.invitation.themeId)}, ${sqlLiteral(pkg.invitation.kind)}, ${sqlLiteral(effectiveClientName)}, ${sqlLiteral(effectiveClientEmail)}, ${sqlLiteral(effectiveClientWhatsapp)}, ${effectivePhotosReceived ? 'true' : 'false'}, '${effectiveOwner}'::uuid) on conflict (id) do update set slug = excluded.slug, managed_identity_id = coalesce(public.invitations.managed_identity_id, excluded.managed_identity_id), event_type = excluded.event_type, theme_id = excluded.theme_id, kind = excluded.kind, updated_at = now() returning id;`;
 		runPsql(invUpsertSql, targetDbUrl, { tuplesOnly: true });
 		count++;
 	}

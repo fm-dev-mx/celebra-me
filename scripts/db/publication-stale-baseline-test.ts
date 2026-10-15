@@ -77,7 +77,7 @@ function runScenario(scenario: Scenario): void {
 	const key = randomUUID();
 	const slug = `baseline-${invitationId.slice(0, 8)}`;
 	query(
-		`insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, kind) values ('${invitationId}', '${slug}', 'Baseline publication', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'demo'); insert into public.invitation_content_drafts (id, invitation_project_id, content, status) values ('${draftId}', '${invitationId}', ${content}, 'draft'); ${scenario.withPublishedContent ? `insert into public.published_invitation_content (invitation_project_id, slug, event_type, is_demo, content, version) values ('${invitationId}', '${slug}', 'xv', true, '{"title":"Before repair"}'::jsonb, 1);` : ''}`,
+		`insert into public.invitations (id, slug, title, event_type, status, theme_id, kind) values ('${invitationId}', '${slug}', 'Baseline publication', 'xv', 'in_production', 'jewelry-box', 'demo'); insert into public.invitation_content_drafts (id, invitation_project_id, content, status) values ('${draftId}', '${invitationId}', ${content}, 'draft'); ${scenario.withPublishedContent ? `insert into public.published_invitation_content (invitation_project_id, slug, event_type, is_demo, content, version) values ('${invitationId}', '${slug}', 'xv', true, '{"title":"Before repair"}'::jsonb, 1);` : ''}`,
 	);
 	const reviewedMetadataHash = metadataHash(invitationId);
 	const reviewedDraftAt = query(
@@ -114,7 +114,7 @@ function assertRollbackAfterReceiptReservation(): void {
 	const key = randomUUID();
 	const slug = `rollback-conflict-${invitationId.slice(0, 8)}`;
 	query(
-		`insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, kind) values ('${ownerId}', '${slug}', 'Existing slug owner', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'demo'); insert into public.published_invitation_content (invitation_project_id, slug, event_type, is_demo, content, version) values ('${ownerId}', '${slug}', 'xv', true, '{"title":"Existing"}'::jsonb, 1); insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, kind) values ('${invitationId}', '${slug}-draft', 'Rollback target', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'demo'); insert into public.invitation_content_drafts (id, invitation_project_id, content, status) values ('${draftId}', '${invitationId}', ${content}, 'draft');`,
+		`insert into public.invitations (id, slug, title, event_type, status, theme_id, kind) values ('${ownerId}', '${slug}', 'Existing slug owner', 'xv', 'published', 'jewelry-box', 'demo'); insert into public.published_invitation_content (invitation_project_id, slug, event_type, is_demo, content, version) values ('${ownerId}', '${slug}', 'xv', true, '{"title":"Existing"}'::jsonb, 1); insert into public.invitations (id, slug, title, event_type, status, theme_id, kind) values ('${invitationId}', '${slug}-draft', 'Rollback target', 'xv', 'in_production', 'jewelry-box', 'demo'); insert into public.invitation_content_drafts (id, invitation_project_id, content, status) values ('${draftId}', '${invitationId}', ${content}, 'draft');`,
 	);
 	const hash = metadataHash(invitationId);
 	const draftAt = query(

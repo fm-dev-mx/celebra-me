@@ -64,8 +64,8 @@ async function main(): Promise<void> {
 	const evidence: ScenarioEvidence[] = [];
 
 	runPsql(`
-		insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, kind, created_by)
-		values ('${invitationId}', '${slug}', 'Phase 3 concurrency', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'client', 'a0000000-0000-0000-0000-000000000001');
+		insert into public.invitations (id, slug, title, event_type, status, theme_id, kind, created_by)
+		values ('${invitationId}', '${slug}', 'Phase 3 concurrency', 'xv', 'in_production', 'jewelry-box', 'client', 'a0000000-0000-0000-0000-000000000001');
 		insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 		values ('${draftId}', '${invitationId}', '{"title":"Initial"}'::jsonb, 'draft');
 		create or replace function public.phase3_pause_invitation_update() returns trigger language plpgsql as $$

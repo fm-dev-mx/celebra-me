@@ -28,8 +28,8 @@ async function main(): Promise<void> {
 	const metadataHash = `md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text))`;
 
 	runPsql(`
-		insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, kind)
-		values ('${invitationId}', '${slug}', 'Concurrent publication', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'demo');
+		insert into public.invitations (id, slug, title, event_type, status, theme_id, kind)
+		values ('${invitationId}', '${slug}', 'Concurrent publication', 'xv', 'in_production', 'jewelry-box', 'demo');
 		insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 		values ('${draftId}', '${invitationId}', ${content}, 'draft');
 		create or replace function public.test_pause_idempotency_insert() returns trigger language plpgsql as $$ begin perform pg_sleep(0.75); return new; end; $$;
