@@ -51,7 +51,7 @@
 	--hero-badge-text-fallback: #{sys.$sys-color-taupe-500};
 	--hero-label-color: #{sys.$sys-color-floral-300};
 	--hero-divider-color-fallback: #{color.change(sys.$sys-color-floral-300, $alpha: 0.7)};
-	--quote-bg:
+	--quote-bg-fallback:
 		radial-gradient(circle at center, transparent 0%, rgb(0 0 0 / 40%) 100%),
 		radial-gradient(
 			ellipse at center,
@@ -60,17 +60,17 @@
 		),
 		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E"),
 		var(--color-surface-dark);
-	--quote-text-color: var(--color-text-on-dark);
-	--quote-author-color: var(--color-text-on-dark);
-	--quote-accent-color: var(--color-action-accent);
-	--quote-content-font: var(--font-body-narrative);
-	--quote-content-size: clamp(1.6rem, 5.5vw, 2.4rem);
-	--quote-content-line-height: 1.5;
+	--quote-text-color-fallback: var(--color-text-on-dark);
+	--quote-author-color-fallback: var(--color-text-on-dark);
+	--quote-accent-color-fallback: var(--color-action-accent);
+	--quote-content-font-fallback: var(--font-body-narrative);
+	--quote-content-size-fallback: clamp(1.6rem, 5.5vw, 2.4rem);
+	--quote-content-line-height-fallback: 1.5;
 	--quote-content-style: italic;
-	--quote-content-letter-spacing: 0;
-	--quote-divider-color: var(--color-action-accent);
+	--quote-content-letter-spacing-fallback: 0;
+	--quote-divider-color-fallback: var(--color-action-accent);
 	--quote-divider-opacity: 1;
-	--quote-ornament-color: var(--color-text-on-dark);
+	--quote-ornament-color-fallback: var(--color-text-on-dark);
 	--quote-ornament-opacity: 0.3;
 
 	// Countdown digits — premiere-floral shares editorial countdown styles that read these tokens.
@@ -82,8 +82,8 @@
 	// ---------------------------------------------------------------------
 	// Gifts section
 	// ---------------------------------------------------------------------
-	--gifts-bg: var(--color-surface-dark);
-	--gifts-subtitle-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--gifts-bg-fallback: var(--color-surface-dark);
+	--gifts-subtitle-color-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 	--light-sweep-fallback: linear-gradient(
 		-45deg,
 		rgb(255 255 255 / 0%) 0%,
@@ -283,13 +283,13 @@
 	--rsvp-radio-glow: 0 0 12px rgb(var(--color-gold-500-rgb) / 45%);
 
 	// Section Overrides: Gallery
-	--gallery-title-font: var(--font-display);
+	--gallery-title-font-fallback: var(--font-display);
 	--gallery-title-size: clamp(3rem, 8vw, 5rem);
 	--gallery-title-letter-spacing: 0.12em;
-	--gallery-title-color: var(--color-text-primary);
+	--gallery-title-color-fallback: var(--color-text-primary);
 	--gallery-subtitle-font: var(--font-label);
 	--gallery-subtitle-size: clamp(0.95rem, 2vw, 1.25rem);
-	--gallery-subtitle-color: var(--color-action-accent);
+	--gallery-subtitle-color-fallback: var(--color-action-accent);
 	--gallery-subtitle-transform: uppercase;
 	--gallery-subtitle-letter-spacing: 0.3em;
 	--gallery-subtitle-opacity: 0.9;

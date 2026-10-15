@@ -86,8 +86,8 @@
 	--family-media-inner-border: 1px solid rgb(255 255 255 / 54%);
 	--family-media-filter-fallback: sepia(0.08) contrast(1.02) brightness(1.01);
 	--hero-label-color: var(--color-text-emphasis);
-	--gallery-section-bg: var(--family-bg, var(--family-bg-fallback));
-	--gallery-title-color: var(--color-text-emphasis);
+	--gallery-section-bg-fallback: var(--family-bg, var(--family-bg-fallback));
+	--gallery-title-color-fallback: var(--color-text-emphasis);
 
 	// ---------------------------------------------------------------------
 	// Location Section (framed card style)

@@ -8,23 +8,9 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--intersection-arch-height",
-        "--intersection-depth",
-        "--itinerary-accent",
-        "--quote-accent-color",
-        "--quote-author-color",
-        "--quote-bg",
-        "--quote-divider-color",
-        "--quote-ornament-color",
-        "--quote-text-color",
         "--shadow-premium"
     ],
-    "aithan-darell": [
-        "--font-calligraphy",
-        "--quote-content-font",
-        "--quote-content-letter-spacing",
-        "--quote-content-line-height"
-    ],
+    "aithan-darell": ["--font-calligraphy"],
     "alba-rosa-quinonez": [
         "--color-border-subtle",
         "--color-surface-primary",
@@ -32,13 +18,8 @@
         "--color-text-primary-rgb",
         "--color-text-secondary",
         "--font-calligraphy",
-        "--gallery-section-bg",
-        "--gifts-bg",
         "--header-bg-scrolled",
-        "--header-nav-color",
-        "--intersection-arch-height",
-        "--intersection-blend",
-        "--intersection-depth"
+        "--header-nav-color"
     ],
     "allison-scarlett": [
         "--color-glass-bg",
@@ -47,9 +28,7 @@
         "--color-text-primary",
         "--color-text-secondary",
         "--font-body",
-        "--font-calligraphy",
-        "--footer-control-min-height",
-        "--footer-replay-opacity"
+        "--font-calligraphy"
     ],
     "daniela-y-martin": [
         "--color-glass-bg",
@@ -59,10 +38,6 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--gallery-title-color",
-        "--intersection-arch-height",
-        "--intersection-blend",
-        "--intersection-depth",
         "--shadow-premium"
     ],
     "destenid-sofia": [
@@ -73,9 +48,7 @@
         "--color-text-muted",
         "--color-text-primary",
         "--color-text-primary-rgb",
-        "--color-text-secondary",
-        "--gifts-icon-color",
-        "--gifts-subtitle-color"
+        "--color-text-secondary"
     ],
     "melissa-y-luis-osmar": [
         "--color-glass-bg",
@@ -88,7 +61,7 @@
         "--font-body",
         "--shadow-premium"
     ],
-    "mia-pintor": ["--color-border-subtle", "--font-body", "--footer-replay-opacity"],
+    "mia-pintor": ["--color-border-subtle", "--font-body"],
     "naydelin-paredes": [
         "--color-glass-bg",
         "--color-glass-border",
@@ -108,11 +81,7 @@
         "--color-text-primary-rgb",
         "--color-text-secondary",
         "--font-body",
-        "--font-calligraphy",
-        "--gallery-section-bg",
-        "--gallery-title-color",
-        "--gallery-title-font",
-        "--quote-text-color"
+        "--font-calligraphy"
     ],
     "renata": [
         "--color-border-subtle",
@@ -122,12 +91,6 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--gallery-section-bg",
-        "--gallery-subtitle-color",
-        "--gallery-title-color",
-        "--gifts-bg",
-        "--gifts-padding-block",
-        "--gifts-padding-inline",
         "--hamburger-color",
         "--hamburger-color-menu-open",
         "--header-nav-color",
@@ -141,7 +104,6 @@
         "--header-nav-cta-shadow",
         "--header-nav-hover-color",
         "--header-nav-title-color",
-        "--intersection-depth",
         "--mobile-drawer-cta-bg",
         "--mobile-drawer-cta-border",
         "--mobile-drawer-cta-color",
@@ -161,12 +123,6 @@
         "--color-text-primary-rgb",
         "--color-text-secondary",
         "--hero-split-title-offset-block",
-        "--quote-accent-color",
-        "--quote-author-color",
-        "--quote-bg",
-        "--quote-divider-color",
-        "--quote-ornament-color",
-        "--quote-text-color",
         "--shadow-premium"
     ],
     "valentina-hernandez": [
@@ -177,9 +133,7 @@
         "--color-text-muted",
         "--color-text-primary",
         "--color-text-primary-rgb",
-        "--color-text-secondary",
-        "--gifts-icon-color",
-        "--gifts-subtitle-color"
+        "--color-text-secondary"
     ],
     "victoria-y-roberto": [
         "--color-glass-bg",
@@ -193,14 +147,6 @@
         "--env-bg",
         "--font-body",
         "--font-calligraphy",
-        "--gallery-single-item-max-width",
-        "--gallery-single-label-letter-spacing",
-        "--gallery-title-color",
-        "--gifts-title-color",
-        "--quote-content-font",
-        "--quote-content-line-height",
-        "--quote-content-size",
-        "--quote-divider-display",
         "--shadow-premium"
     ],
     "xareni-iyarit": [
@@ -212,9 +158,6 @@
         "--color-text-muted",
         "--color-text-primary",
         "--color-text-primary-rgb",
-        "--color-text-secondary",
-        "--gallery-section-bg",
-        "--quote-author-color",
-        "--quote-text-color"
+        "--color-text-secondary"
     ]
 }

@@ -97,7 +97,7 @@
 	);
 
 	// Quote Section
-	--quote-bg:
+	--quote-bg-fallback:
 		radial-gradient(circle at center, transparent 0%, rgb(0 0 0 / 40%) 100%),
 		radial-gradient(
 			ellipse at center,
@@ -106,16 +106,16 @@
 		),
 		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E"),
 		var(--color-surface-dark);
-	--quote-text-color: var(--color-text-secondary);
-	--quote-author-color: var(--color-text-on-dark);
-	--quote-content-font: var(--font-body-narrative);
-	--quote-content-size: clamp(1.6rem, 5.5vw, 2.4rem);
-	--quote-content-line-height: 1.5;
+	--quote-text-color-fallback: var(--color-text-secondary);
+	--quote-author-color-fallback: var(--color-text-on-dark);
+	--quote-content-font-fallback: var(--font-body-narrative);
+	--quote-content-size-fallback: clamp(1.6rem, 5.5vw, 2.4rem);
+	--quote-content-line-height-fallback: 1.5;
 	--quote-content-style: italic;
-	--quote-content-letter-spacing: 0;
-	--quote-divider-color: var(--color-action-accent);
+	--quote-content-letter-spacing-fallback: 0;
+	--quote-divider-color-fallback: var(--color-action-accent);
 	--quote-divider-opacity: 1;
-	--quote-ornament-color: var(--color-text-on-dark);
+	--quote-ornament-color-fallback: var(--color-text-on-dark);
 	--quote-ornament-opacity: 0.3;
 
 	// Family Section
@@ -155,11 +155,11 @@
 	--family-media-filter-fallback: contrast(1.1) saturate(1.1) brightness(0.9);
 
 	// Gifts Section
-	--gifts-bg: var(--color-surface-dark);
-	--gifts-subtitle-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--gifts-bg-fallback: var(--color-surface-dark);
+	--gifts-subtitle-color-fallback: rgb(var(--color-text-primary-rgb) / 72%);
 
 	// Gallery Section
-	--gallery-section-bg: #{sys.$sys-color-onyx-950};
+	--gallery-section-bg-fallback: #{sys.$sys-color-onyx-950};
 	--gallery-caption-bg: #{color.change(sys.$sys-color-onyx-950, $alpha: 0.88)};
 
 	// ---------------------------------------------------------------------

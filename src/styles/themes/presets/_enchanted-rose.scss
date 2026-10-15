@@ -186,7 +186,7 @@
 	// ---------------------------------------------------------------------
 	// Quote section
 	// ---------------------------------------------------------------------
-	--quote-bg:
+	--quote-bg-fallback:
 		linear-gradient(180deg, rgb(var(--color-candle-shadow-rgb) / 95%) 0%, transparent 38%),
 		radial-gradient(
 			ellipse 78% 52% at 50% 20%,
@@ -194,19 +194,19 @@
 			transparent 68%
 		),
 		var(--rose-velvet-wash);
-	--quote-text-color: rgb(var(--color-warm-ivory-rgb) / 92%);
-	--quote-author-color: var(--color-candle-gold);
-	--quote-accent-color: var(--color-antique-gold);
+	--quote-text-color-fallback: rgb(var(--color-warm-ivory-rgb) / 92%);
+	--quote-author-color-fallback: var(--color-candle-gold);
+	--quote-accent-color-fallback: var(--color-antique-gold);
 	--quote-padding-block: clamp(4.5rem, 11vw, 8rem);
 	--quote-content-max-width: 39rem;
-	--quote-content-font: var(--font-display);
-	--quote-content-size: clamp(1.45rem, 4.6vw, 2.35rem);
-	--quote-content-line-height: 1.55;
+	--quote-content-font-fallback: var(--font-display);
+	--quote-content-size-fallback: clamp(1.45rem, 4.6vw, 2.35rem);
+	--quote-content-line-height-fallback: 1.55;
 	--quote-content-style: italic;
-	--quote-content-letter-spacing: 0.01em;
-	--quote-divider-color: var(--color-antique-gold);
+	--quote-content-letter-spacing-fallback: 0.01em;
+	--quote-divider-color-fallback: var(--color-antique-gold);
 	--quote-divider-opacity: 0.56;
-	--quote-ornament-color: var(--color-candle-gold);
+	--quote-ornament-color-fallback: var(--color-candle-gold);
 	--quote-ornament-opacity: 0.54;
 	--quote-texture-bg: var(--rose-satin-sheen);
 	--quote-texture-opacity: 0.08;
@@ -262,9 +262,9 @@
 	// ---------------------------------------------------------------------
 	// Gallery section
 	// ---------------------------------------------------------------------
-	--gallery-section-bg: var(--enchanted-section-dark-bg);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-warm-ivory);
+	--gallery-section-bg-fallback: var(--enchanted-section-dark-bg);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-warm-ivory);
 	--gallery-caption-font: var(--font-body);
 	--gallery-caption-size: 0.72rem;
 

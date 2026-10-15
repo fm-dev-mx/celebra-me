@@ -284,6 +284,6 @@
 	--color-text-secondary: var(--color-text-on-dark);
 	--color-text-muted: var(--color-text-on-dark);
 	--color-border-subtle: transparent;
-	--footer-control-min-height: 44px;
-	--footer-replay-opacity: 100%;
+	--footer-control-min-height-fallback: 44px;
+	--footer-replay-opacity-fallback: 100%;
 }

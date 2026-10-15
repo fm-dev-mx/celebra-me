@@ -153,15 +153,15 @@
 	--family-media-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
 	--family-media-filter-fallback: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.03);
 	--family-meta-display: none;
-	--gallery-section-bg: radial-gradient(
+	--gallery-section-bg-fallback: radial-gradient(
 		circle at 50% 10%,
 		rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
 		var(--color-surface-primary) 56%,
 		rgb(var(--color-soft-sand-rgb) / 72%) 100%
 	);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-text-primary);
-	--gallery-subtitle-color: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-text-primary);
+	--gallery-subtitle-color-fallback: rgb(var(--color-eternal-ink-rgb) / 72%);
 	--texture-silk: linear-gradient(
 		115deg,
 		rgb(var(--color-pure-ivory-rgb) / 82%) 0%,

@@ -5,10 +5,10 @@
 	--motion-reveal-blur: 6px;
 	--motion-ambient-scale-to: 1.035;
 	--motion-ambient-duration: 16s;
-	--intersection-depth: clamp(3rem, 7vw, 6rem);
-	--intersection-arch-height: clamp(2.5rem, 4.5vw, 5rem);
+	--intersection-depth-fallback: clamp(3rem, 7vw, 6rem);
+	--intersection-arch-height-fallback: clamp(2.5rem, 4.5vw, 5rem);
 	--intersection-surface: rgb(var(--color-deep-blue-graphite-rgb));
-	--intersection-blend: radial-gradient(
+	--intersection-blend-fallback: radial-gradient(
 		ellipse 150% 100% at 36% 0%,
 		rgb(var(--color-liquid-silver-rgb) / 26%) 0%,
 		rgb(var(--color-satin-blue-rgb) / 12%) 34%,
@@ -166,7 +166,7 @@
 	// ---------------------------------------------------------------------
 	// Quote section
 	// ---------------------------------------------------------------------
-	--quote-bg:
+	--quote-bg-fallback:
 		linear-gradient(
 			180deg,
 			rgb(var(--color-deep-blue-graphite-rgb) / 60%) 0%,
@@ -195,17 +195,17 @@
 			transparent 72%
 		),
 		var(--color-deep-blue-graphite);
-	--quote-text-color: rgb(var(--color-text-on-dark-rgb) / 88%);
-	--quote-author-color: var(--color-liquid-silver);
-	--quote-accent-color: var(--color-liquid-silver);
+	--quote-text-color-fallback: rgb(var(--color-text-on-dark-rgb) / 88%);
+	--quote-author-color-fallback: var(--color-liquid-silver);
+	--quote-accent-color-fallback: var(--color-liquid-silver);
 	--quote-padding-block: clamp(4rem, 12vh, 7.5rem);
 	--quote-content-max-width: 640px;
-	--quote-content-font: var(--font-calligraphy);
-	--quote-content-size: clamp(1.6rem, 4.6vw, 2.95rem);
-	--quote-content-line-height: 1.35;
-	--quote-content-letter-spacing: -0.01em;
-	--quote-divider-display: none;
-	--quote-ornament-color: var(--color-liquid-silver);
+	--quote-content-font-fallback: var(--font-calligraphy);
+	--quote-content-size-fallback: clamp(1.6rem, 4.6vw, 2.95rem);
+	--quote-content-line-height-fallback: 1.35;
+	--quote-content-letter-spacing-fallback: -0.01em;
+	--quote-divider-display-fallback: none;
+	--quote-ornament-color-fallback: var(--color-liquid-silver);
 	--quote-ornament-opacity: 0.35;
 	--quote-texture-bg: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 	--quote-texture-opacity: 0.06;
@@ -213,19 +213,19 @@
 	// ---------------------------------------------------------------------
 	// Gifts section
 	// ---------------------------------------------------------------------
-	--gifts-bg: linear-gradient(
+	--gifts-bg-fallback: linear-gradient(
 		180deg,
 		var(--color-cool-ivory) 0%,
 		rgb(var(--color-pearl-gray-rgb) / 56%) 100%
 	);
 	--gifts-text-color: var(--color-text-primary);
-	--gifts-title-color: var(--color-deep-blue-graphite);
-	--gifts-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--gifts-title-color-fallback: var(--color-deep-blue-graphite);
+	--gifts-subtitle-color-fallback: rgb(var(--color-soft-graphite-rgb) / 72%);
 	--gifts-card-bg: rgb(var(--color-diamond-white-rgb) / 54%);
 	--gifts-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
 	--gifts-card-radius: 8px;
 	--gifts-card-title-color: var(--color-deep-blue-graphite);
-	--gifts-icon-color: var(--color-satin-blue);
+	--gifts-icon-color-fallback: var(--color-satin-blue);
 	--gifts-account-bg: rgb(var(--color-text-primary-rgb) / 5%);
 	--gifts-account-color: var(--color-text-primary);
 
@@ -402,15 +402,15 @@
 	// ---------------------------------------------------------------------
 	// Gallery section
 	// ---------------------------------------------------------------------
-	--gallery-section-bg: radial-gradient(
+	--gallery-section-bg-fallback: radial-gradient(
 		circle at 50% 10%,
 		rgb(var(--color-ice-blue-rgb) / 62%) 0%,
 		var(--color-surface-primary) 56%,
 		rgb(var(--color-pearl-gray-rgb) / 72%) 100%
 	);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-text-primary);
-	--gallery-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-text-primary);
+	--gallery-subtitle-color-fallback: rgb(var(--color-soft-graphite-rgb) / 72%);
 	--gallery-caption-bg: rgb(var(--color-diamond-white-rgb) / 86%);
 	--gallery-caption-color: var(--color-soft-graphite);
 	--gallery-caption-font: var(--font-body);

@@ -8,20 +8,20 @@
 	// invitation may lay drawn art over the paper (`--storybook-quote-art`, background layers) and
 	// open room for it (`--storybook-quote-padding-block`); both default to the plain page.
 	.quote-section {
-		--quote-bg: var(--storybook-quote-art, none), var(--storybook-paper);
-		--quote-text-color: var(--color-violet-ink);
-		--quote-author-color: var(--color-gold-ink);
-		--quote-accent-color: var(--color-leaf-gold);
+		--quote-bg-fallback: var(--storybook-quote-art, none), var(--storybook-paper);
+		--quote-text-color-fallback: var(--color-violet-ink);
+		--quote-author-color-fallback: var(--color-gold-ink);
+		--quote-accent-color-fallback: var(--color-leaf-gold);
 		--quote-padding-block: var(--storybook-quote-padding-block, clamp(4.5rem, 12vh, 7.5rem));
 
 		// 30rem keeps the closing words of a two-sentence quote together on desktop.
 		--quote-content-max-width: 30rem;
-		--quote-content-font: var(--font-display);
-		--quote-content-size: clamp(1.55rem, 4.4vw, 2.35rem);
-		--quote-content-line-height: 1.35;
-		--quote-content-letter-spacing: 0;
-		--quote-divider-display: none;
-		--quote-ornament-color: var(--color-leaf-gold);
+		--quote-content-font-fallback: var(--font-display);
+		--quote-content-size-fallback: clamp(1.55rem, 4.4vw, 2.35rem);
+		--quote-content-line-height-fallback: 1.35;
+		--quote-content-letter-spacing-fallback: 0;
+		--quote-divider-display-fallback: none;
+		--quote-ornament-color-fallback: var(--color-leaf-gold);
 		--quote-ornament-opacity: 0.6;
 		--quote-texture-bg: none;
 		--quote-texture-opacity: 0;
@@ -85,7 +85,7 @@
 		--section-band-paper: var(--storybook-night);
 		--intersection-surface: var(--color-violet-night);
 		--intersection-surface-fill: var(--storybook-night);
-		--intersection-blend: radial-gradient(
+		--intersection-blend-fallback: radial-gradient(
 			ellipse 140% 100% at 50% 0%,
 			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
 			transparent 72%

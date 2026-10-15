@@ -5,7 +5,10 @@
 .gallery-section[data-variant='magazine-spread'] {
 	--gallery-container-max-width: 1140px;
 
-	background: var(--gallery-section-bg, var(--color-surface-primary));
+	background: var(
+		--gallery-section-bg,
+		var(--gallery-section-bg-fallback, var(--color-surface-primary))
+	);
 	padding-block: var(--section-padding-block);
 
 	.gallery-section__header {
@@ -26,7 +29,7 @@
 		font-size: clamp(2.4rem, 5.5vw, 4.2rem);
 		font-weight: 800;
 		line-height: 0.92;
-		color: var(--gallery-title-color);
+		color: var(--gallery-title-color, var(--gallery-title-color-fallback));
 		text-transform: uppercase;
 		letter-spacing: 0;
 	}

@@ -12,10 +12,10 @@
 	--motion-reveal-blur: 4px;
 	--motion-ambient-scale-to: 1.03;
 	--motion-ambient-duration: 18s;
-	--intersection-depth: clamp(3rem, 7vw, 6rem);
-	--intersection-arch-height: clamp(2.5rem, 5vw, 5.25rem);
+	--intersection-depth-fallback: clamp(3rem, 7vw, 6rem);
+	--intersection-arch-height-fallback: clamp(2.5rem, 5vw, 5.25rem);
 	--intersection-surface: var(--color-surface-primary);
-	--intersection-blend: radial-gradient(
+	--intersection-blend-fallback: radial-gradient(
 		ellipse 140% 100% at 50% 0%,
 		rgb(var(--color-lilac-rgb) / 34%) 0%,
 		rgb(var(--color-candle-gold-rgb) / 8%) 38%,
@@ -154,15 +154,15 @@
 	// ---------------------------------------------------------------------
 	// Gifts
 	// ---------------------------------------------------------------------
-	--gifts-bg: var(--storybook-night);
+	--gifts-bg-fallback: var(--storybook-night);
 	--gifts-text-color: var(--color-candle-cream);
-	--gifts-title-color: var(--color-candle-cream);
-	--gifts-subtitle-color: var(--color-night-lilac);
+	--gifts-title-color-fallback: var(--color-candle-cream);
+	--gifts-subtitle-color-fallback: var(--color-night-lilac);
 	--gifts-card-bg: rgb(var(--color-story-cream-rgb) / 6%);
 	--gifts-card-border: 1px solid rgb(var(--color-candle-gold-rgb) / 38%);
 	--gifts-card-radius: 2px;
 	--gifts-card-title-color: var(--color-candle-cream);
-	--gifts-icon-color: var(--color-candle-gold);
+	--gifts-icon-color-fallback: var(--color-candle-gold);
 	--gifts-account-bg: rgb(var(--color-story-cream-rgb) / 8%);
 	--gifts-account-color: var(--color-candle-cream);
 
@@ -339,11 +339,11 @@
 	// ---------------------------------------------------------------------
 	// Gallery (night ground; photographs keep a thin candle rule)
 	// ---------------------------------------------------------------------
-	--gallery-section-bg: var(--storybook-night);
+	--gallery-section-bg-fallback: var(--storybook-night);
 	--gallery-item-bg: var(--color-violet-midnight);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-candle-cream);
-	--gallery-subtitle-color: var(--color-night-lilac);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-candle-cream);
+	--gallery-subtitle-color-fallback: var(--color-night-lilac);
 	--gallery-caption-bg: rgb(var(--color-violet-night-rgb) / 86%);
 	--gallery-caption-color: var(--color-candle-cream);
 	--gallery-caption-font: var(--font-body);

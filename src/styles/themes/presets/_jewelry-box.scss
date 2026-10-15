@@ -50,10 +50,10 @@
 	// ---------------------------------------------------------------------
 	// Quote section tokens
 	// ---------------------------------------------------------------------
-	--quote-bg: var(--color-surface-dark);
-	--quote-text-color: var(--color-text-on-dark);
-	--quote-author-color: var(--color-action-accent);
-	--quote-accent-color: var(--color-action-accent);
+	--quote-bg-fallback: var(--color-surface-dark);
+	--quote-text-color-fallback: var(--color-text-on-dark);
+	--quote-author-color-fallback: var(--color-action-accent);
+	--quote-accent-color-fallback: var(--color-action-accent);
 
 	// ---------------------------------------------------------------------
 	// Music Player
@@ -143,14 +143,14 @@
 	// ---------------------------------------------------------------------
 	// Gallery tokens
 	// ---------------------------------------------------------------------
-	--gallery-section-bg: radial-gradient(
+	--gallery-section-bg-fallback: radial-gradient(
 		circle at 50% 50%,
 		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-action-accent);
-	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb) / 72%);
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-action-accent);
+	--gallery-subtitle-color-fallback: rgb(var(--color-surface-dark-rgb) / 72%);
 	--gallery-caption-bg: rgb(255 255 255 / 90%);
 	--gallery-caption-color: var(--color-action-accent);
 	--gallery-caption-font: #{sys-type.$sys-font-display-hacienda};
