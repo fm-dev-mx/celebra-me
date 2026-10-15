@@ -434,11 +434,11 @@ or cover.
 
 **Why it matters.** First meaningful visual of the invitation. Guests judge quality here.
 
-**Measurement.** Vercel Speed Insights UI on production (`Layout.astro` loads it when
-`VERCEL_ENV=production`, including invitation routes). The Vercel MCP `get_web_analytics` tool
-exposes **pageviews**, not LCP/CLS/INP. This repository cannot query p75 via API. Local/embedded
-browsers did not reliably emit LCP entries — lab LCP is **not reliably observable**. Canonical
-runtime source: Speed Insights **p75**, not one laptop sample.
+**Measurement.** Production RUM (`Layout.astro` loads the Cloudflare Web Analytics beacon when
+`PUBLIC_CF_WEB_ANALYTICS_TOKEN` is set, including invitation routes). The Vercel MCP
+`get_web_analytics` tool exposes **pageviews**, not LCP/CLS/INP. This repository cannot query p75
+via API. Local/embedded browsers did not reliably emit LCP entries — lab LCP is **not reliably
+observable**. Canonical runtime source: production RUM **p75**, not one laptop sample.
 
 **Direct vs proxy.** Direct only in production RUM. HTML hero URL is not LCP.
 
@@ -673,9 +673,9 @@ investigate.
 | RSVP API errors  | Vercel runtime logs / errors              | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
 | Usage vs traffic | Vercel / Supabase / Cloudinary dashboards | Consumption rising faster than opens/RSVPs                          | Operation contracts, media path         |
 
-Vercel Analytics (also production `Layout.astro`) is pageview telemetry, not a Web Vital. It can
-help as a traffic denominator. Commercial GA4 is consent-gated and must not be required for these
-operational metrics.
+Cloudflare Web Analytics (the beacon in `Layout.astro`) is pageview telemetry, not a Web Vital. It
+can help as a traffic denominator. Commercial GA4 is consent-gated and must not be required for
+these operational metrics.
 
 ## CI contract
 
