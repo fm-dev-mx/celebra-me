@@ -47,7 +47,7 @@
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--header-nav-color);
+		color: var(--header-nav-color, var(--header-nav-color-fallback));
 		position: relative;
 		width: fit-content;
 		padding: var(--spacing-xs) 0;
@@ -95,7 +95,10 @@
 		text-shadow: var(--header-nav-login-shadow, none);
 
 		&:hover {
-			color: var(--header-nav-hover-color, var(--color-text-on-dark));
+			color: var(
+				--header-nav-hover-color,
+				var(--header-nav-hover-color-fallback, var(--color-text-on-dark))
+			);
 		}
 	}
 
@@ -109,12 +112,12 @@
 		font-weight: 600;
 		letter-spacing: 0.02em;
 		text-decoration: none;
-		color: var(--header-nav-cta-color);
-		background: var(--header-nav-cta-bg);
+		color: var(--header-nav-cta-color, var(--header-nav-cta-color-fallback));
+		background: var(--header-nav-cta-bg, var(--header-nav-cta-bg-fallback));
 		backdrop-filter: blur(10px);
-		border: 1px solid var(--header-nav-cta-border);
+		border: 1px solid var(--header-nav-cta-border, var(--header-nav-cta-border-fallback));
 		border-radius: 999px;
-		box-shadow: var(--header-nav-cta-shadow);
+		box-shadow: var(--header-nav-cta-shadow, var(--header-nav-cta-shadow-fallback));
 		transition: var(--transition-standard);
 
 		svg {
@@ -125,9 +128,9 @@
 
 		&:hover {
 			transform: translateY(-2px);
-			background: var(--header-nav-cta-bg);
-			color: var(--header-nav-cta-color);
-			border-color: var(--header-nav-cta-border);
+			background: var(--header-nav-cta-bg, var(--header-nav-cta-bg-fallback));
+			color: var(--header-nav-cta-color, var(--header-nav-cta-color-fallback));
+			border-color: var(--header-nav-cta-border, var(--header-nav-cta-border-fallback));
 			box-shadow: 0 8px 25px rgb(0 0 0 / 20%);
 		}
 	}
@@ -144,17 +147,17 @@
 // --- State Overrides (scoped to #home-header, unified contract) ---
 
 #home-header {
-	--header-nav-color: var(--landing-header-nav-color);
+	--header-nav-color-fallback: var(--landing-header-nav-color);
 	--header-nav-weight: 300;
 	--header-nav-shadow-transparent: var(--landing-header-nav-shadow);
 	--header-nav-underline: var(--landing-header-nav-underline);
 	--header-nav-login-color: var(--landing-header-nav-login-color);
 	--header-nav-login-shadow: var(--landing-header-nav-login-shadow);
-	--header-nav-hover-color: var(--landing-header-nav-hover-color);
-	--header-nav-cta-bg: var(--landing-header-nav-cta-bg);
-	--header-nav-cta-border: var(--landing-header-nav-cta-border);
-	--header-nav-cta-color: var(--landing-header-nav-cta-color);
-	--header-nav-cta-shadow: var(--landing-header-nav-cta-shadow);
+	--header-nav-hover-color-fallback: var(--landing-header-nav-hover-color);
+	--header-nav-cta-bg-fallback: var(--landing-header-nav-cta-bg);
+	--header-nav-cta-border-fallback: var(--landing-header-nav-cta-border);
+	--header-nav-cta-color-fallback: var(--landing-header-nav-cta-color);
+	--header-nav-cta-shadow-fallback: var(--landing-header-nav-cta-shadow);
 	--nav-menu-open-container-bg: var(--landing-header-menu-open-bg);
 	--nav-menu-open-container-border: var(--landing-header-menu-open-border);
 	--hamburger-width: 26px;
@@ -163,11 +166,11 @@
 }
 
 #home-header.header-base--transparent {
-	--header-nav-color: var(--landing-header-nav-color-transparent);
+	--header-nav-color-fallback: var(--landing-header-nav-color-transparent);
 	--header-nav-shadow-transparent: var(--landing-header-nav-shadow-transparent);
 	--header-nav-underline: var(--landing-header-nav-underline-transparent);
-	--header-nav-cta-bg: var(--landing-header-nav-cta-bg-transparent);
-	--header-nav-cta-border: var(--landing-header-nav-cta-border-transparent);
+	--header-nav-cta-bg-fallback: var(--landing-header-nav-cta-bg-transparent);
+	--header-nav-cta-border-fallback: var(--landing-header-nav-cta-border-transparent);
 }
 
 #home-header.header-base--transparent .home-header__logo--white {
@@ -179,15 +182,15 @@
 }
 
 #home-header.header-base--scrolled {
-	--header-nav-color: var(--landing-header-nav-color-scrolled);
+	--header-nav-color-fallback: var(--landing-header-nav-color-scrolled);
 	--header-nav-weight: 500;
 	--header-nav-shadow-transparent: none;
 	--header-nav-underline: var(--landing-header-nav-underline-scrolled);
 	--header-nav-login-color: var(--landing-header-nav-login-color-scrolled);
-	--header-nav-cta-bg: var(--landing-header-nav-cta-bg-scrolled);
-	--header-nav-cta-color: var(--landing-header-nav-cta-color-scrolled);
-	--header-nav-cta-border: var(--landing-header-nav-cta-border-scrolled);
-	--header-nav-cta-shadow: var(--landing-header-nav-cta-shadow-scrolled);
+	--header-nav-cta-bg-fallback: var(--landing-header-nav-cta-bg-scrolled);
+	--header-nav-cta-color-fallback: var(--landing-header-nav-cta-color-scrolled);
+	--header-nav-cta-border-fallback: var(--landing-header-nav-cta-border-scrolled);
+	--header-nav-cta-shadow-fallback: var(--landing-header-nav-cta-shadow-scrolled);
 }
 
 #home-header.header-base--scrolled .home-header__logo--white {

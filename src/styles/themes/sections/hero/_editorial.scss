@@ -43,12 +43,12 @@
 			content: '';
 			position: absolute;
 			inset: 0;
-			background: var(--hero-overlay);
+			background: var(--hero-overlay, var(--hero-overlay-fallback));
 			z-index: 1;
 		}
 
 		img {
-			filter: var(--hero-image-filter);
+			filter: var(--hero-image-filter, var(--hero-image-filter-fallback));
 		}
 	}
 
@@ -103,7 +103,7 @@
 	.invitation-hero__title {
 		grid-area: title;
 		font-family: var(--font-display);
-		font-size: var(--hero-title-size);
+		font-size: var(--hero-title-size, var(--hero-title-size-fallback));
 		line-height: 0.85;
 		color: var(--color-text-on-dark);
 		text-transform: uppercase;
@@ -134,7 +134,7 @@
 			content: '';
 			position: absolute;
 			inset: 0;
-			background: var(--light-sweep);
+			background: var(--light-sweep, var(--light-sweep-fallback));
 			background-size: 200% 200%;
 			background-position: -100% -100%;
 			z-index: 2;
@@ -157,7 +157,7 @@
 			height: 100%;
 			object-fit: cover;
 			object-position: center 15%;
-			filter: var(--hero-portrait-filter);
+			filter: var(--hero-portrait-filter, var(--hero-portrait-filter-fallback));
 		}
 
 		&:hover {

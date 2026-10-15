@@ -1,14 +1,14 @@
 .theme-preset--editorial-magazine .quote-section {
-	--quote-bg: var(--editorial-magazine-ink);
-	--quote-text-color: var(--editorial-magazine-white);
-	--quote-author-color: rgb(var(--editorial-magazine-white-rgb) / 62%);
-	--quote-content-font: var(--font-display);
+	--quote-bg-fallback: var(--editorial-magazine-ink);
+	--quote-text-color-fallback: var(--editorial-magazine-white);
+	--quote-author-color-fallback: rgb(var(--editorial-magazine-white-rgb) / 62%);
+	--quote-content-font-fallback: var(--font-display);
 	--quote-content-style: normal;
-	--quote-content-letter-spacing: 0;
+	--quote-content-letter-spacing-fallback: 0;
 
 	position: relative;
-	background: var(--quote-bg);
-	color: var(--quote-text-color);
+	background: var(--quote-bg, var(--quote-bg-fallback));
+	color: var(--quote-text-color, var(--quote-text-color-fallback));
 	text-align: left;
 	overflow: hidden;
 
@@ -26,14 +26,17 @@
 	}
 
 	.quote-section__text {
-		color: var(--quote-text-color);
-		font-family: var(--quote-content-font);
-		font-size: var(--quote-content-size);
+		color: var(--quote-text-color, var(--quote-text-color-fallback));
+		font-family: var(--quote-content-font, var(--quote-content-font-fallback));
+		font-size: var(--quote-content-size, var(--quote-content-size-fallback));
 		font-style: italic;
 		font-weight: 500;
-		line-height: var(--quote-content-line-height);
+		line-height: var(--quote-content-line-height, var(--quote-content-line-height-fallback));
 		text-transform: none;
-		letter-spacing: var(--quote-content-letter-spacing);
+		letter-spacing: var(
+			--quote-content-letter-spacing,
+			var(--quote-content-letter-spacing-fallback)
+		);
 		text-wrap: pretty;
 	}
 
@@ -41,7 +44,7 @@
 		margin-top: clamp(2rem, 6vw, 3.5rem);
 		padding-top: clamp(1rem, 3vw, 1.5rem);
 		border-top: 1px solid rgb(var(--editorial-magazine-white-rgb) / 16%);
-		color: var(--quote-author-color);
+		color: var(--quote-author-color, var(--quote-author-color-fallback));
 		font-family: var(--font-label);
 		font-size: clamp(0.68rem, 1.2vw, 0.82rem);
 		font-weight: 700;

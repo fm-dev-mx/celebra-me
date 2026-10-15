@@ -50,7 +50,7 @@
 			border-radius: inherit;
 
 			// Keep the surface in the shared token so the variant fallback preserves this texture.
-			--pa-card-glow:
+			--pa-card-glow-fallback:
 				radial-gradient(
 					ellipse 80% 55% at 50% 0%,
 					rgb(var(--color-diamond-white-rgb) / 42%) 0%,

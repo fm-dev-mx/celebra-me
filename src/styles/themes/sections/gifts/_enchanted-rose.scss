@@ -1,9 +1,9 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--enchanted-rose .gifts-section {
-	--gifts-padding-block: clamp(4.4rem, 8vw, 6.6rem);
-	--gifts-padding-inline: clamp(1rem, 4vw, 2rem);
-	--gifts-bg:
+	--gifts-padding-block-fallback: clamp(4.4rem, 8vw, 6.6rem);
+	--gifts-padding-inline-fallback: clamp(1rem, 4vw, 2rem);
+	--gifts-bg-fallback:
 		linear-gradient(
 			180deg,
 			rgb(var(--color-rose-shadow-rgb) / 24%) 0%,
@@ -14,8 +14,8 @@
 		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
 		var(--enchanted-section-ivory-bg, var(--color-warm-ivory));
 	--gifts-text-color: var(--color-velvet-burgundy);
-	--gifts-title-color: var(--color-velvet-burgundy);
-	--gifts-subtitle-color: rgb(var(--color-walnut-brown-rgb) / 74%);
+	--gifts-title-color-fallback: var(--color-velvet-burgundy);
+	--gifts-subtitle-color-fallback: rgb(var(--color-walnut-brown-rgb) / 74%);
 	--gifts-title-letter-spacing: 0.02em;
 	--gifts-card-bg: rgb(var(--color-warm-ivory-rgb) / 72%);
 	--gifts-card-border: var(
@@ -27,7 +27,7 @@
 		0 22px 54px rgb(var(--color-rose-shadow-rgb) / 12%),
 		inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 84%);
 	--gifts-card-title-color: var(--color-velvet-burgundy);
-	--gifts-icon-color: var(--color-antique-gold);
+	--gifts-icon-color-fallback: var(--color-antique-gold);
 	--gifts-button-color: var(--color-velvet-burgundy);
 	--gifts-button-border: 1px solid rgb(var(--color-antique-gold-rgb) / 48%);
 	--gifts-button-border-radius: 999px;
@@ -44,7 +44,7 @@
 	--gifts-success-border: var(--color-velvet-burgundy);
 	--gifts-success-color: var(--color-warm-ivory);
 
-	background: var(--gifts-bg);
+	background: var(--gifts-bg, var(--gifts-bg-fallback));
 	color: var(--gifts-text-color);
 
 	&::before,
@@ -106,7 +106,7 @@
 		font-weight: 400;
 		line-height: 0.98;
 		text-transform: none;
-		color: var(--gifts-title-color);
+		color: var(--gifts-title-color, var(--gifts-title-color-fallback));
 	}
 
 	.gifts-section__flourish {
@@ -145,7 +145,7 @@
 		max-width: 35rem;
 		font-size: clamp(0.92rem, 1.6vw, 1.04rem);
 		line-height: 1.7;
-		color: var(--gifts-subtitle-color);
+		color: var(--gifts-subtitle-color, var(--gifts-subtitle-color-fallback));
 	}
 
 	.gifts-section__separator {
@@ -346,7 +346,7 @@
 		margin: 0 auto;
 		font-size: clamp(0.95rem, 1.5vw, 1.02rem);
 		line-height: 1.65;
-		color: var(--gifts-subtitle-color);
+		color: var(--gifts-subtitle-color, var(--gifts-subtitle-color-fallback));
 	}
 
 	.bank-details {

@@ -7,43 +7,43 @@
 // Default Header Variables (Safe Fallbacks)
 
 .theme-preset--angelic-presence .header-base {
-	--header-bg-scrolled: rgb(var(--color-angelic-white-rgb) / 96%);
+	--header-bg-scrolled-fallback: rgb(var(--color-angelic-white-rgb) / 96%);
 	--header-border-scrolled: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
-	--header-nav-title-color: var(--color-sacred-gold-readable);
-	--header-nav-color: var(--color-eternal-ink);
-	--header-nav-color-transparent: var(--color-eternal-ink);
-	--header-nav-hover-color: var(--color-sacred-gold-readable);
+	--header-nav-title-color-fallback: var(--color-sacred-gold-readable);
+	--header-nav-color-fallback: var(--color-eternal-ink);
+	--header-nav-color-transparent-fallback: var(--color-eternal-ink);
+	--header-nav-hover-color-fallback: var(--color-sacred-gold-readable);
 	--header-nav-shadow-transparent: 0 1px 3px rgb(var(--color-eternal-ink-rgb) / 12%);
 	--header-nav-filter-transparent: none;
 	--header-border-color: rgb(var(--color-sacred-gold-rgb) / 22%);
-	--header-nav-cta-bg: rgb(var(--color-angelic-white-rgb) / 74%);
-	--header-nav-cta-color: var(--color-eternal-ink);
-	--header-nav-cta-border: rgb(var(--color-sacred-gold-rgb) / 52%);
-	--header-nav-cta-shadow:
+	--header-nav-cta-bg-fallback: rgb(var(--color-angelic-white-rgb) / 74%);
+	--header-nav-cta-color-fallback: var(--color-eternal-ink);
+	--header-nav-cta-border-fallback: rgb(var(--color-sacred-gold-rgb) / 52%);
+	--header-nav-cta-shadow-fallback:
 		0 14px 34px -28px rgb(var(--color-eternal-ink-rgb) / 28%),
 		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 70%);
-	--header-nav-cta-hover-bg: rgb(var(--color-sacred-gold-rgb) / 12%);
-	--header-nav-cta-hover-color: var(--color-eternal-ink);
-	--header-nav-cta-hover-border: rgb(var(--color-sacred-gold-rgb) / 70%);
+	--header-nav-cta-hover-bg-fallback: rgb(var(--color-sacred-gold-rgb) / 12%);
+	--header-nav-cta-hover-color-fallback: var(--color-eternal-ink);
+	--header-nav-cta-hover-border-fallback: rgb(var(--color-sacred-gold-rgb) / 70%);
 	--mobile-drawer-bg: rgb(var(--color-ivory-warm-rgb) / 99%);
 	--mobile-drawer-border: rgb(var(--color-sacred-gold-rgb) / 38%);
-	--mobile-drawer-link-color: var(--color-eternal-ink);
-	--mobile-drawer-link-hover: var(--color-sacred-gold-readable);
+	--mobile-drawer-link-color-fallback: var(--color-eternal-ink);
+	--mobile-drawer-link-hover-fallback: var(--color-sacred-gold-readable);
 	--mobile-drawer-login-color: rgb(var(--color-eternal-ink-rgb) / 68%);
 	--mobile-drawer-login-hover-color: var(--color-eternal-ink);
-	--mobile-drawer-cta-bg: var(--color-eternal-ink);
-	--mobile-drawer-cta-color: var(--color-pure-ivory);
-	--mobile-drawer-cta-border: 1px solid var(--color-eternal-ink);
+	--mobile-drawer-cta-bg-fallback: var(--color-eternal-ink);
+	--mobile-drawer-cta-color-fallback: var(--color-pure-ivory);
+	--mobile-drawer-cta-border-fallback: 1px solid var(--color-eternal-ink);
 	--mobile-drawer-cta-shadow: 0 12px 28px rgb(var(--color-eternal-ink-rgb) / 18%);
-	--mobile-drawer-cta-hover-bg: var(--color-sacred-gold-readable);
-	--mobile-drawer-cta-hover-color: var(--color-pure-ivory);
+	--mobile-drawer-cta-hover-bg-fallback: var(--color-sacred-gold-readable);
+	--mobile-drawer-cta-hover-color-fallback: var(--color-pure-ivory);
 	--mobile-drawer-cta-hover-border: 1px solid var(--color-sacred-gold-readable);
 	--mobile-drawer-footer-copy: rgb(var(--color-eternal-ink-rgb) / 58%);
 	--mobile-drawer-shadow: -20px 0 80px rgb(var(--color-eternal-ink-rgb) / 10%);
 	--mobile-signature-color: rgb(var(--color-eternal-ink-rgb) / 72%);
 	--mobile-close-button-color: var(--color-eternal-ink);
-	--hamburger-color: var(--color-eternal-ink);
-	--hamburger-color-menu-open: var(--color-eternal-ink);
+	--hamburger-color-fallback: var(--color-eternal-ink);
+	--hamburger-color-menu-open-fallback: var(--color-eternal-ink);
 
 	&::before {
 		background: linear-gradient(

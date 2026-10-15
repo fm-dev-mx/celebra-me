@@ -42,47 +42,47 @@
 	--formal-chapter-label:
 		var(--formal-chapter-label-font, 'Bodoni Moda Variable'), 'Playfair Display Variable',
 		georgia, serif;
-	--pa-padding-block: clamp(3rem, 6vw, 4.5rem);
-	--pa-padding-block-lg: clamp(4rem, 7vw, 5.5rem);
+	--pa-padding-block-fallback: clamp(3rem, 6vw, 4.5rem);
+	--pa-padding-block-lg-fallback: clamp(4rem, 7vw, 5.5rem);
 	--pa-card-border-radius: 0.875rem;
-	--pa-card-bg-color: var(--formal-chapter-band);
-	--pa-card-bg-image: linear-gradient(
+	--pa-card-bg-color-fallback: var(--formal-chapter-band);
+	--pa-card-bg-image-fallback: linear-gradient(
 		165deg,
 		rgb(var(--formal-chapter-cream-rgb) / 98%) 0%,
 		rgb(var(--formal-chapter-sand-rgb) / 90%) 52%,
 		rgb(var(--formal-chapter-cream-rgb) / 98%) 100%
 	);
-	--pa-card-border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 32%);
-	--pa-card-shadow: 0 14px 36px rgb(0 0 0 / 14%);
-	--pa-card-inner-border: none;
-	--pa-card-glow: none;
-	--pa-count-frame-border: none;
-	--pa-count-frame-radius: 0;
-	--pa-count-frame-bg: transparent;
-	--pa-count-frame-shadow: none;
-	--pa-count-frame-inner-border: none;
-	--pa-count-color: var(--formal-chapter-band);
-	--pa-corner-opacity: 30%;
-	--pa-corner-color: var(--formal-chapter-metal);
-	--pa-corner-glow-blur: 0;
-	--pa-eyebrow-color: var(--formal-chapter-meta);
-	--pa-title-color: var(--formal-chapter-title);
-	--pa-title-tracking: 0.12em;
-	--pa-subtitle-color: var(--formal-chapter-muted);
-	--pa-label-color: var(--formal-chapter-meta);
-	--pa-guest-color: var(--formal-chapter-ink);
-	--pa-divider-gradient: linear-gradient(
+	--pa-card-border-fallback: 1px solid rgb(var(--formal-chapter-metal-rgb) / 32%);
+	--pa-card-shadow-fallback: 0 14px 36px rgb(0 0 0 / 14%);
+	--pa-card-inner-border-fallback: none;
+	--pa-card-glow-fallback: none;
+	--pa-count-frame-border-fallback: none;
+	--pa-count-frame-radius-fallback: 0;
+	--pa-count-frame-bg-fallback: transparent;
+	--pa-count-frame-shadow-fallback: none;
+	--pa-count-frame-inner-border-fallback: none;
+	--pa-count-color-fallback: var(--formal-chapter-band);
+	--pa-corner-opacity-fallback: 30%;
+	--pa-corner-color-fallback: var(--formal-chapter-metal);
+	--pa-corner-glow-blur-fallback: 0;
+	--pa-eyebrow-color-fallback: var(--formal-chapter-meta);
+	--pa-title-color-fallback: var(--formal-chapter-title);
+	--pa-title-tracking-fallback: 0.12em;
+	--pa-subtitle-color-fallback: var(--formal-chapter-muted);
+	--pa-label-color-fallback: var(--formal-chapter-meta);
+	--pa-guest-color-fallback: var(--formal-chapter-ink);
+	--pa-divider-gradient-fallback: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(var(--formal-chapter-metal-rgb) / 45%) 50%,
 		transparent 100%
 	);
-	--pa-divider-diamond-bg: var(--formal-chapter-cream);
-	--pa-divider-diamond-border-color: var(--formal-chapter-metal);
-	--pa-divider-diamond-shadow: none;
-	--pa-footer-bg: transparent;
-	--pa-footer-border-top: 1px solid rgb(var(--formal-chapter-metal-rgb) / 20%);
-	--pa-footer-text-color: rgb(var(--formal-chapter-ink-rgb) / 72%);
+	--pa-divider-diamond-bg-fallback: var(--formal-chapter-cream);
+	--pa-divider-diamond-border-color-fallback: var(--formal-chapter-metal);
+	--pa-divider-diamond-shadow-fallback: none;
+	--pa-footer-bg-fallback: transparent;
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--formal-chapter-metal-rgb) / 20%);
+	--pa-footer-text-color-fallback: rgb(var(--formal-chapter-ink-rgb) / 72%);
 	--pa-footer-text-font-style: normal;
 
 	padding-block: var(--pa-section-padding, clamp(1rem, 2.5vw, 2rem));
@@ -131,7 +131,7 @@
 			font-family: var(--formal-chapter-display);
 			font-size: var(--pa-title-size, clamp(1rem, 1.4vw + 0.5rem, 1.25rem));
 			font-weight: 500;
-			letter-spacing: var(--pa-title-tracking, 0.12em);
+			letter-spacing: var(--pa-title-tracking, var(--pa-title-tracking-fallback, 0.12em));
 			text-transform: var(--pa-title-transform, uppercase);
 		}
 
@@ -387,12 +387,12 @@
 			var(--pa-race-checker-light) 0 50%
 		)
 		0 0 / var(--pa-race-checker-size) var(--pa-race-checker-size);
-	--pa-card-border: 0;
-	--pa-card-bg-image: none;
-	--pa-card-shadow: 0 18px 40px rgb(0 0 0 / 28%);
-	--pa-eyebrow-color: var(--pa-race-band-ink);
-	--pa-title-color: var(--pa-race-band-ink);
-	--pa-subtitle-color: var(--pa-race-band-ink);
+	--pa-card-border-fallback: 0;
+	--pa-card-bg-image-fallback: none;
+	--pa-card-shadow-fallback: 0 18px 40px rgb(0 0 0 / 28%);
+	--pa-eyebrow-color-fallback: var(--pa-race-band-ink);
+	--pa-title-color-fallback: var(--pa-race-band-ink);
+	--pa-subtitle-color-fallback: var(--pa-race-band-ink);
 
 	.personalized-access__container {
 		width: min(100%, 30rem);

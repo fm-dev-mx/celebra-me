@@ -53,7 +53,7 @@
 		}
 
 		img {
-			filter: var(--hero-image-filter);
+			filter: var(--hero-image-filter, var(--hero-image-filter-fallback));
 			object-position: var(--hero-focal-point, var(--hero-focal-point-default, center 32%));
 		}
 	}

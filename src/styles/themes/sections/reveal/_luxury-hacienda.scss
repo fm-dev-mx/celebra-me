@@ -1,6 +1,6 @@
 .envelope-wrapper[data-variant='luxury-hacienda'] {
 	--duration-reveal: 1.8s;
-	--env-bg: radial-gradient(
+	--env-bg-fallback: radial-gradient(
 		ellipse at 50% 30%,
 		hsl(28deg 45% 18%) 0%,
 		hsl(24deg 40% 12%) 45%,
@@ -15,7 +15,7 @@
 	--env-paper-border: hsl(38deg 45% 70%);
 	--env-text-primary: var(--color-text-primary);
 	--env-text-secondary: hsl(30deg 40% 35%);
-	--env-accent: hsl(38deg 45% 55%);
+	--env-accent-fallback: hsl(38deg 45% 55%);
 	--env-seal-bg: radial-gradient(
 		circle at 38% 35%,
 		hsl(40deg 60% 78%) 0%,
@@ -142,8 +142,8 @@
 		background: linear-gradient(
 			to right,
 			transparent,
-			var(--env-accent) 30%,
-			var(--env-accent) 70%,
+			var(--env-accent, var(--env-accent-fallback)) 30%,
+			var(--env-accent, var(--env-accent-fallback)) 70%,
 			transparent
 		);
 		opacity: 35%;

@@ -13,7 +13,10 @@
 .gallery-section[data-variant='mirrored-mosaic'] {
 	padding-block: var(--gallery-section-padding-block, clamp(4.5rem, 12vw, 7.5rem));
 	padding-inline: 0;
-	background: var(--gallery-section-bg, var(--color-surface-primary));
+	background: var(
+		--gallery-section-bg,
+		var(--gallery-section-bg-fallback, var(--color-surface-primary))
+	);
 
 	.gallery-section__header {
 		padding-inline: clamp(1.5rem, 6vw, 3rem);

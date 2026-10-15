@@ -7,9 +7,9 @@
 
 .gallery-section[data-variant='index-choreography'] {
 	padding-block: clamp(6rem, 10vw, 10rem);
-	background: var(--gallery-section-bg);
+	background: var(--gallery-section-bg, var(--gallery-section-bg-fallback));
 
-	--gallery-section-bg:
+	--gallery-section-bg-fallback:
 		radial-gradient(
 			circle at 16% 8%,
 			rgb(var(--color-diamond-white-rgb) / 94%) 0%,
@@ -61,7 +61,7 @@
 	// The title is a full sentence at display size, so it needs body-copy contrast and
 	// sentence case. Declared here rather than in the preset because _gallery.scss sets
 	// these two tokens on `.gallery-section` itself, which outranks any ancestor preset.
-	--gallery-title-color: var(--color-deep-blue-graphite);
+	--gallery-title-color-fallback: var(--color-deep-blue-graphite);
 	--gallery-title-transform: none;
 	--gallery-lightbox-bg: rgb(var(--color-deep-blue-graphite-rgb) / 86%);
 	--gallery-lightbox-close-color: rgb(var(--color-diamond-white-rgb) / 92%);
@@ -140,7 +140,7 @@
 		font-weight: 400;
 		line-height: 0.94;
 		letter-spacing: 0.035em;
-		color: var(--gallery-title-color);
+		color: var(--gallery-title-color, var(--gallery-title-color-fallback));
 		text-shadow: none;
 		text-wrap: balance;
 	}

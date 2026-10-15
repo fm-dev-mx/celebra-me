@@ -95,7 +95,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 
 .envelope-wrapper[data-variant='storybook-lanterns'] {
 	--storybook-gold: var(--storybook-ink, var(--color-ornament-gold, var(--color-border-premium)));
-	--env-bg:
+	--env-bg-fallback:
 		#{$storybook-grain},
 		radial-gradient(
 			ellipse 80% 55% at 50% 100%,
@@ -109,7 +109,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	--env-paper-border: color-mix(in srgb, var(--storybook-gold) 55%, transparent);
 	--env-text-primary: var(--color-text-primary);
 	--env-text-secondary: var(--color-text-secondary);
-	--env-accent: var(--storybook-gold);
+	--env-accent-fallback: var(--storybook-gold);
 	--env-seal-accent: var(--storybook-gold);
 	--env-seal-bg: radial-gradient(
 		circle at 36% 30%,
@@ -126,13 +126,13 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		0 4px 8px color-mix(in srgb, var(--color-text-primary) 18%, transparent),
 		inset 1px 1px 0 color-mix(in srgb, white 55%, transparent),
 		inset -1px -2px 3px color-mix(in srgb, black 22%, transparent);
-	--env-shadow-container:
+	--env-shadow-container-fallback:
 		0 1px 2px color-mix(in srgb, var(--color-text-primary) 14%, transparent),
 		0 26px 52px -28px color-mix(in srgb, var(--color-text-primary) 32%, transparent);
-	--env-container-radius: 2px;
-	--env-container-width: min(86vw, 40rem);
-	--env-container-ratio: 1.18;
-	--env-container-max-height: 60svh;
+	--env-container-radius-fallback: 2px;
+	--env-container-width-fallback: min(86vw, 40rem);
+	--env-container-ratio-fallback: 1.18;
+	--env-container-max-height-fallback: 60svh;
 	--env-grid: 36% 24% 40%;
 	--env-seal-size-min: 72px;
 	--env-seal-size-max: 100px;
@@ -317,7 +317,10 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		font-size: var(--env-open-label-size, 0.86rem);
 		letter-spacing: var(--storybook-instruction-tracking, 0.18em);
 		text-transform: uppercase;
-		color: var(--storybook-instruction-ink, var(--env-text-secondary));
+		color: var(
+			--env-instruction-color,
+			var(--storybook-instruction-ink, var(--env-text-secondary))
+		);
 		opacity: 100%;
 	}
 
@@ -464,9 +467,9 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	}
 
 	@include mixins.respond-below(sm) {
-		--env-container-width: min(88vw, 344px);
-		--env-container-ratio: 0.74;
-		--env-container-max-height: min(74svh, 560px);
+		--env-container-width-fallback: min(88vw, 344px);
+		--env-container-ratio-fallback: 0.74;
+		--env-container-max-height-fallback: min(74svh, 560px);
 		--env-grid: 38% 22% 40%;
 		--env-title-size: clamp(2.6rem, 14cqw, 3.2rem);
 

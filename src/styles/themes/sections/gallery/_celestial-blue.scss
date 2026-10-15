@@ -3,7 +3,7 @@
 // Celestial single-keepsake presentation compatibility.
 .theme-preset--celestial-blue .gallery-section[data-variant='single-keepsake'] {
 	--gallery-section-padding-block: clamp(3.5rem, 7vw, 5.5rem);
-	--gallery-section-bg: linear-gradient(
+	--gallery-section-bg-fallback: linear-gradient(
 		180deg,
 		rgb(var(--color-cool-ivory-rgb) / 96%) 0%,
 		rgb(var(--color-ice-blue-rgb) / 24%) 100%
@@ -22,7 +22,7 @@
 
 .theme-preset--celestial-blue
 	.gallery-section[data-variant='single-keepsake'][data-presentation='pet-keepsake'] {
-	--gallery-section-bg:
+	--gallery-section-bg-fallback:
 		radial-gradient(ellipse 55% 35% at 50% 65%, rgb(234 183 200 / 12%) 0%, transparent 100%),
 		radial-gradient(ellipse 45% 30% at 28% 62%, rgb(210 185 160 / 10%) 0%, transparent 100%),
 		linear-gradient(
@@ -32,8 +32,8 @@
 			rgb(var(--color-deep-blue-graphite-rgb) / 2%) 100%
 		);
 	--gallery-header-gap: clamp(1.6rem, 4vw, 2.4rem);
-	--gallery-title-color: #3e2b22; /* stylelint-disable-line color-no-hex */
-	--gallery-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 60%);
+	--gallery-title-color-fallback: #3e2b22; /* stylelint-disable-line color-no-hex */
+	--gallery-subtitle-color-fallback: rgb(var(--color-soft-graphite-rgb) / 60%);
 	--gallery-subtitle-size: clamp(0.82rem, 2.2vw, 0.95rem);
 	--gallery-item-radius: 16px;
 	--gallery-item-padding: clamp(0.55rem, 1.4vw, 0.85rem);

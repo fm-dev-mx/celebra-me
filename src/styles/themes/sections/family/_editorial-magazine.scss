@@ -1,7 +1,7 @@
 .theme-preset--editorial-magazine .family {
 	position: relative;
-	background: var(--family-bg);
-	color: var(--family-text-primary);
+	background: var(--family-bg, var(--family-bg-fallback));
+	color: var(--family-text-primary, var(--family-text-primary-fallback));
 	padding-block: var(--section-padding-block);
 
 	.family__header {
@@ -20,8 +20,8 @@
 	}
 
 	.family__title {
-		color: var(--family-text-primary);
-		font-family: var(--family-title-font);
+		color: var(--family-text-primary, var(--family-text-primary-fallback));
+		font-family: var(--family-title-font, var(--family-title-font-fallback));
 		font-size: var(--section-title-size);
 		font-weight: 800;
 		line-height: 0.84;
