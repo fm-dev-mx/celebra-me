@@ -199,14 +199,14 @@ date lives in the RSVP copy and the reminder.
 
 ## Design Direction
 
-| decision                          | value                                                               | classification      |
-| --------------------------------- | ------------------------------------------------------------------- | ------------------- |
-| Selected theme preset             | `storybook-lilac` (new preset; no base demo)                        | verified            |
-| Recommended preset alternatives   | —                                                                   | recommendation only |
-| Selected variant / visual profile | preset `storybook-lilac`; envelope + ornaments `storybook-lanterns` | verified (owner D2) |
-| Client color requirements         | Lila, dorado; temática Rapunzel                                     | verified            |
-| Recommended palette               | Lilac paper, violet night, leaf gold, cream, blush accent           | recommendation only |
-| Unresolved visual decisions       | —                                                                   | —                   |
+| decision                          | value                                                                 | classification      |
+| --------------------------------- | --------------------------------------------------------------------- | ------------------- |
+| Selected theme preset             | `storybook-lilac` (new preset; no base demo)                          | verified            |
+| Recommended preset alternatives   | —                                                                     | recommendation only |
+| Selected variant / visual profile | preset `storybook-lilac`; envelope `storybook-lanterns`, no ornaments | verified (owner D2) |
+| Client color requirements         | Lila, dorado; temática Rapunzel                                       | verified            |
+| Recommended palette               | Lilac paper, violet night, leaf gold, cream, blush accent             | recommendation only |
+| Unresolved visual decisions       | —                                                                     | —                   |
 
 The two approved samples set the bar: Mía contributes the printed-letter structure (bleed portrait,
 written countdown, program sheet, mirrored contact sheet, reply card); Naydelin contributes the gold
@@ -216,46 +216,59 @@ leaf and the dark finale. Neither palette is copied.
 
 ## Creative Direction & Acceptance
 
-**Visual idea:** a storybook that leaves the tower. It opens at dusk on lilac paper at the iron and
-stone door of DSC08756, and turns to a violet night with gold lanterns by the time guests reach the
-venues, because the misa starts after sunset and the reception is a night garden. One gold braid
-vine with small flowers ties the chapter thresholds.
+**Visual idea:** an editorial photo album (owner-approved revision "Álbum editorial", 2026-10-14,
+replacing the 2026-10-12 storybook scene art). Two day grounds (lilac paper and lilac mist) carry
+the photographs as prints; the countdown is the only night band. The photographs share one baked
+lilac grade, the cards are flat cream with a single hairline, and the envelope letter is a plain 5:7
+sheet that leaves before the night fades.
 
 **Human creative outcome:** `ACCEPTED`
 
-| concern                                                  | decision / evidence                                                         | status  |
-| -------------------------------------------------------- | --------------------------------------------------------------------------- | ------- |
-| Typography roles (display, heading, body, metadata)      | The Nautigal name/signature; Cinzel labels; Cormorant italic; EB Garamond   | applied |
-| Vertical rhythm and density                              | One idea per chapter; countdown as one written line counting nights         | applied |
-| Surface hierarchy (open flow vs cards/containers)        | Open paper and night grounds; printed pieces: envelope card, details, reply | applied |
-| Photographic treatment (role, crop, focal point, filter) | Natural color, no filters; door bookend (hero 08756, closing 08763 oval)    | applied |
-| Section-intersection intent and narrative cadence        | Two arches (quote, thankYou), three folios, two atmospheric blends          | applied |
-| Local exceptions to the selected preset                  | Profile sets scene art, deckle cards, folio tokens, and surface gradients   | applied |
+| concern                                                  | decision / evidence                                                             | status  |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------- | ------- |
+| Typography roles (display, heading, body, metadata)      | The Nautigal name/signature; Cormorant display; EB Garamond labels and body     | applied |
+| Vertical rhythm and density                              | One idea per chapter; program as a timetable (hour column, no rail)             | applied |
+| Surface hierarchy (open flow vs cards/containers)        | Flat grounds; printed pieces: envelope letter, framed prints, details, reply    | applied |
+| Photographic treatment (role, crop, focal point, filter) | One baked lilac grade; bare patio print, matted pregón print; seated door close | applied |
+| Section-intersection intent and narrative cadence        | Three joins: diagonal into the night, a print over its edge, a closing arch     | applied |
+| Local exceptions to the selected preset                  | Profile flattens grounds, scopes the night band to the countdown, drops art     | applied |
 
-Tonal band: **3-band** (lilac paper → dusk countdown → violet night). Cadence map, non-neutral
-boundaries only (`composition.intersections` is the executable record):
+Tonal band: **2-band + 1 night band** (lilac paper and lilac mist; the countdown alone is violet
+night). Cadence map, non-neutral boundaries only (`composition.intersections` is the executable
+record):
 
 ```text
-// hero                      → quote                     : climax  arch (paper rises into the tower door)
-// quote                     → family                    : bridge  folio (left corner turns over the quote paper)
-// interlude-after-family    → countdown                 : bridge  atmospheric-blend (door photo hands over to dusk)
-// countdown                 → interlude-after-countdown : bridge  folio (right corner turns over the countdown sky)
-// itinerary                 → gallery                   : bridge  folio (left corner turns over the program night)
-// gifts                     → personalized-access       : bridge  atmospheric-blend (gifts note opens to the reply card)
-// rsvp                      → thankYou                  : climax  arch (mirrored gold arch returns to the door)
-// Neutral: family→interlude, framed print→location, location→itinerary, gallery→gifts, pass→rsvp.
+// interlude-after-family    → countdown                 : climax  overlap (night cuts in on a diagonal, deep on the left)
+// countdown                 → interlude-after-countdown : bridge  overlap (the framed pregón print hangs over the night edge)
+// rsvp                      → thankYou                  : climax  arch (asymmetric paper arch rises into the mist)
+// Neutral: hero→quote, quote→family, family→interlude, framed print→location, location→itinerary,
+// itinerary→gallery, gallery→gifts, gifts→pass, pass→rsvp (ground changes only).
 ```
+
+On phones the cover photograph fills the width and gives up the stone above the door on short
+screens, so the larger name stays on the first screen. Accepted gaps against the mock (no token
+exists, or the change would touch shared code): the hero keeps its own split instead of 7/12;
+section labels stay words instead of roman numerals; the patio print has no caption; the closing
+photo keeps the keepsake width on mobile instead of the full width (that width is not a token);
+titles keep plain italics instead of partial italic accents, and the gallery title keeps its bold
+weight; the closing signature keeps the base size; the pregón print does not tilt; the letter date
+keeps the shared `21 · NOV · 2026` format; the place lede keeps the inherited sans face and the
+gifts title keeps its tracked capitals (no tokens); and the letter shows «Para …» only on a
+personalized link.
 
 ### Creative acceptance record
 
-| field                                       | value                                                                      |
-| ------------------------------------------- | -------------------------------------------------------------------------- |
-| Mechanical render/capture result            | pass — Local v1, all-sections at mobile-standard and desktop, 2026-10-09   |
-| Whole-invitation responsive inspection      | Agent review at 390 and 1440 px (envelope, card, every section)            |
-| Section boundaries and narrative continuity | pass (agent); human review accepted 2026-10-12                             |
-| Human creative outcome                      | `ACCEPTED`                                                                 |
-| Reviewer and date                           | Francisco Mendoza (owner), 2026-10-12, whole invitation on Local 4324      |
-| Blocking reason or owner follow-up          | None blocking; client copy, map pins, song and gifts stay owner follow-ups |
+| field                                       | value                                                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Mechanical render/capture result            | pass — Local v1, all-sections at mobile-standard and desktop, 2026-10-09                             |
+| Whole-invitation responsive inspection      | Agent review at 390 and 1440 px (envelope, card, every section)                                      |
+| Section boundaries and narrative continuity | pass (agent); human review accepted 2026-10-12                                                       |
+| Human creative outcome                      | `ACCEPTED`                                                                                           |
+| Reviewer and date                           | Francisco Mendoza (owner), 2026-10-12, whole invitation on Local 4324                                |
+| Blocking reason or owner follow-up          | None blocking; client copy, map pins, song and gifts stay owner follow-ups                           |
+| Álbum editorial revision (2026-10-14)       | Local captures at 375/390/1440 against the mock; Preview acceptance below                            |
+| Preview acceptance (revision)               | `ACCEPTED` — Preview v2; Francisco Mendoza (owner), 2026-10-15, after the cover date fit (beeed5dcc) |
+| Review scope (owner, 2026-10-14)            | Reviewed in Preview; Local must end identical (Local applied as v4 on 2026-10-14)                    |
 
 ---
 
@@ -265,38 +278,45 @@ Source label: `source:hr-photos` (opaque). Sony ILCE-6400, edited 2026-10-07, sR
 profile, no watermark. Four looks: pink satin (outdoor storefront and café), lilac ruffles (iron
 door, courtyard), pink tulle with gloves (studio), yellow lace (studio).
 
-| source filename | dims      | format | orientation | weight  | quality          | role                  | duplicate  | processing | derivative               |
-| --------------- | --------- | ------ | ----------- | ------- | ---------------- | --------------------- | ---------- | ---------- | ------------------------ |
-| DSC08756.jpg    | 3760×5640 | JPEG   | portrait    | 15.9 MB | production-ready | hero                  | near 08763 | WebP       | hero-tower-door.webp     |
-| DSC08753.jpg    | 6000×4000 | JPEG   | landscape   | 15.2 MB | production-ready | interlude (bleed), og | no         | WebP       | interlude-door.webp      |
-| DSC08921.jpg    | 4000×6000 | JPEG   | portrait    | 11.9 MB | production-ready | interlude (framed)    | no         | WebP       | interlude-pregon.webp    |
-| DSC08763.jpg    | 3742×5613 | JPEG   | portrait    | 12.8 MB | production-ready | thank-you             | near 08756 | WebP       | thank-you-door.webp      |
-| DSC08721.jpg    | 4000×6000 | JPEG   | portrait    | 12.9 MB | production-ready | gallery               | no         | WebP       | gallery-01.webp          |
-| DSC08627.jpg    | 6000×4000 | JPEG   | landscape   | 13.5 MB | production-ready | gallery               | no         | WebP       | gallery-02.webp          |
-| DSC08503.jpg    | 4000×6000 | JPEG   | portrait    | 9.6 MB  | production-ready | gallery               | near 08488 | WebP       | gallery-03.webp          |
-| DSC08851.jpg    | 5232×4000 | JPEG   | landscape   | 10.3 MB | production-ready | gallery               | no         | WebP       | gallery-04.webp          |
-| DSC08783.jpg    | 4000×6000 | JPEG   | portrait    | 11.5 MB | production-ready | gallery               | no         | WebP       | gallery-05.webp          |
-| DSC08895.jpg    | 4000×6000 | JPEG   | portrait    | 12.3 MB | production-ready | gallery               | near 08914 | WebP       | gallery-06.webp          |
-| DSC08488.jpg    | 4000×6000 | JPEG   | portrait    | 11.4 MB | production-ready | excluded              | near 08503 | —          | — (storefront lettering) |
-| DSC08498.jpg    | 6000×4000 | JPEG   | landscape   | 13.3 MB | production-ready | excluded              | no         | —          | — (yellow signpost)      |
-| DSC08523.jpg    | 4000×6000 | JPEG   | portrait    | 10.2 MB | production-ready | excluded              | near 08503 | —          | — (photographer shadow)  |
-| DSC08583.jpg    | 4000×6000 | JPEG   | portrait    | 13.7 MB | production-ready | excluded              | no         | —          | — (litter, store sign)   |
-| DSC08914.jpg    | 4356×4000 | JPEG   | landscape   | 9.3 MB  | production-ready | excluded (reserve)    | near 08895 | —          | —                        |
+| source filename | dims      | format | orientation | weight  | quality          | role               | duplicate  | processing | derivative                 |
+| --------------- | --------- | ------ | ----------- | ------- | ---------------- | ------------------ | ---------- | ---------- | -------------------------- |
+| DSC08756.jpg    | 3760×5640 | JPEG   | portrait    | 15.9 MB | production-ready | hero               | near 08763 | WebP       | hero-tower-door.webp       |
+| DSC08753.jpg    | 6000×4000 | JPEG   | landscape   | 15.2 MB | production-ready | thank-you, og      | no         | WebP       | thank-you-door-seated.webp |
+| DSC08921.jpg    | 4000×6000 | JPEG   | portrait    | 11.9 MB | production-ready | interlude (framed) | no         | WebP       | interlude-pregon.webp      |
+| DSC08763.jpg    | 3742×5613 | JPEG   | portrait    | 12.8 MB | production-ready | excluded (reserve) | near 08756 | —          | — (2026-10-14 revision)    |
+| DSC08721.jpg    | 4000×6000 | JPEG   | portrait    | 12.9 MB | production-ready | interlude (framed) | no         | WebP       | gallery-01.webp            |
+| DSC08627.jpg    | 6000×4000 | JPEG   | landscape   | 13.5 MB | production-ready | gallery            | no         | WebP       | gallery-02.webp            |
+| DSC08503.jpg    | 4000×6000 | JPEG   | portrait    | 9.6 MB  | production-ready | gallery            | near 08488 | WebP       | gallery-03.webp            |
+| DSC08851.jpg    | 5232×4000 | JPEG   | landscape   | 10.3 MB | production-ready | gallery            | no         | WebP       | gallery-04.webp            |
+| DSC08783.jpg    | 4000×6000 | JPEG   | portrait    | 11.5 MB | production-ready | gallery            | no         | WebP       | gallery-05.webp            |
+| DSC08895.jpg    | 4000×6000 | JPEG   | portrait    | 12.3 MB | production-ready | gallery            | near 08914 | WebP       | gallery-06.webp            |
+| DSC08488.jpg    | 4000×6000 | JPEG   | portrait    | 11.4 MB | production-ready | excluded           | near 08503 | —          | — (storefront lettering)   |
+| DSC08498.jpg    | 6000×4000 | JPEG   | landscape   | 13.3 MB | production-ready | excluded           | no         | —          | — (yellow signpost)        |
+| DSC08523.jpg    | 4000×6000 | JPEG   | portrait    | 10.2 MB | production-ready | excluded           | near 08503 | —          | — (photographer shadow)    |
+| DSC08583.jpg    | 4000×6000 | JPEG   | portrait    | 13.7 MB | production-ready | excluded           | no         | —          | — (litter, store sign)     |
+| DSC08914.jpg    | 4356×4000 | JPEG   | landscape   | 9.3 MB  | production-ready | excluded (reserve) | near 08895 | —          | —                          |
 
 Sources are 3742–6000 px on the long edge, enough for the 2560 px hero ladder without upscaling.
 Repository derivatives are encoded once from the originals within the role targets (hero 293 KB at
 1280×1920, interludes and closing ≤ 238 KB, gallery ≤ 156 KB, og 113 KB at 1200×630); the managed
 release re-encodes for delivery (Local hero 361 KB, within the 500 KB hero-desktop target).
 
+Álbum editorial revision (2026-10-14): the originals were not on the working machine, so the grade
+was baked into the existing derivatives (saturation 0.86, a slight lift of the blacks, a soft-light
+lilac wash; WebP q84, hero q78 at 312 KB). `thank-you-door-seated.webp` is a 1092×1365 (4:5) crop of
+the former `interlude-door.webp`; `interlude-door.webp` and `thank-you-door.webp` were removed. The
+scene art (`location-castle-lanterns.*`, `thank-you-tower.*`, `corner-floral-*.webp`,
+`sun-corona.svg`) is no longer referenced; `sun-corona-mark.svg` stays as the seal art.
+
 ### Uniqueness table (required before READY_*)
 
-| role               | source                                   | derivative              | intentional multi-role?               |
-| ------------------ | ---------------------------------------- | ----------------------- | ------------------------------------- |
-| hero               | DSC08756.jpg                             | hero-tower-door.webp    | no                                    |
-| interlude (bleed)  | DSC08753.jpg                             | interlude-door.webp     | yes: og-share.webp is a separate crop |
-| interlude (framed) | DSC08921.jpg                             | interlude-pregon.webp   | no                                    |
-| thank-you          | DSC08763.jpg                             | thank-you-door.webp     | no (same door as the hero: bookend)   |
-| gallery (6)        | 08721, 08627, 08503, 08851, 08783, 08895 | gallery-01 … gallery-06 | no                                    |
+| role               | source                            | derivative              | intentional multi-role?               |
+| ------------------ | --------------------------------- | ----------------------- | ------------------------------------- |
+| hero               | DSC08756.jpg                      | hero-tower-door.webp    | no                                    |
+| interlude (framed) | DSC08721.jpg                      | gallery-01.webp         | no (left the gallery in the revision) |
+| interlude (framed) | DSC08921.jpg                      | interlude-pregon.webp   | no                                    |
+| thank-you          | DSC08753.jpg                      | thank-you-door-seated   | yes: og-share.webp is a separate crop |
+| gallery (5)        | 08627, 08503, 08851, 08783, 08895 | gallery-02 … gallery-06 | no                                    |
 
 ---
 

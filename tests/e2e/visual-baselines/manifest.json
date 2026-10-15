@@ -2079,9 +2079,9 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-mobile.png",
-            "sha256": "d6f3e2394ab7d54cd25f8342f226878809c968a6658727112343f42e51ab4c21",
-            "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-            "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+            "sha256": "6bb7847d4faed4711b7e31b2c57667ceade2d3fd2a54110d82edc185e7a533c4",
+            "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+            "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2091,9 +2091,9 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-desktop.png",
-            "sha256": "9cdd3ee355326658e8cf693451bba60947241198fe66750ac7486b7e33629057",
-            "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-            "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+            "sha256": "eede160db2b95f2f55ca9ba57bfe26464170ee5c711a3564e8312e0807c9973a",
+            "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+            "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -4375,9 +4375,9 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-mobile.png",
-                "sha256": "d6f3e2394ab7d54cd25f8342f226878809c968a6658727112343f42e51ab4c21",
-                "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-                "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+                "sha256": "6bb7847d4faed4711b7e31b2c57667ceade2d3fd2a54110d82edc185e7a533c4",
+                "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+                "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4387,9 +4387,9 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-desktop.png",
-                "sha256": "9cdd3ee355326658e8cf693451bba60947241198fe66750ac7486b7e33629057",
-                "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
-                "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+                "sha256": "eede160db2b95f2f55ca9ba57bfe26464170ee5c711a3564e8312e0807c9973a",
+                "contentHash": "dc7d5cdb3f8eb080cafa415ecc0f661a5a694a91e328d8cd01ae429a87f6f43b",
+                "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
                 "comparisonResult": "CANDIDATE"
             },
             {
