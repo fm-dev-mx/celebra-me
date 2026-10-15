@@ -9,6 +9,7 @@ import {
 	isPublishedInvitationExpired,
 } from '@/lib/invitation/access/invitation-access.repository';
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
+import { fetchOwnStaticAsset } from '@/lib/server/static-assets-provider';
 
 /**
  * Watermarked bytes of an unpaid invitation's photo. The sealed token is the only
@@ -46,7 +47,13 @@ export const GET: APIRoute = async ({ params, url }) => {
 
 	let bytes: Uint8Array;
 	try {
-		const upstream = await fetch(source, { signal: AbortSignal.timeout(SOURCE_TIMEOUT_MS) });
+		const init = { signal: AbortSignal.timeout(SOURCE_TIMEOUT_MS) };
+		// Same-origin originals (bundled `/_astro/*` files) never leave the host: a Worker
+		// cannot fetch its own origin.
+		const upstream =
+			source.origin === url.origin
+				? await fetchOwnStaticAsset(source, init)
+				: await fetch(source, init);
 		const declaredLength = Number(upstream.headers.get('content-length') ?? '0');
 		if (!upstream.ok || declaredLength > MAX_SOURCE_BYTES) return emptyResponse(502);
 		bytes = new Uint8Array(await upstream.arrayBuffer());

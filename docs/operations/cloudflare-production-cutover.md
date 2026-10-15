@@ -134,17 +134,17 @@ If 3.1.2 fails at "Create the Worker on the first run" with an authorization err
 
 ## 4. Go / no-go list (T0 minus 15 minutes; any NO = stop)
 
-| #   | Question                                                                                        | Evidence                                   |
-| --- | ----------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| 1   | All section 3 boxes ticked                                                                      | handoff                                    |
-| 2   | `release-status` VERIFIED for `$SHA` on Vercel                                                  | command output                             |
-| 3   | Version URL health shows `$SHA` and `production`                                                | `curl` with Access headers                 |
-| 4   | Fresh critical backup done today                                                                | `pnpm db:prod:backup:critical` finished OK |
-| 5   | Supabase and Cloudflare status pages green                                                      | status pages                               |
-| 6   | Owner awake, rollback steps open in a second window                                             | owner                                      |
-| 7   | No deploy, merge, migration or DNS edit in the last 24 h except planned ones                    | GitHub, Vercel                             |
-| 8   | Time is not within 10 minutes of 03:43 or 08:17 Mazatlan                                        | clock                                      |
-| 9   | `$SHA` includes PR #260 and a photo upload plus a `/vista-previa` image work on its version URL | section 3 evidence                         |
+| #   | Question                                                                                                                                                                                                  | Evidence                                                  |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1   | All section 3 boxes ticked                                                                                                                                                                                | handoff                                                   |
+| 2   | `release-status` VERIFIED for `$SHA` on Vercel                                                                                                                                                            | command output                                            |
+| 3   | Version URL health shows `$SHA` and `production`                                                                                                                                                          | `curl` with Access headers                                |
+| 4   | Fresh critical backup done today                                                                                                                                                                          | `pnpm db:prod:backup:critical` finished OK                |
+| 5   | Supabase and Cloudflare status pages green                                                                                                                                                                | status pages                                              |
+| 6   | Owner awake, rollback steps open in a second window                                                                                                                                                       | owner                                                     |
+| 7   | No deploy, merge, migration or DNS edit in the last 24 h except planned ones                                                                                                                              | GitHub, Vercel                                            |
+| 8   | Time is not within 10 minutes of 03:43 or 08:17 Mazatlan                                                                                                                                                  | clock                                                     |
+| 9   | `$SHA` includes PR #260 and the `/vista-previa` static-asset fix; on its version URL a photo upload works and an unpaid test invitation's watermarked photo answers `200` with `content-type: image/webp` | `curl -sI` with Access headers on `/vista-previa/<token>` |
 
 ## 5. Name server change (done Wednesday 2026-10-14 20:59 Mazatlan)
 
