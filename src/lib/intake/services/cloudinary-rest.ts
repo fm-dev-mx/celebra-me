@@ -19,7 +19,7 @@ export interface CloudinaryRestConfig {
 	apiSecret: string;
 }
 
-export type CloudinaryParamValue = string | number | boolean | readonly string[] | undefined | null;
+type CloudinaryParamValue = string | number | boolean | readonly string[] | undefined | null;
 export type CloudinaryParams = Record<string, CloudinaryParamValue>;
 
 /** Error shape the rest of the module keys on: `http_code` on the root, never the request. */

@@ -12,6 +12,49 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.28.0-beta.1] - 2026-10-15
+
+Release checkpoint that runs invitation image processing through the Cloudflare Images binding
+inside Workers, makes the Cloudflare Preview deploy wait for route propagation, and adds the
+Production cutover runbook. It carries no migration.
+
+### Added
+
+- Image transformer contract with two implementations selected by host: `sharp` (Node, Vercel, local
+  development) and the Cloudflare Images binding (`IMAGES`, installed from `src/worker.ts`). Inside
+  Workers without the binding the lookup fails loudly instead of loading native sharp.
+- Cloudflare Production cutover runbook (`docs/operations/cloudflare-production-cutover.md`) for
+  Monday 2026-10-19 02:00 America/Mazatlan, with the migration freeze and the Production Worker
+  setup order.
+
+### Changed
+
+- `asset-policy` (inspect, decode check, WebP normalization) and the `/vista-previa` renderer
+  (watermarked photo, 1200x630 social card) call the transformer contract. The watermark is one
+  prerendered PNG mark drawn on the existing lattice; EXIF/XMP is written into the encoded
+  container. On Cloudflare the social card crop follows Cloudflare saliency, and JPEG cards are
+  slightly larger (no mozjpeg).
+
+### Fixed
+
+- The Cloudflare Preview deploy polls the stable host for up to about 90 seconds before failing,
+  instead of checking once right after routing traffic.
+
+### Notes on 0.27.0-beta.1
+
+These two changes shipped in 0.27.0-beta.1 but were missing from its entry:
+
+- New canonical invitation `/boda/olivia-y-antonio` on `jewelry-box-wedding`, retinted to navy,
+  slate and dusty blue through a token-only profile (code only; Production publication is separate).
+- The `jewelry-box-wedding` envelope label below the closed envelope keeps the variant's dark ink,
+  so it stays readable on `/boda/melissa-y-luis-osmar`.
+
+### Known issues
+
+- `/vista-previa` and photo uploads through the Cloudflare Images binding are not yet checked by
+  hand on the Preview Worker: every Preview invitation is paid by design and the upload needs a host
+  sign-in.
+
 ## [0.27.0-beta.1] - 2026-10-15
 
 Release checkpoint that prepares the move of Production to Cloudflare Workers without sending it any

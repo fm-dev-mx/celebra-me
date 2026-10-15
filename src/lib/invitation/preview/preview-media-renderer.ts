@@ -6,22 +6,17 @@
  * the size and format link previews expect. Both carry provenance metadata (EXIF and
  * XMP) with an opaque reference to the invitation, never its id or the client's name.
  */
-import { buildPreviewMarkSvg } from './preview-mark-svg';
+import { resolveImageTransformer } from '@/lib/images/image-transformer-provider';
 import { invitationProvenanceReference } from './provenance';
 import type { PreviewMediaVariant } from './preview-media-token';
 
-/** Lazy-load so importers do not require native sharp at module evaluation. */
-async function loadSharp() {
-	const mod = await import('sharp');
-	return mod.default;
-}
-
 const MAX_INPUT_PIXELS = 50_000_000;
 const PREVIEW_PHOTO_QUALITY = 84;
+const SOCIAL_QUALITY = 80;
 const SOCIAL_SIZE = { width: 1200, height: 630 } as const;
 
 export interface RenderedPreviewMedia {
-	bytes: Buffer;
+	bytes: Uint8Array;
 	contentType: 'image/webp' | 'image/jpeg';
 	width: number;
 	height: number;
@@ -54,49 +49,28 @@ export async function renderPreviewMedia(input: {
 	invitationId: string;
 	termsUrl: string;
 }): Promise<RenderedPreviewMedia> {
-	const sharp = await loadSharp();
-	const source = sharp(input.bytes, { failOn: 'error', limitInputPixels: MAX_INPUT_PIXELS });
-	const metadata = await source.metadata();
-	const width =
-		input.variant === 'og' ? SOCIAL_SIZE.width : (metadata.autoOrient?.width ?? metadata.width);
-	const height =
-		input.variant === 'og'
-			? SOCIAL_SIZE.height
-			: (metadata.autoOrient?.height ?? metadata.height);
-	if (!width || !height) throw new Error('Preview source has no readable dimensions.');
-
+	const transformer = await resolveImageTransformer();
 	const reference = previewProvenanceReference(input.invitationId);
-	let pipeline = sharp(input.bytes, {
-		failOn: 'error',
+	const isSocial = input.variant === 'og';
+	const marked = await transformer.renderMarked({
+		bytes: input.bytes,
 		limitInputPixels: MAX_INPUT_PIXELS,
-	}).rotate();
-	if (input.variant === 'og') {
-		pipeline = pipeline.resize(SOCIAL_SIZE.width, SOCIAL_SIZE.height, {
-			fit: 'cover',
-			position: 'attention',
-		});
-	}
-	pipeline = pipeline
-		.composite([
-			{ input: Buffer.from(buildPreviewMarkSvg({ width, height })), top: 0, left: 0 },
-		])
-		.withExif({
-			IFD0: {
-				Artist: 'Celebra-me',
-				Copyright: 'Vista previa generada por Celebra-me. No autorizada para uso final.',
-				ImageDescription: `Vista previa · Celebra-me · ref ${reference}`,
+		crop: isSocial ? SOCIAL_SIZE : undefined,
+		format: isSocial ? 'jpeg' : 'webp',
+		quality: isSocial ? SOCIAL_QUALITY : PREVIEW_PHOTO_QUALITY,
+		provenance: {
+			exif: {
+				artist: 'Celebra-me',
+				copyright: 'Vista previa generada por Celebra-me. No autorizada para uso final.',
+				description: `Vista previa · Celebra-me · ref ${reference}`,
 			},
-		})
-		.withXmp(buildXmp(reference, input.termsUrl));
-
-	const bytes =
-		input.variant === 'og'
-			? await pipeline.jpeg({ quality: 80, mozjpeg: true }).toBuffer()
-			: await pipeline.webp({ quality: PREVIEW_PHOTO_QUALITY, effort: 4 }).toBuffer();
+			xmp: buildXmp(reference, input.termsUrl),
+		},
+	});
 	return {
-		bytes,
-		contentType: input.variant === 'og' ? 'image/jpeg' : 'image/webp',
-		width,
-		height,
+		bytes: marked.data,
+		contentType: isSocial ? 'image/jpeg' : 'image/webp',
+		width: marked.width,
+		height: marked.height,
 	};
 }
