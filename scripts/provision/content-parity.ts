@@ -53,9 +53,7 @@ export interface SemanticInvitationSnapshot {
 	slug: string;
 	eventType: string;
 	kind: string;
-	baseDemoId: string | null;
 	themeId: string | null;
-	snapshot: unknown;
 	draftContent: unknown | null;
 	publishedContent: unknown | null;
 	isDemo: boolean;
@@ -155,7 +153,6 @@ function compareScalarFields(
 		['slug', 'Route slug mismatch'],
 		['eventType', 'Event type mismatch'],
 		['kind', 'Invitation kind mismatch'],
-		['baseDemoId', 'Base demo mismatch'],
 		['themeId', 'Theme mismatch'],
 		['isDemo', 'Demo flag mismatch'],
 	];
@@ -181,13 +178,6 @@ function compareCanonicalContent(
 	push: DriftPush,
 ): void {
 	const checks: Array<[string, string, unknown, unknown, string]> = [
-		[
-			'invitation',
-			'snapshot',
-			left.snapshot,
-			right.snapshot,
-			'Invitation snapshot semantic drift',
-		],
 		[
 			'invitation_content_drafts',
 			'content',
@@ -506,9 +496,7 @@ export function buildSemanticInvitationSnapshot(input: {
 		slug: string;
 		event_type: string;
 		kind: string;
-		base_demo_id?: string | null;
 		theme_id?: string | null;
-		snapshot?: unknown;
 	};
 	draftContent?: unknown | null;
 	published?: {
@@ -538,9 +526,7 @@ export function buildSemanticInvitationSnapshot(input: {
 		slug: input.invitation.slug,
 		eventType: input.invitation.event_type,
 		kind: input.invitation.kind,
-		baseDemoId: input.invitation.base_demo_id ?? null,
 		themeId: input.invitation.theme_id ?? null,
-		snapshot: input.invitation.snapshot ?? null,
 		draftContent: input.draftContent ?? null,
 		publishedContent: input.published?.content ?? null,
 		isDemo,

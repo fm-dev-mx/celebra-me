@@ -14,8 +14,6 @@ export interface InvitationDTO {
 	title: string;
 	eventType: string;
 	status: InvitationStatus;
-	/** Mirrors the legacy DB column `base_demo_id`; leaves with its contract migration. */
-	baseDemoId: string;
 	themeId: string;
 	clientName: string;
 	clientEmail: string;
@@ -74,7 +72,6 @@ export interface InvitationDetailResponse {
 export interface InvitationContentDraftDTO {
 	id: string;
 	invitationId: string;
-	submissionId: string | null;
 	content: Record<string, unknown>;
 	status: string;
 	createdAt: string;
@@ -96,7 +93,7 @@ export interface InvitationEditorContextDTO {
 	invitation: Omit<
 		InvitationDTO,
 		'published' | 'rsvpEventStatus' | 'rsvpEventId' | 'internalEditUrl'
-	> & { snapshot: { previewSlug: string } };
+	>;
 	assetLookupSlug?: string;
 	content: DraftContent;
 	draftUpdatedAt: string | null;
@@ -114,7 +111,8 @@ export interface InvitationEditorContextDTO {
 			| 'DIVERGED'
 			| 'RECONCILIATION_REQUIRED'
 			| 'SOURCE_UPDATE_REQUIRED'
-			| 'DEFERRED';
+			| 'DEFERRED'
+			| 'NOT_APPLICABLE';
 		targetEnvironment: 'local' | 'preview' | 'production';
 		affectedFieldCount: number;
 		affectedSections: string[];

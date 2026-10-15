@@ -385,15 +385,10 @@ function buildPhases(
 				const userFkColumns = columns.filter((c) =>
 					['created_by', 'owner_user_id', 'user_id'].includes(c),
 				);
-				// Nullify legacy columns that must never cross environments (submission_id)
-				const nullifyFkColumns = columns.filter((c) => ['submission_id'].includes(c));
 				let transformedRows = prodRows.map((row) => {
 					const newRow = { ...row };
 					for (const fk of userFkColumns) {
 						newRow[fk] = previewCtx.previewAdminUserId;
-					}
-					for (const fk of nullifyFkColumns) {
-						newRow[fk] = null;
 					}
 					return newRow;
 				});

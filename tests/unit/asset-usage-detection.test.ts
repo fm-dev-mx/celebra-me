@@ -71,7 +71,6 @@ describe('collectAssetUsagesByInvitation', () => {
 		mockFindDraft.mockResolvedValue({
 			id: 'draft-1',
 			invitationId: 'inv-1',
-			submissionId: null,
 			content: {
 				hero: {
 					name: 'Test',
@@ -100,7 +99,6 @@ describe('collectAssetUsagesByInvitation', () => {
 		mockFindDraft.mockResolvedValue({
 			id: 'draft-1',
 			invitationId: 'inv-1',
-			submissionId: null,
 			content: { gallery: { items: [{ image: { type: 'uploaded', assetId: VALID_UUID } }] } },
 			status: 'draft',
 			createdAt: '',
@@ -141,7 +139,6 @@ describe('collectAssetUsagesByInvitation', () => {
 		mockFindDraft.mockResolvedValue({
 			id: 'draft-1',
 			invitationId: 'inv-1',
-			submissionId: null,
 			content: { gallery: { items: [{ image: { type: 'internal', key: 'hero' } }] } },
 			status: 'draft',
 			createdAt: '',
@@ -160,7 +157,6 @@ describe('collectAssetUsagesByInvitation', () => {
 		mockFindDraft.mockResolvedValue({
 			id: 'draft-1',
 			invitationId: 'inv-1',
-			submissionId: null,
 			content: {
 				gallery: {
 					items: [

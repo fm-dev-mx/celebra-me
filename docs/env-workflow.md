@@ -400,14 +400,14 @@ optional unless marked **required**. Paths are relative to the repository root.
 These are present in `.env.example` and the lane bootstrap allowlist
 (`scripts/shared/celebra-runtime-env.ts`); they follow the server-only or `PUBLIC_*` rules above.
 
-| Area           | Names                                                                                        | Read by                                                      |
-| -------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Supabase keys  | `SUPABASE_ANON_KEY`, `PUBLIC_SUPABASE_ANON_KEY`                                              | `src/lib/server/supabase-credentials.ts`, dashboard MFA page |
-| Base URL       | `BASE_URL`                                                                                   | `astro.config.mjs`, `src/lib/rsvp/security/auth-security.ts` |
-| Contact        | `CONTACT_FORM_RECIPIENT_EMAIL`, `CONTACT_WHATSAPP`, `GMAIL_USER`, `GMAIL_PASS`               | `src/lib/server/email.ts`, `src/utils/whatsapp.ts`           |
-| Admin security | `REQUIRE_FRESH_MFA_FOR_ADMIN`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`            | `src/lib/rsvp/auth/`, `src/lib/rsvp/security/`               |
-| Meta CAPI      | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_CAPI_DELIVERY_MODE`, `META_TEST_EVENT_CODE` | `src/lib/commercial/meta-capi/service.ts`                    |
-| Browser tags   | `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ENABLED`, `PUBLIC_META_PIXEL_ID`              | `src/lib/tracking/`                                          |
+| Area           | Names                                                                                                            | Read by                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Supabase keys  | `SUPABASE_ANON_KEY`, `PUBLIC_SUPABASE_ANON_KEY`                                                                  | `src/lib/server/supabase-credentials.ts`, dashboard MFA page |
+| Base URL       | `BASE_URL`                                                                                                       | `astro.config.mjs`, `src/lib/rsvp/security/auth-security.ts` |
+| Contact        | `CONTACT_FORM_RECIPIENT_EMAIL`, `CONTACT_WHATSAPP`, `GMAIL_USER`, `GMAIL_PASS`                                   | `src/lib/server/email.ts`, `src/utils/whatsapp.ts`           |
+| Admin security | `REQUIRE_FRESH_MFA_FOR_ADMIN`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`                                | `src/lib/rsvp/auth/`, `src/lib/rsvp/security/`               |
+| Meta CAPI      | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_CAPI_DELIVERY_MODE`, `META_TEST_EVENT_CODE`                     | `src/lib/commercial/meta-capi/service.ts`                    |
+| Browser tags   | `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ENABLED`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `src/lib/tracking/`                                          |
 
 ### Build and local server
 
@@ -452,6 +452,18 @@ Set by `.github/workflows/post-deploy-smoke.yml` from the dispatch payload and r
   `POST_DEPLOY_COMMIT_SHA`, `POST_DEPLOY_DEPLOYMENT_ID`, `POST_DEPLOY_RUN_ID`,
   `POST_DEPLOY_STARTED_AT` (validated outputs exported through `GITHUB_ENV`).
 - `VERCEL_PROJECT_ID` is a repository variable (`vars.*`) consumed by the same workflow.
+
+The same probes run outside a dispatch with `pnpm ops:post-deploy -- check`, which reads only public
+pages. `--base-url=<origin>` (or `SMOKE_BASE_URL`) picks the host, defaulting to
+`https://www.celebra-me.com`; approved hosts are the Production domain and its subdomains,
+`*.vercel.app` (needs `VERCEL_AUTOMATION_BYPASS_SECRET`) and `*.workers.dev`. Example for a
+Cloudflare Worker:
+`pnpm ops:post-deploy -- check --base-url=https://celebra-me.example.workers.dev`.
+
+`.github/workflows/production-uptime.yml` runs that check against Production every 15 minutes (from
+`main`, as GitHub runs schedules only on the default branch). After two consecutive failed runs it
+opens one issue titled "Monitor de Producción: el smoke falló dos veces seguidas" (later failures
+comment on it) and closes it on the next passing run. It needs no secrets.
 
 ### CI validation (`.github/workflows/commit-validation.yml`)
 

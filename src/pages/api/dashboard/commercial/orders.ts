@@ -8,6 +8,7 @@ import {
 } from '@/lib/rsvp/auth/authorization';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { resolveAfterResponseContext } from '@/lib/server/platform-request';
 
 const CreateCommercialOrderSchema = z.object({
 	customerId: z.string().trim().min(1).max(80),
@@ -24,7 +25,7 @@ const CreateCommercialOrderSchema = z.object({
 	idempotencyKey: z.uuid(),
 });
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
 	try {
 		const session = await requireAdminMutationAccess(
 			request,
@@ -35,21 +36,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		const parsed = await validateBodyOrRespond(request, CreateCommercialOrderSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const order = await createCommercialSalesOrder({
-			customerId: parsed.customerId,
-			leadId: parsed.leadId,
-			sessionId: parsed.sessionId,
-			sourceEventId: parsed.sourceEventId,
-			status: parsed.status,
-			eventType: parsed.eventType,
-			packageId: parsed.packageId,
-			packageName: parsed.packageName,
-			currency: parsed.currency,
-			totalAmount: parsed.totalAmount,
-			depositAmount: parsed.depositAmount,
-			createdBy: session.userId,
-			idempotencyKey: parsed.idempotencyKey,
-		});
+		const order = await createCommercialSalesOrder(
+			{
+				customerId: parsed.customerId,
+				leadId: parsed.leadId,
+				sessionId: parsed.sessionId,
+				sourceEventId: parsed.sourceEventId,
+				status: parsed.status,
+				eventType: parsed.eventType,
+				packageId: parsed.packageId,
+				packageName: parsed.packageName,
+				currency: parsed.currency,
+				totalAmount: parsed.totalAmount,
+				depositAmount: parsed.depositAmount,
+				createdBy: session.userId,
+				idempotencyKey: parsed.idempotencyKey,
+			},
+			{ after: resolveAfterResponseContext(locals) },
+		);
 
 		return successResponse(order, 201);
 	} catch (error) {

@@ -22,9 +22,7 @@ function clientSnapshot(
 			slug: 'client-slug',
 			event_type: 'xv',
 			kind: 'client',
-			base_demo_id: 'demo-xv-jewelry-box',
 			theme_id: 'jewelry-box',
-			snapshot: { title: 'Cliente' },
 		},
 		draftContent: { hero: { name: 'Ana' } },
 		published: {
@@ -236,9 +234,7 @@ describe('semantic parity comparison', () => {
 				slug: 'demo-xv-jewelry-box',
 				event_type: 'xv',
 				kind: 'demo',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: {},
 			},
 			published: { content: { hero: { name: 'Demo' } }, is_demo: true },
 			assets: [],
@@ -344,9 +340,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			draftContent: {
 				hero: {
@@ -379,9 +373,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			draftContent: {
 				hero: {
@@ -422,9 +414,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			published: {
 				content: {
@@ -442,9 +432,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			published: {
 				content: {
@@ -477,9 +465,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			published: {
 				content: {
@@ -498,9 +484,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			published: {
 				content: {
@@ -531,9 +515,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			draftContent: {
 				hero: {
@@ -566,9 +548,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			draftContent: {
 				hero: {
@@ -602,9 +582,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			draftContent: {
 				hero: {
@@ -637,9 +615,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			draftContent: { hero: { name: 'Ana', image: 'hero' } },
 			published: {
@@ -660,9 +636,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			published: {
 				content: {
@@ -685,9 +659,7 @@ describe('semantic parity comparison', () => {
 				slug: 'client-slug',
 				event_type: 'xv',
 				kind: 'client',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: { title: 'Cliente' },
 			},
 			published: {
 				content: {

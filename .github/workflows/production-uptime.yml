@@ -1,0 +1,81 @@
+name: Production Uptime
+
+# Read-only: the smoke only sends GET requests to public Production pages. The token writes
+# nothing but the alert issue.
+permissions:
+    contents: read
+    actions: read
+    issues: write
+
+on:
+    schedule:
+        - cron: '*/15 * * * *'
+    workflow_dispatch:
+
+concurrency:
+    group: production-uptime
+    cancel-in-progress: false
+
+env:
+    ALERT_TITLE: 'Monitor de Producción: el smoke falló dos veces seguidas'
+
+jobs:
+    smoke:
+        name: Production URL smoke
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Run Production URL smoke
+              id: smoke
+              run: pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com
+
+            # One failure can be a blip; the alert waits for the previous completed run to have
+            # failed too, and then opens one issue (GitHub e-mails the repository watchers).
+            - name: Alert after two consecutive failures
+              if: failure() && steps.smoke.outcome == 'failure'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  previous=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow production-uptime.yml \
+                      --status completed --limit 5 --json databaseId,conclusion \
+                      --jq "[.[] | select(.databaseId != $GITHUB_RUN_ID)][0].conclusion // \"\"")
+                  if [ "$previous" != "failure" ]; then
+                      echo "First failure (previous run: ${previous:-none}); no alert yet."
+                      exit 0
+                  fi
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "Sigue fallando: $RUN_URL"
+                  else
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$ALERT_TITLE" --body \
+                          "El smoke de Producción falló dos veces seguidas. Revise el Job Summary: $RUN_URL"
+                  fi
+
+            - name: Close the alert after recovery
+              if: success()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Recuperado: $RUN_URL"
+                  fi

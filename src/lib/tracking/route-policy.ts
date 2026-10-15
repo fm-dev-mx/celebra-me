@@ -1,5 +1,3 @@
-import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
-
 export type TrackingRouteClass =
 	| 'commercial'
 	| 'demo'
@@ -16,17 +14,6 @@ export interface TrackingRoutePolicy {
 	gaAllowed: boolean;
 	metaAllowed: boolean;
 	reason: string;
-}
-
-export interface AnalyticsEnvironment {
-	deployEnvironment: HostedDeployEnvironment | null;
-}
-
-export const DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE = 0.1;
-
-export interface SpeedInsightsConfig {
-	enabled: boolean;
-	sampleRate: number;
 }
 
 const COMMERCIAL_PATHS = new Set(['/', '/privacidad', '/terminos']);
@@ -164,24 +151,5 @@ export function classifyTrackingRoute(input: string | URL): TrackingRoutePolicy 
 		gaAllowed: false,
 		metaAllowed: false,
 		reason: 'unknown_route',
-	};
-}
-
-export function resolveSpeedInsightsConfig(
-	input: string | URL,
-	env: AnalyticsEnvironment,
-): SpeedInsightsConfig {
-	if (env.deployEnvironment !== 'production') {
-		return { enabled: false, sampleRate: 0 };
-	}
-
-	const routePolicy = classifyTrackingRoute(input);
-	if (!routePolicy.internalAllowed) {
-		return { enabled: false, sampleRate: 0 };
-	}
-
-	return {
-		enabled: true,
-		sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
 	};
 }

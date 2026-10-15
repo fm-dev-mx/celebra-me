@@ -86,9 +86,8 @@ export function buildNamespaceRollbackSql(
 			or v_pub.content <> ${sqlLiteral(JSON.stringify(expectedPublished))}::jsonb
 		then raise exception 'namespace_rollback_publication_changed'; end if;
 		v_metadata_hash := md5(jsonb_build_object(
-			'archivedAt', v_inv.archived_at, 'baseDemoId', v_inv.base_demo_id,
-			'eventType', v_inv.event_type, 'kind', v_inv.kind, 'slug', v_inv.slug,
-			'snapshot', v_inv.snapshot, 'status', v_inv.status,
+			'archivedAt', v_inv.archived_at, 'eventType', v_inv.event_type,
+			'kind', v_inv.kind, 'slug', v_inv.slug, 'status', v_inv.status,
 			'themeId', v_inv.theme_id, 'title', v_inv.title
 		)::text);
 		perform public.publish_invitation_atomic(
@@ -280,9 +279,8 @@ export function buildNamespaceRemapSql(
 			or v_pub.content <> ${sqlLiteral(JSON.stringify(snapshot.published.content))}::jsonb
 		then raise exception 'namespace_publication_changed'; end if;
 		v_metadata_hash := md5(jsonb_build_object(
-			'archivedAt', v_inv.archived_at, 'baseDemoId', v_inv.base_demo_id,
-			'eventType', v_inv.event_type, 'kind', v_inv.kind, 'slug', v_inv.slug,
-			'snapshot', v_inv.snapshot, 'status', v_inv.status,
+			'archivedAt', v_inv.archived_at, 'eventType', v_inv.event_type,
+			'kind', v_inv.kind, 'slug', v_inv.slug, 'status', v_inv.status,
 			'themeId', v_inv.theme_id, 'title', v_inv.title
 		)::text);
 		perform public.publish_invitation_atomic(

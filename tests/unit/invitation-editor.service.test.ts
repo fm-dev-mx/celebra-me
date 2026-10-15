@@ -59,19 +59,7 @@ const invitation = {
 	title: 'XV Ana',
 	eventType: 'xv',
 	status: 'published',
-	baseDemoId: 'demo-xv-jewelry-box',
 	themeId: 'jewelry-box',
-	snapshot: {
-		id: 'demo-xv-jewelry-box',
-		eventType: 'xv',
-		displayName: 'Demo',
-		themeId: 'jewelry-box',
-		defaultSections: ['quote', 'itinerary', 'gallery'],
-		supportedBlocks: [],
-		recommendedBlocks: [],
-		requiredAssets: [],
-		previewSlug: 'demo-xv-jewelry-box',
-	},
 	clientName: '',
 	clientEmail: '',
 	clientWhatsapp: '',
@@ -85,7 +73,6 @@ const invitation = {
 const draft = {
 	id: 'draft-1',
 	invitationId: 'proj-1',
-	submissionId: 'sub-1',
 	content: {
 		title: 'XV Ana',
 		hero: { name: 'Ana', label: 'Mis XV', date: '2027-01-01' },
@@ -422,7 +409,6 @@ describe('hydration edge cases', () => {
 		(upsertDraft as jest.Mock).mockResolvedValue({
 			id: 'draft-new',
 			invitationId: 'proj-1',
-			submissionId: null,
 			content: {
 				gallery: { title: 'Galería', items: [{ image: 'gallery01', caption: 'Nueva' }] },
 			},
@@ -454,7 +440,6 @@ describe('hydration edge cases', () => {
 		(upsertDraft as jest.Mock).mockResolvedValue({
 			id: 'draft-seeded',
 			invitationId: 'proj-1',
-			submissionId: null,
 			content: {
 				title: 'XV Ana Publicada',
 				gallery: { title: 'Galería', items: [{ image: 'gallery01', caption: 'Nueva' }] },

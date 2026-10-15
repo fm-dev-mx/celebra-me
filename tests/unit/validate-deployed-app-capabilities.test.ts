@@ -13,6 +13,7 @@ function fixtureRoot(): string {
 		'supabase/migration-rollout-registry.json',
 		'supabase/deployed-app-capabilities.json',
 		'src/lib/intake/repositories/publication.repository.ts',
+		'src/lib/intake/services/publication-diff.service.ts',
 		'scripts/provision/apply-local-invitation.ts',
 		'scripts/provision/invitation-import-engine.ts',
 		'scripts/invitation/image-namespace-remap.ts',
@@ -131,6 +132,35 @@ describe('deployed application capability validation', () => {
 			writeFileSync(route, 'export const POST = () => new Response(null);');
 			expect(validateDeployedAppCapabilities(root).join('\n')).toMatch(
 				/Retired guest view route still exists/,
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects the legacy-columns client proof when the application names a legacy column', () => {
+		const root = fixtureRoot();
+		try {
+			const repository = join(root, 'src/lib/intake/repositories/draft.repository.ts');
+			writeFileSync(repository, "export const SELECT_COLUMNS = 'id,submission_id,content';");
+			expect(validateDeployedAppCapabilities(root)).toContain(
+				'Legacy invitation column submission_id is still referenced by src/lib/intake/repositories/draft.repository.ts.',
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects the legacy-columns client proof when a publication path hashes baseDemoId', () => {
+		const root = fixtureRoot();
+		try {
+			const path = join(root, 'scripts/invitation/image-namespace-remap.ts');
+			writeFileSync(
+				path,
+				`${readFileSync(path, 'utf8')}\n// jsonb_build_object('baseDemoId', v_inv.base_demo_id)`,
+			);
+			expect(validateDeployedAppCapabilities(root)).toContain(
+				'Legacy public-metadata baseline is still computed by scripts/invitation/image-namespace-remap.ts.',
 			);
 		} finally {
 			rmSync(root, { recursive: true, force: true });

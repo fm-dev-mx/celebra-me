@@ -6,7 +6,7 @@ import {
 } from '@/lib/rsvp/core/errors';
 import { isRecord } from '@/lib/shared/data-utils';
 import { PRIVATE_CACHE_CONTROL, withPrivateNoStore } from '@/lib/http/private-cache-path';
-import { sanitize } from '@/lib/rsvp/core/utils';
+import { getClientIp } from '@/lib/server/platform-request';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
@@ -115,10 +115,9 @@ export function forbidden(message: string): Response {
 	return errorResponse(new ApiError(403, 'forbidden', message));
 }
 
+/** Visitor IP for rate-limit buckets; `'unknown'` when no proxy header is present. */
 export function getIp(request: Request): string {
-	const raw =
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-	return sanitize(raw.split(',')[0], 100);
+	return getClientIp(request) ?? 'unknown';
 }
 
 export function errorResponse(error: unknown): Response {

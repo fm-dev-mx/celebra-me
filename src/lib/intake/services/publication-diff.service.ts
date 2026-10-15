@@ -59,26 +59,18 @@ export function hashPublicMetadata(
 		slug: string | null;
 		title: string;
 		eventType: string;
-		baseDemoId: string;
 		themeId: string;
 		kind: string;
-		snapshot: unknown;
 		status: string;
 		archivedAt: string | null;
 	},
 	publishedContent?: Record<string, unknown>,
 ): string {
-	// This baseline must reflect the stored jsonb exactly. Publication-content
-	// normalization is intentionally not used here: even an empty snapshot field
-	// may affect a downstream resolver.
-	const snapshot = input.snapshot ?? {};
 	const projection = {
 		archivedAt: input.archivedAt,
-		baseDemoId: input.baseDemoId,
 		eventType: input.eventType,
 		kind: input.kind,
 		slug: input.slug,
-		snapshot,
 		status: input.status,
 		themeId: input.themeId,
 		title: input.title,

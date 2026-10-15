@@ -246,9 +246,9 @@ select is(public.invitation_event_date('{"eventTiming":{"timeZone":"Mars/Base"},
   null::date, 'an invalid explicit zone yields no date');
 
 -- Publish trigger keeps events.event_date current.
-insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
+insert into public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind)
 values ('f6000000-0000-4000-8000-000000000001', 'eng-event', 'Engagement event', 'xv', 'published',
-  'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'f1000000-0000-4000-8000-000000000001', 'client');
+  'jewelry-box', 'f1000000-0000-4000-8000-000000000001', 'client');
 update public.events set invitation_project_id = 'f6000000-0000-4000-8000-000000000001'
 where id = 'f2000000-0000-4000-8000-000000000001';
 insert into public.published_invitation_content (invitation_project_id, slug, event_type, is_demo, content, version, published_at)

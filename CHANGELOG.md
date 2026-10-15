@@ -12,6 +12,108 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.26.0-beta.1] - 2026-10-15
+
+Release checkpoint that stops the application from reading the legacy invitation columns
+`base_demo_id`, `snapshot` and `submission_id` ahead of the column contract, and widens Production
+monitoring: the health endpoint checks the database and a read-only smoke covers every published
+invitation every 15 minutes.
+
+### Added
+
+- `/api/health` reads one row from Supabase with a 3-second timeout and answers 503 `unhealthy`
+  (without error details) when the read fails; the build identity is still reported.
+- Read-only Production uptime smoke every 15 minutes; two consecutive failures open one alert issue
+  and the next passing run closes it.
+- `ops:post-deploy -- check` runs the smoke against a configurable host (`--base-url` or
+  `SMOKE_BASE_URL`, default `www.celebra-me.com`).
+
+### Changed
+
+- Publication sends the public-metadata hash without `baseDemoId` and `snapshot`; repositories,
+  types, DTOs and mappers no longer read or write the three legacy columns, and publishing scripts
+  use the same hash. Requires expand migration `20261014150000` (applied in Preview and Production).
+- The post-deploy smoke opens every published, non-expired invitation and every demo; a disabled
+  invitation may answer 403.
+
+### Fixed
+
+- The disposable restore drill adds the newer Supabase Storage columns present in a Production dump
+  before loading Storage metadata, so the restore fingerprints match.
+
+### Verification
+
+| Check            | Result                                                                              |
+| :--------------- | :---------------------------------------------------------------------------------- |
+| Database         | Expand `20261014150000` applied in Preview and Production; Production audit CURRENT |
+| Disposable tests | pgTAP 492/492, system concurrency and managed contracts passed                      |
+| Preview          | Test invitation published with the new hash on develop; public smoke 70/70          |
+| Production       | `pnpm dbs` 104/104 and site smoke 37/37 before the release                          |
+
+### Known issues
+
+- The column contract (`20261015120000`) is written on its own branch and is applied only after this
+  release passes the Production smoke.
+- Two authenticated Preview E2E assertions are stale (replay `idempotent` flag and intake detail
+  fields); the fix is on its own branch.
+
+## [0.25.0-beta.1] - 2026-10-14
+
+Release checkpoint that makes the application runtime platform neutral ahead of the Cloudflare
+Workers migration: security headers, client IP, Cloudinary access, cron jobs and web analytics no
+longer depend on Vercel-only APIs, and the Vercel-only status and usage tooling is removed.
+
+### Added
+
+- **Cloudflare Web Analytics**: the layout renders the cookieless beacon
+  (`static.cloudflareinsights.com/beacon.min.js`) when `PUBLIC_CF_WEB_ANALYTICS_TOKEN` is set. It
+  stores nothing on the visitor's device, so it stays outside the consent gate; GA4 and first-party
+  tracking keep their consent and route policies.
+
+### Changed
+
+- Security headers and permanent redirects are served by the middleware; `vercel.json` keeps its
+  copy only until the cutover.
+- Server-side Cloudinary access uses its REST API instead of the SDK, and `sharp` stays out of that
+  module.
+- The cron endpoints delegate to invocable services (memories cleanup, engagement maintenance), and
+  private memories Worker requests are signed with the PEM string.
+- Editor divergence detection runs only on a local runtime.
+- `@vercel/analytics` and `@vercel/speed-insights` are removed; the RUM source is the beacon.
+- Commit rules: commitlint enforces the documented message rules and oversized commits are blocked
+  before push.
+
+### Removed
+
+- The local canonical status panel (`/dashboard/estado` and `/api/dashboard/estado`), the Vercel
+  usage card, the Upstash rate-limit backend and its variables, and the `X-Render-Timing` response
+  headers.
+
+### Fixed
+
+- `CF-Connecting-IP` is trusted only on Cloudflare Workers. On Vercel a visitor could send it and
+  choose their rate-limit bucket; the client IP now comes from `X-Forwarded-For`, then `X-Real-IP`.
+- Profile tokens reach shared section styles (location lede and gifts title defaults).
+- The v0.24.0-beta.1 family roles note is corrected.
+- Jest ignores nested agent worktrees under `.claude/worktrees`.
+
+### Verification
+
+| Check          | Result                                                                       |
+| :------------- | :--------------------------------------------------------------------------- |
+| Repository CI  | Passed on every develop merge; one font-timing visual capture was rerun once |
+| Preview smoke  | VERIFIED for each integrated branch and for the release merge                |
+| Preview checks | Published images load, crons answer 401 without secret, no `X-Render-Timing` |
+| Web analytics  | Beacon loads (200) and reports (204); no `/_vercel/insights` in the HTML     |
+| Unit tests     | Cloudinary REST client and adapter: 31 passed                                |
+
+### Known issues
+
+- Editor image upload needs `CLOUDINARY_*` credentials, which no Vercel environment declares; the
+  REST client is covered by unit tests and delivery of published images is unchanged.
+- The app still reads `base_demo_id`, `snapshot` and `submission_id`; a separate release retires
+  those reads before the column contract.
+
 ## [0.24.0-beta.1] - 2026-10-14
 
 Release checkpoint that extends the design ranking to every published client invitation with

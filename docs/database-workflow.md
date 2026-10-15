@@ -136,11 +136,18 @@ domain**: machine loss, disk loss, or EFS-key loss can destroy both the operatin
 backups. Never place `.backups/` in Git, application logs, or CI artifacts.
 
 Restores are disposable-only, never Production. Run
-`pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url> --report=<path> --storage-root=<new-empty-path>`.
-The workflow rebuilds all migrations, restores public/Auth/Storage metadata, materializes and
-re-hashes actual object bytes, compares deterministic critical-table and business-state
-fingerprints, checks RSVP/ownership/orphan/uniqueness/phone invariants, and writes
-restore/verification/total timings. A synthetic complete set can be created with
+`pnpm db:restore:verify-disposable -- --manifest=<path> --report=<path> --storage-root=<new-empty-path>`.
+`--target-db-url` defaults to the disposable superuser URL
+`postgresql://supabase_admin:postgres@127.0.0.1:54332/postgres`; the `postgres` role cannot write
+the Auth and Storage tables, so an override must also connect as `supabase_admin`. Production can
+run a newer Supabase Storage service than the frozen `supabase/test/storage-schema.sql`: before
+loading Storage metadata the drill adds every column named by the dump's `COPY` headers that the
+disposable tables lack, typed from the Supabase Storage migrations (unknown columns fall back to
+`text`), and records them as `storageColumnsAdded` in the report. The workflow rebuilds all
+migrations, restores public/Auth/Storage metadata, materializes and re-hashes actual object bytes,
+compares deterministic critical-table and business-state fingerprints, checks
+RSVP/ownership/orphan/uniqueness/phone invariants, and writes restore/verification/total timings. A
+synthetic complete set can be created with
 `pnpm db:backup:create-disposable-fixture -- --output-dir=<path>`.
 
 After a drill on Production-derived data, reset the disposable database to synthetic data and remove
