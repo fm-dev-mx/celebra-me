@@ -108,6 +108,64 @@ test.describe('America XV invitation content', () => {
 	});
 });
 
+// The cover date never wraps, so it is the first text to run past a narrow letter column. The
+// sizes cover phones held upright and sideways, the side-by-side layout near its 62rem breakpoint
+// and wide desktops. The body is the page's scroller and draws its own scrollbar, so the visible
+// width is the narrower of the root and the body.
+const coverViewports = [
+	{ width: 390, height: 844 },
+	{ width: 720, height: 900 },
+	{ width: 720, height: 450 },
+	{ width: 720, height: 500 },
+	{ width: 667, height: 375 },
+	{ width: 992, height: 768 },
+	{ width: 1024, height: 768 },
+	{ width: 1199, height: 1200 },
+	{ width: 1280, height: 800 },
+	{ width: 1440, height: 900 },
+];
+
+test.describe('America XV invitation cover', () => {
+	for (const viewport of coverViewports) {
+		test(`keeps every cover text inside the screen at ${viewport.width}x${viewport.height}`, async ({
+			page,
+		}) => {
+			await page.setViewportSize(viewport);
+			await page.goto(invitationUrl, { waitUntil: 'load' });
+			await page.evaluate(() => document.fonts.ready);
+			const overflowing = await page.locator('.invitation-hero').evaluate((hero) => {
+				const visibleWidth = Math.min(
+					document.documentElement.clientWidth,
+					document.body.clientWidth,
+				);
+				const found: string[] = [];
+				const walker = document.createTreeWalker(hero, NodeFilter.SHOW_TEXT);
+				while (walker.nextNode()) {
+					const text = walker.currentNode;
+					if (!text.textContent?.trim()) continue;
+					const range = document.createRange();
+					range.selectNodeContents(text);
+					for (const rect of range.getClientRects()) {
+						if (rect.right > visibleWidth + 0.5 || rect.left < -0.5) {
+							found.push(`${text.textContent.trim()} (${Math.round(rect.right)}px)`);
+						}
+					}
+				}
+				const date = hero.querySelector('.framed-portrait-hero__when');
+				const column = date?.parentElement?.getBoundingClientRect();
+				if (date && column && date.getBoundingClientRect().right > column.right + 0.5) {
+					found.push(`${date.textContent?.trim()} leaves its column`);
+				}
+				return found;
+			});
+			expect(overflowing).toEqual([]);
+			await expect(page.locator('.framed-portrait-hero__when').first()).toContainText(
+				'sábado 21 de noviembre de 2026',
+			);
+		});
+	}
+});
+
 test.describe('America XV invitation interactions', () => {
 	test('keeps the reply card closed without a personal link', async ({ page }) => {
 		const writes = await blockApiWrites(page);

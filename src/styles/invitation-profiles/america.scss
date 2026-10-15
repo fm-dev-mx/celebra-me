@@ -230,6 +230,36 @@
 		--hero-bleed-photo-position-stack: 50% 88%;
 	}
 
+	// Side by side, the date never wraps and shares the letter with the photograph and the facts
+	// label column, so near 62rem (or on a sideways phone) it would run past the screen. These
+	// sizes follow the width left for the date (photograph, letter padding, label column and a
+	// scrollbar subtracted; the date is ~11.4 times its font size wide) and stop at the preset's
+	// 1.7rem, so wide screens keep it unchanged.
+	@media (width >= 62rem) {
+		.invitation-hero[data-variant='bleed-portrait'] {
+			--hero-bleed-when-size: min(
+				1.7rem,
+				(100vw - min(50vw, 100svh * 2 / 3) - 2 * min(8vw, 8rem) - 9.75rem) / 11.4
+			);
+		}
+	}
+
+	@media (orientation: landscape) and (height <= 500px) {
+		.invitation-hero[data-variant='bleed-portrait'] {
+			--hero-bleed-when-size: min(
+				1.7rem,
+				(
+						100vw - min(50vw, 100svh * 2 / 3) - clamp(1.5rem, 5vw, 3rem) - max(
+								1.5rem,
+								env(safe-area-inset-right)
+							) -
+							7.25rem
+					) /
+					11.4
+			);
+		}
+	}
+
 	// Join 1, the bridge into the night: the patio photograph sits on the mist with no mat or
 	// frame, and its bottom padding holds the diagonal the night rises on.
 	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
