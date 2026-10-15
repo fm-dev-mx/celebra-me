@@ -489,6 +489,24 @@ describe('post-deploy smoke', () => {
 		expect(workflow).not.toMatch(/prod:apply|--apply|cloudinary.*secret/i);
 	});
 
+	it('runs a read-only Production smoke every 15 minutes and alerts after two failures', () => {
+		const workflow = readFileSync(
+			resolve('.github', 'workflows', 'production-uptime.yml'),
+			'utf8',
+		);
+		expect(workflow).toContain("- cron: '*/15 * * * *'");
+		expect(workflow).toContain(
+			'pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com',
+		);
+		expect(workflow).toMatch(/permissions:\s+contents: read\s+actions: read\s+issues: write/u);
+		expect(workflow).toContain('select(.databaseId != $GITHUB_RUN_ID)');
+		expect(workflow).toContain('if [ "$previous" != "failure" ]; then');
+		expect(workflow).toContain('gh issue create');
+		expect(workflow).not.toMatch(
+			/secrets\.|environment:|prod:apply|--apply|vercel |wrangler/iu,
+		);
+	});
+
 	it('keeps generated sitemap URLs on the public origin during builds', () => {
 		const config = readFileSync(resolve('astro.config.mjs'), 'utf8');
 		expect(config).toContain('!isHostedBuild && !isBuildCommand');
