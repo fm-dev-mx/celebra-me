@@ -39,7 +39,7 @@ export function isMutableInPlaceMediaUrl(src: string): boolean {
 }
 
 /** Prepared managed media bypasses a second encoder. Explicit legacy transforms remain supported. */
-export function shouldOptimizeThroughVercelImage(
+export function shouldOptimizeThroughImageService(
 	src: string | ImageMetadata,
 	delivery?: ImageDelivery,
 ): boolean {

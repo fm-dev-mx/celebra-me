@@ -6,7 +6,17 @@ import { resolve } from 'path';
 import process from 'process';
 
 const MULTI_FILE_BODY_THRESHOLD = 3;
-const BROAD_COMMIT_THRESHOLD = 10;
+// Size limits count reviewable files and lines only (see isMechanicalChange). Measured on the
+// v0.23.1-beta.1..v0.24.0-beta.1 range: median 6 files / 123 lines, p75 14 / ~570, p90 42 / ~2000.
+const SIZE_WARN_FILES = 15;
+const SIZE_WARN_LINES = 600;
+const SIZE_HARD_FILES = 40;
+const LARGE_CHANGE_TRAILER = /^Large-Change:\s*(rename|format|sweep|retire|generated)\b/im;
+// A body made only of trailers explains nothing.
+const TRAILER_LINE_PATTERN = /^(?:Co-Authored-By|Signed-off-by|Refs|Large-Change):\s/i;
+const MECHANICAL_PATH_PATTERN =
+	/(?:^|\/)pnpm-lock\.yaml$|-snapshots\/|\.(?:png|jpe?g|webp|avif|gif|mp3|mp4|woff2?)$/i;
+const SUPPORTING_AREAS = new Set(['tests', 'docs']);
 const TOP_LEVEL_AREAS = new Set(['src', 'docs', 'tests', 'supabase', 'public', '.github']);
 const ROOT_CONFIG_PATTERN =
 	/^(?:package\.json|pnpm-lock\.yaml|tsconfig(?:\..+)?\.json|eslint\.config\.js|commitlint\.config\.cjs|astro\.config\.mjs|jest\.config\.cjs|playwright\.config\.ts|vercel\.json|README\.md|CONTRIBUTING\.md)$/;
@@ -68,10 +78,6 @@ function getCommitBody(fullMessage) {
 	return bodyLines.join('\n').trim();
 }
 
-function hasBulletStructuredBody(body) {
-	return body.split(/\r?\n/).some((line) => /^\s*[-*]\s+\S+/.test(line));
-}
-
 function getChangedFiles(commitHash) {
 	const result = run('git', [
 		'diff-tree',
@@ -90,6 +96,27 @@ function getChangedFiles(commitHash) {
 		: [];
 }
 
+/**
+ * Lockfiles, binaries, visual snapshots and exact renames are excluded from the size count: they
+ * grow with the change without adding review work.
+ */
+function getReviewableSize(commitHash) {
+	const result = run('git', ['show', '-M', '--numstat', '--format=', commitHash]);
+	if (result.status !== 0 || !result.stdout) return { files: 0, lines: 0 };
+	let files = 0;
+	let lines = 0;
+	for (const line of result.stdout.split('\n')) {
+		const [added, deleted, ...pathParts] = line.split('\t');
+		const filePath = pathParts.join('\t');
+		const binary = added === '-';
+		const exactRename = filePath.includes(' => ') && added === '0' && deleted === '0';
+		if (binary || exactRename || MECHANICAL_PATH_PATTERN.test(filePath)) continue;
+		files += 1;
+		lines += Number(added) + Number(deleted);
+	}
+	return { files, lines };
+}
+
 function classifyPathArea(filePath) {
 	const normalizedPath = String(filePath || '').replace(/\\/g, '/');
 	const [topLevel] = normalizedPath.split('/');
@@ -105,40 +132,43 @@ function collectAuditWarnings(commit) {
 	const changedFiles = getChangedFiles(commit.hash);
 	const body = getCommitBody(commit.full);
 	const changedAreas = [...new Set(changedFiles.map(classifyPathArea))];
+	const primaryAreas = changedAreas.filter((area) => !SUPPORTING_AREAS.has(area));
 	const warnings = [];
+	const errors = [];
 
-	if (changedFiles.length >= MULTI_FILE_BODY_THRESHOLD && !body) {
+	const explanation = body
+		.split(/\r?\n/)
+		.filter((line) => line.trim() && !TRAILER_LINE_PATTERN.test(line));
+	if (changedFiles.length >= MULTI_FILE_BODY_THRESHOLD && explanation.length === 0) {
 		warnings.push(
-			`commit touches ${changedFiles.length} files but has no body; describe the relevant file or module changes`,
+			`commit touches ${changedFiles.length} files but has no body; explain what changes and why`,
 		);
 	}
 
-	if (
-		changedFiles.length >= MULTI_FILE_BODY_THRESHOLD &&
-		body &&
-		!hasBulletStructuredBody(body)
-	) {
+	if (primaryAreas.length >= 3) {
 		warnings.push(
-			`commit touches ${changedFiles.length} files but the body is not bullet-structured; use bullets per file or coherent module`,
+			`commit spans multiple repository areas (${primaryAreas.join(', ')}); check that it is still atomic`,
 		);
 	}
 
-	if (changedAreas.length >= 3) {
-		warnings.push(
-			`commit spans multiple repository areas (${changedAreas.join(', ')}); check that it is still atomic`,
-		);
+	if (changedFiles.length > 0) {
+		const size = getReviewableSize(commit.hash);
+		const exception = commit.full.match(LARGE_CHANGE_TRAILER)?.[1];
+		if (size.files > SIZE_HARD_FILES && !exception) {
+			errors.push(
+				`commit changes ${size.files} reviewable files (limit ${SIZE_HARD_FILES}); split it or add a Large-Change trailer`,
+			);
+		} else if (size.files > SIZE_WARN_FILES || size.lines > SIZE_WARN_LINES) {
+			warnings.push(
+				`commit changes ${size.files} reviewable files and ${size.lines} lines${exception ? ` (Large-Change: ${exception})` : ''}; check that it is still atomic`,
+			);
+		}
 	}
 
-	if (changedFiles.length >= BROAD_COMMIT_THRESHOLD) {
-		warnings.push(
-			`commit changes ${changedFiles.length} files; this is likely too broad for an atomic commit`,
-		);
-	}
-
-	return { changedFiles, warnings };
+	return { changedFiles, warnings, errors };
 }
 
-function validateCommit(commitHash) {
+function validateCommit(commitHash, { strictSize }) {
 	console.log(`\nChecking commit: ${commitHash}`);
 	const commit = getCommitMessage(commitHash);
 	if (!commit) {
@@ -147,8 +177,18 @@ function validateCommit(commitHash) {
 	}
 
 	const audit = collectAuditWarnings({ ...commit, hash: commitHash });
+	// History that already reached origin cannot be split, so CI reports size errors as warnings;
+	// pre-push passes --strict-size while the commits can still be rewritten.
+	const sizeErrors = strictSize ? audit.errors : [];
+	audit.warnings.push(...(strictSize ? [] : audit.errors));
 
 	console.log(`  Subject: ${commit.subject}`);
+	if (sizeErrors.length > 0) {
+		for (const error of sizeErrors) {
+			console.error(`  ❌ ${error}`);
+		}
+		return false;
+	}
 	if (audit.warnings.length > 0) {
 		for (const warning of audit.warnings) {
 			console.warn(`  ⚠️  ${warning}`);
@@ -161,9 +201,13 @@ function validateCommit(commitHash) {
 }
 
 function main() {
-	const [baseSha, headSha] = process.argv.slice(2);
+	const args = process.argv.slice(2);
+	const strictSize = args.includes('--strict-size');
+	const [baseSha, headSha] = args.filter((arg) => !arg.startsWith('--'));
 	if (!baseSha || !headSha) {
-		console.error('Usage: node scripts/validate-commits.mjs <base-sha> <head-sha>');
+		console.error(
+			'Usage: node scripts/validate-commits.mjs <base-sha> <head-sha> [--strict-size]',
+		);
 		process.exit(1);
 	}
 
@@ -192,13 +236,13 @@ function main() {
 
 	let allValid = true;
 	for (const hash of hashes) {
-		if (!validateCommit(hash)) {
+		if (!validateCommit(hash, { strictSize })) {
 			allValid = false;
 		}
 	}
 
 	if (!allValid) {
-		console.error('\n❌ Commit validation failed; hygiene warnings stay advisory.');
+		console.error('\n❌ Commit validation failed; other hygiene warnings stay advisory.');
 		process.exit(1);
 	}
 

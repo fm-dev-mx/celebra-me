@@ -4,6 +4,7 @@ import { markCommercialOrderDepositPaid } from '@/lib/commercial/orders.service'
 import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { resolveAfterResponseContext } from '@/lib/server/platform-request';
 
 const MarkDepositPaidSchema = z.object({
 	amountPaid: z.number().positive(),
@@ -11,7 +12,7 @@ const MarkDepositPaidSchema = z.object({
 	idempotencyKey: z.uuid(),
 });
 
-export const POST: APIRoute = async ({ request, cookies, params }) => {
+export const POST: APIRoute = async ({ request, cookies, params, locals }) => {
 	try {
 		const session = await requireAdminMutationAccess(
 			request,
@@ -27,13 +28,16 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		const parsed = await validateBodyOrRespond(request, MarkDepositPaidSchema);
 		if (parsed instanceof Response) return parsed;
 
-		const result = await markCommercialOrderDepositPaid({
-			orderId,
-			amountPaid: parsed.amountPaid,
-			paidAt: parsed.paidAt,
-			actorId: session.userId,
-			idempotencyKey: parsed.idempotencyKey,
-		});
+		const result = await markCommercialOrderDepositPaid(
+			{
+				orderId,
+				amountPaid: parsed.amountPaid,
+				paidAt: parsed.paidAt,
+				actorId: session.userId,
+				idempotencyKey: parsed.idempotencyKey,
+			},
+			{ after: resolveAfterResponseContext(locals) },
+		);
 
 		return successResponse(result);
 	} catch (error) {

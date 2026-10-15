@@ -9,6 +9,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { randomUUID } from 'node:crypto';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
+import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
 
 const COMMERCIAL_ORDER_CURRENCY = 'MXN';
 
@@ -41,6 +42,11 @@ export interface MarkCommercialOrderDepositPaidInput {
 export interface DepositPaidResult {
 	order: SalesOrder;
 	conversionEvent: MetaConversionEvent | null;
+}
+
+/** Request-scoped options; `after` keeps background work alive once the response is sent. */
+export interface CommercialOrderServiceOptions {
+	after?: AfterResponseContext | null;
 }
 
 function assertPositiveAmount(value: number, message: string): void {
@@ -78,6 +84,7 @@ function createOrderNumber(input: { now?: Date; randomSuffix?: string } = {}): s
 
 export async function createCommercialSalesOrder(
 	input: CreateCommercialSalesOrderInput,
+	options: CommercialOrderServiceOptions = {},
 ): Promise<SalesOrder> {
 	assertPositiveAmount(input.totalAmount, 'Total order amount must be greater than zero.');
 	assertNonNegativeAmount(input.depositAmount, 'Deposit amount cannot be negative.');
@@ -110,15 +117,20 @@ export async function createCommercialSalesOrder(
 			throw error;
 		})
 		.then((order) => {
-			// Fire-and-forget: emit internal order_created tracking event.
+			// Background: emit the internal order_created tracking event after the response.
 			if (order.wasCreated !== false)
-				void emitCommercialTrackingEvent({
-					eventName: 'order_created',
-					customerId: order.customerId,
-					orderId: order.id,
-					sessionId: order.sessionId,
-					totalAmount: order.totalAmount,
-				});
+				runAfterResponse(
+					options.after,
+					() =>
+						emitCommercialTrackingEvent({
+							eventName: 'order_created',
+							customerId: order.customerId,
+							orderId: order.id,
+							sessionId: order.sessionId,
+							totalAmount: order.totalAmount,
+						}),
+					{ label: 'orders-service:order_created' },
+				);
 			return order;
 		});
 }
@@ -148,6 +160,7 @@ function mapDepositTransitionError(error: unknown): never {
 
 export async function markCommercialOrderDepositPaid(
 	input: MarkCommercialOrderDepositPaidInput,
+	options: CommercialOrderServiceOptions = {},
 ): Promise<DepositPaidResult> {
 	assertPositiveAmount(input.amountPaid, 'El monto del anticipo debe ser mayor a cero.');
 
@@ -166,25 +179,25 @@ export async function markCommercialOrderDepositPaid(
 	}
 	const { order, conversionEvent } = result;
 
+	// Background work after the response (skipped on an idempotent re-run): first CAPI
+	// delivery of the conversion event, then the internal deposit_paid tracking event.
 	if (!result.idempotent) {
-		void deliverMetaConversionEvent(conversionEvent.id).catch((err) => {
-			console.error(
-				`[orders-service] Failed to deliver CAPI event ${conversionEvent.id} synchronously:`,
-				err,
-			);
+		runAfterResponse(options.after, () => deliverMetaConversionEvent(conversionEvent.id), {
+			label: `orders-service:capi:${conversionEvent.id}`,
 		});
-	}
-
-	// Fire-and-forget: emit internal deposit_paid tracking event (skip on idempotent re-process).
-	if (!result.idempotent) {
-		void emitCommercialTrackingEvent({
-			eventName: 'deposit_paid',
-			customerId: order.customerId,
-			orderId: order.id,
-			sessionId: order.sessionId,
-			totalAmount: order.totalAmount,
-			amountPaid: input.amountPaid,
-		});
+		runAfterResponse(
+			options.after,
+			() =>
+				emitCommercialTrackingEvent({
+					eventName: 'deposit_paid',
+					customerId: order.customerId,
+					orderId: order.id,
+					sessionId: order.sessionId,
+					totalAmount: order.totalAmount,
+					amountPaid: input.amountPaid,
+				}),
+			{ label: 'orders-service:deposit_paid' },
+		);
 	}
 
 	return { order, conversionEvent };

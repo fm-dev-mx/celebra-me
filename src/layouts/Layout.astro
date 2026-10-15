@@ -3,8 +3,6 @@
 import '@/styles/global.scss';
 
 import Header from '@/components/home/HomeHeader.astro';
-import Analytics from '@vercel/analytics/astro';
-import SpeedInsights from '@vercel/speed-insights/astro';
 import ConsentBanner from '@/components/common/ConsentBanner.astro';
 import SvgFilters from '@/components/common/SvgFilters.astro';
 import {
@@ -12,10 +10,9 @@ import {
 	resolvePublicSiteOrigin,
 } from '@/lib/invitation/social-metadata';
 import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
-import {
-	classifyTrackingRoute,
-	resolveSpeedInsightsConfig,
-} from '@/lib/tracking/route-policy';
+import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import { resolveWebAnalyticsBeacon } from '@/lib/tracking/web-analytics';
+import { getWebAnalyticsToken } from '@/lib/tracking/web-analytics-env';
 
 // Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
 import '@fontsource-variable/montserrat';
@@ -81,9 +78,8 @@ const ogImage = socialImage.url;
 const routePolicy = classifyTrackingRoute(Astro.url);
 const loadCommercialTracking = isProductionRuntime && routePolicy.internalAllowed;
 
-const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
-	deployEnvironment,
-});
+// Cookieless Cloudflare Web Analytics: no consent gate; off when the site token is blank.
+const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
 ---
 <!doctype html>
 <html lang="es">
@@ -164,10 +160,16 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 		</main>
 
 		<ConsentBanner />
-		{loadCommercialTracking && <Analytics />}
-		{speedInsightsConfig.enabled && (
-			<SpeedInsights sampleRate={speedInsightsConfig.sampleRate} />
-		)}
+		{
+			webAnalyticsBeacon && (
+				<script
+					is:inline
+					type="module"
+					src={webAnalyticsBeacon.src}
+					data-cf-beacon={webAnalyticsBeacon.beaconConfig}
+				/>
+			)
+		}
 		{loadCommercialTracking && (
 			<script>
 				import { initCommercialTracking } from '@/lib/tracking/client';

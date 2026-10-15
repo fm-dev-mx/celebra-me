@@ -6,14 +6,11 @@ import type {
 	CanonicalEnvSummary,
 	EnvironmentPromotionState,
 	EvidenceState,
-	FreshnessMeta,
 	MigrationPresence,
 	TargetEnv,
 } from './types';
 
 export const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
-
-const CANONICAL_STATUS_CACHE_TTL_MS = 60_000;
 
 /**
  * Aggregate evidence authority. Incomplete evidence must never become globally LIVE.
@@ -41,29 +38,6 @@ export function invitationAttentionCount(
 	return count;
 }
 
-/**
- * Freshness from a cached (memory or disk) payload. Never LIVE — age is not authority.
- */
-export function freshnessFromCachedTimestamp(
-	lastVerifiedAt: string,
-	nowMs: number = Date.now(),
-	ttlMs: number = CANONICAL_STATUS_CACHE_TTL_MS,
-): FreshnessMeta {
-	const verifiedMs = new Date(lastVerifiedAt).getTime();
-	if (!Number.isFinite(verifiedMs)) {
-		return { status: 'UNVERIFIED', lastVerifiedAt };
-	}
-	const ageMs = nowMs - verifiedMs;
-	return {
-		status: ageMs < ttlMs ? 'CACHED' : 'STALE',
-		lastVerifiedAt,
-	};
-}
-
-export function liveFreshnessMeta(verifiedAt: string): FreshnessMeta {
-	return { status: 'LIVE', lastVerifiedAt: verifiedAt };
-}
-
 export function migrationPresenceForEnv(
 	env: Pick<CanonicalEnvSummary, 'evidence' | 'appliedCount' | 'pendingMigrations'>,
 	version: string,
@@ -71,8 +45,4 @@ export function migrationPresenceForEnv(
 	if (env.evidence === 'UNVERIFIED' || env.appliedCount == null) return 'UNVERIFIED';
 	if (env.pendingMigrations.includes(version)) return 'NOT_APPLIED';
 	return 'APPLIED';
-}
-
-export function hasPersistableOperationalEvidence(evidence: EvidenceState): boolean {
-	return evidence === 'LIVE' || evidence === 'CACHED';
 }

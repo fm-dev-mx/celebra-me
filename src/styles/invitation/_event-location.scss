@@ -377,7 +377,7 @@
 	}
 
 	&__lede {
-		font-family: var(--location-intro-text-font-family, inherit);
+		font-family: var(--location-intro-text-font-family, var(--font-body));
 		font-size: var(--location-intro-text-size, 1rem);
 		line-height: 1.6;
 	}

@@ -81,7 +81,7 @@ Defined in `src/lib/rsvp/auth/authorization.ts`. Guards, in order:
 
 Defined in `src/lib/rsvp/security/admin-rate-limit.ts`. Operation keys and limits are in the
 `RATE_LIMITS` map in the same file. Entity ID is `operation:${userId || hashedIp}`. Backend is
-either Upstash (distributed) or in-memory (local), resolved via `rate-limit-provider.ts`.
+in-memory per instance, resolved via `rate-limit-provider.ts`.
 
 ## CSRF Lifecycle
 

@@ -9,7 +9,6 @@ import {
 	getSupabasePlatformUsage,
 	resetSupabaseUsageCache,
 } from '@/lib/platform/server/supabase-usage';
-import { getVercelPlatformUsage, resetVercelUsageCache } from '@/lib/platform/server/vercel-usage';
 import {
 	getCloudinaryPlatformUsage,
 	resetCloudinaryUsageCache,
@@ -31,7 +30,6 @@ const REPORTABLE_NAMES = [
 	'SUPABASE_MANAGEMENT_TOKEN_PRODUCTION',
 	'SUPABASE_PROJECT_REF_PREVIEW',
 	'SUPABASE_PROJECT_REF_PRODUCTION',
-	'VERCEL_API_TOKEN',
 	'CLOUDINARY_USAGE_API_KEY',
 	'CLOUDINARY_USAGE_API_SECRET',
 	'CLOUDINARY_CLOUD_NAME',
@@ -40,8 +38,6 @@ const REPORTABLE_NAMES = [
 const SECRET_ENV_NAMES = [
 	'SUPABASE_MANAGEMENT_TOKEN',
 	'SUPABASE_PROJECT_REF_PREVIEW',
-	'VERCEL_API_TOKEN',
-	'VERCEL_TEAM_ID',
 	'CLOUDINARY_CLOUD_NAME',
 	'CLOUDINARY_USAGE_API_KEY',
 	'CLOUDINARY_USAGE_API_SECRET',
@@ -67,8 +63,8 @@ describe('missing-credential guidance', () => {
 	});
 
 	it('reuses the base entry for Local-only suffixed names', () => {
-		expect(platformMissingInfo('VERCEL_API_TOKEN_PREVIEW')).toEqual(
-			platformMissingInfo('VERCEL_API_TOKEN'),
+		expect(platformMissingInfo('SUPABASE_MANAGEMENT_TOKEN_PREVIEW')).toEqual(
+			platformMissingInfo('SUPABASE_MANAGEMENT_TOKEN'),
 		);
 	});
 
@@ -97,15 +93,12 @@ describe('no credential values in provider payloads', () => {
 	beforeEach(() => {
 		for (const name of SECRET_ENV_NAMES) delete process.env[name];
 		resetSupabaseUsageCache();
-		resetVercelUsageCache();
 		resetCloudinaryUsageCache();
 	});
 
-	it('keeps Supabase, Vercel and Cloudinary values out of the report', async () => {
+	it('keeps Supabase and Cloudinary values out of the report', async () => {
 		process.env.SUPABASE_MANAGEMENT_TOKEN = 'secret-pat-value';
 		process.env.SUPABASE_PROJECT_REF_PREVIEW = 'secret-ref-value';
-		process.env.VERCEL_API_TOKEN = 'secret-vercel-token';
-		process.env.VERCEL_TEAM_ID = 'secret-team-id';
 		process.env.CLOUDINARY_CLOUD_NAME = 'secret-cloud-name';
 		process.env.CLOUDINARY_API_KEY = 'secret-upload-key';
 		process.env.CLOUDINARY_API_SECRET = 'secret-upload-secret';
@@ -113,19 +106,14 @@ describe('no credential values in provider payloads', () => {
 		const supabase = await getSupabasePlatformUsage('preview', NOW, async () =>
 			jsonResponse({ metrics: { fs_used_bytes: 123, fs_size_bytes: 500 } }),
 		);
-		const vercel = await getVercelPlatformUsage(NOW, async () =>
-			jsonResponse({ BilledCost: '0.00' }),
-		);
 		const cloudinary = await getCloudinaryPlatformUsage(NOW, async () =>
 			jsonResponse({ used_credits: 1, credits: 25 }),
 		);
 
-		const payloads = JSON.stringify({ supabase, vercel, cloudinary });
+		const payloads = JSON.stringify({ supabase, cloudinary });
 		for (const secret of [
 			'secret-pat-value',
 			'secret-ref-value',
-			'secret-vercel-token',
-			'secret-team-id',
 			'secret-cloud-name',
 			'secret-upload-key',
 			'secret-upload-secret',

@@ -5,7 +5,6 @@
 	--gifts-text-color: var(--color-text-primary);
 	--gifts-title-color: var(--color-text-emphasis);
 	--gifts-subtitle-color: var(--color-text-primary);
-	--gifts-title-letter-spacing: 0.15em;
 	--gifts-padding-block: var(--spacing-section-gap, 8rem);
 	--gifts-padding-inline: var(--spacing-md);
 	--gifts-card-bg: var(--color-glass-bg);
@@ -28,7 +27,6 @@
 	--gifts-copy-border: 1px solid var(--color-action-accent);
 	--gifts-container-max-width: 900px;
 	--gifts-header-margin-bottom: var(--spacing-xl);
-	--gifts-title-size: clamp(2rem, 5vw, 3rem);
 	--gifts-subtitle-size: 1.25rem;
 	--gifts-grid-min-column: 280px;
 	--gifts-card-padding: var(--spacing-xl) var(--spacing-lg);
@@ -93,11 +91,11 @@
 
 	&__title {
 		font-family: var(--font-display);
-		font-size: var(--gifts-title-size);
+		font-size: var(--gifts-title-size, clamp(2rem, 5vw, 3rem));
 		margin-bottom: var(--spacing-md);
 		font-style: var(--gifts-title-style, inherit);
 		text-transform: var(--gifts-title-transform, uppercase);
-		letter-spacing: var(--gifts-title-letter-spacing);
+		letter-spacing: var(--gifts-title-letter-spacing, 0.15em);
 		color: var(--gifts-title-color);
 		overflow-wrap: anywhere;
 		text-wrap: balance;

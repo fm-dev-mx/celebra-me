@@ -12,6 +12,63 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.25.0-beta.1] - 2026-10-14
+
+Release checkpoint that makes the application runtime platform neutral ahead of the Cloudflare
+Workers migration: security headers, client IP, Cloudinary access, cron jobs and web analytics no
+longer depend on Vercel-only APIs, and the Vercel-only status and usage tooling is removed.
+
+### Added
+
+- **Cloudflare Web Analytics**: the layout renders the cookieless beacon
+  (`static.cloudflareinsights.com/beacon.min.js`) when `PUBLIC_CF_WEB_ANALYTICS_TOKEN` is set. It
+  stores nothing on the visitor's device, so it stays outside the consent gate; GA4 and first-party
+  tracking keep their consent and route policies.
+
+### Changed
+
+- Security headers and permanent redirects are served by the middleware; `vercel.json` keeps its
+  copy only until the cutover.
+- Server-side Cloudinary access uses its REST API instead of the SDK, and `sharp` stays out of that
+  module.
+- The cron endpoints delegate to invocable services (memories cleanup, engagement maintenance), and
+  private memories Worker requests are signed with the PEM string.
+- Editor divergence detection runs only on a local runtime.
+- `@vercel/analytics` and `@vercel/speed-insights` are removed; the RUM source is the beacon.
+- Commit rules: commitlint enforces the documented message rules and oversized commits are blocked
+  before push.
+
+### Removed
+
+- The local canonical status panel (`/dashboard/estado` and `/api/dashboard/estado`), the Vercel
+  usage card, the Upstash rate-limit backend and its variables, and the `X-Render-Timing` response
+  headers.
+
+### Fixed
+
+- `CF-Connecting-IP` is trusted only on Cloudflare Workers. On Vercel a visitor could send it and
+  choose their rate-limit bucket; the client IP now comes from `X-Forwarded-For`, then `X-Real-IP`.
+- Profile tokens reach shared section styles (location lede and gifts title defaults).
+- The v0.24.0-beta.1 family roles note is corrected.
+- Jest ignores nested agent worktrees under `.claude/worktrees`.
+
+### Verification
+
+| Check          | Result                                                                       |
+| :------------- | :--------------------------------------------------------------------------- |
+| Repository CI  | Passed on every develop merge; one font-timing visual capture was rerun once |
+| Preview smoke  | VERIFIED for each integrated branch and for the release merge                |
+| Preview checks | Published images load, crons answer 401 without secret, no `X-Render-Timing` |
+| Web analytics  | Beacon loads (200) and reports (204); no `/_vercel/insights` in the HTML     |
+| Unit tests     | Cloudinary REST client and adapter: 31 passed                                |
+
+### Known issues
+
+- Editor image upload needs `CLOUDINARY_*` credentials, which no Vercel environment declares; the
+  REST client is covered by unit tests and delivery of published images is unchanged.
+- The app still reads `base_demo_id`, `snapshot` and `submission_id`; a separate release retires
+  those reads before the column contract.
+
 ## [0.24.0-beta.1] - 2026-10-14
 
 Release checkpoint that extends the design ranking to every published client invitation with
@@ -62,8 +119,8 @@ profiles and contracts.
   the memories cleanup cron answers 503.
 - Preview purge and fixture scripts reject any project other than the canonical Preview one.
 - The RSVP island no longer bundles the server WhatsApp helper.
-- Family group titles hide a role they already name, pending itinerary times read "Por confirmar",
-  and the locked reply-card RSVP drops the eyebrow and separator.
+- Pending itinerary times read "Por confirmar", and the locked reply-card RSVP drops the eyebrow and
+  separator.
 - `@astrojs/vercel` 11.0.13 crashed Preview functions on a static import; 11.0.14 fixes it.
 
 ### Verification

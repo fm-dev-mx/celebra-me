@@ -1,7 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import {
 	combineEvidence,
-	freshnessFromCachedTimestamp,
 	invitationAttentionCount,
 	migrationPresenceForEnv,
 } from '@/lib/status/evidence';
@@ -18,12 +17,6 @@ describe('canonical evidence aggregation', () => {
 		expect(combineEvidence(['LIVE', 'LIVE', 'LIVE'])).toBe('LIVE');
 		expect(combineEvidence(['CACHED', 'CACHED'])).toBe('CACHED');
 		expect(combineEvidence(['UNVERIFIED', 'UNVERIFIED'])).toBe('UNVERIFIED');
-	});
-
-	it('never classifies a disk/memory payload as LIVE from age alone', () => {
-		const recent = new Date().toISOString();
-		expect(freshnessFromCachedTimestamp(recent).status).toBe('CACHED');
-		expect(freshnessFromCachedTimestamp('2020-01-01T00:00:00.000Z').status).toBe('STALE');
 	});
 
 	it('marks recent migrations UNVERIFIED when the env probe is missing, not NOT_APPLIED', () => {

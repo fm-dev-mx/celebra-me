@@ -118,10 +118,10 @@ Verify with `git diff --cached` before committing. After stash-pop, confirm the 
   unpushed, follow “Commit on wrong branch” above; if it reached `origin/develop`, revert it on a
   task branch — published `develop` is never rewritten.
 - **`body-max-line-length` (hard error with `--no-verify`)**: commitlint enforces
-  `body-max-line-length: [2, 'always', 140]`. The `--no-verify` flag bypasses the commit-msg hook
+  `body-max-line-length: [2, 'always', 100]`. The `--no-verify` flag bypasses the commit-msg hook
   that normally catches this at commit time, so the error only surfaces during pre-push validation.
   Always pre-validate the message with `echo <message> | pnpm exec commitlint` when using
-  `--no-verify`. Split any body line that exceeds 140 characters into continuation lines (see body
+  `--no-verify`. Split any body line that exceeds 100 characters into continuation lines (see body
   policy in `SKILL.md`).
 - **SCSS pre-commit hooks (stylelint)**: lint-staged runs stylelint on staged SCSS files. Common
   rejections and fixes:

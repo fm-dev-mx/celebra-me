@@ -38,7 +38,7 @@ do
   fi
 
   if [ -n "$BASE_SHA" ]; then
-    node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha"
+    node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha" --strict-size
   fi
 done <<EOF
 $ref_updates

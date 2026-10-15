@@ -18,9 +18,9 @@ import {
 	assertCloudinaryMutationTarget,
 	uploadOrReconcileCloudinaryAsset,
 	verifyCloudinaryAsset,
+	verifyCloudinaryDelivery,
 	hydrateCloudinaryEnvFromFiles,
 } from './cloudinary-adapter.ts';
-import { verifyCloudinaryDelivery } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import {
 	classifyDbTarget,
 	redactCredentials,

@@ -8,8 +8,8 @@ import { resolve } from 'node:path';
 import {
 	uploadOrReconcileCloudinaryAsset as uploadOrReconcileFromEnv,
 	verifyCloudinaryAsset as verifyCloudinaryAssetFromEnv,
+	verifyCloudinaryDelivery as verifyCloudinaryDeliveryWithReader,
 	readVerifiedCloudinaryAsset,
-	verifyCloudinaryDelivery,
 	readCloudinaryQuota,
 	getCloudinaryErrorStatus,
 	type CloudinaryAssetUploadInput,
@@ -17,7 +17,16 @@ import {
 	type CloudinaryAssetResult,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import { CloudinaryQuota } from './cloudinary-quota.ts';
+import { readImageDimensions } from './image-dimensions.ts';
 import { parseEnvContent } from '../shared/celebra-runtime-env.ts';
+
+/** Delivery read-back with the Node-only (sharp) dimension decoder bound in. */
+export function verifyCloudinaryDelivery(
+	input: CloudinaryAssetVerificationInput,
+	secureUrl: string,
+): Promise<Uint8Array> {
+	return verifyCloudinaryDeliveryWithReader(input, secureUrl, readImageDimensions);
+}
 
 /** Canonical migration session: quota and fresh binary evidence live only in this operation. */
 export function createCloudinaryMigrationSession() {
@@ -26,7 +35,7 @@ export function createCloudinaryMigrationSession() {
 	return {
 		quota,
 		verifySource: (input: CloudinaryAssetVerificationInput) =>
-			readVerifiedCloudinaryAsset(input, quota),
+			readVerifiedCloudinaryAsset(input, readImageDimensions, quota),
 		async copy(input: CloudinaryAssetUploadInput) {
 			try {
 				const asset = await uploadOrReconcileFromEnv(input, quota);
@@ -100,5 +109,5 @@ export async function verifyCloudinaryAsset(
 	input: CloudinaryAssetVerificationInput,
 ): Promise<CloudinaryAssetResult> {
 	hydrateCloudinaryEnvFromFiles();
-	return verifyCloudinaryAssetFromEnv(input);
+	return verifyCloudinaryAssetFromEnv(input, readImageDimensions);
 }

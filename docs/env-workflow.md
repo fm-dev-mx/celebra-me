@@ -106,8 +106,7 @@ execution:
   It never forges hosted identity and is not mutation authorization. Its `preview` names the Preview
   database a local process talks to; `CELEBRA_DEPLOY_ENV=preview` names a hosted Preview deployment.
 - **Canonical-status cache path:** `CELEBRA_STATUS_CACHE_PATH` optionally overrides the durable
-  status cache file used by the app/runtime status server. Default is
-  `.cache/canonical-status.json`.
+  status cache file used by the status CLI (`pnpm dbs`). Default is `.cache/canonical-status.json`.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
   `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
   live in `.env.preview.local` (no tracked template), not ordinary Local `.env.local` files.
@@ -169,10 +168,10 @@ substitute for the other.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category         | Variables                                                                                                                                                                                                                                                                                                                                                                                                               | Relationship                                          |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only` | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                          | Present in app/runtime typing; omitted from template. |
+| Contract category         | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                            | Relationship                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `operational-script-only` | `CELEBRA_STATUS_CACHE_PATH`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
+| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                                                       | Present in app/runtime typing; omitted from template. |
 
 `SUPER_ADMIN_EMAILS` is a server-only runtime list. Its first entry is the project owner: the only
 account that may confirm or clear owner review in the invitation workflow, and the local super admin
@@ -217,8 +216,6 @@ managed from the super-admin dashboard.
 | `SUPABASE_MANAGEMENT_TOKEN`                      | Optional; usually empty            | Vercel Preview secret (optional)                                                    | Vercel Production secret, independent                | Read-only Management PAT (`analytics_usage_read`, `infra_disk_config_read`)                |
 | `SUPABASE_PROJECT_REF_PREVIEW`                   | Preview project ref                | Vercel Preview config                                                               | Vercel Production config                             | Non-secret Supabase project ref shown on the platform console                              |
 | `SUPABASE_PROJECT_REF_PRODUCTION`                | Production project ref             | Vercel Preview config                                                               | Vercel Production config                             | Non-secret Supabase project ref shown on the platform console                              |
-| `VERCEL_API_TOKEN`                               | Optional; usually empty            | Vercel Preview secret (optional)                                                    | Vercel Production secret, independent                | Read-only billing token for the platform usage console                                     |
-| `VERCEL_TEAM_ID`                                 | Team id                            | Vercel Preview config                                                               | Vercel Production config                             | Non-secret team id for the billing usage query                                             |
 | `CLOUDINARY_USAGE_API_KEY`                       | Optional; falls back to upload key | Vercel Preview secret (optional)                                                    | Vercel Production secret (optional)                  | Restricted read-only key for the Cloudinary usage report                                   |
 | `CLOUDINARY_USAGE_API_SECRET`                    | Optional; falls back to upload key | Vercel Preview secret (optional)                                                    | Vercel Production secret (optional)                  | Secret of the restricted usage key                                                         |
 | `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW`    | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Per-environment token status for the local platform console                                |
@@ -239,15 +236,15 @@ Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_I
 memories values in Cloudflare Secrets Store. The platform usage console reads its own
 `MEMORIES_CLOUDFLARE_*` names so Wrangler never mistakes the read-only analytics token for deploy
 credentials; without them the console reports "sin configurar" and keeps working. The same console
-reads `SUPABASE_MANAGEMENT_TOKEN`, `VERCEL_API_TOKEN` and the optional `CLOUDINARY_USAGE_*` pair,
-each read-only and least-privilege. The console is scoped per environment: the Preview deployment
-shows only Preview, the Production deployment only Production, and Local shows both (the panel
-labels shared account/project quotas explicitly). To diagnose each environment's configuration from
-Local, load the optional `*_PREVIEW` / `*_PRODUCTION` overrides above in `.env.local`; Local only
-reflects what is loaded there. Interactive deployment authentication is owned by `wrangler login`;
-Worker runtime secrets are applied to the exact environment with
-`wrangler secret put --env <environment>`. Never place API tokens, capability secrets, object keys,
-signed URLs, or reusable secret values in tracked templates, documentation, logs, or evidence.
+reads `SUPABASE_MANAGEMENT_TOKEN` and the optional `CLOUDINARY_USAGE_*` pair, each read-only and
+least-privilege. The console is scoped per environment: the Preview deployment shows only Preview,
+the Production deployment only Production, and Local shows both (the panel labels shared
+account/project quotas explicitly). To diagnose each environment's configuration from Local, load
+the optional `*_PREVIEW` / `*_PRODUCTION` overrides above in `.env.local`; Local only reflects what
+is loaded there. Interactive deployment authentication is owned by `wrangler login`; Worker runtime
+secrets are applied to the exact environment with `wrangler secret put --env <environment>`. Never
+place API tokens, capability secrets, object keys, signed URLs, or reusable secret values in tracked
+templates, documentation, logs, or evidence.
 
 ## Rules
 
@@ -403,15 +400,14 @@ optional unless marked **required**. Paths are relative to the repository root.
 These are present in `.env.example` and the lane bootstrap allowlist
 (`scripts/shared/celebra-runtime-env.ts`); they follow the server-only or `PUBLIC_*` rules above.
 
-| Area            | Names                                                                                        | Read by                                                      |
-| --------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Supabase keys   | `SUPABASE_ANON_KEY`, `PUBLIC_SUPABASE_ANON_KEY`                                              | `src/lib/server/supabase-credentials.ts`, dashboard MFA page |
-| Base URL        | `BASE_URL`                                                                                   | `astro.config.mjs`, `src/lib/rsvp/security/auth-security.ts` |
-| Contact         | `CONTACT_FORM_RECIPIENT_EMAIL`, `CONTACT_WHATSAPP`, `GMAIL_USER`, `GMAIL_PASS`               | `src/lib/server/email.ts`, `src/utils/whatsapp.ts`           |
-| Admin security  | `REQUIRE_FRESH_MFA_FOR_ADMIN`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`            | `src/lib/rsvp/auth/`, `src/lib/rsvp/security/`               |
-| RSVP rate limit | `RSVP_V2_DISTRIBUTED_RATELIMIT`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`        | `src/lib/rsvp/security/rate-limit-provider.ts`               |
-| Meta CAPI       | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_CAPI_DELIVERY_MODE`, `META_TEST_EVENT_CODE` | `src/lib/commercial/meta-capi/service.ts`                    |
-| Browser tags    | `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ENABLED`, `PUBLIC_META_PIXEL_ID`              | `src/lib/tracking/`                                          |
+| Area           | Names                                                                                                            | Read by                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Supabase keys  | `SUPABASE_ANON_KEY`, `PUBLIC_SUPABASE_ANON_KEY`                                                                  | `src/lib/server/supabase-credentials.ts`, dashboard MFA page |
+| Base URL       | `BASE_URL`                                                                                                       | `astro.config.mjs`, `src/lib/rsvp/security/auth-security.ts` |
+| Contact        | `CONTACT_FORM_RECIPIENT_EMAIL`, `CONTACT_WHATSAPP`, `GMAIL_USER`, `GMAIL_PASS`                                   | `src/lib/server/email.ts`, `src/utils/whatsapp.ts`           |
+| Admin security | `REQUIRE_FRESH_MFA_FOR_ADMIN`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`                                | `src/lib/rsvp/auth/`, `src/lib/rsvp/security/`               |
+| Meta CAPI      | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_CAPI_DELIVERY_MODE`, `META_TEST_EVENT_CODE`                     | `src/lib/commercial/meta-capi/service.ts`                    |
+| Browser tags   | `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ENABLED`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `src/lib/tracking/`                                          |
 
 ### Build and local server
 

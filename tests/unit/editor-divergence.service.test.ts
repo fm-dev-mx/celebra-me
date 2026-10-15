@@ -1,10 +1,17 @@
 /**
  * Editor divergence wiring — server DTO → banner contract.
  */
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+
+const mockIsLocalProcess = jest.fn<() => boolean>();
+
+jest.mock('@/lib/server/deploy-identity', () => ({
+	isLocalProcess: () => mockIsLocalProcess(),
+}));
+
 import {
 	computeEditorDivergenceFromPaths,
 	resolveEditorDivergence,
@@ -12,11 +19,31 @@ import {
 	EditorEnvironmentMismatchError,
 } from '../../src/lib/intake/services/editor-divergence.service.ts';
 
+const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321';
+
+function writeArtifact(root: string, slug: string, target: string): void {
+	const dir = join(root, '.agent', 'runtime', 'reconciliation');
+	mkdirSync(dir, { recursive: true });
+	writeFileSync(
+		join(dir, `reconciliation-${slug}-${target}.json`),
+		JSON.stringify({
+			reconciliationState: 'RECONCILIATION_REQUIRED',
+			changedSemanticPaths: ['draftContent.hero.name', 'assets.hero'],
+			isReleaseBlocked: true,
+		}),
+	);
+}
+
+beforeEach(() => {
+	mockIsLocalProcess.mockReset();
+	mockIsLocalProcess.mockReturnValue(true);
+});
+
 describe('Editor divergence environment binding', () => {
 	it('classifies localhost as local', () => {
 		expect(
 			resolveEditorManagedEnvironment({
-				supabaseUrl: 'http://127.0.0.1:54321',
+				supabaseUrl: LOCAL_SUPABASE_URL,
 			}),
 		).toBe('local');
 	});
@@ -24,7 +51,7 @@ describe('Editor divergence environment binding', () => {
 	it('fails closed on environment mismatch', () => {
 		expect(() =>
 			resolveEditorManagedEnvironment({
-				supabaseUrl: 'http://127.0.0.1:54321',
+				supabaseUrl: LOCAL_SUPABASE_URL,
 				expected: 'preview',
 			}),
 		).toThrow(EditorEnvironmentMismatchError);
@@ -57,21 +84,12 @@ describe('Editor divergence CLEAN vs divergent states', () => {
 
 	it('loads runtime reconciliation artifact outside versioned plan directories', () => {
 		const root = join(tmpdir(), `celebra-editor-div-${Date.now()}`);
-		const dir = join(root, '.agent', 'runtime', 'reconciliation');
-		mkdirSync(dir, { recursive: true });
-		writeFileSync(
-			join(dir, 'reconciliation-demo-slug-local.json'),
-			JSON.stringify({
-				reconciliationState: 'RECONCILIATION_REQUIRED',
-				changedSemanticPaths: ['draftContent.hero.name', 'assets.hero'],
-				isReleaseBlocked: true,
-			}),
-		);
+		writeArtifact(root, 'demo-slug', 'local');
 
 		try {
 			const dto = resolveEditorDivergence({
 				slug: 'demo-slug',
-				supabaseUrl: 'http://127.0.0.1:54321',
+				supabaseUrl: LOCAL_SUPABASE_URL,
 				projectRoot: root,
 			});
 			expect(dto.state).toBe('RECONCILIATION_REQUIRED');
@@ -80,5 +98,63 @@ describe('Editor divergence CLEAN vs divergent states', () => {
 		} finally {
 			rmSync(root, { recursive: true, force: true });
 		}
+	});
+
+	it('returns CLEAN in a local process without an artifact', () => {
+		const dto = resolveEditorDivergence({
+			slug: 'demo-slug',
+			supabaseUrl: LOCAL_SUPABASE_URL,
+			projectRoot: join(tmpdir(), `celebra-editor-div-missing-${Date.now()}`),
+		});
+		expect(dto.state).toBe('CLEAN');
+		expect(dto.affectedFieldCount).toBe(0);
+	});
+});
+
+describe('Editor divergence in a hosted runtime', () => {
+	it('answers NOT_APPLICABLE and never reads the artifact', () => {
+		mockIsLocalProcess.mockReturnValue(false);
+		const root = join(tmpdir(), `celebra-editor-div-hosted-${Date.now()}`);
+		writeArtifact(root, 'demo-slug', 'local');
+
+		try {
+			const dto = resolveEditorDivergence({
+				slug: 'demo-slug',
+				supabaseUrl: LOCAL_SUPABASE_URL,
+				projectRoot: root,
+			});
+			expect(dto).toEqual({
+				state: 'NOT_APPLICABLE',
+				targetEnvironment: 'local',
+				affectedFieldCount: 0,
+				affectedSections: [],
+				affectedSectionCount: 0,
+				isReleaseBlocked: false,
+			});
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('still computes explicit paths, which need no filesystem', () => {
+		mockIsLocalProcess.mockReturnValue(false);
+		const dto = resolveEditorDivergence({
+			slug: 'demo-slug',
+			supabaseUrl: LOCAL_SUPABASE_URL,
+			changedPaths: ['draftContent.hero.name'],
+		});
+		expect(dto.state).toBe('DIVERGED');
+		expect(dto.affectedFieldCount).toBe(1);
+	});
+
+	it('keeps the environment mismatch fail-closed before skipping detection', () => {
+		mockIsLocalProcess.mockReturnValue(false);
+		expect(() =>
+			resolveEditorDivergence({
+				slug: 'demo-slug',
+				supabaseUrl: LOCAL_SUPABASE_URL,
+				expectedEnvironment: 'production',
+			}),
+		).toThrow(EditorEnvironmentMismatchError);
 	});
 });

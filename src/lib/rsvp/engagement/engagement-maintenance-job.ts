@@ -1,0 +1,40 @@
+/**
+ * Engagement maintenance as an invocable job: runs the maintenance and logs the outcome with
+ * its `source`. Transport-agnostic so the Vercel HTTP route today and the Worker `scheduled()`
+ * handler later share one implementation.
+ */
+import {
+	runEngagementMaintenance,
+	type EngagementMaintenanceResult,
+} from './engagement-maintenance.service';
+
+export const ENGAGEMENT_MAINTENANCE_SCHEDULED_SOURCE = 'scheduled_cron';
+
+export interface EngagementMaintenanceJobDeps {
+	/** Who triggered the run, e.g. `scheduled_cron`; logged with the counts. */
+	source?: string;
+	maintenance?: () => Promise<EngagementMaintenanceResult>;
+	log?: Pick<Console, 'info' | 'warn' | 'error'>;
+}
+
+export type EngagementMaintenanceJobOutcome =
+	| { kind: 'completed'; result: EngagementMaintenanceResult }
+	| { kind: 'exception'; message: string };
+
+export async function runEngagementMaintenanceJob(
+	deps: EngagementMaintenanceJobDeps = {},
+): Promise<EngagementMaintenanceJobOutcome> {
+	const source = deps.source ?? ENGAGEMENT_MAINTENANCE_SCHEDULED_SOURCE;
+	const maintenance = deps.maintenance ?? runEngagementMaintenance;
+	const log = deps.log ?? console;
+	try {
+		const result = await maintenance();
+		const write = result.snapshotsFailed > 0 ? log.warn : log.info;
+		write.call(log, '[engagement][maintenance] completed', { source, ...result });
+		return { kind: 'completed', result };
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		log.error('[engagement][maintenance] failed', { source, error: message });
+		return { kind: 'exception', message };
+	}
+}

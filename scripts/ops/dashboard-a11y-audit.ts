@@ -29,7 +29,6 @@ const DEFAULT_ROUTES = [
 	'/dashboard/admin',
 	'/dashboard/admin/recuerdos',
 	'/dashboard/admin/plataforma',
-	'/dashboard/estado',
 	'/dashboard/invitaciones',
 	'/dashboard/commercial',
 	'/dashboard/usuarios',

@@ -4,9 +4,6 @@ jest.mock('@/lib/platform/server/cloudflare-usage', () => ({
 jest.mock('@/lib/platform/server/supabase-usage', () => ({
 	getSupabasePlatformUsage: jest.fn(),
 }));
-jest.mock('@/lib/platform/server/vercel-usage', () => ({
-	getVercelPlatformUsage: jest.fn(),
-}));
 jest.mock('@/lib/platform/server/cloudinary-usage', () => ({
 	getCloudinaryPlatformUsage: jest.fn(),
 }));
@@ -14,7 +11,6 @@ jest.mock('@/lib/platform/server/cloudinary-usage', () => ({
 import { getCloudflarePlatformUsage } from '@/lib/platform/server/cloudflare-usage';
 import { getCloudinaryPlatformUsage } from '@/lib/platform/server/cloudinary-usage';
 import { getSupabasePlatformUsage } from '@/lib/platform/server/supabase-usage';
-import { getVercelPlatformUsage } from '@/lib/platform/server/vercel-usage';
 import { getPlatformUsageReport } from '@/lib/platform/server/platform-usage.service';
 import type { PlatformMetric } from '@/lib/platform/contract/types';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
@@ -56,10 +52,6 @@ describe('getPlatformUsageReport', () => {
 			metrics: [metric('preview'), metric('account', 'cfWorkersRequests')],
 		});
 		(getSupabasePlatformUsage as jest.Mock).mockRejectedValue(new Error('socket hang up'));
-		(getVercelPlatformUsage as jest.Mock).mockResolvedValue({
-			kind: 'unconfigured',
-			missing: [{ name: 'VERCEL_API_TOKEN', state: 'absent', scope: 'project' }],
-		});
 		(getCloudinaryPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 
 		const report = await getPlatformUsageReport(NOW);
@@ -68,15 +60,10 @@ describe('getPlatformUsageReport', () => {
 		const [preview, production, shared] = report;
 		expect(preview.cards.map((card) => card.provider)).toEqual(['cloudflare', 'supabase']);
 		expect(production.cards.map((card) => card.provider)).toEqual(['cloudflare', 'supabase']);
-		expect(shared.cards.map((card) => card.provider)).toEqual([
-			'cloudflare',
-			'vercel',
-			'cloudinary',
-		]);
+		expect(shared.cards.map((card) => card.provider)).toEqual(['cloudflare', 'cloudinary']);
 		// A failing provider only blanks its own card.
 		expect(preview.cards[1].usage).toEqual({ kind: 'unavailable' });
-		expect(shared.cards[2].usage).toEqual({ kind: 'unavailable' });
-		expect(shared.cards[1].usage.kind).toBe('unconfigured');
+		expect(shared.cards[1].usage).toEqual({ kind: 'unavailable' });
 	});
 
 	it('splits the Cloudflare snapshot per environment and by shared scope', async () => {
@@ -94,7 +81,6 @@ describe('getPlatformUsageReport', () => {
 			],
 		});
 		(getSupabasePlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
-		(getVercelPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 		(getCloudinaryPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 
 		const report = await getPlatformUsageReport(NOW);
@@ -126,7 +112,6 @@ describe('getPlatformUsageReport', () => {
 			metrics: [],
 		});
 		(getSupabasePlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
-		(getVercelPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 		(getCloudinaryPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 
 		const report = await getPlatformUsageReport(NOW);
