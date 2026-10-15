@@ -202,6 +202,9 @@ legacy.
 
 ## 8. Cutover (F6) and rollback
 
+Step-by-step operator runbook (times, commands, links, 10-minute rollback, open build gaps):
+`docs/operations/cloudflare-production-cutover.md`.
+
 **Preconditions (T-3 days to T-1 hour):**
 
 - The migration chain is closed: no pending migrations, no contract planned before T+7.
