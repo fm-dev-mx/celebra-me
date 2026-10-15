@@ -121,8 +121,6 @@
         "--color-text-primary",
         "--color-text-primary-rgb",
         "--color-text-secondary",
-        "--env-accent",
-        "--env-bg",
         "--font-body",
         "--font-calligraphy",
         "--shadow-premium"

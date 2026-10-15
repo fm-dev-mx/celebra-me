@@ -1,7 +1,7 @@
 @use '../global/mixins' as mixins;
 
 .envelope-wrapper {
-	--env-bg: radial-gradient(
+	--env-bg-fallback: radial-gradient(
 		ellipse at 50% 42%,
 		color-mix(in srgb, var(--color-surface-canvas) 88%, var(--color-surface-dark)) 0%,
 		var(--color-surface-canvas) 72%
@@ -10,8 +10,8 @@
 	--env-paper-border: color-mix(in srgb, var(--color-border-premium) 72%, transparent);
 	--env-text-primary: var(--color-text-primary);
 	--env-text-secondary: var(--color-text-secondary);
-	--env-accent: var(--color-action-accent);
-	--env-seal-accent: var(--env-accent);
+	--env-accent-fallback: var(--color-action-accent);
+	--env-seal-accent: var(--env-accent, var(--env-accent-fallback));
 	--env-seal-bg: radial-gradient(
 		circle at 32% 28%,
 		color-mix(in srgb, var(--env-seal-accent) 32%, var(--color-surface-elevated)) 0%,
@@ -58,7 +58,7 @@
 	justify-content: center;
 	gap: 2rem;
 	overflow: hidden;
-	background: var(--env-bg);
+	background: var(--env-bg, var(--env-bg-fallback));
 	perspective: 2000px;
 	transition:
 		opacity var(--duration-long) var(--ease-standard) var(--env-exit-delay, 0s),
@@ -400,7 +400,7 @@
 	background: linear-gradient(
 		to right,
 		transparent,
-		color-mix(in srgb, var(--env-accent) 54%, transparent),
+		color-mix(in srgb, var(--env-accent, var(--env-accent-fallback)) 54%, transparent),
 		transparent
 	);
 }
@@ -408,7 +408,7 @@
 .envelope-external-instruction {
 	position: relative;
 	z-index: 1000;
-	color: var(--env-text-secondary);
+	color: var(--env-instruction-color, var(--env-text-secondary));
 	text-align: center;
 	filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--color-surface-dark) 20%, transparent));
 	opacity: var(--env-open-label-opacity, 72%);
@@ -512,7 +512,11 @@
 	padding: 0;
 	color: var(
 		--env-seal-hint-color,
-		color-mix(in srgb, var(--env-text-secondary) 78%, var(--env-accent))
+		color-mix(
+			in srgb,
+			var(--env-text-secondary) 78%,
+			var(--env-accent, var(--env-accent-fallback))
+		)
 	);
 	font-family: var(--env-meta-font, var(--font-body));
 	font-size: var(--env-seal-hint-size, 0.56rem);
@@ -777,7 +781,12 @@
 
 	50% {
 		filter: drop-shadow(
-			0 0 10px color-mix(in srgb, var(--env-seal-accent, var(--env-accent)) 34%, transparent)
+			0 0 10px
+				color-mix(
+					in srgb,
+					var(--env-seal-accent, var(--env-accent, var(--env-accent-fallback))) 34%,
+					transparent
+				)
 		);
 		transform: translateY(-1px);
 	}

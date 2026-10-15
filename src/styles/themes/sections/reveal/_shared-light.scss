@@ -2,7 +2,7 @@
 .envelope-wrapper[data-variant='enchanted-rose'],
 .envelope-wrapper[data-variant='jewelry-box'],
 .envelope-wrapper[data-variant='jewelry-box-wedding'] {
-	--env-bg: radial-gradient(
+	--env-bg-fallback: radial-gradient(
 		ellipse at 50% 40%,
 		var(--color-surface-primary) 0%,
 		color-mix(in srgb, var(--color-surface-primary) 92%, var(--color-surface-soft)) 100%
@@ -31,7 +31,7 @@
 
 // Soft night stationery — satin-blue field, cold paper envelope, deep wax jewel.
 .envelope-wrapper[data-variant='celestial-blue'] {
-	--env-bg:
+	--env-bg-fallback:
 		radial-gradient(
 			ellipse 72% 54% at 50% 36%,
 			color-mix(in srgb, var(--color-ice-blue) 62%, var(--color-satin-blue)) 0%,
@@ -58,7 +58,11 @@
 		var(--color-soft-graphite) 68%,
 		var(--color-cold-silver)
 	);
-	--env-accent: color-mix(in srgb, var(--color-satin-blue) 45%, var(--color-deep-blue-graphite));
+	--env-accent-fallback: color-mix(
+		in srgb,
+		var(--color-satin-blue) 45%,
+		var(--color-deep-blue-graphite)
+	);
 	--env-shadow-container-fallback:
 		0 40px 80px rgb(var(--color-deep-blue-graphite-rgb) / 32%),
 		0 14px 32px rgb(var(--color-deep-blue-graphite-rgb) / 18%),

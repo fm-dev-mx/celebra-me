@@ -95,7 +95,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 
 .envelope-wrapper[data-variant='storybook-lanterns'] {
 	--storybook-gold: var(--storybook-ink, var(--color-ornament-gold, var(--color-border-premium)));
-	--env-bg:
+	--env-bg-fallback:
 		#{$storybook-grain},
 		radial-gradient(
 			ellipse 80% 55% at 50% 100%,
@@ -109,7 +109,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	--env-paper-border: color-mix(in srgb, var(--storybook-gold) 55%, transparent);
 	--env-text-primary: var(--color-text-primary);
 	--env-text-secondary: var(--color-text-secondary);
-	--env-accent: var(--storybook-gold);
+	--env-accent-fallback: var(--storybook-gold);
 	--env-seal-accent: var(--storybook-gold);
 	--env-seal-bg: radial-gradient(
 		circle at 36% 30%,
@@ -317,7 +317,10 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		font-size: var(--env-open-label-size, 0.86rem);
 		letter-spacing: var(--storybook-instruction-tracking, 0.18em);
 		text-transform: uppercase;
-		color: var(--storybook-instruction-ink, var(--env-text-secondary));
+		color: var(
+			--env-instruction-color,
+			var(--storybook-instruction-ink, var(--env-text-secondary))
+		);
 		opacity: 100%;
 	}
 

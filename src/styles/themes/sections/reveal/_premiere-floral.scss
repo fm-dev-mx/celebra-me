@@ -14,7 +14,7 @@
 	--reveal-stationery-ink-rgb: 44 42 39;
 	--reveal-stationery-display: 'The Nautigal', cursive;
 	--reveal-stationery-body: 'Montserrat Variable', 'Montserrat', sans-serif;
-	--env-bg: radial-gradient(
+	--env-bg-fallback: radial-gradient(
 		ellipse at 50% 38%,
 		var(--reveal-stationery-ivory) 0%,
 		var(--reveal-stationery-warm-white) 100%
@@ -23,7 +23,7 @@
 	--env-paper-border: rgb(var(--reveal-stationery-gold-rgb) / 18%);
 	--env-text-primary: var(--reveal-stationery-ink);
 	--env-text-secondary: rgb(var(--reveal-stationery-ink-rgb) / 58%);
-	--env-accent: var(--reveal-stationery-gold);
+	--env-accent-fallback: var(--reveal-stationery-gold);
 	--env-seal-accent: var(--reveal-stationery-gold);
 	--env-seal-icon: var(--reveal-stationery-botanical);
 	--env-font-display: var(--reveal-stationery-display);
