@@ -29,6 +29,12 @@
 	--reveal-card-accent: color-mix(in srgb, var(--color-action-accent) 28%, transparent);
 }
 
+// The wedding stationery keeps light paper and dark ink whatever the content closed palette says, so
+// the open label below the envelope follows the envelope ink instead of the palette's primary color.
+.envelope-wrapper[data-variant='jewelry-box-wedding'] {
+	--env-instruction-color: var(--env-text-secondary);
+}
+
 // Soft night stationery — satin-blue field, cold paper envelope, deep wax jewel.
 .envelope-wrapper[data-variant='celestial-blue'] {
 	--env-bg-fallback:
