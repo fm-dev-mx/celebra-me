@@ -45,26 +45,28 @@ Links
 
 ## 2. Timeline
 
-| When (Mazatlan)                               | UTC       | Step                                                                                                                                            | Who           |
-| --------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Wed 2026-10-14 20:59 (done)                   | Thu 03:59 | Name servers changed to Cloudflare (section 5)                                                                                                  | Owner         |
-| Thu 2026-10-15                                | --        | Record the zone Active time; finish section 5 checks                                                                                            | Owner + Agent |
-| Fri 2026-10-16 02:00                          | 09:00     | Migration freeze starts                                                                                                                         | --            |
-| Fri 2026-10-16, after v0.27 is VERIFIED       | --        | Production Worker setup (section 3.1) and preconditions (section 3)                                                                             | Owner + Agent |
-| Sat 2026-10-17                                | --        | No Production changes; read-only checks of records, mail, certificate                                                                           | Agent         |
-| Sun 2026-10-18 (T-1 d) 10:00                  | 17:00     | Production backup, AI crawler policy                                                                                                            | Owner + Agent |
-| Sun 2026-10-18 10:30                          | 17:30     | Proxy apex and www (still pointing at Vercel); smoke; link previews                                                                             | Owner + Agent |
-| Mon 2026-10-19 (T0) 01:00                     | 08:00     | Preconditions re-check, go/no-go (section 4)                                                                                                    | Owner + Agent |
-| Mon 2026-10-19 01:45                          | 08:45     | Final backup                                                                                                                                    | Agent         |
-| Mon 2026-10-19 02:00                          | 09:00     | Add the two Worker routes (cutover)                                                                                                             | Owner         |
-| 02:02                                         | 09:02     | Release status check                                                                                                                            | Agent         |
-| 02:05                                         | 09:05     | Manual smoke checklist                                                                                                                          | Owner         |
-| 02:30                                         | 09:30     | Declare success or roll back                                                                                                                    | Owner         |
-| 03:30                                         | 10:30     | Latest rollback start                                                                                                                           | Owner         |
-| 03:40                                         | 10:40     | Window closes                                                                                                                                   | --            |
-| Tue 2026-10-20 .. Mon 2026-10-26 (T+1 .. T+7) | --        | Daily watch (section 8)                                                                                                                         | Owner + Agent |
-| Mon 2026-10-26 02:00                          | 09:00     | Migration freeze ends                                                                                                                           | --            |
-| Mon 2026-10-26 onward (T+7)                   | --        | Vercel retirement decision (separate runbook); pausing Vercel and enabling crons not before 2026-11-08 (client freeze 2026-10-23 to 2026-11-07) | Owner         |
+| When (Mazatlan)                                | UTC       | Step                                                                                                                                            | Who           |
+| ---------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Wed 2026-10-14 20:59 (done)                    | Thu 03:59 | Name servers changed to Cloudflare (section 5)                                                                                                  | Owner         |
+| Thu 2026-10-15                                 | --        | Record the zone Active time; finish section 5 checks                                                                                            | Owner + Agent |
+| Fri 2026-10-16 02:00                           | 09:00     | Migration freeze starts                                                                                                                         | --            |
+| Thu 2026-10-15, after v0.27 is on `main`       | --        | Merge the Cloudflare Images change (PR #260) to `develop`; test a photo upload and `/vista-previa` on the Preview Worker                        | Owner + Agent |
+| Fri 2026-10-16 morning                         | --        | Release that change to `main`; Vercel Production VERIFIED; its SHA becomes `$SHA`                                                               | Owner + Agent |
+| Fri 2026-10-16, after that release is VERIFIED | --        | Production Worker setup (section 3.1) and preconditions (section 3)                                                                             | Owner + Agent |
+| Sat 2026-10-17                                 | --        | No Production changes; read-only checks of records, mail, certificate                                                                           | Agent         |
+| Sun 2026-10-18 (T-1 d) 10:00                   | 17:00     | Production backup, AI crawler policy                                                                                                            | Owner + Agent |
+| Sun 2026-10-18 10:30                           | 17:30     | Proxy apex and www (still pointing at Vercel); smoke; link previews                                                                             | Owner + Agent |
+| Mon 2026-10-19 (T0) 01:00                      | 08:00     | Preconditions re-check, go/no-go (section 4)                                                                                                    | Owner + Agent |
+| Mon 2026-10-19 01:45                           | 08:45     | Final backup                                                                                                                                    | Agent         |
+| Mon 2026-10-19 02:00                           | 09:00     | Add the two Worker routes (cutover)                                                                                                             | Owner         |
+| 02:02                                          | 09:02     | Release status check                                                                                                                            | Agent         |
+| 02:05                                          | 09:05     | Manual smoke checklist                                                                                                                          | Owner         |
+| 02:30                                          | 09:30     | Declare success or roll back                                                                                                                    | Owner         |
+| 03:30                                          | 10:30     | Latest rollback start                                                                                                                           | Owner         |
+| 03:40                                          | 10:40     | Window closes                                                                                                                                   | --            |
+| Tue 2026-10-20 .. Mon 2026-10-26 (T+1 .. T+7)  | --        | Daily watch (section 8)                                                                                                                         | Owner + Agent |
+| Mon 2026-10-26 02:00                           | 09:00     | Migration freeze ends                                                                                                                           | --            |
+| Mon 2026-10-26 onward (T+7)                    | --        | Vercel retirement decision (separate runbook); pausing Vercel and enabling crons not before 2026-11-08 (client freeze 2026-10-23 to 2026-11-07) | Owner         |
 
 Note on "zone active 72 h": the plan requires the zone active at least 72 hours before cutover, so
 activation must be at or before Friday 2026-10-16 02:00 (09:00 UTC). The registry shows the name
@@ -87,6 +89,12 @@ Tick each; paste the evidence into the handoff.
       `env.production` in `wrangler.jsonc` (built) has no routes, no `workers.dev` host and
       `triggers.crons: []`. Evidence: a green run of the Cloudflare Production upload workflow for
       `$SHA`, and Workers > celebra-me > Settings > Domains & Routes lists no route.
+- [ ] Candidate `$SHA` includes the Cloudflare Images change (PR #260). Without it the Worker has no
+      image path: photo uploads (`asset-policy.ts`) and `/vista-previa` images
+      (`preview-media-renderer.ts`) load native `sharp`, which does not exist on Workers, and fail.
+      Evidence: a photo upload and a `/vista-previa` image work on the Preview Worker for a
+      `develop` commit with that change, and on the Production version URL for `$SHA`. If the change
+      is not on `main` by Sunday 2026-10-18 12:00, move the cutover.
 - [ ] Commit status `Cloudflare - celebra-me production candidate smoke` is success on `$SHA`. This
       context proves the uploaded version only; no release gate reads it.
 - [ ] Production secrets set by name (never values):
@@ -126,16 +134,17 @@ If 3.1.2 fails at "Create the Worker on the first run" with an authorization err
 
 ## 4. Go / no-go list (T0 minus 15 minutes; any NO = stop)
 
-| #   | Question                                                                     | Evidence                                   |
-| --- | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| 1   | All section 3 boxes ticked                                                   | handoff                                    |
-| 2   | `release-status` VERIFIED for `$SHA` on Vercel                               | command output                             |
-| 3   | Version URL health shows `$SHA` and `production`                             | `curl` with Access headers                 |
-| 4   | Fresh critical backup done today                                             | `pnpm db:prod:backup:critical` finished OK |
-| 5   | Supabase and Cloudflare status pages green                                   | status pages                               |
-| 6   | Owner awake, rollback steps open in a second window                          | owner                                      |
-| 7   | No deploy, merge, migration or DNS edit in the last 24 h except planned ones | GitHub, Vercel                             |
-| 8   | Time is not within 10 minutes of 03:43 or 08:17 Mazatlan                     | clock                                      |
+| #   | Question                                                                                        | Evidence                                   |
+| --- | ----------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| 1   | All section 3 boxes ticked                                                                      | handoff                                    |
+| 2   | `release-status` VERIFIED for `$SHA` on Vercel                                                  | command output                             |
+| 3   | Version URL health shows `$SHA` and `production`                                                | `curl` with Access headers                 |
+| 4   | Fresh critical backup done today                                                                | `pnpm db:prod:backup:critical` finished OK |
+| 5   | Supabase and Cloudflare status pages green                                                      | status pages                               |
+| 6   | Owner awake, rollback steps open in a second window                                             | owner                                      |
+| 7   | No deploy, merge, migration or DNS edit in the last 24 h except planned ones                    | GitHub, Vercel                             |
+| 8   | Time is not within 10 minutes of 03:43 or 08:17 Mazatlan                                        | clock                                      |
+| 9   | `$SHA` includes PR #260 and a photo upload plus a `/vista-previa` image work on its version URL | section 3 evidence                         |
 
 ## 5. Name server change (done Wednesday 2026-10-14 20:59 Mazatlan)
 
@@ -193,12 +202,13 @@ Manual smoke checklist (production, real phone for items 4, 6, 8):
 4. RSVP with a fixture guest.
 5. Login plus MFA.
 6. Editor preflight.
-7. `/vista-previa/<token>` opens.
+7. `/vista-previa/<token>` opens and its photos and social card image load.
 8. QR apex.
 9. Contact form email arrives.
 10. Memories upload and retrieve on the canary space.
 11. `/robots.txt` unchanged.
 12. One chat link preview of a real invitation.
+13. A photo upload in the editor succeeds.
 
 ## 8. Watch period (Tuesday 2026-10-20 to Monday 2026-10-26)
 
