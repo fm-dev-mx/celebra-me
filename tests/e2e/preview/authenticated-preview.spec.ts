@@ -21,6 +21,13 @@ import {
 
 const PREVIEW_AUTH_CONCURRENT_USERS = 20;
 
+interface PublishResponse {
+	idempotent: boolean;
+	publishedContent: { id: string; version: number; publishedAt: string };
+	outcome?: { operationId: string; status: string; replayedFromOperationId?: string };
+	context: { publication: { version: number | null } };
+}
+
 async function timedLoginRequest(page: Page): Promise<{ durationMs: number; status: number }> {
 	const startedAt = Date.now();
 	const response = await page.request.get('/login');
@@ -170,10 +177,7 @@ test.describe.serial('Authenticated external Preview', () => {
 			const idempotencyKey = randomUUID();
 			const publicationInput = { ...before, idempotencyKey };
 
-			const result = await mutateJson<{
-				idempotent: boolean;
-				publishedContent: { version: number };
-			}>(
+			const result = await mutateJson<PublishResponse>(
 				page,
 				`/api/dashboard/intake/${encodeURIComponent(preview.fixtureId)}/editor/publish`,
 				'POST',
@@ -181,20 +185,25 @@ test.describe.serial('Authenticated external Preview', () => {
 				'Synthetic fixture publication',
 			);
 			expect(result.idempotent).toBe(false);
+			expect(result.outcome?.status).toBe('applied');
 			expect(result.publishedContent.version).toBeGreaterThan(before.publishedVersion ?? 0);
 
-			const replay = await mutateJson<{
-				idempotent: boolean;
-				publishedContent: { version: number };
-			}>(
+			// publish_invitation_atomic replays the stored response verbatim (including its original
+			// `idempotent: false`), so the replay is identified by its outcome and by the absence of a
+			// new published version, not by the `idempotent` flag.
+			const replay = await mutateJson<PublishResponse>(
 				page,
 				`/api/dashboard/intake/${encodeURIComponent(preview.fixtureId)}/editor/publish`,
 				'POST',
 				publicationInput,
 				'Synthetic fixture publication replay',
 			);
-			expect(replay.idempotent).toBe(true);
-			expect(replay.publishedContent.version).toBe(result.publishedContent.version);
+			expect(replay.publishedContent).toEqual(result.publishedContent);
+			expect(replay.outcome).toMatchObject({
+				status: 'replayed',
+				replayedFromOperationId: result.outcome?.operationId,
+			});
+			expect(replay.context.publication.version).toBe(result.publishedContent.version);
 
 			const publicResponse = await page.request.get(
 				`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,
