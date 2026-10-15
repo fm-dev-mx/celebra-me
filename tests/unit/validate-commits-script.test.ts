@@ -86,4 +86,116 @@ describeRangeValidation('validate-commits script', () => {
 			cleanupFixture(repoRoot);
 		}
 	});
+
+	describe('commit size limits', () => {
+		const env = { ...process.env, pnpm_config_verify_deps_before_run: 'warn' };
+
+		function commitFiles(
+			repoRoot: string,
+			files: Record<string, string | Buffer>,
+			message: string[],
+		) {
+			for (const [path, content] of Object.entries(files)) {
+				const target = join(repoRoot, path);
+				mkdirSync(dirname(target), { recursive: true });
+				writeFileSync(target, content);
+			}
+			// Stage only the written paths; the fixture's node_modules link must stay untracked.
+			runCommand('git', ['add', '--', ...Object.keys(files)], { cwd: repoRoot });
+			runCommand(
+				'git',
+				['commit', '--no-verify', ...message.flatMap((part) => ['-m', part])],
+				{ cwd: repoRoot },
+			);
+			return runCommand('git', ['rev-parse', 'HEAD'], { cwd: repoRoot }).stdout.trim();
+		}
+
+		function sourceModules(count: number) {
+			return Object.fromEntries(
+				Array.from({ length: count }, (_, index) => [
+					`src/fixture/module-${index}.ts`,
+					`export const value${index} = ${index};\n`,
+				]),
+			);
+		}
+
+		function validate(repoRoot: string, baseSha: string, headSha: string, flags: string[]) {
+			return runCommand('node', [SCRIPT_PATH, baseSha, headSha, ...flags], {
+				cwd: repoRoot,
+				allowFailure: true,
+				env,
+			});
+		}
+
+		function withBase(test: (repoRoot: string, baseSha: string) => void) {
+			const repoRoot = createRepoFixture();
+			try {
+				const baseSha = commitFiles(repoRoot, { 'README.md': '# fixture\n' }, [
+					'docs(testing): add fixture readme',
+				]);
+				test(repoRoot, baseSha);
+			} finally {
+				cleanupFixture(repoRoot);
+			}
+		}
+
+		const body = 'Adds generated fixture modules so the size limit has a commit to measure.';
+
+		it('blocks more than 40 reviewable files only with --strict-size', () => {
+			withBase((repoRoot, baseSha) => {
+				const headSha = commitFiles(repoRoot, sourceModules(41), [
+					'test(testing): add generated fixture modules',
+					body,
+				]);
+
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict-size']);
+				expect(strict.status).toBe(1);
+				expect(strict.stderr).toContain('commit changes 41 reviewable files (limit 40)');
+
+				const advisory = validate(repoRoot, baseSha, headSha, []);
+				expect(advisory.status).toBe(0);
+				expect(advisory.stderr).toContain('commit changes 41 reviewable files (limit 40)');
+			});
+		});
+
+		it('turns the hard limit into a warning with a Large-Change trailer', () => {
+			withBase((repoRoot, baseSha) => {
+				const headSha = commitFiles(repoRoot, sourceModules(41), [
+					'test(testing): add generated fixture modules',
+					body,
+					'Large-Change: sweep',
+				]);
+
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict-size']);
+				expect(strict.status).toBe(0);
+				expect(strict.stderr).toContain(
+					'commit changes 41 reviewable files and 41 lines (Large-Change: sweep)',
+				);
+			});
+		});
+
+		it('leaves the lockfile and images out of the size count', () => {
+			withBase((repoRoot, baseSha) => {
+				const images = Object.fromEntries(
+					Array.from({ length: 45 }, (_, index) => [
+						`src/assets/fixture-${index}.png`,
+						Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, index]),
+					]),
+				);
+				const headSha = commitFiles(
+					repoRoot,
+					{
+						...images,
+						'pnpm-lock.yaml': 'lockfileVersion: 9.0\n'.repeat(700),
+						'src/fixture/module-0.ts': 'export const value0 = 0;\n',
+					},
+					['test(testing): add image and lockfile fixtures', body],
+				);
+
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict-size']);
+				expect(strict.status).toBe(0);
+				expect(strict.stderr).not.toContain('reviewable files');
+			});
+		});
+	});
 });

@@ -85,8 +85,11 @@ limits.
   inseparable from the behavior change.
 - Split broad cross-area changes when `src/`, `docs/`, `tests/`, `supabase/`, or root config files
   changed for different reasons.
-- Treat a commit touching `10+` files or multiple top-level areas as suspect until the single intent
-  is clearly defensible.
+- Treat a commit above the warning [size limit](../../../docs/core/git-governance.md#commit-size),
+  or one spanning several primary areas, as suspect until the single intent is clearly defensible.
+  Check the split signals in
+  [What "Atomic" Means Here](../../../docs/core/git-governance.md#what-atomic-means-here) before
+  proposing it.
 - Prefer practical coupling judgment over rigid heuristics: keep changes together only when
   reverting one without the other would leave the repository broken, misleading, or partially
   shipped.
@@ -122,22 +125,32 @@ Treat these as commit-hygiene red flags:
   (agent never runs it),
 - bundling frontend markup/attribute changes with backend interface or data-layer changes.
 
-Treat advisory hygiene warnings as review prompts, not hard gates: `3+` files with no body,
-non-bulleted bodies on multi-file commits, commits spanning multiple top-level areas, and very broad
-`10+` file changes all deserve an explicit atomicity check.
+Treat advisory hygiene warnings as review prompts, not hard gates: a multi-file commit without a
+body, a commit spanning several primary areas and a commit above the warning size all deserve an
+explicit atomicity check. The hard size limit is the exception: `pre-push` refuses it unless the
+commit carries a `Large-Change:` trailer. The limits, what they count and the trailer categories
+live in [Commit Size](../../../docs/core/git-governance.md#commit-size); never restate the numbers
+in a plan.
 
 ## Draft Repository-Compliant Messages
 
 Use `type(scope): specific subject`.
 
-- Choose from the repository's enforced commit types: `feat`, `fix`, `docs`, `style`, `refactor`,
-  `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-- Require a concrete `scope` in `kebab-case`.
+- Choose the type from the [Types](../../../docs/core/git-governance.md#types) table, including its
+  ambiguous cases (migrations, presets, agent guidance, dependencies). `style` means a visual change
+  only.
+- Choose the scope from the [Scopes](../../../docs/core/git-governance.md#scopes) list; any other
+  scope warns. Add a new scope to that list and to `commitlint.config.cjs` in the same commit only
+  when a new domain appears.
 - Make the subject describe the result, not the process.
 - Name the most relevant changed thing concretely.
-- Keep the full header (type + scope + subject) under the project's `header-max-length` limit. Check
-  `commitlint.config.cjs` for the current value (as of writing: **130** characters). If the subject
-  exceeds this, trim it or choose a shorter scope.
+- Follow the [Header Rules](../../../docs/core/git-governance.md#header-rules): imperative,
+  lowercase, no final period, and within `header-max-length` in `commitlint.config.cjs` (a hard
+  error). Aim for the shorter target the rules name; trim the subject before shortening the scope.
+- Never name internal process identifiers or plan step and decision codes in the header, body or
+  footers; describe what the code does instead.
+- Write reverts as described in
+  [Revert commits](../../../docs/core/git-governance.md#revert-commits).
 - Avoid vague language such as `misc`, `wip`, `fix stuff`, `quick fix`, `tweaks`, `improvements`,
   `changes`, `stuff`, or `things`.
 - Avoid process language such as `apply changes`, `record`, `scope`, or `process` as a verb
@@ -145,29 +158,23 @@ Use `type(scope): specific subject`.
 
 ## Apply the Body Policy
 
-- `1-2` changed files: omit the body when the header already makes the intent clear. Exception:
-  always include a body when the change touches critical infrastructure (auth, security, payments,
-  data migrations, database schemas, deployment config, or git hooks), even if only 1–2 files
-  changed. This ensures reviewers have context about risk without digging through the diff.
-- `3-5` changed files: prefer one bullet per file.
-- `6+` changed files: use bullets per coherent module or change group.
-- Keep bullets concrete and path-led: `- src/path: explain the actual change`.
-- **Wrap each body line at the project's `body-max-line-length` limit** (currently **140
-  characters**). Break long bullets into continuation lines indented with 2 spaces. Example:
+[Commit Body Policy](../../../docs/core/git-governance.md#commit-body-policy) owns the thresholds
+and the line width. In short:
 
-  ```
-  - src/lib/tracking/commercial-presentation.ts:
-    extract label maps, humanize functions,
-    and technical/commercial split logic
-  - src/pages/dashboard/commercial.astro:
-    use shared attribution module
-    with technical/commercial separation
-  ```
-
-  The commitlint rule `body-max-line-length: [2, 'always', 140]` is a **hard error** (severity 2),
-  enforced by the `commit-msg` hook and again over the pushed range by `pre-push`. Use `wc -c` or
-  your editor's column ruler to check before committing. Each `-m` argument passed to `git commit`
-  is a separate paragraph; lines within it must individually stay under the limit.
+- The body explains what changes and why, compared with the parent commit. Prose paragraphs and
+  bullets are both fine; there is no bullet-per-file requirement.
+- A small change may omit the body when the header already makes the intent clear. Exception: always
+  include a body when the change touches critical infrastructure (auth, security, payments, data
+  migrations, database schemas, deployment config, or git hooks), so reviewers see the risk without
+  digging through the diff.
+- A multi-file change always has a body, and the policy's "Include these when they apply" table says
+  what it must name (variables, migration phase, visual impact, breaking change, `Refs:`).
+- Footers go last, one per line: `BREAKING CHANGE:`, `Refs:`, `Large-Change:`, `Co-Authored-By:`. A
+  body made only of footers counts as no body.
+- **Wrap body lines at the width the policy names.** `body-max-line-length` in
+  `commitlint.config.cjs` is a **hard error**, enforced by the `commit-msg` hook and again over the
+  pushed range by `pre-push`. Each `-m` argument passed to `git commit` is a separate paragraph;
+  lines within it must individually stay under the limit.
 
 ## CHANGELOG Awareness (milestones only)
 

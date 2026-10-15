@@ -95,6 +95,8 @@ Before creating a version tag, complete this **pre-tag checklist** (all must pas
       `[Unreleased]` notes or an explicitly audited latest-tag-to-HEAD reconstruction.
 - [ ] No wholesale paste of `docs/invitations/<slug>.md` ops notes into the changelog.
 - [ ] Schema impact is summarized only; full history remains in `supabase/migrations/`.
+- [ ] Every bullet still matches the code at the candidate HEAD; drop or correct bullets whose
+      change was reverted later in the range.
 - [ ] Promote `[Unreleased]` bullets into `## [X.Y.Z] - YYYY-MM-DD` (Keep a Changelog groups).
 - [ ] Reset `[Unreleased]` to an empty pending section for the next cycle.
 - [ ] `package.json` `version` matches the new section (no leading `v`).

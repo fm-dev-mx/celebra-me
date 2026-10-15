@@ -18,6 +18,58 @@ const GENERIC_TARGETS = new Set([
 	'work',
 ]);
 
+// AGENTS.md (Technical Commit Messages) forbids internal process identifiers anywhere in the
+// message. A process word followed by a number is unambiguous, so it blocks the commit.
+const PROCESS_IDENTIFIERS = /\b(?:goal|phase|sprint|wave|milestone)\s*#?\d+(?:\.\d+)?\b/i;
+
+// Plan step and decision codes such as D5, F7, G0-G7, Q12 or T0. Product names share the shape
+// (Cloudflare D1), so this rule only warns.
+const PLAN_CODES = /\b[DFGQT]\d{1,2}[a-z]?\b/;
+
+// Canonical scopes, defined in docs/core/git-governance.md (Scopes). Unknown scopes warn.
+const SCOPES = [
+	'agent',
+	'auth',
+	'ci',
+	'commercial',
+	'content',
+	'dashboard',
+	'db',
+	'demos',
+	'deps',
+	'deps-dev',
+	'engagement',
+	'env',
+	'git',
+	'governance',
+	'guests',
+	'hosting',
+	'intake',
+	'invitation',
+	'invitation-access',
+	'invitation-preparation',
+	'landing',
+	'memories',
+	'ops',
+	'plans',
+	'provisioning',
+	'release',
+	'rsvp',
+	'runtime',
+	'security',
+	'seo',
+	'testing',
+	'theme',
+	'tooling',
+	'tracking',
+	'validation',
+	'visual',
+	'workers',
+];
+
+const fullMessage = (parsed) =>
+	[parsed.header, parsed.body, parsed.footer].filter(Boolean).join('\n');
+
 module.exports = {
 	extends: ['@commitlint/config-conventional'],
 	rules: {
@@ -41,15 +93,18 @@ module.exports = {
 		'type-case': [2, 'always', 'lower-case'],
 		'scope-case': [2, 'always', 'kebab-case'],
 		'scope-empty': [2, 'never'],
+		'scope-enum': [1, 'always', SCOPES],
 		'subject-case': [2, 'never', ['sentence-case', 'start-case', 'pascal-case', 'upper-case']],
 		'subject-empty': [2, 'never'],
 		'subject-full-stop': [2, 'never', '.'],
-		'header-max-length': [2, 'always', 130],
+		'header-max-length': [2, 'always', 100],
 		'body-leading-blank': [2, 'always'],
-		'body-max-line-length': [2, 'always', 140],
+		'body-max-line-length': [2, 'always', 100],
 		'no-forbidden-vocabulary': [2, 'always'],
 		'subject-target-required': [2, 'always'],
 		'no-process-language': [2, 'always'],
+		'no-process-identifiers': [2, 'always'],
+		'no-plan-codes': [1, 'always'],
 	},
 	plugins: [
 		{
@@ -84,6 +139,22 @@ module.exports = {
 						return [false, 'subject must describe the change'];
 					}
 					return [true];
+				},
+				'no-process-identifiers': (parsed) => {
+					const match = fullMessage(parsed).match(PROCESS_IDENTIFIERS);
+					if (!match) return [true];
+					return [
+						false,
+						`commit message names an internal process identifier: "${match[0]}"`,
+					];
+				},
+				'no-plan-codes': (parsed) => {
+					const match = fullMessage(parsed).match(PLAN_CODES);
+					if (!match) return [true];
+					return [
+						false,
+						`commit message contains the plan code "${match[0]}"; describe the change it stands for`,
+					];
 				},
 			},
 		},

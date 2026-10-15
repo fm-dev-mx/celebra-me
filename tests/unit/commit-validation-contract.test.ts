@@ -48,4 +48,37 @@ describe('Commit validation contract', () => {
 		expect(result.status).not.toBe(0);
 		expect(`${result.stdout}\n${result.stderr}`).toContain('subject must describe the change');
 	});
+
+	it('rejects internal process identifiers', () => {
+		const result = lintMessage('fix(rsvp): close phase 2.1 of the reply flow');
+
+		expect(result.status).not.toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain(
+			'commit message names an internal process identifier: "phase 2.1"',
+		);
+	});
+
+	it('warns on plan codes without blocking the commit', () => {
+		const result = lintMessage('docs(plans): mark the D5 hosting decision as taken');
+
+		expect(result.status).toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain('contains the plan code "D5"');
+	});
+
+	it('rejects headers longer than 100 characters', () => {
+		const header = `fix(rsvp): reject duplicate replies ${'x'.repeat(65)}`;
+		expect(header).toHaveLength(101);
+
+		const result = lintMessage(header);
+
+		expect(result.status).not.toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain('header-max-length');
+	});
+
+	it('warns on scopes outside the canonical list without blocking the commit', () => {
+		const result = lintMessage('fix(unknown-area): reject duplicate guest replies');
+
+		expect(result.status).toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain('scope-enum');
+	});
 });
