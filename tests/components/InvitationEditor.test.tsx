@@ -25,7 +25,6 @@ function createContext(
 			title: 'XV Ana',
 			eventType: 'xv',
 			status: 'published',
-			baseDemoId: 'demo-xv-jewelry-box',
 			themeId: 'jewelry-box',
 			clientName: 'Ana',
 			clientEmail: '',
@@ -36,7 +35,6 @@ function createContext(
 			createdAt: '2026-05-30T00:00:00Z',
 			updatedAt: '2026-05-30T01:00:00Z',
 			rsvpSectionHasContent: false,
-			snapshot: { previewSlug: 'demo-xv-jewelry-box' },
 		},
 		assetLookupSlug: 'demo-xv-jewelry-box',
 		content: {
@@ -206,6 +204,21 @@ describe('getCriticalSections', () => {
 describe('InvitationEditor', () => {
 	it('hides divergence banner when server state is CLEAN', () => {
 		mockContext = createContext();
+		render(<InvitationEditor initialContext={mockContext} />);
+		expect(screen.queryByTestId('editor-divergence-banner')).not.toBeInTheDocument();
+	});
+
+	it('hides divergence banner when a hosted runtime skipped detection', () => {
+		mockContext = createContext({
+			divergence: {
+				state: 'NOT_APPLICABLE',
+				targetEnvironment: 'preview',
+				affectedFieldCount: 0,
+				affectedSections: [],
+				affectedSectionCount: 0,
+				isReleaseBlocked: false,
+			},
+		});
 		render(<InvitationEditor initialContext={mockContext} />);
 		expect(screen.queryByTestId('editor-divergence-banner')).not.toBeInTheDocument();
 	});

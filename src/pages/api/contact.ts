@@ -6,6 +6,7 @@ import { errorResponse, getIp, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { createLeadFromContactSubmission } from '@/lib/tracking/lead.service';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { resolveAfterResponseContext } from '@/lib/server/platform-request';
 
 const contactSchema = z.object({
 	name: z.string().min(2, 'Name is required.').max(160),
@@ -29,7 +30,7 @@ const contactSchema = z.object({
 	fbclid: z.string().trim().optional(),
 });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
 	try {
 		const body = await validateBodyOrRespond(request, contactSchema);
 		if (body instanceof Response) return body;
@@ -43,7 +44,9 @@ export const POST: APIRoute = async ({ request }) => {
 		if (!allowed) throw new ApiError(429, 'rate_limited', 'Intente de nuevo en un momento.');
 		const { name, email, phone, eventType, eventDate, message } = body;
 
-		const lead = await createLeadFromContactSubmission(body);
+		const lead = await createLeadFromContactSubmission(body, {
+			after: resolveAfterResponseContext(locals),
+		});
 
 		// Send the contact request email through the server mailer.
 		const success = await sendEmail({

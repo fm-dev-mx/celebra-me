@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { validateCriticalBackupManifest, type CriticalBackupManifest } from './backup-manifest.ts';
-import { classifyDbTarget } from './db-target-config.ts';
+import { classifyDbTarget, DISPOSABLE_DB_URL } from './db-target-config.ts';
 import {
 	captureRecoveryIntegrity,
 	compareRecoveryIntegrity,
@@ -11,6 +11,12 @@ import {
 	materializeStorageObjectArchive,
 	readStorageObjectArchive,
 } from './storage-object-archive.ts';
+import {
+	buildAddStorageColumnsSql,
+	findMissingStorageColumns,
+	parseStorageCopyColumns,
+	storageColumnType,
+} from './storage-metadata-columns.ts';
 import { queryJson, runCommand } from './db-workflow-lib.ts';
 
 interface RestoreReport {
@@ -31,6 +37,7 @@ interface RestoreReport {
 	migrationCount: number;
 	tables: RecoveryIntegritySnapshot['tables'];
 	invariants: Record<string, number>;
+	storageColumnsAdded: string[];
 	storageObjects: Array<{
 		bucketId: string;
 		name: string;
@@ -46,9 +53,10 @@ const args = new Map(
 	}),
 );
 const manifestArgument = args.get('manifest');
-const targetDbUrl = args.get('target-db-url') ?? '';
-if (!manifestArgument || !targetDbUrl) {
-	throw new Error('Required: --manifest=... --target-db-url=...');
+// The disposable superuser is supabase_admin; the postgres role cannot write Auth/Storage tables.
+const targetDbUrl = args.get('target-db-url') || DISPOSABLE_DB_URL;
+if (!manifestArgument) {
+	throw new Error('Required: --manifest=... [--target-db-url=...]');
 }
 const manifestPath = resolve(manifestArgument);
 const reportPath = resolve(args.get('report') ?? '.tmp/disposable-restore-report.json');
@@ -114,6 +122,27 @@ truncate table storage.objects, storage.buckets cascade;
 `);
 }
 
+function alignStorageColumns(storageMetadataPath: string): string[] {
+	const dumpColumns = parseStorageCopyColumns(readFileSync(storageMetadataPath, 'utf8'));
+	const targetColumns = new Map<string, Set<string>>();
+	for (const row of parseJsonRows<{
+		table: string;
+		column: string;
+	}>(`select coalesce(json_agg(json_build_object(
+  'table', c.table_name,
+  'column', c.column_name
+)), '[]'::json)::text from information_schema.columns c where c.table_schema = 'storage';`)) {
+		const columns = targetColumns.get(row.table) ?? new Set<string>();
+		columns.add(row.column);
+		targetColumns.set(row.table, columns);
+	}
+	const missing = findMissingStorageColumns(dumpColumns, targetColumns);
+	if (missing.length > 0) runPsql(buildAddStorageColumnsSql(missing));
+	return missing.map(
+		({ table, column }) => `storage.${table}.${column} ${storageColumnType(table, column)}`,
+	);
+}
+
 function parseJsonRows<T>(sql: string): T[] {
 	return (queryJson(sql, targetDbUrl, { asCommand: true, noPsqlrc: true }) ?? []) as T[];
 }
@@ -137,6 +166,10 @@ runCommand('pnpm', [
 clearRestoredData();
 runPsql(requiredArtifact('auth'), true);
 runPsql(requiredArtifact('database'), true);
+const storageColumnsAdded = alignStorageColumns(requiredArtifact('storage-metadata'));
+if (storageColumnsAdded.length > 0) {
+	console.info(`Added newer Storage columns: ${storageColumnsAdded.join(', ')}`);
+}
 runPsql(requiredArtifact('storage-metadata'), true);
 
 const storageArchive = readStorageObjectArchive(requiredArtifact('storage-objects'));
@@ -215,6 +248,7 @@ const report: RestoreReport = {
 	migrationCount: actualIntegrity.migrationCount,
 	tables: actualIntegrity.tables,
 	invariants: actualIntegrity.invariants,
+	storageColumnsAdded,
 	storageObjects: restoredStorage.map(({ bucketId, name, bytes, sha256 }) => ({
 		bucketId,
 		name,

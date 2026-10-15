@@ -13,7 +13,7 @@ pnpm db:prod:backup:daily                # scheduled 24h operator capture
 pnpm db:prod:backup                      # public dump only — local refresh, not recovery
 pnpm db:backup:verify-manifest -- --manifest=<path>
 pnpm db:backup:create-manifest           # assemble manifest from artifacts (no integrity)
-pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url>
+pnpm db:restore:verify-disposable -- --manifest=<path>   # target: supabase_admin@127.0.0.1:54332
 pnpm db:local:restore-from-dump -- …     # persistent-local only; never Preview
 ```
 

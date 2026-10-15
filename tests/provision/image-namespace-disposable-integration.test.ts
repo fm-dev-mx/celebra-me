@@ -60,9 +60,9 @@ function sql(query: string): string {
 function seed(): void {
 	sql('truncate table public.invitations cascade;');
 	sql(`insert into public.invitations
-		(id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
+		(id, slug, title, event_type, status, theme_id, created_by, kind)
 		values ('${invitationId}', 'namespace-contract', 'Namespace contract', 'boda',
-		'published', 'demo-wedding-classic', 'classic', '{}'::jsonb,
+		'published', 'classic',
 		'a0000000-0000-0000-0000-000000000002', 'client');`);
 	sql(`insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 		values ('${draftId}', '${invitationId}', '${JSON.stringify(content)}'::jsonb, 'approved');`);

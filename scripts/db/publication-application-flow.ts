@@ -67,9 +67,7 @@ async function main(): Promise<void> {
 		title: 'Prueba de reintento',
 		event_type: 'xv',
 		status: 'in_production',
-		base_demo_id: 'demo-xv-jewelry-box',
 		theme_id: 'jewelry-box',
-		snapshot: {},
 		kind: 'client',
 		created_by: OWNER_USER_ID,
 	});

@@ -12,7 +12,6 @@ export const PREVIEW_DRAFT_RATE_LIMIT_WINDOW_MS = 60_000;
 /** Deterministic Preview synthetic fixture. Re-provision after `db:preview:sync-invitations` (events CASCADE reset). */
 export const PREVIEW_FIXTURE_SLUG = 'e2e-preview-publication';
 export const PREVIEW_FIXTURE_TITLE = 'Fixture E2E de publicación Preview';
-export const PREVIEW_FIXTURE_DEMO_ID = 'demo-xv-jewelry-box';
 export const PREVIEW_FIXTURE_EVENT_TYPE = 'xv';
 export const EXPECTED_PREVIEW_ACCOUNT_EMAIL = 'preview@preview.com';
 export const EXPECTED_PREVIEW_ACCOUNT_ROLE = 'super_admin';
@@ -38,7 +37,6 @@ export interface PreviewFixtureIdentity {
 	slug: string | null;
 	title: string;
 	eventType: string;
-	baseDemoId: string;
 	clientName: string;
 	clientEmail: string;
 	clientWhatsapp: string;
@@ -326,7 +324,6 @@ export function isCanonicalPreviewFixture(
 		fixture.slug === PREVIEW_FIXTURE_SLUG &&
 		fixture.title === PREVIEW_FIXTURE_TITLE &&
 		fixture.eventType === PREVIEW_FIXTURE_EVENT_TYPE &&
-		fixture.baseDemoId === PREVIEW_FIXTURE_DEMO_ID &&
 		fixture.clientName === '' &&
 		fixture.clientEmail === '' &&
 		fixture.clientWhatsapp === '' &&

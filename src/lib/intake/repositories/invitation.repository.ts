@@ -1,5 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { Invitation, DemoPreset, InvitationStatus } from '@/lib/intake/types';
+import type { Invitation, InvitationStatus } from '@/lib/intake/types';
 import type { WorkStatus } from '@/lib/intake/workflow';
 
 interface InvitationRow {
@@ -13,9 +13,7 @@ interface InvitationRow {
 	title: string;
 	event_type: string;
 	status: string;
-	base_demo_id: string;
 	theme_id: string;
-	snapshot: DemoPreset;
 	client_name: string;
 	client_email: string;
 	client_whatsapp: string;
@@ -40,9 +38,7 @@ function toInvitation(row: InvitationRow): Invitation {
 		title: row.title,
 		eventType: row.event_type as Invitation['eventType'],
 		status: row.status as Invitation['status'],
-		baseDemoId: row.base_demo_id,
 		themeId: row.theme_id,
-		snapshot: row.snapshot,
 		clientName: row.client_name,
 		clientEmail: row.client_email,
 		clientWhatsapp: row.client_whatsapp,
@@ -55,7 +51,7 @@ function toInvitation(row: InvitationRow): Invitation {
 }
 
 const SELECT_COLUMNS =
-	'work_status,owner_reviewed_at,owner_reviewed_by,id,kind,source_invitation_id,slug,title,event_type,status,base_demo_id,theme_id,snapshot,client_name,client_email,client_whatsapp,photos_received,created_by,archived_at,created_at,updated_at';
+	'work_status,owner_reviewed_at,owner_reviewed_by,id,kind,source_invitation_id,slug,title,event_type,status,theme_id,client_name,client_email,client_whatsapp,photos_received,created_by,archived_at,created_at,updated_at';
 
 /** Client invitations only; legacy demo mirror rows are not part of the production surface. */
 export async function listInvitations(

@@ -76,7 +76,7 @@ export function loadSemanticParitySnapshot(
 	}
 
 	const matchingRows = queryJsonArray(
-		`select id, slug, event_type, kind, base_demo_id, theme_id, snapshot
+		`select id, slug, event_type, kind, theme_id
 		 from public.invitations
 		 where slug = ${sqlLiteral(slug)}
 		   and event_type = ${sqlLiteral(eventType)}
@@ -88,9 +88,7 @@ export function loadSemanticParitySnapshot(
 		slug: string;
 		event_type: string;
 		kind: string;
-		base_demo_id?: string | null;
 		theme_id?: string | null;
-		snapshot?: unknown;
 	}>;
 
 	if (matchingRows.length === 0) {
@@ -110,9 +108,7 @@ export function loadSemanticParitySnapshot(
 				slug,
 				eventType,
 				kind: 'conflict',
-				baseDemoId: null,
 				themeId: null,
-				snapshot: null,
 				draftContent: null,
 				publishedContent: null,
 				isDemo: false,

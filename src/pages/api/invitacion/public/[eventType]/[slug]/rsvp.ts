@@ -3,18 +3,18 @@ import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 import { invitationUnavailableError } from '@/lib/invitation/access/invitation-access.repository';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, successResponse, withPrivateCache } from '@/lib/rsvp/core/http';
+import {
+	badRequest,
+	errorResponse,
+	getIp,
+	successResponse,
+	withPrivateCache,
+} from '@/lib/rsvp/core/http';
 import { isEventType, parsePublicGuestRsvpRequest } from '@/lib/rsvp/core/rsvp-request';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { submitGuestRsvpByPublicEvent } from '@/lib/rsvp/services/rsvp-submission.service';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { recordServerEngagementEvent } from '@/lib/rsvp/engagement/engagement.service';
-
-function getIp(request: Request): string {
-	const raw =
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-	return sanitize(raw.split(',')[0], 100);
-}
 
 export const POST: APIRoute = async ({ params, request }) => {
 	try {

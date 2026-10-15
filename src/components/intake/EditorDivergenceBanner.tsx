@@ -2,7 +2,12 @@ import type { FC } from 'react';
 
 interface EditorDivergenceBannerProps {
 	divergenceState?:
-		'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
+		| 'CLEAN'
+		| 'DIVERGED'
+		| 'RECONCILIATION_REQUIRED'
+		| 'SOURCE_UPDATE_REQUIRED'
+		| 'DEFERRED'
+		| 'NOT_APPLICABLE';
 	targetEnvironment?: string;
 	affectedFieldCount?: number;
 	affectedSectionCount?: number;
@@ -18,7 +23,12 @@ const EditorDivergenceBanner: FC<EditorDivergenceBannerProps> = ({
 	affectedSections = [],
 	isReleaseBlocked = false,
 }) => {
-	if (divergenceState === 'CLEAN' || affectedFieldCount === 0) {
+	// NOT_APPLICABLE means a hosted runtime skipped detection: nothing to warn about either.
+	if (
+		divergenceState === 'CLEAN' ||
+		divergenceState === 'NOT_APPLICABLE' ||
+		affectedFieldCount === 0
+	) {
 		return null;
 	}
 

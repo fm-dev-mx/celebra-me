@@ -2,8 +2,12 @@ import {
 	parseCloudflarePreviewOrigin,
 	runCloudflarePreviewSmoke,
 } from '../../scripts/ops/cloudflare-preview-smoke.ts';
+import { listSmokePageRoutes } from '../../scripts/ops/post-deploy-smoke.ts';
 
 const sha = 'a'.repeat(40);
+const PAGE_PATHS = new Set(
+	listSmokePageRoutes().map((route) => `/${route.eventType}/${route.slug}`),
+);
 const stableHost = 'celebra-me-preview.celebra-me-com.workers.dev';
 const versionHost = '1a2b3c4d-celebra-me-preview.celebra-me-com.workers.dev';
 const accessHeaders = {
@@ -27,7 +31,8 @@ function previewFetch(build: { commitSha: string; environment: string | null }) 
 				'strict-transport-security': 'max-age=31536000; includeSubDomains',
 			});
 		}
-		if (pathname === '/login' || pathname === '/xv/demo-xv-editorial') return response(200);
+		if (pathname === '/login') return response(200);
+		if (PAGE_PATHS.has(pathname)) return response(200, '<title>Invitación</title>');
 		if (pathname === '/api/auth/session')
 			return response(401, '', { 'cache-control': 'no-store, private' });
 		if (pathname === '/api/health')

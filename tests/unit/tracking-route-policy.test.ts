@@ -1,8 +1,4 @@
-import {
-	DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
-	classifyTrackingRoute,
-	resolveSpeedInsightsConfig,
-} from '@/lib/tracking/route-policy';
+import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 describe('tracking route policy', () => {
 	it.each([
@@ -49,68 +45,5 @@ describe('tracking route policy', () => {
 		expect(classifyTrackingRoute('/xv/valentina-hernandez?invite=abc').gaAllowed).toBe(false);
 		expect(classifyTrackingRoute('/dashboard/invitaciones').gaAllowed).toBe(false);
 		expect(classifyTrackingRoute('/api/contact').gaAllowed).toBe(false);
-	});
-
-	describe('resolveSpeedInsightsConfig', () => {
-		it('enables Speed Insights only on approved commercial and demo routes in production', () => {
-			const env = { deployEnvironment: 'production' } as const;
-
-			expect(resolveSpeedInsightsConfig('/', env)).toEqual({
-				enabled: true,
-				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
-			});
-			expect(resolveSpeedInsightsConfig('/demos/xv', env)).toEqual({
-				enabled: true,
-				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
-			});
-			expect(resolveSpeedInsightsConfig('/xv/valentina-hernandez', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/xv/valentina-hernandez?invite=abc', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-		});
-
-		it('disables Speed Insights on dashboard, auth, and API routes', () => {
-			const env = { deployEnvironment: 'production' } as const;
-
-			expect(resolveSpeedInsightsConfig('/login', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/dashboard', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/dashboard/invitaciones', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/dashboard/invitaciones/123/preview', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/api/dashboard/invitaciones', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/api/invitacion/abc/rsvp', env)).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-		});
-
-		it('disables Speed Insights in non-production environments', () => {
-			expect(resolveSpeedInsightsConfig('/', { deployEnvironment: 'preview' })).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/', { deployEnvironment: null })).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-		});
 	});
 });

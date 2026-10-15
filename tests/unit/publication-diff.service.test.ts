@@ -1,4 +1,8 @@
-import { createPublicationComparison } from '@/lib/intake/services/publication-diff.service';
+import { createHash } from 'node:crypto';
+import {
+	createPublicationComparison,
+	hashPublicMetadata,
+} from '@/lib/intake/services/publication-diff.service';
 
 describe('createPublicationComparison', () => {
 	const published = {
@@ -275,5 +279,34 @@ describe('createPublicationComparison', () => {
 
 		expect(comparison.changedPaths).toEqual([]);
 		expect(comparison.changedSections).toEqual([]);
+	});
+});
+
+describe('hashPublicMetadata', () => {
+	const md5 = (value: string) => createHash('md5').update(value).digest('hex');
+	const invitation = {
+		slug: 'daniela-y-martin',
+		title: 'Daniela y Martín',
+		eventType: 'boda',
+		themeId: 'jewelry-box',
+		kind: 'client',
+		status: 'in_production',
+		archivedAt: null,
+	};
+
+	it('matches the current baseline publish_invitation_atomic computes from jsonb::text', () => {
+		// jsonb orders keys by length, then bytewise; baseDemoId and snapshot are not part of it.
+		const metadata =
+			'{"kind": "client", "slug": "daniela-y-martin", "title": "Daniela y Martín", ' +
+			'"status": "in_production", "themeId": "jewelry-box", "eventType": "boda", "archivedAt": null}';
+		expect(hashPublicMetadata(invitation)).toBe(md5(`${md5(metadata)}${md5('{}')}`));
+	});
+
+	it('binds the baseline to the published content fingerprint', () => {
+		const published = { title: 'Daniela y Martín' };
+		expect(hashPublicMetadata(invitation, published)).not.toBe(hashPublicMetadata(invitation));
+		expect(hashPublicMetadata({ ...invitation, title: 'Otro título' })).not.toBe(
+			hashPublicMetadata(invitation),
+		);
 	});
 });

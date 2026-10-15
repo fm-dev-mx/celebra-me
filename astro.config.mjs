@@ -302,9 +302,6 @@ export default defineConfig({
 				imageService: 'cloudflare-binding',
 			})
 		: vercel({
-				// Vercel Web Analytics is mounted via <Analytics /> in Layout.astro.
-				// Keeping adapter-level webAnalytics off avoids duplicate client script injection
-				// with @vercel/analytics 2.x.
 				maxDuration: 30, // Increase limit for serverless functions
 				imageService: true, // Enable Vercel's image optimization for local images
 				imagesConfig: {

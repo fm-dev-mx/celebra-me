@@ -93,6 +93,28 @@ describe('createLeadFromContactSubmission', () => {
 		);
 	});
 
+	it('hands the lead_created write to the after-response context when one is given', async () => {
+		const waitUntil = jest.fn();
+
+		await createLeadFromContactSubmission(
+			{
+				name: 'Valentina Hernandez',
+				email: 'client@example.com',
+				consentContact: true,
+				consentMarketing: false,
+				sessionId: '11111111-1111-4111-8111-111111111111',
+				visitorId: 'visitor_00000000-0000-4000-8000-000000000000',
+			},
+			{ after: { waitUntil } },
+		);
+
+		expect(mockInsertTrackingEvent).toHaveBeenCalledWith(
+			expect.objectContaining({ eventName: 'lead_created' }),
+		);
+		expect(waitUntil).toHaveBeenCalledTimes(1);
+		await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBeUndefined();
+	});
+
 	it('copies session Meta attribution into contact-form leads when the form omits it', async () => {
 		mockFindVisitorSessionMetaAttribution.mockResolvedValue({
 			fbp: 'fb.1.1710000000000.1234567890',

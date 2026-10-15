@@ -3,6 +3,8 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
 	formatEvidenceSummary,
+	listSmokePageRoutes,
+	resolveSmokeBaseUrl,
 	runProductionSmoke,
 	validateVercelDispatch,
 	type PostDeployEvidence,
@@ -16,6 +18,9 @@ function response(status: number, body = '', headers: Record<string, string> = {
 		json: async () => JSON.parse(body) as unknown,
 	} as unknown as Response;
 }
+
+const PAGE_ROUTES = listSmokePageRoutes();
+const PAGE_PATHS = new Set(PAGE_ROUTES.map((route) => `/${route.eventType}/${route.slug}`));
 
 function productionFetch(): jest.MockedFunction<
 	(input: string, init?: RequestInit) => Promise<Response>
@@ -31,8 +36,11 @@ function productionFetch(): jest.MockedFunction<
 				'strict-transport-security': 'max-age=31536000; includeSubDomains',
 			});
 		}
-		if (pathname === '/login' || pathname === '/xv/demo-xv-editorial') {
+		if (pathname === '/login') {
 			return response(200);
+		}
+		if (PAGE_PATHS.has(pathname)) {
+			return response(200, '<html><head><title>Invitación</title></head></html>');
 		}
 		if (pathname === '/api/auth/session') {
 			return response(401, '', { 'cache-control': 'no-store, private' });
@@ -175,7 +183,7 @@ describe('post-deploy smoke', () => {
 		const result = await runProductionSmoke('https://celebra-me.com', productionFetch());
 
 		expect(result).toEqual({
-			probeCount: 7,
+			probeCount: 6 + PAGE_ROUTES.length,
 			failedProbeCount: 0,
 			networkRetryCount: 0,
 			runtimeHealthVerified: true,
@@ -193,6 +201,112 @@ describe('post-deploy smoke', () => {
 				}),
 			]),
 		});
+	});
+
+	it('lists every published invitation and demo from the catalog', () => {
+		const targets = PAGE_ROUTES.map(
+			(route) => `${route.kind} /${route.eventType}/${route.slug}`,
+		);
+
+		expect(new Set(targets).size).toBe(targets.length);
+		expect(targets).toEqual(
+			expect.arrayContaining(['invitation /xv/mia-pintor', 'demo /xv/demo-xv-editorial']),
+		);
+		expect(PAGE_ROUTES.filter((route) => route.kind === 'invitation').length).toBeGreaterThan(
+			0,
+		);
+		expect(PAGE_ROUTES.filter((route) => route.kind === 'demo').length).toBeGreaterThan(0);
+	});
+
+	it('opens each page and accepts 403 only for an administrator-disabled invitation', async () => {
+		const pages = [
+			{ kind: 'invitation', eventType: 'xv', slug: 'disabled' },
+			{ kind: 'invitation', eventType: 'boda', slug: 'blank' },
+			{ kind: 'demo', eventType: 'xv', slug: 'demo-forbidden' },
+			{ kind: 'demo', eventType: 'xv', slug: 'demo-ok' },
+		] as const;
+		const baseFetch = productionFetch();
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async (input: string) => {
+			const pathname = new URL(input).pathname;
+			if (pathname === '/xv/disabled' || pathname === '/xv/demo-forbidden') {
+				return response(403);
+			}
+			if (pathname === '/boda/blank') return response(200, '<html></html>');
+			if (pathname === '/xv/demo-ok') return response(200, '<title>Demo</title>');
+			return baseFetch(input);
+		});
+
+		const result = await runProductionSmoke('https://celebra-me.com', fetchMock, { pages });
+
+		expect(result.failureCodes).toEqual([
+			'invitation_failed:boda:blank',
+			'demo_failed:xv:demo-forbidden',
+		]);
+		expect(result.probeResults).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					probe: 'invitation',
+					target: 'xv:disabled',
+					status_code: 403,
+					failure_class: 'none',
+				}),
+				expect.objectContaining({
+					probe: 'invitation',
+					target: 'boda:blank',
+					failure_class: 'contract_mismatch',
+				}),
+				expect.objectContaining({
+					probe: 'demo',
+					target: 'xv:demo-forbidden',
+					failure_class: 'http_status',
+				}),
+			]),
+		);
+	});
+
+	it('resolves a configurable base host limited to approved origins', () => {
+		expect(resolveSmokeBaseUrl([], {})).toBe('https://www.celebra-me.com');
+		expect(
+			resolveSmokeBaseUrl([], { SMOKE_BASE_URL: 'https://celebra.example.workers.dev' }),
+		).toBe('https://celebra.example.workers.dev');
+		expect(
+			resolveSmokeBaseUrl(['--base-url=https://staging.celebra-me.com/'], {
+				SMOKE_BASE_URL: 'https://celebra.example.workers.dev',
+			}),
+		).toBe('https://staging.celebra-me.com');
+		expect(() => resolveSmokeBaseUrl(['--base-url=https://example.com'], {})).toThrow(
+			'unapproved host',
+		);
+		expect(() => resolveSmokeBaseUrl(['--base-url=http://www.celebra-me.com'], {})).toThrow(
+			'HTTPS origin',
+		);
+		expect(() =>
+			validateVercelDispatch({
+				event: 'vercel.deployment.promoted',
+				environment: 'production',
+				projectId: 'prj_abcdef123456',
+				expectedProjectId: 'prj_abcdef123456',
+				deploymentId: 'dpl_abcdef123456',
+				url: 'https://celebra.example.workers.dev',
+				commitSha: 'a'.repeat(40),
+				gitRef: 'main',
+			}),
+		).toThrow('unapproved host');
+	});
+
+	it('runs the same probes against a Cloudflare Worker host without a bypass secret', async () => {
+		const fetchMock = productionFetch();
+		const result = await runProductionSmoke('https://celebra.example.workers.dev', fetchMock);
+
+		expect(result.failedProbeCount).toBe(0);
+		expect(
+			fetchMock.mock.calls.every(
+				([url, init]) =>
+					new URL(url).hostname === 'celebra.example.workers.dev' &&
+					!new Headers(init?.headers).has('x-vercel-protection-bypass'),
+			),
+		).toBe(true);
 	});
 
 	it('performs only one retry for a transient network response', async () => {
@@ -373,6 +487,24 @@ describe('post-deploy smoke', () => {
 		expect(workflow).toContain('environment: Production');
 		expect(workflow).toContain('pnpm invitation:media:verify -- --target production --all');
 		expect(workflow).not.toMatch(/prod:apply|--apply|cloudinary.*secret/i);
+	});
+
+	it('runs a read-only Production smoke every 15 minutes and alerts after two failures', () => {
+		const workflow = readFileSync(
+			resolve('.github', 'workflows', 'production-uptime.yml'),
+			'utf8',
+		);
+		expect(workflow).toContain("- cron: '*/15 * * * *'");
+		expect(workflow).toContain(
+			'pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com',
+		);
+		expect(workflow).toMatch(/permissions:\s+contents: read\s+actions: read\s+issues: write/u);
+		expect(workflow).toContain('select(.databaseId != $GITHUB_RUN_ID)');
+		expect(workflow).toContain('if [ "$previous" != "failure" ]; then');
+		expect(workflow).toContain('gh issue create');
+		expect(workflow).not.toMatch(
+			/secrets\.|environment:|prod:apply|--apply|vercel |wrangler/iu,
+		);
 	});
 
 	it('keeps generated sitemap URLs on the public origin during builds', () => {

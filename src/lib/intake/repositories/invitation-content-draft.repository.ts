@@ -5,7 +5,6 @@ import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 interface InvitationContentDraftRow {
 	id: string;
 	invitation_project_id: string;
-	submission_id: string | null;
 	content: Record<string, unknown>;
 	status: string;
 	created_at: string;
@@ -16,7 +15,6 @@ function toDraft(row: InvitationContentDraftRow): InvitationContentDraft {
 	return {
 		id: row.id,
 		invitationId: row.invitation_project_id,
-		submissionId: row.submission_id,
 		content: row.content,
 		status: row.status as InvitationContentDraft['status'],
 		createdAt: row.created_at,
@@ -24,8 +22,7 @@ function toDraft(row: InvitationContentDraftRow): InvitationContentDraft {
 	};
 }
 
-const SELECT_COLUMNS =
-	'id,invitation_project_id,submission_id,content,status,created_at,updated_at';
+const SELECT_COLUMNS = 'id,invitation_project_id,content,status,created_at,updated_at';
 
 export async function findDraftByInvitationId(
 	invitationId: string,
@@ -58,7 +55,6 @@ export async function updateDraftContentConditionally(
 
 export async function upsertDraft(input: {
 	invitationId: string;
-	submissionId: string | null;
 	content: Record<string, unknown>;
 }): Promise<InvitationContentDraft> {
 	const existing = await findDraftByInvitationId(input.invitationId);
@@ -70,7 +66,6 @@ export async function upsertDraft(input: {
 			useServiceRole: true,
 			prefer: 'return=representation',
 			body: {
-				submission_id: input.submissionId,
 				content: input.content,
 				status: 'draft',
 			},
@@ -86,7 +81,6 @@ export async function upsertDraft(input: {
 		prefer: 'return=representation',
 		body: {
 			invitation_project_id: input.invitationId,
-			submission_id: input.submissionId,
 			content: input.content,
 			status: 'draft',
 		},

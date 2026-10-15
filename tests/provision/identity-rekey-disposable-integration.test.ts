@@ -49,17 +49,16 @@ function resetAndSeedDisposableDb(): void {
 
 	// Seed invitation (OLD slug)
 	execDb(`
-		INSERT INTO public.invitations (id, slug, title, status, event_type, base_demo_id, theme_id, kind, snapshot)
+		INSERT INTO public.invitations (id, slug, title, status, event_type, theme_id, kind, client_name)
 		VALUES (
 			'${INVITATION_UUID}',
 			'alba-rosa-old',
 			'70 años de Alba Rosa',
 			'published',
 			'xv',
-			'alba-rosa-quinonez',
 			'boho-chic',
 			'client',
-			'{"custom_client_note": "preserves_target_owned_metadata"}'::jsonb
+			'preserves_target_owned_metadata'
 		);
 	`);
 
@@ -149,7 +148,7 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		expect(invCount).toBe(1);
 
 		const invRow = queryDb(
-			`SELECT id::text || '|' || slug || '|' || (snapshot->>'custom_client_note') FROM public.invitations WHERE id = '${INVITATION_UUID}';`,
+			`SELECT id::text || '|' || slug || '|' || client_name FROM public.invitations WHERE id = '${INVITATION_UUID}';`,
 		);
 		expect(invRow).toBe(
 			`${INVITATION_UUID}|alba-rosa-quinonez|preserves_target_owned_metadata`,
@@ -234,14 +233,13 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 	it('Test C — destination identity collision aborts before writes and leaves complete DB snapshot unchanged', () => {
 		// Seed a conflicting invitation with destination slug 'alba-rosa-quinonez' under a different UUID
 		execDb(`
-			INSERT INTO public.invitations (id, slug, title, status, event_type, base_demo_id, theme_id, kind)
+			INSERT INTO public.invitations (id, slug, title, status, event_type, theme_id, kind)
 			VALUES (
 				'${COLLISION_UUID}',
 				'alba-rosa-quinonez',
 				'Conflicting Destination Invitation',
 				'published',
 				'xv',
-				'alba-rosa-quinonez',
 				'boho-chic',
 				'client'
 			);
