@@ -19,16 +19,39 @@ function firstHeaderValue(headers: Headers, name: string): string | null {
 	return first.length > 0 ? first : null;
 }
 
+/** The Workers runtime reports itself through `navigator.userAgent`; no request can change it. */
+const CLOUDFLARE_WORKERS_USER_AGENT = 'Cloudflare-Workers';
+
 /**
- * Resolves the visitor IP from the proxy headers the current hosts set.
- *
- * Priority: `CF-Connecting-IP` (Cloudflare writes it from the connection and overwrites
- * any client value), then the first entry of `X-Forwarded-For` (Vercel and most proxies),
- * then `X-Real-IP`. Returns `null` when no header is present, for example on the dev server.
+ * True when this code runs inside Cloudflare Workers. Node (Vercel), the Astro dev
+ * server and jsdom all report a different user agent, or none at all.
  */
-export function getClientIp(request: Request): string | null {
+export function isCloudflareWorkersRuntime(): boolean {
+	const navigator = (globalThis as { navigator?: { userAgent?: unknown } }).navigator;
+	return navigator?.userAgent === CLOUDFLARE_WORKERS_USER_AGENT;
+}
+
+export interface ClientIpOptions {
+	/** Overrides runtime detection; callers that already know the host (and tests) set it. */
+	onCloudflareWorkers?: boolean;
+}
+
+/**
+ * Resolves the visitor IP from the proxy headers the current host sets.
+ *
+ * `CF-Connecting-IP` is read only on Cloudflare Workers, where the edge writes it from the
+ * connection and overwrites any client value. Anywhere else a visitor could send that
+ * header themselves, so Vercel and the dev server fall straight to the first entry of
+ * `X-Forwarded-For` (set by the Vercel proxy), then `X-Real-IP`. Returns `null` when no
+ * header is present, for example on the dev server.
+ */
+export function getClientIp(request: Request, options: ClientIpOptions = {}): string | null {
+	const onCloudflareWorkers = options.onCloudflareWorkers ?? isCloudflareWorkersRuntime();
+	const cloudflareIp = onCloudflareWorkers
+		? firstHeaderValue(request.headers, 'cf-connecting-ip')
+		: null;
 	return (
-		firstHeaderValue(request.headers, 'cf-connecting-ip') ??
+		cloudflareIp ??
 		firstHeaderValue(request.headers, 'x-forwarded-for') ??
 		firstHeaderValue(request.headers, 'x-real-ip')
 	);

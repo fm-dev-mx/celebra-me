@@ -1,5 +1,6 @@
 import {
 	getClientIp,
+	isCloudflareWorkersRuntime,
 	resolveAfterResponseContext,
 	runAfterResponse,
 } from '@/lib/server/platform-request';
@@ -14,17 +15,65 @@ async function flushMicrotasks(): Promise<void> {
 	await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+function mockUserAgent(value: string): jest.SpyInstance {
+	return jest.spyOn(globalThis.navigator, 'userAgent', 'get').mockReturnValue(value);
+}
+
+describe('isCloudflareWorkersRuntime', () => {
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
+	it('recognizes the Workers runtime by its user agent and nothing else', () => {
+		expect(isCloudflareWorkersRuntime()).toBe(false);
+
+		mockUserAgent('Cloudflare-Workers');
+		expect(isCloudflareWorkersRuntime()).toBe(true);
+
+		mockUserAgent('Node.js/24');
+		expect(isCloudflareWorkersRuntime()).toBe(false);
+	});
+});
+
 describe('getClientIp', () => {
-	it('prefers CF-Connecting-IP over the forwarded headers', () => {
+	const spoofedHeaders = {
+		'cf-connecting-ip': '1.2.3.4',
+		'x-forwarded-for': '5.6.7.8',
+	};
+
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
+	it('ignores a client-sent CF-Connecting-IP on Vercel and uses X-Forwarded-For', () => {
+		expect(getClientIp(requestWith(spoofedHeaders), { onCloudflareWorkers: false })).toBe(
+			'5.6.7.8',
+		);
+	});
+
+	it('trusts CF-Connecting-IP on Cloudflare Workers', () => {
+		expect(getClientIp(requestWith(spoofedHeaders), { onCloudflareWorkers: true })).toBe(
+			'1.2.3.4',
+		);
+	});
+
+	it('detects the runtime itself when the caller gives no hint', () => {
+		expect(getClientIp(requestWith(spoofedHeaders))).toBe('5.6.7.8');
+
+		mockUserAgent('Cloudflare-Workers');
+		expect(getClientIp(requestWith(spoofedHeaders))).toBe('1.2.3.4');
+	});
+
+	it('still falls through the forwarded headers on Workers when CF-Connecting-IP is absent', () => {
 		expect(
 			getClientIp(
 				requestWith({
-					'cf-connecting-ip': '203.0.113.9',
 					'x-forwarded-for': '198.51.100.1, 10.0.0.2',
 					'x-real-ip': '192.0.2.5',
 				}),
+				{ onCloudflareWorkers: true },
 			),
-		).toBe('203.0.113.9');
+		).toBe('198.51.100.1');
 	});
 
 	it('takes the first X-Forwarded-For entry when Cloudflare is not in front', () => {

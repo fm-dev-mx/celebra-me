@@ -16,7 +16,7 @@ describe('requireAdminRateLimit', () => {
 		jest.clearAllMocks();
 	});
 
-	it('buckets by the Cloudflare connecting IP before any forwarded header', async () => {
+	it('buckets by X-Forwarded-For outside Cloudflare Workers, even if CF-Connecting-IP is sent', async () => {
 		const request = new Request('https://example.com/api/dashboard/intake/invitation', {
 			headers: {
 				'cf-connecting-ip': '203.0.113.9',
@@ -26,10 +26,30 @@ describe('requireAdminRateLimit', () => {
 
 		await requireAdminRateLimit(request, 'intake:list');
 
-		expect(mockHashIp).toHaveBeenCalledWith('203.0.113.9');
+		expect(mockHashIp).toHaveBeenCalledWith('198.51.100.1');
 		expect(mockCheckRateLimit).toHaveBeenCalledWith(
-			expect.objectContaining({ ip: '203.0.113.9' }),
+			expect.objectContaining({ ip: '198.51.100.1' }),
 		);
+	});
+
+	it('buckets by CF-Connecting-IP when running on Cloudflare Workers', async () => {
+		const userAgent = jest
+			.spyOn(globalThis.navigator, 'userAgent', 'get')
+			.mockReturnValue('Cloudflare-Workers');
+		const request = new Request('https://example.com/api/dashboard/intake/invitation', {
+			headers: {
+				'cf-connecting-ip': '203.0.113.9',
+				'x-forwarded-for': '198.51.100.1, 10.0.0.2',
+			},
+		});
+
+		try {
+			await requireAdminRateLimit(request, 'intake:list');
+		} finally {
+			userAgent.mockRestore();
+		}
+
+		expect(mockHashIp).toHaveBeenCalledWith('203.0.113.9');
 	});
 
 	it('falls back to the unknown bucket when no proxy header is present', async () => {
