@@ -3,8 +3,8 @@ select plan(94);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
-insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
-values ('20000000-0000-0000-0000-000000000001', 'atomic-publish', 'Publicación atómica', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-000000000001', 'client');
+insert into public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind)
+values ('20000000-0000-0000-0000-000000000001', 'atomic-publish', 'Publicación atómica', 'xv', 'in_production', 'jewelry-box', '10000000-0000-0000-0000-000000000001', 'client');
 insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 values ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '{"title":"Publicación atómica"}'::jsonb, 'draft');
 
@@ -21,7 +21,7 @@ select ok(not has_table_privilege('authenticated', 'public.invitation_publicatio
 create temporary table publication_test_result as
 select public.publish_invitation_atomic(
   i.id, d.id, d.updated_at, null,
-  md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'baseDemoId', i.base_demo_id, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'snapshot', i.snapshot, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text)),
+  md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text)),
   md5('{"title":"Publicación atómica"}'::jsonb::text),
   '40000000-0000-0000-0000-000000000001', 'atomic-publish', 'xv', false, '{"title":"Publicación atómica"}'::jsonb
 ) as result
@@ -114,8 +114,8 @@ select ok(
   'restore RPC serializes on the invitation row'
 );
 
-insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind)
-values ('20000000-0000-0000-0000-000000000003', 'editor-atomic', 'Título anterior', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-000000000001', 'client');
+insert into public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind)
+values ('20000000-0000-0000-0000-000000000003', 'editor-atomic', 'Título anterior', 'xv', 'published', 'jewelry-box', '10000000-0000-0000-0000-000000000001', 'client');
 insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 values ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', '{"title":"Borrador anterior"}'::jsonb, 'approved');
 insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version, published_at)

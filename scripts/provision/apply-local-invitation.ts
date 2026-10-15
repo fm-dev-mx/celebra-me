@@ -1383,9 +1383,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		} else if (!existingInv) {
 			const { error } = await supabase
 				.from('invitations')
-				// base_demo_id is NOT NULL until its contract migration drops it; snapshot keeps
-				// its column default.
-				.insert({ id: invitationId, base_demo_id: '', ...invMetadata });
+				.insert({ id: invitationId, ...invMetadata });
 			if (error) throw error;
 			trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: false });
 		}
@@ -1509,7 +1507,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					.update(
 						draftMutation === 'reset_status'
 							? { status: 'draft' }
-							: { content: proposedContent, status: 'draft', submission_id: null },
+							: { content: proposedContent, status: 'draft' },
 					)
 					.eq('id', existingDraft.id)
 					.eq('updated_at', expectedDraftUpdatedAt)
@@ -1535,7 +1533,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					.insert({
 						id: newId,
 						invitation_project_id: invitationId,
-						submission_id: null,
 						content: proposedContent,
 						status: 'draft',
 					})
@@ -1596,9 +1593,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		if (!isPubContentIdentical || !existingPub) {
 			const { data: pubBaseline } = await supabase
 				.from('invitations')
-				.select(
-					'slug, title, event_type, base_demo_id, theme_id, kind, snapshot, status, archived_at',
-				)
+				.select('slug, title, event_type, theme_id, kind, status, archived_at')
 				.eq('id', invitationId)
 				.single();
 
@@ -1607,10 +1602,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					slug: pubBaseline!.slug as string,
 					title: pubBaseline!.title as string,
 					eventType: pubBaseline!.event_type as string,
-					baseDemoId: pubBaseline!.base_demo_id as string,
 					themeId: pubBaseline!.theme_id as string,
 					kind: pubBaseline!.kind as string,
-					snapshot: pubBaseline!.snapshot,
 					status: pubBaseline!.status as string,
 					archivedAt: (pubBaseline!.archived_at as string) ?? null,
 				},

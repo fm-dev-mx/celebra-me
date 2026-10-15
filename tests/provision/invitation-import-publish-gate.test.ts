@@ -271,10 +271,8 @@ describe('publish path atomicity contract', () => {
 						title: 'Demo',
 						event_type: 'xv',
 						status: 'published',
-						base_demo_id: 'demo-xv',
 						theme_id: 'jewelry-box',
 						kind: 'managed',
-						snapshot: {},
 						archived_at: null,
 					}),
 				};

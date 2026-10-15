@@ -181,6 +181,37 @@ function validateGuestEngagementOnlyClient(root: string): string[] {
 	return errors;
 }
 
+const LEGACY_COLUMNS_RETIRED_CAPABILITY = 'legacy_invitation_columns_retired_client';
+/** Legacy invitation columns the application no longer reads or writes. */
+const LEGACY_INVITATION_COLUMN = /\b(?:base_demo_id|baseDemoId|submission_id|submissionId)\b/;
+/** Modules that compute the public-metadata baseline sent to publish_invitation_atomic. */
+const PUBLIC_METADATA_HASH_PATHS = [
+	'src/lib/intake/services/publication-diff.service.ts',
+	...EXECUTABLE_PUBLICATION_PATHS,
+] as const;
+
+/**
+ * The application never names the legacy invitation columns, and no publication path hashes
+ * baseDemoId: every baseline it sends is the current one. Operator scripts may still write the
+ * NOT NULL base_demo_id placeholder until the column contract drops it.
+ */
+function validateLegacyColumnsRetiredClient(root: string): string[] {
+	const errors: string[] = [];
+	for (const path of listExecutableFiles(root)) {
+		if (!path.startsWith('src/')) continue;
+		const match = readFileSync(resolve(root, path), 'utf8').match(LEGACY_INVITATION_COLUMN);
+		if (match)
+			errors.push(`Legacy invitation column ${match[0]} is still referenced by ${path}.`);
+	}
+	for (const path of PUBLIC_METADATA_HASH_PATHS) {
+		const source = read(root, path, errors);
+		if (source && source.includes('baseDemoId')) {
+			errors.push(`Legacy public-metadata baseline is still computed by ${path}.`);
+		}
+	}
+	return errors;
+}
+
 export function validateDeployedAppCapabilities(root = process.cwd()): string[] {
 	const errors: string[] = [];
 	const manifestPath = resolve(root, 'supabase/deployed-app-capabilities.json');
@@ -209,6 +240,9 @@ export function validateDeployedAppCapabilities(root = process.cwd()): string[] 
 	}
 	if (capabilities.includes(GUEST_ENGAGEMENT_ONLY_CAPABILITY)) {
 		errors.push(...validateGuestEngagementOnlyClient(root));
+	}
+	if (capabilities.includes(LEGACY_COLUMNS_RETIRED_CAPABILITY)) {
+		errors.push(...validateLegacyColumnsRetiredClient(root));
 	}
 	return errors;
 }

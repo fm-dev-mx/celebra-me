@@ -4,7 +4,6 @@ import {
 	updateInvitation,
 	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
-import type { DemoPreset } from '@/lib/intake/types';
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
@@ -61,19 +60,7 @@ describe('invitation repository', () => {
 				title: 'Test Event',
 				event_type: 'xv',
 				status: 'draft',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: {
-					id: 'demo-xv-jewelry-box',
-					eventType: 'xv',
-					displayName: 'XV Años — Jewelry Box',
-					themeId: 'jewelry-box',
-					defaultSections: ['quote', 'family'],
-					supportedBlocks: ['event-details', 'photos'],
-					recommendedBlocks: ['event-details'],
-					requiredAssets: ['hero'],
-					previewSlug: 'demo-xv-jewelry-box',
-				} satisfies DemoPreset,
 				client_name: 'John Doe',
 				client_email: 'john@example.com',
 				client_whatsapp: '+521234567890',
@@ -108,9 +95,7 @@ describe('invitation repository', () => {
 				title: 'Updated Title',
 				event_type: 'xv',
 				status: 'in_production',
-				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
-				snapshot: {},
 				client_name: 'Updated Name',
 				client_email: 'updated@example.com',
 				client_whatsapp: '+521111111111',
@@ -175,9 +160,7 @@ describe('invitation repository', () => {
 					title: 'Test Event',
 					event_type: 'xv',
 					status: 'draft',
-					base_demo_id: 'demo-xv-jewelry-box',
 					theme_id: 'jewelry-box',
-					snapshot: {} as DemoPreset,
 					client_name: 'John Doe',
 					client_email: 'john@example.com',
 					client_whatsapp: '+521234567890',

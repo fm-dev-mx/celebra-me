@@ -33,7 +33,6 @@ const mockFindPublished = findPublishedByInvitationId as jest.MockedFunction<
 const existingDraft = {
 	id: 'draft-1',
 	invitationId: 'proj-1',
-	submissionId: 'sub-1',
 	content: { title: 'Original' },
 	status: 'draft' as const,
 	createdAt: '2026-05-28T14:00:00Z',

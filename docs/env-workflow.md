@@ -453,6 +453,18 @@ Set by `.github/workflows/post-deploy-smoke.yml` from the dispatch payload and r
   `POST_DEPLOY_STARTED_AT` (validated outputs exported through `GITHUB_ENV`).
 - `VERCEL_PROJECT_ID` is a repository variable (`vars.*`) consumed by the same workflow.
 
+The same probes run outside a dispatch with `pnpm ops:post-deploy -- check`, which reads only public
+pages. `--base-url=<origin>` (or `SMOKE_BASE_URL`) picks the host, defaulting to
+`https://www.celebra-me.com`; approved hosts are the Production domain and its subdomains,
+`*.vercel.app` (needs `VERCEL_AUTOMATION_BYPASS_SECRET`) and `*.workers.dev`. Example for a
+Cloudflare Worker:
+`pnpm ops:post-deploy -- check --base-url=https://celebra-me.example.workers.dev`.
+
+`.github/workflows/production-uptime.yml` runs that check against Production every 15 minutes (from
+`main`, as GitHub runs schedules only on the default branch). After two consecutive failed runs it
+opens one issue titled "Monitor de Producción: el smoke falló dos veces seguidas" (later failures
+comment on it) and closes it on the next passing run. It needs no secrets.
+
 ### CI validation (`.github/workflows/commit-validation.yml`)
 
 | Name                                               | Read by                                                               | Notes                             |

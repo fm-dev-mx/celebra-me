@@ -42,12 +42,12 @@ $$;
 insert into auth.users (id, aud, role, email, created_at, updated_at) values
   ('c1000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'rank-v2@example.test', now(), now());
 
-insert into public.invitations (id, slug, title, event_type, status, base_demo_id, theme_id, snapshot, created_by, kind) values
-  ('c2000000-0000-4000-8000-000000000001', 'v2-measured', 'Medida', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'c1000000-0000-4000-8000-000000000001', 'client'),
-  ('c2000000-0000-4000-8000-000000000002', 'v2-quiet', 'Sin actividad', 'boda', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'c1000000-0000-4000-8000-000000000001', 'client'),
-  ('c2000000-0000-4000-8000-000000000003', 'v2-archived', 'Archivada', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'c1000000-0000-4000-8000-000000000001', 'client'),
-  ('c2000000-0000-4000-8000-000000000004', 'v2-demo', 'Demo', 'xv', 'published', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'c1000000-0000-4000-8000-000000000001', 'demo'),
-  ('c2000000-0000-4000-8000-000000000005', 'v2-unpublished', 'Sin publicar', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, 'c1000000-0000-4000-8000-000000000001', 'client');
+insert into public.invitations (id, slug, title, event_type, status, theme_id, created_by, kind) values
+  ('c2000000-0000-4000-8000-000000000001', 'v2-measured', 'Medida', 'xv', 'published', 'jewelry-box', 'c1000000-0000-4000-8000-000000000001', 'client'),
+  ('c2000000-0000-4000-8000-000000000002', 'v2-quiet', 'Sin actividad', 'boda', 'published', 'jewelry-box', 'c1000000-0000-4000-8000-000000000001', 'client'),
+  ('c2000000-0000-4000-8000-000000000003', 'v2-archived', 'Archivada', 'xv', 'published', 'jewelry-box', 'c1000000-0000-4000-8000-000000000001', 'client'),
+  ('c2000000-0000-4000-8000-000000000004', 'v2-demo', 'Demo', 'xv', 'published', 'jewelry-box', 'c1000000-0000-4000-8000-000000000001', 'demo'),
+  ('c2000000-0000-4000-8000-000000000005', 'v2-unpublished', 'Sin publicar', 'xv', 'in_production', 'jewelry-box', 'c1000000-0000-4000-8000-000000000001', 'client');
 
 insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version, published_at) values
   ('c3000000-0000-4000-8000-000000000001', 'c2000000-0000-4000-8000-000000000001', 'v2-measured', 'xv', false,

@@ -112,6 +112,21 @@ describe('release status classification', () => {
 		expect(
 			(await probeHealth(previewUrl, sha, healthy(sha), undefined, 'production')).result,
 		).toBe('mismatch');
+		// A failed database check answers 503 with the build identity; it is never a match.
+		const databaseDown = await probeHealth(
+			previewUrl,
+			sha,
+			async () => ({
+				status: 503,
+				json: async () => ({
+					status: 'unhealthy',
+					build: { commitSha: sha, environment: 'preview' },
+				}),
+			}),
+			undefined,
+			'preview',
+		);
+		expect(databaseDown).toMatchObject({ status: 503, commitSha: sha, result: 'unreachable' });
 		expect(
 			(
 				await probeHealth(

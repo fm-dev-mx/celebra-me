@@ -68,9 +68,7 @@ FROM (
 export interface PersistedInvitationRow {
 	slug: string;
 	kind: string | null;
-	baseDemoId: string | null;
 	themeId: string | null;
-	snapshotPreviewSlug: string | null;
 	hasSourceInvitation: boolean;
 }
 
@@ -82,9 +80,7 @@ FROM (
   SELECT jsonb_build_object(
            'slug', i.slug,
            'kind', i.kind,
-           'baseDemoId', i.base_demo_id,
            'themeId', i.theme_id,
-           'snapshotPreviewSlug', i.snapshot->>'previewSlug',
            'hasSourceInvitation', i.source_invitation_id IS NOT NULL) AS row
     FROM public.invitations i
    WHERE i.archived_at IS NULL AND i.slug IS NOT NULL
@@ -106,10 +102,7 @@ FROM (
 	return parsed.filter(isRecord).map((row) => ({
 		slug: String(row.slug),
 		kind: typeof row.kind === 'string' ? row.kind : null,
-		baseDemoId: typeof row.baseDemoId === 'string' ? row.baseDemoId : null,
 		themeId: typeof row.themeId === 'string' ? row.themeId : null,
-		snapshotPreviewSlug:
-			typeof row.snapshotPreviewSlug === 'string' ? row.snapshotPreviewSlug : null,
 		hasSourceInvitation: row.hasSourceInvitation === true,
 	}));
 }

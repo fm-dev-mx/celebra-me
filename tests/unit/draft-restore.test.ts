@@ -36,7 +36,9 @@ import { getSectionValue } from '@/lib/intake/services/section-content-mapper';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { DraftRevisionConflictError } from '@/lib/intake/services/draft-mutation.service';
 
-const findDraftMock = findDraftByInvitationId as jest.MockedFunction<typeof findDraftByInvitationId>;
+const findDraftMock = findDraftByInvitationId as jest.MockedFunction<
+	typeof findDraftByInvitationId
+>;
 const updateDraftMock = updateDraftContentConditionally as jest.MockedFunction<
 	typeof updateDraftContentConditionally
 >;
@@ -153,7 +155,6 @@ describe('draft restore', () => {
 				status: 'draft',
 				updatedAt: '2026-08-01T00:00:00.000Z',
 				createdAt: '2026-08-01T00:00:00.000Z',
-				submissionId: null,
 			});
 			findPublishedMock.mockResolvedValue({
 				id: 'pub-1',
@@ -172,7 +173,6 @@ describe('draft restore', () => {
 					status: 'draft',
 					updatedAt: '2026-08-02T00:00:00.000Z',
 					createdAt: '2026-08-01T00:00:00.000Z',
-					submissionId: null,
 				};
 			});
 
@@ -213,7 +213,6 @@ describe('draft restore', () => {
 				status: 'draft',
 				updatedAt: '2026-08-01T00:00:00.000Z',
 				createdAt: '2026-08-01T00:00:00.000Z',
-				submissionId: null,
 			});
 			findPublishedMock.mockResolvedValue({
 				id: 'pub-1',
