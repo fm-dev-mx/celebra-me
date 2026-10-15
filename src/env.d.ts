@@ -79,8 +79,6 @@ interface ImportMetaEnv {
 	readonly CELEBRA_BUILD_REF: string;
 	/** Local-process runtime target: `local` | `preview`. Never forges hosted identity. */
 	readonly CELEBRA_RUNTIME_TARGET: string;
-	/** Optional override for the durable canonical-status cache file. */
-	readonly CELEBRA_STATUS_CACHE_PATH: string;
 	readonly BASE_URL: string;
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;

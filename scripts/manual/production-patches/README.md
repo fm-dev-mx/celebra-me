@@ -12,11 +12,10 @@ plan, and apply sequence is owned by
 
 ## Active status catalog
 
-`pnpm dbs` and `/dashboard/estado` discover every file in this directory that declares
-`@paired-stores` unless the header also has `@catalog: historical`. Older SQL files without
-`@paired-stores` remain historical and are not probed. The catalog checks the approved path, unique
-`@script-id`, manifest, `@env`, row bounds and `@dry-run-query` before any read-only query is
-issued.
+`pnpm dbs` discovers every file in this directory that declares `@paired-stores` unless the header
+also has `@catalog: historical`. Older SQL files without `@paired-stores` remain historical and are
+not probed. The catalog checks the approved path, unique `@script-id`, manifest, `@env`, row bounds
+and `@dry-run-query` before any read-only query is issued.
 
 Each active patch is reported independently per environment:
 

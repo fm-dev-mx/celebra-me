@@ -22,9 +22,6 @@ const allowedHydratedComponents = new Set([
 	// @/lib/dashboard/engagement-ranking-api (browser-safe api-client). Aggregates only,
 	// no mutations, no guest data, no server-only modules in the island.
 	'EngagementRankingPanel',
-	// Local-only canonical status dashboard — read-only fetch via
-	// @/lib/dashboard/api-client. No mutations, no server-only modules in the island.
-	'CanonicalStatusPanel',
 	// Commercial CRM islands — SalesWorkspace drives lead reconciliation, order creation,
 	// and deposit tracking; CapiOutboxPanel provides CAPI outbox monitoring and manual
 	// retry. Both only import the browser-safe @/lib/dashboard/api-client (fetch via

@@ -389,18 +389,16 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `POST /api/dashboard/intake` (rejected for client creation; managed CLI only)
 - `GET /api/dashboard/intake/:id`
 
-### Local canonical status boundary
+### Canonical status boundary
 
-- `/dashboard/estado` and `GET /api/dashboard/estado` are available only in the persistent-Local
-  runtime to a strongly authenticated `super_admin`.
+- Canonical status is read through the CLI (`pnpm dbs`, `pnpm ops:release-status`). The app serves
+  no status page or API.
 - One `StatusProbeSession` collects at most one content SQL family and one migration-history probe
   per environment. Canonical classification (`classifySchemaLifecycle`, `classifyLiveInvitation`,
   `decidePromotionAction`, `deriveSchemaOperationFields`) stays in TypeScript. Diagnostics enrich
   that view and never override publication, schema, or readiness.
-- The browser payload is `CanonicalStatusView`: classifier tokens, handoff copy, and optional
+- The status payload is `CanonicalStatusView`: classifier tokens, handoff copy, and optional
   diagnostics. It must not include content, UUIDs, hashes, URLs, credentials, or raw errors.
-- The React island consumes only browser-safe status types; it never imports database, filesystem,
-  or child-process modules. Remote probes run only after explicit refresh.
 
 ### Other API Endpoints
 

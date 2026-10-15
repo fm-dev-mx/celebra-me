@@ -33,10 +33,9 @@ Disposable-test proof is listed apart from persistent schema. `--compact` is con
 only — not publication state. `CURRENT`/`BEHIND` on that matrix are **migration-history** states.
 Named public object drift is `pnpm db:*:audit` (`object_audit_readiness`).
 
-Local dashboard: `/dashboard/estado` (explicit remote refresh; same classifiers as `pnpm dbs`).
-Advanced diagnostics are enrichment only (`?diagnostics=1` / `pnpm dbs --diagnostics`), except
-missing Production owner-apply evidence, which is a first-class integrity finding (`MISSING`) and
-must not be presented as unqualified `CURRENT`.
+Advanced diagnostics are enrichment only (`pnpm dbs --diagnostics`), except missing Production
+owner-apply evidence, which is a first-class integrity finding (`MISSING`) and must not be presented
+as unqualified `CURRENT`.
 
 ## Action first
 

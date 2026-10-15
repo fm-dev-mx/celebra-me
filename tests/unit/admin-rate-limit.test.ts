@@ -5,7 +5,6 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
-import { CANONICAL_STATUS_RATE_LIMIT_OPERATION } from '@/pages/api/dashboard/estado/index';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
@@ -74,23 +73,6 @@ describe('requireAdminRateLimit', () => {
 			expect.objectContaining({
 				entityId: 'admin:users:reset_password:hashed-ip',
 				maxHits: 5,
-				windowSec: 60,
-			}),
-		);
-	});
-
-	it('registers canonical status dashboard operation and allows it', async () => {
-		const request = new Request('https://example.com/api/dashboard/estado', {
-			headers: { 'x-forwarded-for': '10.0.0.1' },
-		});
-
-		await expect(
-			requireAdminRateLimit(request, CANONICAL_STATUS_RATE_LIMIT_OPERATION, 'user-1'),
-		).resolves.not.toThrow();
-		expect(mockCheckRateLimit).toHaveBeenCalledWith(
-			expect.objectContaining({
-				entityId: 'admin:estado:user-1',
-				maxHits: 6,
 				windowSec: 60,
 			}),
 		);

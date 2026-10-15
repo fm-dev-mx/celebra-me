@@ -33,9 +33,6 @@ const RATE_LIMITS = {
 	// Login-alias remaps are privileged credential mutations.
 	'admin:users:update_login_alias': { maxHits: 5, windowSec: 60 }, // 5 req/min
 
-	// Local-only canonical status dashboard (manual refresh, read-only probes).
-	'admin:estado': { maxHits: 6, windowSec: 60 },
-
 	// Event memory spaces (guest photo/video QR) administration.
 	'memories:list': { maxHits: 60, windowSec: 60 },
 	'memories:create': { maxHits: 20, windowSec: 60 },

@@ -35,11 +35,11 @@ Preview -> Production: forbidden for DB/Storage content copy.
 
 ## Canonical status projection decision
 
-`pnpm dbs` and `/dashboard/estado` share one evidence pipeline. Each refresh uses one
-`StatusProbeSession` and, per environment, at most one content SQL family plus one migration-history
-probe. Canonical classification stays in TypeScript. Diagnostics may request the heavier content
-payload of the same SQL family; they never run a second content query in the same cycle and never
-override publication, schema, or readiness.
+`pnpm dbs` runs one evidence pipeline. Each refresh uses one `StatusProbeSession` and, per
+environment, at most one content SQL family plus one migration-history probe. Canonical
+classification stays in TypeScript. Diagnostics may request the heavier content payload of the same
+SQL family; they never run a second content query in the same cycle and never override publication,
+schema, or readiness.
 
 The same view includes the active manual-patch catalog. These detectors add one bounded
 `@dry-run-query` count per targeted patch/environment (Production only for the current catalog), in
@@ -80,9 +80,9 @@ pnpm db:availability:verify -- --targets local,preview,production
 The preflight verifies target identity, bounded reachability, and server-enforced read-only mode. A
 failure is evidence of `CREDENTIALS_REQUIRED`, `IDENTITY_CONFLICT`, `UNREACHABLE`, or
 `READ_ONLY_ENFORCEMENT_FAILED`; it is never equivalent to an empty database or no pending change.
-Dependent work stops until evidence becomes available. `/dashboard/estado` remains usable and
-reports the same condition as typed `UNVERIFIED` evidence, because reporting unavailable state is
-its job rather than a reason to conceal the view.
+Dependent work stops until evidence becomes available. `pnpm dbs` still reports the same condition
+as typed `UNVERIFIED` evidence, because reporting unavailable state is its job rather than a reason
+to conceal the view.
 
 ## Production backup and recovery authority
 
