@@ -6,10 +6,6 @@ import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
 import { resolveDashboardEnvBanner } from '@/lib/server/dashboard-env-banner';
 import { readDeployEnvironment } from '@/lib/server/deploy-identity';
 import { isNavItemActive } from '@/utils/dashboard';
-import {
-	isLocalObservabilityRuntime,
-	readObservabilityRuntimeEnv,
-} from '@/lib/observability/runtime-gate';
 import { listOrganizerMemorySpaces } from '@/lib/memories/server/organizer.service';
 import { MEMORIES_ORGANIZER_PAGE_PATH } from '@/lib/memories/contract/private-request';
 
@@ -25,8 +21,6 @@ const envBanner = resolveDashboardEnvBanner({
 	supabaseUrl: process.env.SUPABASE_URL ?? process.env.PUBLIC_SUPABASE_URL,
 	previewMfaBypass: process.env.PREVIEW_MFA_BYPASS,
 });
-
-const showCanonicalStatusNav = isLocalObservabilityRuntime(readObservabilityRuntimeEnv());
 
 // Middleware enforces the authenticated session and stores it in
 // Astro.locals.session. The layout reads from locals (not request cookies)
@@ -54,9 +48,6 @@ const navItems: DashboardNavItem[] = [
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
 	{ label: 'Espacios de recuerdos', href: '/dashboard/admin/recuerdos', adminOnly: true },
 	{ label: 'Plataforma', href: '/dashboard/admin/plataforma', adminOnly: true },
-	...(showCanonicalStatusNav
-		? [{ label: 'Estado', href: '/dashboard/estado', adminOnly: true }]
-		: []),
 	{ label: 'Producción de invitaciones', href: '/dashboard/invitaciones', adminOnly: true },
 	{ label: 'Comercial', href: '/dashboard/commercial', adminOnly: true },
 	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },

@@ -27,7 +27,7 @@ export {
 	releasePromotions,
 } from './promotion-lifecycle';
 
-export type OperationalActionDomain =
+type OperationalActionDomain =
 	| 'schema'
 	| 'readiness'
 	| 'authorization'

@@ -137,6 +137,7 @@ describe('/api/dashboard/commercial/orders', () => {
 				depositAmount: 899,
 				createdBy: expect.any(String),
 			}),
+			{ after: null },
 		);
 		expect(body.data.orderNumber).toBe('CMO-20260708-ABC123');
 	});
@@ -225,6 +226,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 				paidAt: '2026-07-08T12:30:00.000Z',
 				idempotencyKey: '22222222-2222-4222-8222-222222222222',
 			}),
+			{ after: null },
 		);
 		expect(body.data.conversionEvent.eventId).toBe('purchase:order-id:deposit_paid');
 	});

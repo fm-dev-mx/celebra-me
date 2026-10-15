@@ -356,7 +356,7 @@ describe('validate-structure script', () => {
 					"const c = request.headers.get('x-vercel-id');",
 					"const d = getEnv('CELEBRA_DEPLOY_ENV');",
 					"const e = getEnv('NODE_ENV');",
-					"const f = getEnv('VERCEL_API_TOKEN');",
+					"const f = getEnv('VERCEL_AUTOMATION_BYPASS_SECRET');",
 					"const g = 'message that names CELEBRA_DEPLOY_ENV';",
 					"const h = process.env.NODE_ENV === 'production';",
 					"const i = process.env.NODE_ENV === 'test';",
@@ -386,6 +386,60 @@ describe('validate-structure script', () => {
 			expect(output).toContain('src/lib/leaky.ts:12: decides behavior from NODE_ENV');
 			expect(output).toContain('src/lib/leaky.ts:13: decides behavior from NODE_ENV');
 			expect(output).not.toContain('src/lib/server/deploy-identity.ts:');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects static sharp imports under src but allows lazy and type-only ones', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'src/lib/static-sharp.ts',
+				[
+					"import sharp from 'sharp';",
+					"import { type Metadata, default as s } from 'sharp';",
+					"import * as sharpNs from 'sharp';",
+					"import 'sharp';",
+					"export { default } from 'sharp';",
+					"const legacy = require('sharp');",
+				].join('\n'),
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'src/lib/lazy-sharp.ts',
+				[
+					"import type { Metadata } from 'sharp';",
+					"export type { Sharp } from 'sharp';",
+					"async function loadSharp() { return (await import('sharp')).default; }",
+					"// a comment that mentions import sharp from 'sharp' is prose, not code",
+					'const text = "import sharp from \'sharp\'";',
+				].join('\n'),
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'scripts/tooling/uses-sharp.ts',
+				"import sharp from 'sharp';\n",
+			);
+
+			const output = validateFixture(fixtureRoot, [
+				'src/lib/static-sharp.ts',
+				'src/lib/lazy-sharp.ts',
+				'scripts/tooling/uses-sharp.ts',
+			]).join('\n');
+
+			expect(output).toContain('src/lib/static-sharp.ts:1: imports sharp statically');
+			expect(output).toContain('src/lib/static-sharp.ts:2: imports sharp statically');
+			expect(output).toContain('src/lib/static-sharp.ts:3: imports sharp statically');
+			expect(output).toContain('src/lib/static-sharp.ts:4: imports sharp statically');
+			expect(output).toContain('src/lib/static-sharp.ts:5: re-exports sharp statically');
+			expect(output).toContain('src/lib/static-sharp.ts:6: requires sharp statically');
+			expect(output).not.toContain('src/lib/lazy-sharp.ts:1:');
+			expect(output).not.toContain('src/lib/lazy-sharp.ts:2:');
+			expect(output).not.toContain('src/lib/lazy-sharp.ts:3:');
+			expect(output).not.toContain('src/lib/lazy-sharp.ts:5:');
+			expect(output).not.toContain('scripts/tooling/uses-sharp.ts:');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}

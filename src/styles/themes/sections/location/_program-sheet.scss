@@ -21,6 +21,10 @@
 //   --location-program-links-align  Wide screens: `auto` aligns both entries' links
 //   --location-program-padding-block / --location-program-margin-top
 //                                 Section padding and heading-to-program gap
+//   --location-calendar-menu-bg / -ink  "Add to calendar" menu surface and text. They are a pair:
+//                                 the defaults (elevated surface + primary text) contrast in a
+//                                 standard band, and a band that remaps the text color (a night
+//                                 band) must remap both.
 // ==========================================================================
 
 .event-location[data-variant='program-sheet'] {
@@ -221,7 +225,10 @@
 			margin: 0;
 			padding: 0.4rem 0;
 			list-style: none;
-			background: var(--color-surface-elevated, rgb(255 255 255));
+			background: var(
+				--location-calendar-menu-bg,
+				var(--color-surface-elevated, rgb(255 255 255))
+			);
 			border: 1px solid var(--location-program-rule);
 			box-shadow: 0 1px 2px rgb(var(--color-text-primary-rgb, 16 24 32) / 12%);
 		}
@@ -233,7 +240,7 @@
 			padding: 0 1rem;
 			font-family: var(--font-body);
 			font-size: 1.05rem;
-			color: var(--location-program-ink);
+			color: var(--location-calendar-menu-ink, var(--color-text-primary));
 			text-decoration: none;
 		}
 

@@ -6,6 +6,11 @@
  *
  * Ownership exclusions come from INVITATION_FIELD_OWNERSHIP (SSOT). This module
  * does not import scripts/ to preserve the Astro server boundary.
+ *
+ * The reconciliation artifact lives in the repository checkout, so reading it only makes
+ * sense in a local process. A hosted runtime (Vercel, Workers) has no checkout and its
+ * `node:fs` may be virtual, so detection is skipped there with an explicit NOT_APPLICABLE
+ * instead of a misleading CLEAN.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -15,11 +20,18 @@ import {
 	type InvitationMutationEnvironment,
 } from '@/lib/intake/mutations/environment-identity';
 import { isManagedInvitationPath } from '@/lib/intake/mutations/ownership';
+import { isLocalProcess } from '@/lib/server/deploy-identity';
 
 export type EditorManagedEnvironment = InvitationMutationEnvironment;
 
 export type EditorDivergenceState =
-	'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
+	| 'CLEAN'
+	| 'DIVERGED'
+	| 'RECONCILIATION_REQUIRED'
+	| 'SOURCE_UPDATE_REQUIRED'
+	| 'DEFERRED'
+	/** Hosted runtime: no checkout to compare against, so nothing was detected. */
+	| 'NOT_APPLICABLE';
 
 export interface EditorDivergenceDTO {
 	state: EditorDivergenceState;
@@ -142,9 +154,24 @@ function readRuntimeArtifact(
 	}
 }
 
+function emptyDivergence(
+	state: 'CLEAN' | 'NOT_APPLICABLE',
+	targetEnvironment: EditorManagedEnvironment,
+): EditorDivergenceDTO {
+	return {
+		state,
+		targetEnvironment,
+		affectedFieldCount: 0,
+		affectedSections: [],
+		affectedSectionCount: 0,
+		isReleaseBlocked: false,
+	};
+}
+
 /**
  * Resolve Editor divergence for a managed invitation.
- * Prefers the runtime reconciliation artifact; optional explicit paths override.
+ * Explicit paths are always computed; the runtime reconciliation artifact is read only in a
+ * local process, and a hosted runtime answers NOT_APPLICABLE.
  */
 export function resolveEditorDivergence(input: {
 	slug: string | null | undefined;
@@ -165,6 +192,8 @@ export function resolveEditorDivergence(input: {
 		});
 	}
 
+	if (!isLocalProcess()) return emptyDivergence('NOT_APPLICABLE', targetEnvironment);
+
 	if (input.slug) {
 		const artifact = readRuntimeArtifact(input.slug, targetEnvironment, input.projectRoot);
 		if (artifact) {
@@ -180,12 +209,5 @@ export function resolveEditorDivergence(input: {
 		}
 	}
 
-	return {
-		state: 'CLEAN',
-		targetEnvironment,
-		affectedFieldCount: 0,
-		affectedSections: [],
-		affectedSectionCount: 0,
-		isReleaseBlocked: false,
-	};
+	return emptyDivergence('CLEAN', targetEnvironment);
 }

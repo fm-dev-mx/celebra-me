@@ -76,7 +76,8 @@ module.exports = {
 
 	coverageDirectory: '<rootDir>/coverage',
 	coverageReporters: ['text', 'lcov'],
-	modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
+	// Nested agent worktrees hold full repository copies with their own dependencies.
+	modulePathIgnorePatterns: ['<rootDir>/.worktrees/', '<rootDir>/.claude/worktrees/'],
 
 	...(strictRsvpCoverage
 		? {
