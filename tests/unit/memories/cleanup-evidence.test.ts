@@ -100,6 +100,12 @@ describe('completed cleanup evidence', () => {
 		expect(evidence.environment).toBe('preview');
 		expect(evidence.check).toBe('memories_cleanup');
 		expect(evidence.source).toBe('scheduled_cron');
+		expect(
+			createMemoriesCleanupCompletedEvidence(
+				{ ...context, source: 'worker_scheduled' },
+				completed,
+			).source,
+		).toBe('worker_scheduled');
 		expect(evidence.runId).toBe(context.runId);
 		expect(evidence.commitSha).toBe('a'.repeat(40));
 		expect(
