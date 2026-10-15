@@ -258,17 +258,17 @@ personalized link.
 
 ### Creative acceptance record
 
-| field                                       | value                                                                             |
-| ------------------------------------------- | --------------------------------------------------------------------------------- |
-| Mechanical render/capture result            | pass — Local v1, all-sections at mobile-standard and desktop, 2026-10-09          |
-| Whole-invitation responsive inspection      | Agent review at 390 and 1440 px (envelope, card, every section)                   |
-| Section boundaries and narrative continuity | pass (agent); human review accepted 2026-10-12                                    |
-| Human creative outcome                      | `ACCEPTED`                                                                        |
-| Reviewer and date                           | Francisco Mendoza (owner), 2026-10-12, whole invitation on Local 4324             |
-| Blocking reason or owner follow-up          | None blocking; client copy, map pins, song and gifts stay owner follow-ups        |
-| Álbum editorial revision (2026-10-14)       | Local captures at 375/390/1440 against the mock; Preview acceptance below         |
-| Preview acceptance (revision)               | `PENDING` — release id: — ; reviewer and date: —                                  |
-| Review scope (owner, 2026-10-14)            | Reviewed in Preview; Local must end identical (Local applied as v4 on 2026-10-14) |
+| field                                       | value                                                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Mechanical render/capture result            | pass — Local v1, all-sections at mobile-standard and desktop, 2026-10-09                             |
+| Whole-invitation responsive inspection      | Agent review at 390 and 1440 px (envelope, card, every section)                                      |
+| Section boundaries and narrative continuity | pass (agent); human review accepted 2026-10-12                                                       |
+| Human creative outcome                      | `ACCEPTED`                                                                                           |
+| Reviewer and date                           | Francisco Mendoza (owner), 2026-10-12, whole invitation on Local 4324                                |
+| Blocking reason or owner follow-up          | None blocking; client copy, map pins, song and gifts stay owner follow-ups                           |
+| Álbum editorial revision (2026-10-14)       | Local captures at 375/390/1440 against the mock; Preview acceptance below                            |
+| Preview acceptance (revision)               | `ACCEPTED` — Preview v2; Francisco Mendoza (owner), 2026-10-15, after the cover date fit (beeed5dcc) |
+| Review scope (owner, 2026-10-14)            | Reviewed in Preview; Local must end identical (Local applied as v4 on 2026-10-14)                    |
 
 ---
 
