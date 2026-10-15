@@ -51,13 +51,13 @@ $seaside-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 		0 3px 6px color-mix(in srgb, var(--color-text-primary) 12%, transparent),
 		inset 1px 1px 0 color-mix(in srgb, var(--color-surface-elevated) 85%, transparent),
 		inset -1px -2px 3px color-mix(in srgb, var(--color-text-primary) 14%, transparent);
-	--env-shadow-container:
+	--env-shadow-container-fallback:
 		0 1px 2px color-mix(in srgb, var(--color-text-primary) 14%, transparent),
 		0 24px 48px -28px color-mix(in srgb, var(--color-text-primary) 26%, transparent);
-	--env-container-radius: 2px;
-	--env-container-width: min(86vw, 40rem);
-	--env-container-ratio: 1.18;
-	--env-container-max-height: 60svh;
+	--env-container-radius-fallback: 2px;
+	--env-container-width-fallback: min(86vw, 40rem);
+	--env-container-ratio-fallback: 1.18;
+	--env-container-max-height-fallback: 60svh;
 	--env-grid: 36% 24% 40%;
 	--env-seal-size-min: 68px;
 	--env-seal-size-max: 96px;
@@ -260,9 +260,9 @@ $seaside-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 	}
 
 	@include mixins.respond-below(sm) {
-		--env-container-width: min(88vw, 344px);
-		--env-container-ratio: 0.74;
-		--env-container-max-height: min(74svh, 560px);
+		--env-container-width-fallback: min(88vw, 344px);
+		--env-container-ratio-fallback: 0.74;
+		--env-container-max-height-fallback: min(74svh, 560px);
 		--env-grid: 38% 22% 40%;
 		--env-title-size: clamp(2.4rem, 13cqw, 3rem);
 

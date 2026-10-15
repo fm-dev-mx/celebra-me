@@ -28,7 +28,7 @@
 	--env-seal-icon: var(--reveal-stationery-botanical);
 	--env-font-display: var(--reveal-stationery-display);
 	--env-title-size: clamp(1.55rem, 6cqw, 2.35rem);
-	--env-container-radius: 5px;
+	--env-container-radius-fallback: 5px;
 	--env-focus-ring: var(--reveal-stationery-gold);
 	--font-body: var(--reveal-stationery-body);
 	--font-calligraphy: var(--reveal-stationery-display);

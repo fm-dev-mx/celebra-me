@@ -20,17 +20,17 @@
 	);
 	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
 	--env-font-display: var(--font-display);
-	--env-shadow-container:
+	--env-shadow-container-fallback:
 		0 28px 56px color-mix(in srgb, var(--color-surface-dark) 18%, transparent),
 		0 6px 16px color-mix(in srgb, var(--color-surface-dark) 8%, transparent);
 	--env-shadow-seal:
 		0 10px 18px color-mix(in srgb, var(--color-surface-dark) 34%, transparent),
 		inset 0 -2px 7px color-mix(in srgb, var(--color-surface-dark) 28%, transparent),
 		inset 0 2px 8px color-mix(in srgb, var(--color-surface-elevated) 42%, transparent);
-	--env-container-width: clamp(320px, 45vw, 720px);
-	--env-container-ratio: 1.35;
-	--env-container-max-height: min(55svh, 400px);
-	--env-container-radius: 6px;
+	--env-container-width-fallback: clamp(320px, 45vw, 720px);
+	--env-container-ratio-fallback: 1.35;
+	--env-container-max-height-fallback: min(55svh, 400px);
+	--env-container-radius-fallback: 6px;
 	--env-grid: 35% 25% 40%;
 
 	// The visual seal follows the envelope's inline size. Keep the fallback
@@ -72,10 +72,10 @@
 .envelope-container {
 	position: relative;
 	container-type: inline-size;
-	width: var(--env-container-width);
-	aspect-ratio: var(--env-container-ratio);
-	max-height: var(--env-container-max-height);
-	border-radius: var(--env-container-radius);
+	width: var(--env-container-width, var(--env-container-width-fallback));
+	aspect-ratio: var(--env-container-ratio, var(--env-container-ratio-fallback));
+	max-height: var(--env-container-max-height, var(--env-container-max-height-fallback));
+	border-radius: var(--env-container-radius, var(--env-container-radius-fallback));
 	transform-style: preserve-3d;
 
 	&::after {
@@ -84,7 +84,7 @@
 		inset: 0;
 		z-index: -1;
 		border-radius: inherit;
-		box-shadow: var(--env-shadow-container);
+		box-shadow: var(--env-shadow-container, var(--env-shadow-container-fallback));
 	}
 }
 
@@ -654,9 +654,9 @@
 
 @include mixins.respond-below(md) {
 	.envelope-wrapper {
-		--env-container-width: min(88vw, 340px);
-		--env-container-ratio: 0.75;
-		--env-container-max-height: min(78svh, 580px);
+		--env-container-width-fallback: min(88vw, 340px);
+		--env-container-ratio-fallback: 0.75;
+		--env-container-max-height-fallback: min(78svh, 580px);
 		--env-grid: 32% 28% 40%;
 		--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	}
@@ -692,8 +692,8 @@
 
 @include mixins.respond-below(sm) {
 	.envelope-wrapper {
-		--env-container-width: min(88vw, 320px);
-		--env-container-ratio: 0.8;
+		--env-container-width-fallback: min(88vw, 320px);
+		--env-container-ratio-fallback: 0.8;
 	}
 
 	.envelope-seal-button {
@@ -711,8 +711,8 @@
 
 @include mixins.respond-to(md) {
 	.envelope-wrapper {
-		--env-container-width: clamp(300px, 50vw, 550px);
-		--env-container-max-height: 400px;
+		--env-container-width-fallback: clamp(300px, 50vw, 550px);
+		--env-container-max-height-fallback: 400px;
 	}
 
 	.envelope-tease {
@@ -732,8 +732,8 @@
 
 @include mixins.short-viewport {
 	.envelope-wrapper {
-		--env-container-width: min(70%, 450px);
-		--env-container-max-height: 80svh;
+		--env-container-width-fallback: min(70%, 450px);
+		--env-container-max-height-fallback: 80svh;
 		--env-grid: 28% 32% 40%;
 		--env-title-size: clamp(1.2rem, 5vw, 1.8rem);
 	}
@@ -790,9 +790,9 @@
 // ---------------------------------------------------------------------------
 .envelope-wrapper[data-seal-variant='premium-rose'] {
 	--env-premium-seal-accent: var(--env-seal-accent, rgb(216 17 96));
-	--env-container-width: min(92vw, 480px);
-	--env-container-ratio: 1.2;
-	--env-container-max-height: min(72svh, 420px);
+	--env-container-width-fallback: min(92vw, 480px);
+	--env-container-ratio-fallback: 1.2;
+	--env-container-max-height-fallback: min(72svh, 420px);
 	--env-grid: 25% 38% 37%;
 
 	.envelope-zone--seal {
@@ -874,9 +874,9 @@
 
 @include mixins.respond-below(md) {
 	.envelope-wrapper[data-seal-variant='premium-rose'] {
-		--env-container-width: min(90vw, 400px);
-		--env-container-ratio: 1.25;
-		--env-container-max-height: min(70svh, 400px);
+		--env-container-width-fallback: min(90vw, 400px);
+		--env-container-ratio-fallback: 1.25;
+		--env-container-max-height-fallback: min(70svh, 400px);
 
 		.envelope-zone--identity {
 			opacity: 80%;
@@ -886,15 +886,15 @@
 
 @include mixins.respond-below(sm) {
 	.envelope-wrapper[data-seal-variant='premium-rose'] {
-		--env-container-width: min(88vw, 340px);
-		--env-container-ratio: 1.28;
-		--env-container-max-height: min(68svh, 380px);
+		--env-container-width-fallback: min(88vw, 340px);
+		--env-container-ratio-fallback: 1.28;
+		--env-container-max-height-fallback: min(68svh, 380px);
 	}
 }
 
 @include mixins.respond-to(md) {
 	.envelope-wrapper[data-seal-variant='premium-rose'] {
-		--env-container-width: min(48vw, 500px);
-		--env-container-ratio: 1.35;
+		--env-container-width-fallback: min(48vw, 500px);
+		--env-container-ratio-fallback: 1.35;
 	}
 }

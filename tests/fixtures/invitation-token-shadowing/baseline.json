@@ -17,13 +17,7 @@
         "--quote-divider-color",
         "--quote-ornament-color",
         "--quote-text-color",
-        "--shadow-premium",
-        "--wax-seal-deep",
-        "--wax-seal-emboss-shadow",
-        "--wax-seal-highlight",
-        "--wax-seal-letter",
-        "--wax-seal-mid",
-        "--wax-seal-shadow"
+        "--shadow-premium"
     ],
     "aithan-darell": [
         "--font-calligraphy",
@@ -155,12 +149,7 @@
         "--mobile-drawer-cta-hover-color",
         "--mobile-drawer-link-color",
         "--mobile-drawer-link-hover",
-        "--shadow-premium",
-        "--wax-seal-deep",
-        "--wax-seal-highlight",
-        "--wax-seal-letter",
-        "--wax-seal-mid",
-        "--wax-seal-shadow"
+        "--shadow-premium"
     ],
     "romina-rios-chaparro": [
         "--color-border-subtle",
@@ -202,11 +191,6 @@
         "--color-text-secondary",
         "--env-accent",
         "--env-bg",
-        "--env-container-max-height",
-        "--env-container-radius",
-        "--env-container-ratio",
-        "--env-container-width",
-        "--env-shadow-container",
         "--font-body",
         "--font-calligraphy",
         "--gallery-single-item-max-width",
