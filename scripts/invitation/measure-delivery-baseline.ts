@@ -47,8 +47,6 @@ interface DocumentSample {
 	contentEncoding: string | null;
 	cacheControl: string | null;
 	vercelCache: string | null;
-	renderTiming: string | null;
-	renderTimingDetail: string | null;
 }
 
 interface AssetProbe {
@@ -75,7 +73,6 @@ interface ScenarioReport {
 		cacheControl: string | null;
 		vercelCacheFirst: string | null;
 		vercelCacheRepeat: string | null;
-		renderTimingDetail: string | null;
 	};
 	inventory: {
 		uniqueUrlCount: number;
@@ -171,8 +168,6 @@ async function fetchDocument(url: string): Promise<{ sample: DocumentSample; htm
 			contentEncoding: response.headers.get('content-encoding'),
 			cacheControl: response.headers.get('cache-control'),
 			vercelCache: response.headers.get('x-vercel-cache'),
-			renderTiming: response.headers.get('x-render-timing'),
-			renderTimingDetail: response.headers.get('x-render-timing-detail'),
 		},
 	};
 }
@@ -286,8 +281,6 @@ function summarizeDocument(
 		cacheControl: last?.cacheControl ?? null,
 		vercelCacheFirst: documentSamples[0]?.vercelCache ?? null,
 		vercelCacheRepeat: repeat.vercelCache,
-		renderTimingDetail:
-			documentSamples.find((sample) => sample.renderTimingDetail)?.renderTimingDetail ?? null,
 	};
 }
 
@@ -327,7 +320,6 @@ function printScenario(report: ScenarioReport): void {
 	console.log(
 		`  vercel-cache document first/repeat: ${report.document.vercelCacheFirst}/${report.document.vercelCacheRepeat}`,
 	);
-	console.log(`  render: ${report.document.renderTimingDetail ?? '(none)'}`);
 	console.log(
 		`  urls unique=${report.inventory.uniqueUrlCount} vercel-image=${report.inventory.vercelImageCount} storage=${report.inventory.supabaseStorageCount} cloudinary=${report.inventory.cloudinaryCount} astro=${report.inventory.astroHashedCount} lazy-img=${report.inventory.lazyImageCount} eager-img=${report.inventory.eagerImageCount} stale-vercel-storage=${report.inventory.mutableStorageThroughVercelImageCount}`,
 	);
