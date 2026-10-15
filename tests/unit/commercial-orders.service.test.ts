@@ -16,6 +16,7 @@ import {
 	registerSalesOrderDepositPurchase,
 } from '@/lib/commercial/orders.repository';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
+import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 import {
 	createCommercialSalesOrder,
 	markCommercialOrderDepositPaid,
@@ -27,6 +28,9 @@ const mockRegisterDeposit = registerSalesOrderDepositPurchase as jest.MockedFunc
 >;
 const mockDeliver = deliverMetaConversionEvent as jest.MockedFunction<
 	typeof deliverMetaConversionEvent
+>;
+const mockEmitTracking = emitCommercialTrackingEvent as jest.MockedFunction<
+	typeof emitCommercialTrackingEvent
 >;
 
 const order = {
@@ -107,6 +111,29 @@ describe('markCommercialOrderDepositPaid', () => {
 		});
 		expect(mockDeliver).toHaveBeenCalledWith('conversion-id');
 		expect(result).toEqual({ order, conversionEvent });
+	});
+
+	it('keeps CAPI delivery and the tracking event alive through the after-response context', async () => {
+		const waitUntil = jest.fn();
+
+		await markCommercialOrderDepositPaid(
+			{
+				orderId: 'order-id',
+				amountPaid: 899,
+				idempotencyKey: '33333333-3333-4333-8333-333333333333',
+			},
+			{ after: { waitUntil } },
+		);
+
+		expect(mockDeliver).toHaveBeenCalledWith('conversion-id');
+		expect(mockEmitTracking).toHaveBeenCalledWith(
+			expect.objectContaining({ eventName: 'deposit_paid', orderId: 'order-id' }),
+		);
+		expect(waitUntil).toHaveBeenCalledTimes(2);
+		await expect(Promise.all(waitUntil.mock.calls.map((call) => call[0]))).resolves.toEqual([
+			undefined,
+			undefined,
+		]);
 	});
 
 	it('does not redeliver an idempotent retry', async () => {

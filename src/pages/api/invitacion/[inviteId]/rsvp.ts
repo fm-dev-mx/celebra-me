@@ -1,17 +1,17 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, successResponse, withPrivateCache } from '@/lib/rsvp/core/http';
+import {
+	badRequest,
+	errorResponse,
+	getIp,
+	successResponse,
+	withPrivateCache,
+} from '@/lib/rsvp/core/http';
 import { parseInviteGuestRsvpRequest } from '@/lib/rsvp/core/rsvp-request';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp/services/rsvp-submission.service';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { recordServerEngagementEvent } from '@/lib/rsvp/engagement/engagement.service';
-
-function getIp(request: Request): string {
-	const raw =
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-	return sanitize(raw.split(',')[0], 100);
-}
 
 export const POST: APIRoute = async ({ params, request }) => {
 	try {

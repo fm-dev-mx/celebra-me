@@ -2,6 +2,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { getEnv } from '@/lib/server/env';
+import { getClientIp } from '@/lib/server/platform-request';
 import { isCanonicalHostLoginAlias, normalizeHostLoginAlias } from '@/lib/auth/login-alias';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -118,14 +119,6 @@ export function assertSameOrigin(request: Request, expectedOrigin: string): void
 	}
 }
 
-function readClientIp(request: Request): string {
-	const forwardedFor = sanitize(request.headers.get('x-forwarded-for'), 200);
-	if (forwardedFor) return forwardedFor.split(',')[0]?.trim() || 'unknown';
-	const realIp = sanitize(request.headers.get('x-real-ip'), 120);
-	if (realIp) return realIp;
-	return 'unknown';
-}
-
 export async function enforceAuthRateLimit(input: {
 	request: Request;
 	entityId: string;
@@ -135,7 +128,7 @@ export async function enforceAuthRateLimit(input: {
 	const allowed = await checkRateLimit({
 		namespace: 'auth',
 		entityId: input.entityId,
-		ip: readClientIp(input.request),
+		ip: getClientIp(input.request) ?? 'unknown',
 		maxHits: input.maxHits,
 		windowSec: input.windowSec,
 	});

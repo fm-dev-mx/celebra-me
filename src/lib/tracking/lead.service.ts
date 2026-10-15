@@ -13,6 +13,7 @@ import {
 	type LeadChannel,
 } from '@/lib/tracking/lead.repository';
 import { findVisitorSessionMetaAttribution, insertTrackingEvent } from '@/lib/tracking/repository';
+import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
 
 const LeadCodeSchema = z
 	.string()
@@ -77,8 +78,14 @@ async function resolveLeadMetaAttribution(params: {
 	}
 }
 
+/** Request-scoped options; `after` keeps background work alive once the response is sent. */
+export interface LeadServiceOptions {
+	after?: AfterResponseContext | null;
+}
+
 export async function createLeadFromContactSubmission(
 	submission: ContactLeadSubmission,
+	options: LeadServiceOptions = {},
 ): Promise<StoredLead> {
 	const parsed = ContactLeadSubmissionSchema.parse(submission);
 
@@ -134,24 +141,28 @@ export async function createLeadFromContactSubmission(
 		consentMarketing: parsed.consentMarketing,
 	});
 
-	// Fire lead_created event server-side — only for new leads.
+	// Record lead_created server-side after the response — only for new leads.
+	// Non-critical: the lead is already persisted when this runs.
 	const visitorId = blankToUndefined(parsed.visitorId);
 	if (knownNew && visitorId && sessionId) {
-		void insertTrackingEvent({
-			sessionId,
-			visitorId,
-			eventName: 'lead_created',
-			routePath: '/api/contact',
-			routeClass: 'commercial',
-			eventProperties: {
-				lead_code: lead.leadCode,
-				lead_channel: 'contact_form',
-			},
-			consentSnapshot: { necessary: true, analytics: false, marketing: false },
-			isInternal: false,
-		}).catch(() => {
-			// Non-critical: lead is already persisted.
-		});
+		runAfterResponse(
+			options.after,
+			() =>
+				insertTrackingEvent({
+					sessionId,
+					visitorId,
+					eventName: 'lead_created',
+					routePath: '/api/contact',
+					routeClass: 'commercial',
+					eventProperties: {
+						lead_code: lead.leadCode,
+						lead_channel: 'contact_form',
+					},
+					consentSnapshot: { necessary: true, analytics: false, marketing: false },
+					isInternal: false,
+				}),
+			{ label: 'lead-service:lead_created' },
+		);
 	}
 
 	return lead;
