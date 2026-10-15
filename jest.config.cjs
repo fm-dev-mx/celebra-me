@@ -3,6 +3,9 @@ const strictRsvpCoverage = process.env.RSVP_STRICT_COVERAGE === 'true';
 const sanitizeHtmlEsmPackages =
 	'(?:htmlparser2|entities|domhandler|domelementtype|domutils|dom-serializer)';
 const nobleHashesEsmPackage = '@noble[\\\\/]hashes';
+// age-encryption (off-site backup bundles) and the rest of its pure-ESM crypto graph.
+const ageEncryptionEsmPackages =
+	'(?:age-encryption|@noble[\\\\/](?:ciphers|curves|post-quantum)|@scure[\\\\/]base)';
 
 module.exports = {
 	// ESM + TypeScript preset
@@ -31,12 +34,14 @@ module.exports = {
 			'<rootDir>/scripts/jest-esm-to-cjs-transform.cjs',
 		[`[\\\\/]node_modules[\\\\/]${nobleHashesEsmPackage}[\\\\/].+\\.jsx?$`]:
 			'<rootDir>/scripts/jest-esm-to-cjs-transform.cjs',
+		[`[\\\\/]node_modules[\\\\/]${ageEncryptionEsmPackages}[\\\\/].+\\.jsx?$`]:
+			'<rootDir>/scripts/jest-esm-to-cjs-transform.cjs',
 	},
 
 	// Match any node_modules segment so nested htmlparser2/node_modules/* is not ignored.
 	// Remove this exception when Jest can execute this ESM graph directly in the repo pipeline.
 	transformIgnorePatterns: [
-		`[\\\\/]node_modules[\\\\/](?!${sanitizeHtmlEsmPackages}|${nobleHashesEsmPackage})`,
+		`[\\\\/]node_modules[\\\\/](?!${sanitizeHtmlEsmPackages}|${nobleHashesEsmPackage}|${ageEncryptionEsmPackages})`,
 	],
 
 	moduleNameMapper: {

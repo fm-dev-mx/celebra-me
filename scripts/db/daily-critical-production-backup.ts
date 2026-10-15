@@ -26,6 +26,7 @@ import {
 	planCriticalBackupRetention,
 	prepareEncryptedLocalDirectory,
 } from './local-backup-operations.ts';
+import { copyBackupOffsite, readOffsiteConfig } from './offsite-backup.ts';
 
 interface DailyBackupReport {
 	version: 1;
@@ -40,7 +41,9 @@ interface DailyBackupReport {
 	manifestVerified: boolean;
 	retainedBackupPath: string | null;
 	retention: { daily: number; monthly: number; removed: number } | null;
-	failureCode: 'critical_backup_failed' | null;
+	offsite:
+		{ status: 'uploaded'; key: string; bytes: number } | { status: 'not_configured' } | null;
+	failureCode: 'critical_backup_failed' | 'offsite_copy_failed' | null;
 	integrityProfile: 'phase3';
 }
 
@@ -90,6 +93,7 @@ let report: DailyBackupReport = {
 	manifestVerified: false,
 	retainedBackupPath: null,
 	retention: null,
+	offsite: null,
 	failureCode: 'critical_backup_failed',
 	integrityProfile,
 };
@@ -151,6 +155,23 @@ try {
 		(total, artifact) => total + artifact.bytes,
 		0,
 	);
+	// Off-site copy runs before local retention so a failed upload never shrinks local history.
+	const offsiteConfig = readOffsiteConfig();
+	report.failureCode = 'offsite_copy_failed';
+	const offsite = offsiteConfig
+		? {
+				status: 'uploaded' as const,
+				...(await copyBackupOffsite(offsiteConfig, manifestPath, 'daily')),
+			}
+		: { status: 'not_configured' as const };
+	if (offsite.status === 'uploaded') {
+		console.info(`Off-site copy uploaded: ${offsite.key} (${offsite.bytes} bytes)`);
+	} else {
+		console.warn(
+			'Off-site copy is not configured; this recovery point exists only on this machine.',
+		);
+	}
+	report.failureCode = 'critical_backup_failed';
 	const retentionPlan = planCriticalBackupRetention(
 		listCriticalBackups(backupRoot),
 		dailyRetention,
@@ -181,6 +202,7 @@ try {
 			monthly: monthlyRetention,
 			removed: retentionPlan.remove.length,
 		},
+		offsite,
 		failureCode: null,
 		integrityProfile,
 	};

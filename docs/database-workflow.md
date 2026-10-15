@@ -133,7 +133,56 @@ AES-256 encryption restricted to the operator account. There is no EFS recovery 
 backup remains on the same machine as the operator workflow. This protects against logical/data
 failure and accidental disclosure at rest, but **is not an independent disaster-recovery failure
 domain**: machine loss, disk loss, or EFS-key loss can destroy both the operating workflow and its
-backups. Never place `.backups/` in Git, application logs, or CI artifacts.
+backups. Never place `.backups/` in Git, application logs, or CI artifacts. The off-site copy below
+is the independent failure domain.
+
+#### Off-site copy (Cloudflare R2)
+
+After the daily capture verifies its manifest, and before local retention runs, the job packs the
+manifest plus every artifact into one bundle, encrypts it with [age](https://age-encryption.org) for
+the public key in `CELEBRA_OFFSITE_AGE_RECIPIENT`, and uploads it to the R2 bucket named by
+`CELEBRA_OFFSITE_R2_BUCKET` as `daily/<YYYY-MM-DD>/critical-<recovery point>.bundle.age`. The upload
+never overwrites a key (`If-None-Match: *`) and re-reads the stored size. Settings live in
+gitignored `.env.production.local` next to `PROD_DB_URL`:
+
+| Variable                               | Value                                                      |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `CELEBRA_OFFSITE_R2_ACCOUNT_ID`        | Cloudflare account id (32 hex characters)                  |
+| `CELEBRA_OFFSITE_R2_BUCKET`            | Bucket name                                                |
+| `CELEBRA_OFFSITE_R2_ACCESS_KEY_ID`     | R2 API token Access Key ID (Object Read & Write, 1 bucket) |
+| `CELEBRA_OFFSITE_R2_SECRET_ACCESS_KEY` | R2 API token Secret Access Key                             |
+| `CELEBRA_OFFSITE_AGE_RECIPIENT`        | age public key (`age1...`)                                 |
+
+With none set, the daily report records `offsite.status = "not_configured"` and the job still
+succeeds; a partial set, an upload failure, or a size mismatch fails the run with
+`failureCode = "offsite_copy_failed"` and skips local retention.
+
+Key custody: the operator machine holds only the public key, which can encrypt but never decrypt.
+`pnpm db:offsite:keygen -- --out=<path outside the repository>` writes the private identity file and
+prints the public key; the owner stores the identity in a password manager plus a paper copy and
+removes the file from the machine. Losing the identity makes every off-site copy unreadable.
+
+The bucket owns retention and deletion protection; the repository never deletes objects:
+
+- an object lifecycle rule deletes objects older than 30 days (R2 removes them within about 24 hours
+  of expiry);
+- a Bucket Lock rule on the `daily/` prefix retains each object for 30 days, so neither the upload
+  token nor a dashboard user can delete or overwrite a recovery point early. Lock rules take
+  precedence over lifecycle rules, and a locked bucket cannot be emptied until the rule is removed.
+
+Restore from R2 (disposable target only):
+
+1. `pnpm db:offsite:list` (or `-- --prefix=test`) shows the available copies, newest first.
+2. `pnpm db:offsite:restore -- --identity=<identity file> [--key=<object key>]` downloads the newest
+   (or the named) copy, decrypts it, verifies every checksum, and writes the bundle into an empty
+   EFS-encrypted directory under ignored `.tmp/offsite-restore/` with a manifest that points at the
+   extracted files.
+3. Run the `pnpm db:restore:verify-disposable` command the restore prints.
+
+Drills use a synthetic set and the `test/` prefix, never Production data:
+`pnpm db:backup:create-disposable-fixture -- --output-dir=<path>`, then
+`pnpm db:offsite:upload -- --manifest=<path>/manifest.json --prefix=test`, then steps 2–3 with the
+printed `test/` key.
 
 Restores are disposable-only, never Production. Run
 `pnpm db:restore:verify-disposable -- --manifest=<path> --report=<path> --storage-root=<new-empty-path>`.
@@ -551,7 +600,9 @@ application login substitute. Host invitation flows continue to use real `host_c
 - Is the deterministic once-per-24-hours entrypoint for Windows Task Scheduler.
 - Runs one complete critical backup, verifies manifest/checksums and EFS encryption, records byte
   and duration metrics, and applies 30-daily/12-monthly local retention.
-- Returns nonzero on capture, integrity, encryption, reporting, or retention failure.
+- Uploads an age-encrypted copy to Cloudflare R2 when the off-site settings exist (see Off-site
+  copy).
+- Returns nonzero on capture, integrity, encryption, off-site copy, reporting, or retention failure.
 
 `pnpm release-check`
 
