@@ -14,8 +14,6 @@
 
 begin;
 
-alter table public.invitations alter column base_demo_id set default '';
-
 create or replace function public.publish_invitation_atomic(
   p_invitation_id uuid,
   p_draft_id uuid,
@@ -170,5 +168,7 @@ $function$;
 
 revoke all on function public.publish_invitation_atomic(uuid,uuid,timestamptz,integer,text,text,uuid,text,text,boolean,jsonb) from public, anon, authenticated;
 grant execute on function public.publish_invitation_atomic(uuid,uuid,timestamptz,integer,text,text,uuid,text,text,boolean,jsonb) to service_role;
+
+alter table public.invitations alter column base_demo_id set default '';
 
 commit;
