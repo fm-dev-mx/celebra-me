@@ -1,4 +1,4 @@
-import { createHash, createPrivateKey, randomUUID, sign } from 'node:crypto';
+import { createHash, randomUUID, sign } from 'node:crypto';
 import { getEnv } from '@/lib/server/env';
 import {
 	MEMORIES_PRIVATE_REQUEST_HEADERS,
@@ -59,8 +59,11 @@ export function createMemoriesPrivateRequestHeaders(input: {
 		path: input.path,
 		bodyHash,
 	});
+	// The PEM text goes straight to sign(): workerd rejects a KeyObject in `options.key`,
+	// and both Node and workerd accept the PEM string. `ieee-p1363` keeps the raw r||s
+	// signature the Workers verify with WebCrypto.
 	const signature = sign('sha256', Buffer.from(payload, 'utf8'), {
-		key: createPrivateKey(privateKeyPem),
+		key: privateKeyPem,
 		dsaEncoding: 'ieee-p1363',
 	}).toString('base64url');
 	return {
