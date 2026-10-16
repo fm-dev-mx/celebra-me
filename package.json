@@ -150,6 +150,9 @@
         "visual:parity:compare": "tsx scripts/screenshot/visual-parity-cli.ts compare",
         "visual:parity:accept": "tsx scripts/screenshot/visual-parity-cli.ts accept",
         "visual:matrix:check": "tsx scripts/screenshot/visual-parity-cli.ts check",
+        "visual:remote:routes": "tsx scripts/screenshot/remote/remote-visual-cli.ts routes",
+        "visual:remote:capture": "tsx scripts/screenshot/remote/remote-visual-cli.ts capture",
+        "visual:remote:compare": "tsx scripts/screenshot/remote/remote-visual-cli.ts compare",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
         "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
