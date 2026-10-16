@@ -70,6 +70,7 @@
         "db:offsite:list": "tsx scripts/db/offsite-backup-cli.ts list",
         "db:offsite:restore": "tsx scripts/db/offsite-backup-cli.ts restore",
         "db:restore:verify-disposable": "tsx scripts/db/disposable-restore-verify.ts",
+        "db:integrity:snapshot": "tsx scripts/db/capture-data-integrity-snapshot.ts",
         "db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts",
         "db:prod:audit": "tsx scripts/db/db-guard.ts check --target production --operation audit && tsx scripts/db/audit-db.ts --target production",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",
