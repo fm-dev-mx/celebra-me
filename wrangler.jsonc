@@ -32,6 +32,10 @@
                 "BASE_URL": "https://celebra-me-preview.celebra-me-com.workers.dev"
             },
             "images": { "binding": "IMAGES" },
+            // Private retrieval Worker over a Service Binding (src/lib/memories/server/retrieve-binding.ts).
+            "services": [
+                { "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve-staging" }
+            ],
             // Same schedules as vercel.json; src/lib/server/scheduled-jobs.ts maps each expression.
             "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
             // One binding per (namespace, maxHits, windowSec) that src/lib/rsvp/security/rate-limit-provider.ts
@@ -162,6 +166,9 @@
                 "BASE_URL": "https://www.celebra-me.com"
             },
             "images": { "binding": "IMAGES" },
+            // Private retrieval Worker over a Service Binding (src/lib/memories/server/retrieve-binding.ts).
+            // The retrieval Worker keeps workers_dev while Vercel, the rollback host, still calls it.
+            "services": [{ "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve" }],
             // Scheduled jobs keep running on Vercel until it is retired: one cron runner at a time.
             "triggers": { "crons": [] },
             // namespace_id 3001-3099 belongs to the Production application Worker.

@@ -18,6 +18,11 @@ import {
 } from '@/lib/memories/contract/private-request';
 import { MEMORIES_ENV } from './config';
 import { createMemoriesPrivateRequestHeaders, resolveMemoriesWorkerUrl } from './private-request';
+import {
+	MEMORIES_RETRIEVE_BINDING_ORIGIN,
+	fetchMemoriesRetrieveWorker,
+	hasMemoriesRetrieveBinding,
+} from './retrieve-binding';
 
 export interface MemoriesUploadCapability {
 	uploadUrl: string;
@@ -187,10 +192,11 @@ export async function retrieveMemoriesObject(input: {
 	/** Defaults to the signed request lifetime, which streamed downloads need. */
 	timeoutMs?: number;
 }): Promise<Response> {
-	const retrievalUrl = resolveMemoriesWorkerUrl(
-		MEMORIES_ENV.retrievalOrigin,
-		MEMORIES_RETRIEVAL_PATH,
-	);
+	const retrievalUrl =
+		resolveMemoriesWorkerUrl(MEMORIES_ENV.retrievalOrigin, MEMORIES_RETRIEVAL_PATH) ??
+		(hasMemoriesRetrieveBinding()
+			? new URL(MEMORIES_RETRIEVAL_PATH, MEMORIES_RETRIEVE_BINDING_ORIGIN)
+			: null);
 	if (!retrievalUrl) return new Response(null, { status: 503 });
 	const requestBody: Record<string, unknown> = {
 		objectKey: input.objectKey,
@@ -202,7 +208,7 @@ export async function retrieveMemoriesObject(input: {
 		Object.assign(requestBody, parseRange(input.range));
 	}
 	const body = JSON.stringify(requestBody);
-	return fetch(retrievalUrl, {
+	return fetchMemoriesRetrieveWorker(retrievalUrl, {
 		method: 'POST',
 		headers: createMemoriesPrivateRequestHeaders({
 			audience: MEMORIES_RETRIEVAL_REQUEST_AUDIENCE,

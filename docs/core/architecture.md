@@ -506,6 +506,10 @@ deployment.
   on to confirm instead of failing. Video inspection follows the container's top-level boxes with
   ranged reads to the `moov` atom, because phones write it after the media data and its size is
   unbounded; a fixed tail window is only the last resort.
+- **Retrieval transport:** on Cloudflare the app Worker reaches `celebra-memories-retrieve` through
+  the `MEMORIES_RETRIEVE` Service Binding (`src/lib/memories/server/retrieve-binding.ts`); Vercel
+  and local dev call `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`. Both carry the same signed request. The
+  retrieval Worker keeps its `workers.dev` host until Vercel is deleted (2026-11-09).
 - **Retries and refusals:** the app rounds a video duration to the catalog scale
   (`MEMORIES_VIDEO_DURATION_DECIMALS`) before reserving, so a retried request replays the same row
   instead of conflicting with it. A refused reservation carries `error.details.reason`

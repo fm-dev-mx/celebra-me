@@ -262,3 +262,6 @@ Still open:
 2. Rollback rehearsal record on Preview.
 3. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
 4. Production cron enablement step (used only after Vercel is paused).
+5. After Vercel is deleted (2026-11-09): set `workers_dev: false` on `celebra-memories-retrieve` and
+   redeploy it. Until then Vercel, the rollback host, still calls its `workers.dev` origin; the
+   Cloudflare Worker already uses the `MEMORIES_RETRIEVE` Service Binding.
