@@ -12,6 +12,42 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.28.1-beta.1] - 2026-10-16
+
+Release checkpoint that prepares the Production move to Cloudflare Workers: `/vista-previa` reads
+originals through the Worker assets binding, the landing contact becomes WhatsApp-only, the
+Production Worker declares the cron schedules, and read-only tools snapshot data integrity and
+compare live routes before and after the cutover. It carries migration `20261015220000` in code
+only; it is not applied in Production with this release.
+
+### Added
+
+- Read-only remote route visual compare (`pnpm visual:remote:capture` and its compare step) for live
+  public routes on a real origin, desktop and mobile.
+- Read-only data integrity snapshot and compare (`pnpm db:integrity:snapshot`); recovery
+  fingerprints now also cover access controls, memories and guest engagement tables.
+- Migration `20261015220000` lets `invitation_assets.provider` accept `r2` (both checks only widen).
+  Applied on Preview; Production applies it after the migration pause ends on 2026-10-26 02:00.
+  Nothing in the application writes `r2` rows yet.
+
+### Changed
+
+- The landing contact section is a WhatsApp card instead of the email form. `POST /api/contact`, the
+  Gmail SMTP mailer and `nodemailer` are removed.
+- The Production Worker configuration declares the two daily cron schedules (memories cleanup and
+  engagement maintenance). They stay off until the cutover enables them with Vercel paused.
+- The cutover runbook moves Production T0 to Sunday 2026-10-18 02:00 America/Mazatlan.
+
+### Fixed
+
+- `/vista-previa` reads bundled originals through the Worker `ASSETS` binding instead of fetching
+  its own origin, which answered 502 on Cloudflare Previews.
+
+### Known issues
+
+- Production schema stays one migration behind (`20261015220000`) until the owner applies it after
+  2026-10-26 02:00; `pnpm db:prod:audit` reports `BEHIND` until then.
+
 ## [0.28.0-beta.1] - 2026-10-15
 
 Release checkpoint that runs invitation image processing through the Cloudflare Images binding
