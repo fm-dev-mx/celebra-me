@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isReadOnlySql } from '../../scripts/db/production-boundary-policy';
 import {
@@ -7,6 +7,8 @@ import {
 	compareRecoveryIntegrity,
 	CRITICAL_RECOVERY_TABLES,
 	parsePsqlJsonPayload,
+	PRE_PHASE3_MAX_MIGRATION,
+	recoveryTablesForProfile,
 	wrapRecoveryIntegrityPsqlInput,
 	type RecoveryIntegritySnapshot,
 } from '../../scripts/db/recovery-integrity';
@@ -83,6 +85,28 @@ describe('recovery integrity capture SQL', () => {
 		expect(buildRecoveryIntegrityCaptureSql('pre-phase3')).not.toContain(
 			'invitation_mutation_operation_receipts',
 		);
+	});
+
+	it('skips tables newer than the pre-phase3 fixture schema', () => {
+		const prePhase3 = recoveryTablesForProfile('pre-phase3');
+		expect(prePhase3.map(({ table }) => table)).not.toEqual(
+			expect.arrayContaining(['event_memory_items']),
+		);
+		for (const { since } of prePhase3)
+			expect(since === undefined || since <= PRE_PHASE3_MAX_MIGRATION).toBe(true);
+		const sql = buildRecoveryIntegrityCaptureSql('pre-phase3');
+		for (const { schema, table, since } of CRITICAL_RECOVERY_TABLES) {
+			if (since && since > PRE_PHASE3_MAX_MIGRATION)
+				expect(sql).not.toContain(`'${schema}.${table}'`);
+		}
+		expect(recoveryTablesForProfile('phase3')).toBe(CRITICAL_RECOVERY_TABLES);
+	});
+
+	it('dates every newer table by a migration that exists', () => {
+		const migrations = readdirSync(resolve(process.cwd(), 'supabase/migrations'));
+		for (const { since } of CRITICAL_RECOVERY_TABLES) {
+			if (since) expect(migrations.some((name) => name.startsWith(`${since}_`))).toBe(true);
+		}
 	});
 
 	it('orders fingerprints by each table primary key instead of assuming t.id', () => {
