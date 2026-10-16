@@ -86,9 +86,9 @@ Tick each; paste the evidence into the handoff.
 - [ ] Candidate `$SHA` (the v0.27 release on `main`) is live on Vercel Production and its smoke is
       green: `pnpm ops:release-status --target production --sha $SHA` -> state VERIFIED.
 - [ ] Production Worker `celebra-me` has the candidate version uploaded, with no routes:
-      `env.production` in `wrangler.jsonc` (built) has no routes, no `workers.dev` host and
-      `triggers.crons: []`. Evidence: a green run of the Cloudflare Production upload workflow for
-      `$SHA`, and Workers > celebra-me > Settings > Domains & Routes lists no route.
+      `env.production` in `wrangler.jsonc` (built) has no routes and no `workers.dev` host.
+      Evidence: a green run of the Cloudflare Production upload workflow for `$SHA`, and Workers >
+      celebra-me > Settings > Domains & Routes lists no route.
 - [ ] Candidate `$SHA` includes the Cloudflare Images change (PR #260). Without it the Worker has no
       image path: photo uploads (`asset-policy.ts`) and `/vista-previa` images
       (`preview-media-renderer.ts`) load native `sharp`, which does not exist on Workers, and fail.
@@ -104,8 +104,9 @@ Tick each; paste the evidence into the handoff.
       `production` with the service token, and does not return 200 without it (the smoke checks
       both).
 - [ ] Zone Active, edge certificate covers apex and `www`, SSL mode Full (strict) (Zone SSL link).
-- [ ] Production Cron Triggers disabled on the Worker (Workers > celebra-me > Settings > Triggers
-      shows none). Crons stay on Vercel.
+- [ ] Production Cron Triggers not applied on the Worker (Workers > celebra-me > Settings > Trigger
+      Events lists none), although `wrangler.jsonc` declares them. Crons stay on Vercel until the
+      cron enablement step (section 8.1).
 - [ ] Supabase Auth redirect URLs include the production host(s) (Supabase link above).
 - [ ] DNS records copied DNS-only: Zoho MX x3, SPF, DKIM `zmail._domainkey`, DMARC, TXT
       verifications.
@@ -221,9 +222,30 @@ Manual smoke checklist (production, real phone for items 4, 6, 8):
 | T+7 (Mon 10-26)      | Owner | Go decision for Vercel retirement                              | all clean for 7 days                                 |
 
 Crons: remain on Vercel during this whole period (one cron runner at a time). Production Cron
-Triggers are enabled only at the moment Vercel is paused. The client freeze from 2026-10-23 to
-2026-11-07 (event on 2026-10-30) allows no planned Production, DNS or Worker change; a rollback
-under section 9 is the only exception.
+Triggers are enabled only at the moment Vercel is paused (section 8.1). The client freeze from
+2026-10-23 to 2026-11-07 (event on 2026-10-30) allows no planned Production, DNS or Worker change; a
+rollback under section 9 is the only exception.
+
+### 8.1 Cron enablement (only once Vercel is paused)
+
+`env.production` in `wrangler.jsonc` declares the two Vercel schedules, `17 15 * * *` (memories
+cleanup) and `43 10 * * *` (engagement maintenance), and the Worker's `scheduled` handler runs the
+same jobs as `/api/cron/*` (`src/lib/server/scheduled-jobs.ts`). Cron triggers are non-versioned:
+`wrangler versions upload`, `wrangler versions deploy` and `wrangler secret bulk` never apply them,
+so they stay off until this step. Never run `wrangler deploy --env production` before it: that
+command applies them while Vercel still runs the same jobs.
+
+1. Vercel Production is paused, so its crons no longer fire.
+2. Workers > celebra-me > Settings > Trigger Events > Add > Cron Triggers: add `17 15 * * *` and
+   `43 10 * * *` (UTC), exactly as declared. The dashboard touches the schedules only; zone routes
+   stay as they are.
+3. Confirm: Trigger Events lists exactly those two. Changes take up to 15 minutes to propagate, so
+   finish before 10:28 UTC (03:28 Mazatlan) or the 10:43 UTC job may not run that day.
+4. Next day: Workers > celebra-me > Logs (or Observability) shows one `scheduled` event per
+   expression with the job outcome `completed`.
+
+Rollback: delete both Cron Triggers in the same panel before Vercel is unpaused (one cron runner at
+a time).
 
 ## 9. Rollback (maximum 10 minutes)
 
@@ -261,4 +283,4 @@ Still open:
 1. Production Access application and service token policy for the version URL (owner, step 3.1.3).
 2. Rollback rehearsal record on Preview.
 3. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
-4. Production cron enablement step (used only after Vercel is paused).
+4. Production cron enablement is section 8.1 (used only once Vercel is paused).
