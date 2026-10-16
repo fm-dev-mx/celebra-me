@@ -188,7 +188,12 @@ export const landingData: LandingPageData = {
 		cta: {
 			label: PRIMARY_CTA_LABEL,
 		},
-		formIntro: 'O déjenos sus datos y le contactamos.',
+		cardIntro: 'Escríbanos por WhatsApp y le enviamos su cotización.',
+		checklist: [
+			'El tipo de evento, por ejemplo XV años o boda.',
+			'La fecha del evento.',
+			'Lo que imagina para su invitación.',
+		],
 		about: {
 			title: 'Nosotros',
 			text: 'Celebra-me es atendido por Francisco Mendoza desde Los Mochis, Sinaloa.',
