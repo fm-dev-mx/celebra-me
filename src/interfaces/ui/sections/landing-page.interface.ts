@@ -120,7 +120,10 @@ export interface ContactData {
 		message?: string;
 	};
 	microcopy?: string;
-	formIntro?: string;
+	/** Heading of the WhatsApp card. */
+	cardIntro?: string;
+	/** Details the visitor can include in the WhatsApp message. */
+	checklist?: string[];
 	about?: {
 		title: string;
 		text: string;

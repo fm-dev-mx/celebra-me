@@ -432,7 +432,7 @@ These are present in `.env.example` and the lane bootstrap allowlist
 | -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | Supabase keys  | `SUPABASE_ANON_KEY`, `PUBLIC_SUPABASE_ANON_KEY`                                                                  | `src/lib/server/supabase-credentials.ts`, dashboard MFA page |
 | Base URL       | `BASE_URL`                                                                                                       | `astro.config.mjs`, `src/lib/rsvp/security/auth-security.ts` |
-| Contact        | `CONTACT_FORM_RECIPIENT_EMAIL`, `CONTACT_WHATSAPP`, `GMAIL_USER`, `GMAIL_PASS`                                   | `src/lib/server/email.ts`, `src/utils/whatsapp.ts`           |
+| Contact        | `CONTACT_WHATSAPP`                                                                                               | `src/utils/whatsapp.ts`                                      |
 | Admin security | `REQUIRE_FRESH_MFA_FOR_ADMIN`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`                                | `src/lib/rsvp/auth/`, `src/lib/rsvp/security/`               |
 | Meta CAPI      | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_CAPI_DELIVERY_MODE`, `META_TEST_EVENT_CODE`                     | `src/lib/commercial/meta-capi/service.ts`                    |
 | Browser tags   | `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ENABLED`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `src/lib/tracking/`                                          |

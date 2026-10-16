@@ -67,7 +67,7 @@
 	--color-action-accent: var(--color-champagne);
 	--color-action-accent-rgb: var(--color-champagne-rgb);
 
-	// Specific fixes for Contact Form
+	// Border tokens
 	--color-border-subtle: rgb(42 26 19 / 12%);
 	--color-border-emphasis: var(--color-champagne);
 
@@ -196,11 +196,5 @@
 	--contact-title-color: var(--color-text-primary);
 	--contact-info-title-color: var(--color-text-primary);
 	--contact-info-description-color: var(--color-text-secondary);
-	--contact-form-border: var(--color-border-subtle);
-	--contact-input-border: var(--color-border-subtle);
-	--contact-input-color: var(--color-text-primary);
-	--contact-input-focus-border: var(--color-action-accent);
-	--contact-label-color: rgb(var(--color-text-secondary-rgb) / 50%);
-	--contact-label-focus-color: var(--color-action-accent);
-	--contact-submit-bg: var(--color-action-primary);
+	--contact-card-border: var(--color-border-subtle);
 }
