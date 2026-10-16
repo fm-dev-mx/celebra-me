@@ -8,7 +8,7 @@ import {
 	type CriticalBackupManifest,
 } from './backup-manifest.ts';
 import { classifyDbTarget, DISPOSABLE_DB_URL } from './db-target-config.ts';
-import { captureRecoveryIntegrity } from './recovery-integrity.ts';
+import { captureRecoveryIntegrity, PRE_PHASE3_MAX_MIGRATION } from './recovery-integrity.ts';
 import {
 	createStorageObjectArchiveEntry,
 	writeStorageObjectArchive,
@@ -122,7 +122,7 @@ function runPsql(sqlOrFile: string, isFile = false): void {
 
 mkdirSync(outputDir, { recursive: true });
 const resetArgs = ['exec', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset'];
-if (integrityProfile === 'pre-phase3') resetArgs.push('--max-version=20260727180000');
+if (integrityProfile === 'pre-phase3') resetArgs.push(`--max-version=${PRE_PHASE3_MAX_MIGRATION}`);
 runCommand('pnpm', resetArgs);
 runPsql(fixtureSql);
 

@@ -1,11 +1,18 @@
 import { createHash } from 'node:crypto';
 import { quoteIdentifier, runCommand } from './db-workflow-lib.ts';
 
+/** Highest migration a `pre-phase3` disposable fixture is reset to. */
+export const PRE_PHASE3_MAX_MIGRATION = '20260727180000';
+
 /**
  * Fingerprint ORDER BY must follow each table's primary key. Several critical
  * tables have no `id` column; a hardcoded `t.id` aborts the batched snapshot.
+ * `since` names the migration that created a table newer than the pre-phase3
+ * fixture, so that profile skips tables its schema does not have yet.
+ * The legacy RSVP tables were
+ * dropped by 20261012200100; RSVP state lives in guest_invitations.
  */
-export const CRITICAL_RECOVERY_TABLES = [
+export const CRITICAL_RECOVERY_TABLES: readonly CriticalRecoveryTable[] = [
 	{ schema: 'public', table: 'invitations', orderBy: 't.id' },
 	{ schema: 'public', table: 'events', orderBy: 't.id' },
 	{ schema: 'public', table: 'event_memberships', orderBy: 't.id' },
@@ -19,15 +26,65 @@ export const CRITICAL_RECOVERY_TABLES = [
 		table: 'managed_invitation_release_provenance',
 		orderBy: 't.invitation_id',
 	},
-	{ schema: 'public', table: 'invitation_mutation_operation_receipts', orderBy: 't.id' },
+	{
+		schema: 'public',
+		table: 'invitation_mutation_operation_receipts',
+		orderBy: 't.id',
+		since: '20260729140514',
+	},
 	{ schema: 'public', table: 'invitation_assets', orderBy: 't.id' },
+	{
+		schema: 'public',
+		table: 'invitation_access_controls',
+		orderBy: 't.invitation_id',
+		since: '20261013100000',
+	},
+	{
+		schema: 'public',
+		table: 'event_memory_settings',
+		orderBy: 't.event_id',
+		since: '20260930180000',
+	},
+	{ schema: 'public', table: 'event_memory_sessions', orderBy: 't.id', since: '20260930180000' },
+	{ schema: 'public', table: 'event_memory_items', orderBy: 't.id', since: '20260930180000' },
+	{
+		schema: 'public',
+		table: 'event_memory_audit_events',
+		orderBy: 't.id',
+		since: '20260930180000',
+	},
+	{
+		schema: 'public',
+		table: 'guest_engagement_events',
+		orderBy: 't.id',
+		since: '20261010120000',
+	},
 	{ schema: 'auth', table: 'users', orderBy: 't.id' },
 	{ schema: 'auth', table: 'identities', orderBy: 't.id' },
 	{ schema: 'storage', table: 'buckets', orderBy: 't.id' },
 	{ schema: 'storage', table: 'objects', orderBy: 't.id' },
-] as const;
+];
 
-interface RecoveryTableFingerprint {
+export interface CriticalRecoveryTable {
+	schema: string;
+	table: string;
+	/** Primary-key expression over alias `t`. */
+	orderBy: string;
+	/** Creating migration, when newer than PRE_PHASE3_MAX_MIGRATION. */
+	since?: string;
+}
+
+/** Tables whose schema exists at the given integrity profile's migration level. */
+export function recoveryTablesForProfile(
+	profile: RecoveryIntegrityProfile,
+): readonly CriticalRecoveryTable[] {
+	if (profile !== 'pre-phase3') return CRITICAL_RECOVERY_TABLES;
+	return CRITICAL_RECOVERY_TABLES.filter(
+		({ since }) => since === undefined || since <= PRE_PHASE3_MAX_MIGRATION,
+	);
+}
+
+export interface RecoveryTableFingerprint {
 	rowCount: number;
 	sha256: string;
 }
@@ -131,19 +188,23 @@ function sha256(value: string): string {
 	return createHash('sha256').update(value).digest('hex');
 }
 
-const AUTH_USERS_SOURCE = `(
+export const AUTH_USERS_SOURCE = `(
 			  select id, aud, role, email, email_confirmed_at, raw_app_meta_data,
 			         raw_user_meta_data, is_super_admin, phone, phone_confirmed_at,
 			         banned_until, deleted_at, is_sso_user, is_anonymous, created_at, updated_at
 			  from auth.users
 			)`;
 
-function fingerprintSubquery(entry: (typeof CRITICAL_RECOVERY_TABLES)[number]): string {
-	const { schema, table, orderBy } = entry;
-	const source =
-		schema === 'auth' && table === 'users'
-			? AUTH_USERS_SOURCE
-			: `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
+/** Row source for a fingerprint; auth.users excludes volatile sign-in columns. */
+export function recoveryTableSource({ schema, table }: CriticalRecoveryTable): string {
+	return schema === 'auth' && table === 'users'
+		? AUTH_USERS_SOURCE
+		: `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
+}
+
+export function fingerprintSubquery(entry: CriticalRecoveryTable): string {
+	const { orderBy } = entry;
+	const source = recoveryTableSource(entry);
 	return `(select json_build_object(
 		  'rowCount', count(*),
 		  'sha256', encode(digest(
@@ -157,10 +218,9 @@ function fingerprintSubquery(entry: (typeof CRITICAL_RECOVERY_TABLES)[number]): 
 export function buildRecoveryIntegrityCaptureSql(
 	profile: RecoveryIntegrityProfile = 'phase3',
 ): string {
-	const tableEntries = CRITICAL_RECOVERY_TABLES.filter(
-		({ table }) =>
-			!(profile === 'pre-phase3' && table === 'invitation_mutation_operation_receipts'),
-	).map((entry) => `'${entry.schema}.${entry.table}', ${fingerprintSubquery(entry)}`);
+	const tableEntries = recoveryTablesForProfile(profile).map(
+		(entry) => `'${entry.schema}.${entry.table}', ${fingerprintSubquery(entry)}`,
+	);
 	return `select json_build_object(
 	  'tables', json_build_object(${tableEntries.join(',\n	  ')}),
 	  'migrationsText', coalesce((

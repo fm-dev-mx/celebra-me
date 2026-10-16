@@ -731,7 +731,7 @@ test.describe('Landing page regressions', () => {
 			useInnerText: true,
 		});
 
-		await page.locator('#contacto .contact-form-wrapper').scrollIntoViewIfNeeded();
+		await page.locator('#contacto .contact-whatsapp-card').scrollIntoViewIfNeeded();
 		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
 	});
 

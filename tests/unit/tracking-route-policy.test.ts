@@ -20,7 +20,7 @@ describe('tracking route policy', () => {
 		['/dashboard/invitaciones', 'dashboard_admin_auth'],
 		['/api/dashboard/invitaciones', 'dashboard_admin_auth'],
 		['/login', 'dashboard_admin_auth'],
-		['/api/contact', 'generic_api'],
+		['/api/health', 'generic_api'],
 		['/desconocido', 'unknown'],
 	] as const)('classifies %s as %s', (input, expected) => {
 		expect(classifyTrackingRoute(input).routeClass).toBe(expected);
@@ -34,7 +34,7 @@ describe('tracking route policy', () => {
 		expect(classifyTrackingRoute('/xv/valentina-hernandez?invite=abc').metaAllowed).toBe(false);
 		expect(classifyTrackingRoute('/api/invitacion/abc/rsvp').metaAllowed).toBe(false);
 		expect(classifyTrackingRoute('/dashboard/commercial').metaAllowed).toBe(false);
-		expect(classifyTrackingRoute('/api/contact').metaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/api/health').metaAllowed).toBe(false);
 	});
 
 	it('allows GA only on commercial and demo routes', () => {
@@ -44,6 +44,6 @@ describe('tracking route policy', () => {
 		expect(classifyTrackingRoute('/xv/valentina-hernandez').gaAllowed).toBe(false);
 		expect(classifyTrackingRoute('/xv/valentina-hernandez?invite=abc').gaAllowed).toBe(false);
 		expect(classifyTrackingRoute('/dashboard/invitaciones').gaAllowed).toBe(false);
-		expect(classifyTrackingRoute('/api/contact').gaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/api/health').gaAllowed).toBe(false);
 	});
 });

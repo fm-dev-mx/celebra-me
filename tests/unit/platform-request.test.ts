@@ -8,7 +8,7 @@ import {
 const VERCEL_CONTEXT_SYMBOL = Symbol.for('@vercel/request-context');
 
 function requestWith(headers: Record<string, string>): Request {
-	return new Request('https://celebra-me.com/api/contact', { headers });
+	return new Request('https://celebra-me.com/api/health', { headers });
 }
 
 async function flushMicrotasks(): Promise<void> {

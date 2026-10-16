@@ -432,7 +432,7 @@ These are present in `.env.example` and the lane bootstrap allowlist
 | -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | Supabase keys  | `SUPABASE_ANON_KEY`, `PUBLIC_SUPABASE_ANON_KEY`                                                                  | `src/lib/server/supabase-credentials.ts`, dashboard MFA page |
 | Base URL       | `BASE_URL`                                                                                                       | `astro.config.mjs`, `src/lib/rsvp/security/auth-security.ts` |
-| Contact        | `CONTACT_FORM_RECIPIENT_EMAIL`, `CONTACT_WHATSAPP`, `GMAIL_USER`, `GMAIL_PASS`                                   | `src/lib/server/email.ts`, `src/utils/whatsapp.ts`           |
+| Contact        | `CONTACT_WHATSAPP`                                                                                               | `src/utils/whatsapp.ts`                                      |
 | Admin security | `REQUIRE_FRESH_MFA_FOR_ADMIN`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`                                | `src/lib/rsvp/auth/`, `src/lib/rsvp/security/`               |
 | Meta CAPI      | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_CAPI_DELIVERY_MODE`, `META_TEST_EVENT_CODE`                     | `src/lib/commercial/meta-capi/service.ts`                    |
 | Browser tags   | `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ENABLED`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `src/lib/tracking/`                                          |
@@ -523,8 +523,10 @@ Manual only (`workflow_dispatch` from `main`). It builds the Cloudflare target f
 uploads a Worker version tagged with the commit SHA and smokes that version URL behind Cloudflare
 Access with `pnpm ops:cloudflare:production:smoke`, which also fails when the version URL answers
 without the service token. It never routes traffic: `env.production` in `wrangler.jsonc` has no
-routes, no `workers.dev` host and no crons; the cutover adds the zone routes by hand
-(`docs/operations/cloudflare-production-cutover.md`). The first run creates the Worker with
+routes and no `workers.dev` host; the cutover adds the zone routes by hand
+(`docs/operations/cloudflare-production-cutover.md`). It declares the two Vercel cron schedules,
+which version uploads, version deploys and secret changes never apply; the cutover enables them once
+Vercel is paused (section 8.1 of that runbook). The first run creates the Worker with
 `wrangler deploy`, because `wrangler versions upload` cannot create one. Evidence is a GitHub
 Deployment in the `Cloudflare Production` environment and the commit status
 `Cloudflare - celebra-me production candidate smoke`; no release gate reads either, so a candidate

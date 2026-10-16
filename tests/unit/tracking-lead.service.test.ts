@@ -9,10 +9,7 @@ jest.mock('@/lib/tracking/repository', () => ({
 }));
 
 import { createLeadCode } from '@/lib/tracking/lead-code';
-import {
-	createLeadFromContactSubmission,
-	createLeadFromTrackingEvent,
-} from '@/lib/tracking/lead.service';
+import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { upsertLead, findLeadByCode } from '@/lib/tracking/lead.repository';
 import { findVisitorSessionMetaAttribution, insertTrackingEvent } from '@/lib/tracking/repository';
 
@@ -46,105 +43,6 @@ describe('createLeadCode', () => {
 	it('creates a short human-friendly Celebra-me lead code', () => {
 		expect(createLeadCode(() => 0)).toBe('CM-222222');
 		expect(createLeadCode(() => 0.99999)).toMatch(/^CM-[A-Z0-9]{6}$/);
-	});
-});
-
-describe('createLeadFromContactSubmission', () => {
-	it('creates a deduplicated contact-form lead and fires lead_created for new leads', async () => {
-		const result = await createLeadFromContactSubmission({
-			name: 'Valentina Hernandez',
-			email: 'client@example.com',
-			phone: '+52 100 000 0005',
-			eventType: 'xv',
-			packageInterest: 'premium',
-			message: 'Quiero una invitacion para septiembre con musica.',
-			consentContact: true,
-			consentMarketing: false,
-			leadCode: 'CM-ABC123',
-			sessionId: '11111111-1111-4111-8111-111111111111',
-			visitorId: 'visitor_00000000-0000-4000-8000-000000000000',
-			utmSource: 'instagram',
-			utmMedium: 'paid',
-			utmCampaign: 'summer',
-		});
-
-		expect(result).toEqual({
-			id: 'lead-id',
-			leadCode: 'CM-ABC123',
-			status: 'new',
-			sessionId: 'session-id',
-		});
-		expect(mockUpsertLead).toHaveBeenCalledWith(
-			expect.objectContaining({
-				leadCode: 'CM-ABC123',
-				channel: 'contact_form',
-			}),
-		);
-		// Verify lead_created event was fired
-		expect(mockInsertTrackingEvent).toHaveBeenCalledWith(
-			expect.objectContaining({
-				eventName: 'lead_created',
-				visitorId: 'visitor_00000000-0000-4000-8000-000000000000',
-				eventProperties: expect.objectContaining({
-					lead_code: 'CM-ABC123',
-					lead_channel: 'contact_form',
-				}),
-			}),
-		);
-	});
-
-	it('hands the lead_created write to the after-response context when one is given', async () => {
-		const waitUntil = jest.fn();
-
-		await createLeadFromContactSubmission(
-			{
-				name: 'Valentina Hernandez',
-				email: 'client@example.com',
-				consentContact: true,
-				consentMarketing: false,
-				sessionId: '11111111-1111-4111-8111-111111111111',
-				visitorId: 'visitor_00000000-0000-4000-8000-000000000000',
-			},
-			{ after: { waitUntil } },
-		);
-
-		expect(mockInsertTrackingEvent).toHaveBeenCalledWith(
-			expect.objectContaining({ eventName: 'lead_created' }),
-		);
-		expect(waitUntil).toHaveBeenCalledTimes(1);
-		await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBeUndefined();
-	});
-
-	it('copies session Meta attribution into contact-form leads when the form omits it', async () => {
-		mockFindVisitorSessionMetaAttribution.mockResolvedValue({
-			fbp: 'fb.1.1710000000000.1234567890',
-			fbc: 'fb.1.1710000000000.Click-123',
-			fbclid: 'Click-123',
-		});
-
-		await createLeadFromContactSubmission({
-			name: 'Valentina Hernandez',
-			email: 'client@example.com',
-			phone: '+52 100 000 0005',
-			leadCode: 'CM-ABC123',
-			sessionId: '11111111-1111-4111-8111-111111111111',
-			visitorId: 'visitor_00000000-0000-4000-8000-000000000000',
-			consentContact: true,
-			consentMarketing: false,
-		});
-
-		expect(mockFindVisitorSessionMetaAttribution).toHaveBeenCalledWith(
-			'11111111-1111-4111-8111-111111111111',
-		);
-		expect(mockUpsertLead).toHaveBeenCalledWith(
-			expect.objectContaining({
-				metaAttribution: {
-					fbp: 'fb.1.1710000000000.1234567890',
-					fbc: 'fb.1.1710000000000.Click-123',
-					fbclid: 'Click-123',
-				},
-			}),
-		);
 	});
 });
 
