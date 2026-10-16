@@ -1,6 +1,5 @@
 ---
 // src/components/home/Contact.astro
-import ContactForm from '@/components/ui/ContactForm.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getContactPhone } from '@/utils/whatsapp';
@@ -31,16 +30,6 @@ const phone = getContactPhone();
 				{data.subtitle && <p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>}
 			</header>
 
-			<WhatsAppButton
-				className="contact-intro__cta reveal-fade-up stagger-3"
-				phone={phone}
-				message={data.cta?.message}
-				label={data.cta?.label}
-				trackSection="contact"
-				trackCta="contact_whatsapp"
-				campaignSection="FINAL"
-			/>
-
 			{data.about && (
 				<div id="nosotros" class="contact-about" data-screenshot="landing-about">
 					<h3 class="contact-about__title">{data.about.title}</h3>
@@ -52,9 +41,22 @@ const phone = getContactPhone();
 			)}
 		</div>
 
-		<div class="contact-form-wrapper reveal-fade-up stagger-4">
-			{data.formIntro && <p class="contact-form-wrapper__intro">{data.formIntro}</p>}
-			<ContactForm />
+		<div class="contact-whatsapp-card reveal-fade-up stagger-4">
+			{data.cardIntro && <p class="contact-whatsapp-card__intro">{data.cardIntro}</p>}
+			{data.checklist && data.checklist.length > 0 && (
+				<ul class="contact-whatsapp-card__list">
+					{data.checklist.map((item) => <li>{item}</li>)}
+				</ul>
+			)}
+			<WhatsAppButton
+				className="contact-whatsapp-card__cta"
+				phone={phone}
+				message={data.cta?.message}
+				label={data.cta?.label}
+				trackSection="contact"
+				trackCta="contact_whatsapp"
+				campaignSection="FINAL"
+			/>
 			{data.microcopy && <p class="contact-microcopy">{data.microcopy}</p>}
 		</div>
 	</div>

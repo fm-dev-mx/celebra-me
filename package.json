@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.28.0-beta.1",
+    "version": "0.28.1-beta.1",
     "engines": {
         "node": ">=22.13.0 <25"
     },
@@ -70,6 +70,7 @@
         "db:offsite:list": "tsx scripts/db/offsite-backup-cli.ts list",
         "db:offsite:restore": "tsx scripts/db/offsite-backup-cli.ts restore",
         "db:restore:verify-disposable": "tsx scripts/db/disposable-restore-verify.ts",
+        "db:integrity:snapshot": "tsx scripts/db/capture-data-integrity-snapshot.ts",
         "db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts",
         "db:prod:audit": "tsx scripts/db/db-guard.ts check --target production --operation audit && tsx scripts/db/audit-db.ts --target production",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",
@@ -150,6 +151,9 @@
         "visual:parity:compare": "tsx scripts/screenshot/visual-parity-cli.ts compare",
         "visual:parity:accept": "tsx scripts/screenshot/visual-parity-cli.ts accept",
         "visual:matrix:check": "tsx scripts/screenshot/visual-parity-cli.ts check",
+        "visual:remote:routes": "tsx scripts/screenshot/remote/remote-visual-cli.ts routes",
+        "visual:remote:capture": "tsx scripts/screenshot/remote/remote-visual-cli.ts capture",
+        "visual:remote:compare": "tsx scripts/screenshot/remote/remote-visual-cli.ts compare",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
         "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
@@ -173,7 +177,6 @@
         "date-fns": "4.4.0",
         "date-fns-tz": "3.2.0",
         "framer-motion": "^13.5.1",
-        "nodemailer": "^10.0.16",
         "qrcode": "^1.5.4",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
@@ -198,7 +201,6 @@
         "@testing-library/user-event": "^14.6.7",
         "@types/jest": "^30.0.0",
         "@types/node": "^24.13.4",
-        "@types/nodemailer": "8.0.1",
         "@types/qrcode": "^1.5.6",
         "@types/react": "19.3.0",
         "@types/react-dom": "^19.3.0",

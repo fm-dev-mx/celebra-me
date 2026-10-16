@@ -121,7 +121,6 @@ celebra-me/
 - Public RSVP: `/api/invitacion/public/[eventType]/[slug]/rsvp`
 - Intake capture: `/api/captura/[token]`
 - Health: `/api/health`
-- Contact: `/api/contact`
 
 ## Database Workflow
 

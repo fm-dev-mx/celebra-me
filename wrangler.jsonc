@@ -162,8 +162,11 @@
                 "BASE_URL": "https://www.celebra-me.com"
             },
             "images": { "binding": "IMAGES" },
-            // Scheduled jobs keep running on Vercel until it is retired: one cron runner at a time.
-            "triggers": { "crons": [] },
+            // Same schedules as Vercel (`vercel.json`). Cron triggers are non-versioned: version
+            // uploads, version deploys and secret changes never apply them, so they stay off until
+            // the cutover enables them once Vercel is paused (one cron runner at a time). Only
+            // `wrangler deploy` or `wrangler triggers deploy` would apply them.
+            "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
             // namespace_id 3001-3099 belongs to the Production application Worker.
             "ratelimits": [
                 {

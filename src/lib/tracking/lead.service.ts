@@ -1,5 +1,3 @@
-import { z } from 'zod';
-import { normalizeCommercialEmail, normalizeCommercialPhone } from '@/lib/commercial/phone';
 import { createLeadCode } from '@/lib/tracking/lead-code';
 import {
 	metaAttributionOrUndefined,
@@ -13,48 +11,10 @@ import {
 	type LeadChannel,
 } from '@/lib/tracking/lead.repository';
 import { findVisitorSessionMetaAttribution, insertTrackingEvent } from '@/lib/tracking/repository';
-import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
-
-const LeadCodeSchema = z
-	.string()
-	.trim()
-	.regex(/^CM-[A-Z0-9]{6}$/)
-	.optional()
-	.or(z.literal(''));
-
-const ContactLeadSubmissionSchema = z.object({
-	name: z.string().trim().min(2).max(160),
-	email: z.email().optional().or(z.literal('')),
-	phone: z.string().trim().max(40).optional().or(z.literal('')),
-	eventType: z.string().trim().max(80).optional().or(z.literal('')),
-	eventDate: z.string().trim().max(40).optional().or(z.literal('')),
-	packageInterest: z.string().trim().max(80).optional().or(z.literal('')),
-	message: z.string().trim().max(2000).optional().or(z.literal('')),
-	consentContact: z.coerce.boolean().default(true),
-	consentMarketing: z.coerce.boolean().default(false),
-	leadCode: LeadCodeSchema,
-	sessionId: z.uuid().optional().or(z.literal('')),
-	sourceEventId: z.uuid().optional().or(z.literal('')),
-	visitorId: z.string().trim().min(6).max(120).optional().or(z.literal('')),
-	utmSource: z.string().trim().max(120).optional().or(z.literal('')),
-	utmMedium: z.string().trim().max(120).optional().or(z.literal('')),
-	utmCampaign: z.string().trim().max(180).optional().or(z.literal('')),
-	fbp: z.string().trim().max(180).optional().or(z.literal('')),
-	fbc: z.string().trim().max(300).optional().or(z.literal('')),
-	fbclid: z.string().trim().max(300).optional().or(z.literal('')),
-});
-
-export type ContactLeadSubmission = z.input<typeof ContactLeadSubmissionSchema>;
 
 function blankToUndefined(value: string | undefined): string | undefined {
 	const trimmed = value?.trim();
 	return trimmed ? trimmed : undefined;
-}
-
-function summarizeMessage(message: string | undefined): string {
-	return (message?.trim() || 'Solicitud desde formulario de contacto.')
-		.replace(/\s+/g, ' ')
-		.slice(0, 500);
 }
 
 async function resolveLeadMetaAttribution(params: {
@@ -76,96 +36,6 @@ async function resolveLeadMetaAttribution(params: {
 	} catch {
 		return undefined;
 	}
-}
-
-/** Request-scoped options; `after` keeps background work alive once the response is sent. */
-export interface LeadServiceOptions {
-	after?: AfterResponseContext | null;
-}
-
-export async function createLeadFromContactSubmission(
-	submission: ContactLeadSubmission,
-	options: LeadServiceOptions = {},
-): Promise<StoredLead> {
-	const parsed = ContactLeadSubmissionSchema.parse(submission);
-
-	let leadCode = blankToUndefined(parsed.leadCode) ?? createLeadCode();
-	const sessionId = blankToUndefined(parsed.sessionId);
-	const normalizedPhone = normalizeCommercialPhone(parsed.phone);
-	const normalizedEmail = normalizeCommercialEmail(parsed.email);
-	// knownNew: true = confirmed new, false = confirmed existing, undefined = lookup failed
-	let knownNew: boolean | undefined;
-	if (blankToUndefined(parsed.leadCode)) {
-		try {
-			const existing = await findLeadByCode(leadCode);
-			if (existing && (!sessionId || existing.sessionId !== sessionId)) {
-				// A lead code is a continuation token, never a cross-session write key.
-				leadCode = createLeadCode();
-				knownNew = true;
-			} else {
-				knownNew = existing === null;
-			}
-		} catch {
-			knownNew = undefined; // lookup failed → skip lead_created
-		}
-	} else {
-		knownNew = true; // newly-generated code is always new
-	}
-
-	const lead = await upsertLead({
-		leadCode,
-		sessionId,
-		sourceEventId: blankToUndefined(parsed.sourceEventId),
-		channel: 'contact_form',
-		name: parsed.name,
-		email: normalizedEmail,
-		phone: blankToUndefined(parsed.phone),
-		phoneCountryCode: normalizedPhone?.countryCode,
-		phoneNational: normalizedPhone?.national,
-		phoneE164: normalizedPhone?.e164,
-		eventType: blankToUndefined(parsed.eventType),
-		packageInterest: blankToUndefined(parsed.packageInterest),
-		messageSummary: summarizeMessage(parsed.message),
-		utmSource: blankToUndefined(parsed.utmSource),
-		utmMedium: blankToUndefined(parsed.utmMedium),
-		utmCampaign: blankToUndefined(parsed.utmCampaign),
-		metaAttribution: await resolveLeadMetaAttribution({
-			sessionId,
-			metaAttribution: {
-				fbp: parsed.fbp,
-				fbc: parsed.fbc,
-				fbclid: parsed.fbclid,
-			},
-		}),
-		consentContact: parsed.consentContact,
-		consentMarketing: parsed.consentMarketing,
-	});
-
-	// Record lead_created server-side after the response — only for new leads.
-	// Non-critical: the lead is already persisted when this runs.
-	const visitorId = blankToUndefined(parsed.visitorId);
-	if (knownNew && visitorId && sessionId) {
-		runAfterResponse(
-			options.after,
-			() =>
-				insertTrackingEvent({
-					sessionId,
-					visitorId,
-					eventName: 'lead_created',
-					routePath: '/api/contact',
-					routeClass: 'commercial',
-					eventProperties: {
-						lead_code: lead.leadCode,
-						lead_channel: 'contact_form',
-					},
-					consentSnapshot: { necessary: true, analytics: false, marketing: false },
-					isInternal: false,
-				}),
-			{ label: 'lead-service:lead_created' },
-		);
-	}
-
-	return lead;
 }
 
 export async function createLeadFromTrackingEvent(params: {

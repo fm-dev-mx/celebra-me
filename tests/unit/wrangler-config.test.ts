@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
+import { SCHEDULED_JOB_CRONS } from '@/lib/server/scheduled-jobs';
 
 interface RateLimitBinding {
 	name: string;
@@ -50,13 +51,22 @@ const preview = config.env.preview;
 const production = config.env.production;
 
 describe('wrangler.jsonc Production environment', () => {
-	it('declares no traffic: no routes, no workers.dev host and no cron triggers', () => {
+	it('declares no traffic: no routes and no workers.dev host', () => {
 		expect(production.name).toBe('celebra-me');
 		expect(production.routes).toBeUndefined();
 		expect(production.route).toBeUndefined();
 		expect(production.workers_dev).toBe(false);
 		expect(production.preview_urls).toBe(true);
-		expect(production.triggers).toEqual({ crons: [] });
+	});
+
+	it('schedules exactly the Vercel cron jobs, each bound to a scheduled job', () => {
+		const vercel = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8')) as {
+			crons: { schedule: string }[];
+		};
+		const crons = production.triggers?.crons ?? [];
+		expect([...crons].sort()).toEqual(vercel.crons.map((cron) => cron.schedule).sort());
+		expect([...crons].sort()).toEqual(Object.values(SCHEDULED_JOB_CRONS).sort());
+		expect(crons).toEqual(preview.triggers?.crons);
 	});
 
 	it('identifies itself as Production on the Production Supabase project', () => {

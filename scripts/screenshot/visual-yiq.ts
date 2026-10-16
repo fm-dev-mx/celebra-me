@@ -4,7 +4,7 @@
  */
 const MAXIMUM_YIQ_DISTANCE = 35215 * 0.2 ** 2;
 
-function isVisiblePixelChange(
+export function isVisiblePixelChange(
 	before: Uint8Array,
 	beforeOffset: number,
 	after: Uint8Array,

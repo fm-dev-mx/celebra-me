@@ -10,6 +10,10 @@ import {
 	isPublishedInvitationExpired,
 } from '@/lib/invitation/access/invitation-access.repository';
 import { buildPreviewMediaPath } from '@/lib/invitation/preview/preview-media-token';
+import {
+	installAssetsBinding,
+	resetAssetsBindingForTests,
+} from '@/lib/server/static-assets-provider';
 
 const findAccess = jest.mocked(findInvitationAccessRecord);
 const isExpired = jest.mocked(isPublishedInvitationExpired);
@@ -84,6 +88,7 @@ describe('GET /vista-previa/[asset]', () => {
 		isExpired.mockResolvedValue(false);
 		global.fetch = jest.fn().mockResolvedValue(upstream(200, photo)) as unknown as typeof fetch;
 	});
+	afterEach(() => resetAssetsBindingForTests());
 
 	const photoPath = () =>
 		buildPreviewMediaPath({ invitationId: INVITATION_ID, source: SOURCE, variant: 'photo' });
@@ -148,6 +153,46 @@ describe('GET /vista-previa/[asset]', () => {
 		});
 		expect((await call(foreign)).status).toBe(404);
 		expect(global.fetch).not.toHaveBeenCalled();
+	});
+
+	describe('same-origin originals', () => {
+		const ASSET_SOURCE = '/_astro/hero.abc123.webp';
+		const assetPath = () =>
+			buildPreviewMediaPath({
+				invitationId: INVITATION_ID,
+				source: ASSET_SOURCE,
+				variant: 'photo',
+			});
+
+		it('reads them through the ASSETS binding on a Worker, never fetching its own origin', async () => {
+			const assets = { fetch: jest.fn().mockResolvedValue(upstream(200, photo)) };
+			expect(installAssetsBinding({ ASSETS: assets })).toBe(true);
+
+			const response = await call(assetPath());
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get('Content-Type')).toBe('image/webp');
+			expect(global.fetch).not.toHaveBeenCalled();
+			const request = assets.fetch.mock.calls[0][0] as Request;
+			expect(request.url).toBe('https://www.celebra-me.com/_astro/hero.abc123.webp');
+		});
+
+		it('answers 502 when the binding has no such file', async () => {
+			installAssetsBinding({ ASSETS: { fetch: jest.fn().mockResolvedValue(upstream(404)) } });
+			const response = await call(assetPath());
+			expect(response.status).toBe(502);
+			expect(global.fetch).not.toHaveBeenCalled();
+		});
+
+		it('keeps fetch on hosts without the binding', async () => {
+			expect(installAssetsBinding({})).toBe(false);
+			const response = await call(assetPath());
+			expect(response.status).toBe(200);
+			expect(global.fetch).toHaveBeenCalledWith(
+				new URL(ASSET_SOURCE, 'https://www.celebra-me.com'),
+				expect.any(Object),
+			);
+		});
 	});
 
 	it('answers 502 without caching when the original is unavailable', async () => {
