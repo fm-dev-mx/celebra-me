@@ -115,8 +115,8 @@ Tick each; paste the evidence into the handoff.
 - [ ] Memories keys ready: the two public keys for `celebra-memories-sign` and
       `celebra-memories-retrieve` are in the owner's password manager, together with the current
       (Vercel) public keys those Workers hold today, which a rollback needs back.
-- [ ] Remote visual compare available: `pnpm visual:remote:capture` and `pnpm visual:remote:compare`
-      exist on the branch used on Sunday (PR #273). **TO BUILD** until that PR is merged.
+- [ ] Remote visual compare ready (PR #273, on `develop`): run it from an up-to-date `develop`
+      checkout; `pnpm visual:remote:routes --origin=https://www.celebra-me.com` lists the routes.
 - [ ] Observability on: Workers logs + alerts. **TO BUILD**: Cloudflare notification for Worker
       error rate and an external uptime alert (the repo has
       `.github/workflows/production-uptime.yml`, every 15 min,
@@ -312,15 +312,15 @@ Built: Production environment in `wrangler.jsonc` with its Cron Triggers declare
 the Cloudflare Production upload workflow, the Production secrets option
 (`pnpm ops:cloudflare:production:secrets`), the Production version URL smoke
 (`pnpm ops:cloudflare:production:smoke`), the read-only integrity snapshot
-(`pnpm db:integrity:snapshot`, PR #274) and the WhatsApp-only contact card (PR #271). Access on
-version URLs and the 22 secrets are in place since 2026-10-15.
+(`pnpm db:integrity:snapshot`, PR #274), the remote visual compare (`pnpm visual:remote:*`, PR #273)
+and the WhatsApp-only contact card (PR #271). Access on version URLs and the 22 secrets are in place
+since 2026-10-15.
 
 Still open:
 
 1. Final upload run for v0.28.1 (step 3.1.5).
 2. Rollback rehearsal record on Preview, before Saturday 00:00.
-3. Remote visual compare (`pnpm visual:remote:*`, PR #273) merged before Sunday 01:00.
-4. The current (Vercel) memories public keys available for a rollback (section 3).
-5. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
-6. After the night: delete `celebra-me-memories-prod-keys.txt` and `generar-llaves-recuerdos.mjs`
+3. The current (Vercel) memories public keys available for a rollback (section 3).
+4. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
+5. After the night: delete `celebra-me-memories-prod-keys.txt` and `generar-llaves-recuerdos.mjs`
    outside the repository, once the keys are in the password manager.
