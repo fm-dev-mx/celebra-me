@@ -523,8 +523,10 @@ Manual only (`workflow_dispatch` from `main`). It builds the Cloudflare target f
 uploads a Worker version tagged with the commit SHA and smokes that version URL behind Cloudflare
 Access with `pnpm ops:cloudflare:production:smoke`, which also fails when the version URL answers
 without the service token. It never routes traffic: `env.production` in `wrangler.jsonc` has no
-routes, no `workers.dev` host and no crons; the cutover adds the zone routes by hand
-(`docs/operations/cloudflare-production-cutover.md`). The first run creates the Worker with
+routes and no `workers.dev` host; the cutover adds the zone routes by hand
+(`docs/operations/cloudflare-production-cutover.md`). It declares the two Vercel cron schedules,
+which version uploads, version deploys and secret changes never apply; the cutover enables them once
+Vercel is paused (section 8.1 of that runbook). The first run creates the Worker with
 `wrangler deploy`, because `wrangler versions upload` cannot create one. Evidence is a GitHub
 Deployment in the `Cloudflare Production` environment and the commit status
 `Cloudflare - celebra-me production candidate smoke`; no release gate reads either, so a candidate
