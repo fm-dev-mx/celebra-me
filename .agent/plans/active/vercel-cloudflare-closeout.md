@@ -121,7 +121,14 @@ table records what happened.
 | 19   | Not done, on purpose: Vercel stays on as standby, not paused, and runs no crons.                   |
 | 20   | Both crons (`17 15 * * *`, `43 10 * * *`) run on the Worker since 10-16.                           |
 | 14   | The Fri 23:59 fallback rule (cutover Mon 10-19) no longer applies.                                 |
-| 16   | T-1 h snapshot and step 18 checks: evidence not recorded in this plan yet.                         |
+| 16   | Done: integrity compare `ok: true`; details below the table.                                       |
+
+Step 16: Integrity snapshot, target `production`: before Fri 10-16 14:46 (21:46Z), after 17:21
+(10-17 00:21Z). Compare `ok: true`: no failures, no missing rows; 18 changed rows (16
+`public.guest_invitations`, 2 `auth.users`, all newer `updated_at`); new rows
+`guest_invitation_audit` +7, `guest_engagement_events` +63; per-event count changes in 6 events (14
+fields, all forward RSVP/engagement activity). Evidence stays outside the repo in the owner's
+`evidencia-corte-2026-10-18` folder (named for the planned 10-18 date; captures are from 10-16).
 
 The fixed dates in §2 are unchanged: no Production change Sat 10-17; no migrations until Mon 10-26
 02:00; no release to `main` from 10-23 to 11-07.

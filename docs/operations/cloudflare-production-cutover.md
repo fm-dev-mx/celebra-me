@@ -110,8 +110,12 @@ Tick each; paste the evidence into the handoff.
 - [ ] Supabase Auth redirect URLs include the production host(s) (Supabase link above).
 - [ ] DNS records copied DNS-only: Zoho MX x3, SPF, DKIM `zmail._domainkey`, DMARC, TXT
       verifications.
-- [ ] Rollback rehearsed on Preview (route add/delete takes < 2 min), before Saturday 00:00. **TO
-      BUILD**: the rehearsal record.
+- [x] Rollback rehearsed on Preview (route add/delete takes < 2 min), before Saturday 00:00. Record
+      (2026-10-16, owner): added and then deleted the zone route
+      `ensayo-vuelta-atras.celebra-me.com/*` -> Worker `celebra-me-preview`, with no DNS record and
+      no traffic. `www`, apex, DNS, Vercel and the Production Worker were not touched. Owner
+      estimate (not measured): ~30 s per route, ~1 min for the two Production routes, within the
+      2-minute limit of section 3. The route no longer appears in the route list.
 - [ ] Memories keys ready: the two public keys for `celebra-memories-sign` and
       `celebra-memories-retrieve` are in the owner's password manager, together with the current
       (Vercel) public keys those Workers hold today, which a rollback needs back.
@@ -319,11 +323,15 @@ since 2026-10-15.
 Still open:
 
 1. Final upload run for v0.28.1 (step 3.1.5).
-2. Rollback rehearsal record on Preview, before Saturday 00:00.
-3. The current (Vercel) memories public keys available for a rollback (section 3).
-4. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
-5. After the night: delete `celebra-me-memories-prod-keys.txt` and `generar-llaves-recuerdos.mjs`
-   outside the repository, once the keys are in the password manager.
-6. After Vercel is deleted: set `workers_dev: false` on `celebra-memories-retrieve` and redeploy it.
+2. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
+3. After Vercel is deleted: set `workers_dev: false` on `celebra-memories-retrieve` and redeploy it.
    Until then Vercel, the rollback host, still calls its `workers.dev` origin; the Cloudflare Worker
-   already uses the `MEMORIES_RETRIEVE` Service Binding.
+   already uses the `MEMORIES_RETRIEVE` Service Binding. The sign Worker keeps `workers_dev`:
+   browsers upload to its public host.
+
+Done 2026-10-17 (owner):
+
+- The current (Vercel) memories public keys available for a rollback (section 3): in the password
+  manager.
+- `celebra-me-memories-prod-keys.txt` and `generar-llaves-recuerdos.mjs` deleted outside the
+  repository, after the keys were in the password manager.
