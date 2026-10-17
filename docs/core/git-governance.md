@@ -2,7 +2,7 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-10-14
+**Last Updated:** 2026-10-16
 
 ## Overview
 
@@ -98,6 +98,53 @@ mutation authorization.
 
 `pnpm ops worktree-status` reports every lane read-only. Astro uses the lane port with `strictPort`;
 override it with `ASTRO_PORT`. Local-runtime lanes share the persistent Local Supabase database.
+
+## Branch and Worktree Hygiene
+
+A branch is obsolete when it is merged into `origin/develop`, has no open pull request and no
+worktree has it checked out. Obsolete branches are deleted, locally and on `origin`, by the session
+that integrated them:
+
+```bash
+git branch -d <task-branch>                # never -D: -d refuses unmerged work
+git push origin --delete <task-branch>     # only when the branch was pushed
+```
+
+A task merged through a GitHub pull request leaves its remote branch behind unless the repository
+deletes head branches on merge; delete it in the same session. A pull request into `develop` or
+`main` merges with a merge commit, never with squash or rebase.
+
+Periodic sweep, read-only until each deletion is confirmed:
+
+```bash
+git fetch --all --prune --tags
+git branch --merged origin/develop          # local candidates
+git branch -r --merged origin/develop       # remote candidates
+git worktree list                           # exclude branches checked out here
+gh pr list --state open                     # exclude branches with an open pull request
+```
+
+Rules:
+
+- Release candidates use `candidate/vX.Y.Z` ([release process](release-process.md)). Older
+  `chore/release-vX.Y.Z` branches are the same thing under a retired name; delete them once their
+  release reached `main`.
+- A task branch never tracks `origin/develop` as its upstream; `git status` then reports the trunk
+  as the branch's remote and `git push` targets the wrong ref. Push with
+  `git push -u origin <branch>`.
+- Agent worktrees are ephemeral and are not lanes. The Claude desktop app creates
+  `.claude/worktrees/<name>` with a `claude/<name>` branch (ignored through `.git/info/exclude`);
+  Codex creates worktrees under its own home directory. When the agent session ends, its task branch
+  is integrated or abandoned explicitly, and the worktree and `claude/<name>` branch are removed
+  with the app or with `git worktree remove` (never with `--force` while it holds work).
+- Before treating a worktree as dirty, compare the modified files with their committed content. A
+  worktree whose Git LFS filter is not active lists every LFS image as modified even when the
+  content is identical (`sha256sum <file>` equals the `oid` in `git show HEAD:<file>`).
+- Bringing a task branch up to date (`pnpm lane:sync`) is for a real need: a conflict, or work the
+  task depends on. GitHub's "Update branch" button creates the same sync merge; do not use it only
+  to make a pull request look current.
+- Dependabot commits land through their own pull request or task branch, never inside an unrelated
+  task branch (see the merge rules above).
 
 ## Commit Contract
 
@@ -498,5 +545,10 @@ Rules:
 - Release PR titles name the version and the primary shipped outcome. Bodies list included changes,
   material risks, visual/schema/content impact and separately authorized operations.
 - Never rewrite or force-push `main` or `develop`; never use a bypass.
+- Every release merge on `main` gets its version tag, and every version tag is pushed to `origin`.
+  `git ls-remote --tags origin` must list each local `vX.Y.Z` tag.
+- `archive/<topic>-<YYYY-MM-DD>` annotated tags keep recovery points for history that no branch
+  holds any more (for example a stash or a retired lane state). Push them when the history must
+  survive this machine; never reuse the `v` prefix for them.
 - Land hotfixes on `develop` first, then release.
 - Rollback: revert on a task branch, integrate into `develop`, and release normally.
