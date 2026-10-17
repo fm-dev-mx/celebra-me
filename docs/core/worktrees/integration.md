@@ -41,3 +41,17 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 ## Agents
 
 Use an explicit `cwd` of this root.
+
+## Agent worktrees
+
+Agent tools add worktrees of this repository outside the four lanes: the Claude desktop app under
+`.claude/worktrees/<name>` (branch `claude/<name>`) and Codex under its own home directory. They are
+not lanes and never become persistent. Integration owns their cleanup during a hygiene sweep
+([Git governance](../git-governance.md#branch-and-worktree-hygiene)):
+
+1. Check `git worktree list` and the agent session list; keep every worktree whose session is still
+   open or whose branch has an open pull request.
+2. Run `git -C <worktree> status --porcelain` and rule out Git LFS false positives before calling
+   the worktree dirty.
+3. Remove a finished worktree with the app or `git worktree remove <path>`, then delete its merged
+   `claude/<name>` branch with `git branch -d`.
