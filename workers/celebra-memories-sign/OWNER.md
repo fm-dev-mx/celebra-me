@@ -260,21 +260,48 @@ lifetime) is the final bound, not immediate cleanup.
 Every live result starts `UNVERIFIED`. Use only `VERIFIED`, `FAILED`, or `UNVERIFIED`; never infer
 success from repository files or local tests.
 
-| Boundary        | Required proof                                                                                        | Initial state |
-| --------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
-| Database        | Migration versions, RLS enabled, grants denied to browser roles, RPCs callable only by service role   | UNVERIFIED    |
-| Private R2      | Private bucket, Worker-only upload/retrieval, no listing/guessed read, exact lifecycle                | UNVERIFIED    |
-| Worker auth     | Missing/stale/wrong-audience/tampered envelopes fail without object metadata                          | UNVERIFIED    |
-| Space isolation | A session of one space cannot read, upload, or recover in another space                               | UNVERIFIED    |
-| Window          | Reservations rejected before opening, after closing, and for a disabled space                         | UNVERIFIED    |
-| Upload          | Synthetic photo/video, checksum persistence, one accepted copy, duplicate cleanup, interruption/retry | UNVERIFIED    |
-| Guest isolation | Recovery, own accepted preview, edit, delete, quota, revocation, cross-session media ID denied        | UNVERIFIED    |
-| Owner isolation | Owner list/preview/download succeeds; manager, non-member, super-admin-only, anonymous denied         | UNVERIFIED    |
-| Retrieval       | Range seeking, attachment, deleted/rejected/duplicate denied, no signed GET or key exposure           | UNVERIFIED    |
-| Cleanup         | Abandoned reservation, duplicate, rejected, deleted and retention-expired objects physically removed  | UNVERIFIED    |
-| Export          | All accepted objects emitted in bounded encrypted batches; Web Crypto absence fails closed            | UNVERIFIED    |
-| Phones          | Current iOS Safari and Android Chrome over mobile and shared Wi-Fi, including a 60-second video       | UNVERIFIED    |
-| Operations      | Aggregate request/storage budget, sampled PII-free logs, audit retention, key revocation              | UNVERIFIED    |
+| Boundary        | Required proof                                                                                        | State      |
+| --------------- | ----------------------------------------------------------------------------------------------------- | ---------- |
+| Database        | Migration versions, RLS enabled, grants denied to browser roles, RPCs callable only by service role   | VERIFIED   |
+| Private R2      | Private bucket, Worker-only upload/retrieval, no listing/guessed read, exact lifecycle                | FAILED     |
+| Worker auth     | Missing/stale/wrong-audience/tampered envelopes fail without object metadata                          | UNVERIFIED |
+| Space isolation | A session of one space cannot read, upload, or recover in another space                               | UNVERIFIED |
+| Window          | Reservations rejected before opening, after closing, and for a disabled space                         | UNVERIFIED |
+| Upload          | Synthetic photo/video, checksum persistence, one accepted copy, duplicate cleanup, interruption/retry | FAILED     |
+| Guest isolation | Recovery, own accepted preview, edit, delete, quota, revocation, cross-session media ID denied        | UNVERIFIED |
+| Owner isolation | Owner list/preview/download succeeds; manager, non-member, super-admin-only, anonymous denied         | UNVERIFIED |
+| Retrieval       | Range seeking, attachment, deleted/rejected/duplicate denied, no signed GET or key exposure           | UNVERIFIED |
+| Cleanup         | Abandoned reservation, duplicate, rejected, deleted and retention-expired objects physically removed  | UNVERIFIED |
+| Export          | All accepted objects emitted in bounded encrypted batches; Web Crypto absence fails closed            | UNVERIFIED |
+| Phones          | Current iOS Safari and Android Chrome over mobile and shared Wi-Fi, including a 60-second video       | UNVERIFIED |
+| Operations      | Aggregate request/storage budget, sampled PII-free logs, audit retention, key revocation              | UNVERIFIED |
+
+### Staging evidence, 2026-10-17
+
+Synthetic space: the Preview fixture event `xv/e2e-preview-publication`, activated from
+`/dashboard/admin/recuerdos` as a courtesy space (1 GB, 100 files; 15 files, 3 videos and 300 MB per
+guest; window 2026-10-17 07:30 to 2026-10-22 20:00, retention to 2026-10-31, America/Mazatlan).
+Media: generated colour-pattern PNGs and a 3-second MP4. No other Preview space was read or changed.
+
+| Boundary        | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database        | `pnpm db:preview:audit`: 106/106 migrations, latest `20261015220000`, all nine memories migrations present (schema fingerprint step not run: the disposable reference was 105/106). Catalog query: RLS enabled and forced on the four `event_memory_*` tables, no SELECT/INSERT/UPDATE/DELETE for `anon` or `authenticated`; the ten memories RPCs are executable only by `service_role`.                                                               |
+| Private R2      | `wrangler r2 bucket dev-url get`: r2.dev disabled; `domain list`: no custom domain; guessed-key GET on the Retrieval Worker and listing GET on the Sign Worker: 404; lifecycle shows only the default multipart-abort rule (Staging carries no repository lifecycle file). FAILED: `cors list` shows one PUT rule for an old Vercel branch-preview origin, while `r2-cors.staging.json` is empty. Fix: apply the repository file to the Staging bucket. |
+| Worker auth     | Sign `/sign` and Retrieval `/retrieve`: missing, stale (one hour old), wrong-audience and forged-signature envelopes all answer `401 {"error":{"code":"unauthorized"}}` with no object metadata. `/upload` without a capability: `400 capability_invalid`; from a foreign origin: `403`. Still UNVERIFIED: a validly signed but stale envelope needs the Preview private key.                                                                           |
+| Space isolation | Waiting for uploads: needs a second synthetic space and an accepted item.                                                                                                                                                                                                                                                                                                                                                                               |
+| Window          | Waiting: the window and pause checks change the synthetic space and were not run read-only.                                                                                                                                                                                                                                                                                                                                                             |
+| Upload          | Blocked: every reservation answers `503 service_unavailable` and is released (quota stays 0/15). App log: `MemoriesSignerError (404)`; the Sign Worker log stays empty. Cause: the Preview app Worker reaches the Sign Worker through its public `workers.dev` address, which Cloudflare refuses between Workers of the same `workers.dev` subdomain (error 1042). Fix: a service binding to the Sign Worker.                                           |
+| Guest isolation | Partial: a wrong recovery code answers `401`; an unknown media ID answers `404`. Observed: `DELETE /api/memories/<slug>/session` answers 200 but the session cookie stays, so the next `GET` still returns the profile. Remaining steps wait for uploads.                                                                                                                                                                                               |
+| Owner isolation | Waiting for uploads and for an event `owner` assignment (the console warns that no principal host can see the synthetic space).                                                                                                                                                                                                                                                                                                                         |
+| Retrieval       | Waiting for uploads.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Cleanup         | Waiting for uploads and an authorized cleanup `GET`.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Export          | Waiting for uploads.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Phones          | Waiting for uploads.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Operations      | Partial: `wrangler r2 bucket info`: 0 objects, 0 B in the Staging bucket; the console reports 6 GB of 10 GB committed by live Preview spaces. Log sample of the failed reservations carried no names, keys or capabilities. Audit retention and key revocation not yet exercised.                                                                                                                                                                       |
+
+Repository check: `pnpm worker:memories:config:generate` leaves the three generated files
+content-identical (it rewrites them with CRLF line endings on Windows; `git checkout` restores
+them).
 
 ### Phone rehearsal checklist
 
