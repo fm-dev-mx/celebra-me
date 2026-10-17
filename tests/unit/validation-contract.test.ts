@@ -159,6 +159,8 @@ describe('canonical validation contract', () => {
 				'pnpm ci:static',
 				'pnpm test',
 				'pnpm test:e2e:ci --max-failures=5 --workers=2',
+				// Guest memories specs run on every device project of playwright.memories.config.ts.
+				'pnpm test:e2e:memories --max-failures=5 --workers=2',
 			]) {
 				expect(workflowLines).toContain(`run: ${command}`);
 			}

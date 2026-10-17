@@ -302,6 +302,14 @@ jobs:
                   BROWSER_STEP_OUTCOME: ${{ steps.browser-checks.outcome }}
               run: pnpm exec tsx scripts/ops/browser-outcome.ts
 
+            # Guest memories flow on every device project (Chromium, WebKit and in-app user agents)
+            # against the canonical memory space; guest APIs and the upload Worker are mocked.
+            - name: Memories guest browser checks
+              id: memories-checks
+              if: github.event.inputs.visual_mode != 'candidate'
+              continue-on-error: true
+              run: pnpm test:e2e:memories --max-failures=5 --workers=2
+
             - name: Generate visual review candidate
               if: github.event.inputs.visual_mode == 'candidate'
               run: pnpm visual:parity:candidate
@@ -335,7 +343,9 @@ jobs:
                   retention-days: 3
 
             - name: Enforce browser result
-              if: github.event.inputs.visual_mode != 'candidate' && steps.browser-checks.outcome != 'success'
+              if: >-
+                  github.event.inputs.visual_mode != 'candidate' &&
+                  (steps.browser-checks.outcome != 'success' || steps.memories-checks.outcome != 'success')
               run: exit 1
 
     application-validation:
