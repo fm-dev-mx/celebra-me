@@ -308,13 +308,19 @@ describe('PATCH /api/memories/[slug]/session', () => {
 });
 
 describe('DELETE /api/memories/[slug]/session', () => {
-	it('clears the per-space cookie', async () => {
+	it('clears the per-space cookie with its Secure host-only attributes', async () => {
 		const { context, cookies } = createContext(getRequest(`${COOKIE_NAME}=guest-token`));
 
 		const response = await DELETE(context);
 
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toEqual({ success: true });
-		expect(cookies.delete).toHaveBeenCalledWith(COOKIE_NAME, { path: '/' });
+		// A __Host- deletion without Secure is ignored by browsers.
+		expect(cookies.delete).toHaveBeenCalledWith(COOKIE_NAME, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax',
+			path: '/',
+		});
 	});
 });

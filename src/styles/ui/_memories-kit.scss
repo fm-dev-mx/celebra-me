@@ -127,6 +127,14 @@
 		font-weight: 600;
 	}
 
+	// Play triangle: marks a video tile even when no frame could be painted.
+	&__play {
+		width: 0;
+		height: 0;
+		border-block: 0.3rem solid transparent;
+		border-inline-start: 0.5rem solid currentcolor;
+	}
+
 	&__check {
 		position: absolute;
 		top: 0.35rem;

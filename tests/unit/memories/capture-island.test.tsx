@@ -19,7 +19,10 @@ import {
 	MEMORIES_MAX_IMAGE_BYTES,
 	MEMORIES_MAX_VIDEO_BYTES,
 } from '@/lib/memories/contract/media-policy';
-import { memoriesCaptureCopy as copy } from '@/lib/memories/copy';
+import {
+	memoriesCaptureCopy as copy,
+	memoriesGalleryCopy as galleryCopy,
+} from '@/lib/memories/copy';
 import { fetchPutTransport } from '@/lib/memories/client/upload-pipeline';
 
 jest.mock('@/lib/memories/client/api', () => {
@@ -337,6 +340,44 @@ describe('MemoriesCapture island', () => {
 		);
 		expect(screen.getByText(PROFILE.displayName)).toBeInTheDocument();
 		expect(screen.queryByLabelText(copy.chooseFile)).not.toBeInTheDocument();
+	});
+
+	it('shows a first frame and a video badge on a video without thumbnail, and plays it in its options', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems.mockResolvedValue({
+			items: [
+				buildItem({
+					id: 'video-item',
+					status: 'accepted',
+					caption: 'Baile',
+					mimeType: 'video/mp4',
+					hasThumbnail: false,
+				}),
+			],
+			quota: QUOTA,
+		});
+
+		const { container } = renderCapture();
+		const tile = await screen.findByRole('button', { name: /Baile/ });
+		const tileVideo = tile.querySelector('video');
+		// WebKit paints no frame for preload="metadata" without a start offset.
+		expect(tileVideo).toHaveAttribute(
+			'src',
+			`/api/memories/${PUBLIC_SLUG}/items/video-item#t=0.001`,
+		);
+		expect(within(tile).getByText(galleryCopy.video)).toBeInTheDocument();
+
+		await user.click(tile);
+		const sheet = screen.getByRole('dialog', { name: copy.memoryOptions });
+		const player = sheet.querySelector('video');
+		expect(player).toHaveAttribute('controls');
+		expect(player).toHaveAttribute('playsinline');
+		expect(player).toHaveAttribute(
+			'src',
+			`/api/memories/${PUBLIC_SLUG}/items/video-item#t=0.001`,
+		);
+		expect(container.querySelectorAll('img.memories-guest-sheet__media')).toHaveLength(0);
 	});
 
 	it('offers a calendar reminder instead of the form before the window opens', async () => {
