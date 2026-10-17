@@ -21,7 +21,7 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 - Integration may host one task when it is assigned there. Create a task branch first
   (`git switch -c <feat|fix|docs|chore|candidate>/<name> develop`); never author commits directly on
   `develop` or `main`. `develop` receives task branches only through the Integrate step (one
-  `--no-ff` merge per task) and the release back-merge.
+  `--no-ff` merge or one pull request merge per task) and the release back-merge.
 - Before integrating, return to `develop` with a clean tree (`git switch develop`), then follow the
   Integrate step in [Git governance](../git-governance.md#task-lifecycle) and delete the task
   branch.

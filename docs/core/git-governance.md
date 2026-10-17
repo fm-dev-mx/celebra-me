@@ -16,8 +16,8 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 
 - `develop` is the trunk. It accepts direct pushes from Integration that only add commits (merge
   commits included); Repository CI runs on every push and is the integration gate. It blocks
-  deletion and non-fast-forward (history-rewriting) updates. Pull requests into `develop`
-  (Dependabot updates) also run Repository CI before they are merged.
+  deletion and non-fast-forward (history-rewriting) updates. Pull requests into `develop` (task
+  branches and Dependabot updates) also run Repository CI before they are merged.
 - `main` is production. It changes only through the release pull request from `develop`, which
   requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
 - Task branches (`feat/*`, `fix/*`, `candidate/*`, `docs/*`, `chore/*`) are ephemeral. `docs/*` is
@@ -77,7 +77,16 @@ mutation authorization.
    reverts the same way: `git revert -m 1 <merge>`. Group a multi-step program into one task branch
    per step with several commits rather than one task per commit. Resolve conflicts deliberately in
    the merge (never automatic `ours`/`theirs`), then run the applicable checks before pushing.
-   Pushing a task branch to `origin` is optional; CI does not run on task branches.
+   Pushing a task branch to `origin` is needed only for a pull request; CI runs on a task branch
+   only through its pull request.
+
+   A task may instead land through a GitHub pull request into `develop`, merged with a merge commit
+   (the only method the repository allows). Its header,
+   `Merge pull request #<n> from <owner>/<task-branch>`, still names the branch, and the task
+   reverts the same way. Prefer a pull request for code changes, because Repository CI checks the
+   branch before it reaches `develop`. A local merge suits documentation-only or urgent changes,
+   where CI runs after the push. A task lands once: never both a pull request and a local merge for
+   the same branch.
 
    Merge rules:
    - Merge task branches only into `develop`. Never merge one task branch into another: when a task
