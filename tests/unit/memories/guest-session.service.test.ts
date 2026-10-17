@@ -3,6 +3,7 @@ jest.mock('@/lib/memories/server/catalog.repository', () => ({
 	recoverSessionByRecoveryHash: jest.fn(),
 	resolveSessionByTokenHash: jest.fn(),
 	updateSessionDisplayName: jest.fn(),
+	updateSessionRecoveryHash: jest.fn(),
 }));
 
 jest.mock('@/lib/memories/server/audit', () => ({
@@ -21,6 +22,7 @@ import {
 	recoverSessionByRecoveryHash,
 	resolveSessionByTokenHash,
 	updateSessionDisplayName,
+	updateSessionRecoveryHash,
 } from '@/lib/memories/server/catalog.repository';
 import { appendMemoriesAudit } from '@/lib/memories/server/audit';
 import {
@@ -28,6 +30,7 @@ import {
 	createGuestSession,
 	getGuestSessionFromRequest,
 	recoverGuestSession,
+	rotateGuestRecoveryCode,
 	setGuestSessionCookie,
 	toGuestProfile,
 	updateGuestProfile,
@@ -51,6 +54,9 @@ const mockResolve = resolveSessionByTokenHash as jest.MockedFunction<
 >;
 const mockUpdateName = updateSessionDisplayName as jest.MockedFunction<
 	typeof updateSessionDisplayName
+>;
+const mockUpdateRecovery = updateSessionRecoveryHash as jest.MockedFunction<
+	typeof updateSessionRecoveryHash
 >;
 const mockAudit = appendMemoriesAudit as jest.MockedFunction<typeof appendMemoriesAudit>;
 
@@ -337,5 +343,69 @@ describe('updateGuestProfile and toGuestProfile', () => {
 			status: 404,
 			code: 'not_found',
 		});
+	});
+});
+
+describe('rotateGuestRecoveryCode', () => {
+	beforeEach(() => jest.clearAllMocks());
+
+	it('stores only the hash of a new code, so the previous code stops recovering', async () => {
+		// One stored hash per session, as in event_memory_sessions.recovery_code_hash.
+		let storedHash = sha256(RECOVERY_CODE);
+		mockUpdateRecovery.mockImplementation(async (_sessionId, hash) => {
+			storedHash = hash;
+			return buildSessionRow();
+		});
+		mockRecover.mockImplementation(async (_eventId, hash) =>
+			hash === storedHash ? buildSessionRow() : null,
+		);
+		const space = buildSpace();
+
+		const newCode = await rotateGuestRecoveryCode(space, buildSessionRow());
+
+		expect(newCode).toMatch(MEMORIES_RECOVERY_CODE_PATTERN);
+		expect(newCode).not.toBe(RECOVERY_CODE);
+		expect(mockUpdateRecovery).toHaveBeenCalledWith(SESSION_ID, sha256(newCode));
+		expect(JSON.stringify(mockUpdateRecovery.mock.calls)).not.toContain(newCode);
+		await expect(recoverGuestSession(space, RECOVERY_CODE)).rejects.toMatchObject({
+			status: 401,
+		});
+		await expect(recoverGuestSession(space, newCode)).resolves.toMatchObject({
+			profile: { displayName: 'Tía Ana' },
+		});
+		expect(mockAudit).toHaveBeenCalledWith({
+			eventId: EVENT_ID,
+			actorType: 'guest',
+			action: 'recovery_code_rotated',
+		});
+	});
+
+	it('retries a collision with another session code using a fresh code', async () => {
+		mockUpdateRecovery
+			.mockRejectedValueOnce(uniqueViolation())
+			.mockResolvedValueOnce(buildSessionRow());
+
+		const code = await rotateGuestRecoveryCode(buildSpace(), buildSessionRow());
+
+		expect(mockUpdateRecovery).toHaveBeenCalledTimes(2);
+		expect(mockUpdateRecovery.mock.calls[0][1]).not.toBe(mockUpdateRecovery.mock.calls[1][1]);
+		expect(mockUpdateRecovery.mock.calls[1][1]).toBe(sha256(code));
+	});
+
+	it('gives up after the third collision', async () => {
+		mockUpdateRecovery.mockRejectedValue(uniqueViolation());
+		await expect(
+			rotateGuestRecoveryCode(buildSpace(), buildSessionRow()),
+		).rejects.toBeInstanceOf(SupabaseHttpError);
+		expect(mockUpdateRecovery).toHaveBeenCalledTimes(3);
+		expect(mockAudit).not.toHaveBeenCalled();
+	});
+
+	it('returns 404 without auditing when the session was revoked meanwhile', async () => {
+		mockUpdateRecovery.mockResolvedValue(null);
+		await expect(
+			rotateGuestRecoveryCode(buildSpace(), buildSessionRow()),
+		).rejects.toMatchObject({ status: 404, code: 'not_found' });
+		expect(mockAudit).not.toHaveBeenCalled();
 	});
 });

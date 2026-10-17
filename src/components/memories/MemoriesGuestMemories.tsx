@@ -9,6 +9,7 @@ import {
 	memoriesCaptureCopy as copy,
 	memoriesGalleryCopy as galleryCopy,
 } from '@/lib/memories/copy';
+import MemoriesRecoveryCodeCard from '@/components/memories/MemoriesRecoveryCodeCard';
 
 type Item = MemoriesMediaPublicItem;
 
@@ -18,6 +19,8 @@ type Props = {
 	thumbnailUrl: (item: Item) => string;
 	onSaveCaption: (item: Item, caption: string) => Promise<boolean>;
 	onDelete: (item: Item) => Promise<boolean>;
+	/** Resolves the new code, or null when it could not be issued. */
+	onRotateRecoveryCode: () => Promise<string | null>;
 };
 
 function memoriesGuestStatusLabel(item: Item): string {
@@ -178,8 +181,11 @@ export default function MemoriesGuestMemories({
 	thumbnailUrl,
 	onSaveCaption,
 	onDelete,
+	onRotateRecoveryCode,
 }: Props) {
 	const [openId, setOpenId] = useState<string | null>(null);
+	const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
+	const [codeState, setCodeState] = useState<'idle' | 'busy' | 'failed'>('idle');
 	const open = items.find((item) => item.id === openId) ?? null;
 
 	return (
@@ -239,6 +245,32 @@ export default function MemoriesGuestMemories({
 					})}
 				</ul>
 			)}
+			<div className="memories-guest-memories__code">
+				{recoveryCode ? (
+					<MemoriesRecoveryCodeCard recoveryCode={recoveryCode} />
+				) : (
+					<button
+						type="button"
+						className="status-page__btn status-page__btn--outline"
+						disabled={codeState === 'busy'}
+						onClick={() => {
+							if (!window.confirm(copy.showRecoveryCodeConfirm)) return;
+							setCodeState('busy');
+							void onRotateRecoveryCode().then((code) => {
+								setRecoveryCode(code);
+								setCodeState(code ? 'idle' : 'failed');
+							});
+						}}
+					>
+						{copy.showRecoveryCode}
+					</button>
+				)}
+				{codeState === 'failed' ? (
+					<p className="status-page__status status-page__status--error" role="alert">
+						{copy.showRecoveryCodeFailed}
+					</p>
+				) : null}
+			</div>
 			{open ? (
 				<MemoryOptions
 					item={open}

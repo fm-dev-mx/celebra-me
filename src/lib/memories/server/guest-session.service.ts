@@ -16,6 +16,7 @@ import {
 	recoverSessionByRecoveryHash,
 	resolveSessionByTokenHash,
 	updateSessionDisplayName,
+	updateSessionRecoveryHash,
 	type SessionRow,
 } from './catalog.repository';
 import {
@@ -145,6 +146,40 @@ export async function recoverGuestSession(
 		throw new ApiError(401, 'unauthorized', 'El código de recuperación expiró o no es válido.');
 	}
 	return { sessionToken, profile: toGuestProfile(session) };
+}
+
+/**
+ * Issues a new recovery code for the guest's own session. Only the hash is
+ * stored, so the previous code can never be shown again and stops working.
+ */
+export async function rotateGuestRecoveryCode(
+	space: MemoriesSpaceRecord,
+	session: SessionRow,
+): Promise<string> {
+	for (let attempt = 0; attempt < 3; attempt += 1) {
+		const recoveryCode = createMemoriesRecoveryCode();
+		let updated: SessionRow | null;
+		try {
+			updated = await updateSessionRecoveryHash(session.id, hashMemoriesSecret(recoveryCode));
+		} catch (error) {
+			// A rare collision with another session's code is retried with a fresh code.
+			if (
+				error instanceof SupabaseHttpError &&
+				error.code === UNIQUE_VIOLATION &&
+				attempt < 2
+			)
+				continue;
+			throw error;
+		}
+		if (!updated) throw new ApiError(404, 'not_found', 'La sesión ya no está disponible.');
+		await appendMemoriesAudit({
+			eventId: space.eventId,
+			actorType: 'guest',
+			action: 'recovery_code_rotated',
+		});
+		return recoveryCode;
+	}
+	throw new ApiError(503, 'service_unavailable', 'No se pudo crear un código nuevo.');
 }
 
 export async function updateGuestProfile(

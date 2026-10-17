@@ -488,6 +488,16 @@
 	border-top: 1px solid rgb(var(--color-text-primary-rgb) / 18%);
 	scroll-margin-top: 1rem;
 
+	&__code {
+		display: grid;
+		gap: 0.5rem;
+		justify-items: start;
+
+		.status-page__recovery-code {
+			justify-self: stretch;
+		}
+	}
+
 	h2 span {
 		color: var(--color-text-secondary, var(--color-text-muted));
 		font-family: var(--font-ui, inherit);

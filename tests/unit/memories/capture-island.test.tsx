@@ -120,6 +120,8 @@ function createGuestApiFake(): jest.Mocked<MemoriesGuestApi> {
 		createSession: jest.fn(),
 		recoverSession: jest.fn(),
 		updateProfile: jest.fn(),
+		endSession: jest.fn(),
+		rotateRecoveryCode: jest.fn(),
 		listItems: jest.fn(),
 		reserve: jest.fn(),
 		complete: jest.fn(),
@@ -535,6 +537,70 @@ describe('MemoriesCapture island', () => {
 		await user.click(screen.getByRole('button', { name: copy.saveLabel }));
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.sessionLost);
+	});
+
+	it('leaves the session after the guest confirms and asks for the name again', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.endSession.mockResolvedValue(undefined);
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.leaveSession }));
+
+		expect(confirm).toHaveBeenCalledWith(copy.leaveSessionConfirm);
+		expect(guestApi.endSession).toHaveBeenCalledTimes(1);
+		expect(await screen.findByLabelText(copy.displayNameLabel)).toHaveValue('');
+		expect(screen.queryByText(PROFILE.displayName)).not.toBeInTheDocument();
+		expect(screen.queryByText(copy.myMemories)).not.toBeInTheDocument();
+		confirm.mockRestore();
+	});
+
+	it('keeps the session when the guest cancels the leave confirmation', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(false);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.leaveSession }));
+
+		expect(guestApi.endSession).not.toHaveBeenCalled();
+		expect(screen.getByText(PROFILE.displayName)).toBeInTheDocument();
+		confirm.mockRestore();
+	});
+
+	it('shows a new recovery code with a copy button from «Mis recuerdos»', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.rotateRecoveryCode.mockResolvedValue('WXYZ-2345-6789');
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.showRecoveryCode }));
+
+		expect(confirm).toHaveBeenCalledWith(copy.showRecoveryCodeConfirm);
+		expect(await screen.findByText('WXYZ-2345-6789')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: copy.copyRecoveryCode })).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: copy.showRecoveryCode }),
+		).not.toBeInTheDocument();
+		confirm.mockRestore();
+	});
+
+	it('says when a new recovery code could not be issued', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.rotateRecoveryCode.mockRejectedValue(
+			new MemoriesRequestError(429, 'rate_limited'),
+		);
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.showRecoveryCode }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.showRecoveryCodeFailed);
+		expect(screen.getByRole('button', { name: copy.showRecoveryCode })).toBeEnabled();
+		confirm.mockRestore();
 	});
 
 	it('treats a file the storage already holds as sent and goes on to confirm it', async () => {
