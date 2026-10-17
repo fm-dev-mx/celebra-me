@@ -12,6 +12,7 @@ import {
 	RANKING_GROUP_KEYS,
 	RANKING_METRICS,
 	type EngagementRankingReport,
+	type HistoricalEstimatesReport,
 	type RankingFilters,
 	type RankingGroupKey,
 	type RankingMetric,
@@ -97,5 +98,17 @@ export const engagementRankingApi = {
 			),
 		);
 		return payload.ranking;
+	},
+
+	/** Historical estimate (legacy telemetry, cleaned once): its own list, never ranked. */
+	async historical(eventType: string): Promise<HistoricalEstimatesReport> {
+		const params = new URLSearchParams({ level: 'historical' });
+		if (eventType !== DEFAULT_RANKING_REQUEST.eventType) params.set('eventType', eventType);
+		const payload = unwrap(
+			await dashboardApi.get<{ historical: HistoricalEstimatesReport }>(
+				`${ENGAGEMENT_RANKING_API_PATH}?${params.toString()}`,
+			),
+		);
+		return payload.historical;
 	},
 };

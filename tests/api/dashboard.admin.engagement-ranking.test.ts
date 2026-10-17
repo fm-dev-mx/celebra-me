@@ -8,13 +8,17 @@ jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 
 jest.mock('@/lib/rsvp/repositories/engagement.repository', () => ({
 	listInvitationEngagementRankingV2Rpc: jest.fn(),
+	listEngagementHistoricalEstimatesRpc: jest.fn(),
 }));
 
 import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
-import { listInvitationEngagementRankingV2Rpc } from '@/lib/rsvp/repositories/engagement.repository';
+import {
+	listEngagementHistoricalEstimatesRpc,
+	listInvitationEngagementRankingV2Rpc,
+} from '@/lib/rsvp/repositories/engagement.repository';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { GET as getRanking } from '@/pages/api/dashboard/admin/engagement/ranking';
 import { createMockRequest } from '../helpers/api-mocks';
@@ -27,6 +31,10 @@ const mockAdminRateLimit = requireAdminRateLimit as jest.MockedFunction<
 >;
 const mockRpc = listInvitationEngagementRankingV2Rpc as jest.MockedFunction<
 	typeof listInvitationEngagementRankingV2Rpc
+>;
+
+const mockHistoricalRpc = listEngagementHistoricalEstimatesRpc as jest.MockedFunction<
+	typeof listEngagementHistoricalEstimatesRpc
 >;
 
 type RouteContext = Parameters<typeof getRanking>[0];
@@ -57,6 +65,7 @@ beforeEach(() => {
 	mockAdminRateLimit.mockResolvedValue(undefined);
 	mockStrongSession.mockResolvedValue(adminSession);
 	mockRpc.mockResolvedValue([]);
+	mockHistoricalRpc.mockResolvedValue([]);
 });
 
 describe('GET /api/dashboard/admin/engagement/ranking', () => {
@@ -116,5 +125,40 @@ describe('GET /api/dashboard/admin/engagement/ranking', () => {
 		const response = await getRanking(context(`${BASE}?eventType=boda`));
 		expect(response.status).toBe(403);
 		expect(mockRpc).not.toHaveBeenCalled();
+	});
+
+	it('lists the historical estimate apart, with its method, for level=historical', async () => {
+		const response = await getRanking(context(`${BASE}?level=historical&eventType=xv`));
+		expect(response.status).toBe(200);
+		const body = (await response.json()) as {
+			historical: { eventType: string; method: { version: number }; invitations: unknown[] };
+		};
+		expect(body.historical).toMatchObject({
+			eventType: 'xv',
+			method: { version: 1, previewWindowMinutes: 2, visitGapMinutes: 30 },
+			invitations: [],
+		});
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(mockHistoricalRpc).toHaveBeenCalledWith('xv', 1);
+		expect(mockRpc).not.toHaveBeenCalled();
+	});
+
+	it('rejects an unknown data level or event type with 400 before reading', async () => {
+		for (const url of [
+			`${BASE}?level=estimated`,
+			`${BASE}?level=historical&eventType=fiesta`,
+		]) {
+			const response = await getRanking(context(url));
+			expect(response.status).toBe(400);
+		}
+		expect(mockHistoricalRpc).not.toHaveBeenCalled();
+	});
+
+	it('answers 503 while the historical routine is missing in the database', async () => {
+		mockHistoricalRpc.mockRejectedValue(
+			new SupabaseHttpError(404, '{"code":"PGRST202"}', 'PGRST202'),
+		);
+		const response = await getRanking(context(`${BASE}?level=historical`));
+		expect(response.status).toBe(503);
 	});
 });

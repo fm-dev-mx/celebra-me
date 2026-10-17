@@ -82,6 +82,7 @@ export const LEVEL_LABELS = {
 	measured: 'Medido',
 	inferred: 'Inferido',
 	bound: 'Cota',
+	estimated: 'Estimado',
 } as const;
 export type LevelKey = keyof typeof LEVEL_LABELS;
 
