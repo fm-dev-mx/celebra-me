@@ -21,8 +21,9 @@ import { createMemoriesPrivateRequestHeaders, resolveMemoriesWorkerUrl } from '.
 import {
 	MEMORIES_RETRIEVE_BINDING_ORIGIN,
 	fetchMemoriesRetrieveWorker,
+	fetchMemoriesSignWorker,
 	hasMemoriesRetrieveBinding,
-} from './retrieve-binding';
+} from './worker-bindings';
 
 export interface MemoriesUploadCapability {
 	uploadUrl: string;
@@ -141,7 +142,7 @@ export async function requestMemoriesUploadCapability(input: {
 	const signerUrl = resolveMemoriesWorkerUrl(MEMORIES_ENV.uploadOrigin, MEMORIES_SIGN_PATH);
 	if (!signerUrl) throw new Error('Memories upload signer is not configured.');
 	const body = JSON.stringify(input);
-	const response = await fetch(signerUrl, {
+	const response = await fetchMemoriesSignWorker(signerUrl, {
 		method: 'POST',
 		headers: createMemoriesPrivateRequestHeaders({
 			audience: MEMORIES_UPLOAD_REQUEST_AUDIENCE,

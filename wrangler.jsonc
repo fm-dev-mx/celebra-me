@@ -32,8 +32,9 @@
                 "BASE_URL": "https://celebra-me-preview.celebra-me-com.workers.dev"
             },
             "images": { "binding": "IMAGES" },
-            // Private retrieval Worker over a Service Binding (src/lib/memories/server/retrieve-binding.ts).
+            // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
             "services": [
+                { "binding": "MEMORIES_SIGN", "service": "celebra-memories-sign-staging" },
                 { "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve-staging" }
             ],
             // Same schedules as vercel.json; src/lib/server/scheduled-jobs.ts maps each expression.
@@ -166,7 +167,7 @@
                 "BASE_URL": "https://www.celebra-me.com"
             },
             "images": { "binding": "IMAGES" },
-            // Private retrieval Worker over a Service Binding (src/lib/memories/server/retrieve-binding.ts).
+            // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
             // The retrieval Worker keeps workers_dev while Vercel, the rollback host, still calls it.
             "services": [{ "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve" }],
             // Same schedules as Vercel (`vercel.json`). Cron triggers are non-versioned: version

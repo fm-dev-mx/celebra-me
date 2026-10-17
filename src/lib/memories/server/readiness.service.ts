@@ -16,8 +16,10 @@ import { normalizePem, resolveMemoriesWorkerUrl } from './private-request';
 import {
 	MEMORIES_RETRIEVE_BINDING_ORIGIN,
 	fetchMemoriesRetrieveWorker,
+	fetchMemoriesSignWorker,
 	hasMemoriesRetrieveBinding,
-} from './retrieve-binding';
+	hasMemoriesSignBinding,
+} from './worker-bindings';
 
 const MIN_SHARE_SECRET_LENGTH = 32;
 const PROBE_TIMEOUT_MS = 3_000;
@@ -42,6 +44,12 @@ function workerOrigin(key: MemoriesWorkerKey): URL | null {
 	const origin = resolveMemoriesWorkerUrl(WORKER_ENV[key], '/');
 	if (origin || key !== 'retrievalOrigin' || !hasMemoriesRetrieveBinding()) return origin;
 	return new URL('/', MEMORIES_RETRIEVE_BINDING_ORIGIN);
+}
+
+/** The Service Binding that reaches this Worker, when the Worker entry installed one. */
+function bindingProbe(key: MemoriesWorkerKey): typeof fetchMemoriesSignWorker | null {
+	if (key === 'uploadOrigin') return hasMemoriesSignBinding() ? fetchMemoriesSignWorker : null;
+	return hasMemoriesRetrieveBinding() ? fetchMemoriesRetrieveWorker : null;
 }
 
 /** Settings that are absent or unusable as configured. */
@@ -84,10 +92,7 @@ export async function checkMemoriesReadiness(
 	await Promise.all(
 		(Object.keys(WORKER_ENV) as MemoriesWorkerKey[]).map(async (key) => {
 			const origin = workerOrigin(key);
-			const probe =
-				key === 'retrievalOrigin' && hasMemoriesRetrieveBinding()
-					? fetchMemoriesRetrieveWorker
-					: fetchImpl;
+			const probe = bindingProbe(key) ?? fetchImpl;
 			if (origin && !(await probeWorker(origin, probe))) unreachable.push(key);
 		}),
 	);

@@ -81,11 +81,12 @@ describe('wrangler.jsonc Production environment', () => {
 		expect(production.images).toEqual({ binding: 'IMAGES' });
 	});
 
-	it('reaches the retrieval Worker of each environment over a Service Binding', () => {
+	it('reaches the private memories Workers of each environment over Service Bindings', () => {
 		expect(production.services).toEqual([
 			{ binding: 'MEMORIES_RETRIEVE', service: 'celebra-memories-retrieve' },
 		]);
 		expect(preview.services).toEqual([
+			{ binding: 'MEMORIES_SIGN', service: 'celebra-memories-sign-staging' },
 			{ binding: 'MEMORIES_RETRIEVE', service: 'celebra-memories-retrieve-staging' },
 		]);
 	});

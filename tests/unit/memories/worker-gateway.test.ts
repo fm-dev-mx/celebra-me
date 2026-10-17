@@ -17,13 +17,18 @@ import { MEMORIES_INSPECTION_TIMEOUT_MS } from '@/lib/memories/contract/limits';
 import {
 	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
 	MEMORIES_RETRIEVAL_PATH,
+	MEMORIES_SIGN_PATH,
+	MEMORIES_UPLOAD_PATH,
 } from '@/lib/memories/contract/private-request';
 import { resolveMemoriesWorkerUrl } from '@/lib/memories/server/private-request';
 import {
 	MEMORIES_RETRIEVE_BINDING_ORIGIN,
 	installMemoriesRetrieveBinding,
+	installMemoriesSignBinding,
+	installMemoriesWorkerBindings,
 	resetMemoriesRetrieveBindingForTests,
-} from '@/lib/memories/server/retrieve-binding';
+	resetMemoriesSignBindingForTests,
+} from '@/lib/memories/server/worker-bindings';
 import { CHECKSUM_SHA256, OBJECT_KEY, SESSION_ID } from './fixtures';
 
 const target = { objectKey: OBJECT_KEY, mimeType: 'image/jpeg' };
@@ -218,6 +223,56 @@ describe('requestMemoriesUploadCapability', () => {
 		expect(unavailable).toMatchObject({ name: 'MemoriesSignerError', status: 503 });
 		expect(isMemoriesSignerRateLimit(unavailable)).toBe(false);
 		expect(isMemoriesSignerRateLimit(new TypeError('fetch failed'))).toBe(false);
+	});
+
+	describe('transport', () => {
+		const binding = { fetch: jest.fn<Promise<Response>, [Request]>() };
+		const signerOrigin = 'https://memories-retrieve.example.invalid';
+		const capability = () =>
+			json(200, {
+				uploadUrl: `${signerOrigin}${MEMORIES_UPLOAD_PATH}`,
+				requiredHeaders: {
+					Authorization: `Bearer ${'t'.repeat(32)}`,
+					'Content-Type': 'image/jpeg',
+					'x-amz-checksum-sha256': `${'A'.repeat(43)}=`,
+				},
+				expiresAt: new Date(Date.now() + 60_000).toISOString(),
+			});
+
+		beforeEach(() => binding.fetch.mockReset());
+		afterEach(() => resetMemoriesSignBindingForTests());
+
+		it('calls the configured origin when no Service Binding is installed', async () => {
+			mockFetch.mockResolvedValueOnce(capability());
+			await requestMemoriesUploadCapability(reservation);
+
+			expect(String(mockFetch.mock.calls[0][0])).toBe(`${signerOrigin}${MEMORIES_SIGN_PATH}`);
+		});
+
+		it('sends the signed request through the Service Binding at the public signer URL', async () => {
+			installMemoriesWorkerBindings({ MEMORIES_SIGN: binding });
+			binding.fetch.mockResolvedValueOnce(capability());
+
+			const result = await requestMemoriesUploadCapability(reservation);
+			expect(mockFetch).not.toHaveBeenCalled();
+			const request = binding.fetch.mock.calls[0][0];
+			expect(request.method).toBe('POST');
+			// The Worker derives the browser's upload URL from this URL, so it keeps the public origin.
+			expect(request.url).toBe(`${signerOrigin}${MEMORIES_SIGN_PATH}`);
+			expect(request.headers.get('X-Test-Signature')).toBe('signed');
+			await expect(request.json()).resolves.toEqual(reservation);
+			expect(result.uploadUrl).toBe(`${signerOrigin}${MEMORIES_UPLOAD_PATH}`);
+		});
+
+		it('still needs the configured origin with a Service Binding', async () => {
+			installMemoriesSignBinding({ MEMORIES_SIGN: binding });
+			jest.mocked(resolveMemoriesWorkerUrl).mockReturnValueOnce(null);
+
+			await expect(requestMemoriesUploadCapability(reservation)).rejects.toThrow(
+				'Memories upload signer is not configured.',
+			);
+			expect(binding.fetch).not.toHaveBeenCalled();
+		});
 	});
 
 	afterAll(() => {
