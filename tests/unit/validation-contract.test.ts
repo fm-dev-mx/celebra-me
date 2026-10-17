@@ -168,7 +168,10 @@ describe('canonical validation contract', () => {
 			expect(workflow).toMatch(
 				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-scope,?\s*\]/,
 			);
-			expect(workflow).toContain('tier: [static, unit, database]');
+			expect(workflow).toContain('tier: [static, unit, database, workerd]');
+			expect(workflowLines).toContain(
+				'run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA"',
+			);
 			expect(workflow).toContain('cancel-in-progress: true');
 			expect(workflow).toContain("PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'");
 			expect(workflow).toContain("PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true'");
