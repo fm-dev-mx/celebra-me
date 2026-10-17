@@ -252,6 +252,7 @@ jobs:
             - name: Serve the Worker in workerd
               if: matrix.tier == 'workerd'
               env:
+                  PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'
                   WRANGLER_SEND_METRICS: 'false'
               run: |
                   mkdir -p .tmp/workerd
