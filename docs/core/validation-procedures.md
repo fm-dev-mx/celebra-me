@@ -185,6 +185,11 @@ and delete a client guard when its invitation expires (event date + 1 year). `pn
 covers the consent banner and `gtag` loader (see
 [commercial attribution](../domains/tracking/commercial-attribution.md#ga4-status)).
 
+The `Application / browser` job also runs `pnpm test:e2e:memories`: the guest memories specs on
+every device project of `playwright.memories.config.ts` (desktop and Android Chromium, iOS WebKit
+and the Instagram/Facebook in-app user agents) against the canonical memory space, with guest APIs
+and the upload Worker mocked. Its result gates the job like the main browser checks.
+
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
 
