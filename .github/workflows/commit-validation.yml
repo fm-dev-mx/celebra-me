@@ -195,7 +195,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                tier: [static, unit, database]
+                tier: [static, unit, database, workerd]
 
         steps:
             - name: Checkout repository
@@ -239,6 +239,47 @@ jobs:
             - name: Unit tests
               if: matrix.tier == 'unit'
               run: pnpm test
+
+            # Builds the Cloudflare target and serves it in workerd with `wrangler dev`. The canonical
+            # fixture transport stands in for Supabase; no Cloudflare account or real secret is used.
+            - name: Build the Cloudflare Worker
+              if: matrix.tier == 'workerd'
+              env:
+                  CELEBRA_BUILD_TARGET: cloudflare
+                  PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+              run: pnpm build:app
+
+            - name: Serve the Worker in workerd
+              if: matrix.tier == 'workerd'
+              env:
+                  WRANGLER_SEND_METRICS: 'false'
+              run: |
+                  mkdir -p .tmp/workerd
+                  nohup node --import tsx scripts/playwright/canonical-fixture-server.ts                       > .tmp/workerd/fixtures.log 2>&1 &
+                  nohup pnpm exec wrangler dev --port 8799 --test-scheduled                       --show-interactive-dev-session=false                       --var SUPABASE_URL:http://127.0.0.1:54321                       --var PUBLIC_SUPABASE_URL:http://127.0.0.1:54321                       --var SUPABASE_ANON_KEY:workerd-fixture-not-a-credential                       --var PUBLIC_SUPABASE_ANON_KEY:workerd-fixture-not-a-credential                       --var SUPABASE_SERVICE_ROLE_KEY:workerd-fixture-not-a-credential                       > .tmp/workerd/wrangler.log 2>&1 &
+                  for attempt in $(seq 1 60); do
+                      if curl -fsS -o /dev/null http://127.0.0.1:54321/health &&
+                          curl -fsS -o /dev/null http://127.0.0.1:8799/; then
+                          exit 0
+                      fi
+                      sleep 2
+                  done
+                  cat .tmp/workerd/fixtures.log .tmp/workerd/wrangler.log
+                  exit 1
+
+            - name: Check pages, headers, health and crons through the Worker
+              if: matrix.tier == 'workerd'
+              run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA"
+
+            - name: Preserve workerd logs
+              if: failure() && matrix.tier == 'workerd'
+              uses: actions/upload-artifact@v7
+              with:
+                  name: workerd-logs
+                  path: .tmp/workerd/*.log
+                  include-hidden-files: true
+                  if-no-files-found: ignore
+                  retention-days: 3
 
             - name: Public RSVP disposable DB/HTTP contracts
               if: matrix.tier == 'database'

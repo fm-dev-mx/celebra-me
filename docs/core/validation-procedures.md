@@ -228,6 +228,14 @@ fixtures and visual mode across repeated runs, including retries and server prep
 infer remote savings from local diagnostic timings. Capture suites aggregate per-capture records
 after the run and run serially; every remote run uses the locally certified command.
 
+The `Application / workerd` tier builds the Cloudflare target (`CELEBRA_BUILD_TARGET=cloudflare`)
+and serves it with `wrangler dev` in workerd, with the canonical fixture transport in place of
+Supabase and no Cloudflare account or real secret. `pnpm test:workerd` then checks pages, redirects
+and security headers through the Worker's `fetch`, expects a healthy `/api/health` with the build
+SHA, and fires every cron of `SCHEDULED_JOB_CRONS` through `/cdn-cgi/handler/scheduled` (wrangler's
+replacement for `/__scheduled`), waiting for each job's log line. Bindings that need an account
+(rate limits, the Images API) and real cron delivery stay covered only by the Preview deploy smoke.
+
 The aggregate application check requires policy, application and browser jobs to succeed; failed,
 cancelled or incomplete jobs must never become aggregate approval. One case skips the application
 tiers instead of repeating them: a same-repository `develop` → `main` pull request whose merge

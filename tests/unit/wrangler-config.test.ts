@@ -92,3 +92,34 @@ describe('wrangler.jsonc Production environment', () => {
 		}
 	});
 });
+
+describe('wrangler.jsonc Preview environment', () => {
+	it('binds every Preview cron to a scheduled job and schedules every job', () => {
+		const crons = preview.triggers?.crons ?? [];
+		expect(new Set(crons).size).toBe(crons.length);
+		expect([...crons].sort()).toEqual(Object.values(SCHEDULED_JOB_CRONS).sort());
+	});
+
+	it('identifies itself as Preview on the Preview Supabase project', () => {
+		const supabaseUrl = `https://${SUPABASE_PROJECT_REFS.preview}.supabase.co`;
+		expect(preview.name).toBe('celebra-me-preview');
+		expect(preview.vars).toEqual({
+			CELEBRA_DEPLOY_ENV: 'preview',
+			SUPABASE_URL: supabaseUrl,
+			PUBLIC_SUPABASE_URL: supabaseUrl,
+			BASE_URL: 'https://celebra-me-preview.celebra-me-com.workers.dev',
+		});
+		expect(preview.routes).toBeUndefined();
+		expect(preview.route).toBeUndefined();
+	});
+
+	it('keeps its rate limits inside the Preview namespace range', () => {
+		const ids = (preview.ratelimits ?? []).map((binding) => Number(binding.namespace_id));
+		expect(ids.length).toBeGreaterThan(0);
+		expect(new Set(ids).size).toBe(ids.length);
+		for (const id of ids) {
+			expect(id).toBeGreaterThanOrEqual(2001);
+			expect(id).toBeLessThanOrEqual(2099);
+		}
+	});
+});
