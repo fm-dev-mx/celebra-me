@@ -750,6 +750,50 @@ describe('MemoriesCapture island', () => {
 		}
 	});
 
+	it('after a reload during confirmation, confirms the validating file of the guest again', async () => {
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems
+			.mockResolvedValueOnce({
+				items: [buildItem({ id: 'interrupted', status: 'validating' })],
+				quota: QUOTA,
+			})
+			.mockResolvedValue({
+				items: [buildItem({ id: 'interrupted', status: 'accepted' })],
+				quota: QUOTA,
+			});
+		guestApi.complete.mockResolvedValue({
+			item: buildItem({ id: 'interrupted', status: 'accepted' }),
+		});
+
+		renderCapture();
+
+		await waitFor(() => expect(guestApi.listItems).toHaveBeenCalledTimes(2));
+		expect(guestApi.complete).toHaveBeenCalledTimes(1);
+		expect(guestApi.complete).toHaveBeenCalledWith('interrupted');
+		await waitFor(() =>
+			expect(screen.queryByText(copy.validationPending)).not.toBeInTheDocument(),
+		);
+	});
+
+	it('hides a repeated file from «Mis recuerdos» and never confirms it again', async () => {
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems.mockResolvedValue({
+			items: [
+				buildItem({ id: 'original', status: 'accepted' }),
+				buildItem({ id: 'repeated', status: 'duplicate' }),
+			],
+			quota: QUOTA,
+		});
+
+		renderCapture();
+
+		const heading = await screen.findByRole('heading', { name: `${copy.myMemories} 1` });
+		const section = heading.closest('section') as HTMLElement;
+		expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+		expect(screen.queryByText(copy.duplicate)).not.toBeInTheDocument();
+		expect(guestApi.complete).not.toHaveBeenCalled();
+	});
+
 	it('after a reload mid-upload, shows the pending file and explains why a new upload must wait', async () => {
 		const user = userEvent.setup();
 		guestApi.getSession.mockResolvedValue(PROFILE);

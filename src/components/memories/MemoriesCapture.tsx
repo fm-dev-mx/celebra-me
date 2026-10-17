@@ -325,16 +325,37 @@ export default function MemoriesCapture({
 	});
 	const entries = snapshot.entries;
 
-	const loadItems = useCallback(async () => {
+	const loadItems = useCallback(async (): Promise<CatalogItem[]> => {
 		try {
 			const payload = await api.listItems();
-			setItems(payload.items.filter((item) => isMemoriesCatalogVisibleStatus(item.status)));
+			// A duplicate repeats a file the guest already has, so it gets no card of its own.
+			const visible = payload.items.filter(
+				(item) =>
+					isMemoriesCatalogVisibleStatus(item.status) && item.status !== 'duplicate',
+			);
+			setItems(visible);
 			setQuota(payload.quota);
 			if (typeof payload.eventFull === 'boolean') setEventFull(payload.eventFull);
+			return visible;
 		} catch {
 			// A later successful action refreshes the catalog.
+			return [];
 		}
 	}, [api]);
+
+	/**
+	 * Confirms again the files a reload interrupted after their bytes arrived.
+	 * Completion is idempotent, so a file another tab is confirming is safe.
+	 */
+	const settleValidating = useCallback(
+		async (loaded: readonly CatalogItem[]) => {
+			const pending = loaded.filter((item) => item.status === 'validating');
+			if (pending.length === 0) return;
+			const results = await Promise.allSettled(pending.map((item) => api.complete(item.id)));
+			if (results.some((result) => result.status === 'fulfilled')) await loadItems();
+		},
+		[api, loadItems],
+	);
 
 	useEffect(() => {
 		void (async () => {
@@ -342,7 +363,7 @@ export default function MemoriesCapture({
 				const existingProfile = await api.getSession();
 				if (!existingProfile) return;
 				setProfile(existingProfile);
-				await loadItems();
+				await settleValidating(await loadItems());
 			} catch {
 				setSessionIssue(classifyTransportIssue('unavailable'));
 			}
