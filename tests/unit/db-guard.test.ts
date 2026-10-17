@@ -17,6 +17,7 @@ import {
 	guardPersistentLocal,
 	guardUnknown,
 	validateDumpIntegrity,
+	formatClassification,
 } from '../../scripts/db/db-guard.ts';
 import {
 	classifyDbTarget,
@@ -27,6 +28,7 @@ import {
 	type ClassificationResult,
 	type GuardResult,
 } from '../../scripts/db/db-target-config.ts';
+import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -205,9 +207,58 @@ describe('redactCredentials', () => {
 		expect(result).not.toMatch(/pass123/);
 	});
 
+	it('redacts postgres URLs without a path', () => {
+		const result = redactCredentials(
+			'Failed on postgres://admin:nopath-secret@db.example.com:5432',
+		);
+		expect(result).toMatch(/<redacted>@<host>/);
+		expect(result).not.toMatch(/nopath-secret/);
+	});
+
 	it('passes through text without URLs', () => {
 		const input = 'No database URLs here';
 		expect(redactCredentials(input)).toBe(input);
+	});
+});
+
+describe('formatClassification (classify CLI output)', () => {
+	const secret = 'Sup3r%2Fsecret%40pw';
+	const previousPreviewUrl = process.env.PREVIEW_DB_URL;
+
+	beforeAll(() => {
+		// Pins the Preview ref so classification never falls back to local secret files.
+		process.env.PREVIEW_DB_URL = `postgresql://postgres:unused@db.${SUPABASE_PROJECT_REFS.preview}.supabase.co:5432/postgres`;
+	});
+
+	afterAll(() => {
+		if (previousPreviewUrl === undefined) delete process.env.PREVIEW_DB_URL;
+		else process.env.PREVIEW_DB_URL = previousPreviewUrl;
+	});
+
+	it.each([
+		[
+			'production',
+			`postgresql://postgres:${secret}@db.${SUPABASE_PROJECT_REFS.production}.supabase.co:5432/postgres`,
+		],
+		[
+			'production',
+			`postgresql://postgres.${SUPABASE_PROJECT_REFS.production}:${secret}@aws-0-us-east-1.pooler.supabase.com:6543/postgres`,
+		],
+		[
+			'preview',
+			`postgresql://postgres:${secret}@db.${SUPABASE_PROJECT_REFS.preview}.supabase.co:5432/postgres`,
+		],
+		['persistent-local', `postgresql://postgres:${secret}@127.0.0.1:54322/postgres`],
+		['disposable-test', `postgresql://postgres:${secret}@127.0.0.1:54332/postgres`],
+		['unknown', `postgresql://admin:${secret}@some-random-server.com:5432/mydb`],
+	])('classifies %s without printing the password', (target, dbUrl) => {
+		const output = formatClassification(classifyDbTarget(dbUrl));
+		const parsed = JSON.parse(output) as ClassificationResult;
+
+		expect(parsed.target).toBe(target);
+		expect(parsed.dbUrl).toContain('<redacted>');
+		expect(output).not.toContain(secret);
+		expect(output).not.toContain(decodeURIComponent(secret));
 	});
 });
 
