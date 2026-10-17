@@ -27,6 +27,17 @@ import {
 
 const UNIQUE_VIOLATION = '23505';
 const MIN_COOKIE_MAX_AGE_SECONDS = 60;
+/**
+ * A `__Host-` cookie is only accepted with Secure and Path=/ and no Domain.
+ * Browsers also ignore a deletion that omits Secure, so set and delete share
+ * the same attributes.
+ */
+const SESSION_COOKIE_ATTRIBUTES = {
+	httpOnly: true,
+	secure: true,
+	sameSite: 'lax',
+	path: '/',
+} as const;
 
 export type MemoriesGuestSession = SessionRow;
 
@@ -72,16 +83,13 @@ export function setGuestSessionCookie(
 		Math.floor((Date.parse(space.retentionEndsAt) - now.getTime()) / 1000),
 	);
 	cookies.set(buildMemoriesSessionCookieName(space.publicSlug), token, {
-		httpOnly: true,
-		secure: true,
-		sameSite: 'lax',
-		path: '/',
+		...SESSION_COOKIE_ATTRIBUTES,
 		maxAge,
 	});
 }
 
 export function clearGuestSessionCookie(cookies: AstroCookies, space: MemoriesSpaceRecord): void {
-	cookies.delete(buildMemoriesSessionCookieName(space.publicSlug), { path: '/' });
+	cookies.delete(buildMemoriesSessionCookieName(space.publicSlug), SESSION_COOKIE_ATTRIBUTES);
 }
 
 export async function createGuestSession(

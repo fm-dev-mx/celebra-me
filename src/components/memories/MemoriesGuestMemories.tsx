@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MemoriesMediaPublicItem } from '@/lib/memories/contract/catalog';
 import { MEMORIES_MAX_CAPTION_LENGTH } from '@/lib/memories/contract/limits';
-import { isMemoriesVideoMime } from '@/lib/memories/contract/media-policy';
-import { memoriesCaptureCopy as copy } from '@/lib/memories/copy';
+import {
+	isMemoriesVideoMime,
+	withMemoriesVideoFirstFrame,
+} from '@/lib/memories/contract/media-policy';
+import {
+	memoriesCaptureCopy as copy,
+	memoriesGalleryCopy as galleryCopy,
+} from '@/lib/memories/copy';
 
 type Item = MemoriesMediaPublicItem;
 
@@ -79,8 +85,22 @@ function MemoryOptions({
 				<h3 id={`memory-options-${item.id}`} ref={headingRef} tabIndex={-1}>
 					{confirmingDelete ? copy.deleteTitle : copy.memoryOptions}
 				</h3>
-				{item.status === 'accepted' && !isMemoriesVideoMime(item.mimeType) ? (
-					<img src={mediaUrl(item.id)} alt="" className="memories-guest-sheet__media" />
+				{item.status === 'accepted' ? (
+					isMemoriesVideoMime(item.mimeType) ? (
+						<video
+							src={withMemoriesVideoFirstFrame(mediaUrl(item.id))}
+							controls
+							playsInline
+							preload="metadata"
+							className="memories-guest-sheet__media"
+						/>
+					) : (
+						<img
+							src={mediaUrl(item.id)}
+							alt=""
+							className="memories-guest-sheet__media"
+						/>
+					)
 				) : null}
 				{confirmingDelete ? (
 					<>
@@ -191,7 +211,7 @@ export default function MemoriesGuestMemories({
 									{accepted ? (
 										video && !item.hasThumbnail ? (
 											<video
-												src={mediaUrl(item.id)}
+												src={withMemoriesVideoFirstFrame(mediaUrl(item.id))}
 												preload="metadata"
 												muted
 												playsInline
@@ -201,7 +221,14 @@ export default function MemoriesGuestMemories({
 										) : (
 											<img src={thumbnailUrl(item)} alt={label} />
 										)
-									) : (
+									) : null}
+									{accepted && video ? (
+										<span className="memories-tile__badge" aria-hidden="true">
+											<span className="memories-tile__play" />
+											{galleryCopy.video}
+										</span>
+									) : null}
+									{accepted ? null : (
 										<span className="memories-tile__status">
 											{memoriesGuestStatusLabel(item)}
 										</span>

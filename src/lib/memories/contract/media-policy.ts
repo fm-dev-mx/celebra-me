@@ -74,6 +74,15 @@ export function isMemoriesVideoMime(mimeType: string): boolean {
 	return normalizeMemoriesMimeType(mimeType).startsWith('video/');
 }
 
+/**
+ * WebKit draws nothing for `<video preload="metadata">` until playback starts.
+ * A media fragment that seeks just past zero makes it decode and paint the
+ * first frame, so a tile without a thumbnail is not left blank on iPhone.
+ */
+export function withMemoriesVideoFirstFrame(src: string): string {
+	return src.includes('#') ? src : `${src}#t=0.001`;
+}
+
 export function resolveMemoriesFileMimeType(file: {
 	type: string;
 	name: string;

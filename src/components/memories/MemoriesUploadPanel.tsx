@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import type { MemoriesGuestQuota } from '@/lib/memories/contract/catalog';
 import { MEMORIES_MAX_CAPTION_LENGTH } from '@/lib/memories/contract/limits';
-import { isMemoriesVideoMime } from '@/lib/memories/contract/media-policy';
+import {
+	isMemoriesVideoMime,
+	withMemoriesVideoFirstFrame,
+} from '@/lib/memories/contract/media-policy';
 import { buildMemoriesUploadLimitsCopy, memoriesCaptureCopy as copy } from '@/lib/memories/copy';
 import { memoriesIssueCopy } from '@/lib/memories/client/media-prep';
 import type { MemoriesQueueEntry } from '@/lib/memories/client/upload-queue';
@@ -177,7 +180,7 @@ export default function MemoriesUploadPanel({
 							{url && entry.status !== 'invalid' ? (
 								video ? (
 									<video
-										src={url}
+										src={withMemoriesVideoFirstFrame(url)}
 										muted
 										playsInline
 										preload="metadata"

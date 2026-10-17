@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { isMemoriesVideoMime } from '@/lib/memories/contract/media-policy';
+import {
+	isMemoriesVideoMime,
+	withMemoriesVideoFirstFrame,
+} from '@/lib/memories/contract/media-policy';
 import { buildMemoriesGalleryApiPath } from '@/lib/memories/contract/private-request';
 import {
 	formatMemoriesDuration,
@@ -73,7 +76,13 @@ function Viewer({
 					{copy.position(index + 1, items.length)}
 				</h2>
 				{video ? (
-					<video key={item.id} controls preload="metadata" src={mediaUrl(item)} />
+					<video
+						key={item.id}
+						controls
+						playsInline
+						preload="metadata"
+						src={withMemoriesVideoFirstFrame(mediaUrl(item))}
+					/>
 				) : (
 					<img
 						key={item.id}
@@ -213,7 +222,9 @@ export default function MemoriesSharedGallery({ publicSlug, token, timeZone }: P
 										>
 											{video && !item.hasThumbnail ? (
 												<video
-													src={mediaUrl(item)}
+													src={withMemoriesVideoFirstFrame(
+														mediaUrl(item),
+													)}
 													preload="metadata"
 													muted
 													playsInline
@@ -232,6 +243,7 @@ export default function MemoriesSharedGallery({ publicSlug, token, timeZone }: P
 													className="memories-tile__badge"
 													aria-hidden="true"
 												>
+													<span className="memories-tile__play" />
 													{duration ?? copy.video}
 												</span>
 											) : null}

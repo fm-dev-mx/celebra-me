@@ -24,6 +24,7 @@ import {
 } from '@/lib/memories/server/catalog.repository';
 import { appendMemoriesAudit } from '@/lib/memories/server/audit';
 import {
+	clearGuestSessionCookie,
 	createGuestSession,
 	getGuestSessionFromRequest,
 	recoverGuestSession,
@@ -216,6 +217,64 @@ describe('setGuestSessionCookie', () => {
 			new Date('2026-12-30T06:59:59.000Z'),
 		);
 		expect(cookies.set.mock.calls[0][2]).toMatchObject({ maxAge: 60 });
+	});
+});
+
+type CookieOptions = {
+	httpOnly?: boolean;
+	secure?: boolean;
+	sameSite?: string;
+	path?: string;
+	domain?: string;
+};
+
+/**
+ * Serializes deletions the way Astro does (value "deleted", epoch expiry,
+ * caller attributes kept) so the test can read the Set-Cookie header a
+ * browser receives. Astro's own cookie class ships as ESM only.
+ */
+function createSerializingCookies() {
+	const headers: string[] = [];
+	return {
+		headers,
+		delete(name: string, options: CookieOptions = {}) {
+			const parts = [`${name}=deleted`, 'Expires=Thu, 01 Jan 1970 00:00:00 GMT'];
+			if (options.domain) parts.push(`Domain=${options.domain}`);
+			if (options.path) parts.push(`Path=${options.path}`);
+			if (options.httpOnly) parts.push('HttpOnly');
+			if (options.secure) parts.push('Secure');
+			if (options.sameSite) parts.push(`SameSite=${options.sameSite}`);
+			headers.push(parts.join('; '));
+		},
+	};
+}
+
+describe('clearGuestSessionCookie', () => {
+	it('deletes the cookie with the attributes it was set with', () => {
+		const setCookies = createCookies();
+		const deleteCookies = createCookies();
+		const space = buildSpace();
+
+		setGuestSessionCookie(setCookies as unknown as AstroCookies, space, 'session-token', NOW);
+		clearGuestSessionCookie(deleteCookies as unknown as AstroCookies, space);
+
+		const { maxAge: _maxAge, ...setAttributes } = setCookies.set.mock.calls[0][2];
+		expect(deleteCookies.delete).toHaveBeenCalledWith(COOKIE_NAME, setAttributes);
+	});
+
+	it('sends a Set-Cookie header that browsers accept for a __Host- cookie', () => {
+		const cookies = createSerializingCookies();
+
+		clearGuestSessionCookie(cookies as unknown as AstroCookies, buildSpace());
+
+		expect(cookies.headers).toHaveLength(1);
+		const [header] = cookies.headers;
+		expect(header.startsWith(`${COOKIE_NAME}=deleted; `)).toBe(true);
+		expect(header).toContain('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+		// Without Secure and Path=/ the browser rejects the header and keeps the session.
+		expect(header).toContain('; Secure');
+		expect(header).toContain('; Path=/');
+		expect(header).not.toContain('Domain=');
 	});
 });
 

@@ -53,6 +53,38 @@ describe('MemoriesSharedGallery island', () => {
 		expect(screen.queryByRole('button', { name: /Eliminar|Ocultar/ })).not.toBeInTheDocument();
 	});
 
+	it('paints the first frame of a video without thumbnail and plays it inline', async () => {
+		const user = userEvent.setup();
+		(globalThis.fetch as jest.Mock).mockResolvedValue(
+			respond({
+				items: [
+					{
+						...photo,
+						id: 'video-1',
+						mimeType: 'video/mp4',
+						durationSeconds: 39,
+						hasThumbnail: false,
+					},
+				],
+				nextPage: null,
+			}),
+		);
+
+		render(<MemoriesSharedGallery publicSlug="ana-y-luis" token={TOKEN} timeZone="UTC" />);
+
+		const tile = await screen.findByRole('button', { name: 'Video de Tía Ana, Primer baile' });
+		expect(tile.querySelector('video')).toHaveAttribute('src', `${BASE}/items/video-1#t=0.001`);
+		expect(tile.querySelector('.memories-tile__play')).not.toBeNull();
+
+		await user.click(tile);
+		const player = screen
+			.getByRole('dialog', { name: 'Recuerdo 1 de 1' })
+			.querySelector('video');
+		expect(player).toHaveAttribute('controls');
+		expect(player).toHaveAttribute('playsinline');
+		expect(player).toHaveAttribute('src', `${BASE}/items/video-1#t=0.001`);
+	});
+
 	it('explains a failure and retries', async () => {
 		const user = userEvent.setup();
 		(globalThis.fetch as jest.Mock)
