@@ -59,7 +59,6 @@ const SAMPLE_PATHS = [
 	'/wp-admin/index.php',
 	'/bautizo/demo-bautismo-angelic-presence',
 	'/primera-comunion/demo-primera-comunion-illustrated',
-	'/xv/america/invitado',
 ];
 
 function readVercelConfig(): VercelConfig {
@@ -242,23 +241,25 @@ describe('Platform parity: vercel.json vs. middleware permanent redirects', () =
 	it.each([
 		'/boda/daniela-y-martin',
 		'/boda/daniela-y-martin/i/ABC123',
-		'/boda/daniela-y-martin/invitado/extra',
-		'/invitado',
+		'/bautizo/demo-bautismo-angelic-presence/extra',
+		'/demo-bautismo-angelic-presence',
 		'/bautizo/demo-bautizo-angelic-presence',
 	])('leaves %s alone', (pathname) => {
 		expect(resolvePermanentRedirectPath(pathname)).toBeNull();
 	});
 
-	it('answers a legacy guest URL with a 301 that keeps the query string', async () => {
+	it('answers a renamed demo URL with a 301 that keeps the query string', async () => {
 		const next = jest.fn(async () => new Response(null, { status: 200 }));
 		const response = await middleware(
-			createContext('/xv/america/invitado?utm_source=whatsapp'),
+			createContext('/bautizo/demo-bautismo-angelic-presence?utm_source=whatsapp'),
 			next,
 		);
 
 		if (!(response instanceof Response)) throw new Error('Expected a Response.');
 		expect(response.status).toBe(301);
-		expect(response.headers.get('Location')).toBe('/xv/america?utm_source=whatsapp');
+		expect(response.headers.get('Location')).toBe(
+			'/bautizo/demo-bautizo-angelic-presence?utm_source=whatsapp',
+		);
 		expect(response.headers.get('X-Frame-Options')).toBe('DENY');
 		expect(next).not.toHaveBeenCalled();
 	});
