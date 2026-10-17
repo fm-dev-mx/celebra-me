@@ -2,8 +2,9 @@ name: Cloudflare Production Upload
 
 # Manual only, from main. Builds the Cloudflare target for Production, uploads an immutable Worker
 # version tagged with the commit SHA and smokes that version URL behind Cloudflare Access. It never
-# routes traffic: the Production Worker has no workers.dev host, no routes and no crons, and the
-# cutover adds the zone routes by hand (docs/operations/cloudflare-production-cutover.md).
+# routes traffic: the Production Worker has no workers.dev host and no routes, the cutover adds the
+# zone routes by hand, and the declared cron triggers stay off until the cutover enables them
+# (docs/operations/cloudflare-production-cutover.md, section 8.1).
 # Evidence: a GitHub Deployment in the `Cloudflare Production` environment (kept apart from the
 # Vercel `Production` environment that `pnpm ops:release-status` reads) and the commit status
 # `Cloudflare - celebra-me production candidate smoke`, which no release gate accepts: it proves a
@@ -118,7 +119,9 @@ jobs:
                       -f description="Uploading Worker version" > /dev/null
 
             # `wrangler versions upload` cannot create a Worker. The first run creates it with
-            # `wrangler deploy`, which stays unreachable: no routes, no workers.dev host, no crons.
+            # `wrangler deploy`, which stays unreachable (no routes, no workers.dev host) but also
+            # applies the declared cron triggers: recreating the Worker while Vercel runs its crons
+            # needs them deleted right after (one cron runner at a time).
             - name: Create the Worker on the first run
               run: |
                   if pnpm exec wrangler deployments list --env production > .tmp-deployments.log 2>&1; then

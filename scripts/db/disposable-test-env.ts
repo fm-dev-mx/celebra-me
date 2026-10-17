@@ -558,6 +558,7 @@ const PGTAP_FILES = [
 	'publication_metadata_hash.test.sql',
 	'legacy_invitation_columns_contract.test.sql',
 	'invitation_original_image_delivery.test.sql',
+	'invitation_assets_r2_provider.test.sql',
 	'managed_identity_archive_cascade.test.sql',
 	'event_memories_catalog.test.sql',
 	'event_memories_lifecycle.test.sql',
