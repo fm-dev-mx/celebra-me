@@ -20,8 +20,10 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
   (Dependabot updates) also run Repository CI before they are merged.
 - `main` is production. It changes only through the release pull request from `develop`, which
   requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
-- Task branches (`feat/*`, `fix/*`, `candidate/*`) are ephemeral. Persistent lane branches are
-  forbidden.
+- Task branches (`feat/*`, `fix/*`, `candidate/*`, `docs/*`, `chore/*`) are ephemeral. `docs/*` is
+  for changes to documentation, plans or agent guidance only; `chore/*` is for repository
+  maintenance with no runtime effect (audits, retirements, dependency work). Persistent lane
+  branches are forbidden.
 - Annotated tags (`vX.Y.Z`) mark releases.
 
 ## Four-Lane Worktree Model
