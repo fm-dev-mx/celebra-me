@@ -50,7 +50,6 @@ canonical environment workflow.
 | `pnpm lint:styles`           | audit all SCSS sources with Stylelint                                                                            |
 | `pnpm lint:styles:changed`   | lint only changed stylesheet files                                                                               |
 | `pnpm test`                  | run the Jest suite                                                                                               |
-| `pnpm test:coverage`         | run the Jest suite with coverage enabled                                                                         |
 | `pnpm validate:structure`    | validate agent references, plans, documentation links, and forbidden tracked artifacts                           |
 | `pnpm validate:event-parity` | compare content events against the Supabase `events` table                                                       |
 | `pnpm run ci`                | static/build, Jest and certified browser checks; remote policy/DB checks and interactive Git Safety are separate |

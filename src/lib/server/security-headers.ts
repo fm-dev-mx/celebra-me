@@ -94,7 +94,6 @@ export interface PermanentRedirectRule {
  * `redirects` block of `vercel.json` so the parity test can compare them literally.
  */
 export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
-	{ source: '/:eventType/:slug/invitado', destination: '/:eventType/:slug' },
 	{
 		source: '/bautizo/demo-bautismo-angelic-presence',
 		destination: '/bautizo/demo-bautizo-angelic-presence',

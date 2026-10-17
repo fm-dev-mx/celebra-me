@@ -100,6 +100,8 @@ routes matching the touched surfaces.
 - Conversational planning is default. Tracked plans belong under `.agent/plans/active/` per that
   README.
 - Point-in-time audits, reports, and completed plans are not tracked; Git history is the archive.
+  While a report is in use it lives in `.agent/tmp/reports/` of the Integration checkout
+  (`.agent/tmp/README.md`).
 - Human-facing agent report layout (review / apply / commit / remediation):
   [`.agent/templates/agent-report-contract.md`](./templates/agent-report-contract.md) (presentation
   only).

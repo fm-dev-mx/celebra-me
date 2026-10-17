@@ -325,7 +325,7 @@ secrets, and provider account or project IDs.
 Run and record exact results separately from Staging proof:
 
 ```text
-pnpm test:memories
+pnpm test
 pnpm type-check
 pnpm build:app
 pnpm validate:changed

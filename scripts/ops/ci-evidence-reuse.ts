@@ -10,6 +10,7 @@ export const REQUIRED_SOURCE_JOBS = [
 	'Application / static',
 	'Application / unit',
 	'Application / database',
+	'Application / workerd',
 	'Application / browser',
 	'Application Suite',
 ] as const;

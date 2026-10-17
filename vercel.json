@@ -18,11 +18,6 @@
     ],
     "redirects": [
         {
-            "source": "/:eventType/:slug/invitado",
-            "destination": "/:eventType/:slug",
-            "permanent": true
-        },
-        {
             "source": "/bautizo/demo-bautismo-angelic-presence",
             "destination": "/bautizo/demo-bautizo-angelic-presence",
             "permanent": true
