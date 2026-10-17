@@ -115,7 +115,7 @@ describe('remote route inventory', () => {
 		showroomPaths: ['/demos/xv', '/demos/cumpleanos'],
 		redirects: [
 			{
-				source: '/:eventType/:slug/invitado',
+				source: '/:eventType/:slug/antiguo',
 				destination: '/:eventType/:slug',
 				permanent: true,
 			},
@@ -139,7 +139,7 @@ describe('remote route inventory', () => {
 			'/boda/daniela-y-martin',
 			'/xv/naydelin-paredes',
 			'/r/victoria-y-roberto',
-			'/boda/daniela-y-martin/invitado',
+			'/boda/daniela-y-martin/antiguo',
 			'/a',
 			'/vista-previa/token.webp',
 		]);
@@ -147,7 +147,7 @@ describe('remote route inventory', () => {
 			'in_progress',
 		);
 		expect(
-			routes.find((route) => route.path === '/boda/daniela-y-martin/invitado'),
+			routes.find((route) => route.path === '/boda/daniela-y-martin/antiguo'),
 		).toMatchObject({ kind: 'redirect', expectedLocation: '/boda/daniela-y-martin' });
 		expect(routes.at(-1)).toMatchObject({ kind: 'asset', expectedContentType: 'image/webp' });
 	});
@@ -212,7 +212,7 @@ describe('remote compare rules', () => {
 
 	it('requires permanent redirects to the expected path and 200 webp photos', () => {
 		const redirect = {
-			path: '/a/invitado',
+			path: '/a/antiguo',
 			kind: 'redirect',
 			group: 'redirect',
 			expectedLocation: '/a',
