@@ -35,7 +35,7 @@ catalog rows and objects together.
   revokes RPC execution from browser roles) plus pgTAP and disposable concurrency coverage.
 - Application capability `event_memories_client` in `supabase/deployed-app-capabilities.json` with a
   static proof that no executable memories path names a legacy object.
-- Scripts: `pnpm memories:qr -- --slug <slug>`, `pnpm canary:memories`, `pnpm test:memories`,
+- Scripts: `pnpm memories:qr -- --slug <slug>`, `pnpm canary:memories`,
   `pnpm worker:memories:config:generate`.
 
 ## Non-goals

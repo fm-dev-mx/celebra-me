@@ -108,8 +108,6 @@ execution:
   processes. Lane detection sets it automatically; shell override is allowed for intentional tests.
   It never forges hosted identity and is not mutation authorization. Its `preview` names the Preview
   database a local process talks to; `CELEBRA_DEPLOY_ENV=preview` names a hosted Preview deployment.
-- **Canonical-status cache path:** `CELEBRA_STATUS_CACHE_PATH` optionally overrides the durable
-  status cache file used by the status CLI (`pnpm dbs`). Default is `.cache/canonical-status.json`.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
   `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
   live in `.env.preview.local` (template: `.env.preview.local.example`), not ordinary Local
@@ -172,10 +170,10 @@ substitute for the other.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category         | Variables                                                                        | Relationship                                          |
-| ------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only` | `CELEBRA_STATUS_CACHE_PATH`, `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD` | Present in `.env.example`; omitted from typing.       |
-| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                   | Present in app/runtime typing; omitted from template. |
+| Contract category         | Variables                                                      | Relationship                                          |
+| ------------------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
+| `operational-script-only` | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`            | Present in `.env.example`; omitted from typing.       |
+| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF` | Present in app/runtime typing; omitted from template. |
 
 `SUPER_ADMIN_EMAILS` is a server-only runtime list. Its first entry is the project owner: the only
 account that may confirm or clear owner review in the invitation workflow, and the local super admin

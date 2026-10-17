@@ -7,7 +7,6 @@
         "scripts/agent/worktree-doctor.ts",
         "scripts/ops/vercel-ignore-build.mjs",
         "scripts/playwright/canonical-fixture-server.ts",
-        "scripts/provision/print-canonical-status.ts",
         "scripts/db/_check-admin-login.mjs",
         "scripts/db/_check-asset-api.mjs",
         "scripts/db/run-command-sequences-worker.cjs",

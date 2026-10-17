@@ -79,7 +79,7 @@ describe('canonical validation contract', () => {
 		const scripts = readPackageManifest().scripts ?? {};
 
 		expect(scripts.test).toBe('jest');
-		expect(scripts['test:coverage']).toBe('jest --coverage');
+		expect(scripts['test:coverage']).toBeUndefined();
 		expect(scripts['test:e2e:extended']).toBe('node scripts/run-e2e-tier.mjs extended');
 		expect(scripts['test:e2e:infra']).toBeUndefined();
 		expect(scripts['test:e2e:visual']).toBeUndefined();

@@ -426,32 +426,6 @@
                 "panel": "dedicated",
                 "focus": false
             }
-        },
-        {
-            "label": "Pruebas E2E (e2e:landing)",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                "${workspaceFolder}/.vscode/task-runner.ps1",
-                "test:e2e:landing"
-            ],
-            "isBackground": true,
-            "problemMatcher": [],
-            "icon": {
-                "id": "device-desktop",
-                "color": "terminal.ansiGreen"
-            },
-            "presentation": {
-                "echo": false,
-                "clear": false,
-                "reveal": "silent",
-                "panel": "dedicated",
-                "focus": false
-            }
         }
     ]
 }
