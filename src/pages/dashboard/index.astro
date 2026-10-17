@@ -1,0 +1,6 @@
+---
+import { resolveDashboardHome } from '@/lib/rsvp/auth/roles';
+
+// The middleware already handles missing sessions, MFA setup and temporary passwords.
+return Astro.redirect(resolveDashboardHome(Astro.locals.session?.role));
+---
