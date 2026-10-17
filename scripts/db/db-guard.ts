@@ -36,6 +36,7 @@ import {
 	classifyDbTarget,
 	redactDbUrl,
 	redactCredentials,
+	redactClassification,
 	resolveDbUrl,
 } from './db-target-config.ts';
 
@@ -263,13 +264,18 @@ export function validateDumpIntegrity(dumpPath: string): GuardResult {
 // CLI entrypoint
 // ---------------------------------------------------------------------------
 
+/** JSON printed by `classify`; the DB URL is always redacted. */
+export function formatClassification(result: ClassificationResult): string {
+	return JSON.stringify(redactClassification(result), null, 2);
+}
+
 function cliClassify(): void {
 	if (!process.argv[4]) {
 		console.error('Usage: tsx scripts/db/db-guard.ts classify --db-url <connection-string>');
 		process.exit(1);
 	}
 	const result = classifyDbTarget(process.argv[4]);
-	console.log(JSON.stringify(result, null, 2));
+	console.log(formatClassification(result));
 	process.exit(result.target === 'unknown' ? 1 : 0);
 }
 

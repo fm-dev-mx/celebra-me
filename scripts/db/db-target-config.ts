@@ -243,8 +243,15 @@ export function redactDbUrl(rawUrl: string): string {
 }
 
 export function redactCredentials(text: string): string {
-	const urlPattern = /(postgres(?:ql)?:\/\/)(?:[^\s@]+@)?(?:[^\s:]+(?::\d+)?\/[^\s]*)/gi;
+	// Consume the whole URL token, so credentials leak neither from URLs without a path nor from
+	// passwords that contain URL delimiters.
+	const urlPattern = /(postgres(?:ql)?:\/\/)\S+/gi;
 	return text.replace(urlPattern, (_match, protocol) => `${protocol}<redacted>@<host>`);
+}
+
+/** Copy of a classification that is safe to print: `dbUrl` never carries its password. */
+export function redactClassification(result: ClassificationResult): ClassificationResult {
+	return result.dbUrl === undefined ? result : { ...result, dbUrl: redactDbUrl(result.dbUrl) };
 }
 
 // ---------------------------------------------------------------------------
