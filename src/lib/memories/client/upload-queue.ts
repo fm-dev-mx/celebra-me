@@ -3,7 +3,8 @@
  * tripping the server limits. At most `concurrency` uploads run at once (the
  * session's in-flight cap) and no more than `reservationsPerMinute` start in any
  * 60 s window (the Sign Worker limiter), so extra files wait instead of failing.
- * The queue pauses while the browser is offline and resumes when it reconnects.
+ * The queue pauses while the browser is offline and resumes when it reconnects;
+ * uploads that failed for lack of signal go back in line with the same attempt.
  */
 
 import {
@@ -93,6 +94,8 @@ let nextEntryId = 0;
 export class MemoriesUploadQueue {
 	private entries: MemoriesQueueEntry[] = [];
 	private readonly attempts = new Map<string, MemoriesUploadAttempt>();
+	/** Failed entries the next reconnection retries on its own. */
+	private readonly resumeOnline = new Set<string>();
 	private readonly listeners = new Set<() => void>();
 	private readonly reservationTimes: number[] = [];
 	private snapshot: MemoriesQueueSnapshot;
@@ -148,6 +151,7 @@ export class MemoriesUploadQueue {
 		if (!entry || isMemoriesQueueActive(entry)) return;
 		this.entries = this.entries.filter((candidate) => candidate.id !== id);
 		this.attempts.delete(id);
+		this.resumeOnline.delete(id);
 		this.emit();
 	}
 
@@ -163,6 +167,7 @@ export class MemoriesUploadQueue {
 	retry(id: string): void {
 		const entry = this.entries.find((candidate) => candidate.id === id);
 		if (!entry || entry.status !== 'failed') return;
+		this.resumeOnline.delete(id);
 		this.patch(id, { status: 'waiting', issue: null, progress: 0 });
 		this.pump();
 	}
@@ -180,15 +185,27 @@ export class MemoriesUploadQueue {
 		this.entries = this.entries.filter(
 			(entry) => isMemoriesQueueActive(entry) || entry.status === 'waiting',
 		);
-		for (const id of [...this.attempts.keys()]) {
-			if (!this.entries.some((entry) => entry.id === id)) this.attempts.delete(id);
+		for (const id of [...this.attempts.keys(), ...this.resumeOnline]) {
+			if (!this.entries.some((entry) => entry.id === id)) {
+				this.attempts.delete(id);
+				this.resumeOnline.delete(id);
+			}
 		}
 		this.emit();
 	}
 
 	setOnline(online: boolean): void {
-		if (this.offline === !online) return;
+		if (this.offline === !online && !(online && this.resumeOnline.size > 0)) return;
 		this.offline = !online;
+		if (online) {
+			// The attempt keeps its client request id, so the server recognizes the same upload.
+			for (const id of this.resumeOnline) {
+				const entry = this.entries.find((candidate) => candidate.id === id);
+				if (entry?.status === 'failed')
+					this.patch(id, { status: 'waiting', issue: null, progress: 0 });
+			}
+			this.resumeOnline.clear();
+		}
 		this.emit();
 		if (online) this.pump();
 	}
@@ -266,6 +283,7 @@ export class MemoriesUploadQueue {
 		} catch (error) {
 			const issue =
 				error instanceof MemoriesUploadError ? error.issue : readMemoriesUploadIssue(error);
+			if (issue === 'network_failed' || this.offline) this.resumeOnline.add(id);
 			this.patch(id, { status: 'failed', issue });
 			if (BLOCKING_ISSUES.has(issue)) {
 				for (const other of this.entries) {

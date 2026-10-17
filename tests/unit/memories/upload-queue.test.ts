@@ -124,6 +124,83 @@ describe('MemoriesUploadQueue', () => {
 		expect(statuses(queue.getSnapshot())).toEqual(['done']);
 	});
 
+	it('retries an upload that lost the signal once the connection returns, with the same request id', async () => {
+		const api = fakeApi();
+		api.reserve.mockResolvedValue({
+			item: { id: 'item' },
+			upload: { uploadUrl: 'https://upload.invalid', requiredHeaders: {} },
+		} as never);
+		const online = jest.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
+		let puts = 0;
+		const putFile: MemoriesPutTransport = async () => {
+			puts += 1;
+			if (puts === 1) {
+				online.mockReturnValue(false);
+				throw new TypeError('upload_network_error');
+			}
+			return 201;
+		};
+		try {
+			const queue = new MemoriesUploadQueue({ deps: { api, ...passThrough, putFile } });
+			queue.add([png('a.png')]);
+			queue.start();
+			await flush();
+			expect(queue.getSnapshot().entries[0]).toMatchObject({
+				status: 'failed',
+				issue: 'network_failed',
+			});
+
+			queue.setOnline(false);
+			online.mockReturnValue(true);
+			queue.setOnline(true);
+			await flush();
+
+			expect(statuses(queue.getSnapshot())).toEqual(['done']);
+			expect(api.reserve).toHaveBeenCalledTimes(2);
+			const [first, second] = api.reserve.mock.calls.map(([input]) => input.clientRequestId);
+			expect(second).toBe(first);
+		} finally {
+			online.mockRestore();
+		}
+	});
+
+	it('resumes on the online event even when no offline event came first', async () => {
+		const api = fakeApi();
+		api.reserve
+			.mockRejectedValueOnce(new MemoriesRequestError(null, 'network_error'))
+			.mockResolvedValue({ item: { id: 'item' }, upload: null } as never);
+		const online = jest.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+		try {
+			const queue = new MemoriesUploadQueue({ deps: { api, ...passThrough } });
+			queue.add([png('a.png')]);
+			queue.start();
+			await flush();
+			expect(queue.getSnapshot().entries[0].issue).toBe('network_failed');
+
+			online.mockReturnValue(true);
+			queue.setOnline(true);
+			await flush();
+			expect(statuses(queue.getSnapshot())).toEqual(['done']);
+		} finally {
+			online.mockRestore();
+		}
+	});
+
+	it('leaves a failure that is not about the signal for the guest to retry', async () => {
+		const api = fakeApi();
+		api.reserve.mockRejectedValue(new MemoriesRequestError(503, 'unavailable'));
+		const queue = new MemoriesUploadQueue({ deps: { api, ...passThrough } });
+		queue.add([png('a.png')]);
+		queue.start();
+		await flush();
+		queue.setOnline(false);
+		queue.setOnline(true);
+		await flush();
+
+		expect(statuses(queue.getSnapshot())).toEqual(['failed']);
+		expect(api.reserve).toHaveBeenCalledTimes(1);
+	});
+
 	it('fails the waiting files at once when the session cannot take more', async () => {
 		const api = fakeApi();
 		api.reserve.mockRejectedValue(
