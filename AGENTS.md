@@ -18,7 +18,9 @@ Apply this order when instructions conflict:
    never a substitute for repository policy).
 
 Completed plans and point-in-time reports are not kept in the tree; Git history is the archive and
-is evidence only — never policy authority.
+is evidence only — never policy authority. Every agent tool writes point-in-time reports (audits,
+investigations, decision packs) to one ignored directory, `.agent/tmp/reports/` in the Integration
+checkout, as described in [`.agent/tmp/README.md`](.agent/tmp/README.md).
 
 ## Exception Model
 
