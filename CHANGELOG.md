@@ -10,7 +10,14 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
-_Sin cambios pendientes._
+### Added
+
+- Historical engagement estimate for the admin ranking: migration `20261017120000` freezes per-event
+  estimates from legacy view telemetry before the engagement ledger (method version 1: any view at
+  least 2 minutes after the first share, 30-minute visits, guests without a share date counted
+  apart, no legacy depth), the API serves it with `level=historical`, and the dashboard shows it in
+  its own «Histórico (estimado)» tab, never ranked. Code only; not applied in any persistent
+  database with this change.
 
 ## [0.28.1-beta.1] - 2026-10-16
 

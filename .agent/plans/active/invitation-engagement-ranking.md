@@ -2,7 +2,7 @@
 title: Invitation engagement ranking — phase 2.1 (full coverage, confidence levels, filters, demos)
 status: active
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-17
 type: implementation
 autonomy: 2
 related_docs:
@@ -76,9 +76,8 @@ plan. This plan replaces it.
 | Responded by guest | `attendance_status <> 'pending'` and `last_response_source <> 'admin'`.                                        |
 | Opened (inferred)  | Opened (measured) **or** responded by guest. A lower bound: the RSVP form only exists inside the invitation.   |
 | Conversion (v2)    | Responded by guest ÷ opened (inferred). Null when confirmation mode is `whatsapp`; flagged partial for `both`. |
-| Opened (estimate)  | `first_viewed_at` present, not before `first_shared_at`, not within 2 min after it. An upper bound.            |
+| Opened (estimate)  | Any legacy `viewed` audit row ≥ 2 min after `first_shared_at`, or responded by guest. An upper bound.          |
 | Visits (estimate)  | `viewed` audit rows before 2026-10-12, sessionized per guest with the 30-min rule.                             |
-| Depth (estimate)   | `view_percentage`, only if G5 validation passes.                                                               |
 | Event status       | Upcoming when `events.event_date >= today` in `America/Chihuahua`; past otherwise; unknown without a date.     |
 | Activity state     | `measured` (has a snapshot), `none` (published, no snapshot).                                                  |
 
@@ -102,15 +101,21 @@ plan. This plan replaces it.
   inferred opens, response rate and conversion bound, sample state, access, confirmation mode,
   design fallback.
 
-### 5.2 Database — expand migration B (`<ts>_engagement_historical_estimates.sql`, after G5 validation)
+### 5.2 Database — expand migration B (`20261017120000_engagement_historical_estimates.sql`)
 
-- `invitation_engagement_historical_estimates` (one row per event, `method_version`, computed_at;
-  RLS forced, `service_role` select only): shared, opened estimate (upper bound), opened inferred
-  (lower bound), visits estimate, visits per viewer, depth estimate (if validated), responded by
-  guest, conversion range, the cleaning counters (views before share, views within 2 min).
+G5 validation (2026-10-17, report in the Integration reports directory) was accepted by the owner:
+legacy depth is dropped (stop condition triggered), the open rule becomes «any view ≥ 2 min after
+the first share», and guests without `first_shared_at` are counted apart.
+
+- `invitation_engagement_historical_estimates` (one row per event and `method_version`; RLS forced,
+  `service_role` select only): shared, viewed, responded by guest, opens range (responses → views or
+  responses), visits and visits per viewer, conversion lower bound, cleaning counters (views before
+  share, views in the 2-min preview window), unshared counters. No depth column.
 - `compute_engagement_historical_estimates(p_method_version smallint)` computes all rows once from
-  legacy columns and audit rows before 2026-10-12; re-running with the same version is a no-op.
-- The ranking routine accepts `p_level = 'historical'` and reads this table.
+  `viewed` audit rows before 2026-10-12 16:25 UTC (ledger start); re-running a version is a no-op.
+  The migration computes version 1 in its body.
+- `list_engagement_historical_estimates(p_event_type, p_method_version)` lists published client
+  invitations; the API serves it with `level=historical`, the dashboard in its own tab.
 
 ### 5.3 Server
 
@@ -145,15 +150,15 @@ plan. This plan replaces it.
 
 ## 6. Work units
 
-| Goal | Scope                                                                                                                                                                                                   | Verification                                                                                                 |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| G0   | Spec: confidence levels, definitions (§4), ranking v2 query contract, demos metrics                                                                                                                     | Owner review                                                                                                 |
-| G1   | Migration A: snapshot v2 columns + compute + backfill, ranking routine v2, registry, contracts, pgTAP                                                                                                   | Disposable pgTAP (all files), `test:db:rsvp-contracts`, mutation contract on disposable                      |
-| G2   | Service + API v2: filters, facets, per-type ranks, levels, WhatsApp handling, ranges                                                                                                                    | Unit (filters, facets, per-type ranks, ranges, WhatsApp exclusion), API (400s, perimeter)                    |
-| G3   | UI: tabs shell, toolbar, filters popover, chips, URL state, level badges, table changes, copy fix                                                                                                       | Component tests; Local render with a seeded admin session if available, otherwise Preview check by the owner |
-| G4   | Demos tab: service, API, table                                                                                                                                                                          | Unit (aggregation, threshold, drop-off), API tests, component test                                           |
-| G5   | Historical estimate: validation report (sample of guests: view_percentage vs measured depth where both exist; crawler/host filter vs ledger previews), owner review, then migration B + historical view | Validation report accepted by the owner before migration B; pgTAP; unit                                      |
-| G6   | Docs, CHANGELOG, rollout (Local → Preview me; Production owner), checkpoint                                                                                                                             | `validate:changed` → `type-check` → `pnpm run ci`; `release-status` Preview/Production                       |
+| Goal | Scope                                                                                                                                 | Verification                                                                                                 |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| G0   | Spec: confidence levels, definitions (§4), ranking v2 query contract, demos metrics                                                   | Owner review                                                                                                 |
+| G1   | Migration A: snapshot v2 columns + compute + backfill, ranking routine v2, registry, contracts, pgTAP                                 | Disposable pgTAP (all files), `test:db:rsvp-contracts`, mutation contract on disposable                      |
+| G2   | Service + API v2: filters, facets, per-type ranks, levels, WhatsApp handling, ranges                                                  | Unit (filters, facets, per-type ranks, ranges, WhatsApp exclusion), API (400s, perimeter)                    |
+| G3   | UI: tabs shell, toolbar, filters popover, chips, URL state, level badges, table changes, copy fix                                     | Component tests; Local render with a seeded admin session if available, otherwise Preview check by the owner |
+| G4   | Demos tab: service, API, table                                                                                                        | Unit (aggregation, threshold, drop-off), API tests, component test                                           |
+| G5   | Historical estimate: validation report (accepted 2026-10-17: no legacy depth, any-view open rule), then migration B + historical view | Validation report accepted by the owner before migration B; pgTAP; unit                                      |
+| G6   | Docs, CHANGELOG, rollout (Local → Preview me; Production owner), checkpoint                                                           | `validate:changed` → `type-check` → `pnpm run ci`; `release-status` Preview/Production                       |
 
 One task branch per goal group (`feat/ranking-coverage` for G0–G3, `feat/ranking-demos` for G4,
 `feat/ranking-historical` for G5), each from `origin/develop`, merged with `--no-ff`.
@@ -184,8 +189,8 @@ One task branch per goal group (`feat/ranking-coverage` for G0–G3, `feat/ranki
 ## 9. Stop conditions
 
 - (Checked 2026-10-13, not triggered) responses whose source cannot be attributed: none.
-- G5 validation shows legacy depth or opens uncorrelated with measured data → ship G5 without that
-  metric and report.
+- (Checked 2026-10-17, triggered for depth only) G5 validation shows legacy depth or opens
+  uncorrelated with measured data → ship G5 without that metric and report.
 - Any metric would need guest-level data in the response → stop (privacy contract).
 
 ## 10. Risks

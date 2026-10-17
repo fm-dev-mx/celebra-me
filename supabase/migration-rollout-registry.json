@@ -234,6 +234,11 @@
             "provides": ["invitation_assets_r2_provider"],
             "notes": "Replaces invitation_assets_provider_valid and invitation_assets_cloudinary_fields_complete with supersets so invitation_assets.provider also accepts 'r2', with the same provider_public_id and secure_url requirement as Cloudinary rows. Registered as contract only because the CHECK swap uses DROP CONSTRAINT; both checks are re-added NOT VALID and only widen, so no rows, URLs or asset bytes change and the deployed application keeps working. Apply before any task that writes R2 asset rows.",
             "revokes": ["invitation_assets_supabase_cloudinary_only_provider"]
+        },
+        "20261017120000": {
+            "phase": "expand",
+            "provides": ["engagement_historical_estimates"],
+            "notes": "Adds invitation_engagement_historical_estimates (one row per event and method version, aggregates only, RLS forced, service-role select), compute_engagement_historical_estimates (computes method version 1 once from legacy viewed audit rows before 2026-10-12 16:25 UTC; re-running a version is a no-op) and list_engagement_historical_estimates (service-role read over published client invitations). The migration computes version 1 in its body. Additive: the deployed application keeps working and the historical view answers 503 until this routine exists. Revokes only initialize privileges of the new objects."
         }
     },
     "appCapabilities": {

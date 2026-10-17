@@ -202,11 +202,11 @@ Ranks and medians are computed by the application
 Engagement started on 2026-10-12, but older signals exist. The ranking keeps three levels apart and
 labels every figure with its level; a figure never mixes levels.
 
-| Level               | Source                                                                                                 | Meaning             |
-| ------------------- | ------------------------------------------------------------------------------------------------------ | ------------------- |
-| Measured            | Ledger since 2026-10-12, guest traffic only                                                            | Observed            |
-| Inferred            | A guest who responded through the invitation opened it (`last_response_source <> 'admin'`)             | Exact lower bound   |
-| Historical estimate | Legacy `first_viewed_at`, `view_percentage` and `viewed` audit rows before 2026-10-12, cleaned (below) | Upper bound, frozen |
+| Level               | Source                                                                                     | Meaning           |
+| ------------------- | ------------------------------------------------------------------------------------------ | ----------------- |
+| Measured            | Ledger since 2026-10-12, guest traffic only                                                | Observed          |
+| Inferred            | A guest who responded through the invitation opened it (`last_response_source <> 'admin'`) | Exact lower bound |
+| Historical estimate | Legacy `viewed` audit rows before the ledger (2026-10-12 16:25 UTC), cleaned (below)       | Range, frozen     |
 
 Definitions (computed live from guest projections; snapshots are unchanged):
 
@@ -220,13 +220,39 @@ Definitions (computed live from guest projections; snapshots are unchanged):
   bound («≤») and only narrowed into a range by the historical estimate. It is not measurable when
   `rsvp.confirmationMode = 'whatsapp'` (replies never reach the database) and partial for `both`;
   neither enters a conversion ranking.
-- **Historical estimate cleaning**: a legacy view counts only when it is not before
-  `first_shared_at` (host review or QA) and not within 2 minutes after it (chat link preview);
-  visits are `viewed` audit rows sessionized per guest with the 30-minute rule. Estimates are
-  computed once into `invitation_engagement_historical_estimates` with a `method_version` and are
-  shown in their own view, never ranked against measured figures.
+- **Historical estimate**: see [Historical estimate](#historical-estimate-phase-21). It is shown in
+  its own view, never ranked and never mixed with measured or inferred figures.
 
-Where both bounds exist the view shows a range (estimate lower, inferred upper for conversion).
+### Historical estimate (phase 2.1)
+
+Migration `20261017120000` adds `invitation_engagement_historical_estimates` (one row per event and
+`method_version`, aggregates only, RLS forced, `service_role` select) and two `service_role`
+routines: `compute_engagement_historical_estimates(p_method_version)` computes every row of a
+version once (re-running it is a no-op) and
+`list_engagement_historical_estimates(p_event_type, p_method_version)` lists the rows of published
+client invitations. The migration computes version 1 in its body. Method version 1 (validated on
+2026-10-17 against the ledger):
+
+- **Cutoff**: only `viewed` audit rows before 2026-10-12 16:25 UTC count; from then on the ledger
+  also writes `viewed` audit rows, which are measured traffic.
+- **Counted view**: at least 2 minutes after the guest's `first_shared_at`. Earlier rows are counted
+  apart as before-share (host review, QA) or preview-window (chat link preview) views.
+- **Viewed guest**: any counted view, not only the first one (first-view-only misses 13 % of real
+  opens; any-view keeps 94 % precision and 99 % recall).
+- **Opens range**: guests who responded by guest before the cutoff (lower) to guests who viewed or
+  responded (upper). Host views after sharing cannot be separated (≈ 6 % false opens).
+- **Conversion**: responded by guest ÷ upper open bound, shown as a lower bound («≥»); its upper
+  bound is trivially 100 % and is not shown.
+- **Visits**: counted views sessionized per guest with the 30-minute rule.
+- **Guests without `first_shared_at`**: counted apart (total, viewed, responded) and outside every
+  bound.
+- **Depth**: not estimated. Legacy `view_percentage` is saturated at 100 % and does not track
+  measured depth; since 2026-10-12 the ledger also raises it to the measured milestone.
+
+The admin API returns the estimate with
+`GET /api/dashboard/admin/engagement/ranking?level=historical` (`eventType` optional; unknown values
+→ 400; 503 until the routine exists). The dashboard shows it in the «Histórico (estimado)» tab with
+the method version and its cleaning rules.
 
 ### Ranking query v2 (phase 2.1)
 

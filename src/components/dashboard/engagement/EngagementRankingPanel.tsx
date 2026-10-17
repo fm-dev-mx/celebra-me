@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import DemoEngagementPanel from '@/components/dashboard/engagement/DemoEngagementPanel';
+import HistoricalEstimatesPanel from '@/components/dashboard/engagement/HistoricalEstimatesPanel';
 import RankingToolbar from '@/components/dashboard/engagement/RankingToolbar';
 import { DesignsTable, InvitationsTable } from '@/components/dashboard/engagement/RankingTables';
 import type { EngagementRankingReport } from '@/interfaces/dashboard/engagement-ranking.interface';
@@ -121,19 +122,19 @@ function RankingContent() {
 	);
 }
 
-type RankingTab = 'invitations' | 'demos';
-
-function initialTab(): RankingTab {
-	if (typeof window === 'undefined') return 'invitations';
-	return new URLSearchParams(window.location.search).get('tab') === 'demos'
-		? 'demos'
-		: 'invitations';
-}
+type RankingTab = 'invitations' | 'historical' | 'demos';
 
 const TABS: ReadonlyArray<{ id: RankingTab; label: string }> = [
 	{ id: 'invitations', label: rankingCopy.invitationsTitle },
+	{ id: 'historical', label: 'Histórico (estimado)' },
 	{ id: 'demos', label: 'Demos' },
 ];
+
+function initialTab(): RankingTab {
+	if (typeof window === 'undefined') return 'invitations';
+	const tab = new URLSearchParams(window.location.search).get('tab');
+	return TABS.find((item) => item.id === tab)?.id ?? 'invitations';
+}
 
 export default function EngagementRankingPanel() {
 	const [tab, setTab] = useState<RankingTab>(initialTab);
@@ -143,9 +144,9 @@ export default function EngagementRankingPanel() {
 			window.history.replaceState(
 				null,
 				'',
-				next === 'demos'
-					? `${window.location.pathname}?tab=demos`
-					: window.location.pathname,
+				next === 'invitations'
+					? window.location.pathname
+					: `${window.location.pathname}?tab=${next}`,
 			);
 		}
 	};
@@ -168,7 +169,9 @@ export default function EngagementRankingPanel() {
 				))}
 			</div>
 			<div role="tabpanel" id={`ranking-panel-${tab}`} aria-labelledby={`ranking-tab-${tab}`}>
-				{tab === 'demos' ? <DemoEngagementPanel /> : <RankingContent />}
+				{tab === 'demos' ? <DemoEngagementPanel /> : null}
+				{tab === 'historical' ? <HistoricalEstimatesPanel /> : null}
+				{tab === 'invitations' ? <RankingContent /> : null}
 			</div>
 		</ErrorBoundary>
 	);
