@@ -323,7 +323,11 @@ since 2026-10-15.
 Still open:
 
 1. Final upload run for v0.28.1 (step 3.1.5).
-2. The current (Vercel) memories public keys available for a rollback (section 3).
-3. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
-4. After the night: delete `celebra-me-memories-prod-keys.txt` and `generar-llaves-recuerdos.mjs`
-   outside the repository, once the keys are in the password manager.
+2. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
+
+Done 2026-10-17 (owner):
+
+- The current (Vercel) memories public keys available for a rollback (section 3): in the password
+  manager.
+- `celebra-me-memories-prod-keys.txt` and `generar-llaves-recuerdos.mjs` deleted outside the
+  repository, after the keys were in the password manager.
