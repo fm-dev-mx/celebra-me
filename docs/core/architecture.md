@@ -511,9 +511,10 @@ deployment.
   retrieval Worker keeps its `workers.dev` host until Vercel is deleted (2026-11-09).
 - **Sign transport:** on Preview the app Worker shares the `workers.dev` subdomain with
   `celebra-memories-sign-staging`, where a plain `fetch` between Workers fails (Cloudflare error
-  1042), so it calls `POST /sign` through the `MEMORIES_SIGN` Service Binding. The request URL keeps
-  `MEMORIES_PRIVATE_UPLOAD_ORIGIN`, because the sign Worker returns the browser's public upload URL
-  on that origin; the browser's `PUT /upload` always goes to the public host.
+  1042), so it calls `POST /sign` through the `MEMORIES_SIGN` Service Binding; Production binds it
+  too. The request URL keeps `MEMORIES_PRIVATE_UPLOAD_ORIGIN`, because the sign Worker returns the
+  browser's public upload URL on that origin; the browser's `PUT /upload` always goes to the public
+  host.
 - **Retries and refusals:** the app rounds a video duration to the catalog scale
   (`MEMORIES_VIDEO_DURATION_DECIMALS`) before reserving, so a retried request replays the same row
   instead of conflicting with it. A refused reservation carries `error.details.reason`

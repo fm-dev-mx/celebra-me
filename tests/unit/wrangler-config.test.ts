@@ -83,6 +83,7 @@ describe('wrangler.jsonc Production environment', () => {
 
 	it('reaches the private memories Workers of each environment over Service Bindings', () => {
 		expect(production.services).toEqual([
+			{ binding: 'MEMORIES_SIGN', service: 'celebra-memories-sign' },
 			{ binding: 'MEMORIES_RETRIEVE', service: 'celebra-memories-retrieve' },
 		]);
 		expect(preview.services).toEqual([
