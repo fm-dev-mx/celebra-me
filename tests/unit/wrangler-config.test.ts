@@ -19,6 +19,7 @@ interface WorkerEnvironment {
 	vars?: Record<string, string>;
 	images?: { binding: string };
 	ratelimits?: RateLimitBinding[];
+	services?: { binding: string; service: string }[];
 }
 
 /** Drops `//` line comments outside strings; wrangler.jsonc uses no block comments. */
@@ -78,6 +79,17 @@ describe('wrangler.jsonc Production environment', () => {
 			BASE_URL: 'https://www.celebra-me.com',
 		});
 		expect(production.images).toEqual({ binding: 'IMAGES' });
+	});
+
+	it('reaches the private memories Workers of each environment over Service Bindings', () => {
+		expect(production.services).toEqual([
+			{ binding: 'MEMORIES_SIGN', service: 'celebra-memories-sign' },
+			{ binding: 'MEMORIES_RETRIEVE', service: 'celebra-memories-retrieve' },
+		]);
+		expect(preview.services).toEqual([
+			{ binding: 'MEMORIES_SIGN', service: 'celebra-memories-sign-staging' },
+			{ binding: 'MEMORIES_RETRIEVE', service: 'celebra-memories-retrieve-staging' },
+		]);
 	});
 
 	it('mirrors every Preview rate limit inside its own namespace range', () => {

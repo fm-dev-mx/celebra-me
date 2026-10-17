@@ -18,6 +18,12 @@ import {
 } from '@/lib/memories/contract/private-request';
 import { MEMORIES_ENV } from './config';
 import { createMemoriesPrivateRequestHeaders, resolveMemoriesWorkerUrl } from './private-request';
+import {
+	MEMORIES_RETRIEVE_BINDING_ORIGIN,
+	fetchMemoriesRetrieveWorker,
+	fetchMemoriesSignWorker,
+	hasMemoriesRetrieveBinding,
+} from './worker-bindings';
 
 export interface MemoriesUploadCapability {
 	uploadUrl: string;
@@ -136,7 +142,7 @@ export async function requestMemoriesUploadCapability(input: {
 	const signerUrl = resolveMemoriesWorkerUrl(MEMORIES_ENV.uploadOrigin, MEMORIES_SIGN_PATH);
 	if (!signerUrl) throw new Error('Memories upload signer is not configured.');
 	const body = JSON.stringify(input);
-	const response = await fetch(signerUrl, {
+	const response = await fetchMemoriesSignWorker(signerUrl, {
 		method: 'POST',
 		headers: createMemoriesPrivateRequestHeaders({
 			audience: MEMORIES_UPLOAD_REQUEST_AUDIENCE,
@@ -187,10 +193,11 @@ export async function retrieveMemoriesObject(input: {
 	/** Defaults to the signed request lifetime, which streamed downloads need. */
 	timeoutMs?: number;
 }): Promise<Response> {
-	const retrievalUrl = resolveMemoriesWorkerUrl(
-		MEMORIES_ENV.retrievalOrigin,
-		MEMORIES_RETRIEVAL_PATH,
-	);
+	const retrievalUrl =
+		resolveMemoriesWorkerUrl(MEMORIES_ENV.retrievalOrigin, MEMORIES_RETRIEVAL_PATH) ??
+		(hasMemoriesRetrieveBinding()
+			? new URL(MEMORIES_RETRIEVAL_PATH, MEMORIES_RETRIEVE_BINDING_ORIGIN)
+			: null);
 	if (!retrievalUrl) return new Response(null, { status: 503 });
 	const requestBody: Record<string, unknown> = {
 		objectKey: input.objectKey,
@@ -202,7 +209,7 @@ export async function retrieveMemoriesObject(input: {
 		Object.assign(requestBody, parseRange(input.range));
 	}
 	const body = JSON.stringify(requestBody);
-	return fetch(retrievalUrl, {
+	return fetchMemoriesRetrieveWorker(retrievalUrl, {
 		method: 'POST',
 		headers: createMemoriesPrivateRequestHeaders({
 			audience: MEMORIES_RETRIEVAL_REQUEST_AUDIENCE,

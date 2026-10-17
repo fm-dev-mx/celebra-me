@@ -32,6 +32,11 @@
                 "BASE_URL": "https://celebra-me-preview.celebra-me-com.workers.dev"
             },
             "images": { "binding": "IMAGES" },
+            // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
+            "services": [
+                { "binding": "MEMORIES_SIGN", "service": "celebra-memories-sign-staging" },
+                { "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve-staging" }
+            ],
             // Same schedules as vercel.json; src/lib/server/scheduled-jobs.ts maps each expression.
             "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
             // One binding per (namespace, maxHits, windowSec) that src/lib/rsvp/security/rate-limit-provider.ts
@@ -162,6 +167,13 @@
                 "BASE_URL": "https://www.celebra-me.com"
             },
             "images": { "binding": "IMAGES" },
+            // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
+            // The retrieval Worker keeps workers_dev while Vercel, the rollback host, still calls it;
+            // the sign Worker always keeps it, because browsers PUT uploads to its public host.
+            "services": [
+                { "binding": "MEMORIES_SIGN", "service": "celebra-memories-sign" },
+                { "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve" }
+            ],
             // Same schedules as Vercel (`vercel.json`). Cron triggers are non-versioned: version
             // uploads, version deploys and secret changes never apply them, so they stay off until
             // the cutover enables them once Vercel is paused (one cron runner at a time). Only

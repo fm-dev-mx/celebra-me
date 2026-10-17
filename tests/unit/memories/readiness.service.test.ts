@@ -1,5 +1,11 @@
 import { generateKeyPairSync } from 'node:crypto';
 import { checkMemoriesReadiness } from '@/lib/memories/server/readiness.service';
+import {
+	installMemoriesRetrieveBinding,
+	installMemoriesSignBinding,
+	resetMemoriesRetrieveBindingForTests,
+	resetMemoriesSignBindingForTests,
+} from '@/lib/memories/server/worker-bindings';
 
 const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const PRIVATE_PEM = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
@@ -88,5 +94,63 @@ describe('checkMemoriesReadiness', () => {
 
 		expect(readiness).toEqual({ missing: ['uploadOrigin'], unreachable: [] });
 		expect(fetchImpl).toHaveBeenCalledTimes(1);
+	});
+
+	describe('with the retrieval Service Binding', () => {
+		const binding = { fetch: jest.fn(async () => new Response(null, { status: 404 })) };
+		beforeEach(() => {
+			binding.fetch.mockClear();
+			installMemoriesRetrieveBinding({ MEMORIES_RETRIEVE: binding });
+		});
+		afterEach(() => resetMemoriesRetrieveBindingForTests());
+
+		it('needs no retrieval origin and probes the Worker through the binding', async () => {
+			configure({ ...COMPLETE, MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: '' });
+			const fetchImpl = jest.fn<Promise<Response>, [URL | RequestInfo]>(
+				async () => new Response(null, { status: 404 }),
+			);
+
+			await expect(
+				checkMemoriesReadiness({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+			).resolves.toEqual({ missing: [], unreachable: [] });
+			expect(binding.fetch).toHaveBeenCalledTimes(1);
+			expect(fetchImpl).toHaveBeenCalledTimes(1);
+			expect(String(fetchImpl.mock.calls[0][0])).toContain('8787');
+		});
+
+		it('marks the retrieval Worker unreachable when the binding fails', async () => {
+			configure(COMPLETE);
+			binding.fetch.mockRejectedValueOnce(new Error('service unavailable'));
+			const fetchImpl = jest.fn(async () => new Response(null, { status: 404 }));
+
+			await expect(
+				checkMemoriesReadiness({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+			).resolves.toEqual({ missing: [], unreachable: ['retrievalOrigin'] });
+		});
+	});
+
+	describe('with the sign Service Binding', () => {
+		const binding = { fetch: jest.fn(async () => new Response(null, { status: 404 })) };
+		beforeEach(() => {
+			binding.fetch.mockClear();
+			installMemoriesSignBinding({ MEMORIES_SIGN: binding });
+		});
+		afterEach(() => resetMemoriesSignBindingForTests());
+
+		it('probes the sign Worker through the binding and still needs its public origin', async () => {
+			configure({ ...COMPLETE, MEMORIES_PRIVATE_UPLOAD_ORIGIN: '' });
+			const fetchImpl = jest.fn(async () => new Response(null, { status: 404 }));
+
+			await expect(
+				checkMemoriesReadiness({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+			).resolves.toEqual({ missing: ['uploadOrigin'], unreachable: [] });
+			expect(binding.fetch).not.toHaveBeenCalled();
+
+			configure(COMPLETE);
+			await expect(
+				checkMemoriesReadiness({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+			).resolves.toEqual({ missing: [], unreachable: [] });
+			expect(binding.fetch).toHaveBeenCalledTimes(1);
+		});
 	});
 });

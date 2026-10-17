@@ -13,6 +13,13 @@ import type {
 } from '@/lib/memories/contract/catalog';
 import { MEMORIES_ENV } from './config';
 import { normalizePem, resolveMemoriesWorkerUrl } from './private-request';
+import {
+	MEMORIES_RETRIEVE_BINDING_ORIGIN,
+	fetchMemoriesRetrieveWorker,
+	fetchMemoriesSignWorker,
+	hasMemoriesRetrieveBinding,
+	hasMemoriesSignBinding,
+} from './worker-bindings';
 
 const MIN_SHARE_SECRET_LENGTH = 32;
 const PROBE_TIMEOUT_MS = 3_000;
@@ -32,8 +39,17 @@ function isUsableSigningKey(envName: string): boolean {
 	}
 }
 
+/** With the Service Binding installed, the retrieval Worker needs no configured origin. */
 function workerOrigin(key: MemoriesWorkerKey): URL | null {
-	return resolveMemoriesWorkerUrl(WORKER_ENV[key], '/');
+	const origin = resolveMemoriesWorkerUrl(WORKER_ENV[key], '/');
+	if (origin || key !== 'retrievalOrigin' || !hasMemoriesRetrieveBinding()) return origin;
+	return new URL('/', MEMORIES_RETRIEVE_BINDING_ORIGIN);
+}
+
+/** The Service Binding that reaches this Worker, when the Worker entry installed one. */
+function bindingProbe(key: MemoriesWorkerKey): typeof fetchMemoriesSignWorker | null {
+	if (key === 'uploadOrigin') return hasMemoriesSignBinding() ? fetchMemoriesSignWorker : null;
+	return hasMemoriesRetrieveBinding() ? fetchMemoriesRetrieveWorker : null;
 }
 
 /** Settings that are absent or unusable as configured. */
@@ -54,7 +70,10 @@ function findMissingMemoriesConfig(): MemoriesConfigKey[] {
  * A Worker counts as reachable when it answers anything at all: a 404 or 401 at
  * its root still proves the origin points at a running Worker.
  */
-async function probeWorker(origin: URL, fetchImpl: typeof fetch): Promise<boolean> {
+async function probeWorker(
+	origin: URL,
+	fetchImpl: (url: URL, init?: RequestInit) => Promise<Response>,
+): Promise<boolean> {
 	try {
 		await fetchImpl(origin, { method: 'GET', signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
 		return true;
@@ -73,7 +92,8 @@ export async function checkMemoriesReadiness(
 	await Promise.all(
 		(Object.keys(WORKER_ENV) as MemoriesWorkerKey[]).map(async (key) => {
 			const origin = workerOrigin(key);
-			if (origin && !(await probeWorker(origin, fetchImpl))) unreachable.push(key);
+			const probe = bindingProbe(key) ?? fetchImpl;
+			if (origin && !(await probeWorker(origin, probe))) unreachable.push(key);
 		}),
 	);
 	unreachable.sort();
