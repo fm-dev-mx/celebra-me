@@ -54,27 +54,16 @@ and `session_id`.
 A `whatsapp_contact_clicked` tracking event carrying a non-empty `lead_code` in `event_properties`
 triggers automatic lead creation during ingestion (`ingestion.service.ts`).
 
-| Behaviour    | Detail                                                                                    |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| Channel      | `whatsapp`                                                                                |
-| Status       | `new`                                                                                     |
-| Consent      | `consent_contact: true` (user initiated contact), `consent_marketing: false`              |
-| Name/contact | `null` initially — filled later through manual reconciliation or eventual form submission |
-| Intent       | Early commercial intent, NOT a qualified lead, sale, or confirmed customer                |
+| Behaviour    | Detail                                                                       |
+| ------------ | ---------------------------------------------------------------------------- |
+| Channel      | `whatsapp`                                                                   |
+| Status       | `new`                                                                        |
+| Consent      | `consent_contact: true` (user initiated contact), `consent_marketing: false` |
+| Name/contact | `null` initially — filled later through manual reconciliation                |
+| Intent       | Early commercial intent, NOT a qualified lead, sale, or confirmed customer   |
 
 The WhatsApp URL is rewritten client-side to embed the canonical `lead_code` (`CM-XXXXXX`) in the
-message text. The lead code bridges the anonymous click to any future contact form submission.
-
-### Contact form submissions
-
-The contact form (`ContactForm.astro`) submits to `POST /api/contact`. The form includes hidden
-fields for `sessionId`, `visitorId`, `leadCode`, and UTM parameters.
-
-| Behaviour    | Detail                                            |
-| ------------ | ------------------------------------------------- |
-| Channel      | `contact_form`                                    |
-| Dedup        | By `lead_code` via `on_conflict=lead_code` upsert |
-| Name/contact | Provided by user in the form                      |
+message text. The visitor can quote it in the chat so the operator finds the lead in the CRM.
 
 ## `lead_created` Event Rule
 
@@ -87,13 +76,14 @@ a three-valued guard:
 | `null`                     | Confirmed new lead. Emit exactly one `lead_created`. Upsert the lead.                                             |
 | Throws / lookup failure    | Preserve the operational upsert (lead capture is more important than event counting). Do NOT emit `lead_created`. |
 
-This rule applies to **both** lead sources (WhatsApp clicks and contact form submissions).
+This rule applies to WhatsApp click leads, the only public lead source since the landing contact
+form was removed. Older rows may still carry `lead_channel=contact_form`.
 
 The `lead_created` event carries:
 
 - `lead_code` — the stable attribution code
-- `lead_channel` — `whatsapp` or `contact_form`
-- `routePath` — `/api/tracking/events` or `/api/contact`
+- `lead_channel` — the click channel, for example `whatsapp`
+- `routePath` — `/api/tracking/events`
 - `consentSnapshot` — `{ necessary: true, analytics: false, marketing: false }`
 
 ## GA4 Status
@@ -137,13 +127,13 @@ secrets are exposed client-side.
 
 ### Browser-side event map
 
-| First-party event          | Meta event      | When it fires                                                     | Metadata sent                                                                              | Dedup key                 |
-| -------------------------- | --------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
-| `page_viewed`              | `PageView`      | Commercial/demo page load after marketing consent                 | `content_category=page`, optional `content_name`, `source_area`                            | —                         |
-| `demo_viewed`              | `ViewContent`   | Demo page load on real showroom/demo routes                       | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                         |
-| `package_viewed`           | `ViewContent`   | Pricing/package card becomes visible on the landing page          | `content_name`, `content_category=package`, `source_area`                                  | —                         |
-| `whatsapp_contact_clicked` | `WhatsAppClick` | Commercial WhatsApp CTA click                                     | `content_name`, `content_category`, optional `event_type`, `source_area`                   | Technical `event_id` UUID |
-| `form_submitted`           | `Lead`          | Contact form submission succeeds (`POST /api/contact` returns OK) | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | Technical `event_id` UUID |
+| First-party event          | Meta event      | When it fires                                                        | Metadata sent                                                                              | Dedup key                 |
+| -------------------------- | --------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
+| `page_viewed`              | `PageView`      | Commercial/demo page load after marketing consent                    | `content_category=page`, optional `content_name`, `source_area`                            | —                         |
+| `demo_viewed`              | `ViewContent`   | Demo page load on real showroom/demo routes                          | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                         |
+| `package_viewed`           | `ViewContent`   | Pricing/package card becomes visible on the landing page             | `content_name`, `content_category=package`, `source_area`                                  | —                         |
+| `whatsapp_contact_clicked` | `WhatsAppClick` | Commercial WhatsApp CTA click                                        | `content_name`, `content_category`, optional `event_type`, `source_area`                   | Technical `event_id` UUID |
+| `form_submitted`           | `Lead`          | No live emitter since the contact form was removed; kept for history | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | Technical `event_id` UUID |
 
 Notes:
 

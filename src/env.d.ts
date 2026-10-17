@@ -10,9 +10,6 @@ interface ImportMetaEnv {
 	readonly SUPABASE_URL: string;
 	readonly SUPABASE_ANON_KEY: string;
 	readonly SUPABASE_SERVICE_ROLE_KEY: string;
-	readonly GMAIL_USER: string;
-	readonly GMAIL_PASS: string;
-	readonly CONTACT_FORM_RECIPIENT_EMAIL: string;
 	readonly PUBLIC_SUPABASE_URL: string;
 	readonly PUBLIC_SUPABASE_ANON_KEY: string;
 	readonly PUBLIC_GA_MEASUREMENT_ID: string;

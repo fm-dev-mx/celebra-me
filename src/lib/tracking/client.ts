@@ -8,12 +8,6 @@ import {
 	type MetaAttribution,
 } from '@/lib/tracking/meta-attribution';
 import type { PublicTrackingEventName } from '@/lib/tracking/event-contract';
-import {
-	buildCampaignCode,
-	getGeneralPromoCode,
-	getStartingPrice,
-	PROMO_CAMPAIGN,
-} from '@/data/promo-campaign.data';
 
 type ConsentSnapshot = {
 	necessary: true;
@@ -61,12 +55,6 @@ const WHATSAPP_LEAD_KEY = 'cm_whatsapp_lead_code';
  * per session and not overwritten by subsequent events.
  */
 const SESSION_INIT_KEY = 'cm_session_initialized';
-
-// Campaign defaults for events without a CTA-specific promo (contact form submissions).
-// Derived from the promo campaign module so a campaign change never touches this file.
-const DEFAULT_PROMO_CODE = getGeneralPromoCode();
-const DEFAULT_PROMO_PRICE = getStartingPrice();
-const DEFAULT_PROMO_CAMPAIGN = buildCampaignCode('FINAL', DEFAULT_PROMO_CODE);
 
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
@@ -267,43 +255,6 @@ function trackEvent(
 	}
 }
 
-function setContactHiddenFields(leadCode: string): void {
-	const consent = getConsentSnapshot();
-	const mayMeasure = consent.analytics || consent.marketing;
-	const utm = mayMeasure ? getUtmSnapshot() : {};
-	const metaAttribution = consent.marketing ? getMetaAttributionSnapshot() : {};
-	document.querySelectorAll('form[data-commercial-contact-form]').forEach((form) => {
-		if (!(form instanceof HTMLFormElement)) return;
-		const values: Record<string, string> = {
-			sessionId: mayMeasure ? getSessionId() : '',
-			visitorId: mayMeasure ? getVisitorId() : '',
-			leadCode,
-			utmSource: utm.source ?? '',
-			utmMedium: utm.medium ?? '',
-			utmCampaign: utm.campaign ?? '',
-			fbp: metaAttribution.fbp ?? '',
-			fbc: metaAttribution.fbc ?? '',
-			fbclid: metaAttribution.fbclid ?? '',
-		};
-		Object.entries(values).forEach(([name, value]) => {
-			const field = form.elements.namedItem(name);
-			if (field instanceof HTMLInputElement) field.value = value;
-		});
-	});
-}
-
-function getOrCreateFormLeadCode(form: HTMLFormElement, fallbackLeadCode: string): string {
-	const field = form.elements.namedItem('leadCode');
-	if (!(field instanceof HTMLInputElement)) return fallbackLeadCode;
-
-	const currentLeadCode = field.value.trim();
-	if (currentLeadCode) return currentLeadCode;
-
-	const nextLeadCode = fallbackLeadCode || createLeadCode();
-	field.value = nextLeadCode;
-	return nextLeadCode;
-}
-
 function bindSectionVisibility(): void {
 	if (!('IntersectionObserver' in window)) return;
 
@@ -476,48 +427,9 @@ function bindClicks(): void {
 			// Update the WhatsApp message to include the canonical lead_code so the customer
 			// can quote it and the operator can search it directly in the CRM.
 			updateWhatsAppUrl(target, leadCode);
-			setContactHiddenFields(leadCode);
 		}
 
 		void trackEvent(eventName, getTrackedClickProperties(target, leadCode));
-	});
-}
-
-function bindForms(): void {
-	document.querySelectorAll('form[data-commercial-contact-form]').forEach((form) => {
-		if (!(form instanceof HTMLFormElement)) return;
-		const leadCode = createLeadCode();
-		setContactHiddenFields(leadCode);
-
-		let started = false;
-		form.addEventListener(
-			'input',
-			() => {
-				if (started) return;
-				started = true;
-				void trackEvent('form_started', { form_id: 'contact' });
-			},
-			{ passive: true },
-		);
-		form.addEventListener('commercial-contact-submitted', () => {
-			const currentLeadCode = getOrCreateFormLeadCode(form, leadCode);
-			const eventTypeField = form.elements.namedItem('eventType');
-			const eventType =
-				eventTypeField instanceof HTMLInputElement ||
-				eventTypeField instanceof HTMLSelectElement
-					? eventTypeField.value.trim()
-					: '';
-			void trackEvent('form_submitted', {
-				form_id: 'contact',
-				lead_code: currentLeadCode,
-				event_type: eventType,
-				source_area: 'contact',
-				promo_code: DEFAULT_PROMO_CODE,
-				campaign_code: DEFAULT_PROMO_CAMPAIGN,
-				value: DEFAULT_PROMO_PRICE,
-				currency: PROMO_CAMPAIGN.currency,
-			});
-		});
 	});
 }
 
@@ -551,5 +463,4 @@ export function initCommercialTracking(): void {
 	bindPackageViews();
 	bindScrollDepth();
 	bindClicks();
-	bindForms();
 }

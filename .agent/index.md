@@ -49,6 +49,8 @@ routes matching the touched surfaces.
   validation procedures (load on demand)
 - [`docs/core/git-safety-session.md`](../docs/core/git-safety-session.md) — Mutable Git Safety
   session lifecycle (load on demand)
+- [`docs/core/coordinator-board.md`](../docs/core/coordinator-board.md) — Coordinator board rules:
+  action cards, timing, ready-to-paste prompts
 
 ### Environments & Database
 

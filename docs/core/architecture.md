@@ -403,7 +403,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 ### Other API Endpoints
 
 - `GET /api/health`
-- `POST /api/contact`
 - `GET /api/invitacion/public/[eventType]/[slug]/rsvp` — public hybrid RSVP
 
 ### Guest Invitation Access
