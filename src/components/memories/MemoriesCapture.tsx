@@ -38,6 +38,7 @@ import {
 import MemoriesUploadPanel from '@/components/memories/MemoriesUploadPanel';
 import MemoriesUploadProgress from '@/components/memories/MemoriesUploadProgress';
 import MemoriesGuestMemories from '@/components/memories/MemoriesGuestMemories';
+import MemoriesRecoveryCodeCard from '@/components/memories/MemoriesRecoveryCodeCard';
 
 type CatalogItem = MemoriesMediaPublicItem;
 
@@ -59,31 +60,6 @@ function SessionIssue({ issue }: { issue: MemoriesCaptureIssue | null }) {
 		<p className="status-page__status status-page__status--error" role="alert">
 			{memoriesIssueCopy(issue)}
 		</p>
-	);
-}
-
-function RecoveryCodeCard({ recoveryCode }: { recoveryCode: string | null }) {
-	const [copied, setCopied] = useState(false);
-	if (!recoveryCode) return null;
-	const copyCode = async () => {
-		if (!navigator.clipboard) return;
-		try {
-			await navigator.clipboard.writeText(recoveryCode);
-			setCopied(true);
-		} catch {
-			setCopied(false);
-		}
-	};
-	return (
-		<aside className="status-page__recovery-code" aria-labelledby="memories-recovery-title">
-			<strong id="memories-recovery-title">{copy.recoveryCodeTitle}</strong>
-			<span>{copy.recoveryCodeHint}</span>
-			<code tabIndex={0}>{recoveryCode}</code>
-			<button type="button" onClick={() => void copyCode()}>
-				{copied ? copy.recoveryCodeCopied : copy.copyRecoveryCode}
-			</button>
-			<small>{copy.recoveryCodeManualHint}</small>
-		</aside>
 	);
 }
 
@@ -171,12 +147,17 @@ function Identity({
 	inputId,
 	profile,
 	issue,
+	canLeave,
 	onSave,
+	onLeave,
 }: {
 	inputId: string;
 	profile: MemoriesGuestProfile;
 	issue: MemoriesCaptureIssue | null;
+	/** False while files are still uploading under this session. */
+	canLeave: boolean;
 	onSave: (displayName: string) => Promise<boolean>;
+	onLeave: () => Promise<void>;
 }) {
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(profile.displayName);
@@ -221,6 +202,17 @@ function Identity({
 					>
 						{copy.changeName}
 					</button>
+					{canLeave ? (
+						<button
+							type="button"
+							className="status-page__text-button"
+							onClick={() => {
+								if (window.confirm(copy.leaveSessionConfirm)) void onLeave();
+							}}
+						>
+							{copy.leaveSession}
+						</button>
+					) : null}
 				</p>
 			)}
 			<SessionIssue issue={issue} />
@@ -264,7 +256,7 @@ function BatchSummary({
 					{copy.captionSaveFailed}
 				</p>
 			) : null}
-			{saved > 0 ? <RecoveryCodeCard recoveryCode={recoveryCode} /> : null}
+			{saved > 0 ? <MemoriesRecoveryCodeCard recoveryCode={recoveryCode} /> : null}
 			{saved > 0 ? (
 				<div className="status-page__inline-actions">
 					<button type="button" className="status-page__btn" onClick={onUploadMore}>
@@ -386,6 +378,29 @@ export default function MemoriesCapture({
 		}
 	};
 
+	const leaveSession = async () => {
+		try {
+			await api.endSession();
+		} catch (error) {
+			setSessionIssue(mapRequestIssue(error, 'unavailable'));
+			return;
+		}
+		queue.clearFinished();
+		setProfile(null);
+		setRecoveryCode(null);
+		setItems([]);
+		setQuota(null);
+		setSessionIssue(null);
+	};
+
+	const rotateRecoveryCode = async (): Promise<string | null> => {
+		try {
+			return await api.rotateRecoveryCode();
+		} catch {
+			return null;
+		}
+	};
+
 	const saveCaption = async (item: CatalogItem, caption: string): Promise<boolean> => {
 		try {
 			await api.updateCaption(item.id, caption);
@@ -426,7 +441,9 @@ export default function MemoriesCapture({
 					inputId={inputId}
 					profile={profile}
 					issue={sessionIssue}
+					canLeave={!running}
 					onSave={saveProfile}
+					onLeave={leaveSession}
 				/>
 			) : (
 				<Onboarding inputId={inputId} issue={sessionIssue} onStart={startSession} />
@@ -485,6 +502,7 @@ export default function MemoriesCapture({
 					thumbnailUrl={(item) => api.itemThumbnailUrl(item.id)}
 					onSaveCaption={saveCaption}
 					onDelete={deleteItem}
+					onRotateRecoveryCode={rotateRecoveryCode}
 				/>
 			) : null}
 		</div>

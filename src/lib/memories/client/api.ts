@@ -126,6 +126,18 @@ export function createMemoriesGuestApi(publicSlug: string) {
 			});
 			return payload.profile;
 		},
+		/** Clears this browser's session cookie; the recovery code still restores it. */
+		async endSession(): Promise<void> {
+			await guestRequest<{ success: true }>(sessionUrl, { method: 'DELETE' });
+		},
+		/** Issues a new recovery code; the previous one stops working. */
+		async rotateRecoveryCode(): Promise<string> {
+			const payload = await guestRequest<{ recoveryCode: string }>(
+				`${sessionUrl}/recovery-code`,
+				{ method: 'POST' },
+			);
+			return payload.recoveryCode;
+		},
 		async updateProfile(displayName: string): Promise<MemoriesGuestProfile> {
 			const payload = await guestRequest<{ profile: MemoriesGuestProfile }>(sessionUrl, {
 				method: 'PATCH',

@@ -256,6 +256,13 @@ export const memoriesCaptureCopy = {
 		'El recuerdo se guardó, pero la descripción no. Puede reintentar sólo la descripción.',
 	sharingAs: 'Compartiendo como',
 	changeName: 'Cambiar nombre',
+	leaveSession: '¿No es usted? Salir',
+	leaveSessionConfirm:
+		'Guarde su código antes de salir; sin él no podrá ver sus recuerdos. ¿Desea salir?',
+	showRecoveryCode: 'Ver mi código',
+	showRecoveryCodeConfirm:
+		'Le daremos un código nuevo y el anterior dejará de funcionar. ¿Desea continuar?',
+	showRecoveryCodeFailed: 'No pudimos crear su código. Intente de nuevo.',
 	cancelNameChange: 'Cancelar',
 	myMemories: 'Mis recuerdos',
 	validationPending: 'En validación',
