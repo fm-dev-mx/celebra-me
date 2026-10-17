@@ -2,5 +2,9 @@
 import { resolveDashboardHome } from '@/lib/rsvp/auth/roles';
 
 // The middleware already handles missing sessions, MFA setup and temporary passwords.
-return Astro.redirect(resolveDashboardHome(Astro.locals.session?.role));
+// A guarded return keeps astro check aware of the redirect; the home path is never empty.
+const dashboardHome = resolveDashboardHome(Astro.locals.session?.role);
+if (dashboardHome) {
+	return Astro.redirect(dashboardHome);
+}
 ---

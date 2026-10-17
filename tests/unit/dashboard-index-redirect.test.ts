@@ -17,7 +17,8 @@ describe('/dashboard index redirect', () => {
 		const source = readSource('src/pages/dashboard/index.astro');
 		expect(source).toContain("import { resolveDashboardHome } from '@/lib/rsvp/auth/roles';");
 		expect(source).toContain(
-			'return Astro.redirect(resolveDashboardHome(Astro.locals.session?.role));',
+			'const dashboardHome = resolveDashboardHome(Astro.locals.session?.role);',
 		);
+		expect(source).toContain('return Astro.redirect(dashboardHome);');
 	});
 });
