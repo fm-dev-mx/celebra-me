@@ -71,7 +71,7 @@ module.exports = {
 	// Correct glob patterns (no regex syntax here)
 	testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.test.tsx'],
 
-	// Coverage is opt-in through `pnpm test:coverage`.
+	// Coverage is opt-in through `pnpm test --coverage`.
 	collectCoverageFrom: [
 		'src/**/*.{ts,tsx}',
 		'!src/**/index.ts',

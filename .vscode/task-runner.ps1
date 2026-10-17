@@ -202,11 +202,6 @@ $commandDetails = @{
         UseCase = "Capturar imagenes del renderizado de invitaciones para revision de diseño visual."
         Help    = "Ingrese '--help' (o '--interactive' para selector guiado de capturas)"
     }
-    "test:e2e:landing"          = @{
-        Desc    = "Pruebas End-to-End Playwright en la landing page."
-        UseCase = "Simular interacciones reales de un invitado navegando en la landing page."
-        Help    = "Ingrese '--help' (o '--headed' / '--ui' para modo visual interactivo)"
-    }
 }
 $commandDetails["pwsh"] = $commandDetails["terminal"]
 
