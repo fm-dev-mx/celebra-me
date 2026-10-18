@@ -141,42 +141,77 @@ export function requireStaticCapabilityCheck(sha: string, checks: RemoteCheckRun
 		);
 	}
 }
+interface RemoteCheckRunRecord {
+	id: number;
+	name: string;
+	head_sha: string;
+	status: string;
+	conclusion: string;
+	app?: { id: number };
+}
+interface RemoteCommitStatus {
+	context: string;
+	state: string;
+	creator?: { login: string };
+}
+/** GitHub caps one page at 100 entries; scheduled smokes keep adding runs to long-lived SHAs. */
+const PAGE_SIZE = 100;
+/** Bounds pagination so a misbehaving API cannot loop forever; beyond it evidence is unavailable. */
+const MAX_PAGES = 20;
+
+function pageSuffix(path: string, page: number): string {
+	return page === 1 ? path : `${path}&page=${page}`;
+}
+
+/** Collects every check run reported for the commit, deduplicated by id across pages. */
+function loadAllCheckRuns(api: (suffix: string) => unknown): RemoteCheckRunRecord[] {
+	const byId = new Map<number, RemoteCheckRunRecord>();
+	let total = 0;
+	for (let page = 1; page <= MAX_PAGES; page += 1) {
+		const response = api(
+			pageSuffix(`check-runs?filter=latest&per_page=${PAGE_SIZE}`, page),
+		) as { total_count: number; check_runs: RemoteCheckRunRecord[] };
+		if (
+			!response ||
+			!Array.isArray(response.check_runs) ||
+			typeof response.total_count !== 'number'
+		)
+			throw new RemoteEvidenceError('unavailable', 'Check result response is malformed.');
+		total = Math.max(total, response.total_count);
+		for (const run of response.check_runs) byId.set(run.id, run);
+		if (byId.size >= total) return [...byId.values()];
+		if (response.check_runs.length < PAGE_SIZE) break;
+	}
+	throw new RemoteEvidenceError('unavailable', 'Check result page is incomplete.');
+}
+
+/** Collects every commit status; the endpoint has no total, so a short page ends the list. */
+function loadAllStatuses(api: (suffix: string) => unknown): RemoteCommitStatus[] {
+	const statuses: RemoteCommitStatus[] = [];
+	for (let page = 1; page <= MAX_PAGES; page += 1) {
+		const response = api(pageSuffix(`statuses?per_page=${PAGE_SIZE}`, page));
+		if (!Array.isArray(response))
+			throw new RemoteEvidenceError('unavailable', 'Status result page is incomplete.');
+		statuses.push(...(response as RemoteCommitStatus[]));
+		if (response.length < PAGE_SIZE) return statuses;
+	}
+	throw new RemoteEvidenceError('unavailable', 'Status result page is incomplete.');
+}
+
 export function loadRemoteChecks(sha: string, run: GhRunner = defaultGhRunner): RemoteCheckRun[] {
 	if (!/^[a-f0-9]{40}$/i.test(sha))
 		throw new RemoteEvidenceError('invalid', 'An exact release SHA is required.');
 	const client = createGitHubClient(run);
 	const api = (suffix: string): unknown => client.api(`commits/${sha}/${suffix}`);
-	const runs = api('check-runs?filter=latest&per_page=100') as {
-		total_count: number;
-		check_runs: Array<{
-			id: number;
-			name: string;
-			head_sha: string;
-			status: string;
-			conclusion: string;
-			app: { id: number };
-		}>;
-	};
-	if (!runs || !Array.isArray(runs.check_runs) || typeof runs.total_count !== 'number')
-		throw new RemoteEvidenceError('unavailable', 'Check result response is malformed.');
-	if (runs.total_count > 100)
-		throw new RemoteEvidenceError('unavailable', 'Check result page is incomplete.');
-	const statuses = api('statuses?per_page=100') as Array<{
-		context: string;
-		state: string;
-		creator?: { login: string };
-	}>;
-	if (!Array.isArray(statuses) || statuses.length >= 100)
-		throw new RemoteEvidenceError('unavailable', 'Status result page is incomplete.');
+	const checkRuns = loadAllCheckRuns(api);
+	const statuses = loadAllStatuses(api);
 	const names = new Set([
 		...REQUIRED_RELEASE_CHECKS,
 		...PRODUCTION_DEPLOYMENT_SMOKES,
 		...PREVIEW_DEPLOYMENT_SMOKES,
 	]);
 	return [...names].flatMap((name) => {
-		const run = runs.check_runs
-			.filter((entry) => entry.name === name)
-			.sort((a, b) => b.id - a.id)[0];
+		const run = checkRuns.filter((entry) => entry.name === name).sort((a, b) => b.id - a.id)[0];
 		if (run)
 			return [
 				{
