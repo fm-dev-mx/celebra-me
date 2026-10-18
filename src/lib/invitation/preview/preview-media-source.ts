@@ -1,8 +1,10 @@
 /**
  * Which original images the preview endpoint may fetch. Tokens are sealed by this
  * server, so this is defense in depth: same-origin assets, managed Supabase Storage
- * public objects and Cloudinary deliveries only.
+ * public objects, R2 invitation media and Cloudinary deliveries only.
  */
+import { isR2InvitationMediaUrl } from '@/lib/intake/services/r2-invitation-media';
+
 const STORAGE_PUBLIC_PATH = '/storage/v1/object/public/';
 
 function configuredSupabaseOrigins(): string[] {
@@ -35,5 +37,6 @@ export function resolvePreviewMediaSource(source: string, requestOrigin: string)
 	const host = parsed.hostname.toLowerCase();
 	if (isStorageObject && host.endsWith('.supabase.co')) return parsed;
 	if (host === 'res.cloudinary.com' || host.endsWith('.res.cloudinary.com')) return parsed;
+	if (isR2InvitationMediaUrl(parsed.href)) return parsed;
 	return null;
 }

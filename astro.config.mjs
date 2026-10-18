@@ -72,6 +72,8 @@ const PROD_SUPABASE_HOST = process.env.PROD_SUPABASE_HOST ?? 'ineitkdkyrxqyressl
 const externalImageDomains = [
 	'images.unsplash.com',
 	'res.cloudinary.com',
+	'media.celebra-me.com',
+	'media-staging.celebra-me.com',
 	PROD_SUPABASE_HOST,
 	...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern.hostname] : []),
 ];
@@ -206,6 +208,14 @@ export default defineConfig({
 			{
 				protocol: 'https',
 				hostname: 'res.cloudinary.com',
+			},
+			{
+				protocol: 'https',
+				hostname: 'media.celebra-me.com',
+			},
+			{
+				protocol: 'https',
+				hostname: 'media-staging.celebra-me.com',
 			},
 			{
 				protocol: 'https',

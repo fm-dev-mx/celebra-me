@@ -63,7 +63,7 @@ export interface InvitationAsset {
 	validationVersion?: number;
 	originalMimeType?: string;
 	originalFileSize?: number;
-	provider?: 'supabase' | 'cloudinary';
+	provider?: 'supabase' | 'cloudinary' | 'r2';
 	providerPublicId?: string;
 	secureUrl?: string;
 	sha256?: string;
