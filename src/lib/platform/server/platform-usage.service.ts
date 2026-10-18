@@ -15,7 +15,6 @@ import type {
 	PlatformUsageReport,
 } from '@/lib/platform/contract/types';
 import { getCloudflarePlatformUsage, type CloudflareUsageSnapshot } from './cloudflare-usage';
-import { getCloudinaryPlatformUsage } from './cloudinary-usage';
 import { getSupabasePlatformUsage } from './supabase-usage';
 import { resolvePanelEnvironments } from './env-profiles';
 
@@ -57,7 +56,7 @@ export async function getPlatformUsageReport(
 	fetchImpl: typeof fetch = fetch,
 ): Promise<PlatformUsageReport> {
 	const environments = resolvePanelEnvironments();
-	const [cloudflare, supabase, cloudinary] = await Promise.all([
+	const [cloudflare, supabase] = await Promise.all([
 		getCloudflarePlatformUsage(now, fetchImpl).catch((): CloudflareUsageSnapshot => ({
 			kind: 'unavailable',
 			fetchedAt: null,
@@ -69,7 +68,6 @@ export async function getPlatformUsageReport(
 				safe(() => getSupabasePlatformUsage(environment, now, fetchImpl)),
 			),
 		),
-		safe(() => getCloudinaryPlatformUsage(now, fetchImpl)),
 	]);
 	const sections: PlatformSection[] = environments.map((environment, index) => ({
 		id: environment,
@@ -80,10 +78,7 @@ export async function getPlatformUsageReport(
 	}));
 	sections.push({
 		id: 'shared',
-		cards: [
-			cloudflareCard(cloudflare, 'shared', now),
-			{ provider: 'cloudinary', usage: cloudinary },
-		],
+		cards: [cloudflareCard(cloudflare, 'shared', now)],
 	});
 	return sections;
 }

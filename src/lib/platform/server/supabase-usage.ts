@@ -2,7 +2,7 @@
  * Supabase project usage for the super-admin platform console, read from the
  * Management API with a read-only personal access token. One project per
  * environment (Preview and Production), each against its own Free-plan
- * allowance and its own credentials. Never throws to callers and never
+ * allowance. Never throws to callers and never
  * forwards provider response bodies: failures collapse to `unavailable` or a
  * blanked meter.
  */
@@ -11,7 +11,7 @@ import { SUPABASE_FREE_TIER } from '@/lib/platform/contract/limits';
 import { buildPlatformMetric } from '@/lib/platform/contract/meters';
 import type { PlatformEnvironmentId, PlatformProviderUsage } from '@/lib/platform/contract/types';
 import { PLATFORM_ENV } from './config';
-import { readProfileVar, readSharedVar } from './env-profiles';
+import { readProfileVar } from './env-profiles';
 
 const MANAGEMENT_ENDPOINT = 'https://api.supabase.com/v1/projects';
 const REQUEST_TIMEOUT_MS = 5_000;
@@ -80,8 +80,8 @@ export async function getSupabasePlatformUsage(
 	now = new Date(),
 	fetchImpl: typeof fetch = fetch,
 ): Promise<PlatformProviderUsage> {
-	const token = readProfileVar('supabaseManagementToken', environment);
-	const projectRef = readSharedVar(PROJECT_REF_ENV[environment], environment);
+	const token = readProfileVar(PLATFORM_ENV.supabaseManagementToken, environment);
+	const projectRef = readProfileVar(PROJECT_REF_ENV[environment], environment);
 	const missing = [token.missing, projectRef.missing].filter(
 		(entry): entry is NonNullable<typeof entry> => entry !== null,
 	);

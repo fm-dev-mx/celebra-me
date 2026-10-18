@@ -46,13 +46,10 @@ describe('projectPlatformExhaustion', () => {
 		});
 	});
 
-	it('cannot project snapshots, unknown cycles or empty meters', () => {
+	it('cannot project snapshots or empty meters', () => {
 		expect(projectPlatformExhaustion({ used: 1_000, limit: 10_000 }, 'snapshot', NOW)).toEqual({
 			kind: 'unknown',
 		});
-		expect(
-			projectPlatformExhaustion({ used: 1_000, limit: 10_000 }, 'creditCycle', NOW),
-		).toEqual({ kind: 'unknown' });
 		expect(projectPlatformExhaustion({ used: null, limit: 10_000 }, 'dayUtc', NOW)).toEqual({
 			kind: 'unknown',
 		});
@@ -88,15 +85,15 @@ describe('projectPlatformExhaustion', () => {
 		expect(metric.projection.kind).toBe('exhaustsAt');
 	});
 
-	it('formats storage and bandwidth metrics with byte units', () => {
-		const bandwidthMetric = buildPlatformMetric({
-			id: 'clBandwidth',
+	it('formats storage metrics with byte units', () => {
+		const storageMetric = buildPlatformMetric({
+			id: 'cfR2StorageAccount',
 			used: 5_000_000_000,
 			limit: null,
-			window: 'creditCycle',
+			window: 'snapshot',
 			scope: 'account',
 			now: NOW,
 		});
-		expect(platformMetricFormat(bandwidthMetric)(5_000_000_000)).toBe('5 GB');
+		expect(platformMetricFormat(storageMetric)(5_000_000_000)).toBe('5 GB');
 	});
 });

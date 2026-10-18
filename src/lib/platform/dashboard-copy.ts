@@ -69,13 +69,11 @@ export const platformCopy = {
 export const platformProviderTitle: Record<PlatformProviderId, string> = {
 	cloudflare: 'Cloudflare · cuenta compartida',
 	supabase: 'Supabase · un proyecto por entorno',
-	cloudinary: 'Cloudinary · cuenta compartida',
 };
 
 export const platformProviderLink: Record<PlatformProviderId, string> = {
 	cloudflare: 'https://dash.cloudflare.com/',
 	supabase: 'https://supabase.com/dashboard',
-	cloudinary: 'https://console.cloudinary.com/',
 };
 
 /** Static cost notes for the free plans in force (documented 2026-10-02). */
@@ -83,7 +81,6 @@ export const platformProviderCostNote: Record<PlatformProviderId, string> = {
 	cloudflare: 'Costo del periodo: $0 (plan gratuito). Solo se factura si se supera una cuota.',
 	supabase:
 		'Costo del periodo: $0 (plan gratuito). No hay excedentes facturables: el límite es duro.',
-	cloudinary: 'Costo del periodo: $0 (plan gratuito). Sin excedentes facturables verificados.',
 };
 
 export const platformScopeLabel: Record<PlatformScope, string> = {
@@ -142,37 +139,21 @@ const MISSING_INFO: Record<string, MissingInfo> = {
 		description: 'Referencia del proyecto Supabase de Producción (ajustes del proyecto).',
 		setupUrl: 'https://supabase.com/dashboard',
 	},
-	CLOUDINARY_USAGE_API_KEY: {
-		description:
-			'Clave restringida de solo lectura para el informe de uso de Cloudinary (opcional; mientras falte se usa la clave de subida).',
-		setupUrl: 'https://console.cloudinary.com/settings/api-keys',
-	},
-	CLOUDINARY_USAGE_API_SECRET: {
-		description: 'Secreto de la clave restringida de uso de Cloudinary.',
-		setupUrl: 'https://console.cloudinary.com/settings/api-keys',
-	},
-	CLOUDINARY_CLOUD_NAME: {
-		description: 'Nombre del cloud de Cloudinary (ajustes de la consola).',
-		setupUrl: 'https://console.cloudinary.com/settings/api-keys',
-	},
 };
 
-/**
- * Setup guidance for one variable. Exact names win; Local-only overrides
- * (`NAME_PREVIEW` / `NAME_PRODUCTION`) reuse the base name's entry.
- */
+/** Setup guidance for one variable name. */
 export function platformMissingInfo(name: string): MissingInfo {
-	const exact = MISSING_INFO[name];
-	if (exact) return exact;
-	const base = MISSING_INFO[name.replace(/_(?:PREVIEW|PRODUCTION)$/, '')];
-	return base ?? { description: 'Configuración del panel de plataforma.', setupUrl: '' };
+	return (
+		MISSING_INFO[name] ?? {
+			description: 'Configuración del panel de plataforma.',
+			setupUrl: '',
+		}
+	);
 }
 
 export const platformWindowLabel: Record<PlatformWindow, string> = {
 	dayUtc: 'día UTC · reinicia 00:00 UTC (17:00 en Mazatlán)',
 	monthUtc: 'mes calendario UTC',
-	billingCycle: 'ciclo de facturación',
-	creditCycle: 'ciclo de créditos del proveedor',
 	snapshot: 'instantánea reciente',
 };
 
@@ -187,11 +168,6 @@ const METRIC_LABELS: Record<string, string | ((resource: string) => string)> = {
 	cfWorkersRequests: 'Peticiones de Workers · total de la cuenta',
 	cfDurableObjectsRequests: 'Peticiones de Durable Objects · total de la cuenta',
 	sbDatabase: 'Base de datos / disco',
-	clCredits: 'Créditos usados',
-	clStorage: 'Almacenamiento',
-	clBandwidth: 'Ancho de banda del periodo',
-	clRequests: 'Peticiones del periodo',
-	clResources: 'Recursos almacenados',
 };
 
 export function platformMetricLabel(metric: PlatformMetric): string {
@@ -208,9 +184,7 @@ export function platformProjectionLabel(projection: PlatformProjection): string 
 export function platformMetricFormat(metric: PlatformMetric): (value: number) => string {
 	return metric.id === 'cfR2StorageBucket' ||
 		metric.id === 'cfR2StorageAccount' ||
-		metric.id === 'sbDatabase' ||
-		metric.id === 'clStorage' ||
-		metric.id === 'clBandwidth'
+		metric.id === 'sbDatabase'
 		? formatPlatformStorage
 		: formatPlatformCount;
 }
