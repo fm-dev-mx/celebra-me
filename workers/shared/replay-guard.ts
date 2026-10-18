@@ -5,6 +5,7 @@ type ReplayStorage = {
 	put<T>(key: string, value: T): Promise<void>;
 	list<T = unknown>(): Promise<Map<string, T>>;
 	delete(key: string): Promise<boolean>;
+	deleteAll(): Promise<void>;
 	setAlarm(scheduledTime: number | Date): Promise<void>;
 };
 
@@ -64,9 +65,15 @@ export class ReplayGuard {
 	async alarm(): Promise<void> {
 		const now = Date.now();
 		const records = await this.state.storage.list<ReplayRecord>();
+		let nextExpiry: number | undefined;
 		for (const [key, record] of records) {
 			if (record.expiresAt <= now) await this.state.storage.delete(key);
+			else nextExpiry = Math.min(nextExpiry ?? record.expiresAt, record.expiresAt);
 		}
+		// SQLite-backed objects keep their metadata after per-key deletes; only deleteAll()
+		// releases the object (and, from compatibility date 2026-02-24, its alarm).
+		if (nextExpiry === undefined) await this.state.storage.deleteAll();
+		else await this.state.storage.setAlarm(nextExpiry);
 	}
 }
 
