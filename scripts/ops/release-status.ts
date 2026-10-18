@@ -144,9 +144,11 @@ export interface HealthEvidence {
 	 * `unreported` means the serving build predates build identity in `/api/health`;
 	 * `mismatch` also covers a matching SHA served under the wrong deploy identity;
 	 * `protected` means provider authentication answered instead of the application (no bypass
-	 * credential), so the URL proves nothing about the serving build.
+	 * credential), so the URL proves nothing about the serving build; `paused` means Vercel answered
+	 * that the project is paused (`503`, `x-vercel-error: DEPLOYMENT_PAUSED`), which proves nothing
+	 * either.
 	 */
-	result: 'match' | 'mismatch' | 'unreported' | 'unreachable' | 'protected';
+	result: 'match' | 'mismatch' | 'unreported' | 'unreachable' | 'protected' | 'paused';
 }
 
 type FetchLike = (
@@ -177,6 +179,15 @@ function isAuthenticationChallenge(url: string, response: Awaited<ReturnType<Fet
 	}
 }
 
+/** A paused Vercel project answers every `*.vercel.app` URL with this error instead of the app. */
+function isPausedVercelDeployment(url: string, response: Awaited<ReturnType<FetchLike>>): boolean {
+	return (
+		response.status === 503 &&
+		response.headers?.get('x-vercel-error') === 'DEPLOYMENT_PAUSED' &&
+		new URL(url).hostname.endsWith('.vercel.app')
+	);
+}
+
 export async function probeHealth(
 	origin: string,
 	sha: string,
@@ -190,13 +201,18 @@ export async function probeHealth(
 			...(headers ? { headers } : {}),
 			redirect: 'manual',
 		});
-		if (isAuthenticationChallenge(url, response))
+		const providerAnswer = isAuthenticationChallenge(url, response)
+			? 'protected'
+			: isPausedVercelDeployment(url, response)
+				? 'paused'
+				: null;
+		if (providerAnswer)
 			return {
 				url,
 				status: response.status,
 				commitSha: null,
 				environment: null,
-				result: 'protected',
+				result: providerAnswer,
 			};
 		const body = (await response.json().catch(() => ({}))) as {
 			status?: unknown;
@@ -387,11 +403,11 @@ function describeSmoke(
 const PRODUCTION_ALIAS_HEALTH_URL = `${PRODUCTION_ALIAS_URL}/api/health`;
 
 /**
- * Health probes that keep the release from VERIFIED. A protected deployment URL is never evidence.
- * On Production the public alias reports what the domain actually serves (since 2026-10-16 the
- * Cloudflare Worker, while the Vercel deployment URL stays behind Vercel Authentication), so a
- * protected deployment URL stops blocking only once the alias reports this exact SHA and
- * environment. Preview has no alias: a protected deployment URL keeps it pending.
+ * Health probes that keep the release from VERIFIED. A protected or paused deployment URL is never
+ * evidence. On Production the public alias reports what the domain actually serves (since
+ * 2026-10-16 the Cloudflare Worker, while the Vercel project stays behind Vercel Authentication
+ * and, since 2026-10-18, paused), so such a deployment URL stops blocking only once the alias
+ * reports this exact SHA and environment. Preview has no alias: it keeps Preview pending.
  */
 function blockingHealth(status: Omit<ReleaseStatus, 'state' | 'blockers'>): HealthEvidence[] {
 	const aliasMatches =
@@ -403,7 +419,7 @@ function blockingHealth(status: Omit<ReleaseStatus, 'state' | 'blockers'>): Heal
 		(entry) =>
 			entry.result === 'mismatch' ||
 			entry.result === 'unreachable' ||
-			(entry.result === 'protected' && !aliasMatches),
+			((entry.result === 'protected' || entry.result === 'paused') && !aliasMatches),
 	);
 }
 

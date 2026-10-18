@@ -688,3 +688,83 @@ describe('deployment URL behind provider authentication', () => {
 		expect(status.blockers).toEqual([`${previewUrl}/api/health: protected`]);
 	});
 });
+
+describe('paused Vercel project', () => {
+	const aliasHealthUrl = 'https://www.celebra-me.com/api/health';
+	const vercelError = (status: number, error: string | null) => ({
+		status,
+		headers: {
+			get: (name: string) => (name.toLowerCase() === 'x-vercel-error' ? error : null),
+		},
+		json: async () => {
+			throw new Error('not JSON');
+		},
+	});
+	const paused = vercelError(503, 'DEPLOYMENT_PAUSED');
+	const productionRun = () =>
+		ghRunner({
+			...responses({ ...allPassed, [PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
+			'deployments/3/statuses?per_page=100': [
+				{ state: 'success', environment_url: productionUrl },
+			],
+			[`deployments?sha=${sha}&per_page=100`]: [{ id: 3, sha, environment: 'Production' }],
+		});
+	const productionFetch =
+		(alias: Awaited<ReturnType<ReturnType<typeof healthy>>>) => async (url: string) =>
+			url === aliasHealthUrl ? alias : paused;
+
+	it('reads only a Vercel 503 DEPLOYMENT_PAUSED as paused', async () => {
+		const probe = (url: string, response: ReturnType<typeof vercelError>) =>
+			probeHealth(url, sha, async () => response, undefined, 'production');
+		expect(await probe(productionUrl, paused)).toMatchObject({
+			status: 503,
+			commitSha: null,
+			result: 'paused',
+		});
+		// Another Vercel error, or the same header outside a Vercel host, stays unreachable.
+		expect((await probe(productionUrl, vercelError(503, 'DEPLOYMENT_NOT_FOUND'))).result).toBe(
+			'unreachable',
+		);
+		expect((await probe(productionUrl, vercelError(500, 'DEPLOYMENT_PAUSED'))).result).toBe(
+			'unreachable',
+		);
+		expect((await probe('https://www.celebra-me.com', paused)).result).toBe('unreachable');
+	});
+
+	it('verifies Production when the public alias serves the exact SHA', async () => {
+		const status = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(await healthy(sha, 'production')()),
+		});
+		expect(status.health.map((entry) => entry.result)).toEqual(['paused', 'match']);
+		expect(status.state).toBe('VERIFIED');
+		expect(status.blockers).toEqual([]);
+	});
+
+	it('never counts a paused deployment URL as success without the alias match', async () => {
+		const otherSha = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(await healthy('b'.repeat(40), 'production')()),
+		});
+		expect(otherSha.state).toBe('FAILED');
+		expect(otherSha.blockers).toEqual([
+			`${productionUrl}/api/health: paused`,
+			`${aliasHealthUrl}: mismatch`,
+		]);
+		const noIdentity = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(await healthy(null, 'production')()),
+		});
+		expect(noIdentity.state).toBe('PENDING');
+		expect(noIdentity.blockers).toEqual([`${productionUrl}/api/health: paused`]);
+	});
+
+	it('keeps Preview pending', async () => {
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run: ghRunner(responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' })),
+			fetchImpl: async () => paused,
+		});
+		expect(status.state).toBe('PENDING');
+		expect(status.blockers).toEqual([`${previewUrl}/api/health: paused`]);
+	});
+});
