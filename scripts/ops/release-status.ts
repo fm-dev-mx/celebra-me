@@ -142,18 +142,40 @@ export interface HealthEvidence {
 	environment: string | null;
 	/**
 	 * `unreported` means the serving build predates build identity in `/api/health`;
-	 * `mismatch` also covers a matching SHA served under the wrong deploy identity.
+	 * `mismatch` also covers a matching SHA served under the wrong deploy identity;
+	 * `protected` means provider authentication answered instead of the application (no bypass
+	 * credential), so the URL proves nothing about the serving build.
 	 */
-	result: 'match' | 'mismatch' | 'unreported' | 'unreachable';
+	result: 'match' | 'mismatch' | 'unreported' | 'unreachable' | 'protected';
 }
 
 type FetchLike = (
 	url: string,
-	init?: { headers?: Record<string, string> },
+	init?: { headers?: Record<string, string>; redirect?: 'manual' },
 ) => Promise<{
 	status: number;
+	headers?: { get: (name: string) => string | null };
 	json: () => Promise<unknown>;
 }>;
+
+/** Vercel Authentication and Cloudflare Access send unauthenticated requests to these hosts. */
+const AUTHENTICATION_HOST_PATTERN = /(?:^|\.)vercel\.com$|\.cloudflareaccess\.com$/u;
+
+/**
+ * Without a bypass credential, Vercel Authentication answers 401 or redirects to its login page,
+ * which itself answers 200; redirects are not followed so that page never reads as the application.
+ */
+function isAuthenticationChallenge(url: string, response: Awaited<ReturnType<FetchLike>>): boolean {
+	if (response.status === 401) return true;
+	if (response.status < 300 || response.status >= 400) return false;
+	const location = response.headers?.get('location');
+	if (!location) return false;
+	try {
+		return AUTHENTICATION_HOST_PATTERN.test(new URL(location, url).hostname);
+	} catch {
+		return false;
+	}
+}
 
 export async function probeHealth(
 	origin: string,
@@ -164,7 +186,18 @@ export async function probeHealth(
 ): Promise<HealthEvidence> {
 	const url = `${origin.replace(/\/$/, '')}/api/health`;
 	try {
-		const response = await fetchImpl(url, headers ? { headers } : undefined);
+		const response = await fetchImpl(url, {
+			...(headers ? { headers } : {}),
+			redirect: 'manual',
+		});
+		if (isAuthenticationChallenge(url, response))
+			return {
+				url,
+				status: response.status,
+				commitSha: null,
+				environment: null,
+				result: 'protected',
+			};
 		const body = (await response.json().catch(() => ({}))) as {
 			status?: unknown;
 			build?: Record<string, unknown>;
@@ -351,6 +384,29 @@ function describeSmoke(
 	return smoke;
 }
 
+const PRODUCTION_ALIAS_HEALTH_URL = `${PRODUCTION_ALIAS_URL}/api/health`;
+
+/**
+ * Health probes that keep the release from VERIFIED. A protected deployment URL is never evidence.
+ * On Production the public alias reports what the domain actually serves (since 2026-10-16 the
+ * Cloudflare Worker, while the Vercel deployment URL stays behind Vercel Authentication), so a
+ * protected deployment URL stops blocking only once the alias reports this exact SHA and
+ * environment. Preview has no alias: a protected deployment URL keeps it pending.
+ */
+function blockingHealth(status: Omit<ReleaseStatus, 'state' | 'blockers'>): HealthEvidence[] {
+	const aliasMatches =
+		status.target === 'production' &&
+		status.health.some(
+			(entry) => entry.url === PRODUCTION_ALIAS_HEALTH_URL && entry.result === 'match',
+		);
+	return status.health.filter(
+		(entry) =>
+			entry.result === 'mismatch' ||
+			entry.result === 'unreachable' ||
+			(entry.result === 'protected' && !aliasMatches),
+	);
+}
+
 function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string[] {
 	const checkBlockers = status.checks
 		.filter((check) => check.progress !== 'passed')
@@ -364,9 +420,7 @@ function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string
 		...(status.smoke.progress === 'passed'
 			? []
 			: [`${status.smoke.name}: ${status.smoke.state}`]),
-		...status.health
-			.filter((entry) => entry.result === 'mismatch' || entry.result === 'unreachable')
-			.map((entry) => `${entry.url}: ${entry.result}`),
+		...blockingHealth(status).map((entry) => `${entry.url}: ${entry.result}`),
 	];
 }
 
@@ -383,11 +437,7 @@ function deriveState(status: Omit<ReleaseStatus, 'state' | 'blockers'>): Release
 	];
 	if (progresses.includes('failed') || status.health.some((entry) => entry.result === 'mismatch'))
 		return 'FAILED';
-	if (
-		progresses.includes('pending') ||
-		status.health.some((entry) => entry.result === 'unreachable')
-	)
-		return 'PENDING';
+	if (progresses.includes('pending') || blockingHealth(status).length > 0) return 'PENDING';
 	return 'VERIFIED';
 }
 

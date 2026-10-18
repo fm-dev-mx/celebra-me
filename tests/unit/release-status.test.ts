@@ -565,3 +565,126 @@ describe('deploymentProvider', () => {
 		expect(deploymentProvider(null)).toBeNull();
 	});
 });
+
+describe('deployment URL behind provider authentication', () => {
+	const aliasHealthUrl = 'https://www.celebra-me.com/api/health';
+	const vercelLogin = `https://vercel.com/login?next=%2Fsso-api%3Furl%3D${encodeURIComponent(productionUrl)}`;
+	const redirect = (location: string, status = 302) => ({
+		status,
+		headers: { get: (name: string) => (name.toLowerCase() === 'location' ? location : null) },
+		json: async () => {
+			throw new Error('not JSON');
+		},
+	});
+	const productionRun = () =>
+		ghRunner({
+			...responses({ ...allPassed, [PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
+			'deployments/3/statuses?per_page=100': [
+				{ state: 'success', environment_url: productionUrl },
+			],
+			[`deployments?sha=${sha}&per_page=100`]: [{ id: 3, sha, environment: 'Production' }],
+		});
+	// The deployment URL redirects to the Vercel login; the alias answers with `alias`.
+	const productionFetch =
+		(alias: Awaited<ReturnType<ReturnType<typeof healthy>>> | Error) => async (url: string) => {
+			if (url === aliasHealthUrl) {
+				if (alias instanceof Error) throw alias;
+				return alias;
+			}
+			return redirect(vercelLogin);
+		};
+
+	it('reads an authentication redirect or 401 as protected, never as the application', async () => {
+		const inits: unknown[] = [];
+		const login = await probeHealth(
+			productionUrl,
+			sha,
+			async (_url, init) => {
+				inits.push(init);
+				return redirect(vercelLogin);
+			},
+			undefined,
+			'production',
+		);
+		expect(login).toMatchObject({ status: 302, commitSha: null, result: 'protected' });
+		// Following the redirect would read the login page, which answers 200.
+		expect(inits).toEqual([{ redirect: 'manual' }]);
+		const access = await probeHealth(
+			cloudflareVersionUrl,
+			sha,
+			async () => redirect('https://celebra-me.cloudflareaccess.com/cdn-cgi/access/login'),
+			undefined,
+			'preview',
+		);
+		expect(access.result).toBe('protected');
+		const unauthorized = await probeHealth(
+			productionUrl,
+			sha,
+			async () => ({ status: 401, json: async () => ({}) }),
+			undefined,
+			'production',
+		);
+		expect(unauthorized.result).toBe('protected');
+		// Any other redirect is not the application either, and not provider authentication.
+		const elsewhere = await probeHealth(
+			productionUrl,
+			sha,
+			async () => redirect('https://example.com/'),
+			undefined,
+			'production',
+		);
+		expect(elsewhere.result).toBe('unreachable');
+	});
+
+	it('verifies Production when the public alias serves the exact SHA', async () => {
+		const status = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(await healthy(sha, 'production')()),
+		});
+		expect(status.health.map((entry) => [entry.url, entry.result])).toEqual([
+			[`${productionUrl}/api/health`, 'protected'],
+			[aliasHealthUrl, 'match'],
+		]);
+		expect(status.state).toBe('VERIFIED');
+		expect(status.blockers).toEqual([]);
+	});
+
+	it('never counts a protected deployment URL as success without the alias match', async () => {
+		const otherSha = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(await healthy('b'.repeat(40), 'production')()),
+		});
+		expect(otherSha.state).toBe('FAILED');
+		expect(otherSha.blockers).toEqual([
+			`${productionUrl}/api/health: protected`,
+			`${aliasHealthUrl}: mismatch`,
+		]);
+
+		const noIdentity = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(await healthy(null, 'production')()),
+		});
+		expect(noIdentity.state).toBe('PENDING');
+		expect(noIdentity.blockers).toEqual([`${productionUrl}/api/health: protected`]);
+
+		const offline = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(new Error('offline')),
+		});
+		expect(offline.state).toBe('PENDING');
+		expect(offline.blockers).toEqual([
+			`${productionUrl}/api/health: protected`,
+			`${aliasHealthUrl}: unreachable`,
+		]);
+	});
+
+	it('keeps Preview pending: it has no public alias to stand in', async () => {
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run: ghRunner(responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' })),
+			fetchImpl: async () => redirect(vercelLogin),
+		});
+		expect(status.health.map((entry) => entry.result)).toEqual(['protected']);
+		expect(status.state).toBe('PENDING');
+		expect(status.blockers).toEqual([`${previewUrl}/api/health: protected`]);
+	});
+});
