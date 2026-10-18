@@ -22,8 +22,12 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
   requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
 - Task branches (`feat/*`, `fix/*`, `candidate/*`, `docs/*`, `chore/*`) are ephemeral. `docs/*` is
   for changes to documentation, plans or agent guidance only; `chore/*` is for repository
-  maintenance with no runtime effect (audits, retirements, dependency work). Persistent lane
-  branches are forbidden.
+  maintenance with no runtime effect (audits, retirements, dependency work, and changes that only
+  add or adjust tests, fixtures or CI test jobs). No other prefix is allowed: `test/*`, `refactor/*`
+  or `ci/*` branches are not used, even when the commits inside use those [types](#types) (for
+  example, a branch that adds a CI job for the memories end-to-end tests is `chore/memories-e2e-ci`,
+  and a branch that fixes a broken test is `fix/*`). Dependabot's own `dependabot/*` branches are
+  the only exception. Persistent lane branches are forbidden.
 - Annotated tags (`vX.Y.Z`) mark releases.
 
 ## Four-Lane Worktree Model
@@ -72,13 +76,13 @@ mutation authorization.
    ```
 
    Every task lands as one merge commit with Git's default message
-   (`Merge branch '<task-branch>' into develop`), including single-commit tasks, so
-   `git log --first-parent develop` lists one entry per task, named after its branch, and every task
-   reverts the same way: `git revert -m 1 <merge>`. Group a multi-step program into one task branch
-   per step with several commits rather than one task per commit. Resolve conflicts deliberately in
-   the merge (never automatic `ours`/`theirs`), then run the applicable checks before pushing.
-   Pushing a task branch to `origin` is needed only for a pull request; CI runs on a task branch
-   only through its pull request.
+   (`Merge branch '<task-branch>' into develop`), including single-commit tasks, so every task has
+   one merge commit named after its branch, and every task reverts the same way:
+   `git revert -m 1 <merge>`. Group a multi-step program into one task branch per step with several
+   commits rather than one task per commit. Resolve conflicts deliberately in the merge (never
+   automatic `ours`/`theirs`), then run the applicable checks before pushing. Pushing a task branch
+   to `origin` is needed only for a pull request; CI runs on a task branch only through its pull
+   request.
 
    A task may instead land through a GitHub pull request into `develop`, merged with a merge commit
    (the only method the repository allows). Its header,
@@ -87,6 +91,21 @@ mutation authorization.
    branch before it reaches `develop`. A local merge suits documentation-only or urgent changes,
    where CI runs after the push. A task lands once: never both a pull request and a local merge for
    the same branch.
+
+   To list the tasks that reached `develop`, filter the merge commits by header. Do not use
+   `git log --first-parent develop` for this: after each release, `develop` fast-forwards to the
+   release merge on `main` (see [Production Promotion](#production-promotion)), so its first-parent
+   line follows `main` and skips the task merges of that release.
+
+   ```bash
+   git log --merges --format='%h %s' <since-tag>..origin/develop \
+     | grep -E "into develop$|from [^ ]+/(feat|fix|docs|chore|candidate|dependabot)/"
+   ```
+
+   `<since-tag>` is the release tag to count from (for example `v0.26.0-beta.1`). The two patterns
+   match a local merge (`Merge branch 'fix/x' into develop`) and a pull request merge
+   (`Merge pull request #12 from <owner>/fix/x`). Sync merges into task branches and release pull
+   requests (`from <owner>/develop`) drop out.
 
    Merge rules:
    - Merge task branches only into `develop`. Never merge one task branch into another: when a task
@@ -344,18 +363,19 @@ Use one scope from this list. `commitlint` warns on any other scope.
 | `security`               | Headers, secrets, PII guards and owner identity                   |
 | `seo`                    | Metadata, sitemap, robots and social previews                     |
 | `runtime`                | Deploy identity, middleware, server platform helpers              |
+| `images`                 | Image processing and transformers under `src/lib/images/`         |
 | `hosting`                | Vercel and Cloudflare adapters and platform configuration         |
 | `workers`                | Cloudflare Workers under `workers/`                               |
 | `db`                     | Migrations, policies, routines, pgTAP and the rollout registry    |
 | `env`                    | Environment variables and their documentation                     |
 | `provisioning`           | Definition-to-database publishing: release, apply, hash baselines |
 | `release`                | Version, CHANGELOG and release checks                             |
-| `ops`                    | Operations CLI: status, database menus, worktree reports          |
+| `ops`                    | Operations CLI, runbooks under `docs/operations/`, cutovers       |
 | `git`                    | Hooks, `commitlint`, lane sync and git-safety tooling             |
 | `ci`                     | Workflows and their contract tests                                |
 | `validation`             | Static validators (`scripts/validate-*`)                          |
 | `testing`                | Jest and Playwright configuration, fixtures and helpers           |
-| `visual`                 | Visual parity tooling and accepted baselines                      |
+| `visual`                 | Visual parity, screenshot tooling and accepted baselines          |
 | `tooling`                | Shared scripts and developer tooling not covered above            |
 | `deps`, `deps-dev`       | Dependency updates (Dependabot uses these)                        |
 | `agent`                  | `AGENTS.md`, `.agent/rules`, skills and templates                 |
@@ -365,9 +385,9 @@ Use one scope from this list. `commitlint` warns on any other scope.
 Avoid the synonyms the history accumulated: `invitations` (use `content` or `invitation`),
 `provision` (`provisioning`), `database` or `supabase` (`db`), `plan` (`plans`), `styles` or
 `themes` (`theme`), `playwright` or `fixtures` (`testing`), `visual-parity` (`visual`), `server`,
-`platform` or `middleware` (`runtime`), `vercel` or `cloudflare` (`hosting`), and client names such
-as `america` (`content`). Add a scope to this list and to `commitlint.config.cjs` in the same commit
-when a new domain appears.
+`platform` or `middleware` (`runtime`), `vercel` or `cloudflare` (`hosting`), `operations` (`ops`),
+`core` (`governance`), `screenshot` (`visual`), and client names such as `america` (`content`). Add
+a scope to this list and to `commitlint.config.cjs` in the same commit when a new domain appears.
 
 ## Commit Body Policy
 
