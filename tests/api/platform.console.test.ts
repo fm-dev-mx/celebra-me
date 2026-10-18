@@ -47,10 +47,7 @@ const REPORT: PlatformUsageReport = [
 	},
 	{
 		id: 'shared',
-		cards: [
-			{ provider: 'cloudflare', usage: { kind: 'unconfigured', missing: [] } },
-			{ provider: 'cloudinary', usage: { kind: 'unconfigured', missing: [] } },
-		],
+		cards: [{ provider: 'cloudflare', usage: { kind: 'unconfigured', missing: [] } }],
 	},
 ];
 

@@ -43,8 +43,6 @@ const SHARED_SECRET_NAMES: readonly string[] = [
 	'CLOUDINARY_CLOUD_NAME',
 	'CLOUDINARY_API_KEY',
 	'CLOUDINARY_API_SECRET',
-	'CLOUDINARY_USAGE_API_KEY',
-	'CLOUDINARY_USAGE_API_SECRET',
 	'META_CAPI_DELIVERY_MODE',
 	'META_CAPI_ACCESS_TOKEN',
 	'META_PIXEL_ID',
@@ -69,9 +67,8 @@ export const CLOUDFLARE_WORKER_SECRET_NAMES: Readonly<
 };
 
 /**
- * Names that must never reach the Worker even when the file carries them: identity `vars`,
- * Local-only switches and the Local-only `_PREVIEW` / `_PRODUCTION` diagnostics
- * (`PLATFORM_ENV_BY_ENVIRONMENT`; deployments read the plain names).
+ * Names that must never reach the Worker even when the file carries them: identity `vars`
+ * and Local-only switches.
  */
 const ALWAYS_REFUSED = [
 	'CELEBRA_DEPLOY_ENV',
@@ -81,12 +78,6 @@ const ALWAYS_REFUSED = [
 	'BASE_URL',
 	'NODE_ENV',
 	'DEV_MFA_BYPASS',
-	'SUPABASE_MANAGEMENT_TOKEN_PREVIEW',
-	'SUPABASE_MANAGEMENT_TOKEN_PRODUCTION',
-	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
-	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
-	'MEMORIES_R2_BUCKET_NAME_PREVIEW',
-	'MEMORIES_R2_BUCKET_NAME_PRODUCTION',
 ];
 
 const REFUSED_NAMES: Readonly<Record<CloudflareWorkerEnvironment, ReadonlySet<string>>> = {

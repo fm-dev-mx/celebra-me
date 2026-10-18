@@ -42,8 +42,7 @@ function windowBoundsUtc(window: PlatformWindow, now: Date): { start: number; en
 		case 'monthUtc':
 			return { start: monthStart, end: monthEnd };
 		default:
-			// Billing and credit cycles start on provider-side dates (not verified);
-			// snapshots (storage) have no reset, so neither yields a rate.
+			// Snapshots (storage) have no reset, so they yield no rate.
 			return null;
 	}
 }

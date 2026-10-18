@@ -9,7 +9,7 @@ const proven = { id: 42, headSha: 'b'.repeat(40) };
 describe('CI browser scope', () => {
 	it.each([
 		'src/styles/landing.scss',
-		'src/lib/platform/contract/environments.ts',
+		'src/lib/platform/contract/limits.ts',
 		'public/favicon.svg',
 		'scripts/shared/worktree-lane.ts',
 		'scripts/playwright/canonical-fixture-server.ts',

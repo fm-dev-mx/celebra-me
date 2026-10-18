@@ -3,7 +3,7 @@
  * data only: no imports, so contract, server and UI can share them.
  */
 
-export type PlatformProviderId = 'cloudflare' | 'supabase' | 'cloudinary';
+export type PlatformProviderId = 'cloudflare' | 'supabase';
 
 /**
  * Whose quota a figure belongs to. Shared figures are labeled as account or
@@ -18,7 +18,7 @@ export type PlatformEnvironmentId = 'preview' | 'production';
 export type PlatformSectionId = PlatformEnvironmentId | 'shared';
 
 /** Accumulation window of a `used` figure. */
-export type PlatformWindow = 'dayUtc' | 'monthUtc' | 'billingCycle' | 'creditCycle' | 'snapshot';
+export type PlatformWindow = 'dayUtc' | 'monthUtc' | 'snapshot';
 
 /** Configuration gap to report: environment variable names only, never values. */
 export interface PlatformMissingVar {

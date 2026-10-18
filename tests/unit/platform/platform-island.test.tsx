@@ -42,7 +42,7 @@ const REPORT: PlatformUsageReport = [
 					spendUsd: null,
 					missing: [
 						{
-							name: 'MEMORIES_R2_BUCKET_NAME_PREVIEW',
+							name: 'MEMORIES_R2_BUCKET_NAME',
 							state: 'absent',
 							scope: 'preview',
 						},
@@ -82,7 +82,7 @@ const REPORT: PlatformUsageReport = [
 					kind: 'unconfigured',
 					missing: [
 						{
-							name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
+							name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 							state: 'absent',
 							scope: 'production',
 						},
@@ -115,7 +115,6 @@ const REPORT: PlatformUsageReport = [
 					],
 				},
 			},
-			{ provider: 'cloudinary', usage: { kind: 'unavailable' } },
 		],
 	},
 ];
@@ -164,7 +163,7 @@ describe('PlatformUsagePanel island', () => {
 		expect(screen.getByText('Excedente estimado: 0.90 USD.')).toBeInTheDocument();
 		expect(screen.getByText(/la cuota se agotaría el/)).toBeInTheDocument();
 		expect(screen.getByText('Costo del periodo: 0.00 USD.')).toBeInTheDocument();
-		expect(screen.getAllByText(/el proveedor no respondió/).length).toBe(2);
+		expect(screen.getAllByText(/el proveedor no respondió/).length).toBe(1);
 	});
 
 	it('names the missing variables and links where to generate them', async () => {
@@ -172,16 +171,14 @@ describe('PlatformUsagePanel island', () => {
 
 		render(<PlatformUsagePanel />);
 
-		expect(await screen.findByText('MEMORIES_R2_BUCKET_NAME_PREVIEW')).toBeInTheDocument();
+		expect(await screen.findByText('MEMORIES_R2_BUCKET_NAME')).toBeInTheDocument();
 		expect(screen.getByText(/Bucket R2 de este entorno/)).toBeInTheDocument();
 		const bucketLink = screen.getAllByRole('link', {
 			name: 'Generar o revisar la credencial',
 		})[0];
 		expect(bucketLink).toHaveAttribute('href', 'https://dash.cloudflare.com/?to=/:account/r2');
 
-		expect(
-			screen.getByText('MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION'),
-		).toBeInTheDocument();
+		expect(screen.getByText('MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN')).toBeInTheDocument();
 		expect(
 			screen.getByText(/Token de solo lectura de analítica de Cloudflare/),
 		).toBeInTheDocument();

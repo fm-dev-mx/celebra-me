@@ -1,11 +1,6 @@
 import {
-	classifyR2BucketEnvironment,
-	matchR2BucketForEnvironment,
-} from '@/lib/platform/contract/environments';
-import {
 	isLocalPanel,
 	readProfileVar,
-	readSharedVar,
 	resolvePanelEnvironments,
 } from '@/lib/platform/server/env-profiles';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
@@ -13,10 +8,6 @@ import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 const ENV_NAMES = [
 	'SUPABASE_URL',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
-	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
-	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
-	'MEMORIES_R2_BUCKET_NAME',
-	'MEMORIES_R2_BUCKET_NAME_PREVIEW',
 	'MEMORIES_CLOUDFLARE_ACCOUNT_ID',
 ] as const;
 
@@ -59,57 +50,28 @@ describe('panel scoping', () => {
 });
 
 describe('readProfileVar', () => {
-	it('prefers the Local suffixed name and falls back to the shared name', () => {
-		process.env.MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN = 'shared-token';
-		expect(readProfileVar('cloudflareAnalyticsToken', 'preview')).toMatchObject({
+	it('reads the plain name and reports it when absent', () => {
+		expect(readProfileVar('MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN', 'account')).toEqual({
 			name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
-			value: 'shared-token',
-			missing: null,
-		});
-
-		process.env.MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW = 'preview-token';
-		expect(readProfileVar('cloudflareAnalyticsToken', 'preview')).toMatchObject({
-			name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
-			value: 'preview-token',
-			missing: null,
-		});
-		expect(readProfileVar('cloudflareAnalyticsToken', 'production')).toMatchObject({
-			name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
-			value: 'shared-token',
-		});
-	});
-
-	it('reports the Local suffixed name when nothing is loaded for that environment', () => {
-		expect(readProfileVar('cloudflareAnalyticsToken', 'production')).toEqual({
-			name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
 			value: null,
 			missing: {
-				name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
+				name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 				state: 'absent',
-				scope: 'production',
+				scope: 'account',
 			},
 		});
-	});
 
-	it('keeps the plain name for the R2 bucket out of Local fallbacks', () => {
-		process.env.MEMORIES_R2_BUCKET_NAME = 'celebra-memories-local';
-		const local = readProfileVar('r2BucketName', 'preview', { allowPlainFallback: false });
-		expect(local.value).toBeNull();
-		expect(local.missing?.name).toBe('MEMORIES_R2_BUCKET_NAME_PREVIEW');
-
-		asHostedDeploy('production');
-		const deployment = readProfileVar('r2BucketName', 'production', {
-			allowPlainFallback: false,
-		});
-		expect(deployment).toMatchObject({
-			name: 'MEMORIES_R2_BUCKET_NAME',
-			value: 'celebra-memories-local',
+		process.env.MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN = ' shared-token ';
+		expect(readProfileVar('MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN', 'preview')).toEqual({
+			name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
+			value: 'shared-token',
+			missing: null,
 		});
 	});
 
 	it('flags invalid values without leaking them', () => {
 		process.env.MEMORIES_CLOUDFLARE_ACCOUNT_ID = 'not-an-account';
-		const resolved = readSharedVar('MEMORIES_CLOUDFLARE_ACCOUNT_ID', 'account', (value) =>
+		const resolved = readProfileVar('MEMORIES_CLOUDFLARE_ACCOUNT_ID', 'account', (value) =>
 			/^[0-9a-f]{32}$/i.test(value),
 		);
 		expect(resolved.value).toBeNull();
@@ -118,23 +80,5 @@ describe('readProfileVar', () => {
 			state: 'invalid',
 			scope: 'account',
 		});
-	});
-});
-
-describe('R2 bucket classification', () => {
-	it('maps the repository bucket names to environments', () => {
-		expect(classifyR2BucketEnvironment('celebra-memories')).toBe('production');
-		expect(classifyR2BucketEnvironment('celebra-memories-staging')).toBe('preview');
-		expect(classifyR2BucketEnvironment('celebra-memories-preview')).toBe('preview');
-		expect(classifyR2BucketEnvironment('celebra-memories-local')).toBe('local');
-		expect(classifyR2BucketEnvironment('celebra-memories-production')).toBe('production');
-	});
-
-	it('resolves one bucket per environment and refuses ambiguous sets', () => {
-		const observed = ['celebra-memories', 'celebra-memories-staging', 'celebra-memories-local'];
-		expect(matchR2BucketForEnvironment(observed, 'preview')).toBe('celebra-memories-staging');
-		expect(matchR2BucketForEnvironment(observed, 'production')).toBe('celebra-memories');
-		expect(matchR2BucketForEnvironment(['a-staging', 'b-preview'], 'preview')).toBeNull();
-		expect(matchR2BucketForEnvironment(['celebra-memories-local'], 'production')).toBeNull();
 	});
 });

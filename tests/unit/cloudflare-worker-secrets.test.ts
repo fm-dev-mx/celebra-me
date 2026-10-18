@@ -21,7 +21,7 @@ describe('Cloudflare Preview secret selection', () => {
 			SUPABASE_URL: 'https://iwipdvisoyerfdytuhwi.supabase.co',
 			CELEBRA_DEPLOY_ENV: 'preview',
 			DEV_MFA_BYPASS: 'true',
-			SUPABASE_MANAGEMENT_TOKEN_PRODUCTION: 'never',
+			SUPABASE_PROJECT_REF_PRODUCTION: 'never',
 			PLAYWRIGHT_HOST_PASSWORD: 'script-only',
 		});
 		expect(selection.selected).toEqual({
@@ -34,7 +34,7 @@ describe('Cloudflare Preview secret selection', () => {
 			'CELEBRA_DEPLOY_ENV',
 			'DEV_MFA_BYPASS',
 			'PLAYWRIGHT_HOST_PASSWORD',
-			'SUPABASE_MANAGEMENT_TOKEN_PRODUCTION',
+			'SUPABASE_PROJECT_REF_PRODUCTION',
 			'SUPABASE_URL',
 		]);
 	});
@@ -50,13 +50,7 @@ describe('Cloudflare Preview secret selection', () => {
 			'BASE_URL',
 			'NODE_ENV',
 			'DEV_MFA_BYPASS',
-			'SUPABASE_MANAGEMENT_TOKEN_PREVIEW',
-			'SUPABASE_MANAGEMENT_TOKEN_PRODUCTION',
-			'MEMORIES_R2_BUCKET_NAME_PREVIEW',
-			'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
 			'SUPABASE_PROJECT_REF_PRODUCTION',
-			'MEMORIES_R2_BUCKET_NAME_PRODUCTION',
-			'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
 		]) {
 			expect(CLOUDFLARE_PREVIEW_SECRET_NAMES).not.toContain(name);
 		}
