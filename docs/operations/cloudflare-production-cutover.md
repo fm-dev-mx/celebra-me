@@ -141,6 +141,27 @@ Access and the secrets are in place. None of these steps routes traffic.
 
 Never set Access to "All traffic" on this Worker: it would also lock the routes added on Sunday.
 
+### 3.2 Activate an uploaded version (every Production release)
+
+The upload workflow only uploads and smokes a version; it never sends traffic to it. Activation is a
+separate step, run by the agent after the owner approves the release.
+
+1. Take the version ID from the workflow run log (`Worker Version ID: …`), or list the versions and
+   pick the one tagged with `$SHA`:
+   `pnpm exec wrangler versions list --config wrangler.jsonc --env production`.
+2. Activate it at 100 %:
+   `pnpm exec wrangler versions deploy <version-id>@100% --config wrangler.jsonc --env production --yes`.
+   Never use `wrangler deploy`: it uploads a new build and also applies routes, triggers and
+   anything else in the config.
+3. Confirm the active deployment shows that version at 100 %:
+   `pnpm exec wrangler deployments status --config wrangler.jsonc --env production`.
+4. Confirm the domain serves it: `curl -s https://www.celebra-me.com/api/health` reports
+   `build.commitSha == $SHA` and environment `production`.
+5. Run the domain smoke: `pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com`.
+
+Always pass `--config wrangler.jsonc`. Without it, Wrangler may pick up a stale
+`.wrangler/deploy/config.json` left by an earlier local build and act on the wrong configuration.
+
 ## 4. Go / no-go list (Sunday 01:45; any NO = stop)
 
 | #   | Question                                                                                                                                | Evidence                                                  |
