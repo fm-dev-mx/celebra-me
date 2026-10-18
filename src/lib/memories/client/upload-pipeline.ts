@@ -37,10 +37,19 @@ import {
 const COMPLETION_ATTEMPTS = 3;
 
 export class MemoriesUploadError extends Error {
-	constructor(readonly issue: MemoriesCaptureIssue) {
+	/** `transport` marks a request that never got an HTTP answer, such as a dropped signal. */
+	constructor(
+		readonly issue: MemoriesCaptureIssue,
+		readonly transport = false,
+	) {
 		super(issue);
 		this.name = 'MemoriesUploadError';
 	}
+}
+
+function isTransportFailure(error: unknown): boolean {
+	if (error instanceof DOMException && error.name === 'AbortError') return false;
+	return !(error instanceof MemoriesRequestError) || error.status === null;
 }
 
 export function readMemoriesUploadIssue(error: unknown): MemoriesCaptureIssue {
@@ -138,7 +147,7 @@ async function putOriginal(
 		status = await transport(upload, file, onProgress);
 	} catch (error) {
 		if (error instanceof DOMException && error.name === 'AbortError') throw error;
-		throw new MemoriesUploadError(classifyTransportIssue('put_failed'));
+		throw new MemoriesUploadError(classifyTransportIssue('put_failed'), true);
 	}
 	// 412: an earlier PUT of this reservation already stored the object.
 	if ((status < 200 || status >= 300) && status !== 412)
@@ -166,7 +175,10 @@ async function completeReserved(
 		if (attempt < COMPLETION_ATTEMPTS - 1)
 			await new Promise((resolve) => setTimeout(resolve, 300 * 3 ** attempt));
 	}
-	throw new MemoriesUploadError(mapRequestIssue(lastError, 'put_failed'));
+	throw new MemoriesUploadError(
+		mapRequestIssue(lastError, 'put_failed'),
+		isTransportFailure(lastError),
+	);
 }
 
 async function prepare(
@@ -274,6 +286,6 @@ export async function uploadMemoriesFile(
 		// A closed request id can never be reused: the next attempt starts over.
 		if (issue === 'upload_expired') attempt.requestId = createSecureClientRequestId();
 		if (error instanceof MemoriesUploadError) throw error;
-		throw new MemoriesUploadError(issue);
+		throw new MemoriesUploadError(issue, isTransportFailure(error));
 	}
 }

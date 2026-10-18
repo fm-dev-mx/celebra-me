@@ -288,11 +288,16 @@ function useUploadQueue(deps: ConstructorParameters<typeof MemoriesUploadQueue>[
 	useEffect(() => {
 		const online = () => queue.setOnline(true);
 		const offline = () => queue.setOnline(false);
+		// Some Android builds report a network switch here and not as `online`.
+		const connection = (navigator as Navigator & { connection?: EventTarget }).connection;
+		const changed = () => queue.setOnline(navigator.onLine !== false);
 		window.addEventListener('online', online);
 		window.addEventListener('offline', offline);
+		connection?.addEventListener('change', changed);
 		return () => {
 			window.removeEventListener('online', online);
 			window.removeEventListener('offline', offline);
+			connection?.removeEventListener('change', changed);
 			queue.dispose();
 		};
 	}, [queue]);

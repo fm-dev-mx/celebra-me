@@ -775,6 +775,31 @@ describe('MemoriesCapture island', () => {
 		);
 	});
 
+	it('tells the guest to choose again a file whose upload never finished', async () => {
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems.mockResolvedValue({
+			items: [
+				buildItem({
+					id: 'stale',
+					status: 'uploading',
+					createdAt: new Date(Date.now() - 10 * 60_000).toISOString(),
+				}),
+				buildItem({
+					id: 'fresh',
+					status: 'uploading',
+					createdAt: new Date().toISOString(),
+				}),
+			],
+			quota: QUOTA,
+		});
+
+		renderCapture();
+
+		expect(await screen.findByText(copy.uploadUnfinished)).toBeInTheDocument();
+		expect(screen.getByText(copy.validationPending)).toBeInTheDocument();
+		expect(guestApi.complete).not.toHaveBeenCalled();
+	});
+
 	it('hides a repeated file from «Mis recuerdos» and never confirms it again', async () => {
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		guestApi.listItems.mockResolvedValue({

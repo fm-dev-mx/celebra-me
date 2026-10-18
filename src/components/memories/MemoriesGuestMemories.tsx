@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MemoriesMediaPublicItem } from '@/lib/memories/contract/catalog';
-import { MEMORIES_MAX_CAPTION_LENGTH } from '@/lib/memories/contract/limits';
+import {
+	MEMORIES_MAX_CAPTION_LENGTH,
+	MEMORIES_PRESIGN_TTL_SECONDS,
+} from '@/lib/memories/contract/limits';
 import {
 	isMemoriesVideoMime,
 	withMemoriesVideoFirstFrame,
@@ -28,6 +31,12 @@ function memoriesGuestStatusLabel(item: Item): string {
 	if (item.status === 'duplicate') return copy.duplicate;
 	if (item.status === 'rejected') return copy.rejected;
 	if (item.status === 'deleted') return copy.deleted;
+	// Past the signed upload's lifetime the bytes can no longer arrive.
+	if (
+		item.status === 'uploading' &&
+		Date.now() - Date.parse(item.createdAt) > MEMORIES_PRESIGN_TTL_SECONDS * 1000
+	)
+		return copy.uploadUnfinished;
 	return copy.validationPending;
 }
 
