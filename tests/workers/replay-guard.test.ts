@@ -7,25 +7,33 @@ type ReplayRecord = { expiresAt: number };
 
 const NOW = new Date('2026-10-18T12:00:00.000Z').getTime();
 
+type ReplayState = ConstructorParameters<typeof ReplayGuard>[0];
+
 function createState() {
 	const entries = new Map<string, ReplayRecord>();
 	const storage = {
 		alarm: undefined as number | undefined,
-		get: jest.fn(async <T>(key: string) => entries.get(key) as T | undefined),
-		put: jest.fn(async <T>(key: string, value: T) => {
+		async get<T>(key: string): Promise<T | undefined> {
+			return entries.get(key) as T | undefined;
+		},
+		async put<T>(key: string, value: T): Promise<void> {
 			entries.set(key, value as ReplayRecord);
-		}),
-		list: jest.fn(async <T>() => new Map(entries) as Map<string, T>),
-		delete: jest.fn(async (key: string) => entries.delete(key)),
+		},
+		async list<T>(): Promise<Map<string, T>> {
+			return new Map(entries) as Map<string, T>;
+		},
+		async delete(key: string): Promise<boolean> {
+			return entries.delete(key);
+		},
 		deleteAll: jest.fn(async () => {
 			entries.clear();
 			storage.alarm = undefined;
 		}),
-		setAlarm: jest.fn(async (time: number | Date) => {
+		async setAlarm(time: number | Date): Promise<void> {
 			storage.alarm = Number(time);
-		}),
+		},
 	};
-	const state = {
+	const state: ReplayState = {
 		storage,
 		blockConcurrencyWhile: <T>(callback: () => Promise<T>) => callback(),
 	};
