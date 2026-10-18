@@ -5,6 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import {
 	R2_IMMUTABLE_CACHE_CONTROL,
@@ -292,9 +293,16 @@ export function readR2MigrationManifest(manifestPath: string): R2MigrationPlan {
 	return plan;
 }
 
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+/** The Windows shell joins arguments, so values with spaces need their own quotes there. */
+function shellArg(value: string): string {
+	return process.platform === 'win32' ? `"${value}"` : value;
+}
+
 function wranglerBinary(): string {
 	const name = process.platform === 'win32' ? 'wrangler.cmd' : 'wrangler';
-	return resolve('node_modules', '.bin', name);
+	return shellArg(resolve(REPO_ROOT, 'node_modules', '.bin', name));
 }
 
 /** Uncached read of the public object; the query keeps CDN entries out of verification. */
@@ -313,8 +321,9 @@ async function assertSocialCard(bytes: Uint8Array, objectKey: string): Promise<v
 }
 
 async function putObject(target: Target, object: R2MediaObject, bytes: Uint8Array, dir: string) {
-	const file = join(dir, basename(object.objectKey));
-	writeFileSync(file, bytes);
+	// Wrangler runs inside `dir`, so the file goes by its key-derived name and needs no quoting.
+	const file = basename(object.objectKey);
+	writeFileSync(join(dir, file), bytes);
 	execFileSync(
 		wranglerBinary(),
 		[
@@ -327,10 +336,7 @@ async function putObject(target: Target, object: R2MediaObject, bytes: Uint8Arra
 			'--content-type',
 			object.mimeType,
 			'--cache-control',
-			// The Windows shell joins arguments, so the spaced value needs its own quotes there.
-			process.platform === 'win32'
-				? `"${R2_IMMUTABLE_CACHE_CONTROL}"`
-				: R2_IMMUTABLE_CACHE_CONTROL,
+			shellArg(R2_IMMUTABLE_CACHE_CONTROL),
 			'--remote',
 		],
 		{ cwd: dir, stdio: 'pipe', shell: process.platform === 'win32' },

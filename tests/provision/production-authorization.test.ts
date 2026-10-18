@@ -55,6 +55,15 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		family: 'image_namespace',
 	},
 	{
+		file: 'scripts/db/production-image-r2-apply.ts',
+		firstWritePattern: /runPsql\s*\(/,
+		preflightPatterns: [
+			/const snapshot = readR2Snapshot\s*\(/,
+			/const backup = ensureCriticalProductionBackup\s*\(/,
+		],
+		family: 'image_namespace',
+	},
+	{
 		file: 'scripts/db/migrate-policy-production.ts',
 		firstWritePattern: /executeSupabasePush\s*\(\s*ctx\.dbUrl/,
 		preflightPatterns: [
@@ -430,6 +439,19 @@ describe('Production mutator discovery and gate ordering', () => {
 		expect(backupIndex).toBeGreaterThan(gateIndex);
 		expect(permitIndex).toBeGreaterThan(backupIndex);
 		for (const write of [/runPsql\s*\(/, /await applyRemoteMigration\s*\(/]) {
+			expect(indexOfPattern(source, write)).toBeGreaterThan(permitIndex);
+		}
+	});
+
+	it('gates both R2 media write paths after backup revalidation and permit scope', () => {
+		const source = sourceOf('scripts/db/production-image-r2-apply.ts');
+		const gateIndex = indexOfPattern(source, OWNER_GATE_CALL);
+		const backupIndex = indexOfPattern(source, /revalidateCriticalProductionBackup\s*\(/);
+		const permitIndex = indexOfPattern(source, /await withProductionPermitScope\s*\(/);
+		expect(gateIndex).toBeGreaterThanOrEqual(0);
+		expect(backupIndex).toBeGreaterThan(gateIndex);
+		expect(permitIndex).toBeGreaterThan(backupIndex);
+		for (const write of [/runPsql\s*\(/, /await applyR2Migration\s*\(/]) {
 			expect(indexOfPattern(source, write)).toBeGreaterThan(permitIndex);
 		}
 	});

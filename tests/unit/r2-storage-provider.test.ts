@@ -83,6 +83,21 @@ describe('R2 invitation media storage', () => {
 		).rejects.toThrow('different bytes');
 	});
 
+	it('reuses an object the migration copied without digest metadata', async () => {
+		const bucket = memoryBucket();
+		const objectKey = `invitations/xv/a/hero-${sha256}.webp`;
+		bucket.objects.set(objectKey, {});
+		await expect(
+			putR2InvitationMedia(bucket, {
+				target: 'preview',
+				objectKey,
+				bytes: new Uint8Array(),
+				mimeType: 'image/webp',
+				sha256,
+			}),
+		).resolves.toMatchObject({ reused: true });
+	});
+
 	it('selects R2 only when the Worker installed the binding', () => {
 		expect(getStorageProvider('production').providerName).toBe('cloudinary');
 		expect(installInvitationMediaBinding({ INVITATION_MEDIA: memoryBucket() })).toBe(true);

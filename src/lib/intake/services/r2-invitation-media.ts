@@ -127,7 +127,8 @@ export interface R2MediaUploadInput {
 
 /**
  * Writes one content-addressed object. An existing object with the same digest is reused, and
- * one with another digest under the same key is refused instead of overwritten.
+ * one with another digest under the same key is refused instead of overwritten. Objects copied by
+ * the migration CLI carry no digest metadata; their key already embeds the verified digest.
  */
 export async function putR2InvitationMedia(
 	bucket: InvitationMediaBucket,
@@ -136,7 +137,8 @@ export async function putR2InvitationMedia(
 	const url = buildR2PublicUrl(input.target, input.objectKey);
 	const existing = await bucket.head(input.objectKey);
 	if (existing) {
-		if (existing.customMetadata?.sha256 !== input.sha256)
+		const storedDigest = existing.customMetadata?.sha256;
+		if (storedDigest !== undefined && storedDigest !== input.sha256)
 			throw new Error(`R2 object ${input.objectKey} already holds different bytes.`);
 		return { url, reused: true };
 	}
