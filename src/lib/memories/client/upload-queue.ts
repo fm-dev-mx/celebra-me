@@ -59,10 +59,25 @@ const BLOCKING_ISSUES: ReadonlySet<MemoriesCaptureIssue> = new Set([
 	'session_files_reached',
 ]);
 
-/** Automatic retries per file after a dropped signal; later ones need the guest. */
-const MAX_AUTO_RESUMES = 3;
+/**
+ * How long a file keeps retrying on its own after a dropped signal; later the
+ * guest decides. A reconnecting phone can fail several requests before its radio
+ * carries data, so the limit is time, not a number of attempts.
+ */
+const AUTO_RESUME_WINDOW_MS = 10 * 60_000;
 
-const DEFAULT_RECHECK_MS = 5_000;
+const DEFAULT_RECHECK_MS = 2_000;
+
+/** Wait before the next automatic retry: 2 s, 4 s, 8 s… up to 30 s. */
+function resumeDelayMs(tries: number): number {
+	return Math.min(30_000, 2_000 * 2 ** tries);
+}
+
+interface MemoriesDroppedUpload {
+	firstAt: number;
+	tries: number;
+	nextAt: number;
+}
 
 const ACTIVE_STATUSES: ReadonlySet<MemoriesQueueStatus> = new Set([
 	'optimizing',
@@ -105,7 +120,7 @@ export class MemoriesUploadQueue {
 	private readonly attempts = new Map<string, MemoriesUploadAttempt>();
 	/** Failed entries the next reconnection retries on its own. */
 	private readonly resumeOnline = new Set<string>();
-	private readonly autoResumes = new Map<string, number>();
+	private readonly drops = new Map<string, MemoriesDroppedUpload>();
 	private recheckTimer: unknown = null;
 	private readonly listeners = new Set<() => void>();
 	private readonly reservationTimes: number[] = [];
@@ -168,7 +183,7 @@ export class MemoriesUploadQueue {
 		this.entries = this.entries.filter((candidate) => candidate.id !== id);
 		this.attempts.delete(id);
 		this.resumeOnline.delete(id);
-		this.autoResumes.delete(id);
+		this.drops.delete(id);
 		this.emit();
 	}
 
@@ -185,7 +200,7 @@ export class MemoriesUploadQueue {
 		const entry = this.entries.find((candidate) => candidate.id === id);
 		if (!entry || entry.status !== 'failed') return;
 		this.resumeOnline.delete(id);
-		this.autoResumes.delete(id);
+		this.drops.delete(id);
 		this.patch(id, { status: 'waiting', issue: null, progress: 0 });
 		this.pump();
 	}
@@ -207,7 +222,7 @@ export class MemoriesUploadQueue {
 			if (!this.entries.some((entry) => entry.id === id)) {
 				this.attempts.delete(id);
 				this.resumeOnline.delete(id);
-				this.autoResumes.delete(id);
+				this.drops.delete(id);
 			}
 		}
 		this.emit();
@@ -216,16 +231,9 @@ export class MemoriesUploadQueue {
 	setOnline(online: boolean): void {
 		if (this.offline === !online && !(online && this.resumeOnline.size > 0)) return;
 		this.offline = !online;
-		if (online) {
-			// The attempt keeps its client request id, so the server recognizes the same upload.
-			for (const id of this.resumeOnline) {
-				const entry = this.entries.find((candidate) => candidate.id === id);
-				if (entry?.status !== 'failed') continue;
-				this.autoResumes.set(id, (this.autoResumes.get(id) ?? 0) + 1);
-				this.patch(id, { status: 'waiting', issue: null, progress: 0 });
-			}
-			this.resumeOnline.clear();
-		} else {
+		// A reported reconnection retries at once; the backoff applies between rechecks.
+		if (online) this.resumeDropped(true);
+		else {
 			this.scheduleRecheck();
 		}
 		this.emit();
@@ -252,12 +260,36 @@ export class MemoriesUploadQueue {
 		for (const listener of this.listeners) listener();
 	}
 
+	/** Puts dropped uploads back in line; `force` ignores their backoff. */
+	private resumeDropped(force: boolean): void {
+		const now = this.now();
+		for (const id of [...this.resumeOnline]) {
+			const entry = this.entries.find((candidate) => candidate.id === id);
+			const drop = this.drops.get(id);
+			if (entry?.status !== 'failed' || !drop) {
+				this.resumeOnline.delete(id);
+				continue;
+			}
+			if (!force && drop.nextAt > now) continue;
+			drop.tries += 1;
+			this.resumeOnline.delete(id);
+			// The attempt keeps its client request id, so the server recognizes the same upload.
+			this.patch(id, { status: 'waiting', issue: null, progress: 0 });
+		}
+	}
+
 	/** Reads the connection again later, in case the browser never fires `online`. */
 	private scheduleRecheck(): void {
 		if (this.recheckTimer !== null) return;
 		this.recheckTimer = this.setTimer(() => {
 			this.recheckTimer = null;
-			if (this.isOnline()) this.setOnline(true);
+			if (this.isOnline()) {
+				if (this.offline) this.setOnline(true);
+				else {
+					this.resumeDropped(false);
+					this.pump();
+				}
+			}
 			if (this.offline || this.resumeOnline.size > 0) this.scheduleRecheck();
 		}, this.recheckMs);
 	}
@@ -307,6 +339,7 @@ export class MemoriesUploadQueue {
 				onPhase: (phase) => this.patch(id, { status: phase }),
 				onProgress: (progress) => this.patch(id, { progress }),
 			});
+			this.drops.delete(id);
 			this.patch(id, {
 				status: 'done',
 				progress: 1,
@@ -321,7 +354,11 @@ export class MemoriesUploadQueue {
 				issue === 'network_failed' ||
 				this.offline ||
 				(error instanceof MemoriesUploadError && error.transport);
-			if (dropped && (this.autoResumes.get(id) ?? 0) < MAX_AUTO_RESUMES) {
+			const now = this.now();
+			const drop = this.drops.get(id) ?? { firstAt: now, tries: 0, nextAt: now };
+			if (dropped && now - drop.firstAt < AUTO_RESUME_WINDOW_MS) {
+				drop.nextAt = now + resumeDelayMs(drop.tries);
+				this.drops.set(id, drop);
 				this.resumeOnline.add(id);
 				this.scheduleRecheck();
 			}

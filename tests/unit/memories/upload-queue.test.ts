@@ -243,25 +243,84 @@ describe('MemoriesUploadQueue', () => {
 		expect(statuses(queue.getSnapshot())).toEqual(['done']);
 	});
 
-	it('stops retrying on its own after three dropped attempts', async () => {
+	it('keeps retrying while a reconnecting phone still has no data, then resumes', async () => {
 		const api = fakeApi();
-		api.reserve.mockRejectedValue(new MemoriesRequestError(null, 'network_error'));
+		// Cut mid-upload: the PUT drops, then the radio is back but carries no data for a while.
+		let reserves = 0;
+		api.reserve.mockImplementation(async () => {
+			reserves += 1;
+			if (reserves >= 2 && reserves <= 5)
+				throw new MemoriesRequestError(null, 'network_error');
+			return {
+				item: { id: 'item' },
+				upload: { uploadUrl: 'https://upload.invalid', requiredHeaders: {} },
+			} as never;
+		});
+		let puts = 0;
+		const putFile: MemoriesPutTransport = async () => {
+			puts += 1;
+			if (puts === 1) throw new TypeError('upload_network_error');
+			return 201;
+		};
+		let now = 0;
+		const timers: Array<() => void> = [];
 		const queue = new MemoriesUploadQueue({
-			deps: { api, ...passThrough },
-			setTimer: () => null,
+			deps: { api, ...passThrough, putFile },
+			concurrency: 1,
+			reservationsPerMinute: 100,
+			now: () => now,
+			setTimer: (run) => timers.push(run),
 			clearTimer: () => undefined,
 		});
 		queue.add([png('a.png')]);
 		queue.start();
 		await flush();
-		for (let round = 0; round < 5; round += 1) {
-			queue.setOnline(false);
-			queue.setOnline(true);
+		expect(queue.getSnapshot().entries[0].issue).toBe('put_failed');
+
+		// The browser announces the reconnection before data flows: these retries fail too.
+		queue.setOnline(false);
+		queue.setOnline(true);
+		await flush();
+		for (let tick = 0; tick < 40 && statuses(queue.getSnapshot())[0] !== 'done'; tick += 1) {
+			now += 2_000;
+			timers.shift()?.();
 			await flush();
 		}
 
-		expect(api.reserve).toHaveBeenCalledTimes(4);
+		expect(statuses(queue.getSnapshot())).toEqual(['done']);
+		expect(api.reserve).toHaveBeenCalledTimes(6);
+		const ids = new Set(api.reserve.mock.calls.map(([input]) => input.clientRequestId));
+		expect(ids.size).toBe(1);
+	});
+
+	it('leaves a dropped upload to the guest after ten minutes of failed retries', async () => {
+		const api = fakeApi();
+		api.reserve.mockRejectedValue(new MemoriesRequestError(null, 'network_error'));
+		let now = 0;
+		const timers: Array<() => void> = [];
+		const queue = new MemoriesUploadQueue({
+			deps: { api, ...passThrough },
+			reservationsPerMinute: 100,
+			now: () => now,
+			setTimer: (run) => timers.push(run),
+			clearTimer: () => undefined,
+		});
+		queue.add([png('a.png')]);
+		queue.start();
+		await flush();
+		while (timers.length > 0 && now < 20 * 60_000) {
+			now += 2_000;
+			timers.shift()?.();
+			await flush();
+		}
+
+		expect(now).toBeLessThan(20 * 60_000);
 		expect(statuses(queue.getSnapshot())).toEqual(['failed']);
+		const calls = api.reserve.mock.calls.length;
+		queue.setOnline(false);
+		queue.setOnline(true);
+		await flush();
+		expect(api.reserve).toHaveBeenCalledTimes(calls);
 	});
 
 	it('leaves a failure that is not about the signal for the guest to retry', async () => {
