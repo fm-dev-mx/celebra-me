@@ -1,10 +1,13 @@
 /**
  * Cloudflare Workers entry point (`main` in `wrangler.jsonc`). The adapter's default entry
  * only exports `fetch`; this one adds `scheduled` for the cron triggers and adopts the
- * rate-limit, image, invitation-media, static-asset and memories Worker bindings before the first request. Only the Cloudflare build (`CELEBRA_BUILD_TARGET=cloudflare`)
+ * rate-limit, image, invitation-media, static-asset and memories Worker bindings, plus the
+ * in-process app loopback, before the first request. Only the Cloudflare build (`CELEBRA_BUILD_TARGET=cloudflare`)
  * bundles this file.
  */
 import { handle } from '@astrojs/cloudflare/handler';
+import { redirectApexToCanonical } from './lib/server/apex-redirect';
+import { installAppLoopback } from './lib/server/app-loopback';
 import { installImagesBinding } from './lib/images/image-transformer-provider';
 import { installInvitationMediaBinding } from './lib/intake/services/r2-invitation-media';
 import { installMemoriesWorkerBindings } from './lib/memories/server/worker-bindings';
@@ -26,6 +29,23 @@ interface ScheduledController {
 	readonly scheduledTime: number;
 }
 
+/**
+ * Concurrent requests share the isolate, so the installed loopback may carry the context of
+ * a request that already answered; its `waitUntil` must never break the inner render.
+ */
+function loopbackContext(context: WorkerExecutionContext): WorkerExecutionContext {
+	return {
+		waitUntil(promise) {
+			try {
+				context.waitUntil(promise);
+			} catch {
+				void promise.catch(() => undefined);
+			}
+		},
+		passThroughOnException() {},
+	};
+}
+
 export default {
 	async fetch(
 		request: Request,
@@ -37,7 +57,12 @@ export default {
 		installInvitationMediaBinding(env);
 		installAssetsBinding(env);
 		installMemoriesWorkerBindings(env);
-		return handle(request, env as never, context as never);
+		installAppLoopback(
+			async (inner) =>
+				redirectApexToCanonical(inner) ??
+				handle(inner, env as never, loopbackContext(context) as never),
+		);
+		return redirectApexToCanonical(request) ?? handle(request, env as never, context as never);
 	},
 
 	async scheduled(
