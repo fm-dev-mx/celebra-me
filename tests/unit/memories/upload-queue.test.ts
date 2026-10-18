@@ -186,6 +186,84 @@ describe('MemoriesUploadQueue', () => {
 		}
 	});
 
+	it('resumes an upload whose PUT dropped before the browser noticed it was offline', async () => {
+		const api = fakeApi();
+		api.reserve.mockResolvedValue({
+			item: { id: 'item' },
+			upload: { uploadUrl: 'https://upload.invalid', requiredHeaders: {} },
+		} as never);
+		let puts = 0;
+		const putFile: MemoriesPutTransport = async () => {
+			puts += 1;
+			if (puts === 1) throw new TypeError('upload_network_error');
+			return 201;
+		};
+		const queue = new MemoriesUploadQueue({
+			deps: { api, ...passThrough, putFile },
+			setTimer: () => null,
+			clearTimer: () => undefined,
+		});
+		queue.add([png('a.png')]);
+		queue.start();
+		await flush();
+		// navigator.onLine was still true, so the guest saw the generic upload failure.
+		expect(queue.getSnapshot().entries[0]).toMatchObject({
+			status: 'failed',
+			issue: 'put_failed',
+		});
+
+		queue.setOnline(false);
+		queue.setOnline(true);
+		await flush();
+		expect(statuses(queue.getSnapshot())).toEqual(['done']);
+	});
+
+	it('rechecks the connection itself when the browser never fires online', async () => {
+		const api = fakeApi();
+		api.reserve.mockResolvedValue({ item: { id: 'item' }, upload: null } as never);
+		let connected = false;
+		const timers: Array<() => void> = [];
+		const queue = new MemoriesUploadQueue({
+			deps: { api, ...passThrough },
+			isOnline: () => connected,
+			setTimer: (run) => timers.push(run),
+			clearTimer: () => undefined,
+		});
+		queue.add([png('a.png')]);
+		queue.start();
+		await flush();
+		expect(queue.getSnapshot().offline).toBe(true);
+
+		timers.shift()?.();
+		expect(queue.getSnapshot().offline).toBe(true);
+		connected = true;
+		timers.shift()?.();
+		await flush();
+		expect(queue.getSnapshot().offline).toBe(false);
+		expect(statuses(queue.getSnapshot())).toEqual(['done']);
+	});
+
+	it('stops retrying on its own after three dropped attempts', async () => {
+		const api = fakeApi();
+		api.reserve.mockRejectedValue(new MemoriesRequestError(null, 'network_error'));
+		const queue = new MemoriesUploadQueue({
+			deps: { api, ...passThrough },
+			setTimer: () => null,
+			clearTimer: () => undefined,
+		});
+		queue.add([png('a.png')]);
+		queue.start();
+		await flush();
+		for (let round = 0; round < 5; round += 1) {
+			queue.setOnline(false);
+			queue.setOnline(true);
+			await flush();
+		}
+
+		expect(api.reserve).toHaveBeenCalledTimes(4);
+		expect(statuses(queue.getSnapshot())).toEqual(['failed']);
+	});
+
 	it('leaves a failure that is not about the signal for the guest to retry', async () => {
 		const api = fakeApi();
 		api.reserve.mockRejectedValue(new MemoriesRequestError(503, 'unavailable'));

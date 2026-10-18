@@ -5,6 +5,8 @@
  * 60 s window (the Sign Worker limiter), so extra files wait instead of failing.
  * The queue pauses while the browser is offline and resumes when it reconnects;
  * uploads that failed for lack of signal go back in line with the same attempt.
+ * Browsers do not always announce the reconnection, so the queue also checks
+ * the connection itself every few seconds while it waits.
  */
 
 import {
@@ -57,6 +59,11 @@ const BLOCKING_ISSUES: ReadonlySet<MemoriesCaptureIssue> = new Set([
 	'session_files_reached',
 ]);
 
+/** Automatic retries per file after a dropped signal; later ones need the guest. */
+const MAX_AUTO_RESUMES = 3;
+
+const DEFAULT_RECHECK_MS = 5_000;
+
 const ACTIVE_STATUSES: ReadonlySet<MemoriesQueueStatus> = new Set([
 	'optimizing',
 	'preparing',
@@ -87,6 +94,8 @@ export interface MemoriesUploadQueueOptions {
 	setTimer?: (callback: () => void, ms: number) => unknown;
 	clearTimer?: (handle: unknown) => void;
 	isOnline?: () => boolean;
+	/** How often to recheck the connection while offline or holding a dropped upload. */
+	recheckMs?: number;
 }
 
 let nextEntryId = 0;
@@ -96,6 +105,8 @@ export class MemoriesUploadQueue {
 	private readonly attempts = new Map<string, MemoriesUploadAttempt>();
 	/** Failed entries the next reconnection retries on its own. */
 	private readonly resumeOnline = new Set<string>();
+	private readonly autoResumes = new Map<string, number>();
+	private recheckTimer: unknown = null;
 	private readonly listeners = new Set<() => void>();
 	private readonly reservationTimes: number[] = [];
 	private snapshot: MemoriesQueueSnapshot;
@@ -107,6 +118,8 @@ export class MemoriesUploadQueue {
 	private readonly now: () => number;
 	private readonly setTimer: (callback: () => void, ms: number) => unknown;
 	private readonly clearTimer: (handle: unknown) => void;
+	private readonly isOnline: () => boolean;
+	private readonly recheckMs: number;
 
 	constructor(private readonly options: MemoriesUploadQueueOptions) {
 		this.concurrency = options.concurrency ?? MEMORIES_SESSION_MAX_IN_FLIGHT;
@@ -116,8 +129,11 @@ export class MemoriesUploadQueue {
 		this.clearTimer =
 			options.clearTimer ??
 			((handle) => clearTimeout(handle as ReturnType<typeof setTimeout>));
-		this.offline = !(options.isOnline ?? (() => true))();
+		this.isOnline = options.isOnline ?? (() => true);
+		this.recheckMs = options.recheckMs ?? DEFAULT_RECHECK_MS;
+		this.offline = !this.isOnline();
 		this.snapshot = { entries: [], offline: this.offline };
+		if (this.offline) this.scheduleRecheck();
 	}
 
 	subscribe = (listener: () => void): (() => void) => {
@@ -152,6 +168,7 @@ export class MemoriesUploadQueue {
 		this.entries = this.entries.filter((candidate) => candidate.id !== id);
 		this.attempts.delete(id);
 		this.resumeOnline.delete(id);
+		this.autoResumes.delete(id);
 		this.emit();
 	}
 
@@ -168,6 +185,7 @@ export class MemoriesUploadQueue {
 		const entry = this.entries.find((candidate) => candidate.id === id);
 		if (!entry || entry.status !== 'failed') return;
 		this.resumeOnline.delete(id);
+		this.autoResumes.delete(id);
 		this.patch(id, { status: 'waiting', issue: null, progress: 0 });
 		this.pump();
 	}
@@ -189,6 +207,7 @@ export class MemoriesUploadQueue {
 			if (!this.entries.some((entry) => entry.id === id)) {
 				this.attempts.delete(id);
 				this.resumeOnline.delete(id);
+				this.autoResumes.delete(id);
 			}
 		}
 		this.emit();
@@ -201,10 +220,13 @@ export class MemoriesUploadQueue {
 			// The attempt keeps its client request id, so the server recognizes the same upload.
 			for (const id of this.resumeOnline) {
 				const entry = this.entries.find((candidate) => candidate.id === id);
-				if (entry?.status === 'failed')
-					this.patch(id, { status: 'waiting', issue: null, progress: 0 });
+				if (entry?.status !== 'failed') continue;
+				this.autoResumes.set(id, (this.autoResumes.get(id) ?? 0) + 1);
+				this.patch(id, { status: 'waiting', issue: null, progress: 0 });
 			}
 			this.resumeOnline.clear();
+		} else {
+			this.scheduleRecheck();
 		}
 		this.emit();
 		if (online) this.pump();
@@ -212,7 +234,9 @@ export class MemoriesUploadQueue {
 
 	dispose(): void {
 		if (this.timer !== null) this.clearTimer(this.timer);
+		if (this.recheckTimer !== null) this.clearTimer(this.recheckTimer);
 		this.timer = null;
+		this.recheckTimer = null;
 		this.listeners.clear();
 	}
 
@@ -226,6 +250,16 @@ export class MemoriesUploadQueue {
 	private emit(): void {
 		this.snapshot = { entries: this.entries, offline: this.offline };
 		for (const listener of this.listeners) listener();
+	}
+
+	/** Reads the connection again later, in case the browser never fires `online`. */
+	private scheduleRecheck(): void {
+		if (this.recheckTimer !== null) return;
+		this.recheckTimer = this.setTimer(() => {
+			this.recheckTimer = null;
+			if (this.isOnline()) this.setOnline(true);
+			if (this.offline || this.resumeOnline.size > 0) this.scheduleRecheck();
+		}, this.recheckMs);
 	}
 
 	/** Milliseconds until another reservation fits the per-minute budget; 0 when it fits now. */
@@ -283,7 +317,14 @@ export class MemoriesUploadQueue {
 		} catch (error) {
 			const issue =
 				error instanceof MemoriesUploadError ? error.issue : readMemoriesUploadIssue(error);
-			if (issue === 'network_failed' || this.offline) this.resumeOnline.add(id);
+			const dropped =
+				issue === 'network_failed' ||
+				this.offline ||
+				(error instanceof MemoriesUploadError && error.transport);
+			if (dropped && (this.autoResumes.get(id) ?? 0) < MAX_AUTO_RESUMES) {
+				this.resumeOnline.add(id);
+				this.scheduleRecheck();
+			}
 			this.patch(id, { status: 'failed', issue });
 			if (BLOCKING_ISSUES.has(issue)) {
 				for (const other of this.entries) {

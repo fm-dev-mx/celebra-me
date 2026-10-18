@@ -266,6 +266,7 @@ export const memoriesCaptureCopy = {
 	cancelNameChange: 'Cancelar',
 	myMemories: 'Mis recuerdos',
 	validationPending: 'En validación',
+	uploadUnfinished: 'No terminó de subirse. Elíjalo otra vez.',
 	duplicate: 'Este archivo ya estaba guardado',
 	accepted: 'Disponible',
 	rejected: 'No aprobado',
