@@ -3,11 +3,16 @@
     "isDemo": true,
     "templateId": "xv-jewelry-box",
     "_assetSlug": "demo-xv-jewelry-box",
-    "title": "XV Años — Lucía García",
+    "title": "Fixture E2E de publicación Preview",
     "description": "Una invitación editorial con brillo de joyero: retratos serenos, detalles dorados y una noche de XV años pensada como una pieza única.",
     "theme": {
         "fontFamily": "serif",
         "preset": "jewelry-box"
+    },
+    "eventTiming": {
+        "localDateTime": "2026-11-21T18:00",
+        "timeZone": "America/Monterrey",
+        "startsAtUtc": "2026-11-22T00:00:00.000Z"
     },
     "sectionOrder": [
         "quote",
@@ -35,7 +40,9 @@
         "portrait": "portrait",
         "focalPoint": "50% 40%",
         "focalPointMobile": "50% 35%",
-        "variant": "standard"
+        "variant": "standard",
+        "nickname": "",
+        "secondaryName": ""
     },
     "location": {
         "accessPolicy": {
@@ -66,7 +73,7 @@
                 "venueName": "Parroquia de la Sagrada Familia",
                 "address": "Avenida Ayuntamiento s/n, Jardines de Guadalupe",
                 "city": "Monterrey",
-                "date": "21 de noviembre de 2026",
+                "date": "2026-11-21",
                 "time": "18:00",
                 "mapUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
                 "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
@@ -85,7 +92,7 @@
                 "venueName": "Quinta Las Flores",
                 "address": "Av. Real de Catorce 123, Col. Valle Alto",
                 "city": "Monterrey",
-                "date": "21 de noviembre de 2026",
+                "date": "2026-11-21",
                 "time": "20:00",
                 "mapUrl": "https://maps.app.goo.gl/example",
                 "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
@@ -186,9 +193,7 @@
         "confirmationMessage": "Gracias por confirmar. Los esperamos con mucha emoción.",
         "confirmationMode": "both",
         "whatsappConfig": {
-            "phone": "5211000000008",
-            "confirmedTemplate": "Hola, soy {name}. Ya registré mi confirmación para la celebración de Lucía. Asistiremos {guestCount} persona(s).",
-            "declinedTemplate": "Hola, soy {name}. Ya registré mi respuesta para la celebración de Lucía, pero no podré asistir."
+            "phone": "5211000000008"
         },
         "variant": "standard",
         "personalizedAccess": {
@@ -298,6 +303,7 @@
     "sharing": {
         "ogImage": "portrait",
         "ogDescription": "Acompáñame a celebrar mis XV años en Monterrey. Consulta todos los detalles de la celebración aquí.",
+        "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
         "shareMessages": {
             "invitation": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
             "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
