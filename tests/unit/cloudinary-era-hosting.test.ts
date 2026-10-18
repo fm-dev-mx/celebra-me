@@ -26,6 +26,12 @@ describe('cloudinary-era hosting', () => {
 				secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
 			}),
 		).toBe(true);
+		expect(
+			isCloudinaryHostedAsset({
+				provider: 'r2',
+				secureUrl: 'https://media.celebra-me.com/invitations/xv/demo/hero-0.webp',
+			}),
+		).toBe(true);
 		expect(isCloudinaryHostedAsset({ provider: 'supabase', secureUrl: null })).toBe(false);
 		expect(isCloudinaryHostedAsset({ provider: 'cloudinary', secureUrl: '' })).toBe(false);
 	});
@@ -46,6 +52,6 @@ describe('cloudinary-era hosting', () => {
 				src: 'http://localhost:54321/storage/v1/object/public/invitation-assets/test.webp',
 			}),
 		).toHaveLength(1);
-		expect(cloudinaryEraHostingMessage(['hero-desktop'])).toMatch(/Cloudinary/);
+		expect(cloudinaryEraHostingMessage(['hero-desktop'])).toMatch(/servicio de imágenes/);
 	});
 });

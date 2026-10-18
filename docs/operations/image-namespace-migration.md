@@ -94,3 +94,22 @@ presentation, explained reconciliation results, final-SHA CI, automatic Preview 
 required human acceptance. Asset-row counts alone do not establish absence of legacy URLs in
 content. Report unverified provider inventory, retained historical references, and pending owner
 actions explicitly.
+
+## Cloudflare R2 destination
+
+[`image-r2-migration-cli.ts`](../../scripts/invitation/image-r2-migration-cli.ts) moves every active
+Cloudinary image row of one invitation, and every Cloudinary audio URL in its content, to the
+environment bucket in
+[`r2-invitation-media.ts`](../../src/lib/intake/services/r2-invitation-media.ts). Keys are
+content-addressed (`invitations/<eventType>/<slug>/<key>-<sha256>.<ext>`); each image also gets a
+prepared 1200x630 JPEG social card (`.og.jpg`), because the zone has no image transformations.
+
+- `plan <preview|production> <slug> <manifest>` downloads every source, checks its recorded sha256,
+  dimensions and format, and writes an immutable manifest. It writes nothing remote.
+- `apply-preview` / `rollback-preview` follow the Preview task-scope gate above.
+- Production uses the same `pnpm prod:apply -- --image-namespace <manifest>` entrypoint; an
+  `r2-media` manifest is routed to
+  [`production-image-r2-apply.ts`](../../scripts/db/production-image-r2-apply.ts).
+
+Apply only after the release that serves R2 hosts (`astro.config.mjs` remote patterns and the
+delivery policy) is live on the target. Cloudinary objects stay in place as the rollback source.

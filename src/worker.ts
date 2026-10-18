@@ -1,11 +1,12 @@
 /**
  * Cloudflare Workers entry point (`main` in `wrangler.jsonc`). The adapter's default entry
  * only exports `fetch`; this one adds `scheduled` for the cron triggers and adopts the
- * rate-limit, image, static-asset and memories Worker bindings before the first request. Only the Cloudflare build (`CELEBRA_BUILD_TARGET=cloudflare`)
+ * rate-limit, image, invitation-media, static-asset and memories Worker bindings before the first request. Only the Cloudflare build (`CELEBRA_BUILD_TARGET=cloudflare`)
  * bundles this file.
  */
 import { handle } from '@astrojs/cloudflare/handler';
 import { installImagesBinding } from './lib/images/image-transformer-provider';
+import { installInvitationMediaBinding } from './lib/intake/services/r2-invitation-media';
 import { installMemoriesWorkerBindings } from './lib/memories/server/worker-bindings';
 import { installRateLimitBindings } from './lib/rsvp/security/rate-limit-provider';
 import { runScheduledJob } from './lib/server/scheduled-jobs';
@@ -33,6 +34,7 @@ export default {
 	): Promise<Response> {
 		installRateLimitBindings(env);
 		installImagesBinding(env);
+		installInvitationMediaBinding(env);
 		installAssetsBinding(env);
 		installMemoriesWorkerBindings(env);
 		return handle(request, env as never, context as never);
@@ -45,6 +47,7 @@ export default {
 	): Promise<void> {
 		installRateLimitBindings(env);
 		installImagesBinding(env);
+		installInvitationMediaBinding(env);
 		installMemoriesWorkerBindings(env);
 		context.waitUntil(runScheduledJob(controller.cron));
 	},

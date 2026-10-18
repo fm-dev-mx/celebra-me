@@ -1,7 +1,7 @@
 /**
  * Cloudinary-era invitation image hosting.
  * Client invitations in hosted/remote environments (Preview and Production)
- * must deliver referenced images from Cloudinary.
+ * must deliver referenced images from remote media hosting (Cloudinary or R2), never Storage.
  */
 
 export interface CloudinaryEraInvitationInput {
@@ -29,7 +29,7 @@ export function isCloudinaryEraInvitation(input: CloudinaryEraInvitationInput): 
 export function isCloudinaryHostedAsset(asset: CloudinaryHostedAssetInput): boolean {
 	const provider = (asset.provider ?? '').toLowerCase();
 	const url = asset.secureUrl?.trim() ?? '';
-	return provider === 'cloudinary' && isHttpUrl(url);
+	return (provider === 'cloudinary' || provider === 'r2') && isHttpUrl(url);
 }
 
 export function isSupabaseStorageUrl(value: string): boolean {
@@ -56,5 +56,5 @@ export function findSupabaseStorageUrls(value: unknown, found: string[] = []): s
 export function cloudinaryEraHostingMessage(labels: readonly string[]): string {
 	const shown = labels.slice(0, 6).join(', ');
 	const extra = labels.length > 6 ? ` (+${labels.length - 6})` : '';
-	return `Las imágenes de esta invitación deben alojarse en Cloudinary (${shown}${extra}).`;
+	return `Las imágenes de esta invitación deben alojarse en el servicio de imágenes publicado (${shown}${extra}).`;
 }

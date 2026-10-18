@@ -361,7 +361,7 @@ describe('runPromotionPreflight / apply', () => {
 		});
 		expect(report.status).toBe('BLOCKED');
 		expect(report.blockCode).toBe('CLOUDINARY_ERA_HOSTING');
-		expect(report.reason).toMatch(/Cloudinary/);
+		expect(report.reason).toMatch(/servicio de imágenes/);
 	});
 
 	it('blocks when exact approval is missing', async () => {

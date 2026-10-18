@@ -5,7 +5,7 @@
 
 import { getPublicUrl } from '@/lib/intake/storage';
 
-type AssetDeliveryProvider = 'supabase' | 'cloudinary';
+type AssetDeliveryProvider = 'supabase' | 'cloudinary' | 'r2';
 
 export interface AssetDeliverySource {
 	id?: string;
@@ -59,6 +59,15 @@ function resolveCloudinaryAssetUrl(asset: AssetDeliverySource, provider: string)
 	return `https://res.cloudinary.com/${cloudName}/image/upload/v1/${normalizedId}.${extension}`;
 }
 
+function resolveR2AssetUrl(asset: AssetDeliverySource, provider: string): string {
+	const secure = asset.secureUrl?.trim();
+	if (secure && isHttpUrl(secure)) return secure;
+	throw new AssetDeliveryResolutionError('R2 asset is missing secure_url.', {
+		assetId: asset.id,
+		provider,
+	});
+}
+
 function resolveSupabaseAssetUrl(asset: AssetDeliverySource, provider: string): string {
 	const secure = asset.secureUrl?.trim();
 	if (secure && isHttpUrl(secure)) return secure;
@@ -81,6 +90,10 @@ export function resolveAssetDeliveryUrl(asset: AssetDeliverySource): string {
 
 	if (provider === 'cloudinary') {
 		return resolveCloudinaryAssetUrl(asset, provider);
+	}
+
+	if (provider === 'r2') {
+		return resolveR2AssetUrl(asset, provider);
 	}
 
 	if (provider === 'supabase') {
@@ -114,5 +127,6 @@ export function preferUploadedDeliverySrc(input: {
 		return frozen;
 	}
 
+	// R2 rows always carry their content-addressed secure_url.
 	return derived;
 }

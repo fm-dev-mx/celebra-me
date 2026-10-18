@@ -1,5 +1,7 @@
 /** Owner-only image namespace migration through the canonical prod:apply entrypoint. */
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { assertProductionDbUrl, getProdDbUrl, runPsql } from './db-workflow-lib.ts';
 import {
 	ensureCriticalProductionBackup,
@@ -20,12 +22,19 @@ import {
 	buildNamespaceRemapSql,
 	buildNamespaceRollbackSql,
 } from '../invitation/image-namespace-remap.ts';
+import { runProductionImageR2Apply } from './production-image-r2-apply.ts';
+
+function isR2MediaManifest(manifestPath: string): boolean {
+	const raw = JSON.parse(readFileSync(resolve(manifestPath), 'utf8')) as { kind?: unknown };
+	return raw.kind === 'r2-media';
+}
 
 export async function runProductionImageNamespaceApply(input: {
 	manifestPath: string;
 	apply: boolean;
 	rollback: boolean;
 }): Promise<void> {
+	if (isR2MediaManifest(input.manifestPath)) return runProductionImageR2Apply(input);
 	const plan = readMigrationManifest(input.manifestPath);
 	if (plan.target !== 'production')
 		throw new Error('Only Production manifests can use prod:apply.');
