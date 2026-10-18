@@ -59,13 +59,22 @@ const DESTRUCTIVE_PATTERNS: Array<{ kind: MigrationSqlRiskKind; pattern: RegExp 
 	},
 ];
 
+// Lexical units in source order: line comment, block comment, dollar-quoted body, string literal.
+const SQL_LEXICAL_UNITS =
+	/--[^\r\n]*|\/\*[\s\S]*?\*\/|\$([A-Za-z_][A-Za-z0-9_]*|)\$[\s\S]*?\$\1\$|'(?:''|[^'])*'/g;
+
 export function normalizeSqlForRiskScan(sql: string): string {
 	// Consume lexical units in source order: a comment marker inside a literal must
 	// never swallow subsequent executable SQL (including a real REVOKE).
-	return sql.replace(
-		/--[^\r\n]*|\/\*[\s\S]*?\*\/|\$([A-Za-z_][A-Za-z0-9_]*|)\$[\s\S]*?\$\1\$|'(?:''|[^'])*'/g,
-		(token) => (token.startsWith("'") ? "''" : ' '),
-	);
+	return sql.replace(SQL_LEXICAL_UNITS, (token) => (token.startsWith("'") ? "''" : ' '));
+}
+
+/**
+ * Removes `--` line comments only. Literals, dollar bodies and block comments stay verbatim so
+ * the lexical ambiguity checks still see them; an apostrophe in prose must not open a literal.
+ */
+function stripSqlLineComments(sql: string): string {
+	return sql.replace(SQL_LEXICAL_UNITS, (token) => (token.startsWith('--') ? ' ' : token));
 }
 
 export function classifySqlText(sql: string): MigrationSqlRiskFinding[] {
@@ -116,7 +125,7 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 	// Strip function definition bodies (AS $tag$ ... $tag$) so standard function definitions
 	// are not rejected merely for containing dollar quotes. Other dollar quotes (like DO $$ ... $$)
 	// remain and fail closed.
-	const sqlWithoutFunctionBodies = sql.replace(
+	const sqlWithoutFunctionBodies = stripSqlLineComments(sql).replace(
 		/\bas\s+\$([A-Za-z_][A-Za-z0-9_]*|)\$[\s\S]*?\$\1\$/gi,
 		'as ',
 	);
