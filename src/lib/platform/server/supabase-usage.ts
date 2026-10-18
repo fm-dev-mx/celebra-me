@@ -12,9 +12,9 @@ import { buildPlatformMetric } from '@/lib/platform/contract/meters';
 import type { PlatformEnvironmentId, PlatformProviderUsage } from '@/lib/platform/contract/types';
 import { PLATFORM_ENV } from './config';
 import { readProfileVar } from './env-profiles';
+import { type ProviderFailure, fetchProviderJson, isRecord } from './provider-request';
 
 const MANAGEMENT_ENDPOINT = 'https://api.supabase.com/v1/projects';
-const REQUEST_TIMEOUT_MS = 5_000;
 /** Analytics endpoints are rate limited to 30 requests/minute; cache absorbs refreshes. */
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -27,10 +27,6 @@ let cache: Record<string, { expiresAt: number; value: PlatformProviderUsage }> =
 
 export function resetSupabaseUsageCache(): void {
 	cache = {};
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -47,32 +43,23 @@ export function parseDiskUsedBytes(payload: unknown): number | null {
 	return null;
 }
 
-async function queryProjectUsedBytes(
+export type SupabaseDiskResult =
+	{ ok: true; usedBytes: number } | { ok: false; failure: ProviderFailure };
+
+/** Used disk bytes of one project. Never throws and never returns the provider body. */
+export async function readProjectDiskUsage(
 	ref: string,
 	token: string,
 	fetchImpl: typeof fetch,
-): Promise<number | null> {
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-	try {
-		const response = await fetchImpl(
-			`${MANAGEMENT_ENDPOINT}/${encodeURIComponent(ref)}/config/disk/util`,
-			{
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json',
-				},
-				signal: controller.signal,
-			},
-		);
-		if (!response.ok) return null;
-		return parseDiskUsedBytes(await response.json());
-	} catch {
-		return null;
-	} finally {
-		clearTimeout(timer);
-	}
+): Promise<SupabaseDiskResult> {
+	const result = await fetchProviderJson(
+		`${MANAGEMENT_ENDPOINT}/${encodeURIComponent(ref)}/config/disk/util`,
+		{ method: 'GET', token },
+		fetchImpl,
+	);
+	if (!result.ok) return { ok: false, failure: result.failure };
+	const usedBytes = parseDiskUsedBytes(result.body);
+	return usedBytes === null ? { ok: false, failure: 'malformed' } : { ok: true, usedBytes };
 }
 
 export async function getSupabasePlatformUsage(
@@ -90,7 +77,8 @@ export async function getSupabasePlatformUsage(
 	}
 	const cached = cache[environment];
 	if (cached && cached.expiresAt > now.getTime()) return cached.value;
-	const used = await queryProjectUsedBytes(projectRef.value, token.value, fetchImpl);
+	const disk = await readProjectDiskUsage(projectRef.value, token.value, fetchImpl);
+	const used = disk.ok ? disk.usedBytes : null;
 	const value: PlatformProviderUsage =
 		used === null
 			? { kind: 'unavailable' }

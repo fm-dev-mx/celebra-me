@@ -6,21 +6,21 @@
  * it declares in `MEMORIES_R2_BUCKET_NAME` to its own environment.
  */
 
-import { CLOUDFLARE_FREE_TIER, R2_OVERAGE_PRICES_USD } from '@/lib/platform/contract/limits';
+import { CLOUDFLARE_PAID_PLAN, R2_OVERAGE_PRICES_USD } from '@/lib/platform/contract/limits';
 import { buildPlatformMetric } from '@/lib/platform/contract/meters';
 import type {
 	PlatformEnvironmentId,
 	PlatformMetric,
 	PlatformMissingVar,
 } from '@/lib/platform/contract/types';
+import { firstViewerNode, queryCloudflareGraphql } from './cloudflare-graphql';
 import { PLATFORM_ENV } from './config';
 import { isLocalPanel, readProfileVar, resolvePanelEnvironments } from './env-profiles';
+import { asRows, finiteNumber, isRecord } from './provider-request';
 
-const GRAPHQL_ENDPOINT = 'https://api.cloudflare.com/client/v4/graphql';
-const REQUEST_TIMEOUT_MS = 5_000;
 /** Analytics lag by minutes; caching also keeps the console under the API rate limit. */
 const CACHE_TTL_MS = 5 * 60 * 1000;
-const ACCOUNT_ID_PATTERN = /^[0-9a-f]{32}$/i;
+export const ACCOUNT_ID_PATTERN = /^[0-9a-f]{32}$/i;
 const BUCKET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
 const DECIMAL_GB = 1_000_000_000;
 const DECIMAL_MILLION = 1_000_000;
@@ -70,16 +70,16 @@ const METRIC_QUERIES: Record<MetricName, string> = {
 		}
 	} }
 }`,
-	workers: `query MemoriesWorkersRequests($accountTag: string!, $dayStart: Time!, $now: Time!) {
+	workers: `query MemoriesWorkersRequests($accountTag: string!, $monthStart: Time!, $now: Time!) {
 	viewer { accounts(filter: { accountTag: $accountTag }) {
-		rows: workersInvocationsAdaptive(limit: 1, filter: { datetime_geq: $dayStart, datetime_leq: $now }) {
+		rows: workersInvocationsAdaptive(limit: 1, filter: { datetime_geq: $monthStart, datetime_leq: $now }) {
 			sum { requests }
 		}
 	} }
 }`,
-	durableObjects: `query MemoriesDurableObjectsRequests($accountTag: string!, $dayStart: Time!, $now: Time!) {
+	durableObjects: `query MemoriesDurableObjectsRequests($accountTag: string!, $monthStart: Time!, $now: Time!) {
 	viewer { accounts(filter: { accountTag: $accountTag }) {
-		rows: durableObjectsInvocationsAdaptiveGroups(limit: 1, filter: { datetime_geq: $dayStart, datetime_leq: $now }) {
+		rows: durableObjectsInvocationsAdaptiveGroups(limit: 1, filter: { datetime_geq: $monthStart, datetime_leq: $now }) {
 			sum { requests }
 		}
 	} }
@@ -98,18 +98,6 @@ let cache: { key: string; expiresAt: number; value: CloudflareUsageSnapshot } | 
 
 export function resetCloudflareUsageCache(): void {
 	cache = null;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function asRows(value: unknown): Record<string, unknown>[] | null {
-	return Array.isArray(value) ? value.filter(isRecord) : null;
-}
-
-function finiteNumber(value: unknown): number | null {
-	return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 }
 
 function sumRequests(rows: Record<string, unknown>[] | null): number | null {
@@ -153,7 +141,7 @@ function readConfig(): { config: UsageConfig | null; missing: PlatformMissingVar
 	};
 }
 
-function windowBounds(now: Date) {
+export function windowBounds(now: Date) {
 	const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 	const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 	const storageSince = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -171,37 +159,18 @@ async function queryMetric(
 	now: Date,
 	fetchImpl: typeof fetch,
 ): Promise<Record<string, unknown>[] | null> {
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-	try {
-		const bounds = windowBounds(now);
-		const variables: Record<string, string> = { accountTag: config.accountId, now: bounds.now };
-		if (name === 'storage') {
-			variables.storageSince = bounds.storageSince;
-		} else if (name === 'operations') {
-			variables.monthStart = bounds.monthStart;
-		} else {
-			variables.dayStart = bounds.dayStart;
-		}
-		const response = await fetchImpl(GRAPHQL_ENDPOINT, {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${config.token}`,
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ query: METRIC_QUERIES[name], variables }),
-			signal: controller.signal,
-		});
-		if (!response.ok) return null;
-		const payload: unknown = await response.json();
-		const viewer = isRecord(payload) && isRecord(payload.data) ? payload.data.viewer : null;
-		const account = isRecord(viewer) ? asRows(viewer.accounts)?.[0] : undefined;
-		return account ? asRows(account.rows) : null;
-	} catch {
-		return null;
-	} finally {
-		clearTimeout(timer);
-	}
+	const bounds = windowBounds(now);
+	const variables: Record<string, string> = { accountTag: config.accountId, now: bounds.now };
+	if (name === 'storage') variables.storageSince = bounds.storageSince;
+	else variables.monthStart = bounds.monthStart;
+	const result = await queryCloudflareGraphql(
+		METRIC_QUERIES[name],
+		variables,
+		config.token,
+		fetchImpl,
+	);
+	const account = result.ok ? firstViewerNode(result.viewer, 'accounts') : null;
+	return account ? asRows(account.rows) : null;
 }
 
 function overageUsd(excess: number, unitPrice: number): number {
@@ -228,7 +197,9 @@ export function classifyR2Operations(rows: Record<string, unknown>[] | null): {
 }
 
 /** Bytes per bucket from the bucket-grouped query; malformed rows blank the meters. */
-function storageBytesByBucket(rows: Record<string, unknown>[] | null): Map<string, number> | null {
+export function storageBytesByBucket(
+	rows: Record<string, unknown>[] | null,
+): Map<string, number> | null {
 	if (!rows) return null;
 	const byBucket = new Map<string, number>();
 	for (const row of rows) {
@@ -251,7 +222,7 @@ function storageMetrics(
 	environment: PlatformEnvironmentId,
 	now: Date,
 ): PlatformMetric {
-	const limit = CLOUDFLARE_FREE_TIER.r2StorageBytes;
+	const limit = CLOUDFLARE_PAID_PLAN.r2StorageBytes;
 	const used = byBucket && bucketName ? (byBucket.get(bucketName) ?? 0) : null;
 	return buildPlatformMetric({
 		id: 'cfR2StorageBucket',
@@ -271,7 +242,7 @@ function accountMetrics(
 	durableObjects: Record<string, unknown>[] | null,
 	now: Date,
 ): PlatformMetric[] {
-	const limit = CLOUDFLARE_FREE_TIER.r2StorageBytes;
+	const limit = CLOUDFLARE_PAID_PLAN.r2StorageBytes;
 	const operations = classifyR2Operations(operationRows);
 	return [
 		buildPlatformMetric({
@@ -292,15 +263,15 @@ function accountMetrics(
 		buildPlatformMetric({
 			id: 'cfR2ClassA',
 			used: operations.classA,
-			limit: CLOUDFLARE_FREE_TIER.r2ClassAOperationsPerMonth,
+			limit: CLOUDFLARE_PAID_PLAN.r2ClassAOperationsPerMonth,
 			window: 'monthUtc',
 			scope: 'account',
 			now,
 			overageUsd:
 				operations.classA !== null &&
-				operations.classA > CLOUDFLARE_FREE_TIER.r2ClassAOperationsPerMonth
+				operations.classA > CLOUDFLARE_PAID_PLAN.r2ClassAOperationsPerMonth
 					? overageUsd(
-							(operations.classA - CLOUDFLARE_FREE_TIER.r2ClassAOperationsPerMonth) /
+							(operations.classA - CLOUDFLARE_PAID_PLAN.r2ClassAOperationsPerMonth) /
 								DECIMAL_MILLION,
 							R2_OVERAGE_PRICES_USD.classAOperationsPerMillion,
 						)
@@ -309,15 +280,15 @@ function accountMetrics(
 		buildPlatformMetric({
 			id: 'cfR2ClassB',
 			used: operations.classB,
-			limit: CLOUDFLARE_FREE_TIER.r2ClassBOperationsPerMonth,
+			limit: CLOUDFLARE_PAID_PLAN.r2ClassBOperationsPerMonth,
 			window: 'monthUtc',
 			scope: 'account',
 			now,
 			overageUsd:
 				operations.classB !== null &&
-				operations.classB > CLOUDFLARE_FREE_TIER.r2ClassBOperationsPerMonth
+				operations.classB > CLOUDFLARE_PAID_PLAN.r2ClassBOperationsPerMonth
 					? overageUsd(
-							(operations.classB - CLOUDFLARE_FREE_TIER.r2ClassBOperationsPerMonth) /
+							(operations.classB - CLOUDFLARE_PAID_PLAN.r2ClassBOperationsPerMonth) /
 								DECIMAL_MILLION,
 							R2_OVERAGE_PRICES_USD.classBOperationsPerMillion,
 						)
@@ -326,16 +297,16 @@ function accountMetrics(
 		buildPlatformMetric({
 			id: 'cfWorkersRequests',
 			used: sumRequests(workers),
-			limit: CLOUDFLARE_FREE_TIER.workersRequestsPerDay,
-			window: 'dayUtc',
+			limit: CLOUDFLARE_PAID_PLAN.workersRequestsPerMonth,
+			window: 'monthUtc',
 			scope: 'account',
 			now,
 		}),
 		buildPlatformMetric({
 			id: 'cfDurableObjectsRequests',
 			used: sumRequests(durableObjects),
-			limit: CLOUDFLARE_FREE_TIER.durableObjectsRequestsPerDay,
-			window: 'dayUtc',
+			limit: CLOUDFLARE_PAID_PLAN.durableObjectsRequestsPerMonth,
+			window: 'monthUtc',
 			scope: 'account',
 			now,
 		}),

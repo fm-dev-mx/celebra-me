@@ -27,6 +27,7 @@ export const SCHEDULED_HANDLER_PATH = '/cdn-cgi/handler/scheduled';
 export const SCHEDULED_JOB_LOG_MARKERS: Readonly<Record<ScheduledJobName, string>> = {
 	memories_cleanup: '"event":"memories_cleanup_summary","phase":"completed"',
 	engagement_maintenance: '[engagement][maintenance]',
+	platform_usage: '[platform][collector]',
 };
 
 interface PageExpectation {

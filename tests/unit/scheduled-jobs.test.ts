@@ -4,11 +4,16 @@ jest.mock('@/lib/memories/server/cleanup.service', () => ({
 jest.mock('@/lib/rsvp/engagement/engagement-maintenance.service', () => ({
 	runEngagementMaintenance: jest.fn(),
 }));
+jest.mock('@/lib/platform/server/collector/run-collector', () => ({
+	runPlatformUsageCollector: jest.fn(),
+}));
 jest.mock('@/lib/server/deploy-identity', () => ({
 	readDeployEnvironment: jest.fn(() => 'preview'),
 }));
 
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
+import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
 import { readDeployEnvironment } from '@/lib/server/deploy-identity';
 import { SCHEDULED_JOB_CRONS, runScheduledJob } from '@/lib/server/scheduled-jobs';
@@ -16,6 +21,9 @@ import { SCHEDULED_JOB_CRONS, runScheduledJob } from '@/lib/server/scheduled-job
 const cleanup = runMemoriesCleanup as jest.MockedFunction<typeof runMemoriesCleanup>;
 const maintenance = runEngagementMaintenance as jest.MockedFunction<
 	typeof runEngagementMaintenance
+>;
+const collector = runPlatformUsageCollector as jest.MockedFunction<
+	typeof runPlatformUsageCollector
 >;
 const deployEnvironment = readDeployEnvironment as jest.MockedFunction<
 	typeof readDeployEnvironment
@@ -112,5 +120,64 @@ describe('runScheduledJob', () => {
 			'[engagement][maintenance] completed',
 			expect.objectContaining({ snapshotsWritten: 3 }),
 		);
+	});
+
+	const collected = {
+		datasets: {
+			cloudflare_workers: true,
+			cloudflare_durable_objects: true,
+			cloudflare_r2: true,
+			cloudflare_zone: true,
+			supabase_disk: true,
+		},
+		missingPermissions: [],
+		purged: true,
+	};
+
+	it('runs the platform usage collector only on the Production identity', async () => {
+		collector.mockResolvedValue(collected);
+		for (const environment of ['preview', null] as const) {
+			deployEnvironment.mockReturnValue(environment);
+			await expect(runScheduledJob(SCHEDULED_JOB_CRONS.platform_usage)).resolves.toEqual({
+				job: 'platform_usage',
+				status: 'skipped',
+			});
+		}
+		expect(collector).not.toHaveBeenCalled();
+
+		deployEnvironment.mockReturnValue('production');
+		await expect(runScheduledJob('*/15 * * * *')).resolves.toEqual({
+			job: 'platform_usage',
+			status: 'completed',
+		});
+		expect(collector).toHaveBeenCalledTimes(1);
+		expect(info).toHaveBeenCalledWith('[platform][collector] completed', collected);
+	});
+
+	it('warns when a dataset failed and logs only status and code when the insert fails', async () => {
+		deployEnvironment.mockReturnValue('production');
+		collector.mockResolvedValueOnce({
+			...collected,
+			datasets: { ...collected.datasets, supabase_disk: false },
+			missingPermissions: ['Disk Config Read'],
+		});
+		await expect(runScheduledJob(SCHEDULED_JOB_CRONS.platform_usage)).resolves.toMatchObject({
+			status: 'completed',
+		});
+		expect(warn).toHaveBeenCalledWith(
+			'[platform][collector] completed',
+			expect.objectContaining({ missingPermissions: ['Disk Config Read'] }),
+		);
+
+		collector.mockRejectedValueOnce(
+			new SupabaseHttpError(404, '{"payload":"echo"}', 'PGRST205'),
+		);
+		await expect(runScheduledJob(SCHEDULED_JOB_CRONS.platform_usage)).resolves.toMatchObject({
+			status: 'failed',
+		});
+		expect(error).toHaveBeenCalledWith('[platform][collector] failed', {
+			status: 404,
+			code: 'PGRST205',
+		});
 	});
 });

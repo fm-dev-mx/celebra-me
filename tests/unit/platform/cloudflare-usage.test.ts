@@ -4,7 +4,7 @@ import {
 	resetCloudflareUsageCache,
 	type CloudflareUsageSnapshot,
 } from '@/lib/platform/server/cloudflare-usage';
-import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
+import { CLOUDFLARE_PAID_PLAN } from '@/lib/platform/contract/limits';
 import type { PlatformMetric } from '@/lib/platform/contract/types';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
@@ -131,16 +131,19 @@ describe('getCloudflarePlatformUsage', () => {
 		expect(metric(usage, 'cfR2StorageBucket', 'production')).toMatchObject({
 			resource: 'celebra-memories',
 			scope: 'production',
-			meter: { used: 1_500_001_000, limit: CLOUDFLARE_FREE_TIER.r2StorageBytes },
+			meter: { used: 1_500_001_000, limit: CLOUDFLARE_PAID_PLAN.r2StorageBytes },
 		});
 		expect(usage.metrics.some((entry) => entry.scope === 'preview')).toBe(false);
 		expect(metric(usage, 'cfR2StorageAccount').meter.used).toBe(1_950_001_500);
 		expect(metric(usage, 'cfR2ClassA').meter).toEqual({ used: 150, limit: 1_000_000 });
 		expect(metric(usage, 'cfR2ClassB').meter).toEqual({ used: 940, limit: 10_000_000 });
-		expect(metric(usage, 'cfWorkersRequests').meter).toEqual({ used: 410, limit: 100_000 });
-		expect(metric(usage, 'cfDurableObjectsRequests').meter).toEqual({
-			used: 55,
-			limit: 100_000,
+		expect(metric(usage, 'cfWorkersRequests')).toMatchObject({
+			window: 'monthUtc',
+			meter: { used: 410, limit: 10_000_000 },
+		});
+		expect(metric(usage, 'cfDurableObjectsRequests')).toMatchObject({
+			window: 'monthUtc',
+			meter: { used: 55, limit: 1_000_000 },
 		});
 		expect(fetchImpl).toHaveBeenCalledTimes(4);
 		const [url, init] = fetchImpl.mock.calls[0];

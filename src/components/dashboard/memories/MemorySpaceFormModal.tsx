@@ -5,7 +5,7 @@ import {
 	MemoryPlanFieldset,
 	MemoryScheduleFieldset,
 } from '@/components/dashboard/memories/MemorySpaceFormFields';
-import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
+import { CLOUDFLARE_PAID_PLAN } from '@/lib/platform/contract/limits';
 import { formatMemoriesEventDate, memoriesFormCopy as copy } from '@/lib/memories/dashboard-copy';
 import type { AdminSpaceCandidate } from '@/lib/memories/client/api';
 import { checkMemoriesSchedule } from '@/lib/memories/client/schedule-check';
@@ -161,7 +161,7 @@ function canSubmitForm(
 ): boolean {
 	const over =
 		projectMemoriesCommitment(commitment, form.limits.maxEventBytes) >
-		CLOUDFLARE_FREE_TIER.r2StorageBytes;
+		CLOUDFLARE_PAID_PLAN.r2StorageBytes;
 	return checkMemoriesSchedule(form).valid && (!over || acknowledged);
 }
 

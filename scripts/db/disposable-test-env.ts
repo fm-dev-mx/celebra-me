@@ -568,6 +568,7 @@ const PGTAP_FILES = [
 	'invitation_engagement_ranking_v2.test.sql',
 	'invitation_engagement_historical_estimates.test.sql',
 	'invitation_access_controls.test.sql',
+	'platform_usage_snapshots.test.sql',
 ];
 
 function cmdRunTests(): void {
