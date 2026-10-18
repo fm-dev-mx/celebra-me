@@ -106,6 +106,27 @@ describe('Worker entry', () => {
 		}
 	});
 
+	it('redirects the apex to www before the Astro handler, also in process', async () => {
+		resetAppLoopbackForTests();
+		const response = await worker.fetch(
+			new Request('https://celebra-me.com/r/victoria-y-roberto?x=1'),
+			env,
+			executionContext(),
+		);
+
+		expect(response.status).toBe(307);
+		expect(response.headers.get('location')).toBe(
+			'https://www.celebra-me.com/r/victoria-y-roberto?x=1',
+		);
+		expect(handle).not.toHaveBeenCalled();
+		const inner = await fetchFromApp('https://celebra-me.com/r/victoria-y-roberto', {
+			redirect: 'manual',
+		});
+		expect(inner.status).toBe(307);
+		expect(handle).not.toHaveBeenCalled();
+		resetAppLoopbackForTests();
+	});
+
 	it('routes self-requests to the Astro handler in process', async () => {
 		resetAppLoopbackForTests();
 		const context = executionContext();

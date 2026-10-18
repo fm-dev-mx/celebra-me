@@ -6,6 +6,7 @@
  * bundles this file.
  */
 import { handle } from '@astrojs/cloudflare/handler';
+import { redirectApexToCanonical } from './lib/server/apex-redirect';
 import { installAppLoopback } from './lib/server/app-loopback';
 import { installImagesBinding } from './lib/images/image-transformer-provider';
 import { installInvitationMediaBinding } from './lib/intake/services/r2-invitation-media';
@@ -56,10 +57,12 @@ export default {
 		installInvitationMediaBinding(env);
 		installAssetsBinding(env);
 		installMemoriesWorkerBindings(env);
-		installAppLoopback((inner) =>
-			handle(inner, env as never, loopbackContext(context) as never),
+		installAppLoopback(
+			async (inner) =>
+				redirectApexToCanonical(inner) ??
+				handle(inner, env as never, loopbackContext(context) as never),
 		);
-		return handle(request, env as never, context as never);
+		return redirectApexToCanonical(request) ?? handle(request, env as never, context as never);
 	},
 
 	async scheduled(
