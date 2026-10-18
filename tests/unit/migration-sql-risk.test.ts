@@ -79,6 +79,62 @@ describe('migration SQL risk classification', () => {
 		);
 	});
 
+	it('ignores apostrophes in line comments when proving initial permissions', () => {
+		const sql = `-- Counts views after the guest's first open.
+BEGIN;
+CREATE TABLE public.t (id int);
+REVOKE ALL ON TABLE public.t FROM PUBLIC, anon;
+COMMENT ON FUNCTION public.t_fn() IS 'note; with -- markers';
+COMMIT;`;
+		// The literal holds `;` and `--`, so the proof must fail closed for this variant.
+		expect(classifySqlText(sql).some((finding) => finding.kind === 'destructive_revoke')).toBe(
+			true,
+		);
+		const withoutAmbiguousLiteral = `-- Counts views after the guest's first open.
+BEGIN;
+CREATE TABLE public.t (id int);
+-- Initial privileges: the table's owner keeps access.
+REVOKE ALL ON TABLE public.t FROM PUBLIC, anon;
+COMMIT;
+COMMENT ON TABLE public.t IS 'Historical estimates';`;
+		expect(classifySqlText(withoutAmbiguousLiteral).map((finding) => finding.kind)).toEqual([
+			'ordinary',
+		]);
+	});
+
+	it('still flags a revoke on a pre-existing object when comments hold apostrophes', () => {
+		const sql = `-- The guest's audit rows.
+BEGIN;
+CREATE TABLE public.t (id int);
+REVOKE ALL ON TABLE public.existing FROM PUBLIC;
+COMMIT;`;
+		expect(classifySqlText(sql).some((finding) => finding.kind === 'destructive_revoke')).toBe(
+			true,
+		);
+	});
+
+	it.each([
+		"-- the guest's note\nBEGIN; CREATE TABLE public.t (v text default 'a -- b'); REVOKE ALL ON public.t FROM PUBLIC; COMMIT;",
+		"-- the guest's note\nBEGIN; CREATE TABLE public.t (v text default 'a; b'); REVOKE ALL ON public.t FROM PUBLIC; COMMIT;",
+		"-- the guest's note\nBEGIN; DO $$ BEGIN NULL; END $$; CREATE TABLE public.t (id int); REVOKE ALL ON public.t FROM PUBLIC; COMMIT;",
+		'-- the guest\'s note\nBEGIN; CREATE TABLE "public".t (id int); REVOKE ALL ON public.t FROM PUBLIC; COMMIT;',
+	])('keeps failing closed for real ambiguity after stripping comments: %s', (sql) => {
+		expect(classifySqlText(sql).some((finding) => finding.kind === 'destructive_revoke')).toBe(
+			true,
+		);
+	});
+
+	it('classifies the historical engagement estimates migration as ordinary', () => {
+		const version = '20261017120000';
+		const registry = JSON.parse(
+			fs.readFileSync(path.resolve('supabase/migration-rollout-registry.json'), 'utf8'),
+		) as MigrationRolloutRegistry;
+		const result = evaluateMigrationSqlRisk({ version, registry });
+		expect(registry.migrations[version].phase).toBe('expand');
+		expect(result.risk.findings.map((finding) => finding.kind)).toEqual(['ordinary']);
+		expect(result.blocked).toBe(false);
+	});
+
 	it('allows the committed expand migration without changing its registry or SQL', () => {
 		const version = '20260925182713';
 		const registry = JSON.parse(
