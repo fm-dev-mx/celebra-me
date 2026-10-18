@@ -2,7 +2,7 @@
 title: Vercel to Cloudflare migration close-out
 status: draft
 created: 2026-10-15
-updated: 2026-10-16
+updated: 2026-10-18
 autonomy: 1
 type: production rollout
 related_docs:
@@ -43,18 +43,18 @@ replaces the dates of the cutover, Vercel retirement and media-to-R2 phases in
 
 ## 3. Owner decisions (2026-10-15)
 
-| #   | Question                     | Decision                                                                                                                                                                                                                                                                  |
-| --- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Cloudinary timing            | Migrate fast: expand migration adding `'r2'` before 2026-10-16 02:00; published URL switch Tue 10-20 or Wed 10-21.                                                                                                                                                        |
-| 2   | Vercel and crons             | Planned: cutover Sun 2026-10-18 02:00, Vercel paused the same night, crons to the Worker at the same moment. **Actual (§4.2): Worker routes live Fri 2026-10-16 ~15:40; Vercel left on as standby, not paused, without crons; both crons run on the Worker since 10-16.** |
-| 3   | `celebra-memories-*` Workers | Stay separate. The app reaches `celebra-memories-retrieve` through a Service Binding shipped with the cutover. `celebra-memories-sign` stays public. Staging pair stays. `workers_dev` on retrieve is removed only after Vercel is deleted.                               |
-| 4   | Watch period                 | Staggered until 2026-11-09: daily 10-18 → 10-25; Mon/Wed/Fri after; every 2 h on 10-30.                                                                                                                                                                                   |
-| 5   | Legacy scope                 | Everything Vercel and Cloudinary, every migration temporary, **plus all dead code** in the repo. Keep `CHANGELOG.md`, applied migrations, Git history. CI guards prevent regressions.                                                                                     |
-| 6   | Visual acceptance            | Full-page desktop + mobile capture, Vercel before vs Cloudflare after: ≤ 0.5 % changed pixels outside photos, no missing or moved image. Owner reviews ~6 grouped cases.                                                                                                  |
-| 7   | Data verification            | Fingerprints (count + sha256) extended to the RSVP, memories, access and engagement tables, plus per-event counts, before and after every step; restore drill from R2 before Saturday.                                                                                    |
-| 8   | Cloudinary account           | Read-only for 30 days after the URL switch (~2026-11-20), then the owner deletes it. Code and `CLOUDINARY_*` names go on 2026-11-09.                                                                                                                                      |
-| 9   | Contact form                 | Remove the form and `nodemailer`; WhatsApp button only. Ships in the Friday release.                                                                                                                                                                                      |
-| 10  | Fallback                     | If any must-have item is missing at Fri 23:59, the cutover returns to Mon 2026-10-19 02:00 (Sunday closes the gap). Optional items (Service Binding) are dropped, not waited for.                                                                                         |
+| #   | Question                     | Decision                                                                                                                                                                                                                                                                                                           |
+| --- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Cloudinary timing            | Migrate fast: expand migration adding `'r2'` before 2026-10-16 02:00; published URL switch Tue 10-20 or Wed 10-21.                                                                                                                                                                                                 |
+| 2   | Vercel and crons             | Planned: cutover Sun 2026-10-18 02:00, Vercel paused the same night, crons to the Worker at the same moment. **Actual (§4.2, §4.3): Worker routes live Fri 2026-10-16 ~15:40; both crons run on the Worker; owner paused the Vercel project `celebra-me` on Sun 2026-10-18 (it answers 503 `DEPLOYMENT_PAUSED`).** |
+| 3   | `celebra-memories-*` Workers | Stay separate. The app reaches `celebra-memories-retrieve` through a Service Binding shipped with the cutover. `celebra-memories-sign` stays public. Staging pair stays. `workers_dev` on retrieve is removed only after Vercel is deleted.                                                                        |
+| 4   | Watch period                 | Staggered until 2026-11-09: daily 10-18 → 10-25; Mon/Wed/Fri after; every 2 h on 10-30.                                                                                                                                                                                                                            |
+| 5   | Legacy scope                 | Everything Vercel and Cloudinary, every migration temporary, **plus all dead code** in the repo. Keep `CHANGELOG.md`, applied migrations, Git history. CI guards prevent regressions.                                                                                                                              |
+| 6   | Visual acceptance            | Full-page desktop + mobile capture, Vercel before vs Cloudflare after: ≤ 0.5 % changed pixels outside photos, no missing or moved image. Owner reviews ~6 grouped cases.                                                                                                                                           |
+| 7   | Data verification            | Fingerprints (count + sha256) extended to the RSVP, memories, access and engagement tables, plus per-event counts, before and after every step; restore drill from R2 before Saturday.                                                                                                                             |
+| 8   | Cloudinary account           | Read-only for 30 days after the URL switch (~2026-11-20), then the owner deletes it. Code and `CLOUDINARY_*` names go on 2026-11-09.                                                                                                                                                                               |
+| 9   | Contact form                 | Remove the form and `nodemailer`; WhatsApp button only. Ships in the Friday release.                                                                                                                                                                                                                               |
+| 10  | Fallback                     | If any must-have item is missing at Fri 23:59, the cutover returns to Mon 2026-10-19 02:00 (Sunday closes the gap). Optional items (Service Binding) are dropped, not waited for.                                                                                                                                  |
 
 ## 4. Ordered steps
 
@@ -82,7 +82,7 @@ the session that implements. Times are America/Mazatlan.
 | 16  | Data snapshot T-1 h (§7)                                                                                                                                                                                                                                                                                                                                                           | agent                                                    | before cutover (planned Sun 10-18 01:00)             | 6          | Snapshot stored.                                                                                                                                                                         |
 | 17  | Cutover: zone Worker routes `www.celebra-me.com/*` and `celebra-me.com/*`                                                                                                                                                                                                                                                                                                          | Owner                                                    | Done Fri 10-16 ~15:40 (planned Sun 10-18 02:00)      | 14         | `cf-ray` present; `/api/health` = main SHA, `production`.                                                                                                                                |
 | 18  | Post-cutover checks: smoke, visual compare (§6), manual `/xv/naydelin-paredes`, `/r/victoria-y-roberto`, `/vista-previa` unpaid photo `200 image/webp`, data snapshot                                                                                                                                                                                                              | agent + Owner (phone RSVP + login)                       | right after cutover, Fri 10-16                       | 17         | All pass; data rule §7 holds. Any fail → rollback (delete routes) before 03:30.                                                                                                          |
-| 19  | Pause Vercel and flip the step 5a cron gate to the Worker in the same minute                                                                                                                                                                                                                                                                                                       | Owner                                                    | Not done: Vercel kept on as standby, without crons   | 5a, 18     | Vercel project shows Paused; Worker shows both triggers (`17 15 * * *`, `43 10 * * *`).                                                                                                  |
+| 19  | Pause Vercel and flip the step 5a cron gate to the Worker in the same minute                                                                                                                                                                                                                                                                                                       | Owner                                                    | Done 2026-10-18 (Vercel paused by the owner)         | 5a, 18     | Vercel project shows Paused; Worker shows both triggers (`17 15 * * *`, `43 10 * * *`).                                                                                                  |
 | 20  | First Worker cron runs                                                                                                                                                                                                                                                                                                                                                             | Coordinator                                              | since Fri 10-16 (10:43 UTC and 15:17 UTC)            | 5a         | Worker logs show both jobs succeeded; no Vercel invocation.                                                                                                                              |
 | 21  | Media to R2 code (`feat/media-r2`): R2 provider, delivery domain, OG transform on Images binding, preview media allow-list, 3 demo `.mp3`, provisioning adapters                                                                                                                                                                                                                   | dev-local session                                        | Fri 10-16 → Mon 10-19                                | 1          | `pnpm run ci` green; Preview uploads land in R2.                                                                                                                                         |
 | 22  | Copy the 911 Cloudinary resources to the Production R2 bucket and verify each sha256                                                                                                                                                                                                                                                                                               | dev-local session; Owner authorizes                      | Sat 10-17 → Mon 10-19 (no serving change)            | 21         | 911/911 hashes match; manifest stored.                                                                                                                                                   |
@@ -118,7 +118,7 @@ table records what happened.
 | ---- | -------------------------------------------------------------------------------------------------- |
 | 10   | Released: `main` at `811da72ff` (v0.28.1-beta.1).                                                  |
 | 17   | Done: zone Worker routes active Fri 10-16 ~15:40. Production is served by the `celebra-me` Worker. |
-| 19   | Not done, on purpose: Vercel stays on as standby, not paused, and runs no crons.                   |
+| 19   | Superseded by §4.3: Vercel was paused on 2026-10-18.                                               |
 | 20   | Both crons (`17 15 * * *`, `43 10 * * *`) run on the Worker since 10-16.                           |
 | 14   | The Fri 23:59 fallback rule (cutover Mon 10-19) no longer applies.                                 |
 | 16   | Done: integrity compare `ok: true`; details below the table.                                       |
@@ -132,6 +132,14 @@ fields, all forward RSVP/engagement activity). Evidence stays outside the repo i
 
 The fixed dates in §2 are unchanged: no Production change Sat 10-17; no migrations until Mon 10-26
 02:00; no release to `main` from 10-23 to 11-07.
+
+### 4.3 Status at Sun 2026-10-18
+
+| Step | State                                                                                                                                                  |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 19   | Done 2026-10-18: the owner paused the Vercel project `celebra-me`; it answers 503 `DEPLOYMENT_PAUSED`. `release-status` counts it as paused (PR #297). |
+| 20   | Both crons run on the Worker only, since 10-17; Vercel runs none.                                                                                      |
+| —    | Production `main` `3b32e8852` (v0.29.0-beta.1) is the active version on the `celebra-me` Worker.                                                       |
 
 ## 5. Deletion inventory (exact names)
 
@@ -222,9 +230,10 @@ against the previous capture → threshold of decision 6 → owner reviews ~6 cr
 ## 8. Risks
 
 - Step 1 has a ~9-hour window; late means Cloudinary moves to 11-09.
-- Cutover ran Fri 10-16 ~15:40, before the Naydelin party. Vercel is not paused, so rollback is
-  deleting the Worker routes (< 10 min, step 11); the Cron Triggers keep running on the Worker
-  regardless of routes.
+- Cutover ran Fri 10-16 ~15:40, before the Naydelin party. Vercel is paused since 2026-10-18, so
+  deleting the Worker routes alone would leave the domain without a host. Rollback is the runbook
+  section 9.2 order, about 20 minutes: Resume Vercel first, then delete both Worker routes, then
+  delete the Worker Cron Triggers.
 - URL switch 9 days before the wedding changes all 14 published package hashes.
 - Six parallel sessions: `scripts/ops/cloudflare-worker-secrets.ts` and
   `scripts/shared/celebra-runtime-env.ts` are touched by steps 21 and 25; 25 rebases after 21.
