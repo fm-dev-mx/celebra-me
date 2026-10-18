@@ -207,7 +207,7 @@
         "variant": "standard"
     },
     "music": {
-        "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
         "autoPlay": false,
         "title": "Música de fondo"
     },
