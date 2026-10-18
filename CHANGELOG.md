@@ -10,6 +10,15 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.29.0-beta.1] - 2026-10-18
+
+First release checkpoint served by the Production Worker after the cutover: guest memories get the
+fixes the Victoria y Roberto gallery needs (iPhone videos, review counts, leaving the session, a new
+code, resumed uploads), the app reaches the private memories Workers over Service Bindings, and the
+admin ranking gains a frozen historical estimate. It carries migration `20261017120000` in code
+only; Production applies it, with `20261015220000`, in a separate step after this release, and until
+then only the historical view answers 503.
+
 ### Added
 
 - Historical engagement estimate for the admin ranking: migration `20261017120000` freezes per-event
@@ -18,6 +27,25 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   apart, no legacy depth), the API serves it with `level=historical`, and the dashboard shows it in
   its own «Histórico (estimado)» tab, never ranked. Code only; not applied in any persistent
   database with this change.
+- Guests can leave the memories session with «Salir» and ask for a new access code.
+
+### Changed
+
+- The app reaches the private memories sign and retrieval Workers over Service Bindings
+  (`MEMORIES_SIGN`, `MEMORIES_RETRIEVE` in `wrangler.jsonc`) instead of their public hosts.
+- CI runs the guest memories specs on every device project and runs the built Worker in workerd,
+  including `scheduled()`.
+- Unused provisioning script and test aliases are removed.
+
+### Fixed
+
+- `/dashboard` redirects to the role's home page instead of answering 404.
+- Guest videos play on iPhone, and leaving clears the guest cookie.
+- Picked videos are marked and counted in the upload review step.
+- Uploads interrupted by a dropped connection or going offline resume, keep retrying with a backoff,
+  and interrupted ones settle instead of staying pending.
+- The retired `/invitado` permanent redirect is dropped.
+- The database guard redacts database URLs in its classify output.
 
 ## [0.28.1-beta.1] - 2026-10-16
 
