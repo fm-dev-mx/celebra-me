@@ -29,6 +29,7 @@ import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maint
 import { installRateLimitBindings } from '@/lib/rsvp/security/rate-limit-provider';
 import { SCHEDULED_JOB_CRONS, type ScheduledJobOutcome } from '@/lib/server/scheduled-jobs';
 import { installAssetsBinding } from '@/lib/server/static-assets-provider';
+import { fetchFromApp, resetAppLoopbackForTests } from '@/lib/server/app-loopback';
 import worker from '../../src/worker';
 
 /**
@@ -103,6 +104,30 @@ describe('Worker entry', () => {
 		]) {
 			expect((install as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(handleOrder);
 		}
+	});
+
+	it('routes self-requests to the Astro handler in process', async () => {
+		resetAppLoopbackForTests();
+		const context = executionContext();
+		await worker.fetch(new Request('https://www.celebra-me.com/'), env, context);
+		(handle as jest.Mock).mockClear();
+
+		const response = await fetchFromApp('https://www.celebra-me.com/r/victoria-y-roberto');
+
+		expect(await response.text()).toBe('served');
+		const [inner, innerEnv, innerContext] = (handle as jest.Mock).mock.calls[0];
+		expect((inner as Request).url).toBe('https://www.celebra-me.com/r/victoria-y-roberto');
+		expect(innerEnv).toBe(env);
+		const pending = Promise.resolve();
+		(innerContext as ReturnType<typeof executionContext>).waitUntil(pending);
+		expect(context.waitUntil).toHaveBeenCalledWith(pending);
+		context.waitUntil.mockImplementation(() => {
+			throw new Error('request already answered');
+		});
+		expect(() =>
+			(innerContext as ReturnType<typeof executionContext>).waitUntil(pending),
+		).not.toThrow();
+		resetAppLoopbackForTests();
 	});
 
 	it.each([
