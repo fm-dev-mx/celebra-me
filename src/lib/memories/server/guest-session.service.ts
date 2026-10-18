@@ -16,6 +16,7 @@ import {
 	recoverSessionByRecoveryHash,
 	resolveSessionByTokenHash,
 	updateSessionDisplayName,
+	updateSessionRecoveryHash,
 	type SessionRow,
 } from './catalog.repository';
 import {
@@ -27,6 +28,17 @@ import {
 
 const UNIQUE_VIOLATION = '23505';
 const MIN_COOKIE_MAX_AGE_SECONDS = 60;
+/**
+ * A `__Host-` cookie is only accepted with Secure and Path=/ and no Domain.
+ * Browsers also ignore a deletion that omits Secure, so set and delete share
+ * the same attributes.
+ */
+const SESSION_COOKIE_ATTRIBUTES = {
+	httpOnly: true,
+	secure: true,
+	sameSite: 'lax',
+	path: '/',
+} as const;
 
 export type MemoriesGuestSession = SessionRow;
 
@@ -72,16 +84,13 @@ export function setGuestSessionCookie(
 		Math.floor((Date.parse(space.retentionEndsAt) - now.getTime()) / 1000),
 	);
 	cookies.set(buildMemoriesSessionCookieName(space.publicSlug), token, {
-		httpOnly: true,
-		secure: true,
-		sameSite: 'lax',
-		path: '/',
+		...SESSION_COOKIE_ATTRIBUTES,
 		maxAge,
 	});
 }
 
 export function clearGuestSessionCookie(cookies: AstroCookies, space: MemoriesSpaceRecord): void {
-	cookies.delete(buildMemoriesSessionCookieName(space.publicSlug), { path: '/' });
+	cookies.delete(buildMemoriesSessionCookieName(space.publicSlug), SESSION_COOKIE_ATTRIBUTES);
 }
 
 export async function createGuestSession(
@@ -137,6 +146,40 @@ export async function recoverGuestSession(
 		throw new ApiError(401, 'unauthorized', 'El código de recuperación expiró o no es válido.');
 	}
 	return { sessionToken, profile: toGuestProfile(session) };
+}
+
+/**
+ * Issues a new recovery code for the guest's own session. Only the hash is
+ * stored, so the previous code can never be shown again and stops working.
+ */
+export async function rotateGuestRecoveryCode(
+	space: MemoriesSpaceRecord,
+	session: SessionRow,
+): Promise<string> {
+	for (let attempt = 0; attempt < 3; attempt += 1) {
+		const recoveryCode = createMemoriesRecoveryCode();
+		let updated: SessionRow | null;
+		try {
+			updated = await updateSessionRecoveryHash(session.id, hashMemoriesSecret(recoveryCode));
+		} catch (error) {
+			// A rare collision with another session's code is retried with a fresh code.
+			if (
+				error instanceof SupabaseHttpError &&
+				error.code === UNIQUE_VIOLATION &&
+				attempt < 2
+			)
+				continue;
+			throw error;
+		}
+		if (!updated) throw new ApiError(404, 'not_found', 'La sesión ya no está disponible.');
+		await appendMemoriesAudit({
+			eventId: space.eventId,
+			actorType: 'guest',
+			action: 'recovery_code_rotated',
+		});
+		return recoveryCode;
+	}
+	throw new ApiError(503, 'service_unavailable', 'No se pudo crear un código nuevo.');
 }
 
 export async function updateGuestProfile(

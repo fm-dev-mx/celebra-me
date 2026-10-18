@@ -38,6 +38,7 @@ import {
 import MemoriesUploadPanel from '@/components/memories/MemoriesUploadPanel';
 import MemoriesUploadProgress from '@/components/memories/MemoriesUploadProgress';
 import MemoriesGuestMemories from '@/components/memories/MemoriesGuestMemories';
+import MemoriesRecoveryCodeCard from '@/components/memories/MemoriesRecoveryCodeCard';
 
 type CatalogItem = MemoriesMediaPublicItem;
 
@@ -59,31 +60,6 @@ function SessionIssue({ issue }: { issue: MemoriesCaptureIssue | null }) {
 		<p className="status-page__status status-page__status--error" role="alert">
 			{memoriesIssueCopy(issue)}
 		</p>
-	);
-}
-
-function RecoveryCodeCard({ recoveryCode }: { recoveryCode: string | null }) {
-	const [copied, setCopied] = useState(false);
-	if (!recoveryCode) return null;
-	const copyCode = async () => {
-		if (!navigator.clipboard) return;
-		try {
-			await navigator.clipboard.writeText(recoveryCode);
-			setCopied(true);
-		} catch {
-			setCopied(false);
-		}
-	};
-	return (
-		<aside className="status-page__recovery-code" aria-labelledby="memories-recovery-title">
-			<strong id="memories-recovery-title">{copy.recoveryCodeTitle}</strong>
-			<span>{copy.recoveryCodeHint}</span>
-			<code tabIndex={0}>{recoveryCode}</code>
-			<button type="button" onClick={() => void copyCode()}>
-				{copied ? copy.recoveryCodeCopied : copy.copyRecoveryCode}
-			</button>
-			<small>{copy.recoveryCodeManualHint}</small>
-		</aside>
 	);
 }
 
@@ -171,12 +147,17 @@ function Identity({
 	inputId,
 	profile,
 	issue,
+	canLeave,
 	onSave,
+	onLeave,
 }: {
 	inputId: string;
 	profile: MemoriesGuestProfile;
 	issue: MemoriesCaptureIssue | null;
+	/** False while files are still uploading under this session. */
+	canLeave: boolean;
 	onSave: (displayName: string) => Promise<boolean>;
+	onLeave: () => Promise<void>;
 }) {
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(profile.displayName);
@@ -221,6 +202,17 @@ function Identity({
 					>
 						{copy.changeName}
 					</button>
+					{canLeave ? (
+						<button
+							type="button"
+							className="status-page__text-button"
+							onClick={() => {
+								if (window.confirm(copy.leaveSessionConfirm)) void onLeave();
+							}}
+						>
+							{copy.leaveSession}
+						</button>
+					) : null}
 				</p>
 			)}
 			<SessionIssue issue={issue} />
@@ -264,7 +256,7 @@ function BatchSummary({
 					{copy.captionSaveFailed}
 				</p>
 			) : null}
-			{saved > 0 ? <RecoveryCodeCard recoveryCode={recoveryCode} /> : null}
+			{saved > 0 ? <MemoriesRecoveryCodeCard recoveryCode={recoveryCode} /> : null}
 			{saved > 0 ? (
 				<div className="status-page__inline-actions">
 					<button type="button" className="status-page__btn" onClick={onUploadMore}>
@@ -296,11 +288,16 @@ function useUploadQueue(deps: ConstructorParameters<typeof MemoriesUploadQueue>[
 	useEffect(() => {
 		const online = () => queue.setOnline(true);
 		const offline = () => queue.setOnline(false);
+		// Some Android builds report a network switch here and not as `online`.
+		const connection = (navigator as Navigator & { connection?: EventTarget }).connection;
+		const changed = () => queue.setOnline(navigator.onLine !== false);
 		window.addEventListener('online', online);
 		window.addEventListener('offline', offline);
+		connection?.addEventListener('change', changed);
 		return () => {
 			window.removeEventListener('online', online);
 			window.removeEventListener('offline', offline);
+			connection?.removeEventListener('change', changed);
 			queue.dispose();
 		};
 	}, [queue]);
@@ -333,16 +330,37 @@ export default function MemoriesCapture({
 	});
 	const entries = snapshot.entries;
 
-	const loadItems = useCallback(async () => {
+	const loadItems = useCallback(async (): Promise<CatalogItem[]> => {
 		try {
 			const payload = await api.listItems();
-			setItems(payload.items.filter((item) => isMemoriesCatalogVisibleStatus(item.status)));
+			// A duplicate repeats a file the guest already has, so it gets no card of its own.
+			const visible = payload.items.filter(
+				(item) =>
+					isMemoriesCatalogVisibleStatus(item.status) && item.status !== 'duplicate',
+			);
+			setItems(visible);
 			setQuota(payload.quota);
 			if (typeof payload.eventFull === 'boolean') setEventFull(payload.eventFull);
+			return visible;
 		} catch {
 			// A later successful action refreshes the catalog.
+			return [];
 		}
 	}, [api]);
+
+	/**
+	 * Confirms again the files a reload interrupted after their bytes arrived.
+	 * Completion is idempotent, so a file another tab is confirming is safe.
+	 */
+	const settleValidating = useCallback(
+		async (loaded: readonly CatalogItem[]) => {
+			const pending = loaded.filter((item) => item.status === 'validating');
+			if (pending.length === 0) return;
+			const results = await Promise.allSettled(pending.map((item) => api.complete(item.id)));
+			if (results.some((result) => result.status === 'fulfilled')) await loadItems();
+		},
+		[api, loadItems],
+	);
 
 	useEffect(() => {
 		void (async () => {
@@ -350,7 +368,7 @@ export default function MemoriesCapture({
 				const existingProfile = await api.getSession();
 				if (!existingProfile) return;
 				setProfile(existingProfile);
-				await loadItems();
+				await settleValidating(await loadItems());
 			} catch {
 				setSessionIssue(classifyTransportIssue('unavailable'));
 			}
@@ -383,6 +401,29 @@ export default function MemoriesCapture({
 		} catch (error) {
 			setSessionIssue(mapRequestIssue(error, 'unavailable'));
 			return false;
+		}
+	};
+
+	const leaveSession = async () => {
+		try {
+			await api.endSession();
+		} catch (error) {
+			setSessionIssue(mapRequestIssue(error, 'unavailable'));
+			return;
+		}
+		queue.clearFinished();
+		setProfile(null);
+		setRecoveryCode(null);
+		setItems([]);
+		setQuota(null);
+		setSessionIssue(null);
+	};
+
+	const rotateRecoveryCode = async (): Promise<string | null> => {
+		try {
+			return await api.rotateRecoveryCode();
+		} catch {
+			return null;
 		}
 	};
 
@@ -426,7 +467,9 @@ export default function MemoriesCapture({
 					inputId={inputId}
 					profile={profile}
 					issue={sessionIssue}
+					canLeave={!running}
 					onSave={saveProfile}
+					onLeave={leaveSession}
 				/>
 			) : (
 				<Onboarding inputId={inputId} issue={sessionIssue} onStart={startSession} />
@@ -485,6 +528,7 @@ export default function MemoriesCapture({
 					thumbnailUrl={(item) => api.itemThumbnailUrl(item.id)}
 					onSaveCaption={saveCaption}
 					onDelete={deleteItem}
+					onRotateRecoveryCode={rotateRecoveryCode}
 				/>
 			) : null}
 		</div>

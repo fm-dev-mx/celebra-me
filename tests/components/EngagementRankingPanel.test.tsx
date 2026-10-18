@@ -1,12 +1,13 @@
 jest.mock('@/lib/dashboard/engagement-ranking-api', () => {
 	const actual = jest.requireActual('@/lib/dashboard/engagement-ranking-api');
-	return { ...actual, engagementRankingApi: { ranking: jest.fn() } };
+	return { ...actual, engagementRankingApi: { ranking: jest.fn(), historical: jest.fn() } };
 });
 
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import EngagementRankingPanel from '@/components/dashboard/engagement/EngagementRankingPanel';
 import type {
 	EngagementRankingReport,
+	HistoricalEstimatesReport,
 	RankingInvitation,
 } from '@/interfaces/dashboard/engagement-ranking.interface';
 import {
@@ -18,6 +19,9 @@ import {
 
 const mockRanking = engagementRankingApi.ranking as jest.MockedFunction<
 	typeof engagementRankingApi.ranking
+>;
+const mockHistorical = engagementRankingApi.historical as jest.MockedFunction<
+	typeof engagementRankingApi.historical
 >;
 
 function invitation(overrides: Partial<RankingInvitation>): RankingInvitation {
@@ -258,5 +262,72 @@ describe('EngagementRankingPanel', () => {
 		expect(
 			await screen.findByText('El ranking todavía no está disponible en este entorno.'),
 		).toBeInTheDocument();
+	});
+});
+
+describe('historical estimate tab', () => {
+	const HISTORICAL: HistoricalEstimatesReport = {
+		eventType: 'all',
+		method: {
+			version: 1,
+			cutoff: '2026-10-12T16:25:00Z',
+			previewWindowMinutes: 2,
+			visitGapMinutes: 30,
+		},
+		invitations: [
+			{
+				invitationId: 'inv-1',
+				eventId: 'event-1',
+				title: 'Daniela y Martín',
+				slug: 'daniela-y-martin',
+				eventType: 'boda',
+				eventDate: '2026-11-28',
+				computedAt: '2026-10-26T08:00:00Z',
+				guestsTotal: 159,
+				guestsShared: 146,
+				guestsViewed: 120,
+				guestsRespondedSelf: 100,
+				openedLower: 100,
+				openedUpper: 130,
+				visitsEstimate: 300,
+				visitsPerViewer: 2.5,
+				conversionLower: 0.7692,
+				viewsCounted: 500,
+				viewsBeforeShare: 12,
+				viewsWithinPreviewWindow: 30,
+				guestsUnshared: 13,
+				guestsUnsharedViewed: 5,
+				guestsUnsharedRespondedSelf: 2,
+			},
+		],
+	};
+
+	it('lists estimates apart, as ranges with their method, never ranked', async () => {
+		mockRanking.mockResolvedValue(REPORT);
+		mockHistorical.mockResolvedValue(HISTORICAL);
+		render(<EngagementRankingPanel />);
+		fireEvent.click(screen.getByRole('tab', { name: 'Histórico (estimado)' }));
+
+		const table = await screen.findByRole('table');
+		expect(within(table).getByText('100–130')).toBeInTheDocument();
+		expect(within(table).getByText(/^≥ 76[.,]9 %$/)).toBeInTheDocument();
+		expect(within(table).getByText('13 (5 / 2)')).toBeInTheDocument();
+		expect(within(table).getAllByText('Estimado')).toHaveLength(3);
+		expect(within(table).queryByText('#')).not.toBeInTheDocument();
+		expect(screen.getByText('Método v1')).toBeInTheDocument();
+		expect(mockHistorical).toHaveBeenCalledWith('all');
+		expect(window.location.search).toBe('?tab=historical');
+	});
+
+	it('explains an unavailable routine', async () => {
+		window.history.replaceState(null, '', '/dashboard/admin/ranking?tab=historical');
+		mockHistorical.mockRejectedValue(new EngagementRankingRequestError(503));
+		render(<EngagementRankingPanel />);
+		expect(
+			await screen.findByText(
+				'La estimación histórica todavía no está disponible en este entorno.',
+			),
+		).toBeInTheDocument();
+		expect(mockRanking).not.toHaveBeenCalled();
 	});
 });

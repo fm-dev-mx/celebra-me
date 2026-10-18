@@ -143,3 +143,42 @@ export async function listInvitationEngagementRankingV2Rpc(
 		body: { p_event_type: eventType },
 	});
 }
+
+/** Historical estimate rows (service role): legacy telemetry cleaned per method version. */
+export interface HistoricalEstimateRow {
+	invitation_id: string;
+	event_id: string;
+	title: string;
+	slug: string;
+	event_type: string;
+	event_date: string | null;
+	method_version: number;
+	computed_at: string;
+	guests_total: number;
+	guests_shared: number;
+	guests_viewed: number;
+	guests_responded_self: number;
+	opened_lower: number;
+	opened_upper: number;
+	visits_estimate: number;
+	visits_per_viewer: string | number | null;
+	conversion_lower: string | number | null;
+	views_counted: number;
+	views_before_share: number;
+	views_within_preview_window: number;
+	guests_unshared: number;
+	guests_unshared_viewed: number;
+	guests_unshared_responded_self: number;
+}
+
+export async function listEngagementHistoricalEstimatesRpc(
+	eventType: string | null,
+	methodVersion: number,
+): Promise<HistoricalEstimateRow[]> {
+	return await supabaseRestRequest<HistoricalEstimateRow[]>({
+		pathWithQuery: 'rpc/list_engagement_historical_estimates',
+		method: 'POST',
+		useServiceRole: true,
+		body: { p_event_type: eventType, p_method_version: methodVersion },
+	});
+}

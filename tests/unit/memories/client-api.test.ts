@@ -98,6 +98,27 @@ describe('memories client api', () => {
 			});
 		});
 
+		it('ends the session with DELETE and rotates the recovery code with POST', async () => {
+			const fetchMock = jest
+				.spyOn(globalThis, 'fetch')
+				.mockResolvedValueOnce(jsonResponse({ success: true }))
+				.mockResolvedValueOnce(jsonResponse({ recoveryCode: 'WXYZ-2345-6789' }));
+			const api = createMemoriesGuestApi('slug');
+
+			await expect(api.endSession()).resolves.toBeUndefined();
+			expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/memories/slug/session', {
+				method: 'DELETE',
+				headers: { Accept: 'application/json' },
+			});
+
+			await expect(api.rotateRecoveryCode()).resolves.toBe('WXYZ-2345-6789');
+			expect(fetchMock).toHaveBeenNthCalledWith(
+				2,
+				'/api/memories/slug/session/recovery-code',
+				{ method: 'POST', headers: { Accept: 'application/json' } },
+			);
+		});
+
 		it('turns HTTP failures into MemoriesRequestError with status and error code', async () => {
 			jest.spyOn(globalThis, 'fetch').mockResolvedValue(
 				jsonResponse({ error: { code: 'rate_limited' } }, 429),

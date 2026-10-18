@@ -19,7 +19,10 @@ import {
 	MEMORIES_MAX_IMAGE_BYTES,
 	MEMORIES_MAX_VIDEO_BYTES,
 } from '@/lib/memories/contract/media-policy';
-import { memoriesCaptureCopy as copy } from '@/lib/memories/copy';
+import {
+	memoriesCaptureCopy as copy,
+	memoriesGalleryCopy as galleryCopy,
+} from '@/lib/memories/copy';
 import { fetchPutTransport } from '@/lib/memories/client/upload-pipeline';
 
 jest.mock('@/lib/memories/client/api', () => {
@@ -117,6 +120,8 @@ function createGuestApiFake(): jest.Mocked<MemoriesGuestApi> {
 		createSession: jest.fn(),
 		recoverSession: jest.fn(),
 		updateProfile: jest.fn(),
+		endSession: jest.fn(),
+		rotateRecoveryCode: jest.fn(),
 		listItems: jest.fn(),
 		reserve: jest.fn(),
 		complete: jest.fn(),
@@ -339,6 +344,44 @@ describe('MemoriesCapture island', () => {
 		expect(screen.queryByLabelText(copy.chooseFile)).not.toBeInTheDocument();
 	});
 
+	it('shows a first frame and a video badge on a video without thumbnail, and plays it in its options', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems.mockResolvedValue({
+			items: [
+				buildItem({
+					id: 'video-item',
+					status: 'accepted',
+					caption: 'Baile',
+					mimeType: 'video/mp4',
+					hasThumbnail: false,
+				}),
+			],
+			quota: QUOTA,
+		});
+
+		const { container } = renderCapture();
+		const tile = await screen.findByRole('button', { name: /Baile/ });
+		const tileVideo = tile.querySelector('video');
+		// WebKit paints no frame for preload="metadata" without a start offset.
+		expect(tileVideo).toHaveAttribute(
+			'src',
+			`/api/memories/${PUBLIC_SLUG}/items/video-item#t=0.001`,
+		);
+		expect(within(tile).getByText(galleryCopy.video)).toBeInTheDocument();
+
+		await user.click(tile);
+		const sheet = screen.getByRole('dialog', { name: copy.memoryOptions });
+		const player = sheet.querySelector('video');
+		expect(player).toHaveAttribute('controls');
+		expect(player).toHaveAttribute('playsinline');
+		expect(player).toHaveAttribute(
+			'src',
+			`/api/memories/${PUBLIC_SLUG}/items/video-item#t=0.001`,
+		);
+		expect(container.querySelectorAll('img.memories-guest-sheet__media')).toHaveLength(0);
+	});
+
 	it('offers a calendar reminder instead of the form before the window opens', async () => {
 		guestApi.getSession.mockResolvedValue(null);
 
@@ -496,6 +539,70 @@ describe('MemoriesCapture island', () => {
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.sessionLost);
 	});
 
+	it('leaves the session after the guest confirms and asks for the name again', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.endSession.mockResolvedValue(undefined);
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.leaveSession }));
+
+		expect(confirm).toHaveBeenCalledWith(copy.leaveSessionConfirm);
+		expect(guestApi.endSession).toHaveBeenCalledTimes(1);
+		expect(await screen.findByLabelText(copy.displayNameLabel)).toHaveValue('');
+		expect(screen.queryByText(PROFILE.displayName)).not.toBeInTheDocument();
+		expect(screen.queryByText(copy.myMemories)).not.toBeInTheDocument();
+		confirm.mockRestore();
+	});
+
+	it('keeps the session when the guest cancels the leave confirmation', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(false);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.leaveSession }));
+
+		expect(guestApi.endSession).not.toHaveBeenCalled();
+		expect(screen.getByText(PROFILE.displayName)).toBeInTheDocument();
+		confirm.mockRestore();
+	});
+
+	it('shows a new recovery code with a copy button from «Mis recuerdos»', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.rotateRecoveryCode.mockResolvedValue('WXYZ-2345-6789');
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.showRecoveryCode }));
+
+		expect(confirm).toHaveBeenCalledWith(copy.showRecoveryCodeConfirm);
+		expect(await screen.findByText('WXYZ-2345-6789')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: copy.copyRecoveryCode })).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: copy.showRecoveryCode }),
+		).not.toBeInTheDocument();
+		confirm.mockRestore();
+	});
+
+	it('says when a new recovery code could not be issued', async () => {
+		const user = userEvent.setup();
+		const confirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.rotateRecoveryCode.mockRejectedValue(
+			new MemoriesRequestError(429, 'rate_limited'),
+		);
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: copy.showRecoveryCode }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.showRecoveryCodeFailed);
+		expect(screen.getByRole('button', { name: copy.showRecoveryCode })).toBeEnabled();
+		confirm.mockRestore();
+	});
+
 	it('treats a file the storage already holds as sent and goes on to confirm it', async () => {
 		const user = userEvent.setup();
 		guestApi.getSession.mockResolvedValue(PROFILE);
@@ -641,6 +748,75 @@ describe('MemoriesCapture island', () => {
 		} finally {
 			online.mockRestore();
 		}
+	});
+
+	it('after a reload during confirmation, confirms the validating file of the guest again', async () => {
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems
+			.mockResolvedValueOnce({
+				items: [buildItem({ id: 'interrupted', status: 'validating' })],
+				quota: QUOTA,
+			})
+			.mockResolvedValue({
+				items: [buildItem({ id: 'interrupted', status: 'accepted' })],
+				quota: QUOTA,
+			});
+		guestApi.complete.mockResolvedValue({
+			item: buildItem({ id: 'interrupted', status: 'accepted' }),
+		});
+
+		renderCapture();
+
+		await waitFor(() => expect(guestApi.listItems).toHaveBeenCalledTimes(2));
+		expect(guestApi.complete).toHaveBeenCalledTimes(1);
+		expect(guestApi.complete).toHaveBeenCalledWith('interrupted');
+		await waitFor(() =>
+			expect(screen.queryByText(copy.validationPending)).not.toBeInTheDocument(),
+		);
+	});
+
+	it('tells the guest to choose again a file whose upload never finished', async () => {
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems.mockResolvedValue({
+			items: [
+				buildItem({
+					id: 'stale',
+					status: 'uploading',
+					createdAt: new Date(Date.now() - 10 * 60_000).toISOString(),
+				}),
+				buildItem({
+					id: 'fresh',
+					status: 'uploading',
+					createdAt: new Date().toISOString(),
+				}),
+			],
+			quota: QUOTA,
+		});
+
+		renderCapture();
+
+		expect(await screen.findByText(copy.uploadUnfinished)).toBeInTheDocument();
+		expect(screen.getByText(copy.validationPending)).toBeInTheDocument();
+		expect(guestApi.complete).not.toHaveBeenCalled();
+	});
+
+	it('hides a repeated file from «Mis recuerdos» and never confirms it again', async () => {
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems.mockResolvedValue({
+			items: [
+				buildItem({ id: 'original', status: 'accepted' }),
+				buildItem({ id: 'repeated', status: 'duplicate' }),
+			],
+			quota: QUOTA,
+		});
+
+		renderCapture();
+
+		const heading = await screen.findByRole('heading', { name: `${copy.myMemories} 1` });
+		const section = heading.closest('section') as HTMLElement;
+		expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+		expect(screen.queryByText(copy.duplicate)).not.toBeInTheDocument();
+		expect(guestApi.complete).not.toHaveBeenCalled();
 	});
 
 	it('after a reload mid-upload, shows the pending file and explains why a new upload must wait', async () => {

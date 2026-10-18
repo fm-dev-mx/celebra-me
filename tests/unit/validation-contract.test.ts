@@ -79,7 +79,7 @@ describe('canonical validation contract', () => {
 		const scripts = readPackageManifest().scripts ?? {};
 
 		expect(scripts.test).toBe('jest');
-		expect(scripts['test:coverage']).toBe('jest --coverage');
+		expect(scripts['test:coverage']).toBeUndefined();
 		expect(scripts['test:e2e:extended']).toBe('node scripts/run-e2e-tier.mjs extended');
 		expect(scripts['test:e2e:infra']).toBeUndefined();
 		expect(scripts['test:e2e:visual']).toBeUndefined();
@@ -159,6 +159,8 @@ describe('canonical validation contract', () => {
 				'pnpm ci:static',
 				'pnpm test',
 				'pnpm test:e2e:ci --max-failures=5 --workers=2',
+				// Guest memories specs run on every device project of playwright.memories.config.ts.
+				'pnpm test:e2e:memories --max-failures=5 --workers=2',
 			]) {
 				expect(workflowLines).toContain(`run: ${command}`);
 			}
@@ -166,7 +168,10 @@ describe('canonical validation contract', () => {
 			expect(workflow).toMatch(
 				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-scope,?\s*\]/,
 			);
-			expect(workflow).toContain('tier: [static, unit, database]');
+			expect(workflow).toContain('tier: [static, unit, database, workerd]');
+			expect(workflowLines).toContain(
+				'run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA"',
+			);
 			expect(workflow).toContain('cancel-in-progress: true');
 			expect(workflow).toContain("PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'");
 			expect(workflow).toContain("PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true'");

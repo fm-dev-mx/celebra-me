@@ -140,6 +140,21 @@ export async function updateSessionDisplayName(
 	return rows[0] ?? null;
 }
 
+/** Replaces the stored recovery hash, so the previous code stops working at once. */
+export async function updateSessionRecoveryHash(
+	sessionId: string,
+	recoveryCodeHash: string,
+): Promise<SessionRow | null> {
+	const rows = await supabaseRestRequest<SessionRow[]>({
+		pathWithQuery: `${SESSIONS}?id=eq.${encodeURIComponent(sessionId)}&revoked_at=is.null&select=${SESSION_COLUMNS}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: { recovery_code_hash: recoveryCodeHash, last_seen_at: new Date().toISOString() },
+	});
+	return rows[0] ?? null;
+}
+
 export async function revokeSessionsByAlias(
 	eventId: string,
 	guestAlias: string,

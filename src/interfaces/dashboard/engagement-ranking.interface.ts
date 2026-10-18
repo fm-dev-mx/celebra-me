@@ -146,3 +146,56 @@ export interface EngagementRankingReport {
 	designs: RankingDesignGroup[];
 	invitations: RankingInvitation[];
 }
+
+/** Data levels of the ranking API: measured + inferred (ranked) or the historical estimate. */
+export const RANKING_LEVELS = ['measured', 'historical'] as const;
+export type RankingLevel = (typeof RANKING_LEVELS)[number];
+
+/** Cleaning rules of one historical estimate method version, shown next to its figures. */
+export interface HistoricalMethod {
+	version: number;
+	/** Legacy telemetry recorded before this instant only (the ledger starts here). */
+	cutoff: string;
+	/** Views closer than this to the first share are link previews or host review. */
+	previewWindowMinutes: number;
+	/** Inactivity that separates two visits. */
+	visitGapMinutes: number;
+}
+
+/**
+ * Historical estimate per published client invitation: legacy telemetry before the ledger,
+ * cleaned once per method version. Never ranked and never mixed with measured figures.
+ */
+export interface HistoricalEstimateInvitation {
+	invitationId: string;
+	eventId: string;
+	title: string;
+	slug: string;
+	eventType: string;
+	eventDate: string | null;
+	computedAt: string;
+	guestsTotal: number;
+	guestsShared: number;
+	guestsViewed: number;
+	guestsRespondedSelf: number;
+	/** Opens range: guest responses (lower) to views or responses (upper). */
+	openedLower: number;
+	openedUpper: number;
+	visitsEstimate: number;
+	visitsPerViewer: number | null;
+	/** Responses over the upper open bound; the upper conversion bound is trivially 100 %. */
+	conversionLower: number | null;
+	viewsCounted: number;
+	viewsBeforeShare: number;
+	viewsWithinPreviewWindow: number;
+	/** Guests without a share date: counted apart, outside every bound. */
+	guestsUnshared: number;
+	guestsUnsharedViewed: number;
+	guestsUnsharedRespondedSelf: number;
+}
+
+export interface HistoricalEstimatesReport {
+	eventType: string;
+	method: HistoricalMethod;
+	invitations: HistoricalEstimateInvitation[];
+}

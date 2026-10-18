@@ -19,6 +19,7 @@ interface WorkerEnvironment {
 	vars?: Record<string, string>;
 	images?: { binding: string };
 	ratelimits?: RateLimitBinding[];
+	services?: { binding: string; service: string }[];
 }
 
 /** Drops `//` line comments outside strings; wrangler.jsonc uses no block comments. */
@@ -80,6 +81,17 @@ describe('wrangler.jsonc Production environment', () => {
 		expect(production.images).toEqual({ binding: 'IMAGES' });
 	});
 
+	it('reaches the private memories Workers of each environment over Service Bindings', () => {
+		expect(production.services).toEqual([
+			{ binding: 'MEMORIES_SIGN', service: 'celebra-memories-sign' },
+			{ binding: 'MEMORIES_RETRIEVE', service: 'celebra-memories-retrieve' },
+		]);
+		expect(preview.services).toEqual([
+			{ binding: 'MEMORIES_SIGN', service: 'celebra-memories-sign-staging' },
+			{ binding: 'MEMORIES_RETRIEVE', service: 'celebra-memories-retrieve-staging' },
+		]);
+	});
+
 	it('mirrors every Preview rate limit inside its own namespace range', () => {
 		const shape = (bindings: RateLimitBinding[] = []) =>
 			bindings.map(({ name, simple }) => ({ name, simple }));
@@ -89,6 +101,37 @@ describe('wrangler.jsonc Production environment', () => {
 		for (const id of ids) {
 			expect(id).toBeGreaterThanOrEqual(3001);
 			expect(id).toBeLessThanOrEqual(3099);
+		}
+	});
+});
+
+describe('wrangler.jsonc Preview environment', () => {
+	it('binds every Preview cron to a scheduled job and schedules every job', () => {
+		const crons = preview.triggers?.crons ?? [];
+		expect(new Set(crons).size).toBe(crons.length);
+		expect([...crons].sort()).toEqual(Object.values(SCHEDULED_JOB_CRONS).sort());
+	});
+
+	it('identifies itself as Preview on the Preview Supabase project', () => {
+		const supabaseUrl = `https://${SUPABASE_PROJECT_REFS.preview}.supabase.co`;
+		expect(preview.name).toBe('celebra-me-preview');
+		expect(preview.vars).toEqual({
+			CELEBRA_DEPLOY_ENV: 'preview',
+			SUPABASE_URL: supabaseUrl,
+			PUBLIC_SUPABASE_URL: supabaseUrl,
+			BASE_URL: 'https://celebra-me-preview.celebra-me-com.workers.dev',
+		});
+		expect(preview.routes).toBeUndefined();
+		expect(preview.route).toBeUndefined();
+	});
+
+	it('keeps its rate limits inside the Preview namespace range', () => {
+		const ids = (preview.ratelimits ?? []).map((binding) => Number(binding.namespace_id));
+		expect(ids.length).toBeGreaterThan(0);
+		expect(new Set(ids).size).toBe(ids.length);
+		for (const id of ids) {
+			expect(id).toBeGreaterThanOrEqual(2001);
+			expect(id).toBeLessThanOrEqual(2099);
 		}
 	});
 });

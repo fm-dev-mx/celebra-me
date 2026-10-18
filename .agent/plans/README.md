@@ -146,6 +146,7 @@ Do not invent a second status vocabulary for a provider or runtime.
 | `docs/`                | Stable product and system documentation                     |
 | `.agent/skills/`       | Reusable agent execution guidance and repeatable procedures |
 | `.agent/tmp/handoffs/` | Ephemeral role-chain artifacts (not policy SSOT)            |
+| `.agent/tmp/reports/`  | Point-in-time reports while in use (Integration checkout)   |
 
 ## Goal lifecycle (canonical for substantial audit-driven remediation)
 

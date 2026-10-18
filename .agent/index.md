@@ -49,6 +49,8 @@ routes matching the touched surfaces.
   validation procedures (load on demand)
 - [`docs/core/git-safety-session.md`](../docs/core/git-safety-session.md) — Mutable Git Safety
   session lifecycle (load on demand)
+- [`docs/core/coordinator-board.md`](../docs/core/coordinator-board.md) — Coordinator board rules:
+  action cards, timing, ready-to-paste prompts
 
 ### Environments & Database
 
@@ -98,6 +100,8 @@ routes matching the touched surfaces.
 - Conversational planning is default. Tracked plans belong under `.agent/plans/active/` per that
   README.
 - Point-in-time audits, reports, and completed plans are not tracked; Git history is the archive.
+  While a report is in use it lives in `.agent/tmp/reports/` of the Integration checkout
+  (`.agent/tmp/README.md`).
 - Human-facing agent report layout (review / apply / commit / remediation):
   [`.agent/templates/agent-report-contract.md`](./templates/agent-report-contract.md) (presentation
   only).

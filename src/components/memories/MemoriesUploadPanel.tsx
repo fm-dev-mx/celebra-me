@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import type { MemoriesGuestQuota } from '@/lib/memories/contract/catalog';
 import { MEMORIES_MAX_CAPTION_LENGTH } from '@/lib/memories/contract/limits';
-import { isMemoriesVideoMime } from '@/lib/memories/contract/media-policy';
-import { buildMemoriesUploadLimitsCopy, memoriesCaptureCopy as copy } from '@/lib/memories/copy';
+import {
+	isMemoriesVideoMime,
+	resolveMemoriesFileMimeType,
+	withMemoriesVideoFirstFrame,
+} from '@/lib/memories/contract/media-policy';
+import {
+	buildMemoriesUploadLimitsCopy,
+	memoriesCaptureCopy as copy,
+	memoriesGalleryCopy as galleryCopy,
+} from '@/lib/memories/copy';
 import { memoriesIssueCopy } from '@/lib/memories/client/media-prep';
 import type { MemoriesQueueEntry } from '@/lib/memories/client/upload-queue';
 
@@ -35,15 +43,28 @@ function usePreviewUrls(entries: readonly MemoriesQueueEntry[]): Record<string, 
 	return urls;
 }
 
-function QuotaMeter({ quota, adding }: { quota: MemoriesGuestQuota; adding: number }) {
+function isVideoFile(file: File): boolean {
+	return isMemoriesVideoMime(resolveMemoriesFileMimeType(file) ?? file.type);
+}
+
+function QuotaMeter({
+	quota,
+	adding,
+	addingVideos,
+}: {
+	quota: MemoriesGuestQuota;
+	adding: number;
+	addingVideos: number;
+}) {
 	const remainingAfter = Math.max(0, quota.files.remaining - adding);
+	const videosAfter = Math.max(0, quota.videos.remaining - addingVideos);
 	const used = quota.files.limit - remainingAfter;
 	const percent = quota.files.limit > 0 ? Math.round((used / quota.files.limit) * 100) : 0;
 	return (
 		<div className="memories-guest-quota">
 			<div className="memories-guest-quota__label">
 				<span>{copy.quotaRemaining(remainingAfter, quota.files.limit)}</span>
-				<span>{copy.quotaVideosRemaining(quota.videos.remaining)}</span>
+				<span>{copy.quotaVideosRemaining(videosAfter)}</span>
 			</div>
 			<progress
 				className="memories-guest-quota__bar"
@@ -132,6 +153,7 @@ export default function MemoriesUploadPanel({
 	const [caption, setCaption] = useState('');
 	const urls = usePreviewUrls(entries);
 	const ready = useMemo(() => entries.filter((entry) => entry.status === 'ready'), [entries]);
+	const readyVideos = ready.filter((entry) => isVideoFile(entry.file)).length;
 	const invalidEntries = entries.filter((entry) => entry.status === 'invalid');
 
 	if (entries.length === 0) {
@@ -149,7 +171,7 @@ export default function MemoriesUploadPanel({
 					onFilesSelected={onFilesSelected}
 					variant="zone"
 				/>
-				{quota ? <QuotaMeter quota={quota} adding={0} /> : null}
+				{quota ? <QuotaMeter quota={quota} adding={0} addingVideos={0} /> : null}
 				<details className="status-page__details">
 					<summary>{copy.detailsLabel}</summary>
 					<p>{buildMemoriesUploadLimitsCopy(maxSessionVideos)}</p>
@@ -168,7 +190,7 @@ export default function MemoriesUploadPanel({
 			<ul className="memories-guest-preview" aria-label="Archivos elegidos">
 				{entries.map((entry) => {
 					const url = urls[entry.id];
-					const video = isMemoriesVideoMime(entry.file.type);
+					const video = isVideoFile(entry.file);
 					return (
 						<li
 							key={entry.id}
@@ -177,7 +199,7 @@ export default function MemoriesUploadPanel({
 							{url && entry.status !== 'invalid' ? (
 								video ? (
 									<video
-										src={url}
+										src={withMemoriesVideoFirstFrame(url)}
 										muted
 										playsInline
 										preload="metadata"
@@ -186,6 +208,14 @@ export default function MemoriesUploadPanel({
 								) : (
 									<img src={url} alt="" />
 								)
+							) : null}
+							{video && entry.status !== 'invalid' ? (
+								// WebKit may still paint no frame for a local file, so the
+								// badge keeps a picked video recognizable before upload.
+								<span className="memories-tile__badge" aria-hidden="true">
+									<span className="memories-tile__play" />
+									{galleryCopy.video}
+								</span>
 							) : null}
 							<span className="memories-guest-preview__name">{entry.file.name}</span>
 							{entry.status === 'invalid' && entry.issue ? (
@@ -238,7 +268,9 @@ export default function MemoriesUploadPanel({
 					onChange={(event) => setCaption(event.target.value)}
 				/>
 			</details>
-			{quota ? <QuotaMeter quota={quota} adding={ready.length} /> : null}
+			{quota ? (
+				<QuotaMeter quota={quota} adding={ready.length} addingVideos={readyVideos} />
+			) : null}
 			<button
 				type="button"
 				className="status-page__btn"

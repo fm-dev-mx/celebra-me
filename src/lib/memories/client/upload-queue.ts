@@ -3,7 +3,10 @@
  * tripping the server limits. At most `concurrency` uploads run at once (the
  * session's in-flight cap) and no more than `reservationsPerMinute` start in any
  * 60 s window (the Sign Worker limiter), so extra files wait instead of failing.
- * The queue pauses while the browser is offline and resumes when it reconnects.
+ * The queue pauses while the browser is offline and resumes when it reconnects;
+ * uploads that failed for lack of signal go back in line with the same attempt.
+ * Browsers do not always announce the reconnection, so the queue also checks
+ * the connection itself every few seconds while it waits.
  */
 
 import {
@@ -56,6 +59,26 @@ const BLOCKING_ISSUES: ReadonlySet<MemoriesCaptureIssue> = new Set([
 	'session_files_reached',
 ]);
 
+/**
+ * How long a file keeps retrying on its own after a dropped signal; later the
+ * guest decides. A reconnecting phone can fail several requests before its radio
+ * carries data, so the limit is time, not a number of attempts.
+ */
+const AUTO_RESUME_WINDOW_MS = 10 * 60_000;
+
+const DEFAULT_RECHECK_MS = 2_000;
+
+/** Wait before the next automatic retry: 2 s, 4 s, 8 s… up to 30 s. */
+function resumeDelayMs(tries: number): number {
+	return Math.min(30_000, 2_000 * 2 ** tries);
+}
+
+interface MemoriesDroppedUpload {
+	firstAt: number;
+	tries: number;
+	nextAt: number;
+}
+
 const ACTIVE_STATUSES: ReadonlySet<MemoriesQueueStatus> = new Set([
 	'optimizing',
 	'preparing',
@@ -86,6 +109,8 @@ export interface MemoriesUploadQueueOptions {
 	setTimer?: (callback: () => void, ms: number) => unknown;
 	clearTimer?: (handle: unknown) => void;
 	isOnline?: () => boolean;
+	/** How often to recheck the connection while offline or holding a dropped upload. */
+	recheckMs?: number;
 }
 
 let nextEntryId = 0;
@@ -93,6 +118,10 @@ let nextEntryId = 0;
 export class MemoriesUploadQueue {
 	private entries: MemoriesQueueEntry[] = [];
 	private readonly attempts = new Map<string, MemoriesUploadAttempt>();
+	/** Failed entries the next reconnection retries on its own. */
+	private readonly resumeOnline = new Set<string>();
+	private readonly drops = new Map<string, MemoriesDroppedUpload>();
+	private recheckTimer: unknown = null;
 	private readonly listeners = new Set<() => void>();
 	private readonly reservationTimes: number[] = [];
 	private snapshot: MemoriesQueueSnapshot;
@@ -104,6 +133,8 @@ export class MemoriesUploadQueue {
 	private readonly now: () => number;
 	private readonly setTimer: (callback: () => void, ms: number) => unknown;
 	private readonly clearTimer: (handle: unknown) => void;
+	private readonly isOnline: () => boolean;
+	private readonly recheckMs: number;
 
 	constructor(private readonly options: MemoriesUploadQueueOptions) {
 		this.concurrency = options.concurrency ?? MEMORIES_SESSION_MAX_IN_FLIGHT;
@@ -113,8 +144,11 @@ export class MemoriesUploadQueue {
 		this.clearTimer =
 			options.clearTimer ??
 			((handle) => clearTimeout(handle as ReturnType<typeof setTimeout>));
-		this.offline = !(options.isOnline ?? (() => true))();
+		this.isOnline = options.isOnline ?? (() => true);
+		this.recheckMs = options.recheckMs ?? DEFAULT_RECHECK_MS;
+		this.offline = !this.isOnline();
 		this.snapshot = { entries: [], offline: this.offline };
+		if (this.offline) this.scheduleRecheck();
 	}
 
 	subscribe = (listener: () => void): (() => void) => {
@@ -148,6 +182,8 @@ export class MemoriesUploadQueue {
 		if (!entry || isMemoriesQueueActive(entry)) return;
 		this.entries = this.entries.filter((candidate) => candidate.id !== id);
 		this.attempts.delete(id);
+		this.resumeOnline.delete(id);
+		this.drops.delete(id);
 		this.emit();
 	}
 
@@ -163,6 +199,8 @@ export class MemoriesUploadQueue {
 	retry(id: string): void {
 		const entry = this.entries.find((candidate) => candidate.id === id);
 		if (!entry || entry.status !== 'failed') return;
+		this.resumeOnline.delete(id);
+		this.drops.delete(id);
 		this.patch(id, { status: 'waiting', issue: null, progress: 0 });
 		this.pump();
 	}
@@ -180,22 +218,33 @@ export class MemoriesUploadQueue {
 		this.entries = this.entries.filter(
 			(entry) => isMemoriesQueueActive(entry) || entry.status === 'waiting',
 		);
-		for (const id of [...this.attempts.keys()]) {
-			if (!this.entries.some((entry) => entry.id === id)) this.attempts.delete(id);
+		for (const id of [...this.attempts.keys(), ...this.resumeOnline]) {
+			if (!this.entries.some((entry) => entry.id === id)) {
+				this.attempts.delete(id);
+				this.resumeOnline.delete(id);
+				this.drops.delete(id);
+			}
 		}
 		this.emit();
 	}
 
 	setOnline(online: boolean): void {
-		if (this.offline === !online) return;
+		if (this.offline === !online && !(online && this.resumeOnline.size > 0)) return;
 		this.offline = !online;
+		// A reported reconnection retries at once; the backoff applies between rechecks.
+		if (online) this.resumeDropped(true);
+		else {
+			this.scheduleRecheck();
+		}
 		this.emit();
 		if (online) this.pump();
 	}
 
 	dispose(): void {
 		if (this.timer !== null) this.clearTimer(this.timer);
+		if (this.recheckTimer !== null) this.clearTimer(this.recheckTimer);
 		this.timer = null;
+		this.recheckTimer = null;
 		this.listeners.clear();
 	}
 
@@ -209,6 +258,40 @@ export class MemoriesUploadQueue {
 	private emit(): void {
 		this.snapshot = { entries: this.entries, offline: this.offline };
 		for (const listener of this.listeners) listener();
+	}
+
+	/** Puts dropped uploads back in line; `force` ignores their backoff. */
+	private resumeDropped(force: boolean): void {
+		const now = this.now();
+		for (const id of [...this.resumeOnline]) {
+			const entry = this.entries.find((candidate) => candidate.id === id);
+			const drop = this.drops.get(id);
+			if (entry?.status !== 'failed' || !drop) {
+				this.resumeOnline.delete(id);
+				continue;
+			}
+			if (!force && drop.nextAt > now) continue;
+			drop.tries += 1;
+			this.resumeOnline.delete(id);
+			// The attempt keeps its client request id, so the server recognizes the same upload.
+			this.patch(id, { status: 'waiting', issue: null, progress: 0 });
+		}
+	}
+
+	/** Reads the connection again later, in case the browser never fires `online`. */
+	private scheduleRecheck(): void {
+		if (this.recheckTimer !== null) return;
+		this.recheckTimer = this.setTimer(() => {
+			this.recheckTimer = null;
+			if (this.isOnline()) {
+				if (this.offline) this.setOnline(true);
+				else {
+					this.resumeDropped(false);
+					this.pump();
+				}
+			}
+			if (this.offline || this.resumeOnline.size > 0) this.scheduleRecheck();
+		}, this.recheckMs);
 	}
 
 	/** Milliseconds until another reservation fits the per-minute budget; 0 when it fits now. */
@@ -256,6 +339,7 @@ export class MemoriesUploadQueue {
 				onPhase: (phase) => this.patch(id, { status: phase }),
 				onProgress: (progress) => this.patch(id, { progress }),
 			});
+			this.drops.delete(id);
 			this.patch(id, {
 				status: 'done',
 				progress: 1,
@@ -266,6 +350,18 @@ export class MemoriesUploadQueue {
 		} catch (error) {
 			const issue =
 				error instanceof MemoriesUploadError ? error.issue : readMemoriesUploadIssue(error);
+			const dropped =
+				issue === 'network_failed' ||
+				this.offline ||
+				(error instanceof MemoriesUploadError && error.transport);
+			const now = this.now();
+			const drop = this.drops.get(id) ?? { firstAt: now, tries: 0, nextAt: now };
+			if (dropped && now - drop.firstAt < AUTO_RESUME_WINDOW_MS) {
+				drop.nextAt = now + resumeDelayMs(drop.tries);
+				this.drops.set(id, drop);
+				this.resumeOnline.add(id);
+				this.scheduleRecheck();
+			}
 			this.patch(id, { status: 'failed', issue });
 			if (BLOCKING_ISSUES.has(issue)) {
 				for (const other of this.entries) {

@@ -2,12 +2,13 @@
 
 Each subdirectory here represents one task's role-chain artifacts (copy → builder → QA, etc.).
 Semantic handoff fields follow the Handoff Contract in `.agent/plans/README.md`. This directory is
-not a policy SSOT.
+not a policy SSOT. Audits and other point-in-time reports go to `.agent/tmp/reports/` instead (see
+`.agent/tmp/README.md`).
 
 See `.agent/tmp/README.md`, `.agent/rules/agent-routing.md`, and `.agent/plans/README.md` for
 conventions.
 
 ## Active handoffs (if any)
 
-_This directory is populated dynamically during task execution.
-It should be empty when no task is in progress._
+_This directory is populated dynamically during task execution. It should be empty when no task is
+in progress._

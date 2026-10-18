@@ -2,7 +2,7 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-10-14
+**Last Updated:** 2026-10-16
 
 ## Overview
 
@@ -16,12 +16,14 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 
 - `develop` is the trunk. It accepts direct pushes from Integration that only add commits (merge
   commits included); Repository CI runs on every push and is the integration gate. It blocks
-  deletion and non-fast-forward (history-rewriting) updates. Pull requests into `develop`
-  (Dependabot updates) also run Repository CI before they are merged.
+  deletion and non-fast-forward (history-rewriting) updates. Pull requests into `develop` (task
+  branches and Dependabot updates) also run Repository CI before they are merged.
 - `main` is production. It changes only through the release pull request from `develop`, which
   requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
-- Task branches (`feat/*`, `fix/*`, `candidate/*`) are ephemeral. Persistent lane branches are
-  forbidden.
+- Task branches (`feat/*`, `fix/*`, `candidate/*`, `docs/*`, `chore/*`) are ephemeral. `docs/*` is
+  for changes to documentation, plans or agent guidance only; `chore/*` is for repository
+  maintenance with no runtime effect (audits, retirements, dependency work). Persistent lane
+  branches are forbidden.
 - Annotated tags (`vX.Y.Z`) mark releases.
 
 ## Four-Lane Worktree Model
@@ -75,7 +77,16 @@ mutation authorization.
    reverts the same way: `git revert -m 1 <merge>`. Group a multi-step program into one task branch
    per step with several commits rather than one task per commit. Resolve conflicts deliberately in
    the merge (never automatic `ours`/`theirs`), then run the applicable checks before pushing.
-   Pushing a task branch to `origin` is optional; CI does not run on task branches.
+   Pushing a task branch to `origin` is needed only for a pull request; CI runs on a task branch
+   only through its pull request.
+
+   A task may instead land through a GitHub pull request into `develop`, merged with a merge commit
+   (the only method the repository allows). Its header,
+   `Merge pull request #<n> from <owner>/<task-branch>`, still names the branch, and the task
+   reverts the same way. Prefer a pull request for code changes, because Repository CI checks the
+   branch before it reaches `develop`. A local merge suits documentation-only or urgent changes,
+   where CI runs after the push. A task lands once: never both a pull request and a local merge for
+   the same branch.
 
    Merge rules:
    - Merge task branches only into `develop`. Never merge one task branch into another: when a task
@@ -98,6 +109,53 @@ mutation authorization.
 
 `pnpm ops worktree-status` reports every lane read-only. Astro uses the lane port with `strictPort`;
 override it with `ASTRO_PORT`. Local-runtime lanes share the persistent Local Supabase database.
+
+## Branch and Worktree Hygiene
+
+A branch is obsolete when it is merged into `origin/develop`, has no open pull request and no
+worktree has it checked out. Obsolete branches are deleted, locally and on `origin`, by the session
+that integrated them:
+
+```bash
+git branch -d <task-branch>                # never -D: -d refuses unmerged work
+git push origin --delete <task-branch>     # only when the branch was pushed
+```
+
+A task merged through a GitHub pull request leaves its remote branch behind unless the repository
+deletes head branches on merge; delete it in the same session. A pull request into `develop` or
+`main` merges with a merge commit, never with squash or rebase.
+
+Periodic sweep, read-only until each deletion is confirmed:
+
+```bash
+git fetch --all --prune --tags
+git branch --merged origin/develop          # local candidates
+git branch -r --merged origin/develop       # remote candidates
+git worktree list                           # exclude branches checked out here
+gh pr list --state open                     # exclude branches with an open pull request
+```
+
+Rules:
+
+- Release candidates use `candidate/vX.Y.Z` ([release process](release-process.md)). Older
+  `chore/release-vX.Y.Z` branches are the same thing under a retired name; delete them once their
+  release reached `main`.
+- A task branch never tracks `origin/develop` as its upstream; `git status` then reports the trunk
+  as the branch's remote and `git push` targets the wrong ref. Push with
+  `git push -u origin <branch>`.
+- Agent worktrees are ephemeral and are not lanes. The Claude desktop app creates
+  `.claude/worktrees/<name>` with a `claude/<name>` branch (ignored through `.git/info/exclude`);
+  Codex creates worktrees under its own home directory. When the agent session ends, its task branch
+  is integrated or abandoned explicitly, and the worktree and `claude/<name>` branch are removed
+  with the app or with `git worktree remove` (never with `--force` while it holds work).
+- Before treating a worktree as dirty, compare the modified files with their committed content. A
+  worktree whose Git LFS filter is not active lists every LFS image as modified even when the
+  content is identical (`sha256sum <file>` equals the `oid` in `git show HEAD:<file>`).
+- Bringing a task branch up to date (`pnpm lane:sync`) is for a real need: a conflict, or work the
+  task depends on. GitHub's "Update branch" button creates the same sync merge; do not use it only
+  to make a pull request look current.
+- Dependabot commits land through their own pull request or task branch, never inside an unrelated
+  task branch (see the merge rules above).
 
 ## Commit Contract
 
@@ -498,5 +556,10 @@ Rules:
 - Release PR titles name the version and the primary shipped outcome. Bodies list included changes,
   material risks, visual/schema/content impact and separately authorized operations.
 - Never rewrite or force-push `main` or `develop`; never use a bypass.
+- Every release merge on `main` gets its version tag, and every version tag is pushed to `origin`.
+  `git ls-remote --tags origin` must list each local `vX.Y.Z` tag.
+- `archive/<topic>-<YYYY-MM-DD>` annotated tags keep recovery points for history that no branch
+  holds any more (for example a stash or a retired lane state). Push them when the history must
+  survive this machine; never reuse the `v` prefix for them.
 - Land hotfixes on `develop` first, then release.
 - Rollback: revert on a task branch, integrate into `develop`, and release normally.
