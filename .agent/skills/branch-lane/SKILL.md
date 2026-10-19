@@ -251,6 +251,14 @@ State what the agent will do automatically on resume vs what the human must do.
 
 Load the mode reference and perform only authorized steps. Preserve merge-only sync. No rebase.
 
+- Only the four lanes and `.claude/worktrees/*` exist. A session that needs another checkout uses an
+  idle lane; a new directory under `<worktrees-root>` needs the owner's approval and a lane card.
+- The session that merges a task releases its worktree in the same turn:
+  `git switch --detach develop` in a lane, or the desktop app's clean-up for `.claude/worktrees/*`.
+  Then it deletes the local branch with `git branch -d`.
+- Integration runs `git pull --ff-only origin develop` after each merge it observes, so
+  `git branch -d` can verify merged branches.
+
 ## User-facing report (required structure)
 
 Always present:
