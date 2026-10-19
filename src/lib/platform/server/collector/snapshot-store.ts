@@ -1,6 +1,7 @@
 /**
  * Service-role access to `platform_usage_snapshots`. RLS denies anon and
- * authenticated; only the Production collector writes and purges.
+ * authenticated; only the Production collector writes and purges, and only the
+ * service role reads the database size.
  */
 
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
@@ -17,6 +18,18 @@ export async function insertPlatformSnapshots(rows: PlatformSnapshotRow[]): Prom
 		prefer: 'return=minimal',
 		body: rows,
 	});
+}
+
+/** Bytes used by the database the service role connects to (`platform_database_size()`). */
+export async function readPlatformDatabaseSize(): Promise<number | null> {
+	const size = await supabaseRestRequest<unknown>({
+		pathWithQuery: 'rpc/platform_database_size',
+		method: 'POST',
+		useServiceRole: true,
+		body: {},
+	});
+	const bytes = typeof size === 'string' ? Number(size) : size;
+	return typeof bytes === 'number' && Number.isFinite(bytes) && bytes >= 0 ? bytes : null;
 }
 
 /** Deletes every snapshot collected before `cutoff`. */

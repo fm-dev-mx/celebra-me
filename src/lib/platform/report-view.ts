@@ -33,8 +33,16 @@ export interface PlatformSummary {
 	healthy: number;
 	missing: number;
 	unavailable: number;
-	/** Most recent provider read across the report; null when none succeeded. */
+	/** Most recent collector snapshot across the report; null when none succeeded. */
 	updatedAt: string | null;
+}
+
+/** The collector runs every 15 minutes; three missed runs mark the report stale. */
+const PLATFORM_SNAPSHOT_STALE_MS = 45 * 60 * 1000;
+
+export function isPlatformReportStale(updatedAt: string | null, now: Date): boolean {
+	if (!updatedAt) return false;
+	return now.getTime() - new Date(updatedAt).getTime() > PLATFORM_SNAPSHOT_STALE_MS;
 }
 
 const PROVIDER_ORDER: PlatformProviderId[] = ['cloudflare', 'supabase'];
