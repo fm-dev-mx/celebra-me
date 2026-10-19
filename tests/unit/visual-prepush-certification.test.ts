@@ -90,7 +90,7 @@ describe('visual pre-push certification', () => {
 	});
 
 	it('keeps the candidate wrapper bound to the exact certified browser runtime', () => {
-		expect(CERTIFIED_BROWSER_COMMAND).toBe('pnpm test:e2e:ci --max-failures=5 --workers=2');
+		expect(CERTIFIED_BROWSER_COMMAND).toBe('pnpm test:e2e:ci --max-failures=5 --workers=4');
 		expect(NODE_ARCHIVE_SHA256).toMatch(/^[0-9a-f]{64}$/u);
 	});
 
