@@ -6,7 +6,6 @@
 # Main build directories and deployment artifacts
 dist/
 .astro/
-.vercel/
 .wrangler/
 .dev.vars
 workers/**/.dev.vars

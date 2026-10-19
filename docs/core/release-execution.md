@@ -15,7 +15,7 @@ implementing these skills is never a live-release invocation.
 - `.github/workflows/deploy-production.yml` is manual and runs from `main`: it uploads and smokes a
   Production Worker version but never routes traffic. The owner-approved activation of that version
   is a separate step
-  ([runbook](../operations/cloudflare-production-cutover.md#32-activate-an-uploaded-version-every-production-release)).
+  ([steps](../operations/cloudflare-platform.md#8-activate-an-uploaded-version-every-production-release)).
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.
@@ -124,7 +124,7 @@ implementing these skills is never a live-release invocation.
    activated version, and production alias routing. Require the trusted
    `Cloudflare - celebra-me production smoke` result for this deployed SHA, published by the
    `domain-smoke` step of `deploy-production.yml` after activation
-   ([runbook 3.2](../operations/cloudflare-production-cutover.md#32-activate-an-uploaded-version-every-production-release)).
+   ([steps](../operations/cloudflare-platform.md#8-activate-an-uploaded-version-every-production-release)).
    `pnpm ops:post-deploy` owns HTTP and image-delivery checks; inspect all required steps, not just
    the push or build. An old successful smoke on a different version of the same SHA is
    insufficient. `pnpm ops:release-status -- --sha <main-sha> --target production --wait` must

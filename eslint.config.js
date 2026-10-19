@@ -18,7 +18,6 @@ export default [
 			'.opencode/',
 			'.agent/tmp/',
 			'.astro/',
-			'.vercel/',
 			'.build/',
 			'coverage/',
 			'public/',
