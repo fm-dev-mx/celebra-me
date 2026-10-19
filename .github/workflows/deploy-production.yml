@@ -1,14 +1,18 @@
 name: Cloudflare Production Upload
 
-# Manual only, from main. Builds the Cloudflare target for Production, uploads an immutable Worker
-# version tagged with the commit SHA and smokes that version URL behind Cloudflare Access. It never
-# routes traffic: the Production Worker has no workers.dev host and no routes (the zone routes were
-# added by hand), and the declared cron triggers are applied only from the dashboard
-# (docs/operations/cloudflare-platform.md).
-# Evidence: a GitHub Deployment in the `Cloudflare Production` environment (kept apart from the
-# `Production` environment that `pnpm ops:release-status` reads) and the commit status
-# `Cloudflare - celebra-me production candidate smoke`, which no release gate accepts: it proves a
-# version, not what the domain serves.
+# Manual only, from main. Two steps, chosen by the `step` input:
+# - `upload` builds the Cloudflare target for Production, uploads an immutable Worker version tagged
+#   with the commit SHA and smokes that version URL behind Cloudflare Access. It never routes
+#   traffic: the Production Worker has no workers.dev host and no routes (the zone routes were added
+#   by hand), the declared cron triggers are applied only from the dashboard, and activating a
+#   version is a separate manual step after the owner approves the release
+#   (docs/operations/cloudflare-platform.md, section 8). Evidence: a GitHub Deployment in the
+#   `Cloudflare Production` environment and the commit status
+#   `Cloudflare - celebra-me production candidate smoke`, which no release gate accepts: it proves a
+#   version, not what the domain serves.
+# - `domain-smoke` runs after that activation. It requires the public domain to report this exact
+#   commit, runs the domain smoke and publishes the commit status
+#   `Cloudflare - celebra-me production smoke` that `pnpm ops:release-status` requires.
 
 permissions:
     contents: read
@@ -17,6 +21,12 @@ permissions:
 
 on:
     workflow_dispatch:
+        inputs:
+            step:
+                description: 'upload a new Worker version, or smoke the domain once the version is active'
+                type: choice
+                options: [upload, domain-smoke]
+                default: upload
 
 concurrency:
     group: cloudflare-production-upload
@@ -24,13 +34,14 @@ concurrency:
 
 env:
     SMOKE_CONTEXT: Cloudflare - celebra-me production candidate smoke
+    DOMAIN_SMOKE_CONTEXT: Cloudflare - celebra-me production smoke
     PRODUCTION_BASE_URL: https://www.celebra-me.com
     PRODUCTION_SUPABASE_REF: ineitkdkyrxqyressllp
 
 jobs:
     production:
         name: Cloudflare production upload
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && inputs.step == 'upload'
         runs-on: ubuntu-latest
         timeout-minutes: 25
         environment:
@@ -185,3 +196,59 @@ jobs:
                       -f context="$SMOKE_CONTEXT" \
                       -f description="Production Worker smoke failed" \
                       -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null || true
+
+    domain-smoke:
+        name: Production domain smoke
+        if: github.ref == 'refs/heads/main' && inputs.step == 'domain-smoke'
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        env:
+            GH_TOKEN: ${{ github.token }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Publish pending smoke status
+              run: |
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"                       -f state=pending                       -f context="$DOMAIN_SMOKE_CONTEXT"                       -f description="Production domain smoke pending"                       -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
+
+            # The smoke proves nothing about this commit unless the domain serves it; the edge can take
+            # a few minutes to pick up a newly active version.
+            - name: Require the domain to serve this commit
+              run: |
+                  for attempt in $(seq 1 10); do
+                      body=$(curl -fsS --max-time 20 "$PRODUCTION_BASE_URL/api/health" || true)
+                      served=$(printf '%s' "$body" | jq -r '[.status, .build.commitSha, .build.environment] | join(" ")' 2>/dev/null || true)
+                      echo "Attempt $attempt: $served"
+                      if [ "$served" = "healthy $GITHUB_SHA production" ]; then
+                          exit 0
+                      fi
+                      sleep 30
+                  done
+                  echo "$PRODUCTION_BASE_URL does not serve $GITHUB_SHA in production. Activate its version first." >&2
+                  exit 1
+
+            - name: Smoke the domain
+              run: pnpm ops:post-deploy -- check --base-url="$PRODUCTION_BASE_URL"
+
+            - name: Record success
+              run: |
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"                       -f state=success                       -f context="$DOMAIN_SMOKE_CONTEXT"                       -f description="Production domain serves this commit and its smoke passed"                       -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
+
+            - name: Record failure
+              if: failure() || cancelled()
+              run: |
+                  gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA"                       -f state=failure                       -f context="$DOMAIN_SMOKE_CONTEXT"                       -f description="Production domain smoke failed"                       -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null || true

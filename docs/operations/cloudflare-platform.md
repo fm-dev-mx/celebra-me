@@ -167,7 +167,16 @@ separate step, run by the agent after the owner approves the release.
    `pnpm exec wrangler deployments status --config wrangler.jsonc --env production`.
 4. Confirm the domain serves it: `curl -s https://www.celebra-me.com/api/health` reports
    `build.commitSha` equal to the release SHA and environment `production`.
-5. Run the domain smoke: `pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com`.
+5. Run the domain smoke on GitHub so it becomes release evidence: dispatch the upload workflow again
+   from `main` with step `domain-smoke`
+   (`gh workflow run deploy-production.yml --ref main -f step=domain-smoke`). It waits until the
+   domain reports the release SHA, runs
+   `pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com` and publishes the commit
+   status `Cloudflare - celebra-me production smoke` on that SHA.
+6. Confirm the release: `pnpm ops:release-status -- --sha <sha> --target production --wait` reports
+   VERIFIED. It requires `Repository Policy`, `Application Suite` and `Application / static` on the
+   main SHA (Repository CI runs on every `main` push), that smoke status, and the public alias
+   reporting the SHA in `production`. It reads no GitHub deployment record for Production.
 
 **Rollback:** run the same steps with the previous version ID. Never run a migration during a
 rollback. There is no data to roll back: every version serves the same schema (section 2).

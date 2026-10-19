@@ -122,10 +122,14 @@ implementing these skills is never a live-release invocation.
    ([back-merge](git-governance.md#production-promotion)).
 5. Verify the Production Worker, actual main SHA/ref, Production environment, the uploaded and
    activated version, and production alias routing. Require the trusted
-   `Cloudflare - celebra-me production smoke` result for this deployed SHA and correlate its version
-   ID/URL. `pnpm ops:post-deploy` owns HTTP and image-delivery checks; inspect all required steps,
-   not just the push or build. An old successful smoke on a different version of the same SHA is
-   insufficient.
+   `Cloudflare - celebra-me production smoke` result for this deployed SHA, published by the
+   `domain-smoke` step of `deploy-production.yml` after activation
+   ([steps](../operations/cloudflare-platform.md#8-activate-an-uploaded-version-every-production-release)).
+   `pnpm ops:post-deploy` owns HTTP and image-delivery checks; inspect all required steps, not just
+   the push or build. An old successful smoke on a different version of the same SHA is
+   insufficient. `pnpm ops:release-status -- --sha <main-sha> --target production --wait` must
+   report VERIFIED: Repository CI runs on every `main` push, so the merge commit carries its own
+   required checks.
 
 ## Recovery, stops and completion
 
