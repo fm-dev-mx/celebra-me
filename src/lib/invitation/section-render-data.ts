@@ -1,7 +1,11 @@
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
-import type { InvitationRevealRecipe, SectionIntersectionFamily } from '@/lib/theme/theme-contract';
+import type {
+	InvitationRevealRecipe,
+	SectionIntersectionFamily,
+	ThemeMotionMode,
+} from '@/lib/theme/theme-contract';
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
@@ -375,6 +379,7 @@ function renderBlock(
 		intersection: block.intersection.family,
 		intersectionSource: block.intersection.source,
 	};
+	const motion = pageContext.viewModel.theme.motion;
 
 	switch (block.type) {
 		case 'interlude':
@@ -385,7 +390,7 @@ function renderBlock(
 			};
 
 		case 'personalized-access':
-			return withRenderMetadata(renderPersonalizedAccess(pageContext), metadata);
+			return withRenderMetadata(renderPersonalizedAccess(pageContext), metadata, motion);
 
 		case 'section': {
 			const nextSectionLink =
@@ -394,6 +399,7 @@ function renderBlock(
 			return withRenderMetadata(
 				renderSection(pageContext, block.section, nextSectionLink),
 				metadata,
+				motion,
 			);
 		}
 	}
@@ -408,12 +414,16 @@ function isLockedRsvpDescriptor(descriptor: DescriptorData): boolean {
 	);
 }
 
-function resolveSectionReveal(descriptor: DescriptorData): InvitationRevealRecipe {
+function resolveSectionReveal(
+	descriptor: DescriptorData,
+	motion: ThemeMotionMode | undefined,
+): InvitationRevealRecipe {
 	if (isLockedRsvpDescriptor(descriptor)) return 'none';
 	// Magazine-spread can be taller than the stagger observer threshold on mobile.
 	if (descriptor.component === 'gallery' && descriptor.props.variant === 'magazine-spread') {
 		return 'none';
 	}
+	if (motion === 'editorial') return 'editorial';
 	if (descriptor.component === 'itinerary' && descriptor.props.variant === 'editorial-ledger') {
 		return 'fade-up';
 	}
@@ -429,6 +439,7 @@ function withRenderMetadata<T extends DescriptorData>(
 		InvitationSectionRenderDescriptor,
 		'afterInterlude' | 'intersection' | 'intersectionSource'
 	>,
+	motion?: ThemeMotionMode,
 ): InvitationSectionRenderDescriptor | null {
 	if (!descriptor) return null;
 
@@ -437,7 +448,7 @@ function withRenderMetadata<T extends DescriptorData>(
 	return {
 		...descriptor,
 		...metadata,
-		reveal: resolveSectionReveal(descriptor),
+		reveal: resolveSectionReveal(descriptor, motion),
 		...(descriptor.component === 'rsvp'
 			? { renderMode: isLockedRsvp ? ('locked' as const) : ('interactive' as const) }
 			: {}),

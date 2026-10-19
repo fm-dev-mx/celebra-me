@@ -109,6 +109,50 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(mosaic?.props).not.toMatchObject({ variant: 'magazine-spread' });
 	});
 
+	it('applies the editorial reveal to sections when theme.motion is editorial', () => {
+		const pageContext = setupDemoPageContext(JEWELRY_BOX_SLUG);
+		pageContext.viewModel.theme.motion = 'editorial';
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const family = descriptors.find((descriptor) => descriptor.component === 'family');
+		const gallery = descriptors.find((descriptor) => descriptor.component === 'gallery');
+
+		expect(family?.reveal).toBe('editorial');
+		expect(gallery?.reveal).toBe('editorial');
+	});
+
+	it('keeps the current recipes when theme.motion is absent', () => {
+		const pageContext = setupDemoPageContext(JEWELRY_BOX_SLUG);
+		expect(pageContext.viewModel.theme.motion).toBeUndefined();
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+
+		expect(descriptors.some((descriptor) => descriptor.reveal === 'editorial')).toBe(false);
+		expect(descriptors.find((descriptor) => descriptor.component === 'family')?.reveal).toBe(
+			'stagger-group',
+		);
+	});
+
+	it('keeps locked RSVP and magazine-spread gallery unrevealed under editorial motion', () => {
+		const pageContext = { ...setupDemoPageContext(JEWELRY_BOX_SLUG), isDemoPreview: false };
+		pageContext.viewModel.theme.motion = 'editorial';
+		const rsvp = pageContext.viewModel.sections.rsvp;
+		const gallery = pageContext.viewModel.sections.gallery;
+		if (!rsvp || !gallery) throw new Error('RSVP and gallery fixtures are required');
+		rsvp.accessMode = 'personalized-only';
+		gallery.variant = 'magazine-spread';
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+
+		expect(descriptors.find(isRsvpDescriptor)).toMatchObject({
+			renderMode: 'locked',
+			reveal: 'none',
+		});
+		expect(descriptors.find((descriptor) => descriptor.component === 'gallery')?.reveal).toBe(
+			'none',
+		);
+	});
+
 	it('derives the next anchorable section for location navigation from the render plan', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',

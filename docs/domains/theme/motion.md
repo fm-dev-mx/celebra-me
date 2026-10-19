@@ -1,6 +1,6 @@
 # Invitation Motion System
 
-**Status:** Sole normative authority for invitation motion **Last updated:** 2026-08-17
+**Status:** Sole normative authority for invitation motion **Last updated:** 2026-10-19
 
 This document owns invitation motion categories, timing limits, reveal recipes, observer behavior,
 ambient decoration, hero sequencing, and reduced motion. Operational skills and other domain docs
@@ -48,6 +48,8 @@ The closed recipe set is:
 - `fade-up`: opacity plus a small vertical entrance.
 - `media-scale`: one-time media reveal followed by optional ambient decoration.
 - `stagger-group`: one observed section whose marked items use CSS delays.
+- `editorial`: opt-in per invitation with `theme.motion: 'editorial'`; every section uses it and
+  each marked item is observed on its own (see [Editorial recipe](#editorial-recipe)).
 
 ### Stagger placement rule
 
@@ -61,8 +63,8 @@ markers, but must not create observers.
 
 ## Document-scoped observation contract
 
-`src/lib/invitation/motion-coordinator.ts` is the only invitation reveal coordinator. Every current
-recipe uses one documented observer signature:
+`src/lib/invitation/motion-coordinator.ts` is the only invitation reveal coordinator. Every section
+recipe except `editorial` uses one documented observer signature:
 
 ```text
 threshold: 0.12
@@ -81,6 +83,44 @@ The contract is mandatory:
 5. Reduced motion reveals immediately without constructing the reveal observer.
 6. Item staggering is CSS-only; items are not independently observed.
 7. Invitation motion does not use scroll listeners or animation-frame scroll loops.
+
+The `editorial` recipe is the documented exception to rules 3, 5 and 6; its contract follows.
+
+## Editorial recipe
+
+`theme.motion: 'editorial'` (theme schema, optional) makes `section-render-data.ts` assign
+`editorial` to every section. Invitations without the field render exactly as before.
+
+- **Second observer.** The coordinator creates one more observer, `threshold: 0`,
+  `rootMargin: 0px 0px -15% 0px`, once per item, so an item starts when its top crosses 85 % of the
+  viewport. It observes each `data-reveal-item` and `data-reveal-role` (`label`, `title`, `lede`,
+  `media`, `item`) element; a section without marked items is observed as one block. Observation
+  starts only after `[data-reveal-state]` reaches `revealed`, so nothing animates behind the
+  envelope. Observed targets carry `data-reveal-pending` until they enter; missing or throwing
+  observation reveals everything (rules 1, 2 and 4 hold).
+- **Order.** Items entering in one batch get `--reveal-order`, counted per role and capped at 8.
+- **Timing.** One curve, `cubic-bezier(0.16, 1, 0.3, 1)`. Label 600 ms; title words 900 ms,
+  `80 ms + 60 ms × word index` (`SplitWords.astro` emits the spans with `--i`; the accessible name
+  stays on the heading); lede 700 ms after `--reveal-delay` (240 ms); media 1200 ms clip; items 600
+  ms, `300 ms + 70 ms × order`. These longer entrances belong to this recipe only; the in-view limit
+  in the table applies to the other recipes.
+- **Reduced motion.** The observer still runs, and every editorial entrance becomes a 200 ms opacity
+  fade with no blur, scale, clip, translation or delay. Ambient lanterns rest in place and the
+  envelope send-off is skipped.
+- **Ambient lanterns.** Layers of `StorybookLanternSky` with `scene="ambient"` that a profile
+  displays loop only while on screen (`data-ambient='running'` from an observer in the coordinator);
+  hidden layers are never observed.
+- **Scroll-linked exceptions.** Two effects tie motion to scroll position, both only under
+  `prefers-reduced-motion: no-preference`:
+  - `itinerary.stacked-cards` uses CSS scroll-driven animations (`view-timeline`), inside
+    `@supports (animation-timeline: view())`. There is no script; without support the cards stay as
+    a plain list.
+  - Smooth wheel scrolling (`src/lib/invitation/smooth-scroll.ts`, the `lenis` package) runs an
+    animation-frame loop. It is loaded with a dynamic import after the reveal, only on
+    `pointer: fine`, so phones never download it. Native touch scrolling is unchanged, and `#` links
+    scroll to their target below the fixed header.
+- **Budget.** Nothing new loads on first paint except CSS. At most about 12 elements animate at
+  once.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.
@@ -120,5 +160,5 @@ motion hover must not change an audited element's bounding box or transform matr
 
 Section intersections are static composition primitives governed by
 [`section-intersections.md`](section-intersections.md). Motion is optional and never required to
-understand an intersection. Ambient image scaling is not parallax; no scroll-position transform is
-part of the invitation system.
+understand an intersection. Ambient image scaling is not parallax. The only scroll-position
+transforms are the editorial exceptions above.

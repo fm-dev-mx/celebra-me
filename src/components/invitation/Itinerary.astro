@@ -1,7 +1,9 @@
 ---
+import SplitWords from '@/components/invitation/SplitWords.astro';
 import '@/styles/invitation/_itinerary.scss';
 import TimelineList from './TimelineList.astro';
 import ItineraryProgram from './ItineraryProgram.astro';
+import ItineraryStackedCards from './ItineraryStackedCards.astro';
 import type { ItineraryItem } from '@/lib/adapters/types';
 import type { ItineraryVariant } from '@/lib/invitation/section-variants';
 
@@ -21,9 +23,9 @@ const { title = "Itinerario", items, variant, monogram, subtitle, closingNote } 
 	<div class="itinerary__container">
 		{title && (
 			<div class="itinerary__header">
-				<h2 class="itinerary__title">{title}</h2>
+				<SplitWords class="itinerary__title" text={title} />
 				{subtitle && (
-					<p class="itinerary__subtitle" data-itinerary-subtitle>{subtitle}</p>
+					<p class="itinerary__subtitle" data-itinerary-subtitle data-reveal-role="lede">{subtitle}</p>
 				)}
 				<div class="itinerary__header-flourish" aria-hidden="true">
 					<span class="flourish-line"></span>
@@ -38,6 +40,8 @@ const { title = "Itinerario", items, variant, monogram, subtitle, closingNote } 
 
 			{variant === 'timeline-paper' ? (
 				<ItineraryProgram items={items} monogram={monogram} />
+			) : variant === 'stacked-cards' ? (
+				<ItineraryStackedCards items={items} />
 			) : (
 				<TimelineList items={items} />
 			)}

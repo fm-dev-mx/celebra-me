@@ -1,12 +1,15 @@
 ---
 import type { RsvpVariant } from '@/lib/invitation/section-variants';
+import SplitWords from '@/components/invitation/SplitWords.astro';
 
 interface Props {
 	title: string;
 	variant: RsvpVariant;
+	/** Invitation-specific copy that replaces the default locked message and detail. */
+	lockedMessage?: string;
 }
 
-const { title, variant } = Astro.props;
+const { title, variant, lockedMessage } = Astro.props;
 ---
 
 <section id="rsvp" data-screenshot-section="rsvp" class="rsvp-section">
@@ -22,15 +25,21 @@ const { title, variant } = Astro.props;
 					<span class="rsvp__separator" aria-hidden="true">◆</span>
 				</>
 			)}
-			<h2 class="rsvp__title">{title}</h2>
+			<SplitWords class="rsvp__title" text={title} />
 		</header>
 		<div class="rsvp__locked-card" role="status" aria-live="polite" aria-atomic="true">
-			<p class="rsvp__locked-message">
-				Las reservas para este evento se gestionan de forma personalizada.
-			</p>
-			<p class="rsvp__locked-detail">
-				Si recibió su invitación directa, utilice el enlace exclusivo que le fue compartido.
-			</p>
+			{lockedMessage ? (
+				<p class="rsvp__locked-message">{lockedMessage}</p>
+			) : (
+				<>
+					<p class="rsvp__locked-message">
+						Las reservas para este evento se gestionan de forma personalizada.
+					</p>
+					<p class="rsvp__locked-detail">
+						Si recibió su invitación directa, utilice el enlace exclusivo que le fue compartido.
+					</p>
+				</>
+			)}
 		</div>
 	</div>
 </section>

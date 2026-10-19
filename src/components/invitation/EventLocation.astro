@@ -1,4 +1,5 @@
 ---
+import SplitWords from '@/components/invitation/SplitWords.astro';
 /*
   EventLocation Component
   Displays modern, interactive cards for the event venues.
@@ -99,9 +100,9 @@ const venueType = (venue: GroupedVenue) =>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
 	{(introEyebrow || introHeading || introLede) && (
 		<header class="event-location__intro">
-			{introEyebrow && <p class="event-location__eyebrow">{introEyebrow}</p>}
-			{introHeading && <h2 class="event-location__heading">{introHeading}</h2>}
-			{introLede && <p class="event-location__lede">{introLede}</p>}
+			{introEyebrow && <p class="event-location__eyebrow" data-reveal-role="label">{introEyebrow}</p>}
+			{introHeading && <SplitWords class="event-location__heading" text={introHeading} />}
+			{introLede && <p class="event-location__lede" data-reveal-role="lede">{introLede}</p>}
 		</header>
 	)}
 	{ornament && (
@@ -150,7 +151,7 @@ const venueType = (venue: GroupedVenue) =>
 	)}
 	{indications && indications.length > 0 && isIndicationsEnclosure && (
 		<div class="event-location__indications-container" data-indications-layout="enclosure">
-			<div class="event-location__enclosure">
+			<div class="event-location__enclosure" data-reveal-role="item">
 				{indicationsHeading && <h2 class="event-location__indications-heading">{indicationsHeading}</h2>}
 				{indications.map((indication) => {
 					const isReserved = indication.styleVariant === 'reserved';

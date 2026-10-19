@@ -91,7 +91,17 @@ export const INDICATION_STYLE_VARIANTS = ['default', 'reserved'] as const;
 
 export type IndicationStyleVariant = (typeof INDICATION_STYLE_VARIANTS)[number];
 
-export type InvitationRevealRecipe = 'none' | 'fade' | 'fade-up' | 'media-scale' | 'stagger-group';
+export type InvitationRevealRecipe =
+	'none' | 'fade' | 'fade-up' | 'media-scale' | 'stagger-group' | 'editorial';
+
+/**
+ * Opt-in invitation motion modes (`theme.motion`). `editorial` observes each marked item once and
+ * choreographs label, title words, lede, media and items; absent, every invitation keeps its
+ * per-section recipes.
+ */
+export const THEME_MOTION_MODES = ['editorial'] as const;
+
+export type ThemeMotionMode = (typeof THEME_MOTION_MODES)[number];
 
 export const SECTION_INTERSECTION_FAMILIES = [
 	'neutral',

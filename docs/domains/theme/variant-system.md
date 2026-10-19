@@ -51,7 +51,9 @@ audit tooling (`pnpm invitation:published-audit`).
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
   `narrative-stack`, `mirrored-mosaic`, `paired-portraits`. `single-keepsake` requires exactly one
   item; feature layouts enforce their item requirements.
-- **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`.
+- **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
+  `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
+  CSS where supported, otherwise a plain list; requires `itinerary.items`).
 - **Gifts:** `standard`, `editorial-catalog`.
 - **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`.

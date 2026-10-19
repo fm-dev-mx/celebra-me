@@ -95,6 +95,8 @@
 		font-size: var(--gifts-title-size, clamp(2rem, 5vw, 3rem));
 		margin-bottom: var(--spacing-md);
 		font-style: var(--gifts-title-style, inherit);
+		font-weight: var(--gifts-title-weight, revert);
+		line-height: var(--gifts-title-line-height, inherit);
 		text-transform: var(--gifts-title-transform, uppercase);
 		letter-spacing: var(--gifts-title-letter-spacing, 0.15em);
 		color: var(--gifts-title-color, var(--gifts-title-color-fallback));

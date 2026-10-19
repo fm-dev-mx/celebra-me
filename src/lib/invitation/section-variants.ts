@@ -160,6 +160,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/itinerary/_editorial-program.scss',
 	},
 	{
+		section: 'itinerary',
+		variant: 'stacked-cards',
+		default: false,
+		prerequisites: ['itinerary.items'],
+		cssOwner: 'src/styles/themes/sections/itinerary/_stacked-cards.scss',
+	},
+	{
 		section: 'gallery',
 		variant: 'uniform-grid',
 		default: true,

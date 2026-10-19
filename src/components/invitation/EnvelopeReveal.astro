@@ -100,6 +100,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 >
 	{backdropImage && <img class="envelope-ambient" src={plainImgSrc(backdropImage.src)} alt="" width="960" height="1440" decoding="async" />}
 	{isStorybook && <StorybookLanternSky />}
+	{isStorybook && <StorybookLanternSky scene="send-off" />}
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
 		{
@@ -297,6 +298,53 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const openButtons = Array.from(this.querySelectorAll<HTMLButtonElement>('[data-envelope-open]'));
 			let hasRevealed = false;
 			let isOpening = false;
+			let envelopeSkipped = false;
+
+			// Opt-in send-off (`--storybook-send-off: lanterns`): once the envelope has opened, a few
+			// lanterns rise from the bottom center over the cover and are removed as each one leaves.
+			const releaseLanterns = () => {
+				if (envelopeSkipped || getMotionPreference() || isScreenshotCaptureMode()) return;
+				if (getComputedStyle(this).getPropertyValue('--storybook-send-off').trim() !== 'lanterns') {
+					return;
+				}
+				const template = this.querySelector<HTMLTemplateElement>('template[data-lantern-send-off]');
+				const layer = template?.content.firstElementChild?.cloneNode(true);
+				if (!(layer instanceof HTMLElement) || typeof layer.animate !== 'function') return;
+				// The send-off is styled where it lands, so the envelope's palette comes along.
+				layer.style.setProperty(
+					'--storybook-sky-lantern',
+					getComputedStyle(this).getPropertyValue('--storybook-sky-lantern'),
+				);
+				layer.style.setProperty(
+					'--storybook-sky-light',
+					getComputedStyle(this).getPropertyValue('--storybook-sky-light'),
+				);
+				document.body.append(layer);
+				const lanterns = Array.from(layer.querySelectorAll<HTMLElement>('.lantern-flight__lantern'));
+				let flying = lanterns.length;
+				lanterns.forEach((lantern) => {
+					const drift = Math.round(Math.random() * 48 - 24);
+					const flight = lantern.animate(
+						[
+							{ opacity: 0, transform: 'translate3d(0, 0, 0)' },
+							{ opacity: 1, offset: 0.15 },
+							{ opacity: 1, offset: 0.8 },
+							{ opacity: 0, transform: `translate3d(${drift}px, calc(-100vh - 8rem), 0)` },
+						],
+						{
+							duration: 3200 + Math.random() * 1600,
+							delay: Math.random() * 900,
+							easing: 'cubic-bezier(0.33, 0, 0.67, 1)',
+							fill: 'both',
+						},
+					);
+					flight.onfinish = () => {
+						lantern.remove();
+						flying -= 1;
+						if (flying === 0) layer.remove();
+					};
+				});
+			};
 
 			/** Screenshot tool needs the letter laid out; do not race-hide the host. */
 			const isScreenshotCaptureMode = () => {
@@ -433,6 +481,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				});
 
 				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
+				releaseLanterns();
 
 				window.setTimeout(() => {
 					// Keep host measurable during screenshot runs (display:none → 0×0 letter).
@@ -443,6 +492,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			};
 
 			if (manager.shouldSkipEnvelope()) {
+				envelopeSkipped = true;
 				completeReveal();
 				if (!isScreenshotCaptureMode()) {
 					this.hidden = true;

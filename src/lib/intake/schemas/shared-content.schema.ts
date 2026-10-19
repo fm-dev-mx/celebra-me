@@ -10,7 +10,11 @@ import { safeHttpUrlSchema } from '@/lib/schemas/content/gifts.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
 import { envelopeRevealVariantSchema } from '@/lib/schemas/content/envelope.schema';
-import { COUNTDOWN_DAY_UNITS, COUNTDOWN_UNITS } from '@/lib/invitation/countdown-presentation';
+import {
+	COUNTDOWN_CALENDAR_MARKS,
+	COUNTDOWN_DAY_UNITS,
+	COUNTDOWN_UNITS,
+} from '@/lib/invitation/countdown-presentation';
 import {
 	GALLERY_LAYOUT_ROLES,
 	GALLERY_MOBILE_BROWSE_MODES,
@@ -229,6 +233,11 @@ export const countdownEditorSchema = z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),
 				dayUnit: z.enum(COUNTDOWN_DAY_UNITS).optional(),
+				/** Month calendar of the event, its day circled by the mark; replaces the written date. */
+				calendar: z
+					.object({ mark: z.enum(COUNTDOWN_CALENDAR_MARKS) })
+					.strict()
+					.optional(),
 			})
 			.strict()
 			.optional(),

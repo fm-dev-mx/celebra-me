@@ -84,7 +84,52 @@ const segments = ALL_SEGMENTS.filter((segment) => resolvedUnits.includes(segment
 				? effectiveTargetMs - 45 * 86400000
 				: effectiveTargetMs + 1;
 
+		// Editorial motion counts the day numeral up from 0 once, as its segment enters; the tick
+		// waits for it so the two never write the same element.
+		let isCountingUp = false;
+		const daysSegment = root.querySelector<HTMLElement>('.countdown__segment[data-unit="days"]');
+		const daysValue = root.querySelector<HTMLElement>('[data-countdown-value="days"]');
+		const countsUp =
+			!isAuditCapture &&
+			Boolean(root.closest('[data-motion="editorial"]')) &&
+			!window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+			daysSegment !== null &&
+			daysValue !== null;
+
+		const countUp = (element: HTMLElement) => {
+			const finalText = element.textContent ?? '';
+			const finalValue = Number.parseInt(finalText, 10);
+			if (!Number.isFinite(finalValue) || finalValue <= 0) return;
+			const width = finalText.length;
+			const duration = 1200;
+			const start = performance.now();
+			isCountingUp = true;
+			const step = (now: number) => {
+				const progress = Math.min((now - start) / duration, 1);
+				// Same curve as the editorial reveal: fast start, long settle.
+				const eased = 1 - Math.pow(1 - progress, 4);
+				element.textContent = String(Math.round(finalValue * eased)).padStart(width, '0');
+				if (progress < 1) {
+					window.requestAnimationFrame(step);
+				} else {
+					element.textContent = finalText;
+					isCountingUp = false;
+				}
+			};
+			window.requestAnimationFrame(step);
+		};
+
+		if (countsUp && daysSegment && daysValue) {
+			const watcher = new MutationObserver(() => {
+				if (!daysSegment.classList.contains('is-visible')) return;
+				watcher.disconnect();
+				countUp(daysValue);
+			});
+			watcher.observe(daysSegment, { attributes: true, attributeFilter: ['class'] });
+		}
+
 		const updateCountdown = () => {
+			if (isCountingUp) return;
 			const nowMs = isAuditCapture ? auditNowMs : Date.now();
 			const difference = effectiveTargetMs - nowMs;
 			const hasStarted = difference <= 0;

@@ -10,6 +10,11 @@
 //   --countdown-written-muted    Lead and date color
 //   --countdown-written-rule     Desktop divider color
 //   --countdown-written-numeral  Numeral size
+//   --countdown-written-numeral-{weight,color,shadow}  Numeral weight (300), ink and glow (none)
+//   --countdown-written-title-{size,tracking,caps,transform,color}
+//                                Lead size (1.05rem), tracking (0.16em), small caps
+//                                (all-small-caps), case (none) and ink (the muted color)
+//   --countdown-written-calendar-gap  Space above the month calendar (default 0.6rem)
 //   --countdown-written-unit-gap Space between the numeral and "días"
 //   --countdown-written-columns  Column gap around the desktop divider
 //   --countdown-written-date-row Desktop grid row of the date (span 2 to sit on the numeral)
@@ -52,14 +57,14 @@
 		max-width: none;
 		margin: 0 0 0.5rem;
 		font-family: var(--font-label, var(--font-body));
-		font-size: 1.05rem;
+		font-size: var(--countdown-written-title-size, 1.05rem);
 		font-weight: 400;
-		font-variant-caps: all-small-caps;
-		letter-spacing: 0.16em;
+		font-variant-caps: var(--countdown-written-title-caps, all-small-caps);
+		letter-spacing: var(--countdown-written-title-tracking, 0.16em);
 		line-height: 1.3;
-		text-transform: none;
+		text-transform: var(--countdown-written-title-transform, none);
 		text-shadow: none;
-		color: var(--countdown-written-muted);
+		color: var(--countdown-written-title-color, var(--countdown-written-muted));
 	}
 
 	.countdown-timer-wrapper {
@@ -109,14 +114,14 @@
 	.countdown__value {
 		background: none;
 		-webkit-text-fill-color: currentcolor;
-		text-shadow: none;
+		text-shadow: var(--countdown-written-numeral-shadow, none);
 		font-family: var(--font-display);
 		font-size: var(--countdown-written-numeral, clamp(5rem, 18vw, 8.5rem));
-		font-weight: 300;
+		font-weight: var(--countdown-written-numeral-weight, 300);
 		font-variant-numeric: lining-nums;
 		letter-spacing: 0;
 		line-height: 1.05;
-		color: var(--countdown-written-ink);
+		color: var(--countdown-written-numeral-color, var(--countdown-written-ink));
 	}
 
 	.countdown__label {
@@ -129,6 +134,10 @@
 		text-transform: lowercase;
 		color: var(--countdown-written-ink);
 		opacity: 100%;
+	}
+
+	.event-calendar {
+		margin-top: var(--countdown-written-calendar-gap, 0.6rem);
 	}
 
 	.countdown-written-date {
@@ -191,7 +200,8 @@
 			background: var(--countdown-written-rule);
 		}
 
-		.countdown-written-date {
+		.countdown-written-date,
+		.event-calendar {
 			grid-column: 3;
 			grid-row: var(--countdown-written-date-row, 2);
 			place-self: end start;

@@ -78,7 +78,7 @@
 		font-size: var(--location-intro-heading-size, clamp(2.4rem, 9vw, 3.75rem));
 		font-style: var(--location-intro-heading-style, inherit);
 		font-weight: var(--location-intro-heading-font-weight, 400);
-		line-height: 1.08;
+		line-height: var(--location-intro-heading-line-height, 1.08);
 		color: var(--location-program-ink);
 	}
 
@@ -126,9 +126,10 @@
 		font-family: var(--font-label, var(--font-body));
 		font-size: var(--location-program-label-size, 0.98rem);
 		font-weight: 400;
-		font-variant-caps: all-small-caps;
+		font-variant-caps: var(--location-program-label-caps, all-small-caps);
 		letter-spacing: 0.14em;
-		color: var(--location-program-muted);
+		text-transform: var(--location-program-label-transform, none);
+		color: var(--location-program-label-color, var(--location-program-muted));
 	}
 
 	.event-location__program-time {

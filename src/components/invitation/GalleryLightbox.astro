@@ -81,7 +81,21 @@ const { variant } = Astro.props;
 			lastFocusedElement?.focus();
 		};
 
-		const openLightbox = (src: string, caption: string, alt: string) => {
+		const showLightbox = () => {
+			lightbox.hidden = false;
+			document.body.style.overflow = 'hidden';
+			lightbox.addEventListener('keydown', trapFocus);
+		};
+
+		// Editorial motion grows the tapped thumbnail into the large photo with a view transition;
+		// elsewhere (or without support, or with reduced motion) the lightbox keeps its fade.
+		const canMorph = (origin: unknown): origin is HTMLElement =>
+			origin instanceof HTMLElement &&
+			typeof document.startViewTransition === 'function' &&
+			Boolean(origin.closest('[data-motion="editorial"]')) &&
+			!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const openLightbox = (src: string, caption: string, alt: string, origin?: unknown) => {
 			lastFocusedElement = document.activeElement as HTMLElement;
 			lightboxImage.src = src;
 			lightboxImage.alt = caption || alt || '';
@@ -89,14 +103,26 @@ const { variant } = Astro.props;
 			lightboxFooterText.textContent = caption;
 			lightboxFooterEl.hidden = !caption;
 
-			lightbox.hidden = false;
-			document.body.style.overflow = 'hidden';
-			lightbox.addEventListener('keydown', trapFocus);
+			if (canMorph(origin)) {
+				origin.style.viewTransitionName = 'gallery-photo';
+				const transition = document.startViewTransition(() => {
+					origin.style.viewTransitionName = '';
+					lightboxImage.style.viewTransitionName = 'gallery-photo';
+					showLightbox();
+				});
+				transition.finished.finally(() => {
+					lightboxImage.style.viewTransitionName = '';
+					closeButton.focus();
+				});
+				return;
+			}
+
+			showLightbox();
 			requestAnimationFrame(() => closeButton.focus());
 		};
 
 		document.addEventListener('gallery:open', ((e: CustomEvent) => {
-			openLightbox(e.detail.src, e.detail.caption, e.detail.alt);
+			openLightbox(e.detail.src, e.detail.caption, e.detail.alt, e.detail.origin);
 		}) as EventListener);
 
 		closeButton.addEventListener('click', (event) => {
