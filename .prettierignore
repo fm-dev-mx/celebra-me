@@ -1,6 +1,5 @@
 # Ignore build output
 dist/
-.vercel/
 .build/
 
 # Node modules

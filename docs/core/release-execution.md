@@ -15,7 +15,7 @@ implementing these skills is never a live-release invocation.
 - `.github/workflows/deploy-production.yml` is manual and runs from `main`: it uploads and smokes a
   Production Worker version but never routes traffic. The owner-approved activation of that version
   is a separate step
-  ([runbook](../operations/cloudflare-production-cutover.md#32-activate-an-uploaded-version-every-production-release)).
+  ([steps](../operations/cloudflare-platform.md#8-activate-an-uploaded-version-every-production-release)).
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.

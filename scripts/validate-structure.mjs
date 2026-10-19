@@ -100,7 +100,6 @@ const PHYSICAL_PATH_PATTERNS = [
 ];
 const FORBIDDEN_TRACKED_DIRECTORIES = [
 	'.astro',
-	'.vercel',
 	'coverage',
 	'dist',
 	'logs',

@@ -311,6 +311,26 @@ Architectural decisions must account for:
 - filesystem limitations
 - server execution contexts used by Astro/Cloudflare Workers
 
+### Worker Runtime Rules
+
+- **Deploy identity.** `CELEBRA_DEPLOY_ENV` is the only hosted identity and has a single reader,
+  `src/lib/server/deploy-identity.ts`. No application decision reads `NODE_ENV`. Every security gate
+  (MFA bypasses, local-only observability, mutations, cookie `Secure`, `?debug=1`, storage choice)
+  fails closed when the identity is missing or invalid.
+- **Node-only code stays off Worker routes.** `child_process`, repository `fs` reads and `sharp` do
+  not run on workerd. Pixel work uses the Images binding; local-only tooling stays in `scripts/`.
+- **Post-response work** goes through `runAfterResponse()` (`waitUntil`). **Client IP** comes from
+  `getClientIp()` (`CF-Connecting-IP`), never from `x-forwarded-*` alone.
+- **Scheduled work** runs only from the Worker `scheduled()` handler (`src/worker.ts` →
+  `src/lib/server/scheduled-jobs.ts`); there are no HTTP cron routes.
+- **Rate limits** use `ratelimits` bindings; **bindings** are read with
+  `import { env } from 'cloudflare:workers'`.
+- **Server to Supabase** traffic is plain HTTPS `fetch` (PostgREST, Auth, Storage, RPC). Supabase
+  clients run in the browser only; no driver, pooler or Hyperdrive.
+
+Platform configuration, delivery, external settings and rollback:
+[`../operations/cloudflare-platform.md`](../operations/cloudflare-platform.md).
+
 ---
 
 ## 10) Refactor Criteria
