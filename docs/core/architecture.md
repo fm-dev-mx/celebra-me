@@ -469,18 +469,25 @@ deployment.
   `www` app, elsewhere the serving origin (Preview deployment protection can make them fail).
 - **Usage sources:** per-space figures come from `event_memory_items` rows that still hold an R2
   object (the same set the reservation quota counts) and from session counts; the committed-capacity
-  total compares them with the shared R2 allowance in `CLOUDFLARE_FREE_TIER`
+  total compares them with the shared R2 allowance in `CLOUDFLARE_PAID_PLAN`
   (`src/lib/platform/contract/limits.ts`). Account-wide consumption is not part of this domain: the
-  super-admin platform console (`/dashboard/admin/plataforma`, `src/lib/platform/`) aggregates
-  Cloudflare and Supabase limit and cost metrics from read-only credentials
-  (`MEMORIES_CLOUDFLARE_*`, `SUPABASE_MANAGEMENT_TOKEN`), one query per provider dataset cached for
-  minutes. The console is scoped per environment (Preview and Production deployments show only their
-  own; Local shows both) and every environment reads the plain variable names: a deployment reports
-  the R2 bucket it declares in `MEMORIES_R2_BUCKET_NAME`, while Local shows only account-wide R2
-  totals. Shared account/project quotas stay visible in every panel labeled as shared. Missing
-  credentials are reported by variable name with a description and the provider's setup link - never
-  values. Every provider card degrades on its own (`ok` / `unconfigured` / `unavailable`) and the
-  report carries aggregates only. Free-plan allowances and the 70 %/90 % warning thresholds live in
+  super-admin platform console (`/dashboard/admin/plataforma`, `src/lib/platform/`) shows Cloudflare
+  and Supabase limits from the snapshots the Production-only cron `*/15 * * * *` stores
+  (`src/lib/platform/server/collector/`, job `platform_usage` in
+  `src/lib/server/scheduled-jobs.ts`). Each run reads the providers with read-only credentials
+  (`MEMORIES_CLOUDFLARE_*`, `SUPABASE_MANAGEMENT_TOKEN`) and writes one `platform_usage_snapshots`
+  row per dataset (Workers per script, Durable Objects per namespace with object counts, R2 per
+  bucket, celebra-me.com 404/403/threats and top 404 paths, Supabase disk, and the database size
+  from the service-role RPC `platform_database_size()`), with `ok = false` and a typed failure code
+  when a provider fails, then deletes rows older than 90 days. The table and the RPC are
+  service-role only (RLS forced, no policies). A page load never queries a provider: the API reads
+  the newest row per dataset and maps it onto the deployment's own section (the bucket it declares
+  in `MEMORIES_R2_BUCKET_NAME`, the database size against the 500 MB Free cap, disk as a secondary
+  figure) plus the shared account quotas and health indicators. The status banner stamps the
+  snapshot age and marks it stale past 45 minutes. Missing credentials are reported by variable name
+  with a description and the provider's setup link - never values. Every card degrades on its own
+  (`ok` / `unconfigured` / `unavailable`). Workers Paid / R2 Paid allowances (monthly windows
+  approximated by the UTC month) and the 70 %/90 % warning thresholds live in
   `src/lib/platform/contract/limits.ts`.
 - **QR:** `src/lib/memories/qr.ts` renders the printable SVG for both dashboard routes and the
   `memories:qr` CLI; a test pins the SHA-256 of the SVG already printed.
@@ -507,9 +514,9 @@ deployment.
   ranged reads to the `moov` atom, because phones write it after the media data and its size is
   unbounded; a fixed tail window is only the last resort.
 - **Retrieval transport:** on Cloudflare the app Worker reaches `celebra-memories-retrieve` through
-  the `MEMORIES_RETRIEVE` Service Binding (`src/lib/memories/server/worker-bindings.ts`); Vercel and
-  local dev call `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`. Both carry the same signed request. The
-  retrieval Worker keeps its `workers.dev` host until Vercel is deleted (2026-11-09).
+  the `MEMORIES_RETRIEVE` Service Binding (`src/lib/memories/server/worker-bindings.ts`); local dev
+  calls `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`. Both carry the same signed request. The retrieval
+  Worker has no `workers.dev` host, so Vercel can no longer serve memories media.
 - **Sign transport:** on Preview the app Worker shares the `workers.dev` subdomain with
   `celebra-memories-sign-staging`, where a plain `fetch` between Workers fails (Cloudflare error
   1042), so it calls `POST /sign` through the `MEMORIES_SIGN` Service Binding; Production binds it

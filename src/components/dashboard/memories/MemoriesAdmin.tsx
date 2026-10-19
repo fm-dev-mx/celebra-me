@@ -21,7 +21,7 @@ import {
 	memoriesAdminApi,
 	type AdminSpaceCandidate,
 } from '@/lib/memories/client/api';
-import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
+import { CLOUDFLARE_PAID_PLAN } from '@/lib/platform/contract/limits';
 import MemorySpaceCard, {
 	resolveUndownloadedDeletionDays,
 } from '@/components/dashboard/memories/MemorySpaceCard';
@@ -118,7 +118,7 @@ function MemoriesAdmin() {
 		(item) => resolveUndownloadedDeletionDays(item, now) !== null,
 	).length;
 
-	const committedOver = totals.committedBytes > CLOUDFLARE_FREE_TIER.r2StorageBytes;
+	const committedOver = totals.committedBytes > CLOUDFLARE_PAID_PLAN.r2StorageBytes;
 
 	const commitment = useMemo((): MemorySpaceCommitment => {
 		const item = modal?.item;
@@ -270,7 +270,7 @@ function MemoriesAdmin() {
 			>
 				{copy.committed(
 					formatMemoriesStorage(totals.committedBytes),
-					formatMemoriesStorage(CLOUDFLARE_FREE_TIER.r2StorageBytes),
+					formatMemoriesStorage(CLOUDFLARE_PAID_PLAN.r2StorageBytes),
 				)}
 				{committedOver ? ` ${copy.committedOver}` : null}
 			</p>

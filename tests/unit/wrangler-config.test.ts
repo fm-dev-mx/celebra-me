@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
-import { SCHEDULED_JOB_CRONS } from '@/lib/server/scheduled-jobs';
+import { PRODUCTION_ONLY_JOBS, SCHEDULED_JOB_CRONS } from '@/lib/server/scheduled-jobs';
 
 interface RateLimitBinding {
 	name: string;
@@ -60,14 +60,19 @@ describe('wrangler.jsonc Production environment', () => {
 		expect(production.preview_urls).toBe(true);
 	});
 
-	it('schedules exactly the Vercel cron jobs, each bound to a scheduled job', () => {
+	it('schedules every job: the Vercel crons plus the Production-only jobs', () => {
 		const vercel = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8')) as {
 			crons: { schedule: string }[];
 		};
 		const crons = production.triggers?.crons ?? [];
-		expect([...crons].sort()).toEqual(vercel.crons.map((cron) => cron.schedule).sort());
+		const productionOnly = PRODUCTION_ONLY_JOBS.map((job) => SCHEDULED_JOB_CRONS[job]);
 		expect([...crons].sort()).toEqual(Object.values(SCHEDULED_JOB_CRONS).sort());
-		expect(crons).toEqual(preview.triggers?.crons);
+		expect(crons.filter((cron) => !productionOnly.includes(cron)).sort()).toEqual(
+			vercel.crons.map((cron) => cron.schedule).sort(),
+		);
+		expect(crons.filter((cron) => !productionOnly.includes(cron))).toEqual(
+			preview.triggers?.crons,
+		);
 	});
 
 	it('identifies itself as Production on the Production Supabase project', () => {
@@ -106,10 +111,13 @@ describe('wrangler.jsonc Production environment', () => {
 });
 
 describe('wrangler.jsonc Preview environment', () => {
-	it('binds every Preview cron to a scheduled job and schedules every job', () => {
+	it('binds every Preview cron to a scheduled job and leaves out Production-only jobs', () => {
 		const crons = preview.triggers?.crons ?? [];
+		const shared = (Object.keys(SCHEDULED_JOB_CRONS) as (keyof typeof SCHEDULED_JOB_CRONS)[])
+			.filter((job) => !PRODUCTION_ONLY_JOBS.includes(job))
+			.map((job) => SCHEDULED_JOB_CRONS[job]);
 		expect(new Set(crons).size).toBe(crons.length);
-		expect([...crons].sort()).toEqual(Object.values(SCHEDULED_JOB_CRONS).sort());
+		expect([...crons].sort()).toEqual(shared.sort());
 	});
 
 	it('identifies itself as Preview on the Preview Supabase project', () => {

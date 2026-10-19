@@ -33,7 +33,12 @@
             },
             "images": { "binding": "IMAGES" },
             // Invitation images (src/lib/intake/services/r2-invitation-media.ts).
-            "r2_buckets": [{ "binding": "INVITATION_MEDIA", "bucket_name": "celebra-me-invitation-media-staging" }],
+            "r2_buckets": [
+                {
+                    "binding": "INVITATION_MEDIA",
+                    "bucket_name": "celebra-me-invitation-media-staging"
+                }
+            ],
             // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
             "services": [
                 { "binding": "MEMORIES_SIGN", "service": "celebra-memories-sign-staging" },
@@ -170,10 +175,12 @@
             },
             "images": { "binding": "IMAGES" },
             // Invitation images (src/lib/intake/services/r2-invitation-media.ts).
-            "r2_buckets": [{ "binding": "INVITATION_MEDIA", "bucket_name": "celebra-me-invitation-media" }],
+            "r2_buckets": [
+                { "binding": "INVITATION_MEDIA", "bucket_name": "celebra-me-invitation-media" }
+            ],
             // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
-            // The retrieval Worker keeps workers_dev while Vercel, the rollback host, still calls it;
-            // the sign Worker always keeps it, because browsers PUT uploads to its public host.
+            // The retrieval Worker has no workers.dev host; the sign Worker keeps it, because
+            // browsers PUT uploads to its public host.
             "services": [
                 { "binding": "MEMORIES_SIGN", "service": "celebra-memories-sign" },
                 { "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve" }
@@ -181,8 +188,9 @@
             // Same schedules as Vercel (`vercel.json`). Cron triggers are non-versioned: version
             // uploads, version deploys and secret changes never apply them, so they stay off until
             // the cutover enables them once Vercel is paused (one cron runner at a time). Only
-            // `wrangler deploy` or `wrangler triggers deploy` would apply them.
-            "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
+            // `wrangler deploy` or `wrangler triggers deploy` would apply them. `*/15 * * * *` is the
+            // Production-only platform usage collector (PRODUCTION_ONLY_JOBS in scheduled-jobs.ts).
+            "triggers": { "crons": ["17 15 * * *", "43 10 * * *", "*/15 * * * *"] },
             // namespace_id 3001-3099 belongs to the Production application Worker.
             "ratelimits": [
                 {

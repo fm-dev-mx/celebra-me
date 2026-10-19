@@ -4,7 +4,7 @@ jest.mock('@/lib/platform/client/api', () => ({
 	},
 }));
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import PlatformUsagePanel from '@/components/dashboard/platform/PlatformUsagePanel';
 import { platformAdminApi } from '@/lib/platform/client/api';
 import type { PlatformMetric, PlatformUsageReport } from '@/lib/platform/contract/types';
@@ -30,6 +30,7 @@ function metric(
 	};
 }
 
+/** Local panel: both environments plus the shared quotas. */
 const REPORT: PlatformUsageReport = [
 	{
 		id: 'preview',
@@ -48,10 +49,9 @@ const REPORT: PlatformUsageReport = [
 						},
 					],
 					metrics: [
-						metric('cfR2StorageBucket', 400_000_000, 10_000_000_000, {
+						metric('cfR2StorageBucket', null, 10_000_000_000, {
 							window: 'snapshot',
 							scope: 'preview',
-							resource: 'celebra-memories-staging',
 						}),
 					],
 				},
@@ -64,7 +64,11 @@ const REPORT: PlatformUsageReport = [
 					spendUsd: null,
 					missing: [],
 					metrics: [
-						metric('sbDatabase', 120_000_000, 500_000_000, {
+						metric('sbDatabase', 69_000_000, 500_000_000, {
+							window: 'snapshot',
+							scope: 'preview',
+						}),
+						metric('sbDisk', 120_000_000, null, {
 							window: 'snapshot',
 							scope: 'preview',
 						}),
@@ -106,12 +110,73 @@ const REPORT: PlatformUsageReport = [
 						metric('cfR2StorageAccount', 9_500_000_000, 10_000_000_000, {
 							window: 'snapshot',
 						}),
-						metric('cfWorkersRequests', 75_000, 100_000),
+						metric('cfWorkersRequests', 7_500_000, 10_000_000, { window: 'monthUtc' }),
 						metric('cfR2ClassA', 1_200_000, 1_000_000, {
 							window: 'monthUtc',
 							overageUsd: 0.9,
 							projection: { kind: 'exhaustsAt', at: '2026-10-25T02:00:00.000Z' },
 						}),
+						metric('cfDurableObjectsRequests', 1_900, 1_000_000, {
+							window: 'monthUtc',
+						}),
+					],
+				},
+			},
+		],
+	},
+];
+
+/** Production deployment: only Production plus the shared quotas, all healthy. */
+const HEALTHY_PRODUCTION: PlatformUsageReport = [
+	{
+		id: 'production',
+		cards: [
+			{
+				provider: 'cloudflare',
+				usage: {
+					kind: 'ok',
+					fetchedAt: NOW,
+					spendUsd: null,
+					missing: [
+						{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'absent', scope: 'production' },
+					],
+					metrics: [
+						metric('cfR2StorageBucket', null, 10_000_000_000, {
+							window: 'snapshot',
+							scope: 'production',
+						}),
+					],
+				},
+			},
+			{
+				provider: 'supabase',
+				usage: {
+					kind: 'ok',
+					fetchedAt: NOW,
+					spendUsd: null,
+					missing: [],
+					metrics: [
+						metric('sbDisk', 333_000_000, null, {
+							window: 'snapshot',
+							scope: 'production',
+						}),
+					],
+				},
+			},
+		],
+	},
+	{
+		id: 'shared',
+		cards: [
+			{
+				provider: 'cloudflare',
+				usage: {
+					kind: 'ok',
+					fetchedAt: NOW,
+					spendUsd: null,
+					missing: [],
+					metrics: [
+						metric('cfWorkersRequests', 10_000, 10_000_000, { window: 'monthUtc' }),
 					],
 				},
 			},
@@ -124,65 +189,186 @@ describe('PlatformUsagePanel island', () => {
 		jest.clearAllMocks();
 	});
 
-	it('renders one section per environment plus the shared quotas', async () => {
+	it('leads with the overall status and the last update', async () => {
 		mockUsage.mockResolvedValue(REPORT);
 
 		render(<PlatformUsagePanel />);
 
-		expect(await screen.findByRole('heading', { name: 'Entorno Preview' })).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Entorno Producción' })).toBeInTheDocument();
+		const summary = await screen.findByRole('region', { name: 'Hay cuotas críticas' });
+		expect(within(summary).getByText('2 críticas (≥ 90 %)')).toBeInTheDocument();
+		expect(within(summary).getByText('1 en aviso (≥ 70 %)')).toBeInTheDocument();
+		expect(within(summary).getByText('2 datos por configurar')).toBeInTheDocument();
+		expect(within(summary).getByText('1 proveedor sin respuesta')).toBeInTheDocument();
 		expect(
-			screen.getByRole('heading', { name: 'Compartido por ambos entornos' }),
+			within(summary).getByText(/^Actualizado .* \(hora de Mazatlán\)$/),
 		).toBeInTheDocument();
 	});
 
-	it('renders meters with their level, scope and warnings', async () => {
+	it('marks the snapshot stale after 45 minutes without a collector run', async () => {
+		const collectedAt = new Date(Date.now() - 46 * 60 * 1000).toISOString();
+		mockUsage.mockResolvedValue(
+			REPORT.map((section) => ({
+				...section,
+				cards: section.cards.map((card) =>
+					card.usage.kind === 'ok'
+						? { ...card, usage: { ...card.usage, fetchedAt: collectedAt } }
+						: card,
+				),
+			})),
+		);
+
+		render(<PlatformUsagePanel />);
+
+		const summary = await screen.findByRole('region', { name: 'Hay cuotas críticas' });
+		expect(
+			within(summary).getByText('Datos desactualizados (más de 45 min)'),
+		).toBeInTheDocument();
+		expect(within(summary).getByText(/hace 46 min/)).toBeInTheDocument();
+		expect(within(summary).getByText(/Desactualizado: el recolector/)).toBeInTheDocument();
+	});
+
+	it('keeps a fresh snapshot unmarked', async () => {
+		const collectedAt = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+		mockUsage.mockResolvedValue([
+			{
+				id: 'production',
+				cards: [
+					{
+						provider: 'supabase',
+						usage: {
+							kind: 'ok',
+							fetchedAt: collectedAt,
+							spendUsd: null,
+							missing: [],
+							metrics: [
+								metric('sbDatabase', 69_000_000, 500_000_000, {
+									window: 'snapshot',
+									scope: 'production',
+								}),
+							],
+						},
+					},
+				],
+			},
+		]);
+
+		render(<PlatformUsagePanel />);
+
+		const summary = await screen.findByRole('region', { name: 'Todo en orden' });
+		expect(within(summary).getByText(/hace 10 min/)).toBeInTheDocument();
+		expect(within(summary).queryByText(/desactualizado/i)).not.toBeInTheDocument();
+	});
+
+	it('groups quotas by provider, shared first, then each environment', async () => {
 		mockUsage.mockResolvedValue(REPORT);
 
 		render(<PlatformUsagePanel />);
 
-		const total = await screen.findByRole('meter', {
-			name: 'Almacenamiento R2 · total de la cuenta',
-		});
-		expect(total).toHaveAttribute('aria-valuenow', '95');
-		expect(total.closest('.usage-meter')).toHaveClass('usage-meter--critical');
-
-		const bucket = screen.getByRole('meter', {
-			name: 'Almacenamiento R2 · bucket «celebra-memories-staging»',
-		});
-		expect(bucket).toHaveAttribute('aria-valuenow', '4');
-		expect(bucket.closest('.usage-meter')).toHaveClass('usage-meter--normal');
-
+		const cloudflare = await screen.findByRole('region', { name: 'Cloudflare' });
+		expect(within(cloudflare).getByText(/Workers Paid y R2 Paid/)).toBeInTheDocument();
+		expect(within(cloudflare).queryByText(/plan gratuito/)).not.toBeInTheDocument();
 		expect(
-			screen
-				.getByRole('meter', { name: 'Peticiones de Workers · total de la cuenta' })
-				.closest('.usage-meter'),
-		).toHaveClass('usage-meter--warning');
+			within(cloudflare).getByRole('region', { name: 'Cloudflare · Toda la cuenta' }),
+		).toBeInTheDocument();
+		expect(
+			within(cloudflare).getByRole('region', { name: 'Cloudflare · Producción' }),
+		).toBeInTheDocument();
+		expect(
+			within(cloudflare).getByRole('region', { name: 'Cloudflare · Preview' }),
+		).toBeInTheDocument();
 
-		expect(screen.getAllByText(/de la cuenta, no de un entorno/).length).toBeGreaterThan(0);
+		const supabase = screen.getByRole('region', { name: 'Supabase' });
+		expect(within(supabase).getByText(/la base pasa a solo lectura/)).toBeInTheDocument();
+		expect(within(supabase).getByText('Disco (incluye WAL)')).toBeInTheDocument();
+		expect(within(supabase).getByText('120 MB')).toBeInTheDocument();
+		expect(within(supabase).getAllByText(/Dato secundario, sin alertas/)).toHaveLength(1);
+		// Only the database size has a meter against the 500 MB cap; disk stays secondary.
+		const meters = within(supabase).getAllByRole('meter');
+		expect(meters).toHaveLength(1);
+		expect(meters[0]).toHaveAccessibleName('Base de datos');
+		expect(within(supabase).getByText('69 MB')).toBeInTheDocument();
+		expect(within(supabase).getByText('14 %')).toBeInTheDocument();
+		expect(within(supabase).queryByText(/Sin cuota verificada/)).not.toBeInTheDocument();
+		expect(within(supabase).getByText(/El proveedor no respondió/)).toBeInTheDocument();
+	});
+
+	it('colors meters by threshold and prints short numbers', async () => {
+		mockUsage.mockResolvedValue(REPORT);
+
+		render(<PlatformUsagePanel />);
+
+		const storage = await screen.findByRole('meter', {
+			name: 'Almacenamiento R2 (todos los buckets)',
+		});
+		expect(storage).toHaveAttribute('aria-valuenow', '95');
+		expect(storage.closest('.usage-meter')).toHaveClass('usage-meter--critical');
+		expect(
+			within(storage.closest('li') as HTMLElement).getByText('Crítico'),
+		).toBeInTheDocument();
+
+		const workers = screen.getByRole('meter', { name: 'Peticiones a Workers' });
+		expect(workers.closest('.usage-meter')).toHaveClass('usage-meter--warning');
+		expect(workers).toHaveAttribute('aria-valuetext', '7.5 M de 10 M (75 %)');
+
+		const durableObjects = screen.getByRole('meter', { name: 'Peticiones a Durable Objects' });
+		expect(durableObjects.closest('.usage-meter')).toHaveClass('usage-meter--normal');
+		expect(durableObjects).toHaveAttribute('aria-valuetext', '1.9k de 1 M (<1 %)');
+
 		expect(screen.getByText('Excedente estimado: 0.90 USD.')).toBeInTheDocument();
-		expect(screen.getByText(/la cuota se agotaría el/)).toBeInTheDocument();
+		expect(screen.getByText(/se agotaría el/)).toBeInTheDocument();
 		expect(screen.getByText('Costo del periodo: 0.00 USD.')).toBeInTheDocument();
-		expect(screen.getAllByText(/el proveedor no respondió/).length).toBe(1);
 	});
 
-	it('names the missing variables and links where to generate them', async () => {
+	it('turns missing configuration into an actionable notice, not «Sin datos»', async () => {
 		mockUsage.mockResolvedValue(REPORT);
 
 		render(<PlatformUsagePanel />);
 
-		expect(await screen.findByText('MEMORIES_R2_BUCKET_NAME')).toBeInTheDocument();
-		expect(screen.getByText(/Bucket R2 de este entorno/)).toBeInTheDocument();
-		const bucketLink = screen.getAllByRole('link', {
-			name: 'Generar o revisar la credencial',
-		})[0];
-		expect(bucketLink).toHaveAttribute('href', 'https://dash.cloudflare.com/?to=/:account/r2');
-
-		expect(screen.getByText('MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN')).toBeInTheDocument();
+		const preview = await screen.findByRole('region', { name: 'Cloudflare · Preview' });
+		expect(within(preview).getByText('MEMORIES_R2_BUCKET_NAME')).toBeInTheDocument();
+		expect(within(preview).getByText(/^Falta configurar:/)).toBeInTheDocument();
+		expect(within(preview).getByText(/\.env\.local/)).toBeInTheDocument();
+		expect(within(preview).queryByText('Sin datos')).not.toBeInTheDocument();
 		expect(
-			screen.getByText(/Token de solo lectura de analítica de Cloudflare/),
+			within(preview).getByText(/Pendiente: completa la configuración/),
 		).toBeInTheDocument();
-		expect(screen.getByText(/faltan credenciales de solo lectura/)).toBeInTheDocument();
+		expect(within(preview).getByRole('link', { name: /Ver los buckets R2/ })).toHaveAttribute(
+			'href',
+			'https://dash.cloudflare.com/?to=/:account/r2',
+		);
+
+		const production = screen.getByRole('region', { name: 'Cloudflare · Producción' });
+		expect(
+			within(production).getByText('MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN'),
+		).toBeInTheDocument();
+		expect(
+			within(production).getByText(/Token de solo lectura de analítica de Cloudflare/),
+		).toBeInTheDocument();
+		expect(
+			within(production).getByRole('link', { name: /Generar o revisar la credencial/ }),
+		).toHaveAttribute('href', expect.stringContaining('/:account/api-tokens'));
+	});
+
+	it('names the Worker secret and command on a deployment', async () => {
+		mockUsage.mockResolvedValue(HEALTHY_PRODUCTION);
+
+		render(<PlatformUsagePanel />);
+
+		expect(
+			await screen.findByRole('region', { name: 'Faltan datos por leer' }),
+		).toBeInTheDocument();
+		const production = screen.getByRole('region', { name: 'Cloudflare · Producción' });
+		expect(within(production).getByText(/secreto del Worker «celebra-me»/)).toBeInTheDocument();
+		expect(
+			within(production).getByText('pnpm ops:cloudflare:production:secrets'),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole('region', { name: 'Cloudflare · Preview' }),
+		).not.toBeInTheDocument();
+		// 333 MB of disk is not a 70 % alarm: only the R2 gap is pending.
+		expect(screen.getByText('333 MB')).toBeInTheDocument();
+		expect(screen.queryByText(/en aviso/)).not.toBeInTheDocument();
+		expect(screen.getByText('1 dato por configurar')).toBeInTheDocument();
 	});
 
 	it('reports a failed console read without breaking the page', async () => {
@@ -191,7 +377,7 @@ describe('PlatformUsagePanel island', () => {
 		render(<PlatformUsagePanel />);
 
 		expect(
-			await screen.findByText('No se pudo consultar el consumo de la plataforma.'),
+			await screen.findByText(/No se pudo consultar el consumo de la plataforma/),
 		).toBeInTheDocument();
 		expect(screen.getByRole('alert')).toBeInTheDocument();
 	});

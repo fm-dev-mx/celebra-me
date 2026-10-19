@@ -1,9 +1,4 @@
-import {
-	isLocalPanel,
-	readProfileVar,
-	resolvePanelEnvironments,
-} from '@/lib/platform/server/env-profiles';
-import { asHostedDeploy } from '@tests/helpers/deploy-identity';
+import { readProfileVar } from '@/lib/platform/server/env-profiles';
 
 const ENV_NAMES = [
 	'SUPABASE_URL',
@@ -27,26 +22,6 @@ afterAll(() => {
 beforeEach(() => {
 	for (const name of ENV_NAMES) delete process.env[name];
 	process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
-});
-
-describe('panel scoping', () => {
-	it('shows both environments locally and one environment per deployment', () => {
-		expect(resolvePanelEnvironments()).toEqual(['preview', 'production']);
-		expect(isLocalPanel()).toBe(true);
-
-		asHostedDeploy('preview');
-		expect(resolvePanelEnvironments()).toEqual(['preview']);
-		expect(isLocalPanel()).toBe(false);
-
-		asHostedDeploy('production');
-		expect(resolvePanelEnvironments()).toEqual(['production']);
-	});
-
-	it('shows no environment when a deployment does not declare its identity', () => {
-		delete process.env.SUPABASE_URL;
-		expect(resolvePanelEnvironments()).toEqual([]);
-		expect(isLocalPanel()).toBe(false);
-	});
 });
 
 describe('readProfileVar', () => {

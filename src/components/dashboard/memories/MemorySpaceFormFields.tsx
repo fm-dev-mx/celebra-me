@@ -9,7 +9,7 @@ import {
 	type MemoriesLimitProfile,
 	type MemoriesSpaceLimits,
 } from '@/lib/memories/contract/limits';
-import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
+import { CLOUDFLARE_PAID_PLAN } from '@/lib/platform/contract/limits';
 import {
 	MEMORIES_MAX_IMAGE_BYTES,
 	MEMORIES_MAX_VIDEO_BYTES,
@@ -270,7 +270,7 @@ interface CommitmentProps {
 
 /** Account-wide storage the save would commit, with an explicit opt-in past the free tier. */
 function CommitmentNotice({ id, projectedBytes, acknowledged, onAcknowledge }: CommitmentProps) {
-	const limit = CLOUDFLARE_FREE_TIER.r2StorageBytes;
+	const limit = CLOUDFLARE_PAID_PLAN.r2StorageBytes;
 	const over = projectedBytes > limit;
 	return (
 		<div
