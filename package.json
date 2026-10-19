@@ -118,6 +118,7 @@
         "invitation:hash-baseline": "tsx scripts/provision/release-hash-baseline.ts",
         "invitation:reconcile": "tsx scripts/provision/invitation-reconcile-cli.ts",
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
+        "invitation:preview-demo": "tsx scripts/provision/preview-demo-republish-cli.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
         "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",
