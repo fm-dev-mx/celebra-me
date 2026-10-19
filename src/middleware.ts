@@ -94,7 +94,10 @@ function privateRedirect(redirect: (path: string) => Response, path: string): Re
 }
 
 function applyInvitationRoute404Headers(pathname: string, response: Response): Response {
-	if (!/^\/[^/]+\/[^/]+\/?$/.test(pathname) || !isUnavailableInvitationStatus(response.status)) {
+	if (
+		!/^\/[^/]+(?:\/[^/]+)?\/?$/.test(pathname) ||
+		!isUnavailableInvitationStatus(response.status)
+	) {
 		return response;
 	}
 

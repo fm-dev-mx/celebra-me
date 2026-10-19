@@ -1,3 +1,5 @@
+import { isReservedInvitationSlug } from '@/lib/invitation/slug-policy';
+
 export type TrackingRouteClass =
 	| 'commercial'
 	| 'demo'
@@ -40,6 +42,11 @@ function normalizePath(input: string | URL): {
 function isEventRoute(pathname: string): boolean {
 	const parts = pathname.split('/').filter(Boolean);
 	return parts.length === 2 && EVENT_TYPES.has(parts[0]);
+}
+
+function isShortSlugRoute(pathname: string): boolean {
+	const parts = pathname.split('/').filter(Boolean);
+	return parts.length === 1 && !isReservedInvitationSlug(parts[0]);
 }
 
 function isNestedShortInvitationRoute(pathname: string): boolean {
@@ -121,6 +128,16 @@ export function classifyTrackingRoute(input: string | URL): TrackingRoutePolicy 
 			gaAllowed: true,
 			metaAllowed: true,
 			reason: 'demo_showroom_route',
+		};
+	}
+
+	if (isShortSlugRoute(pathname)) {
+		return {
+			routeClass: 'real_invitation',
+			internalAllowed: false,
+			gaAllowed: false,
+			metaAllowed: false,
+			reason: 'real_invitation_route',
 		};
 	}
 
