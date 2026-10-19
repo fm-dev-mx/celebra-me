@@ -37,11 +37,13 @@ describe('CI browser scope', () => {
 		).toEqual(['src/pages/index.astro']);
 	});
 
-	it('runs the tier for anything but a develop push', () => {
+	it('runs the tier for anything but a develop push or a pull request into develop', () => {
 		for (const [eventName, refName] of [
 			['pull_request', 'main'],
+			['pull_request', 'feat/task'],
 			['workflow_dispatch', 'develop'],
 			['push', 'feat/task'],
+			['push', 'main'],
 		]) {
 			const decision = assessBrowserScope({ eventName, refName, proven, changedPaths: [] });
 			expect(decision.browser).toBe('run');
@@ -89,5 +91,28 @@ describe('CI browser scope', () => {
 		expect(decision.browser).toBe('skip');
 		expect(decision.sourceRunId).toBe(42);
 		expect(decision.reason).toContain(proven.headSha);
+	});
+
+	it('skips the tier for a pull request into develop without browser inputs', () => {
+		const decision = assessBrowserScope({
+			eventName: 'pull_request',
+			refName: 'develop',
+			proven,
+			changedPaths: ['tests/unit/example.test.ts', 'docs/core/release-process.md'],
+		});
+		expect(decision.browser).toBe('skip');
+		expect(decision.sourceRunId).toBe(42);
+	});
+
+	it('runs the tier for a pull request into develop that changes a browser input', () => {
+		for (const changedPaths of [['src/pages/index.astro'], ['package.json'], null]) {
+			const decision = assessBrowserScope({
+				eventName: 'pull_request',
+				refName: 'develop',
+				proven,
+				changedPaths,
+			});
+			expect(decision.browser).toBe('run');
+		}
 	});
 });
