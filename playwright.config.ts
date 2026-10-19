@@ -20,9 +20,9 @@ if (
 ) {
 	throw new Error('Canonical fixtures require isolated, Playwright-owned local servers.');
 }
-if (runtime.isVercelPreview) {
+if (runtime.isPreview) {
 	throw new Error(
-		'Protected Vercel Preview targets must use test:e2e:preview:public or test:e2e:preview.',
+		'Protected Preview targets must use test:e2e:preview:public or test:e2e:preview.',
 	);
 }
 

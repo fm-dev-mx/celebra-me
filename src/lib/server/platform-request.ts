@@ -23,8 +23,8 @@ function firstHeaderValue(headers: Headers, name: string): string | null {
 const CLOUDFLARE_WORKERS_USER_AGENT = 'Cloudflare-Workers';
 
 /**
- * True when this code runs inside Cloudflare Workers. Node (Vercel), the Astro dev
- * server and jsdom all report a different user agent, or none at all.
+ * True when this code runs inside Cloudflare Workers. Node, the Astro dev server and
+ * jsdom all report a different user agent, or none at all.
  */
 export function isCloudflareWorkersRuntime(): boolean {
 	const navigator = (globalThis as { navigator?: { userAgent?: unknown } }).navigator;
@@ -41,8 +41,8 @@ export interface ClientIpOptions {
  *
  * `CF-Connecting-IP` is read only on Cloudflare Workers, where the edge writes it from the
  * connection and overwrites any client value. Anywhere else a visitor could send that
- * header themselves, so Vercel and the dev server fall straight to the first entry of
- * `X-Forwarded-For` (set by the Vercel proxy), then `X-Real-IP`. Returns `null` when no
+ * header themselves, so the dev server falls straight to the first entry of
+ * `X-Forwarded-For`, then `X-Real-IP`. Returns `null` when no
  * header is present, for example on the dev server.
  */
 export function getClientIp(request: Request, options: ClientIpOptions = {}): string | null {
@@ -78,19 +78,6 @@ export function resolveAfterResponseContext(locals: unknown): AfterResponseConte
 	return { waitUntil: (promise) => ctx.waitUntil(promise) };
 }
 
-/**
- * Vercel functions expose their request context on a well-known global symbol; this is
- * what `@vercel/functions`' `waitUntil` reads. Absent anywhere else.
- */
-function resolveVercelAfterResponseContext(): AfterResponseContext | null {
-	const holder = (globalThis as Record<symbol, unknown>)[Symbol.for('@vercel/request-context')];
-	if (typeof holder !== 'object' || holder === null) return null;
-	const get = (holder as { get?: unknown }).get;
-	if (typeof get !== 'function') return null;
-	const ctx: unknown = get.call(holder);
-	return isAfterResponseContext(ctx) ? ctx : null;
-}
-
 export interface RunAfterResponseOptions {
 	/** Name used in the error log when the task rejects. */
 	label?: string;
@@ -100,8 +87,8 @@ export interface RunAfterResponseOptions {
  * Starts `task` now and keeps the request alive until it settles, so the response can
  * be sent before the task finishes (tracking events, CAPI delivery, audit writes).
  *
- * Uses `ctx.waitUntil` when the caller has one (Cloudflare), otherwise the Vercel
- * request context, otherwise lets the promise float (dev server, tests). Rejections are
+ * Uses `ctx.waitUntil` when the caller has one (Cloudflare), otherwise lets the promise
+ * float (dev server, tests). Rejections are
  * logged and never propagate to the caller.
  */
 export function runAfterResponse(
@@ -122,6 +109,5 @@ export function runAfterResponse(
 			console.error(`[${label}] Background task failed after the response:`, error);
 		},
 	);
-	const target = ctx ?? resolveVercelAfterResponseContext();
-	if (target) target.waitUntil(settled);
+	if (ctx) ctx.waitUntil(settled);
 }

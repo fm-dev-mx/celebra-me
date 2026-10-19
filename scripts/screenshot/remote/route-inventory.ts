@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 
 /**
@@ -135,10 +135,12 @@ export function findVistaPreviaPaths(html: string, origin: string): string[] {
 
 /** Repository sources at `root`. Imported lazily so unit tests can stay hermetic. */
 export async function loadRepositoryRouteSources(root: string): Promise<RouteSources> {
-	const [{ listActiveInvitationDefinitions }, { DEMO_SHOWROOM_EVENTS }] = await Promise.all([
-		import('../../provision/invitations/registry.ts'),
-		import('../../../src/data/demo-showroom.data.ts'),
-	]);
+	const [{ listActiveInvitationDefinitions }, { DEMO_SHOWROOM_EVENTS }, { PERMANENT_REDIRECTS }] =
+		await Promise.all([
+			import('../../provision/invitations/registry.ts'),
+			import('../../../src/data/demo-showroom.data.ts'),
+			import('../../../src/lib/server/security-headers.ts'),
+		]);
 	const demosRoot = resolve(root, 'src/content/event-demos');
 	const demos = readdirSync(demosRoot, { withFileTypes: true })
 		.filter((entry) => entry.isDirectory())
@@ -148,9 +150,6 @@ export async function loadRepositoryRouteSources(root: string): Promise<RouteSou
 				.map((file) => ({ eventType: entry.name, slug: basename(file, '.json') })),
 		)
 		.sort((a, b) => `${a.eventType}/${a.slug}`.localeCompare(`${b.eventType}/${b.slug}`));
-	const vercel = JSON.parse(readFileSync(resolve(root, 'vercel.json'), 'utf8')) as {
-		redirects?: RedirectRuleSource[];
-	};
 	return {
 		definitions: listActiveInvitationDefinitions().map((definition) => ({
 			eventType: definition.eventType,
@@ -159,7 +158,7 @@ export async function loadRepositoryRouteSources(root: string): Promise<RouteSou
 		})),
 		demos,
 		showroomPaths: DEMO_SHOWROOM_EVENTS.map((event) => event.showroomHref),
-		redirects: vercel.redirects ?? [],
+		redirects: PERMANENT_REDIRECTS.map((rule) => ({ ...rule, permanent: true })),
 		memoriesPaths: [...MEMORIES_PATHS],
 		vistaPreviaPaths: [],
 	};

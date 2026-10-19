@@ -7,7 +7,7 @@ function normalizePath(file) {
 
 // Deploy identity is read in exactly one module. Application code never consults
 // hosting-platform identity or NODE_ENV: edge runtimes report no NODE_ENV, and hosting
-// platforms may inject any value at runtime (Vercel serves NODE_ENV=development).
+// platforms may inject any value at runtime.
 const DEPLOY_IDENTITY_MODULE = 'src/lib/server/deploy-identity.ts';
 const DEPLOY_IDENTITY_RULES = [
 	{

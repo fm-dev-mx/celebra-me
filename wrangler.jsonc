@@ -1,5 +1,5 @@
 // Cloudflare Workers configuration for the Celebra-me application.
-// Only the Cloudflare build reads it (CELEBRA_BUILD_TARGET=cloudflare). The build selects an
+// `astro build` reads it through the Cloudflare adapter. The build selects an
 // environment with CLOUDFLARE_ENV=<name>; wrangler commands pass the same name with --env.
 // The top-level entry is the local target (wrangler dev); it is never deployed.
 {
@@ -33,13 +33,18 @@
             },
             "images": { "binding": "IMAGES" },
             // Invitation images (src/lib/intake/services/r2-invitation-media.ts).
-            "r2_buckets": [{ "binding": "INVITATION_MEDIA", "bucket_name": "celebra-me-invitation-media-staging" }],
+            "r2_buckets": [
+                {
+                    "binding": "INVITATION_MEDIA",
+                    "bucket_name": "celebra-me-invitation-media-staging"
+                }
+            ],
             // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
             "services": [
                 { "binding": "MEMORIES_SIGN", "service": "celebra-memories-sign-staging" },
                 { "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve-staging" }
             ],
-            // Same schedules as vercel.json; src/lib/server/scheduled-jobs.ts maps each expression.
+            // src/lib/server/scheduled-jobs.ts maps each expression to its job.
             "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
             // One binding per (namespace, maxHits, windowSec) that src/lib/rsvp/security/rate-limit-provider.ts
             // resolves by name. namespace_id 2001-2099 belongs to the Preview application Worker
@@ -170,18 +175,18 @@
             },
             "images": { "binding": "IMAGES" },
             // Invitation images (src/lib/intake/services/r2-invitation-media.ts).
-            "r2_buckets": [{ "binding": "INVITATION_MEDIA", "bucket_name": "celebra-me-invitation-media" }],
+            "r2_buckets": [
+                { "binding": "INVITATION_MEDIA", "bucket_name": "celebra-me-invitation-media" }
+            ],
             // Private memories Workers over Service Bindings (src/lib/memories/server/worker-bindings.ts).
-            // The retrieval Worker keeps workers_dev while Vercel, the rollback host, still calls it;
+            // The retrieval Worker still has workers_dev until its own config drops it;
             // the sign Worker always keeps it, because browsers PUT uploads to its public host.
             "services": [
                 { "binding": "MEMORIES_SIGN", "service": "celebra-memories-sign" },
                 { "binding": "MEMORIES_RETRIEVE", "service": "celebra-memories-retrieve" }
             ],
-            // Same schedules as Vercel (`vercel.json`). Cron triggers are non-versioned: version
-            // uploads, version deploys and secret changes never apply them, so they stay off until
-            // the cutover enables them once Vercel is paused (one cron runner at a time). Only
-            // `wrangler deploy` or `wrangler triggers deploy` would apply them.
+            // Cron triggers are non-versioned: version uploads, version deploys and secret changes
+            // never apply them. Only `wrangler deploy` or `wrangler triggers deploy` applies them.
             "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
             // namespace_id 3001-3099 belongs to the Production application Worker.
             "ratelimits": [

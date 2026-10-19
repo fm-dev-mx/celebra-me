@@ -187,12 +187,8 @@ describe('limits fit the platform', () => {
 		);
 	});
 
-	it('budgets the daily cleanup inside the function time Vercel gives it', () => {
-		const maxDurationSeconds = Number(
-			/maxDuration: (\d+)/.exec(readRepositoryFile('astro.config.mjs'))?.[1],
-		);
-		expect(maxDurationSeconds).toBeGreaterThan(0);
-		expect(MEMORIES_CLEANUP_TIME_BUDGET_MS).toBeLessThan(maxDurationSeconds * 1000);
+	it('budgets the daily cleanup inside a 30-second run', () => {
+		expect(MEMORIES_CLEANUP_TIME_BUDGET_MS).toBeLessThan(30_000);
 		expect(MEMORIES_CLEANUP_SETTLE_BUDGET_MS).toBeLessThan(MEMORIES_CLEANUP_TIME_BUDGET_MS);
 	});
 

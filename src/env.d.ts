@@ -28,7 +28,6 @@ interface ImportMetaEnv {
 	/** Server-only HMAC key for shared memories gallery links. */
 	readonly MEMORIES_SHARE_SECRET: string;
 	/** Server-only bearer secret that authorizes scheduled cleanup calls. */
-	readonly CRON_SECRET: string;
 	/** Server-only comma-separated super admin emails; the first entry is the project owner. */
 	readonly SUPER_ADMIN_EMAILS: string;
 	/** Server-only Cloudflare account id for the platform usage console (optional). */

@@ -1,7 +1,7 @@
 /**
  * Scheduled jobs for the Workers runtime. Cloudflare delivers a cron trigger to the
  * Worker's `scheduled` handler with the cron expression that fired; this module maps
- * each expression to the job the `/api/cron/*` routes run for Vercel's scheduler.
+ * each expression to its job.
  * The expressions are the ones declared under `triggers.crons` in `wrangler.jsonc`.
  */
 import { randomUUID } from 'node:crypto';

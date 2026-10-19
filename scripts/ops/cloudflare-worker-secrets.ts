@@ -5,7 +5,7 @@
  * secrets. The script prints names and counts, never values.
  *
  * Preview reads the lane's `.env.preview.local`. Production has no lane file: the operator passes
- * a one-off file (for example the Vercel Production variables) with `--env-file`, and deletes it
+ * a one-off file (for example a previous host's Production variables) with `--env-file`, and deletes it
  * afterwards. A file whose Supabase URL names another project is refused.
  *
  * Usage: tsx scripts/ops/cloudflare-worker-secrets.ts [--env preview|production] [--env-file <path>] [--dry-run]
@@ -37,7 +37,6 @@ const SHARED_SECRET_NAMES: readonly string[] = [
 	'MEMORIES_CLOUDFLARE_ACCOUNT_ID',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 	'MEMORIES_R2_BUCKET_NAME',
-	'CRON_SECRET',
 	'SUPER_ADMIN_EMAILS',
 	'SUPABASE_MANAGEMENT_TOKEN',
 	'CLOUDINARY_CLOUD_NAME',

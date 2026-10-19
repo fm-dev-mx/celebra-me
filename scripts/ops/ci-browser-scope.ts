@@ -22,7 +22,7 @@ export const BROWSER_INPUT_PATTERNS = [
 	/^tests\/fixtures\//u,
 	/^scripts\/ops\/(?:ci-browser-scope|browser-outcome|visual-impact)\.ts$/u,
 	/^\.github\/workflows\/commit-validation\.yml$/u,
-	/^(?:\.npmrc|tsconfig(?:\..+)?\.json|vercel\.json)$/u,
+	/^(?:\.npmrc|tsconfig(?:\..+)?\.json)$/u,
 ];
 
 export const BROWSER_JOB_NAME = 'Application / browser';

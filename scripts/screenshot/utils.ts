@@ -616,15 +616,7 @@ export function getAboveFoldCriticalSelector(pageType: PageType): string {
  * Hidden only under screenshot/audit capture CSS — never product UI.
  */
 export function getOperationalToolbarSelectors(): string[] {
-	return [
-		'astro-dev-toolbar',
-		'astro-dev-overlay',
-		'#vercel-live-feedback',
-		'vercel-live-feedback',
-		'[data-vercel-toolbar]',
-		'[data-vercel-toolbar-rel]',
-		'#__vercel_toolbar',
-	];
+	return ['astro-dev-toolbar', 'astro-dev-overlay'];
 }
 
 export function getDefaultHideSelectors(): string[] {

@@ -63,7 +63,6 @@ describe('remote visual target allow-list', () => {
 		'https://www.celebra-me.com/xv/america',
 		'https://www.celebra-me.com?x=1',
 		'https://www.celebra-me.com:8443',
-		'https://celebra-me.vercel.app',
 		'https://example.com',
 		'https://evil-celebra-me.celebra-me-com.workers.dev.example.com',
 	])('rejects %s', (origin) => {
@@ -165,7 +164,6 @@ describe('remote route inventory', () => {
 
 describe('remote manifest helpers', () => {
 	it.each([
-		['/_vercel/image?url=%2F_astro%2Fhero.Bx3kL9aZ.jpg&w=1080&q=75', 'hero.jpg'],
 		['/_image?href=%2F_astro%2Fhero.Bx3kL9aZ.jpg&w=1080', 'hero.jpg'],
 		['https://cdn.example/cdn-cgi/image/width=800/photos/Portada.JPG', 'portada.jpg'],
 		['https://www.celebra-me.com/_astro/hero.Bx3kL9aZ.webp', 'hero.webp'],

@@ -37,7 +37,7 @@ export default defineConfig({
 		reuseExistingServer: false,
 		timeout: 120_000,
 		env: {
-			VERCEL_ENV: 'production',
+			CELEBRA_DEPLOY_ENV: 'production',
 			PUBLIC_GA_MEASUREMENT_ID: 'G-TEST',
 		},
 	},

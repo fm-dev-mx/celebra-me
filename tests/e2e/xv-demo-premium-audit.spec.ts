@@ -79,8 +79,6 @@ for (const viewport of VIEWPORTS) {
 				isHostOrSubdomain(hostname, 'google-analytics.com') ||
 				isHostOrSubdomain(hostname, 'googleapis.com') ||
 				isHostOrSubdomain(hostname, 'goo.gl') ||
-				isHostOrSubdomain(hostname, 'vercel.app') ||
-				isHostOrSubdomain(hostname, 'vercel.com') ||
 				isHostOrSubdomain(hostname, 'apple.com') ||
 				isHostOrSubdomain(hostname, 'waze.com') ||
 				url.endsWith('.mp3') ||

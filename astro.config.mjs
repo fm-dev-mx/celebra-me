@@ -4,7 +4,6 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap'; // Automatic site map generation for SEO
 import robotsTxt from 'astro-robots-txt'; // Automatic robots.txt generation for SEO
 import react from '@astrojs/react';
-import vercel from '@astrojs/vercel';
 import cloudflare from '@astrojs/cloudflare';
 import { fileURLToPath } from 'url';
 import {
@@ -18,20 +17,15 @@ import { appendStaticSecurityHeaders } from './scripts/shared/cloudflare-static-
 import { readFile, writeFile } from 'node:fs/promises';
 
 const isBuildCommand = process.argv.includes('build');
-// Temporary dual hosting target while Preview moves to Cloudflare Workers: `vercel` (default)
-// or `cloudflare`. The Cloudflare build reads wrangler.jsonc and bundles src/worker.ts.
-const buildTarget = process.env.CELEBRA_BUILD_TARGET || 'vercel';
-if (buildTarget !== 'vercel' && buildTarget !== 'cloudflare') {
-	throw new Error('CELEBRA_BUILD_TARGET must be "vercel" or "cloudflare" when set.');
-}
-const isCloudflareBuild = buildTarget === 'cloudflare';
+// The Cloudflare adapter serves `astro build` and `astro preview`: it reads wrangler.jsonc and
+// bundles src/worker.ts. `astro dev` and `astro check` run without an adapter, in Node.
+const usesCloudflareAdapter = isBuildCommand || process.argv.includes('preview');
 // Hosted builds declare their deploy identity; local processes never do. An invalid
 // declaration fails the build instead of producing a bundle that throws at runtime.
 const isHostedBuild = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV) !== null;
-// Build identity reported by /api/health. GitHub Actions exposes GITHUB_SHA; the
-// Vercel build fallbacks leave together with the Vercel build.
-const buildCommitSha = process.env.GITHUB_SHA || process.env.VERCEL_GIT_COMMIT_SHA || '';
-const buildGitRef = process.env.GITHUB_REF_NAME || process.env.VERCEL_GIT_COMMIT_REF || '';
+// Build identity reported by /api/health. GitHub Actions exposes GITHUB_SHA.
+const buildCommitSha = process.env.GITHUB_SHA || '';
+const buildGitRef = process.env.GITHUB_REF_NAME || '';
 const configuredBaseUrl = process.env.BASE_URL;
 const publicSiteUrl =
 	configuredBaseUrl &&
@@ -68,15 +62,6 @@ const supabaseStorageRemotePattern = supabasePublicUrl
 		})()
 	: null;
 const PROD_SUPABASE_HOST = process.env.PROD_SUPABASE_HOST ?? 'ineitkdkyrxqyressllp.supabase.co';
-
-const externalImageDomains = [
-	'images.unsplash.com',
-	'res.cloudinary.com',
-	'media.celebra-me.com',
-	'media-staging.celebra-me.com',
-	PROD_SUPABASE_HOST,
-	...(supabaseStorageRemotePattern ? [supabaseStorageRemotePattern.hostname] : []),
-];
 
 if (process.env.CELEBRA_ENV_BOOTSTRAP_LOG === '1') {
 	console.info(
@@ -151,15 +136,14 @@ function supabaseDevPreflightIntegration() {
 }
 
 /**
- * Cloudflare build only: prerendered pages are static assets that skip the middleware, so
- * their security headers come from a `_headers` rule (Vercel applies vercel.json instead).
+ * Prerendered pages are static assets that skip the middleware, so their security headers
+ * come from a `_headers` rule.
  */
 function cloudflareStaticSecurityHeadersIntegration() {
 	return {
 		name: 'cloudflare-static-security-headers',
 		hooks: {
 			'astro:build:done': async ({ dir }) => {
-				if (!isCloudflareBuild) return;
 				const headersPath = new URL('./_headers', dir);
 				const existing = await readFile(headersPath, 'utf8').catch(() => '');
 				await writeFile(
@@ -256,32 +240,6 @@ export default defineConfig({
 			// Observability and intake image paths import sharp; bundling it under Vite SSR
 			// surfaces win32 ERR_DLOPEN_FAILED and collapses API routes to opaque 500 HTML.
 			external: ['sharp'],
-			// Vercel's serverless loader cannot safely load sanitize-html's runtime graph:
-			// bare requires in its bundled CommonJS entrypoint are not traced into the
-			// function, and htmlparser2@12 is ESM-only. Bundle the bounded SSR chain.
-			// The Cloudflare adapter bundles every dependency itself.
-			noExternal:
-				isBuildCommand && !isCloudflareBuild
-					? [
-							'sanitize-html',
-							'escape-string-regexp',
-							'is-plain-object',
-							'deepmerge',
-							'parse-srcset',
-							'postcss',
-							'picocolors',
-							'source-map-js',
-							'nanoid',
-							'launder',
-							'dayjs',
-							'htmlparser2',
-							'entities',
-							'domhandler',
-							'domelementtype',
-							'domutils',
-							'dom-serializer',
-						]
-					: undefined,
 		},
 		define: {
 			'import.meta.env.CELEBRA_BUILD_SHA': JSON.stringify(buildCommitSha),
@@ -305,18 +263,11 @@ export default defineConfig({
 	output: 'server',
 	// The app never uses Astro.session; without this the Cloudflare adapter provisions a KV
 	// session namespace on every deploy.
-	...(isCloudflareBuild ? { session: false } : {}),
-	adapter: isCloudflareBuild
+	session: false,
+	adapter: usesCloudflareAdapter
 		? cloudflare({
 				// Image transforms through the IMAGES binding declared in wrangler.jsonc.
 				imageService: 'cloudflare-binding',
 			})
-		: vercel({
-				maxDuration: 30, // Increase limit for serverless functions
-				imageService: true, // Enable Vercel's image optimization for local images
-				imagesConfig: {
-					sizes: [320, 640, 960, 1200, 1600, 1800],
-					domains: externalImageDomains, // Allow external images
-				},
-			}),
+		: undefined,
 });

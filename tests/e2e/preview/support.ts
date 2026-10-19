@@ -62,36 +62,18 @@ export async function establishDeploymentProtectionBypass(
 ): Promise<void> {
 	const headers = runtime.protectionHeaders;
 	if (!headers) {
-		throw new Error('Vercel Deployment Protection headers were not resolved.');
+		throw new Error('Cloudflare Access service token headers were not resolved.');
 	}
 
-	// Scope the secret to one same-origin request. Vercel responds by setting its
-	// bypass cookie, which page.request shares with the browser context. A global
-	// extraHTTPHeaders setting would also attach the secret to third-party assets.
+	// Scope the service token to one same-origin request. Cloudflare Access answers with a
+	// CF_Authorization cookie, which page.request shares with the browser context. A global
+	// extraHTTPHeaders setting would also attach the token to third-party assets.
 	const response = await page.request.get(`${runtime.baseURL}/api/health`, {
 		headers,
 		maxRedirects: 0,
 	});
-	if (response.status() === 200) return;
-
-	const location = response.headers().location;
-	if (response.status() < 300 || response.status() >= 400 || !location) {
-		throw new Error(
-			`Vercel Deployment Protection bootstrap failed with HTTP ${response.status()}.`,
-		);
-	}
-	const redirectUrl = new URL(location, runtime.baseURL);
-	if (redirectUrl.origin !== new URL(runtime.baseURL).origin) {
-		throw new Error(
-			'Vercel Deployment Protection bootstrap attempted a cross-origin redirect.',
-		);
-	}
-
-	const verification = await page.request.get(redirectUrl.toString(), { maxRedirects: 0 });
-	if (verification.status() !== 200) {
-		throw new Error(
-			`Vercel Deployment Protection cookie verification failed with HTTP ${verification.status()}.`,
-		);
+	if (response.status() !== 200) {
+		throw new Error(`Cloudflare Access bootstrap failed with HTTP ${response.status()}.`);
 	}
 }
 

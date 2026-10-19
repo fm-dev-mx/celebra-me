@@ -2,7 +2,7 @@
  * preview-approval-store.ts — Storage seam for Preview release approvals.
  *
  * Default runtime store is Preview DB (shared across worktrees). Tests inject
- * an in-memory store. No app runtime, Vercel, or Cloudinary involvement.
+ * an in-memory store. No app runtime or Cloudinary involvement.
  */
 import { requirePreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import type { PreviewApprovalArtifact } from './preview-approval-service.ts';

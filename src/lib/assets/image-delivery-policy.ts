@@ -25,7 +25,7 @@ function isStorageMediaUrl(src: string | URL): boolean {
 
 /**
  * Published media that keeps a stable path when bytes are replaced.
- * Confirmed stale path: these URLs through `/_vercel/image` inherit a 1h
+ * Stale-path risk: if an image optimizer proxied these URLs it could inherit a 1h
  * transform TTL while Storage itself is `no-cache` + ETag.
  *
  * Classification is hostname-based so path-only lookalikes do not match.

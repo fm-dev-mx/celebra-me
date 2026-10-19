@@ -1,12 +1,6 @@
 /**
- * Platform-neutral security headers and legacy redirects.
- *
- * These rules were historically declared only in `vercel.json` (`headers` and
- * `redirects`). Serving them from the Astro middleware means every hosting
- * platform (Vercel today, Cloudflare Workers next) returns the same answers
- * without platform-specific configuration. `vercel.json` keeps its copy until
- * Vercel is retired; `tests/integration/platform-headers-parity.test.ts`
- * guards that both copies stay identical.
+ * Security headers and legacy redirects, served from the Astro middleware.
+ * `tests/integration/security-headers-middleware.test.ts` pins the served values.
  *
  * The immutable cache header for `/_astro/*` is intentionally not handled
  * here: static assets never reach the middleware, and each adapter writes
@@ -83,16 +77,13 @@ export function withSecurityHeaders(pathname: string, response: Response): Respo
 }
 
 export interface PermanentRedirectRule {
-	/** Vercel-style source: literal segments or `:param` placeholders (one segment each). */
+	/** Source path: literal segments or `:param` placeholders (one segment each). */
 	readonly source: string;
 	/** Destination with the same `:param` placeholders, substituted from the match. */
 	readonly destination: string;
 }
 
-/**
- * Permanent (301) redirects for retired URLs. Declared in the same shape as the
- * `redirects` block of `vercel.json` so the parity test can compare them literally.
- */
+/** Permanent (301) redirects for retired URLs. */
 export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 	{
 		source: '/bautizo/demo-bautismo-angelic-presence',

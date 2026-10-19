@@ -60,12 +60,9 @@ describe('wrangler.jsonc Production environment', () => {
 		expect(production.preview_urls).toBe(true);
 	});
 
-	it('schedules exactly the Vercel cron jobs, each bound to a scheduled job', () => {
-		const vercel = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8')) as {
-			crons: { schedule: string }[];
-		};
+	it('schedules both daily jobs, each bound to a scheduled job', () => {
 		const crons = production.triggers?.crons ?? [];
-		expect([...crons].sort()).toEqual(vercel.crons.map((cron) => cron.schedule).sort());
+		expect([...crons].sort()).toEqual(['17 15 * * *', '43 10 * * *']);
 		expect([...crons].sort()).toEqual(Object.values(SCHEDULED_JOB_CRONS).sort());
 		expect(crons).toEqual(preview.triggers?.crons);
 	});

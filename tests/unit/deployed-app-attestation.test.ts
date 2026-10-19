@@ -7,7 +7,7 @@ const deployedSha = 'a'.repeat(40);
 const targetSha = 'b'.repeat(40);
 const checks = [
 	{
-		name: 'Vercel - celebra-me production smoke',
+		name: 'Cloudflare - celebra-me production smoke',
 		sha: deployedSha,
 		state: 'success',
 		trusted: true,

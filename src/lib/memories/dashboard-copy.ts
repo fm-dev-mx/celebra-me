@@ -166,7 +166,7 @@ export function describeMemoriesLoadError(failure: {
 		title: 'El servidor respondió con un error inesperado.',
 		steps: [
 			'Confirme que el servidor de desarrollo y Supabase estén en marcha («pnpm db:start»).',
-			'Revise la terminal de «pnpm dev» (o los registros de Vercel) y busque «[rsvp]» para ver la causa.',
+			'Revise la terminal de «pnpm dev» (o los registros del Worker en Cloudflare) y busque «[rsvp]» para ver la causa.',
 			'Use «Reintentar» después de corregirla.',
 		],
 	};
@@ -177,7 +177,7 @@ const SECRET_COMMAND =
 const KEY_PAIR_COMMAND =
 	"node -e \"const k=require('crypto').generateKeyPairSync('ec',{namedCurve:'prime256v1'});console.log(k.privateKey.export({type:'pkcs8',format:'pem'}));console.log(k.publicKey.export({type:'spki',format:'pem'}))\"";
 const STORE_IN_APP =
-	'Guárdela en .env.local (Local) o en Vercel → Settings → Environment Variables como Sensitive (Preview y Producción) y vuelva a desplegar la app.';
+	'Guárdela en .env.local (Local) o como secreto del Worker de Cloudflare (Preview y Producción) y vuelva a desplegar la app.';
 
 /** One actionable notice per missing setting; names and commands only, never values. */
 export function describeMemoriesConfigGap(key: MemoriesConfigKey): MemoriesLoadErrorGuide {
@@ -228,11 +228,6 @@ export function describeMemoriesConfigGap(key: MemoriesConfigKey): MemoriesLoadE
 				],
 			};
 		}
-		case 'cronSecret':
-			return {
-				title: 'Falta CRON_SECRET: la limpieza diaria no borra los recuerdos vencidos.',
-				steps: [`Genere un valor aleatorio: ${SECRET_COMMAND}`, STORE_IN_APP],
-			};
 	}
 }
 
