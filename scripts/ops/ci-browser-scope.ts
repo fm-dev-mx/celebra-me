@@ -25,7 +25,11 @@ export const BROWSER_INPUT_PATTERNS = [
 	/^(?:\.npmrc|tsconfig(?:\..+)?\.json)$/u,
 ];
 
-export const BROWSER_JOB_NAME = 'Application / browser';
+/** Every job of the browser tier; a source run proves the tier only when all of them passed. */
+export const BROWSER_JOB_NAMES = [
+	'Application / browser',
+	'Application / browser memories',
+] as const;
 export const SCOPE_WORKFLOW_FILE = 'commit-validation.yml';
 export const SCOPE_SOURCE_BRANCH = 'develop';
 
@@ -84,7 +88,7 @@ export function assessBrowserScope(input: {
 
 const EXACT_SHA = /^[a-f0-9]{40}$/u;
 
-/** Most recent successful `develop` push run whose browser job itself concluded `success`. */
+/** Most recent successful `develop` push run whose browser jobs themselves concluded `success`. */
 async function findProvenRun(
 	repository: string,
 	token: string,
@@ -116,8 +120,11 @@ async function findProvenRun(
 			repository,
 			token,
 		)) as { jobs?: Array<{ name: string; conclusion: string | null }> };
-		const browserJob = (body.jobs ?? []).find((job) => job.name === BROWSER_JOB_NAME);
-		if (browserJob?.conclusion === 'success') {
+		const jobs = body.jobs ?? [];
+		const browserTierPassed = BROWSER_JOB_NAMES.every((name) =>
+			jobs.some((job) => job.name === name && job.conclusion === 'success'),
+		);
+		if (browserTierPassed) {
 			return { id: candidate.id, headSha: candidate.head_sha };
 		}
 	}
