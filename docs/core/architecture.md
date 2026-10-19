@@ -514,9 +514,9 @@ deployment.
   ranged reads to the `moov` atom, because phones write it after the media data and its size is
   unbounded; a fixed tail window is only the last resort.
 - **Retrieval transport:** on Cloudflare the app Worker reaches `celebra-memories-retrieve` through
-  the `MEMORIES_RETRIEVE` Service Binding (`src/lib/memories/server/worker-bindings.ts`); Vercel and
-  local dev call `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`. Both carry the same signed request. The
-  retrieval Worker keeps its `workers.dev` host until Vercel is deleted (2026-11-09).
+  the `MEMORIES_RETRIEVE` Service Binding (`src/lib/memories/server/worker-bindings.ts`); local dev
+  calls `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`. Both carry the same signed request. The retrieval
+  Worker has no `workers.dev` host, so Vercel can no longer serve memories media.
 - **Sign transport:** on Preview the app Worker shares the `workers.dev` subdomain with
   `celebra-memories-sign-staging`, where a plain `fetch` between Workers fails (Cloudflare error
   1042), so it calls `POST /sign` through the `MEMORIES_SIGN` Service Binding; Production binds it

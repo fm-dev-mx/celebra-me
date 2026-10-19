@@ -100,7 +100,11 @@ describe('memories Workers wrangler configuration', () => {
 			expect(parseStorageTarget(storageTarget)).toBe(target);
 			expect(environment.routes).toEqual([]);
 			expect(environment.preview_urls).toBe(false);
-			expect(environment.workers_dev).toBe(target !== 'local');
+			// Only the sign Worker stays public: browsers PUT uploads to its host. The app reaches
+			// the retrieval Worker through the MEMORIES_RETRIEVE Service Binding.
+			expect(environment.workers_dev).toBe(
+				worker === 'celebra-memories-sign' && target !== 'local',
+			);
 			if (target !== 'production') expect(environment.name).toBe(`${worker}-${target}`);
 		}
 	});
