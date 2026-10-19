@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { INVITATION_STATUSES } from '@/lib/intake/types';
+import { isReservedInvitationSlug, RESERVED_SLUG_MESSAGE } from '@/lib/invitation/slug-policy';
 
 const UpdateInvitationSchema = z.object({
 	title: z.string().min(1).max(200).trim().optional(),
@@ -7,6 +8,7 @@ const UpdateInvitationSchema = z.object({
 		.string()
 		.max(120)
 		.regex(/^[a-z0-9-]+$/)
+		.refine((slug) => !isReservedInvitationSlug(slug), RESERVED_SLUG_MESSAGE)
 		.trim()
 		.optional()
 		.nullable(),

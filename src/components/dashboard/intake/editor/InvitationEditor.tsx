@@ -61,6 +61,7 @@ import {
 	getPublicationFeedback,
 	type PublicationFeedback,
 } from '@/lib/intake/publication-feedback';
+import { buildPublicInvitationPath } from '@/utils/invitation-link';
 import EditorDivergenceBanner from '@/components/intake/EditorDivergenceBanner';
 
 interface Props {
@@ -855,7 +856,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 						<p>Los cambios ya están visibles en la página pública.</p>
 						<div className="invitation-editor__publish-actions">
 							<a
-								href={`/${editor.context.invitation.eventType}/${publishedSlug}`}
+								href={buildPublicInvitationPath(
+									editor.context.invitation.eventType,
+									publishedSlug,
+								)}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="invitation-editor__primary-action"

@@ -1,3 +1,4 @@
+import { buildPublicInvitationPath } from '@/utils/invitation-link';
 import WorkflowControls from '@/components/dashboard/intake/WorkflowControls';
 import '@/styles/dashboard/_invitation-workflow.scss';
 import type { FC } from 'react';
@@ -107,7 +108,7 @@ const FILTER_TABS: Array<{
 
 function publicUrl(invitation: InvitationDTO): string | null {
 	if (!invitation.published) return null;
-	return `/${invitation.eventType}/${getPublicSlug(invitation)}`;
+	return buildPublicInvitationPath(invitation.eventType, getPublicSlug(invitation));
 }
 
 function relativeDate(dateStr: string): string {
