@@ -38,6 +38,9 @@
 	--color-text-on-light: rgb(var(--olivia-navy-rgb) / 82%);
 	--countdown-section-background: var(--olivia-ivory);
 
+	// The shore pause after the families stays a breath, not a full screen, on phones.
+	--interlude-min-height-2-sm: 62svh;
+
 	// Photographs drawn once inside a champagne hairline (family, save-the-date, closing).
 	--hairline-frame-display: block;
 	--hairline-frame-ink: var(--olivia-champagne);
@@ -53,6 +56,11 @@
 	.family[data-variant='asymmetric-groups'] {
 		--family-bg: var(--olivia-ivory);
 		--family-media-filter: none;
+		--family-media-aspect-ratio: 1 / 1;
+		--family-split-padding-block: 3rem;
+		--family-split-header-gap: 1.5rem;
+		--family-split-group-gap: 1rem;
+		--family-split-godparents-gap: 1.5rem;
 		--family-label-font: var(--font-label);
 		--family-meta-font: var(--font-label);
 		--family-eyebrow-size: var(--olivia-label-size);
@@ -82,6 +90,7 @@
 
 	// Gallery: features full width at 4:5, the rest paired at 3:4 on a tight 8 px gutter.
 	.gallery-section[data-variant='paired-feature-band'] {
+		--gallery-section-padding-block: 4rem;
 		--gallery-section-bg: var(--olivia-ivory);
 		--gallery-title-size: var(--olivia-title-size);
 		--gallery-title-weight: 500;
@@ -124,6 +133,7 @@
 
 	// Countdown: the days lead in display numerals; hours, minutes and seconds share one line.
 	.countdown-section {
+		--countdown-type-section-padding-block: 4rem;
 		--countdown-type-title-size: var(--olivia-title-size);
 		--countdown-type-title-weight: 500;
 		--countdown-type-title-line-height: var(--olivia-title-line-height);
@@ -260,6 +270,9 @@
 		--location-inner-frame-padding: 0;
 		--location-content-padding: clamp(1.35rem, 3vw, 1.85rem);
 		--location-plates-content-align: left;
+		--location-padding-block: 3.25rem;
+		--location-stack-gap: 1.75rem;
+		--location-lead-time-align: center;
 		--location-intro-heading-size: var(--olivia-title-size);
 		--location-intro-heading-font-weight: 500;
 		--location-plates-eyebrow-size: var(--olivia-label-size);
@@ -417,9 +430,11 @@
 		--color-surface-dark-rgb: var(--olivia-navy-deep-rgb);
 		--thank-you-bleed-veil: linear-gradient(
 			to bottom,
-			transparent 40%,
-			var(--olivia-navy-deep) 92%
+			transparent 30%,
+			rgb(var(--olivia-navy-deep-rgb) / 72%) 58%,
+			var(--olivia-navy-deep) 88%
 		);
+		--thank-you-bleed-photo-veil-content: '';
 		--thank-you-bleed-grid-opacity: 0%;
 		--thank-you-bleed-message-bg: transparent;
 		--thank-you-bleed-message-shadow: none;

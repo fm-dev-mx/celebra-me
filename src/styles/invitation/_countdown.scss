@@ -2,7 +2,7 @@
 
 .countdown-section {
 	position: relative;
-	padding: 6rem 1rem;
+	padding: var(--countdown-type-section-padding-block, 6rem) 1rem;
 	overflow: hidden;
 	display: flex;
 	justify-content: center;

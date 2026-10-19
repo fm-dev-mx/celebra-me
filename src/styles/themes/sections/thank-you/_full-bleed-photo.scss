@@ -8,6 +8,7 @@
 //   --thank-you-bleed-monogram-display  Monogram ring above the message (`none` hides it)
 //   --thank-you-bleed-message-color / -message-style / -message-size / -message-line-height
 //   --thank-you-bleed-name-display    Closing name (default `none`); --thank-you-bleed-name-size (below md)
+//   --thank-you-bleed-photo-veil-content  `''` repeats the veil over the photo itself (default `none`)
 
 :is(.event-theme-wrapper, body) .thank-you-section[data-variant='full-bleed-photo'] {
 	--thank-you-overlay-gap: clamp(2rem, 6vw, 5rem);
@@ -101,9 +102,19 @@
 		background: var(--thank-you-ink);
 		box-shadow: none;
 
-		&::before,
-		&::after {
+		&::before {
 			content: none;
+		}
+
+		// The section veil paints under the content's stacking context; a profile that needs the
+		// photo itself shaded opts in with --thank-you-bleed-photo-veil-content: ''.
+		&::after {
+			content: var(--thank-you-bleed-photo-veil-content, none);
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background: var(--thank-you-bleed-veil, none);
+			pointer-events: none;
 		}
 
 		.photo-image {

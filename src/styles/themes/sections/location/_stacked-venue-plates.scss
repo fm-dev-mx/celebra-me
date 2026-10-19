@@ -241,7 +241,7 @@
 		font-variant-numeric: lining-nums;
 		line-height: 1;
 		color: var(--location-lead-time-color, var(--location-place-color, currentcolor));
-		text-align: var(--location-plates-content-align, center);
+		text-align: var(--location-lead-time-align, var(--location-plates-content-align, center));
 	}
 
 	.event-location__card-lead-time + .event-location__card-title {

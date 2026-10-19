@@ -3,7 +3,8 @@
 // Family asymmetric-groups: left-read staggered groups with optional right-set
 // spanning godparents block. Shared canonical implementation.
 // Opt-in tokens: --family-split-title-size / -title-weight / -title-line-height and
-// --family-split-name-size (defaults keep the variant's display scale).
+// --family-split-name-size (defaults keep the variant's display scale); spacing tokens
+// --family-split-padding-block, -header-gap, -group-gap and -godparents-gap keep its rhythm.
 .family[data-variant='asymmetric-groups'] {
 	--family-split-gap-inline: clamp(2rem, 6vw, 5rem);
 	--family-split-gap-block: clamp(1.25rem, 3.5vw, 1.65rem);
@@ -47,7 +48,7 @@
 		var(--family-text-muted-fallback, rgb(48 43 40 / 64%))
 	);
 
-	padding-block: clamp(4.25rem, 8vw, 6.25rem);
+	padding-block: var(--family-split-padding-block, clamp(4.25rem, 8vw, 6.25rem));
 	background: var(--family-bg, var(--family-bg-fallback));
 	color: var(--family-text-primary, var(--family-text-primary-fallback));
 
@@ -65,7 +66,7 @@
 
 	.family__header {
 		max-width: 36rem;
-		margin: 0 0 clamp(2.5rem, 5vw, 3.75rem);
+		margin: 0 0 var(--family-split-header-gap, clamp(2.5rem, 5vw, 3.75rem));
 		text-align: left;
 	}
 
@@ -171,7 +172,7 @@
 	}
 
 	.family__group--group-1 {
-		margin-top: clamp(1.75rem, 4vw, 3rem);
+		margin-top: var(--family-split-group-gap, clamp(1.75rem, 4vw, 3rem));
 	}
 
 	.family__group--group-1::before {
@@ -222,7 +223,7 @@
 
 	.family__group--godparents {
 		grid-column: 1 / -1;
-		margin-top: clamp(2.5rem, 5vw, 3.75rem);
+		margin-top: var(--family-split-godparents-gap, clamp(2.5rem, 5vw, 3.75rem));
 		padding-top: clamp(1.5rem, 3vw, 2.25rem);
 		border-top: 1px solid var(--family-split-divider);
 		text-align: right;
