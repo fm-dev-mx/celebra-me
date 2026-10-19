@@ -64,8 +64,10 @@ function failOpen(wrappers: Iterable<RevealWrapper>): void {
 
 function editorialTargets(wrapper: RevealWrapper): HTMLElement[] {
 	// A marked container (a header item holding a marked title) defers to its marked children.
+	// Markup inside a framework island is left alone: changing it before hydration would not match
+	// the client render.
 	const items = Array.from(wrapper.querySelectorAll<HTMLElement>(EDITORIAL_ITEM_SELECTOR)).filter(
-		(item) => !item.querySelector(EDITORIAL_ITEM_SELECTOR),
+		(item) => !item.querySelector(EDITORIAL_ITEM_SELECTOR) && !item.closest('astro-island'),
 	);
 	// A section without marked items enters as one block.
 	return items.length > 0 ? items : [wrapper];

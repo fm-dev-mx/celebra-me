@@ -2,9 +2,9 @@
 /* eslint-disable no-restricted-syntax -- each word carries its stagger index as a custom property */
 /**
  * Title split into words on the server for the editorial reveal. A heading keeps its full text for
- * assistive technology in `aria-label`; other elements carry it as visually hidden text. The word
- * spans are presentational. Outside the editorial recipe they are plain inline text, so the title
- * renders as before.
+ * assistive technology in `aria-label` and its word spans are hidden from it; a paragraph is read
+ * through its words, which keep their spaces. Outside the editorial recipe the spans are plain
+ * inline text, so the title renders as before.
  */
 interface Props {
 	text: string;
@@ -21,11 +21,10 @@ const isHeading = Tag !== 'p';
 ---
 
 <Tag class={className} id={id} aria-label={isHeading ? text : undefined} data-reveal-role="title">
-	{!isHeading && <span class="sr-only">{text}</span>}
 	{
 		words.map((word, index) => (
 			<>
-				<span class="word" style={`--i:${offset + index}`} aria-hidden="true">{word}</span>
+				<span class="word" style={`--i:${offset + index}`} aria-hidden={isHeading ? 'true' : undefined}>{word}</span>
 				{index < words.length - 1 ? ' ' : ''}
 			</>
 		))

@@ -217,6 +217,19 @@ describe('invitation motion coordinator', () => {
 			expect(observers[0].observe).toHaveBeenCalledWith(wrapper.querySelector('h2'));
 		});
 
+		it('leaves markup inside a framework island untouched before hydration', () => {
+			const wrapper = renderEditorial(`
+				<astro-island ssr><h2 data-reveal-role="title">RSVP</h2></astro-island>
+			`);
+			const observers = installObserverMock();
+
+			initInvitationMotion();
+
+			expect(observers[0].observe).toHaveBeenCalledTimes(1);
+			expect(observers[0].observe).toHaveBeenCalledWith(wrapper);
+			expect(wrapper.querySelector('h2')).not.toHaveAttribute('data-reveal-pending');
+		});
+
 		it('reveals entering items once, with is-visible and no pending flag', () => {
 			const wrapper = renderEditorial('<div data-reveal-item data-gallery-item>One</div>');
 			const observers = installObserverMock();

@@ -74,8 +74,7 @@ describe('RSVP Component', () => {
 		it('should render the title', () => {
 			render(<RSVP {...defaultProps} />);
 
-			// The title is split into word spans; its accessible name stays whole.
-			expect(screen.getByRole('heading', { name: defaultProps.title })).toBeInTheDocument();
+			expect(screen.getByText(defaultProps.title)).toBeInTheDocument();
 		});
 
 		it('should render custom subcopy when provided', () => {
