@@ -342,7 +342,7 @@ describe('validate-structure script', () => {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}
 	});
-	it('rejects hosting-platform identity and stray deploy identity reads in src', () => {
+	it('rejects stray deploy identity reads in src', () => {
 		const fixtureRoot = createFixture();
 		try {
 			writeFixtureFile(
@@ -375,9 +375,10 @@ describe('validate-structure script', () => {
 				'src/lib/leaky.ts',
 			]).join('\n');
 
-			expect(output).toContain('src/lib/leaky.ts:1: reads hosting-platform identity');
-			expect(output).toContain('src/lib/leaky.ts:2: reads hosting-platform identity');
-			expect(output).toContain('src/lib/leaky.ts:3: reads a hosting-platform request id');
+			// Retired-provider names are reported as warnings by their own validator.
+			expect(output).not.toContain('src/lib/leaky.ts:1:');
+			expect(output).not.toContain('src/lib/leaky.ts:2:');
+			expect(output).not.toContain('src/lib/leaky.ts:3:');
 			expect(output).toContain('src/lib/leaky.ts:4: reads CELEBRA_DEPLOY_ENV outside');
 			expect(output).toContain('src/lib/leaky.ts:5: reads NODE_ENV dynamically');
 			expect(output).not.toContain('src/lib/leaky.ts:6:');
