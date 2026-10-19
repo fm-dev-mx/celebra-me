@@ -1,7 +1,7 @@
 ---
 template: agent-report-contract
 purpose: Human-facing evidence reports and material decision prompts
-version: 1.3.0
+version: 1.4.0
 applies_to:
   - .agent/skills/error-remediation/SKILL.md
   - .agent/skills/staged-code-review
@@ -31,8 +31,12 @@ gates.
 
 - Ask only for missing material intent, scope, acceptance, or permission required by the owning
   rule. Continue already-authorized work without a proceed/stop prompt or cosmetic feedback gate.
-- Ask one question at a time. When options clarify a tradeoff, offer two or three meaningful choices
-  ordered by recommendation (a first); do not invent a third option merely to fill a template.
+- Front-load owner decisions. Gather every material owner decision the task needs, then ask them all
+  in ONE round at the start: at most four questions, each with its recommended option first (offer
+  two or three meaningful choices; do not invent a third option merely to fill a template). Ask
+  again only when new evidence appears that changes a decision. This changes when a question is
+  asked, never whether: every approval an owning rule requires (Git writes, merge, deploy,
+  Production) still needs its explicit yes.
 - Describe the exact action and consequence briefly. Never recommend a policy-violating option.
 - Bind approval to the actual pending action and scope. Do not interpret an ambiguous affirmative as
   permission for a broader option, destructive operation, or unrelated Git/environment write.
