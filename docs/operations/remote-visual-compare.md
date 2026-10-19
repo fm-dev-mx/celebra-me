@@ -1,8 +1,8 @@
 # Remote visual compare
 
 Read-only screenshots of every live public route on a real origin, and a compare of two capture
-sets. Built for the Vercel to Cloudflare Workers cutover: capture `www` before, capture it again
-after, and the report says whether guests see the same pages.
+sets. Built for the cutover to Cloudflare Workers: capture `www` before, capture it again after, and
+the report says whether guests see the same pages.
 
 The repository's visual baselines only cover fixture sections, and the Preview E2E guards in
 `scripts/playwright/preview-environment.ts` refuse Production on purpose. This tool is a separate
@@ -43,8 +43,8 @@ Options for `capture`:
 | Production Worker version URL `<prefix>-celebra-me.celebra-me-com.workers.dev`      | required       |
 | Preview Worker `celebra-me-preview.celebra-me-com.workers.dev` and its version URLs | required       |
 
-Anything else (apex domain, Vercel hosts, ports, paths, `http`) is rejected. For Worker hosts the
-CLI reads `CLOUDFLARE_ACCESS_CLIENT_ID` / `CLOUDFLARE_ACCESS_CLIENT_SECRET` from the environment or
+Anything else (apex domain, other hosts, ports, paths, `http`) is rejected. For Worker hosts the CLI
+reads `CLOUDFLARE_ACCESS_CLIENT_ID` / `CLOUDFLARE_ACCESS_CLIENT_SECRET` from the environment or
 `.env.e2e.local`, and adds them only to requests for that exact origin, never to fonts, maps or
 other third parties. Values are never printed.
 
@@ -66,8 +66,8 @@ Built from the repository, then checked against the origin:
   origin serves them (for example `/xv/naydelin-paredes` answers 200 in Production); a 404 is
   recorded and skipped. Disabled invitations answer 403 by design and are captured as such;
 - `/r/victoria-y-roberto` (memories QR landing);
-- the permanent redirects in `vercel.json`, with `:eventType/:slug` filled from a published
-  invitation. Vercel answers 308 and other hosts may answer 301: both count as permanent;
+- the permanent redirects of the legacy URL scheme, with `:eventType/:slug` filled from a published
+  invitation. A 301 or 308 both count as permanent;
 - `/vista-previa/<token>` photos given with `--vista-previa`, or the first one found in a captured
   page. A set without one gets a warning in the report.
 
@@ -94,7 +94,7 @@ image, even when the rest of the page is identical.
 
 ## Cutover use
 
-1. Friday 22:00: `capture --label=antes` on `https://www.celebra-me.com` (still Vercel).
+1. Friday 22:00: `capture --label=antes` on `https://www.celebra-me.com` (still the former host).
 2. Optional rehearsal: capture the Production Worker version URL and compare it with `antes`.
 3. At the cutover (T+15 min): `capture --label=despues` on `https://www.celebra-me.com`, then
    `compare --before=antes --after=despues`. Exit code 0 = pass, 1 = fail.

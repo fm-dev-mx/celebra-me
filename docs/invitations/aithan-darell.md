@@ -47,32 +47,32 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 
 ## Fact Register
 
-| field                | value                                                                                                      | classification | source    | notes                                                                                                               |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- | -------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
-| slug                 | aithan-darell                                                                                              | verified       | owner     | Owner decision; two given names, no eventType prefix                                                                |
-| hostLoginAlias       | aithan_ruiz                                                                                                | verified       | owner     | Contract form; owner may remap to `aithan_darell`                                                                   |
-| celebrantName        | Aithan Darell Ruiz Salgado                                                                                 | verified       | wa-export | Written twice ("aithan darell Ruiz Salgado", then "Aithan Darell"); display name "Aithan Darell"                    |
-| eventLabel           | Mis 3 años                                                                                                 | verified       | wa-export | Client copy: "Aithan Darell / Mis 3 años"                                                                           |
-| eventDate            | 2026-10-24                                                                                                 | verified       | wa-export | "24 de octubre", stated twice; Saturday 24 October 2026                                                             |
-| eventTime            | 17:30                                                                                                      | verified       | wa-export | First "4:30", corrected to "Hora 5:30"; 5:30 p. m. confirmed by the client (2026-10-07)                             |
-| timeZone             | America/Mexico_City                                                                                        | inferred       | geography | Atizapán de Zaragoza, Estado de México; not client-stated                                                           |
-| sourceAssetPath      | source:client-photos                                                                                       | verified       | owner     | Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat                                      |
-| sectionOrder         | quote, countdown, location, gifts, gallery, personalizedAccess, rsvp, thankYou                             | inferred       | owner     | Family and itinerary omitted (client: "esto no va", 2026-10-08); gifts added as a legend                            |
-| primaryVenueName     | Jardín de Teresita                                                                                         | verified       | wa-export | —                                                                                                                   |
-| primaryVenueAddress  | Avenida Juárez 49, Atizapán centro                                                                         | verified       | wa-export | Municipality and state (Atizapán de Zaragoza, Estado de México) inferred from the client's Maps link                |
-| venueMapsUrl         | https://maps.app.goo.gl/ebbpWEFK68LhuDm28                                                                  | verified       | wa-export | Client link (2026-10-07); pinned at Av. Juárez 49 (19.5589908, -99.2451091); replaces the unpinned Street View link |
-| themeDescription     | Cars: carreras, McQueen, Mate, Mack, todos los personajes                                                  | verified       | wa-export | Client wrote "mcqueen, mate Mac todos los personas"; read as "personajes"; cutouts listed in Photograph Inventory   |
-| clientColors         | rojo, negro, blanco                                                                                        | verified       | wa-export | First "rojo y negro", later "roja y negra y blanca"                                                                 |
-| heroPhoto            | ride-on car photograph                                                                                     | verified       | wa-export | "La imagen sería la que tiene el carro"; published once (hero card/panel) plus the off-page OG image                |
-| rsvpConfirmationMode | api                                                                                                        | inferred       | owner     | Owner offered dashboard guest control and passes; client agreed ("Ok super")                                        |
-| rsvpGuestCap         | 4                                                                                                          | inferred       | owner     | Owner default, never discussed; passes are assigned per guest in the dashboard (asked in the message)               |
-| musicUrl             | https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3 | verified       | owner     | "Life Is a Highway" (Rascal Flatts); hosted Cloudinary track supplied by owner (2026-10-07)                         |
-| musicStartAt         | 49 s, 3 s fade-in                                                                                          | verified       | owner     | Client asked to start where the vocals begin; owner gave ~0:49 and a gentle entry (2026-10-08)                      |
-| dressCode            | Rojo, negro y/o blanco; nada referente a Cars, no disfraz                                                  | verified       | wa-export | Owner relay (2026-10-07) plus client line (2026-10-08); location pit board 03                                       |
-| gifts                | ¡No olvide mi regalo! (legend only, gift-on-wheels illustration)                                           | verified       | wa-export | Client: "poner como no olviden mi regalo" (2026-10-08); no registry or account details                              |
-| itinerary            | —                                                                                                          | missing        | owner     | Not included: owner relay "esto no va" (2026-10-08)                                                                 |
-| hostsNames           | —                                                                                                          | missing        | owner     | Not included: owner relay "esto no va" (2026-10-08)                                                                 |
-| clientContact        | Alin Salgado                                                                                               | verified       | wa-export | Purchaser; contact details stay outside this document                                                               |
+| field                | value                                                                          | classification | source    | notes                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------ | -------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| slug                 | aithan-darell                                                                  | verified       | owner     | Owner decision; two given names, no eventType prefix                                                                |
+| hostLoginAlias       | aithan_ruiz                                                                    | verified       | owner     | Contract form; owner may remap to `aithan_darell`                                                                   |
+| celebrantName        | Aithan Darell Ruiz Salgado                                                     | verified       | wa-export | Written twice ("aithan darell Ruiz Salgado", then "Aithan Darell"); display name "Aithan Darell"                    |
+| eventLabel           | Mis 3 años                                                                     | verified       | wa-export | Client copy: "Aithan Darell / Mis 3 años"                                                                           |
+| eventDate            | 2026-10-24                                                                     | verified       | wa-export | "24 de octubre", stated twice; Saturday 24 October 2026                                                             |
+| eventTime            | 17:30                                                                          | verified       | wa-export | First "4:30", corrected to "Hora 5:30"; 5:30 p. m. confirmed by the client (2026-10-07)                             |
+| timeZone             | America/Mexico_City                                                            | inferred       | geography | Atizapán de Zaragoza, Estado de México; not client-stated                                                           |
+| sourceAssetPath      | source:client-photos                                                           | verified       | owner     | Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat                                      |
+| sectionOrder         | quote, countdown, location, gifts, gallery, personalizedAccess, rsvp, thankYou | inferred       | owner     | Family and itinerary omitted (client: "esto no va", 2026-10-08); gifts added as a legend                            |
+| primaryVenueName     | Jardín de Teresita                                                             | verified       | wa-export | —                                                                                                                   |
+| primaryVenueAddress  | Avenida Juárez 49, Atizapán centro                                             | verified       | wa-export | Municipality and state (Atizapán de Zaragoza, Estado de México) inferred from the client's Maps link                |
+| venueMapsUrl         | https://maps.app.goo.gl/ebbpWEFK68LhuDm28                                      | verified       | wa-export | Client link (2026-10-07); pinned at Av. Juárez 49 (19.5589908, -99.2451091); replaces the unpinned Street View link |
+| themeDescription     | Cars: carreras, McQueen, Mate, Mack, todos los personajes                      | verified       | wa-export | Client wrote "mcqueen, mate Mac todos los personas"; read as "personajes"; cutouts listed in Photograph Inventory   |
+| clientColors         | rojo, negro, blanco                                                            | verified       | wa-export | First "rojo y negro", later "roja y negra y blanca"                                                                 |
+| heroPhoto            | ride-on car photograph                                                         | verified       | wa-export | "La imagen sería la que tiene el carro"; published once (hero card/panel) plus the off-page OG image                |
+| rsvpConfirmationMode | api                                                                            | inferred       | owner     | Owner offered dashboard guest control and passes; client agreed ("Ok super")                                        |
+| rsvpGuestCap         | 4                                                                              | inferred       | owner     | Owner default, never discussed; passes are assigned per guest in the dashboard (asked in the message)               |
+| musicUrl             | Hosted audio URL (owner-supplied track)                                        | verified       | owner     | "Life Is a Highway" (Rascal Flatts); hosted track supplied by owner (2026-10-07)                                    |
+| musicStartAt         | 49 s, 3 s fade-in                                                              | verified       | owner     | Client asked to start where the vocals begin; owner gave ~0:49 and a gentle entry (2026-10-08)                      |
+| dressCode            | Rojo, negro y/o blanco; nada referente a Cars, no disfraz                      | verified       | wa-export | Owner relay (2026-10-07) plus client line (2026-10-08); location pit board 03                                       |
+| gifts                | ¡No olvide mi regalo! (legend only, gift-on-wheels illustration)               | verified       | wa-export | Client: "poner como no olviden mi regalo" (2026-10-08); no registry or account details                              |
+| itinerary            | —                                                                              | missing        | owner     | Not included: owner relay "esto no va" (2026-10-08)                                                                 |
+| hostsNames           | —                                                                              | missing        | owner     | Not included: owner relay "esto no va" (2026-10-08)                                                                 |
+| clientContact        | Alin Salgado                                                                   | verified       | wa-export | Purchaser; contact details stay outside this document                                                               |
 
 Rules:
 
@@ -130,7 +130,7 @@ Every published fact was re-read against the full chat and the Local payload.
   - **status:** confirmed; no other page role
 - **fact:** Song
   - **source:** chat: "Life ls a highway canción"
-  - **payload:** "Life Is a Highway" (hosted Cloudinary mp3), `startAt: 49`, `fadeInSeconds: 3`
+  - **payload:** "Life Is a Highway" (hosted mp3), `startAt: 49`, `fadeInSeconds: 3`
   - **status:** confirmed (2026-10-08: client asked to start at the vocals; owner gave ~0:49)
 - **fact:** Parents / hosts
   - **source:** not supplied; owner (2026-10-08): not included
@@ -214,7 +214,7 @@ Answer: `yes` (`evaluateEventCompleteness`).
 
 ## Placeholders
 
-No placeholders remain. The music track is hosted and published (`https://res.cloudinary.com/...`).
+No placeholders remain. The music track is hosted and published.
 
 ---
 
@@ -344,8 +344,8 @@ No placeholders remain. The music track is hosted and published (`https://res.cl
   - **issue:** Song named, no file
   - **evidence:** "Life ls a highway canción"
   - **options:** owner hosts audio / omit music
-  - **recommendation:** Resolved 2026-10-07: owner supplied hosted Cloudinary track for "Life Is a
-    Highway" (Rascal Flatts)
+  - **recommendation:** Resolved 2026-10-07: owner supplied hosted track for "Life Is a Highway"
+    (Rascal Flatts)
 
 ---
 
@@ -677,8 +677,7 @@ reintroduces a repetition.
   section (Gran Premio, pole position, motores, salida, circuito/banderazo, pits, tribuna,
   inscripción, meta/trofeo). No client facts were invented; the inferred municipality and state are
   not printed. Client phrases used literally: "Mis 3 años", venue, address.
-- Music: published with hosted track (`https://res.cloudinary.com/...`); `MUSIC_START_SECONDS` adds
-  `startAt` if needed.
+- Music: published with hosted track; `MUSIC_START_SECONDS` adds `startAt` if needed.
 - The shorter folios ("GRAN PREMIO · INSCRIPCIÓN") fit on one line at 390 px, which also removes the
   earlier overlap with the RSVP demo notice.
 

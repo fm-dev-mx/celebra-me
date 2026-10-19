@@ -95,9 +95,8 @@ before an invitation was marked unpaid remain wherever they were saved.
 
 ## Owner operations
 
-- **Vercel Firewall:** enable the AI Bots managed ruleset in Log mode, confirm WhatsApp and Facebook
-  link previews still work, then switch to Deny. Cloudflare does not front the main domain, so its
-  AI crawler controls do not apply.
+- **Cloudflare AI Crawl Control:** keep the per-crawler blocks active and confirm WhatsApp and
+  Facebook link previews still work.
 - **Unpaid existing invitations:** mark them from the panel when the client is informed (the
   backfill left all existing invitations paid).
 - **Terms:** `/terminos` §4 (owner-approved 2026-10-10) states that an unpaid preview grants no

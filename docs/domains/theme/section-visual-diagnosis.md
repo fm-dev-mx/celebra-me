@@ -15,10 +15,8 @@ operator-provided provenance, not proof inferred from the hostname.
 pnpm visual:parity:diagnose --production-url=https://production-deployment.example.com --preview-url=https://preview-deployment.example.com --production-sha=<40-character-sha> --preview-sha=<40-character-sha>
 ```
 
-Use the existing `VERCEL_AUTOMATION_BYPASS_SECRET` environment variable when Preview needs
-deployment protection access. It is sent only to the configured Preview origin, never to Production
-or third-party image hosts. Do not put secrets in command arguments. No database writes,
-provisioning, publication, or deployment occurs.
+Do not put secrets in command arguments. No database writes, provisioning, publication, or
+deployment occurs.
 
 The default covers all registered invitations and discovered demos at 390×844 and 1440×900.
 `--route=/xv/example` limits a troubleshooting run and marks its scope PARTIAL.

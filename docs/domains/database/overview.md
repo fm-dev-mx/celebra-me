@@ -250,9 +250,9 @@ Visitor → `/{eventType}/{slug}` → `resolveInvitationContent()`:
 
 Admin uploads through `/api/dashboard/intake/[id]/assets/**` create `invitation_assets` metadata
 rows for a specific invitation. In Local (`dev-local`), binaries are stored in Supabase Storage
-local (`invitation-assets` bucket); in Preview and Production, binaries are hosted on Cloudinary
-with SHA-256 deduplication. Postgres stores provider, display names, alt text, object paths, MIME
-type, size, dimensions, secure URLs, and soft-delete state.
+local (`invitation-assets` bucket); in Preview and Production, binaries are hosted on R2 with
+SHA-256 deduplication. Postgres stores provider, display names, alt text, object paths, MIME type,
+size, dimensions, secure URLs, and soft-delete state.
 
 ### RSVP Linkage
 
@@ -346,7 +346,7 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
 - **Service-role only**: `audit_logs`, `deleted_*` views, archive/restore RPCs,
   `invitation_access_controls` (read) and `set_invitation_access_control()` (the only write path).
 - **Asset metadata**: `invitation_assets` is managed by service-role API routes; binaries live in
-  Supabase Storage locally and on Cloudinary in Preview/Production (see Asset Library above).
+  Supabase Storage locally and on R2 in Preview/Production (see Asset Library above).
 
 ## Migration Strategy
 

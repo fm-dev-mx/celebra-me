@@ -591,7 +591,7 @@ The RSVP presence boundary disables initial animations for the first render. Ser
 client hydration therefore stay visible and consistent when reduced motion is enabled; subsequent
 form/status transitions retain their existing motion behavior.
 
-Managed Storage and Cloudinary media bypass implicit Astro/Vercel re-encoding, even when URLs are
+Managed Storage and remote-host media bypass implicit Astro image re-encoding, even when URLs are
 versioned. Canonical references use prepared files and `delivery.mode=original`; the name means
 original bytes of the delivery file, which may itself be a prepared derivative. Existing explicit
 `optimized` references retain compatibility until publication replaces them. Bundled demos and
