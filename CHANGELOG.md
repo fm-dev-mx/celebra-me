@@ -10,6 +10,40 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.33.0-beta.1] - 2026-10-19
+
+Invitation polish and release tooling fixes: selected invitations get a short URL, America gains an
+editorial motion system, unpaid previews drop the photo watermark, hosts sign in with a password
+only, and Preview serves image width variants. No new migrations.
+
+### Added
+
+- Short `/{slug}` URL for selected invitations (#351): the route resolves the event type from the
+  published row and renders the canonical page in place; reserved slugs are enforced in both slug
+  schemas and `SHORT_PATH_SLUGS` lists `america` and `olivia-y-antonio`. Both URL forms resolve.
+- Opt-in editorial motion system, `theme.motion: 'editorial'`, turned on for America only (#355):
+  word-by-word title reveals, `itinerary.stacked-cards` sticky cards and an optional countdown month
+  calendar. Reduced motion falls back to a short fade.
+
+### Changed
+
+- Unpaid invitation previews render their original photos without the tiled watermark or preview
+  seals; the thinner public banner is the only preview cue (#358).
+- Preview-hosted invitation images serve width variants (`responsiveVariants` on for the Preview
+  bucket only; Production stays off) and the variant decode bound rises to 24 MP (#354).
+
+### Removed
+
+- Host magic-link login (#356): `/login` is email/alias + password only, and
+  `POST /api/auth/login-host` answers `400 bad_request` for any other method.
+
+### Fixed
+
+- `pnpm prod:apply -- --schema` reads the latest `Cloudflare Production` deployment in its contract
+  gate instead of the retired Vercel `production` records (#353).
+- The `cleanup-heartbeat` scheduled monitor filters the parsed `event`/`phase` fields so it finds
+  completed memories cleanup runs (#357).
+
 ## [0.32.0-beta.1] - 2026-10-19
 
 Cloudflare migration close-out: the last Vercel and Cloudinary mentions are retired and guarded,
