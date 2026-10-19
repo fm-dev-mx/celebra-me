@@ -15,7 +15,7 @@ import {
 } from './cleanup-evidence';
 import { runMemoriesCleanup, type MemoriesCleanupResult } from './cleanup.service';
 
-export const MEMORIES_CLEANUP_SCHEDULED_SOURCE = 'scheduled_cron';
+const MEMORIES_CLEANUP_SCHEDULED_SOURCE = 'scheduled_cron';
 
 export interface MemoriesCleanupJobDeps {
 	/** Evidence `source` code (lowercase, digits, underscores), e.g. `scheduled_cron`. */

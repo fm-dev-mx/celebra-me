@@ -23,7 +23,7 @@ import {
 
 export { buildR2SocialImageUrl } from '../../src/lib/intake/services/r2-invitation-media.ts';
 
-export const SOCIAL_CARD = { width: 1200, height: 630, quality: 82 } as const;
+const SOCIAL_CARD = { width: 1200, height: 630, quality: 82 } as const;
 
 // Provisioning CLIs run from the repository root (pnpm scripts).
 const REPO_ROOT = process.cwd();
@@ -125,7 +125,7 @@ function putObject(
 	}
 }
 
-export async function buildSocialCard(original: Uint8Array): Promise<Uint8Array> {
+async function buildSocialCard(original: Uint8Array): Promise<Uint8Array> {
 	return new Uint8Array(
 		await sharp(original)
 			.rotate()
