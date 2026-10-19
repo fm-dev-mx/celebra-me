@@ -1,8 +1,9 @@
 name: Cloudflare Preview Deploy
 
 # Builds the Cloudflare target, uploads an immutable Worker version tagged with the commit SHA,
-# smokes that version behind Cloudflare Access, and only then routes traffic to it. Evidence:
-# a GitHub Deployment (environment Preview, URL = the version URL) and the commit status
+# smokes that version behind Cloudflare Access, and only then routes traffic to it. Once the stable
+# host serves the commit, it verifies the published images and runs read-only browser checks.
+# Evidence: a GitHub Deployment (environment Preview, URL = the version URL) and the commit status
 # `Cloudflare - celebra-me preview smoke`, both read by `pnpm ops:release-status`.
 
 permissions:
@@ -206,6 +207,49 @@ jobs:
                   if-no-files-found: ignore
                   include-hidden-files: true
                   retention-days: 7
+
+            - name: Install Playwright Chromium
+              run: pnpm exec playwright install --with-deps chromium
+
+            # Read-only browser checks on the stable host, after it serves this commit. Both keep
+            # every mutation guard false and never provision or publish.
+            - name: Probe public invitation content
+              env:
+                  PLAYWRIGHT_BASE_URL: ${{ env.PREVIEW_WORKER_URL }}
+                  PLAYWRIGHT_PREVIEW_SUPABASE_URL: ${{ secrets.PLAYWRIGHT_PREVIEW_SUPABASE_URL }}
+                  CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+                  CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
+                  PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'
+                  PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'
+                  PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
+                  # One invitation per event type at one viewport keeps the probe near one minute.
+                  PREVIEW_CONTENT_PROBE: event-types
+              run: pnpm test:e2e:preview:public
+
+            - name: Check the authenticated dashboard
+              env:
+                  PLAYWRIGHT_BASE_URL: ${{ env.PREVIEW_WORKER_URL }}
+                  PLAYWRIGHT_PREVIEW_SUPABASE_URL: ${{ secrets.PLAYWRIGHT_PREVIEW_SUPABASE_URL }}
+                  CLOUDFLARE_ACCESS_CLIENT_ID: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_ID }}
+                  CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
+                  PLAYWRIGHT_HOST_LOGIN: ${{ secrets.PLAYWRIGHT_HOST_LOGIN }}
+                  PLAYWRIGHT_HOST_PASSWORD: ${{ secrets.PLAYWRIGHT_HOST_PASSWORD }}
+                  PLAYWRIGHT_PREVIEW_INVITATION_ID: ${{ secrets.PLAYWRIGHT_PREVIEW_INVITATION_ID }}
+                  PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'
+                  PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'
+                  PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
+              run: |
+                  # The Preview account secrets are optional: without them the check is skipped
+                  # and the run summary says so, instead of failing the deploy.
+                  if [ -z "$PLAYWRIGHT_HOST_LOGIN" ] || [ -z "$PLAYWRIGHT_HOST_PASSWORD" ] || [ -z "$PLAYWRIGHT_PREVIEW_INVITATION_ID" ]; then
+                      {
+                          echo "### Authenticated Preview check skipped"
+                          echo
+                          echo "Add the repository secrets PLAYWRIGHT_HOST_LOGIN, PLAYWRIGHT_HOST_PASSWORD and PLAYWRIGHT_PREVIEW_INVITATION_ID to enable it."
+                      } | tee -a "$GITHUB_STEP_SUMMARY"
+                      exit 0
+                  fi
+                  pnpm test:e2e:preview
 
             - name: Record success
               run: |
