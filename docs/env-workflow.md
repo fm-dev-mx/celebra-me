@@ -350,6 +350,13 @@ Public and authenticated read-only commands require the provisioning, publicatio
 to be present and exactly `false`. Missing flags fail closed before the Cloudflare Access headers or
 application authentication are used.
 
+The Preview Deploy workflow runs both read-only suites on the stable host after every deploy. The
+public probe (`PREVIEW_CONTENT_PROBE=event-types`: one invitation per event type, mobile viewport)
+uses the repository secrets it already has. The authenticated dashboard check also needs the
+repository secrets `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD` and
+`PLAYWRIGHT_PREVIEW_INVITATION_ID`; while any of them is missing, the step is skipped and the run
+summary says so.
+
 `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the Playwright fixture reconcile
 command (`pnpm test:e2e:preview:provision`): verify slug `e2e-preview-publication`, copy
 demo-derived content, and run publication preflight. It does **not** publish and does **not** create
