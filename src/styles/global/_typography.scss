@@ -1,5 +1,3 @@
-@use '../tokens' as tokens;
-
 /* Global Calligraphy Flourishes (Premium Brand Elements) */
 
 @mixin calligraphy-base {
@@ -17,25 +15,4 @@
 	@include calligraphy-base;
 
 	font-size: 1.4em;
-}
-
-/* Font Utility Classes — Core 5 System */
-.font-heading-elegant {
-	font-family: tokens.$font-display-elegant;
-}
-
-.font-heading-formal {
-	font-family: tokens.$font-display-formal;
-}
-
-.font-ui {
-	font-family: tokens.$font-ui;
-}
-
-.font-body {
-	font-family: tokens.$font-body;
-}
-
-.font-calligraphy {
-	font-family: tokens.$font-calligraphy;
 }

@@ -41,13 +41,6 @@ $authoring-scale: (
 		text-transform: uppercase,
 	),
 );
-$font-display-formal: semantic-type.font(display-formal);
-$font-display-elegant: semantic-type.font(display-elegant);
-$font-display-hacienda: semantic-type.font(display-hacienda);
-$font-calligraphy: semantic-type.font(calligraphy);
-$font-body: semantic-type.font(body);
-$font-body-hacienda: semantic-type.font(body-hacienda);
-$font-ui: semantic-type.font(ui);
 $font-size-h1: semantic-type.size(h1);
 $font-size-h2: semantic-type.size(h2);
 $font-size-h3: semantic-type.size(h3);
