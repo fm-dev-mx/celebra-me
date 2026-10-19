@@ -17,6 +17,7 @@ import {
 	MEMORIES_RESERVATION_TTL_SECONDS,
 	MEMORIES_VALIDATION_RETRY_DELAY_SECONDS,
 } from '@/lib/memories/contract/limits';
+import { fetchFromApp } from '@/lib/server/app-loopback';
 import { isProductionDeployment } from '@/lib/server/deploy-identity';
 import {
 	MEMORIES_CANONICAL_APP_ORIGIN,
@@ -108,6 +109,7 @@ export async function buildMemorySpaceDiagnostics(
 		live: boolean;
 		requestOrigin: string;
 		now?: Date;
+		/** Reaches the Sign Worker; the app's own routes go through `fetchFromApp`. */
 		fetchImpl?: typeof fetch;
 	},
 ): Promise<MemoriesSpaceDiagnostics> {
@@ -125,6 +127,7 @@ export async function buildMemorySpaceDiagnostics(
 					uploadOrigin: uploadOrigin ? uploadOrigin.origin : null,
 				},
 				options.fetchImpl,
+				fetchFromApp,
 			)
 		: null;
 	return {

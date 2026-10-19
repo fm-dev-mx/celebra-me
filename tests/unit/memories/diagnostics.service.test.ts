@@ -8,6 +8,7 @@ jest.mock('@/lib/server/env', () => ({
 }));
 
 import { getEnv } from '@/lib/server/env';
+import { installAppLoopback, resetAppLoopbackForTests } from '@/lib/server/app-loopback';
 import {
 	listDiagnosticAuditRows,
 	listMediaStatusRows,
@@ -39,6 +40,20 @@ function row(overrides: Partial<MediaStatusRow>): MediaStatusRow {
 	};
 }
 
+/** Stands in for the application: the guest page, an unknown slug and the session route. */
+async function answerAppRoute(request: Request): Promise<Response> {
+	const { pathname } = new URL(request.url);
+	if (pathname === `/r/${PUBLIC_SLUG}`)
+		return new Response('<main data-page="memories"></main>', {
+			status: 200,
+			headers: { 'cache-control': 'no-store' },
+		});
+	if (pathname === '/r/preflight-no-such-space') return new Response('', { status: 404 });
+	if (pathname.endsWith('/session'))
+		return new Response(JSON.stringify({ profile: null }), { status: 200 });
+	return new Response('', { status: 500 });
+}
+
 function env(values: Record<string, string>) {
 	mockEnv.mockImplementation((name: string) => values[name] ?? '');
 }
@@ -48,6 +63,7 @@ beforeEach(() => {
 	env({});
 	mockRows.mockResolvedValue([]);
 	mockAudit.mockResolvedValue([]);
+	resetAppLoopbackForTests();
 });
 
 describe('buildMemorySpaceDiagnostics', () => {
@@ -158,15 +174,6 @@ describe('buildMemorySpaceDiagnostics', () => {
 		env({ MEMORIES_PRIVATE_UPLOAD_ORIGIN: UPLOAD_ORIGIN });
 		const fetchImpl = jest.fn(async (url: string, init?: RequestInit) => {
 			const origin = new Headers(init?.headers).get('origin');
-			if (url.endsWith(`/r/${PUBLIC_SLUG}`))
-				return new Response('<main data-page="memories"></main>', {
-					status: 200,
-					headers: { 'cache-control': 'no-store' },
-				});
-			if (url.endsWith('/r/preflight-no-such-space'))
-				return new Response('', { status: 404 });
-			if (url.endsWith('/session'))
-				return new Response(JSON.stringify({ profile: null }), { status: 200 });
 			if (url === `${UPLOAD_ORIGIN}/upload`)
 				return origin === LOCAL_ORIGIN
 					? new Response(null, {
@@ -176,6 +183,8 @@ describe('buildMemorySpaceDiagnostics', () => {
 					: new Response(null, { status: 403 });
 			return new Response('', { status: 500 });
 		});
+		const appHandler = jest.fn(answerAppRoute);
+		installAppLoopback(appHandler);
 
 		const result = await buildMemorySpaceDiagnostics(buildSpace(), {
 			live: true,
@@ -191,13 +200,47 @@ describe('buildMemorySpaceDiagnostics', () => {
 			['upload_worker_accepts_app_origin', 'PASS'],
 			['upload_worker_rejects_other_origins', 'PASS'],
 		]);
-		expect(fetchImpl.mock.calls.map(([url]) => url)).not.toContain(
+		expect(appHandler.mock.calls.map(([request]) => request.url)).not.toContain(
 			`https://celebra-me.com/r/${PUBLIC_SLUG}`,
 		);
 	});
 
+	it('sends the app checks in process and only the Sign Worker checks over the network', async () => {
+		env({ CELEBRA_DEPLOY_ENV: 'production', MEMORIES_PRIVATE_UPLOAD_ORIGIN: UPLOAD_ORIGIN });
+		const fetchImpl = jest.fn<Promise<Response>, [string]>(
+			async () => new Response(null, { status: 403 }),
+		);
+		const appHandler = jest.fn(answerAppRoute);
+		installAppLoopback(appHandler);
+
+		const result = await buildMemorySpaceDiagnostics(buildSpace(), {
+			live: true,
+			requestOrigin: 'https://www.celebra-me.com',
+			now: NOW,
+			fetchImpl: fetchImpl as unknown as typeof fetch,
+		});
+
+		expect(appHandler.mock.calls.map(([request]) => request.url)).toEqual([
+			`https://celebra-me.com/r/${PUBLIC_SLUG}`,
+			`https://www.celebra-me.com/r/${PUBLIC_SLUG}`,
+			'https://www.celebra-me.com/r/preflight-no-such-space',
+			`https://www.celebra-me.com/api/memories/${PUBLIC_SLUG}/session`,
+		]);
+		expect(fetchImpl.mock.calls.map(([url]) => url)).toEqual([
+			`${UPLOAD_ORIGIN}/upload`,
+			`${UPLOAD_ORIGIN}/upload`,
+		]);
+		expect(result.liveChecks?.find((c) => c.check === 'guest_page')?.status).toBe('PASS');
+		// The app answers the apex itself, so the printed QR is not redirected to `www`.
+		expect(result.liveChecks?.find((c) => c.check === 'printed_qr_redirect')).toMatchObject({
+			status: 'FAIL',
+			detail: 'status 200, location unexpected',
+		});
+	});
+
 	it('skips the upload checks when the Sign Worker origin is not configured', async () => {
 		const fetchImpl = jest.fn(async () => new Response('', { status: 500 }));
+		installAppLoopback(async () => new Response('', { status: 500 }));
 
 		const result = await buildMemorySpaceDiagnostics(buildSpace(), {
 			live: true,
@@ -212,6 +255,7 @@ describe('buildMemorySpaceDiagnostics', () => {
 		expect(result.liveChecks?.find((check) => check.check === 'guest_page')).toMatchObject({
 			status: 'FAIL',
 		});
+		expect(fetchImpl).not.toHaveBeenCalled();
 	});
 });
 

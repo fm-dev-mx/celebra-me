@@ -343,7 +343,10 @@ describe('adaptEvent', () => {
 	it('countdown uses centralized legacy fallback when eventTiming is missing', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
+			data: {
+				...loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
+				eventTiming: undefined,
+			},
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
