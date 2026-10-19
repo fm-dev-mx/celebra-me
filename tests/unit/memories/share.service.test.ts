@@ -90,19 +90,23 @@ describe('guest link origin', () => {
 
 	it('keeps the canonical domain in Production whatever host served the request', () => {
 		runIn('production');
-		expect(resolveMemoriesPublicOrigin('https://celebra-me.vercel.app')).toBe(
-			'https://celebra-me.com',
-		);
 		expect(
-			resolveMemoriesShareUrl(sharedSpace, NOW, 'https://celebra-me-abc.vercel.app'),
+			resolveMemoriesPublicOrigin('https://abc123-celebra-me.celebra-me-com.workers.dev'),
+		).toBe('https://celebra-me.com');
+		expect(
+			resolveMemoriesShareUrl(
+				sharedSpace,
+				NOW,
+				'https://abc123-celebra-me.celebra-me-com.workers.dev',
+			),
 		).toMatch(/^https:\/\/celebra-me\.com\/r\//);
 	});
 
 	it('uses the serving origin in Preview and local runs', () => {
 		runIn('preview');
-		expect(resolveMemoriesPublicOrigin('https://celebra-me-git-develop.vercel.app')).toBe(
-			'https://celebra-me-git-develop.vercel.app',
-		);
+		expect(
+			resolveMemoriesPublicOrigin('https://celebra-me-preview.celebra-me-com.workers.dev'),
+		).toBe('https://celebra-me-preview.celebra-me-com.workers.dev');
 		runIn('');
 		expect(resolveMemoriesShareUrl(sharedSpace, NOW, 'http://localhost:4321')).toBe(
 			`http://localhost:4321/r/${sharedSpace.publicSlug}/galeria/${buildMemoriesShareToken(sharedSpace, SECRET)}`,

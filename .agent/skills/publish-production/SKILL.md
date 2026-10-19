@@ -48,6 +48,6 @@ content/assets publication, fixture provisioning, visual-reference acceptance, p
 changes, bypasses, force pushes, history rewrites, or destructive cleanup. Missing required schema
 compatibility is a blocker, not permission to migrate.
 
-Finish only after verifying the actual merged `main` SHA, correct Vercel project/environment, ready
-and promoted Production deployment, serving alias, and correlated smoke. The merged SHA may differ
-from the reviewed develop SHA; report both. Follow shared stop/recovery rules if incomplete.
+Finish only after verifying the actual merged `main` SHA, correct Production Worker/environment,
+uploaded and activated Worker version, serving alias, and correlated smoke. The merged SHA may
+differ from the reviewed develop SHA; report both. Follow shared stop/recovery rules if incomplete.

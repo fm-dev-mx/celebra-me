@@ -68,7 +68,7 @@ describe('GET /vista-previa/[asset]', () => {
 
 	beforeAll(async () => {
 		process.env.PREVIEW_MEDIA_SECRET = 'test-preview-secret';
-		// jsdom lacks AbortSignal.timeout (available in the Node and Vercel runtimes).
+		// jsdom lacks AbortSignal.timeout (available in the Node and Workers runtimes).
 		if (typeof AbortSignal.timeout !== 'function') {
 			Object.assign(AbortSignal, { timeout: () => new AbortController().signal });
 		}

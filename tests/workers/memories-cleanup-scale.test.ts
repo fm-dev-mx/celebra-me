@@ -185,7 +185,7 @@ describe('purge of a full event after retention', () => {
 
 describe('a cleanup that did not run', () => {
 	it('leaves files reachable by the host route until the first run after retention', async () => {
-		// Vercel Hobby delivers the daily cron on a best-effort basis: five days were missed.
+		// A scheduled run can be missed: here five daily runs never happened.
 		resetStack(new Date(Date.parse(RETENTION_ENDS) + 5 * DAY));
 		const [row] = seedFullEvent(3);
 

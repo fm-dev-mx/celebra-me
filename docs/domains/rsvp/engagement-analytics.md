@@ -17,8 +17,8 @@ engage guests best".
 - **First-party and guest-scoped.** Events are stored only in Celebra-me's database, keyed to a
   guest invitation while the retention window lasts.
 - **Isolated from commercial attribution.** Guest engagement never feeds `tracking_events`,
-  `visitor_sessions`, GA4, Meta, or Vercel Analytics, and never joins them. Personalized and real
-  invitation routes stay excluded from commercial tracking
+  `visitor_sessions`, GA4, Meta, or Cloudflare Web Analytics, and never joins them. Personalized and
+  real invitation routes stay excluded from commercial tracking
   ([`../tracking/commercial-attribution.md`](../tracking/commercial-attribution.md)).
 - **Data minimization.** No IP address, raw user agent, or free text is stored. Device information
   is reduced to a coarse class.
@@ -68,7 +68,7 @@ retention.
 
 | Class            | Rule (first match wins)                                                      |
 | ---------------- | ---------------------------------------------------------------------------- |
-| `non_production` | Request served outside Vercel Production (`VERCEL_ENV !== 'production'`)     |
+| `non_production` | Request served outside Production (`CELEBRA_DEPLOY_ENV !== 'production'`)    |
 | `bot`            | User agent matches the crawler/bot list (link previews are always `bot`)     |
 | `host`           | Valid session of the event owner, an active event member, or a `super_admin` |
 | `test`           | Guest invitation flagged as a test guest (`is_test`)                         |

@@ -56,7 +56,7 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | dressCode             | De etiqueta                                                                              | verified       | source:client-corrections     | Supersedes earlier "Gala formal" wording                      |
 | childPolicy           | Celebración reservada para adultos                                                       | verified       | source:client-reference-sheet | Formal visible wording                                        |
 | gifts                 | Liverpool event 60019030; Sobres                                                         | verified       | source:client-corrections     | Liverpool retained; remove "lluvia" from cash option          |
-| musicUrl              | Cloudinary direct audio source                                                           | verified       | owner-provided source         | “A Thousand Years” by Christina Perri; autoplay enabled       |
+| musicUrl              | Remote direct audio source                                                               | verified       | owner-provided source         | “A Thousand Years” by Christina Perri; autoplay enabled       |
 | clientColors          | marfil, perla, taupe, cacao y champagne                                                  | verified       | owner implementation plan     | Champagne restricted to decorative emphasis                   |
 
 ### Family and godparents

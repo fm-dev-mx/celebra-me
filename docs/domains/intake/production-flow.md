@@ -26,7 +26,7 @@ Architecture: [`docs/core/architecture.md`](../../core/architecture.md). Authori
 | Prepare assets              | Server decode, normalize, resize, WebP conversion, metadata | Upload through the editor; never bypass policy  | Choose crop and focal point    | Review mobile crops                        |
 | Preview                     | Internal SSR preview                                        | Exercise all content states                     | Approve visual direction       | Verify links and client facts              |
 | Publish                     | Validation plus atomic RPC                                  | Resolve all blockers and initiate publish       | —                              | Apply required production migrations first |
-| Deploy and verify           | Vercel and Supabase runtime                                 | Run checks and capture evidence                 | Review deployed visuals        | Authorize production-only actions          |
+| Deploy and verify           | Cloudflare Worker and Supabase runtime                      | Run checks and capture evidence                 | Review deployed visuals        | Authorize production-only actions          |
 
 Production database mutations, deployments, and rollbacks require explicit human authorization.
 
@@ -303,8 +303,8 @@ crops. Do not replace independent client namespaces merely because files have id
 
 ## 6. Preview and visual QA
 
-Use both the internal preview (`/dashboard/invitaciones/{id}/preview`) and a deployed Vercel
-preview. Internal preview proves editor mapping; only a deployment proves Linux casing, Vercel
+Use both the internal preview (`/dashboard/invitaciones/{id}/preview`) and a deployed Preview
+Worker. Internal preview proves editor mapping; only a deployment proves Linux casing, Worker
 bundling, headers, Supabase connectivity, and real asset delivery.
 
 The canonical visual matrix is 390 × 844 and 1440 × 900
@@ -397,13 +397,13 @@ Required order:
    migration history.
 4. Create and verify the complete post-migration critical DB/Auth/Storage recovery set.
 5. Deploy application code that depends on those migrations.
-6. Run the production smoke tests below and inspect Vercel/Supabase logs.
+6. Run the production smoke tests below and inspect Worker/Supabase logs.
 
 On the Free plan, both Production recovery points run only on the authorized local operator machine
 and must be Windows EFS encrypted. The daily local OS schedule targets catastrophic-loss RPO ≤24
 hours; the planned-mutation pre/post points are additional gates. Same-machine EFS is not an
-independent disaster-recovery failure domain. No backup job runs in Vercel, CI, Supabase scheduled
-compute, Edge Functions, or application code.
+independent disaster-recovery failure domain. No backup job runs in the application Worker, CI,
+Supabase scheduled compute, Edge Functions, or application code.
 
 Application code must not be deployed before its required database migration. In particular,
 reviewed atomic publication requires `20260717193000_publication_preflight_integrity.sql` (after
@@ -446,13 +446,12 @@ IDs for each test.
 13. Open a legacy valid invitation and confirm read-time schema validation preserves rendering.
 14. Inject an invalid published fixture only in a disposable/test environment; expect the controlled
     unavailable state, no malformed payload in logs, and no public/personalized cache.
-15. Inspect Vercel function logs and Supabase API/Postgres logs for errors, latency, and RPC
-    markers.
+15. Inspect Worker logs and Supabase API/Postgres logs for errors, latency, and RPC markers.
 
 ## 10. Rollback and incident handling
 
-- Application code and CSS can be rolled back by promoting the last known-good Vercel deployment.
-  Preserve the database migrations; migration history is append-only.
+- Application code and CSS can be rolled back by rolling back the Worker to the last known-good
+  version. Preserve the database migrations; migration history is append-only.
 - A database correction requires a new forward migration. Never edit or delete an applied migration
   or drop a compatibility object without production-consumer evidence.
 - A failed atomic publication leaves the previous published snapshot available. Reload state,
@@ -465,4 +464,4 @@ IDs for each test.
 
 Before corrective changes capture: current deployment ID/commit, route and cache headers, migration
 history, relevant row IDs and timestamps (without client payloads), published version, draft
-timestamp/status, and Vercel/Supabase request IDs.
+timestamp/status, and Cloudflare/Supabase request IDs.

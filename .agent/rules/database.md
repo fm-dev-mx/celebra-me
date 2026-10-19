@@ -34,12 +34,12 @@ asks you to change, backfill, replay, or manually invoke them.
 
 Four distinct database targets exist:
 
-| Target               | Identification                                                                  | Usage                                                               | Destructive ops allowed?                                           |
-| -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection; owner apply via `pnpm prod:apply`             | NEVER                                                              |
-| **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Vercel `develop` deployments | NO — schema mutated via `pnpm db:migrate -- --target preview` only |
-| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                               | NO — protected state                                               |
-| **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference       | YES — created/recreated on demand                                  |
+| Target               | Identification                                                                  | Usage                                                                           | Destructive ops allowed?                                           |
+| -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **production**       | Supabase cloud host (`*.supabase.co`, `*.supabase.com`)                         | Read-only inspection; owner apply via `pnpm prod:apply`                         | NEVER                                                              |
+| **preview**          | Hosted branch DB (`PREVIEW_DB_URL` or secret files)                             | Provisioned hosted Preview project for Cloudflare Preview `develop` deployments | NO — schema mutated via `pnpm db:migrate -- --target preview` only |
+| **persistent-local** | `127.0.0.1:54322` or `localhost:54322`, container `supabase_db_celebra-me-rsvp` | Normal development through `pnpm dev`                                           | NO — protected state                                               |
+| **disposable-test**  | `127.0.0.1:54332` or `localhost:54332`, container `celebra-me-test-db`          | Migration reconstruction/pgTAP/seed/canonical audit reference                   | YES — created/recreated on demand                                  |
 
 Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
 boundaries through classification, identity verification, and per-target policy checks.
@@ -161,9 +161,9 @@ invent a healthy state, or acquire mutation authority.
   (`pnpm db:disposable:test`), and use `pnpm prod:apply -- --schema` for the reviewed Production
   owner path (primitive: `pnpm db:migrate -- --target production`).
 - Need a production recovery point? Use `pnpm db:prod:backup:critical` or the daily job
-  `pnpm db:prod:backup:daily` (authorized Windows operator account only; never CI, Vercel, Supabase
-  scheduled compute, or application infrastructure). `pnpm db:prod:backup` is a public-schema dump
-  for local refresh only — not a critical recovery set.
+  `pnpm db:prod:backup:daily` (authorized Windows operator account only; never CI, Cloudflare
+  Workers, Supabase scheduled compute, or application infrastructure). `pnpm db:prod:backup` is a
+  public-schema dump for local refresh only — not a critical recovery set.
 - Need to reset a database for tests? Use `pnpm db:disposable:reset`. The guard allows all
   operations on the disposable-test target.
 - Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),

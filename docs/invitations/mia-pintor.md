@@ -64,7 +64,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpGuestCap          | 2                                                                                                 | inferred       | owner-session | Fallback only; per-guest passes govern attendee counts               |
 | rsvpWhatsappPhone     | —                                                                                                 | not_applicable | owner-session | No WhatsApp confirmation flow                                        |
 | rsvpDeadline          | —                                                                                                 | missing        | wa-export     | Optional; omit until client provides it                              |
-| musicUrl              | Dancing Queen — ABBA (Cloudinary hosted)                                                          | verified       | wa-export     | Client selected track; autoPlay: true (starts with the envelope tap) |
+| musicUrl              | Dancing Queen — ABBA (remote hosted)                                                              | verified       | wa-export     | Client selected track; autoPlay: true (starts with the envelope tap) |
 | itinerary             | Official Salón Sole Mio schedule                                                                  | verified       | wa-export     | 7 milestones; timeline-paper variant                                 |
 | specialMessages       | Copy proposed by agent                                                                            | inferred       | owner-session | Pending client approval                                              |
 

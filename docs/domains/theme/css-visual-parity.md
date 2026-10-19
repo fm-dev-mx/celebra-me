@@ -43,11 +43,8 @@ payloads, guest personalization, cookies, credentials, signed URLs, or external 
 
 Only the browser validation job downloads Git LFS references, through its checkout step. Other
 validation jobs keep LFS pointers and must not download image objects. Do not add a second
-`git lfs pull` after an LFS-enabled checkout. Keep Vercel's project Git LFS support disabled while
-these test references are the only LFS assets; revisit that setting before adding runtime assets to
-LFS. `.vercelignore` excludes references from CLI uploads; it does not replace the Git integration's
-LFS setting. Accepted references must remain outside deployed static and function outputs. Temporary
-candidates and differences stay ignored.
+`git lfs pull` after an LFS-enabled checkout. Accepted references must remain outside deployed
+static and function outputs. Temporary candidates and differences stay ignored.
 
 Canonical capture initialization pins the gift-registry event identifier's `--font-mono` fallback to
 `Liberation Mono` in the fixed Linux image. Chromium otherwise changes from WenQuanYi Zen Hei Mono
@@ -175,7 +172,7 @@ not reach a release.
 ### Release-time visual confirmation
 
 Visual acceptance is part of the owner's decision to release a candidate for deployment. It is not
-an automatic consequence of a push, a green partial CI run, or a Vercel build starting. Before the
+an automatic consequence of a push, a green partial CI run, or a deploy build starting. Before the
 owner sends the exact candidate revision through the release/promotion path, the owner reviews the
 candidate captures generated with the pinned runtime and explicitly confirms its source SHA, matrix
 hash, and candidate-manifest SHA-256. Only then may the owner run `visual:parity:accept`, land the
@@ -206,7 +203,7 @@ changing tolerances, or downgrading compare mode.
 - Verify physical PNG height against both the measured document and the last content boundary. DOM
   presence, test counts and viewport-only images cannot establish complete-page coverage. Inspect
   the complete vertical sequence for blank tails and missing painted content.
-- Hide only selectors returned by `getOperationalToolbarSelectors`. Visible Astro or Vercel tooling
+- Hide only selectors returned by `getOperationalToolbarSelectors`. Visible Astro tooling
   invalidates evidence. Music, credits, navigation and other product controls remain visible and
   must be tested before scrolling changes their state.
 - Record exact clean source SHA, content versions, configuration identity, runtime/browser metadata,

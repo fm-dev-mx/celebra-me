@@ -34,7 +34,7 @@ rigidity.
 - Follow conventional Astro practice: **lowercase** folder names.
 - Use hyphens (kebab-case) when helpful for readability.
 
-This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` and
+This minimizes risk in case-sensitive environments (like the Linux CI runners). (`/src/pages` and
 `/src/components` are conventional according to Astro docs).
 
 ### 2.2 Files
@@ -239,7 +239,7 @@ Assertions**.
 major lines and upgrade stance.
 
 - **Package:** Astro
-  - **Repo baseline:** 7.x with `@astrojs/vercel` 11.x / `@astrojs/react` 6.x
+  - **Repo baseline:** 7.x with `@astrojs/cloudflare` 14.x / `@astrojs/react` 6.x
   - **Upgrade stance:** Patch/minor within Astro 7; majors need a dedicated window
 - **Package:** TypeScript
   - **Repo baseline:** **Hybrid:** CLI compiler **7.0.2** (`@typescript/native` → `tsc`);
@@ -274,31 +274,12 @@ against TypeScript ≥7.1 and pass `pnpm lint` + `pnpm type-check` + `pnpm valid
 
 ### `sanitize-html` ESM compatibility
 
-`sanitize-html@2.17.6` intentionally resolves its production parser to `htmlparser2@12`; do not
-override that security update to an older parser. Vercel's serverless loader cannot load the
-CommonJS `sanitize-html` entry when it synchronously requires the ESM-only parser, and the Vercel
-function tracer can leave its `escape-string-regexp` require unresolved. The bounded
-`vite.ssr.noExternal` list in `astro.config.mjs` therefore bundles only this runtime graph:
-
-- `sanitize-html` sanitizes indication markup and requires the rest of this bounded graph;
-- `escape-string-regexp` safely converts wildcard attribute and class patterns into regular
-  expressions;
-- `is-plain-object` and `deepmerge` normalize and merge sanitizer options;
-- `parse-srcset` validates responsive image source sets;
-- `postcss` parses inline style attributes when that sanitizer option is enabled and uses
-  `picocolors`, `source-map-js`, and `nanoid`;
-- `launder` rejects unsafe URL schemes and uses `dayjs` for date normalization;
-- `htmlparser2` parses markup and depends on `entities`, `domhandler`, and `domutils`;
-- `entities` decodes and encodes HTML entities;
-- `domhandler` builds the DOM tree and uses `domelementtype` for node classification;
-- `domutils` traverses/manipulates the tree and uses `dom-serializer` for output.
-
-Jest uses the same six-package ESM graph through `scripts/jest-esm-to-cjs-transform.cjs`, scoped by
-`jest.config.cjs`; that transform is test-only and is not imported into production code. Remove the
-Jest exception when the repository Jest pipeline consumes the graph directly. Remove the Vite SSR
-exception when the Vercel runtime can load the upstream CommonJS-to-ESM boundary directly (or
-`sanitize-html` ships a compatible entry), and only after local handler invocation, the full local
-suite, and authenticated verification on the automatic Vercel Preview without it.
+`sanitize-html` intentionally resolves its production parser to `htmlparser2@12`; do not override
+that security update to an older parser. That parser graph (`htmlparser2`, `entities`, `domhandler`,
+`domelementtype`, `domutils`, `dom-serializer`) is ESM-only, so Jest consumes it through
+`scripts/jest-esm-to-cjs-transform.cjs`, scoped by `jest.config.cjs`; that transform is test-only
+and is not imported into production code. Remove the Jest exception when the repository Jest
+pipeline consumes the graph directly.
 
 Prefer Context7 (or equivalent) against the pinned versions when API details are uncertain. Major
 framework upgrades should not mix with invitation production work.

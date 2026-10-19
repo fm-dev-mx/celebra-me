@@ -17,7 +17,7 @@ Cache-Control: public, max-age=0, s-maxage=0, must-revalidate
 
 Browsers and shared caches may retain the response, but must revalidate before reuse. This avoids
 serving an obsolete published version after a host republishes an invitation. The policy is not a
-performance-TTL proposal and does not imply a Vercel cache hit.
+performance-TTL proposal and does not imply a CDN cache hit.
 
 Every response that can contain guest, editor, draft, validation, conflict, or redirect state uses:
 
@@ -67,7 +67,7 @@ X-Robots-Tag: noindex, noimageindex, nofollow
   deleting a source photo does not purge it sooner.
 - The endpoint serves only while the invitation is unpaid and enabled (otherwise `404`, `no-store`),
   refuses any query string (`400`) so variants cannot bust the cache, and fetches only same-origin,
-  managed Storage or Cloudinary sources.
+  managed Storage or remote-host sources.
 - Link previews already cached by WhatsApp cannot be purged; personalized short links get a fresh
   preview, and re-sharing the canonical URL with a new query string forces one.
 
@@ -89,9 +89,9 @@ invitation-shaped 404 responses that Astro resolves before the dynamic invitatio
 
 ## Deployment-only checks
 
-After an authorized Vercel deployment, request an anonymous invitation, a personalized invitation, a
+After an authorized Worker deployment, request an anonymous invitation, a personalized invitation, a
 dashboard preview, an invalid route, and a canonical redirect. Record status and effective
-`Cache-Control`, `Age`, and Vercel cache headers. Local tests do not prove CDN behavior.
+`Cache-Control`, `Age`, and Cloudflare cache headers. Local tests do not prove CDN behavior.
 
 Do not introduce a positive `s-maxage`, stale-while-revalidate policy, ISR, or a new shared cache
 without a separate freshness decision and validation plan.

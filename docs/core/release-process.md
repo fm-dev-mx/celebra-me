@@ -199,7 +199,7 @@ on `develop` through the same integration as step 4, and wait for `Application S
 resulting `develop` SHA. The commit that changes the matrix (for example the `published` flip) is
 committed first with normal hooks; the matrix pin is a branch gate (`validate:changed`, CI), so the
 accepted references land in the following commit of the same task branch. This is a human release
-decision, not an automatic action performed by CI or Vercel after a deployment begins.
+decision, not an automatic action performed by CI or a deployment.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.

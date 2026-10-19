@@ -29,7 +29,7 @@ Execute [the shared release procedure](../../../docs/core/release-execution.md) 
 Explicit invocation authorizes, for the identified release scope in the assigned checkout: fetching
 origin; staging named in-scope files; ordinary commits with normal hooks; creating a task branch
 when needed; switching branches when permitted by the assigned lane; non-destructive branch
-integration into `develop`; pushing that exact `develop` ref; and its automatic Vercel Preview
+integration into `develop`; pushing that exact `develop` ref; and its automatic Cloudflare Preview
 deployment. It also includes read-only provider inspection, required checks, and read-only Preview
 smoke. Reuse this authority through supporting skills; never prompt again for these actions.
 
@@ -49,7 +49,5 @@ value of `git rev-parse HEAD`; abbreviations are rejected), present the concise 
 (`pnpm visual:parity:accept`) and pushing.
 
 Finish only after the exact integrated SHA has required CI, a ready Preview deployment in the
-correct project, and passing applicable read-only smoke. When `ops:release-status` reports `SKIPPED`
-(Vercel skipped the Preview build because no application input changed), required CI is the
-evidence: report the skip explicitly instead of a deployment. Report the SHA, deployment ID/URL,
+correct Worker, and passing applicable read-only smoke. Report the SHA, deployment ID/URL,
 environment, checks and residual risks. Follow shared stop/recovery rules when blocked.

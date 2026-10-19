@@ -51,10 +51,10 @@ shell, the Cloudflare Worker, or gitignored secret paths documented by the ownin
   values come from `.env.preview.local` (overlay) and set `CELEBRA_RUNTIME_TARGET=preview`. This is
   **runtime connectivity only** — it does not authorize Preview DB migrations, syncs, invitation
   updates, or E2E provision/publish.
-- **Preview Validation / Ops Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments, Preview
-  E2E) remains the hosted validation environment for workflows requiring broader verification,
-  including:
-  - Hosted SSR and Vercel edge/runtime behavior,
+- **Preview Validation / Ops Role**: Preview (`PREVIEW_DB_URL`, the Cloudflare Preview Worker,
+  Preview E2E) remains the hosted validation environment for workflows requiring broader
+  verification, including:
+  - Hosted SSR and Cloudflare Workers runtime behavior,
   - Supabase Auth and MFA flows,
   - Invitation publication and provisioning preflights,
   - Storage asset host resolution,
@@ -137,11 +137,11 @@ Worker deployments, R2 memories storage) must perform a credential preflight che
   `CELEBRA_AGENT_CONTEXT` marks an agent session and makes the gate refuse; only the Cursor hooks
   set it. Gate sequence: [`database-workflow.md`](database-workflow.md) (`pnpm db:migrate`).
 - **Hosted migrate identity:** clean Git `HEAD` is the target release. Production contract phases
-  resolve the prior deployed SHA from GitHub/Vercel evidence, require its trusted Production smoke,
-  and read `supabase/deployed-app-capabilities.json` from that exact Git tree. Shell variables never
-  authorize deployed-app readiness. An unavailable remote preflight is reported as `UNVERIFIED` and
-  never authorizes apply; invalid evidence blocks both preflight and apply. Preview DB URL must
-  match the canonical Preview project ref.
+  resolve the prior deployed SHA from GitHub deployment evidence, require its trusted Production
+  smoke, and read `supabase/deployed-app-capabilities.json` from that exact Git tree. Shell
+  variables never authorize deployed-app readiness. An unavailable remote preflight is reported as
+  `UNVERIFIED` and never authorizes apply; invalid evidence blocks both preflight and apply. Preview
+  DB URL must match the canonical Preview project ref.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
   server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
 - **Retired:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are read nowhere. Keep them out of templates
@@ -154,7 +154,7 @@ substitute for the other.
 
 | Variable                 | Question it answers                         | Who sets it                            | `preview` means                                                      |
 | ------------------------ | ------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- |
-| `CELEBRA_DEPLOY_ENV`     | Which hosted deployment is this?            | Each hosted environment (Vercel)       | A hosted Preview deployment built from `develop`                     |
+| `CELEBRA_DEPLOY_ENV`     | Which hosted deployment is this?            | Each hosted environment (Wrangler)     | A hosted Preview deployment built from `develop`                     |
 | `CELEBRA_RUNTIME_TARGET` | Which database does a local process target? | Lane bootstrap or an intentional shell | A local Astro process (`dev-preview`) talking to the Preview project |
 
 - A hosted deployment is identified only by `CELEBRA_DEPLOY_ENV`, read only by
@@ -303,9 +303,9 @@ Rules:
   that no code reads, a name without a comment, an empty section, or a comment naming a retired
   provider, and when test runner and Production names leak into another template. `pnpm env:audit`
   prints the same template checks (names only) for a quick review.
-- No other copies: no `.env` files under `.vercel/`, `.secrets/`, `.tmp/` or `.agent/tmp/`, and no
-  ad hoc pulls of hosted environments. Hosted values stay in the host (Cloudflare Worker secrets,
-  GitHub Actions secrets).
+- No other copies: no `.env` files under `.secrets/`, `.tmp/` or `.agent/tmp/`, and no ad hoc pulls
+  of hosted environments. Hosted values stay in the host (Cloudflare Worker secrets, GitHub Actions
+  secrets).
 - Ephemeral agent worktrees (for example under `.claude/worktrees/`) never receive env files.
 
 | Worktree      | Files used at runtime                                    | Notes                   |
@@ -430,7 +430,6 @@ These are present in `.env.example` and the lane bootstrap allowlist
 | `PROD_SUPABASE_HOST`          | `astro.config.mjs`                        | Image `remotePatterns` host override                                   |
 | `CELEBRA_ENV_BOOTSTRAP_LOG`   | `astro.config.mjs`                        | `1` logs lane bootstrap decisions (names only)                         |
 | `ENABLE_TEST_VARIANT_HARNESS` | `astro.config.mjs`                        | `1` enables the visual variant harness in `astro dev`                  |
-| `CELEBRA_BUILD_TARGET`        | `astro.config.mjs`                        | `vercel` (default) or `cloudflare`: selects the adapter                |
 | `CLOUDFLARE_ENV`              | `@astrojs/cloudflare`, `wrangler`         | Wrangler environment of a Cloudflare build (`preview` or `production`) |
 
 ### Local DB tooling and disposable test environment
@@ -455,23 +454,11 @@ These are present in `.env.example` and the lane bootstrap allowlist
 | `CELEBRA_GIT_SAFETY_ROOT`, `CELEBRA_GIT_SAFETY_SESSION`                                                 | `scripts/agent/git-safety.mjs`                     | Defaults for `--root` / `--session`               |
 | `CELEBRA_CLI_ASCII`                                                                                     | `scripts/lib/cli-theme.ts`                         | `1` forces ASCII glyphs                           |
 
-### Post-deploy smoke (Vercel `repository_dispatch`)
+### Post-deploy smoke
 
-Set by `.github/workflows/post-deploy-smoke.yml` from the dispatch payload and read by
-`scripts/ops/post-deploy-smoke.ts`; **required** inside that workflow, never configured by hand:
-
-- `VERCEL_DISPATCH_EVENT`, `VERCEL_DISPATCH_URL`, `VERCEL_DISPATCH_ENVIRONMENT`,
-  `VERCEL_DISPATCH_GIT_REF`, `VERCEL_DISPATCH_COMMIT_SHA`, `VERCEL_DISPATCH_DEPLOYMENT_ID`,
-  `VERCEL_DISPATCH_PROJECT_ID`, `VERCEL_DISPATCH_EXPECTED_PROJECT_ID` (dispatch inputs).
-- `POST_DEPLOY_BASE_URL`, `POST_DEPLOY_APPROVED_HOST`, `POST_DEPLOY_ENVIRONMENT`,
-  `POST_DEPLOY_COMMIT_SHA`, `POST_DEPLOY_DEPLOYMENT_ID`, `POST_DEPLOY_RUN_ID`,
-  `POST_DEPLOY_STARTED_AT` (validated outputs exported through `GITHUB_ENV`).
-- `VERCEL_PROJECT_ID` is a repository variable (`vars.*`) consumed by the same workflow.
-
-The same probes run outside a dispatch with `pnpm ops:post-deploy -- check`, which reads only public
-pages. `--base-url=<origin>` (or `SMOKE_BASE_URL`) picks the host, defaulting to
-`https://www.celebra-me.com`; approved hosts are the Production domain, its subdomains and
-`*.workers.dev`. Example for a Cloudflare Worker:
+`pnpm ops:post-deploy -- check` probes public pages only. `--base-url=<origin>` (or
+`SMOKE_BASE_URL`) picks the host, defaulting to `https://www.celebra-me.com`; approved hosts are the
+Production domain, its subdomains and `*.workers.dev`. Example for a Cloudflare Worker:
 `pnpm ops:post-deploy -- check --base-url=https://celebra-me.example.workers.dev`.
 
 `.github/workflows/production-uptime.yml` runs that check against Production every 15 minutes (from
@@ -508,11 +495,11 @@ uploads a Worker version tagged with the commit SHA and smokes that version URL 
 Access with `pnpm ops:cloudflare:production:smoke`, which also fails when the version URL answers
 without the service token. It never routes traffic: `env.production` in `wrangler.jsonc` has no
 routes and no `workers.dev` host; the cutover adds the zone routes by hand
-(`docs/operations/cloudflare-production-cutover.md`). It declares the two Vercel cron schedules,
-which version uploads, version deploys and secret changes never apply; the cutover enables them once
-Vercel is paused (section 8.1 of that runbook). The first run creates the Worker with
-`wrangler deploy`, because `wrangler versions upload` cannot create one. Evidence is a GitHub
-Deployment in the `Cloudflare Production` environment and the commit status
+(`docs/operations/cloudflare-production-cutover.md`). It declares the Production cron schedules
+(`triggers.crons` in `wrangler.jsonc`), which version uploads, version deploys and secret changes
+never apply; the cutover enables them (section 8.1 of that runbook). The first run creates the
+Worker with `wrangler deploy`, because `wrangler versions upload` cannot create one. Evidence is a
+GitHub Deployment in the `Cloudflare Production` environment and the commit status
 `Cloudflare - celebra-me production candidate smoke`; no release gate reads either, so a candidate
 never stands in for what the domain serves.
 
@@ -520,13 +507,13 @@ never stands in for what the domain serves.
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------- |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET`                                            | Repository secrets (shared with Preview)      | The service token must be allowed by the Production version URL Access app |
 | `PRODUCTION_PUBLIC_SUPABASE_ANON_KEY`                                                                                                                        | `Cloudflare Production` environment secret    | Required; a JWT naming another Supabase project fails the run              |
-| `PRODUCTION_PUBLIC_GA_MEASUREMENT_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ENABLED`, `PRODUCTION_PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `Cloudflare Production` environment variables | Same values as Vercel Production; empty disables that tracker              |
+| `PRODUCTION_PUBLIC_GA_MEASUREMENT_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ENABLED`, `PRODUCTION_PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `Cloudflare Production` environment variables | Same values as the previous Production host; empty disables that tracker   |
 
 The `PRODUCTION_` prefix keeps a missing value from falling back to the repository-level Preview
 value of the same plain name. `PUBLIC_SUPABASE_URL` and `BASE_URL` are fixed in the workflow.
 
-Worker secrets: Production has no lane file. Export the Vercel Production variables to a one-off
-file outside the repository, upload with
+Worker secrets: Production has no lane file. Export the Production variables to a one-off file
+outside the repository, upload with
 `pnpm ops:cloudflare:production:secrets -- --env-file <path> --dry-run` (names only), then again
 without `--dry-run`, and delete the file. The script refuses lane files and any file whose
 `SUPABASE_URL` or `PUBLIC_SUPABASE_URL` names another project; `PREVIEW_MFA_BYPASS`,
@@ -564,10 +551,9 @@ declared in each `wrangler.json`, never variables or secrets.
 Read as provided by the platform or terminal; never set them in env files: `CI`, `NODE_ENV`, `DEV`
 (`import.meta.env`), `GITHUB_SHA`, `GITHUB_REF_NAME`, `GITHUB_REPOSITORY`, `GITHUB_RUN_ID`,
 `GITHUB_EVENT_NAME`, `GITHUB_OUTPUT`, `GITHUB_ENV`, `GITHUB_STEP_SUMMARY`, `GITHUB_API_URL`,
-`VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_PREVIOUS_SHA` (build
-fallbacks and `scripts/ops/vercel-ignore-build.mjs` only), `PGOPTIONS`, `PGCONNECT_TIMEOUT` (libpq,
-set by scripts), `USER`, `USERNAME`, `TERM`, `TERM_PROGRAM`, `TERMINAL_EMULATOR`, `WT_SESSION`,
-`MSYSTEM`, `NO_COLOR`, `FORCE_COLOR` (terminal detection in `scripts/lib/cli-theme.ts`).
+`PGOPTIONS`, `PGCONNECT_TIMEOUT` (libpq, set by scripts), `USER`, `USERNAME`, `TERM`,
+`TERM_PROGRAM`, `TERMINAL_EMULATOR`, `WT_SESSION`, `MSYSTEM`, `NO_COLOR`, `FORCE_COLOR` (terminal
+detection in `scripts/lib/cli-theme.ts`).
 
 ## Cleanup Notes
 

@@ -6,29 +6,65 @@ function normalizePath(file) {
 }
 
 // Vercel and Cloudinary are retired: hosting runs on Cloudflare Workers and invitation media on
-// R2. Any new mention outside the history below means a removed path is coming back. The mode
-// stays `warn` while the remaining documentation is rewritten; switch it to `error` once the
-// tracked tree is clean so CI rejects regressions.
-const RETIRED_PROVIDER_REFERENCE_MODE = 'warn';
+// R2. Any new mention outside the allow-list below means a removed path is coming back, so CI
+// rejects it.
+const RETIRED_PROVIDER_REFERENCE_MODE = 'error';
 
 const RETIRED_PROVIDERS = [
 	{ name: 'Vercel', pattern: /vercel/i },
 	{ name: 'Cloudinary', pattern: /cloudinary/i },
 ];
 
-// History and guards that must keep naming the retired providers.
 const RETIRED_PROVIDER_ALLOWLIST = new Set([
+	// History.
 	'CHANGELOG.md',
 	'pnpm-lock.yaml',
 	'supabase/migration-rollout-registry.json',
 	'.agent/plans/active/cloudflare-workers-migration.md',
 	'.agent/plans/active/vercel-cloudflare-closeout.md',
+	// Guards and their tests: they name the providers to reject them.
 	'scripts/validate-retired-provider-references.mjs',
 	'scripts/validate-structure.mjs',
+	'scripts/agent/env-files.ts',
 	'tests/unit/validate-structure-script.test.ts',
 	'tests/unit/layout-web-analytics.test.ts',
+	'tests/unit/hostname-validation.test.ts',
+	'tests/unit/env-templates.test.ts',
+	'tests/unit/deployment-workflow-contract.test.ts',
+	'tests/unit/post-deploy-smoke.test.ts',
+	'tests/scripts/operational-contracts.test.ts',
+	// Until the owner closes the Vercel project and deletes the local `.vercel/` directory:
+	// ignore rules, the Sign Worker origin of the backup deployment, and the rollback runbook.
+	'.gitignore',
+	'.prettierignore',
+	'.vscode/settings.json',
+	'eslint.config.js',
+	'jest.config.cjs',
+	'workers/celebra-memories-sign/wrangler.json',
+	'workers/celebra-memories-sign/worker-bindings.d.ts',
+	'docs/operations/cloudflare-production-cutover.md',
+	// Until the contract migration drops provider='cloudinary': tests that prove legacy
+	// Cloudinary rows and URLs are rejected, ignored or pruned.
+	'tests/db/preview-sync-invitations.test.ts',
+	'tests/provision/approval-asset-hashes.test.ts',
+	'tests/provision/asset-reconciliation.test.ts',
+	'tests/provision/content-parity.test.ts',
+	'tests/provision/hosted-apply-post-verify.test.ts',
+	'tests/provision/local-final-asset-verification.test.ts',
+	'tests/provision/plan-id-fingerprint.test.ts',
+	'tests/provision/preview-approval-service.test.ts',
+	'tests/provision/preview-live-verification.test.ts',
+	'tests/provision/promotion-comparison.test.ts',
+	'tests/provision/promotional-fingerprint.test.ts',
+	'tests/provision/semantic-delta.test.ts',
+	'tests/unit/asset-delivery.test.ts',
+	'tests/unit/draft-mutation.service.test.ts',
+	'tests/unit/image-delivery-server.test.ts',
+	'tests/unit/invitation-music-player-visibility.test.ts',
+	'tests/unit/invitation-preview/preview-media-source.test.ts',
 ]);
-const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/'];
+// Migrations are history; database tests follow the schema they check.
+const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/', 'supabase/tests/'];
 
 function isAllowlisted(relativeFile) {
 	return (
@@ -83,7 +119,7 @@ export function validateNoVercelReferences(
 		: { errors: [], warnings: findings };
 }
 
-/** Prints the findings to stderr without failing the run. */
+/** Prints warning-mode findings to stderr without failing the run. */
 export function reportRetiredProviderWarnings(warnings) {
 	if (warnings.length === 0) return;
 	console.warn(`Structural validation warnings (${warnings.length}): retired providers named.`);
