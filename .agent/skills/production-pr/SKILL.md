@@ -121,6 +121,18 @@ Use the repository template if present. Otherwise provide a concise body contain
 - Separately authorized follow-up operations and the evidence still required before merge,
   production deployment, or publication. Do not present those future operations as completed.
 
+Before creating or updating a release pull request:
+
+- The title is `release: vX.Y.Z - <primary outcome>` and `package.json` on `develop` has that
+  version; stop if the version equals the last tag.
+- List every pull request in `git log --merges origin/main..origin/develop`, not only the ones the
+  task worked on (for example a Worker setting such as `workers_dev`).
+- Compare the CHANGELOG entry with that list and with `git diff --stat origin/main origin/develop`;
+  a shipped change without a CHANGELOG line is fixed on the candidate before the pull request.
+- State visual impact and content impact as separate lines, even when the answer is "none".
+- Re-read claims about other pull requests ("retired", "merged") against `gh pr view` before writing
+  them.
+
 With creation authorized and prerequisites satisfied, create the PR using explicit `--base` and
 `--head` (or equivalent structured fields). For a multiline CLI body, save exact text in a local
 scratch file (under `.git/` or `.tmp/`) and use `--body-file`; exclude that file from the commit.
