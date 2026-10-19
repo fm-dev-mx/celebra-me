@@ -1,0 +1,49 @@
+---
+// src/components/invitation/ItineraryStackedCards.astro
+/* eslint-disable no-restricted-syntax -- per-card index and scroll-timeline names are generated per item */
+import type { ItineraryItem } from '@/lib/adapters/types';
+import { isValidTime } from '@/lib/time/time-format';
+
+interface Props {
+	items: ItineraryItem[];
+}
+
+const { items } = Astro.props;
+// Each card shrinks as the next one arrives; the names let a card follow its successor's view
+// timeline (see _stacked-cards.scss).
+const timelineName = (index: number) => `--stacked-card-${index}`;
+const timelineScope = items.map((_, index) => timelineName(index)).join(', ');
+---
+
+<ol class="stacked-cards" style={`timeline-scope: ${timelineScope}`}>
+	{items.map((item, index) => {
+		const timeValid = isValidTime(item.time);
+		const next = index < items.length - 1 ? timelineName(index + 1) : undefined;
+		return (
+			<li
+				class="stacked-card"
+				data-itinerary-item
+				data-moment={item.iconName}
+				data-time-status={timeValid ? 'confirmed' : 'pending'}
+				data-reveal-item
+				style={`--card-index:${index}; view-timeline-name:${timelineName(index)};${next ? ` --stacked-card-next:${next}` : ''}`}
+			>
+				<div class="stacked-card__surface">
+					<svg class="stacked-card__lantern" viewBox="0 0 32 44" aria-hidden="true" focusable="false">
+						<path class="stacked-card__lantern-glow" d="M16 9c6.5 0 10 5 10 13.5S22 36 16 36 6 31 6 22.5 9.5 9 16 9Z" />
+						<path class="stacked-card__lantern-line" d="M16 9c6.5 0 10 5 10 13.5S22 36 16 36 6 31 6 22.5 9.5 9 16 9Zm-4 0V5h8v4m-8 27v3h8v-3M16 1v4" />
+					</svg>
+					{timeValid ? (
+						<p class="stacked-card__time">{item.time}</p>
+					) : (
+						<p class="stacked-card__time stacked-card__time--pending" data-itinerary-time-pending>
+							Por confirmar
+						</p>
+					)}
+					<h3 class="stacked-card__label">{item.label}</h3>
+					{item.description && <p class="stacked-card__description">{item.description}</p>}
+				</div>
+			</li>
+		);
+	})}
+</ol>

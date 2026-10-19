@@ -362,7 +362,8 @@ export function buildIncompatiblePrerequisiteEvent(
 			if (
 				entry.variant === 'timeline-paper' ||
 				entry.variant === 'editorial-ledger' ||
-				entry.variant === 'editorial-program'
+				entry.variant === 'editorial-program' ||
+				entry.variant === 'stacked-cards'
 			) {
 				const itinerary = data.itinerary as Record<string, unknown>;
 				delete itinerary.items;

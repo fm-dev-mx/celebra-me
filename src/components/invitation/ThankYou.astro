@@ -5,6 +5,8 @@ import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThankYouVariant } from '@/lib/invitation/section-variants';
 import { splitLeadWords } from '@/lib/invitation/name-split';
+import SplitWords from '@/components/invitation/SplitWords.astro';
+import StorybookLanternSky from '@/components/invitation/StorybookLanternSky.astro';
 
 interface Props {
 	message: string;
@@ -76,6 +78,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	data-overlay-anchor={overlayAnchor}
 	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >
+	<StorybookLanternSky scene="closing" />
 	{
 		variant === 'ceremonial-closing' ? (
 			<div class="ceremonial-closing">
@@ -88,7 +91,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 			<div class="thank-you-editorial">
 				<div class="thank-you-editorial__ambient" aria-hidden="true" />
 				{image && (
-					<figure class="thank-you-editorial__media photo-frame">
+					<figure class="thank-you-editorial__media photo-frame" data-reveal-role="media">
 						<div class="thank-you-editorial__image-shell">
 							<OptimizedImage
 								imagePath={image}
@@ -100,17 +103,21 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 				)}
 
 				<div class="thank-you-editorial__copy">
-					<div class="message-container">
+					<div class="message-container" data-reveal-role="lede">
 						<p class="thank-you-message">
 							<span class="drop-cap">{firstLetter}</span>{remainingMessage}
 						</p>
 					</div>
 
 					<div class="signature-block">
-						<p class="closing-name">
-							{closingNameSplit ? <><span class="closing-name__lead">{closingNameSplit.lead}</span>{' '}<span class="closing-name__rest">{closingNameSplit.rest}</span></> : closingName}
-						</p>
-						{date && <p class="closing-date">{date}</p>}
+						{closingNameSplit ? (
+							<p class="closing-name" data-reveal-role="item">
+								<span class="closing-name__lead">{closingNameSplit.lead}</span>{' '}<span class="closing-name__rest">{closingNameSplit.rest}</span>
+							</p>
+						) : (
+							<SplitWords as="p" class="closing-name" text={closingName} />
+						)}
+						{date && <p class="closing-date" data-reveal-role="label">{date}</p>}
 					</div>
 					{ornament && (
 						<img class="thank-you__ornament" src={plainImgSrc(ornament.src)} alt="" width="256" height="128" loading="lazy" decoding="async" />
