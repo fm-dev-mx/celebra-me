@@ -254,7 +254,7 @@
             "phase": "contract",
             "provides": ["invitation_assets_remote_fields_complete"],
             "revokes": ["invitation_assets_cloudinary_provider"],
-            "notes": "Narrows invitation_assets_provider_valid to ('supabase', 'r2') and replaces invitation_assets_cloudinary_fields_complete with invitation_assets_remote_fields_complete (same object key and secure URL rule, R2 only); both checks are added validated. Aborts without changing rows if any provider='cloudinary' row remains, deleted or not. The application no longer reads or writes Cloudinary rows. Apply after 20261015220000 and never in the same release as a newly published invitation."
+            "notes": "Narrows invitation_assets_provider_valid to ('supabase', 'r2') for live rows and replaces invitation_assets_cloudinary_fields_complete with invitation_assets_remote_fields_complete (same object key and secure URL rule, live R2 rows only); soft-deleted rows (deleted_at set) may keep the retired provider. Both checks are added validated. Aborts without changing rows if any live provider='cloudinary' row remains. The application no longer reads or writes Cloudinary rows. Apply after 20261015220000 and never in the same release as a newly published invitation."
         }
     },
     "appCapabilities": {

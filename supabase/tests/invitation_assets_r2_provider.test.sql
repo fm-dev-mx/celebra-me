@@ -1,9 +1,9 @@
 begin;
-select plan(9);
+select plan(11);
 
 -- Exercise the installed provider constraints without creating or altering invitation records.
 create temporary table provider_contract (
-  provider text, provider_public_id text, secure_url text
+  provider text, provider_public_id text, secure_url text, deleted_at timestamptz
 );
 do $$
 declare
@@ -24,11 +24,13 @@ begin
 end;
 $$;
 
-select lives_ok($$insert into provider_contract values ('supabase', null, null)$$, 'Supabase rows need no remote identity');
-select lives_ok($$insert into provider_contract values ('r2', 'boda/a.webp', 'https://media.example.com/boda/a.webp')$$, 'complete R2 rows are accepted');
-select throws_ok($$insert into provider_contract values ('r2', null, 'https://media.example.com/boda/a.webp')$$, '23514', null, 'R2 rows require an object key');
-select throws_ok($$insert into provider_contract values ('r2', 'boda/a.webp', null)$$, '23514', null, 'R2 rows require a secure URL');
-select throws_ok($$insert into provider_contract values ('s3', 'boda/a.webp', 'https://media.example.com/boda/a.webp')$$, '23514', null, 'unknown providers are rejected');
+select lives_ok($$insert into provider_contract values ('supabase', null, null, null)$$, 'Supabase rows need no remote identity');
+select lives_ok($$insert into provider_contract values ('r2', 'boda/a.webp', 'https://media.example.com/boda/a.webp', null)$$, 'complete R2 rows are accepted');
+select throws_ok($$insert into provider_contract values ('r2', null, 'https://media.example.com/boda/a.webp', null)$$, '23514', null, 'R2 rows require an object key');
+select throws_ok($$insert into provider_contract values ('r2', 'boda/a.webp', null, null)$$, '23514', null, 'R2 rows require a secure URL');
+select throws_ok($$insert into provider_contract values ('s3', 'boda/a.webp', 'https://media.example.com/boda/a.webp', null)$$, '23514', null, 'unknown providers are rejected');
+select throws_ok($$insert into provider_contract values ('cloudinary', 'celebra/a', 'https://res.cloudinary.com/a.webp', null)$$, '23514', null, 'live Cloudinary rows are rejected');
+select lives_ok($$insert into provider_contract values ('cloudinary', 'celebra/a', null, now())$$, 'soft-deleted Cloudinary rows remain valid history');
 select is(
   (select count(*)::integer from pg_constraint
     where conrelid = 'public.invitation_assets'::regclass
@@ -46,16 +48,17 @@ select is(
   'no provider-named remote identity check remains'
 );
 select is(
-  (select count(*)::integer from public.invitation_assets where provider not in ('supabase', 'r2')),
+  (select count(*)::integer from public.invitation_assets
+    where deleted_at is null and provider not in ('supabase', 'r2')),
   0,
-  'existing rows use only the supported providers'
+  'live rows use only the supported providers'
 );
 select is(
   col_description('public.invitation_assets'::regclass, (
     select attnum from pg_attribute
     where attrelid = 'public.invitation_assets'::regclass and attname = 'provider'
   )),
-  'Storage provider backing the asset (supabase or r2).',
+  'Storage provider backing the asset (supabase or r2). Soft-deleted rows may keep a retired provider.',
   'the provider column comment lists only the supported providers'
 );
 
