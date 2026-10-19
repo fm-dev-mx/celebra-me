@@ -13,7 +13,7 @@ describe('buildInvitationPath', () => {
 				eventSlug: 'elena-fixture',
 				inviteId: 'invite-123',
 			}),
-		).toBe('/xv/elena-fixture?invite=invite-123');
+		).toBe('/elena-fixture?invite=invite-123');
 	});
 });
 
@@ -36,7 +36,7 @@ describe('generateInvitationLink', () => {
 				eventSlug: 'elena-fixture',
 				inviteId: 'invite-123',
 			}),
-		).toBe('https://celebra.test/xv/elena-fixture?invite=invite-123');
+		).toBe('https://celebra.test/elena-fixture?invite=invite-123');
 	});
 
 	it('generates minimal /i/{shortId} link when shortId is provided', () => {
@@ -78,17 +78,55 @@ describe('generateInvitationLink', () => {
 				eventSlug: 'juan-maria',
 				inviteId: 'invite-789',
 			}),
-		).toBe('https://celebra.test/boda/juan-maria?invite=invite-789');
+		).toBe('https://celebra.test/juan-maria?invite=invite-789');
 	});
 });
 
-describe('short public paths', () => {
-	it('uses /{slug} for short-URL invitations and keeps the legacy form otherwise', () => {
-		expect(buildPublicInvitationPath('xv', 'america')).toBe('/america');
-		expect(buildPublicInvitationPath('boda', 'olivia-y-antonio')).toBe('/olivia-y-antonio');
-		expect(buildPublicInvitationPath('xv', 'elena-fixture')).toBe('/xv/elena-fixture');
+describe('buildPublicInvitationPath', () => {
+	it.each([
+		['xv', 'america', '/america'],
+		['boda', 'olivia-y-antonio', '/olivia-y-antonio'],
+		['cumple', 'aithan-darell', '/aithan-darell'],
+		['xv', 'xv-america', '/xv-america'],
+	])('uses the short path for %s/%s', (eventType, slug, expected) => {
+		expect(buildPublicInvitationPath(eventType, slug)).toBe(expected);
+	});
+
+	it('keeps the long path for static catalog demos', () => {
+		expect(buildPublicInvitationPath('xv', 'demo-xv-editorial')).toBe('/xv/demo-xv-editorial');
+	});
+
+	it('encodes the slug', () => {
+		expect(buildPublicInvitationPath('xv', 'a b')).toBe('/a%20b');
+	});
+
+	it('never prefixes the slug with the event type', () => {
+		expect(buildPublicInvitationPath('boda', 'daniela-y-martin')).not.toContain('/boda/');
+	});
+
+	it('builds personalized and generated links on the short path', () => {
 		expect(
 			buildInvitationPath({ eventType: 'xv', eventSlug: 'america', inviteId: 'invite-1' }),
 		).toBe('/america?invite=invite-1');
+		expect(
+			generateInvitationLink({
+				origin: 'https://celebra.test/',
+				eventType: 'boda',
+				eventSlug: 'olivia-y-antonio',
+				inviteId: 'invite-2',
+			}),
+		).toBe('https://celebra.test/olivia-y-antonio?invite=invite-2');
+	});
+
+	it('keeps the /i/{shortId} link independent of the route form', () => {
+		expect(
+			generateInvitationLink({
+				origin: 'https://celebra.test',
+				eventType: 'xv',
+				eventSlug: 'america',
+				inviteId: 'invite-3',
+				shortId: 'k3x9aB',
+			}),
+		).toBe('https://celebra.test/i/k3x9aB');
 	});
 });

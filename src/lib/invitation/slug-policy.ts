@@ -26,12 +26,13 @@ export function isReservedInvitationSlug(slug: string): boolean {
 	return RESERVED_SLUGS.has(slug.trim().toLowerCase());
 }
 
-/**
- * Invitations shared as `/{slug}`. Every other published invitation keeps `/{eventType}/{slug}`
- * (both forms resolve). Add a slug here when the owner switches an invitation to the short URL.
- */
-const SHORT_PATH_SLUGS: ReadonlySet<string> = new Set(['america', 'olivia-y-antonio']);
+/** Static catalog demos (src/content/event-demos) are not published rows, so they keep the long path. */
+const CATALOG_DEMO_PREFIX = 'demo-';
 
+/**
+ * From 2026-10-19 every invitation is shared as `/{slug}`. Catalog demos keep
+ * `/{eventType}/{slug}`; the long form still resolves for every invitation (no redirect).
+ */
 export function usesShortInvitationPath(slug: string): boolean {
-	return SHORT_PATH_SLUGS.has(slug);
+	return !slug.startsWith(CATALOG_DEMO_PREFIX);
 }
