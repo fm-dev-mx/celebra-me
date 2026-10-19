@@ -204,6 +204,10 @@ export default defineConfig({
 		port: devServerPort,
 	},
 	image: {
+		// `astro dev` renders through sharp; match the hosted Cloudflare fit (see the service).
+		...(usesCloudflareAdapter
+			? {}
+			: { service: { entrypoint: './src/lib/assets/dev-image-service.ts' } }),
 		remotePatterns: [
 			{
 				protocol: 'https',
