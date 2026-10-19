@@ -2,7 +2,7 @@
     "name": "celebra-memories-retrieve",
     "main": "src/index.ts",
     "compatibility_date": "2026-08-28",
-    "workers_dev": true,
+    "workers_dev": false,
     "preview_urls": false,
     "vars": {
         "MEMORIES_STORAGE_TARGET": "production"
@@ -58,7 +58,7 @@
         },
         "staging": {
             "name": "celebra-memories-retrieve-staging",
-            "workers_dev": true,
+            "workers_dev": false,
             "preview_urls": false,
             "routes": [],
             "durable_objects": {

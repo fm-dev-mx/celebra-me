@@ -345,10 +345,10 @@ Still open:
 
 1. Final upload run for v0.28.1 (step 3.1.5).
 2. Worker error-rate notification and external uptime alert beyond the 15-minute GitHub workflow.
-3. After Vercel is deleted: set `workers_dev: false` on `celebra-memories-retrieve` and redeploy it.
-   Until then Vercel, the rollback host, still calls its `workers.dev` origin; the Cloudflare Worker
-   already uses the `MEMORIES_RETRIEVE` Service Binding. The sign Worker keeps `workers_dev`:
-   browsers upload to its public host.
+3. Done 2026-10-19 (owner decision, ahead of the Vercel deletion): `workers_dev: false` on
+   `celebra-memories-retrieve` and its staging Worker, and `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`
+   removed from `celebra-me` and `celebra-me-preview`. Vercel, the rollback host, can no longer
+   serve memories media. The sign Worker keeps `workers_dev`: browsers upload to its public host.
 
 Done 2026-10-17 (owner):
 
