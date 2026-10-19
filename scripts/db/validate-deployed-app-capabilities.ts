@@ -27,7 +27,6 @@ const EXECUTABLE_PUBLICATION_PATHS = [
 	'src/lib/intake/repositories/publication.repository.ts',
 	'scripts/provision/apply-local-invitation.ts',
 	'scripts/provision/invitation-import-engine.ts',
-	'scripts/invitation/image-namespace-remap.ts',
 ] as const;
 
 const EVENT_MEMORIES_CAPABILITY = 'event_memories_client';

@@ -12,12 +12,12 @@ import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import { preferUploadedDeliverySrc } from '@/lib/intake/services/asset-delivery';
 import {
-	cloudinaryEraHostingMessage,
+	remoteMediaHostingMessage,
 	findSupabaseStorageUrls,
-	isCloudinaryEraInvitation,
-	isCloudinaryHostedAsset,
+	isRemoteMediaInvitation,
+	isRemoteHostedAsset,
 	isSupabaseStorageUrl,
-} from '@/lib/intake/services/cloudinary-era-hosting';
+} from '@/lib/intake/services/remote-media-hosting';
 import { resolveEffectiveTarget } from '@/lib/intake/services/storage-provider';
 import type { Invitation, InvitationAsset, InvitationContentDraft } from '@/lib/intake/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -378,10 +378,10 @@ async function freezeUploadedContentRefs(
 	const assetMap = new Map(assets.map((a) => [a.id, a]));
 	const legacyPublishedAssetIds = collectUploadedAssetIds(priorPublishedContent);
 	const isLocal = resolveEffectiveTarget() === 'local';
-	const requireCloudinary =
+	const requireRemoteMedia =
 		!isLocal &&
 		(invitation
-			? isCloudinaryEraInvitation({
+			? isRemoteMediaInvitation({
 					kind: invitation.kind,
 					createdAt: invitation.createdAt,
 					publishedAt,
@@ -415,18 +415,18 @@ async function freezeUploadedContentRefs(
 				},
 				frozenSrc,
 			});
-			if (requireCloudinary && !isCloudinaryHostedAsset(asset)) {
+			if (requireRemoteMedia && !isRemoteHostedAsset(asset)) {
 				throw new ApiError(
 					422,
 					'bad_request',
-					cloudinaryEraHostingMessage([asset.displayName || assetId.slice(0, 8)]),
+					remoteMediaHostingMessage([asset.displayName || assetId.slice(0, 8)]),
 				);
 			}
-			if (requireCloudinary && isSupabaseStorageUrl(src)) {
+			if (requireRemoteMedia && isSupabaseStorageUrl(src)) {
 				throw new ApiError(
 					422,
 					'bad_request',
-					cloudinaryEraHostingMessage([asset.displayName || assetId.slice(0, 8)]),
+					remoteMediaHostingMessage([asset.displayName || assetId.slice(0, 8)]),
 				);
 			}
 			return { ...obj, src };
@@ -444,13 +444,13 @@ async function freezeUploadedContentRefs(
 	}
 
 	const frozen = walk(content) as Record<string, unknown>;
-	if (requireCloudinary) {
+	if (requireRemoteMedia) {
 		const leftover = findSupabaseStorageUrls(frozen);
 		if (leftover.length > 0) {
 			throw new ApiError(
 				422,
 				'bad_request',
-				cloudinaryEraHostingMessage(['contenido publicado']),
+				remoteMediaHostingMessage(['contenido publicado']),
 			);
 		}
 	}

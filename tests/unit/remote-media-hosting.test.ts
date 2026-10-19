@@ -1,39 +1,39 @@
 import {
-	cloudinaryEraHostingMessage,
+	remoteMediaHostingMessage,
 	findSupabaseStorageUrls,
-	isCloudinaryEraInvitation,
-	isCloudinaryHostedAsset,
-} from '../../src/lib/intake/services/cloudinary-era-hosting';
+	isRemoteMediaInvitation,
+	isRemoteHostedAsset,
+} from '../../src/lib/intake/services/remote-media-hosting';
 
-describe('cloudinary-era hosting', () => {
+describe('remote media hosting', () => {
 	it('applies to client invitations in hosted environments and excludes demos', () => {
 		expect(
-			isCloudinaryEraInvitation({
+			isRemoteMediaInvitation({
 				kind: 'client',
 			}),
 		).toBe(true);
 		expect(
-			isCloudinaryEraInvitation({
+			isRemoteMediaInvitation({
 				kind: 'demo',
 			}),
 		).toBe(false);
 	});
 
-	it('requires cloudinary provider plus an http secure_url', () => {
+	it('requires the r2 provider plus an http secure_url', () => {
 		expect(
-			isCloudinaryHostedAsset({
-				provider: 'cloudinary',
-				secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+			isRemoteHostedAsset({
+				provider: 'r2',
+				secureUrl: 'https://media.celebra-me.com/invitations/xv/demo/hero.webp',
 			}),
 		).toBe(true);
 		expect(
-			isCloudinaryHostedAsset({
+			isRemoteHostedAsset({
 				provider: 'r2',
 				secureUrl: 'https://media.celebra-me.com/invitations/xv/demo/hero-0.webp',
 			}),
 		).toBe(true);
-		expect(isCloudinaryHostedAsset({ provider: 'supabase', secureUrl: null })).toBe(false);
-		expect(isCloudinaryHostedAsset({ provider: 'cloudinary', secureUrl: '' })).toBe(false);
+		expect(isRemoteHostedAsset({ provider: 'supabase', secureUrl: null })).toBe(false);
+		expect(isRemoteHostedAsset({ provider: 'r2', secureUrl: '' })).toBe(false);
 	});
 
 	it('detects Supabase storage URLs', () => {
@@ -52,6 +52,6 @@ describe('cloudinary-era hosting', () => {
 				src: 'http://localhost:54321/storage/v1/object/public/invitation-assets/test.webp',
 			}),
 		).toHaveLength(1);
-		expect(cloudinaryEraHostingMessage(['hero-desktop'])).toMatch(/servicio de imágenes/);
+		expect(remoteMediaHostingMessage(['hero-desktop'])).toMatch(/servicio de imágenes/);
 	});
 });

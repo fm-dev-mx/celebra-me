@@ -1,16 +1,16 @@
 /**
- * Cloudinary-era invitation image hosting.
+ * Remote media hosting for invitation images.
  * Client invitations in hosted/remote environments (Preview and Production)
- * must deliver referenced images from remote media hosting (Cloudinary or R2), never Storage.
+ * must deliver referenced images from R2, never Storage.
  */
 
-export interface CloudinaryEraInvitationInput {
+export interface RemoteMediaInvitationInput {
 	kind?: string | null;
 	createdAt?: string | Date | null;
 	publishedAt?: string | Date | null;
 }
 
-export interface CloudinaryHostedAssetInput {
+export interface RemoteHostedAssetInput {
 	id?: string | null;
 	key?: string | null;
 	provider?: string | null;
@@ -21,15 +21,15 @@ function isHttpUrl(value: string): boolean {
 	return /^https?:\/\//i.test(value.trim());
 }
 
-export function isCloudinaryEraInvitation(input: CloudinaryEraInvitationInput): boolean {
+export function isRemoteMediaInvitation(input: RemoteMediaInvitationInput): boolean {
 	if (input.kind && input.kind !== 'client') return false;
 	return true;
 }
 
-export function isCloudinaryHostedAsset(asset: CloudinaryHostedAssetInput): boolean {
+export function isRemoteHostedAsset(asset: RemoteHostedAssetInput): boolean {
 	const provider = (asset.provider ?? '').toLowerCase();
 	const url = asset.secureUrl?.trim() ?? '';
-	return (provider === 'cloudinary' || provider === 'r2') && isHttpUrl(url);
+	return provider === 'r2' && isHttpUrl(url);
 }
 
 export function isSupabaseStorageUrl(value: string): boolean {
@@ -53,7 +53,7 @@ export function findSupabaseStorageUrls(value: unknown, found: string[] = []): s
 	return found;
 }
 
-export function cloudinaryEraHostingMessage(labels: readonly string[]): string {
+export function remoteMediaHostingMessage(labels: readonly string[]): string {
 	const shown = labels.slice(0, 6).join(', ');
 	const extra = labels.length > 6 ? ` (+${labels.length - 6})` : '';
 	return `Las imágenes de esta invitación deben alojarse en el servicio de imágenes publicado (${shown}${extra}).`;

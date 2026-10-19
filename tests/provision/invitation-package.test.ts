@@ -1,7 +1,4 @@
-import { describe, expect, it, jest } from '@jest/globals';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { describe, expect, it } from '@jest/globals';
 import {
 	computePackageHash,
 	serializeInvitationPackage,
@@ -154,38 +151,31 @@ describe('invitation package', () => {
 		expect(pkg.packageHash).toBe(computePackageHash(pkg));
 		expect(pkg.sourceHash).toBe(release.sourceHash);
 		expect(pkg.assets.every((asset) => !asset.storagePath.includes('127.0.0.1'))).toBe(true);
-		expect(pkg.assets.every((asset) => asset.provider === 'cloudinary')).toBe(true);
+		expect(pkg.assets.every((asset) => asset.provider === 'r2')).toBe(true);
 		expect(pkg.assets[0]?.providerPublicId).toBeUndefined();
 		expect(pkg.assets[0]?.secureUrl).toBeUndefined();
 	});
 
 	it('derives environment identity only after validating the portable package', () => {
-		const tempRoot = mkdtempSync(join(tmpdir(), 'invitation-package-env-'));
-		const originalCloudName = process.env.CLOUDINARY_CLOUD_NAME;
-		const cwdSpy = jest.spyOn(process, 'cwd').mockReturnValue(tempRoot);
-		writeFileSync(join(tempRoot, '.env.local'), 'CLOUDINARY_CLOUD_NAME=stable-cloud\n', 'utf8');
-
-		try {
-			delete process.env.CLOUDINARY_CLOUD_NAME;
-			const pkg = serializeInvitationPackage(baseRelease);
-			expect(pkg.packageHash).toBe(computePackageHash(pkg));
-			const preview = materializeHostedPackageAssets(pkg, 'preview');
-			const production = materializeHostedPackageAssets(pkg, 'production');
-			expect(preview.assets[0]?.providerPublicId).toBe(
-				`preview/xv/test-invitation/assets/hero-${hash.slice(0, 12)}`,
-			);
-			expect(production.assets[0]?.providerPublicId).toBe(
-				`production/xv/test-invitation/assets/hero-${hash.slice(0, 12)}`,
-			);
-			expect(preview.assets[0]?.secureUrl).toContain('res.cloudinary.com/stable-cloud/');
-			expect(pkg.assets[0]?.providerPublicId).toBeUndefined();
-			expect(process.env.CLOUDINARY_CLOUD_NAME).toBe('stable-cloud');
-		} finally {
-			cwdSpy.mockRestore();
-			if (originalCloudName === undefined) delete process.env.CLOUDINARY_CLOUD_NAME;
-			else process.env.CLOUDINARY_CLOUD_NAME = originalCloudName;
-			rmSync(tempRoot, { recursive: true, force: true });
-		}
+		const pkg = serializeInvitationPackage(baseRelease);
+		expect(pkg.packageHash).toBe(computePackageHash(pkg));
+		const preview = materializeHostedPackageAssets(pkg, 'preview');
+		const production = materializeHostedPackageAssets(pkg, 'production');
+		const objectKey = `invitations/xv/test-invitation/hero-${hash}.webp`;
+		expect(preview.assets[0]).toMatchObject({
+			bucket: 'celebra-me-invitation-media-staging',
+			storagePath: objectKey,
+			providerPublicId: objectKey,
+			secureUrl: `https://media-staging.celebra-me.com/${objectKey}`,
+		});
+		expect(production.assets[0]).toMatchObject({
+			bucket: 'celebra-me-invitation-media',
+			storagePath: objectKey,
+			providerPublicId: objectKey,
+			secureUrl: `https://media.celebra-me.com/${objectKey}`,
+		});
+		expect(pkg.assets[0]?.providerPublicId).toBeUndefined();
+		expect(pkg.assets[0]?.secureUrl).toBeUndefined();
 	});
 
 	it('accepts an in-memory package only when every integrity hash is present and correct', () => {

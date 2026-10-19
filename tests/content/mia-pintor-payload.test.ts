@@ -37,7 +37,9 @@ describe('Mía managed definition', () => {
 		expect(parsed.family?.godparents ?? []).toHaveLength(0);
 		expect(parsed.itinerary).toBeDefined();
 		expect(parsed.itinerary?.items).toHaveLength(7);
-		expect(parsed.music?.url).toContain('Dancing_Queen_hxqiaf.mp3');
+		expect(parsed.music?.url).toMatch(
+			/^https:\/\/media\.celebra-me\.com\/invitations\/xv\/mia-pintor\/music-[0-9a-f]{64}\.mp3$/,
+		);
 		expect(parsed.sectionOrder).toContain('itinerary');
 		expect(parsed.location?.venues?.[1]?.time).toBe('18:30');
 	});

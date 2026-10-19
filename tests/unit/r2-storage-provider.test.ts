@@ -99,7 +99,8 @@ describe('R2 invitation media storage', () => {
 	});
 
 	it('selects R2 only when the Worker installed the binding', () => {
-		expect(getStorageProvider('production').providerName).toBe('cloudinary');
+		expect(() => getStorageProvider('production')).toThrow('INVITATION_MEDIA R2 binding');
+		expect(() => getStorageProvider('preview')).toThrow('INVITATION_MEDIA R2 binding');
 		expect(installInvitationMediaBinding({ INVITATION_MEDIA: memoryBucket() })).toBe(true);
 		expect(getStorageProvider('production').providerName).toBe('r2');
 		expect(getStorageProvider('local').providerName).toBe('supabase');

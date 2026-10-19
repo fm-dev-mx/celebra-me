@@ -61,12 +61,12 @@ const VENUE_CITY = 'Atizapán';
 const MAPS_URL = 'https://maps.app.goo.gl/ebbpWEFK68LhuDm28';
 
 /**
- * Music: the client asked for "Life Is a Highway" (Rascal Flatts). Hosted track on Cloudinary
+ * Music: the client asked for "Life Is a Highway" (Rascal Flatts). Hosted track on R2
  * (full track). Client request (2026-10-08): start where the vocals begin (~0:49), entering with a
  * gentle volume ramp instead of cutting in mid-phrase.
  */
 const MUSIC_URL =
-	'https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3';
+	'https://media.celebra-me.com/invitations/cumple/aithan-darell/music-9aec3fe1ce5960c85623c934f273a4d2ad6e868897d8f6bfd93f731a60067155.mp3';
 const MUSIC_START_SECONDS: number | undefined = 49;
 const MUSIC_FADE_IN_SECONDS = 3;
 

@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ImageMetadata } from 'astro';
+import { isR2InvitationMediaUrl } from '@/lib/intake/services/r2-invitation-media';
 import {
-	isCloudinaryDeliveryHostname,
 	isMutableInPlaceMediaUrl,
 	plainImgSrc,
 	shouldOptimizeThroughImageService,
@@ -13,8 +13,8 @@ const readSource = (relativePath: string) =>
 
 const SUPABASE_STORAGE_URL =
 	'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitations/optimized/hero.webp';
-const CLOUDINARY_VERSIONED_URL =
-	'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc123.webp';
+const R2_MEDIA_URL =
+	'https://media.celebra-me.com/invitations/xv/demo/hero-' + 'c'.repeat(64) + '.webp';
 
 describe('vercel image optimization policy', () => {
 	it('treats in-place Supabase Storage URLs as mutable', () => {
@@ -41,14 +41,14 @@ describe('vercel image optimization policy', () => {
 		expect(
 			isMutableInPlaceMediaUrl('https://evil.example/.supabase.co/storage/hero.webp'),
 		).toBe(false);
-		expect(isCloudinaryDeliveryHostname('https://res.cloudinary.com.evil.example/image')).toBe(
+		expect(isR2InvitationMediaUrl('https://media.celebra-me.com.evil.example/image.webp')).toBe(
 			false,
 		);
-		expect(isCloudinaryDeliveryHostname(CLOUDINARY_VERSIONED_URL)).toBe(true);
+		expect(isR2InvitationMediaUrl(R2_MEDIA_URL)).toBe(true);
 	});
 
-	it('does not classify versioned Cloudinary, hashed /_astro, or unrelated remotes as mutable Storage URLs', () => {
-		expect(isMutableInPlaceMediaUrl(CLOUDINARY_VERSIONED_URL)).toBe(false);
+	it('does not classify R2, hashed /_astro, or unrelated remotes as mutable Storage URLs', () => {
+		expect(isMutableInPlaceMediaUrl(R2_MEDIA_URL)).toBe(false);
 		expect(isMutableInPlaceMediaUrl('/_astro/hero.hash.webp')).toBe(false);
 		expect(isMutableInPlaceMediaUrl('https://images.unsplash.com/photo-1')).toBe(false);
 	});
@@ -70,7 +70,7 @@ describe('vercel image optimization policy', () => {
 		expect(shouldOptimizeThroughImageService('data:image/webp;base64,AAAA')).toBe(false);
 	});
 
-	it('optimizes bundled ImageMetadata but delivers prepared Cloudinary media directly', () => {
+	it('optimizes bundled ImageMetadata but delivers prepared R2 media directly', () => {
 		expect(
 			shouldOptimizeThroughImageService({
 				src: '/_astro/hero.hash.webp',
@@ -79,11 +79,11 @@ describe('vercel image optimization policy', () => {
 				format: 'webp',
 			} as ImageMetadata),
 		).toBe(true);
-		expect(shouldOptimizeThroughImageService(CLOUDINARY_VERSIONED_URL)).toBe(false);
+		expect(shouldOptimizeThroughImageService(R2_MEDIA_URL)).toBe(false);
 	});
 
 	it.each([
-		'https://res.cloudinary.com/demo/image/upload/v1/photo.webp',
+		'https://media.celebra-me.com/invitations/xv/demo/photo-' + 'a'.repeat(64) + '.webp',
 		'https://abc.supabase.co/storage/v1/object/public/invitation-assets/photo-' +
 			'a'.repeat(64) +
 			'.webp',

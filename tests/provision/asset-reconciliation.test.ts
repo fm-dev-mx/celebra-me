@@ -24,10 +24,14 @@ const mockStorageCanonicalAsset: InvitationPackageAsset = {
 	dataBase64: 'mockbase64',
 };
 
+const R2_KEY =
+	'invitations/xv/romina-rios-chaparro/hero-b7a4f50f723982d06b5b5335b807e2dfa4e15558a4af7c0dff5bffe54c544fd6.webp';
+const R2_URL = `https://media.celebra-me.com/${R2_KEY}`;
+
 const mockCanonicalAsset: InvitationPackageAsset = {
 	...mockStorageCanonicalAsset,
-	provider: 'cloudinary',
-	providerPublicId: 'xv/romina-rios-chaparro/assets/hero-b7a4f50f7239',
+	provider: 'r2',
+	providerPublicId: R2_KEY,
 };
 
 const mockTargetDbRecord: TargetAssetRecord = {
@@ -105,13 +109,13 @@ describe('asset-reconciliation engine', () => {
 		expect(result.reconciledAssets[0]?.plannedAction).toBe('REUSE');
 	});
 
-	it('plans Cloudinary upload when the target row is still on Supabase Storage', () => {
+	it('plans R2 upload when the target row is still on Supabase Storage', () => {
 		const result = reconcileAssets({
 			canonicalAssets: [
 				{
 					...mockCanonicalAsset,
-					provider: 'cloudinary',
-					providerPublicId: 'xv/romina-rios-chaparro/assets/hero-b7a4f50f7239',
+					provider: 'r2',
+					providerPublicId: R2_KEY,
 				},
 			],
 			targetDbAssets: [mockTargetDbRecord],
@@ -126,19 +130,19 @@ describe('asset-reconciliation engine', () => {
 
 		expect(result.blocked).toBe(false);
 		expect(result.reconciledAssets[0]?.plannedAction).toBe('UPLOAD');
-		expect(result.reconciledAssets[0]?.reasonCode).toBe('ASSET_CLOUDINARY_UPLOAD');
+		expect(result.reconciledAssets[0]?.reasonCode).toBe('ASSET_R2_UPLOAD');
 	});
 
-	it('classifies MATCH and plans REUSE when the target row is already Cloudinary', () => {
+	it('classifies MATCH and plans REUSE when the target row is already on R2', () => {
 		const result = reconcileAssets({
 			canonicalAssets: [mockCanonicalAsset],
 			targetDbAssets: [
 				{
 					...mockTargetDbRecord,
-					provider: 'cloudinary',
-					providerPublicId: mockCanonicalAsset.providerPublicId,
-					secureUrl:
-						'https://res.cloudinary.com/demo/image/upload/v1/xv/romina-rios-chaparro/assets/hero-b7a4f50f7239.webp',
+					provider: 'r2',
+					storagePath: R2_KEY,
+					providerPublicId: R2_KEY,
+					secureUrl: R2_URL,
 					sha256: mockCanonicalAsset.sha256,
 					managedByDefinitionSlug: 'romina-rios-chaparro',
 					managedSourceKey: 'hero',
@@ -155,16 +159,16 @@ describe('asset-reconciliation engine', () => {
 		expect(result.reconciledAssets[0]?.reasonCode).toBe('ASSET_MATCH_EXISTS');
 	});
 
-	it('reuses a ready Cloudinary row under preserve', () => {
+	it('reuses a ready R2 row under preserve', () => {
 		const result = reconcileAssets({
 			canonicalAssets: [mockCanonicalAsset],
 			targetDbAssets: [
 				{
 					...mockTargetDbRecord,
-					provider: 'cloudinary',
-					providerPublicId: mockCanonicalAsset.providerPublicId,
-					secureUrl:
-						'https://res.cloudinary.com/demo/image/upload/v1/xv/romina-rios-chaparro/assets/hero-b7a4f50f7239.webp',
+					provider: 'r2',
+					storagePath: R2_KEY,
+					providerPublicId: R2_KEY,
+					secureUrl: R2_URL,
 					sha256: mockCanonicalAsset.sha256,
 					managedByDefinitionSlug: 'romina-rios-chaparro',
 					managedSourceKey: 'hero',
@@ -179,7 +183,7 @@ describe('asset-reconciliation engine', () => {
 		expect(result.reconciledAssets[0]?.plannedAction).toBe('REUSE');
 	});
 
-	it('blocks Cloudinary missing binaries under preserve instead of uploading', () => {
+	it('blocks R2 missing binaries under preserve instead of uploading', () => {
 		const result = reconcileAssets({
 			canonicalAssets: [mockCanonicalAsset],
 			targetDbAssets: [],

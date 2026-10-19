@@ -29,33 +29,7 @@ export function resolvePublicSiteOrigin(options?: {
 	return normalizeOrigin(fallbackOrigin);
 }
 
-const CLOUDINARY_UPLOAD_PATTERN =
-	/^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.*)$/i;
-const CLOUDINARY_VERSIONED_ASSET = /(?:^|\/)(v\d+\/.*)$/;
-const CLOUDINARY_SOCIAL_TRANSFORMATION = 'c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg';
-
-function toJpgDeliveryPath(path: string): string {
-	return path.replace(/\.(webp|png|jpeg|jpg|gif)$/i, '.jpg');
-}
-
-function toOptimizedSocialImageUrl(url: string): string {
-	const match = url.match(CLOUDINARY_UPLOAD_PATTERN);
-	if (!match) return url;
-
-	const [, prefix, rest] = match;
-	if (rest.startsWith(`${CLOUDINARY_SOCIAL_TRANSFORMATION}/`)) {
-		return url;
-	}
-
-	const versionedAsset = rest.match(CLOUDINARY_VERSIONED_ASSET)?.[1] ?? rest;
-	return `${prefix}${CLOUDINARY_SOCIAL_TRANSFORMATION}/${toJpgDeliveryPath(versionedAsset)}`;
-}
-
 function inferImageType(url: string): string {
-	if (url.includes('f_jpg') || url.includes('f_jpeg')) return 'image/jpeg';
-	if (url.includes('f_png')) return 'image/png';
-	if (url.includes('f_webp')) return 'image/webp';
-
 	try {
 		const pathname = new URL(url).pathname.toLowerCase();
 		if (pathname.endsWith('.jpg') || pathname.endsWith('.jpeg')) return 'image/jpeg';
@@ -97,11 +71,10 @@ export function buildSocialImageMetadata(
 	},
 ): SocialImageMetadata {
 	const absoluteUrl = buildAbsoluteSocialUrl(pathOrUrl, options.origin);
-	const optimizedUrl = toOptimizedSocialImageUrl(absoluteUrl);
 	return {
-		url: optimizedUrl,
+		url: absoluteUrl,
 		width: options.width ?? DEFAULT_IMAGE_WIDTH,
 		height: options.height ?? DEFAULT_IMAGE_HEIGHT,
-		type: options.type ?? inferImageType(optimizedUrl),
+		type: options.type ?? inferImageType(absoluteUrl),
 	};
 }

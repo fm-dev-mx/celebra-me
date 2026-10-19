@@ -10,7 +10,7 @@
  *   pnpm invitation:delivery:baseline --slug <eventType>/<slug> --legacy-slug <eventType>/<slug>
  *   pnpm invitation:delivery:baseline --slug <eventType>/<slug> --origin <url> --samples 5 --assert-budget
  *
- * --slug names an invitation with versioned (Cloudinary) media; --legacy-slug, when given, names one
+ * --slug names an invitation with versioned (R2) media; --legacy-slug, when given, names one
  * that still serves mutable Storage media.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -78,7 +78,7 @@ interface ScenarioReport {
 		uniqueUrlCount: number;
 		vercelImageCount: number;
 		supabaseStorageCount: number;
-		cloudinaryCount: number;
+		r2MediaCount: number;
 		astroHashedCount: number;
 		eagerImageCount: number;
 		lazyImageCount: number;
@@ -177,7 +177,7 @@ function summarizeInventory(inventory: InvitationHtmlInventory) {
 		uniqueUrlCount: inventory.uniqueUrlCount,
 		vercelImageCount: inventory.vercelImageCount,
 		supabaseStorageCount: inventory.supabaseStorageCount,
-		cloudinaryCount: inventory.cloudinaryCount,
+		r2MediaCount: inventory.r2MediaCount,
 		astroHashedCount: inventory.astroHashedCount,
 		eagerImageCount: inventory.eagerImageCount,
 		lazyImageCount: inventory.lazyImageCount,
@@ -321,7 +321,7 @@ function printScenario(report: ScenarioReport): void {
 		`  vercel-cache document first/repeat: ${report.document.vercelCacheFirst}/${report.document.vercelCacheRepeat}`,
 	);
 	console.log(
-		`  urls unique=${report.inventory.uniqueUrlCount} vercel-image=${report.inventory.vercelImageCount} storage=${report.inventory.supabaseStorageCount} cloudinary=${report.inventory.cloudinaryCount} astro=${report.inventory.astroHashedCount} lazy-img=${report.inventory.lazyImageCount} eager-img=${report.inventory.eagerImageCount} stale-vercel-storage=${report.inventory.mutableStorageThroughVercelImageCount}`,
+		`  urls unique=${report.inventory.uniqueUrlCount} vercel-image=${report.inventory.vercelImageCount} storage=${report.inventory.supabaseStorageCount} r2=${report.inventory.r2MediaCount} astro=${report.inventory.astroHashedCount} lazy-img=${report.inventory.lazyImageCount} eager-img=${report.inventory.eagerImageCount} stale-vercel-storage=${report.inventory.mutableStorageThroughVercelImageCount}`,
 	);
 	console.log(
 		`  hero kind=${report.hero.kind ?? 'n/a'} delivered=${report.hero.deliveredBytes ?? 'n/a'} origin=${report.hero.originBytes ?? 'n/a'} cache=${report.hero.cacheControl ?? 'n/a'}`,

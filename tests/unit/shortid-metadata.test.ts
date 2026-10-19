@@ -202,63 +202,43 @@ describe('shortId route metadata (social crawler path)', () => {
 		expect(metadata.ogTitle).toBe('Invitación para Francisco Prueba');
 	});
 
-	describe('social image optimization and Cloudinary transformations', () => {
-		it('transforms raw Cloudinary image URLs into lightweight 1200x630 JPGs', () => {
-			const cloudinaryViewModel: InvitationViewModel = {
+	describe('social image metadata', () => {
+		const R2_HERO =
+			'https://media.celebra-me.com/invitations/xv/xv-renata/hero-' +
+			'a'.repeat(64) +
+			'.webp';
+		const R2_SOCIAL = R2_HERO.replace(/\.webp$/, '.og.jpg');
+
+		it('passes hosted R2 image URLs through without rewriting them', () => {
+			const r2ViewModel: InvitationViewModel = {
 				...baseViewModel,
 				hero: {
 					...baseViewModel.hero,
-					backgroundImage: {
-						src: 'https://res.cloudinary.com/celebra-me/image/upload/v1/events/xv-renata/hero.webp',
-						alt: 'Hero Renata',
-					},
+					backgroundImage: { src: R2_HERO, alt: 'Hero Renata' },
 				},
 			};
 
 			const metadata = simulateShortIdMetadata({
-				viewModel: cloudinaryViewModel,
+				viewModel: r2ViewModel,
 				shortId: 'FXTR8N4P',
 				eventType: 'xv',
 				eventSlug: 'xv-renata',
 			});
 
-			expect(metadata.ogImage).toBe(
-				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg',
-			);
-			expect(metadata.twitterImage).toBe(
-				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg',
-			);
+			expect(metadata.ogImage).toBe(R2_HERO);
+			expect(metadata.twitterImage).toBe(R2_HERO);
 		});
 
-		it('does not duplicate transformation if Cloudinary URL is already transformed', () => {
-			const alreadyTransformedUrl =
-				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg';
+		it('keeps the provisioned R2 social card (.og.jpg) as a 1200x630 JPEG', () => {
+			const imageMeta = buildSocialImageMetadata(R2_SOCIAL, { origin: PRODUCTION_ORIGIN });
 
-			const imageMeta = buildSocialImageMetadata(alreadyTransformedUrl, {
-				origin: PRODUCTION_ORIGIN,
-			});
-
-			expect(imageMeta.url).toBe(alreadyTransformedUrl);
+			expect(imageMeta.url).toBe(R2_SOCIAL);
 			expect(imageMeta.width).toBe(1200);
 			expect(imageMeta.height).toBe(630);
 			expect(imageMeta.type).toBe('image/jpeg');
 		});
 
-		it('rewrites provisioned f_auto OG URLs to the social JPEG transform', () => {
-			const provisionedUrl =
-				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,g_auto,w_1200,h_630,q_auto,f_auto/v1/events/xv-renata/hero.webp';
-
-			const imageMeta = buildSocialImageMetadata(provisionedUrl, {
-				origin: PRODUCTION_ORIGIN,
-			});
-
-			expect(imageMeta.url).toBe(
-				'https://res.cloudinary.com/celebra-me/image/upload/c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg/v1/events/xv-renata/hero.jpg',
-			);
-			expect(imageMeta.type).toBe('image/jpeg');
-		});
-
-		it('preserves non-Cloudinary images without injecting Cloudinary parameters', () => {
+		it('preserves local and Supabase images without injecting transformations', () => {
 			const localImageMeta = buildSocialImageMetadata('/images/og-image.webp', {
 				origin: PRODUCTION_ORIGIN,
 			});

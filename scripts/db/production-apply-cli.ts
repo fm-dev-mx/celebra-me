@@ -21,7 +21,6 @@ import {
 } from './production-apply-orchestrator.ts';
 import { renderOperatorError, writeHuman, writeJson } from './operator-cli-ux.ts';
 import { productionApplyHandoff } from './production-apply-plan.ts';
-import { runProductionImageNamespaceApply } from './production-image-namespace-apply.ts';
 import { isInteractiveSession } from '../lib/cli-prompts.ts';
 import { shouldOpenProductionApplyMenu } from './production-apply-menu-model.ts';
 
@@ -52,14 +51,6 @@ async function main(): Promise<void> {
 	}
 
 	try {
-		if (parsed.imageManifestPath) {
-			await runProductionImageNamespaceApply({
-				manifestPath: parsed.imageManifestPath,
-				apply: parsed.apply,
-				rollback: Boolean(parsed.imageRollback),
-			});
-			return;
-		}
 		if (!parsed.apply) {
 			const plan = await buildProductionApplyPlan(parsed);
 			if (parsed.json) {

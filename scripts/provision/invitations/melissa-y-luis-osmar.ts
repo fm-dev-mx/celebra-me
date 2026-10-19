@@ -36,7 +36,7 @@ const EVENT_DATE_HEADING = 'Miércoles, 16 de diciembre de 2026';
 const RSVP_DEADLINE = '16 de noviembre de 2026';
 
 export const MELISSA_MUSIC = {
-	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1790200190/Christina_Perri_-_A_Thousand_Years_Piano_Cello_Cover_-_The_Piano_Guys_l598pf.mp3',
+	url: 'https://media.celebra-me.com/invitations/boda/melissa-y-luis-osmar/music-a6edb12d63d0c2938b069530e55d906b2b8a007e6606bd9d0b5bc41214c72f9e.mp3',
 	title: 'A Thousand Years — Christina Perri',
 	autoPlay: true,
 } as const;

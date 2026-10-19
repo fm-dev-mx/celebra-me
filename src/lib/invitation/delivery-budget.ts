@@ -38,7 +38,7 @@ export function buildDeliveryBenchmarkScenarios(input: {
 			id: 'versionedAnonymous',
 			path: versionedRoute,
 			personalized: false,
-			architecture: 'Hashed Cloudinary public IDs; Storage is not the LCP media path',
+			architecture: 'Content-addressed R2 keys; Storage is not the LCP media path',
 		},
 	];
 	if (input.legacyStorageSlug) {

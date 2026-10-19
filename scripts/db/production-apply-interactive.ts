@@ -31,7 +31,6 @@ import {
 	applyOffersFromPlan,
 	argvFromSelection,
 	describeSelection,
-	imageNamespaceOffer,
 	productionApplyRootMenu,
 	summarizePlanRows,
 	type ProductionApplyOffer,
@@ -43,7 +42,6 @@ import {
 	buildProductionApplyPlan,
 } from './production-apply-orchestrator.ts';
 import { mutationItemsOf, type ProductionApplyPlan } from './production-apply-plan.ts';
-import { runProductionImageNamespaceApply } from './production-image-namespace-apply.ts';
 import { readReleaseCheckEvidence } from './release-check.ts';
 
 function parseSelection(selection: ProductionApplySelection): ProductionApplyCliArgs {
@@ -140,28 +138,6 @@ async function collectSelection(
 			});
 			return { kind: 'patch', patchFile, ownerUserId: ownerUserId || undefined };
 		}
-		case 'image_namespace': {
-			const direction = await menu<'migrate' | 'rollback' | 'back'>({
-				title: 'Image namespace operation',
-				items: [
-					{ value: 'migrate', label: 'Migration (reviewed manifest)' },
-					{ value: 'rollback', label: 'Rollback (reviewed manifest)' },
-					{ value: 'back', label: 'Back' },
-				],
-				initial: 'migrate',
-			});
-			if (direction === 'back') return null;
-			const imageManifestPath = await askText({
-				title: 'Manifest path (.json)',
-				required: true,
-				validate: existingFile('.json'),
-			});
-			return {
-				kind: 'image_namespace',
-				imageManifestPath,
-				imageRollback: direction === 'rollback',
-			};
-		}
 	}
 }
 
@@ -211,15 +187,6 @@ async function runApply(
 		return;
 	}
 	try {
-		if (selection.kind === 'image_namespace') {
-			await runProductionImageNamespaceApply({
-				manifestPath: selection.imageManifestPath!,
-				apply: true,
-				rollback: Boolean(selection.imageRollback),
-			});
-			printLine(t.mark('ok', `${describeSelection(selection)} finished.`));
-			return;
-		}
 		const parsed = parseSelection(selection);
 		const execution = await applyProductionApplyPlan(parsed);
 		writeHuman(formatProductionApplyResult(execution));
@@ -243,19 +210,6 @@ async function runApply(
 		});
 		process.exitCode = 1;
 	}
-}
-
-async function runImageNamespacePlan(selection: ProductionApplySelection): Promise<void> {
-	await step(
-		`Planning ${describeSelection(selection)} (read-only)`,
-		() =>
-			runProductionImageNamespaceApply({
-				manifestPath: selection.imageManifestPath!,
-				apply: false,
-				rollback: Boolean(selection.imageRollback),
-			}),
-		{ done: () => 'Image namespace plan printed' },
-	);
 }
 
 async function printJsonPlan(): Promise<void> {
@@ -304,16 +258,11 @@ export async function runProductionApplyInteractive(): Promise<void> {
 				if (!selection) continue;
 			}
 
-			let plan: ProductionApplyPlan | null = null;
+			let plan: ProductionApplyPlan;
 			let offers: ProductionApplyOffer[];
 			try {
-				if (selection.kind === 'image_namespace') {
-					await runImageNamespacePlan(selection);
-					offers = [imageNamespaceOffer(selection)];
-				} else {
-					plan = await planSelection(selection);
-					offers = applyOffersFromPlan(plan, selection);
-				}
+				plan = await planSelection(selection);
+				offers = applyOffersFromPlan(plan, selection);
 			} catch (error) {
 				if (isPromptExit(error)) throw error;
 				renderOperatorError(error, {

@@ -19,7 +19,6 @@ describe('resolveAssetDeliveryUrl', () => {
 	beforeEach(() => {
 		process.env = { ...originalEnv };
 		mockGetSupabaseUrl.mockReturnValue('http://127.0.0.1:54321');
-		delete process.env.CLOUDINARY_CLOUD_NAME;
 	});
 
 	afterEach(() => {
@@ -38,39 +37,36 @@ describe('resolveAssetDeliveryUrl', () => {
 		);
 	});
 
-	it('resolves cloudinary assets from secure_url when present', () => {
+	it('resolves r2 assets from secure_url', () => {
 		expect(
 			resolveAssetDeliveryUrl({
-				provider: 'cloudinary',
+				provider: 'r2',
 				bucket: 'invitation-assets',
-				storagePath: 'xv/abril/assets/hero',
-				secureUrl:
-					'https://res.cloudinary.com/demo/image/upload/v1/xv/abril/assets/hero.webp',
+				storagePath: 'invitations/xv/abril/hero-abc.webp',
+				secureUrl: 'https://media.celebra-me.com/invitations/xv/abril/hero-abc.webp',
 			}),
-		).toBe('https://res.cloudinary.com/demo/image/upload/v1/xv/abril/assets/hero.webp');
+		).toBe('https://media.celebra-me.com/invitations/xv/abril/hero-abc.webp');
 	});
 
-	it('preserves the source extension when falling back without secure_url', () => {
-		process.env.CLOUDINARY_CLOUD_NAME = 'demo';
-		expect(
+	it('throws when an r2 asset lacks secure_url instead of deriving a Storage URL', () => {
+		expect(() =>
 			resolveAssetDeliveryUrl({
-				provider: 'cloudinary',
+				provider: 'r2',
 				bucket: 'invitation-assets',
-				storagePath: 'managed/abril/hero.jpg',
-				providerPublicId: 'xv/abril/assets/hero.jpg',
+				storagePath: 'invitations/xv/abril/hero-abc.webp',
 			}),
-		).toBe('https://res.cloudinary.com/demo/image/upload/v1/xv/abril/assets/hero.jpg');
+		).toThrow(/R2 asset is missing secure_url/);
 	});
 
-	it('throws when cloudinary fallback lacks CLOUDINARY_CLOUD_NAME', () => {
+	it('rejects the retired cloudinary provider', () => {
 		expect(() =>
 			resolveAssetDeliveryUrl({
 				provider: 'cloudinary',
 				bucket: 'invitation-assets',
 				storagePath: 'managed/abril/hero.jpg',
-				providerPublicId: 'xv/abril/assets/hero.jpg',
+				secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/hero.jpg',
 			}),
-		).toThrow(/CLOUDINARY_CLOUD_NAME/);
+		).toThrow(/Unsupported asset provider "cloudinary"/);
 	});
 
 	it('throws for an unsupported provider', () => {
@@ -96,12 +92,12 @@ describe('preferUploadedDeliverySrc', () => {
 		process.env = originalEnv;
 	});
 
-	it('does not let a supabase-derived url override a frozen cloudinary src', () => {
+	it('does not let a supabase-derived url override a frozen r2 src', () => {
 		const frozen =
-			'https://res.cloudinary.com/demo/image/upload/v1/xv/abril/assets/thank-you-confetti.webp';
+			'https://media.celebra-me.com/invitations/xv/abril/thank-you-confetti-abc.webp';
 		const preferred = preferUploadedDeliverySrc({
 			asset: {
-				provider: 'cloudinary',
+				provider: 'r2',
 				bucket: 'invitation-assets',
 				storagePath: 'managed/abril/thank-you-confetti.webp',
 				secureUrl: frozen,
@@ -110,7 +106,7 @@ describe('preferUploadedDeliverySrc', () => {
 		});
 
 		expect(preferred).toBe(frozen);
-		expect(preferred).toContain('res.cloudinary.com');
+		expect(preferred).toContain('media.celebra-me.com');
 		expect(preferred).not.toContain('127.0.0.1:54321');
 	});
 });

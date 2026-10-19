@@ -4,7 +4,6 @@ import {
 	applyOffersFromPlan,
 	argvFromSelection,
 	describeSelection,
-	imageNamespaceOffer,
 	productionApplyRootMenu,
 	shouldOpenProductionApplyMenu,
 	summarizePlanRows,
@@ -99,9 +98,6 @@ describe('prod:apply menu model', () => {
 			ownerUserId: 'uuid',
 		});
 		expect(
-			parse({ kind: 'image_namespace', imageManifestPath: 'm.json', imageRollback: true }),
-		).toMatchObject({ imageManifestPath: 'm.json', imageRollback: true });
-		expect(
 			parse({
 				kind: 'invitations',
 				slugs: ['a'],
@@ -156,9 +152,6 @@ describe('prod:apply menu model', () => {
 	it('describes selections and summarizes plans for the result block', () => {
 		expect(describeSelection({ kind: 'invitations', slugs: ['a', 'b'] })).toBe('2 invitations');
 		expect(describeSelection({ kind: 'patch', patchFile: 'p.sql' })).toBe('patch p.sql');
-		expect(imageNamespaceOffer({ kind: 'image_namespace', imageRollback: true }).label).toBe(
-			'Roll back images',
-		);
 		const rows = summarizePlanRows(plan([schemaReady, invitationBlocked]));
 		expect(rows.find(([label]) => label === 'Mutations')?.[1]).toBe('1');
 		expect(rows.find(([label]) => label === 'Blocked')?.[1]).toBe('1');

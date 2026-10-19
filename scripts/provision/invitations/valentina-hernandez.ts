@@ -35,7 +35,7 @@ const VENUE_CITY = 'Texcoco, Estado de México';
 const MAPS_URL =
 	'https://www.google.com/maps/search/?api=1&query=Finca+Las+Palmas+San+Luis+Huexotla+Texcoco';
 const MUSIC_URL =
-	'https://res.cloudinary.com/dusxvauvj/video/upload/v1782619626/Justin_Timberlake_-_CAN_T_STOP_THE_FEELING_mscvhn.m4a';
+	'https://media.celebra-me.com/invitations/xv/valentina-hernandez/music-0f6688b5e9c0a1ba6c485401556f0520589f25afe8634707b5b1ebe565eec03b.m4a';
 
 export const VALENTINA_ASSET_SPECS = [
 	{

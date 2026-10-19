@@ -97,7 +97,9 @@ describe('Destenid Sofía managed definition', () => {
 
 	it('plays the client song from second 39', () => {
 		const parsed = eventContentSchema.parse(publishedContent());
-		expect(parsed.music?.url).toMatch(/^https:\/\/res\.cloudinary\.com\/.+\.mp3$/);
+		expect(parsed.music?.url).toMatch(
+			/^https:\/\/media\.celebra-me\.com\/invitations\/xv\/destenid-sofia\/music-[0-9a-f]{64}\.mp3$/,
+		);
 		expect(parsed.music?.startAt).toBe(39);
 		expect(parsed.music?.autoPlay).toBe(true);
 	});

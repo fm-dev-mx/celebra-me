@@ -1,9 +1,10 @@
 import { imageExtension } from '../../src/lib/intake/services/asset-policy.ts';
+import { isR2InvitationMediaUrl } from '../../src/lib/intake/services/r2-invitation-media.ts';
 /**
  * Pure Local final-asset verification helpers.
  *
  * Persistent-local SSOT hosts managed assets on Supabase Storage
- * (`provider: 'supabase'`). Cloudinary rows remain acceptable leftovers
+ * (`provider: 'supabase'`). R2 rows remain acceptable leftovers
  * after Prod→Local restore / content-only preserve.
  */
 
@@ -17,10 +18,6 @@ export function isLocalSupabaseDeliveryUrl(url: string): boolean {
 	} catch {
 		return false;
 	}
-}
-
-export function isCloudinaryDeliveryUrl(url: string): boolean {
-	return url.startsWith('https://res.cloudinary.com');
 }
 
 export function localManagedStoragePath(
@@ -61,7 +58,7 @@ export interface LocalFinalAssetRowAcceptanceInput {
 
 /**
  * Pure acceptance gate for Local final verification (before reachability fetch).
- * Accepts Local Supabase SSOT rows or Cloudinary leftovers.
+ * Accepts Local Supabase SSOT rows or R2 leftovers.
  */
 export function isAcceptableLocalFinalAssetRow(input: LocalFinalAssetRowAcceptanceInput): boolean {
 	const secureUrl = typeof input.secureUrl === 'string' ? input.secureUrl : '';
@@ -70,8 +67,8 @@ export function isAcceptableLocalFinalAssetRow(input: LocalFinalAssetRowAcceptan
 
 	const provider = input.provider ?? null;
 
-	if (provider === 'cloudinary') {
-		return isCloudinaryDeliveryUrl(secureUrl);
+	if (provider === 'r2') {
+		return isR2InvitationMediaUrl(secureUrl);
 	}
 
 	// Local SSOT + legacy absent provider with a local managed Storage URL.
@@ -87,8 +84,8 @@ export function isAcceptableLocalFinalAssetRow(input: LocalFinalAssetRowAcceptan
 		) {
 			return true;
 		}
-		// Legacy restore: absent/supabase-mislabelled Cloudinary leftover URL.
-		if (provider === null && isCloudinaryDeliveryUrl(secureUrl)) {
+		// Legacy restore: absent/supabase-mislabelled R2 leftover URL.
+		if (provider === null && isR2InvitationMediaUrl(secureUrl)) {
 			return true;
 		}
 		return false;
@@ -97,7 +94,7 @@ export function isAcceptableLocalFinalAssetRow(input: LocalFinalAssetRowAcceptan
 	return false;
 }
 
-/** Content-only reuse: Cloudinary leftover or identical local Supabase asset. */
+/** Content-only reuse: R2 leftover or identical local Supabase asset. */
 export function canReuseExistingLocalAsset(input: {
 	provider: string | null | undefined;
 	secureUrl: string;
@@ -118,8 +115,8 @@ export function canReuseExistingLocalAsset(input: {
 	if (Number(input.validationVersion) !== input.expectedValidationVersion) return false;
 
 	const provider = input.provider ?? null;
-	if (provider === 'cloudinary') {
-		return isCloudinaryDeliveryUrl(input.secureUrl);
+	if (provider === 'r2') {
+		return isR2InvitationMediaUrl(input.secureUrl);
 	}
 	if (provider === 'supabase' || provider === null) {
 		if (
@@ -136,7 +133,7 @@ export function canReuseExistingLocalAsset(input: {
 		) {
 			return true;
 		}
-		if (provider === null && isCloudinaryDeliveryUrl(input.secureUrl)) {
+		if (provider === null && isR2InvitationMediaUrl(input.secureUrl)) {
 			return true;
 		}
 		return false;

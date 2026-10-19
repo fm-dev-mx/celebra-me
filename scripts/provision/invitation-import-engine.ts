@@ -10,17 +10,17 @@ import type { InvitationPackageData, InvitationPackageAsset } from './invitation
 import { computePackageHash, PACKAGE_SCHEMA_VERSION } from './invitation-package.ts';
 import { selectPackageApprovalAssetHashes } from './approval-asset-hashes.ts';
 import {
-	buildCloudinaryDeliveryUrl,
-	buildCloudinaryPublicId,
-	classifyCloudinaryPublicIdEnvironment,
-	buildCloudinaryOgImageUrl,
-	assertCloudinaryPublicIdEnvironment,
-	assertCloudinaryMutationTarget,
-	uploadOrReconcileCloudinaryAsset,
-	verifyCloudinaryAsset,
-	verifyCloudinaryDelivery,
-	hydrateCloudinaryEnvFromFiles,
-} from './cloudinary-adapter.ts';
+	assertR2MutationTarget,
+	buildR2AssetObjectKey,
+	buildR2SocialImageUrl,
+	uploadOrReconcileR2Asset,
+	verifyR2Asset,
+} from './r2-adapter.ts';
+import {
+	R2_INVITATION_MEDIA,
+	buildR2PublicUrl,
+	isR2InvitationMediaUrl,
+} from '../../src/lib/intake/services/r2-invitation-media.ts';
 import {
 	classifyDbTarget,
 	redactCredentials,
@@ -478,17 +478,11 @@ export function assertReconciledMutationTargets(
 			(record) =>
 				record.id === item.targetAssetId || record.storagePath === item.targetStoragePath,
 		);
-		if (targetRecord?.provider !== 'cloudinary') continue;
-		const publicId = targetRecord.providerPublicId ?? targetRecord.storagePath;
-		if (classifyCloudinaryPublicIdEnvironment(publicId) === 'legacy') {
-			if (
-				item.reasonCode === 'LEGACY_COPY_TO_TARGET_NAMESPACE' &&
-				item.plannedAction === 'UPLOAD'
-			)
-				continue;
-			if (item.plannedAction === 'REUSE' || item.plannedAction === 'RETAIN') continue;
-		}
-		assertCloudinaryMutationTarget(publicId, targetIdentity);
+		if (targetRecord?.provider !== 'r2') continue;
+		assertR2MutationTarget(
+			targetRecord.providerPublicId ?? targetRecord.storagePath,
+			targetIdentity,
+		);
 	}
 }
 async function scanAssetStatus(
@@ -553,7 +547,7 @@ async function scanAssetStatus(
 				resource: 'invitation_assets',
 				name: item.displayName,
 				action: 'reuse',
-				detail: `Cloudinary binary and metadata up-to-date (SHA-256: ${item.canonicalHash.slice(0, 12)}…)`,
+				detail: `R2 binary and metadata up-to-date (SHA-256: ${item.canonicalHash.slice(0, 12)}…)`,
 			});
 		} else if (item.plannedAction === 'REPAIR_METADATA') {
 			assetsToUpsertDbOnly.push(pAsset);
@@ -561,7 +555,7 @@ async function scanAssetStatus(
 				resource: 'invitation_assets',
 				name: item.displayName,
 				action: 'replace',
-				detail: `Update asset DB metadata (Cloudinary binary up-to-date)`,
+				detail: `Update asset DB metadata (R2 binary up-to-date)`,
 			});
 		} else if (item.plannedAction === 'UPLOAD' || item.plannedAction === 'OVERWRITE') {
 			assetsToUpload.push(pAsset);
@@ -569,7 +563,7 @@ async function scanAssetStatus(
 				resource: 'invitation_assets',
 				name: item.displayName,
 				action: item.plannedAction === 'UPLOAD' ? 'create' : 'replace',
-				detail: `${item.plannedAction === 'UPLOAD' ? 'Upload binary to' : 'Overwrite binary in'} Cloudinary (${(pAsset.fileSize ?? 0) / 1024} KB WebP)`,
+				detail: `${item.plannedAction === 'UPLOAD' ? 'Upload binary to' : 'Overwrite binary in'} R2 (${(pAsset.fileSize ?? 0) / 1024} KB WebP)`,
 			});
 		}
 	}
@@ -622,41 +616,28 @@ async function uploadAndVerifyAssets(
 
 	for (const pAsset of assetsToUpload) {
 		const bytes = new Uint8Array(Buffer.from(pAsset.dataBase64, 'base64'));
-		const result = await uploadOrReconcileCloudinaryAsset({
-			targetEnvironment: identity.targetEnvironment,
-			eventType: identity.eventType,
-			slug: identity.slug,
-			key: pAsset.key,
-			displayName: pAsset.displayName,
-			alt: pAsset.defaultAltText,
-			bytes,
-			sha256: pAsset.sha256,
-			mimeType: pAsset.mimeType,
-			width: pAsset.width ?? undefined,
-			height: pAsset.height ?? undefined,
-			dryRun: false,
-		});
-
-		pAsset.provider = 'cloudinary';
-		pAsset.providerPublicId = result.publicId;
-		pAsset.secureUrl = result.secureUrl;
-
+		let result: Awaited<ReturnType<typeof uploadOrReconcileR2Asset>>;
 		try {
-			await verifyCloudinaryDelivery(
-				{
-					publicId: result.publicId,
-					sha256: pAsset.sha256,
-					mimeType: pAsset.mimeType,
-					width: pAsset.width ?? undefined,
-					height: pAsset.height ?? undefined,
-				},
-				result.secureUrl,
-			);
+			result = await uploadOrReconcileR2Asset({
+				targetEnvironment: identity.targetEnvironment,
+				eventType: identity.eventType,
+				slug: identity.slug,
+				key: pAsset.key,
+				bytes,
+				sha256: pAsset.sha256,
+				mimeType: pAsset.mimeType,
+			});
 		} catch (error) {
-			throw new Error(`Cloudinary read-back verification failed for "${pAsset.key}".`, {
+			throw new Error(`R2 upload or read-back verification failed for "${pAsset.key}".`, {
 				cause: error,
 			});
 		}
+
+		pAsset.provider = 'r2';
+		pAsset.bucket = R2_INVITATION_MEDIA[identity.targetEnvironment].bucket;
+		pAsset.storagePath = result.objectKey;
+		pAsset.providerPublicId = result.objectKey;
+		pAsset.secureUrl = result.secureUrl;
 
 		verifiedAssetHashes[pAsset.storagePath] = pAsset.sha256;
 		if (result.action === 'UPLOAD') uploadedCount++;
@@ -667,7 +648,7 @@ async function uploadAndVerifyAssets(
 
 /**
  * A content-only release may preserve references, never unverified binaries.
- * Verify the provider before a plan can claim that an existing Cloudinary asset is reusable.
+ * Verify the provider before a plan can claim that an existing R2 asset is reusable.
  */
 async function verifyContentOnlyHostedAssets(
 	assets: readonly InvitationPackageAsset[],
@@ -685,18 +666,15 @@ async function verifyContentOnlyHostedAssets(
 		const provider = record?.provider ?? 'missing';
 		try {
 			if (!record) throw new Error('managed target asset record is missing.');
-			if (provider === 'cloudinary') {
-				const publicId = record.providerPublicId ?? record.storagePath;
-				if (!publicId) throw new Error('missing provider public ID.');
-				assertCloudinaryPublicIdEnvironment(publicId, targetEnvironment, {
-					allowLegacyRead: true,
-				});
-				await verifyCloudinaryAsset({
-					publicId,
+			if (provider === 'r2') {
+				const objectKey = record.providerPublicId ?? record.storagePath;
+				if (!objectKey) throw new Error('missing R2 object key.');
+				assertR2MutationTarget(objectKey, identity);
+				await verifyR2Asset({
+					targetEnvironment,
+					objectKey,
 					sha256: asset.sha256,
 					mimeType: asset.mimeType,
-					width: asset.width ?? undefined,
-					height: asset.height ?? undefined,
 				});
 				continue;
 			}
@@ -825,27 +803,23 @@ export function materializeHostedPackageAssets(
 	packageData: InvitationPackageData,
 	target: 'preview' | 'production',
 ): InvitationPackageData {
-	const cloudName = hydrateCloudinaryEnvFromFiles({
-		keys: ['CLOUDINARY_CLOUD_NAME'],
-	}).CLOUDINARY_CLOUD_NAME?.trim();
-	if (!cloudName || cloudName === 'unconfigured')
-		throw new Error('Cloudinary cloud name is required for hosted package materialization.');
 	return {
 		...packageData,
 		assets: packageData.assets.map((asset) => {
-			if (asset.provider !== 'cloudinary') return asset;
-			const publicId = buildCloudinaryPublicId({
-				targetEnvironment: target,
+			if (asset.provider !== 'r2') return asset;
+			const objectKey = buildR2AssetObjectKey({
 				eventType: packageData.invitation.eventType,
 				slug: packageData.invitation.slug,
 				key: asset.key,
 				sha256: asset.sha256,
+				mimeType: asset.mimeType,
 			});
 			return {
 				...asset,
-				storagePath: publicId,
-				providerPublicId: publicId,
-				secureUrl: buildCloudinaryDeliveryUrl(cloudName, publicId, asset.mimeType),
+				bucket: R2_INVITATION_MEDIA[target].bucket,
+				storagePath: objectKey,
+				providerPublicId: objectKey,
+				secureUrl: buildR2PublicUrl(target, objectKey),
 			};
 		}),
 	};
@@ -917,16 +891,12 @@ export interface HostedAssetUpsertInput {
  */
 export function buildHostedAssetUpsertSql(input: HostedAssetUpsertInput): string {
 	const { assetId, targetInvitationId, asset, definitionSlug, operationId } = input;
-	const provider = asset.provider ?? 'cloudinary';
+	const provider = asset.provider ?? 'r2';
 	const providerPublicId = asset.providerPublicId ?? asset.storagePath;
-	if (provider === 'cloudinary') {
-		assertCloudinaryMutationTarget(providerPublicId, {
-			environment: input.targetEnvironment,
-			eventType: input.eventType,
-			slug: input.slug,
-		});
-		if (!asset.secureUrl || !asset.secureUrl.includes(`/${providerPublicId}.`))
-			throw new Error('Hosted Cloudinary asset lacks its canonical destination URL.');
+	if (provider === 'r2') {
+		assertR2MutationTarget(providerPublicId, input);
+		if (asset.secureUrl !== buildR2PublicUrl(input.targetEnvironment, providerPublicId))
+			throw new Error('Hosted R2 asset lacks its canonical destination URL.');
 	}
 	const secureUrlSql = asset.secureUrl ? sqlLiteral(asset.secureUrl) : 'null';
 	return (
@@ -1708,7 +1678,7 @@ function isHttpUrl(value: string): boolean {
 }
 
 /**
- * Delivery src for a hosted uploaded ref. Cloudinary package assets must never
+ * Delivery src for a hosted uploaded ref. R2 package assets must never
  * rematerialize to a Supabase Storage URL.
  */
 export function resolveHostedUploadedAssetSrc(
@@ -1716,23 +1686,12 @@ export function resolveHostedUploadedAssetSrc(
 	existingRecord: HostedAssetIdentityRow | null,
 	targetStorageUrl: string,
 ): string {
-	if (asset.provider === 'cloudinary') {
+	if (asset.provider === 'r2') {
 		const persisted = existingRecord?.secure_url?.trim();
 		if (persisted && isHttpUrl(persisted)) return persisted;
 		const packaged = asset.secureUrl?.trim();
 		if (packaged && isHttpUrl(packaged)) return packaged;
-		if (asset.providerPublicId?.trim()) {
-			const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
-			if (!cloudName) {
-				throw new Error(
-					'Stop before mutation: Cloudinary credentials (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are missing. Configure server-only environment values before uploading invitation images.',
-				);
-			}
-			return buildCloudinaryDeliveryUrl(cloudName, asset.providerPublicId, asset.mimeType);
-		}
-		throw new Error(
-			`Cloudinary package asset "${asset.key}" is missing secureUrl and providerPublicId.`,
-		);
+		throw new Error(`R2 package asset "${asset.key}" is missing secureUrl.`);
 	}
 	const storagePath = existingRecord?.storage_path ?? asset.storagePath;
 	return `${targetStorageUrl}/${storagePath}`;
@@ -1754,8 +1713,8 @@ export function rewriteUploadedDeliverySrcs(
 		);
 		if (!ref) return record;
 		const src =
-			parentKey === 'ogImage' && ref.src.includes('cloudinary.com')
-				? buildCloudinaryOgImageUrl(ref.src)
+			parentKey === 'ogImage' && isR2InvitationMediaUrl(ref.src)
+				? buildR2SocialImageUrl(ref.src)
 				: ref.src;
 		return { ...record, src };
 	}

@@ -54,7 +54,7 @@ const MAPS_URL =
 	'https://www.google.com/maps/search/?api=1&query=Jard%C3%ADn+Quinta+Para%C3%ADso+Calle+Rosa+Violeta+8+Cuautitl%C3%A1n+Izcalli';
 const RSVP_WHATSAPP = '524611830851';
 const MUSIC_URL =
-	'https://res.cloudinary.com/dusxvauvj/video/upload/v1790740387/yo_soy_Rebelde_-_RBD_vnzffv.mp3';
+	'https://media.celebra-me.com/invitations/xv/destenid-sofia/music-583bd7df6e42d2ad3030e52cfe2a66d39f1edb2c5b254cc1096837fb42ae670d.mp3';
 // The client asked for the song "del segundo 39 en adelante"; the file is the full track.
 const MUSIC_START_SECONDS = 39;
 

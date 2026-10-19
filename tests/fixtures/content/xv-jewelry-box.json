@@ -79,7 +79,7 @@
                 "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
                 "googleMapsUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
                 "wazeUrl": "https://waze.com/ul?q=Parroquia+de+la+Sagrada+Familia",
-                "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg",
+                "image": "https://media.celebra-me.com/shared/images/parroquia-sagrada-familia-47b7155b8fd772d5800f9f917ee8139dc5755acdd887a8d58cd8548b32097dd4.jpg",
                 "coordinates": {
                     "lat": 25.6816,
                     "lng": -100.252
@@ -212,7 +212,7 @@
         "variant": "standard"
     },
     "music": {
-        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
+        "url": "https://media.celebra-me.com/shared/music/nuvole-bianche-24611cb040e2779c681d7b14bc9423d8e058d477f2c4368c216a1373cf2b3f59.mp3",
         "autoPlay": false,
         "title": "Música de fondo"
     },
