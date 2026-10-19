@@ -98,9 +98,7 @@ describe('no credential values in provider payloads', () => {
 
 		expect(supabase.kind).toBe('ok');
 		if (supabase.kind !== 'ok') return;
-		expect(supabase.metrics).toHaveLength(1);
-		expect(supabase.metrics[0]).toMatchObject({
-			id: 'sbDisk',
+		expect(supabase.metrics.find((metric) => metric.id === 'sbDisk')).toMatchObject({
 			meter: { used: 333_000_000, limit: null },
 		});
 	});

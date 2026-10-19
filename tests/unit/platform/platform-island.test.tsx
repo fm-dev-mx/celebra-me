@@ -64,6 +64,10 @@ const REPORT: PlatformUsageReport = [
 					spendUsd: null,
 					missing: [],
 					metrics: [
+						metric('sbDatabase', null, 500_000_000, {
+							window: 'snapshot',
+							scope: 'preview',
+						}),
 						metric('sbDisk', 120_000_000, null, {
 							window: 'snapshot',
 							scope: 'preview',
@@ -152,6 +156,10 @@ const HEALTHY_PRODUCTION: PlatformUsageReport = [
 					spendUsd: null,
 					missing: [],
 					metrics: [
+						metric('sbDatabase', 69_000_000, 500_000_000, {
+							window: 'snapshot',
+							scope: 'production',
+						}),
 						metric('sbDisk', 333_000_000, null, {
 							window: 'snapshot',
 							scope: 'production',
@@ -225,6 +233,9 @@ describe('PlatformUsagePanel island', () => {
 		expect(within(supabase).getAllByText(/Solo informativo, sin alertas/)).toHaveLength(1);
 		// Disk is informative: no meter, no threshold against the 500 MB database cap.
 		expect(within(supabase).queryByRole('meter')).not.toBeInTheDocument();
+		// A database size this deployment cannot read points to Supabase → Usage.
+		expect(within(supabase).getByText('Tamaño de la base de datos')).toBeInTheDocument();
+		expect(within(supabase).getByText(/consúltalo en Supabase → Usage/)).toBeInTheDocument();
 		expect(within(supabase).queryByText(/Sin cuota verificada/)).not.toBeInTheDocument();
 		expect(within(supabase).getByText(/El proveedor no respondió/)).toBeInTheDocument();
 	});
@@ -302,7 +313,11 @@ describe('PlatformUsagePanel island', () => {
 		expect(
 			screen.queryByRole('region', { name: 'Cloudflare · Preview' }),
 		).not.toBeInTheDocument();
-		// 333 MB of disk is not a 70 % alarm: only the R2 gap is pending.
+		// The database size is the quota; 333 MB of disk is not a 70 % alarm.
+		expect(screen.getByRole('meter', { name: 'Tamaño de la base de datos' })).toHaveAttribute(
+			'aria-valuetext',
+			'69 MB de 500 MB (14 %)',
+		);
 		expect(screen.getByText('333 MB')).toBeInTheDocument();
 		expect(screen.queryByText(/en aviso/)).not.toBeInTheDocument();
 		expect(screen.getByText('1 dato por configurar')).toBeInTheDocument();

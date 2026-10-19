@@ -14,6 +14,7 @@ import {
 	formatPlatformPercent,
 	platformCopy,
 	platformLevelLabel,
+	platformMetricEmpty,
 	platformMetricFormat,
 	platformMetricLabel,
 	platformMetricNote,
@@ -101,7 +102,9 @@ function MetricRow({ metric, pending }: { metric: PlatformMetric; pending: boole
 	if (used === null) {
 		value = (
 			<span className="platform-metric__empty">
-				{pending ? platformCopy.pendingConfig : platformCopy.noData}
+				{pending
+					? platformCopy.pendingConfig
+					: (platformMetricEmpty(metric) ?? platformCopy.noData)}
 			</span>
 		);
 	} else {

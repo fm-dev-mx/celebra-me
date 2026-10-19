@@ -160,7 +160,7 @@ export const platformProviderPlan: Record<PlatformProviderId, string> = {
 export const platformProviderNote: Record<PlatformProviderId, string> = {
 	cloudflare:
 		'Las cuotas incluidas se renuevan cada mes; si se superan, el excedente se cobra por uso.',
-	supabase: `El límite del plan es el tamaño de la base de datos: ${formatPlatformBytes(SUPABASE_FREE_TIER.databaseBytes)} por proyecto; al superarlo, la base pasa a solo lectura. Ese tamaño aún no se lee aquí: consúltalo en Supabase → Usage («Database Size»). El disco que se muestra abajo es solo informativo.`,
+	supabase: `El límite del plan es el tamaño de la base de datos: ${formatPlatformBytes(SUPABASE_FREE_TIER.databaseBytes)} por proyecto; al superarlo, la base pasa a solo lectura. El disco es solo un dato informativo.`,
 };
 
 export const platformProviderLink: Record<PlatformProviderId, string> = {
@@ -173,7 +173,7 @@ export const platformGroupCopy = {
 	sharedHint: 'Cuotas compartidas por Producción y Preview.',
 	environmentsTitle: 'Por entorno',
 	cloudflareEnvironmentHint: 'El bucket R2 que declara cada entorno.',
-	supabaseEnvironmentHint: 'Cada entorno tiene su propio proyecto y su propio disco.',
+	supabaseEnvironmentHint: 'Cada entorno tiene su propio proyecto y su propia base de datos.',
 } as const;
 
 export const platformEnvironmentLabel: Record<PlatformEnvironmentId, string> = {
@@ -282,12 +282,19 @@ const METRIC_LABELS: Record<string, string | ((resource: string) => string)> = {
 	cfR2ClassB: 'Operaciones R2 de lectura (Clase B)',
 	cfWorkersRequests: 'Peticiones a Workers',
 	cfDurableObjectsRequests: 'Peticiones a Durable Objects',
+	sbDatabase: 'Tamaño de la base de datos',
 	sbDisk: 'Disco (incluye WAL)',
 };
 
 /** Why a figure has no quota, shown instead of «Sin cuota verificada». */
 const METRIC_NOTES: Record<string, string> = {
 	sbDisk: 'Solo informativo, sin alertas: incluye WAL y archivos del sistema, así que no es el tamaño de la base que limita el plan.',
+};
+
+/** Why a figure is blank, shown instead of «Sin datos». */
+const METRIC_EMPTY: Record<string, string> = {
+	sbDatabase:
+		'No se puede leer desde este despliegue: consúltalo en Supabase → Usage («Database Size»).',
 };
 
 export function platformMetricLabel(metric: PlatformMetric): string {
@@ -299,6 +306,10 @@ export function platformMetricNote(metric: PlatformMetric): string | null {
 	return METRIC_NOTES[metric.id] ?? null;
 }
 
+export function platformMetricEmpty(metric: PlatformMetric): string | null {
+	return METRIC_EMPTY[metric.id] ?? null;
+}
+
 export function platformProjectionLabel(projection: PlatformProjection): string | null {
 	if (projection.kind === 'exhaustsAt') return platformCopy.projectionExhausts(projection.at);
 	if (projection.kind === 'safe') return platformCopy.projectionSafe;
@@ -308,6 +319,7 @@ export function platformProjectionLabel(projection: PlatformProjection): string 
 export function platformMetricFormat(metric: PlatformMetric): (value: number) => string {
 	return metric.id === 'cfR2StorageBucket' ||
 		metric.id === 'cfR2StorageAccount' ||
+		metric.id === 'sbDatabase' ||
 		metric.id === 'sbDisk'
 		? formatPlatformBytes
 		: formatPlatformCount;
