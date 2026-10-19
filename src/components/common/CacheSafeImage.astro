@@ -6,6 +6,7 @@ import {
 	plainImgSrc,
 	shouldOptimizeThroughImageService,
 } from '@/lib/assets/image-delivery-policy';
+import { buildR2ResponsiveSrcset } from '@/lib/intake/services/r2-invitation-media';
 
 interface Props {
 	delivery?: ImageDelivery;
@@ -53,6 +54,10 @@ const localSize = transformHeight !== undefined ? { width, height: transformHeig
 const format = delivery?.format ?? defaultFormat;
 const quality = delivery?.quality ?? defaultQuality;
 const optimize = shouldOptimizeThroughImageService(src, delivery);
+// Hosted originals bypass the image service; their stored width variants serve the same role.
+// Without a caller `sizes`, 100vw never picks a file narrower than the rendered image.
+const plainSrcset = optimize ? undefined : buildR2ResponsiveSrcset(plainImgSrc(src));
+const plainSizes = plainSrcset ? (sizes ?? '100vw') : undefined;
 ---
 
 {
@@ -99,6 +104,8 @@ const optimize = shouldOptimizeThroughImageService(src, delivery);
 	) : (
 		<img
 			src={plainImgSrc(src)}
+			srcset={plainSrcset}
+			sizes={plainSizes}
 			alt={alt}
 			width={width}
 			height={height}

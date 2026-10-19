@@ -11,10 +11,18 @@ import {
 	R2_INVITATION_MEDIA,
 	buildR2ObjectKey,
 	buildR2PublicUrl,
+	buildR2VariantObjectKey,
 	getInvitationMediaBucket,
+	putR2ImageVariantIfMissing,
 	putR2InvitationMedia,
 	type InvitationMediaBucket,
 } from '@/lib/intake/services/r2-invitation-media';
+import { resolveImageTransformer } from '@/lib/images/image-transformer-provider';
+import {
+	RESPONSIVE_IMAGE_WIDTHS,
+	encodeResponsiveVariants,
+	type ResponsiveImageVariant,
+} from '@/lib/images/responsive-variants';
 import { resolveDeployEnvironment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 
@@ -137,7 +145,21 @@ export class R2StorageProvider implements StorageProvider {
 	constructor(
 		private readonly targetEnvironment: 'preview' | 'production',
 		private readonly bucket: InvitationMediaBucket,
+		private readonly encodeVariants: (
+			bytes: Uint8Array,
+		) => Promise<ResponsiveImageVariant[]> = async (bytes) =>
+			encodeResponsiveVariants(await resolveImageTransformer(), bytes),
 	) {}
+
+	/** A re-upload of known bytes skips the encoder when every variant is already stored. */
+	private async hasAllVariants(objectKey: string): Promise<boolean> {
+		const heads = await Promise.all(
+			RESPONSIVE_IMAGE_WIDTHS.map((width) =>
+				this.bucket.head(buildR2VariantObjectKey(objectKey, width)),
+			),
+		);
+		return heads.every(Boolean);
+	}
 
 	async uploadAsset(input: StorageUploadInput): Promise<StoredAssetResult> {
 		const objectKey = buildR2ObjectKey({
@@ -163,13 +185,24 @@ export class R2StorageProvider implements StorageProvider {
 			const url = buildR2PublicUrl(this.targetEnvironment, objectKey);
 			return { ...result, secureUrl: url, deliveryUrl: url, metadata: { dryRun: true } };
 		}
+		const bytes = await extractBytes(input.blob);
 		const { url, reused } = await putR2InvitationMedia(this.bucket, {
 			target: this.targetEnvironment,
 			objectKey,
-			bytes: await extractBytes(input.blob),
+			bytes,
 			mimeType: input.mimeType,
 			sha256: input.sha256,
 		});
+		// Width variants are written before the URL is returned, so no published image lacks them.
+		if (input.mimeType.startsWith('image/') && !(await this.hasAllVariants(objectKey))) {
+			for (const variant of await this.encodeVariants(bytes)) {
+				await putR2ImageVariantIfMissing(this.bucket, {
+					variantKey: buildR2VariantObjectKey(objectKey, variant.width),
+					bytes: variant.data,
+					sourceSha256: input.sha256,
+				});
+			}
+		}
 		return {
 			...result,
 			secureUrl: url,
