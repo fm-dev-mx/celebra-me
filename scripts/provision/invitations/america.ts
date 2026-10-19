@@ -31,9 +31,9 @@ const content: CanonicalEventContentInput = {
 	eventTiming: AMERICA_TIMING,
 	sectionOrder: [
 		'quote',
-		'family',
 		'countdown',
 		'location',
+		'family',
 		'itinerary',
 		'gallery',
 		'gifts',
@@ -49,7 +49,7 @@ const content: CanonicalEventContentInput = {
 			// paper, and the closing door rises into the reply card under the mirrored arch (crown
 			// on the right, against the diagonal). The profile draws the diagonal and reserves
 			// each depth.
-			countdown: { family: 'overlap', source: 'interlude-after-family' },
+			countdown: { family: 'overlap', source: 'interlude-after-quote' },
 			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
@@ -58,7 +58,7 @@ const content: CanonicalEventContentInput = {
 		{
 			// The lilac look in the brick patio, laid on the mist as a plate before the night.
 			image: 'gallery01',
-			afterSection: 'family',
+			afterSection: 'quote',
 			alt: 'América con vestido lila en un patio de ladrillo, junto a una reja.',
 			height: 'medium',
 			presentation: 'framed',
@@ -136,6 +136,8 @@ const content: CanonicalEventContentInput = {
 		presentationOptions: {
 			showCalendarLinks: true,
 			indicationsLayout: 'enclosure',
+			// From the church to the garden: a lantern walks the route while the entries swap.
+			scene: 'lantern-route',
 		},
 		introHeading: 'Apunte la fecha',
 		introLede: 'Primero la misa, después la fiesta en el jardín.',

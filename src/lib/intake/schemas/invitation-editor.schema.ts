@@ -13,6 +13,7 @@ import { isReservedInvitationSlug, RESERVED_SLUG_MESSAGE } from '@/lib/invitatio
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/location-presentation';
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
+	LOCATION_SCENES,
 	LOCATION_INDICATIONS_STYLES,
 	LOCATION_MAP_STYLES,
 } from '@/lib/invitation/location-presentation';
@@ -102,6 +103,7 @@ export const InvitationEditorSectionSchemas = {
 				indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
 				indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 				showCalendarLinks: z.boolean().optional(),
+				scene: z.enum(LOCATION_SCENES).optional(),
 			})
 			.strict()
 			.optional(),

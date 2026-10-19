@@ -31,6 +31,7 @@ import type {
 	LocationIndicationsStyle,
 	LocationMapStyle,
 	LocationIndicationsLayout,
+	LocationScene,
 } from '@/lib/invitation/location-presentation';
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
@@ -259,6 +260,7 @@ export interface LocationSection {
 		indicationsLayout?: LocationIndicationsLayout;
 		indicationsStyle?: LocationIndicationsStyle;
 		showCalendarLinks?: boolean;
+		scene?: LocationScene;
 	};
 	isLocked?: boolean;
 	lockedTitle?: string;
@@ -277,6 +279,7 @@ export interface LocationSection {
 	indicationsHeading?: string;
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
+	scene?: LocationScene;
 	calendarEventTitle?: string;
 	eventTimeZone?: string;
 }

@@ -433,6 +433,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 		indicationsHeading: data.location.indicationsHeading ?? '',
 		indicationsLayout: data.location.presentationOptions?.indicationsLayout ?? 'list',
 		showCalendarLinks: data.location.presentationOptions?.showCalendarLinks ?? false,
+		scene: data.location.presentationOptions?.scene,
 		calendarEventTitle: data.title,
 		eventTimeZone: data.eventTiming?.timeZone,
 	};

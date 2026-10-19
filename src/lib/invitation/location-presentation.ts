@@ -41,7 +41,16 @@ export interface LocationPresentationOptions {
 	indicationsStyle?: LocationIndicationsStyle;
 	/** Adds a no-JS "Agendar en el calendario" disclosure to each venue with a date and time. */
 	showCalendarLinks?: boolean;
+	/**
+	 * Pinned scroll scene for editorial invitations (`program-sheet`, two or more venues):
+	 * `lantern-route` draws the route between the venues while a lantern travels it and the
+	 * entries take turns. Without editorial motion or under reduced motion the program shows as is.
+	 */
+	scene?: LocationScene;
 }
+
+export const LOCATION_SCENES = ['lantern-route'] as const;
+export type LocationScene = (typeof LOCATION_SCENES)[number];
 
 export const LOCATION_INDICATIONS_LAYOUTS = ['list', 'band', 'enclosure'] as const;
 export type LocationIndicationsLayout = (typeof LOCATION_INDICATIONS_LAYOUTS)[number];

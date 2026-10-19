@@ -1,5 +1,8 @@
 @use '../../../global/mixins' as mixins;
 
+// Optional pinned scene over the program (presentationOptions.scene = 'lantern-route').
+@use '../../../invitation/scenes/lantern-route' as lantern-route;
+
 // ==========================================================================
 // LOCATION — program-sheet
 // Venues as entries of a printed program: no cards, no shadows, no map widget. Each entry
@@ -279,3 +282,5 @@
 		}
 	}
 }
+
+@include lantern-route.styles;

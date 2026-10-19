@@ -233,6 +233,7 @@
 	// the day inks of the preset.
 	.invitation-section-wrapper:is(
 		[data-section-kind='location'],
+		[data-section-kind='family'],
 		[data-section-kind='itinerary'],
 		[data-section-kind='gallery'],
 		[data-section-kind='gifts'],
@@ -266,7 +267,7 @@
 	}
 
 	.invitation-section-wrapper:is(
-		[data-section-kind='location'],
+		[data-section-kind='family'],
 		[data-section-kind='gallery'],
 		[data-section-kind='personalized-access'],
 		[data-section-kind='rsvp']
