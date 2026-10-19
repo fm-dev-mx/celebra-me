@@ -19,7 +19,6 @@ import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
-	sendMagicLink: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
@@ -142,10 +141,7 @@ describe('POST /api/auth/login-host — error classification', () => {
 		expect(response.status).toBe(503);
 	});
 
-	it('returns 200 for magic link requests', async () => {
-		const sendMagicMock = authApi.sendMagicLink as jest.Mock;
-		sendMagicMock.mockResolvedValue({});
-
+	it('returns 400 for magic link requests', async () => {
 		const response = await loginHost({
 			request: createMockRequest({
 				email: 'magic@test.com',
@@ -154,28 +150,10 @@ describe('POST /api/auth/login-host — error classification', () => {
 			url: new URL('http://localhost/api/auth/login-host'),
 		} as unknown as APIContext);
 
-		expect(response.status).toBe(200);
+		expect(response.status).toBe(400);
 		const body = await response.json();
-		expect(body.ok).toBe(true);
-	});
-
-	it('returns 503 for a transient magic-link provider failure', async () => {
-		const sendMagicMock = authApi.sendMagicLink as jest.Mock;
-		sendMagicMock.mockRejectedValue(
-			new AuthRequestError({ kind: 'timeout', operation: 'send_magic_link' }),
-		);
-
-		const response = await loginHost({
-			request: createMockRequest({
-				email: 'magic@test.com',
-				method: 'magic_link',
-			}),
-			url: new URL('http://localhost/api/auth/login-host'),
-		} as unknown as APIContext);
-
-		expect(response.status).toBe(503);
-		expect(response.headers.get('Retry-After')).toBe('5');
-		expect((await response.json()).error.code).toBe('service_unavailable');
+		expect(body.error.code).toBe('bad_request');
+		expect(authApi.signInWithPassword).not.toHaveBeenCalled();
 	});
 
 	it('returns 401 when auth identifier resolution returns null', async () => {

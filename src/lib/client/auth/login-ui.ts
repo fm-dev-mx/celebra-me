@@ -1,8 +1,6 @@
 import { isCanonicalHostLoginAlias } from '@/lib/auth/login-alias';
 
-export type AuthMethod = 'password' | 'magic_link';
 export interface LoginFormState {
-	method: AuthMethod;
 	email: string;
 	password: string;
 }
@@ -26,29 +24,16 @@ export function isValidLoginIdentifier(identifier: string): boolean {
 	return EMAIL_PATTERN.test(value) || isValidLoginAlias(value);
 }
 
-export function getMethodHelpText(method: AuthMethod): string {
-	if (method === 'magic_link') {
-		return 'Te enviaremos un enlace seguro por correo. Suele llegar en menos de 2 minutos.';
-	}
-	return 'Acceso inmediato con tu correo o usuario y contrasena.';
-}
-
 export function validateLoginForm(input: LoginFormState): string | null {
 	if (!normalize(input.email)) {
-		return input.method === 'magic_link'
-			? 'Escribe un correo valido para continuar.'
-			: 'Escribe tu correo o usuario para continuar.';
+		return 'Escribe tu correo o usuario para continuar.';
 	}
 
-	if (input.method === 'magic_link' && !isValidEmail(input.email)) {
-		return 'Escribe un correo valido para continuar.';
-	}
-
-	if (input.method === 'password' && !isValidLoginIdentifier(input.email)) {
+	if (!isValidLoginIdentifier(input.email)) {
 		return 'Escribe un correo o usuario valido para continuar.';
 	}
 
-	if (input.method === 'password' && !normalize(input.password)) {
+	if (!normalize(input.password)) {
 		return 'Ingresa tu contrasena para continuar con este metodo.';
 	}
 

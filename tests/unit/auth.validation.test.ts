@@ -22,19 +22,12 @@ describe('Authentication Validation Logic (Spanish UI)', () => {
 
 	describe('validateLoginForm', () => {
 		const baseInput = {
-			method: 'password' as const,
 			email: 'valid@test.com',
 			password: 'securePassword123',
 		};
 
 		test('should return null for valid password input', () => {
 			expect(validateLoginForm(baseInput)).toBeNull();
-		});
-
-		test('should return null for valid magic_link input without password', () => {
-			expect(
-				validateLoginForm({ ...baseInput, method: 'magic_link', password: '' }),
-			).toBeNull();
 		});
 
 		test('should accept a valid alias for password login', () => {
@@ -53,7 +46,7 @@ describe('Authentication Validation Logic (Spanish UI)', () => {
 			expect(result).toBe('Escribe un correo o usuario valido para continuar.');
 		});
 
-		test('should return Spanish error for missing password in password method', () => {
+		test('should return Spanish error for missing password', () => {
 			const result = validateLoginForm({ ...baseInput, password: '' });
 			expect(result).toBe('Ingresa tu contrasena para continuar con este metodo.');
 		});

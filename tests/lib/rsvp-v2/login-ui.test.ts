@@ -1,6 +1,5 @@
 import { getLoginQueryPrefill } from '@/lib/client/auth/login-bridge';
 import {
-	getMethodHelpText as getMethodHelpTextUi,
 	isValidEmail as isValidEmailUi,
 	isValidLoginIdentifier as isValidLoginIdentifierUi,
 	validateLoginForm as validateLoginFormUi,
@@ -18,10 +17,9 @@ describe('rsvp login UI helpers', () => {
 		expect(isValidLoginIdentifierUi('xx')).toBe(false);
 	});
 
-	it('validates login form based on selected method', () => {
+	it('requires a login identifier and a password', () => {
 		expect(
 			validateLoginFormUi({
-				method: 'password',
 				email: 'host@test.com',
 				password: '',
 			}),
@@ -29,24 +27,17 @@ describe('rsvp login UI helpers', () => {
 
 		expect(
 			validateLoginFormUi({
-				method: 'magic_link',
-				email: 'host@test.com',
-				password: '',
+				email: '',
+				password: 'Pass123!',
 			}),
-		).toBeNull();
+		).toBe('Escribe tu correo o usuario para continuar.');
 
 		expect(
 			validateLoginFormUi({
-				method: 'password',
 				email: 'ximena_meza',
 				password: 'ximenameza2026',
 			}),
 		).toBeNull();
-	});
-
-	it('returns clear helper text per auth method', () => {
-		expect(getMethodHelpTextUi('password')).toContain('Acceso inmediato');
-		expect(getMethodHelpTextUi('magic_link')).toContain('Suele llegar');
 	});
 
 	it('hydrates only safe login params from the query string', () => {
@@ -55,15 +46,13 @@ describe('rsvp login UI helpers', () => {
 				'?method=password&email=owner%40example.com&password=Testtest00%21',
 			),
 		).toEqual({
-			method: 'password',
 			email: 'owner@example.com',
 			hasPasswordParam: true,
 		});
 	});
 
-	it('ignores invalid auth methods in the query string', () => {
-		expect(getLoginQueryPrefill('?method=token&email=ximena_meza')).toEqual({
-			method: null,
+	it('ignores the legacy method param in the query string', () => {
+		expect(getLoginQueryPrefill('?method=magic_link&email=ximena_meza')).toEqual({
 			email: 'ximena_meza',
 			hasPasswordParam: false,
 		});
