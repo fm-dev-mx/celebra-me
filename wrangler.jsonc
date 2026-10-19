@@ -187,7 +187,9 @@
             ],
             // Cron triggers are non-versioned: version uploads, version deploys and secret changes
             // never apply them. Only `wrangler deploy` or `wrangler triggers deploy` applies them.
-            "triggers": { "crons": ["17 15 * * *", "43 10 * * *"] },
+            // `*/15 * * * *` is the Production-only platform usage collector (PRODUCTION_ONLY_JOBS in
+            // scheduled-jobs.ts).
+            "triggers": { "crons": ["17 15 * * *", "43 10 * * *", "*/15 * * * *"] },
             // namespace_id 3001-3099 belongs to the Production application Worker.
             "ratelimits": [
                 {

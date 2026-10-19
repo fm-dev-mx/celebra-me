@@ -239,6 +239,16 @@
             "phase": "expand",
             "provides": ["engagement_historical_estimates"],
             "notes": "Adds invitation_engagement_historical_estimates (one row per event and method version, aggregates only, RLS forced, service-role select), compute_engagement_historical_estimates (computes method version 1 once from legacy viewed audit rows before 2026-10-12 16:25 UTC; re-running a version is a no-op) and list_engagement_historical_estimates (service-role read over published client invitations). The migration computes version 1 in its body. Additive: the deployed application keeps working and the historical view answers 503 until this routine exists. Revokes only initialize privileges of the new objects."
+        },
+        "20261018120000": {
+            "phase": "expand",
+            "provides": ["platform_usage_snapshots"],
+            "notes": "Adds platform_usage_snapshots (one row per provider dataset per collector run: collected_at, provider, ok, payload jsonb; aggregates only), indexed by collected_at, RLS forced with no policies, service-role select/insert/delete. Additive: the deployed application never reads it yet, and the Production collector cron only writes once this table exists (until then each run logs a failed insert). Revokes only initialize privileges of the new object."
+        },
+        "20261018180000": {
+            "phase": "expand",
+            "provides": ["platform_database_size"],
+            "notes": "Adds platform_database_size() (security invoker, empty search_path, returns pg_database_size of the current database and reads no table), executable by service_role only. Additive: the deployed platform console calls it and, until it exists, shows the database size as unreadable while disk stays informative. Revokes only initialize privileges of the new function."
         }
     },
     "appCapabilities": {

@@ -1,20 +1,36 @@
 /**
- * Supabase project usage for the super-admin platform console, read from the
- * Management API with a read-only personal access token. One project per
- * environment (Preview and Production), each against its own Free-plan
- * allowance. Never throws to callers and never
+ * Supabase project usage for the super-admin platform console. One project per
+ * environment (Preview and Production). Never throws to callers and never
  * forwards provider response bodies: failures collapse to `unavailable` or a
  * blanked meter.
+ *
+ * The Free plan's 500 MB cap applies to the database size. The Management API
+ * token cannot read it without SQL access to every table, so the size comes
+ * from the `platform_database_size()` RPC (service role only, returns a single
+ * number), called with the Worker's own service role key. That key only
+ * reaches its own project, so the size is read only when `SUPABASE_URL` is the
+ * environment's project; elsewhere the meter stays blank.
+ *
+ * Disk usage comes from the Management API (read-only PAT). It includes WAL
+ * and system files and runs far above the database size, so it is reported as
+ * an informative figure with no quota (`limit: null`).
  */
 
 import { SUPABASE_FREE_TIER } from '@/lib/platform/contract/limits';
 import { buildPlatformMetric } from '@/lib/platform/contract/meters';
 import type { PlatformEnvironmentId, PlatformProviderUsage } from '@/lib/platform/contract/types';
+import { getEnv } from '@/lib/server/env';
 import { PLATFORM_ENV } from './config';
 import { readProfileVar } from './env-profiles';
+import {
+	type ProviderFailure,
+	fetchProviderJson,
+	finiteNumber,
+	isRecord,
+} from './provider-request';
 
 const MANAGEMENT_ENDPOINT = 'https://api.supabase.com/v1/projects';
-const REQUEST_TIMEOUT_MS = 5_000;
+const DATABASE_SIZE_RPC = 'rest/v1/rpc/platform_database_size';
 /** Analytics endpoints are rate limited to 30 requests/minute; cache absorbs refreshes. */
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -29,15 +45,10 @@ export function resetSupabaseUsageCache(): void {
 	cache = {};
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 /**
- * Disk utilization from `GET /v1/projects/{ref}/config/disk/util`. The exact
- * envelope and its equivalence to the plan's "database size" are not verified
- * against the live API: both shapes are accepted and a missing figure blanks
- * only its own meter.
+ * Disk utilization from `GET /v1/projects/{ref}/config/disk/util`
+ * (`{ timestamp, metrics: { fs_used_bytes, … } }` per the OpenAPI spec; a flat
+ * shape is also accepted). A missing figure blanks only its own meter.
  */
 export function parseDiskUsedBytes(payload: unknown): number | null {
 	const root = isRecord(payload) ? payload : null;
@@ -47,32 +58,57 @@ export function parseDiskUsedBytes(payload: unknown): number | null {
 	return null;
 }
 
-async function queryProjectUsedBytes(
+export type SupabaseDiskResult =
+	{ ok: true; usedBytes: number } | { ok: false; failure: ProviderFailure };
+
+/** Used disk bytes of one project. Never throws and never returns the provider body. */
+export async function readProjectDiskUsage(
 	ref: string,
 	token: string,
 	fetchImpl: typeof fetch,
-): Promise<number | null> {
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+): Promise<SupabaseDiskResult> {
+	const result = await fetchProviderJson(
+		`${MANAGEMENT_ENDPOINT}/${encodeURIComponent(ref)}/config/disk/util`,
+		{ method: 'GET', token },
+		fetchImpl,
+	);
+	if (!result.ok) return { ok: false, failure: result.failure };
+	const usedBytes = parseDiskUsedBytes(result.body);
+	return usedBytes === null ? { ok: false, failure: 'malformed' } : { ok: true, usedBytes };
+}
+
+/** Origin of `ref`'s project when `SUPABASE_URL` points at it, else null. */
+function ownProjectOrigin(ref: string): string | null {
+	const raw = getEnv('SUPABASE_URL').trim();
+	if (!raw) return null;
 	try {
-		const response = await fetchImpl(
-			`${MANAGEMENT_ENDPOINT}/${encodeURIComponent(ref)}/config/disk/util`,
-			{
-				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json',
-				},
-				signal: controller.signal,
-			},
-		);
-		if (!response.ok) return null;
-		return parseDiskUsedBytes(await response.json());
+		const url = new URL(raw);
+		return url.protocol === 'https:' && url.hostname === `${ref.toLowerCase()}.supabase.co`
+			? url.origin
+			: null;
 	} catch {
 		return null;
-	} finally {
-		clearTimeout(timer);
 	}
+}
+
+/**
+ * Database size of `ref`'s project via `platform_database_size()`, or null when
+ * this deployment has no service role key for that project, the migration is
+ * not applied yet, or the call fails. Never throws.
+ */
+async function readProjectDatabaseSize(
+	ref: string,
+	fetchImpl: typeof fetch,
+): Promise<number | null> {
+	const origin = ownProjectOrigin(ref);
+	const serviceKey = getEnv('SUPABASE_SERVICE_ROLE_KEY').trim();
+	if (!origin || !serviceKey) return null;
+	const result = await fetchProviderJson(
+		`${origin}/${DATABASE_SIZE_RPC}`,
+		{ method: 'POST', token: serviceKey, headers: { apikey: serviceKey }, body: {} },
+		fetchImpl,
+	);
+	return result.ok ? finiteNumber(result.body) : null;
 }
 
 export async function getSupabasePlatformUsage(
@@ -90,9 +126,15 @@ export async function getSupabasePlatformUsage(
 	}
 	const cached = cache[environment];
 	if (cached && cached.expiresAt > now.getTime()) return cached.value;
-	const used = await queryProjectUsedBytes(projectRef.value, token.value, fetchImpl);
+	const [databaseBytes, disk] = await Promise.all([
+		readProjectDatabaseSize(projectRef.value, fetchImpl),
+		readProjectDiskUsage(projectRef.value, token.value, fetchImpl),
+	]);
+	const diskBytes = disk.ok ? disk.usedBytes : null;
+	const metric = (id: string, used: number | null, limit: number | null) =>
+		buildPlatformMetric({ id, used, limit, window: 'snapshot', scope: environment, now });
 	const value: PlatformProviderUsage =
-		used === null
+		databaseBytes === null && diskBytes === null
 			? { kind: 'unavailable' }
 			: {
 					kind: 'ok',
@@ -100,14 +142,8 @@ export async function getSupabasePlatformUsage(
 					spendUsd: null,
 					missing: [],
 					metrics: [
-						buildPlatformMetric({
-							id: 'sbDatabase',
-							used,
-							limit: SUPABASE_FREE_TIER.databaseBytes,
-							window: 'snapshot',
-							scope: environment,
-							now,
-						}),
+						metric('sbDatabase', databaseBytes, SUPABASE_FREE_TIER.databaseBytes),
+						...(diskBytes === null ? [] : [metric('sbDisk', diskBytes, null)]),
 					],
 				};
 	if (value.kind === 'ok') {
