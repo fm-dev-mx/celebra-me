@@ -1,0 +1,31 @@
+---
+/**
+ * Pinned scroll scene for editorial invitations. The outer element is `length` screens tall and
+ * its stage sticks to the viewport while the page scrolls through it; children animate against
+ * the `--scroll-scene` view timeline (CSS) or `--scene-progress` (scripted fallback). Outside
+ * `theme.motion: 'editorial'`, under reduced motion, or with neither engine available, the scene
+ * collapses to its children in normal flow, so the static layout must read on its own.
+ * Contract: docs/domains/theme/motion.md, "Scroll scenes".
+ */
+interface Props {
+	/** Scene height in viewport heights, including the pinned screen. */
+	length?: 2 | 3 | 4 | 5;
+	/** Optional number of discrete steps; the scripted engine exposes `data-scene-step`. */
+	steps?: number;
+	class?: string;
+}
+
+const { length = 3, steps, class: className } = Astro.props;
+const stepCount = steps && Number.isInteger(steps) && steps > 1 ? steps : undefined;
+---
+
+<div
+	class:list={['scroll-scene', className]}
+	data-scroll-scene
+	data-scene-length={length}
+	data-scene-steps={stepCount}
+>
+	<div class="scroll-scene__stage">
+		<slot />
+	</div>
+</div>
