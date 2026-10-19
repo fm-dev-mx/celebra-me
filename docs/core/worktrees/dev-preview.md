@@ -19,7 +19,7 @@ Preview Supabase via required `.env.preview.local` overlay (`CELEBRA_RUNTIME_TAR
 local Astro → Preview Supabase API/Auth/Storage → Preview-backed app state
 ```
 
-This is independent of Vercel Preview deployments (`VERCEL_ENV=preview`).
+This is independent of the hosted Cloudflare Preview Worker (`CELEBRA_DEPLOY_ENV=preview`).
 
 ## Idle / active state
 

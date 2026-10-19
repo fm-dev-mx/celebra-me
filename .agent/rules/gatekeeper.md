@@ -26,7 +26,6 @@ Forbidden examples (non-exhaustive):
 - `.astro/`
 - `logs/`
 - `dist/`
-- `.vercel/`
 - `coverage/`
 - `*.log`
 - `*.tmp`
@@ -52,7 +51,7 @@ Forbidden examples (non-exhaustive):
 
 ---
 
-### 2.3 Case-Sensitivity (Vercel / Linux Safety)
+### 2.3 Case-Sensitivity (Linux Safety)
 
 Casing inconsistencies are treated as bugs.
 

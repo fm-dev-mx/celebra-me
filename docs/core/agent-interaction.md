@@ -7,20 +7,20 @@ validation, Git safety, and handoff semantics are inherited from `AGENTS.md` and
 
 Include only the fields that are not already guaranteed by repository infrastructure:
 
-| Field | What to provide |
-| --- | --- |
-| Objective | Observable outcome and relevant business context |
-| Operation mode | `audit`, `plan`, `implement`, `remediate`, `validate`, or `release-ops` |
-| Scope / non-goals | Files, surfaces, environments, and explicit exclusions |
+| Field                   | What to provide                                                            |
+| ----------------------- | -------------------------------------------------------------------------- |
+| Objective               | Observable outcome and relevant business context                           |
+| Operation mode          | `audit`, `plan`, `implement`, `remediate`, `validate`, or `release-ops`    |
+| Scope / non-goals       | Files, surfaces, environments, and explicit exclusions                     |
 | Task-specific authority | Any exact Git, database, deploy, external-service, or human-approval grant |
-| Acceptance evidence | What must be true and how it will be demonstrated |
-| Required output | Report, patch, plan, review, handoff, or other deliverable |
+| Acceptance evidence     | What must be true and how it will be demonstrated                          |
+| Required output         | Report, patch, plan, review, handoff, or other deliverable                 |
 
 ## Planning and execution
 
 Use conversation-scoped planning by default. Persist one plan under `.agent/plans/active/` only when
-continuity, risk, or the repository owner justifies it. The Task Contract remains the semantic source
-of truth across conversation, plans, workflows, skills, and handoffs.
+continuity, risk, or the repository owner justifies it. The Task Contract remains the semantic
+source of truth across conversation, plans, workflows, skills, and handoffs.
 
 The selected operation mode controls mutability. Workflows and skills provide reusable procedure or
 specialized judgment; they never grant permissions. Git, database, deployment, and provider actions
@@ -36,5 +36,5 @@ still require their owning rules and explicit current-task authorization.
 
 ## Help
 
-When a prompt is underspecified, the agent should use the least-privileged interpretation and ask only
-when the missing information would materially change scope, authority, or acceptance.
+When a prompt is underspecified, the agent should use the least-privileged interpretation and ask
+only when the missing information would materially change scope, authority, or acceptance.

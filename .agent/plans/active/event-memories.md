@@ -43,7 +43,7 @@ catalog rows and objects together.
 - Legacy retirement (see below), streaming ZIP export to disk, multipart video uploads, browser-side
   rejection telemetry, and package-catalog gating. Entitlement is recorded per space; gating by
   catalog stays commercial process.
-- Any database, Cloudflare, R2, Vercel or Git mutation from an agent session.
+- Any database, Cloudflare, R2 or Git mutation from an agent session.
 - The Staging load-test harness of the pilot was retired with it; a per-space harness is a separate
   task.
 

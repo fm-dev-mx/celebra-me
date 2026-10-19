@@ -137,9 +137,9 @@ Every managed digital invitation must define:
 - **Asset Requirements**: Stable semantic keys (`hero`, `portrait`, `gallery1`, etc.) mapped to
   verified source binaries (JPEG, PNG, WebP). Declared keys are operationally required.
 - **Storage Conventions**: Local stores managed binaries in Supabase Storage bucket
-  `invitation-assets` at `managed/<slug>/<key>.webp`. Preview and Production host them on Cloudinary
-  under the immutable public id `<environment>/<eventType>/<slug>/assets/<key>-<sha12>`
-  (`src/lib/intake/services/storage-provider.ts`, `cloudinary-assets.ts`). In both cases
+  `invitation-assets` at `managed/<slug>/<key>.webp`. Preview and Production host them in R2 under
+  the content-addressed object key `invitations/<eventType>/<slug>/<key>-<sha256>.<ext>`
+  (`src/lib/intake/services/storage-provider.ts`, `r2-invitation-media.ts`). In both cases
   `invitation_assets` rows record the provider, path and delivery URL.
 
 When a new invitation uses custom section-to-section composition, select and verify it against the
