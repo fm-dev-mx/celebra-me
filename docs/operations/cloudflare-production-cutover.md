@@ -1,9 +1,10 @@
 # Production cutover runbook: Vercel to Cloudflare Workers
 
-Audience: a junior operator. Prepared 2026-10-15 and rescheduled 2026-10-16 from
-`.agent/plans/active/cloudflare-workers-migration.md`, `wrangler.jsonc`,
+Audience: a junior operator. Prepared 2026-10-15 and rescheduled 2026-10-16 from `wrangler.jsonc`,
 `.github/workflows/deploy.yml`, `.github/workflows/deploy-production.yml`, `package.json`,
-`scripts/ops/*`.
+`scripts/ops/*`. The standing rules, external configuration and design decisions behind this runbook
+live in [`cloudflare-platform.md`](cloudflare-platform.md). The cutover is done; this file stays as
+the record and as the rollback procedure.
 
 Legend: **TO BUILD** = does not exist on `develop` yet. Do not invent a command; build it first.
 `$ACCT` = `05cb212a366549f0f93e7101c4ca3692`. `$SHA` = the 40-hex candidate commit on `main`

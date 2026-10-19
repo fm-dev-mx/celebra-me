@@ -33,6 +33,45 @@ Local/Preview package -> Production (content): owner-only pnpm prod:apply only.
 Preview -> Production: forbidden for DB/Storage content copy.
 ```
 
+### Platform principle and runtime-to-database mapping
+
+Moving the application between hosts changes where it runs, not where the data lives. All database
+targets stay on Supabase under the guards above, and the server reaches Supabase only over HTTPS
+`fetch` (PostgREST, Auth, Storage, RPC), so no driver, pooler or Hyperdrive is needed. Hosted
+identity is enforced by `src/lib/server/deploy-identity.ts`.
+
+| Runtime                                        | Database target                         | Identity enforcement                                                                                                                                |
+| ---------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local `astro dev` / `astro preview` on workerd | persistent-local (`127.0.0.1:54321`)    | `local` only for a loopback Supabase URL; lane bootstrap writes a gitignored `.dev.vars` from the lane env instead of mutating Node's `process.env` |
+| Preview Worker (`env.preview`)                 | Preview project                         | `CELEBRA_DEPLOY_ENV=preview` plus project-ref check (`SUPABASE_PROJECT_REFS.preview`); a mismatch throws                                            |
+| Production Worker                              | Production project                      | `CELEBRA_DEPLOY_ENV=production` plus the Production project ref                                                                                     |
+| Jest, pgTAP, migration CLIs, backups           | disposable-test and the guarded targets | Run in Node; the hosting platform does not affect them                                                                                              |
+
+Operating rules around any host or routing change:
+
+- Close the pending migration chain first, and run no migration while two builds of the same SHA can
+  serve the same database. Both builds must share one schema so a rollback stays a routing change.
+- Run no contract migration between a change of host and the first trusted smoke from the new
+  pipeline, because the contract gate reads that evidence.
+- Exactly one platform runs the database-writing cron jobs (memories cleanup, engagement snapshots
+  and anonymization) at a time.
+- Run `pnpm db:prod:backup:critical` before the change and before each guarded data step.
+- Supabase Auth Site URL and Redirect URLs live in the Supabase dashboard, not in the repository;
+  list the current hosts there and remove hosts of a retired platform.
+- Applied migrations are immutable: editing one breaks the migrator digest check
+  (`APPLIED_VERIFICATION_FAILED`), so retired-provider guards exclude `supabase/migrations/`.
+- No schema redesign rides with a platform change: it would make any regression impossible to
+  attribute.
+
+### Candidate follow-ups (separate programs, owner approval each)
+
+| Candidate                                                                                                                          | Value                                                                                | Note                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Move the legacy Supabase-Storage assets (bucket `invitation-assets`, provider `supabase`) to R2                                    | One media store, one provider value, simpler Local setup (R2 local through wrangler) | Needs its own inventory of rows and objects                                                                       |
+| Drop the retired media provider value from the `invitation_assets.provider` constraint (contract), once no row and no code uses it | Smaller schema                                                                       | After a smoke-checked Production deploy; regenerate `release-hash-baseline.json` when package hashes change       |
+| Retire the `valentina_*` memories-catalog objects and deduplicate the "latest published" SQL                                       | Smaller schema                                                                       | Verify each is still present first; each keeps its own owner gate                                                 |
+| D1, Hyperdrive or leaving Supabase                                                                                                 | None found                                                                           | Auth, RLS, RPCs, Storage and the guarded migration tooling depend on Supabase; a move adds risk with no reduction |
+
 ## Canonical status projection decision
 
 `pnpm dbs` runs one evidence pipeline. Each refresh uses one `StatusProbeSession` and, per

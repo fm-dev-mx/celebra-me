@@ -488,6 +488,13 @@ with `pnpm ops:cloudflare:preview:secrets` (allow-list in
 `src/lib/rsvp/security/rate-limit-provider.ts` uses, and the two daily jobs are `triggers.crons`
 handled by `src/worker.ts` → `src/lib/server/scheduled-jobs.ts`.
 
+Hosted rules that do not depend on a variable value (full list:
+[`operations/cloudflare-platform.md`](operations/cloudflare-platform.md)): `CELEBRA_DEPLOY_ENV` must
+be declared as a versioned `var` in every hosted environment, because without it nothing writes and
+`/api/health` reports `environment: null`; `.dev.vars` is a gitignored local secrets file and never
+committed; the deploy token is scoped to Workers Scripts and Access only; secrets are verified by
+name with `wrangler secret list --env <name>`, never by value.
+
 ### Cloudflare Production upload (`.github/workflows/deploy-production.yml`)
 
 Manual only (`workflow_dispatch` from `main`). It builds the Cloudflare target for Production,

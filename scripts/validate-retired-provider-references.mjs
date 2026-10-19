@@ -20,8 +20,6 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'CHANGELOG.md',
 	'pnpm-lock.yaml',
 	'supabase/migration-rollout-registry.json',
-	'.agent/plans/active/cloudflare-workers-migration.md',
-	'.agent/plans/active/vercel-cloudflare-closeout.md',
 	// Guards and their tests: they name the providers to reject them.
 	'scripts/validate-retired-provider-references.mjs',
 	'scripts/validate-structure.mjs',
