@@ -15,7 +15,7 @@ export type PlatformScope = 'account' | 'project' | 'preview' | 'production';
 export type PlatformEnvironmentId = 'preview' | 'production';
 
 /** Panel sections: one per visible environment, then the shared quotas. */
-export type PlatformSectionId = PlatformEnvironmentId | 'shared';
+type PlatformSectionId = PlatformEnvironmentId | 'shared';
 
 /** Accumulation window of a `used` figure. */
 export type PlatformWindow = 'dayUtc' | 'monthUtc' | 'snapshot';
