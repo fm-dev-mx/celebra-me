@@ -46,6 +46,7 @@ import {
 	changedTopLevelSections,
 	countCloudinaryUrls,
 	PREVIEW_DEMO_REPUBLISH_OPERATION,
+	replaceStringValue,
 	republishPreviewDemo,
 } from '../../scripts/provision/preview-demo-republish.ts';
 
@@ -199,5 +200,113 @@ describe('republishPreviewDemo', () => {
 		await expect(
 			republishPreviewDemo({ slug: 'demo-xv-jewelry-box', env: ENV }),
 		).rejects.toThrow(/PREVIEW_DEMO_SOURCE_MISSING/);
+	});
+});
+
+describe('republishPreviewDemo with a URL replacement', () => {
+	const FROM = 'https://res.cloudinary.com/demo/image/upload/v1/parroquia.jpg';
+	const TO = 'https://media.celebra-me.com/shared/images/parroquia-abc.jpg';
+	const STORED = {
+		title: 'Joyero',
+		location: { venues: [{ image: FROM, name: 'Parroquia' }] },
+		note: `Antes en ${FROM}`,
+	};
+	const okFetch = jest.fn<typeof fetch>(async () => ({ status: 200 }) as Response);
+
+	beforeEach(() => {
+		mockedPsql.mockReset();
+		okFetch.mockClear();
+		mockedClassify.mockReset();
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'preview host' } as never);
+	});
+
+	it('replaces whole string values only', () => {
+		const result = replaceStringValue(STORED, FROM, TO);
+		expect(result.count).toBe(1);
+		expect(result.value).toEqual({
+			...STORED,
+			location: { venues: [{ image: TO, name: 'Parroquia' }] },
+		});
+	});
+
+	it('plans the swap without the versioned JSON and leaves the rest as stored', async () => {
+		mockedPsql.mockReturnValueOnce(
+			psqlResult([demoRow({ content: STORED, draft_content: { title: 'Joyero' } })]),
+		);
+		const result = await republishPreviewDemo({
+			slug: 'demo-xv-jewelry-box',
+			replaceUrl: { from: FROM, to: TO },
+			env: ENV,
+			fetchImpl: okFetch as unknown as typeof fetch,
+		});
+		expect(result).toMatchObject({
+			action: 'dry_run_update',
+			sourcePath: 'url replacement',
+			changedSections: ['location'],
+			draftChanged: false,
+			replacedUrls: 1,
+		});
+		expect(okFetch).toHaveBeenCalledWith(TO, expect.objectContaining({ method: 'HEAD' }));
+	});
+
+	it('writes only the replaced publication', async () => {
+		mockedPsql
+			.mockReturnValueOnce(psqlResult([demoRow({ content: STORED })]))
+			.mockReturnValueOnce(psqlResult({ version: 8, published: 1, drafts: 0 }));
+		await republishPreviewDemo({
+			slug: 'demo-xv-jewelry-box',
+			apply: true,
+			replaceUrl: { from: FROM, to: TO },
+			env: ENV,
+			fetchImpl: okFetch as unknown as typeof fetch,
+		});
+		const sql = String(mockedPsql.mock.calls[1]?.[0]);
+		expect(sql).toContain(TO);
+		expect(sql).toContain('Antes en https://res.cloudinary.com');
+		expect(sql).not.toContain('"image":"https://res.cloudinary.com');
+	});
+
+	it('refuses replacements that are not Cloudinary to R2', async () => {
+		await expect(
+			republishPreviewDemo({
+				slug: 'demo-xv-jewelry-box',
+				replaceUrl: { from: 'https://example.com/a.jpg', to: TO },
+				env: ENV,
+				fetchImpl: okFetch as unknown as typeof fetch,
+			}),
+		).rejects.toThrow(/PREVIEW_DEMO_URL_REJECTED/);
+		await expect(
+			republishPreviewDemo({
+				slug: 'demo-xv-jewelry-box',
+				replaceUrl: { from: FROM, to: 'https://example.com/a.jpg' },
+				env: ENV,
+				fetchImpl: okFetch as unknown as typeof fetch,
+			}),
+		).rejects.toThrow(/PREVIEW_DEMO_URL_REJECTED/);
+		expect(mockedPsql).not.toHaveBeenCalled();
+	});
+
+	it('refuses an R2 URL that does not answer 200', async () => {
+		const missing = jest.fn<typeof fetch>(async () => ({ status: 404 }) as Response);
+		await expect(
+			republishPreviewDemo({
+				slug: 'demo-xv-jewelry-box',
+				replaceUrl: { from: FROM, to: TO },
+				env: ENV,
+				fetchImpl: missing as unknown as typeof fetch,
+			}),
+		).rejects.toThrow(/PREVIEW_DEMO_URL_UNREACHABLE/);
+	});
+
+	it('refuses when the publication does not contain the URL', async () => {
+		mockedPsql.mockReturnValueOnce(psqlResult([demoRow({ content: { title: 'Joyero' } })]));
+		await expect(
+			republishPreviewDemo({
+				slug: 'demo-xv-jewelry-box',
+				replaceUrl: { from: FROM, to: TO },
+				env: ENV,
+				fetchImpl: okFetch as unknown as typeof fetch,
+			}),
+		).rejects.toThrow(/PREVIEW_DEMO_URL_NOT_FOUND/);
 	});
 });

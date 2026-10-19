@@ -4,7 +4,9 @@
  * Demo pages read the published row first and fall back to `src/content/event-demos` only when
  * no row exists, so a stale Preview row keeps serving old copy and media. This replaces the
  * published content (and the active draft, when one exists) of exactly one demo with the
- * schema-parsed JSON from the repository. Preview only; Production is rejected.
+ * schema-parsed JSON from the repository. A demo without versioned JSON can instead have one
+ * Cloudinary URL swapped for its R2 copy, leaving the rest of its content as stored.
+ * Preview only; Production is rejected.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -21,6 +23,8 @@ export const PREVIEW_DEMO_REPUBLISH_OPERATION = 'demo-republish';
 
 const SLUG_PATTERN = /^demo-[a-z0-9-]+$/;
 const CLOUDINARY_HOST = 'res.cloudinary.com';
+const R2_MEDIA_ORIGINS = ['https://media.celebra-me.com', 'https://media-staging.celebra-me.com'];
+const REPLACE_URL_SOURCE = 'url replacement';
 
 export interface PreviewDemoRepublishResult {
 	action: 'unchanged' | 'dry_run_update' | 'updated';
@@ -30,6 +34,8 @@ export interface PreviewDemoRepublishResult {
 	publishedVersion: number;
 	changedSections: string[];
 	draftChanged: boolean;
+	/** String values swapped by a URL replacement (publication and draft); 0 otherwise. */
+	replacedUrls: number;
 	cloudinaryUrlsBefore: number;
 	cloudinaryUrlsAfter: number;
 	dbUrlRedacted: string;
@@ -141,12 +147,103 @@ function readDemoSource(
 	return { path, source };
 }
 
+/** Replaces string values equal to `from`, at any depth; substrings are left alone. */
+export function replaceStringValue(
+	value: unknown,
+	from: string,
+	to: string,
+): { value: unknown; count: number } {
+	if (value === from) return { value: to, count: 1 };
+	if (Array.isArray(value)) {
+		let count = 0;
+		const items = value.map((item) => {
+			const replaced = replaceStringValue(item, from, to);
+			count += replaced.count;
+			return replaced.value;
+		});
+		return { value: items, count };
+	}
+	if (value && typeof value === 'object') {
+		let count = 0;
+		const entries = Object.entries(value as Record<string, unknown>).map(([key, entry]) => {
+			const replaced = replaceStringValue(entry, from, to);
+			count += replaced.count;
+			return [key, replaced.value] as const;
+		});
+		return { value: Object.fromEntries(entries), count };
+	}
+	return { value, count: 0 };
+}
+
+/** Only a Cloudinary delivery URL may be swapped, and only for a live R2 media object. */
+async function assertMediaUrlReplacement(
+	replacement: { from: string; to: string },
+	fetchImpl: typeof fetch,
+): Promise<void> {
+	if (!replacement.from.startsWith(`https://${CLOUDINARY_HOST}/`)) {
+		throw new Error(
+			`PREVIEW_DEMO_URL_REJECTED: only https://${CLOUDINARY_HOST}/ URLs can be replaced.`,
+		);
+	}
+	if (!R2_MEDIA_ORIGINS.some((origin) => replacement.to.startsWith(`${origin}/`))) {
+		throw new Error(
+			`PREVIEW_DEMO_URL_REJECTED: the replacement must live on ${R2_MEDIA_ORIGINS.join(' or ')}.`,
+		);
+	}
+	const response = await fetchImpl(replacement.to, { method: 'HEAD', redirect: 'error' });
+	if (response.status !== 200) {
+		throw new Error(
+			`PREVIEW_DEMO_URL_UNREACHABLE: ${replacement.to} answered HTTP ${response.status}.`,
+		);
+	}
+}
+
+interface PlannedDemoContent {
+	sourcePath: string;
+	nextPublished: Record<string, unknown>;
+	nextDraft: Record<string, unknown> | null;
+	replacedUrls: number;
+}
+
+function planDemoContent(
+	row: PublishedDemoRow,
+	slug: string,
+	replaceUrl: { from: string; to: string } | undefined,
+): PlannedDemoContent {
+	if (!replaceUrl) {
+		const { path, source } = readDemoSource(row.event_type, slug);
+		const nextPublished = buildDemoPublishedContent(source);
+		// The draft, when present, receives the same content as the publication.
+		const nextDraft = row.draft_content === null ? null : nextPublished;
+		return { sourcePath: path, nextPublished, nextDraft, replacedUrls: 0 };
+	}
+	const published = replaceStringValue(row.content, replaceUrl.from, replaceUrl.to);
+	if (published.count === 0) {
+		throw new Error(
+			`PREVIEW_DEMO_URL_NOT_FOUND: the published "${slug}" does not contain ${replaceUrl.from}.`,
+		);
+	}
+	const draft =
+		row.draft_content === null
+			? null
+			: replaceStringValue(row.draft_content, replaceUrl.from, replaceUrl.to);
+	return {
+		sourcePath: REPLACE_URL_SOURCE,
+		nextPublished: published.value as Record<string, unknown>,
+		nextDraft: (draft?.value as Record<string, unknown> | undefined) ?? null,
+		replacedUrls: published.count + (draft?.count ?? 0),
+	};
+}
+
 export async function republishPreviewDemo(options: {
 	slug: string;
 	apply?: boolean;
+	/** Swap one Cloudinary URL for its R2 copy instead of republishing from the JSON. */
+	replaceUrl?: { from: string; to: string };
 	isInteractive?: boolean;
 	readConfirmationLine?: () => string | Promise<string>;
 	env?: NodeJS.ProcessEnv;
+	fetchImpl?: typeof fetch;
 }): Promise<PreviewDemoRepublishResult> {
 	const { slug } = options;
 	const apply = options.apply === true;
@@ -168,24 +265,32 @@ export async function republishPreviewDemo(options: {
 		});
 	}
 
+	const replaceUrl = options.replaceUrl;
+	if (replaceUrl) await assertMediaUrlReplacement(replaceUrl, options.fetchImpl ?? fetch);
+
 	const row = loadPublishedDemo(dbUrl, slug);
-	const { path, source } = readDemoSource(row.event_type, slug);
-	const next = buildDemoPublishedContent(source);
-	const changedSections = changedTopLevelSections(row.content, next);
+	const { sourcePath, nextPublished, nextDraft, replacedUrls } = planDemoContent(
+		row,
+		slug,
+		replaceUrl,
+	);
+	const changedSections = changedTopLevelSections(row.content, nextPublished);
 	const draftChanged =
-		row.draft_content !== null && changedTopLevelSections(row.draft_content, next).length > 0;
+		row.draft_content !== null &&
+		nextDraft !== null &&
+		changedTopLevelSections(row.draft_content, nextDraft).length > 0;
 	const result: PreviewDemoRepublishResult = {
 		action: changedSections.length === 0 && !draftChanged ? 'unchanged' : 'dry_run_update',
 		slug,
 		eventType: row.event_type,
-		sourcePath: path,
+		sourcePath,
 		publishedVersion: row.version,
 		changedSections,
 		draftChanged,
+		replacedUrls,
 		cloudinaryUrlsBefore:
 			countCloudinaryUrls(row.content) + countCloudinaryUrls(row.draft_content),
-		// The draft, when present, receives the same content as the publication.
-		cloudinaryUrlsAfter: countCloudinaryUrls(next) * (row.draft_content === null ? 1 : 2),
+		cloudinaryUrlsAfter: countCloudinaryUrls(nextPublished) + countCloudinaryUrls(nextDraft),
 		dbUrlRedacted: redactDbUrl(dbUrl),
 	};
 	if (!apply || result.action === 'unchanged') return result;
@@ -193,12 +298,13 @@ export async function republishPreviewDemo(options: {
 	await authorizePreviewWriteApply({
 		slug,
 		operation: PREVIEW_DEMO_REPUBLISH_OPERATION,
-		confirmPrompt: `Republish Preview demo ${row.event_type}/${slug} from ${path}?`,
+		confirmPrompt: `Republish Preview demo ${row.event_type}/${slug} from ${sourcePath}?`,
 		readConfirmationLine: options.readConfirmationLine,
 		isInteractive: options.isInteractive,
 	});
 
-	const content = sqlLiteral(JSON.stringify(next));
+	const content = sqlLiteral(JSON.stringify(nextPublished));
+	const draftContent = sqlLiteral(JSON.stringify(nextDraft ?? nextPublished));
 	// One statement: the publication moves only from the version that was planned.
 	const res = runPsql(
 		`with pub as (
@@ -209,9 +315,10 @@ export async function republishPreviewDemo(options: {
 			returning version
 		), drf as (
 			update public.invitation_content_drafts
-			set content = ${content}::jsonb, updated_at = now()
+			set content = ${draftContent}::jsonb, updated_at = now()
 			where invitation_project_id = ${sqlLiteral(row.invitation_id)}::uuid and deleted_at is null
-			  and content is distinct from ${content}::jsonb
+			  and ${draftChanged}
+			  and content is distinct from ${draftContent}::jsonb
 			  and (${changedSections.length === 0} or exists (select 1 from pub))
 			returning id
 		)

@@ -18,9 +18,12 @@ function printHelp(): void {
 Usage:
   pnpm invitation:preview-demo --slug <demo-slug> --dry-run
   pnpm invitation:preview-demo --slug <demo-slug> --apply [--json]
+  pnpm invitation:preview-demo --slug <demo-slug> --replace-url <cloudinary-url> --with <r2-url> --dry-run|--apply
 
 Replaces the published content of that one demo (and its active draft, when present) with the
-schema-parsed versioned JSON. Production is rejected.
+schema-parsed versioned JSON. With --replace-url, only string values equal to that Cloudinary URL
+change, to an R2 media URL that must answer 200; the rest of the content stays as stored.
+Production is rejected.
 
 Automated --apply requires:
   CELEBRA_TASK_SCOPE=preview:<demo-slug>:${PREVIEW_DEMO_REPUBLISH_OPERATION}
@@ -28,11 +31,21 @@ An interactive --apply also asks for YES.
 `);
 }
 
-function readSlug(args: string[]): string {
-	const index = args.indexOf('--slug');
-	const slug = index >= 0 ? args[index + 1] : undefined;
-	if (!slug || slug.startsWith('--')) throw new Error('Pass --slug <demo-slug>.');
-	return slug;
+function readValue(args: string[], flag: string): string | undefined {
+	const index = args.indexOf(flag);
+	if (index < 0) return undefined;
+	const value = args[index + 1];
+	if (!value || value.startsWith('--')) throw new Error(`Pass a value after ${flag}.`);
+	return value;
+}
+
+function readReplaceUrl(args: string[]): { from: string; to: string } | undefined {
+	const from = readValue(args, '--replace-url');
+	const to = readValue(args, '--with');
+	if (!from && !to) return undefined;
+	if (!from || !to)
+		throw new Error('Pass --replace-url <cloudinary-url> together with --with <r2-url>.');
+	return { from, to };
 }
 
 function printResult(result: PreviewDemoRepublishResult): void {
@@ -43,9 +56,8 @@ function printResult(result: PreviewDemoRepublishResult): void {
 	console.log(
 		`  sections:    ${result.changedSections.length > 0 ? result.changedSections.join(', ') : 'none'}`,
 	);
-	console.log(
-		`  draft:       ${result.draftChanged ? 'replaced with the same content' : 'unchanged'}`,
-	);
+	if (result.replacedUrls > 0) console.log(`  replaced:    ${result.replacedUrls} URL value(s)`);
+	console.log(`  draft:       ${result.draftChanged ? 'updated' : 'unchanged'}`);
 	console.log(
 		`  cloudinary:  ${result.cloudinaryUrlsBefore} URL(s) now -> ${result.cloudinaryUrlsAfter} after`,
 	);
@@ -67,8 +79,9 @@ async function main(): Promise<void> {
 	}
 
 	const result = await republishPreviewDemo({
-		slug: readSlug(args),
+		slug: readValue(args, '--slug') ?? '',
 		apply,
+		replaceUrl: readReplaceUrl(args),
 		isInteractive: process.stdin.isTTY === true && !process.env.CI,
 	});
 	if (args.includes('--json')) {
