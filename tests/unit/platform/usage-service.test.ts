@@ -4,12 +4,8 @@ jest.mock('@/lib/platform/server/cloudflare-usage', () => ({
 jest.mock('@/lib/platform/server/supabase-usage', () => ({
 	getSupabasePlatformUsage: jest.fn(),
 }));
-jest.mock('@/lib/platform/server/cloudinary-usage', () => ({
-	getCloudinaryPlatformUsage: jest.fn(),
-}));
 
 import { getCloudflarePlatformUsage } from '@/lib/platform/server/cloudflare-usage';
-import { getCloudinaryPlatformUsage } from '@/lib/platform/server/cloudinary-usage';
 import { getSupabasePlatformUsage } from '@/lib/platform/server/supabase-usage';
 import { getPlatformUsageReport } from '@/lib/platform/server/platform-usage.service';
 import type { PlatformMetric } from '@/lib/platform/contract/types';
@@ -46,13 +42,12 @@ describe('getPlatformUsageReport', () => {
 			kind: 'ok',
 			fetchedAt: NOW.toISOString(),
 			missing: [
-				{ name: 'MEMORIES_R2_BUCKET_NAME_PREVIEW', state: 'absent', scope: 'preview' },
+				{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'absent', scope: 'preview' },
 				{ name: 'MEMORIES_CLOUDFLARE_ACCOUNT_ID', state: 'absent', scope: 'account' },
 			],
 			metrics: [metric('preview'), metric('account', 'cfWorkersRequests')],
 		});
 		(getSupabasePlatformUsage as jest.Mock).mockRejectedValue(new Error('socket hang up'));
-		(getCloudinaryPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 
 		const report = await getPlatformUsageReport(NOW);
 
@@ -60,10 +55,10 @@ describe('getPlatformUsageReport', () => {
 		const [preview, production, shared] = report;
 		expect(preview.cards.map((card) => card.provider)).toEqual(['cloudflare', 'supabase']);
 		expect(production.cards.map((card) => card.provider)).toEqual(['cloudflare', 'supabase']);
-		expect(shared.cards.map((card) => card.provider)).toEqual(['cloudflare', 'cloudinary']);
+		expect(shared.cards.map((card) => card.provider)).toEqual(['cloudflare']);
 		// A failing provider only blanks its own card.
 		expect(preview.cards[1].usage).toEqual({ kind: 'unavailable' });
-		expect(shared.cards[1].usage).toEqual({ kind: 'unavailable' });
+		expect(preview.cards[0].usage.kind).toBe('ok');
 	});
 
 	it('splits the Cloudflare snapshot per environment and by shared scope', async () => {
@@ -71,7 +66,7 @@ describe('getPlatformUsageReport', () => {
 			kind: 'ok',
 			fetchedAt: NOW.toISOString(),
 			missing: [
-				{ name: 'MEMORIES_R2_BUCKET_NAME_PREVIEW', state: 'absent', scope: 'preview' },
+				{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'absent', scope: 'preview' },
 				{ name: 'MEMORIES_CLOUDFLARE_ACCOUNT_ID', state: 'absent', scope: 'account' },
 			],
 			metrics: [
@@ -81,7 +76,6 @@ describe('getPlatformUsageReport', () => {
 			],
 		});
 		(getSupabasePlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
-		(getCloudinaryPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 
 		const report = await getPlatformUsageReport(NOW);
 		const previewCard = report[0].cards[0];
@@ -92,7 +86,7 @@ describe('getPlatformUsageReport', () => {
 		if (previewCard.usage.kind !== 'ok' || productionCard.usage.kind !== 'ok') return;
 		expect(previewCard.usage.metrics.map((entry) => entry.scope)).toEqual(['preview']);
 		expect(previewCard.usage.missing.map((entry) => entry.name)).toEqual([
-			'MEMORIES_R2_BUCKET_NAME_PREVIEW',
+			'MEMORIES_R2_BUCKET_NAME',
 		]);
 		expect(productionCard.usage.metrics.map((entry) => entry.scope)).toEqual(['production']);
 		expect(productionCard.usage.missing).toEqual([]);
@@ -112,7 +106,6 @@ describe('getPlatformUsageReport', () => {
 			metrics: [],
 		});
 		(getSupabasePlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
-		(getCloudinaryPlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
 
 		const report = await getPlatformUsageReport(NOW);
 

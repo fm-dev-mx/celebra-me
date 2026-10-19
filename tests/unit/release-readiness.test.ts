@@ -148,6 +148,138 @@ describe('release check evidence', () => {
 		}
 	});
 
+	describe('paginated check runs', () => {
+		const checkRunsPath = `commits/${sha}/check-runs?filter=latest&per_page=100`;
+		const statusesPath = `commits/${sha}/statuses?per_page=100`;
+		const smokeRun = (id: number) => ({
+			id,
+			name: 'Vercel post-deploy smoke',
+			head_sha: sha,
+			status: 'completed',
+			conclusion: 'success',
+			app: { id: 15368 },
+		});
+		const policyRun = (id: number, conclusion: string, headSha = sha) => ({
+			id,
+			name: 'Repository Policy',
+			head_sha: headSha,
+			status: 'completed',
+			conclusion,
+			app: { id: 15368 },
+		});
+		const policyOf = (checks: ReturnType<typeof loadRemoteChecks>) =>
+			checks.find((check) => check.name === 'Repository Policy');
+
+		it('reads every page when a commit has more than 100 check runs', () => {
+			const firstPage = Array.from({ length: 100 }, (_, i) => smokeRun(1000 - i));
+			const runner = ghRunner({
+				[checkRunsPath]: { total_count: 109, check_runs: firstPage },
+				[`${checkRunsPath}&page=2`]: {
+					total_count: 109,
+					check_runs: [
+						...Array.from({ length: 8 }, (_, i) => smokeRun(800 - i)),
+						policyRun(5, 'success'),
+					],
+				},
+				[statusesPath]: [],
+			});
+			expect(policyOf(loadRemoteChecks(sha, runner))).toEqual({
+				name: 'Repository Policy',
+				sha,
+				state: 'success',
+				trusted: true,
+			});
+		});
+
+		it('lets the latest run per check name decide across pages', () => {
+			const runner = ghRunner({
+				[checkRunsPath]: {
+					total_count: 101,
+					check_runs: [
+						policyRun(900, 'failure'),
+						...Array.from({ length: 99 }, (_, i) => smokeRun(800 - i)),
+					],
+				},
+				[`${checkRunsPath}&page=2`]: {
+					total_count: 101,
+					check_runs: [policyRun(10, 'success')],
+				},
+				[statusesPath]: [],
+			});
+			expect(policyOf(loadRemoteChecks(sha, runner))?.state).toBe('failure');
+			const newestOnLaterPage = ghRunner({
+				[checkRunsPath]: {
+					total_count: 101,
+					check_runs: [
+						policyRun(10, 'success'),
+						...Array.from({ length: 99 }, (_, i) => smokeRun(800 - i)),
+					],
+				},
+				[`${checkRunsPath}&page=2`]: {
+					total_count: 101,
+					check_runs: [policyRun(900, 'in_progress')],
+				},
+				[statusesPath]: [],
+			});
+			const pending = loadRemoteChecks(sha, newestOnLaterPage);
+			expect(policyOf(pending)?.state).toBe('in_progress');
+			expect(() => requireReleaseChecks(sha, pending)).toThrow('Repository Policy');
+		});
+
+		it('keeps a different-SHA latest run as evidence for another SHA', () => {
+			const other = 'b'.repeat(40);
+			const runner = ghRunner({
+				[checkRunsPath]: {
+					total_count: 101,
+					check_runs: Array.from({ length: 100 }, (_, i) => smokeRun(800 - i)),
+				},
+				[`${checkRunsPath}&page=2`]: {
+					total_count: 101,
+					check_runs: [policyRun(900, 'success', other)],
+				},
+				[statusesPath]: [],
+			});
+			const checks = loadRemoteChecks(sha, runner);
+			expect(policyOf(checks)?.sha).toBe(other);
+			expect(() => requireReleaseChecks(sha, checks)).toThrow('Repository Policy');
+		});
+
+		it('treats a short page before total_count as unavailable', () => {
+			const runner = ghRunner({
+				[checkRunsPath]: {
+					total_count: 150,
+					check_runs: Array.from({ length: 100 }, (_, i) => smokeRun(800 - i)),
+				},
+				[`${checkRunsPath}&page=2`]: {
+					total_count: 150,
+					check_runs: [policyRun(5, 'success')],
+				},
+				[statusesPath]: [],
+			});
+			expect(() => loadRemoteChecks(sha, runner)).toThrow('Check result page is incomplete.');
+		});
+
+		it('reads commit statuses past the first page', () => {
+			const smoke = PRODUCTION_DEPLOYMENT_SMOKE;
+			const runner = ghRunner({
+				[checkRunsPath]: { total_count: 0, check_runs: [] },
+				[statusesPath]: Array.from({ length: 100 }, () => ({
+					context: 'Vercel',
+					state: 'success',
+				})),
+				[`${statusesPath}&page=2`]: [
+					{ context: smoke, state: 'success', creator: { login: 'github-actions[bot]' } },
+				],
+			});
+			expect(loadRemoteChecks(sha, runner)).toContainEqual({
+				name: smoke,
+				sha,
+				state: 'success',
+				trusted: true,
+			});
+		});
+	});
+
 	it('resolves the repository identity once per runner', () => {
 		let repoViews = 0;
 		const base = ghRunner({

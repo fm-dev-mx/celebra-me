@@ -44,6 +44,7 @@ const SCOPES = [
 	'governance',
 	'guests',
 	'hosting',
+	'images',
 	'intake',
 	'invitation',
 	'invitation-access',

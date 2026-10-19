@@ -1,4 +1,5 @@
 import type { ImageMetadata } from 'astro';
+import { isR2InvitationMediaUrl } from '@/lib/intake/services/r2-invitation-media';
 import type { ImageDelivery } from './image-delivery';
 
 function parseHttpUrl(src: string): URL | null {
@@ -54,7 +55,11 @@ export function shouldOptimizeThroughImageService(
 	// creates an unnecessary same-origin request that cannot be used in deterministic captures.
 	if (/^data:/i.test(url.trim())) return false;
 	if (delivery?.mode === 'optimized') return true;
-	return !isStorageMediaUrl(url) && !isCloudinaryDeliveryHostname(url);
+	return (
+		!isStorageMediaUrl(url) &&
+		!isCloudinaryDeliveryHostname(url) &&
+		!isR2InvitationMediaUrl(url)
+	);
 }
 
 export function plainImgSrc(src: string | ImageMetadata): string {

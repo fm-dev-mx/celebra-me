@@ -2,7 +2,8 @@
  * Read-only reachability checks for one memory space: GET and OPTIONS requests
  * only, so no session is created, nothing is reserved and nothing is uploaded.
  * Shared by the owner's Production preflight script and the super-admin
- * diagnostics panel; the caller decides which origins stand for the app.
+ * diagnostics panel; the caller decides which origins stand for the app and how
+ * requests reach it (over the network, or in process inside the Worker).
  */
 
 import {
@@ -162,17 +163,21 @@ async function guarded(
 export async function runMemoriesLiveChecks(
 	target: MemoriesLiveCheckTarget,
 	fetchImpl: Fetch = fetch,
+	/** Reaches the app and QR origins; defaults to `fetchImpl`. */
+	appFetchImpl: Fetch = fetchImpl,
 ): Promise<MemoriesLiveCheck[]> {
 	const { qrOrigin, uploadOrigin } = target;
 	return [
 		...(qrOrigin
 			? await guarded('printed_qr_redirect', () =>
-					checkQrRedirect(fetchImpl, { ...target, qrOrigin }),
+					checkQrRedirect(appFetchImpl, { ...target, qrOrigin }),
 				)
 			: []),
-		...(await guarded('guest_page', () => checkGuestPage(fetchImpl, target))),
-		...(await guarded('unknown_slug_fails_closed', () => checkUnknownSlug(fetchImpl, target))),
-		...(await guarded('guest_api', () => checkGuestApi(fetchImpl, target))),
+		...(await guarded('guest_page', () => checkGuestPage(appFetchImpl, target))),
+		...(await guarded('unknown_slug_fails_closed', () =>
+			checkUnknownSlug(appFetchImpl, target),
+		)),
+		...(await guarded('guest_api', () => checkGuestApi(appFetchImpl, target))),
 		...(uploadOrigin
 			? await guarded('upload_worker', () =>
 					checkUploadWorker(fetchImpl, target.appOrigin, uploadOrigin),

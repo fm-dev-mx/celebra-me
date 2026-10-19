@@ -2,15 +2,10 @@
  * Account-wide Cloudflare usage for the super-admin platform console, read
  * from the GraphQL Analytics API with a read-only token. Never throws to
  * callers and never forwards Cloudflare's response body: failures collapse to
- * `unavailable`. Quotas are account-wide; per-bucket storage is attributed to
- * the panel environments through explicit values or the repository's bucket
- * naming convention.
+ * `unavailable`. Quotas are account-wide; each deployment attributes the bucket
+ * it declares in `MEMORIES_R2_BUCKET_NAME` to its own environment.
  */
 
-import {
-	matchR2BucketForEnvironment,
-	classifyR2BucketEnvironment,
-} from '@/lib/platform/contract/environments';
 import { CLOUDFLARE_FREE_TIER, R2_OVERAGE_PRICES_USD } from '@/lib/platform/contract/limits';
 import { buildPlatformMetric } from '@/lib/platform/contract/meters';
 import type {
@@ -19,7 +14,7 @@ import type {
 	PlatformMissingVar,
 } from '@/lib/platform/contract/types';
 import { PLATFORM_ENV } from './config';
-import { readProfileVar, readSharedVar, resolvePanelEnvironments } from './env-profiles';
+import { isLocalPanel, readProfileVar, resolvePanelEnvironments } from './env-profiles';
 
 const GRAPHQL_ENDPOINT = 'https://api.cloudflare.com/client/v4/graphql';
 const REQUEST_TIMEOUT_MS = 5_000;
@@ -52,26 +47,17 @@ export interface CloudflareUsageSnapshot {
 	metrics: PlatformMetric[];
 }
 
-type MetricName = 'storage' | 'storageFallback' | 'operations' | 'workers' | 'durableObjects';
+type MetricName = 'storage' | 'operations' | 'workers' | 'durableObjects';
 
 /**
  * One request per dataset: a dataset the account cannot query only blanks its
  * own meter. Variables not used by a query are simply ignored by the API.
- * `storageFallback` keeps the historical single-bucket query alive in case the
- * bucket-name dimension is ever rejected (not verified against the live API).
  */
 const METRIC_QUERIES: Record<MetricName, string> = {
 	storage: `query MemoriesR2StorageByBucket($accountTag: string!, $storageSince: Time!, $now: Time!) {
 	viewer { accounts(filter: { accountTag: $accountTag }) {
 		rows: r2StorageAdaptiveGroups(limit: 1000, filter: { datetime_geq: $storageSince, datetime_leq: $now }) {
 			dimensions { bucketName }
-			max { payloadSize metadataSize }
-		}
-	} }
-}`,
-	storageFallback: `query MemoriesR2Storage($accountTag: string!, $bucketName: string!, $storageSince: Time!, $now: Time!) {
-	viewer { accounts(filter: { accountTag: $accountTag }) {
-		rows: r2StorageAdaptiveGroups(limit: 1, filter: { datetime_geq: $storageSince, datetime_leq: $now, bucketName: $bucketName }, orderBy: [datetime_DESC]) {
 			max { payloadSize metadataSize }
 		}
 	} }
@@ -102,12 +88,9 @@ const METRIC_QUERIES: Record<MetricName, string> = {
 
 type UsageConfig = {
 	accountId: string;
-	/** Name of the variable the query token came from, for cache identity only. */
-	tokenName: string;
 	token: string;
-	/** Resolved bucket per panel environment (null when unresolved). */
+	/** Declared bucket per panel environment (null when unset or on Local). */
 	buckets: Record<PlatformEnvironmentId, string | null>;
-	bucketMissing: Record<PlatformEnvironmentId, PlatformMissingVar | null>;
 	missing: PlatformMissingVar[];
 };
 
@@ -141,42 +124,31 @@ function sumRequests(rows: Record<string, unknown>[] | null): number | null {
 }
 
 function readConfig(): { config: UsageConfig | null; missing: PlatformMissingVar[] } {
-	const environments = resolvePanelEnvironments();
-	const account = readSharedVar(PLATFORM_ENV.cloudflareAccountId, 'account', (value) =>
+	const account = readProfileVar(PLATFORM_ENV.cloudflareAccountId, 'account', (value) =>
 		ACCOUNT_ID_PATTERN.test(value),
 	);
-	const missing: PlatformMissingVar[] = account.missing ? [account.missing] : [];
-	const tokens = environments.map((environment) =>
-		readProfileVar('cloudflareAnalyticsToken', environment),
+	const token = readProfileVar(PLATFORM_ENV.cloudflareAnalyticsToken, 'account');
+	const missing = [account.missing, token.missing].filter(
+		(entry): entry is PlatformMissingVar => entry !== null,
 	);
-	for (const token of tokens) if (token.missing) missing.push(token.missing);
-	const queryToken = tokens.find((token) => token.value) ?? null;
 	const buckets: Record<PlatformEnvironmentId, string | null> = {
 		preview: null,
 		production: null,
 	};
-	const bucketMissing: Record<PlatformEnvironmentId, PlatformMissingVar | null> = {
-		preview: null,
-		production: null,
-	};
-	for (const environment of environments) {
-		const bucket = readProfileVar('r2BucketName', environment, {
-			validate: (value) => BUCKET_NAME_PATTERN.test(value),
-			allowPlainFallback: false,
-		});
-		buckets[environment] = bucket.value;
-		bucketMissing[environment] = bucket.missing;
+	// Local's plain bucket is the Local bucket, which belongs to neither panel
+	// environment: only a deployment attributes its declared bucket.
+	if (!isLocalPanel()) {
+		for (const environment of resolvePanelEnvironments()) {
+			const bucket = readProfileVar(PLATFORM_ENV.r2BucketName, environment, (value) =>
+				BUCKET_NAME_PATTERN.test(value),
+			);
+			buckets[environment] = bucket.value;
+			if (bucket.missing) missing.push(bucket.missing);
+		}
 	}
-	if (!account.value || !queryToken?.value) return { config: null, missing };
+	if (!account.value || !token.value) return { config: null, missing };
 	return {
-		config: {
-			accountId: account.value,
-			tokenName: queryToken.name,
-			token: queryToken.value,
-			buckets,
-			bucketMissing,
-			missing,
-		},
+		config: { accountId: account.value, token: token.value, buckets, missing },
 		missing,
 	};
 }
@@ -196,7 +168,6 @@ function windowBounds(now: Date) {
 async function queryMetric(
 	name: MetricName,
 	config: UsageConfig,
-	bucketName: string | null,
 	now: Date,
 	fetchImpl: typeof fetch,
 ): Promise<Record<string, unknown>[] | null> {
@@ -206,9 +177,6 @@ async function queryMetric(
 		const bounds = windowBounds(now);
 		const variables: Record<string, string> = { accountTag: config.accountId, now: bounds.now };
 		if (name === 'storage') {
-			variables.storageSince = bounds.storageSince;
-		} else if (name === 'storageFallback') {
-			variables.bucketName = bucketName ?? '';
 			variables.storageSince = bounds.storageSince;
 		} else if (name === 'operations') {
 			variables.monthStart = bounds.monthStart;
@@ -259,17 +227,14 @@ export function classifyR2Operations(rows: Record<string, unknown>[] | null): {
 	return { classA, classB };
 }
 
-/** Bytes per bucket from the dimensioned query; null rows stay null. */
-function storageBytesByBucket(
-	rows: Record<string, unknown>[] | null,
-	fallbackBucket: string,
-): Map<string, number> | null {
+/** Bytes per bucket from the bucket-grouped query; malformed rows blank the meters. */
+function storageBytesByBucket(rows: Record<string, unknown>[] | null): Map<string, number> | null {
 	if (!rows) return null;
 	const byBucket = new Map<string, number>();
 	for (const row of rows) {
 		const dimensions = isRecord(row.dimensions) ? row.dimensions : null;
-		const bucketName =
-			typeof dimensions?.bucketName === 'string' ? dimensions.bucketName : fallbackBucket;
+		const bucketName = dimensions?.bucketName;
+		if (typeof bucketName !== 'string') return null;
 		const max = isRecord(row.max) ? row.max : null;
 		const payload = finiteNumber(max?.payloadSize);
 		if (payload === null) return null;
@@ -280,10 +245,6 @@ function storageBytesByBucket(
 	return byBucket;
 }
 
-function isLocalBucket(bucketName: string): boolean {
-	return classifyR2BucketEnvironment(bucketName) === 'local';
-}
-
 function storageMetrics(
 	byBucket: Map<string, number> | null,
 	bucketName: string | null,
@@ -291,10 +252,7 @@ function storageMetrics(
 	now: Date,
 ): PlatformMetric {
 	const limit = CLOUDFLARE_FREE_TIER.r2StorageBytes;
-	const used =
-		byBucket && bucketName && !isLocalBucket(bucketName)
-			? (byBucket.get(bucketName) ?? 0)
-			: null;
+	const used = byBucket && bucketName ? (byBucket.get(bucketName) ?? 0) : null;
 	return buildPlatformMetric({
 		id: 'cfR2StorageBucket',
 		resource: bucketName ?? undefined,
@@ -384,92 +342,31 @@ function accountMetrics(
 	];
 }
 
-/**
- * When Local has no explicit bucket value, attribute an observed bucket to the
- * environment through the repository naming convention; the gap disappears if
- * exactly one bucket matches.
- */
-function resolveConventionBuckets(
-	config: UsageConfig,
-	byBucket: Map<string, number> | null,
-): { buckets: Record<PlatformEnvironmentId, string | null>; missing: PlatformMissingVar[] } {
-	const buckets = { ...config.buckets };
-	const bucketMissing = { ...config.bucketMissing };
-	if (byBucket) {
-		const observed = Array.from(byBucket.keys());
-		for (const environment of resolvePanelEnvironments()) {
-			if (buckets[environment]) continue;
-			const match = matchR2BucketForEnvironment(observed, environment);
-			if (match) {
-				buckets[environment] = match;
-				bucketMissing[environment] = null;
-			}
-		}
-	}
-	const missing = [
-		...config.missing,
-		...resolvePanelEnvironments()
-			.map((environment) => bucketMissing[environment])
-			.filter((entry): entry is PlatformMissingVar => entry !== null),
-	];
-	return { buckets, missing };
-}
-
 async function queryCloudflare(
 	config: UsageConfig,
 	now: Date,
 	fetchImpl: typeof fetch,
 ): Promise<CloudflareUsageSnapshot> {
-	const storageRows = await queryMetric('storage', config, null, now, fetchImpl);
-	let byBucket = storageBytesByBucket(storageRows, '');
-	if (!byBucket) {
-		// The bucket dimension may be rejected (not verified live): fall back to
-		// one single-bucket query per resolved bucket and keep the meters alive.
-		const fallbacks = await Promise.all(
-			Object.values(config.buckets)
-				.filter((bucketName): bucketName is string => Boolean(bucketName))
-				.map(async (bucketName) => {
-					const rows = await queryMetric(
-						'storageFallback',
-						config,
-						bucketName,
-						now,
-						fetchImpl,
-					);
-					return storageBytesByBucket(rows, bucketName);
-				}),
-		);
-		const merged = new Map<string, number>();
-		for (const entry of fallbacks) {
-			if (entry) for (const [name, bytes] of entry) merged.set(name, bytes);
-		}
-		byBucket = merged.size > 0 ? merged : null;
-	}
-	const resolved = resolveConventionBuckets(config, byBucket);
-	const [operationRows, workers, durableObjects] = await Promise.all(
-		(['operations', 'workers', 'durableObjects'] as const).map((name) =>
-			queryMetric(name, config, null, now, fetchImpl),
+	const [storageRows, operationRows, workers, durableObjects] = await Promise.all(
+		(['storage', 'operations', 'workers', 'durableObjects'] as const).map((name) =>
+			queryMetric(name, config, now, fetchImpl),
 		),
 	);
-	// Only bucket-grouped rows account for every bucket at once; the
-	// single-bucket fallback must not pretend its sum is the account total.
-	const dimensioned = (storageRows ?? []).some(
-		(row) => isRecord(row.dimensions) && typeof row.dimensions.bucketName === 'string',
-	);
-	const storageTotal =
-		dimensioned && byBucket
-			? Array.from(byBucket.values()).reduce((sum, bytes) => sum + bytes, 0)
-			: null;
+	const byBucket = storageBytesByBucket(storageRows);
+	const storageTotal = byBucket
+		? Array.from(byBucket.values()).reduce((sum, bytes) => sum + bytes, 0)
+		: null;
+	const bucketEnvironments = isLocalPanel() ? [] : resolvePanelEnvironments();
 	const metrics = [
-		...resolvePanelEnvironments().map((environment) =>
-			storageMetrics(byBucket, resolved.buckets[environment], environment, now),
+		...bucketEnvironments.map((environment) =>
+			storageMetrics(byBucket, config.buckets[environment], environment, now),
 		),
 		...accountMetrics(storageTotal, operationRows, workers, durableObjects, now),
 	];
 	if (metrics.every((metric) => metric.meter.used === null)) {
-		return { kind: 'unavailable', fetchedAt: null, missing: resolved.missing, metrics: [] };
+		return { kind: 'unavailable', fetchedAt: null, missing: config.missing, metrics: [] };
 	}
-	return { kind: 'ok', fetchedAt: now.toISOString(), missing: resolved.missing, metrics };
+	return { kind: 'ok', fetchedAt: now.toISOString(), missing: config.missing, metrics };
 }
 
 export async function getCloudflarePlatformUsage(
@@ -480,7 +377,7 @@ export async function getCloudflarePlatformUsage(
 	if (!config) {
 		return { kind: 'unconfigured', fetchedAt: null, missing, metrics: [] };
 	}
-	const key = `${config.accountId}:${config.tokenName}:${Object.entries(config.buckets).join(',')}`;
+	const key = `${config.accountId}:${Object.entries(config.buckets).join(',')}`;
 	if (cache && cache.key === key && cache.expiresAt > now.getTime()) return cache.value;
 	const value = await queryCloudflare(config, now, fetchImpl);
 	// Failures are not cached, so the next refresh retries immediately.

@@ -6,6 +6,7 @@ import {
 } from '@/lib/platform/server/cloudflare-usage';
 import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
 import type { PlatformMetric } from '@/lib/platform/contract/types';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 const ACCOUNT_ID = '0123456789abcdef0123456789abcdef';
 const TOKEN = 'synthetic-analytics-token';
@@ -14,11 +15,7 @@ const ENV_NAMES = [
 	'SUPABASE_URL',
 	'MEMORIES_CLOUDFLARE_ACCOUNT_ID',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
-	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
-	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
 	'MEMORIES_R2_BUCKET_NAME',
-	'MEMORIES_R2_BUCKET_NAME_PREVIEW',
-	'MEMORIES_R2_BUCKET_NAME_PRODUCTION',
 ] as const;
 
 function graphql(rows: unknown[]): Response {
@@ -28,7 +25,7 @@ function graphql(rows: unknown[]): Response {
 	});
 }
 
-function responseFor(query: string, variables: Record<string, string>): Response {
+function responseFor(query: string): Response {
 	if (query.includes('MemoriesR2StorageByBucket')) {
 		return graphql([
 			{
@@ -45,11 +42,6 @@ function responseFor(query: string, variables: Record<string, string>): Response
 			},
 		]);
 	}
-	if (query.includes('bucketName: $bucketName')) {
-		const bytes =
-			variables.bucketName === 'celebra-memories-staging' ? 400_000_500 : 1_500_001_000;
-		return graphql([{ max: { payloadSize: bytes - 500, metadataSize: 500 } }]);
-	}
 	if (query.includes('r2OperationsAdaptiveGroups')) {
 		return graphql([
 			{ sum: { requests: 120 }, dimensions: { actionType: 'PutObject' } },
@@ -65,18 +57,10 @@ function responseFor(query: string, variables: Record<string, string>): Response
 	return graphql([{ sum: { requests: 55 } }]);
 }
 
-function createFetch(
-	handler: (
-		query: string,
-		variables: Record<string, string>,
-	) => Response | Promise<Response> = responseFor,
-) {
+function createFetch(handler: (query: string) => Response | Promise<Response> = responseFor) {
 	return jest.fn(async (_url: string | URL | Request, init?: RequestInit) => {
-		const body = JSON.parse(String(init?.body)) as {
-			query: string;
-			variables: Record<string, string>;
-		};
-		return handler(body.query, body.variables);
+		const body = JSON.parse(String(init?.body)) as { query: string };
+		return handler(body.query);
 	}) as unknown as jest.MockedFunction<typeof fetch>;
 }
 
@@ -122,9 +106,8 @@ describe('getCloudflarePlatformUsage', () => {
 
 		expect(usage.kind).toBe('unconfigured');
 		expect(usage).not.toHaveProperty('metrics[0]');
-		expect(missingNames(usage)).toEqual([
-			'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
-			'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
+		expect(usage.missing).toEqual([
+			{ name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN', state: 'absent', scope: 'account' },
 		]);
 		expect(JSON.stringify(usage)).not.toContain(TOKEN);
 
@@ -135,7 +118,9 @@ describe('getCloudflarePlatformUsage', () => {
 		expect(fetchImpl).not.toHaveBeenCalled();
 	});
 
-	it('attributes buckets by the naming convention and sums them for the account', async () => {
+	it('reports the declared bucket of a deployment and sums every bucket for the account', async () => {
+		asHostedDeploy('production');
+		process.env.MEMORIES_R2_BUCKET_NAME = 'celebra-memories';
 		const fetchImpl = createFetch();
 
 		const usage = await getCloudflarePlatformUsage(NOW, fetchImpl);
@@ -148,15 +133,7 @@ describe('getCloudflarePlatformUsage', () => {
 			scope: 'production',
 			meter: { used: 1_500_001_000, limit: CLOUDFLARE_FREE_TIER.r2StorageBytes },
 		});
-		expect(metric(usage, 'cfR2StorageBucket', 'preview')).toMatchObject({
-			resource: 'celebra-memories-staging',
-			scope: 'preview',
-			meter: { used: 400_000_500 },
-		});
-		// Local buckets stay out of the panel but keep counting on the account.
-		expect(usage.metrics.some((entry) => entry.resource === 'celebra-memories-local')).toBe(
-			false,
-		);
+		expect(usage.metrics.some((entry) => entry.scope === 'preview')).toBe(false);
 		expect(metric(usage, 'cfR2StorageAccount').meter.used).toBe(1_950_001_500);
 		expect(metric(usage, 'cfR2ClassA').meter).toEqual({ used: 150, limit: 1_000_000 });
 		expect(metric(usage, 'cfR2ClassB').meter).toEqual({ used: 940, limit: 10_000_000 });
@@ -171,88 +148,58 @@ describe('getCloudflarePlatformUsage', () => {
 		expect(init?.headers).toMatchObject({ Authorization: `Bearer ${TOKEN}` });
 	});
 
-	it('lets explicit Local bucket values win over the naming convention', async () => {
-		process.env.MEMORIES_R2_BUCKET_NAME_PREVIEW = 'celebra-memories';
-		process.env.MEMORIES_R2_BUCKET_NAME_PRODUCTION = 'celebra-memories-staging';
+	it('names the bucket variable when a deployment does not declare a valid one', async () => {
+		asHostedDeploy('preview');
+
+		const usage = await getCloudflarePlatformUsage(NOW, createFetch());
+
+		expect(usage.kind).toBe('ok');
+		expect(usage.missing).toEqual([
+			{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'absent', scope: 'preview' },
+		]);
+		expect(metric(usage, 'cfR2StorageBucket', 'preview').meter.used).toBeNull();
+
+		resetCloudflareUsageCache();
+		process.env.MEMORIES_R2_BUCKET_NAME = 'Not A Bucket';
+		const invalid = await getCloudflarePlatformUsage(NOW, createFetch());
+		expect(invalid.missing).toEqual([
+			{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'invalid', scope: 'preview' },
+		]);
+		expect(JSON.stringify(invalid)).not.toContain('Not A Bucket');
+	});
+
+	it('shows only account totals on Local, whose plain bucket is the Local bucket', async () => {
+		process.env.MEMORIES_R2_BUCKET_NAME = 'celebra-memories-local';
 
 		const usage = await getCloudflarePlatformUsage(NOW, createFetch());
 
 		expect(usage.kind).toBe('ok');
 		expect(usage.missing).toEqual([]);
-		expect(metric(usage, 'cfR2StorageBucket', 'preview')).toMatchObject({
-			resource: 'celebra-memories',
-			meter: { used: 1_500_001_000 },
-		});
-		expect(metric(usage, 'cfR2StorageBucket', 'production')).toMatchObject({
-			resource: 'celebra-memories-staging',
-			meter: { used: 400_000_500 },
-		});
+		expect(usage.metrics.some((entry) => entry.id === 'cfR2StorageBucket')).toBe(false);
+		expect(metric(usage, 'cfR2StorageAccount').meter.used).toBe(1_950_001_500);
 	});
 
-	it('names the bucket variables when Local can neither configure nor attribute them', async () => {
-		const fetchImpl = createFetch((query, variables) =>
+	it('blanks the storage meters when a storage row lacks its bucket', async () => {
+		const fetchImpl = createFetch((query) =>
 			query.includes('MemoriesR2StorageByBucket')
-				? graphql([
-						{
-							dimensions: { bucketName: 'celebra-memories-local' },
-							max: { payloadSize: 50_000_000, metadataSize: 0 },
-						},
-					])
-				: responseFor(query, variables),
+				? graphql([{ max: { payloadSize: 10, metadataSize: 0 } }])
+				: responseFor(query),
 		);
 
 		const usage = await getCloudflarePlatformUsage(NOW, fetchImpl);
 
 		expect(usage.kind).toBe('ok');
-		expect(missingNames(usage)).toEqual([
-			'MEMORIES_R2_BUCKET_NAME_PREVIEW',
-			'MEMORIES_R2_BUCKET_NAME_PRODUCTION',
-		]);
-		expect(metric(usage, 'cfR2StorageBucket', 'preview').meter.used).toBeNull();
-	});
-
-	it('reports a missing token only for the environment that lacks one', async () => {
-		delete process.env.MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN;
-		process.env.MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION = TOKEN;
-
-		const usage = await getCloudflarePlatformUsage(NOW, createFetch());
-
-		expect(usage.kind).toBe('ok');
-		expect(usage.missing.map((entry) => entry.name)).toEqual([
-			'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
-		]);
-	});
-
-	it('falls back to single-bucket queries when the bucket dimension is rejected', async () => {
-		process.env.MEMORIES_R2_BUCKET_NAME_PREVIEW = 'celebra-memories-staging';
-		process.env.MEMORIES_R2_BUCKET_NAME_PRODUCTION = 'celebra-memories';
-		const fetchImpl = createFetch((query, variables) =>
-			query.includes('MemoriesR2StorageByBucket')
-				? new Response('{"errors":[{"message":"unknown field"}]}', { status: 200 })
-				: responseFor(query, variables),
-		);
-
-		const usage = await getCloudflarePlatformUsage(NOW, fetchImpl);
-
-		expect(usage.kind).toBe('ok');
-		expect(metric(usage, 'cfR2StorageBucket', 'preview').meter.used).toBe(400_000_500);
-		expect(metric(usage, 'cfR2StorageBucket', 'production').meter.used).toBe(1_500_001_000);
-		// The fallback cannot account for every bucket, so no fake account total.
 		expect(metric(usage, 'cfR2StorageAccount').meter.used).toBeNull();
-		const queries = fetchImpl.mock.calls.map(([, request]) =>
-			JSON.parse(String(request?.body)),
-		);
-		expect(queries.some((body) => body.query.includes('MemoriesR2StorageByBucket'))).toBe(true);
-		expect(queries.some((body) => body.query.includes('bucketName: $bucketName'))).toBe(true);
+		expect(metric(usage, 'cfWorkersRequests').meter.used).toBe(410);
 	});
 
 	it('estimates an overage in money only once a free allowance is exceeded', async () => {
-		const fetchImpl = createFetch((query, variables) =>
+		const fetchImpl = createFetch((query) =>
 			query.includes('r2OperationsAdaptiveGroups')
 				? graphql([
 						{ sum: { requests: 1_200_000 }, dimensions: { actionType: 'PutObject' } },
 					])
-				: responseFor(query, variables),
+				: responseFor(query),
 		);
 
 		const usage = await getCloudflarePlatformUsage(NOW, fetchImpl);
@@ -263,10 +210,10 @@ describe('getCloudflarePlatformUsage', () => {
 	});
 
 	it('blanks only the dataset that fails and keeps the rest', async () => {
-		const fetchImpl = createFetch((query, variables) =>
+		const fetchImpl = createFetch((query) =>
 			query.includes('durableObjects')
 				? new Response('{"errors":[{"message":"unknown field"}]}', { status: 200 })
-				: responseFor(query, variables),
+				: responseFor(query),
 		);
 
 		const usage = await getCloudflarePlatformUsage(NOW, fetchImpl);
