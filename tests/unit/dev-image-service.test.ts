@@ -42,7 +42,7 @@ describe('dev image service', () => {
 	it('is wired into astro dev only', () => {
 		const source = readFileSync('astro.config.mjs', 'utf8');
 		expect(source).toMatch(
-			/usesCloudflareAdapter\s*\?\s*\{\}\s*:\s*\{ service: \{ entrypoint: '\.\/src\/lib\/assets\/dev-image-service\.ts' \} \}/,
+			/isCloudflareBuild\s*\?\s*\{\}\s*:\s*\{ service: \{ entrypoint: '\.\/src\/lib\/assets\/dev-image-service\.ts' \} \}/,
 		);
 	});
 });
