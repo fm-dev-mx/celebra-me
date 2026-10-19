@@ -1,5 +1,6 @@
 import {
 	buildInvitationPath,
+	buildPublicInvitationPath,
 	buildMinimalInvitationPath,
 	generateInvitationLink,
 } from '@/utils/invitation-link';
@@ -78,5 +79,16 @@ describe('generateInvitationLink', () => {
 				inviteId: 'invite-789',
 			}),
 		).toBe('https://celebra.test/boda/juan-maria?invite=invite-789');
+	});
+});
+
+describe('short public paths', () => {
+	it('uses /{slug} for short-URL invitations and keeps the legacy form otherwise', () => {
+		expect(buildPublicInvitationPath('xv', 'america')).toBe('/america');
+		expect(buildPublicInvitationPath('boda', 'olivia-y-antonio')).toBe('/olivia-y-antonio');
+		expect(buildPublicInvitationPath('xv', 'elena-fixture')).toBe('/xv/elena-fixture');
+		expect(
+			buildInvitationPath({ eventType: 'xv', eventSlug: 'america', inviteId: 'invite-1' }),
+		).toBe('/america?invite=invite-1');
 	});
 });

@@ -32,6 +32,7 @@ import InvitationError from '@/components/invitation/InvitationError.astro';
 import InvitationUnavailable from '@/components/invitation/InvitationUnavailable.astro';
 import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
 import { isEventType } from '@/lib/theme/theme-contract';
+import { buildPublicInvitationPath } from '@/utils/invitation-link';
 
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
@@ -84,7 +85,7 @@ try {
 		Astro.response.headers.set('Cache-Control', 'no-store, private');
 	} else {
 		viewModel = resolution.viewModel;
-		const currentPathWithQuery = Astro.url.pathname + Astro.url.search;
+		const currentPathWithQuery = buildPublicInvitationPath(eventType, slug) + Astro.url.search;
 
 		let eventEntry: Awaited<ReturnType<typeof getRoutableEventEntry>> = null;
 		let routeEventType: string = eventType;
@@ -207,6 +208,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 			description={page.layout.description}
 			image={page.layout.image}
 			robots={isClientInvitation ? CLIENT_INVITATION_ROBOTS : undefined}
+			canonicalPath={buildPublicInvitationPath(eventType, slug)}
 			hideHeader={true}
 			className={page.layout.className}
 			isDemo={page.viewModel.isDemo}

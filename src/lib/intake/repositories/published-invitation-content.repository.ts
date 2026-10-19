@@ -117,3 +117,12 @@ export async function updatePublishedContentSnapshot(input: {
 		);
 	return toRow(rows[0]);
 }
+
+/** Event type of the active published row for a slug; null unless exactly one row matches. */
+export async function findPublishedEventTypeBySlug(slug: string): Promise<string | null> {
+	const rows = await supabaseRestRequest<Array<{ event_type: string }>>({
+		pathWithQuery: `published_invitation_content?select=event_type&slug=eq.${encodeURIComponent(slug)}&${ACTIVE_FILTER}&limit=2`,
+		useServiceRole: true,
+	});
+	return rows.length === 1 ? rows[0].event_type : null;
+}

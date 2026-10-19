@@ -21,7 +21,9 @@ describe('tracking route policy', () => {
 		['/api/dashboard/invitaciones', 'dashboard_admin_auth'],
 		['/login', 'dashboard_admin_auth'],
 		['/api/health', 'generic_api'],
-		['/desconocido', 'unknown'],
+		['/america', 'real_invitation'],
+		['/xv', 'unknown'],
+		['/a/b/c', 'unknown'],
 	] as const)('classifies %s as %s', (input, expected) => {
 		expect(classifyTrackingRoute(input).routeClass).toBe(expected);
 	});

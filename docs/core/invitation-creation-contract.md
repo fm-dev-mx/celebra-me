@@ -36,6 +36,13 @@ Every managed digital invitation must define:
   - **Do not prefix the slug with `eventType`.** Public routes are already `/{eventType}/{slug}`
     (e.g. `/boda/daniela-y-martin`). A slug like `boda-daniela-y-martin` produces a redundant URL
     (`/boda/boda-daniela-y-martin`) and is forbidden for new invitations.
+  - **Short public route (from 2026-10-19):** invitations published from this date are shared as
+    `/{slug}` (e.g. `/daniela-y-martin`). Invitations published earlier keep `/{eventType}/{slug}`
+    unchanged; both forms resolve to the same page, with no redirect. Slugs must be unique across
+    all event types and must not be reserved: first-level routes (`dashboard`, `login`, `demos`,
+    `api`, `i`, `r`, `terminos`, `privacidad`, `vista-previa`, `invitacion`, `404`) or event types
+    (`xv`, `boda`, `cumple`, `bautizo`, `baby-shower`, `primera-comunion`). SSOT:
+    `src/lib/invitation/slug-policy.ts`.
   - Prefer celebrant/couple identity tokens only (names), not event-type labels (`boda`, `xv`,
     `cumple`, etc.).
   - **Slug Brevity & Naming Discipline:** Prefer the concise public form

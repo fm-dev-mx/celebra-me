@@ -9,6 +9,7 @@ import {
 	closingNameLeadWordsSchema,
 	rsvpResponseMessagesSchema,
 } from '@/lib/schemas/content/shared.schema';
+import { isReservedInvitationSlug, RESERVED_SLUG_MESSAGE } from '@/lib/invitation/slug-policy';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/location-presentation';
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
@@ -225,6 +226,7 @@ export const UpdateInvitationEditorMetadataSchema = z.object({
 				/^[a-z0-9]+(?:-[a-z0-9]+)*$/,
 				'Usa solo letras minúsculas, números y guiones intermedios.',
 			)
+			.refine((slug) => !isReservedInvitationSlug(slug), RESERVED_SLUG_MESSAGE)
 			.nullable(),
 		status: z.enum(INVITATION_STATUSES),
 		clientName: z.string().trim().max(200),
