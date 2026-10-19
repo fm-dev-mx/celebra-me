@@ -17,10 +17,10 @@ as $$
   select pg_catalog.pg_database_size(pg_catalog.current_database());
 $$;
 
-revoke execute on function public.platform_database_size() from public, anon, authenticated;
+revoke all on function public.platform_database_size() from public, anon, authenticated;
 grant execute on function public.platform_database_size() to service_role;
 
 comment on function public.platform_database_size() is
-  'Size in bytes of the current database, compared against the Supabase Free plan cap by the platform console. Service role only; reads no table.';
+  'Size in bytes of the current database, compared against the Supabase Free plan cap by the platform console. Service role only, reads no table.';
 
 commit;
