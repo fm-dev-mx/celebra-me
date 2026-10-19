@@ -64,6 +64,12 @@ export function buildR2PublicUrl(target: R2MediaTargetEnvironment, objectKey: st
 	return `${R2_INVITATION_MEDIA[target].origin}/${objectKey}`;
 }
 
+/** Public URL of the social card that sits beside a hosted original. */
+export function buildR2SocialImageUrl(secureUrl: string): string {
+	const url = new URL(secureUrl);
+	return `${url.origin}/${buildR2SocialObjectKey(url.pathname.slice(1))}`;
+}
+
 export function isR2InvitationMediaUrl(src: string): boolean {
 	try {
 		const parsed = new URL(src.trim());

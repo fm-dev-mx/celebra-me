@@ -335,7 +335,7 @@ describe('classifyPromotionDifferences', () => {
 });
 
 describe('runPromotionPreflight / apply', () => {
-	it('blocks Cloudinary-era packages whose assets are still on Supabase', async () => {
+	it('blocks remote-media-era packages whose assets are still on Supabase', async () => {
 		const eraPackage = {
 			...packageData(),
 			definitionCreatedAt: '2026-08-06T00:00:00.000Z',
@@ -360,7 +360,7 @@ describe('runPromotionPreflight / apply', () => {
 			}),
 		});
 		expect(report.status).toBe('BLOCKED');
-		expect(report.blockCode).toBe('CLOUDINARY_ERA_HOSTING');
+		expect(report.blockCode).toBe('REMOTE_MEDIA_HOSTING');
 		expect(report.reason).toMatch(/servicio de imágenes/);
 	});
 

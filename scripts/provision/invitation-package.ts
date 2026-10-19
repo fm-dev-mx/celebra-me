@@ -29,7 +29,7 @@ export interface InvitationPackageAsset {
 	originalFileSize: number | null;
 	sha256: string;
 	dataBase64: string;
-	provider?: 'supabase' | 'cloudinary';
+	provider?: 'supabase' | 'r2';
 	providerPublicId?: string;
 	secureUrl?: string;
 }
@@ -154,7 +154,7 @@ export function serializeInvitationPackage(
 				originalFileSize: asset.originalFileSize,
 				sha256: asset.sha256,
 				dataBase64: asset.dataBase64,
-				provider: 'cloudinary' as const,
+				provider: 'r2' as const,
 			};
 		}),
 	};

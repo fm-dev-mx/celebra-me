@@ -20,8 +20,8 @@ import {
 
 const STORAGE_HERO =
 	'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/invitation-assets/invitations/abc/optimized/hero.webp';
-const CLOUDINARY_HERO =
-	'https://res.cloudinary.com/demo/image/upload/v1/xv/renata/assets/hero-desktop-0cc4c2f74a2b.webp';
+const R2_HERO =
+	'https://media.celebra-me.com/invitations/xv/renata/hero-desktop-0cc4c2f74a2b0cc4c2f74a2b0cc4c2f74a2b0cc4c2f74a2b0cc4c2f74a2b0cc4.webp';
 
 describe('invitation document cache contracts', () => {
 	it('accepts origin-revalidate public documents with or without s-maxage=0', () => {
@@ -51,15 +51,16 @@ describe('invitation document cache contracts', () => {
 });
 
 describe('invitation HTML delivery inventory', () => {
-	it('counts raw Storage, Cloudinary and hashed assets', () => {
+	it('counts raw Storage, R2 and hashed assets', () => {
 		const html = `
-			<img src="${CLOUDINARY_HERO}" alt="hero" fetchpriority="high">
+			<img src="${R2_HERO}" alt="hero" fetchpriority="high">
 			<img src="${STORAGE_HERO}" alt="legacy" width="1080" height="1920">
 			<link rel="stylesheet" href="/_astro/invitation.C0de.css">
 			<img src="${STORAGE_HERO}" alt="duplicate-check" loading="lazy">
 		`;
 		const inventory = inventoryInvitationHtml(html);
-		expect(classifyDeliveryUrl(CLOUDINARY_HERO)).toBe('cloudinary');
+		expect(classifyDeliveryUrl(R2_HERO)).toBe('r2-media');
+		expect(inventory.r2MediaCount).toBe(1);
 		expect(inventory.supabaseStorageCount).toBe(2);
 		expect(inventory.astroHashedCount).toBe(1);
 		expect(inventory.lazyImageCount).toBe(1);
@@ -68,11 +69,11 @@ describe('invitation HTML delivery inventory', () => {
 	});
 
 	it('classifies query strings, malformed URLs, and lookalike hosts by hostname', () => {
-		expect(classifyDeliveryUrl(`${CLOUDINARY_HERO}?_a=1`)).toBe('cloudinary');
+		expect(classifyDeliveryUrl(`${R2_HERO}?_a=1`)).toBe('r2-media');
 		expect(classifyDeliveryUrl(`${STORAGE_HERO}?token=abc`)).toBe('supabase-storage');
 		expect(classifyDeliveryUrl('not a url')).toBe('other');
 		expect(
-			classifyDeliveryUrl('https://res.cloudinary.com.evil.example/image/upload/x.webp'),
+			classifyDeliveryUrl('https://media.celebra-me.com.evil.example/invitations/x.webp'),
 		).toBe('other');
 		expect(
 			classifyDeliveryUrl(

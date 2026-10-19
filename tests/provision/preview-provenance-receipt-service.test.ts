@@ -59,7 +59,7 @@ const packageWithAsset = {
 			originalFileSize: 23456,
 			sha256: assetSha,
 			dataBase64: '',
-			provider: 'cloudinary',
+			provider: 'r2',
 		},
 	],
 } as InvitationPackageData;

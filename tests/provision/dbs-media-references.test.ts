@@ -11,9 +11,13 @@ import { buildCanonicalStatusViewFixture } from '../helpers/canonical-status-fix
 
 const assetId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const baseUrl =
-	'https://res.cloudinary.com/example/image/upload/v1/boda/victoria-y-roberto/assets/hero.webp';
+	'https://media.celebra-me.com/invitations/boda/victoria-y-roberto/hero-desktop-' +
+	'a'.repeat(64) +
+	'.webp';
 const oldUrl =
-	'https://res.cloudinary.com/example/image/upload/v1/production/boda/victoria-y-roberto/assets/hero.webp';
+	'https://media.celebra-me.com/invitations/boda/victoria-y-roberto/hero-desktop-' +
+	'b'.repeat(64) +
+	'.webp';
 
 function published(src: string | undefined = baseUrl): PublishedMediaInventoryRow {
 	return {
@@ -91,21 +95,22 @@ describe('dbs media references', () => {
 		expect(summary).not.toContain('\x1b[');
 	});
 
-	it('accepts the exact Cloudinary OG transform', () => {
+	it('accepts the R2 social card that sits beside the hosted original', () => {
 		const row = published();
 		row.content = {
 			sharing: {
 				ogImage: {
 					type: 'uploaded',
 					assetId,
-					src: baseUrl.replace(
-						'/upload/',
-						'/upload/c_fill,g_auto,w_1200,h_630,q_auto,f_auto/',
-					),
+					src: baseUrl.replace(/\.webp$/, '.og.jpg'),
 				},
 			},
 		};
 		expect(inspectPublishedMediaReferences([row]).status).toBe('MATCH');
+		const original = published();
+		original.content = row.content;
+		(original.content.sharing as { ogImage: { src: string } }).ogImage.src = baseUrl;
+		expect(inspectPublishedMediaReferences([original]).status).toBe('REFERENCE_DRIFT');
 	});
 
 	it('marks missing src and missing active asset separately', () => {

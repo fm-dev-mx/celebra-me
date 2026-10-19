@@ -154,7 +154,7 @@ export function buildRominaPublishedContent(
 		description: 'Acompáñeme a celebrar este momento tan especial.',
 		theme: { preset: ROMINA_EVENT.themeId, fontFamily: 'serif' },
 		music: {
-			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1784908430/Perfect_opt_vkkh87.mp3',
+			url: 'https://media.celebra-me.com/invitations/xv/romina-rios-chaparro/music-0a99a2fcd7e7c9100a957746b47a09c1e071a9a76954c189ee7115068e4ae852.mp3',
 			title: 'Perfect',
 			autoPlay: true,
 		},

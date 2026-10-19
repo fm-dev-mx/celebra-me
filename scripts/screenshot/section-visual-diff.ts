@@ -169,14 +169,7 @@ export function captureImageTransformations(source: string): string {
 		url.searchParams.delete('href');
 	}
 	url.searchParams.sort();
-	const cloudinaryTransform = url.hostname.endsWith('cloudinary.com')
-		? (url.pathname
-				.split('/upload/')[1]
-				?.split('/')
-				.filter((part) => /^(?:w_|h_|c_|q_|f_|g_|e_)/.test(part))
-				.join('/') ?? '')
-		: '';
-	return cloudinaryTransform + url.search;
+	return url.search;
 }
 
 export function sectionImageSignature(images: CapturedImageIdentity[]): string {

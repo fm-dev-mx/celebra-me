@@ -1,11 +1,7 @@
-import {
-	isCloudinaryDeliveryHostname,
-	isMutableInPlaceMediaUrl,
-} from '@/lib/assets/image-delivery-policy';
+import { isMutableInPlaceMediaUrl } from '@/lib/assets/image-delivery-policy';
 import { isR2InvitationMediaUrl } from '@/lib/intake/services/r2-invitation-media';
 
-export type DeliveryResourceKind =
-	'supabase-storage' | 'cloudinary' | 'r2-media' | 'astro-hashed' | 'other';
+export type DeliveryResourceKind = 'supabase-storage' | 'r2-media' | 'astro-hashed' | 'other';
 
 export interface DeliveryResource {
 	url: string;
@@ -21,7 +17,6 @@ export interface InvitationHtmlInventory {
 	uniqueUrlCount: number;
 	duplicateUrls: string[];
 	supabaseStorageCount: number;
-	cloudinaryCount: number;
 	r2MediaCount: number;
 	astroHashedCount: number;
 	eagerImageCount: number;
@@ -106,7 +101,6 @@ export function classifyDeliveryUrl(rawUrl: string): DeliveryResourceKind {
 		return 'other';
 	}
 	if (isMutableInPlaceMediaUrl(url)) return 'supabase-storage';
-	if (isCloudinaryDeliveryHostname(url)) return 'cloudinary';
 	if (isR2InvitationMediaUrl(url)) return 'r2-media';
 	if (/\/_astro\//i.test(url)) return 'astro-hashed';
 	return 'other';
@@ -127,7 +121,7 @@ function extractDocumentUrls(html: string): string[] {
 }
 
 function isImageLikeUrl(url: string, kind: DeliveryResourceKind): boolean {
-	if (kind === 'supabase-storage' || kind === 'cloudinary' || kind === 'r2-media') {
+	if (kind === 'supabase-storage' || kind === 'r2-media') {
 		return true;
 	}
 	return /\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#]|$)/i.test(url);
@@ -182,7 +176,6 @@ export function inventoryInvitationHtml(html: string): InvitationHtmlInventory {
 		duplicateUrls,
 		supabaseStorageCount: resources.filter((resource) => resource.kind === 'supabase-storage')
 			.length,
-		cloudinaryCount: resources.filter((resource) => resource.kind === 'cloudinary').length,
 		r2MediaCount: resources.filter((resource) => resource.kind === 'r2-media').length,
 		astroHashedCount: resources.filter((resource) => resource.kind === 'astro-hashed').length,
 		eagerImageCount,
@@ -197,9 +190,7 @@ export function selectHeroResource(inventory: InvitationHtmlInventory): Delivery
 		inventory.resources.find(
 			(resource) =>
 				!resource.lazy &&
-				(resource.kind === 'supabase-storage' ||
-					resource.kind === 'cloudinary' ||
-					resource.kind === 'r2-media'),
+				(resource.kind === 'supabase-storage' || resource.kind === 'r2-media'),
 		) ??
 		null
 	);

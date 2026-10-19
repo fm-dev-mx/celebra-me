@@ -1,7 +1,7 @@
 /**
  * Critical-backup Storage inventory and bounded-parallel download.
  * Inventory is live `invitation_assets` with provider supabase plus a catalog
- * row in `storage.objects`. Leftover bucket objects (Cloudinary-era managed
+ * row in `storage.objects`. Leftover bucket objects (pre-R2 managed
  * paths) are not recovery binaries. Do not scan invitation JSON with LIKE.
  */
 import { createHash } from 'node:crypto';

@@ -6,21 +6,13 @@ jest.mock('@/lib/server/supabase-credentials', () => ({
 	getSupabaseServiceRoleKey: mockGetSupabaseServiceRoleKey,
 }));
 
-const mockUploadOrReconcile = jest.fn();
-jest.mock('@/lib/intake/services/cloudinary-assets', () => ({
-	uploadOrReconcileCloudinaryAsset: (...args: unknown[]) => mockUploadOrReconcile(...args),
-	buildCloudinaryDeliveryUrl: (cloudName: string, publicId: string) =>
-		`https://res.cloudinary.com/${cloudName}/image/upload/v1/${publicId}.webp`,
-	buildCloudinaryPublicId: () => 'xv/test/assets/test',
-}));
-
 import {
-	CloudinaryStorageProvider,
 	SupabaseLocalStorageProvider,
 	getStorageProvider,
 	resolveEffectiveTarget,
 } from '@/lib/intake/services/storage-provider';
 
+import { installInvitationMediaBinding } from '@/lib/intake/services/r2-invitation-media';
 import {
 	asHostedDeploy,
 	asLocalDevServer,
@@ -116,47 +108,6 @@ describe('StorageProvider Abstraction', () => {
 		});
 	});
 
-	describe('CloudinaryStorageProvider', () => {
-		const provider = new CloudinaryStorageProvider('preview');
-
-		it('delegates asset upload to Cloudinary SDK and returns Cloudinary metadata', async () => {
-			mockUploadOrReconcile.mockResolvedValue({
-				action: 'UPLOAD',
-				publicId: 'boda/daniela-y-martin/assets/hero-desktop',
-				version: 'v1234567890',
-				secureUrl:
-					'https://res.cloudinary.com/demo/image/upload/v1234567890/boda/daniela-y-martin/assets/hero-desktop.webp',
-				bytes: 45000,
-				width: 1200,
-				height: 800,
-				format: 'webp',
-				metadata: { provider: 'cloudinary' },
-			});
-
-			const result = await provider.uploadAsset({
-				invitationId: 'inv-123',
-				eventType: 'boda',
-				slug: 'daniela-y-martin',
-				key: 'hero-desktop',
-				displayName: 'Portada',
-				blob: new Blob(['fake-image-bytes'], { type: 'image/webp' }),
-				mimeType: 'image/webp',
-				width: 1200,
-				height: 800,
-				fileSize: 45000,
-				validationVersion: 1,
-				originalMimeType: 'image/jpeg',
-				originalFileSize: 80000,
-				sha256: 'a1b2c3d4e5f67890123456789012345678901234567890123456789012345678',
-			});
-
-			expect(result.provider).toBe('cloudinary');
-			expect(result.providerPublicId).toBe('boda/daniela-y-martin/assets/hero-desktop');
-			expect(result.secureUrl).toContain('https://res.cloudinary.com');
-			expect(result.deliveryUrl).toBe(result.secureUrl);
-		});
-	});
-
 	describe('Factory resolution: getStorageProvider and resolveEffectiveTarget', () => {
 		it('resolves local provider when targetEnv is local', () => {
 			expect(resolveEffectiveTarget('local')).toBe('local');
@@ -164,21 +115,32 @@ describe('StorageProvider Abstraction', () => {
 			expect(provider.providerName).toBe('supabase');
 		});
 
-		it('resolves cloudinary provider when targetEnv is preview or production', () => {
+		it('refuses hosted targets without the INVITATION_MEDIA R2 binding', () => {
 			expect(resolveEffectiveTarget('preview')).toBe('preview');
 			expect(resolveEffectiveTarget('production')).toBe('production');
-			expect(getStorageProvider('preview').providerName).toBe('cloudinary');
-			expect(getStorageProvider('production').providerName).toBe('cloudinary');
+			expect(() => getStorageProvider('preview')).toThrow('INVITATION_MEDIA R2 binding');
+			expect(() => getStorageProvider('production')).toThrow('INVITATION_MEDIA R2 binding');
+		});
+
+		it('resolves the R2 provider on hosted targets once the Worker installed the binding', () => {
+			installInvitationMediaBinding({
+				INVITATION_MEDIA: { head: jest.fn(), put: jest.fn() },
+			});
+			expect(getStorageProvider('preview').providerName).toBe('r2');
+			expect(getStorageProvider('production').providerName).toBe('r2');
 		});
 
 		it('infers provider from the declared deploy identity', () => {
+			installInvitationMediaBinding({
+				INVITATION_MEDIA: { head: jest.fn(), put: jest.fn() },
+			});
 			asHostedDeploy('production');
 			expect(resolveEffectiveTarget()).toBe('production');
-			expect(getStorageProvider().providerName).toBe('cloudinary');
+			expect(getStorageProvider().providerName).toBe('r2');
 
 			asHostedDeploy('preview');
 			expect(resolveEffectiveTarget()).toBe('preview');
-			expect(getStorageProvider().providerName).toBe('cloudinary');
+			expect(getStorageProvider().providerName).toBe('r2');
 		});
 
 		it('fails closed for a built bundle without a deploy identity', () => {
@@ -189,9 +151,12 @@ describe('StorageProvider Abstraction', () => {
 		});
 
 		it('infers provider from CELEBRA_RUNTIME_TARGET when set', () => {
+			installInvitationMediaBinding({
+				INVITATION_MEDIA: { head: jest.fn(), put: jest.fn() },
+			});
 			process.env.CELEBRA_RUNTIME_TARGET = 'preview';
 			expect(resolveEffectiveTarget()).toBe('preview');
-			expect(getStorageProvider().providerName).toBe('cloudinary');
+			expect(getStorageProvider().providerName).toBe('r2');
 
 			process.env.CELEBRA_RUNTIME_TARGET = 'local';
 			expect(resolveEffectiveTarget()).toBe('local');

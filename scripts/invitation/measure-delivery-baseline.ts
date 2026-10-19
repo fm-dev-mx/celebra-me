@@ -10,7 +10,7 @@
  *   pnpm invitation:delivery:baseline --slug <eventType>/<slug> --legacy-slug <eventType>/<slug>
  *   pnpm invitation:delivery:baseline --slug <eventType>/<slug> --origin <url> --samples 5 --assert-budget
  *
- * --slug names an invitation with versioned (Cloudinary) media; --legacy-slug, when given, names one
+ * --slug names an invitation with versioned (R2) media; --legacy-slug, when given, names one
  * that still serves mutable Storage media.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -77,7 +77,7 @@ interface ScenarioReport {
 	inventory: {
 		uniqueUrlCount: number;
 		supabaseStorageCount: number;
-		cloudinaryCount: number;
+		r2MediaCount: number;
 		astroHashedCount: number;
 		eagerImageCount: number;
 		lazyImageCount: number;
@@ -174,7 +174,7 @@ function summarizeInventory(inventory: InvitationHtmlInventory) {
 	return {
 		uniqueUrlCount: inventory.uniqueUrlCount,
 		supabaseStorageCount: inventory.supabaseStorageCount,
-		cloudinaryCount: inventory.cloudinaryCount,
+		r2MediaCount: inventory.r2MediaCount,
 		astroHashedCount: inventory.astroHashedCount,
 		eagerImageCount: inventory.eagerImageCount,
 		lazyImageCount: inventory.lazyImageCount,
@@ -317,7 +317,7 @@ function printScenario(report: ScenarioReport): void {
 		`  shared-cache document first/repeat: ${report.document.sharedCacheFirst}/${report.document.sharedCacheRepeat}`,
 	);
 	console.log(
-		`  urls unique=${report.inventory.uniqueUrlCount} storage=${report.inventory.supabaseStorageCount} cloudinary=${report.inventory.cloudinaryCount} astro=${report.inventory.astroHashedCount} lazy-img=${report.inventory.lazyImageCount} eager-img=${report.inventory.eagerImageCount}`,
+		`  urls unique=${report.inventory.uniqueUrlCount} storage=${report.inventory.supabaseStorageCount} r2=${report.inventory.r2MediaCount} astro=${report.inventory.astroHashedCount} lazy-img=${report.inventory.lazyImageCount} eager-img=${report.inventory.eagerImageCount}`,
 	);
 	console.log(
 		`  hero kind=${report.hero.kind ?? 'n/a'} delivered=${report.hero.deliveredBytes ?? 'n/a'} origin=${report.hero.originBytes ?? 'n/a'} cache=${report.hero.cacheControl ?? 'n/a'}`,

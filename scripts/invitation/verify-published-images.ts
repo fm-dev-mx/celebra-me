@@ -13,6 +13,7 @@ import {
 } from '../db/db-workflow-lib.ts';
 import { buildNormalizedInvitationRelease } from '../provision/normalized-invitation-release.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
+import { isR2InvitationMediaUrl } from '../../src/lib/intake/services/r2-invitation-media.ts';
 
 export type MediaVerificationTarget = 'preview' | 'production';
 /**
@@ -106,17 +107,8 @@ export function isMediaVerificationFailure(
 	return row.classification !== 'PENDING_PUBLISH' || args.includes('--strict');
 }
 
-function validCloudinaryUrl(value: string | null): URL | null {
-	try {
-		const url = new URL(value ?? '');
-		return url.protocol === 'https:' &&
-			url.hostname === 'res.cloudinary.com' &&
-			url.pathname.includes('/image/upload/')
-			? url
-			: null;
-	} catch {
-		return null;
-	}
+function validR2Url(value: string | null): URL | null {
+	return value && isR2InvitationMediaUrl(value) ? new URL(value) : null;
 }
 
 // One remote read intentionally produces the complete transport, binary, persisted, and package verdict.
@@ -127,14 +119,14 @@ async function verifyAssetDelivery(
 	download: typeof fetch,
 ): Promise<Omit<MediaVerificationRow, 'route'>> {
 	const reasons: string[] = [];
-	const url = validCloudinaryUrl(row.url);
+	const url = validR2Url(row.url);
 	let status: number | null = null;
 	let observedHash: string | null = null;
 	let observedMime: string | null = null;
 	let observedWidth: number | null = null;
 	let observedHeight: number | null = null;
 	if (!url) {
-		reasons.push('invalid Cloudinary delivery URL');
+		reasons.push('invalid R2 delivery URL');
 	} else {
 		try {
 			const response = await download(url, {
@@ -142,8 +134,8 @@ async function verifyAssetDelivery(
 				signal: AbortSignal.timeout(10_000),
 			});
 			status = response.status;
-			if (response.url && validCloudinaryUrl(response.url) === null)
-				reasons.push('delivery redirected outside Cloudinary image delivery');
+			if (response.url && validR2Url(response.url) === null)
+				reasons.push('delivery redirected outside R2 media delivery');
 			if (!response.ok) {
 				reasons.push(`HTTP ${response.status}`);
 			} else {
@@ -187,8 +179,8 @@ async function verifyAssetDelivery(
 }
 
 async function verifyFrozenContentUrl(value: string, download: typeof fetch): Promise<string[]> {
-	const url = validCloudinaryUrl(value);
-	if (!url) return ['invalid Cloudinary delivery URL'];
+	const url = validR2Url(value);
+	if (!url) return ['invalid R2 delivery URL'];
 	try {
 		const response = await download(url, {
 			redirect: 'follow',

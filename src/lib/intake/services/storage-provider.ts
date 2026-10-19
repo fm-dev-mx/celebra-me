@@ -4,11 +4,9 @@
  * Provides a unified contract for storing and resolving invitation assets:
  * - Local (dev-local): Supabase Storage local (http://127.0.0.1:54321 / invitation-assets)
  * - Preview / Production on the Cloudflare Worker: R2 (https://media.celebra-me.com/...)
- * - Preview / Production without the R2 binding: Cloudinary
  */
 
 import { DEFAULT_BUCKET, getPublicUrl, uploadToStorage } from '@/lib/intake/storage';
-import { uploadOrReconcileCloudinaryAsset } from '@/lib/intake/services/cloudinary-assets';
 import {
 	R2_INVITATION_MEDIA,
 	buildR2ObjectKey,
@@ -40,7 +38,7 @@ export interface StorageUploadInput {
 }
 
 export interface StoredAssetResult {
-	provider: 'supabase' | 'cloudinary' | 'r2';
+	provider: 'supabase' | 'r2';
 	bucket: string;
 	storagePath: string;
 	providerPublicId?: string;
@@ -56,7 +54,7 @@ export interface StoredAssetResult {
 }
 
 export interface StorageProvider {
-	readonly providerName: 'supabase' | 'cloudinary' | 'r2';
+	readonly providerName: 'supabase' | 'r2';
 	uploadAsset(input: StorageUploadInput): Promise<StoredAssetResult>;
 }
 
@@ -133,47 +131,6 @@ async function extractBytes(blob: Blob): Promise<Uint8Array> {
 	throw new Error('Unsupported blob: binary extraction is not available.');
 }
 
-export class CloudinaryStorageProvider implements StorageProvider {
-	readonly providerName = 'cloudinary' as const;
-
-	constructor(private readonly targetEnvironment: 'preview' | 'production') {}
-
-	async uploadAsset(input: StorageUploadInput): Promise<StoredAssetResult> {
-		const bytes = await extractBytes(input.blob);
-
-		const uploaded = await uploadOrReconcileCloudinaryAsset({
-			targetEnvironment: this.targetEnvironment,
-			eventType: input.eventType,
-			slug: input.slug,
-			key: input.key,
-			displayName: input.displayName,
-			alt: input.defaultAltText ?? input.displayName,
-			bytes,
-			sha256: input.sha256,
-			mimeType: input.mimeType,
-			width: input.width,
-			height: input.height,
-			dryRun: input.dryRun,
-		});
-
-		return {
-			provider: 'cloudinary',
-			bucket: DEFAULT_BUCKET,
-			storagePath: uploaded.publicId,
-			providerPublicId: uploaded.publicId,
-			providerVersion: uploaded.version,
-			secureUrl: uploaded.secureUrl,
-			width: uploaded.width,
-			height: uploaded.height,
-			fileSize: uploaded.bytes,
-			mimeType: input.mimeType,
-			sha256: input.sha256,
-			metadata: uploaded.metadata,
-			deliveryUrl: uploaded.secureUrl,
-		};
-	}
-}
-
 export class R2StorageProvider implements StorageProvider {
 	readonly providerName = 'r2' as const;
 
@@ -245,6 +202,9 @@ export function getStorageProvider(targetEnv?: string): StorageProvider {
 		return new SupabaseLocalStorageProvider();
 	}
 	const bucket = getInvitationMediaBucket();
-	if (bucket) return new R2StorageProvider(effective, bucket);
-	return new CloudinaryStorageProvider(effective);
+	if (!bucket)
+		throw new Error(
+			`Invitation media uploads on ${effective} need the INVITATION_MEDIA R2 binding.`,
+		);
+	return new R2StorageProvider(effective, bucket);
 }

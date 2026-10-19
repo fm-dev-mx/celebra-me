@@ -195,10 +195,6 @@ export default defineConfig({
 		remotePatterns: [
 			{
 				protocol: 'https',
-				hostname: 'res.cloudinary.com',
-			},
-			{
-				protocol: 'https',
 				hostname: 'media.celebra-me.com',
 			},
 			{

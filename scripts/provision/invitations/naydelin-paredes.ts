@@ -22,7 +22,7 @@ const content: CanonicalEventContentInput = {
 	description: 'Le invito a celebrar conmigo mis XV años el 17 de octubre de 2026.',
 	theme: { preset: 'jewelry-box', fontFamily: 'serif' },
 	music: {
-		url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1790729635/Imagine_-_John_Lennon_The_Plastic_Ono_Band_ndhjjv.mp3',
+		url: 'https://media.celebra-me.com/invitations/xv/naydelin-paredes/music-0fded0633a6387d55220ce3996fa5ad1a35f57b45448c500ce476e3efe17f878.mp3',
 		title: 'Imagine - John Lennon',
 		autoPlay: true,
 	},

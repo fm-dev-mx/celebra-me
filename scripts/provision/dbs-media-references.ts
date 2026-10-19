@@ -1,6 +1,9 @@
 /** Fast, read-only published media reference status for the dbs operator CLI. */
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
-import { buildCloudinaryOgImageUrl } from '../../src/lib/intake/services/cloudinary-assets.ts';
+import {
+	buildR2SocialImageUrl,
+	isR2InvitationMediaUrl,
+} from '../../src/lib/intake/services/r2-invitation-media.ts';
 import type { OperationalActionPlan } from '../../src/lib/status/action-plan.ts';
 import type {
 	MediaReferenceEnvironment,
@@ -37,16 +40,7 @@ function safeLabel(value: string, pattern: RegExp): string {
 }
 
 function validHostedDeliveryUrl(value: string | null): boolean {
-	try {
-		const url = new URL(value ?? '');
-		return (
-			url.protocol === 'https:' &&
-			url.hostname === 'res.cloudinary.com' &&
-			url.pathname.includes('/image/upload/')
-		);
-	} catch {
-		return false;
-	}
+	return isR2InvitationMediaUrl(value ?? '');
 }
 
 /** Compare physical reference identity only; no provider requests or binary reads. */
@@ -75,7 +69,7 @@ export function inspectPublishedMediaReferences(
 			}
 			const expected =
 				ref.path === 'sharing.ogImage'
-					? buildCloudinaryOgImageUrl(asset.url as string)
+					? buildR2SocialImageUrl(asset.url as string)
 					: asset.url;
 			if (!ref.src || ref.src !== expected) {
 				findings.push({ ...base, issue: 'REFERENCE_DRIFT' });

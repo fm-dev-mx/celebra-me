@@ -6,8 +6,7 @@
  */
 import { mutationItemsOf, type ProductionApplyPlan } from './production-apply-plan.ts';
 
-type ProductionApplyScopeKind =
-	'inspect_all' | 'schema' | 'invitations' | 'all_ready' | 'patch' | 'image_namespace';
+type ProductionApplyScopeKind = 'inspect_all' | 'schema' | 'invitations' | 'all_ready' | 'patch';
 
 export interface ProductionApplySelection {
 	kind: ProductionApplyScopeKind;
@@ -15,8 +14,6 @@ export interface ProductionApplySelection {
 	expectedPin?: readonly string[];
 	patchFile?: string;
 	ownerUserId?: string;
-	imageManifestPath?: string;
-	imageRollback?: boolean;
 	acknowledgeDiscardUnpublishedDraft?: boolean;
 	apply?: boolean;
 	json?: boolean;
@@ -68,11 +65,6 @@ export function productionApplyRootMenu(): {
 				hint: 'Reviewed manifest patch file (--patch)',
 			},
 			{
-				value: 'image_namespace',
-				label: 'Image namespace migration / rollback…',
-				hint: 'Reviewed manifest (--image-namespace / --image-namespace-rollback)',
-			},
-			{
 				value: 'json',
 				label: 'Print plan JSON',
 				hint: 'Secret-free inspect-all plan (--json)',
@@ -98,13 +90,6 @@ export function argvFromSelection(selection: ProductionApplySelection): string[]
 			break;
 		case 'patch':
 			if (selection.patchFile) argv.push('--patch', selection.patchFile);
-			break;
-		case 'image_namespace':
-			if (selection.imageManifestPath)
-				argv.push(
-					selection.imageRollback ? '--image-namespace-rollback' : '--image-namespace',
-					selection.imageManifestPath,
-				);
 			break;
 		case 'inspect_all':
 			break;
@@ -135,8 +120,6 @@ export function describeSelection(selection: ProductionApplySelection): string {
 			return 'all READY items';
 		case 'patch':
 			return `patch ${selection.patchFile ?? ''}`.trim();
-		case 'image_namespace':
-			return `${selection.imageRollback ? 'image namespace rollback' : 'image namespace migration'} ${selection.imageManifestPath ?? ''}`.trim();
 	}
 }
 
@@ -147,14 +130,6 @@ export interface ProductionApplyOffer {
 
 function invitationOffer(slug: string): ProductionApplyOffer {
 	return { label: `Apply ${slug}`, selection: { kind: 'invitations', slugs: [slug] } };
-}
-
-/** The only apply offer for an image namespace manifest (its own owner gate runs inside). */
-export function imageNamespaceOffer(selection: ProductionApplySelection): ProductionApplyOffer {
-	return {
-		label: selection.imageRollback ? 'Roll back images' : 'Migrate images',
-		selection: { ...selection, apply: true },
-	};
 }
 
 /**
@@ -187,8 +162,6 @@ export function applyOffersFromPlan(
 		if (schemaReady) offers.push({ label: 'Apply schema only', selection: { kind: 'schema' } });
 		// READY_AFTER_SCHEMA invitations have no narrower scope than "Apply all READY".
 		for (const item of readyInvitations) offers.push(invitationOffer(item.id));
-	} else if (selection.kind === 'image_namespace') {
-		return [imageNamespaceOffer(selection)];
 	} else if (mutationItemsOf(plan).length > 0) {
 		offers.push({
 			label: `Apply ${describeSelection(selection)}`,

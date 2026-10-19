@@ -4,7 +4,7 @@ const mockResolveAssetSlug = jest.fn();
 const mockGetEventAsset = jest.fn();
 const mockIsEventAssetKey = jest.fn();
 const mockIsValidEvent = jest.fn();
-const mockUploadOrReconcile = jest.fn();
+const mockBucketPut = jest.fn();
 const mockCreateAsset = jest.fn();
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
@@ -34,10 +34,6 @@ jest.mock('@/lib/intake/storage', () => ({
 	DEFAULT_BUCKET: 'invitation-assets',
 }));
 
-jest.mock('@/lib/intake/services/cloudinary-assets', () => ({
-	uploadOrReconcileCloudinaryAsset: (...args: unknown[]) => mockUploadOrReconcile(...args),
-}));
-
 jest.mock('@/lib/intake/repositories/asset.repository', () => ({
 	createAsset: mockCreateAsset,
 }));
@@ -59,6 +55,7 @@ jest.mock('@/lib/intake/services/asset-policy', () => ({
 }));
 
 import { importBundledAsset } from '@/lib/intake/services/asset.service';
+import { installInvitationMediaBinding } from '@/lib/intake/services/r2-invitation-media';
 
 const INVITATION_ID = 'inv-1';
 const DEFAULT_METADATA = { src: '/assets/hero.webp', width: 1080, height: 1920, format: 'webp' };
@@ -79,9 +76,9 @@ function createMockAssetResult(overrides: Record<string, unknown> = {}) {
 		displayName: 'hero',
 		bucket: 'invitation-assets',
 		storagePath: 'xv/demo/assets/hero-abc',
-		provider: 'cloudinary',
-		providerPublicId: 'xv/demo/assets/hero-abc',
-		secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
+		provider: 'supabase',
+		providerPublicId: null,
+		secureUrl: 'https://cdn.test/asset.webp',
 		sha256: 'abc',
 		mimeType: 'image/webp',
 		width: 1080,
@@ -144,20 +141,6 @@ describe('importBundledAsset', () => {
 			mockIsEventAssetKey.mockReturnValue(true);
 			mockIsValidEvent.mockReturnValue(true);
 			mockFindPublishedContent.mockResolvedValue(null);
-			mockUploadOrReconcile.mockResolvedValue({
-				provider: 'cloudinary',
-				publicId: 'xv/demo/assets/hero-abc',
-				version: '1',
-				secureUrl:
-					'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
-				sha256: 'abc',
-				width: 1080,
-				height: 1920,
-				bytes: 9,
-				format: 'webp',
-				metadata: {},
-				action: 'UPLOAD',
-			});
 			mockFetch();
 		});
 
@@ -190,8 +173,12 @@ describe('importBundledAsset', () => {
 			);
 		});
 
-		it('imports a bundled asset to Cloudinary when in preview environment', async () => {
+		it('imports a bundled asset to R2 when in preview environment', async () => {
 			process.env.CELEBRA_RUNTIME_TARGET = 'preview';
+			mockBucketPut.mockResolvedValue(undefined);
+			installInvitationMediaBinding({
+				INVITATION_MEDIA: { head: jest.fn().mockResolvedValue(null), put: mockBucketPut },
+			});
 			mockFindInvitation.mockResolvedValue({
 				id: INVITATION_ID,
 				eventType: 'xv',
@@ -205,18 +192,23 @@ describe('importBundledAsset', () => {
 			const result = await importBundledAsset(INVITATION_ID, 'hero');
 
 			expect(result.asset.id).toBe('new-asset-id');
-			expect(mockUploadOrReconcile).toHaveBeenCalled();
+			expect(mockBucketPut).toHaveBeenCalledTimes(1);
+			const [objectKey, , putOptions] = mockBucketPut.mock.calls[0];
+			expect(objectKey).toMatch(
+				/^invitations\/xv\/[a-z0-9-]+\/bundled-hero-[a-z0-9]+-[a-f0-9]{64}\.webp$/,
+			);
+			expect(putOptions.httpMetadata.contentType).toBe('image/webp');
 			expect(mockCreateAsset).toHaveBeenCalledWith(
 				expect.objectContaining({
 					invitationId: INVITATION_ID,
 					displayName: 'hero',
 					width: 1080,
 					height: 1920,
-					provider: 'cloudinary',
-					providerPublicId: 'xv/demo/assets/hero-abc',
-					secureUrl:
-						'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc.webp',
-					storagePath: 'xv/demo/assets/hero-abc',
+					provider: 'r2',
+					bucket: 'celebra-me-invitation-media-staging',
+					providerPublicId: objectKey,
+					storagePath: objectKey,
+					secureUrl: `https://media-staging.celebra-me.com/${objectKey}`,
 				}),
 			);
 			delete process.env.CELEBRA_RUNTIME_TARGET;

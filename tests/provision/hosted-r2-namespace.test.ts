@@ -8,14 +8,14 @@ const identity = { environment: 'preview' as const, eventType: 'xv', slug: 'rena
 const record: TargetAssetRecord = {
 	id: 'asset-id',
 	displayName: 'Hero',
-	storagePath: 'xv/renata/assets/hero-old',
+	storagePath: 'managed/renata/hero-old.webp',
 	bucket: 'invitation-assets',
 	mimeType: 'image/webp',
 	fileSize: 10,
 	width: 10,
 	height: 10,
 	validationVersion: 1,
-	provider: 'cloudinary',
+	provider: 'r2',
 	managedByDefinitionSlug: 'renata',
 	managedSourceKey: 'hero',
 };
@@ -59,33 +59,46 @@ function plan(action: 'REUSE' | 'OVERWRITE'): AssetReconciliationResult {
 	};
 }
 
-describe('hosted Cloudinary namespace guard', () => {
-	it('rejects a cross-environment asset even when reconciliation would reuse it', () => {
-		const result = plan('REUSE');
-		expect(() =>
-			assertReconciledMutationTargets(
-				result,
-				[{ ...record, providerPublicId: 'production/xv/renata/assets/hero-old' }],
-				identity,
-			),
-		).toThrow('namespace mismatch');
-	});
-	it('allows a legacy asset for read-only reuse', () => {
+describe('hosted R2 namespace guard', () => {
+	it('rejects an asset under another invitation prefix even when reconciliation would reuse it', () => {
 		expect(() =>
 			assertReconciledMutationTargets(
 				plan('REUSE'),
-				[{ ...record, providerPublicId: 'xv/renata/assets/hero-old' }],
+				[{ ...record, providerPublicId: 'invitations/xv/otra/hero-old.webp' }],
+				identity,
+			),
+		).toThrow('belongs to another invitation');
+	});
+	it('rejects an asset under another event type prefix', () => {
+		expect(() =>
+			assertReconciledMutationTargets(
+				plan('OVERWRITE'),
+				[{ ...record, providerPublicId: 'invitations/boda/renata/hero-old.webp' }],
+				identity,
+			),
+		).toThrow('belongs to another invitation');
+	});
+	it('allows an asset inside its own invitation prefix', () => {
+		expect(() =>
+			assertReconciledMutationTargets(
+				plan('OVERWRITE'),
+				[{ ...record, providerPublicId: 'invitations/xv/renata/hero-old.webp' }],
 				identity,
 			),
 		).not.toThrow();
 	});
-	it('blocks mutation of a legacy asset', () => {
+	it('falls back to the storage path when the provider public id is absent', () => {
+		expect(() =>
+			assertReconciledMutationTargets(plan('REUSE'), [{ ...record }], identity),
+		).toThrow('belongs to another invitation');
+	});
+	it('ignores non-R2 rows because they are not mutated through R2', () => {
 		expect(() =>
 			assertReconciledMutationTargets(
 				plan('OVERWRITE'),
-				[{ ...record, providerPublicId: 'xv/renata/assets/hero-old' }],
+				[{ ...record, provider: 'supabase', providerPublicId: 'elsewhere/hero.webp' }],
 				identity,
 			),
-		).toThrow('namespace mismatch');
+		).not.toThrow();
 	});
 });

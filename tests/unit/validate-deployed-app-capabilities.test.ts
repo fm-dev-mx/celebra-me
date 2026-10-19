@@ -16,7 +16,6 @@ function fixtureRoot(): string {
 		'src/lib/intake/services/publication-diff.service.ts',
 		'scripts/provision/apply-local-invitation.ts',
 		'scripts/provision/invitation-import-engine.ts',
-		'scripts/invitation/image-namespace-remap.ts',
 		...EXECUTABLE_MEMORIES_PATHS,
 		ENGAGEMENT_RECORDER_PATH,
 	]) {
@@ -73,7 +72,7 @@ describe('deployed application capability validation', () => {
 	it('rejects positional publication overload use in executable scripts', () => {
 		const root = fixtureRoot();
 		try {
-			const path = join(root, 'scripts/invitation/image-namespace-remap.ts');
+			const path = join(root, 'scripts/provision/apply-local-invitation.ts');
 			writeFileSync(path, `${readFileSync(path, 'utf8')}\npublish_invitation_atomic(a, b);`);
 			expect(validateDeployedAppCapabilities(root).join('\n')).toMatch(/Revoked positional/);
 		} finally {
@@ -97,7 +96,7 @@ describe('deployed application capability validation', () => {
 	it('rejects positional publication overload with string literals or numbers', () => {
 		const root = fixtureRoot();
 		try {
-			const path = join(root, 'scripts/invitation/image-namespace-remap.ts');
+			const path = join(root, 'scripts/provision/apply-local-invitation.ts');
 			writeFileSync(
 				path,
 				`${readFileSync(path, 'utf8')}\npublish_invitation_atomic('inv-123', 'draft-456');`,
@@ -154,13 +153,13 @@ describe('deployed application capability validation', () => {
 	it('rejects the legacy-columns client proof when a publication path hashes baseDemoId', () => {
 		const root = fixtureRoot();
 		try {
-			const path = join(root, 'scripts/invitation/image-namespace-remap.ts');
+			const path = join(root, 'scripts/provision/apply-local-invitation.ts');
 			writeFileSync(
 				path,
 				`${readFileSync(path, 'utf8')}\n// jsonb_build_object('baseDemoId', v_inv.base_demo_id)`,
 			);
 			expect(validateDeployedAppCapabilities(root)).toContain(
-				'Legacy public-metadata baseline is still computed by scripts/invitation/image-namespace-remap.ts.',
+				'Legacy public-metadata baseline is still computed by scripts/provision/apply-local-invitation.ts.',
 			);
 		} finally {
 			rmSync(root, { recursive: true, force: true });

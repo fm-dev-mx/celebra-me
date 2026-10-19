@@ -179,7 +179,7 @@ function expectedAssetMetadata(
 		originalMimeType: asset.originalMimeType,
 		originalFileSize: asset.originalFileSize,
 		defaultAltText: asset.defaultAltText,
-		provider: asset.provider ?? 'cloudinary',
+		provider: asset.provider ?? 'r2',
 		providerPublicId: asset.providerPublicId ?? asset.storagePath,
 		secureUrl: asset.secureUrl ?? null,
 		sha256: asset.sha256,

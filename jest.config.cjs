@@ -120,6 +120,5 @@ module.exports = {
 		'/tests/db/invitation-event-date-db\\.test\\.ts$',
 		// Disposable managed rekey contracts — run via `pnpm test:db:managed-contracts`.
 		'/tests/provision/identity-rekey-disposable-integration\\.test\\.ts$',
-		'/tests/provision/image-namespace-disposable-integration\\.test\\.ts$',
 	],
 };
