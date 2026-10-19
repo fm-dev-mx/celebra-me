@@ -100,7 +100,8 @@ test('certified comparison rejects a deliberately different rendered page', asyn
 });
 
 test.describe('Registry-Driven Visual Portability Suite', () => {
-	test.describe.configure({ mode: 'serial', retries: 0 });
+	// Captures are independent; the run teardown aggregates their records across workers.
+	test.describe.configure({ mode: 'parallel', retries: 0 });
 	test.beforeAll(() => markVisualSuiteStarted(resolveVisualOutputRoot(), 'variants'));
 	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
