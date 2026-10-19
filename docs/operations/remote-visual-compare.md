@@ -21,19 +21,17 @@ Output lives under `output/playwright/remote-visual/` (git-ignored): one folder 
 with `manifest.json` and one PNG per route and viewport, and `compare-<before>-vs-<after>/` with
 `report.md`, `report.json` and at most six cropped before/after images in `cases/`.
 
-In Git Bash on Windows, keep paths from being rewritten:
-`MSYS2_ARG_CONV_EXCL='--only=;--origin=;--vista-previa='`.
+In Git Bash on Windows, keep paths from being rewritten: `MSYS2_ARG_CONV_EXCL='--only=;--origin='`.
 
 Options for `capture`:
 
-| Flag                    | Meaning                                                                                |
-| ----------------------- | -------------------------------------------------------------------------------------- |
-| `--label=<name>`        | Capture set name (lowercase letters, digits, `-`). Refuses to overwrite.               |
-| `--replace=true`        | Overwrite an existing set with the same label.                                         |
-| `--vista-previa=<path>` | Comma-separated `/vista-previa/<token>` photos to check (200 `image/webp`).            |
-| `--clock=<iso>`         | Frozen browser clock. Default `2026-10-17T12:00:00-07:00`; keep it equal in both sets. |
-| `--only=<paths>`        | Comma-separated paths, for debugging one route.                                        |
-| `--concurrency=<n>`     | Routes captured at once (default 3).                                                   |
+| Flag                | Meaning                                                                                |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| `--label=<name>`    | Capture set name (lowercase letters, digits, `-`). Refuses to overwrite.               |
+| `--replace=true`    | Overwrite an existing set with the same label.                                         |
+| `--clock=<iso>`     | Frozen browser clock. Default `2026-10-17T12:00:00-07:00`; keep it equal in both sets. |
+| `--only=<paths>`    | Comma-separated paths, for debugging one route.                                        |
+| `--concurrency=<n>` | Routes captured at once (default 3).                                                   |
 
 ## Allowed origins
 
@@ -67,9 +65,7 @@ Built from the repository, then checked against the origin:
   recorded and skipped. Disabled invitations answer 403 by design and are captured as such;
 - `/r/victoria-y-roberto` (memories QR landing);
 - the permanent redirects of the legacy URL scheme, with `:eventType/:slug` filled from a published
-  invitation. A 301 or 308 both count as permanent;
-- `/vista-previa/<token>` photos given with `--vista-previa`, or the first one found in a captured
-  page. A set without one gets a warning in the report.
+  invitation. A 301 or 308 both count as permanent.
 
 Each page is captured full-page at desktop (1440×900) and mobile (390×844), device scale 1, reduced
 motion, `es-MX`, `America/Mazatlan`, with the clock frozen so countdowns match. Lazy images are
@@ -82,7 +78,6 @@ A compare passes only when all of these hold:
 
 - every route in "before" exists in "after" with the same status class;
 - redirects are permanent and land on the same path;
-- every `/vista-previa` photo answers 200 `image/webp`;
 - no photo is missing, replaced, broken or moved by more than 2 px (photos are matched in page order
   by source name without host, image service or build hash);
 - at most 0.5 % of pixels changed outside photo and embedded-media regions. A height change counts

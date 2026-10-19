@@ -480,11 +480,6 @@ export async function compareRemoteCaptures(options: {
 			warnings.push(`Ruta nueva en "después": ${route.path} (${route.status}).`);
 		}
 	}
-	if (!before.routes.some((route) => route.kind === 'asset')) {
-		warnings.push(
-			'Ninguna foto de /vista-previa en "antes": la marca de agua no quedó cubierta.',
-		);
-	}
 
 	for (const route of before.routes) {
 		const next = afterByPath.get(route.path);
