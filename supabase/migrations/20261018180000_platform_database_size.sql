@@ -27,6 +27,6 @@ revoke all on function public.platform_database_size() from public, anon, authen
 grant execute on function public.platform_database_size() to service_role;
 
 comment on function public.platform_database_size() is
-  'Size in bytes of the current database, compared against the Supabase Free plan cap by the platform console. Service role only; reads no table.';
+  'Size in bytes of the current database, compared against the Supabase Free plan cap by the platform console. Service role only, reads no table.';
 
 commit;
