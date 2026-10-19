@@ -193,8 +193,8 @@ describe('collectReleaseStatus', () => {
 		);
 	});
 
-	it('verifies Production from checks, its smoke and the public alias, ignoring Vercel records', async () => {
-		// The retired Vercel project left Production deployment records on GitHub, some failed.
+	it('verifies Production from checks, its smoke and the public alias, ignoring legacy deployment records', async () => {
+		// The retired hosting provider left Production deployment records on GitHub, some failed.
 		const run = ghRunner({
 			...responses({ ...allPassed, [CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
 			[`deployments?sha=${sha}&per_page=100`]: [{ id: 3, sha, environment: 'Production' }],

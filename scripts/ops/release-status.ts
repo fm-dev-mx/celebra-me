@@ -379,7 +379,7 @@ export async function collectReleaseStatus(
 		const check = remote.find((entry) => entry.name === name);
 		return { name, state: check?.state ?? 'missing', progress: classifyCheck(sha, check) };
 	});
-	// Production deployment records on GitHub are left over from the retired Vercel project.
+	// Production deployment records on GitHub are left over from the retired hosting provider.
 	const evidence = target === 'preview' ? loadDeploymentForSha(sha, target, run) : null;
 	const deployment = evidence
 		? { ...evidence, progress: classifyDeployment(target, evidence) }
