@@ -154,6 +154,10 @@ interface FetchOverrides {
 	rest?: (url: string) => Response | undefined;
 }
 
+function isSupabaseManagementUrl(url: string): boolean {
+	return new URL(url).hostname === 'api.supabase.com';
+}
+
 function createFetch(overrides: FetchOverrides = {}) {
 	return jest.fn(async (input: string | URL | Request, init?: RequestInit) => {
 		const url = String(input);
@@ -344,7 +348,7 @@ describe('collectPlatformUsage', () => {
 	it('never stores a token or a provider body', async () => {
 		const fetchImpl = createFetch({
 			rest: (url) =>
-				url.includes('supabase.com')
+				isSupabaseManagementUrl(url)
 					? json({ message: `secret ${SB_TOKEN}` }, 500)
 					: undefined,
 		});
@@ -366,7 +370,7 @@ describe('collectPlatformUsage', () => {
 			rest: (url) => {
 				if (url.includes('/durable_objects/namespaces?'))
 					return json({ success: false }, 403);
-				if (url.includes('supabase.com')) return json({}, 403);
+				if (isSupabaseManagementUrl(url)) return json({}, 403);
 				return undefined;
 			},
 			graphql: (query) =>
@@ -566,7 +570,7 @@ describe('snapshot store', () => {
 describe('runPlatformUsageCollector', () => {
 	it('stores the run, then purges rows older than 90 days', async () => {
 		const fetchImpl = createFetch({
-			rest: (url) => (url.includes('supabase.com') ? json({}, 403) : undefined),
+			rest: (url) => (isSupabaseManagementUrl(url) ? json({}, 403) : undefined),
 		});
 
 		const result = await runPlatformUsageCollector(NOW, fetchImpl);
