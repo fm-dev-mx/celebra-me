@@ -1,4 +1,5 @@
 ---
+import SplitWords from '@/components/invitation/SplitWords.astro';
 import '@/styles/invitation/_family.scss';
 import Container from '@/components/layout/Container.astro';
 import CeremonialFiligree from './CeremonialFiligree.astro';
@@ -234,11 +235,11 @@ if (!hasContent) return;
 	<Container class="family__container">
 		<header class="family__header family__reveal" data-reveal-item>
 			<div class="family__header-inner">
-				<span class="family__eyebrow">{resolvedLabels.sectionSubtitle}</span>
-				<h2 class="family__title">{resolvedLabels.sectionTitle}</h2>
+				<span class="family__eyebrow" data-reveal-role="label">{resolvedLabels.sectionSubtitle}</span>
+				<SplitWords class="family__title" text={resolvedLabels.sectionTitle} />
 				<div class="family__header-divider" aria-hidden="true"></div>
 				{resolvedLabels.sectionMessage && (
-					<p class="family__message">{resolvedLabels.sectionMessage}</p>
+					<p class="family__message" data-reveal-role="lede">{resolvedLabels.sectionMessage}</p>
 				)}
 			</div>
 		</header>

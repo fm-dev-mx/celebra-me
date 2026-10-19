@@ -27,7 +27,7 @@ const content: CanonicalEventContentInput = {
 	templateId: 'xv-storybook-lilac',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	description: `${CELEBRANT_NAME} cumple 15 y ya está contando las noches. Sábado ${EVENT_DATE_LABEL}, Los Mochis.`,
-	theme: { preset: 'storybook-lilac', fontFamily: 'serif' },
+	theme: { preset: 'storybook-lilac', fontFamily: 'serif', motion: 'editorial' },
 	eventTiming: AMERICA_TIMING,
 	sectionOrder: [
 		'quote',
@@ -97,7 +97,8 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Quince años, un vestido lila y una lista de personas que no pueden faltar. Usted está en ella.',
+		text: 'Quince años, un vestido lila y una lista de personas que no pueden faltar.',
+		closingLine: 'Usted está en ella.',
 	},
 	family: {
 		variant: 'standard',
@@ -126,7 +127,7 @@ const content: CanonicalEventContentInput = {
 		variant: 'written-days',
 		title: 'Faltan',
 		footerText: '(sí, las estoy contando)',
-		presentationOptions: { dayUnit: 'nights' },
+		presentationOptions: { dayUnit: 'nights', calendar: { mark: 'sun' } },
 	},
 	location: {
 		variant: 'program-sheet',
@@ -191,7 +192,7 @@ const content: CanonicalEventContentInput = {
 	itinerary: {
 		// The moments and hours most common across our XV programs (vals 1h30 after the reception,
 		// dinner an hour later, closing at 01:00), until the client confirms her own.
-		variant: 'timeline-paper',
+		variant: 'stacked-cards',
 		title: 'Así será mi noche',
 		items: [
 			{
@@ -231,7 +232,7 @@ const content: CanonicalEventContentInput = {
 		// patio plate opens the night.
 		variant: 'mirrored-mosaic',
 		eyebrow: '',
-		title: 'Mis cuatro looks',
+		title: 'Mis looks',
 		subtitle: 'Rosa, lila, amarillo… y unos lentes de corazón.',
 		items: [
 			{
@@ -277,6 +278,8 @@ const content: CanonicalEventContentInput = {
 		// deadline field, so the date lives in the copy and the reminder.
 		subcopy:
 			'Avíseme antes del viernes 6 de noviembre, que quiero tener todo listo para recibirle.',
+		lockedMessage:
+			'Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',

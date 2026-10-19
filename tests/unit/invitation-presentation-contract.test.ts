@@ -19,6 +19,7 @@ describe('invitation presentation contract', () => {
 			'timeline-paper',
 			'editorial-ledger',
 			'editorial-program',
+			'stacked-cards',
 		]);
 		expect(resolvePortraitEnabled({ portraitEnabled: true }, false)).toBe(true);
 		expect(resolvePortraitEnabled(undefined, true)).toBe(true);

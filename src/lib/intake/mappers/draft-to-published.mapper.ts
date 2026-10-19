@@ -75,9 +75,19 @@ function mapCountdownFromDraft(
 	const title = str(draftCountdown?.title);
 	const footerText = str(draftCountdown?.footerText);
 
-	const presentationOptions = isNonEmptyObject(draftCountdown?.presentationOptions)
+	const draftOptions = isNonEmptyObject(draftCountdown?.presentationOptions)
 		? draftCountdown.presentationOptions
 		: undefined;
+	// The month calendar is managed-only for now: a draft without one keeps the published choice.
+	const priorOptions = isRecord(priorCountdown?.presentationOptions)
+		? priorCountdown.presentationOptions
+		: undefined;
+	const carriedCalendar =
+		draftOptions?.calendar === undefined ? priorFields(priorOptions, ['calendar']) : {};
+	const presentationOptions =
+		draftOptions || Object.keys(carriedCalendar).length > 0
+			? { ...draftOptions, ...carriedCalendar }
+			: undefined;
 
 	return {
 		variant: requireVariant('countdown', draftCountdown?.variant, priorCountdown?.variant),
@@ -349,6 +359,8 @@ function mapRsvpSection(
 		...(draftRsvp.calendar
 			? { calendar: draftRsvp.calendar }
 			: priorFields(priorRsvp, ['calendar'])),
+		// Managed-only copy, never edited in a draft.
+		...priorFields(priorRsvp, ['lockedMessage']),
 	};
 }
 
@@ -394,9 +406,15 @@ function mapGiftsSection(
 	};
 }
 
-function mapQuoteSection(draftQuote: DraftContent['quote']): Record<string, unknown> {
+function mapQuoteSection(
+	draftQuote: DraftContent['quote'],
+	priorQuote: Record<string, unknown> | undefined,
+): Record<string, unknown> {
 	const text = str(draftQuote?.text);
-	return text ? { text, author: str(draftQuote?.author) } : { text: '' };
+	// The closing line is managed-only: it stays with the published quote while one has text.
+	return text
+		? { text, author: str(draftQuote?.author), ...priorFields(priorQuote, ['closingLine']) }
+		: { text: '' };
 }
 
 const THANK_YOU_OVERLAY_FIELDS = [
@@ -557,7 +575,13 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		description: str(draftContent.description),
 		isDemo: false,
 
-		theme: { preset: input.themePreset },
+		// The motion recipe is managed-only and carried from the prior revision.
+		theme: {
+			preset: input.themePreset,
+			...priorFields(isRecord(priorPublished?.theme) ? priorPublished.theme : undefined, [
+				'motion',
+			]),
+		},
 
 		sectionOrder,
 		eventTiming: mapEventTimingFromDraft(draftContent.eventTiming),
@@ -576,7 +600,7 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		rsvp: mapRsvpSection(draftContent.rsvp, prior('rsvp')),
 		music: mapMusicSection(draftContent.music),
 		gifts: mapGiftsSection(draftContent.gifts, prior('gifts')),
-		quote: mapQuoteSection(draftContent.quote),
+		quote: mapQuoteSection(draftContent.quote, prior('quote')),
 		thankYou: mapThankYouSection(draftContent.thankYou, prior('thankYou')),
 		// Managed-only: never editable in a draft, always carried from the prior revision.
 		memories: prior('memories'),

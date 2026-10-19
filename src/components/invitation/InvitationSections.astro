@@ -83,7 +83,7 @@ const expectedSectionIds = [
 					{component === 'location' && <EventLocation {...props} />}
 					{component === 'itinerary' && <Itinerary {...props} />}
 					{component === 'rsvp' && (renderMode === 'locked' ? (
-						<LockedRsvpPreview title={props.title} variant={props.variant} />
+						<LockedRsvpPreview title={props.title} variant={props.variant} lockedMessage={props.lockedMessage} />
 					) : (
 						<RSVP client:visible {...props} />
 					))}
@@ -99,6 +99,8 @@ const expectedSectionIds = [
 
 <script>
 	import { initInvitationMotion } from '@/lib/invitation/motion-coordinator';
+	import { initSmoothScroll } from '@/lib/invitation/smooth-scroll';
 
 	initInvitationMotion();
+	initSmoothScroll();
 </script>

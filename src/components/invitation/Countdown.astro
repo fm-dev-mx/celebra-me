@@ -3,8 +3,16 @@
 // Premium countdown section
 import '@/styles/invitation/_countdown.scss';
 import CountdownTimer from '@/components/invitation/CountdownTimer.astro';
+import EventCalendar from '@/components/invitation/EventCalendar.astro';
+import SplitWords from '@/components/invitation/SplitWords.astro';
+import StorybookLanternSky from '@/components/invitation/StorybookLanternSky.astro';
+import type { EventCalendarMonth } from '@/lib/invitation/event-calendar';
 import { plainImgSrc } from '@/lib/assets/image-delivery-policy';
-import type { CountdownDayUnit, CountdownUnit } from '@/lib/invitation/countdown-presentation';
+import type {
+	CountdownCalendarMark,
+	CountdownDayUnit,
+	CountdownUnit,
+} from '@/lib/invitation/countdown-presentation';
 import type { CountdownVariant } from '@/lib/invitation/section-variants';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 
@@ -16,6 +24,8 @@ interface Props {
 	ornament?: ImageAsset;
 	visibleUnits?: CountdownUnit[];
 	dayUnit?: CountdownDayUnit;
+	/** Month calendar of the event; replaces the written date. */
+	calendar?: { mark: CountdownCalendarMark; month: EventCalendarMonth };
 	variant: CountdownVariant;
 	isDemo?: boolean;
 }
@@ -28,6 +38,7 @@ const {
 	ornament,
 	visibleUnits,
 	dayUnit,
+	calendar,
 	variant,
 	isDemo = false,
 } = Astro.props;
@@ -68,15 +79,18 @@ const writtenDate = isWrittenDays ? formatWrittenDate(targetIso, eventTimeZone) 
 
 <section class="countdown-section" id="countdown" data-screenshot-section="countdown" data-variant={variant}>
 	<div class="countdown-texture" aria-hidden="true"></div>
+	<StorybookLanternSky scene="ambient" />
 	<div class="countdown-container">
-		<h2 class="countdown-title">{title}</h2>
+		<SplitWords class="countdown-title" text={title} />
 
 		<div class="countdown-timer-wrapper">
 			<CountdownTimer targetIso={targetIso} isDemo={isDemo} visibleUnits={timerUnits} dayUnit={dayUnit} />
 		</div>
 
-		{isWrittenDays ? (
-		<p class="countdown-written-date">{writtenDate}</p>
+		{calendar ? (
+		<EventCalendar month={calendar.month} mark={calendar.mark} />
+		) : isWrittenDays ? (
+		<p class="countdown-written-date" data-reveal-role="lede">{writtenDate}</p>
 		) : (
 		<div class="countdown-date">
 			<div class="subtitle-line"></div>
@@ -105,7 +119,7 @@ const writtenDate = isWrittenDays ? formatWrittenDate(targetIso, eventTimeZone) 
 
 		{footerText && (
 			<footer class="countdown-footer">
-				<p class="countdown-invitation-text">{footerText}</p>
+				<p class="countdown-invitation-text" data-reveal-role="lede">{footerText}</p>
 			</footer>
 		)}
 	</div>

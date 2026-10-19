@@ -534,6 +534,101 @@ describe('mapDraftToPublished', () => {
 		expect(result.quote).toMatchObject({ text: 'Una frase', author: 'Autor' });
 	});
 
+	it('carries managed-only quote.closingLine from the prior revision', () => {
+		const priorPublishedContent = {
+			...baseInput.priorPublishedContent,
+			quote: { text: 'Antes', closingLine: 'Con todo mi cariño.' },
+		};
+		const withText = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent,
+			draftContent: {
+				...baseInput.draftContent,
+				quote: { text: 'Una frase', author: 'Autor' },
+			},
+		});
+		const withoutText = mapDraftToPublished({ ...baseInput, priorPublishedContent });
+
+		expect(withText.quote).toEqual({
+			text: 'Una frase',
+			author: 'Autor',
+			closingLine: 'Con todo mi cariño.',
+		});
+		expect(withoutText.quote).toEqual({ text: '' });
+	});
+
+	it('carries managed-only rsvp.lockedMessage from the prior revision', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent: {
+				...baseInput.priorPublishedContent,
+				rsvp: { ...basePublishedContent.rsvp, lockedMessage: 'Abre tu enlace personal.' },
+			},
+			draftContent: { ...baseInput.draftContent, rsvp: { title: 'Confirma' } },
+		});
+
+		expect(result.rsvp).toMatchObject({
+			title: 'Confirma',
+			lockedMessage: 'Abre tu enlace personal.',
+		});
+	});
+
+	it('carries the prior countdown calendar when the draft lacks one', () => {
+		const priorPublishedContent = {
+			...baseInput.priorPublishedContent,
+			countdown: {
+				...basePublishedContent.countdown,
+				presentationOptions: { dayUnit: 'nights', calendar: { mark: 'heart' } },
+			},
+		};
+		const noCountdown = mapDraftToPublished({ ...baseInput, priorPublishedContent });
+		const draftOptions = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent,
+			draftContent: {
+				...baseInput.draftContent,
+				countdown: { title: 'Ya casi', presentationOptions: { dayUnit: 'days' } },
+			},
+		});
+		const draftCalendar = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent,
+			draftContent: {
+				...baseInput.draftContent,
+				countdown: { presentationOptions: { calendar: { mark: 'sun' } } },
+			},
+		});
+
+		expect((noCountdown.countdown as Record<string, unknown>).presentationOptions).toEqual({
+			calendar: { mark: 'heart' },
+		});
+		expect((draftOptions.countdown as Record<string, unknown>).presentationOptions).toEqual({
+			dayUnit: 'days',
+			calendar: { mark: 'heart' },
+		});
+		expect((draftCalendar.countdown as Record<string, unknown>).presentationOptions).toEqual({
+			calendar: { mark: 'sun' },
+		});
+	});
+
+	it('adds no presentationOptions when neither draft nor prior has any', () => {
+		const result = mapDraftToPublished(baseInput);
+
+		expect((result.countdown as Record<string, unknown>).presentationOptions).toBeUndefined();
+	});
+
+	it('carries managed-only theme.motion from the prior revision', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent: {
+				...baseInput.priorPublishedContent,
+				theme: { fontFamily: 'serif', preset: 'jewelry-box', motion: 'editorial' },
+			},
+		});
+
+		expect(result.theme).toEqual({ preset: 'jewelry-box', motion: 'editorial' });
+	});
+
 	it('maps thankYou section', () => {
 		const result = mapDraftToPublished({
 			...baseInput,

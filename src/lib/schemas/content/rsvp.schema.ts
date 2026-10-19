@@ -23,6 +23,8 @@ export const rsvpSchema = z
 	.object({
 		variant: z.enum(RSVP_VARIANTS),
 		subcopy: z.string().optional(),
+		/** Copy shown instead of the default message while the RSVP is locked (no personal link). */
+		lockedMessage: z.string().trim().min(1).optional(),
 		title: z.string().default('¿Vienes a celebrar conmigo?'),
 		guestCap: rsvpGuestCapSchema.default(1),
 		accessMode: z.enum(['personalized-only', 'hybrid']).default('personalized-only'),

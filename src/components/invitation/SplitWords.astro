@@ -1,0 +1,32 @@
+---
+/* eslint-disable no-restricted-syntax -- each word carries its stagger index as a custom property */
+/**
+ * Title split into words on the server for the editorial reveal. A heading keeps its full text for
+ * assistive technology in `aria-label` and its word spans are hidden from it; a paragraph is read
+ * through its words, which keep their spaces. Outside the editorial recipe the spans are plain
+ * inline text, so the title renders as before.
+ */
+interface Props {
+	text: string;
+	as?: 'h2' | 'h3' | 'p';
+	class?: string;
+	id?: string;
+	/** Index of the first word, so several lines of one text stagger as one sequence. */
+	offset?: number;
+}
+
+const { text, as: Tag = 'h2', class: className, id, offset = 0 } = Astro.props as Props;
+const words: string[] = text.trim().split(/\s+/).filter(Boolean);
+const isHeading = Tag !== 'p';
+---
+
+<Tag class={className} id={id} aria-label={isHeading ? text : undefined} data-reveal-role="title">
+	{
+		words.map((word, index) => (
+			<>
+				<span class="word" style={`--i:${offset + index}`} aria-hidden={isHeading ? 'true' : undefined}>{word}</span>
+				{index < words.length - 1 ? ' ' : ''}
+			</>
+		))
+	}
+</Tag>

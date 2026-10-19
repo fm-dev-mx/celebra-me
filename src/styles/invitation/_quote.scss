@@ -82,6 +82,23 @@
 	margin-bottom: clamp(1.5rem, 3vh, 3rem);
 }
 
+// Optional mark above the text in place of the rule (`--quote-top-art`, an image used as a mask
+// and painted in `--quote-top-art-ink`).
+.quote-top-art {
+	display: var(--quote-top-art-display, none);
+	width: var(--quote-top-art-size, 2.75rem);
+	aspect-ratio: 1;
+	margin: 0 auto var(--quote-top-art-gap, 1.75rem);
+	background: var(--quote-top-art-ink, currentcolor);
+	mask: var(--quote-top-art, none) center / contain no-repeat;
+}
+
+// Final line set apart from the text, in its own ink.
+.quote-closing-line {
+	margin: var(--quote-closing-line-gap, 1em) 0 0;
+	color: var(--quote-closing-line-color, inherit);
+}
+
 .quote-mark {
 	display: var(--quote-mark-display, none);
 	width: 2rem;
