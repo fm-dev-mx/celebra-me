@@ -25,7 +25,8 @@ create table public.platform_usage_snapshots (
       'cloudflare_durable_objects',
       'cloudflare_r2',
       'cloudflare_zone',
-      'supabase_disk'
+      'supabase_disk',
+      'supabase_database'
     )
   ),
   constraint platform_usage_snapshots_payload_object check (jsonb_typeof(payload) = 'object'),

@@ -17,7 +17,11 @@ import {
 	readCloudflareCollectorConfig,
 	readSupabaseCollectorConfig,
 } from './collector-config';
-import { insertPlatformSnapshots, purgePlatformSnapshots } from './snapshot-store';
+import {
+	insertPlatformSnapshots,
+	purgePlatformSnapshots,
+	readPlatformDatabaseSize,
+} from './snapshot-store';
 import type { DatasetResult, PlatformSnapshotProvider, PlatformSnapshotRow } from './types';
 
 export const PLATFORM_SNAPSHOT_RETENTION_DAYS = 90;
@@ -39,6 +43,18 @@ async function collectSupabaseDisk(fetchImpl: typeof fetch): Promise<DatasetResu
 			...(disk.failure === 'http_403' ? { missingPermission: SUPABASE_DISK_PERMISSION } : {}),
 		},
 	};
+}
+
+/** Database size through the service-role RPC: no Management API token needed. */
+async function collectSupabaseDatabase(): Promise<DatasetResult> {
+	try {
+		const usedBytes = await readPlatformDatabaseSize();
+		if (usedBytes === null)
+			return { ok: false, payload: { failure: 'malformed', stage: 'rpc' } };
+		return { ok: true, payload: { usedBytes } };
+	} catch {
+		return { ok: false, payload: { failure: 'network', stage: 'rpc' } };
+	}
 }
 
 /** Never throws: an unexpected error inside a dataset is recorded as `network`. */
@@ -73,6 +89,7 @@ export async function collectPlatformUsage(
 		['cloudflare_r2', run(collectR2)],
 		['cloudflare_zone', run(collectZone)],
 		['supabase_disk', settle(() => collectSupabaseDisk(fetchImpl))],
+		['supabase_database', settle(collectSupabaseDatabase)],
 	];
 	const collectedAt = now.toISOString();
 	return Promise.all(

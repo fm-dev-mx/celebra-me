@@ -4,7 +4,7 @@ import {
 	platformCopy,
 	platformSummaryCopy,
 } from '@/lib/platform/dashboard-copy';
-import type { PlatformSummary } from '@/lib/platform/report-view';
+import { isPlatformReportStale, type PlatformSummary } from '@/lib/platform/report-view';
 
 const ICON: Record<PlatformSummary['level'], string> = {
 	ok: '✓',
@@ -19,7 +19,11 @@ interface Props {
 }
 
 export default function PlatformStatusSummary({ summary, now }: Props) {
+	const stale = isPlatformReportStale(summary.updatedAt, now);
 	const chips: { key: string; tone: string; text: string }[] = [];
+	if (stale) {
+		chips.push({ key: 'stale', tone: 'warning', text: platformSummaryCopy.stale });
+	}
 	if (summary.critical > 0) {
 		chips.push({
 			key: 'critical',
@@ -84,7 +88,9 @@ export default function PlatformStatusSummary({ summary, now }: Props) {
 						))}
 					</ul>
 				) : null}
-				<p className="platform-summary__stamp">
+				<p
+					className={`platform-summary__stamp${stale ? ' platform-summary__stamp--stale' : ''}`}
+				>
 					{summary.updatedAt ? (
 						<time dateTime={summary.updatedAt}>
 							{platformCopy.updated(
@@ -95,6 +101,7 @@ export default function PlatformStatusSummary({ summary, now }: Props) {
 					) : (
 						platformCopy.notUpdated
 					)}
+					{stale ? ` · ${platformCopy.staleHint}` : null}
 				</p>
 			</div>
 		</section>
