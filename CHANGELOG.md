@@ -10,6 +10,36 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.34.0-beta.1] - 2026-10-19
+
+Editorial motion groundwork, a redesigned Olivia y Antonio, the end of the watermarked-photo
+pipeline, and read-only browser checks after every Preview deploy. No new migrations.
+
+### Added
+
+- Pinned scroll scene primitive for editorial motion (#359): `ScrollScene.astro` keeps a sticky
+  stage over a 2–5 viewport section and exposes scene progress through a CSS view timeline or, where
+  unsupported, one passive scroll listener. It runs only under `theme.motion: 'editorial'` without
+  reduced motion and has no consumer yet.
+- Opt-in content options for the "Noche azul de diciembre" redesign of `/boda/olivia-y-antonio`
+  (#361): `hero.presentation.timeFormat: '12h'`, `family.godparentsLayout: 'by-role'`,
+  `location.presentationOptions.venueCard: 'compact'` and the `HairlineFrame` photo frame.
+- The Preview Deploy workflow runs a read-only public content probe (one invitation per event type)
+  and, when its credentials are present, the authenticated dashboard check before it records the
+  `Cloudflare - celebra-me preview smoke` status (#360).
+
+### Removed
+
+- The `/vista-previa/` watermarked-photo pipeline (#362): its route, preview media token and
+  renderer, the preview mark modules and the `invitation:preview-mark:generate` script. Old
+  `/vista-previa/` URLs answer 404 and `PREVIEW_MEDIA_SECRET` is no longer read.
+
+### Fixed
+
+- The Preview Playwright probes send the Cloudflare Access service token headers on every
+  Preview-origin request, so strict service token authentication no longer redirects them to the
+  Access login (#365).
+
 ## [0.33.0-beta.1] - 2026-10-19
 
 Invitation polish and release tooling fixes: selected invitations get a short URL, America gains an
