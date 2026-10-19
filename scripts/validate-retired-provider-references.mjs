@@ -20,8 +20,6 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'CHANGELOG.md',
 	'pnpm-lock.yaml',
 	'supabase/migration-rollout-registry.json',
-	'.agent/plans/active/cloudflare-workers-migration.md',
-	'.agent/plans/active/vercel-cloudflare-closeout.md',
 	// Guards and their tests: they name the providers to reject them.
 	'scripts/validate-retired-provider-references.mjs',
 	'scripts/validate-structure.mjs',
@@ -33,16 +31,6 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'tests/unit/deployment-workflow-contract.test.ts',
 	'tests/unit/post-deploy-smoke.test.ts',
 	'tests/scripts/operational-contracts.test.ts',
-	// Until the owner closes the Vercel project and deletes the local `.vercel/` directory:
-	// ignore rules, the Sign Worker origin of the backup deployment, and the rollback runbook.
-	'.gitignore',
-	'.prettierignore',
-	'.vscode/settings.json',
-	'eslint.config.js',
-	'jest.config.cjs',
-	'workers/celebra-memories-sign/wrangler.json',
-	'workers/celebra-memories-sign/worker-bindings.d.ts',
-	'docs/operations/cloudflare-production-cutover.md',
 ]);
 // Migrations are history.
 const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/'];

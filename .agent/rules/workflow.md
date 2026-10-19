@@ -13,7 +13,9 @@ This document defines the core 7-step operating procedure for agents.
    and authorizes the exact operation, following `.agent/rules/git-safety.md`.
 3. **Set Scope:** Establish the Task Contract for this work (objective, `operation_mode`, authorized
    actions, scope, non-goals, invariants, acceptance, verification, stop conditions) per
-   `.agent/plans/README.md`. State file boundaries explicitly. For mutable sessions, run
+   `.agent/plans/README.md`. State file boundaries explicitly. Gather every material owner decision
+   and ask them all in one round now (at most four questions, recommended option first); ask again
+   only when new evidence appears. Approval gates keep their explicit yes. For mutable sessions, run
    `pnpm agent:git-safety:start` (interactive plumbing; see `.agent/rules/git-safety.md`).
 4. **Implement Narrowly:** Edit only authorized files within scope. Keep the implementation simple,
    avoid duplicate owners and speculative legacy compatibility, and do not clean unrelated working

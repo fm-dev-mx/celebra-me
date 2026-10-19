@@ -3,7 +3,7 @@ name: publish-production
 description:
   Publish an identified code release from develop through a protected main PR and verify Production.
 domain: workflow
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - User explicitly invokes publish-production to execute a code release
 preconditions:
@@ -34,6 +34,10 @@ update of the exact `develop` → `main` release PR, its merge after all protect
 pass, the resulting automatic Production deployment, and read-only deployment/smoke verification.
 Preserve meaningful commits and use the allowed merge method. Never push or commit directly to main.
 Supporting skills inherit this request; do not stop after opening the PR or ask again to merge it.
+If the release needs an owner decision outside this authority (for example an unclear range or a
+gated migration), gather every such decision and ask them in one round before the first write, per
+the [report contract](../../templates/agent-report-contract.md); ask again only when new evidence
+appears. Each gate in this skill keeps its explicit approval.
 
 Create or update that PR only through [production-pr](../production-pr/SKILL.md), the canonical PR
 procedure; this skill adds the merge and deployment verification. Identify all included

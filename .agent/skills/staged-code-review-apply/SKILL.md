@@ -6,7 +6,7 @@ description: |
   production, or governance docs. Never stages, unstages, or commits — user owns the index for
   visualization. Respects prior review MCQ scope choices.
 domain: workflow
-version: 1.6.0
+version: 1.7.0
 when_to_use:
   - Immediately after a staged-code-review report when the user says proceed / apply / adelante
   - User explicitly asks to apply staged-code-review fixes
@@ -88,7 +88,9 @@ git stash apply --index
 3. **Revalidate** — load gates/protected paths; assign a **final** tag per finding (rules below).
 4. **Scope bind** — if the user already chose scope via the review MCQ (`a`/`b`/`c`), honor it and
    do **not** re-ask the same question. If no equivalent choice exists and any final tag is
-   `needs-confirm`, stop for one pre-apply MCQ before editing.
+   `needs-confirm`, stop for one pre-apply MCQ before editing. Put every pending choice (scope,
+   stash, `needs-confirm` manifest) in that single round; ask again mid-apply only when revalidation
+   finds new evidence.
 5. **Apply** — only authorized items. Re-read each target (line drift). Prefer deletion. Clean
    blank-line residue. Do not stage, unstage, or commit.
 6. **Verify** — proportional commands (below). Fix regressions only in files you modified.

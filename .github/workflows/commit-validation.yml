@@ -16,9 +16,12 @@ on:
                 type: choice
                 options: [compare, candidate]
                 default: compare
+    # A main push is a merged release: `pnpm ops:release-status --target production` requires these
+    # checks on the exact main SHA, which is a new merge commit nothing else validated.
     push:
         branches:
             - develop
+            - main
     # Pull requests into develop (for example Dependabot updates) are validated before they land;
     # pull requests into main are release promotions.
     pull_request:

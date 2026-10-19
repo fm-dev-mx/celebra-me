@@ -23,7 +23,7 @@ declare namespace Cloudflare {
 		MEMORIES_BUCKET: R2Bucket;
 		NONCE_GUARD: DurableObjectNamespace;
 		MEMORIES_STORAGE_TARGET: 'staging';
-		MEMORIES_ALLOWED_ORIGINS: 'https://celebra-me.vercel.app';
+		MEMORIES_ALLOWED_ORIGINS: 'https://celebra-me-preview.celebra-me-com.workers.dev';
 	}
 	interface Env extends __BaseEnv_MemoriesSignBindings {}
 }

@@ -53,6 +53,15 @@ provider-specific status vocabulary.
 If the mode is omitted, choose the least-privileged mode consistent with the user's verb. Ask only
 when the remaining ambiguity would materially change permissions or acceptance.
 
+### Owner decisions
+
+Before acting, gather every material owner decision the contract depends on (scope, permissions,
+acceptance) and ask them all in one round at the start: at most four questions, each with its
+recommended option first. Ask again only when new evidence appears that changes a decision. This
+governs when questions are asked, never whether: approvals that an owning rule gates (Git writes,
+merge, deploy, Production) still require their explicit yes. Presentation follows
+`.agent/templates/agent-report-contract.md`.
+
 | Field                                     | Meaning                                                              |
 | ----------------------------------------- | -------------------------------------------------------------------- |
 | Objective                                 | What success looks like                                              |
