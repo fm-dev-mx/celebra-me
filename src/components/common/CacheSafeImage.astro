@@ -42,14 +42,6 @@ const {
 const widths = delivery?.width ? undefined : defaultWidths;
 const width = delivery?.width ?? defaultWidth;
 const height = delivery?.height ?? defaultHeight;
-// A delivery width without a height keeps the source aspect ratio: the default height belongs
-// to the default width and would crop the transform.
-const transformHeight = delivery?.width && !delivery.height ? undefined : height;
-const remoteSize =
-	transformHeight !== undefined
-		? { width, height: transformHeight }
-		: { width, inferSize: true as const };
-const localSize = transformHeight !== undefined ? { width, height: transformHeight } : { width };
 const format = delivery?.format ?? defaultFormat;
 const quality = delivery?.quality ?? defaultQuality;
 const optimize = shouldOptimizeThroughImageService(src, delivery);
@@ -61,7 +53,8 @@ const optimize = shouldOptimizeThroughImageService(src, delivery);
 			<Image
 				src={src}
 				alt={alt}
-				{...remoteSize}
+				width={width}
+				height={height}
 				class={className}
 				loading={loading}
 				decoding={decoding}
@@ -87,7 +80,8 @@ const optimize = shouldOptimizeThroughImageService(src, delivery);
 			<Image
 				src={src}
 				alt={alt}
-				{...localSize}
+				width={width}
+				height={height}
 				class={className}
 				loading={loading}
 				decoding={decoding}
