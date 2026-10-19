@@ -212,7 +212,6 @@ describe('invitation full-page section composite', () => {
 			expect(getDefaultHideSelectors()).toContain(selector);
 		}
 		expect(getDefaultHideSelectors().join(',')).toContain('astro-dev-toolbar');
-		expect(getDefaultHideSelectors().join(',')).toContain('vercel');
 	});
 });
 

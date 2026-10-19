@@ -1,6 +1,6 @@
 /**
  * Environment reader safe to import from shared modules.
- * Vercel and Astro SSR expose runtime values through process.env. No
+ * Astro SSR exposes runtime values through process.env. No
  * filesystem or Node-only imports belong here because this helper can be
  * reached while Vite assembles browser-safe route code.
  */

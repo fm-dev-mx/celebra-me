@@ -19,7 +19,7 @@ const MECHANICAL_PATH_PATTERN =
 const SUPPORTING_AREAS = new Set(['tests', 'docs']);
 const TOP_LEVEL_AREAS = new Set(['src', 'docs', 'tests', 'supabase', 'public', '.github']);
 const ROOT_CONFIG_PATTERN =
-	/^(?:package\.json|pnpm-lock\.yaml|tsconfig(?:\..+)?\.json|eslint\.config\.js|commitlint\.config\.cjs|astro\.config\.mjs|jest\.config\.cjs|playwright\.config\.ts|vercel\.json|README\.md|CONTRIBUTING\.md)$/;
+	/^(?:package\.json|pnpm-lock\.yaml|tsconfig(?:\..+)?\.json|eslint\.config\.js|commitlint\.config\.cjs|astro\.config\.mjs|jest\.config\.cjs|playwright\.config\.ts|README\.md|CONTRIBUTING\.md)$/;
 
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';

@@ -294,7 +294,7 @@ test.describe('Landing page regressions', () => {
 		expect(heroMessage).not.toContain('Cupón');
 		expect(heroMessage).not.toMatch(/CM-\d+-/);
 
-		// Outside Vercel production no rewriter runs: a click must leave the message untouched.
+		// Outside production no rewriter runs: a click must leave the message untouched.
 		const clickedHref = await heroCta.evaluate((anchor) => {
 			anchor.addEventListener('click', (event) => event.preventDefault(), { once: true });
 			anchor.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));

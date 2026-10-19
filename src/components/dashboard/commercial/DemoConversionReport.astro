@@ -15,7 +15,7 @@ const display = (value: number | null) => value === null ? 'Sin medición' : val
 	</form>
 	{report ? <>
 		<p>{report.period.startDate} a {report.period.endDate} · {report.period.timeZone}. No incluye hoy.</p>
-		<p>Consulta paginada completa de registros disponibles; no acredita cobertura histórica total. Las visitas dependen también de qué enlaces se compartieron y del consentimiento. No se suman datos de GA4 o Vercel.</p>
+		<p>Consulta paginada completa de registros disponibles; no acredita cobertura histórica total. Las visitas dependen también de qué enlaces se compartieron y del consentimiento. No se suman datos de GA4.</p>
 		<div class="demo-conversion-report__table" tabindex="0" role="region" aria-label="Métricas por demo">
 		<table><thead><tr>{['Demo', 'Vistas', 'Clics a WhatsApp', 'CTR en demo', 'Compartida', 'Consulta recibida', 'Cotización', 'Pago', 'Perdida'].map((h) => <th scope="col">{h}</th>)}</tr></thead>
 		<tbody>{report.metrics.map((m) => <tr>

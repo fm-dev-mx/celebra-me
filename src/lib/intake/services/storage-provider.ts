@@ -4,7 +4,7 @@
  * Provides a unified contract for storing and resolving invitation assets:
  * - Local (dev-local): Supabase Storage local (http://127.0.0.1:54321 / invitation-assets)
  * - Preview / Production on the Cloudflare Worker: R2 (https://media.celebra-me.com/...)
- * - Preview / Production without the R2 binding (Vercel rollback host): Cloudinary
+ * - Preview / Production without the R2 binding: Cloudinary
  */
 
 import { DEFAULT_BUCKET, getPublicUrl, uploadToStorage } from '@/lib/intake/storage';

@@ -8,7 +8,7 @@
  * does not import scripts/ to preserve the Astro server boundary.
  *
  * The reconciliation artifact lives in the repository checkout, so reading it only makes
- * sense in a local process. A hosted runtime (Vercel, Workers) has no checkout and its
+ * sense in a local process. A hosted runtime (Workers) has no checkout and its
  * `node:fs` may be virtual, so detection is skipped there with an explicit NOT_APPLICABLE
  * instead of a misleading CLEAN.
  */

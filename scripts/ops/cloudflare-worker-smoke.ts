@@ -1,7 +1,7 @@
 /**
  * Smoke of one Cloudflare application Worker URL for one exact SHA: on Preview the stable host or
  * a version URL, on Production a version URL only (that Worker has no `workers.dev` host and no
- * traffic before the cutover). Runs the public probes shared with the Vercel smoke, then verifies
+ * traffic before the cutover). Runs the public probes shared with `post-deploy-smoke.ts check`, then verifies
  * the serving build identity (`/api/health`: commit SHA and deploy environment). On Production it
  * also proves the version URL is closed without the Cloudflare Access service token. The token
  * travels only to that origin. Read-only: it never deploys anything.

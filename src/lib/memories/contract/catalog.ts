@@ -201,7 +201,6 @@ export const MEMORIES_CONFIG_KEYS = [
 	'uploadSigningKey',
 	'retrievalSigningKey',
 	'shareSecret',
-	'cronSecret',
 ] as const;
 export type MemoriesConfigKey = (typeof MEMORIES_CONFIG_KEYS)[number];
 export type MemoriesWorkerKey = 'uploadOrigin' | 'retrievalOrigin';

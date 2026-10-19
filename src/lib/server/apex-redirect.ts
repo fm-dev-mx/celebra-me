@@ -1,5 +1,5 @@
 /**
- * Sends the bare domain to the canonical `www` host, as Vercel did before the cutover. The
+ * Sends the bare domain to the canonical `www` host. The
  * printed QR codes point at the apex, and the memories Sign Worker accepts uploads only from
  * `www`, so a page served on the apex could never upload. The Worker answers both zone
  * routes, so the redirect lives here as well as in the zone's redirect rule; the in-process

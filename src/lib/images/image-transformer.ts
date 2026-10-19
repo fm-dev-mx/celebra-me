@@ -2,7 +2,7 @@
  * Image processing contract shared by the intake pipeline and the watermarked preview media.
  *
  * Two implementations exist because the two hosting targets cannot run the same engine:
- * native `sharp` (Node, Vercel and local development) and the Cloudflare Images binding
+ * native `sharp` (Node and local development) and the Cloudflare Images binding
  * (Workers). Callers ask for an operation and never see the engine.
  */
 import type { ProvenanceMetadata } from './image-metadata';

@@ -1,7 +1,6 @@
 /**
  * Memories cleanup as an invocable job: deploy-identity gate, the cleanup itself and the
- * started/completed evidence lines. Transport-agnostic so the Vercel HTTP route today and the
- * Worker `scheduled()` handler later share one implementation.
+ * started/completed evidence lines. The Worker `scheduled()` handler runs it.
  */
 import { randomUUID } from 'node:crypto';
 import { readBuildIdentity } from '@/lib/environment';

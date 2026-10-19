@@ -1,7 +1,6 @@
 /**
  * Engagement maintenance as an invocable job: runs the maintenance and logs the outcome with
- * its `source`. Transport-agnostic so the Vercel HTTP route today and the Worker `scheduled()`
- * handler later share one implementation.
+ * its `source`. The Worker `scheduled()` handler runs it.
  */
 import {
 	runEngagementMaintenance,

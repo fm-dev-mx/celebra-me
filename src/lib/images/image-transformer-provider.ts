@@ -1,7 +1,7 @@
 /**
  * Picks the image engine of the running host. The Cloudflare Worker entry installs the
- * `IMAGES` binding before the first request (`src/worker.ts`); every other host (Vercel, the
- * dev server, tests) uses `sharp`. Inside Workers without the binding the lookup fails
+ * `IMAGES` binding before the first request (`src/worker.ts`); every other host (the dev
+ * server, tests) uses `sharp`. Inside Workers without the binding the lookup fails
  * loudly: `sharp` cannot load there.
  */
 import { isCloudflareWorkersRuntime } from '@/lib/server/platform-request';

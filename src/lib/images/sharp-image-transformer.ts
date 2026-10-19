@@ -1,5 +1,5 @@
 /**
- * `sharp` implementation of the image transformer (Node, Vercel, local development).
+ * `sharp` implementation of the image transformer (Node, local development).
  * Native and Node-only: it is loaded lazily so importers that never transform pixels do not
  * require the native module at evaluation time.
  */

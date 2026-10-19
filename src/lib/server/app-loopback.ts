@@ -3,7 +3,7 @@
  * Worker's `fetch()` to a hostname of its own zone skips the Worker and reaches the zone's
  * DNS origin, so a self-check over HTTP measures that origin instead of the Worker. The
  * Worker entry installs the adapter's handler before the first request (`src/worker.ts`);
- * every other host (Vercel, the dev server, the preflight script, tests) has none and
+ * every other host (the dev server, the preflight script, tests) has none and
  * keeps `fetch`.
  */
 

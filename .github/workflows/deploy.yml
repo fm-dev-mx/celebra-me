@@ -66,7 +66,6 @@ jobs:
 
             - name: Build Cloudflare target
               env:
-                  CELEBRA_BUILD_TARGET: cloudflare
                   CELEBRA_DEPLOY_ENV: preview
                   BASE_URL: ${{ env.PREVIEW_WORKER_URL }}
                   PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
@@ -149,6 +148,64 @@ jobs:
                   done
                   echo "Stable host reports '${served:-unreported}', expected $GITHUB_SHA." >&2
                   exit 1
+
+            - name: Verify published invitation images
+              env:
+                  MEDIA_VERIFY_REPORT: .tmp/media-verify/preview-media-verification.json
+                  PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'
+                  PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'
+                  PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
+                  PLAYWRIGHT_PREVIEW_SUPABASE_URL: ${{ secrets.PLAYWRIGHT_PREVIEW_SUPABASE_URL }}
+                  PREVIEW_DB_URL: ${{ secrets.PREVIEW_DB_URL }}
+              run: |
+                  mkdir -p "$(dirname "$MEDIA_VERIFY_REPORT")"
+                  set +e
+                  # --silent keeps the pnpm banner out of the JSON report.
+                  pnpm --silent invitation:media:verify -- --target preview --all --json > "$MEDIA_VERIFY_REPORT"
+                  status=$?
+                  set -e
+                  # Package images the Preview DB has not received yet are a content backlog, not a
+                  # delivery failure: list them, do not fail. `pnpm dbs` owns the next command.
+                  if jq -e '(.summary.pendingPublish // 0) > 0' "$MEDIA_VERIFY_REPORT" > /dev/null 2>&1; then
+                      jq -r '
+                          "### Preview images pending publication: \(.summary.pendingPublish)",
+                          "",
+                          "| Route | Asset |",
+                          "| --- | --- |",
+                          (.rows[] | select(.classification == "PENDING_PUBLISH") | "| \(.route) | \(.assetKey) |")
+                      ' "$MEDIA_VERIFY_REPORT" | tee -a "$GITHUB_STEP_SUMMARY"
+                  fi
+                  if [ "$status" -ne 0 ]; then
+                      {
+                          echo "### Preview media verification failed (exit $status)"
+                          echo
+                          if jq -e '.rows | type == "array"' "$MEDIA_VERIFY_REPORT" > /dev/null 2>&1; then
+                              # Report rows carry only routes, asset keys, redacted URLs, and fixed reasons.
+                              jq -r '
+                                  ([.rows[] | select(.classification != "HEALTHY" and .classification != "PENDING_PUBLISH")]) as $failed
+                                  | "Invitations: \(.summary.invitations), assets: \(.summary.assets), failures: \(.summary.failures)",
+                                    "",
+                                    "| Route | Asset | Classification | Reasons |",
+                                    "| --- | --- | --- | --- |",
+                                    ($failed[:50][] | "| \(.route) | \(.assetKey) | \(.classification) | \(.reasons | join("; ") | gsub("[|]"; "/")) |"),
+                                    (if ($failed | length) > 50 then "", "_\(($failed | length) - 50) more failures in the media-verification artifact._" else empty end)
+                              ' "$MEDIA_VERIFY_REPORT"
+                          else
+                              echo "No JSON report was produced; see the step log for the error."
+                          fi
+                      } | tee -a "$GITHUB_STEP_SUMMARY"
+                  fi
+                  exit "$status"
+
+            - name: Upload media verification report
+              if: always()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: preview-media-verification-${{ github.sha }}
+                  path: .tmp/media-verify/preview-media-verification.json
+                  if-no-files-found: ignore
+                  include-hidden-files: true
+                  retention-days: 7
 
             - name: Record success
               run: |

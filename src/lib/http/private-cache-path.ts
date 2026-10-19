@@ -22,7 +22,7 @@ export function withPrivateNoStore(response: Response): Response {
 
 /**
  * Path prefixes whose responses are identity-dependent or otherwise unsafe
- * for Vercel's default `public, max-age=0, must-revalidate` function header.
+ * for a shared cache that honors a default `public, max-age=0, must-revalidate` header.
  * `/login` is public HTML and is excluded on purpose.
  */
 export function isPrivateNoStorePath(pathname: string): boolean {

@@ -88,7 +88,6 @@ const BLOCKED_THIRD_PARTY_HOSTS = [
 	/(^|\.)google-analytics\.com$/,
 	/(^|\.)googletagmanager\.com$/,
 	/(^|\.)doubleclick\.net$/,
-	/(^|\.)vercel-insights\.com$/,
 	/(^|\.)cloudflareinsights\.com$/,
 ];
 
