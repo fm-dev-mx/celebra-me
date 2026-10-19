@@ -84,7 +84,7 @@ export function recoveryTablesForProfile(
 	);
 }
 
-export interface RecoveryTableFingerprint {
+interface RecoveryTableFingerprint {
 	rowCount: number;
 	sha256: string;
 }
@@ -188,7 +188,7 @@ function sha256(value: string): string {
 	return createHash('sha256').update(value).digest('hex');
 }
 
-export const AUTH_USERS_SOURCE = `(
+const AUTH_USERS_SOURCE = `(
 			  select id, aud, role, email, email_confirmed_at, raw_app_meta_data,
 			         raw_user_meta_data, is_super_admin, phone, phone_confirmed_at,
 			         banned_until, deleted_at, is_sso_user, is_anonymous, created_at, updated_at

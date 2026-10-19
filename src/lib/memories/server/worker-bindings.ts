@@ -11,8 +11,8 @@ interface ServiceBinding {
 	fetch(request: Request): Promise<Response>;
 }
 
-export const MEMORIES_SIGN_BINDING = 'MEMORIES_SIGN';
-export const MEMORIES_RETRIEVE_BINDING = 'MEMORIES_RETRIEVE';
+const MEMORIES_SIGN_BINDING = 'MEMORIES_SIGN';
+const MEMORIES_RETRIEVE_BINDING = 'MEMORIES_RETRIEVE';
 
 /**
  * Origin of the request URL when no retrieval origin is configured. A Service Binding

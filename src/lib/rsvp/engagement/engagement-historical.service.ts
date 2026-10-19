@@ -18,7 +18,7 @@ import type {
 } from '@/interfaces/dashboard/engagement-ranking.interface';
 
 /** Mirrors compute_engagement_historical_estimates method version 1. */
-export const HISTORICAL_METHOD: HistoricalMethod = {
+const HISTORICAL_METHOD: HistoricalMethod = {
 	version: 1,
 	cutoff: '2026-10-12T16:25:00Z',
 	previewWindowMinutes: 2,

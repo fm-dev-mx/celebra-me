@@ -7,7 +7,7 @@ import {
 	type EngagementMaintenanceResult,
 } from './engagement-maintenance.service';
 
-export const ENGAGEMENT_MAINTENANCE_SCHEDULED_SOURCE = 'scheduled_cron';
+const ENGAGEMENT_MAINTENANCE_SCHEDULED_SOURCE = 'scheduled_cron';
 
 export interface EngagementMaintenanceJobDeps {
 	/** Who triggered the run, e.g. `scheduled_cron`; logged with the counts. */

@@ -442,7 +442,7 @@ function annotateUnknownPublicationCauses(view: CanonicalStatusView): void {
 	}
 }
 
-export function buildLocalCanonicalStatusView(): CanonicalStatusView {
+function buildLocalCanonicalStatusView(): CanonicalStatusView {
 	const expectedVersions = listExpectedMigrationVersions();
 	const disposable = assertCurrentDisposableMigrationProof();
 	const registryCount = listInvitationDefinitions().length;
