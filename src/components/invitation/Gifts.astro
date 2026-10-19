@@ -1,4 +1,5 @@
 ---
+import SplitWords from '@/components/invitation/SplitWords.astro';
 import '@/styles/invitation/_gifts.scss';
 import { GiftIcon } from '@/components/common/icons/invitation/Gift';
 import { BankCardIcon } from '@/components/common/icons/ui/BankCard';
@@ -200,8 +201,8 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 					decoding="async"
 				/>
 			)}
-			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}
-			<h2 class="gifts-section__title">{title}</h2>
+			{eyebrow && <span class="gifts-section__eyebrow" data-reveal-role="label">{eyebrow}</span>}
+			<SplitWords class="gifts-section__title" text={title} />
 			{!isLegendOnly && (
 				<div class="gifts-section__flourish" aria-hidden="true">
 					<span class="flourish-line"></span>
@@ -209,7 +210,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 					<span class="flourish-line"></span>
 				</div>
 			)}
-			{subtitle && <p class="gifts-section__subtitle">{subtitle}</p>}
+			{subtitle && <p class="gifts-section__subtitle" data-reveal-role="lede">{subtitle}</p>}
 		</header>
 
 		{!isLegendOnly && (

@@ -45,7 +45,8 @@ type PortableOverrides = {
 	giftsVariant?: string;
 	rsvpVariant?: string;
 	personalizedAccessVariant?: string;
-	itineraryVariant?: 'standard' | 'timeline-paper' | 'editorial-ledger' | 'editorial-program';
+	itineraryVariant?:
+		'standard' | 'timeline-paper' | 'editorial-ledger' | 'editorial-program' | 'stacked-cards';
 	thankYouVariant?: string;
 	/** Optional theme skin; structural selection must not depend on it. */
 	themePreset?: string;

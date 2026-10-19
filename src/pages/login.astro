@@ -40,15 +40,6 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			<section id="panel-login" class="auth-panel">
 				<form id="login-form" class="auth-form" method="post" novalidate>
 					<div class="auth-field">
-						<label for="login-method">¿Cómo desea ingresar?</label>
-						<select id="login-method" name="method">
-							<option value="password">Correo o usuario + contraseña</option>
-							<option value="magic_link">Magic Link</option>
-						</select>
-						<p id="login-method-help" class="auth-hint" aria-live="polite"></p>
-					</div>
-
-					<div class="auth-field">
 						<label for="login-email">Correo electrónico o usuario</label>
 						<input
 							id="login-email"

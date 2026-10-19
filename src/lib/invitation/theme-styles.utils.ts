@@ -16,6 +16,7 @@ export function generateThemeScopedStyles(
 		'data-event-slug': eventSlug,
 		'data-reveal-state': showEnvelope ? 'sealed' : 'revealed',
 		'data-is-demo': isDemo ? 'true' : 'false',
+		...(theme.motion ? { 'data-motion': theme.motion } : {}),
 	};
 
 	const overrides: Record<string, string> = {};

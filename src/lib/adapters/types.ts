@@ -3,6 +3,7 @@ import type {
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
 	EventType,
+	ThemeMotionMode,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
@@ -10,7 +11,12 @@ import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
-import type { CountdownDayUnit, CountdownUnit } from '@/lib/invitation/countdown-presentation';
+import type {
+	CountdownCalendarMark,
+	CountdownDayUnit,
+	CountdownUnit,
+} from '@/lib/invitation/countdown-presentation';
+import type { EventCalendarMonth } from '@/lib/invitation/event-calendar';
 import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
 import type {
 	GalleryLayoutRole,
@@ -49,6 +55,8 @@ export interface ThemeConfig {
 	preset: ThemePreset;
 	// Derived CSS class for the body/wrapper
 	themeClass: string;
+	/** Opt-in motion mode (`theme.motion`); absent keeps the per-section recipes. */
+	motion?: ThemeMotionMode;
 }
 
 export interface HeroViewModel {
@@ -291,6 +299,7 @@ export interface InvitationViewModel {
 		quote?: {
 			text: string;
 			author?: string;
+			closingLine?: string;
 			variant: QuoteVariant;
 		};
 		countdown?: {
@@ -302,6 +311,7 @@ export interface InvitationViewModel {
 			ornament?: ImageAsset;
 			visibleUnits: CountdownUnit[];
 			dayUnit?: CountdownDayUnit;
+			calendar?: { mark: CountdownCalendarMark; month: EventCalendarMonth };
 			variant: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
 			isDemo?: boolean;
@@ -354,6 +364,7 @@ export interface InvitationViewModel {
 			eventSlug: string;
 			eventType: EventType;
 			subcopy?: string;
+			lockedMessage?: string;
 			title: string;
 			guestCap: number;
 			locationVisibility?: LocationVisibility;

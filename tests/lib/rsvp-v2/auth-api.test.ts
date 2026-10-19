@@ -7,7 +7,6 @@ import {
 	findAuthUserByLoginIdentifier,
 	getAuthUserByAccessToken,
 	refreshAccessToken,
-	sendMagicLink,
 	signInWithPassword,
 } from '@/lib/rsvp/auth/auth-api';
 import { AuthRequestError } from '@/lib/rsvp/core/errors';
@@ -47,13 +46,9 @@ describe('rsvp authApi', () => {
 		expect(login.user.id).toBe('u1');
 	});
 
-	it('sends magic link and finds auth users by email or login alias', async () => {
+	it('finds auth users by email or login alias', async () => {
 		global.fetch = jest
 			.fn()
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({ message_id: 'msg-1' }),
-			})
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({
@@ -79,10 +74,6 @@ describe('rsvp authApi', () => {
 				}),
 			}) as unknown as typeof fetch;
 
-		const magic = await sendMagicLink({
-			email: 'admin@test.com',
-			redirectTo: 'http://localhost/dashboard/invitados',
-		});
 		const user = await findAuthUserByEmail({
 			email: 'admin@test.com',
 		});
@@ -90,9 +81,6 @@ describe('rsvp authApi', () => {
 			identifier: 'admin',
 		});
 
-		expect(magic.message_id).toBe('msg-1');
-		const magicRequest = (global.fetch as jest.Mock).mock.calls[0]?.[1] as RequestInit;
-		expect(JSON.parse(String(magicRequest.body))).toMatchObject({ create_user: false });
 		expect(user?.id).toBe('u-admin');
 		expect(userByAlias?.login_alias).toBe('admin');
 	});
@@ -389,9 +377,9 @@ describe('rsvp authApi', () => {
 				.mockResolvedValueOnce({ ok: false, status: 503 }) as typeof fetch;
 
 			await signInWithPassword({ email: 'private@example.com', password: 'SecretPassword!' });
-			await expect(sendMagicLink({ email: 'private@example.com' })).rejects.toBeInstanceOf(
-				AuthRequestError,
-			);
+			await expect(
+				refreshAccessToken({ refreshToken: 'secret-refresh' }),
+			).rejects.toBeInstanceOf(AuthRequestError);
 
 			expect(log).toHaveBeenCalledTimes(2);
 			const events = log.mock.calls.map(([entry]) => JSON.parse(String(entry)));
@@ -405,7 +393,7 @@ describe('rsvp authApi', () => {
 				}),
 				expect.objectContaining({
 					event: 'auth_upstream_request',
-					operation: 'send_magic_link',
+					operation: 'refresh_session',
 					outcome: 'failure',
 					status: 503,
 					errorKind: 'http',

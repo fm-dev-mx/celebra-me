@@ -13,7 +13,6 @@ import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro
 import Quote from '@/components/invitation/Quote.astro';
 import RSVP from '@/components/invitation/RSVP';
 import ThankYou from '@/components/invitation/ThankYou.astro';
-import PreviewStamp from '@/components/invitation/PreviewStamp.astro';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import {
 	buildInvitationSectionRenderDescriptors,
@@ -22,20 +21,10 @@ import {
 interface Props {
 	pageContext: InvitationPageContext;
 	showDemoConversion?: boolean;
-	/** Unpaid client invitation: seal the photo sections. */
-	previewMode?: boolean;
 }
 
-const { pageContext, showDemoConversion = false, previewMode = false } = Astro.props;
-const PREVIEW_STAMPED_SECTIONS = new Set(['gallery', 'family']);
+const { pageContext, showDemoConversion = false } = Astro.props;
 const sections = buildInvitationSectionRenderDescriptors(pageContext);
-const stampedSectionIndices = new Set(
-	previewMode
-		? sections.flatMap((section, index) =>
-				PREVIEW_STAMPED_SECTIONS.has(section.component) ? [index] : [],
-			)
-		: [],
-);
 
 const interludeIndices = new Map<number, number>();
 {
@@ -70,20 +59,18 @@ const expectedSectionIds = [
 	{
 		sections.map(({component, props, afterInterlude, intersection, intersectionSource, reveal, renderMode}, index) => {
 			const interludeIndex = component === 'interlude' ? interludeIndices.get(index) : undefined;
-			const stamped = stampedSectionIndices.has(index);
 
 			return (
 				<div
 					data-section-id={`section-${index}-${component}`}
 					data-screenshot-section={getScreenshotSection(component, index)}
-					class:list={['invitation-section-wrapper', { 'preview-stamp-host': stamped }]}
+					class="invitation-section-wrapper"
 					data-section-kind={component}
 					data-intersection={intersection}
 					data-intersection-source={intersectionSource}
 					data-reveal={reveal}
 					{...(afterInterlude && { 'data-after-interlude': '' })}
 				>
-					{stamped && <PreviewStamp placement="section" />}
 					{component === 'interlude' && <Interlude {...props} interludeIndex={interludeIndex} />}
 					{component === 'quote' && <Quote {...props} />}
 					{component === 'family' && <Family {...props} />}
@@ -96,7 +83,7 @@ const expectedSectionIds = [
 					{component === 'location' && <EventLocation {...props} />}
 					{component === 'itinerary' && <Itinerary {...props} />}
 					{component === 'rsvp' && (renderMode === 'locked' ? (
-						<LockedRsvpPreview title={props.title} variant={props.variant} />
+						<LockedRsvpPreview title={props.title} variant={props.variant} lockedMessage={props.lockedMessage} />
 					) : (
 						<RSVP client:visible {...props} />
 					))}
@@ -112,6 +99,8 @@ const expectedSectionIds = [
 
 <script>
 	import { initInvitationMotion } from '@/lib/invitation/motion-coordinator';
+	import { initSmoothScroll } from '@/lib/invitation/smooth-scroll';
 
 	initInvitationMotion();
+	initSmoothScroll();
 </script>

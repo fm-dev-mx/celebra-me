@@ -62,6 +62,7 @@ it('isolates native enlargement and commercial navigation while preserving legac
 			src: 'last.webp',
 			caption: 'Caption',
 			alt: 'Last photograph',
+			origin: null,
 		});
 		legacy.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 		expect(listener).toHaveBeenCalledTimes(2);

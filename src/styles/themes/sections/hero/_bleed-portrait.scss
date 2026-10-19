@@ -20,6 +20,8 @@
 //   --hero-bleed-entrance-wait        Extra delay while an envelope is still fading (default 0s)
 //   --hero-bleed-bg                   Section paper (default the primary surface)
 //   --hero-bleed-photo-veil / -wide   Overlay on the photograph, stacked / side-by-side (default none)
+//   --hero-bleed-photo-drift          Slow zoom on the photograph once revealed (default none;
+//                                     `hero-bleed-drift` scales 1 → 1.04 once over 14 s)
 //   --hero-bleed-stack-height / -min-height / -padding-bottom
 //                                     Stacked hero height (default 100svh; `auto` + min-height
 //                                     lets it grow) and bottom padding
@@ -384,6 +386,11 @@
 @media (prefers-reduced-motion: no-preference) {
 	.event-theme-wrapper[data-reveal-state='revealed']
 		.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
+		// Opt-in drift: transform only, so the photograph keeps its box (no layout shift).
+		.framed-portrait-hero__photograph img {
+			animation: var(--hero-bleed-photo-drift, none) 14s linear 1 both;
+		}
+
 		.framed-portrait-hero__occasion,
 		.framed-portrait-hero__name,
 		.framed-portrait-hero__facts,
@@ -496,5 +503,15 @@
 	to {
 		opacity: 100%;
 		transform: none;
+	}
+}
+
+@keyframes hero-bleed-drift {
+	from {
+		scale: 1;
+	}
+
+	to {
+		scale: 1.04;
 	}
 }

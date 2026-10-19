@@ -1,0 +1,188 @@
+// ==========================================================================
+// STACKED CARDS ITINERARY
+// Uses the ItineraryStackedCards DOM path from Itinerary.astro: one card per moment, 24 h time.
+// Where scroll-driven animations are supported (and motion is allowed) the cards stick under the
+// header and pile up: the previous card shrinks and darkens as the next arrives, and each card's
+// lantern fills in as it reaches the top. Elsewhere they read as a plain vertical list.
+// Profile hooks (all optional):
+//   --stacked-cards-paper / -ink / -accent      Card surface, text and time ink
+//   --stacked-cards-border                     Card border (default 1px #C9A45C at 40 %)
+//   --stacked-cards-radius / -min-height        Card shape (default 20px, 70svh when stacking)
+//   --stacked-cards-top / -step                 Sticky offset and per-card step (72px, 12px)
+//   --stacked-cards-lantern-line / -fill        Lantern outline and filled glow (#E8A040)
+//   --stacked-cards-time-{font,size,pending-size}, --stacked-cards-label-size, --stacked-cards-desc-size
+//   --stacked-cards-section-bg / -padding-block
+//   --stacked-cards-title-{size,weight,line-height,color}  Section title
+// Per-card tone: set the card hooks under `.stacked-card[data-moment='<IconName>']`.
+// ==========================================================================
+
+.itinerary[data-variant='stacked-cards'] {
+	padding: var(--stacked-cards-padding-block, clamp(4rem, 8vw, 6rem)) clamp(1.25rem, 4vw, 3rem);
+	background: var(--stacked-cards-section-bg, transparent);
+
+	.itinerary__line-start,
+	.itinerary__line-end,
+	.itinerary__header-flourish {
+		display: none;
+	}
+
+	.itinerary__title {
+		font-size: var(--stacked-cards-title-size, clamp(2rem, 7vw, 2.75rem));
+		font-weight: var(--stacked-cards-title-weight, 400);
+		line-height: var(--stacked-cards-title-line-height, 1.1);
+		color: var(--stacked-cards-title-color, var(--color-text-primary));
+	}
+
+	.itinerary__timeline {
+		max-width: 32rem;
+		margin-inline: auto;
+	}
+
+	.stacked-cards {
+		display: grid;
+		gap: 1rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.stacked-card__surface {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		gap: 0.5rem;
+		padding: clamp(1.75rem, 6vw, 2.5rem);
+		overflow: hidden;
+		border: var(--stacked-cards-border, 1px solid rgb(201 164 92 / 40%));
+		border-radius: var(--stacked-cards-radius, 20px);
+		background: var(--stacked-cards-paper, rgb(251 248 243));
+		color: var(--stacked-cards-ink, var(--itinerary-ink-dark, currentColor));
+		transform-origin: 50% 0;
+
+		// Darkening layer for the card underneath (opacity only).
+		&::after {
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			background: rgb(0 0 0);
+			content: '';
+			opacity: 0%;
+			pointer-events: none;
+		}
+	}
+
+	.stacked-card__lantern {
+		width: 2rem;
+		height: auto;
+		margin-bottom: 0.5rem;
+	}
+
+	.stacked-card__lantern-line {
+		fill: none;
+		stroke: var(--stacked-cards-lantern-line, var(--stacked-cards-accent, rgb(201 164 92)));
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.4;
+	}
+
+	.stacked-card__lantern-glow {
+		fill: var(--stacked-cards-lantern-fill, rgb(232 160 64));
+	}
+
+	.stacked-card__time {
+		margin: 0;
+		color: var(--stacked-cards-accent, inherit);
+		font-family: var(--stacked-cards-time-font, var(--font-display, serif));
+		font-size: var(--stacked-cards-time-size, 4rem);
+		font-variant-numeric: lining-nums tabular-nums;
+		font-weight: 400;
+		line-height: 1;
+	}
+
+	.stacked-card__time--pending {
+		font-size: var(--stacked-cards-time-pending-size, 1.75rem);
+	}
+
+	.stacked-card__label {
+		margin: 0;
+		font-family: var(--font-display, serif);
+		font-size: var(--stacked-cards-label-size, 1.75rem);
+		font-weight: 400;
+		line-height: 1.15;
+	}
+
+	.stacked-card__description {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: var(--stacked-cards-desc-size, 1.0625rem);
+		line-height: 1.5;
+	}
+}
+
+@supports (animation-timeline: view()) and (timeline-scope: --a) {
+	@media (prefers-reduced-motion: no-preference) {
+		.itinerary[data-variant='stacked-cards'] {
+			// The section clips without becoming a scroll container, so the cards stick to the page.
+			overflow: clip;
+
+			.stacked-cards {
+				gap: 1.5rem;
+			}
+
+			.stacked-card {
+				position: sticky;
+				top: calc(
+					var(--stacked-cards-top, 72px) + var(--card-index, 0) *
+						var(--stacked-cards-step, 12px)
+				);
+			}
+
+			.stacked-card__surface {
+				min-height: var(--stacked-cards-min-height, 70svh);
+			}
+
+			// Every card but the last recedes under its successor.
+			.stacked-card:not(:last-child) .stacked-card__surface {
+				animation: stacked-card-recede linear both;
+				animation-timeline: var(--stacked-card-next);
+				animation-range: entry 0% entry 100%;
+
+				&::after {
+					animation: stacked-card-darken linear both;
+					animation-timeline: var(--stacked-card-next);
+					animation-range: entry 0% entry 100%;
+				}
+			}
+
+			// The lantern lights up while its own card climbs to the top.
+			.stacked-card__lantern-glow {
+				animation: stacked-card-light linear both;
+				animation-timeline: view();
+				animation-range: contain 30% contain 65%;
+			}
+		}
+	}
+}
+
+@keyframes stacked-card-recede {
+	to {
+		scale: 0.94;
+	}
+}
+
+@keyframes stacked-card-darken {
+	to {
+		opacity: 15%;
+	}
+}
+
+@keyframes stacked-card-light {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: 100%;
+	}
+}

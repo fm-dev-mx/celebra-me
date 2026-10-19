@@ -16,7 +16,6 @@ import { createMockRequest } from '../helpers/api-mocks';
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	getAuthUserAdminById: jest.fn(),
 	signInWithPassword: jest.fn(),
-	sendMagicLink: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/auth-access.service', () => ({
@@ -45,9 +44,6 @@ jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
 describe('auth endpoints', () => {
 	const signInWithPasswordMock = authApi.signInWithPassword as jest.MockedFunction<
 		typeof authApi.signInWithPassword
-	>;
-	const sendMagicLinkMock = authApi.sendMagicLink as jest.MockedFunction<
-		typeof authApi.sendMagicLink
 	>;
 	const resolvePasswordAuthEmailMock =
 		authIdentifierService.resolvePasswordAuthEmail as jest.MockedFunction<
@@ -78,7 +74,7 @@ describe('auth endpoints', () => {
 		jest.clearAllMocks();
 	});
 
-	it('login-host supports password and magic link', async () => {
+	it('login-host supports password and rejects magic link', async () => {
 		resolvePasswordAuthEmailMock.mockResolvedValue('host@test.com');
 		signInWithPasswordMock.mockResolvedValue({
 			access_token: 'token-123',
@@ -95,7 +91,6 @@ describe('auth endpoints', () => {
 		} as never);
 		expect(passwordResp.status).toBe(200);
 
-		sendMagicLinkMock.mockResolvedValue({});
 		const magicResp = await loginHost({
 			request: createMockRequest({
 				method: 'magic_link',
@@ -103,7 +98,7 @@ describe('auth endpoints', () => {
 			}),
 			url: new URL('http://localhost/api/auth/login-host'),
 		} as never);
-		expect(magicResp.status).toBe(200);
+		expect(magicResp.status).toBe(400);
 	});
 
 	it('session endpoint returns unauthorized when session is missing', async () => {

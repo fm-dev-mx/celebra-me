@@ -118,7 +118,8 @@ const nativeWidthStyleFor = (width: number) =>
 					detail: {
 						src: item.dataset.gallerySrc || '',
 						caption: item.dataset.galleryCaption || '',
-						alt: item.dataset.galleryAlt || item.getAttribute('aria-label') || ''
+						alt: item.dataset.galleryAlt || item.getAttribute('aria-label') || '',
+						origin: item.querySelector('img'),
 					}
 				})
 			);

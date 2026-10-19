@@ -1,40 +1,79 @@
 ---
 /**
- * Depth sky behind the `storybook-lanterns` envelope: far stars, mid-distance glows and a few
- * near paper lanterns, each on its own plane so they part like a stage set as the envelope opens.
- * Purely decorative; motion and colors live in the reveal skin and stay off under reduced motion.
+ * Paper sky lanterns of the storybook-lilac album, drawn once and placed in four scenes:
+ * - `envelope` (default): the depth sky behind the `storybook-lanterns` envelope: far stars,
+ *   mid-distance glows and a few near lanterns, each on its own plane so they part like a stage
+ *   set as the envelope opens. Motion and colors live in the reveal skin.
+ * - `closing`: the same sky behind a closing section, shown with `--storybook-closing-sky-display`.
+ * - `ambient`: small lanterns rising behind a section's text, shown with
+ *   `--storybook-ambient-lanterns-display`; paused while the section is off screen.
+ * - `send-off`: an inert template of lanterns the envelope releases over the cover once it has
+ *   opened (`--storybook-send-off: lanterns`); each is removed when its flight ends.
+ * Purely decorative and never announced; the section scenes are styled in
+ * `src/styles/invitation/_lantern-flight.scss` and stay still under reduced motion.
  */
+import '@/styles/invitation/_lantern-flight.scss';
+
 interface Props {
 	class?: string;
+	scene?: 'envelope' | 'closing' | 'ambient' | 'send-off';
 }
 
-const { class: className } = Astro.props;
+const { class: className, scene = 'envelope' } = Astro.props;
 
 // Same silhouette as the card art (48 × 64 grid), filled so it reads as a lit lantern at small size.
 const body = 'M11.5 16C11.5 7.2 36.5 7.2 36.5 16L34 45.5C33.6 48.6 14.4 48.6 14 45.5Z';
 const bands = 'M11.9 21C19 23.4 29 23.4 36.1 21M13 34C20 36.2 28 36.2 35 34';
 const flame = 'M24 51.6C27.2 54.4 26.8 57.8 24 60 21.2 57.8 20.8 54.4 24 51.6Z';
 
-// Placement, size and rise timing of each lantern live in the reveal skin (by position).
-const lanternCount = 5;
+// Placement, size and rise timing of each lantern live in the stylesheets (by position).
+const lanternCount = scene === 'envelope' || scene === 'closing' ? 5 : 6;
+const lanterns = Array.from({ length: lanternCount }, (_, index) => index);
 ---
 
-<div class:list={['storybook-sky', className]} aria-hidden="true">
-	<div class="storybook-sky__rig">
-		<div class="storybook-sky__plane storybook-sky__plane--far"></div>
-		<div class="storybook-sky__plane storybook-sky__plane--mid"></div>
-		<div class="storybook-sky__plane storybook-sky__plane--near">
-			{
-				Array.from({ length: lanternCount }, () => (
-					<span class="storybook-sky__lantern">
+{
+	scene === 'send-off' ? (
+		<template data-lantern-send-off>
+			<div class="lantern-send-off" aria-hidden="true">
+				{lanterns.map(() => (
+					<span class="lantern-flight__lantern">
 						<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
 							<path class="storybook-sky__lantern-body" d={body} />
 							<path class="storybook-sky__lantern-bands" d={bands} fill="none" />
 							<path class="storybook-sky__lantern-flame" d={flame} />
 						</svg>
 					</span>
-				))
-			}
+				))}
+			</div>
+		</template>
+	) : scene === 'ambient' ? (
+		<div class:list={['lantern-ambient', className]} aria-hidden="true" data-lantern-ambient>
+			{lanterns.map(() => (
+				<span class="lantern-flight__lantern">
+					<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
+						<path class="storybook-sky__lantern-body" d={body} />
+						<path class="storybook-sky__lantern-flame" d={flame} />
+					</svg>
+				</span>
+			))}
 		</div>
-	</div>
-</div>
+	) : (
+		<div class:list={['storybook-sky', { 'storybook-sky--closing': scene === 'closing' }, className]} aria-hidden="true">
+			<div class="storybook-sky__rig">
+				<div class="storybook-sky__plane storybook-sky__plane--far"></div>
+				<div class="storybook-sky__plane storybook-sky__plane--mid"></div>
+				<div class="storybook-sky__plane storybook-sky__plane--near">
+					{lanterns.map(() => (
+						<span class="storybook-sky__lantern">
+							<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
+								<path class="storybook-sky__lantern-body" d={body} />
+								<path class="storybook-sky__lantern-bands" d={bands} fill="none" />
+								<path class="storybook-sky__lantern-flame" d={flame} />
+							</svg>
+						</span>
+					))}
+				</div>
+			</div>
+		</div>
+	)
+}

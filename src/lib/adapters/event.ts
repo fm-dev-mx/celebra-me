@@ -20,7 +20,11 @@ import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
 import { MEMORIES_SECTION_DEFAULTS } from '@/lib/memories/copy';
-import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-presentation';
+import {
+	resolveCountdownVisibleUnits,
+	type CountdownCalendarMark,
+} from '@/lib/invitation/countdown-presentation';
+import { buildEventCalendarMonth, type EventCalendarMonth } from '@/lib/invitation/event-calendar';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import { resolvePersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
@@ -347,9 +351,20 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		eventTimeZone: data.eventTiming?.timeZone,
 		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
 		dayUnit: data.countdown?.presentationOptions?.dayUnit,
+		calendar: buildCountdownCalendar(data),
 		variant,
 		isDemo: data.isDemo,
 	};
+}
+
+function buildCountdownCalendar(
+	data: CanonicalEventContent,
+): { mark: CountdownCalendarMark; month: EventCalendarMonth } | undefined {
+	const mark = data.countdown?.presentationOptions?.calendar?.mark;
+	const localDateTime = data.eventTiming?.localDateTime;
+	if (!mark || !localDateTime) return undefined;
+	const month = buildEventCalendarMonth(localDateTime);
+	return month ? { mark, month } : undefined;
 }
 
 function formatVenueLocation(
@@ -616,6 +631,7 @@ export function adaptEvent(
 		theme: {
 			preset: normalizedPreset,
 			themeClass: `theme-preset--${normalizedPreset}`,
+			...(originalData.theme.motion ? { motion: originalData.theme.motion } : {}),
 		},
 		hero: buildHero(context),
 		envelope,

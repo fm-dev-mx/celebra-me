@@ -53,6 +53,7 @@
 	.thank-you-editorial__image-shell {
 		overflow: hidden;
 		border-radius: var(--thank-you-keepsake-image-radius, var(--thank-you-image-radius, 50%));
+		mask: var(--thank-you-keepsake-image-mask, none);
 		position: relative;
 		width: 100%;
 		height: 100%;

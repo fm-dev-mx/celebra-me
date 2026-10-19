@@ -10,6 +10,11 @@ export const COUNTDOWN_DAY_UNITS = ['days', 'nights'] as const;
 
 export type CountdownDayUnit = (typeof COUNTDOWN_DAY_UNITS)[number];
 
+/** Line-art mark drawn around the event day of the countdown calendar. */
+export const COUNTDOWN_CALENDAR_MARKS = ['sun', 'heart', 'ring'] as const;
+
+export type CountdownCalendarMark = (typeof COUNTDOWN_CALENDAR_MARKS)[number];
+
 export function resolveCountdownDayLabel(dayUnit: CountdownDayUnit | undefined): string {
 	return dayUnit === 'nights' ? 'Noches' : 'Días';
 }

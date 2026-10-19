@@ -1,0 +1,185 @@
+@use '../global/mixins' as mixins;
+
+// Section scenes of StorybookLanternSky (the envelope scene is styled by the reveal skin).
+// Only transform and opacity move. Every scene is hidden unless a profile opts in:
+//   --storybook-closing-sky-display     `block` shows the sky behind a closing section
+//   --storybook-ambient-lanterns-display `block` shows the small lanterns behind a section's text
+//   --storybook-send-off                `lanterns` releases lanterns over the cover after the envelope
+// Colors: --storybook-sky-light / -glow / -lantern (as on the envelope sky).
+
+.storybook-sky--closing,
+.lantern-ambient,
+.lantern-send-off {
+	--sky-light: var(--storybook-sky-light, var(--color-surface-elevated));
+	--sky-glow: var(--storybook-sky-glow, var(--color-ornament-gold, currentcolor));
+	--sky-lantern: var(--storybook-sky-lantern, var(--color-ornament-gold, currentcolor));
+
+	pointer-events: none;
+
+	.storybook-sky__lantern-body {
+		fill: color-mix(in srgb, var(--sky-lantern) 82%, var(--sky-light));
+	}
+
+	.storybook-sky__lantern-bands {
+		stroke: color-mix(in srgb, var(--sky-lantern) 60%, black);
+		stroke-opacity: 35%;
+		stroke-width: 1;
+	}
+
+	.storybook-sky__lantern-flame {
+		fill: var(--sky-light);
+	}
+
+	svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+}
+
+// Closing: far stars and a few lanterns climbing behind the content.
+.storybook-sky--closing {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	display: var(--storybook-closing-sky-display, none);
+	overflow: hidden;
+	container-type: size;
+
+	.storybook-sky__plane {
+		position: absolute;
+		inset: 0;
+	}
+
+	.storybook-sky__plane--far {
+		background:
+			radial-gradient(1px 1px at 12% 18%, var(--sky-light), transparent),
+			radial-gradient(1px 1px at 34% 8%, var(--sky-light), transparent),
+			radial-gradient(1.5px 1.5px at 58% 22%, var(--sky-light), transparent),
+			radial-gradient(1px 1px at 81% 12%, var(--sky-light), transparent),
+			radial-gradient(1px 1px at 92% 34%, var(--sky-light), transparent),
+			radial-gradient(1.5px 1.5px at 6% 46%, var(--sky-light), transparent),
+			radial-gradient(1px 1px at 70% 52%, var(--sky-light), transparent);
+		opacity: 70%;
+	}
+
+	.storybook-sky__plane--mid {
+		background: radial-gradient(
+			ellipse 60% 40% at 50% 100%,
+			color-mix(in srgb, var(--sky-glow) 18%, transparent),
+			transparent 70%
+		);
+	}
+
+	@each $index, $x, $size, $rise, $phase in (1, 8%, 26px, 26s, -4s), (2, 86%, 32px, 31s, -17s),
+		(3, 20%, 18px, 22s, -12s), (4, 72%, 16px, 19s, -6s), (5, 54%, 12px, 24s, -20s)
+	{
+		.storybook-sky__lantern:nth-child(#{$index}) {
+			--x: #{$x};
+			--size: #{$size};
+			--rise: #{$rise};
+			--phase: #{$phase};
+			--rest: #{20 + $index * 13};
+		}
+	}
+
+	.storybook-sky__lantern {
+		position: absolute;
+		bottom: -10%;
+		left: var(--x);
+		width: var(--size);
+		aspect-ratio: 48 / 64;
+		animation: lantern-flight-climb var(--rise) linear var(--phase) infinite;
+	}
+}
+
+// Ambient: six small lanterns rising behind the text, looping; paused off screen (the countdown
+// script sets `data-ambient='running'` while the section is in view).
+.lantern-ambient {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	display: var(--storybook-ambient-lanterns-display, none);
+	overflow: hidden;
+	container-type: size;
+
+	@each $index, $x, $size, $rise, $phase in (1, 10%, 14px, 24s, -3s), (2, 84%, 18px, 28s, -15s),
+		(3, 26%, 10px, 20s, -9s), (4, 66%, 12px, 30s, -22s), (5, 46%, 9px, 18s, -6s),
+		(6, 92%, 11px, 26s, -12s)
+	{
+		.lantern-flight__lantern:nth-child(#{$index}) {
+			--x: #{$x};
+			--size: #{$size};
+			--rise: #{$rise};
+			--phase: #{$phase};
+			--rest: #{18 + $index * 11};
+		}
+	}
+
+	.lantern-flight__lantern {
+		position: absolute;
+		bottom: -6%;
+		left: var(--x);
+		width: var(--size);
+		aspect-ratio: 48 / 64;
+		opacity: 0%;
+		animation: lantern-flight-climb var(--rise) linear var(--phase) infinite paused;
+	}
+
+	&[data-ambient='running'] .lantern-flight__lantern {
+		animation-play-state: running;
+	}
+}
+
+// Send-off: released from the bottom center once the envelope has opened, each removed when it
+// leaves the top of the screen (the flight itself is set by the envelope script).
+.lantern-send-off {
+	position: fixed;
+	inset: 0;
+	z-index: 40;
+	overflow: hidden;
+
+	.lantern-flight__lantern {
+		position: absolute;
+		bottom: -4rem;
+		left: calc(50% - 1rem);
+		width: 2rem;
+		aspect-ratio: 48 / 64;
+		opacity: 0%;
+	}
+}
+
+@keyframes lantern-flight-climb {
+	0% {
+		opacity: 0%;
+		transform: translate3d(0, 0, 0);
+	}
+
+	12% {
+		opacity: 90%;
+	}
+
+	50% {
+		transform: translate3d(12px, -55cqh, 0);
+	}
+
+	88% {
+		opacity: 90%;
+	}
+
+	100% {
+		opacity: 0%;
+		transform: translate3d(-8px, -115cqh, 0);
+	}
+}
+
+// Reduced motion: the lanterns rest where they are, with no climb.
+@include mixins.reduced-motion {
+	.storybook-sky--closing .storybook-sky__lantern,
+	.lantern-ambient .lantern-flight__lantern {
+		/* stylelint-disable-next-line declaration-no-important */
+		animation: none !important;
+		opacity: 80%;
+		transform: translateY(calc(var(--rest, 40) * -1cqh));
+	}
+}

@@ -2,7 +2,7 @@
 title: Invitation Payment Status, Public Access and Preview Protection
 lifecycle: evergreen
 domain: invitation-delivery
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-19
 ---
 
 # Invitation payment status, public access and preview protection
@@ -16,11 +16,11 @@ invitation behaves for guests and how the administrator controls it.
 `invitation_access_controls` holds one row per invitation with two independent values (schema:
 [`../database/overview.md`](../database/overview.md#commercial-access-state)):
 
-| `public_access` | `payment_status` | What guests see                                                               |
-| --------------- | ---------------- | ----------------------------------------------------------------------------- |
-| `enabled`       | `paid`           | The invitation, unchanged                                                     |
-| `enabled`       | `unpaid`         | The full invitation as a preview: banner, seals, watermarked photos and card  |
-| `disabled`      | any              | Neutral page «Esta invitación no está disponible por el momento.», HTTP `403` |
+| `public_access` | `payment_status` | What guests see                                                                |
+| --------------- | ---------------- | ------------------------------------------------------------------------------ |
+| `enabled`       | `paid`           | The invitation, unchanged                                                      |
+| `enabled`       | `unpaid`         | The full invitation, original photos and card, under a discreet preview banner |
+| `disabled`      | any              | Neutral page «Esta invitación no está disponible por el momento.», HTTP `403`  |
 
 A client invitation past its validity window — its own event date + 1 year, end of that day in the
 event time zone ([creation contract](../../core/invitation-creation-contract.md)) — is **expired**:
@@ -39,10 +39,9 @@ through `PATCH /api/dashboard/intake/[id]/access` and the audited RPC. Governanc
 ## Server control points
 
 - `resolvePublicInvitation` reads the access state in the single published-content read. Disabled or
-  expired → `unavailable`; unpaid → the view model's photographs are rewritten to watermarked
-  previews before anything renders. `resolveInvitationContent` maps `unavailable` to `null`, so
-  location, RSVP, memories identity and social metadata treat a disabled or expired invitation as
-  missing.
+  expired → `unavailable`; unpaid → the same view model as paid (photos are not altered).
+  `resolveInvitationContent` maps `unavailable` to `null`, so location, RSVP, memories identity and
+  social metadata treat a disabled or expired invitation as missing.
 - Event-keyed checks (personalized RSVP, memories space) use `isEventInvitationUnavailable`: the
   access row first, then the published event timing (one extra read when enabled). Preview media
   (`/vista-previa/*`) also refuses an expired invitation.
@@ -57,21 +56,20 @@ Response headers and the shared cache of preview media:
 
 ## Unpaid preview
 
-- **Photos.** Every photograph field (`PREVIEW_PHOTO_PATHS` in
-  `src/lib/invitation/preview/preview-media-policy.ts`) points at `/vista-previa/<token>.webp`; the
-  social card is a 1200×630 `<token>.jpg`. The token seals the invitation id, source URL and variant
-  (AES-256-GCM); the original URL never reaches the HTML. The endpoint re-encodes at the original
-  pixel size with a tiled «VISTA PREVIA · CELEBRA-ME» mark drawn as strokes (no font needed) and
-  writes EXIF/XMP provenance with an opaque reference. Design assets keep their delivery. A unit
-  test walks every demo view model and fails on an unclassified image field.
-- **Markup.** A fixed banner «Vista previa · Celebra-me» sits above the envelope and navigation
-  (`--preview-banner-height`); seals drawn with the preset's tokens appear on the closed envelope,
-  the cover, the gallery and family sections and the closing.
+- **Banner.** A thin fixed banner «Vista previa · Celebra-me» sits above the envelope and navigation
+  (`--preview-banner-height`) and is the only preview cue. Photos, the social card and every section
+  render exactly as on a paid invitation (owner decision 2026-10-19: the photo watermark and section
+  seals hurt the invitation's quality more than they protected).
 - **Copy friction.** Right-click save and drag of images are blocked on unpaid previews only; text
   selection, keyboard and zoom are untouched.
 
-Removing the banner or seals with DevTools only changes the viewer's own screen: the photos stay
-marked in their pixels and the original URLs are not in the page.
+What actually protects an unpaid invitation is the administrator's switch (disabled → `403` on the
+page, RSVP, location and memories) and the expiry window: the invitation's value is the live link,
+and the banner tells guests it is not final. The photos belong to the client.
+
+The `/vista-previa/` endpoint and `applyPreviewMediaPolicy` are no longer referenced by the page;
+the endpoint still answers previously issued URLs (e.g. social cards WhatsApp cached) under the same
+rules.
 
 ## Indexing, AI crawlers and rights
 
