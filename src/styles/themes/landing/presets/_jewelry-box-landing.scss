@@ -1,4 +1,3 @@
-/* stylelint-disable color-no-hex, color-hex-length */
 // src/styles/themes/landing/presets/_jewelry-box-landing.scss
 
 /**
@@ -13,23 +12,23 @@
 
 .theme-preset--jewelry-box-landing {
 	// Curated restrained visual system
-	--color-ink: #110d09;
-	--color-ink-rgb: 17 13 9;
-	--color-espresso: #21130d;
-	--color-ivory: #f7f0e4;
-	--color-ivory-rgb: 247 240 228;
-	--color-paper: #fbf6ec;
-	--color-paper-rgb: 251 246 236;
-	--color-champagne: #d9a93a;
-	--color-champagne-rgb: 217 169 58;
-	--color-border-gold: #d8b76a;
-	--color-border-gold-rgb: 216 183 106;
-	--color-text-dark: #2a1a13;
-	--color-text-dark-rgb: 42 26 19;
-	--color-text-muted: #8c7d70;
-	--color-text-muted-rgb: 140 125 112;
-	--color-text-light: #f7f0e4;
-	--color-text-light-rgb: 247 240 228;
+	--color-ink: #{sys.$sys-color-landing-ink};
+	--color-ink-rgb: #{tools.rgb-channels(sys.$sys-color-landing-ink)};
+	--color-espresso: #{sys.$sys-color-landing-espresso};
+	--color-ivory: #{sys.$sys-color-landing-ivory};
+	--color-ivory-rgb: #{tools.rgb-channels(sys.$sys-color-landing-ivory)};
+	--color-paper: #{sys.$sys-color-landing-paper};
+	--color-paper-rgb: #{tools.rgb-channels(sys.$sys-color-landing-paper)};
+	--color-champagne: #{sys.$sys-color-landing-champagne};
+	--color-champagne-rgb: #{tools.rgb-channels(sys.$sys-color-landing-champagne)};
+	--color-border-gold: #{sys.$sys-color-landing-gold-line};
+	--color-border-gold-rgb: #{tools.rgb-channels(sys.$sys-color-landing-gold-line)};
+	--color-text-dark: #{sys.$sys-color-landing-cocoa};
+	--color-text-dark-rgb: #{tools.rgb-channels(sys.$sys-color-landing-cocoa)};
+	--color-text-muted: #{sys.$sys-color-landing-taupe};
+	--color-text-muted-rgb: #{tools.rgb-channels(sys.$sys-color-landing-taupe)};
+	--color-text-light: #{sys.$sys-color-landing-ivory};
+	--color-text-light-rgb: #{tools.rgb-channels(sys.$sys-color-landing-ivory)};
 
 	// Core Spacing System Clamps
 	// One vertical rhythm for every landing section: 56px on phones, 112px on wide screens.

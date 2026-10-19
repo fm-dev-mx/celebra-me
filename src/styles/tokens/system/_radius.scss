@@ -1,0 +1,8 @@
+// Corner radius scale. Literal radii in feature files map to the nearest step only when that file
+// is migrated and its visual diff is accepted.
+$sys-radius-xs: 4px;
+$sys-radius-sm: 6px;
+$sys-radius-md: 8px;
+$sys-radius-lg: 12px;
+$sys-radius-xl: 16px;
+$sys-radius-pill: 999px;

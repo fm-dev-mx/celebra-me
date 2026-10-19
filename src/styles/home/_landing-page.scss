@@ -1,3 +1,5 @@
+@use '../tokens/type-scale';
+
 html {
 	scroll-behavior: smooth;
 }
@@ -41,12 +43,9 @@ html {
 	.testimonials__eyebrow,
 	.faq-pretitle,
 	.contact-eyebrow {
-		font-family: var(--font-body);
-		text-transform: uppercase;
-		letter-spacing: 0.18em;
-		font-size: clamp(0.72rem, 1.5vw, 0.8rem);
+		@include type-scale.text(eyebrow);
+
 		color: var(--color-champagne);
-		font-weight: 700;
 		margin-bottom: var(--spacing-sm);
 	}
 

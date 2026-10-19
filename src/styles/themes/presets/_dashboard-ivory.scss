@@ -1,6 +1,6 @@
-/* stylelint-disable color-no-hex */
 @use 'sass:color';
 @use '../../tools/functions' as tools;
+@use '../../tokens/system/color' as sys;
 @use '../../tokens/system/type' as sys-type;
 
 .theme-preset--dashboard-ivory {
@@ -11,125 +11,128 @@
 	// ==========================================================================
 
 	// --- Surfaces ---
-	--color-surface-primary: #f5f0e6;
-	--color-surface-primary-rgb: #{tools.rgb-channels(#f5f0e6)};
-	--color-surface-secondary: #fbf7ee;
-	--color-surface-secondary-rgb: #{tools.rgb-channels(#fbf7ee)};
-	--color-surface-soft: #ede5d3;
-	--color-surface-elevated: #fffdf9;
-	--color-surface-elevated-rgb: #{tools.rgb-channels(#fffdf9)};
-	--color-surface-dark: #151412;
-	--color-surface-dark-rgb: #{tools.rgb-channels(#151412)};
+	--color-surface-primary: #{sys.$sys-color-dashboard-ivory};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-ivory)};
+	--color-surface-secondary: #{sys.$sys-color-dashboard-ivory-light};
+	--color-surface-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-ivory-light)};
+	--color-surface-soft: #{sys.$sys-color-dashboard-sand};
+	--color-surface-elevated: #{sys.$sys-color-dashboard-paper};
+	--color-surface-elevated-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-paper)};
+	--color-surface-dark: #{sys.$sys-color-dashboard-charcoal-deep};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-charcoal-deep)};
 	--color-surface-canvas: var(--color-surface-primary);
-	--color-surface-warm-ivory: #fffdf9;
-	--color-surface-premium-card: #fffdf9;
-	--color-glass-bg: #fffdf9;
+	--color-surface-warm-ivory: #{sys.$sys-color-dashboard-paper};
+	--color-surface-premium-card: #{sys.$sys-color-dashboard-paper};
+	--color-glass-bg: #{sys.$sys-color-dashboard-paper};
 
 	// --- Text ---
-	--color-text-primary: #1b1a17;
-	--color-text-primary-rgb: #{tools.rgb-channels(#1b1a17)};
-	--color-text-secondary: #4f4a40;
-	--color-text-secondary-rgb: #{tools.rgb-channels(#4f4a40)};
-	--color-text-emphasis: #7a5c17;
-	--color-text-on-dark: #f8f3e8;
-	--color-text-on-dark-rgb: #{tools.rgb-channels(#f8f3e8)};
-	--color-text-on-light: #1b1a17;
-	--color-text-muted: #5b564b;
-	--color-text-muted-rgb: #{tools.rgb-channels(#5b564b)};
+	--color-text-primary: #{sys.$sys-color-dashboard-ink};
+	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-ink)};
+	--color-text-secondary: #{sys.$sys-color-dashboard-stone};
+	--color-text-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-stone)};
+	--color-text-emphasis: #{sys.$sys-color-dashboard-gold-deep};
+	--color-text-on-dark: #{sys.$sys-color-dashboard-ivory-on-dark};
+	--color-text-on-dark-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-ivory-on-dark)};
+	--color-text-on-light: #{sys.$sys-color-dashboard-ink};
+	--color-text-muted: #{sys.$sys-color-dashboard-stone-muted};
+	--color-text-muted-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-stone-muted)};
 
 	// --- Actions (global) ---
-	--color-action-primary: #1f1d1a;
-	--color-action-primary-rgb: #{tools.rgb-channels(#1f1d1a)};
-	--color-action-primary-text: #fffdf9;
-	--color-action-secondary: #ede5d3;
-	--color-action-secondary-rgb: #{tools.rgb-channels(#ede5d3)};
-	--color-action-accent: #c6a04e;
-	--color-action-accent-rgb: #{tools.rgb-channels(#c6a04e)};
+	--color-action-primary: #{sys.$sys-color-dashboard-charcoal};
+	--color-action-primary-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-charcoal)};
+	--color-action-primary-text: #{sys.$sys-color-dashboard-paper};
+	--color-action-secondary: #{sys.$sys-color-dashboard-sand};
+	--color-action-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-sand)};
+	--color-action-accent: #{sys.$sys-color-dashboard-gold};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-gold)};
 
 	// --- Dashboard-specific focus tokens ---
 	--dashboard-focus-ring: rgb(122 92 23 / 85%);
 	--dashboard-focus-glow: rgb(198 160 78 / 28%);
 
 	// --- Charcoal chrome (topbar, dock accents) ---
-	--dashboard-topbar-bg: #151412;
-	--dashboard-topbar-text: #f8f3e8;
-	--dashboard-topbar-accent: #e8d3a0;
-	--dashboard-topbar-border: #c6a04e;
+	--dashboard-topbar-bg: #{sys.$sys-color-dashboard-charcoal-deep};
+	--dashboard-topbar-text: #{sys.$sys-color-dashboard-ivory-on-dark};
+	--dashboard-topbar-accent: #{sys.$sys-color-dashboard-champagne};
+	--dashboard-topbar-border: #{sys.$sys-color-dashboard-gold};
 
 	// --- Unified button hierarchy ---
 	// Primary (warm charcoal with champagne edge)
-	--dashboard-button-primary-bg: #1f1d1a;
-	--dashboard-button-primary-bg-hover: #34302b;
-	--dashboard-button-primary-bg-active: #0d0c0b;
-	--dashboard-button-primary-text: #fffdf9;
-	--dashboard-button-primary-border: #1f1d1a;
-	--dashboard-button-primary-accent: #e8d3a0;
+	--dashboard-button-primary-bg: #{sys.$sys-color-dashboard-charcoal};
+	--dashboard-button-primary-bg-hover: #{sys.$sys-color-dashboard-charcoal-hover};
+	--dashboard-button-primary-bg-active: #{sys.$sys-color-dashboard-charcoal-pressed};
+	--dashboard-button-primary-text: #{sys.$sys-color-dashboard-paper};
+	--dashboard-button-primary-border: #{sys.$sys-color-dashboard-charcoal};
+	--dashboard-button-primary-accent: #{sys.$sys-color-dashboard-champagne};
 
 	// Secondary (outlined charcoal)
 	--dashboard-button-secondary-bg: transparent;
 	--dashboard-button-secondary-bg-hover: rgb(31 29 26 / 6%);
-	--dashboard-button-secondary-border: #1f1d1a;
-	--dashboard-button-secondary-border-hover: #000;
-	--dashboard-button-secondary-text: #1f1d1a;
+	--dashboard-button-secondary-border: #{sys.$sys-color-dashboard-charcoal};
+	--dashboard-button-secondary-border-hover: #{sys.$sys-color-dashboard-black};
+	--dashboard-button-secondary-text: #{sys.$sys-color-dashboard-charcoal};
 
 	// Success
 
 	// Danger
-	--dashboard-button-danger-cta-bg: #8e2a1c;
-	--dashboard-button-danger-cta-bg-hover: #{color.change(#8e2a1c, $blackness: 30%)};
-	--dashboard-button-danger-cta-text: #fffdf9;
+	--dashboard-button-danger-cta-bg: #{sys.$sys-color-dashboard-danger};
+	--dashboard-button-danger-cta-bg-hover: #{color.change(
+			sys.$sys-color-dashboard-danger,
+			$blackness: 30%
+		)};
+	--dashboard-button-danger-cta-text: #{sys.$sys-color-dashboard-paper};
 
 	// --- Borders ---
-	--color-border-subtle: #e3d9c4;
-	--color-border-subtle-rgb: #{tools.rgb-channels(#e3d9c4)};
-	--color-border-control: #a08f6c;
-	--color-border-premium: #{color.change(#c6a04e, $alpha: 0.55)};
-	--color-border-emphasis: #c6a04e;
+	--color-border-subtle: #{sys.$sys-color-dashboard-line};
+	--color-border-subtle-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-line)};
+	--color-border-control: #{sys.$sys-color-dashboard-line-strong};
+	--color-border-premium: #{color.change(sys.$sys-color-dashboard-gold, $alpha: 0.55)};
+	--color-border-emphasis: #{sys.$sys-color-dashboard-gold};
 
 	// --- Dashboard surface roles ---
-	--dashboard-surface-sidebar: #151412;
+	--dashboard-surface-sidebar: #{sys.$sys-color-dashboard-charcoal-deep};
 
 	// --- State colors (light ground, AA text) ---
-	--color-state-success: #1e5c33;
-	--color-state-success-rgb: #{tools.rgb-channels(#1e5c33)};
-	--color-state-success-bg: #dfeee2;
-	--color-state-success-border: #9cc7a6;
-	--color-state-success-text: #1e5c33;
-	--color-state-warning-rgb: #{tools.rgb-channels(#8a6414)};
-	--color-state-warning-bg: #f4e8c8;
-	--color-state-warning-border: #e3c77e;
-	--color-state-warning-text: #5a410c;
-	--color-state-danger: #8e2a1c;
-	--color-state-danger-rgb: #{tools.rgb-channels(#8e2a1c)};
-	--color-state-danger-bg: #f6e1dc;
-	--color-state-danger-border: #e2a99f;
-	--color-state-danger-text: #8e2a1c;
-	--color-state-info: #1d3f73;
-	--color-state-info-rgb: #{tools.rgb-channels(#1d3f73)};
-	--color-state-info-bg: #e3eaf5;
-	--color-state-info-border: #a9bedd;
-	--color-state-info-text: #1d3f73;
+	--color-state-success: #{sys.$sys-color-dashboard-success};
+	--color-state-success-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-success)};
+	--color-state-success-bg: #{sys.$sys-color-dashboard-success-bg};
+	--color-state-success-border: #{sys.$sys-color-dashboard-success-border};
+	--color-state-success-text: #{sys.$sys-color-dashboard-success};
+	--color-state-warning-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-warning)};
+	--color-state-warning-bg: #{sys.$sys-color-dashboard-warning-bg};
+	--color-state-warning-border: #{sys.$sys-color-dashboard-warning-border};
+	--color-state-warning-text: #{sys.$sys-color-dashboard-warning-text};
+	--color-state-danger: #{sys.$sys-color-dashboard-danger};
+	--color-state-danger-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-danger)};
+	--color-state-danger-bg: #{sys.$sys-color-dashboard-danger-bg};
+	--color-state-danger-border: #{sys.$sys-color-dashboard-danger-border};
+	--color-state-danger-text: #{sys.$sys-color-dashboard-danger};
+	--color-state-info: #{sys.$sys-color-dashboard-info};
+	--color-state-info-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-info)};
+	--color-state-info-bg: #{sys.$sys-color-dashboard-info-bg};
+	--color-state-info-border: #{sys.$sys-color-dashboard-info-border};
+	--color-state-info-text: #{sys.$sys-color-dashboard-info};
 
 	// Neutral state — warm gray for "no response" / "declined"
-	--color-state-neutral: #4f4a40;
-	--color-state-neutral-rgb: #{tools.rgb-channels(#4f4a40)};
-	--color-state-neutral-bg: #ece8e1;
-	--color-state-neutral-border: #cfc7b8;
-	--color-state-neutral-text: #4f4a40;
+	--color-state-neutral: #{sys.$sys-color-dashboard-stone};
+	--color-state-neutral-rgb: #{tools.rgb-channels(sys.$sys-color-dashboard-stone)};
+	--color-state-neutral-bg: #{sys.$sys-color-dashboard-neutral-bg};
+	--color-state-neutral-border: #{sys.$sys-color-dashboard-neutral-border};
+	--color-state-neutral-text: #{sys.$sys-color-dashboard-stone};
 
 	// --- Guest data (passes bar, group bars) ---
 	// Measured on --dashboard-data-track: confirmed 6.90:1, declined 5.06:1,
 	// unused 3.40:1. Neighbouring slices also differ by pattern, never hue alone.
-	--dashboard-data-track: #f3eee4;
-	--dashboard-data-confirmed: #1e5c33;
-	--dashboard-data-declined: #6b6458;
-	--dashboard-data-unused: #8c7f66;
+	--dashboard-data-track: #{sys.$sys-color-dashboard-data-track};
+	--dashboard-data-confirmed: #{sys.$sys-color-dashboard-success};
+	--dashboard-data-declined: #{sys.$sys-color-dashboard-data-declined};
+	--dashboard-data-unused: #{sys.$sys-color-dashboard-data-unused};
 
 	// Hints and secondary help text: 7.18:1 on elevated surfaces (no opacity tricks).
-	--dashboard-text-hint: #5b564b;
+	--dashboard-text-hint: #{sys.$sys-color-dashboard-stone-muted};
 
 	// "Enviada, sin abrir": outline-only pill, 3.87:1 border on elevated surfaces.
-	--dashboard-stage-unopened-border: #8c7f66;
+	--dashboard-stage-unopened-border: #{sys.$sys-color-dashboard-data-unused};
 
 	// --- Shadows ---
 	--shadow-subtle: 0 1px 2px rgb(30 26 18 / 6%), 0 4px 12px rgb(30 26 18 / 6%);
@@ -141,4 +144,3 @@
 	--font-label: #{sys-type.$sys-font-ui};
 	--font-calligraphy: #{sys-type.$sys-font-calligraphy};
 }
-/* stylelint-enable color-no-hex */

@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../tokens' as tokens;
 @use '../tokens/spacing' as spacing-tokens;
-@use '../tokens/typography' as typography-tokens;
+@use '../tokens/type-scale';
 
 @mixin respond-to($breakpoint) {
 	@if map.has-key(spacing-tokens.$breakpoints, $breakpoint) {
@@ -59,15 +59,7 @@
 }
 
 @mixin typography($variant) {
-	@if map.has-key(typography-tokens.$authoring-scale, $variant) {
-		$typography-styles: map.get(typography-tokens.$authoring-scale, $variant);
-
-		@each $property, $value in $typography-styles {
-			#{$property}: $value;
-		}
-	} @else {
-		@error "Typography variant `#{$variant}` is not defined in tokens.$authoring-scale.";
-	}
+	@include type-scale.text($variant);
 }
 
 @mixin text-gradient-clip {
