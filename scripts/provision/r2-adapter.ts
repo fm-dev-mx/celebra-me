@@ -3,8 +3,9 @@
  *
  * Objects are content-addressed (`invitations/<eventType>/<slug>/<key>-<sha256>.<ext>`), so an
  * existing object is reused only when its delivered bytes match, and is never overwritten.
- * Every image gets a 1200x630 JPEG social card beside it (`<...>-<sha256>.og.jpg`), because the
- * media domain serves bytes as stored and has no transformation URLs.
+ * Every image gets a 1200x630 JPEG social card beside it (`<...>-<sha256>.og.jpg`) and WebP width
+ * variants (`<...>-<sha256>.w<width>.webp`), because the media domain serves bytes as stored and
+ * has no transformation URLs.
  */
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
@@ -18,8 +19,14 @@ import {
 	buildR2ObjectKey,
 	buildR2PublicUrl,
 	buildR2SocialObjectKey,
+	buildR2VariantObjectKey,
 	type R2MediaTargetEnvironment,
 } from '../../src/lib/intake/services/r2-invitation-media.ts';
+import {
+	RESPONSIVE_IMAGE_WIDTHS,
+	encodeResponsiveVariants,
+} from '../../src/lib/images/responsive-variants.ts';
+import { sharpImageTransformer } from '../../src/lib/images/sharp-image-transformer.ts';
 
 export { buildR2SocialImageUrl } from '../../src/lib/intake/services/r2-invitation-media.ts';
 
@@ -178,9 +185,54 @@ async function ensureSocialCard(
 		throw new Error(`R2 social card ${socialKey} read-back verification failed.`);
 }
 
+export interface R2VariantReport {
+	written: string[];
+	present: string[];
+}
+
+/**
+ * Writes the WebP width variants of a hosted image that the bucket does not serve yet, and reads
+ * each written one back. Existing variants are kept: they are derived bytes, not canonical ones.
+ * `dryRun` only reports the missing keys.
+ */
+export async function ensureResponsiveVariants(
+	target: R2MediaTargetEnvironment,
+	objectKey: string,
+	original: Uint8Array,
+	options: { dryRun?: boolean } = {},
+): Promise<R2VariantReport> {
+	const report: R2VariantReport = { written: [], present: [] };
+	const missing: string[] = [];
+	for (const width of RESPONSIVE_IMAGE_WIDTHS) {
+		const variantKey = buildR2VariantObjectKey(objectKey, width);
+		const existing = await readPublished(target, variantKey);
+		if (existing.status === 200 && existing.contentType === 'image/webp') {
+			report.present.push(variantKey);
+			continue;
+		}
+		if (existing.status !== 404)
+			throw new Error(`R2 variant ${variantKey} read failed (HTTP ${existing.status}).`);
+		missing.push(variantKey);
+	}
+	if (missing.length === 0 || options.dryRun) {
+		report.written = options.dryRun ? missing : [];
+		return report;
+	}
+	for (const variant of await encodeResponsiveVariants(sharpImageTransformer, original)) {
+		const variantKey = buildR2VariantObjectKey(objectKey, variant.width);
+		if (!missing.includes(variantKey)) continue;
+		putObject(target, variantKey, variant.data, 'image/webp');
+		const delivered = await readPublished(target, variantKey);
+		if (delivered.status !== 200 || delivered.contentType !== 'image/webp')
+			throw new Error(`R2 variant ${variantKey} read-back verification failed.`);
+		report.written.push(variantKey);
+	}
+	return report;
+}
+
 /**
  * Uploads one canonical image unless the bucket already serves the same bytes, then verifies
- * the delivered object and its social card.
+ * the delivered object, its social card and its width variants.
  */
 export async function uploadOrReconcileR2Asset(
 	input: R2AssetUploadInput,
@@ -200,6 +252,9 @@ export async function uploadOrReconcileR2Asset(
 		throw new Error(`R2 object ${objectKey} already holds different bytes.`);
 	}
 	await verifyR2Asset({ ...input, objectKey });
-	if (input.mimeType.startsWith('image/')) await ensureSocialCard(target, objectKey, input.bytes);
+	if (input.mimeType.startsWith('image/')) {
+		await ensureSocialCard(target, objectKey, input.bytes);
+		await ensureResponsiveVariants(target, objectKey, input.bytes);
+	}
 	return { objectKey, secureUrl: buildR2PublicUrl(target, objectKey), action };
 }

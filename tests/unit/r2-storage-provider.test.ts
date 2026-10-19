@@ -9,6 +9,7 @@ import {
 	type InvitationMediaBucket,
 } from '../../src/lib/intake/services/r2-invitation-media';
 import { resolveAssetDeliveryUrl } from '../../src/lib/intake/services/asset-delivery';
+import { RESPONSIVE_IMAGE_WIDTHS } from '../../src/lib/images/responsive-variants';
 
 function memoryBucket(): InvitationMediaBucket & { objects: Map<string, Record<string, string>> } {
 	const objects = new Map<string, Record<string, string>>();
@@ -42,12 +43,18 @@ const upload = {
 	sha256,
 };
 
+async function fakeVariants() {
+	return RESPONSIVE_IMAGE_WIDTHS.map((width) => ({ width, data: new Uint8Array([width % 256]) }));
+}
+
 afterEach(() => resetInvitationMediaBindingForTests());
 
 describe('R2 invitation media storage', () => {
 	it('stores a content-addressed object and returns its public URL', async () => {
 		const bucket = memoryBucket();
-		const result = await new R2StorageProvider('production', bucket).uploadAsset(upload);
+		const result = await new R2StorageProvider('production', bucket, fakeVariants).uploadAsset(
+			upload,
+		);
 		const key = `invitations/boda/ana-y-luis/hero-${sha256}.webp`;
 		expect(result).toMatchObject({
 			provider: 'r2',
@@ -65,6 +72,32 @@ describe('R2 invitation media storage', () => {
 				secureUrl: result.secureUrl,
 			}),
 		).toBe(result.secureUrl);
+	});
+
+	it('writes every width variant beside the original and skips the encoder once stored', async () => {
+		const bucket = memoryBucket();
+		const encode = jest.fn(fakeVariants);
+		const provider = new R2StorageProvider('preview', bucket, encode);
+		await provider.uploadAsset(upload);
+		const base = `invitations/boda/ana-y-luis/hero-${sha256}`;
+		for (const width of RESPONSIVE_IMAGE_WIDTHS)
+			expect(bucket.objects.get(`${base}.w${width}.webp`)).toEqual({ source_sha256: sha256 });
+		await provider.uploadAsset(upload);
+		expect(encode).toHaveBeenCalledTimes(1);
+	});
+
+	it('writes no variants for audio', async () => {
+		const bucket = memoryBucket();
+		const encode = jest.fn(fakeVariants);
+		await new R2StorageProvider('preview', bucket, encode).uploadAsset({
+			...upload,
+			key: 'song',
+			mimeType: 'audio/mpeg',
+		});
+		expect(encode).not.toHaveBeenCalled();
+		expect([...bucket.objects.keys()]).toEqual([
+			`invitations/boda/ana-y-luis/song-${sha256}.mp3`,
+		]);
 	});
 
 	it('reuses identical bytes and refuses to overwrite different bytes', async () => {
