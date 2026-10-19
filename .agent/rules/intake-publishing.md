@@ -151,7 +151,7 @@ through `PATCH /api/dashboard/intake/[id]/access` → RPC `set_invitation_access
 `version`, `audit_logs` row in the same transaction). Hosts have no route, grant or RLS path to
 them.
 
-- New invitations start unpaid; an unpaid client invitation renders as the preview (watermarked), a
+- New invitations start unpaid; an unpaid client invitation renders as the preview (banner only), a
   disabled one renders the neutral unavailable page. Demos never carry access state.
 - Changing either value does not touch `invitations.updated_at`, so an open editor keeps its token.
 - Publication, promotion (`invitation:release`, `prod:apply`) and the Production → Preview mirror
