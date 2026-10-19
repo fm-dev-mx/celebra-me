@@ -18,6 +18,17 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 
 See [`git-governance.md`](../git-governance.md) for the canonical lane lifecycle.
 
+## Start a task
+
+Start the task branch without an upstream, whether it starts from `develop` or `origin/develop`:
+
+```bash
+git switch -c <task-branch> --no-track origin/develop
+```
+
+`--no-track` keeps `origin/develop` from becoming the branch's upstream; the first push is
+`git push -u origin <task-branch>`.
+
 ## Environment files
 
 - `.env.local` → Local Supabase
