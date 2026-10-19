@@ -5,7 +5,7 @@
  */
 
 interface AuthLoginPayload {
-	method: 'password' | 'magic_link';
+	method: 'password';
 	email: string;
 	password: string;
 }

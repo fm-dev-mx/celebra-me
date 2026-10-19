@@ -296,34 +296,36 @@ describe('release check evidence', () => {
 
 	it('requires the latest successful Production deployment', () => {
 		const runner = ghRunner({
-			'deployments?environment=production&per_page=100': [
-				{ id: 42, environment: 'production', sha },
+			'deployments?environment=Cloudflare%20Production&per_page=100': [
+				{ id: 42, environment: 'Cloudflare Production', sha },
 			],
 			'deployments/42/statuses?per_page=100': [{ state: 'success' }],
 		});
 		expect(loadLatestProductionDeployment(runner)).toEqual({ id: 42, sha });
 		const hundredDeployments = ghRunner({
-			'deployments?environment=production&per_page=100': Array.from(
+			'deployments?environment=Cloudflare%20Production&per_page=100': Array.from(
 				{ length: 100 },
-				(_, i) => ({ id: 100 - i, environment: 'production', sha }),
+				(_, i) => ({ id: 100 - i, environment: 'Cloudflare Production', sha }),
 			),
 			'deployments/100/statuses?per_page=100': [{ state: 'success' }],
 		});
 		expect(loadLatestProductionDeployment(hundredDeployments)).toEqual({ id: 100, sha });
 		const failed = ghRunner({
-			'deployments?environment=production&per_page=100': [
-				{ id: 42, environment: 'production', sha },
+			'deployments?environment=Cloudflare%20Production&per_page=100': [
+				{ id: 42, environment: 'Cloudflare Production', sha },
 			],
 			'deployments/42/statuses?per_page=100': [{ state: 'failure' }],
 		});
 		expect(() => loadLatestProductionDeployment(failed)).toThrow('did not succeed');
 	});
 
-	it.each(['production', 'Production', ' Production '])(
+	it.each(['Cloudflare Production', 'cloudflare production', ' Cloudflare Production '])(
 		'accepts a normalized Production deployment environment: %s',
 		(environment) => {
 			const runner = ghRunner({
-				'deployments?environment=production&per_page=100': [{ id: 42, environment, sha }],
+				'deployments?environment=Cloudflare%20Production&per_page=100': [
+					{ id: 42, environment, sha },
+				],
 				'deployments/42/statuses?per_page=100': [{ state: 'success' }],
 			});
 			expect(loadLatestProductionDeployment(runner)).toEqual({ id: 42, sha });
@@ -331,9 +333,11 @@ describe('release check evidence', () => {
 	);
 
 	it('rejects missing, blank, and non-string deployment environments', () => {
-		for (const environment of [undefined, '', ' preview ', 42]) {
+		for (const environment of [undefined, '', ' preview ', 'Production', 42]) {
 			const runner = ghRunner({
-				'deployments?environment=production&per_page=100': [{ id: 42, environment, sha }],
+				'deployments?environment=Cloudflare%20Production&per_page=100': [
+					{ id: 42, environment, sha },
+				],
 			});
 			expect(() => loadLatestProductionDeployment(runner)).toThrow('history is unavailable');
 		}

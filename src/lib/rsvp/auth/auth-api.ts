@@ -74,12 +74,6 @@ function isAuthTokenResponse(value: unknown): value is AuthTokenResponse {
 	);
 }
 
-function isMagicLinkResponse(value: unknown): value is { message_id?: string } {
-	return (
-		isRecord(value) && (value.message_id === undefined || typeof value.message_id === 'string')
-	);
-}
-
 function isAuthUserListResponse(value: unknown): value is { users: AuthAdminUserRecord[] } {
 	return (
 		isRecord(value) &&
@@ -243,22 +237,6 @@ export async function refreshAccessToken(input: {
 		path: 'token?grant_type=refresh_token',
 		body: { refresh_token: input.refreshToken },
 		validate: isAuthTokenResponse,
-	});
-}
-
-export async function sendMagicLink(input: {
-	email: string;
-	redirectTo?: string;
-}): Promise<{ message_id?: string }> {
-	return authRequest({
-		operation: 'send_magic_link',
-		path: 'otp',
-		body: {
-			email: input.email,
-			create_user: false,
-			email_redirect_to: input.redirectTo,
-		},
-		validate: isMagicLinkResponse,
 	});
 }
 

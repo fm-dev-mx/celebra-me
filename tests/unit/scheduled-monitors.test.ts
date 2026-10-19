@@ -6,12 +6,13 @@ import { resolve } from 'node:path';
 import {
 	BACKUP_MAX_AGE_MS,
 	CLEANUP_LOOKBACK_MS,
+	CLEANUP_SLICE_MS,
 	MONITOR_ENV,
 	buildCleanupHeartbeatQuery,
 	checkBackupFreshness,
 	checkCleanupHeartbeat,
 	evaluateBackupFreshness,
-	evaluateCleanupHeartbeat,
+	planCleanupSlices,
 } from '../../scripts/ops/scheduled-monitors';
 
 const NOW = Date.parse('2026-10-19T16:40:00.000Z');
@@ -40,37 +41,89 @@ function listXml(objects: { key: string; size: number; at: string }[]): string {
 	return `<ListBucketResult><IsTruncated>false</IsTruncated>${contents}</ListBucketResult>`;
 }
 
-describe('memories cleanup heartbeat', () => {
-	it('asks Workers Logs for completed cleanup summaries of the Production Worker', () => {
-		const query = buildCleanupHeartbeatQuery(NOW) as {
-			view: string;
-			timeframe: { from: number; to: number };
-			parameters: { filters: { key: string; operation: string; value: string }[] };
-		};
+type HeartbeatQuery = {
+	timeframe: { from: number; to: number };
+	parameters: { filters: { key: string; operation: string; value: string }[] };
+};
 
-		expect(query.view).toBe('events');
-		expect(query.timeframe).toEqual({ from: NOW - CLEANUP_LOOKBACK_MS, to: NOW });
-		expect(query.parameters.filters).toEqual([
-			expect.objectContaining({ key: '$metadata.service', value: 'celebra-me' }),
-			expect.objectContaining({ value: '"event":"memories_cleanup_summary"' }),
-			expect.objectContaining({ value: '"phase":"completed"' }),
-		]);
-	});
+/** Structured event as Workers Logs returns it: the logged JSON lands in top-level fields. */
+const COMPLETED_AT = Date.parse('2026-10-19T15:17:35.526Z');
+const COMPLETED_EVENT = {
+	source: { level: 'info', event: 'memories_cleanup_summary', phase: 'completed' },
+	timestamp: COMPLETED_AT,
+	$metadata: { service: 'celebra-me', origin: 'scheduled', trigger: '17 15 * * *' },
+};
 
-	it('fails when the day has only a started event and no completed summary', () => {
-		const result = evaluateCleanupHeartbeat({
-			success: true,
-			result: { events: { count: 0 } },
-		});
-
-		expect(result.ok).toBe(false);
-		expect(result.detail).toContain('stopped after "started"');
-	});
-
-	it('passes with a completed summary and posts the query with the read-only token', async () => {
-		const fetchImpl = jest.fn(async () =>
-			jsonResponse({ success: true, result: { events: { count: 1, events: [{}] } } }),
+/**
+ * Fake Workers Logs: matches filters against the structured fields of `events`, and answers a
+ * window wider than `sampledAbove` as Workers Logs does under sampling (abr_level 10, no events).
+ */
+function fakeWorkersLogs(events: (typeof COMPLETED_EVENT)[], sampledAbove = Infinity) {
+	return jest.fn(async (_url: string, init: RequestInit) => {
+		const query = JSON.parse(init.body as string) as HeartbeatQuery;
+		const { from, to } = query.timeframe;
+		if (to - from > sampledAbove) {
+			return jsonResponse({
+				success: true,
+				result: { events: { count: 0, events: [] }, statistics: { abr_level: 10 } },
+			});
+		}
+		const field = (event: typeof COMPLETED_EVENT, key: string): unknown =>
+			key.startsWith('$metadata.')
+				? event.$metadata[key.slice('$metadata.'.length) as keyof typeof event.$metadata]
+				: event.source[key as keyof typeof event.source];
+		const matches = events.filter(
+			(event) =>
+				event.timestamp >= from &&
+				event.timestamp <= to &&
+				query.parameters.filters.every(
+					(filter) => field(event, filter.key) === filter.value,
+				),
 		);
+		return jsonResponse({
+			success: true,
+			result: {
+				events: { count: matches.length, events: matches },
+				statistics: { abr_level: 1 },
+			},
+		});
+	});
+}
+
+describe('memories cleanup heartbeat', () => {
+	it('filters on the parsed event and phase fields, not on a message string', () => {
+		const query = buildCleanupHeartbeatQuery(NOW - HOUR, NOW) as unknown as HeartbeatQuery;
+
+		expect(query.timeframe).toEqual({ from: NOW - HOUR, to: NOW });
+		expect(query.parameters.filters).toEqual([
+			expect.objectContaining({
+				key: '$metadata.service',
+				operation: 'eq',
+				value: 'celebra-me',
+			}),
+			expect.objectContaining({
+				key: 'event',
+				operation: 'eq',
+				value: 'memories_cleanup_summary',
+			}),
+			expect.objectContaining({ key: 'phase', operation: 'eq', value: 'completed' }),
+		]);
+		expect(JSON.stringify(query)).not.toContain('$metadata.message');
+	});
+
+	it('covers the whole lookback window with narrow slices, newest first', () => {
+		const slices = planCleanupSlices(NOW);
+
+		expect(slices[0]).toEqual([NOW - CLEANUP_SLICE_MS, NOW]);
+		expect(slices.at(-1)?.[0]).toBe(NOW - CLEANUP_LOOKBACK_MS);
+		for (const [index, [from, to]] of slices.entries()) {
+			expect(to - from).toBeLessThanOrEqual(CLEANUP_SLICE_MS);
+			if (index > 0) expect(to).toBe(slices[index - 1][0]);
+		}
+	});
+
+	it('finds a structured completed summary and posts the query with the read-only token', async () => {
+		const fetchImpl = fakeWorkersLogs([COMPLETED_EVENT]);
 
 		const result = await checkCleanupHeartbeat(ENV, NOW, fetchImpl as unknown as typeof fetch);
 
@@ -85,6 +138,61 @@ describe('memories cleanup heartbeat', () => {
 		);
 	});
 
+	it('finds the summary although Workers Logs samples any window wider than 6 hours', async () => {
+		const fetchImpl = fakeWorkersLogs([COMPLETED_EVENT], 6 * HOUR);
+
+		const result = await checkCleanupHeartbeat(ENV, NOW, fetchImpl as unknown as typeof fetch);
+
+		expect(result.ok).toBe(true);
+		const windows = fetchImpl.mock.calls.map(
+			([, init]) => (JSON.parse(init.body as string) as HeartbeatQuery).timeframe,
+		);
+		expect(windows.every(({ from, to }) => to - from <= 6 * HOUR)).toBe(true);
+	});
+
+	it('splits a sampled slice until it reads every row', async () => {
+		const fetchImpl = fakeWorkersLogs([COMPLETED_EVENT], HOUR);
+
+		const result = await checkCleanupHeartbeat(ENV, NOW, fetchImpl as unknown as typeof fetch);
+
+		expect(result.ok).toBe(true);
+	});
+
+	it('fails when the day has only a started event and no completed summary', async () => {
+		const started = {
+			...COMPLETED_EVENT,
+			source: { ...COMPLETED_EVENT.source, phase: 'started' },
+		};
+		const fetchImpl = fakeWorkersLogs([started]);
+
+		const result = await checkCleanupHeartbeat(ENV, NOW, fetchImpl as unknown as typeof fetch);
+
+		expect(result.ok).toBe(false);
+		expect(result.detail).toContain('stopped after "started"');
+		expect(fetchImpl).toHaveBeenCalledTimes(planCleanupSlices(NOW).length);
+	});
+
+	it('ignores a completed summary older than the lookback window', async () => {
+		const old = { ...COMPLETED_EVENT, timestamp: NOW - CLEANUP_LOOKBACK_MS - HOUR };
+
+		const result = await checkCleanupHeartbeat(
+			ENV,
+			NOW,
+			fakeWorkersLogs([old]) as unknown as typeof fetch,
+		);
+
+		expect(result.ok).toBe(false);
+	});
+
+	it('reports an inconclusive check when even the narrowest slices are sampled', async () => {
+		const fetchImpl = fakeWorkersLogs([COMPLETED_EVENT], 0);
+
+		const result = await checkCleanupHeartbeat(ENV, NOW, fetchImpl as unknown as typeof fetch);
+
+		expect(result.ok).toBe(false);
+		expect(result.detail).toContain('may have been missed');
+	});
+
 	it('fails with the API reason when the query is rejected', async () => {
 		const fetchImpl = jest.fn(async () =>
 			jsonResponse({ success: false, errors: [{ message: 'Authentication error' }] }, 403),
@@ -96,6 +204,7 @@ describe('memories cleanup heartbeat', () => {
 			ok: false,
 			detail: 'Workers Logs query failed: Authentication error.',
 		});
+		expect(fetchImpl).toHaveBeenCalledTimes(1);
 	});
 
 	it('refuses to run without its token', async () => {

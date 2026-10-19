@@ -8,7 +8,6 @@ import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
-	sendMagicLink: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
@@ -21,7 +20,6 @@ jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
 
 describe('API: /api/auth/login-host', () => {
 	const signInMock = authApi.signInWithPassword as jest.Mock;
-	const sendMagicMock = authApi.sendMagicLink as jest.Mock;
 	const resolvePasswordAuthEmailMock =
 		authIdentifierService.resolvePasswordAuthEmail as jest.Mock;
 	const checkRateLimitMock = rateLimitProvider.checkRateLimit as jest.Mock;
@@ -129,26 +127,21 @@ describe('API: /api/auth/login-host', () => {
 		});
 	});
 
-	it('Scenario: Successful Magic Link Request', async () => {
-		sendMagicMock.mockResolvedValue({});
-
+	it('Scenario: Magic Link Request Is Rejected', async () => {
 		const response = await loginHost({
 			request: createMockRequest({
 				email: 'magic@test.com',
+				password: 'somePassword',
 				method: 'magic_link',
 			}),
 			url: new URL('http://localhost/api/auth/login-host'),
 		} as unknown as APIContext);
 
-		expect(response.status).toBe(200);
+		expect(response.status).toBe(400);
 		const data = await response.json();
-		expect(data.ok).toBe(true);
-		expect(data.message).toContain('correo');
-		expect(sendMagicMock).toHaveBeenCalledWith(
-			expect.objectContaining({
-				email: 'magic@test.com',
-			}),
-		);
+		expect(data.error.code).toBe('bad_request');
+		expect(signInMock).not.toHaveBeenCalled();
+		expect(checkRateLimitMock).not.toHaveBeenCalled();
 	});
 
 	it('Scenario: Missing Login Identifier Error', async () => {

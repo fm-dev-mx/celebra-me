@@ -1,8 +1,8 @@
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
 import type { APIRoute } from 'astro';
 import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
-import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
-import { sendMagicLink, signInWithPassword } from '@/lib/rsvp/auth/auth-api';
+import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import { signInWithPassword } from '@/lib/rsvp/auth/auth-api';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
@@ -10,11 +10,9 @@ import {
 } from '@/lib/rsvp/auth/cookies';
 import {
 	assertSameOrigin,
-	assertValidEmail,
 	assertValidLoginIdentifier,
 	assertValidPassword,
 	enforceAuthRateLimit,
-	normalizeEmail,
 	normalizeLoginIdentifier,
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
@@ -48,28 +46,12 @@ export const POST: APIRoute = async ({ request, url }) => {
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
 
-		const identifier = normalizeLoginIdentifier(body.email as string);
-		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
-
-		if (method === 'magic_link') {
-			const email = normalizeEmail(body.email as string);
-			assertValidEmail(email);
-			await enforceAuthRateLimit({
-				request,
-				entityId: `login:${email}`,
-				maxHits: 8,
-				windowSec: 60,
-			});
-			await sendMagicLink({
-				email,
-				redirectTo: `${url.origin}/dashboard/invitados`,
-			});
-			return jsonResponse({
-				ok: true,
-				message: 'Revisa tu correo para iniciar sesión con un enlace mágico.',
-			});
+		// Hosts sign in with a password only; any other method is a bad request.
+		if (body.method !== undefined && body.method !== 'password') {
+			throw new ApiError(400, 'bad_request', 'El método de acceso es inválido.');
 		}
 
+		const identifier = normalizeLoginIdentifier(body.email as string);
 		assertValidLoginIdentifier(identifier);
 		await enforceAuthRateLimit({
 			request,

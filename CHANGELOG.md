@@ -10,6 +10,41 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.32.0-beta.1] - 2026-10-19
+
+Cloudflare migration close-out: the last Vercel and Cloudinary mentions are retired and guarded,
+Production releases become verifiable end to end, and hosted invitation images gain width variants
+for responsive delivery. One contract migration (`20261019180000`).
+
+### Added
+
+- Width variants for hosted invitation images (#348): both upload paths store 480/800/1280/1920 px
+  WebP variants, `CacheSafeImage` emits `srcset`/`sizes` when a bucket's `responsiveVariants` switch
+  is on (off by default), `pnpm invitation:media:variants` backfills them, and the invitation hero
+  is fetched with `fetchpriority="high"`.
+- Scheduled monitors (#333): daily memories cleanup heartbeat and off-site backup freshness checks
+  (`scheduled-monitors.yml`, `pnpm ops:monitor`).
+- `pnpm env:audit` and documentation of every name in the env templates (#342).
+- Validation warning for retired Vercel and Cloudinary mentions (#329, #343).
+- Unit coverage for countdown, send link, memories QR and cron triggers (#332).
+
+### Changed
+
+- Production release evidence (#345): Repository CI runs on `main` pushes, `deploy-production.yml`
+  gains a `domain-smoke` step that publishes the production smoke status, and
+  `ops:release-status --target production` no longer reads deployment records.
+- `invitation_assets.provider` allows only `supabase` or `r2` on live rows; soft-deleted rows may
+  keep the retired provider (#347, migration `20261019180000`).
+- The staging Sign Worker no longer allows the retired Vercel origin.
+- CI: memories browser checks run beside the visual checks, and pull requests into develop skip an
+  unchanged browser tier (#325, #339); commitlint accepts Dependabot bump commits (#340, #341).
+- Operations docs keep the durable Cloudflare platform rules; migration plans are dropped (#344).
+- `sharp` moved to devDependencies (#331); dependency bumps (#334–#338).
+
+### Removed
+
+- Preview demo republish tool (#328), unused exports and Wrangler dry-run scripts (#330).
+
 ## [0.31.0-beta.1] - 2026-10-18
 
 Hosting and media close-out: the code builds only for the Cloudflare Worker (the Vercel target is

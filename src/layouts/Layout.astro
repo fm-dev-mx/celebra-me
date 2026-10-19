@@ -27,6 +27,8 @@ interface Props {
 	robots?: string;
 	/** Leave out canonical and social URLs (pages whose path must not be echoed back). */
 	omitCanonical?: boolean;
+	/** Public path used for canonical and social URLs when it differs from the request path. */
+	canonicalPath?: string;
 	hideHeader?: boolean;
 	className?: string;
 	isDemo?: boolean;
@@ -50,6 +52,7 @@ const {
 	imageAlt,
 	robots,
 	omitCanonical = false,
+	canonicalPath,
 	hideHeader = false,
 	className,
 	isDemo = false,
@@ -67,7 +70,7 @@ const resolvedImageSrc = typeof image === 'string' ? image : image.src;
 const canonicalOrigin = resolvePublicSiteOrigin();
 const copyrightNotice = `© ${new Date().getFullYear()} Celebra-me. Todos los derechos reservados.`;
 
-let canonicalUrl = new URL(Astro.url.pathname, canonicalOrigin);
+let canonicalUrl = new URL(canonicalPath ?? Astro.url.pathname, canonicalOrigin);
 if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
 	canonicalUrl.pathname = canonicalUrl.pathname.replace(/\/+$/, '');
 }
