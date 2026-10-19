@@ -113,6 +113,20 @@ describe('Commit validation contract', () => {
 			expect(result.status).toBe(0);
 		});
 
+		it('skips a signed-off group bump that names the manifest directory', () => {
+			const result = lintMessage(
+				[
+					'chore(deps-dev): Bump @testing-library/user-event',
+					'',
+					'Bumps the testing group with 1 update in the / directory: [@testing-library/user-event](https://github.com/testing-library/user-event).',
+					'',
+					SIGN_OFF,
+				].join('\n'),
+			);
+
+			expect(result.status).toBe(0);
+		});
+
 		it('still lints a human commit shaped like a bump', () => {
 			const result = lintMessage(
 				'chore(deps): Bump zod from 4.6.5 to 4.7.0\n\nRaise the schema library version.',
