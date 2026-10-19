@@ -25,7 +25,7 @@ const okUsage = (used: number, limit: number, fetchedAt = AT) => ({
 	missing: [],
 	metrics: [
 		{
-			id: 'sbDatabase',
+			id: 'cfWorkersRequests',
 			meter: { used, limit },
 			window: 'snapshot' as const,
 			scope: 'production' as const,

@@ -154,13 +154,13 @@ export const platformProviderName: Record<PlatformProviderId, string> = {
 /** Plan line under each provider name; Cloudflare limits come from `CLOUDFLARE_PAID_PLAN`. */
 export const platformProviderPlan: Record<PlatformProviderId, string> = {
 	cloudflare: 'Workers Paid y R2 Paid · una cuenta para ambos entornos',
-	supabase: 'Un proyecto por entorno',
+	supabase: 'Plan Free · un proyecto por entorno',
 };
 
 export const platformProviderNote: Record<PlatformProviderId, string> = {
 	cloudflare:
 		'Las cuotas incluidas se renuevan cada mes; si se superan, el excedente se cobra por uso.',
-	supabase: `Se mide el disco usado de cada proyecto contra ${formatPlatformBytes(SUPABASE_FREE_TIER.databaseBytes)}. No es el «Database size» que muestra Supabase, que suele ser menor.`,
+	supabase: `El límite del plan es el tamaño de la base de datos: ${formatPlatformBytes(SUPABASE_FREE_TIER.databaseBytes)} por proyecto; al superarlo, la base pasa a solo lectura. Ese tamaño aún no se lee aquí: consúltalo en Supabase → Usage («Database Size»). El disco que se muestra abajo es solo informativo.`,
 };
 
 export const platformProviderLink: Record<PlatformProviderId, string> = {
@@ -282,12 +282,21 @@ const METRIC_LABELS: Record<string, string | ((resource: string) => string)> = {
 	cfR2ClassB: 'Operaciones R2 de lectura (Clase B)',
 	cfWorkersRequests: 'Peticiones a Workers',
 	cfDurableObjectsRequests: 'Peticiones a Durable Objects',
-	sbDatabase: 'Disco usado',
+	sbDisk: 'Disco (incluye WAL)',
+};
+
+/** Why a figure has no quota, shown instead of «Sin cuota verificada». */
+const METRIC_NOTES: Record<string, string> = {
+	sbDisk: 'Solo informativo, sin alertas: incluye WAL y archivos del sistema, así que no es el tamaño de la base que limita el plan.',
 };
 
 export function platformMetricLabel(metric: PlatformMetric): string {
 	const label = METRIC_LABELS[metric.id] ?? metric.id;
 	return typeof label === 'function' ? label(metric.resource ?? '') : label;
+}
+
+export function platformMetricNote(metric: PlatformMetric): string | null {
+	return METRIC_NOTES[metric.id] ?? null;
 }
 
 export function platformProjectionLabel(projection: PlatformProjection): string | null {
@@ -299,7 +308,7 @@ export function platformProjectionLabel(projection: PlatformProjection): string 
 export function platformMetricFormat(metric: PlatformMetric): (value: number) => string {
 	return metric.id === 'cfR2StorageBucket' ||
 		metric.id === 'cfR2StorageAccount' ||
-		metric.id === 'sbDatabase'
+		metric.id === 'sbDisk'
 		? formatPlatformBytes
 		: formatPlatformCount;
 }

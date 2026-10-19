@@ -64,7 +64,7 @@ const REPORT: PlatformUsageReport = [
 					spendUsd: null,
 					missing: [],
 					metrics: [
-						metric('sbDatabase', 120_000_000, 500_000_000, {
+						metric('sbDisk', 120_000_000, null, {
 							window: 'snapshot',
 							scope: 'preview',
 						}),
@@ -152,7 +152,7 @@ const HEALTHY_PRODUCTION: PlatformUsageReport = [
 					spendUsd: null,
 					missing: [],
 					metrics: [
-						metric('sbDatabase', 333_000_000, 500_000_000, {
+						metric('sbDisk', 333_000_000, null, {
 							window: 'snapshot',
 							scope: 'production',
 						}),
@@ -219,11 +219,13 @@ describe('PlatformUsagePanel island', () => {
 		).toBeInTheDocument();
 
 		const supabase = screen.getByRole('region', { name: 'Supabase' });
-		expect(within(supabase).getByText(/No es el «Database size»/)).toBeInTheDocument();
-		expect(within(supabase).getByRole('meter', { name: 'Disco usado' })).toHaveAttribute(
-			'aria-valuetext',
-			'120 MB de 500 MB (24 %)',
-		);
+		expect(within(supabase).getByText(/la base pasa a solo lectura/)).toBeInTheDocument();
+		expect(within(supabase).getByText('Disco (incluye WAL)')).toBeInTheDocument();
+		expect(within(supabase).getByText('120 MB')).toBeInTheDocument();
+		expect(within(supabase).getAllByText(/Solo informativo, sin alertas/)).toHaveLength(1);
+		// Disk is informative: no meter, no threshold against the 500 MB database cap.
+		expect(within(supabase).queryByRole('meter')).not.toBeInTheDocument();
+		expect(within(supabase).queryByText(/Sin cuota verificada/)).not.toBeInTheDocument();
 		expect(within(supabase).getByText(/El proveedor no respondió/)).toBeInTheDocument();
 	});
 
@@ -300,10 +302,10 @@ describe('PlatformUsagePanel island', () => {
 		expect(
 			screen.queryByRole('region', { name: 'Cloudflare · Preview' }),
 		).not.toBeInTheDocument();
-		expect(screen.getByRole('meter', { name: 'Disco usado' })).toHaveAttribute(
-			'aria-valuetext',
-			'333 MB de 500 MB (67 %)',
-		);
+		// 333 MB of disk is not a 70 % alarm: only the R2 gap is pending.
+		expect(screen.getByText('333 MB')).toBeInTheDocument();
+		expect(screen.queryByText(/en aviso/)).not.toBeInTheDocument();
+		expect(screen.getByText('1 dato por configurar')).toBeInTheDocument();
 	});
 
 	it('reports a failed console read without breaking the page', async () => {

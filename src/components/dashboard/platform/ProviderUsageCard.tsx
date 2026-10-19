@@ -16,6 +16,7 @@ import {
 	platformLevelLabel,
 	platformMetricFormat,
 	platformMetricLabel,
+	platformMetricNote,
 	platformMissingDestination,
 	platformMissingInfo,
 	platformMissingLinkLabel,
@@ -93,6 +94,7 @@ function MetricRow({ metric, pending }: { metric: PlatformMetric; pending: boole
 	const badge = platformLevelLabel[level];
 	const percent = ratio === null ? 0 : Math.min(100, Math.round(ratio * 100));
 	const projection = platformProjectionLabel(metric.projection);
+	const note = platformMetricNote(metric);
 	const meta = [platformWindowLabel[metric.window], projection].filter(Boolean).join(' · ');
 
 	let value: ReactNode;
@@ -106,11 +108,13 @@ function MetricRow({ metric, pending }: { metric: PlatformMetric; pending: boole
 		value = (
 			<>
 				<strong>{format(used)}</strong>
-				<span className="platform-metric__limit">
-					{limit === null
-						? ` · ${platformCopy.noQuota}`
-						: ` ${platformCopy.ofLimit(format(limit))}`}
-				</span>
+				{limit !== null ? (
+					<span className="platform-metric__limit">
+						{` ${platformCopy.ofLimit(format(limit))}`}
+					</span>
+				) : note ? null : (
+					<span className="platform-metric__limit">{` · ${platformCopy.noQuota}`}</span>
+				)}
 				{ratio !== null ? (
 					<span className="platform-metric__percent">{formatPlatformPercent(ratio)}</span>
 				) : null}
@@ -135,6 +139,7 @@ function MetricRow({ metric, pending }: { metric: PlatformMetric; pending: boole
 				/>
 			) : null}
 			{used !== null ? <p className="platform-metric__meta">{meta}</p> : null}
+			{note ? <p className="platform-metric__meta">{note}</p> : null}
 			{metric.overageUsd !== null ? (
 				<p className="platform-metric__overage" role="alert">
 					{platformCopy.overage(formatPlatformMoney(metric.overageUsd))}
