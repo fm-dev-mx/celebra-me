@@ -31,6 +31,13 @@ const familyAsset: InvitationPackageAsset = {
 	dataBase64: 'mock',
 };
 const definitionSlug = 'alba-rosa-quinonez';
+const R2_KEY = `invitations/cumple/${definitionSlug}/family-${familyAsset.sha256}.webp`;
+const r2Asset: InvitationPackageAsset = {
+	...familyAsset,
+	provider: 'r2',
+	providerPublicId: R2_KEY,
+	secureUrl: `https://media-staging.celebra-me.com/${R2_KEY}`,
+};
 
 const engineSource = readFileSync(
 	resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
@@ -40,13 +47,7 @@ const engineSource = readFileSync(
 const sql = buildHostedAssetUpsertSql({
 	assetId: '7bce748d-8c86-40e3-b28e-0b5523640034',
 	targetInvitationId: '28110aef-078d-46bd-857c-893e10e11bc1',
-	asset: {
-		...familyAsset,
-		provider: 'cloudinary',
-		providerPublicId: 'preview/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
-		secureUrl:
-			'https://res.cloudinary.com/test/image/upload/v1/preview/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa.webp',
-	},
+	asset: r2Asset,
 	definitionSlug,
 	operationId: '11111111-1111-4111-8111-111111111111',
 	targetEnvironment: 'preview',
@@ -55,16 +56,21 @@ const sql = buildHostedAssetUpsertSql({
 });
 
 describe('buildHostedAssetUpsertSql', () => {
-	it('rejects a legacy or cross-environment Cloudinary ID before building a mutation', () => {
+	it('rejects an R2 object under another invitation prefix before building a mutation', () => {
 		for (const publicId of [
-			'cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
-			'production/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
+			`invitations/cumple/otra-invitacion/family-${familyAsset.sha256}.webp`,
+			`invitations/boda/${definitionSlug}/family-${familyAsset.sha256}.webp`,
+			`${definitionSlug}/family-${familyAsset.sha256}.webp`,
 		]) {
 			expect(() =>
 				buildHostedAssetUpsertSql({
 					assetId: '7bce748d-8c86-40e3-b28e-0b5523640034',
 					targetInvitationId: '28110aef-078d-46bd-857c-893e10e11bc1',
-					asset: { ...familyAsset, provider: 'cloudinary', providerPublicId: publicId },
+					asset: {
+						...r2Asset,
+						providerPublicId: publicId,
+						secureUrl: `https://media-staging.celebra-me.com/${publicId}`,
+					},
 					definitionSlug,
 					operationId: '11111111-1111-4111-8111-111111111111',
 					targetEnvironment: 'preview',
@@ -73,6 +79,30 @@ describe('buildHostedAssetUpsertSql', () => {
 				}),
 			).toThrow();
 		}
+	});
+	it('rejects an R2 secureUrl that is not the canonical destination for the target environment', () => {
+		for (const secureUrl of [
+			`https://media.celebra-me.com/${R2_KEY}`,
+			`https://media-staging.celebra-me.com/${R2_KEY}?v=2`,
+		]) {
+			expect(() =>
+				buildHostedAssetUpsertSql({
+					assetId: '7bce748d-8c86-40e3-b28e-0b5523640034',
+					targetInvitationId: '28110aef-078d-46bd-857c-893e10e11bc1',
+					asset: { ...r2Asset, secureUrl },
+					definitionSlug,
+					operationId: '11111111-1111-4111-8111-111111111111',
+					targetEnvironment: 'preview',
+					eventType: 'cumple',
+					slug: definitionSlug,
+				}),
+			).toThrow('canonical destination URL');
+		}
+	});
+	it('records the R2 provider, object key and public URL', () => {
+		expect(sql).toContain("'r2'");
+		expect(sql).toContain(`'${R2_KEY}'`);
+		expect(sql).toContain(`'https://media-staging.celebra-me.com/${R2_KEY}'`);
 	});
 	it('conflicts on primary key id, not bucket/storage_path', () => {
 		expect(sql).toContain('on conflict (id) do update set');
@@ -279,7 +309,7 @@ describe('resolveTargetAssetRefs wiring', () => {
 		expect(resolveFn).not.toMatch(/deleted_at is null/);
 	});
 
-	it('uses Cloudinary delivery src instead of Supabase Storage for invitation images', () => {
+	it('uses the R2 delivery src instead of Supabase Storage for invitation images', () => {
 		expect(resolveFn).toContain('resolveHostedUploadedAssetSrc');
 		expect(resolveFn).not.toContain('`${targetStorageUrl}/${storagePath}`');
 	});
@@ -288,37 +318,20 @@ describe('resolveTargetAssetRefs wiring', () => {
 describe('resolveHostedUploadedAssetSrc', () => {
 	const storageUrl = 'https://preview.supabase.co/storage/v1/object/public/invitation-assets';
 
-	it('uses packaged Cloudinary secureUrl and never a Storage host', () => {
-		const src = resolveHostedUploadedAssetSrc(
-			{
-				...familyAsset,
-				provider: 'cloudinary',
-				providerPublicId: 'cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
-				secureUrl:
-					'https://res.cloudinary.com/dusxvauvj/image/upload/v1/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa.webp',
-			},
-			null,
-			storageUrl,
-		);
-		expect(src).toContain('res.cloudinary.com');
+	it('uses packaged R2 secureUrl and never a Storage host', () => {
+		const src = resolveHostedUploadedAssetSrc(r2Asset, null, storageUrl);
+		expect(src).toBe(r2Asset.secureUrl);
 		expect(src).not.toContain('supabase.co/storage');
 	});
 
 	it('prefers the verified persisted delivery URL for an existing asset row', () => {
-		const persisted =
-			'https://res.cloudinary.com/dusxvauvj/image/upload/v1/boda/victoria/assets/hero-aaaaaaaaaaaa.webp';
+		const persisted = `https://media.celebra-me.com/invitations/cumple/${definitionSlug}/family-persisted.webp`;
 		const src = resolveHostedUploadedAssetSrc(
-			{
-				...familyAsset,
-				provider: 'cloudinary',
-				providerPublicId: 'production/boda/victoria/assets/hero-aaaaaaaaaaaa',
-				secureUrl:
-					'https://res.cloudinary.com/dusxvauvj/image/upload/v1/production/boda/victoria/assets/hero-aaaaaaaaaaaa.webp',
-			},
+			r2Asset,
 			{
 				id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
 				display_name: familyAsset.displayName,
-				storage_path: 'boda/victoria/assets/hero-aaaaaaaaaaaa',
+				storage_path: 'invitations/cumple/alba-rosa-quinonez/family-persisted.webp',
 				secure_url: persisted,
 			},
 			storageUrl,
@@ -327,24 +340,19 @@ describe('resolveHostedUploadedAssetSrc', () => {
 		expect(src).toBe(persisted);
 	});
 
-	it('fails closed when Cloudinary identity is missing', () => {
+	it('fails closed when the R2 secureUrl is missing', () => {
 		expect(() =>
-			resolveHostedUploadedAssetSrc(
-				{ ...familyAsset, provider: 'cloudinary' },
-				null,
-				storageUrl,
-			),
-		).toThrow(/missing secureUrl and providerPublicId/);
+			resolveHostedUploadedAssetSrc({ ...familyAsset, provider: 'r2' }, null, storageUrl),
+		).toThrow(/missing secureUrl/);
 	});
 });
 
 describe('rewriteUploadedDeliverySrcs', () => {
-	it('rewrites uploaded src and applies the OG Cloudinary transform', () => {
+	it('rewrites uploaded src and points the OG image at the R2 social card', () => {
 		const assetId = '7bce748d-8c86-40e3-b28e-0b5523640034';
 		const storageHost =
 			'https://preview.supabase.co/storage/v1/object/public/invitation-assets';
-		const cloudinarySrc =
-			'https://res.cloudinary.com/dusxvauvj/image/upload/v1/cumple/alba/assets/hero-aaa.webp';
+		const r2Src = r2Asset.secureUrl as string;
 		const rewritten = rewriteUploadedDeliverySrcs(
 			{
 				hero: { type: 'uploaded', assetId, src: `${storageHost}/managed/alba/hero.webp` },
@@ -354,9 +362,9 @@ describe('rewriteUploadedDeliverySrcs', () => {
 					src: `${storageHost}/managed/alba/hero.webp`,
 				},
 			},
-			{ hero: { type: 'uploaded', assetId, src: cloudinarySrc } },
+			{ hero: { type: 'uploaded', assetId, src: r2Src } },
 		) as Record<string, { src: string }>;
-		expect(rewritten.hero.src).toBe(cloudinarySrc);
-		expect(rewritten.ogImage.src).toContain('c_fill,g_auto,w_1200,h_630');
+		expect(rewritten.hero.src).toBe(r2Src);
+		expect(rewritten.ogImage.src).toBe(r2Src.replace(/\.webp$/, '.og.jpg'));
 	});
 });

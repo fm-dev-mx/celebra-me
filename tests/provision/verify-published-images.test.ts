@@ -18,7 +18,7 @@ describe('published image verification', () => {
 		const download = jest.fn(async () => ({
 			ok: true,
 			status: 200,
-			url: 'https://res.cloudinary.com/demo/image/upload/v1/production/xv/example/assets/hero.webp',
+			url: 'https://media.celebra-me.com/invitations/xv/example/hero.webp',
 			headers: new Headers({ 'content-type': 'image/webp' }),
 			arrayBuffer: async () => Uint8Array.from(bytes).buffer,
 		})) as unknown as typeof fetch;
@@ -35,7 +35,7 @@ describe('published image verification', () => {
 						mimeType: 'image/webp',
 						width: 3,
 						height: 2,
-						url: 'https://res.cloudinary.com/demo/image/upload/v1/production/xv/example/assets/hero.webp',
+						url: 'https://media.celebra-me.com/invitations/xv/example/hero.webp',
 					},
 				],
 			},
@@ -47,8 +47,7 @@ describe('published image verification', () => {
 
 	it('verifies a published invitation even when no repository package is available', async () => {
 		const { bytes, sha256 } = await imageFixture();
-		const url =
-			'https://res.cloudinary.com/demo/image/upload/v1/production/xv/unregistered/assets/hero.webp';
+		const url = 'https://media.celebra-me.com/invitations/xv/unregistered/hero.webp';
 		const download = jest.fn(async () => ({
 			ok: true,
 			status: 200,
@@ -108,7 +107,7 @@ describe('published image verification', () => {
 						mimeType: 'image/webp',
 						width: 3,
 						height: 2,
-						url: 'https://res.cloudinary.com/demo/image/upload/v1/production/xv/broken/assets/hero.webp',
+						url: 'https://media.celebra-me.com/invitations/xv/broken/hero.webp',
 					},
 				],
 			},
@@ -135,7 +134,7 @@ describe('published image verification', () => {
 						mimeType: 'image/webp',
 						width: 1,
 						height: 1,
-						url: 'https://res.cloudinary.com/demo/image/upload/v1/production/boda/example/hero.webp?token=secret',
+						url: 'https://media.celebra-me.com/invitations/boda/example/hero.webp?token=secret',
 					},
 					{
 						id: 'orphan',
@@ -144,7 +143,7 @@ describe('published image verification', () => {
 						mimeType: 'image/webp',
 						width: 1,
 						height: 1,
-						url: 'https://res.cloudinary.com/demo/image/upload/v1/production/boda/example/hero.webp?token=secret',
+						url: 'https://media.celebra-me.com/invitations/boda/example/hero.webp?token=secret',
 					},
 				],
 			},
@@ -159,8 +158,7 @@ describe('published image verification', () => {
 
 	it('reports package images the target has not received as pending, not missing', async () => {
 		const { bytes, sha256 } = await imageFixture();
-		const url =
-			'https://res.cloudinary.com/demo/image/upload/v1/production/xv/example/assets/hero.webp';
+		const url = 'https://media.celebra-me.com/invitations/xv/example/hero.webp';
 		const download = jest.fn(async () => ({
 			ok: true,
 			status: 200,
@@ -200,11 +198,10 @@ describe('published image verification', () => {
 
 	it('identifies a broken published reference without calling the active binary missing', async () => {
 		const { bytes, sha256 } = await imageFixture();
-		const activeUrl =
-			'https://res.cloudinary.com/demo/image/upload/v1/boda/example/assets/hero.webp';
+		const activeUrl = 'https://media.celebra-me.com/invitations/boda/example/hero.webp';
 		const download = jest.fn(async (input: URL | RequestInfo) => {
 			const requested = String(input);
-			if (requested.includes('/production/')) return new Response(null, { status: 404 });
+			if (requested.includes('-stale')) return new Response(null, { status: 404 });
 			return {
 				ok: true,
 				status: 200,
@@ -222,7 +219,7 @@ describe('published image verification', () => {
 						image: {
 							type: 'uploaded',
 							assetId: 'asset-1',
-							src: 'https://res.cloudinary.com/demo/image/upload/v1/production/boda/example/assets/hero.webp',
+							src: 'https://media.celebra-me.com/invitations/boda/example/hero-stale.webp',
 						},
 					},
 				},
@@ -258,7 +255,7 @@ describe('published image verification', () => {
 						image: {
 							type: 'uploaded',
 							assetId: 'asset-1',
-							src: 'https://res.cloudinary.com/demo/image/upload/v1/production/boda/example/hero.webp',
+							src: 'https://media.celebra-me.com/invitations/boda/example/hero-stale.webp',
 						},
 					},
 				},
@@ -270,7 +267,7 @@ describe('published image verification', () => {
 						mimeType: 'image/webp',
 						width: 3,
 						height: 2,
-						url: 'https://res.cloudinary.com/demo/image/upload/v1/boda/example/hero.webp',
+						url: 'https://media.celebra-me.com/invitations/boda/example/hero.webp',
 					},
 				],
 			},

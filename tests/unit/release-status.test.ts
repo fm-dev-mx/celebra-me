@@ -2,25 +2,22 @@ import {
 	classifyCheck,
 	classifyDeployment,
 	collectReleaseStatus,
-	deploymentProvider,
 	loadDeploymentForSha,
-	loadIgnoredPreviewBuild,
 	probeHealth,
 	waitForReleaseStatus,
 	type ReleaseStatus,
 } from '../../scripts/ops/release-status.ts';
 import {
 	CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
-	PREVIEW_DEPLOYMENT_SMOKE,
-	PRODUCTION_DEPLOYMENT_SMOKE,
+	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
 	REQUIRED_RELEASE_CHECKS,
 } from '../../scripts/ops/release-readiness.ts';
 
 const sha = 'a'.repeat(40);
-const previewUrl = 'https://celebra-abc123-francisco-mendoza-s-projects.vercel.app';
-const productionUrl = 'https://celebra-ar4swgfjq-francisco-mendoza-s-projects.vercel.app';
-const vercelCreator = { login: 'vercel[bot]' };
 const cloudflareVersionUrl = 'https://1a2b3c4d-celebra-me-preview.celebra-me-com.workers.dev';
+const previewUrl = cloudflareVersionUrl;
+const productionUrl = 'https://9f8e7d6c-celebra-me.celebra-me-com.workers.dev';
+const workerCreator = { login: 'github-actions[bot]' };
 
 function ghRunner(responses: Record<string, unknown>): (args: string[]) => string {
 	return (args) => {
@@ -88,10 +85,10 @@ describe('release status classification', () => {
 		);
 	});
 
-	it('requires an immutable Preview host for a ready deployment', () => {
+	it('requires a Cloudflare Preview Worker host for a ready deployment', () => {
 		const ready = { id: 1, environment: 'Preview', state: 'success', url: previewUrl };
 		expect(classifyDeployment('preview', ready)).toBe('passed');
-		expect(classifyDeployment('preview', { ...ready, url: 'https://example.vercel.app' })).toBe(
+		expect(classifyDeployment('preview', { ...ready, url: 'https://example.com' })).toBe(
 			'failed',
 		);
 		expect(classifyDeployment('preview', { ...ready, state: 'in_progress' })).toBe('pending');
@@ -171,92 +168,15 @@ describe('release status classification', () => {
 describe('collectReleaseStatus', () => {
 	it('verifies checks, the Preview deployment, its smoke and health in one result', async () => {
 		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
-			run: ghRunner(responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' })),
+			run: ghRunner(
+				responses({ ...allPassed, [CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'success' }),
+			),
 			fetchImpl: healthy(sha),
 		});
 		expect(status.state).toBe('VERIFIED');
 		expect(status.deployment).toMatchObject({ id: 7, url: previewUrl });
 		expect(status.health[0].result).toBe('match');
 		expect(status.blockers).toEqual([]);
-	});
-
-	describe('ignored Preview build', () => {
-		const skipped = (extra: Record<string, unknown>[] = []) => ({
-			[`commits/${sha}/statuses?per_page=100`]: [
-				...extra,
-				{
-					context: 'Vercel',
-					state: 'success',
-					description: 'Canceled by Ignored Build Step',
-					creator: vercelCreator,
-				},
-			],
-			[`deployments?sha=${sha}&per_page=100`]: [],
-		});
-
-		it('reports SKIPPED when CI passed and Vercel skipped the build', async () => {
-			const status = await collectReleaseStatus(sha, 'preview', 'ci', {
-				run: ghRunner({ ...responses(allPassed), ...skipped() }),
-				fetchImpl: healthy(sha),
-			});
-			expect(status.state).toBe('SKIPPED');
-			expect(status.ignoredBuild).toEqual({ description: 'Canceled by Ignored Build Step' });
-			expect(status.deployment).toBeNull();
-			expect(status.blockers).toEqual([]);
-		});
-
-		it('never skips past a failed or pending required check', async () => {
-			const failed = await collectReleaseStatus(sha, 'preview', 'ci', {
-				run: ghRunner({
-					...responses({ ...allPassed, 'Application Suite': 'failure' }),
-					...skipped(),
-				}),
-			});
-			expect(failed.state).toBe('FAILED');
-			const pending = await collectReleaseStatus(sha, 'preview', 'ci', {
-				run: ghRunner({
-					...responses({ ...allPassed, 'Application Suite': 'in_progress' }),
-					...skipped(),
-				}),
-			});
-			expect(pending.state).toBe('PENDING');
-		});
-
-		it('ignores a skip superseded by a newer build, a foreign creator and Production', () => {
-			const deploying = {
-				context: 'Vercel',
-				state: 'pending',
-				description: 'Vercel is deploying your app',
-				creator: vercelCreator,
-			};
-			const run = (extra: Record<string, unknown>[]) =>
-				ghRunner({ ...responses(allPassed), ...skipped(extra) });
-			expect(loadIgnoredPreviewBuild(sha, run([deploying]))).toBeNull();
-			expect(
-				loadIgnoredPreviewBuild(
-					sha,
-					ghRunner({
-						...responses(allPassed),
-						[`commits/${sha}/statuses?per_page=100`]: [
-							{
-								context: 'Vercel',
-								state: 'success',
-								description: 'Canceled by Ignored Build Step',
-								creator: { login: 'someone' },
-							},
-						],
-					}),
-				),
-			).toBeNull();
-		});
-
-		it('does not apply to Production', async () => {
-			const status = await collectReleaseStatus(sha, 'production', 'ci', {
-				run: ghRunner({ ...responses(allPassed), ...skipped() }),
-			});
-			expect(status.ignoredBuild).toBeNull();
-			expect(status.state).not.toBe('SKIPPED');
-		});
 	});
 
 	it('stays pending while CI or the smoke is still running', async () => {
@@ -268,20 +188,19 @@ describe('collectReleaseStatus', () => {
 		expect(status.blockers).toEqual(
 			expect.arrayContaining([
 				'Application Suite: in_progress',
-				`${PREVIEW_DEPLOYMENT_SMOKE}: missing`,
+				`${CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE}: missing`,
 			]),
 		);
 	});
 
-	it('verifies Production from the Vercel deployment when a workflow environment record is newer', async () => {
-		// Observed for a Production SHA: Vercel records the deployment, then the Post-deploy Smoke
-		// job (`environment: Production`) records a newer deployment with an empty environment_url
-		// that GitHub also attributes to vercel[bot].
+	it('verifies Production from the Worker deployment when a workflow environment record is newer', async () => {
+		// A workflow job declaring `environment: Production` can record a newer deployment with an
+		// empty environment_url behind the deployment that carries the Worker URL.
 		const run = ghRunner({
-			...responses({ ...allPassed, [PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
+			...responses({ ...allPassed, [CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
 			[`deployments?sha=${sha}&per_page=100`]: [
-				{ id: 6927490534, sha, environment: 'Production', creator: vercelCreator },
-				{ id: 6927490121, sha, environment: 'Production', creator: vercelCreator },
+				{ id: 6927490534, sha, environment: 'Production', creator: workerCreator },
+				{ id: 6927490121, sha, environment: 'Production', creator: workerCreator },
 			],
 			'deployments/6927490534/statuses?per_page=100': [
 				{ state: 'success', environment_url: '' },
@@ -298,10 +217,10 @@ describe('collectReleaseStatus', () => {
 			url: productionUrl,
 		});
 		const probes: Array<{ url: string; headers?: Record<string, string> }> = [];
-		const protectionHeaders = { 'x-vercel-protection-bypass': 'test-bypass' };
+		const accessHeaders = { 'CF-Access-Client-Id': 'id', 'CF-Access-Client-Secret': 'secret' };
 		const status = await collectReleaseStatus(sha, 'production', 'ci', {
 			run,
-			protectionHeaders,
+			accessHeaders,
 			fetchImpl: async (url, init) => {
 				probes.push({ url, headers: init?.headers });
 				return healthy(sha, 'production')();
@@ -311,9 +230,9 @@ describe('collectReleaseStatus', () => {
 		expect(status.deployment).toMatchObject({ id: 6927490121, url: productionUrl });
 		expect(status.health.map((entry) => entry.result)).toEqual(['match', 'match']);
 		expect(status.blockers).toEqual([]);
-		// Vercel Authentication guards the immutable Production URL; the public alias needs no bypass.
+		// Cloudflare Access guards the Production version URL; the public alias needs no credential.
 		expect(probes).toEqual([
-			{ url: `${productionUrl}/api/health`, headers: protectionHeaders },
+			{ url: `${productionUrl}/api/health`, headers: accessHeaders },
 			{ url: 'https://www.celebra-me.com/api/health', headers: undefined },
 		]);
 	});
@@ -322,7 +241,6 @@ describe('collectReleaseStatus', () => {
 		const run = ghRunner({
 			...responses({
 				...allPassed,
-				[PREVIEW_DEPLOYMENT_SMOKE]: 'failure',
 				[CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'success',
 			}),
 			'deployments/7/statuses?per_page=100': [
@@ -334,7 +252,6 @@ describe('collectReleaseStatus', () => {
 		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
 			run,
 			accessHeaders,
-			protectionHeaders: { 'x-vercel-protection-bypass': 'vercel-only' },
 			fetchImpl: async (url, init) => {
 				probes.push({ url, headers: init?.headers });
 				return healthy(sha)();
@@ -350,13 +267,9 @@ describe('collectReleaseStatus', () => {
 		]);
 	});
 
-	it('reports the most advanced provider smoke while no deployment is recorded', async () => {
+	it('reports a pending smoke while no deployment is recorded', async () => {
 		const run = ghRunner({
-			...responses({
-				...allPassed,
-				[PREVIEW_DEPLOYMENT_SMOKE]: 'failure',
-				[CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'in_progress',
-			}),
+			...responses({ ...allPassed, [CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'in_progress' }),
 			[`deployments?sha=${sha}&per_page=100`]: [],
 		});
 		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
@@ -371,13 +284,13 @@ describe('collectReleaseStatus', () => {
 	});
 
 	it('verifies Preview from the record with an environment_url behind newer smoke records', async () => {
-		// Observed for a Preview SHA: two newer vercel[bot] records with an empty environment_url.
+		// Observed for a Preview SHA: two newer workflow records with an empty environment_url.
 		const run = ghRunner({
-			...responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' }),
+			...responses({ ...allPassed, [CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'success' }),
 			[`deployments?sha=${sha}&per_page=100`]: [
-				{ id: 6927513471, sha, environment: 'Preview', creator: vercelCreator },
-				{ id: 6927617721, sha, environment: 'Preview', creator: vercelCreator },
-				{ id: 6927513812, sha, environment: 'Preview', creator: vercelCreator },
+				{ id: 6927513471, sha, environment: 'Preview', creator: workerCreator },
+				{ id: 6927617721, sha, environment: 'Preview', creator: workerCreator },
+				{ id: 6927513812, sha, environment: 'Preview', creator: workerCreator },
 			],
 			'deployments/6927617721/statuses?per_page=100': [
 				{ state: 'success', environment_url: '' },
@@ -400,9 +313,9 @@ describe('collectReleaseStatus', () => {
 	it('falls back to the newest deployment record while no candidate has an environment_url', () => {
 		const run = ghRunner({
 			[`deployments?sha=${sha}&per_page=100`]: [
-				{ id: 11, sha, environment: 'Production', creator: vercelCreator },
-				{ id: 10, sha, environment: 'Production', creator: vercelCreator },
-				{ id: 9, sha, environment: 'Preview', creator: vercelCreator },
+				{ id: 11, sha, environment: 'Production', creator: workerCreator },
+				{ id: 10, sha, environment: 'Production', creator: workerCreator },
+				{ id: 9, sha, environment: 'Preview', creator: workerCreator },
 			],
 			'deployments/11/statuses?per_page=100': [],
 			'deployments/10/statuses?per_page=100': [{ state: 'in_progress' }],
@@ -430,12 +343,12 @@ describe('collectReleaseStatus', () => {
 });
 
 describe('smoke re-run', () => {
-	// Observed shape: the dispatch workflow publishes the smoke as a commit status whose target_url
-	// links to its run; the run itself carries the default branch head_sha, not the release SHA.
+	// Observed shape: the deploy workflow publishes the smoke as a commit status whose target_url
+	// links to its run; the run's head_sha need not be the release SHA.
 	const runId = 37714189056;
 	const targetUrl = `https://github.com/fm-dev-mx/celebra-me/actions/runs/${runId}/job/113112233445`;
 	const smokeStatus = (state: string, createdAt: string) => ({
-		context: PREVIEW_DEPLOYMENT_SMOKE,
+		context: CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
 		state,
 		description: null,
 		target_url: targetUrl,
@@ -445,9 +358,9 @@ describe('smoke re-run', () => {
 	});
 	const workflowRun = (status: string, attempt: number, conclusion: string | null) => ({
 		id: runId,
-		name: 'Post-deploy Smoke',
-		event: 'repository_dispatch',
-		display_title: 'vercel.deployment.ready',
+		name: 'Cloudflare Preview Deploy',
+		event: 'push',
+		display_title: 'Cloudflare Preview Deploy',
 		head_branch: 'main',
 		head_sha: 'c'.repeat(40),
 		status,
@@ -494,7 +407,9 @@ describe('smoke re-run', () => {
 			progress: 'pending',
 			rerun: { runId, attempt: 2, status: 'queued' },
 		});
-		expect(observed[1].blockers).toEqual([`${PREVIEW_DEPLOYMENT_SMOKE}: rerun in_progress`]);
+		expect(observed[1].blockers).toEqual([
+			`${CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE}: rerun in_progress`,
+		]);
 		expect(result.state).toBe('VERIFIED');
 		expect(result.smoke.rerun).toBeUndefined();
 		expect(sleep).toHaveBeenCalledTimes(2);
@@ -554,21 +469,9 @@ describe('waitForReleaseStatus', () => {
 	});
 });
 
-describe('deploymentProvider', () => {
-	it('recognizes both Cloudflare Workers and leaves every other host to Vercel', () => {
-		expect(deploymentProvider(cloudflareVersionUrl)).toBe('cloudflare');
-		expect(deploymentProvider('https://9f8e7d6c-celebra-me.celebra-me-com.workers.dev')).toBe(
-			'cloudflare',
-		);
-		expect(deploymentProvider(productionUrl)).toBe('vercel');
-		expect(deploymentProvider('https://www.celebra-me.com')).toBe('vercel');
-		expect(deploymentProvider(null)).toBeNull();
-	});
-});
-
-describe('deployment URL behind provider authentication', () => {
+describe('deployment URL behind Cloudflare Access', () => {
 	const aliasHealthUrl = 'https://www.celebra-me.com/api/health';
-	const vercelLogin = `https://vercel.com/login?next=%2Fsso-api%3Furl%3D${encodeURIComponent(productionUrl)}`;
+	const accessLogin = 'https://celebra-me.cloudflareaccess.com/cdn-cgi/access/login';
 	const redirect = (location: string, status = 302) => ({
 		status,
 		headers: { get: (name: string) => (name.toLowerCase() === 'location' ? location : null) },
@@ -578,20 +481,20 @@ describe('deployment URL behind provider authentication', () => {
 	});
 	const productionRun = () =>
 		ghRunner({
-			...responses({ ...allPassed, [PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
+			...responses({ ...allPassed, [CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
 			'deployments/3/statuses?per_page=100': [
 				{ state: 'success', environment_url: productionUrl },
 			],
 			[`deployments?sha=${sha}&per_page=100`]: [{ id: 3, sha, environment: 'Production' }],
 		});
-	// The deployment URL redirects to the Vercel login; the alias answers with `alias`.
+	// The deployment URL redirects to the Access login; the alias answers with `alias`.
 	const productionFetch =
 		(alias: Awaited<ReturnType<ReturnType<typeof healthy>>> | Error) => async (url: string) => {
 			if (url === aliasHealthUrl) {
 				if (alias instanceof Error) throw alias;
 				return alias;
 			}
-			return redirect(vercelLogin);
+			return redirect(accessLogin);
 		};
 
 	it('reads an authentication redirect or 401 as protected, never as the application', async () => {
@@ -601,7 +504,7 @@ describe('deployment URL behind provider authentication', () => {
 			sha,
 			async (_url, init) => {
 				inits.push(init);
-				return redirect(vercelLogin);
+				return redirect(accessLogin);
 			},
 			undefined,
 			'production',
@@ -680,91 +583,13 @@ describe('deployment URL behind provider authentication', () => {
 
 	it('keeps Preview pending: it has no public alias to stand in', async () => {
 		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
-			run: ghRunner(responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' })),
-			fetchImpl: async () => redirect(vercelLogin),
+			run: ghRunner(
+				responses({ ...allPassed, [CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE]: 'success' }),
+			),
+			fetchImpl: async () => redirect(accessLogin),
 		});
 		expect(status.health.map((entry) => entry.result)).toEqual(['protected']);
 		expect(status.state).toBe('PENDING');
 		expect(status.blockers).toEqual([`${previewUrl}/api/health: protected`]);
-	});
-});
-
-describe('paused Vercel project', () => {
-	const aliasHealthUrl = 'https://www.celebra-me.com/api/health';
-	const vercelError = (status: number, error: string | null) => ({
-		status,
-		headers: {
-			get: (name: string) => (name.toLowerCase() === 'x-vercel-error' ? error : null),
-		},
-		json: async () => {
-			throw new Error('not JSON');
-		},
-	});
-	const paused = vercelError(503, 'DEPLOYMENT_PAUSED');
-	const productionRun = () =>
-		ghRunner({
-			...responses({ ...allPassed, [PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
-			'deployments/3/statuses?per_page=100': [
-				{ state: 'success', environment_url: productionUrl },
-			],
-			[`deployments?sha=${sha}&per_page=100`]: [{ id: 3, sha, environment: 'Production' }],
-		});
-	const productionFetch =
-		(alias: Awaited<ReturnType<ReturnType<typeof healthy>>>) => async (url: string) =>
-			url === aliasHealthUrl ? alias : paused;
-
-	it('reads only a Vercel 503 DEPLOYMENT_PAUSED as paused', async () => {
-		const probe = (url: string, response: ReturnType<typeof vercelError>) =>
-			probeHealth(url, sha, async () => response, undefined, 'production');
-		expect(await probe(productionUrl, paused)).toMatchObject({
-			status: 503,
-			commitSha: null,
-			result: 'paused',
-		});
-		// Another Vercel error, or the same header outside a Vercel host, stays unreachable.
-		expect((await probe(productionUrl, vercelError(503, 'DEPLOYMENT_NOT_FOUND'))).result).toBe(
-			'unreachable',
-		);
-		expect((await probe(productionUrl, vercelError(500, 'DEPLOYMENT_PAUSED'))).result).toBe(
-			'unreachable',
-		);
-		expect((await probe('https://www.celebra-me.com', paused)).result).toBe('unreachable');
-	});
-
-	it('verifies Production when the public alias serves the exact SHA', async () => {
-		const status = await collectReleaseStatus(sha, 'production', 'ci', {
-			run: productionRun(),
-			fetchImpl: productionFetch(await healthy(sha, 'production')()),
-		});
-		expect(status.health.map((entry) => entry.result)).toEqual(['paused', 'match']);
-		expect(status.state).toBe('VERIFIED');
-		expect(status.blockers).toEqual([]);
-	});
-
-	it('never counts a paused deployment URL as success without the alias match', async () => {
-		const otherSha = await collectReleaseStatus(sha, 'production', 'ci', {
-			run: productionRun(),
-			fetchImpl: productionFetch(await healthy('b'.repeat(40), 'production')()),
-		});
-		expect(otherSha.state).toBe('FAILED');
-		expect(otherSha.blockers).toEqual([
-			`${productionUrl}/api/health: paused`,
-			`${aliasHealthUrl}: mismatch`,
-		]);
-		const noIdentity = await collectReleaseStatus(sha, 'production', 'ci', {
-			run: productionRun(),
-			fetchImpl: productionFetch(await healthy(null, 'production')()),
-		});
-		expect(noIdentity.state).toBe('PENDING');
-		expect(noIdentity.blockers).toEqual([`${productionUrl}/api/health: paused`]);
-	});
-
-	it('keeps Preview pending', async () => {
-		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
-			run: ghRunner(responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' })),
-			fetchImpl: async () => paused,
-		});
-		expect(status.state).toBe('PENDING');
-		expect(status.blockers).toEqual([`${previewUrl}/api/health: paused`]);
 	});
 });

@@ -160,7 +160,7 @@ function buildNormaPublishedContent(
 			},
 		},
 		music: {
-			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1789008926/Maria_Martha_Serra_Lima_-_A_Mi_Manera_opt_stvuaw.mp3',
+			url: 'https://media.celebra-me.com/invitations/cumple/norma-hernandez/music-43346b16137fa243a2af6e4d7b33a384155d04db6f2481cf046173f08e481f42.mp3',
 			autoPlay: true,
 		},
 		quote: { text: NORMA_COPY.childhood, author: 'Norma Hernandez' },

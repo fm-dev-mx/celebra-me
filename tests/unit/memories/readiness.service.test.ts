@@ -17,7 +17,6 @@ const ENV_NAMES = [
 	'MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY',
 	'MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY',
 	'MEMORIES_SHARE_SECRET',
-	'CRON_SECRET',
 ] as const;
 
 function configure(values: Partial<Record<(typeof ENV_NAMES)[number], string>>) {
@@ -33,7 +32,6 @@ const COMPLETE = {
 	MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY: PRIVATE_PEM,
 	MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY: PRIVATE_PEM.replace(/\n/g, '\\n'),
 	MEMORIES_SHARE_SECRET: SHARE_SECRET,
-	CRON_SECRET: 'cron-secret',
 };
 
 describe('checkMemoriesReadiness', () => {
@@ -65,7 +63,6 @@ describe('checkMemoriesReadiness', () => {
 			'uploadSigningKey',
 			'retrievalSigningKey',
 			'shareSecret',
-			'cronSecret',
 		]);
 		const serialized = JSON.stringify(readiness);
 		expect(serialized).not.toContain('not-a-worker');

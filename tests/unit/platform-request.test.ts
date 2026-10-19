@@ -5,8 +5,6 @@ import {
 	runAfterResponse,
 } from '@/lib/server/platform-request';
 
-const VERCEL_CONTEXT_SYMBOL = Symbol.for('@vercel/request-context');
-
 function requestWith(headers: Record<string, string>): Request {
 	return new Request('https://celebra-me.com/api/health', { headers });
 }
@@ -45,7 +43,7 @@ describe('getClientIp', () => {
 		jest.restoreAllMocks();
 	});
 
-	it('ignores a client-sent CF-Connecting-IP on Vercel and uses X-Forwarded-For', () => {
+	it('ignores a client-sent CF-Connecting-IP outside Workers and uses X-Forwarded-For', () => {
 		expect(getClientIp(requestWith(spoofedHeaders), { onCloudflareWorkers: false })).toBe(
 			'5.6.7.8',
 		);
@@ -118,10 +116,7 @@ describe('resolveAfterResponseContext', () => {
 });
 
 describe('runAfterResponse', () => {
-	const globalWithContext = globalThis as Record<symbol, unknown>;
-
 	afterEach(() => {
-		delete globalWithContext[VERCEL_CONTEXT_SYMBOL];
 		jest.restoreAllMocks();
 	});
 
@@ -136,24 +131,11 @@ describe('runAfterResponse', () => {
 		await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBeUndefined();
 	});
 
-	it('uses the Vercel request context when no ctx is given', async () => {
-		const waitUntil = jest.fn();
-		globalWithContext[VERCEL_CONTEXT_SYMBOL] = { get: () => ({ waitUntil }) };
+	it('lets the task float when no ctx is given', async () => {
+		const task = jest.fn().mockResolvedValue('done');
 
-		runAfterResponse(null, async () => 'done');
-
-		expect(waitUntil).toHaveBeenCalledTimes(1);
-	});
-
-	it('prefers the given ctx over the Vercel request context', () => {
-		const vercelWaitUntil = jest.fn();
-		const ctxWaitUntil = jest.fn();
-		globalWithContext[VERCEL_CONTEXT_SYMBOL] = { get: () => ({ waitUntil: vercelWaitUntil }) };
-
-		runAfterResponse({ waitUntil: ctxWaitUntil }, async () => 'done');
-
-		expect(ctxWaitUntil).toHaveBeenCalledTimes(1);
-		expect(vercelWaitUntil).not.toHaveBeenCalled();
+		expect(() => runAfterResponse(null, task)).not.toThrow();
+		expect(task).toHaveBeenCalledTimes(1);
 	});
 
 	it('logs a rejected task instead of throwing, with and without a context', async () => {

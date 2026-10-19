@@ -18,7 +18,10 @@ import { hashPublicationProjection } from '../../src/lib/intake/services/publica
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { InvitationContentDraftContentSchema } from '../../src/lib/intake/schemas/invitation-content-draft.schema.ts';
 import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-content-mapper.ts';
-import { buildCloudinaryOgImageUrl } from './cloudinary-adapter.ts';
+import {
+	buildR2SocialImageUrl,
+	isR2InvitationMediaUrl,
+} from '../../src/lib/intake/services/r2-invitation-media.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
 	DEFINITION_CLIENT_EMAIL,
@@ -144,11 +147,11 @@ export function materializeAssetReferences(
 				throw new Error(
 					`No target asset mapping exists for semantic key "${record.assetId}".`,
 				);
-			if (parentKey === 'ogImage' && ref.src.includes('cloudinary.com')) {
+			if (parentKey === 'ogImage' && isR2InvitationMediaUrl(ref.src)) {
 				return {
 					...ref,
 					...(record.delivery ? { delivery: record.delivery } : {}),
-					src: buildCloudinaryOgImageUrl(ref.src),
+					src: buildR2SocialImageUrl(ref.src),
 				};
 			}
 			return { ...ref, ...(record.delivery ? { delivery: record.delivery } : {}) };

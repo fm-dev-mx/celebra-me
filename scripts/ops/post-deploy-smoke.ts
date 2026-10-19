@@ -5,41 +5,14 @@ import {
 	OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
 	assertOperationalEvidenceSafe,
 	serializeOperationalEvidenceEvent,
-	sanitizeOperationalCorrelationId,
 	type OperationalAggregatePayload,
 	type OperationalAggregatePayloadValue,
 	type OperationalEvidenceV1,
 } from '../../src/lib/operations/operational-evidence.ts';
-import {
-	PREVIEW_SUPABASE_PROJECT_REF,
-	validateReadOnlyPreviewEnvironment,
-} from '../playwright/preview-environment.ts';
 import { listPublishedInvitationDefinitions } from '../provision/invitations/registry.ts';
 import { discoverDemoCases } from '../screenshot/visual-coverage-contract.ts';
 
 export type PostDeployEnvironment = 'preview' | 'production';
-
-export interface VercelDispatchInput {
-	event: string;
-	environment: string;
-	projectId: string;
-	expectedProjectId: string;
-	deploymentId: string;
-	url: string;
-	commitSha: string;
-	gitRef: string;
-}
-
-export interface ValidatedVercelDispatch {
-	event: 'vercel.deployment.ready' | 'vercel.deployment.promoted';
-	environment: PostDeployEnvironment;
-	projectId: string;
-	deploymentId: string;
-	baseUrl: string;
-	commitSha: string;
-	gitRef: string;
-	hostname: string;
-}
 
 export type PostDeployProbeId =
 	| 'homepage'
@@ -107,8 +80,6 @@ type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 const TRANSIENT_STATUSES = new Set([502, 503, 504]);
 const PRODUCTION_HOSTS = new Set(['celebra-me.com', 'www.celebra-me.com']);
-const VERCEL_ID_PATTERN = /^(?:dpl_|prj_)[A-Za-z0-9_-]+$/;
-const SHA_PATTERN = /^[0-9a-f]{40}$/i;
 
 /**
  * Pages come from the repository catalog: published, non-expired invitation definitions and
@@ -147,38 +118,19 @@ function requireValue(value: string, name: string): string {
 	return trimmed;
 }
 
-function validateDispatchTransition(event: string, environment: string): PostDeployEnvironment {
-	if (event === 'vercel.deployment.ready' && environment === 'preview') return 'preview';
-	if (event === 'vercel.deployment.promoted' && environment === 'production') {
-		return 'production';
-	}
-	throw new Error('Dispatch event does not match the approved environment transition.');
-}
-
-function validateDispatchProject(projectId: string, expectedProjectId: string): string {
-	if (projectId !== expectedProjectId || !VERCEL_ID_PATTERN.test(projectId)) {
-		throw new Error('Dispatch rejected a different or invalid Vercel project id.');
-	}
-	return projectId;
-}
-
 /**
- * Hosts a URL smoke may target: the Production domain and its subdomains, protected Vercel
- * deployments (bypass secret required), and Cloudflare Workers preview hosts.
+ * Hosts a URL smoke may target: the Production domain and its subdomains, and Cloudflare
+ * Workers hosts.
  */
 function isApprovedSmokeHost(hostname: string): boolean {
 	return (
 		PRODUCTION_HOSTS.has(hostname) ||
 		hostname.endsWith('.celebra-me.com') ||
-		hostname.endsWith('.vercel.app') ||
 		hostname.endsWith('.workers.dev')
 	);
 }
 
-function parseDeploymentOrigin(
-	rawUrl: string,
-	environment: PostDeployEnvironment | 'url_check',
-): URL {
+function parseDeploymentOrigin(rawUrl: string): URL {
 	let url: URL;
 	try {
 		url = new URL(requireValue(rawUrl, 'Deployment URL'));
@@ -195,88 +147,10 @@ function parseDeploymentOrigin(
 	) {
 		throw new Error('Deployment URL must contain only an HTTPS origin.');
 	}
-	const hostname = url.hostname.toLowerCase();
-	if (
-		environment === 'production' &&
-		!PRODUCTION_HOSTS.has(hostname) &&
-		!hostname.endsWith('.vercel.app')
-	) {
-		throw new Error('Production smoke rejected an unapproved host.');
-	}
-	if (environment === 'url_check' && !isApprovedSmokeHost(hostname)) {
+	if (!isApprovedSmokeHost(url.hostname.toLowerCase())) {
 		throw new Error('URL smoke rejected an unapproved host.');
 	}
 	return url;
-}
-
-export function validateVercelDispatch(input: VercelDispatchInput): ValidatedVercelDispatch {
-	const event = requireValue(input.event, 'Dispatch event');
-	const environment = validateDispatchTransition(
-		event,
-		requireValue(input.environment, 'Deployment environment'),
-	);
-	const expectedProjectId = requireValue(input.expectedProjectId, 'Expected Vercel project id');
-	const projectId = validateDispatchProject(
-		requireValue(input.projectId, 'Vercel project id'),
-		expectedProjectId,
-	);
-	const deploymentId = requireValue(input.deploymentId, 'Vercel deployment id');
-	if (!VERCEL_ID_PATTERN.test(deploymentId)) {
-		throw new Error('Dispatch deployment id is invalid.');
-	}
-	const commitSha = requireValue(input.commitSha, 'Deployment commit SHA');
-	if (!SHA_PATTERN.test(commitSha)) throw new Error('Deployment commit SHA must be exact.');
-	const gitRef = requireValue(input.gitRef, 'Deployment git ref');
-	if (!/^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$/.test(gitRef)) {
-		throw new Error('Deployment git ref is invalid.');
-	}
-	const url = parseDeploymentOrigin(input.url, environment);
-	const hostname = url.hostname.toLowerCase();
-	return {
-		event: event as ValidatedVercelDispatch['event'],
-		environment,
-		projectId,
-		deploymentId,
-		baseUrl: url.origin,
-		commitSha: commitSha.toLowerCase(),
-		gitRef,
-		hostname,
-	};
-}
-
-function dispatchFromEnvironment(): ValidatedVercelDispatch {
-	const dispatch = validateVercelDispatch({
-		event: process.env.VERCEL_DISPATCH_EVENT ?? '',
-		environment: process.env.VERCEL_DISPATCH_ENVIRONMENT ?? '',
-		projectId: process.env.VERCEL_DISPATCH_PROJECT_ID ?? '',
-		expectedProjectId: process.env.VERCEL_DISPATCH_EXPECTED_PROJECT_ID ?? '',
-		deploymentId: process.env.VERCEL_DISPATCH_DEPLOYMENT_ID ?? '',
-		url: process.env.VERCEL_DISPATCH_URL ?? '',
-		commitSha: process.env.VERCEL_DISPATCH_COMMIT_SHA ?? '',
-		gitRef: process.env.VERCEL_DISPATCH_GIT_REF ?? '',
-	});
-	if (dispatch.environment === 'preview') {
-		validateReadOnlyPreviewEnvironment({
-			...process.env,
-			PLAYWRIGHT_BASE_URL: dispatch.baseUrl,
-			PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST: dispatch.hostname,
-			PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false',
-			PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false',
-			PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false',
-			PLAYWRIGHT_PREVIEW_SUPABASE_URL: `https://${PREVIEW_SUPABASE_PROJECT_REF}.supabase.co`,
-			VERCEL_AUTOMATION_BYPASS_SECRET: 'dispatch-preflight',
-		});
-	}
-	return dispatch;
-}
-
-function appendEnvironment(name: string, value: string): void {
-	const path = process.env.GITHUB_ENV;
-	if (!path) return;
-	if (!/^[A-Z][A-Z0-9_]{0,79}$/.test(name) || /[\r\n]/.test(value)) {
-		throw new Error('GitHub environment output is invalid.');
-	}
-	appendFileSync(path, `${name}=${value}\n`, 'utf8');
 }
 
 function appendSummary(markdown: string): void {
@@ -285,10 +159,9 @@ function appendSummary(markdown: string): void {
 }
 
 function createPostDeployEvidence(input: {
-	dispatch: Pick<ValidatedVercelDispatch, 'environment'> &
-		Partial<Pick<ValidatedVercelDispatch, 'deploymentId' | 'commitSha'>>;
+	environment: PostDeployEnvironment;
 	source?: string;
-	failureOwnerAction?: string;
+	failureOwnerAction: string;
 	runId: string;
 	startedAt: string;
 	completedAt: string | null;
@@ -297,15 +170,10 @@ function createPostDeployEvidence(input: {
 	payload: PostDeployPayload;
 }): PostDeployEvidence {
 	const observedAt = input.completedAt ?? input.startedAt;
-	const deploymentId =
-		input.dispatch.deploymentId === undefined
-			? undefined
-			: sanitizeOperationalCorrelationId(input.dispatch.deploymentId);
-	if (deploymentId === null) throw new Error('Deployment correlation id is invalid.');
 	const evidence: PostDeployEvidence = {
 		schemaVersion: OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
 		check: 'post_deploy_smoke',
-		environment: input.dispatch.environment,
+		environment: input.environment,
 		runId: input.runId,
 		startedAt: input.startedAt,
 		completedAt: input.completedAt,
@@ -316,30 +184,11 @@ function createPostDeployEvidence(input: {
 		ownerAction:
 			input.status === 'VERIFIED'
 				? 'No se requiere acción; conserve el Job Summary como evidencia.'
-				: input.failureOwnerAction
-					? input.failureOwnerAction
-					: input.dispatch.environment === 'preview'
-						? 'Revise el Job Summary y corrija el SHA exacto antes de la promoción humana.'
-						: 'Abra el deployment exacto en Vercel y revise el Job Summary; no ejecute rollback automático.',
-		...(input.dispatch.commitSha ? { commitSha: input.dispatch.commitSha } : {}),
-		...(deploymentId ? { deploymentId } : {}),
+				: input.failureOwnerAction,
 		payload: input.payload,
 	};
 	assertOperationalEvidenceSafe(evidence);
 	return evidence;
-}
-
-function emptyPostDeployPayload(): PostDeployPayload {
-	return {
-		probe_count: 0,
-		failed_probe_count: 0,
-		network_retry_count: 0,
-		runtime_health_verified: null,
-		asset_verified: null,
-		auth_boundary_verified: null,
-		header_policy_verified: null,
-		probe_results: [],
-	};
 }
 
 async function fetchWithOneRetry(
@@ -385,32 +234,16 @@ function hasExpectedSecurityHeaders(headers: Headers): boolean {
 export async function runProductionSmoke(
 	baseUrl: string,
 	fetchImpl: FetchLike = fetch,
-	access: {
-		approvedHost?: string;
-		bypassSecret?: string;
-		pages?: readonly SmokePageRoute[];
-	} = {},
+	access: { pages?: readonly SmokePageRoute[] } = {},
 ): Promise<ProductionSmokeResult> {
-	const origin = parseDeploymentOrigin(baseUrl, 'url_check');
-	const bypassSecret = access.bypassSecret?.trim();
-	if (origin.hostname.endsWith('.vercel.app') && !bypassSecret)
-		throw new Error(
-			'VERCEL_AUTOMATION_BYPASS_SECRET is required for the protected deployment smoke.',
-		);
-	if (bypassSecret && access.approvedHost !== origin.hostname)
-		throw new Error('Protection bypass requires the exact approved deployment host.');
-	// No bypass cookie: the application session probe must remain anonymous.
-	return runDeploymentSmoke(
-		origin,
-		fetchImpl,
-		bypassSecret ? { 'x-vercel-protection-bypass': bypassSecret } : {},
-		access.pages,
-	);
+	const origin = parseDeploymentOrigin(baseUrl);
+	// No credentials: the application session probe must remain anonymous.
+	return runDeploymentSmoke(origin, fetchImpl, {}, access.pages);
 }
 
 /**
- * Public probes of one deployment origin. `accessHeaders` (a provider's protection bypass or
- * Cloudflare Access service token) travel only to that origin; redirects are never followed.
+ * Public probes of one deployment origin. `accessHeaders` (for example a Cloudflare Access
+ * service token) travel only to that origin; redirects are never followed.
  */
 export async function runDeploymentSmoke(
 	origin: URL,
@@ -653,8 +486,6 @@ export function formatEvidenceSummary(evidence: PostDeployEvidence): string {
 		`- Status: \`${evidence.status}\``,
 		`- Reason: \`${evidence.reasonCode}\``,
 		`- Run: \`${evidence.runId}\``,
-		`- Deployment: \`${evidence.deploymentId ?? 'UNVERIFIED'}\``,
-		`- Commit: \`${evidence.commitSha ?? 'UNVERIFIED'}\``,
 		`- Observed at: \`${evidence.observedAt}\``,
 		`- Owner action: ${evidence.ownerAction}`,
 		'',
@@ -664,73 +495,6 @@ export function formatEvidenceSummary(evidence: PostDeployEvidence): string {
 
 function writeEvidenceSummary(evidence: PostDeployEvidence): void {
 	appendSummary(formatEvidenceSummary(evidence));
-}
-
-async function validateCommand(): Promise<void> {
-	const dispatch = dispatchFromEnvironment();
-	appendEnvironment('POST_DEPLOY_ENVIRONMENT', dispatch.environment);
-	appendEnvironment('POST_DEPLOY_BASE_URL', dispatch.baseUrl);
-	appendEnvironment('POST_DEPLOY_COMMIT_SHA', dispatch.commitSha);
-	appendEnvironment('POST_DEPLOY_DEPLOYMENT_ID', dispatch.deploymentId);
-	appendEnvironment('POST_DEPLOY_APPROVED_HOST', dispatch.hostname);
-	appendEnvironment('POST_DEPLOY_RUN_ID', randomUUID());
-	appendEnvironment('POST_DEPLOY_STARTED_AT', new Date().toISOString());
-	console.info(
-		`Validated ${dispatch.environment} deployment ${dispatch.deploymentId} at ${dispatch.commitSha}.`,
-	);
-}
-
-function dispatchFromValidatedEnvironment(): ValidatedVercelDispatch {
-	return validateVercelDispatch({
-		event: process.env.VERCEL_DISPATCH_EVENT ?? '',
-		environment: process.env.POST_DEPLOY_ENVIRONMENT ?? '',
-		projectId: process.env.VERCEL_DISPATCH_PROJECT_ID ?? '',
-		expectedProjectId: process.env.VERCEL_DISPATCH_EXPECTED_PROJECT_ID ?? '',
-		deploymentId: process.env.POST_DEPLOY_DEPLOYMENT_ID ?? '',
-		url: process.env.POST_DEPLOY_BASE_URL ?? '',
-		commitSha: process.env.POST_DEPLOY_COMMIT_SHA ?? '',
-		gitRef: process.env.VERCEL_DISPATCH_GIT_REF ?? '',
-	});
-}
-
-async function productionCommand(): Promise<void> {
-	const dispatch = dispatchFromValidatedEnvironment();
-	if (dispatch.environment !== 'production')
-		throw new Error('Production smoke requires Production.');
-	const runId = requireValue(process.env.POST_DEPLOY_RUN_ID ?? '', 'Post-deploy run id');
-	const startedAt = requireValue(process.env.POST_DEPLOY_STARTED_AT ?? '', 'Post-deploy start');
-	emitEvidence(
-		createPostDeployEvidence({
-			dispatch,
-			runId,
-			startedAt,
-			completedAt: null,
-			status: 'UNVERIFIED',
-			reasonCode: 'post_deploy_smoke_started',
-			payload: emptyPostDeployPayload(),
-		}),
-		'started',
-	);
-	const result = await runProductionSmoke(dispatch.baseUrl, fetch, {
-		approvedHost: dispatch.hostname,
-		bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
-	});
-	const passed = result.failedProbeCount === 0;
-	const evidence = createPostDeployEvidence({
-		dispatch,
-		runId,
-		startedAt,
-		completedAt: new Date().toISOString(),
-		status: passed ? 'VERIFIED' : 'FAILED',
-		reasonCode: passed ? 'post_deploy_smoke_passed' : 'post_deploy_smoke_failed',
-		payload: toPostDeployPayload(result),
-	});
-	emitEvidence(evidence, 'completed');
-	writeEvidenceSummary(evidence);
-	if (!passed) {
-		console.error(`POST_DEPLOY_FAILURE_CODES=${result.failureCodes.join(',')}`);
-		process.exitCode = 1;
-	}
 }
 
 export const DEFAULT_SMOKE_BASE_URL = 'https://www.celebra-me.com';
@@ -746,25 +510,18 @@ export function resolveSmokeBaseUrl(
 	const flag = args.find((arg) => arg.startsWith('--base-url='));
 	const raw =
 		flag?.slice('--base-url='.length) || env.SMOKE_BASE_URL?.trim() || DEFAULT_SMOKE_BASE_URL;
-	return parseDeploymentOrigin(raw, 'url_check').origin;
+	return parseDeploymentOrigin(raw).origin;
 }
 
-/** Read-only smoke against an approved host, outside a Vercel dispatch. */
+/** Read-only smoke against an approved host. */
 async function checkCommand(args: readonly string[]): Promise<void> {
 	const baseUrl = resolveSmokeBaseUrl(args);
 	const hostname = new URL(baseUrl).hostname;
 	const startedAt = new Date().toISOString();
-	// The Vercel bypass secret only ever goes to a protected Vercel deployment.
-	const result = await runProductionSmoke(
-		baseUrl,
-		fetch,
-		hostname.endsWith('.vercel.app')
-			? { approvedHost: hostname, bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET }
-			: {},
-	);
+	const result = await runProductionSmoke(baseUrl, fetch);
 	const passed = result.failedProbeCount === 0;
 	const evidence = createPostDeployEvidence({
-		dispatch: { environment: 'production' },
+		environment: 'production',
 		source: process.env.GITHUB_ACTIONS === 'true' ? 'github_actions' : 'operator_cli',
 		failureOwnerAction:
 			'Revise el Job Summary y abra la página que falló en el host revisado; no ejecute rollback automático.',
@@ -790,12 +547,7 @@ async function main(): Promise<void> {
 	if (args[0] === 'check' && args.slice(1).every((arg) => arg.startsWith('--base-url='))) {
 		return checkCommand(args.slice(1));
 	}
-	const command = args.length === 1 ? args[0] : undefined;
-	if (command === 'validate') return validateCommand();
-	if (command === 'production') return productionCommand();
-	throw new Error(
-		'Usage: post-deploy-smoke.ts <validate|production|check [--base-url=<origin>]>',
-	);
+	throw new Error('Usage: post-deploy-smoke.ts check [--base-url=<origin>]');
 }
 
 if (process.argv[1] && /^post-deploy-smoke\.(?:ts|js)$/.test(basename(process.argv[1]))) {

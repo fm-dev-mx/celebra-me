@@ -141,11 +141,15 @@ export function captureImageInputSource(source: string): string | undefined {
 			source.replace('{deployment}', 'https://deployment.invalid'),
 			'https://deployment.invalid',
 		);
-		if (!['/_image', '/_vercel/image'].includes(url.pathname)) return undefined;
+		if (url.pathname !== '/_image') return undefined;
 		const input = url.searchParams.get('url') ?? url.searchParams.get('href');
 		if (!input) return undefined;
 		const resolved = new URL(input, url.origin);
-		if (!['https:', 'http:'].includes(resolved.protocol) || resolved.username || resolved.password)
+		if (
+			!['https:', 'http:'].includes(resolved.protocol) ||
+			resolved.username ||
+			resolved.password
+		)
 			return undefined;
 		return resolved.href;
 	} catch {
@@ -160,19 +164,12 @@ export function captureImageTransformations(source: string): string {
 		source.replace('{deployment}', 'https://deployment.invalid'),
 		'https://deployment.invalid',
 	);
-	if (['/_image', '/_vercel/image'].includes(url.pathname)) {
+	if (url.pathname === '/_image') {
 		url.searchParams.delete('url');
 		url.searchParams.delete('href');
 	}
 	url.searchParams.sort();
-	const cloudinaryTransform = url.hostname.endsWith('cloudinary.com')
-		? (url.pathname
-				.split('/upload/')[1]
-				?.split('/')
-				.filter((part) => /^(?:w_|h_|c_|q_|f_|g_|e_)/.test(part))
-				.join('/') ?? '')
-		: '';
-	return cloudinaryTransform + url.search;
+	return url.search;
 }
 
 export function sectionImageSignature(images: CapturedImageIdentity[]): string {

@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type { APIContext } from 'astro';
 import { onRequest as middleware } from '../../src/middleware';
 import {
@@ -11,36 +9,38 @@ import {
 } from '../../src/lib/server/security-headers';
 
 /**
- * Both `vercel.json` and `src/middleware.ts` declare the same security headers and
- * permanent redirects while Vercel and Cloudflare Workers serve the app side by side.
- * This suite reads `vercel.json` and checks that the middleware answers identically,
- * so neither copy can drift without failing CI.
+ * `src/middleware.ts` is the only source of the security headers and permanent redirects.
+ * The literal values below are the served contract, so a change to any of them is a
+ * deliberate edit to both the module and this suite.
  */
 
-interface VercelHeaderRule {
-	source: string;
-	headers: Array<{ key: string; value: string }>;
-}
-
-interface VercelRedirectRule {
-	source: string;
-	destination: string;
-	permanent?: boolean;
-}
-
-interface VercelConfig {
-	headers?: VercelHeaderRule[];
-	redirects?: VercelRedirectRule[];
-}
-
-/** The adapter writes the immutable cache rule for hashed assets; it is not a middleware concern. */
-const STATIC_ASSET_SOURCE = '/_astro/(.*)';
-
-const SAMPLE_PARAM_VALUES: Record<string, string> = {
-	eventType: 'boda',
-	slug: 'daniela-y-martin',
-	id: 'inv_123',
+const EXPECTED_GLOBAL_HEADERS: Record<string, string> = {
+	'x-content-type-options': 'nosniff',
+	'x-frame-options': 'DENY',
+	'x-xss-protection': '1; mode=block',
+	'referrer-policy': 'strict-origin-when-cross-origin',
+	'permissions-policy': 'camera=(), microphone=(), geolocation=()',
+	'strict-transport-security': 'max-age=31536000; includeSubDomains',
 };
+
+const EXPECTED_PREVIEW_HEADERS: Record<string, string> = {
+	...EXPECTED_GLOBAL_HEADERS,
+	'x-frame-options': 'SAMEORIGIN',
+	'content-security-policy': "frame-ancestors 'self'",
+};
+
+const EXPECTED_REDIRECTS = [
+	{
+		source: '/bautizo/demo-bautismo-angelic-presence',
+		destination: '/bautizo/demo-bautizo-angelic-presence',
+	},
+	{
+		source: '/primera-comunion/demo-primera-comunion-illustrated',
+		destination: '/primera-comunion/demo-primera-comunion-angelic-presence',
+	},
+];
+
+const PREVIEW_PATH = /^\/dashboard\/invitaciones\/[^/]+\/preview$/;
 
 const SAMPLE_PATHS = [
 	'/',
@@ -52,6 +52,7 @@ const SAMPLE_PATHS = [
 	'/dashboard/invitaciones',
 	'/dashboard/invitaciones/inv_123',
 	'/dashboard/invitaciones/inv_123/preview',
+	'/dashboard/invitaciones/inv_123/preview/extra',
 	'/dashboard/invitaciones/inv_123/editar',
 	'/api/dashboard/guests',
 	'/api/tracking/events',
@@ -61,38 +62,14 @@ const SAMPLE_PATHS = [
 	'/primera-comunion/demo-primera-comunion-illustrated',
 ];
 
-function readVercelConfig(): VercelConfig {
-	return JSON.parse(readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')) as VercelConfig;
-}
-
-/**
- * Compiles a Vercel `source` into a RegExp. Vercel sources are path-to-regexp
- * patterns: `:param` matches one segment and parenthesised groups are raw regex.
- */
-function compileVercelSource(source: string): RegExp {
-	return new RegExp(`^${source.replace(/:[A-Za-z_][A-Za-z0-9_]*/g, '[^/]+')}$`);
-}
-
-function substituteParams(template: string): string {
-	return template.replace(/:([A-Za-z_][A-Za-z0-9_]*)/g, (_, name: string) => {
-		const value = SAMPLE_PARAM_VALUES[name];
-		if (value === undefined) throw new Error(`No sample value for :${name}`);
-		return value;
-	});
-}
-
 function toHeaderRecord(entries: Iterable<readonly [string, string]>): Record<string, string> {
 	const record: Record<string, string> = {};
 	for (const [name, value] of entries) record[name.toLowerCase()] = value;
 	return record;
 }
 
-function expectedVercelHeaders(config: VercelConfig, pathname: string): Record<string, string> {
-	const matching = (config.headers ?? [])
-		.filter((rule) => rule.source !== STATIC_ASSET_SOURCE)
-		.filter((rule) => compileVercelSource(rule.source).test(pathname))
-		.flatMap((rule) => rule.headers.map((header) => [header.key, header.value] as const));
-	return toHeaderRecord(matching);
+function expectedHeaders(pathname: string): Record<string, string> {
+	return PREVIEW_PATH.test(pathname) ? EXPECTED_PREVIEW_HEADERS : EXPECTED_GLOBAL_HEADERS;
 }
 
 function createContext(path: string) {
@@ -107,50 +84,19 @@ function createContext(path: string) {
 	} as unknown as APIContext;
 }
 
-describe('Platform parity: vercel.json vs. middleware security headers', () => {
-	const config = readVercelConfig();
-
-	it('declares the same global security headers as vercel.json', () => {
-		const globalRule = (config.headers ?? []).find((rule) =>
-			rule.headers.some(
-				(header) => header.key === 'X-Frame-Options' && header.value === 'DENY',
-			),
-		);
-		expect(globalRule).toBeDefined();
-		expect(toHeaderRecord(SECURITY_HEADERS)).toEqual(
-			toHeaderRecord(
-				globalRule!.headers.map((header) => [header.key, header.value] as const),
-			),
-		);
+describe('Middleware security headers', () => {
+	it('declares the global security headers', () => {
+		expect(toHeaderRecord(SECURITY_HEADERS)).toEqual(EXPECTED_GLOBAL_HEADERS);
 	});
 
-	it('declares the same invitation preview headers as vercel.json', () => {
-		const previewRule = (config.headers ?? []).find((rule) =>
-			rule.headers.some(
-				(header) => header.key === 'X-Frame-Options' && header.value === 'SAMEORIGIN',
-			),
-		);
-		expect(previewRule).toBeDefined();
+	it('declares the invitation preview headers', () => {
 		expect(toHeaderRecord(INVITATION_PREVIEW_SECURITY_HEADERS)).toEqual(
-			toHeaderRecord(
-				previewRule!.headers.map((header) => [header.key, header.value] as const),
-			),
+			EXPECTED_PREVIEW_HEADERS,
 		);
 	});
 
-	it.each(SAMPLE_PATHS)('resolves the same header set as vercel.json for %s', (pathname) => {
-		const expected = expectedVercelHeaders(config, pathname);
-		expect(Object.keys(expected).length).toBeGreaterThan(0);
-		expect(toHeaderRecord(resolveSecurityHeaders(pathname))).toEqual(expected);
-	});
-
-	it('does not leave any vercel.json header rule unmatched by the sample paths', () => {
-		const unmatched = (config.headers ?? [])
-			.filter((rule) => rule.source !== STATIC_ASSET_SOURCE)
-			.filter(
-				(rule) => !SAMPLE_PATHS.some((path) => compileVercelSource(rule.source).test(path)),
-			);
-		expect(unmatched.map((rule) => rule.source)).toEqual([]);
+	it.each(SAMPLE_PATHS)('resolves the expected header set for %s', (pathname) => {
+		expect(toHeaderRecord(resolveSecurityHeaders(pathname))).toEqual(expectedHeaders(pathname));
 	});
 
 	it.each([
@@ -166,7 +112,7 @@ describe('Platform parity: vercel.json vs. middleware security headers', () => {
 			expect(response).toBeInstanceOf(Response);
 			if (!(response instanceof Response)) throw new Error('Expected a Response.');
 			expect(response.status).toBe(status);
-			for (const [name, value] of Object.entries(expectedVercelHeaders(config, path))) {
+			for (const [name, value] of Object.entries(expectedHeaders(path))) {
 				expect(response.headers.get(name)).toBe(value);
 			}
 		},
@@ -181,7 +127,7 @@ describe('Platform parity: vercel.json vs. middleware security headers', () => {
 		expect(response.status).toBe(302);
 		expect(response.headers.get('Location')).toBe('/login');
 		expect(next).not.toHaveBeenCalled();
-		for (const [name, value] of Object.entries(expectedVercelHeaders(config, path))) {
+		for (const [name, value] of Object.entries(expectedHeaders(path))) {
 			expect(response.headers.get(name)).toBe(value);
 		}
 	});
@@ -195,7 +141,7 @@ describe('Platform parity: vercel.json vs. middleware security headers', () => {
 		expect(response.status).toBe(302);
 		expect(response.headers.get('X-Frame-Options')).toBe('SAMEORIGIN');
 		expect(response.headers.get('Content-Security-Policy')).toBe("frame-ancestors 'self'");
-		for (const [name, value] of Object.entries(expectedVercelHeaders(config, path))) {
+		for (const [name, value] of Object.entries(expectedHeaders(path))) {
 			expect(response.headers.get(name)).toBe(value);
 		}
 	});
@@ -215,26 +161,14 @@ describe('Platform parity: vercel.json vs. middleware security headers', () => {
 	});
 });
 
-describe('Platform parity: vercel.json vs. middleware permanent redirects', () => {
-	const config = readVercelConfig();
-
-	it('declares the same redirect rules as vercel.json, all permanent', () => {
-		const vercelRedirects = (config.redirects ?? []).map((rule) => ({
-			source: rule.source,
-			destination: rule.destination,
-		}));
-		expect(vercelRedirects.length).toBeGreaterThan(0);
-		for (const rule of config.redirects ?? []) expect(rule.permanent).toBe(true);
-		expect([...PERMANENT_REDIRECTS]).toEqual(vercelRedirects);
+describe('Middleware permanent redirects', () => {
+	it('declares the retired demo URLs', () => {
+		expect([...PERMANENT_REDIRECTS]).toEqual(EXPECTED_REDIRECTS);
 	});
 
-	it('resolves every vercel.json redirect to the same destination', () => {
-		for (const rule of config.redirects ?? []) {
-			const samplePath = substituteParams(rule.source);
-			expect(compileVercelSource(rule.source).test(samplePath)).toBe(true);
-			expect(resolvePermanentRedirectPath(samplePath)).toBe(
-				substituteParams(rule.destination),
-			);
+	it('resolves every retired URL to its destination', () => {
+		for (const rule of EXPECTED_REDIRECTS) {
+			expect(resolvePermanentRedirectPath(rule.source)).toBe(rule.destination);
 		}
 	});
 

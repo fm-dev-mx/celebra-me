@@ -80,7 +80,7 @@ export function routeFileStem(path: string): string {
 
 /**
  * Stable identity for an image URL across hosts and image services: the inner source of
- * `/_vercel/image?url=`, `/_image?href=` or `/cdn-cgi/image/<options>/`, last path segment,
+ * `/_image?href=` or `/cdn-cgi/image/<options>/`, last path segment,
  * Astro build hash removed.
  */
 export function imageIdentity(source: string): string {

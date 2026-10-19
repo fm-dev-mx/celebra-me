@@ -25,7 +25,7 @@ function isStorageMediaUrl(src: string | URL): boolean {
 
 /**
  * Published media that keeps a stable path when bytes are replaced.
- * Confirmed stale path: these URLs through `/_vercel/image` inherit a 1h
+ * Stale-path risk: if an image optimizer proxied these URLs it could inherit a 1h
  * transform TTL while Storage itself is `no-cache` + ETag.
  *
  * Classification is hostname-based so path-only lookalikes do not match.
@@ -55,20 +55,9 @@ export function shouldOptimizeThroughImageService(
 	// creates an unnecessary same-origin request that cannot be used in deterministic captures.
 	if (/^data:/i.test(url.trim())) return false;
 	if (delivery?.mode === 'optimized') return true;
-	return (
-		!isStorageMediaUrl(url) &&
-		!isCloudinaryDeliveryHostname(url) &&
-		!isR2InvitationMediaUrl(url)
-	);
+	return !isStorageMediaUrl(url) && !isR2InvitationMediaUrl(url);
 }
 
 export function plainImgSrc(src: string | ImageMetadata): string {
 	return typeof src === 'string' ? src : src.src;
-}
-
-export function isCloudinaryDeliveryHostname(src: string): boolean {
-	const parsed = parseHttpUrl(src);
-	if (!parsed) return false;
-	const hostname = parsed.hostname.toLowerCase();
-	return hostname === 'res.cloudinary.com' || hostname.endsWith('.res.cloudinary.com');
 }

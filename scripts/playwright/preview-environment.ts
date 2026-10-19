@@ -16,13 +16,8 @@ export const PREVIEW_FIXTURE_EVENT_TYPE = 'xv';
 export const EXPECTED_PREVIEW_ACCOUNT_EMAIL = 'preview@preview.com';
 export const EXPECTED_PREVIEW_ACCOUNT_ROLE = 'super_admin';
 
-const APPROVED_PREVIEW_ALIASES = new Set([
-	'celebra-me.vercel.app',
-	'celebra-me-fm-dev-mx-francisco-mendoza-s-projects.vercel.app',
-]);
+const APPROVED_PREVIEW_ALIASES = new Set(['celebra-me-preview.celebra-me-com.workers.dev']);
 const PRODUCTION_DOMAINS = new Set(['celebra-me.com', 'www.celebra-me.com']);
-export const IMMUTABLE_PREVIEW_HOST_PATTERN =
-	/^celebra-[a-z0-9]+-francisco-mendoza-s-projects\.vercel\.app$/;
 /**
  * Cloudflare Preview Worker: the stable `workers.dev` host and the immutable version URLs
  * (`<version-prefix>-celebra-me-preview...`) that `wrangler versions upload` creates per SHA.
@@ -55,7 +50,7 @@ export interface PlaywrightRuntimeEnvironment {
 	baseURL: string;
 	webServerURL: string;
 	isExternal: boolean;
-	isVercelPreview: boolean;
+	isPreview: boolean;
 	targetEnvironment: 'local' | 'preview' | 'external';
 	previewSupabaseProjectRef?: string;
 	protectionHeaders?: Record<string, string>;
@@ -109,7 +104,7 @@ function assertApprovedPreviewHost(url: URL, env: NodeJS.ProcessEnv): void {
 
 	const explicitlyApprovedHost =
 		env.PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST?.trim().toLowerCase();
-	if (explicitlyApprovedHost === hostname && IMMUTABLE_PREVIEW_HOST_PATTERN.test(hostname)) {
+	if (explicitlyApprovedHost === hostname && CLOUDFLARE_PREVIEW_HOST_PATTERN.test(hostname)) {
 		return;
 	}
 
@@ -183,17 +178,6 @@ export function loadPlaywrightEnvironment(options: LoadEnvironmentOptions = {}):
 	return loaded;
 }
 
-export function buildVercelProtectionHeaders(
-	env: NodeJS.ProcessEnv,
-): Record<string, string> | undefined {
-	const bypassSecret = env.VERCEL_AUTOMATION_BYPASS_SECRET;
-	if (!bypassSecret) return undefined;
-	return {
-		'x-vercel-protection-bypass': bypassSecret,
-		'x-vercel-set-bypass-cookie': 'true',
-	};
-}
-
 /** Cloudflare Access service token headers; the Preview Worker sits behind Access. */
 export function buildCloudflareAccessHeaders(
 	env: NodeJS.ProcessEnv,
@@ -219,19 +203,19 @@ export function resolvePlaywrightRuntimeEnvironment(
 	}
 
 	const isExternal = !sameConfiguredServer(base, webServer);
-	const isVercelPreview =
+	const isPreview =
 		isExternal &&
 		base.protocol === 'https:' &&
 		(APPROVED_PREVIEW_ALIASES.has(base.hostname.toLowerCase()) ||
-			IMMUTABLE_PREVIEW_HOST_PATTERN.test(base.hostname.toLowerCase()));
-	const protectionHeaders = isVercelPreview ? buildVercelProtectionHeaders(env) : undefined;
+			CLOUDFLARE_PREVIEW_HOST_PATTERN.test(base.hostname.toLowerCase()));
+	const protectionHeaders = isPreview ? buildCloudflareAccessHeaders(env) : undefined;
 
 	return {
 		baseURL: base.toString().replace(/\/$/, ''),
 		webServerURL: webServer.toString().replace(/\/$/, ''),
 		isExternal,
-		isVercelPreview,
-		targetEnvironment: isVercelPreview ? 'preview' : isExternal ? 'external' : 'local',
+		isPreview,
+		targetEnvironment: isPreview ? 'preview' : isExternal ? 'external' : 'local',
 		protectionHeaders,
 	};
 }
@@ -242,10 +226,11 @@ function validateReadOnlyPreviewTarget(env: NodeJS.ProcessEnv): PlaywrightRuntim
 	const parsedBaseUrl = parseUrl(baseUrl, 'PLAYWRIGHT_BASE_URL');
 	assertApprovedPreviewHost(parsedBaseUrl, env);
 	const runtime = resolvePlaywrightRuntimeEnvironment(env);
-	if (!runtime.isVercelPreview) {
+	if (!runtime.isPreview) {
 		throw new Error('PLAYWRIGHT_BASE_URL did not resolve to an approved Preview target.');
 	}
-	requireVariable(env, 'VERCEL_AUTOMATION_BYPASS_SECRET');
+	requireVariable(env, 'CLOUDFLARE_ACCESS_CLIENT_ID');
+	requireVariable(env, 'CLOUDFLARE_ACCESS_CLIENT_SECRET');
 	return { ...runtime, previewSupabaseProjectRef: validatePreviewSupabaseUrl(env) };
 }
 

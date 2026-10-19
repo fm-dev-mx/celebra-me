@@ -245,7 +245,6 @@ jobs:
             - name: Build the Cloudflare Worker
               if: matrix.tier == 'workerd'
               env:
-                  CELEBRA_BUILD_TARGET: cloudflare
                   PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
               run: pnpm build:app
 

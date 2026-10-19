@@ -16,7 +16,6 @@ describe('Cloudflare Preview secret selection', () => {
 	it('uploads only allow-listed names with a value and reports the rest by name', () => {
 		const selection = selectCloudflarePreviewSecrets({
 			SUPABASE_SERVICE_ROLE_KEY: ' service-role ',
-			CRON_SECRET: 'cron',
 			PREVIEW_MFA_BYPASS: '',
 			SUPABASE_URL: 'https://iwipdvisoyerfdytuhwi.supabase.co',
 			CELEBRA_DEPLOY_ENV: 'preview',
@@ -26,7 +25,6 @@ describe('Cloudflare Preview secret selection', () => {
 		});
 		expect(selection.selected).toEqual({
 			SUPABASE_SERVICE_ROLE_KEY: 'service-role',
-			CRON_SECRET: 'cron',
 		});
 		expect(selection.missing).toContain('PREVIEW_MFA_BYPASS');
 		expect(selection.missing).toContain('SUPABASE_ANON_KEY');
@@ -111,12 +109,10 @@ describe('Cloudflare Production secret selection', () => {
 
 	it('skips Preview switches found in a Production file', () => {
 		const selection = selectCloudflareWorkerSecrets('production', {
-			CRON_SECRET: 'cron',
 			PREVIEW_MFA_BYPASS: 'true',
 			SUPABASE_PROJECT_REF_PRODUCTION: 'ineitkdkyrxqyressllp',
 		});
 		expect(selection.selected).toEqual({
-			CRON_SECRET: 'cron',
 			SUPABASE_PROJECT_REF_PRODUCTION: 'ineitkdkyrxqyressllp',
 		});
 		expect(selection.skipped).toEqual(['PREVIEW_MFA_BYPASS']);
@@ -149,10 +145,10 @@ describe('Cloudflare Production secret selection', () => {
 			);
 		}
 		expect(
-			parseSecretsArgs(['--env', 'production', '--env-file', '../vercel-production.env']),
+			parseSecretsArgs(['--env', 'production', '--env-file', '../legacy-production.env']),
 		).toEqual({
 			environment: 'production',
-			envFile: '../vercel-production.env',
+			envFile: '../legacy-production.env',
 			dryRun: false,
 		});
 		expect(parseSecretsArgs([])).toEqual({

@@ -2,28 +2,32 @@ import { describe, expect, it } from '@jest/globals';
 import {
 	canReuseExistingLocalAsset,
 	isAcceptableLocalFinalAssetRow,
-	isCloudinaryDeliveryUrl,
 	isLocalManagedDeliveryUrl,
 	isLocalSupabaseDeliveryUrl,
 } from '../../scripts/provision/local-final-asset-verification.ts';
+import { isR2InvitationMediaUrl } from '@/lib/intake/services/r2-invitation-media';
 
 const SHA = 'a'.repeat(64);
 const OTHER_SHA = 'b'.repeat(64);
 const SLUG = 'leslie-perez';
 const KEY = 'photo-01';
 const LOCAL_URL = `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/managed/${SLUG}/${KEY}.webp`;
-const CLOUDINARY_URL = `https://res.cloudinary.com/demo/image/upload/v1/xv/${SLUG}/assets/${KEY}.webp`;
+const R2_URL = `https://media.celebra-me.com/invitations/xv/${SLUG}/${KEY}-${SHA}.webp`;
 
 describe('local final asset verification helpers', () => {
 	it('detects local Supabase delivery URLs', () => {
 		expect(isLocalSupabaseDeliveryUrl(LOCAL_URL)).toBe(true);
-		expect(isLocalSupabaseDeliveryUrl('http://localhost:54321/storage/v1/object/public/invitation-assets/x')).toBe(
-			true,
-		);
-		expect(isLocalSupabaseDeliveryUrl(CLOUDINARY_URL)).toBe(false);
-		expect(isLocalSupabaseDeliveryUrl('https://example.com/storage/v1/object/public/invitation-assets/x')).toBe(
-			false,
-		);
+		expect(
+			isLocalSupabaseDeliveryUrl(
+				'http://localhost:54321/storage/v1/object/public/invitation-assets/x',
+			),
+		).toBe(true);
+		expect(isLocalSupabaseDeliveryUrl(R2_URL)).toBe(false);
+		expect(
+			isLocalSupabaseDeliveryUrl(
+				'https://example.com/storage/v1/object/public/invitation-assets/x',
+			),
+		).toBe(false);
 	});
 
 	it('requires managed path for local managed delivery URLs', () => {
@@ -34,7 +38,7 @@ describe('local final asset verification helpers', () => {
 				{ slug: SLUG, key: KEY },
 			),
 		).toBe(false);
-		expect(isCloudinaryDeliveryUrl(CLOUDINARY_URL)).toBe(true);
+		expect(isR2InvitationMediaUrl(R2_URL)).toBe(true);
 	});
 
 	it('accepts supabase local SSOT rows with matching sha', () => {
@@ -50,11 +54,11 @@ describe('local final asset verification helpers', () => {
 		).toBe(true);
 	});
 
-	it('accepts cloudinary leftover rows', () => {
+	it('accepts R2 leftover rows', () => {
 		expect(
 			isAcceptableLocalFinalAssetRow({
-				provider: 'cloudinary',
-				secureUrl: CLOUDINARY_URL,
+				provider: 'r2',
+				secureUrl: R2_URL,
 				sha256: SHA,
 				expectedSha256: SHA,
 				slug: SLUG,
@@ -63,11 +67,11 @@ describe('local final asset verification helpers', () => {
 		).toBe(true);
 	});
 
-	it('rejects supabase row with Cloudinary URL', () => {
+	it('rejects supabase row with R2 URL', () => {
 		expect(
 			isAcceptableLocalFinalAssetRow({
 				provider: 'supabase',
-				secureUrl: CLOUDINARY_URL,
+				secureUrl: R2_URL,
 				sha256: SHA,
 				expectedSha256: SHA,
 				slug: SLUG,
@@ -76,11 +80,24 @@ describe('local final asset verification helpers', () => {
 		).toBe(false);
 	});
 
-	it('rejects cloudinary row with local Storage URL', () => {
+	it('rejects R2 row with local Storage URL', () => {
+		expect(
+			isAcceptableLocalFinalAssetRow({
+				provider: 'r2',
+				secureUrl: LOCAL_URL,
+				sha256: SHA,
+				expectedSha256: SHA,
+				slug: SLUG,
+				key: KEY,
+			}),
+		).toBe(false);
+	});
+
+	it('rejects the retired cloudinary provider even with an R2 URL', () => {
 		expect(
 			isAcceptableLocalFinalAssetRow({
 				provider: 'cloudinary',
-				secureUrl: LOCAL_URL,
+				secureUrl: R2_URL,
 				sha256: SHA,
 				expectedSha256: SHA,
 				slug: SLUG,
@@ -134,11 +151,11 @@ describe('local final asset verification helpers', () => {
 		).toBe(true);
 	});
 
-	it('allows content-only reuse for cloudinary leftovers', () => {
+	it('allows content-only reuse for R2 leftovers', () => {
 		expect(
 			canReuseExistingLocalAsset({
-				provider: 'cloudinary',
-				secureUrl: CLOUDINARY_URL,
+				provider: 'r2',
+				secureUrl: R2_URL,
 				sha256: SHA,
 				expectedSha256: SHA,
 				alt: 'Hero',
@@ -153,11 +170,11 @@ describe('local final asset verification helpers', () => {
 		).toBe(true);
 	});
 
-	it('allows content-only reuse for legacy null provider with Cloudinary leftover', () => {
+	it('allows content-only reuse for legacy null provider with R2 leftover', () => {
 		expect(
 			canReuseExistingLocalAsset({
 				provider: null,
-				secureUrl: CLOUDINARY_URL,
+				secureUrl: R2_URL,
 				sha256: SHA,
 				expectedSha256: SHA,
 				alt: 'Hero',

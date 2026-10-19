@@ -2,8 +2,7 @@
  * Cloudflare Workers entry point (`main` in `wrangler.jsonc`). The adapter's default entry
  * only exports `fetch`; this one adds `scheduled` for the cron triggers and adopts the
  * rate-limit, image, invitation-media, static-asset and memories Worker bindings, plus the
- * in-process app loopback, before the first request. Only the Cloudflare build (`CELEBRA_BUILD_TARGET=cloudflare`)
- * bundles this file.
+ * in-process app loopback, before the first request. `astro build` bundles this file.
  */
 import { handle } from '@astrojs/cloudflare/handler';
 import { redirectApexToCanonical } from './lib/server/apex-redirect';

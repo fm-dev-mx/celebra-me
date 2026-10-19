@@ -1,0 +1,11 @@
+@use '../system/radius' as sys;
+
+// CSS Variable Bridge (Semantic Layer)
+:root {
+	--radius-xs: #{sys.$sys-radius-xs};
+	--radius-sm: #{sys.$sys-radius-sm};
+	--radius-md: #{sys.$sys-radius-md};
+	--radius-lg: #{sys.$sys-radius-lg};
+	--radius-xl: #{sys.$sys-radius-xl};
+	--radius-pill: #{sys.$sys-radius-pill};
+}

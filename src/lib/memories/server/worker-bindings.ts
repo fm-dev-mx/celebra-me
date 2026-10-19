@@ -4,7 +4,7 @@
  * instead of crossing the public `workers.dev` host, which a Worker on the same
  * `workers.dev` subdomain cannot reach with a plain `fetch` (error 1042). The Worker
  * entry installs the bindings before the first request (`src/worker.ts`); every other
- * host (Vercel, the dev server, tests) has none and keeps the configured origin.
+ * host (the dev server, tests) has none and keeps the configured origin.
  */
 
 interface ServiceBinding {

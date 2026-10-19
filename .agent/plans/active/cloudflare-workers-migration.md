@@ -187,11 +187,13 @@ legacy.
   `scripts/provision/{cloudinary-adapter,cloudinary-quota,dbs-media-references,invitation-import-engine}.ts`,
   `scripts/invitation/{image-namespace-remap,verify-published-images}.ts`, the delivery contract and
   `astro.config.mjs` `remotePatterns`.
-- **Removals:**
-  - the Cloudinary usage card (`src/lib/platform/server/cloudinary-usage.ts` and its wiring);
-  - `cloudinary-assets.ts`;
-  - the 5 env names `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`,
-    `CLOUDINARY_USAGE_API_KEY`, `CLOUDINARY_USAGE_API_SECRET`.
+- **Removals (code done 2026-10-18, branch `chore/retire-cloudinary`):**
+  - the Cloudinary usage card is gone; `CLOUDINARY_USAGE_API_KEY` and `CLOUDINARY_USAGE_API_SECRET`
+    exist neither in code nor in any Worker;
+  - `cloudinary-assets.ts`, `cloudinary-rest.ts`, the provisioning adapters and the image migration
+    tooling are deleted;
+  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` are gone from code;
+    the owner deletes them from the `celebra-me-preview` Worker after that branch is deployed.
 - **Grace period:** keep the Cloudinary account read-only for 30 days, because chat link previews
   already cached in WhatsApp or Facebook point at it. The owner then deletes the account.
 - **Rollback:** reverse the URL map from the backup; Cloudinary stays readable during the grace

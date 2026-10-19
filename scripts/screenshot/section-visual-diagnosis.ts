@@ -9,6 +9,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { buildCloudflareAccessHeaders } from '../playwright/preview-environment';
 import { chromium, type Browser, type Page } from '@playwright/test';
 import sharp from 'sharp';
 import { buildVisualPageCases, VISUAL_VIEWPORTS } from './visual-coverage-contract';
@@ -187,7 +188,7 @@ async function capturePage(
 	prefix: string,
 	root: string,
 	fixedTime: string,
-	token: string | undefined,
+	accessHeaders: Record<string, string> | undefined,
 	fullPages: boolean,
 	inputHashes: Map<string, Promise<string | undefined>>,
 ): Promise<PageCapture> {
@@ -199,12 +200,12 @@ async function capturePage(
 		reducedMotion: 'reduce',
 	});
 	try {
-		if (token)
+		if (accessHeaders)
 			await context.route(`${origin}/**`, (route) =>
 				route.continue({
 					headers: {
 						...route.request().headers(),
-						'x-vercel-protection-bypass': token,
+						...accessHeaders,
 					},
 				}),
 			);
@@ -233,8 +234,8 @@ async function capturePage(
 					page.request
 						.get(input, {
 							timeout: 15000,
-							...(token && new URL(input).origin === origin
-								? { headers: { 'x-vercel-protection-bypass': token } }
+							...(accessHeaders && new URL(input).origin === origin
+								? { headers: accessHeaders }
 								: {}),
 						})
 						.then(async (response) => {
@@ -553,7 +554,7 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 		preview?: PageCapture;
 		error?: string;
 	}[] = [];
-	const token = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+	const accessHeaders = buildCloudflareAccessHeaders(process.env);
 	const provenance = {
 		production: { url: options['production-url'], sha: options['production-sha'] },
 		preview: { url: options['preview-url'], sha: options['preview-sha'] },
@@ -601,7 +602,7 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 										`${prefix}-${env}-${attempt}`,
 										root,
 										fixedTime,
-										env === 'preview' ? token : undefined,
+										env === 'preview' ? accessHeaders : undefined,
 										fullPages,
 										inputHashes,
 									),

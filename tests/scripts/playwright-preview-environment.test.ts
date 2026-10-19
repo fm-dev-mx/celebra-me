@@ -6,7 +6,7 @@ import {
 	assertExpectedPreviewAccountEmail,
 	assertExpectedPreviewAccountRole,
 	assertPreviewPublicationTarget,
-	buildVercelProtectionHeaders,
+	buildCloudflareAccessHeaders,
 	executePreviewMutation,
 	executePreviewRead,
 	EXPECTED_PREVIEW_ACCOUNT_EMAIL,
@@ -31,7 +31,7 @@ import {
 	type PreviewFixtureIdentity,
 } from '../../scripts/playwright/preview-environment';
 
-const previewBaseUrl = 'https://celebra-me.vercel.app';
+const previewBaseUrl = 'https://celebra-me-preview.celebra-me-com.workers.dev';
 const fixtureId = '00000000-0000-4000-8000-000000000001';
 const ownerId = '11111111-1111-4111-8111-111111111111';
 
@@ -41,7 +41,8 @@ function validPreviewEnvironment(): NodeJS.ProcessEnv {
 		PLAYWRIGHT_PREVIEW_SUPABASE_URL: `https://${PREVIEW_SUPABASE_PROJECT_REF}.supabase.co`,
 		PLAYWRIGHT_HOST_LOGIN: EXPECTED_PREVIEW_ACCOUNT_EMAIL,
 		PLAYWRIGHT_HOST_PASSWORD: 'password-placeholder',
-		VERCEL_AUTOMATION_BYPASS_SECRET: 'bypass-placeholder',
+		CLOUDFLARE_ACCESS_CLIENT_ID: 'access-id-placeholder',
+		CLOUDFLARE_ACCESS_CLIENT_SECRET: 'access-secret-placeholder',
 		PLAYWRIGHT_PREVIEW_INVITATION_ID: fixtureId,
 		PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false',
 		PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false',
@@ -101,7 +102,7 @@ describe('Playwright Preview environment', () => {
 		const runtime = resolvePlaywrightRuntimeEnvironment({});
 
 		expect(runtime.isExternal).toBe(false);
-		expect(runtime.isVercelPreview).toBe(false);
+		expect(runtime.isPreview).toBe(false);
 		expect(runtime.protectionHeaders).toBeUndefined();
 	});
 
@@ -120,16 +121,16 @@ describe('Playwright Preview environment', () => {
 		});
 
 		expect(runtime.isExternal).toBe(true);
-		expect(runtime.isVercelPreview).toBe(false);
+		expect(runtime.isPreview).toBe(false);
 	});
 
-	it('configures both Vercel Deployment Protection headers without inspecting values', () => {
-		const headers = buildVercelProtectionHeaders(validPreviewEnvironment());
+	it('configures both Cloudflare Access service token headers without inspecting values', () => {
+		const headers = buildCloudflareAccessHeaders(validPreviewEnvironment());
 
 		expect(headers).toBeDefined();
 		expect(Object.keys(headers ?? {}).sort()).toEqual([
-			'x-vercel-protection-bypass',
-			'x-vercel-set-bypass-cookie',
+			'CF-Access-Client-Id',
+			'CF-Access-Client-Secret',
 		]);
 	});
 
@@ -137,7 +138,8 @@ describe('Playwright Preview environment', () => {
 		'PLAYWRIGHT_BASE_URL',
 		'PLAYWRIGHT_HOST_LOGIN',
 		'PLAYWRIGHT_HOST_PASSWORD',
-		'VERCEL_AUTOMATION_BYPASS_SECRET',
+		'CLOUDFLARE_ACCESS_CLIENT_ID',
+		'CLOUDFLARE_ACCESS_CLIENT_SECRET',
 		'PLAYWRIGHT_PREVIEW_INVITATION_ID',
 	])('fails fast when %s is missing', (key) => {
 		const env = validPreviewEnvironment();
@@ -146,7 +148,7 @@ describe('Playwright Preview environment', () => {
 		expect(() => validateAuthenticatedPreviewEnvironment(env)).toThrow(key);
 	});
 
-	it('rejects a non-Vercel target before authenticated execution', () => {
+	it('rejects a non-Cloudflare target before authenticated execution', () => {
 		const env = validPreviewEnvironment();
 		env.PLAYWRIGHT_BASE_URL = 'https://example.test';
 
@@ -269,7 +271,7 @@ describe('Playwright Preview environment', () => {
 	});
 
 	it('accepts only approved aliases or an explicitly approved immutable deployment host', () => {
-		const immutableHost = 'celebra-abc123-francisco-mendoza-s-projects.vercel.app';
+		const immutableHost = 'abc123-celebra-me-preview.celebra-me-com.workers.dev';
 		const env = validPreviewEnvironment();
 		env.PLAYWRIGHT_BASE_URL = `https://${immutableHost}`;
 		expect(() => validateReadOnlyPreviewEnvironment(env)).toThrow('explicitly approved');
@@ -279,10 +281,10 @@ describe('Playwright Preview environment', () => {
 	});
 
 	it.each([
-		'https://arbitrary-project.vercel.app',
+		'https://arbitrary-project.workers.dev',
 		'https://www.celebra-me.com',
 		'https://celebra-me.com',
-		'http://celebra-me.vercel.app',
+		'http://celebra-me-preview.celebra-me-com.workers.dev',
 	])('rejects unapproved or Production target %s', (baseUrl) => {
 		const env = validPreviewEnvironment();
 		env.PLAYWRIGHT_BASE_URL = baseUrl;

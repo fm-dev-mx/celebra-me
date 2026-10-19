@@ -1,4 +1,4 @@
-/** Approval artifacts bind to package storage paths, not leftover Cloudinary public IDs. */
+/** Approval artifacts bind to package storage paths, not provider object keys. */
 
 export function selectPackageApprovalAssetHashes(
 	hashes: Record<string, string>,

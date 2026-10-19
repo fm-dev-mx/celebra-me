@@ -100,4 +100,52 @@ $sys-color-taupe-700: hsl(27deg 40% 16%);
 // Special
 $sys-color-whatsapp: #25d366;
 
+// Landing (jewelry box): brand constants used by the landing theme only.
+$sys-color-landing-ink: #110d09;
+$sys-color-landing-espresso: #21130d;
+$sys-color-landing-ivory: #f7f0e4;
+$sys-color-landing-paper: #fbf6ec;
+$sys-color-landing-champagne: #d9a93a;
+$sys-color-landing-gold-line: #d8b76a;
+$sys-color-landing-cocoa: #2a1a13;
+$sys-color-landing-taupe: #8c7d70;
+
+// Dashboard (ivory charcoal): tuned for contrast on light ground; see the dashboard theme notes.
+$sys-color-dashboard-ivory: #f5f0e6;
+$sys-color-dashboard-ivory-light: #fbf7ee;
+$sys-color-dashboard-sand: #ede5d3;
+$sys-color-dashboard-paper: #fffdf9;
+$sys-color-dashboard-charcoal-deep: #151412;
+$sys-color-dashboard-ink: #1b1a17;
+$sys-color-dashboard-charcoal: #1f1d1a;
+$sys-color-dashboard-charcoal-hover: #34302b;
+$sys-color-dashboard-charcoal-pressed: #0d0c0b;
+$sys-color-dashboard-black: #000;
+$sys-color-dashboard-stone: #4f4a40;
+$sys-color-dashboard-stone-muted: #5b564b;
+$sys-color-dashboard-ivory-on-dark: #f8f3e8;
+$sys-color-dashboard-gold-deep: #7a5c17;
+$sys-color-dashboard-gold: #c6a04e;
+$sys-color-dashboard-champagne: #e8d3a0;
+$sys-color-dashboard-line: #e3d9c4;
+$sys-color-dashboard-line-strong: #a08f6c;
+$sys-color-dashboard-success: #1e5c33;
+$sys-color-dashboard-success-bg: #dfeee2;
+$sys-color-dashboard-success-border: #9cc7a6;
+$sys-color-dashboard-warning: #8a6414;
+$sys-color-dashboard-warning-bg: #f4e8c8;
+$sys-color-dashboard-warning-border: #e3c77e;
+$sys-color-dashboard-warning-text: #5a410c;
+$sys-color-dashboard-danger: #8e2a1c;
+$sys-color-dashboard-danger-bg: #f6e1dc;
+$sys-color-dashboard-danger-border: #e2a99f;
+$sys-color-dashboard-info: #1d3f73;
+$sys-color-dashboard-info-bg: #e3eaf5;
+$sys-color-dashboard-info-border: #a9bedd;
+$sys-color-dashboard-neutral-bg: #ece8e1;
+$sys-color-dashboard-neutral-border: #cfc7b8;
+$sys-color-dashboard-data-track: #f3eee4;
+$sys-color-dashboard-data-declined: #6b6458;
+$sys-color-dashboard-data-unused: #8c7f66;
+
 /* stylelint-enable color-no-hex, color-hex-length */

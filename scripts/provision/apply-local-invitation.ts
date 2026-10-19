@@ -46,7 +46,7 @@ import { cleanupLocalResources, type TrackedResource } from './managed-invitatio
 import { assertManagedMemoriesReference } from './managed-memories-reference.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 import { describeApplyError, resolveLocalDraftMutation } from './local-draft-publication.ts';
-import { buildCloudinaryPublicId } from './cloudinary-adapter.ts';
+import { buildR2ObjectKey } from '../../src/lib/intake/services/r2-invitation-media.ts';
 import {
 	canReuseExistingLocalAsset,
 	isAcceptableLocalFinalAssetRow,
@@ -232,11 +232,13 @@ function resolveLocalAssetRow(
 	input: { key: string; displayName: string; sha256: string },
 	identity: { eventType: string; slug: string },
 ): Record<string, unknown> | undefined {
-	const publicId = buildCloudinaryPublicId({
+	// Rows restored from a hosted database keep their R2 key; managed images are always WebP.
+	const publicId = buildR2ObjectKey({
 		eventType: identity.eventType,
 		slug: identity.slug,
 		key: input.key,
 		sha256: input.sha256,
+		mimeType: 'image/webp',
 	});
 	const managedPath = `managed/${identity.slug}/${input.key}.webp`;
 	return (
@@ -684,8 +686,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					storageHash: existingAsset.sha256 ?? norm.imageHash,
 					metadata: existingAsset,
 				});
-				const reuseProvider =
-					existingAsset.provider === 'cloudinary' ? 'Cloudinary' : 'Supabase Storage';
+				const reuseProvider = existingAsset.provider === 'r2' ? 'R2' : 'Supabase Storage';
 				assetActions.push({
 					resource: 'invitation_assets',
 					name: norm.displayName,
@@ -882,7 +883,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const storageIdentity = String(row.provider_public_id || row.storage_path);
 		if (observedStorage[storageIdentity]) continue;
 		const assetUrl =
-			row.provider === 'cloudinary'
+			row.provider === 'r2'
 				? String(row.secure_url ?? '')
 				: `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${String(row.storage_path)}`;
 		let present = false;

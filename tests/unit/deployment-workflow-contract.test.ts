@@ -7,24 +7,36 @@ import {
 } from '../../scripts/ops/release-readiness.ts';
 
 describe('deployment workflow contract', () => {
-	it('leaves Preview and Production deployment ownership to the Vercel Git integration', () => {
+	it('has no Vercel-driven or per-deployment smoke workflow left', () => {
 		expect(existsSync(resolve('.github/workflows/deploy-preview.yml'))).toBe(false);
-		const smoke = readFileSync(resolve('.github/workflows/post-deploy-smoke.yml'), 'utf8');
-		expect(smoke).not.toMatch(/vercel(?:@\S+)?\s+(?:build|deploy|promote)/u);
+		expect(existsSync(resolve('.github/workflows/post-deploy-smoke.yml'))).toBe(false);
 	});
 
-	it('smokes only ready develop Preview deployments, read-only and SHA-correlated', () => {
-		const smoke = readFileSync(resolve('.github/workflows/post-deploy-smoke.yml'), 'utf8');
-		const preview = smoke.slice(smoke.indexOf('preview-smoke:'), smoke.indexOf('\n    smoke:'));
-		expect(preview).toContain("github.event.action == 'vercel.deployment.ready'");
-		expect(preview).toContain("github.event.client_payload.environment == 'preview'");
-		expect(preview).toContain("github.event.client_payload.git.ref == 'develop'");
+	it('verifies Preview invitation images from the Cloudflare Preview deploy, read-only', () => {
+		const preview = readFileSync(resolve('.github/workflows/deploy.yml'), 'utf8');
 		expect(preview).toContain("PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'");
 		expect(preview).toContain("PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'");
-		expect(preview).toContain('pnpm ops:post-deploy -- validate');
-		expect(preview).toContain('.build.commitSha');
-		expect(preview).toContain('pnpm test:e2e:preview:public');
+		expect(preview).toContain(
+			'pnpm --silent invitation:media:verify -- --target preview --all --json > "$MEDIA_VERIFY_REPORT"',
+		);
+		expect(preview).toContain('tee -a "$GITHUB_STEP_SUMMARY"');
+		expect(preview).toContain('exit "$status"');
+		// Content not yet published to Preview is listed, never counted as a failure.
+		expect(preview).toContain('.classification == "PENDING_PUBLISH"');
+		expect(preview).toContain('.classification != "PENDING_PUBLISH"');
+		const upload = preview.slice(preview.indexOf('- name: Upload media verification report'));
+		expect(upload).toContain('if: always()');
+		expect(upload).toContain('uses: actions/upload-artifact@v7');
+		expect(upload).toContain('path: .tmp/media-verify/preview-media-verification.json');
+		expect(upload).toMatch(/retention-days: [1-7]\s/u);
 		expect(preview).not.toMatch(/preview:provision|preview:publish|db:preview:sync/u);
+		// The images are verified after the stable host serves the release, before success is recorded.
+		expect(preview.indexOf('Verify the stable host serves the release')).toBeLessThan(
+			preview.indexOf('Verify published invitation images'),
+		);
+		expect(preview.indexOf('Verify published invitation images')).toBeLessThan(
+			preview.indexOf('- name: Record success'),
+		);
 	});
 });
 
@@ -52,7 +64,7 @@ describe('Cloudflare Production upload workflow contract', () => {
 		);
 	});
 
-	it('keeps its evidence apart from the Vercel Production environment', () => {
+	it('keeps its evidence in its own Cloudflare Production environment', () => {
 		expect(workflow).toContain('name: Cloudflare Production\n');
 		expect(workflow).toContain('environment: "Cloudflare Production"');
 		expect(workflow).not.toMatch(/environment: "?Production"?\n/u);

@@ -273,7 +273,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			variant: envelopeVariant,
 		},
 		music: {
-			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/sample.mp3',
+			url: 'https://media.celebra-me.com/shared/sample.mp3',
 			autoPlay: false,
 			title: 'Música de fondo',
 		},

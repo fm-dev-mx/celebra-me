@@ -555,7 +555,7 @@ describe('MemoriesAdmin island', () => {
 		expect(notices[0]).toHaveTextContent('Falta MEMORIES_SHARE_SECRET');
 		expect(notices[0]).toHaveTextContent('randomBytes(32)');
 		expect(notices[0]).toHaveTextContent('.env.local');
-		expect(notices[0]).toHaveTextContent('Vercel');
+		expect(notices[0]).toHaveTextContent('Cloudflare');
 		expect(notices[1]).toHaveTextContent('Falta MEMORIES_PRIVATE_UPLOAD_ORIGIN');
 		expect(notices[2]).toHaveTextContent('El Worker de lectura no responde');
 	});

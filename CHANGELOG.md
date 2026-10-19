@@ -10,6 +10,44 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.31.0-beta.1] - 2026-10-18
+
+Hosting and media close-out: the code builds only for the Cloudflare Worker (the Vercel target is
+gone) and invitation media is served from R2 only (the Cloudinary code paths are gone). The theme
+gains radius and text-style scales with a ratchet on hand-written values. No database migrations.
+
+### Added
+
+- Radius scale (`--radius-xs` … `--radius-pill`), text styles (`eyebrow`, `table-label`, `badge`)
+  with the `type-scale.text()` mixin, and named landing and dashboard theme colors.
+- Style ratchet test: literal `border-radius` and `font-size` declarations in the landing and
+  dashboard styles may not grow beyond a per-file baseline.
+- `pnpm invitation:preview-demo`: guarded, Preview-only republish of a demo from its versioned JSON
+  (dry-run by default, exact task scope or TTY confirmation to apply).
+
+### Changed
+
+- Invitation media provisioning, delivery, social cards and `invitation:media:verify` use R2 only;
+  the publish gate is `remote-media-hosting` and managed package hashes are regenerated.
+- Security headers and redirects live only in the middleware; release and smoke tooling is
+  Cloudflare-only.
+- `font(body)` resolves to the UI stack, matching `--font-body`; `body-narrative` carries EB
+  Garamond.
+- Visual capture suites run in parallel mode.
+
+### Fixed
+
+- `CacheSafeImage` keeps the source aspect ratio when a delivery sets only a width; the dev image
+  service defaults `fit` to `scale-down` like Cloudflare.
+- Collector tests compare the Supabase management host exactly.
+
+### Removed
+
+- Vercel hosting target: `@astrojs/vercel`, `vercel.json`, `.vercelignore`, `/api/cron/*` and
+  `CRON_SECRET` (the Worker `scheduled()` handler runs both jobs).
+- Cloudinary client, helpers, quota guard, provisioning adapter and `CLOUDINARY_*` env names.
+- Unused font utility classes and the duplicate `--color-state-warning`.
+
 ## [0.30.0-beta.1] - 2026-10-18
 
 Platform usage console for the super-admin: the Production Worker measures Cloudflare and Supabase

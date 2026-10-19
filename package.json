@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.30.0-beta.1",
+    "version": "0.31.0-beta.1",
     "engines": {
         "node": ">=22.13.0 <25"
     },
@@ -118,6 +118,7 @@
         "invitation:hash-baseline": "tsx scripts/provision/release-hash-baseline.ts",
         "invitation:reconcile": "tsx scripts/provision/invitation-reconcile-cli.ts",
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
+        "invitation:preview-demo": "tsx scripts/provision/preview-demo-republish-cli.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
         "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",
@@ -157,7 +158,6 @@
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
     },
     "dependencies": {
-        "@astrojs/vercel": "11.0.14",
         "@fontsource-variable/bodoni-moda": "^5.3.0",
         "@fontsource-variable/cinzel": "^5.3.0",
         "@fontsource-variable/cormorant-garamond": "^5.3.0",

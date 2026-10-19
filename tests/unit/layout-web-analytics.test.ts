@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { resolveWebAnalyticsBeacon } from '@/lib/tracking/web-analytics';
+import {
+	INVITATION_PREVIEW_SECURITY_HEADERS,
+	SECURITY_HEADERS,
+} from '@/lib/server/security-headers';
 
 const projectRoot = process.cwd();
 
@@ -70,14 +74,10 @@ describe('Cloudflare Web Analytics beacon', () => {
 		});
 	});
 
-	describe('Content-Security-Policy in vercel.json', () => {
-		type HeaderRule = { source: string; headers: Array<{ key: string; value: string }> };
-		const rules = (JSON.parse(read('vercel.json')) as { headers?: HeaderRule[] }).headers ?? [];
-		const cspValues = rules.flatMap((rule) =>
-			rule.headers
-				.filter((header) => header.key.toLowerCase() === 'content-security-policy')
-				.map((header) => header.value),
-		);
+	describe('Content-Security-Policy served by the middleware', () => {
+		const cspValues = [...SECURITY_HEADERS, ...INVITATION_PREVIEW_SECURITY_HEADERS]
+			.filter(([name]) => name.toLowerCase() === 'content-security-policy')
+			.map(([, value]) => value);
 
 		it('keeps the beacon allowed wherever scripts or connections are restricted', () => {
 			expect(cspValues.length).toBeGreaterThan(0);

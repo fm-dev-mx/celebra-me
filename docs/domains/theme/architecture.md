@@ -238,14 +238,16 @@ Stop if a change only reshuffles CSS between files without changing ownership.
 ## Token Levels
 
 1. **Foundation tokens** live in `src/styles/tokens/system/**`. They are SCSS variables only and
-   contain raw values such as palette colors, spacing, radius, typography families, motion values,
-   and shadows. They do not express product intent.
+   contain raw values such as palette colors, spacing, typography families, motion values, and
+   shadows, and the radius scale (`xs` 4px to `pill` 999px). They do not express product intent. The
+   landing and dashboard theme colors are named foundation tokens (`$sys-color-landing-*`,
+   `$sys-color-dashboard-*`), so theme files carry no literal hex.
 
 2. **Semantic tokens** live in `src/styles/tokens/semantic/**` and are published through
    `src/styles/global.scss`. They are `:root` CSS custom properties for reusable system intent, such
    as `--color-text-primary`, `--color-surface-elevated`, `--color-action-accent`,
-   `--color-border-subtle`, `--color-state-danger`, `--font-display`, `--shadow-soft`,
-   `--duration-fast`, and `--ease-premium`.
+   `--color-border-subtle`, `--color-state-danger`, `--font-display`, `--shadow-subtle`,
+   `--radius-md`, `--duration-fast`, and `--ease-premium`.
 
 3. **Component tokens** live with the component, layout, section, or surface that owns them. They
    are scoped CSS custom properties for public component contracts, such as
@@ -254,6 +256,12 @@ Stop if a change only reshuffles CSS between files without changing ownership.
 
 Themes and states are not separate token layers. Themes override semantic tokens and public
 component tokens. States are represented inside component token contracts.
+
+Landing (`src/styles/home/**`) and dashboard (`src/styles/dashboard/**`) styles take `border-radius`
+from `--radius-*` and `font-size` from a `type-scale` text style or a font-size variable. Existing
+literals are frozen per file by `tests/unit/style-scale-literals.test.ts`: a file may only lower its
+count, and a migration that lowers it updates `tests/fixtures/style-scale-literals/baseline.json` in
+the same change.
 
 ## Theme Presets
 

@@ -1,7 +1,7 @@
 import { observeVersionedLocalAsset } from '../../scripts/provision/apply-local-invitation';
 import { createHash } from 'node:crypto';
 import { rominaInvitation } from '../../scripts/provision/invitations/romina-rios-chaparro';
-import { buildCloudinaryDeliveryUrl } from '@/lib/intake/services/cloudinary-assets';
+import { buildR2ObjectKey, buildR2PublicUrl } from '@/lib/intake/services/r2-invitation-media';
 import { ImageDeliverySchema } from '@/lib/assets/image-delivery';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 import { shouldOptimizeThroughImageService } from '@/lib/assets/image-delivery-policy';
@@ -62,7 +62,7 @@ test('materialization and semantic comparison retain delivery intent', () => {
 
 test('explicit original delivery is independent of storage provider', () => {
 	for (const url of [
-		'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+		`https://media.celebra-me.com/invitations/xv/demo/hero-${sha256}.webp`,
 		'http://127.0.0.1:54321/storage/v1/object/public/images/hero.webp',
 	]) {
 		expect(shouldOptimizeThroughImageService(url, { mode: 'original' })).toBe(false);
@@ -131,12 +131,14 @@ test('canonical publication applies delivery to concrete environment references'
 	});
 	expect(assets['hero-mobile']).not.toHaveProperty('delivery');
 });
-test('hosted delivery preserves the original format instead of requesting an implicit WebP conversion', () => {
-	expect(buildCloudinaryDeliveryUrl('demo', 'hero', 'image/jpeg')).toBe(
-		'https://res.cloudinary.com/demo/image/upload/v1/hero.jpg',
-	);
-	expect(buildCloudinaryDeliveryUrl('demo', 'hero')).toBe(
-		'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+test('hosted R2 delivery preserves the original format and content-addresses the object', () => {
+	const input = { eventType: 'xv', slug: 'demo', key: 'hero', sha256 };
+	const jpeg = buildR2ObjectKey({ ...input, mimeType: 'image/jpeg' });
+	const webp = buildR2ObjectKey({ ...input, mimeType: 'image/webp' });
+	expect(jpeg).toBe(`invitations/xv/demo/hero-${sha256}.jpg`);
+	expect(webp).toBe(`invitations/xv/demo/hero-${sha256}.webp`);
+	expect(buildR2PublicUrl('production', jpeg)).toBe(
+		`https://media.celebra-me.com/invitations/xv/demo/hero-${sha256}.jpg`,
 	);
 });
 

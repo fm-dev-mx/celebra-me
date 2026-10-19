@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-15T06:55:41.568Z",
+    "generatedAt": "2026-10-19T03:14:49.520Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,9 +11,9 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "f6460a93877e20a15788cabfc1c4ab44f8abcd41c9890d4f850eff46f4bc97b7",
-        "cssSha256": "4495881e05fa58976157c1d572960718e57cb8b5f0e6cd1ac71c55d42da1f573",
-        "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
+        "lockfileSha256": "8200cd44b922076ce25a899a56681114c9689965de3faf163f27eeebb32b5ba5",
+        "cssSha256": "903eaf4409720f5a14fdbfe76669840a85abde580828c8b31d802c3794365f39",
+        "assetSha256": "48537f8948126af5697abea2db4b27479fc38929510453d95987ebaee4946a26",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -2199,7 +2199,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "7611134964840030916e08c6b46df650b1003b05a93bfb9d146f2e018792a193",
+            "sha256": "d9cb98e639ce46b329e491e9eab5663cc9df409287ec8653c2753ea99d2afa85",
             "contentHash": "50cd0ec40853695fd14cd77397e929e553197a94c7ddb84835de876d3f1cfea6",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
@@ -2265,9 +2265,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "a7f8d37bc2572552d144b6150aee578c06f51744",
+    "referenceSha": "22aac523ad11c4392e6e2644804e85fa6842dc38",
     "variantManifest": {
-        "generatedAt": "2026-10-15T06:55:41.568Z",
+        "generatedAt": "2026-10-19T03:14:49.520Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2279,9 +2279,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "f6460a93877e20a15788cabfc1c4ab44f8abcd41c9890d4f850eff46f4bc97b7",
-            "cssSha256": "4495881e05fa58976157c1d572960718e57cb8b5f0e6cd1ac71c55d42da1f573",
-            "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
+            "lockfileSha256": "8200cd44b922076ce25a899a56681114c9689965de3faf163f27eeebb32b5ba5",
+            "cssSha256": "903eaf4409720f5a14fdbfe76669840a85abde580828c8b31d802c3794365f39",
+            "assetSha256": "48537f8948126af5697abea2db4b27479fc38929510453d95987ebaee4946a26",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4029,10 +4029,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a7f8d37bc2572552d144b6150aee578c06f51744"
+        "referenceSha": "22aac523ad11c4392e6e2644804e85fa6842dc38"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-15T06:55:41.589Z",
+        "generatedAt": "2026-10-19T03:14:49.527Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4044,9 +4044,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "f6460a93877e20a15788cabfc1c4ab44f8abcd41c9890d4f850eff46f4bc97b7",
-            "cssSha256": "4495881e05fa58976157c1d572960718e57cb8b5f0e6cd1ac71c55d42da1f573",
-            "assetSha256": "7a1ffb3f63897be9731232cbe15e9cb80401a235e3810658303ad5681c47c2dd",
+            "lockfileSha256": "8200cd44b922076ce25a899a56681114c9689965de3faf163f27eeebb32b5ba5",
+            "cssSha256": "903eaf4409720f5a14fdbfe76669840a85abde580828c8b31d802c3794365f39",
+            "assetSha256": "48537f8948126af5697abea2db4b27479fc38929510453d95987ebaee4946a26",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4495,7 +4495,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-                "sha256": "7611134964840030916e08c6b46df650b1003b05a93bfb9d146f2e018792a193",
+                "sha256": "d9cb98e639ce46b329e491e9eab5663cc9df409287ec8653c2753ea99d2afa85",
                 "contentHash": "50cd0ec40853695fd14cd77397e929e553197a94c7ddb84835de876d3f1cfea6",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
@@ -4561,9 +4561,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a7f8d37bc2572552d144b6150aee578c06f51744"
+        "referenceSha": "22aac523ad11c4392e6e2644804e85fa6842dc38"
     },
-    "candidateManifestSha256": "c4ef73dd10d741e8c9329ad1f2cf9ed68217ac33b3cd4bb1d781eedf80f5de07",
-    "acceptedFromCommit": "a7f8d37bc2572552d144b6150aee578c06f51744",
-    "acceptedAt": "2026-10-15T07:05:53.426Z"
+    "candidateManifestSha256": "63a831e6cd2ecf0bb162687e6be7350570d731ee611a8f6204605a5d13242036",
+    "acceptedFromCommit": "22aac523ad11c4392e6e2644804e85fa6842dc38",
+    "acceptedAt": "2026-10-19T03:15:21.425Z"
 }

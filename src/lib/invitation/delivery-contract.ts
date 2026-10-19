@@ -1,11 +1,7 @@
-import {
-	isCloudinaryDeliveryHostname,
-	isMutableInPlaceMediaUrl,
-} from '@/lib/assets/image-delivery-policy';
+import { isMutableInPlaceMediaUrl } from '@/lib/assets/image-delivery-policy';
 import { isR2InvitationMediaUrl } from '@/lib/intake/services/r2-invitation-media';
 
-export type DeliveryResourceKind =
-	'vercel-image' | 'supabase-storage' | 'cloudinary' | 'r2-media' | 'astro-hashed' | 'other';
+export type DeliveryResourceKind = 'supabase-storage' | 'r2-media' | 'astro-hashed' | 'other';
 
 export interface DeliveryResource {
 	url: string;
@@ -20,12 +16,9 @@ export interface InvitationHtmlInventory {
 	resources: DeliveryResource[];
 	uniqueUrlCount: number;
 	duplicateUrls: string[];
-	vercelImageCount: number;
 	supabaseStorageCount: number;
-	cloudinaryCount: number;
 	r2MediaCount: number;
 	astroHashedCount: number;
-	mutableStorageThroughVercelImage: string[];
 	eagerImageCount: number;
 	lazyImageCount: number;
 	highPriorityImageCount: number;
@@ -89,7 +82,7 @@ export function isPrivateNoStoreCacheContract(cacheControl: string): boolean {
 
 /**
  * Effective anonymous invitation document policy: origin revalidate, no shared TTL.
- * Accepts both the source form (`s-maxage=0`) and Vercel's omission of that token.
+ * Accepts both the source form (`s-maxage=0`) and an edge that omits that token.
  */
 export function isOriginRevalidatePublicDocument(cacheControl: string): boolean {
 	const cc = cacheControl.toLowerCase();
@@ -107,26 +100,10 @@ export function classifyDeliveryUrl(rawUrl: string): DeliveryResourceKind {
 	if (!url || url.startsWith('data:') || url.startsWith('mailto:') || url.startsWith('#')) {
 		return 'other';
 	}
-	if (/\/_vercel\/image(?:\?|$)/i.test(url)) return 'vercel-image';
 	if (isMutableInPlaceMediaUrl(url)) return 'supabase-storage';
-	if (isCloudinaryDeliveryHostname(url)) return 'cloudinary';
 	if (isR2InvitationMediaUrl(url)) return 'r2-media';
 	if (/\/_astro\//i.test(url)) return 'astro-hashed';
 	return 'other';
-}
-
-export function vercelImageSourceUrl(rawUrl: string): string | null {
-	const decoded = decodeHtmlEntities(rawUrl.trim());
-	try {
-		const parsed = decoded.includes('://')
-			? new URL(decoded)
-			: new URL(decoded, 'https://www.celebra-me.com');
-		if (!parsed.pathname.includes('/_vercel/image')) return null;
-		const inner = parsed.searchParams.get('url');
-		return inner ? decodeURIComponent(inner) : null;
-	} catch {
-		return null;
-	}
 }
 
 function extractDocumentUrls(html: string): string[] {
@@ -144,12 +121,7 @@ function extractDocumentUrls(html: string): string[] {
 }
 
 function isImageLikeUrl(url: string, kind: DeliveryResourceKind): boolean {
-	if (
-		kind === 'vercel-image' ||
-		kind === 'supabase-storage' ||
-		kind === 'cloudinary' ||
-		kind === 'r2-media'
-	) {
+	if (kind === 'supabase-storage' || kind === 'r2-media') {
 		return true;
 	}
 	return /\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#]|$)/i.test(url);
@@ -162,7 +134,7 @@ export function inventoryInvitationHtml(html: string): InvitationHtmlInventory {
 		return {
 			url,
 			kind,
-			optimizedSource: kind === 'vercel-image' ? vercelImageSourceUrl(url) : null,
+			optimizedSource: null,
 			lazy: false,
 			highPriority: false,
 		};
@@ -197,27 +169,15 @@ export function inventoryInvitationHtml(html: string): InvitationHtmlInventory {
 		.filter(([, count]) => count > 1)
 		.map(([url]) => url);
 
-	const mutableStorageThroughVercelImage = resources
-		.filter(
-			(resource) =>
-				resource.kind === 'vercel-image' &&
-				resource.optimizedSource !== null &&
-				isMutableInPlaceMediaUrl(resource.optimizedSource),
-		)
-		.map((resource) => resource.optimizedSource as string);
-
 	return {
 		urls,
 		resources,
 		uniqueUrlCount: counts.size,
 		duplicateUrls,
-		vercelImageCount: resources.filter((resource) => resource.kind === 'vercel-image').length,
 		supabaseStorageCount: resources.filter((resource) => resource.kind === 'supabase-storage')
 			.length,
-		cloudinaryCount: resources.filter((resource) => resource.kind === 'cloudinary').length,
 		r2MediaCount: resources.filter((resource) => resource.kind === 'r2-media').length,
 		astroHashedCount: resources.filter((resource) => resource.kind === 'astro-hashed').length,
-		mutableStorageThroughVercelImage,
 		eagerImageCount,
 		lazyImageCount,
 		highPriorityImageCount,
@@ -230,10 +190,7 @@ export function selectHeroResource(inventory: InvitationHtmlInventory): Delivery
 		inventory.resources.find(
 			(resource) =>
 				!resource.lazy &&
-				(resource.kind === 'vercel-image' ||
-					resource.kind === 'supabase-storage' ||
-					resource.kind === 'cloudinary' ||
-					resource.kind === 'r2-media'),
+				(resource.kind === 'supabase-storage' || resource.kind === 'r2-media'),
 		) ??
 		null
 	);

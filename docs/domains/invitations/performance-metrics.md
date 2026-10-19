@@ -259,7 +259,7 @@ changes when `sha256` changes.
 replacements are not stale.
 
 **Measurement.** `tests/unit/image-delivery-policy.test.ts`,
-`tests/provision/cloudinary-adapter.test.ts`.
+`tests/unit/r2-storage-provider.test.ts`.
 
 **Enforcement.** Hard CI.
 

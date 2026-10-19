@@ -180,7 +180,7 @@ describe('verified delivered image identity', () => {
 		);
 		expect(sectionImageSignature([image])).not.toBe(
 			sectionImageSignature([
-				{ ...image, src: 'https://a.example/_vercel/image?url=source&w=800&q=90' },
+				{ ...image, src: 'https://a.example/_image?href=source&w=800&q=90' },
 			]),
 		);
 	});

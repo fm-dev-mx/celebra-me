@@ -21,9 +21,9 @@ import {
 import { PROJECT_ROOT } from '../db/db-workflow-lib.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
-	cloudinaryEraHostingMessage,
-	isCloudinaryEraInvitation,
-} from '../../src/lib/intake/services/cloudinary-era-hosting.ts';
+	remoteMediaHostingMessage,
+	isRemoteMediaInvitation,
+} from '../../src/lib/intake/services/remote-media-hosting.ts';
 import {
 	runImportEngine,
 	type ImportEngineOptions,
@@ -83,7 +83,7 @@ type PromotionBlockCode =
 	| 'MANAGED_DIVERGENCE'
 	| 'CONFIRMATION_REQUIRED'
 	| 'VERIFICATION_FAILED'
-	| 'CLOUDINARY_ERA_HOSTING'
+	| 'REMOTE_MEDIA_HOSTING'
 	| 'MEMORIES_SPACE_REFERENCE';
 
 export interface PromotionSchemaGateResult {
@@ -362,15 +362,13 @@ export async function runPromotionPreflight(input: {
 }): Promise<PromotionPreflightReport> {
 	const slug = input.packageData.invitation.slug;
 	if (
-		isCloudinaryEraInvitation({
+		isRemoteMediaInvitation({
 			kind: input.packageData.invitation.kind,
 			createdAt: input.packageData.definitionCreatedAt,
 		})
 	) {
 		const violations = (input.packageData.assets ?? [])
-			.filter(
-				(asset) => asset.provider !== 'cloudinary' || !/^[a-f0-9]{64}$/u.test(asset.sha256),
-			)
+			.filter((asset) => asset.provider !== 'r2' || !/^[a-f0-9]{64}$/u.test(asset.sha256))
 			.map((asset) => asset.key);
 		if (violations.length > 0) {
 			return {
@@ -380,8 +378,8 @@ export async function runPromotionPreflight(input: {
 				projectionHash: input.packageData.projectionHash,
 				assetManifestHash: input.packageData.assetManifestHash,
 				status: 'BLOCKED',
-				blockCode: 'CLOUDINARY_ERA_HOSTING',
-				reason: cloudinaryEraHostingMessage(violations),
+				blockCode: 'REMOTE_MEDIA_HOSTING',
+				reason: remoteMediaHostingMessage(violations),
 				schema: {
 					state: 'UNVERIFIED',
 					migrationHead: null,
@@ -395,7 +393,7 @@ export async function runPromotionPreflight(input: {
 					required: false,
 					acceptable: true,
 					canonicalCommand: CANONICAL_BACKUP_COMMAND,
-					detail: 'Backup gate skipped because Cloudinary hosting is incomplete.',
+					detail: 'Backup gate skipped because R2 hosting is incomplete.',
 				},
 				divergence: emptyDivergence(),
 			};

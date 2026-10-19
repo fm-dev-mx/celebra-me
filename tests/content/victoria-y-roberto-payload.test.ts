@@ -125,7 +125,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		});
 		expect(content).toHaveProperty('itinerary');
 		expect(content.music).toEqual({
-			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
+			url: 'https://media.celebra-me.com/invitations/boda/victoria-y-roberto/music-c4844f86fbd15f2ce2711bdaf7a83c80871b691c64d9b31fd999473a3884a1d3.mp3',
 			title: 'Stephen Sanchez — Until I Found You',
 			autoPlay: true,
 		});

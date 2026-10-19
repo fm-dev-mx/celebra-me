@@ -64,7 +64,7 @@ export function isSemanticUploadedAssetRef(
 }
 
 /**
- * Hosted external asset URL string (Cloudinary, Storage host, or storage placeholder).
+ * Hosted external asset URL string (R2, Storage host, or storage placeholder).
  */
 function isExternalHostedAssetString(value: unknown): value is string {
 	if (typeof value !== 'string' || value.length === 0) return false;

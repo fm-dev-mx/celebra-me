@@ -3,8 +3,6 @@ import { basename } from 'node:path';
 import { assessExactEvidence } from './operational-evidence.ts';
 
 export const STATIC_CAPABILITY_CHECK = 'Application / static';
-export const PRODUCTION_DEPLOYMENT_SMOKE = 'Vercel - celebra-me production smoke';
-export const PREVIEW_DEPLOYMENT_SMOKE = 'Vercel - celebra-me preview smoke';
 /** Commit statuses published by `.github/workflows/deploy.yml` for the Cloudflare Workers. */
 export const CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE = 'Cloudflare - celebra-me production smoke';
 export const CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE = 'Cloudflare - celebra-me preview smoke';
@@ -15,15 +13,9 @@ export const CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE = 'Cloudflare - celebra-me prev
  */
 export const CLOUDFLARE_PRODUCTION_CANDIDATE_SMOKE =
 	'Cloudflare - celebra-me production candidate smoke';
-/** Either hosting provider's smoke proves the deployed SHA for its environment. */
-export const PRODUCTION_DEPLOYMENT_SMOKES = [
-	PRODUCTION_DEPLOYMENT_SMOKE,
-	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
-] as const;
-export const PREVIEW_DEPLOYMENT_SMOKES = [
-	PREVIEW_DEPLOYMENT_SMOKE,
-	CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE,
-] as const;
+/** The Cloudflare smoke proves the deployed SHA for its environment. */
+export const PRODUCTION_DEPLOYMENT_SMOKES = [CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE] as const;
+export const PREVIEW_DEPLOYMENT_SMOKES = [CLOUDFLARE_PREVIEW_DEPLOYMENT_SMOKE] as const;
 export const REQUIRED_RELEASE_CHECKS = [
 	'Repository Policy',
 	'Application Suite',

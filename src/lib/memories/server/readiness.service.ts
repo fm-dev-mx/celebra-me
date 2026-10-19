@@ -61,7 +61,6 @@ function findMissingMemoriesConfig(): MemoriesConfigKey[] {
 		retrievalSigningKey: () => isUsableSigningKey(MEMORIES_ENV.retrievalSigningPrivateKey),
 		shareSecret: () =>
 			getEnv(MEMORIES_ENV.shareSecret).trim().length >= MIN_SHARE_SECRET_LENGTH,
-		cronSecret: () => getEnv(MEMORIES_ENV.cronSecret).trim().length > 0,
 	};
 	return (Object.keys(checks) as MemoriesConfigKey[]).filter((key) => !checks[key]());
 }

@@ -5,7 +5,6 @@
         "scripts/validate-schema.mjs",
         "scripts/agent/worktree-status.ts",
         "scripts/agent/worktree-doctor.ts",
-        "scripts/ops/vercel-ignore-build.mjs",
         "scripts/playwright/canonical-fixture-server.ts",
         "scripts/db/_check-admin-login.mjs",
         "scripts/db/_check-asset-api.mjs",

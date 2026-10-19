@@ -11,30 +11,15 @@ import { checkUnknownFlags } from '../../scripts/provision/invitation-update-opt
 import { formatApplyResult } from '../../scripts/provision/invitation-update-presenter.ts';
 
 describe('invitation operator guidance', () => {
-	it('explains legacy namespaces without exposing appended provider credentials', () => {
+	it('explains foreign R2 objects without exposing appended provider details', () => {
 		const result = translatePreviewNamespaceFailure(
-			'Cloudinary asset namespace mismatch: expected preview, observed legacy. https://user:secret@example.test/private',
+			'R2 object invitations/xv/otra/hero-a.webp belongs to another invitation than xv/ana. https://user:secret@example.test/private',
 		);
-		expect(result).toContain('migración');
+		expect(result).toContain('origen e identidad');
 		expect(result).not.toMatch(/secret|example|credenciales/);
 	});
-	it.each(['production', 'invalid'])(
-		'rejects %s assets without suggesting overwrite',
-		(observed) => {
-			expect(
-				translatePreviewNamespaceFailure(
-					`Cloudinary asset namespace mismatch: expected preview, observed ${observed}.`,
-				),
-			).toContain('origen e identidad');
-		},
-	);
-	it('does not misclassify network or other-target failures as Preview migration', () => {
-		expect(translatePreviewNamespaceFailure('Cloudinary HTTP 401')).toBeNull();
-		expect(
-			translatePreviewNamespaceFailure(
-				'Cloudinary asset namespace mismatch: expected production, observed legacy.',
-			),
-		).toBeNull();
+	it('does not misclassify network failures as a foreign object', () => {
+		expect(translatePreviewNamespaceFailure('R2 object read failed (HTTP 500).')).toBeNull();
 	});
 	it('consumes a leading pnpm separator instead of treating it as a paste', () => {
 		expect(normalizeOperatorArgv(['--', '--slug', 'renata'])).toEqual(['--slug', 'renata']);

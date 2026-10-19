@@ -185,8 +185,6 @@ describe('screenshot CLI utilities', () => {
 			expect.arrayContaining(getOperationalToolbarSelectors()),
 		);
 		expect(getOperationalToolbarSelectors()).toContain('astro-dev-toolbar');
-		expect(getOperationalToolbarSelectors()).toContain('#vercel-live-feedback');
-		expect(getOperationalToolbarSelectors()).toContain('[data-vercel-toolbar]');
 	});
 
 	it('deduplicates identical run-level notices while preserving unique ones', () => {
@@ -234,14 +232,12 @@ describe('screenshot CLI utilities', () => {
 		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/dev-preview' })).toBe(
 			'http://localhost:4323',
 		);
-		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me' })).toBe(
-			'http://localhost:4321',
-		);
+		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me' })).toBe('http://localhost:4321');
 
 		// Unix checkout root: lane detection is platform-agnostic (marker-based).
-		expect(resolveScreenshotBaseUrl({ cwd: '/home/dev/celebra-me-worktrees/dev-preview' })).toBe(
-			'http://localhost:4323',
-		);
+		expect(
+			resolveScreenshotBaseUrl({ cwd: '/home/dev/celebra-me-worktrees/dev-preview' }),
+		).toBe('http://localhost:4323');
 	});
 
 	it('lets ASTRO_PORT and explicit base URL override the lane table', () => {
@@ -530,9 +526,9 @@ describe('screenshot CLI utilities', () => {
 		});
 
 		it('recovers Git for Windows conversion (C:/Program Files/Git prefix)', () => {
-			expect(resolveUrl('C:/Program Files/Git/boda/demo-boda-jewelry-box-wedding', base)).toBe(
-				'http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
-			);
+			expect(
+				resolveUrl('C:/Program Files/Git/boda/demo-boda-jewelry-box-wedding', base),
+			).toBe('http://localhost:4321/boda/demo-boda-jewelry-box-wedding');
 		});
 
 		it('recovers MSYS2 conversion (C:/msys64 prefix)', () => {

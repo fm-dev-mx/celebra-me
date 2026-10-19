@@ -38,7 +38,7 @@ export function buildDeliveryBenchmarkScenarios(input: {
 			id: 'versionedAnonymous',
 			path: versionedRoute,
 			personalized: false,
-			architecture: 'Hashed Cloudinary public IDs; Storage is not the LCP media path',
+			architecture: 'Content-addressed R2 keys; Storage is not the LCP media path',
 		},
 	];
 	if (input.legacyStorageSlug) {
@@ -94,7 +94,7 @@ export interface DeliveryBudgetObservation {
 	htmlBytes: number;
 	cacheControl: string | null;
 	personalized: boolean;
-	vercelCache: string | null;
+	sharedCache: string | null;
 }
 
 export function assertDeliveryBudgets(observations: DeliveryBudgetObservation[]): void {
@@ -118,9 +118,9 @@ export function assertDeliveryBudgets(observations: DeliveryBudgetObservation[])
 				`${observation.id} expected origin-revalidate public document, got ${cache || '(none)'}`,
 			);
 		}
-		if ((observation.vercelCache ?? '').toUpperCase() === 'HIT') {
+		if ((observation.sharedCache ?? '').toUpperCase() === 'HIT') {
 			failures.push(
-				`${observation.id} document was a shared-cache HIT (${observation.vercelCache})`,
+				`${observation.id} document was a shared-cache HIT (${observation.sharedCache})`,
 			);
 		}
 	}

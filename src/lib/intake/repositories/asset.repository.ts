@@ -26,9 +26,7 @@ interface AssetRow {
 
 function toInvitationAsset(row: AssetRow): InvitationAsset {
 	const provider =
-		row.provider === 'cloudinary' || row.provider === 'supabase' || row.provider === 'r2'
-			? row.provider
-			: 'supabase';
+		row.provider === 'supabase' || row.provider === 'r2' ? row.provider : 'supabase';
 	return {
 		id: row.id,
 		invitationId: row.invitation_id,
@@ -69,7 +67,7 @@ export async function createAsset(input: {
 	validationVersion?: number;
 	originalMimeType?: string;
 	originalFileSize?: number;
-	provider?: 'supabase' | 'cloudinary' | 'r2';
+	provider?: 'supabase' | 'r2';
 	providerPublicId?: string;
 	secureUrl?: string;
 	sha256?: string;

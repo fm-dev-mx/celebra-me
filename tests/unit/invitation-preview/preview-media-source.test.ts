@@ -12,7 +12,8 @@ describe('preview media source allowlist', () => {
 		'/_astro/hero.abc123.webp',
 		'https://www.celebra-me.com/images/x.webp',
 		'https://abcdefgh.supabase.co/storage/v1/object/public/invitation-assets/a/b.webp',
-		'https://res.cloudinary.com/demo/image/upload/v1/x.jpg',
+		'https://media.celebra-me.com/invitations/xv/demo/hero-abc.webp',
+		'https://media-staging.celebra-me.com/invitations/xv/demo/hero-abc.webp',
 	])('accepts %s', (source) => {
 		expect(resolvePreviewMediaSource(source, origin)).not.toBeNull();
 	});
@@ -32,7 +33,10 @@ describe('preview media source allowlist', () => {
 		'http://abcdefgh.supabase.co/storage/v1/object/public/a.webp',
 		'https://abcdefgh.supabase.co/rest/v1/invitations',
 		'http://169.254.169.254/latest/meta-data',
-		'https://user:pass@res.cloudinary.com/x.jpg',
+		'https://user:pass@media.celebra-me.com/x.jpg',
+		'https://res.cloudinary.com/demo/image/upload/v1/x.jpg',
+		'https://media.celebra-me.com.evil.example/x.jpg',
+		'http://media.celebra-me.com/x.jpg',
 		'file:///etc/passwd',
 		'javascript:alert(1)',
 	])('rejects %s', (source) => {

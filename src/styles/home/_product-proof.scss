@@ -1,4 +1,4 @@
-/* stylelint-disable color-no-hex */
+/* stylelint-disable color-no-hex -- one-off landing shades not yet promoted to $sys-color-landing-* tokens */
 @use '../global/mixins' as mixins;
 
 // Host-side proof: what the guest panel shows, on a dark espresso surface.

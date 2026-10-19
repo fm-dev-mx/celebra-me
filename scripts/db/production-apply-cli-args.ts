@@ -14,8 +14,6 @@ const KNOWN_FLAGS = new Set([
 	'--all-ready',
 	'--acknowledge-discard-unpublished-draft',
 	'--patch',
-	'--image-namespace',
-	'--image-namespace-rollback',
 	'--expected',
 	'--apply',
 	'--json',
@@ -43,8 +41,6 @@ export interface ProductionApplyCliArgs {
 	allReady: boolean;
 	acknowledgeDiscardUnpublishedDraft: boolean;
 	patchFile?: string;
-	imageManifestPath?: string;
-	imageRollback?: boolean;
 	ownerUserId?: string;
 	inspectAll: boolean;
 	expectedPin: string[] | null;
@@ -64,8 +60,6 @@ Absence of scope never means apply everything.
   pnpm prod:apply -- --slugs <slug,slug>
   pnpm prod:apply -- --all-ready
   pnpm prod:apply -- --patch <file.sql>
-  pnpm prod:apply -- --image-namespace <manifest.json>
-  pnpm prod:apply -- --image-namespace-rollback <manifest.json>
   pnpm prod:apply -- --schema --slugs a,b --apply
   pnpm prod:apply -- --schema --expected <versions> --apply
   pnpm prod:apply -- --all-ready --apply
@@ -78,8 +72,6 @@ Options:
   --acknowledge-discard-unpublished-draft
                         Explicitly review selected invitation draft discards
   --patch <file>        Explicit specialized DML (never implied by --all-ready)
-  --image-namespace <file>          Reviewed invitation image migration manifest
-  --image-namespace-rollback <file> Reviewed image migration rollback
   --expected <versions> Optional exact pending-set pin (requires --schema)
   --apply               Mutate Production after one owner TTY confirmation
   --owner-user-id <id>  Only when the patch SQL reads app.owner_user_id
@@ -147,15 +139,8 @@ function isInspectAllScope(input: {
 	slugs: readonly string[];
 	allReady: boolean;
 	patchFile?: string;
-	imageManifestPath?: string;
 }): boolean {
-	return (
-		!input.schema &&
-		input.slugs.length === 0 &&
-		!input.allReady &&
-		!input.patchFile &&
-		!input.imageManifestPath
-	);
+	return !input.schema && input.slugs.length === 0 && !input.allReady && !input.patchFile;
 }
 
 function assertDiscardAcknowledgementScope(input: {
@@ -164,7 +149,6 @@ function assertDiscardAcknowledgementScope(input: {
 	schema: boolean;
 	slugs: readonly string[];
 	patchFile?: string;
-	imageManifestPath?: string;
 	expectedPin: string[] | null;
 }): void {
 	if (!input.acknowledgeDiscardUnpublishedDraft) return;
@@ -173,11 +157,10 @@ function assertDiscardAcknowledgementScope(input: {
 		!input.allReady &&
 		!input.schema &&
 		!input.patchFile &&
-		!input.imageManifestPath &&
 		!input.expectedPin;
 	if (!explicitInvitationOnlyScope) {
 		throw new Error(
-			'--acknowledge-discard-unpublished-draft requires an explicit --slug or --slugs scope only; it cannot be combined with --all-ready, --schema, --patch, --expected, or image namespace operations.',
+			'--acknowledge-discard-unpublished-draft requires an explicit --slug or --slugs scope only; it cannot be combined with --all-ready, --schema, --patch, or --expected.',
 		);
 	}
 }
@@ -188,7 +171,6 @@ function assertCliCombinations(input: {
 	schema: boolean;
 	slugs: readonly string[];
 	patchFile?: string;
-	imageManifestPath?: string;
 	apply: boolean;
 	inspectAll: boolean;
 	expectedPin: string[] | null;
@@ -199,16 +181,6 @@ function assertCliCombinations(input: {
 		);
 	}
 	assertDiscardAcknowledgementScope(input);
-	if (
-		input.imageManifestPath &&
-		(input.schema ||
-			input.allReady ||
-			input.slugs.length > 0 ||
-			input.patchFile ||
-			input.expectedPin)
-	) {
-		throw new Error('Image namespace migration must be the only Production apply scope.');
-	}
 	if (input.expectedPin && !input.schema && !input.allReady) {
 		throw new Error('--expected requires --schema or --all-ready.');
 	}
@@ -230,7 +202,6 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 			slugs: [],
 			allReady: false,
 			acknowledgeDiscardUnpublishedDraft: false,
-			imageRollback: false,
 			inspectAll: true,
 			expectedPin: null,
 		};
@@ -245,16 +216,9 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 	const apply = args.includes('--apply');
 	const json = args.includes('--json');
 	const patchFile = flagValue(args, '--patch');
-	const imageManifestPath =
-		flagValue(args, '--image-namespace') ?? flagValue(args, '--image-namespace-rollback');
-	const imageRollback = args.includes('--image-namespace-rollback');
-	if (args.includes('--image-namespace') && imageRollback)
-		throw new Error('Choose migration or rollback, not both.');
-	if ((args.includes('--image-namespace') || imageRollback) && !imageManifestPath)
-		throw new Error('Image namespace scope requires a manifest path.');
 	const ownerUserId = flagValue(args, '--owner-user-id');
 	const slugs = parseSlugArgs(args);
-	const inspectAll = isInspectAllScope({ schema, slugs, allReady, patchFile, imageManifestPath });
+	const inspectAll = isInspectAllScope({ schema, slugs, allReady, patchFile });
 	const expectedPin = parseExpectedConstraint(args).expectedPin;
 	assertCliCombinations({
 		allReady,
@@ -262,7 +226,6 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 		schema,
 		slugs,
 		patchFile,
-		imageManifestPath,
 		apply,
 		inspectAll,
 		expectedPin,
@@ -277,8 +240,6 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 		allReady,
 		acknowledgeDiscardUnpublishedDraft,
 		patchFile,
-		imageManifestPath,
-		imageRollback,
 		ownerUserId,
 		inspectAll,
 		expectedPin,
