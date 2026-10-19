@@ -10,7 +10,6 @@ import {
 	isOriginRevalidatePublicDocument,
 	isPrivateNoStoreCacheContract,
 	selectHeroResource,
-	vercelImageSourceUrl,
 } from '@/lib/invitation/delivery-contract';
 import {
 	assertDeliveryBudgets,
@@ -52,26 +51,16 @@ describe('invitation document cache contracts', () => {
 });
 
 describe('invitation HTML delivery inventory', () => {
-	it('flags mutable Storage media routed through /_vercel/image', () => {
-		const encoded = encodeURIComponent(STORAGE_HERO);
-		const html = `<img src="/_vercel/image?url=${encoded}&amp;w=960&amp;q=84" alt="" fetchpriority="high">`;
-		const inventory = inventoryInvitationHtml(html);
-		expect(inventory.mutableStorageThroughVercelImage).toEqual([STORAGE_HERO]);
-		expect(inventory.highPriorityImageCount).toBe(1);
-		expect(vercelImageSourceUrl(inventory.urls[0])).toBe(STORAGE_HERO);
-	});
-
-	it('allows content-addressed R2 media through /_vercel/image and raw Storage after the mutable-media bypass', () => {
-		const encoded = encodeURIComponent(R2_HERO);
+	it('counts raw Storage, R2 and hashed assets', () => {
 		const html = `
-			<img src="/_vercel/image?url=${encoded}&w=1080&q=84" alt="hero" fetchpriority="high">
+			<img src="${R2_HERO}" alt="hero" fetchpriority="high">
 			<img src="${STORAGE_HERO}" alt="legacy" width="1080" height="1920">
 			<link rel="stylesheet" href="/_astro/invitation.C0de.css">
 			<img src="${STORAGE_HERO}" alt="duplicate-check" loading="lazy">
 		`;
 		const inventory = inventoryInvitationHtml(html);
-		expect(inventory.mutableStorageThroughVercelImage).toEqual([]);
 		expect(classifyDeliveryUrl(R2_HERO)).toBe('r2-media');
+		expect(inventory.r2MediaCount).toBe(1);
 		expect(inventory.supabaseStorageCount).toBe(2);
 		expect(inventory.astroHashedCount).toBe(1);
 		expect(inventory.lazyImageCount).toBe(1);
@@ -97,7 +86,7 @@ describe('invitation HTML delivery inventory', () => {
 		expect(classifyDeliveryUrl('/_astro/hero.DEXMG-Os.png')).toBe('astro-hashed');
 		expect(
 			inventoryInvitationHtml('<img src="/_astro/hero.DEXMG-Os.png" alt="">')
-				.vercelImageCount,
+				.supabaseStorageCount,
 		).toBe(0);
 	});
 });
@@ -142,7 +131,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: 80_000,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
-					vercelCache: 'MISS',
+					sharedCache: 'MISS',
 				},
 			]),
 		).not.toThrow();
@@ -157,7 +146,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: 80_000,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
-					vercelCache: 'MISS',
+					sharedCache: 'MISS',
 				},
 			]),
 		).not.toThrow();
@@ -168,7 +157,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: 80_000,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
-					vercelCache: 'HIT',
+					sharedCache: 'HIT',
 				},
 			]),
 		).toThrow(/shared-cache HIT/);
@@ -182,7 +171,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: 95_000,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
-					vercelCache: 'MISS',
+					sharedCache: 'MISS',
 				},
 			]),
 		).toThrow(/html 95000 B exceeds budget/);
@@ -197,7 +186,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: ceiling,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
-					vercelCache: 'MISS',
+					sharedCache: 'MISS',
 				},
 			]),
 		).not.toThrow();
@@ -208,7 +197,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: ceiling + 1,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
-					vercelCache: 'MISS',
+					sharedCache: 'MISS',
 				},
 			]),
 		).toThrow(/exceeds budget/);
@@ -222,7 +211,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: 80_000,
 					cacheControl: 'no-store, private',
 					personalized: true,
-					vercelCache: 'MISS',
+					sharedCache: 'MISS',
 				},
 			]),
 		).not.toThrow();
@@ -236,7 +225,7 @@ describe('invitation delivery HTML budgets', () => {
 					htmlBytes: 80_000,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: true,
-					vercelCache: 'MISS',
+					sharedCache: 'MISS',
 				},
 			]),
 		).toThrow(/private no-store/);

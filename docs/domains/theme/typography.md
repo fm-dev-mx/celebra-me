@@ -75,7 +75,7 @@ to the fallback families.
 ## Token Sources
 
 - System family stacks: `src/styles/tokens/system/_type.scss`
-- Authoring aliases: `src/styles/tokens/_typography.scss`
+- Authoring aliases (sizes, weights, tracking): `src/styles/tokens/_typography.scss`
 - Semantic/runtime type tokens: `src/styles/tokens/semantic/_type.scss`
 - Runtime CSS variables consumed by components: `src/styles/global.scss`
 
@@ -88,8 +88,8 @@ Current runtime typography variables include:
 - `--font-display-elegant`
 - `--font-display-hacienda`
 - `--font-calligraphy`
-- `--font-body`
-- `--font-body-narrative`
+- `--font-body` (the UI face, Montserrat)
+- `--font-body-narrative` (invitation prose, EB Garamond)
 - `--font-body-hacienda`
 - `--font-ui`
 - `--font-label`

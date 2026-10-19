@@ -60,7 +60,7 @@ describe('Cloudflare Preview smoke', () => {
 			`http://${stableHost}`,
 			`https://${stableHost}/login`,
 			`https://${stableHost}?x=1`,
-			'https://celebra-me.vercel.app',
+			'https://celebra-me.example.com',
 			'https://celebra-me-preview.other-account.workers.dev',
 			'https://evil-celebra-me-preview.celebra-me-com.workers.dev.example',
 			'not a url',

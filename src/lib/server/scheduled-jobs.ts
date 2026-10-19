@@ -1,7 +1,7 @@
 /**
  * Scheduled jobs for the Workers runtime. Cloudflare delivers a cron trigger to the
  * Worker's `scheduled` handler with the cron expression that fired; this module maps
- * each expression to the job the `/api/cron/*` routes run for Vercel's scheduler.
+ * each expression to its job.
  * The expressions are the ones declared under `triggers.crons` in `wrangler.jsonc`.
  * Jobs listed in `PRODUCTION_ONLY_JOBS` are declared only on the Production Worker and
  * skip on any other deploy identity.
@@ -29,7 +29,7 @@ export const SCHEDULED_JOB_CRONS: Readonly<Record<ScheduledJobName, string>> = {
 	platform_usage: '*/15 * * * *',
 };
 
-/** Jobs scheduled only on the Production Worker (no Vercel or Preview counterpart). */
+/** Jobs scheduled only on the Production Worker (no Preview counterpart). */
 export const PRODUCTION_ONLY_JOBS: readonly ScheduledJobName[] = ['platform_usage'];
 
 export interface ScheduledJobOutcome {

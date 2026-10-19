@@ -238,13 +238,14 @@ Stop if a change only reshuffles CSS between files without changing ownership.
 ## Token Levels
 
 1. **Foundation tokens** live in `src/styles/tokens/system/**`. They are SCSS variables only and
-   contain raw values such as palette colors, spacing, radius, typography families, motion values,
-   and shadows. They do not express product intent.
+   contain raw values such as palette colors, spacing, typography families, motion values, and
+   shadows. They do not express product intent. Radius has no foundation scale yet; components set
+   it locally.
 
 2. **Semantic tokens** live in `src/styles/tokens/semantic/**` and are published through
    `src/styles/global.scss`. They are `:root` CSS custom properties for reusable system intent, such
    as `--color-text-primary`, `--color-surface-elevated`, `--color-action-accent`,
-   `--color-border-subtle`, `--color-state-danger`, `--font-display`, `--shadow-soft`,
+   `--color-border-subtle`, `--color-state-danger`, `--font-display`, `--shadow-subtle`,
    `--duration-fast`, and `--ease-premium`.
 
 3. **Component tokens** live with the component, layout, section, or surface that owns them. They

@@ -10,6 +10,29 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.30.0-beta.1] - 2026-10-18
+
+Platform usage console for the super-admin: the Production Worker measures Cloudflare and Supabase
+usage every 15 minutes and the console at `/dashboard/admin/plataforma` reads those measurements
+instead of calling the provider APIs on each visit. It carries the expand migrations
+`20261018120000` and `20261018180000` in code only; Production applies them with
+`pnpm prod:apply -- --schema` before the Worker deploy that turns the `*/15` cron on.
+
+### Added
+
+- Platform usage collector: the Production-only `*/15 * * * *` Worker cron stores one snapshot per
+  dataset (Workers, Durable Objects, R2, zone traffic, Supabase disk and Supabase database size) in
+  `platform_usage_snapshots` (migration `20261018120000`) and logs each run with its datasets and
+  any missing token permissions.
+- `public.platform_database_size()` (migration `20261018180000`): a `security definer` function with
+  an empty `search_path` that returns `pg_database_size(current_database())`, executable by
+  `service_role` only.
+- Super-admin console `/dashboard/admin/plataforma`: shared Cloudflare quotas, the environment's R2
+  bucket and the Supabase database meter («Base de datos», 500 MB Free plan cap, warning at 70 %,
+  critical at 90 %), with the disk as a secondary figure without alerts. It reads the newest stored
+  snapshot per dataset, never the provider APIs, and marks the page «Datos desactualizados» when the
+  last measurement is older than 45 minutes.
+
 ## [0.29.0-beta.1] - 2026-10-18
 
 First release checkpoint served by the Production Worker after the cutover: guest memories get the

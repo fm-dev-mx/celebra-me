@@ -108,6 +108,12 @@ mutation authorization.
    requests (`from <owner>/develop`) drop out.
 
    Merge rules:
+   - A branch name is used once. After its pull request or local merge, follow-up work starts a new
+     branch from `develop` with its own name (`fix/platform-snapshot-reads`, not another push to
+     `feat/platform-dashboard-ui`), even when GitHub already deleted the old remote branch.
+   - A branch starts from `develop`, never from another task branch. When a task needs unmerged
+     work, that work lands first; a pull request whose diff repeats another open pull request's
+     commits is not opened.
    - Merge task branches only into `develop`. Never merge one task branch into another: when a task
      needs another task's work, integrate that task first and bring it in with `pnpm lane:sync`.
    - A sync merge (`origin/develop` into a task branch) that resolved conflicts replaces Git's
@@ -175,6 +181,14 @@ Rules:
   to make a pull request look current.
 - Dependabot commits land through their own pull request or task branch, never inside an unrelated
   task branch (see the merge rules above).
+- Only the four lanes and `.claude/worktrees/*` exist. A session that needs another checkout uses an
+  idle lane; a new directory under `<worktrees-root>` (for example `plataforma-ui`) needs the
+  owner's approval and a lane card.
+- The session that merges a task releases its worktree in the same turn:
+  `git switch --detach develop` in a lane, or the desktop app's clean-up for `.claude/worktrees/*`.
+  Then it deletes the local branch with `git branch -d`.
+- Integration runs `git pull --ff-only origin develop` after each merge it observes, so
+  `git branch -d` can verify merged branches.
 
 ## Commit Contract
 
@@ -573,6 +587,9 @@ Rules:
   merge commit. If it is refused, `develop` and `main` diverged: merge `origin/main` into `develop`
   (no rebase, no reset), resolve deliberately, validate, and push (`branch-lane` mode
   `sync-main-into-develop`).
+- A release pull request into `main` exists only for a checkpoint: `develop` carries a new
+  `package.json` version and its CHANGELOG entry. Without one, the pull request is not opened. A
+  title without a version (`release: promote develop <sha> to main`) is refused in review.
 - Release PR titles name the version and the primary shipped outcome. Bodies list included changes,
   material risks, visual/schema/content impact and separately authorized operations.
 - Never rewrite or force-push `main` or `develop`; never use a bypass.

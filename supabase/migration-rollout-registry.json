@@ -248,7 +248,7 @@
         "20261018180000": {
             "phase": "expand",
             "provides": ["platform_database_size"],
-            "notes": "Adds platform_database_size() (security invoker, empty search_path, returns pg_database_size of the current database and reads no table), executable by service_role only. Additive: the deployed platform console calls it and, until it exists, shows the database size as unreadable while disk stays informative. Revokes only initialize privileges of the new function."
+            "notes": "Adds public.platform_database_size() (security definer, empty search_path, returns pg_database_size of the current database; reads no table), executable by service_role only. Additive: the Production collector cron stores its result as a supabase_database snapshot once it exists (until then that dataset logs a failed RPC). Revokes only initialize privileges of the new function."
         }
     },
     "appCapabilities": {

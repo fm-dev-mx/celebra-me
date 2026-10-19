@@ -97,6 +97,10 @@ limits.
   interface/type visibility changes, tests, comment-only fixes, and line-ending normalization as
   separate intents unless the diff proves they are inseparable. In particular, do not bundle
   `data-*` screenshot/audit markers with copy refreshes, refactors, or test rewrites by default.
+- Evidence or checklist rows added during one session are one commit before the first push, not one
+  commit per row (13 commits in #285 became one table change).
+- A `Large-Change: retire` commit only deletes. Moving a step to another workflow or rewriting a
+  script for the remaining platform is its own commit.
 
 ## Call Out What Should Not Ship Together
 

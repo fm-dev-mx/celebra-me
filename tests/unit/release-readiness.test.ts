@@ -1,6 +1,5 @@
 import {
 	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
-	PRODUCTION_DEPLOYMENT_SMOKE,
 	STATIC_CAPABILITY_CHECK,
 	isRemoteEvidenceUnavailable,
 	loadLatestProductionDeployment,
@@ -76,7 +75,7 @@ describe('release check evidence', () => {
 	});
 	it('requires trusted Production smoke for the deployed SHA', () => {
 		const checks = [
-			{ name: PRODUCTION_DEPLOYMENT_SMOKE, sha, state: 'success', trusted: true },
+			{ name: CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE, sha, state: 'success', trusted: true },
 		];
 		expect(() => requireProductionDeploymentSmoke(sha, checks)).not.toThrow();
 		checks[0].sha = 'b'.repeat(40);
@@ -86,13 +85,10 @@ describe('release check evidence', () => {
 		expect(() => requireProductionDeploymentSmoke(sha, checks)).toThrow();
 	});
 
-	it('accepts the Cloudflare Production smoke as deployment evidence', () => {
+	it('names the Cloudflare Production smoke when it is missing', () => {
 		const checks = [
-			{ name: PRODUCTION_DEPLOYMENT_SMOKE, sha, state: 'failure', trusted: true },
-			{ name: CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE, sha, state: 'success', trusted: true },
+			{ name: CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE, sha, state: 'success', trusted: false },
 		];
-		expect(() => requireProductionDeploymentSmoke(sha, checks)).not.toThrow();
-		checks[1].trusted = false;
 		expect(() => requireProductionDeploymentSmoke(sha, checks)).toThrow('Cloudflare');
 	});
 
@@ -153,7 +149,7 @@ describe('release check evidence', () => {
 		const statusesPath = `commits/${sha}/statuses?per_page=100`;
 		const smokeRun = (id: number) => ({
 			id,
-			name: 'Vercel post-deploy smoke',
+			name: 'Cloudflare post-deploy smoke',
 			head_sha: sha,
 			status: 'completed',
 			conclusion: 'success',
@@ -260,11 +256,11 @@ describe('release check evidence', () => {
 		});
 
 		it('reads commit statuses past the first page', () => {
-			const smoke = PRODUCTION_DEPLOYMENT_SMOKE;
+			const smoke = CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE;
 			const runner = ghRunner({
 				[checkRunsPath]: { total_count: 0, check_runs: [] },
 				[statusesPath]: Array.from({ length: 100 }, () => ({
-					context: 'Vercel',
+					context: 'Cloudflare - other status',
 					state: 'success',
 				})),
 				[`${statusesPath}&page=2`]: [

@@ -91,11 +91,14 @@ function plural(count: number, one: string, many: string): string {
 export const platformCopy = {
 	title: 'Consumo de la plataforma',
 	intro: 'Superar un límite solo genera un aviso en esta página: las subidas y las ventas no se bloquean.',
-	loading: 'Consultando a los proveedores…',
+	loading: 'Leyendo la última medición…',
 	loadError:
 		'No se pudo consultar el consumo de la plataforma. Recarga la página en unos minutos.',
 	updated: (age: string, time: string) => `Actualizado ${age} · ${time} (hora de Mazatlán)`,
-	notUpdated: 'Sin lecturas recientes de los proveedores.',
+	notUpdated:
+		'Aún no hay mediciones guardadas. El recolector de Producción mide cada 15 minutos.',
+	staleHint:
+		'Desactualizado: el recolector lleva más de 45 minutos sin guardar una medición. Revise el cron del Worker.',
 	noData: 'Sin datos',
 	pendingConfig: 'Pendiente: completa la configuración indicada arriba.',
 	noQuota: 'Sin cuota verificada',
@@ -137,6 +140,7 @@ export const platformSummaryCopy = {
 	missing: (count: number) => plural(count, 'dato por configurar', 'datos por configurar'),
 	unavailable: (count: number) =>
 		plural(count, 'proveedor sin respuesta', 'proveedores sin respuesta'),
+	stale: 'Datos desactualizados (más de 45 min)',
 } as const;
 
 /** Meter badge; normal meters carry no badge. */
@@ -160,7 +164,7 @@ export const platformProviderPlan: Record<PlatformProviderId, string> = {
 export const platformProviderNote: Record<PlatformProviderId, string> = {
 	cloudflare:
 		'Las cuotas incluidas se renuevan cada mes; si se superan, el excedente se cobra por uso.',
-	supabase: `El límite del plan es el tamaño de la base de datos: ${formatPlatformBytes(SUPABASE_FREE_TIER.databaseBytes)} por proyecto; al superarlo, la base pasa a solo lectura. El disco es solo un dato informativo.`,
+	supabase: `El límite del plan es el tamaño de la base de datos: ${formatPlatformBytes(SUPABASE_FREE_TIER.databaseBytes)} por proyecto; al superarlo, la base pasa a solo lectura. El disco es un dato secundario.`,
 };
 
 export const platformProviderLink: Record<PlatformProviderId, string> = {
@@ -173,7 +177,7 @@ export const platformGroupCopy = {
 	sharedHint: 'Cuotas compartidas por Producción y Preview.',
 	environmentsTitle: 'Por entorno',
 	cloudflareEnvironmentHint: 'El bucket R2 que declara cada entorno.',
-	supabaseEnvironmentHint: 'Cada entorno tiene su propio proyecto y su propia base de datos.',
+	supabaseEnvironmentHint: 'El proyecto de este entorno: tamaño de la base y disco.',
 } as const;
 
 export const platformEnvironmentLabel: Record<PlatformEnvironmentId, string> = {
@@ -281,20 +285,26 @@ const METRIC_LABELS: Record<string, string | ((resource: string) => string)> = {
 	cfR2ClassA: 'Operaciones R2 de escritura (Clase A)',
 	cfR2ClassB: 'Operaciones R2 de lectura (Clase B)',
 	cfWorkersRequests: 'Peticiones a Workers',
+	cfWorkersCpu: 'Tiempo de CPU de Workers',
 	cfDurableObjectsRequests: 'Peticiones a Durable Objects',
-	sbDatabase: 'Tamaño de la base de datos',
+	cfWorkersErrors: 'Errores de Workers',
+	cfDurableObjectsObjects: 'Objetos de Durable Objects',
+	cfZone404: 'Respuestas 404 de celebra-me.com',
+	cfZone403: 'Respuestas 403 de celebra-me.com',
+	cfZoneThreats: 'Amenazas detectadas en celebra-me.com',
+	sbDatabase: 'Base de datos',
 	sbDisk: 'Disco (incluye WAL)',
 };
 
 /** Why a figure has no quota, shown instead of «Sin cuota verificada». */
 const METRIC_NOTES: Record<string, string> = {
-	sbDisk: 'Solo informativo, sin alertas: incluye WAL y archivos del sistema, así que no es el tamaño de la base que limita el plan.',
-};
-
-/** Why a figure is blank, shown instead of «Sin datos». */
-const METRIC_EMPTY: Record<string, string> = {
-	sbDatabase:
-		'No se puede leer desde este despliegue: consúltalo en Supabase → Usage («Database Size»).',
+	sbDisk: 'Dato secundario, sin alertas: incluye WAL y archivos del sistema, así que no es el tamaño de la base que limita el plan.',
+	cfWorkersErrors: 'Indicador de salud, sin cuota: lo normal es 0.',
+	cfDurableObjectsObjects:
+		'Indicador de salud, sin cuota: debe bajar cuando los objetos expiran.',
+	cfZone404: 'Indicador de salud, sin cuota: un pico suele ser un escaneo.',
+	cfZone403: 'Indicador de salud, sin cuota.',
+	cfZoneThreats: 'Indicador de salud, sin cuota.',
 };
 
 export function platformMetricLabel(metric: PlatformMetric): string {
@@ -306,21 +316,16 @@ export function platformMetricNote(metric: PlatformMetric): string | null {
 	return METRIC_NOTES[metric.id] ?? null;
 }
 
-export function platformMetricEmpty(metric: PlatformMetric): string | null {
-	return METRIC_EMPTY[metric.id] ?? null;
-}
-
 export function platformProjectionLabel(projection: PlatformProjection): string | null {
 	if (projection.kind === 'exhaustsAt') return platformCopy.projectionExhausts(projection.at);
 	if (projection.kind === 'safe') return platformCopy.projectionSafe;
 	return null;
 }
 
+const BYTE_METRICS = new Set(['cfR2StorageBucket', 'cfR2StorageAccount', 'sbDatabase', 'sbDisk']);
+
 export function platformMetricFormat(metric: PlatformMetric): (value: number) => string {
-	return metric.id === 'cfR2StorageBucket' ||
-		metric.id === 'cfR2StorageAccount' ||
-		metric.id === 'sbDatabase' ||
-		metric.id === 'sbDisk'
-		? formatPlatformBytes
-		: formatPlatformCount;
+	if (BYTE_METRICS.has(metric.id)) return formatPlatformBytes;
+	if (metric.id === 'cfWorkersCpu') return (value) => `${formatPlatformCount(value)} ms`;
+	return formatPlatformCount;
 }

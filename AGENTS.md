@@ -49,8 +49,10 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
 - **Database Safety:** Operations on persistent local (`celebra-me-rsvp`), Preview, and Production
   DBs require guarded workflows (`.agent/rules/database.md`). Resets allowed only on
   `disposable-test`.
-- **UI / Code Language:** Visible UI copy in Spanish ("usted" register); code, identifiers, and
-  technical comments in English.
+- **UI / Code Language:** Visible UI copy in Spanish ("usted" register); code, identifiers,
+  technical comments, commit messages, pull request titles and pull request descriptions in English.
+  GitHub copies the pull request title into the merge commit, so a Spanish title is a Spanish
+  commit.
 - **Technical Commit Messages:** Never mention internal process/goal identifiers (e.g., `Goal 1`,
   `Goal 2`, `Phase X`) in commit headers or bodies. Focus strictly on code behavioral changes.
 - **Relative Paths Only:** Never hardcode absolute machine paths (e.g., drive letters `D:\`, user

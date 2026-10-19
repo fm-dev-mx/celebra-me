@@ -1,6 +1,6 @@
 /**
  * Local-only critical backup health for operator status (pnpm dbs, pnpm prod:apply header).
- * Does not contact Supabase, Vercel, or R2.
+ * Does not contact Supabase, Cloudflare, or R2.
  *
  * The backup store is `.backups/prod` under the current checkout, so every worktree reads its own
  * store: the scheduled daily backup only refreshes the checkout it runs in, and critical sets taken

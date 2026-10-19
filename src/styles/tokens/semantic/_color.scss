@@ -109,7 +109,6 @@ $semantic-color: (
 	--color-state-success-bg: #{sys.$sys-color-forest-50};
 	--color-state-success-border: #{sys.$sys-color-forest-200};
 	--color-state-success-text: #{sys.$sys-color-forest-800};
-	--color-state-warning: #{sys.$sys-color-amber-600};
 	--color-state-warning-rgb: #{tools.rgb-channels(sys.$sys-color-amber-600)};
 	--color-state-warning-bg: #{sys.$sys-color-amber-50};
 	--color-state-warning-border: #{sys.$sys-color-amber-200};

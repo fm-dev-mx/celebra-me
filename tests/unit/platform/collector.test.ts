@@ -154,6 +154,10 @@ interface FetchOverrides {
 	rest?: (url: string) => Response | undefined;
 }
 
+function isSupabaseManagementUrl(url: string): boolean {
+	return new URL(url).hostname === 'api.supabase.com';
+}
+
 function createFetch(overrides: FetchOverrides = {}) {
 	return jest.fn(async (input: string | URL | Request, init?: RequestInit) => {
 		const url = String(input);
@@ -227,13 +231,18 @@ afterAll(() => {
 	}
 });
 
+const DATABASE_SIZE_RPC = 'rpc/platform_database_size';
+const DATABASE_BYTES = 69_000_000;
+
 beforeEach(() => {
 	jest.clearAllMocks();
 	process.env.MEMORIES_CLOUDFLARE_ACCOUNT_ID = ACCOUNT_ID;
 	process.env.MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN = CF_TOKEN;
 	process.env.SUPABASE_MANAGEMENT_TOKEN = SB_TOKEN;
 	process.env.SUPABASE_PROJECT_REF_PRODUCTION = PROJECT_REF;
-	restRequest.mockResolvedValue([]);
+	restRequest.mockImplementation(async (options: { pathWithQuery: string }) =>
+		options.pathWithQuery === DATABASE_SIZE_RPC ? DATABASE_BYTES : [],
+	);
 });
 
 describe('collectPlatformUsage', () => {
@@ -248,6 +257,7 @@ describe('collectPlatformUsage', () => {
 			'cloudflare_r2',
 			'cloudflare_zone',
 			'supabase_disk',
+			'supabase_database',
 		]);
 		expect(rows.every((entry) => entry.ok && entry.collected_at === NOW.toISOString())).toBe(
 			true,
@@ -321,6 +331,7 @@ describe('collectPlatformUsage', () => {
 		expect(paths[1]?.path).toHaveLength(200);
 
 		expect(row(rows, 'supabase_disk').payload).toEqual({ usedBytes: 123_456_789 });
+		expect(row(rows, 'supabase_database').payload).toEqual({ usedBytes: DATABASE_BYTES });
 
 		// 4 GraphQL datasets + namespace list + 2 object listings + Supabase disk.
 		expect(fetchImpl).toHaveBeenCalledTimes(8);
@@ -337,7 +348,7 @@ describe('collectPlatformUsage', () => {
 	it('never stores a token or a provider body', async () => {
 		const fetchImpl = createFetch({
 			rest: (url) =>
-				url.includes('supabase.com')
+				isSupabaseManagementUrl(url)
 					? json({ message: `secret ${SB_TOKEN}` }, 500)
 					: undefined,
 		});
@@ -359,7 +370,7 @@ describe('collectPlatformUsage', () => {
 			rest: (url) => {
 				if (url.includes('/durable_objects/namespaces?'))
 					return json({ success: false }, 403);
-				if (url.includes('supabase.com')) return json({}, 403);
+				if (isSupabaseManagementUrl(url)) return json({}, 403);
 				return undefined;
 			},
 			graphql: (query) =>
@@ -412,7 +423,26 @@ describe('collectPlatformUsage', () => {
 			ok: false,
 			payload: { failure: 'network' },
 		});
-		expect(rows.filter((entry) => entry.ok)).toHaveLength(4);
+		expect(rows.filter((entry) => entry.ok)).toHaveLength(5);
+	});
+
+	it('records the database size RPC failure without needing the Management API token', async () => {
+		delete process.env.SUPABASE_MANAGEMENT_TOKEN;
+		restRequest.mockImplementation(async (options: { pathWithQuery: string }) => {
+			if (options.pathWithQuery === DATABASE_SIZE_RPC) throw new Error('function not found');
+			return [];
+		});
+
+		const rows = await collectPlatformUsage(NOW, createFetch());
+
+		expect(row(rows, 'supabase_database')).toMatchObject({
+			ok: false,
+			payload: { failure: 'network', stage: 'rpc' },
+		});
+		expect(row(rows, 'supabase_disk')).toMatchObject({
+			ok: false,
+			payload: { failure: 'unconfigured', missing: ['SUPABASE_MANAGEMENT_TOKEN'] },
+		});
 	});
 
 	it('rejects malformed rows instead of storing half a figure', async () => {
@@ -540,7 +570,7 @@ describe('snapshot store', () => {
 describe('runPlatformUsageCollector', () => {
 	it('stores the run, then purges rows older than 90 days', async () => {
 		const fetchImpl = createFetch({
-			rest: (url) => (url.includes('supabase.com') ? json({}, 403) : undefined),
+			rest: (url) => (isSupabaseManagementUrl(url) ? json({}, 403) : undefined),
 		});
 
 		const result = await runPlatformUsageCollector(NOW, fetchImpl);
@@ -548,10 +578,18 @@ describe('runPlatformUsageCollector', () => {
 		expect(PLATFORM_SNAPSHOT_RETENTION_DAYS).toBe(90);
 		expect(restRequest).toHaveBeenNthCalledWith(
 			1,
-			expect.objectContaining({ method: 'POST', pathWithQuery: 'platform_usage_snapshots' }),
+			expect.objectContaining({
+				method: 'POST',
+				pathWithQuery: DATABASE_SIZE_RPC,
+				useServiceRole: true,
+			}),
 		);
 		expect(restRequest).toHaveBeenNthCalledWith(
 			2,
+			expect.objectContaining({ method: 'POST', pathWithQuery: 'platform_usage_snapshots' }),
+		);
+		expect(restRequest).toHaveBeenNthCalledWith(
+			3,
 			expect.objectContaining({
 				method: 'DELETE',
 				pathWithQuery:
@@ -565,6 +603,7 @@ describe('runPlatformUsageCollector', () => {
 				cloudflare_r2: true,
 				cloudflare_zone: true,
 				supabase_disk: false,
+				supabase_database: true,
 			},
 			missingPermissions: ['Disk Config Read'],
 			purged: true,
@@ -572,7 +611,13 @@ describe('runPlatformUsageCollector', () => {
 	});
 
 	it('keeps the stored run when the purge fails', async () => {
-		restRequest.mockResolvedValueOnce([]).mockRejectedValueOnce(new Error('timeout'));
+		restRequest.mockImplementation(
+			async (options: { pathWithQuery: string; method?: string }) => {
+				if (options.pathWithQuery === DATABASE_SIZE_RPC) return DATABASE_BYTES;
+				if (options.method === 'DELETE') throw new Error('timeout');
+				return [];
+			},
+		);
 
 		const result = await runPlatformUsageCollector(NOW, createFetch());
 
@@ -581,9 +626,12 @@ describe('runPlatformUsageCollector', () => {
 	});
 
 	it('fails when the snapshot table cannot be written and skips the purge', async () => {
-		restRequest.mockRejectedValueOnce(new Error('relation does not exist'));
+		restRequest.mockImplementation(async (options: { pathWithQuery: string }) => {
+			if (options.pathWithQuery === DATABASE_SIZE_RPC) return DATABASE_BYTES;
+			throw new Error('relation does not exist');
+		});
 
 		await expect(runPlatformUsageCollector(NOW, createFetch())).rejects.toThrow();
-		expect(restRequest).toHaveBeenCalledTimes(1);
+		expect(restRequest).toHaveBeenCalledTimes(2);
 	});
 });

@@ -6,7 +6,7 @@ name: Cloudflare Production Upload
 # zone routes by hand, and the declared cron triggers stay off until the cutover enables them
 # (docs/operations/cloudflare-production-cutover.md, section 8.1).
 # Evidence: a GitHub Deployment in the `Cloudflare Production` environment (kept apart from the
-# Vercel `Production` environment that `pnpm ops:release-status` reads) and the commit status
+# `Production` environment that `pnpm ops:release-status` reads) and the commit status
 # `Cloudflare - celebra-me production candidate smoke`, which no release gate accepts: it proves a
 # version, not what the domain serves.
 
@@ -89,7 +89,6 @@ jobs:
 
             - name: Build Cloudflare target
               env:
-                  CELEBRA_BUILD_TARGET: cloudflare
                   CELEBRA_DEPLOY_ENV: production
                   BASE_URL: ${{ env.PRODUCTION_BASE_URL }}
                   PUBLIC_SUPABASE_URL: https://${{ env.PRODUCTION_SUPABASE_REF }}.supabase.co
@@ -120,7 +119,7 @@ jobs:
 
             # `wrangler versions upload` cannot create a Worker. The first run creates it with
             # `wrangler deploy`, which stays unreachable (no routes, no workers.dev host) but also
-            # applies the declared cron triggers: recreating the Worker while Vercel runs its crons
+            # applies the declared cron triggers: recreating the Worker while another host runs its crons
             # needs them deleted right after (one cron runner at a time).
             - name: Create the Worker on the first run
               run: |

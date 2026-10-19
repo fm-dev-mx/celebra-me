@@ -16,7 +16,7 @@ const SUPABASE_STORAGE_URL =
 const R2_MEDIA_URL =
 	'https://media.celebra-me.com/invitations/xv/demo/hero-' + 'c'.repeat(64) + '.webp';
 
-describe('vercel image optimization policy', () => {
+describe('image delivery policy', () => {
 	it('treats in-place Supabase Storage URLs as mutable', () => {
 		expect(isMutableInPlaceMediaUrl(SUPABASE_STORAGE_URL)).toBe(true);
 		expect(
@@ -53,7 +53,7 @@ describe('vercel image optimization policy', () => {
 		expect(isMutableInPlaceMediaUrl('https://images.unsplash.com/photo-1')).toBe(false);
 	});
 
-	it('bypasses /_vercel/image for mutable Storage URLs including ImageMetadata.src', () => {
+	it('treats mutable Storage URLs including ImageMetadata.src', () => {
 		expect(shouldOptimizeThroughImageService(SUPABASE_STORAGE_URL)).toBe(false);
 		expect(
 			shouldOptimizeThroughImageService({

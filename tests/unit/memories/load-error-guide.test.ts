@@ -43,7 +43,7 @@ describe('describeMemoriesConfigGap', () => {
 			expect(guide.title).toMatch(/^Falta/);
 			expect(guide.steps.length).toBeGreaterThanOrEqual(2);
 			expect(text).toMatch(/\.env\.local|\.dev\.vars|127\.0\.0\.1/);
-			expect(text).toMatch(/Vercel|wrangler/);
+			expect(text).toMatch(/Cloudflare|wrangler/);
 			expect(text).not.toMatch(/(?:^|\s)(?:tú|tu)\s/i);
 		},
 	);

@@ -46,7 +46,7 @@ interface DocumentSample {
 	contentLengthHeader: number | null;
 	contentEncoding: string | null;
 	cacheControl: string | null;
-	vercelCache: string | null;
+	sharedCache: string | null;
 }
 
 interface AssetProbe {
@@ -56,7 +56,7 @@ interface AssetProbe {
 	bytes: number | null;
 	cacheControl: string | null;
 	etag: string | null;
-	vercelCache: string | null;
+	sharedCache: string | null;
 	cfCacheStatus: string | null;
 }
 
@@ -71,19 +71,17 @@ interface ScenarioReport {
 		contentEncoding: string | null;
 		contentLengthHeader: number | null;
 		cacheControl: string | null;
-		vercelCacheFirst: string | null;
-		vercelCacheRepeat: string | null;
+		sharedCacheFirst: string | null;
+		sharedCacheRepeat: string | null;
 	};
 	inventory: {
 		uniqueUrlCount: number;
-		vercelImageCount: number;
 		supabaseStorageCount: number;
 		r2MediaCount: number;
 		astroHashedCount: number;
 		eagerImageCount: number;
 		lazyImageCount: number;
 		duplicateUrlCount: number;
-		mutableStorageThroughVercelImageCount: number;
 	};
 	hero: {
 		url: string | null;
@@ -93,7 +91,7 @@ interface ScenarioReport {
 		originUrl: string | null;
 		cacheControl: string | null;
 		repeatCacheControl: string | null;
-		repeatVercelCache: string | null;
+		repeatSharedCache: string | null;
 	};
 	astroAsset: AssetProbe | null;
 }
@@ -142,7 +140,7 @@ async function probeAsset(url: string, kind: string): Promise<AssetProbe> {
 		bytes: buffer.byteLength,
 		cacheControl: response.headers.get('cache-control'),
 		etag: response.headers.get('etag'),
-		vercelCache: response.headers.get('x-vercel-cache'),
+		sharedCache: response.headers.get('cf-cache-status'),
 		cfCacheStatus: response.headers.get('cf-cache-status'),
 	};
 }
@@ -167,7 +165,7 @@ async function fetchDocument(url: string): Promise<{ sample: DocumentSample; htm
 				: null,
 			contentEncoding: response.headers.get('content-encoding'),
 			cacheControl: response.headers.get('cache-control'),
-			vercelCache: response.headers.get('x-vercel-cache'),
+			sharedCache: response.headers.get('cf-cache-status'),
 		},
 	};
 }
@@ -175,14 +173,12 @@ async function fetchDocument(url: string): Promise<{ sample: DocumentSample; htm
 function summarizeInventory(inventory: InvitationHtmlInventory) {
 	return {
 		uniqueUrlCount: inventory.uniqueUrlCount,
-		vercelImageCount: inventory.vercelImageCount,
 		supabaseStorageCount: inventory.supabaseStorageCount,
 		r2MediaCount: inventory.r2MediaCount,
 		astroHashedCount: inventory.astroHashedCount,
 		eagerImageCount: inventory.eagerImageCount,
 		lazyImageCount: inventory.lazyImageCount,
 		duplicateUrlCount: inventory.duplicateUrls.length,
-		mutableStorageThroughVercelImageCount: inventory.mutableStorageThroughVercelImage.length,
 	};
 }
 
@@ -232,7 +228,7 @@ function toHeroReport(
 		originUrl: originProbe?.url ?? null,
 		cacheControl: heroProbe?.cacheControl ?? null,
 		repeatCacheControl: heroRepeat?.cacheControl ?? null,
-		repeatVercelCache: heroRepeat?.vercelCache ?? null,
+		repeatSharedCache: heroRepeat?.sharedCache ?? null,
 	};
 }
 
@@ -279,8 +275,8 @@ function summarizeDocument(
 		contentEncoding: last?.contentEncoding ?? null,
 		contentLengthHeader: last?.contentLengthHeader ?? null,
 		cacheControl: last?.cacheControl ?? null,
-		vercelCacheFirst: documentSamples[0]?.vercelCache ?? null,
-		vercelCacheRepeat: repeat.vercelCache,
+		sharedCacheFirst: documentSamples[0]?.sharedCache ?? null,
+		sharedCacheRepeat: repeat.sharedCache,
 	};
 }
 
@@ -318,10 +314,10 @@ function printScenario(report: ScenarioReport): void {
 		`  html decoded-utf8=${report.document.htmlBytes} B content-length=${report.document.contentLengthHeader ?? 'n/a'} encoding=${report.document.contentEncoding ?? 'identity'} | ttfb ms min/median/max ${report.document.ttfbMs.min}/${report.document.ttfbMs.median}/${report.document.ttfbMs.max}`,
 	);
 	console.log(
-		`  vercel-cache document first/repeat: ${report.document.vercelCacheFirst}/${report.document.vercelCacheRepeat}`,
+		`  shared-cache document first/repeat: ${report.document.sharedCacheFirst}/${report.document.sharedCacheRepeat}`,
 	);
 	console.log(
-		`  urls unique=${report.inventory.uniqueUrlCount} vercel-image=${report.inventory.vercelImageCount} storage=${report.inventory.supabaseStorageCount} r2=${report.inventory.r2MediaCount} astro=${report.inventory.astroHashedCount} lazy-img=${report.inventory.lazyImageCount} eager-img=${report.inventory.eagerImageCount} stale-vercel-storage=${report.inventory.mutableStorageThroughVercelImageCount}`,
+		`  urls unique=${report.inventory.uniqueUrlCount} storage=${report.inventory.supabaseStorageCount} r2=${report.inventory.r2MediaCount} astro=${report.inventory.astroHashedCount} lazy-img=${report.inventory.lazyImageCount} eager-img=${report.inventory.eagerImageCount}`,
 	);
 	console.log(
 		`  hero kind=${report.hero.kind ?? 'n/a'} delivered=${report.hero.deliveredBytes ?? 'n/a'} origin=${report.hero.originBytes ?? 'n/a'} cache=${report.hero.cacheControl ?? 'n/a'}`,
@@ -363,9 +359,8 @@ async function main(): Promise<void> {
 		notes: [
 			'Policy: docs/domains/invitations/performance-metrics.md',
 			'Personalized scenario uses a synthetic invite id; no guest PII is requested or stored.',
-			'LCP is not measured here; use Vercel Speed Insights or a browser trace for paint timing.',
+			'LCP is not measured here; use a browser trace for paint timing.',
 			'htmlBytes is decoded UTF-8 body length after fetch decompression, not Content-Length.',
-			'Production HTML may still wrap legacy Storage URLs in /_vercel/image until the cache-safe image change is deployed.',
 		],
 		scenarios: reports,
 	};
@@ -385,7 +380,7 @@ async function main(): Promise<void> {
 				htmlBytes: report.document.htmlBytes,
 				cacheControl: report.document.cacheControl,
 				personalized: report.personalized,
-				vercelCache: report.document.vercelCacheRepeat,
+				sharedCache: report.document.sharedCacheRepeat,
 			})),
 		);
 		console.log('Budget assertions passed.');

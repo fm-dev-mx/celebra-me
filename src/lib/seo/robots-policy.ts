@@ -8,7 +8,7 @@
  *
  * Link-preview crawlers (WhatsApp, facebookexternalhit, Telegram, X, Slack, Discord,
  * LinkedIn, Apple) are deliberately absent: guests share invitations through them.
- * robots.txt only expresses a preference; enforcement is the Vercel Firewall AI Bots rule.
+ * robots.txt only expresses a preference; enforcement belongs to the edge firewall.
  */
 import { EVENT_TYPES } from '../theme/theme-contract';
 

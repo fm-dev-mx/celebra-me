@@ -3,7 +3,7 @@
  * behind Cloudflare Access, `workers.dev` refuses self-requests, and behind zone routes the
  * request reaches the zone origin instead of the Worker. The Worker entry installs the
  * adapter's `ASSETS` binding before the first request (`src/worker.ts`); every other host
- * (Vercel, the dev server, tests) serves its own origin and keeps `fetch`.
+ * (the dev server, tests) serves its own origin and keeps `fetch`.
  */
 
 interface AssetsBinding {
