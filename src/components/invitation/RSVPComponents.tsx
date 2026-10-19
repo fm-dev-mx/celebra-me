@@ -31,7 +31,7 @@ export type RevealedLocation = LocationSection;
 
 type RsvpShellState = 'form' | 'confirmed' | 'declined';
 
-const RsvpShell = forwardRef<
+export const RsvpShell = forwardRef<
 	HTMLElement,
 	{
 		state: RsvpShellState;
@@ -54,7 +54,7 @@ const RsvpShell = forwardRef<
 });
 RsvpShell.displayName = 'RsvpShell';
 
-function RsvpVisibleHeader({
+export function RsvpVisibleHeader({
 	title,
 	subcopy,
 	eyebrow,
@@ -98,7 +98,7 @@ function RsvpStatusHeader({ title }: { title: string }) {
 }
 RsvpStatusHeader.displayName = 'RsvpStatusHeader';
 
-function SubmitButtonText({
+export function SubmitButtonText({
 	submitStatus,
 	buttonLabel,
 	attendanceStatus,
@@ -342,7 +342,7 @@ export const SubmittedState = forwardRef<
 
 SubmittedState.displayName = 'SubmittedState';
 
-interface RsvpFormViewProps {
+export interface RsvpFormViewProps {
 	title: string;
 	subcopy: string;
 	variant?: RsvpVariant;

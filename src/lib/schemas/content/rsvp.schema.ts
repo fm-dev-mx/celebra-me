@@ -1,3 +1,4 @@
+import { RSVP_FLOWS } from '@/lib/invitation/rsvp-flow';
 import { z } from 'zod';
 import { rsvpResponseMessagesSchema } from '@/lib/schemas/content/shared.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
@@ -32,6 +33,8 @@ export const rsvpSchema = z
 			.string()
 			.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
 		confirmationMode: z.enum(['api', 'whatsapp', 'both']).default('api'),
+		/** `steps` asks one question per step; see RSVP_FLOWS. */
+		flow: z.enum(RSVP_FLOWS).optional(),
 		responseMessages: rsvpResponseMessagesSchema,
 		whatsappConfig: z
 			.object({

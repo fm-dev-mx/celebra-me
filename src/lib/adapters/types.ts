@@ -1,3 +1,4 @@
+import type { RsvpFlow } from '@/lib/invitation/rsvp-flow';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	IndicationStyleVariant,
@@ -374,6 +375,7 @@ export interface InvitationViewModel {
 			accessMode: 'personalized-only' | 'hybrid';
 			confirmationMessage: string;
 			confirmationMode: 'api' | 'whatsapp' | 'both';
+			flow?: RsvpFlow;
 			whatsappConfig?: WhatsAppConfig;
 			responseMessages?: RsvpResponseMessages;
 			variant: RsvpVariant;

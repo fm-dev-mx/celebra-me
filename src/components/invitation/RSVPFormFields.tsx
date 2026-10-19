@@ -291,6 +291,8 @@ export function AttendanceField(props: {
 }
 
 export function ConfirmedFields(props: {
+	/** Renders only the party size or only the message; both when omitted. */
+	part?: 'guests' | 'notes';
 	attendanceStatus: RsvpAttendanceChoice;
 	prefersReducedMotion: boolean;
 	supportsPlusOnes: boolean;
@@ -318,6 +320,7 @@ export function ConfirmedFields(props: {
 		guestCountRef,
 		attendeeCount,
 		notes,
+		part,
 		notesLabel,
 		notesPlaceholder,
 		onGuestCountChange,
@@ -326,6 +329,8 @@ export function ConfirmedFields(props: {
 	} = props;
 
 	const isExpanded = attendanceStatus !== null;
+	const showGuests = part !== 'notes' && attendanceStatus === 'confirmed' && supportsPlusOnes;
+	const showNotes = part !== 'guests';
 
 	return (
 		<div
@@ -333,7 +338,7 @@ export function ConfirmedFields(props: {
 			aria-hidden={!isExpanded}
 		>
 			<div className="rsvp__extra-fields-inner">
-				{attendanceStatus === 'confirmed' && supportsPlusOnes && (
+				{showGuests && (
 					<>
 						<FloatingField
 							id="guestCount"
@@ -358,21 +363,23 @@ export function ConfirmedFields(props: {
 						</p>
 					</>
 				)}
-				<div className="rsvp__field rsvp__field--notes">
-					<label htmlFor="notes" className="rsvp__notes-label">
-						{notesLabel}
-					</label>
-					<textarea
-						id="notes"
-						placeholder={notesPlaceholder}
-						rows={3}
-						maxLength={MAX_GUEST_COMMENT_LEN}
-						value={notes}
-						onChange={(e) => onNotesChange(e.target.value)}
-						disabled={!isExpanded}
-						suppressHydrationWarning
-					/>
-				</div>
+				{showNotes && (
+					<div className="rsvp__field rsvp__field--notes">
+						<label htmlFor="notes" className="rsvp__notes-label">
+							{notesLabel}
+						</label>
+						<textarea
+							id="notes"
+							placeholder={notesPlaceholder}
+							rows={3}
+							maxLength={MAX_GUEST_COMMENT_LEN}
+							value={notes}
+							onChange={(e) => onNotesChange(e.target.value)}
+							disabled={!isExpanded}
+							suppressHydrationWarning
+						/>
+					</div>
+				)}
 			</div>
 		</div>
 	);

@@ -285,6 +285,8 @@ const content: CanonicalEventContentInput = {
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
+		// One question at a time on the reply card; the lantern rises when the reply is sent.
+		flow: 'steps',
 		personalizedAccess: {
 			variant: 'reply-card',
 			title: 'Su lugar ya está apartado',

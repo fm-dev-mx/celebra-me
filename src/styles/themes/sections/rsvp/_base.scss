@@ -1,6 +1,9 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
+// Optional one-question-per-step presentation (rsvp.flow = 'steps').
+@use '../../../invitation/scenes/rsvp-steps' as rsvp-steps;
+
 // ==========================================================================
 
 // EDITORIAL RSVP
@@ -60,3 +63,5 @@
 	--rsvp-error-bg: rgb(var(--color-state-danger-rgb) / 10%);
 	--rsvp-error-border: rgb(var(--color-state-danger-rgb) / 28%);
 }
+
+@include rsvp-steps.styles;

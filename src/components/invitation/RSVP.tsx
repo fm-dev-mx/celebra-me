@@ -21,6 +21,8 @@ import {
 	RsvpFormView,
 	type RevealedLocation,
 } from '@/components/invitation/RSVPComponents';
+import { RsvpStepsFormView } from '@/components/invitation/RSVPSteps';
+import type { RsvpFlow } from '@/lib/invitation/rsvp-flow';
 import type { RsvpVariant } from '@/lib/invitation/section-variants';
 
 // Reference captures need entrance motion settled; skipping it completes animations instantly
@@ -47,6 +49,7 @@ interface RSVPProps {
 	locationVisibility?: LocationVisibility;
 	variant?: RsvpVariant;
 	confirmationMode?: 'api' | 'whatsapp' | 'both';
+	flow?: RsvpFlow;
 	whatsappConfig?: WhatsAppConfig;
 	initialGuestData?: {
 		fullName?: string;
@@ -130,6 +133,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	labels,
 	variant,
 	confirmationMode = 'api',
+	flow = 'form',
 	whatsappConfig,
 	initialGuestData,
 	isDemoPreview,
@@ -303,8 +307,11 @@ const RSVP: React.FC<RSVPProps> = ({
 		restoreInitialResponse();
 	}, [restoreInitialResponse]);
 
+	// Steps keep the same fields and submission; only the presentation changes.
+	const FormView = flow === 'steps' ? RsvpStepsFormView : RsvpFormView;
+
 	return (
-		<section data-screenshot-section="rsvp" className="rsvp-section">
+		<section data-screenshot-section="rsvp" className="rsvp-section" data-rsvp-flow={flow}>
 			<RsvpContext.Provider value={{ eventType }}>
 				{/* Keep the first server/client render visible regardless of motion preference. */}
 				<AnimatePresence initial={false} mode="wait">
@@ -353,8 +360,9 @@ const RSVP: React.FC<RSVPProps> = ({
 							exit={prefersReducedMotion ? undefined : { opacity: 0, y: -10 }}
 							transition={{ duration: 0.2 }}
 						>
-							<RsvpFormView
+							<FormView
 								ref={sectionRef}
+								onValidate={validate}
 								title={title}
 								subcopy={resolvedSubcopy}
 								variant={variant}

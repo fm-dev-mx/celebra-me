@@ -1,3 +1,4 @@
+import { RSVP_FLOWS } from '@/lib/invitation/rsvp-flow';
 import { heroSchema } from '@/lib/schemas/content/hero.schema';
 import { z } from 'zod';
 import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
@@ -143,6 +144,7 @@ export const InvitationContentDraftContentSchema = z
 				guestCap: rsvpGuestCapSchema.optional(),
 				confirmationMessage: optionalText(1000),
 				confirmationMode: optionalText(20),
+				flow: z.enum(RSVP_FLOWS).optional(),
 				whatsappPhone: optionalText(30),
 				subcopy: optionalText(1000),
 				confirmationDeadline: optionalText(60),
