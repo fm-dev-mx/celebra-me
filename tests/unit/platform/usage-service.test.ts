@@ -1,114 +1,177 @@
-jest.mock('@/lib/platform/server/cloudflare-usage', () => ({
-	getCloudflarePlatformUsage: jest.fn(),
-}));
-jest.mock('@/lib/platform/server/supabase-usage', () => ({
-	getSupabasePlatformUsage: jest.fn(),
-}));
-
-import { getCloudflarePlatformUsage } from '@/lib/platform/server/cloudflare-usage';
-import { getSupabasePlatformUsage } from '@/lib/platform/server/supabase-usage';
-import { getPlatformUsageReport } from '@/lib/platform/server/platform-usage.service';
-import type { PlatformMetric } from '@/lib/platform/contract/types';
+import {
+	getPlatformUsageReport,
+	type StoredSnapshot,
+} from '@/lib/platform/server/platform-usage.service';
+import type { PlatformSnapshotProvider } from '@/lib/platform/server/collector/types';
+import type { PlatformMetric, PlatformProviderUsage } from '@/lib/platform/contract/types';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
-const NOW = new Date('2026-10-24T12:00:00.000Z');
+const COLLECTED_AT = '2026-10-24T12:00:00.000Z';
 
-function metric(scope: PlatformMetric['scope'], id = 'cfR2StorageBucket'): PlatformMetric {
+type Latest = Partial<Record<PlatformSnapshotProvider, StoredSnapshot>>;
+
+function row(
+	provider: PlatformSnapshotProvider,
+	payload: Record<string, unknown>,
+	ok = true,
+): StoredSnapshot {
+	return { provider, ok, payload, collected_at: COLLECTED_AT };
+}
+
+/** One full collector run, as the Production cron stores it. */
+function fullRun(): Latest {
 	return {
-		id,
-		meter: { used: 1, limit: 10 },
-		window: 'snapshot',
-		scope,
-		overageUsd: null,
-		projection: { kind: 'unknown' },
+		cloudflare_workers: row('cloudflare_workers', {
+			totals: {
+				today: { requests: 50, errors: 2, cpuTimeMs: 40 },
+				month: { requests: 7_500_000, errors: 3, cpuTimeMs: 1_200 },
+			},
+		}),
+		cloudflare_durable_objects: row('cloudflare_durable_objects', {
+			totals: { requestsToday: 4, requestsMonth: 950_000, objects: 12, withStoredData: 3 },
+		}),
+		cloudflare_r2: row('cloudflare_r2', {
+			buckets: [
+				{
+					bucketName: 'celebra-memories',
+					storageBytes: 2_000_000_000,
+					classA: 1,
+					classB: 2,
+				},
+				{
+					bucketName: 'celebra-memories-staging',
+					storageBytes: 1_000_000,
+					classA: 0,
+					classB: 0,
+				},
+			],
+			totals: { storageBytes: 2_001_000_000, classA: 1_100_000, classB: 20 },
+		}),
+		cloudflare_zone: row('cloudflare_zone', {
+			days: [
+				{ date: '2026-10-23', requests: 10, threats: 0, status403: 1, status404: 9 },
+				{ date: '2026-10-24', requests: 20, threats: 1, status403: 2, status404: 30 },
+			],
+		}),
+		supabase_disk: row('supabase_disk', { usedBytes: 333_000_000 }),
+		supabase_database: row('supabase_database', { usedBytes: 69_000_000 }),
 	};
 }
 
+function metrics(usage: PlatformProviderUsage): Record<string, PlatformMetric> {
+	if (usage.kind !== 'ok') throw new Error(`expected ok, got ${usage.kind}`);
+	return Object.fromEntries(usage.metrics.map((metric) => [metric.id, metric]));
+}
+
 describe('getPlatformUsageReport', () => {
-	const originalSupabaseUrl = process.env.SUPABASE_URL;
+	const originalEnv = {
+		SUPABASE_URL: process.env.SUPABASE_URL,
+		MEMORIES_R2_BUCKET_NAME: process.env.MEMORIES_R2_BUCKET_NAME,
+	};
 
 	beforeEach(() => {
-		jest.clearAllMocks();
 		process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
+		delete process.env.MEMORIES_R2_BUCKET_NAME;
 	});
 
 	afterAll(() => {
-		if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
-		else process.env.SUPABASE_URL = originalSupabaseUrl;
+		for (const [name, value] of Object.entries(originalEnv)) {
+			if (value === undefined) delete process.env[name];
+			else process.env[name] = value;
+		}
 	});
 
-	it('assembles one section per environment plus the shared quotas', async () => {
-		(getCloudflarePlatformUsage as jest.Mock).mockResolvedValue({
-			kind: 'ok',
-			fetchedAt: NOW.toISOString(),
-			missing: [
-				{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'absent', scope: 'preview' },
-				{ name: 'MEMORIES_CLOUDFLARE_ACCOUNT_ID', state: 'absent', scope: 'account' },
-			],
-			metrics: [metric('preview'), metric('account', 'cfWorkersRequests')],
-		});
-		(getSupabasePlatformUsage as jest.Mock).mockRejectedValue(new Error('socket hang up'));
-
-		const report = await getPlatformUsageReport(NOW);
-
-		expect(report.map((section) => section.id)).toEqual(['preview', 'production', 'shared']);
-		const [preview, production, shared] = report;
-		expect(preview.cards.map((card) => card.provider)).toEqual(['cloudflare', 'supabase']);
-		expect(production.cards.map((card) => card.provider)).toEqual(['cloudflare', 'supabase']);
-		expect(shared.cards.map((card) => card.provider)).toEqual(['cloudflare']);
-		// A failing provider only blanks its own card.
-		expect(preview.cards[1].usage).toEqual({ kind: 'unavailable' });
-		expect(preview.cards[0].usage.kind).toBe('ok');
-	});
-
-	it('splits the Cloudflare snapshot per environment and by shared scope', async () => {
-		(getCloudflarePlatformUsage as jest.Mock).mockResolvedValue({
-			kind: 'ok',
-			fetchedAt: NOW.toISOString(),
-			missing: [
-				{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'absent', scope: 'preview' },
-				{ name: 'MEMORIES_CLOUDFLARE_ACCOUNT_ID', state: 'absent', scope: 'account' },
-			],
-			metrics: [
-				metric('preview'),
-				metric('production'),
-				metric('account', 'cfWorkersRequests'),
-			],
-		});
-		(getSupabasePlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
-
-		const report = await getPlatformUsageReport(NOW);
-		const previewCard = report[0].cards[0];
-		const productionCard = report[1].cards[0];
-		const sharedCard = report[2].cards[0];
-
-		expect(previewCard.usage.kind).toBe('ok');
-		if (previewCard.usage.kind !== 'ok' || productionCard.usage.kind !== 'ok') return;
-		expect(previewCard.usage.metrics.map((entry) => entry.scope)).toEqual(['preview']);
-		expect(previewCard.usage.missing.map((entry) => entry.name)).toEqual([
-			'MEMORIES_R2_BUCKET_NAME',
-		]);
-		expect(productionCard.usage.metrics.map((entry) => entry.scope)).toEqual(['production']);
-		expect(productionCard.usage.missing).toEqual([]);
-		if (sharedCard.usage.kind !== 'ok') return;
-		expect(sharedCard.usage.metrics.map((entry) => entry.id)).toEqual(['cfWorkersRequests']);
-		expect(sharedCard.usage.missing.map((entry) => entry.name)).toEqual([
-			'MEMORIES_CLOUDFLARE_ACCOUNT_ID',
-		]);
-	});
-
-	it('scopes a deployment panel to its own environment only', async () => {
+	it('maps every snapshot dataset onto the deployment section and the shared quotas', async () => {
 		asHostedDeploy('production');
-		(getCloudflarePlatformUsage as jest.Mock).mockResolvedValue({
-			kind: 'unavailable',
-			fetchedAt: null,
-			missing: [],
-			metrics: [],
-		});
-		(getSupabasePlatformUsage as jest.Mock).mockResolvedValue({ kind: 'unavailable' });
+		process.env.MEMORIES_R2_BUCKET_NAME = 'celebra-memories';
 
-		const report = await getPlatformUsageReport(NOW);
+		const report = await getPlatformUsageReport(async () => fullRun());
 
 		expect(report.map((section) => section.id)).toEqual(['production', 'shared']);
+		const [production, shared] = report;
+		const [cloudflare, supabase] = production.cards;
+		expect(cloudflare.provider).toBe('cloudflare');
+		expect(metrics(cloudflare.usage).cfR2StorageBucket).toMatchObject({
+			resource: 'celebra-memories',
+			meter: { used: 2_000_000_000 },
+		});
+		expect(cloudflare.usage).toMatchObject({ fetchedAt: COLLECTED_AT, missing: [] });
+
+		const sb = metrics(supabase.usage);
+		expect(sb.sbDatabase.meter).toEqual({ used: 69_000_000, limit: 500_000_000 });
+		expect(sb.sbDisk.meter).toEqual({ used: 333_000_000, limit: null });
+
+		const account = metrics(shared.cards[0].usage);
+		expect(account.cfWorkersRequests.meter.used).toBe(7_500_000);
+		expect(account.cfWorkersCpu.meter.used).toBe(1_200);
+		expect(account.cfDurableObjectsRequests.meter.used).toBe(950_000);
+		expect(account.cfR2StorageAccount.meter.used).toBe(2_001_000_000);
+		expect(account.cfR2ClassA.overageUsd).toBe(0.45);
+		expect(account.cfWorkersErrors.meter).toEqual({ used: 2, limit: null });
+		expect(account.cfDurableObjectsObjects.meter.used).toBe(12);
+		// Zone figures come from the collection day, not the oldest stored day.
+		expect(account.cfZone404.meter.used).toBe(30);
+		expect(account.cfZone403.meter.used).toBe(2);
+		expect(account.cfZoneThreats.meter.used).toBe(1);
+	});
+
+	it('blanks only the meters of a failed dataset', async () => {
+		asHostedDeploy('production');
+		process.env.MEMORIES_R2_BUCKET_NAME = 'celebra-memories';
+		const latest = fullRun();
+		latest.cloudflare_zone = row('cloudflare_zone', { failure: 'http_403' }, false);
+		latest.supabase_disk = row('supabase_disk', { failure: 'timeout' }, false);
+
+		const [production, shared] = await getPlatformUsageReport(async () => latest);
+
+		const account = metrics(shared.cards[0].usage);
+		expect(account.cfZone404.meter.used).toBeNull();
+		expect(account.cfWorkersRequests.meter.used).toBe(7_500_000);
+		const sb = metrics(production.cards[1].usage);
+		expect(sb.sbDatabase.meter.used).toBe(69_000_000);
+		expect(sb.sbDisk.meter.used).toBeNull();
+	});
+
+	it('reports collector configuration gaps as names only', async () => {
+		asHostedDeploy('production');
+		const unconfigured = {
+			failure: 'unconfigured',
+			missing: ['MEMORIES_CLOUDFLARE_ACCOUNT_ID', 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN'],
+		};
+		const latest: Latest = {
+			cloudflare_workers: row('cloudflare_workers', unconfigured, false),
+			cloudflare_durable_objects: row('cloudflare_durable_objects', unconfigured, false),
+			cloudflare_r2: row('cloudflare_r2', unconfigured, false),
+			cloudflare_zone: row('cloudflare_zone', unconfigured, false),
+		};
+
+		const [production, shared] = await getPlatformUsageReport(async () => latest);
+
+		expect(shared.cards[0].usage).toEqual({
+			kind: 'unconfigured',
+			missing: [
+				{ name: 'MEMORIES_CLOUDFLARE_ACCOUNT_ID', state: 'absent', scope: 'account' },
+				{ name: 'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN', state: 'absent', scope: 'account' },
+			],
+		});
+		// The page's own bucket variable is still named when it is absent.
+		expect(production.cards[0].usage).toEqual({
+			kind: 'unconfigured',
+			missing: [{ name: 'MEMORIES_R2_BUCKET_NAME', state: 'absent', scope: 'production' }],
+		});
+	});
+
+	it('marks every card unavailable when the snapshot table cannot be read', async () => {
+		asHostedDeploy('preview');
+		process.env.MEMORIES_R2_BUCKET_NAME = 'celebra-memories-staging';
+
+		const report = await getPlatformUsageReport(async () => {
+			throw new Error('socket hang up');
+		});
+
+		expect(report.map((section) => section.id)).toEqual(['preview', 'shared']);
+		for (const section of report) {
+			for (const card of section.cards) expect(card.usage).toEqual({ kind: 'unavailable' });
+		}
 	});
 });

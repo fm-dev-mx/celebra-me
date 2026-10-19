@@ -129,6 +129,7 @@ describe('runScheduledJob', () => {
 			cloudflare_r2: true,
 			cloudflare_zone: true,
 			supabase_disk: true,
+			supabase_database: true,
 		},
 		missingPermissions: [],
 		purged: true,

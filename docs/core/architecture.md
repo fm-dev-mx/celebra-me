@@ -471,24 +471,24 @@ deployment.
   object (the same set the reservation quota counts) and from session counts; the committed-capacity
   total compares them with the shared R2 allowance in `CLOUDFLARE_PAID_PLAN`
   (`src/lib/platform/contract/limits.ts`). Account-wide consumption is not part of this domain: the
-  super-admin platform console (`/dashboard/admin/plataforma`, `src/lib/platform/`) aggregates
-  Cloudflare and Supabase limit and cost metrics from read-only credentials
-  (`MEMORIES_CLOUDFLARE_*`, `SUPABASE_MANAGEMENT_TOKEN`), one query per provider dataset cached for
-  minutes. The console is scoped per environment (Preview and Production deployments show only their
-  own; Local shows both) and every environment reads the plain variable names: a deployment reports
-  the R2 bucket it declares in `MEMORIES_R2_BUCKET_NAME`, while Local shows only account-wide R2
-  totals. Shared account/project quotas stay visible in every panel labeled as shared. Missing
-  credentials are reported by variable name with a description and the provider's setup link - never
-  values. Every provider card degrades on its own (`ok` / `unconfigured` / `unavailable`) and the
-  report carries aggregates only. Workers Paid / R2 Paid allowances (monthly windows approximated by
-  the UTC month) and the 70 %/90 % warning thresholds live in `src/lib/platform/contract/limits.ts`.
-  Snapshots for the console come from the Production-only cron `*/15 * * * *`
+  super-admin platform console (`/dashboard/admin/plataforma`, `src/lib/platform/`) shows Cloudflare
+  and Supabase limits from the snapshots the Production-only cron `*/15 * * * *` stores
   (`src/lib/platform/server/collector/`, job `platform_usage` in
-  `src/lib/server/scheduled-jobs.ts`): each run writes one `platform_usage_snapshots` row per
-  dataset (Workers per script, Durable Objects per namespace with object counts, R2 per bucket,
-  celebra-me.com 404/403/threats and top 404 paths, Supabase disk) with `ok = false` and a typed
-  failure code when a provider fails, then deletes rows older than 90 days. The table is
-  service-role only (RLS forced, no policies).
+  `src/lib/server/scheduled-jobs.ts`). Each run reads the providers with read-only credentials
+  (`MEMORIES_CLOUDFLARE_*`, `SUPABASE_MANAGEMENT_TOKEN`) and writes one `platform_usage_snapshots`
+  row per dataset (Workers per script, Durable Objects per namespace with object counts, R2 per
+  bucket, celebra-me.com 404/403/threats and top 404 paths, Supabase disk, and the database size
+  from the service-role RPC `platform_database_size()`), with `ok = false` and a typed failure code
+  when a provider fails, then deletes rows older than 90 days. The table and the RPC are
+  service-role only (RLS forced, no policies). A page load never queries a provider: the API reads
+  the newest row per dataset and maps it onto the deployment's own section (the bucket it declares
+  in `MEMORIES_R2_BUCKET_NAME`, the database size against the 500 MB Free cap, disk as a secondary
+  figure) plus the shared account quotas and health indicators. The status banner stamps the
+  snapshot age and marks it stale past 45 minutes. Missing credentials are reported by variable name
+  with a description and the provider's setup link - never values. Every card degrades on its own
+  (`ok` / `unconfigured` / `unavailable`). Workers Paid / R2 Paid allowances (monthly windows
+  approximated by the UTC month) and the 70 %/90 % warning thresholds live in
+  `src/lib/platform/contract/limits.ts`.
 - **QR:** `src/lib/memories/qr.ts` renders the printable SVG for both dashboard routes and the
   `memories:qr` CLI; a test pins the SHA-256 of the SVG already printed.
 - **Planning and warnings:** `event_memory_settings.expected_guests` and `admin_note` are

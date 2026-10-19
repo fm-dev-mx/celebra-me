@@ -64,6 +64,10 @@ const REPORT: PlatformUsageReport = [
 					spendUsd: null,
 					missing: [],
 					metrics: [
+						metric('sbDatabase', 69_000_000, 500_000_000, {
+							window: 'snapshot',
+							scope: 'preview',
+						}),
 						metric('sbDisk', 120_000_000, null, {
 							window: 'snapshot',
 							scope: 'preview',
@@ -200,6 +204,61 @@ describe('PlatformUsagePanel island', () => {
 		).toBeInTheDocument();
 	});
 
+	it('marks the snapshot stale after 45 minutes without a collector run', async () => {
+		const collectedAt = new Date(Date.now() - 46 * 60 * 1000).toISOString();
+		mockUsage.mockResolvedValue(
+			REPORT.map((section) => ({
+				...section,
+				cards: section.cards.map((card) =>
+					card.usage.kind === 'ok'
+						? { ...card, usage: { ...card.usage, fetchedAt: collectedAt } }
+						: card,
+				),
+			})),
+		);
+
+		render(<PlatformUsagePanel />);
+
+		const summary = await screen.findByRole('region', { name: 'Hay cuotas críticas' });
+		expect(
+			within(summary).getByText('Datos desactualizados (más de 45 min)'),
+		).toBeInTheDocument();
+		expect(within(summary).getByText(/hace 46 min/)).toBeInTheDocument();
+		expect(within(summary).getByText(/Desactualizado: el recolector/)).toBeInTheDocument();
+	});
+
+	it('keeps a fresh snapshot unmarked', async () => {
+		const collectedAt = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+		mockUsage.mockResolvedValue([
+			{
+				id: 'production',
+				cards: [
+					{
+						provider: 'supabase',
+						usage: {
+							kind: 'ok',
+							fetchedAt: collectedAt,
+							spendUsd: null,
+							missing: [],
+							metrics: [
+								metric('sbDatabase', 69_000_000, 500_000_000, {
+									window: 'snapshot',
+									scope: 'production',
+								}),
+							],
+						},
+					},
+				],
+			},
+		]);
+
+		render(<PlatformUsagePanel />);
+
+		const summary = await screen.findByRole('region', { name: 'Todo en orden' });
+		expect(within(summary).getByText(/hace 10 min/)).toBeInTheDocument();
+		expect(within(summary).queryByText(/desactualizado/i)).not.toBeInTheDocument();
+	});
+
 	it('groups quotas by provider, shared first, then each environment', async () => {
 		mockUsage.mockResolvedValue(REPORT);
 
@@ -222,9 +281,13 @@ describe('PlatformUsagePanel island', () => {
 		expect(within(supabase).getByText(/la base pasa a solo lectura/)).toBeInTheDocument();
 		expect(within(supabase).getByText('Disco (incluye WAL)')).toBeInTheDocument();
 		expect(within(supabase).getByText('120 MB')).toBeInTheDocument();
-		expect(within(supabase).getAllByText(/Solo informativo, sin alertas/)).toHaveLength(1);
-		// Disk is informative: no meter, no threshold against the 500 MB database cap.
-		expect(within(supabase).queryByRole('meter')).not.toBeInTheDocument();
+		expect(within(supabase).getAllByText(/Dato secundario, sin alertas/)).toHaveLength(1);
+		// Only the database size has a meter against the 500 MB cap; disk stays secondary.
+		const meters = within(supabase).getAllByRole('meter');
+		expect(meters).toHaveLength(1);
+		expect(meters[0]).toHaveAccessibleName('Base de datos');
+		expect(within(supabase).getByText('69 MB')).toBeInTheDocument();
+		expect(within(supabase).getByText('14 %')).toBeInTheDocument();
 		expect(within(supabase).queryByText(/Sin cuota verificada/)).not.toBeInTheDocument();
 		expect(within(supabase).getByText(/El proveedor no respondió/)).toBeInTheDocument();
 	});

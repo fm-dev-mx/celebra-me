@@ -12,7 +12,8 @@ export type PlatformSnapshotProvider =
 	| 'cloudflare_durable_objects'
 	| 'cloudflare_r2'
 	| 'cloudflare_zone'
-	| 'supabase_disk';
+	| 'supabase_disk'
+	| 'supabase_database';
 
 /** Why a dataset is missing from a run. `unconfigured` lists variable names only. */
 export interface PlatformSnapshotFailure {
