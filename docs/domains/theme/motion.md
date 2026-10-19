@@ -160,6 +160,13 @@ only; elsewhere the same markup renders as a normal section.
 - **Budget.** At most two scenes per invitation and no more than 35 % of the page's scroll height
   pinned at a 390 × 844 viewport. Two scenes are never adjacent; a normal section sits between them.
   A scene never traps scrolling: no scroll snapping, no wheel or touch interception.
+- **Scenes in use.** `gallery.album-assemble` (prints drop onto the album page, with a counter) and
+  `location.program-sheet` with `presentationOptions.scene: 'lantern-route'` (two or more venues:
+  under a night sky the route draws itself, a lantern walks it and the entries take turns; the next
+  entry settles from above so its links stay under the visible one).
+- **Not scenes.** `rsvp.flow: 'steps'` (one question per step, a lantern on the progress track and
+  one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
+  motion it keeps the progress and drops the movement.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.

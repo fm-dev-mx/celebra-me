@@ -202,7 +202,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Required Inputs**: `variant`, `personalizedAccess.variant`.
 - **Defaulted Inputs**: `title` (`¿Vienes a celebrar conmigo?`), `guestCap` (1), `accessMode`
   (`personalized-only` | `hybrid`, default `personalized-only`), `confirmationMode` (`api` |
-  `whatsapp` | `both`, default `api`), `confirmationMessage`.
+  `whatsapp` | `both`, default `api`), `confirmationMessage`, `flow` (`form` | `steps`, default
+  `form`; presentation only, the payload is the same).
 - **Optional Inputs**: `subcopy`, `responseMessages` (`confirmed` / `declined`, each with `title`
   and `subtitle` ≤500), `whatsappConfig` (`phone` required; `confirmedTemplate`, `declinedTemplate`,
   `omitTitle`), `labels` (see [Content Schema](../../core/content-schema.md)), `calendar` (`title`,
@@ -330,7 +331,7 @@ validated by the schemas; the second table is **authoring guidance, not validate
 | `family.asymmetric-groups`      | Same as `split-groups`; any `groups` array needs at least two items |
 | `location.split-map`            | One visible venue with `coordinates` or `image`                     |
 | `location.stacked-venue-plates` | At least two visible venues                                         |
-| `location.program-sheet`        | At least one visible venue                                          |
+| `location.program-sheet`        | At least one visible venue; `scene: 'lantern-route'` needs two      |
 | `gallery.single-keepsake`       | Exactly one item                                                    |
 | `gallery.paired-portraits`      | Exactly two items                                                   |
 | `gallery.narrative-stack`       | At least one item; every item has a caption and no `aspectRatio`    |

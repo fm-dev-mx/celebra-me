@@ -195,7 +195,9 @@ invitation profiles.
 - location.program-sheet: venues as printed-program entries (line drawing for ceremony/reception,
   label, time in words, venue, address, text links of 44 px for map, calendar and copy). No cards
   and no section nav button; two columns with a vertical hairline on wide screens.
-  `--location-program-*`.
+  `--location-program-*`. Optional `presentationOptions.scene: 'lantern-route'` (two or more visible
+  venues) sets the program in a pinned night scene; see [Motion](motion.md#scroll-scenes).
+  `--location-route-*`.
 - hero.bleed-portrait: framed-portrait markup with the photograph to the edges (full width at its
   own proportion on phones, full-height left half on wide screens), written when/where facts and a
   silver scroll line. `--hero-bleed-*`.
@@ -213,6 +215,13 @@ invitation profiles.
   and joined into one surface — seats written out above, then the heading, two 56 px answers in the
   stationery formula ("Con gusto asistiré" / "Lamento no poder asistir"), message and one button; no
   eyebrow or seal. `--reply-card-*`.
+- rsvp `flow: 'steps'` (any variant): the same form one question per step — answer, then who comes
+  (name, phone and party size when they apply), then the message and send. Same hook, payload and
+  API as the form. `--rsvp-steps-*`.
+- itinerary.stacked-cards hooks: besides tone and size, `--stacked-cards-align`, `-padding`,
+  `-numeral` (for example `counter(moment, upper-roman) ' · ' / ''`), `-rule`, `-motif`,
+  `-ornament`, `-header-gap` and `-shade(-strength)` compose a card without new markup; every
+  default keeps the plain card.
 - location.presentationOptions.showCalendarLinks: native `<details>` "Agendar en el calendario" per
   venue (Google, .ics data URL, Outlook), resolved from the venue local date/time in
   `eventTiming.timeZone`; works without JavaScript.
