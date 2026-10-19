@@ -193,28 +193,12 @@ describe('collectReleaseStatus', () => {
 		);
 	});
 
-	it('verifies Production from the Worker deployment when a workflow environment record is newer', async () => {
-		// A workflow job declaring `environment: Production` can record a newer deployment with an
-		// empty environment_url behind the deployment that carries the Worker URL.
+	it('verifies Production from checks, its smoke and the public alias, ignoring Vercel records', async () => {
+		// The retired Vercel project left Production deployment records on GitHub, some failed.
 		const run = ghRunner({
 			...responses({ ...allPassed, [CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
-			[`deployments?sha=${sha}&per_page=100`]: [
-				{ id: 6927490534, sha, environment: 'Production', creator: workerCreator },
-				{ id: 6927490121, sha, environment: 'Production', creator: workerCreator },
-			],
-			'deployments/6927490534/statuses?per_page=100': [
-				{ state: 'success', environment_url: '' },
-				{ state: 'in_progress', environment_url: '' },
-			],
-			'deployments/6927490121/statuses?per_page=100': [
-				{ state: 'success', environment_url: productionUrl },
-			],
-		});
-		expect(loadDeploymentForSha(sha, 'production', run)).toEqual({
-			id: 6927490121,
-			environment: 'Production',
-			state: 'success',
-			url: productionUrl,
+			[`deployments?sha=${sha}&per_page=100`]: [{ id: 3, sha, environment: 'Production' }],
+			'deployments/3/statuses?per_page=100': [{ state: 'failure', environment_url: '' }],
 		});
 		const probes: Array<{ url: string; headers?: Record<string, string> }> = [];
 		const accessHeaders = { 'CF-Access-Client-Id': 'id', 'CF-Access-Client-Secret': 'secret' };
@@ -227,13 +211,30 @@ describe('collectReleaseStatus', () => {
 			},
 		});
 		expect(status.state).toBe('VERIFIED');
-		expect(status.deployment).toMatchObject({ id: 6927490121, url: productionUrl });
-		expect(status.health.map((entry) => entry.result)).toEqual(['match', 'match']);
+		expect(status.deployment).toBeNull();
+		expect(status.checks.map((check) => check.progress)).toEqual(
+			REQUIRED_RELEASE_CHECKS.map(() => 'passed'),
+		);
+		expect(status.smoke).toMatchObject({
+			name: CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
+			progress: 'passed',
+		});
 		expect(status.blockers).toEqual([]);
-		// Cloudflare Access guards the Production version URL; the public alias needs no credential.
+		// The public alias needs no Access credential.
 		expect(probes).toEqual([
-			{ url: `${productionUrl}/api/health`, headers: accessHeaders },
 			{ url: 'https://www.celebra-me.com/api/health', headers: undefined },
+		]);
+	});
+
+	it('keeps Production pending without its domain smoke or Repository CI on the main SHA', async () => {
+		const status = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: ghRunner(responses({})),
+			fetchImpl: healthy(sha, 'production'),
+		});
+		expect(status.state).toBe('PENDING');
+		expect(status.blockers).toEqual([
+			...REQUIRED_RELEASE_CHECKS.map((name) => `${name}: missing`),
+			`${CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE}: missing`,
 		]);
 	});
 
@@ -545,40 +546,39 @@ describe('deployment URL behind Cloudflare Access', () => {
 			fetchImpl: productionFetch(await healthy(sha, 'production')()),
 		});
 		expect(status.health.map((entry) => [entry.url, entry.result])).toEqual([
-			[`${productionUrl}/api/health`, 'protected'],
 			[aliasHealthUrl, 'match'],
 		]);
 		expect(status.state).toBe('VERIFIED');
 		expect(status.blockers).toEqual([]);
 	});
 
-	it('never counts a protected deployment URL as success without the alias match', async () => {
+	it('never verifies Production unless the alias reports the exact SHA', async () => {
 		const otherSha = await collectReleaseStatus(sha, 'production', 'ci', {
 			run: productionRun(),
 			fetchImpl: productionFetch(await healthy('b'.repeat(40), 'production')()),
 		});
 		expect(otherSha.state).toBe('FAILED');
-		expect(otherSha.blockers).toEqual([
-			`${productionUrl}/api/health: protected`,
-			`${aliasHealthUrl}: mismatch`,
-		]);
+		expect(otherSha.blockers).toEqual([`${aliasHealthUrl}: mismatch`]);
+
+		const previewBuild = await collectReleaseStatus(sha, 'production', 'ci', {
+			run: productionRun(),
+			fetchImpl: productionFetch(await healthy(sha, 'preview')()),
+		});
+		expect(previewBuild.state).toBe('FAILED');
 
 		const noIdentity = await collectReleaseStatus(sha, 'production', 'ci', {
 			run: productionRun(),
 			fetchImpl: productionFetch(await healthy(null, 'production')()),
 		});
 		expect(noIdentity.state).toBe('PENDING');
-		expect(noIdentity.blockers).toEqual([`${productionUrl}/api/health: protected`]);
+		expect(noIdentity.blockers).toEqual([`${aliasHealthUrl}: unreported`]);
 
 		const offline = await collectReleaseStatus(sha, 'production', 'ci', {
 			run: productionRun(),
 			fetchImpl: productionFetch(new Error('offline')),
 		});
 		expect(offline.state).toBe('PENDING');
-		expect(offline.blockers).toEqual([
-			`${productionUrl}/api/health: protected`,
-			`${aliasHealthUrl}: unreachable`,
-		]);
+		expect(offline.blockers).toEqual([`${aliasHealthUrl}: unreachable`]);
 	});
 
 	it('keeps Preview pending: it has no public alias to stand in', async () => {

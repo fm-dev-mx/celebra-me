@@ -157,7 +157,15 @@ separate step, run by the agent after the owner approves the release.
    `pnpm exec wrangler deployments status --config wrangler.jsonc --env production`.
 4. Confirm the domain serves it: `curl -s https://www.celebra-me.com/api/health` reports
    `build.commitSha == $SHA` and environment `production`.
-5. Run the domain smoke: `pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com`.
+5. Run the domain smoke on GitHub so it becomes release evidence: dispatch the upload workflow again
+   from `main` with step `domain-smoke`
+   (`gh workflow run deploy-production.yml --ref main -f step=domain-smoke`). It waits until the
+   domain reports `$SHA`, runs `pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com`
+   and publishes the commit status `Cloudflare - celebra-me production smoke` on `$SHA`.
+6. Confirm the release: `pnpm ops:release-status -- --sha $SHA --target production --wait` reports
+   VERIFIED. It requires `Repository Policy`, `Application Suite` and `Application / static` on
+   `$SHA` (Repository CI runs on every `main` push), that smoke status, and the public alias
+   reporting `$SHA` in `production`. It reads no GitHub deployment record for Production.
 
 Always pass `--config wrangler.jsonc`. Without it, Wrangler may pick up a stale
 `.wrangler/deploy/config.json` left by an earlier local build and act on the wrong configuration.

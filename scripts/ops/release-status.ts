@@ -1,13 +1,14 @@
 /**
- * One blocking release status command: required CI checks, the provider deployment recorded on
- * GitHub, the deployment smoke check and the serving build identity, for one exact SHA.
+ * One blocking release status command: required CI checks, the deployment smoke check and the
+ * serving build identity, for one exact SHA. Preview also requires its Worker deployment recorded on
+ * GitHub. Production has no such record: the zone routes serve whichever Worker version is active,
+ * so the public alias reporting this exact SHA stands in for it.
  * Read-only: it never pushes, redeploys or reruns anything.
  */
 import { basename } from 'node:path';
 import {
 	buildCloudflareAccessHeaders,
 	CLOUDFLARE_PREVIEW_HOST_PATTERN,
-	CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN,
 	loadPlaywrightEnvironment,
 } from '../playwright/preview-environment.ts';
 import {
@@ -117,11 +118,7 @@ export function classifyDeployment(
 
 /** Whether a deployment URL is a Cloudflare Worker version host that Cloudflare Access guards. */
 function isCloudflareWorkerHost(url: string): boolean {
-	const host = new URL(url).hostname;
-	return (
-		CLOUDFLARE_PREVIEW_HOST_PATTERN.test(host) ||
-		CLOUDFLARE_PRODUCTION_VERSION_HOST_PATTERN.test(host)
-	);
+	return CLOUDFLARE_PREVIEW_HOST_PATTERN.test(new URL(url).hostname);
 }
 
 export interface HealthEvidence {
@@ -271,6 +268,7 @@ export interface ReleaseStatus {
 	target: ReleaseTarget;
 	state: 'VERIFIED' | 'FAILED' | 'PENDING';
 	checks: Array<{ name: string; state: string; progress: Progress }>;
+	/** Always null for Production, which has no deployment record (see the module comment). */
 	deployment: (DeploymentEvidence & { progress: Progress }) | null;
 	smoke: {
 		name: string;
@@ -287,7 +285,7 @@ export interface ReleaseStatus {
 export interface StatusDependencies {
 	run?: GhRunner;
 	fetchImpl?: FetchLike;
-	/** Sent to the Cloudflare Worker URL only; Cloudflare Access guards it. */
+	/** Sent to the Cloudflare Preview Worker URL only; Cloudflare Access guards it. */
 	accessHeaders?: Record<string, string>;
 }
 
@@ -322,26 +320,25 @@ function describeSmoke(
 	return smoke;
 }
 
-const PRODUCTION_ALIAS_HEALTH_URL = `${PRODUCTION_ALIAS_URL}/api/health`;
-
 /**
  * Health probes that keep the release from VERIFIED. A protected deployment URL is never
- * evidence. On Production the public alias reports what the domain actually serves, so such a
- * deployment URL stops blocking only once the alias reports this exact SHA and environment.
- * Preview has no alias: it keeps Preview pending.
+ * evidence, and Preview has no public alias to stand in for it. Production probes only the public
+ * alias, which must report this exact SHA and environment.
  */
 function blockingHealth(status: Omit<ReleaseStatus, 'state' | 'blockers'>): HealthEvidence[] {
-	const aliasMatches =
-		status.target === 'production' &&
-		status.health.some(
-			(entry) => entry.url === PRODUCTION_ALIAS_HEALTH_URL && entry.result === 'match',
-		);
-	return status.health.filter(
-		(entry) =>
-			entry.result === 'mismatch' ||
-			entry.result === 'unreachable' ||
-			(entry.result === 'protected' && !aliasMatches),
+	return status.health.filter((entry) =>
+		status.target === 'production'
+			? entry.result !== 'match'
+			: entry.result === 'mismatch' ||
+				entry.result === 'unreachable' ||
+				entry.result === 'protected',
 	);
+}
+
+/** Preview requires its Worker deployment record; Production has none (see the module comment). */
+function deploymentProgress(status: Omit<ReleaseStatus, 'state' | 'blockers'>): Progress {
+	if (status.target === 'production') return 'passed';
+	return status.deployment?.progress ?? 'pending';
 }
 
 function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string[] {
@@ -350,7 +347,7 @@ function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string
 		.map((check) => `${check.name}: ${check.state}`);
 	return [
 		...checkBlockers,
-		...(status.deployment?.progress === 'passed'
+		...(deploymentProgress(status) === 'passed'
 			? []
 			: [`${status.target} deployment: ${status.deployment?.state ?? 'missing'}`]),
 		...(status.smoke.progress === 'passed'
@@ -362,11 +359,7 @@ function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string
 
 function deriveState(status: Omit<ReleaseStatus, 'state' | 'blockers'>): ReleaseStatus['state'] {
 	const checkProgresses = status.checks.map((check) => check.progress);
-	const progresses = [
-		...checkProgresses,
-		status.deployment?.progress ?? 'pending',
-		status.smoke.progress,
-	];
+	const progresses = [...checkProgresses, deploymentProgress(status), status.smoke.progress];
 	if (progresses.includes('failed') || status.health.some((entry) => entry.result === 'mismatch'))
 		return 'FAILED';
 	if (progresses.includes('pending') || blockingHealth(status).length > 0) return 'PENDING';
@@ -386,13 +379,18 @@ export async function collectReleaseStatus(
 		const check = remote.find((entry) => entry.name === name);
 		return { name, state: check?.state ?? 'missing', progress: classifyCheck(sha, check) };
 	});
-	const evidence = loadDeploymentForSha(sha, target, run);
+	// Production deployment records on GitHub are left over from the retired Vercel project.
+	const evidence = target === 'preview' ? loadDeploymentForSha(sha, target, run) : null;
 	const deployment = evidence
 		? { ...evidence, progress: classifyDeployment(target, evidence) }
 		: null;
 
 	const health: HealthEvidence[] = [];
-	if (deployment?.progress === 'passed' && deployment.url) {
+	if (target === 'production')
+		health.push(
+			await probeHealth(PRODUCTION_ALIAS_URL, sha, fetchImpl, undefined, 'production'),
+		);
+	else if (deployment?.progress === 'passed' && deployment.url)
 		health.push(
 			await probeHealth(
 				deployment.url,
@@ -402,11 +400,6 @@ export async function collectReleaseStatus(
 				target,
 			),
 		);
-		if (target === 'production')
-			health.push(
-				await probeHealth(PRODUCTION_ALIAS_URL, sha, fetchImpl, undefined, 'production'),
-			);
-	}
 
 	const status = {
 		sha,
