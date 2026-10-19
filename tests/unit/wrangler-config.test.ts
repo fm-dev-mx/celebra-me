@@ -1,7 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
 import { PRODUCTION_ONLY_JOBS, SCHEDULED_JOB_CRONS } from '@/lib/server/scheduled-jobs';
+import { readWranglerConfig } from '../helpers/wrangler-config';
 
 interface RateLimitBinding {
 	name: string;
@@ -22,32 +21,7 @@ interface WorkerEnvironment {
 	services?: { binding: string; service: string }[];
 }
 
-/** Drops `//` line comments outside strings; wrangler.jsonc uses no block comments. */
-function stripLineComments(source: string): string {
-	let output = '';
-	let inString = false;
-	for (let index = 0; index < source.length; index++) {
-		const char = source[index];
-		if (inString) {
-			output += char;
-			if (char === '\\') output += source[++index] ?? '';
-			else if (char === '"') inString = false;
-		} else if (char === '"') {
-			inString = true;
-			output += char;
-		} else if (char === '/' && source[index + 1] === '/') {
-			while (index < source.length && source[index] !== '\n') index++;
-			output += '\n';
-		} else {
-			output += char;
-		}
-	}
-	return output;
-}
-
-const config = JSON.parse(
-	stripLineComments(readFileSync(resolve(process.cwd(), 'wrangler.jsonc'), 'utf8')),
-) as { env: Record<string, WorkerEnvironment> };
+const config = readWranglerConfig<{ env: Record<string, WorkerEnvironment> }>();
 const preview = config.env.preview;
 const production = config.env.production;
 
