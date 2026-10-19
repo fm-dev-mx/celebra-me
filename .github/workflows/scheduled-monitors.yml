@@ -1,0 +1,88 @@
+name: Production Scheduled Monitors
+
+# Read-only: each monitor reads Workers Logs or lists the off-site backup bucket with read-only
+# credentials. The GitHub token writes nothing but the alert issue.
+permissions:
+    contents: read
+    issues: write
+
+on:
+    schedule:
+        # After the memories cleanup cron (15:17 UTC) and the daily backup (~10:00 UTC).
+        - cron: '40 16 * * *'
+    workflow_dispatch:
+
+concurrency:
+    group: production-scheduled-monitors
+    cancel-in-progress: false
+
+jobs:
+    monitor:
+        name: ${{ matrix.title }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - monitor: cleanup-heartbeat
+                      title: Memories cleanup heartbeat
+                      alert: 'Monitor de Producción: la limpieza de recuerdos no cerró'
+                    - monitor: backup-freshness
+                      title: Off-site backup freshness
+                      alert: 'Monitor de Producción: el respaldo externo no está al día'
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Run monitor
+              id: monitor
+              env:
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  MONITOR_CLOUDFLARE_API_TOKEN: ${{ secrets.MONITOR_CLOUDFLARE_API_TOKEN }}
+                  MONITOR_OFFSITE_R2_ACCESS_KEY_ID: ${{ secrets.MONITOR_OFFSITE_R2_ACCESS_KEY_ID }}
+                  MONITOR_OFFSITE_R2_SECRET_ACCESS_KEY: ${{ secrets.MONITOR_OFFSITE_R2_SECRET_ACCESS_KEY }}
+              run: pnpm ops:monitor ${{ matrix.monitor }}
+
+            # Daily jobs: one missed day is already an incident, so the first failure opens the
+            # issue (GitHub e-mails the repository watchers) and later failures comment on it.
+            - name: Alert
+              if: failure() && steps.monitor.outcome == 'failure'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: ${{ matrix.alert }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "Sigue fallando: $RUN_URL"
+                  else
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$ALERT_TITLE" --body \
+                          "El monitor diario falló. Revise el Job Summary: $RUN_URL"
+                  fi
+
+            - name: Close the alert after recovery
+              if: success()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: ${{ matrix.alert }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Recuperado: $RUN_URL"
+                  fi
