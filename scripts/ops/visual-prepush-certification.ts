@@ -27,7 +27,7 @@ export const NODE_VERSION = '24.14.1';
 export const NODE_ARCHIVE_SHA256 =
 	'ace9fa104992ed0829642629c46ca7bd7fd6e76278cb96c958c4b387d29658ea';
 export const PNPM_VERSION = '11.23.0';
-export const CERTIFIED_BROWSER_COMMAND = 'pnpm test:e2e:ci --max-failures=5 --workers=2';
+export const CERTIFIED_BROWSER_COMMAND = 'pnpm test:e2e:ci --max-failures=5 --workers=4';
 const ACCEPTED_MANIFEST = 'tests/e2e/visual-baselines/manifest.json';
 
 export interface CertificationIdentity {

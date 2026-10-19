@@ -90,14 +90,15 @@ failed, or skipped tiers cannot authorize release. The single exception is the `
 pull request whose merge candidate holds the tree a complete `develop` run already validated: its
 tiers are skipped and the status reuses that run
 ([validation procedures](../../core/validation-procedures.md)). New runs cancel superseded runs for
-the same branch or pull request. Browser CI uses two workers across files and stops after five
-failed tests, remaining failed overall. Each capture suite remains sequential so its manifest stays
-complete. Pixel and size mismatches are recorded per capture and fail the aggregate comparison after
-the full matrix. A capture byte-identical to its accepted reference passes without decoding; this is
-stricter than the pixel comparison and does not change its tolerance. Capture-case success means
-capture completion, not parity acceptance. Reports retain FAIL entries and a FAILED manifest when
-any pixel comparison differs. Navigation, missing/corrupt baselines, and capture integrity errors
-remain immediate failures.
+the same branch or pull request. Browser CI uses four workers and stops after five failed tests,
+remaining failed overall. Captures within a suite run in parallel; each writes its own record and
+the run teardown aggregates them, so the manifest stays complete. Pixel and size mismatches are
+recorded per capture and fail the aggregate comparison after the full matrix. A capture
+byte-identical to its accepted reference passes without decoding; this is stricter than the pixel
+comparison and does not change its tolerance. Capture-case success means capture completion, not
+parity acceptance. Reports retain FAIL entries and a FAILED manifest when any pixel comparison
+differs. Navigation, missing/corrupt baselines, and capture integrity errors remain immediate
+failures.
 
 In compare mode a capture whose pixels differ gets exactly one in-run re-capture of the same,
 already settled page (owner decision of 2026-10-03). It passes only if the re-capture is within the
