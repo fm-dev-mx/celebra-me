@@ -6,6 +6,10 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validateDeployIdentityReads } from './validate-deploy-identity-reads.mjs';
 import { validateStaticSharpImports } from './validate-static-sharp-imports.mjs';
+import {
+	reportRetiredProviderWarnings,
+	validateNoVercelReferences,
+} from './validate-retired-provider-references.mjs';
 
 const REQUIRED_SKILL_FIELDS = [
 	'name',
@@ -808,10 +812,17 @@ function detectOrphanedGuidance(root, skillNames) {
 	return errors;
 }
 
+/** Findings that are reported but do not fail the run (see RETIRED_PROVIDER_REFERENCE_MODE). */
+export function validateStructureWarnings({ root = process.cwd(), trackedFiles } = {}) {
+	const tracked = trackedFiles ?? getTrackedFiles(root);
+	return validateNoVercelReferences(root, tracked).warnings.sort();
+}
+
 export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 	const skills = validateSkills(root);
 	const tracked = trackedFiles ?? getTrackedFiles(root);
 	return [
+		...validateNoVercelReferences(root, tracked).errors,
 		...skills.errors,
 		...validateRoles(root, skills.skillNames),
 		...rejectRetiredWorkflows(root),
@@ -841,7 +852,10 @@ function parseRootArgument(argv) {
 
 function main() {
 	const root = parseRootArgument(process.argv.slice(2));
-	const errors = validateStructure({ root });
+	const trackedFiles = getTrackedFiles(root);
+	const warnings = validateStructureWarnings({ root, trackedFiles });
+	reportRetiredProviderWarnings(warnings);
+	const errors = validateStructure({ root, trackedFiles });
 	if (errors.length > 0) {
 		console.error(`Structural validation failed with ${errors.length} error(s):`);
 		for (const error of errors) console.error(`  - ${error}`);
