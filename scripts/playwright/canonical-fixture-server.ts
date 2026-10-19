@@ -87,7 +87,7 @@ if (accessSource) {
 const UNSUPPORTED = Symbol('unsupported');
 const eqParam = (url: URL, name: string) => url.searchParams.get(name)?.replace(/^eq\./, '');
 
-/** Watermarked previews check the access row before serving a photo. */
+/** Access row (payment and public access) of a canonical fixture invitation. */
 function accessRowFor(invitationId: string): Record<string, unknown> {
 	const state = canonicalAccessStateFor(invitationId);
 	return {

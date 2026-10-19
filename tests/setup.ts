@@ -42,9 +42,6 @@ if (typeof globalThis.MessagePort === 'undefined') {
 	globalThis.MessagePort = NodeMessagePort;
 }
 
-// Unpaid previews seal photo URLs; tests must not depend on Supabase credentials for it.
-process.env.PREVIEW_MEDIA_SECRET ??= 'jest-preview-media-secret';
-
 /**
  * Fetch API Polyfills for JSDOM
  * JSDOM does not provide Response, Request, or Headers globals by default.

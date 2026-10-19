@@ -1,12 +1,10 @@
 /**
- * Image processing contract shared by the intake pipeline and the watermarked preview media.
+ * Image processing contract of the photo intake pipeline.
  *
  * Two implementations exist because the two hosting targets cannot run the same engine:
  * native `sharp` (Node and local development) and the Cloudflare Images binding
  * (Workers). Callers ask for an operation and never see the engine.
  */
-import type { ProvenanceMetadata } from './image-metadata';
-
 export interface ImageInspection {
 	/** MIME type of the decoded container, or undefined for a format the pipeline does not accept. */
 	mimeType: 'image/jpeg' | 'image/png' | 'image/webp' | undefined;
@@ -36,21 +34,6 @@ export interface EncodedImage {
 	size: number;
 }
 
-export interface MarkedImageRequest extends DecodeLimits {
-	bytes: Uint8Array;
-	/** Cover-crops to this size (saliency-guided) before marking; omitted keeps the pixel size. */
-	crop?: { width: number; height: number };
-	format: 'webp' | 'jpeg';
-	quality: number;
-	provenance: ProvenanceMetadata;
-}
-
-export interface MarkedImage {
-	data: Uint8Array;
-	width: number;
-	height: number;
-}
-
 export interface ImageTransformer {
 	readonly id: 'sharp' | 'cloudflare-images';
 	/** Reads format, size, orientation and frame count. Throws when the bytes are not an image. */
@@ -59,6 +42,4 @@ export interface ImageTransformer {
 	assertDecodable(bytes: Uint8Array, limits: DecodeLimits): Promise<void>;
 	/** Auto-orients, fits inside `maxDimension` and encodes WebP. */
 	encodeWebp(bytes: Uint8Array, options: EncodeWebpOptions): Promise<EncodedImage>;
-	/** Draws the preview watermark and provenance metadata on the (optionally cropped) image. */
-	renderMarked(request: MarkedImageRequest): Promise<MarkedImage>;
 }

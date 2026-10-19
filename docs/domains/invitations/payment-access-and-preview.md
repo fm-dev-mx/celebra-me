@@ -43,8 +43,7 @@ through `PATCH /api/dashboard/intake/[id]/access` and the audited RPC. Governanc
   `resolveInvitationContent` maps `unavailable` to `null`, so location, RSVP, memories identity and
   social metadata treat a disabled or expired invitation as missing.
 - Event-keyed checks (personalized RSVP, memories space) use `isEventInvitationUnavailable`: the
-  access row first, then the published event timing (one extra read when enabled). Preview media
-  (`/vista-previa/*`) also refuses an expired invitation.
+  access row first, then the published event timing (one extra read when enabled).
 - A missing access row is served as the unpaid preview, never as the clean invitation.
 - No query parameter (`screenshot`, `skipEnvelope`, `animations`) bypasses either state.
 - Disabled and expired invitations: page `403`; short links answer crawlers with an empty `403` and
@@ -67,9 +66,8 @@ What actually protects an unpaid invitation is the administrator's switch (disab
 page, RSVP, location and memories) and the expiry window: the invitation's value is the live link,
 and the banner tells guests it is not final. The photos belong to the client.
 
-The `/vista-previa/` endpoint and `applyPreviewMediaPolicy` are no longer referenced by the page;
-the endpoint still answers previously issued URLs (e.g. social cards WhatsApp cached) under the same
-rules.
+The former watermarked-photo endpoint (`/vista-previa/`) was removed; previously issued URLs, such
+as social cards WhatsApp cached, now answer `404`.
 
 ## Indexing, AI crawlers and rights
 
