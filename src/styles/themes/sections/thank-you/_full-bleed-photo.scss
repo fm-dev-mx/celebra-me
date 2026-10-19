@@ -1,5 +1,14 @@
 @use '../../../global/mixins' as mixins;
 
+// Opt-in tokens (defaults keep the ivory veil and card):
+//   --thank-you-bleed-veil            Photograph veil at every width
+//   --thank-you-bleed-grid-opacity    Paper grid over the veil (default 22%)
+//   --thank-you-bleed-message-bg / -message-shadow / -message-backdrop / -message-border
+//                                     Message card paint
+//   --thank-you-bleed-monogram-display  Monogram ring above the message (`none` hides it)
+//   --thank-you-bleed-message-color / -message-style / -message-size / -message-line-height
+//   --thank-you-bleed-name-display    Closing name (default `none`); --thank-you-bleed-name-size (below md)
+
 :is(.event-theme-wrapper, body) .thank-you-section[data-variant='full-bleed-photo'] {
 	--thank-you-overlay-gap: clamp(2rem, 6vw, 5rem);
 	--thank-you-overlay-width: 35.5rem;
@@ -32,7 +41,8 @@
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		background:
+		background: var(
+			--thank-you-bleed-veil,
 			linear-gradient(
 				90deg,
 				rgb(var(--thank-you-ivory-rgb) / 94%) 0%,
@@ -45,7 +55,8 @@
 				rgb(var(--thank-you-ivory-rgb) / 36%) 0%,
 				transparent 28%,
 				rgb(var(--thank-you-ink-rgb) / 34%) 100%
-			);
+			)
+		);
 		pointer-events: none;
 	}
 
@@ -61,7 +72,7 @@
 			44px 44px,
 			52px 52px;
 		mix-blend-mode: multiply;
-		opacity: 22%;
+		opacity: var(--thank-you-bleed-grid-opacity, 22%);
 		pointer-events: none;
 	}
 
@@ -123,22 +134,30 @@
 		width: min(100%, 35.5rem);
 		max-width: none;
 		padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3.5vw, 2.4rem);
-		border-left: 1px solid rgb(var(--thank-you-accent-rgb) / 34%);
-		background: linear-gradient(
-			135deg,
-			rgb(var(--thank-you-ivory-rgb) / 82%) 0%,
-			rgb(var(--thank-you-ivory-warm-rgb) / 62%) 58%,
-			rgb(var(--thank-you-ivory-rgb) / 28%) 100%
+		border-left: var(
+			--thank-you-bleed-message-border,
+			1px solid rgb(var(--thank-you-accent-rgb) / 34%)
 		);
-		box-shadow:
+		background: var(
+			--thank-you-bleed-message-bg,
+			linear-gradient(
+				135deg,
+				rgb(var(--thank-you-ivory-rgb) / 82%) 0%,
+				rgb(var(--thank-you-ivory-warm-rgb) / 62%) 58%,
+				rgb(var(--thank-you-ivory-rgb) / 28%) 100%
+			)
+		);
+		box-shadow: var(
+			--thank-you-bleed-message-shadow,
 			0 24px 70px -54px rgb(var(--thank-you-ink-rgb) / 50%),
-			inset 0 1px 0 rgb(var(--thank-you-ivory-rgb) / 62%);
-		backdrop-filter: blur(7px) saturate(118%);
+			inset 0 1px 0 rgb(var(--thank-you-ivory-rgb) / 62%)
+		);
+		backdrop-filter: var(--thank-you-bleed-message-backdrop, blur(7px) saturate(118%));
 		perspective: none;
 
 		&::before {
 			content: var(--sacred-thank-you-monogram, '');
-			display: grid;
+			display: var(--thank-you-bleed-monogram-display, grid);
 			place-items: center;
 			width: 2.15rem;
 			height: 2.15rem;
@@ -155,12 +174,13 @@
 	.thank-you-message {
 		max-width: 33rem;
 		margin: 0;
-		color: rgb(var(--thank-you-ink-rgb) / 84%);
+		color: var(--thank-you-bleed-message-color, rgb(var(--thank-you-ink-rgb) / 84%));
 		font-family: var(--font-display);
-		font-size: clamp(1.18rem, 2.1vw, 1.52rem);
+		font-size: var(--thank-you-bleed-message-size, clamp(1.18rem, 2.1vw, 1.52rem));
+		font-style: var(--thank-you-bleed-message-style, normal);
 		font-weight: 400;
 		letter-spacing: 0;
-		line-height: 1.68;
+		line-height: var(--thank-you-bleed-message-line-height, 1.68);
 	}
 
 	.thank-you-message .drop-cap {
@@ -179,7 +199,7 @@
 	}
 
 	.closing-name {
-		display: none;
+		display: var(--thank-you-bleed-name-display, none);
 	}
 
 	@include mixins.respond-below(md) {
@@ -190,7 +210,8 @@
 		padding: clamp(4rem, 10vw, 6rem) clamp(1rem, 4vw, 1.5rem) clamp(2rem, 5vw, 3rem);
 
 		&::before {
-			background:
+			background: var(
+				--thank-you-bleed-veil,
 				linear-gradient(
 					180deg,
 					transparent 0%,
@@ -204,7 +225,8 @@
 					transparent 30%,
 					transparent 70%,
 					rgb(var(--thank-you-ink-rgb) / 6%) 100%
-				);
+				)
+			);
 		}
 
 		&::after {
@@ -238,15 +260,20 @@
 			width: min(100%, 28rem);
 			max-width: none;
 			padding: clamp(1rem, 4vw, 1.4rem) clamp(1rem, 4vw, 1.4rem) clamp(0.85rem, 3vw, 1.1rem);
-			background: linear-gradient(
-				135deg,
-				rgb(var(--thank-you-ivory-rgb) / 88%) 0%,
-				rgb(var(--thank-you-ivory-warm-rgb) / 72%) 60%,
-				rgb(var(--thank-you-ivory-rgb) / 56%) 100%
+			background: var(
+				--thank-you-bleed-message-bg,
+				linear-gradient(
+					135deg,
+					rgb(var(--thank-you-ivory-rgb) / 88%) 0%,
+					rgb(var(--thank-you-ivory-warm-rgb) / 72%) 60%,
+					rgb(var(--thank-you-ivory-rgb) / 56%) 100%
+				)
 			);
-			box-shadow:
+			box-shadow: var(
+				--thank-you-bleed-message-shadow,
 				0 16px 48px -32px rgb(var(--thank-you-ink-rgb) / 40%),
-				inset 0 1px 0 rgb(var(--thank-you-ivory-rgb) / 70%);
+				inset 0 1px 0 rgb(var(--thank-you-ivory-rgb) / 70%)
+			);
 
 			&::before {
 				width: 1.75rem;
@@ -271,8 +298,8 @@
 		}
 
 		.thank-you-message {
-			font-size: clamp(1rem, 4.5vw, 1.12rem);
-			line-height: 1.62;
+			font-size: var(--thank-you-bleed-message-size, clamp(1rem, 4.5vw, 1.12rem));
+			line-height: var(--thank-you-bleed-message-line-height, 1.62);
 		}
 	}
 
@@ -291,12 +318,12 @@
 		}
 
 		.thank-you-message {
-			font-size: clamp(0.98rem, 5vw, 1.08rem);
-			line-height: 1.58;
+			font-size: var(--thank-you-bleed-message-size, clamp(0.98rem, 5vw, 1.08rem));
+			line-height: var(--thank-you-bleed-message-line-height, 1.58);
 		}
 
 		.closing-name {
-			font-size: clamp(1.85rem, 11vw, 2.25rem);
+			font-size: var(--thank-you-bleed-name-size, clamp(1.85rem, 11vw, 2.25rem));
 		}
 	}
 
@@ -309,7 +336,8 @@
 		padding: clamp(4rem, 10vw, 6rem) clamp(1.25rem, 4vw, 2.5rem);
 
 		&::before {
-			background:
+			background: var(
+				--thank-you-bleed-veil,
 				linear-gradient(
 					90deg,
 					rgb(var(--thank-you-ivory-rgb) / 94%) 0%,
@@ -322,7 +350,8 @@
 					rgb(var(--thank-you-ivory-rgb) / 32%) 0%,
 					transparent 30%,
 					rgb(var(--thank-you-ink-rgb) / 32%) 100%
-				);
+				)
+			);
 		}
 
 		&::after {
@@ -359,8 +388,8 @@
 		}
 
 		.thank-you-message {
-			font-size: clamp(1.1rem, 2vw, 1.4rem);
-			line-height: 1.7;
+			font-size: var(--thank-you-bleed-message-size, clamp(1.1rem, 2vw, 1.4rem));
+			line-height: var(--thank-you-bleed-message-line-height, 1.7);
 		}
 	}
 }

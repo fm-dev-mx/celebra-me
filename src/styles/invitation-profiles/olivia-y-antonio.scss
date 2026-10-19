@@ -1,8 +1,10 @@
-// Olivia y Antonio: the jewelry-box-wedding stationery retinted to the couple's palette. Navy is
-// the ink and the dark chapters, slate and dusty blues carry the bands and hairlines, champagne is
-// kept for fine accents, and the paper stays ivory so the white dress and the greens of the
-// photographs read clean. Section owners keep the geometry; this profile sets tokens only
-// (tests/unit/invitation-profile-boundary.test.ts).
+// Olivia y Antonio, "Noche azul de diciembre": the jewelry-box-wedding stationery retinted to the
+// couple's palette. Navy is the ink and the dark chapters, slate and dusty blues carry the bands
+// and hairlines, and the paper stays ivory so the white dress and the greens of the photographs
+// read clean. Champagne is kept for rules, ornaments and text on navy; small labels on the paper
+// use the deeper champagne ink so they stay legible (4.5:1). Titles are Playfair 500, labels are
+// Cinzel 600, and the script is kept for the couple's names in the closing. Section owners keep
+// the geometry; this profile sets tokens only (tests/unit/invitation-profile-boundary.test.ts).
 
 .event--olivia-y-antonio.theme-preset--jewelry-box-wedding {
 	--olivia-navy: rgb(30 44 77);
@@ -17,6 +19,11 @@
 	--olivia-mist-rgb: 232 239 246;
 	--olivia-champagne: rgb(205 178 140);
 	--olivia-champagne-rgb: 205 178 140;
+	--olivia-champagne-ink: rgb(138 106 58);
+	--olivia-label-size: 0.8125rem;
+	--olivia-label-tracking: 0.16em;
+	--olivia-title-size: 2rem;
+	--olivia-title-line-height: 1.1;
 	--olivia-ivory: rgb(250 247 240);
 	--olivia-ivory-rgb: 250 247 240;
 
@@ -29,12 +36,12 @@
 	--color-text-emphasis: var(--olivia-slate);
 	--color-text-on-dark: var(--olivia-mist);
 	--color-text-on-light: rgb(var(--olivia-navy-rgb) / 82%);
-	--countdown-section-background: linear-gradient(
-		180deg,
-		var(--olivia-ivory) 0%,
-		var(--olivia-mist) 50%,
-		var(--olivia-ivory) 100%
-	);
+	--countdown-section-background: var(--olivia-ivory);
+
+	// Photographs drawn once inside a champagne hairline (family, save-the-date, closing).
+	--hairline-frame-display: block;
+	--hairline-frame-ink: var(--olivia-champagne);
+	--hairline-frame-inset: 10px;
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
@@ -44,21 +51,128 @@
 	--family-media-border: 1px solid rgb(var(--olivia-dusty-rgb) / 60%);
 
 	.family[data-variant='asymmetric-groups'] {
-		--family-bg: radial-gradient(
-			circle at 50% 50%,
-			rgb(var(--olivia-dusty-rgb) / 16%) 0%,
-			var(--olivia-ivory) 100%
-		);
+		--family-bg: var(--olivia-ivory);
 		--family-media-filter: none;
+		--family-label-font: var(--font-label);
+		--family-meta-font: var(--font-label);
+		--family-eyebrow-size: var(--olivia-label-size);
+		--family-eyebrow-weight: 600;
+		--family-eyebrow-letter-spacing: var(--olivia-label-tracking);
+		--family-eyebrow-color: var(--olivia-champagne-ink);
+		--family-eyebrow-opacity: 100%;
+		--family-split-title-size: var(--olivia-title-size);
+		--family-split-title-weight: 500;
+		--family-split-title-line-height: var(--olivia-title-line-height);
+		--family-title-color: var(--olivia-navy);
+		--family-group-title-size: var(--olivia-label-size);
+		--family-group-title-weight: 600;
+		--family-group-title-letter-spacing: var(--olivia-label-tracking);
+		--family-group-title-color: var(--olivia-champagne-ink);
+		--family-group-title-opacity: 100%;
+		--family-meta-size: var(--olivia-label-size);
+		--family-meta-weight: 600;
+		--family-meta-letter-spacing: var(--olivia-label-tracking);
+		--family-meta-color: var(--olivia-champagne-ink);
+		--family-split-name-size: 1.375rem;
+		--family-name-line-height: 1.2;
+		--family-name-color: var(--olivia-navy);
+		--family-godparent-role-name-size: 1.0625rem;
+		--family-godparent-role-separator-color: var(--olivia-champagne);
 	}
 
-	.gallery-section {
-		--gallery-section-bg: linear-gradient(
-			180deg,
-			var(--olivia-ivory) 0%,
-			var(--olivia-mist) 100%
-		);
-		--gallery-title-color: var(--olivia-slate);
+	// Gallery: features full width at 4:5, the rest paired at 3:4 on a tight 8 px gutter.
+	.gallery-section[data-variant='paired-feature-band'] {
+		--gallery-section-bg: var(--olivia-ivory);
+		--gallery-title-size: var(--olivia-title-size);
+		--gallery-title-weight: 500;
+		--gallery-title-line-height: var(--olivia-title-line-height);
+		--gallery-title-color: var(--olivia-navy);
+		--gallery-grid-columns-mobile: 2;
+		--gallery-item-aspect-ratio: 3 / 4;
+		--gallery-item-aspect-ratio-feature: 4 / 5;
+		--gallery-grid-gap: 8px;
+		--gallery-grid-gap-wide: 8px;
+	}
+
+	.gifts-section {
+		--gifts-title-size: var(--olivia-title-size);
+		--gifts-title-weight: 500;
+		--gifts-title-line-height: var(--olivia-title-line-height);
+		--gifts-title-transform: none;
+		--gifts-title-letter-spacing: 0;
+		--gifts-title-color: var(--olivia-navy);
+	}
+
+	// The vow: italic Playfair on ivory, the last clause apart in slate.
+	.quote-section {
+		--quote-bg: var(--olivia-ivory);
+		--quote-padding-block: 96px;
+		--quote-content-font: var(--font-display);
+		--quote-content-style: italic;
+		--quote-content-weight: 400;
+		--quote-content-size: 1.5rem;
+		--quote-content-line-height: 1.4;
+		--quote-content-max-width: 22ch;
+		--quote-content-shadow: none;
+		--quote-text-color: var(--olivia-navy);
+		--quote-closing-line-color: var(--olivia-slate);
+		--quote-author-font: var(--font-label);
+		--quote-author-size: var(--olivia-label-size);
+		--quote-author-color: var(--olivia-champagne-ink);
+		--quote-author-opacity: 100%;
+	}
+
+	// Countdown: the days lead in display numerals; hours, minutes and seconds share one line.
+	.countdown-section {
+		--countdown-type-title-size: var(--olivia-title-size);
+		--countdown-type-title-weight: 500;
+		--countdown-type-title-line-height: var(--olivia-title-line-height);
+		--countdown-type-title-tracking: 0;
+		--countdown-type-title-transform: none;
+		--countdown-type-title-ink: var(--olivia-navy);
+		--countdown-grid-columns-mobile: 3;
+		--countdown-grid-columns-tablet: 3;
+		--countdown-days-span: 1 / -1;
+		--countdown-segment-padding-mobile: 0;
+		--countdown-segment-padding-desktop: 0;
+		--countdown-value-wrapper-width-mobile: auto;
+		--countdown-value-wrapper-width-desktop: auto;
+		--countdown-type-segment-direction: row;
+		--countdown-type-segment-align: baseline;
+		--countdown-type-segment-justify: center;
+		--countdown-type-segment-gap: 0.4em;
+		--countdown-type-value-font: var(--font-label);
+		--countdown-type-value-size: var(--olivia-label-size);
+		--countdown-type-value-weight: 600;
+		--countdown-type-value-tracking: 0.08em;
+		--countdown-type-label-font: var(--font-label);
+		--countdown-type-label-size: var(--olivia-label-size);
+		--countdown-type-label-weight: 600;
+		--countdown-type-label-tracking: var(--olivia-label-tracking);
+		--countdown-type-label-ink: var(--olivia-champagne-ink);
+		--countdown-type-label-opacity: 100%;
+		--color-text-primary: var(--olivia-champagne-ink);
+		--event-calendar-ink: var(--olivia-navy);
+		--event-calendar-day-ink: rgb(var(--olivia-slate-rgb) / 85%);
+		--event-calendar-event-ink: var(--olivia-navy);
+		--event-calendar-mark-ink: var(--olivia-champagne);
+		--event-calendar-mark-width: 1.55;
+		--event-calendar-label-size: var(--olivia-label-size);
+
+		.countdown__segment[data-unit='days'] {
+			--countdown-type-segment-direction: column;
+			--countdown-type-segment-align: center;
+			--countdown-type-segment-gap: 0.5rem;
+			--countdown-type-value-font: var(--font-display);
+			--countdown-type-value-size: 5.5rem;
+			--countdown-type-value-weight: 500;
+			--countdown-type-value-tracking: 0;
+			--color-text-primary: var(--olivia-navy);
+		}
+
+		.countdown-invitation-text {
+			--color-text-primary: var(--olivia-slate);
+		}
 	}
 
 	// Music prompt (shown once the couple's song is added).
@@ -88,8 +202,9 @@
 		--hero-content-z-index: 1;
 		--hero-content-width: min(42rem, 48vw);
 		--hero-content-margin: 0 0 clamp(6.5rem, 13vh, 9rem) clamp(1.8rem, 7vw, 7rem);
+		--hero-photo-drift: hero-photo-drift;
 		--hero-eyebrow-font: var(--font-label);
-		--hero-eyebrow-size: 0.7rem;
+		--hero-eyebrow-size: var(--olivia-label-size);
 		--hero-eyebrow-weight: 600;
 		--hero-eyebrow-tracking: 0.28em;
 		--hero-heading-size: clamp(3rem, 5.6vw, 5.75rem);
@@ -101,7 +216,7 @@
 		--hero-divider-fill: var(--olivia-dusty);
 		--hero-details-align: flex-start;
 		--hero-date-font: var(--font-label);
-		--hero-date-size: clamp(0.72rem, 1.2vw, 0.84rem);
+		--hero-date-size: var(--olivia-label-size);
 		--hero-date-weight: 600;
 		--hero-date-tracking: 0.18em;
 		--hero-date-transform: uppercase;
@@ -122,17 +237,6 @@
 			--hero-divider-margin: 1.5rem auto;
 			--hero-details-align: center;
 		}
-	}
-
-	.itinerary[data-variant='editorial-ledger'] {
-		--editorial-ledger-rule: rgb(var(--olivia-navy-rgb) / 16%);
-		--editorial-ledger-spine: rgb(var(--olivia-dusty-rgb) / 70%);
-		--itinerary-item-label-color: var(--olivia-navy);
-		--itinerary-item-time-color: var(--olivia-slate);
-		--itinerary-item-time-font: var(--font-label);
-		--itinerary-item-time-weight: 600;
-		--itinerary-item-time-tracking: 0.14em;
-		--itinerary-item-desc-color: rgb(var(--olivia-navy-rgb) / 72%);
 	}
 
 	.event-location[data-variant='stacked-venue-plates'] {
@@ -156,26 +260,26 @@
 		--location-inner-frame-padding: 0;
 		--location-content-padding: clamp(1.35rem, 3vw, 1.85rem);
 		--location-plates-content-align: left;
-		--location-date-font-family: var(--font-label);
-		--location-date-font-size: 0.7rem;
-		--location-date-font-weight: 600;
-		--location-date-letter-spacing: 0.16em;
-		--location-date-color: var(--olivia-slate);
-		--location-hour-font-family: var(--font-label);
-		--location-hour-font-size: 0.7rem;
-		--location-hour-font-weight: 600;
-		--location-hour-letter-spacing: 0.16em;
-		--location-hour-color: var(--olivia-slate);
+		--location-intro-heading-size: var(--olivia-title-size);
+		--location-intro-heading-font-weight: 500;
+		--location-plates-eyebrow-size: var(--olivia-label-size);
+		--location-plates-eyebrow-weight: 600;
+		--location-plates-eyebrow-tracking: var(--olivia-label-tracking);
+		--location-lead-time-color: var(--olivia-navy);
+		--location-indications-heading-font-size: var(--olivia-label-size);
+		--location-indications-heading-font-weight: 600;
+		--location-indications-heading-letter-spacing: var(--olivia-label-tracking);
+		--location-indication-number-display: none;
 		--location-plates-notes-max-width: 46rem;
 		--location-plates-notes-border-inline: 0;
 		--location-plates-notes-bg: transparent;
 
 		.event-location__card-title {
 			--location-title-font-family: var(--font-label);
-			--location-title-font-size: 0.7rem;
+			--location-title-font-size: var(--olivia-label-size);
 			--location-title-font-weight: 600;
-			--location-title-letter-spacing: 0.25em;
-			--location-title-color: var(--olivia-slate);
+			--location-title-letter-spacing: var(--olivia-label-tracking);
+			--location-title-color: var(--olivia-champagne-ink);
 		}
 	}
 
@@ -296,6 +400,47 @@
 		--formal-chapter-metal-rgb: var(--olivia-champagne-rgb);
 		--formal-chapter-padding-end: 1.5rem;
 		--formal-chapter-footer-margin-end: 0;
+		--formal-chapter-display: var(--font-display);
+		--formal-chapter-label: var(--font-label);
+		--formal-register-title-size: var(--olivia-title-size);
+		--formal-register-title-weight: 500;
+		--formal-register-title-line-height: var(--olivia-title-line-height);
+		--formal-register-eyebrow-size: var(--olivia-label-size);
+		--formal-register-eyebrow-weight: 600;
+		--formal-register-eyebrow-tracking: var(--olivia-label-tracking);
 		--rsvp-section-min-height: auto;
+	}
+
+	// Closing: the last photograph sinks into deep navy; the couple's names in script, champagne.
+	.thank-you-section[data-variant='full-bleed-photo'] {
+		--color-surface-dark: var(--olivia-navy-deep);
+		--color-surface-dark-rgb: var(--olivia-navy-deep-rgb);
+		--thank-you-bleed-veil: linear-gradient(
+			to bottom,
+			transparent 40%,
+			var(--olivia-navy-deep) 92%
+		);
+		--thank-you-bleed-grid-opacity: 0%;
+		--thank-you-bleed-message-bg: transparent;
+		--thank-you-bleed-message-shadow: none;
+		--thank-you-bleed-message-backdrop: none;
+		--thank-you-bleed-message-border: 0;
+		--thank-you-bleed-monogram-display: none;
+		--thank-you-bleed-message-color: rgb(var(--olivia-ivory-rgb) / 88%);
+		--thank-you-bleed-message-style: italic;
+		--thank-you-bleed-message-size: 1.25rem;
+		--thank-you-bleed-message-line-height: 1.5;
+		--thank-you-bleed-name-display: block;
+		--thank-you-bleed-name-size: 2.75rem;
+		--thank-you-closing-date-size: var(--olivia-label-size);
+
+		.closing-name {
+			--color-action-accent: var(--olivia-champagne);
+			--color-action-primary: var(--olivia-champagne);
+		}
+
+		.closing-date {
+			--color-text-secondary: var(--olivia-champagne);
+		}
 	}
 }

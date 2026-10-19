@@ -14,6 +14,7 @@ import { LOCATION_PRESENTATIONS } from '@/lib/invitation/location-presentation';
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
 	LOCATION_INDICATIONS_STYLES,
+	LOCATION_VENUE_CARDS,
 	LOCATION_MAP_STYLES,
 } from '@/lib/invitation/location-presentation';
 import {
@@ -102,6 +103,7 @@ export const InvitationEditorSectionSchemas = {
 				indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
 				indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 				showCalendarLinks: z.boolean().optional(),
+				venueCard: z.enum(LOCATION_VENUE_CARDS).optional(),
 			})
 			.strict()
 			.optional(),

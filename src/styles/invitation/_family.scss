@@ -440,6 +440,44 @@
 		min-width: 0;
 	}
 
+	// `godparentsLayout: 'by-role'`: one label per role over the names joined on one line. Roles
+	// with more than two names take the full row.
+	&__godparent-roles {
+		display: grid;
+		grid-template-columns: repeat(var(--family-godparent-roles-columns, 2), minmax(0, 1fr));
+		gap: var(--family-godparent-roles-gap, clamp(1.1rem, 3vw, 1.5rem) 1rem);
+	}
+
+	&__godparent-role[data-span='full'] {
+		grid-column: 1 / -1;
+	}
+
+	&__godparent-role-label {
+		margin: 0 0 0.35rem;
+		font-family: var(--family-meta-font, var(--font-label, var(--font-body)));
+		font-size: var(--family-meta-size, 0.68rem);
+		font-weight: var(--family-meta-weight, 600);
+		letter-spacing: var(--family-meta-letter-spacing, 0.16em);
+		text-transform: var(--family-meta-text-transform, uppercase);
+		color: var(
+			--family-meta-color,
+			var(--family-meta-color-fallback, rgb(var(--color-text-primary-rgb) / 68%))
+		);
+	}
+
+	&__godparent-role-names {
+		margin: 0;
+		font-family: var(--family-name-font, var(--family-name-font-fallback, var(--font-display)));
+		font-size: var(--family-godparent-role-name-size, 1.0625rem);
+		line-height: var(--family-godparent-role-name-line-height, 1.4);
+		color: var(--family-name-color, currentcolor);
+		text-wrap: pretty;
+	}
+
+	&__godparent-role-separator {
+		color: var(--family-godparent-role-separator-color, currentcolor);
+	}
+
 	&__list--godparents-grouped {
 		grid-template-columns: var(
 			--family-godparents-grouped-list-columns,

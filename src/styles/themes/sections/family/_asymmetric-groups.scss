@@ -2,6 +2,8 @@
 
 // Family asymmetric-groups: left-read staggered groups with optional right-set
 // spanning godparents block. Shared canonical implementation.
+// Opt-in tokens: --family-split-title-size / -title-weight / -title-line-height and
+// --family-split-name-size (defaults keep the variant's display scale).
 .family[data-variant='asymmetric-groups'] {
 	--family-split-gap-inline: clamp(2rem, 6vw, 5rem);
 	--family-split-gap-block: clamp(1.25rem, 3.5vw, 1.65rem);
@@ -92,9 +94,9 @@
 				)
 			)
 		);
-		font-size: clamp(1.75rem, 3.8vw, 2.45rem);
-		font-weight: 600;
-		line-height: 1.15;
+		font-size: var(--family-split-title-size, clamp(1.75rem, 3.8vw, 2.45rem));
+		font-weight: var(--family-split-title-weight, 600);
+		line-height: var(--family-split-title-line-height, 1.15);
 		color: var(--family-title-color, var(--family-title-color-fallback));
 	}
 
@@ -201,7 +203,7 @@
 				)
 			)
 		);
-		font-size: clamp(1.45rem, 3vw, 2.05rem);
+		font-size: var(--family-split-name-size, clamp(1.45rem, 3vw, 2.05rem));
 		font-weight: 500;
 		color: var(--family-name-color);
 	}

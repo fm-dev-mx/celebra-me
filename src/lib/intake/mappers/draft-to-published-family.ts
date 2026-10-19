@@ -200,6 +200,7 @@ export function mapFamilyFromDraft(
 
 	if (typeof family.visible === 'boolean') result.visible = family.visible;
 	if (family.presentation) result.presentation = family.presentation;
+	if (family.godparentsLayout) result.godparentsLayout = family.godparentsLayout;
 	result.variant = resolveFamilyVariant(family, priorFamily);
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	return isNonEmptyObject(result) ? result : undefined;
