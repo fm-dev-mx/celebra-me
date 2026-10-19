@@ -88,6 +88,11 @@ describe('environment contract', () => {
 	const runtimeNames = collectRuntimeEnvNames();
 	const operationalOnlyNames = readDocumentedCategory('operational-script-only');
 	const deployRuntimeNames = readDocumentedCategory('deploy-provided-runtime');
+	const hostedPreviewOnlyNames = readDocumentedCategory('hosted-preview-only');
+	const previewTemplateNames = collectMatches(
+		readProjectFile('.env.preview.local.example'),
+		/^([A-Z][A-Z0-9_]*)=/gm,
+	);
 
 	it('types every active app/runtime variable and no script-only variables', () => {
 		expect(sorted(typedRuntimeNames)).toEqual(sorted(runtimeNames));
@@ -103,8 +108,19 @@ describe('environment contract', () => {
 			sorted(difference(deployRuntimeNames, difference(typedRuntimeNames, templateNames))),
 		).toEqual([]);
 
+		expect(sorted(difference(hostedPreviewOnlyNames, typedRuntimeNames))).toEqual([]);
+		expect(sorted(difference(hostedPreviewOnlyNames, previewTemplateNames))).toEqual([]);
+		expect(sorted(hostedPreviewOnlyNames).filter((name) => templateNames.has(name))).toEqual(
+			[],
+		);
+
 		expect(sorted(difference(templateNames, operationalOnlyNames))).toEqual(
-			sorted(difference(typedRuntimeNames, deployRuntimeNames)),
+			sorted(
+				difference(
+					difference(typedRuntimeNames, deployRuntimeNames),
+					hostedPreviewOnlyNames,
+				),
+			),
 		);
 	});
 

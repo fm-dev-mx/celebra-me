@@ -90,6 +90,7 @@
         "invitation:media:verify": "tsx scripts/invitation/verify-published-images.ts",
         "invitation:preview-mark:generate": "tsx scripts/invitation/generate-preview-mark-master.ts",
         "db:disposable:system-concurrency": "tsx scripts/db/disposable-test-env.ts run-system-concurrency-test",
+        "env:audit": "tsx scripts/agent/env-files.ts audit",
         "env:check": "tsx scripts/agent/env-files.ts check",
         "env:sync": "tsx scripts/agent/env-files.ts sync",
         "lane:sync": "tsx scripts/agent/lane-sync.ts",
