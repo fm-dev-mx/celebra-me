@@ -257,6 +257,12 @@ Stop if a change only reshuffles CSS between files without changing ownership.
 Themes and states are not separate token layers. Themes override semantic tokens and public
 component tokens. States are represented inside component token contracts.
 
+Landing (`src/styles/home/**`) and dashboard (`src/styles/dashboard/**`) styles take `border-radius`
+from `--radius-*` and `font-size` from a `type-scale` text style or a font-size variable. Existing
+literals are frozen per file by `tests/unit/style-scale-literals.test.ts`: a file may only lower its
+count, and a migration that lowers it updates `tests/fixtures/style-scale-literals/baseline.json` in
+the same change.
+
 ## Theme Presets
 
 Invitation presets are reusable atmosphere packs (catalog SKUs), not per-invitation look files:
