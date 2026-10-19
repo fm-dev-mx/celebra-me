@@ -1,3 +1,5 @@
+@use '../tokens/type-scale';
+
 .dashboard-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -12,9 +14,8 @@
 }
 
 .dashboard-table th {
-	font-size: 0.75rem;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
+	@include type-scale.text(table-label);
+
 	color: var(--color-text-secondary);
 }
 
@@ -23,10 +24,10 @@
 	--dashboard-badge-text: var(--color-state-info-text);
 	--dashboard-badge-border: var(--color-state-info-border);
 
+	@include type-scale.text(badge);
+
 	padding: 0.2rem 0.5rem;
 	border-radius: 999px;
-	font-size: 0.7rem;
-	font-weight: 600;
 	background: var(--dashboard-badge-bg);
 	color: var(--dashboard-badge-text);
 	border: 1px solid var(--dashboard-badge-border);

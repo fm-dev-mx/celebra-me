@@ -76,6 +76,9 @@ to the fallback families.
 
 - System family stacks: `src/styles/tokens/system/_type.scss`
 - Authoring aliases (sizes, weights, tracking): `src/styles/tokens/_typography.scss`
+- Text styles (`display-2`, `h3`, `h4`, `body-large`, `body-small`, `button`, `eyebrow`,
+  `table-label`, `badge`): `src/styles/tokens/_type-scale.scss`, applied with
+  `@include type-scale.text(<style>)`. The module emits no CSS, so any partial may `@use` it.
 - Semantic/runtime type tokens: `src/styles/tokens/semantic/_type.scss`
 - Runtime CSS variables consumed by components: `src/styles/global.scss`
 
