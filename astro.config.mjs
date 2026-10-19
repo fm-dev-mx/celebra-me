@@ -189,7 +189,7 @@ export default defineConfig({
 	},
 	image: {
 		// `astro dev` renders through sharp; match the hosted Cloudflare fit (see the service).
-		...(isCloudflareBuild
+		...(usesCloudflareAdapter
 			? {}
 			: { service: { entrypoint: './src/lib/assets/dev-image-service.ts' } }),
 		remotePatterns: [
