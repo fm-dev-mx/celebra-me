@@ -80,7 +80,7 @@
 	.powered-by {
 		display: none;
 		margin: 0;
-		font-size: 0.6rem;
+		font-size: var(--footer-powered-size, 0.6rem);
 		font-weight: 400;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
@@ -99,12 +99,14 @@
 
 .footer__rights {
 	margin: 0;
-	font-size: 0.62rem;
+	font-size: var(--footer-rights-size, 0.62rem);
 	letter-spacing: 0.08em;
 	text-align: center;
 	opacity: var(--footer-powered-opacity, 55%);
 
 	a {
+		// Inline padding grows the tap area without moving the line (`--footer-link-tap-padding`).
+		padding-block: var(--footer-link-tap-padding, 0);
 		color: inherit;
 		text-decoration: underline;
 		text-underline-offset: 2px;

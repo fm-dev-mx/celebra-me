@@ -14,6 +14,16 @@
 	--america-gutter: clamp(1.5rem, 6vw, 4rem);
 	--america-rule: rgb(var(--color-violet-ink-rgb) / 18%);
 
+	// The album's paper and mist.
+	--color-lilac-paper: rgb(251 248 243);
+	--color-lilac-paper-rgb: 251 248 243;
+	--color-lilac-mist: rgb(233 223 245);
+	--color-lilac-mist-rgb: 233 223 245;
+	--america-night: rgb(28 21 48);
+	--america-night-rgb: 28 21 48;
+	--america-night-gold: rgb(243 217 164);
+	--america-night-gold-rgb: 243 217 164;
+
 	// Flat grounds: the album paper carries no grain.
 	--storybook-paper: var(--color-lilac-paper);
 	--storybook-paper-mist: var(--color-lilac-mist);
@@ -26,13 +36,24 @@
 
 	// Cover: the photograph is shown as taken, with no night veil over the door. Its letter rises
 	// once the envelope night has mostly faded (the night waits for the envelope letter to leave).
-	--hero-bleed-photo-veil: none;
+	// Cover: a short night veil under the header and a slow drift on the photograph.
+	--hero-bleed-photo-veil: linear-gradient(to bottom, rgb(28 21 48 / 55%) 0%, transparent 30%);
 	--hero-bleed-photo-veil-wide: none;
+	--hero-bleed-photo-drift: hero-bleed-drift;
 	--hero-bleed-entrance: hero-bleed-rise;
 	--hero-bleed-entrance-wait: 900ms;
 
-	// Quote on plain paper.
+	// Quote as a pause on plain paper: the small sun in place of the rule, then the line, then
+	// the closing words in gold ink.
 	--storybook-quote-art: none;
+	--storybook-quote-padding-block: 7rem;
+	--quote-top-art: url('../../assets/invitations/america/sun-corona-mark.svg');
+	--quote-top-art-display: block;
+	--quote-top-art-ink: var(--color-gold-ink);
+	--quote-content-weight: 400;
+	--quote-content-size: 1.75rem;
+	--quote-content-line-height: 1.35;
+	--quote-closing-line-color: var(--color-gold-ink);
 
 	// Family on mist, titles upright in the display face.
 	--family-bg: var(--color-lilac-mist);
@@ -42,11 +63,48 @@
 	--interlude-framed-settle: none;
 	--thank-you-keepsake-settle: none;
 
+	// Chapter titles share one upright display voice: Cormorant 400 at 34 px, set tight. Small
+	// capital labels share one size, tracking and gold ink.
+	--america-title-size: 2.125rem;
+	--america-label-size: 0.8125rem;
+	--america-label-tracking: 0.14em;
+	--family-title-size: var(--america-title-size);
+	--family-title-line-height: 1.1;
+	--family-title-letter-spacing: 0;
+	--family-eyebrow-size: var(--america-label-size);
+	--family-eyebrow-letter-spacing: var(--america-label-tracking);
+	--family-group-title-size: var(--america-label-size);
+	--family-group-title-letter-spacing: var(--america-label-tracking);
+	--family-name-size: 1.375rem;
+	--family-name-line-height: 1.2;
+	--location-intro-heading-size: var(--america-title-size);
+	--location-intro-heading-line-height: 1.1;
+	--location-enclosure-heading-size: var(--america-title-size);
+	--location-enclosure-heading-line-height: 1.1;
+	--location-program-label-size: var(--america-label-size);
+	--location-program-label-caps: normal;
+	--location-program-label-transform: uppercase;
+	--location-program-label-color: var(--color-gold-ink);
+	--stacked-cards-title-size: var(--america-title-size);
+	--stacked-cards-title-color: var(--color-violet-ink);
+	--reply-card-title-size: var(--america-title-size);
+	--reply-card-title-line-height: 1.1;
+
+	// No text under 12 px; the footer links keep a 44 px tap height.
+	--footer-rights-size: 0.75rem;
+	--footer-powered-size: 0.75rem;
+	--footer-replay-font-size: 0.75rem;
+	--footer-control-font-size: 0.75rem;
+	--footer-link-tap-padding: 0.875rem;
+
 	// Chapter titles share one upright display voice.
 	--gifts-title-style: normal;
 	--gifts-title-transform: none;
 	--gifts-title-letter-spacing: 0;
-	--gifts-title-size: var(--location-intro-heading-size);
+	--gifts-title-size: var(--america-title-size);
+	--gifts-title-weight: 400;
+	--gifts-title-line-height: 1.1;
+	--gifts-title-color: var(--color-violet-ink);
 	--itinerary-title-tracking: 0;
 	--location-intro-heading-style: normal;
 
@@ -144,6 +202,11 @@
 	--thank-you-keepsake-ambient-stacked: none;
 	--thank-you-keepsake-image-radius: 64% 36% 0 0 / 16% 10% 0 0;
 
+	// The quote section declares its measure itself, so it is set on the section.
+	.quote-section {
+		--quote-content-max-width: 18ch;
+	}
+
 	// The program's moment titles are set in the display face (the script is only for the name).
 	.itinerary {
 		--font-calligraphy: var(--font-display);
@@ -155,6 +218,9 @@
 		--gallery-section-bg: var(--color-lilac-mist);
 		--gallery-title-style: normal;
 		--gallery-title-color: var(--color-violet-ink);
+		--gallery-title-size: var(--america-title-size);
+		--gallery-title-weight: 400;
+		--gallery-title-line-height: 1.1;
 		--gallery-mosaic-gap: 0.5rem;
 		--gallery-mosaic-max-width: min(calc(100% - 2 * var(--america-gutter)), 60rem);
 	}
@@ -212,11 +278,32 @@
 	// The closing writes its signature in ink on the day paper. Its base tints the paper toward the
 	// accent; the tint is set to the paper itself, so the closing ground stays flat. The first
 	// letter keeps the message ink instead of a gold initial.
+	// The closing is the night the story ends in: the door photograph fades into it through a
+	// radial mask, under the lantern sky, with the message and the name in candle gold.
+	.invitation-section-wrapper[data-section-kind='thankYou'] {
+		--america-ground: var(--america-night);
+		--america-ground-rgb: var(--america-night-rgb);
+	}
+
 	.thank-you-section {
-		--color-action-primary: var(--color-violet-ink);
-		--color-action-primary-rgb: var(--color-violet-ink-rgb);
-		--color-action-accent-rgb: var(--color-lilac-paper-rgb);
-		--color-text-emphasis: var(--color-violet-ink);
+		--color-surface-primary: var(--america-night);
+		--color-surface-primary-rgb: var(--america-night-rgb);
+		--color-action-primary: var(--america-night-gold);
+		--color-action-primary-rgb: var(--america-night-gold-rgb);
+		--color-action-accent: var(--america-night-gold);
+		--color-action-accent-rgb: var(--america-night-rgb);
+		--color-text-primary: rgb(var(--america-night-gold-rgb) / 85%);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-emphasis: var(--america-night-gold);
+		--thank-you-keepsake-image-mask: radial-gradient(
+			ellipse 75% 70% at 50% 42%,
+			rgb(0 0 0) 55%,
+			transparent 100%
+		);
+		--storybook-closing-sky-display: block;
+		--storybook-sky-light: var(--color-candle-cream);
+		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-lantern: var(--color-lantern-amber);
 	}
 
 	// Stacked under the photograph (phones held upright), the name is the cover's headline: the
@@ -291,10 +378,41 @@
 	}
 
 	.countdown-section {
+		--america-band-padding: 7rem;
 		--countdown-written-bg: transparent;
 		--countdown-written-padding-block: calc(var(--america-band-padding) + var(--america-cut))
 			calc(var(--america-band-padding) + var(--america-print-overlap));
 		--countdown-written-muted: var(--color-night-lilac);
+		--countdown-written-title-size: 0.8125rem;
+		--countdown-written-title-tracking: 0.14em;
+		--countdown-written-title-caps: normal;
+		--countdown-written-title-transform: uppercase;
+		--countdown-written-title-color: var(--america-night-gold);
+		--countdown-written-numeral: 6.5rem;
+		--countdown-written-numeral-weight: 400;
+		--countdown-written-numeral-color: var(--america-night-gold);
+		--countdown-written-numeral-shadow: 0 0 24px rgb(232 160 64 / 35%);
+		--event-calendar-ink: var(--america-night-gold);
+		--event-calendar-mark-ink: var(--america-night-gold);
+		--storybook-ambient-lanterns-display: block;
+		--storybook-sky-light: var(--color-candle-cream);
+		--storybook-sky-lantern: var(--color-lantern-amber);
+	}
+
+	// Program: one card per moment; the waltz card is set in the night.
+	.itinerary[data-variant='stacked-cards'] {
+		--stacked-cards-section-bg: var(--color-lilac-paper);
+		--stacked-cards-paper: var(--color-lilac-paper);
+		--stacked-cards-ink: var(--color-violet-ink);
+		--stacked-cards-accent: var(--color-violet-ink);
+		--stacked-cards-desc-size: 1.0625rem;
+	}
+
+	.stacked-card[data-moment='Waltz'] {
+		--stacked-cards-paper: var(--america-night);
+		--stacked-cards-ink: var(--america-night-gold);
+		--stacked-cards-accent: var(--america-night-gold);
+		--stacked-cards-lantern-line: var(--america-night-gold);
 	}
 
 	// Join 2, the second bridge: the save-the-date print hangs out of the night into the paper on
@@ -360,6 +478,7 @@
 	.envelope-wrapper[data-variant='storybook-lanterns'] {
 		// The lights live on the depth sky (see the reveal skin); the field is the night alone.
 		--storybook-sky-display: block;
+		--storybook-send-off: lanterns;
 		--storybook-sky-light: var(--color-candle-cream);
 		--storybook-sky-glow: var(--color-candle-gold);
 		--storybook-sky-lantern: var(--color-lantern-amber);
