@@ -231,15 +231,27 @@ export interface ProductionDeploymentEvidence {
 	sha: string;
 }
 
+/**
+ * GitHub environment that `.github/workflows/deploy-production.yml` records for each Production
+ * Worker upload. An upload serves no traffic by itself; the contract gate pairs it with the
+ * Production domain smoke on the same SHA, which passes only once the domain serves that build.
+ */
+export const CLOUDFLARE_PRODUCTION_DEPLOYMENT_ENVIRONMENT = 'Cloudflare Production';
+
 function isProductionDeploymentEnvironment(value: unknown): boolean {
-	return typeof value === 'string' && value.trim().toLowerCase() === 'production';
+	return (
+		typeof value === 'string' &&
+		value.trim().toLowerCase() === CLOUDFLARE_PRODUCTION_DEPLOYMENT_ENVIRONMENT.toLowerCase()
+	);
 }
 
 export function loadLatestProductionDeployment(
 	run: GhRunner = defaultGhRunner,
 ): ProductionDeploymentEvidence {
 	const client = createGitHubClient(run);
-	const deployments = client.api('deployments?environment=production&per_page=100') as Array<{
+	const deployments = client.api(
+		`deployments?environment=${encodeURIComponent(CLOUDFLARE_PRODUCTION_DEPLOYMENT_ENVIRONMENT)}&per_page=100`,
+	) as Array<{
 		id?: unknown;
 		sha?: unknown;
 		environment?: unknown;
