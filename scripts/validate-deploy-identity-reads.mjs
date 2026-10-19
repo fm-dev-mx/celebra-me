@@ -5,20 +5,11 @@ function normalizePath(file) {
 	return file.replaceAll('\\', '/').replace(/^\.\//u, '');
 }
 
-// Deploy identity is read in exactly one module. Application code never consults
-// hosting-platform identity or NODE_ENV: edge runtimes report no NODE_ENV, and hosting
-// platforms may inject any value at runtime.
+// Deploy identity is read in exactly one module. Application code never consults NODE_ENV:
+// edge runtimes report no NODE_ENV, and hosting platforms may inject any value at runtime.
+// Retired hosting providers are caught by validate-retired-provider-references.mjs.
 const DEPLOY_IDENTITY_MODULE = 'src/lib/server/deploy-identity.ts';
 const DEPLOY_IDENTITY_RULES = [
-	{
-		pattern:
-			/\bVERCEL(?:_ENV|_GIT_COMMIT_SHA|_GIT_COMMIT_REF|_GIT_PREVIOUS_SHA|_DEPLOYMENT_ID|_REGION|_URL)?\b/,
-		message: 'reads hosting-platform identity; use src/lib/server/deploy-identity.ts',
-	},
-	{
-		pattern: /x-vercel-id/i,
-		message: 'reads a hosting-platform request id',
-	},
 	{
 		pattern:
 			/(?:getEnv\(\s*['"]CELEBRA_DEPLOY_ENV|(?:process|import\.meta)\.env(?:\.|\[\s*['"])CELEBRA_DEPLOY_ENV|\{[^}]*\bCELEBRA_DEPLOY_ENV\b[^}]*\}\s*=\s*(?:process|import\.meta)\.env)/,
