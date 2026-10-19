@@ -31,13 +31,6 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'tests/unit/deployment-workflow-contract.test.ts',
 	'tests/unit/post-deploy-smoke.test.ts',
 	'tests/scripts/operational-contracts.test.ts',
-	// Until the owner closes the Vercel project and deletes the local `.vercel/` directory:
-	// ignore rules, the Sign Worker origin of the backup deployment, and the rollback runbook.
-	'.gitignore',
-	'.prettierignore',
-	'.vscode/settings.json',
-	'eslint.config.js',
-	'jest.config.cjs',
 	// Until the contract migration drops provider='cloudinary': tests that prove legacy
 	// Cloudinary rows and URLs are rejected, ignored or pruned.
 	'tests/db/preview-sync-invitations.test.ts',
