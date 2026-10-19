@@ -262,7 +262,7 @@ describe('GET /api/dashboard/memories/[eventId]/qr', () => {
 
 		it('encodes the Preview deployment in a Preview QR', async () => {
 			asHostedDeploy('preview');
-			const previewOrigin = 'https://celebra-me-git-develop.vercel.app';
+			const previewOrigin = 'https://celebra-me-preview.celebra-me-com.workers.dev';
 			const response = await getAdminQr(
 				context(`${previewOrigin}/api/dashboard/admin/memories/${EVENT_ID}/qr`, {
 					eventId: EVENT_ID,

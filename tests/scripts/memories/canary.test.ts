@@ -131,7 +131,7 @@ describe('memories Production canary preflight', () => {
 		`https://www.celebra-me.com/r/${SLUG}#canary`,
 		`http://www.celebra-me.com/r/${SLUG}`,
 		`https://www.celebra-me.com/r/otro-evento`,
-		`https://celebra-me.vercel.app/r/${SLUG}`,
+		`https://abc123-celebra-me.celebra-me-com.workers.dev/r/${SLUG}`,
 		'not a url',
 	])('rejects noncanonical destination %s', (destination) => {
 		expectFailure(
@@ -256,7 +256,7 @@ describe('memories Production canary lifecycle guard', () => {
 		});
 		guard.observe({
 			method: 'POST',
-			url: `https://celebra-me.vercel.app${SESSION_PATH}`,
+			url: `https://abc123-celebra-me.celebra-me-com.workers.dev${SESSION_PATH}`,
 			body: JSON.stringify({ action: 'create' }),
 		});
 		guard.observe({

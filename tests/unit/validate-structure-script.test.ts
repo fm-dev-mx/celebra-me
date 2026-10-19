@@ -375,8 +375,11 @@ describe('validate-structure script', () => {
 				'src/lib/leaky.ts',
 			]).join('\n');
 
-			// Retired-provider names are reported as warnings by their own validator.
-			expect(output).not.toContain('src/lib/leaky.ts:1:');
+			// Line 1 is reported once, by the retired-provider guard, for the whole file.
+			expect(output).toContain(
+				'src/lib/leaky.ts:1: names retired provider Vercel on 4 line(s).',
+			);
+			expect(output).not.toMatch(/src\/lib\/leaky\.ts:1: (?!names retired provider)/);
 			expect(output).not.toContain('src/lib/leaky.ts:2:');
 			expect(output).not.toContain('src/lib/leaky.ts:3:');
 			expect(output).toContain('src/lib/leaky.ts:4: reads CELEBRA_DEPLOY_ENV outside');
@@ -449,7 +452,7 @@ describe('validate-structure script', () => {
 		}
 	});
 
-	it('warns about retired Vercel and Cloudinary mentions outside history without failing', () => {
+	it('rejects retired Vercel and Cloudinary mentions outside the allow-list', () => {
 		const fixtureRoot = createFixture();
 		try {
 			writeFixtureFile(
@@ -494,11 +497,11 @@ describe('validate-structure script', () => {
 				strict: { errors: string[]; warnings: string[] };
 			};
 
-			expect(output.warnings).toEqual([
+			expect(output.warnings).toEqual([]);
+			expect(output.errors).toEqual([
 				'docs/hosting.md:3: names retired provider Vercel on 2 line(s).',
 				'docs/hosting.md:4: names retired provider Cloudinary on 1 line(s).',
 			]);
-			expect(output.errors).toEqual([]);
 			expect(output.strict.errors).toHaveLength(2);
 			expect(output.strict.warnings).toEqual([]);
 		} finally {
