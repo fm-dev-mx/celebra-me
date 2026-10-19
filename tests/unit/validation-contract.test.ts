@@ -231,9 +231,13 @@ describe('canonical validation contract', () => {
 			expect(job(name)).toContain('!cancelled()');
 			expect(job(name)).toContain("needs.evidence-reuse.outputs.reuse != 'true'");
 		}
-		// Browser scope may skip only the browser tier, and only on a develop push.
+		// Browser scope may skip only the browser tier, and only for develop pushes and pull
+		// requests into develop; promotion pull requests into main never reach it.
 		expect(job('browser-scope')).toContain('run: node scripts/ops/ci-browser-scope.ts');
-		expect(job('browser-scope')).toContain("if: github.event_name == 'push'");
+		expect(job('browser-scope')).toContain("github.event_name == 'push' ||");
+		expect(job('browser-scope')).toContain(
+			"(github.event_name == 'pull_request' && github.base_ref == 'develop')",
+		);
 		for (const name of ['browser-validation', 'browser-memories']) {
 			expect(job(name)).toContain("needs.browser-scope.outputs.browser != 'skip'");
 		}

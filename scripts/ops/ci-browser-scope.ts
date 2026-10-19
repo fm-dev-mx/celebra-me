@@ -5,13 +5,16 @@ import { isVisualImpactPath, normalizeVisualPath } from './visual-impact.ts';
 import { githubApi } from '../lib/github-api.ts';
 
 /**
- * Decides whether the Repository CI browser tier must execute for a `develop` push.
+ * Decides whether the Repository CI browser tier must execute for a `develop` push or a pull
+ * request into `develop`.
  *
  * The tier is skipped only when every browser input (application sources, served assets, the
- * browser harness and its configuration) is byte-identical to the head of an earlier `develop`
- * push whose browser job passed. Pull requests, manual dispatches and every uncertain case run
- * the tier (fail-open). A run that skipped the tier never serves as evidence itself: its browser
- * job concludes `skipped`, so evidence reuse and this assessment both look past it.
+ * browser harness and its configuration) of the validated commit is byte-identical to the head of
+ * an earlier `develop` push whose browser jobs passed. For a pull request the validated commit is
+ * its merge candidate, so changes on `develop` since that run count as well. Pull requests into
+ * other branches, manual dispatches and every uncertain case run the tier (fail-open). A run that
+ * skipped the tier never serves as evidence itself: its browser jobs conclude `skipped`, so
+ * evidence reuse and this assessment both look past it.
  */
 
 /** Browser inputs beyond the shared visual-impact classifier (which already covers assets, harness and lockfile). */
@@ -32,6 +35,9 @@ export const BROWSER_JOB_NAMES = [
 ] as const;
 export const SCOPE_WORKFLOW_FILE = 'commit-validation.yml';
 export const SCOPE_SOURCE_BRANCH = 'develop';
+
+/** Events whose run may inherit browser evidence when they validate `develop`. */
+export const SCOPE_EVENTS = ['push', 'pull_request'] as const;
 
 export type BrowserScope = 'run' | 'skip';
 
@@ -64,13 +70,19 @@ function run(reason: string): ScopeDecision {
 
 export function assessBrowserScope(input: {
 	eventName: string;
+	/** Branch the run validates: the pushed branch, or the base branch of a pull request. */
 	refName: string;
 	proven: ProvenRun | null;
 	/** Paths changed between the proven head and this head; null when unknown. */
 	changedPaths: string[] | null;
 }): ScopeDecision {
-	if (input.eventName !== 'push' || input.refName !== SCOPE_SOURCE_BRANCH)
-		return run(`Only ${SCOPE_SOURCE_BRANCH} pushes may inherit browser evidence.`);
+	if (
+		!(SCOPE_EVENTS as readonly string[]).includes(input.eventName) ||
+		input.refName !== SCOPE_SOURCE_BRANCH
+	)
+		return run(
+			`Only ${SCOPE_SOURCE_BRANCH} pushes and pull requests into ${SCOPE_SOURCE_BRANCH} may inherit browser evidence.`,
+		);
 	if (!input.proven) return run('No earlier integration run with a passing browser tier exists.');
 	if (!Array.isArray(input.changedPaths))
 		return run(`The diff against integration run ${input.proven.id} is unavailable.`);
@@ -149,11 +161,15 @@ function changedPathsSince(provenSha: string, headSha: string): string[] | null 
 
 async function decide(): Promise<ScopeDecision> {
 	const eventName = process.env.GITHUB_EVENT_NAME ?? '';
-	const refName = process.env.GITHUB_REF_NAME ?? '';
+	// A pull request validates its merge candidate (GITHUB_SHA) against its base branch.
+	const refName =
+		(eventName === 'pull_request'
+			? process.env.GITHUB_BASE_REF
+			: process.env.GITHUB_REF_NAME) ?? '';
 	const repository = process.env.GITHUB_REPOSITORY ?? '';
 	const token = process.env.GH_TOKEN ?? '';
 	const headSha = process.env.GITHUB_SHA ?? '';
-	if (eventName !== 'push' || refName !== SCOPE_SOURCE_BRANCH)
+	if (!(SCOPE_EVENTS as readonly string[]).includes(eventName) || refName !== SCOPE_SOURCE_BRANCH)
 		return assessBrowserScope({ eventName, refName, proven: null, changedPaths: null });
 	if (!token || !repository || !EXACT_SHA.test(headSha))
 		return run('Scope inputs are incomplete.');

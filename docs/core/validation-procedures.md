@@ -254,15 +254,17 @@ Repository CI on `develop` to force a complete execution. Failure artifacts reta
 images and traces when produced for three days. No additional capture, retry, tolerance or
 acceptance policy is introduced for diagnostics.
 
-A `develop` push may skip only the browser tier. The `Browser scope` job
-(`scripts/ops/ci-browser-scope.ts`) compares the head against the most recent successful `develop`
-push run whose `Application / browser` and `Application / browser memories` jobs themselves
-succeeded, and skips the tier only when no browser input (application sources, served assets,
-`scripts/shared/`, the Playwright harness, fixtures, visual references, the workflow itself and the
-package/Astro/Playwright configuration) changed in between. Pull requests, manual dispatches, an
-unreadable history or API, and any changed browser input run the tier. A run that skipped the tier
-records a `skipped` browser job, so it is never a source for evidence reuse or for a later scope
-assessment; the release pull request then runs every tier.
+A `develop` push or a pull request into `develop` may skip only the browser tier. The
+`Browser scope` job (`scripts/ops/ci-browser-scope.ts`) compares the validated commit (the pushed
+head, or the pull request's merge candidate, which also carries `develop` changes since that run)
+against the most recent successful `develop` push run whose `Application / browser` and
+`Application / browser memories` jobs themselves succeeded, and skips the tier only when no browser
+input (application sources, served assets, `scripts/shared/`, the Playwright harness, fixtures,
+visual references, the workflow itself and the package/Astro/Playwright configuration) changed in
+between. Pull requests into `main`, manual dispatches, an unreadable history or API, and any changed
+browser input run the tier. A run that skipped the tier records a `skipped` browser job, so it is
+never a source for evidence reuse or for a later scope assessment; the release pull request then
+runs every tier.
 
 Evidence is reusable only for the same SHA, range, configuration, runtime and command. A new final
 integration SHA, changed inputs or an unresolved failure justifies revalidation; PR merge-SHA

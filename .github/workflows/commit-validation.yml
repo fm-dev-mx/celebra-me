@@ -63,12 +63,15 @@ jobs:
                   PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: node scripts/ops/ci-evidence-reuse.ts
 
-    # A develop push whose browser inputs equal the head of an earlier develop push with a passing
-    # browser job inherits that evidence instead of repeating the browser tier.
+    # A develop push or pull request into develop whose browser inputs equal the head of an earlier
+    # develop push with a passing browser tier inherits that evidence instead of repeating the tier.
     browser-scope:
         name: Browser scope
-        # Only a develop push can inherit evidence; pull requests and dispatches always run the tier.
-        if: github.event_name == 'push'
+        # Only a develop push or a pull request into develop can inherit evidence; promotion pull
+        # requests into main use evidence reuse instead, and dispatches always run the tier.
+        if: >-
+            github.event_name == 'push' ||
+            (github.event_name == 'pull_request' && github.base_ref == 'develop')
         runs-on: ubuntu-24.04
         timeout-minutes: 5
         outputs:
