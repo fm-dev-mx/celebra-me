@@ -469,9 +469,7 @@ describe('resolvePublicInvitation access state', () => {
 		consoleWarn.mockRestore();
 	});
 
-	it('serves watermarked photos for an unpaid invitation and originals once paid', async () => {
-		const original = process.env.PREVIEW_MEDIA_SECRET;
-		process.env.PREVIEW_MEDIA_SECRET = 'test-preview-secret';
+	it('serves original photos whether the invitation is unpaid or paid', async () => {
 		const heroSrc =
 			'https://abc.supabase.co/storage/v1/object/public/invitation-assets/x/hero.webp';
 		const heroViewModel = {
@@ -496,11 +494,8 @@ describe('resolvePublicInvitation access state', () => {
 		);
 		const unpaid = await resolvePublicInvitation('my-invitation', 'xv');
 		const unpaidVm = unpaid?.source === 'published' ? unpaid.viewModel : null;
-		expect(unpaidVm?.hero.backgroundImage.src).toMatch(
-			/^\/vista-previa\/[A-Za-z0-9_-]+\.webp$/,
-		);
-		expect(unpaidVm?.sharing?.ogImage?.src).toMatch(/\.jpg$/);
-		expect(JSON.stringify(unpaidVm)).not.toContain(heroSrc);
+		expect(unpaidVm?.hero.backgroundImage.src).toBe(heroSrc);
+		expect(JSON.stringify(unpaidVm)).not.toContain('/vista-previa/');
 
 		mockFindPublishedWithAccess.mockResolvedValue(
 			publishedEntry({ paymentStatus: 'paid', publicAccess: 'enabled' }),
@@ -509,7 +504,6 @@ describe('resolvePublicInvitation access state', () => {
 		expect(paid?.source === 'published' && paid.viewModel.hero.backgroundImage.src).toBe(
 			heroSrc,
 		);
-		process.env.PREVIEW_MEDIA_SECRET = original;
 	});
 
 	it('never applies access state to static demos', async () => {

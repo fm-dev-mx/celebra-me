@@ -9,10 +9,8 @@ import { normalizeLegacyLocationInContent } from '@/lib/invitation/location-norm
 import {
 	MISSING_INVITATION_ACCESS,
 	isInvitationPubliclyDisabled,
-	resolvePublicInvitationMode,
 	type InvitationAccessState,
 } from '@/lib/invitation/access/invitation-access';
-import { applyPreviewMediaPolicy } from '@/lib/invitation/preview/preview-media-policy';
 import {
 	resolveInvitationContentValidity,
 	toInvitationTimingProjection,
@@ -178,17 +176,11 @@ export async function resolvePublicInvitation(
 				}
 
 				const rawContent = parsedContent.data;
-				const adaptedViewModel = adaptDbEvent({
+				// Unpaid previews keep their original photos; the page banner is the preview cue.
+				const viewModel = adaptDbEvent({
 					slug,
 					content: rawContent,
 				});
-				// Unpaid: every consumer (page, social card, memories identity) gets watermarked photos.
-				const viewModel =
-					resolvePublicInvitationMode(access) === 'preview'
-						? applyPreviewMediaPolicy(adaptedViewModel, {
-								invitationId: publishedEntry.invitationId,
-							})
-						: adaptedViewModel;
 				return {
 					source: 'published',
 					invitationId: publishedEntry.invitationId,
