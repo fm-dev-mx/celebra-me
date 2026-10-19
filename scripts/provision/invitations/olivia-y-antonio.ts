@@ -41,14 +41,13 @@ const content: CanonicalEventContentInput = {
 	templateId: 'boda-jewelry-box-wedding',
 	title: 'Boda de Olivia Martínez y Antonio Vázquez',
 	description: `Invitación a la boda de Olivia y Antonio, el ${EVENT_DATE_LONG} en Los Mochis, Sinaloa.`,
-	theme: { preset: 'jewelry-box-wedding' },
+	theme: { preset: 'jewelry-box-wedding', motion: 'editorial' },
 	eventTiming: OLIVIA_TIMING,
 	sectionOrder: [
 		'quote',
 		'countdown',
 		'family',
 		'location',
-		'itinerary',
 		'gallery',
 		'gifts',
 		'personalizedAccess',
@@ -64,8 +63,7 @@ const content: CanonicalEventContentInput = {
 			family: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
 			'interlude-after-family': { family: 'overlap', source: 'family' },
 			location: { family: 'arch', source: 'interlude-after-family' },
-			itinerary: { family: 'atmospheric-blend', source: 'location' },
-			gallery: { family: 'atmospheric-blend', source: 'itinerary' },
+			gallery: { family: 'atmospheric-blend', source: 'location' },
 			gifts: { family: 'atmospheric-blend', source: 'gallery' },
 			'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
 			rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
@@ -87,6 +85,7 @@ const content: CanonicalEventContentInput = {
 		focalPointMobile: '50% 38%',
 		focalPointTablet: '50% 40%',
 		focalPointDesktop: '60% 45%',
+		presentation: { timeFormat: '12h' },
 	},
 	envelope: {
 		disabled: false,
@@ -111,13 +110,15 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	quote: {
-		text: 'El amor es paciente, es bondadoso. Todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta.',
+		text: 'El amor es paciente, es bondadoso. Todo lo disculpa, todo lo cree, todo lo espera,',
+		closingLine: 'todo lo soporta.',
 		author: '1 Corintios 13:4–7',
 	},
 	countdown: {
 		variant: 'standard',
 		title: 'Falta poco para decir que sí',
 		footerText: 'Los Mochis, Sinaloa',
+		presentationOptions: { calendar: { mark: 'ring' } },
 	},
 	interludes: [
 		{
@@ -140,6 +141,8 @@ const content: CanonicalEventContentInput = {
 	family: {
 		variant: 'asymmetric-groups',
 		presentation: 'with-photo',
+		// One label per role with its names beneath; no couples are inferred.
+		godparentsLayout: 'by-role',
 		featuredImage: 'family',
 		featuredImageAlt: 'Olivia y Antonio de pie entre bambúes, ella con un ramo blanco.',
 		focalPoint: '50% 40%',
@@ -179,8 +182,10 @@ const content: CanonicalEventContentInput = {
 		variant: 'stacked-venue-plates',
 		presentation: 'simple',
 		presentationOptions: {
-			showFlourishes: true,
+			showFlourishes: false,
 			showNavigationButtons: true,
+			// Each card opens with its time and keeps one «Cómo llegar» button, no map tile.
+			venueCard: 'compact',
 		},
 		introEyebrow: 'Los Mochis, Sinaloa',
 		introHeading: EVENT_DATE_HEADING,
@@ -220,33 +225,16 @@ const content: CanonicalEventContentInput = {
 			},
 		],
 	},
-	itinerary: {
-		variant: 'editorial-ledger',
-		title: 'Programa de la noche',
-		subtitle: 'Acompáñenos en cada momento de nuestra celebración.',
-		items: [
-			{
-				iconName: 'Church',
-				label: 'Ceremonia religiosa',
-				time: SCHEDULE.ceremony,
-				description: `${CEREMONY.name}.`,
-			},
-			{
-				iconName: 'Toast',
-				label: 'Recepción',
-				time: SCHEDULE.reception,
-				description: `${RECEPTION.name}.`,
-			},
-		],
-	},
 	gallery: {
-		variant: 'uniform-grid',
+		// Full-width 4:5 features between 3:4 pairs.
+		variant: 'paired-feature-band',
 		eyebrow: 'Galería',
 		title: 'Nuestra historia',
 		subtitle: 'Del jardín al mar: algunos momentos antes del gran día.',
 		items: [
 			{
 				image: 'gallery01',
+				layoutRole: 'feature',
 				alt: 'Antonio besa la frente de Olivia mientras ella muestra su anillo.',
 				focalPoint: '50% 35%',
 			},
@@ -262,6 +250,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: 'gallery04',
+				layoutRole: 'feature',
 				alt: 'Antonio inclina a Olivia en un paso de baile en el jardín.',
 				focalPoint: '50% 50%',
 			},
@@ -277,6 +266,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: 'gallery07',
+				layoutRole: 'feature',
 				alt: 'Olivia con un ramo junto a Antonio en la playa.',
 				focalPoint: '45% 45%',
 			},
@@ -303,6 +293,8 @@ const content: CanonicalEventContentInput = {
 		variant: 'formal-register',
 		title: 'Confirme su asistencia',
 		subcopy: `Le pedimos registrar su respuesta a más tardar el ${RSVP_DEADLINE}. El número de lugares corresponde al pase asignado.`,
+		lockedMessage:
+			'Esta invitación es personal. Abra el enlace que le enviamos para ver su lugar y confirmar antes del 18 de noviembre.',
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		confirmationMessage: 'Su respuesta quedó registrada. Le esperamos.',
@@ -334,8 +326,8 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	thankYou: {
-		variant: 'standard',
-		// The sunset kiss closes the evening the invitation opened in the garden.
+		// The sunset kiss fades into the wedding night that closes the invitation.
+		variant: 'full-bleed-photo',
 		image: 'thankYou',
 		focalPoint: '50% 60%',
 		message:

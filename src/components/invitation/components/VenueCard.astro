@@ -33,6 +33,8 @@ interface Props {
 	showNavigationButtons?: boolean;
 	accessLabel?: string;
 	calendar?: VenueCalendarLinks | null;
+	/** Time-led card: the time opens it, no map tile, one «Cómo llegar» directions button. */
+	compact?: boolean;
 }
 
 const {
@@ -44,6 +46,7 @@ const {
 	showNavigationButtons = true,
 	accessLabel,
 	calendar,
+	compact = false,
 } = Astro.props;
 
 // Presentation-only Spanish formatting. Persistence uses YYYY-MM-DD / HH:mm;
@@ -67,11 +70,15 @@ const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
 // buttons: linked when a navigable URL exists, pure illustration while the
 // venue URL is still pending.
 const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
+const directionsUrl = [venue.googleMapsUrl, venue.mapUrl, venue.appleMapsUrl, venue.wazeUrl].find(
+	(url) => isNavigableVenueMapUrl(url),
+);
 
 ---
 
 <div class="event-location__card-wrapper" data-reveal-item>
 	{accessLabel && <p class="event-location__access-label">{accessLabel}</p>}
+	{compact && formattedTime && <p class="event-location__card-lead-time">{formattedTime}</p>}
 	<h3 class="event-location__card-title">{venue.venueEvent}</h3>
 	{showFlourishes && (
 		<div class="event-location__card-flourish" aria-hidden="true">
@@ -80,8 +87,12 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 			<span class="flourish-line"></span>
 		</div>
 	)}
-	<article class={`event-location__card event-location__card--${type}`} data-media-mode={mediaMode}>
-		{mediaMode !== 'none' && !useMapPreviewLink && (
+	<article
+		class={`event-location__card event-location__card--${type}`}
+		data-media-mode={mediaMode}
+		data-card-form={compact ? 'compact' : undefined}
+	>
+		{!compact && mediaMode !== 'none' && !useMapPreviewLink && (
 			<div class="event-location__card-image-outer-frame">
 				<div class="event-location__card-image-inner-frame">
 					<div class="event-location__card-image-container">
@@ -106,7 +117,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 		)}
 		{/* Artwork plate for presentations that disable navigation buttons.
 		    Linked when a navigable map URL exists; pure illustration while it is pending. */}
-		{mediaMode === 'none' && showNavigationButtons === false && (
+		{!compact && mediaMode === 'none' && showNavigationButtons === false && (
 			<MapPreviewContainer
 				href={useMapPreviewLink ? mapPreviewUrl : undefined}
 				class={`event-location__card-map-preview${useMapPreviewLink ? ' event-location__card-map-preview--link' : ''}`}
@@ -180,7 +191,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 		)}
 		{/* Classic UBICACIÓN layout for invitations with navigation buttons enabled.
 		    Side-by-side grid: map art on the left, link panel on the right. */}
-		{mediaMode === 'none' && !useMapPreviewLink && hasMapLink && (
+		{!compact && mediaMode === 'none' && !useMapPreviewLink && hasMapLink && (
 			<div class="event-location__card-map-preview" data-map-preview="link">
 				<div class="event-location__card-map-preview-art" aria-hidden="true">
 					<span class="event-location__card-map-preview-grid"></span>
@@ -209,7 +220,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 				<li class="event-location__card-content-place">
 					{venue.venueName}
 				</li>
-				{formattedDate && (
+				{formattedDate && !compact && (
 					<li class="event-location__card-content-date">
 						{formattedDate}
 					</li>
@@ -226,7 +237,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 							))}
 						</ul>
 					</li>
-				) : formattedTime ? (
+				) : formattedTime && !compact ? (
 					<li class="event-location__card-content-hour">{formattedTime}</li>
 				) : null}
 				<li class="event-location__card-content-address">
@@ -253,7 +264,21 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 				</details>
 			)}
 
-			{showNavigationButtons && (
+			{compact ? (
+				directionsUrl && (
+					<div class="event-location__card-navigation-buttons">
+						<a
+							href={directionsUrl}
+							class="event-location__nav-button event-location__nav-button--directions"
+							target="_blank"
+							rel="noopener noreferrer"
+							aria-label={`Cómo llegar a ${venue.venueName}`}
+						>
+							Cómo llegar
+						</a>
+					</div>
+				)
+			) : showNavigationButtons && (
 				<div class="event-location__card-navigation-buttons">
 					{hasAppleMap && (
 						<a

@@ -1,0 +1,49 @@
+// Hairline frame (HairlineFrame.astro): a 1 px rectangle set inside a photograph that draws itself
+// once when its revealed ancestor enters. Hidden unless a profile displays it.
+// Tokens (all optional):
+//   --hairline-frame-display   `block` to show it (default: none)
+//   --hairline-frame-ink       Stroke color (default: current text color)
+//   --hairline-frame-inset     Distance from the photograph's edge (default: 10px)
+// Without motion (no script, or reduced motion) the frame is complete and still.
+.hairline-frame {
+	--hairline-frame-inset-resolved: var(--hairline-frame-inset, 10px);
+
+	position: absolute;
+	inset: var(--hairline-frame-inset-resolved);
+	z-index: 2;
+	display: var(--hairline-frame-display, none);
+	width: calc(100% - 2 * var(--hairline-frame-inset-resolved));
+	height: calc(100% - 2 * var(--hairline-frame-inset-resolved));
+	overflow: visible;
+	pointer-events: none;
+
+	rect {
+		fill: none;
+		stroke: var(--hairline-frame-ink, currentcolor);
+		stroke-width: 1;
+		stroke-dasharray: 1;
+		stroke-dashoffset: 0;
+	}
+}
+
+// Held undrawn only while a revealed ancestor waits to enter, so a frame outside any observed
+// element is simply complete.
+@media (prefers-reduced-motion: no-preference) {
+	[data-reveal-pending] .hairline-frame rect {
+		stroke-dashoffset: 1;
+	}
+
+	.is-visible .hairline-frame rect {
+		animation: hairline-frame-draw 1400ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+	}
+}
+
+@keyframes hairline-frame-draw {
+	from {
+		stroke-dashoffset: 1;
+	}
+
+	to {
+		stroke-dashoffset: 0;
+	}
+}

@@ -109,6 +109,8 @@ function mapFamilyToDraft(
 		visible: typeof family.visible === 'boolean' ? family.visible : undefined,
 		presentation: str(family.presentation) as
 			NonNullable<DraftContent['family']>['presentation'] | undefined,
+		godparentsLayout: str(family.godparentsLayout) as
+			NonNullable<DraftContent['family']>['godparentsLayout'] | undefined,
 		variant: str(family.variant) as NonNullable<DraftContent['family']>['variant'] | undefined,
 		groups: publishedGroups
 			?.filter((g) => g.items && g.items.length > 0)

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
+import { HERO_TIME_FORMATS } from '@/lib/invitation/hero-presentation';
 import { HERO_VARIANTS } from '@/lib/invitation/section-variants';
 
 export const heroSchema = z
@@ -33,6 +34,8 @@ export const heroSchema = z
 				coverPage: z.string().trim().min(1).max(16).optional(),
 				// Editorial-cover design credit line; shown unless explicitly disabled.
 				designCredit: z.boolean().optional(),
+				// Clock shown under the cover date: `24h` (default, as written) or `12h` (`7:00 p. m.`).
+				timeFormat: z.enum(HERO_TIME_FORMATS).optional(),
 			})
 			.strict()
 			.optional(),

@@ -5,6 +5,7 @@ import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.sche
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
 	LOCATION_INDICATIONS_STYLES,
+	LOCATION_VENUE_CARDS,
 	LOCATION_MAP_STYLES,
 	LOCATION_PRESENTATIONS,
 } from '@/lib/invitation/location-presentation';
@@ -66,6 +67,7 @@ const locationBaseSchema = z.object({
 			indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
 			indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 			showCalendarLinks: z.boolean().optional(),
+			venueCard: z.enum(LOCATION_VENUE_CARDS).optional(),
 		})
 		.strict()
 		.optional(),
@@ -120,6 +122,18 @@ export const locationSchema = z
 				path: ['accessPolicy', 'revealPlacement'],
 				message:
 					'location.accessPolicy.revealPlacement is only valid for after-rsvp visibility',
+			});
+		}
+
+		if (
+			location.presentationOptions?.venueCard === 'compact' &&
+			location.variant !== 'stacked-venue-plates'
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['presentationOptions', 'venueCard'],
+				message:
+					'location.presentationOptions.venueCard=compact requires stacked-venue-plates',
 			});
 		}
 

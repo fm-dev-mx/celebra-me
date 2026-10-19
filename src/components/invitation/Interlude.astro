@@ -1,4 +1,5 @@
 ---
+import HairlineFrame from '@/components/invitation/HairlineFrame.astro';
 import '@/styles/invitation/_interlude.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
@@ -67,5 +68,6 @@ const imageHeight = isFramed && intrinsic ? intrinsic.height : 1400;
 			fetchpriority="low"
 			quality={80}
 		/>
+		{isFramed && <HairlineFrame />}
 	</div>
 </section>

@@ -22,6 +22,7 @@ import type {
 	LocationIndicationsStyle,
 	LocationMapStyle,
 	LocationPresentation,
+	LocationVenueCard,
 } from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
 
@@ -41,6 +42,8 @@ interface Props {
 	indicationsHeading?: string;
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
+	/** `compact`: time-led venue cards without the map tile (stacked-venue-plates). */
+	venueCard?: LocationVenueCard;
 	calendarEventTitle?: string;
 	eventTimeZone?: string;
 	nextSectionLink?: {
@@ -70,6 +73,7 @@ const {
 	indicationsHeading,
 	indicationsLayout = 'list',
 	showCalendarLinks = false,
+	venueCard,
 	calendarEventTitle,
 	eventTimeZone,
 	nextSectionLink,
@@ -143,6 +147,7 @@ const venueType = (venue: GroupedVenue) =>
 					presentation={presentation}
 					showFlourishes={showFlourishes}
 					showNavigationButtons={showNavigationButtons}
+					compact={venueCard === 'compact'}
 					calendar={calendarFor(venue)}
 				/>
 			))}

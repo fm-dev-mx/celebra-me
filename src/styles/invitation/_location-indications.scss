@@ -15,6 +15,11 @@
 	gap: var(--location-indication-number-gap, 0.6em);
 }
 
+// `--location-indication-number-display: none` drops the ordinal (a single note needs no "01").
+:where(.event-location__indication-number) {
+	display: var(--location-indication-number-display, inline);
+}
+
 // The board selector carries the section class so it outranks preset section skins
 // (e.g. editorial-magazine's flat "NOTA 0N" list) without !important.
 .event-location .event-location__indications[data-indications-style='numbered-board'] {
