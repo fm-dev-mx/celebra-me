@@ -140,7 +140,11 @@ export const RsvpStepsFormView = forwardRef<HTMLElement, RsvpStepsFormViewProps>
 
 	useEffect(() => {
 		if (!movedRef.current) return;
-		headingRef.current?.focus({ preventScroll: true });
+		// After the new step paints, so the answer does not wait on a forced layout.
+		const frame = requestAnimationFrame(() =>
+			headingRef.current?.focus({ preventScroll: true }),
+		);
+		return () => cancelAnimationFrame(frame);
 	}, [step]);
 
 	const handleAttendance: RsvpFormViewProps['onAttendanceChange'] = (status) => {
