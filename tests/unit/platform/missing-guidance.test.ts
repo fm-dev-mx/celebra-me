@@ -87,4 +87,21 @@ describe('no credential values in provider payloads', () => {
 		expect(payload).not.toContain('secret-pat-value');
 		expect(payload).not.toContain('secret-ref-value');
 	});
+
+	it('reports disk as an informative figure, never against the 500 MB database cap', async () => {
+		process.env.SUPABASE_MANAGEMENT_TOKEN = 'secret-pat-value';
+		process.env.SUPABASE_PROJECT_REF_PREVIEW = 'secret-ref-value';
+
+		const supabase = await getSupabasePlatformUsage('preview', NOW, async () =>
+			jsonResponse({ metrics: { fs_used_bytes: 333_000_000, fs_size_bytes: 8_000_000_000 } }),
+		);
+
+		expect(supabase.kind).toBe('ok');
+		if (supabase.kind !== 'ok') return;
+		expect(supabase.metrics).toHaveLength(1);
+		expect(supabase.metrics[0]).toMatchObject({
+			id: 'sbDisk',
+			meter: { used: 333_000_000, limit: null },
+		});
+	});
 });

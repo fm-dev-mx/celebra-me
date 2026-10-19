@@ -1,13 +1,18 @@
 /**
  * Supabase project usage for the super-admin platform console, read from the
  * Management API with a read-only personal access token. One project per
- * environment (Preview and Production), each against its own Free-plan
- * allowance. Never throws to callers and never
+ * environment (Preview and Production). Never throws to callers and never
  * forwards provider response bodies: failures collapse to `unavailable` or a
  * blanked meter.
+ *
+ * The Free plan's 500 MB cap applies to the database size, which the PAT's
+ * scopes (Usage Analytics Read, Disk Config Read) cannot read: the SQL and
+ * metrics endpoints need `database_read` or `analytics_logs_read`. Disk usage
+ * includes WAL and system files and runs far above the database size, so it
+ * is reported as an informative figure with no quota (`limit: null`), never
+ * against the 500 MB cap, to avoid a false alarm.
  */
 
-import { SUPABASE_FREE_TIER } from '@/lib/platform/contract/limits';
 import { buildPlatformMetric } from '@/lib/platform/contract/meters';
 import type { PlatformEnvironmentId, PlatformProviderUsage } from '@/lib/platform/contract/types';
 import { PLATFORM_ENV } from './config';
@@ -30,10 +35,9 @@ export function resetSupabaseUsageCache(): void {
 }
 
 /**
- * Disk utilization from `GET /v1/projects/{ref}/config/disk/util`. The exact
- * envelope and its equivalence to the plan's "database size" are not verified
- * against the live API: both shapes are accepted and a missing figure blanks
- * only its own meter.
+ * Disk utilization from `GET /v1/projects/{ref}/config/disk/util`
+ * (`{ timestamp, metrics: { fs_used_bytes, … } }` per the OpenAPI spec; a flat
+ * shape is also accepted). A missing figure blanks only its own meter.
  */
 export function parseDiskUsedBytes(payload: unknown): number | null {
 	const root = isRecord(payload) ? payload : null;
@@ -89,9 +93,9 @@ export async function getSupabasePlatformUsage(
 					missing: [],
 					metrics: [
 						buildPlatformMetric({
-							id: 'sbDatabase',
+							id: 'sbDisk',
 							used,
-							limit: SUPABASE_FREE_TIER.databaseBytes,
+							limit: null,
 							window: 'snapshot',
 							scope: environment,
 							now,
