@@ -212,7 +212,7 @@ describe('canonicalizeManagedInvitationContent', () => {
 						},
 					},
 				},
-				{ hero: { image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp' } },
+				{ hero: { image: 'https://cdn.example.com/demo/image/upload/v1/hero.webp' } },
 				new Map([[localId, 'hero']]),
 			),
 		).toBe(true);
@@ -229,7 +229,7 @@ describe('canonicalizeManagedInvitationContent', () => {
 				},
 				{
 					hero: {
-						image: 'https://res.cloudinary.com/demo/image/upload/v1/portrait.webp',
+						image: 'https://cdn.example.com/demo/image/upload/v1/portrait.webp',
 					},
 				},
 				new Map([[localId, 'hero']]),
@@ -288,7 +288,7 @@ describe('canonicalizeManagedInvitationContent', () => {
 				{
 					hero: {
 						name: 'Different',
-						image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+						image: 'https://cdn.example.com/demo/image/upload/v1/hero.webp',
 					},
 				},
 				new Map([[localId, 'hero']]),

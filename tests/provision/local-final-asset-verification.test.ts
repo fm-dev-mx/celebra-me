@@ -93,10 +93,10 @@ describe('local final asset verification helpers', () => {
 		).toBe(false);
 	});
 
-	it('rejects the retired cloudinary provider even with an R2 URL', () => {
+	it('rejects an unsupported provider even with an R2 URL', () => {
 		expect(
 			isAcceptableLocalFinalAssetRow({
-				provider: 'cloudinary',
+				provider: 's3',
 				secureUrl: R2_URL,
 				sha256: SHA,
 				expectedSha256: SHA,

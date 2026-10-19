@@ -233,7 +233,7 @@ describe('applyDraftMutation', () => {
 				kind: 'section',
 				section: 'music',
 				value: {
-					url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
+					url: 'https://cdn.example.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
 					title: 'Stephen Sanchez — Until I Found You',
 					autoPlay: true,
 				},

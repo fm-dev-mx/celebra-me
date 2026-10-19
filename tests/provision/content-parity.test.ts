@@ -381,7 +381,7 @@ describe('semantic parity comparison', () => {
 					image: {
 						type: 'uploaded',
 						assetId: productionId,
-						src: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+						src: 'https://cdn.example.com/demo/image/upload/v1/hero.webp',
 					},
 				},
 			},
@@ -392,7 +392,7 @@ describe('semantic parity comparison', () => {
 						image: {
 							type: 'uploaded',
 							assetId: productionId,
-							src: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+							src: 'https://cdn.example.com/demo/image/upload/v1/hero.webp',
 						},
 					},
 				},
@@ -553,14 +553,14 @@ describe('semantic parity comparison', () => {
 			draftContent: {
 				hero: {
 					name: 'Ana',
-					image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+					image: 'https://cdn.example.com/demo/image/upload/v1/hero.webp',
 				},
 			},
 			published: {
 				content: {
 					hero: {
 						name: 'Ana',
-						image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+						image: 'https://cdn.example.com/demo/image/upload/v1/hero.webp',
 					},
 				},
 				is_demo: false,
@@ -665,7 +665,7 @@ describe('semantic parity comparison', () => {
 				content: {
 					hero: {
 						name: 'Different',
-						image: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
+						image: 'https://cdn.example.com/demo/image/upload/v1/hero.webp',
 					},
 				},
 				is_demo: false,

@@ -507,14 +507,14 @@ describe('asset-reconciliation engine', () => {
 		);
 	});
 
-	it('prunes unreferenced Cloudinary managed assets via PRUNE_METADATA without blocking', () => {
-		const cloudinaryUnreferenced: TargetAssetRecord = {
+	it('prunes unreferenced R2 managed assets via PRUNE_METADATA without blocking', () => {
+		const r2Unreferenced: TargetAssetRecord = {
 			...mockTargetDbRecord,
 			id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
 			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
-			displayName: 'Cloudinary Zombie Asset',
+			displayName: 'R2 Zombie Asset',
 			storagePath: 'xv/romina-rios-chaparro/assets/zombie-1234567890ab',
-			provider: 'cloudinary',
+			provider: 'r2',
 			providerPublicId: 'xv/romina-rios-chaparro/assets/zombie-1234567890ab',
 			managedByDefinitionSlug: 'romina-rios-chaparro',
 			managedSourceKey: 'zombie-asset',
@@ -523,20 +523,20 @@ describe('asset-reconciliation engine', () => {
 		};
 		const result = reconcileAssets({
 			canonicalAssets: [mockStorageCanonicalAsset],
-			targetDbAssets: [mockTargetDbRecord, cloudinaryUnreferenced],
+			targetDbAssets: [mockTargetDbRecord, r2Unreferenced],
 			observedStorage: {
 				[mockTargetDbRecord.storagePath]: {
 					present: true,
 					sha256: mockCanonicalAsset.sha256,
 				},
-				[cloudinaryUnreferenced.storagePath]: {
+				[r2Unreferenced.storagePath]: {
 					present: true,
 					sha256: '9'.repeat(64),
 				},
 			},
 			pruneAssets: true,
 			definitionSlug: 'romina-rios-chaparro',
-			targetInvitationId: cloudinaryUnreferenced.invitationId,
+			targetInvitationId: r2Unreferenced.invitationId,
 			referencedAssetIds: new Set(),
 		});
 
@@ -544,7 +544,7 @@ describe('asset-reconciliation engine', () => {
 		expect(result.summary.plannedDeletes).toBe(1);
 		expect(result.unreferencedAssets).toContainEqual(
 			expect.objectContaining({
-				targetAssetId: cloudinaryUnreferenced.id,
+				targetAssetId: r2Unreferenced.id,
 				classification: 'UNREFERENCED',
 				plannedAction: 'PRUNE_METADATA',
 			}),

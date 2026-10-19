@@ -3,7 +3,7 @@ import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
-const PLAYABLE_URL = 'https://res.cloudinary.com/example/video/upload/song.mp3';
+const PLAYABLE_URL = 'https://cdn.example.com/example/video/upload/song.mp3';
 
 const baseViewModel = {
 	id: 'leslie-perez',

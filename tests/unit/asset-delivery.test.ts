@@ -58,17 +58,6 @@ describe('resolveAssetDeliveryUrl', () => {
 		).toThrow(/R2 asset is missing secure_url/);
 	});
 
-	it('rejects the retired cloudinary provider', () => {
-		expect(() =>
-			resolveAssetDeliveryUrl({
-				provider: 'cloudinary',
-				bucket: 'invitation-assets',
-				storagePath: 'managed/abril/hero.jpg',
-				secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/hero.jpg',
-			}),
-		).toThrow(/Unsupported asset provider "cloudinary"/);
-	});
-
 	it('throws for an unsupported provider', () => {
 		expect(() =>
 			resolveAssetDeliveryUrl({

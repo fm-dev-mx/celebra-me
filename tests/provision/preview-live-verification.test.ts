@@ -110,7 +110,7 @@ describe('Preview live verification', () => {
 		expect(result.storageHashVerification).toEqual({ [path]: expectedHash });
 	});
 
-	it('ignores leftover Cloudinary public IDs when managed storage paths verify', async () => {
+	it('ignores leftover provider public IDs when managed storage paths verify', async () => {
 		const bytes = new TextEncoder().encode('current hero');
 		const expectedHash = createHash('sha256').update(bytes).digest('hex');
 		const managedPath = 'managed/prueba/hero-desktop.webp';
@@ -227,7 +227,7 @@ describe('Preview live verification', () => {
 	});
 
 	it('still verifies publicId-only legacy rows', async () => {
-		const bytes = new TextEncoder().encode('legacy cloudinary asset');
+		const bytes = new TextEncoder().encode('legacy external asset');
 		const expectedHash = createHash('sha256').update(bytes).digest('hex');
 		const publicId = 'xv/prueba/assets/hero-legacy';
 		const result = await verifyPreviewArtifactLive(artifact({ [publicId]: expectedHash }), {
@@ -238,7 +238,7 @@ describe('Preview live verification', () => {
 						{
 							storagePath: null,
 							providerPublicId: publicId,
-							secureUrl: `https://res.cloudinary.com/${publicId}`,
+							secureUrl: `https://cdn.example.com/${publicId}`,
 						},
 					],
 				}),

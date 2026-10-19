@@ -124,20 +124,20 @@ describe('Storage URL rewriting', () => {
 		expect(rewritten).toBe(content);
 	});
 
-	it('does not rewrite Cloudinary secure_url references (out of Supabase Storage rewrite)', () => {
-		const cloudinary = 'https://res.cloudinary.com/demo/image/upload/v1/invitations/hero.jpg';
+	it('does not rewrite external secure_url references (out of Supabase Storage rewrite)', () => {
+		const external = 'https://cdn.example.com/demo/image/upload/v1/invitations/hero.jpg';
 		const content = JSON.stringify({
-			hero: cloudinary,
+			hero: external,
 			supabase: `${PROD_STORAGE}/slug/hero.webp`,
 			asset: {
-				provider: 'cloudinary',
-				secure_url: cloudinary,
+				provider: 'r2',
+				secure_url: external,
 			},
 		});
 		const rewritten = rewriteStorageUrl(content, PROD_STORAGE, PREVIEW_STORAGE);
 		const parsed = JSON.parse(rewritten);
-		expect(parsed.hero).toBe(cloudinary);
-		expect(parsed.asset.secure_url).toBe(cloudinary);
+		expect(parsed.hero).toBe(external);
+		expect(parsed.asset.secure_url).toBe(external);
 		expect(parsed.supabase).toBe(`${PREVIEW_STORAGE}/slug/hero.webp`);
 	});
 });
