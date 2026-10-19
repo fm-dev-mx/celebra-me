@@ -18,8 +18,11 @@ export type ResponsiveImageWidth = (typeof RESPONSIVE_IMAGE_WIDTHS)[number];
  */
 export const RESPONSIVE_VARIANT_QUALITY = 88;
 
-/** Hosted originals are capped at 2560 px on the long side; this bounds the decode work. */
-const MAX_VARIANT_INPUT_PIXELS = 2560 * 2560;
+/**
+ * Preserved originals keep their source size up to 24 MP (e.g. 4000x6000), so the decode bound
+ * matches that preservation cap rather than the 2560 px normalized output.
+ */
+const MAX_VARIANT_INPUT_PIXELS = 24_000_000;
 
 export interface ResponsiveImageVariant {
 	width: ResponsiveImageWidth;
