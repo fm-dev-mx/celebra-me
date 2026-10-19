@@ -501,12 +501,12 @@ Manual only (`workflow_dispatch` from `main`). It builds the Cloudflare target f
 uploads a Worker version tagged with the commit SHA and smokes that version URL behind Cloudflare
 Access with `pnpm ops:cloudflare:production:smoke`, which also fails when the version URL answers
 without the service token. It never routes traffic: `env.production` in `wrangler.jsonc` has no
-routes and no `workers.dev` host; the cutover adds the zone routes by hand
-(`docs/operations/cloudflare-production-cutover.md`). It declares the Production cron schedules
+routes and no `workers.dev` host; the zone routes were added by hand
+(`docs/operations/cloudflare-platform.md`). It declares the Production cron schedules
 (`triggers.crons` in `wrangler.jsonc`), which version uploads, version deploys and secret changes
-never apply; the cutover enables them (section 8.1 of that runbook). The first run creates the
-Worker with `wrangler deploy`, because `wrangler versions upload` cannot create one. Evidence is a
-GitHub Deployment in the `Cloudflare Production` environment and the commit status
+never apply; they are set in the dashboard. The first run creates the Worker with `wrangler deploy`,
+because `wrangler versions upload` cannot create one. Evidence is a GitHub Deployment in the
+`Cloudflare Production` environment and the commit status
 `Cloudflare - celebra-me production candidate smoke`; no release gate reads either, so a candidate
 never stands in for what the domain serves.
 

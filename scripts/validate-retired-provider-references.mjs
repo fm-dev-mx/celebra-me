@@ -38,9 +38,6 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'.vscode/settings.json',
 	'eslint.config.js',
 	'jest.config.cjs',
-	'workers/celebra-memories-sign/wrangler.json',
-	'workers/celebra-memories-sign/worker-bindings.d.ts',
-	'docs/operations/cloudflare-production-cutover.md',
 	// Until the contract migration drops provider='cloudinary': tests that prove legacy
 	// Cloudinary rows and URLs are rejected, ignored or pruned.
 	'tests/db/preview-sync-invitations.test.ts',

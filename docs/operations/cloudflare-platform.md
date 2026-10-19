@@ -1,8 +1,8 @@
 # Cloudflare Platform
 
 Standing rules, external configuration and design decisions of the Cloudflare Workers platform that
-serves Celebra-me. It keeps what is still true after the hosting migration; the step-by-step cutover
-and its rollback live in [`cloudflare-production-cutover.md`](cloudflare-production-cutover.md).
+serves Celebra-me. It keeps what is still true after the hosting migration; the dated migration
+runbooks are in Git history.
 
 Related owners: runtime and server boundaries in
 [`../core/architecture.md`](../core/architecture.md), environment names in
@@ -56,10 +56,9 @@ Workers plan fails any SSR request above 10 ms of CPU, so Paid is mandatory for 
 - **Production upload never routes traffic.** `env.production` has no routes and no `workers.dev`
   host. Activation is
   `wrangler versions deploy <version-id>@100% --config wrangler.jsonc --env production --yes` after
-  the owner approves the release (steps in section 3.2 of the cutover runbook). Never run
-  `wrangler deploy` on Production, because it also applies routes and triggers. Always pass
-  `--config wrangler.jsonc`, otherwise a stale `.wrangler/deploy/config.json` can select the wrong
-  configuration.
+  the owner approves the release (steps in section 8). Never run `wrangler deploy` on Production,
+  because it also applies routes and triggers. Always pass `--config wrangler.jsonc`, otherwise a
+  stale `.wrangler/deploy/config.json` can select the wrong configuration.
 - **Access.** Preview protection is a self-hosted Access application on the Preview host with two
   policies (a service token and the owner). Production uses Access on version URLs only ("Previews
   only"), allowing account members and the smoke service token; never "All traffic", which would
@@ -154,25 +153,49 @@ static page to `prerender` is free of CPU.
   MFA, an editor photo upload, an unpaid invitation's `/vista-previa/<token>` photo
   (`200 image/webp` with the watermark), `/robots.txt` unchanged and one chat link preview.
 
-## 8. Rollback
+## 8. Activate an uploaded version (every Production release)
 
-Two levels, cheapest first. Never run a migration during either.
+The upload workflow only uploads and smokes a version; it never sends traffic to it. Activation is a
+separate step, run by the agent after the owner approves the release.
 
-1. **Code.** Reactivate the previous Worker version:
-   `wrangler versions list --config wrangler.jsonc --env production`, then
-   `wrangler versions deploy <previous-version-id>@100% --config wrangler.jsonc --env production --yes`,
-   then confirm `/api/health` reports that SHA.
-2. **Host.** While the previous platform is retained, a hosting rollback is: resume the previous
-   platform first so the domain has a host, delete the two zone routes (`www.celebra-me.com/*`,
-   `celebra-me.com/*`), delete the Worker Cron Triggers, and put the previous memories public keys
-   back on `celebra-memories-sign` and `celebra-memories-retrieve`. Do not run a cron job twice on
-   the same day. If nothing serves, set the apex and `www` records to DNS-only. The timed table is
-   section 9 of the cutover runbook.
+1. Take the version ID from the workflow run log (`Worker Version ID: …`), or list the versions and
+   pick the one tagged with the release SHA:
+   `pnpm exec wrangler versions list --config wrangler.jsonc --env production`.
+2. Activate it at 100 %:
+   `pnpm exec wrangler versions deploy <version-id>@100% --config wrangler.jsonc --env production --yes`.
+3. Confirm the active deployment shows that version at 100 %:
+   `pnpm exec wrangler deployments status --config wrangler.jsonc --env production`.
+4. Confirm the domain serves it: `curl -s https://www.celebra-me.com/api/health` reports
+   `build.commitSha` equal to the release SHA and environment `production`.
+5. Run the domain smoke: `pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com`.
 
-There is no data to roll back: both builds share one schema (section 2).
+**Rollback:** run the same steps with the previous version ID. Never run a migration during a
+rollback. There is no data to roll back: every version serves the same schema (section 2).
 
 ## 9. Applied migrations
 
 Applied migrations are immutable: editing one breaks the migrator digest check
 (`APPLIED_VERIFICATION_FAILED`). Retired-provider guards therefore exclude `supabase/migrations/`
 and `supabase/tests/`. See [`../database-workflow.md`](../database-workflow.md).
+
+## 10. Links
+
+- Cloudflare dashboard: https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692
+- Production Worker settings:
+  https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/workers/services/view/celebra-me/production/settings
+- Memories sign Worker settings:
+  https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/workers/services/view/celebra-memories-sign/production/settings
+- Memories retrieve Worker settings:
+  https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/workers/services/view/celebra-memories-retrieve/production/settings
+- Zone DNS: https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/celebra-me.com/dns/records
+- Zone Worker routes:
+  https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/celebra-me.com/workers/routes
+- Zone SSL: https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/celebra-me.com/ssl-tls
+- AI Crawl Control: https://dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/celebra-me.com/ai
+- Zero Trust Access applications:
+  https://one.dash.cloudflare.com/05cb212a366549f0f93e7101c4ca3692/access/apps
+- Cloudflare Production upload workflow:
+  https://github.com/fm-dev-mx/celebra-me/actions/workflows/deploy-production.yml
+- GitHub environments: https://github.com/fm-dev-mx/celebra-me/settings/environments
+- Supabase Production Auth URLs:
+  https://supabase.com/dashboard/project/ineitkdkyrxqyressllp/auth/url-configuration
