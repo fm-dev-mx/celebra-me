@@ -19,7 +19,7 @@ import {
 	MEMORIES_SIGN_RATE_LIMIT,
 	MEMORIES_UPLOAD_ABANDON_SECONDS,
 } from '@/lib/memories/contract/limits';
-import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
+import { CLOUDFLARE_PAID_PLAN } from '@/lib/platform/contract/limits';
 import {
 	MEMORIES_ALLOWED_EXTENSIONS,
 	MEMORIES_ALLOWED_MIME_TYPES,
@@ -148,12 +148,12 @@ describe('limits fit the platform', () => {
 		}
 	});
 
-	it('fits two standard spaces, or one extended, in the R2 free allowance', () => {
+	it('fits two standard spaces, or one extended, in the included R2 allowance', () => {
 		expect(2 * MEMORIES_LIMIT_PROFILES.standard.maxEventBytes).toBeLessThanOrEqual(
-			CLOUDFLARE_FREE_TIER.r2StorageBytes,
+			CLOUDFLARE_PAID_PLAN.r2StorageBytes,
 		);
 		expect(MEMORIES_LIMIT_PROFILES.extended.maxEventBytes).toBeLessThanOrEqual(
-			CLOUDFLARE_FREE_TIER.r2StorageBytes,
+			CLOUDFLARE_PAID_PLAN.r2StorageBytes,
 		);
 	});
 

@@ -3,6 +3,8 @@
  * Worker's `scheduled` handler with the cron expression that fired; this module maps
  * each expression to the job the `/api/cron/*` routes run for Vercel's scheduler.
  * The expressions are the ones declared under `triggers.crons` in `wrangler.jsonc`.
+ * Jobs listed in `PRODUCTION_ONLY_JOBS` are declared only on the Production Worker and
+ * skip on any other deploy identity.
  */
 import { randomUUID } from 'node:crypto';
 import { readBuildIdentity } from '@/lib/environment';
@@ -14,15 +16,21 @@ import {
 } from '@/lib/memories/server/cleanup-evidence';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
 import { serializeOperationalEvidenceEvent } from '@/lib/operations/operational-evidence';
+import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
 import { readDeployEnvironment } from '@/lib/server/deploy-identity';
 
-export type ScheduledJobName = 'memories_cleanup' | 'engagement_maintenance';
+export type ScheduledJobName = 'memories_cleanup' | 'engagement_maintenance' | 'platform_usage';
 
 export const SCHEDULED_JOB_CRONS: Readonly<Record<ScheduledJobName, string>> = {
 	memories_cleanup: '17 15 * * *',
 	engagement_maintenance: '43 10 * * *',
+	platform_usage: '*/15 * * * *',
 };
+
+/** Jobs scheduled only on the Production Worker (no Vercel or Preview counterpart). */
+export const PRODUCTION_ONLY_JOBS: readonly ScheduledJobName[] = ['platform_usage'];
 
 export interface ScheduledJobOutcome {
 	job: ScheduledJobName | null;
@@ -98,6 +106,36 @@ async function runEngagementMaintenanceJob(): Promise<ScheduledJobOutcome['statu
 	}
 }
 
+async function runPlatformUsageJob(): Promise<ScheduledJobOutcome['status']> {
+	// Snapshots describe the shared Production account; any other identity skips.
+	if (readDeployEnvironment() !== 'production') {
+		console.info('[platform][collector] skipped: deploy identity is not production.');
+		return 'skipped';
+	}
+	try {
+		const result = await runPlatformUsageCollector();
+		const degraded =
+			!result.purged || Object.values(result.datasets).some((collected) => !collected);
+		(degraded ? console.warn : console.info)('[platform][collector] completed', result);
+		return 'completed';
+	} catch (error) {
+		// Status and PostgREST code only: the error body could echo the inserted payload.
+		console.error('[platform][collector] failed', {
+			status: error instanceof SupabaseHttpError ? error.status : null,
+			code: error instanceof SupabaseHttpError ? error.code : null,
+		});
+		return 'failed';
+	}
+}
+
+const JOB_RUNNERS: Readonly<
+	Record<ScheduledJobName, () => Promise<ScheduledJobOutcome['status']>>
+> = {
+	memories_cleanup: runMemoriesCleanupJob,
+	engagement_maintenance: runEngagementMaintenanceJob,
+	platform_usage: runPlatformUsageJob,
+};
+
 /** Runs the job bound to `cron`. Never throws: the outcome is logged and returned. */
 export async function runScheduledJob(cron: string): Promise<ScheduledJobOutcome> {
 	const job = jobForCron(cron);
@@ -105,9 +143,6 @@ export async function runScheduledJob(cron: string): Promise<ScheduledJobOutcome
 		console.error('[scheduled] no job is bound to this cron expression', { cron });
 		return { job: null, status: 'unknown_cron' };
 	}
-	const status =
-		job === 'memories_cleanup'
-			? await runMemoriesCleanupJob()
-			: await runEngagementMaintenanceJob();
+	const status = await JOB_RUNNERS[job]();
 	return { job, status };
 }

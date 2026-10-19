@@ -54,7 +54,7 @@ function fakeWorker(options: FakeWorkerOptions = {}) {
 const fullLog = Object.values(SCHEDULED_JOB_LOG_MARKERS).join('\n');
 
 describe('cloudflare-worker-local-check', () => {
-	it('passes a Worker that serves headers, health and both crons', async () => {
+	it('passes a Worker that serves headers, health and every cron', async () => {
 		const { fetchImpl, requested } = fakeWorker();
 
 		await expect(
@@ -105,7 +105,11 @@ describe('cloudflare-worker-local-check', () => {
 		const failures = await runLocalWorkerChecks({
 			origin: ORIGIN,
 			fetchImpl,
-			readLog: () => SCHEDULED_JOB_LOG_MARKERS.memories_cleanup,
+			readLog: () =>
+				[
+					SCHEDULED_JOB_LOG_MARKERS.memories_cleanup,
+					SCHEDULED_JOB_LOG_MARKERS.platform_usage,
+				].join('\n'),
 			logTimeoutMs: 0,
 			sleep: async () => undefined,
 		});
