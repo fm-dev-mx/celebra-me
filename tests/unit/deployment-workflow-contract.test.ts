@@ -40,12 +40,46 @@ describe('deployment workflow contract', () => {
 	});
 });
 
+describe('Repository CI on release commits', () => {
+	it('runs on main pushes so the exact main SHA carries the release checks', () => {
+		const ci = readFileSync(resolve('.github/workflows/commit-validation.yml'), 'utf8');
+		expect(ci).toMatch(/^ {4}push:\n {8}branches:\n {12}- develop\n {12}- main\n/mu);
+	});
+});
+
 describe('Cloudflare Production upload workflow contract', () => {
 	const workflow = readFileSync(resolve('.github/workflows/deploy-production.yml'), 'utf8');
 
 	it('runs only by hand, from main', () => {
-		expect(workflow).toMatch(/^on:\n {4}workflow_dispatch:\n\n/mu);
-		expect(workflow).toContain("if: github.ref == 'refs/heads/main'");
+		expect(workflow).toMatch(/^on:\n {4}workflow_dispatch:\n {8}inputs:\n/mu);
+		expect(workflow).not.toMatch(/^ {4}(?:push|pull_request|schedule|workflow_run):/mu);
+		expect(workflow).toContain(
+			"if: github.ref == 'refs/heads/main' && inputs.step == 'upload'",
+		);
+		expect(workflow).toContain(
+			"if: github.ref == 'refs/heads/main' && inputs.step == 'domain-smoke'",
+		);
+	});
+
+	it('publishes the Production smoke only once the domain serves this exact commit', () => {
+		const job = workflow.slice(workflow.indexOf('    domain-smoke:'));
+		expect(workflow).toContain(
+			`DOMAIN_SMOKE_CONTEXT: ${CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE}\n`,
+		);
+		expect(PRODUCTION_DEPLOYMENT_SMOKES).toContain(CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE);
+		// No secrets: the job reads only the public domain.
+		expect(job).not.toMatch(/secrets\.|environment:/u);
+		const identity = job.indexOf('- name: Require the domain to serve this commit');
+		const smoke = job.indexOf('- name: Smoke the domain');
+		const success = job.indexOf('- name: Record success');
+		expect(identity).toBeGreaterThan(0);
+		expect(identity).toBeLessThan(smoke);
+		expect(smoke).toBeLessThan(success);
+		expect(job).toContain('"healthy $GITHUB_SHA production"');
+		expect(job).toContain('pnpm ops:post-deploy -- check --base-url="$PRODUCTION_BASE_URL"');
+		const failure = job.slice(job.indexOf('- name: Record failure'));
+		expect(failure).toContain('if: failure() || cancelled()');
+		expect(failure).toContain('-f context="$DOMAIN_SMOKE_CONTEXT"');
 	});
 
 	it('never routes traffic, deploys triggers or touches routes', () => {
@@ -60,7 +94,7 @@ describe('Cloudflare Production upload workflow contract', () => {
 		expect(workflow).toContain(`SMOKE_CONTEXT: ${CLOUDFLARE_PRODUCTION_CANDIDATE_SMOKE}`);
 		expect(PRODUCTION_DEPLOYMENT_SMOKES).not.toContain(CLOUDFLARE_PRODUCTION_CANDIDATE_SMOKE);
 		expect(workflow).not.toContain(
-			`SMOKE_CONTEXT: ${CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE}\n`,
+			`    SMOKE_CONTEXT: ${CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE}\n`,
 		);
 	});
 

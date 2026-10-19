@@ -349,7 +349,7 @@ describe('apply3WaySemanticPatch', () => {
 		const hostedHero = {
 			type: 'uploaded',
 			assetId: '11111111-1111-4111-8111-111111111111',
-			src: 'https://res.cloudinary.com/example/hero.jpg',
+			src: 'https://cdn.example.com/example/hero.jpg',
 		};
 		const packagedHero = {
 			type: 'uploaded',

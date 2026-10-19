@@ -104,14 +104,14 @@ Invitation and intake tables (`invitations`, `intake_*`, drafts, published conte
 `invitation_assets`) are described in the overview. Child FK columns keep the historical name
 `invitation_project_id` (see Deferred Cleanup).
 
-Asset binaries live in Supabase Storage locally and on Cloudinary in Preview/Production (see the
-Storage Provider Boundary in
+Asset binaries live in Supabase Storage locally and on R2 in Preview/Production (see the Storage
+Provider Boundary in
 [`content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md)).
-`invitation_assets.provider` accepts `supabase`, `cloudinary`, and `r2` (Cloudflare R2);
-`cloudinary` and `r2` rows must carry `provider_public_id` and `secure_url`. DB dumps copy
-`invitation_assets` metadata but not Storage objects. Managed rows additionally record definition
-slug, semantic source key, SHA-256, and operation ID. Null managed ownership means target-owned:
-package absence alone can never prune that row.
+`invitation_assets.provider` accepts `supabase`, `r2` (Cloudflare R2), and a retired remote-host
+value kept until a later migration; remote-host and `r2` rows must carry `provider_public_id` and
+`secure_url`. DB dumps copy `invitation_assets` metadata but not Storage objects. Managed rows
+additionally record definition slug, semantic source key, SHA-256, and operation ID. Null managed
+ownership means target-owned: package absence alone can never prune that row.
 
 ### Deprecated RPCs
 

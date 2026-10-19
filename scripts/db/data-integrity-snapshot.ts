@@ -15,9 +15,9 @@ import {
 export type IntegritySnapshotTarget = 'local' | 'preview' | 'production';
 
 /** [row hash, updated_at as text or null when the table has no such column]. */
-export type RowFingerprint = [string, string | null];
+type RowFingerprint = [string, string | null];
 
-export interface TableIntegrity {
+interface TableIntegrity {
 	rowCount: number;
 	/** Same digest as the recovery integrity fingerprint for this table. */
 	sha256: string;
@@ -56,10 +56,10 @@ export interface DataIntegritySnapshot {
 }
 
 /** Per-event counts that may only grow between two snapshots. */
-export const MONOTONIC_EVENT_COUNTS = ['guests', 'memoryItems', 'engagementEvents'] as const;
+const MONOTONIC_EVENT_COUNTS = ['guests', 'memoryItems', 'engagementEvents'] as const;
 
 /** Per-event counts that legitimately move (RSVP answers, host deletions); reported, never enforced. */
-export const INFORMATIONAL_EVENT_COUNTS = [
+const INFORMATIONAL_EVENT_COUNTS = [
 	'activeGuests',
 	'confirmed',
 	'declined',
@@ -69,7 +69,7 @@ export const INFORMATIONAL_EVENT_COUNTS = [
 	'memoryAcceptedBytes',
 ] as const;
 
-export const SNAPSHOT_TABLES: readonly CriticalRecoveryTable[] = CRITICAL_RECOVERY_TABLES;
+const SNAPSHOT_TABLES: readonly CriticalRecoveryTable[] = CRITICAL_RECOVERY_TABLES;
 
 function rowHashesSubquery(entry: CriticalRecoveryTable): string {
 	return `(select coalesce(json_object_agg((${entry.orderBy})::text, json_build_array(
@@ -195,7 +195,7 @@ export function parseDataIntegritySnapshot(text: string, label: string): DataInt
 	return value as DataIntegritySnapshot;
 }
 
-export interface ChangedRow {
+interface ChangedRow {
 	table: string;
 	key: string;
 	beforeUpdatedAt: string | null;
@@ -204,7 +204,7 @@ export interface ChangedRow {
 	updatedAtChanged: boolean;
 }
 
-export interface EventCountChange {
+interface EventCountChange {
 	eventId: string;
 	label: string;
 	field: string;
@@ -346,7 +346,7 @@ export interface SnapshotCliArgs {
 
 const TARGETS: readonly IntegritySnapshotTarget[] = ['local', 'preview', 'production'];
 
-export const SNAPSHOT_USAGE = [
+const SNAPSHOT_USAGE = [
 	'Usage:',
 	'  pnpm db:integrity:snapshot --target=preview|production|local --out=<file.json> [--compare=<before.json>]',
 	'  pnpm db:integrity:snapshot --compare=<before.json> --after=<after.json> [--report=<file.json>]',

@@ -16,9 +16,12 @@ on:
                 type: choice
                 options: [compare, candidate]
                 default: compare
+    # A main push is a merged release: `pnpm ops:release-status --target production` requires these
+    # checks on the exact main SHA, which is a new merge commit nothing else validated.
     push:
         branches:
             - develop
+            - main
     # Pull requests into develop (for example Dependabot updates) are validated before they land;
     # pull requests into main are release promotions.
     pull_request:
@@ -63,12 +66,15 @@ jobs:
                   PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: node scripts/ops/ci-evidence-reuse.ts
 
-    # A develop push whose browser inputs equal the head of an earlier develop push with a passing
-    # browser job inherits that evidence instead of repeating the browser tier.
+    # A develop push or pull request into develop whose browser inputs equal the head of an earlier
+    # develop push with a passing browser tier inherits that evidence instead of repeating the tier.
     browser-scope:
         name: Browser scope
-        # Only a develop push can inherit evidence; pull requests and dispatches always run the tier.
-        if: github.event_name == 'push'
+        # Only a develop push or a pull request into develop can inherit evidence; promotion pull
+        # requests into main use evidence reuse instead, and dispatches always run the tier.
+        if: >-
+            github.event_name == 'push' ||
+            (github.event_name == 'pull_request' && github.base_ref == 'develop')
         runs-on: ubuntu-24.04
         timeout-minutes: 5
         outputs:
@@ -334,7 +340,7 @@ jobs:
               id: browser-checks
               if: github.event.inputs.visual_mode != 'candidate'
               continue-on-error: true
-              run: pnpm test:e2e:ci --max-failures=5 --workers=2
+              run: pnpm test:e2e:ci --max-failures=5 --workers=4
 
             - name: Classify browser outcome
               id: browser-outcome
@@ -342,14 +348,6 @@ jobs:
               env:
                   BROWSER_STEP_OUTCOME: ${{ steps.browser-checks.outcome }}
               run: pnpm exec tsx scripts/ops/browser-outcome.ts
-
-            # Guest memories flow on every device project (Chromium, WebKit and in-app user agents)
-            # against the canonical memory space; guest APIs and the upload Worker are mocked.
-            - name: Memories guest browser checks
-              id: memories-checks
-              if: github.event.inputs.visual_mode != 'candidate'
-              continue-on-error: true
-              run: pnpm test:e2e:memories --max-failures=5 --workers=2
 
             - name: Generate visual review candidate
               if: github.event.inputs.visual_mode == 'candidate'
@@ -386,8 +384,53 @@ jobs:
             - name: Enforce browser result
               if: >-
                   github.event.inputs.visual_mode != 'candidate' &&
-                  (steps.browser-checks.outcome != 'success' || steps.memories-checks.outcome != 'success')
+                  steps.browser-checks.outcome != 'success'
               run: exit 1
+
+    # Guest memories flow on every device project (Chromium, WebKit and in-app user agents)
+    # against the canonical memory space; guest APIs and the upload Worker are mocked. It runs
+    # beside the visual checks instead of after them, under the same browser-tier conditions.
+    browser-memories:
+        name: Application / browser memories
+        needs: [evidence-reuse, browser-scope]
+        if: >-
+            !cancelled() &&
+            needs.evidence-reuse.outputs.reuse != 'true' &&
+            needs.browser-scope.outputs.browser != 'skip' &&
+            github.event.inputs.visual_mode != 'candidate'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        container:
+            image: mcr.microsoft.com/playwright@sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac
+        env:
+            PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+              with:
+                  lfs: false
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+            - name: Memories guest browser checks
+              run: pnpm test:e2e:memories --max-failures=5 --workers=2
+
+            - name: Preserve memories failure evidence
+              if: failure()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: memories-failures
+                  path: |
+                      test-results/**/trace.zip
+                      test-results/**/error-context.md
+                  if-no-files-found: ignore
+                  retention-days: 3
 
     application-validation:
         name: Application Suite
@@ -398,6 +441,7 @@ jobs:
                 policy-validation,
                 application-checks,
                 browser-validation,
+                browser-memories,
                 browser-scope,
             ]
         if: always() && github.event.inputs.visual_mode != 'candidate'
@@ -406,6 +450,7 @@ jobs:
               env:
                   APPLICATION_RESULT: ${{ needs.application-checks.result }}
                   BROWSER_RESULT: ${{ needs.browser-validation.result }}
+                  MEMORIES_RESULT: ${{ needs.browser-memories.result }}
                   POLICY_RESULT: ${{ needs.policy-validation.result }}
                   EVIDENCE_REUSE: ${{ needs.evidence-reuse.outputs.reuse }}
                   BROWSER_SCOPE: ${{ needs.browser-scope.outputs.browser }}
@@ -413,10 +458,10 @@ jobs:
                   test "$POLICY_RESULT" = success
                   if [ "$EVIDENCE_REUSE" = true ]; then
                     # Reused integration evidence stands in for tiers that must not have executed.
-                    test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped
+                    test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped
                   elif [ "$BROWSER_SCOPE" = skip ]; then
                     # Browser inputs are byte-identical to an earlier develop push whose browser tier passed.
-                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped
+                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped
                   else
-                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success
+                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success && test "$MEMORIES_RESULT" = success
                   fi

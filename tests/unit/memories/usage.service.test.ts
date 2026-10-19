@@ -177,7 +177,7 @@ describe('getMemorySpaceHostSummary', () => {
 			const summary = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,
-				'https://celebra-me-abc.vercel.app',
+				'https://abc123-celebra-me.celebra-me-com.workers.dev',
 			);
 			expect(summary.publicUrl).toBe('https://celebra-me.com/r/victoria-y-roberto');
 		});
@@ -187,10 +187,10 @@ describe('getMemorySpaceHostSummary', () => {
 			const preview = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,
-				'https://celebra-me-git-develop.vercel.app',
+				'https://celebra-me-preview.celebra-me-com.workers.dev',
 			);
 			expect(preview.publicUrl).toBe(
-				'https://celebra-me-git-develop.vercel.app/r/victoria-y-roberto',
+				'https://celebra-me-preview.celebra-me-com.workers.dev/r/victoria-y-roberto',
 			);
 			asLocalDevServer();
 			const local = await getMemorySpaceHostSummary(

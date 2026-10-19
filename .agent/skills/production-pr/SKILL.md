@@ -3,7 +3,7 @@ name: production-pr
 description: |
   Prepare and open a production pull request with an explicit release range, current validation evidence, and task-scoped Git authorization. Stops before merge or deployment.
 domain: workflow
-version: 1.2.0
+version: 1.3.0
 when_to_use:
   - Prepare or open a pull request intended for production
   - Audit the scope and evidence for an existing production pull request
@@ -44,8 +44,9 @@ preparation. Do not activate those broader operations merely to write a PR descr
 ## Establish scope and state
 
 1. Resolve the Task Contract: requested outcome, included changes, allowed Git operations, target
-   environment, and stop conditions. Reuse explicit current-task authorization; ask only for missing
-   scope or authority.
+   environment, and stop conditions. Reuse explicit current-task authorization. Gather every missing
+   scope or authority decision and ask them all in one round before the first Git write; ask again
+   only when new evidence appears. Gates that need the owner's explicit yes stay unchanged.
 2. Stay in the assigned checkout. Inspect current branch/detached state, HEAD, upstream, remote
    identity, staged and unstaged diffs, untracked files, and any in-progress Git operation. Record
    the initial state and ownership before writes. Stop on unrelated work, ambiguous ownership,

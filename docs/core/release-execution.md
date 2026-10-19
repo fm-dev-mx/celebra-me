@@ -8,13 +8,14 @@ implementing these skills is never a live-release invocation.
 
 ## Delivery model
 
-- Vercel's Git integration owns deployments: pull requests and `develop` receive automatic Preview
-  deployments, and `main` receives the automatic Production deployment. GitHub Actions does not
-  build or deploy a second Preview.
-- Vercel builds with `pnpm build:app`; `astro check` and `tsc` belong to Repository CI
-  (`ci:static`). `scripts/ops/vercel-ignore-build.mjs` (`ignoreCommand`) skips a Preview build when
-  no application input (`src/`, `public/`, `scripts/shared/`, Astro/Vercel/package configuration)
-  changed since the previous deployed commit of that branch; Production always builds.
+- `.github/workflows/deploy.yml` owns Preview: every push to `develop` builds the Cloudflare target
+  (`pnpm build:app`), uploads an immutable Worker version tagged with the commit SHA, smokes that
+  version behind Cloudflare Access and only then routes traffic to it. `astro check` and `tsc`
+  belong to Repository CI (`ci:static`).
+- `.github/workflows/deploy-production.yml` is manual and runs from `main`: it uploads and smokes a
+  Production Worker version but never routes traffic. The owner-approved activation of that version
+  is a separate step
+  ([steps](../operations/cloudflare-platform.md#8-activate-an-uploaded-version-every-production-release)).
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.
@@ -78,20 +79,15 @@ implementing these skills is never a live-release invocation.
    minutes) for:
    - trusted Repository Policy, Application Suite and Application / static results on the exact SHA
      (task-branch CI is insufficient);
-   - the Preview deployment Vercel recorded on GitHub for that SHA: success state and an immutable
-     Preview URL;
-   - the `Vercel - celebra-me preview smoke` check. The Post-deploy Smoke workflow runs it on
-     `vercel.deployment.ready` for `develop`. It checks the dispatch, the `/api/health` SHA,
-     published invitation images (browserless) and `test:e2e:preview:public`;
+   - the Preview deployment that the Preview Deploy workflow recorded on GitHub for that SHA:
+     success state and an immutable version URL;
+   - the `Cloudflare - celebra-me preview smoke` check, which the same workflow posts after smoking
+     the uploaded version. It checks the `/api/health` SHA, published invitation images
+     (browserless) and `test:e2e:preview:public`;
    - `/api/health` build identity on that URL, which must not report another SHA.
 
-   `VERIFIED` is the success for a built deployment. `SKIPPED` is the only other success, and only
-   for Preview: required CI passed and Vercel's latest `Vercel` status for the exact SHA is
-   "Canceled by Ignored Build Step" (`scripts/ops/vercel-ignore-build.mjs`: no application input
-   changed). No deployment or smoke exists for that SHA; report it as skipped, with the unchanged
-   application inputs, and never present it as a deployed Preview. Production never reports
-   `SKIPPED`. `PENDING` after the timeout is unverified, and `FAILED` names its blockers. Do not
-   synthesize evidence or redeploy to make it pass.
+   `VERIFIED` is the success for a built deployment. `PENDING` after the timeout is unverified, and
+   `FAILED` names its blockers. Do not synthesize evidence or redeploy to make it pass.
 
    While a smoke rerun is queued or in progress, `--wait` keeps the smoke `PENDING` (state
    `rerun <status>`, field `smoke.rerun`) instead of reporting the previous failed attempt. When the
@@ -100,7 +96,7 @@ implementing these skills is never a live-release invocation.
    yet are listed as `PENDING_PUBLISH` and never fail the smoke: they are a content backlog that
    `pnpm dbs` resolves, not a delivery problem of the deployment.
 
-4. Only when the CI smoke cannot run (for example a failed dispatch), use `--smoke skip` and run
+4. Only when the CI smoke cannot run (for example a failed smoke step), use `--smoke skip` and run
    `pnpm test:e2e:preview:public` locally against the reported URL, as both `PLAYWRIGHT_BASE_URL`
    and `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`. `scripts/playwright/preview-environment.ts`
    owns the host, project and bypass prerequisites. Never run provisioning or publication suites to
@@ -124,11 +120,16 @@ implementing these skills is never a live-release invocation.
    head-match option). Read the merge result and actual main SHA; do not assume SHA equality. Then
    fast-forward `develop` to `origin/main` from Integration
    ([back-merge](git-governance.md#production-promotion)).
-5. Verify Vercel project, actual main SHA/ref, Production environment, READY result, promotion and
-   production alias routing. Require the trusted `Vercel - celebra-me production smoke` result for
-   this deployed SHA and correlate its deployment ID/URL. The existing Post-deploy Smoke workflow
-   owns HTTP and image-delivery checks; inspect all required steps, not just the push or build. An
-   old successful smoke on a different deployment of the same SHA is insufficient.
+5. Verify the Production Worker, actual main SHA/ref, Production environment, the uploaded and
+   activated version, and production alias routing. Require the trusted
+   `Cloudflare - celebra-me production smoke` result for this deployed SHA, published by the
+   `domain-smoke` step of `deploy-production.yml` after activation
+   ([steps](../operations/cloudflare-platform.md#8-activate-an-uploaded-version-every-production-release)).
+   `pnpm ops:post-deploy` owns HTTP and image-delivery checks; inspect all required steps, not just
+   the push or build. An old successful smoke on a different version of the same SHA is
+   insufficient. `pnpm ops:release-status -- --sha <main-sha> --target production --wait` must
+   report VERIFIED: Repository CI runs on every `main` push, so the merge commit carries its own
+   required checks.
 
 ## Recovery, stops and completion
 

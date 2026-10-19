@@ -34,7 +34,7 @@ import { GET as getSummary } from '@/pages/api/dashboard/memories/[eventId]/summ
 import { createMockRequest } from '../helpers/api-mocks';
 import { EVENT_ID, OWNER_USER_ID, buildSpace } from '../unit/memories/fixtures';
 
-const PREVIEW_ORIGIN = 'https://celebra-me-git-develop.vercel.app';
+const PREVIEW_ORIGIN = 'https://celebra-me-preview.celebra-me-com.workers.dev';
 const EVENT_URL = `${PREVIEW_ORIGIN}/api/dashboard/memories/${EVENT_ID}`;
 const space = buildSpace();
 const hostSession: SessionContext = {

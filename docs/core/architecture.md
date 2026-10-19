@@ -12,11 +12,12 @@ rendering.
 
 Celebra-me follows these guiding principles:
 
-- **SSR by default** Astro runs with `output: 'server'` on Vercel. Individual responses may still be
-  cacheable, but routes must be designed for runtime execution.
+- **SSR by default** Astro runs with `output: 'server'` on Cloudflare Workers. Individual responses
+  may still be cacheable, but routes must be designed for runtime execution.
 - **Pragmatism over theory** Patterns are applied only when they reduce real complexity.
 - **Explicit boundaries** UI code, route orchestration, and server-only logic stay separated.
-- **Deploy safety first** Architecture must remain compatible with Astro and Vercel constraints.
+- **Deploy safety first** Architecture must remain compatible with Astro and Cloudflare Workers
+  constraints.
 
 ### Validation and operational tooling boundary
 
@@ -66,8 +67,8 @@ Preview → Production; do not apply manual dashboard grants.
 
 ## 2) Astro Execution Model
 
-The repository tracks **Astro 7** SSR with the Vercel adapter. Platform version policy (including
-the hybrid TypeScript 7 CLI / TypeScript 6 tooling-API arrangement) lives in
+The repository tracks **Astro 7** SSR with the Cloudflare adapter. Platform version policy
+(including the hybrid TypeScript 7 CLI / TypeScript 6 tooling-API arrangement) lives in
 [`project-conventions.md`](project-conventions.md#12-platform-version-policy).
 
 ### Default Strategy
@@ -293,7 +294,7 @@ contract and limitations are documented in
 
 ---
 
-## 9) Environment & Deployment (Vercel)
+## 9) Environment & Deployment (Cloudflare Workers)
 
 ### Environment Variables
 
@@ -308,7 +309,27 @@ Architectural decisions must account for:
 - Linux case sensitivity
 - build-time vs runtime execution
 - filesystem limitations
-- server execution contexts used by Astro/Vercel
+- server execution contexts used by Astro/Cloudflare Workers
+
+### Worker Runtime Rules
+
+- **Deploy identity.** `CELEBRA_DEPLOY_ENV` is the only hosted identity and has a single reader,
+  `src/lib/server/deploy-identity.ts`. No application decision reads `NODE_ENV`. Every security gate
+  (MFA bypasses, local-only observability, mutations, cookie `Secure`, `?debug=1`, storage choice)
+  fails closed when the identity is missing or invalid.
+- **Node-only code stays off Worker routes.** `child_process`, repository `fs` reads and `sharp` do
+  not run on workerd. Pixel work uses the Images binding; local-only tooling stays in `scripts/`.
+- **Post-response work** goes through `runAfterResponse()` (`waitUntil`). **Client IP** comes from
+  `getClientIp()` (`CF-Connecting-IP`), never from `x-forwarded-*` alone.
+- **Scheduled work** runs only from the Worker `scheduled()` handler (`src/worker.ts` →
+  `src/lib/server/scheduled-jobs.ts`); there are no HTTP cron routes.
+- **Rate limits** use `ratelimits` bindings; **bindings** are read with
+  `import { env } from 'cloudflare:workers'`.
+- **Server to Supabase** traffic is plain HTTPS `fetch` (PostgREST, Auth, Storage, RPC). Supabase
+  clients run in the browser only; no driver, pooler or Hyperdrive.
+
+Platform configuration, delivery, external settings and rollback:
+[`../operations/cloudflare-platform.md`](../operations/cloudflare-platform.md).
 
 ---
 
@@ -414,8 +435,8 @@ The active guest-facing patterns are:
 - `/api/invitacion/:inviteId/location`
 - `/api/invitacion/:inviteId/rsvp`
 - `/api/invitacion/:inviteId/events` — guest engagement batches
-- `GET /api/cron/engagement-maintenance` — daily engagement snapshots and ledger anonymization
-  (Vercel cron at 10:43 UTC; bearer `CRON_SECRET`)
+- Daily engagement snapshots and ledger anonymization run in the Worker `scheduled()` handler (cron
+  trigger at 10:43 UTC; `src/lib/server/scheduled-jobs.ts`)
 
 Historical note:
 
@@ -516,7 +537,7 @@ deployment.
 - **Retrieval transport:** on Cloudflare the app Worker reaches `celebra-memories-retrieve` through
   the `MEMORIES_RETRIEVE` Service Binding (`src/lib/memories/server/worker-bindings.ts`); local dev
   calls `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`. Both carry the same signed request. The retrieval
-  Worker has no `workers.dev` host, so Vercel can no longer serve memories media.
+  Worker has no `workers.dev` host, so only the app Worker reaches it.
 - **Sign transport:** on Preview the app Worker shares the `workers.dev` subdomain with
   `celebra-memories-sign-staging`, where a plain `fetch` between Workers fails (Cloudflare error
   1042), so it calls `POST /sign` through the `MEMORIES_SIGN` Service Binding; Production binds it
@@ -529,13 +550,13 @@ deployment.
   (`MEMORIES_RESERVATION_REFUSALS`) and a Sign Worker throttle surfaces as 429, so the guest copy
   names the limit and what to do. Quota is counted on rows that still hold an R2 object: a deleted,
   rejected, duplicate or abandoned file keeps its slot until the daily cleanup removes the object.
-- **Cleanup:** `GET /api/cron/memories-cleanup` (Vercel cron at 15:17 UTC, an off-hour for events in
-  Mexico; bearer secret) settles stale in-flight items from storage evidence, expires
-  retention-ended spaces, deletes scheduled objects in leased batches within a time budget,
-  anonymizes inactive guest sessions after their last object is gone, and purges audit rows.
-  Settling never deletes blindly: a validation is rejected and an abandoned reservation released
-  only when the Retrieval Worker answers that the object is absent; an upload whose bytes arrived
-  without a browser confirmation is validated instead. Because the cron runs once a day, a guest at
-  the in-flight limit settles their own items before the reservation is refused. Anonymization is a
-  service-role-only, security-invoker RPC that locks the event and session in the same order as
-  reservation; a missing RPC fails closed.
+- **Cleanup:** the Worker `scheduled()` handler (cron trigger at 15:17 UTC, an off-hour for events
+  in Mexico; `src/lib/server/scheduled-jobs.ts`) settles stale in-flight items from storage
+  evidence, expires retention-ended spaces, deletes scheduled objects in leased batches within a
+  time budget, anonymizes inactive guest sessions after their last object is gone, and purges audit
+  rows. Settling never deletes blindly: a validation is rejected and an abandoned reservation
+  released only when the Retrieval Worker answers that the object is absent; an upload whose bytes
+  arrived without a browser confirmation is validated instead. Because the cron runs once a day, a
+  guest at the in-flight limit settles their own items before the reservation is refused.
+  Anonymization is a service-role-only, security-invoker RPC that locks the event and session in the
+  same order as reservation; a missing RPC fails closed.

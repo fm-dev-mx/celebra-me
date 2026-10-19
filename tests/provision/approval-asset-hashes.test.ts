@@ -5,7 +5,7 @@ import {
 } from '../../scripts/provision/approval-asset-hashes.ts';
 
 describe('selectPackageApprovalAssetHashes', () => {
-	it('keeps package storagePath hashes and drops leftover Cloudinary public IDs', () => {
+	it('keeps package storagePath hashes and drops leftover provider public IDs', () => {
 		expect(
 			selectPackageApprovalAssetHashes(
 				{

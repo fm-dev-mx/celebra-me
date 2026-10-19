@@ -265,7 +265,7 @@ describe('resolveShortIdRequest', () => {
 			mockedGetContext.mockResolvedValue(validContext);
 		});
 
-		it('redirects when user-agent is null/empty (Vercel edge case)', async () => {
+		it('redirects when user-agent is null/empty (edge runtime case)', async () => {
 			mockedIsCrawler.mockReturnValue(false);
 			const result = await resolveShortIdRequest('ABC123', '', SITE_ORIGIN);
 			assertIsRedirect(result);

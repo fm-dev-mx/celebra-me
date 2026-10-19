@@ -1,7 +1,8 @@
 # Agent Guide — Celebra-me
 
-Celebra-me is an Astro, TypeScript, SCSS, Supabase, and Vercel project for digital invitations, host
-dashboard, RSVP operations, and publishing. This is the canonical entry point for coding agents.
+Celebra-me is an Astro, TypeScript, SCSS, Supabase, and Cloudflare Workers project for digital
+invitations, host dashboard, RSVP operations, and publishing. This is the canonical entry point for
+coding agents.
 
 ## Authority Hierarchy
 

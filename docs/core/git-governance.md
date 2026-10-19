@@ -378,7 +378,7 @@ Use one scope from this list. `commitlint` warns on any other scope.
 | `seo`                    | Metadata, sitemap, robots and social previews                     |
 | `runtime`                | Deploy identity, middleware, server platform helpers              |
 | `images`                 | Image processing and transformers under `src/lib/images/`         |
-| `hosting`                | Vercel and Cloudflare adapters and platform configuration         |
+| `hosting`                | Cloudflare adapter and platform configuration                     |
 | `workers`                | Cloudflare Workers under `workers/`                               |
 | `db`                     | Migrations, policies, routines, pgTAP and the rollout registry    |
 | `env`                    | Environment variables and their documentation                     |
@@ -399,9 +399,9 @@ Use one scope from this list. `commitlint` warns on any other scope.
 Avoid the synonyms the history accumulated: `invitations` (use `content` or `invitation`),
 `provision` (`provisioning`), `database` or `supabase` (`db`), `plan` (`plans`), `styles` or
 `themes` (`theme`), `playwright` or `fixtures` (`testing`), `visual-parity` (`visual`), `server`,
-`platform` or `middleware` (`runtime`), `vercel` or `cloudflare` (`hosting`), `operations` (`ops`),
-`core` (`governance`), `screenshot` (`visual`), and client names such as `america` (`content`). Add
-a scope to this list and to `commitlint.config.cjs` in the same commit when a new domain appears.
+`platform` or `middleware` (`runtime`), `cloudflare` (`hosting`), `operations` (`ops`), `core`
+(`governance`), `screenshot` (`visual`), and client names such as `america` (`content`). Add a scope
+to this list and to `commitlint.config.cjs` in the same commit when a new domain appears.
 
 ## Commit Body Policy
 

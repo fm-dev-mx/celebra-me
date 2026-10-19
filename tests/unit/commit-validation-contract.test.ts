@@ -81,4 +81,59 @@ describe('Commit validation contract', () => {
 		expect(result.status).toBe(0);
 		expect(`${result.stdout}\n${result.stderr}`).toContain('scope-enum');
 	});
+
+	describe('Dependabot commits', () => {
+		const SIGN_OFF = 'Signed-off-by: dependabot[bot] <support@github.com>';
+
+		it('skips a signed-off single dependency bump', () => {
+			const result = lintMessage(
+				[
+					'chore(deps-dev): Bump esbuild from 0.28.1 to 0.28.2',
+					'',
+					'Bumps [esbuild](https://github.com/evanw/esbuild) from 0.28.1 to 0.28.2.',
+					'',
+					SIGN_OFF,
+				].join('\n'),
+			);
+
+			expect(result.status).toBe(0);
+		});
+
+		it('skips a signed-off group bump whose header names only the package', () => {
+			const result = lintMessage(
+				[
+					'chore(deps-dev): Bump sass-embedded',
+					'',
+					'Bumps the tooling group with 1 update: [sass-embedded](https://github.com/sass/embedded-host-node).',
+					'',
+					SIGN_OFF,
+				].join('\n'),
+			);
+
+			expect(result.status).toBe(0);
+		});
+
+		it('skips a signed-off group bump that names the manifest directory', () => {
+			const result = lintMessage(
+				[
+					'chore(deps-dev): Bump @testing-library/user-event',
+					'',
+					'Bumps the testing group with 1 update in the / directory: [@testing-library/user-event](https://github.com/testing-library/user-event).',
+					'',
+					SIGN_OFF,
+				].join('\n'),
+			);
+
+			expect(result.status).toBe(0);
+		});
+
+		it('still lints a human commit shaped like a bump', () => {
+			const result = lintMessage(
+				'chore(deps): Bump zod from 4.6.5 to 4.7.0\n\nRaise the schema library version.',
+			);
+
+			expect(result.status).not.toBe(0);
+			expect(`${result.stdout}\n${result.stderr}`).toContain('subject-case');
+		});
+	});
 });

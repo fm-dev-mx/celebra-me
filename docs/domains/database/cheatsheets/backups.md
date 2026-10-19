@@ -21,8 +21,9 @@ pnpm db:offsite:restore -- --identity=<file> [--key=<k>] # download + decrypt + 
 pnpm db:local:restore-from-dump -- …     # persistent-local only; never Preview
 ```
 
-Invitation images: Cloudinary is delivery SSOT. The critical set stores Cloudinary metadata in the
-DB dump and downloads only `provider = 'supabase'` binaries. Do not route backups through Vercel.
+Invitation images: the remote media host (R2) is the delivery SSOT. The critical set stores
+remote-host metadata in the DB dump and downloads only `provider = 'supabase'` binaries. Do not
+route backups through the application Worker.
 
 **Expected result:** Manifest + artifacts under `.backups/`; migrate/promote reuse fresh critical
 coverage when identity/history match and age ≤ RPO. `pnpm dbs` shows daily age and orphan count.

@@ -1,16 +1,36 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import baseline from '../fixtures/style-scale-literals/baseline.json';
+import invitationBaseline from '../fixtures/style-scale-literals/invitation-baseline.json';
 
 /**
- * Ratchet for literal `border-radius` and `font-size` values in the dashboard and landing styles.
- * Values should come from tokens: `--radius-*` for radii, a `type-scale` text style or a font-size
- * variable for type. Each file may keep at most its baseline count of literals; a new file starts
- * at zero. When a migration lowers a count, lower the baseline in the same change.
+ * Ratchet for literal `border-radius` and `font-size` values. Values should come from tokens:
+ * `--radius-*` for radii, a `type-scale` text style or a font-size variable for type. Each file may
+ * keep at most its baseline count of literals; a new file starts at zero. When a migration lowers a
+ * count, lower the baseline in the same change. Dashboard/landing and invitation styles keep
+ * separate baselines because they migrate on separate schedules.
  */
 
 const ROOT = process.cwd();
-const SCOPES = ['src/styles/dashboard', 'src/styles/home'];
+const RATCHETS = [
+	{
+		name: 'dashboard and landing styles',
+		scopes: ['src/styles/dashboard', 'src/styles/home'],
+		baseline: baseline as Record<string, number>,
+	},
+	{
+		name: 'invitation and preset styles',
+		scopes: [
+			'src/styles/invitation',
+			'src/styles/invitation-presets',
+			'src/styles/invitation-profiles',
+			'src/styles/invitation-sections-by-preset',
+			'src/styles/themes/presets',
+			'src/styles/themes/sections',
+		],
+		baseline: invitationBaseline as Record<string, number>,
+	},
+];
 const DECLARATION = /^\s*(border-radius|font-size)\s*:\s*([^;{}]+);/gm;
 const TOKEN_VALUE = [/^var\(--/, /^\$/, /^[a-z-]+\.\$/];
 const ALLOWED: Record<string, RegExp[]> = {
@@ -24,9 +44,9 @@ function countLiterals(source: string): number {
 	).length;
 }
 
-function collectCounts(): Record<string, number> {
+function collectCounts(scopes: string[]): Record<string, number> {
 	return Object.fromEntries(
-		SCOPES.flatMap((scope) =>
+		scopes.flatMap((scope) =>
 			readdirSync(join(ROOT, scope), { recursive: true })
 				.map(String)
 				.filter((file) => file.endsWith('.scss'))
@@ -39,9 +59,8 @@ function collectCounts(): Record<string, number> {
 	);
 }
 
-describe('style scale literals', () => {
-	const counts = collectCounts();
-	const allowed = baseline as Record<string, number>;
+describe.each(RATCHETS)('style scale literals in $name', ({ scopes, baseline: allowed }) => {
+	const counts = collectCounts(scopes);
 
 	it('adds no literal border-radius or font-size beyond each file baseline', () => {
 		const grown = Object.entries(counts)

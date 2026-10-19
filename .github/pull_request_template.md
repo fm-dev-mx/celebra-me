@@ -6,7 +6,7 @@
 
 ## Verification
 
-<!-- Commands run and results; what was not run. Expected red checks and why (for example Vercel, paused). -->
+<!-- Commands run and results; what was not run. Expected red checks and why (for example a deploy check that is intentionally skipped). -->
 
 ## Risks and follow-ups
 

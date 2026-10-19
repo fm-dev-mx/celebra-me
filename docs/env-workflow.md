@@ -33,11 +33,12 @@ issues, logs, and chat.
 - `.env.preview.local` / `.env.production.local`: the **single canonical secret file** per hosted
   target for operational DB workflows (environment variables take precedence). Do not keep parallel
   copies under `.secrets/` or `.tmp/secrets/`.
-- `.secrets/`: reserved for non-DB script-owned fallbacks only (e.g. `.secrets/cloudinary.env`).
-- Shell/Vercel environment: production and deployment values.
+- `.secrets/`: reserved for non-DB script-owned fallbacks only.
+- Shell and host environment (Cloudflare Worker `vars` and secrets, GitHub Actions secrets):
+  production and deployment values.
 
 Production must never be inferred from `.env` or `.env.local`. Production-only values belong in the
-shell, Vercel, or gitignored secret paths documented by the owning workflow.
+shell, the Cloudflare Worker, or gitignored secret paths documented by the owning workflow.
 
 ## Validation Role of Preview vs Local Default
 
@@ -50,10 +51,10 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
   values come from `.env.preview.local` (overlay) and set `CELEBRA_RUNTIME_TARGET=preview`. This is
   **runtime connectivity only** — it does not authorize Preview DB migrations, syncs, invitation
   updates, or E2E provision/publish.
-- **Preview Validation / Ops Role**: Preview (`PREVIEW_DB_URL`, Vercel Preview deployments, Preview
-  E2E) remains the hosted validation environment for workflows requiring broader verification,
-  including:
-  - Hosted SSR and Vercel edge/runtime behavior,
+- **Preview Validation / Ops Role**: Preview (`PREVIEW_DB_URL`, the Cloudflare Preview Worker,
+  Preview E2E) remains the hosted validation environment for workflows requiring broader
+  verification, including:
+  - Hosted SSR and Cloudflare Workers runtime behavior,
   - Supabase Auth and MFA flows,
   - Invitation publication and provisioning preflights,
   - Storage asset host resolution,
@@ -69,9 +70,8 @@ shell, Vercel, or gitignored secret paths documented by the owning workflow.
 
 ## Credential Preflight and Fail-Fast Taxonomy
 
-Operations that depend on external credentials or secrets (Supabase Auth/DB, Vercel Preview
-deployments, Cloudinary asset provisioning) must perform a credential preflight check before
-execution:
+Operations that depend on external credentials or secrets (Supabase Auth/DB, Cloudflare Preview
+Worker deployments, R2 memories storage) must perform a credential preflight check before execution:
 
 1. **Taxonomy of Operational Failures**:
    - **Missing Access / Credential** → `Environmental Blocker`: When a required environment variable
@@ -99,11 +99,13 @@ execution:
   `src/lib/server/env.ts`. Includes credentials, API keys, deployment metadata, and internal URLs.
 - **Preview-only app/runtime:** `PREVIEW_MFA_BYPASS` and `PREVIEW_ADMIN_EMAILS` support the guarded
   Preview MFA bypass on hosted Preview deployments (`CELEBRA_DEPLOY_ENV=preview`, built from
-  `develop`). Never enable them in Production. Local Preview runtime
-  (`CELEBRA_RUNTIME_TARGET=preview`) uses `DEV_MFA_BYPASS` instead: it activates only on the Astro
-  dev server (`import.meta.env.DEV`) with `DEV_MFA_BYPASS=true`, no declared deploy identity, and
-  either Local Supabase or `CELEBRA_RUNTIME_TARGET=preview` with the Preview project URL. A built
-  bundle never qualifies, because edge runtimes do not report `NODE_ENV`.
+  `develop`). Never enable them in Production. They live only in `.env.preview.local` (the source of
+  the Preview Worker secrets), not in `.env.local`, because no local process can activate them.
+  Local Preview runtime (`CELEBRA_RUNTIME_TARGET=preview`) uses `DEV_MFA_BYPASS` instead: it
+  activates only on the Astro dev server (`import.meta.env.DEV`) with `DEV_MFA_BYPASS=true`, no
+  declared deploy identity, and either Local Supabase or `CELEBRA_RUNTIME_TARGET=preview` with the
+  Preview project URL. A built bundle never qualifies, because edge runtimes do not report
+  `NODE_ENV`.
 - **Lane runtime target:** `CELEBRA_RUNTIME_TARGET` is `local` or `preview` for local Astro
   processes. Lane detection sets it automatically; shell override is allowed for intentional tests.
   It never forges hosted identity and is not mutation authorization. Its `preview` names the Preview
@@ -135,11 +137,11 @@ execution:
   `CELEBRA_AGENT_CONTEXT` marks an agent session and makes the gate refuse; only the Cursor hooks
   set it. Gate sequence: [`database-workflow.md`](database-workflow.md) (`pnpm db:migrate`).
 - **Hosted migrate identity:** clean Git `HEAD` is the target release. Production contract phases
-  resolve the prior deployed SHA from GitHub/Vercel evidence, require its trusted Production smoke,
-  and read `supabase/deployed-app-capabilities.json` from that exact Git tree. Shell variables never
-  authorize deployed-app readiness. An unavailable remote preflight is reported as `UNVERIFIED` and
-  never authorizes apply; invalid evidence blocks both preflight and apply. Preview DB URL must
-  match the canonical Preview project ref.
+  resolve the prior deployed SHA from GitHub deployment evidence, require its trusted Production
+  smoke, and read `supabase/deployed-app-capabilities.json` from that exact Git tree. Shell
+  variables never authorize deployed-app readiness. An unavailable remote preflight is reported as
+  `UNVERIFIED` and never authorizes apply; invalid evidence blocks both preflight and apply. Preview
+  DB URL must match the canonical Preview project ref.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
   server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
 - **Retired:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are read nowhere. Keep them out of templates
@@ -152,7 +154,7 @@ substitute for the other.
 
 | Variable                 | Question it answers                         | Who sets it                            | `preview` means                                                      |
 | ------------------------ | ------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- |
-| `CELEBRA_DEPLOY_ENV`     | Which hosted deployment is this?            | Each hosted environment (Vercel)       | A hosted Preview deployment built from `develop`                     |
+| `CELEBRA_DEPLOY_ENV`     | Which hosted deployment is this?            | Each hosted environment (Wrangler)     | A hosted Preview deployment built from `develop`                     |
 | `CELEBRA_RUNTIME_TARGET` | Which database does a local process target? | Lane bootstrap or an intentional shell | A local Astro process (`dev-preview`) talking to the Preview project |
 
 - A hosted deployment is identified only by `CELEBRA_DEPLOY_ENV`, read only by
@@ -174,16 +176,12 @@ with app/runtime typing:
 | ------------------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
 | `operational-script-only` | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`            | Present in `.env.example`; omitted from typing.       |
 | `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF` | Present in app/runtime typing; omitted from template. |
+| `hosted-preview-only`     | `PREVIEW_MFA_BYPASS`, `PREVIEW_ADMIN_EMAILS`                   | Typed; in `.env.preview.local.example` only.          |
 
 `SUPER_ADMIN_EMAILS` is a server-only runtime list. Its first entry is the project owner: the only
 account that may confirm or clear owner review in the invitation workflow, and the local super admin
-that `pnpm db:local:bootstrap-admin` creates. Set it in Vercel Preview and Production; when it is
-absent, nobody can record owner review.
-
-`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are server-only runtime
-secrets for invitation image upload (Astro API + `invitation:release` CLI). Never create
-`PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files. Missing values
-fail closed: invitation image uploads do not fall back to Supabase Storage.
+that `pnpm db:local:bootstrap-admin` creates. Set it as a Worker secret in Preview and Production;
+when it is absent, nobody can record owner review.
 
 `PREVIEW_MEDIA_SECRET` is an optional server-only secret that seals the watermarked photo URLs of
 unpaid invitation previews (`/vista-previa/<token>`). When it is absent, the keys are derived from
@@ -204,12 +202,11 @@ managed from the super-admin dashboard.
 
 | Name                                             | Local                             | Preview / Staging                                                                   | Production                                           | Value source                                                                               |
 | ------------------------------------------------ | --------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret               | Vercel Preview secret                                                               | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 upload pair                                                 |
-| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret               | Vercel Preview secret                                                               | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 retrieval pair                                              |
-| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin             | Vercel Preview config                                                               | Vercel Production config                             | Deployed Sign Worker origin; path stays in code                                            |
-| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin             | Vercel Preview config                                                               | Vercel Production config                             | Deployed Retrieval Worker origin; path stays in code                                       |
-| `MEMORIES_SHARE_SECRET`                          | `.env.local` secret (optional)    | Vercel Preview secret                                                               | Vercel Production secret, independent                | Cryptographically secure random generator (≥ 32 bytes); signs shared-gallery links         |
-| `CRON_SECRET`                                    | Synthetic `.env.local` secret     | Vercel Preview secret                                                               | Vercel Production secret, independent                | Cryptographically secure random generator                                                  |
+| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret               | `celebra-me-preview` Worker secret                                                  | `celebra-me` Worker secret, independent              | Locally generated PKCS#8 P-256 upload pair                                                 |
+| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret               | `celebra-me-preview` Worker secret                                                  | `celebra-me` Worker secret, independent              | Locally generated PKCS#8 P-256 retrieval pair                                              |
+| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin             | `celebra-me-preview` Worker config                                                  | `celebra-me` Worker config                           | Deployed Sign Worker origin; path stays in code                                            |
+| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin             | `celebra-me-preview` Worker config                                                  | `celebra-me` Worker config                           | Deployed Retrieval Worker origin; path stays in code                                       |
+| `MEMORIES_SHARE_SECRET`                          | `.env.local` secret (optional)    | `celebra-me-preview` Worker secret                                                  | `celebra-me` Worker secret, independent              | Cryptographically secure random generator (≥ 32 bytes); signs shared-gallery links         |
 | `MEMORIES_CLOUDFLARE_ACCOUNT_ID`                 | Optional; usually empty           | `celebra-me-preview` Worker secret (optional)                                       | `celebra-me` Worker secret                           | Cloudflare account id; read only by the admin usage console                                |
 | `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN`            | Optional; usually empty           | `celebra-me-preview` Worker secret (optional)                                       | `celebra-me` Worker secret, independent              | Account API token (Manage account → Account API tokens) limited to Account Analytics: Read |
 | `MEMORIES_R2_BUCKET_NAME`                        | `celebra-memories-local`          | `celebra-memories-staging`                                                          | `celebra-memories`                                   | Bucket whose R2 usage the console reports                                                  |
@@ -222,7 +219,7 @@ managed from the super-admin dashboard.
 | `MEMORIES_STORAGE_TARGET`                        | Wrangler versioned var: `local`   | Wrangler versioned var: `staging`                                                   | Wrangler versioned var: `production`                 | Repository Worker configuration                                                            |
 | `MEMORIES_ALLOWED_ORIGINS`                       | Wrangler versioned var            | Wrangler versioned var; branch previews via `--var` at deploy time, never committed | Wrangler versioned var: `https://www.celebra-me.com` | Repository Worker configuration (comma-separated origins)                                  |
 | `MEMORIES_BUCKET`                                | Simulated local R2 binding        | Binding to the Staging bucket                                                       | Binding to the Production bucket                     | Wrangler R2 binding; never a variable or secret                                            |
-| Supabase URL / anon / service role               | Values reported by local Supabase | Vercel Preview values from the Preview project                                      | Vercel Production values from the Production project | Matching Supabase project API settings                                                     |
+| Supabase URL / anon / service role               | Values reported by local Supabase | Preview Worker values from the Preview project                                      | Production Worker values from the Production project | Matching Supabase project API settings                                                     |
 
 Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, or event
 memories values in Cloudflare Secrets Store. The platform usage console reads its own
@@ -254,8 +251,8 @@ logs, or evidence.
 - `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are accepted only by the read-only
   complete critical backup workflow. DB/API/Storage/credential project refs must agree with the
   allowlisted Production identity before any request.
-- Production backup secrets remain local operational inputs. They must not be added to Vercel, CI,
-  Supabase jobs, application runtime variables, or Task Scheduler arguments.
+- Production backup secrets remain local operational inputs. They must not be added to the Worker,
+  CI, Supabase jobs, application runtime variables, or Task Scheduler arguments.
 - Logs may show variable names, source filenames, presence/absence, and local/remote classification.
   They must not show full URLs, keys, passwords, raw tokens, or DB connection strings.
 - Examples should use local placeholders unless explicitly marked shell-only.
@@ -267,22 +264,19 @@ logs, or evidence.
 - Lane detection (`scripts/shared/worktree-lane.ts`) selects the runtime default:
   - Integration / `dev-local` / `dev-extra` → Local
   - `dev-preview` → Preview
-- File loading for local processes (`NODE_ENV=development`, non-Vercel):
+- File loading for local processes (`NODE_ENV=development`, no hosted deploy identity):
   1. Vite `loadEnv` merges `.env`, `.env.local`, `.env.[mode]`, `.env.[mode].local`
   2. Preview lane additionally overlays `.env.preview.local` (required) for Preview runtime keys
   3. Allowlisted keys from files override inherited shell values
   4. `CELEBRA_RUNTIME_TARGET` is set from the lane default unless already present
 - `src/lib/server/env.ts#getEnv` reads `process.env` only. It never reads `.env` files directly and
   has no test-mode filesystem behavior.
-- Shell/Vercel values remain authoritative on Vercel and in CI. Local lane bootstrap validates that
-  `SUPABASE_URL` and `PUBLIC_SUPABASE_URL` match the intended Local or Preview project and rejects
-  mixed or Production targets for ordinary development lanes.
+- Host values remain authoritative on the Cloudflare Workers and in CI. Local lane bootstrap
+  validates that `SUPABASE_URL` and `PUBLIC_SUPABASE_URL` match the intended Local or Preview
+  project and rejects mixed or Production targets for ordinary development lanes.
 - DB workflow scripts centralize local app env loading in `scripts/db/db-workflow-lib.ts`, with
   `.env.local`/`.env` merged and `process.env` overriding file values. Local DB workflows refuse
   remote Supabase URLs inside `.env.local`.
-- Cloudinary runtime reads `process.env` only. The release CLI may fill missing values from
-  `.env.local`, `.env`, and `.secrets/cloudinary.env` in that order before calling the shared server
-  module.
 - Older operational scripts still load env files locally and are guarded case-by-case. Broad
   precedence normalization is intentionally deferred to avoid changing deployment behavior.
 
@@ -296,7 +290,7 @@ allowed name (`pnpm env:check` compares a checkout with the templates; names onl
 | `.env.local`            | Local development against Local Supabase                                                          | `.env.example`                  | Local Supabase, Local Workers, owner-held test secrets |
 | `.env.preview.local`    | Preview lane overlay, Preview DB workflows, source of the Cloudflare Preview Worker secrets       | `.env.preview.local.example`    | Preview Supabase project, owner-held Preview secrets   |
 | `.env.production.local` | Production operator workflows only (critical backup, guarded refresh, `prod:apply` owner gate)    | `.env.production.local.example` | Production Supabase project                            |
-| `.env.e2e.local`        | Hosted test runner (Preview Playwright configs, smoke scripts) and hosting-protection credentials | `.env.e2e.local.example`        | Test host account, Vercel bypass, Access service token |
+| `.env.e2e.local`        | Hosted test runner (Preview Playwright configs, smoke scripts) and hosting-protection credentials | `.env.e2e.local.example`        | Test host account, Cloudflare Access service token     |
 
 Rules:
 
@@ -306,10 +300,12 @@ Rules:
   running dev servers after a sync.
 - A name lives in exactly one template, except the Preview overlay, which repeats the runtime names
   it overrides. A unit test (`tests/unit/env-templates.test.ts`) fails when a template lists a name
-  that no code reads, or when test runner and Production names leak into another template.
-- No other copies: no `.env` files under `.vercel/`, `.secrets/`, `.tmp/` or `.agent/tmp/`, and no
-  ad hoc pulls of hosted environments. Hosted values stay in the host (Vercel, Cloudflare Worker
-  secrets, GitHub Actions secrets).
+  that no code reads, a name without a comment, an empty section, or a comment naming a retired
+  provider, and when test runner and Production names leak into another template. `pnpm env:audit`
+  prints the same template checks (names only) for a quick review.
+- No other copies: no `.env` files under `.secrets/`, `.tmp/` or `.agent/tmp/`, and no ad hoc pulls
+  of hosted environments. Hosted values stay in the host (Cloudflare Worker secrets, GitHub Actions
+  secrets).
 - Ephemeral agent worktrees (for example under `.claude/worktrees/`) never receive env files.
 
 | Worktree      | Files used at runtime                                    | Notes                   |
@@ -320,16 +316,16 @@ Rules:
 | `dev-extra`   | `.env.local`                                             | Local default           |
 | Any lane      | `.env.e2e.local` only for Preview Playwright and smoke   | Hosted test runner      |
 
-## External Vercel Preview E2E
+## External Preview E2E
 
 Preview Playwright configs (`playwright.preview*.config.ts`) load `.env.e2e.local` before resolving
 configuration. The default `playwright.config.ts` used by `pnpm test:e2e:ci` / `pnpm run ci` does
 not load that file, so a local Preview harness cannot redirect the canonical CI suite. Existing
 shell or CI variables take precedence; the file fills only missing values in Preview configs. The
-file is ignored by the existing `.env.*.local` rule and must never be copied into Vercel runtime
-environment variables. Canonical `webServer` startup supplies Local Supabase URL stubs
-(`http://127.0.0.1:54321`) when `SUPABASE_URL` / `PUBLIC_SUPABASE_URL` are unset so Astro's
-fail-closed lane bootstrap can start without a checked-in `.env.local`.
+file is ignored by the existing `.env.*.local` rule and must never be copied into Worker runtime
+secrets. Canonical `webServer` startup supplies Local Supabase URL stubs (`http://127.0.0.1:54321`)
+when `SUPABASE_URL` / `PUBLIC_SUPABASE_URL` are unset so Astro's fail-closed lane bootstrap can
+start without a checked-in `.env.local`.
 
 Required for authenticated Preview runs:
 
@@ -338,20 +334,21 @@ PLAYWRIGHT_BASE_URL
 PLAYWRIGHT_PREVIEW_SUPABASE_URL
 PLAYWRIGHT_HOST_LOGIN
 PLAYWRIGHT_HOST_PASSWORD
-VERCEL_AUTOMATION_BYPASS_SECRET
 PLAYWRIGHT_PREVIEW_INVITATION_ID
+CLOUDFLARE_ACCESS_CLIENT_ID
+CLOUDFLARE_ACCESS_CLIENT_SECRET
 ```
 
-`PLAYWRIGHT_BASE_URL` must use HTTPS and match either the stable Celebra-me Preview alias, the
-`develop` branch alias, or an immutable Celebra-me deployment hostname repeated exactly in
-`PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`. The explicit immutable-host value is required because
-an arbitrary `*.vercel.app` suffix does not prove Preview identity. Production domains are always
-rejected. `PLAYWRIGHT_PREVIEW_SUPABASE_URL` must resolve to project ref `iwipdvisoyerfdytuhwi`; the
-Production ref is always rejected before any remote request.
+`PLAYWRIGHT_BASE_URL` must use HTTPS and match either the stable Preview Worker host
+(`celebra-me-preview.celebra-me-com.workers.dev`) or an immutable Preview Worker version host
+repeated exactly in `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`. The explicit immutable-host value
+is required because an arbitrary `*.workers.dev` suffix does not prove Preview identity. Production
+domains are always rejected. `PLAYWRIGHT_PREVIEW_SUPABASE_URL` must resolve to project ref
+`iwipdvisoyerfdytuhwi`; the Production ref is always rejected before any remote request.
 
 Public and authenticated read-only commands require the provisioning, publication, and debug guards
-to be present and exactly `false`. Missing flags fail closed before Deployment Protection bypass or
-application authentication.
+to be present and exactly `false`. Missing flags fail closed before the Cloudflare Access headers or
+application authentication are used.
 
 `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the Playwright fixture reconcile
 command (`pnpm test:e2e:preview:provision`): verify slug `e2e-preview-publication`, copy
@@ -385,9 +382,9 @@ explicit Preview task scope, then reconcile content with `pnpm test:e2e:preview:
 publication only as the separate `pnpm test:e2e:preview:publish` command after explicit
 authorization.
 
-The Deployment Protection secret is sent only during a single same-origin health request that asks
-Vercel to establish its bypass cookie. It is never configured as a global browser header, so
-cross-origin image, font, analytics, Supabase, and Cloudinary requests cannot receive it.
+The Cloudflare Access service token (`CLOUDFLARE_ACCESS_CLIENT_ID`,
+`CLOUDFLARE_ACCESS_CLIENT_SECRET`) is attached only when the target is an approved Preview Worker
+host; Local and other external targets never receive it.
 
 Preview projects always disable screenshots, video, traces, and persistent `storageState`, and
 discard temporary test output after execution. Debug artifacts currently fail closed when enabled.
@@ -433,7 +430,6 @@ These are present in `.env.example` and the lane bootstrap allowlist
 | `PROD_SUPABASE_HOST`          | `astro.config.mjs`                        | Image `remotePatterns` host override                                   |
 | `CELEBRA_ENV_BOOTSTRAP_LOG`   | `astro.config.mjs`                        | `1` logs lane bootstrap decisions (names only)                         |
 | `ENABLE_TEST_VARIANT_HARNESS` | `astro.config.mjs`                        | `1` enables the visual variant harness in `astro dev`                  |
-| `CELEBRA_BUILD_TARGET`        | `astro.config.mjs`                        | `vercel` (default) or `cloudflare`: selects the adapter                |
 | `CLOUDFLARE_ENV`              | `@astrojs/cloudflare`, `wrangler`         | Wrangler environment of a Cloudflare build (`preview` or `production`) |
 
 ### Local DB tooling and disposable test environment
@@ -458,24 +454,11 @@ These are present in `.env.example` and the lane bootstrap allowlist
 | `CELEBRA_GIT_SAFETY_ROOT`, `CELEBRA_GIT_SAFETY_SESSION`                                                 | `scripts/agent/git-safety.mjs`                     | Defaults for `--root` / `--session`               |
 | `CELEBRA_CLI_ASCII`                                                                                     | `scripts/lib/cli-theme.ts`                         | `1` forces ASCII glyphs                           |
 
-### Post-deploy smoke (Vercel `repository_dispatch`)
+### Post-deploy smoke
 
-Set by `.github/workflows/post-deploy-smoke.yml` from the dispatch payload and read by
-`scripts/ops/post-deploy-smoke.ts`; **required** inside that workflow, never configured by hand:
-
-- `VERCEL_DISPATCH_EVENT`, `VERCEL_DISPATCH_URL`, `VERCEL_DISPATCH_ENVIRONMENT`,
-  `VERCEL_DISPATCH_GIT_REF`, `VERCEL_DISPATCH_COMMIT_SHA`, `VERCEL_DISPATCH_DEPLOYMENT_ID`,
-  `VERCEL_DISPATCH_PROJECT_ID`, `VERCEL_DISPATCH_EXPECTED_PROJECT_ID` (dispatch inputs).
-- `POST_DEPLOY_BASE_URL`, `POST_DEPLOY_APPROVED_HOST`, `POST_DEPLOY_ENVIRONMENT`,
-  `POST_DEPLOY_COMMIT_SHA`, `POST_DEPLOY_DEPLOYMENT_ID`, `POST_DEPLOY_RUN_ID`,
-  `POST_DEPLOY_STARTED_AT` (validated outputs exported through `GITHUB_ENV`).
-- `VERCEL_PROJECT_ID` is a repository variable (`vars.*`) consumed by the same workflow.
-
-The same probes run outside a dispatch with `pnpm ops:post-deploy -- check`, which reads only public
-pages. `--base-url=<origin>` (or `SMOKE_BASE_URL`) picks the host, defaulting to
-`https://www.celebra-me.com`; approved hosts are the Production domain and its subdomains,
-`*.vercel.app` (needs `VERCEL_AUTOMATION_BYPASS_SECRET`) and `*.workers.dev`. Example for a
-Cloudflare Worker:
+`pnpm ops:post-deploy -- check` probes public pages only. `--base-url=<origin>` (or
+`SMOKE_BASE_URL`) picks the host, defaulting to `https://www.celebra-me.com`; approved hosts are the
+Production domain, its subdomains and `*.workers.dev`. Example for a Cloudflare Worker:
 `pnpm ops:post-deploy -- check --base-url=https://celebra-me.example.workers.dev`.
 
 `.github/workflows/production-uptime.yml` runs that check against Production every 15 minutes (from
@@ -505,18 +488,25 @@ with `pnpm ops:cloudflare:preview:secrets` (allow-list in
 `src/lib/rsvp/security/rate-limit-provider.ts` uses, and the two daily jobs are `triggers.crons`
 handled by `src/worker.ts` → `src/lib/server/scheduled-jobs.ts`.
 
+Hosted rules that do not depend on a variable value (full list:
+[`operations/cloudflare-platform.md`](operations/cloudflare-platform.md)): `CELEBRA_DEPLOY_ENV` must
+be declared as a versioned `var` in every hosted environment, because without it nothing writes and
+`/api/health` reports `environment: null`; `.dev.vars` is a gitignored local secrets file and never
+committed; the deploy token is scoped to Workers Scripts and Access only; secrets are verified by
+name with `wrangler secret list --env <name>`, never by value.
+
 ### Cloudflare Production upload (`.github/workflows/deploy-production.yml`)
 
 Manual only (`workflow_dispatch` from `main`). It builds the Cloudflare target for Production,
 uploads a Worker version tagged with the commit SHA and smokes that version URL behind Cloudflare
 Access with `pnpm ops:cloudflare:production:smoke`, which also fails when the version URL answers
 without the service token. It never routes traffic: `env.production` in `wrangler.jsonc` has no
-routes and no `workers.dev` host; the cutover adds the zone routes by hand
-(`docs/operations/cloudflare-production-cutover.md`). It declares the two Vercel cron schedules,
-which version uploads, version deploys and secret changes never apply; the cutover enables them once
-Vercel is paused (section 8.1 of that runbook). The first run creates the Worker with
-`wrangler deploy`, because `wrangler versions upload` cannot create one. Evidence is a GitHub
-Deployment in the `Cloudflare Production` environment and the commit status
+routes and no `workers.dev` host; the zone routes were added by hand
+(`docs/operations/cloudflare-platform.md`). It declares the Production cron schedules
+(`triggers.crons` in `wrangler.jsonc`), which version uploads, version deploys and secret changes
+never apply; they are set in the dashboard. The first run creates the Worker with `wrangler deploy`,
+because `wrangler versions upload` cannot create one. Evidence is a GitHub Deployment in the
+`Cloudflare Production` environment and the commit status
 `Cloudflare - celebra-me production candidate smoke`; no release gate reads either, so a candidate
 never stands in for what the domain serves.
 
@@ -524,13 +514,13 @@ never stands in for what the domain serves.
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------- |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCESS_CLIENT_ID`, `CLOUDFLARE_ACCESS_CLIENT_SECRET`                                            | Repository secrets (shared with Preview)      | The service token must be allowed by the Production version URL Access app |
 | `PRODUCTION_PUBLIC_SUPABASE_ANON_KEY`                                                                                                                        | `Cloudflare Production` environment secret    | Required; a JWT naming another Supabase project fails the run              |
-| `PRODUCTION_PUBLIC_GA_MEASUREMENT_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ENABLED`, `PRODUCTION_PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `Cloudflare Production` environment variables | Same values as Vercel Production; empty disables that tracker              |
+| `PRODUCTION_PUBLIC_GA_MEASUREMENT_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ID`, `PRODUCTION_PUBLIC_META_PIXEL_ENABLED`, `PRODUCTION_PUBLIC_CF_WEB_ANALYTICS_TOKEN` | `Cloudflare Production` environment variables | Same values as the previous Production host; empty disables that tracker   |
 
 The `PRODUCTION_` prefix keeps a missing value from falling back to the repository-level Preview
 value of the same plain name. `PUBLIC_SUPABASE_URL` and `BASE_URL` are fixed in the workflow.
 
-Worker secrets: Production has no lane file. Export the Vercel Production variables to a one-off
-file outside the repository, upload with
+Worker secrets: Production has no lane file. Export the Production variables to a one-off file
+outside the repository, upload with
 `pnpm ops:cloudflare:production:secrets -- --env-file <path> --dry-run` (names only), then again
 without `--dry-run`, and delete the file. The script refuses lane files and any file whose
 `SUPABASE_URL` or `PUBLIC_SUPABASE_URL` names another project; `PREVIEW_MFA_BYPASS`,
@@ -568,10 +558,9 @@ declared in each `wrangler.json`, never variables or secrets.
 Read as provided by the platform or terminal; never set them in env files: `CI`, `NODE_ENV`, `DEV`
 (`import.meta.env`), `GITHUB_SHA`, `GITHUB_REF_NAME`, `GITHUB_REPOSITORY`, `GITHUB_RUN_ID`,
 `GITHUB_EVENT_NAME`, `GITHUB_OUTPUT`, `GITHUB_ENV`, `GITHUB_STEP_SUMMARY`, `GITHUB_API_URL`,
-`VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_PREVIOUS_SHA` (build
-fallbacks and `scripts/ops/vercel-ignore-build.mjs` only), `PGOPTIONS`, `PGCONNECT_TIMEOUT` (libpq,
-set by scripts), `USER`, `USERNAME`, `TERM`, `TERM_PROGRAM`, `TERMINAL_EMULATOR`, `WT_SESSION`,
-`MSYSTEM`, `NO_COLOR`, `FORCE_COLOR` (terminal detection in `scripts/lib/cli-theme.ts`).
+`PGOPTIONS`, `PGCONNECT_TIMEOUT` (libpq, set by scripts), `USER`, `USERNAME`, `TERM`,
+`TERM_PROGRAM`, `TERMINAL_EMULATOR`, `WT_SESSION`, `MSYSTEM`, `NO_COLOR`, `FORCE_COLOR` (terminal
+detection in `scripts/lib/cli-theme.ts`).
 
 ## Cleanup Notes
 

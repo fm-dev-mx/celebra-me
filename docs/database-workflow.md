@@ -33,6 +33,45 @@ Local/Preview package -> Production (content): owner-only pnpm prod:apply only.
 Preview -> Production: forbidden for DB/Storage content copy.
 ```
 
+### Platform principle and runtime-to-database mapping
+
+Moving the application between hosts changes where it runs, not where the data lives. All database
+targets stay on Supabase under the guards above, and the server reaches Supabase only over HTTPS
+`fetch` (PostgREST, Auth, Storage, RPC), so no driver, pooler or Hyperdrive is needed. Hosted
+identity is enforced by `src/lib/server/deploy-identity.ts`.
+
+| Runtime                                        | Database target                         | Identity enforcement                                                                                                                                |
+| ---------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local `astro dev` / `astro preview` on workerd | persistent-local (`127.0.0.1:54321`)    | `local` only for a loopback Supabase URL; lane bootstrap writes a gitignored `.dev.vars` from the lane env instead of mutating Node's `process.env` |
+| Preview Worker (`env.preview`)                 | Preview project                         | `CELEBRA_DEPLOY_ENV=preview` plus project-ref check (`SUPABASE_PROJECT_REFS.preview`); a mismatch throws                                            |
+| Production Worker                              | Production project                      | `CELEBRA_DEPLOY_ENV=production` plus the Production project ref                                                                                     |
+| Jest, pgTAP, migration CLIs, backups           | disposable-test and the guarded targets | Run in Node; the hosting platform does not affect them                                                                                              |
+
+Operating rules around any host or routing change:
+
+- Close the pending migration chain first, and run no migration while two builds of the same SHA can
+  serve the same database. Both builds must share one schema so a rollback stays a routing change.
+- Run no contract migration between a change of host and the first trusted smoke from the new
+  pipeline, because the contract gate reads that evidence.
+- Exactly one platform runs the database-writing cron jobs (memories cleanup, engagement snapshots
+  and anonymization) at a time.
+- Run `pnpm db:prod:backup:critical` before the change and before each guarded data step.
+- Supabase Auth Site URL and Redirect URLs live in the Supabase dashboard, not in the repository;
+  list the current hosts there and remove hosts of a retired platform.
+- Applied migrations are immutable: editing one breaks the migrator digest check
+  (`APPLIED_VERIFICATION_FAILED`), so retired-provider guards exclude `supabase/migrations/`.
+- No schema redesign rides with a platform change: it would make any regression impossible to
+  attribute.
+
+### Candidate follow-ups (separate programs, owner approval each)
+
+| Candidate                                                                                                                          | Value                                                                                | Note                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Move the legacy Supabase-Storage assets (bucket `invitation-assets`, provider `supabase`) to R2                                    | One media store, one provider value, simpler Local setup (R2 local through wrangler) | Needs its own inventory of rows and objects                                                                       |
+| Drop the retired media provider value from the `invitation_assets.provider` constraint (contract), once no row and no code uses it | Smaller schema                                                                       | After a smoke-checked Production deploy; regenerate `release-hash-baseline.json` when package hashes change       |
+| Retire the `valentina_*` memories-catalog objects and deduplicate the "latest published" SQL                                       | Smaller schema                                                                       | Verify each is still present first; each keeps its own owner gate                                                 |
+| D1, Hyperdrive or leaving Supabase                                                                                                 | None found                                                                           | Auth, RLS, RPCs, Storage and the guarded migration tooling depend on Supabase; a move adds risk with no reduction |
+
 ## Canonical status projection decision
 
 `pnpm dbs` runs one evidence pipeline. Each refresh uses one `StatusProbeSession` and, per
@@ -57,11 +96,11 @@ complete, and copyable when `NO_COLOR` is set or output is redirected. A Product
 shows lint/dry-run, owner plan, owner apply, and residual verification separately. A hosted contract
 migration reports a prior deployment only when the rollout registry declares required app
 capabilities; missing registry or deployment evidence is `UNVERIFIED`. The repository has no
-canonical Vercel deployment command, so `dbs` never invents one. Production apply remains an
-independent owner/TTY decision even when deployment and smoke evidence are valid. Interactive
-commands wider than the terminal use a shell-valid continuation marker (PowerShell backtick on
-Windows, backslash on POSIX); redirected and JSON output retain the canonical one-line command.
-`--json` is validated as the canonical v3 view plus its typed `operationalPlan`.
+canonical deployment command, so `dbs` never invents one. Production apply remains an independent
+owner/TTY decision even when deployment and smoke evidence are valid. Interactive commands wider
+than the terminal use a shell-valid continuation marker (PowerShell backtick on Windows, backslash
+on POSIX); redirected and JSON output retain the canonical one-line command. `--json` is validated
+as the canonical v3 view plus its typed `operationalPlan`.
 
 The current projection remains application-owned SQL rather than a database view. A view would not
 reduce the one content invocation per environment, would add an independently grantable object, and
@@ -211,8 +250,8 @@ Use current provider dashboards for volatile quota limits rather than copying nu
 At least once per backup review, record or inspect Supabase uncached egress, Storage usage, database
 size, downloaded bytes per recovery point, projected monthly backup egress, age of the latest valid
 backup, date of the latest successful restore drill, and restore duration. Measure real daily runs
-before considering incremental Storage capture. Backups never route through Vercel and must not poll
-Production or download an object more than once within one recovery operation.
+before considering incremental Storage capture. Backups never route through the application hosting
+and must not poll Production or download an object more than once within one recovery operation.
 
 ## Hosted schema invariants
 
@@ -290,7 +329,7 @@ Command authority is `package.json`. Use `pnpm dbs` for read-only status,
 and `pnpm db:preview:sync-invitations` only for the separate Production-to-Preview regression
 mirror. `pnpm lane:sync` and `pnpm db:local:restore-from-dump` remain separate systems.
 
-Policy for mirror exclusions, RSVP reset, and Cloudinary vs Supabase Storage boundaries:
+Policy for mirror exclusions, RSVP reset, and remote-host vs Supabase Storage boundaries:
 [`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).
 
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion. Use
@@ -348,7 +387,7 @@ PROVISIONED & HOSTED-VALIDATED
 ```
 
 - **Status & Parity**: Ephemeral Preview database environment is provisioned and hosted-validated.
-  Dedicated Supabase Preview project is used for Vercel Preview deployments from `develop`.
+  Dedicated Supabase Preview project is used for Preview Worker deployments from `develop`.
 - **Supported Credentials**: `PREVIEW_DB_URL` environment variable or the canonical secret file
   `.env.preview.local`.
 - **Target Classification**: `scripts/db/db-guard.ts` classifies targets matching `PREVIEW_DB_URL`
@@ -393,8 +432,8 @@ PROVISIONED & HOSTED-VALIDATED
   dedicated Preview admin). Real Production auth users are never copied.
 - **Storage Mirroring**: Supabase Storage binaries under `invitation-assets` (rows with
   `storage_path`) are copied to Preview Storage. Supabase public Storage URLs inside mirrored JSON
-  `content`/`snapshot` are rewritten Production→Preview. Cloudinary `secure_url` / remote CDN
-  references are preserved as-is and are **not** a Supabase Storage completeness claim — see
+  `content`/`snapshot` are rewritten Production→Preview. Remote-host `secure_url` / CDN references
+  are preserved as-is and are **not** a Supabase Storage completeness claim — see
   [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). Apply fails closed on
   partial upsert, missing transferable assets, Storage credential gaps, unregistered Storage refs,
   or residual Production Storage URLs after rewrite.
@@ -497,17 +536,17 @@ assumptions. Cross-machine concurrent migrate is an accepted single-operator res
 Rollout phases (registry metadata; **hosted candidates must have an explicit phase** — omission
 fails closed; do not backfill already-applied historical migrations without need):
 
-| Phase      | Meaning                                                    | Hosted rule                                                                                                                                      |
-| ---------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `expand`   | Adds capability compatible with the currently deployed app | May run before target deployment when release membership + DB deps hold                                                                          |
-| `neutral`  | Does not invalidate current or target app contracts        | Normal guarded path + membership                                                                                                                 |
-| `contract` | Removes/restricts behavior an older app relies on          | Blocked until GitHub/Vercel prove a prior Production deployment passed smoke and its versioned capability manifest provides the replacement path |
+| Phase      | Meaning                                                    | Hosted rule                                                                                                                                          |
+| ---------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `expand`   | Adds capability compatible with the currently deployed app | May run before target deployment when release membership + DB deps hold                                                                              |
+| `neutral`  | Does not invalidate current or target app contracts        | Normal guarded path + membership                                                                                                                     |
+| `contract` | Removes/restricts behavior an older app relies on          | Blocked until GitHub/Cloudflare prove a prior Production deployment passed smoke and its versioned capability manifest provides the replacement path |
 
 Safe RSVP-class sequencing:
 
 ```text
 EXPAND (RPC / portable capability)
-→ Production deploy + verified GitHub/Vercel smoke of replacement application
+→ Production deploy + verified GitHub/Cloudflare smoke of replacement application
 → CONTRACT (revoke legacy direct DML paths)
 ```
 

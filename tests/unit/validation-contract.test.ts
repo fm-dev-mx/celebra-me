@@ -158,7 +158,7 @@ describe('canonical validation contract', () => {
 			for (const command of [
 				'pnpm ci:static',
 				'pnpm test',
-				'pnpm test:e2e:ci --max-failures=5 --workers=2',
+				'pnpm test:e2e:ci --max-failures=5 --workers=4',
 				// Guest memories specs run on every device project of playwright.memories.config.ts.
 				'pnpm test:e2e:memories --max-failures=5 --workers=2',
 			]) {
@@ -166,7 +166,7 @@ describe('canonical validation contract', () => {
 			}
 			// Prettier wraps this list; the aggregate must still wait for every tier and the scope job.
 			expect(workflow).toMatch(
-				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-scope,?\s*\]/,
+				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-memories,\s*browser-scope,?\s*\]/,
 			);
 			expect(workflow).toContain('tier: [static, unit, database, workerd]');
 			expect(workflowLines).toContain(
@@ -179,7 +179,7 @@ describe('canonical validation contract', () => {
 			expect(imageDigest).toBeDefined();
 			expect(workflow).toContain(`VISUAL_PARITY_OS_IMAGE_DIGEST: ${imageDigest}`);
 			expect(workflow).toContain(
-				'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success',
+				'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success && test "$MEMORIES_RESULT" = success',
 			);
 			expect(workflow).toContain('uses: actions/checkout@v7');
 			expect(workflow).toContain('uses: pnpm/action-setup@v6');
@@ -226,16 +226,21 @@ describe('canonical validation contract', () => {
 
 		expect(job('application-checks')).toContain('needs: evidence-reuse');
 		expect(job('browser-validation')).toContain('needs: [evidence-reuse, browser-scope]');
-		for (const name of ['application-checks', 'browser-validation']) {
+		expect(job('browser-memories')).toContain('needs: [evidence-reuse, browser-scope]');
+		for (const name of ['application-checks', 'browser-validation', 'browser-memories']) {
 			expect(job(name)).toContain('!cancelled()');
 			expect(job(name)).toContain("needs.evidence-reuse.outputs.reuse != 'true'");
 		}
-		// Browser scope may skip only the browser tier, and only on a develop push.
+		// Browser scope may skip only the browser tier, and only for develop pushes and pull
+		// requests into develop; promotion pull requests into main never reach it.
 		expect(job('browser-scope')).toContain('run: node scripts/ops/ci-browser-scope.ts');
-		expect(job('browser-scope')).toContain("if: github.event_name == 'push'");
-		expect(job('browser-validation')).toContain(
-			"needs.browser-scope.outputs.browser != 'skip'",
+		expect(job('browser-scope')).toContain("github.event_name == 'push' ||");
+		expect(job('browser-scope')).toContain(
+			"(github.event_name == 'pull_request' && github.base_ref == 'develop')",
 		);
+		for (const name of ['browser-validation', 'browser-memories']) {
+			expect(job(name)).toContain("needs.browser-scope.outputs.browser != 'skip'");
+		}
 		expect(job('application-checks')).not.toContain('browser-scope');
 		// Policy always validates the promotion range itself.
 		expect(job('policy-validation')).not.toContain('evidence-reuse');
@@ -244,11 +249,11 @@ describe('canonical validation contract', () => {
 		expect(suite).toContain('test "$POLICY_RESULT" = success');
 		expect(suite).toContain('if [ "$EVIDENCE_REUSE" = true ]; then');
 		expect(suite).toContain(
-			'test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped',
+			'test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped',
 		);
 		expect(suite).toContain('elif [ "$BROWSER_SCOPE" = skip ]; then');
 		expect(suite).toContain(
-			'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped',
+			'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped',
 		);
 	});
 });

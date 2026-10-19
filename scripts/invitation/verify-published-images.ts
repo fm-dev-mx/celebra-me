@@ -268,7 +268,7 @@ export async function verifyPublishedInvitation(
 	return rows.sort((left, right) => left.assetKey.localeCompare(right.assetKey));
 }
 
-function readPublishedInvitations(
+export function readPublishedInvitations(
 	target: MediaVerificationTarget,
 	slug?: string,
 ): PublishedInvitation[] {

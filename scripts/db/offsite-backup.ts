@@ -18,7 +18,7 @@ import { getSecretFromEnvOrFiles, PROD_SECRET_FILES } from './db-target-config.t
 
 const BUNDLE_MAGIC = 'CELEBRA-OFFSITE-BUNDLE-V1\n';
 const MANIFEST_ENTRY = 'manifest.json';
-export const OFFSITE_OBJECT_SUFFIX = '.bundle.age';
+const OFFSITE_OBJECT_SUFFIX = '.bundle.age';
 export const OFFSITE_PREFIXES = ['daily', 'test'] as const;
 export type OffsitePrefix = (typeof OFFSITE_PREFIXES)[number];
 

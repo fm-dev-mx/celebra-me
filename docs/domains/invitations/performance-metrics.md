@@ -15,16 +15,18 @@ Cache **correctness** for public and private responses remains
 [`public-response-cache-policy.md`](public-response-cache-policy.md). This document does not change
 that policy.
 
-Numeric baselines below come from production `www.celebra-me.com` on 2026-08-16 via
+Numeric baselines below come from production `www.celebra-me.com` on 2026-08-16, measured on the
+former host before the Cloudflare Workers cutover, via
 `pnpm invitation:delivery:baseline --slug <eventType>/<slug>`. Canonical metric name: **HTML decoded
 size**. The recorded field `htmlBytes` is the decoded UTF-8 byte length of the HTML response body
 after HTTP decompression (`response.text()` → `Buffer.byteLength(html, "utf8")`). It is not
 compressed transfer size, not `Content-Length`, and not total page weight.
 
 Benchmark roles are architectural (`buildDeliveryBenchmarkScenarios`). The operator names the
-invitations: `--slug <eventType>/<slug>` (versioned Cloudinary, also used for the personalized miss)
-and, while an invitation still serves mutable Storage media, `--legacy-slug <eventType>/<slug>`. The
-2026 measurements below used `renata` and `romina-rios-chaparro`.
+invitations: `--slug <eventType>/<slug>` (versioned content-addressed media, also used for the
+personalized miss) and, while an invitation still serves mutable Storage media,
+`--legacy-slug <eventType>/<slug>`. The 2026 measurements below used `renata` and
+`romina-rios-chaparro`.
 
 A metric is canonical only if a meaningful change can trigger a concrete decision. Timing metrics
 are not CI gates.
@@ -34,22 +36,22 @@ are not CI gates.
 Confidence: **High** = direct and reproducible for its enforcement; **Medium** = valid but proxy or
 environment-dependent; **Low** = weakly observable. Low-confidence metrics must not block CI.
 
-| Metric                      | Unit                | Confidence                            | Key limitation                                |
-| --------------------------- | ------------------- | ------------------------------------- | --------------------------------------------- |
-| Anonymous HTML cache        | boolean (header)    | High (CI policy); Medium (hosted HIT) | Jest does not prove CDN HIT/MISS              |
-| Personalized HTML cache     | boolean (header)    | High (CI policy); Medium (hosted HIT) | Same hosted caveat                            |
-| Storage vs `/_vercel/image` | boolean (URL class) | High                                  | Live HTML may lag undeployed policy           |
-| Cloudinary hash + host      | boolean / public ID | High                                  | Hostname-based; lookalikes are `other`        |
-| Published-content reads     | count / request     | High                                  | Observes repository mocks, not Postgres logs  |
-| Personalized lookups        | count / request     | High                                  | Route service calls ≠ persistence reads       |
-| RSVP submit ops             | count / request     | High                                  | Service layer; RPC helper also re-reads guest |
-| RSVP functional outcome     | boolean             | High in disposable DB                 | Production guests are never mutated           |
-| HTML decoded size           | UTF-8 bytes         | High                                  | Not compressed `Content-Length`               |
-| LCP / CLS / INP             | p75 ms / score      | Medium                                | Speed Insights UI; MCP has no vitals API      |
-| TTFB / render spans         | ms                  | Low–Medium                            | Range ≈ proposed thresholds                   |
-| RSVP errors                 | log events          | Medium                                | No in-repo success-rate series                |
-| Provider usage vs traffic   | totals / ratio      | Medium                                | Manual pairing; no per-invite billing         |
-| HTML inventory / hero bytes | count / bytes       | Medium proxy                          | Markup URL ≠ `currentSrc` ≠ LCP               |
+| Metric                      | Unit                 | Confidence                            | Key limitation                                |
+| --------------------------- | -------------------- | ------------------------------------- | --------------------------------------------- |
+| Anonymous HTML cache        | boolean (header)     | High (CI policy); Medium (hosted HIT) | Jest does not prove CDN HIT/MISS              |
+| Personalized HTML cache     | boolean (header)     | High (CI policy); Medium (hosted HIT) | Same hosted caveat                            |
+| Storage vs image transform  | boolean (URL class)  | High                                  | Live HTML may lag undeployed policy           |
+| R2 hash + host              | boolean / object key | High                                  | Hostname-based; lookalikes are `other`        |
+| Published-content reads     | count / request      | High                                  | Observes repository mocks, not Postgres logs  |
+| Personalized lookups        | count / request      | High                                  | Route service calls ≠ persistence reads       |
+| RSVP submit ops             | count / request      | High                                  | Service layer; RPC helper also re-reads guest |
+| RSVP functional outcome     | boolean              | High in disposable DB                 | Production guests are never mutated           |
+| HTML decoded size           | UTF-8 bytes          | High                                  | Not compressed `Content-Length`               |
+| LCP / CLS / INP             | p75 ms / score       | Medium                                | Web Analytics UI; no in-repo vitals API       |
+| TTFB / render spans         | ms                   | Low–Medium                            | Range ≈ proposed thresholds                   |
+| RSVP errors                 | log events           | Medium                                | No in-repo success-rate series                |
+| Provider usage vs traffic   | totals / ratio       | Medium                                | Manual pairing; no per-invite billing         |
+| HTML inventory / hero bytes | count / bytes        | Medium proxy                          | Markup URL ≠ `currentSrc` ≠ LCP               |
 
 ## HTML byte semantics
 
@@ -63,14 +65,14 @@ that matched the recorded snapshots (69 382 / 75 902 / 69 413). When `Cont
 is often the compressed on-the-wire size and will be **smaller**. Do not mix the two in a budget.
 
 The baseline script records both `htmlBytes` (canonical) and `contentLengthHeader` /
-`contentEncoding` as a cross-check. Hosted `x-vercel-cache` on the same GET is a CDN snapshot, not a
-Jest proof.
+`contentEncoding` as a cross-check. Hosted `cf-cache-status` on the same GET is a CDN snapshot, not
+a Jest proof.
 
 ## Architecture scenarios
 
 | Role                 | Architecture                          | Current path                            |
 | -------------------- | ------------------------------------- | --------------------------------------- |
-| Versioned media      | Hashed Cloudinary public IDs          | `/xv/renata`                            |
+| Versioned media      | Hashed R2 object keys                 | `/xv/renata`                            |
 | Legacy mutable media | In-place Supabase Storage URLs        | `/xv/romina-rios-chaparro`              |
 | Personalized miss    | Versioned document + synthetic invite | `/xv/renata?invite=fixture-not-a-guest` |
 
@@ -97,8 +99,8 @@ an efficiency regression; the same read increase with matching traffic is expect
 `document render → 1 published-content read → critical assets and media`
 
 The document is origin-revalidated (`public, max-age=0, must-revalidate` in production). Hashed
-`/_astro` and versioned Cloudinary assets may be long-lived. Mutable Storage media must not use a
-stale-prone `/_vercel/image` transform.
+`/_astro` and versioned R2 assets may be long-lived. Mutable Storage media must not use a
+stale-prone image-service transform.
 
 ### Personalized invitation view
 
@@ -118,22 +120,22 @@ change.
 
 ## Canonical registry
 
-| Metric                          | Class         | Source                         | Decision              |
-| ------------------------------- | ------------- | ------------------------------ | --------------------- |
-| Anonymous HTML cache            | Hard CI       | Jest + baseline script         | Privacy/freshness     |
-| Personalized HTML cache         | Hard CI       | Jest + baseline script         | Privacy               |
-| Storage vs `/_vercel/image`     | Hard CI       | Jest (code); live until deploy | Freshness             |
-| Cloudinary optimize eligibility | Hard CI       | Jest                           | Delivery path         |
-| Content-addressed public ID     | Hard CI       | Jest                           | Replace-without-stale |
-| Published-content reads         | Hard CI       | Jest                           | DB cost               |
-| Personalized lookup counts      | Hard CI       | Jest                           | DB cost               |
-| RSVP submit ops / duplicates    | Hard CI       | Jest                           | Reliability           |
-| HTML decoded size               | Budget        | Baseline `--assert-budget`     | Structural growth     |
-| LCP / CLS / INP                 | Runtime       | Vercel Speed Insights          | UX                    |
-| TTFB / render timing            | Runtime       | Headers + Speed Insights       | Server cost           |
-| RSVP errors / latency           | Runtime       | Vercel logs; no in-repo alert  | Reliability           |
-| Provider usage vs traffic       | Runtime       | Provider dashboards            | Cost                  |
-| HTML inventory / hero bytes     | Informational | Baseline script                | Diagnosis             |
+| Metric                       | Class         | Source                         | Decision              |
+| ---------------------------- | ------------- | ------------------------------ | --------------------- |
+| Anonymous HTML cache         | Hard CI       | Jest + baseline script         | Privacy/freshness     |
+| Personalized HTML cache      | Hard CI       | Jest + baseline script         | Privacy               |
+| Storage vs image transform   | Hard CI       | Jest (code); live until deploy | Freshness             |
+| R2 optimize eligibility      | Hard CI       | Jest                           | Delivery path         |
+| Content-addressed object key | Hard CI       | Jest                           | Replace-without-stale |
+| Published-content reads      | Hard CI       | Jest                           | DB cost               |
+| Personalized lookup counts   | Hard CI       | Jest                           | DB cost               |
+| RSVP submit ops / duplicates | Hard CI       | Jest                           | Reliability           |
+| HTML decoded size            | Budget        | Baseline `--assert-budget`     | Structural growth     |
+| LCP / CLS / INP              | Runtime       | Cloudflare Web Analytics       | UX                    |
+| TTFB / render timing         | Runtime       | Headers + Web Analytics        | Server cost           |
+| RSVP errors / latency        | Runtime       | Worker logs; no in-repo alert  | Reliability           |
+| Provider usage vs traffic    | Runtime       | Provider dashboards            | Cost                  |
+| HTML inventory / hero bytes  | Informational | Baseline script                | Diagnosis             |
 
 ## Budget registry
 
@@ -182,7 +184,7 @@ evidence.
 
 **Definition.** Effective `Cache-Control` on anonymous `/{eventType}/{slug}` HTML: public,
 `max-age=0`, no positive `s-maxage`, no `stale-while-revalidate`. Production may omit the source
-token `s-maxage=0`. `x-vercel-cache` for the document must not be `HIT`.
+token `s-maxage=0`. `cf-cache-status` for the document must not be `HIT`.
 
 **Why it matters.** Hosts republish invitations; a shared TTL would show a stale published version.
 
@@ -224,36 +226,35 @@ MISS.
 
 **Action.** Restore `no-store, private`. Confirm `hasInviteParam` still forces the private branch.
 
-### Mutable Storage vs `/_vercel/image`
+### Mutable Storage vs image transform
 
-**Definition.** In-place Supabase Storage URLs must not be rewritten through `/_vercel/image`.
-Versioned Cloudinary and hashed `/_astro` remain eligible.
+**Definition.** In-place Supabase Storage URLs must not be rewritten through the image service.
+Versioned R2 media and hashed `/_astro` remain eligible.
 
-**Why it matters.** Vercel image transforms can cache a derived byte stream after the Storage object
-is replaced.
+**Why it matters.** Image transforms can cache a derived byte stream after the Storage object is
+replaced.
 
 **Measurement.** `tests/unit/image-delivery-policy.test.ts`, HTML inventory in `delivery-contract`
 tests. Live production HTML may still wrap Storage until that policy is deployed; hermetic tests
 guard the code.
 
-**Enforcement.** Hard CI for code. Live `stale-vercel-storage` count in the baseline script is
-report-only until production matches the code.
+**Enforcement.** Hard CI for code.
 
-**Interpretation.** Re-enabling Storage through `/_vercel/image` is a freshness regression even if
+**Interpretation.** Re-enabling Storage through the image service is a freshness regression even if
 LCP looks better.
 
-**Example.** Romina `hero.webp` origin 379 472 B vs a 168 431 B Vercel JPEG fallback. Typical mobile
-LCP already uses the Storage `<source>`. Do not restore the transform to “optimize” that fallback.
+**Example.** Romina `hero.webp` origin 379 472 B vs a 168 431 B JPEG fallback from the former image
+transform. Typical mobile LCP already uses the Storage `<source>`. Do not restore the transform to
+“optimize” that fallback.
 
 **Use case.** Image component changes, new Storage uploads, or LCP path debugging.
 
-**Action.** Keep the cache-safe `<img>` bypass. Treat Cloudinary rehost as a separate product
-change.
+**Action.** Keep the cache-safe `<img>` bypass. Treat rehosting to R2 as a separate product change.
 
-### Cloudinary optimize eligibility and content-addressed IDs
+### R2 optimize eligibility and content-addressed keys
 
-**Definition.** Hashed Cloudinary public IDs stay eligible for `/_vercel/image`. The public ID
-changes when `sha256` changes.
+**Definition.** Hashed R2 object keys stay eligible for the image service. The object key changes
+when `sha256` changes.
 
 **Why it matters.** Versioned media can be cached long-lived; a new hash is a new object, so
 replacements are not stale.
@@ -263,18 +264,18 @@ replacements are not stale.
 
 **Enforcement.** Hard CI.
 
-**Baseline.** Renata hero-desktop `…-0cc4c2f74a2b.webp` through `/_vercel/image` delivered 128 150
-B, `max-age=2592000`, repeat HIT.
+**Baseline.** Renata hero-desktop `…-0cc4c2f74a2b.webp` through the former host image transform
+delivered 128 150 B, `max-age=2592000`, repeat HIT.
 
 **Interpretation.** A stable public ID after a byte change means clients can keep the old image.
 
-**Example.** Changing only the file on a mutable Storage path would not change the URL; hashed
-Cloudinary would.
+**Example.** Changing only the file on a mutable Storage path would not change the URL; a hashed R2
+key would.
 
 **Use case.** Adapter or upload-pipeline changes; “the new hero does not show”.
 
-**Action.** Confirm `buildCloudinaryPublicId` includes the content hash. Do not flatten hashes to
-stable keys.
+**Action.** Confirm `buildR2ObjectKey` includes the content hash. Do not flatten hashes to stable
+keys.
 
 ### Published-content reads
 
@@ -370,7 +371,7 @@ idempotent, but the client must not invite that.
 
 **Use case.** RSVP island or submission-service changes.
 
-**Action.** Keep one in-flight request. Inspect Vercel logs for `/api/invitacion/**/rsvp` 5xx before
+**Action.** Keep one in-flight request. Inspect Worker logs for `/api/invitacion/**/rsvp` 5xx before
 tuning LCP.
 
 ### HTML decoded size
@@ -420,12 +421,12 @@ checks and still fail publish.
 **Enforcement.** Hard CI via `tests/unit/image-optimization-budgets.test.ts`,
 `tests/content/published-asset-path-budget.test.ts`, and the managed-release path-role gate.
 
-### Hosted `x-vercel-cache` vs CI policy
+### Hosted `cf-cache-status` vs CI policy
 
-CI proves the **response policy** (helpers + `[slug].astro` source). Hosted `x-vercel-cache: MISS`
-on 2026-08-16 matched origin-revalidate, but local tests cannot prove future CDN behavior. A
-document HIT on anonymous or personalized HTML fails `--assert-budget` when that script is run
-against a live origin. That is a hosted cross-check, not a substitute for Jest.
+CI proves the **response policy** (helpers + `[slug].astro` source). Hosted cache `MISS` on
+2026-08-16 (former host) matched origin-revalidate, but local tests cannot prove future CDN
+behavior. A document HIT on anonymous or personalized HTML fails `--assert-budget` when that script
+is run against a live origin. That is a hosted cross-check, not a substitute for Jest.
 
 ### LCP
 
@@ -435,9 +436,8 @@ or cover.
 **Why it matters.** First meaningful visual of the invitation. Guests judge quality here.
 
 **Measurement.** Production RUM (`Layout.astro` loads the Cloudflare Web Analytics beacon when
-`PUBLIC_CF_WEB_ANALYTICS_TOKEN` is set, including invitation routes). The Vercel MCP
-`get_web_analytics` tool exposes **pageviews**, not LCP/CLS/INP. This repository cannot query p75
-via API. Local/embedded browsers did not reliably emit LCP entries — lab LCP is **not reliably
+`PUBLIC_CF_WEB_ANALYTICS_TOKEN` is set, including invitation routes). This repository cannot query
+p75 via API. Local/embedded browsers did not reliably emit LCP entries — lab LCP is **not reliably
 observable**. Canonical runtime source: production RUM **p75**, not one laptop sample.
 
 **Direct vs proxy.** Direct only in production RUM. HTML hero URL is not LCP.
@@ -454,11 +454,11 @@ CI gate.
 **Example.** If Romina p75 LCP is worse than Renata, inspect the 379 KB Storage hero and the
 picture/srcset path — not HTML cache TTLs.
 
-**Use case.** Hosts report “la invitación tarda en verse”; after replacing a hero; after Speed
-Insights weekly review.
+**Use case.** Hosts report “la invitación tarda en verse”; after replacing a hero; after the Web
+Analytics weekly review.
 
-**Action.** Identify the LCP URL (hero vs font vs section). Check bytes and delivery path (hashed
-Cloudinary vs Storage). Check TTFB only if the document itself is slow.
+**Action.** Identify the LCP URL (hero vs font vs section). Check bytes and delivery path (hashed R2
+vs Storage). Check TTFB only if the document itself is slow.
 
 ### CLS
 
@@ -466,7 +466,7 @@ Cloudinary vs Storage). Check TTFB only if the document itself is slow.
 
 **Why it matters.** Shifts on hero, fonts, or RSVP feel cheap and can cause mis-taps.
 
-**Measurement.** Vercel Speed Insights p75. No hermetic CLS test.
+**Measurement.** Cloudflare Web Analytics p75. No hermetic CLS test.
 
 **Enforcement.** Runtime.
 
@@ -478,7 +478,7 @@ example display scripts), reveal/envelope, dynamically injected RSVP or map.
 **Example.** A hero `img` without width/height that swaps from a tiny placeholder to 1707×2560 will
 move the RSVP block.
 
-**Use case.** Visual QA after gallery/hero/font changes; Speed Insights CLS regression.
+**Use case.** Visual QA after gallery/hero/font changes; Web Analytics CLS regression.
 
 **Action.** Fix dimensions or reserve space. Do not disable the reveal to chase a lab score.
 
@@ -489,7 +489,7 @@ move the RSVP block.
 **Why it matters.** RSVP, gallery, menu, and maps must respond. INP is not the first-view quality
 signal (that is LCP) but it is the interaction signal.
 
-**Measurement.** Vercel Speed Insights p75.
+**Measurement.** Cloudflare Web Analytics p75.
 
 **Enforcement.** Runtime.
 
@@ -511,13 +511,13 @@ size.
 **Why it matters.** Origin work (DB, personalization) shows up here. It is a poor CI signal: two
 5-sample runs on 2026-08-16 showed Renata TTFB medians of 341 ms and 663 ms (range 306–1494 ms).
 
-**Measurement.** Baseline script (per-sample TTFB); Speed Insights TTFB.
+**Measurement.** Baseline script (per-sample TTFB); Web Analytics TTFB.
 
-**Repeatability (lab, 2026-08-16).** Environment: unthrottled `fetch` from a developer workstation
-to production `www.celebra-me.com/xv/renata`. Two independent 5-sample runs. Statistic: median of
-each run. Observed medians 341 ms and 663 ms; min–max across samples 306–1494 ms. Spread between run
-medians (~320 ms) is the same order of magnitude as a 200–300 ms regression threshold would need to
-detect. Therefore **no millisecond CI gate**.
+**Repeatability (lab, 2026-08-16, former host).** Environment: unthrottled `fetch` from a developer
+workstation to production `www.celebra-me.com/xv/renata`. Two independent 5-sample runs. Statistic:
+median of each run. Observed medians 341 ms and 663 ms; min–max across samples 306–1494 ms. Spread
+between run medians (~320 ms) is the same order of magnitude as a 200–300 ms regression threshold
+would need to detect. Therefore **no millisecond CI gate**.
 
 **Direct vs proxy.** Direct for that client’s first byte. Proxy for guest TTFB (different network,
 region, cold start mix).
@@ -563,13 +563,13 @@ legacy asset, and the HTML hero URL is not always the painted one.
 **Interpretation.** 128 KB → 135 KB is noise. 128 KB → 380 KB on a **versioned** invitation is a
 media-pipeline issue. HTML high-priority `src` is not the painted file.
 
-**Example.** Do not weaken Storage freshness to recapture the 168 KB Vercel JPEG on Romina. If a new
-versioned hero lands near 379 KB, inspect export size and Cloudinary transforms.
+**Example.** Do not weaken Storage freshness to recapture the 168 KB JPEG fallback on Romina. If a
+new versioned hero lands near 379 KB, inspect export size and image transforms.
 
 **Use case.** New hero upload; LCP regression with stable HTML size.
 
-**Action.** Weigh the painted URL. Prefer rehost/versioning over `/_vercel/image` on mutable
-Storage.
+**Action.** Weigh the painted URL. Prefer rehost/versioning over an image-service transform on
+mutable Storage.
 
 ### Critical requests and critical bytes
 
@@ -580,8 +580,8 @@ count of unique URLs in the HTML, which includes lazy gallery images and unused 
 usually do not.
 
 **Measurement.** Not isolated reliably today. Cursor-browser LCP entries were **empty** on both
-benchmark invitations. HTML unique-URL inventory is a diagnostic only. Speed Insights p75 remains
-the LCP source. Do not label HTML inventories or hero GETs as “bytes before LCP”.
+benchmark invitations. HTML unique-URL inventory is a diagnostic only. Web Analytics p75 remains the
+LCP source. Do not label HTML inventories or hero GETs as “bytes before LCP”.
 
 **Enforcement.** Informational.
 
@@ -611,8 +611,8 @@ mutation.
 
 **Why it matters.** Confirming attendance is the product outcome of the invitation.
 
-**Measurement.** Vercel runtime logs and runtime errors for `/api/invitacion/**/rsvp`. No dedicated
-in-repo RSVP success-rate dashboard or alert exists — do not claim one.
+**Measurement.** Worker logs and runtime errors for `/api/invitacion/**/rsvp`. No dedicated in-repo
+RSVP success-rate dashboard or alert exists — do not claim one.
 
 **Enforcement.** Runtime investigation. Functional contracts stay in Hard CI (above).
 
@@ -629,19 +629,17 @@ one timeout.
 
 ### Provider consumption vs traffic
 
-**Definition.** Vercel function invocations/CPU/transfer, Postgres reads/writes, Cloudinary
-delivery, Supabase Storage bandwidth, Vercel image transforms — always compared with invitation open
-and RSVP volume.
+**Definition.** Worker requests/CPU, Postgres reads/writes, R2 delivery, Supabase Storage bandwidth,
+image transforms — always compared with invitation open and RSVP volume.
 
 **Why it matters.** Absolute GB or invocation counts follow traffic. Disproportionate growth means
 an efficiency bug (extra queries, transform amplification, duplicate downloads).
 
-**Measurement.** Provider-native dashboards (Vercel Usage, Supabase, Cloudinary). Cloudinary MCP
-`get-usage-details` returns **account** storage, bandwidth, requests, and credits — not
-per-invitation or per-route. Vercel MCP `get_web_analytics` counts pageviews/visitors (optional
-`requestPath` / `route` grouping) and is a traffic denominator, not Web Vitals. Supabase usage is
-dashboard-only in this workflow. Ratios are **manual**: pair a usage window with Analytics volume
-for the same period. No in-repo replica, alert, or billing series.
+**Measurement.** Provider-native dashboards (Cloudflare, Supabase). Provider totals are **account**
+or project scope — not per-invitation or per-route. Cloudflare Web Analytics counts
+pageviews/visitors and is a traffic denominator, not Web Vitals. Supabase usage is dashboard-only in
+this workflow. Ratios are **manual**: pair a usage window with Analytics volume for the same period.
+No in-repo replica, alert, or billing series.
 
 **Confidence.** Medium for account totals. Low for attributing a spike to one invitation.
 
@@ -652,7 +650,7 @@ for the same period. No in-repo replica, alert, or billing series.
 **Interpretation.** Traffic +20% and DB reads +80% → investigate resolver/RSVP amplification.
 Traffic +20% and reads +20% → expected.
 
-**Example.** Routing every Storage image through `/_vercel/image` would raise transform usage
+**Example.** Routing every Storage image through the image service would raise transform usage
 without a matching guest-count increase — and would violate the freshness contract.
 
 **Use case.** Monthly cost review; after a deploy that changes media or resolver behavior.
@@ -665,13 +663,13 @@ raising a silent budget.
 There is **no** in-repository PagerDuty/Datadog/Grafana alert. “Trigger” means when a human should
 investigate.
 
-| Metric           | Where                                     | Trigger                                                             | Response                                |
-| ---------------- | ----------------------------------------- | ------------------------------------------------------------------- | --------------------------------------- |
-| LCP, CLS, INP    | Vercel Speed Insights                     | Sustained p75 worsening on invitation routes (days, not one sample) | Hero/path, layout, islands              |
-| TTFB             | Speed Insights + baseline script          | Sustained origin-time rise vs traffic                               | Query-count tests, personalization span |
-| Document cache   | Baseline script; deploy checks            | Public TTL or document HIT                                          | Restore origin-revalidate / no-store    |
-| RSVP API errors  | Vercel runtime logs / errors              | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
-| Usage vs traffic | Vercel / Supabase / Cloudinary dashboards | Consumption rising faster than opens/RSVPs                          | Operation contracts, media path         |
+| Metric           | Where                            | Trigger                                                             | Response                                |
+| ---------------- | -------------------------------- | ------------------------------------------------------------------- | --------------------------------------- |
+| LCP, CLS, INP    | Cloudflare Web Analytics         | Sustained p75 worsening on invitation routes (days, not one sample) | Hero/path, layout, islands              |
+| TTFB             | Web Analytics + baseline script  | Sustained origin-time rise vs traffic                               | Query-count tests, personalization span |
+| Document cache   | Baseline script; deploy checks   | Public TTL or document HIT                                          | Restore origin-revalidate / no-store    |
+| RSVP API errors  | Worker logs / errors             | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
+| Usage vs traffic | Cloudflare / Supabase dashboards | Consumption rising faster than opens/RSVPs                          | Operation contracts, media path         |
 
 Cloudflare Web Analytics (the beacon in `Layout.astro`) is pageview telemetry, not a Web Vital. It
 can help as a traffic denominator. Commercial GA4 is consent-gated and must not be required for
@@ -684,9 +682,8 @@ These may fail automated validation immediately:
 - Anonymous HTML origin-revalidate helpers and `[slug].astro` source (no positive `s-maxage`, no
   SWR; `?invite=` forces `no-store, private`).
 - Private-path `no-store` for dashboard/auth (`private-cache-path`).
-- `shouldOptimizeThroughImageService` false for mutable Storage; true for Cloudinary and hashed
-  `/_astro`.
-- Cloudinary public ID changes when `sha256` changes.
+- `shouldOptimizeThroughImageService` false for mutable Storage; true for R2 and hashed `/_astro`.
+- R2 object key changes when `sha256` changes.
 - Published resolver: one content read on hit; no extra invitation-row read.
 - Personalization: empty invite = 0 service lookups; miss = 1 context service call; persistence hit
   = guest+event (2); miss = guest only. `assertObservedOperationCount` fails on a duplicate observed
@@ -719,18 +716,18 @@ not commit it.
 
 ## Calibration
 
-Deterministic guards are calibrated in Jest. Hosted `x-vercel-cache` is a live-origin cross-check
+Deterministic guards are calibrated in Jest. Hosted `cf-cache-status` is a live-origin cross-check
 only (`invitation:delivery:baseline`). Local tests do not prove CDN behavior.
 
-| Instrument           | Positive                   | Negative            | Result      |
-| -------------------- | -------------------------- | ------------------- | ----------- |
-| Origin-revalidate    | `public, max-age=0`        | `s-maxage=60`       | Pass / fail |
-| Personalized HTML    | `no-store, private`        | public document     | Pass / fail |
-| HTML budget          | value ≤ ceiling            | ceiling + 1 B       | Pass / fail |
-| URL class            | Storage + Cloudinary hosts | lookalike hosts     | Pass / fail |
-| Published reads      | 1 observed mock call       | 2 observed          | Pass / fail |
-| Persistence hit/miss | guest+event / guest only   | extra event read    | Pass / fail |
-| RSVP service         | 1 lookup + 1 RPC           | extra observed call | Pass / fail |
+| Instrument           | Positive                 | Negative            | Result      |
+| -------------------- | ------------------------ | ------------------- | ----------- |
+| Origin-revalidate    | `public, max-age=0`      | `s-maxage=60`       | Pass / fail |
+| Personalized HTML    | `no-store, private`      | public document     | Pass / fail |
+| HTML budget          | value ≤ ceiling          | ceiling + 1 B       | Pass / fail |
+| URL class            | Storage + R2 hosts       | lookalike hosts     | Pass / fail |
+| Published reads      | 1 observed mock call     | 2 observed          | Pass / fail |
+| Persistence hit/miss | guest+event / guest only | extra event read    | Pass / fail |
+| RSVP service         | 1 lookup + 1 RPC         | extra observed call | Pass / fail |
 
 HTML unit check: `decodedHtmlUtf8ByteLength('á')` is 2 (not JS string length 1).
 
@@ -743,42 +740,32 @@ equality between sources that measure different phenomena.
 
 - Operations per request: Jest / disposable-DB contracts.
 - HTML decoded size: baseline `htmlBytes`.
-- Cache policy: CI headers. Hosted CDN: `x-vercel-cache` on the live origin.
-- LCP / CLS / INP: Speed Insights UI p75. Lab/browser is secondary.
-- Traffic denominator: Vercel Web Analytics pageviews (not Web Vitals).
-- Consumption: provider dashboards / Cloudinary usage API, compared with Analytics in the **same**
-  window. Totals are account or project scope unless the provider says otherwise.
+- Cache policy: CI headers. Hosted CDN: `cf-cache-status` on the live origin.
+- LCP / CLS / INP: Cloudflare Web Analytics p75. Lab/browser is secondary.
+- Traffic denominator: Cloudflare Web Analytics pageviews (not Web Vitals).
+- Consumption: provider dashboards, compared with Analytics in the **same** window. Totals are
+  account or project scope unless the provider says otherwise.
 
 | Local metric             | Provider metric       | Scope                   | What it proves      |
 | ------------------------ | --------------------- | ----------------------- | ------------------- |
 | 1 published-content read | Supabase DB usage     | Project, billing window | Scaling trend only  |
-| HTML decoded size        | Vercel transfer       | Project transfer        | Different quantity  |
-| Header policy            | `x-vercel-cache`      | Live document           | Deployed HIT/MISS   |
+| HTML decoded size        | Worker transfer       | Project transfer        | Different quantity  |
+| Header policy            | `cf-cache-status`     | Live document           | Deployed HIT/MISS   |
 | Invitation opens         | Analytics `route`     | Project, date range     | Traffic denominator |
-| LCP/CLS/INP              | Speed Insights p75    | Production RUM          | Canonical UX        |
-| Versioned media          | Cloudinary usage API  | Account, billing period | Aggregate delivery  |
-| RSVP 5xx                 | Vercel runtime errors | Project, ≤7 d           | Error clusters      |
+| LCP/CLS/INP              | Web Analytics p75     | Production RUM          | Canonical UX        |
+| Versioned media          | R2 usage dashboard    | Account, billing period | Aggregate delivery  |
+| RSVP 5xx                 | Worker runtime errors | Project, ≤7 d           | Error clusters      |
 
-Verified 2026-08-16 (read-only):
+Verified 2026-08-16 (read-only, former host):
 
-- Analytics 9–16 Aug: 1221 pageviews, 689 visitors. Route `/[eventType]/[slug]`: 974 pageviews
-  (invitation HTML). This is the invitation-traffic denominator. Not LCP.
-- Speed Insights p75: ingest API exists; **no query API** in Vercel MCP. Canonical source remains
-  the dashboard. Lab LCP entries were empty.
-- Hosted documents: `br`, no `Content-Length`, `x-vercel-cache: MISS`, cache headers match policy.
-- Vercel `usage` CLI: `Costs not found (404)` for this team. Function/transfer/Image Optimization
-  totals were **not** retrieved here. Pair those with Analytics in the dashboard when reviewing.
-- Runtime errors `/api/invitacion` last 7 d: none clustered.
+- Hosted documents: `br`, no `Content-Length`, cache `MISS`, cache headers match policy.
 - Supabase Production `celebrame-db` (`ineitkdkyrxqyressllp`): `ACTIVE_HEALTHY`. MCP has no usage or
   Storage-egress API. Disk/Storage/egress live on the org usage page. Spend-cap email exists as a
   platform capability when quotas are exceeded (Free or Spend Cap on); **enabled state for this org
   was not verified**.
-- Cloudinary account (Free, period through 2026-08-15): requests 17484, transformations 104,
-  bandwidth ~4.77 GB, storage ~337 MB, credits 4.85 / 25 (19.4%). No per-invitation dimension. Do
-  not divide these billing-period totals by the weekly Analytics window.
 
 **Expected relationship (manual, same window):** traffic +20% with DB/function/media +~20% can be
-normal; traffic +20% with DB +80% or transformations far above invitation/media traffic →
+normal; traffic +20% with DB +80% or transform usage far above invitation/media traffic →
 investigate operation contracts or transform amplification.
 
 **Do not infer** per-request or per-invitation cost from account totals.
@@ -787,19 +774,13 @@ investigate operation contracts or transform amplification.
 
 No in-repo alerting. Do not create CI alerts for contracts already in Hard CI.
 
-| Provider   | Capability                                   | Verified state                                     | Verdict                              |
-| ---------- | -------------------------------------------- | -------------------------------------------------- | ------------------------------------ |
-| Vercel     | Default rule `level in ('error','critical')` | Present; `notifications: []`; owners autosubscribe | Use for 5xx clusters                 |
-| Vercel     | `usage_anomaly` / `error_anomaly` rules      | None listed for `celebra-me`                       | Unnecessary at current traffic       |
-| Vercel     | Spend / usage CLI                            | Usage 404; no spend alert verified                 | Recommend dashboard spend review     |
-| Vercel     | Recent alert groups                          | Empty                                              | No active incident                   |
-| Supabase   | Spend Cap / quota email                      | Documented platform behavior                       | Recommend; org enablement unverified |
-| Cloudinary | Credits vs plan limit                        | 19.4% of 25; no usage webhook                      | Recommend watch near limit           |
-| Cloudinary | Notification triggers                        | `list-triggers` total 0                            | Unnecessary for this model           |
+| Provider | Capability              | Verified state               | Verdict                              |
+| -------- | ----------------------- | ---------------------------- | ------------------------------------ |
+| Supabase | Spend Cap / quota email | Documented platform behavior | Recommend; org enablement unverified |
 
-Owner action if Vercel error-level alerts fire: inspect `/api/invitacion/**/rsvp` and RPC tests. If
-Cloudinary credits approach the plan limit: review transformations vs hashed-media demand, not HTML
-budgets. Do not add Grafana or custom alert storage.
+If Worker error rates rise: inspect `/api/invitacion/**/rsvp` and RPC tests. If media delivery usage
+approaches a plan limit: review transformations vs hashed-media demand, not HTML budgets. Do not add
+Grafana or custom alert storage.
 
 ## Review cadence
 
@@ -807,45 +788,23 @@ Keep this lightweight.
 
 - **After relevant deploys:** only the surface that changed (cache headers, media path, query
   counts, RSVP, or resource use). Re-run the matching Jest contract and, for cache, a live
-  `x-vercel-cache` check.
+  `cf-cache-status` check.
 - **Monthly consumption:** pair org/project usage dashboards with Analytics invitation pageviews for
   the same period. Enough unless growth, incidents, or plan limits appear.
-- **Incidents:** Speed Insights p75 drop, RSVP error cluster, or usage diverging from traffic.
-
-### Post-deploy invitation CSS critical-path check
-
-After the render-blocking CSS split ships, do not treat an immediate p75 movement as a local CI
-gate. Once Speed Insights has a comparable mobile Production window (about 7 days at current
-invitation traffic, or earlier if the invitation route again has several hundred mobile samples),
-compare against the 2026-08-16 mobile Production baseline:
-
-| Signal               | Baseline |
-| -------------------- | -------: |
-| RES                  |       59 |
-| Invitation route RES |       57 |
-| FCP                  |   5.35 s |
-| LCP                  |   5.63 s |
-| TTFB                 |    1.7 s |
-| CLS                  |     0.02 |
-| INP                  |   200 ms |
-
-Hypothesis: fewer invitation stylesheets blocking sealed-envelope paint improves FCP/LCP without
-changing CLS, INP, reveal behavior, cache freshness, or media delivery. TTFB is a control. If FCP
-and LCP stay materially degraded, keep origin/geography as a separate audit; do not reopen CSS
-fan-out without new same-navigation evidence.
+- **Incidents:** Web Analytics p75 drop, RSVP error cluster, or usage diverging from traffic.
 
 ## Enforcement reconciliation
 
 | Metric                              | Decision               | Evidence                               |
 | ----------------------------------- | ---------------------- | -------------------------------------- |
 | Cache / privacy headers             | Retained Hard CI       | Positive + negative header tests       |
-| Storage bypass / Cloudinary host    | Retained Hard CI       | Hostname classifiers + lookalikes      |
+| Storage bypass / R2 host            | Retained Hard CI       | Hostname classifiers + lookalikes      |
 | Published / personalized / RSVP ops | Retained Hard CI       | Observed mock/RPC call counts          |
 | HTML decoded size                   | Retained Budget        | Boundary + UTF-8; ceilings unchanged   |
 | Unique HTML URLs                    | Retained Informational | Already demoted; not executed requests |
 | Hero / LCP bytes                    | Retained Informational | `currentSrc` ≠ markup; no Hard CI      |
 | TTFB / render spans                 | Retained Runtime       | Lab median spread 341 vs 663 ms        |
-| LCP / CLS / INP                     | Retained Runtime       | Speed Insights UI; no vitals API       |
+| LCP / CLS / INP                     | Retained Runtime       | Web Analytics UI; no vitals API        |
 | Provider usage vs traffic           | Retained Runtime       | Account totals; manual ratios          |
 | RSVP functional HTTP+DB             | Retained gated         | Disposable harness passed 2026-08-16   |
 
@@ -855,12 +814,12 @@ No metric was promoted. No budget number was changed for calibration convenience
 
 Do not add Grafana, Prometheus, Datadog, custom metric storage, Redis/KV telemetry, synthetic
 monitoring farms, or a performance history database unless a confirmed operational gap appears that
-Speed Insights, provider dashboards, logs, and these tests cannot cover.
+Web Analytics, provider dashboards, logs, and these tests cannot cover.
 
-Do not implement, as part of this model, Romina Cloudinary migration, general font subsetting or
-rehosting, demo prerender, gallery redesign, preload strategy, or image-quality retuning. Those need
-evidence from the metrics above that the benefit justifies the work, and must preserve the cache
-freshness contract.
+Do not implement, as part of this model, Romina R2 rehost, general font subsetting or rehosting,
+demo prerender, gallery redesign, preload strategy, or image-quality retuning. Those need evidence
+from the metrics above that the benefit justifies the work, and must preserve the cache freshness
+contract.
 
 Unnecessary global Parisienne injection on invitation routes is already removed; keep loading it
 only for profiles that actually use the family (currently Romina).

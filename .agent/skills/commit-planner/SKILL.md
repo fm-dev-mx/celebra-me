@@ -4,7 +4,7 @@ description:
   Plan atomic commits from staged/unstaged changes, draft repository-compliant messages, and execute
   only exact Git operations explicitly authorized for the approved plan.
 domain: meta
-version: 2.8.0
+version: 2.9.0
 when_to_use:
   - Preparing commits or evaluating atomicity
   - Drafting or reviewing commit messages
@@ -237,8 +237,9 @@ type(scope): subject
   execution step-by-step according to plan.
 - Option B: Manual step-by-step user staging.
 - Option C: Plan only / do not commit.
-- Ask only for a missing material decision or exact Git authorization; use the shared report
-  contract.
+- Gather every missing material decision and exact Git authorization and ask them in one round
+  before the first Git write; ask again only when new evidence appears (for example protected-state
+  drift). Each Git write still needs its explicit authorization; use the shared report contract.
 - Do not MCQ between commits of an already approved plan.
 - Recovery content: load
   [`references/recovery-and-pitfalls.md`](./references/recovery-and-pitfalls.md) only for that

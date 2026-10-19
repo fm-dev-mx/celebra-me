@@ -38,6 +38,12 @@ jest.mock('@/lib/intake/repositories/asset.repository', () => ({
 	createAsset: mockCreateAsset,
 }));
 
+jest.mock('@/lib/images/responsive-variants', () => ({
+	...jest.requireActual('@/lib/images/responsive-variants'),
+	encodeResponsiveVariants: jest.fn(async () =>
+		[480, 800, 1280, 1920].map((width) => ({ width, data: new Uint8Array([1]) })),
+	),
+}));
 jest.mock('@/lib/intake/services/asset-policy', () => ({
 	normalizeInvitationImage: jest.fn().mockResolvedValue({
 		blob: {
@@ -192,10 +198,16 @@ describe('importBundledAsset', () => {
 			const result = await importBundledAsset(INVITATION_ID, 'hero');
 
 			expect(result.asset.id).toBe('new-asset-id');
-			expect(mockBucketPut).toHaveBeenCalledTimes(1);
+			// The original, then one WebP per width variant.
+			expect(mockBucketPut).toHaveBeenCalledTimes(5);
 			const [objectKey, , putOptions] = mockBucketPut.mock.calls[0];
 			expect(objectKey).toMatch(
 				/^invitations\/xv\/[a-z0-9-]+\/bundled-hero-[a-z0-9]+-[a-f0-9]{64}\.webp$/,
+			);
+			expect(mockBucketPut.mock.calls.slice(1).map(([key]) => key)).toEqual(
+				[480, 800, 1280, 1920].map((width) =>
+					objectKey.replace(/\.webp$/, `.w${width}.webp`),
+				),
 			);
 			expect(putOptions.httpMetadata.contentType).toBe('image/webp');
 			expect(mockCreateAsset).toHaveBeenCalledWith(

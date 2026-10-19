@@ -149,7 +149,7 @@ describe('public rsvp & engagement HTTP API wiring (real DB)', () => {
 		const json = await response.json();
 		expect(json).toEqual({ accepted: 1, duplicates: 0, rejected: 0 });
 
-		// Outside Vercel Production the request is classified non_production and must not
+		// Outside hosted Production the request is classified non_production and must not
 		// move the guest projections.
 		const dbCheck = runSql(
 			`select l.traffic_class, l.device_class, g.open_count from public.guest_engagement_events l join public.guest_invitations g on g.id = l.guest_invitation_id where l.client_event_id = '${clientEventId}';`,

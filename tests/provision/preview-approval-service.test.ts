@@ -158,7 +158,7 @@ describe('Preview approval artifact (shared store)', () => {
 		).toThrow(/does not match/i);
 	});
 
-	it('approves when leftover Cloudinary public IDs are absent from live storage evidence', () => {
+	it('approves when leftover provider public IDs are absent from live storage evidence', () => {
 		const leftoverPublicId = 'xv/renata/assets/interlude-6f1f940883a7';
 		createPending({
 			[ASSET_PATH]: ASSET_HASH,

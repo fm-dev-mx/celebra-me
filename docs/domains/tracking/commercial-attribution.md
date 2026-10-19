@@ -326,7 +326,7 @@ contaminating production acquisition data:
 
 Before enabling live production delivery, verify:
 
-- [ ] `META_CAPI_DELIVERY_MODE` is explicitly set to `production` in Vercel.
+- [ ] `META_CAPI_DELIVERY_MODE` is explicitly set to `production` in the Production Worker.
 - [ ] `META_CAPI_ACCESS_TOKEN` is configured securely as a serverless secret.
 - [ ] `META_PIXEL_ID` matches your production pixel.
 - [ ] `META_TEST_EVENT_CODE` is deleted/unset.
@@ -479,7 +479,7 @@ safety overflow produce unavailable data, never partial totals.
 
 The older operational overview remains explicitly all-history; it also uses complete pagination.
 Recent lists remain short presentation lists, not data-source limits. Neither surface sums GA4 and
-Vercel data.
+hosting-provider data.
 
 An observed view establishes that measurement exists for that demo in the selected period; absent
 views are unknown coverage, not proof of zero traffic. A zero contact count means no administrative

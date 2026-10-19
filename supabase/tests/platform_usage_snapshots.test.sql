@@ -80,7 +80,7 @@ select is(
 );
 select is(
   platform_snapshot_test.as_role('service_role', $sql$
-    insert into public.platform_usage_snapshots (collected_at, provider, ok) values (now(), 'vercel', true)
+    insert into public.platform_usage_snapshots (collected_at, provider, ok) values (now(), 'unknown_provider', true)
     returning 'inserted'
   $sql$),
   '23514',

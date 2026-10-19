@@ -274,7 +274,7 @@ describe('canonical URL generation (main invitation routes)', () => {
 
 	it('filters localhost but preserves valid external origins as-is', () => {
 		const nonLocalOrigins = [
-			'https://celebra-areapmyow-francisco-mendoza-s-projects.vercel.app',
+			'https://celebra-me-preview.celebra-me-com.workers.dev',
 			'https://celebra-me.com',
 		];
 

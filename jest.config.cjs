@@ -110,7 +110,6 @@ module.exports = {
 	testPathIgnorePatterns: [
 		'/node_modules/',
 		'/dist/',
-		'/\\.vercel/',
 		'/\\.worktrees/',
 		'/tests/e2e/',
 		// Disposable PostgreSQL/PostgREST contracts — run via `pnpm test:db:rsvp-contracts`.

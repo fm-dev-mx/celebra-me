@@ -7,6 +7,9 @@ import { runCommand } from '../helpers/run-command';
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'validate-structure.mjs');
 const SCRIPT_URL = pathToFileURL(SCRIPT_PATH).href;
+const RETIRED_PROVIDER_URL = pathToFileURL(
+	path.join(ROOT, 'scripts', 'validate-retired-provider-references.mjs'),
+).href;
 
 function writeFixtureFile(root: string, file: string, content: string) {
 	const target = path.join(root, file);
@@ -339,7 +342,7 @@ describe('validate-structure script', () => {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}
 	});
-	it('rejects hosting-platform identity and stray deploy identity reads in src', () => {
+	it('rejects stray deploy identity reads in src', () => {
 		const fixtureRoot = createFixture();
 		try {
 			writeFixtureFile(
@@ -372,9 +375,13 @@ describe('validate-structure script', () => {
 				'src/lib/leaky.ts',
 			]).join('\n');
 
-			expect(output).toContain('src/lib/leaky.ts:1: reads hosting-platform identity');
-			expect(output).toContain('src/lib/leaky.ts:2: reads hosting-platform identity');
-			expect(output).toContain('src/lib/leaky.ts:3: reads a hosting-platform request id');
+			// Line 1 is reported once, by the retired-provider guard, for the whole file.
+			expect(output).toContain(
+				'src/lib/leaky.ts:1: names retired provider Vercel on 4 line(s).',
+			);
+			expect(output).not.toMatch(/src\/lib\/leaky\.ts:1: (?!names retired provider)/);
+			expect(output).not.toContain('src/lib/leaky.ts:2:');
+			expect(output).not.toContain('src/lib/leaky.ts:3:');
 			expect(output).toContain('src/lib/leaky.ts:4: reads CELEBRA_DEPLOY_ENV outside');
 			expect(output).toContain('src/lib/leaky.ts:5: reads NODE_ENV dynamically');
 			expect(output).not.toContain('src/lib/leaky.ts:6:');
@@ -440,6 +447,63 @@ describe('validate-structure script', () => {
 			expect(output).not.toContain('src/lib/lazy-sharp.ts:3:');
 			expect(output).not.toContain('src/lib/lazy-sharp.ts:5:');
 			expect(output).not.toContain('scripts/tooling/uses-sharp.ts:');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects retired Vercel and Cloudinary mentions outside the allow-list', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'docs/hosting.md',
+				[
+					'# Hosting',
+					'Intro',
+					'Deployed on Vercel.',
+					'Images on vercel and Cloudinary.',
+				].join('\n'),
+			);
+			writeFixtureFile(fixtureRoot, 'src/lib/clean.ts', 'export const host = "workers";\n');
+			writeFixtureFile(fixtureRoot, 'CHANGELOG.md', '- Removed Vercel and Cloudinary.\n');
+			writeFixtureFile(
+				fixtureRoot,
+				'supabase/migrations/20260101000000_cloudinary.sql',
+				"-- cloudinary provider\nselect 'vercel';\n",
+			);
+			const trackedFiles = [
+				'docs/hosting.md',
+				'src/lib/clean.ts',
+				'CHANGELOG.md',
+				'supabase/migrations/20260101000000_cloudinary.sql',
+			];
+			const script = `
+				import { validateStructure, validateStructureWarnings } from ${JSON.stringify(SCRIPT_URL)};
+				import { validateNoVercelReferences } from ${JSON.stringify(RETIRED_PROVIDER_URL)};
+				const input = { root: ${JSON.stringify(fixtureRoot)}, trackedFiles: ${JSON.stringify(trackedFiles)} };
+				process.stdout.write(JSON.stringify({
+					warnings: validateStructureWarnings(input),
+					errors: validateStructure(input),
+					strict: validateNoVercelReferences(input.root, input.trackedFiles, 'error'),
+				}));
+			`;
+			const result = runCommand(process.execPath, ['--input-type=module', '--eval', script], {
+				cwd: ROOT,
+			});
+			const output = JSON.parse(result.stdout) as {
+				warnings: string[];
+				errors: string[];
+				strict: { errors: string[]; warnings: string[] };
+			};
+
+			expect(output.warnings).toEqual([]);
+			expect(output.errors).toEqual([
+				'docs/hosting.md:3: names retired provider Vercel on 2 line(s).',
+				'docs/hosting.md:4: names retired provider Cloudinary on 1 line(s).',
+			]);
+			expect(output.strict.errors).toHaveLength(2);
+			expect(output.strict.warnings).toEqual([]);
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}

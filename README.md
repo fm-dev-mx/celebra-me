@@ -15,7 +15,7 @@ support event operations.
 - Supabase
 - Jest and Playwright
 - pnpm
-- Vercel
+- Cloudflare Workers
 
 ## Prerequisites
 
@@ -43,7 +43,7 @@ canonical environment workflow.
 | Command                      | Purpose                                                                                                          |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `pnpm dev`                   | start the Astro dev server                                                                                       |
-| `pnpm build`                 | run type checks, then generate the production Astro/Vercel build                                                 |
+| `pnpm build`                 | run type checks, then generate the production Astro/Cloudflare Workers build                                     |
 | `pnpm preview`               | preview the Astro app locally                                                                                    |
 | `pnpm type-check`            | run `astro check` and `tsc --noEmit`                                                                             |
 | `pnpm lint`                  | run ESLint across the repository                                                                                 |

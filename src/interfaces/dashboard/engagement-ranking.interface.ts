@@ -149,7 +149,6 @@ export interface EngagementRankingReport {
 
 /** Data levels of the ranking API: measured + inferred (ranked) or the historical estimate. */
 export const RANKING_LEVELS = ['measured', 'historical'] as const;
-export type RankingLevel = (typeof RANKING_LEVELS)[number];
 
 /** Cleaning rules of one historical estimate method version, shown next to its figures. */
 export interface HistoricalMethod {

@@ -185,8 +185,8 @@ Cross-environment “same content” means equal **semantic invitation-facing st
   and `snapshot` are legacy, scheduled for removal)
 - Draft and published content JSON
 - Referenced assets by semantic key + content digest (`sha256`), not environment asset UUIDs,
-  Storage hosts, or Cloudinary vs local Supabase provider. Empty managed inventory paired with
-  hosted URL-string content is representation-compatible with a managed uploaded inventory.
+  Storage hosts, or R2 vs local Supabase provider. Empty managed inventory paired with hosted
+  URL-string content is representation-compatible with a managed uploaded inventory.
 - Client RSVP **projection**: linked non-demo `(event_type, slug)` event existence (not event UUID,
   owner, memberships, timestamps, or guests)
 
@@ -204,7 +204,7 @@ records or ambiguous identity mappings exist for a slug:
 
 Primary keys and Auth user IDs, Storage hosts/URLs, asset UUIDs, `version` / timestamps, provenance
 and mutation/publication receipts, owner FKs, draft `submission_id`, Preview admin ownership remaps,
-storage provider (`supabase` vs `cloudinary`), first-insert `invitations.title`, host share-message
+storage provider (`supabase` vs `r2`), first-insert `invitations.title`, host share-message
 overlays, unreferenced leftover assets, and any RSVP/PII/operational tables listed below.
 
 ---
@@ -276,17 +276,17 @@ Image storage and delivery follows an environment-deterministic abstraction (`St
   `invitation-assets`). Dashboard uploads and
   `pnpm invitation:release -- --targets local --slug <slug> --apply` persist locally with
   `provider: 'supabase'` and require zero third-party credentials.
-- **Preview & Production:** Uses **Cloudinary** (`provider: 'cloudinary'`, `secure_url`). Client
-  invitations published in Preview/Production must deliver referenced images from Cloudinary
-  (publish and promote fail closed if local or Supabase Storage URLs are referenced).
+- **Preview & Production:** Uses **R2** (`provider: 'r2'`, `secure_url`). Client invitations
+  published in Preview/Production must deliver referenced images from R2 (publish and promote fail
+  closed if local or Supabase Storage URLs are referenced).
 - **Demos:** Resolve through the Astro/Vite static image pipeline across all environments.
 
-| Flow                                   | Local (`dev-local`)                                                                           | Preview / Production                                                                                                        |
-| -------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Dashboard Intake / Upload              | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                             | Uploads to Cloudinary with SHA-256 deduplication                                                                            |
-| Managed release (`invitation:release`) | Local target uploads normalized binaries to Supabase Storage                                  | Preview target uploads/reconciles canonical binaries to Cloudinary                                                          |
-| Release / Promote (`prod:apply`)       | N/A                                                                                           | Uploads/reconciles canonical binaries to Cloudinary; freezes immutable CDN URLs                                             |
-| Production→Preview mirror              | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
+| Flow                                   | Local (`dev-local`)                                                                           | Preview / Production                                                                                                |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Dashboard Intake / Upload              | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                             | Uploads to R2 with SHA-256 content-addressed keys                                                                   |
+| Managed release (`invitation:release`) | Local target uploads normalized binaries to Supabase Storage                                  | Preview target uploads/reconciles canonical binaries to R2                                                          |
+| Release / Promote (`prod:apply`)       | N/A                                                                                           | Uploads/reconciles canonical binaries to R2; freezes immutable CDN URLs                                             |
+| Production→Preview mirror              | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and R2 hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
 
 ---
 

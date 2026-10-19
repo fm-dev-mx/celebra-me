@@ -167,7 +167,7 @@ finding → one total). If none: `~0`.
 
 - Client islands importing server-only code
 - Non-serializable values passed from server/BFF to client without serialization
-- Path casing (Vercel/Linux sensitive)
+- Path casing (Linux sensitive)
 - Invented slug equality (`_assetSlug` and route slug can differ)
 - Secrets or server env reaching client bundles
 
