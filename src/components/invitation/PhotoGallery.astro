@@ -23,11 +23,14 @@ interface GalleryItem {
 interface Props {
 	items: GalleryItem[];
 	variant: GalleryVariant;
+	/** Mark items for the reveal coordinator; scroll scenes animate them instead. */
+	revealItems?: boolean;
 }
 
 const {
 	items,
 	variant,
+	revealItems = true,
 } = Astro.props;
 const isMagazineSpread = variant === 'magazine-spread';
 
@@ -44,6 +47,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 // paired-portraits caps each print at the source's native width (never upscaled).
 const nativeWidthStyleFor = (width: number) =>
 	variant === 'paired-portraits' ? `--gallery-item-native-width: ${width}px;` : '';
+const revealAttrs = revealItems ? { 'data-reveal-item': true } : {};
 ---
 
 <div class="gallery-grid" data-variant={variant}>
@@ -58,7 +62,7 @@ const nativeWidthStyleFor = (width: number) =>
 			<div
 				class:list={['gallery-grid__item', layoutClass]}
 				data-gallery-item
-				data-reveal-item
+				{...revealAttrs}
 				data-gallery-index={index}
 				data-image-orientation={width > height ? 'landscape' : 'portrait'}
 				data-layout-role={layoutRole}

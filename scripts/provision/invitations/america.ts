@@ -228,9 +228,9 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gallery: {
-		// Contact sheet of the four looks; the door stays for the hero and the closing, and the
-		// patio plate opens the night.
-		variant: 'mirrored-mosaic',
+		// An album page that assembles itself, one look per stretch of the scroll; the door stays
+		// for the hero and the closing, and the patio plate opens the night.
+		variant: 'album-assemble',
 		eyebrow: '',
 		title: 'Mis looks',
 		subtitle: 'Rosa, lila, amarillo… y unos lentes de corazón.',

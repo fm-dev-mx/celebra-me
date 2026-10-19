@@ -373,7 +373,9 @@ export function buildIncompatiblePrerequisiteEvent(
 			if (entry.variant === 'single-keepsake') {
 				const gallery = data.gallery as Record<string, unknown>;
 				gallery.items = [{ image: 'gallery01' }, { image: 'gallery02' }];
-			} else if (entry.variant === 'feature-stack' || entry.variant === 'mirrored-mosaic') {
+			} else if (
+				['feature-stack', 'mirrored-mosaic', 'album-assemble'].includes(entry.variant)
+			) {
 				const gallery = data.gallery as Record<string, unknown>;
 				gallery.items = [{ image: 'gallery01' }, { image: 'gallery02' }];
 			} else if (entry.variant === 'paired-feature-band') {
@@ -469,6 +471,13 @@ export function getIncompatiblePrerequisiteExpectation(
 					expectedPath: ['gallery', 'items'],
 					expectedMessageSubstring:
 						'mirrored-mosaic requires at least three gallery items',
+				};
+			}
+			if (entry.variant === 'album-assemble') {
+				return {
+					expectedPath: ['gallery', 'items'],
+					expectedMessageSubstring:
+						'album-assemble requires three to eight gallery items',
 				};
 			}
 			if (entry.variant === 'feature-stack') {

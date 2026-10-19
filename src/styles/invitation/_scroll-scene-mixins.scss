@@ -1,0 +1,48 @@
+// ==========================================================================
+// SCROLL SCENE MIXINS (no CSS output)
+// For styles inside a ScrollScene.astro stage. `timeline` rules apply while CSS scroll-driven
+// animations drive the scene (children use `animation-timeline: --scroll-scene` with ranges
+// inside `contain 0%` … `contain 100%`); `scripted` rules apply under the scroll-scene.ts
+// fallback (children read `--scene-progress`, 0–1); `pinned` applies under either.
+// Contract: docs/domains/theme/motion.md, "Scroll scenes".
+// ==========================================================================
+
+/// Rules for a scene descendant while the CSS timeline engine drives the scene.
+@mixin timeline {
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			[data-motion='editorial'] &:where(.scroll-scene *) {
+				@content;
+			}
+		}
+	}
+}
+
+/// Rules for a scene descendant while the scripted fallback drives the scene.
+@mixin scripted {
+	@media (prefers-reduced-motion: no-preference) {
+		&:where(.scroll-scene[data-scene-engine='script'] *) {
+			@content;
+		}
+	}
+}
+
+/// Rules for a scene descendant under the scripted fallback at one step (`data-scene-step`).
+@mixin scripted-step($step) {
+	@media (prefers-reduced-motion: no-preference) {
+		&:where(.scroll-scene[data-scene-engine='script'][data-scene-step='#{$step}'] *) {
+			@content;
+		}
+	}
+}
+
+/// Rules for a scene descendant whenever the scene is pinned, whichever engine drives it.
+@mixin pinned {
+	@include timeline {
+		@content;
+	}
+
+	@include scripted {
+		@content;
+	}
+}

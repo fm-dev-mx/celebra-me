@@ -49,8 +49,9 @@ audit tooling (`pnpm invitation:published-audit`).
   enforced by the owning schema.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
-  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`. `single-keepsake` requires exactly one
-  item; feature layouts enforce their item requirements.
+  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`. `single-keepsake`
+  requires exactly one item; `album-assemble` three to eight; feature layouts enforce their item
+  requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
@@ -204,6 +205,10 @@ invitation profiles.
 - gallery.mirrored-mosaic: contact sheet in blocks of three (principal photograph over two thirds
   plus two stacked), every second block mirrored; square corners, hairline gaps, per-item focal
   points, captions only in the lightbox. Requires three items. `--gallery-mosaic-*`.
+- gallery.album-assemble: an album page in a pinned scroll scene (editorial motion only): each print
+  drops onto the page in its own slice of the scroll, turned slightly by hand, with a 01 / NN
+  counter and a progress line; otherwise the prints rest in a two- or three-column grid. Three to
+  eight items. `--gallery-album-*`.
 - rsvp.reply-card + personalizedAccess.reply-card: a printed reply card split across both sections
   and joined into one surface — seats written out above, then the heading, two 56 px answers in the
   stationery formula ("Con gusto asistiré" / "Lamento no poder asistir"), message and one button; no

@@ -224,6 +224,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'gallery',
+		variant: 'album-assemble',
+		default: false,
+		prerequisites: ['gallery.items with three to eight images'],
+		cssOwner: 'src/styles/themes/sections/gallery/_album-assemble.scss',
+	},
+	{
+		section: 'gallery',
 		variant: 'single-keepsake',
 		default: false,
 		prerequisites: ['gallery.items with exactly one item'],

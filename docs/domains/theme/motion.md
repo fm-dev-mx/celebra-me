@@ -143,7 +143,7 @@ only; elsewhere the same markup renders as a normal section.
     plus `data-scene-step` when steps are declared.
 
   Consumers style children through the `timeline`, `scripted` and `pinned` mixins of
-  `src/styles/invitation/_scroll-scene.scss`.
+  `src/styles/invitation/_scroll-scene-mixins.scss` (no CSS output).
 
 - **Resting layout.** Reduced motion, a non-editorial invitation, or no engine leaves the stage in
   normal flow. Every scene's default (unmixed) styles are its complete static layout: all content

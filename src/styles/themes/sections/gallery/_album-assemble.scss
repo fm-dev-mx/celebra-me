@@ -1,0 +1,354 @@
+@use 'sass:list';
+@use 'sass:math';
+@use '../../../global/mixins' as m;
+@use '../../../invitation/scroll-scene-mixins' as scene;
+
+// ==========================================================================
+// GALLERY — album-assemble
+// An album page that assembles itself: inside a pinned scroll scene each photograph drops onto
+// the page in its own slice of the scroll, framed as a print and turned slightly by hand, with a
+// 01 / NN counter and a progress line. When the scene is not pinned (reduced motion, no editorial
+// motion, no engine) the same prints rest in a two-column (three on wide screens) grid.
+// Supports three to eight items; slot positions are fixed per index.
+// Tokens (all optional):
+//   --gallery-album-paper / -print / -ink        Page tint, print frame and caption ink
+//   --gallery-album-accent                       Counter and progress line
+//   --gallery-album-shadow                       Print shadow
+//   --gallery-album-count-size / -caption-size / -hint-size   Type sizes
+//   --gallery-album-print-ratio                  Photograph ratio inside the print (4 / 5)
+// ==========================================================================
+
+$album-max-items: 8;
+
+// Pinned slots: width, top, left (percent of the page area) and resting turn, per index.
+$album-slots-mobile: (
+	(52%, 0%, 2%, -4deg),
+	(60%, 7%, 38%, 5deg),
+	(44%, 33%, 54%, 3deg),
+	(58%, 45%, 0%, -3deg),
+	(42%, 58%, 48%, -5deg),
+	(40%, 18%, 30%, 2deg),
+	(38%, 66%, 8%, 4deg),
+	(36%, 28%, 4%, -2deg)
+);
+$album-slots-desktop: (
+	(19%, 10%, 2%, -4deg),
+	(21%, 6%, 22%, 5deg),
+	(17%, 26%, 44%, 3deg),
+	(19%, 10%, 62%, -3deg),
+	(18%, 30%, 80%, -5deg),
+	(17%, 40%, 12%, 2deg),
+	(16%, 44%, 52%, 4deg),
+	(16%, 46%, 30%, -2deg)
+);
+
+// Photographs land during the first 85 % of the pinned span; the finished page holds for the rest.
+$album-land-share: 0.85;
+
+.gallery-section[data-variant='album-assemble'] {
+	--gallery-album-paper: var(--gallery-section-bg, var(--color-surface-primary));
+	--gallery-album-print: rgb(255 255 255);
+	--gallery-album-ink: var(--gallery-caption-color, var(--color-text-secondary));
+	--gallery-album-accent: var(--color-action-accent, currentColor);
+	--gallery-album-shadow: 0 18px 40px rgb(0 0 0 / 16%);
+	--gallery-album-count-size: 1.25rem;
+	--gallery-album-caption-size: 0.875rem;
+	--gallery-album-hint-size: 0.8125rem;
+	--album-span: calc(#{$album-land-share} / var(--album-count, 5));
+	--album-span-pct: calc(#{$album-land-share * 100%} / var(--album-count, 5));
+
+	// `clip`, not `hidden`: a scroll container here would break the sticky stage and capture the
+	// scene's view timeline.
+	overflow: clip;
+	background: var(--gallery-album-paper);
+
+	// Item count, read by the counter in the header and by every print's landing slice.
+	@for $count from 3 through $album-max-items {
+		&:has(.gallery-grid__item:nth-child(#{$count}):last-child) {
+			--album-count: #{$count};
+			--album-count-name: album-count-#{$count};
+		}
+	}
+
+	// Pinned: the stage holds the page; prints sit in fixed slots and land with the scroll.
+	.gallery-section__container {
+		@include scene.pinned {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			box-sizing: border-box;
+			width: 100%;
+			max-width: 72rem;
+			height: 100%;
+			margin-inline: auto;
+			padding: calc(var(--invitation-header-offset, calc(70px + 1.5rem)) + 0.25rem)
+				max(1.25rem, env(safe-area-inset-right, 0px)) 1.25rem
+				max(1.25rem, env(safe-area-inset-left, 0px));
+		}
+	}
+
+	.gallery-section__header {
+		@include scene.pinned {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			column-gap: 1rem;
+			align-items: end;
+			margin: 0;
+			text-align: start;
+
+			> * {
+				grid-column: 1;
+				margin: 0;
+			}
+
+			> .gallery-album__count {
+				grid-row: 1;
+				grid-column: 2;
+			}
+		}
+	}
+
+	// Counter and progress exist only while the scene is pinned.
+	.gallery-album__footer,
+	.gallery-album__count {
+		display: none;
+
+		@include scene.pinned {
+			display: block;
+		}
+	}
+
+	.gallery-album__count {
+		--album-line: 1.6em;
+
+		height: var(--album-line);
+		overflow: hidden;
+		color: var(--gallery-album-accent);
+		font-family: var(--font-display, serif);
+		font-size: var(--gallery-album-count-size);
+		font-variant-numeric: lining-nums tabular-nums;
+		line-height: 1.6;
+	}
+
+	.gallery-album__count-roll {
+		display: block;
+
+		> span {
+			display: block;
+		}
+
+		@include scene.timeline {
+			animation: var(--album-count-name, album-count-5) linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain 0% contain #{$album-land-share * 100%};
+		}
+
+		@include scene.scripted {
+			translate: 0
+				calc(
+					var(--album-line) * -1 *
+						min(
+							var(--album-count, 5) - 1,
+							round(down, var(--scene-progress, 0) / var(--album-span), 1)
+						)
+				);
+		}
+	}
+
+	.gallery-album__progress {
+		display: block;
+		height: 2px;
+		overflow: hidden;
+		border-radius: calc(var(--radius-xs) / 2);
+		background: rgb(0 0 0 / 8%);
+	}
+
+	.gallery-album__progress-bar {
+		display: block;
+		height: 100%;
+		background: var(--gallery-album-accent);
+		transform-origin: 0 50%;
+		scale: 0 1;
+
+		@include scene.timeline {
+			animation: album-progress linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain 0% contain #{$album-land-share * 100%};
+		}
+
+		@include scene.scripted {
+			scale: min(1, calc(var(--scene-progress, 0) / #{$album-land-share})) 1;
+		}
+	}
+
+	.gallery-album__hint {
+		display: block;
+		margin-top: 0.5rem;
+		color: var(--gallery-album-ink);
+		font-size: var(--gallery-album-hint-size);
+		text-align: center;
+	}
+
+	// Resting layout: every print visible in a grid.
+	.gallery-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem 0.75rem;
+
+		@include m.respond-to(lg) {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+
+		@include scene.pinned {
+			position: relative;
+			display: block;
+			flex: 1;
+			min-height: 0;
+		}
+	}
+
+	.gallery-grid__item {
+		align-self: start;
+		aspect-ratio: auto;
+		padding: 6px 6px 28px;
+		overflow: visible;
+		border: 0;
+		border-radius: var(--radius-xs);
+		background: var(--gallery-album-print);
+		box-shadow: var(--gallery-album-shadow);
+		rotate: var(--album-rotate, 0deg);
+
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+			border-radius: calc(var(--radius-xs) / 2);
+			aspect-ratio: var(--gallery-album-print-ratio, 4 / 5);
+			object-fit: cover;
+		}
+
+		@include scene.pinned {
+			position: absolute;
+			will-change: transform, opacity;
+		}
+
+		// Timeline engine: each print plays `album-land` over its own slice of the pinned span.
+		@include scene.timeline {
+			animation: album-land linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain calc(var(--album-index) * var(--album-span-pct)) contain
+				calc((var(--album-index) + 1) * var(--album-span-pct));
+		}
+
+		// Scripted engine: the same landing computed from --scene-progress.
+		@include scene.scripted {
+			--album-t: clamp(
+				0,
+				(var(--scene-progress, 0) - var(--album-index) * var(--album-span)) /
+					var(--album-span),
+				1
+			);
+			--album-e: calc(1 - (1 - var(--album-t)) * (1 - var(--album-t)));
+
+			opacity: calc(var(--album-t) * 170%);
+			translate: 0 calc((1 - var(--album-e)) * 70svh);
+			rotate: calc(var(--album-rotate) * (1 - 4 * (1 - var(--album-e))));
+			scale: calc(1.12 - 0.12 * var(--album-e));
+		}
+
+		// A print that receives keyboard focus shows in place, whatever the scroll position.
+		&:focus-visible {
+			@include scene.pinned {
+				animation: none;
+				opacity: 100%;
+				translate: none;
+				scale: none;
+				rotate: var(--album-rotate);
+			}
+		}
+
+		@for $index from 1 through $album-max-items {
+			$mobile: list.nth($album-slots-mobile, $index);
+			$desktop: list.nth($album-slots-desktop, $index);
+
+			&:nth-child(#{$index}) {
+				--album-index: #{$index - 1};
+				--album-rotate: #{list.nth($mobile, 4)};
+
+				@include scene.pinned {
+					top: list.nth($mobile, 2);
+					left: list.nth($mobile, 3);
+					width: list.nth($mobile, 1);
+				}
+
+				@include m.respond-to(lg) {
+					@include scene.pinned {
+						--album-rotate: #{list.nth($desktop, 4)};
+
+						top: list.nth($desktop, 2);
+						left: list.nth($desktop, 3);
+						width: list.nth($desktop, 1);
+					}
+				}
+			}
+		}
+	}
+
+	.gallery-grid__overlay {
+		position: absolute;
+		inset: auto 0 4px;
+		padding: 0;
+		background: none;
+		opacity: 100%;
+	}
+
+	.gallery-grid__caption {
+		margin: 0;
+		color: var(--gallery-album-ink);
+		font-family: var(--font-display, serif);
+		font-size: var(--gallery-album-caption-size);
+		line-height: 1.4;
+		text-align: center;
+	}
+}
+
+@keyframes album-land {
+	0% {
+		opacity: 0%;
+		translate: 0 70svh;
+		rotate: calc(var(--album-rotate, 0deg) * -3);
+		scale: 1.12;
+	}
+
+	60% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 100%;
+		translate: 0 0;
+		rotate: var(--album-rotate, 0deg);
+		scale: 1;
+	}
+}
+
+@keyframes album-progress {
+	100% {
+		scale: 1 1;
+	}
+}
+
+// Number k holds while print k lands: one held stop per print.
+@for $count from 3 through $album-max-items {
+	@keyframes album-count-#{$count} {
+		@for $step from 0 through $count - 1 {
+			#{math.div($step, $count) * 100%} {
+				animation-timing-function: step-end;
+				translate: 0 calc(var(--album-line, 1.6em) * #{-$step});
+			}
+		}
+
+		100% {
+			translate: 0 calc(var(--album-line, 1.6em) * #{1 - $count});
+		}
+	}
+}
