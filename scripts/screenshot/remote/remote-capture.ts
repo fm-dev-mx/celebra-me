@@ -21,8 +21,6 @@ import {
 import { decideRemoteRequest, type RemoteTarget } from './remote-target.ts';
 import {
 	buildRouteCandidates,
-	findVistaPreviaPaths,
-	VISTA_PREVIA_CONTENT_TYPE,
 	type RemoteRouteCandidate,
 	type RouteSources,
 } from './route-inventory.ts';
@@ -165,8 +163,7 @@ async function captureViewport(
 	options: RemoteCaptureOptions,
 	route: RemoteRouteCandidate,
 	viewport: RemoteViewport,
-	wantHtml: boolean,
-): Promise<{ capture: RemoteViewportCapture; html?: string }> {
+): Promise<{ capture: RemoteViewportCapture }> {
 	const { target } = options;
 	const file = `${routeFileStem(route.path)}.${viewport.name}.png`;
 	const context = await browser.newContext({
@@ -236,7 +233,6 @@ async function captureViewport(
 				finalPath: finalUrl.origin === target.origin ? finalUrl.pathname : finalUrl.origin,
 				images,
 			},
-			html: wantHtml ? await page.content() : undefined,
 		};
 	} catch (error) {
 		return {
@@ -260,7 +256,6 @@ async function captureRoute(
 	browser: Browser,
 	options: RemoteCaptureOptions,
 	route: RemoteRouteCandidate,
-	onHtml: (html: string) => void,
 ): Promise<RemoteRouteRecord> {
 	const isAsset = route.kind === 'asset';
 	const result = await probe(options.target, route.path, isAsset);
@@ -281,15 +276,8 @@ async function captureRoute(
 	}
 	if (route.kind !== 'page' || !record.live || result.status === 0) return record;
 	for (const viewport of REMOTE_VIEWPORTS) {
-		const { capture, html } = await captureViewport(
-			browser,
-			options,
-			route,
-			viewport,
-			viewport.name === 'desktop',
-		);
+		const { capture } = await captureViewport(browser, options, route, viewport);
 		record.captures[viewport.name] = capture;
-		if (html) onHtml(html);
 	}
 	return record;
 }
@@ -322,7 +310,6 @@ export async function captureRemoteRoutes(
 			? routes.filter((route) => options.onlyPaths?.includes(route.path))
 			: routes;
 	const candidates = filter(buildRouteCandidates(options.sources));
-	const discoveredPhotos = new Set<string>();
 	const browser = await chromium.launch();
 	let routes: RemoteRouteRecord[];
 	try {
@@ -330,33 +317,11 @@ export async function captureRemoteRoutes(
 			candidates,
 			options.concurrency ?? DEFAULT_CONCURRENCY,
 			async (route) => {
-				const record = await captureRoute(browser, options, route, (html) => {
-					for (const path of findVistaPreviaPaths(html, options.target.origin)) {
-						discoveredPhotos.add(path);
-					}
-				});
+				const record = await captureRoute(browser, options, route);
 				log(`${String(record.status).padStart(3)} ${route.kind.padEnd(8)} ${route.path}`);
 				return record;
 			},
 		);
-		// One discovered unpaid photo is enough to prove the watermark route serves images.
-		const known = new Set(candidates.map((route) => route.path));
-		const photo = [...discoveredPhotos].find((path) => !known.has(path));
-		if (photo && !candidates.some((route) => route.kind === 'asset')) {
-			const record = await captureRoute(
-				browser,
-				options,
-				{
-					path: photo,
-					kind: 'asset',
-					group: 'preview-photo',
-					expectedContentType: VISTA_PREVIA_CONTENT_TYPE,
-				},
-				() => undefined,
-			);
-			log(`${String(record.status).padStart(3)} asset    ${photo}`);
-			routes.push(record);
-		}
 	} finally {
 		await browser.close();
 	}

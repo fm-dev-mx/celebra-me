@@ -86,19 +86,18 @@ Workers plan fails any SSR request above 10 ms of CPU, so Paid is mandatory for 
 
 ## 4. Code rules on workerd
 
-| Constraint                 | Rule                                                                                                                                                                     |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Bindings                   | Read with `import { env } from 'cloudflare:workers'`; Astro 7 has no `Astro.locals.runtime.env`                                                                          |
-| `process.env`              | Populated from Wrangler `vars` and secrets; read through `getEnv()` only, never at module scope                                                                          |
-| `NODE_ENV`                 | Literal reads are fixed at build time and dynamic reads are empty; never decide on it                                                                                    |
-| `child_process`, real `fs` | Not available; local-only tooling (status CLI, editor divergence) stays out of Worker routes                                                                             |
-| `sharp`                    | Not available at runtime; pixel work (watermark, social crops, re-encoding) uses the Images binding                                                                      |
-| Images binding             | The local emulator returns the photo without the overlay and without error; only a deployed check counts. `draw` has no SVG input, so rasterize the mark per output size |
-| Post-response work         | Use `runAfterResponse()` (`waitUntil`); never fire-and-forget                                                                                                            |
-| Client IP and origin       | `getClientIp()` reads `CF-Connecting-IP`; do not trust `x-forwarded-*` for security decisions                                                                            |
-| Memories ECDSA signing     | Pass the PEM string (or WebCrypto) to `sign()`; workerd rejects a `KeyObject` in `options.key`                                                                           |
-| Headers and redirects      | Security headers and the legacy `301` redirects live in middleware (parity with `public/_headers`); `/_astro/*` is `immutable` through the adapter's `_headers`          |
-| Watermark provenance       | The visible mark and the HTML rights metas stay; EXIF/XMP provenance in watermarked output is not kept                                                                   |
+| Constraint                 | Rule                                                                                                                                                            |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bindings                   | Read with `import { env } from 'cloudflare:workers'`; Astro 7 has no `Astro.locals.runtime.env`                                                                 |
+| `process.env`              | Populated from Wrangler `vars` and secrets; read through `getEnv()` only, never at module scope                                                                 |
+| `NODE_ENV`                 | Literal reads are fixed at build time and dynamic reads are empty; never decide on it                                                                           |
+| `child_process`, real `fs` | Not available; local-only tooling (status CLI, editor divergence) stays out of Worker routes                                                                    |
+| `sharp`                    | Not available at runtime; pixel work (re-encoding) uses the Images binding                                                                                      |
+| Images binding             | The local emulator does not reproduce every transform; only a deployed check counts                                                                             |
+| Post-response work         | Use `runAfterResponse()` (`waitUntil`); never fire-and-forget                                                                                                   |
+| Client IP and origin       | `getClientIp()` reads `CF-Connecting-IP`; do not trust `x-forwarded-*` for security decisions                                                                   |
+| Memories ECDSA signing     | Pass the PEM string (or WebCrypto) to `sign()`; workerd rejects a `KeyObject` in `options.key`                                                                  |
+| Headers and redirects      | Security headers and the legacy `301` redirects live in middleware (parity with `public/_headers`); `/_astro/*` is `immutable` through the adapter's `_headers` |
 
 Prerendered pages never invoke the Worker (Workers Assets serves them with 0 CPU), so moving a
 static page to `prerender` is free of CPU.
@@ -150,8 +149,7 @@ static page to `prerender` is free of CPU.
 - **Smoke.** `pnpm ops:post-deploy -- check --base-url=https://www.celebra-me.com` after any change
   that touches routing, plus `pnpm ops:release-status --target production --sha <sha>`.
 - **Manual.** On a real phone: a real invitation, a demo, the QR apex, a fixture RSVP, login with
-  MFA, an editor photo upload, an unpaid invitation's `/vista-previa/<token>` photo
-  (`200 image/webp` with the watermark), `/robots.txt` unchanged and one chat link preview.
+  MFA, an editor photo upload, `/robots.txt` unchanged and one chat link preview.
 
 ## 8. Activate an uploaded version (every Production release)
 
