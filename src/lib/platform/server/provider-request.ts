@@ -53,7 +53,14 @@ function failureForStatus(status: number): ProviderFailure {
 /** Fetch JSON with a bearer token and a timeout. Never throws. */
 export async function fetchProviderJson(
 	url: string,
-	init: { method: 'GET' | 'POST'; token: string; body?: unknown; timeoutMs?: number },
+	init: {
+		method: 'GET' | 'POST';
+		token: string;
+		/** Extra headers (e.g. PostgREST's `apikey`); never logged. */
+		headers?: Record<string, string>;
+		body?: unknown;
+		timeoutMs?: number;
+	},
 	fetchImpl: typeof fetch,
 ): Promise<ProviderJsonResult> {
 	const controller = new AbortController();
@@ -62,6 +69,7 @@ export async function fetchProviderJson(
 		const response = await fetchImpl(url, {
 			method: init.method,
 			headers: {
+				...init.headers,
 				Authorization: `Bearer ${init.token}`,
 				'Content-Type': 'application/json',
 			},
