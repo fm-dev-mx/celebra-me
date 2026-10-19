@@ -43,7 +43,7 @@ describe('computePlanId conflictResolutions fingerprint', () => {
 			entity: 'hero',
 			label: 'Subida: hero',
 			operation: 'upload' as const,
-			newValue: 'Upload binary to Cloudinary (120 KB WebP)',
+			newValue: 'Upload binary to R2 (120 KB WebP)',
 			scope: 'storage' as const,
 			technicalWriteCount: 1,
 		};
@@ -87,9 +87,7 @@ describe('computePlanId conflictResolutions fingerprint', () => {
 	});
 
 	it('treats matching content operation keys as the same plan identity', () => {
-		expect(planIdentityChangeKeys(baseParams.changes)).toEqual([
-			'database:update:tooltipText',
-		]);
+		expect(planIdentityChangeKeys(baseParams.changes)).toEqual(['database:update:tooltipText']);
 		expect(
 			formatPlanIdentityMismatch(
 				{ functionalChanges: baseParams.changes },

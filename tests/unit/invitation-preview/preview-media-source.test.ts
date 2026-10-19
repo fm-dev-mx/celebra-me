@@ -34,7 +34,7 @@ describe('preview media source allowlist', () => {
 		'https://abcdefgh.supabase.co/rest/v1/invitations',
 		'http://169.254.169.254/latest/meta-data',
 		'https://user:pass@media.celebra-me.com/x.jpg',
-		'https://res.cloudinary.com/demo/image/upload/v1/x.jpg',
+		'https://cdn.example.com/demo/image/upload/v1/x.jpg',
 		'https://media.celebra-me.com.evil.example/x.jpg',
 		'http://media.celebra-me.com/x.jpg',
 		'file:///etc/passwd',

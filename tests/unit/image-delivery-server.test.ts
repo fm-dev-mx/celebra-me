@@ -5,8 +5,8 @@ jest.mock('astro:assets', () => ({ getImage }), { virtual: true });
 
 import { resolveExplicitImageDelivery } from '@/lib/assets/image-delivery.server';
 
-const CLOUDINARY_VERSIONED_URL =
-	'https://res.cloudinary.com/demo/image/upload/v1/xv/demo/assets/hero-abc123.webp';
+const EXTERNAL_VERSIONED_URL =
+	'https://cdn.example.com/demo/image/upload/v1/xv/demo/assets/hero-abc123.webp';
 const LOCAL_ASSET = {
 	src: '/_astro/hero.abc123.jpg',
 	width: 2000,
@@ -40,13 +40,13 @@ describe('resolveExplicitImageDelivery', () => {
 
 	it('falls back to the caller defaults and infers the size of a remote source', async () => {
 		await resolveExplicitImageDelivery(
-			CLOUDINARY_VERSIONED_URL,
+			EXTERNAL_VERSIONED_URL,
 			{ mode: 'optimized' },
 			{ width: 1200, quality: 80, format: 'webp' },
 		);
 
 		expect(getImage).toHaveBeenCalledWith({
-			src: CLOUDINARY_VERSIONED_URL,
+			src: EXTERNAL_VERSIONED_URL,
 			width: 1200,
 			inferSize: true,
 			quality: 80,

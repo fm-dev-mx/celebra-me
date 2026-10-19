@@ -43,28 +43,9 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'workers/celebra-memories-sign/wrangler.json',
 	'workers/celebra-memories-sign/worker-bindings.d.ts',
 	'docs/operations/cloudflare-production-cutover.md',
-	// Until the contract migration drops provider='cloudinary': tests that prove legacy
-	// Cloudinary rows and URLs are rejected, ignored or pruned.
-	'tests/db/preview-sync-invitations.test.ts',
-	'tests/provision/approval-asset-hashes.test.ts',
-	'tests/provision/asset-reconciliation.test.ts',
-	'tests/provision/content-parity.test.ts',
-	'tests/provision/hosted-apply-post-verify.test.ts',
-	'tests/provision/local-final-asset-verification.test.ts',
-	'tests/provision/plan-id-fingerprint.test.ts',
-	'tests/provision/preview-approval-service.test.ts',
-	'tests/provision/preview-live-verification.test.ts',
-	'tests/provision/promotion-comparison.test.ts',
-	'tests/provision/promotional-fingerprint.test.ts',
-	'tests/provision/semantic-delta.test.ts',
-	'tests/unit/asset-delivery.test.ts',
-	'tests/unit/draft-mutation.service.test.ts',
-	'tests/unit/image-delivery-server.test.ts',
-	'tests/unit/invitation-music-player-visibility.test.ts',
-	'tests/unit/invitation-preview/preview-media-source.test.ts',
 ]);
-// Migrations are history; database tests follow the schema they check.
-const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/', 'supabase/tests/'];
+// Migrations are history.
+const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/'];
 
 function isAllowlisted(relativeFile) {
 	return (

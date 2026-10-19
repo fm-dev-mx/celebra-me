@@ -302,11 +302,11 @@ describe('promotional fingerprint', () => {
 				rows: [
 					liveRow({
 						publishedContent: {
-							hero: 'https://res.cloudinary.com/demo/image/upload/v1/portrait.webp',
+							hero: 'https://cdn.example.com/demo/image/upload/v1/portrait.webp',
 							title: 'Celebración',
 						},
 						draftContent: {
-							hero: 'https://res.cloudinary.com/demo/image/upload/v1/portrait.webp',
+							hero: 'https://cdn.example.com/demo/image/upload/v1/portrait.webp',
 							title: 'Celebración',
 						},
 						assets: [],

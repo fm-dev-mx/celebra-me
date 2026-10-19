@@ -143,7 +143,7 @@ describe('evaluateAppliedHostedTargetIdentity', () => {
 				image: {
 					type: 'uploaded',
 					assetId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
-					src: 'https://res.cloudinary.com/demo/image/upload/canonical.webp',
+					src: 'https://cdn.example.com/demo/image/upload/canonical.webp',
 				},
 			},
 		};
@@ -152,7 +152,7 @@ describe('evaluateAppliedHostedTargetIdentity', () => {
 				image: {
 					type: 'uploaded',
 					assetId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
-					src: 'https://res.cloudinary.com/demo/image/upload/production/stale.webp',
+					src: 'https://cdn.example.com/demo/image/upload/production/stale.webp',
 				},
 			},
 		};
