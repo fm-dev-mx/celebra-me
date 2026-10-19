@@ -107,6 +107,182 @@
 	}
 }
 
+// Editorial recipe (opt-in, `theme.motion: 'editorial'`): the coordinator observes every marked item
+// once (`data-reveal-item` or `data-reveal-role='item'` for list items and cards, `data-reveal-role`
+// for the label, the title, the lede and the photograph) and adds `is-visible` as it crosses 85 % of the viewport. Items that enter
+// together carry `--reveal-order`. One curve for everything; the blur belongs to title words only.
+#invitation-sections-container > .invitation-section-wrapper[data-reveal='editorial'] {
+	--editorial-ease: cubic-bezier(0.16, 1, 0.3, 1);
+	--editorial-order: var(--reveal-order, 0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial']
+		[data-reveal-role='title']
+		.word {
+		display: inline-block;
+	}
+
+	// The coordinator marks each observed target `data-reveal-pending` and clears it on entry, so an
+	// element mounted later (an island re-render) is never held hidden.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-pending]:not([data-reveal-role='title'], [data-reveal-role='media']),
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'][data-reveal-pending] {
+		opacity: 0%;
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-role='title'][data-reveal-pending]
+		.word {
+		opacity: 0%;
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-role='media'][data-reveal-pending] {
+		clip-path: inset(6%);
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-role='label'].is-visible {
+		animation: editorial-rise-label 600ms var(--editorial-ease) backwards;
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-role='title'].is-visible
+		.word {
+		animation: editorial-word 900ms var(--editorial-ease) backwards;
+		animation-delay: calc(80ms + 60ms * var(--i, 0));
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-role='lede'].is-visible {
+		animation: editorial-rise 700ms var(--editorial-ease) backwards;
+		animation-delay: var(--reveal-delay, 240ms);
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-role='media'].is-visible {
+		animation: editorial-media 1200ms var(--editorial-ease) backwards;
+		animation-delay: calc(200ms + 70ms * var(--editorial-order));
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		:is([data-reveal-item], [data-reveal-role='item']).is-visible,
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].is-visible:not(
+			:has([data-reveal-item], [data-reveal-role])
+		) {
+		animation: editorial-rise 600ms var(--editorial-ease) backwards;
+		animation-delay: calc(300ms + 70ms * var(--editorial-order));
+	}
+}
+
+// Reduced motion: no blur, scale, clip or delay; every editorial entrance is a 200 ms fade. It
+// outranks the global reduced-motion reset, which removes every other animation.
+@media (prefers-reduced-motion: reduce) {
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		[data-reveal-pending],
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'][data-reveal-pending] {
+		opacity: 0%;
+	}
+
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+		:is([data-reveal-item], [data-reveal-role]).is-visible,
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal='editorial'].is-visible:not(
+			:has([data-reveal-item], [data-reveal-role])
+		) {
+		/* stylelint-disable-next-line declaration-no-important */
+		animation: invitation-reveal-fade 200ms ease-out backwards !important;
+	}
+}
+
+@keyframes editorial-rise-label {
+	from {
+		opacity: 0%;
+		translate: 0 8px;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes editorial-rise {
+	from {
+		opacity: 0%;
+		translate: 0 12px;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes editorial-word {
+	from {
+		opacity: 0%;
+		translate: 0 0.35em;
+		filter: blur(8px);
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+		filter: blur(0);
+	}
+}
+
+@keyframes editorial-media {
+	from {
+		clip-path: inset(6%);
+		scale: 1.06;
+	}
+
+	to {
+		clip-path: inset(0);
+		scale: 1;
+	}
+}
+
+// Smooth scrolling (editorial invitations on a fine pointer, src/lib/invitation/smooth-scroll.ts):
+// Lenis drives the scroll itself, so the native smooth behavior steps aside while it runs.
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+
+html.lenis.lenis-smooth {
+	/* stylelint-disable-next-line declaration-no-important */
+	scroll-behavior: auto !important;
+}
+
+// Editorial press cue: a gallery photograph gives under the finger before it opens.
+@media (prefers-reduced-motion: no-preference) {
+	[data-motion='editorial'] [data-gallery-item] {
+		transition: scale 160ms var(--editorial-ease, ease-out);
+
+		&:active {
+			scale: 0.98;
+		}
+	}
+}
+
 // Photograph load fade (opt-in): the page adds `has-image-fade` only when the wrapper declares
 // `--image-fade-animation`, and marks images `is-loaded` (`is-instant` when they were complete
 // before the first paint). Late images wait at `--image-fade-hidden-opacity` over their own

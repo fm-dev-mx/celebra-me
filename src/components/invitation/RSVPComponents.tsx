@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { forwardRef, useState } from 'react';
-import type { FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
+import { Fragment, forwardRef, useState } from 'react';
+import type { CSSProperties, FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { useRsvpContext } from '@/components/invitation/rsvp-context';
 import { resolveEventEdition } from '@/lib/invitation/event-type-contract';
 import {
@@ -83,15 +83,41 @@ function RsvpVisibleHeader({
 					</span>
 				</>
 			)}
-			<h2 className="rsvp__title">{title}</h2>
+			<SplitWordsTitle className="rsvp__title" text={title} />
 			{isEditorialPressPass && (
 				<p className="rsvp__edition-label">ACCESO PRIVADO · {edition.label}</p>
 			)}
-			{subcopy !== undefined && <p className="rsvp__subcopy">{subcopy}</p>}
+			{subcopy !== undefined && (
+				<p className="rsvp__subcopy" data-reveal-role="lede">
+					{subcopy}
+				</p>
+			)}
 		</>
 	);
 }
 RsvpVisibleHeader.displayName = 'RsvpVisibleHeader';
+
+/** React counterpart of SplitWords.astro: one span per word for the editorial title reveal. */
+function SplitWordsTitle({ className, text }: { className: string; text: string }) {
+	const words = text.trim().split(/\s+/).filter(Boolean);
+	return (
+		<h2 className={className} aria-label={text} data-reveal-role="title">
+			{words.map((word, index) => (
+				<Fragment key={`${index}-${word}`}>
+					<span
+						className="word"
+						// eslint-disable-next-line no-restricted-syntax -- per-word stagger index
+						style={{ '--i': index } as CSSProperties}
+						aria-hidden="true"
+					>
+						{word}
+					</span>
+					{index < words.length - 1 ? ' ' : null}
+				</Fragment>
+			))}
+		</h2>
+	);
+}
 
 function RsvpStatusHeader({ title }: { title: string }) {
 	return <h2 className="sr-only">{title}</h2>;

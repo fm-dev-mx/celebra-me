@@ -1,10 +1,15 @@
 import { ImageDeliverySchema } from '@/lib/assets/image-delivery';
 import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-keys';
-import { COUNTDOWN_DAY_UNITS, COUNTDOWN_UNITS } from '@/lib/invitation/countdown-presentation';
+import {
+	COUNTDOWN_CALENDAR_MARKS,
+	COUNTDOWN_DAY_UNITS,
+	COUNTDOWN_UNITS,
+} from '@/lib/invitation/countdown-presentation';
 import {
 	EVENT_TYPES,
 	INVITATION_RENDER_SECTION_KEYS,
+	THEME_MOTION_MODES,
 	THEME_PRESETS,
 } from '@/lib/theme/theme-contract';
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
@@ -106,6 +111,8 @@ const themeSchema = z
 	.object({
 		fontFamily: z.enum(['serif', 'sans']).default('serif'),
 		preset: z.enum(THEME_PRESETS),
+		/** Opt-in motion mode; absent keeps the per-section reveal recipes. */
+		motion: z.enum(THEME_MOTION_MODES).optional(),
 	})
 	.strict();
 
@@ -113,6 +120,8 @@ export const quoteSchema = z
 	.object({
 		text: z.string(),
 		author: z.string().optional(),
+		/** Final line set apart from the text, entering after it. */
+		closingLine: z.string().trim().min(1).optional(),
 	})
 	.strict();
 
@@ -174,6 +183,11 @@ export const countdownSchema = z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),
 				dayUnit: z.enum(COUNTDOWN_DAY_UNITS).optional(),
+				/** Month calendar of the event, its day circled by the mark; replaces the written date. */
+				calendar: z
+					.object({ mark: z.enum(COUNTDOWN_CALENDAR_MARKS) })
+					.strict()
+					.optional(),
 			})
 			.strict()
 			.optional(),
