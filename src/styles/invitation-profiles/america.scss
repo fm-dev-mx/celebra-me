@@ -132,16 +132,24 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-name-max-width: 22ch;
 	--family-message-max-width: min(22rem, 100%);
 
-	// A band of lantern light crosses each name as they scroll by.
+	// Each name is lit like a lantern as it rises up the screen: warm ink spreads across it from
+	// the first letter, with a soft amber glow, and stays lit. The braid between the parents and
+	// the godparents is drawn out from its centre on the way.
 	--family-shine: linear-gradient(
-		105deg,
-		currentcolor 45%,
-		color-mix(in srgb, var(--color-lantern-amber) 70%, var(--color-gold-ink)) 50%,
-		currentcolor 55%
+		100deg,
+		var(--color-gold-ink) 0 40%,
+		color-mix(in srgb, var(--color-lantern-amber) 60%, var(--color-gold-ink)) 47%,
+		currentcolor 54% 100%
 	);
+	--family-shine-size: 220% 100%;
 	--family-shine-clip: text;
 	--family-shine-fill: transparent;
-	--family-shine-name: family-shine;
+	--family-shine-name: family-light;
+	--family-shine-timeline: --family-name-light;
+	--family-shine-range: entry 100% cover 55%;
+	--family-shine-range-godparents: entry 100% cover 55%;
+	--family-shine-glow: rgb(232 160 64 / 45%);
+	--family-divider-draw: family-divider-draw;
 	--location-intro-heading-size: var(--america-title-size);
 	--location-intro-heading-line-height: 1.1;
 	--location-enclosure-heading-line-height: 1.1;

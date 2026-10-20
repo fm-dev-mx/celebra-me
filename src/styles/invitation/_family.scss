@@ -582,7 +582,11 @@
 // (transparent) and --family-shine-name names the sweep (family-shine). The light follows the
 // section through the viewport (the section clips its overflow, so it carries the timeline):
 // the parents first, then the godparents. Without scroll timelines, or with reduced motion,
-// the names keep their own ink.
+// the names keep their own ink. A profile may instead light each name on its own way up the
+// screen: --family-shine-timeline `--family-name-light` ties it to the name, --family-shine-range
+// sets where it lights, and `family-light` (with --family-shine-size and --family-shine-glow)
+// leaves it lit with a soft glow. --family-divider-draw (`family-divider-draw`) draws the ornament between groups out
+// from its centre as the section scrolls.
 @supports (animation-timeline: view()) {
 	@media (prefers-reduced-motion: no-preference) {
 		.family {
@@ -590,17 +594,47 @@
 		}
 
 		.family__name {
-			background: var(--family-shine, none) 100% 0 / 300% 100% no-repeat;
+			view-timeline: --family-name-light block;
+			background: var(--family-shine, none) 100% 0 / var(--family-shine-size, 300% 100%)
+				no-repeat;
 			background-clip: var(--family-shine-clip, border-box);
 			-webkit-text-fill-color: var(--family-shine-fill, currentcolor);
 			animation: var(--family-shine-name, none) auto linear both;
-			animation-timeline: --family-shine;
-			animation-range: cover 20% cover 45%;
+			animation-timeline: var(--family-shine-timeline, --family-shine);
+			animation-range: var(--family-shine-range, cover 20% cover 45%);
 		}
 
 		.family__group--godparents .family__name {
-			animation-range: cover 40% cover 65%;
+			animation-range: var(--family-shine-range-godparents, cover 40% cover 65%);
 		}
+
+		.family__group + .family__group::before {
+			animation: var(--family-divider-draw, none) auto linear both;
+			animation-timeline: --family-shine;
+			animation-range: var(--family-divider-draw-range, cover 30% cover 45%);
+		}
+	}
+}
+
+@keyframes family-light {
+	0% {
+		background-position: 100% 0;
+		filter: drop-shadow(0 0 0 transparent);
+	}
+
+	100% {
+		background-position: 0 0;
+		filter: drop-shadow(0 0 0.35em var(--family-shine-glow, transparent));
+	}
+}
+
+@keyframes family-divider-draw {
+	0% {
+		clip-path: inset(0 50%);
+	}
+
+	100% {
+		clip-path: inset(0);
 	}
 }
 
