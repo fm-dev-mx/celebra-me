@@ -621,8 +621,24 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	@media (width >= 62rem) {
 		.invitation-hero[data-variant='bleed-portrait'] {
 			--hero-bleed-when-size: min(
-				1.7rem,
+				2rem,
 				(100vw - min(50vw, 100svh * 2 / 3) - 2 * min(8vw, 8rem) - 9.75rem) / 11.4
+			);
+		}
+	}
+
+	// Wide and tall, the letter holds the half beside the photograph: the name and the facts are
+	// set larger, so the cover does not read as a small block on empty paper. The hour and the
+	// venue follow the date down where the date must shrink to fit.
+	@media (width >= 62rem) and (height > 500px) {
+		.invitation-hero[data-variant='bleed-portrait'] {
+			--hero-bleed-title-size-desktop: clamp(8rem, 11vw, 11rem);
+			--hero-bleed-occasion-size-wide: 1.125rem;
+			--hero-bleed-facts-gap: 2.25rem;
+			--hero-bleed-time-size: max(1rem, min(1.25rem, var(--hero-bleed-when-size) * 0.62));
+			--hero-bleed-where-size: max(
+				0.875rem,
+				min(1.0625rem, var(--hero-bleed-when-size) * 0.53)
 			);
 		}
 	}
