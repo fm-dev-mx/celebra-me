@@ -491,44 +491,33 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--america-ground-rgb: var(--america-night-rgb);
 	}
 
-	// The reply button floats as a small piece of the night: gold type on the dark, a gold hairline.
-	.floating-cta {
-		--invitation-floating-cta: on;
-		--floating-cta-bg: var(--america-night);
-		--floating-cta-ink: var(--america-night-gold);
-		--floating-cta-border: 1px solid rgb(var(--america-night-gold-rgb) / 45%);
-		--floating-cta-panel-bg: var(--america-night);
-		--floating-cta-panel-ink: var(--color-night-lilac);
-		--floating-cta-panel-muted: rgb(var(--america-night-gold-rgb) / 78%);
-
-		// A small lit lantern before the label, the reply date under it (Agendar names the two
-		// events), and a gleam of lantern light across the pill when it first rises.
-		--floating-cta-button-display: inline-grid;
-		--floating-cta-icon-display: block;
-		--floating-cta-icon: radial-gradient(
-			circle at 50% 60%,
-			rgb(255 236 196) 0,
-			rgb(232 160 64) 55%,
-			rgb(190 120 40) 100%
-		);
-		--floating-cta-note-confirm: 'Antes del viernes 6 de noviembre';
-		--floating-cta-note-calendar: 'Misa y recepción';
-		--floating-cta-note-size: var(--america-label-size);
-		--floating-cta-glint: linear-gradient(
-			105deg,
-			transparent 40%,
-			rgb(var(--america-night-gold-rgb) / 30%) 50%,
-			transparent 60%
-		);
-		--floating-cta-shadow:
-			0 0.6rem 1.6rem rgb(var(--america-night-rgb) / 35%), 0 0 1.25rem rgb(232 160 64 / 18%);
-	}
-
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll
 	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a gold
 	// hairline and a plain text contact link.
 	.invitation-footer {
 		--invitation-footer-reveal: held;
+
+		// The reply waits for the end: no button floats over the reading; the footer opens on the
+		// last lantern, lit, with the question and the reply under it, in candle gold.
+		--invitation-footer-reply: on;
+		--footer-reply-eyebrow: 'La última linterna es la suya';
+		--footer-reply-question: '¿Me acompaña el 21 de noviembre?';
+		--footer-reply-note: 'Antes del viernes 6 de noviembre';
+		--footer-reply-answered: 'Su linterna ya está encendida.';
+		--footer-reply-ink: var(--color-candle-cream);
+		--footer-reply-muted: var(--color-night-lilac);
+		--footer-reply-accent: var(--america-night-gold);
+		--footer-reply-eyebrow-size: var(--america-label-size);
+		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
+		--footer-reply-button-bg: var(--america-night-gold);
+		--footer-reply-button-ink: var(--america-night);
+		--footer-reply-button-font: var(--font-label);
+		--footer-reply-glint: linear-gradient(
+			105deg,
+			transparent 40%,
+			rgb(255 255 255 / 55%) 50%,
+			transparent 60%
+		);
 		--footer-bg: var(--america-night);
 		--footer-border-color: rgb(var(--america-night-gold-rgb) / 14%);
 		--footer-closing-color: rgb(var(--america-night-gold-rgb) / 78%);
