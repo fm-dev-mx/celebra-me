@@ -17,21 +17,20 @@
 $night-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url%28%23n%29'/%3E%3C/svg%3E");
 $night-front-shade: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0L50 50L0 100Z' fill-opacity='.16'/%3E%3Cpath d='M100 0L50 50L100 100Z' fill-opacity='.16'/%3E%3Cpath d='M0 100L50 60L100 100Z' fill='%23fff' fill-opacity='.05'/%3E%3C/svg%3E");
 $night-front-folds: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M0 0L50 50L100 0' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M0 100L50 60L100 100' stroke-opacity='.4' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E");
-$night-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-$night-ease-in: cubic-bezier(0.55, 0, 0.85, 0.3);
 $night-ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
-$night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
+$night-ease-rise: cubic-bezier(0.25, 0.1, 0.25, 1);
 
 // ---------------------------------------------------------------------------------------------
-// Opening choreography. The envelope parts share one 3D context: base 0, letter 1px, pocket 2px,
-// flap 3px, tease 4px. The flap drops behind the letter at its edge-on instant.
-//   0–500ms      the seal is pressed softly and glows (no rebound)
-//   650–1650ms   the flap turns at an even pace, its starry liner fading in at edge-on; the seal
-//                rides its tip up and away
-//   1250–2650ms  the letter rises up and forward in one movement
-//   1550–2350ms  the envelope sinks a little and fades beneath it
-//   2650–3050ms  the letter rests
-//   3050ms→      the window flies onto the cover arch while the paper and the sky fade
+// Opening choreography: one thing at a time, nothing snaps. The envelope parts share one 3D
+// context: base 0, letter 1px, pocket 2px, flap 3px, tease 4px. The flap drops behind the letter
+// at its edge-on instant.
+//   0–800ms      the seal gives a little under the tap while the seal, the names and the line
+//                under the envelope fade together
+//   500–2100ms   the flap opens slowly, its starry liner fading in at edge-on
+//   1700–3700ms  the letter rises out of the pocket, without growing
+//   2600–3800ms  the envelope fades in place beneath it
+//   3700–4100ms  the letter rests
+//   4100ms→      the window flies onto the cover arch while the paper and the sky fade
 // ---------------------------------------------------------------------------------------------
 
 .envelope-wrapper[data-variant='night-envelope'] {
@@ -364,7 +363,7 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 	// Letter: ivory paper (5:7), the arched window on top, then the names and the date.
 	.envelope-reveal-stage {
 		padding: 0;
-		transform: translate3d(0, 8%, 1px) scale(0.9);
+		transform: translate3d(0, 8%, 1px) scale(0.97);
 		transform-origin: center;
 	}
 
@@ -488,47 +487,47 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 	}
 
 	&.is-opening {
-		.envelope-tease {
-			transition: opacity 500ms var(--ease-standard) 400ms;
+		// The seal, the names and the line under the envelope leave together, softly.
+		.envelope-tease,
+		.envelope-external-instruction {
+			transition: opacity 800ms $night-ease-soft;
 		}
 
-		// The monogram stays whole: it presses and glows, then rides the flap's tip up and away.
+		// The monogram stays whole: it gives a little under the tap and fades with the tease.
 		.envelope-seal-button__visual {
-			animation:
-				night-seal-press 500ms $night-ease-soft both,
-				night-seal-ride 1000ms linear 650ms forwards;
+			animation: night-seal-press 600ms $night-ease-soft both;
 		}
 
 		.envelope-seal-button::before {
-			animation: night-seal-glow 1400ms $night-ease-soft both;
+			animation: night-seal-glow 800ms $night-ease-soft both;
 		}
 
 		.envelope-flap {
 			animation:
-				night-flap-turn 1000ms linear 650ms forwards,
-				night-envelope-sink 800ms $night-ease-soft 1550ms forwards;
+				night-flap-turn 1600ms linear 500ms forwards,
+				night-envelope-fade 1200ms $night-ease-soft 2600ms forwards;
 		}
 
 		.envelope-flap-shadow {
-			animation: night-flap-liner 1000ms linear 650ms forwards;
+			animation: night-flap-liner 1600ms linear 500ms forwards;
 		}
 
 		.envelope-flap::after {
-			animation: night-flap-hairline 1000ms linear 650ms forwards;
+			animation: night-flap-hairline 1600ms linear 500ms forwards;
 		}
 
 		.envelope-base,
 		.envelope-pocket {
-			animation: night-envelope-sink 800ms $night-ease-soft 1550ms forwards;
+			animation: night-envelope-fade 1200ms $night-ease-soft 2600ms forwards;
 		}
 
 		.envelope-container::after {
-			animation: night-envelope-shadow-out 800ms $night-ease-soft 1550ms forwards;
+			animation: night-envelope-shadow-out 1200ms $night-ease-soft 2600ms forwards;
 		}
 
 		// Keeps the `envCardRise` prefix: EnvelopeReveal hands over on that animationend.
 		.envelope-reveal-stage {
-			animation: envCardRiseNight 1400ms $night-ease-rise 1250ms both;
+			animation: envCardRiseNight 2000ms $night-ease-rise 1700ms both;
 		}
 	}
 
@@ -593,8 +592,8 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 		scale: 1;
 	}
 
-	35% {
-		scale: 0.96;
+	40% {
+		scale: 0.98;
 	}
 
 	100% {
@@ -607,39 +606,19 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 		opacity: 50%;
 	}
 
-	35% {
-		opacity: 100%;
-		scale: 1.12;
+	40% {
+		opacity: 80%;
 	}
 
 	100% {
 		opacity: 0%;
-		scale: 1.2;
-	}
-}
-
-@keyframes night-seal-ride {
-	0% {
-		opacity: 100%;
-		transform: translate3d(0, 0, 0);
-		animation-timing-function: $night-ease-in;
-	}
-
-	70% {
-		opacity: 100%;
-	}
-
-	100% {
-		opacity: 0%;
-		transform: translate3d(0, calc(-50cqi / var(--env-container-ratio-fallback)), 24px)
-			scale(0.86);
 	}
 }
 
 @keyframes night-flap-turn {
 	0% {
 		transform: translateZ(3px) rotateX(0deg);
-		animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+		animation-timing-function: cubic-bezier(0.42, 0, 0.8, 0.6);
 	}
 
 	50% {
@@ -649,7 +628,7 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 
 	50.5% {
 		transform: translateZ(-8px) rotateX(91deg);
-		animation-timing-function: cubic-bezier(0, 0, 0.55, 1);
+		animation-timing-function: cubic-bezier(0.2, 0.4, 0.4, 1);
 	}
 
 	100% {
@@ -659,11 +638,11 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 
 @keyframes night-flap-liner {
 	0%,
-	46% {
+	40% {
 		opacity: 0%;
 	}
 
-	54%,
+	60%,
 	100% {
 		opacity: 100%;
 	}
@@ -671,20 +650,20 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 
 @keyframes night-flap-hairline {
 	0%,
-	46% {
+	40% {
 		opacity: 100%;
 	}
 
-	54%,
+	60%,
 	100% {
 		opacity: 0%;
 	}
 }
 
-@keyframes night-envelope-sink {
+@keyframes night-envelope-fade {
 	to {
 		opacity: 0%;
-		translate: 0 6rem;
+		translate: 0 1.5rem;
 	}
 }
 
@@ -697,10 +676,10 @@ $night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
 @keyframes envCardRiseNight {
 	0% {
 		opacity: 0%;
-		transform: translate3d(0, 8%, 1px) scale(0.9);
+		transform: translate3d(0, 8%, 1px) scale(0.97);
 	}
 
-	8% {
+	25% {
 		opacity: 100%;
 	}
 
