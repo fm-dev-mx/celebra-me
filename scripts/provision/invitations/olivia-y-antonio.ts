@@ -6,9 +6,9 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
  * palette: navy ink, slate and dusty blues, champagne for fine accents on ivory paper. Photographs
  * come from their engagement session (garden, dock, beach at sunset and a save-the-date newspaper
  * prop). Ceremony in the Parroquia del Santo Niño de la Salud and reception at Liarah Salón de
- * Eventos, Los Mochis. The song is omitted until the couple's audio file exists (placeholder
- * MUSIC_AUDIO in docs/invitations/olivia-y-antonio.md). Map links are Google Maps place pins
- * approved by the owner; the reception keeps the client's address wording.
+ * Eventos, Los Mochis. The couple's song is hosted on the production R2 media bucket. Map links
+ * are Google Maps place pins approved by the owner; the reception keeps the client's address
+ * wording.
  */
 const OLIVIA_TIMING = {
 	localDateTime: '2026-12-18T19:00',
@@ -42,6 +42,11 @@ const content: CanonicalEventContentInput = {
 	title: 'Boda de Olivia Martínez y Antonio Vázquez',
 	description: `Invitación a la boda de Olivia y Antonio, el ${EVENT_DATE_LONG} en Los Mochis, Sinaloa.`,
 	theme: { preset: 'jewelry-box-wedding', motion: 'editorial' },
+	music: {
+		url: 'https://media.celebra-me.com/invitations/boda/olivia-y-antonio/music-df7a7ba0de4eeafe507278cad85ced121d20f569c3c1a953c04ab7f19a15e817.mp3',
+		title: 'Alex Warren — Ordinary',
+		autoPlay: true,
+	},
 	eventTiming: OLIVIA_TIMING,
 	sectionOrder: [
 		'quote',
