@@ -20,6 +20,31 @@ function headerOffset(root: Document): number {
 	return header ? header.getBoundingClientRect().height : 0;
 }
 
+type Glider = {
+	scrollTo: (target: HTMLElement, options: { offset: number; onComplete?: () => void }) => void;
+};
+
+// Sections below can still grow while the glide runs (images and scenes settle as they are passed),
+// so the target is aimed at once more when the glide ends if it came up short or overshot.
+const AIM_SLACK_PX = 4;
+
+export function glideTo(
+	lenis: Glider,
+	target: HTMLElement,
+	root: Document = document,
+	retries = 2,
+): void {
+	const offset = -headerOffset(root);
+	lenis.scrollTo(target, {
+		offset,
+		onComplete: () => {
+			const miss = target.getBoundingClientRect().top + offset;
+			if (retries > 0 && Math.abs(miss) > AIM_SLACK_PX)
+				glideTo(lenis, target, root, retries - 1);
+		},
+	});
+}
+
 export async function startSmoothScroll(root: Document = document): Promise<void> {
 	const { default: Lenis } = await import('lenis');
 	const lenis = new Lenis({ lerp: 0.1, syncTouch: false, anchors: false });
@@ -38,7 +63,7 @@ export async function startSmoothScroll(root: Document = document): Promise<void
 		const target = root.getElementById(decodeURIComponent(hash.slice(1)));
 		if (!target) return;
 		event.preventDefault();
-		lenis.scrollTo(target, { offset: -headerOffset(root) });
+		glideTo(lenis, target, root);
 		history.pushState(null, '', hash);
 	});
 }
