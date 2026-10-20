@@ -113,6 +113,7 @@
         "agent:git-safety:start": "node scripts/agent/git-safety.mjs start",
         "agent:git-safety:check": "node scripts/agent/git-safety.mjs check",
         "agent:git-safety:finish": "node scripts/agent/git-safety.mjs finish",
+        "board:verify": "node scripts/board/verify-board.mjs",
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb",
         "dbs": "tsx scripts/provision/dbs-cli.ts",
         "invitation:release": "tsx scripts/provision/invitation-release-cli.ts",
