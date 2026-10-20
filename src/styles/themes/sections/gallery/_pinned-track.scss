@@ -1,4 +1,4 @@
-@use '../../../invitation/scroll-scene' as scene;
+@use '../../../invitation/scroll-scene-mixins' as scene;
 
 // Gallery pinned-track: a scroll scene. The stage pins and the photos travel sideways with
 // vertical scroll at varied heights, each photo drifting inside its frame for depth, while a
