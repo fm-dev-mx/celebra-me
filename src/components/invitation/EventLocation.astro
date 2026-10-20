@@ -148,6 +148,8 @@ const venueType = (venue: GroupedVenue) =>
 					showFlourishes={showFlourishes}
 					showNavigationButtons={showNavigationButtons}
 					compact={venueCard === 'compact'}
+					vignette={variant === 'night-route'}
+					reveal={variant !== 'night-route'}
 					calendar={calendarFor(venue)}
 				/>
 			))}

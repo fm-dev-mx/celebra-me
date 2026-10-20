@@ -645,6 +645,10 @@ describe('registry-driven canonical variant portability', () => {
 		const stackedPlates = readSource(
 			'src/styles/themes/sections/location/_stacked-venue-plates.scss',
 		);
+		const nightRoute = readSource('src/styles/themes/sections/location/_night-route.scss');
+		// Plate geometry lives in one mixin that both plate variants include.
+		const venuePlates = readSource('src/styles/invitation/_venue-plates.scss');
+		const pinnedTrack = readSource('src/styles/themes/sections/gallery/_pinned-track.scss');
 		const splitGroups = readSource('src/styles/themes/sections/family/_split-groups.scss');
 		const asymmetricGroups = readSource(
 			'src/styles/themes/sections/family/_asymmetric-groups.scss',
@@ -673,6 +677,9 @@ describe('registry-driven canonical variant portability', () => {
 			splitCover,
 			splitMap,
 			stackedPlates,
+			nightRoute,
+			venuePlates,
+			pinnedTrack,
 			splitGroups,
 			asymmetricGroups,
 			featureStack,
@@ -688,16 +695,20 @@ describe('registry-driven canonical variant portability', () => {
 		expect(combined).toContain(".invitation-hero[data-variant='split-cover']");
 		expect(combined).toContain(".event-location[data-variant='split-map']");
 		expect(combined).toContain(".event-location[data-variant='stacked-venue-plates']");
-		expect(stackedPlates).toContain('.event-location__intro');
-		expect(stackedPlates).toContain('.event-location__indications-container');
-		expect(stackedPlates).toContain('--location-plate-row');
-		expect(stackedPlates).toContain('--location-place-letter-spacing');
-		expect(stackedPlates).toContain('--location-copy-button-radius');
-		expect(stackedPlates).toContain('--location-indication-icon-svg-size');
+		expect(combined).toContain(".event-location[data-variant='night-route']");
+		expect(stackedPlates).toContain('@include plates.venue-plates');
+		expect(nightRoute).toContain('@include plates.venue-plates');
+		expect(venuePlates).toContain('.event-location__intro');
+		expect(venuePlates).toContain('.event-location__indications-container');
+		expect(venuePlates).toContain('--location-plate-row');
+		expect(venuePlates).toContain('--location-place-letter-spacing');
+		expect(venuePlates).toContain('--location-copy-button-radius');
+		expect(venuePlates).toContain('--location-indication-icon-svg-size');
 		expect(combined).toContain(".family[data-variant='split-groups']");
 		expect(combined).toContain(".family[data-variant='asymmetric-groups']");
 		expect(combined).toContain(".gallery-section[data-variant='feature-stack']");
 		expect(combined).toContain(".gallery-section[data-variant='paired-feature-band']");
+		expect(combined).toContain(".gallery-section[data-variant='pinned-track']");
 		expect(combined).toContain(".itinerary[data-variant='editorial-ledger']");
 		expect(combined).toContain(".itinerary[data-variant='editorial-program']");
 		expect(combined).toContain(".personalized-access[data-variant='formal-pass']");
@@ -713,7 +724,7 @@ describe('registry-driven canonical variant portability', () => {
 		);
 		expect(editorialProgram).toContain('counter-reset: editorial-program');
 		expect(editorialProgram).toContain('--editorial-program-display');
-		expect(combined).not.toMatch(/romina|alba-rosa|daniela-y-martin|visualProfileId/i);
+		expect(combined).not.toMatch(/romina|alba-rosa|daniela-y-martin|olivia|visualProfileId/i);
 		expect(combined).toMatch(/respond-to\(lg\)|min-width|width\s*>=\s*768px|respond-to\(md\)/);
 		expect(combined).toMatch(/width\s*<\s*768px|respond-below|width\s*<=\s*767px/);
 	});

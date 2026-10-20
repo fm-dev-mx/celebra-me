@@ -76,15 +76,12 @@ const content: CanonicalEventContentInput = {
 		label: 'Nuestra boda',
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2026-12-18T19:00:00.000Z',
-		variant: 'standard',
-		// Walking the garden dock hand in hand; the couple stays clear of the text column.
-		backgroundImage: 'heroDesktop',
-		backgroundImageMobile: 'heroMobile',
-		backgroundImageDesktop: 'heroDesktop',
-		focalPoint: '52% 45%',
-		focalPointMobile: '50% 38%',
-		focalPointTablet: '50% 40%',
-		focalPointDesktop: '60% 45%',
+		variant: 'night-arch',
+		// Standing on the garden dock, framed by the arch; one 2:3 frame in two widths.
+		backgroundImage: 'heroArchDesktop',
+		backgroundImageMobile: 'heroArchMobile',
+		backgroundImageDesktop: 'heroArchDesktop',
+		focalPoint: '50% 42%',
 		presentation: { timeFormat: '12h' },
 	},
 	envelope: {
@@ -179,7 +176,7 @@ const content: CanonicalEventContentInput = {
 	location: {
 		accessPolicy: { visibility: 'public' },
 		mapStyle: 'dark',
-		variant: 'stacked-venue-plates',
+		variant: 'night-route',
 		presentation: 'simple',
 		presentationOptions: {
 			showFlourishes: false,
@@ -223,11 +220,17 @@ const content: CanonicalEventContentInput = {
 				styleVariant: 'default',
 				text: 'Formal. Le pedimos amablemente reservar el blanco y el rojo.',
 			},
+			{
+				title: 'Pase personal',
+				iconName: 'Enveloped',
+				styleVariant: 'default',
+				text: `Su invitación es personal y los lugares corresponden a su pase. Le pedimos confirmar a más tardar el ${RSVP_DEADLINE}.`,
+			},
 		],
 	},
 	gallery: {
-		// Full-width 4:5 features between 3:4 pairs.
-		variant: 'paired-feature-band',
+		// A pinned track of nine photos; at rest, full-width 4:5 features between 3:4 pairs.
+		variant: 'pinned-track',
 		eyebrow: 'Galería',
 		title: 'Nuestra historia',
 		subtitle: 'Del jardín al mar: algunos momentos antes del gran día.',
@@ -363,8 +366,8 @@ export const oliviaAntonioInvitation = defineCanonicalInvitation({
 	assetDir: 'src/assets/invitations/olivia-y-antonio',
 	// One role per photograph; the og crop is a separate derivative of the hero source.
 	assetFiles: {
-		heroDesktop: 'hero-desktop.webp',
-		heroMobile: 'hero-mobile.webp',
+		heroArchDesktop: 'hero-arch-desktop.webp',
+		heroArchMobile: 'hero-arch-mobile.webp',
 		family: 'family.webp',
 		interludeBeach: 'interlude-01.webp',
 		interludeSaveTheDate: 'interlude-02.webp',

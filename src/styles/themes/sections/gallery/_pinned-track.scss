@@ -1,0 +1,231 @@
+@use '../../../invitation/scroll-scene' as scene;
+
+// Gallery pinned-track: a scroll scene. The stage pins and the photos travel sideways with
+// vertical scroll at varied heights, each photo drifting inside its frame for depth, while a
+// thin progress line and a «01 / 09» counter follow the track (motion.md, "Scroll scenes").
+// The resting layout (reduced motion, non-editorial invitations, no engine) is a two-column grid
+// with the feature photo across both columns. `Gallery.astro` sets `--gallery-track-count`.
+// Profiles retint through `--gallery-track-*`.
+@property --gallery-track-n {
+	syntax: '<integer>';
+	inherits: true;
+	initial-value: 1;
+}
+
+.gallery-section[data-variant='pinned-track'] {
+	--gallery-item-aspect-ratio: 3 / 4;
+	--gallery-item-aspect-ratio-feature: 4 / 5;
+
+	overflow: clip;
+	padding-block: 0;
+
+	.gallery-section__container {
+		padding-block: var(--gallery-section-padding-block);
+	}
+
+	.gallery-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--gallery-grid-gap, clamp(0.75rem, 2.5vw, 1.5rem));
+		max-width: 880px;
+		margin-inline: auto;
+	}
+
+	// The `:nth-child(n)` and child combinators outrank preset rhythm rules (nth-child spans and
+	// aspect ratios); only features cross both columns.
+	.gallery-grid > .gallery-grid__item:nth-child(n) {
+		grid-column: auto;
+		min-height: 0;
+		aspect-ratio: var(--gallery-item-aspect-ratio);
+		overflow: clip;
+	}
+
+	.gallery-grid > .gallery-grid__item[data-layout-role='feature'] {
+		grid-column: 1 / -1;
+		aspect-ratio: var(--gallery-item-aspect-ratio-feature);
+	}
+
+	.gallery-grid__item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+
+// The scene mixins prefix `[data-motion] .scroll-scene`, so these rules start inside the scene.
+// Pinned: the stage holds the title, the track, the counter and the progress line.
+.scroll-scene__stage:has(> [data-gallery-track]) {
+	@include scene.pinned {
+		container-type: inline-size;
+	}
+}
+
+[data-gallery-track] {
+	@include scene.pinned {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 1.1rem;
+		height: 100%;
+		max-width: none;
+		padding-block: var(--header-height-scrolled, 64px) 0;
+		padding-inline: 0;
+		counter-reset: gallery-track-n var(--gallery-track-n) gallery-track-total
+			var(--gallery-track-count, 9);
+
+		.gallery-section__header {
+			margin: 0;
+			padding-inline: 1.25rem;
+		}
+
+		.gallery-section__subtitle {
+			display: none;
+		}
+
+		// Counter and progress line under the track; decorative, so the counter has no alt text.
+		&::after {
+			content: counter(gallery-track-n, decimal-leading-zero) ' / '
+				counter(gallery-track-total, decimal-leading-zero) / '';
+			order: 3;
+			align-self: center;
+			font-family: var(--font-label);
+			font-size: var(--gallery-track-counter-size, 0.75rem);
+			font-weight: 600;
+			letter-spacing: 0.2em;
+			color: var(--gallery-track-accent, var(--color-action-accent));
+		}
+
+		&::before {
+			content: '';
+			order: 4;
+			align-self: center;
+			width: min(60vw, 18rem);
+			height: 1px;
+			margin-top: -0.6rem;
+			background:
+				linear-gradient(
+						90deg,
+						var(--gallery-track-accent, var(--color-action-accent)),
+						var(--gallery-track-accent, var(--color-action-accent))
+					)
+					left / calc(var(--gallery-track-progress, 0) * 100%) 100% no-repeat,
+				var(--gallery-track-rail, rgb(var(--color-text-primary-rgb) / 18%));
+		}
+
+		.gallery-grid {
+			order: 2;
+			display: flex;
+			align-items: center;
+			gap: 0.85rem;
+			width: max-content;
+			max-width: none;
+			margin: 0;
+			padding-inline: 1.25rem;
+		}
+
+		.gallery-grid__item:nth-child(n) {
+			flex: 0 0 auto;
+			width: auto;
+			height: 46svh;
+			aspect-ratio: 3 / 4;
+		}
+
+		.gallery-grid__item:nth-child(n)[data-layout-role='feature'] {
+			height: 58svh;
+			aspect-ratio: 4 / 5;
+		}
+
+		.gallery-grid__item:nth-child(n)[data-image-orientation='landscape'] {
+			height: 40svh;
+			aspect-ratio: 4 / 3;
+		}
+
+		.gallery-grid__item img {
+			width: 116%;
+			max-width: none;
+		}
+	}
+
+	// CSS timeline engine: everything follows the pinned span of the scene.
+	@include scene.timeline {
+		animation: gallery-track-count linear both;
+		animation-timeline: --scroll-scene;
+		animation-range: contain 0% contain 100%;
+
+		&::before {
+			animation: gallery-track-progress linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain 0% contain 100%;
+		}
+
+		.gallery-grid {
+			animation: gallery-track-travel linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain 0% contain 100%;
+		}
+
+		.gallery-grid__item img {
+			animation: gallery-track-drift linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain 0% contain 100%;
+		}
+	}
+
+	// Scripted engine: the same positions from `--scene-progress`.
+	@include scene.scripted {
+		--gallery-track-n: calc(1 + var(--scene-progress, 0) * (var(--gallery-track-count, 9) - 1));
+		--gallery-track-progress: var(--scene-progress, 0);
+
+		.gallery-grid {
+			transform: translateX(calc(var(--scene-progress, 0) * (100cqw - 100%)));
+		}
+
+		.gallery-grid__item img {
+			translate: calc(var(--scene-progress, 0) * -13.8%) 0;
+		}
+	}
+}
+
+@keyframes gallery-track-travel {
+	from {
+		transform: translateX(0);
+	}
+
+	to {
+		transform: translateX(calc(100cqw - 100%));
+	}
+}
+
+@keyframes gallery-track-drift {
+	from {
+		translate: 0 0;
+	}
+
+	to {
+		translate: -13.8% 0;
+	}
+}
+
+@keyframes gallery-track-progress {
+	from {
+		background-size:
+			0% 100%,
+			auto;
+	}
+
+	to {
+		background-size:
+			100% 100%,
+			auto;
+	}
+}
+
+@keyframes gallery-track-count {
+	from {
+		--gallery-track-n: 1;
+	}
+
+	to {
+		--gallery-track-n: var(--gallery-track-count, 9);
+	}
+}

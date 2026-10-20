@@ -88,19 +88,18 @@
 		--family-godparent-role-separator-color: var(--olivia-champagne);
 	}
 
-	// Gallery: features full width at 4:5, the rest paired at 3:4 on a tight 8 px gutter.
-	.gallery-section[data-variant='paired-feature-band'] {
+	// Gallery: a pinned track on ivory; at rest, features full width at 4:5 and the rest paired at
+	// 3:4 on a tight 8 px gutter.
+	.gallery-section[data-variant='pinned-track'] {
 		--gallery-section-padding-block: 4rem;
 		--gallery-section-bg: var(--olivia-ivory);
 		--gallery-title-size: var(--olivia-title-size);
 		--gallery-title-weight: 500;
 		--gallery-title-line-height: var(--olivia-title-line-height);
 		--gallery-title-color: var(--olivia-navy);
-		--gallery-grid-columns-mobile: 2;
-		--gallery-item-aspect-ratio: 3 / 4;
-		--gallery-item-aspect-ratio-feature: 4 / 5;
 		--gallery-grid-gap: 8px;
-		--gallery-grid-gap-wide: 8px;
+		--gallery-track-accent: var(--olivia-champagne-ink);
+		--gallery-track-rail: rgb(var(--olivia-slate-rgb) / 20%);
 	}
 
 	.gifts-section {
@@ -190,109 +189,125 @@
 	--music-player-button-bg: var(--olivia-navy);
 	--music-player-button-color: var(--olivia-ivory);
 
-	// The cover keeps the demo's directional veil, tinted navy instead of walnut.
-	.invitation-hero[data-variant='standard'] {
-		--hero-overlay: transparent;
-		--hero-overlay-gradient:
-			linear-gradient(
-				90deg,
-				rgb(var(--olivia-navy-deep-rgb) / 72%) 0%,
-				rgb(var(--olivia-navy-deep-rgb) / 56%) 30%,
-				rgb(var(--olivia-navy-deep-rgb) / 14%) 54%,
-				transparent 74%
+	// The cover is a December night: navy paper with a faint star field and a champagne-ringed arch.
+	.invitation-hero[data-variant='night-arch'] {
+		--hero-arch-sky:
+			radial-gradient(
+				1px 1px at 12% 18%,
+				rgb(var(--olivia-ivory-rgb) / 70%),
+				transparent 60%
 			),
-			linear-gradient(0deg, rgb(var(--olivia-navy-deep-rgb) / 50%) 0%, transparent 46%);
-		--hero-badge-text: var(--olivia-ivory);
-		--hero-label-color: var(--olivia-ivory);
+			radial-gradient(
+				1px 1px at 82% 12%,
+				rgb(var(--olivia-ivory-rgb) / 55%),
+				transparent 60%
+			),
+			radial-gradient(
+				1.5px 1.5px at 68% 34%,
+				rgb(var(--olivia-champagne-rgb) / 70%),
+				transparent 60%
+			),
+			radial-gradient(
+				1px 1px at 24% 52%,
+				rgb(var(--olivia-ivory-rgb) / 45%),
+				transparent 60%
+			),
+			radial-gradient(
+				1px 1px at 90% 62%,
+				rgb(var(--olivia-ivory-rgb) / 50%),
+				transparent 60%
+			),
+			radial-gradient(1px 1px at 6% 78%, rgb(var(--olivia-ivory-rgb) / 40%), transparent 60%),
+			radial-gradient(
+				120% 70% at 50% 0%,
+				rgb(var(--olivia-slate-rgb) / 55%),
+				transparent 70%
+			),
+			linear-gradient(
+				180deg,
+				rgb(var(--olivia-navy-rgb)) 0%,
+				rgb(var(--olivia-navy-deep-rgb)) 100%
+			);
+		--hero-arch-sky-deep: rgb(var(--olivia-navy-deep-rgb));
+		--hero-arch-ring: rgb(var(--olivia-champagne-rgb) / 85%);
+		--hero-arch-moulding: rgb(var(--olivia-champagne-rgb) / 40%);
+		--hero-arch-accent: var(--olivia-champagne);
+		--hero-arch-ink: var(--olivia-ivory);
+		--hero-arch-muted: rgb(var(--olivia-mist-rgb) / 92%);
+		--hero-arch-photo-shade: linear-gradient(
+			0deg,
+			rgb(var(--olivia-navy-deep-rgb) / 88%) 0%,
+			transparent 42%
+		);
 		--hero-scroll-indicator-color: rgb(var(--olivia-ivory-rgb) / 88%);
 		--hero-scroll-z-index: 1;
-		--hero-copy-shadow: 0 2px 12px rgb(0 0 0 / 34%);
-		--hero-align: flex-start;
-		--hero-text-align: left;
-		--hero-content-z-index: 1;
-		--hero-content-width: min(42rem, 48vw);
-		--hero-content-margin: 0 0 clamp(6.5rem, 13vh, 9rem) clamp(1.8rem, 7vw, 7rem);
-		--hero-photo-drift: hero-photo-drift;
 		--hero-eyebrow-font: var(--font-label);
 		--hero-eyebrow-size: var(--olivia-label-size);
 		--hero-eyebrow-weight: 600;
 		--hero-eyebrow-tracking: 0.28em;
-		--hero-heading-size: clamp(3rem, 5.6vw, 5.75rem);
 		--hero-heading-weight: 500;
-		--hero-heading-line-height: 0.98;
 		--hero-heading-paint: none;
 		--hero-heading-fill: currentcolor;
-		--hero-divider-margin: 1.5rem 0;
 		--hero-divider-fill: var(--olivia-dusty);
-		--hero-details-align: flex-start;
 		--hero-date-font: var(--font-label);
 		--hero-date-size: var(--olivia-label-size);
 		--hero-date-weight: 600;
 		--hero-date-tracking: 0.18em;
 		--hero-date-transform: uppercase;
-
-		@media (width <= 61.9375rem) {
-			--hero-overlay-gradient: linear-gradient(
-				0deg,
-				rgb(var(--olivia-navy-deep-rgb) / 74%) 0%,
-				rgb(var(--olivia-navy-deep-rgb) / 26%) 58%,
-				transparent 100%
-			);
-			--hero-align: center;
-			--hero-text-align: center;
-			--hero-content-width: min(100% - 2.5rem, 30rem);
-			--hero-content-margin: 0 auto 6.75rem;
-			--hero-content-rail: 6.75rem;
-			--hero-heading-size: clamp(3rem, 14vw, 4.6rem);
-			--hero-divider-margin: 1.5rem auto;
-			--hero-details-align: center;
-		}
 	}
 
-	.event-location[data-variant='stacked-venue-plates'] {
-		--location-bg: linear-gradient(180deg, var(--olivia-mist) 0%, var(--olivia-ivory) 100%);
+	// Location: the night of the cover. Venues are numbered stops on a champagne route.
+	.event-location[data-variant='night-route'] {
+		--location-route-sky:
+			radial-gradient(1px 1px at 14% 8%, rgb(var(--olivia-ivory-rgb) / 60%), transparent 60%),
+			radial-gradient(
+				1px 1px at 86% 16%,
+				rgb(var(--olivia-ivory-rgb) / 50%),
+				transparent 60%
+			),
+			radial-gradient(
+				1.5px 1.5px at 72% 42%,
+				rgb(var(--olivia-champagne-rgb) / 60%),
+				transparent 60%
+			),
+			radial-gradient(1px 1px at 8% 64%, rgb(var(--olivia-ivory-rgb) / 40%), transparent 60%),
+			radial-gradient(
+				1px 1px at 92% 80%,
+				rgb(var(--olivia-ivory-rgb) / 45%),
+				transparent 60%
+			),
+			radial-gradient(
+				130% 40% at 50% 0%,
+				rgb(var(--olivia-slate-rgb) / 45%),
+				transparent 70%
+			),
+			linear-gradient(180deg, var(--olivia-navy) 0%, var(--olivia-navy-deep) 100%);
+		--location-route-sky-deep: var(--olivia-navy-deep);
+		--location-route-ink: var(--olivia-ivory);
+		--location-route-muted: rgb(var(--olivia-mist-rgb) / 82%);
+		--location-route-accent: var(--olivia-champagne);
+		--location-route-track: rgb(var(--olivia-mist-rgb) / 30%);
+		--location-route-card-bg: rgb(var(--olivia-ivory-rgb) / 6%);
 		--location-container-max-width: 62rem;
-		--location-card-bg: var(--olivia-ivory);
-		--location-card-border: 1px solid rgb(var(--olivia-slate-rgb) / 22%);
-		--location-card-shadow: none;
-		--location-place-color: var(--olivia-navy);
-		--location-title-color: var(--olivia-slate);
-		--location-address-color: rgb(var(--olivia-navy-rgb) / 76%);
-		--location-flourish-color: var(--olivia-dusty);
-		--location-indication-icon-color: var(--olivia-slate);
-		--location-indication-icon-border: 1px solid rgb(var(--olivia-slate-rgb) / 28%);
-		--location-indication-icon-bg: transparent;
 		--location-plates-intro-max-width: 38rem;
-		--location-intro-heading-color: var(--olivia-navy);
-		--location-outer-frame-padding: 0;
-		--location-outer-frame-bg: transparent;
-		--location-outer-frame-shadow: none;
-		--location-inner-frame-padding: 0;
 		--location-content-padding: clamp(1.35rem, 3vw, 1.85rem);
-		--location-plates-content-align: left;
-		--location-padding-block: 3.25rem;
 		--location-stack-gap: 1.75rem;
-		--location-lead-time-align: center;
 		--location-intro-heading-size: var(--olivia-title-size);
 		--location-intro-heading-font-weight: 500;
 		--location-plates-eyebrow-size: var(--olivia-label-size);
 		--location-plates-eyebrow-weight: 600;
 		--location-plates-eyebrow-tracking: var(--olivia-label-tracking);
-		--location-lead-time-color: var(--olivia-navy);
 		--location-indications-heading-font-size: var(--olivia-label-size);
 		--location-indications-heading-font-weight: 600;
 		--location-indications-heading-letter-spacing: var(--olivia-label-tracking);
 		--location-indication-number-display: none;
 		--location-plates-notes-max-width: 46rem;
-		--location-plates-notes-border-inline: 0;
-		--location-plates-notes-bg: transparent;
 
 		.event-location__card-title {
 			--location-title-font-family: var(--font-label);
 			--location-title-font-size: var(--olivia-label-size);
 			--location-title-font-weight: 600;
 			--location-title-letter-spacing: var(--olivia-label-tracking);
-			--location-title-color: var(--olivia-champagne-ink);
 		}
 	}
 
