@@ -431,6 +431,11 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--hero-bleed-photo-img-height: 100%;
 		--hero-bleed-photo-position-stack: 50% 88%;
 
+		// The print is the whole door, with América a third of its width; the arch frames her
+		// closer, from her head to her knees, and the iron gate becomes the frame around her.
+		--hero-bleed-photo-transform: scale(1.55);
+		--hero-bleed-photo-transform-origin: 52% 78%;
+
 		// Stacked: the arch sits under the header on paper, and the name rises over its lower
 		// edge, where the photograph fades into the paper (the hairline fades with it).
 		--hero-bleed-frame-top-stack: 4.5rem;
@@ -743,6 +748,10 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 			--hero-bleed-photo-radius-wide: 50% 50% 0.75rem 0.75rem / 14rem 14rem 0.75rem 0.75rem;
 			--hero-bleed-photo-frame-radius: 50% 50% 0.4rem 0.4rem / 13.5rem 13.5rem 0.4rem 0.4rem;
 			--hero-bleed-photo-frame-mask: none;
+
+			// The taller arch keeps her whole, down to her shoes.
+			--hero-bleed-photo-transform: scale(1.4);
+			--hero-bleed-photo-transform-origin: 52% 92%;
 		}
 	}
 

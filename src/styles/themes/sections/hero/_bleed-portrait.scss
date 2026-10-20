@@ -81,6 +81,9 @@
 //                                     font shows, so the swap does not shift the letter
 //   --hero-bleed-name-entrance        Name entrance keyframes (default the letter's;
 //                                     `hero-bleed-write` writes it in)
+//   --hero-bleed-photo-transform / -transform-origin
+//                                     Closer framing inside the frame (default none;
+//                                     `scale(1.5)` with an origin on the subject)
 //   --hero-bleed-photo-settle         Scroll-linked keyframes on the photograph while the cover
 //                                     leaves (default none; `hero-bleed-settle` eases 1.06 → 1)
 //   --hero-bleed-scroll-grow          Scroll-linked keyframes on the scroll drawing (default none;
@@ -295,6 +298,11 @@
 			max-height: 100%;
 			object-fit: cover;
 			object-position: var(--hero-bleed-photo-position-stack, 50% 50%);
+
+			// Optional closer framing of the subject inside the frame (transform only, so the
+			// photograph keeps its box); the origin also anchors the scroll-linked settle.
+			transform: var(--hero-bleed-photo-transform, none);
+			transform-origin: var(--hero-bleed-photo-transform-origin, 50% 50%);
 		}
 	}
 
