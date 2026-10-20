@@ -83,6 +83,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/hero/_split-cover.scss',
 	},
 	{
+		section: 'hero',
+		variant: 'night-arch',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_night-arch.scss',
+	},
+	{
 		section: 'family',
 		variant: 'standard',
 		default: true,

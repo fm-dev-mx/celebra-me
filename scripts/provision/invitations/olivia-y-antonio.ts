@@ -76,15 +76,12 @@ const content: CanonicalEventContentInput = {
 		label: 'Nuestra boda',
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2026-12-18T19:00:00.000Z',
-		variant: 'standard',
-		// Walking the garden dock hand in hand; the couple stays clear of the text column.
-		backgroundImage: 'heroDesktop',
-		backgroundImageMobile: 'heroMobile',
-		backgroundImageDesktop: 'heroDesktop',
-		focalPoint: '52% 45%',
-		focalPointMobile: '50% 38%',
-		focalPointTablet: '50% 40%',
-		focalPointDesktop: '60% 45%',
+		variant: 'night-arch',
+		// Standing on the garden dock, framed by the arch; one 2:3 frame in two widths.
+		backgroundImage: 'heroArchDesktop',
+		backgroundImageMobile: 'heroArchMobile',
+		backgroundImageDesktop: 'heroArchDesktop',
+		focalPoint: '50% 42%',
 		presentation: { timeFormat: '12h' },
 	},
 	envelope: {
@@ -363,8 +360,8 @@ export const oliviaAntonioInvitation = defineCanonicalInvitation({
 	assetDir: 'src/assets/invitations/olivia-y-antonio',
 	// One role per photograph; the og crop is a separate derivative of the hero source.
 	assetFiles: {
-		heroDesktop: 'hero-desktop.webp',
-		heroMobile: 'hero-mobile.webp',
+		heroArchDesktop: 'hero-arch-desktop.webp',
+		heroArchMobile: 'hero-arch-mobile.webp',
 		family: 'family.webp',
 		interludeBeach: 'interlude-01.webp',
 		interludeSaveTheDate: 'interlude-02.webp',

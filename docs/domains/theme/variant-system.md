@@ -42,7 +42,8 @@ audit tooling (`pnpm invitation:published-audit`).
 ## Canonical inventory
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
-  `ceremonial-portrait`.
+  `ceremonial-portrait`, `night-arch` (the photograph inside an arched window on a night sky, names
+  below; wide screens put the arch on the right).
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
   layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `program-sheet`; prerequisites are

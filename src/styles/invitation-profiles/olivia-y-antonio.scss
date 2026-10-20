@@ -190,63 +190,71 @@
 	--music-player-button-bg: var(--olivia-navy);
 	--music-player-button-color: var(--olivia-ivory);
 
-	// The cover keeps the demo's directional veil, tinted navy instead of walnut.
-	.invitation-hero[data-variant='standard'] {
-		--hero-overlay: transparent;
-		--hero-overlay-gradient:
-			linear-gradient(
-				90deg,
-				rgb(var(--olivia-navy-deep-rgb) / 72%) 0%,
-				rgb(var(--olivia-navy-deep-rgb) / 56%) 30%,
-				rgb(var(--olivia-navy-deep-rgb) / 14%) 54%,
-				transparent 74%
+	// The cover is a December night: navy paper with a faint star field and a champagne-ringed arch.
+	.invitation-hero[data-variant='night-arch'] {
+		--hero-arch-sky:
+			radial-gradient(
+				1px 1px at 12% 18%,
+				rgb(var(--olivia-ivory-rgb) / 70%),
+				transparent 60%
 			),
-			linear-gradient(0deg, rgb(var(--olivia-navy-deep-rgb) / 50%) 0%, transparent 46%);
-		--hero-badge-text: var(--olivia-ivory);
-		--hero-label-color: var(--olivia-ivory);
+			radial-gradient(
+				1px 1px at 82% 12%,
+				rgb(var(--olivia-ivory-rgb) / 55%),
+				transparent 60%
+			),
+			radial-gradient(
+				1.5px 1.5px at 68% 34%,
+				rgb(var(--olivia-champagne-rgb) / 70%),
+				transparent 60%
+			),
+			radial-gradient(
+				1px 1px at 24% 52%,
+				rgb(var(--olivia-ivory-rgb) / 45%),
+				transparent 60%
+			),
+			radial-gradient(
+				1px 1px at 90% 62%,
+				rgb(var(--olivia-ivory-rgb) / 50%),
+				transparent 60%
+			),
+			radial-gradient(1px 1px at 6% 78%, rgb(var(--olivia-ivory-rgb) / 40%), transparent 60%),
+			radial-gradient(
+				120% 70% at 50% 0%,
+				rgb(var(--olivia-slate-rgb) / 55%),
+				transparent 70%
+			),
+			linear-gradient(
+				180deg,
+				rgb(var(--olivia-navy-rgb)) 0%,
+				rgb(var(--olivia-navy-deep-rgb)) 100%
+			);
+		--hero-arch-sky-deep: rgb(var(--olivia-navy-deep-rgb));
+		--hero-arch-ring: rgb(var(--olivia-champagne-rgb) / 85%);
+		--hero-arch-moulding: rgb(var(--olivia-champagne-rgb) / 40%);
+		--hero-arch-accent: var(--olivia-champagne);
+		--hero-arch-ink: var(--olivia-ivory);
+		--hero-arch-muted: rgb(var(--olivia-mist-rgb) / 92%);
+		--hero-arch-photo-shade: linear-gradient(
+			0deg,
+			rgb(var(--olivia-navy-deep-rgb) / 88%) 0%,
+			transparent 42%
+		);
 		--hero-scroll-indicator-color: rgb(var(--olivia-ivory-rgb) / 88%);
 		--hero-scroll-z-index: 1;
-		--hero-copy-shadow: 0 2px 12px rgb(0 0 0 / 34%);
-		--hero-align: flex-start;
-		--hero-text-align: left;
-		--hero-content-z-index: 1;
-		--hero-content-width: min(42rem, 48vw);
-		--hero-content-margin: 0 0 clamp(6.5rem, 13vh, 9rem) clamp(1.8rem, 7vw, 7rem);
-		--hero-photo-drift: hero-photo-drift;
 		--hero-eyebrow-font: var(--font-label);
 		--hero-eyebrow-size: var(--olivia-label-size);
 		--hero-eyebrow-weight: 600;
 		--hero-eyebrow-tracking: 0.28em;
-		--hero-heading-size: clamp(3rem, 5.6vw, 5.75rem);
 		--hero-heading-weight: 500;
-		--hero-heading-line-height: 0.98;
 		--hero-heading-paint: none;
 		--hero-heading-fill: currentcolor;
-		--hero-divider-margin: 1.5rem 0;
 		--hero-divider-fill: var(--olivia-dusty);
-		--hero-details-align: flex-start;
 		--hero-date-font: var(--font-label);
 		--hero-date-size: var(--olivia-label-size);
 		--hero-date-weight: 600;
 		--hero-date-tracking: 0.18em;
 		--hero-date-transform: uppercase;
-
-		@media (width <= 61.9375rem) {
-			--hero-overlay-gradient: linear-gradient(
-				0deg,
-				rgb(var(--olivia-navy-deep-rgb) / 74%) 0%,
-				rgb(var(--olivia-navy-deep-rgb) / 26%) 58%,
-				transparent 100%
-			);
-			--hero-align: center;
-			--hero-text-align: center;
-			--hero-content-width: min(100% - 2.5rem, 30rem);
-			--hero-content-margin: 0 auto 6.75rem;
-			--hero-content-rail: 6.75rem;
-			--hero-heading-size: clamp(3rem, 14vw, 4.6rem);
-			--hero-divider-margin: 1.5rem auto;
-			--hero-details-align: center;
-		}
 	}
 
 	.event-location[data-variant='stacked-venue-plates'] {
