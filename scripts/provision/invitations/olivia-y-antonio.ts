@@ -185,9 +185,8 @@ const content: CanonicalEventContentInput = {
 			showCalendarLinks: true,
 		},
 		introEyebrow: 'Los Mochis, Sinaloa',
-		introHeading: EVENT_DATE_HEADING,
-		introLede:
-			'Les esperamos primero en la parroquia para la ceremonia y después en el salón para celebrar juntos.',
+		introHeading: 'Dónde celebraremos',
+		introLede: `${EVENT_DATE_HEADING}. Les esperamos primero en la parroquia para la ceremonia y después en el salón para celebrar juntos.`,
 		venues: [
 			{
 				type: 'ceremony',
@@ -286,8 +285,7 @@ const content: CanonicalEventContentInput = {
 		variant: 'formal-register',
 		title: 'Confirme su asistencia',
 		subcopy: `Le pedimos registrar su respuesta a más tardar el ${RSVP_DEADLINE}. El número de lugares corresponde al pase asignado.`,
-		lockedMessage:
-			'Esta invitación es personal. Abra el enlace que le enviamos para ver su lugar y confirmar antes del 18 de noviembre.',
+		lockedMessage: `Esta invitación es personal. Abra el enlace que le enviamos para ver su lugar y confirmar a más tardar el ${RSVP_DEADLINE}.`,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		confirmationMessage: 'Su respuesta quedó registrada. Le esperamos.',

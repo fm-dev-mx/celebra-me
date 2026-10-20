@@ -15,9 +15,9 @@
 }
 
 .footer__closing-phrase {
-	font-family: var(--font-display);
-	font-size: clamp(1rem, 3vw, 1.2rem);
-	font-style: italic;
+	font-family: var(--footer-closing-font, var(--font-display));
+	font-size: var(--footer-closing-size, clamp(1rem, 3vw, 1.2rem));
+	font-style: var(--footer-closing-style, italic);
 	font-weight: 400;
 	letter-spacing: 0.02em;
 	text-align: center;
@@ -91,9 +91,11 @@
 		}
 	}
 
+	// Opt-in recolor of the brand mark for dark footers (`--footer-logo-filter`).
 	.footer-brand-logo.logo {
 		transform: scale(0.7);
 		transform-origin: center;
+		filter: var(--footer-logo-filter, none);
 	}
 }
 
@@ -146,6 +148,7 @@
 		width: 14px;
 		height: 14px;
 		opacity: 70%;
+		filter: var(--footer-contact-icon-filter, none);
 	}
 
 	&:hover {
