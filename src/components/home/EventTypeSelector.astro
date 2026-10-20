@@ -3,7 +3,6 @@ import Container from '@/components/layout/Container.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import { Image } from 'astro:assets';
-import { getContactPhone } from '@/utils/whatsapp';
 
 import type { ImageMetadata } from 'astro';
 import type { DemoShowroomEvent } from '@/interfaces/ui/sections/demo-showroom.interface';
@@ -24,7 +23,6 @@ interface Props {
 }
 
 const { events, landingData } = Astro.props;
-const phone = getContactPhone();
 const es = landingData?.eventSelector;
 
 const getCtaLabel = (eventType: string, label: string) => {
@@ -159,7 +157,6 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 				</a>
 				<WhatsAppButton
 					className="action-btn action-btn--primary event-showroom__quote-link"
-					phone={phone}
 					message={events[0].homeSelector.quoteCta.message}
 					label={events[0].homeSelector.quoteCta.label}
 					trackSection="event-types"

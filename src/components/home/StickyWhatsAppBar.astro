@@ -7,11 +7,9 @@
  */
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import { formatMxn, getStartingPrice, getStartingRegularPrice } from '@/data/promo-campaign.data';
-import { getContactPhone } from '@/utils/whatsapp';
 
 import '@/styles/home/_sticky-cta.scss';
 
-const phone = getContactPhone();
 const promoPrice = formatMxn(getStartingPrice());
 const regularPrice = formatMxn(getStartingRegularPrice());
 ---
@@ -19,7 +17,6 @@ const regularPrice = formatMxn(getStartingRegularPrice());
 <div class="sticky-cta" data-sticky-cta inert>
 	<WhatsAppButton
 		className="sticky-cta__button"
-		phone={phone}
 		label={`WhatsApp · desde ${promoPrice}`}
 		trackSection="sticky"
 		trackCta="whatsapp-sticky"

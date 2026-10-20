@@ -262,7 +262,7 @@ jobs:
               run: |
                   mkdir -p .tmp/workerd
                   nohup node --import tsx scripts/playwright/canonical-fixture-server.ts                       > .tmp/workerd/fixtures.log 2>&1 &
-                  nohup pnpm exec wrangler dev --port 8799 --test-scheduled                       --show-interactive-dev-session=false                       --var SUPABASE_URL:http://127.0.0.1:54321                       --var PUBLIC_SUPABASE_URL:http://127.0.0.1:54321                       --var SUPABASE_ANON_KEY:workerd-fixture-not-a-credential                       --var PUBLIC_SUPABASE_ANON_KEY:workerd-fixture-not-a-credential                       --var SUPABASE_SERVICE_ROLE_KEY:workerd-fixture-not-a-credential                       > .tmp/workerd/wrangler.log 2>&1 &
+                  nohup pnpm exec wrangler dev --port 8799 --test-scheduled                       --show-interactive-dev-session=false                       --var SUPABASE_URL:http://127.0.0.1:54321                       --var PUBLIC_SUPABASE_URL:http://127.0.0.1:54321                       --var SUPABASE_ANON_KEY:workerd-fixture-not-a-credential                       --var PUBLIC_SUPABASE_ANON_KEY:workerd-fixture-not-a-credential                       --var SUPABASE_SERVICE_ROLE_KEY:workerd-fixture-not-a-credential                       --var CONTACT_WHATSAPP:5216681234567                       > .tmp/workerd/wrangler.log 2>&1 &
                   for attempt in $(seq 1 60); do
                       if curl -fsS -o /dev/null http://127.0.0.1:54321/health &&
                           curl -fsS -o /dev/null http://127.0.0.1:8799/; then

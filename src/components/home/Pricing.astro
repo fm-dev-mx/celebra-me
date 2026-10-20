@@ -9,14 +9,12 @@ import {
 	getValidityNote,
 	PROMO_CAMPAIGN,
 } from '@/data/promo-campaign.data';
-import { getContactPhone } from '@/utils/whatsapp';
 
 interface Props {
 	data: PricingData;
 }
 
 const { data } = Astro.props;
-const phone = getContactPhone();
 const validityNote = getValidityNote();
 const currency = PROMO_CAMPAIGN.currency;
 ---
@@ -112,7 +110,6 @@ const currency = PROMO_CAMPAIGN.currency;
 
 									<WhatsAppButton
 										className="cta-button"
-										phone={phone}
 										packageId={pkg.id}
 										ariaLabel={`Cotizar el paquete ${pkg.name} por WhatsApp`}
 										trackSection="pricing"

@@ -105,6 +105,8 @@ export default defineConfig({
 										'canonical-browser-fixture-not-a-credential',
 									PUBLIC_SUPABASE_ANON_KEY:
 										'canonical-browser-fixture-not-a-credential',
+									// Fake, non-placeholder number: contact CTAs render as in the accepted references.
+									CONTACT_WHATSAPP: '5216681234567',
 								}
 							: {}),
 						CELEBRA_RUNTIME_TARGET:

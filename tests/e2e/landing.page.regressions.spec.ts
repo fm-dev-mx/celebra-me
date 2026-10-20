@@ -29,8 +29,10 @@ const COUNTDOWN_DAY = new Date(campaignEnd - 4.5 * DAY_MS);
 /** A date after the campaign ended. */
 const AFTER_CAMPAIGN = new Date(campaignEnd + DAY_MS);
 
+// Prerendered CTAs point at the /api/whatsapp redirect, which reads the Worker secret at request time.
+const WHATSAPP_HREF = /^(?:https:\/\/wa\.me\/\d+|\/api\/whatsapp)(?:\?|$)/u;
 const decodeWhatsAppText = (href: string | null) =>
-	new URL(href ?? 'https://wa.me/').searchParams.get('text') ?? '';
+	new URL(href ?? '/api/whatsapp', 'https://www.celebra-me.com').searchParams.get('text') ?? '';
 
 test.describe('Landing page regressions', () => {
 	const expectedNavLabels = ['Demos', 'Planes', 'Nosotros'];
@@ -107,7 +109,7 @@ test.describe('Landing page regressions', () => {
 			);
 			const menuCta = page.locator('.mobile-nav-actions__cta');
 			await expect(menuCta).toHaveText('Cotizar por WhatsApp');
-			await expect(menuCta).toHaveAttribute('href', /wa\.me/);
+			await expect(menuCta).toHaveAttribute('href', WHATSAPP_HREF);
 			await expect(menuCta).toHaveAttribute(
 				'data-campaign-code',
 				buildCampaignCode('HEADER'),
@@ -133,7 +135,7 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
 		const headerCta = page.locator('.home-nav-actions__cta');
 		await expect(headerCta).toHaveText('Cotizar por WhatsApp');
-		await expect(headerCta).toHaveAttribute('href', /wa\.me/);
+		await expect(headerCta).toHaveAttribute('href', WHATSAPP_HREF);
 		await expect(headerCta).toHaveAttribute('data-track-cta', 'whatsapp-header');
 		await expect(headerCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HEADER'));
 		await expect(page.locator('.home-nav__link', { hasText: 'Nosotros' })).toHaveAttribute(
@@ -431,7 +433,7 @@ test.describe('Landing page regressions', () => {
 				formatMxnAmount(pkg.regularPrice),
 			);
 			await expect(cta).toHaveAttribute('data-track-event', 'whatsapp_contact_clicked');
-			await expect(cta).toHaveAttribute('href', /wa\.me/);
+			await expect(cta).toHaveAttribute('href', WHATSAPP_HREF);
 			await expect(cta).toHaveAttribute(
 				'data-campaign-code',
 				buildCampaignCode('PRICING', code),

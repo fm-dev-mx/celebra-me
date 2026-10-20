@@ -2,6 +2,7 @@ import {
 	PAGE_EXPECTATIONS,
 	SCHEDULED_HANDLER_PATH,
 	SCHEDULED_JOB_LOG_MARKERS,
+	WORKERD_CONTACT_WHATSAPP,
 	runLocalWorkerChecks,
 } from '../../scripts/ops/cloudflare-worker-local-check.ts';
 import { SCHEDULED_JOB_CRONS } from '@/lib/server/scheduled-jobs';
@@ -14,6 +15,7 @@ interface FakeWorkerOptions {
 	dropHeader?: string;
 	healthStatus?: number;
 	scheduledBody?: string;
+	contactLocation?: string;
 }
 
 /** Answers like a healthy local Worker; options break one behavior at a time. */
@@ -29,6 +31,13 @@ function fakeWorker(options: FakeWorkerOptions = {}) {
 		);
 		if (url.pathname === SCHEDULED_HANDLER_PATH) {
 			return new Response(options.scheduledBody ?? 'ok', { status: 200 });
+		}
+		if (url.pathname === '/api/whatsapp') {
+			headers.set(
+				'location',
+				options.contactLocation ?? `https://wa.me/${WORKERD_CONTACT_WHATSAPP}${url.search}`,
+			);
+			return new Response(null, { status: 302, headers });
 		}
 		if (url.pathname === '/api/health') {
 			const status = options.healthStatus ?? 200;
@@ -96,6 +105,18 @@ describe('cloudflare-worker-local-check', () => {
 				'/api/health: database check is not ok',
 				`/api/health: commitSha ${SHA}, expected ${'b'.repeat(40)}`,
 			]),
+		);
+	});
+
+	it('reports a WhatsApp redirect that does not use the runtime CONTACT_WHATSAPP', async () => {
+		const { fetchImpl } = fakeWorker({
+			contactLocation: 'https://wa.me/521000000000?text=Hola',
+		});
+
+		const failures = await runLocalWorkerChecks({ origin: ORIGIN, fetchImpl });
+
+		expect(failures).toContain(
+			`/api/whatsapp?text=Hola: status 302 to https://wa.me/521000000000?text=Hola, expected 302 to https://wa.me/${WORKERD_CONTACT_WHATSAPP}?text=Hola`,
 		);
 	});
 
