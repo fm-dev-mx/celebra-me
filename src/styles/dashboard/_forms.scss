@@ -134,18 +134,3 @@
 .dashboard-form-field + .dashboard-form-field {
 	margin-top: 0.85rem;
 }
-
-.dashboard-form-section {
-	margin-top: 1.25rem;
-	padding-top: 1.1rem;
-	border-top: 1px solid var(--color-border-subtle);
-
-	&__title {
-		color: var(--color-text-primary);
-		font-family: var(--font-display-elegant);
-		font-size: 0.85rem;
-		font-weight: 500;
-		margin: 0 0 0.85rem;
-		letter-spacing: -0.01em;
-	}
-}

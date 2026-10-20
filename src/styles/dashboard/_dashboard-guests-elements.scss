@@ -141,23 +141,3 @@
 	margin-right: 0.4rem;
 	border: 1px solid rgb(var(--color-text-secondary-rgb) / 14%);
 }
-
-.attendee-count {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 1px;
-	font-size: 0.82rem;
-	font-weight: 600;
-	color: var(--color-text-primary);
-}
-
-.attendee-count__separator {
-	color: var(--color-text-muted);
-	font-size: 0.75em;
-	margin: 0 1px;
-}
-
-.attendee-count__max {
-	color: var(--color-text-secondary);
-	font-weight: 500;
-}
