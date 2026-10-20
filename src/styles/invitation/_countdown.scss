@@ -2,7 +2,7 @@
 
 .countdown-section {
 	position: relative;
-	padding: 6rem 1rem;
+	padding: var(--countdown-type-section-padding-block, 6rem) 1rem;
 	overflow: hidden;
 	display: flex;
 	justify-content: center;
@@ -24,12 +24,22 @@
 	text-align: center;
 }
 
+// Opt-in type tokens for the default timer (defaults keep the current look):
+//   --countdown-type-title-{size,weight,line-height,tracking,transform,ink}
+//   --countdown-type-value-{font,size,weight,tracking}   Numerals (scope per unit with
+//                                                         `[data-unit]` to lead with the days)
+//   --countdown-type-label-{font,size,weight,tracking,ink,opacity}
+//   --countdown-type-segment-direction / -segment-gap     `row` sets value and label on one line
+//   --countdown-days-span                                 `1 / -1` gives the days their own row
 .countdown-title {
 	font-family: var(--font-display);
-	color: var(--color-surface-dark);
+	font-size: var(--countdown-type-title-size, 1.5em);
+	font-weight: var(--countdown-type-title-weight, 700);
+	line-height: var(--countdown-type-title-line-height, normal);
+	color: var(--countdown-type-title-ink, var(--color-surface-dark));
 	margin-bottom: 2rem;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
+	letter-spacing: var(--countdown-type-title-tracking, 0.06em);
+	text-transform: var(--countdown-type-title-transform, uppercase);
 	text-align: center;
 }
 
@@ -97,9 +107,10 @@
 	padding: var(--countdown-segment-padding-mobile, 1.8rem 0.75rem);
 	border-radius: 6px;
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.4rem;
+	flex-direction: var(--countdown-type-segment-direction, column);
+	align-items: var(--countdown-type-segment-align, center);
+	justify-content: var(--countdown-type-segment-justify, normal);
+	gap: var(--countdown-type-segment-gap, 0.4rem);
 	position: relative;
 	transition:
 		border-color var(--motion-interaction-duration, 0.2s) var(--countdown-feedback-ease, ease),
@@ -108,8 +119,12 @@
 	@include mixins.respond-to(sm) {
 		padding: var(--countdown-segment-padding-desktop, 2rem 1.25rem);
 		border-radius: 8px;
-		gap: 0.5rem;
+		gap: var(--countdown-type-segment-gap, 0.5rem);
 	}
+}
+
+.countdown__segment[data-unit='days'] {
+	grid-column: var(--countdown-days-span, auto);
 }
 
 .countdown__value-wrapper {
@@ -129,15 +144,15 @@
 }
 
 .countdown__value {
-	font-family: var(--font-display);
-	font-size: clamp(1.6rem, 5vw, 2.4rem);
+	font-family: var(--countdown-type-value-font, var(--font-display));
+	font-size: var(--countdown-type-value-size, clamp(1.6rem, 5vw, 2.4rem));
 	color: var(--color-text-primary);
-	font-weight: 700;
+	font-weight: var(--countdown-type-value-weight, 700);
 	line-height: 1;
-	letter-spacing: 0.08em;
+	letter-spacing: var(--countdown-type-value-tracking, 0.08em);
 
 	@include mixins.respond-to(sm) {
-		font-size: clamp(2.4rem, 5vw, 3.2rem);
+		font-size: var(--countdown-type-value-size, clamp(2.4rem, 5vw, 3.2rem));
 	}
 }
 
@@ -149,16 +164,17 @@
 }
 
 .countdown__label {
-	font-family: var(--font-display);
-	font-size: 0.62rem;
+	font-family: var(--countdown-type-label-font, var(--font-display));
+	font-size: var(--countdown-type-label-size, 0.62rem);
+	font-weight: var(--countdown-type-label-weight, inherit);
 	text-transform: uppercase;
-	letter-spacing: 0.12em;
-	color: var(--color-text-primary);
-	opacity: 55%;
+	letter-spacing: var(--countdown-type-label-tracking, 0.12em);
+	color: var(--countdown-type-label-ink, var(--color-text-primary));
+	opacity: var(--countdown-type-label-opacity, 55%);
 
 	@include mixins.respond-to(sm) {
-		font-size: 0.7rem;
-		letter-spacing: 0.18em;
+		font-size: var(--countdown-type-label-size, 0.7rem);
+		letter-spacing: var(--countdown-type-label-tracking, 0.18em);
 	}
 }
 

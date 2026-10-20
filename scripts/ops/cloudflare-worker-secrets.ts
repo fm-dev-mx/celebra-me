@@ -46,7 +46,6 @@ const SHARED_SECRET_NAMES: readonly string[] = [
 	'TRUST_DEVICE_SECRET',
 	'TRUST_DEVICE_MAX_AGE_DAYS',
 	'REQUIRE_FRESH_MFA_FOR_ADMIN',
-	'PREVIEW_MEDIA_SECRET',
 ];
 
 /** Allow-list per environment; Preview-only switches never reach Production. */

@@ -25,7 +25,7 @@ export const R2_INVITATION_MEDIA = {
 	production: {
 		bucket: 'celebra-me-invitation-media',
 		origin: 'https://media.celebra-me.com',
-		responsiveVariants: false,
+		responsiveVariants: true,
 	},
 } as const satisfies Record<
 	R2MediaTargetEnvironment,

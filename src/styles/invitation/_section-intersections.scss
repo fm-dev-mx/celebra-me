@@ -232,3 +232,75 @@
 		transform: perspective(28rem) scaleX(var(--folio-flip)) rotate3d(1, 1, 0, 0deg);
 	}
 }
+
+// Stack: the incoming section rises over its source like a card laid on a pile. The source pins at
+// the top of the viewport (`--intersection-stack-top`, default 0) while the incoming section scrolls
+// over it on an opaque ground (`--intersection-stack-surface`, else the section band, else
+// `--intersection-surface`) with an optional top edge (`--intersection-stack-edge`), corner radius
+// (`--intersection-stack-radius`) and a shadow cast upward (`--intersection-stack-shadow`). It applies
+// only when the source renders right before it: the markup marks that source with
+// `data-intersection-anchor='stack'`, so a missing source (for example a pass that only invited
+// guests see) leaves both sections in normal flow. While it is covered, the pinned source recedes
+// with `--intersection-stack-recede-scale`, `--intersection-stack-recede-dim` and
+// `--intersection-stack-recede-fade` (end opacity). With a clear surface only the incoming content
+// (a card) rises; set the fade to 0 then, so the source never shows again once the card has passed,
+// and `--intersection-stack-floor` to the source's ground.
+// The pin needs scroll timelines, so browsers without them keep both sections in normal flow;
+// reduced motion keeps the fade and drops the scale.
+#invitation-sections-container:has(> [data-intersection-anchor='stack']) {
+	timeline-scope: --intersection-stack;
+}
+
+.invitation-section-wrapper[data-intersection-anchor='stack']
+	+ .invitation-section-wrapper[data-intersection='stack'] {
+	position: relative;
+	z-index: 1;
+	background: var(
+		--intersection-stack-surface,
+		var(--section-band-paper, var(--intersection-surface))
+	);
+	border-top: var(--intersection-stack-edge, 0);
+	border-radius: var(--intersection-stack-radius, 0) var(--intersection-stack-radius, 0) 0 0;
+	box-shadow: var(--intersection-stack-shadow, 0 -1.25rem 2.5rem rgb(0 0 0 / 22%));
+	view-timeline: --intersection-stack block;
+}
+
+@supports (animation-timeline: view()) {
+	.invitation-section-wrapper[data-intersection-anchor='stack'] {
+		position: sticky;
+		top: var(--intersection-stack-top, 0);
+		z-index: 0;
+
+		// A source shorter than the viewport leaves a strip below it once pinned; a clear surface
+		// would show the page there, so `--intersection-stack-floor` paints a viewport of ground
+		// under it (default transparent, no layout).
+		box-shadow: 0 50vh 0 50vh var(--intersection-stack-floor, transparent);
+
+		> * {
+			transform-origin: 50% 0;
+			animation: intersection-stack-recede ease-in both;
+			animation-timeline: --intersection-stack;
+			animation-range: entry 0% exit-crossing 0%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.invitation-section-wrapper[data-intersection-anchor='stack'] > * {
+			animation-name: intersection-stack-fade;
+		}
+	}
+}
+
+@keyframes intersection-stack-recede {
+	to {
+		transform: scale(var(--intersection-stack-recede-scale, 1));
+		filter: brightness(var(--intersection-stack-recede-dim, 1));
+		opacity: var(--intersection-stack-recede-fade, 100%);
+	}
+}
+
+@keyframes intersection-stack-fade {
+	to {
+		opacity: var(--intersection-stack-recede-fade, 100%);
+	}
+}

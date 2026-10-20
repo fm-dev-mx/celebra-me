@@ -47,7 +47,9 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 // paired-portraits caps each print at the source's native width (never upscaled).
 const nativeWidthStyleFor = (width: number) =>
 	variant === 'paired-portraits' ? `--gallery-item-native-width: ${width}px;` : '';
-const revealAttrs = revealItems ? { 'data-reveal-item': true } : {};
+// pinned-track photos travel sideways off screen, where an entrance observer never fires; the
+// scene itself is their entrance. album-assemble lands its photos with the scroll instead.
+const revealAttrs = revealItems && variant !== 'pinned-track' ? { 'data-reveal-item': '' } : {};
 ---
 
 <div class="gallery-grid" data-variant={variant}>

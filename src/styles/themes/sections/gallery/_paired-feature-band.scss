@@ -1,7 +1,8 @@
 @use '../../../global/mixins' as mixins;
 
 // Gallery paired-feature-band: portrait pairs with a full-width feature band.
-// The variant owns the paired grid; public tokens tune column count and image proportions.
+// The variant owns the paired grid; public tokens tune column count, image proportions and the
+// gutter (--gallery-grid-gap / --gallery-grid-gap-wide).
 .gallery-section[data-variant='paired-feature-band'] {
 	--gallery-grid-columns-mobile: 1;
 	--gallery-item-aspect-ratio: 4 / 5;
@@ -10,7 +11,7 @@
 	.gallery-grid {
 		display: grid;
 		grid-template-columns: repeat(var(--gallery-grid-columns-mobile, 1), minmax(0, 1fr));
-		gap: clamp(1rem, 2.5vw, 1.5rem);
+		gap: var(--gallery-grid-gap, clamp(1rem, 2.5vw, 1.5rem));
 		max-width: 880px;
 		margin-inline: auto;
 
@@ -20,7 +21,7 @@
 
 		@include mixins.respond-to(md) {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: clamp(1.15rem, 2.4vw, 1.75rem);
+			gap: var(--gallery-grid-gap-wide, clamp(1.15rem, 2.4vw, 1.75rem));
 		}
 	}
 

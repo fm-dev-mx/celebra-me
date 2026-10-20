@@ -7,15 +7,22 @@ import {
 import { listInvitationDefinitions } from '../../../scripts/provision/invitations/registry';
 import { buildSemanticAssetMap } from '../../../scripts/provision/normalized-invitation-release';
 import { assertRenderedImageDelivery } from './image-delivery';
+import { resolveContentProbeScope, selectContentProbeCases } from './content-probe-scope';
 
 // Complements the controlled visual harness with the deployed public resolver.
 // Deployment protection is handled by the existing read-only Preview fixture.
-for (const entry of buildVisualPageCases()) {
+// PREVIEW_CONTENT_PROBE=event-types narrows it to the per-deploy probe (see content-probe-scope.ts).
+const probeScope = resolveContentProbeScope(process.env.PREVIEW_CONTENT_PROBE);
+for (const { entry, viewports } of selectContentProbeCases(
+	buildVisualPageCases(),
+	VISUAL_VIEWPORTS,
+	probeScope,
+)) {
 	const definition = listInvitationDefinitions().find((item) => item.slug === entry.slug);
 	const content = definition
 		? definition.buildPublishedContent(buildSemanticAssetMap(definition))
 		: JSON.parse(fs.readFileSync(entry.sourcePath!, 'utf8'));
-	for (const viewport of VISUAL_VIEWPORTS) {
+	for (const viewport of viewports) {
 		test(`public content: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({
 			page,
 		}) => {

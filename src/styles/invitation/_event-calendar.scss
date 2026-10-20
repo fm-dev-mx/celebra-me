@@ -7,6 +7,9 @@
 //   --event-calendar-width      Grid width (default: min(100%, 20rem))
 //   --event-calendar-label-size Title and weekday size (default: 0.8125rem)
 //   --event-calendar-day-size   Day number size (default: 1rem)
+//   --event-calendar-day-weight Day number weight (default: inherited)
+//   --event-calendar-event-ink  Event day number (default: the ink)
+//   --event-calendar-mark-width Mark stroke width (default: 1.4)
 .event-calendar {
 	--event-calendar-ink-resolved: var(--event-calendar-ink, currentcolor);
 
@@ -59,11 +62,12 @@
 	place-items: center;
 	min-height: 2.1rem;
 	font-size: var(--event-calendar-day-size, 1rem);
+	font-weight: var(--event-calendar-day-weight, inherit);
 	line-height: 1;
 }
 
 .event-calendar__day--event {
-	color: var(--event-calendar-ink-resolved);
+	color: var(--event-calendar-event-ink, var(--event-calendar-ink-resolved));
 	font-weight: 600;
 }
 
@@ -78,7 +82,7 @@
 
 	path {
 		stroke: var(--event-calendar-mark-ink, var(--event-calendar-ink-resolved));
-		stroke-width: 1.4;
+		stroke-width: var(--event-calendar-mark-width, 1.4);
 		stroke-linecap: round;
 		stroke-linejoin: round;
 		stroke-dasharray: 1;

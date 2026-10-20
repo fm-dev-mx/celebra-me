@@ -1,5 +1,6 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
+import { PRIMARY_CTA_LABEL } from '@/data/landing-page.data';
 import {
 	buildCampaignCode,
 	buildGeneralMessage,
@@ -12,11 +13,10 @@ import {
 	type CampaignSection,
 	type PromoPackageId,
 } from '@/data/promo-campaign.data';
-import { isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { getWhatsAppLink } from '@/utils/whatsapp';
 
 interface Props {
 	className?: string;
-	phone?: string;
 	message?: string;
 	label?: string;
 	trackSection?: string;
@@ -34,6 +34,7 @@ interface Props {
 	promoCode?: string;
 	eventType?: string;
 	eventLabel?: string;
+	/** Defaults to the visible label plus the destination, e.g. «Quiero mi invitación por WhatsApp». */
 	ariaLabel?: string;
 	/** Keeps the message untouched by the click-time folio rewrite. */
 	preserveMessage?: boolean;
@@ -43,9 +44,8 @@ interface Props {
 
 const {
 	className = '',
-	phone: explicitPhone,
 	message: explicitMessage,
-	label = 'Cotizar por WhatsApp',
+	label = PRIMARY_CTA_LABEL,
 	trackSection = 'hero',
 	trackCta = 'hero_whatsapp',
 	trackIntent = 'whatsapp',
@@ -58,11 +58,12 @@ const {
 	promoCode: explicitPromoCode,
 	eventType,
 	eventLabel,
-	ariaLabel = 'Cotizar por WhatsApp',
+	ariaLabel: explicitAriaLabel,
 	preserveMessage = false,
 	withoutPromo = false,
 } = Astro.props;
 
+const ariaLabel = explicitAriaLabel ?? `${label} por WhatsApp`;
 const pkg = packageId ? getPromoPackage(packageId) : undefined;
 const promoCode = withoutPromo
 	? undefined
@@ -72,16 +73,10 @@ const campaignCode = trackCampaign ?? (promoCode ? buildCampaignCode(campaignSec
 const currency = trackCurrency ?? (promoValue !== undefined ? PROMO_CAMPAIGN.currency : undefined);
 const message = explicitMessage ?? (pkg ? buildPackageMessage(pkg) : buildGeneralMessage());
 
-// If no phone is explicitly provided, fall back to empty string (caller provides phone).
-// If the phone is a placeholder, hide the CTA to avoid broken links.
-const phone = explicitPhone || '';
-const isPlaceholder = phone ? isPlaceholderContactPhone(phone) : true;
-const shouldRender = !isPlaceholder || import.meta.env.DEV;
-const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : phone;
-const whatsappUrl = shouldRender ? `https://wa.me/${displayPhone}${message ? `?text=${encodeURIComponent(message)}` : ''}` : '';
+// Prerendered pages get the /api/whatsapp redirect, which reads the Worker secret at request time.
+const whatsappUrl = getWhatsAppLink(message);
 ---
 
-{shouldRender && (
 <a
 	href={whatsappUrl}
 	target="_blank"
@@ -102,10 +97,8 @@ const whatsappUrl = shouldRender ? `https://wa.me/${displayPhone}${message ? `?t
 	data-event-label={eventLabel}
 	data-track-value={promoValue}
 	data-track-currency={currency}
-	data-phone={phone}
 	data-preserve-message={preserveMessage ? 'true' : undefined}
 >
 	<Icon name="WhatsApp" size={20} />
 	<slot>{label}</slot>
 </a>
-)}

@@ -17,8 +17,9 @@ const { eventType } = Astro.params;
 const publicSlug = eventType!;
 const showroom = getDemoShowroomByPublicSlug(publicSlug);
 
+// Event types without demos (e.g. baby shower) land on the landing event selector.
 if (!showroom) {
-	return Astro.redirect('/', 302);
+	return Astro.redirect('/#tipo-evento', 302);
 }
 // Alternate public slugs are inbound aliases; the showroom has one canonical address.
 if (publicSlug !== showroom.publicSlug) {
@@ -35,11 +36,12 @@ const eventDisplayNameBySlug: Record<string, string> = {
 	xv: 'XV años',
 	boda: 'boda',
 	bautizo: 'bautizo',
+	'primera-comunion': 'primera comunión',
 	cumpleanos: 'cumpleaños',
 };
 
 const eventDisplayName = eventDisplayNameBySlug[publicSlug] ?? showroom.label.toLowerCase();
-const adaptationTarget = publicSlug === 'xv' ? 'tus XV años' : `tu ${eventDisplayName}`;
+const adaptationTarget = publicSlug === 'xv' ? 'sus XV años' : `su ${eventDisplayName}`;
 const lookbookLabel = eventDisplayName.toUpperCase();
 
 const rawDemoParam = Astro.url.searchParams.get('demo') ?? '';
@@ -49,15 +51,15 @@ const activeSlug =
 const demoCount = featuredItems.length;
 const introTitle =
 	demoCount > 1
-		? 'Elige una referencia visual para tu invitación'
-		: 'Referencia visual para tu invitación';
+		? 'Elija una referencia visual para su invitación'
+		: 'Referencia visual para su invitación';
 const introDescription =
 	demoCount > 1
-		? 'Cada propuesta se adapta a tus fotografías, paleta de colores y estilo del evento.'
-		: 'Esta propuesta se adapta a tus fotografías, paleta de colores y estilo del evento.';
+		? 'Cada propuesta se adapta a sus fotografías, paleta de colores y estilo del evento.'
+		: 'Esta propuesta se adapta a sus fotografías, paleta de colores y estilo del evento.';
 const pageTitle = `Lookbook ${eventDisplayName} | Celebra.me`;
 const pageDescription = introDescription;
-const quoteHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : '/#contact';
+const quoteHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : '/#contacto';
 ---
 
 <Layout title={pageTitle} description={pageDescription} className="theme-preset--jewelry-box-landing" transparentHeader={false}>
@@ -81,7 +83,7 @@ const quoteHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : 
 			data-track-section="demo_showroom_adaptation"
 		>
 			<div class="demo-showroom__adaptation-copy">
-				<p class="demo-showroom__eyebrow">¿Te gustó un estilo?</p>
+				<p class="demo-showroom__eyebrow">¿Le gustó un estilo?</p>
 				<h2 id="demo-showroom-adaptation-title" class="demo-showroom__final-title">
 					Lo adaptamos a {adaptationTarget}
 				</h2>
@@ -103,8 +105,9 @@ const quoteHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : 
 							data-track-cta={`showroom_final_whatsapp_${showroom.eventType}`}
 							data-track-intent="whatsapp"
 							data-event-type={showroom.eventType}
+							aria-label="Quiero mi invitación por WhatsApp"
 						>
-							Cotizar mi invitación
+							Quiero mi invitación
 						</a>
 					) : (
 						<a
@@ -115,7 +118,7 @@ const quoteHref = showWhatsAppCta ? getWhatsAppLink(showroom.whatsAppMessage) : 
 							data-track-cta={`showroom_final_contact_${showroom.eventType}`}
 							data-track-intent="contact"
 						>
-							Cotizar mi invitación
+							Quiero mi invitación
 						</a>
 					)
 				}

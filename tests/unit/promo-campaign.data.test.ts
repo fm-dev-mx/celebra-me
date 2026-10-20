@@ -87,33 +87,33 @@ describe('promo campaign copy', () => {
 
 describe('promo campaign status', () => {
 	it('is upcoming before the first day in Los Mochis', () => {
-		expect(getPromoStatus(losMochis('2026-09-30T23:59:59'))).toEqual({
+		expect(getPromoStatus(losMochis('2026-10-31T23:59:59'))).toEqual({
 			phase: 'upcoming',
 			daysLeft: 0,
 			showCountdown: false,
 		});
 	});
 
-	it('is active without a countdown early in the month', () => {
-		expect(getPromoStatus(losMochis('2026-10-01T00:00:00')).phase).toBe('active');
-		const midMonth = getPromoStatus(losMochis('2026-10-15T12:00:00'));
-		expect(midMonth.phase).toBe('active');
-		expect(midMonth.showCountdown).toBe(false);
+	it('is active without a countdown early in the season', () => {
+		expect(getPromoStatus(losMochis('2026-11-01T00:00:00')).phase).toBe('active');
+		const midSeason = getPromoStatus(losMochis('2026-11-20T12:00:00'));
+		expect(midSeason.phase).toBe('active');
+		expect(midSeason.showCountdown).toBe(false);
 	});
 
-	it('shows the countdown during the last seven days', () => {
-		expect(getPromoStatus(losMochis('2026-10-24T23:00:00')).showCountdown).toBe(false);
+	it('shows the countdown during the last ten days', () => {
+		expect(getPromoStatus(losMochis('2026-12-05T23:00:00')).showCountdown).toBe(false);
 
-		const firstCountdownDay = getPromoStatus(losMochis('2026-10-25T12:00:00'));
-		expect(firstCountdownDay).toEqual({ phase: 'active', daysLeft: 7, showCountdown: true });
+		const firstCountdownDay = getPromoStatus(losMochis('2026-12-06T12:00:00'));
+		expect(firstCountdownDay).toEqual({ phase: 'active', daysLeft: 10, showCountdown: true });
 
-		const lastDay = getPromoStatus(losMochis('2026-10-31T23:00:00'));
+		const lastDay = getPromoStatus(losMochis('2026-12-15T23:00:00'));
 		expect(lastDay).toEqual({ phase: 'active', daysLeft: 1, showCountdown: true });
 		expect(formatDaysLeft(lastDay.daysLeft)).toBe('Queda 1 día');
 	});
 
 	it('expires after the last day in Los Mochis', () => {
-		expect(getPromoStatus(losMochis('2026-11-01T00:00:01'))).toEqual({
+		expect(getPromoStatus(losMochis('2026-12-16T00:00:01'))).toEqual({
 			phase: 'expired',
 			daysLeft: 0,
 			showCountdown: false,

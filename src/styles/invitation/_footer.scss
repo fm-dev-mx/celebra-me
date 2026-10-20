@@ -69,6 +69,9 @@
 //   --footer-pull-color  Lantern and thread (default lantern amber)
 //   --footer-pull-glow   Lantern light
 //   --footer-pull-scale  Lantern size (default 1)
+//   --footer-pull-height / -shape  Lantern height (default 0.95rem) and corner radius (default the
+//                        lantern's; `50%` with a square height makes a disc, for example a moon);
+//                        the shape also applies to the reply's lantern
 //   --footer-pull-body   Lantern fill (default the plain colour)
 //   --footer-pull-pool   Light rising from the bottom edge with the pull (default none)
 //   --footer-pull-label / -label-color / -label-size
@@ -153,8 +156,8 @@ $lantern-shape: 40% 40% 45% 45%;
 		bottom: 0;
 		left: 50%;
 		width: 0.7rem;
-		height: 0.95rem;
-		border-radius: $lantern-shape;
+		height: var(--footer-pull-height, 0.95rem);
+		border-radius: var(--footer-pull-shape, #{$lantern-shape});
 		background: var(--footer-pull-body, var(--footer-pull-color, rgb(232 160 64)));
 		box-shadow: 0 0 calc(0.9rem + var(--footer-pull) * 0.9rem) 0.25rem
 			var(--footer-pull-glow, rgb(232 160 64 / 35%));
@@ -191,9 +194,9 @@ $lantern-shape: 40% 40% 45% 45%;
 }
 
 .footer__closing-phrase {
-	font-family: var(--font-display);
-	font-size: clamp(1rem, 3vw, 1.2rem);
-	font-style: italic;
+	font-family: var(--footer-closing-font, var(--font-display));
+	font-size: var(--footer-closing-size, clamp(1rem, 3vw, 1.2rem));
+	font-style: var(--footer-closing-style, italic);
 	font-weight: 400;
 	letter-spacing: 0.02em;
 	text-align: center;
@@ -267,6 +270,7 @@ $lantern-shape: 40% 40% 45% 45%;
 		}
 	}
 
+	// Opt-in recolor of the brand mark for dark footers (`--footer-logo-filter`).
 	.footer-brand-logo.logo {
 		transform: scale(0.7);
 		transform-origin: center;
@@ -323,6 +327,7 @@ $lantern-shape: 40% 40% 45% 45%;
 		width: 14px;
 		height: 14px;
 		opacity: 70%;
+		filter: var(--footer-contact-icon-filter, none);
 	}
 
 	&:hover {
@@ -383,6 +388,7 @@ $lantern-shape: 40% 40% 45% 45%;
 //   --footer-reply-ink / -muted / -accent   Question, note and eyebrow inks
 //   --footer-reply-question-font / -question-size / -eyebrow-size / -note-size
 //   --footer-reply-lantern / -lantern-glow   Lantern fill (default the pull lantern's) and light
+//   --footer-reply-lantern-height   Lantern height (default 1.8rem; its width is 1.4rem)
 //   --footer-reply-button-bg / -button-ink / -button-font / -button-size
 //   --footer-reply-glint      A light crossing the button as the footer opens (default none)
 //   --footer-reply-gap        Space under the block, above the closing phrase (default 2.5rem)
@@ -405,9 +411,9 @@ $footer-reply-pill: 999px;
 	&__lantern {
 		position: relative;
 		width: 1.4rem;
-		height: 1.8rem;
+		height: var(--footer-reply-lantern-height, 1.8rem);
 		margin: 2.75rem 0 1.25rem;
-		border-radius: $lantern-shape;
+		border-radius: var(--footer-pull-shape, #{$lantern-shape});
 		background: var(
 			--footer-reply-lantern,
 			var(--footer-pull-body, var(--footer-pull-color, rgb(232 160 64)))

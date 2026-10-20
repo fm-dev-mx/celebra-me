@@ -41,14 +41,13 @@ const content: CanonicalEventContentInput = {
 	templateId: 'boda-jewelry-box-wedding',
 	title: 'Boda de Olivia Martínez y Antonio Vázquez',
 	description: `Invitación a la boda de Olivia y Antonio, el ${EVENT_DATE_LONG} en Los Mochis, Sinaloa.`,
-	theme: { preset: 'jewelry-box-wedding' },
+	theme: { preset: 'jewelry-box-wedding', motion: 'editorial' },
 	eventTiming: OLIVIA_TIMING,
 	sectionOrder: [
 		'quote',
 		'countdown',
 		'family',
 		'location',
-		'itinerary',
 		'gallery',
 		'gifts',
 		'personalizedAccess',
@@ -64,11 +63,11 @@ const content: CanonicalEventContentInput = {
 			family: { family: 'atmospheric-blend', source: 'interlude-after-countdown' },
 			'interlude-after-family': { family: 'overlap', source: 'family' },
 			location: { family: 'arch', source: 'interlude-after-family' },
-			itinerary: { family: 'atmospheric-blend', source: 'location' },
-			gallery: { family: 'atmospheric-blend', source: 'itinerary' },
+			gallery: { family: 'atmospheric-blend', source: 'location' },
 			gifts: { family: 'atmospheric-blend', source: 'gallery' },
 			'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
-			rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
+			// The RSVP rises over the pinned pass like a card laid on it.
+			rsvp: { family: 'stack', source: 'personalized-access' },
 			thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 		},
 	},
@@ -78,18 +77,19 @@ const content: CanonicalEventContentInput = {
 		label: 'Nuestra boda',
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2026-12-18T19:00:00.000Z',
-		variant: 'standard',
-		// Walking the garden dock hand in hand; the couple stays clear of the text column.
-		backgroundImage: 'heroDesktop',
-		backgroundImageMobile: 'heroMobile',
-		backgroundImageDesktop: 'heroDesktop',
-		focalPoint: '52% 45%',
-		focalPointMobile: '50% 38%',
-		focalPointTablet: '50% 40%',
-		focalPointDesktop: '60% 45%',
+		variant: 'night-arch',
+		scrollLabel: 'Descubra más',
+		// Standing on the garden dock, framed by the arch; one 2:3 frame in two widths.
+		backgroundImage: 'heroArchDesktop',
+		backgroundImageMobile: 'heroArchMobile',
+		backgroundImageDesktop: 'heroArchDesktop',
+		focalPoint: '50% 42%',
+		presentation: { timeFormat: '12h' },
 	},
 	envelope: {
 		disabled: false,
+		// Navy night envelope; the letter's arched window flies onto the cover arch.
+		revealVariant: 'night-envelope',
 		cardLabel: 'BODA',
 		envelopeName: COUPLE,
 		teaserDetails: '18 · DIC · 2026 · LOS MOCHIS',
@@ -104,20 +104,17 @@ const content: CanonicalEventContentInput = {
 		stampYear: '2026',
 		microcopy: 'Tenemos el honor de invitarle',
 		tooltipText: 'Abrir invitación',
-		closedPalette: {
-			primary: 'surfacePrimary',
-			accent: 'actionAccent',
-			background: 'surfaceDark',
-		},
 	},
 	quote: {
-		text: 'El amor es paciente, es bondadoso. Todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta.',
+		text: 'El amor es paciente, es bondadoso. Todo lo disculpa, todo lo cree, todo lo espera,',
+		closingLine: 'todo lo soporta.',
 		author: '1 Corintios 13:4–7',
 	},
 	countdown: {
 		variant: 'standard',
 		title: 'Falta poco para decir que sí',
 		footerText: 'Los Mochis, Sinaloa',
+		presentationOptions: { calendar: { mark: 'ring' } },
 	},
 	interludes: [
 		{
@@ -140,6 +137,8 @@ const content: CanonicalEventContentInput = {
 	family: {
 		variant: 'asymmetric-groups',
 		presentation: 'with-photo',
+		// One label per role with its names beneath; no couples are inferred.
+		godparentsLayout: 'by-role',
 		featuredImage: 'family',
 		featuredImageAlt: 'Olivia y Antonio de pie entre bambúes, ella con un ramo blanco.',
 		focalPoint: '50% 40%',
@@ -176,16 +175,19 @@ const content: CanonicalEventContentInput = {
 	location: {
 		accessPolicy: { visibility: 'public' },
 		mapStyle: 'dark',
-		variant: 'stacked-venue-plates',
+		variant: 'night-route',
 		presentation: 'simple',
 		presentationOptions: {
-			showFlourishes: true,
+			showFlourishes: false,
 			showNavigationButtons: true,
+			// Each card opens with its time and keeps one «Cómo llegar» button, no map tile.
+			venueCard: 'compact',
+			// Guests save each part of the night to their calendar from its card.
+			showCalendarLinks: true,
 		},
 		introEyebrow: 'Los Mochis, Sinaloa',
-		introHeading: EVENT_DATE_HEADING,
-		introLede:
-			'Les esperamos primero en la parroquia para la ceremonia y después en el salón para celebrar juntos.',
+		introHeading: 'Dónde celebraremos',
+		introLede: `${EVENT_DATE_HEADING}. Les esperamos primero en la parroquia para la ceremonia y después en el salón para celebrar juntos.`,
 		venues: [
 			{
 				type: 'ceremony',
@@ -218,35 +220,24 @@ const content: CanonicalEventContentInput = {
 				styleVariant: 'default',
 				text: 'Formal. Le pedimos amablemente reservar el blanco y el rojo.',
 			},
-		],
-	},
-	itinerary: {
-		variant: 'editorial-ledger',
-		title: 'Programa de la noche',
-		subtitle: 'Acompáñenos en cada momento de nuestra celebración.',
-		items: [
 			{
-				iconName: 'Church',
-				label: 'Ceremonia religiosa',
-				time: SCHEDULE.ceremony,
-				description: `${CEREMONY.name}.`,
-			},
-			{
-				iconName: 'Toast',
-				label: 'Recepción',
-				time: SCHEDULE.reception,
-				description: `${RECEPTION.name}.`,
+				title: 'Pase personal',
+				iconName: 'Enveloped',
+				styleVariant: 'default',
+				text: `Su invitación es personal y los lugares corresponden a su pase. Le pedimos confirmar a más tardar el ${RSVP_DEADLINE}.`,
 			},
 		],
 	},
 	gallery: {
-		variant: 'uniform-grid',
+		// A pinned track of seven photos (one dance, not three); at rest, 4:5 features and 3:4 pairs.
+		variant: 'pinned-track',
 		eyebrow: 'Galería',
 		title: 'Nuestra historia',
 		subtitle: 'Del jardín al mar: algunos momentos antes del gran día.',
 		items: [
 			{
 				image: 'gallery01',
+				layoutRole: 'feature',
 				alt: 'Antonio besa la frente de Olivia mientras ella muestra su anillo.',
 				focalPoint: '50% 35%',
 			},
@@ -262,21 +253,13 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: 'gallery04',
+				layoutRole: 'feature',
 				alt: 'Antonio inclina a Olivia en un paso de baile en el jardín.',
 				focalPoint: '50% 50%',
 			},
 			{
-				image: 'gallery05',
-				alt: 'Olivia y Antonio en un paso de baile sobre la arena.',
-				focalPoint: '55% 50%',
-			},
-			{
-				image: 'gallery06',
-				alt: 'Olivia y Antonio bailan en un sendero entre árboles.',
-				focalPoint: '50% 45%',
-			},
-			{
 				image: 'gallery07',
+				layoutRole: 'feature',
 				alt: 'Olivia con un ramo junto a Antonio en la playa.',
 				focalPoint: '45% 45%',
 			},
@@ -303,9 +286,15 @@ const content: CanonicalEventContentInput = {
 		variant: 'formal-register',
 		title: 'Confirme su asistencia',
 		subcopy: `Le pedimos registrar su respuesta a más tardar el ${RSVP_DEADLINE}. El número de lugares corresponde al pase asignado.`,
+		lockedMessage: `Esta invitación es personal. Abra el enlace que le enviamos para ver su lugar y confirmar a más tardar el ${RSVP_DEADLINE}.`,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		confirmationMessage: 'Su respuesta quedó registrada. Le esperamos.',
+		labels: {
+			name: 'Su nombre',
+			notesLabel: 'Mensaje para Olivia y Antonio',
+			notesPlaceholder: 'Escriba unas palabras para los novios…',
+		},
 		responseMessages: {
 			confirmed: {
 				title: 'Confirmación recibida, {guestName}.',
@@ -334,8 +323,8 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	thankYou: {
-		variant: 'standard',
-		// The sunset kiss closes the evening the invitation opened in the garden.
+		// The sunset kiss fades into the wedding night that closes the invitation.
+		variant: 'full-bleed-photo',
 		image: 'thankYou',
 		focalPoint: '50% 60%',
 		message:
@@ -365,14 +354,14 @@ export const oliviaAntonioInvitation = defineCanonicalInvitation({
 	eventTiming: OLIVIA_TIMING,
 	content,
 	managedIdentityId: 'f0139dcd-8734-43bd-a286-cef91442aa7d',
-	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'olivia_martinez',
 	assetDir: 'src/assets/invitations/olivia-y-antonio',
 	// One role per photograph; the og crop is a separate derivative of the hero source.
 	assetFiles: {
-		heroDesktop: 'hero-desktop.webp',
-		heroMobile: 'hero-mobile.webp',
+		heroArchDesktop: 'hero-arch-desktop.webp',
+		heroArchMobile: 'hero-arch-mobile.webp',
 		family: 'family.webp',
 		interludeBeach: 'interlude-01.webp',
 		interludeSaveTheDate: 'interlude-02.webp',

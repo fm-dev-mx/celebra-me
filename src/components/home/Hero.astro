@@ -14,7 +14,6 @@ import {
 	getStartingRegularPrice,
 	PROMO_CAMPAIGN,
 } from '@/data/promo-campaign.data';
-import { getContactPhone } from '@/utils/whatsapp';
 
 // One static, event-neutral image: a laid table with a place card, the "pass for every guest".
 import heroDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
@@ -27,7 +26,6 @@ interface Props {
 }
 
 const { data } = Astro.props;
-const phone = getContactPhone();
 
 ---
 
@@ -70,13 +68,12 @@ const phone = getContactPhone();
 
 			<div class="hero-prime__actions stagger-4">
 				<WhatsAppButton
-					phone={phone}
 					label={data.primaryCtaLabel}
 					trackSection="hero"
 					trackCta="whatsapp-hero"
 					campaignSection="HERO"
-					ariaLabel="Cotizar por WhatsApp"
 				/>
+				<p class="hero-prime__trust-line">{data.primaryCtaTrustLine}</p>
 				<p class="hero-prime__payment-note">{data.paymentNote}</p>
 				<ActionBase
 					as="a"

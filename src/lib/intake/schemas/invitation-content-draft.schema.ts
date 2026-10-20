@@ -15,6 +15,7 @@ import {
 	LOCATION_INDICATIONS_LAYOUTS,
 	LOCATION_SCENES,
 	LOCATION_INDICATIONS_STYLES,
+	LOCATION_VENUE_CARDS,
 	LOCATION_MAP_STYLES,
 } from '@/lib/invitation/location-presentation';
 import {
@@ -119,6 +120,7 @@ export const InvitationContentDraftContentSchema = z
 						indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 						showCalendarLinks: z.boolean().optional(),
 						scene: z.enum(LOCATION_SCENES).optional(),
+						venueCard: z.enum(LOCATION_VENUE_CARDS).optional(),
 					})
 					.strict()
 					.optional(),

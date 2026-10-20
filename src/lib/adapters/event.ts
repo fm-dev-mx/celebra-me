@@ -170,6 +170,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		name: data.hero.name,
 		venueIndex: data.hero.presentation?.venueIndex,
 		nameLeadWords: data.hero.presentation?.nameLeadWords,
+		timeFormat: data.hero.presentation?.timeFormat,
 		coverMark: data.hero.presentation?.coverMark,
 		coverPage: data.hero.presentation?.coverPage,
 		designCredit: data.hero.presentation?.designCredit,
@@ -434,6 +435,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 		indicationsLayout: data.location.presentationOptions?.indicationsLayout ?? 'list',
 		showCalendarLinks: data.location.presentationOptions?.showCalendarLinks ?? false,
 		scene: data.location.presentationOptions?.scene,
+		venueCard: data.location.presentationOptions?.venueCard,
 		calendarEventTitle: data.title,
 		eventTimeZone: data.eventTiming?.timeZone,
 	};

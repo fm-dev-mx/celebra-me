@@ -1,4 +1,4 @@
-import { expect, test } from './public-preview-test';
+import { expect, publicPreviewAccessHeaders, test } from './public-preview-test';
 import {
 	PREVIEW_FIXTURE_EVENT_TYPE,
 	PREVIEW_FIXTURE_SLUG,
@@ -38,7 +38,9 @@ test('public routes and representative invitation assets load without runtime er
 	expect(login?.status()).toBe(200);
 	await expect(page.locator('#login-submit')).toBeVisible();
 
-	const health = await page.request.get('/api/health');
+	const health = await page.request.get('/api/health', {
+		headers: publicPreviewAccessHeaders,
+	});
 	expect(health.status()).toBe(200);
 	const healthPayload = (await health.json()) as { status?: unknown };
 	expect(healthPayload.status).toBe('healthy');

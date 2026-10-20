@@ -14,7 +14,6 @@ import {
 } from '@/lib/invitation/access/invitation-access';
 import PreviewBanner from '@/components/invitation/PreviewBanner.astro';
 import { invitationProvenanceReference } from '@/lib/invitation/preview/provenance';
-import PreviewStamp from '@/components/invitation/PreviewStamp.astro';
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
 import Layout from '@/layouts/Layout.astro';
@@ -28,6 +27,7 @@ import InvitationPageScripts from '@/components/invitation/InvitationPageScripts
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { buildInvitationHeadLinks } from '@/lib/invitation/invitation-head-links';
+import { buildHeroImagePreloads } from '@/lib/invitation/hero-image-preload';
 import InvitationError from '@/components/invitation/InvitationError.astro';
 import InvitationUnavailable from '@/components/invitation/InvitationUnavailable.astro';
 import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
@@ -173,7 +173,10 @@ const forceBlockingInvitationCss =
 	skipEnvelope || screenshotMode || !page?.wrapper.showEnvelope || !page?.envelope;
 
 const headLinks = page
-	? buildInvitationHeadLinks({ page, forceBlocking: forceBlockingInvitationCss })
+	? [
+			...buildHeroImagePreloads(page.viewModel.hero),
+			...buildInvitationHeadLinks({ page, forceBlocking: forceBlockingInvitationCss }),
+		]
 	: [];
 
 const wrapperDataAttributes = page
@@ -194,7 +197,7 @@ const isDemoConversion = Boolean(
 	page && hasDemoConversion(page.viewModel.id, page.viewModel.isDemo),
 );
 
-// Unpaid client invitation: watermarked photos (resolver), banner, seals, copy friction.
+// Unpaid client invitation: preview banner and image copy friction.
 const previewMode = accessMode === 'preview' && Boolean(page);
 
 ---
@@ -236,7 +239,6 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 			}
 			<div class={page.wrapper.className} {...wrapperDataAttributes} data-screenshot="invitation-root">
 				{previewMode && <PreviewBanner />}
-				{previewMode && <PreviewStamp placement="envelope" />}
 				{
 					previewMode && (
 						<script is:inline>
@@ -295,11 +297,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 							/>
 						</div>
 
-						<div
-							data-screenshot="invitation-open-content"
-							class:list={[{ 'preview-stamp-host': previewMode }]}
-						>
-							{previewMode && <PreviewStamp placement="cover" />}
+						<div data-screenshot="invitation-open-content">
 							<Hero
 								{...page.viewModel.hero}
 								venueName={page.heroVenueName}
@@ -312,7 +310,6 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 							<InvitationSections
 								pageContext={page}
 								showDemoConversion={isDemoConversion}
-								previewMode={previewMode}
 							/>
 
 							{
@@ -333,7 +330,6 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								)
 							}
 
-							{previewMode && <PreviewStamp placement="closing" />}
 							<Footer
 								class={isDemoConversion ? 'demo-conversion-farewell' : undefined}
 								eventSlug={page.viewModel.id}

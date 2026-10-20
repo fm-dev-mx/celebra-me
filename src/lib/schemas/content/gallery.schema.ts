@@ -56,6 +56,13 @@ function validateNarrativeStack(
 	});
 }
 
+/** Variants whose layout needs at least three photos. */
+const MIN_THREE_ITEM_VARIANTS: ReadonlySet<string> = new Set([
+	'mirrored-mosaic',
+	'feature-stack',
+	'pinned-track',
+]);
+
 function validatePairedFeatureBand(
 	items: readonly { layoutRole?: string }[],
 	context: z.RefinementCtx,
@@ -160,24 +167,16 @@ export const gallerySchema = z
 			});
 		}
 
-		if (gallery.variant === 'mirrored-mosaic' && gallery.items.length < 3) {
+		if (MIN_THREE_ITEM_VARIANTS.has(gallery.variant) && gallery.items.length < 3) {
 			context.addIssue({
 				code: 'custom',
 				path: ['items'],
-				message: 'gallery.variant=mirrored-mosaic requires at least three gallery items',
+				message: `gallery.variant=${gallery.variant} requires at least three gallery items`,
 			});
 		}
 
 		if (gallery.variant === 'album-assemble') {
 			validateAlbumAssemble(gallery.items, context);
-		}
-
-		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
-			context.addIssue({
-				code: 'custom',
-				path: ['items'],
-				message: 'gallery.variant=feature-stack requires at least three gallery items',
-			});
 		}
 
 		if (gallery.variant === 'paired-feature-band') {

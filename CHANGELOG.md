@@ -10,6 +10,133 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.37.0-beta.1] - 2026-10-20
+
+Sales buttons say what they do, a first communion showroom, and a night-themed Olivia y Antonio with
+new hero, location, gallery and envelope variants. No new migrations.
+
+### Added
+
+- `/demos/primera-comunion` showroom; showroom slugs without demos (for example
+  `/demos/baby-shower`) redirect to `/#tipo-evento` (#380).
+- Invitation variants `hero.night-arch`, `location.night-route`, `gallery.pinned-track` (the first
+  scroll scene) and the `night-envelope` reveal, with opt-in scroll-linked tokens for interludes and
+  the RSVP register (#371, #381).
+
+### Changed
+
+- Sales WhatsApp buttons are labelled by intent: «Cotizar mi invitación» in the header and hero,
+  «Quiero el paquete …» on pricing, «Quiero una invitación así» on demos; platform copy on
+  `/demos/*`, the hero payment note and the 404 page uses «usted» (#380).
+- Olivia y Antonio uses the night variants, a 7-photo gallery, the invitation's own fonts in the
+  RSVP and a 12 px text floor in the menu and footer (#371, #381). Its Preview and Production
+  content publication is a separate step.
+
+## [0.36.0-beta.1] - 2026-10-20
+
+WhatsApp contact links use the real number in Production, every invitation answers at its short URL,
+and Olivia y Antonio becomes publishable. No new migrations.
+
+### Added
+
+- `/api/whatsapp?text=…` reads `CONTACT_WHATSAPP` from the Worker on each request and answers `302`
+  to `wa.me/<number>`, or `503` when the secret is missing or the placeholder (#374).
+
+### Changed
+
+- Every invitation except the `demo-*` catalog is shared at the short `/{slug}` URL: dashboard
+  links, personalized `?invite=` links, `/i/{shortId}` and canonical/OG URLs; the long
+  `/{eventType}/{slug}` form keeps resolving (#366).
+- The Olivia y Antonio wedding definition is `published`, with accepted visual references for its
+  mobile and desktop pages (#375). Its Preview and Production content publication is a separate
+  step.
+
+### Fixed
+
+- WhatsApp links no longer use the placeholder `521000000000`: server-rendered pages read
+  `CONTACT_WHATSAPP` at request time and prerendered pages link `/api/whatsapp`. The Production
+  Worker smoke fails with `contact_whatsapp_missing` unless that route redirects to a real number
+  (#374).
+- Authenticated and provisioning Preview suites send the Cloudflare Access headers on every API
+  request (#367).
+- The landing header links to `/#tipo-evento`, `/#pricing` and `/#nosotros`, so they work from
+  `/demos/*`, `/privacidad` and `/terminos`; the demo showroom fallback quote links to `/#contacto`
+  (#377).
+
+## [0.35.0-beta.1] - 2026-10-19
+
+Production invitation images get responsive width variants. No new migrations.
+
+### Changed
+
+- Published invitation images in Production serve a WebP `srcset` (480/800/1280/1920) from the
+  Production R2 bucket (`responsiveVariants` on, like Preview); all 288 published images already
+  have their variants (#370).
+
+## [0.34.0-beta.1] - 2026-10-19
+
+Editorial motion groundwork, a redesigned Olivia y Antonio, the end of the watermarked-photo
+pipeline, and read-only browser checks after every Preview deploy. No new migrations.
+
+### Added
+
+- Pinned scroll scene primitive for editorial motion (#359): `ScrollScene.astro` keeps a sticky
+  stage over a 2–5 viewport section and exposes scene progress through a CSS view timeline or, where
+  unsupported, one passive scroll listener. It runs only under `theme.motion: 'editorial'` without
+  reduced motion and has no consumer yet.
+- Opt-in content options for the "Noche azul de diciembre" redesign of `/boda/olivia-y-antonio`
+  (#361): `hero.presentation.timeFormat: '12h'`, `family.godparentsLayout: 'by-role'`,
+  `location.presentationOptions.venueCard: 'compact'` and the `HairlineFrame` photo frame.
+- The Preview Deploy workflow runs a read-only public content probe (one invitation per event type)
+  and, when its credentials are present, the authenticated dashboard check before it records the
+  `Cloudflare - celebra-me preview smoke` status (#360).
+
+### Removed
+
+- The `/vista-previa/` watermarked-photo pipeline (#362): its route, preview media token and
+  renderer, the preview mark modules and the `invitation:preview-mark:generate` script. Old
+  `/vista-previa/` URLs answer 404 and `PREVIEW_MEDIA_SECRET` is no longer read.
+
+### Fixed
+
+- The Preview Playwright probes send the Cloudflare Access service token headers on every
+  Preview-origin request, so strict service token authentication no longer redirects them to the
+  Access login (#365).
+
+## [0.33.0-beta.1] - 2026-10-19
+
+Invitation polish and release tooling fixes: selected invitations get a short URL, America gains an
+editorial motion system, unpaid previews drop the photo watermark, hosts sign in with a password
+only, and Preview serves image width variants. No new migrations.
+
+### Added
+
+- Short `/{slug}` URL for selected invitations (#351): the route resolves the event type from the
+  published row and renders the canonical page in place; reserved slugs are enforced in both slug
+  schemas and `SHORT_PATH_SLUGS` lists `america` and `olivia-y-antonio`. Both URL forms resolve.
+- Opt-in editorial motion system, `theme.motion: 'editorial'`, turned on for America only (#355):
+  word-by-word title reveals, `itinerary.stacked-cards` sticky cards and an optional countdown month
+  calendar. Reduced motion falls back to a short fade.
+
+### Changed
+
+- Unpaid invitation previews render their original photos without the tiled watermark or preview
+  seals; the thinner public banner is the only preview cue (#358).
+- Preview-hosted invitation images serve width variants (`responsiveVariants` on for the Preview
+  bucket only; Production stays off) and the variant decode bound rises to 24 MP (#354).
+
+### Removed
+
+- Host magic-link login (#356): `/login` is email/alias + password only, and
+  `POST /api/auth/login-host` answers `400 bad_request` for any other method.
+
+### Fixed
+
+- `pnpm prod:apply -- --schema` reads the latest `Cloudflare Production` deployment in its contract
+  gate instead of the retired Vercel `production` records (#353).
+- The `cleanup-heartbeat` scheduled monitor filters the parsed `event`/`phase` fields so it finds
+  completed memories cleanup runs (#357).
+
 ## [0.32.0-beta.1] - 2026-10-19
 
 Cloudflare migration close-out: the last Vercel and Cloudinary mentions are retired and guarded,

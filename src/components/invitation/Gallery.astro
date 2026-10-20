@@ -55,19 +55,33 @@ const usesMobileRail = isMagazineSpread && resolvedMobileBrowse === 'rail';
 const pairedArrangement =
 	variant === 'paired-portraits' ? resolveGalleryPairedArrangement(variantOptions) : undefined;
 const hasLastItem = Astro.slots.has('last-item');
-const shownItems = hasLastItem ? items.slice(0, -1) : items;
+const isPinnedTrack = variant === 'pinned-track';
+const gridItems = hasLastItem ? items.slice(0, -1) : items;
 // album-assemble pins the album page in a scroll scene; photos land one per step of the scroll.
 const isAlbum = variant === 'album-assemble';
 const SceneWrapper = isAlbum ? ScrollScene : Fragment;
 const sceneProps = isAlbum
-	? { length: 4 as const, steps: shownItems.length, class: 'gallery-album' }
+	? { length: 4 as const, steps: gridItems.length, class: 'gallery-album' }
 	: {};
 const pad = (value: number) => String(value).padStart(2, '0');
 
 if (!items || items.length === 0) return null;
 ---
 
-<section id="galeria" class="gallery-section" data-variant={variant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse} {...(pairedArrangement && { 'data-arrangement': pairedArrangement })}>
+<section id="galeria" class="gallery-section" data-variant={variant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse} {...(pairedArrangement && { 'data-arrangement': pairedArrangement })} {...(isPinnedTrack && { style: `--gallery-track-count: ${gridItems.length};` })}>
+	{isPinnedTrack ? (
+		<ScrollScene length={3}>
+			<div class="gallery-section__container" data-gallery data-gallery-track>
+				<header class="gallery-section__header">
+					{eyebrow && <span class="gallery-section__eyebrow" data-reveal-role="label">{eyebrow}</span>}
+					{title?.trim() && <SplitWords class="gallery-section__title" text={title} />}
+					{subtitle && <p class="gallery-section__subtitle" data-reveal-role="lede">{subtitle}</p>}
+				</header>
+				<PhotoGallery items={gridItems} variant={variant} />
+			</div>
+		</ScrollScene>
+		<slot name="last-item" />
+	) : (
 	<SceneWrapper {...sceneProps}>
 	<div class="gallery-section__container" data-gallery>
 		<header class="gallery-section__header">
@@ -80,15 +94,15 @@ if (!items || items.length === 0) return null;
 			{isAlbum && (
 				<span class="gallery-album__count" aria-hidden="true">
 					<span class="gallery-album__count-roll">
-						{shownItems.map((_, index) => (
-							<span>{pad(index + 1)} / {pad(shownItems.length)}</span>
+						{gridItems.map((_, index) => (
+							<span>{pad(index + 1)} / {pad(gridItems.length)}</span>
 						))}
 					</span>
 				</span>
 			)}
 		</header>
 
-		<PhotoGallery items={shownItems} variant={variant} revealItems={!isAlbum} />
+		<PhotoGallery items={gridItems} variant={variant} revealItems={!isAlbum} />
 		{isAlbum && (
 			<div class="gallery-album__footer" aria-hidden="true">
 				<span class="gallery-album__progress"><span class="gallery-album__progress-bar" /></span>
@@ -98,6 +112,13 @@ if (!items || items.length === 0) return null;
 		<slot name="last-item" />
 	</div>
 	</SceneWrapper>
+	)}
 </section>
 
 <GalleryLightbox variant={variant} />
+
+<script>
+	import { initGalleryTrackFocus } from '@/lib/invitation/gallery-track-focus';
+
+	initGalleryTrackFocus();
+</script>

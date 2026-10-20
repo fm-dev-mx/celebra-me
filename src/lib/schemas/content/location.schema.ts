@@ -6,10 +6,14 @@ import {
 	LOCATION_INDICATIONS_LAYOUTS,
 	LOCATION_SCENES,
 	LOCATION_INDICATIONS_STYLES,
+	LOCATION_VENUE_CARDS,
 	LOCATION_MAP_STYLES,
 	LOCATION_PRESENTATIONS,
 } from '@/lib/invitation/location-presentation';
 import { LOCATION_VARIANTS } from '@/lib/invitation/section-variants';
+
+/** Variants built on the shared venue plates: two or more venues, optional compact cards. */
+const PLATE_VARIANTS: ReadonlySet<string> = new Set(['stacked-venue-plates', 'night-route']);
 
 const locationCoordinatesSchema = z
 	.object({
@@ -68,6 +72,7 @@ const locationBaseSchema = z.object({
 			indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 			showCalendarLinks: z.boolean().optional(),
 			scene: z.enum(LOCATION_SCENES).optional(),
+			venueCard: z.enum(LOCATION_VENUE_CARDS).optional(),
 		})
 		.strict()
 		.optional(),
@@ -113,6 +118,7 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[1]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[3]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[4]) }),
 	])
 	.superRefine((location, context) => {
 		if (
@@ -142,6 +148,18 @@ export const locationSchema = z
 			validateLanternRoute(location, context);
 		}
 
+		if (
+			location.presentationOptions?.venueCard === 'compact' &&
+			!PLATE_VARIANTS.has(location.variant ?? '')
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['presentationOptions', 'venueCard'],
+				message:
+					'location.presentationOptions.venueCard=compact requires stacked-venue-plates or night-route',
+			});
+		}
+
 		if (location.variant === 'split-map') {
 			const venues = collectVisibleVenues(location) as Array<{
 				coordinates?: unknown;
@@ -157,14 +175,13 @@ export const locationSchema = z
 			return;
 		}
 
-		if (location.variant === 'stacked-venue-plates') {
+		if (PLATE_VARIANTS.has(location.variant ?? '')) {
 			const venues = collectVisibleVenues(location);
 			if (venues.length >= 2) return;
 			context.addIssue({
 				code: 'custom',
 				path: ['variant'],
-				message:
-					'location.variant=stacked-venue-plates requires at least two visible venues',
+				message: `location.variant=${location.variant} requires at least two visible venues`,
 			});
 			return;
 		}

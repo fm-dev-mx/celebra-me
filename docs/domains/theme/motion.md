@@ -126,6 +126,33 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
     leaves, the photograph settles from `scale: 1.06` to rest and the scroll drawing grows down by
     `clip-path`. Nothing runs on load, so the photograph paints at once; without support both stay
     at rest.
+  - Per-element scroll-linked effects (see
+    [Per-element scroll-linked effects](#per-element-scroll-linked-effects)).
+- **Held footer.** `--invitation-footer-reveal: held` (a profile token, read by
+  `src/lib/invitation/footer-reveal.ts`) ends the page at its last section. After a short rest at
+  the bottom a small lantern peeks from the bottom edge; pulling on (a swipe up or more wheel) lifts
+  it on its thread, and past a short pull the footer opens with a 320 ms glide and a 360 ms rise.
+  Letting go sooner settles the lantern back. ArrowDown, PageDown, End, Space or a tab into its
+  links open it at once. Reduced motion shows no lantern and opens on the next gesture without
+  movement; without the script the footer is always shown. A profile may dress the lantern
+  (`--footer-pull-scale`, `-body`, `-glow`, and `-height` with `-shape` for another outline, such as
+  a disc for a moon), let a pool of light rise from the edge with the pull (`--footer-pull-pool`),
+  set words over the resting lantern that fade as it climbs (`--footer-pull-label`, `-label-color`,
+  `-label-size`) and let its glow breathe while it waits
+  (`--footer-pull-breathe: footer-pull-breathe`). The cue is a sibling of the footer, so these
+  tokens go on the invitation root. Where the phone supports it, the footer opening gives one 12 ms
+  vibration.
+- **Floating reply glint.** `--floating-cta-glint` (a gradient) crosses the floating reply button
+  once, in 1.1 s, when it first shows and again when it changes to the calendar. It is time-based,
+  not scroll-linked, and does not run under reduced motion.
+- **Footer reply.** `--invitation-footer-reply: on` (a profile token, read by
+  `src/lib/invitation/footer-reply.ts`) shows a reply block at the top of the footer while the guest
+  has not answered: a lit lantern on its thread, `--footer-reply-eyebrow`, `-question`, a "Confirmar
+  asistencia" link that scrolls back to the RSVP and focuses its first field, and `-note`. After a
+  yes only `--footer-reply-answered` stays, if set; after a decline, or on a card locked to personal
+  passes, nothing shows. When a held footer opens, the lantern rises into place in 900 ms and
+  `--footer-reply-glint` crosses the button once. Neither runs under reduced motion; both are
+  time-based, on transforms, opacity and the button's background position.
 - **Budget.** Nothing new loads on first paint except CSS. At most about 12 elements animate at
   once.
 
@@ -172,18 +199,6 @@ only; elsewhere the same markup renders as a normal section.
 - **Not scenes.** `rsvp.flow: 'steps'` (one question per step, a lantern on the progress track and
   one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
   motion it keeps the progress and drops the movement.
-- **Held footer.** `--invitation-footer-reveal: held` (a profile token, read by
-  `src/lib/invitation/footer-reveal.ts`) ends the page at its last section. After a short rest at
-  the bottom a small lantern peeks from the bottom edge; pulling on (a swipe up or more wheel) lifts
-  it on its thread, and past a short pull the footer opens with a 320 ms glide and a 360 ms rise.
-  Letting go sooner settles the lantern back. ArrowDown, PageDown, End, Space or a tab into its
-  links open it at once. Reduced motion shows no lantern and opens on the next gesture without
-  movement; without the script the footer is always shown. A profile may dress the lantern
-  (`--footer-pull-scale`, `-body`, `-glow`), let a pool of light rise from the edge with the pull
-  (`--footer-pull-pool`), set words over the resting lantern that fade as it climbs
-  (`--footer-pull-label`, `-label-color`, `-label-size`) and let its glow breathe while it waits
-  (`--footer-pull-breathe: footer-pull-breathe`). Where the phone supports it, the footer opening
-  gives one 12 ms vibration.
 - **Scroll-linked accents.** Outside scenes, a profile may opt sections into short view-timeline
   accents. Each one is set inside `@supports (animation-timeline: view())` and
   `prefers-reduced-motion: no-preference` and is off by default (`none`). Without support, or under
@@ -202,20 +217,36 @@ only; elsewhere the same markup renders as a normal section.
   The name shine animates `background-position` and a `drop-shadow` filter on short text runs; the
   other accents keep to the scene property list above.
 
-- **Floating reply glint.** `--floating-cta-glint` (a gradient) crosses the floating reply button
-  once, in 1.1 s, when it first shows and again when it changes to the calendar. It is time-based,
-  not scroll-linked, and does not run under reduced motion.
-- **Footer reply.** `--invitation-footer-reply: on` (a profile token, read by
-  `src/lib/invitation/footer-reply.ts`) shows a reply block at the top of the footer while the guest
-  has not answered: a lit lantern on its thread, `--footer-reply-eyebrow`, `-question`, a "Confirmar
-  asistencia" link that scrolls back to the RSVP and focuses its first field, and `-note`. After a
-  yes only `--footer-reply-answered` stays, if set; after a decline, or on a card locked to personal
-  passes, nothing shows. When a held footer opens, the lantern rises into place in 900 ms and
-  `--footer-reply-glint` crosses the button once. Neither runs under reduced motion; both are
-  time-based, on transforms, opacity and the button's background position.
-
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.
+
+## Per-element scroll-linked effects
+
+A per-element effect ties one element's appearance to its own position in the viewport, without
+pinning anything. Typical uses: a photo that settles while it enters (`animation-timeline: view()`),
+a hero photo that drifts while it leaves, or stacked cards where the card underneath recedes while
+the next one covers it (a named `view-timeline` shared through `timeline-scope`). They belong to the
+`editorial` recipe only, like scroll scenes, and do not count toward the scroll-scene budget.
+
+- **Gates.** Every rule sits inside `@media (prefers-reduced-motion: no-preference)` and
+  `@supports (animation-timeline: view())`. Without either, the element shows its final state and
+  the editorial entrance (or nothing) applies.
+- **No script.** CSS only: no observer, scroll listener or animation-frame loop is added for it.
+- **Properties.** Animate only `transform`, `opacity`, `scale`, `translate` and `clip-path`. Never
+  animate `filter`: a filled filter creates a containing block and moves absolutely positioned
+  children.
+- **Final state by default.** The unanimated styles are the complete readable layout. Use
+  `animation-fill-mode: both` so the element rests at its final keyframe after its range ends, and
+  keep every text element at full opacity once it is in the reading zone.
+- **Ranges.** Entrances finish by `cover 45%` at the latest, so content is settled before the reader
+  reaches it. Exit effects start no earlier than `exit 0%`.
+- **Ancestors.** `overflow: hidden` or `auto` on an ancestor makes it the scroll container, which
+  captures `view()` and breaks `sticky`; use `overflow: clip`. An element with `aspect-ratio` that
+  gets `overflow: clip` also needs `min-height: 0`, otherwise its content can stretch it.
+- **Stacking.** Stacked elements are opaque (they carry their own background) so nothing behind them
+  shows through while they overlap, and they stay in reading order in the DOM.
+- **Budget.** At most about 12 elements animate at once, shared with the editorial entrances. A
+  section uses either a scroll scene or per-element effects, not both.
 
 ## Hero timing roles
 
@@ -253,4 +284,4 @@ motion hover must not change an audited element's bounding box or transform matr
 Section intersections are static composition primitives governed by
 [`section-intersections.md`](section-intersections.md). Motion is optional and never required to
 understand an intersection. Ambient image scaling is not parallax. The only scroll-position
-transforms are the editorial exceptions above, scroll scenes included.
+transforms are the editorial exceptions above, scroll scenes and per-element effects included.

@@ -16,6 +16,7 @@ import { buildPreviewFixtureContent } from '../../../scripts/provision/preview-e
 import {
 	loginAsPreviewAdmin,
 	mutateJson,
+	previewAccessHeaders,
 	readEditorContext,
 	readInvitationList,
 	readPublicationPreflight,
@@ -136,6 +137,7 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 
 	const detailResponse = await page.request.get(
 		`/api/dashboard/intake/${encodeURIComponent(fixture.id)}`,
+		{ headers: previewAccessHeaders(preview.runtime) },
 	);
 	expect(detailResponse.status()).toBe(200);
 	const detail = (await detailResponse.json()) as {

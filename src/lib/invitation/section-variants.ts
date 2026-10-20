@@ -83,6 +83,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/hero/_split-cover.scss',
 	},
 	{
+		section: 'hero',
+		variant: 'night-arch',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_night-arch.scss',
+	},
+	{
 		section: 'family',
 		variant: 'standard',
 		default: true,
@@ -123,6 +130,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['At least two visible venues'],
 		cssOwner: 'src/styles/themes/sections/location/_stacked-venue-plates.scss',
+	},
+	{
+		section: 'location',
+		variant: 'night-route',
+		default: false,
+		prerequisites: ['At least two visible venues'],
+		cssOwner: 'src/styles/themes/sections/location/_night-route.scss',
 	},
 	{
 		section: 'location',
@@ -207,6 +221,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['gallery.items with at least three items and one feature role'],
 		cssOwner: 'src/styles/themes/sections/gallery/_paired-feature-band.scss',
+	},
+	{
+		section: 'gallery',
+		variant: 'pinned-track',
+		default: false,
+		prerequisites: ['gallery.items with at least three items'],
+		cssOwner: 'src/styles/themes/sections/gallery/_pinned-track.scss',
 	},
 	{
 		section: 'gallery',

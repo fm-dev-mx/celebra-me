@@ -47,10 +47,18 @@ export interface LocationPresentationOptions {
 	 * entries take turns. Without editorial motion or under reduced motion the program shows as is.
 	 */
 	scene?: LocationScene;
+	/**
+	 * Venue card form; `compact` (stacked-venue-plates only) leads each card with its time, drops
+	 * the decorative map tile and keeps one «Cómo llegar» directions button.
+	 */
+	venueCard?: LocationVenueCard;
 }
 
 export const LOCATION_SCENES = ['lantern-route'] as const;
 export type LocationScene = (typeof LOCATION_SCENES)[number];
+
+export const LOCATION_VENUE_CARDS = ['compact'] as const;
+export type LocationVenueCard = (typeof LOCATION_VENUE_CARDS)[number];
 
 export const LOCATION_INDICATIONS_LAYOUTS = ['list', 'band', 'enclosure'] as const;
 export type LocationIndicationsLayout = (typeof LOCATION_INDICATIONS_LAYOUTS)[number];

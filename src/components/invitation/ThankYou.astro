@@ -6,6 +6,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThankYouVariant } from '@/lib/invitation/section-variants';
 import { splitLeadWords } from '@/lib/invitation/name-split';
 import SplitWords from '@/components/invitation/SplitWords.astro';
+import HairlineFrame from '@/components/invitation/HairlineFrame.astro';
 import StorybookLanternSky from '@/components/invitation/StorybookLanternSky.astro';
 
 interface Props {
@@ -133,6 +134,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 							alt={closingName}
 							{...imageConfig}
 						/>
+						<HairlineFrame />
 					</div>
 				)}
 				<div class="message-container">
@@ -170,7 +172,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 		margin: 0.5rem 0 0;
 		color: var(--color-text-secondary);
 		font-family: var(--font-label);
-		font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+		font-size: var(--thank-you-closing-date-size, clamp(0.75rem, 1.8vw, 0.95rem));
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 	}

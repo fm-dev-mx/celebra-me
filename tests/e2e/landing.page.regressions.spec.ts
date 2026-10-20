@@ -29,8 +29,10 @@ const COUNTDOWN_DAY = new Date(campaignEnd - 4.5 * DAY_MS);
 /** A date after the campaign ended. */
 const AFTER_CAMPAIGN = new Date(campaignEnd + DAY_MS);
 
+// Prerendered CTAs point at the /api/whatsapp redirect, which reads the Worker secret at request time.
+const WHATSAPP_HREF = /^(?:https:\/\/wa\.me\/\d+|\/api\/whatsapp)(?:\?|$)/u;
 const decodeWhatsAppText = (href: string | null) =>
-	new URL(href ?? 'https://wa.me/').searchParams.get('text') ?? '';
+	new URL(href ?? '/api/whatsapp', 'https://www.celebra-me.com').searchParams.get('text') ?? '';
 
 test.describe('Landing page regressions', () => {
 	const expectedNavLabels = ['Demos', 'Planes', 'Nosotros'];
@@ -106,8 +108,12 @@ test.describe('Landing page regressions', () => {
 				loginHref,
 			);
 			const menuCta = page.locator('.mobile-nav-actions__cta');
-			await expect(menuCta).toHaveText('Cotizar por WhatsApp');
-			await expect(menuCta).toHaveAttribute('href', /wa\.me/);
+			await expect(menuCta).toHaveText('Quiero mi invitación');
+			await expect(menuCta).toHaveAttribute(
+				'aria-label',
+				'Quiero mi invitación por WhatsApp',
+			);
+			await expect(menuCta).toHaveAttribute('href', WHATSAPP_HREF);
 			await expect(menuCta).toHaveAttribute(
 				'data-campaign-code',
 				buildCampaignCode('HEADER'),
@@ -132,13 +138,14 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.home-nav-actions__login')).toHaveText(loginLabel);
 		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
 		const headerCta = page.locator('.home-nav-actions__cta');
-		await expect(headerCta).toHaveText('Cotizar por WhatsApp');
-		await expect(headerCta).toHaveAttribute('href', /wa\.me/);
+		await expect(headerCta).toHaveText('Quiero mi invitación');
+		await expect(headerCta).toHaveAttribute('aria-label', 'Quiero mi invitación por WhatsApp');
+		await expect(headerCta).toHaveAttribute('href', WHATSAPP_HREF);
 		await expect(headerCta).toHaveAttribute('data-track-cta', 'whatsapp-header');
 		await expect(headerCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HEADER'));
 		await expect(page.locator('.home-nav__link', { hasText: 'Nosotros' })).toHaveAttribute(
 			'href',
-			'#nosotros',
+			'/#nosotros',
 		);
 
 		const navLinkStyles = await page
@@ -246,7 +253,7 @@ test.describe('Landing page regressions', () => {
 			{ useInnerText: true },
 		);
 		await expect(page.locator('.hero-prime__payment-note')).toHaveText(
-			'Sin anticipo: paga al recibir su invitación terminada.',
+			'Sin anticipo: pague al recibir su invitación terminada.',
 		);
 		await expect(page.locator('.hero-prime__secondary-action')).toHaveAttribute(
 			'href',
@@ -431,7 +438,7 @@ test.describe('Landing page regressions', () => {
 				formatMxnAmount(pkg.regularPrice),
 			);
 			await expect(cta).toHaveAttribute('data-track-event', 'whatsapp_contact_clicked');
-			await expect(cta).toHaveAttribute('href', /wa\.me/);
+			await expect(cta).toHaveAttribute('href', WHATSAPP_HREF);
 			await expect(cta).toHaveAttribute(
 				'data-campaign-code',
 				buildCampaignCode('PRICING', code),
@@ -667,6 +674,10 @@ test.describe('Landing page regressions', () => {
 			'data-campaign-code',
 			buildCampaignCode('FOOTER'),
 		);
+		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
+			'aria-label',
+			'Quiero mi invitación por WhatsApp',
+		);
 
 		const rowWidths = await footer.evaluate((element) => {
 			const containers = element.querySelectorAll('.container');
@@ -681,7 +692,7 @@ test.describe('Landing page regressions', () => {
 		await expect(footer.locator('.footer-link--cookie')).toHaveCSS('cursor', 'pointer');
 	});
 
-	test('uses one primary WhatsApp label and tracks every quote CTA', async ({ page }) => {
+	test('labels every quote CTA by intent and tracks it', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/', { waitUntil: 'load' });
 
@@ -691,7 +702,13 @@ test.describe('Landing page regressions', () => {
 			)
 			.evaluateAll((links) => links.map((link) => link.getAttribute('data-track-label')));
 		expect(labels.length).toBeGreaterThan(5);
-		expect(new Set(labels)).toEqual(new Set(['Cotizar por WhatsApp']));
+		expect(new Set(labels)).toEqual(
+			new Set([
+				'Quiero mi invitación',
+				'Quiero una invitación así',
+				...PROMO_CAMPAIGN.packages.map((pkg) => `Quiero el paquete ${pkg.name}`),
+			]),
+		);
 
 		const guestCta = page.locator(
 			'#experiencia-invitados [data-track-event="whatsapp_contact_clicked"]',
@@ -700,7 +717,7 @@ test.describe('Landing page regressions', () => {
 		await expect(guestCta).toHaveAttribute('data-track-section', 'guest-experience');
 		await expect(guestCta).toHaveAttribute('data-campaign-code', buildCampaignCode('GUESTS'));
 		await expect(guestCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
-		await expect(guestCta).toContainText('Cotizar por WhatsApp');
+		await expect(guestCta).toContainText('Quiero mi invitación');
 	});
 
 	test('shows the sticky WhatsApp bar after the hero and hides it over the contact form', async ({

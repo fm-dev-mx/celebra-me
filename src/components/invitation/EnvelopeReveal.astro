@@ -71,8 +71,9 @@ const sealPresentation = resolveSealPresentation({
 
 const isSeaside = revealVariant === 'seaside-lineart';
 const isStorybook = revealVariant === 'storybook-lanterns';
-// Storybook letters sit inside the envelope, behind the pocket front, and rise out of it.
-const letterInPocket = isStorybook;
+const isNight = revealVariant === 'night-envelope';
+// Storybook and night letters sit inside the envelope, behind the pocket front, and rise out of it.
+const letterInPocket = isStorybook || isNight;
 const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';
@@ -97,6 +98,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	data-dev-skip={String(import.meta.env.DEV)}
 	data-preview-state={previewState}
 	data-open-chime={isStorybook ? 'true' : undefined}
+	data-arch-handoff={isNight ? 'true' : undefined}
 >
 	{backdropImage && <img class="envelope-ambient" src={plainImgSrc(backdropImage.src)} alt="" width="960" height="1440" decoding="async" />}
 	{isStorybook && <StorybookLanternSky />}
@@ -107,7 +109,14 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			letterInPocket && (
 				<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
 					<InvitationRevealCard card={card} showGuest={guestPlacement !== 'outside-envelope'}>
-						<StorybookLanternsArt slot="ornament" class="invitation-reveal-card__ornament" />
+						{isStorybook && <StorybookLanternsArt slot="ornament" class="invitation-reveal-card__ornament" />}
+						{
+							isNight && (
+								<span slot="ornament" class="night-envelope-window" data-arch-window>
+									<img alt="" data-arch-photo decoding="async" />
+								</span>
+							)
+						}
 					</InvitationRevealCard>
 				</div>
 			)
@@ -149,7 +158,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 							class="seal-icon"
 						/>
 						{revealVariant === 'satin-filigree' && <span class="envelope-crystal-initials" aria-hidden="true">{sealInitials}</span>}
-						{isStorybook && sealInitials && <span class="envelope-seal-monogram" aria-hidden="true">{sealInitials}</span>}
+						{(isStorybook || isNight) && sealInitials && <span class="envelope-seal-monogram" aria-hidden="true">{sealInitials}</span>}
 						{
 							!isWaxRenderer && (
 								<div class="envelope-seal-button__pulse" aria-hidden="true"></div>
@@ -246,6 +255,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	const CARD_RISE_FALLBACK_MARGIN_MS = 1200;
 	const CARD_RISE_FALLBACK_FLOOR_MS = 4000;
 	const SKY_TILT_MAX_DEG = 3;
+	const ARCH_HANDOFF_HOLD_MS = 400;
+	const ARCH_HANDOFF_MS = 1000;
+	const ARCH_HANDOFF_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)';
 
 	/** Longest time in a comma-separated CSS time list (`1.2s, 300ms`), in milliseconds. */
 	const readLongestMs = (value: string) =>
@@ -299,6 +311,33 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			let hasRevealed = false;
 			let isOpening = false;
 			let envelopeSkipped = false;
+
+			// Night envelope: the letter's arched window shows the cover photograph in the cover
+			// arch's proportions, so the hand-over can land the window exactly on that arch.
+			const coverArch =
+				this.dataset.archHandoff === 'true'
+					? document.querySelector<HTMLElement>(
+							'.invitation-hero[data-variant="night-arch"] .invitation-hero__background',
+						)
+					: null;
+			const archWindow = this.querySelector<HTMLElement>('[data-arch-window]');
+			const fillArchWindow = () => {
+				const photo = archWindow?.querySelector<HTMLImageElement>('[data-arch-photo]');
+				const coverPhoto = coverArch?.querySelector('img');
+				if (!coverArch || !archWindow || !photo || !coverPhoto) return;
+				if (!coverPhoto.complete) {
+					coverPhoto.addEventListener('load', fillArchWindow, { once: true });
+					return;
+				}
+				const src = coverPhoto.currentSrc || coverPhoto.src;
+				const { width, height } = coverArch.getBoundingClientRect();
+				if (!src || !width || !height) return;
+				photo.src = src;
+				photo.style.objectPosition = getComputedStyle(coverPhoto).objectPosition;
+				archWindow.style.aspectRatio = `${width} / ${height}`;
+				archWindow.classList.add('has-photo');
+			};
+			fillArchWindow();
 
 			// Opt-in send-off (`--storybook-send-off: lanterns`): once the envelope has opened, a few
 			// lanterns rise from the bottom center over the cover and are removed as each one leaves.
@@ -523,6 +562,49 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				};
 			}
 
+			// The window's photograph flies onto the cover arch while the letter and the night fade;
+			// the cover underneath shows the same photograph in the same place, so the reveal's
+			// own fade hands over without a jump. Inverse FLIP: laid out at the arch, so the
+			// photograph is painted at its final size and only the transform moves.
+			const handOverToArch = () => {
+				const photo = archWindow?.querySelector('img');
+				const from = archWindow?.getBoundingClientRect();
+				const to = coverArch?.getBoundingClientRect();
+				if (!coverArch || !archWindow || !photo || !from?.width || !to?.width) {
+					completeReveal();
+					return;
+				}
+				const host = this.getBoundingClientRect();
+				const flight = document.createElement('div');
+				flight.className = 'night-envelope-flight';
+				flight.setAttribute('aria-hidden', 'true');
+				flight.style.left = `${to.left - host.left}px`;
+				flight.style.top = `${to.top - host.top}px`;
+				flight.style.width = `${to.width}px`;
+				flight.style.height = `${to.height}px`;
+				flight.style.borderRadius = getComputedStyle(coverArch).borderRadius;
+				flight.append(photo.cloneNode());
+				this.append(flight);
+				archWindow.style.visibility = 'hidden';
+				this.classList.add('is-handing-off');
+				if (typeof flight.animate !== 'function') {
+					completeReveal();
+					return;
+				}
+				const scale = from.width / to.width;
+				flight
+					.animate(
+						[
+							{
+								transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${scale})`,
+							},
+							{ transform: 'none' },
+						],
+						{ duration: ARCH_HANDOFF_MS, easing: ARCH_HANDOFF_EASE, fill: 'both' },
+					)
+					.finished.then(completeReveal, completeReveal);
+			};
+
 			const requestOpen = () => {
 				if (hasRevealed) return;
 				if (isOpening) return;
@@ -562,6 +644,12 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				const showLetter = () => {
 					if (hasRevealed) return;
 					showCardToAccessibility();
+
+					if (archWindow?.classList.contains('has-photo')) {
+						// A short rest so the letter reads before its window flies.
+						window.setTimeout(handOverToArch, ARCH_HANDOFF_HOLD_MS);
+						return;
+					}
 
 					const holdMs = resolveLetterHoldMs(this);
 					if (holdMs <= 0) {

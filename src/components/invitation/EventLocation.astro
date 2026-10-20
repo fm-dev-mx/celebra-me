@@ -24,6 +24,7 @@ import type {
 	LocationMapStyle,
 	LocationPresentation,
 	LocationScene,
+	LocationVenueCard,
 } from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
 
@@ -45,6 +46,8 @@ interface Props {
 	showCalendarLinks?: boolean;
 	/** Pinned scroll scene over the program; see LocationPresentationOptions.scene. */
 	scene?: LocationScene;
+	/** `compact`: time-led venue cards without the map tile (stacked-venue-plates). */
+	venueCard?: LocationVenueCard;
 	calendarEventTitle?: string;
 	eventTimeZone?: string;
 	nextSectionLink?: {
@@ -75,6 +78,7 @@ const {
 	indicationsLayout = 'list',
 	showCalendarLinks = false,
 	scene,
+	venueCard,
 	calendarEventTitle,
 	eventTimeZone,
 	nextSectionLink,
@@ -172,6 +176,9 @@ const venueType = (venue: GroupedVenue) =>
 					presentation={presentation}
 					showFlourishes={showFlourishes}
 					showNavigationButtons={showNavigationButtons}
+					compact={venueCard === 'compact'}
+					vignette={variant === 'night-route'}
+					reveal={variant !== 'night-route'}
 					calendar={calendarFor(venue)}
 				/>
 			))}

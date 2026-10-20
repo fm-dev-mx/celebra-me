@@ -1,0 +1,725 @@
+@use '../../../global/mixins' as mixins;
+
+// Night envelope reveal: a navy envelope under a quiet starry sky, champagne hairlines along the
+// flap, a starry liner revealed as the flap turns, and a champagne wax seal with the couple's
+// monogram. The seal never breaks: it presses, glows and rises with the flap. The letter is ivory
+// with an arched window that shows the cover photograph; EnvelopeReveal flies that window onto the
+// cover arch (`data-arch-handoff`). Colors resolve through semantic tokens; profiles may override
+// the optional `--night-envelope-*` hooks, which this skin consumes with fallbacks and never
+// declares.
+
+@function night-star($at, $size, $color) {
+	@return radial-gradient($size $size at $at, $color, transparent 60%);
+}
+
+// Paper fiber, neutral so it reads on any navy; the front's flap shading and fold lines are drawn
+// in a 100×100 box stretched to the envelope (non-scaling strokes keep the folds one pixel wide).
+$night-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url%28%23n%29'/%3E%3C/svg%3E");
+$night-front-shade: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0L50 50L0 100Z' fill-opacity='.16'/%3E%3Cpath d='M100 0L50 50L100 100Z' fill-opacity='.16'/%3E%3Cpath d='M0 100L50 60L100 100Z' fill='%23fff' fill-opacity='.05'/%3E%3C/svg%3E");
+$night-front-folds: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M0 0L50 50L100 0' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M0 100L50 60L100 100' stroke-opacity='.4' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E");
+$night-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$night-ease-in: cubic-bezier(0.55, 0, 0.85, 0.3);
+$night-ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
+$night-ease-rise: cubic-bezier(0.3, 0, 0.15, 1);
+
+// ---------------------------------------------------------------------------------------------
+// Opening choreography. The envelope parts share one 3D context: base 0, letter 1px, pocket 2px,
+// flap 3px, tease 4px. The flap drops behind the letter at its edge-on instant.
+//   0–500ms      the seal is pressed softly and glows (no rebound)
+//   650–1650ms   the flap turns at an even pace, its starry liner fading in at edge-on; the seal
+//                rides its tip up and away
+//   1250–2650ms  the letter rises up and forward in one movement
+//   1550–2350ms  the envelope sinks a little and fades beneath it
+//   2650–3050ms  the letter rests
+//   3050ms→      the window flies onto the cover arch while the paper and the sky fade
+// ---------------------------------------------------------------------------------------------
+
+.envelope-wrapper[data-variant='night-envelope'] {
+	--night-ink: var(--night-envelope-ink, var(--color-action-accent));
+	--night-field: var(--night-envelope-field, var(--color-surface-dark));
+	--night-star: var(--night-envelope-star, var(--color-text-on-dark));
+	--night-paper: var(
+		--night-envelope-paper,
+		color-mix(in srgb, var(--night-field) 90%, var(--night-star))
+	);
+	--night-liner: var(
+		--night-envelope-liner,
+		color-mix(in srgb, var(--night-field) 78%, var(--night-star))
+	);
+	--env-paper-bg:
+		radial-gradient(
+			120% 80% at 20% 0%,
+			color-mix(in srgb, var(--night-star) 7%, transparent),
+			transparent 60%
+		),
+		linear-gradient(
+			170deg,
+			var(--night-paper),
+			color-mix(in srgb, var(--night-paper) 82%, black)
+		);
+	--env-paper-sheen: none;
+	--env-paper-grain: #{$night-grain};
+	--env-paper-grain-opacity: 100%;
+	--env-paper-border: color-mix(in srgb, var(--night-ink) 32%, transparent);
+	--env-text-primary: var(--night-star);
+	--env-text-secondary: color-mix(in srgb, var(--night-star) 78%, transparent);
+	--env-accent-fallback: var(--night-ink);
+	--env-seal-accent: var(--night-ink);
+	--env-seal-bg: radial-gradient(
+		circle at 35% 30%,
+		var(--night-envelope-wax-light, color-mix(in srgb, var(--night-ink) 55%, white)) 0%,
+		var(--night-envelope-wax, var(--night-ink)) 45%,
+		var(--night-envelope-wax-deep, color-mix(in srgb, var(--night-ink) 65%, black)) 100%
+	);
+	--env-seal-icon: var(
+		--night-envelope-wax-press,
+		color-mix(in srgb, var(--night-ink) 45%, black)
+	);
+	--env-shadow-seal:
+		0 1px 1px color-mix(in srgb, black 40%, transparent),
+		0 6px 10px -5px color-mix(in srgb, black 55%, transparent),
+		inset 0 0 0 4px color-mix(in srgb, var(--night-ink) 88%, black),
+		inset 0 0 0 5px color-mix(in srgb, white 30%, transparent);
+	--env-shadow-container-fallback:
+		0 2px 3px color-mix(in srgb, black 35%, transparent),
+		0 40px 70px -30px color-mix(in srgb, black 75%, transparent);
+	--env-pocket-shadow: none;
+	--env-container-radius-fallback: 0.5rem;
+	--env-container-width-fallback: min(86vw, 40rem);
+	--env-container-ratio-fallback: 1.18;
+	--env-container-max-height-fallback: 60svh;
+	--env-grid: 36% 24% 40%;
+	--env-seal-size-min: 64px;
+	--env-seal-size-max: 84px;
+	--env-seal-size-ratio: 18;
+	--env-seal-hint-display: none;
+	--env-title-size: clamp(2rem, 9cqw, 3rem);
+	--env-font-display: var(--font-display);
+	--env-identity-padding: 1.25rem;
+	--env-instruction-color: color-mix(in srgb, var(--night-ink) 90%, var(--night-star));
+	--reveal-card-bg: var(--night-envelope-card-bg, var(--color-surface-elevated));
+	--reveal-card-sheen: none;
+	--reveal-card-text-primary: var(--night-envelope-card-ink, var(--color-text-primary));
+	--reveal-card-text-secondary: color-mix(
+		in srgb,
+		var(--night-envelope-card-ink, var(--color-text-primary)) 70%,
+		transparent
+	);
+	--reveal-card-border: transparent;
+	--reveal-card-accent: var(--night-ink);
+	--reveal-card-radius: 0.4rem;
+	--reveal-card-shadow: 0 10px 30px color-mix(in srgb, black 35%, transparent);
+	--reveal-card-grain-opacity: 0;
+	--reveal-card-width: var(--night-envelope-card-width, min(72vw, 21rem));
+	--reveal-card-rest-y: var(--night-envelope-card-rest-y, -24%);
+
+	// The flight lands when the letter settles; no reading hold.
+	--env-letter-hold: 0ms;
+
+	// The sky is painted on ::before, so the wrapper itself stays clear.
+	background: none;
+	perspective: var(--night-envelope-perspective, 1100px);
+	perspective-origin: 50% 42%;
+
+	// The sky is painted on its own layer so it can fade off the cover during the hand-over.
+	// The wrapper is its own stacking context, so -1 paints above its (transparent) background
+	// and below every part of the envelope.
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background:
+			night-star(12% 14%, 1px, color-mix(in srgb, var(--night-star) 70%, transparent)),
+			night-star(82% 10%, 1px, color-mix(in srgb, var(--night-star) 55%, transparent)),
+			night-star(70% 30%, 1.5px, color-mix(in srgb, var(--night-ink) 70%, transparent)),
+			night-star(24% 40%, 1px, color-mix(in srgb, var(--night-star) 45%, transparent)),
+			night-star(90% 62%, 1px, color-mix(in srgb, var(--night-star) 50%, transparent)),
+			night-star(8% 78%, 1px, color-mix(in srgb, var(--night-star) 40%, transparent)),
+			night-star(56% 88%, 1.5px, color-mix(in srgb, var(--night-ink) 55%, transparent)),
+			night-star(38% 6%, 1px, color-mix(in srgb, var(--night-star) 50%, transparent)),
+			radial-gradient(
+				130% 50% at 50% 0%,
+				color-mix(in srgb, var(--night-paper) 70%, transparent),
+				transparent 70%
+			),
+			linear-gradient(
+				180deg,
+				var(--night-field),
+				var(--night-envelope-field-deep, color-mix(in srgb, var(--night-field) 70%, black))
+			);
+		transition: opacity 900ms var(--ease-standard);
+		pointer-events: none;
+	}
+
+	// The top flap covers the front's V opening and carries the seal at its tip.
+	.envelope-flap {
+		height: 56%;
+		clip-path: polygon(0 0, 100% 0, 50% 100%);
+		background:
+			#{$night-grain},
+			linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--night-paper) 92%, var(--night-star)),
+				color-mix(in srgb, var(--night-paper) 94%, black)
+			);
+	}
+
+	// Champagne hairline along both flap diagonals.
+	.envelope-flap::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		height: auto;
+		background:
+			linear-gradient(
+					to top right,
+					transparent calc(50% - 0.75px),
+					var(--night-ink) 50%,
+					transparent calc(50% + 0.75px)
+				)
+				left / 50% 100% no-repeat,
+			linear-gradient(
+					to top left,
+					transparent calc(50% - 0.75px),
+					var(--night-ink) 50%,
+					transparent calc(50% + 0.75px)
+				)
+				right / 50% 100% no-repeat;
+	}
+
+	&:not(.is-opening) .envelope-flap {
+		transform: translateZ(3px) rotateX(0deg);
+	}
+
+	// The inside of the flap: a lighter navy with a few stars, hidden until the flap passes
+	// edge-on.
+	.envelope-flap-shadow {
+		z-index: 3;
+		background:
+			night-star(30% 20%, 1px, color-mix(in srgb, var(--night-star) 80%, transparent)),
+			night-star(62% 34%, 1px, color-mix(in srgb, var(--night-star) 70%, transparent)),
+			night-star(48% 12%, 1.5px, var(--night-ink)),
+			night-star(72% 14%, 1px, color-mix(in srgb, var(--night-star) 60%, transparent)),
+			night-star(40% 60%, 1px, color-mix(in srgb, var(--night-star) 70%, transparent)),
+			night-star(54% 46%, 1.5px, var(--night-ink)),
+			linear-gradient(
+				0deg,
+				var(--night-liner),
+				color-mix(in srgb, var(--night-liner) 80%, black)
+			);
+		filter: none;
+		opacity: 0%;
+		transform: none;
+	}
+
+	// Inside of the envelope, seen through the V once the flap is up.
+	.envelope-base {
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--night-paper) 60%, black),
+			color-mix(in srgb, var(--night-paper) 80%, black)
+		);
+		transform: translateZ(0);
+	}
+
+	// The front: two side flaps folded in from the corners (a touch darker) under a bottom flap (a
+	// touch lighter), with champagne fold lines.
+	.envelope-pocket {
+		clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+		background:
+			#{$night-front-shade} center / 100% 100%,
+			#{$night-grain},
+			linear-gradient(
+				170deg,
+				var(--night-paper),
+				color-mix(in srgb, var(--night-paper) 85%, black)
+			);
+		transform: translateZ(2px);
+
+		&::after {
+			inset: 0;
+			height: auto;
+			background: color-mix(in srgb, var(--night-ink) 55%, transparent);
+			mask: #{$night-front-folds} center / 100% 100% no-repeat;
+		}
+	}
+
+	.envelope-tease {
+		padding-bottom: calc(1.25rem + 6cqw);
+		transform: translateZ(4px);
+	}
+
+	// Champagne wax with the monogram struck in; a soft ring breathes around it at rest.
+	.envelope-seal-button__visual {
+		position: relative;
+		z-index: 1;
+		border: 0;
+		border-radius: 50%;
+	}
+
+	// A warm glow behind the wax, drawn as a gradient (no ring, no dark halo).
+	.envelope-seal-button {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: -35%;
+			border-radius: 50%;
+			background: radial-gradient(
+				closest-side,
+				color-mix(in srgb, var(--night-ink) 38%, transparent),
+				transparent
+			);
+			opacity: 50%;
+			pointer-events: none;
+		}
+	}
+
+	&:not(.is-opening) .envelope-seal-button::before {
+		animation: night-seal-breathe 2.4s ease-in-out infinite;
+	}
+
+	.envelope-seal-button__visual .seal-icon {
+		opacity: 0%;
+	}
+
+	.envelope-seal-monogram {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		padding-top: 0.1em;
+		font-family: var(--night-envelope-seal-monogram-font, var(--wax-seal-font-family));
+
+		--night-seal-type: calc(var(--env-seal-size, 72px) * 0.26);
+
+		font-size: var(--night-envelope-seal-monogram-size, var(--night-seal-type));
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: 0.06em;
+		color: var(--env-seal-icon);
+		text-shadow: 0.6px 0.8px 0 color-mix(in srgb, white 45%, transparent);
+		pointer-events: none;
+
+		@supports (text-box: trim-both cap alphabetic) {
+			padding-top: 0;
+			text-box: trim-both cap alphabetic;
+		}
+	}
+
+	.envelope-seal-button__pulse {
+		display: none;
+	}
+
+	// A soft navy halo keeps the names clear of the bottom flap's fold lines.
+	.envelope-name {
+		font-family: var(--font-display);
+		font-weight: 400;
+		color: var(--env-text-primary);
+		text-shadow: 0 0 12px var(--night-paper);
+	}
+
+	// The wax monogram already carries the initials; the postal stamp would repeat them.
+	.envelope-zone--stamp,
+	.envelope-details,
+	.tease-divider {
+		display: none;
+	}
+
+	.personalized-label {
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--night-envelope-label-size, 0.75rem);
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--env-instruction-color);
+	}
+
+	.personalized-name {
+		font-family: var(--font-display);
+		font-size: var(--night-envelope-guest-size, clamp(1.4rem, 6vw, 1.8rem));
+		font-style: italic;
+		font-weight: 400;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--env-text-primary);
+	}
+
+	.envelope-external-instruction__button {
+		min-height: 44px;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--env-open-label-size, 0.75rem);
+		letter-spacing: 0.32em;
+		text-transform: uppercase;
+		color: var(--env-instruction-color);
+		opacity: 100%;
+	}
+
+	.instruction-line {
+		display: none;
+	}
+
+	// Letter: ivory paper (5:7), the arched window on top, then the names and the date.
+	.envelope-reveal-stage {
+		padding: 0;
+		transform: translate3d(0, 8%, 1px) scale(0.9);
+		transform-origin: center;
+	}
+
+	.invitation-reveal-card {
+		aspect-ratio: 5 / 7;
+		border: 0;
+		transition: opacity 500ms var(--ease-standard);
+	}
+
+	.invitation-reveal-card__inner {
+		position: relative;
+		height: 100%;
+		justify-content: flex-start;
+		gap: 0.45rem;
+		padding: 11% 11% 9%;
+
+		// One champagne hairline inset, the stationery's frame.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: var(--night-envelope-card-rule-inset, 0.6rem);
+			border: 1px solid color-mix(in srgb, var(--night-ink) 60%, transparent);
+			border-radius: var(--night-envelope-card-rule-radius, 0.2rem);
+			pointer-events: none;
+		}
+	}
+
+	// The window takes the cover arch's proportions once the photograph is known
+	// (EnvelopeReveal sets its aspect ratio); until then it keeps a portrait arch.
+	.night-envelope-window {
+		display: block;
+		flex: none;
+		width: var(--night-envelope-window-width, 52%);
+		aspect-ratio: 3 / 4;
+		margin-bottom: 0.6rem;
+		overflow: hidden;
+		border-radius: var(--hero-arch-radius, 999px 999px 0.3rem 0.3rem);
+		background: color-mix(in srgb, var(--night-field) 85%, transparent);
+		box-shadow:
+			0 0 0 3px var(--reveal-card-bg),
+			0 0 0 4px var(--night-ink);
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			opacity: 0%;
+		}
+
+		&.has-photo img {
+			opacity: 100%;
+		}
+	}
+
+	.invitation-reveal-card__label {
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--night-envelope-card-label-size, 0.75rem);
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--night-envelope-card-label-ink, var(--reveal-card-text-secondary));
+	}
+
+	// A short champagne rule parts the names from the date.
+	.invitation-reveal-card__date::before {
+		content: '';
+		display: block;
+		width: 2.4rem;
+		margin: 0.15rem auto 0.6rem;
+		border-top: 1px solid var(--night-ink);
+	}
+
+	.invitation-reveal-card__name {
+		margin-block: 0;
+		font-family: var(--font-display);
+		font-size: var(--night-envelope-card-name-size, clamp(1.5rem, 6.5vw, 2rem));
+		font-weight: 400;
+		line-height: 1.05;
+	}
+
+	.invitation-reveal-card__ampersand {
+		font-style: italic;
+		color: var(--night-ink);
+	}
+
+	.invitation-reveal-card__date {
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--night-envelope-card-label-size, 0.75rem);
+		letter-spacing: 0.24em;
+		color: var(--night-envelope-card-label-ink, var(--reveal-card-text-secondary));
+	}
+
+	.invitation-reveal-card__tagline,
+	.invitation-reveal-card__divider {
+		display: none;
+	}
+
+	.invitation-reveal-card__guest {
+		margin-top: auto;
+		font-family: var(--font-display);
+		font-size: var(--night-envelope-card-guest-size, 1rem);
+		font-style: italic;
+		color: var(--reveal-card-text-secondary);
+	}
+
+	.invitation-reveal-card__guest-label,
+	.invitation-reveal-card__guest-name {
+		margin: 0;
+		font: inherit;
+		letter-spacing: 0;
+		text-transform: none;
+		color: inherit;
+	}
+
+	@include mixins.respond-below(sm) {
+		--env-container-width-fallback: min(88vw, 344px);
+		--env-container-ratio-fallback: 0.74;
+		--env-container-max-height-fallback: min(74svh, 560px);
+		--env-grid: 38% 22% 40%;
+		--env-title-size: clamp(2rem, 11cqw, 2.6rem);
+	}
+
+	&.is-opening {
+		.envelope-tease {
+			transition: opacity 500ms var(--ease-standard) 400ms;
+		}
+
+		// The monogram stays whole: it presses and glows, then rides the flap's tip up and away.
+		.envelope-seal-button__visual {
+			animation:
+				night-seal-press 500ms $night-ease-soft both,
+				night-seal-ride 1000ms linear 650ms forwards;
+		}
+
+		.envelope-seal-button::before {
+			animation: night-seal-glow 1400ms $night-ease-soft both;
+		}
+
+		.envelope-flap {
+			animation:
+				night-flap-turn 1000ms linear 650ms forwards,
+				night-envelope-sink 800ms $night-ease-soft 1550ms forwards;
+		}
+
+		.envelope-flap-shadow {
+			animation: night-flap-liner 1000ms linear 650ms forwards;
+		}
+
+		.envelope-flap::after {
+			animation: night-flap-hairline 1000ms linear 650ms forwards;
+		}
+
+		.envelope-base,
+		.envelope-pocket {
+			animation: night-envelope-sink 800ms $night-ease-soft 1550ms forwards;
+		}
+
+		.envelope-container::after {
+			animation: night-envelope-shadow-out 800ms $night-ease-soft 1550ms forwards;
+		}
+
+		// Keeps the `envCardRise` prefix: EnvelopeReveal hands over on that animationend.
+		.envelope-reveal-stage {
+			animation: envCardRiseNight 1400ms $night-ease-rise 1250ms both;
+		}
+	}
+
+	&.is-preview-opened,
+	&.is-letter-held {
+		.envelope-base,
+		.envelope-container::after {
+			opacity: 0%;
+			pointer-events: none;
+		}
+
+		.envelope-reveal-stage {
+			pointer-events: auto;
+			opacity: 100%;
+			transform: translate3d(0, var(--reveal-card-rest-y), 36px) scale(0.97);
+		}
+	}
+
+	// Hand-over: the letter's paper and the sky fade while the window flies to the cover arch.
+	&.is-handing-off {
+		&::before {
+			opacity: 0%;
+		}
+
+		.invitation-reveal-card {
+			opacity: 0%;
+		}
+	}
+
+	.night-envelope-flight {
+		position: absolute;
+		z-index: 2;
+		overflow: hidden;
+		transform-origin: 0 0;
+		will-change: transform;
+		pointer-events: none;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+}
+
+// The window already sits on the cover arch, so the envelope leaves without a delay.
+.event-theme-wrapper[data-reveal-state='revealed']
+	.envelope-wrapper[data-variant='night-envelope'] {
+	--env-exit-delay: 0s;
+}
+
+@keyframes night-seal-breathe {
+	50% {
+		opacity: 90%;
+		scale: 1.08;
+	}
+}
+
+@keyframes night-seal-press {
+	0% {
+		scale: 1;
+	}
+
+	35% {
+		scale: 0.96;
+	}
+
+	100% {
+		scale: 1;
+	}
+}
+
+@keyframes night-seal-glow {
+	0% {
+		opacity: 50%;
+	}
+
+	35% {
+		opacity: 100%;
+		scale: 1.12;
+	}
+
+	100% {
+		opacity: 0%;
+		scale: 1.2;
+	}
+}
+
+@keyframes night-seal-ride {
+	0% {
+		opacity: 100%;
+		transform: translate3d(0, 0, 0);
+		animation-timing-function: $night-ease-in;
+	}
+
+	70% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 0%;
+		transform: translate3d(0, calc(-50cqi / var(--env-container-ratio-fallback)), 24px)
+			scale(0.86);
+	}
+}
+
+@keyframes night-flap-turn {
+	0% {
+		transform: translateZ(3px) rotateX(0deg);
+		animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+	}
+
+	50% {
+		transform: translateZ(3px) rotateX(90deg);
+		animation-timing-function: step-end;
+	}
+
+	50.5% {
+		transform: translateZ(-8px) rotateX(91deg);
+		animation-timing-function: cubic-bezier(0, 0, 0.55, 1);
+	}
+
+	100% {
+		transform: translateZ(-8px) rotateX(178deg);
+	}
+}
+
+@keyframes night-flap-liner {
+	0%,
+	46% {
+		opacity: 0%;
+	}
+
+	54%,
+	100% {
+		opacity: 100%;
+	}
+}
+
+@keyframes night-flap-hairline {
+	0%,
+	46% {
+		opacity: 100%;
+	}
+
+	54%,
+	100% {
+		opacity: 0%;
+	}
+}
+
+@keyframes night-envelope-sink {
+	to {
+		opacity: 0%;
+		translate: 0 6rem;
+	}
+}
+
+@keyframes night-envelope-shadow-out {
+	to {
+		opacity: 0%;
+	}
+}
+
+@keyframes envCardRiseNight {
+	0% {
+		opacity: 0%;
+		transform: translate3d(0, 8%, 1px) scale(0.9);
+	}
+
+	8% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translate3d(0, var(--reveal-card-rest-y), 36px) scale(0.97);
+	}
+}
+
+@include mixins.reduced-motion {
+	.envelope-wrapper[data-variant='night-envelope'] {
+		.envelope-seal-button__visual,
+		.envelope-seal-button::before {
+			/* stylelint-disable-next-line declaration-no-important */
+			animation: none !important;
+		}
+
+		&:not(.is-preview-opened, .is-letter-held) .envelope-reveal-stage {
+			opacity: 0%;
+		}
+	}
+}

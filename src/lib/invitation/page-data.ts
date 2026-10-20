@@ -14,6 +14,7 @@ import {
 import { buildInvitationRenderPlan } from './render-plan';
 import { resolveEventEdition } from './event-type-contract';
 import type { InvitationRenderPlanItem } from './render-plan';
+import { formatHeroTime } from '@/lib/invitation/hero-presentation';
 import {
 	applyLocationPolicy,
 	shouldRedactEnvelopeTeaser,
@@ -155,7 +156,10 @@ export function buildPageContextFromViewModel(input: {
 		.join(' ');
 
 	const guestName = guestContext?.guest.fullName;
-	const heroTime = pickHeroValue(sections, 'time', renderViewModel.hero.venueIndex);
+	const heroTime = formatHeroTime(
+		pickHeroValue(sections, 'time', renderViewModel.hero.venueIndex),
+		renderViewModel.hero.timeFormat,
+	);
 	const heroVenueName = pickHeroValue(sections, 'venueName', renderViewModel.hero.venueIndex);
 	const heroVenueEvent = pickHeroValue(sections, 'venueEvent', renderViewModel.hero.venueIndex);
 

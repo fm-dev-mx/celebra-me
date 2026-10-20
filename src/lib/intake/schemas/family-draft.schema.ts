@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { optionalText, editableAssetSchema } from '@/lib/intake/schemas/shared-content.schema';
 import { focalPointSchema } from '@/lib/schemas/content/shared.schema';
-import { FAMILY_PRESENTATIONS } from '@/lib/invitation/family-presentation';
+import {
+	FAMILY_GODPARENTS_LAYOUTS,
+	FAMILY_PRESENTATIONS,
+} from '@/lib/invitation/family-presentation';
 import { FAMILY_VARIANTS } from '@/lib/invitation/section-variants';
 
 const familyGroupDraftSchema = z.object({
@@ -56,6 +59,7 @@ export const familyDraftSchema = z.object({
 	motherRole: optionalText(200),
 	visible: z.boolean().optional(),
 	presentation: z.enum(FAMILY_PRESENTATIONS).optional(),
+	godparentsLayout: z.enum(FAMILY_GODPARENTS_LAYOUTS).optional(),
 	variant: z.enum(FAMILY_VARIANTS).optional(),
 	groups: z.array(familyGroupDraftSchema).optional(),
 	godparentGroups: z.array(godparentGroupDraftSchema).optional(),
