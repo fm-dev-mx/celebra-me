@@ -60,7 +60,7 @@
 	min-height: 44px;
 	padding: 0.6rem 1.4rem;
 	border: var(--floating-cta-border, 0);
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	font-family: var(--font-label, var(--font-body));
 	font-size: tokens.$font-size-ui;
 	font-weight: 600;
@@ -88,7 +88,7 @@
 	gap: 0.9rem;
 	width: min(20rem, calc(100vw - 2rem));
 	padding: 1rem 1.15rem;
-	border-radius: 1rem;
+	border-radius: var(--radius-lg);
 	font-family: var(--font-body);
 	color: var(--floating-cta-panel-ink, var(--color-text-primary));
 	background: var(--floating-cta-panel-bg, var(--color-surface-primary));

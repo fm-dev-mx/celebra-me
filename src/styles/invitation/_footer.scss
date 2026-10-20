@@ -66,6 +66,9 @@
 // the finger while pulling and eases back otherwise. Transforms and opacity only.
 //   --footer-pull-color  Lantern and thread (default lantern amber)
 //   --footer-pull-glow   Lantern light
+// A paper lantern's outline: a little fuller below than above.
+$lantern-shape: 40% 40% 45% 45%;
+
 @property --footer-pull {
 	syntax: '<number>';
 	inherits: true;
@@ -113,7 +116,7 @@
 		left: 50%;
 		width: 0.7rem;
 		height: 0.95rem;
-		border-radius: 40% 40% 45% 45%;
+		border-radius: $lantern-shape;
 		background: var(--footer-pull-color, rgb(232 160 64));
 		box-shadow: 0 0 0.9rem 0.25rem var(--footer-pull-glow, rgb(232 160 64 / 35%));
 		translate: -50% calc(var(--footer-pull) * -3.25rem + 0.4rem);
