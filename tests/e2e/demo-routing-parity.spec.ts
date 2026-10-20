@@ -68,10 +68,10 @@ test.describe('Demo Routing Parity', () => {
 				'LOOKBOOK XV AÑOS',
 			);
 			await expect(page.locator('.demo-showroom__title')).toHaveText(
-				'Elige una referencia visual para tu invitación',
+				'Elija una referencia visual para su invitación',
 			);
 			await expect(page.locator('.demo-showroom__description')).toHaveText(
-				'Cada propuesta se adapta a tus fotografías, paleta de colores y estilo del evento.',
+				'Cada propuesta se adapta a sus fotografías, paleta de colores y estilo del evento.',
 			);
 
 			// Featured panel defaults to Celestial Blue
@@ -86,7 +86,7 @@ test.describe('Demo Routing Parity', () => {
 			const selectorSection = page.locator('.demo-showroom__selector');
 			await expect(selectorSection).toBeVisible();
 			await expect(selectorSection.locator('#demo-showroom-selector-title')).toHaveText(
-				'Explora otros estilos',
+				'Explore otros estilos',
 			);
 
 			// Exactly 2 cards (active excluded)
@@ -423,10 +423,10 @@ test.describe('Demo Routing Parity', () => {
 				'LOOKBOOK BODA',
 			);
 			await expect(page.locator('.demo-showroom__title')).toHaveText(
-				'Referencia visual para tu invitación',
+				'Referencia visual para su invitación',
 			);
 			await expect(page.locator('.demo-showroom__description')).toHaveText(
-				'Esta propuesta se adapta a tus fotografías, paleta de colores y estilo del evento.',
+				'Esta propuesta se adapta a sus fotografías, paleta de colores y estilo del evento.',
 			);
 
 			// Featured panel eyebrow is 'Estilo disponible' for single demos
@@ -444,6 +444,34 @@ test.describe('Demo Routing Parity', () => {
 			await expect(page.locator('#demo-showroom-strip-title')).toHaveText(
 				'Nuestras invitaciones incluyen:',
 			);
+		});
+	});
+
+	test.describe('Showroom – Primera comunión', () => {
+		test('lists the Angelic Presence demo with a demo quote CTA', async ({ page }) => {
+			const response = await page.goto('/demos/primera-comunion', {
+				waitUntil: 'domcontentloaded',
+			});
+			expect(response?.ok()).toBeTruthy();
+
+			await expect(page.locator('.demo-showroom__eyebrow').first()).toHaveText(
+				'LOOKBOOK PRIMERA COMUNIÓN',
+			);
+			await expect(
+				page.getByRole('heading', { name: 'Lo adaptamos a su primera comunión' }),
+			).toBeVisible();
+			const featuredLink = page.locator(
+				'a[href="/primera-comunion/demo-primera-comunion-angelic-presence"]',
+			);
+			await expect(featuredLink.first()).toBeVisible();
+		});
+	});
+
+	test.describe('Showroom – event type without demos', () => {
+		test('baby shower lands on the landing event selector', async ({ page }) => {
+			await page.goto('/demos/baby-shower', { waitUntil: 'domcontentloaded' });
+			expect(new URL(page.url()).pathname).toBe('/');
+			expect(new URL(page.url()).hash).toBe('#tipo-evento');
 		});
 	});
 });

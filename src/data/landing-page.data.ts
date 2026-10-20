@@ -8,7 +8,7 @@ import {
 } from '@/data/promo-campaign.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 
-const PRIMARY_CTA_LABEL = 'Cotizar por WhatsApp';
+const PRIMARY_CTA_LABEL = 'Cotizar mi invitación';
 
 /** Featured demo opened by the hero secondary action ("Ver una invitación"). */
 const HERO_DEMO_SLUG = 'demo-xv-celestial-blue';
@@ -36,7 +36,7 @@ export const landingData: LandingPageData = {
 			prefix: 'Desde',
 			suffix: 'MXN, pago único.',
 		},
-		paymentNote: 'Sin anticipo: paga al recibir su invitación terminada.',
+		paymentNote: 'Sin anticipo: pague al recibir su invitación terminada.',
 		primaryCtaLabel: PRIMARY_CTA_LABEL,
 		secondaryCtaLabel: 'Ver una invitación',
 		secondaryCtaUrl: heroDemo.href,
