@@ -269,7 +269,9 @@ runs every tier.
 When a pull request into `develop` runs the browser tier, it skips the two complete visual parity
 suites (`canonical-invitation-page-parity` and `structural-variant-portability`): the browser step
 sets `VISUAL_PARITY_DEFERRED=true` and both suites call `test.skip`, while every other browser check
-still runs. The `develop` push, pull requests into `main`, manual dispatches and the nightly
+still runs. The host guest import flow (`guest-import-flow.spec.ts`) follows the same gate; it signs
+in with the synthetic host token of the canonical fixture transport and mocks every dashboard API.
+The `develop` push, pull requests into `main`, manual dispatches and the nightly
 `Nightly Visual Parity` workflow (`nightly-visual-parity.yml`, 08:30 UTC) run them in full. The
 nightly workflow dispatches Repository CI on `develop`, waits for it and opens or comments an issue
 titled «CI nocturna: la paridad visual completa de develop falló» when it fails; it closes that
