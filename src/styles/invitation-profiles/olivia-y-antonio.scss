@@ -416,9 +416,20 @@
 		--color-glass-shadow: rgb(var(--olivia-navy-rgb) / 12%);
 	}
 
+	// Pass, register and closing share one deep-navy night, so the chapters join without seams;
+	// the wrapper carries the band too, so the preset's default band never shows at its edges.
+	.invitation-section-wrapper[data-section-kind='rsvp'],
 	.rsvp-section {
-		--formal-chapter-band: var(--olivia-navy);
-		--formal-chapter-band-rgb: var(--olivia-navy-rgb);
+		--formal-chapter-band: var(--olivia-navy-deep);
+		--formal-chapter-band-rgb: var(--olivia-navy-deep-rgb);
+	}
+
+	// Inside the night the register needs no champagne haze at its seam with the pass.
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--intersection-blend: none;
+	}
+
+	.rsvp-section {
 		--formal-chapter-cream: var(--olivia-ivory);
 		--formal-chapter-cream-rgb: var(--olivia-ivory-rgb);
 		--formal-chapter-metal: var(--olivia-champagne);
@@ -437,11 +448,13 @@
 		--formal-register-open: formal-register-open;
 		--formal-register-label-size: 0.75rem;
 
-		// The register sits in a panel like the venue stops, so it reads as the same suite.
+		// The register sits in a panel like the venue stops and the pass, so it reads as the
+		// same suite.
 		--formal-register-surface-bg: linear-gradient(
-			180deg,
-			rgb(var(--olivia-ivory-rgb) / 5%) 0%,
-			rgb(var(--olivia-navy-deep-rgb) / 60%) 100%
+			165deg,
+			rgb(var(--olivia-slate-rgb) / 55%) 0%,
+			var(--olivia-navy) 55%,
+			rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
 		);
 		--formal-register-surface-border: 1px solid rgb(var(--olivia-champagne-rgb) / 32%);
 		--formal-register-surface-radius: 1.1rem;
@@ -455,6 +468,8 @@
 		--color-surface-dark-rgb: var(--olivia-navy-deep-rgb);
 		--thank-you-bleed-veil: linear-gradient(
 			to bottom,
+			var(--olivia-navy-deep) 0%,
+			rgb(var(--olivia-navy-deep-rgb) / 0%) 22%,
 			transparent 30%,
 			rgb(var(--olivia-navy-deep-rgb) / 72%) 58%,
 			var(--olivia-navy-deep) 88%
