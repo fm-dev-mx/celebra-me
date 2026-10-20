@@ -19,7 +19,7 @@
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 174,
+    "totalCaptures": 176,
     "matrixHash": "e74f884d057a7aeb4b6de0356eca6cd753552644c4bf76c4828620cf749ae920",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
@@ -2206,6 +2206,30 @@
             "sha256": "532603ddb5903f93d587c18aff14952da08bf8c74e1eb2db4f910afb26f84cc8",
             "contentHash": "7f309f40c01984dbc9fd95a1d5ebd339007bd6d10bae0d5f4c06f562d4f3fafa",
             "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "olivia-y-antonio",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
+            "sha256": "e9d6a98a2c36a87caa5af1bed5a73a1fad3826ca2027c9eb05cb3811df855fab",
+            "contentHash": "2ace4f5c7f59cbbe2498f04cedb0437b3b24ec196fefd13c00547399c6f3368f",
+            "assetHash": "bd1b6bd9347ea652c12e590a3c3afb492f2aa75bd3b30493c50c82e22084d9a9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "olivia-y-antonio",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
+            "sha256": "37a81041fbc349bfc4e08056367148ecc89a1bb410bd0dedab5cfac96f8a6d7c",
+            "contentHash": "2ace4f5c7f59cbbe2498f04cedb0437b3b24ec196fefd13c00547399c6f3368f",
+            "assetHash": "bd1b6bd9347ea652c12e590a3c3afb492f2aa75bd3b30493c50c82e22084d9a9",
             "comparisonResult": "ACCEPTED"
         },
         {

@@ -3,8 +3,7 @@
 > Schema owner: `docs/core/invitation-preparation-contract.md`  
 > Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
 > Skill: `.agent/skills/invitation-preparation/SKILL.md`  
-> Scope: preparation only. Implementation, managed application and publication are not yet
-> authorized.
+> Scope: publication authorized by the owner on 2026-10-20 (tracking board decision d076).
 
 ## Identity
 
@@ -171,27 +170,31 @@ indications carry the dress code and the personal-pass reminder.
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING`
+**Visual idea:** "Noche azul de diciembre" (PR #361): navy titles in Playfair over ivory, Cinzel
+labels in a deep champagne ink, a large days counter with a ring calendar, a paired gallery and a
+full-bleed navy closing.
 
-| concern                                                  | decision / evidence | status  |
-| -------------------------------------------------------- | ------------------- | ------- |
-| Typography roles (display, heading, body, metadata)      | Preset defaults     | pending |
-| Vertical rhythm and density                              |                     | pending |
-| Surface hierarchy (open flow vs cards/containers)        |                     | pending |
-| Photographic treatment (role, crop, focal point, filter) | See inventory       | pending |
-| Section-intersection intent and narrative cadence        |                     | pending |
-| Local exceptions to the selected preset                  | Palette only        | pending |
+**Human creative outcome:** `ACCEPTED`
+
+| concern                                                  | decision / evidence                                                         | status  |
+| -------------------------------------------------------- | --------------------------------------------------------------------------- | ------- |
+| Typography roles (display, heading, body, metadata)      | Playfair 500 navy titles; Cinzel labels in champagne ink (4.5:1 on ivory)   | applied |
+| Vertical rhythm and density                              | Page at 390 px is 9,931 px tall (target 9,500), accepted by the owner       | applied |
+| Surface hierarchy (open flow vs cards/containers)        | Open ivory flow; compact time-led venue cards; formal RSVP register         | applied |
+| Photographic treatment (role, crop, focal point, filter) | One role per photograph (see inventory); champagne hairline frame on photos | applied |
+| Section-intersection intent and narrative cadence        | `composition.intersections` in the definition is the executable record      | applied |
+| Local exceptions to the selected preset                  | Invitation profile retints the preset blue; godparents grouped by role      | applied |
 
 ### Creative acceptance record
 
-| field                                       | value     |
-| ------------------------------------------- | --------- |
-| Mechanical render/capture result            | pending   |
-| Whole-invitation responsive inspection      | pending   |
-| Section boundaries and narrative continuity | pending   |
-| Human creative outcome                      | `PENDING` |
-| Reviewer and date                           |           |
-| Blocking reason or owner follow-up          |           |
+| field                                       | value                                                                         |
+| ------------------------------------------- | ----------------------------------------------------------------------------- |
+| Mechanical render/capture result            | pass — PR #361 captures at 390 and 1280 px, 2026-10-19                        |
+| Whole-invitation responsive inspection      | Owner review of the published v0.34 design on an Android phone, 2026-10-20    |
+| Section boundaries and narrative continuity | pass; a second round (night arch) may follow as a republication               |
+| Human creative outcome                      | `ACCEPTED`                                                                    |
+| Reviewer and date                           | Francisco Mendoza (owner), 2026-10-20, tracking board decisions d075 and d076 |
+| Blocking reason or owner follow-up          | None blocking; the song (MUSIC_AUDIO) stays an owner follow-up                |
 
 ## Photograph Inventory
 

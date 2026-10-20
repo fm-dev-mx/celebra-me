@@ -56,6 +56,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+// Access headers per bypassed page, so helpers that only receive a Page can sign their
+// direct page.request calls without threading the runtime through every signature.
+const pageAccessHeaders = new WeakMap<Page, Record<string, string>>();
+
+function accessHeadersFor(page: Page): Record<string, string> {
+	const headers = pageAccessHeaders.get(page);
+	if (!headers) {
+		throw new Error('Call establishDeploymentProtectionBypass before Preview API requests.');
+	}
+	return headers;
+}
+
 export async function establishDeploymentProtectionBypass(
 	page: Page,
 	runtime: PlaywrightRuntimeEnvironment,
@@ -70,6 +82,7 @@ export async function establishDeploymentProtectionBypass(
 	// global extraHTTPHeaders setting would also send the token to third-party assets. Direct
 	// page.request calls bypass routes and pass previewAccessHeaders() themselves.
 	const origin = new URL(runtime.baseURL).origin;
+	pageAccessHeaders.set(page, headers);
 	await page.route(
 		(url) => url.origin === origin,
 		(route) => route.continue({ headers: { ...route.request().headers(), ...headers } }),
@@ -145,7 +158,9 @@ async function readCsrfToken(page: Page): Promise<string> {
 }
 
 export async function getJson<T>(page: Page, path: string, operation: string): Promise<T> {
-	const response = await executePreviewRead(operation, () => page.request.get(path));
+	const response = await executePreviewRead(operation, () =>
+		page.request.get(path, { headers: accessHeadersFor(page) }),
+	);
 	return parseSuccessfulJson<T>(response, operation);
 }
 
@@ -160,7 +175,7 @@ export async function mutateJson<T>(
 	const response = await executePreviewMutation(operation, () =>
 		page.request.fetch(path, {
 			method,
-			headers: { 'X-CSRF-Token': csrfToken },
+			headers: { ...accessHeadersFor(page), 'X-CSRF-Token': csrfToken },
 			data: body,
 		}),
 	);

@@ -41,7 +41,7 @@ describe('invitation route personalization', () => {
 
 		expect(decision).toEqual({
 			allowGuestContext: false,
-			redirectPath: '/xv/elena-fixture?invite=invite-1',
+			redirectPath: '/elena-fixture?invite=invite-1',
 		});
 	});
 
@@ -72,7 +72,7 @@ describe('invitation route personalization', () => {
 
 		expect(result).toEqual({
 			guestContext: null,
-			redirectPath: '/xv/elena-fixture?invite=invite-1',
+			redirectPath: '/elena-fixture?invite=invite-1',
 		});
 	});
 
@@ -117,6 +117,34 @@ describe('invitation route personalization', () => {
 			guestContext: null,
 			redirectPath: '/xv/elena-fixture?skipEnvelope=true',
 		});
+	});
+
+	it('keeps the guest on the short path and strips a missing invite from it', async () => {
+		getInvitationContextByInviteIdMock.mockRejectedValue(
+			new ApiError(404, 'not_found', 'Invitation not found.'),
+		);
+
+		const result = await resolveRoutePersonalization({
+			inviteId: 'missing',
+			currentPathWithQuery: '/america?invite=missing',
+			routeEventType: 'xv',
+			routeSlug: 'america',
+			routeIsDemo: false,
+		});
+
+		expect(result).toEqual({ guestContext: null, redirectPath: '/america' });
+	});
+
+	it('accepts a matching invite on the short path without redirecting', () => {
+		const decision = decideInvitationRouteAccess({
+			currentPathWithQuery: '/america?invite=invite-1',
+			routeEventType: 'xv',
+			routeSlug: 'america',
+			routeIsDemo: false,
+			inviteContext: { inviteId: 'invite-1', eventSlug: 'america', eventType: 'xv' },
+		});
+
+		expect(decision).toEqual({ allowGuestContext: true, redirectPath: null });
 	});
 
 	it('avoids self-redirect when the current path does not contain an invite query param', async () => {
