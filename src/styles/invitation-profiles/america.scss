@@ -125,9 +125,9 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// A band of lantern light crosses each name as they scroll by.
 	--family-shine: linear-gradient(
 		105deg,
-		currentcolor 40%,
+		currentcolor 45%,
 		color-mix(in srgb, var(--color-lantern-amber) 70%, var(--color-gold-ink)) 50%,
-		currentcolor 60%
+		currentcolor 55%
 	);
 	--family-shine-clip: text;
 	--family-shine-fill: transparent;
