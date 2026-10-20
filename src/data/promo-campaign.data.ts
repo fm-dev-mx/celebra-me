@@ -70,21 +70,22 @@ export interface PromoStatus {
 }
 
 /**
- * October 2026 pricing. Dates are anchored to America/Mazatlan (Los Mochis, Sinaloa; UTC-7 with
- * no daylight saving time): valid from 1 October 00:00 through 31 October 23:59:59 inclusive.
+ * Season pricing, autumn 2026. Dates are anchored to America/Mazatlan (Los Mochis, Sinaloa; UTC-7
+ * with no daylight saving time): valid from 1 November 00:00 through 15 December 23:59:59
+ * inclusive. Regular prices are charged from 16 December.
  */
 export const PROMO_CAMPAIGN: PromoCampaign = {
-	label: 'Precio de octubre',
-	codePrefix: 'OCTUBRE',
+	label: 'Precio de temporada',
+	codePrefix: 'TEMPORADA',
 	currency: 'MXN',
-	startsAt: '2026-10-01T07:00:00.000Z',
-	endsAt: '2026-11-01T07:00:00.000Z',
-	endLabel: '31 de octubre de 2026',
-	countdownDays: 7,
+	startsAt: '2026-11-01T07:00:00.000Z',
+	endsAt: '2026-12-16T07:00:00.000Z',
+	endLabel: '15 de diciembre de 2026',
+	countdownDays: 10,
 	packages: [
-		{ id: 'esencial', name: 'Esencial', promoPrice: 999, regularPrice: 1299 },
-		{ id: 'signature', name: 'Signature', promoPrice: 1399, regularPrice: 1799 },
-		{ id: 'atelier', name: 'Atelier', promoPrice: 1999, regularPrice: 2499 },
+		{ id: 'esencial', name: 'Esencial', promoPrice: 899, regularPrice: 1299 },
+		{ id: 'signature', name: 'Signature', promoPrice: 1299, regularPrice: 1799 },
+		{ id: 'atelier', name: 'Atelier', promoPrice: 1899, regularPrice: 2499 },
 	],
 	extras: [
 		{
@@ -114,7 +115,7 @@ export function getPromoPackage(id: PromoPackageId): PromoPackage {
 	return pkg;
 }
 
-/** Promo code whose numeric suffix is the promo price (read by the folio tooling): `OCTUBRE-999`. */
+/** Promo code whose numeric suffix is the promo price (read by the folio tooling): `TEMPORADA-899`. */
 export function getPromoCode(pkg: PromoPackage): string {
 	return `${PROMO_CAMPAIGN.codePrefix}-${pkg.promoPrice}`;
 }
