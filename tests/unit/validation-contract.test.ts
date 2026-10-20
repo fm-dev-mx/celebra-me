@@ -223,6 +223,19 @@ describe('canonical validation contract', () => {
 		expect(nightly).toContain('-f visual_mode=compare');
 	});
 
+	it('runs the guest import flow in the CI browser list under the visual parity gate', () => {
+		const pkg = JSON.parse(
+			fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'),
+		) as { scripts: Record<string, string> };
+		expect(pkg.scripts['test:e2e:ci']).toContain('tests/e2e/guest-import-flow.spec.ts');
+		expect(
+			fs.readFileSync(
+				path.resolve(process.cwd(), 'tests/e2e/guest-import-flow.spec.ts'),
+				'utf8',
+			),
+		).toContain('isVisualParityDeferred(),');
+	});
+
 	it('keeps the default browser run identical to the locally certified command', () => {
 		const workflow = fs.readFileSync(
 			path.resolve(process.cwd(), '.github/workflows/commit-validation.yml'),
