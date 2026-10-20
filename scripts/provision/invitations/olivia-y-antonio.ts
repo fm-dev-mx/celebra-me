@@ -176,7 +176,7 @@ const content: CanonicalEventContentInput = {
 	location: {
 		accessPolicy: { visibility: 'public' },
 		mapStyle: 'dark',
-		variant: 'stacked-venue-plates',
+		variant: 'night-route',
 		presentation: 'simple',
 		presentationOptions: {
 			showFlourishes: false,
@@ -223,8 +223,8 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gallery: {
-		// Full-width 4:5 features between 3:4 pairs.
-		variant: 'paired-feature-band',
+		// A pinned track of nine photos; at rest, full-width 4:5 features between 3:4 pairs.
+		variant: 'pinned-track',
 		eyebrow: 'Galería',
 		title: 'Nuestra historia',
 		subtitle: 'Del jardín al mar: algunos momentos antes del gran día.',

@@ -133,6 +133,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'location',
+		variant: 'night-route',
+		default: false,
+		prerequisites: ['At least two visible venues'],
+		cssOwner: 'src/styles/themes/sections/location/_night-route.scss',
+	},
+	{
+		section: 'location',
 		variant: 'program-sheet',
 		default: false,
 		prerequisites: ['At least one visible venue'],
@@ -214,6 +221,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['gallery.items with at least three items and one feature role'],
 		cssOwner: 'src/styles/themes/sections/gallery/_paired-feature-band.scss',
+	},
+	{
+		section: 'gallery',
+		variant: 'pinned-track',
+		default: false,
+		prerequisites: ['gallery.items with at least three items'],
+		cssOwner: 'src/styles/themes/sections/gallery/_pinned-track.scss',
 	},
 	{
 		section: 'gallery',

@@ -88,19 +88,18 @@
 		--family-godparent-role-separator-color: var(--olivia-champagne);
 	}
 
-	// Gallery: features full width at 4:5, the rest paired at 3:4 on a tight 8 px gutter.
-	.gallery-section[data-variant='paired-feature-band'] {
+	// Gallery: a pinned track on ivory; at rest, features full width at 4:5 and the rest paired at
+	// 3:4 on a tight 8 px gutter.
+	.gallery-section[data-variant='pinned-track'] {
 		--gallery-section-padding-block: 4rem;
 		--gallery-section-bg: var(--olivia-ivory);
 		--gallery-title-size: var(--olivia-title-size);
 		--gallery-title-weight: 500;
 		--gallery-title-line-height: var(--olivia-title-line-height);
 		--gallery-title-color: var(--olivia-navy);
-		--gallery-grid-columns-mobile: 2;
-		--gallery-item-aspect-ratio: 3 / 4;
-		--gallery-item-aspect-ratio-feature: 4 / 5;
 		--gallery-grid-gap: 8px;
-		--gallery-grid-gap-wide: 8px;
+		--gallery-track-accent: var(--olivia-champagne-ink);
+		--gallery-track-rail: rgb(var(--olivia-slate-rgb) / 20%);
 	}
 
 	.gifts-section {
@@ -257,50 +256,58 @@
 		--hero-date-transform: uppercase;
 	}
 
-	.event-location[data-variant='stacked-venue-plates'] {
-		--location-bg: linear-gradient(180deg, var(--olivia-mist) 0%, var(--olivia-ivory) 100%);
+	// Location: the night of the cover. Venues are numbered stops on a champagne route.
+	.event-location[data-variant='night-route'] {
+		--location-route-sky:
+			radial-gradient(1px 1px at 14% 8%, rgb(var(--olivia-ivory-rgb) / 60%), transparent 60%),
+			radial-gradient(
+				1px 1px at 86% 16%,
+				rgb(var(--olivia-ivory-rgb) / 50%),
+				transparent 60%
+			),
+			radial-gradient(
+				1.5px 1.5px at 72% 42%,
+				rgb(var(--olivia-champagne-rgb) / 60%),
+				transparent 60%
+			),
+			radial-gradient(1px 1px at 8% 64%, rgb(var(--olivia-ivory-rgb) / 40%), transparent 60%),
+			radial-gradient(
+				1px 1px at 92% 80%,
+				rgb(var(--olivia-ivory-rgb) / 45%),
+				transparent 60%
+			),
+			radial-gradient(
+				130% 40% at 50% 0%,
+				rgb(var(--olivia-slate-rgb) / 45%),
+				transparent 70%
+			),
+			linear-gradient(180deg, var(--olivia-navy) 0%, var(--olivia-navy-deep) 100%);
+		--location-route-sky-deep: var(--olivia-navy-deep);
+		--location-route-ink: var(--olivia-ivory);
+		--location-route-muted: rgb(var(--olivia-mist-rgb) / 82%);
+		--location-route-accent: var(--olivia-champagne);
+		--location-route-track: rgb(var(--olivia-mist-rgb) / 30%);
+		--location-route-card-bg: rgb(var(--olivia-ivory-rgb) / 6%);
 		--location-container-max-width: 62rem;
-		--location-card-bg: var(--olivia-ivory);
-		--location-card-border: 1px solid rgb(var(--olivia-slate-rgb) / 22%);
-		--location-card-shadow: none;
-		--location-place-color: var(--olivia-navy);
-		--location-title-color: var(--olivia-slate);
-		--location-address-color: rgb(var(--olivia-navy-rgb) / 76%);
-		--location-flourish-color: var(--olivia-dusty);
-		--location-indication-icon-color: var(--olivia-slate);
-		--location-indication-icon-border: 1px solid rgb(var(--olivia-slate-rgb) / 28%);
-		--location-indication-icon-bg: transparent;
 		--location-plates-intro-max-width: 38rem;
-		--location-intro-heading-color: var(--olivia-navy);
-		--location-outer-frame-padding: 0;
-		--location-outer-frame-bg: transparent;
-		--location-outer-frame-shadow: none;
-		--location-inner-frame-padding: 0;
 		--location-content-padding: clamp(1.35rem, 3vw, 1.85rem);
-		--location-plates-content-align: left;
-		--location-padding-block: 3.25rem;
 		--location-stack-gap: 1.75rem;
-		--location-lead-time-align: center;
 		--location-intro-heading-size: var(--olivia-title-size);
 		--location-intro-heading-font-weight: 500;
 		--location-plates-eyebrow-size: var(--olivia-label-size);
 		--location-plates-eyebrow-weight: 600;
 		--location-plates-eyebrow-tracking: var(--olivia-label-tracking);
-		--location-lead-time-color: var(--olivia-navy);
 		--location-indications-heading-font-size: var(--olivia-label-size);
 		--location-indications-heading-font-weight: 600;
 		--location-indications-heading-letter-spacing: var(--olivia-label-tracking);
 		--location-indication-number-display: none;
 		--location-plates-notes-max-width: 46rem;
-		--location-plates-notes-border-inline: 0;
-		--location-plates-notes-bg: transparent;
 
 		.event-location__card-title {
 			--location-title-font-family: var(--font-label);
 			--location-title-font-size: var(--olivia-label-size);
 			--location-title-font-weight: 600;
 			--location-title-letter-spacing: var(--olivia-label-tracking);
-			--location-title-color: var(--olivia-champagne-ink);
 		}
 	}
 

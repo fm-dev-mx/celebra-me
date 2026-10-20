@@ -46,12 +46,16 @@ audit tooling (`pnpm invitation:published-audit`).
   below; wide screens put the arch on the right).
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
   layouts require at least two explicit `groups`.
-- **Location:** `standard`, `split-map`, `stacked-venue-plates`, `program-sheet`; prerequisites are
-  enforced by the owning schema.
+- **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
+  numbered stops on one rail under a night sky; editorial invitations draw the rail with scroll),
+  `program-sheet`; prerequisites are enforced by the owning schema. `stacked-venue-plates` and
+  `night-route` need at least two visible venues and accept `venueCard: 'compact'`.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
-  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`. `single-keepsake` requires exactly one
-  item; feature layouts enforce their item requirements.
+  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `pinned-track` (a scroll scene: the
+  photos travel sideways under a counter while the stage is pinned; at rest, a two-column grid).
+  `single-keepsake` requires exactly one item; feature layouts and `pinned-track` enforce their item
+  requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).

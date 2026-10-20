@@ -297,6 +297,13 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 	};
 }
 
+/** Gallery variants that need three photos; two make them incompatible. */
+const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
+	'feature-stack',
+	'mirrored-mosaic',
+	'pinned-track',
+]);
+
 function makeLocationIncompatible(data: Record<string, unknown>, variant: string): void {
 	if (variant === 'split-map') {
 		const location = data.location as Record<string, unknown>;
@@ -311,7 +318,7 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 				isVisible: true,
 			},
 		];
-	} else if (variant === 'stacked-venue-plates') {
+	} else if (variant === 'stacked-venue-plates' || variant === 'night-route') {
 		const location = data.location as Record<string, unknown>;
 		location.venues = [(location.venues as Array<unknown>)[0]];
 	} else if (variant === 'program-sheet') {
@@ -374,7 +381,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			if (entry.variant === 'single-keepsake') {
 				const gallery = data.gallery as Record<string, unknown>;
 				gallery.items = [{ image: 'gallery01' }, { image: 'gallery02' }];
-			} else if (entry.variant === 'feature-stack' || entry.variant === 'mirrored-mosaic') {
+			} else if (TWO_ITEM_INCOMPATIBLE_GALLERIES.has(entry.variant)) {
 				const gallery = data.gallery as Record<string, unknown>;
 				gallery.items = [{ image: 'gallery01' }, { image: 'gallery02' }];
 			} else if (entry.variant === 'paired-feature-band') {
@@ -453,8 +460,7 @@ export function getIncompatiblePrerequisiteExpectation(
 			}
 			return {
 				expectedPath: ['location', 'variant'],
-				expectedMessageSubstring:
-					'stacked-venue-plates requires at least two visible venues',
+				expectedMessageSubstring: `${entry.variant} requires at least two visible venues`,
 			};
 		case 'itinerary':
 			return { expectedPath: ['itinerary', 'items'] };
@@ -476,6 +482,12 @@ export function getIncompatiblePrerequisiteExpectation(
 				return {
 					expectedPath: ['gallery', 'items'],
 					expectedMessageSubstring: 'feature-stack requires at least three gallery items',
+				};
+			}
+			if (entry.variant === 'pinned-track') {
+				return {
+					expectedPath: ['gallery', 'items'],
+					expectedMessageSubstring: 'pinned-track requires at least three gallery items',
 				};
 			}
 			if (entry.variant === 'paired-feature-band') {

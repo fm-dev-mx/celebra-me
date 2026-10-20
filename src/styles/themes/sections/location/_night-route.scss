@@ -1,0 +1,293 @@
+@use '../../../invitation/venue-plates' as plates;
+
+// Location night-route: the venues as numbered stops on one route under a night sky. The plate
+// geometry comes from the shared venue-plates mixin; this variant adds the route layer: a dotted
+// rail with a numbered marker per stop, and a light palette on a dark section. Wide screens put
+// the rail in the middle and alternate the stops either side of it.
+// Editorial invitations add per-element scroll-linked effects (motion.md, "Per-element
+// scroll-linked effects"): the accent line draws down the rail, each marker lights as its stop
+// arrives, and the plates rise onto the route. Without them the full line and every stop show.
+// Profiles retint through `--location-route-*`; every token falls back to the semantic palette.
+.event-location[data-variant='night-route'] {
+	@include plates.venue-plates;
+
+	--location-route-rail-x: 1.6rem;
+	--location-route-gutter: 1.75rem;
+	--location-route-marker-size: 2.2rem;
+	--location-padding-block: var(--location-route-padding-block, 4.5rem);
+	--location-bg: var(
+		--location-route-sky,
+		linear-gradient(
+			180deg,
+			var(--color-surface-dark, rgb(30 44 77)) 0%,
+			var(--location-route-sky-deep, rgb(16 24 44)) 100%
+		)
+	);
+	--location-card-bg: var(--location-route-card-bg, rgb(255 255 255 / 6%));
+	--location-card-border: 1px solid var(--location-route-line);
+	--location-card-shadow: none;
+	--location-card-backdrop-filter: blur(2px);
+	--location-place-color: var(--location-route-ink);
+	--location-title-color: var(--location-route-accent);
+	--location-address-color: var(--location-route-muted);
+	--location-address-border-top: 1px solid var(--location-route-hairline);
+	--location-intro-heading-color: var(--location-route-ink);
+	--location-lead-time-color: var(--location-route-ink);
+	--location-lead-time-size: clamp(2.4rem, 11vw, 3.25rem);
+	--location-lead-time-align: left;
+	--location-plates-content-align: left;
+	--location-flourish-color: var(--location-route-accent);
+	--location-copy-button-border: 1px solid var(--location-route-line-strong);
+	--location-copy-button-color: var(--location-route-accent);
+	--location-copy-button-hover-color: var(--location-route-ink);
+	--location-map-preview-bg: transparent;
+	--location-map-preview-art-bg: var(--location-route-card-bg, rgb(255 255 255 / 6%));
+	--location-map-preview-copy-bg: transparent;
+	--location-map-preview-copy-border: var(--location-route-hairline);
+	--location-map-preview-link-color: var(--location-route-accent);
+	--location-map-preview-artwork-color: var(--location-route-accent);
+	--location-map-preview-artwork-detail: var(--location-route-sky-deep, rgb(16 24 44));
+	--location-map-preview-artwork-horizon: var(--location-route-accent);
+	--location-map-preview-pin-bg: var(--location-route-marker-bg);
+	--location-map-preview-pin-color: var(--location-route-accent);
+	--location-map-preview-pin-border: var(--location-route-line-strong);
+	--location-nav-bg: transparent;
+	--location-nav-border: 1px solid var(--location-route-line-strong);
+	--location-nav-color: var(--location-route-accent);
+	--location-nav-hover-bg: transparent;
+	--location-nav-hover-color: var(--location-route-ink);
+	--location-nav-hover-border-color: var(--location-route-accent);
+	--location-nav-primary-bg: transparent;
+	--location-nav-primary-color: var(--location-route-accent);
+	--location-nav-primary-border-color: var(--location-route-line-strong);
+	--location-nav-maps-bg: transparent;
+	--location-nav-maps-color: var(--location-route-accent);
+	--location-nav-maps-border: 1px solid var(--location-route-line-strong);
+	--location-nav-apple-bg: transparent;
+	--location-nav-apple-color: var(--location-route-accent);
+	--location-nav-apple-border: 1px solid var(--location-route-line-strong);
+	--location-calendar-bg: transparent;
+	--location-calendar-color: var(--location-route-accent);
+	--location-calendar-link-color: var(--location-route-accent);
+	--location-calendar-border: 1px solid var(--location-route-line-strong);
+	--location-indications-heading-color: var(--location-route-accent);
+	--location-indication-text-color: var(--location-route-muted);
+	--location-indication-strong-color: var(--location-route-ink);
+	--location-indication-icon-color: var(--location-route-accent);
+	--location-indication-icon-bg: transparent;
+	--location-indication-icon-border: 1px solid var(--location-route-line);
+	--location-indication-item-divider: 1px solid var(--location-route-hairline);
+	--location-plates-notes-bg: transparent;
+	--location-plates-notes-border: 1px solid var(--location-route-hairline);
+
+	// Palette defaults; profiles override these, not the derived tokens above.
+	--location-route-ink: var(--color-text-on-dark, rgb(250 247 240));
+	--location-route-muted: rgb(232 239 246 / 82%);
+	--location-route-accent: var(--color-action-accent, rgb(205 178 140));
+	--location-route-track: rgb(232 239 246 / 30%);
+	--location-route-marker-bg: var(--location-route-sky-deep, rgb(16 24 44));
+	--location-route-line: color-mix(in srgb, var(--location-route-accent) 32%, transparent);
+	--location-route-line-strong: color-mix(in srgb, var(--location-route-accent) 55%, transparent);
+	--location-route-hairline: color-mix(in srgb, var(--location-route-accent) 22%, transparent);
+
+	overflow: clip;
+	color: var(--location-route-ink);
+
+	.event-location__lede,
+	.event-location__indication-text {
+		color: var(--location-route-muted);
+	}
+
+	.event-location__indication-title {
+		color: var(--location-route-ink);
+	}
+
+	.event-location__container {
+		position: relative;
+		counter-reset: route-stop;
+		padding-inline: calc(var(--location-route-rail-x) + var(--location-route-gutter)) 1rem;
+	}
+
+	// The rail: a faint dotted track and, over it, the accent line that draws with scroll.
+	.event-location__container::before,
+	.event-location__container::after {
+		content: '';
+		position: absolute;
+		top: 1.4rem;
+		bottom: 2rem;
+		left: var(--location-route-rail-x);
+		width: 1px;
+		pointer-events: none;
+	}
+
+	.event-location__container::before {
+		background: repeating-linear-gradient(
+			180deg,
+			var(--location-route-track) 0 4px,
+			transparent 4px 10px
+		);
+	}
+
+	.event-location__container::after {
+		background: linear-gradient(
+			180deg,
+			var(--location-route-accent) 0%,
+			var(--location-route-line-strong) 100%
+		);
+		transform-origin: top;
+	}
+
+	.event-location__card-wrapper {
+		position: relative;
+		counter-increment: route-stop;
+	}
+
+	// Stop marker on the rail, numbered 01, 02.
+	.event-location__card-wrapper::before {
+		content: counter(route-stop, decimal-leading-zero);
+		position: absolute;
+		z-index: 1;
+		top: 0.55rem;
+		left: calc(-1 * var(--location-route-gutter) - var(--location-route-marker-size) / 2);
+		display: grid;
+		place-items: center;
+		width: var(--location-route-marker-size);
+		height: var(--location-route-marker-size);
+		border: 1px solid var(--location-route-accent);
+		border-radius: 50%;
+		background: var(--location-route-marker-bg);
+		box-shadow: 0 0 0 0.35rem var(--location-route-marker-bg);
+		font-family: var(--font-label);
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		color: var(--location-route-accent);
+	}
+
+	.event-location__card-title {
+		text-align: left;
+	}
+
+	.event-location__indication-item {
+		background: transparent;
+	}
+
+	.section-nav-button {
+		color: var(--location-route-accent);
+	}
+
+	// Wide screens: the rail runs down the middle and the stops alternate sides.
+	@media (width >= 62rem) {
+		--location-route-rail-x: 50%;
+		--location-route-gutter: 3.5rem;
+
+		.event-location__container {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			column-gap: calc(2 * var(--location-route-gutter));
+			padding-inline: 2rem;
+		}
+
+		.event-location__card-wrapper:nth-child(odd) {
+			grid-column: 1;
+			text-align: right;
+
+			.event-location__card-lead-time,
+			.event-location__card-title {
+				text-align: right;
+			}
+
+			&::before {
+				right: calc(
+					-1 * var(--location-route-gutter) - var(--location-route-marker-size) / 2
+				);
+				left: auto;
+			}
+		}
+
+		.event-location__card-wrapper:nth-child(even) {
+			grid-column: 2;
+			margin-top: 9rem;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: view()) {
+		[data-motion='editorial'] .event-location[data-variant='night-route'] {
+			.event-location__container {
+				view-timeline: --location-route block;
+			}
+
+			.event-location__container::after {
+				animation: location-route-draw linear both;
+				animation-timeline: --location-route;
+				animation-range: entry 40% exit 35%;
+			}
+
+			.event-location__card-wrapper::before {
+				animation: location-route-stop-light linear both;
+				animation-timeline: view();
+				animation-range: entry 55% cover 40%;
+			}
+
+			.event-location__card {
+				animation: location-route-plate-rise linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 30%;
+			}
+
+			.event-location__card-lead-time {
+				animation: location-route-time-slide linear both;
+				animation-timeline: view();
+				animation-range: entry 10% cover 35%;
+			}
+		}
+	}
+}
+
+@keyframes location-route-draw {
+	from {
+		transform: scaleY(0);
+	}
+
+	to {
+		transform: scaleY(1);
+	}
+}
+
+@keyframes location-route-stop-light {
+	from {
+		scale: 0.55;
+		opacity: 40%;
+	}
+
+	to {
+		scale: 1;
+		opacity: 100%;
+	}
+}
+
+@keyframes location-route-plate-rise {
+	from {
+		translate: 0 2.5rem;
+		opacity: 0%;
+	}
+
+	to {
+		translate: 0 0;
+		opacity: 100%;
+	}
+}
+
+@keyframes location-route-time-slide {
+	from {
+		translate: -1.5rem 0;
+		opacity: 30%;
+	}
+
+	to {
+		translate: 0 0;
+		opacity: 100%;
+	}
+}
