@@ -64,9 +64,9 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | godparentsLazo        | Marisela Lerma; Guadalupe Martínez                             | verified       | owner-session               | Shown as supplied, also listed as a bride parent  |
 | godparentsArras       | Liliana Domínguez; Yuliana Domínguez                           | verified       | source:wa-export            |                                                   |
 | godparentsBiblia      | Lizbeth Miranda; Raúl López                                    | verified       | source:wa-export            | Biblia y rosario                                  |
-| dressCode             | Formal                                                         | verified       | source:wa-export            | White and red reserved (not allowed for guests)   |
+| dressCode             | Formal                                                         | verified       | source:wa-export            | White, red and navy/dark blue reserved            |
 | childPolicy           | none shown                                                     | not_applicable | owner-session               | No line about children; passes control attendance |
-| gifts                 | Lluvia de sobres                                               | verified       | owner-session               | Envelopes only; no registry                       |
+| gifts                 | BBVA card transfer; lluvia de sobres                           | verified       | source:wa-export            | Card for transfers; envelopes at the reception    |
 | musicUrl              | Alex Warren — Ordinary (hosted on R2)                          | verified       | owner-session               | Direct MP3 on the production media bucket         |
 | clientColors          | azul marino, azul pizarra, azul cielo, champagne, marfil       | verified       | source:wa-palette-reference | Client asked for advice; owner confirmed the fit  |
 

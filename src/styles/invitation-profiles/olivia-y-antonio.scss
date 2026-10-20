@@ -190,6 +190,9 @@
 		--gifts-header-mark-width: 2.5rem;
 		--gifts-header-mark-color: var(--olivia-champagne-ink);
 		--gifts-header-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20' fill='none' stroke='%23000' stroke-width='1'%3E%3Crect x='.5' y='.5' width='29' height='19' rx='1'/%3E%3Cpath d='M.5 .5 15 11 29.5 .5M.5 19.5 11 8.2M29.5 19.5 19 8.2'/%3E%3C/svg%3E");
+
+		// The card number reads as one line; it drops below its label rather than split.
+		--gifts-account-white-space: nowrap;
 	}
 
 	// The vow: italic Playfair on ivory, the last clause apart in slate.
@@ -491,6 +494,10 @@
 		--pa-ticket-width: min(100%, 30rem);
 		--pa-welcome-align: center;
 		--pa-welcome-wrap: balance;
+
+		// The seats label breaks between words only; "RESERVADOS" never loses its last letter.
+		--pa-seats-label-max-width: 13ch;
+		--pa-seats-label-wrap: normal;
 	}
 
 	.rsvp {

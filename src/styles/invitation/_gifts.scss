@@ -384,6 +384,7 @@
 	font-size: 0.9rem;
 	letter-spacing: 0.05em;
 	color: var(--gifts-account-color);
+	white-space: var(--gifts-account-white-space, normal);
 }
 
 .copy-button {
