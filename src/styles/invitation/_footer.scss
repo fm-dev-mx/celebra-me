@@ -392,7 +392,7 @@ $footer-reply-pill: 999px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	max-width: 26rem;
+	width: min(100%, 32rem);
 	margin: -2rem 0 var(--footer-reply-gap, 2.5rem);
 	text-align: center;
 
@@ -437,10 +437,6 @@ $footer-reply-pill: 999px;
 		align-items: center;
 	}
 
-	p {
-		margin: 0;
-	}
-
 	&__eyebrow::before {
 		content: var(--footer-reply-eyebrow, none);
 	}
@@ -458,7 +454,7 @@ $footer-reply-pill: 999px;
 	}
 
 	&__eyebrow {
-		margin-bottom: 0.6rem;
+		margin: 0 0 0.9rem;
 		font-family: var(--font-label, var(--font-body));
 		font-size: var(--footer-reply-eyebrow-size, 0.8125rem);
 		letter-spacing: 0.14em;
@@ -467,7 +463,7 @@ $footer-reply-pill: 999px;
 	}
 
 	&__question {
-		margin-bottom: 1.5rem;
+		margin: 0 0 1.5rem;
 		font-family: var(--footer-reply-question-font, var(--font-display));
 		font-size: var(--footer-reply-question-size, 1.6rem);
 		line-height: 1.25;
@@ -497,7 +493,7 @@ $footer-reply-pill: 999px;
 	}
 
 	&__note {
-		margin-top: 0.75rem;
+		margin: 0.75rem 0 0;
 		font-family: var(--font-body);
 		font-size: var(--footer-reply-note-size, 0.9375rem);
 		font-style: italic;
@@ -505,6 +501,7 @@ $footer-reply-pill: 999px;
 	}
 
 	&__answered {
+		margin: 0;
 		font-family: var(--footer-reply-question-font, var(--font-display));
 		font-size: var(--footer-reply-note-size, 1.125rem);
 		font-style: italic;
