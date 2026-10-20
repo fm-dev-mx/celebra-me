@@ -111,7 +111,7 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
 - **Ambient lanterns.** Layers of `StorybookLanternSky` with `scene="ambient"` that a profile
   displays loop only while on screen (`data-ambient='running'` from an observer in the coordinator);
   hidden layers are never observed.
-- **Scroll-linked exceptions.** Three effects tie motion to scroll position, all only under
+- **Scroll-linked exceptions.** Four effects tie motion to scroll position, all only under
   `prefers-reduced-motion: no-preference`:
   - `itinerary.stacked-cards` uses CSS scroll-driven animations (`view-timeline`), inside
     `@supports (animation-timeline: view())`. There is no script; without support the cards stay as
@@ -121,6 +121,8 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
     `pointer: fine`, so phones never download it. Native touch scrolling is unchanged, and `#` links
     scroll to their target below the fixed header.
   - Scroll scenes (next section).
+  - Per-element scroll-linked effects (see
+    [Per-element scroll-linked effects](#per-element-scroll-linked-effects)).
 - **Budget.** Nothing new loads on first paint except CSS. At most about 12 elements animate at
   once.
 
@@ -164,6 +166,34 @@ only; elsewhere the same markup renders as a normal section.
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.
 
+## Per-element scroll-linked effects
+
+A per-element effect ties one element's appearance to its own position in the viewport, without
+pinning anything. Typical uses: a photo that settles while it enters (`animation-timeline: view()`),
+a hero photo that drifts while it leaves, or stacked cards where the card underneath recedes while
+the next one covers it (a named `view-timeline` shared through `timeline-scope`). They belong to the
+`editorial` recipe only, like scroll scenes, and do not count toward the scroll-scene budget.
+
+- **Gates.** Every rule sits inside `@media (prefers-reduced-motion: no-preference)` and
+  `@supports (animation-timeline: view())`. Without either, the element shows its final state and
+  the editorial entrance (or nothing) applies.
+- **No script.** CSS only: no observer, scroll listener or animation-frame loop is added for it.
+- **Properties.** Animate only `transform`, `opacity`, `scale`, `translate` and `clip-path`. Never
+  animate `filter`: a filled filter creates a containing block and moves absolutely positioned
+  children.
+- **Final state by default.** The unanimated styles are the complete readable layout. Use
+  `animation-fill-mode: both` so the element rests at its final keyframe after its range ends, and
+  keep every text element at full opacity once it is in the reading zone.
+- **Ranges.** Entrances finish by `cover 45%` at the latest, so content is settled before the reader
+  reaches it. Exit effects start no earlier than `exit 0%`.
+- **Ancestors.** `overflow: hidden` or `auto` on an ancestor makes it the scroll container, which
+  captures `view()` and breaks `sticky`; use `overflow: clip`. An element with `aspect-ratio` that
+  gets `overflow: clip` also needs `min-height: 0`, otherwise its content can stretch it.
+- **Stacking.** Stacked elements are opaque (they carry their own background) so nothing behind them
+  shows through while they overlap, and they stay in reading order in the DOM.
+- **Budget.** At most about 12 elements animate at once, shared with the editorial entrances. A
+  section uses either a scroll scene or per-element effects, not both.
+
 ## Hero timing roles
 
 Every standard invitation hero maps its animation to these roles:
@@ -200,4 +230,4 @@ motion hover must not change an audited element's bounding box or transform matr
 Section intersections are static composition primitives governed by
 [`section-intersections.md`](section-intersections.md). Motion is optional and never required to
 understand an intersection. Ambient image scaling is not parallax. The only scroll-position
-transforms are the editorial exceptions above, scroll scenes included.
+transforms are the editorial exceptions above, scroll scenes and per-element effects included.

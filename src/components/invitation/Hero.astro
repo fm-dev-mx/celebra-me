@@ -11,6 +11,13 @@ import {
 } from '@/lib/assets/image-delivery-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { HeroVariant } from '@/lib/invitation/section-variants';
+import { buildR2ResponsiveSrcset } from '@/lib/intake/services/r2-invitation-media';
+import {
+	HERO_DESKTOP_MEDIA,
+	HERO_MOBILE_MEDIA,
+	NIGHT_ARCH_DESKTOP_SIZES,
+	NIGHT_ARCH_MOBILE_SIZES,
+} from '@/lib/invitation/hero-image-preload';
 import '@/styles/invitation/_hero.scss';
 import EditorialCoverHero from './EditorialCoverHero.astro';
 import FramedPortraitHero from './FramedPortraitHero.astro';
@@ -72,6 +79,11 @@ const {
 const isEditorialCover = variant === 'editorial-cover';
 const isFramedPortrait = variant === 'framed-portrait' || variant === 'bleed-portrait';
 const isCeremonialPortrait = variant === 'ceremonial-portrait';
+const isNightArch = variant === 'night-arch';
+// The arch frames a smaller photograph: lighter default widths, and a `srcset` from the stored
+// width variants when the bucket serves them.
+const mobileDefaultWidth = isNightArch ? 600 : 1080;
+const desktopDefaultWidth = isNightArch ? 900 : 1920;
 
 let displayLabel: string | undefined;
 let ageLockupMatch: RegExpMatchArray | null = null;
@@ -120,8 +132,8 @@ if (!isFramedPortrait && !isCeremonialPortrait) {
 							src: resolvedMobileBg,
 							width:
 								typeof resolvedMobileBg === 'object' && 'width' in resolvedMobileBg
-									? Math.min(1080, resolvedMobileBg.width)
-									: 1080,
+									? Math.min(mobileDefaultWidth, resolvedMobileBg.width)
+									: mobileDefaultWidth,
 							format: 'webp',
 							quality: 84,
 						})
@@ -130,14 +142,19 @@ if (!isFramedPortrait && !isCeremonialPortrait) {
 		: null;
 
 	if (mobileDelivery && resolvedMobileBg) {
-		mobileBgSrc = await resolveExplicitImageDelivery(resolvedMobileBg, mobileDelivery, { width: 1080, quality: 84, format: 'webp' });
+		mobileBgSrc = await resolveExplicitImageDelivery(resolvedMobileBg, mobileDelivery, { width: mobileDefaultWidth, quality: 84, format: 'webp' });
 	}
 	desktopBgSrc = backgroundImageDesktop ? backgroundImageDesktop.src : null;
 	if (backgroundImageDesktop?.delivery) {
-		desktopBgSrc = await resolveExplicitImageDelivery(backgroundImageDesktop.src, backgroundImageDesktop.delivery, { width: 1920, quality: 84, format: 'webp' });
+		desktopBgSrc = await resolveExplicitImageDelivery(backgroundImageDesktop.src, backgroundImageDesktop.delivery, { width: desktopDefaultWidth, quality: 84, format: 'webp' });
 	}
 	portraitSrc = portrait ? resolveImage(portrait) : null;
 }
+
+const mobileSrcset = mobileBgSrc && isNightArch ? buildR2ResponsiveSrcset(mobileBgSrc) : undefined;
+const desktopSrcset =
+	desktopBgSrc && isNightArch ? buildR2ResponsiveSrcset(desktopBgSrc) : undefined;
+const imageAlt = isNightArch && secondaryName ? `${name} y ${secondaryName}` : name;
 
 if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;
@@ -178,16 +195,24 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 			<div class="invitation-hero__background">
 				<picture>
 					{mobileBgSrc && (
-						<source media="(max-width: 991px)" srcset={mobileBgSrc} />
+						<source
+							media={HERO_MOBILE_MEDIA}
+							srcset={mobileSrcset ?? mobileBgSrc}
+							sizes={mobileSrcset ? NIGHT_ARCH_MOBILE_SIZES : undefined}
+						/>
 					)}
 					{desktopBgSrc && (
-						<source media="(min-width: 992px)" srcset={desktopBgSrc} />
+						<source
+							media={HERO_DESKTOP_MEDIA}
+							srcset={desktopSrcset ?? desktopBgSrc}
+							sizes={desktopSrcset ? NIGHT_ARCH_DESKTOP_SIZES : undefined}
+						/>
 					)}
 					{bgSrc && (
 						<CacheSafeImage
 							src={bgSrc}
 							delivery={'delivery' in backgroundImage ? backgroundImage.delivery : undefined}
-							alt={name}
+							alt={imageAlt}
 							width={1080}
 							height={1920}
 							format="webp"
@@ -272,7 +297,7 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 					<p class="invitation-hero__date">{formattedDate}</p>
 					{time && <p class="invitation-hero__time">{time}</p>}
 					{venueName && <p class="invitation-hero__venue">
-						<span class="calligraphy-accent">en</span> {venueName}
+						{isNightArch ? venueName : <><span class="calligraphy-accent">en</span> {venueName}</>}
 					</p>}
 				</div>
 			</div>

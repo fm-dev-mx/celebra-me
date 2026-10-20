@@ -42,15 +42,20 @@ audit tooling (`pnpm invitation:published-audit`).
 ## Canonical inventory
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
-  `ceremonial-portrait`.
+  `ceremonial-portrait`, `night-arch` (the photograph inside an arched window on a night sky, names
+  below; wide screens put the arch on the right).
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
   layouts require at least two explicit `groups`.
-- **Location:** `standard`, `split-map`, `stacked-venue-plates`, `program-sheet`; prerequisites are
-  enforced by the owning schema.
+- **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
+  numbered stops on one rail under a night sky; editorial invitations draw the rail with scroll),
+  `program-sheet`; prerequisites are enforced by the owning schema. `stacked-venue-plates` and
+  `night-route` need at least two visible venues and accept `venueCard: 'compact'`.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
-  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`. `single-keepsake` requires exactly one
-  item; feature layouts enforce their item requirements.
+  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `pinned-track` (a scroll scene: the
+  photos travel sideways under a counter while the stage is pinned; the scene is one screen plus
+  `--gallery-track-pace` (0.2) screens per photo; at rest, a two-column grid). `single-keepsake`
+  requires exactly one item; feature layouts and `pinned-track` enforce their item requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
@@ -175,6 +180,12 @@ invitation profiles.
   `--storybook-*` tokens. Proven on the America invitation (`/xv/america`); the e2e harness renders
   it through `/test/variant?full=1&eventType=xv&slug=america`, without a synthetic portability
   fixture.
+- envelope.revealVariant night-envelope: a letter under a December night. Navy paper with a fine
+  grain and champagne fold hairlines, a star liner shown while the flap turns, a glowing seal with
+  the couple's monogram that is pressed but never broken, and an ivory card whose arched window
+  holds the cover photograph; when the hero is `night-arch`, that window flies onto the cover arch
+  before the page opens. Profiles tune it only through optional `--night-envelope-*` tokens. Proven
+  on the Olivia y Antonio invitation (`/boda/olivia-y-antonio`).
 - composition.ornaments storybook-lanterns: the tale told with light — a single gold-leaf thread at
   the quote opening, family close and location close and under the closing signature; lantern-light
   fields in three depths behind the countdown and the closing that kindle as they scroll in and
@@ -183,6 +194,12 @@ invitation profiles.
   `--ornament-thread-*`).
 - countdown.presentationOptions.dayUnit nights: the day segment reads "noches" (same value) for
   evening celebrations, e.g. "Faltan 43 noches".
+- interludes dusk (profile token): `--interlude-dusk-<n>: interlude-dusk` darkens the nth interlude
+  toward `--interlude-dusk-ink-rgb` while the reader scrolls through it; off by default and under
+  reduced motion.
+- rsvp formal-register opening (profile token): `--formal-register-open: formal-register-open`
+  unfolds the register's header and card from the top edge as the chapter scrolls in; off by default
+  and under reduced motion.
 - interludes[].presentation framed: the whole photograph on paper inside a hairline double frame, so
   edge marks (watermarks, handwritten dates) are never cropped. Tuned through
   `--interlude-framed-*`.

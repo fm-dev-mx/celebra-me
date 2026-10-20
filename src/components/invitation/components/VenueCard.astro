@@ -6,6 +6,7 @@
 import CalendarOptions from './CalendarOptions.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import StaticVenueMap from './StaticVenueMap.astro';
+import VenueNightVignette from './VenueNightVignette.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import {
 	isNavigableVenueMapUrl,
@@ -35,6 +36,10 @@ interface Props {
 	calendar?: VenueCalendarLinks | null;
 	/** Time-led card: the time opens it, no map tile, one «Cómo llegar» directions button. */
 	compact?: boolean;
+	/** Compact cards only: a decorative night scene of the venue heads the card. */
+	vignette?: boolean;
+	/** False when the variant drives its own scroll-linked entrance (night-route). */
+	reveal?: boolean;
 }
 
 const {
@@ -47,6 +52,8 @@ const {
 	accessLabel,
 	calendar,
 	compact = false,
+	vignette = false,
+	reveal = true,
 } = Astro.props;
 
 // Presentation-only Spanish formatting. Persistence uses YYYY-MM-DD / HH:mm;
@@ -70,14 +77,16 @@ const hasGenericMap = isNavigableVenueMapUrl(venue.mapUrl);
 // buttons: linked when a navigable URL exists, pure illustration while the
 // venue URL is still pending.
 const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
+const revealAttrs = reveal ? { 'data-reveal-item': '' } : {};
 const directionsUrl = [venue.googleMapsUrl, venue.mapUrl, venue.appleMapsUrl, venue.wazeUrl].find(
 	(url) => isNavigableVenueMapUrl(url),
 );
 
 ---
 
-<div class="event-location__card-wrapper" data-reveal-item>
+<div class="event-location__card-wrapper" {...revealAttrs}>
 	{accessLabel && <p class="event-location__access-label">{accessLabel}</p>}
+	{compact && vignette && <VenueNightVignette kind={type === 'ceremony' ? 'church' : 'hall'} />}
 	{compact && formattedTime && <p class="event-location__card-lead-time">{formattedTime}</p>}
 	<h3 class="event-location__card-title">{venue.venueEvent}</h3>
 	{showFlourishes && (

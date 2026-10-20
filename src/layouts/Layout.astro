@@ -41,6 +41,8 @@ interface Props {
 		media?: string;
 		type?: string;
 		fetchpriority?: 'high' | 'low' | 'auto';
+		imagesrcset?: string;
+		imagesizes?: string;
 		deferredCss?: boolean;
 	}>;
 }
@@ -131,6 +133,8 @@ const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
 					media={l.media}
 					type={l.type}
 					fetchpriority={l.fetchpriority}
+					imagesrcset={l.imagesrcset}
+					imagesizes={l.imagesizes}
 					data-invitation-deferred-css={l.deferredCss ? 'true' : undefined}
 				/>
 			))

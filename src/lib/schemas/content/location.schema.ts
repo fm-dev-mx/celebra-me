@@ -11,6 +11,9 @@ import {
 } from '@/lib/invitation/location-presentation';
 import { LOCATION_VARIANTS } from '@/lib/invitation/section-variants';
 
+/** Variants built on the shared venue plates: two or more venues, optional compact cards. */
+const PLATE_VARIANTS: ReadonlySet<string> = new Set(['stacked-venue-plates', 'night-route']);
+
 const locationCoordinatesSchema = z
 	.object({
 		lat: z.number().min(-90).max(90),
@@ -100,6 +103,7 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[1]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[3]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[4]) }),
 	])
 	.superRefine((location, context) => {
 		if (
@@ -127,13 +131,13 @@ export const locationSchema = z
 
 		if (
 			location.presentationOptions?.venueCard === 'compact' &&
-			location.variant !== 'stacked-venue-plates'
+			!PLATE_VARIANTS.has(location.variant ?? '')
 		) {
 			context.addIssue({
 				code: 'custom',
 				path: ['presentationOptions', 'venueCard'],
 				message:
-					'location.presentationOptions.venueCard=compact requires stacked-venue-plates',
+					'location.presentationOptions.venueCard=compact requires stacked-venue-plates or night-route',
 			});
 		}
 
@@ -152,14 +156,13 @@ export const locationSchema = z
 			return;
 		}
 
-		if (location.variant === 'stacked-venue-plates') {
+		if (PLATE_VARIANTS.has(location.variant ?? '')) {
 			const venues = collectVisibleVenues(location);
 			if (venues.length >= 2) return;
 			context.addIssue({
 				code: 'custom',
 				path: ['variant'],
-				message:
-					'location.variant=stacked-venue-plates requires at least two visible venues',
+				message: `location.variant=${location.variant} requires at least two visible venues`,
 			});
 			return;
 		}

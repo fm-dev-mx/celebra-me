@@ -10,6 +10,28 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.37.0-beta.1] - 2026-10-20
+
+Sales buttons say what they do, a first communion showroom, and a night-themed Olivia y Antonio with
+new hero, location, gallery and envelope variants. No new migrations.
+
+### Added
+
+- `/demos/primera-comunion` showroom; showroom slugs without demos (for example
+  `/demos/baby-shower`) redirect to `/#tipo-evento` (#380).
+- Invitation variants `hero.night-arch`, `location.night-route`, `gallery.pinned-track` (the first
+  scroll scene) and the `night-envelope` reveal, with opt-in scroll-linked tokens for interludes and
+  the RSVP register (#371, #381).
+
+### Changed
+
+- Sales WhatsApp buttons are labelled by intent: «Cotizar mi invitación» in the header and hero,
+  «Quiero el paquete …» on pricing, «Quiero una invitación así» on demos; platform copy on
+  `/demos/*`, the hero payment note and the 404 page uses «usted» (#380).
+- Olivia y Antonio uses the night variants, a 7-photo gallery, the invitation's own fonts in the
+  RSVP and a 12 px text floor in the menu and footer (#371, #381). Its Preview and Production
+  content publication is a separate step.
+
 ## [0.36.0-beta.1] - 2026-10-20
 
 WhatsApp contact links use the real number in Production, every invitation answers at its short URL,

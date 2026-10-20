@@ -27,6 +27,7 @@ import InvitationPageScripts from '@/components/invitation/InvitationPageScripts
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { buildInvitationHeadLinks } from '@/lib/invitation/invitation-head-links';
+import { buildHeroImagePreloads } from '@/lib/invitation/hero-image-preload';
 import InvitationError from '@/components/invitation/InvitationError.astro';
 import InvitationUnavailable from '@/components/invitation/InvitationUnavailable.astro';
 import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
@@ -172,7 +173,10 @@ const forceBlockingInvitationCss =
 	skipEnvelope || screenshotMode || !page?.wrapper.showEnvelope || !page?.envelope;
 
 const headLinks = page
-	? buildInvitationHeadLinks({ page, forceBlocking: forceBlockingInvitationCss })
+	? [
+			...buildHeroImagePreloads(page.viewModel.hero),
+			...buildInvitationHeadLinks({ page, forceBlocking: forceBlockingInvitationCss }),
+		]
 	: [];
 
 const wrapperDataAttributes = page

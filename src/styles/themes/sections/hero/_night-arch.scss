@@ -1,0 +1,376 @@
+// Night-arch cover: a stationery piece on a night sky. The photograph sits inside an arched
+// window ringed by a fine accent line, the names are set large below the arch's foot, and one
+// quiet line carries date, time and place. Wide screens put the arch on the right and the letter
+// on the left. The layout is static; the only motion is scroll-linked on the way out (the photo
+// pushes in, the names lift), editorial invitations only.
+// Profiles retint through `--hero-arch-*`; every token falls back to the semantic palette so a
+// demo without a profile still renders a complete cover.
+.invitation-hero[data-variant='night-arch'] {
+	--hero-arch-top: calc(var(--header-height-scrolled, 64px) + 3.25rem);
+	--hero-arch-width: min(74vw, 22rem);
+	--hero-arch-height: min(47svh, 30rem);
+	--hero-arch-radius: 999px 999px 0.375rem 0.375rem;
+	--hero-arch-moulding-gap: 0.875rem;
+	--hero-arch-label-top: calc(var(--header-height-scrolled, 64px) + 1.1rem);
+	--hero-arch-content-margin: 0 auto 6.25rem;
+	--hero-arch-heading-size: clamp(3.25rem, 15vw, 4.75rem);
+	--hero-arch-divider-margin: 1.1rem auto 0.9rem;
+
+	justify-content: flex-end;
+	align-items: center;
+	text-align: center;
+	color: var(--hero-arch-ink, var(--color-text-on-dark, rgb(250 247 240)));
+	background: var(
+		--hero-arch-sky,
+		linear-gradient(
+			180deg,
+			var(--color-surface-dark, rgb(30 44 77)) 0%,
+			var(--hero-arch-sky-deep, rgb(16 24 44)) 100%
+		)
+	);
+
+	.invitation-hero__background {
+		inset: auto;
+		top: var(--hero-arch-top);
+		left: 50%;
+		width: var(--hero-arch-width);
+		height: var(--hero-arch-height);
+		translate: -50% 0;
+		border-radius: var(--hero-arch-radius);
+		overflow: clip;
+		box-shadow:
+			0 0 0 0.375rem var(--hero-arch-sky-deep, rgb(16 24 44)),
+			0 0 0 0.4375rem var(--hero-arch-ring, var(--color-action-accent, rgb(205 178 140))),
+			0 30px 60px -20px rgb(0 0 0 / 55%);
+	}
+
+	// Only a soft shadow at the arch's foot so the names read where they overlap the photo.
+	.invitation-hero__background::after {
+		background: var(
+			--hero-arch-photo-shade,
+			linear-gradient(0deg, rgb(0 0 0 / 55%) 0%, transparent 42%)
+		);
+	}
+
+	// Second, finer ring floating outside the arch: the window's moulding.
+	&::before {
+		content: '';
+		position: absolute;
+		z-index: 0;
+		top: calc(var(--hero-arch-top) - var(--hero-arch-moulding-gap));
+		left: 50%;
+		width: calc(var(--hero-arch-width) + 2 * var(--hero-arch-moulding-gap));
+		height: calc(var(--hero-arch-height) + var(--hero-arch-moulding-gap));
+		translate: -50% 0;
+		border: 1px solid var(--hero-arch-moulding, rgb(205 178 140 / 40%));
+		border-bottom: 0;
+		border-radius: var(--hero-arch-moulding-radius, 999px 999px 0 0);
+		pointer-events: none;
+	}
+
+	.invitation-hero__content {
+		position: static;
+		z-index: 1;
+		width: min(100% - 2.5rem, 30rem);
+		margin: var(--hero-arch-content-margin);
+		text-shadow: none;
+	}
+
+	// The shared reveal fills `filter`, which would make the content the containing block of the
+	// label; an opacity-only reveal keeps the label above the arch. The wrapper raises specificity
+	// over the shared `[data-reveal-state]` rules.
+	.event-theme-wrapper & .invitation-hero__content {
+		animation-name: hero-night-arch-fade;
+	}
+
+	.invitation-hero__label {
+		position: absolute;
+		top: var(--hero-arch-label-top);
+		right: 0;
+		left: 0;
+		margin: 0;
+		text-align: center;
+		color: var(--hero-arch-accent, var(--color-action-accent, rgb(205 178 140)));
+	}
+
+	.invitation-hero__title {
+		font-size: var(--hero-arch-heading-size);
+		font-style: normal;
+		line-height: 0.92;
+		letter-spacing: -0.01em;
+	}
+
+	.invitation-hero__ampersand {
+		margin-inline-end: 0.08em;
+		font-style: italic;
+		font-weight: 400;
+		color: var(--hero-arch-accent, var(--color-action-accent, rgb(205 178 140)));
+	}
+
+	.invitation-hero__divider {
+		width: 2.5rem;
+		margin: var(--hero-arch-divider-margin);
+	}
+
+	.invitation-hero__details {
+		align-items: center;
+		gap: 0.2rem;
+	}
+
+	.invitation-hero__date {
+		color: var(--hero-arch-accent, var(--color-action-accent, rgb(205 178 140)));
+	}
+
+	.invitation-hero__time,
+	.invitation-hero__venue {
+		margin: 0;
+		font-size: var(--hero-arch-venue-size, 0.875rem);
+		line-height: 1.45;
+		color: var(--hero-arch-muted, rgb(232 239 246 / 92%));
+	}
+
+	// Centered under the letter at every width, like the rest of the composition. A thread of
+	// light replaces the chevron: a faint 1px track with an accent light travelling down it.
+	.invitation-hero__scroll-indicator {
+		right: 0;
+		left: 0;
+		z-index: 1;
+		display: grid;
+		justify-items: center;
+		gap: 0.7rem;
+		bottom: 1.4rem;
+		margin-inline: auto;
+
+		&::before {
+			content: '';
+			width: 1px;
+			height: 3.25rem;
+			background:
+				radial-gradient(
+						circle at 50% 50%,
+						var(--hero-arch-cue-spark, rgb(255 236 190)) 0 1.5px,
+						color-mix(
+								in srgb,
+								var(
+										--hero-arch-accent,
+										var(--color-action-accent, rgb(205 178 140))
+									)
+									70%,
+								transparent
+							)
+							2.5px,
+						transparent 6px
+					)
+					50% -12px / 12px 12px no-repeat,
+				linear-gradient(
+						180deg,
+						transparent,
+						color-mix(
+								in srgb,
+								var(
+										--hero-arch-accent,
+										var(--color-action-accent, rgb(205 178 140))
+									)
+									85%,
+								transparent
+							)
+							40%,
+						transparent
+					)
+					50% -100% / 1px 60% no-repeat,
+				linear-gradient(
+					180deg,
+					color-mix(in srgb, currentcolor 8%, transparent),
+					color-mix(in srgb, currentcolor 28%, transparent),
+					color-mix(in srgb, currentcolor 8%, transparent)
+				);
+			animation: hero-night-arch-thread 2.4s cubic-bezier(0.55, 0, 0.35, 1) infinite;
+		}
+	}
+
+	.invitation-hero__scroll-text {
+		order: 2;
+		margin-right: -0.32em;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--hero-arch-cue-size, 0.75rem);
+		font-weight: 500;
+		letter-spacing: 0.32em;
+		color: var(--hero-arch-muted, rgb(232 239 246 / 92%));
+	}
+
+	.invitation-hero__scroll-chevron {
+		display: none;
+	}
+
+	// Wide screens: the arch stands on the right, the letter on the left.
+	@media (width >= 62rem) {
+		--hero-arch-top: 50%;
+		--hero-arch-width: min(30vw, 26rem);
+		--hero-arch-height: min(74svh, 40rem);
+		--hero-arch-content-margin: 0 auto 0 clamp(2rem, 8vw, 8rem);
+		--hero-arch-heading-size: clamp(4rem, 6.4vw, 6.5rem);
+		--hero-arch-divider-margin: 1.5rem 0 1.1rem;
+
+		justify-content: center;
+		align-items: flex-start;
+		text-align: left;
+
+		.invitation-hero__background,
+		&::before {
+			left: 68%;
+			translate: -50% -50%;
+		}
+
+		&::before {
+			top: calc(50% - var(--hero-arch-moulding-gap) / 2);
+		}
+
+		.invitation-hero__background::after {
+			background: none;
+		}
+
+		.invitation-hero__content {
+			width: min(40vw, 36rem);
+		}
+
+		.invitation-hero__label {
+			position: static;
+			margin-bottom: 1rem;
+			text-align: left;
+		}
+
+		.invitation-hero__details {
+			align-items: flex-start;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: view()) {
+		[data-motion='editorial'] .invitation-hero[data-variant='night-arch'] {
+			.invitation-hero__background img {
+				animation: hero-night-arch-push linear both;
+				animation-timeline: view();
+				animation-range: exit 0% exit 100%;
+			}
+
+			.invitation-hero__title-wrapper {
+				animation: hero-night-arch-lift linear both;
+				animation-timeline: view();
+				animation-range: exit 0% exit 80%;
+			}
+		}
+	}
+}
+
+// Once the envelope is open the thread arrives with the cover, then leaves with the first scroll
+// of the page. The opened-state selector outranks the shared affordance fade; the sealed state
+// keeps hiding it.
+.event-theme-wrapper:not([data-reveal-state='sealed'])
+	.invitation-hero[data-variant='night-arch']
+	.invitation-hero__scroll-indicator {
+	opacity: 100%;
+	animation: none;
+
+	&::before {
+		animation-name: motion-fade-in, hero-night-arch-thread;
+		animation-duration: var(--motion-hero-affordance-duration), 2.4s;
+		animation-timing-function: var(--ease-out), cubic-bezier(0.55, 0, 0.35, 1);
+		animation-delay: var(--motion-hero-affordance-delay), 0s;
+		animation-iteration-count: 1, infinite;
+		animation-fill-mode: both, none;
+	}
+
+	.invitation-hero__scroll-text {
+		animation: motion-fade-in var(--motion-hero-affordance-duration) var(--ease-out)
+			var(--motion-hero-affordance-delay) both;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: scroll()) {
+		.event-theme-wrapper:not([data-reveal-state='sealed'])
+			.invitation-hero[data-variant='night-arch']
+			.invitation-hero__scroll-indicator {
+			animation: hero-night-arch-cue-leave linear both;
+			animation-timeline: scroll(root);
+			animation-range: 0 18svh;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.invitation-hero[data-variant='night-arch'] .invitation-hero__scroll-indicator::before {
+		/* stylelint-disable-next-line declaration-no-important */
+		animation: none !important;
+		background: linear-gradient(
+			180deg,
+			transparent,
+			color-mix(
+				in srgb,
+				var(--hero-arch-accent, var(--color-action-accent, rgb(205 178 140))) 80%,
+				transparent
+			),
+			transparent
+		);
+	}
+}
+
+@keyframes hero-night-arch-thread {
+	0% {
+		background-position:
+			50% -12px,
+			50% -100%,
+			0 0;
+	}
+
+	70%,
+	100% {
+		background-position:
+			50% calc(100% + 12px),
+			50% 220%,
+			0 0;
+	}
+}
+
+@keyframes hero-night-arch-cue-leave {
+	from {
+		opacity: 100%;
+	}
+
+	to {
+		opacity: 0%;
+		translate: 0 1rem;
+		scale: 1 0.6;
+	}
+}
+
+@keyframes hero-night-arch-fade {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: 100%;
+	}
+}
+
+@keyframes hero-night-arch-push {
+	from {
+		scale: 1;
+	}
+
+	to {
+		scale: 1.14;
+	}
+}
+
+@keyframes hero-night-arch-lift {
+	from {
+		translate: 0 0;
+	}
+
+	to {
+		translate: 0 -3rem;
+	}
+}

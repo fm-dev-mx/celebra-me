@@ -152,6 +152,17 @@ Single round answered by the owner on 2026-10-15; no client round was needed.
 Planned order: quote, countdown, family, location, itinerary, gallery, gifts, personalizedAccess,
 rsvp, thankYou. The dress code lives in the itinerary/location details per preset practice.
 
+Current order: quote, countdown, family, location, gallery, gifts, personalizedAccess, rsvp,
+thankYou. The itinerary held only the ceremony (19:00) and the reception (21:00), so it now lives in
+the location route (`night-route`): one numbered stop per venue, led by its time. The location
+indications carry the dress code and the personal-pass reminder.
+
+Night round (2026-10-20): `night-envelope` reveal whose letter window flies onto the `night-arch`
+cover; the shore interlude darkens to navy on scroll; venue cards offer «Agendar en el calendario»;
+the RSVP register unfolds on scroll; Regalos carries a fine-line envelope mark; the gallery keeps
+seven photographs (one dance instead of three). RSVP and chrome text follow the three type voices
+and the 12 px floor.
+
 ## Design Direction
 
 | decision                          | value                                                    | classification          |
@@ -174,7 +185,7 @@ full-bleed navy closing.
 | concern                                                  | decision / evidence                                                         | status  |
 | -------------------------------------------------------- | --------------------------------------------------------------------------- | ------- |
 | Typography roles (display, heading, body, metadata)      | Playfair 500 navy titles; Cinzel labels in champagne ink (4.5:1 on ivory)   | applied |
-| Vertical rhythm and density                              | Page at 390 px is 9,931 px tall (target 9,500), accepted by the owner       | applied |
+| Vertical rhythm and density                              | Page at 390 px is 10,437 px tall with the night round (7-photo gallery)     | applied |
 | Surface hierarchy (open flow vs cards/containers)        | Open ivory flow; compact time-led venue cards; formal RSVP register         | applied |
 | Photographic treatment (role, crop, focal point, filter) | One role per photograph (see inventory); champagne hairline frame on photos | applied |
 | Section-intersection intent and narrative cadence        | `composition.intersections` in the definition is the executable record      | applied |
@@ -186,7 +197,7 @@ full-bleed navy closing.
 | ------------------------------------------- | ----------------------------------------------------------------------------- |
 | Mechanical render/capture result            | pass — PR #361 captures at 390 and 1280 px, 2026-10-19                        |
 | Whole-invitation responsive inspection      | Owner review of the published v0.34 design on an Android phone, 2026-10-20    |
-| Section boundaries and narrative continuity | pass; a second round (night arch) may follow as a republication               |
+| Section boundaries and narrative continuity | pass; night round (arch, night envelope, dusk shore) ships as a republication |
 | Human creative outcome                      | `ACCEPTED`                                                                    |
 | Reviewer and date                           | Francisco Mendoza (owner), 2026-10-20, tracking board decisions d075 and d076 |
 | Blocking reason or owner follow-up          | None blocking; the song (MUSIC_AUDIO) stays an owner follow-up                |
@@ -198,42 +209,43 @@ lake and dock, stone house, bamboo, beach at golden hour and sunset, and four sa
 with a newspaper prop. JPEG, 2496–4160 px long edge, EXIF and ICC stripped by WhatsApp. One extra
 image is the palette screenshot (reference only).
 
-| source filename | dims      | format | orientation | weight | quality              | role             | duplicate    | processing        | derivative        |
-| --------------- | --------- | ------ | ----------- | ------ | -------------------- | ---------------- | ------------ | ----------------- | ----------------- |
-| chat-45         | 4160×2773 | jpeg   | landscape   | 1.6 MB | provisional-whatsapp | hero desktop, og | near chat-39 | WebP cover crop   | hero-desktop.webp |
-| chat-39         | 2773×4160 | jpeg   | portrait    | 1.2 MB | provisional-whatsapp | hero mobile      | near chat-45 | WebP cover crop   | hero-mobile.webp  |
-| chat-43         | 2773×4160 | jpeg   | portrait    | 1.4 MB | provisional-whatsapp | family featured  | no           | WebP              | family.webp       |
-| chat-36         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | interlude 1      | no           | WebP              | interlude-01.webp |
-| chat-46         | 4160×2773 | jpeg   | landscape   | 0.9 MB | provisional-whatsapp | interlude 2      | near chat-34 | WebP              | interlude-02.webp |
-| chat-41         | 2773×4160 | jpeg   | portrait    | 0.6 MB | provisional-whatsapp | thank-you        | no           | WebP              | thank-you.webp    |
-| chat-40         | 2773×4160 | jpeg   | portrait    | 0.4 MB | provisional-whatsapp | gallery          | no           | WebP 1600         | gallery-01.webp   |
-| chat-37         | 2496×4160 | jpeg   | portrait    | 0.9 MB | provisional-whatsapp | gallery          | no           | WebP 1600         | gallery-02.webp   |
-| chat-42         | 2773×4160 | jpeg   | portrait    | 0.4 MB | provisional-whatsapp | gallery          | near chat-38 | WebP 1600         | gallery-03.webp   |
-| chat-35         | 4160×2773 | jpeg   | landscape   | 1.6 MB | provisional-whatsapp | gallery          | no           | WebP 1400 (dense) | gallery-04.webp   |
-| chat-38         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | gallery          | near chat-42 | WebP 1600         | gallery-05.webp   |
-| chat-32         | 2773×4160 | jpeg   | portrait    | 1.5 MB | provisional-whatsapp | gallery          | no           | WebP 1400 (dense) | gallery-06.webp   |
-| chat-44         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | gallery          | no           | WebP 1600         | gallery-07.webp   |
-| chat-34         | 4160×2773 | jpeg   | landscape   | 0.9 MB | provisional-whatsapp | gallery          | near chat-46 | WebP 1600         | gallery-08.webp   |
-| chat-33         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | gallery          | near chat-34 | WebP 1600         | gallery-09.webp   |
+| source filename | dims      | format | orientation | weight | quality              | role            | duplicate    | processing        | derivative        |
+| --------------- | --------- | ------ | ----------- | ------ | -------------------- | --------------- | ------------ | ----------------- | ----------------- |
+| chat-45         | 4160×2773 | jpeg   | landscape   | 1.6 MB | provisional-whatsapp | og              | near chat-39 | WebP cover crop   | og-share.webp     |
+| chat-39         | 2773×4160 | jpeg   | portrait    | 1.2 MB | provisional-whatsapp | hero arch       | near chat-45 | WebP 2:3 crop     | hero-arch-*.webp  |
+| chat-43         | 2773×4160 | jpeg   | portrait    | 1.4 MB | provisional-whatsapp | family featured | no           | WebP              | family.webp       |
+| chat-36         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | interlude 1     | no           | WebP              | interlude-01.webp |
+| chat-46         | 4160×2773 | jpeg   | landscape   | 0.9 MB | provisional-whatsapp | interlude 2     | near chat-34 | WebP              | interlude-02.webp |
+| chat-41         | 2773×4160 | jpeg   | portrait    | 0.6 MB | provisional-whatsapp | thank-you       | no           | WebP              | thank-you.webp    |
+| chat-40         | 2773×4160 | jpeg   | portrait    | 0.4 MB | provisional-whatsapp | gallery         | no           | WebP 1600         | gallery-01.webp   |
+| chat-37         | 2496×4160 | jpeg   | portrait    | 0.9 MB | provisional-whatsapp | gallery         | no           | WebP 1600         | gallery-02.webp   |
+| chat-42         | 2773×4160 | jpeg   | portrait    | 0.4 MB | provisional-whatsapp | gallery         | near chat-38 | WebP 1600         | gallery-03.webp   |
+| chat-35         | 4160×2773 | jpeg   | landscape   | 1.6 MB | provisional-whatsapp | gallery         | no           | WebP 1400 (dense) | gallery-04.webp   |
+| chat-38         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | gallery         | near chat-42 | WebP 1600         | gallery-05.webp   |
+| chat-32         | 2773×4160 | jpeg   | portrait    | 1.5 MB | provisional-whatsapp | gallery         | no           | WebP 1400 (dense) | gallery-06.webp   |
+| chat-44         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | gallery         | no           | WebP 1600         | gallery-07.webp   |
+| chat-34         | 4160×2773 | jpeg   | landscape   | 0.9 MB | provisional-whatsapp | gallery         | near chat-46 | WebP 1600         | gallery-08.webp   |
+| chat-33         | 4160×2773 | jpeg   | landscape   | 0.6 MB | provisional-whatsapp | gallery         | near chat-34 | WebP 1600         | gallery-09.webp   |
 
-Derivatives are encoded once from the chat files within the role targets: hero desktop 468 KB at
-2048×1365, hero mobile 233 KB at 1080×1620, family 275 KB, interludes 123–190 KB, thank-you 96 KB,
-og 138 KB at 1200×630, gallery 40–180 KB. Two foliage-dense gallery frames (chat-35, chat-32) are
-capped at 1400 px to stay inside the gallery target without dropping below quality 68. The owner
-accepted the chat files as the definitive set (2026-10-15); they stay `provisional-whatsapp` by
-rule. If originals ever arrive, re-encode every derivative from them with the same names and roles.
+Derivatives are encoded once from the chat files within the role targets: the night-arch hero photo
+in two widths of one 2:3 frame, 69 KB at 600×900 (phones) and 111 KB at 900×1350 (wide screens),
+family 275 KB, interludes 123–190 KB, thank-you 96 KB, og 138 KB at 1200×630, gallery 40–180 KB. Two
+foliage-dense gallery frames (chat-35, chat-32) are capped at 1400 px to stay inside the gallery
+target without dropping below quality 68. The owner accepted the chat files as the definitive set
+(2026-10-15); they stay `provisional-whatsapp` by rule. If originals ever arrive, re-encode every
+derivative from them with the same names and roles.
 
 ### Uniqueness table (required before READY_*)
 
-| role            | source                             | derivative              | intentional multi-role?               |
-| --------------- | ---------------------------------- | ----------------------- | ------------------------------------- |
-| hero desktop    | chat-45                            | hero-desktop.webp       | yes: og-share.webp is a separate crop |
-| hero mobile     | chat-39                            | hero-mobile.webp        | no (same dock, different frame)       |
-| family featured | chat-43                            | family.webp             | no                                    |
-| interlude 1     | chat-36                            | interlude-01.webp       | no                                    |
-| interlude 2     | chat-46                            | interlude-02.webp       | no                                    |
-| thank-you       | chat-41                            | thank-you.webp          | no                                    |
-| gallery (9)     | 40, 37, 42, 35, 38, 32, 44, 34, 33 | gallery-01 … gallery-09 | no                                    |
+| role            | source                             | derivative                                    | intentional multi-role?         |
+| --------------- | ---------------------------------- | --------------------------------------------- | ------------------------------- |
+| hero arch       | chat-39                            | hero-arch-mobile.webp, hero-arch-desktop.webp | no (one frame, two widths)      |
+| og              | chat-45                            | og-share.webp                                 | no (same dock, different frame) |
+| family featured | chat-43                            | family.webp                                   | no                              |
+| interlude 1     | chat-36                            | interlude-01.webp                             | no                              |
+| interlude 2     | chat-46                            | interlude-02.webp                             | no                              |
+| thank-you       | chat-41                            | thank-you.webp                                | no                              |
+| gallery (9)     | 40, 37, 42, 35, 38, 32, 44, 34, 33 | gallery-01 … gallery-09                       | no                              |
 
 ## Implementation Constraints
 

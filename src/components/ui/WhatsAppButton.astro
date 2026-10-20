@@ -33,6 +33,7 @@ interface Props {
 	promoCode?: string;
 	eventType?: string;
 	eventLabel?: string;
+	/** Defaults to the visible label plus the destination, e.g. «Cotizar mi invitación por WhatsApp». */
 	ariaLabel?: string;
 	/** Keeps the message untouched by the click-time folio rewrite. */
 	preserveMessage?: boolean;
@@ -43,7 +44,7 @@ interface Props {
 const {
 	className = '',
 	message: explicitMessage,
-	label = 'Cotizar por WhatsApp',
+	label = 'Cotizar mi invitación',
 	trackSection = 'hero',
 	trackCta = 'hero_whatsapp',
 	trackIntent = 'whatsapp',
@@ -56,11 +57,12 @@ const {
 	promoCode: explicitPromoCode,
 	eventType,
 	eventLabel,
-	ariaLabel = 'Cotizar por WhatsApp',
+	ariaLabel: explicitAriaLabel,
 	preserveMessage = false,
 	withoutPromo = false,
 } = Astro.props;
 
+const ariaLabel = explicitAriaLabel ?? `${label} por WhatsApp`;
 const pkg = packageId ? getPromoPackage(packageId) : undefined;
 const promoCode = withoutPromo
 	? undefined
