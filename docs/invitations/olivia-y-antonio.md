@@ -173,7 +173,12 @@ RSVP notes field reads «Mensaje para Olivia y Antonio» with a placeholder for 
 scroll, only the RSVP card rises over the pinned pass (`stack` intersection with a clear surface):
 the pass sinks back to 94 %, dims and fades out under the card, and the register column is the
 card's width, so the card is centered over the pass on desktop. Without a personal link there is no
-pass, so the RSVP follows the gifts in normal flow.
+pass, so the RSVP follows the gifts in normal flow. The footer is held below the closing, like
+America's: a pull raises a champagne crescent moon on its thread (the crescent the closing lacked),
+and the footer opens on that moon with «Bajo la misma luna», «¿Nos acompaña el 18 de diciembre?»,
+the reply button and «Antes del miércoles 18 de noviembre» while the guest has not answered; after a
+yes it keeps «Su lugar bajo esta luna ya está apartado.». Without a personal link the reply stays
+away.
 
 ## Design Direction
 
