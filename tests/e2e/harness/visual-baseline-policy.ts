@@ -13,6 +13,17 @@ export function resolveVisualParityMode(): VisualParityMode {
 		(process.env.CI ? 'compare' : 'diagnostic')) as VisualParityMode;
 }
 
+/**
+ * Pull requests into develop defer the complete visual parity suites to the develop push, release
+ * promotions and the nightly run on develop; every other browser check still runs.
+ */
+export function isVisualParityDeferred(): boolean {
+	return process.env.VISUAL_PARITY_DEFERRED === 'true';
+}
+
+export const VISUAL_PARITY_DEFERRED_REASON =
+	'Complete visual parity runs on develop pushes, release promotions and nightly on develop.';
+
 interface AcceptedVisualCapture {
 	file?: unknown;
 	sha256?: unknown;

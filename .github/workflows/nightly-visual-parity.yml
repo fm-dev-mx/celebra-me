@@ -1,0 +1,78 @@
+name: Nightly Visual Parity
+
+# Pull requests into develop skip the complete visual parity suites (VISUAL_PARITY_DEFERRED in
+# commit-validation.yml). Once a night this dispatches the full Repository CI on develop, so a
+# visual regression that merged without them surfaces within a day even when no develop push ran
+# the browser tier. The token only starts and reads that run and writes the alert issue.
+permissions:
+    contents: read
+    actions: write
+    issues: write
+
+on:
+    schedule:
+        # 01:30 in Mazatlán, after the day's merges.
+        - cron: '30 8 * * *'
+    workflow_dispatch:
+
+concurrency:
+    group: nightly-visual-parity
+    cancel-in-progress: false
+
+jobs:
+    dispatch:
+        name: Full Repository CI on develop
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        steps:
+            - name: Dispatch and wait for the full run
+              id: full-run
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  started=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+                  gh workflow run commit-validation.yml --repo "$GITHUB_REPOSITORY" --ref develop \
+                      -f visual_mode=compare
+                  run_id=''
+                  for attempt in $(seq 1 18); do
+                      sleep 10
+                      run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow commit-validation.yml \
+                          --branch develop --event workflow_dispatch --created ">=$started" --limit 1 \
+                          --json databaseId --jq '.[0].databaseId // empty')
+                      [ -n "$run_id" ] && break
+                  done
+                  test -n "$run_id"
+                  echo "url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$run_id" >> "$GITHUB_OUTPUT"
+                  echo "Full run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$run_id" >> "$GITHUB_STEP_SUMMARY"
+                  gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status --interval 60
+
+            # The first failure opens the issue (GitHub e-mails the repository watchers) and later
+            # failures comment on it, like the Production scheduled monitors.
+            - name: Alert
+              if: failure()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: 'CI nocturna: la paridad visual completa de develop falló'
+                  RUN_URL: ${{ steps.full-run.outputs.url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "Sigue fallando: $RUN_URL"
+                  else
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$ALERT_TITLE" --body \
+                          "La corrida completa de Repository CI en develop falló. Revise el run: $RUN_URL"
+                  fi
+
+            - name: Close the alert after recovery
+              if: success()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: 'CI nocturna: la paridad visual completa de develop falló'
+                  RUN_URL: ${{ steps.full-run.outputs.url }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Recuperado: $RUN_URL"
+                  fi

@@ -16,7 +16,6 @@ const TIERS = {
 		'tests/e2e/layout-verify-fix.spec.ts',
 		'tests/e2e/login.scenarios.test.ts',
 		'tests/e2e/raster-seal-layout-regression.spec.ts',
-		'tests/e2e/rsvp-v2.e2e.test.ts',
 		'tests/e2e/destenid-cover-hero-distinct.spec.ts',
 		'tests/e2e/destenid-face-safety.spec.ts',
 		'tests/e2e/editorial-cover-collector.spec.ts',
