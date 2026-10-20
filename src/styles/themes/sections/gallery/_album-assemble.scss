@@ -16,6 +16,9 @@
 //   --gallery-album-shadow                       Print shadow
 //   --gallery-album-count-size / -caption-size / -hint-size   Type sizes
 //   --gallery-album-print-ratio                  Photograph ratio inside the print (4 / 5)
+//   --gallery-album-lead                         Prints that land while the page scrolls in,
+//                                                before the scene pins (default 0), so the page
+//                                                never arrives empty
 // ==========================================================================
 
 $album-max-items: 8;
@@ -54,8 +57,14 @@ $album-land-share: 0.85;
 	--gallery-album-count-size: 1.25rem;
 	--gallery-album-caption-size: 0.875rem;
 	--gallery-album-hint-size: 0.8125rem;
-	--album-span: calc(#{$album-land-share} / var(--album-count, 5));
-	--album-span-pct: calc(#{$album-land-share * 100%} / var(--album-count, 5));
+	--album-lead: var(--gallery-album-lead, 0);
+	--album-span: calc(#{$album-land-share} / (var(--album-count, 5) - var(--album-lead)));
+	--album-span-pct: calc(
+		#{$album-land-share * 100%} / (var(--album-count, 5) - var(--album-lead))
+	);
+
+	// Where the first slice starts: at the pin, or earlier by one slice per lead print.
+	--album-start: calc(-1 * var(--album-lead) * var(--album-span-pct));
 
 	// `clip`, not `hidden`: a scroll container here would break the sticky stage and capture the
 	// scene's view timeline.
@@ -140,7 +149,7 @@ $album-land-share: 0.85;
 		@include scene.timeline {
 			animation: var(--album-count-name, album-count-5) linear both;
 			animation-timeline: --scroll-scene;
-			animation-range: contain 0% contain #{$album-land-share * 100%};
+			animation-range: contain var(--album-start) contain #{$album-land-share * 100%};
 		}
 
 		@include scene.scripted {
@@ -149,7 +158,8 @@ $album-land-share: 0.85;
 					var(--album-line) * -1 *
 						min(
 							var(--album-count, 5) - 1,
-							round(down, var(--scene-progress, 0) / var(--album-span), 1)
+							round(down, var(--scene-progress, 0) / var(--album-span), 1) +
+								var(--album-lead)
 						)
 				);
 		}
@@ -173,7 +183,7 @@ $album-land-share: 0.85;
 		@include scene.timeline {
 			animation: album-progress linear both;
 			animation-timeline: --scroll-scene;
-			animation-range: contain 0% contain #{$album-land-share * 100%};
+			animation-range: contain var(--album-start) contain #{$album-land-share * 100%};
 		}
 
 		@include scene.scripted {
@@ -237,15 +247,19 @@ $album-land-share: 0.85;
 		@include scene.timeline {
 			animation: album-land linear both;
 			animation-timeline: --scroll-scene;
-			animation-range: contain calc(var(--album-index) * var(--album-span-pct)) contain
-				calc((var(--album-index) + 1) * var(--album-span-pct));
+			animation-range: contain
+				calc((var(--album-index) - var(--album-lead)) * var(--album-span-pct)) contain
+				calc((var(--album-index) + 1 - var(--album-lead)) * var(--album-span-pct));
 		}
 
 		// Scripted engine: the same landing computed from --scene-progress.
 		@include scene.scripted {
 			--album-t: clamp(
 				0,
-				(var(--scene-progress, 0) - var(--album-index) * var(--album-span)) /
+				(
+						var(--scene-progress, 0) - (var(--album-index) - var(--album-lead)) *
+							var(--album-span)
+					) /
 					var(--album-span),
 				1
 			);

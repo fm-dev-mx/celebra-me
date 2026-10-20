@@ -419,6 +419,9 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		// The album's scroll cue speaks in the italic of the other quiet asides.
 		--gallery-album-hint-font: var(--font-display);
 		--gallery-album-hint-style: italic;
+
+		// The first print is already falling as the album page scrolls in.
+		--gallery-album-lead: 1;
 	}
 
 	.gifts-section {
