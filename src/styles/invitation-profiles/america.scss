@@ -102,7 +102,6 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-message-size: clamp(1.25rem, 4.6vw, 1.45rem);
 	--family-message-style: italic;
 	--family-message-line-height: 1.4;
-	--family-message-max-width: 24rem;
 	--family-message-color: var(--color-violet-ink);
 	--family-divider: #{$america-braid} center / contain no-repeat;
 	--family-divider-width: 6.5rem;
@@ -114,13 +113,25 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-group-padding: clamp(2.25rem, 7vw, 3rem) 0 0;
 	--family-group-title-color: var(--color-gold-ink);
 	--family-texture-image: #{$america-sun};
-	--family-texture-position: 50% calc(100% + 5rem);
-	--family-texture-size: min(22rem, 80vw);
+	--family-texture-position: 50% calc(100% + 7rem);
+	--family-texture-size: min(14rem, 60vw);
 	--family-texture-repeat: no-repeat;
-	--family-texture-opacity: 18%;
+	--family-texture-opacity: 24%;
 	--family-member-joiner: 'y';
 	--family-member-joiner-color: var(--color-gold-ink);
-	--family-name-max-width: 16ch;
+	--family-name-max-width: 22ch;
+	--family-message-max-width: min(22rem, 100%);
+
+	// A band of lantern light crosses each name as they scroll by.
+	--family-shine: linear-gradient(
+		105deg,
+		currentcolor 40%,
+		color-mix(in srgb, var(--color-lantern-amber) 70%, var(--color-gold-ink)) 50%,
+		currentcolor 60%
+	);
+	--family-shine-clip: text;
+	--family-shine-fill: transparent;
+	--family-shine-name: family-shine;
 	--location-intro-heading-size: var(--america-title-size);
 	--location-intro-heading-line-height: 1.1;
 	--location-enclosure-heading-line-height: 1.1;
@@ -486,6 +497,7 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	}
 
 	.family__group--parents {
+		--family-group-padding: clamp(0.5rem, 2vw, 1rem) 0 0;
 		--family-name-size: clamp(1.75rem, 7vw, 2.25rem);
 	}
 

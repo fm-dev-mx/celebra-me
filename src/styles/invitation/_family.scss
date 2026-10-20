@@ -576,3 +576,40 @@
 		}
 	}
 }
+
+// Optional scroll-linked shine on the names: --family-shine is a background painted through
+// the text (a band of light in a wide gradient), --family-shine-fill lets the text show it
+// (transparent) and --family-shine-name names the sweep (family-shine). The light follows the
+// section through the viewport (the section clips its overflow, so it carries the timeline):
+// the parents first, then the godparents. Without scroll timelines, or with reduced motion,
+// the names keep their own ink.
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.family {
+			view-timeline: --family-shine block;
+		}
+
+		.family__name {
+			background: var(--family-shine, none) 100% 0 / 300% 100% no-repeat;
+			background-clip: var(--family-shine-clip, border-box);
+			-webkit-text-fill-color: var(--family-shine-fill, currentcolor);
+			animation: var(--family-shine-name, none) auto linear both;
+			animation-timeline: --family-shine;
+			animation-range: cover 20% cover 45%;
+		}
+
+		.family__group--godparents .family__name {
+			animation-range: cover 40% cover 65%;
+		}
+	}
+}
+
+@keyframes family-shine {
+	0% {
+		background-position: 100% 0;
+	}
+
+	100% {
+		background-position: 0 0;
+	}
+}
