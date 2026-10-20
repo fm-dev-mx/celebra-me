@@ -234,7 +234,7 @@
 // Admission ticket composition; opt-in content comes from the section renderer.
 .personalized-access[data-variant='formal-pass'][data-presentation='admission-ticket'] {
 	.personalized-access__container {
-		width: min(100%, 38rem);
+		width: var(--pa-ticket-width, min(100%, 38rem));
 	}
 
 	.access-card {
@@ -302,6 +302,8 @@
 		margin: 0 0 1.75rem;
 		font: 400 var(--pa-welcome-size, 1.375rem) / 1.4 var(--formal-chapter-display);
 		color: var(--formal-chapter-muted);
+		text-align: var(--pa-welcome-align, inherit);
+		text-wrap: var(--pa-welcome-wrap, wrap);
 	}
 
 	.access-card__divider {

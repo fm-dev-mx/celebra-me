@@ -202,8 +202,9 @@ invitation profiles.
   and under reduced motion.
 - rsvp formal-register panel (profile tokens):
   `--formal-register-surface-{bg,border,radius,padding,shadow}` frame the register as a panel;
-  defaults keep the open chapter. `--pa-welcome-size` sets the formal-pass welcome line (default
-  1.375rem).
+  defaults keep the open chapter. `--pa-ticket-width` sizes the admission ticket, and
+  `--pa-welcome-{align,wrap}` set the welcome line's alignment and wrapping; `--pa-welcome-size`
+  sets the formal-pass welcome line (default 1.375rem).
 - location card actions (profile tokens): `--location-calendar-order` moves the calendar disclosure
   after the directions button; `--location-copy-label-display: inline` shows «Copiar» next to the
   copy icon (with `--location-copy-button-gap`); night-route `--location-route-stack-gap` holds the

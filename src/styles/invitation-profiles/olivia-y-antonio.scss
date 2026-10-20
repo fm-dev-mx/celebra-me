@@ -399,15 +399,35 @@
 		--formal-chapter-title: var(--olivia-ivory);
 		--formal-chapter-muted: rgb(var(--olivia-mist-rgb) / 82%);
 		--formal-chapter-meta: var(--olivia-champagne);
-		--pa-card-bg-image: linear-gradient(
-			165deg,
-			rgb(var(--olivia-slate-rgb) / 55%) 0%,
-			var(--olivia-navy) 55%,
-			rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
-		);
+
+		// Laid paper: a fine grain and faint horizontal chain lines under a champagne glow at
+		// the head, over the navy gradient. The ticket breathes inside wider margins.
+		--pa-card-bg-image:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.98 0 0 0 0 0.96 0 0 0 0 0.92 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"),
+			repeating-linear-gradient(
+				0deg,
+				rgb(var(--olivia-champagne-rgb) / 3.5%) 0 1px,
+				transparent 1px 7px
+			),
+			radial-gradient(
+				120% 55% at 50% 0%,
+				rgb(var(--olivia-champagne-rgb) / 12%) 0%,
+				transparent 70%
+			),
+			linear-gradient(
+				165deg,
+				rgb(var(--olivia-slate-rgb) / 55%) 0%,
+				var(--olivia-navy) 55%,
+				rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
+			);
 		--pa-card-shadow: 0 1.25rem 2.5rem rgb(0 0 0 / 35%);
 		--pa-count-color: var(--olivia-champagne);
 		--pa-welcome-size: 1.125rem;
+		--pa-section-padding: 3.5rem;
+		--pa-section-inline: 2rem;
+		--pa-ticket-width: min(100%, 30rem);
+		--pa-welcome-align: center;
+		--pa-welcome-wrap: balance;
 	}
 
 	.rsvp {
@@ -424,7 +444,8 @@
 		--formal-chapter-band-rgb: var(--olivia-navy-deep-rgb);
 	}
 
-	// Inside the night the register needs no champagne haze at its seam with the pass.
+	// The night chapters take no champagne haze at their seams; on navy it reads as a grey smear.
+	.invitation-section-wrapper[data-section-kind='personalized-access'],
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
 		--intersection-blend: none;
 	}
