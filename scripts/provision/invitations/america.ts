@@ -328,8 +328,17 @@ const content: CanonicalEventContentInput = {
 		closingName: CELEBRANT_NAME,
 		closingPhrase: 'América · XV años · Los Mochis · MMXXVI',
 	},
-	// A storybook needs no site menu: a single RSVP link leaves the header without navigation.
-	navigation: [{ label: 'Confirmar', href: '#rsvp' }],
+	// The chapters a guest returns to; the quote and the countdown are passed on the way. The
+	// RSVP link becomes the menu's call to action.
+	navigation: [
+		{ label: 'Inicio', href: '#inicio' },
+		{ label: 'Lugar', href: '#event-location' },
+		{ label: 'Familia', href: '#family-section' },
+		{ label: 'Programa', href: '#itinerary' },
+		{ label: 'Galería', href: '#galeria' },
+		{ label: 'Regalos', href: '#regalos' },
+		{ label: 'Confirmar', href: '#rsvp' },
+	],
 	sharing: {
 		ogImage: 'ogShare',
 		ogDescription: `Sábado ${EVENT_DATE_LABEL} · Los Mochis, Sinaloa. Misa a las 18:00 y recepción a las 20:00.`,
