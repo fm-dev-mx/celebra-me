@@ -21,6 +21,9 @@
 //                               it changes to Agendar (default none)
 // ==========================================================================
 
+// The mark's lantern outline, as in the footer pull and the RSVP steps.
+$lantern-shape: 40% 40% 45% 45%;
+
 .floating-cta {
 	position: fixed;
 	bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
@@ -97,7 +100,7 @@
 		width: 0.6rem;
 		height: 0.8rem;
 		margin-right: 0.75rem;
-		border-radius: 40% 40% 45% 45%;
+		border-radius: $lantern-shape;
 		background: var(--floating-cta-icon, currentcolor);
 	}
 
