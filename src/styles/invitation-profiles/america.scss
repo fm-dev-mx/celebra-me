@@ -16,6 +16,10 @@ $america-tower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 
 // The night's horizon (a slow rise, deep on the left, under a gold hairline) and the small
 // flat lanterns that leave it into the mist.
+// Line icons for the venue buttons, used as masks so they take the button ink.
+$america-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
+$america-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14.5' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
+$america-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
 $america-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23211938' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
 $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30'%3E%3Ccircle cx='12' cy='16' r='11' fill='%23E8A040' opacity='.16'/%3E%3Cpath fill='%23E8A040' d='M9.5 6h5v1.6c3 1 5 4 5 8.2 0 4.3-2.3 6.9-3.8 7.6H8.3c-1.5-.7-3.8-3.3-3.8-7.6 0-4.2 2-7.2 5-8.2z'/%3E%3Cpath fill='%23F3D9A4' opacity='.75' d='M11 10.5h2v9h-2z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-width='.8' d='M12 6V2'/%3E%3C/svg%3E");
 
@@ -490,8 +494,39 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	}
 
 	// The hour takes the label's gold, read where the entry sits (the night stage remaps it).
+	// Venue actions as buttons: the map is the primary one, filled in the link color, with the
+	// calendar and the copy beside each other as outlined buttons below it; each carries a line
+	// icon. Wide screens set the three on one line. Read at the entry, where the night stage
+	// remaps the link colors.
 	.event-location__program-entry {
 		--location-program-time-color: var(--location-program-label-color);
+		--location-program-action-flex: 1 1 0;
+		--location-program-action-primary-flex: 1 1 100%;
+		--location-program-links-gap: 0.625rem;
+		--location-program-links-row-gap: 0.625rem;
+		--location-program-link-width: 100%;
+		--location-program-link-justify: center;
+		--location-program-link-padding: 0.35rem 1rem;
+		--location-program-link-border: 1px solid
+			color-mix(in srgb, var(--location-program-link) 55%, transparent);
+		--location-program-link-radius: 999px;
+		--location-program-link-decoration: none;
+		--location-program-link-size: 0.95rem;
+		--location-program-link-tracking: 0.1em;
+		--location-program-link-primary-bg: var(--location-program-link);
+		--location-program-link-primary-color: var(--location-program-link-ink);
+		--location-program-link-primary-border: 1px solid var(--location-program-link);
+		--location-program-link-icon: '';
+		--location-program-map-icon: #{$america-icon-pin};
+		--location-program-calendar-icon: #{$america-icon-calendar};
+		--location-program-copy-icon: #{$america-icon-copy};
+
+		@media (width >= 768px) {
+			--location-program-action-flex: 0 1 auto;
+			--location-program-action-primary-flex: 0 1 auto;
+			--location-program-link-width: auto;
+			--location-program-link-padding: 0.35rem 1.35rem;
+		}
 	}
 
 	// Program: one card per moment under a dusk sky (paper into the gallery's mist). Each card is a

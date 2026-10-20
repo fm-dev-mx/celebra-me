@@ -22,6 +22,18 @@
 //   --location-program-link-size / -tracking  Text link size and small-caps tracking
 //   --location-program-link-radius  Focus outline shape of the text links (default 4px)
 //   --location-program-links-align  Wide screens: `auto` aligns both entries' links
+//   --location-program-links-row-gap  Space between rows of links (default 0)
+//   --location-program-action-flex / -action-primary-flex  Flex of each action and of the first
+//                                 one (default 0 1 auto: links sit at their own width)
+//   --location-program-link-width / -justify / -padding / -border / -bg / -decoration
+//                                 Link box: set them to turn the links into buttons (defaults:
+//                                 underlined text links)
+//   --location-program-link-ink   Ink for text on a filled link (default: the section ground;
+//                                 the lantern-route stage remaps it)
+//   --location-program-link-primary-bg / -color / -border  The first link (the map) as the
+//                                 primary action
+//   --location-program-map-icon / -calendar-icon / -copy-icon  Icon masks before each link,
+//                                 shown with --location-program-link-icon: ''
 //   --location-program-lede-font / -size / -style / -line-height  Intro lede type (default:
 //                                 the inherited body text)
 //   --location-program-padding-block / --location-program-margin-top
@@ -38,6 +50,7 @@
 	--location-program-rule: rgb(var(--color-text-primary-rgb, 16 24 32) / 16%);
 	--location-program-drawing: var(--color-text-secondary);
 	--location-program-link: var(--color-text-primary);
+	--location-program-link-ink: var(--location-bg, var(--color-surface-primary));
 
 	padding-block: var(
 		--location-program-padding-block,
@@ -184,24 +197,39 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-start;
-		column-gap: var(--location-program-links-gap, 1.35rem);
+		gap: var(--location-program-links-row-gap, 0) var(--location-program-links-gap, 1.35rem);
 		margin-top: 0.25rem;
+
+		> * {
+			flex: var(--location-program-action-flex, 0 1 auto);
+		}
+
+		> :first-child {
+			flex: var(
+				--location-program-action-primary-flex,
+				var(--location-program-action-flex, 0 1 auto)
+			);
+		}
 	}
 
 	.event-location__program-link {
 		display: inline-flex;
 		align-items: center;
+		justify-content: var(--location-program-link-justify, flex-start);
+		gap: 0.5em;
+		box-sizing: border-box;
+		width: var(--location-program-link-width, auto);
 		min-height: 44px;
-		padding: 0;
-		border: 0;
+		padding: var(--location-program-link-padding, 0);
+		border: var(--location-program-link-border, 0);
 		border-radius: var(--location-program-link-radius, 4px);
-		background: none;
+		background: var(--location-program-link-bg, none);
 		font-family: var(--font-label, var(--font-body));
 		font-size: var(--location-program-link-size, 1.05rem);
 		font-variant-caps: all-small-caps;
 		letter-spacing: var(--location-program-link-tracking, 0.12em);
 		color: var(--location-program-link);
-		text-decoration: underline;
+		text-decoration-line: var(--location-program-link-decoration, underline);
 		text-decoration-thickness: 1px;
 		text-underline-offset: 0.35em;
 		text-decoration-color: color-mix(in srgb, var(--location-program-link) 40%, transparent);
@@ -212,6 +240,15 @@
 			display: none;
 		}
 
+		&::before {
+			content: var(--location-program-link-icon, none);
+			flex: none;
+			width: 1.1em;
+			height: 1.1em;
+			background: currentcolor;
+			mask: var(--location-program-copy-icon, none) center / contain no-repeat;
+		}
+
 		&:hover {
 			color: var(--location-program-ink);
 		}
@@ -220,6 +257,20 @@
 			outline: 2px solid var(--location-program-link);
 			outline-offset: 3px;
 		}
+	}
+
+	a.event-location__program-link::before {
+		mask-image: var(--location-program-map-icon, none);
+	}
+
+	summary.event-location__program-link::before {
+		mask-image: var(--location-program-calendar-icon, none);
+	}
+
+	.event-location__program-actions > .event-location__program-link:first-child {
+		border: var(--location-program-link-primary-border, var(--location-program-link-border, 0));
+		background: var(--location-program-link-primary-bg, var(--location-program-link-bg, none));
+		color: var(--location-program-link-primary-color, var(--location-program-link));
 	}
 
 	.event-location__program-calendar {
