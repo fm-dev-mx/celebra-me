@@ -67,7 +67,7 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | dressCode             | Formal                                                         | verified       | source:wa-export            | White and red reserved (not allowed for guests)   |
 | childPolicy           | none shown                                                     | not_applicable | owner-session               | No line about children; passes control attendance |
 | gifts                 | Lluvia de sobres                                               | verified       | owner-session               | Envelopes only; no registry                       |
-| musicUrl              | YouTube link supplied                                          | verified       | source:wa-export            | Needs a direct audio source before implementation |
+| musicUrl              | Alex Warren — Ordinary (hosted on R2)                          | verified       | owner-session               | Direct MP3 on the production media bucket         |
 | clientColors          | azul marino, azul pizarra, azul cielo, champagne, marfil       | verified       | source:wa-palette-reference | Client asked for advice; owner confirmed the fit  |
 
 Notes:
@@ -105,16 +105,14 @@ Contract maturity for `boda`: `partial` (from `getEventCompletenessContract`).
 
 ### Non-blocking gaps
 
-- Music audio source (see Placeholders). Every other gap was closed by the owner on 2026-10-15.
+- None. The owner closed the other gaps on 2026-10-15 and supplied the song file on 2026-10-20.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**
 Answer: `yes` (from `evaluateEventCompleteness`).
 
 ## Placeholders
 
-| token                       | missing datum | blocking | reason            | replacement requirement                      |
-| --------------------------- | ------------- | -------- | ----------------- | -------------------------------------------- |
-| `[[PENDIENTE:MUSIC_AUDIO]]` | MUSIC_AUDIO   | no       | YouTube link only | Direct audio file hosted like prior weddings |
+None. The song is a direct MP3 on the production R2 media bucket.
 
 ## Owner Decisions
 
@@ -147,7 +145,7 @@ Single round answered by the owner on 2026-10-15; no client round was needed.
 | requested              | countdown, family, location, itinerary, gallery, rsvp, thankYou |
 | inferred / recommended | quote, personalizedAccess, gifts (lluvia de sobres), music      |
 | omitted                | —                                                               |
-| unresolved             | music (audio source pending)                                    |
+| unresolved             | —                                                               |
 
 Planned order: quote, countdown, family, location, itinerary, gallery, gifts, personalizedAccess,
 rsvp, thankYou. The dress code lives in the itinerary/location details per preset practice.
@@ -219,7 +217,7 @@ full-bleed navy closing.
 | Section boundaries and narrative continuity | pass; night round (arch, night envelope, dusk shore) ships as a republication |
 | Human creative outcome                      | `ACCEPTED`                                                                    |
 | Reviewer and date                           | Francisco Mendoza (owner), 2026-10-20, tracking board decisions d075 and d076 |
-| Blocking reason or owner follow-up          | None blocking; the song (MUSIC_AUDIO) stays an owner follow-up                |
+| Blocking reason or owner follow-up          | None                                                                          |
 
 ## Photograph Inventory
 
@@ -272,7 +270,7 @@ derivative from them with the same names and roles.
   photos and the placeholders above documented; no placeholder may reach a published page.
 - Palette changes stay invitation-scoped; the shared `jewelry-box-wedding` preset and other
   invitations must not change.
-- Music: include once a direct audio source exists; until then keep the music section off.
+- Music: Alex Warren — Ordinary, served from the production R2 media bucket with autoplay.
 - Venue Facebook pages are not navigation links.
 - No phone numbers, chat titles or client folder paths in tracked files.
 
