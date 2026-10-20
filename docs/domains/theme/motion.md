@@ -123,6 +123,31 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
   - Scroll scenes (next section).
   - Per-element scroll-linked effects (see
     [Per-element scroll-linked effects](#per-element-scroll-linked-effects)).
+- **Held footer.** `--invitation-footer-reveal: held` (a profile token, read by
+  `src/lib/invitation/footer-reveal.ts`) ends the page at its last section. After a short rest at
+  the bottom a small lantern peeks from the bottom edge; pulling on (a swipe up or more wheel) lifts
+  it on its thread, and past a short pull the footer opens with a 320 ms glide and a 360 ms rise.
+  Letting go sooner settles the lantern back. ArrowDown, PageDown, End, Space or a tab into its
+  links open it at once. Reduced motion shows no lantern and opens on the next gesture without
+  movement; without the script the footer is always shown. A profile may dress the lantern
+  (`--footer-pull-scale`, `-body`, `-glow`, and `-height` with `-shape` for another outline, such as
+  a disc for a moon), let a pool of light rise from the edge with the pull (`--footer-pull-pool`),
+  set words over the resting lantern that fade as it climbs (`--footer-pull-label`, `-label-color`,
+  `-label-size`) and let its glow breathe while it waits
+  (`--footer-pull-breathe: footer-pull-breathe`). The cue is a sibling of the footer, so these
+  tokens go on the invitation root. Where the phone supports it, the footer opening gives one 12 ms
+  vibration.
+- **Floating reply glint.** `--floating-cta-glint` (a gradient) crosses the floating reply button
+  once, in 1.1 s, when it first shows and again when it changes to the calendar. It is time-based,
+  not scroll-linked, and does not run under reduced motion.
+- **Footer reply.** `--invitation-footer-reply: on` (a profile token, read by
+  `src/lib/invitation/footer-reply.ts`) shows a reply block at the top of the footer while the guest
+  has not answered: a lit lantern on its thread, `--footer-reply-eyebrow`, `-question`, a "Confirmar
+  asistencia" link that scrolls back to the RSVP and focuses its first field, and `-note`. After a
+  yes only `--footer-reply-answered` stays, if set; after a decline, or on a card locked to personal
+  passes, nothing shows. When a held footer opens, the lantern rises into place in 900 ms and
+  `--footer-reply-glint` crosses the button once. Neither runs under reduced motion; both are
+  time-based, on transforms, opacity and the button's background position.
 - **Budget.** Nothing new loads on first paint except CSS. At most about 12 elements animate at
   once.
 

@@ -218,7 +218,10 @@
 		align-items: stretch;
 		justify-content: stretch;
 		min-height: 100svh;
-		padding: clamp(4rem, 10vw, 6rem) clamp(1rem, 4vw, 1.5rem) clamp(2rem, 5vw, 3rem);
+
+		// `--thank-you-bleed-padding-end` keeps the closing clear of a held footer's pull cue.
+		padding: clamp(4rem, 10vw, 6rem) clamp(1rem, 4vw, 1.5rem)
+			var(--thank-you-bleed-padding-end, clamp(2rem, 5vw, 3rem));
 
 		&::before {
 			background: var(

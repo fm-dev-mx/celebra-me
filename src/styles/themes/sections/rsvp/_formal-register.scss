@@ -24,7 +24,7 @@
 	--color-text-muted: rgb(var(--formal-chapter-cream-rgb) / 64%);
 
 	padding-block: 0;
-	background: var(--formal-chapter-band);
+	background: var(--formal-register-band-bg, var(--formal-chapter-band));
 	color: var(--formal-chapter-cream);
 }
 

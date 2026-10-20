@@ -50,6 +50,29 @@
 	--footer-control-font-size: 0.75rem;
 	--footer-powered-size: 0.75rem;
 
+	// The pull cue sits beside the footer, not in it, so its tokens live here: a champagne crescent
+	// moon on a thread instead of a lantern; the reply in the footer hangs the same moon.
+	--olivia-crescent: radial-gradient(
+		ellipse 42% 42% at 70% 30%,
+		transparent 97%,
+		var(--olivia-champagne) 100%
+	);
+	--footer-pull-color: var(--olivia-champagne);
+	--footer-pull-body: var(--olivia-crescent);
+	--footer-pull-shape: 50%;
+	--footer-pull-height: 0.7rem;
+	--footer-pull-scale: 1.8;
+	--footer-pull-glow: rgb(var(--olivia-champagne-rgb) / 30%);
+	--footer-pull-pool: radial-gradient(
+		ellipse 60% 100% at 50% 100%,
+		rgb(var(--olivia-champagne-rgb) / 18%),
+		transparent 70%
+	);
+	--footer-pull-label: 'Deslice hacia arriba para subir la luna';
+	--footer-pull-label-color: rgb(var(--olivia-champagne-rgb) / 88%);
+	--footer-pull-label-size: 0.8125rem;
+	--footer-pull-breathe: footer-pull-breathe;
+
 	// The shore pause after the families stays a breath, not a full screen, on phones.
 	--interlude-min-height-2-sm: 62svh;
 
@@ -389,6 +412,8 @@
 	.invitation-section-wrapper[data-section-kind='personalized-access'] {
 		--intersection-stack-recede-scale: 0.94;
 		--intersection-stack-recede-dim: 0.62;
+		--intersection-stack-recede-fade: 0%;
+		--intersection-stack-floor: var(--olivia-navy-deep);
 		--formal-chapter-band: var(--olivia-navy-deep);
 		--formal-chapter-band-rgb: var(--olivia-navy-deep-rgb);
 		--formal-chapter-cream: var(--olivia-ivory);
@@ -452,14 +477,13 @@
 		--intersection-blend: none;
 	}
 
-	// The RSVP is laid over the pinned pass as a second sheet: a hairline champagne edge, rounded
-	// shoulders and a deep shadow, while the pass sinks back a little under it (recede tokens on the
-	// pass block above).
+	// Only the RSVP card rises over the pinned pass: the register's band is clear, so the pass
+	// stays in view around the card while it sinks back and fades out under it (recede tokens on
+	// the pass block above).
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
-		--intersection-stack-surface: var(--olivia-navy-deep);
-		--intersection-stack-edge: 1px solid rgb(var(--olivia-champagne-rgb) / 30%);
-		--intersection-stack-radius: 1.75rem;
-		--intersection-stack-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 45%);
+		--formal-register-band-bg: transparent;
+		--intersection-stack-surface: transparent;
+		--intersection-stack-shadow: none;
 	}
 
 	.rsvp-section {
@@ -483,20 +507,29 @@
 
 		// The register sits in a panel like the venue stops and the pass, so it reads as the
 		// same suite.
-		--formal-register-surface-bg: linear-gradient(
-			165deg,
-			rgb(var(--olivia-slate-rgb) / 55%) 0%,
-			var(--olivia-navy) 55%,
-			rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
-		);
+		--formal-register-surface-bg:
+			linear-gradient(
+				165deg,
+				rgb(var(--olivia-slate-rgb) / 55%) 0%,
+				var(--olivia-navy) 55%,
+				rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
+			),
+			var(--olivia-navy-deep);
 		--formal-register-surface-border: 1px solid rgb(var(--olivia-champagne-rgb) / 32%);
 		--formal-register-surface-radius: 1.1rem;
 		--formal-register-surface-padding: 1.75rem 1.25rem 1.5rem;
-		--formal-register-surface-shadow: 0 1rem 2.25rem rgb(0 0 0 / 25%);
+		--formal-register-surface-shadow:
+			0 -0.75rem 2.5rem rgb(0 0 0 / 30%), 0 1rem 2.25rem rgb(0 0 0 / 25%);
+		--rsvp-bg: transparent;
+
+		// The card rises over the centered pass, so its column is the card's width and centers too.
+		--formal-register-shell-width: 40rem;
 	}
 
 	// Closing: the last photograph sinks into deep navy; the couple's names in script, champagne.
 	.thank-you-section[data-variant='full-bleed-photo'] {
+		// Room under the names for the moon cue and its line while the footer is held.
+		--thank-you-bleed-padding-end: 6rem;
 		--color-surface-dark: var(--olivia-navy-deep);
 		--color-surface-dark-rgb: var(--olivia-navy-deep-rgb);
 		--thank-you-bleed-veil: linear-gradient(
@@ -533,7 +566,34 @@
 	}
 
 	// Footer: the closing photograph's deep navy carries on; script in champagne, white mark.
+	// The footer waits below the closing, as in the America suite: the invitation stops on the
+	// night and a pull raises a champagne crescent moon on its thread; the footer opens on that moon
+	// with the question and the reply, while the guest has not answered.
 	.invitation-footer {
+		--invitation-footer-reveal: held;
+		--invitation-footer-reply: on;
+		--footer-reply-eyebrow: 'Bajo la misma luna';
+		--footer-reply-question: '¿Nos acompaña el 18 de diciembre?';
+		--footer-reply-note: 'Antes del miércoles 18 de noviembre';
+		--footer-reply-answered: 'Su lugar bajo esta luna ya está apartado.';
+		--footer-reply-ink: var(--olivia-ivory);
+		--footer-reply-muted: rgb(var(--olivia-mist-rgb) / 82%);
+		--footer-reply-accent: var(--olivia-champagne);
+		--footer-reply-eyebrow-size: 0.75rem;
+		--footer-reply-question-font: var(--font-display);
+		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
+		--footer-reply-lantern: var(--olivia-crescent);
+		--footer-reply-lantern-height: 1.4rem;
+		--footer-reply-lantern-glow: rgb(var(--olivia-champagne-rgb) / 28%);
+		--footer-reply-button-bg: var(--olivia-champagne);
+		--footer-reply-button-ink: var(--olivia-navy-deep);
+		--footer-reply-button-font: var(--font-label);
+		--footer-reply-glint: linear-gradient(
+			105deg,
+			transparent 40%,
+			rgb(255 255 255 / 50%) 50%,
+			transparent 60%
+		);
 		--footer-bg: var(--olivia-navy-deep);
 		--footer-closing-color: var(--olivia-champagne);
 		--footer-closing-font: var(--font-calligraphy);
