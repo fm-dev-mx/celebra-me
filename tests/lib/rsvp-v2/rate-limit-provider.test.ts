@@ -2,6 +2,7 @@ import {
 	checkRateLimit,
 	hashIp,
 	installRateLimitBindings,
+	peekRateLimit,
 	rateLimitBindingName,
 	resetRateLimitProviderForTests,
 } from '@/lib/rsvp/security/rate-limit-provider';
@@ -136,5 +137,38 @@ describe('rsvp rateLimitProvider', () => {
 			expect(await checkRateLimit(input)).toBe(true);
 			expect(await checkRateLimit(input)).toBe(false);
 		});
+	});
+});
+
+describe('peekRateLimit', () => {
+	afterEach(() => {
+		resetRateLimitProviderForTests();
+	});
+
+	const input = {
+		namespace: 'guest-link' as const,
+		entityId: 'failed-code',
+		ip: '10.0.0.9',
+		maxHits: 2,
+		windowSec: 3600,
+	};
+
+	it('reads the bucket without consuming a hit', async () => {
+		expect(await peekRateLimit(input)).toBe(true);
+		expect(await peekRateLimit(input)).toBe(true);
+		expect(await checkRateLimit(input)).toBe(true);
+		expect(await peekRateLimit(input)).toBe(true);
+		expect(await checkRateLimit(input)).toBe(true);
+		expect(await peekRateLimit(input)).toBe(false);
+		expect(await checkRateLimit(input)).toBe(false);
+	});
+
+	it('uses the buckets when no binding exists for the window', async () => {
+		const limit = jest.fn(async () => ({ success: true }));
+		installRateLimitBindings({ RATE_LIMIT_CTX_20_60: { limit } });
+		await checkRateLimit(input);
+		await checkRateLimit(input);
+		expect(await peekRateLimit(input)).toBe(false);
+		expect(limit).not.toHaveBeenCalled();
 	});
 });

@@ -5,13 +5,15 @@ const readSource = (relativePath: string) =>
 	readFileSync(join(process.cwd(), relativePath), 'utf8');
 
 describe('Dynamic Routing Early Rejection Contracts', () => {
-	it('validates eventType early in [eventType]/[slug].astro and returns 404 before resolution', () => {
+	it('hands non-event-type paths in [eventType]/[slug].astro to the guest link page before resolution', () => {
 		const source = readSource('src/pages/[eventType]/[slug].astro');
 
 		expect(source).toContain("import { isEventType } from '@/lib/theme/theme-contract';");
 		expect(source).toContain('if (!isEventType(eventType)) {');
-		expect(source).toContain('return new Response(null, { status: 404, headers:');
-		expect(source).toContain("'Cache-Control': 'no-store, private'");
+		expect(source).toContain('return Astro.rewrite(');
+		expect(source).toContain(
+			'`/i/${encodeURIComponent(eventType)}/${encodeURIComponent(slug)}`',
+		);
 
 		// Assert that this check happens BEFORE resolvePublicInvitation is invoked
 		const isEventTypeIdx = source.indexOf('if (!isEventType(eventType))');
