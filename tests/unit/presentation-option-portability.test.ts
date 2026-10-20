@@ -511,3 +511,37 @@ describe('music fadeInSeconds', () => {
 		expect(eventContentSchema.safeParse(candidate.data).success).toBe(false);
 	});
 });
+
+describe('stack intersection family', () => {
+	it('is part of the closed intersection family set and copied into the render plan', () => {
+		expect(SECTION_INTERSECTION_FAMILIES).toContain('stack');
+		const view = adapt(
+			synthetic('location', 'standard', (data) => {
+				data.sectionOrder = ['countdown', 'location'];
+				data.composition = {
+					intersections: { location: { family: 'stack', source: 'countdown' } },
+				};
+			}),
+		);
+		expect(buildInvitationRenderPlan(view)).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					type: 'section',
+					section: 'location',
+					intersection: { family: 'stack', source: 'countdown' },
+				}),
+			]),
+		);
+	});
+
+	it('pins only a source the markup anchors, keeps recede motion opt-in and stays generic', () => {
+		const styles = readSource('src/styles/invitation/_section-intersections.scss');
+		expect(styles).toContain("[data-intersection-anchor='stack']");
+		expect(styles).toContain('var(--intersection-stack-recede-scale, 1)');
+		expect(styles).toContain('prefers-reduced-motion: no-preference');
+		expect(styles).not.toMatch(/event--|olivia/);
+		expect(readSource('src/components/invitation/InvitationSections.astro')).toContain(
+			'data-intersection-anchor={stackAnchor}',
+		);
+	});
+});

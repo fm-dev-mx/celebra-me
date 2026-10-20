@@ -457,7 +457,9 @@
 					animation-range: cover 10% cover 50%;
 				}
 
+				// Opt-in lead before the second panel arrives, so the first is read whole.
 				.event-location__card-wrapper:last-child {
+					margin-top: var(--location-route-stack-gap, 0);
 					top: calc(var(--location-route-stack-top) + var(--location-route-stack-peek));
 					view-timeline: --location-route-next block;
 				}

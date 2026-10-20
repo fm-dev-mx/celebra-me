@@ -864,6 +864,7 @@
 		margin-right: var(--location-copy-button-margin);
 		align-items: center;
 		justify-content: center;
+		gap: var(--location-copy-button-gap, 0);
 		transition:
 			opacity var(--duration-snappy) var(--ease-standard),
 			transform var(--duration-snappy) var(--ease-standard),
@@ -882,6 +883,16 @@
 			opacity: 100%;
 			background: rgb(var(--color-action-accent-rgb) / 10%);
 		}
+	}
+
+	// Opt-in visible label next to the copy icon; the accessible name stays on the button.
+	&__card-content-copy-label {
+		display: var(--location-copy-label-display, none);
+		font-family: var(--font-body);
+		font-size: var(--location-copy-label-size, 0.75rem);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 	}
 
 	/* Itinerary */
@@ -1313,6 +1324,7 @@
 // Tokens: --location-calendar-{margin-top,border,radius,bg,color,font,link-color}
 // ==========================================================================
 .event-location__calendar {
+	order: var(--location-calendar-order, 0);
 	margin-top: var(--location-calendar-margin-top, 1.1rem);
 	text-align: center;
 }

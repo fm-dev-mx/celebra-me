@@ -163,6 +163,17 @@ the RSVP register unfolds on scroll; Regalos carries a fine-line envelope mark; 
 seven photographs (one dance instead of three). RSVP and chrome text follow the three type voices
 and the 12 px floor.
 
+Suite round (2026-10-20): Cinzel now loads for the labels (it fell back to a system serif); the
+location is titled «Dónde celebraremos» with the date in the lede, each stop is titled by its venue
+with the time as a champagne lead, «Cómo llegar» is the filled action, the calendar follows as a
+link and the copy button reads «Copiar»; the personal pass is a navy ticket; the RSVP register sits
+in a navy panel with 12 px labels; the footer continues the closing in deep navy. The locked RSVP
+message now reads «a más tardar el miércoles 18 de noviembre», like the other deadline texts. The
+RSVP notes field reads «Mensaje para Olivia y Antonio» with a placeholder for «los novios». On
+scroll, the RSVP rises over the pinned pass as a second sheet (`stack` intersection): champagne
+hairline edge, rounded shoulders and an upward shadow, while the pass sinks back to 94 % and dims.
+Without a personal link there is no pass, so the RSVP follows the gifts in normal flow.
+
 ## Design Direction
 
 | decision                          | value                                                    | classification          |

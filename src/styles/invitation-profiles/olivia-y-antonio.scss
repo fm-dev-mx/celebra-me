@@ -1,3 +1,5 @@
+@use '../fonts/cinzel' as cinzel;
+
 // Olivia y Antonio, "Noche azul de diciembre": the jewelry-box-wedding stationery retinted to the
 // couple's palette. Navy is the ink and the dark chapters, slate and dusty blues carry the bands
 // and hairlines, and the paper stays ivory so the white dress and the greens of the photographs
@@ -42,9 +44,11 @@
 	--mobile-nav-subtitle-size: 0.75rem;
 	--mobile-nav-copy-size: 0.75rem;
 	--section-nav-label-size: 0.75rem;
+	--header-action-size: 0.75rem;
 	--footer-rights-size: 0.75rem;
 	--footer-replay-font-size: 0.75rem;
 	--footer-control-font-size: 0.75rem;
+	--footer-powered-size: 0.75rem;
 
 	// The shore pause after the families stays a breath, not a full screen, on phones.
 	--interlude-min-height-2-sm: 62svh;
@@ -307,7 +311,7 @@
 		--location-route-track: rgb(var(--olivia-mist-rgb) / 30%);
 		--location-route-card-bg: rgb(var(--olivia-ivory-rgb) / 6%);
 		--location-container-max-width: 62rem;
-		--location-plates-intro-max-width: 38rem;
+		--location-plates-intro-max-width: min(38rem, 88vw);
 		--location-content-padding: clamp(1.35rem, 3vw, 1.85rem);
 		--location-stack-gap: 1.75rem;
 		--location-intro-heading-size: var(--olivia-title-size);
@@ -320,6 +324,29 @@
 		--location-indications-heading-letter-spacing: var(--olivia-label-tracking);
 		--location-indication-number-display: none;
 		--location-plates-notes-max-width: 46rem;
+
+		// Each stop is titled by its venue; the time reads above it as a champagne lead.
+		--location-lead-time-size: 1.5rem;
+		--location-lead-time-color: var(--olivia-champagne);
+		--location-route-place-size: 2rem;
+
+		// One action leads: «Cómo llegar» filled in champagne, the calendar after it as a quiet
+		// link, and the copy action names itself.
+		--location-calendar-order: 1;
+		--location-calendar-border: 0;
+		--location-nav-bg: var(--olivia-champagne);
+		--location-nav-color: var(--olivia-navy-deep);
+		--location-nav-border: 1px solid var(--olivia-champagne);
+		--location-nav-hover-bg: var(--olivia-ivory);
+		--location-nav-hover-color: var(--olivia-navy-deep);
+		--location-nav-hover-border-color: var(--olivia-ivory);
+		--location-copy-label-display: inline;
+		--location-copy-button-width: auto;
+		--location-copy-button-padding: 0.55rem 0.8rem;
+		--location-copy-button-gap: 0.4rem;
+
+		// Stacked stops: the first stays whole for a beat before the second slides over it.
+		--location-route-stack-gap: 35svh;
 
 		// The link to the gallery sits on navy, where the slate emphasis would not read.
 		.section-nav-button {
@@ -357,15 +384,85 @@
 		--formal-chapter-label-font: var(--font-label);
 	}
 
+	// The pass is a navy ticket on the deep-navy chapter, champagne metal and ivory ink, like the
+	// venue panels; the welcome line steps down so the guest's name leads.
+	.invitation-section-wrapper[data-section-kind='personalized-access'] {
+		--intersection-stack-recede-scale: 0.94;
+		--intersection-stack-recede-dim: 0.62;
+		--formal-chapter-band: var(--olivia-navy-deep);
+		--formal-chapter-band-rgb: var(--olivia-navy-deep-rgb);
+		--formal-chapter-cream: var(--olivia-ivory);
+		--formal-chapter-cream-rgb: var(--olivia-ivory-rgb);
+		--formal-chapter-sand-rgb: var(--olivia-slate-rgb);
+		--formal-chapter-metal: var(--olivia-champagne);
+		--formal-chapter-metal-rgb: var(--olivia-champagne-rgb);
+		--formal-chapter-ink: var(--olivia-ivory);
+		--formal-chapter-ink-rgb: var(--olivia-ivory-rgb);
+		--formal-chapter-title: var(--olivia-ivory);
+		--formal-chapter-muted: rgb(var(--olivia-mist-rgb) / 82%);
+		--formal-chapter-meta: var(--olivia-champagne);
+
+		// Laid paper: a fine grain and faint horizontal chain lines under a champagne glow at
+		// the head, over the navy gradient. The ticket breathes inside wider margins.
+		--pa-card-bg-image:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.98 0 0 0 0 0.96 0 0 0 0 0.92 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"),
+			repeating-linear-gradient(
+				0deg,
+				rgb(var(--olivia-champagne-rgb) / 3.5%) 0 1px,
+				transparent 1px 7px
+			),
+			radial-gradient(
+				120% 55% at 50% 0%,
+				rgb(var(--olivia-champagne-rgb) / 12%) 0%,
+				transparent 70%
+			),
+			linear-gradient(
+				165deg,
+				rgb(var(--olivia-slate-rgb) / 55%) 0%,
+				var(--olivia-navy) 55%,
+				rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
+			);
+		--pa-card-shadow: 0 1.25rem 2.5rem rgb(0 0 0 / 35%);
+		--pa-count-color: var(--olivia-champagne);
+		--pa-welcome-size: 1.125rem;
+		--pa-section-padding: 3.5rem;
+		--pa-section-inline: 2rem;
+		--pa-ticket-width: min(100%, 30rem);
+		--pa-welcome-align: center;
+		--pa-welcome-wrap: balance;
+	}
+
 	.rsvp {
 		--color-glass-bg: rgb(var(--olivia-ivory-rgb) / 65%);
 		--color-glass-border: rgb(var(--olivia-dusty-rgb) / 45%);
 		--color-glass-shadow: rgb(var(--olivia-navy-rgb) / 12%);
 	}
 
+	// Pass, register and closing share one deep-navy night, so the chapters join without seams;
+	// the wrapper carries the band too, so the preset's default band never shows at its edges.
+	.invitation-section-wrapper[data-section-kind='rsvp'],
 	.rsvp-section {
-		--formal-chapter-band: var(--olivia-navy);
-		--formal-chapter-band-rgb: var(--olivia-navy-rgb);
+		--formal-chapter-band: var(--olivia-navy-deep);
+		--formal-chapter-band-rgb: var(--olivia-navy-deep-rgb);
+	}
+
+	// The night chapters take no champagne haze at their seams; on navy it reads as a grey smear.
+	.invitation-section-wrapper[data-section-kind='personalized-access'],
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--intersection-blend: none;
+	}
+
+	// The RSVP is laid over the pinned pass as a second sheet: a hairline champagne edge, rounded
+	// shoulders and a deep shadow, while the pass sinks back a little under it (recede tokens on the
+	// pass block above).
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--intersection-stack-surface: var(--olivia-navy-deep);
+		--intersection-stack-edge: 1px solid rgb(var(--olivia-champagne-rgb) / 30%);
+		--intersection-stack-radius: 1.75rem;
+		--intersection-stack-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 45%);
+	}
+
+	.rsvp-section {
 		--formal-chapter-cream: var(--olivia-ivory);
 		--formal-chapter-cream-rgb: var(--olivia-ivory-rgb);
 		--formal-chapter-metal: var(--olivia-champagne);
@@ -382,6 +479,20 @@
 		--formal-register-eyebrow-tracking: var(--olivia-label-tracking);
 		--rsvp-section-min-height: auto;
 		--formal-register-open: formal-register-open;
+		--formal-register-label-size: 0.75rem;
+
+		// The register sits in a panel like the venue stops and the pass, so it reads as the
+		// same suite.
+		--formal-register-surface-bg: linear-gradient(
+			165deg,
+			rgb(var(--olivia-slate-rgb) / 55%) 0%,
+			var(--olivia-navy) 55%,
+			rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
+		);
+		--formal-register-surface-border: 1px solid rgb(var(--olivia-champagne-rgb) / 32%);
+		--formal-register-surface-radius: 1.1rem;
+		--formal-register-surface-padding: 1.75rem 1.25rem 1.5rem;
+		--formal-register-surface-shadow: 0 1rem 2.25rem rgb(0 0 0 / 25%);
 	}
 
 	// Closing: the last photograph sinks into deep navy; the couple's names in script, champagne.
@@ -390,6 +501,8 @@
 		--color-surface-dark-rgb: var(--olivia-navy-deep-rgb);
 		--thank-you-bleed-veil: linear-gradient(
 			to bottom,
+			var(--olivia-navy-deep) 0%,
+			rgb(var(--olivia-navy-deep-rgb) / 0%) 22%,
 			transparent 30%,
 			rgb(var(--olivia-navy-deep-rgb) / 72%) 58%,
 			var(--olivia-navy-deep) 88%
@@ -417,5 +530,25 @@
 		.closing-date {
 			--color-text-secondary: var(--olivia-champagne);
 		}
+	}
+
+	// Footer: the closing photograph's deep navy carries on; script in champagne, white mark.
+	.invitation-footer {
+		--footer-bg: var(--olivia-navy-deep);
+		--footer-closing-color: var(--olivia-champagne);
+		--footer-closing-font: var(--font-calligraphy);
+		--footer-closing-style: normal;
+		--footer-closing-size: 2rem;
+		--footer-divider-glow: none;
+		--footer-logo-filter: brightness(0) invert(1);
+		--footer-contact-icon-filter: brightness(0) invert(1);
+		--footer-replay-color: rgb(var(--olivia-mist-rgb) / 88%);
+		--footer-replay-opacity: 100%;
+		--color-text-primary: var(--olivia-ivory);
+		--color-text-secondary: var(--olivia-ivory);
+		--color-text-muted: rgb(var(--olivia-mist-rgb) / 82%);
+		--color-border-subtle: rgb(var(--olivia-champagne-rgb) / 22%);
+		--color-border-premium: rgb(var(--olivia-champagne-rgb) / 45%);
+		--color-text-on-light: var(--olivia-navy-deep);
 	}
 }

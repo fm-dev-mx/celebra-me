@@ -232,3 +232,55 @@
 		transform: perspective(28rem) scaleX(var(--folio-flip)) rotate3d(1, 1, 0, 0deg);
 	}
 }
+
+// Stack: the incoming section rises over its source like a card laid on a pile. The source pins at
+// the top of the viewport (`--intersection-stack-top`, default 0) while the incoming section scrolls
+// over it on an opaque ground (`--intersection-stack-surface`, else the section band, else
+// `--intersection-surface`) with an optional top edge (`--intersection-stack-edge`), corner radius
+// (`--intersection-stack-radius`) and a shadow cast upward (`--intersection-stack-shadow`). It applies
+// only when the source renders right before it: the markup marks that source with
+// `data-intersection-anchor='stack'`, so a missing source (for example a pass that only invited
+// guests see) leaves both sections in normal flow. With `--intersection-stack-recede-scale` and
+// `--intersection-stack-recede-dim` the pinned source recedes while it is covered; reduced motion and
+// browsers without scroll timelines keep it still.
+#invitation-sections-container:has(> [data-intersection-anchor='stack']) {
+	timeline-scope: --intersection-stack;
+}
+
+.invitation-section-wrapper[data-intersection-anchor='stack'] {
+	position: sticky;
+	top: var(--intersection-stack-top, 0);
+	z-index: 0;
+}
+
+.invitation-section-wrapper[data-intersection-anchor='stack']
+	+ .invitation-section-wrapper[data-intersection='stack'] {
+	position: relative;
+	z-index: 1;
+	background: var(
+		--intersection-stack-surface,
+		var(--section-band-paper, var(--intersection-surface))
+	);
+	border-top: var(--intersection-stack-edge, 0);
+	border-radius: var(--intersection-stack-radius, 0) var(--intersection-stack-radius, 0) 0 0;
+	box-shadow: var(--intersection-stack-shadow, 0 -1.25rem 2.5rem rgb(0 0 0 / 22%));
+	view-timeline: --intersection-stack block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: view()) {
+		.invitation-section-wrapper[data-intersection-anchor='stack'] > * {
+			transform-origin: 50% 0;
+			animation: intersection-stack-recede linear both;
+			animation-timeline: --intersection-stack;
+			animation-range: entry 0% exit-crossing 0%;
+		}
+	}
+}
+
+@keyframes intersection-stack-recede {
+	to {
+		transform: scale(var(--intersection-stack-recede-scale, 1));
+		filter: brightness(var(--intersection-stack-recede-dim, 1));
+	}
+}
