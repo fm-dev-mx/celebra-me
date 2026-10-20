@@ -674,6 +674,10 @@ test.describe('Landing page regressions', () => {
 			'data-campaign-code',
 			buildCampaignCode('FOOTER'),
 		);
+		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
+			'aria-label',
+			'Quiero mi invitación por WhatsApp',
+		);
 
 		const rowWidths = await footer.evaluate((element) => {
 			const containers = element.querySelectorAll('.container');

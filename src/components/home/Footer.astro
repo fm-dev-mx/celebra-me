@@ -2,6 +2,7 @@
 // src/components/home/Footer.astro
 import Logo from '@/components/ui/Logo.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
+import { PRIMARY_CTA_LABEL } from '@/data/landing-page.data';
 import type { FooterProps } from '@/interfaces/ui/sections/footer.interface';
 
 interface Props {
@@ -42,7 +43,7 @@ const currentYear = new Date().getFullYear();
 					<WhatsAppButton
 						className="footer-link footer-contact__whatsapp"
 						label={data.contact.whatsappLabel}
-						ariaLabel={`${data.contact.whatsappLabel}: cotizar mi invitación`}
+						ariaLabel={`${PRIMARY_CTA_LABEL} por ${data.contact.whatsappLabel}`}
 						trackSection="footer"
 						trackCta="footer_whatsapp"
 						campaignSection="FOOTER"
