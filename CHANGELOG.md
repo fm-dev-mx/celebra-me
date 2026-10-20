@@ -10,6 +10,30 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.38.0-beta.1] - 2026-10-20
+
+The primary sales button says «Quiero mi invitación», landing prices follow a dated promo calendar,
+and Olivia y Antonio and America get their final envelope, RSVP, footer and scroll-scene passes. No
+new migrations.
+
+### Added
+
+- Landing promo calendar (`PROMO_SCHEDULE` in `src/data/promo-campaign.data.ts`): October and season
+  rows at $999 until 15 December and a new year row at $899 from 16 December to 31 January. The
+  browser picks the row of the visitor's date, so a row starts or ends without a release (#388,
+  #391).
+- America scroll scenes: `album-assemble` gallery, lantern-route location, a steps flow over the
+  RSVP form, a chapter menu and an opt-in footer reply block (#392).
+
+### Changed
+
+- The primary WhatsApp CTA in the header, mobile menu and hero reads «Quiero mi invitación» with the
+  line «Respuesta en minutos · Sin compromiso»; the footer link is named after it (#384, #385).
+- Plain-language wording for the Signature and Atelier packages and two FAQ answers (#386).
+- Olivia y Antonio: Cinzel labels, location hierarchy, envelope adjustments, the RSVP card rising
+  over the pass, a held footer with a three-level hierarchy and a quiet contact link (#387, #389,
+  #390). Its Preview and Production content publication is a separate step, like America's.
+
 ## [0.37.0-beta.1] - 2026-10-20
 
 Sales buttons say what they do, a first communion showroom, and a night-themed Olivia y Antonio with
