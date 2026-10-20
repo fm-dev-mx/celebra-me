@@ -3,7 +3,8 @@
  * a version URL, on Production a version URL only (that Worker has no `workers.dev` host and no
  * traffic before the cutover). Runs the public probes shared with `post-deploy-smoke.ts check`, then verifies
  * the serving build identity (`/api/health`: commit SHA and deploy environment). On Production it
- * also proves the version URL is closed without the Cloudflare Access service token. The token
+ * also proves the version URL is closed without the Cloudflare Access service token and that
+ * `/api/whatsapp` redirects to a real contact number (the CONTACT_WHATSAPP Worker secret). The token
  * travels only to that origin. Read-only: it never deploys anything.
  *
  * Usage: tsx scripts/ops/cloudflare-worker-smoke.ts [--env preview|production] --url <https://...workers.dev> --sha <sha> [--version-id <id>]
@@ -50,6 +51,8 @@ export interface CloudflareWorkerSmokeResult {
 	};
 	/** Production only: the version URL refused a request without the service token. */
 	accessEnforced: boolean | null;
+	/** Production only: `/api/whatsapp` redirects to wa.me with a real, non-placeholder number. */
+	contactWhatsAppConfigured: boolean | null;
 	passed: boolean;
 	failureCodes: string[];
 }
@@ -141,18 +144,51 @@ export async function runCloudflareWorkerSmoke(
 		identity.commitSha?.toLowerCase() === sha && identity.environment === environment;
 	const accessEnforced =
 		environment === 'production' ? await isAccessEnforced(origin, fetchImpl) : null;
+	const contactWhatsAppConfigured =
+		environment === 'production'
+			? await isContactWhatsAppConfigured(origin, fetchImpl, accessHeaders)
+			: null;
 	const failureCodes = [
 		...probes.failureCodes,
 		...(verified ? [] : ['build_identity_failed']),
 		...(accessEnforced === false ? ['access_not_enforced'] : []),
+		...(contactWhatsAppConfigured === false ? ['contact_whatsapp_missing'] : []),
 	];
 	return {
 		probes,
 		identity: { ...identity, verified },
 		accessEnforced,
+		contactWhatsAppConfigured,
 		passed: failureCodes.length === 0,
 		failureCodes,
 	};
+}
+
+/** wa.me digits the Worker would ship when CONTACT_WHATSAPP is missing. */
+const PLACEHOLDER_CONTACT_PHONE = '521000000000';
+
+/** True when `/api/whatsapp` answers 302 to wa.me with a real number; never follows the redirect. */
+async function isContactWhatsAppConfigured(
+	origin: URL,
+	fetchImpl: FetchLike,
+	accessHeaders: Record<string, string>,
+): Promise<boolean> {
+	try {
+		const response = await fetchImpl(`${origin.origin}/api/whatsapp`, {
+			method: 'GET',
+			redirect: 'manual',
+			signal: AbortSignal.timeout(10_000),
+			headers: { ...accessHeaders, 'User-Agent': 'celebra-me-post-deploy-smoke/1' },
+		});
+		const phone = response.headers
+			.get('location')
+			?.match(/^https:\/\/wa\.me\/(\d{10,15})(?:\?|$)/u)?.[1];
+		return (
+			response.status === 302 && phone !== undefined && phone !== PLACEHOLDER_CONTACT_PHONE
+		);
+	} catch {
+		return false;
+	}
 }
 
 function createEvidence(input: {

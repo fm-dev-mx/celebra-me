@@ -10,7 +10,6 @@ import HeaderBase from '@/components/common/HeaderBase.astro';
 import NavBarMobile from '@/components/ui/header/NavBarMobile.astro';
 import Logo from '@/components/ui/Logo.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
-import { getContactPhone } from '@/utils/whatsapp';
 import '@styles/home/_home-header.scss';
 
 interface Props {
@@ -20,13 +19,12 @@ interface Props {
 const { transparentOnHero = true } = Astro.props;
 
 const navLinks = [
-    { label: 'Demos', href: '#tipo-evento' },
-    { label: 'Planes', href: '#pricing' },
-    { label: 'Nosotros', href: '#nosotros' },
+    { label: 'Demos', href: '/#tipo-evento' },
+    { label: 'Planes', href: '/#pricing' },
+    { label: 'Nosotros', href: '/#nosotros' },
 ];
 
 const loginLink = '/login?next=%2Fdashboard%2Finvitados';
-const phone = getContactPhone();
 ---
 
 <HeaderBase
@@ -54,7 +52,6 @@ const phone = getContactPhone();
             </a>
             <WhatsAppButton
                 className="home-nav-actions__cta"
-                phone={phone}
                 trackSection="header"
                 trackCta="whatsapp-header"
                 campaignSection="HEADER"
@@ -73,7 +70,6 @@ const phone = getContactPhone();
             <WhatsAppButton
                 slot="cta"
                 className="mobile-nav-actions__cta"
-                phone={phone}
                 trackSection="header"
                 trackCta="whatsapp-header-menu"
                 campaignSection="HEADER"

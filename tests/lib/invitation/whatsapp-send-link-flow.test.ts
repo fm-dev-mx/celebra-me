@@ -78,7 +78,7 @@ describe('WhatsApp send link flow', () => {
 		expect(mockedGetContext).toHaveBeenCalledWith('FXTR7K2M');
 		expect(resolution).toEqual({
 			kind: 'redirect',
-			redirectTarget: '/boda/daniela-y-martin?invite=invite-uuid-123',
+			redirectTarget: '/daniela-y-martin?invite=invite-uuid-123',
 			canonicalUrl: `${SITE_ORIGIN}/i/FXTR7K2M`,
 		});
 	});
@@ -88,16 +88,16 @@ describe('WhatsApp send link flow', () => {
 		const [link] = linksIn(message);
 
 		expect(link.origin).toBe(SITE_ORIGIN);
-		expect(link.pathname).toBe('/boda/daniela-y-martin');
+		expect(link.pathname).toBe('/daniela-y-martin');
 		expect(link.searchParams.get('invite')).toBe('invite-uuid-123');
 	});
 
 	it('keeps the slug unprefixed by the event type', () => {
 		const { message } = readShareUrl(buildWhatsAppShareUrl(guest));
 		const [link] = linksIn(message);
-		const [eventType, slug] = link.pathname.slice(1).split('/');
+		const segments = link.pathname.slice(1).split('/');
 
-		expect(eventType).toBe('boda');
-		expect(slug.startsWith(`${eventType}-`)).toBe(false);
+		expect(segments).toEqual(['daniela-y-martin']);
+		expect(segments[0].startsWith('boda-')).toBe(false);
 	});
 });

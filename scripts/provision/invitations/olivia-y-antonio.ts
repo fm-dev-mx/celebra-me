@@ -357,8 +357,8 @@ export const oliviaAntonioInvitation = defineCanonicalInvitation({
 	eventTiming: OLIVIA_TIMING,
 	content,
 	managedIdentityId: 'f0139dcd-8734-43bd-a286-cef91442aa7d',
-	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'olivia_martinez',
 	assetDir: 'src/assets/invitations/olivia-y-antonio',
 	// One role per photograph; the og crop is a separate derivative of the hero source.

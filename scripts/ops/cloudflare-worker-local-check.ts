@@ -49,6 +49,9 @@ export const PAGE_EXPECTATIONS: readonly PageExpectation[] = [
 	})),
 ];
 
+/** Fake contact number CI passes with `--var CONTACT_WHATSAPP:...`; never a real one. */
+export const WORKERD_CONTACT_WHATSAPP = '5216681234567';
+
 export interface LocalCheckOptions {
 	origin: string;
 	fetchImpl?: typeof fetch;
@@ -105,6 +108,21 @@ function healthBodyFailures(body: HealthBody, expectedSha: string | undefined): 
 	return failures;
 }
 
+/** The redirect reads CONTACT_WHATSAPP from the Worker env at request time, not from the build. */
+async function checkContactRedirect(fetchImpl: typeof fetch, origin: string): Promise<string[]> {
+	const path = '/api/whatsapp?text=Hola';
+	const response = await fetchImpl(`${origin}${path}`, { redirect: 'manual' });
+	await response.text();
+	const expected = `https://wa.me/${WORKERD_CONTACT_WHATSAPP}?text=Hola`;
+	const location = response.headers.get('location');
+	if (response.status !== 302 || location !== expected) {
+		return [
+			`${path}: status ${response.status} to ${location ?? 'nothing'}, expected 302 to ${expected}`,
+		];
+	}
+	return [];
+}
+
 async function checkHealth(
 	fetchImpl: typeof fetch,
 	origin: string,
@@ -153,6 +171,7 @@ export async function runLocalWorkerChecks(options: LocalCheckOptions): Promise<
 	const failures: string[] = [];
 	for (const page of PAGE_EXPECTATIONS)
 		failures.push(...(await checkPage(fetchImpl, origin, page)));
+	failures.push(...(await checkContactRedirect(fetchImpl, origin)));
 	failures.push(...(await checkHealth(fetchImpl, origin, options.expectedSha)));
 	failures.push(...(await checkScheduled({ ...options, origin, fetchImpl })));
 	return failures;

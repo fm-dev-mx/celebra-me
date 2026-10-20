@@ -1,28 +1,17 @@
 ---
-// Short public route for invitations published from 2026-10-19: /{slug}.
-// Resolves the event type from the slug and renders the canonical invitation page in place.
+// Short public route: /{slug}. Resolves the event type from the published row and renders the
+// canonical invitation page in place (the long /{eventType}/{slug} form keeps resolving too).
 export const prerender = false;
 
 import { findPublishedEventTypeBySlug } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { isReservedInvitationSlug } from '@/lib/invitation/slug-policy';
-import { isEventType } from '@/lib/theme/theme-contract';
+import { resolveShortRouteEventType } from '@/lib/invitation/short-route';
 
 const slug = Astro.params.slug!;
+const eventType = await resolveShortRouteEventType(slug, findPublishedEventTypeBySlug);
 
-let eventType: string | null = null;
-if (!isReservedInvitationSlug(slug)) {
-	try {
-		eventType = await findPublishedEventTypeBySlug(slug);
-	} catch (error) {
-		console.error(`[ShortRoute] Slug lookup failed for "${slug}":`, error);
-	}
-}
-
-if (!eventType || !isEventType(eventType)) {
+if (!eventType) {
 	return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private' } });
 }
 
-return Astro.rewrite(
-	`/${encodeURIComponent(eventType)}/${encodeURIComponent(slug)}${Astro.url.search}`,
-);
+return Astro.rewrite(`/${eventType}/${encodeURIComponent(slug)}${Astro.url.search}`);
 ---

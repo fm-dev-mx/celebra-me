@@ -2,7 +2,6 @@
 // src/components/home/Footer.astro
 import Logo from '@/components/ui/Logo.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
-import { getContactPhone } from '@/utils/whatsapp';
 import type { FooterProps } from '@/interfaces/ui/sections/footer.interface';
 
 interface Props {
@@ -11,7 +10,6 @@ interface Props {
 
 const { data } = Astro.props;
 const currentYear = new Date().getFullYear();
-const phone = getContactPhone();
 ---
 
 <footer class="footer-section" data-screenshot="landing-footer">
@@ -43,7 +41,6 @@ const phone = getContactPhone();
 					<h4 class="group-title">{data.contact.title}</h4>
 					<WhatsAppButton
 						className="footer-link footer-contact__whatsapp"
-						phone={phone}
 						label={data.contact.whatsappLabel}
 						ariaLabel="Cotizar por WhatsApp"
 						trackSection="footer"

@@ -21,7 +21,7 @@ function response(status: number, body = '', headers: Record<string, string> = {
 
 function previewFetch(
 	build: { commitSha: string; environment: string | null },
-	options: { openWithoutToken?: boolean } = {},
+	options: { openWithoutToken?: boolean; contactLocation?: string } = {},
 ) {
 	return jest.fn(async (input: string, init?: RequestInit) => {
 		const pathname = new URL(input).pathname;
@@ -46,6 +46,10 @@ function previewFetch(
 				200,
 				JSON.stringify({ status: 'healthy', checks: { runtime: { status: 'ok' } }, build }),
 			);
+		if (pathname === '/api/whatsapp')
+			return response(302, '', {
+				location: options.contactLocation ?? 'https://wa.me/5216681234567?text=Hola',
+			});
 		if (pathname === '/_astro/app.abc123.js')
 			return response(200, '', { 'cache-control': 'public, max-age=31536000, immutable' });
 		return response(404);
@@ -151,7 +155,23 @@ describe('Cloudflare Production smoke', () => {
 		);
 		expect(result.failureCodes).toEqual([]);
 		expect(result.accessEnforced).toBe(true);
+		expect(result.contactWhatsAppConfigured).toBe(true);
 		expect(result.passed).toBe(true);
+	});
+
+	it('fails a Production version whose WhatsApp redirect carries no real number', async () => {
+		for (const contactLocation of [
+			'https://wa.me/521000000000',
+			'https://example.com/5216681234567',
+		]) {
+			const result = await runCloudflareWorkerSmoke(
+				{ url: `https://${productionVersionHost}`, sha, environment: 'production' },
+				previewFetch({ commitSha: sha, environment: 'production' }, { contactLocation }),
+				accessHeaders,
+			);
+			expect(result.contactWhatsAppConfigured).toBe(false);
+			expect(result.failureCodes).toEqual(['contact_whatsapp_missing']);
+		}
 	});
 
 	it('fails a version URL that answers without the Access token', async () => {

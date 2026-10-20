@@ -152,7 +152,7 @@ describe('resolveShortIdRequest', () => {
 				SITE_ORIGIN,
 			);
 			assertIsRedirect(result);
-			expect(result.redirectTarget).toBe('/xv/valeria-fixture?invite=invite-abc-123');
+			expect(result.redirectTarget).toBe('/valeria-fixture?invite=invite-abc-123');
 		});
 
 		it('returns redirect with canonicalUrl', async () => {
@@ -207,7 +207,7 @@ describe('resolveShortIdRequest', () => {
 				SITE_ORIGIN,
 			);
 			assertIsCrawler(result);
-			expect(result.redirectTarget).toBe('/xv/valeria-fixture?invite=invite-abc-123');
+			expect(result.redirectTarget).toBe('/valeria-fixture?invite=invite-abc-123');
 		});
 
 		it('includes canonicalUrl in crawler response', async () => {
