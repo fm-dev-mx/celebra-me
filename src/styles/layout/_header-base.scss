@@ -454,7 +454,7 @@
 
 		&__subtitle {
 			font-family: var(--font-label, var(--font-ui));
-			font-size: 0.6rem;
+			font-size: var(--mobile-nav-subtitle-size, 0.6rem);
 			letter-spacing: 0.18em;
 			text-transform: uppercase;
 			color: var(--mobile-drawer-footer-copy);
@@ -594,7 +594,7 @@
 		&__copy {
 			margin-top: 1rem;
 			color: var(--mobile-drawer-footer-copy);
-			font-size: 0.6rem;
+			font-size: var(--mobile-nav-footer-copy-size, 0.6rem);
 			font-family: var(--font-ui);
 			letter-spacing: 0.35em;
 			text-transform: uppercase;

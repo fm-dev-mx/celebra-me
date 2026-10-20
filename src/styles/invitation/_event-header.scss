@@ -63,7 +63,7 @@
 		justify-content: center;
 		text-decoration: none;
 		font-family: var(--font-body);
-		font-size: clamp(0.68rem, 0.72vw, 0.78rem);
+		font-size: var(--header-action-size, clamp(0.68rem, 0.72vw, 0.78rem));
 		font-weight: 500;
 		line-height: 1;
 		padding: 0.72rem clamp(0.55rem, 1vw, 0.95rem);

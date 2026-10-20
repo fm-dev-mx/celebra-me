@@ -95,6 +95,12 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--america-title-size: 2.125rem;
 	--america-label-size: 0.8125rem;
 	--america-label-tracking: 0.14em;
+
+	// Practical words never fall under the label size: the desktop links and the menu's subtitle
+	// and footer.
+	--header-action-size: var(--america-label-size);
+	--mobile-nav-subtitle-size: var(--america-label-size);
+	--mobile-nav-footer-copy-size: 0.75rem;
 	--family-title-size: var(--america-title-size);
 	--family-title-line-height: 1.1;
 	--family-title-letter-spacing: 0;
