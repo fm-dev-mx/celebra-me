@@ -4,7 +4,7 @@
  * scene where that photo is in view, so a keyboard user never focuses an invisible control.
  * Nothing runs while the scene rests in normal flow.
  */
-export const GALLERY_TRACK_SELECTOR = '[data-gallery-track]';
+const GALLERY_TRACK_SELECTOR = '[data-gallery-track]';
 
 /** Scene progress (0–1) that brings a photo at `offset` along a track into view. */
 export function trackProgressFor(offset: number, trackWidth: number, viewWidth: number): number {

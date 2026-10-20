@@ -48,7 +48,6 @@ canonical environment workflow.
 | `pnpm type-check`            | run `astro check` and `tsc --noEmit`                                                                             |
 | `pnpm lint`                  | run ESLint across the repository                                                                                 |
 | `pnpm lint:styles`           | audit all SCSS sources with Stylelint                                                                            |
-| `pnpm lint:styles:changed`   | lint only changed stylesheet files                                                                               |
 | `pnpm test`                  | run the Jest suite                                                                                               |
 | `pnpm validate:structure`    | validate agent references, plans, documentation links, and forbidden tracked artifacts                           |
 | `pnpm validate:event-parity` | compare content events against the Supabase `events` table                                                       |

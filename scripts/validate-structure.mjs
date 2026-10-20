@@ -55,14 +55,6 @@ const RECOGNIZED_PLAN_STATUSES = new Set([
 	'final',
 ]);
 const ACTIVE_DIRECTORY_PLAN_STATUSES = new Set(['draft', 'active', 'blocked']);
-const TERMINAL_PLAN_STATUSES = new Set([
-	'implemented',
-	'validated',
-	'accepted',
-	'deferred',
-	'superseded',
-	'final',
-]);
 const REQUIRED_OWNERSHIP = [
 	{
 		aspect: 'Task Contract, Goal protocol & Handoff Contract',
@@ -432,38 +424,6 @@ function validateActivePlans(root) {
 	return errors;
 }
 
-function validateArchivedPlans(root) {
-	const errors = [];
-	const archivedRoot = path.join(root, '.agent', 'plans', 'archived');
-	if (!existsSync(archivedRoot)) return errors;
-	const archivedPlans = listMarkdownFilesRecursively(archivedRoot);
-	for (const planFile of archivedPlans) {
-		const relativeFile = normalizePath(path.relative(root, planFile));
-		const frontmatter = parseFrontmatter(readFileSync(planFile, 'utf8'));
-		if (!frontmatter) continue;
-		if (frontmatter.status === 'archived') {
-			errors.push(
-				`${relativeFile}: status "archived" is invalid; use a terminal status such as "final" (directory already means archived).`,
-			);
-		} else if (
-			frontmatter.status &&
-			!RECOGNIZED_PLAN_STATUSES.has(frontmatter.status) &&
-			frontmatter.status !== 'archived'
-		) {
-			errors.push(`${relativeFile}: plan status "${frontmatter.status}" is not recognized.`);
-		} else if (ACTIVE_DIRECTORY_PLAN_STATUSES.has(frontmatter.status)) {
-			errors.push(
-				`${relativeFile}: status "${frontmatter.status}" belongs under plans/active/, not archived/.`,
-			);
-		} else if (frontmatter.status && !TERMINAL_PLAN_STATUSES.has(frontmatter.status)) {
-			errors.push(
-				`${relativeFile}: archived plan status "${frontmatter.status}" is not a terminal status.`,
-			);
-		}
-	}
-	return errors;
-}
-
 function validateCanonicalOwnership(root) {
 	const errors = [];
 	const file = path.join(root, '.agent', 'ownership.yaml');
@@ -595,7 +555,6 @@ function isPortablePathScanTarget(relativeFile) {
 	const file = normalizePath(relativeFile);
 	if (file === 'AGENTS.md') return true;
 	if (file.startsWith('docs/archive/')) return false;
-	if (file.startsWith('.agent/plans/archived/')) return false;
 	if (file.startsWith('.agent/tmp/')) return false;
 	if (file.startsWith('.agent/')) return true;
 	if (file.startsWith('docs/')) return true;
@@ -827,7 +786,6 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 		...rejectRetiredWorkflows(root),
 		...validateIndex(root),
 		...validateActivePlans(root),
-		...validateArchivedPlans(root),
 		...validateCanonicalCiInvocation(root),
 		...validateOwnershipYaml(root),
 		...validateCanonicalOwnership(root),

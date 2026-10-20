@@ -12,9 +12,9 @@ import { RESPONSIVE_IMAGE_WIDTHS } from '@/lib/images/responsive-variants';
 export type R2MediaTargetEnvironment = 'preview' | 'production';
 
 /**
- * `responsiveVariants` turns on `srcset` for that bucket's images. Enable it only after
- * `pnpm invitation:media:variants --target <env> --all` reports every published image complete: a
- * listed variant that does not exist would break the image for the guest.
+ * `responsiveVariants` turns on `srcset` for that bucket's images. A bucket enables it only once every
+ * published image has its variants: a listed variant that does not exist would break the image for
+ * the guest.
  */
 export const R2_INVITATION_MEDIA = {
 	preview: {

@@ -10,13 +10,13 @@
 import type { ImageTransformer } from './image-transformer';
 
 export const RESPONSIVE_IMAGE_WIDTHS = [480, 800, 1280, 1920] as const;
-export type ResponsiveImageWidth = (typeof RESPONSIVE_IMAGE_WIDTHS)[number];
+type ResponsiveImageWidth = (typeof RESPONSIVE_IMAGE_WIDTHS)[number];
 
 /**
  * Measured on published photos against a lossless downscale: quality 88 keeps about 38-39 dB
  * PSNR, where 80 dropped to about 35 dB on detailed portraits.
  */
-export const RESPONSIVE_VARIANT_QUALITY = 88;
+const RESPONSIVE_VARIANT_QUALITY = 88;
 
 /**
  * Preserved originals keep their source size up to 24 MP (e.g. 4000x6000), so the decode bound

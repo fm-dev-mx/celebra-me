@@ -185,7 +185,7 @@ async function ensureSocialCard(
 		throw new Error(`R2 social card ${socialKey} read-back verification failed.`);
 }
 
-export interface R2VariantReport {
+interface R2VariantReport {
 	written: string[];
 	present: string[];
 }
@@ -195,7 +195,7 @@ export interface R2VariantReport {
  * each written one back. Existing variants are kept: they are derived bytes, not canonical ones.
  * `dryRun` only reports the missing keys.
  */
-export async function ensureResponsiveVariants(
+async function ensureResponsiveVariants(
 	target: R2MediaTargetEnvironment,
 	objectKey: string,
 	original: Uint8Array,

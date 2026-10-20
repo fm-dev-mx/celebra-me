@@ -23,7 +23,6 @@ describe('canonical validation contract', () => {
 		const ci = scripts['ci:static'] ?? '';
 
 		expect(ci).toContain('pnpm lint:styles');
-		expect(ci).not.toContain('pnpm lint:styles:changed');
 		expect(ci).toContain('pnpm build:app');
 		expect(ci).toContain('pnpm validate:structure');
 		expect(ci).not.toContain('agent:git-safety');

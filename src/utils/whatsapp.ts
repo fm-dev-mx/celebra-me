@@ -1,10 +1,10 @@
 import { getEnv } from '@/lib/server/env';
 
 /** Number a build or render falls back to when CONTACT_WHATSAPP is not configured. */
-export const PLACEHOLDER_CONTACT_PHONE = '521000000000';
+const PLACEHOLDER_CONTACT_PHONE = '521000000000';
 
 /** Site route that reads the Worker secret at request time and redirects to wa.me. */
-export const WHATSAPP_REDIRECT_PATH = '/api/whatsapp';
+const WHATSAPP_REDIRECT_PATH = '/api/whatsapp';
 
 /**
  * CONTACT_WHATSAPP is a Worker secret: it exists at request time, never while `astro build`

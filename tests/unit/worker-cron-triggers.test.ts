@@ -9,9 +9,6 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 jest.mock('@/lib/images/image-transformer-provider', () => ({
 	installImagesBinding: jest.fn(),
 }));
-jest.mock('@/lib/server/static-assets-provider', () => ({
-	installAssetsBinding: jest.fn(),
-}));
 jest.mock('@/lib/memories/server/cleanup.service', () => ({
 	runMemoriesCleanup: jest.fn(async () => ({})),
 }));
