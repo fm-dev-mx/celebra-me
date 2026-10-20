@@ -140,7 +140,7 @@ test.describe('Landing page regressions', () => {
 		await expect(headerCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HEADER'));
 		await expect(page.locator('.home-nav__link', { hasText: 'Nosotros' })).toHaveAttribute(
 			'href',
-			'#nosotros',
+			'/#nosotros',
 		);
 
 		const navLinkStyles = await page
