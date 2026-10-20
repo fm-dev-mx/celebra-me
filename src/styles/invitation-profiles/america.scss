@@ -391,9 +391,10 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--itinerary-paper-desc-color: var(--color-violet-ink-soft);
 	--itinerary-paper-desc-color-sm: var(--color-violet-ink-soft);
 
-	// Reply card: one flat cream card with a hairline, on the mist. Pass and reply share one
-	// width and meet on a perforation, like a stub to tear off; the guest's name is written in
-	// the display italic (the script stays hers), with a candle dot between name and seats.
+	// Reply card: one cream ticket with a hairline, lifted off the mist. Pass and reply share one
+	// width and meet on a perforation, punched at both ends like a stub to tear off; the pass is
+	// crowned by the Corona sun, the guest's name is written in the display italic (the script
+	// stays hers) and the seats sit in a lantern-lit ring.
 	--reply-card-bg: var(--color-story-cream);
 	--reply-card-max-width: 30rem;
 	--reply-card-guest-size: clamp(2rem, 9vw, 2.75rem);
@@ -414,17 +415,83 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		rgb(var(--color-leaf-gold-rgb) / 70%) 0 4px,
 		transparent 4px 9px
 	);
-	--reply-card-seam-width: calc(100% - 2 * clamp(0.6rem, 2.4vw, 0.85rem));
-	--reply-card-mask-upper: none;
-	--reply-card-mask-lower: none;
+	--reply-card-seam-width: calc(100% - 2 * (var(--america-punch) + 0.5rem));
+	--america-punch: 0.8rem;
+	--reply-card-mask-upper:
+		radial-gradient(
+				circle at 0 100%,
+				transparent var(--america-punch),
+				rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+			)
+			intersect,
+		radial-gradient(
+			circle at 100% 50%,
+			transparent var(--america-punch),
+			rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+		);
+	--reply-card-mask-lower:
+		radial-gradient(
+				circle at 0 0,
+				transparent var(--america-punch),
+				rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+			)
+			intersect,
+		radial-gradient(
+			circle at 100% 50%,
+			transparent var(--america-punch),
+			rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+		);
+	--reply-card-mask-locked: none;
 	--reply-card-shadow-upper: none;
 	--reply-card-shadow-lower: none;
-	--reply-card-edge-shadow: none;
+	--reply-card-edge-shadow: drop-shadow(0 14px 14px rgb(var(--color-violet-ink-rgb) / 12%));
+	--reply-card-crest-content: '';
+	--reply-card-crest: #{$america-sun};
+	--reply-card-crest-size: 3rem;
+	--reply-card-count-size: 3.25rem;
+	--reply-card-count-frame-size: 6.5rem;
+	--reply-card-count-frame-ratio: 1;
+	--reply-card-count-frame-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 60%);
+	--reply-card-count-frame-bg: radial-gradient(
+		circle,
+		rgb(var(--color-candle-gold-rgb) / 16%),
+		transparent 70%
+	);
+	--pa-count-frame-radius: 50%;
+	--pa-count-frame-inner-display: block;
+	--pa-count-frame-inner-inset: 5px;
+	--pa-count-frame-inner-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 28%);
+	--reply-card-option-bg: rgb(255 255 255 / 55%);
+	--reply-card-option-rule: rgb(var(--color-leaf-gold-rgb) / 55%);
+	--reply-card-option-hover-rule: var(--color-gold-ink);
+	--reply-card-option-checked-rule: var(--color-gold-ink);
 
 	// Closing: the door photograph with an asymmetric arch crown, no painted tower behind it.
 	--thank-you-keepsake-ambient: none;
 	--thank-you-keepsake-ambient-stacked: none;
 	--thank-you-keepsake-image-radius: 64% 36% 0 0 / 16% 10% 0 0;
+
+	// The reply card's answers, fields and steps declare their inks on themselves, so they are set
+	// there: centred answers with a gold ring that fills with ink, fields on the cream with a gold
+	// rule, a gold track and a centred step heading.
+	.rsvp[data-variant='reply-card'] {
+		--rsvp-radio-card-justify: center;
+		--rsvp-radio-bg-hover: rgb(var(--color-candle-gold-rgb) / 8%);
+		--rsvp-radio-indicator-border: rgb(var(--color-leaf-gold-rgb) / 80%);
+		--rsvp-radio-selected-border: var(--color-gold-ink);
+		--rsvp-radio-indicator-dot: var(--color-gold-ink);
+		--rsvp-radio-label-color: var(--color-violet-ink);
+		--rsvp-radio-label-color-selected: var(--color-violet-ink);
+		--rsvp-radio-focus-ring: 0 0 0 3px rgb(var(--color-candle-gold-rgb) / 30%);
+		--rsvp-field-bg: rgb(255 255 255 / 60%);
+		--rsvp-field-bg-focus: rgb(255 255 255 / 92%);
+		--rsvp-field-border: rgb(var(--color-leaf-gold-rgb) / 55%);
+	}
+
+	[data-rsvp-flow='steps'] {
+		--rsvp-steps-track: rgb(var(--color-leaf-gold-rgb) / 35%);
+		--rsvp-steps-heading-align: center;
+	}
 
 	// The quote section declares its measure itself, so it is set on the section.
 	.quote-section {
@@ -518,8 +585,8 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	}
 
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll
-	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a gold
-	// hairline and a plain text contact link.
+	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a plain
+	// text contact link.
 	.invitation-footer {
 		--invitation-footer-reveal: held;
 
@@ -555,6 +622,28 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--footer-contact-padding: 0.5rem 0.25rem;
 		--footer-replay-color: var(--color-night-lilac);
 		--footer-replay-opacity: 72%;
+
+		// Three tiers: the reply, then the invitation's own sign-off with the replay under it, and
+		// last the platform, set apart by a short gold rule on one quiet line with the legal note.
+		--footer-reply-gap: 3.25rem;
+		--footer-closing-size: clamp(1.1rem, 3vw, 1.25rem);
+		--footer-divider-display: none;
+		--footer-replay-order: -1;
+		--footer-content-gap: 1rem;
+		--footer-primary-row-direction: row;
+		--footer-platform-rule: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--america-night-gold-rgb) / 45%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.5rem;
+		--footer-contact-color: var(--color-night-lilac);
+		--footer-contact-weight: 400;
+		--footer-contact-icon-filter: brightness(0) invert(0.85);
+
+		// The music button rests in the bottom corner; the legal line ends above it.
+		--footer-padding-bottom: 5.5rem;
 		--color-text-primary: var(--color-night-lilac);
 		--color-action-accent: rgb(232 160 64);
 		--color-action-accent-rgb: 232 160 64;
