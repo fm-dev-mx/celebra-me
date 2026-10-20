@@ -12,9 +12,10 @@
 // under the header while the next slides over it, and the covered one recedes (a named view
 // timeline shared through `timeline-scope`). Without them the full line and every stop show.
 // Profiles retint through `--location-route-*`; every token falls back to the semantic palette.
-.event-location[data-variant='night-route'] {
-	@include plates.venue-plates;
 
+// The variant owns its location tokens and maps them onto the route palette. They sit in a mixin,
+// like the shared plate geometry.
+@mixin route-tokens {
 	--location-route-rail-x: 1.6rem;
 	--location-route-gutter: 1.75rem;
 	--location-route-marker-size: 2.2rem;
@@ -104,6 +105,11 @@
 		var(--location-route-sky-panel) 100%
 	);
 	--location-route-window: color-mix(in srgb, var(--location-route-accent) 80%, rgb(255 236 190));
+}
+
+.event-location[data-variant='night-route'] {
+	@include plates.venue-plates;
+	@include route-tokens;
 
 	overflow: clip;
 	color: var(--location-route-ink);
@@ -190,7 +196,7 @@
 	}
 
 	.event-location__card-content-place {
-		font-size: clamp(1.45rem, 6.4vw, 1.85rem);
+		font-size: var(--location-route-place-size, clamp(1.45rem, 6.4vw, 1.85rem));
 	}
 
 	.event-location__card-navigation-buttons {
@@ -251,7 +257,7 @@
 		background: var(--location-route-marker-bg);
 		box-shadow: 0 0 0 0.35rem var(--location-route-marker-bg);
 		font-family: var(--font-label);
-		font-size: 0.75rem;
+		font-size: var(--location-route-marker-text-size, 0.75rem);
 		font-weight: 600;
 		letter-spacing: 0.06em;
 		color: var(--location-route-accent);
@@ -314,7 +320,7 @@
 		margin: 0 0 0.3rem;
 		color: var(--location-route-ink);
 		font-family: var(--font-display);
-		font-size: 1.2rem;
+		font-size: var(--location-route-note-title-size, 1.2rem);
 		letter-spacing: 0.01em;
 	}
 

@@ -64,7 +64,7 @@
 		translate: -50% 0;
 		border: 1px solid var(--hero-arch-moulding, rgb(205 178 140 / 40%));
 		border-bottom: 0;
-		border-radius: 999px 999px 0 0;
+		border-radius: var(--hero-arch-moulding-radius, 999px 999px 0 0);
 		pointer-events: none;
 	}
 
@@ -124,7 +124,7 @@
 	.invitation-hero__time,
 	.invitation-hero__venue {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: var(--hero-arch-venue-size, 0.875rem);
 		line-height: 1.45;
 		color: var(--hero-arch-muted, rgb(232 239 246 / 92%));
 	}
