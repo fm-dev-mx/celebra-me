@@ -404,10 +404,31 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--floating-cta-bg: var(--america-night);
 		--floating-cta-ink: var(--america-night-gold);
 		--floating-cta-border: 1px solid rgb(var(--america-night-gold-rgb) / 45%);
-		--floating-cta-shadow: 0 0.6rem 1.6rem rgb(var(--america-night-rgb) / 35%);
 		--floating-cta-panel-bg: var(--america-night);
 		--floating-cta-panel-ink: var(--color-night-lilac);
 		--floating-cta-panel-muted: rgb(var(--america-night-gold-rgb) / 78%);
+
+		// A small lit lantern before the label, the reply date under it (Agendar names the two
+		// events), and a gleam of lantern light across the pill when it first rises.
+		--floating-cta-button-display: inline-grid;
+		--floating-cta-icon-display: block;
+		--floating-cta-icon: radial-gradient(
+			circle at 50% 60%,
+			rgb(255 236 196) 0,
+			rgb(232 160 64) 55%,
+			rgb(190 120 40) 100%
+		);
+		--floating-cta-note-confirm: 'Antes del viernes 6 de noviembre';
+		--floating-cta-note-calendar: 'Misa y recepción';
+		--floating-cta-note-size: var(--america-label-size);
+		--floating-cta-glint: linear-gradient(
+			105deg,
+			transparent 40%,
+			rgb(var(--america-night-gold-rgb) / 30%) 50%,
+			transparent 60%
+		);
+		--floating-cta-shadow:
+			0 0.6rem 1.6rem rgb(var(--america-night-rgb) / 35%), 0 0 1.25rem rgb(232 160 64 / 18%);
 	}
 
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll

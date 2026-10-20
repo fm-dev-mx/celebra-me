@@ -79,6 +79,9 @@ export function initFloatingCta(root: Element | null): void {
 	const menu = document.querySelector<HTMLElement>('[data-nav-mobile-menu]');
 	let rsvpOnScreen = false;
 	let frame = 0;
+	// The mode the light last crossed the pill for: once on first showing, again on Agendar.
+	let glinted: FloatingCtaMode = 'none';
+	let glintTimer = 0;
 
 	const setPanel = (open: boolean, returnFocus = false) => {
 		panel.hidden = !open;
@@ -99,6 +102,12 @@ export function initFloatingCta(root: Element | null): void {
 			!menuOpen &&
 			isInFloatingZone(window.scrollY, window.innerHeight, docRoot.scrollHeight);
 		if (!visible && !panel.hidden) setPanel(false);
+		if (visible && mode !== glinted) {
+			glinted = mode;
+			root.dataset.glint = mode;
+			window.clearTimeout(glintTimer);
+			glintTimer = window.setTimeout(() => delete root.dataset.glint, 1600);
+		}
 		root.dataset.visible = String(visible);
 		root.inert = !visible;
 	};
