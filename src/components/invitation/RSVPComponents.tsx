@@ -31,7 +31,7 @@ export type RevealedLocation = LocationSection;
 
 type RsvpShellState = 'form' | 'confirmed' | 'declined';
 
-const RsvpShell = forwardRef<
+export const RsvpShell = forwardRef<
 	HTMLElement,
 	{
 		state: RsvpShellState;
@@ -54,7 +54,7 @@ const RsvpShell = forwardRef<
 });
 RsvpShell.displayName = 'RsvpShell';
 
-function RsvpVisibleHeader({
+export function RsvpVisibleHeader({
 	title,
 	subcopy,
 	eyebrow,
@@ -98,7 +98,7 @@ function RsvpStatusHeader({ title }: { title: string }) {
 }
 RsvpStatusHeader.displayName = 'RsvpStatusHeader';
 
-function SubmitButtonText({
+export function SubmitButtonText({
 	submitStatus,
 	buttonLabel,
 	attendanceStatus,
@@ -342,7 +342,7 @@ export const SubmittedState = forwardRef<
 
 SubmittedState.displayName = 'SubmittedState';
 
-interface RsvpFormViewProps {
+export interface RsvpFormViewProps {
 	title: string;
 	subcopy: string;
 	variant?: RsvpVariant;
@@ -357,6 +357,11 @@ interface RsvpFormViewProps {
 	phoneLabel: string;
 	notesLabel: string;
 	notesPlaceholder: string;
+	/** Line under the party size; `{count}` is the seats held. */
+	guestHint?: string;
+	/** `flow: 'steps'` headings of the answer and party steps. */
+	stepAttendance?: string;
+	stepDetails?: string;
 	name: string;
 	phone: string;
 	countryCode: string;
@@ -544,6 +549,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 					notes={notes}
 					notesLabel={notesLabel}
 					notesPlaceholder={notesPlaceholder}
+					guestHint={props.guestHint}
 					onGuestCountChange={onGuestCountChange}
 					onNotesChange={onNotesChange}
 					onBlur={onBlur}

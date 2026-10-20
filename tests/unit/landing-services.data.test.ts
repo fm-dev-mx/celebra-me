@@ -4,8 +4,8 @@ import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 import {
 	formatMxn,
 	getExpressDelivery,
-	getPromoPackage,
-	PROMO_CAMPAIGN,
+	getCatalogPackage,
+	PACKAGE_CATALOG,
 } from '@/data/promo-campaign.data';
 
 describe('landing product value data', () => {
@@ -47,10 +47,8 @@ describe('landing package catalog', () => {
 	it('lists Esencial, Signature (recommended) and Atelier in screen order', () => {
 		const { tiers } = landingData.pricing;
 
-		expect(tiers.map((tier) => tier.packageId)).toEqual(
-			PROMO_CAMPAIGN.packages.map((pkg) => pkg.id),
-		);
-		expect(tiers.map((tier) => getPromoPackage(tier.packageId).name)).toEqual([
+		expect(tiers.map((tier) => tier.packageId)).toEqual(PACKAGE_CATALOG.map((pkg) => pkg.id));
+		expect(tiers.map((tier) => getCatalogPackage(tier.packageId).name)).toEqual([
 			'Esencial',
 			'Signature',
 			'Atelier',
@@ -65,7 +63,9 @@ describe('landing package catalog', () => {
 
 		expect(esencial.includesFrom).toBeUndefined();
 		expect(signature.includesFrom).toBe('Todo lo de Esencial, más:');
-		expect(signature.includes).toContain('QR de recuerdos');
+		expect(signature.includes).toContain(
+			'QR para que sus invitados compartan fotos y videos del evento',
+		);
 		expect(atelier.includesFrom).toBe('Todo lo de Signature, más:');
 		expect(atelier.includes).toContain('Su invitación a su nombre, sin la firma de Celebra-me');
 
@@ -109,7 +109,7 @@ describe('landing primary CTA and trust copy', () => {
 			landingData.howItWorks.cta?.label,
 			landingData.contact.cta?.label,
 		];
-		expect(new Set(labels)).toEqual(new Set(['Cotizar mi invitación']));
+		expect(new Set(labels)).toEqual(new Set(['Quiero mi invitación']));
 	});
 
 	it('publishes real, anonymous testimonials with a privacy notice', () => {

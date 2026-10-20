@@ -15,6 +15,10 @@
 //   --reply-card-gutter    Section side padding
 //   --reply-card-subtitle-wrap  Pass subtitle wrapping (`balance` avoids a one-word line)
 //   --reply-card-padding-block  Space above the pass and below the reply
+//   --reply-card-divider / -divider-width / -divider-height
+//                          Mark between the guest and the seats (default a 3rem hairline)
+//   --reply-card-seam / -seam-width / -seam-height
+//                          Line where the two halves meet (default a short centred hairline)
 // ==========================================================================
 
 .personalized-access[data-variant='reply-card'] {
@@ -132,10 +136,10 @@
 	}
 
 	.access-card__divider {
-		width: 3rem;
-		height: 1px;
+		width: var(--reply-card-divider-width, 3rem);
+		height: var(--reply-card-divider-height, 1px);
 		margin: 1rem 0 0.5rem;
-		background: var(--reply-card-rule, rgb(16 24 32 / 18%));
+		background: var(--reply-card-divider, var(--reply-card-rule, rgb(16 24 32 / 18%)));
 
 		&::before,
 		&::after {

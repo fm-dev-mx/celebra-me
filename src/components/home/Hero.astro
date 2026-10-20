@@ -11,8 +11,9 @@ import {
 	formatMxn,
 	getGeneralPromoCode,
 	getStartingPrice,
+	getRenderCampaign,
 	getStartingRegularPrice,
-	PROMO_CAMPAIGN,
+	PROMO_CURRENCY,
 } from '@/data/promo-campaign.data';
 
 // One static, event-neutral image: a laid table with a place card, the "pass for every guest".
@@ -26,6 +27,8 @@ interface Props {
 }
 
 const { data } = Astro.props;
+// Built with the campaign of the build day; PromoStatus.astro switches it for the visitor's date.
+const campaign = getRenderCampaign();
 
 ---
 
@@ -61,7 +64,7 @@ const { data } = Astro.props;
 				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>{' '}
 				<span class="hero-prime__price-line">
 					{data.priceLine.prefix}{' '}
-					<span data-promo-only>{formatMxn(getStartingPrice())}</span><span data-promo-fallback>{formatMxn(getStartingRegularPrice())}</span>{' '}
+					{campaign && <span data-promo-only data-promo-field="starting-price">{formatMxn(getStartingPrice(campaign))}</span>}<span data-promo-fallback={campaign ? '' : undefined}>{formatMxn(getStartingRegularPrice())}</span>{' '}
 					{data.priceLine.suffix}
 				</span>
 			</p>
@@ -73,6 +76,7 @@ const { data } = Astro.props;
 					trackCta="whatsapp-hero"
 					campaignSection="HERO"
 				/>
+				<p class="hero-prime__trust-line">{data.primaryCtaTrustLine}</p>
 				<p class="hero-prime__payment-note">{data.paymentNote}</p>
 				<ActionBase
 					as="a"
@@ -87,10 +91,12 @@ const { data } = Astro.props;
 					data-track-intent="demo_showroom"
 					data-track-destination="demo"
 					data-demo-slug={data.secondaryCtaDemoSlug}
-					data-campaign-code={buildCampaignCode('DEMO')}
-					data-promo-code={getGeneralPromoCode()}
-					data-track-value={getStartingPrice()}
-					data-track-currency={PROMO_CAMPAIGN.currency}
+					data-campaign-code={buildCampaignCode('DEMO', getGeneralPromoCode(campaign))}
+					data-promo-code={getGeneralPromoCode(campaign) ?? undefined}
+					data-track-value={getStartingPrice(campaign)}
+					data-track-currency={PROMO_CURRENCY}
+					data-promo-quote="general"
+					data-campaign-section="DEMO"
 				>
 					{data.secondaryCtaLabel}
 				</ActionBase>

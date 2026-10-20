@@ -42,6 +42,9 @@
 		pointer-events: none;
 		opacity: var(--family-texture-opacity, var(--family-texture-opacity-fallback, 0%));
 		background-image: var(--family-texture-image, none);
+		background-position: var(--family-texture-position, 0% 0%);
+		background-size: var(--family-texture-size, auto);
+		background-repeat: var(--family-texture-repeat, repeat);
 	}
 
 	&__container {
@@ -117,11 +120,25 @@
 		opacity: var(--family-divider-opacity, 82%);
 	}
 
+	// Optional signature under the message (--family-message-signature, default none), in its
+	// own face, size and colour.
+	&__message::after {
+		content: var(--family-message-signature, none);
+		display: block;
+		margin-top: 0.6rem;
+		font-family: var(--family-message-signature-font, inherit);
+		font-size: var(--family-message-signature-size, 1.5rem);
+		font-style: normal;
+		line-height: 1.2;
+		color: var(--family-message-signature-color, inherit);
+	}
+
 	&__message {
 		max-width: var(--family-message-max-width, 40rem);
 		margin: var(--family-message-margin, clamp(1.15rem, 2.5vw, 1.7rem) auto 0);
 		font-family: var(--family-message-font, var(--font-body));
 		font-size: var(--family-message-size, clamp(0.98rem, 1.8vw, 1.13rem));
+		font-style: var(--family-message-style, inherit);
 		line-height: var(--family-message-line-height, 1.7);
 		color: var(
 			--family-message-color,
@@ -346,11 +363,11 @@
 		position: absolute;
 		top: 0;
 		left: 50%;
-		width: min(100%, 22rem);
-		height: 1px;
+		width: var(--family-group-divider-width, min(100%, 22rem));
+		height: var(--family-group-divider-height, 1px);
 		transform: translateX(-50%);
 		background: var(--family-divider, rgb(var(--color-text-primary-rgb) / 18%));
-		opacity: 75%;
+		opacity: var(--family-group-divider-opacity, 75%);
 	}
 
 	&__group-title {
@@ -505,6 +522,17 @@
 		gap: 0.28rem;
 	}
 
+	// Optional word between paired names (`--family-member-joiner`, e.g. 'y'; default none).
+	&__item + &__item::before {
+		content: var(--family-member-joiner, none);
+		margin-bottom: var(--family-member-joiner-gap, 0.2rem);
+		font-family: var(--font-display);
+		font-size: var(--family-member-joiner-size, 1.25rem);
+		font-style: italic;
+		line-height: 1;
+		color: var(--family-member-joiner-color, currentcolor);
+	}
+
 	&__item--lead .family__name {
 		font-size: var(--family-lead-name-size, clamp(2rem, 4.4vw, 2.7rem));
 	}
@@ -564,6 +592,22 @@
 		margin-inline: var(--family-parents-margin-inline, auto);
 		padding: var(--family-parents-padding, clamp(0.9rem, 2vw, 1.35rem) 0);
 
+		// Optional medallion behind the parents' names (--family-parents-medallion, default
+		// none), centred on them, which may turn slowly as the section scrolls.
+		&::before {
+			content: '';
+			position: absolute;
+			z-index: -1;
+			top: 50%;
+			left: 50%;
+			width: var(--family-parents-medallion-size, 16rem);
+			aspect-ratio: 1;
+			translate: -50% -50%;
+			background: var(--family-parents-medallion, none) center / contain no-repeat;
+			opacity: var(--family-parents-medallion-opacity, 100%);
+			pointer-events: none;
+		}
+
 		&::after {
 			content: var(--family-parents-after-content, none);
 			display: block;
@@ -597,5 +641,92 @@
 		&__list--godparents {
 			grid-template-columns: 1fr;
 		}
+	}
+}
+
+// Optional scroll-linked shine on the names: --family-shine is a background painted through
+// the text (a band of light in a wide gradient), --family-shine-fill lets the text show it
+// (transparent) and --family-shine-name names the sweep (family-shine). The light follows the
+// section through the viewport (the section clips its overflow, so it carries the timeline):
+// the parents first, then the godparents. Without scroll timelines, or with reduced motion,
+// the names keep their own ink. A profile may instead light each name on its own way up the
+// screen: --family-shine-timeline `--family-name-light` ties it to the name, --family-shine-range
+// sets where it lights, and `family-light` (with --family-shine-size and --family-shine-glow)
+// leaves it lit with a soft glow. --family-divider-draw (`family-divider-draw`) draws the ornament between groups out
+// from its centre as the section scrolls.
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.family {
+			view-timeline: --family-shine block;
+		}
+
+		.family__name {
+			view-timeline: --family-name-light block;
+			background: var(--family-shine, none) 100% 0 / var(--family-shine-size, 300% 100%)
+				no-repeat;
+			background-clip: var(--family-shine-clip, border-box);
+			-webkit-text-fill-color: var(--family-shine-fill, currentcolor);
+			animation: var(--family-shine-name, none) auto linear both;
+			animation-timeline: var(--family-shine-timeline, --family-shine);
+			animation-range: var(--family-shine-range, cover 20% cover 45%);
+		}
+
+		.family__group--godparents .family__name {
+			animation-range: var(--family-shine-range-godparents, cover 40% cover 65%);
+		}
+
+		.family__group--parents::before {
+			animation: var(--family-parents-medallion-spin, none) auto linear;
+			animation-fill-mode: both;
+			animation-timeline: --family-shine;
+		}
+
+		.family__group + .family__group::before {
+			animation: var(--family-divider-draw, none) auto linear both;
+			animation-timeline: --family-shine;
+			animation-range: var(--family-divider-draw-range, cover 30% cover 45%);
+		}
+	}
+}
+
+@keyframes family-light {
+	0% {
+		background-position: 100% 0;
+		filter: drop-shadow(0 0 0 transparent);
+	}
+
+	100% {
+		background-position: 0 0;
+		filter: drop-shadow(0 0 0.35em var(--family-shine-glow, transparent));
+	}
+}
+
+@keyframes family-medallion-spin {
+	0% {
+		rotate: -24deg;
+	}
+
+	100% {
+		rotate: 24deg;
+	}
+}
+
+@keyframes family-divider-draw {
+	0% {
+		clip-path: inset(0 50%);
+	}
+
+	100% {
+		clip-path: inset(0);
+	}
+}
+
+@keyframes family-shine {
+	0% {
+		background-position: 100% 0;
+	}
+
+	100% {
+		background-position: 0 0;
 	}
 }

@@ -57,6 +57,13 @@ const pairedArrangement =
 const hasLastItem = Astro.slots.has('last-item');
 const isPinnedTrack = variant === 'pinned-track';
 const gridItems = hasLastItem ? items.slice(0, -1) : items;
+// album-assemble pins the album page in a scroll scene; photos land one per step of the scroll.
+const isAlbum = variant === 'album-assemble';
+const SceneWrapper = isAlbum ? ScrollScene : Fragment;
+const sceneProps = isAlbum
+	? { length: 4 as const, steps: gridItems.length, class: 'gallery-album' }
+	: {};
+const pad = (value: number) => String(value).padStart(2, '0');
 
 if (!items || items.length === 0) return null;
 ---
@@ -75,6 +82,7 @@ if (!items || items.length === 0) return null;
 		</ScrollScene>
 		<slot name="last-item" />
 	) : (
+	<SceneWrapper {...sceneProps}>
 	<div class="gallery-section__container" data-gallery>
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow" data-reveal-role="label">{eyebrow}</span>}
@@ -83,11 +91,27 @@ if (!items || items.length === 0) return null;
 			{usesMobileRail && (
 				<p class="gallery-section__swipe-hint">Desliza la edición</p>
 			)}
+			{isAlbum && (
+				<span class="gallery-album__count" aria-hidden="true">
+					<span class="gallery-album__count-roll">
+						{gridItems.map((_, index) => (
+							<span>{pad(index + 1)} / {pad(gridItems.length)}</span>
+						))}
+					</span>
+				</span>
+			)}
 		</header>
 
-		<PhotoGallery items={gridItems} variant={variant} />
+		<PhotoGallery items={gridItems} variant={variant} revealItems={!isAlbum} />
+		{isAlbum && (
+			<div class="gallery-album__footer" aria-hidden="true">
+				<span class="gallery-album__progress"><span class="gallery-album__progress-bar" /></span>
+				<span class="gallery-album__hint">Siga bajando para armar el álbum</span>
+			</div>
+		)}
 		<slot name="last-item" />
 	</div>
+	</SceneWrapper>
 	)}
 </section>
 

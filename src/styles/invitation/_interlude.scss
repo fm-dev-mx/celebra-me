@@ -264,6 +264,8 @@
 //   --interlude-framed-shadow          Contact shadow under the mat
 //   --interlude-framed-image-rule      Hairline drawn around the photograph inside the mat
 //   --interlude-framed-image-rule-offset Gap between the photograph and that hairline
+//   --interlude-framed-radius / --interlude-framed-image-radius  Frame and photograph shape (the
+//                                      frame lines follow it; default square)
 // ==========================================================================
 .invitation-interlude.invitation-interlude[data-presentation='framed'] {
 	min-height: 0;
@@ -284,6 +286,7 @@
 		outline: var(--interlude-framed-outline, 1px solid var(--color-border-subtle));
 		outline-offset: var(--interlude-framed-outline-offset, 0.45rem);
 		box-shadow: var(--interlude-framed-shadow, none);
+		border-radius: var(--interlude-framed-radius, 0);
 
 		// Optional 3D settle (`--interlude-framed-settle: invitation-settle-3d`, default none): the
 		// print arrives tilted by `--interlude-framed-settle-tilt` / `-turn`, lifted by `-rise`, and
@@ -303,6 +306,7 @@
 	.invitation-interlude__image {
 		outline: var(--interlude-framed-image-rule, none);
 		outline-offset: var(--interlude-framed-image-rule-offset, 0);
+		border-radius: var(--interlude-framed-image-radius, 0);
 		position: static;
 		width: 100%;
 		height: auto;

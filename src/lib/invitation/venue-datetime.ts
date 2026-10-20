@@ -113,9 +113,13 @@ function dayPeriod(hour: number): string {
 /**
  * Stationery wording for a venue time (`a las cinco de la tarde`). Only whole hours, quarter
  * and half hours have a conventional written form; other minutes fall back to the numeric
- * display so the time is never rounded.
+ * display so the time is never rounded. Without the period it reads `a las cinco`, for a line that
+ * already makes the time of day plain.
  */
-export function formatVenueTimeInWords(value: unknown): string | null {
+export function formatVenueTimeInWords(
+	value: unknown,
+	{ withPeriod = true }: { withPeriod?: boolean } = {},
+): string | null {
 	const canonical = toCanonicalVenueTime(value);
 	if (!canonical) return formatVenueTimeForDisplay(value);
 	const [hour, minute] = canonical.split(':').map(Number);
@@ -124,5 +128,6 @@ export function formatVenueTimeInWords(value: unknown): string | null {
 	if (suffix === null) return formatVenueTimeForDisplay(value);
 	const word = HOUR_WORDS[hour % 12];
 	const article = hour % 12 === 1 ? 'a la' : 'a las';
-	return `${article} ${word}${suffix} ${dayPeriod(hour)}`;
+	const period = withPeriod ? ` ${dayPeriod(hour)}` : '';
+	return `${article} ${word}${suffix}${period}`;
 }

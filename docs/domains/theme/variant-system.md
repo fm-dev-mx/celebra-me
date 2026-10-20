@@ -52,10 +52,11 @@ audit tooling (`pnpm invitation:published-audit`).
   `night-route` need at least two visible venues and accept `venueCard: 'compact'`.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
-  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `pinned-track` (a scroll scene: the
-  photos travel sideways under a counter while the stage is pinned; the scene is one screen plus
-  `--gallery-track-pace` (0.2) screens per photo; at rest, a two-column grid). `single-keepsake`
-  requires exactly one item; feature layouts and `pinned-track` enforce their item requirements.
+  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `pinned-track` (a
+  scroll scene: the photos travel sideways under a counter while the stage is pinned; the scene is
+  one screen plus `--gallery-track-pace` (0.2) screens per photo; at rest, a two-column grid).
+  `single-keepsake` requires exactly one item; `album-assemble` three to eight; feature layouts and
+  `pinned-track` enforce their item requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
@@ -200,6 +201,17 @@ invitation profiles.
 - rsvp formal-register opening (profile token): `--formal-register-open: formal-register-open`
   unfolds the register's header and card from the top edge as the chapter scrolls in; off by default
   and under reduced motion.
+- rsvp formal-register panel (profile tokens):
+  `--formal-register-surface-{bg,border,radius,padding,shadow}` frame the register as a panel;
+  defaults keep the open chapter. `--pa-ticket-width` sizes the admission ticket, and
+  `--pa-welcome-{align,wrap}` set the welcome line's alignment and wrapping; `--pa-welcome-size`
+  sets the formal-pass welcome line (default 1.375rem).
+- location card actions (profile tokens): `--location-calendar-order` moves the calendar disclosure
+  after the directions button; `--location-copy-label-display: inline` shows «Copiar» next to the
+  copy icon (with `--location-copy-button-gap`); night-route `--location-route-stack-gap` holds the
+  first stacked stop whole before the second slides over it. All off by default.
+- footer (profile tokens): `--footer-closing-{font,size,style}`, `--footer-logo-filter` and
+  `--footer-contact-icon-filter` restyle the closing line and recolor the marks on dark footers.
 - interludes[].presentation framed: the whole photograph on paper inside a hairline double frame, so
   edge marks (watermarks, handwritten dates) are never cropped. Tuned through
   `--interlude-framed-*`.
@@ -211,7 +223,9 @@ invitation profiles.
 - location.program-sheet: venues as printed-program entries (line drawing for ceremony/reception,
   label, time in words, venue, address, text links of 44 px for map, calendar and copy). No cards
   and no section nav button; two columns with a vertical hairline on wide screens.
-  `--location-program-*`.
+  `--location-program-*`. Optional `presentationOptions.scene: 'lantern-route'` (two or more visible
+  venues) sets the program in a pinned night scene; see [Motion](motion.md#scroll-scenes).
+  `--location-route-*`.
 - hero.bleed-portrait: framed-portrait markup with the photograph to the edges (full width at its
   own proportion on phones, full-height left half on wide screens), written when/where facts and a
   silver scroll line. `--hero-bleed-*`.
@@ -221,10 +235,21 @@ invitation profiles.
 - gallery.mirrored-mosaic: contact sheet in blocks of three (principal photograph over two thirds
   plus two stacked), every second block mirrored; square corners, hairline gaps, per-item focal
   points, captions only in the lightbox. Requires three items. `--gallery-mosaic-*`.
+- gallery.album-assemble: an album page in a pinned scroll scene (editorial motion only): each print
+  drops onto the page in its own slice of the scroll, turned slightly by hand, with a 01 / NN
+  counter and a progress line; otherwise the prints rest in a two- or three-column grid. Three to
+  eight items. `--gallery-album-*`.
 - rsvp.reply-card + personalizedAccess.reply-card: a printed reply card split across both sections
   and joined into one surface — seats written out above, then the heading, two 56 px answers in the
   stationery formula ("Con gusto asistiré" / "Lamento no poder asistir"), message and one button; no
   eyebrow or seal. `--reply-card-*`.
+- rsvp `flow: 'steps'` (any variant): the same form one question per step — answer, then who comes
+  (name, phone and party size when they apply), then the message and send. Same hook, payload and
+  API as the form. `--rsvp-steps-*`.
+- itinerary.stacked-cards hooks: besides tone and size, `--stacked-cards-align`, `-padding`,
+  `-numeral` (for example `counter(moment, upper-roman) ' · ' / ''`), `-rule`, `-motif`,
+  `-ornament`, `-header-gap` and `-shade(-strength)` compose a card without new markup; every
+  default keeps the plain card.
 - location.presentationOptions.showCalendarLinks: native `<details>` "Agendar en el calendario" per
   venue (Google, .ics data URL, Outlook), resolved from the venue local date/time in
   `eventTiming.timeZone`; works without JavaScript.

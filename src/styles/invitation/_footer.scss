@@ -1,5 +1,15 @@
 @use '../global/mixins' as mixins;
 
+// Tokens (all optional, besides the variant ones below):
+//   --invitation-footer-reveal  `held`: the invitation stops at its last section and the footer
+//                               opens once the guest pulls on past the bottom (Footer.astro reads
+//                               it; see the pull cue below). Unset, the footer is always shown.
+//   --footer-border-color       Top rule
+//   --footer-divider-line       Divider line color
+//   --footer-logo-filter        Filter on the brand logo
+//   --footer-contact-border / -bg / -padding  Contact link outline, fill and padding
+//   --invitation-footer-reply   `on`: the reply at the end (see .footer-reply below)
+
 .invitation-footer {
 	display: flex;
 	flex-direction: column;
@@ -9,15 +19,184 @@
 	padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom, 0px));
 	font-family: var(--font-body);
 	color: var(--color-text-primary);
-	border-top: 1px solid var(--color-border-subtle);
+	border-top: 1px solid var(--footer-border-color, var(--color-border-subtle));
 	background-color: var(--footer-bg, var(--color-surface-primary));
 	transition: opacity var(--transition-snappy);
 }
 
+// Held at the end of the invitation: out of view but still in the reading and focus order, so a
+// tab into its links opens it (Footer.astro sets the state only when the token asks for it).
+.invitation-footer[data-footer-reveal='held'] {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.invitation-footer[data-footer-reveal='open'] > * {
+		animation: footer-reveal 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	// Counted past the reply block, so the footer's own rows keep their stagger with or without it.
+	.invitation-footer[data-footer-reveal='open'] > :nth-child(2 of :not(.footer-reply)) {
+		animation-delay: 50ms;
+	}
+
+	.invitation-footer[data-footer-reveal='open'] > :nth-child(3 of :not(.footer-reply)) {
+		animation-delay: 100ms;
+	}
+}
+
+@keyframes footer-reveal {
+	0% {
+		opacity: 0%;
+		translate: 0 1rem;
+	}
+
+	100% {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+// The pull cue of a held footer (footer-reveal.ts adds it, never with reduced motion): a lantern
+// on a thread at the bottom edge. --footer-pull (0–1) is how far the guest has pulled; it follows
+// the finger while pulling and eases back otherwise. Transforms and opacity only.
+//   --footer-pull-color  Lantern and thread (default lantern amber)
+//   --footer-pull-glow   Lantern light
+//   --footer-pull-scale  Lantern size (default 1)
+//   --footer-pull-height / -shape  Lantern height (default 0.95rem) and corner radius (default the
+//                        lantern's; `50%` with a square height makes a disc, for example a moon);
+//                        the shape also applies to the reply's lantern
+//   --footer-pull-body   Lantern fill (default the plain colour)
+//   --footer-pull-pool   Light rising from the bottom edge with the pull (default none)
+//   --footer-pull-label / -label-color / -label-size
+//                        Words above the resting lantern (default none); they fade as it climbs
+//   --footer-pull-breathe Keyframes on the resting lantern's glow (default none)
+// A paper lantern's outline: a little fuller below than above.
+$lantern-shape: 40% 40% 45% 45%;
+
+@property --footer-pull {
+	syntax: '<number>';
+	inherits: true;
+	initial-value: 0;
+}
+
+.footer-pull {
+	position: fixed;
+	bottom: env(safe-area-inset-bottom, 0);
+	left: 50%;
+	z-index: 40;
+	width: 2rem;
+	height: 4.5rem;
+	opacity: min(100%, calc(var(--footer-pull) * 400%));
+	translate: -50% 0;
+	pointer-events: none;
+	transition: --footer-pull 260ms cubic-bezier(0.22, 1, 0.36, 1);
+
+	&[data-state='pulling'] {
+		transition: none;
+	}
+
+	&__light {
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: 100vw;
+		height: 9rem;
+		translate: -50% 0;
+		background: var(--footer-pull-pool, none);
+		opacity: calc(var(--footer-pull) * 100%);
+	}
+
+	&__label {
+		position: absolute;
+		bottom: calc(2.25rem * var(--footer-pull-scale, 1));
+		left: 50%;
+		width: max-content;
+		max-width: calc(100vw - 2rem);
+		translate: -50% 0;
+		font-family: var(--font-body);
+		font-size: var(--footer-pull-label-size, 0.8125rem);
+		letter-spacing: 0.04em;
+		color: var(--footer-pull-label-color, var(--footer-pull-color, rgb(232 160 64)));
+		text-align: center;
+		opacity: calc(150% - var(--footer-pull) * 250%);
+
+		&::before {
+			content: var(--footer-pull-label, none);
+		}
+	}
+
+	// The thread grows from the edge as the lantern climbs.
+	&::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: 1px;
+		height: 3.25rem;
+		background: linear-gradient(
+			to top,
+			transparent,
+			var(--footer-pull-color, rgb(232 160 64)) 70%
+		);
+		opacity: 60%;
+		transform-origin: 50% 100%;
+		scale: 1 var(--footer-pull);
+	}
+
+	&::before {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: 0.7rem;
+		height: var(--footer-pull-height, 0.95rem);
+		border-radius: var(--footer-pull-shape, #{$lantern-shape});
+		background: var(--footer-pull-body, var(--footer-pull-color, rgb(232 160 64)));
+		box-shadow: 0 0 calc(0.9rem + var(--footer-pull) * 0.9rem) 0.25rem
+			var(--footer-pull-glow, rgb(232 160 64 / 35%));
+		translate: -50% calc(var(--footer-pull) * -3.25rem + 0.4rem);
+		scale: calc((0.8 + var(--footer-pull) * 0.3) * var(--footer-pull-scale, 1));
+		transform-origin: 50% 100%;
+	}
+
+	&[data-resting]::before {
+		animation: var(--footer-pull-breathe, none) 2.4s ease-in-out infinite alternate;
+	}
+
+	&[data-state='away'] {
+		animation: footer-pull-away 320ms cubic-bezier(0.3, 0.6, 0.4, 1) forwards;
+	}
+}
+
+// The resting lantern's light rises and falls, like a flame.
+@keyframes footer-pull-breathe {
+	0% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 70%;
+	}
+}
+
+@keyframes footer-pull-away {
+	100% {
+		opacity: 0%;
+		translate: -50% -4rem;
+	}
+}
+
 .footer__closing-phrase {
-	font-family: var(--font-display);
-	font-size: clamp(1rem, 3vw, 1.2rem);
-	font-style: italic;
+	font-family: var(--footer-closing-font, var(--font-display));
+	font-size: var(--footer-closing-size, clamp(1rem, 3vw, 1.2rem));
+	font-style: var(--footer-closing-style, italic);
 	font-weight: 400;
 	letter-spacing: 0.02em;
 	text-align: center;
@@ -26,10 +205,11 @@
 }
 
 .footer__divider {
+	display: var(--footer-divider-display, block);
 	width: 80px;
 	height: 1px;
 	margin: 0 auto 1.5rem;
-	background: var(--color-border-premium);
+	background: var(--footer-divider-line, var(--color-border-premium));
 
 	&::before {
 		content: '';
@@ -43,20 +223,30 @@
 	}
 }
 
+// Opt-in hierarchy for the closing block (all default to the plain stack):
+//   --footer-divider-display   `none` drops the dot divider under the closing phrase
+//   --footer-content-gap       Space between the rows of the content (default 1.25rem)
+//   --footer-replay-order      `-1` lifts the replay link above the brand row, next to the closing
+//   --footer-primary-row-direction   `row` keeps brand and contact on one line on phones too
+//   --footer-platform-rule / -rule-space   A short rule (an image, e.g. a gradient) above the
+//                              brand row and the space under it, setting the platform apart
+//   --footer-contact-color / -contact-weight   Ink and weight of the contact link
 .footer__content {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1.25rem;
+	gap: var(--footer-content-gap, 1.25rem);
 	width: 100%;
 }
 
 .footer__primary-row {
 	display: flex;
-	flex-direction: column;
+	flex-direction: var(--footer-primary-row-direction, column);
 	align-items: center;
 	gap: 1.25rem;
 	width: 100%;
+	padding-top: var(--footer-platform-rule-space, 0);
+	background: var(--footer-platform-rule, none) top center / 12rem 1px no-repeat;
 
 	@include mixins.respond-to(sm) {
 		flex-direction: row;
@@ -91,9 +281,11 @@
 		}
 	}
 
+	// Opt-in recolor of the brand mark for dark footers (`--footer-logo-filter`).
 	.footer-brand-logo.logo {
 		transform: scale(0.7);
 		transform-origin: center;
+		filter: var(--footer-logo-filter, none);
 	}
 }
 
@@ -125,14 +317,14 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
-	padding: 0.5rem 1.25rem;
+	padding: var(--footer-contact-padding, 0.5rem 1.25rem);
 	border-radius: var(--footer-contact-radius, 999px);
-	border: 1px solid var(--color-action-accent);
-	background: rgb(var(--color-action-accent-rgb) / 8%);
-	color: var(--color-text-primary);
+	border: var(--footer-contact-border, 1px solid var(--color-action-accent));
+	background: var(--footer-contact-bg, rgb(var(--color-action-accent-rgb) / 8%));
+	color: var(--footer-contact-color, var(--color-text-primary));
 	font-family: var(--font-body);
 	font-size: var(--footer-control-font-size, 0.7rem);
-	font-weight: 500;
+	font-weight: var(--footer-contact-weight, 500);
 	letter-spacing: var(--footer-control-letter-spacing, 0.12em);
 	text-transform: var(--footer-control-text-transform, uppercase);
 	transition:
@@ -146,6 +338,7 @@
 		width: 14px;
 		height: 14px;
 		opacity: 70%;
+		filter: var(--footer-contact-icon-filter, none);
 	}
 
 	&:hover {
@@ -166,6 +359,7 @@
 }
 
 .footer__replay-link {
+	order: var(--footer-replay-order, 0);
 	min-height: var(--footer-control-min-height, var(--footer-control-min-height-fallback, 44px));
 	display: inline-flex;
 	align-items: center;
@@ -194,5 +388,189 @@
 		outline: 1px solid var(--color-action-accent);
 		outline-offset: 2px;
 		opacity: 80%;
+	}
+}
+
+// The reply at the end (footer-reply.ts shows it only with `--invitation-footer-reply: on`, while
+// the guest has not answered): a lit lantern hangs from the top of the footer over a short lead, a
+// question, the button and a note; after a yes, only a line of thanks stays under the lantern.
+// When the held footer opens, the lantern rises on its thread and a light crosses the button once.
+// Tokens (all optional; the words default to none):
+//   --footer-reply-eyebrow / -question / -note / -answered   The words
+//   --footer-reply-ink / -muted / -accent   Question, note and eyebrow inks
+//   --footer-reply-question-font / -question-size / -eyebrow-size / -note-size
+//   --footer-reply-lantern / -lantern-glow   Lantern fill (default the pull lantern's) and light
+//   --footer-reply-lantern-height   Lantern height (default 1.8rem; its width is 1.4rem)
+//   --footer-reply-button-bg / -button-ink / -button-font / -button-size
+//   --footer-reply-glint      A light crossing the button as the footer opens (default none)
+//   --footer-reply-gap        Space under the block, above the closing phrase (default 2.5rem)
+$footer-reply-pill: 999px;
+
+.footer-reply {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: min(100%, 32rem);
+	margin: -2rem 0 var(--footer-reply-gap, 2.5rem);
+	text-align: center;
+
+	&[hidden],
+	[hidden] {
+		display: none;
+	}
+
+	// The thread from the footer's top edge down to the lantern.
+	&__lantern {
+		position: relative;
+		width: 1.4rem;
+		height: var(--footer-reply-lantern-height, 1.8rem);
+		margin: 2.75rem 0 1.25rem;
+		border-radius: var(--footer-pull-shape, #{$lantern-shape});
+		background: var(
+			--footer-reply-lantern,
+			var(--footer-pull-body, var(--footer-pull-color, rgb(232 160 64)))
+		);
+		box-shadow: 0 0 1.4rem 0.35rem var(--footer-reply-lantern-glow, rgb(232 160 64 / 40%));
+
+		&::before {
+			content: '';
+			position: absolute;
+			bottom: 100%;
+			left: 50%;
+			width: 1px;
+			height: 2.75rem;
+			translate: -50% 0;
+			background: linear-gradient(
+				to bottom,
+				transparent,
+				var(--footer-reply-accent, var(--footer-pull-color, rgb(232 160 64))) 80%
+			);
+			opacity: 60%;
+		}
+	}
+
+	&__pending {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	&__eyebrow::before {
+		content: var(--footer-reply-eyebrow, none);
+	}
+
+	&__question::before {
+		content: var(--footer-reply-question, none);
+	}
+
+	&__note::before {
+		content: var(--footer-reply-note, none);
+	}
+
+	&__answered::before {
+		content: var(--footer-reply-answered, none);
+	}
+
+	&__eyebrow {
+		margin: 0 0 0.9rem;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--footer-reply-eyebrow-size, 0.8125rem);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--footer-reply-accent, var(--color-text-secondary));
+	}
+
+	&__question {
+		margin: 0 0 1.5rem;
+		font-family: var(--footer-reply-question-font, var(--font-display));
+		font-size: var(--footer-reply-question-size, 1.6rem);
+		line-height: 1.25;
+		text-wrap: balance;
+		color: var(--footer-reply-ink, var(--color-text-primary));
+	}
+
+	&__button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 3rem;
+		padding: 0.75rem 1.75rem;
+		border-radius: $footer-reply-pill;
+		background: var(--footer-reply-button-bg, var(--color-action-accent));
+		color: var(--footer-reply-button-ink, var(--color-surface-primary));
+		font-family: var(--footer-reply-button-font, var(--font-label, var(--font-body)));
+		font-size: var(--footer-reply-button-size, 0.875rem);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		text-decoration: none;
+
+		&:focus-visible {
+			outline: 2px solid var(--footer-reply-button-bg, var(--color-action-accent));
+			outline-offset: 3px;
+		}
+	}
+
+	&__note {
+		margin: 0.75rem 0 0;
+		font-family: var(--font-body);
+		font-size: var(--footer-reply-note-size, 0.9375rem);
+		font-style: italic;
+		color: var(--footer-reply-muted, var(--color-text-secondary));
+	}
+
+	&__answered {
+		margin: 0;
+		font-family: var(--footer-reply-question-font, var(--font-display));
+		font-size: var(--footer-reply-note-size, 1.125rem);
+		font-style: italic;
+		color: var(--footer-reply-ink, var(--color-text-primary));
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.invitation-footer[data-footer-reveal='open'] {
+		.footer-reply__lantern {
+			animation: footer-reply-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+		}
+
+		.footer-reply__button {
+			background:
+				var(--footer-reply-glint, linear-gradient(transparent, transparent)) 150% 0 / 250%
+					100% no-repeat,
+				var(--footer-reply-button-bg, var(--color-action-accent));
+			animation: footer-reply-glint 1.1s cubic-bezier(0.4, 0, 0.2, 1) 700ms both;
+		}
+	}
+}
+
+// The pull lantern, let go, arrives from below and settles on its thread.
+@keyframes footer-reply-rise {
+	0% {
+		opacity: 0%;
+		translate: 0 3rem;
+	}
+
+	70% {
+		opacity: 100%;
+		translate: 0 -0.2rem;
+	}
+
+	100% {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes footer-reply-glint {
+	from {
+		background-position:
+			150% 0,
+			0 0;
+	}
+
+	to {
+		background-position:
+			-50% 0,
+			0 0;
 	}
 }

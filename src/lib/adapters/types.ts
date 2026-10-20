@@ -1,3 +1,4 @@
+import type { RsvpFlow } from '@/lib/invitation/rsvp-flow';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	IndicationStyleVariant,
@@ -35,6 +36,7 @@ import type {
 	LocationVenueCard,
 	LocationMapStyle,
 	LocationIndicationsLayout,
+	LocationScene,
 } from '@/lib/invitation/location-presentation';
 import type { HeroTimeFormat } from '@/lib/invitation/hero-presentation';
 import type { z } from 'zod';
@@ -266,6 +268,7 @@ export interface LocationSection {
 		indicationsLayout?: LocationIndicationsLayout;
 		indicationsStyle?: LocationIndicationsStyle;
 		showCalendarLinks?: boolean;
+		scene?: LocationScene;
 		venueCard?: LocationVenueCard;
 	};
 	isLocked?: boolean;
@@ -285,6 +288,7 @@ export interface LocationSection {
 	indicationsHeading?: string;
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
+	scene?: LocationScene;
 	venueCard?: LocationVenueCard;
 	calendarEventTitle?: string;
 	eventTimeZone?: string;
@@ -381,6 +385,7 @@ export interface InvitationViewModel {
 			accessMode: 'personalized-only' | 'hybrid';
 			confirmationMessage: string;
 			confirmationMode: 'api' | 'whatsapp' | 'both';
+			flow?: RsvpFlow;
 			whatsappConfig?: WhatsAppConfig;
 			responseMessages?: RsvpResponseMessages;
 			variant: RsvpVariant;
@@ -401,6 +406,9 @@ export interface InvitationViewModel {
 				attendance?: string;
 				confirmButton?: string;
 				notesPlaceholder?: string;
+				guestHint?: string;
+				stepAttendance?: string;
+				stepDetails?: string;
 			};
 			personalizedAccess: {
 				variant: PersonalizedAccessVariant;

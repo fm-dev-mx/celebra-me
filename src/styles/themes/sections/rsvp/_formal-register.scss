@@ -24,7 +24,7 @@
 	--color-text-muted: rgb(var(--formal-chapter-cream-rgb) / 64%);
 
 	padding-block: 0;
-	background: var(--formal-chapter-band);
+	background: var(--formal-register-band-bg, var(--formal-chapter-band));
 	color: var(--formal-chapter-cream);
 }
 
@@ -79,12 +79,15 @@
 	width: min(100%, 40rem);
 	max-width: 40rem;
 	margin: 0;
-	padding: 0 0 var(--formal-chapter-padding-end, 0);
+	padding: var(--formal-register-surface-padding, 0 0 var(--formal-chapter-padding-end, 0));
 	overflow: visible;
-	background: transparent;
-	border: 0;
-	border-radius: 0;
-	box-shadow: none;
+
+	// Opt-in panel around the register (`--formal-register-surface-*`); the defaults keep the
+	// open, unframed chapter.
+	background: var(--formal-register-surface-bg, transparent);
+	border: var(--formal-register-surface-border, 0);
+	border-radius: var(--formal-register-surface-radius, 0);
+	box-shadow: var(--formal-register-surface-shadow, none);
 	backdrop-filter: none;
 	color: var(--formal-chapter-cream);
 

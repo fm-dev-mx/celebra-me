@@ -5,9 +5,11 @@ import type { PricingData } from '@/interfaces/ui/sections/landing-page.interfac
 import {
 	formatMxn,
 	formatMxnAmount,
-	getPromoPackage,
+	getCatalogPackage,
+	getPackagePrice,
+	getRenderCampaign,
 	getValidityNote,
-	PROMO_CAMPAIGN,
+	PROMO_CURRENCY,
 } from '@/data/promo-campaign.data';
 
 interface Props {
@@ -15,8 +17,9 @@ interface Props {
 }
 
 const { data } = Astro.props;
-const validityNote = getValidityNote();
-const currency = PROMO_CAMPAIGN.currency;
+// Built with the campaign of the build day; PromoStatus.astro switches it for the visitor's date.
+const campaign = getRenderCampaign();
+const currency = PROMO_CURRENCY;
 ---
 
 <section id="pricing" class="pricing-section" data-track-section="pricing" data-screenshot="landing-pricing" aria-labelledby="pricing-title">
@@ -26,16 +29,19 @@ const currency = PROMO_CAMPAIGN.currency;
 				{data.eyebrow && <span class="pricing-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</span>}
 				<h2 id="pricing-title" class="pricing-title reveal-fade-up stagger-2">{data.title}</h2>
 				{data.intro && <p class="pricing-intro reveal-fade-up stagger-3">{data.intro}</p>}
-				<p class="pricing-note reveal-fade-up stagger-4" data-promo-only>
-					<span>{validityNote}</span>
-					<span class="pricing-note__countdown" data-promo-days-left></span>
-				</p>
+				{campaign && (
+					<p class="pricing-note reveal-fade-up stagger-4" data-promo-only>
+						<span data-promo-field="validity">{getValidityNote(campaign)}</span>
+						<span class="pricing-note__countdown" data-promo-days-left></span>
+					</p>
+				)}
 			</header>
 
 			<div class="pricing-grid reveal-fade-up stagger-5" aria-label="Paquetes">
 				{
 					data.tiers.map((tier, index) => {
-						const pkg = getPromoPackage(tier.packageId);
+						const pkg = getCatalogPackage(tier.packageId);
+						const promoPrice = getPackagePrice(pkg.id, campaign);
 
 						return (
 							<article
@@ -59,20 +65,25 @@ const currency = PROMO_CAMPAIGN.currency;
 									</header>
 
 									<div class="tier-pricing">
-										<p class="tier-promo-label" data-promo-only>{PROMO_CAMPAIGN.label}</p>
+										{campaign && (
+											<>
+												<p class="tier-promo-label" data-promo-only data-promo-field="label">{campaign.label}</p>
+												<div
+													class="tier-price"
+													data-promo-only
+													data-promo-price-label={pkg.id}
+													aria-label={`${formatMxn(promoPrice)} ${currency}, pago único`}
+												>
+													<span class="currency-symbol">$</span>
+													<span class="amount" data-promo-amount={pkg.id}>{formatMxnAmount(promoPrice)}</span>
+													<span class="currency-code">{currency}</span>
+													<span class="period">pago único</span>
+												</div>
+											</>
+										)}
 										<div
 											class="tier-price"
-											data-promo-only
-											aria-label={`${formatMxn(pkg.promoPrice)} ${currency}, pago único`}
-										>
-											<span class="currency-symbol">$</span>
-											<span class="amount">{formatMxnAmount(pkg.promoPrice)}</span>
-											<span class="currency-code">{currency}</span>
-											<span class="period">pago único</span>
-										</div>
-										<div
-											class="tier-price"
-											data-promo-fallback
+											data-promo-fallback={campaign ? '' : undefined}
 											aria-label={`${formatMxn(pkg.regularPrice)} ${currency}, pago único`}
 										>
 											<span class="currency-symbol">$</span>
@@ -80,9 +91,11 @@ const currency = PROMO_CAMPAIGN.currency;
 											<span class="currency-code">{currency}</span>
 											<span class="period">pago único</span>
 										</div>
-										<p class="regular-price" data-promo-only>
-											Precio regular: <s>{formatMxn(pkg.regularPrice)} {currency}</s>
-										</p>
+										{campaign && (
+											<p class="regular-price" data-promo-only>
+												Precio regular: <s>{formatMxn(pkg.regularPrice)} {currency}</s>
+											</p>
+										)}
 									</div>
 
 									<div class="tier-sections">

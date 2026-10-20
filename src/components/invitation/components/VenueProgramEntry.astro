@@ -15,16 +15,18 @@ interface Props {
 	venue: GroupedVenue;
 	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
 	calendar?: VenueCalendarLinks | null;
+	/** Scroll reveal on entry; off when a scroll scene animates the entry instead. */
+	reveal?: boolean;
 }
 
-const { venue, type, calendar } = Astro.props;
+const { venue, type, calendar, reveal = true } = Astro.props;
 const writtenTime = formatVenueTimeInWords(venue.time);
 const addressPending = /\[\[PENDIENTE:/u.test(venue.address);
 const displayAddress = addressPending ? 'Dirección pendiente de confirmar' : venue.address;
 const mapUrl = resolveVenueMapPreviewUrl(venue);
 ---
 
-<article class="event-location__program-entry" data-venue-type={type} data-reveal-item>
+<article class="event-location__program-entry" data-venue-type={type} data-reveal-item={reveal || undefined}>
 	{type === 'ceremony' && (
 		<svg
 			class="event-location__program-drawing"

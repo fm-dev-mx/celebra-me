@@ -4,6 +4,7 @@ import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
+	LOCATION_SCENES,
 	LOCATION_INDICATIONS_STYLES,
 	LOCATION_VENUE_CARDS,
 	LOCATION_MAP_STYLES,
@@ -70,6 +71,7 @@ const locationBaseSchema = z.object({
 			indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
 			indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 			showCalendarLinks: z.boolean().optional(),
+			scene: z.enum(LOCATION_SCENES).optional(),
 			venueCard: z.enum(LOCATION_VENUE_CARDS).optional(),
 		})
 		.strict()
@@ -95,6 +97,19 @@ const locationBaseSchema = z.object({
 
 function collectVisibleVenues(location: { venues: Array<{ isVisible?: boolean }> }): unknown[] {
 	return location.venues.filter((venue) => venue.isVisible !== false);
+}
+
+function validateLanternRoute(
+	location: { variant: string; venues: Array<{ isVisible?: boolean }> },
+	context: z.RefinementCtx,
+): void {
+	if (location.variant === 'program-sheet' && collectVisibleVenues(location).length >= 2) return;
+	context.addIssue({
+		code: 'custom',
+		path: ['presentationOptions', 'scene'],
+		message:
+			'location.presentationOptions.scene=lantern-route requires program-sheet with at least two visible venues',
+	});
 }
 
 export const locationSchema = z
@@ -127,6 +142,10 @@ export const locationSchema = z
 				message:
 					'location.accessPolicy.revealPlacement is only valid for after-rsvp visibility',
 			});
+		}
+
+		if (location.presentationOptions?.scene === 'lantern-route') {
+			validateLanternRoute(location, context);
 		}
 
 		if (

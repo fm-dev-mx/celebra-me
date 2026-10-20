@@ -1,14 +1,11 @@
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
-import {
-	formatMxn,
-	getExpressDelivery,
-	getPromoPackage,
-	getStartingPrice,
-} from '@/data/promo-campaign.data';
+import { formatMxn, getCatalogPackage, getExpressDelivery } from '@/data/promo-campaign.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 
-const PRIMARY_CTA_LABEL = 'Cotizar mi invitación';
+export const PRIMARY_CTA_LABEL = 'Quiero mi invitación';
+/** Small reassurance line shown under the primary WhatsApp CTA in the header and the hero. */
+export const PRIMARY_CTA_TRUST_LINE = 'Respuesta en minutos · Sin compromiso';
 
 /** Featured demo opened by the hero secondary action ("Ver una invitación"). */
 const HERO_DEMO_SLUG = 'demo-xv-celestial-blue';
@@ -17,17 +14,19 @@ if (!heroDemo) throw new Error(`Missing hero demo: ${HERO_DEMO_SLUG}`);
 
 const expressDelivery = getExpressDelivery();
 const expressDeliveryPackages = expressDelivery.appliesTo
-	.map((packageId) => getPromoPackage(packageId).name)
+	.map((packageId) => getCatalogPackage(packageId).name)
 	.join(' y ');
 const expressDeliveryPrice = `+${formatMxn(expressDelivery.price)} MXN`;
-const esencialName = getPromoPackage('esencial').name;
-const signatureName = getPromoPackage('signature').name;
-const atelierName = getPromoPackage('atelier').name;
+const esencialName = getCatalogPackage('esencial').name;
+const signatureName = getCatalogPackage('signature').name;
+const atelierName = getCatalogPackage('atelier').name;
 
 export const landingData: LandingPageData = {
 	seo: {
 		title: 'Celebra-me | Invitaciones Digitales Premium',
-		description: `Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp. Desde ${formatMxn(getStartingPrice())} MXN, sin anticipo.`,
+		// No price here: search engines keep this text long after a promo row ends.
+		description:
+			'Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp, sin anticipo.',
 	},
 	hero: {
 		title: 'Invitaciones digitales con pase y confirmación para cada invitado',
@@ -38,6 +37,7 @@ export const landingData: LandingPageData = {
 		},
 		paymentNote: 'Sin anticipo: pague al recibir su invitación terminada.',
 		primaryCtaLabel: PRIMARY_CTA_LABEL,
+		primaryCtaTrustLine: PRIMARY_CTA_TRUST_LINE,
 		secondaryCtaLabel: 'Ver una invitación',
 		secondaryCtaUrl: heroDemo.href,
 		secondaryCtaDemoSlug: heroDemo.slug,
@@ -121,7 +121,7 @@ export const landingData: LandingPageData = {
 				badge: 'RECOMENDADO',
 				isPrimary: true,
 				includesFrom: `Todo lo de ${esencialName}, más:`,
-				includes: ['QR de recuerdos'],
+				includes: ['QR para que sus invitados compartan fotos y videos del evento'],
 				details: [
 					{ label: 'Entrega', value: '3 a 5 días hábiles' },
 					{ label: expressDelivery.name, value: expressDeliveryPrice },
@@ -133,7 +133,7 @@ export const landingData: LandingPageData = {
 				includesFrom: `Todo lo de ${signatureName}, más:`,
 				includes: [
 					'Entrega en 48 horas',
-					'Celebra-me carga su lista de invitados (Excel o legible)',
+					'Nosotros cargamos su lista de invitados, en Excel o escrita a mano, siempre que se lea bien',
 					'Su invitación a su nombre, sin la firma de Celebra-me',
 				],
 				details: [],
@@ -145,7 +145,7 @@ export const landingData: LandingPageData = {
 		faqs: [
 			{
 				question: '¿Cómo y cuándo pago?',
-				answer: 'Sin anticipo. Usted revisa su invitación 100 % terminada con un Invitado de prueba y paga al aprobarla; en ese momento se activa su panel de invitados.',
+				answer: 'Sin anticipo. Usted revisa su invitación 100 % terminada, tal como la verá un invitado, y paga al aprobarla; en ese momento se activa su panel de invitados.',
 			},
 			{
 				question: '¿Cuánto tarda?',
@@ -165,7 +165,7 @@ export const landingData: LandingPageData = {
 			},
 			{
 				question: '¿Qué necesito enviar?',
-				answer: `Fecha, lugar, nombres, fotos y detalles del evento, además de su lista de invitados. En ${atelierName}, nosotros la cargamos a partir de su lista en Excel o legible.`,
+				answer: `Fecha, lugar, nombres, fotos y detalles del evento, además de su lista de invitados. En ${atelierName}, nosotros la cargamos a partir de su lista en Excel o escrita a mano, siempre que se lea bien.`,
 			},
 		],
 	},

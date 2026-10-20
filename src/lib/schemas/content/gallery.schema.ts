@@ -14,6 +14,18 @@ interface GalleryItemRefinement {
 	aspectRatio?: string;
 }
 
+function validateAlbumAssemble(
+	items: readonly GalleryItemRefinement[],
+	context: z.RefinementCtx,
+): void {
+	if (items.length >= 3 && items.length <= 8) return;
+	context.addIssue({
+		code: 'custom',
+		path: ['items'],
+		message: 'gallery.variant=album-assemble requires three to eight gallery items',
+	});
+}
+
 function validateNarrativeStack(
 	items: readonly GalleryItemRefinement[],
 	context: z.RefinementCtx,
@@ -161,6 +173,10 @@ export const gallerySchema = z
 				path: ['items'],
 				message: `gallery.variant=${gallery.variant} requires at least three gallery items`,
 			});
+		}
+
+		if (gallery.variant === 'album-assemble') {
+			validateAlbumAssemble(gallery.items, context);
 		}
 
 		if (gallery.variant === 'paired-feature-band') {

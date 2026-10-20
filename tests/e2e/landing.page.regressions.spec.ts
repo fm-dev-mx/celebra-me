@@ -6,22 +6,31 @@ import {
 	formatDaysLeft,
 	formatMxn,
 	formatMxnAmount,
+	getCatalogPackage,
 	getExpressDelivery,
 	getGeneralPromoCode,
+	getPackagePrice,
 	getPromoCode,
-	getPromoPackage,
 	getPromoStatus,
 	getStartingPrice,
+	getStartingRegularPrice,
 	getValidityNote,
-	PROMO_CAMPAIGN,
+	PACKAGE_CATALOG,
+	PROMO_SCHEDULE,
+	type PromoCampaign,
 } from '../../src/data/promo-campaign.data';
 import { footerData } from '../../src/data/footer.data';
 import { landingData } from '../../src/data/landing-page.data';
 import { CLIENT_TESTIMONIALS } from '../../src/data/testimonials.data';
 
 const DAY_MS = 86_400_000;
-const campaignStart = Date.parse(PROMO_CAMPAIGN.startsAt);
-const campaignEnd = Date.parse(PROMO_CAMPAIGN.endsAt);
+const lastCampaign = PROMO_SCHEDULE.at(-1);
+if (!lastCampaign) throw new Error('The promo calendar is empty');
+/** Promo row under test: the last one, whose end raises the price and shows the countdown. */
+const CAMPAIGN: PromoCampaign = lastCampaign;
+const GENERAL_CODE = getGeneralPromoCode(CAMPAIGN) ?? '';
+const campaignStart = Date.parse(CAMPAIGN.startsAt);
+const campaignEnd = Date.parse(CAMPAIGN.endsAt);
 /** A date inside the campaign, before the countdown window. */
 const MID_CAMPAIGN = new Date(campaignStart + 14 * DAY_MS + DAY_MS / 2);
 /** A date inside the countdown window. */
@@ -66,8 +75,9 @@ test.describe('Landing page regressions', () => {
 	};
 
 	test.beforeEach(async ({ page }) => {
-		// The prerendered page ships the promo; pin the browser clock inside the campaign so the
-		// client-side expiry never depends on the date the suite runs.
+		// The prerendered page ships the campaign of the build day and the browser switches it for
+		// its own date; pin the clock inside the campaign under test so the suite never depends on
+		// the date it runs.
 		await page.clock.setFixedTime(MID_CAMPAIGN);
 		page.on('pageerror', (error) => {
 			throw new Error('Page JS error: ' + error.message);
@@ -108,15 +118,15 @@ test.describe('Landing page regressions', () => {
 				loginHref,
 			);
 			const menuCta = page.locator('.mobile-nav-actions__cta');
-			await expect(menuCta).toHaveText('Cotizar mi invitación');
+			await expect(menuCta).toHaveText('Quiero mi invitación');
 			await expect(menuCta).toHaveAttribute(
 				'aria-label',
-				'Cotizar mi invitación por WhatsApp',
+				'Quiero mi invitación por WhatsApp',
 			);
 			await expect(menuCta).toHaveAttribute('href', WHATSAPP_HREF);
 			await expect(menuCta).toHaveAttribute(
 				'data-campaign-code',
-				buildCampaignCode('HEADER'),
+				buildCampaignCode('HEADER', GENERAL_CODE),
 			);
 			await expect(page.locator('#home-header')).toHaveClass(/header-base--menu-open/);
 		}
@@ -138,11 +148,14 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.home-nav-actions__login')).toHaveText(loginLabel);
 		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
 		const headerCta = page.locator('.home-nav-actions__cta');
-		await expect(headerCta).toHaveText('Cotizar mi invitación');
-		await expect(headerCta).toHaveAttribute('aria-label', 'Cotizar mi invitación por WhatsApp');
+		await expect(headerCta).toHaveText('Quiero mi invitación');
+		await expect(headerCta).toHaveAttribute('aria-label', 'Quiero mi invitación por WhatsApp');
 		await expect(headerCta).toHaveAttribute('href', WHATSAPP_HREF);
 		await expect(headerCta).toHaveAttribute('data-track-cta', 'whatsapp-header');
-		await expect(headerCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HEADER'));
+		await expect(headerCta).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('HEADER', GENERAL_CODE),
+		);
 		await expect(page.locator('.home-nav__link', { hasText: 'Nosotros' })).toHaveAttribute(
 			'href',
 			'/#nosotros',
@@ -249,7 +262,7 @@ test.describe('Landing page regressions', () => {
 			landingData.hero.subtitle,
 		);
 		await expect(page.locator('.hero-prime__subtitle')).toContainText(
-			`Desde ${formatMxn(getStartingPrice())} MXN, pago único.`,
+			`Desde ${formatMxn(getStartingPrice(CAMPAIGN))} MXN, pago único.`,
 			{ useInnerText: true },
 		);
 		await expect(page.locator('.hero-prime__payment-note')).toHaveText(
@@ -291,13 +304,19 @@ test.describe('Landing page regressions', () => {
 
 		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
 		await expect(heroCta).toHaveAttribute('data-track-event', 'whatsapp_contact_clicked');
-		await expect(heroCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
-		await expect(heroCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HERO'));
-		await expect(heroCta).toHaveAttribute('data-track-value', String(getStartingPrice()));
+		await expect(heroCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
+		await expect(heroCta).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('HERO', GENERAL_CODE),
+		);
+		await expect(heroCta).toHaveAttribute(
+			'data-track-value',
+			String(getStartingPrice(CAMPAIGN)),
+		);
 
 		const heroHref = await heroCta.getAttribute('href');
 		const heroMessage = decodeWhatsAppText(heroHref);
-		expect(heroMessage).toBe(buildGeneralMessage());
+		expect(heroMessage).toBe(buildGeneralMessage(CAMPAIGN));
 		expect(heroMessage).not.toContain('Cupón');
 		expect(heroMessage).not.toMatch(/CM-\d+-/);
 
@@ -330,10 +349,18 @@ test.describe('Landing page regressions', () => {
 		await expect(eventCta).toHaveAttribute('data-event-label', 'Boda');
 		await expect(eventCta).not.toHaveAttribute('data-package-interest');
 		await expect(eventCta).not.toHaveAttribute('data-package-name');
-		await expect(eventCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
-		await expect(eventCta).toHaveAttribute('data-campaign-code', buildCampaignCode('DEMO'));
-		await expect(eventCta).toHaveAttribute('data-track-value', String(getStartingPrice()));
-		expect(decodeWhatsAppText(await eventCta.getAttribute('href'))).toBe(buildGeneralMessage());
+		await expect(eventCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
+		await expect(eventCta).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('DEMO', GENERAL_CODE),
+		);
+		await expect(eventCta).toHaveAttribute(
+			'data-track-value',
+			String(getStartingPrice(CAMPAIGN)),
+		);
+		expect(decodeWhatsAppText(await eventCta.getAttribute('href'))).toBe(
+			buildGeneralMessage(CAMPAIGN),
+		);
 
 		const clickedHref = await eventCta.evaluate((anchor) => {
 			anchor.addEventListener('click', (event) => event.preventDefault(), { once: true });
@@ -341,7 +368,7 @@ test.describe('Landing page regressions', () => {
 			return anchor.getAttribute('href');
 		});
 		const clickedMessage = decodeWhatsAppText(clickedHref);
-		expect(clickedMessage).toBe(buildGeneralMessage());
+		expect(clickedMessage).toBe(buildGeneralMessage(CAMPAIGN));
 		expect(clickedMessage).not.toMatch(/Folio/);
 	});
 
@@ -423,16 +450,16 @@ test.describe('Landing page regressions', () => {
 		await page.goto('/', { waitUntil: 'load' });
 		await page.locator('#pricing').scrollIntoViewIfNeeded();
 
-		await expect(page.locator('.pricing-note')).toContainText(getValidityNote());
+		await expect(page.locator('.pricing-note')).toContainText(getValidityNote(CAMPAIGN));
 
-		for (const [index, pkg] of PROMO_CAMPAIGN.packages.entries()) {
+		for (const [index, pkg] of PACKAGE_CATALOG.entries()) {
 			const card = page.locator('.pricing-card').nth(index);
 			const cta = card.locator('[data-track-cta^="pricing_"]');
-			const code = getPromoCode(pkg);
+			const code = getPromoCode(pkg.id, CAMPAIGN) ?? '';
 
 			await expect(card.locator('.tier-name')).toHaveText(pkg.name);
 			await expect(card.locator('.tier-price[data-promo-only] .amount')).toHaveText(
-				formatMxnAmount(pkg.promoPrice),
+				formatMxnAmount(getPackagePrice(pkg.id, CAMPAIGN)),
 			);
 			await expect(card.locator('.regular-price s')).toContainText(
 				formatMxnAmount(pkg.regularPrice),
@@ -445,14 +472,17 @@ test.describe('Landing page regressions', () => {
 			);
 			await expect(cta).toHaveAttribute('data-promo-code', code);
 			await expect(cta).toHaveAttribute('data-package-name', pkg.name);
-			await expect(cta).toHaveAttribute('data-track-value', String(pkg.promoPrice));
+			await expect(cta).toHaveAttribute(
+				'data-track-value',
+				String(getPackagePrice(pkg.id, CAMPAIGN)),
+			);
 			expect(decodeWhatsAppText(await cta.getAttribute('href'))).toBe(
-				buildPackageMessage(pkg),
+				buildPackageMessage(pkg.id, CAMPAIGN),
 			);
 		}
 
 		await expect(page.locator('.pricing-card.is-primary .tier-name')).toHaveText(
-			getPromoPackage('signature').name,
+			getCatalogPackage('signature').name,
 		);
 		await expect(page.locator('.pricing-card[data-tier="atelier"]')).toContainText(
 			'sin la firma de Celebra-me',
@@ -460,7 +490,7 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('#pricing')).not.toContainText(/con marca|con publicidad/i);
 	});
 
-	test('adds the remaining-days countdown during the last week', async ({ page }) => {
+	test('adds the remaining-days countdown before the price goes up', async ({ page }) => {
 		await page.clock.setFixedTime(COUNTDOWN_DAY);
 		await page.goto('/', { waitUntil: 'load' });
 
@@ -471,19 +501,85 @@ test.describe('Landing page regressions', () => {
 		);
 	});
 
+	test('keeps the countdown hidden when the next row is not more expensive', async ({ page }) => {
+		const steady = PROMO_SCHEDULE.find((campaign) => {
+			const status = getPromoStatus(new Date(Date.parse(campaign.endsAt) - DAY_MS / 2));
+			return status.campaign === campaign && !status.showCountdown;
+		});
+		if (!steady) throw new Error('Expected a row whose next price does not go up');
+		await page.clock.setFixedTime(new Date(Date.parse(steady.endsAt) - DAY_MS / 2));
+		await page.goto('/', { waitUntil: 'load' });
+
+		await expect(page.locator('.pricing-note')).toContainText(getValidityNote(steady));
+		await expect(page.locator('.pricing-note [data-promo-days-left]')).toHaveText('');
+	});
+
+	test('switches prices and WhatsApp quotes on each calendar date', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		const heroCta = page.locator(
+			'.hero-prime__actions [data-track-event="whatsapp_contact_clicked"]',
+		);
+		const signatureCta = page.locator('[data-track-cta="pricing_signature"]');
+
+		for (const campaign of PROMO_SCHEDULE) {
+			await page.clock.setFixedTime(new Date(Date.parse(campaign.startsAt) + DAY_MS / 2));
+			await page.goto('/', { waitUntil: 'load' });
+
+			await expect(page.locator('html')).toHaveAttribute('data-promo-state', 'active');
+			await expect(
+				page.locator('.pricing-card').nth(1).locator('.tier-promo-label'),
+			).toHaveText(campaign.label);
+			await expect(
+				page
+					.locator('.pricing-card')
+					.nth(1)
+					.locator('.tier-price[data-promo-only] .amount'),
+			).toHaveText(formatMxnAmount(getPackagePrice('signature', campaign)));
+			expect(decodeWhatsAppText(await heroCta.getAttribute('href'))).toBe(
+				buildGeneralMessage(campaign),
+			);
+			expect(decodeWhatsAppText(await signatureCta.getAttribute('href'))).toBe(
+				buildPackageMessage('signature', campaign),
+			);
+			await expect(signatureCta).toHaveAttribute(
+				'data-promo-code',
+				getPromoCode('signature', campaign) ?? '',
+			);
+			await expect(heroCta).toHaveAttribute(
+				'data-campaign-code',
+				buildCampaignCode('HERO', getGeneralPromoCode(campaign)),
+			);
+		}
+	});
+
 	test('hides the promo and shows regular prices once the campaign ends', async ({ page }) => {
 		await page.clock.setFixedTime(AFTER_CAMPAIGN);
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/', { waitUntil: 'load' });
 		await page.locator('#pricing').scrollIntoViewIfNeeded();
 
-		await expect(page.locator('html')).toHaveAttribute('data-promo-state', 'expired');
+		await expect(page.locator('html')).toHaveAttribute('data-promo-state', 'none');
 		await expect(page.locator('.pricing-note')).toBeHidden();
 		const firstCard = page.locator('.pricing-card').first();
 		await expect(firstCard.locator('.tier-promo-label')).toBeHidden();
 		await expect(firstCard.locator('.regular-price')).toBeHidden();
 		await expect(firstCard.locator('.tier-price[data-promo-fallback] .amount')).toHaveText(
-			formatMxnAmount(PROMO_CAMPAIGN.packages[0].regularPrice),
+			formatMxnAmount(getStartingRegularPrice()),
+		);
+
+		const esencialCta = page.locator('[data-track-cta="pricing_esencial"]');
+		expect(decodeWhatsAppText(await esencialCta.getAttribute('href'))).toBe(
+			buildPackageMessage('esencial', null),
+		);
+		expect(buildPackageMessage('esencial', null)).not.toMatch(/Ref\./);
+		await expect(esencialCta).not.toHaveAttribute('data-promo-code');
+		await expect(esencialCta).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('PRICING', null),
+		);
+		await expect(esencialCta).toHaveAttribute(
+			'data-track-value',
+			String(getStartingRegularPrice()),
 		);
 	});
 
@@ -499,7 +595,7 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.pricing-card').first()).toBeVisible({ timeout: 5000 });
 		await expect(page.locator('.pricing-card')).toHaveCount(3);
 		await expect(page.locator('.pricing-card').first()).toBeVisible();
-		for (const [index, pkg] of PROMO_CAMPAIGN.packages.entries()) {
+		for (const [index, pkg] of PACKAGE_CATALOG.entries()) {
 			await expect(page.locator('.pricing-card').nth(index)).toContainText(pkg.name);
 		}
 		await expect(page.locator('.pricing-note')).toBeVisible();
@@ -597,7 +693,7 @@ test.describe('Landing page regressions', () => {
 				return Math.abs(box.left - root.left - (root.right - box.right));
 			});
 		});
-		expect(offsets).toHaveLength(PROMO_CAMPAIGN.packages.length);
+		expect(offsets).toHaveLength(PACKAGE_CATALOG.length);
 		for (const offset of offsets) expect(offset).toBeLessThanOrEqual(2);
 	});
 
@@ -672,7 +768,11 @@ test.describe('Landing page regressions', () => {
 		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.city);
 		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
 			'data-campaign-code',
-			buildCampaignCode('FOOTER'),
+			buildCampaignCode('FOOTER', GENERAL_CODE),
+		);
+		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
+			'aria-label',
+			'Quiero mi invitación por WhatsApp',
 		);
 
 		const rowWidths = await footer.evaluate((element) => {
@@ -700,9 +800,9 @@ test.describe('Landing page regressions', () => {
 		expect(labels.length).toBeGreaterThan(5);
 		expect(new Set(labels)).toEqual(
 			new Set([
-				'Cotizar mi invitación',
+				'Quiero mi invitación',
 				'Quiero una invitación así',
-				...PROMO_CAMPAIGN.packages.map((pkg) => `Quiero el paquete ${pkg.name}`),
+				...PACKAGE_CATALOG.map((pkg) => `Quiero el paquete ${pkg.name}`),
 			]),
 		);
 
@@ -711,9 +811,12 @@ test.describe('Landing page regressions', () => {
 		);
 		await expect(guestCta).toHaveAttribute('data-track-cta', 'whatsapp-guest-experience');
 		await expect(guestCta).toHaveAttribute('data-track-section', 'guest-experience');
-		await expect(guestCta).toHaveAttribute('data-campaign-code', buildCampaignCode('GUESTS'));
-		await expect(guestCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
-		await expect(guestCta).toContainText('Cotizar mi invitación');
+		await expect(guestCta).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('GUESTS', GENERAL_CODE),
+		);
+		await expect(guestCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
+		await expect(guestCta).toContainText('Quiero mi invitación');
 	});
 
 	test('shows the sticky WhatsApp bar after the hero and hides it over the contact form', async ({
@@ -736,13 +839,19 @@ test.describe('Landing page regressions', () => {
 		const bar = page.locator('[data-sticky-cta]');
 		const cta = bar.locator('[data-track-cta="whatsapp-sticky"]');
 		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
-		await expect(cta).toHaveAttribute('data-campaign-code', buildCampaignCode('STICKY'));
+		await expect(cta).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('STICKY', GENERAL_CODE),
+		);
 
 		await page.locator('#pricing').scrollIntoViewIfNeeded();
 		await expect(bar).toHaveClass(/sticky-cta--visible/);
-		await expect(cta).toContainText(`WhatsApp · desde ${formatMxn(getStartingPrice())}`, {
-			useInnerText: true,
-		});
+		await expect(cta).toContainText(
+			`WhatsApp · desde ${formatMxn(getStartingPrice(CAMPAIGN))}`,
+			{
+				useInnerText: true,
+			},
+		);
 
 		await page.locator('#contacto .contact-whatsapp-card').scrollIntoViewIfNeeded();
 		await expect(bar).not.toHaveClass(/sticky-cta--visible/);

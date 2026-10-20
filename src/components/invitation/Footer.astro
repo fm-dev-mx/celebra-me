@@ -1,6 +1,7 @@
 ---
 // src/components/invitation/Footer.astro
 import '@/styles/invitation/_footer.scss';
+import '@/styles/invitation/_floating-cta.scss';
 import Logo from '@/components/ui/Logo.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { SharedSectionVariant } from '@/lib/invitation/section-variants';
@@ -33,10 +34,47 @@ const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getCon
 const rightsYear = new Date().getFullYear();
 ---
 
+<!-- Floating reply button; shown only when the invitation's profile turns it on (floating-cta.ts). -->
+<div class="floating-cta" data-floating-cta data-visible="false" hidden>
+	<div
+		id="floating-cta-calendar"
+		class="floating-cta__panel"
+		role="group"
+		aria-label="Agendar en su calendario"
+		data-floating-cta-panel
+		hidden
+	>
+	</div>
+	<a class="floating-cta__button" href="#rsvp" data-floating-cta-confirm>Confirmar asistencia</a>
+	<button
+		type="button"
+		class="floating-cta__button"
+		aria-expanded="false"
+		aria-controls="floating-cta-calendar"
+		data-floating-cta-calendar
+		hidden
+	>
+		Agendar
+	</button>
+</div>
+
 <footer
 	class:list={['invitation-footer', className]}
 	data-variant={variant}
 >
+	<!-- Reply at the end; shown only when the profile turns it on and the guest has not answered
+	     (footer-reply.ts). Its words come from the profile. -->
+	<div class="footer-reply" data-footer-reply hidden>
+		<span class="footer-reply__lantern" aria-hidden="true"></span>
+		<div class="footer-reply__pending" data-footer-reply-pending hidden>
+			<p class="footer-reply__eyebrow"></p>
+			<p class="footer-reply__question"></p>
+			<a class="footer-reply__button" href="#rsvp" data-footer-reply-confirm>Confirmar asistencia</a>
+			<p class="footer-reply__note"></p>
+		</div>
+		<p class="footer-reply__answered" data-footer-reply-answered hidden></p>
+	</div>
+
 	{closingPhrase && (
 		<p class="footer__closing-phrase">{closingPhrase}</p>
 	)}
@@ -94,6 +132,16 @@ const rightsYear = new Date().getFullYear();
 		)}
 	</div>
 </footer>
+
+<script>
+	import { initFloatingCta } from '@/lib/invitation/floating-cta';
+	import { holdFooterUntilSecondScroll } from '@/lib/invitation/footer-reveal';
+	import { initFooterReply } from '@/lib/invitation/footer-reply';
+
+	holdFooterUntilSecondScroll(document.querySelector('.invitation-footer'));
+	initFooterReply(document.querySelector('[data-footer-reply]'));
+	initFloatingCta(document.querySelector('[data-floating-cta]'));
+</script>
 
 {hasReplay && (
 	<script>

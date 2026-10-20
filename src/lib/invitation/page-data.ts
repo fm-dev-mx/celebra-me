@@ -43,6 +43,7 @@ export interface InvitationPageContext {
 	guestName?: string;
 	heroTime?: string;
 	heroVenueName?: string;
+	heroVenueEvent?: string;
 	envelope?:
 		| (NonNullable<InvitationViewModel['envelope']['data']> & {
 				eventSlug: string;
@@ -100,7 +101,7 @@ function buildEnvelopeData(
 
 function pickHeroValue(
 	sections: InvitationPageContext['viewModel']['sections'] | undefined,
-	field: 'time' | 'venueName',
+	field: 'time' | 'venueName' | 'venueEvent',
 	venueIndex?: number,
 ): string | undefined {
 	const venues = sections?.location?.venues;
@@ -160,6 +161,7 @@ export function buildPageContextFromViewModel(input: {
 		renderViewModel.hero.timeFormat,
 	);
 	const heroVenueName = pickHeroValue(sections, 'venueName', renderViewModel.hero.venueIndex);
+	const heroVenueEvent = pickHeroValue(sections, 'venueEvent', renderViewModel.hero.venueIndex);
 
 	const localAccessPreview = shouldShowLocalPersonalizedAccessPreview();
 	const isDemoPreview = (isDemo || screenshotMode || localAccessPreview) && !guestContext;
@@ -193,6 +195,7 @@ export function buildPageContextFromViewModel(input: {
 		guestName,
 		heroTime,
 		heroVenueName,
+		heroVenueEvent,
 		envelope: envelopeData,
 		footerClosingPhrase:
 			renderViewModel.sections.thankYou?.closingPhrase?.trim() ||

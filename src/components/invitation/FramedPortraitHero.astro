@@ -19,9 +19,10 @@ interface Props {
 	variant?: 'framed-portrait' | 'bleed-portrait';
 	time?: string;
 	venueName?: string;
+	venueEvent?: string;
 }
 
-const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel = 'Descubra mi historia', highPriority = true, variant = 'framed-portrait', time, venueName } = Astro.props;
+const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel = 'Descubra mi historia', highPriority = true, variant = 'framed-portrait', time, venueName, venueEvent } = Astro.props;
 // bleed-portrait: the photograph runs to the edges and the letter states when and where in
 // written form; the scroll cue is a silver line instead of a phrase with an arrow.
 const isBleed = variant === 'bleed-portrait';
@@ -32,6 +33,14 @@ const writtenDate = new Date(date).toLocaleDateString('es-MX', {
 	weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
 }).replace(',', '');
 const writtenTime = time ? formatVenueTimeInWords(time) : null;
+// A shorter reading of the same facts (`Sábado 21 de noviembre` / `Misa a las seis · Parroquia`),
+// hidden unless a profile shows it in the stacked layout (`--hero-bleed-summary-display`).
+const summaryDay = new Date(date).toLocaleDateString('es-MX', {
+	weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC',
+}).replace(',', '');
+const summaryTime = time ? formatVenueTimeInWords(time, { withPeriod: false }) : null;
+const summaryWhen = [venueEvent, summaryTime].filter(Boolean).join(' ');
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 const source = backgroundImage.src;
 const delivery = 'delivery' in backgroundImage ? backgroundImage.delivery : undefined;
 const width = delivery?.width ?? ('width' in backgroundImage ? backgroundImage.width : 960);
@@ -47,6 +56,12 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 			{label && <p class="framed-portrait-hero__occasion">{label}</p>}
 			<h1 class="framed-portrait-hero__name">{nameSplit ? <><span class="framed-portrait-hero__name-lead">{nameSplit.lead}</span>{' '}<span class="framed-portrait-hero__name-rest">{nameSplit.rest}</span></> : name}{secondaryName && <><span aria-hidden="true"> &amp; </span>{secondaryName}</>}</h1>
 			{nickname && <p class="framed-portrait-hero__introduction">{nickname}</p>}
+			{isBleed && (
+				<div class="framed-portrait-hero__summary">
+					<p>{capitalize(summaryDay)}</p>
+					{(summaryWhen || venueName) && <p>{capitalize([summaryWhen, venueName].filter(Boolean).join(' · '))}</p>}
+				</div>
+			)}
 			{isBleed ? (
 				<dl class="framed-portrait-hero__facts">
 					<div>

@@ -121,8 +121,38 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
     `pointer: fine`, so phones never download it. Native touch scrolling is unchanged, and `#` links
     scroll to their target below the fixed header.
   - Scroll scenes (next section).
+  - The `bleed-portrait` hero may opt in (`--hero-bleed-photo-settle`, `--hero-bleed-scroll-grow`)
+    to a view timeline on the hero, inside `@supports (animation-timeline: view())`: while the cover
+    leaves, the photograph settles from `scale: 1.06` to rest and the scroll drawing grows down by
+    `clip-path`. Nothing runs on load, so the photograph paints at once; without support both stay
+    at rest.
   - Per-element scroll-linked effects (see
     [Per-element scroll-linked effects](#per-element-scroll-linked-effects)).
+- **Held footer.** `--invitation-footer-reveal: held` (a profile token, read by
+  `src/lib/invitation/footer-reveal.ts`) ends the page at its last section. After a short rest at
+  the bottom a small lantern peeks from the bottom edge; pulling on (a swipe up or more wheel) lifts
+  it on its thread, and past a short pull the footer opens with a 320 ms glide and a 360 ms rise.
+  Letting go sooner settles the lantern back. ArrowDown, PageDown, End, Space or a tab into its
+  links open it at once. Reduced motion shows no lantern and opens on the next gesture without
+  movement; without the script the footer is always shown. A profile may dress the lantern
+  (`--footer-pull-scale`, `-body`, `-glow`, and `-height` with `-shape` for another outline, such as
+  a disc for a moon), let a pool of light rise from the edge with the pull (`--footer-pull-pool`),
+  set words over the resting lantern that fade as it climbs (`--footer-pull-label`, `-label-color`,
+  `-label-size`) and let its glow breathe while it waits
+  (`--footer-pull-breathe: footer-pull-breathe`). The cue is a sibling of the footer, so these
+  tokens go on the invitation root. Where the phone supports it, the footer opening gives one 12 ms
+  vibration.
+- **Floating reply glint.** `--floating-cta-glint` (a gradient) crosses the floating reply button
+  once, in 1.1 s, when it first shows and again when it changes to the calendar. It is time-based,
+  not scroll-linked, and does not run under reduced motion.
+- **Footer reply.** `--invitation-footer-reply: on` (a profile token, read by
+  `src/lib/invitation/footer-reply.ts`) shows a reply block at the top of the footer while the guest
+  has not answered: a lit lantern on its thread, `--footer-reply-eyebrow`, `-question`, a "Confirmar
+  asistencia" link that scrolls back to the RSVP and focuses its first field, and `-note`. After a
+  yes only `--footer-reply-answered` stays, if set; after a decline, or on a card locked to personal
+  passes, nothing shows. When a held footer opens, the lantern rises into place in 900 ms and
+  `--footer-reply-glint` crosses the button once. Neither runs under reduced motion; both are
+  time-based, on transforms, opacity and the button's background position.
 - **Budget.** Nothing new loads on first paint except CSS. At most about 12 elements animate at
   once.
 
@@ -145,7 +175,7 @@ only; elsewhere the same markup renders as a normal section.
     plus `data-scene-step` when steps are declared.
 
   Consumers style children through the `timeline`, `scripted` and `pinned` mixins of
-  `src/styles/invitation/_scroll-scene.scss`.
+  `src/styles/invitation/_scroll-scene-mixins.scss` (no CSS output).
 
 - **Resting layout.** Reduced motion, a non-editorial invitation, or no engine leaves the stage in
   normal flow. Every scene's default (unmixed) styles are its complete static layout: all content
@@ -162,6 +192,30 @@ only; elsewhere the same markup renders as a normal section.
 - **Budget.** At most two scenes per invitation and no more than 35 % of the page's scroll height
   pinned at a 390 × 844 viewport. Two scenes are never adjacent; a normal section sits between them.
   A scene never traps scrolling: no scroll snapping, no wheel or touch interception.
+- **Scenes in use.** `gallery.album-assemble` (prints drop onto the album page, with a counter) and
+  `location.program-sheet` with `presentationOptions.scene: 'lantern-route'` (two or more venues:
+  under a night sky the route draws itself, a lantern walks it and the entries take turns; the next
+  entry settles from above so its links stay under the visible one).
+- **Not scenes.** `rsvp.flow: 'steps'` (one question per step, a lantern on the progress track and
+  one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
+  motion it keeps the progress and drops the movement.
+- **Scroll-linked accents.** Outside scenes, a profile may opt sections into short view-timeline
+  accents. Each one is set inside `@supports (animation-timeline: view())` and
+  `prefers-reduced-motion: no-preference` and is off by default (`none`). Without support, or under
+  reduced motion, each element rests in its final state:
+  - _Family names:_ `--family-shine` (a gradient over the text), `--family-shine-name: family-light`
+    and `--family-shine-timeline` light each name as it rises, within `--family-shine-range` (and
+    `-range-godparents`), with an optional `--family-shine-glow`.
+    `--family-divider-draw: family-divider-draw` draws the rule between groups from the centre out.
+  - _Parents' medallion:_ `--family-parents-medallion` (an image behind the parents' names, with
+    `-size` and `-opacity`) may turn ±24° across the section
+    (`--family-parents-medallion-spin: family-medallion-spin`).
+  - _Hanging enclosure:_ `--location-enclosure-swing: location-enclosure-swing` lets the enclosure
+    card settle from a slight swing on its cord (`--location-enclosure-hanger*`), about
+    `--location-enclosure-swing-origin`, between `entry 0%` and `cover 45%`.
+
+  The name shine animates `background-position` and a `drop-shadow` filter on short text runs; the
+  other accents keep to the scene property list above.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.

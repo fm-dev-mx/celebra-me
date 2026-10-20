@@ -2,7 +2,7 @@ import type { FooterProps } from '@/interfaces/ui/sections/footer.interface';
 
 export const footerData: FooterProps = {
 	siteInfo: {
-		slogan: 'Celebre cada momento, diseñe cada recuerdo.',
+		slogan: 'Celebre cada momento. Nosotros diseñamos su invitación.',
 	},
 	// Navigation lives in the header and the legal links in the footer's bottom row.
 	linkGroups: [],

@@ -54,6 +54,40 @@
 //                                     entrance (default none; `hero-bleed-scroll-cue`)
 //   --hero-bleed-scroll-line-stack / --hero-bleed-scroll-line-margin
 //                                     Scroll line length and margins in the stacked layout
+//   --hero-bleed-photo-radius / -radius-wide
+//                                     Photograph shape (default 0; an arch radius frames it)
+//   --hero-bleed-photo-frame / -frame-inset / -frame-radius / -frame-mask
+//                                     Hairline drawn inside the photograph (default none), its
+//                                     distance from the edge, shape and fade
+//   --hero-bleed-frame-top-stack / -side-stack
+//                                     Paper above and beside the stacked photograph (default 0)
+//   --hero-bleed-frame-top-wide / -bottom-wide / -side-wide
+//                                     Paper around the side-by-side photograph (default 0)
+//   --hero-bleed-letter-overlap-stack How far the stacked letter rises over the photograph
+//                                     (default 0; pair it with a paper veil at the bottom)
+//   --hero-bleed-summary-display / --hero-bleed-facts-display-stack
+//                                     `grid` / `none` show a short two-line reading of the facts
+//                                     in the stacked layout instead of the long one (default
+//                                     none / grid)
+//   --hero-bleed-summary-size / -detail-size
+//                                     Its day line and its event/time/venue line (they take the
+//                                     when and where tokens)
+//   --hero-bleed-apex / -apex-display / -apex-width
+//                                     Ornament hanging from the top of the stacked hero to the
+//                                     photograph (default none)
+//   --hero-bleed-scroll-line-width / -bg / --hero-bleed-scroll-braid
+//                                     Scroll line width (default 1px), fill, and a drawing over it
+//   --hero-bleed-name-overflow-wrap   `normal` keeps a one-word name whole while a wider fallback
+//                                     font shows, so the swap does not shift the letter
+//   --hero-bleed-name-entrance        Name entrance keyframes (default the letter's;
+//                                     `hero-bleed-write` writes it in)
+//   --hero-bleed-photo-transform / -transform-origin
+//                                     Closer framing inside the frame (default none;
+//                                     `scale(1.5)` with an origin on the subject)
+//   --hero-bleed-photo-settle         Scroll-linked keyframes on the photograph while the cover
+//                                     leaves (default none; `hero-bleed-settle` eases 1.06 → 1)
+//   --hero-bleed-scroll-grow          Scroll-linked keyframes on the scroll drawing (default none;
+//                                     `hero-bleed-scroll-grow` lets it grow down)
 //   --motion-hero-{eyebrow,title,details,affordance}-{duration,delay}, --motion-reveal-ease
 //                                     Entrance timing for occasion, name, facts and scroll line
 // ==========================================================================
@@ -77,10 +111,28 @@
 	}
 
 	// A definite full-height frame: the 2:3 photograph fills it exactly, without a stray pixel.
+	// Optional paper around it keeps the same proportion inside the smaller frame.
 	.framed-portrait-hero__photograph {
 		flex: none;
-		width: min(50vw, calc(100svh * 2 / 3));
-		height: 100svh;
+		width: min(
+			50vw - var(--hero-bleed-frame-side-wide, 0px),
+			(
+					100svh - var(--hero-bleed-frame-top-wide, 0px) - var(
+							--hero-bleed-frame-bottom-wide,
+							0px
+						)
+				) *
+				2 / 3
+		);
+		height: calc(
+			100svh - var(--hero-bleed-frame-top-wide, 0px) - var(
+					--hero-bleed-frame-bottom-wide,
+					0px
+				)
+		);
+		margin: var(--hero-bleed-frame-top-wide, 0) 0 var(--hero-bleed-frame-bottom-wide, 0)
+			var(--hero-bleed-frame-side-wide, 0);
+		border-radius: var(--hero-bleed-photo-radius-wide, var(--hero-bleed-photo-radius, 0));
 
 		img {
 			width: 100%;
@@ -94,8 +146,14 @@
 		flex: 1;
 		align-items: flex-start;
 		justify-content: center;
+		margin-top: 0;
 		padding: 4rem clamp(3rem, 8vw, 8rem);
 		text-align: left;
+	}
+
+	.framed-portrait-hero__layout::before,
+	.framed-portrait-hero__summary {
+		display: none;
 	}
 
 	.framed-portrait-hero__photograph::after {
@@ -112,6 +170,7 @@
 	}
 
 	.framed-portrait-hero__facts {
+		display: grid;
 		gap: 0.65rem;
 		min-width: min(100%, 30rem);
 		margin-top: var(--hero-bleed-facts-gap, 1.25rem);
@@ -146,7 +205,20 @@
 
 	.framed-portrait-hero__scroll-line {
 		position: absolute;
-		left: calc(min(50vw, 100svh * 2 / 3) + clamp(3rem, 8vw, 8rem));
+		left: calc(
+			var(--hero-bleed-frame-side-wide, 0px) +
+				min(
+					50vw - var(--hero-bleed-frame-side-wide, 0px),
+					(
+							100svh - var(--hero-bleed-frame-top-wide, 0px) - var(
+									--hero-bleed-frame-bottom-wide,
+									0px
+								)
+						) *
+						2 / 3
+				) +
+				clamp(3rem, 8vw, 8rem)
+		);
 		bottom: 2.5rem;
 		height: var(--hero-bleed-scroll-line, 2.5rem);
 		margin: 0;
@@ -175,6 +247,7 @@
 		flex: 0 1 auto;
 		flex-direction: column;
 		align-items: stretch;
+		position: relative;
 		width: 100%;
 		min-height: 0;
 	}
@@ -184,14 +257,27 @@
 		display: flex;
 		flex: 0 1 auto;
 		justify-content: center;
-		width: 100%;
+		width: calc(100% - 2 * var(--hero-bleed-frame-side-stack, 0px));
 		max-width: none;
 		height: var(--hero-bleed-photo-height-stack, auto);
 		min-height: var(--hero-bleed-photo-min-height, 0);
-		margin: 0;
+		margin: var(--hero-bleed-frame-top-stack, 0) auto 0;
 		padding: 0;
-		border-radius: 0;
+		border-radius: var(--hero-bleed-photo-radius, 0);
 		overflow: hidden;
+
+		// Optional hairline inside the photograph, following its shape; the mask lets it fade
+		// where the photograph fades into the paper.
+		&::before {
+			content: '';
+			position: absolute;
+			z-index: 1;
+			inset: var(--hero-bleed-photo-frame-inset, 0);
+			border: var(--hero-bleed-photo-frame, none);
+			border-radius: var(--hero-bleed-photo-frame-radius, 0);
+			mask-image: var(--hero-bleed-photo-frame-mask, none);
+			pointer-events: none;
+		}
 
 		// Optional veil toward the letter; the photographer mark must stay readable through it.
 		&::after {
@@ -212,16 +298,71 @@
 			max-height: 100%;
 			object-fit: cover;
 			object-position: var(--hero-bleed-photo-position-stack, 50% 50%);
+
+			// Optional closer framing of the subject inside the frame (transform only, so the
+			// photograph keeps its box); the origin also anchors the scroll-linked settle.
+			transform: var(--hero-bleed-photo-transform, none);
+			transform-origin: var(--hero-bleed-photo-transform-origin, 50% 50%);
 		}
 	}
 
+	// Optional ornament hanging from the top of the hero to the photograph's apex: it ends on the
+	// photograph's top and runs up past the hero, which clips it, whatever space the hero leaves
+	// above the layout.
+	.framed-portrait-hero__layout::before {
+		content: '';
+		display: var(--hero-bleed-apex-display, none);
+		position: absolute;
+		bottom: calc(100% - var(--hero-bleed-frame-top-stack, 0px));
+		left: 50%;
+		width: var(--hero-bleed-apex-width, 1px);
+		height: 100svh;
+		translate: -50% 0;
+		background: var(--hero-bleed-apex, none);
+		pointer-events: none;
+	}
+
+	// Above the photograph, so a letter that rises over its faded edge stays on top.
 	.framed-portrait-hero__letter {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		flex: none;
 		flex-direction: column;
 		align-items: center;
+		margin-top: calc(-1 * var(--hero-bleed-letter-overlap-stack, 0px));
 		padding: var(--hero-bleed-letter-padding, clamp(1.5rem, 6vw, 2.25rem) 1.5rem 0);
 		text-align: center;
+	}
+
+	// Short reading of the facts (stacked layout, opt-in) in place of the long one.
+	.framed-portrait-hero__summary {
+		display: var(--hero-bleed-summary-display, none);
+		gap: 0.15rem;
+		margin: var(--hero-bleed-facts-margin, 0.4rem 0 0);
+		font-family: var(--font-body);
+		line-height: 1.35;
+		text-wrap: balance;
+
+		p {
+			margin: 0;
+		}
+
+		// The day reads like the written date, the second line like the venue.
+		p:first-child {
+			font-family: var(--hero-bleed-when-font-family, inherit);
+			font-size: var(--hero-bleed-summary-size, clamp(1.08rem, 2vw, 1.4rem));
+			font-style: var(--hero-bleed-when-style, inherit);
+			color: var(--hero-bleed-when-color, inherit);
+		}
+
+		p + p {
+			font-family: var(--hero-bleed-where-font-family, inherit);
+			font-size: var(--hero-bleed-summary-detail-size, 1rem);
+			font-variant-caps: var(--hero-bleed-where-caps, normal);
+			letter-spacing: var(--hero-bleed-where-tracking, normal);
+			color: var(--hero-bleed-where-color, var(--color-text-secondary));
+		}
 	}
 
 	.framed-portrait-hero__occasion {
@@ -253,11 +394,11 @@
 			var(--hero-name-line-height, 1.15) var(--hero-name-font-family, var(--font-display));
 		letter-spacing: var(--hero-name-letter-spacing, 0);
 		text-wrap: balance;
-		overflow-wrap: anywhere;
+		overflow-wrap: var(--hero-bleed-name-overflow-wrap, anywhere);
 	}
 
 	.framed-portrait-hero__facts {
-		display: grid;
+		display: var(--hero-bleed-facts-display-stack, grid);
 		gap: var(--hero-bleed-facts-row-gap, 0.2rem);
 		margin: var(--hero-bleed-facts-margin, 0.4rem 0 0);
 		padding-top: var(--hero-bleed-facts-padding-top, 0);
@@ -330,15 +471,26 @@
 	.framed-portrait-hero__scroll-line {
 		position: relative;
 		display: block;
-		width: 1px;
+		width: var(--hero-bleed-scroll-line-width, 1px);
 		height: var(--hero-bleed-scroll-line-stack, 2.5rem);
 		flex: none;
 		margin: var(--hero-bleed-scroll-line-margin, 1.25rem auto 0);
 		overflow: hidden;
-		background: linear-gradient(
-			var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 45%)),
-			transparent
+		background: var(
+			--hero-bleed-scroll-line-bg,
+			linear-gradient(
+				var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 45%)),
+				transparent
+			)
 		);
+
+		// Optional drawing over the line (a braid, say), which a scroll timeline may grow.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: var(--hero-bleed-scroll-braid, none);
+		}
 	}
 
 	@include mixins.respond-to(lg) {
@@ -393,6 +545,7 @@
 
 		.framed-portrait-hero__occasion,
 		.framed-portrait-hero__name,
+		.framed-portrait-hero__summary,
 		.framed-portrait-hero__facts,
 		.framed-portrait-hero__scroll-line {
 			animation-name: var(--hero-bleed-entrance, none);
@@ -406,10 +559,12 @@
 		}
 
 		.framed-portrait-hero__name {
+			animation-name: var(--hero-bleed-name-entrance, var(--hero-bleed-entrance, none));
 			animation-duration: var(--motion-hero-title-duration);
 			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-title-delay));
 		}
 
+		.framed-portrait-hero__summary,
 		.framed-portrait-hero__facts {
 			animation-duration: var(--motion-hero-details-duration);
 			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-details-delay));
@@ -461,6 +616,75 @@
 	.event-theme-wrapper[data-reveal-state='revealed']:has(> ds-envelope-reveal:not([hidden]))
 		.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
 		--hero-bleed-wait: var(--hero-bleed-entrance-wait, 0s);
+	}
+}
+
+// Scroll-linked (opt-in): while the cover leaves, the photograph settles from a slight zoom to
+// rest inside its frame and the scroll drawing grows down. Transform and clip only, tied to the
+// hero's own view timeline; nothing runs on load, so the photograph paints at once (LCP) and
+// nothing shifts. Without support, or with reduced motion, both stay at rest.
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
+			view-timeline: --hero-bleed-cover block;
+
+			.framed-portrait-hero__photograph img {
+				animation: var(--hero-bleed-photo-settle, none) auto linear both;
+				animation-timeline: --hero-bleed-cover;
+				animation-range: exit 0% exit 60%;
+			}
+
+			.framed-portrait-hero__scroll-line::before {
+				animation: var(--hero-bleed-scroll-grow, none) auto linear both;
+				animation-timeline: --hero-bleed-cover;
+				animation-range: exit 0% exit 35%;
+			}
+		}
+
+		// Once revealed, the optional time-based drift runs beside the settle.
+		.event-theme-wrapper[data-reveal-state='revealed']
+			.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait']
+			.framed-portrait-hero__photograph
+			img {
+			animation:
+				var(--hero-bleed-photo-drift, none) 14s linear 1 both,
+				var(--hero-bleed-photo-settle, none) auto linear both;
+			animation-timeline: auto, --hero-bleed-cover;
+			animation-range:
+				normal,
+				exit 0% exit 60%;
+		}
+	}
+}
+
+@keyframes hero-bleed-settle {
+	from {
+		scale: 1.06;
+	}
+
+	to {
+		scale: 1;
+	}
+}
+
+@keyframes hero-bleed-scroll-grow {
+	from {
+		clip-path: inset(0 0 50% 0);
+	}
+
+	to {
+		clip-path: inset(0);
+	}
+}
+
+// The name is written in from its first letter; the clip reaches past the box so swashes show.
+@keyframes hero-bleed-write {
+	from {
+		clip-path: inset(-0.5em 100% -0.5em 0);
+	}
+
+	to {
+		clip-path: inset(-0.5em -0.5em -0.5em -0.5em);
 	}
 }
 

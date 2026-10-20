@@ -23,11 +23,14 @@ interface GalleryItem {
 interface Props {
 	items: GalleryItem[];
 	variant: GalleryVariant;
+	/** Mark items for the reveal coordinator; scroll scenes animate them instead. */
+	revealItems?: boolean;
 }
 
 const {
 	items,
 	variant,
+	revealItems = true,
 } = Astro.props;
 const isMagazineSpread = variant === 'magazine-spread';
 
@@ -45,8 +48,8 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 const nativeWidthStyleFor = (width: number) =>
 	variant === 'paired-portraits' ? `--gallery-item-native-width: ${width}px;` : '';
 // pinned-track photos travel sideways off screen, where an entrance observer never fires; the
-// scene itself is their entrance.
-const revealAttrs = variant === 'pinned-track' ? {} : { 'data-reveal-item': '' };
+// scene itself is their entrance. album-assemble lands its photos with the scroll instead.
+const revealAttrs = revealItems && variant !== 'pinned-track' ? { 'data-reveal-item': '' } : {};
 ---
 
 <div class="gallery-grid" data-variant={variant}>

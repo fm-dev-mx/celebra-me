@@ -45,6 +45,14 @@ const interludeId = (i: number) => {
 const getScreenshotSection = (component: string, i: number) =>
 	component === 'interlude' ? interludeId(i) : component;
 
+// A stack intersection pins its source only when that source renders right before it.
+const getStackAnchor = (component: string, i: number) => {
+	const next = sections[i + 1];
+	return next?.intersection === 'stack' && next.intersectionSource === component
+		? 'stack'
+		: undefined;
+};
+
 const expectedSectionIds = [
 	'hero',
 	...sections.map((s, i) => getScreenshotSection(s.component, i)),
@@ -59,6 +67,7 @@ const expectedSectionIds = [
 	{
 		sections.map(({component, props, afterInterlude, intersection, intersectionSource, reveal, renderMode}, index) => {
 			const interludeIndex = component === 'interlude' ? interludeIndices.get(index) : undefined;
+			const stackAnchor = getStackAnchor(component, index);
 
 			return (
 				<div
@@ -68,6 +77,7 @@ const expectedSectionIds = [
 					data-section-kind={component}
 					data-intersection={intersection}
 					data-intersection-source={intersectionSource}
+					data-intersection-anchor={stackAnchor}
 					data-reveal={reveal}
 					{...(afterInterlude && { 'data-after-interlude': '' })}
 				>
