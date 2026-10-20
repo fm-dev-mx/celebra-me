@@ -9,6 +9,8 @@
 //   --footer-logo-filter        Filter on the brand logo
 //   --footer-contact-border / -bg / -padding  Contact link outline, fill and padding
 //   --invitation-footer-reply   `on`: the reply at the end (see .footer-reply below)
+//   --footer-padding-bottom     Space under the last line (default 2rem), e.g. to clear a
+//                               floating control in the corner
 
 .invitation-footer {
 	display: flex;
@@ -16,7 +18,8 @@
 	align-items: center;
 	justify-content: center;
 	width: 100%;
-	padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom, 0px));
+	padding: 2rem 1.25rem
+		calc(var(--footer-padding-bottom, 2rem) + env(safe-area-inset-bottom, 0px));
 	font-family: var(--font-body);
 	color: var(--color-text-primary);
 	border-top: 1px solid var(--footer-border-color, var(--color-border-subtle));

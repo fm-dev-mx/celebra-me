@@ -585,8 +585,8 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	}
 
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll
-	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a gold
-	// hairline and a plain text contact link.
+	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a plain
+	// text contact link.
 	.invitation-footer {
 		--invitation-footer-reveal: held;
 
@@ -622,6 +622,28 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--footer-contact-padding: 0.5rem 0.25rem;
 		--footer-replay-color: var(--color-night-lilac);
 		--footer-replay-opacity: 72%;
+
+		// Three tiers: the reply, then the invitation's own sign-off with the replay under it, and
+		// last the platform, set apart by a short gold rule on one quiet line with the legal note.
+		--footer-reply-gap: 3.25rem;
+		--footer-closing-size: clamp(1.1rem, 3vw, 1.25rem);
+		--footer-divider-display: none;
+		--footer-replay-order: -1;
+		--footer-content-gap: 1rem;
+		--footer-primary-row-direction: row;
+		--footer-platform-rule: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--america-night-gold-rgb) / 45%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.5rem;
+		--footer-contact-color: var(--color-night-lilac);
+		--footer-contact-weight: 400;
+		--footer-contact-icon-filter: brightness(0) invert(0.85);
+
+		// The music button rests in the bottom corner; the legal line ends above it.
+		--footer-padding-bottom: 5.5rem;
 		--color-text-primary: var(--color-night-lilac);
 		--color-action-accent: rgb(232 160 64);
 		--color-action-accent-rgb: 232 160 64;
