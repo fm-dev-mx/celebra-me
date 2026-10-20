@@ -691,6 +691,24 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--countdown-written-numeral-shadow: 0 0 24px rgb(232 160 64 / 35%);
 		--event-calendar-ink: var(--america-night-gold);
 		--event-calendar-mark-ink: var(--america-night-gold);
+
+		// The reason reads with the count: "para encender las linternas" sits under the nights,
+		// before the calendar; wide, the lead, the count and the reason stand together beside
+		// the calendar, centred on it.
+		--countdown-written-calendar-order: 1;
+		--countdown-written-date-row: 1 / span 3;
+		--countdown-written-footer-column: 1;
+		--countdown-written-footer-row: 3;
+		--countdown-written-title-row: 1;
+		--countdown-written-title-align: end;
+		--countdown-written-timer-row: 2;
+		--countdown-written-timer-align: start;
+
+		// Wide, the calendar's column no longer borrows the reason's width; it keeps its own.
+		@media (width >= 62rem) {
+			--event-calendar-width: 16rem;
+		}
+
 		--storybook-ambient-lanterns-display: block;
 		--storybook-sky-light: var(--color-candle-cream);
 		--storybook-sky-lantern: var(--color-lantern-amber);

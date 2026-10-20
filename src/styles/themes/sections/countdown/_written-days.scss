@@ -15,6 +15,8 @@
 //                                Lead size (1.05rem), tracking (0.16em), small caps
 //                                (all-small-caps), case (none) and ink (the muted color)
 //   --countdown-written-calendar-gap  Space above the month calendar (default 0.6rem)
+//   --countdown-written-calendar-order  Narrow order of the calendar (default 0; 1 sets the
+//                                       footer line under the numeral, before the calendar)
 //   --countdown-written-unit-gap Space between the numeral and "días"
 //   --countdown-written-columns  Column gap around the desktop divider
 //   --countdown-written-date-row Desktop grid row of the date (span 2 to sit on the numeral)
@@ -25,6 +27,8 @@
 //   --countdown-written-rule-display  Wide divider (`block`; `none` hides it)
 //   --countdown-written-wide-align / -wide-justify  Wide text-align and title placement
 //   --countdown-written-footer-column / -footer-row / -footer-justify  Wide footer placement
+//   --countdown-written-title-row / -title-align  Wide title row (1) and its align-self (auto)
+//   --countdown-written-timer-row / -timer-align  Wide numeral rows (2 / span 2) and align-self
 // ==========================================================================
 
 // The section id keeps this layout above preset skins that style the default tiles.
@@ -137,6 +141,7 @@
 	}
 
 	.event-calendar {
+		order: var(--countdown-written-calendar-order, 0);
 		margin-top: var(--countdown-written-calendar-gap, 0.6rem);
 	}
 
@@ -181,13 +186,15 @@
 
 		.countdown-title {
 			grid-column: 1;
-			grid-row: 1;
-			justify-self: var(--countdown-written-wide-justify, start);
+			grid-row: var(--countdown-written-title-row, 1);
+			place-self: var(--countdown-written-title-align, auto)
+				var(--countdown-written-wide-justify, start);
 		}
 
 		.countdown-timer-wrapper {
 			grid-column: 1;
-			grid-row: 2 / span 2;
+			grid-row: var(--countdown-written-timer-row, 2 / span 2);
+			align-self: var(--countdown-written-timer-align, auto);
 		}
 
 		.countdown-container::after {
