@@ -324,7 +324,7 @@ const content: CanonicalEventContentInput = {
 		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
 		focalPoint: '50% 40%',
-		message: 'Lo que falta no cabe aquí. Se lo enseño el 21 de noviembre.',
+		message: 'Esa noche cada linterna tendrá un nombre. Ojalá una lleve el suyo.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: 'América · XV años · Los Mochis · MMXXVI',
 	},
