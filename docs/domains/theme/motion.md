@@ -168,10 +168,12 @@ only; elsewhere the same markup renders as a normal section.
   one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
   motion it keeps the progress and drops the movement.
 - **Held footer.** `--invitation-footer-reveal: held` (a profile token, read by
-  `src/lib/invitation/footer-reveal.ts`) ends the page at its last section; after a short rest at
-  the bottom, a second scroll gesture (wheel, swipe, ArrowDown, PageDown, End or Space) or a tab
-  into its links opens the footer with a short fade. Reduced motion opens it without the fade, and
-  without the script the footer is always shown.
+  `src/lib/invitation/footer-reveal.ts`) ends the page at its last section. After a short rest at
+  the bottom a small lantern peeks from the bottom edge; pulling on (a swipe up or more wheel) lifts
+  it on its thread, and past a short pull the footer opens with a 320 ms glide and a 360 ms rise.
+  Letting go sooner settles the lantern back. ArrowDown, PageDown, End, Space or a tab into its
+  links open it at once. Reduced motion shows no lantern and opens on the next gesture without
+  movement; without the script the footer is always shown.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.

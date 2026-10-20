@@ -2,8 +2,8 @@
 
 // Tokens (all optional, besides the variant ones below):
 //   --invitation-footer-reveal  `held`: the invitation stops at its last section and the footer
-//                               opens on a second scroll gesture at the bottom (Footer.astro
-//                               reads it). Unset, the footer is always shown.
+//                               opens once the guest pulls on past the bottom (Footer.astro reads
+//                               it; see the pull cue below). Unset, the footer is always shown.
 //   --footer-border-color       Top rule
 //   --footer-divider-line       Divider line color
 //   --footer-logo-filter        Filter on the brand logo
@@ -37,27 +37,98 @@
 
 @media (prefers-reduced-motion: no-preference) {
 	.invitation-footer[data-footer-reveal='open'] > * {
-		animation: footer-reveal 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation: footer-reveal 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.invitation-footer[data-footer-reveal='open'] > :nth-child(2) {
-		animation-delay: 120ms;
+		animation-delay: 50ms;
 	}
 
 	.invitation-footer[data-footer-reveal='open'] > :nth-child(3) {
-		animation-delay: 240ms;
+		animation-delay: 100ms;
 	}
 }
 
 @keyframes footer-reveal {
 	0% {
 		opacity: 0%;
-		translate: 0 0.75rem;
+		translate: 0 1rem;
 	}
 
 	100% {
 		opacity: 100%;
 		translate: 0 0;
+	}
+}
+
+// The pull cue of a held footer (footer-reveal.ts adds it, never with reduced motion): a lantern
+// on a thread at the bottom edge. --footer-pull (0–1) is how far the guest has pulled; it follows
+// the finger while pulling and eases back otherwise. Transforms and opacity only.
+//   --footer-pull-color  Lantern and thread (default lantern amber)
+//   --footer-pull-glow   Lantern light
+@property --footer-pull {
+	syntax: '<number>';
+	inherits: true;
+	initial-value: 0;
+}
+
+.footer-pull {
+	position: fixed;
+	bottom: env(safe-area-inset-bottom, 0);
+	left: 50%;
+	z-index: 40;
+	width: 2rem;
+	height: 4.5rem;
+	opacity: min(100%, calc(var(--footer-pull) * 400%));
+	translate: -50% 0;
+	pointer-events: none;
+	transition: --footer-pull 260ms cubic-bezier(0.22, 1, 0.36, 1);
+
+	&[data-state='pulling'] {
+		transition: none;
+	}
+
+	// The thread grows from the edge as the lantern climbs.
+	&::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: 1px;
+		height: 3.25rem;
+		background: linear-gradient(
+			to top,
+			transparent,
+			var(--footer-pull-color, rgb(232 160 64)) 70%
+		);
+		opacity: 60%;
+		transform-origin: 50% 100%;
+		scale: 1 var(--footer-pull);
+	}
+
+	&::before {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: 0.7rem;
+		height: 0.95rem;
+		border-radius: 40% 40% 45% 45%;
+		background: var(--footer-pull-color, rgb(232 160 64));
+		box-shadow: 0 0 0.9rem 0.25rem var(--footer-pull-glow, rgb(232 160 64 / 35%));
+		translate: -50% calc(var(--footer-pull) * -3.25rem + 0.4rem);
+		scale: calc(0.8 + var(--footer-pull) * 0.3);
+	}
+
+	&[data-state='away'] {
+		animation: footer-pull-away 320ms cubic-bezier(0.3, 0.6, 0.4, 1) forwards;
+	}
+}
+
+@keyframes footer-pull-away {
+	100% {
+		opacity: 0%;
+		translate: -50% -4rem;
 	}
 }
 
