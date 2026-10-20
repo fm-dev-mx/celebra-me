@@ -111,7 +111,7 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
 - **Ambient lanterns.** Layers of `StorybookLanternSky` with `scene="ambient"` that a profile
   displays loop only while on screen (`data-ambient='running'` from an observer in the coordinator);
   hidden layers are never observed.
-- **Scroll-linked exceptions.** Three effects tie motion to scroll position, all only under
+- **Scroll-linked exceptions.** Four effects tie motion to scroll position, all only under
   `prefers-reduced-motion: no-preference`:
   - `itinerary.stacked-cards` uses CSS scroll-driven animations (`view-timeline`), inside
     `@supports (animation-timeline: view())`. There is no script; without support the cards stay as
@@ -121,6 +121,11 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
     `pointer: fine`, so phones never download it. Native touch scrolling is unchanged, and `#` links
     scroll to their target below the fixed header.
   - Scroll scenes (next section).
+  - The `bleed-portrait` hero may opt in (`--hero-bleed-photo-settle`, `--hero-bleed-scroll-grow`)
+    to a view timeline on the hero, inside `@supports (animation-timeline: view())`: while the cover
+    leaves, the photograph settles from `scale: 1.06` to rest and the scroll drawing grows down by
+    `clip-path`. Nothing runs on load, so the photograph paints at once; without support both stay
+    at rest.
 - **Budget.** Nothing new loads on first paint except CSS. At most about 12 elements animate at
   once.
 

@@ -18,6 +18,11 @@ describe('formatVenueTimeInWords', () => {
 		expect(formatVenueTimeInWords('18:15')).toBe('a las seis y cuarto de la tarde');
 	});
 
+	it('can leave out the period of the day', () => {
+		expect(formatVenueTimeInWords('18:00', { withPeriod: false })).toBe('a las seis');
+		expect(formatVenueTimeInWords('13:30', { withPeriod: false })).toBe('a la una y media');
+	});
+
 	it('falls back to the numeric display for other minutes', () => {
 		expect(formatVenueTimeInWords('18:40')).not.toMatch(/^a las/);
 	});
