@@ -14,13 +14,9 @@ interface DemoShowroomThumbnail {
 	objectPosition?: string;
 }
 
+/** The quote itself (message, promo code, value) is the general one from the promo calendar. */
 interface DemoShowroomQuoteCta {
 	label: string;
-	message: string;
-	promoCode: string;
-	trackValue: number;
-	packageName?: string;
-	packageInterest?: string;
 }
 
 interface DemoShowroomHomeSelector {

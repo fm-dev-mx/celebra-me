@@ -4,8 +4,8 @@ import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 import {
 	formatMxn,
 	getExpressDelivery,
-	getPromoPackage,
-	PROMO_CAMPAIGN,
+	getCatalogPackage,
+	PACKAGE_CATALOG,
 } from '@/data/promo-campaign.data';
 
 describe('landing product value data', () => {
@@ -47,10 +47,8 @@ describe('landing package catalog', () => {
 	it('lists Esencial, Signature (recommended) and Atelier in screen order', () => {
 		const { tiers } = landingData.pricing;
 
-		expect(tiers.map((tier) => tier.packageId)).toEqual(
-			PROMO_CAMPAIGN.packages.map((pkg) => pkg.id),
-		);
-		expect(tiers.map((tier) => getPromoPackage(tier.packageId).name)).toEqual([
+		expect(tiers.map((tier) => tier.packageId)).toEqual(PACKAGE_CATALOG.map((pkg) => pkg.id));
+		expect(tiers.map((tier) => getCatalogPackage(tier.packageId).name)).toEqual([
 			'Esencial',
 			'Signature',
 			'Atelier',

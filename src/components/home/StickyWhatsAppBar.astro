@@ -6,18 +6,25 @@
  * over the contact section and footer, and yields to the cookie consent bar while that bar is open.
  */
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
-import { formatMxn, getStartingPrice, getStartingRegularPrice } from '@/data/promo-campaign.data';
+import {
+	formatMxn,
+	getRenderCampaign,
+	getStartingPrice,
+	getStartingRegularPrice,
+} from '@/data/promo-campaign.data';
 
 import '@/styles/home/_sticky-cta.scss';
 
-const promoPrice = formatMxn(getStartingPrice());
+// Built with the campaign of the build day; PromoStatus.astro switches it for the visitor's date.
+const campaign = getRenderCampaign();
+const promoPrice = formatMxn(getStartingPrice(campaign));
 const regularPrice = formatMxn(getStartingRegularPrice());
 ---
 
 <div class="sticky-cta" data-sticky-cta inert>
 	<WhatsAppButton
 		className="sticky-cta__button"
-		label={`WhatsApp · desde ${promoPrice}`}
+		label="WhatsApp · desde"
 		ariaLabel="Quiero mi invitación por WhatsApp"
 		trackSection="sticky"
 		trackCta="whatsapp-sticky"
@@ -25,7 +32,7 @@ const regularPrice = formatMxn(getStartingRegularPrice());
 	>
 		<span>
 			WhatsApp · desde{' '}
-			<span data-promo-only>{promoPrice}</span><span data-promo-fallback>{regularPrice}</span>
+			{campaign && <span data-promo-only data-promo-field="starting-price">{promoPrice}</span>}<span data-promo-fallback={campaign ? '' : undefined}>{regularPrice}</span>
 		</span>
 	</WhatsAppButton>
 </div>

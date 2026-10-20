@@ -1,11 +1,6 @@
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
-import {
-	formatMxn,
-	getExpressDelivery,
-	getPromoPackage,
-	getStartingPrice,
-} from '@/data/promo-campaign.data';
+import { formatMxn, getCatalogPackage, getExpressDelivery } from '@/data/promo-campaign.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 
 export const PRIMARY_CTA_LABEL = 'Quiero mi invitación';
@@ -19,17 +14,19 @@ if (!heroDemo) throw new Error(`Missing hero demo: ${HERO_DEMO_SLUG}`);
 
 const expressDelivery = getExpressDelivery();
 const expressDeliveryPackages = expressDelivery.appliesTo
-	.map((packageId) => getPromoPackage(packageId).name)
+	.map((packageId) => getCatalogPackage(packageId).name)
 	.join(' y ');
 const expressDeliveryPrice = `+${formatMxn(expressDelivery.price)} MXN`;
-const esencialName = getPromoPackage('esencial').name;
-const signatureName = getPromoPackage('signature').name;
-const atelierName = getPromoPackage('atelier').name;
+const esencialName = getCatalogPackage('esencial').name;
+const signatureName = getCatalogPackage('signature').name;
+const atelierName = getCatalogPackage('atelier').name;
 
 export const landingData: LandingPageData = {
 	seo: {
 		title: 'Celebra-me | Invitaciones Digitales Premium',
-		description: `Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp. Desde ${formatMxn(getStartingPrice())} MXN, sin anticipo.`,
+		// No price here: search engines keep this text long after a promo row ends.
+		description:
+			'Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp, sin anticipo.',
 	},
 	hero: {
 		title: 'Invitaciones digitales con pase y confirmación para cada invitado',
