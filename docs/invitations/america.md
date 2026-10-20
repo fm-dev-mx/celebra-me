@@ -66,7 +66,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpWhatsappPhone     | —                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                            |
 | rsvpDeadline          | 2026-11-06 (viernes 6 de noviembre)                                          | inferred       | owner-session | 15 days before the event (D9); in RSVP copy and reminder |
 | gifts                 | Lluvia de sobres                                                             | inferred       | owner-session | Owner decision D10; client to confirm                    |
-| musicUrl              | —                                                                            | missing        | wa-export     | Pending (D11); player omitted until the client picks one |
+| musicUrl              | «Veo en ti la luz» (Chayanne y Danna Paola), looped cut                      | confirmed      | client        | Client pick (2026-10-20); cut before the spoken lines    |
 | itinerary             | Misa 18:00, Recepción 20:00, Vals 21:30, Cena 22:30, Cierre 01:00            | inferred       | owner-session | Most common XV program (D8); owner adjusts later         |
 | memories              | QR de recuerdos (add-on)                                                     | verified       | owner-session | D12; needs a memory space first, see Owner Decisions     |
 | specialMessages       | Copy proposed by agent                                                       | inferred       | owner-session | Pending client approval                                  |
@@ -140,15 +140,15 @@ the only consumer of `storybook-lilac`, and unit tests cover the generic preset 
 
 ## Agent Recommendations
 
-| topic     | recommendation                                                                        | basis                           | status                  |
-| --------- | ------------------------------------------------------------------------------------- | ------------------------------- | ----------------------- |
-| concept   | "La noche de las linternas": storybook from the tower door at dusk to a lantern night | 18:00 misa after sunset, garden | approved (plan)         |
-| preset    | `storybook-lilac`: lilac paper, violet night, leaf gold; Cinzel, Cormorant, Garamond  | no lilac preset exists          | approved (D2)           |
-| motifs    | `storybook-lanterns` ornament set: lantern, tower, braid vine, sun, wildflower        | no fairy-tale set exists        | approved (D5)           |
-| envelope  | `storybook-lanterns` reveal + `sunburst` wax seal with the «A» monogram               | no fairy-tale envelope or seal  | approved (D5)           |
-| countdown | `written-days` counting nights: "Faltan N noches para ver las linternas"              | event happens at night          | pending creative review |
-| type      | The Nautigal for the name only                                                        | long swashes read as a braid    | pending creative review |
-| music     | Ask the client; "Veo en ti la luz" offered only as a suggestion                       | "Canción" left blank            | pending client answer   |
+| topic     | recommendation                                                                        | basis                              | status                  |
+| --------- | ------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------- |
+| concept   | "La noche de las linternas": storybook from the tower door at dusk to a lantern night | 18:00 misa after sunset, garden    | approved (plan)         |
+| preset    | `storybook-lilac`: lilac paper, violet night, leaf gold; Cinzel, Cormorant, Garamond  | no lilac preset exists             | approved (D2)           |
+| motifs    | `storybook-lanterns` ornament set: lantern, tower, braid vine, sun, wildflower        | no fairy-tale set exists           | approved (D5)           |
+| envelope  | `storybook-lanterns` reveal + `sunburst` wax seal with the «A» monogram               | no fairy-tale envelope or seal     | approved (D5)           |
+| countdown | `written-days` counting nights: "Faltan N noches para ver las linternas"              | event happens at night             | pending creative review |
+| type      | The Nautigal for the name only                                                        | long swashes read as a braid       | pending creative review |
+| music     | Client chose "Veo en ti la luz"                                                       | Looped cut, autoplay with envelope | resolved (2026-10-20)   |
 
 ---
 
@@ -158,8 +158,8 @@ the only consumer of `storybook-lilac`, and unit tests cover the generic preset 
 | ---------------------- | ---------------------------------------------------------------------------------------------- |
 | requested              | location (two venues), family (parents, godparents), dress code + reserved color + adults only |
 | inferred / recommended | envelope, hero, quote, countdown, gallery, personalizedAccess, rsvp, thankYou, interludes      |
+| client-provided        | music: «Veo en ti la luz», looped cut (2026-10-20)                                             |
 | owner placeholders     | itinerary (D8), gifts: envelope shower (D10)                                                   |
-| omitted                | music (pending, D11)                                                                           |
 | unresolved             | memories (D12): joins after its memory space exists                                            |
 
 Guest-facing copy (owner-approved 2026-10-10, pending client approval). Voice: América in the first
