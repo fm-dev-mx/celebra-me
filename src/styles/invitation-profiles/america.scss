@@ -425,18 +425,22 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		}
 	}
 
-	// Join 1, the bridge into the night: the patio photograph sits on the mist with no mat or
-	// frame, and its bottom padding holds the horizon the night rises on.
+	// Join 1, the bridge into the night: the patio photograph is a tower window on the mist, an
+	// arched top under a gold hairline that follows it, and its bottom padding holds the horizon
+	// the night rises on.
 	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+		--interlude-framed-radius: 50% 50% 0.75rem 0.75rem / 8.5rem 8.5rem 0.75rem 0.75rem;
+		--interlude-framed-image-radius: var(--interlude-framed-radius);
 		--section-band-paper: var(--color-lilac-mist);
 		--interlude-framed-bg: var(--color-lilac-mist);
-		--interlude-framed-padding: clamp(0.5rem, 3vw, 2rem) var(--america-gutter)
-			calc(clamp(2.5rem, 7vw, 4.5rem) + var(--america-cut));
-		--interlude-framed-max-width: 30rem;
+		--interlude-framed-padding: clamp(1.75rem, 5vw, 2.75rem) var(--america-gutter)
+			calc(clamp(2rem, 6vw, 3.5rem) + var(--america-cut));
+		--interlude-framed-max-width: 26rem;
 		--interlude-framed-mat: 0;
 		--interlude-framed-mat-bg: transparent;
 		--interlude-framed-border: 0;
-		--interlude-framed-outline: 0;
+		--interlude-framed-outline: 1px solid rgb(201 164 92 / 70%);
+		--interlude-framed-outline-offset: 0.6rem;
 		--interlude-framed-shadow: none;
 	}
 
