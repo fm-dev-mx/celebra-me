@@ -62,6 +62,19 @@ const rightsYear = new Date().getFullYear();
 	class:list={['invitation-footer', className]}
 	data-variant={variant}
 >
+	<!-- Reply at the end; shown only when the profile turns it on and the guest has not answered
+	     (footer-reply.ts). Its words come from the profile. -->
+	<div class="footer-reply" data-footer-reply hidden>
+		<span class="footer-reply__lantern" aria-hidden="true"></span>
+		<div class="footer-reply__pending" data-footer-reply-pending hidden>
+			<p class="footer-reply__eyebrow"></p>
+			<p class="footer-reply__question"></p>
+			<a class="footer-reply__button" href="#rsvp" data-footer-reply-confirm>Confirmar asistencia</a>
+			<p class="footer-reply__note"></p>
+		</div>
+		<p class="footer-reply__answered" data-footer-reply-answered hidden></p>
+	</div>
+
 	{closingPhrase && (
 		<p class="footer__closing-phrase">{closingPhrase}</p>
 	)}
@@ -123,8 +136,10 @@ const rightsYear = new Date().getFullYear();
 <script>
 	import { initFloatingCta } from '@/lib/invitation/floating-cta';
 	import { holdFooterUntilSecondScroll } from '@/lib/invitation/footer-reveal';
+	import { initFooterReply } from '@/lib/invitation/footer-reply';
 
 	holdFooterUntilSecondScroll(document.querySelector('.invitation-footer'));
+	initFooterReply(document.querySelector('[data-footer-reply]'));
 	initFloatingCta(document.querySelector('[data-floating-cta]'));
 </script>
 

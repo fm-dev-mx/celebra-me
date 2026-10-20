@@ -205,6 +205,14 @@ only; elsewhere the same markup renders as a normal section.
 - **Floating reply glint.** `--floating-cta-glint` (a gradient) crosses the floating reply button
   once, in 1.1 s, when it first shows and again when it changes to the calendar. It is time-based,
   not scroll-linked, and does not run under reduced motion.
+- **Footer reply.** `--invitation-footer-reply: on` (a profile token, read by
+  `src/lib/invitation/footer-reply.ts`) shows a reply block at the top of the footer while the guest
+  has not answered: a lit lantern on its thread, `--footer-reply-eyebrow`, `-question`, a "Confirmar
+  asistencia" link that scrolls back to the RSVP and focuses its first field, and `-note`. After a
+  yes only `--footer-reply-answered` stays, if set; after a decline, or on a card locked to personal
+  passes, nothing shows. When a held footer opens, the lantern rises into place in 900 ms and
+  `--footer-reply-glint` crosses the button once. Neither runs under reduced motion; both are
+  time-based, on transforms, opacity and the button's background position.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.

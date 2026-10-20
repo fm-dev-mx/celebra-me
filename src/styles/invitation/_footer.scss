@@ -8,6 +8,7 @@
 //   --footer-divider-line       Divider line color
 //   --footer-logo-filter        Filter on the brand logo
 //   --footer-contact-border / -bg / -padding  Contact link outline, fill and padding
+//   --invitation-footer-reply   `on`: the reply at the end (see .footer-reply below)
 
 .invitation-footer {
 	display: flex;
@@ -40,11 +41,12 @@
 		animation: footer-reveal 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
-	.invitation-footer[data-footer-reveal='open'] > :nth-child(2) {
+	// Counted past the reply block, so the footer's own rows keep their stagger with or without it.
+	.invitation-footer[data-footer-reveal='open'] > :nth-child(2 of :not(.footer-reply)) {
 		animation-delay: 50ms;
 	}
 
-	.invitation-footer[data-footer-reveal='open'] > :nth-child(3) {
+	.invitation-footer[data-footer-reveal='open'] > :nth-child(3 of :not(.footer-reply)) {
 		animation-delay: 100ms;
 	}
 }
@@ -369,5 +371,191 @@ $lantern-shape: 40% 40% 45% 45%;
 		outline: 1px solid var(--color-action-accent);
 		outline-offset: 2px;
 		opacity: 80%;
+	}
+}
+
+// The reply at the end (footer-reply.ts shows it only with `--invitation-footer-reply: on`, while
+// the guest has not answered): a lit lantern hangs from the top of the footer over a short lead, a
+// question, the button and a note; after a yes, only a line of thanks stays under the lantern.
+// When the held footer opens, the lantern rises on its thread and a light crosses the button once.
+// Tokens (all optional; the words default to none):
+//   --footer-reply-eyebrow / -question / -note / -answered   The words
+//   --footer-reply-ink / -muted / -accent   Question, note and eyebrow inks
+//   --footer-reply-question-font / -question-size / -eyebrow-size / -note-size
+//   --footer-reply-lantern / -lantern-glow   Lantern fill (default the pull lantern's) and light
+//   --footer-reply-button-bg / -button-ink / -button-font / -button-size
+//   --footer-reply-glint      A light crossing the button as the footer opens (default none)
+//   --footer-reply-gap        Space under the block, above the closing phrase (default 2.5rem)
+$footer-reply-pill: 999px;
+
+.footer-reply {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	max-width: 26rem;
+	margin: -2rem 0 var(--footer-reply-gap, 2.5rem);
+	text-align: center;
+
+	&[hidden],
+	[hidden] {
+		display: none;
+	}
+
+	// The thread from the footer's top edge down to the lantern.
+	&__lantern {
+		position: relative;
+		width: 1.4rem;
+		height: 1.8rem;
+		margin: 2.75rem 0 1.25rem;
+		border-radius: $lantern-shape;
+		background: var(
+			--footer-reply-lantern,
+			var(--footer-pull-body, var(--footer-pull-color, rgb(232 160 64)))
+		);
+		box-shadow: 0 0 1.4rem 0.35rem var(--footer-reply-lantern-glow, rgb(232 160 64 / 40%));
+
+		&::before {
+			content: '';
+			position: absolute;
+			bottom: 100%;
+			left: 50%;
+			width: 1px;
+			height: 2.75rem;
+			translate: -50% 0;
+			background: linear-gradient(
+				to bottom,
+				transparent,
+				var(--footer-reply-accent, var(--footer-pull-color, rgb(232 160 64))) 80%
+			);
+			opacity: 60%;
+		}
+	}
+
+	&__pending {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	p {
+		margin: 0;
+	}
+
+	&__eyebrow::before {
+		content: var(--footer-reply-eyebrow, none);
+	}
+
+	&__question::before {
+		content: var(--footer-reply-question, none);
+	}
+
+	&__note::before {
+		content: var(--footer-reply-note, none);
+	}
+
+	&__answered::before {
+		content: var(--footer-reply-answered, none);
+	}
+
+	&__eyebrow {
+		margin-bottom: 0.6rem;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--footer-reply-eyebrow-size, 0.8125rem);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--footer-reply-accent, var(--color-text-secondary));
+	}
+
+	&__question {
+		margin-bottom: 1.5rem;
+		font-family: var(--footer-reply-question-font, var(--font-display));
+		font-size: var(--footer-reply-question-size, 1.6rem);
+		line-height: 1.25;
+		text-wrap: balance;
+		color: var(--footer-reply-ink, var(--color-text-primary));
+	}
+
+	&__button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 3rem;
+		padding: 0.75rem 1.75rem;
+		border-radius: $footer-reply-pill;
+		background: var(--footer-reply-button-bg, var(--color-action-accent));
+		color: var(--footer-reply-button-ink, var(--color-surface-primary));
+		font-family: var(--footer-reply-button-font, var(--font-label, var(--font-body)));
+		font-size: var(--footer-reply-button-size, 0.875rem);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		text-decoration: none;
+
+		&:focus-visible {
+			outline: 2px solid var(--footer-reply-button-bg, var(--color-action-accent));
+			outline-offset: 3px;
+		}
+	}
+
+	&__note {
+		margin-top: 0.75rem;
+		font-family: var(--font-body);
+		font-size: var(--footer-reply-note-size, 0.9375rem);
+		font-style: italic;
+		color: var(--footer-reply-muted, var(--color-text-secondary));
+	}
+
+	&__answered {
+		font-family: var(--footer-reply-question-font, var(--font-display));
+		font-size: var(--footer-reply-note-size, 1.125rem);
+		font-style: italic;
+		color: var(--footer-reply-ink, var(--color-text-primary));
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.invitation-footer[data-footer-reveal='open'] {
+		.footer-reply__lantern {
+			animation: footer-reply-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+		}
+
+		.footer-reply__button {
+			background:
+				var(--footer-reply-glint, linear-gradient(transparent, transparent)) 150% 0 / 250%
+					100% no-repeat,
+				var(--footer-reply-button-bg, var(--color-action-accent));
+			animation: footer-reply-glint 1.1s cubic-bezier(0.4, 0, 0.2, 1) 700ms both;
+		}
+	}
+}
+
+// The pull lantern, let go, arrives from below and settles on its thread.
+@keyframes footer-reply-rise {
+	0% {
+		opacity: 0%;
+		translate: 0 3rem;
+	}
+
+	70% {
+		opacity: 100%;
+		translate: 0 -0.2rem;
+	}
+
+	100% {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes footer-reply-glint {
+	from {
+		background-position:
+			150% 0,
+			0 0;
+	}
+
+	to {
+		background-position:
+			-50% 0,
+			0 0;
 	}
 }
