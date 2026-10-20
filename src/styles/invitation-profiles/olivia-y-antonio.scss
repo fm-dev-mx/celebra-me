@@ -128,8 +128,10 @@
 	}
 
 	// Gallery: a pinned track on ivory; at rest, features full width at 4:5 and the rest paired at
-	// 3:4 on a tight 8 px gutter.
+	// 3:4 on a tight 8 px gutter. Each photograph holds about half a screen of scroll, so the
+	// guest can look at it before the next one slides in.
 	.gallery-section[data-variant='pinned-track'] {
+		--gallery-track-pace: 0.55;
 		--gallery-section-padding-block: 4rem;
 		--gallery-section-bg: var(--olivia-ivory);
 		--gallery-title-size: var(--olivia-title-size);
@@ -588,6 +590,7 @@
 		--footer-reply-button-bg: var(--olivia-champagne);
 		--footer-reply-button-ink: var(--olivia-navy-deep);
 		--footer-reply-button-font: var(--font-label);
+		--footer-reply-gap: 3.25rem;
 		--footer-reply-glint: linear-gradient(
 			105deg,
 			transparent 40%,
