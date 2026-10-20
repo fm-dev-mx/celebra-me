@@ -124,7 +124,7 @@ export const landingData: LandingPageData = {
 				badge: 'RECOMENDADO',
 				isPrimary: true,
 				includesFrom: `Todo lo de ${esencialName}, más:`,
-				includes: ['QR de recuerdos'],
+				includes: ['QR para que sus invitados compartan fotos y videos del evento'],
 				details: [
 					{ label: 'Entrega', value: '3 a 5 días hábiles' },
 					{ label: expressDelivery.name, value: expressDeliveryPrice },
@@ -136,7 +136,7 @@ export const landingData: LandingPageData = {
 				includesFrom: `Todo lo de ${signatureName}, más:`,
 				includes: [
 					'Entrega en 48 horas',
-					'Celebra-me carga su lista de invitados (Excel o legible)',
+					'Nosotros cargamos su lista de invitados, en Excel o escrita a mano, siempre que se lea bien',
 					'Su invitación a su nombre, sin la firma de Celebra-me',
 				],
 				details: [],
@@ -148,7 +148,7 @@ export const landingData: LandingPageData = {
 		faqs: [
 			{
 				question: '¿Cómo y cuándo pago?',
-				answer: 'Sin anticipo. Usted revisa su invitación 100 % terminada con un Invitado de prueba y paga al aprobarla; en ese momento se activa su panel de invitados.',
+				answer: 'Sin anticipo. Usted revisa su invitación 100 % terminada, tal como la verá un invitado, y paga al aprobarla; en ese momento se activa su panel de invitados.',
 			},
 			{
 				question: '¿Cuánto tarda?',
@@ -168,7 +168,7 @@ export const landingData: LandingPageData = {
 			},
 			{
 				question: '¿Qué necesito enviar?',
-				answer: `Fecha, lugar, nombres, fotos y detalles del evento, además de su lista de invitados. En ${atelierName}, nosotros la cargamos a partir de su lista en Excel o legible.`,
+				answer: `Fecha, lugar, nombres, fotos y detalles del evento, además de su lista de invitados. En ${atelierName}, nosotros la cargamos a partir de su lista en Excel o escrita a mano, siempre que se lea bien.`,
 			},
 		],
 	},

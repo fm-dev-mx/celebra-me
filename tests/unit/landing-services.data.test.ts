@@ -65,7 +65,9 @@ describe('landing package catalog', () => {
 
 		expect(esencial.includesFrom).toBeUndefined();
 		expect(signature.includesFrom).toBe('Todo lo de Esencial, más:');
-		expect(signature.includes).toContain('QR de recuerdos');
+		expect(signature.includes).toContain(
+			'QR para que sus invitados compartan fotos y videos del evento',
+		);
 		expect(atelier.includesFrom).toBe('Todo lo de Signature, más:');
 		expect(atelier.includes).toContain('Su invitación a su nombre, sin la firma de Celebra-me');
 
