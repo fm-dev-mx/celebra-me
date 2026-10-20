@@ -148,7 +148,7 @@ async function resolveEventSharingContext(
 
 function buildGuestDto(
 	guest: GuestInvitationRecord,
-	event: Pick<EventRecord, 'title' | 'eventType' | 'slug'> | null,
+	event: Pick<EventRecord, 'title' | 'eventType' | 'slug' | 'guestCodeLinks'> | null,
 	origin: string,
 	shareMessages?: ShareMessagesConfig | null,
 	eventDate?: string | null,
@@ -159,6 +159,7 @@ function buildGuestDto(
 		eventTitle: event?.title,
 		eventType: event?.eventType,
 		eventSlug: event?.slug,
+		guestCodeLinks: event?.guestCodeLinks,
 		shareMessages,
 		eventDate,
 		rsvpDeadline,

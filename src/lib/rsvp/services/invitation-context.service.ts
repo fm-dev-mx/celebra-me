@@ -116,7 +116,8 @@ export function isGuestCodeFormat(value: string): boolean {
 
 /**
  * Resolves `/{slug}/{guestCode}`. The code only counts inside its own invitation: a code that
- * belongs to another invitation is not found.
+ * belongs to another invitation is not found, and so is any code of an invitation that keeps
+ * `/i/{shortId}` links (`events.guest_code_links` false).
  */
 export async function getInvitationContextBySlugAndCode(
 	eventSlug: string,
@@ -128,7 +129,7 @@ export async function getInvitationContextBySlugAndCode(
 	}
 
 	const event = await findEventBySlugService(safeSlug);
-	if (!event) throw new ApiError(404, 'not_found', 'Event not found.');
+	if (!event?.guestCodeLinks) throw new ApiError(404, 'not_found', 'Event not found.');
 
 	const invitation = await findGuestByEventAndCodePublic(event.id, guestCode);
 	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');

@@ -1,7 +1,7 @@
 -- Guest link codes: every insert path gets a random 4-character code without look-alikes,
 -- unique within its event only, and the generator stays private.
 begin;
-select plan(9);
+select plan(10);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at) values
   ('e5000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'guest-code-owner@example.test', now(), now());
@@ -91,6 +91,12 @@ select ok(
       and not tgisinternal
   ),
   'the insert trigger assigns codes'
+);
+
+select ok(
+  (select bool_and(guest_code_links) from public.events
+   where id in ('e5100000-0000-4000-8000-000000000001', 'e5100000-0000-4000-8000-000000000002')),
+  'events created from 2026-10-20 share /{slug}/{guest_code} links'
 );
 
 select * from finish();

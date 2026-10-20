@@ -25,6 +25,15 @@ const oliviaEvent = {
 	eventType: 'boda',
 	title: 'Boda de Olivia y Antonio',
 	brandingRemovalGuestLimit: 0,
+	guestCodeLinks: true,
+};
+
+/** An invitation created before 2026-10-20 keeps sending /i/{shortId} links. */
+const pastEvent = {
+	...oliviaEvent,
+	id: 'event-victoria',
+	slug: 'victoria-y-roberto',
+	guestCodeLinks: false,
 };
 
 beforeEach(() => {
@@ -59,6 +68,16 @@ describe('getInvitationContextBySlugAndCode', () => {
 		expect(context.inviteId).toBe('invite-olivia-1');
 		expect(context.eventSlug).toBe('olivia-y-antonio');
 		expect(context.guest.fullName).toBe('Francisco Prueba');
+	});
+
+	it('answers 404 for an invitation that keeps /i/ links, even with a real code', async () => {
+		mockedEventBySlug.mockResolvedValue(pastEvent);
+		mockedGuestByCode.mockResolvedValue({ inviteId: 'invite-victoria-1' });
+
+		await expect(
+			getInvitationContextBySlugAndCode('victoria-y-roberto', 'k7q2'),
+		).rejects.toMatchObject({ status: 404 });
+		expect(mockedGuestByCode).not.toHaveBeenCalled();
 	});
 
 	it('answers 404 for an unknown slug', async () => {

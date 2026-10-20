@@ -17,6 +17,8 @@ export interface EventRecord {
 	invitationId: string | null;
 	/** Guests that may hide Celebra-me branding; 0 means the add-on is off for the event. */
 	brandingRemovalGuestLimit: number;
+	/** Guest links use /{slug}/{guestCode}; false keeps /i/{shortId} (events before 2026-10-20). */
+	guestCodeLinks?: boolean;
 	createdAt: string;
 	updatedAt: string;
 }
