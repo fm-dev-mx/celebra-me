@@ -1,6 +1,7 @@
 ---
 // src/components/invitation/Footer.astro
 import '@/styles/invitation/_footer.scss';
+import '@/styles/invitation/_floating-cta.scss';
 import Logo from '@/components/ui/Logo.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { SharedSectionVariant } from '@/lib/invitation/section-variants';
@@ -32,6 +33,30 @@ const whatsappLink = getWhatsAppLink(whatsappMessage);
 const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getContactPhone());
 const rightsYear = new Date().getFullYear();
 ---
+
+<!-- Floating reply button; shown only when the invitation's profile turns it on (floating-cta.ts). -->
+<div class="floating-cta" data-floating-cta data-visible="false" hidden>
+	<div
+		id="floating-cta-calendar"
+		class="floating-cta__panel"
+		role="group"
+		aria-label="Agendar en su calendario"
+		data-floating-cta-panel
+		hidden
+	>
+	</div>
+	<a class="floating-cta__button" href="#rsvp" data-floating-cta-confirm>Confirmar asistencia</a>
+	<button
+		type="button"
+		class="floating-cta__button"
+		aria-expanded="false"
+		aria-controls="floating-cta-calendar"
+		data-floating-cta-calendar
+		hidden
+	>
+		Agendar
+	</button>
+</div>
 
 <footer
 	class:list={['invitation-footer', className]}
@@ -96,9 +121,11 @@ const rightsYear = new Date().getFullYear();
 </footer>
 
 <script>
+	import { initFloatingCta } from '@/lib/invitation/floating-cta';
 	import { holdFooterUntilSecondScroll } from '@/lib/invitation/footer-reveal';
 
 	holdFooterUntilSecondScroll(document.querySelector('.invitation-footer'));
+	initFloatingCta(document.querySelector('[data-floating-cta]'));
 </script>
 
 {hasReplay && (

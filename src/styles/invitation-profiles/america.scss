@@ -357,6 +357,18 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--america-ground-rgb: var(--america-night-rgb);
 	}
 
+	// The reply button floats as a small piece of the night: gold type on the dark, a gold hairline.
+	.floating-cta {
+		--invitation-floating-cta: on;
+		--floating-cta-bg: var(--america-night);
+		--floating-cta-ink: var(--america-night-gold);
+		--floating-cta-border: 1px solid rgb(var(--america-night-gold-rgb) / 45%);
+		--floating-cta-shadow: 0 0.6rem 1.6rem rgb(var(--america-night-rgb) / 35%);
+		--floating-cta-panel-bg: var(--america-night);
+		--floating-cta-panel-ink: var(--color-night-lilac);
+		--floating-cta-panel-muted: rgb(var(--america-night-gold-rgb) / 78%);
+	}
+
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll
 	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a gold
 	// hairline and a plain text contact link.
