@@ -122,11 +122,18 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-group-divider-opacity: 100%;
 	--family-group-padding: clamp(2.25rem, 7vw, 3rem) 0 0;
 	--family-group-title-color: var(--color-gold-ink);
-	--family-texture-image: #{$america-sun};
-	--family-texture-position: 50% calc(100% + 7rem);
-	--family-texture-size: min(14rem, 60vw);
-	--family-texture-repeat: no-repeat;
-	--family-texture-opacity: 24%;
+
+	// The Corona sun stands behind the parents as a medallion and turns a little as the page
+	// passes; the message is signed by her, and the parents lead the godparents in size.
+	--family-padding-block: clamp(3rem, 8vw, 4rem) clamp(4.5rem, 10vw, 6rem);
+	--family-parents-medallion: #{$america-sun};
+	--family-parents-medallion-size: min(20rem, 84vw);
+	--family-parents-medallion-opacity: 17%;
+	--family-parents-medallion-spin: family-medallion-spin;
+	--family-message-signature: '— América';
+	--family-message-signature-font: var(--font-calligraphy);
+	--family-message-signature-size: 2rem;
+	--family-message-signature-color: var(--color-gold-ink);
 	--family-member-joiner: 'y';
 	--family-member-joiner-color: var(--color-gold-ink);
 	--family-name-max-width: 22ch;

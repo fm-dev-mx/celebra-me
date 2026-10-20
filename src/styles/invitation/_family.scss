@@ -120,6 +120,19 @@
 		opacity: var(--family-divider-opacity, 82%);
 	}
 
+	// Optional signature under the message (--family-message-signature, default none), in its
+	// own face, size and colour.
+	&__message::after {
+		content: var(--family-message-signature, none);
+		display: block;
+		margin-top: 0.6rem;
+		font-family: var(--family-message-signature-font, inherit);
+		font-size: var(--family-message-signature-size, 1.5rem);
+		font-style: normal;
+		line-height: 1.2;
+		color: var(--family-message-signature-color, inherit);
+	}
+
 	&__message {
 		max-width: var(--family-message-max-width, 40rem);
 		margin: var(--family-message-margin, clamp(1.15rem, 2.5vw, 1.7rem) auto 0);
@@ -541,6 +554,22 @@
 		margin-inline: var(--family-parents-margin-inline, auto);
 		padding: var(--family-parents-padding, clamp(0.9rem, 2vw, 1.35rem) 0);
 
+		// Optional medallion behind the parents' names (--family-parents-medallion, default
+		// none), centred on them, which may turn slowly as the section scrolls.
+		&::before {
+			content: '';
+			position: absolute;
+			z-index: -1;
+			top: 50%;
+			left: 50%;
+			width: var(--family-parents-medallion-size, 16rem);
+			aspect-ratio: 1;
+			translate: -50% -50%;
+			background: var(--family-parents-medallion, none) center / contain no-repeat;
+			opacity: var(--family-parents-medallion-opacity, 100%);
+			pointer-events: none;
+		}
+
 		&::after {
 			content: var(--family-parents-after-content, none);
 			display: block;
@@ -608,6 +637,12 @@
 			animation-range: var(--family-shine-range-godparents, cover 40% cover 65%);
 		}
 
+		.family__group--parents::before {
+			animation: var(--family-parents-medallion-spin, none) auto linear;
+			animation-fill-mode: both;
+			animation-timeline: --family-shine;
+		}
+
 		.family__group + .family__group::before {
 			animation: var(--family-divider-draw, none) auto linear both;
 			animation-timeline: --family-shine;
@@ -625,6 +660,16 @@
 	100% {
 		background-position: 0 0;
 		filter: drop-shadow(0 0 0.35em var(--family-shine-glow, transparent));
+	}
+}
+
+@keyframes family-medallion-spin {
+	0% {
+		rotate: -24deg;
+	}
+
+	100% {
+		rotate: 24deg;
 	}
 }
 
