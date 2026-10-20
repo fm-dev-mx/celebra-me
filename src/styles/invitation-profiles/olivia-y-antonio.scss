@@ -602,6 +602,12 @@
 		--footer-divider-glow: none;
 		--footer-logo-filter: brightness(0) invert(1);
 		--footer-contact-icon-filter: brightness(0) invert(1);
+
+		// The contact is a quiet text link, as in America, so the reply's button is the only call to
+		// action in the footer; it keeps its 44 px tap height.
+		--footer-contact-border: 0;
+		--footer-contact-bg: none;
+		--footer-contact-padding: 0.5rem 0.25rem;
 		--footer-replay-color: rgb(var(--olivia-mist-rgb) / 88%);
 		--footer-replay-opacity: 100%;
 		--color-text-primary: var(--olivia-ivory);
