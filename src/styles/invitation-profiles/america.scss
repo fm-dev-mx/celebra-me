@@ -3,7 +3,7 @@
 // short night band. No painted art, light fields, deckle or gradients: the photographs lead, and
 // type carries the rest in two families (Cormorant for titles, EB Garamond for reading and small
 // capital labels; the script stays on the name). Three joins out of eleven boundaries, in a
-// bridge, bridge, climax cadence: the night rises on a diagonal under the patio photograph, the
+// bridge, bridge, climax cadence: the night rises on a slow horizon under the patio photograph, the
 // save-the-date print hangs out of the night into the paper, and the closing door rises into the
 // reply card under an asymmetric arch. Layout stays with the variants; the profile only sets tokens.
 // Rapunzel line motifs for the program: the Corona sun, a braided rule with three small flowers
@@ -14,9 +14,14 @@ $america-braid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 $america-braid-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23F3D9A4' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M14 6C17 0 19 0 22 6S27 12 30 6C33 0 35 0 38 6S43 12 46 6C49 0 51 0 54 6S59 12 62 6C65 0 67 0 70 6S75 12 78 6C81 0 83 0 86 6S91 12 94 6'/%3E%3Cpath d='M14 6C17 12 19 12 22 6S27 0 30 6C33 12 35 12 38 6S43 0 46 6C49 12 51 12 54 6S59 0 62 6C65 12 67 12 70 6S75 0 78 6C81 12 83 12 86 6S91 0 94 6'/%3E%3Cg transform='translate%286 6%29'%3E%3Ccircle r='1.6' fill='%23F3D9A4'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3Cg transform='translate%2898 6%29'%3E%3Ccircle r='1.6' fill='%23F3D9A4'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3Cg transform='translate%2854 6%29'%3E%3Ccircle r='1.6' fill='%23F3D9A4'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3C/svg%3E");
 $america-tower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 72' fill='none' stroke='%23C9A45C' stroke-width='1.2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M24 2v6M12 26 24 8l12 18'/%3E%3Cpath d='M14 26h20v44H14z'/%3E%3Cpath d='M10 26h28'/%3E%3Cpath d='M20 44v-6a4 4 0 0 1 8 0v6z'/%3E%3Cpath d='M26 44c3 6-4 10 0 16s-3 8 0 10'/%3E%3Cpath d='M14 56h-4M38 56h-4M14 64h20'/%3E%3C/svg%3E");
 
+// The night's horizon (a slow rise, deep on the left, under a gold hairline) and the small
+// flat lanterns that leave it into the mist.
+$america-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23211938' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
+$america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30'%3E%3Ccircle cx='12' cy='16' r='11' fill='%23E8A040' opacity='.16'/%3E%3Cpath fill='%23E8A040' d='M9.5 6h5v1.6c3 1 5 4 5 8.2 0 4.3-2.3 6.9-3.8 7.6H8.3c-1.5-.7-3.8-3.3-3.8-7.6 0-4.2 2-7.2 5-8.2z'/%3E%3Cpath fill='%23F3D9A4' opacity='.75' d='M11 10.5h2v9h-2z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-width='.8' d='M12 6V2'/%3E%3C/svg%3E");
+
 .event--america.theme-preset--storybook-lilac {
 	// Depths of the three joins, each reserved as padding on the side it enters.
-	--america-cut: clamp(3.5rem, 12vw, 6.5rem);
+	--america-cut: clamp(4.5rem, 14vw, 6.5rem);
 	--america-print-overlap: clamp(5rem, 22vw, 9rem);
 	--america-band-padding: clamp(4.5rem, 12vw, 7.5rem);
 	--america-gutter: clamp(1.5rem, 6vw, 4rem);
@@ -357,12 +362,12 @@ $america-tower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	}
 
 	// Join 1, the bridge into the night: the patio photograph sits on the mist with no mat or
-	// frame, and its bottom padding holds the diagonal the night rises on.
+	// frame, and its bottom padding holds the horizon the night rises on.
 	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
 		--section-band-paper: var(--color-lilac-mist);
 		--interlude-framed-bg: var(--color-lilac-mist);
 		--interlude-framed-padding: clamp(0.5rem, 3vw, 2rem) var(--america-gutter)
-			calc(clamp(3.5rem, 9vw, 6rem) + var(--america-cut));
+			calc(clamp(2.5rem, 7vw, 4.5rem) + var(--america-cut));
 		--interlude-framed-max-width: 30rem;
 		--interlude-framed-mat: 0;
 		--interlude-framed-mat-bg: transparent;
@@ -371,19 +376,19 @@ $america-tower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 		--interlude-framed-shadow: none;
 	}
 
-	// The night band: the countdown's ground is cut on a diagonal, deep on the left, and drawn
-	// over the patio padding. Its own padding holds the cut above and the hanging print below.
+	// The night band: the countdown's ground rises out of the mist on a slow curve, deep on the
+	// left, drawn over the patio padding under a gold hairline, and three small lanterns have
+	// already left it. Its own padding holds the horizon above and the hanging print below.
 	.invitation-section-wrapper[data-section-kind='countdown'] {
 		--intersection-depth: var(--america-cut);
 		--section-band-paper:
-			linear-gradient(
-					to bottom right,
-					transparent calc(50% - 0.5px),
-					var(--color-violet-night) 50%
-				)
-				left top / 100% var(--america-cut) no-repeat,
-			linear-gradient(var(--color-violet-night) 0 0) left var(--america-cut) / 100% 100%
-				no-repeat;
+			#{$america-lantern} left 8% top calc(var(--america-cut) * 0.36) / 1rem auto no-repeat,
+			#{$america-lantern} left 19% top calc(var(--america-cut) * 0.1) / 0.75rem auto no-repeat,
+			#{$america-lantern} left 30% top calc(var(--america-cut) * 0.02) / 1.15rem auto
+				no-repeat,
+			#{$america-horizon} left top / 100% var(--america-cut) no-repeat,
+			linear-gradient(var(--color-violet-night) 0 0) left calc(var(--america-cut) - 1px) /
+				100% 100% no-repeat;
 	}
 
 	.countdown-section {
@@ -497,7 +502,7 @@ $america-tower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg
 	}
 
 	// Join 3, the climax: the closing rises into the reply card's mist under the mirrored arch
-	// (crown right, opposite to the diagonal), cut from the closing paper with no ink line.
+	// (crown right, opposite to the horizon's rise), cut from the closing paper with no ink line.
 	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
 		--intersection-arch-ink: transparent;
 	}

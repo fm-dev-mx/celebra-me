@@ -44,10 +44,10 @@ const content: CanonicalEventContentInput = {
 	composition: {
 		intersections: {
 			// Three joins out of eleven boundaries, bridge, bridge, climax; every other boundary is
-			// a clean cut between paper and mist. The night rises on a diagonal (deep on the left)
+			// a clean cut between paper and mist. The night rises on a slow horizon (deep on the left)
 			// under the patio photograph, the save-the-date print hangs out of the night into the
 			// paper, and the closing door rises into the reply card under the mirrored arch (crown
-			// on the right, against the diagonal). The profile draws the diagonal and reserves
+			// on the right, against the rise). The profile draws the horizon and reserves
 			// each depth.
 			countdown: { family: 'overlap', source: 'interlude-after-quote' },
 			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
