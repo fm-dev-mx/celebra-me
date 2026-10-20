@@ -387,8 +387,30 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--itinerary-paper-desc-color: var(--color-violet-ink-soft);
 	--itinerary-paper-desc-color-sm: var(--color-violet-ink-soft);
 
-	// Reply card: one flat cream card with a hairline, on the mist.
+	// Reply card: one flat cream card with a hairline, on the mist. Pass and reply share one
+	// width and meet on a perforation, like a stub to tear off; the guest's name is written in
+	// the display italic (the script stays hers), with a candle dot between name and seats.
 	--reply-card-bg: var(--color-story-cream);
+	--reply-card-max-width: 30rem;
+	--reply-card-guest-size: clamp(2rem, 9vw, 2.75rem);
+	--reply-card-guest-style: italic;
+	--reply-card-guest-weight: 400;
+	--reply-card-divider:
+		radial-gradient(circle, var(--color-gold-ink) 2.5px, transparent 3px) center / 7px 7px
+			no-repeat,
+		linear-gradient(
+				rgb(var(--color-leaf-gold-rgb) / 70%),
+				rgb(var(--color-leaf-gold-rgb) / 70%)
+			)
+			center / 100% 1px no-repeat;
+	--reply-card-divider-width: 5rem;
+	--reply-card-divider-height: 7px;
+	--reply-card-seam: repeating-linear-gradient(
+		90deg,
+		rgb(var(--color-leaf-gold-rgb) / 70%) 0 4px,
+		transparent 4px 9px
+	);
+	--reply-card-seam-width: calc(100% - 2 * clamp(0.6rem, 2.4vw, 0.85rem));
 	--reply-card-mask-upper: none;
 	--reply-card-mask-lower: none;
 	--reply-card-shadow-upper: none;
