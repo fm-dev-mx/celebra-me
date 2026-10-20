@@ -185,7 +185,9 @@ $album-land-share: 0.85;
 		display: block;
 		margin-top: 0.5rem;
 		color: var(--gallery-album-ink);
+		font-family: var(--gallery-album-hint-font, inherit);
 		font-size: var(--gallery-album-hint-size);
+		font-style: var(--gallery-album-hint-style, inherit);
 		text-align: center;
 	}
 

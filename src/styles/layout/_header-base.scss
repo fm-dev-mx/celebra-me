@@ -554,6 +554,7 @@
 			border-radius: 999px;
 			background: var(--mobile-drawer-cta-bg, var(--mobile-drawer-cta-bg-fallback));
 			color: var(--mobile-drawer-cta-color, var(--mobile-drawer-cta-color-fallback));
+			font-family: var(--mobile-drawer-cta-font, inherit);
 			font-weight: 600;
 			font-size: 0.8rem;
 			box-shadow: var(--mobile-drawer-cta-shadow);

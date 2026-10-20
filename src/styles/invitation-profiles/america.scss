@@ -101,6 +101,7 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--header-action-size: var(--america-label-size);
 	--mobile-nav-subtitle-size: var(--america-label-size);
 	--mobile-nav-footer-copy-size: 0.75rem;
+	--mobile-drawer-cta-font: var(--font-body);
 	--family-title-size: var(--america-title-size);
 	--family-title-line-height: 1.1;
 	--family-title-letter-spacing: 0;
@@ -414,6 +415,10 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--gallery-title-line-height: 1.1;
 		--gallery-mosaic-gap: 0.5rem;
 		--gallery-mosaic-max-width: min(calc(100% - 2 * var(--america-gutter)), 60rem);
+
+		// The album's scroll cue speaks in the italic of the other quiet asides.
+		--gallery-album-hint-font: var(--font-display);
+		--gallery-album-hint-style: italic;
 	}
 
 	.gifts-section {
