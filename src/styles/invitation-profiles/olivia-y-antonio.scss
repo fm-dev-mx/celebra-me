@@ -603,13 +603,29 @@
 		--footer-logo-filter: brightness(0) invert(1);
 		--footer-contact-icon-filter: brightness(0) invert(1);
 
-		// The contact is a quiet text link, as in America, so the reply's button is the only call to
-		// action in the footer; it keeps its 44 px tap height.
+		// Three levels under the reply: the couple's farewell with the replay link, then a short
+		// rule, then the platform (brand, contact and rights) in a dim mist. The contact is a quiet
+		// text link, as in America, so the reply's button is the only call to action; it keeps its
+		// 44 px tap height.
+		--footer-divider-display: none;
+		--footer-content-gap: 0.5rem;
+		--footer-replay-order: -1;
+		--footer-replay-color: var(--olivia-champagne);
+		--footer-replay-opacity: 100%;
+		--footer-primary-row-direction: row;
+		--footer-platform-rule: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--olivia-champagne-rgb) / 35%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.5rem;
+		--footer-powered-opacity: 62%;
 		--footer-contact-border: 0;
 		--footer-contact-bg: none;
 		--footer-contact-padding: 0.5rem 0.25rem;
-		--footer-replay-color: rgb(var(--olivia-mist-rgb) / 88%);
-		--footer-replay-opacity: 100%;
+		--footer-contact-color: rgb(var(--olivia-mist-rgb) / 70%);
+		--footer-contact-weight: 400;
 		--color-text-primary: var(--olivia-ivory);
 		--color-text-secondary: var(--olivia-ivory);
 		--color-text-muted: rgb(var(--olivia-mist-rgb) / 82%);

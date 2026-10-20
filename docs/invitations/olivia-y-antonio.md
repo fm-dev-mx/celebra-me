@@ -178,7 +178,9 @@ America's: a pull raises a champagne crescent moon on its thread (the crescent t
 and the footer opens on that moon with «Bajo la misma luna», «¿Nos acompaña el 18 de diciembre?»,
 the reply button and «Antes del miércoles 18 de noviembre» while the guest has not answered; after a
 yes it keeps «Su lugar bajo esta luna ya está apartado.». Without a personal link the reply stays
-away.
+away. Under the reply the footer reads in three levels: «Con cariño» with the champagne «Volver a
+ver la apertura» link, a short rule, and then the platform (brand, a plain «Contáctenos» link and
+the rights) in a dim mist, so the reply's button is the only call to action.
 
 ## Design Direction
 
