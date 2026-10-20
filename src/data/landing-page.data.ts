@@ -8,7 +8,9 @@ import {
 } from '@/data/promo-campaign.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 
-const PRIMARY_CTA_LABEL = 'Cotizar mi invitación';
+export const PRIMARY_CTA_LABEL = 'Quiero mi invitación';
+/** Small reassurance line shown under the primary WhatsApp CTA in the header and the hero. */
+export const PRIMARY_CTA_TRUST_LINE = 'Respuesta en minutos · Sin compromiso';
 
 /** Featured demo opened by the hero secondary action ("Ver una invitación"). */
 const HERO_DEMO_SLUG = 'demo-xv-celestial-blue';
@@ -38,6 +40,7 @@ export const landingData: LandingPageData = {
 		},
 		paymentNote: 'Sin anticipo: pague al recibir su invitación terminada.',
 		primaryCtaLabel: PRIMARY_CTA_LABEL,
+		primaryCtaTrustLine: PRIMARY_CTA_TRUST_LINE,
 		secondaryCtaLabel: 'Ver una invitación',
 		secondaryCtaUrl: heroDemo.href,
 		secondaryCtaDemoSlug: heroDemo.slug,

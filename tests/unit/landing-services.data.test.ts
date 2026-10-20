@@ -109,7 +109,7 @@ describe('landing primary CTA and trust copy', () => {
 			landingData.howItWorks.cta?.label,
 			landingData.contact.cta?.label,
 		];
-		expect(new Set(labels)).toEqual(new Set(['Cotizar mi invitación']));
+		expect(new Set(labels)).toEqual(new Set(['Quiero mi invitación']));
 	});
 
 	it('publishes real, anonymous testimonials with a privacy notice', () => {

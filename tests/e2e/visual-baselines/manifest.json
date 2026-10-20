@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-20T04:37:03.390Z",
+    "generatedAt": "2026-10-20T13:32:24.052Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-        "cssSha256": "d1944b0b7bae8bcb312d9368d4fdc30894bc7a6a7bbd22a67fcfa1c19188976f",
+        "cssSha256": "292448376bcf6a473c8f87f2e8da2f54a674c104e37bfde00c09f47c339b6d14",
         "assetSha256": "51cfd08be8b87c98bedfa1c76a84ce159b349b7b660fc2d72d50f7eb8fbc8930",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2312,7 +2312,7 @@
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
             "sha256": "f58f4d0193b6f54d3493f91f36d19f09c19f75160705dd62fc708ef58f01a041",
-            "contentHash": "97f55928a2c24e4d5a57b741e08fa15e9968d5ea8ef72127a8c23c5b535416a9",
+            "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2324,7 +2324,7 @@
             "viewport": "desktop",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
             "sha256": "860f788a2036ef307ebd9f5f4a1d47948d35a436635294b93f43a86f4282e282",
-            "contentHash": "97f55928a2c24e4d5a57b741e08fa15e9968d5ea8ef72127a8c23c5b535416a9",
+            "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2401,9 +2401,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "4b08a5399213fb1cf6ca26333f4f6f984d0f64a5",
+    "referenceSha": "9afbe2ffed6f61eb91026415dd0f1cfaa246c5da",
     "variantManifest": {
-        "generatedAt": "2026-10-20T04:37:03.390Z",
+        "generatedAt": "2026-10-20T13:32:24.052Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2416,7 +2416,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "d1944b0b7bae8bcb312d9368d4fdc30894bc7a6a7bbd22a67fcfa1c19188976f",
+            "cssSha256": "292448376bcf6a473c8f87f2e8da2f54a674c104e37bfde00c09f47c339b6d14",
             "assetSha256": "51cfd08be8b87c98bedfa1c76a84ce159b349b7b660fc2d72d50f7eb8fbc8930",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4277,10 +4277,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "4b08a5399213fb1cf6ca26333f4f6f984d0f64a5"
+        "referenceSha": "9afbe2ffed6f61eb91026415dd0f1cfaa246c5da"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-20T04:37:03.395Z",
+        "generatedAt": "2026-10-20T13:32:24.055Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4293,7 +4293,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "d1944b0b7bae8bcb312d9368d4fdc30894bc7a6a7bbd22a67fcfa1c19188976f",
+            "cssSha256": "292448376bcf6a473c8f87f2e8da2f54a674c104e37bfde00c09f47c339b6d14",
             "assetSha256": "51cfd08be8b87c98bedfa1c76a84ce159b349b7b660fc2d72d50f7eb8fbc8930",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4744,7 +4744,7 @@
                 "viewport": "mobile",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
                 "sha256": "f58f4d0193b6f54d3493f91f36d19f09c19f75160705dd62fc708ef58f01a041",
-                "contentHash": "97f55928a2c24e4d5a57b741e08fa15e9968d5ea8ef72127a8c23c5b535416a9",
+                "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4756,7 +4756,7 @@
                 "viewport": "desktop",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
                 "sha256": "860f788a2036ef307ebd9f5f4a1d47948d35a436635294b93f43a86f4282e282",
-                "contentHash": "97f55928a2c24e4d5a57b741e08fa15e9968d5ea8ef72127a8c23c5b535416a9",
+                "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4833,9 +4833,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "4b08a5399213fb1cf6ca26333f4f6f984d0f64a5"
+        "referenceSha": "9afbe2ffed6f61eb91026415dd0f1cfaa246c5da"
     },
-    "candidateManifestSha256": "1724dfe4017a8c1302d9d7846fc20385b47eb0029f93773edf72f9f0287d7fdc",
-    "acceptedFromCommit": "4b08a5399213fb1cf6ca26333f4f6f984d0f64a5",
-    "acceptedAt": "2026-10-20T04:37:46.998Z"
+    "candidateManifestSha256": "7d1849b2fe020983a34a2911536c28500e623d6e17488362342275d9ccfcd58e",
+    "acceptedFromCommit": "9afbe2ffed6f61eb91026415dd0f1cfaa246c5da",
+    "acceptedAt": "2026-10-20T13:32:50.484Z"
 }

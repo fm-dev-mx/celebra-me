@@ -13,6 +13,8 @@ export interface HeroData {
 	};
 	paymentNote: string;
 	primaryCtaLabel: string;
+	/** Reassurance line rendered right under the primary CTA. */
+	primaryCtaTrustLine: string;
 	secondaryCtaLabel: string;
 	secondaryCtaUrl: string;
 	secondaryCtaDemoSlug?: string;

@@ -102,6 +102,24 @@
 		}
 	}
 
+	// The CTA and its reassurance line stack as one unit; the line hangs under the pill.
+	&__cta-group {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+	}
+
+	&__trust {
+		color: var(--header-nav-login-color);
+		font-family: var(--font-body);
+		font-size: 0.68em;
+		font-weight: 400;
+		letter-spacing: 0.02em;
+		line-height: 1.2;
+		text-shadow: var(--header-nav-login-shadow, none);
+	}
+
 	// The header carries the same WhatsApp quote CTA as the page, in a compact outline style.
 	&__cta.whatsapp-button {
 		min-width: 0;
@@ -142,6 +160,21 @@
 	letter-spacing: 0.02em;
 	font-size: 0.95rem;
 	font-weight: 700;
+}
+
+#home-header .mobile-nav-actions__cta-group {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+#home-header .mobile-nav-actions__trust {
+	color: var(--mobile-drawer-footer-copy);
+	font-family: var(--font-body);
+	font-size: 0.78em;
+	letter-spacing: 0.02em;
+	text-align: center;
 }
 
 // --- State Overrides (scoped to #home-header, unified contract) ---
