@@ -125,6 +125,26 @@ without a change of surface.
   not a climax. Keep it to a few boundaries, never on one carrying photography at its top edge, and
   check that the rise clears the outgoing section's last line at every proof viewport.
 
+### Stack
+
+Use a stack when a section should arrive like a second sheet laid on the previous one, for example
+an RSVP rising over a personal pass.
+
+- The source section pins at the top of the viewport (`position: sticky`,
+  `--intersection-stack-top`, default `0`) while the incoming section scrolls over it on an opaque
+  ground: `--intersection-stack-surface`, else the section band, else `--intersection-surface`.
+- The incoming sheet can draw a top edge (`--intersection-stack-edge`), round its shoulders
+  (`--intersection-stack-radius`) and cast `--intersection-stack-shadow` upward.
+- With `--intersection-stack-recede-scale` and `--intersection-stack-recede-dim` (on the source) the
+  pinned section shrinks and darkens while it is covered (scroll-driven, `transform` and `filter`
+  only). Reduced motion and browsers without scroll timelines keep it still.
+- It applies only when the declared source renders right before the incoming section: the render
+  marks that source with `data-intersection-anchor="stack"`. When the source is absent (a pass that
+  only invited guests see), both sections stay in normal flow.
+- Keep the source no taller than the smallest proof viewport, or its bottom never shows before it is
+  covered, and every section after the stack must paint an opaque ground, since the pinned source
+  stays behind them until the sections container ends.
+
 ## Secondary Golden Thread
 
 A champagne, antique-gold, or theme-equivalent thread may connect selected moments:
@@ -226,9 +246,11 @@ uses it to carry one tonal band across section kinds whose variants draw no back
 
 Reusable mechanics are selected before rendering and copied onto stable wrapper attributes:
 
-- `data-intersection`: `neutral`, `arch`, `overlap`, `atmospheric-blend`, `pattern-band`, or
-  `folio`;
+- `data-intersection`: `neutral`, `arch`, `overlap`, `atmospheric-blend`, `pattern-band`, `folio`,
+  or `stack`;
 - `data-intersection-source`: explicit source identity from the selected composition profile;
+- `data-intersection-anchor`: `stack` on the source wrapper of a stack whose declared source renders
+  right before it;
 - `data-section-kind`: stable incoming section kind.
 
 Selection is owned by typed `composition.intersections` and copied through the render plan. CSS must

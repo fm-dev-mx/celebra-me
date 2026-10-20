@@ -66,7 +66,8 @@ const content: CanonicalEventContentInput = {
 			gallery: { family: 'atmospheric-blend', source: 'location' },
 			gifts: { family: 'atmospheric-blend', source: 'gallery' },
 			'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
-			rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
+			// The RSVP rises over the pinned pass like a card laid on it.
+			rsvp: { family: 'stack', source: 'personalized-access' },
 			thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 		},
 	},
@@ -289,6 +290,11 @@ const content: CanonicalEventContentInput = {
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		confirmationMessage: 'Su respuesta quedó registrada. Le esperamos.',
+		labels: {
+			name: 'Su nombre',
+			notesLabel: 'Mensaje para Olivia y Antonio',
+			notesPlaceholder: 'Escriba unas palabras para los novios…',
+		},
 		responseMessages: {
 			confirmed: {
 				title: 'Confirmación recibida, {guestName}.',

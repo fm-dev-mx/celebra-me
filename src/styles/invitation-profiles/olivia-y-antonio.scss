@@ -387,6 +387,8 @@
 	// The pass is a navy ticket on the deep-navy chapter, champagne metal and ivory ink, like the
 	// venue panels; the welcome line steps down so the guest's name leads.
 	.invitation-section-wrapper[data-section-kind='personalized-access'] {
+		--intersection-stack-recede-scale: 0.94;
+		--intersection-stack-recede-dim: 0.62;
 		--formal-chapter-band: var(--olivia-navy-deep);
 		--formal-chapter-band-rgb: var(--olivia-navy-deep-rgb);
 		--formal-chapter-cream: var(--olivia-ivory);
@@ -448,6 +450,16 @@
 	.invitation-section-wrapper[data-section-kind='personalized-access'],
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
 		--intersection-blend: none;
+	}
+
+	// The RSVP is laid over the pinned pass as a second sheet: a hairline champagne edge, rounded
+	// shoulders and a deep shadow, while the pass sinks back a little under it (recede tokens on the
+	// pass block above).
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--intersection-stack-surface: var(--olivia-navy-deep);
+		--intersection-stack-edge: 1px solid rgb(var(--olivia-champagne-rgb) / 30%);
+		--intersection-stack-radius: 1.75rem;
+		--intersection-stack-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 45%);
 	}
 
 	.rsvp-section {
