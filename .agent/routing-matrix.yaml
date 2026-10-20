@@ -102,6 +102,13 @@ routes:
       rules:
           - '.agent/rules/workflow.md'
 
+    - task_type: 'coordinator_board'
+      description: 'Coordinator board tasks, their fields and closing, and pnpm board:verify'
+      rules:
+          - '.agent/rules/board.md'
+      docs:
+          - 'docs/core/coordinator-board.md'
+
     - task_type: 'testing_qa'
       description: 'Automated tests or regression coverage; add accessibility/metadata only if affected'
       skills:
