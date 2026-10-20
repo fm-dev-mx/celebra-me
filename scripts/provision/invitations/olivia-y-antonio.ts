@@ -77,6 +77,7 @@ const content: CanonicalEventContentInput = {
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2026-12-18T19:00:00.000Z',
 		variant: 'night-arch',
+		scrollLabel: 'Descubra más',
 		// Standing on the garden dock, framed by the arch; one 2:3 frame in two widths.
 		backgroundImage: 'heroArchDesktop',
 		backgroundImageMobile: 'heroArchMobile',
@@ -86,6 +87,8 @@ const content: CanonicalEventContentInput = {
 	},
 	envelope: {
 		disabled: false,
+		// Navy night envelope; the letter's arched window flies onto the cover arch.
+		revealVariant: 'night-envelope',
 		cardLabel: 'BODA',
 		envelopeName: COUPLE,
 		teaserDetails: '18 · DIC · 2026 · LOS MOCHIS',
@@ -100,11 +103,6 @@ const content: CanonicalEventContentInput = {
 		stampYear: '2026',
 		microcopy: 'Tenemos el honor de invitarle',
 		tooltipText: 'Abrir invitación',
-		closedPalette: {
-			primary: 'surfacePrimary',
-			accent: 'actionAccent',
-			background: 'surfaceDark',
-		},
 	},
 	quote: {
 		text: 'El amor es paciente, es bondadoso. Todo lo disculpa, todo lo cree, todo lo espera,',
@@ -183,6 +181,8 @@ const content: CanonicalEventContentInput = {
 			showNavigationButtons: true,
 			// Each card opens with its time and keeps one «Cómo llegar» button, no map tile.
 			venueCard: 'compact',
+			// Guests save each part of the night to their calendar from its card.
+			showCalendarLinks: true,
 		},
 		introEyebrow: 'Los Mochis, Sinaloa',
 		introHeading: EVENT_DATE_HEADING,
@@ -229,7 +229,7 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gallery: {
-		// A pinned track of nine photos; at rest, full-width 4:5 features between 3:4 pairs.
+		// A pinned track of seven photos (one dance, not three); at rest, 4:5 features and 3:4 pairs.
 		variant: 'pinned-track',
 		eyebrow: 'Galería',
 		title: 'Nuestra historia',
@@ -256,16 +256,6 @@ const content: CanonicalEventContentInput = {
 				layoutRole: 'feature',
 				alt: 'Antonio inclina a Olivia en un paso de baile en el jardín.',
 				focalPoint: '50% 50%',
-			},
-			{
-				image: 'gallery05',
-				alt: 'Olivia y Antonio en un paso de baile sobre la arena.',
-				focalPoint: '55% 50%',
-			},
-			{
-				image: 'gallery06',
-				alt: 'Olivia y Antonio bailan en un sendero entre árboles.',
-				focalPoint: '50% 45%',
 			},
 			{
 				image: 'gallery07',

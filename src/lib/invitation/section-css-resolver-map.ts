@@ -29,6 +29,7 @@ export interface InvitationCssLoadItem {
 }
 
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
+	'night-envelope': 'night-envelope',
 	'satin-filigree': 'satin-filigree',
 	'seaside-lineart': 'seaside-lineart',
 	'storybook-lanterns': 'storybook-lanterns',

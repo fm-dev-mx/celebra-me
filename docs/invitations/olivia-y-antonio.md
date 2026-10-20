@@ -157,6 +157,12 @@ thankYou. The itinerary held only the ceremony (19:00) and the reception (21:00)
 the location route (`night-route`): one numbered stop per venue, led by its time. The location
 indications carry the dress code and the personal-pass reminder.
 
+Night round (2026-10-20): `night-envelope` reveal whose letter window flies onto the `night-arch`
+cover; the shore interlude darkens to navy on scroll; venue cards offer «Agendar en el calendario»;
+the RSVP register unfolds on scroll; Regalos carries a fine-line envelope mark; the gallery keeps
+seven photographs (one dance instead of three). RSVP and chrome text follow the three type voices
+and the 12 px floor.
+
 ## Design Direction
 
 | decision                          | value                                                    | classification          |
@@ -179,7 +185,7 @@ full-bleed navy closing.
 | concern                                                  | decision / evidence                                                         | status  |
 | -------------------------------------------------------- | --------------------------------------------------------------------------- | ------- |
 | Typography roles (display, heading, body, metadata)      | Playfair 500 navy titles; Cinzel labels in champagne ink (4.5:1 on ivory)   | applied |
-| Vertical rhythm and density                              | Page at 390 px is 9,931 px tall (target 9,500), accepted by the owner       | applied |
+| Vertical rhythm and density                              | Page at 390 px is 10,437 px tall with the night round (7-photo gallery)     | applied |
 | Surface hierarchy (open flow vs cards/containers)        | Open ivory flow; compact time-led venue cards; formal RSVP register         | applied |
 | Photographic treatment (role, crop, focal point, filter) | One role per photograph (see inventory); champagne hairline frame on photos | applied |
 | Section-intersection intent and narrative cadence        | `composition.intersections` in the definition is the executable record      | applied |
@@ -191,7 +197,7 @@ full-bleed navy closing.
 | ------------------------------------------- | ----------------------------------------------------------------------------- |
 | Mechanical render/capture result            | pass — PR #361 captures at 390 and 1280 px, 2026-10-19                        |
 | Whole-invitation responsive inspection      | Owner review of the published v0.34 design on an Android phone, 2026-10-20    |
-| Section boundaries and narrative continuity | pass; a second round (night arch) may follow as a republication               |
+| Section boundaries and narrative continuity | pass; night round (arch, night envelope, dusk shore) ships as a republication |
 | Human creative outcome                      | `ACCEPTED`                                                                    |
 | Reviewer and date                           | Francisco Mendoza (owner), 2026-10-20, tracking board decisions d075 and d076 |
 | Blocking reason or owner follow-up          | None blocking; the song (MUSIC_AUDIO) stays an owner follow-up                |

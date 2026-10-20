@@ -19,8 +19,25 @@
 	overflow: clip;
 	padding-block: 0;
 
+	// The scene grows with the track: one pinned screen plus a fifth of a screen per photo, so
+	// seven photos scroll through in 2.4 screens and every count keeps the same pace.
+	.scroll-scene {
+		--scene-length: calc(1 + var(--gallery-track-count, 9) * var(--gallery-track-pace, 0.2));
+	}
+
 	.gallery-section__container {
 		padding-block: var(--gallery-section-padding-block);
+	}
+
+	// The eyebrow speaks in the invitation's label voice, like the other section eyebrows.
+	.gallery-section__eyebrow {
+		display: block;
+		font-family: var(--font-label);
+		font-size: var(--gallery-track-eyebrow-size, 0.8125rem);
+		font-weight: 600;
+		letter-spacing: var(--gallery-track-eyebrow-tracking, 0.16em);
+		text-transform: uppercase;
+		color: var(--gallery-track-accent, var(--color-action-accent));
 	}
 
 	.gallery-grid {

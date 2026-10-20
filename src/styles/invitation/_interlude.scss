@@ -94,6 +94,7 @@
 			--interlude-indexed-top-ink-height: var(--interlude-top-ink-height-#{$index});
 			--interlude-indexed-top-ink: var(--interlude-top-ink-#{$index});
 			--interlude-indexed-top-ink-mask: var(--interlude-top-ink-mask-#{$index});
+			--interlude-indexed-dusk: var(--interlude-dusk-#{$index});
 
 			min-height: var(--interlude-min-height-#{$index}, var(--interlude-min-height-resolved));
 		}
@@ -222,6 +223,18 @@
 		}
 	}
 
+	// Opt-in dusk: `--interlude-dusk-<n>: interlude-dusk` darkens the nth pause toward
+	// `--interlude-dusk-ink-rgb` while the reader scrolls through it (day turning to night).
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			&::after {
+				animation: var(--interlude-indexed-dusk, none) linear both;
+				animation-timeline: view();
+				animation-range: cover 25% cover 85%;
+			}
+		}
+	}
+
 	// ---- reduced motion ----
 	@media (prefers-reduced-motion: reduce) {
 		&__media {
@@ -303,5 +316,15 @@
 
 	&::after {
 		content: none;
+	}
+}
+
+@keyframes interlude-dusk {
+	from {
+		background-color: rgb(var(--interlude-dusk-ink-rgb, 20 30 54) / 0%);
+	}
+
+	to {
+		background-color: rgb(var(--interlude-dusk-ink-rgb, 20 30 54) / 55%);
 	}
 }

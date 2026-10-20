@@ -38,8 +38,20 @@
 	--color-text-on-light: rgb(var(--olivia-navy-rgb) / 82%);
 	--countdown-section-background: var(--olivia-ivory);
 
+	// Chrome text (menu, section links, footer) holds the 12px floor of the invitation copy.
+	--mobile-nav-subtitle-size: 0.75rem;
+	--mobile-nav-copy-size: 0.75rem;
+	--section-nav-label-size: 0.75rem;
+	--footer-rights-size: 0.75rem;
+	--footer-replay-font-size: 0.75rem;
+	--footer-control-font-size: 0.75rem;
+
 	// The shore pause after the families stays a breath, not a full screen, on phones.
 	--interlude-min-height-2-sm: 62svh;
+
+	// The shore darkens to navy as the reader passes it: dusk before the night of the venues.
+	--interlude-dusk-2: interlude-dusk;
+	--interlude-dusk-ink-rgb: var(--olivia-navy-deep-rgb);
 
 	// Photographs drawn once inside a champagne hairline (family, save-the-date, closing).
 	--hairline-frame-display: block;
@@ -109,6 +121,12 @@
 		--gifts-title-transform: none;
 		--gifts-title-letter-spacing: 0;
 		--gifts-title-color: var(--olivia-navy);
+
+		// A fine-line envelope over the title, the same stationery as the opening.
+		--gifts-header-mark-display: block;
+		--gifts-header-mark-width: 2.5rem;
+		--gifts-header-mark-color: var(--olivia-champagne-ink);
+		--gifts-header-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20' fill='none' stroke='%23000' stroke-width='1'%3E%3Crect x='.5' y='.5' width='29' height='19' rx='1'/%3E%3Cpath d='M.5 .5 15 11 29.5 .5M.5 19.5 11 8.2M29.5 19.5 19 8.2'/%3E%3C/svg%3E");
 	}
 
 	// The vow: italic Playfair on ivory, the last clause apart in slate.
@@ -303,6 +321,12 @@
 		--location-indication-number-display: none;
 		--location-plates-notes-max-width: 46rem;
 
+		// The link to the gallery sits on navy, where the slate emphasis would not read.
+		.section-nav-button {
+			--color-text-emphasis: var(--olivia-champagne);
+			--section-nav-label-opacity: 100%;
+		}
+
 		.event-location__card-title {
 			--location-title-font-family: var(--font-label);
 			--location-title-font-size: var(--olivia-label-size);
@@ -311,108 +335,28 @@
 		}
 	}
 
-	// Ivory stationery with a navy seal; the reveal state machine stays untouched.
-	.envelope-wrapper[data-variant='jewelry-box-wedding'] {
-		--env-bg:
-			radial-gradient(circle at 50% 28%, rgb(255 255 255 / 90%), transparent 42%),
-			linear-gradient(
-				145deg,
-				rgb(var(--olivia-dusty-rgb)) 0%,
-				var(--olivia-mist) 49%,
-				rgb(138 162 190) 100%
-			);
-		--env-paper-bg:
-			linear-gradient(154deg, rgb(255 254 250 / 98%), rgb(var(--olivia-ivory-rgb) / 96%)),
-			repeating-linear-gradient(
-				0deg,
-				transparent 0 3px,
-				rgb(var(--olivia-navy-rgb) / 2%) 3px 4px
-			);
-		--env-paper-sheen: none;
-		--env-paper-border: rgb(var(--olivia-slate-rgb) / 30%);
-		--env-text-primary: var(--olivia-navy);
-		--env-text-secondary: rgb(var(--olivia-navy-rgb) / 72%);
-
-		// The closed palette's ivory is meant for a dark content background; this variant keeps the
-		// light blue stationery, so the open label below the envelope stays navy.
-		--env-instruction-color: var(--env-text-secondary);
-		--env-seal-accent: var(--olivia-navy);
-		--env-seal-visual-filter: drop-shadow(0 7px 10px rgb(var(--olivia-navy-deep-rgb) / 30%));
-		--env-shadow-container:
-			0 24px 54px rgb(var(--olivia-navy-rgb) / 22%),
-			0 4px 10px rgb(var(--olivia-navy-rgb) / 12%);
-		--env-pocket-shadow: inset 0 16px 26px rgb(var(--olivia-navy-rgb) / 9%);
-		--env-name-font-weight: 500;
-		--env-name-tracking: 0.05em;
-		--env-name-color: var(--env-text-primary);
-		--env-name-text-shadow: 0 1px 0 rgb(255 255 255 / 65%);
-		--reveal-card-bg: var(--olivia-ivory);
-		--reveal-card-text-primary: var(--olivia-navy);
-		--reveal-card-text-secondary: rgb(var(--olivia-navy-rgb) / 68%);
-		--reveal-card-border: rgb(var(--olivia-slate-rgb) / 42%);
-		--reveal-card-accent: var(--olivia-champagne);
-		--reveal-card-radius: 1px;
-		--reveal-card-grain-opacity: 0.7;
-		--reveal-card-shadow:
-			0 2px 3px rgb(var(--olivia-navy-rgb) / 8%),
-			0 22px 48px rgb(var(--olivia-navy-rgb) / 18%), inset 0 0 0 1px rgb(255 255 255 / 62%);
-
-		// Inner hairline frame (0.62rem inset) drawn as four background lines over the paper.
-		--reveal-card-sheen:
-			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) left 0.62rem top
-				0.62rem / calc(100% - 1.24rem) 1px no-repeat,
-			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) left 0.62rem
-				bottom 0.62rem / calc(100% - 1.24rem) 1px no-repeat,
-			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) left 0.62rem top
-				0.62rem / 1px calc(100% - 1.24rem) no-repeat,
-			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) right 0.62rem top
-				0.62rem / 1px calc(100% - 1.24rem) no-repeat,
-			radial-gradient(circle at 18% 15%, rgb(255 255 255 / 62%), transparent 28%),
-			repeating-linear-gradient(
-				0deg,
-				transparent 0 3px,
-				rgb(var(--olivia-navy-rgb) / 2.4%) 3px 4px
-			);
-		--reveal-card-inner-gap: 0.42rem;
-		--reveal-card-inner-padding: clamp(2rem, 6vw, 2.8rem) clamp(1.65rem, 5vw, 2.6rem);
-		--reveal-card-meta-font: var(--font-label);
-		--reveal-card-meta-size: clamp(0.58rem, 1.7vw, 0.68rem);
-		--reveal-card-meta-tracking: 0.28em;
-		--reveal-card-name-size: clamp(2rem, 8vw, 2.8rem);
-		--reveal-card-name-line-height: 1.04;
-		--reveal-card-ampersand-color: var(--reveal-card-accent);
-		--reveal-card-tagline-margin: 0.35rem 0 0;
-		--reveal-card-tagline-font: var(--font-display);
-		--reveal-card-tagline-color: var(--reveal-card-text-secondary);
-		--reveal-card-divider-width: min(8rem, 48%);
-		--reveal-card-divider-margin: 0.65rem 0 0;
-
-		.envelope-flap {
-			--env-paper-grain:
-				linear-gradient(144deg, rgb(var(--olivia-slate-rgb) / 12%), transparent 40%),
-				repeating-linear-gradient(
-					0deg,
-					transparent 0 3px,
-					rgb(var(--olivia-navy-rgb) / 2%) 3px 4px
-				);
-			--env-paper-grain-opacity: 100%;
-		}
-
-		.envelope-details {
-			--env-meta-font: var(--font-label);
-			--env-details-font-weight: 500;
-			--env-details-tracking: 0.25em;
-		}
-
-		.envelope-seal-hint {
-			--env-meta-font: var(--font-label);
-			--env-open-label-spacing: 0.25em;
-			--env-open-label-spacing-compact: 0.25em;
-			--env-seal-hint-color: var(--env-text-secondary);
-		}
+	// Night envelope: the couple's navy and champagne, the ivory letter in navy ink.
+	.envelope-wrapper[data-variant='night-envelope'] {
+		--night-envelope-field: var(--olivia-navy);
+		--night-envelope-field-deep: var(--olivia-navy-deep);
+		--night-envelope-ink: var(--olivia-champagne);
+		--night-envelope-star: var(--olivia-ivory);
+		--night-envelope-paper: rgb(34 49 84);
+		--night-envelope-liner: rgb(48 68 108);
+		--night-envelope-card-bg: var(--olivia-ivory);
+		--night-envelope-card-ink: var(--olivia-navy);
+		--night-envelope-card-label-ink: var(--olivia-champagne-ink);
 	}
 
-	// Pass and reply register as navy chapters with champagne metal.
+	// Pass and reply register as navy chapters with champagne metal. The register and the pass
+	// declare their own faces on the element, so the invitation's three voices are restated there.
+	.rsvp[data-variant='formal-register'],
+	.personalized-access[data-variant='formal-pass'] {
+		--formal-chapter-display: var(--font-display);
+		--formal-chapter-body: var(--font-body);
+		--formal-chapter-label-font: var(--font-label);
+	}
+
 	.rsvp {
 		--color-glass-bg: rgb(var(--olivia-ivory-rgb) / 65%);
 		--color-glass-border: rgb(var(--olivia-dusty-rgb) / 45%);
@@ -437,6 +381,7 @@
 		--formal-register-eyebrow-weight: 600;
 		--formal-register-eyebrow-tracking: var(--olivia-label-tracking);
 		--rsvp-section-min-height: auto;
+		--formal-register-open: formal-register-open;
 	}
 
 	// Closing: the last photograph sinks into deep navy; the couple's names in script, champagne.

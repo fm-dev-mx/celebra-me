@@ -154,9 +154,11 @@
 		transform-origin: top;
 	}
 
-	// Each stop is an opaque panel, so a panel sliding over another hides it.
+	// Each stop is an opaque panel, so a panel sliding over another hides it. Panels sit above the
+	// rail lines, so the line runs behind each stop marker, not across it.
 	.event-location__card-wrapper {
 		position: relative;
+		z-index: 1;
 		counter-increment: route-stop;
 		padding: var(--location-route-panel-pad);
 		border: 1px solid var(--location-route-line);
