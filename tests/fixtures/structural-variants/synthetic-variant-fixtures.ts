@@ -301,6 +301,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
 	'feature-stack',
 	'mirrored-mosaic',
+	'album-assemble',
 	'pinned-track',
 ]);
 
@@ -476,6 +477,13 @@ export function getIncompatiblePrerequisiteExpectation(
 					expectedPath: ['gallery', 'items'],
 					expectedMessageSubstring:
 						'mirrored-mosaic requires at least three gallery items',
+				};
+			}
+			if (entry.variant === 'album-assemble') {
+				return {
+					expectedPath: ['gallery', 'items'],
+					expectedMessageSubstring:
+						'album-assemble requires three to eight gallery items',
 				};
 			}
 			if (entry.variant === 'feature-stack') {

@@ -1507,12 +1507,43 @@
 // --location-enclosure-reserved-title-{font,size,caps,line-height,tracking,color,tilt}
 // A masked (deckle) card clips its own shadow; `edge-shadow` is a drop-shadow filter on the
 // container that follows the deckle instead.
+// Optional, for a hanging tag (all default to the plain card):
+//   --location-enclosure-shape / -outline   Card clip-path and its inner hairline outline
+//   --location-enclosure-frame-display / -frame / -frame-shape / -frame-inset
+//                                          A hairline that follows the shape (two stacked layers)
+//   --location-enclosure-art / -frame-art  A drawing over the card's ground (inside the frame)
+//   --location-enclosure-hanger / -hanger-display / -hanger-width / -hanger-height / -hanger-to
+//                                          A cord from above the card down to its eyelet
+//   --location-enclosure-swing             Scroll-linked keyframes as the card arrives
+//                                          (`location-enclosure-swing`), around -swing-origin
+//   --location-enclosure-heading-{transform,tracking,color}
+//   --location-enclosure-lead-title-{font,size,caps,tracking,color}  First note's title
+//   --location-enclosure-swatch-size / -swatch-ring
+//   --location-enclosure-last-text-{font,size,caps,transform,tracking,color}  Last note's text
 // ==========================================================================
 .event-location__indications-container[data-indications-layout='enclosure'] {
+	position: relative;
 	box-sizing: border-box;
 	max-width: var(--location-enclosure-max-width, 34rem);
-	margin: clamp(3.25rem, 9vw, 5rem) auto 0;
+	margin: calc(clamp(3.25rem, 9vw, 5rem) + var(--location-enclosure-hanger-height, 0px)) auto 0;
 	filter: var(--location-enclosure-edge-shadow, none);
+
+	// The cord the card hangs from, down into its eyelet.
+	&::before {
+		content: '';
+		display: var(--location-enclosure-hanger-display, none);
+		position: absolute;
+		z-index: 2;
+		top: calc(-1 * var(--location-enclosure-hanger-height, 0px));
+		left: 50%;
+		width: var(--location-enclosure-hanger-width, 1px);
+		height: calc(
+			var(--location-enclosure-hanger-height, 0px) + var(--location-enclosure-hanger-to, 0px)
+		);
+		translate: -50% 0;
+		background: var(--location-enclosure-hanger, none);
+		pointer-events: none;
+	}
 
 	.event-location__enclosure {
 		display: flex;
@@ -1522,13 +1553,48 @@
 			--location-enclosure-padding,
 			clamp(2.5rem, 8vw, 3.5rem) clamp(1.75rem, 7vw, 3.5rem) clamp(2.25rem, 7vw, 3rem)
 		);
-		background: var(--location-enclosure-bg, var(--color-surface-elevated));
+		position: relative;
+		background:
+			var(--location-enclosure-art, none),
+			var(--location-enclosure-bg, var(--color-surface-elevated));
 		box-shadow: var(--location-enclosure-shadow, 0 1px 2px rgb(16 24 32 / 14%));
-		outline: 1px solid var(--location-enclosure-rule, rgb(16 24 32 / 18%));
+		outline: var(
+			--location-enclosure-outline,
+			1px solid var(--location-enclosure-rule, rgb(16 24 32 / 18%))
+		);
 		outline-offset: calc(-1 * clamp(0.6rem, 2.4vw, 0.85rem));
+		clip-path: var(--location-enclosure-shape, none);
 		mask: var(--location-enclosure-mask, none) center / 100% 100% no-repeat;
 		color: var(--location-enclosure-ink, var(--color-text-primary));
 		text-align: center;
+
+		// A hairline that follows a clipped shape: a rule-coloured layer and the ground over it,
+		// a pixel smaller, both cut to the frame shape.
+		&::before,
+		&::after {
+			content: '';
+			display: var(--location-enclosure-frame-display, none);
+			position: absolute;
+			inset: var(--location-enclosure-frame-inset, 0.6rem);
+			clip-path: var(--location-enclosure-frame-shape, none);
+			pointer-events: none;
+		}
+
+		&::before {
+			background: var(--location-enclosure-frame, var(--location-enclosure-rule));
+		}
+
+		&::after {
+			inset: calc(var(--location-enclosure-frame-inset, 0.6rem) + 1px);
+			background:
+				var(--location-enclosure-frame-art, none),
+				var(--location-enclosure-bg, var(--color-surface-elevated));
+		}
+
+		> * {
+			position: relative;
+			z-index: 1;
+		}
 	}
 
 	.event-location__indications-heading {
@@ -1538,10 +1604,30 @@
 		font-style: var(--location-indications-heading-style, inherit);
 		font-weight: 400;
 		line-height: var(--location-enclosure-heading-line-height, 1.12);
-		letter-spacing: 0;
-		text-transform: none;
+		letter-spacing: var(--location-enclosure-heading-tracking, 0);
+		text-transform: var(--location-enclosure-heading-transform, none);
 		text-wrap: balance;
-		color: inherit;
+		color: var(--location-enclosure-heading-color, inherit);
+	}
+
+	.event-location__enclosure-note:first-of-type .event-location__enclosure-title {
+		font-family: var(--location-enclosure-lead-title-font, var(--font-label, var(--font-body)));
+		font-size: var(--location-enclosure-lead-title-size, 1rem);
+		font-variant-caps: var(--location-enclosure-lead-title-caps, all-small-caps);
+		letter-spacing: var(--location-enclosure-lead-title-tracking, 0.16em);
+		color: var(
+			--location-enclosure-lead-title-color,
+			var(--location-enclosure-muted, var(--color-text-secondary))
+		);
+	}
+
+	.event-location__enclosure-note:last-of-type .event-location__enclosure-text {
+		font-family: var(--location-enclosure-last-text-font, var(--font-body));
+		font-size: var(--location-enclosure-last-text-size, clamp(1.1rem, 2vw, 1.25rem));
+		font-variant-caps: var(--location-enclosure-last-text-caps, normal);
+		text-transform: var(--location-enclosure-last-text-transform, none);
+		letter-spacing: var(--location-enclosure-last-text-tracking, normal);
+		color: var(--location-enclosure-last-text-color, inherit);
 	}
 
 	.event-location__enclosure-note {
@@ -1570,11 +1656,11 @@
 
 	.event-location__enclosure-swatch {
 		flex: none;
-		width: 1rem;
-		height: 1rem;
+		width: var(--location-enclosure-swatch-size, 1rem);
+		height: var(--location-enclosure-swatch-size, 1rem);
 		border-radius: 50%;
 		background: var(--location-enclosure-swatch, var(--color-action-accent));
-		box-shadow: inset 0 0 0 1px rgb(16 24 32 / 25%);
+		box-shadow: var(--location-enclosure-swatch-ring, inset 0 0 0 1px rgb(16 24 32 / 25%));
 	}
 
 	.event-location__enclosure-copy {
@@ -1624,5 +1710,32 @@
 			var(--location-enclosure-muted, var(--color-text-secondary))
 		);
 		rotate: var(--location-enclosure-reserved-title-tilt, 0deg);
+	}
+}
+
+// The tag settles from a slight swing on its cord as it arrives (opt-in, scroll-linked).
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.event-location__indications-container[data-indications-layout='enclosure'] {
+			transform-origin: var(--location-enclosure-swing-origin, 50% 0);
+			animation: var(--location-enclosure-swing, none) auto ease-out;
+			animation-fill-mode: both;
+			animation-timeline: view();
+			animation-range: entry 0% cover 45%;
+		}
+	}
+}
+
+@keyframes location-enclosure-swing {
+	0% {
+		rotate: -5deg;
+	}
+
+	60% {
+		rotate: 1.5deg;
+	}
+
+	100% {
+		rotate: 0deg;
 	}
 }

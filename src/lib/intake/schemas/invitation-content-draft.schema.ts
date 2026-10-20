@@ -1,3 +1,4 @@
+import { RSVP_FLOWS } from '@/lib/invitation/rsvp-flow';
 import { heroSchema } from '@/lib/schemas/content/hero.schema';
 import { z } from 'zod';
 import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
@@ -12,6 +13,7 @@ import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/location-presentation';
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
+	LOCATION_SCENES,
 	LOCATION_INDICATIONS_STYLES,
 	LOCATION_VENUE_CARDS,
 	LOCATION_MAP_STYLES,
@@ -117,6 +119,7 @@ export const InvitationContentDraftContentSchema = z
 						indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
 						indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 						showCalendarLinks: z.boolean().optional(),
+						scene: z.enum(LOCATION_SCENES).optional(),
 						venueCard: z.enum(LOCATION_VENUE_CARDS).optional(),
 					})
 					.strict()
@@ -143,6 +146,7 @@ export const InvitationContentDraftContentSchema = z
 				guestCap: rsvpGuestCapSchema.optional(),
 				confirmationMessage: optionalText(1000),
 				confirmationMode: optionalText(20),
+				flow: z.enum(RSVP_FLOWS).optional(),
 				whatsappPhone: optionalText(30),
 				subcopy: optionalText(1000),
 				confirmationDeadline: optionalText(60),

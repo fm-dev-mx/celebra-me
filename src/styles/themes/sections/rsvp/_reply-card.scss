@@ -14,6 +14,10 @@
 }
 
 .rsvp-section:has(> .rsvp[data-variant='reply-card']) {
+	// Fill the outer section: both sections centre their items (the outer one now stretches its
+	// wrapper), so without this the reply half shrinks to its content, narrower than the pass.
+	box-sizing: border-box;
+	width: 100%;
 	padding: 0 var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem))
 		var(--reply-card-padding-block, clamp(4.5rem, 12vw, 7rem));
 
@@ -24,6 +28,7 @@
 // The page wraps the RSVP island in a second `.rsvp-section`: the outer shell keeps the generic
 // inline padding, which pushed the reply half right of the pass. Only the inner section pads.
 .rsvp-section:has(.rsvp-section .rsvp[data-variant='reply-card']) {
+	justify-items: stretch;
 	padding: 0;
 }
 
@@ -60,9 +65,9 @@
 		position: absolute;
 		top: 0;
 		left: 50%;
-		width: min(60%, 14rem);
-		height: 1px;
-		background: var(--reply-card-rule, rgb(16 24 32 / 18%));
+		width: var(--reply-card-seam-width, min(60%, 14rem));
+		height: var(--reply-card-seam-height, 1px);
+		background: var(--reply-card-seam, var(--reply-card-rule, rgb(16 24 32 / 18%)));
 		transform: translateX(-50%);
 	}
 

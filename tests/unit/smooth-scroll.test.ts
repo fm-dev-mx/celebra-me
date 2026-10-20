@@ -1,4 +1,4 @@
-import { shouldUseSmoothScroll } from '@/lib/invitation/smooth-scroll';
+import { glideTo, shouldUseSmoothScroll } from '@/lib/invitation/smooth-scroll';
 
 function mockMedia(options: { fine: boolean; reduced: boolean }): jest.Mock {
 	const matchMedia = jest.fn((query: string) => ({
@@ -80,5 +80,41 @@ describe('shouldUseSmoothScroll', () => {
 
 		expect(shouldUseSmoothScroll(detached)).toBe(true);
 		expect(shouldUseSmoothScroll(document)).toBe(false);
+	});
+});
+
+describe('glideTo', () => {
+	function targetAt(tops: number[]): HTMLElement {
+		const target = document.createElement('section');
+		let call = 0;
+		target.getBoundingClientRect = () =>
+			({ top: tops[Math.min(call++, tops.length - 1)] }) as DOMRect;
+		return target;
+	}
+
+	function lenisMock(): { scrollTo: jest.Mock } {
+		return {
+			scrollTo: jest.fn((_target: HTMLElement, options: { onComplete?: () => void }) =>
+				options.onComplete?.(),
+			),
+		};
+	}
+
+	it('aims again when the glide ends short of a target that moved', () => {
+		const lenis = lenisMock();
+		glideTo(lenis, targetAt([600, 0]));
+		expect(lenis.scrollTo).toHaveBeenCalledTimes(2);
+	});
+
+	it('stops once the target is reached', () => {
+		const lenis = lenisMock();
+		glideTo(lenis, targetAt([2]));
+		expect(lenis.scrollTo).toHaveBeenCalledTimes(1);
+	});
+
+	it('gives up after a bounded number of corrections', () => {
+		const lenis = lenisMock();
+		glideTo(lenis, targetAt([500]));
+		expect(lenis.scrollTo).toHaveBeenCalledTimes(3);
 	});
 });

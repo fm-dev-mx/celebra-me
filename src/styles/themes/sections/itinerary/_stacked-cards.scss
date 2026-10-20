@@ -10,9 +10,21 @@
 //   --stacked-cards-radius / -min-height        Card shape (default 20px, 70svh when stacking)
 //   --stacked-cards-top / -step                 Sticky offset and per-card step (72px, 12px)
 //   --stacked-cards-lantern-line / -fill        Lantern outline and filled glow (#E8A040)
+//   --stacked-cards-shade / -shade-strength     Tint a receding card darkens toward (black, 15%)
 //   --stacked-cards-time-{font,size,pending-size}, --stacked-cards-label-size, --stacked-cards-desc-size
 //   --stacked-cards-section-bg / -padding-block
 //   --stacked-cards-title-{size,weight,line-height,color}  Section title
+//   --stacked-cards-max-width / -align / -padding / -gap / -shadow / -lantern-size
+//                                              Card measure, alignment (start or center), inner
+//                                              spacing, drop shadow and lantern width
+//   --stacked-cards-time-tracking / -time-caps  Hour as small capitals (e.g. 0.16em, all-small-caps)
+//   --stacked-cards-numeral                     Text before the hour; the counter `moment` numbers
+//                                              the cards, e.g. counter(moment, upper-roman) ' · '
+//   --stacked-cards-rule                        Image of a rule set under the hour (none)
+//   --stacked-cards-motif / -motif-position / -motif-size  Image layer on the card (none)
+//   --stacked-cards-desc-color                  Description ink (the card ink)
+//   --stacked-cards-ornament                    Image above the title (none), with -ornament-ratio
+//   --stacked-cards-header-gap                  Space between the title and the first card
 // Per-card tone: set the card hooks under `.stacked-card[data-moment='<IconName>']`.
 // ==========================================================================
 
@@ -26,6 +38,19 @@
 		display: none;
 	}
 
+	.itinerary__header {
+		margin-bottom: var(--stacked-cards-header-gap, 6rem);
+	}
+
+	.itinerary__header::before {
+		content: '';
+		display: var(--stacked-cards-ornament-display, none);
+		width: 2.5rem;
+		aspect-ratio: var(--stacked-cards-ornament-ratio, 2 / 3);
+		margin: 0 auto 1rem;
+		background: var(--stacked-cards-ornament, none) center / contain no-repeat;
+	}
+
 	.itinerary__title {
 		font-size: var(--stacked-cards-title-size, clamp(2rem, 7vw, 2.75rem));
 		font-weight: var(--stacked-cards-title-weight, 400);
@@ -34,11 +59,13 @@
 	}
 
 	.itinerary__timeline {
-		max-width: 32rem;
+		max-width: var(--stacked-cards-max-width, 32rem);
 		margin-inline: auto;
+		padding-top: var(--stacked-cards-timeline-padding, 2rem);
 	}
 
 	.stacked-cards {
+		counter-reset: moment;
 		display: grid;
 		gap: 1rem;
 		margin: 0;
@@ -50,14 +77,20 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
+		align-items: var(--stacked-cards-align, stretch);
 		justify-content: flex-start;
-		gap: 0.5rem;
-		padding: clamp(1.75rem, 6vw, 2.5rem);
+		gap: var(--stacked-cards-gap, 0.5rem);
+		padding: var(--stacked-cards-padding, clamp(1.75rem, 6vw, 2.5rem));
 		overflow: hidden;
 		border: var(--stacked-cards-border, 1px solid rgb(201 164 92 / 40%));
 		border-radius: var(--stacked-cards-radius, 20px);
-		background: var(--stacked-cards-paper, rgb(251 248 243));
+		background:
+			var(--stacked-cards-motif, none) var(--stacked-cards-motif-position, center) /
+				var(--stacked-cards-motif-size, auto) no-repeat,
+			var(--stacked-cards-paper, rgb(251 248 243));
+		box-shadow: var(--stacked-cards-shadow, none);
 		color: var(--stacked-cards-ink, var(--itinerary-ink-dark, currentColor));
+		text-align: var(--stacked-cards-text-align, start);
 		transform-origin: 50% 0;
 
 		// Darkening layer for the card underneath (opacity only).
@@ -65,15 +98,19 @@
 			position: absolute;
 			inset: 0;
 			border-radius: inherit;
-			background: rgb(0 0 0);
+			background: var(--stacked-cards-shade, rgb(0 0 0));
 			content: '';
 			opacity: 0%;
 			pointer-events: none;
 		}
 	}
 
+	.stacked-card {
+		counter-increment: moment;
+	}
+
 	.stacked-card__lantern {
-		width: 2rem;
+		width: var(--stacked-cards-lantern-size, 2rem);
 		height: auto;
 		margin-bottom: 0.5rem;
 	}
@@ -95,9 +132,24 @@
 		color: var(--stacked-cards-accent, inherit);
 		font-family: var(--stacked-cards-time-font, var(--font-display, serif));
 		font-size: var(--stacked-cards-time-size, 4rem);
+		font-variant-caps: var(--stacked-cards-time-caps, normal);
 		font-variant-numeric: lining-nums tabular-nums;
 		font-weight: 400;
+		letter-spacing: var(--stacked-cards-time-tracking, normal);
 		line-height: 1;
+
+		&::before {
+			content: var(--stacked-cards-numeral, none);
+		}
+
+		&::after {
+			content: '';
+			display: var(--stacked-cards-rule-display, none);
+			width: 6.5rem;
+			aspect-ratio: var(--stacked-cards-rule-ratio, 8 / 1);
+			margin: 0.75rem auto 0.35rem;
+			background: var(--stacked-cards-rule, none) center / contain no-repeat;
+		}
 	}
 
 	.stacked-card__time--pending {
@@ -109,14 +161,18 @@
 		font-family: var(--font-display, serif);
 		font-size: var(--stacked-cards-label-size, 1.75rem);
 		font-weight: 400;
-		line-height: 1.15;
+		line-height: var(--stacked-cards-label-line-height, 1.15);
+		text-wrap: balance;
 	}
 
 	.stacked-card__description {
 		margin: 0;
 		font-family: var(--font-body);
+		max-width: var(--stacked-cards-desc-measure, none);
 		font-size: var(--stacked-cards-desc-size, 1.0625rem);
 		line-height: 1.5;
+		color: var(--stacked-cards-desc-color, inherit);
+		text-wrap: pretty;
 	}
 }
 
@@ -173,7 +229,7 @@
 
 @keyframes stacked-card-darken {
 	to {
-		opacity: 15%;
+		opacity: var(--stacked-cards-shade-strength, 15%);
 	}
 }
 

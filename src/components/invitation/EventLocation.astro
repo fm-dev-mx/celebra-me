@@ -7,6 +7,7 @@ import SplitWords from '@/components/invitation/SplitWords.astro';
 import '@/styles/invitation/_event-location.scss';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
 import VenueProgramEntry from '@/components/invitation/components/VenueProgramEntry.astro';
+import ScrollScene from '@/components/invitation/ScrollScene.astro';
 import { formatVenueDateForDisplay } from '@/lib/invitation/venue-datetime';
 import { groupVenues, type GroupedVenue } from '@/lib/invitation/location-helper';
 import Icon from '@/components/common/icons/Icon.astro';
@@ -22,6 +23,7 @@ import type {
 	LocationIndicationsStyle,
 	LocationMapStyle,
 	LocationPresentation,
+	LocationScene,
 	LocationVenueCard,
 } from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
@@ -42,6 +44,8 @@ interface Props {
 	indicationsHeading?: string;
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
+	/** Pinned scroll scene over the program; see LocationPresentationOptions.scene. */
+	scene?: LocationScene;
 	/** `compact`: time-led venue cards without the map tile (stacked-venue-plates). */
 	venueCard?: LocationVenueCard;
 	calendarEventTitle?: string;
@@ -73,6 +77,7 @@ const {
 	indicationsHeading,
 	indicationsLayout = 'list',
 	showCalendarLinks = false,
+	scene,
 	venueCard,
 	calendarEventTitle,
 	eventTimeZone,
@@ -96,12 +101,21 @@ const isIndicationsBand = indicationsLayout === 'band';
 const isIndicationsEnclosure = indicationsLayout === 'enclosure';
 // The printed-program variant owns its rhythm: no venue cards and no section nav button.
 const isProgramSheet = variant === 'program-sheet';
+// The lantern route pins the intro and the program together; it needs two stops to travel.
+const isLanternRoute = scene === 'lantern-route' && isProgramSheet && !isLocked && displayVenues.length >= 2;
+const SceneWrapper = isLanternRoute ? ScrollScene : Fragment;
+const sceneProps = isLanternRoute ? { length: 3 as const, class: 'location-route' } : {};
+// Route between the first and the last stop, drawn in a 390 × 500 box; the lantern's offset-path
+// in _lantern-route.scss repeats it.
+const ROUTE_PATH = 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 const venueType = (venue: GroupedVenue) =>
 	venue.type === 'ceremony' || venue.type === 'reception' || venue.type === 'grouped' ? venue.type : 'custom';
 ---
 
-<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation}>
+<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation} data-location-scene={isLanternRoute ? scene : undefined}>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
+	<SceneWrapper {...sceneProps}>
+	{isLanternRoute && <div class="location-route__sky" aria-hidden="true"></div>}
 	{(introEyebrow || introHeading || introLede) && (
 		<header class="event-location__intro">
 			{introEyebrow && <p class="event-location__eyebrow" data-reveal-role="label">{introEyebrow}</p>}
@@ -132,11 +146,26 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 	) : (
 		isProgramSheet ? (
+		<>
+		{isLanternRoute && (
+			<svg class="location-route__map" viewBox="0 0 390 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+				<path class="location-route__trail" d={ROUTE_PATH} />
+				<path class="location-route__path" d={ROUTE_PATH} pathLength="1" />
+				<circle class="location-route__stop" cx="70" cy="40" r="6" />
+				<circle class="location-route__stop" cx="120" cy="470" r="6" />
+				<g class="location-route__lantern">
+					<circle class="location-route__lantern-glow" r="30" />
+					<path class="location-route__lantern-body" d="M-10 -16h20l3 30h-26Z" />
+					<path class="location-route__lantern-cap" d="M-5 -23h10v7h-10Z" />
+				</g>
+			</svg>
+		)}
 		<div class={`event-location__program ${isSingleVenue ? 'event-location__program--single' : ''}`}>
 			{displayVenues.map((venue: GroupedVenue) => (
-				<VenueProgramEntry venue={venue} type={venueType(venue)} calendar={calendarFor(venue)} />
+				<VenueProgramEntry venue={venue} type={venueType(venue)} calendar={calendarFor(venue)} reveal={!isLanternRoute} />
 			))}
 		</div>
+		</>
 		) : (
 		<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
 			{displayVenues.map((venue: GroupedVenue) => (
@@ -156,6 +185,7 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 		)
 	)}
+	</SceneWrapper>
 	{indications && indications.length > 0 && isIndicationsEnclosure && (
 		<div class="event-location__indications-container" data-indications-layout="enclosure">
 			<div class="event-location__enclosure" data-reveal-role="item">

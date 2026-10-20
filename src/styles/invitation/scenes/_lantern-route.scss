@@ -1,0 +1,384 @@
+@use '../../global/mixins' as m;
+@use '../scroll-scene-mixins' as scene;
+
+// ==========================================================================
+// LOCATION SCENE — lantern-route (program-sheet, two or more venues)
+// While the scene is pinned the program moves under a night sky: the route between the first and
+// the last stop draws itself, a lantern walks it, and the venue entries take turns — the first
+// until the lantern is halfway, then the last. Entries stay in the DOM and keep their links; the
+// one with focus always shows. The next entry settles from above, so while it waits its links stay
+// under the visible entry, which takes the taps. Unpinned, the program-sheet layout is untouched.
+// Included at the end of _program-sheet.scss so its pinned rules follow the program layout.
+// Tokens (all optional):
+//   --location-route-night / -night-deep   Sky gradient
+//   --location-route-ink / -muted          Text over the sky
+//   --location-route-trail                 Dashed trail
+//   --location-route-glow                  Drawn route and lantern light
+//   --location-route-lantern               Lantern body
+//   --location-route-lift                  How far the pinned night rises over the section's top
+//                                          padding (default 0); unpinned, the padding stays
+// ==========================================================================
+
+// The route draws over this slice of the pinned span; entries swap around its middle.
+$route-start: 10%;
+$route-end: 85%;
+
+// Same path as ROUTE_PATH in EventLocation.astro (390 × 500 user units).
+$route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
+
+@mixin styles {
+	.event-location[data-location-scene='lantern-route'] {
+		--location-route-night: var(--america-night, rgb(28 21 48));
+		--location-route-night-deep: rgb(14 10 26);
+		--location-route-ink: rgb(248 244 252);
+		--location-route-muted: rgb(248 244 252 / 72%);
+		--location-route-trail: rgb(248 244 252 / 24%);
+		--location-route-glow: var(--america-night-gold, rgb(243 217 164));
+		--location-route-lantern: rgb(232 160 64);
+
+		// `clip`, not `hidden`: a scroll container here would break the sticky stage.
+		overflow: clip;
+
+		.location-route__sky,
+		.location-route__map {
+			display: none;
+		}
+
+		// Pinned, the scene bleeds to the viewport (the section clips it); the stage restores the gutters. The
+		// scene is the timeline subject itself, so the descendant mixins do not reach it.
+		@supports (animation-timeline: view()) {
+			@media (prefers-reduced-motion: no-preference) {
+				:where([data-motion='editorial']) & .location-route {
+					margin-inline: calc(50% - 50vw);
+					margin-top: calc(-1 * var(--location-route-lift, 0px));
+				}
+			}
+		}
+
+		@media (prefers-reduced-motion: no-preference) {
+			.location-route[data-scene-engine='script'] {
+				margin-inline: calc(50% - 50vw);
+				margin-top: calc(-1 * var(--location-route-lift, 0px));
+			}
+		}
+
+		.scroll-scene__stage {
+			@include scene.pinned {
+				--location-program-ink: var(--location-route-ink);
+				--location-program-muted: var(--location-route-muted);
+				--location-program-rule: var(--location-route-trail);
+				--location-program-drawing: var(--location-route-glow);
+				--location-program-link: var(--location-route-glow);
+				--location-program-link-ink: var(--location-route-night-deep);
+				--location-program-label-color: var(--location-route-glow);
+				--location-calendar-menu-bg: var(--location-route-night-deep);
+				--location-calendar-menu-ink: var(--location-route-ink);
+				--location-program-drawing-size: 6rem;
+
+				display: flex;
+				flex-direction: column;
+				gap: 0.75rem;
+				box-sizing: border-box;
+
+				// The bottom padding clears the floating section nav.
+				padding: calc(var(--invitation-header-offset, calc(70px + 1.5rem)) + 0.25rem)
+					max(1.25rem, env(safe-area-inset-right, 0px), calc((100% - 72rem) / 2))
+					calc(4.5rem + env(safe-area-inset-bottom, 0px))
+					max(1.25rem, env(safe-area-inset-left, 0px), calc((100% - 72rem) / 2));
+				color: var(--location-route-ink);
+
+				> * {
+					position: relative;
+				}
+			}
+
+			// Scripted engine: one progress for the route, derived from --scene-progress.
+			@include scene.scripted {
+				--route-t: clamp(0, (var(--scene-progress, 0) - 0.1) / 0.75, 1);
+				--route-out: clamp(0, (0.5 - var(--scene-progress, 0)) / 0.08, 1);
+				--route-in: clamp(0, (var(--scene-progress, 0) - 0.5) / 0.1, 1);
+			}
+
+			@include m.respond-to(lg) {
+				@include scene.pinned {
+					display: grid;
+					grid-template-rows: auto minmax(0, 1fr);
+					grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+					column-gap: 4rem;
+					align-content: center;
+				}
+			}
+		}
+
+		.location-route__sky {
+			@include scene.pinned {
+				position: absolute;
+				inset: 0;
+				display: block;
+				background:
+					radial-gradient(
+						1px 1px at 18% 22%,
+						rgb(255 255 255 / 70%) 50%,
+						transparent 51%
+					),
+					radial-gradient(
+						1px 1px at 72% 14%,
+						rgb(255 255 255 / 60%) 50%,
+						transparent 51%
+					),
+					radial-gradient(
+						1.5px 1.5px at 84% 38%,
+						rgb(255 255 255 / 55%) 50%,
+						transparent 51%
+					),
+					radial-gradient(
+						1px 1px at 34% 48%,
+						rgb(255 255 255 / 45%) 50%,
+						transparent 51%
+					),
+					radial-gradient(
+						1px 1px at 58% 66%,
+						rgb(255 255 255 / 40%) 50%,
+						transparent 51%
+					),
+					radial-gradient(120% 70% at 50% 100%, rgb(232 160 64 / 18%), transparent 60%),
+					linear-gradient(
+						180deg,
+						var(--location-route-night-deep) 0%,
+						var(--location-route-night) 100%
+					);
+			}
+		}
+
+		.event-location__intro {
+			@include scene.pinned {
+				margin: 0;
+				color: var(--location-route-ink);
+				text-align: start;
+			}
+
+			@include m.respond-to(lg) {
+				@include scene.pinned {
+					grid-row: 1;
+					grid-column: 1;
+					align-self: end;
+				}
+			}
+		}
+
+		.event-location__heading,
+		.event-location__lede {
+			@include scene.pinned {
+				color: inherit;
+			}
+		}
+
+		.location-route__map {
+			@include scene.pinned {
+				display: block;
+				flex: 1;
+				width: 100%;
+				min-height: 0;
+				overflow: visible;
+			}
+
+			@include m.respond-to(lg) {
+				@include scene.pinned {
+					grid-row: 1 / span 2;
+					grid-column: 2;
+					height: min(70svh, 40rem);
+					align-self: center;
+				}
+			}
+		}
+
+		.location-route__trail {
+			fill: none;
+			stroke: var(--location-route-trail);
+			stroke-dasharray: 3 7;
+			stroke-width: 1.5;
+		}
+
+		.location-route__path {
+			fill: none;
+			stroke: var(--location-route-glow);
+			stroke-dasharray: 1;
+			stroke-dashoffset: 1;
+			stroke-linecap: round;
+			stroke-width: 2.5;
+
+			@include scene.timeline {
+				animation: route-draw linear both;
+				animation-timeline: --scroll-scene;
+				animation-range: contain $route-start contain $route-end;
+			}
+
+			@include scene.scripted {
+				stroke-dashoffset: calc(1 - var(--route-t));
+			}
+		}
+
+		.location-route__stop {
+			fill: var(--location-route-ink);
+		}
+
+		.location-route__lantern {
+			offset-path: path($route-path);
+			offset-rotate: 0deg;
+			offset-distance: 0%;
+			will-change: offset-distance;
+
+			@include scene.timeline {
+				animation: route-walk linear both;
+				animation-timeline: --scroll-scene;
+				animation-range: contain $route-start contain $route-end;
+			}
+
+			@include scene.scripted {
+				offset-distance: calc(var(--route-t) * 100%);
+			}
+		}
+
+		.location-route__lantern-glow {
+			fill: var(--location-route-lantern);
+			opacity: 22%;
+		}
+
+		.location-route__lantern-body {
+			fill: var(--location-route-lantern);
+		}
+
+		.location-route__lantern-cap {
+			fill: var(--location-route-glow);
+		}
+
+		// Entries share one cell and take turns.
+		.event-location__program {
+			@include scene.pinned {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr);
+				width: 100%;
+				max-width: 32rem;
+				margin: 0;
+			}
+
+			@include m.respond-to(lg) {
+				@include scene.pinned {
+					grid-row: 2;
+					grid-column: 1;
+					align-self: start;
+				}
+			}
+		}
+
+		.event-location__program-entry {
+			// Both entries fill the shared cell, so the one on top also covers the other's links
+			// from taps. Also resets the program-sheet two-column rules of wide screens.
+			@include scene.pinned {
+				grid-area: 1 / 1;
+				align-self: stretch;
+				align-items: start;
+				margin: 0;
+				padding: 0;
+				border: 0;
+				text-align: start;
+
+				.event-location__program-actions {
+					justify-content: start;
+				}
+
+				.event-location__program-calendar .event-location__calendar-options {
+					left: 0;
+					transform: none;
+				}
+			}
+
+			&:first-child {
+				@include scene.timeline {
+					animation: route-entry-out linear both;
+					animation-timeline: --scroll-scene;
+					animation-range: contain 42% contain 50%;
+				}
+
+				@include scene.scripted {
+					z-index: 1;
+					opacity: var(--route-out);
+					translate: 0 calc((1 - var(--route-out)) * -1.5rem);
+				}
+			}
+
+			&:not(:first-child) {
+				@include scene.timeline {
+					animation: route-entry-in linear both;
+					animation-timeline: --scroll-scene;
+					animation-range: contain 50% contain 60%;
+				}
+
+				@include scene.scripted {
+					z-index: calc(var(--route-in) * 2);
+					opacity: var(--route-in);
+					translate: 0 calc((1 - var(--route-in)) * -1.5rem);
+				}
+			}
+
+			// Keyboard focus shows its entry whatever the scroll position, and hides the other.
+			&:focus-within {
+				@include scene.pinned {
+					z-index: 3;
+					animation: none;
+					opacity: 100%;
+					translate: none;
+				}
+			}
+		}
+
+		// `:focus-within` on the sheet rather than `:has(> :focus-within)`: the same match, without
+		// a `:has()` that makes Chrome restyle the whole page on unrelated text changes.
+		.event-location__program:focus-within > :not(:focus-within) {
+			@include scene.pinned {
+				animation: none;
+				opacity: 0%;
+			}
+		}
+	}
+
+	@keyframes route-draw {
+		100% {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@keyframes route-walk {
+		100% {
+			offset-distance: 100%;
+		}
+	}
+
+	@keyframes route-entry-out {
+		0% {
+			z-index: 1;
+			opacity: 100%;
+			translate: 0 0;
+		}
+
+		100% {
+			z-index: 1;
+			opacity: 0%;
+			translate: 0 -1.5rem;
+		}
+	}
+
+	@keyframes route-entry-in {
+		0% {
+			z-index: 0;
+			opacity: 0%;
+			translate: 0 -1.5rem;
+		}
+
+		100% {
+			z-index: 2;
+			opacity: 100%;
+			translate: 0 0;
+		}
+	}
+}

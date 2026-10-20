@@ -121,6 +121,11 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
     `pointer: fine`, so phones never download it. Native touch scrolling is unchanged, and `#` links
     scroll to their target below the fixed header.
   - Scroll scenes (next section).
+  - The `bleed-portrait` hero may opt in (`--hero-bleed-photo-settle`, `--hero-bleed-scroll-grow`)
+    to a view timeline on the hero, inside `@supports (animation-timeline: view())`: while the cover
+    leaves, the photograph settles from `scale: 1.06` to rest and the scroll drawing grows down by
+    `clip-path`. Nothing runs on load, so the photograph paints at once; without support both stay
+    at rest.
   - Per-element scroll-linked effects (see
     [Per-element scroll-linked effects](#per-element-scroll-linked-effects)).
 - **Held footer.** `--invitation-footer-reveal: held` (a profile token, read by
@@ -170,7 +175,7 @@ only; elsewhere the same markup renders as a normal section.
     plus `data-scene-step` when steps are declared.
 
   Consumers style children through the `timeline`, `scripted` and `pinned` mixins of
-  `src/styles/invitation/_scroll-scene.scss`.
+  `src/styles/invitation/_scroll-scene-mixins.scss` (no CSS output).
 
 - **Resting layout.** Reduced motion, a non-editorial invitation, or no engine leaves the stage in
   normal flow. Every scene's default (unmixed) styles are its complete static layout: all content
@@ -187,6 +192,30 @@ only; elsewhere the same markup renders as a normal section.
 - **Budget.** At most two scenes per invitation and no more than 35 % of the page's scroll height
   pinned at a 390 × 844 viewport. Two scenes are never adjacent; a normal section sits between them.
   A scene never traps scrolling: no scroll snapping, no wheel or touch interception.
+- **Scenes in use.** `gallery.album-assemble` (prints drop onto the album page, with a counter) and
+  `location.program-sheet` with `presentationOptions.scene: 'lantern-route'` (two or more venues:
+  under a night sky the route draws itself, a lantern walks it and the entries take turns; the next
+  entry settles from above so its links stay under the visible one).
+- **Not scenes.** `rsvp.flow: 'steps'` (one question per step, a lantern on the progress track and
+  one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
+  motion it keeps the progress and drops the movement.
+- **Scroll-linked accents.** Outside scenes, a profile may opt sections into short view-timeline
+  accents. Each one is set inside `@supports (animation-timeline: view())` and
+  `prefers-reduced-motion: no-preference` and is off by default (`none`). Without support, or under
+  reduced motion, each element rests in its final state:
+  - _Family names:_ `--family-shine` (a gradient over the text), `--family-shine-name: family-light`
+    and `--family-shine-timeline` light each name as it rises, within `--family-shine-range` (and
+    `-range-godparents`), with an optional `--family-shine-glow`.
+    `--family-divider-draw: family-divider-draw` draws the rule between groups from the centre out.
+  - _Parents' medallion:_ `--family-parents-medallion` (an image behind the parents' names, with
+    `-size` and `-opacity`) may turn ±24° across the section
+    (`--family-parents-medallion-spin: family-medallion-spin`).
+  - _Hanging enclosure:_ `--location-enclosure-swing: location-enclosure-swing` lets the enclosure
+    card settle from a slight swing on its cord (`--location-enclosure-hanger*`), about
+    `--location-enclosure-swing-origin`, between `entry 0%` and `cover 45%`.
+
+  The name shine animates `background-position` and a `drop-shadow` filter on short text runs; the
+  other accents keep to the scene property list above.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.

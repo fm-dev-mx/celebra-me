@@ -40,6 +40,8 @@ interface Props {
 	date: string;
 	time?: string;
 	venueName?: string;
+	/** The hero venue's event (`Misa`), for heroes that name it beside the time. */
+	venueEvent?: string;
 	backgroundImage: ImageMetadata | ImageAsset;
 	backgroundImageDesktop?: { src: string; delivery?: ImageDelivery };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
