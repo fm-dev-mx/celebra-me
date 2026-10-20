@@ -153,6 +153,11 @@ Single round answered by the owner on 2026-10-15; no client round was needed.
 Planned order: quote, countdown, family, location, itinerary, gallery, gifts, personalizedAccess,
 rsvp, thankYou. The dress code lives in the itinerary/location details per preset practice.
 
+Current order: quote, countdown, family, location, gallery, gifts, personalizedAccess, rsvp,
+thankYou. The itinerary held only the ceremony (19:00) and the reception (21:00), so it now lives in
+the location route (`night-route`): one numbered stop per venue, led by its time. The location
+indications carry the dress code and the personal-pass reminder.
+
 ## Design Direction
 
 | decision                          | value                                                    | classification          |

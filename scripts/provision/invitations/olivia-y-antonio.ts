@@ -220,6 +220,12 @@ const content: CanonicalEventContentInput = {
 				styleVariant: 'default',
 				text: 'Formal. Le pedimos amablemente reservar el blanco y el rojo.',
 			},
+			{
+				title: 'Pase personal',
+				iconName: 'Enveloped',
+				styleVariant: 'default',
+				text: `Su invitación es personal y los lugares corresponden a su pase. Le pedimos confirmar a más tardar el ${RSVP_DEADLINE}.`,
+			},
 		],
 	},
 	gallery: {

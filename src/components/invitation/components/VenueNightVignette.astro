@@ -1,0 +1,70 @@
+---
+/*
+  VenueNightVignette: a small decorative night scene for a venue (a church or an event hall under
+  a moon and stars, with lit windows). Illustrative, not a portrait of the real building; used by
+  the night-route location cards, which have no venue photography. Colors come from the
+  `--location-route-*` tokens of the night-route variant.
+*/
+interface Props {
+	kind: 'church' | 'hall';
+}
+
+const { kind } = Astro.props;
+const STARS = [
+	[22, 18, 1.1],
+	[58, 34, 0.8],
+	[96, 14, 1],
+	[138, 30, 0.7],
+	[182, 12, 0.9],
+	[224, 26, 1.1],
+	[262, 10, 0.8],
+	[300, 30, 1],
+	[40, 54, 0.6],
+	[284, 52, 0.7],
+] as const;
+---
+
+<svg
+	class="event-location__vignette"
+	data-venue-vignette={kind}
+	viewBox="0 0 320 132"
+	preserveAspectRatio="xMidYMax slice"
+	aria-hidden="true"
+	focusable="false"
+>
+	<g class="event-location__vignette-stars">
+		{STARS.map(([cx, cy, r]) => <circle cx={cx} cy={cy} r={r} />)}
+	</g>
+	<path
+		class="event-location__vignette-moon"
+		d={kind === 'church' ? 'M262 22a14 14 0 1 0 14 18 11 11 0 1 1-14-18Z' : 'M58 20a14 14 0 1 0 14 18 11 11 0 1 1-14-18Z'}
+	/>
+	<path class="event-location__vignette-hills" d="M0 112c48-14 92-18 136-10s96 10 184-6v36H0Z" />
+	{kind === 'church' ? (
+		<g class="event-location__vignette-building">
+			<path d="M108 116V78l52-20 52 20v38Z" />
+			<path d="M146 116V44h28v72Z" />
+			<path d="m160 26 9 12h-18Z" />
+			<path class="event-location__vignette-trim" d="M158.5 12h3v8h6v3h-6v8h-3v-8h-6v-3h6Z" />
+			<path class="event-location__vignette-window" d="M153 116v-14a7 7 0 0 1 14 0v14Z" />
+			<circle class="event-location__vignette-window" cx="160" cy="62" r="4.5" />
+			<path class="event-location__vignette-window" d="M122 88h9v12h-9zM189 88h9v12h-9z" />
+		</g>
+	) : (
+		<g class="event-location__vignette-building">
+			<path d="M86 116V84l38-12 36-14 36 14 38 12v32Z" />
+			<path class="event-location__vignette-trim" d="M124 72h72M86 84h148" />
+			<path class="event-location__vignette-window" d="M150 116v-16a10 10 0 0 1 20 0v16Z" />
+			<path
+				class="event-location__vignette-window"
+				d="M98 92a4 4 0 0 1 8 0v12h-8zM112 92a4 4 0 0 1 8 0v12h-8zM200 92a4 4 0 0 1 8 0v12h-8zM214 92a4 4 0 0 1 8 0v12h-8z"
+			/>
+			<path class="event-location__vignette-string" d="M70 66q45 22 90 6t90 4" />
+			<g class="event-location__vignette-lights">
+				{[82, 100, 118, 136, 154, 172, 190, 208, 226, 242].map((x, index) => (
+					<circle cx={x} cy={[71, 76, 79, 78, 74, 72, 73, 75, 77, 76][index]} r="1.8" />
+				))}
+			</g>
+		</g>
+	)}
+</svg>
