@@ -37,6 +37,9 @@ and Olivia y Antonio becomes publishable. No new migrations.
   (#374).
 - Authenticated and provisioning Preview suites send the Cloudflare Access headers on every API
   request (#367).
+- The landing header links to `/#tipo-evento`, `/#pricing` and `/#nosotros`, so they work from
+  `/demos/*`, `/privacidad` and `/terminos`; the demo showroom fallback quote links to `/#contacto`
+  (#377).
 
 ## [0.35.0-beta.1] - 2026-10-19
 
