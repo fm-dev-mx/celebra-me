@@ -6,18 +6,9 @@ import type {
 } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventType } from '@/lib/theme/theme-contract';
 import { CELESTIAL_QUOTE_MESSAGE } from '@/lib/invitation/demo-conversion';
-import {
-	buildGeneralMessage,
-	getGeneralPromoCode,
-	getStartingPrice,
-} from '@/data/promo-campaign.data';
-
-/** Shared home-selector quote CTA: the general promo message, code and value. */
+/** Shared home-selector quote CTA; it sends the general quote of the promo calendar. */
 const SHOWROOM_QUOTE_CTA = {
 	label: 'Quiero una invitación así',
-	message: buildGeneralMessage(),
-	promoCode: getGeneralPromoCode(),
-	trackValue: getStartingPrice(),
 } as const;
 
 export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [

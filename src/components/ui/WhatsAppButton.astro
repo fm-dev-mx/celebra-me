@@ -5,11 +5,13 @@ import {
 	buildCampaignCode,
 	buildGeneralMessage,
 	buildPackageMessage,
+	getCatalogPackage,
 	getGeneralPromoCode,
+	getPackagePrice,
 	getPromoCode,
-	getPromoPackage,
+	getRenderCampaign,
 	getStartingPrice,
-	PROMO_CAMPAIGN,
+	PROMO_CURRENCY,
 	type CampaignSection,
 	type PromoPackageId,
 } from '@/data/promo-campaign.data';
@@ -64,14 +66,26 @@ const {
 } = Astro.props;
 
 const ariaLabel = explicitAriaLabel ?? `${label} por WhatsApp`;
-const pkg = packageId ? getPromoPackage(packageId) : undefined;
-const promoCode = withoutPromo
+const campaign = getRenderCampaign();
+const pkg = packageId ? getCatalogPackage(packageId) : undefined;
+const derivedPromoCode = pkg ? getPromoCode(pkg.id, campaign) : getGeneralPromoCode(campaign);
+const promoCode = withoutPromo ? undefined : (explicitPromoCode ?? derivedPromoCode ?? undefined);
+const promoValue = withoutPromo
 	? undefined
-	: (explicitPromoCode ?? (pkg ? getPromoCode(pkg) : getGeneralPromoCode()));
-const promoValue = withoutPromo ? undefined : (trackValue ?? pkg?.promoPrice ?? getStartingPrice());
-const campaignCode = trackCampaign ?? (promoCode ? buildCampaignCode(campaignSection, promoCode) : undefined);
-const currency = trackCurrency ?? (promoValue !== undefined ? PROMO_CAMPAIGN.currency : undefined);
-const message = explicitMessage ?? (pkg ? buildPackageMessage(pkg) : buildGeneralMessage());
+	: (trackValue ?? (pkg ? getPackagePrice(pkg.id, campaign) : getStartingPrice(campaign)));
+const campaignCode =
+	trackCampaign ?? (withoutPromo ? undefined : buildCampaignCode(campaignSection, promoCode ?? null));
+const currency = trackCurrency ?? (promoValue !== undefined ? PROMO_CURRENCY : undefined);
+const message =
+	explicitMessage ?? (pkg ? buildPackageMessage(pkg.id, campaign) : buildGeneralMessage(campaign));
+// PromoStatus.astro rewrites the quote (message, codes, value) for the visitor's date; CTAs with
+// their own message, code or campaign keep what they were given.
+const switchesWithCalendar =
+	!withoutPromo &&
+	explicitMessage === undefined &&
+	explicitPromoCode === undefined &&
+	trackCampaign === undefined &&
+	trackValue === undefined;
 
 // Prerendered pages get the /api/whatsapp redirect, which reads the Worker secret at request time.
 const whatsappUrl = getWhatsAppLink(message);
@@ -98,6 +112,9 @@ const whatsappUrl = getWhatsAppLink(message);
 	data-track-value={promoValue}
 	data-track-currency={currency}
 	data-preserve-message={preserveMessage ? 'true' : undefined}
+	data-promo-quote={switchesWithCalendar ? (pkg?.id ?? 'general') : undefined}
+	data-promo-message={switchesWithCalendar ? 'true' : undefined}
+	data-campaign-section={switchesWithCalendar ? campaignSection : undefined}
 >
 	<Icon name="WhatsApp" size={20} />
 	<slot>{label}</slot>

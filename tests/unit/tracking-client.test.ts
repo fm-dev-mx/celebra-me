@@ -19,7 +19,13 @@ jest.mock('@/lib/tracking/consent-client', () => ({
 
 import { MockIntersectionObserver } from '../helpers/intersection-observer';
 import { initCommercialTracking } from '@/lib/tracking/client';
-import { buildGeneralMessage, getGeneralPromoCode } from '@/data/promo-campaign.data';
+import {
+	buildGeneralMessage,
+	getGeneralPromoCode,
+	PROMO_SCHEDULE,
+} from '@/data/promo-campaign.data';
+
+const QUOTE_CAMPAIGN = PROMO_SCHEDULE[0] ?? null;
 
 function flushPromises(): Promise<void> {
 	return new Promise((resolve) => {
@@ -164,10 +170,10 @@ describe('WhatsApp lead identity [T1, T2]', () => {
 		window.history.replaceState({}, '', '/');
 		document.body.innerHTML = `
 			<a
-				href="https://wa.me/521234567890?text=${encodeURIComponent(buildGeneralMessage())}"
+				href="https://wa.me/521234567890?text=${encodeURIComponent(buildGeneralMessage(QUOTE_CAMPAIGN))}"
 				data-track-event="whatsapp_contact_clicked"
 				data-track-cta="hero_whatsapp"
-				data-promo-code="${getGeneralPromoCode()}"
+				data-promo-code="${getGeneralPromoCode(QUOTE_CAMPAIGN)}"
 			>WhatsApp</a>
 		`;
 		document.body.dataset.trackingRouteClass = 'commercial';
@@ -213,7 +219,7 @@ describe('WhatsApp lead identity [T1, T2]', () => {
 
 		const message = new URL(anchor.href).searchParams.get('text') ?? '';
 		const [firstLine, folioLine, ...rest] = message.split('\n');
-		expect(firstLine).toBe(buildGeneralMessage());
+		expect(firstLine).toBe(buildGeneralMessage(QUOTE_CAMPAIGN));
 		expect(folioLine).toMatch(/^Folio CM-[A-Z0-9]{6}$/);
 		expect(rest).toEqual([]);
 		expect(message).not.toContain('Cupón');

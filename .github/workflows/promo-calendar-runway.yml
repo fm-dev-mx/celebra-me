@@ -1,0 +1,74 @@
+name: Promo Calendar Runway
+
+# Read-only: the check reads src/data/promo-campaign.data.ts. The GitHub token writes nothing but
+# the reminder issue. Scheduled runs use the default branch, so the calendar checked is the one
+# released to Production.
+permissions:
+    contents: read
+    issues: write
+
+on:
+    schedule:
+        # Mondays 15:00 UTC (08:00 in Los Mochis).
+        - cron: '0 15 * * 1'
+    workflow_dispatch:
+
+concurrency:
+    group: promo-calendar-runway
+    cancel-in-progress: false
+
+jobs:
+    runway:
+        name: Promo calendar runway
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        env:
+            ALERT_TITLE: 'Promociones: el calendario está por terminar'
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Check runway
+              id: runway
+              run: pnpm ops:promo-runway
+
+            # Weekly job: the first failure opens the issue (GitHub e-mails the repository
+            # watchers) and later failures comment on it until a new row is released.
+            - name: Remind
+              if: failure() && steps.runway.outcome == 'failure'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "Sigue pendiente: $RUN_URL"
+                  else
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$ALERT_TITLE" --body \
+                          "La última promoción programada está por terminar. Agregue la siguiente fila en src/data/promo-campaign.data.ts y publíquela. Detalle en el Job Summary: $RUN_URL"
+                  fi
+
+            - name: Close the reminder once the calendar is extended
+              if: success()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Calendario extendido: $RUN_URL"
+                  fi
