@@ -129,12 +129,77 @@
 		color: var(--hero-arch-muted, rgb(232 239 246 / 92%));
 	}
 
-	// Centered under the letter at every width, like the rest of the composition.
+	// Centered under the letter at every width, like the rest of the composition. A thread of
+	// light replaces the chevron: a faint 1px track with an accent light travelling down it.
 	.invitation-hero__scroll-indicator {
 		right: 0;
 		left: 0;
 		z-index: 1;
+		display: grid;
+		justify-items: center;
+		gap: 0.7rem;
+		bottom: 1.4rem;
 		margin-inline: auto;
+
+		&::before {
+			content: '';
+			width: 1px;
+			height: 3.25rem;
+			background:
+				radial-gradient(
+						circle at 50% 50%,
+						var(--hero-arch-cue-spark, rgb(255 236 190)) 0 1.5px,
+						color-mix(
+								in srgb,
+								var(
+										--hero-arch-accent,
+										var(--color-action-accent, rgb(205 178 140))
+									)
+									70%,
+								transparent
+							)
+							2.5px,
+						transparent 6px
+					)
+					50% -12px / 12px 12px no-repeat,
+				linear-gradient(
+						180deg,
+						transparent,
+						color-mix(
+								in srgb,
+								var(
+										--hero-arch-accent,
+										var(--color-action-accent, rgb(205 178 140))
+									)
+									85%,
+								transparent
+							)
+							40%,
+						transparent
+					)
+					50% -100% / 1px 60% no-repeat,
+				linear-gradient(
+					180deg,
+					color-mix(in srgb, currentcolor 8%, transparent),
+					color-mix(in srgb, currentcolor 28%, transparent),
+					color-mix(in srgb, currentcolor 8%, transparent)
+				);
+			animation: hero-night-arch-thread 2.4s cubic-bezier(0.55, 0, 0.35, 1) infinite;
+		}
+	}
+
+	.invitation-hero__scroll-text {
+		order: 2;
+		margin-right: -0.32em;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--hero-arch-cue-size, 0.75rem);
+		font-weight: 500;
+		letter-spacing: 0.32em;
+		color: var(--hero-arch-muted, rgb(232 239 246 / 92%));
+	}
+
+	.invitation-hero__scroll-chevron {
+		display: none;
 	}
 
 	// Wide screens: the arch stands on the right, the letter on the left.
@@ -195,6 +260,88 @@
 				animation-range: exit 0% exit 80%;
 			}
 		}
+	}
+}
+
+// Once the envelope is open the thread arrives with the cover, then leaves with the first scroll
+// of the page. The opened-state selector outranks the shared affordance fade; the sealed state
+// keeps hiding it.
+.event-theme-wrapper:not([data-reveal-state='sealed'])
+	.invitation-hero[data-variant='night-arch']
+	.invitation-hero__scroll-indicator {
+	opacity: 100%;
+	animation: none;
+
+	&::before {
+		animation-name: motion-fade-in, hero-night-arch-thread;
+		animation-duration: var(--motion-hero-affordance-duration), 2.4s;
+		animation-timing-function: var(--ease-out), cubic-bezier(0.55, 0, 0.35, 1);
+		animation-delay: var(--motion-hero-affordance-delay), 0s;
+		animation-iteration-count: 1, infinite;
+		animation-fill-mode: both, none;
+	}
+
+	.invitation-hero__scroll-text {
+		animation: motion-fade-in var(--motion-hero-affordance-duration) var(--ease-out)
+			var(--motion-hero-affordance-delay) both;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: scroll()) {
+		.event-theme-wrapper:not([data-reveal-state='sealed'])
+			.invitation-hero[data-variant='night-arch']
+			.invitation-hero__scroll-indicator {
+			animation: hero-night-arch-cue-leave linear both;
+			animation-timeline: scroll(root);
+			animation-range: 0 18svh;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.invitation-hero[data-variant='night-arch'] .invitation-hero__scroll-indicator::before {
+		/* stylelint-disable-next-line declaration-no-important */
+		animation: none !important;
+		background: linear-gradient(
+			180deg,
+			transparent,
+			color-mix(
+				in srgb,
+				var(--hero-arch-accent, var(--color-action-accent, rgb(205 178 140))) 80%,
+				transparent
+			),
+			transparent
+		);
+	}
+}
+
+@keyframes hero-night-arch-thread {
+	0% {
+		background-position:
+			50% -12px,
+			50% -100%,
+			0 0;
+	}
+
+	70%,
+	100% {
+		background-position:
+			50% calc(100% + 12px),
+			50% 220%,
+			0 0;
+	}
+}
+
+@keyframes hero-night-arch-cue-leave {
+	from {
+		opacity: 100%;
+	}
+
+	to {
+		opacity: 0%;
+		translate: 0 1rem;
+		scale: 1 0.6;
 	}
 }
 

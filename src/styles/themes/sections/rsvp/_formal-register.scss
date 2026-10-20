@@ -503,3 +503,34 @@
 		}
 	}
 }
+
+// Opt-in «register opens»: as the chapter scrolls in, its header and card unfold from the top
+// edge like a page of the register, driven by the reader's scroll. Profiles turn it on with
+// `--formal-register-open: formal-register-open`; the default `none` keeps the static chapter.
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.rsvp[data-variant='formal-register'] {
+			.rsvp__header,
+			.rsvp__form,
+			.rsvp__locked-card {
+				animation: var(--formal-register-open, none) linear both;
+				animation-timeline: view();
+				animation-range: entry 10% cover 40%;
+			}
+		}
+	}
+}
+
+@keyframes formal-register-open {
+	from {
+		opacity: 0%;
+		clip-path: inset(0 0 100% 0);
+		translate: 0 1.25rem;
+	}
+
+	to {
+		opacity: 100%;
+		clip-path: inset(0 0 -2rem 0);
+		translate: 0 0;
+	}
+}
