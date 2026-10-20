@@ -342,6 +342,27 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--america-ground-rgb: var(--america-night-rgb);
 	}
 
+	// The footer waits below the closing: the invitation stops on the night, and a second scroll
+	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a gold
+	// hairline and a plain text contact link.
+	.invitation-footer {
+		--invitation-footer-reveal: held;
+		--footer-bg: var(--america-night);
+		--footer-border-color: rgb(var(--america-night-gold-rgb) / 14%);
+		--footer-closing-color: rgb(var(--america-night-gold-rgb) / 78%);
+		--footer-divider-line: rgb(var(--america-night-gold-rgb) / 30%);
+		--footer-divider-glow: 0 0 8px rgb(232 160 64 / 55%);
+		--footer-logo-filter: brightness(0) invert(0.85);
+		--footer-contact-border: 0;
+		--footer-contact-bg: none;
+		--footer-contact-padding: 0.5rem 0.25rem;
+		--footer-replay-color: var(--color-night-lilac);
+		--footer-replay-opacity: 72%;
+		--color-text-primary: var(--color-night-lilac);
+		--color-action-accent: rgb(232 160 64);
+		--color-action-accent-rgb: 232 160 64;
+	}
+
 	.thank-you-section {
 		--color-surface-primary: var(--america-night);
 		--color-surface-primary-rgb: var(--america-night-rgb);

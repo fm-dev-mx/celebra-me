@@ -95,6 +95,12 @@ const rightsYear = new Date().getFullYear();
 	</div>
 </footer>
 
+<script>
+	import { holdFooterUntilSecondScroll } from '@/lib/invitation/footer-reveal';
+
+	holdFooterUntilSecondScroll(document.querySelector('.invitation-footer'));
+</script>
+
 {hasReplay && (
 	<script>
 		const replayLink = document.querySelector('.footer__replay-link');

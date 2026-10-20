@@ -1,5 +1,14 @@
 @use '../global/mixins' as mixins;
 
+// Tokens (all optional, besides the variant ones below):
+//   --invitation-footer-reveal  `held`: the invitation stops at its last section and the footer
+//                               opens on a second scroll gesture at the bottom (Footer.astro
+//                               reads it). Unset, the footer is always shown.
+//   --footer-border-color       Top rule
+//   --footer-divider-line       Divider line color
+//   --footer-logo-filter        Filter on the brand logo
+//   --footer-contact-border / -bg / -padding  Contact link outline, fill and padding
+
 .invitation-footer {
 	display: flex;
 	flex-direction: column;
@@ -9,9 +18,47 @@
 	padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom, 0px));
 	font-family: var(--font-body);
 	color: var(--color-text-primary);
-	border-top: 1px solid var(--color-border-subtle);
+	border-top: 1px solid var(--footer-border-color, var(--color-border-subtle));
 	background-color: var(--footer-bg, var(--color-surface-primary));
 	transition: opacity var(--transition-snappy);
+}
+
+// Held at the end of the invitation: out of view but still in the reading and focus order, so a
+// tab into its links opens it (Footer.astro sets the state only when the token asks for it).
+.invitation-footer[data-footer-reveal='held'] {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.invitation-footer[data-footer-reveal='open'] > * {
+		animation: footer-reveal 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.invitation-footer[data-footer-reveal='open'] > :nth-child(2) {
+		animation-delay: 120ms;
+	}
+
+	.invitation-footer[data-footer-reveal='open'] > :nth-child(3) {
+		animation-delay: 240ms;
+	}
+}
+
+@keyframes footer-reveal {
+	0% {
+		opacity: 0%;
+		translate: 0 0.75rem;
+	}
+
+	100% {
+		opacity: 100%;
+		translate: 0 0;
+	}
 }
 
 .footer__closing-phrase {
@@ -29,7 +76,7 @@
 	width: 80px;
 	height: 1px;
 	margin: 0 auto 1.5rem;
-	background: var(--color-border-premium);
+	background: var(--footer-divider-line, var(--color-border-premium));
 
 	&::before {
 		content: '';
@@ -94,6 +141,7 @@
 	.footer-brand-logo.logo {
 		transform: scale(0.7);
 		transform-origin: center;
+		filter: var(--footer-logo-filter, none);
 	}
 }
 
@@ -125,10 +173,10 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
-	padding: 0.5rem 1.25rem;
+	padding: var(--footer-contact-padding, 0.5rem 1.25rem);
 	border-radius: var(--footer-contact-radius, 999px);
-	border: 1px solid var(--color-action-accent);
-	background: rgb(var(--color-action-accent-rgb) / 8%);
+	border: var(--footer-contact-border, 1px solid var(--color-action-accent));
+	background: var(--footer-contact-bg, rgb(var(--color-action-accent-rgb) / 8%));
 	color: var(--color-text-primary);
 	font-family: var(--font-body);
 	font-size: var(--footer-control-font-size, 0.7rem);
