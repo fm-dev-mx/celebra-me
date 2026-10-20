@@ -659,15 +659,14 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		}
 	}
 
-	// Side by side (the hero's lg split), the photo holds only the left column: the top shade
-	// stays in that corner behind the monogram instead of greying the paper column.
+	// Side by side (the hero's lg split), the links cross both the photograph and the paper column,
+	// so over the cover the bar is already the night it turns into on scroll.
 	@media (width >= 62rem) {
-		#event-header {
-			--nav-transparent-scrim: radial-gradient(
-				ellipse 24rem 10rem at 0% 0%,
-				rgb(var(--color-violet-night-rgb) / 48%) 0%,
-				transparent 100%
-			);
+		#event-header.header-base--transparent {
+			--nav-bg: rgb(var(--america-night-rgb) / 94%);
+			--nav-scrim-opacity: 0;
+			--header-nav-shadow-transparent: none;
+			--header-nav-filter-transparent: none;
 		}
 	}
 

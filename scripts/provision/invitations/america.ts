@@ -328,10 +328,9 @@ const content: CanonicalEventContentInput = {
 		closingName: CELEBRANT_NAME,
 		closingPhrase: 'América · XV años · Los Mochis · MMXXVI',
 	},
-	// The chapters a guest returns to; the quote and the countdown are passed on the way. The
-	// RSVP link becomes the menu's call to action.
+	// The chapters a guest returns to; the quote and the countdown are passed on the way, and the
+	// monogram leads back to the cover. The RSVP link becomes the menu's call to action.
 	navigation: [
-		{ label: 'Inicio', href: '#inicio' },
 		{ label: 'Lugar', href: '#event-location' },
 		{ label: 'Familia', href: '#family-section' },
 		{ label: 'Programa', href: '#itinerary' },
