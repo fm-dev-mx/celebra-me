@@ -72,13 +72,13 @@
 // The scene mixins prefix `[data-motion] .scroll-scene`, so these rules start inside the scene.
 // Pinned: the stage holds the title, the track, the counter and the progress line.
 .scroll-scene__stage:has(> [data-gallery-track]) {
-	@include scene.pinned {
+	@include scene.pinned($scene-specificity: true) {
 		container-type: inline-size;
 	}
 }
 
 [data-gallery-track] {
-	@include scene.pinned {
+	@include scene.pinned($scene-specificity: true) {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -164,7 +164,7 @@
 	}
 
 	// CSS timeline engine: everything follows the pinned span of the scene.
-	@include scene.timeline {
+	@include scene.timeline($scene-specificity: true) {
 		animation: gallery-track-count linear both;
 		animation-timeline: --scroll-scene;
 		animation-range: contain 0% contain 100%;
@@ -189,7 +189,7 @@
 	}
 
 	// Scripted engine: the same positions from `--scene-progress`.
-	@include scene.scripted {
+	@include scene.scripted($scene-specificity: true) {
 		--gallery-track-n: calc(1 + var(--scene-progress, 0) * (var(--gallery-track-count, 9) - 1));
 		--gallery-track-progress: var(--scene-progress, 0);
 
