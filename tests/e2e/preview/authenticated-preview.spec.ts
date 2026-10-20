@@ -14,12 +14,15 @@ import {
 	getJson,
 	loginAsPreviewAdmin,
 	mutateJson,
+	previewAccessHeaders,
 	readEditorContext,
 	readPublicationPreflight,
 	readSessionIdentity,
 } from './support';
 
 const PREVIEW_AUTH_CONCURRENT_USERS = 20;
+// Direct page.request calls skip the page route, so they carry the Access token themselves.
+const accessHeaders = previewAccessHeaders(preview.runtime);
 
 interface PublishResponse {
 	idempotent: boolean;
@@ -30,7 +33,7 @@ interface PublishResponse {
 
 async function timedLoginRequest(page: Page): Promise<{ durationMs: number; status: number }> {
 	const startedAt = Date.now();
-	const response = await page.request.get('/login');
+	const response = await page.request.get('/login', { headers: accessHeaders });
 	return { durationMs: Date.now() - startedAt, status: response.status() };
 }
 
@@ -89,6 +92,7 @@ test.describe.serial('Authenticated external Preview', () => {
 		await expect(page.getByText('Hay cambios sin publicar')).toBeVisible();
 		const publicResponse = await page.request.get(
 			`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,
+			{ headers: accessHeaders },
 		);
 		expect(publicResponse.status()).toBe(200);
 
@@ -98,7 +102,9 @@ test.describe.serial('Authenticated external Preview', () => {
 		await expect(page).toHaveURL(/\/login$/);
 		await expect(page.locator('#login-submit')).toBeVisible();
 
-		const sessionAfterLogout = await page.request.get('/api/auth/session');
+		const sessionAfterLogout = await page.request.get('/api/auth/session', {
+			headers: accessHeaders,
+		});
 		expect(sessionAfterLogout.status()).toBe(401);
 		await page.goto('/dashboard/invitados');
 		await expect(page).toHaveURL(/\/login/);
@@ -207,6 +213,7 @@ test.describe.serial('Authenticated external Preview', () => {
 
 			const publicResponse = await page.request.get(
 				`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_SLUG}`,
+				{ headers: accessHeaders },
 			);
 			expect(publicResponse.status()).toBe(200);
 
