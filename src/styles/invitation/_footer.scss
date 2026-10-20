@@ -161,7 +161,7 @@ $lantern-shape: 40% 40% 45% 45%;
 		transform-origin: 50% 100%;
 	}
 
-	&[data-state='settling']::before {
+	&[data-resting]::before {
 		animation: var(--footer-pull-breathe, none) 2.4s ease-in-out infinite alternate;
 	}
 

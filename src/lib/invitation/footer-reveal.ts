@@ -100,6 +100,8 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		if (!cue || opened) return;
 		cue.dataset.state = state;
 		cue.style.setProperty('--footer-pull', progress.toFixed(3));
+		// Only a lantern waiting in view breathes; one settled out of sight stays still.
+		cue.toggleAttribute('data-resting', state === 'settling' && progress > 0);
 	};
 	// Pulled far enough opens; anything less follows the pull and settles back on release.
 	const pull = (progress: number) => {
