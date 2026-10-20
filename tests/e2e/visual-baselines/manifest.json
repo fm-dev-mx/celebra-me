@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-20T19:23:17.473Z",
+    "generatedAt": "2026-10-20T21:57:33.618Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-        "cssSha256": "8016439c8f3ceb4f3a5d971469e30724baafcd22ed274cbaebb6c979176ce499",
+        "cssSha256": "3f2a919073cfe48658c32da97c43a3dc29b68b8568e18e91b8ced2460ee6b8bc",
         "assetSha256": "51cfd08be8b87c98bedfa1c76a84ce159b349b7b660fc2d72d50f7eb8fbc8930",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2220,7 +2220,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-mobile.png",
             "sha256": "1057530b4052ae8b087ac35671be7ccd33b8b46ba3c3de9cc2709016a648bbc9",
-            "contentHash": "b595479766257df4379ffb570df1137d81b6b0f5f4f26008e61cd4c5ee5a3aaa",
+            "contentHash": "3c97bc033cfd4cd59f9ad72e7bc7a7cfaea36a8853b067a1f9ed59a358e67f4a",
             "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
             "comparisonResult": "ACCEPTED"
         },
@@ -2232,7 +2232,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-desktop.png",
             "sha256": "41a105aca6af752ab4124362ec88ca4cdbc7cff651e68aa1704ac285d2c2502a",
-            "contentHash": "b595479766257df4379ffb570df1137d81b6b0f5f4f26008e61cd4c5ee5a3aaa",
+            "contentHash": "3c97bc033cfd4cd59f9ad72e7bc7a7cfaea36a8853b067a1f9ed59a358e67f4a",
             "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
             "comparisonResult": "ACCEPTED"
         },
@@ -2243,8 +2243,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
-            "sha256": "e38462eaf7c314cb25ca58487ea564a1ef47eee0ea6170fd27ed02fa5adca91d",
-            "contentHash": "61186d2e17ccf12f779f1e7c61853be39308639167aa4b538b48f8553ff39c60",
+            "sha256": "d0fdac05695f84c13967d83b49b52dcd2d46fdf6219588f654479c31fd947f82",
+            "contentHash": "01a70c27d41d3b6f67189cc9a0600f03eb2af131ed4a8342aff340cc1e0e76b3",
             "assetHash": "d2c0bce1dbf0bf773a31dfa4b577ad291c74cefaf9b3679c3663f352b5446c2f",
             "comparisonResult": "ACCEPTED"
         },
@@ -2255,8 +2255,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
-            "sha256": "12354aefeff8fb008f0e98a405fba33e3995f2cd37d475f01eb300ae08159bf9",
-            "contentHash": "61186d2e17ccf12f779f1e7c61853be39308639167aa4b538b48f8553ff39c60",
+            "sha256": "b96c59e9c3273dd895da47ef3b98d60c6e4c1bef6203358e2aaf6e69f174ec26",
+            "contentHash": "01a70c27d41d3b6f67189cc9a0600f03eb2af131ed4a8342aff340cc1e0e76b3",
             "assetHash": "d2c0bce1dbf0bf773a31dfa4b577ad291c74cefaf9b3679c3663f352b5446c2f",
             "comparisonResult": "ACCEPTED"
         },
@@ -2429,9 +2429,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "c91d51cf2dd5ded780b22cbf596dca39f2d00d01",
+    "referenceSha": "ba95f62ec4ea66e379b2d1bf4b0924a66d391d7c",
     "variantManifest": {
-        "generatedAt": "2026-10-20T19:23:17.473Z",
+        "generatedAt": "2026-10-20T21:57:33.618Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2444,7 +2444,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "8016439c8f3ceb4f3a5d971469e30724baafcd22ed274cbaebb6c979176ce499",
+            "cssSha256": "3f2a919073cfe48658c32da97c43a3dc29b68b8568e18e91b8ced2460ee6b8bc",
             "assetSha256": "51cfd08be8b87c98bedfa1c76a84ce159b349b7b660fc2d72d50f7eb8fbc8930",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4333,10 +4333,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c91d51cf2dd5ded780b22cbf596dca39f2d00d01"
+        "referenceSha": "ba95f62ec4ea66e379b2d1bf4b0924a66d391d7c"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-20T19:23:17.478Z",
+        "generatedAt": "2026-10-20T21:57:33.623Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4349,7 +4349,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "8016439c8f3ceb4f3a5d971469e30724baafcd22ed274cbaebb6c979176ce499",
+            "cssSha256": "3f2a919073cfe48658c32da97c43a3dc29b68b8568e18e91b8ced2460ee6b8bc",
             "assetSha256": "51cfd08be8b87c98bedfa1c76a84ce159b349b7b660fc2d72d50f7eb8fbc8930",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4680,7 +4680,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-mobile.png",
                 "sha256": "1057530b4052ae8b087ac35671be7ccd33b8b46ba3c3de9cc2709016a648bbc9",
-                "contentHash": "b595479766257df4379ffb570df1137d81b6b0f5f4f26008e61cd4c5ee5a3aaa",
+                "contentHash": "3c97bc033cfd4cd59f9ad72e7bc7a7cfaea36a8853b067a1f9ed59a358e67f4a",
                 "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4692,7 +4692,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-desktop.png",
                 "sha256": "41a105aca6af752ab4124362ec88ca4cdbc7cff651e68aa1704ac285d2c2502a",
-                "contentHash": "b595479766257df4379ffb570df1137d81b6b0f5f4f26008e61cd4c5ee5a3aaa",
+                "contentHash": "3c97bc033cfd4cd59f9ad72e7bc7a7cfaea36a8853b067a1f9ed59a358e67f4a",
                 "assetHash": "3c727b67b3592de4ad68fb984edb9ac9ae3f898daaa50a391321858a92f38128",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4703,8 +4703,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
-                "sha256": "e38462eaf7c314cb25ca58487ea564a1ef47eee0ea6170fd27ed02fa5adca91d",
-                "contentHash": "61186d2e17ccf12f779f1e7c61853be39308639167aa4b538b48f8553ff39c60",
+                "sha256": "d0fdac05695f84c13967d83b49b52dcd2d46fdf6219588f654479c31fd947f82",
+                "contentHash": "01a70c27d41d3b6f67189cc9a0600f03eb2af131ed4a8342aff340cc1e0e76b3",
                 "assetHash": "d2c0bce1dbf0bf773a31dfa4b577ad291c74cefaf9b3679c3663f352b5446c2f",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4715,8 +4715,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
-                "sha256": "12354aefeff8fb008f0e98a405fba33e3995f2cd37d475f01eb300ae08159bf9",
-                "contentHash": "61186d2e17ccf12f779f1e7c61853be39308639167aa4b538b48f8553ff39c60",
+                "sha256": "b96c59e9c3273dd895da47ef3b98d60c6e4c1bef6203358e2aaf6e69f174ec26",
+                "contentHash": "01a70c27d41d3b6f67189cc9a0600f03eb2af131ed4a8342aff340cc1e0e76b3",
                 "assetHash": "d2c0bce1dbf0bf773a31dfa4b577ad291c74cefaf9b3679c3663f352b5446c2f",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4889,9 +4889,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c91d51cf2dd5ded780b22cbf596dca39f2d00d01"
+        "referenceSha": "ba95f62ec4ea66e379b2d1bf4b0924a66d391d7c"
     },
-    "candidateManifestSha256": "d380e1fd386888b2411f89e3907b92b776fb51f3755a35b8a72b75dd4e37cdf1",
-    "acceptedFromCommit": "c91d51cf2dd5ded780b22cbf596dca39f2d00d01",
-    "acceptedAt": "2026-10-20T19:25:40.810Z"
+    "candidateManifestSha256": "89e7166b4c0f00dc7d461739fee7680307856d57c0fe86266e0f8f47a5f322b6",
+    "acceptedFromCommit": "ba95f62ec4ea66e379b2d1bf4b0924a66d391d7c",
+    "acceptedAt": "2026-10-20T22:22:24.930Z"
 }
