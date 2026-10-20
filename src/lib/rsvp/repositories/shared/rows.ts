@@ -90,6 +90,7 @@ export type GuestRow = {
 	updated_at: string;
 	tags: string[];
 	short_id?: string;
+	guest_code?: string;
 	hide_celebra_me_branding: boolean;
 	last_reminder_sent_at: string | null;
 	is_test: boolean;
@@ -132,7 +133,7 @@ const EVENT_COLUMN_LIST = [
 
 export const EVENT_COLUMNS = EVENT_COLUMN_LIST.join(',');
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding,last_reminder_sent_at,is_test,open_count,first_opened_at,last_opened_at,last_previewed_at,max_progress_milestone';
+	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,guest_code,hide_celebra_me_branding,last_reminder_sent_at,is_test,open_count,first_opened_at,last_opened_at,last_previewed_at,max_progress_milestone';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -175,6 +176,7 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		updatedAt: row.updated_at,
 		tags: row.tags || [],
 		shortId: row.short_id,
+		guestCode: row.guest_code,
 		hideCelebraMeBranding: row.hide_celebra_me_branding,
 		lastReminderSentAt: row.last_reminder_sent_at,
 		isTest: row.is_test ?? false,

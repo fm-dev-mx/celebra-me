@@ -1,6 +1,7 @@
 import {
 	buildInvitationPath,
 	buildPublicInvitationPath,
+	buildGuestCodePath,
 	buildMinimalInvitationPath,
 	generateInvitationLink,
 } from '@/utils/invitation-link';
@@ -128,5 +129,48 @@ describe('buildPublicInvitationPath', () => {
 				shortId: 'k3x9aB',
 			}),
 		).toBe('https://celebra.test/i/k3x9aB');
+	});
+});
+
+describe('guest code links', () => {
+	it('prefers /{slug}/{guestCode} over /i/{shortId} in shared messages', () => {
+		expect(
+			generateInvitationLink({
+				origin: 'https://celebra.test/',
+				eventType: 'xv',
+				eventSlug: 'america',
+				inviteId: 'invite-4',
+				shortId: 'B5NBO65L',
+				guestCode: 'k7q2',
+			}),
+		).toBe('https://celebra.test/america/k7q2');
+	});
+
+	it('falls back to /i/{shortId} when the slug keeps the long path', () => {
+		expect(
+			generateInvitationLink({
+				origin: 'https://celebra.test',
+				eventType: 'xv',
+				eventSlug: 'demo-xv-editorial',
+				inviteId: 'invite-5',
+				shortId: 'B5NBO65L',
+				guestCode: 'k7q2',
+			}),
+		).toBe('https://celebra.test/i/B5NBO65L');
+	});
+
+	it('falls back to /i/{shortId} without a slug', () => {
+		expect(
+			generateInvitationLink({
+				origin: 'https://celebra.test',
+				inviteId: 'invite-6',
+				shortId: 'B5NBO65L',
+				guestCode: 'k7q2',
+			}),
+		).toBe('https://celebra.test/i/B5NBO65L');
+	});
+
+	it('encodes both segments', () => {
+		expect(buildGuestCodePath('a b', 'k7q2')).toBe('/a%20b/k7q2');
 	});
 });

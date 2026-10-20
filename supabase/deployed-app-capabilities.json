@@ -8,6 +8,7 @@
         "guest_engagement_client",
         "guest_engagement_only_client",
         "invitation_access_controls_client",
-        "legacy_invitation_columns_retired_client"
+        "legacy_invitation_columns_retired_client",
+        "guest_link_code_client"
     ]
 }

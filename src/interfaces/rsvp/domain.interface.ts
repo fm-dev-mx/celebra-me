@@ -45,6 +45,7 @@ export interface GuestInvitationRecord {
 	updatedAt: string;
 	tags?: string[];
 	shortId?: string;
+	guestCode?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
 	isTest?: boolean;
@@ -79,6 +80,7 @@ export interface GuestInvitationDTO {
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	shortId?: string;
+	guestCode?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
 	isTest?: boolean;

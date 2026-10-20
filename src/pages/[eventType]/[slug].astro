@@ -38,7 +38,11 @@ const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
 
 if (!isEventType(eventType)) {
-	return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private' } });
+	// Slugs can never be event types (slug-policy.ts), so `/{slug}/{guestCode}` lands here:
+	// the guest link page answers it, and 404s anything that is not a guest code.
+	return Astro.rewrite(
+		`/i/${encodeURIComponent(eventType)}/${encodeURIComponent(slug)}`,
+	);
 }
 const inviteId = Astro.url.searchParams.get('invite');
 const hasInviteParam = Astro.url.searchParams.has('invite');

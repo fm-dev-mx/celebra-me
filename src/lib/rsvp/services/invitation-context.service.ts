@@ -1,5 +1,9 @@
-import { findEventByInvitationPublic } from '@/lib/rsvp/repositories/event.repository';
 import {
+	findEventByInvitationPublic,
+	findEventBySlugService,
+} from '@/lib/rsvp/repositories/event.repository';
+import {
+	findGuestByEventAndCodePublic,
 	findGuestByInviteIdPublic,
 	findGuestByShortIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
@@ -99,6 +103,35 @@ export async function getInvitationContextByShortId(shortId: string): Promise<{
 
 	const event = await findEventByInvitationPublic(invitation.eventId);
 	if (!event) throw new ApiError(404, 'not_found', 'Event not found.');
+
+	return toInvitationContext(invitation, event);
+}
+
+/** Guest codes are 4 characters from an alphabet without 0/o/1/l/i (see migration 20261020120000). */
+const GUEST_CODE_PATTERN = /^[a-hjkmnp-z2-9]{4}$/;
+
+export function isGuestCodeFormat(value: string): boolean {
+	return GUEST_CODE_PATTERN.test(value);
+}
+
+/**
+ * Resolves `/{slug}/{guestCode}`. The code only counts inside its own invitation: a code that
+ * belongs to another invitation is not found.
+ */
+export async function getInvitationContextBySlugAndCode(
+	eventSlug: string,
+	guestCode: string,
+): Promise<ReturnType<typeof toInvitationContext>> {
+	const safeSlug = sanitize(eventSlug, 128);
+	if (!safeSlug || !isGuestCodeFormat(guestCode)) {
+		throw new ApiError(404, 'not_found', 'Invitation not found.');
+	}
+
+	const event = await findEventBySlugService(safeSlug);
+	if (!event) throw new ApiError(404, 'not_found', 'Event not found.');
+
+	const invitation = await findGuestByEventAndCodePublic(event.id, guestCode);
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
 	return toInvitationContext(invitation, event);
 }

@@ -26,6 +26,7 @@ export interface BuildShareMessageInput {
 	countryCode?: string;
 	fullName: string;
 	shortId?: string;
+	guestCode?: string;
 	eventTitle?: string;
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
@@ -76,6 +77,7 @@ export function buildShareMessage(input: BuildShareMessageInput): string {
 		eventSlug: input.eventSlug,
 		inviteId: input.inviteId,
 		shortId: input.shortId,
+		guestCode: input.guestCode,
 	});
 
 	let template = resolveTemplate(input);

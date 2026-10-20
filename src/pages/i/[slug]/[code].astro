@@ -1,0 +1,24 @@
+---
+// Guest link `/{slug}/{guestCode}` (e.g. /america/k7q2). `[eventType]/[slug].astro` rewrites
+// here when the first segment is not an event type; `/i/{slug}/{code}` itself is not a link.
+export const prerender = false;
+
+import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
+import {
+  buildShortIdEarlyResponse,
+  resolveGuestCodePage,
+} from '@/lib/invitation/short-id-resolver';
+import InvitationOGShell from '@/layouts/InvitationOGShell.astro';
+
+if (Astro.originPathname.startsWith('/i/')) {
+  return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private' } });
+}
+
+const { slug, code } = Astro.params;
+
+const result = await resolveGuestCodePage(slug, code, Astro.request, resolvePublicSiteOrigin());
+const earlyResponse = buildShortIdEarlyResponse(result, Astro.response);
+if (earlyResponse) return earlyResponse;
+---
+
+<InvitationOGShell result={result} />

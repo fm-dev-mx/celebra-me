@@ -28,9 +28,18 @@ export function buildMinimalInvitationPath(shortId: string): string {
 }
 
 /**
+ * Personal guest path `/{slug}/{guestCode}`, e.g. `/america/k7q2`. Slugs can never be event
+ * types, so it never collides with `/{eventType}/{slug}`.
+ */
+export function buildGuestCodePath(eventSlug: string, guestCode: string): string {
+	return `/${encodeURIComponent(eventSlug)}/${encodeURIComponent(guestCode)}`;
+}
+
+/**
  * Generates a secure, environment-aware URL for guest invitations.
  *
- * Preferred pattern: {origin}/i/{shortId}  (when shortId is available)
+ * Preferred pattern: {origin}/{eventSlug}/{guestCode}  (short-URL invitations with a code)
+ * Legacy:             {origin}/i/{shortId}  (still resolves for links already sent)
  * Fallback:           {origin}/{eventType}/{eventSlug}?invite={inviteId}
  * Fallback (no slug): {origin}/invitacion/{inviteId}
  */
@@ -40,9 +49,14 @@ export function generateInvitationLink(params: {
 	eventSlug?: string;
 	inviteId: string;
 	shortId?: string;
+	guestCode?: string;
 }): string {
-	const { origin, shortId, eventType, eventSlug, inviteId } = params;
+	const { origin, shortId, guestCode, eventType, eventSlug, inviteId } = params;
 	const baseUrl = origin.replace(/\/+$/, '');
+
+	if (guestCode && eventSlug && usesShortInvitationPath(eventSlug)) {
+		return `${baseUrl}${buildGuestCodePath(eventSlug, guestCode)}`;
+	}
 
 	if (shortId) {
 		return `${baseUrl}${buildMinimalInvitationPath(shortId)}`;
