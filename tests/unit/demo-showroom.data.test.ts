@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import {
 	DEMO_SHOWROOM_EVENTS,
+	DEMO_SHOWROOM_HOME_EVENTS,
 	DEMO_SHOWROOM_ITEMS,
 	getDemoShowroomByPublicSlug,
 	getFeaturedDemoShowroomItems,
@@ -42,8 +43,16 @@ describe('demo showroom public metadata', () => {
 			'/demos/xv',
 			'/demos/boda',
 			'/demos/bautizo',
+			'/demos/primera-comunion',
 			'/demos/cumpleanos',
 		]);
+		expect(DEMO_SHOWROOM_HOME_EVENTS.map((event) => event.eventType)).toEqual([
+			'xv',
+			'boda',
+			'bautizo',
+			'cumple',
+		]);
+		expect(getDemoShowroomByPublicSlug('baby-shower')).toBeUndefined();
 
 		expect(getDemoShowroomByPublicSlug('cumpleanos')).toMatchObject({
 			eventType: 'cumple',
@@ -55,12 +64,12 @@ describe('demo showroom public metadata', () => {
 	it('renders only demos explicitly approved for public showroom exposure', () => {
 		const featuredItems = getFeaturedDemoShowroomItems();
 
-		expect(featuredItems).toHaveLength(6);
+		expect(featuredItems).toHaveLength(7);
 		expect(featuredItems.every((item) => item.visibility === 'featured')).toBe(true);
 		expect(featuredItems.every((item) => item.reviewStatus === 'approved')).toBe(true);
-		expect(featuredItems.map((item) => item.slug)).not.toContain(
-			'demo-primera-comunion-angelic-presence',
-		);
+		expect(getFeaturedDemoShowroomItems('primera-comunion').map((item) => item.href)).toEqual([
+			'/primera-comunion/demo-primera-comunion-angelic-presence',
+		]);
 	});
 
 	it('keeps every featured showroom slug backed by an existing event demo file', () => {
@@ -165,7 +174,7 @@ describe('showroom interaction model', () => {
 	});
 
 	it('quotes every event with the current promo and no retired package', () => {
-		for (const event of DEMO_SHOWROOM_EVENTS) {
+		for (const event of DEMO_SHOWROOM_HOME_EVENTS) {
 			const quote = event.homeSelector.quoteCta;
 			expect(quote.message).toBe(buildGeneralMessage());
 			expect(quote.promoCode).toBe(getGeneralPromoCode());

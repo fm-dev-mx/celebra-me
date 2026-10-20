@@ -1,5 +1,6 @@
 import type {
 	DemoShowroomEvent,
+	DemoShowroomHomeEvent,
 	DemoShowroomItem,
 	DemoShowroomPublicSlug,
 } from '@/interfaces/ui/sections/demo-showroom.interface';
@@ -13,7 +14,7 @@ import {
 
 /** Shared home-selector quote CTA: the general promo message, code and value. */
 const SHOWROOM_QUOTE_CTA = {
-	label: 'Cotizar por WhatsApp',
+	label: 'Quiero una invitación así',
 	message: buildGeneralMessage(),
 	promoCode: getGeneralPromoCode(),
 	trackValue: getStartingPrice(),
@@ -29,7 +30,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		showroomHref: '/demos/xv',
 		heroTitle: 'Demos de invitaciones para XV años',
 		heroDescription:
-			'Explora estilos digitales para una celebración de XV años con RSVP, pases y galería.',
+			'Explore estilos digitales para una celebración de XV años con RSVP, pases y galería.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para XV años. Vi sus demos y quiero asesoría para elegir estilo.',
 		homeSelector: {
@@ -48,7 +49,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		showroomHref: '/demos/boda',
 		heroTitle: 'Demos de invitaciones para boda',
 		heroDescription:
-			'Conoce experiencias digitales para comunicar ceremonia, recepción y detalles de la boda.',
+			'Conozca experiencias digitales para comunicar ceremonia, recepción y detalles de la boda.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para boda. Quiero conocer opciones similares a sus demos.',
 		homeSelector: {
@@ -67,7 +68,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		showroomHref: '/demos/bautizo',
 		heroTitle: 'Demos de invitaciones para bautizo',
 		heroDescription:
-			'Mira propuestas digitales para compartir la celebración con familia y padrinos.',
+			'Vea propuestas digitales para compartir la celebración con familia y padrinos.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para bautizo. Vi sus demos y quiero asesoría para mi celebración.',
 		homeSelector: {
@@ -75,6 +76,20 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 30,
+	},
+	{
+		eventType: 'primera-comunion',
+		publicSlug: 'primera-comunion',
+		label: 'Primera comunión',
+		description: 'Familia, padrinos, ubicación y confirmación en una invitación serena.',
+		icon: 'Dove',
+		showroomHref: '/demos/primera-comunion',
+		heroTitle: 'Demos de invitaciones para primera comunión',
+		heroDescription:
+			'Vea una invitación digital para compartir la primera comunión con familia y padrinos.',
+		whatsAppMessage:
+			'Hola, me gustaría una invitación digital para primera comunión. Vi sus demos y quiero asesoría para mi celebración.',
+		sortOrder: 40,
 	},
 	{
 		eventType: 'cumple',
@@ -86,7 +101,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		showroomHref: '/demos/cumpleanos',
 		heroTitle: 'Demos de invitaciones para cumpleaños',
 		heroDescription:
-			'Explora una invitación digital para celebraciones personales, familiares o de aniversario.',
+			'Explore una invitación digital para celebraciones personales, familiares o de aniversario.',
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para cumpleaños. Vi sus demos y quiero conocer opciones.',
 		homeSelector: {
@@ -220,6 +235,25 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		},
 	},
 	{
+		eventType: 'primera-comunion',
+		publicSlug: 'primera-comunion',
+		slug: 'demo-primera-comunion-angelic-presence',
+		href: '/primera-comunion/demo-primera-comunion-angelic-presence',
+		title: 'Primera comunión estilo Angelical',
+		description: 'Ilustrada, floral y fresca.',
+		styleTags: ['ilustrada', 'floral'],
+		visibility: 'featured',
+		reviewStatus: 'approved',
+		sortOrder: 10,
+		ctaMessage:
+			'Hola, me gustaría una invitación digital para primera comunión similar a la demo Angelic Presence.',
+		thumbnail: {
+			assetSlug: 'demo-primera-comunion-angelic-presence',
+			key: 'hero',
+			alt: 'Vista principal de la demo de primera comunión estilo Angelic Presence',
+		},
+	},
+	{
 		eventType: 'cumple',
 		publicSlug: 'cumpleanos',
 		slug: 'demo-cumple-luxury-hacienda',
@@ -240,6 +274,12 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		},
 	},
 ] as const;
+
+/** Events with a tab in the landing event selector, in showroom order. */
+export const DEMO_SHOWROOM_HOME_EVENTS: readonly DemoShowroomHomeEvent[] =
+	DEMO_SHOWROOM_EVENTS.filter(
+		(event): event is DemoShowroomHomeEvent => event.homeSelector !== undefined,
+	);
 
 export function getDemoShowroomByPublicSlug(publicSlug: string): DemoShowroomEvent | undefined {
 	return DEMO_SHOWROOM_EVENTS.find(

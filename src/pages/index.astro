@@ -14,7 +14,7 @@ import Contact from '@/components/home/Contact.astro';
 import Footer from '@/components/home/Footer.astro';
 import PromoStatus from '@/components/home/PromoStatus.astro';
 import StickyWhatsAppBar from '@/components/home/StickyWhatsAppBar.astro';
-import { DEMO_SHOWROOM_EVENTS } from '@/data/demo-showroom.data';
+import { DEMO_SHOWROOM_HOME_EVENTS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
 import { footerData } from '@/data/footer.data';
 import heroDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
@@ -89,7 +89,7 @@ const schemaJsonLd = {
 	<script is:inline type="application/ld+json" set:html={JSON.stringify(schemaJsonLd)} slot="head"></script>
 	<div class="landing-sections-wrapper">
 		<Hero data={landingData.hero} />
-		<EventTypeSelector events={DEMO_SHOWROOM_EVENTS} landingData={landingData} />
+		<EventTypeSelector events={DEMO_SHOWROOM_HOME_EVENTS} landingData={landingData} />
 		<ProductProof data={landingData.productProof} />
 		<GuestExperience data={landingData.guestExperience} />
 		<Testimonials data={landingData.testimonials} />

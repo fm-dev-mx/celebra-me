@@ -17,7 +17,7 @@ describe('landing product value data', () => {
 		);
 		expect(hero.subtitle).toBe('Usted la envía por WhatsApp y ve quién confirmó.');
 		expect(hero.eyebrow).toBeUndefined();
-		expect(hero.paymentNote).toBe('Sin anticipo: paga al recibir su invitación terminada.');
+		expect(hero.paymentNote).toBe('Sin anticipo: pague al recibir su invitación terminada.');
 		expect(hero.secondaryCtaLabel).toBe('Ver una invitación');
 		expect(DEMO_SHOWROOM_ITEMS.some((item) => item.href === hero.secondaryCtaUrl)).toBe(true);
 
@@ -109,7 +109,7 @@ describe('landing primary CTA and trust copy', () => {
 			landingData.howItWorks.cta?.label,
 			landingData.contact.cta?.label,
 		];
-		expect(new Set(labels)).toEqual(new Set(['Cotizar por WhatsApp']));
+		expect(new Set(labels)).toEqual(new Set(['Cotizar mi invitación']));
 	});
 
 	it('publishes real, anonymous testimonials with a privacy notice', () => {

@@ -2,7 +2,7 @@ import type { EventType } from '@/lib/theme/theme-contract';
 import type { EventAssetKey } from '@/lib/assets/asset-keys';
 
 export type DemoShowroomPublicSlug =
-	'xv' | 'boda' | 'bautizo' | 'bautismo' | 'cumple' | 'cumpleanos';
+	'xv' | 'boda' | 'bautizo' | 'bautismo' | 'primera-comunion' | 'cumple' | 'cumpleanos';
 
 type DemoShowroomVisibility = 'featured' | 'hidden';
 type DemoShowroomReviewStatus = 'approved' | 'needs-review';
@@ -40,9 +40,12 @@ export interface DemoShowroomEvent {
 	heroTitle: string;
 	heroDescription: string;
 	whatsAppMessage: string;
-	homeSelector: DemoShowroomHomeSelector;
+	/** Present only for events with a tab in the landing event selector. */
+	homeSelector?: DemoShowroomHomeSelector;
 	sortOrder: number;
 }
+
+export type DemoShowroomHomeEvent = DemoShowroomEvent & { homeSelector: DemoShowroomHomeSelector };
 
 export interface DemoShowroomItem {
 	eventType: EventType;
