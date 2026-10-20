@@ -9,9 +9,6 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 jest.mock('@/lib/images/image-transformer-provider', () => ({
 	installImagesBinding: jest.fn(),
 }));
-jest.mock('@/lib/server/static-assets-provider', () => ({
-	installAssetsBinding: jest.fn(),
-}));
 jest.mock('@/lib/memories/server/cleanup.service', () => ({
 	runMemoriesCleanup: jest.fn(),
 }));
@@ -28,7 +25,6 @@ import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
 import { installRateLimitBindings } from '@/lib/rsvp/security/rate-limit-provider';
 import { SCHEDULED_JOB_CRONS, type ScheduledJobOutcome } from '@/lib/server/scheduled-jobs';
-import { installAssetsBinding } from '@/lib/server/static-assets-provider';
 import { fetchFromApp, resetAppLoopbackForTests } from '@/lib/server/app-loopback';
 import worker from '../../src/worker';
 
@@ -94,14 +90,9 @@ describe('Worker entry', () => {
 		expect(await response.text()).toBe('served');
 		expect(installRateLimitBindings).toHaveBeenCalledWith(env);
 		expect(installImagesBinding).toHaveBeenCalledWith(env);
-		expect(installAssetsBinding).toHaveBeenCalledWith(env);
 		expect(handle).toHaveBeenCalledWith(request, env, context);
 		const handleOrder = (handle as jest.Mock).mock.invocationCallOrder[0];
-		for (const install of [
-			installRateLimitBindings,
-			installImagesBinding,
-			installAssetsBinding,
-		]) {
+		for (const install of [installRateLimitBindings, installImagesBinding]) {
 			expect((install as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(handleOrder);
 		}
 	});

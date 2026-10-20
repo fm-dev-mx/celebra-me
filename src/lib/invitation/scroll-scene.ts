@@ -5,9 +5,9 @@
  * `--scene-progress` (0–1) with one passive scroll listener and at most one frame per scroll.
  * `data-scene-step` follows when the scene declares `data-scene-steps`.
  */
-export const SCROLL_SCENE_SELECTOR = '[data-scroll-scene]';
+const SCROLL_SCENE_SELECTOR = '[data-scroll-scene]';
 
-export function supportsScrollTimeline(win: Window = window): boolean {
+function supportsScrollTimeline(win: Window = window): boolean {
 	const css = (win as Window & typeof globalThis).CSS;
 	return typeof css?.supports === 'function' && css.supports('animation-timeline: view()');
 }
