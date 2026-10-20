@@ -57,17 +57,51 @@
 		transparent 97%,
 		var(--olivia-champagne) 100%
 	);
+
+	// A December sky for the end of the invitation: fine ivory stars, a few brighter, as on the
+	// cover. The pull lights it at the bottom edge and the footer keeps it, breathing slowly.
+	--olivia-stars:
+		radial-gradient(2.5px 2.5px at 8% 22%, rgb(var(--olivia-ivory-rgb) / 85%), transparent 60%),
+		radial-gradient(2px 2px at 19% 64%, rgb(var(--olivia-ivory-rgb) / 70%), transparent 60%),
+		radial-gradient(
+			3px 3px at 27% 12%,
+			rgb(var(--olivia-champagne-rgb) / 90%),
+			transparent 60%
+		),
+		radial-gradient(2px 2px at 36% 82%, rgb(var(--olivia-ivory-rgb) / 60%), transparent 60%),
+		radial-gradient(
+			2.5px 2.5px at 44% 38%,
+			rgb(var(--olivia-ivory-rgb) / 75%),
+			transparent 60%
+		),
+		radial-gradient(2px 2px at 58% 8%, rgb(var(--olivia-ivory-rgb) / 70%), transparent 60%),
+		radial-gradient(
+			3px 3px at 66% 56%,
+			rgb(var(--olivia-champagne-rgb) / 85%),
+			transparent 60%
+		),
+		radial-gradient(2px 2px at 74% 28%, rgb(var(--olivia-ivory-rgb) / 65%), transparent 60%),
+		radial-gradient(
+			2.5px 2.5px at 83% 74%,
+			rgb(var(--olivia-ivory-rgb) / 80%),
+			transparent 60%
+		),
+		radial-gradient(2px 2px at 91% 16%, rgb(var(--olivia-ivory-rgb) / 70%), transparent 60%),
+		radial-gradient(2px 2px at 96% 48%, rgb(var(--olivia-ivory-rgb) / 55%), transparent 60%),
+		radial-gradient(2.5px 2.5px at 4% 88%, rgb(var(--olivia-ivory-rgb) / 60%), transparent 60%);
 	--footer-pull-color: var(--olivia-champagne);
 	--footer-pull-body: var(--olivia-crescent);
 	--footer-pull-shape: 50%;
 	--footer-pull-height: 0.7rem;
-	--footer-pull-scale: 1.8;
-	--footer-pull-glow: rgb(var(--olivia-champagne-rgb) / 30%);
-	--footer-pull-pool: radial-gradient(
-		ellipse 60% 100% at 50% 100%,
-		rgb(var(--olivia-champagne-rgb) / 18%),
-		transparent 70%
-	);
+	--footer-pull-scale: 2.6;
+	--footer-pull-glow: rgb(var(--olivia-champagne-rgb) / 45%);
+	--footer-pull-pool:
+		var(--olivia-stars),
+		radial-gradient(
+			ellipse 70% 100% at 50% 100%,
+			rgb(var(--olivia-champagne-rgb) / 30%),
+			transparent 72%
+		);
 	--footer-pull-label: 'Deslice hacia arriba para subir la luna';
 	--footer-pull-label-color: rgb(var(--olivia-champagne-rgb) / 88%);
 	--footer-pull-label-size: 0.8125rem;
@@ -531,7 +565,7 @@
 	// Closing: the last photograph sinks into deep navy; the couple's names in script, champagne.
 	.thank-you-section[data-variant='full-bleed-photo'] {
 		// Room under the names for the moon cue and its line while the footer is held.
-		--thank-you-bleed-padding-end: 6rem;
+		--thank-you-bleed-padding-end: 8.5rem;
 		--color-surface-dark: var(--olivia-navy-deep);
 		--color-surface-dark-rgb: var(--olivia-navy-deep-rgb);
 		--thank-you-bleed-veil: linear-gradient(
@@ -586,7 +620,7 @@
 		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
 		--footer-reply-lantern: var(--olivia-crescent);
 		--footer-reply-lantern-height: 1.4rem;
-		--footer-reply-lantern-glow: rgb(var(--olivia-champagne-rgb) / 28%);
+		--footer-reply-lantern-glow: rgb(var(--olivia-champagne-rgb) / 45%);
 		--footer-reply-button-bg: var(--olivia-champagne);
 		--footer-reply-button-ink: var(--olivia-navy-deep);
 		--footer-reply-button-font: var(--font-label);
@@ -598,6 +632,14 @@
 			transparent 60%
 		);
 		--footer-bg: var(--olivia-navy-deep);
+		--footer-sky:
+			var(--olivia-stars),
+			radial-gradient(
+				ellipse 60% 28% at 50% 0%,
+				rgb(var(--olivia-champagne-rgb) / 14%),
+				transparent 70%
+			);
+		--footer-sky-twinkle: footer-sky-twinkle;
 		--footer-closing-color: var(--olivia-champagne);
 		--footer-closing-font: var(--font-calligraphy);
 		--footer-closing-style: normal;
