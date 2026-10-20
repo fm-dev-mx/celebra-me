@@ -17,6 +17,11 @@ const rsvpLabelsSchema = z
 		phone: z.string().optional(),
 		notesLabel: z.string().optional(),
 		notesPlaceholder: z.string().optional(),
+		/** Line under the party size; `{count}` is the seats held for the guest. */
+		guestHint: z.string().optional(),
+		/** `flow: 'steps'` headings of the answer and party steps. */
+		stepAttendance: z.string().optional(),
+		stepDetails: z.string().optional(),
 	})
 	.strict();
 

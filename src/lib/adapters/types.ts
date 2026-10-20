@@ -396,6 +396,9 @@ export interface InvitationViewModel {
 				attendance?: string;
 				confirmButton?: string;
 				notesPlaceholder?: string;
+				guestHint?: string;
+				stepAttendance?: string;
+				stepDetails?: string;
 			};
 			personalizedAccess: {
 				variant: PersonalizedAccessVariant;

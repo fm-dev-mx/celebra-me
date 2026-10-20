@@ -357,6 +357,11 @@ export interface RsvpFormViewProps {
 	phoneLabel: string;
 	notesLabel: string;
 	notesPlaceholder: string;
+	/** Line under the party size; `{count}` is the seats held. */
+	guestHint?: string;
+	/** `flow: 'steps'` headings of the answer and party steps. */
+	stepAttendance?: string;
+	stepDetails?: string;
 	name: string;
 	phone: string;
 	countryCode: string;
@@ -544,6 +549,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 					notes={notes}
 					notesLabel={notesLabel}
 					notesPlaceholder={notesPlaceholder}
+					guestHint={props.guestHint}
 					onGuestCountChange={onGuestCountChange}
 					onNotesChange={onNotesChange}
 					onBlur={onBlur}

@@ -26,7 +26,7 @@ const content: CanonicalEventContentInput = {
 	isDemo: false,
 	templateId: 'xv-storybook-lilac',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
-	description: `${CELEBRANT_NAME} cumple 15 y ya está contando las noches. Sábado ${EVENT_DATE_LABEL}, Los Mochis.`,
+	description: `${CELEBRANT_NAME} cumple quince. Sábado ${EVENT_DATE_LABEL}, Los Mochis.`,
 	theme: { preset: 'storybook-lilac', fontFamily: 'serif', motion: 'editorial' },
 	eventTiming: AMERICA_TIMING,
 	sectionOrder: [
@@ -97,7 +97,7 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Quince años, un vestido lila y una lista de personas que no pueden faltar.',
+		text: 'Quince años y una lista muy corta de personas que no pueden faltar.',
 		closingLine: 'Usted está en ella.',
 	},
 	family: {
@@ -113,20 +113,20 @@ const content: CanonicalEventContentInput = {
 			{ name: 'Brianda Galdámez', role: 'Madrina' },
 		],
 		labels: {
-			sectionTitle: 'Mi gente favorita',
+			sectionTitle: 'Mi familia',
 			sectionSubtitle: '',
 			parentsTitle: 'Mis papás',
 			godparentsTitle: 'Mis padrinos',
-			// Rendered after the names, so "ellos" points back to parents and godparents.
+			// Rendered after the names: parents first, then the godparents beside them.
 			sectionMessage:
-				'Con la bendición de Dios y de la mano de ellos, le invito a celebrar mis quince años.',
+				'Me han visto crecer, y al cabello también. Mis padrinos, siempre a un paso. Esa noche quiero que usted también esté.',
 		},
 	},
 	countdown: {
-		// One written line that counts nights: "Faltan 43 noches (sí, las estoy contando)".
+		// One written line that counts nights: "Faltan 43 noches para encender las linternas".
 		variant: 'written-days',
 		title: 'Faltan',
-		footerText: '(sí, las estoy contando)',
+		footerText: 'para encender las linternas',
 		presentationOptions: { dayUnit: 'nights', calendar: { mark: 'sun' } },
 	},
 	location: {
@@ -140,7 +140,7 @@ const content: CanonicalEventContentInput = {
 			scene: 'lantern-route',
 		},
 		introHeading: 'Apunte la fecha',
-		introLede: 'Primero la misa, después la fiesta en el jardín.',
+		introLede: 'Misa a las seis, fiesta a las ocho.',
 		indicationsHeading: 'Código de vestimenta',
 		indications: [
 			{
@@ -158,7 +158,7 @@ const content: CanonicalEventContentInput = {
 			{
 				iconName: 'Forbidden',
 				styleVariant: 'default',
-				text: 'Esta vez la fiesta es solo para adultos. Gracias por entenderlo.',
+				text: 'Esta vez, solo adultos.',
 			},
 		],
 		venues: [
@@ -193,7 +193,8 @@ const content: CanonicalEventContentInput = {
 	},
 	itinerary: {
 		// The moments and hours most common across our XV programs (vals 1h30 after the reception,
-		// dinner an hour later, closing at 01:00), until the client confirms her own.
+		// a surprise dance, dinner an hour later, closing at 01:00), until the client confirms her
+		// own.
 		variant: 'stacked-cards',
 		title: 'Así será mi noche',
 		items: [
@@ -201,19 +202,25 @@ const content: CanonicalEventContentInput = {
 				time: '18:00',
 				iconName: 'Church',
 				label: 'Misa',
-				description: 'Primero, dar gracias en la Parroquia Cristo Rey.',
+				description: 'Para empezar, dar gracias.',
 			},
 			{
 				time: '20:00',
 				iconName: 'Reception',
 				label: 'Recepción',
-				description: 'Le espero en el Jardín Los Mangos.',
+				description: 'Abren las puertas del jardín.',
 			},
 			{
 				time: '21:30',
 				iconName: 'Waltz',
 				label: 'Vals',
-				description: 'Mi vals de quince años. Prometo no llorar… mucho.',
+				description: 'Ensayé más de lo que voy a admitir.',
+			},
+			{
+				time: '22:00',
+				iconName: 'Sparkles',
+				label: 'Baile sorpresa',
+				description: 'No le cuento nada. Llegue a tiempo.',
 			},
 			{
 				time: '22:30',
@@ -225,7 +232,7 @@ const content: CanonicalEventContentInput = {
 				time: '01:00',
 				iconName: 'Party',
 				label: 'Cierre',
-				description: 'La última canción la bailamos juntos.',
+				description: 'La última canción no se negocia.',
 			},
 		],
 	},
@@ -234,8 +241,8 @@ const content: CanonicalEventContentInput = {
 		// for the hero and the closing, and the patio plate opens the night.
 		variant: 'album-assemble',
 		eyebrow: '',
-		title: 'Mis looks',
-		subtitle: 'Rosa, lila, amarillo… y unos lentes de corazón.',
+		title: 'Antes de la noche',
+		subtitle: 'Rosa, lila, amarillo. El cabello, el mismo.',
 		items: [
 			{
 				image: 'gallery02',
@@ -269,8 +276,7 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Regalos',
 		presentation: 'legend-only',
-		subtitle:
-			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá lluvia de sobres en la recepción.',
+		subtitle: 'Lo importante es que venga. Si quiere traer algo más, habrá lluvia de sobres.',
 	},
 	rsvp: {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
@@ -278,8 +284,7 @@ const content: CanonicalEventContentInput = {
 		title: '¿Me acompaña?',
 		// Replies close 15 days before the event (owner decision); the canonical RSVP block has no
 		// deadline field, so the date lives in the copy and the reminder.
-		subcopy:
-			'Avíseme antes del viernes 6 de noviembre, que quiero tener todo listo para recibirle.',
+		subcopy: 'Confírmeme antes del viernes 6 de noviembre.',
 		lockedMessage:
 			'Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.',
 		guestCap: 2,
@@ -290,19 +295,22 @@ const content: CanonicalEventContentInput = {
 		personalizedAccess: {
 			variant: 'reply-card',
 			title: 'Su lugar ya está apartado',
-			subtitle: 'Lo guardé con su nombre, así que nadie más lo puede ocupar.',
-			footerText: 'Confírmelo abajo para que siga siendo suyo.',
+			subtitle: 'Lleva su nombre.',
+			footerText: 'Confírmelo abajo.',
 		},
 		labels: {
 			name: 'Su nombre',
-			notesLabel: 'Déjeme un mensaje',
-			notesPlaceholder: 'Lo voy a leer, prometido…',
+			notesLabel: 'Pida un deseo para mis quince',
+			notesPlaceholder: 'Lo guardo para cuando se apaguen las luces.',
+			guestHint: 'Tiene {count} lugares. Si vienen menos, ajústelo aquí.',
+			stepAttendance: 'Primero lo importante',
+			stepDetails: '¿Quiénes le acompañan?',
 		},
 		// The confirmed card reads title, confirmationMessage, then subtitle.
-		confirmationMessage: 'Ya está: ese lugar es suyo. Nos vemos el sábado 21 de noviembre.',
+		confirmationMessage: 'Nos vemos el sábado 21 de noviembre.',
 		responseMessages: {
 			confirmed: {
-				title: '¡Qué emoción, {guestName}!',
+				title: 'Ya le espero, {guestName}.',
 				subtitle: 'Si algo cambia, puede modificar su respuesta aquí mismo.',
 			},
 			declined: {
@@ -316,8 +324,7 @@ const content: CanonicalEventContentInput = {
 		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
 		focalPoint: '50% 40%',
-		message:
-			'Gracias por llegar hasta el final. Lo demás se lo cuento el 21 de noviembre… en persona.',
+		message: 'Lo que falta no cabe aquí. Se lo enseño el 21 de noviembre.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: 'América · XV años · Los Mochis · MMXXVI',
 	},
@@ -329,9 +336,9 @@ const content: CanonicalEventContentInput = {
 		// A custom reminder is sent verbatim to every status, so it never assumes a pending reply.
 		shareMessages: {
 			invitation:
-				'Hola, {{invitado}}: ¡cumplo quince años y quiero que usted esté ahí! Aquí va mi invitación, con su pase y la opción para confirmar:\n\n{{enlace}}',
+				'Hola, {{invitado}}: cumplo quince y usted está en mi lista. Aquí va su invitación, con su pase y la opción para confirmar:\n\n{{enlace}}',
 			reminder:
-				'Hola, {{invitado}}: {{hora_evento}} Yo ya estoy contando las noches.\n\nSi aún no confirma, tiene hasta el viernes 6 de noviembre:\n{{enlace}}',
+				'Hola, {{invitado}}: {{hora_evento}} Las linternas ya casi están listas.\n\nSi aún no confirma, tiene hasta el viernes 6 de noviembre:\n{{enlace}}',
 		},
 	},
 };

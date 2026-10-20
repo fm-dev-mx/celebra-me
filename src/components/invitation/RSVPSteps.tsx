@@ -127,6 +127,11 @@ export const RsvpStepsFormView = forwardRef<HTMLElement, RsvpStepsFormViewProps>
 		? ['attendance', 'details', 'message']
 		: ['attendance', 'message'];
 	const stepIndex = Math.max(0, steps.indexOf(step));
+	const headings: Record<RsvpStep, string> = {
+		...STEP_HEADINGS,
+		...(props.stepAttendance && { attendance: props.stepAttendance }),
+		...(props.stepDetails && { details: props.stepDetails }),
+	};
 	const detailFields = [
 		...(showIdentityFields ? ['name'] : []),
 		...(showIdentityFields && showPhoneField ? ['phone'] : []),
@@ -220,7 +225,7 @@ export const RsvpStepsFormView = forwardRef<HTMLElement, RsvpStepsFormViewProps>
 				</div>
 				<div className="rsvp-steps__panel" key={step}>
 					<h3 className="rsvp-steps__heading" ref={headingRef} tabIndex={-1}>
-						{step === 'message' ? notesLabel : STEP_HEADINGS[step]}
+						{step === 'message' ? notesLabel : headings[step]}
 					</h3>
 					{step === 'attendance' && (
 						<AttendanceField
@@ -280,6 +285,7 @@ export const RsvpStepsFormView = forwardRef<HTMLElement, RsvpStepsFormViewProps>
 								notes={props.notes}
 								notesLabel={notesLabel}
 								notesPlaceholder={props.notesPlaceholder}
+								guestHint={props.guestHint}
 								onGuestCountChange={props.onGuestCountChange}
 								onNotesChange={props.onNotesChange}
 								onBlur={onBlur}

@@ -45,6 +45,11 @@ interface RSVPProps {
 		attendance?: string;
 		confirmButton?: string;
 		phone?: string;
+		notesLabel?: string;
+		notesPlaceholder?: string;
+		guestHint?: string;
+		stepAttendance?: string;
+		stepDetails?: string;
 	};
 	locationVisibility?: LocationVisibility;
 	variant?: RsvpVariant;
@@ -376,6 +381,9 @@ const RSVP: React.FC<RSVPProps> = ({
 								phoneLabel={labelsResolved.phoneLabel}
 								notesLabel={labelsResolved.notesLabel}
 								notesPlaceholder={labelsResolved.notesPlaceholder}
+								guestHint={labels?.guestHint}
+								stepAttendance={labels?.stepAttendance}
+								stepDetails={labels?.stepDetails}
 								name={name}
 								phone={phone}
 								countryCode={countryCode}

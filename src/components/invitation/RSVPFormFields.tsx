@@ -305,6 +305,8 @@ export function ConfirmedFields(props: {
 	notes: string;
 	notesLabel: string;
 	notesPlaceholder: string;
+	/** Replaces the seats line; `{count}` is the seats held. */
+	guestHint?: string;
 	onGuestCountChange: (value: string) => void;
 	onNotesChange: (value: string) => void;
 	onBlur: (field: string) => void;
@@ -323,6 +325,7 @@ export function ConfirmedFields(props: {
 		part,
 		notesLabel,
 		notesPlaceholder,
+		guestHint,
 		onGuestCountChange,
 		onNotesChange,
 		onBlur,
@@ -358,8 +361,14 @@ export function ConfirmedFields(props: {
 							max={effectiveGuestCap}
 						/>
 						<p className="rsvp__guest-hint">
-							Hemos reservado {effectiveGuestCap} lugares para tu invitación. Puedes
-							ajustar el número si asistirán menos personas.
+							{guestHint ? (
+								guestHint.replaceAll('{count}', String(effectiveGuestCap))
+							) : (
+								<>
+									Hemos reservado {effectiveGuestCap} lugares para tu invitación.
+									Puedes ajustar el número si asistirán menos personas.
+								</>
+							)}
 						</p>
 					</>
 				)}
