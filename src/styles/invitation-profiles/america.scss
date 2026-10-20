@@ -22,6 +22,10 @@ $america-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 $america-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14.5' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
 $america-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
 $america-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23211938' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
+
+// The same horizon turned the other way, for the top of the patio window: the cream of the
+// phrase hangs deep on the right, the mist rises on the left, and the gold hairline rides the cream.
+$america-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23FBF8F3' d='M0 0H400V94C280 94 200 26 0 20z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 6C200 12 280 80 400 80'/%3E%3C/svg%3E");
 $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30'%3E%3Ccircle cx='12' cy='16' r='11' fill='%23E8A040' opacity='.16'/%3E%3Cpath fill='%23E8A040' d='M9.5 6h5v1.6c3 1 5 4 5 8.2 0 4.3-2.3 6.9-3.8 7.6H8.3c-1.5-.7-3.8-3.3-3.8-7.6 0-4.2 2-7.2 5-8.2z'/%3E%3Cpath fill='%23F3D9A4' opacity='.75' d='M11 10.5h2v9h-2z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-width='.8' d='M12 6V2'/%3E%3C/svg%3E");
 
 .event--america.theme-preset--storybook-lilac {
@@ -674,15 +678,19 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	}
 
 	// Join 1, the bridge into the night: the patio photograph is a tower window on the mist, an
-	// arched top under a gold hairline that follows it, and its bottom padding holds the horizon
-	// the night rises on.
+	// arched top under a gold hairline that follows it. The mist comes out of the phrase on the
+	// mirror of the night's horizon (it rises under the phrase's empty foot), so the window sits
+	// between two slow curves, and its bottom padding holds the horizon the night rises on.
 	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
 		--interlude-framed-radius: 50% 50% 0.75rem 0.75rem / 8.5rem 8.5rem 0.75rem 0.75rem;
 		--interlude-framed-image-radius: var(--interlude-framed-radius);
 		--section-band-paper: var(--color-lilac-mist);
-		--interlude-framed-bg: var(--color-lilac-mist);
-		--interlude-framed-padding: clamp(1.75rem, 5vw, 2.75rem) var(--america-gutter)
-			calc(clamp(2rem, 6vw, 3.5rem) + var(--america-cut));
+		--interlude-pull-up: calc(-0.5 * var(--america-cut));
+		--interlude-framed-bg:
+			#{$america-mist-rise} left top / 100% var(--america-cut) no-repeat,
+			var(--color-lilac-mist);
+		--interlude-framed-padding: calc(clamp(1.75rem, 5vw, 2.75rem) + 0.9 * var(--america-cut))
+			var(--america-gutter) calc(clamp(2rem, 6vw, 3.5rem) + var(--america-cut));
 		--interlude-framed-max-width: 26rem;
 		--interlude-framed-mat: 0;
 		--interlude-framed-mat-bg: transparent;
