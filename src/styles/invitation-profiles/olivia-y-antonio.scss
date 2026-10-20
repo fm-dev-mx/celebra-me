@@ -389,6 +389,8 @@
 	.invitation-section-wrapper[data-section-kind='personalized-access'] {
 		--intersection-stack-recede-scale: 0.94;
 		--intersection-stack-recede-dim: 0.62;
+		--intersection-stack-recede-fade: 0%;
+		--intersection-stack-floor: var(--olivia-navy-deep);
 		--formal-chapter-band: var(--olivia-navy-deep);
 		--formal-chapter-band-rgb: var(--olivia-navy-deep-rgb);
 		--formal-chapter-cream: var(--olivia-ivory);
@@ -452,14 +454,13 @@
 		--intersection-blend: none;
 	}
 
-	// The RSVP is laid over the pinned pass as a second sheet: a hairline champagne edge, rounded
-	// shoulders and a deep shadow, while the pass sinks back a little under it (recede tokens on the
-	// pass block above).
+	// Only the RSVP card rises over the pinned pass: the register's band is clear, so the pass
+	// stays in view around the card while it sinks back and fades out under it (recede tokens on
+	// the pass block above).
 	.invitation-section-wrapper[data-section-kind='rsvp'] {
-		--intersection-stack-surface: var(--olivia-navy-deep);
-		--intersection-stack-edge: 1px solid rgb(var(--olivia-champagne-rgb) / 30%);
-		--intersection-stack-radius: 1.75rem;
-		--intersection-stack-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 45%);
+		--formal-register-band-bg: transparent;
+		--intersection-stack-surface: transparent;
+		--intersection-stack-shadow: none;
 	}
 
 	.rsvp-section {
@@ -483,16 +484,23 @@
 
 		// The register sits in a panel like the venue stops and the pass, so it reads as the
 		// same suite.
-		--formal-register-surface-bg: linear-gradient(
-			165deg,
-			rgb(var(--olivia-slate-rgb) / 55%) 0%,
-			var(--olivia-navy) 55%,
-			rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
-		);
+		--formal-register-surface-bg:
+			linear-gradient(
+				165deg,
+				rgb(var(--olivia-slate-rgb) / 55%) 0%,
+				var(--olivia-navy) 55%,
+				rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
+			),
+			var(--olivia-navy-deep);
 		--formal-register-surface-border: 1px solid rgb(var(--olivia-champagne-rgb) / 32%);
 		--formal-register-surface-radius: 1.1rem;
 		--formal-register-surface-padding: 1.75rem 1.25rem 1.5rem;
-		--formal-register-surface-shadow: 0 1rem 2.25rem rgb(0 0 0 / 25%);
+		--formal-register-surface-shadow:
+			0 -0.75rem 2.5rem rgb(0 0 0 / 30%), 0 1rem 2.25rem rgb(0 0 0 / 25%);
+		--rsvp-bg: transparent;
+
+		// The card rises over the centered pass, so its column is the card's width and centers too.
+		--formal-register-shell-width: 40rem;
 	}
 
 	// Closing: the last photograph sinks into deep navy; the couple's names in script, champagne.

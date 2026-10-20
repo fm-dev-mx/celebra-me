@@ -135,9 +135,16 @@ an RSVP rising over a personal pass.
   ground: `--intersection-stack-surface`, else the section band, else `--intersection-surface`.
 - The incoming sheet can draw a top edge (`--intersection-stack-edge`), round its shoulders
   (`--intersection-stack-radius`) and cast `--intersection-stack-shadow` upward.
-- With `--intersection-stack-recede-scale` and `--intersection-stack-recede-dim` (on the source) the
-  pinned section shrinks and darkens while it is covered (scroll-driven, `transform` and `filter`
-  only). Reduced motion and browsers without scroll timelines keep it still.
+- While it is covered, the pinned source recedes with `--intersection-stack-recede-scale`,
+  `--intersection-stack-recede-dim` and `--intersection-stack-recede-fade` (end opacity), all on the
+  source (scroll-driven, `transform`, `filter` and `opacity` only). Reduced motion keeps the fade
+  and drops the scale. The pin itself needs scroll timelines; browsers without them keep both
+  sections in normal flow.
+- Card only: with a clear surface (`--intersection-stack-surface: transparent`, and the incoming
+  section's own band clear) only the incoming content, such as a card, rises over the source. Set
+  `--intersection-stack-recede-fade: 0%` so the source is gone once the card has passed, and
+  `--intersection-stack-floor` to the source's ground, which fills the strip below a source shorter
+  than the viewport.
 - It applies only when the declared source renders right before the incoming section: the render
   marks that source with `data-intersection-anchor="stack"`. When the source is absent (a pass that
   only invited guests see), both sections stay in normal flow.

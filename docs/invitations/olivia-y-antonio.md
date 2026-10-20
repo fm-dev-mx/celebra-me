@@ -170,9 +170,10 @@ link and the copy button reads «Copiar»; the personal pass is a navy ticket; t
 in a navy panel with 12 px labels; the footer continues the closing in deep navy. The locked RSVP
 message now reads «a más tardar el miércoles 18 de noviembre», like the other deadline texts. The
 RSVP notes field reads «Mensaje para Olivia y Antonio» with a placeholder for «los novios». On
-scroll, the RSVP rises over the pinned pass as a second sheet (`stack` intersection): champagne
-hairline edge, rounded shoulders and an upward shadow, while the pass sinks back to 94 % and dims.
-Without a personal link there is no pass, so the RSVP follows the gifts in normal flow.
+scroll, only the RSVP card rises over the pinned pass (`stack` intersection with a clear surface):
+the pass sinks back to 94 %, dims and fades out under the card, and the register column is the
+card's width, so the card is centered over the pass on desktop. Without a personal link there is no
+pass, so the RSVP follows the gifts in normal flow.
 
 ## Design Direction
 
