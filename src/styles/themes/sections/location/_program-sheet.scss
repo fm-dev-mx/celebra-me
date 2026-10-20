@@ -22,6 +22,8 @@
 //   --location-program-link-size / -tracking  Text link size and small-caps tracking
 //   --location-program-link-radius  Focus outline shape of the text links (default 4px)
 //   --location-program-links-align  Wide screens: `auto` aligns both entries' links
+//   --location-program-lede-font / -size / -style / -line-height  Intro lede type (default:
+//                                 the inherited body text)
 //   --location-program-padding-block / --location-program-margin-top
 //                                 Section padding and heading-to-program gap
 //   --location-calendar-menu-bg / -ink  "Add to calendar" menu surface and text. They are a pair:
@@ -83,6 +85,13 @@
 		font-weight: var(--location-intro-heading-font-weight, 400);
 		line-height: var(--location-intro-heading-line-height, 1.08);
 		color: var(--location-program-ink);
+	}
+
+	.event-location__lede {
+		font-family: var(--location-program-lede-font, inherit);
+		font-size: var(--location-program-lede-size, inherit);
+		font-style: var(--location-program-lede-style, inherit);
+		line-height: var(--location-program-lede-line-height, inherit);
 	}
 
 	.event-location__shared-date {

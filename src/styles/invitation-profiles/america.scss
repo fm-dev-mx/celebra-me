@@ -92,7 +92,6 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-name-line-height: 1.2;
 	--location-intro-heading-size: var(--america-title-size);
 	--location-intro-heading-line-height: 1.1;
-	--location-enclosure-heading-size: var(--america-title-size);
 	--location-enclosure-heading-line-height: 1.1;
 	--location-program-label-size: var(--america-label-size);
 	--location-program-label-caps: normal;
@@ -142,6 +141,23 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-enclosure-reserved-title-tracking: 0;
 	--location-enclosure-reserved-title-color: var(--color-lilac-deep);
 	--location-enclosure-reserved-title-tilt: 0deg;
+
+	// Program hierarchy: the place leads, the hour follows the label in its gold, the address and
+	// links step back. The lede is a line in the display italic under the title, and the dress
+	// code card is titled one step below the chapter.
+	--location-program-lede-font: var(--font-display);
+	--location-program-lede-size: clamp(1.3rem, 5vw, 1.6rem);
+	--location-program-lede-style: italic;
+	--location-program-lede-line-height: 1.3;
+	--location-program-entry-gap: 0.35rem;
+	--location-program-time-font: var(--font-display);
+	--location-program-time-size: clamp(1.2rem, 4.5vw, 1.4rem);
+	--location-program-place-size: clamp(2.1rem, 8.5vw, 2.75rem);
+	--location-program-place-weight: 400;
+	--location-program-place-gap: 0.15rem;
+	--location-program-address-size: 1rem;
+	--location-program-address-margin: 0.35rem 0 0.5rem;
+	--location-enclosure-heading-size: clamp(1.6rem, 6vw, 2rem);
 
 	// Program: a ruled timetable on the paper, hour then moment, no sheet, marker or rail.
 	--itinerary-paper-section-bg: var(--color-lilac-paper);
@@ -411,6 +427,11 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--storybook-ambient-lanterns-display: block;
 		--storybook-sky-light: var(--color-candle-cream);
 		--storybook-sky-lantern: var(--color-lantern-amber);
+	}
+
+	// The hour takes the label's gold, read where the entry sits (the night stage remaps it).
+	.event-location__program-entry {
+		--location-program-time-color: var(--location-program-label-color);
 	}
 
 	// Program: one card per moment under a dusk sky (paper into the gallery's mist). Each card is a
