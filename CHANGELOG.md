@@ -10,6 +10,34 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.36.0-beta.1] - 2026-10-20
+
+WhatsApp contact links use the real number in Production, every invitation answers at its short URL,
+and Olivia y Antonio becomes publishable. No new migrations.
+
+### Added
+
+- `/api/whatsapp?text=…` reads `CONTACT_WHATSAPP` from the Worker on each request and answers `302`
+  to `wa.me/<number>`, or `503` when the secret is missing or the placeholder (#374).
+
+### Changed
+
+- Every invitation except the `demo-*` catalog is shared at the short `/{slug}` URL: dashboard
+  links, personalized `?invite=` links, `/i/{shortId}` and canonical/OG URLs; the long
+  `/{eventType}/{slug}` form keeps resolving (#366).
+- The Olivia y Antonio wedding definition is `published`, with accepted visual references for its
+  mobile and desktop pages (#375). Its Preview and Production content publication is a separate
+  step.
+
+### Fixed
+
+- WhatsApp links no longer use the placeholder `521000000000`: server-rendered pages read
+  `CONTACT_WHATSAPP` at request time and prerendered pages link `/api/whatsapp`. The Production
+  Worker smoke fails with `contact_whatsapp_missing` unless that route redirects to a real number
+  (#374).
+- Authenticated and provisioning Preview suites send the Cloudflare Access headers on every API
+  request (#367).
+
 ## [0.35.0-beta.1] - 2026-10-19
 
 Production invitation images get responsive width variants. No new migrations.
