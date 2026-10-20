@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-19T20:19:53.826Z",
+    "generatedAt": "2026-10-20T02:18:29.562Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-        "cssSha256": "2345a68eead710e4402aa779220c63e64244b97db7beb06e8a9af0a43fdf88ed",
+        "cssSha256": "212444c2263913a56b7334e237a3d5c72e2cd6484144048d6f2932ff3a1fe8ea",
         "assetSha256": "48537f8948126af5697abea2db4b27479fc38929510453d95987ebaee4946a26",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 168,
-    "matrixHash": "884e649d17ab0c90e2d7ee9f9c9085d780f0e9eccb94470c588281fd6a5a5d75",
+    "totalCaptures": 170,
+    "matrixHash": "4146661399f4b527e6c0a16ff309426844be6b5a92092023f47c2b9f9dcc66bc",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2125,6 +2125,30 @@
             "comparisonResult": "ACCEPTED"
         },
         {
+            "kind": "invitation",
+            "slug": "olivia-y-antonio",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
+            "sha256": "e9d6a98a2c36a87caa5af1bed5a73a1fad3826ca2027c9eb05cb3811df855fab",
+            "contentHash": "2ace4f5c7f59cbbe2498f04cedb0437b3b24ec196fefd13c00547399c6f3368f",
+            "assetHash": "bd1b6bd9347ea652c12e590a3c3afb492f2aa75bd3b30493c50c82e22084d9a9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "olivia-y-antonio",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
+            "sha256": "37a81041fbc349bfc4e08056367148ecc89a1bb410bd0dedab5cfac96f8a6d7c",
+            "contentHash": "2ace4f5c7f59cbbe2498f04cedb0437b3b24ec196fefd13c00547399c6f3368f",
+            "assetHash": "bd1b6bd9347ea652c12e590a3c3afb492f2aa75bd3b30493c50c82e22084d9a9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
             "kind": "demo",
             "slug": "demo-bautizo-angelic-presence",
             "eventType": "bautizo",
@@ -2293,9 +2317,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "468941dd976d5aa8b2b2f2198df2f441bd084345",
+    "referenceSha": "d7186632acc04adab9d053a1d1e5cc5037dd55c4",
     "variantManifest": {
-        "generatedAt": "2026-10-19T20:19:53.826Z",
+        "generatedAt": "2026-10-20T02:18:29.562Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2308,7 +2332,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "2345a68eead710e4402aa779220c63e64244b97db7beb06e8a9af0a43fdf88ed",
+            "cssSha256": "212444c2263913a56b7334e237a3d5c72e2cd6484144048d6f2932ff3a1fe8ea",
             "assetSha256": "48537f8948126af5697abea2db4b27479fc38929510453d95987ebaee4946a26",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4085,10 +4109,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "468941dd976d5aa8b2b2f2198df2f441bd084345"
+        "referenceSha": "d7186632acc04adab9d053a1d1e5cc5037dd55c4"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-19T20:19:53.831Z",
+        "generatedAt": "2026-10-20T02:18:29.571Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4101,16 +4125,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "2345a68eead710e4402aa779220c63e64244b97db7beb06e8a9af0a43fdf88ed",
+            "cssSha256": "212444c2263913a56b7334e237a3d5c72e2cd6484144048d6f2932ff3a1fe8ea",
             "assetSha256": "48537f8948126af5697abea2db4b27479fc38929510453d95987ebaee4946a26",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 42,
-        "matrixHash": "1cc8869c234c84bcefe2e588c6f2704aa201d3dd4bf41c3919106d5573e9f476",
-        "cases": 21,
+        "totalCaptures": 44,
+        "matrixHash": "7f4f17c6b931ab157fb2182abcedcd132719541f72c025e76676e7effb76529c",
+        "cases": 22,
         "captures": [
             {
                 "kind": "invitation",
@@ -4449,6 +4473,30 @@
                 "comparisonResult": "CANDIDATE"
             },
             {
+                "kind": "invitation",
+                "slug": "olivia-y-antonio",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "mobile",
+                "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
+                "sha256": "e9d6a98a2c36a87caa5af1bed5a73a1fad3826ca2027c9eb05cb3811df855fab",
+                "contentHash": "2ace4f5c7f59cbbe2498f04cedb0437b3b24ec196fefd13c00547399c6f3368f",
+                "assetHash": "bd1b6bd9347ea652c12e590a3c3afb492f2aa75bd3b30493c50c82e22084d9a9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "olivia-y-antonio",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "desktop",
+                "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
+                "sha256": "37a81041fbc349bfc4e08056367148ecc89a1bb410bd0dedab5cfac96f8a6d7c",
+                "contentHash": "2ace4f5c7f59cbbe2498f04cedb0437b3b24ec196fefd13c00547399c6f3368f",
+                "assetHash": "bd1b6bd9347ea652c12e590a3c3afb492f2aa75bd3b30493c50c82e22084d9a9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
                 "kind": "demo",
                 "slug": "demo-bautizo-angelic-presence",
                 "eventType": "bautizo",
@@ -4617,9 +4665,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "468941dd976d5aa8b2b2f2198df2f441bd084345"
+        "referenceSha": "d7186632acc04adab9d053a1d1e5cc5037dd55c4"
     },
-    "candidateManifestSha256": "4c0a591e8f3c685b6a7a4df0fae3b4adcdb5d89ca42b47559548cac61ad0aa83",
-    "acceptedFromCommit": "468941dd976d5aa8b2b2f2198df2f441bd084345",
-    "acceptedAt": "2026-10-19T20:28:58.702Z"
+    "candidateManifestSha256": "8d8e68e3c9eae0dc2497f129f7999436b2242c08953ad893c8754cde4149bf0f",
+    "acceptedFromCommit": "d7186632acc04adab9d053a1d1e5cc5037dd55c4",
+    "acceptedAt": "2026-10-20T02:18:57.260Z"
 }
