@@ -42,6 +42,9 @@
 		pointer-events: none;
 		opacity: var(--family-texture-opacity, var(--family-texture-opacity-fallback, 0%));
 		background-image: var(--family-texture-image, none);
+		background-position: var(--family-texture-position, 0% 0%);
+		background-size: var(--family-texture-size, auto);
+		background-repeat: var(--family-texture-repeat, repeat);
 	}
 
 	&__container {
@@ -122,6 +125,7 @@
 		margin: var(--family-message-margin, clamp(1.15rem, 2.5vw, 1.7rem) auto 0);
 		font-family: var(--family-message-font, var(--font-body));
 		font-size: var(--family-message-size, clamp(0.98rem, 1.8vw, 1.13rem));
+		font-style: var(--family-message-style, inherit);
 		line-height: var(--family-message-line-height, 1.7);
 		color: var(
 			--family-message-color,
@@ -346,11 +350,11 @@
 		position: absolute;
 		top: 0;
 		left: 50%;
-		width: min(100%, 22rem);
-		height: 1px;
+		width: var(--family-group-divider-width, min(100%, 22rem));
+		height: var(--family-group-divider-height, 1px);
 		transform: translateX(-50%);
 		background: var(--family-divider, rgb(var(--color-text-primary-rgb) / 18%));
-		opacity: 75%;
+		opacity: var(--family-group-divider-opacity, 75%);
 	}
 
 	&__group-title {
@@ -465,6 +469,17 @@
 		flex-direction: column;
 		align-items: var(--family-item-align, center);
 		gap: 0.28rem;
+	}
+
+	// Optional word between paired names (`--family-member-joiner`, e.g. 'y'; default none).
+	&__item + &__item::before {
+		content: var(--family-member-joiner, none);
+		margin-bottom: var(--family-member-joiner-gap, 0.2rem);
+		font-family: var(--font-display);
+		font-size: var(--family-member-joiner-size, 1.25rem);
+		font-style: italic;
+		line-height: 1;
+		color: var(--family-member-joiner-color, currentcolor);
 	}
 
 	&__item--lead .family__name {

@@ -90,6 +90,33 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-group-title-letter-spacing: var(--america-label-tracking);
 	--family-name-size: 1.375rem;
 	--family-name-line-height: 1.2;
+
+	// Family as a dedication page: the message reads as an epigraph in the display italic, a
+	// braid stands for the rules, the Corona sun rests faint behind the names, and each pair is
+	// joined by a gold "y". Parents are set a step above the godparents.
+	--family-message-font: var(--font-display);
+	--family-message-size: clamp(1.25rem, 4.6vw, 1.45rem);
+	--family-message-style: italic;
+	--family-message-line-height: 1.4;
+	--family-message-max-width: 24rem;
+	--family-message-color: var(--color-violet-ink);
+	--family-divider: #{$america-braid} center / contain no-repeat;
+	--family-divider-width: 6.5rem;
+	--family-divider-height: 0.75rem;
+	--family-divider-opacity: 100%;
+	--family-group-divider-width: 6.5rem;
+	--family-group-divider-height: 0.75rem;
+	--family-group-divider-opacity: 100%;
+	--family-group-padding: clamp(2.25rem, 7vw, 3rem) 0 0;
+	--family-group-title-color: var(--color-gold-ink);
+	--family-texture-image: #{$america-sun};
+	--family-texture-position: 50% calc(100% + 5rem);
+	--family-texture-size: min(22rem, 80vw);
+	--family-texture-repeat: no-repeat;
+	--family-texture-opacity: 18%;
+	--family-member-joiner: 'y';
+	--family-member-joiner-color: var(--color-gold-ink);
+	--family-name-max-width: 16ch;
 	--location-intro-heading-size: var(--america-title-size);
 	--location-intro-heading-line-height: 1.1;
 	--location-enclosure-heading-line-height: 1.1;
@@ -427,6 +454,14 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--storybook-ambient-lanterns-display: block;
 		--storybook-sky-light: var(--color-candle-cream);
 		--storybook-sky-lantern: var(--color-lantern-amber);
+	}
+
+	.family__group--parents {
+		--family-name-size: clamp(1.75rem, 7vw, 2.25rem);
+	}
+
+	.family__group--godparents {
+		--family-name-size: clamp(1.4rem, 5.5vw, 1.7rem);
 	}
 
 	// The hour takes the label's gold, read where the entry sits (the night stage remaps it).
