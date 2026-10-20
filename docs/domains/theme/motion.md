@@ -178,7 +178,33 @@ only; elsewhere the same markup renders as a normal section.
   it on its thread, and past a short pull the footer opens with a 320 ms glide and a 360 ms rise.
   Letting go sooner settles the lantern back. ArrowDown, PageDown, End, Space or a tab into its
   links open it at once. Reduced motion shows no lantern and opens on the next gesture without
-  movement; without the script the footer is always shown.
+  movement; without the script the footer is always shown. A profile may dress the lantern
+  (`--footer-pull-scale`, `-body`, `-glow`), let a pool of light rise from the edge with the pull
+  (`--footer-pull-pool`), set words over the resting lantern that fade as it climbs
+  (`--footer-pull-label`, `-label-color`, `-label-size`) and let its glow breathe while it waits
+  (`--footer-pull-breathe: footer-pull-breathe`). Where the phone supports it, the footer opening
+  gives one 12 ms vibration.
+- **Scroll-linked accents.** Outside scenes, a profile may opt sections into short view-timeline
+  accents. Each one is set inside `@supports (animation-timeline: view())` and
+  `prefers-reduced-motion: no-preference` and is off by default (`none`). Without support, or under
+  reduced motion, each element rests in its final state:
+  - _Family names:_ `--family-shine` (a gradient over the text), `--family-shine-name: family-light`
+    and `--family-shine-timeline` light each name as it rises, within `--family-shine-range` (and
+    `-range-godparents`), with an optional `--family-shine-glow`.
+    `--family-divider-draw: family-divider-draw` draws the rule between groups from the centre out.
+  - _Parents' medallion:_ `--family-parents-medallion` (an image behind the parents' names, with
+    `-size` and `-opacity`) may turn ±24° across the section
+    (`--family-parents-medallion-spin: family-medallion-spin`).
+  - _Hanging enclosure:_ `--location-enclosure-swing: location-enclosure-swing` lets the enclosure
+    card settle from a slight swing on its cord (`--location-enclosure-hanger*`), about
+    `--location-enclosure-swing-origin`, between `entry 0%` and `cover 45%`.
+
+  The name shine animates `background-position` and a `drop-shadow` filter on short text runs; the
+  other accents keep to the scene property list above.
+
+- **Floating reply glint.** `--floating-cta-glint` (a gradient) crosses the floating reply button
+  once, in 1.1 s, when it first shows and again when it changes to the calendar. It is time-based,
+  not scroll-linked, and does not run under reduced motion.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.
