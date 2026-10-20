@@ -10,6 +10,16 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.35.0-beta.1] - 2026-10-19
+
+Production invitation images get responsive width variants. No new migrations.
+
+### Changed
+
+- Published invitation images in Production serve a WebP `srcset` (480/800/1280/1920) from the
+  Production R2 bucket (`responsiveVariants` on, like Preview); all 288 published images already
+  have their variants (#370).
+
 ## [0.34.0-beta.1] - 2026-10-19
 
 Editorial motion groundwork, a redesigned Olivia y Antonio, the end of the watermarked-photo
