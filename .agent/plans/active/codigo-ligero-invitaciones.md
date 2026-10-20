@@ -43,7 +43,8 @@ and 3 below are asked when phase C starts.
 
 ## Goal
 
-1. Remove what only existed for Vercel or Cloudinary, and lock it out with a guard.
+1. Remove what only existed for the retired hosting and image providers, and lock it out with a
+   guard.
 2. Add the missing flow tests, while keeping each PR under 6 minutes of CI.
 3. Move invitations toward one format (contract vs theme) without changing any published
    `sourceHash`.
@@ -57,20 +58,12 @@ and 3 below are asked when phase C starts.
   (deploy workflow) have a different rollback, written in their rows.
 - Never touch published invitation definitions, legacy profiles frozen by digest, or `sourceHash`.
 
-## Phase A: remove code with no risk
+## Phase A: remove code with no risk (done)
 
-| PR                                                 | Removes or changes                                                                                                                                                                                                                                                                                                                                                                                           | Approx. lines | Protected by                                                                                              | Rollback                                                                  |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------: | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| **1. `chore/retire-cloudinary-demo-republish`**    | `scripts/provision/preview-demo-republish.ts`, `-cli.ts`, its test and the `invitation:preview-demo` script (H2). Unexport `SOCIAL_CARD` and `buildSocialCard`. **Precondition:** a read-only `invitation:media:verify` on the Preview demos shows 0 `res.cloudinary.com`                                                                                                                                    |          −760 | `tests/provision/*` still green; `production-image-audit` (Production has 285 R2 images and 0 Cloudinary) | revert                                                                    |
-| **2. `chore/no-vercel-cloudinary-guard`**          | Add `validateNoVercelReferences` and the Cloudinary rule to `scripts/validate-structure.mjs` (H3). The allow-list covers `supabase/migrations/**`, `CHANGELOG.md`, the two migration plans and the guard tests (`layout-web-analytics`, `validate-structure-script`, `hostname-validation`). Run it in warn mode until PR 3 lands, then switch it to error                                                   |           +80 | Its own unit test in `tests/unit/validate-structure-script.test.ts`                                       | revert                                                                    |
-| **3. `docs/retire-vercel-cloudinary-mentions`**    | Rewrite **`src/pages/privacidad.astro:55`** (Vercel → Cloudflare hosting and Web Analytics; copy approved by the owner) (H1). Rewrite `docs/env-workflow.md`, `performance-metrics.md`, `release-execution.md`, `architecture.md`, `payment-access-and-preview.md:98` (Vercel Firewall → AI Crawl Control) and the other `.md` files the guard flags. Clean `.env.example:17,31,39` (H4)                     |   −400 / +150 | The guard from PR 2 switches to error mode                                                                | revert                                                                    |
-| **4. `chore/knip-unused-exports`**                 | Remove or unexport the 15 exports and 6 types that knip flags (H8). Delete the `cloudflare:*:dry-run` scripts (H9). Review the 32 docs-only scripts and delete the ones whose doc is also obsolete                                                                                                                                                                                                           |          −150 | `pnpm lint:dead-code`; after the PR, raise `exports`/`types` from `warn` to `error` in `knip.json`        | revert                                                                    |
-| **5. `chore/sharp-dev-only`**                      | Move `sharp` to `devDependencies`. Keep `external: ['sharp']` only if the Worker build still needs it (H6). Drop the Vercel rules in `validate-deploy-identity-reads.mjs` (H12)                                                                                                                                                                                                                              |           ±10 | `workerd` tier + `pnpm build` + the wrangler log shows no `sharp`                                         | revert                                                                    |
-| **6. `feat/db-contract-drop-cloudinary-provider`** | Contract migration: the provider check becomes `('supabase','r2')`; rename `invitation_assets_cloudinary_fields_complete` to `…_remote_fields_complete`; fix the column comments (H5). **Precondition:** 0 `provider='cloudinary'` rows in Preview and Production (guarded read). It ships through the migration flow, never in the same release as a newly published invitation                             |       +40 SQL | `supabase/tests/invitation_assets_*.test.sql` + DB contract job                                           | A forward migration that restores the old check (no destructive rollback) |
-| **7. `docs/close-migration-plans`**                | Move what is durable from `cloudflare-workers-migration.md` and `vercel-cloudflare-closeout.md` into `docs/`, then delete both plans (H11). Owner items stay listed in the PR description: close the Vercel project, close Cloudinary after F9 + 30 days, remove the `*.vercel.app` URLs in Supabase Auth, delete local `.vercel/`; afterwards drop `.vercel` from `.gitignore` and `validate-structure.mjs` |        −1,100 | The guard from PR 2                                                                                       | revert                                                                    |
-
-**First PR to do: PR 1.** It is the largest removal with the lowest risk, and its only precondition
-is a read-only check.
+Rows 1–7 removed the code, docs, package scripts, database check values and migration plans that
+only served the retired hosting and image providers, and added the retired-provider guard in
+`scripts/validate-structure.mjs` (`scripts/validate-retired-provider-references.mjs`). Pull requests
+and commits are listed under Progress; their descriptions keep the detail.
 
 ## Phase B: missing tests (each PR stays under 6 min of CI)
 
@@ -113,6 +106,6 @@ PR: definition, profile, assets and digest together.
 
 - Code: about −2.5k lines in phase A, +1k test lines in phase B and −1.5k lines in phase C. After
   the legacy invitations expire, about −20k more SCSS lines.
-- Vercel and Cloudinary mentions: 0 outside the allow-list, locked by a guard.
+- Retired provider mentions: 0 outside the allow-list, locked by a guard.
 - CI: PR median under 6 min; Preview deploy of 3–4 min with real flow checks.
 - Worker: about −1 MiB uploaded.
