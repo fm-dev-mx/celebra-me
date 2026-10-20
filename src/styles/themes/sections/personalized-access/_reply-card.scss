@@ -19,6 +19,11 @@
 //                          Mark between the guest and the seats (default a 3rem hairline)
 //   --reply-card-seam / -seam-width / -seam-height
 //                          Line where the two halves meet (default a short centred hairline)
+//   --reply-card-crest-content / -crest / -crest-size
+//                          Emblem above the eyebrow (content `''` and an image; default none)
+//   --reply-card-count-frame-size / -ratio / -border / -bg
+//                          A frame around the seat numeral (e.g. a ring; default none); its
+//                          radius and inner ring come from --pa-count-frame-radius / -inner-*
 // ==========================================================================
 
 .personalized-access[data-variant='reply-card'] {
@@ -85,6 +90,15 @@
 		padding: 0;
 		background: none;
 		border: 0;
+	}
+
+	.access-card__header::before {
+		content: var(--reply-card-crest-content, none);
+		display: block;
+		width: var(--reply-card-crest-size, 2.5rem);
+		aspect-ratio: 1;
+		margin-bottom: 0.6rem;
+		background: var(--reply-card-crest, none) center / contain no-repeat;
 	}
 
 	.access-card__eyebrow:empty {
@@ -155,10 +169,21 @@
 	}
 
 	.access-card__count-frame {
+		display: grid;
+		place-items: center;
+		box-sizing: border-box;
+		width: var(--reply-card-count-frame-size, auto);
+		min-width: var(--reply-card-count-frame-size, 8.5rem);
+		aspect-ratio: var(--reply-card-count-frame-ratio, auto);
 		padding: 0;
-		border: 0;
-		background: none;
+		border: var(--reply-card-count-frame-border, 0);
+		background: var(--reply-card-count-frame-bg, none);
 		box-shadow: none;
+
+		// The optional inner ring (--pa-count-frame-inner-display) follows a round frame.
+		&::before {
+			border-radius: inherit;
+		}
 	}
 
 	.access-card__count {
