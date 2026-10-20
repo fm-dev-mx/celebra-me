@@ -192,6 +192,37 @@ describe('canonical validation contract', () => {
 		},
 	);
 
+	it('defers complete visual parity only on pull requests into develop and runs it nightly', () => {
+		const workflow = fs.readFileSync(
+			path.resolve(process.cwd(), '.github/workflows/commit-validation.yml'),
+			'utf8',
+		);
+		expect(workflow).toContain(
+			"VISUAL_PARITY_DEFERRED: ${{ github.event_name == 'pull_request' && github.base_ref == 'develop' }}",
+		);
+		expect(workflow).toContain('-${{ github.event_name }}');
+		for (const spec of [
+			'tests/e2e/canonical-invitation-page-parity.spec.ts',
+			'tests/e2e/structural-variant-portability.spec.ts',
+		]) {
+			expect(fs.readFileSync(path.resolve(process.cwd(), spec), 'utf8')).toContain(
+				'test.skip(isVisualParityDeferred(), VISUAL_PARITY_DEFERRED_REASON);',
+			);
+		}
+		const nightly = fs
+			.readFileSync(
+				path.resolve(process.cwd(), '.github/workflows/nightly-visual-parity.yml'),
+				'utf8',
+			)
+			.replace(/\r\n/g, '\n');
+		expect(nightly).toMatch(/- cron: '30 8 \* \* \*'/);
+		expect(nightly).toContain(
+			'gh workflow run commit-validation.yml --repo "$GITHUB_REPOSITORY" --ref develop',
+		);
+		expect(nightly).toContain('--exit-status');
+		expect(nightly).toContain('-f visual_mode=compare');
+	});
+
 	it('keeps the default browser run identical to the locally certified command', () => {
 		const workflow = fs.readFileSync(
 			path.resolve(process.cwd(), '.github/workflows/commit-validation.yml'),
