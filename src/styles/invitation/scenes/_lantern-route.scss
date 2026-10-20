@@ -328,7 +328,9 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 			}
 		}
 
-		.event-location__program:has(> :focus-within) > :not(:focus-within) {
+		// `:focus-within` on the sheet rather than `:has(> :focus-within)`: the same match, without
+		// a `:has()` that makes Chrome restyle the whole page on unrelated text changes.
+		.event-location__program:focus-within > :not(:focus-within) {
 			@include scene.pinned {
 				animation: none;
 				opacity: 0%;
