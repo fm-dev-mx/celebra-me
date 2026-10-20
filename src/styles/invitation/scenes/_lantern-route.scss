@@ -15,6 +15,8 @@
 //   --location-route-trail                 Dashed trail
 //   --location-route-glow                  Drawn route and lantern light
 //   --location-route-lantern               Lantern body
+//   --location-route-lift                  How far the pinned night rises over the section's top
+//                                          padding (default 0); unpinned, the padding stays
 // ==========================================================================
 
 // The route draws over this slice of the pinned span; entries swap around its middle.
@@ -48,6 +50,7 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 			@media (prefers-reduced-motion: no-preference) {
 				:where([data-motion='editorial']) & .location-route {
 					margin-inline: calc(50% - 50vw);
+					margin-top: calc(-1 * var(--location-route-lift, 0px));
 				}
 			}
 		}
@@ -55,6 +58,7 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 		@media (prefers-reduced-motion: no-preference) {
 			.location-route[data-scene-engine='script'] {
 				margin-inline: calc(50% - 50vw);
+				margin-top: calc(-1 * var(--location-route-lift, 0px));
 			}
 		}
 

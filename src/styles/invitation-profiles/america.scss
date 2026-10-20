@@ -222,6 +222,12 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// base section styles declare them.
 	--location-bg: var(--color-lilac-mist);
 
+	// The night of the route starts right under the save-the-date print: pinned, it rises over
+	// the program's top padding, so no strip of mist shows between them.
+	--america-location-top: clamp(4.5rem, 12vw, 7.5rem);
+	--location-program-padding-block: var(--america-location-top) clamp(5rem, 12vw, 8rem);
+	--location-route-lift: var(--america-location-top);
+
 	// Place: plain mist, the program as type on the page.
 	--location-program-art-display: none;
 	--location-program-art: none;
