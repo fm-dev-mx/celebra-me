@@ -82,7 +82,8 @@ The contract is mandatory:
    alone must never consume its entrance.
 5. Reduced motion reveals immediately without constructing the reveal observer.
 6. Item staggering is CSS-only; items are not independently observed.
-7. Invitation motion does not use scroll listeners or animation-frame scroll loops.
+7. Invitation motion does not use scroll listeners or animation-frame scroll loops, except the two
+   editorial exceptions below (smooth wheel scrolling and the scroll-scene fallback).
 
 The `editorial` recipe is the documented exception to rules 3, 5 and 6; its contract follows.
 
@@ -110,7 +111,7 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
 - **Ambient lanterns.** Layers of `StorybookLanternSky` with `scene="ambient"` that a profile
   displays loop only while on screen (`data-ambient='running'` from an observer in the coordinator);
   hidden layers are never observed.
-- **Scroll-linked exceptions.** Two effects tie motion to scroll position, both only under
+- **Scroll-linked exceptions.** Three effects tie motion to scroll position, all only under
   `prefers-reduced-motion: no-preference`:
   - `itinerary.stacked-cards` uses CSS scroll-driven animations (`view-timeline`), inside
     `@supports (animation-timeline: view())`. There is no script; without support the cards stay as
@@ -119,8 +120,46 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
     animation-frame loop. It is loaded with a dynamic import after the reveal, only on
     `pointer: fine`, so phones never download it. Native touch scrolling is unchanged, and `#` links
     scroll to their target below the fixed header.
+  - Scroll scenes (next section).
 - **Budget.** Nothing new loads on first paint except CSS. At most about 12 elements animate at
   once.
+
+## Scroll scenes
+
+A scroll scene pins one stage to the viewport while the page scrolls through a taller section, and
+its children change with scroll position instead of time. Scenes belong to the `editorial` recipe
+only; elsewhere the same markup renders as a normal section.
+
+- **Primitive.** `ScrollScene.astro` renders `.scroll-scene[data-scroll-scene]` with
+  `data-scene-length` 2–5 (viewport heights, including the pinned screen; default 3) and an optional
+  `data-scene-steps`. Its `.scroll-scene__stage` is `position: sticky`, `100svh` tall, with
+  `overflow: clip`. Use `svh`, never `vh`, for scene geometry.
+- **Engines.** Under `prefers-reduced-motion: no-preference` inside `[data-motion="editorial"]`:
+  - _Timeline:_ where `animation-timeline: view()` is supported, the scene declares the view
+    timeline `--scroll-scene`; children animate with `animation-timeline: --scroll-scene` and ranges
+    within `contain 0%` … `contain 100%` (the pinned span). No script runs.
+  - _Script:_ elsewhere `src/lib/invitation/scroll-scene.ts` sets `data-scene-engine="script"` and
+    writes `--scene-progress` (0–1) from one passive scroll listener, at most one frame per scroll,
+    plus `data-scene-step` when steps are declared.
+
+  Consumers style children through the `timeline`, `scripted` and `pinned` mixins of
+  `src/styles/invitation/_scroll-scene.scss`.
+
+- **Resting layout.** Reduced motion, a non-editorial invitation, or no engine leaves the stage in
+  normal flow. Every scene's default (unmixed) styles are its complete static layout: all content
+  visible, nothing at `opacity: 0`. The reduced-motion contract applies unchanged.
+- **Properties.** Animate only `transform`, `opacity`, `scale`, `translate`, `rotate` and
+  `clip-path`. Small inline SVG strokes (`stroke-dashoffset`) and motion paths (`offset-distance`)
+  are allowed for decorative drawings.
+- **Content and focus.** All text and controls stay in the DOM in reading order; decorative layers
+  are `aria-hidden`. A control that is transparent at the current progress must become visible on
+  `:focus-within`. Links and buttons inside a scene (for example «Cómo llegar») stay operable at
+  every progress.
+- **Ancestors.** Nothing between the scene and the viewport may set `overflow: hidden` or `auto`;
+  use `overflow: clip` to clip, which keeps `sticky` working.
+- **Budget.** At most two scenes per invitation and no more than 35 % of the page's scroll height
+  pinned at a 390 × 844 viewport. Two scenes are never adjacent; a normal section sits between them.
+  A scene never traps scrolling: no scroll snapping, no wheel or touch interception.
 
 Other product surfaces may use the generic utilities in `src/utils/animations.ts`; they are not
 invitation section owners and do not change this contract.
@@ -161,4 +200,4 @@ motion hover must not change an audited element's bounding box or transform matr
 Section intersections are static composition primitives governed by
 [`section-intersections.md`](section-intersections.md). Motion is optional and never required to
 understand an intersection. Ambient image scaling is not parallax. The only scroll-position
-transforms are the editorial exceptions above.
+transforms are the editorial exceptions above, scroll scenes included.

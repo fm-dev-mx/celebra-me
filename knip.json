@@ -21,7 +21,8 @@
         "playwright*.config.ts",
         "tests/e2e/**/*.{spec,test}.ts",
         "tests/e2e/harness/visual-record-teardown.ts",
-        "tests/e2e/harness/visual-environment-preflight.ts"
+        "tests/e2e/harness/visual-environment-preflight.ts",
+        "src/components/invitation/ScrollScene.astro"
     ],
     "project": [
         "src/**/*.{ts,tsx,astro,mjs,js}",

@@ -21,7 +21,6 @@ import {
 } from '../../scripts/screenshot/remote/remote-target';
 import {
 	buildRouteCandidates,
-	findVistaPreviaPaths,
 	type RouteSources,
 } from '../../scripts/screenshot/remote/route-inventory';
 
@@ -122,10 +121,9 @@ describe('remote route inventory', () => {
 			{ source: '/temporary', destination: '/b', permanent: false },
 		],
 		memoriesPaths: ['/r/victoria-y-roberto'],
-		vistaPreviaPaths: ['/vista-previa/token.webp'],
 	};
 
-	it('lists site pages, showrooms, demos, definitions, memories, redirects and photos', () => {
+	it('lists site pages, showrooms, demos, definitions, memories and redirects', () => {
 		const routes = buildRouteCandidates(sources);
 		expect(routes.map((route) => route.path)).toEqual([
 			'/',
@@ -140,7 +138,6 @@ describe('remote route inventory', () => {
 			'/r/victoria-y-roberto',
 			'/boda/daniela-y-martin/antiguo',
 			'/a',
-			'/vista-previa/token.webp',
 		]);
 		expect(routes.find((route) => route.path === '/xv/naydelin-paredes')?.lifecycle).toBe(
 			'in_progress',
@@ -148,17 +145,6 @@ describe('remote route inventory', () => {
 		expect(
 			routes.find((route) => route.path === '/boda/daniela-y-martin/antiguo'),
 		).toMatchObject({ kind: 'redirect', expectedLocation: '/boda/daniela-y-martin' });
-		expect(routes.at(-1)).toMatchObject({ kind: 'asset', expectedContentType: 'image/webp' });
-	});
-
-	it('finds same-origin watermarked photo paths in rendered HTML', () => {
-		const html =
-			'<img src="/vista-previa/abc.webp"><img srcset="https://www.celebra-me.com/vista-previa/def.webp 2x">' +
-			'<img src="https://other.example/vista-previa/zzz.webp">';
-		expect(findVistaPreviaPaths(html, 'https://www.celebra-me.com')).toEqual([
-			'/vista-previa/abc.webp',
-			'/vista-previa/def.webp',
-		]);
 	});
 });
 
@@ -224,7 +210,7 @@ describe('remote compare rules', () => {
 			'redirect-changed',
 		]);
 		const photo = {
-			path: '/vista-previa/x',
+			path: '/media/x.webp',
 			kind: 'asset',
 			group: 'preview-photo',
 			expectedContentType: 'image/webp',

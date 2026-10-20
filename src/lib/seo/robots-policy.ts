@@ -3,8 +3,8 @@
  *
  * - Every crawler: the site is open except private paths.
  * - AI training crawlers: nothing (the whole site).
- * - AI search and assistant agents: the landing and demos, never client invitations,
- *   short links or watermarked previews.
+ * - AI search and assistant agents: the landing and demos, never client invitations or
+ *   short links.
  *
  * Link-preview crawlers (WhatsApp, facebookexternalhit, Telegram, X, Slack, Discord,
  * LinkedIn, Apple) are deliberately absent: guests share invitations through them.
@@ -53,11 +53,10 @@ export const AI_ASSISTANT_CRAWLERS = [
 	'meta-externalfetcher',
 ] as const;
 
-/** Client invitation routes, personalized short links and watermarked previews. */
+/** Client invitation routes and personalized short links. */
 export const INVITATION_PATH_PREFIXES = [
 	...EVENT_TYPES.map((eventType) => `/${eventType}/`),
 	'/i/',
-	'/vista-previa/',
 ] as const;
 
 export interface RobotsPolicyEntry {

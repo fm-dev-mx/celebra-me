@@ -83,7 +83,9 @@ implementing these skills is never a live-release invocation.
      success state and an immutable version URL;
    - the `Cloudflare - celebra-me preview smoke` check, which the same workflow posts after smoking
      the uploaded version. It checks the `/api/health` SHA, published invitation images
-     (browserless) and `test:e2e:preview:public`;
+     (browserless), then on the stable host the public content probe (`test:e2e:preview:public` with
+     one invitation per event type) and, when its account secrets exist, the read-only authenticated
+     dashboard check (`test:e2e:preview`);
    - `/api/health` build identity on that URL, which must not report another SHA.
 
    `VERIFIED` is the success for a built deployment. `PENDING` after the timeout is unverified, and

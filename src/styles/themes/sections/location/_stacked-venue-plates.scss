@@ -174,8 +174,9 @@
 
 	.event-location__eyebrow {
 		font-family: var(--font-label);
-		font-size: clamp(0.7rem, 1.4vw, 0.78rem);
-		letter-spacing: 0.26em;
+		font-size: var(--location-plates-eyebrow-size, clamp(0.7rem, 1.4vw, 0.78rem));
+		font-weight: var(--location-plates-eyebrow-weight, inherit);
+		letter-spacing: var(--location-plates-eyebrow-tracking, 0.26em);
 		text-transform: uppercase;
 		color: var(--location-title-color, var(--color-text-secondary));
 		margin-bottom: 0.55rem;
@@ -228,6 +229,23 @@
 
 	.event-location__card-flourish {
 		align-self: center;
+	}
+
+	// `venueCard: 'compact'`: the hour leads the card, above the event label.
+	.event-location__card-lead-time {
+		margin: 0;
+		padding-block-start: 0.55rem;
+		font-family: var(--location-lead-time-font, var(--font-display));
+		font-size: var(--location-lead-time-size, 2.25rem);
+		font-weight: var(--location-lead-time-weight, 500);
+		font-variant-numeric: lining-nums;
+		line-height: 1;
+		color: var(--location-lead-time-color, var(--location-place-color, currentcolor));
+		text-align: var(--location-lead-time-align, var(--location-plates-content-align, center));
+	}
+
+	.event-location__card-lead-time + .event-location__card-title {
+		padding-block-start: 0.35rem;
 	}
 
 	.event-location__card {

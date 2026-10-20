@@ -41,7 +41,15 @@ export interface LocationPresentationOptions {
 	indicationsStyle?: LocationIndicationsStyle;
 	/** Adds a no-JS "Agendar en el calendario" disclosure to each venue with a date and time. */
 	showCalendarLinks?: boolean;
+	/**
+	 * Venue card form; `compact` (stacked-venue-plates only) leads each card with its time, drops
+	 * the decorative map tile and keeps one «Cómo llegar» directions button.
+	 */
+	venueCard?: LocationVenueCard;
 }
+
+export const LOCATION_VENUE_CARDS = ['compact'] as const;
+export type LocationVenueCard = (typeof LOCATION_VENUE_CARDS)[number];
 
 export const LOCATION_INDICATIONS_LAYOUTS = ['list', 'band', 'enclosure'] as const;
 export type LocationIndicationsLayout = (typeof LOCATION_INDICATIONS_LAYOUTS)[number];

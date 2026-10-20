@@ -96,8 +96,9 @@
 
 	.rsvp__eyebrow {
 		font-family: var(--formal-chapter-label);
-		font-size: 0.68rem;
-		letter-spacing: 0.24em;
+		font-size: var(--formal-register-eyebrow-size, 0.68rem);
+		font-weight: var(--formal-register-eyebrow-weight, 500);
+		letter-spacing: var(--formal-register-eyebrow-tracking, 0.24em);
 		color: rgb(var(--formal-chapter-metal-rgb) / 88%);
 	}
 
@@ -108,9 +109,9 @@
 	.rsvp__title {
 		font-family: var(--formal-chapter-display);
 		font-size: var(--formal-register-title-size, clamp(2rem, 4.4vw, 3.25rem));
-		font-weight: 600;
+		font-weight: var(--formal-register-title-weight, 600);
 		letter-spacing: normal;
-		line-height: 1.06;
+		line-height: var(--formal-register-title-line-height, 1.06);
 		color: var(--formal-chapter-cream);
 		text-align: left;
 		text-wrap: balance;

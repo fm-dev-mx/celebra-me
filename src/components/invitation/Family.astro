@@ -7,7 +7,14 @@ import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { FamilyVariant } from '@/lib/invitation/section-variants';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
-import { shouldRenderFamilyMedia, type FamilyPresentation } from '@/lib/invitation/family-presentation';
+import {
+	groupGodparentsByRole,
+	shouldRenderFamilyMedia,
+	type FamilyGodparentsLayout,
+	type FamilyPresentation,
+	type GodparentRoleGroup,
+} from '@/lib/invitation/family-presentation';
+import HairlineFrame from '@/components/invitation/HairlineFrame.astro';
 
 interface Props {
 	parents?: {
@@ -46,6 +53,8 @@ interface Props {
 	}>;
 	featuredImage?: string | ImageAsset;
 	presentation?: FamilyPresentation;
+	/** `by-role`: flat godparents grouped under one label per role. */
+	godparentsLayout?: FamilyGodparentsLayout;
 	variant: FamilyVariant;
 	celebrantName: string;
 	labels?: {
@@ -80,6 +89,7 @@ interface FamilyBlock {
 		label?: string;
 		entries: FamilyEntry[];
 	}>;
+	roleGroups?: GodparentRoleGroup[];
 }
 
 const {
@@ -92,6 +102,7 @@ const {
 	groups,
 	featuredImage,
 	presentation,
+	godparentsLayout,
 	variant,
 	celebrantName,
 	labels,
@@ -203,6 +214,15 @@ const godparentBlock: FamilyBlock[] = (godparentGroups ?? []).length > 0
 				})),
 			},
 		]
+	: godparents && godparents.length > 0 && godparentsLayout === 'by-role'
+		? [
+				{
+					id: 'godparents',
+					title: resolvedLabels.godparentsTitle,
+					entries: [],
+					roleGroups: groupGodparentsByRole(godparents),
+				},
+			]
 	: godparents && godparents.length > 0
 		? [
 				{
@@ -261,6 +281,7 @@ if (!hasContent) return;
 							quality={84}
 							sizes="(max-width: 768px) 92vw, min(32rem, 42vw)"
 						/>
+						<HairlineFrame />
 					</div>
 				</figure>
 			)}
@@ -277,7 +298,35 @@ if (!hasContent) return;
 						data-reveal-item
 					>
 						<h3 class="family__group-title">{block.title}</h3>
-						{block.godparentGroups && block.godparentGroups.length > 0 ? (
+						{block.roleGroups ? (
+							<div class="family__godparent-roles" data-godparents-layout="by-role">
+								{block.roleGroups.map((group) => (
+									<div
+										class="family__godparent-role"
+										data-span={group.members.length > 2 ? 'full' : undefined}
+									>
+										{group.role && <p class="family__godparent-role-label">{group.role}</p>}
+										<p class="family__godparent-role-names">
+											{group.members.map((member, index) => (
+												<>
+													{index > 0 && <span class="family__godparent-role-separator" aria-hidden="true"> · </span>}
+													<span class="family__godparent-role-name">
+														{member.name}
+														{member.deceased && (
+															<>
+																<span class="family__deceased-indicator" aria-hidden="true">†</span>
+																<span class="sr-only">, quien falleció</span>
+															</>
+														)}
+													</span>
+													{index < group.members.length - 1 && <span class="sr-only">,</span>}
+												</>
+											))}
+										</p>
+									</div>
+								))}
+							</div>
+						) : block.godparentGroups && block.godparentGroups.length > 0 ? (
 							<div class="family__godparent-groups">
 								{block.godparentGroups.map((group) => (
 									<div class="family__godparent-group">

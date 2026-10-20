@@ -24,9 +24,7 @@ describe('robots policy', () => {
 	it.each(AI_ASSISTANT_CRAWLERS)('keeps the assistant %s off invitations only', (agent) => {
 		const entry = forAgent(agent);
 		expect(entry?.allow).toBe('/');
-		expect(entry?.disallow).toEqual(
-			expect.arrayContaining([...PRIVATE_PATHS, '/i/', '/vista-previa/']),
-		);
+		expect(entry?.disallow).toEqual(expect.arrayContaining([...PRIVATE_PATHS, '/i/']));
 		for (const eventType of EVENT_TYPES) {
 			expect(entry?.disallow).toContain(`/${eventType}/`);
 		}

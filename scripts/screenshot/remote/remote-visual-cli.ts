@@ -69,7 +69,6 @@ async function main(): Promise<number> {
 		if (needsAccessToken(origin)) loadPlaywrightEnvironment({ cwd: root });
 		const target = resolveRemoteTarget(origin);
 		const sources = await loadRepositoryRouteSources(root);
-		sources.vistaPreviaPaths = listFlag(flags, 'vista-previa');
 		if (command === 'routes') {
 			for (const route of buildRouteCandidates(sources)) {
 				console.log(`${route.kind.padEnd(8)} ${route.group.padEnd(13)} ${route.path}`);

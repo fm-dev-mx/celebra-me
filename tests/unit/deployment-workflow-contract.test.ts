@@ -38,6 +38,34 @@ describe('deployment workflow contract', () => {
 			preview.indexOf('- name: Record success'),
 		);
 	});
+
+	it('runs the read-only browser checks on the stable host before success is recorded', () => {
+		const preview = readFileSync(resolve('.github/workflows/deploy.yml'), 'utf8');
+		const stableHost = preview.indexOf('Verify the stable host serves the release');
+		const probe = preview.indexOf('- name: Probe public invitation content');
+		const dashboard = preview.indexOf('- name: Check the authenticated dashboard');
+		const success = preview.indexOf('- name: Record success');
+		expect(stableHost).toBeGreaterThan(0);
+		expect(stableHost).toBeLessThan(probe);
+		expect(probe).toBeLessThan(dashboard);
+		expect(dashboard).toBeLessThan(success);
+
+		const probeStep = preview.slice(probe, dashboard);
+		expect(probeStep).toContain('PLAYWRIGHT_BASE_URL: ${{ env.PREVIEW_WORKER_URL }}');
+		expect(probeStep).toContain('PREVIEW_CONTENT_PROBE: event-types');
+		expect(probeStep).toContain('run: pnpm test:e2e:preview:public');
+
+		const dashboardStep = preview.slice(dashboard, success);
+		expect(dashboardStep).toContain('PLAYWRIGHT_BASE_URL: ${{ env.PREVIEW_WORKER_URL }}');
+		expect(dashboardStep).toMatch(/exit 0\n\s+fi\n\s+pnpm test:e2e:preview\n/u);
+		expect(dashboardStep).toContain('tee -a "$GITHUB_STEP_SUMMARY"');
+
+		for (const step of [probeStep, dashboardStep]) {
+			expect(step).toContain("PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'");
+			expect(step).toContain("PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'");
+			expect(step).toContain("PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'");
+		}
+	});
 });
 
 describe('Repository CI on release commits', () => {

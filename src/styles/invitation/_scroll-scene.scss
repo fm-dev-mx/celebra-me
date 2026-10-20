@@ -1,0 +1,82 @@
+// ==========================================================================
+// SCROLL SCENES
+// Layout for ScrollScene.astro and the mixins consumers use to animate inside a scene.
+// A scene engages only inside `[data-motion='editorial']` and under
+// `prefers-reduced-motion: no-preference`, through one of two engines:
+//   timeline  CSS scroll-driven animations; children use `animation-timeline: --scroll-scene`
+//             with ranges inside `contain 0%` … `contain 100%` (the pinned span).
+//   script    scroll-scene.ts sets `data-scene-engine='script'` and `--scene-progress` (0–1)
+//             where `animation-timeline` is unsupported.
+// Otherwise the stage is in normal flow and its children show their resting layout.
+// Contract: docs/domains/theme/motion.md, "Scroll scenes".
+// ==========================================================================
+
+$scene-lengths: 2, 3, 4, 5;
+
+/// Rules for a scene descendant while the CSS timeline engine drives the scene.
+@mixin timeline {
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			[data-motion='editorial'] .scroll-scene & {
+				@content;
+			}
+		}
+	}
+}
+
+/// Rules for a scene descendant while the scripted fallback drives the scene.
+@mixin scripted {
+	@media (prefers-reduced-motion: no-preference) {
+		.scroll-scene[data-scene-engine='script'] & {
+			@content;
+		}
+	}
+}
+
+/// Rules for a scene descendant whenever the scene is pinned, whichever engine drives it.
+@mixin pinned {
+	@include timeline {
+		@content;
+	}
+
+	@include scripted {
+		@content;
+	}
+}
+
+@mixin -pinned-scene {
+	height: calc(var(--scene-length, 3) * 100svh);
+
+	> .scroll-scene__stage {
+		position: sticky;
+		top: 0;
+		height: 100svh;
+		overflow: clip;
+	}
+}
+
+.scroll-scene {
+	position: relative;
+
+	@each $length in $scene-lengths {
+		&[data-scene-length='#{$length}'] {
+			--scene-length: #{$length};
+		}
+	}
+}
+
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		[data-motion='editorial'] .scroll-scene {
+			view-timeline: --scroll-scene block;
+
+			@include -pinned-scene;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.scroll-scene[data-scene-engine='script'] {
+		@include -pinned-scene;
+	}
+}

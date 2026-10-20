@@ -183,11 +183,6 @@ account that may confirm or clear owner review in the invitation workflow, and t
 that `pnpm db:local:bootstrap-admin` creates. Set it as a Worker secret in Preview and Production;
 when it is absent, nobody can record owner review.
 
-`PREVIEW_MEDIA_SECRET` is an optional server-only secret that seals the watermarked photo URLs of
-unpaid invitation previews (`/vista-previa/<token>`). When it is absent, the keys are derived from
-`SUPABASE_SERVICE_ROLE_KEY`, so no deployment needs it; setting or rotating it only changes preview
-URLs. Never expose it with a `PUBLIC_` prefix.
-
 Event memories have no browser-facing environment variable. The browser calls same-origin APIs; the
 backend uses server-only Worker origins and repository-owned route paths. Missing or invalid values
 fail closed.
@@ -349,6 +344,13 @@ domains are always rejected. `PLAYWRIGHT_PREVIEW_SUPABASE_URL` must resolve to p
 Public and authenticated read-only commands require the provisioning, publication, and debug guards
 to be present and exactly `false`. Missing flags fail closed before the Cloudflare Access headers or
 application authentication are used.
+
+The Preview Deploy workflow runs both read-only suites on the stable host after every deploy. The
+public probe (`PREVIEW_CONTENT_PROBE=event-types`: one invitation per event type, mobile viewport)
+uses the repository secrets it already has. The authenticated dashboard check also needs the
+repository secrets `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD` and
+`PLAYWRIGHT_PREVIEW_INVITATION_ID`; while any of them is missing, the step is skipped and the run
+summary says so.
 
 `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the Playwright fixture reconcile
 command (`pnpm test:e2e:preview:provision`): verify slug `e2e-preview-publication`, copy

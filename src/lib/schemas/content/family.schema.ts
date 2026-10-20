@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
-import { FAMILY_PRESENTATIONS } from '@/lib/invitation/family-presentation';
+import {
+	FAMILY_GODPARENTS_LAYOUTS,
+	FAMILY_PRESENTATIONS,
+} from '@/lib/invitation/family-presentation';
 import { FAMILY_VARIANTS } from '@/lib/invitation/section-variants';
 
 const familyMemberSchema = z.object({ name: z.string(), role: z.string().optional() });
@@ -61,6 +64,8 @@ const familyBaseSchema = z.object({
 	featuredImage: AssetSchema.optional(),
 	featuredImageAlt: z.string().trim().min(1).optional(),
 	presentation: z.enum(FAMILY_PRESENTATIONS).optional(),
+	/** `by-role`: one label per godparent role with its names joined beneath (flat `godparents`). */
+	godparentsLayout: z.enum(FAMILY_GODPARENTS_LAYOUTS).optional(),
 	focalPoint: focalPointSchema.optional(),
 	visible: z.boolean().optional(),
 	sectionMessage: z.string().optional(),

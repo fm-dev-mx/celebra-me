@@ -17,7 +17,10 @@ import type {
 	CountdownUnit,
 } from '@/lib/invitation/countdown-presentation';
 import type { EventCalendarMonth } from '@/lib/invitation/event-calendar';
-import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
+import type {
+	FamilyGodparentsLayout,
+	FamilyPresentation,
+} from '@/lib/invitation/family-presentation';
 import type {
 	GalleryLayoutRole,
 	GalleryMobileBrowseMode,
@@ -29,9 +32,11 @@ import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-
 import type {
 	LocationPresentation,
 	LocationIndicationsStyle,
+	LocationVenueCard,
 	LocationMapStyle,
 	LocationIndicationsLayout,
 } from '@/lib/invitation/location-presentation';
+import type { HeroTimeFormat } from '@/lib/invitation/hero-presentation';
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
@@ -65,6 +70,8 @@ export interface HeroViewModel {
 	ambience?: ImageAsset;
 	venueIndex?: number;
 	nameLeadWords?: number;
+	/** Clock format of the cover time line (`hero.presentation.timeFormat`). */
+	timeFormat?: HeroTimeFormat;
 	/** Editorial-cover folio marks; the renderer falls back to its XV defaults. */
 	coverMark?: string;
 	coverPage?: string;
@@ -259,6 +266,7 @@ export interface LocationSection {
 		indicationsLayout?: LocationIndicationsLayout;
 		indicationsStyle?: LocationIndicationsStyle;
 		showCalendarLinks?: boolean;
+		venueCard?: LocationVenueCard;
 	};
 	isLocked?: boolean;
 	lockedTitle?: string;
@@ -277,6 +285,7 @@ export interface LocationSection {
 	indicationsHeading?: string;
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
+	venueCard?: LocationVenueCard;
 	calendarEventTitle?: string;
 	eventTimeZone?: string;
 }
@@ -327,6 +336,7 @@ export interface InvitationViewModel {
 			groups?: FamilyGroup[];
 			featuredImage?: ImageAsset;
 			presentation?: FamilyPresentation;
+			godparentsLayout?: FamilyGodparentsLayout;
 			variant: FamilyVariant;
 			focalPoint?: string;
 			labels?: FamilyLabels;

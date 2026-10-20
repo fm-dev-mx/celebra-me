@@ -40,13 +40,11 @@ export interface RouteSources {
 	showroomPaths: string[];
 	redirects: RedirectRuleSource[];
 	memoriesPaths: string[];
-	vistaPreviaPaths: string[];
 }
 
 const SITE_PATHS = ['/', '/login', '/privacidad', '/terminos'] as const;
 /** QR landing of the one invitation with the memories add-on in Production. */
 const MEMORIES_PATHS = ['/r/victoria-y-roberto'] as const;
-export const VISTA_PREVIA_CONTENT_TYPE = 'image/webp';
 
 function instantiateRedirect(
 	rule: RedirectRuleSource,
@@ -108,29 +106,7 @@ export function buildRouteCandidates(sources: RouteSources): RemoteRouteCandidat
 			expectedLocation: instance.destination,
 		});
 	}
-	for (const path of sources.vistaPreviaPaths) {
-		add({
-			path,
-			kind: 'asset',
-			group: 'preview-photo',
-			expectedContentType: VISTA_PREVIA_CONTENT_TYPE,
-		});
-	}
 	return routes;
-}
-
-/** Same-origin `/vista-previa/<token>` references found in rendered HTML. */
-export function findVistaPreviaPaths(html: string, origin: string): string[] {
-	const found = new Set<string>();
-	for (const match of html.matchAll(/(?:https?:\/\/[^"'\s)]+)?\/vista-previa\/[^"'\s)?#,]+/g)) {
-		try {
-			const url = new URL(match[0].replace(/&amp;/g, '&'), origin);
-			if (url.origin === origin) found.add(url.pathname);
-		} catch {
-			// Not a URL; ignore.
-		}
-	}
-	return [...found].sort();
 }
 
 /** Repository sources at `root`. Imported lazily so unit tests can stay hermetic. */
@@ -160,6 +136,5 @@ export async function loadRepositoryRouteSources(root: string): Promise<RouteSou
 		showroomPaths: DEMO_SHOWROOM_EVENTS.map((event) => event.showroomHref),
 		redirects: PERMANENT_REDIRECTS.map((rule) => ({ ...rule, permanent: true })),
 		memoriesPaths: [...MEMORIES_PATHS],
-		vistaPreviaPaths: [],
 	};
 }

@@ -65,9 +65,16 @@ export async function establishDeploymentProtectionBypass(
 		throw new Error('Cloudflare Access service token headers were not resolved.');
 	}
 
-	// Scope the service token to one same-origin request. Cloudflare Access answers with a
-	// CF_Authorization cookie, which page.request shares with the browser context. A global
-	// extraHTTPHeaders setting would also attach the token to third-party assets.
+	// Strict service token authentication returns no CF_Authorization cookie, so every request
+	// to the Preview origin must carry the token. Route only same-origin browser requests: a
+	// global extraHTTPHeaders setting would also send the token to third-party assets. Direct
+	// page.request calls bypass routes and pass previewAccessHeaders() themselves.
+	const origin = new URL(runtime.baseURL).origin;
+	await page.route(
+		(url) => url.origin === origin,
+		(route) => route.continue({ headers: { ...route.request().headers(), ...headers } }),
+	);
+
 	const response = await page.request.get(`${runtime.baseURL}/api/health`, {
 		headers,
 		maxRedirects: 0,
@@ -75,6 +82,16 @@ export async function establishDeploymentProtectionBypass(
 	if (response.status() !== 200) {
 		throw new Error(`Cloudflare Access bootstrap failed with HTTP ${response.status()}.`);
 	}
+}
+
+/** Cloudflare Access headers for direct page.request calls to the Preview origin. */
+export function previewAccessHeaders(
+	runtime: PlaywrightRuntimeEnvironment,
+): Record<string, string> {
+	if (!runtime.protectionHeaders) {
+		throw new Error('Cloudflare Access service token headers were not resolved.');
+	}
+	return runtime.protectionHeaders;
 }
 
 async function parseSuccessfulJson<T>(response: APIResponse, operation: string): Promise<T> {
