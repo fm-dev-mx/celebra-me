@@ -4,7 +4,8 @@ import {
 	formatMxn,
 	formatMxnAmount,
 	getExpressDelivery,
-	PROMO_CAMPAIGN,
+	PACKAGE_CATALOG,
+	PROMO_SCHEDULE,
 } from '@/data/promo-campaign.data';
 
 /**
@@ -62,14 +63,19 @@ describe('landing promo literals', () => {
 
 	it('writes promo codes only in the promo module', () => {
 		const files = [...collectFiles('src'), ...collectFiles('tests')];
-		const codePattern = new RegExp(`\\b${escapeRegExp(PROMO_CAMPAIGN.codePrefix)}-\\d+`);
-		expect(findOffenders(files, [codePattern])).toEqual([]);
+		const codePatterns = PROMO_SCHEDULE.map(
+			(campaign) => new RegExp(`\\b${escapeRegExp(campaign.codePrefix)}-\\d+`),
+		);
+		expect(findOffenders(files, codePatterns)).toEqual([]);
 	});
 
 	it('writes promo prices and dates only in the promo module', () => {
 		const amounts = [
-			...PROMO_CAMPAIGN.packages.flatMap((pkg) => [pkg.promoPrice, pkg.regularPrice]),
-			getExpressDelivery().price,
+			...new Set([
+				...PACKAGE_CATALOG.map((pkg) => pkg.regularPrice),
+				...PROMO_SCHEDULE.flatMap((campaign) => Object.values(campaign.prices)),
+				getExpressDelivery().price,
+			]),
 		];
 		const pricePatterns = amounts.flatMap((amount) => [
 			new RegExp(`${escapeRegExp(formatMxn(amount))}(?![\\d,])`),
@@ -77,11 +83,11 @@ describe('landing promo literals', () => {
 				? [new RegExp(`(?<![\\d,])${escapeRegExp(formatMxnAmount(amount))}(?![\\d,])`)]
 				: []),
 		]);
-		const datePatterns = [
-			new RegExp(escapeRegExp(PROMO_CAMPAIGN.endLabel)),
-			new RegExp(escapeRegExp(PROMO_CAMPAIGN.startsAt.slice(0, 10))),
-			new RegExp(escapeRegExp(PROMO_CAMPAIGN.endsAt.slice(0, 10))),
-		];
+		const datePatterns = PROMO_SCHEDULE.flatMap((campaign) => [
+			new RegExp(escapeRegExp(campaign.endLabel)),
+			new RegExp(escapeRegExp(campaign.startsAt.slice(0, 10))),
+			new RegExp(escapeRegExp(campaign.endsAt.slice(0, 10))),
+		]);
 		const files = LANDING_SURFACES.flatMap(collectFiles);
 
 		expect(findOffenders(files, [...pricePatterns, ...datePatterns])).toEqual([]);

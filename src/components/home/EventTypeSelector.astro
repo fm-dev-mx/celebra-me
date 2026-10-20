@@ -85,7 +85,6 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 
 			<div class="event-showroom__panels">
 				{events.map((event, index) => {
-					const quote = event.homeSelector.quoteCta;
 					const demoScreen = getDemoScreen(event.eventType);
 
 					return (
@@ -98,9 +97,6 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 						data-event-panel
 						data-showroom-href={event.showroomHref}
 						data-event-label={event.label}
-						data-quote-message={quote.message}
-						data-quote-promo={quote.promoCode}
-						data-quote-value={quote.trackValue}
 						aria-hidden={index === 0 ? "false" : "true"}
 						{...(index === 0 ? {} : { inert: true })}
 					>
@@ -157,13 +153,10 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 				</a>
 				<WhatsAppButton
 					className="action-btn action-btn--primary event-showroom__quote-link"
-					message={events[0].homeSelector.quoteCta.message}
 					label={events[0].homeSelector.quoteCta.label}
 					trackSection="event-types"
 					trackCta={`showroom_quote_${events[0].eventType}`}
 					campaignSection="DEMO"
-					trackValue={events[0].homeSelector.quoteCta.trackValue}
-					promoCode={events[0].homeSelector.quoteCta.promoCode}
 					eventType={events[0].eventType}
 					eventLabel={events[0].label}
 				/>
@@ -286,9 +279,6 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 			const href = panel.getAttribute("data-showroom-href") || "";
 			const label = panel.getAttribute("data-event-label") || "";
 			const eventType = panel.getAttribute("data-panel-event") || "";
-			const message = panel.getAttribute("data-quote-message") || "";
-			const promo = panel.getAttribute("data-quote-promo") || "";
-			const value = panel.getAttribute("data-quote-value") || "";
 
 			if (demoLink) {
 				demoLink.href = href;
@@ -309,13 +299,9 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 				}
 			}
 
+			// The quote message, promo code and value are the general ones, kept current by PromoStatus.
 			if (quoteLink) {
-				const url = new URL(quoteLink.href);
-				url.searchParams.set("text", message);
-				quoteLink.href = url.toString();
 				quoteLink.setAttribute("data-track-cta", `showroom_quote_${panel.getAttribute("data-panel-event")}`);
-				quoteLink.setAttribute("data-promo-code", promo);
-				quoteLink.setAttribute("data-track-value", value);
 				quoteLink.setAttribute("data-event-type", panel.getAttribute("data-panel-event") || "");
 				quoteLink.setAttribute("data-event-label", label);
 			}

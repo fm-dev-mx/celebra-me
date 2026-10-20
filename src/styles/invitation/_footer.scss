@@ -205,6 +205,7 @@ $lantern-shape: 40% 40% 45% 45%;
 }
 
 .footer__divider {
+	display: var(--footer-divider-display, block);
 	width: 80px;
 	height: 1px;
 	margin: 0 auto 1.5rem;
@@ -222,20 +223,30 @@ $lantern-shape: 40% 40% 45% 45%;
 	}
 }
 
+// Opt-in hierarchy for the closing block (all default to the plain stack):
+//   --footer-divider-display   `none` drops the dot divider under the closing phrase
+//   --footer-content-gap       Space between the rows of the content (default 1.25rem)
+//   --footer-replay-order      `-1` lifts the replay link above the brand row, next to the closing
+//   --footer-primary-row-direction   `row` keeps brand and contact on one line on phones too
+//   --footer-platform-rule / -rule-space   A short rule (an image, e.g. a gradient) above the
+//                              brand row and the space under it, setting the platform apart
+//   --footer-contact-color / -contact-weight   Ink and weight of the contact link
 .footer__content {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1.25rem;
+	gap: var(--footer-content-gap, 1.25rem);
 	width: 100%;
 }
 
 .footer__primary-row {
 	display: flex;
-	flex-direction: column;
+	flex-direction: var(--footer-primary-row-direction, column);
 	align-items: center;
 	gap: 1.25rem;
 	width: 100%;
+	padding-top: var(--footer-platform-rule-space, 0);
+	background: var(--footer-platform-rule, none) top center / 12rem 1px no-repeat;
 
 	@include mixins.respond-to(sm) {
 		flex-direction: row;
@@ -310,10 +321,10 @@ $lantern-shape: 40% 40% 45% 45%;
 	border-radius: var(--footer-contact-radius, 999px);
 	border: var(--footer-contact-border, 1px solid var(--color-action-accent));
 	background: var(--footer-contact-bg, rgb(var(--color-action-accent-rgb) / 8%));
-	color: var(--color-text-primary);
+	color: var(--footer-contact-color, var(--color-text-primary));
 	font-family: var(--font-body);
 	font-size: var(--footer-control-font-size, 0.7rem);
-	font-weight: 500;
+	font-weight: var(--footer-contact-weight, 500);
 	letter-spacing: var(--footer-control-letter-spacing, 0.12em);
 	text-transform: var(--footer-control-text-transform, uppercase);
 	transition:
@@ -348,6 +359,7 @@ $lantern-shape: 40% 40% 45% 45%;
 }
 
 .footer__replay-link {
+	order: var(--footer-replay-order, 0);
 	min-height: var(--footer-control-min-height, var(--footer-control-min-height-fallback, 44px));
 	display: inline-flex;
 	align-items: center;

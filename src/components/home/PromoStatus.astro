@@ -2,24 +2,86 @@
 /**
  * src/components/home/PromoStatus.astro
  *
- * Client-only promo state for the prerendered landing page. It never renders markup:
- * - adds "Quedan N días" to `[data-promo-days-left]` during the last days of the campaign;
- * - marks `html[data-promo-state]` so CSS hides `[data-promo-only]` and reveals
- *   `[data-promo-fallback]` once the campaign has ended.
- * Dates come from `src/data/promo-campaign.data.ts`; there is no hour/minute clock.
+ * Client-only promo switcher for the prerendered landing page. It never renders markup. On load it
+ * picks the promo calendar row active on the visitor's date (`src/data/promo-campaign.data.ts`)
+ * and:
+ * - marks `html[data-promo-state]` ('active' | 'none'); with 'none', CSS hides `[data-promo-only]`
+ *   and reveals `[data-promo-fallback]` (regular prices);
+ * - fills the campaign label, validity note, promo prices and starting price;
+ * - adds "Quedan N días" to `[data-promo-days-left]` when the price goes up after the row ends;
+ * - rewrites every calendar-driven quote (`[data-promo-quote]`): WhatsApp message text, promo
+ *   code, campaign code and tracked value. The tracking client appends the folio on click.
+ * There is no hour/minute clock: the state is computed once per page load.
  */
 ---
 
 <script>
-	import { formatDaysLeft, getPromoStatus } from '@/data/promo-campaign.data';
+	import {
+		buildCampaignCode,
+		buildGeneralMessage,
+		buildPackageMessage,
+		formatDaysLeft,
+		formatMxn,
+		formatMxnAmount,
+		getGeneralPromoCode,
+		getPackagePrice,
+		getPromoCode,
+		getPromoStatus,
+		getStartingPrice,
+		getValidityNote,
+		PACKAGE_CATALOG,
+		PROMO_CURRENCY,
+		type CampaignSection,
+		type PromoPackageId,
+	} from '@/data/promo-campaign.data';
 
-	const status = getPromoStatus(new Date());
-	document.documentElement.dataset.promoState = status.phase;
+	const { phase, campaign, daysLeft, showCountdown } = getPromoStatus(new Date());
+	document.documentElement.dataset.promoState = phase;
 
-	if (status.showCountdown) {
-		const label = formatDaysLeft(status.daysLeft);
-		document.querySelectorAll<HTMLElement>('[data-promo-days-left]').forEach((element) => {
-			element.textContent = label;
+	const setText = (selector: string, text: string) => {
+		document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+			element.textContent = text;
 		});
+	};
+
+	const isPackageId = (value: string): value is PromoPackageId =>
+		PACKAGE_CATALOG.some((pkg) => pkg.id === value);
+
+	if (campaign) {
+		setText('[data-promo-field="label"]', campaign.label);
+		setText('[data-promo-field="validity"]', getValidityNote(campaign));
+		setText('[data-promo-field="starting-price"]', formatMxn(getStartingPrice(campaign)));
+		for (const pkg of PACKAGE_CATALOG) {
+			const price = getPackagePrice(pkg.id, campaign);
+			setText(`[data-promo-amount="${pkg.id}"]`, formatMxnAmount(price));
+			document
+				.querySelectorAll<HTMLElement>(`[data-promo-price-label="${pkg.id}"]`)
+				.forEach((element) => {
+					element.setAttribute('aria-label', `${formatMxn(price)} ${PROMO_CURRENCY}, pago único`);
+				});
+		}
 	}
+	setText('[data-promo-days-left]', showCountdown ? formatDaysLeft(daysLeft) : '');
+
+	document.querySelectorAll<HTMLElement>('[data-promo-quote]').forEach((element) => {
+		const quote = element.dataset.promoQuote ?? 'general';
+		const packageId = isPackageId(quote) ? quote : null;
+		const section = element.dataset.campaignSection as CampaignSection | undefined;
+		const promoCode = packageId ? getPromoCode(packageId, campaign) : getGeneralPromoCode(campaign);
+		const value = packageId ? getPackagePrice(packageId, campaign) : getStartingPrice(campaign);
+
+		if (promoCode) element.dataset.promoCode = promoCode;
+		else delete element.dataset.promoCode;
+		if (section) element.dataset.campaignCode = buildCampaignCode(section, promoCode);
+		element.dataset.trackValue = String(value);
+
+		if (element instanceof HTMLAnchorElement && element.dataset.promoMessage === 'true') {
+			const url = new URL(element.href);
+			url.searchParams.set(
+				'text',
+				packageId ? buildPackageMessage(packageId, campaign) : buildGeneralMessage(campaign),
+			);
+			element.href = url.toString();
+		}
+	});
 </script>

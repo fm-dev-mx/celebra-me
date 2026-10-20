@@ -7,13 +7,18 @@ export const prerender = true;
 import Layout from '@/layouts/Layout.astro';
 import Footer from '@/components/home/Footer.astro';
 import { footerData } from '@/data/footer.data';
-import { formatMxn, getExpressDelivery, getPromoPackage } from '@/data/promo-campaign.data';
+import {
+	formatMxn,
+	getCatalogPackage,
+	getExpressDelivery,
+	PRICE_HOLD_DAYS,
+} from '@/data/promo-campaign.data';
 
 const expressDelivery = getExpressDelivery();
 const expressDeliveryPackages = expressDelivery.appliesTo
-	.map((packageId) => getPromoPackage(packageId).name)
+	.map((packageId) => getCatalogPackage(packageId).name)
 	.join(' y ');
-const atelierName = getPromoPackage('atelier').name;
+const atelierName = getCatalogPackage('atelier').name;
 ---
 
 <Layout title="Términos y Condiciones | Celebra-me" description="Términos y condiciones de uso de la plataforma Celebra-me">
@@ -54,6 +59,9 @@ const atelierName = getPromoPackage('atelier').name;
 				<h2>5. Pago</h2>
 				<p>
 					Los precios de nuestros servicios se muestran en pesos mexicanos (MXN) y se cubren en un pago único. No solicitamos anticipo: usted revisa su invitación 100 % terminada con un Invitado de prueba y paga al aprobarla; en ese momento se activa su panel de invitados. En caso de solicitar un reembolso, este será evaluado caso por caso según el estado del proyecto.
+				</p>
+				<p>
+					Respetamos el precio vigente el día en que nos escribe por WhatsApp, incluido el de una promoción, siempre que apruebe y pague su invitación dentro de los {PRICE_HOLD_DAYS} días siguientes. Después de ese plazo aplica el precio vigente el día del pago.
 				</p>
 
 				<h2>6. Entrega</h2>

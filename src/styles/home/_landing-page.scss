@@ -65,12 +65,12 @@ html {
 
 // ---------------------------------------------------------------------------
 // Promo visibility
-// The prerendered landing always ships the promo; PromoStatus.astro sets
-// html[data-promo-state='expired'] once the campaign ends in the visitor's browser.
+// The prerendered landing ships the campaign of the build day; PromoStatus.astro sets
+// html[data-promo-state='none'] when no promo calendar row is active on the visitor's date.
 // ---------------------------------------------------------------------------
 
-html:not([data-promo-state='expired']) [data-promo-fallback],
-html[data-promo-state='expired'] [data-promo-only] {
+html:not([data-promo-state='none']) [data-promo-fallback],
+html[data-promo-state='none'] [data-promo-only] {
 	display: none;
 }
 
