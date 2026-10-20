@@ -12,11 +12,10 @@ import {
 	type CampaignSection,
 	type PromoPackageId,
 } from '@/data/promo-campaign.data';
-import { isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { getWhatsAppLink } from '@/utils/whatsapp';
 
 interface Props {
 	className?: string;
-	phone?: string;
 	message?: string;
 	label?: string;
 	trackSection?: string;
@@ -43,7 +42,6 @@ interface Props {
 
 const {
 	className = '',
-	phone: explicitPhone,
 	message: explicitMessage,
 	label = 'Cotizar por WhatsApp',
 	trackSection = 'hero',
@@ -72,16 +70,10 @@ const campaignCode = trackCampaign ?? (promoCode ? buildCampaignCode(campaignSec
 const currency = trackCurrency ?? (promoValue !== undefined ? PROMO_CAMPAIGN.currency : undefined);
 const message = explicitMessage ?? (pkg ? buildPackageMessage(pkg) : buildGeneralMessage());
 
-// If no phone is explicitly provided, fall back to empty string (caller provides phone).
-// If the phone is a placeholder, hide the CTA to avoid broken links.
-const phone = explicitPhone || '';
-const isPlaceholder = phone ? isPlaceholderContactPhone(phone) : true;
-const shouldRender = !isPlaceholder || import.meta.env.DEV;
-const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : phone;
-const whatsappUrl = shouldRender ? `https://wa.me/${displayPhone}${message ? `?text=${encodeURIComponent(message)}` : ''}` : '';
+// Prerendered pages get the /api/whatsapp redirect, which reads the Worker secret at request time.
+const whatsappUrl = getWhatsAppLink(message);
 ---
 
-{shouldRender && (
 <a
 	href={whatsappUrl}
 	target="_blank"
@@ -102,10 +94,8 @@ const whatsappUrl = shouldRender ? `https://wa.me/${displayPhone}${message ? `?t
 	data-event-label={eventLabel}
 	data-track-value={promoValue}
 	data-track-currency={currency}
-	data-phone={phone}
 	data-preserve-message={preserveMessage ? 'true' : undefined}
 >
 	<Icon name="WhatsApp" size={20} />
 	<slot>{label}</slot>
 </a>
-)}

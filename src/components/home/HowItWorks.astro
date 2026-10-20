@@ -5,7 +5,6 @@ import Section from '@/components/layout/Section.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 
 import type { HowItWorksData } from '@/interfaces/ui/sections/landing-page.interface';
-import { getContactPhone } from '@/utils/whatsapp';
 
 import '@/styles/home/_how-it-works.scss';
 
@@ -14,7 +13,6 @@ interface Props {
 }
 
 const { data } = Astro.props;
-const phone = getContactPhone();
 ---
 
 <Section
@@ -52,7 +50,6 @@ const phone = getContactPhone();
 				<div class="how-it-works__actions reveal-fade-up stagger-4">
 					<WhatsAppButton
 						className="how-it-works__cta"
-						phone={phone}
 						label={data.cta.label}
 						trackSection="how-it-works"
 						trackCta="whatsapp-process"

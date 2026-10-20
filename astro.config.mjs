@@ -11,7 +11,6 @@ import {
 	parseDeployEnvironment,
 } from './scripts/shared/celebra-runtime-env.ts';
 import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
-import { assertProductionContactPhone } from './src/utils/contact-phone.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
 import { SECURITY_HEADERS } from './src/lib/server/security-headers.ts';
 import { appendStaticSecurityHeaders } from './scripts/shared/cloudflare-static-headers.ts';
@@ -24,12 +23,6 @@ const usesCloudflareAdapter = isBuildCommand || process.argv.includes('preview')
 // Hosted builds declare their deploy identity; local processes never do. An invalid
 // declaration fails the build instead of producing a bundle that throws at runtime.
 const isHostedBuild = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV) !== null;
-if (isBuildCommand) {
-	assertProductionContactPhone(
-		parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV),
-		process.env.CONTACT_WHATSAPP,
-	);
-}
 // Build identity reported by /api/health. GitHub Actions exposes GITHUB_SHA.
 const buildCommitSha = process.env.GITHUB_SHA || '';
 const buildGitRef = process.env.GITHUB_REF_NAME || '';
