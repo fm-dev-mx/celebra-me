@@ -570,6 +570,7 @@ const PGTAP_FILES = [
 	'invitation_access_controls.test.sql',
 	'platform_usage_snapshots.test.sql',
 	'platform_database_size.test.sql',
+	'guest_invitation_guest_code.test.sql',
 ];
 
 function cmdRunTests(): void {

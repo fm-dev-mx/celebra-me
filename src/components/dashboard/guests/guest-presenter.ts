@@ -649,6 +649,7 @@ export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: strin
 		eventSlug: item.eventSlug,
 		inviteId: item.inviteId,
 		shortId: item.shortId,
+		guestCode: item.guestCode,
 	});
 }
 

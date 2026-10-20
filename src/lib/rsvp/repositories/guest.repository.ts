@@ -214,6 +214,20 @@ export async function findGuestByShortIdPublic(
 		{ useServiceRole: true },
 	);
 }
+
+/** Guest codes are unique per event only, so the lookup is always scoped to one event. */
+export async function findGuestByEventAndCodePublic(
+	eventId: string,
+	guestCode: string,
+): Promise<GuestInvitationRecord | null> {
+	return findSingle(
+		TABLE,
+		`event_id=eq.${encodeURIComponent(eventId)}&guest_code=eq.${encodeURIComponent(guestCode)}&${ACTIVE_GUEST_FILTER}`,
+		GUEST_COLUMNS,
+		toGuestRecord,
+		{ useServiceRole: true },
+	);
+}
 export async function findGuestByPhoneAuth(
 	eventId: string,
 	countryCode: string,

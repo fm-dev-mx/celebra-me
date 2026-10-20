@@ -255,6 +255,60 @@ test.describe('shared envelope reveal interaction', () => {
 		);
 	});
 
+	test('plays music only on a tap and pauses it from the same control', async ({ page }) => {
+		// The demo's track has autoPlay false. Headless Chromium may lack the codec, so the media
+		// element reports its calls and fires the events a real playback would.
+		await page.route('**/*.mp3', (route) => route.fulfill({ status: 204, body: '' }));
+		await page.addInitScript(() => {
+			// Keep the cookie banner from covering the player.
+			window.localStorage.setItem(
+				'cm_consent',
+				JSON.stringify({
+					necessary: true,
+					analytics: false,
+					marketing: false,
+					updatedAt: new Date().toISOString(),
+				}),
+			);
+			const calls = { play: 0, pause: 0 };
+			(window as Window & { musicCalls?: typeof calls }).musicCalls = calls;
+			HTMLMediaElement.prototype.play = function play(this: HTMLMediaElement) {
+				calls.play += 1;
+				this.dispatchEvent(new Event('playing'));
+				return Promise.resolve();
+			};
+			HTMLMediaElement.prototype.pause = function pause(this: HTMLMediaElement) {
+				calls.pause += 1;
+				this.dispatchEvent(new Event('pause'));
+			};
+		});
+		const musicCalls = () =>
+			page.evaluate(
+				() =>
+					(window as Window & { musicCalls?: { play: number; pause: number } })
+						.musicCalls,
+			);
+
+		await page.goto('/xv/demo-xv-enchanted-rose?forceEnvelope=true', {
+			waitUntil: 'domcontentloaded',
+		});
+		await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
+		await expectRevealed(page);
+		const toggle = page.locator('[data-music-toggle]');
+		await expect(toggle).toHaveAttribute('aria-label', 'Música de fondo');
+		expect(await musicCalls()).toEqual({ play: 0, pause: 0 });
+
+		await toggle.click();
+		await expect(toggle).toHaveAttribute('aria-label', 'Pausar música');
+		await expect(toggle.locator('[data-icon-pause]')).toBeVisible();
+		expect(await musicCalls()).toEqual({ play: 1, pause: 0 });
+
+		await toggle.click();
+		await expect(toggle).toHaveAttribute('aria-label', 'Música de fondo');
+		await expect(toggle.locator('[data-icon-play]')).toBeVisible();
+		expect(await musicCalls()).toEqual({ play: 1, pause: 1 });
+	});
+
 	for (const route of representativeRoutes) {
 		test(`@extended reveals representative shared invitation ${route}`, async ({ page }) => {
 			await page.goto(route, { waitUntil: 'domcontentloaded' });

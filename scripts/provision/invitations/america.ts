@@ -319,6 +319,14 @@ const content: CanonicalEventContentInput = {
 			},
 		},
 	},
+	music: {
+		// Client pick, cut before the spoken lines (0:91) and crossfaded into its own intro, so the
+		// native loop has no audible seam.
+		url: 'https://media.celebra-me.com/invitations/xv/america/music-7fa910c9946d722de6405d406d045530ae5a453f1a43cceacec60fd5c67eb829.mp3',
+		title: 'Veo en ti la luz — Chayanne y Danna Paola',
+		// Starts with the envelope tap (inside the gesture, so mobile browsers allow it).
+		autoPlay: true,
+	},
 	thankYou: {
 		// Back at the same door, now seated: the story ends where it began, framed differently.
 		variant: 'portrait-keepsake',

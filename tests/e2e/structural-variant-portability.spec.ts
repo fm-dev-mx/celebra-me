@@ -24,7 +24,9 @@ import {
 import { hashVisualValue } from './harness/visual-parity-metadata';
 import {
 	assertVisualComparisonReady,
+	isVisualParityDeferred,
 	resolveVisualParityMode,
+	VISUAL_PARITY_DEFERRED_REASON,
 } from './harness/visual-baseline-policy';
 import { markVisualSuiteStarted, resolveVisualOutputRoot } from './harness/visual-capture-record';
 import {
@@ -102,6 +104,7 @@ test('certified comparison rejects a deliberately different rendered page', asyn
 test.describe('Registry-Driven Visual Portability Suite', () => {
 	// Captures are independent; the run teardown aggregates their records across workers.
 	test.describe.configure({ mode: 'parallel', retries: 0 });
+	test.skip(isVisualParityDeferred(), VISUAL_PARITY_DEFERRED_REASON);
 	test.beforeAll(() => markVisualSuiteStarted(resolveVisualOutputRoot(), 'variants'));
 	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {

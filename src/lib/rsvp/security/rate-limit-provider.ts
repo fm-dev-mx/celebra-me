@@ -9,7 +9,8 @@ export type RateLimitNamespace =
 	| 'auth'
 	| 'tracking'
 	| 'memories'
-	| 'engagement';
+	| 'engagement'
+	| 'guest-link';
 
 interface RateLimitRequest {
 	namespace: RateLimitNamespace;
@@ -20,6 +21,8 @@ interface RateLimitRequest {
 
 interface RateLimitBackend {
 	allow(request: RateLimitRequest): Promise<boolean>;
+	/** True while the key still has hits left; never consumes one. */
+	peek(request: RateLimitRequest): Promise<boolean>;
 }
 
 /**
@@ -62,6 +65,11 @@ class InMemoryBackend implements RateLimitBackend {
 		this.buckets.set(request.key, current);
 		return true;
 	}
+
+	async peek(request: RateLimitRequest): Promise<boolean> {
+		const current = this.buckets.get(request.key);
+		return !current || current.resetAt <= Date.now() || current.count < request.maxHits;
+	}
 }
 
 /**
@@ -93,6 +101,16 @@ class BindingBackend implements RateLimitBackend {
 		}
 		const { success } = await binding.limit({ key: request.key });
 		return success;
+	}
+
+	/**
+	 * Workers bindings cannot be read without counting a hit, so a bound combination always
+	 * peeks open. Bindings only support 10 s and 60 s periods; longer windows use the buckets.
+	 */
+	async peek(request: RateLimitRequest): Promise<boolean> {
+		const name = rateLimitBindingName(request.namespace, request.maxHits, request.windowSec);
+		if (this.bindings.has(name)) return true;
+		return this.fallback.peek(request);
 	}
 }
 
@@ -139,22 +157,37 @@ export function hashIp(ip: string): string {
 		.slice(0, 16);
 }
 
-export async function checkRateLimit(input: {
+interface RateLimitInput {
 	namespace: RateLimitNamespace;
 	entityId: string;
 	ip?: string;
 	maxHits: number;
 	windowSec: number;
-}): Promise<boolean> {
+}
+
+function toRateLimitRequest(input: RateLimitInput): RateLimitRequest {
 	const key = input.ip
 		? `${input.namespace}:${input.entityId}:${hashIp(input.ip)}`
 		: `${input.namespace}:${input.entityId}`;
-	return resolveBackend().allow({
+	return {
 		namespace: input.namespace,
 		key,
 		maxHits: input.maxHits,
 		windowSec: input.windowSec,
-	});
+	};
+}
+
+export async function checkRateLimit(input: RateLimitInput): Promise<boolean> {
+	return resolveBackend().allow(toRateLimitRequest(input));
+}
+
+/**
+ * Reads whether `checkRateLimit` with the same input would still allow a hit, without counting
+ * one. Lets a caller count only failures (e.g. unknown codes) and still block every request
+ * once the failures run out.
+ */
+export async function peekRateLimit(input: RateLimitInput): Promise<boolean> {
+	return resolveBackend().peek(toRateLimitRequest(input));
 }
 
 export function resetRateLimitProviderForTests(): void {

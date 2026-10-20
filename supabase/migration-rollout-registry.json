@@ -255,6 +255,16 @@
             "provides": ["invitation_assets_remote_fields_complete"],
             "revokes": ["invitation_assets_cloudinary_provider"],
             "notes": "Narrows invitation_assets_provider_valid to ('supabase', 'r2') for live rows and replaces invitation_assets_cloudinary_fields_complete with invitation_assets_remote_fields_complete (same object key and secure URL rule, live R2 rows only); soft-deleted rows (deleted_at set) may keep the retired provider. Both checks are added validated. Aborts without changing rows if any live provider='cloudinary' row remains. The application no longer reads or writes Cloudinary rows. Apply after 20261015220000 and never in the same release as a newly published invitation."
+        },
+        "20261020120000": {
+            "phase": "expand",
+            "provides": ["guest_invitations_guest_code"],
+            "notes": "Adds guest_invitations.guest_code (4 characters from an alphabet without 0/o/1/l/i, unique per event_id, NOT NULL after backfill), generate_guest_code(uuid) and a BEFORE INSERT trigger that assigns the code on every insert path under a per-event advisory lock. Backfills every existing guest, soft-deleted rows included. Additive: short_id and /i/{short_id} are untouched, and the deployed application keeps inserting guests without naming the column. Revokes only initialize privileges of the new functions. Must be applied before the application that reads guest_code is deployed."
+        },
+        "20261020130000": {
+            "phase": "expand",
+            "provides": ["events_guest_code_links"],
+            "notes": "Adds events.guest_code_links (boolean, NOT NULL). Existing events get false, then the default turns true so events created afterwards opt in; america and olivia-y-antonio are set to true. Additive: the deployed application does not read the column. Apply together with 20261020120000, before the application that reads it is deployed."
         }
     },
     "appCapabilities": {
@@ -290,6 +300,9 @@
         },
         "legacy_invitation_columns_retired_client": {
             "requiresDbCapabilities": ["publication_metadata_hash_without_legacy_columns"]
+        },
+        "guest_link_code_client": {
+            "requiresDbCapabilities": ["guest_invitations_guest_code", "events_guest_code_links"]
         }
     }
 }

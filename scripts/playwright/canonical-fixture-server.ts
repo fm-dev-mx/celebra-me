@@ -19,6 +19,7 @@ import {
 	CANONICAL_ACCESS_FIXTURE_SLUGS,
 	canonicalAccessStateFor,
 } from './canonical-access-fixture.ts';
+import { CANONICAL_HOST_ACCESS_TOKEN, buildCanonicalHostUser } from './canonical-host-fixture.ts';
 
 if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true') {
 	throw new Error('Canonical fixtures require explicit PLAYWRIGHT_USE_CANONICAL_FIXTURES=true.');
@@ -101,11 +102,16 @@ function accessRowFor(invitationId: string): Record<string, unknown> {
 	};
 }
 
-function resolveFixtureResult(url: URL): unknown {
+function resolveFixtureResult(url: URL, authorization: string | undefined): unknown {
 	switch (url.pathname) {
 		case '/health':
 		case '/auth/v1/health':
 			return { fixture: true, publications: publications.length };
+		case '/auth/v1/user':
+			// Only the synthetic host token resolves; any other token stays unsupported.
+			return authorization === `Bearer ${CANONICAL_HOST_ACCESS_TOKEN}`
+				? buildCanonicalHostUser()
+				: UNSUPPORTED;
 		case '/rest/v1/published_invitation_content': {
 			const slug = eqParam(url, 'slug');
 			const eventType = eqParam(url, 'event_type');
@@ -143,7 +149,7 @@ const server = createServer((request, response) => {
 		response.end(request.method === 'HEAD' ? undefined : asset.bytes);
 		return;
 	}
-	const result = resolveFixtureResult(url);
+	const result = resolveFixtureResult(url, request.headers.authorization);
 	if (result === UNSUPPORTED) {
 		response.writeHead(404).end('Unsupported fixture request.');
 		return;

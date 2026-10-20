@@ -3,7 +3,10 @@
 // The lower half of a printed reply card, continuing the `reply-card` personalized access
 // above it: the heading, two answers as 56 px choices in the text face, the optional message
 // and one button. No eyebrow, no shadows between halves, readable demo note.
-// Tokens: see personalized-access/_reply-card.scss (--reply-card-*).
+// Tokens: see personalized-access/_reply-card.scss (--reply-card-*), plus:
+//   --reply-card-option-rule / -option-hover-rule / -option-checked-rule
+//                          Borders of the two answers (default the rule, muted and ink)
+//   --reply-card-mask-locked  Mask of the card standing alone (default the lower-half mask)
 // ==========================================================================
 
 .rsvp-section:has(.rsvp[data-variant='reply-card']) {
@@ -124,7 +127,7 @@
 		gap: 0.9rem;
 		min-height: 56px;
 		padding: 0 1rem;
-		border: 1px solid var(--reply-card-rule, rgb(16 24 32 / 22%));
+		border: 1px solid var(--reply-card-option-rule, var(--reply-card-rule, rgb(16 24 32 / 22%)));
 		border-radius: 0;
 		background: var(--reply-card-option-bg, rgb(255 255 255 / 70%));
 		box-shadow: none;
@@ -137,11 +140,17 @@
 		cursor: pointer;
 
 		&:hover {
-			border-color: var(--reply-card-muted, var(--color-text-secondary));
+			border-color: var(
+				--reply-card-option-hover-rule,
+				var(--reply-card-muted, var(--color-text-secondary))
+			);
 		}
 
 		&:has(input:checked) {
-			border-color: var(--reply-card-ink, var(--color-text-primary));
+			border-color: var(
+				--reply-card-option-checked-rule,
+				var(--reply-card-ink, var(--color-text-primary))
+			);
 		}
 
 		&:has(input:focus-visible) {
@@ -210,8 +219,10 @@
 	text-align: center;
 
 	// A deckle may close all four edges here (`--reply-card-mask-locked-size: 100% 100%`); by
-	// default the card keeps the lower half of the shared mask.
-	mask-size: var(--reply-card-mask-locked-size, 100% 200%);
+	// default the card keeps the lower half of the shared mask. A mask made for the seam (ticket
+	// punches, say) can be swapped for another with --reply-card-mask-locked.
+	mask: var(--reply-card-mask-locked, var(--reply-card-mask-lower, none)) center bottom /
+		var(--reply-card-mask-locked-size, 100% 200%) no-repeat;
 
 	&::before {
 		inset: clamp(0.6rem, 2.4vw, 0.85rem);

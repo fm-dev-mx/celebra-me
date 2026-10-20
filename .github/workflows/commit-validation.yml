@@ -4,8 +4,9 @@ permissions:
     contents: read
     actions: read
 
+# The event keeps the nightly dispatch on develop and a develop push from cancelling each other.
 concurrency:
-    group: repository-ci-${{ github.event.pull_request.number || github.ref }}
+    group: repository-ci-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}
     cancel-in-progress: true
 
 on:
@@ -340,6 +341,10 @@ jobs:
               id: browser-checks
               if: github.event.inputs.visual_mode != 'candidate'
               continue-on-error: true
+              # A pull request into develop skips the complete visual parity suites; the develop
+              # push, release promotions and the nightly dispatch (nightly-visual-parity.yml) run them.
+              env:
+                  VISUAL_PARITY_DEFERRED: ${{ github.event_name == 'pull_request' && github.base_ref == 'develop' }}
               run: pnpm test:e2e:ci --max-failures=5 --workers=4
 
             - name: Classify browser outcome

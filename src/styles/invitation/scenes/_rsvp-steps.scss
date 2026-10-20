@@ -11,6 +11,7 @@
 //   --rsvp-steps-lantern      Lantern color
 //   --rsvp-steps-glow         Lantern light
 //   --rsvp-steps-ink / -muted Heading and step count
+//   --rsvp-steps-heading-align  Step heading alignment (default inherited)
 // ==========================================================================
 
 // A paper lantern's outline: a little fuller below than above.
@@ -105,6 +106,7 @@ $lantern-shape: 40% 40% 45% 45%;
 			font-size: tokens.$font-size-h3;
 			font-weight: 400;
 			line-height: 1.2;
+			text-align: var(--rsvp-steps-heading-align);
 			color: var(--rsvp-steps-ink);
 
 			&:focus {
@@ -120,6 +122,11 @@ $lantern-shape: 40% 40% 45% 45%;
 		.rsvp-steps__panel {
 			display: grid;
 			gap: 1rem;
+		}
+
+		// The first step has no buttons (an answer moves on), so its empty row leaves no gap.
+		.rsvp-steps__actions:empty {
+			display: none;
 		}
 
 		.rsvp-steps__actions {

@@ -179,10 +179,10 @@ Playwright setup) must be registered as a knip `entry` instead of being ignored.
 
 Opt-in browser suites outside `pnpm test:e2e:ci`: `pnpm test:e2e:extended` runs generic contracts
 (motion, progressive visibility, gallery rail, raster seal, managed countdown, location navigation,
-RSVP flow, login labels) and the authoring guards of invitations that are still active or in
-progress. Run it when a change touches those surfaces or before publishing one of those invitations,
-and delete a client guard when its invitation expires (event date + 1 year). `pnpm test:e2e:ga4`
-covers the consent banner and `gtag` loader (see
+login labels) and the authoring guards of invitations that are still active or in progress. Run it
+when a change touches those surfaces or before publishing one of those invitations, and delete a
+client guard when its invitation expires (event date + 1 year). `pnpm test:e2e:ga4` covers the
+consent banner and `gtag` loader (see
 [commercial attribution](../domains/tracking/commercial-attribution.md#ga4-status)).
 
 The `Application / browser memories` job runs `pnpm test:e2e:memories` beside
@@ -265,6 +265,21 @@ between. Pull requests into `main`, manual dispatches, an unreadable history or 
 browser input run the tier. A run that skipped the tier records a `skipped` browser job, so it is
 never a source for evidence reuse or for a later scope assessment; the release pull request then
 runs every tier.
+
+When a pull request into `develop` runs the browser tier, it skips the two complete visual parity
+suites (`canonical-invitation-page-parity` and `structural-variant-portability`): the browser step
+sets `VISUAL_PARITY_DEFERRED=true` and both suites call `test.skip`, while every other browser check
+still runs. The host guest import flow (`guest-import-flow.spec.ts`) follows the same gate; it signs
+in with the synthetic host token of the canonical fixture transport and mocks every dashboard API.
+The `develop` push, pull requests into `main`, manual dispatches and the nightly
+`Nightly Visual Parity` workflow (`nightly-visual-parity.yml`, 08:30 UTC) run them in full. The
+nightly workflow dispatches Repository CI on `develop`, waits for it and opens or comments an issue
+titled «CI nocturna: la paridad visual completa de develop falló» when it fails; it closes that
+issue after the next green night. Scheduled workflows run from `main`, so the nightly run starts
+after the release that carries it. A branch that changes rendered invitations still generates a
+candidate and accepts new references before merge (see
+[visual certification](#visual-certification-and-candidates)); the pull request no longer catches a
+missed reference, the next `develop` push or night does.
 
 Evidence is reusable only for the same SHA, range, configuration, runtime and command. A new final
 integration SHA, changed inputs or an unresolved failure justifies revalidation; PR merge-SHA

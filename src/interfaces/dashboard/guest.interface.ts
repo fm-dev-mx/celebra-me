@@ -36,6 +36,7 @@ export interface DashboardGuestItem {
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	shortId?: string;
+	guestCode?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
 	/** Test guest: excluded from totals, funnel, and engagement snapshots. */

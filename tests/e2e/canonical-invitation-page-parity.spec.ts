@@ -16,7 +16,9 @@ import {
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release';
 import {
 	assertVisualComparisonReady,
+	isVisualParityDeferred,
 	resolveVisualParityMode,
+	VISUAL_PARITY_DEFERRED_REASON,
 } from './harness/visual-baseline-policy';
 import { markVisualSuiteStarted, resolveVisualOutputRoot } from './harness/visual-capture-record';
 import {
@@ -80,6 +82,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 	// Captures are independent; each writes its own record and the run teardown aggregates them,
 	// so they spread across workers instead of holding one worker for the whole suite.
 	test.describe.configure({ mode: 'parallel', retries: 0 });
+	test.skip(isVisualParityDeferred(), VISUAL_PARITY_DEFERRED_REASON);
 	test.beforeAll(() => markVisualSuiteStarted(resolveVisualOutputRoot(), 'pages'));
 	for (const entry of PAGE_CASES) {
 		for (const viewport of VIEWPORTS) {

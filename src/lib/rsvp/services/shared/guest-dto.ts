@@ -15,6 +15,8 @@ export interface ToGuestDtoOptions {
 	eventTitle?: string;
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
+	/** The event shares /{slug}/{guestCode} links; otherwise links stay /i/{shortId}. */
+	guestCodeLinks?: boolean;
 	shareMessages?: ShareMessagesConfig | null;
 	eventDate?: string | null;
 	rsvpDeadline?: string | null;
@@ -30,6 +32,8 @@ export function toGuestDto(
 		deliveryStatus: guest.deliveryStatus,
 	});
 
+	const guestCode = options.guestCodeLinks ? guest.guestCode : undefined;
+
 	const messageOptions = {
 		origin: options.origin,
 		inviteId: guest.inviteId,
@@ -37,6 +41,7 @@ export function toGuestDto(
 		fullName: guest.fullName,
 		eventTitle: options.eventTitle,
 		shortId: guest.shortId,
+		guestCode,
 		eventType: options.eventType,
 		eventSlug: options.eventSlug,
 		shareMessages: options.shareMessages,
@@ -71,6 +76,7 @@ export function toGuestDto(
 		eventType: options.eventType,
 		eventSlug: options.eventSlug,
 		shortId: guest.shortId,
+		guestCode,
 		lastReminderSentAt: guest.lastReminderSentAt,
 		isTest: guest.isTest ?? false,
 		openCount: guest.openCount ?? 0,

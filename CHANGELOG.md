@@ -10,6 +10,38 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.39.0-beta.1] - 2026-10-20
+
+Guest links read as `/{slug}/{code}` for new invitations, and Olivia y Antonio and America get a
+calmer envelope, a slower gallery and a refined reply ticket and footer. Two expand migrations
+(`20261020120000`, `20261020130000`).
+
+### Added
+
+- Guest links `/{slug}/{guestCode}` (4 characters, unique per invitation) for invitations flagged by
+  `events.guest_code_links`: America, Olivia y Antonio and every invitation created from 2026-10-20.
+  Older invitations keep `/i/{shortId}`, which still resolves. After 20 unknown codes per connection
+  and hour both forms answer 429 (#401).
+- Nightly full visual parity run on `develop` that opens an issue when it fails (#400).
+
+### Changed
+
+- Complete visual parity no longer runs on pull requests into `develop`; the `develop` push, pull
+  requests into `main` and the nightly run keep it. RSVP and the host guest import flow join the
+  browser CI suite (#400, #402).
+- Olivia y Antonio: one gesture at a time in the envelope opening, a slower pinned gallery and the
+  footer reply gap of America (#398).
+- America: pass and reply cut at the perforation with a sun crest and a gold seat ring, and a
+  three-tier footer (#399).
+- Songs for Olivia y Antonio and America (#394, #397), already published to Production as content
+  after v0.38.
+
+### Database / Migrations
+
+- `20261020120000` adds `guest_invitations.guest_code` with a per-event unique code assigned by an
+  insert trigger and backfilled for existing guests; `20261020130000` adds
+  `events.guest_code_links`.
+
 ## [0.38.0-beta.1] - 2026-10-20
 
 The primary sales button says «Quiero mi invitación», landing prices follow a dated promo calendar,

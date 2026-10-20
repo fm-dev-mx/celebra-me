@@ -1,5 +1,8 @@
-import { getInvitationContextByShortId } from '@/lib/rsvp/services/invitation-context.service';
-import { buildInvitationPath } from '@/utils/invitation-link';
+import {
+	getInvitationContextBySlugAndCode,
+	getInvitationContextByShortId,
+} from '@/lib/rsvp/services/invitation-context.service';
+import { buildGuestCodePath, buildInvitationPath } from '@/utils/invitation-link';
 import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 import { buildLayoutData } from '@/lib/invitation/page-data';
 import { isSocialCrawler } from '@/lib/social/social-crawler';
@@ -10,6 +13,11 @@ import {
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
 import { UNAVAILABLE_INVITATION_ROBOTS } from '@/lib/invitation/access/invitation-access';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { isGuestLinkBlocked, recordGuestLinkFailure } from '@/lib/invitation/guest-link-rate-limit';
+
+/** Seconds a blocked connection waits: the failed-code window. */
+const GUEST_LINK_RETRY_AFTER = '3600';
 
 const SHORT_ID_PRIVATE_HEADERS = {
 	'Cache-Control': 'no-store, private',
@@ -33,7 +41,8 @@ export type ShortIdResolution =
 	  }
 	/** Crawler asking for a disabled invitation: no metadata at all. */
 	| { kind: 'unavailable' }
-	| { kind: 'error' };
+	/** `notFound`: the code matched no guest (counts toward the failed-code limit). */
+	| { kind: 'error'; notFound: boolean };
 
 /**
  * Convenience wrapper around resolveShortIdRequest that returns a page-friendly
@@ -43,6 +52,8 @@ export type ShortIdResolution =
  */
 export type ShortIdPageResult =
 	| { kind: 'error' }
+	/** Too many unknown codes from this connection. */
+	| { kind: 'blocked' }
 	| { kind: 'unavailable' }
 	| { kind: 'redirect'; target: string }
 	| { kind: 'render'; ogData: ShortIdOGData; canonicalUrl: string; redirectTarget: string };
@@ -72,6 +83,12 @@ export function buildShortIdEarlyResponse(
 	if (result.kind === 'error') {
 		return new Response(null, { status: 404, headers: SHORT_ID_PRIVATE_HEADERS });
 	}
+	if (result.kind === 'blocked') {
+		return new Response(null, {
+			status: 429,
+			headers: { ...SHORT_ID_PRIVATE_HEADERS, 'Retry-After': GUEST_LINK_RETRY_AFTER },
+		});
+	}
 	if (result.kind === 'redirect') {
 		return new Response(null, {
 			status: 302,
@@ -93,11 +110,44 @@ export async function resolveShortIdPage(
 	request: Request,
 	siteOrigin: string,
 ): Promise<ShortIdPageResult> {
-	const userAgent = request.headers.get('user-agent') || '';
-	const resolution = await resolveShortIdRequest(shortId, userAgent, siteOrigin);
+	return resolveGuestLinkPage(request, (userAgent) =>
+		resolveShortIdRequest(shortId, userAgent, siteOrigin),
+	);
+}
 
-	if (resolution.kind === 'error' || resolution.kind === 'unavailable') {
-		return { kind: resolution.kind };
+/** `/{slug}/{guestCode}`: same behaviour as `/i/{shortId}`, scoped to one invitation. */
+export async function resolveGuestCodePage(
+	eventSlug: string | undefined,
+	guestCode: string | undefined,
+	request: Request,
+	siteOrigin: string,
+): Promise<ShortIdPageResult> {
+	return resolveGuestLinkPage(request, (userAgent) =>
+		resolveGuestCodeRequest(eventSlug, guestCode, userAgent, siteOrigin),
+	);
+}
+
+/**
+ * Shared page flow of both guest link forms: a connection that already spent its failed-code
+ * allowance is refused before any lookup, and every unknown code counts against it.
+ */
+async function resolveGuestLinkPage(
+	request: Request,
+	resolve: (userAgent: string) => Promise<ShortIdResolution>,
+): Promise<ShortIdPageResult> {
+	if (await isGuestLinkBlocked(request)) {
+		return { kind: 'blocked' };
+	}
+
+	const userAgent = request.headers.get('user-agent') || '';
+	const resolution = await resolve(userAgent);
+
+	if (resolution.kind === 'error') {
+		if (resolution.notFound) await recordGuestLinkFailure(request);
+		return { kind: 'error' };
+	}
+	if (resolution.kind === 'unavailable') {
+		return { kind: 'unavailable' };
 	}
 	if (resolution.kind === 'redirect') {
 		return { kind: 'redirect', target: resolution.redirectTarget };
@@ -111,25 +161,63 @@ export async function resolveShortIdPage(
 	};
 }
 
+type GuestLinkContext = Awaited<ReturnType<typeof getInvitationContextByShortId>>;
+
+/** A 400/404 from the lookup means the code is wrong; anything else is an outage. */
+function isUnknownCodeError(error: unknown): boolean {
+	return error instanceof ApiError && (error.status === 400 || error.status === 404);
+}
+
 export async function resolveShortIdRequest(
 	shortId: string | undefined,
 	userAgent: string,
 	siteOrigin: string,
 ): Promise<ShortIdResolution> {
 	if (!shortId) {
-		return { kind: 'error' };
+		return { kind: 'error', notFound: true };
 	}
+	return resolveGuestLinkRequest(
+		() => getInvitationContextByShortId(shortId),
+		`/i/${shortId}`,
+		userAgent,
+		siteOrigin,
+	);
+}
 
+export async function resolveGuestCodeRequest(
+	eventSlug: string | undefined,
+	guestCode: string | undefined,
+	userAgent: string,
+	siteOrigin: string,
+): Promise<ShortIdResolution> {
+	if (!eventSlug || !guestCode) {
+		return { kind: 'error', notFound: true };
+	}
+	return resolveGuestLinkRequest(
+		() => getInvitationContextBySlugAndCode(eventSlug, guestCode),
+		buildGuestCodePath(eventSlug, guestCode),
+		userAgent,
+		siteOrigin,
+	);
+}
+
+async function resolveGuestLinkRequest(
+	lookup: () => Promise<GuestLinkContext>,
+	canonicalPath: string,
+	userAgent: string,
+	siteOrigin: string,
+): Promise<ShortIdResolution> {
 	let context;
 	try {
-		context = await getInvitationContextByShortId(shortId);
+		context = await lookup();
 	} catch (error) {
-		console.error('[invitation][shortId] Error:', error);
-		return { kind: 'error' };
+		const notFound = isUnknownCodeError(error);
+		if (!notFound) console.error('[invitation][shortId] Error:', error);
+		return { kind: 'error', notFound };
 	}
 
 	if (!context.inviteId) {
-		return { kind: 'error' };
+		return { kind: 'error', notFound: true };
 	}
 
 	const redirectTarget = buildInvitationPath({
@@ -137,7 +225,7 @@ export async function resolveShortIdRequest(
 		eventSlug: context.eventSlug,
 		inviteId: context.inviteId,
 	});
-	const canonicalUrl = new URL(`/i/${shortId}`, siteOrigin).href;
+	const canonicalUrl = new URL(canonicalPath, siteOrigin).href;
 
 	if (!isSocialCrawler(userAgent)) {
 		return {

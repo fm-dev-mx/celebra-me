@@ -9,19 +9,53 @@
 //   --footer-logo-filter        Filter on the brand logo
 //   --footer-contact-border / -bg / -padding  Contact link outline, fill and padding
 //   --invitation-footer-reply   `on`: the reply at the end (see .footer-reply below)
+//   --footer-sky                Layers drawn over the footer's ground and under its content, for
+//                               example a star field (default none)
+//   --footer-sky-twinkle        Keyframes on that layer (default none); `footer-sky-twinkle`
+//                               lets it breathe slowly, without reduced motion
+//   --footer-padding-bottom     Space under the last line (default 2rem), e.g. to clear a
+//                               floating control in the corner
 
 .invitation-footer {
+	position: relative;
+	isolation: isolate;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	width: 100%;
-	padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom, 0px));
+	padding: 2rem 1.25rem
+		calc(var(--footer-padding-bottom, 2rem) + env(safe-area-inset-bottom, 0px));
 	font-family: var(--font-body);
 	color: var(--color-text-primary);
 	border-top: 1px solid var(--footer-border-color, var(--color-border-subtle));
 	background-color: var(--footer-bg, var(--color-surface-primary));
 	transition: opacity var(--transition-snappy);
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--footer-sky, none);
+		pointer-events: none;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.invitation-footer::before {
+		animation: var(--footer-sky-twinkle, none) 5s ease-in-out infinite alternate;
+	}
+}
+
+@keyframes footer-sky-twinkle {
+	0% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 45%;
+	}
 }
 
 // Held at the end of the invitation: out of view but still in the reading and focus order, so a
