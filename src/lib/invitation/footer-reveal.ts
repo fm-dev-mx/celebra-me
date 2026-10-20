@@ -50,6 +50,12 @@ function createPullCue(footer: HTMLElement): HTMLElement {
 	const cue = document.createElement('div');
 	cue.className = 'footer-pull';
 	cue.setAttribute('aria-hidden', 'true');
+	// A pool of light at the edge and an optional label (its words come from the profile).
+	for (const part of ['light', 'label']) {
+		const span = document.createElement('span');
+		span.className = `footer-pull__${part}`;
+		cue.append(span);
+	}
 	footer.before(cue);
 	return cue;
 }
@@ -136,6 +142,8 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		const y = event.touches[0]?.clientY;
 		if (touchStartY === null || y === undefined) return;
 		pull(pullProgress(touchStartY - y, TOUCH_PULL_PX));
+		// A short tick where the phone supports it, as the lantern lets go.
+		if (opened && cue) navigator.vibrate?.(12);
 	};
 	const onTouchEnd = () => {
 		if (touchStartY === null) return;

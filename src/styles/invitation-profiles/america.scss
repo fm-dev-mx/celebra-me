@@ -150,6 +150,29 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-shine-range-godparents: entry 100% cover 55%;
 	--family-shine-glow: rgb(232 160 64 / 45%);
 	--family-divider-draw: family-divider-draw;
+
+	// The last lantern: it waits larger at the bottom of the closing, breathing, with a line
+	// that asks for the pull; pulling lights the edge of the night until it lets go.
+	--footer-pull-scale: 1.7;
+	--footer-pull-body:
+		radial-gradient(
+			circle at 50% 65%,
+			rgb(255 236 196) 0,
+			rgb(243 196 112) 35%,
+			transparent 75%
+		),
+		repeating-linear-gradient(90deg, transparent 0 22%, rgb(170 100 30 / 35%) 22% 26%),
+		rgb(232 160 64);
+	--footer-pull-glow: rgb(232 160 64 / 45%);
+	--footer-pull-pool: radial-gradient(
+		ellipse 60% 100% at 50% 100%,
+		rgb(232 160 64 / 26%),
+		transparent 70%
+	);
+	--footer-pull-label: 'Deslice hacia arriba para encender la última linterna';
+	--footer-pull-label-color: rgb(var(--america-night-gold-rgb) / 85%);
+	--footer-pull-label-size: var(--america-label-size);
+	--footer-pull-breathe: footer-pull-breathe;
 	--location-intro-heading-size: var(--america-title-size);
 	--location-intro-heading-line-height: 1.1;
 	--location-enclosure-heading-line-height: 1.1;
