@@ -108,6 +108,8 @@ jobs:
                   PUBLIC_META_PIXEL_ID: ${{ vars.PRODUCTION_PUBLIC_META_PIXEL_ID }}
                   PUBLIC_META_PIXEL_ENABLED: ${{ vars.PRODUCTION_PUBLIC_META_PIXEL_ENABLED }}
                   PUBLIC_CF_WEB_ANALYTICS_TOKEN: ${{ vars.PRODUCTION_PUBLIC_CF_WEB_ANALYTICS_TOKEN }}
+                  # Inlined at build time; the Worker secret of the same name never reaches the prerendered home page.
+                  CONTACT_WHATSAPP: ${{ vars.PRODUCTION_CONTACT_WHATSAPP }}
               run: pnpm build:app
 
             - name: Create GitHub deployment

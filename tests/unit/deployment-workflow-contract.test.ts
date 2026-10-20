@@ -138,5 +138,7 @@ describe('Cloudflare Production upload workflow contract', () => {
 		const buildEnv = build.slice(0, build.indexOf('run: pnpm build:app'));
 		expect(buildEnv).not.toMatch(/(?:secrets|vars)\.PUBLIC_/u);
 		expect(buildEnv).toContain('CELEBRA_DEPLOY_ENV: production');
+		// The prerendered home page inlines the number at build time; the Worker secret never reaches it.
+		expect(buildEnv).toContain('CONTACT_WHATSAPP: ${{ vars.PRODUCTION_CONTACT_WHATSAPP }}');
 	});
 });

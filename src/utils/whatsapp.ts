@@ -1,4 +1,6 @@
-const FALLBACK_PHONE = '521000000000';
+import { PLACEHOLDER_CONTACT_PHONE } from './contact-phone';
+
+const FALLBACK_PHONE = PLACEHOLDER_CONTACT_PHONE;
 
 export function getContactPhone(): string {
 	return import.meta.env.CONTACT_WHATSAPP || FALLBACK_PHONE;

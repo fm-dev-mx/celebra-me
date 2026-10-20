@@ -74,6 +74,7 @@ jobs:
                   PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
                   PUBLIC_META_PIXEL_ID: ${{ vars.PUBLIC_META_PIXEL_ID }}
                   PUBLIC_META_PIXEL_ENABLED: ${{ vars.PUBLIC_META_PIXEL_ENABLED }}
+                  CONTACT_WHATSAPP: ${{ vars.CONTACT_WHATSAPP }}
               run: pnpm build:app
 
             - name: Create GitHub deployment
