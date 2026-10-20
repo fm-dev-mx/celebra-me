@@ -108,10 +108,10 @@ test.describe('Landing page regressions', () => {
 				loginHref,
 			);
 			const menuCta = page.locator('.mobile-nav-actions__cta');
-			await expect(menuCta).toHaveText('Cotizar mi invitación');
+			await expect(menuCta).toHaveText('Quiero mi invitación');
 			await expect(menuCta).toHaveAttribute(
 				'aria-label',
-				'Cotizar mi invitación por WhatsApp',
+				'Quiero mi invitación por WhatsApp',
 			);
 			await expect(menuCta).toHaveAttribute('href', WHATSAPP_HREF);
 			await expect(menuCta).toHaveAttribute(
@@ -138,8 +138,8 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.home-nav-actions__login')).toHaveText(loginLabel);
 		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
 		const headerCta = page.locator('.home-nav-actions__cta');
-		await expect(headerCta).toHaveText('Cotizar mi invitación');
-		await expect(headerCta).toHaveAttribute('aria-label', 'Cotizar mi invitación por WhatsApp');
+		await expect(headerCta).toHaveText('Quiero mi invitación');
+		await expect(headerCta).toHaveAttribute('aria-label', 'Quiero mi invitación por WhatsApp');
 		await expect(headerCta).toHaveAttribute('href', WHATSAPP_HREF);
 		await expect(headerCta).toHaveAttribute('data-track-cta', 'whatsapp-header');
 		await expect(headerCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HEADER'));
@@ -700,7 +700,7 @@ test.describe('Landing page regressions', () => {
 		expect(labels.length).toBeGreaterThan(5);
 		expect(new Set(labels)).toEqual(
 			new Set([
-				'Cotizar mi invitación',
+				'Quiero mi invitación',
 				'Quiero una invitación así',
 				...PROMO_CAMPAIGN.packages.map((pkg) => `Quiero el paquete ${pkg.name}`),
 			]),
@@ -713,7 +713,7 @@ test.describe('Landing page regressions', () => {
 		await expect(guestCta).toHaveAttribute('data-track-section', 'guest-experience');
 		await expect(guestCta).toHaveAttribute('data-campaign-code', buildCampaignCode('GUESTS'));
 		await expect(guestCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
-		await expect(guestCta).toContainText('Cotizar mi invitación');
+		await expect(guestCta).toContainText('Quiero mi invitación');
 	});
 
 	test('shows the sticky WhatsApp bar after the hero and hides it over the contact form', async ({

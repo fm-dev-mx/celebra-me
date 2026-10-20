@@ -1,5 +1,6 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
+import { PRIMARY_CTA_LABEL } from '@/data/landing-page.data';
 import {
 	buildCampaignCode,
 	buildGeneralMessage,
@@ -33,7 +34,7 @@ interface Props {
 	promoCode?: string;
 	eventType?: string;
 	eventLabel?: string;
-	/** Defaults to the visible label plus the destination, e.g. «Cotizar mi invitación por WhatsApp». */
+	/** Defaults to the visible label plus the destination, e.g. «Quiero mi invitación por WhatsApp». */
 	ariaLabel?: string;
 	/** Keeps the message untouched by the click-time folio rewrite. */
 	preserveMessage?: boolean;
@@ -44,7 +45,7 @@ interface Props {
 const {
 	className = '',
 	message: explicitMessage,
-	label = 'Cotizar mi invitación',
+	label = PRIMARY_CTA_LABEL,
 	trackSection = 'hero',
 	trackCta = 'hero_whatsapp',
 	trackIntent = 'whatsapp',

@@ -55,13 +55,6 @@ function hasPlaceholder(val: unknown): { found: boolean; match?: string } {
 	return { found: false };
 }
 
-/**
- * Featured demos whose content description still needs a client-facing rewrite. Editing the JSON
- * changes the content hash of an accepted visual baseline, so the fix waits for owner approval of
- * a re-accepted baseline. Remove the slug together with that content fix.
- */
-const DESCRIPTION_FIX_PENDING_BASELINE = new Set(['demo-primera-comunion-angelic-presence']);
-
 describe('Premium Demo Quality Gate', () => {
 	const featuredItems = getFeaturedDemoShowroomItems();
 
@@ -95,9 +88,7 @@ describe('Premium Demo Quality Gate', () => {
 
 			it('has a client-facing name and title without "Demo" tags', () => {
 				expect(content.title).not.toMatch(/Demo/i);
-				if (!DESCRIPTION_FIX_PENDING_BASELINE.has(item.slug)) {
-					expect(content.description).not.toMatch(/Demo oficial/i);
-				}
+				expect(content.description).not.toMatch(/Demo oficial/i);
 				expect(content.description).not.toMatch(/tema [a-z-]+/i); // theme preset jargon
 			});
 
