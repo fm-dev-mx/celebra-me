@@ -10,6 +10,36 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.41.0-beta.1] - 2026-10-21
+
+Faster invitations: background music buffers after the page paints and plays shorter loop cuts, each
+invitation loads only the editorial cover and ornament CSS it uses, and the portrait hero image is
+preloaded. Demos show the in-page sales block, and frozen invitation media is served from R2
+manifests. No migrations.
+
+### Added
+
+- Twelve client songs play shorter loop cuts; their invitation definitions point to the new tracks
+  (#435).
+- Read-only local operations console (#434).
+- Envelope openings are tracked and demo cards are named by slug (#428).
+- Patch that soft-deletes orphan Supabase invitation assets, run on demand (#423).
+
+### Changed
+
+- Background music buffers only after the page paints (#430).
+- The editorial cover, collector edition and ornament sets move out of the shared invitation CSS
+  into per-feature sheets loaded only where used (#436).
+- The portrait hero image is preloaded (#425).
+- Frozen invitation media is served from R2 manifests (#431).
+- Every demo shows the in-page sales block (#424, accepted baselines #433); demo envelope dates are
+  spelled out and microcopy uses usted (#427).
+- Each demo and each new client invitation gets its own folder; content documents are adapted
+  directly; preset lists derive from one metadata table (#417, #420, #421, #422).
+- Browser-only modules are stubbed in the server bundle (#419).
+- Published rows no longer convert legacy locations (#426).
+- The release session creates the version tag (#432).
+
 ## [0.40.0-beta.1] - 2026-10-20
 
 America's gifts note offers a gift or cash under a gold gift mark, Olivia y Antonio get the client's
