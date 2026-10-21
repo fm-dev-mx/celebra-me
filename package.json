@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "astro dev",
         "build": "pnpm type-check && pnpm build:app",
-        "build:app": "astro build",
+        "build:app": "astro build && node scripts/check-ops-console-bundle.mjs",
         "preview": "astro preview",
         "astro": "astro",
         "test": "jest",
@@ -114,6 +114,7 @@
         "agent:git-safety:check": "node scripts/agent/git-safety.mjs check",
         "agent:git-safety:finish": "node scripts/agent/git-safety.mjs finish",
         "board:verify": "node scripts/board/verify-board.mjs",
+        "ops:console": "node scripts/ops/start-ops-console.mjs",
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb",
         "dbs": "tsx scripts/provision/dbs-cli.ts",
         "invitation:release": "tsx scripts/provision/invitation-release-cli.ts",

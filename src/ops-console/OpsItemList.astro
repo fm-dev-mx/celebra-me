@@ -1,0 +1,35 @@
+---
+import type { OpsItem, OpsStatus } from '../../scripts/ops/ops-console-snapshot.ts';
+
+interface Props {
+	items: readonly OpsItem[];
+}
+
+const STATUS_LABEL: Record<OpsStatus, string> = {
+	ok: 'Listo',
+	warn: 'Revisar',
+	block: 'Bloquea',
+	unknown: 'Sin datos',
+};
+
+const { items } = Astro.props;
+---
+
+<ul class="ops-items">
+	{
+		items.map((item) => (
+			<li class={`ops-item ops-item--${item.status}`}>
+				<span class="ops-item__badge">{STATUS_LABEL[item.status]}</span>
+				<div class="ops-item__body">
+					<p class="ops-item__label">{item.label}</p>
+					<p class="ops-item__detail">{item.detail}</p>
+					{item.fix && (
+						<p class="ops-item__fix">
+							En su terminal: <code>{item.fix}</code>
+						</p>
+					)}
+				</div>
+			</li>
+		))
+	}
+</ul>
