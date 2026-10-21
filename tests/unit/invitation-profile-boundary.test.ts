@@ -3,6 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
+import {
+	CLIENT_INVITATIONS_DIR,
+	listClientInvitationSlugs,
+} from '../../scripts/shared/invitation-definition-files.ts';
 import { resolveInvitationValidityWindow } from '../../src/lib/invitation/access/invitation-validity-window.ts';
 import {
 	DEMO_INVITATIONS_DIR,
@@ -51,7 +55,7 @@ const RETAINED_UNTIL_EXPIRY: Record<string, { eventDate: string; timeZone: strin
 	'xareni-iyarit': { eventDate: '2026-09-12', timeZone: 'America/Mexico_City' },
 };
 
-/** Profile stylesheets by id: client profiles in PROFILES_DIR, demo profiles in their folder. */
+/** Profile stylesheets by id: legacy client profiles in PROFILES_DIR, others in their folder. */
 function profilePaths(): Map<string, string> {
 	const paths = new Map<string, string>();
 	for (const name of fs.readdirSync(PROFILES_DIR)) {
@@ -61,6 +65,10 @@ function profilePaths(): Map<string, string> {
 	for (const { slug, contentPath } of listDemoInvitationFiles()) {
 		const profile = path.join(path.dirname(contentPath), 'profile.scss');
 		if (fs.existsSync(profile)) paths.set(slug, profile);
+	}
+	for (const slug of listClientInvitationSlugs()) {
+		const profile = path.join(CLIENT_INVITATIONS_DIR, slug, 'profile.scss');
+		if (fs.existsSync(profile)) paths.set(slug, path.resolve(profile));
 	}
 	return new Map([...paths].sort(([a], [b]) => a.localeCompare(b)));
 }

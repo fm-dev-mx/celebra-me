@@ -53,8 +53,14 @@ Every managed digital invitation must define:
     and URL links; compound surnames or middle names are permitted only when strictly necessary to
     disambiguate a collision or when explicitly requested by the celebrant for their public URL.
   - `visualProfileId` should match the canonical slug unless a documented exception exists.
-  - New definitions do not declare `_assetSlug`: their binaries live in
-    `src/assets/invitations/<slug>/` (the default `assetDir`) and are referenced by semantic asset
+  - New definitions live in their own folder, `src/invitations/clients/<slug>/`: `invitation.ts`
+    (`export default defineCanonicalInvitation({ ... })`), an optional token-only `profile.scss`
+    (then `visualProfileId` is the slug) and `assets/` (the definition's
+    `assetDir: 'src/invitations/clients/<slug>/assets'`). Run `pnpm invitation:registry` to add the
+    folder to `scripts/provision/invitations/client-registry.generated.ts`; a test fails while that
+    file is stale. The single-file definitions in `scripts/provision/invitations/` are frozen: a
+    test refuses new ones, and each leaves when its invitation expires.
+  - New definitions do not declare `_assetSlug`: their binaries are referenced by semantic asset
     keys. `_assetSlug` remains only on demos and on the legacy definitions listed under
     [Documented exceptions](#documented-exceptions).
 - **Host Login Alias** (`hostLoginAlias`): Short unique Auth login for the dedicated host. Technical

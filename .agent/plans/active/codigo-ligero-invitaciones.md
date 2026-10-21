@@ -40,8 +40,9 @@ to that report.
 | 13    | Done        | #417 (13a); 13b skipped by owner decision d108              |
 | 14    | Done        | #419                                                        |
 | 15    | Done        | #420                                                        |
-| 16    | In progress | This pull request                                           |
-| 17–19 | Pending     | —                                                           |
+| 16    | Done        | #421                                                        |
+| 17    | In progress | This pull request                                           |
+| 18–19 | Pending     | —                                                           |
 | 20    | Done        | #406                                                        |
 | 21    | Done        | #408                                                        |
 | 22    | Done        | #410                                                        |
@@ -64,6 +65,11 @@ Row 14 found that `InvitationDeferredCssPromotion` is only the name of the share
 whole invitation render tree. Its avoidable weight was `sanitize-html`'s postcss and source-map-js,
 which indication HTML never calls; with `@zip.js/zip.js`, both are stubbed in the server build
 (`dist/server` 6,293 → 5,789 KiB).
+
+Row 16 gave each demo a folder under `src/invitations/demos/<slug>/`. Row 17 does the same for new
+client invitations under `src/invitations/clients/<slug>/`, listed in a generated
+`client-registry.generated.ts` (`pnpm invitation:registry`). The legacy list counts 17 definitions
+by then, not 13; a test freezes it so it can only shrink.
 
 ## Goal
 

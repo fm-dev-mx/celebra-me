@@ -58,6 +58,12 @@ describe('release hash baseline', () => {
 			]),
 		).toBe(true);
 		expect(ownsChangedFile({ slug: 'x' }, ['src/assets/invitations/xy/a.webp'])).toBe(false);
+		expect(ownsChangedFile({ slug: 'x' }, ['src/invitations/clients/x/profile.scss'])).toBe(
+			true,
+		);
+		expect(ownsChangedFile({ slug: 'x' }, ['src/invitations/clients/xy/invitation.ts'])).toBe(
+			false,
+		);
 	});
 
 	it('keeps the committed baseline aligned with the active registry', () => {

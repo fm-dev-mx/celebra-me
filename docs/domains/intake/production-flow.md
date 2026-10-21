@@ -30,10 +30,11 @@ Architecture: [`docs/core/architecture.md`](../../core/architecture.md). Authori
 
 Production database mutations, deployments, and rollbacks require explicit human authorization.
 
-## Single-File Invitation Provisioning & Promotion Workflow
+## Invitation Provisioning & Promotion Workflow
 
-Version-controlled invitations are defined as single TypeScript files under
-`scripts/provision/invitations/<slug>.ts`.
+Version-controlled invitations are defined in one folder each, `src/invitations/clients/<slug>/`
+(`invitation.ts`, optional `profile.scss`, `assets/`). Older invitations keep their frozen
+single-file definition in `scripts/provision/invitations/<slug>.ts` until they expire.
 
 ```text
 Define -> Plan -> Release Local -> Package -> Release Preview -> Approve -> Owner Production release
@@ -221,7 +222,7 @@ Managed client invitations are created only through the canonical managed workfl
 Dashboard “Nueva invitación” UI or `POST /api/dashboard/intake`.
 
 ```text
-managed creation → scripts/provision/invitations/<slug>.ts (registry)
+managed creation → src/invitations/clients/<slug>/invitation.ts (pnpm invitation:registry)
 Local / Preview updates → pnpm invitation:release
 Production promotion → pnpm prod:apply -- --slug <slug> --apply (owner-only)
 ```

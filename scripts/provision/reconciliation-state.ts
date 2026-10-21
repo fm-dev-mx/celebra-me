@@ -23,6 +23,7 @@
 
 import { isManagedInvitationPath } from '../../src/lib/intake/mutations/ownership.ts';
 import type { SemanticDelta } from './semantic-delta.ts';
+import { invitationDefinitionFile } from '../shared/invitation-definition-files.ts';
 
 type ReconciliationState =
 	'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
@@ -121,7 +122,7 @@ export function computeReconciliationState(input: {
 	let hasDeferred = false;
 	let hasKeepEnv = false;
 
-	const canonicalFile = `scripts/provision/invitations/${slug}.ts`;
+	const canonicalFile = invitationDefinitionFile(slug);
 
 	for (const diff of diffs) {
 		const decision = decisions[diff.path];

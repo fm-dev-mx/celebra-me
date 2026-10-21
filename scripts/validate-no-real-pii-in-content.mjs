@@ -93,6 +93,7 @@ const EVENT_ASSET_ROOT = path.join(PROJECT_ROOT, 'src', 'assets', 'images', 'eve
 const CLIENT_ASSET_ROOTS = [
 	EVENT_ASSET_ROOT,
 	path.join(PROJECT_ROOT, 'src', 'assets', 'invitations'),
+	path.join(PROJECT_ROOT, 'src', 'invitations', 'clients'),
 ];
 const APPROVED_SHARED_CLIENT_FOLDERS = new Set();
 const IMAGE_EXTENSIONS = new Set(['.webp', '.jpg', '.jpeg', '.png', '.avif']);
