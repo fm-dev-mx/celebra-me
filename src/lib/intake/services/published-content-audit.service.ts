@@ -1,10 +1,8 @@
 /**
  * Read-only migration audit for Published invitation content.
  *
- * Inventories legacy venue date/time prose and conflicting showFlourishes
- * ownership. Does not rewrite data.
+ * Inventories legacy venue date/time prose. Does not rewrite data.
  */
-import { detectShowFlourishesConflict } from '@/lib/invitation/location-presentation-compatibility';
 import {
 	isCanonicalVenueDate,
 	isCanonicalVenueTime,
@@ -21,7 +19,6 @@ type PublishedAuditFindingKind =
 	| 'unparseable_date'
 	| 'unparseable_time'
 	| 'safe_machine_conversion'
-	| 'show_flourishes_conflict'
 	| 'canonical_datetime';
 
 interface PublishedAuditFinding {
@@ -37,7 +34,6 @@ export interface PublishedContentAuditResult {
 	legacyDateTimeCount: number;
 	unparseableCount: number;
 	safeConversionCount: number;
-	showFlourishesConflicts: number;
 	readyForMachineMigration: boolean;
 }
 
@@ -121,7 +117,7 @@ function auditVenueDateTime(
 
 /**
  * Deterministic, non-mutating audit of a Published content document for
- * date/time and showFlourishes migration readiness.
+ * date/time migration readiness.
  */
 export function auditPublishedContent(
 	content: Record<string, unknown> | null | undefined,
@@ -133,7 +129,6 @@ export function auditPublishedContent(
 			legacyDateTimeCount: 0,
 			unparseableCount: 0,
 			safeConversionCount: 0,
-			showFlourishesConflicts: 0,
 			readyForMachineMigration: true,
 		};
 	}
@@ -151,29 +146,6 @@ export function auditPublishedContent(
 		}
 		if (isRecord(location.reception)) {
 			auditVenueDateTime('location.reception', location.reception, findings);
-		}
-
-		const sectionStyles = content.sectionStyles;
-		const legacyFlourishes =
-			isRecord(sectionStyles) && isRecord(sectionStyles.location)
-				? (sectionStyles.location.showFlourishes as boolean | undefined)
-				: undefined;
-		const presentationOptions = isRecord(location.presentationOptions)
-			? (location.presentationOptions as { showFlourishes?: boolean })
-			: undefined;
-
-		if (
-			detectShowFlourishesConflict({
-				presentationOptions,
-				legacySectionStylesShowFlourishes: legacyFlourishes,
-			})
-		) {
-			findings.push({
-				kind: 'show_flourishes_conflict',
-				path: 'location.presentationOptions.showFlourishes',
-				detail: `conflicts with sectionStyles.location.showFlourishes=${String(legacyFlourishes)}; canonical owner is presentationOptions`,
-				current: String(presentationOptions?.showFlourishes),
-			});
 		}
 	}
 
@@ -225,16 +197,12 @@ export function auditPublishedContent(
 		(f) => f.kind === 'unparseable_date' || f.kind === 'unparseable_time',
 	).length;
 	const safeConversionCount = findings.filter((f) => f.kind === 'safe_machine_conversion').length;
-	const showFlourishesConflicts = findings.filter(
-		(f) => f.kind === 'show_flourishes_conflict',
-	).length;
 
 	return {
 		findings,
 		legacyDateTimeCount,
 		unparseableCount,
 		safeConversionCount,
-		showFlourishesConflicts,
-		readyForMachineMigration: unparseableCount === 0 && showFlourishesConflicts === 0,
+		readyForMachineMigration: unparseableCount === 0,
 	};
 }

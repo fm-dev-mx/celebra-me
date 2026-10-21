@@ -329,6 +329,38 @@ describe('resolveInvitationContent', () => {
 		consoleError.mockRestore();
 	});
 
+	it('fails closed on a published row that still carries legacy ceremony/reception', async () => {
+		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		const { venues, ...location } = validPublishedContent.location as {
+			venues: Record<string, unknown>[];
+		};
+		mockFindPublishedWithAccess.mockResolvedValue({
+			id: 'published-legacy',
+			invitationId: 'invitation-legacy',
+			slug: 'legacy-location',
+			eventType: 'xv',
+			isDemo: false,
+			content: {
+				...validPublishedContent,
+				location: { ...location, ceremony: venues[0], reception: venues[1] },
+			},
+			version: 3,
+		} as any);
+
+		const result = await resolveInvitationContent('legacy-location', 'xv');
+
+		expect(result).toBeNull();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
+		expect(consoleError).toHaveBeenCalledWith(
+			'[invitation-content] Invalid published content',
+			expect.objectContaining({
+				publishedContentId: 'published-legacy',
+				slug: 'legacy-location',
+			}),
+		);
+		consoleError.mockRestore();
+	});
+
 	it('keeps schema-compatible legacy published snapshots renderable', async () => {
 		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'legacy-invitation',
