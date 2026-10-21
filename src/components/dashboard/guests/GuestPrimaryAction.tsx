@@ -21,7 +21,23 @@ interface GuestPrimaryActionProps {
 	onReminderSent?: (guestId: string) => void;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onSaveGuest?: GuestSaveCallback;
+	/** Card and detail sheet use the full button; the table row uses the compact one. */
+	variant?: 'card' | 'row';
 }
+
+const REMINDER_BUTTON = {
+	card: {
+		className:
+			'btn-primary dashboard-guests__share-button guest-card__primary-action--reminder',
+		iconClassName: 'share-icon',
+		iconSize: 16,
+	},
+	row: {
+		className: 'btn-primary btn--compact guest-row__reminder-btn',
+		iconClassName: undefined,
+		iconSize: 14,
+	},
+} as const;
 
 /**
  * The single next step for a guest: share or remind. Answered guests have no next
@@ -38,21 +54,26 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 	onReminderSent,
 	onMarkShared,
 	onSaveGuest,
+	variant = 'card',
 }) => {
 	const [reminderModalOpen, setReminderModalOpen] = useState(false);
 	const primaryAction = getGuestPrimaryAction(item, reminderMode, isReminderEligible);
+	const reminderButton = REMINDER_BUTTON[variant];
 
 	if (primaryAction.action === 'send-reminder') {
 		return (
 			<>
 				<button
 					type="button"
-					className="btn-primary dashboard-guests__share-button guest-card__primary-action--reminder"
+					className={reminderButton.className}
 					onClick={() => setReminderModalOpen(true)}
 					title="Enviar recordatorio"
 					aria-label={`Enviar recordatorio a ${item.fullName}`}
 				>
-					<MessageIcon className="share-icon" size={16} />
+					<MessageIcon
+						className={reminderButton.iconClassName}
+						size={reminderButton.iconSize}
+					/>
 					<span>Recordar</span>
 				</button>
 				{reminderModalOpen && (

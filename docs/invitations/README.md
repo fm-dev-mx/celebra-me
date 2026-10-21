@@ -35,6 +35,13 @@ Gates: `pnpm validate:invitation-preparation` (prepReadiness alignment and hygie
 - **Delivered:** once the event has taken place, reduce the file to identity, route, preset and
   variants, delivered state, and known constraints. Git keeps the preparation history. Keep any line
   a contract test or the preparation validator still reads.
+- **Retro:** about a month after the event, record what worked, what looks dated or generic and what
+  took the most review rounds in the
+  [invitation standards](../domains/theme/invitation-standards.md#retro), and add the invitation's
+  row to its retro log.
+- **Removal:** the file leaves only after its retro, together with the invitation's definition,
+  profile and assets when the invitation expires. `pnpm validate:invitation-note-retirement` fails a
+  pull request that deletes a file without its retro log row.
 
 ## Index
 
@@ -50,7 +57,7 @@ Gates: `pnpm validate:invitation-preparation` (prepReadiness alignment and hygie
 | [leslie-perez](leslie-perez.md)                             | `/xv/leslie-perez`               | delivered |
 | [melissa-y-luis-osmar](melissa-y-luis-osmar.md)             | `/boda/melissa-y-luis-osmar`     | active    |
 | [mia-pintor](mia-pintor.md)                                 | `/xv/mia-pintor`                 | active    |
-| [naydelin-paredes](naydelin-paredes.md)                     | `/xv/naydelin-paredes`           | active    |
+| [naydelin-paredes](naydelin-paredes.md)                     | `/xv/naydelin-paredes`           | delivered |
 | [norma-hernandez](norma-hernandez.md)                       | `/cumple/norma-hernandez`        | active    |
 | [renata](renata.md)                                         | `/xv/renata`                     | delivered |
 | [romina-rios-chaparro](romina-rios-chaparro.md)             | `/xv/romina-rios-chaparro`       | delivered |

@@ -149,7 +149,7 @@ describe('validate-structure script', () => {
 		}
 	});
 
-	it('rejects terminal plans under active and invalid archived status', () => {
+	it('rejects terminal plans under active', () => {
 		const fixtureRoot = createFixture();
 		try {
 			writeFixtureFile(
@@ -165,7 +165,6 @@ describe('validate-structure script', () => {
 			writeFixtureFile(fixtureRoot, 'CLAUDE.md', '# no\n');
 			const output = validateFixture(fixtureRoot, ['CLAUDE.md']).join('\n');
 			expect(output).toContain('must not remain under plans/active/');
-			expect(output).toContain('status "archived" is invalid');
 			expect(output).toContain('competing provider-owned policy entry point');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });

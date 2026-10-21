@@ -17,7 +17,6 @@ related_plans:
   - .agent/plans/active/<slug>-asset-report.md
 related_rules:
   - .agent/rules/invitation-production.md
-  - .agent/rules/manual-sql-manifest.md
 ---
 ```
 

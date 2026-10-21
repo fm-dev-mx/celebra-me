@@ -68,8 +68,8 @@ Please follow these coding standards:
   `.prettierrc.mjs`.
 - **Linting**: Use ESLint for identifying and reporting on patterns in JavaScript. The configuration
   is already set up in `eslint.config.js` (ESLint flat config).
-- **SCSS Linting**: Use `pnpm lint:styles:changed` for required changed-file checks and
-  `pnpm lint:styles` for full-repository audits.
+- **SCSS Linting**: `pnpm validate:changed` lints changed stylesheets; use `pnpm lint:styles` for
+  full-repository audits.
 - **Type Safety**: Ensure type safety with TypeScript.
 - **Commit Messages**: Follow the commit policy in
   [`docs/core/git-governance.md`](docs/core/git-governance.md).

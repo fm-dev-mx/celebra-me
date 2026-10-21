@@ -17,8 +17,9 @@ related_docs:
 
 Approved by the owner on 2026-10-20: run phases A, B and C in order, one pull request per row into
 `develop`, merged when every check is green. The evidence lives in the point-in-time report
-`.agent/tmp/reports/2026-10-19-auditoria-post-migracion.md` (Integration checkout), measured on
-`main` `dd758333c`. Finding ids (H*, P*) refer to that report.
+`2026-10-19-auditoria-post-migracion.md`, kept outside Git in the Integration checkout's ignored
+reports folder (`.agent/tmp/reports/`), measured on `main` `dd758333c`. Finding ids (H*, P*) refer
+to that report.
 
 ## Progress
 
@@ -34,8 +35,15 @@ Approved by the owner on 2026-10-20: run phases A, B and C in order, one pull re
 | 8     | Done        | #332                                                        |
 | 9     | Done        | #360                                                        |
 | 10    | Done        | #333                                                        |
-| 11    | In progress | This plan lands with it                                     |
-| 12–19 | Pending     | —                                                           |
+| 11    | Done        | #400                                                        |
+| 12    | Done        | #402                                                        |
+| 13–19 | Pending     | —                                                           |
+| 20    | Done        | #406                                                        |
+| 21    | Done        | #408                                                        |
+| 22    | Done        | #410                                                        |
+| 23    | Done        | #412                                                        |
+| 24    | Done        | #413                                                        |
+| 25    | In progress | This pull request                                           |
 
 Owner decisions: the `/privacidad` text needs only the owner's approval, no legal review; full
 visual parity runs nightly on `develop` instead of on every pull request into `develop`. Questions 1
@@ -93,6 +101,25 @@ byte-identical. Prove it with `pnpm invitation:hash-baseline` before and after.
 The 13 legacy definitions and their profiles (≈ 20k SCSS lines) are not migrated. Each one leaves
 when its invitation expires (the first on 2027-02-21; `sacred-keepsake` on 2027-06-20) in a deletion
 PR: definition, profile, assets and digest together.
+
+## Phase D: cleanup and invitation standards
+
+Added by the owner on 2026-10-20 after an audit of `develop` `e490a2fae`: what is left to remove is
+small. Rows 20–24 run after row 12 and before phase C; row 25 follows them.
+
+| PR                                  | Change                                                                                                                                                                                                                                                                                                      | Protected by                                                        | Rollback |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------- |
+| **20. `chore/drop-unused-exports`** | Unexport the symbols knip reports, delete the dead static-assets binding module, the `lint:styles:changed` and `invitation:media:variants` scripts, and the archived-plans validator (that directory no longer exists). The three `worker:memories:dry-run:*` scripts stay as manual tools (owner decision) | `pnpm lint:dead-code` with no unused exports, unit tests, `workerd` | revert   |
+| **21. `chore/remove-dead-scss`**    | Unused mixins, functions and dashboard classes. Classes under `themes/sections/*` only with `invitation:hash-baseline` unchanged and a clean visual diff                                                                                                                                                    | `hash-baseline`, visual baselines                                   | revert   |
+| **22. `refactor/dedupe-clones`**    | Copied blocks of 15 or more lines in TypeScript and dashboard SCSS (jscpd). Preset clones wait for row 13                                                                                                                                                                                                   | Unit tests, visual baselines                                        | revert   |
+| **23. `docs/align-with-code`**      | Fix docs, skills and templates that name files or behavior the code no longer has; delete finished plans. No invitation note is deleted; `naydelin-paredes.md` is reduced to its delivered state                                                                                                            | `validate:structure`, `validate:invitation-preparation`             | revert   |
+| **24. `docs/merge-duplicates`**     | Merge duplicated database, release-tag and rule docs and the two Supabase skills into one owner each                                                                                                                                                                                                        | `validate:structure` (links and ownership)                          | revert   |
+| **25. `docs/invitation-standards`** | One standards document with "Repeat" and "Avoid" lists (example invitation, date, evidence), a retro step before an invitation note leaves, and a guard that fails a pull request deleting a note without its standards entry. The aesthetic brief reads the standards first                                | A unit test for the guard                                           | revert   |
+
+Invitation notes (`docs/invitations/<slug>.md`) stay while their invitation is online: some tests
+read them. About a month after the event, a retro records what worked, what looks dated or generic
+and what took the most review rounds; the note leaves with the invitation's definition, profile and
+assets when it expires.
 
 ## Open questions for the owner
 

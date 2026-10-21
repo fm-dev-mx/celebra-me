@@ -8,7 +8,7 @@ all production database work as high risk.
 - This file is the short operational contract and decision tree for agents.
 - [`docs/env-workflow.md`](../../docs/env-workflow.md) is the canonical environment source hierarchy
   and variable category guide.
-- [`manual-sql-manifest.md`](manual-sql-manifest.md) defines the required manifest for manual
+- [Manual SQL Manifest](#manual-sql-manifest) (below) defines the required manifest for manual
   production SQL patch files.
 - [`docs/database-workflow.md`](../../docs/database-workflow.md) is the full human runbook: the
   Production apply sequence and owner gate, backups and restore, guard and disposable environment,
@@ -117,8 +117,8 @@ authorization is task scope + target environment + operation risk + existing rep
   parity as authorization.
 - `pnpm db:prod:patch` is lint-only and requires `--dry-run`; it never opens Production. Patches
   execute only through `pnpm prod:apply -- --patch <path> --apply`, reject persistent DDL, need the
-  [manual SQL manifest](manual-sql-manifest.md), and must not bypass `pnpm prod:apply -- --schema`
-  or `pnpm prod:apply -- --slug`. Non-manifest SQL files are historical records only.
+  [manual SQL manifest](#manual-sql-manifest), and must not bypass `pnpm prod:apply -- --schema` or
+  `pnpm prod:apply -- --slug`. Non-manifest SQL files are historical records only.
 
 ## Decision Tree
 
@@ -166,8 +166,8 @@ invent a healthy state, or acquire mutation authority.
   public-schema dump for local refresh only — not a critical recovery set.
 - Need to reset a database for tests? Use `pnpm db:disposable:reset`. The guard allows all
   operations on the disposable-test target.
-- Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),
-  run `pnpm db:prod:patch -- --dry-run --file <path>`, then use only
+- Need a manual production SQL patch? Require the [`manual SQL manifest`](#manual-sql-manifest), run
+  `pnpm db:prod:patch -- --dry-run --file <path>`, then use only
   `pnpm prod:apply -- --patch <path> --apply` for owner-confirmed specialized maintenance that
   cannot yet be a versioned migration.
 - Asked to run `pnpm db:push`, `pnpm db:local:reset`, or raw `supabase db push --linked`? Do not run
@@ -177,6 +177,55 @@ invent a healthy state, or acquire mutation authority.
 - Unsure whether a command could touch production or destroy persistent local? Run the guard check:
   `tsx scripts/db/db-guard.ts check --target <target> --operation "<op>"`. Fail closed and ask for a
   narrower, explicit operation.
+
+## Manual SQL Manifest
+
+Manual production SQL patch files first checked by `pnpm db:prod:patch -- --dry-run --file <path>`
+must start with a manifest before any SQL statement. Direct production SQL is prohibited as a normal
+workflow; all schema changes must be introduced through versioned migrations in
+`supabase/migrations/`. The patch entrypoint is lint-only; this manifest does not authorize
+execution. Owner mutation is available only through `pnpm prod:apply -- --patch <path> --apply`. The
+lint, plan, and apply sequence is owned by
+[`docs/database-workflow.md`](../../docs/database-workflow.md).
+
+Older non-manifest SQL files are historical records only. Do not copy them as templates for new
+production patches.
+
+```sql
+-- @script-id: YYYYMMDD_short_description
+-- @purpose: one sentence describing the production correction
+-- @env: production
+-- @ticket: issue, PR, incident, or operator note reference
+-- @tables: comma-separated public tables touched
+-- @operation: update | insert | delete | select-only
+-- @expected-rows-min: 0
+-- @expected-rows-max: 0
+-- @requires-backup: true
+-- @dry-run-query: SELECT statement that previews exactly the target rows
+-- @rollback: concrete rollback or explicit reason rollback is not possible
+```
+
+### Field Rules
+
+- `@script-id` must be stable and unique enough to identify the patch in logs and review notes.
+- `@purpose` must describe the user-visible or operational problem being corrected.
+- `@env` must be exactly `production`.
+- `@ticket` must point to the review, incident, or operator record that approved preparing the
+  patch.
+- `@tables` must name every table the SQL could touch.
+- `@operation` must match the highest-risk operation in the file.
+- `@expected-rows-min` and `@expected-rows-max` must bound the intended row count.
+- `@requires-backup` must be `true`.
+- `@dry-run-query` must be a read-only preview query with the same targeting predicate.
+- Residual: after the intended state exists, `@dry-run-query` returns 0 rows.
+- Paired: when `@paired-stores` is set, the dry-run must select `store` and every `@pair-key`
+  column. Those files are auto-discovered into `pnpm dbs` unless `@catalog: historical`.
+- `@rollback` must be actionable enough for review; if rollback is impossible, say why.
+
+Keep the SQL narrowly scoped. Broad destructive operations, schema changes, RLS changes,
+`SECURITY DEFINER`, and `CASCADE` belong in reviewed migrations, not manual production patches;
+`prod:apply -- --patch` rejects persistent DDL. Managed invitation content is never a patch: it goes
+through `pnpm prod:apply -- --slug <slug>`.
 
 ## Guard and Disposable Environment
 

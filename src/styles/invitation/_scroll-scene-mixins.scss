@@ -41,15 +41,6 @@
 	}
 }
 
-/// Rules for a scene descendant under the scripted fallback at one step (`data-scene-step`).
-@mixin scripted-step($step) {
-	@media (prefers-reduced-motion: no-preference) {
-		&:where(.scroll-scene[data-scene-engine='script'][data-scene-step='#{$step}'] *) {
-			@content;
-		}
-	}
-}
-
 /// Rules for a scene descendant whenever the scene is pinned, whichever engine drives it.
 @mixin pinned($scene-specificity: false) {
 	@include timeline($scene-specificity) {

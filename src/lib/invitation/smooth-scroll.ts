@@ -45,7 +45,7 @@ export function glideTo(
 	});
 }
 
-export async function startSmoothScroll(root: Document = document): Promise<void> {
+async function startSmoothScroll(root: Document = document): Promise<void> {
 	const { default: Lenis } = await import('lenis');
 	const lenis = new Lenis({ lerp: 0.1, syncTouch: false, anchors: false });
 	const frame = (time: number) => {

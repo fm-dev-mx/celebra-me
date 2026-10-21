@@ -16,7 +16,7 @@ related_skills:
   - staged-code-review
 related_docs:
   - .agent/plans/README.md
-  - .agent/rules/workflow.md
+  - .agent/rules/agent-routing.md
 ---
 
 # Plan Authoring

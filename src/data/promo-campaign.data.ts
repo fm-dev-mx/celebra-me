@@ -80,7 +80,7 @@ export const PACKAGE_CATALOG: readonly CatalogPackage[] = [
 	{ id: 'atelier', name: 'Atelier', regularPrice: 2499 },
 ];
 
-export const PROMO_EXTRAS: readonly PromoExtra[] = [
+const PROMO_EXTRAS: readonly PromoExtra[] = [
 	{
 		id: 'express-24h',
 		name: 'Entrega exprés en 24 horas',

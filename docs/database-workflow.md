@@ -701,7 +701,7 @@ application login substitute. Host invitation flows continue to use real `host_c
 
 - Reads a SQL file only.
 - Requires the production patch manifest documented in
-  [`.agent/rules/manual-sql-manifest.md`](../.agent/rules/manual-sql-manifest.md).
+  [Manual SQL Manifest](../.agent/rules/database.md#manual-sql-manifest).
 - Blocks unsafe production-patch patterns including unscoped `UPDATE`/`DELETE`, `TRUNCATE`, broad
   `DROP`, `ALTER TABLE`, RLS policy changes, `SECURITY DEFINER`, and `CASCADE`.
 
@@ -812,8 +812,8 @@ pnpm prod:apply -- --patch scripts/manual/production-patches/<script>.sql --appl
 
 The `db:prod:patch` command only validates the manifest and SQL safety rules; it never executes the
 patch. `prod:apply` plans and, after owner confirmation, executes the exact reviewed artifact. A
-production patch file without the [required manifest](../.agent/rules/manual-sql-manifest.md) is
-blocked.
+production patch file without the
+[required manifest](../.agent/rules/database.md#manual-sql-manifest) is blocked.
 
 ## Executable guard
 

@@ -1,5 +1,6 @@
 import {
 	isAtBottom,
+	openGlideMs,
 	pullProgress,
 	shouldHoldFooter,
 	wheelPixels,
@@ -29,5 +30,12 @@ describe('footer reveal', () => {
 		expect(wheelPixels({ deltaY: 100, deltaMode: 0 })).toBe(100);
 		expect(wheelPixels({ deltaY: 3, deltaMode: 1 })).toBe(48);
 		expect(wheelPixels({ deltaY: 1, deltaMode: 2 })).toBe(window.innerHeight);
+	});
+
+	it('reads the open glide from its token, falling back to the default', () => {
+		expect(openGlideMs(' 720ms')).toBe(720);
+		expect(openGlideMs('')).toBe(320);
+		expect(openGlideMs('fast')).toBe(320);
+		expect(openGlideMs('-5ms')).toBe(320);
 	});
 });

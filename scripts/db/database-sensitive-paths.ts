@@ -22,7 +22,6 @@ const DATABASE_SENSITIVE_EXACT_PATHS = new Set([
 	'supabase/config.toml',
 	'docs/database-workflow.md',
 	'.agent/rules/database.md',
-	'.agent/rules/manual-sql-manifest.md',
 ]);
 
 /** Normalize to forward-slash repo-relative paths. */

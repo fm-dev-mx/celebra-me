@@ -80,7 +80,7 @@ routes:
       rules:
           - '.agent/rules/database.md'
       skills:
-          - 'supabase-postgres'
+          - 'supabase'
 
     - task_type: 'database_parity'
       description: 'Branch migration parity or database-sensitive release validation'
@@ -93,14 +93,20 @@ routes:
       description: 'Author or review manual SQL patch artifacts; does not authorize execution'
       rules:
           - '.agent/rules/database.md'
-          - '.agent/rules/manual-sql-manifest.md'
       skills:
           - 'production-sql-patches'
 
     - task_type: 'documentation_governance'
       description: 'Documentation updates, link integrity, or instruction-system alignment'
       rules:
-          - '.agent/rules/workflow.md'
+          - '.agent/rules/agent-routing.md'
+
+    - task_type: 'coordinator_board'
+      description: 'Coordinator board tasks, their fields and closing, and pnpm board:verify'
+      rules:
+          - '.agent/rules/board.md'
+      docs:
+          - 'docs/core/coordinator-board.md'
 
     - task_type: 'testing_qa'
       description: 'Automated tests or regression coverage; add accessibility/metadata only if affected'
@@ -192,7 +198,7 @@ routes:
     - task_type: 'planning'
       description: 'Task planning, multi-session continuity, or goal sequencing'
       rules:
-          - '.agent/rules/workflow.md'
+          - '.agent/rules/agent-routing.md'
       skills:
           - 'plan-authoring'
       docs:

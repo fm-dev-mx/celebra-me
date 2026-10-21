@@ -12,7 +12,6 @@ import { installInvitationMediaBinding } from './lib/intake/services/r2-invitati
 import { installMemoriesWorkerBindings } from './lib/memories/server/worker-bindings';
 import { installRateLimitBindings } from './lib/rsvp/security/rate-limit-provider';
 import { runScheduledJob } from './lib/server/scheduled-jobs';
-import { installAssetsBinding } from './lib/server/static-assets-provider';
 
 // Minimal shapes of the Workers runtime types; the repository does not load the
 // `@cloudflare/workers-types` globals for the application sources.
@@ -54,7 +53,6 @@ export default {
 		installRateLimitBindings(env);
 		installImagesBinding(env);
 		installInvitationMediaBinding(env);
-		installAssetsBinding(env);
 		installMemoriesWorkerBindings(env);
 		installAppLoopback(
 			async (inner) =>

@@ -99,6 +99,7 @@ const {
 	},
 } = Astro.props;
 
+const copiedLabel = labels.copied ?? '¡Copiado!';
 const isEditorialCatalog = variant === 'editorial-catalog';
 const isLegendOnly = presentation === 'legend-only';
 const showEditorialFolio = isEditorialCatalog && Boolean(folioMark);
@@ -288,17 +289,17 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 
 								{gift.type === 'bank' && (
 									<div class="bank-details">
-										<p class="bank-details__item">
-											<strong>{labels.bank}:</strong>
+										<p class="bank-details__item bank-details__item--bank">
+											<strong>{labels.bank}<span class="bank-details__colon">:</span></strong>
 											<span data-status={gift.bankName.includes('PENDIENTE') ? 'pending' : undefined}>{gift.bankName}</span>
 										</p>
-										<p class="bank-details__item">
-											<strong>{labels.titular}:</strong>
+										<p class="bank-details__item bank-details__item--holder">
+											<strong>{labels.titular}<span class="bank-details__colon">:</span></strong>
 											<span data-status={gift.accountHolder.includes('PENDIENTE') ? 'pending' : undefined}>{gift.accountHolder}</span>
 										</p>
 										<div class="bank-details__clabe-wrapper">
-											<p class="bank-details__item">
-												<strong>{bankNumberLabel(gift)}:</strong>
+											<p class="bank-details__item bank-details__item--number">
+												<strong>{bankNumberLabel(gift)}<span class="bank-details__colon">:</span></strong>
 												<span class="clabe-number">{formatBankNumber(gift)}</span>
 											</p>
 											<button
@@ -310,6 +311,11 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 											>
 												<CopyIcon size={14} className="icon-copy" />
 												<CheckIcon size={14} className="icon-check" />
+												{/* Visible wording is opt-in (--gifts-copy-label-display); icon-only by default. */}
+												<span class="copy-icon-button__label" aria-hidden="true">{bankNumberCopy(gift).copy}</span>
+												<span class="copy-icon-button__label copy-icon-button__label--done" aria-hidden="true">
+													{copiedLabel}
+												</span>
 											</button>
 										</div>
 									</div>

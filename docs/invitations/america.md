@@ -65,7 +65,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpGuestCap          | 2                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats             |
 | rsvpWhatsappPhone     | —                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                            |
 | rsvpDeadline          | 2026-11-06 (viernes 6 de noviembre)                                          | inferred       | owner-session | 15 days before the event (D9); in RSVP copy and reminder |
-| gifts                 | Lluvia de sobres                                                             | inferred       | owner-session | Owner decision D10; client to confirm                    |
+| gifts                 | Regalo o efectivo                                                            | confirmed      | client        | Client pick (2026-10-20); replaces the envelope shower   |
 | musicUrl              | «Veo en ti la luz» (Chayanne y Danna Paola), looped cut                      | confirmed      | client        | Client pick (2026-10-20); cut before the spoken lines    |
 | itinerary             | Misa 18:00, Recepción 20:00, Vals 21:30, Cena 22:30, Cierre 01:00            | inferred       | owner-session | Most common XV program (D8); owner adjusts later         |
 | memories              | QR de recuerdos (add-on)                                                     | verified       | owner-session | D12; needs a memory space first, see Owner Decisions     |
@@ -115,7 +115,7 @@ No placeholder tokens are used; optional content is omitted until supplied.
 | D7  | demo-design-decisions | Proof for the new art       | catalog   | Unlisted demo / tests + this invitation | Tests + this invitation                    |
 | D8  | missing-client-facts  | Program                     | catalog   | Omit / most common XV program           | Most common program; owner adjusts later   |
 | D9  | missing-client-facts  | RSVP deadline               | owner     | Omit / fixed date                       | 15 days before: 2026-11-06                 |
-| D10 | missing-client-facts  | Gifts                       | owner     | Omit / envelope shower / registry       | Envelope shower (legend-only note)         |
+| D10 | missing-client-facts  | Gifts                       | owner     | Omit / envelope shower / registry       | Gift or cash (legend-only note, client)    |
 | D11 | missing-client-facts  | Song                        | wa-export | Suggest / wait for the client           | Pending                                    |
 | D12 | missing-client-facts  | Memories QR add-on          | owner     | Without / with memories                 | With memories (after its memory space)     |
 
@@ -158,8 +158,8 @@ the only consumer of `storybook-lilac`, and unit tests cover the generic preset 
 | ---------------------- | ---------------------------------------------------------------------------------------------- |
 | requested              | location (two venues), family (parents, godparents), dress code + reserved color + adults only |
 | inferred / recommended | envelope, hero, quote, countdown, gallery, personalizedAccess, rsvp, thankYou, interludes      |
-| client-provided        | music: «Veo en ti la luz», looped cut (2026-10-20)                                             |
-| owner placeholders     | itinerary (D8), gifts: envelope shower (D10)                                                   |
+| client-provided        | music: «Veo en ti la luz», looped cut (2026-10-20); gifts: regalo o efectivo (2026-10-20)      |
+| owner placeholders     | itinerary (D8)                                                                                 |
 | unresolved             | memories (D12): joins after its memory space exists                                            |
 
 Guest-facing copy (owner-approved 2026-10-10, pending client approval). Voice: América in the first
@@ -180,8 +180,8 @@ newspaper, four looks, heart-shaped glasses).
   «Le espero en el Jardín Los Mangos.» · Vals «Mi vals de quince años. Prometo no llorar… mucho.» ·
   Cena «A la mesa, que la noche todavía es larga.» · Cierre «La última canción la bailamos juntos.»
 - Gallery: «Mis cuatro looks» · «Rosa, lila, amarillo… y unos lentes de corazón.»
-- Gifts: «Regalos» · «Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá
-  lluvia de sobres en la recepción.»
+- Gifts: «Regalos» · «Lo importante es que venga. Si desea tener un detalle conmigo, puede ser un
+  regalo o en efectivo.»
 - Pass: «Su lugar ya está apartado» · «Lo guardé con su nombre, así que nadie más lo puede ocupar.»
 - RSVP: «¿Me acompaña?» · «Avíseme antes del viernes 6 de noviembre, que quiero tener todo listo
   para recibirle.» · confirmed «¡Qué emoción, {nombre}!» · declined «Le voy a extrañar, {nombre}.»

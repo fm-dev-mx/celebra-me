@@ -44,7 +44,9 @@ the active task handoff by default. A real client invitation still requires
 
 ### Internal references
 
-List the most relevant live component, demo, preset, per-invitation note, or prior verified pattern.
+Read the [invitation standards](../../../docs/domains/theme/invitation-standards.md) first and name
+the Repeat and Avoid entries that apply. Then list the most relevant live component, demo, preset,
+per-invitation note, or prior verified pattern.
 
 1.
 2.

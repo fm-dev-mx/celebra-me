@@ -80,7 +80,7 @@ Current-task authorization unlocks only gated operations that repository policy 
 implicitly waive unrelated invariants. See `AGENTS.md` Exception Model.
 
 Authoring procedure: `.agent/skills/plan-authoring/SKILL.md`. Operating steps:
-`.agent/rules/workflow.md`.
+`.agent/rules/agent-routing.md#operating-procedure`.
 
 ## Plan Status Taxonomy
 

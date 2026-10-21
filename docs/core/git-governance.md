@@ -575,11 +575,10 @@ gh pr create --base main --head develop --title "release: vX.Y.Z - <primary outc
 git pull --ff-only origin develop
 git merge --ff-only origin/main
 git push origin develop
-
-# 3. Tag the deployed main SHA (checkpoint policy: release-process.md)
-git tag -a vX.Y.Z -m "vX.Y.Z - Short description of checkpoint"
-git push origin vX.Y.Z
 ```
+
+3. Tag the deployed `main` SHA following
+   [Create and push the annotated tag](release-process.md#7-create-and-push-the-annotated-tag).
 
 Rules:
 

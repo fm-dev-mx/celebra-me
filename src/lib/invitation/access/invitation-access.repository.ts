@@ -47,7 +47,7 @@ export async function findEventInvitationAccess(
  * True when the client invitation's active published content is past its validity
  * window (event date + 1 year). No published row, a demo or no event date: false.
  */
-export async function isPublishedInvitationExpired(
+async function isPublishedInvitationExpired(
 	invitationId: string,
 	now = new Date(),
 ): Promise<boolean> {

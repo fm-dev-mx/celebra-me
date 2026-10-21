@@ -11,8 +11,9 @@
 
 **Preparation Readiness (prepReadiness):** `READY_WITH_PLACEHOLDERS`
 
-This is the helper result for preparation only. It does not indicate that an account, Local database
-row, or publication exists.
+**Delivered:** live at `/xv/naydelin-paredes` in Production (answered 200 on 2026-10-21) for the
+event on Saturday, 17 October 2026. The readiness line above is the preparation helper result kept
+for the validator; this note records what was delivered.
 
 ## Sources
 
@@ -107,23 +108,23 @@ has a controlled preparation placeholder; the current candidate does not render 
 
 ## Owner Decisions
 
-No unresolved blocking owner decisions for this Local draft.
+No unresolved blocking owner decisions.
 
 - 2026-09-28: the ten-photo selection is definitive; photo 6 opens the invitation.
 - 2026-09-29: the messaging-app files are the definitive delivery source (no HR request).
 - 2026-09-29: keep and polish the itinerary; the English `PM` time format is a separate global task
   for `formatTime12h`.
 - 2026-09-29: add interludes, shorten the gallery, and add a closing photograph.
-- Open before Production: confirm surname accentuation with the client (the client typed most names
-  without accents, except "María").
+- Surname accentuation: the client typed most names without accents, except "María"; no confirmation
+  was recorded before release.
 
 ## Agent Recommendations
 
-| topic                  | recommendation                                                                                | basis                                                                   | status                                                               |
-| ---------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| palette                | Ivory and pearl surfaces, soft gold, restrained rose-gold accents, and a dark finale          | Confirmed gold invitation preference and current optimization direction | Applied to current Local candidate; creative acceptance pending      |
-| photography            | Use photo 6 as the opening image; follow it with photos 1–5 and 7–10 in original order        | Owner-confirmed final selection and supplied photo sequence             | Accepted; final selection                                            |
-| typography and spacing | Cormorant Garamond display with Montserrat body text; open spacing and readable venue details | Selected preset and optimization direction                              | Applied to current Local candidate; final browser validation pending |
+| topic                  | recommendation                                                                                | basis                                                                   | status                    |
+| ---------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------- |
+| palette                | Ivory and pearl surfaces, soft gold, restrained rose-gold accents, and a dark finale          | Confirmed gold invitation preference and current optimization direction | Delivered                 |
+| photography            | Use photo 6 as the opening image; follow it with photos 1–5 and 7–10 in original order        | Owner-confirmed final selection and supplied photo sequence             | Accepted; final selection |
+| typography and spacing | Cormorant Garamond display with Montserrat body text; open spacing and readable venue details | Selected preset and optimization direction                              | Delivered                 |
 
 ## Sections
 
@@ -139,23 +140,23 @@ No unresolved blocking owner decisions for this Local draft.
   - **section keys:** Personal quote: `[[PENDIENTE:SPECIAL_MESSAGES]]`
 
 The itinerary lists the confirmed ceremony (19:00) and reception (21:00) plus waltz (22:00), dinner
-(22:30), and closing (02:00). **The last three times are estimates pending owner confirmation.** The
-target delivery date of Thursday, 1 October 2026 is internal and does not appear in the invitation.
+(22:30), and closing (02:00). The last three times were delivered as estimates; no confirmation was
+recorded.
 
 ## Design Direction
 
-| decision                    | selected source / value                                | classification |
-| --------------------------- | ------------------------------------------------------ | -------------- |
-| Selected theme preset       | `jewelry-box` (owner-selected)                         | verified       |
-| Theme preset                | `jewelry-box`                                          | verified       |
-| Visual profile              | `naydelin-paredes` profile                             | verified       |
-| Client reference            | Ana Sofía Cota Guillén functional parity               | verified       |
-| Color requirement           | Gold invitation, rose-gold gown                        | verified       |
-| Palette                     | Ivory, champagne foil, rose-gold echoes, espresso band | verified       |
-| Typography                  | Cormorant Garamond, Montserrat, Pinyon Script          | verified       |
-| Stationery                  | Warm ivory cotton paper stock with grain and cut edge  | verified       |
-| Closing signature           | Pinyon Script foil lead with Cormorant line            | verified       |
-| Unresolved visual decisions | Owner creative acceptance; quote omitted               | pending        |
+| decision              | selected source / value                                | classification |
+| --------------------- | ------------------------------------------------------ | -------------- |
+| Selected theme preset | `jewelry-box` (owner-selected)                         | verified       |
+| Theme preset          | `jewelry-box`                                          | verified       |
+| Visual profile        | `naydelin-paredes` profile                             | verified       |
+| Client reference      | Ana Sofía Cota Guillén functional parity               | verified       |
+| Color requirement     | Gold invitation, rose-gold gown                        | verified       |
+| Palette               | Ivory, champagne foil, rose-gold echoes, espresso band | verified       |
+| Typography            | Cormorant Garamond, Montserrat, Pinyon Script          | verified       |
+| Stationery            | Warm ivory cotton paper stock with grain and cut edge  | verified       |
+| Closing signature     | Pinyon Script foil lead with Cormorant line            | verified       |
+| Quote                 | Omitted (no approved wording)                          | verified       |
 
 ### Design Notes
 
@@ -288,20 +289,9 @@ its role budget.
 
 **Human creative outcome:** `PENDING`
 
-The first Local candidate was **REJECTED** by the owner on 2026-09-28. The current canonical
-candidate is **PENDING** and has not received creative acceptance.
-
-Local render without a database: `/test/variant?full=1&presentation=1&slug=naydelin-paredes` on a
-dev server started with `ENABLE_TEST_VARIANT_HARNESS=1`. The earlier ad hoc `/xv/naydelin-paredes`
-preview route and its test fixture were removed.
-
-| field                                  | value                                                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Mechanical render/capture result       | Harness route returned 200 at 375 and 1440 px on 2026-09-29; no horizontal overflow                     |
-| Whole-invitation responsive inspection | Reviewed mobile and desktop captures with reduced motion; typography, palette, and photo roles verified |
-| Human creative outcome                 | `PENDING`                                                                                               |
-| Reviewer and date                      | —                                                                                                       |
-| Blocking reason or owner follow-up     | Owner creative acceptance; surname accentuation confirmation                                            |
+The first Local candidate was rejected by the owner on 2026-09-28; the second candidate is the one
+delivered. The owner released it to Production; no separate acceptance entry was recorded, so the
+token above stays as it was.
 
 ## Preparation Readiness History
 
