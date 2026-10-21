@@ -37,8 +37,9 @@ to that report.
 | 10    | Done        | #333                                                        |
 | 11    | Done        | #400                                                        |
 | 12    | Done        | #402                                                        |
-| 13    | In progress | This pull request: the metadata table (13a)                 |
-| 14–19 | Pending     | —                                                           |
+| 13    | Done        | #417 (13a); 13b skipped by owner decision d108              |
+| 14    | In progress | This pull request                                           |
+| 15–19 | Pending     | —                                                           |
 | 20    | Done        | #406                                                        |
 | 21    | Done        | #408                                                        |
 | 22    | Done        | #410                                                        |
@@ -53,9 +54,14 @@ presets do not merge for now (published invitations use all four; revisit when t
 
 Row 13 runs in two parts. 13a adds `THEME_PRESET_METADATA` and derives `THEME_PRESETS`,
 `PORTRAIT_SUPPORTED_THEMES` and the event-type preset lists from it, with a test that keeps the two
-stylesheet directories in step with the table. 13b, generating those directories from the table, is
-decided after 13a: it needs a Vite plugin, and some section bundles hold real styles (the
-`editorial-magazine` folios).
+stylesheet directories in step with the table. 13b, generating those directories from the table, was
+skipped by the owner (d108): it needed a Vite plugin, some section bundles hold real styles (the
+`editorial-magazine` folios), and the test already keeps table and directories in step.
+
+Row 14 found that `InvitationDeferredCssPromotion` is only the name of the shared chunk with the
+whole invitation render tree. Its avoidable weight was `sanitize-html`'s postcss and source-map-js,
+which indication HTML never calls; with `@zip.js/zip.js`, both are stubbed in the server build
+(`dist/server` 6,293 → 5,789 KiB).
 
 ## Goal
 

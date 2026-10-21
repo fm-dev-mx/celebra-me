@@ -14,6 +14,7 @@ import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
 import { SECURITY_HEADERS } from './src/lib/server/security-headers.ts';
 import { appendStaticSecurityHeaders } from './scripts/shared/cloudflare-static-headers.ts';
+import { serverBundleStubs } from './scripts/shared/server-bundle-stubs.ts';
 import { readFile, writeFile } from 'node:fs/promises';
 
 const isBuildCommand = process.argv.includes('build');
@@ -227,6 +228,8 @@ export default defineConfig({
 	},
 	vite: {
 		envPrefix: ['PUBLIC_', 'VITE_'],
+		// Keeps browser-only and never-called modules out of the Worker upload.
+		plugins: [serverBundleStubs()],
 		server: {
 			// Immutable browser fixtures must not consume Astro's buffered startup reload.
 			// Keep hot reload available for normal interactive development.
