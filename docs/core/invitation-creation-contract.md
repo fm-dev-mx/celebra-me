@@ -70,11 +70,13 @@ Every managed digital invitation must define:
 - **Event Type** (`eventType`): Supported event type from live `EVENT_TYPES` (e.g. `xv`, `boda`,
   `cumple`, `baby-shower`, `bautizo`, `primera-comunion`). Each type has a structure contract in
   `src/lib/invitation/event-type-contract.ts`: the sections `sectionOrder` must include and the
-  theme presets verified for that type. Section variants stay type-agnostic.
+  theme presets verified for that type (the `eventTypes` of each row in `THEME_PRESET_METADATA`).
+  Section variants stay type-agnostic.
 - **Theme Preset** (`themeId` and `content.theme.preset`, required, no default): a value of
-  `THEME_PRESETS` (e.g. `editorial-magazine`, `jewelry-box`). The content schema rejects a missing
-  preset and the adapter throws on an unknown one; nothing falls back to a default preset. Keep
-  `themeId` equal to `theme.preset` (`defineCanonicalInvitation` does not cross-check them).
+  `THEME_PRESETS`, the keys of `THEME_PRESET_METADATA` (e.g. `editorial-magazine`, `jewelry-box`).
+  The content schema rejects a missing preset and the adapter throws on an unknown one; nothing
+  falls back to a default preset. Keep `themeId` equal to `theme.preset`
+  (`defineCanonicalInvitation` does not cross-check them).
 - **Visual Profile ID** (`visualProfileId`): Compatible visual profile.
 - **Template ID** (`content.templateId`, optional): reporting dimension `{eventType}-{themePreset}`.
   `defineCanonicalInvitation` derives it when the content omits it. Invitations have no base demo
@@ -314,8 +316,8 @@ and `preset-css-resolver.ts`), so keeping the stylesheet is enough.
 
 `tests/unit/invitation-profile-boundary.test.ts` (`RETAINED_UNTIL_EXPIRY`) fails once a retained
 profile's window has closed, so it is removed with its digest. Remove `sacred-keepsake` after
-2027-06-20 together with its entries in `THEME_PRESETS`, `PORTRAIT_SUPPORTED_THEMES`, the bautizo
-presets and `tests/unit/style-boundaries.test.ts`. This list only shrinks.
+2027-06-20 together with its `THEME_PRESET_METADATA` row, its two stylesheet entrypoints and
+`tests/unit/style-boundaries.test.ts`. This list only shrinks.
 
 ### Presets and their consumers
 

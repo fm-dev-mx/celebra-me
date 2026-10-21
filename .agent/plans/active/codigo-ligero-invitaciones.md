@@ -37,17 +37,25 @@ to that report.
 | 10    | Done        | #333                                                        |
 | 11    | Done        | #400                                                        |
 | 12    | Done        | #402                                                        |
-| 13–19 | Pending     | —                                                           |
+| 13    | In progress | This pull request: the metadata table (13a)                 |
+| 14–19 | Pending     | —                                                           |
 | 20    | Done        | #406                                                        |
 | 21    | Done        | #408                                                        |
 | 22    | Done        | #410                                                        |
 | 23    | Done        | #412                                                        |
 | 24    | Done        | #413                                                        |
-| 25    | In progress | This pull request                                           |
+| 25    | Done        | #415                                                        |
 
 Owner decisions: the `/privacidad` text needs only the owner's approval, no legal review; full
-visual parity runs nightly on `develop` instead of on every pull request into `develop`. Questions 1
-and 3 below are asked when phase C starts.
+visual parity runs nightly on `develop` instead of on every pull request into `develop`. On
+2026-10-21 the owner answered questions 1 and 3: QR check-in at arrival is not planned, and the twin
+presets do not merge for now (published invitations use all four; revisit when they expire).
+
+Row 13 runs in two parts. 13a adds `THEME_PRESET_METADATA` and derives `THEME_PRESETS`,
+`PORTRAIT_SUPPORTED_THEMES` and the event-type preset lists from it, with a test that keeps the two
+stylesheet directories in step with the table. 13b, generating those directories from the table, is
+decided after 13a: it needs a Vite plugin, and some section bundles hold real styles (the
+`editorial-magazine` folios).
 
 ## Goal
 
@@ -121,13 +129,11 @@ read them. About a month after the event, a retro records what worked, what look
 and what took the most review rounds; the note leaves with the invitation's definition, profile and
 assets when it expires.
 
-## Open questions for the owner
+## Owner questions (answered)
 
-1. Is QR check-in at arrival a planned feature? It does not exist today, and nothing tests it.
-2. The new `/privacidad` text (PR 3): does it need legal review?
-3. Can the twin presets `jewelry-box` / `jewelry-box-wedding` and `editorial` / `editorial-magazine`
-   merge? This needs a token diff first.
-4. Should full visual parity run nightly instead of on every PR (PR 11)?
+All four were answered (see Progress). Token diff behind question 3, on `develop` `a5733331a`:
+`jewelry-box-wedding` shares 69 of its 121 token declarations with `jewelry-box`;
+`editorial-magazine` shares 5 of 109 with `editorial`.
 
 ## Expected result
 
