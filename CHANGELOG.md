@@ -29,7 +29,8 @@ and duplicated schemas. No migrations.
 - Dashboard guest, lead and draft schemas share their duplicated blocks (#410).
 - The board verifier is versioned with implicit pull request and branch checks (#404).
 - Agent docs, skills and samples follow the current code (#412); duplicated rules, skills and
-  release steps are merged into one place each (#413).
+  release steps are merged into one place each (#413); invitation standards are documented and a
+  test guards invitation note retirement (#415).
 
 ### Removed
 
