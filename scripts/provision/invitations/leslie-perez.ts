@@ -213,7 +213,7 @@ export function buildLesliePublishedContent(
 		description: 'Invitación a los XV años de Leslie en San Carlos Eventos.',
 		theme: { preset: LESLIE_EVENT.themeId },
 		music: {
-			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3e1816ec21b0f3d3d0cfbdeb6ad9ad4e271eab616894203135a2fb7e13c7b802.mp3',
+			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3f23298fd1defa947d191cad8fc0de355daec6d642716aea206e61f3e243a326.mp3',
 			autoPlay: true,
 		},
 		eventTiming: {

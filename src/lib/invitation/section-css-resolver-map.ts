@@ -8,16 +8,27 @@ export type SectionUrlMap = Record<string, Record<string, string>> & {
 };
 export type SectionBundleUrlMap = Record<string, string>;
 export type InvitationProfileUrlMap = Record<string, string>;
+/** Feature sheets by file name: `invitation-features/<name>.scss`. */
+export type InvitationFeatureUrlMap = Record<string, string>;
 
 export type InvitationCssResolverInput = {
 	themePreset: string;
 	sectionVariants?: Partial<Record<CanonicalVariantSection, string>>;
 	envelopeVariant?: string;
 	visualProfileId?: string;
+	/** Edition of the editorial cover reveal; absent when the page opens with an envelope. */
+	editorialCover?: 'standard' | 'collector';
+	/** Ornament set from `composition.ornaments`. */
+	ornamentSet?: string;
 };
 
 type InvitationCssOwner =
-	'section-bundle' | 'envelope-reveal' | 'section-variant' | 'visual-profile';
+	| 'section-bundle'
+	| 'envelope-reveal'
+	| 'section-variant'
+	| 'visual-profile'
+	| 'editorial-cover'
+	| 'ornament-set';
 
 export interface InvitationCssLoadItem {
 	href: string;
@@ -98,6 +109,37 @@ export function buildInvitationProfileUrlMap(
 	return profileUrlMap;
 }
 
+export function buildInvitationFeatureUrlMap(
+	modules: Record<string, CssModule>,
+): InvitationFeatureUrlMap {
+	return buildSectionBundleUrlMap(modules);
+}
+
+/**
+ * Sheets that only some pages need, in the order they held inside the shared invitation sheet:
+ * the editorial cover (blocking, it paints the opening), its collector edition, then the ornament
+ * set, which only dresses the sections and waits like the section bundle.
+ */
+function resolveFeatureLoadItems(
+	featureUrlMap: InvitationFeatureUrlMap,
+	input: InvitationCssResolverInput,
+): InvitationCssLoadItem[] {
+	const items: InvitationCssLoadItem[] = [];
+	const add = (name: string, owner: InvitationCssOwner, blocking: boolean) => {
+		const href = featureUrlMap[name];
+		if (!href) throw new Error(`Missing invitation feature stylesheet: ${name}`);
+		items.push({ href, owner, blocking });
+	};
+	if (input.editorialCover) {
+		add('editorial-cover', 'editorial-cover', true);
+		if (input.editorialCover === 'collector') {
+			add('editorial-cover-collector', 'editorial-cover', true);
+		}
+	}
+	if (input.ornamentSet) add(`ornaments-${input.ornamentSet}`, 'ornament-set', false);
+	return items;
+}
+
 export function resolveSectionBundleCssUrl(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	preset: string,
@@ -157,6 +199,7 @@ export function resolveInvitationCssLoadPlan(
 	sectionUrlMap: SectionUrlMap,
 	input: InvitationCssResolverInput,
 	profileUrlMap: InvitationProfileUrlMap = {},
+	featureUrlMap: InvitationFeatureUrlMap = {},
 ): InvitationCssLoadItem[] {
 	const items: InvitationCssLoadItem[] = [];
 	const seen = new Set<string>();
@@ -185,6 +228,10 @@ export function resolveInvitationCssLoadPlan(
 
 	const profileUrl = resolveVisualProfileCssUrl(profileUrlMap, input);
 	push(profileUrl ? { href: profileUrl, owner: 'visual-profile', blocking: true } : undefined);
+
+	for (const item of resolveFeatureLoadItems(featureUrlMap, input)) {
+		push(item);
+	}
 
 	return items;
 }

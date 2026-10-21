@@ -144,7 +144,7 @@ export function buildAbrilPublishedContent(
 			'Acompáñenos a celebrar los XV años de Abril Michelle Becerra Rea el 12 de septiembre de 2026 en Lagos de Moreno.',
 		theme: { preset: ABRIL_EVENT.themeId, fontFamily: 'serif' },
 		music: {
-			url: 'https://media.celebra-me.com/invitations/xv/abril-michelle-becerra-rea/music-bcfd31b1e77e34ea1cd9da7a8e95c0024c5ec6c6a11f2c57efc7cd5fa6968c1f.mp3',
+			url: 'https://media.celebra-me.com/invitations/xv/abril-michelle-becerra-rea/music-09befab7858d5520e2b33077f41aed3221c2695aff96bb2afe54d228a3b59dfd.mp3',
 			title: 'Talking to the moon',
 			autoPlay: true,
 		},

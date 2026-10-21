@@ -54,9 +54,9 @@ const MAPS_URL =
 	'https://www.google.com/maps/search/?api=1&query=Jard%C3%ADn+Quinta+Para%C3%ADso+Calle+Rosa+Violeta+8+Cuautitl%C3%A1n+Izcalli';
 const RSVP_WHATSAPP = '524611830851';
 const MUSIC_URL =
-	'https://media.celebra-me.com/invitations/xv/destenid-sofia/music-583bd7df6e42d2ad3030e52cfe2a66d39f1edb2c5b254cc1096837fb42ae670d.mp3';
-// The client asked for the song "del segundo 39 en adelante"; the file is the full track.
-const MUSIC_START_SECONDS = 39;
+	'https://media.celebra-me.com/invitations/xv/destenid-sofia/music-057eb44ccf1e8dc3807a0c873c574a80de0af3205dbf806bbf2a622fbaed5610.mp3';
+// The client asked for the song "del segundo 39 en adelante"; the hosted file is a 76 s loop cut
+// that already starts there (owner-approved 2026-10-21).
 
 /**
  * Gift transfer: BBVA debit card supplied by the client (holder below). The owner pastes the
@@ -214,7 +214,6 @@ export function buildDestenidPublishedContent(
 			url: MUSIC_URL,
 			title: 'Rebelde · RBD',
 			autoPlay: true,
-			startAt: MUSIC_START_SECONDS,
 		},
 		sectionOrder: [
 			'quote',

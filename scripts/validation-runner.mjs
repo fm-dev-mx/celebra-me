@@ -19,7 +19,7 @@ const MANAGED_INVITATION_RENDERING_SURFACES = [
 	/^src\/components\/invitation\//u,
 	/^src\/lib\/(?:adapters|invitation)\//u,
 	/^src\/lib\/intake\/(?:schemas\/|services\/section-content-mapper(?:\.ts)?$)/u,
-	/^src\/styles\/(?:invitation|invitation-profiles|themes\/sections)\//u,
+	/^src\/styles\/(?:invitation|invitation-features|invitation-profiles|themes\/sections)\//u,
 	/^src\/invitations\//u,
 	/^scripts\/provision\/invitations\//u,
 	/^scripts\/provision\/local-render-corpus\//u,
