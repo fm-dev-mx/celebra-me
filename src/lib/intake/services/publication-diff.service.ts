@@ -1,9 +1,6 @@
 import { createHash } from 'node:crypto';
 import { getEditorSectionForPublishedPath } from '@/lib/intake/invitation-section-registry';
-import {
-	canonicalizePublicationValue,
-	preparePublicationProjection,
-} from '@/lib/intake/services/publication-canonicalize';
+import { canonicalizePublicationValue } from '@/lib/intake/services/publication-canonicalize';
 
 /**
  * Generates a 32-character MD5 hex digest for publication optimistic concurrency control.
@@ -37,8 +34,7 @@ export interface PublicationComparison {
 
 export function hashPublicationProjection(projection: Record<string, unknown>): string {
 	const canonical =
-		(canonicalizePublicationValue(preparePublicationProjection(projection)) as
-			Record<string, unknown> | undefined) ?? {};
+		(canonicalizePublicationValue(projection) as Record<string, unknown> | undefined) ?? {};
 	return optimisticLockHash(JSON.stringify(canonical));
 }
 
@@ -140,12 +136,11 @@ export function createPublicationComparison(input: {
 	publishedProjection?: Record<string, unknown>;
 }): PublicationComparison {
 	const canonicalDraftProjection =
-		(canonicalizePublicationValue(preparePublicationProjection(input.draftProjection)) as
+		(canonicalizePublicationValue(input.draftProjection) as
 			Record<string, unknown> | undefined) ?? {};
 	const canonicalPublishedProjection =
-		(canonicalizePublicationValue(
-			preparePublicationProjection(input.publishedProjection ?? {}),
-		) as Record<string, unknown> | undefined) ?? {};
+		(canonicalizePublicationValue(input.publishedProjection ?? {}) as
+			Record<string, unknown> | undefined) ?? {};
 	const changedPaths = collectChangedPaths(
 		canonicalDraftProjection,
 		canonicalPublishedProjection,

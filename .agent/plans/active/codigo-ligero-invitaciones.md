@@ -23,32 +23,33 @@ to that report.
 
 ## Progress
 
-| Row   | State       | Evidence                                                    |
-| ----- | ----------- | ----------------------------------------------------------- |
-| 1     | Done        | `c5ebacae3` on `develop`                                    |
-| 2     | Done        | #329                                                        |
-| 3     | Done        | #343                                                        |
-| 4     | Done        | #330                                                        |
-| 5     | Done        | #331                                                        |
-| 6     | Done        | #347 (contract migration; ships through the migration flow) |
-| 7     | Done        | #344                                                        |
-| 8     | Done        | #332                                                        |
-| 9     | Done        | #360                                                        |
-| 10    | Done        | #333                                                        |
-| 11    | Done        | #400                                                        |
-| 12    | Done        | #402                                                        |
-| 13    | Done        | #417 (13a); 13b skipped by owner decision d108              |
-| 14    | Done        | #419                                                        |
-| 15    | Done        | #420                                                        |
-| 16    | Done        | #421                                                        |
-| 17    | In progress | This pull request                                           |
-| 18–19 | Pending     | —                                                           |
-| 20    | Done        | #406                                                        |
-| 21    | Done        | #408                                                        |
-| 22    | Done        | #410                                                        |
-| 23    | Done        | #412                                                        |
-| 24    | Done        | #413                                                        |
-| 25    | Done        | #415                                                        |
+| Row | State       | Evidence                                                    |
+| --- | ----------- | ----------------------------------------------------------- |
+| 1   | Done        | `c5ebacae3` on `develop`                                    |
+| 2   | Done        | #329                                                        |
+| 3   | Done        | #343                                                        |
+| 4   | Done        | #330                                                        |
+| 5   | Done        | #331                                                        |
+| 6   | Done        | #347 (contract migration; ships through the migration flow) |
+| 7   | Done        | #344                                                        |
+| 8   | Done        | #332                                                        |
+| 9   | Done        | #360                                                        |
+| 10  | Done        | #333                                                        |
+| 11  | Done        | #400                                                        |
+| 12  | Done        | #402                                                        |
+| 13  | Done        | #417 (13a); 13b skipped by owner decision d108              |
+| 14  | Done        | #419                                                        |
+| 15  | Done        | #420                                                        |
+| 16  | Done        | #421                                                        |
+| 17  | Done        | #422                                                        |
+| 18  | In progress | #423 (soft-delete patch, owner decision d113); code pending |
+| 19  | Done        | This pull request (owner decision d114: no data migration)  |
+| 20  | Done        | #406                                                        |
+| 21  | Done        | #408                                                        |
+| 22  | Done        | #410                                                        |
+| 23  | Done        | #412                                                        |
+| 24  | Done        | #413                                                        |
+| 25  | Done        | #415                                                        |
 
 Owner decisions: the `/privacidad` text needs only the owner's approval, no legal review; full
 visual parity runs nightly on `develop` instead of on every pull request into `develop`. On
@@ -118,7 +119,7 @@ byte-identical. Prove it with `pnpm invitation:hash-baseline` before and after.
 | **16. `feat/invitation-document-demos`**    | Introduce `InvitationDocument` (one directory per invitation: `invitation.ts`, an optional token-only `profile.scss`, an asset manifest). Migrate the 7 demos first: they carry no client hash. `demo-showroom.data.ts` gets absorbed. The `event-demos` collection reads the new tree |          ±600 | Demo routing parity, `premium-demo-quality-gate`, visual baselines of the demos             | revert                           |
 | **17. `feat/invitation-document-new-only`** | New real invitations use `InvitationDocument`. `registry.ts` is generated by glob. The 13 legacy definitions stay frozen                                                                                                                                                               |          ±300 | `invitation-profile-boundary` digests unchanged, `hash-baseline`                            | revert                           |
 | **18. `refactor/r2-only-runtime-assets`**   | Once Production has no `supabase` rows outside Local, `provider` stops being a branch in `asset-delivery.ts`, `storage-provider.ts` and `remote-media-hosting.ts`. Binaries move from `src/assets/invitations/` (62 MB) to R2 with a hash manifest                                     |  −400, −62 MB | `image-delivery-contract.spec`, `production-image-audit`                                    | revert, plus keep the R2 objects |
-| **19. `refactor/drop-location-compat`**     | Remove `normalizeLegacyLocationInContent` and `location-presentation-compatibility.ts`, after a contract release that migrates the published data                                                                                                                                      |          −200 | Contract tests + a published-content audit                                                  | A forward fix                    |
+| **19. `refactor/drop-location-compat`**     | Remove `normalizeLegacyLocationInContent` and `location-presentation-compatibility.ts` without migrating published data (d114); a legacy published row now fails closed                                                                                                                |          −200 | Contract tests + a published-content audit                                                  | A forward fix                    |
 
 The 13 legacy definitions and their profiles (≈ 20k SCSS lines) are not migrated. Each one leaves
 when its invitation expires (the first on 2027-02-21; `sacred-keepsake` on 2027-06-20) in a deletion

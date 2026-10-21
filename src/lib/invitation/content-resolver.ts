@@ -4,7 +4,6 @@ import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation
 import { adaptEvent } from '@/lib/adapters/event';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { normalizeLegacyLocationInContent } from '@/lib/invitation/location-normalizer';
 import {
 	MISSING_INVITATION_ACCESS,
 	isInvitationPubliclyDisabled,
@@ -174,8 +173,7 @@ export async function resolvePublicInvitation(
 				) {
 					return { source: 'unavailable' };
 				}
-				const normalizedContent = normalizeLegacyLocationInContent(publishedEntry.content);
-				const parsedContent = eventContentSchema.safeParse(normalizedContent);
+				const parsedContent = eventContentSchema.safeParse(publishedEntry.content);
 				if (!parsedContent.success) {
 					logInvalidPublishedContent({
 						id: publishedEntry.id,

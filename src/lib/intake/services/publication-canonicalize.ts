@@ -2,7 +2,6 @@
  * Isomorphic publication value normalization shared by server publish/diff
  * and the client invitation editor section-save path. Must not import `node:*`.
  */
-import { foldLocationPresentationOptions } from '@/lib/invitation/location-presentation-compatibility';
 import { toEditorDate } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
 
@@ -33,51 +32,6 @@ function canonicalizeDateTimeField(key: string, value: unknown): unknown {
 		return normalizeTime(trimmed) ?? trimmed;
 	}
 	return canonicalizePublicationValue(trimmed);
-}
-
-/**
- * Fold legacy `sectionStyles.location.showFlourishes` into the canonical
- * `location.presentationOptions.showFlourishes` owner and drop the legacy key
- * before equality checks / hashing.
- */
-export function preparePublicationProjection(value: unknown): unknown {
-	if (!isPlainObject(value)) return value;
-	const root = isPlainObject(value.content)
-		? { ...value, content: { ...value.content } }
-		: { ...value };
-	const content = (isPlainObject(root.content) ? root.content : root) as Record<string, unknown>;
-
-	const sectionStyles = content.sectionStyles;
-	const legacyFlourishes =
-		isPlainObject(sectionStyles) && isPlainObject(sectionStyles.location)
-			? (sectionStyles.location.showFlourishes as boolean | undefined)
-			: undefined;
-	const legacyNavigationButtons =
-		isPlainObject(sectionStyles) && isPlainObject(sectionStyles.location)
-			? (sectionStyles.location.showNavigationButtons as boolean | undefined)
-			: undefined;
-
-	if (isPlainObject(content.location)) {
-		content.location = foldLocationPresentationOptions(
-			content.location,
-			legacyFlourishes,
-			legacyNavigationButtons,
-		) as Record<string, unknown>;
-	}
-
-	if (isPlainObject(sectionStyles) && isPlainObject(sectionStyles.location)) {
-		const {
-			showFlourishes: _legacyFlourishes,
-			showNavigationButtons: _legacyNavigationButtons,
-			...locationStyleRest
-		} = sectionStyles.location;
-		content.sectionStyles = {
-			...sectionStyles,
-			location: locationStyleRest,
-		};
-	}
-
-	return root;
 }
 
 /** Normalizes values that are equivalent in the published contract. */

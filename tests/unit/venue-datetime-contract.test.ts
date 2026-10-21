@@ -17,10 +17,6 @@ import { computeEffectiveContent } from '@/lib/intake/services/merge-content.ser
 import { auditPublishedContent } from '@/lib/intake/services/published-content-audit.service';
 import { createPublicationComparison } from '@/lib/intake/services/publication-diff.service';
 import { getSectionValue } from '@/lib/intake/services/section-content-mapper';
-import {
-	detectShowFlourishesConflict,
-	foldLocationPresentationOptions,
-} from '@/lib/invitation/location-presentation-compatibility';
 import { resolveLocationShowFlourishes } from '@/lib/invitation/location-presentation';
 import {
 	formatVenueDateForDisplay,
@@ -158,42 +154,6 @@ describe('showFlourishes ownership', () => {
 		expect(resolveLocationShowFlourishes(undefined, undefined)).toBe(true);
 	});
 
-	it('folds legacy sectionStyles into presentationOptions when canonical absent', () => {
-		const folded = foldLocationPresentationOptions({} as Record<string, unknown>, false);
-		expect(folded?.presentationOptions).toEqual({ showFlourishes: false });
-	});
-
-	it('does not overwrite canonical presentationOptions from legacy', () => {
-		const folded = foldLocationPresentationOptions(
-			{ presentationOptions: { showFlourishes: true } } as Record<string, unknown>,
-			false,
-		);
-		expect(folded?.presentationOptions).toEqual({ showFlourishes: true });
-	});
-
-	it('folds legacy navigation visibility without overwriting canonical options', () => {
-		expect(
-			foldLocationPresentationOptions({} as Record<string, unknown>, undefined, false)
-				?.presentationOptions,
-		).toEqual({ showNavigationButtons: false });
-		expect(
-			foldLocationPresentationOptions(
-				{ presentationOptions: { showNavigationButtons: true } } as Record<string, unknown>,
-				undefined,
-				false,
-			)?.presentationOptions,
-		).toEqual({ showNavigationButtons: true });
-	});
-
-	it('detects conflicting legacy ownership instead of silently resolving', () => {
-		expect(
-			detectShowFlourishesConflict({
-				presentationOptions: { showFlourishes: true },
-				legacySectionStylesShowFlourishes: false,
-			}),
-		).toBe(true);
-	});
-
 	it('keeps Daniela canonical showFlourishes in Draft presentationOptions', () => {
 		const pub = buildDanielaPublishedContent(danielaAssets as never) as Record<string, unknown>;
 		const draft = normalizeDraftContent(mapNestedToDraftContent(pub));
@@ -232,24 +192,6 @@ describe('published content migration audit', () => {
 		expect(audit.unparseableCount).toBe(0);
 		expect(audit.findings.some((f) => f.kind === 'legacy_date_prose')).toBe(true);
 		expect(audit.findings.some((f) => f.kind === 'legacy_time_prose')).toBe(true);
-	});
-
-	it('reports showFlourishes conflicts rather than resolving them', () => {
-		const audit = auditPublishedContent({
-			location: {
-				presentationOptions: { showFlourishes: true },
-				ceremony: {
-					venueEvent: 'Ceremonia',
-					venueName: 'X',
-					address: 'Y',
-					date: '2026-01-01',
-					time: '10:00',
-				},
-			},
-			sectionStyles: { location: { showFlourishes: false } },
-		});
-		expect(audit.showFlourishesConflicts).toBe(1);
-		expect(audit.readyForMachineMigration).toBe(false);
 	});
 
 	it('flags unparseable values for manual review', () => {
