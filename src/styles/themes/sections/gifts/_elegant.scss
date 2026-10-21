@@ -28,13 +28,13 @@
 	}
 
 	.bank-details {
-		background: rgb(255 255 255 / 40%);
-		border-left: 2px solid var(--color-action-accent);
+		background: var(--gifts-bank-surface, rgb(255 255 255 / 40%));
+		border-left: var(--gifts-bank-rule, 2px solid var(--color-action-accent));
 		backdrop-filter: blur(4px);
-		border-radius: 0 8px 8px 0;
+		border-radius: var(--gifts-bank-radius, 0 8px 8px 0);
 
 		strong {
-			color: var(--color-action-accent);
+			color: var(--gifts-bank-label-ink, var(--color-action-accent));
 		}
 	}
 
