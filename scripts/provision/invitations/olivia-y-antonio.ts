@@ -289,7 +289,7 @@ const content: CanonicalEventContentInput = {
 			{
 				type: 'cash',
 				title: 'Lluvia de sobres',
-				text: 'Habrá recepción de sobres durante la recepción.',
+				text: 'Habrá lluvia de sobres durante la fiesta.',
 			},
 			{
 				type: 'bank',
