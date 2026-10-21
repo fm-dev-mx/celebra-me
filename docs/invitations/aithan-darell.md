@@ -67,7 +67,7 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 | rsvpConfirmationMode | api                                                                            | inferred       | owner     | Owner offered dashboard guest control and passes; client agreed ("Ok super")                                        |
 | rsvpGuestCap         | 4                                                                              | inferred       | owner     | Owner default, never discussed; passes are assigned per guest in the dashboard (asked in the message)               |
 | musicUrl             | Hosted audio URL (owner-supplied track)                                        | verified       | owner     | "Life Is a Highway" (Rascal Flatts); hosted track supplied by owner (2026-10-07)                                    |
-| musicStartAt         | 49 s, 3 s fade-in                                                              | verified       | owner     | Client asked to start where the vocals begin; owner gave ~0:49 and a gentle entry (2026-10-08)                      |
+| musicStartAt         | 0 s: hosted 102 s loop cut starts at the vocals (2026-10-21), 3 s fade-in      | verified       | owner     | Client asked to start where the vocals begin; owner gave ~0:49 and a gentle entry (2026-10-08)                      |
 | dressCode            | Rojo, negro y/o blanco; nada referente a Cars, no disfraz                      | verified       | wa-export | Owner relay (2026-10-07) plus client line (2026-10-08); location pit board 03                                       |
 | gifts                | ¡No olvide mi regalo! (legend only, gift-on-wheels illustration)               | verified       | wa-export | Client: "poner como no olviden mi regalo" (2026-10-08); no registry or account details                              |
 | itinerary            | —                                                                              | missing        | owner     | Not included: owner relay "esto no va" (2026-10-08)                                                                 |
@@ -130,7 +130,8 @@ Every published fact was re-read against the full chat and the Local payload.
   - **status:** confirmed; no other page role
 - **fact:** Song
   - **source:** chat: "Life ls a highway canción"
-  - **payload:** "Life Is a Highway" (hosted mp3), `startAt: 49`, `fadeInSeconds: 3`
+  - **payload:** "Life Is a Highway" (hosted 102 s loop cut that starts at the vocals, 2026-10-21),
+    `fadeInSeconds: 3`
   - **status:** confirmed (2026-10-08: client asked to start at the vocals; owner gave ~0:49)
 - **fact:** Parents / hosts
   - **source:** not supplied; owner (2026-10-08): not included

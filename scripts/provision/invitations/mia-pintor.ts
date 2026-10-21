@@ -226,7 +226,7 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	music: {
-		url: 'https://media.celebra-me.com/invitations/xv/mia-pintor/music-24f471af89f8c3f7b6ceeda93880507cb8dd41224ab04ec27b151aac2d892927.mp3',
+		url: 'https://media.celebra-me.com/invitations/xv/mia-pintor/music-6056e2e1848a9d461313d2fb8ec8b03a0af1aeba15b41245ccec9dd2f7145118.mp3',
 		title: 'Dancing Queen — ABBA',
 		// Starts with the envelope tap (inside the gesture, so mobile browsers allow it).
 		autoPlay: true,
