@@ -19,6 +19,13 @@ const PUBLIC_TRACKING_EVENT_NAMES = [
 	'form_submitted',
 ] as const;
 
+/**
+ * Browser-only funnel events: pushed to the dataLayer and forwarded to GA4, never posted to
+ * /api/tracking/events. Storing one first-party needs `tracking_events_event_name_check` widened
+ * by a migration first; until then the ingestion schema keeps rejecting it.
+ */
+export const CLIENT_ONLY_TRACKING_EVENT_NAMES = ['envelope_opened'] as const;
+
 export const INTERNAL_TRACKING_EVENT_NAMES = [
 	'session_started',
 	'session_ended',
@@ -43,6 +50,7 @@ const TRACKING_EVENT_NAMES = [
 
 export type TrackingEventName = (typeof TRACKING_EVENT_NAMES)[number];
 export type PublicTrackingEventName = (typeof PUBLIC_TRACKING_EVENT_NAMES)[number];
+export type ClientOnlyTrackingEventName = (typeof CLIENT_ONLY_TRACKING_EVENT_NAMES)[number];
 
 const TRACKING_ROUTE_CLASSES: TrackingRouteClass[] = [
 	'commercial',

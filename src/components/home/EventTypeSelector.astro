@@ -3,6 +3,7 @@ import Container from '@/components/layout/Container.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import { Image } from 'astro:assets';
+import { getFeaturedDemoShowroomItems } from '@/data/demo-showroom.data';
 
 import type { ImageMetadata } from 'astro';
 import type { DemoShowroomHomeEvent } from '@/interfaces/ui/sections/demo-showroom.interface';
@@ -41,6 +42,11 @@ const demoScreens: Partial<Record<EventType, ImageMetadata>> = {
 };
 
 const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoScreenXv;
+
+// The featured demo of each tab, whose first screen the phone mockup shows.
+const getFeaturedDemoSlug = (eventType: EventType) =>
+	getFeaturedDemoShowroomItems(eventType)[0]?.slug ?? eventType;
+const firstDemoSlug = getFeaturedDemoSlug(events[0].eventType);
 ---
 
 <section
@@ -86,6 +92,7 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 			<div class="event-showroom__panels">
 				{events.map((event, index) => {
 					const demoScreen = getDemoScreen(event.eventType);
+					const demoSlug = getFeaturedDemoSlug(event.eventType);
 
 					return (
 					<div
@@ -97,6 +104,7 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 						data-event-panel
 						data-showroom-href={event.showroomHref}
 						data-event-label={event.label}
+						data-demo-slug={demoSlug}
 						aria-hidden={index === 0 ? "false" : "true"}
 						{...(index === 0 ? {} : { inert: true })}
 					>
@@ -108,7 +116,8 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 									aria-label={`Abrir demo completa de ${event.label}`}
 									data-track-event="cta_clicked"
 									data-track-section="event-types"
-									data-track-cta={`showroom_preview_${event.eventType}`}
+									data-track-cta={`demo_open_${demoSlug}`}
+									data-demo-slug={demoSlug}
 									data-track-label="Vista previa interactiva"
 									data-track-intent="demo_showroom"
 									data-track-destination="demo-showroom"
@@ -143,7 +152,8 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 					aria-label={`Abrir demo completa de ${events[0].label}`}
 					data-track-event="cta_clicked"
 					data-track-section="event-types"
-					data-track-cta={`showroom_view_demo_${events[0].eventType}`}
+					data-track-cta={`demo_open_${firstDemoSlug}`}
+					data-demo-slug={firstDemoSlug}
 					data-track-label="Abrir demo completa"
 					data-track-intent="demo_showroom"
 					data-track-destination="demo-showroom"
@@ -279,11 +289,13 @@ const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoSc
 			const href = panel.getAttribute("data-showroom-href") || "";
 			const label = panel.getAttribute("data-event-label") || "";
 			const eventType = panel.getAttribute("data-panel-event") || "";
+			const demoSlug = panel.getAttribute("data-demo-slug") || "";
 
 			if (demoLink) {
 				demoLink.href = href;
 				demoLink.setAttribute("aria-label", `Abrir demo completa de ${label}`);
-				demoLink.setAttribute("data-track-cta", `showroom_view_demo_${eventType}`);
+				demoLink.setAttribute("data-track-cta", `demo_open_${demoSlug}`);
+				demoLink.setAttribute("data-demo-slug", demoSlug);
 
 				const labelSpan = demoLink.querySelector('[data-cta-label]');
 				if (labelSpan) {

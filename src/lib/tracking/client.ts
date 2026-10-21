@@ -7,7 +7,13 @@ import {
 	metaAttributionOrUndefined,
 	type MetaAttribution,
 } from '@/lib/tracking/meta-attribution';
-import type { PublicTrackingEventName } from '@/lib/tracking/event-contract';
+import {
+	CLIENT_ONLY_TRACKING_EVENT_NAMES,
+	type ClientOnlyTrackingEventName,
+	type PublicTrackingEventName,
+} from '@/lib/tracking/event-contract';
+
+type BrowserTrackingEventName = PublicTrackingEventName | ClientOnlyTrackingEventName;
 
 type ConsentSnapshot = {
 	necessary: true;
@@ -134,7 +140,7 @@ function shouldIgnoreTracking(): boolean {
 }
 
 function pushDataLayer(
-	eventName: PublicTrackingEventName,
+	eventName: BrowserTrackingEventName,
 	properties: TrackingPayload['eventProperties'],
 ): void {
 	window.dataLayer = window.dataLayer ?? [];
@@ -179,7 +185,7 @@ function markSessionInitialized(): void {
 }
 
 function trackEvent(
-	eventName: PublicTrackingEventName,
+	eventName: BrowserTrackingEventName,
 	eventProperties: TrackingPayload['eventProperties'] = {},
 ): void {
 	if (shouldIgnoreTracking()) return;
@@ -192,6 +198,20 @@ function trackEvent(
 
 	const routeClass = document.body.dataset.trackingRouteClass;
 	if (!routeClass) return;
+
+	const publicProperties = { ...eventProperties };
+	delete publicProperties.lead_code;
+	delete publicProperties.cta_label;
+	delete publicProperties.destination;
+	pushDataLayer(eventName, publicProperties);
+
+	// Synchronously forward to GA4 and Meta Pixel BEFORE any async network operations.
+	// This guarantees that outbound navigation events (like WhatsApp clicks) are tracked
+	// immediately without being suspended or cancelled by microtask delays.
+	forwardToGA4(eventName, eventProperties);
+	forwardToMetaPixel(eventName, eventProperties);
+
+	if (isClientOnlyEvent(eventName)) return;
 
 	const utm = getUtmSnapshot();
 	const metaAttribution = consent.marketing
@@ -217,18 +237,6 @@ function trackEvent(
 		consentSnapshot: consent,
 	};
 
-	const publicProperties = { ...eventProperties };
-	delete publicProperties.lead_code;
-	delete publicProperties.cta_label;
-	delete publicProperties.destination;
-	pushDataLayer(eventName, publicProperties);
-
-	// Synchronously forward to GA4 and Meta Pixel BEFORE any async network operations.
-	// This guarantees that outbound navigation events (like WhatsApp clicks) are tracked
-	// immediately without being suspended or cancelled by microtask delays.
-	forwardToGA4(eventName, eventProperties);
-	forwardToMetaPixel(eventName, eventProperties);
-
 	try {
 		// Use keepalive: true to ensure the request is completed in the background
 		// by the browser after page unload. We do not await this fetch so that
@@ -253,6 +261,32 @@ function trackEvent(
 	} catch {
 		// Degrade gracefully if keepalive fetch is not supported/throws.
 	}
+}
+
+function isClientOnlyEvent(
+	eventName: BrowserTrackingEventName,
+): eventName is ClientOnlyTrackingEventName {
+	return (CLIENT_ONLY_TRACKING_EVENT_NAMES as readonly string[]).includes(eventName);
+}
+
+/** One `envelope_opened` per page, from the tap that opens the envelope or editorial cover. */
+function bindEnvelopeOpen(routeClass: string): void {
+	window.addEventListener(
+		'envelope:open-requested',
+		(event) => {
+			if (document.body.dataset.envelopeOpenTracked === 'true') return;
+			document.body.dataset.envelopeOpenTracked = 'true';
+			const detail = (event as CustomEvent<{ eventSlug?: string }>).detail;
+			const [, eventType = ''] = window.location.pathname.split('/');
+			trackEvent('envelope_opened', {
+				demo_slug: detail?.eventSlug ?? '',
+				event_type: eventType,
+				is_demo: routeClass === 'demo',
+				page_type: routeClass,
+			});
+		},
+		{ once: true },
+	);
 }
 
 function bindSectionVisibility(): void {
@@ -459,6 +493,7 @@ export function initCommercialTracking(): void {
 			source_area: 'demo_page',
 		});
 	}
+	bindEnvelopeOpen(routeClass);
 	bindSectionVisibility();
 	bindPackageViews();
 	bindScrollDepth();

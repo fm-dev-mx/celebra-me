@@ -27,7 +27,7 @@ const descriptor = item.styleTags.slice(0, 2).join(' · ');
 			data-demo-rank={position}
 			data-track-event="cta_clicked"
 			data-track-section="demo_showroom_style_selector"
-			data-track-cta="demo_style_selector"
+			data-track-cta={`demo_open_${item.slug}`}
 			data-track-intent="demo"
 			data-demo-slug={item.slug}
 		>
