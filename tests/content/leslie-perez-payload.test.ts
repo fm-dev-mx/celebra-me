@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import {
@@ -157,10 +158,12 @@ describe('Leslie Perez provision contract', () => {
 	});
 
 	it('renders the closed section sequence', () => {
-		const viewModel = adaptEvent({
-			id: `events/${LESLIE_EVENT.slug}`,
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: `events/${LESLIE_EVENT.slug}`,
+				data: content,
+			} as EventContentEntry),
+		);
 
 		expect(viewModel.hero.variant).toBe('split-cover');
 		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
@@ -204,10 +207,12 @@ describe('Leslie Perez provision contract', () => {
 	});
 
 	it('assembles the music player on hosted Production from published music', () => {
-		const viewModel = adaptEvent({
-			id: `events/${LESLIE_EVENT.slug}`,
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: `events/${LESLIE_EVENT.slug}`,
+				data: content,
+			} as EventContentEntry),
+		);
 		asHostedDeploy('production', { isDevServer: true });
 
 		const page = buildPageContextFromViewModel({
@@ -231,10 +236,12 @@ describe('Leslie Perez provision contract', () => {
 
 	it('does not assemble a music player on hosted Production when no music is published', () => {
 		const unpublished = { ...content, music: undefined };
-		const viewModel = adaptEvent({
-			id: `events/${LESLIE_EVENT.slug}`,
-			data: unpublished,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: `events/${LESLIE_EVENT.slug}`,
+				data: unpublished,
+			} as EventContentEntry),
+		);
 		asHostedDeploy('production', { isDevServer: true });
 
 		const page = buildPageContextFromViewModel({

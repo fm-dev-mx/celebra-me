@@ -1,7 +1,7 @@
 import { adaptEvent } from '@/lib/adapters/event';
 import { resolveBrandingVisibility } from '@/lib/adapters/branding';
 import type { InvitationViewModel } from '@/lib/adapters/types';
-import type { EventContentEntry } from '@/lib/content/events';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
@@ -210,7 +210,7 @@ export function prepareInvitationPageContext(input: {
 	eventEntry: EventContentEntry;
 	guestContext?: InvitationGuestContext | null;
 }): InvitationPageContext {
-	const viewModel = adaptEvent(input.eventEntry);
+	const viewModel = adaptEvent(contentDocumentFromEntry(input.eventEntry));
 
 	return buildPageContextFromViewModel({
 		viewModel,

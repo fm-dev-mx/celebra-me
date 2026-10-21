@@ -3,7 +3,7 @@
  * Uses real corpus content shapes from canonical managed definitions.
  */
 import { describe, expect, it } from '@jest/globals';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/section-render-data';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -114,7 +114,7 @@ describe('local render corpus regression sweep', () => {
 			}
 			expect(JSON.stringify(content)).not.toMatch(/PENDING_|PROVISIONAL_/);
 
-			const viewModel = adaptDbEvent({
+			const viewModel = adaptEvent({
 				slug: entry.slug,
 				content,
 				assetSlug: typeof content._assetSlug === 'string' ? content._assetSlug : entry.slug,

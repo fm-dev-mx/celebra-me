@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import { rominaInvitation } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 import { adaptEvent } from '../../src/lib/adapters/event.ts';
+import { contentDocumentFromEntry } from '../../src/lib/content/events.ts';
 import { buildInvitationSectionRenderDescriptors } from '../../src/lib/invitation/section-render-data.ts';
 import { buildInvitationRenderPlan } from '../../src/lib/invitation/render-plan.ts';
 import { parseEventContentData } from '../helpers/event-content-fixture.ts';
@@ -24,11 +25,13 @@ describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 		expect((publishedProjection.family as Record<string, unknown>).eyebrow).toBeUndefined();
 
 		// 3. Adapter -> ViewModel
-		const viewModel = adaptEvent({
-			id: 'romina-rios-chaparro',
-			collection: 'event-demos',
-			data: publishedProjection,
-		});
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'romina-rios-chaparro',
+				collection: 'event-demos',
+				data: publishedProjection,
+			}),
+		);
 		expect(viewModel.sections.family).toBeDefined();
 		expect(viewModel.sections.family?.labels?.sectionSubtitle).toBe(sectionSubtitle);
 		expect(viewModel.sections.family?.labels?.sectionTitle).toBe(sectionTitle);

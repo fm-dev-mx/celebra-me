@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-presentation';
 import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
@@ -86,10 +87,12 @@ describe('Goal C — presentation options', () => {
 					timeZone: 'America/Mexico_City',
 				},
 			});
-			const viewModel = adaptEvent({
-				id: 'event-demos/xv/portability-countdown',
-				data,
-			} as Parameters<typeof adaptEvent>[0]);
+			const viewModel = adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/portability-countdown',
+					data,
+				} as EventContentEntry),
+			);
 
 			expect(viewModel.sections.countdown?.visibleUnits).toEqual(['days']);
 			expect(viewModel.theme.preset).toBe('luxury-hacienda');
@@ -117,10 +120,12 @@ describe('Goal C — presentation options', () => {
 				},
 			});
 			expect(
-				adaptEvent({
-					id: 'event-demos/xv/no-gifts',
-					data: omitted,
-				} as Parameters<typeof adaptEvent>[0]).sections.gifts,
+				adaptEvent(
+					contentDocumentFromEntry({
+						id: 'event-demos/xv/no-gifts',
+						data: omitted,
+					} as EventContentEntry),
+				).sections.gifts,
 			).toBeUndefined();
 		});
 
@@ -158,10 +163,12 @@ describe('Goal C — presentation options', () => {
 					presentation: 'legend-only',
 				},
 			});
-			const gifts = adaptEvent({
-				id: 'event-demos/xv/portability-gifts',
-				data,
-			} as Parameters<typeof adaptEvent>[0]).sections.gifts;
+			const gifts = adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/portability-gifts',
+					data,
+				} as EventContentEntry),
+			).sections.gifts;
 
 			expect(gifts?.presentation).toBe('legend-only');
 			expect(gifts?.items).toEqual([]);
@@ -233,10 +240,12 @@ describe('Goal C — presentation options', () => {
 					],
 				},
 			});
-			const gallery = adaptEvent({
-				id: 'event-demos/xv/portability-gallery-rail',
-				data,
-			} as Parameters<typeof adaptEvent>[0]).sections.gallery;
+			const gallery = adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/portability-gallery-rail',
+					data,
+				} as EventContentEntry),
+			).sections.gallery;
 
 			expect(gallery?.variant).toBe('magazine-spread');
 			expect(gallery?.variantOptions?.mobileBrowse).toBe('rail');

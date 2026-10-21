@@ -20,6 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { SECTION_INTERSECTION_FAMILIES } from '@/lib/theme/theme-contract';
@@ -41,7 +42,7 @@ jest.mock('@/lib/assets/asset-registry', () => {
 	};
 });
 
-type EventInput = Parameters<typeof adaptEvent>[0];
+type EventInput = EventContentEntry;
 
 // Type-safe JSON shape for in-memory patches; the schema parse below is the real contract.
 type PatchableContent = {
@@ -82,7 +83,7 @@ function synthetic(
 
 function adapt(candidate: { id: string; data: Record<string, unknown> }) {
 	const parsed = eventContentSchema.parse(candidate.data);
-	return adaptEvent({ ...candidate, data: parsed } as EventInput);
+	return adaptEvent(contentDocumentFromEntry({ ...candidate, data: parsed } as EventInput));
 }
 
 function readSource(relativePath: string) {

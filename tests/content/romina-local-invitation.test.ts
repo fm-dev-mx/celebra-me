@@ -1,5 +1,5 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import {
@@ -85,7 +85,7 @@ describe('Romina local invitation content', () => {
 
 	it('builds a public page context from uploaded images without an internal asset registry pack', () => {
 		const content = buildRominaPublishedContent(buildTestAssets(ROMINA_ASSET_SPECS));
-		const viewModel = adaptDbEvent({
+		const viewModel = adaptEvent({
 			slug: ROMINA_EVENT.slug,
 			content,
 			assetSlug: ROMINA_EVENT.assetSlug,

@@ -1,8 +1,7 @@
-import { getRoutableEventEntry } from '@/lib/content/events';
+import { getRoutableEventEntry, contentDocumentFromEntry } from '@/lib/content/events';
 import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { normalizeLegacyLocationInContent } from '@/lib/invitation/location-normalizer';
@@ -37,16 +36,30 @@ interface UnavailableInvitationResolution {
 
 export type PublicInvitationResolution = ContentResolution | UnavailableInvitationResolution;
 
-function isStaticDemoEntry(
-	entry: Awaited<ReturnType<typeof getRoutableEventEntry>> | null,
-): boolean {
-	return entry?.data?.isDemo === true;
+/**
+ * Static fallback: the bundled demo with this slug, or null. Only demos render from the
+ * bundle; a non-demo bundled entry is blocked because client data must come from the database.
+ */
+async function resolveStaticDemo(
+	slug: string,
+	eventType: string | undefined,
+): Promise<ContentResolution | null> {
+	const entry = await getRoutableEventEntry(slug, eventType);
+	if (entry?.data?.isDemo !== true) return null;
+	return { source: 'static', viewModel: adaptEvent(contentDocumentFromEntry(entry)) };
 }
 
-function toStaticResolution(
-	entry: NonNullable<Awaited<ReturnType<typeof getRoutableEventEntry>>>,
-): ContentResolution {
-	return { source: 'static', viewModel: adaptEvent(entry) };
+/**
+ * Database errors after which the resolver serves the static fallback instead of failing:
+ * no Supabase credentials (CI, local without .env) or Supabase configured but unreachable.
+ * Any other error is thrown.
+ */
+type StaticFallbackReason = 'database-not-configured' | 'database-unreachable';
+
+function staticFallbackReason(error: unknown): StaticFallbackReason | null {
+	if (isMissingSupabaseCredentialsError(error)) return 'database-not-configured';
+	if (isSupabaseNetworkError(error)) return 'database-unreachable';
+	return null;
 }
 
 function isMissingInvitationsTableError(error: unknown): boolean {
@@ -177,10 +190,7 @@ export async function resolvePublicInvitation(
 
 				const rawContent = parsedContent.data;
 				// Unpaid previews keep their original photos; the page banner is the preview cue.
-				const viewModel = adaptDbEvent({
-					slug,
-					content: rawContent,
-				});
+				const viewModel = adaptEvent({ slug, content: rawContent });
 				return {
 					source: 'published',
 					invitationId: publishedEntry.invitationId,
@@ -191,40 +201,15 @@ export async function resolvePublicInvitation(
 				};
 			}
 		} catch (error) {
-			if (isMissingSupabaseCredentialsError(error)) {
-				// Credentials not configured — static fallback will handle this.
-				// Do not swallow other DB errors.
-			} else if (isSupabaseNetworkError(error)) {
-				// Supabase is configured but unreachable — fall back to static
-				// content so demos still render.
-			} else {
-				throw error;
-			}
+			if (!staticFallbackReason(error)) throw error;
 		}
 	}
 
 	try {
 		if (await isInvitationArchivedBySlug(slug)) return null;
 	} catch (error) {
-		if (isMissingSupabaseCredentialsError(error)) {
-			// Credentials not configured — proceed to static fallback.
-		} else if (isSupabaseNetworkError(error)) {
-			// Supabase is configured but unreachable — fall through to
-			// static fallback so demos still render.
-		} else if (!isMissingInvitationsTableError(error)) {
-			throw error;
-		}
+		if (!staticFallbackReason(error) && !isMissingInvitationsTableError(error)) throw error;
 	}
 
-	// Static fallback — only for demos
-	const staticEntry = await getRoutableEventEntry(slug, eventType);
-	if (staticEntry?.data) {
-		if (isStaticDemoEntry(staticEntry)) {
-			return toStaticResolution(staticEntry);
-		}
-		// Non-demo static entries are blocked — real client data must come from DB
-		return null;
-	}
-
-	return null;
+	return resolveStaticDemo(slug, eventType);
 }

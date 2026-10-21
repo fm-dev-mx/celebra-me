@@ -1,5 +1,6 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { resolveLocationShowNavigationButtons } from '@/lib/invitation/location-presentation';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import demoBodaJewelryBoxWedding from '../../src/content/event-demos/boda/demo-boda-jewelry-box-wedding.json';
@@ -158,10 +159,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 			}),
 		]);
 
-		const viewModel = adaptEvent({
-			id: 'events/daniela-y-martin',
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/daniela-y-martin',
+				data: content,
+			} as EventContentEntry),
+		);
 		const renderPlan = buildInvitationRenderPlan(viewModel);
 		expect(renderPlan.filter((item) => item.type === 'interlude')).toHaveLength(2);
 		expect(
@@ -326,10 +329,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 
 		// The adapter must surface the opt-out on the section data the
 		// render plan and EventLocation consume.
-		const viewModel = adaptEvent({
-			id: 'events/daniela-y-martin',
-			data: published,
-		} as unknown as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/daniela-y-martin',
+				data: published,
+			} as unknown as EventContentEntry),
+		);
 		expect(viewModel.sections.location?.presentation).toBe('simple');
 		expect(viewModel.sections.location?.showNavigationButtons).toBe(false);
 	});
@@ -337,10 +342,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 	it('keeps provider navigation enabled for the existing wedding control invitation', () => {
 		expect(resolveLocationShowNavigationButtons(undefined)).toBe(true);
 
-		const viewModel = adaptEvent({
-			id: 'event-demos/boda/demo-boda-jewelry-box-wedding.json',
-			data: demoBodaJewelryBoxWedding,
-		} as unknown as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'event-demos/boda/demo-boda-jewelry-box-wedding.json',
+				data: demoBodaJewelryBoxWedding,
+			} as unknown as EventContentEntry),
+		);
 
 		expect(viewModel.sections.location?.showNavigationButtons).toBe(true);
 	});

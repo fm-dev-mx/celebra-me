@@ -1,4 +1,5 @@
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildInvitationRenderPlan } from '@/lib/invitation/page-data';
 import { loadFixture } from '../helpers/json-fixture';
 
@@ -20,9 +21,9 @@ describe('buildInvitationRenderPlan', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 		const plan = buildInvitationRenderPlan(viewModel);
 
 		const sectionTypes = plan.map((item) =>
@@ -39,9 +40,9 @@ describe('buildInvitationRenderPlan', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 		const plan = buildInvitationRenderPlan(viewModel);
 
 		const sectionTypes = plan.map((item) =>
@@ -72,9 +73,9 @@ describe('buildInvitationRenderPlan', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 		const plan = buildInvitationRenderPlan(viewModel);
 
 		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
@@ -97,9 +98,9 @@ describe('buildInvitationRenderPlan', () => {
 		const event = {
 			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
 			data: loadFixture('src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 		const plan = buildInvitationRenderPlan(viewModel);
 
 		const sectionTypes = plan.map((item) =>
@@ -127,9 +128,9 @@ describe('buildInvitationRenderPlan', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 		const plan = buildInvitationRenderPlan(viewModel);
 
 		expect(viewModel.interludes).toBeDefined();
@@ -155,9 +156,9 @@ describe('buildInvitationRenderPlan', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data,
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const plan = buildInvitationRenderPlan(adaptEvent(event));
+		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
 		const interlude = plan.find((item) => item.type === 'interlude');
 
 		expect(interlude).toMatchObject({
@@ -170,9 +171,9 @@ describe('buildInvitationRenderPlan', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-celestial-blue',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-celestial-blue.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const plan = buildInvitationRenderPlan(adaptEvent(event));
+		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
 		const nonNeutral = plan.filter((item) => item.intersection.family !== 'neutral');
 
 		expect(nonNeutral).toHaveLength(5);
@@ -215,8 +216,8 @@ describe('published demo interlude placement', () => {
 		const event = {
 			id: `event-demos/${fixture}`,
 			data: loadFixture(`src/content/event-demos/${fixture}.json`),
-		} as Parameters<typeof adaptEvent>[0];
-		const plan = buildInvitationRenderPlan(adaptEvent(event));
+		} as EventContentEntry;
+		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
 		expect(
 			plan.slice(0, 3).map((item) => (item.type === 'section' ? item.section : item.type)),
 		).toEqual(['quote', 'personalized-access', 'interlude']);
