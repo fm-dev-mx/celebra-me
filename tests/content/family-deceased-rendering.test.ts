@@ -4,6 +4,7 @@ import path from 'node:path';
 import { victoriaInvitation } from '../../scripts/provision/invitations/victoria-y-roberto.ts';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 import { adaptEvent } from '../../src/lib/adapters/event.ts';
+import { contentDocumentFromEntry } from '../../src/lib/content/events.ts';
 import { parseEventContentData } from '../helpers/event-content-fixture.ts';
 
 describe('Family Deceased Indicator Contract', () => {
@@ -36,11 +37,13 @@ describe('Family Deceased Indicator Contract', () => {
 			deceased: true,
 		});
 
-		const viewModel = adaptEvent({
-			id: 'events/victoria-y-roberto',
-			collection: 'event-demos',
-			data: publishedProjection,
-		});
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/victoria-y-roberto',
+				collection: 'event-demos',
+				data: publishedProjection,
+			}),
+		);
 
 		const familySection = viewModel.sections.family;
 		expect(familySection).toBeDefined();

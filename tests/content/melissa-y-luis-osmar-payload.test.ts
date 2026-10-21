@@ -1,5 +1,6 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { deriveStartsAtUtc } from '@/lib/time/event-time';
 import fs from 'node:fs';
@@ -222,10 +223,12 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 			),
 		).toBe(true);
 
-		const viewModel = adaptEvent({
-			id: 'events/melissa-y-luis-osmar',
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/melissa-y-luis-osmar',
+				data: content,
+			} as EventContentEntry),
+		);
 		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess?.variant).toBe('formal-pass');
 

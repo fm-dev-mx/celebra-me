@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import {
 	findEventTypeStructureViolations,
 	listEventTypeStructureContracts,
@@ -55,7 +55,7 @@ function parse(entry: CorpusEntry): CanonicalEventContent {
 /** View-model key for each registry section; personalized access lives under RSVP content. */
 const VIEW_MODEL_VARIANT_READERS: Record<
 	string,
-	(sections: ReturnType<typeof adaptDbEvent>['sections']) => string | undefined
+	(sections: ReturnType<typeof adaptEvent>['sections']) => string | undefined
 > = {
 	family: (sections) => sections.family?.variant,
 	location: (sections) => sections.location?.variant,
@@ -101,7 +101,7 @@ describe('event type structure contract', () => {
 		'%s keeps every declared section variant through the adapter',
 		(_id, entry) => {
 			const content = parse(entry);
-			const viewModel = adaptDbEvent({
+			const viewModel = adaptEvent({
 				slug: entry.id,
 				content: content as unknown as Record<string, unknown>,
 			});

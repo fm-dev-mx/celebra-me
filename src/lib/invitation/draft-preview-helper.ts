@@ -1,5 +1,5 @@
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import { preferUploadedDeliverySrc } from '@/lib/intake/services/asset-delivery';
@@ -97,7 +97,7 @@ export async function buildDraftPreviewPageContext(
 			priorPublishedContent: options.priorPublishedContent ?? undefined,
 		});
 
-		const viewModel = adaptDbEvent({
+		const viewModel = adaptEvent({
 			slug: contentSlug,
 			content: publishedData,
 			assetSlug: assetLookupSlug,

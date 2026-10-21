@@ -1,5 +1,5 @@
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import type { Invitation } from '@/lib/intake/types';
@@ -12,8 +12,8 @@ jest.mock('@/lib/intake/storage', () => ({
 	getPublicUrl: (bucket: string, path: string) => `https://cdn.test/${bucket}/${path}`,
 }));
 
-jest.mock('@/lib/adapters/db-event-adapter', () => ({
-	adaptDbEvent: jest.fn(),
+jest.mock('@/lib/adapters/event', () => ({
+	adaptEvent: jest.fn(),
 }));
 
 jest.mock('@/lib/invitation/page-data', () => ({
@@ -23,7 +23,7 @@ jest.mock('@/lib/invitation/page-data', () => ({
 const mockFindAssets = findAssetsByInvitationId as jest.MockedFunction<
 	typeof findAssetsByInvitationId
 >;
-const mockAdaptDbEvent = adaptDbEvent as jest.MockedFunction<typeof adaptDbEvent>;
+const mockAdaptEvent = adaptEvent as jest.MockedFunction<typeof adaptEvent>;
 const mockBuildPageContext = buildPageContextFromViewModel as jest.MockedFunction<
 	typeof buildPageContextFromViewModel
 >;
@@ -106,7 +106,7 @@ const mockPageContext = {
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockFindAssets.mockResolvedValue([]);
-	mockAdaptDbEvent.mockReturnValue(mockViewModel);
+	mockAdaptEvent.mockReturnValue(mockViewModel);
 	mockBuildPageContext.mockReturnValue(mockPageContext);
 });
 
@@ -148,15 +148,15 @@ describe('buildDraftPreviewPageContext', () => {
 		});
 
 		expect(result.ok).toBe(true);
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
-		const published = mockAdaptDbEvent.mock.calls[0][0].content as {
+		expect(mockAdaptEvent).toHaveBeenCalledTimes(1);
+		const published = mockAdaptEvent.mock.calls[0][0].content as {
 			rsvp?: { variant?: string; personalizedAccess?: { variant?: string } };
 		};
 		expect(published.rsvp?.variant).toBe('editorial-press-pass');
 		expect(published.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
 	});
 
-	it('passes correct args to adaptDbEvent', async () => {
+	it('passes correct args to adaptEvent', async () => {
 		const invitation = makeProject();
 
 		await buildDraftPreviewPageContext(invitation, validDraftContent, {
@@ -164,8 +164,8 @@ describe('buildDraftPreviewPageContext', () => {
 			assetLookupSlug: 'valeria-fixture',
 		});
 
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
-		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(mockAdaptEvent).toHaveBeenCalledTimes(1);
+		const callArgs = mockAdaptEvent.mock.calls[0][0];
 		expect(callArgs.slug).toBe('valeria-fixture');
 		expect(callArgs.assetSlug).toBe('valeria-fixture');
 		expect(callArgs.content).toMatchObject({
@@ -186,9 +186,9 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(callArgs.eventType).toBe('xv');
 	});
 
-	it('returns RENDER_FAILED when adaptDbEvent throws', async () => {
+	it('returns RENDER_FAILED when adaptEvent throws', async () => {
 		const invitation = makeProject();
-		mockAdaptDbEvent.mockImplementation(() => {
+		mockAdaptEvent.mockImplementation(() => {
 			throw new Error('Asset resolution failed');
 		});
 
@@ -209,8 +209,8 @@ describe('buildDraftPreviewPageContext', () => {
 
 		await buildDraftPreviewPageContext(invitation, validDraftContent, previewOptions);
 
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
-		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(mockAdaptEvent).toHaveBeenCalledTimes(1);
+		const callArgs = mockAdaptEvent.mock.calls[0][0];
 		expect(callArgs.slug).toBe('lucia-fixture');
 		expect(callArgs.assetSlug).toBeUndefined();
 		expect(callArgs.content).not.toHaveProperty('_assetSlug');
@@ -229,8 +229,8 @@ describe('buildDraftPreviewPageContext', () => {
 			{ ...previewOptions, assetLookupSlug: 'other-asset-slug' },
 		);
 
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
-		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(mockAdaptEvent).toHaveBeenCalledTimes(1);
+		const callArgs = mockAdaptEvent.mock.calls[0][0];
 		expect(callArgs.slug).toBe('lucia-fixture');
 		expect(callArgs.assetSlug).toBe('lucia-fixture');
 	});
@@ -244,7 +244,7 @@ describe('buildDraftPreviewPageContext', () => {
 			{ ...previewOptions, assetLookupSlug: 'elena-fixture' },
 		);
 
-		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		const callArgs = mockAdaptEvent.mock.calls[0][0];
 		expect(callArgs.assetSlug).toBe('elena-fixture');
 		expect((callArgs.content.hero as Record<string, unknown>).name).toBe('Ximena');
 	});
@@ -254,8 +254,8 @@ describe('buildDraftPreviewPageContext', () => {
 
 		await buildDraftPreviewPageContext(invitation, validDraftContent, previewOptions);
 
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
-		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(mockAdaptEvent).toHaveBeenCalledTimes(1);
+		const callArgs = mockAdaptEvent.mock.calls[0][0];
 		expect(callArgs.slug).toBe('xv-test-inv');
 		expect(callArgs.assetSlug).toBeUndefined();
 	});
@@ -268,7 +268,7 @@ describe('buildDraftPreviewPageContext', () => {
 		});
 
 		expect(result.ok).toBe(false);
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
 	});
 
 	it('succeeds with empty draft content (no draft saved yet)', async () => {
@@ -277,7 +277,7 @@ describe('buildDraftPreviewPageContext', () => {
 		const result = await buildDraftPreviewPageContext(invitation, {}, previewOptions);
 
 		expect(result.ok).toBe(true);
-		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
+		expect(mockAdaptEvent).toHaveBeenCalledTimes(1);
 	});
 
 	it('fails closed when both draft and prior published content are empty', async () => {
@@ -293,7 +293,7 @@ describe('buildDraftPreviewPageContext', () => {
 		);
 
 		expect(result.ok).toBe(false);
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
 	});
 });
 
@@ -308,14 +308,14 @@ describe('content mapping behavior', () => {
 		);
 
 		expect(result.ok).toBe(true);
-		const callContent = mockAdaptDbEvent.mock.calls[0][0].content as Record<string, unknown>;
+		const callContent = mockAdaptEvent.mock.calls[0][0].content as Record<string, unknown>;
 		expect(callContent.title).toBe('XV Años — Valeria Ruiz');
 		expect((callContent.hero as Record<string, unknown>).name).toBe('Valeria Ruiz');
 	});
 
-	it('returns error when adaptDbEvent throws during build', async () => {
+	it('returns error when adaptEvent throws during build', async () => {
 		const invitation = makeProject();
-		mockAdaptDbEvent.mockImplementation(() => {
+		mockAdaptEvent.mockImplementation(() => {
 			throw new Error('Draft render failed');
 		});
 
@@ -422,14 +422,14 @@ describe('content mapping behavior', () => {
 			themePreset: 'luxury-hacienda',
 		});
 		expect(withoutPrior.ok).toBe(false);
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
 
 		const withPrior = await buildDraftPreviewPageContext(invitation, editableDraft, {
 			themePreset: 'luxury-hacienda',
 			priorPublishedContent,
 		});
 		expect(withPrior.ok).toBe(true);
-		const contentWithPrior = mockAdaptDbEvent.mock.calls.at(-1)?.[0].content as Record<
+		const contentWithPrior = mockAdaptEvent.mock.calls.at(-1)?.[0].content as Record<
 			string,
 			unknown
 		>;

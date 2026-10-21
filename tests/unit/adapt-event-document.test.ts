@@ -1,5 +1,5 @@
 import { adaptEvent } from '@/lib/adapters/event';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { loadFixture } from '../helpers/json-fixture';
 
 function makeDbSource(slug: string, eventType: string, fixturePath: string) {
@@ -14,46 +14,38 @@ function makeDbSource(slug: string, eventType: string, fixturePath: string) {
 
 const JEWELRY_BOX_FIXTURE = 'tests/fixtures/content/xv-jewelry-box.json';
 
-describe('adaptDbEvent', () => {
-	it('produces InvitationViewModel matching adaptEvent for demos', () => {
+describe('adaptEvent with an invitation document', () => {
+	it('renders a bundled demo entry exactly like the same content published to the database', () => {
 		const slug = 'demo-xv-jewelry-box';
-		const source = makeDbSource(slug, 'xv', JEWELRY_BOX_FIXTURE);
-
-		const dbResult = adaptDbEvent(source);
-
-		const event = {
-			id: `event-demos/xv/${slug}`,
+		const entry = {
+			id: `event-demos/xv/${slug}.json`,
 			data: loadFixture(JEWELRY_BOX_FIXTURE),
-		} as Parameters<typeof adaptEvent>[0];
-		const fileResult = adaptEvent(event);
+		} as unknown as EventContentEntry;
 
-		expect(dbResult.title).toBe(fileResult.title);
-		expect(dbResult.theme.preset).toBe(fileResult.theme.preset);
-		expect(dbResult.hero.name).toBe(fileResult.hero.name);
-		expect(dbResult.hero.label).toBe(fileResult.hero.label);
-		expect(dbResult.hero.date).toBe(fileResult.hero.date);
-		expect(dbResult.sections.rsvp?.title).toBe(fileResult.sections.rsvp?.title);
-		expect(dbResult.sections.rsvp?.guestCap).toBe(fileResult.sections.rsvp?.guestCap);
+		expect(contentDocumentFromEntry(entry)).toEqual({ slug, content: entry.data });
+		expect(adaptEvent(contentDocumentFromEntry(entry))).toEqual(
+			adaptEvent(makeDbSource(slug, 'xv', JEWELRY_BOX_FIXTURE)),
+		);
 	});
 
-	it('produces InvitationViewModel matching adaptEvent for demos', () => {
-		const slug = 'demo-xv-jewelry-box';
-		const source = makeDbSource(slug, 'xv', JEWELRY_BOX_FIXTURE);
+	it('looks images up under assetSlug when given, else under the content _assetSlug', () => {
+		const content = loadFixture(JEWELRY_BOX_FIXTURE);
+		const overridden = adaptEvent({
+			slug: 'renamed',
+			content,
+			assetSlug: 'demo-xv-jewelry-box',
+		});
 
-		const dbResult = adaptDbEvent(source);
-
-		const event = {
-			id: `event-demos/xv/${slug}`,
-			data: loadFixture(JEWELRY_BOX_FIXTURE),
-		} as Parameters<typeof adaptEvent>[0];
-		const fileResult = adaptEvent(event);
-
-		expect(dbResult.theme.preset).toBe(fileResult.theme.preset);
-		expect(dbResult.hero.name).toBe(fileResult.hero.name);
-		expect(dbResult.sections.family?.godparents).toEqual(
-			fileResult.sections.family?.godparents,
+		expect(overridden.id).toBe('renamed');
+		expect(overridden.sections.rsvp?.eventSlug).toBe('renamed');
+		expect(JSON.stringify(overridden)).toEqual(
+			JSON.stringify(
+				adaptEvent({
+					slug: 'renamed',
+					content: { ...content, _assetSlug: 'demo-xv-jewelry-box' },
+				}),
+			),
 		);
-		expect(dbResult.sections.gifts?.items).toEqual(fileResult.sections.gifts?.items);
 	});
 
 	it('preserves hero section with all fields', () => {
@@ -62,7 +54,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'tests/fixtures/content/xv-jewelry-box.json',
 		);
-		const result = adaptDbEvent(source);
+		const result = adaptEvent(source);
 
 		expect(result.hero).toMatchObject({
 			name: expect.any(String),
@@ -78,7 +70,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'tests/fixtures/content/xv-jewelry-box.json',
 		);
-		const result = adaptDbEvent(source);
+		const result = adaptEvent(source);
 
 		expect(result.sections.location).toBeDefined();
 		expect(
@@ -92,7 +84,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'tests/fixtures/content/xv-jewelry-box.json',
 		);
-		const result = adaptDbEvent(source);
+		const result = adaptEvent(source);
 
 		expect(result.music).toBeDefined();
 		expect(result.music?.url).toBeTruthy();
@@ -104,7 +96,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'src/content/event-demos/xv/demo-xv-enchanted-rose.json',
 		);
-		const result = adaptDbEvent(source);
+		const result = adaptEvent(source);
 
 		expect(result.sections.quote).toBeDefined();
 		expect(result.sections.thankYou).toBeDefined();
@@ -118,7 +110,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'tests/fixtures/content/xv-jewelry-box.json',
 		);
-		expect(adaptDbEvent(demoSoure).isDemo).toBe(true);
+		expect(adaptEvent(demoSoure).isDemo).toBe(true);
 	});
 
 	it('sets correct id from slug', () => {
@@ -127,7 +119,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'src/content/event-demos/xv/demo-xv-editorial.json',
 		);
-		const result = adaptDbEvent(source);
+		const result = adaptEvent(source);
 
 		expect(result.id).toBe('demo-xv-editorial');
 	});
@@ -138,7 +130,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'tests/fixtures/content/xv-jewelry-box.json',
 		);
-		const result = adaptDbEvent(source);
+		const result = adaptEvent(source);
 
 		expect(result.sections.gifts?.items).toBeDefined();
 		expect(result.sections.gifts?.items.length).toBeGreaterThan(0);
@@ -150,7 +142,7 @@ describe('adaptDbEvent', () => {
 			'xv',
 			'tests/fixtures/content/xv-jewelry-box.json',
 		);
-		const result = adaptDbEvent(source);
+		const result = adaptEvent(source);
 
 		expect(result.brandingVisibility).toEqual({
 			showFooterBranding: true,

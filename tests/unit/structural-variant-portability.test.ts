@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/section-render-data';
 import {
@@ -126,7 +127,7 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 	return {
 		id: 'event-demos/xv/demo-xv-jewelry-box',
 		data,
-	} as Parameters<typeof adaptEvent>[0];
+	} as EventContentEntry;
 }
 
 function loadDemoEvent(relativePath: string, id: string) {
@@ -135,7 +136,7 @@ function loadDemoEvent(relativePath: string, id: string) {
 	return {
 		id,
 		data: fixture,
-	} as Parameters<typeof adaptEvent>[0];
+	} as EventContentEntry;
 }
 
 describe('registry-driven canonical variant portability', () => {
@@ -149,8 +150,8 @@ describe('registry-driven canonical variant portability', () => {
 			const parsed = eventContentSchema.safeParse(candidate.data);
 			expect(parsed.success).toBe(true);
 
-			const event = { ...candidate, data: parsed.data } as Parameters<typeof adaptEvent>[0];
-			const viewModel = adaptEvent(event);
+			const event = { ...candidate, data: parsed.data } as EventContentEntry;
+			const viewModel = adaptEvent(contentDocumentFromEntry(event));
 			const pageContext = prepareInvitationPageContext({
 				eventEntry: event as Parameters<
 					typeof prepareInvitationPageContext
@@ -193,8 +194,8 @@ describe('registry-driven canonical variant portability', () => {
 			expect(parsed.success).toBe(true);
 			if (!parsed.success) continue;
 
-			const event = { ...candidate, data: parsed.data } as Parameters<typeof adaptEvent>[0];
-			const viewModel = adaptEvent(event);
+			const event = { ...candidate, data: parsed.data } as EventContentEntry;
+			const viewModel = adaptEvent(contentDocumentFromEntry(event));
 			expect(viewModel.theme.preset).toBe('celestial-blue');
 
 			const expectedView =
@@ -265,7 +266,7 @@ describe('registry-driven canonical variant portability', () => {
 
 	it('applies Hero split-cover to jewelry-box demo content without schema transformation', () => {
 		const event = buildPortableJewelryBoxEvent({ heroVariant: 'split-cover' });
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(event.data.theme.preset).toBe('jewelry-box');
 		expect(event.data._assetSlug).toBe('demo-xv-jewelry-box');
@@ -281,7 +282,7 @@ describe('registry-driven canonical variant portability', () => {
 			heroVariant: 'editorial-cover',
 			themePreset: 'jewelry-box',
 		});
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(event.data.theme.preset).toBe('jewelry-box');
 		expect(event.data).not.toHaveProperty('visualProfileId');
@@ -290,7 +291,7 @@ describe('registry-driven canonical variant portability', () => {
 
 	it('applies Family split-groups without Daniela/Victoria identity', () => {
 		const event = buildPortableJewelryBoxEvent({ familyVariant: 'split-groups' });
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.sections.family?.variant).toBe('split-groups');
@@ -300,7 +301,7 @@ describe('registry-driven canonical variant portability', () => {
 		const event = buildPortableJewelryBoxEvent({
 			familyVariant: 'asymmetric-groups',
 		});
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
@@ -308,7 +309,7 @@ describe('registry-driven canonical variant portability', () => {
 
 	it('applies Location split-map to jewelry-box demo content with existing venue/map media', () => {
 		const event = buildPortableJewelryBoxEvent({ locationVariant: 'split-map' });
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 		const location = viewModel.sections.location;
 
 		expect(location?.variant).toBe('split-map');
@@ -329,7 +330,7 @@ describe('registry-driven canonical variant portability', () => {
 		const event = buildPortableJewelryBoxEvent({
 			locationVariant: 'stacked-venue-plates',
 		});
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.sections.location?.variant).toBe('stacked-venue-plates');
@@ -337,7 +338,9 @@ describe('registry-driven canonical variant portability', () => {
 
 	it('ports gallery layouts via adaptEvent on non-origin demos/overrides', () => {
 		const magazine = adaptEvent(
-			buildPortableJewelryBoxEvent({ galleryVariant: 'magazine-spread' }),
+			contentDocumentFromEntry(
+				buildPortableJewelryBoxEvent({ galleryVariant: 'magazine-spread' }),
+			),
 		);
 		expect(magazine.sections.gallery?.variant).toBe('magazine-spread');
 
@@ -345,20 +348,22 @@ describe('registry-driven canonical variant portability', () => {
 			galleryVariant: 'single-keepsake',
 			galleryItems: [{ image: 'gallery01', caption: 'Keepsake' }],
 		});
-		const keepsake = adaptEvent(keepsakeEvent);
+		const keepsake = adaptEvent(contentDocumentFromEntry(keepsakeEvent));
 		expect(keepsakeEvent.data).not.toHaveProperty('visualProfileId');
 		expect(keepsake.sections.gallery?.variant).toBe('single-keepsake');
 
 		const celestial = adaptEvent(
-			loadDemoEvent(
-				'src/content/event-demos/xv/demo-xv-celestial-blue.json',
-				'event-demos/xv/demo-xv-celestial-blue',
+			contentDocumentFromEntry(
+				loadDemoEvent(
+					'src/content/event-demos/xv/demo-xv-celestial-blue.json',
+					'event-demos/xv/demo-xv-celestial-blue',
+				),
 			),
 		);
 		expect(celestial.sections.gallery?.variant).toBe('feature-stack');
 
 		const indexEvent = buildPortableJewelryBoxEvent({ galleryVariant: 'index-choreography' });
-		const index = adaptEvent(indexEvent);
+		const index = adaptEvent(contentDocumentFromEntry(indexEvent));
 		expect(indexEvent.data).not.toHaveProperty('visualProfileId');
 		expect(index.sections.gallery?.variant).toBe('index-choreography');
 
@@ -367,24 +372,28 @@ describe('registry-driven canonical variant portability', () => {
 			galleryVariant: 'feature-mosaic',
 			themePreset: 'premiere-floral',
 		});
-		const mosaic = adaptEvent(mosaicEvent);
+		const mosaic = adaptEvent(contentDocumentFromEntry(mosaicEvent));
 		expect(mosaic.theme.preset).toBe('premiere-floral');
 		expect(mosaic.sections.gallery?.variant).toBe('feature-mosaic');
 
 		const featureStack = adaptEvent(
-			buildPortableJewelryBoxEvent({ galleryVariant: 'feature-stack' }),
+			contentDocumentFromEntry(
+				buildPortableJewelryBoxEvent({ galleryVariant: 'feature-stack' }),
+			),
 		);
 		expect(featureStack.sections.gallery?.variant).toBe('feature-stack');
 
 		const pairedBand = adaptEvent(
-			buildPortableJewelryBoxEvent({
-				galleryVariant: 'paired-feature-band',
-				galleryItems: [
-					{ image: 'gallery01' },
-					{ image: 'gallery03', layoutRole: 'feature' },
-					{ image: 'gallery05' },
-				],
-			}),
+			contentDocumentFromEntry(
+				buildPortableJewelryBoxEvent({
+					galleryVariant: 'paired-feature-band',
+					galleryItems: [
+						{ image: 'gallery01' },
+						{ image: 'gallery03', layoutRole: 'feature' },
+						{ image: 'gallery05' },
+					],
+				}),
+			),
 		);
 		expect(pairedBand.sections.gallery?.variant).toBe('paired-feature-band');
 	});
@@ -394,7 +403,7 @@ describe('registry-driven canonical variant portability', () => {
 			giftsVariant: 'editorial-catalog',
 			rsvpVariant: 'editorial-press-pass',
 		});
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.sections.gifts?.variant).toBe('editorial-catalog');
@@ -406,7 +415,7 @@ describe('registry-driven canonical variant portability', () => {
 			personalizedAccessVariant: 'formal-pass',
 			rsvpVariant: 'formal-register',
 		});
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(event.data).not.toHaveProperty('visualProfileId');
 		expect(viewModel.sections.rsvp?.personalizedAccess?.variant).toBe('formal-pass');
@@ -417,7 +426,7 @@ describe('registry-driven canonical variant portability', () => {
 		const ornamentedEvent = buildPortableJewelryBoxEvent({
 			personalizedAccessVariant: 'ornamented',
 		});
-		const ornamented = adaptEvent(ornamentedEvent);
+		const ornamented = adaptEvent(contentDocumentFromEntry(ornamentedEvent));
 		expect(ornamentedEvent.data).not.toHaveProperty('visualProfileId');
 		expect(ornamented.sections.rsvp?.personalizedAccess?.variant).toBe('ornamented');
 
@@ -425,34 +434,34 @@ describe('registry-driven canonical variant portability', () => {
 		const editorialPassEvent = buildPortableJewelryBoxEvent({
 			personalizedAccessVariant: 'editorial-pass',
 		});
-		const editorialPass = adaptEvent(editorialPassEvent);
+		const editorialPass = adaptEvent(contentDocumentFromEntry(editorialPassEvent));
 		expect(editorialPass.sections.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
 	});
 
 	it('selects Itinerary timeline-paper, editorial-ledger, editorial-program, and standard from section.variant only', () => {
 		const standardEvent = buildPortableJewelryBoxEvent({ itineraryVariant: 'standard' });
-		const standard = adaptEvent(standardEvent);
+		const standard = adaptEvent(contentDocumentFromEntry(standardEvent));
 		expect(standard.sections.itinerary?.variant).toBe('standard');
 
 		const paperEvent = buildPortableJewelryBoxEvent({
 			itineraryVariant: 'timeline-paper',
 			themePreset: 'jewelry-box',
 		});
-		const paper = adaptEvent(paperEvent);
+		const paper = adaptEvent(contentDocumentFromEntry(paperEvent));
 		expect(paper.theme.preset).toBe('jewelry-box');
 		expect(paper.sections.itinerary?.variant).toBe('timeline-paper');
 
 		const ledgerEvent = buildPortableJewelryBoxEvent({
 			itineraryVariant: 'editorial-ledger',
 		});
-		const ledger = adaptEvent(ledgerEvent);
+		const ledger = adaptEvent(contentDocumentFromEntry(ledgerEvent));
 		expect(ledgerEvent.data).not.toHaveProperty('visualProfileId');
 		expect(ledger.sections.itinerary?.variant).toBe('editorial-ledger');
 
 		const programEvent = buildPortableJewelryBoxEvent({
 			itineraryVariant: 'editorial-program',
 		});
-		const program = adaptEvent(programEvent);
+		const program = adaptEvent(contentDocumentFromEntry(programEvent));
 		expect(programEvent.data).not.toHaveProperty('visualProfileId');
 		expect(program.sections.itinerary?.variant).toBe('editorial-program');
 	});

@@ -1,5 +1,5 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import fs from 'node:fs';
@@ -205,7 +205,7 @@ describe('Abril Michelle local invitation content', () => {
 
 	it('builds a public page context from uploaded images without errors', () => {
 		const content = buildAbrilPublishedContent(buildTestAssets(ABRIL_ASSET_SPECS));
-		const viewModel = adaptDbEvent({
+		const viewModel = adaptEvent({
 			slug: ABRIL_EVENT.slug,
 			content,
 			assetSlug: ABRIL_EVENT.assetSlug,

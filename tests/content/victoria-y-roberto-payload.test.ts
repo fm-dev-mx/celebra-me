@@ -1,5 +1,6 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -275,10 +276,12 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(thankYou.image).toBeDefined();
 		expect(thankYou.closingName?.trim()).not.toBe('');
 
-		const viewModel = adaptEvent({
-			id: 'events/victoria-y-roberto',
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/victoria-y-roberto',
+				data: content,
+			} as EventContentEntry),
+		);
 		expect(viewModel.sections.itinerary?.variant).toBe('editorial-ledger');
 		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess?.variant).toBe('formal-pass');
@@ -369,10 +372,12 @@ describe('Boda Victoria y Roberto provision contract', () => {
 
 	it('keys the first invitation section handoff to source=hero without encoding a fixed successor', () => {
 		const content = buildVictoriaPublishedContent(buildTestAssets(VICTORIA_ASSET_SPECS));
-		const viewModel = adaptEvent({
-			id: 'events/victoria-y-roberto',
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/victoria-y-roberto',
+				data: content,
+			} as EventContentEntry),
+		);
 		const renderPlan = buildInvitationRenderPlan(viewModel);
 		const firstSection = renderPlan.find((item) => item.type === 'section');
 

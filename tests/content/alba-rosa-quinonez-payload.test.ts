@@ -1,5 +1,5 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import fs from 'node:fs';
@@ -147,7 +147,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 
 	it('preserves Alba presentation and structural choices through page assembly', () => {
 		const content = publishedContent();
-		const viewModel = adaptDbEvent({
+		const viewModel = adaptEvent({
 			slug: ALBA_EVENT.slug,
 			content,
 			assetSlug: ALBA_EVENT.assetSlug,

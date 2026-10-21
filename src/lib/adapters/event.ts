@@ -4,7 +4,7 @@ import type { AssetSource } from '@/lib/assets/asset-source';
 import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
 import { THEME_PRESETS, type ThemePreset, themeSupportsPortrait } from '@/lib/theme/theme-contract';
 import type { ItineraryVariant } from '@/lib/invitation/section-variants';
-import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
+import type { InvitationContentDocument } from '@/lib/content/events';
 import type {
 	InvitationViewModel,
 	HeroViewModel,
@@ -584,17 +584,13 @@ function buildMemoriesSectionData(context: AdaptationContext) {
 	};
 }
 
-export function adaptEvent(
-	event: EventContentEntry,
-	assetSlugOverride?: string,
-): InvitationViewModel {
-	const { data: rawData, id: contentEntryId } = event;
+export function adaptEvent(document: InvitationContentDocument): InvitationViewModel {
 	// Astro content and publication validate the full canonical schema before adaptation.
-	const originalData = rawData as CanonicalEventContent;
-	const entrySlug = getContentEntrySlug(contentEntryId);
+	const originalData = document.content as unknown as CanonicalEventContent;
+	const entrySlug = document.slug;
 	const contentAssetSlug =
 		typeof originalData._assetSlug === 'string' ? originalData._assetSlug : undefined;
-	const eventSlug = assetSlugOverride ?? contentAssetSlug ?? entrySlug;
+	const eventSlug = document.assetSlug ?? contentAssetSlug ?? entrySlug;
 
 	const normalizedPreset = pickPreset(originalData.theme.preset);
 	const context: AdaptationContext = {

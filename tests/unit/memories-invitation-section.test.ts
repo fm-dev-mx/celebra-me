@@ -1,4 +1,5 @@
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/section-render-data';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { buildInvitationCssResolverInput } from '@/lib/invitation/invitation-css-input';
@@ -49,10 +50,12 @@ function memoriesEvent(overrides: Record<string, unknown> = {}) {
 
 function adapt(data: Record<string, unknown>) {
 	const parsed = eventContentSchema.parse(data);
-	return adaptEvent({
-		id: 'event-demos/xv/demo-xv-jewelry-box',
-		data: parsed,
-	} as Parameters<typeof adaptEvent>[0]);
+	return adaptEvent(
+		contentDocumentFromEntry({
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: parsed,
+		} as EventContentEntry),
+	);
 }
 
 describe('memories content schema', () => {
