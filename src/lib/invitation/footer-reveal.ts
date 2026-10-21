@@ -23,6 +23,8 @@ const PEEK = 0.18;
 // Without the lantern a third of a pull opens, so a tap's jitter does not.
 const REDUCED_OPEN = 0.34;
 const OPEN_GLIDE_MS = 320;
+// The cue is removed by this time even if its exit animation never reports its end.
+const CUE_REMOVE_FALLBACK_MS = 1000;
 const REVEAL_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
 
 export function shouldHoldFooter(value: string): boolean {
@@ -40,6 +42,12 @@ export function pullProgress(distance: number, threshold: number): number {
 }
 
 /** Wheel delta in pixels, whatever unit the device reports. */
+/** Glide length in ms from `--footer-open-glide` (e.g. `720ms`); the default when unset or invalid. */
+export function openGlideMs(value: string): number {
+	const ms = Number.parseFloat(value);
+	return Number.isFinite(ms) && ms > 0 ? ms : OPEN_GLIDE_MS;
+}
+
 export function wheelPixels(event: Pick<WheelEvent, 'deltaY' | 'deltaMode'>): number {
 	if (event.deltaMode === 1) return event.deltaY * 16;
 	if (event.deltaMode === 2) return event.deltaY * window.innerHeight;
@@ -80,6 +88,7 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 
 	const root = document.documentElement;
 	const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const glideMs = openGlideMs(getComputedStyle(footer).getPropertyValue('--footer-open-glide'));
 	const atBottom = () => isAtBottom(window.scrollY, window.innerHeight, root.scrollHeight);
 	footer.dataset.footerReveal = 'held';
 	if (root.scrollHeight <= window.innerHeight + BOTTOM_SLACK_PX) {
@@ -181,11 +190,11 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 			// The lantern lets go of its thread and rises out of view as the footer arrives.
 			cue.dataset.state = 'away';
 			cue.addEventListener('animationend', () => cue.remove(), { once: true });
-			window.setTimeout(() => cue.remove(), 1000);
+			window.setTimeout(() => cue.remove(), Math.max(CUE_REMOVE_FALLBACK_MS, glideMs + 400));
 		}
 		requestAnimationFrame(() => {
 			if (reduced) window.scrollTo({ top: root.scrollHeight, behavior: 'auto' });
-			else glideToBottom(root, OPEN_GLIDE_MS);
+			else glideToBottom(root, glideMs);
 		});
 	}
 

@@ -223,7 +223,7 @@ const content: CanonicalEventContentInput = {
 				title: 'Vestimenta',
 				iconName: 'DressCode',
 				styleVariant: 'default',
-				text: 'Formal. Le pedimos amablemente reservar el blanco y el rojo.',
+				text: 'Formal. Le pedimos amablemente reservar el blanco, el rojo y los tonos azul marino u oscuro.',
 			},
 			{
 				title: 'Pase personal',
@@ -283,9 +283,23 @@ const content: CanonicalEventContentInput = {
 	gifts: {
 		variant: 'standard',
 		title: 'Regalos',
-		presentation: 'legend-only',
-		subtitle:
-			'Su presencia es nuestro mejor regalo. Si desea tener un detalle con nosotros, habrá lluvia de sobres durante la recepción.',
+		presentation: 'catalog',
+		subtitle: 'Su presencia es nuestro mejor regalo. Si desea tener un detalle con nosotros:',
+		items: [
+			{
+				type: 'cash',
+				title: 'Lluvia de sobres',
+				text: 'Habrá lluvia de sobres durante la fiesta.',
+			},
+			{
+				type: 'bank',
+				title: 'Transferencia',
+				bankName: 'BBVA',
+				accountHolder: 'José Antonio Vázquez Flores',
+				clabe: '4152 3146 2062 2954',
+				accountKind: 'card',
+			},
+		],
 	},
 	rsvp: {
 		variant: 'formal-register',
