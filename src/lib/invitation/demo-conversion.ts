@@ -35,7 +35,7 @@ export interface DemoConversionContext {
 }
 
 function findDemoItem(slug: string): DemoShowroomItem | undefined {
-	return DEMO_SHOWROOM_ITEMS.find((item) => item.slug === slug);
+	return DEMO_SHOWROOM_ITEMS.find((item) => item.slug === slug && item.showConversion !== false);
 }
 
 /** Commercial composition is opt-in at the public page, never a section renderer decision. */
