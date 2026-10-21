@@ -4,6 +4,7 @@
 
 import * as syncFs from 'node:fs';
 import * as path from 'node:path';
+import { DEMO_INVITATIONS_DIR, listDemoInvitationFiles } from '../shared/demo-invitation-files.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
 import { assertInvitationCatalogIntegrity } from './registry-validation.js';
 
@@ -16,48 +17,21 @@ export interface DiscoveredInvitation {
 }
 
 /**
- * Discover static event demos from src/content/event-demos
+ * Discover static event demos from src/invitations/demos
  */
 export function discoverStaticDemos(): DiscoveredInvitation[] {
-	const demosDir = path.join(process.cwd(), 'src/content/event-demos');
-	const results: DiscoveredInvitation[] = [];
-
-	if (!syncFs.existsSync(demosDir)) return results;
-
-	const folders = syncFs.readdirSync(demosDir);
-	for (const folder of folders) {
-		const folderPath = path.join(demosDir, folder);
-		if (!syncFs.statSync(folderPath).isDirectory()) continue;
-
-		const files = syncFs.readdirSync(folderPath);
-		for (const file of files) {
-			if (!file.endsWith('.json') || file.startsWith('_')) continue;
-
-			try {
-				const contentStr = syncFs.readFileSync(path.join(folderPath, file), 'utf8');
-				const content = JSON.parse(contentStr);
-
-				const eventType = content.eventType || folder;
-				const slug = file.replace(/\.json$/, '');
-				const route = `/${eventType}/${slug}`;
-
-				results.push({
-					name: content.title || `${eventType}: ${slug}`,
-					route,
-					slug,
-					eventType,
-					source: 'demo',
-				});
-			} catch (error) {
-				throw new Error(
-					`Invalid static demo file "${path.join(folderPath, file)}": ${error instanceof Error ? error.message : String(error)}`,
-					{ cause: error },
-				);
-			}
-		}
-	}
-
-	return results;
+	const demosDir = path.join(process.cwd(), DEMO_INVITATIONS_DIR);
+	if (!syncFs.existsSync(demosDir)) return [];
+	return listDemoInvitationFiles(demosDir).map(({ slug, eventType, content }) => ({
+		name:
+			typeof content.title === 'string' && content.title
+				? content.title
+				: `${eventType}: ${slug}`,
+		route: `/${eventType}/${slug}`,
+		slug,
+		eventType,
+		source: 'demo',
+	}));
 }
 
 /**

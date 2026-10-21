@@ -3,8 +3,8 @@
  * PII guardrail for static content collections.
  *
  * Real client data must live in the database (intake -> draft -> publish), never in
- * `src/content/**`. The guard fails closed: a required content root that is missing or holds no
- * JSON files is an error, so a moved or restructured collection cannot turn it into a no-op.
+ * `src/invitations/demos/**`. The guard fails closed: a required content root that is missing or
+ * holds no JSON files is an error, so a moved or restructured collection cannot turn it into a no-op.
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -15,8 +15,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 
-// Demo showroom collection, loaded recursively (`src/content/event-demos/<eventType>/*.json`).
-const CONTENT_ROOT = 'event-demos';
+// Demo showroom collection, loaded recursively (`src/invitations/demos/<slug>/content.json`).
+const CONTENT_ROOT = path.join('src', 'invitations', 'demos');
 // Demo-owned visual profiles carry this prefix; any other profile id belongs to a real client.
 const DEMO_PROFILE_PREFIX = 'demo-';
 
@@ -38,7 +38,7 @@ function listJsonFiles(dirPath) {
 const errors = [];
 let checkedFiles = 0;
 
-const dirPath = path.join(PROJECT_ROOT, 'src', 'content', CONTENT_ROOT);
+const dirPath = path.join(PROJECT_ROOT, CONTENT_ROOT);
 const repoDir = toRepoPath(dirPath);
 const files = fs.existsSync(dirPath) ? listJsonFiles(dirPath) : null;
 
@@ -116,10 +116,15 @@ function listFolders(dirPath) {
 
 const digest = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const demoImagesByDigest = new Map();
-for (const folder of listFolders(EVENT_ASSET_ROOT).filter((name) =>
-	name.startsWith(DEMO_PROFILE_PREFIX),
-)) {
-	for (const image of listImages(path.join(EVENT_ASSET_ROOT, folder))) {
+const demoImageFolders = [
+	...listFolders(EVENT_ASSET_ROOT)
+		.filter((name) => name.startsWith(DEMO_PROFILE_PREFIX))
+		.map((name) => path.join(EVENT_ASSET_ROOT, name)),
+	// Demo invitation folders keep their images next to the content.
+	...listFolders(dirPath).map((name) => path.join(dirPath, name)),
+];
+for (const folder of demoImageFolders) {
+	for (const image of listImages(folder)) {
 		demoImagesByDigest.set(digest(image), toRepoPath(image));
 	}
 }

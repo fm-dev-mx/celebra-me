@@ -79,6 +79,25 @@ export function buildSectionBundleUrlMap(modules: Record<string, CssModule>): Se
 	return sectionBundleUrlMap;
 }
 
+/**
+ * Visual profiles by id: `invitation-profiles/<id>.scss`, or `<id>/profile.scss` inside an
+ * invitation folder.
+ */
+export function buildInvitationProfileUrlMap(
+	modules: Record<string, CssModule>,
+): SectionBundleUrlMap {
+	const profileUrlMap: SectionBundleUrlMap = {};
+	for (const [path, mod] of Object.entries(modules)) {
+		const segments = path.split('/');
+		const fileName = segments.at(-1);
+		if (!fileName) continue;
+		const profileId =
+			fileName === 'profile.scss' ? segments.at(-2) : fileName.replace(/\.scss$/, '');
+		if (profileId) profileUrlMap[profileId] = mod.default;
+	}
+	return profileUrlMap;
+}
+
 export function resolveSectionBundleCssUrl(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	preset: string,

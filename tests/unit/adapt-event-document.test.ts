@@ -94,7 +94,7 @@ describe('adaptEvent with an invitation document', () => {
 		const source = makeDbSource(
 			'demo-xv-enchanted-rose',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-enchanted-rose.json',
+			'src/invitations/demos/demo-xv-enchanted-rose/content.json',
 		);
 		const result = adaptEvent(source);
 
@@ -117,7 +117,7 @@ describe('adaptEvent with an invitation document', () => {
 		const source = makeDbSource(
 			'demo-xv-editorial',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-editorial.json',
+			'src/invitations/demos/demo-xv-editorial/content.json',
 		);
 		const result = adaptEvent(source);
 

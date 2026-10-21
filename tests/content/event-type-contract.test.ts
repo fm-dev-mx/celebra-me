@@ -1,5 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { adaptEvent } from '@/lib/adapters/event';
 import {
 	findEventTypeStructureViolations,
@@ -14,8 +12,7 @@ import {
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
-
-const DEMOS_DIR = path.join(process.cwd(), 'src/content/event-demos');
+import { listDemoInvitationFiles } from '../../scripts/shared/demo-invitation-files.ts';
 
 interface CorpusEntry {
 	id: string;
@@ -23,19 +20,10 @@ interface CorpusEntry {
 }
 
 function listDemoEntries(): CorpusEntry[] {
-	return fs.readdirSync(DEMOS_DIR, { withFileTypes: true }).flatMap((dir) =>
-		dir.isDirectory()
-			? fs
-					.readdirSync(path.join(DEMOS_DIR, dir.name))
-					.filter((file) => file.endsWith('.json'))
-					.map((file) => ({
-						id: `demo:${dir.name}/${file}`,
-						content: JSON.parse(
-							fs.readFileSync(path.join(DEMOS_DIR, dir.name, file), 'utf8'),
-						) as unknown,
-					}))
-			: [],
-	);
+	return listDemoInvitationFiles().map(({ slug, content }) => ({
+		id: `demo:${slug}`,
+		content,
+	}));
 }
 
 const corpus: CorpusEntry[] = [

@@ -5,7 +5,7 @@ import { ICON_CATALOG, isIconName } from '@/lib/icons/icon-catalog';
 import { resolveIconComponent } from '@/components/common/icons/registry';
 
 function collectDemoIconNames(): string[] {
-	const demosDir = path.resolve(__dirname, '../../src/content/event-demos');
+	const demosDir = path.resolve(__dirname, '../../src/invitations/demos');
 	const names = new Set<string>();
 	const walk = (dir: string) => {
 		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

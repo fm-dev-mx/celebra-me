@@ -15,8 +15,8 @@ That is intended and allowed.
 
 Real client data must never appear in:
 
-- the demo collection `src/content/event-demos/` (`isDemo: true` showcase content uses fictitious
-  data only; `pnpm validate:no-pii` enforces it, including that a demo uses only a `demo-*` visual
+- the demo collection `src/invitations/demos/` (`isDemo: true` showcase content uses fictitious data
+  only; `pnpm validate:no-pii` enforces it, including that a demo uses only a `demo-*` visual
   profile);
 - demo asset namespaces or reusable components, styles, and tests that are not scoped to that
   invitation;

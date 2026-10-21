@@ -33,7 +33,7 @@ describe('Quote and family presentation controls', () => {
 	beforeAll(() => {
 		quoteRules = compileRules('src/styles/invitation/_quote.scss');
 		familyRules = compileRules('src/styles/invitation/_family.scss');
-		profileRules = compileRules('src/styles/invitation-profiles/demo-xv-celestial-blue.scss');
+		profileRules = compileRules('src/invitations/demos/demo-xv-celestial-blue/profile.scss');
 		celestialHeroRules = compileRules('src/styles/themes/sections/hero/_celestial-blue.scss');
 		intersectionRules = compileRules('src/styles/invitation/_section-intersections.scss');
 	});

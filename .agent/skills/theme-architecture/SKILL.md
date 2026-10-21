@@ -116,7 +116,8 @@ new ones (`docs/domains/theme/architecture.md`, Transitional ownership exception
 2. Preset SCSS + entrypoint (`src/styles/invitation-presets/`) + section bundle
    (`src/styles/invitation-sections-by-preset/`); `tests/unit/theme-contract.test.ts` fails when one
    is missing or left over
-3. Optional showcase demo JSON under `src/content/event-demos/` and its asset registry
+3. Optional showcase demo folder `src/invitations/demos/<slug>/` (`content.json`, `invitation.ts`
+   with the showroom card, `assets.ts`), listed in `src/invitations/demos/index.ts`
 
 Never skip the theme-contract registration step.
 

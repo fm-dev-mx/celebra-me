@@ -3,7 +3,7 @@
 ## Source roles
 
 - `published_invitation_content` is the public source for real/client invitations.
-- `src/content/event-demos/` contains public, fictitious showcase content.
+- `src/invitations/demos/` contains public, fictitious showcase content.
 - `src/lib/content/events.ts` owns collection lookup; `src/lib/invitation/content-resolver.ts` owns
   static eligibility; `src/data/demo-showroom.data.ts` owns showroom approval. These sets are
   intentionally distinct.

@@ -39,8 +39,9 @@ to that report.
 | 12    | Done        | #402                                                        |
 | 13    | Done        | #417 (13a); 13b skipped by owner decision d108              |
 | 14    | Done        | #419                                                        |
-| 15    | In progress | This pull request                                           |
-| 16–19 | Pending     | —                                                           |
+| 15    | Done        | #420                                                        |
+| 16    | In progress | This pull request                                           |
+| 17–19 | Pending     | —                                                           |
 | 20    | Done        | #406                                                        |
 | 21    | Done        | #408                                                        |
 | 22    | Done        | #410                                                        |

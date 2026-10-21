@@ -1,5 +1,4 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import { listDemoInvitationFiles } from '../../scripts/shared/demo-invitation-files.ts';
 import { isReservedInvitationSlug, usesShortInvitationPath } from '@/lib/invitation/slug-policy';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import { UpdateInvitationCommandSchema } from '@/lib/intake/schemas/invitation.schema';
@@ -59,12 +58,7 @@ describe('short invitation path policy', () => {
 	});
 
 	it('every static demo keeps the long path', () => {
-		const demos = fs.readdirSync(path.join(process.cwd(), 'src/content/event-demos'), {
-			recursive: true,
-		}) as string[];
-		const slugs = demos
-			.filter((file) => file.endsWith('.json'))
-			.map((file) => path.basename(file, '.json'));
+		const slugs = listDemoInvitationFiles().map(({ slug }) => slug);
 		expect(slugs.length).toBeGreaterThan(0);
 		for (const slug of slugs) expect(usesShortInvitationPath(slug)).toBe(false);
 	});

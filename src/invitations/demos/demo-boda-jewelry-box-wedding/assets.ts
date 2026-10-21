@@ -1,8 +1,8 @@
-import hero from './prewedding-hero.webp';
-import portrait from './prewedding-portrait.webp';
-import chapel from './venue-chapel.webp';
-import hacienda from './venue-hacienda.webp';
-import stationery from './stationery-prewedding.webp';
+import hero from './assets/prewedding-hero.webp';
+import portrait from './assets/prewedding-portrait.webp';
+import chapel from './assets/venue-chapel.webp';
+import hacienda from './assets/venue-hacienda.webp';
+import stationery from './assets/stationery-prewedding.webp';
 
 export const assets = {
 	hero,

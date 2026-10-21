@@ -1,6 +1,7 @@
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import {
 	buildSectionUrlMap,
+	buildInvitationProfileUrlMap,
 	buildSectionBundleUrlMap,
 	resolveInvitationCssLoadPlan as resolveInvitationCssLoadPlanFromMaps,
 	type InvitationCssLoadItem,
@@ -17,14 +18,17 @@ const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-b
 	eager: true,
 }) as Record<string, { default: string }>;
 
-const invitationProfileModules = import.meta.glob('/src/styles/invitation-profiles/*.scss', {
-	query: '?url',
-	eager: true,
-}) as Record<string, { default: string }>;
+const invitationProfileModules = import.meta.glob(
+	['/src/styles/invitation-profiles/*.scss', '/src/invitations/demos/*/profile.scss'],
+	{
+		query: '?url',
+		eager: true,
+	},
+) as Record<string, { default: string }>;
 
 const sectionVariantUrlMap = buildSectionUrlMap(sectionVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
-const invitationProfileUrlMap = buildSectionBundleUrlMap(invitationProfileModules);
+const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
 
 if (import.meta.env.DEV) {
 	const map = new Map(Object.entries(sectionBundleUrlMap));

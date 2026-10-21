@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
-import fs from 'node:fs';
 import path from 'node:path';
+import { DEMO_INVITATIONS_DIR, listDemoInvitationFiles } from '../shared/demo-invitation-files.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
 import {
 	CANONICAL_VARIANT_REGISTRY,
@@ -63,24 +63,10 @@ export interface VisualPageCase {
 
 /** Discover repository demos; the directory is the only demo inventory. */
 export function discoverDemoCases(
-	root = path.resolve(process.cwd(), 'src/content/event-demos'),
+	root = path.resolve(process.cwd(), DEMO_INVITATIONS_DIR),
 ): VisualPageCase[] {
-	const cases: VisualPageCase[] = [];
-	const visit = (directory: string): void => {
-		for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-			const absolute = path.join(directory, entry.name);
-			if (entry.isDirectory()) {
-				visit(absolute);
-				continue;
-			}
-			if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
-			const raw = JSON.parse(fs.readFileSync(absolute, 'utf8')) as Record<string, unknown>;
-			const relativeDirectory = path.relative(root, path.dirname(absolute));
-			const slug = path.basename(entry.name, '.json');
-			const eventType =
-				typeof raw.eventType === 'string' && raw.eventType
-					? raw.eventType
-					: (relativeDirectory.split(path.sep)[0] ?? '');
+	const cases: VisualPageCase[] = listDemoInvitationFiles(root).map(
+		({ slug, eventType, contentPath, content: raw }) => {
 			const theme =
 				raw.theme && typeof raw.theme === 'object'
 					? (raw.theme as Record<string, unknown>)
@@ -91,13 +77,10 @@ export function discoverDemoCases(
 					: typeof raw.themeId === 'string'
 						? raw.themeId
 						: undefined;
-			if (!eventType) throw new Error(`Demo ${absolute} is missing eventType.`);
 			const assetSlug = typeof raw._assetSlug === 'string' ? raw._assetSlug : undefined;
-			cases.push({ kind: 'demo', slug, eventType, preset, sourcePath: absolute, assetSlug });
-		}
-	};
-	if (!fs.existsSync(root)) throw new Error(`Demo directory is missing: ${root}`);
-	visit(root);
+			return { kind: 'demo', slug, eventType, preset, sourcePath: contentPath, assetSlug };
+		},
+	);
 	return cases.sort((a, b) => a.slug.localeCompare(b.slug));
 }
 

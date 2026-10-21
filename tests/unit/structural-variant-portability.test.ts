@@ -355,7 +355,7 @@ describe('registry-driven canonical variant portability', () => {
 		const celestial = adaptEvent(
 			contentDocumentFromEntry(
 				loadDemoEvent(
-					'src/content/event-demos/xv/demo-xv-celestial-blue.json',
+					'src/invitations/demos/demo-xv-celestial-blue/content.json',
 					'event-demos/xv/demo-xv-celestial-blue',
 				),
 			),

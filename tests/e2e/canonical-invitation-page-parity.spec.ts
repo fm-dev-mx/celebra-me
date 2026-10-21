@@ -21,6 +21,7 @@ import {
 	VISUAL_PARITY_DEFERRED_REASON,
 } from './harness/visual-baseline-policy';
 import { markVisualSuiteStarted, resolveVisualOutputRoot } from './harness/visual-capture-record';
+import { resolveEventAssetDirectory } from '../../scripts/shared/demo-invitation-files.ts';
 import {
 	recordVisualCapture,
 	settleVisualCaptureWithRecapture,
@@ -257,11 +258,12 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 						)
 					: entry.assetSlug
 						? hashAssetDirectory(
-								path.resolve(
-									process.cwd(),
-									'src/assets/images/events',
-									entry.assetSlug,
-								),
+								resolveEventAssetDirectory(entry.assetSlug) ??
+									path.resolve(
+										process.cwd(),
+										'src/assets/images/events',
+										entry.assetSlug,
+									),
 							)
 						: (() => {
 								throw new Error(

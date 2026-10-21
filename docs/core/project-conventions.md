@@ -299,6 +299,7 @@ For a new managed invitation:
 3. **Verify the content and theme contract** with the narrow relevant commands from
    `docs/domains/content/event-governance.md`.
 
-Demos remain under `src/content/event-demos`, with their assets under `src/assets/images/events/`.
+Demos live one folder each under `src/invitations/demos/<slug>/` (`content.json`, `invitation.ts`,
+`assets.ts` with `assets/`, optional token-only `profile.scss`).
 
 Conventions are agreements to reduce friction, not obstacles to progress.

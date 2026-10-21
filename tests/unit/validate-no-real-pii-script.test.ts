@@ -48,8 +48,8 @@ describe('validate-no-real-pii-in-content script', () => {
 
 	it('recurses into event-type subfolders', () => {
 		const root = createFixture({
-			'src/content/event-demos/xv/demo-xv-one.json': demoEntry(),
-			'src/content/event-demos/boda/nested/demo-boda-two.json': demoEntry({
+			'src/invitations/demos/demo-xv-one/content.json': demoEntry(),
+			'src/invitations/demos/boda/nested/demo-boda-two.json': demoEntry({
 				eventType: 'boda',
 			}),
 		});
@@ -65,15 +65,15 @@ describe('validate-no-real-pii-in-content script', () => {
 		['missing isDemo', { isDemo: undefined }],
 	])('rejects nested demo entries with %s', (_scenario, overrides) => {
 		const root = createFixture({
-			'src/content/event-demos/xv/demo-xv-ok.json': demoEntry(),
-			'src/content/event-demos/xv/xv-real-client.json': demoEntry(overrides),
+			'src/invitations/demos/demo-xv-ok/content.json': demoEntry(),
+			'src/invitations/demos/xv/xv-real-client.json': demoEntry(overrides),
 		});
 
 		const result = runGuard(root);
 
 		expect(result.status).toBe(1);
 		expect(result.output).toContain(
-			'[PII] src/content/event-demos/xv/xv-real-client.json is not marked isDemo=true',
+			'[PII] src/invitations/demos/xv/xv-real-client.json is not marked isDemo=true',
 		);
 		expect(result.output).not.toContain('demo-xv-ok.json');
 	});
@@ -84,35 +84,35 @@ describe('validate-no-real-pii-in-content script', () => {
 		const result = runGuard(root);
 
 		expect(result.status).toBe(1);
-		expect(result.output).toContain('[PII] src/content/event-demos is missing');
+		expect(result.output).toContain('[PII] src/invitations/demos is missing');
 	});
 
 	it('fails when the demo collection yields zero JSON files', () => {
-		const root = createFixture({ 'src/content/event-demos/xv/README.md': '# Demos\n' });
+		const root = createFixture({ 'src/invitations/demos/xv/README.md': '# Demos\n' });
 
 		const result = runGuard(root);
 
 		expect(result.status).toBe(1);
-		expect(result.output).toContain('[PII] src/content/event-demos contains no JSON files');
+		expect(result.output).toContain('[PII] src/invitations/demos contains no JSON files');
 	});
 
 	it('fails on unparseable content instead of skipping it', () => {
 		const root = createFixture({
-			'src/content/event-demos/xv/demo-xv-broken.json': '{ "isDemo": true,',
+			'src/invitations/demos/demo-xv-broken/content.json': '{ "isDemo": true,',
 		});
 
 		const result = runGuard(root);
 
 		expect(result.status).toBe(1);
 		expect(result.output).toContain(
-			'[PII] src/content/event-demos/xv/demo-xv-broken.json is not valid JSON',
+			'[PII] src/invitations/demos/demo-xv-broken/content.json is not valid JSON',
 		);
 	});
 
 	describe('demo visual profiles', () => {
 		it('accepts demo-owned profiles', () => {
 			const root = createFixture({
-				'src/content/event-demos/xv/demo-xv-celestial-blue.json': demoEntry({
+				'src/invitations/demos/demo-xv-celestial-blue/content.json': demoEntry({
 					visualProfileId: 'demo-xv-celestial-blue',
 				}),
 			});
@@ -123,7 +123,7 @@ describe('validate-no-real-pii-in-content script', () => {
 		});
 
 		it('rejects a demo styled by a client profile', () => {
-			const demoPath = 'src/content/event-demos/xv/demo-xv-client-profile.json';
+			const demoPath = 'src/invitations/demos/demo-xv-client-profile/content.json';
 			const root = createFixture({
 				[demoPath]: demoEntry({ visualProfileId: 'valentina-hernandez' }),
 			});
@@ -138,7 +138,7 @@ describe('validate-no-real-pii-in-content script', () => {
 	});
 
 	describe('demo photographs', () => {
-		const demoJson = { 'src/content/event-demos/xv/demo-xv-one.json': demoEntry() };
+		const demoJson = { 'src/invitations/demos/demo-xv-one/content.json': demoEntry() };
 
 		it('rejects a demo image that is a byte copy of a client photograph', () => {
 			const root = createFixture({
@@ -152,6 +152,21 @@ describe('validate-no-real-pii-in-content script', () => {
 			expect(result.status).toBe(1);
 			expect(result.output).toContain(
 				'[PII] src/assets/images/events/demo-xv-one/hero.webp is a byte copy of client photograph src/assets/invitations/some-client/hero.webp',
+			);
+		});
+
+		it('rejects a byte copy kept inside a demo invitation folder', () => {
+			const root = createFixture({
+				...demoJson,
+				'src/invitations/demos/demo-xv-one/assets/hero.webp': 'same-bytes',
+				'src/assets/invitations/some-client/hero.webp': 'same-bytes',
+			});
+
+			const result = runGuard(root);
+
+			expect(result.status).toBe(1);
+			expect(result.output).toContain(
+				'[PII] src/invitations/demos/demo-xv-one/assets/hero.webp is a byte copy of client photograph src/assets/invitations/some-client/hero.webp',
 			);
 		});
 

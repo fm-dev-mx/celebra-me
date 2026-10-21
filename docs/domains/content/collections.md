@@ -15,9 +15,9 @@ source-of-truth contract.
 
 ## Active Collections
 
-| Collection    | Path                         | Purpose               |
-| ------------- | ---------------------------- | --------------------- |
-| `event-demos` | `src/content/event-demos/**` | public showcase demos |
+| Collection    | Path                                   | Purpose               |
+| ------------- | -------------------------------------- | --------------------- |
+| `event-demos` | `src/invitations/demos/*/content.json` | public showcase demos |
 
 `src/lib/content/events.ts` looks up the collection. The static eligibility gate belongs to
 `src/lib/invitation/content-resolver.ts`: only demo content (`isDemo: true`) is eligible.

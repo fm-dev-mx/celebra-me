@@ -83,7 +83,7 @@ const PRODUCTION_HOSTS = new Set(['celebra-me.com', 'www.celebra-me.com']);
 
 /**
  * Pages come from the repository catalog: published, non-expired invitation definitions and
- * every demo under `src/content/event-demos`. Nothing is listed by hand.
+ * every demo under `src/invitations/demos`. Nothing is listed by hand.
  */
 export function listSmokePageRoutes(now = new Date()): SmokePageRoute[] {
 	return [

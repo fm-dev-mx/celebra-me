@@ -26,7 +26,7 @@ export function isReservedInvitationSlug(slug: string): boolean {
 	return RESERVED_SLUGS.has(slug.trim().toLowerCase());
 }
 
-/** Static catalog demos (src/content/event-demos) are not published rows, so they keep the long path. */
+/** Static catalog demos (src/invitations/demos) are not published rows, so they keep the long path. */
 const CATALOG_DEMO_PREFIX = 'demo-';
 
 /**
