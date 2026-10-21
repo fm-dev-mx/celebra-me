@@ -11,8 +11,9 @@ export default defineDemoInvitation({
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		sortOrder: 30,
+		styleName: 'Enchanted Rose',
 		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años similar al demo Enchanted Rose.',
+			'Hola, revisé la demo de XV Enchanted Rose y quisiera cotizar una invitación basada en este estilo.',
 		thumbnail: {
 			key: 'hero',
 			alt: 'Vista principal del demo de XV años estilo Enchanted Rose',

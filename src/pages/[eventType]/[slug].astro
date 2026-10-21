@@ -3,7 +3,7 @@ export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import DemoConversion from '@/components/invitation/DemoConversion.astro';
-import { hasDemoConversion } from '@/lib/invitation/demo-conversion';
+import { getDemoConversion, hasDemoConversion } from '@/lib/invitation/demo-conversion';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 import {
@@ -197,9 +197,11 @@ const wrapperDataAttributes = page
 		}
 	: {};
 
-const isDemoConversion = Boolean(
-	page && hasDemoConversion(page.viewModel.id, page.viewModel.isDemo),
-);
+const demoConversion =
+	page && hasDemoConversion(page.viewModel.id, page.viewModel.isDemo)
+		? getDemoConversion(page.viewModel.id)
+		: undefined;
+const isDemoConversion = demoConversion !== undefined;
 
 // Unpaid client invitation: preview banner and image copy friction.
 const previewMode = accessMode === 'preview' && Boolean(page);
@@ -313,7 +315,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 
 							<InvitationSections
 								pageContext={page}
-								showDemoConversion={isDemoConversion}
+								demoConversion={demoConversion}
 							/>
 
 							{
@@ -343,7 +345,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding && !isDemoConversion}
 								showContactCta={page.viewModel.brandingVisibility.showContactCta && !isDemoConversion}
 							/>
-							{isDemoConversion && <DemoConversion placement="closing" />}
+							{demoConversion && <DemoConversion placement="closing" demo={demoConversion} />}
 
 							{page.musicPlayer && <MusicPlayer {...page.musicPlayer} />}
 						</div>

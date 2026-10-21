@@ -11,8 +11,9 @@ export default defineDemoInvitation({
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		sortOrder: 10,
+		styleName: 'Jewelry Box',
 		ctaMessage:
-			'Hola, me gustaría una invitación digital para boda similar al demo Jewelry Box.',
+			'Hola, revisé la demo de boda Jewelry Box y quisiera cotizar una invitación basada en este estilo.',
 		thumbnail: {
 			key: 'hero',
 			alt: 'Vista principal del demo de boda estilo Jewelry Box',

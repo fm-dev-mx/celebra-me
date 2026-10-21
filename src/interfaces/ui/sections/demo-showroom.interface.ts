@@ -55,6 +55,8 @@ export interface DemoShowroomItem {
 	visibility: DemoShowroomVisibility;
 	reviewStatus: DemoShowroomReviewStatus;
 	sortOrder: number;
+	/** Short style name shown in the in-page sales block (e.g. "Celestial Blue"). */
+	styleName: string;
 	ctaMessage: string;
 	thumbnail: DemoShowroomThumbnail;
 	selectorThumbnail?: DemoShowroomThumbnail;
