@@ -10,6 +10,25 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.40.0-beta.1] - 2026-10-20
+
+America's gifts note offers a gift or cash under a gold gift mark, plus internal cleanup of unused
+dashboard styles, exports and duplicated schemas. No migrations.
+
+### Changed
+
+- America: the gifts note reads «puede ser un regalo o en efectivo» (client request) under a
+  line-art gift drawn in the gold ink of the quote's sun; the text is already published, the mark
+  ships with this release (#407, #411).
+- Dashboard guest, lead and draft schemas share their duplicated blocks (#410).
+- The board verifier is versioned with implicit pull request and branch checks (#404).
+- Agent docs, skills and samples follow the current code (#412).
+
+### Removed
+
+- Unused dashboard classes and SCSS helpers (#408).
+- Unused exports, scripts and the archived-plans check (#406).
+
 ## [0.39.0-beta.1] - 2026-10-20
 
 Guest links read as `/{slug}/{code}` for new invitations, and Olivia y Antonio and America get a
