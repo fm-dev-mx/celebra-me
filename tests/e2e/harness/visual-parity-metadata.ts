@@ -17,12 +17,28 @@ export function hashVisualValue(value: unknown): string {
 	return crypto.createHash('sha256').update(canonicalize(value)).digest('hex');
 }
 
+/** Frozen invitations keep a media manifest instead of the binaries; its digest stands in for the file. */
+function readManifestDigests(root: string): Map<string, string> {
+	const manifestPath = path.join(root, 'media-manifest.json');
+	if (!fs.existsSync(manifestPath)) return new Map();
+	const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as {
+		assets: Array<{ relativePath: string; sha256: string }>;
+	};
+	return new Map(manifest.assets.map((entry) => [entry.relativePath, entry.sha256]));
+}
+
 export function hashAssetFiles(root: string, files: readonly string[]): string {
 	const digest = crypto.createHash('sha256');
+	const manifestDigests = readManifestDigests(root);
 	for (const relativePath of [...files].map((file) => file.replaceAll('\\', '/')).sort()) {
 		const absolutePath = path.join(root, relativePath);
 		digest.update(relativePath);
-		digest.update(fs.readFileSync(absolutePath));
+		const manifestDigest = manifestDigests.get(relativePath);
+		digest.update(
+			manifestDigest && !fs.existsSync(absolutePath)
+				? manifestDigest
+				: fs.readFileSync(absolutePath),
+		);
 	}
 	return digest.digest('hex');
 }

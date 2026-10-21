@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { getInvitationAssetSourceDir } from '../invitations/invitation-definition.ts';
 import { getInvitationDefinition, listInvitationDefinitions } from '../invitations/registry.ts';
 import { invitationDefinitionFile } from '../../shared/invitation-definition-files.ts';
+import { readInvitationMediaManifest } from '../invitation-media-manifest.ts';
 
 type CorpusClassification = 'canonical';
 type CorpusSourceStrategy = 'canonical_definition';
@@ -33,8 +34,13 @@ function assetReadiness(
 	definition: ReturnType<typeof getInvitationDefinition>,
 ): 'ready' | 'missing' {
 	const root = getInvitationAssetSourceDir(definition);
-	return existsSync(root) &&
-		definition.assets.every((asset) => existsSync(join(root, asset.relativePath)))
+	if (!existsSync(root)) return 'missing';
+	const manifest = readInvitationMediaManifest(root);
+	if (manifest) {
+		const recorded = new Set(manifest.assets.map((entry) => entry.key));
+		return definition.assets.every((asset) => recorded.has(asset.key)) ? 'ready' : 'missing';
+	}
+	return definition.assets.every((asset) => existsSync(join(root, asset.relativePath)))
 		? 'ready'
 		: 'missing';
 }

@@ -1,0 +1,111 @@
+{
+    "schemaVersion": 1,
+    "slug": "alba-rosa-quinonez",
+    "eventType": "cumple",
+    "assets": [
+        {
+            "key": "family",
+            "relativePath": "family.webp",
+            "sha256": "699ff43a289feffe3e66fdab62e18d99bd5bb54c662b0aa58b7b8c43e2a0d96a",
+            "mimeType": "image/webp",
+            "width": 994,
+            "height": 1280,
+            "fileSize": 202976,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 233710,
+            "originalSha256": "20e72e2e8410f720edd5c7c28fa51400ca67dd21ec19a3f8d166e2aae8de02c2"
+        },
+        {
+            "key": "gallery-01-paris",
+            "relativePath": "gallery-01-paris.webp",
+            "sha256": "0d5ea6232566afd9961aa37a3eb85181c755ae211eefa36c881e73ecc9b04119",
+            "mimeType": "image/webp",
+            "width": 1027,
+            "height": 1800,
+            "fileSize": 97246,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 104400,
+            "originalSha256": "554a87413ecf7f950bd076c026eb57c1c666ef9a60fe5ea5b43797977a698bdb"
+        },
+        {
+            "key": "gallery-02-london",
+            "relativePath": "gallery-02-london.webp",
+            "sha256": "aa9f078fcea85dac23cf66b08873e9f10eea033c3b577f8be6ea4e6d035c7750",
+            "mimeType": "image/webp",
+            "width": 928,
+            "height": 1280,
+            "fileSize": 129936,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 134488,
+            "originalSha256": "b2e38c8002c8b20c91dfc184d43af4ab3fbb2b63b5652d54fea323c0cacfdbeb"
+        },
+        {
+            "key": "gallery-03-nyc-holiday",
+            "relativePath": "gallery-03-nyc-holiday.webp",
+            "sha256": "a2f053690a4fdb6c4dc061e9df70537add928d3798138eebd3c404aefe1bcf7a",
+            "mimeType": "image/webp",
+            "width": 1048,
+            "height": 1800,
+            "fileSize": 137952,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 145158,
+            "originalSha256": "396ae431d3d926e208886afa8cd460fabfebea8df672dbdd67ec198925064c65"
+        },
+        {
+            "key": "gallery-05-albert",
+            "relativePath": "gallery-05-albert.webp",
+            "sha256": "dd4784a364849b80c67f16c27306b41f8faee6c55ccc9d458de27083552b0f84",
+            "mimeType": "image/webp",
+            "width": 741,
+            "height": 1280,
+            "fileSize": 49246,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 50638,
+            "originalSha256": "76280cc60e2815c016069fe47efb50140ed43513d3014bf9ec4519860406adb2"
+        },
+        {
+            "key": "hero-desktop",
+            "relativePath": "hero-desktop.webp",
+            "sha256": "1db828773b0fe5b7165c22694bbb35cbab82d39b495cd4bb67f7475e390e76e7",
+            "mimeType": "image/webp",
+            "width": 1672,
+            "height": 941,
+            "fileSize": 141630,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 269746,
+            "originalSha256": "f6d62d69497a9c313e5838f217e044f3cd689a7e929963a33b8ab1f84829a99f"
+        },
+        {
+            "key": "hero-mobile",
+            "relativePath": "hero-mobile.webp",
+            "sha256": "c998552a7026b178012a28dbcd24a230e3bc79ccf149e96431e97fd1e19025d5",
+            "mimeType": "image/webp",
+            "width": 965,
+            "height": 2008,
+            "fileSize": 119952,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 177794,
+            "originalSha256": "900c9892ffd98310cb5ed1d2e36ed9d832ed4dc8bb8446d0e211774628b92c9c"
+        },
+        {
+            "key": "thank-you",
+            "relativePath": "thank-you.webp",
+            "sha256": "9ed0a15f8936f83bad7e08a4d638be2b78972582d34d13a355b223b2b52d5686",
+            "mimeType": "image/webp",
+            "width": 1171,
+            "height": 2000,
+            "fileSize": 87870,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 120322,
+            "originalSha256": "89eba844b6eef6abb4b2c8fed020f675e9383cd8a4aa21b46a86359042219e82"
+        }
+    ]
+}

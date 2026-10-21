@@ -17,6 +17,11 @@ import { buildSyntheticVariantEvent } from '../../fixtures/structural-variants/s
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { listInvitationDefinitions } from '../../../scripts/provision/invitations/registry';
 import { getInvitationAssetSourceDir } from '../../../scripts/provision/invitations/invitation-definition';
+import {
+	assertManifestMatchesDefinition,
+	loadInvitationMediaBytes,
+	readInvitationMediaManifest,
+} from '../../../scripts/provision/invitation-media-manifest';
 import { existsSync, readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import type { CanonicalVariantSection } from '@/lib/invitation/section-variants';
@@ -50,24 +55,38 @@ if (fullPage) {
 	let eventEntry: EventContentEntry | null;
 	if (definition) {
 		const assetRoot = join(process.cwd(), getInvitationAssetSourceDir(definition));
+		// Frozen invitations inline their published (R2) bytes; newer ones inline their source files.
+		const manifest = readInvitationMediaManifest(assetRoot);
+		const manifestEntries = manifest ? assertManifestMatchesDefinition(manifest, definition) : null;
 		const syntheticAssets = Object.fromEntries(
-			definition.assets.map((asset) => {
-				const absoluteAssetPath = join(assetRoot, asset.relativePath);
-				if (!existsSync(absoluteAssetPath)) {
-					throw new Error(`VISUAL_ASSET_MISSING: ${definition.slug}/${asset.relativePath}`);
-				}
-				const extension = extname(asset.relativePath).toLowerCase();
-				const mime = extension === '.png' ? 'image/png' : extension === '.jpg' || extension === '.jpeg' ? 'image/jpeg' : 'image/webp';
-				return [
-					asset.key,
-					{
-						type: 'uploaded' as const,
-						assetId: `__INVITATION_ASSET_KEY__:${asset.key}`,
-						src: `data:${mime};base64,${readFileSync(absoluteAssetPath).toString('base64')}`,
-						delivery: asset.delivery,
-					},
-				];
-			}),
+			await Promise.all(
+				definition.assets.map(async (asset) => {
+					let mime: string;
+					let bytes: Uint8Array;
+					const entry = manifestEntries?.get(asset.key);
+					if (manifest && entry) {
+						mime = entry.mimeType;
+						bytes = await loadInvitationMediaBytes(manifest, entry);
+					} else {
+						const absoluteAssetPath = join(assetRoot, asset.relativePath);
+						if (!existsSync(absoluteAssetPath)) {
+							throw new Error(`VISUAL_ASSET_MISSING: ${definition.slug}/${asset.relativePath}`);
+						}
+						const extension = extname(asset.relativePath).toLowerCase();
+						mime = extension === '.png' ? 'image/png' : extension === '.jpg' || extension === '.jpeg' ? 'image/jpeg' : 'image/webp';
+						bytes = readFileSync(absoluteAssetPath);
+					}
+					return [
+						asset.key,
+						{
+							type: 'uploaded' as const,
+							assetId: `__INVITATION_ASSET_KEY__:${asset.key}`,
+							src: `data:${mime};base64,${Buffer.from(bytes).toString('base64')}`,
+							delivery: asset.delivery,
+						},
+					] as const;
+				}),
+			),
 		);
 		const data = eventContentSchema.parse(
 			definition.buildPublishedContent(syntheticAssets),

@@ -23,33 +23,33 @@ to that report.
 
 ## Progress
 
-| Row | State       | Evidence                                                    |
-| --- | ----------- | ----------------------------------------------------------- |
-| 1   | Done        | `c5ebacae3` on `develop`                                    |
-| 2   | Done        | #329                                                        |
-| 3   | Done        | #343                                                        |
-| 4   | Done        | #330                                                        |
-| 5   | Done        | #331                                                        |
-| 6   | Done        | #347 (contract migration; ships through the migration flow) |
-| 7   | Done        | #344                                                        |
-| 8   | Done        | #332                                                        |
-| 9   | Done        | #360                                                        |
-| 10  | Done        | #333                                                        |
-| 11  | Done        | #400                                                        |
-| 12  | Done        | #402                                                        |
-| 13  | Done        | #417 (13a); 13b skipped by owner decision d108              |
-| 14  | Done        | #419                                                        |
-| 15  | Done        | #420                                                        |
-| 16  | Done        | #421                                                        |
-| 17  | Done        | #422                                                        |
-| 18  | In progress | #423 (soft-delete patch, owner decision d113); code pending |
-| 19  | Done        | This pull request (owner decision d114: no data migration)  |
-| 20  | Done        | #406                                                        |
-| 21  | Done        | #408                                                        |
-| 22  | Done        | #410                                                        |
-| 23  | Done        | #412                                                        |
-| 24  | Done        | #413                                                        |
-| 25  | Done        | #415                                                        |
+| Row | State | Evidence                                                                                                                                                           |
+| --- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Done  | `c5ebacae3` on `develop`                                                                                                                                           |
+| 2   | Done  | #329                                                                                                                                                               |
+| 3   | Done  | #343                                                                                                                                                               |
+| 4   | Done  | #330                                                                                                                                                               |
+| 5   | Done  | #331                                                                                                                                                               |
+| 6   | Done  | #347 (contract migration; ships through the migration flow)                                                                                                        |
+| 7   | Done  | #344                                                                                                                                                               |
+| 8   | Done  | #332                                                                                                                                                               |
+| 9   | Done  | #360                                                                                                                                                               |
+| 10  | Done  | #333                                                                                                                                                               |
+| 11  | Done  | #400                                                                                                                                                               |
+| 12  | Done  | #402                                                                                                                                                               |
+| 13  | Done  | #417 (13a); 13b skipped by owner decision d108                                                                                                                     |
+| 14  | Done  | #419                                                                                                                                                               |
+| 15  | Done  | #420                                                                                                                                                               |
+| 16  | Done  | #421                                                                                                                                                               |
+| 17  | Done  | #422                                                                                                                                                               |
+| 18  | Done  | #423 (soft-delete patch, d113) + code PR (d115: Local keeps the supabase branch, url() files and frozen profiles untouched, backup tools keep the supabase filter) |
+| 19  | Done  | This pull request (owner decision d114: no data migration)                                                                                                         |
+| 20  | Done  | #406                                                                                                                                                               |
+| 21  | Done  | #408                                                                                                                                                               |
+| 22  | Done  | #410                                                                                                                                                               |
+| 23  | Done  | #412                                                                                                                                                               |
+| 24  | Done  | #413                                                                                                                                                               |
+| 25  | Done  | #415                                                                                                                                                               |
 
 Owner decisions: the `/privacidad` text needs only the owner's approval, no legal review; full
 visual parity runs nightly on `develop` instead of on every pull request into `develop`. On

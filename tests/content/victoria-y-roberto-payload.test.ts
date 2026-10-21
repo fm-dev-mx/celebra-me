@@ -11,6 +11,7 @@ import {
 } from '../../scripts/provision/invitations/victoria-y-roberto.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
 import { buildTestAssets } from '../helpers/managed-payload';
+import { invitationMediaPaths } from '../helpers/invitation-media';
 
 const profilePath = path.join(
 	process.cwd(),
@@ -21,7 +22,7 @@ const singleKeepsakeStylesPath = path.join(
 	'src/styles/themes/sections/gallery/_single-keepsake.scss',
 );
 
-const assetDir = path.join(process.cwd(), 'src/assets/invitations/victoria-y-roberto');
+const assetDir = invitationMediaPaths(getInvitationDefinition('victoria-y-roberto'));
 
 describe('Boda Victoria y Roberto provision contract', () => {
 	it('registers the managed definition with jewelry-box catalog identity', () => {
@@ -68,7 +69,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 	it('has a prepared file for every declared asset path', () => {
 		const uniquePaths = new Set(VICTORIA_ASSET_SPECS.map((spec) => spec.relativePath));
 		for (const relativePath of uniquePaths) {
-			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
+			expect(assetDir.has(relativePath)).toBe(true);
 		}
 	});
 

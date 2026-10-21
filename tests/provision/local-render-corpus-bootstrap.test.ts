@@ -7,6 +7,8 @@ import {
 } from '../../scripts/provision/local-render-corpus/registry.ts';
 import { resolveCorpusPublishedContent } from '../../scripts/provision/local-render-corpus/content.ts';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { invitationMediaPaths } from '../helpers/invitation-media';
 
 describe('local render corpus contract', () => {
 	it('derives every corpus entry from a schema-valid canonical definition', () => {
@@ -27,9 +29,8 @@ describe('local render corpus contract', () => {
 		expect(slugs.every((slug) => !slug.startsWith('demo-'))).toBe(true);
 	});
 
-	it('versions Romina managed source assets under the repository asset root', () => {
-		const root = path.join(process.cwd(), 'src/assets/invitations/romina-rios-chaparro');
-		expect(fs.existsSync(root)).toBe(true);
+	it('records Romina managed source assets in the repository media manifest', () => {
+		const recorded = invitationMediaPaths(getInvitationDefinition('romina-rios-chaparro'));
 		const required = [
 			'IMG_3263.jpeg',
 			'IMG_3462.jpeg',
@@ -44,7 +45,7 @@ describe('local render corpus contract', () => {
 			'IMG_3442.jpeg',
 		];
 		for (const file of required) {
-			expect(fs.existsSync(path.join(root, file))).toBe(true);
+			expect(recorded.has(file)).toBe(true);
 		}
 	});
 });

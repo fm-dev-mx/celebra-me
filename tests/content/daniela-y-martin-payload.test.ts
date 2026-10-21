@@ -12,13 +12,15 @@ import {
 	buildDanielaPublishedContent,
 } from '../../scripts/provision/invitations/daniela-y-martin.ts';
 import { buildTestAssets } from '../helpers/managed-payload';
+import { invitationMediaPaths } from '../helpers/invitation-media';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
 
 const profilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/daniela-y-martin.scss',
 );
 
-const assetDir = path.join(process.cwd(), 'src/assets/invitations/daniela-y-martin');
+const assetDir = invitationMediaPaths(getInvitationDefinition('daniela-y-martin'));
 
 function publishedContent() {
 	return buildDanielaPublishedContent(buildTestAssets(DANIELA_ASSET_SPECS));
@@ -86,14 +88,14 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(heroDesktop?.relativePath).toBe('hero-source.jpg');
 		expect(heroMobile?.relativePath).toBe('hero-source.jpg');
 		expect(heroDesktop?.focalPoint).not.toEqual(heroMobile?.focalPoint);
-		expect(fs.existsSync(path.join(assetDir, 'hero-source.jpg'))).toBe(true);
-		expect(fs.existsSync(path.join(assetDir, 'hero-mobile-source.jpg'))).toBe(false);
+		expect(assetDir.has('hero-source.jpg')).toBe(true);
+		expect(assetDir.has('hero-mobile-source.jpg')).toBe(false);
 	});
 
 	it('has source files for every declared asset path', () => {
 		const uniquePaths = new Set(DANIELA_ASSET_SPECS.map((spec) => spec.relativePath));
 		for (const relativePath of uniquePaths) {
-			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
+			expect(assetDir.has(relativePath)).toBe(true);
 		}
 	});
 
