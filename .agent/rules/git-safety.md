@@ -21,10 +21,14 @@ carry over.
 
 Explicit invocation of `publish-preview` or `publish-production` is an explicit current-task request
 for the exact operations enumerated in that skill, limited to the identified release scope and
-assigned checkout. Record that scope before writes; do not ask again for the same operations. Merely
-loading, auditing, editing, mentioning, or automatically selecting a skill grants nothing. These
-invocations do not authorize database/content publication, visual acceptance, protection changes,
-destructive cleanup, force pushes, or operations outside their documented scope.
+assigned checkout. Record that scope before writes; do not ask again for the same operations.
+Creating and pushing the annotated version tag once `pnpm ops:release-status` reports `VERIFIED` for
+the promoted `main` SHA is part of the release authorization
+([release-process.md](../../docs/core/release-process.md#7-create-and-push-the-annotated-tag)), not
+a separate owner request; force-updating a tag stays forbidden. Merely loading, auditing, editing,
+mentioning, or automatically selecting a skill grants nothing. These invocations do not authorize
+database/content publication, visual acceptance, protection changes, destructive cleanup, force
+pushes, or operations outside their documented scope.
 
 ---
 
