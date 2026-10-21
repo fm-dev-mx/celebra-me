@@ -92,7 +92,7 @@ Required on every expanded finding (and on LOW when actionable):
 
 Review **labels only**; apply revalidates gates.
 
-Meta line example: `src/lib/guests.ts:42 · ~12 lines · TS · apply: auto-safe`
+Meta line example (fictional path): `src/lib/guests.ts:42 · ~12 lines · TS · apply: auto-safe`
 
 ### `auto-safe` allowlist
 

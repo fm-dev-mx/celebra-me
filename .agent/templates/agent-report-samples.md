@@ -6,8 +6,10 @@ version: 1.5.0
 
 # Agent Report Samples
 
-Illustrative only. Field values are fictional. Use the shared report contract for whether a decision
-is needed and how many meaningful options to present. Examples grant no authorization.
+Illustrative only. Field values are fictional, including file paths and symbols such as
+`src/lib/guests.ts` or `src/lib/rsvp/counts.ts`, which do not exist in the repository. Use the
+shared report contract for whether a decision is needed and how many meaningful options to present.
+Examples grant no authorization.
 
 ---
 
