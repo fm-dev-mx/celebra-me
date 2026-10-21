@@ -12,11 +12,17 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [0.40.0-beta.1] - 2026-10-20
 
-America's gifts note offers a gift or cash under a gold gift mark, plus internal cleanup of unused
-dashboard styles, exports and duplicated schemas. No migrations.
+America's gifts note offers a gift or cash under a gold gift mark, Olivia y Antonio get the client's
+gift cards, dress code and pass changes, plus internal cleanup of unused dashboard styles, exports
+and duplicated schemas. No migrations.
 
 ### Changed
 
+- Olivia y Antonio: the dress code also reserves navy and dark blue; gifts become a catalog with a
+  BBVA card transfer (centred labelled details and a visible copy control) and envelope reception at
+  equal card height; the pass seats label wraps between words; the footer opens in one slower glide.
+  Shared gifts, formal-pass and footer styles gain tokens whose defaults keep every other invitation
+  unchanged (#409).
 - America: the gifts note reads «puede ser un regalo o en efectivo» (client request) under a
   line-art gift drawn in the gold ink of the quote's sun; the text is already published, the mark
   ships with this release (#407, #411).
