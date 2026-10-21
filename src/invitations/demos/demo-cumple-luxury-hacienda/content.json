@@ -230,7 +230,7 @@
         "documentLabel": "RESERVACIÓN DE GALA",
         "stampText": "EST. 1966",
         "stampYear": "2026",
-        "microcopy": "Toca el sello para abrir la invitación",
+        "microcopy": "Toque el sello para abrir la invitación",
         "tooltipText": "Acceder a la invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
