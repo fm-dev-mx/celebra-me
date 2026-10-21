@@ -1,0 +1,33 @@
+{
+    "schemaVersion": 1,
+    "slug": "melissa-y-luis-osmar",
+    "eventType": "boda",
+    "assets": [
+        {
+            "key": "belcanto-editorial",
+            "relativePath": "belcanto-editorial.webp",
+            "sha256": "1d1ce1b503809d050ce3a4893f28f9b2b67902a6186d36038d563846e165c77a",
+            "mimeType": "image/webp",
+            "width": 1024,
+            "height": 1536,
+            "fileSize": 268512,
+            "validationVersion": 2,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 288264,
+            "originalSha256": "85b2cf051033510e28d0030302d1f7ee30fa728acb1957cff43b1fc9fe456148"
+        },
+        {
+            "key": "cathedral-editorial",
+            "relativePath": "cathedral-editorial.webp",
+            "sha256": "1b4c853bc66db9ac5da2a66e010168499f4d15ae107ceb1e2a3f0f9557e585c3",
+            "mimeType": "image/webp",
+            "width": 1024,
+            "height": 1536,
+            "fileSize": 286966,
+            "validationVersion": 2,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 298834,
+            "originalSha256": "9b1218c9584bd9e8b5dcf3f8c4f0d239cb468b349cd35c51aa3dbfe726dacdd5"
+        }
+    ]
+}

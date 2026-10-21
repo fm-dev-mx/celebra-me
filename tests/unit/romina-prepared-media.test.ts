@@ -1,11 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { createHash } from 'node:crypto';
-import sharp from 'sharp';
 import { rominaInvitation } from '../../scripts/provision/invitations/romina-rios-chaparro';
-import { getInvitationAssetSourceDir } from '../../scripts/provision/invitations/invitation-definition';
-import { normalizeInvitationImage, extractBlobRawBytes } from '@/lib/intake/services/asset-policy';
-import { Blob as NodeBlob } from 'node:buffer';
+import { invitationMediaEntries } from '../helpers/invitation-media';
 const cases = [
 	{
 		key: 'hero-mobile',
@@ -24,30 +18,21 @@ const cases = [
 ];
 test.each(cases)(
 	'$key preserves its original and publishes a budgeted derivative without re-encoding',
-	async ({ key, source, hash, maxBytes, dimensions }) => {
+	({ key, source, hash, maxBytes, dimensions }) => {
 		const spec = rominaInvitation.assets.find((asset) => asset.key === key)!;
-		const root = getInvitationAssetSourceDir(rominaInvitation);
-		expect(
-			createHash('sha256')
-				.update(fs.readFileSync(path.join(root, source)))
-				.digest('hex'),
-		).toBe(hash);
-		const bytes = fs.readFileSync(path.join(root, spec.relativePath));
-		const metadata = await sharp(bytes).metadata();
-		expect([metadata.width, metadata.height]).toEqual(dimensions);
-		expect(bytes.length).toBeLessThanOrEqual(maxBytes);
+		const entries = [...invitationMediaEntries(rominaInvitation)!.values()];
+		expect(entries.find((entry) => entry.relativePath === source)?.originalSha256).toBe(hash);
+		const entry = entries.find((candidate) => candidate.key === key)!;
+		expect([entry.width, entry.height]).toEqual(dimensions);
+		expect(entry.fileSize).toBeLessThanOrEqual(maxBytes);
 		expect(spec.sourcePolicy).toBe('preserve');
 		expect(spec.delivery).toEqual({
 			mode: 'original',
 			width: dimensions[0],
 			height: dimensions[1],
 		});
-		const normalized = await normalizeInvitationImage(
-			new NodeBlob([bytes], { type: 'image/webp' }) as Blob,
-			'image/webp',
-			spec.optimizationRole,
-			spec.sourcePolicy,
-		);
-		expect(Buffer.from((await extractBlobRawBytes(normalized.blob))!)).toEqual(bytes);
+		// `preserve` publishes the prepared file byte for byte.
+		expect(entry.sha256).toBe(entry.originalSha256);
+		expect(entry.fileSize).toBe(entry.originalFileSize);
 	},
 );

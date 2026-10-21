@@ -10,13 +10,15 @@ import {
 	buildAlbaPublishedContent,
 } from '../../scripts/provision/invitations/alba-rosa-quinonez.ts';
 import { buildTestAssets } from '../helpers/managed-payload';
+import { invitationMediaPaths } from '../helpers/invitation-media';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
 
 const albaProfilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/alba-rosa-quinonez.scss',
 );
 
-const albaAssetDir = path.join(process.cwd(), 'src/assets/invitations/alba-rosa-quinonez');
+const albaAssetDir = invitationMediaPaths(getInvitationDefinition('alba-rosa-quinonez'));
 
 function publishedContent() {
 	return buildAlbaPublishedContent(buildTestAssets(ALBA_ASSET_SPECS));
@@ -48,11 +50,10 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 
 	it('has WebP release sources for every declared asset', () => {
 		for (const spec of ALBA_ASSET_SPECS) {
-			const filePath = path.join(albaAssetDir, spec.relativePath);
-			expect(fs.existsSync(filePath)).toBe(true);
+			expect(albaAssetDir.has(spec.relativePath)).toBe(true);
 			expect(path.extname(spec.relativePath)).toBe('.webp');
 		}
-		expect(fs.existsSync(path.join(albaAssetDir, 'gallery-04-cafe.webp'))).toBe(false);
+		expect(albaAssetDir.has('gallery-04-cafe.webp')).toBe(false);
 	});
 
 	it('builds published content with structural contracts', () => {

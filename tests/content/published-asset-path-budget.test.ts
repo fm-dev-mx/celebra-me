@@ -1,11 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import {
-	detectFileMimeType,
-	normalizeInvitationImage,
-	isRoleAwareAssetPolicy,
-} from '@/lib/intake/services/asset-policy';
+import { isRoleAwareAssetPolicy } from '@/lib/intake/services/asset-policy';
 import {
 	getImageOptimizationRoleForPath,
 	getWeightTargetBytes,
@@ -16,11 +10,9 @@ import {
 	ASSET_KEY_PREFIX,
 	buildSemanticAssetMap,
 } from '../../scripts/provision/normalized-invitation-release.ts';
-import {
-	getInvitationAssetSourceDir,
-	type InvitationAssetSpec,
-} from '../../scripts/provision/invitations/invitation-definition.ts';
+import type { InvitationAssetSpec } from '../../scripts/provision/invitations/invitation-definition.ts';
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
+import { hasDeclaredAssetSource, normalizedAssetFacts } from '../helpers/invitation-media';
 
 function specKeyFromAssetId(assetId: string): string {
 	expect(assetId.startsWith(ASSET_KEY_PREFIX)).toBe(true);
@@ -65,20 +57,14 @@ describe('published asset path-role budget contract', () => {
 		async (_slug, definition) => {
 			const content = definition.buildPublishedContent(buildSemanticAssetMap(definition));
 			const rolesByKey = pathRolesBySpecKey(content);
-			const assetDir = join(process.cwd(), getInvitationAssetSourceDir(definition));
 			const specs = definition.assets as readonly InvitationAssetSpec[];
 
 			for (const spec of specs) {
-				const filePath = join(assetDir, spec.relativePath);
-				expect(existsSync(filePath)).toBe(true);
-				const sourceBytes = readFileSync(filePath);
-				const declaredMime = detectFileMimeType(spec.relativePath, sourceBytes);
-				const normalized = await normalizeInvitationImage(
-					new Blob([sourceBytes], { type: declaredMime }),
-					declaredMime,
-					spec.optimizationRole,
+				expect(hasDeclaredAssetSource(definition, spec)).toBe(true);
+				const { fileSize, validationVersion } = await normalizedAssetFacts(
+					definition,
+					spec,
 				);
-				const { fileSize, validationVersion } = normalized;
 
 				if (spec.optimizationRole) {
 					expect(fileSize).toBeLessThanOrEqual(

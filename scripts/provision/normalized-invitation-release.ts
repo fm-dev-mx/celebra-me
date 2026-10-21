@@ -32,6 +32,12 @@ import {
 } from './invitations/invitation-definition.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 import {
+	assertManifestMatchesDefinition,
+	loadInvitationMediaBytes,
+	readInvitationMediaManifest,
+	type InvitationMediaManifest,
+} from './invitation-media-manifest.ts';
+import {
 	currentNormalizerFingerprint,
 	openSourceAssetDigestCache,
 	sourceAssetDigestKey,
@@ -297,6 +303,13 @@ export async function loadSourceAssetDigests(
 	if (!existsSync(root) || !statSync(root).isDirectory()) {
 		throw new Error(`Invitation asset root does not exist: ${root}`);
 	}
+	const manifest = readInvitationMediaManifest(root);
+	if (manifest) {
+		const entries = assertManifestMatchesDefinition(manifest, definition);
+		return definition.assets
+			.map((asset) => ({ key: asset.key, sha256: entries.get(asset.key)!.sha256 }))
+			.sort((left, right) => left.key.localeCompare(right.key));
+	}
 	const cache =
 		options.cache === undefined
 			? (digestCache ??= openSourceAssetDigestCache())
@@ -353,6 +366,8 @@ async function loadSourceAssets(
 	if (!existsSync(root) || !statSync(root).isDirectory()) {
 		throw new Error(`Invitation asset root does not exist: ${sourceDir}`);
 	}
+	const manifest = readInvitationMediaManifest(root);
+	if (manifest) return loadManifestAssets(definition, manifest);
 	const assets: NormalizedInvitationAsset[] = [];
 	for (const asset of definition.assets) {
 		const source = resolveDeclaredAssetSource(root, asset);
@@ -383,6 +398,37 @@ async function loadSourceAssets(
 			validationVersion: normalized.validationVersion,
 			originalMimeType: normalized.originalMimeType,
 			originalFileSize: normalized.originalFileSize,
+		});
+	}
+	return assets;
+}
+
+/** Frozen invitations: normalized bytes come from R2, verified against the committed manifest. */
+async function loadManifestAssets(
+	definition: InvitationDefinition,
+	manifest: InvitationMediaManifest,
+): Promise<NormalizedInvitationAsset[]> {
+	const entries = assertManifestMatchesDefinition(manifest, definition);
+	const assets: NormalizedInvitationAsset[] = [];
+	for (const asset of definition.assets) {
+		const entry = entries.get(asset.key)!;
+		const bytes = await loadInvitationMediaBytes(manifest, entry);
+		assets.push({
+			key: asset.key,
+			...(asset.delivery || asset.sourcePolicy === 'preserve' ? { versioned: true } : {}),
+			displayName: asset.displayName,
+			alt: asset.alt,
+			focalPoint: asset.focalPoint,
+			bytes,
+			dataBase64: Buffer.from(bytes).toString('base64'),
+			sha256: entry.sha256,
+			mimeType: entry.mimeType,
+			width: entry.width,
+			height: entry.height,
+			fileSize: entry.fileSize,
+			validationVersion: entry.validationVersion,
+			originalMimeType: entry.originalMimeType,
+			originalFileSize: entry.originalFileSize,
 		});
 	}
 	return assets;

@@ -135,11 +135,27 @@ for (const root of CLIENT_ASSET_ROOTS) {
 		(name) => !name.startsWith(DEMO_PROFILE_PREFIX),
 	)) {
 		if (APPROVED_SHARED_CLIENT_FOLDERS.has(folder)) continue;
-		for (const image of listImages(path.join(root, folder))) {
-			const demoImage = demoImagesByDigest.get(digest(image));
+		const clientImages = listImages(path.join(root, folder)).map((image) => ({
+			label: toRepoPath(image),
+			digests: [digest(image)],
+		}));
+		// Frozen invitations keep only a media manifest; their photographs live in R2.
+		const manifestFile = path.join(root, folder, 'media-manifest.json');
+		if (fs.existsSync(manifestFile)) {
+			for (const entry of JSON.parse(fs.readFileSync(manifestFile, 'utf8')).assets) {
+				clientImages.push({
+					label: `${toRepoPath(manifestFile)} (${entry.relativePath})`,
+					digests: [entry.originalSha256, entry.sha256],
+				});
+			}
+		}
+		for (const image of clientImages) {
+			const demoImage = image.digests
+				.map((value) => demoImagesByDigest.get(value))
+				.find(Boolean);
 			if (demoImage) {
 				errors.push(
-					`${demoImage} is a byte copy of client photograph ${toRepoPath(image)}. ` +
+					`${demoImage} is a byte copy of client photograph ${image.label}. ` +
 						`Demos use fictitious or owner-approved images only.`,
 				);
 			}

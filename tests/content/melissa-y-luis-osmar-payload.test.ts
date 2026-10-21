@@ -13,12 +13,12 @@ import {
 } from '../../scripts/provision/invitations/melissa-y-luis-osmar.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
 import { buildTestAssets } from '../helpers/managed-payload';
+import { invitationMediaEntries } from '../helpers/invitation-media';
 
 const profilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/melissa-y-luis-osmar.scss',
 );
-const assetDir = path.join(process.cwd(), 'src/assets/invitations/melissa-y-luis-osmar');
 
 describe('Boda Melissa y Luis Osmar managed content regression', () => {
 	it('registers a published managed jewelry-box definition', () => {
@@ -53,10 +53,9 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 			'cathedral-editorial',
 			'belcanto-editorial',
 		]);
+		const entries = invitationMediaEntries(getInvitationDefinition('melissa-y-luis-osmar'))!;
 		for (const asset of MELISSA_ASSET_SPECS) {
-			const derivative = path.join(assetDir, asset.relativePath);
-			expect(fs.existsSync(derivative)).toBe(true);
-			expect(fs.statSync(derivative).size).toBeLessThanOrEqual(300_000);
+			expect(entries.get(asset.key)?.fileSize).toBeLessThanOrEqual(300_000);
 			expect(asset.optimizationRole).toBe('editorial-featured');
 		}
 	});
