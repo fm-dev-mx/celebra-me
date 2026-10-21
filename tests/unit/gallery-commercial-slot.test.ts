@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { transpileModule, ScriptTarget } from 'typescript';
-import { hasDemoConversion } from '@/lib/invitation/demo-conversion';
+import { getDemoConversion, hasDemoConversion } from '@/lib/invitation/demo-conversion';
+import { DEMO_INVITATIONS } from '@/invitations/demos';
 
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 const photoGallery = read('src/components/invitation/PhotoGallery.astro');
@@ -14,7 +15,8 @@ it('replaces the last photo only through an explicitly provided slot', () => {
 	expect(gallery).toContain('<slot name="last-item" />');
 	expect(hasDemoConversion('demo-xv-celestial-blue', true)).toBe(true);
 	expect(hasDemoConversion('demo-xv-celestial-blue', false)).toBe(false);
-	expect(hasDemoConversion('demo-xv-enchanted-rose', true)).toBe(false);
+	expect(hasDemoConversion('demo-xv-enchanted-rose', true)).toBe(true);
+	expect(hasDemoConversion('olivia-y-antonio', true)).toBe(false);
 });
 
 it('keeps commercial closing after the invitation farewell and retains tracking contracts', () => {
@@ -26,9 +28,20 @@ it('keeps commercial closing after the invitation farewell and retains tracking 
 	expect(component).toContain('data-preserve-message="true"');
 	expect(component).toContain('data-track-cta={`demo_quote_${placement}`}');
 	expect(component).toContain('data-track-cta="demo_browse_styles"');
-	expect(component).toContain('href={getCelestialQuoteLink()}');
+	expect(component).toContain('href={demo.quoteLink}');
 	expect(component).toContain('aria-describedby={channelId}');
 	expect(component).not.toMatch(/onclick|preventDefault|trackEvent/);
+});
+
+it('gives every demo its own sales message, label and closing photo', () => {
+	for (const { slug, eventType } of DEMO_INVITATIONS) {
+		const demo = getDemoConversion(slug);
+		expect(demo).toMatchObject({ slug, eventType });
+		expect(demo?.quoteLink).toContain(encodeURIComponent(demo!.styleName));
+		expect(demo?.celebrationLabel).toMatch(/^sus? /);
+		expect(demo?.closingImage).toBeDefined();
+	}
+	expect(getDemoConversion('olivia-y-antonio')).toBeUndefined();
 });
 
 it('isolates native enlargement and commercial navigation while preserving legacy keyboard handling', () => {

@@ -11,8 +11,9 @@ export default defineDemoInvitation({
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		sortOrder: 10,
+		styleName: 'Angelic Presence',
 		ctaMessage:
-			'Hola, me gustaría una invitación digital para bautizo similar al demo Angelic Presence.',
+			'Hola, revisé la demo de bautizo Angelic Presence y quisiera cotizar una invitación basada en este estilo.',
 		thumbnail: {
 			key: 'hero',
 			alt: 'Vista principal del demo de bautizo estilo Angelic Presence',

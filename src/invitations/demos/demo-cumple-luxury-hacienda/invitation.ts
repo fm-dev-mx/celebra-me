@@ -11,8 +11,9 @@ export default defineDemoInvitation({
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		sortOrder: 10,
+		styleName: 'Luxury Hacienda',
 		ctaMessage:
-			'Hola, me gustaría una invitación digital para cumpleaños similar al demo Luxury Hacienda.',
+			'Hola, revisé la demo de cumpleaños Luxury Hacienda y quisiera cotizar una invitación basada en este estilo.',
 		thumbnail: {
 			key: 'hero',
 			alt: 'Vista principal del demo de cumpleaños estilo Luxury Hacienda',

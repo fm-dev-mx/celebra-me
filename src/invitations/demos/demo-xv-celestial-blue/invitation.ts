@@ -1,4 +1,3 @@
-import { CELESTIAL_QUOTE_MESSAGE } from '@/lib/invitation/demo-conversion';
 import { defineDemoInvitation } from '@/lib/invitation/demo-invitation';
 
 export default defineDemoInvitation({
@@ -12,7 +11,9 @@ export default defineDemoInvitation({
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		sortOrder: 10,
-		ctaMessage: CELESTIAL_QUOTE_MESSAGE,
+		styleName: 'Celestial Blue',
+		ctaMessage:
+			'Hola, revisé la demo de XV Celestial Blue y quisiera cotizar una invitación basada en este estilo.',
 		thumbnail: {
 			key: 'hero',
 			alt: 'Vista principal del demo de XV años estilo Celestial Blue',
