@@ -10,6 +10,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { getInvitationAssetSourceDir } from '../invitations/invitation-definition.ts';
 import { getInvitationDefinition, listInvitationDefinitions } from '../invitations/registry.ts';
+import { invitationDefinitionFile } from '../../shared/invitation-definition-files.ts';
 
 type CorpusClassification = 'canonical';
 type CorpusSourceStrategy = 'canonical_definition';
@@ -58,7 +59,7 @@ function deriveEntry(
 		assetStatus: assetReadiness(definition),
 		themeId: definition.themeId,
 		visualProfileId: definition.visualProfileId,
-		sourceDefinition: `scripts/provision/invitations/${definition.slug}.ts`,
+		sourceDefinition: invitationDefinitionFile(definition.slug),
 	};
 }
 
@@ -100,7 +101,7 @@ export function assertLocalRenderCorpusIntegrity(): void {
 		) {
 			throw new Error(`Corpus entry ${entry.slug} is not canonical-definition backed.`);
 		}
-		if (entry.sourceDefinition !== `scripts/provision/invitations/${entry.slug}.ts`) {
+		if (entry.sourceDefinition !== invitationDefinitionFile(entry.slug)) {
 			throw new Error(`Corpus entry ${entry.slug} has an invalid source definition path.`);
 		}
 		const route = corpusPublicRoute(entry).toLowerCase();

@@ -1,7 +1,13 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import ts from 'typescript';
+import {
+	CLIENT_INVITATIONS_DIR,
+	isInvitationDefinitionPath,
+	LEGACY_DEFINITIONS_DIR,
+	listInvitationDefinitionFiles,
+} from '../shared/invitation-definition-files.ts';
 import {
 	parseCreativeAcceptanceFromMarkdown,
 	parsePreparationReadinessFromMarkdown,
@@ -211,10 +217,11 @@ export function buildPublicationTransitionReport(input: {
 		input.baseSha,
 		input.headSha,
 		'--',
-		'scripts/provision/invitations',
+		LEGACY_DEFINITIONS_DIR,
+		CLIENT_INVITATIONS_DIR,
 	])
 		.split(/\r?\n/u)
-		.filter((path) => path.endsWith('.ts'));
+		.filter(isInvitationDefinitionPath);
 	const gateEstablishedAtBase =
 		sourceAt(input.baseSha, 'scripts/validate-invitation-publication-transitions.ts') !== null;
 	const transitions: PublicationTransitionAssessment[] = [];
@@ -247,13 +254,10 @@ export function buildPublicationTransitionReport(input: {
 				bootstrapWarnings.push({ ...assessment, status: 'WARNING' });
 		}
 	}
-	const currentDir = join(root, 'scripts', 'provision', 'invitations');
-	const legacyWarnings = readdirSync(currentDir)
-		.filter((name) => name.endsWith('.ts'))
-		.flatMap((name) => {
-			const path = join(currentDir, name);
-			return parseCanonicalLifecycleSource(readFileSync(path, 'utf8'), basename(path));
-		})
+	const legacyWarnings = listInvitationDefinitionFiles(root)
+		.flatMap((file) =>
+			parseCanonicalLifecycleSource(readFileSync(join(root, file), 'utf8'), basename(file)),
+		)
 		.filter((item) => item.lifecycle === 'published')
 		.map((current) => {
 			const docPath = join(root, 'docs', 'invitations', `${current.slug}.md`);

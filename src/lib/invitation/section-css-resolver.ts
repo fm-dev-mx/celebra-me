@@ -19,7 +19,11 @@ const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-b
 }) as Record<string, { default: string }>;
 
 const invitationProfileModules = import.meta.glob(
-	['/src/styles/invitation-profiles/*.scss', '/src/invitations/demos/*/profile.scss'],
+	[
+		'/src/styles/invitation-profiles/*.scss',
+		'/src/invitations/demos/*/profile.scss',
+		'/src/invitations/clients/*/profile.scss',
+	],
 	{
 		query: '?url',
 		eager: true,

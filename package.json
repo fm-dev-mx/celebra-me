@@ -117,6 +117,7 @@
         "dbs": "tsx scripts/provision/dbs-cli.ts",
         "invitation:release": "tsx scripts/provision/invitation-release-cli.ts",
         "invitation:hash-baseline": "tsx scripts/provision/release-hash-baseline.ts",
+        "invitation:registry": "tsx scripts/provision/invitations/generate-client-registry.ts",
         "invitation:reconcile": "tsx scripts/provision/invitation-reconcile-cli.ts",
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",

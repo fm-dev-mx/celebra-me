@@ -31,10 +31,11 @@ const RELEASE_HASH_SURFACES = [
 	/^scripts\/provision\//u,
 	/^src\/lib\/(?:intake|invitation|schemas)\//u,
 	/^src\/assets\/invitations\//u,
+	/^src\/invitations\/clients\//u,
 ];
 /** Files that can make a hash move "expected" (an invitation's own definition or assets). */
 const RELEASE_HASH_OWNED_FILES =
-	/^(?:scripts\/provision\/invitations\/[^/]+\.ts|src\/assets\/invitations\/.+)$/u;
+	/^(?:scripts\/provision\/invitations\/[^/]+\.ts|src\/assets\/invitations\/.+|src\/invitations\/clients\/.+)$/u;
 
 function resolveCommand(command, args) {
 	if (command !== 'pnpm') {
