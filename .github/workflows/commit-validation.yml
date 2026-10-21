@@ -178,6 +178,9 @@ jobs:
             - name: Validate invitation publication transitions
               run: pnpm validate:invitation-publication-transitions -- --base "$VALIDATION_BASE_SHA" --head "$VALIDATION_HEAD_SHA"
 
+            - name: Validate invitation note retirement
+              run: pnpm validate:invitation-note-retirement -- --base "$VALIDATION_BASE_SHA" --head "$VALIDATION_HEAD_SHA"
+
             - name: Classify release (advisory)
               run: pnpm ops:classify-release -- --base "$VALIDATION_BASE_SHA" --head "$VALIDATION_HEAD_SHA" --output release-classification.json
 
