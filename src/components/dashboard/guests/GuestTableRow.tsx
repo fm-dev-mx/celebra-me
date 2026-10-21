@@ -4,8 +4,7 @@ import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
 import { ChevronRightGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import GuestLastMessage from '@/components/dashboard/guests/GuestLastMessage';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
-import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
-import ShareAction from '@/components/dashboard/guests/ShareAction';
+import GuestPrimaryAction from '@/components/dashboard/guests/GuestPrimaryAction';
 import GuestStatusPill from '@/components/dashboard/guests/GuestStatusPill';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
@@ -14,7 +13,6 @@ import {
 	getCompactGroupChips,
 	getGuestMessageCount,
 	getGuestPeopleLabel,
-	getGuestPrimaryAction,
 	getGuestMessageFallbackTimestamp,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -57,12 +55,10 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 }) => {
 	const msgId = useId();
 	const [msgOpen, setMsgOpen] = useState(false);
-	const [reminderModalOpen, setReminderModalOpen] = useState(false);
 
 	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 1);
 	const hasCompactChips = compactChips.length > 0;
 	const hasMessages = getGuestMessageCount(item.guestComment) > 0;
-	const primaryAction = getGuestPrimaryAction(item, reminderMode, isReminderEligible).action;
 	const people = getGuestPeopleLabel(item);
 
 	const msgPanel = hasMessages && msgOpen && (
@@ -77,54 +73,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 			</td>
 		</tr>
 	);
-
-	// Answered guests get no send step; the copy action stays available for everyone.
-	const renderSendAction = () => {
-		if (primaryAction === 'send-reminder') {
-			return (
-				<>
-					<button
-						type="button"
-						className="btn-primary btn--compact guest-row__reminder-btn"
-						onClick={() => setReminderModalOpen(true)}
-						title="Enviar recordatorio"
-						aria-label={`Enviar recordatorio a ${item.fullName}`}
-					>
-						<MessageIcon size={14} />
-						<span>Recordar</span>
-					</button>
-					{reminderModalOpen && (
-						<SendInvitationModal
-							key={item.guestId}
-							guest={item}
-							pendingGuests={[]}
-							inviteUrl={inviteUrl}
-							onClose={() => setReminderModalOpen(false)}
-							onSave={onSaveGuest ?? (async () => item)}
-							onMarkShared={async () => onMarkShared(item)}
-							onReminderSent={onReminderSent}
-							templates={shareTemplates}
-							shareDateContext={shareDateContext}
-							eventTitle={eventTitle}
-							mode="single-reminder"
-						/>
-					)}
-				</>
-			);
-		}
-		if (primaryAction !== 'share') return null;
-		return (
-			<ShareAction
-				guest={item}
-				inviteUrl={inviteUrl}
-				eventTitle={eventTitle}
-				shareTemplates={shareTemplates}
-				shareDateContext={shareDateContext}
-				onShared={async () => onMarkShared(item)}
-				onSaveGuest={onSaveGuest}
-			/>
-		);
-	};
 
 	const rowClassName = [
 		item.deliveryStatus === 'shared' ? 'row-shared' : '',
@@ -200,7 +148,19 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				</td>
 				<td data-label="Acciones">
 					<div className="guest-row__actions">
-						{renderSendAction()}
+						<GuestPrimaryAction
+							item={item}
+							inviteUrl={inviteUrl}
+							eventTitle={eventTitle}
+							shareTemplates={shareTemplates}
+							shareDateContext={shareDateContext}
+							reminderMode={reminderMode}
+							isReminderEligible={isReminderEligible}
+							onReminderSent={onReminderSent}
+							onMarkShared={onMarkShared}
+							onSaveGuest={onSaveGuest}
+							variant="row"
+						/>
 						<CopyLinkButton
 							url={inviteUrl}
 							guestName={item.fullName}
