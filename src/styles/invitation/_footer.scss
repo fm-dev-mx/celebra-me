@@ -443,6 +443,7 @@ $lantern-shape: 40% 40% 45% 45%;
 //   --footer-reply-question-font / -question-size / -eyebrow-size / -note-size
 //   --footer-reply-lantern / -lantern-glow   Lantern fill (default the pull lantern's) and light
 //   --footer-reply-lantern-height   Lantern height (default 1.8rem; its width is 1.4rem)
+//   --footer-reply-overshoot    Final lantern overshoot; zero removes its settling bounce
 //   --footer-reply-button-bg / -button-ink / -button-font / -button-size
 //   --footer-reply-glint      A light crossing the button as the footer opens (default none)
 //   --footer-reply-gap        Space under the block, above the closing phrase (default 2.5rem)
@@ -594,7 +595,7 @@ $footer-reply-pill: 999px;
 
 	70% {
 		opacity: 100%;
-		translate: 0 -0.2rem;
+		translate: 0 var(--footer-reply-overshoot, -0.2rem);
 	}
 
 	100% {

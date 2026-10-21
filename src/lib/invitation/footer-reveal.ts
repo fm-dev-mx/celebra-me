@@ -73,9 +73,11 @@ function glideToBottom(root: HTMLElement, duration: number): void {
 	const startedAt = performance.now();
 	const step = (now: number) => {
 		const t = Math.min(1, (now - startedAt) / duration);
-		const eased = 1 - (1 - t) ** 3;
+		// Zero velocity and acceleration at both ends keeps the handoff from the pull continuous.
+		const eased = t * t * t * (t * (t * 6 - 15) + 10);
 		const end = root.scrollHeight - window.innerHeight;
-		window.scrollTo(0, start + (end - start) * eased);
+		// This loop owns interpolation; native CSS smooth scrolling must not restart each frame.
+		window.scrollTo({ top: start + (end - start) * eased, behavior: 'instant' });
 		if (t < 1) requestAnimationFrame(step);
 	};
 	requestAnimationFrame(step);
@@ -137,6 +139,8 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 	};
 	const onWheel = (event: WheelEvent) => {
 		if (event.deltaY <= 0 || !rested()) return;
+		// The pull is consumed here, otherwise the browser also scrolls the newly opened space.
+		event.preventDefault();
 		wheelPulled += wheelPixels(event);
 		pull(pullProgress(wheelPulled, WHEEL_PULL));
 		if (opened) return;
@@ -152,6 +156,7 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 	const onTouchMove = (event: TouchEvent) => {
 		const y = event.touches[0]?.clientY;
 		if (touchStartY === null || y === undefined) return;
+		if (touchStartY > y) event.preventDefault();
 		pull(pullProgress(touchStartY - y, TOUCH_PULL_PX));
 		// A short tick where the phone supports it, as the lantern lets go.
 		if (opened && cue) navigator.vibrate?.(12);
@@ -169,6 +174,7 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 			target?.closest('input, textarea, select, button, a, [contenteditable]')
 		)
 			return;
+		event.preventDefault();
 		open();
 	};
 
@@ -200,9 +206,9 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 
 	if (restingSince !== null) schedulePeek();
 	window.addEventListener('scroll', onScroll, { passive: true });
-	window.addEventListener('wheel', onWheel, { passive: true });
+	window.addEventListener('wheel', onWheel, { passive: false });
 	window.addEventListener('touchstart', onTouchStart, { passive: true });
-	window.addEventListener('touchmove', onTouchMove, { passive: true });
+	window.addEventListener('touchmove', onTouchMove, { passive: false });
 	window.addEventListener('touchend', onTouchEnd, { passive: true });
 	window.addEventListener('touchcancel', onTouchEnd, { passive: true });
 	window.addEventListener('keydown', onKeyDown);

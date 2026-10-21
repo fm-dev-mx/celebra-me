@@ -29,6 +29,10 @@ $america-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30'%3E%3Ccircle cx='12' cy='16' r='11' fill='%23E8A040' opacity='.16'/%3E%3Cpath fill='%23E8A040' d='M9.5 6h5v1.6c3 1 5 4 5 8.2 0 4.3-2.3 6.9-3.8 7.6H8.3c-1.5-.7-3.8-3.3-3.8-7.6 0-4.2 2-7.2 5-8.2z'/%3E%3Cpath fill='%23F3D9A4' opacity='.75' d='M11 10.5h2v9h-2z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-width='.8' d='M12 6V2'/%3E%3C/svg%3E");
 
 .event--america.theme-preset--storybook-lilac {
+	// Keep the location cue above the floating music controls.
+	--location-route-cue-bottom: 4.5rem;
+	--location-route-cue-space: 9rem;
+
 	// Depths of the three joins, each reserved as padding on the side it enters.
 	--america-cut: clamp(4.5rem, 14vw, 6.5rem);
 	--america-print-overlap: clamp(5rem, 22vw, 9rem);
@@ -597,6 +601,11 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// text contact link.
 	.invitation-footer {
 		--invitation-footer-reveal: held;
+		--footer-open-glide: 720ms;
+		--footer-reveal-duration: 560ms;
+		--footer-reveal-stagger: 0ms;
+		--footer-reveal-rise: 0.35rem;
+		--footer-reply-overshoot: 0;
 
 		// The reply waits for the end: no button floats over the reading; the footer opens on the
 		// last lantern, lit, with the question and the reply under it, in candle gold.
