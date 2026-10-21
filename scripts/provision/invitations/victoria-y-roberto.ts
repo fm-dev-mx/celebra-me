@@ -46,7 +46,7 @@ const EVENT_DATE_HEADING = 'Viernes, 30 de octubre de 2026';
 
 /** Confirmed Production music; served from the R2 media domain. */
 const VICTORIA_MUSIC = {
-	url: 'https://media.celebra-me.com/invitations/boda/victoria-y-roberto/music-c4844f86fbd15f2ce2711bdaf7a83c80871b691c64d9b31fd999473a3884a1d3.mp3',
+	url: 'https://media.celebra-me.com/invitations/boda/victoria-y-roberto/music-59c4fc7945c68213cb4921f7866d0bd612e74dc3add4aafa7ef90829bd81c7d0.mp3',
 	title: 'Stephen Sanchez — Until I Found You',
 	autoPlay: true,
 } as const;
