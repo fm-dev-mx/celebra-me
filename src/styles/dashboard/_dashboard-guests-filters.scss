@@ -134,69 +134,6 @@
 	}
 }
 
-/* Mobile filter toggle — hidden on desktop */
-.filter-advanced-toggle {
-	@include mixins.respond-to(md) {
-		display: none;
-	}
-}
-
-.filter-advanced-toggle__btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.35rem;
-	padding: 0.5rem 0.9rem;
-	border: 1px solid var(--color-border-subtle);
-	border-radius: 8px;
-	background: var(--color-surface-elevated);
-	color: var(--color-text-secondary);
-	font-family: var(--font-ui);
-	font-size: 0.82rem;
-	font-weight: 500;
-	cursor: pointer;
-	white-space: nowrap;
-	min-height: 44px;
-	transition:
-		border-color 0.2s ease,
-		color 0.2s ease,
-		background-color 0.2s ease;
-
-	&:hover {
-		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
-		color: var(--color-text-primary);
-	}
-
-	&:focus-visible {
-		@include mixins.focus-ring;
-	}
-}
-
-.filter-active-indicator {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: var(--color-state-info-bg);
-	flex-shrink: 0;
-}
-
-/* Collapsible advanced filters section */
-.filter-advanced {
-	display: none;
-	flex-direction: column;
-	gap: 0.6rem;
-
-	&--open {
-		display: flex;
-	}
-
-	@include mixins.respond-to(md) {
-		display: flex;
-		flex-flow: row wrap;
-		align-items: flex-end;
-		gap: 0.5rem 1rem;
-	}
-}
-
 /* Clear filters button */
 .filter-clear-btn {
 	display: inline-flex;

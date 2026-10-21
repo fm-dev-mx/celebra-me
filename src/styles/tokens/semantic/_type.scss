@@ -51,10 +51,6 @@ $semantic-type: (
 	--font-label: #{sys.$sys-font-display-formal};
 }
 
-@function font($token) {
-	@return tools.token($semantic-type, font, $token);
-}
-
 @function size($token) {
 	@return tools.token($semantic-type, size, $token);
 }
