@@ -110,8 +110,12 @@ new ones (`docs/domains/theme/architecture.md`, Transitional ownership exception
 
 ### SSOT propagation order
 
-1. `THEME_PRESETS` in `src/lib/theme/theme-contract.ts` (publish guard)
-2. Preset SCSS + entrypoint + section bundle
+1. One row in `THEME_PRESET_METADATA` (`src/lib/theme/theme-contract.ts`): portrait support and
+   verified event types. `THEME_PRESETS`, `PORTRAIT_SUPPORTED_THEMES` and the event-type preset
+   lists derive from it.
+2. Preset SCSS + entrypoint (`src/styles/invitation-presets/`) + section bundle
+   (`src/styles/invitation-sections-by-preset/`); `tests/unit/theme-contract.test.ts` fails when one
+   is missing or left over
 3. Optional showcase demo JSON under `src/content/event-demos/` and its asset registry
 
 Never skip the theme-contract registration step.

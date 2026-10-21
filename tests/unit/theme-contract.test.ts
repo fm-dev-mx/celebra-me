@@ -1,8 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import {
+	EVENT_TYPES,
 	THEME_PRESETS,
 	PORTRAIT_SUPPORTED_THEMES,
+	listThemePresetsForEventType,
 	themeSupportsPortrait,
 } from '@/lib/theme/theme-contract';
+
+function entrypointNames(dir: string): string[] {
+	return fs
+		.readdirSync(path.join(process.cwd(), dir))
+		.filter((file) => file.endsWith('.scss'))
+		.map((file) => file.replace(/\.scss$/, ''))
+		.sort();
+}
 
 describe('themeSupportsPortrait', () => {
 	it('includes editorial-magazine as a portrait-capable preset', () => {
@@ -37,5 +49,21 @@ describe('themeSupportsPortrait', () => {
 		for (const theme of PORTRAIT_SUPPORTED_THEMES) {
 			expect(valid.has(theme)).toBe(true);
 		}
+	});
+});
+
+describe('THEME_PRESET_METADATA', () => {
+	it.each(['src/styles/invitation-presets', 'src/styles/invitation-sections-by-preset'])(
+		'%s has exactly one entrypoint per preset',
+		(dir) => {
+			expect(entrypointNames(dir)).toEqual([...THEME_PRESETS].sort());
+		},
+	);
+
+	it('gives every preset at least one event type and every event type a preset', () => {
+		const covered = new Set(EVENT_TYPES.flatMap((type) => listThemePresetsForEventType(type)));
+		expect([...covered].sort()).toEqual([...THEME_PRESETS].sort());
+		for (const type of EVENT_TYPES)
+			expect(listThemePresetsForEventType(type).length).toBeGreaterThan(0);
 	});
 });
