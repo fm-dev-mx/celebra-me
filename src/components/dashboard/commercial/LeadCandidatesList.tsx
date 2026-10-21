@@ -51,6 +51,42 @@ export function buildSyntheticCustomer(lead: LeadCandidate): Customer {
 	};
 }
 
+interface CandidateItemProps {
+	lead: LeadCandidate;
+	meta: React.ReactNode;
+	onSelectCustomer: LeadCandidatesListProps['onSelectCustomer'];
+	onReconcileLead: LeadCandidatesListProps['onReconcileLead'];
+}
+
+const CandidateItem: React.FC<CandidateItemProps> = ({
+	lead,
+	meta,
+	onSelectCustomer,
+	onReconcileLead,
+}) => (
+	<div className="candidate-item">
+		<p>
+			<strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}
+		</p>
+		<p className="candidate-meta">{meta}</p>
+		<div className="candidate-actions">
+			{lead.customerId ? (
+				<button
+					type="button"
+					className="btn-secondary"
+					onClick={() => onSelectCustomer(buildSyntheticCustomer(lead), lead)}
+				>
+					Seleccionar cliente
+				</button>
+			) : (
+				<button type="button" className="btn-primary" onClick={() => onReconcileLead(lead)}>
+					Vincular o crear cliente
+				</button>
+			)}
+		</div>
+	</div>
+);
+
 export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 	candidates,
 	onSelectCustomer,
@@ -63,52 +99,28 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 		candidates.byPhone.length > 0 ||
 		candidates.byEmail.length > 0 ||
 		candidates.recentContext.length > 0;
+	const actions = { onSelectCustomer, onReconcileLead };
+	const byLeadCode = candidates.byLeadCode;
 
 	return (
 		<div className="crm-search-results">
 			<h3>Resultados de búsqueda</h3>
 			<div className="candidates-list">
 				{/* Direct Match by Lead Code */}
-				{candidates.byLeadCode && (
+				{byLeadCode && (
 					<div className="candidate-group">
 						<h4>Coincidencia por código</h4>
-						<div className="candidate-item">
-							<p>
-								<strong>{candidates.byLeadCode.leadCode}</strong> —{' '}
-								{candidates.byLeadCode.name || 'Sin nombre'}
-							</p>
-							<p className="candidate-meta">
-								{candidates.byLeadCode.phone &&
-									`Tel: ${candidates.byLeadCode.phone} | `}
-								{candidates.byLeadCode.email &&
-									`Email: ${candidates.byLeadCode.email} | `}
-								Canal: {displayChannel(candidates.byLeadCode.channel)}
-							</p>
-							<div className="candidate-actions">
-								{candidates.byLeadCode.customerId ? (
-									<button
-										type="button"
-										className="btn-secondary"
-										onClick={() =>
-											onSelectCustomer(
-																buildSyntheticCustomer(candidates.byLeadCode!),
-																candidates.byLeadCode!,
-															)
-										}
-									>
-										Seleccionar cliente
-									</button>
-								) : (
-									<button
-										type="button"
-										className="btn-primary"
-										onClick={() => onReconcileLead(candidates.byLeadCode!)}
-									>
-										Vincular o crear cliente
-									</button>
-								)}
-							</div>
-						</div>
+						<CandidateItem
+							lead={byLeadCode}
+							meta={
+								<>
+									{byLeadCode.phone && `Tel: ${byLeadCode.phone} | `}
+									{byLeadCode.email && `Email: ${byLeadCode.email} | `}
+									Canal: {displayChannel(byLeadCode.channel)}
+								</>
+							}
+							{...actions}
+						/>
 					</div>
 				)}
 
@@ -117,38 +129,12 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 					<div className="candidate-group">
 						<h4>Coincidencias por teléfono</h4>
 						{candidates.byPhone.map((lead) => (
-							<div key={lead.id} className="candidate-item">
-								<p>
-									<strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}
-								</p>
-								<p className="candidate-meta">
-									{lead.phone} | {displayChannel(lead.channel)}
-								</p>
-								<div className="candidate-actions">
-									{lead.customerId ? (
-										<button
-											type="button"
-											className="btn-secondary"
-											onClick={() =>
-												onSelectCustomer(
-																		buildSyntheticCustomer(lead),
-																		lead,
-																	)
-											}
-										>
-											Seleccionar cliente
-										</button>
-									) : (
-										<button
-											type="button"
-											className="btn-primary"
-											onClick={() => onReconcileLead(lead)}
-										>
-											Vincular o crear cliente
-										</button>
-									)}
-								</div>
-							</div>
+							<CandidateItem
+								key={lead.id}
+								lead={lead}
+								meta={`${lead.phone} | ${displayChannel(lead.channel)}`}
+								{...actions}
+							/>
 						))}
 					</div>
 				)}
@@ -158,38 +144,12 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 					<div className="candidate-group">
 						<h4>Coincidencias por correo</h4>
 						{candidates.byEmail.map((lead) => (
-							<div key={lead.id} className="candidate-item">
-								<p>
-									<strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}
-								</p>
-								<p className="candidate-meta">
-									{lead.email} | {displayChannel(lead.channel)}
-								</p>
-								<div className="candidate-actions">
-									{lead.customerId ? (
-										<button
-											type="button"
-											className="btn-secondary"
-											onClick={() =>
-												onSelectCustomer(
-																		buildSyntheticCustomer(lead),
-																		lead,
-																	)
-											}
-										>
-											Seleccionar cliente
-										</button>
-									) : (
-										<button
-											type="button"
-											className="btn-primary"
-											onClick={() => onReconcileLead(lead)}
-										>
-											Vincular o crear cliente
-										</button>
-									)}
-								</div>
-							</div>
+							<CandidateItem
+								key={lead.id}
+								lead={lead}
+								meta={`${lead.email} | ${displayChannel(lead.channel)}`}
+								{...actions}
+							/>
 						))}
 					</div>
 				)}
@@ -199,40 +159,19 @@ export const LeadCandidatesList: React.FC<LeadCandidatesListProps> = ({
 					<div className="candidate-group">
 						<h4>Contexto reciente</h4>
 						{candidates.recentContext.map((lead) => (
-							<div key={lead.id} className="candidate-item">
-								<p>
-									<strong>{lead.leadCode}</strong> — {lead.name || 'Sin nombre'}
-								</p>
-								<p className="candidate-meta">
-									{lead.eventType && `Evento: ${lead.eventType} | `}
-									{lead.packageInterest && `Paquete: ${lead.packageInterest} | `}
-									{displayChannel(lead.channel)}
-								</p>
-								<div className="candidate-actions">
-									{lead.customerId ? (
-										<button
-											type="button"
-											className="btn-secondary"
-											onClick={() =>
-												onSelectCustomer(
-																		buildSyntheticCustomer(lead),
-																		lead,
-																	)
-											}
-										>
-											Seleccionar cliente
-										</button>
-									) : (
-										<button
-											type="button"
-											className="btn-primary"
-											onClick={() => onReconcileLead(lead)}
-										>
-											Vincular o crear cliente
-										</button>
-									)}
-								</div>
-							</div>
+							<CandidateItem
+								key={lead.id}
+								lead={lead}
+								meta={
+									<>
+										{lead.eventType && `Evento: ${lead.eventType} | `}
+										{lead.packageInterest &&
+											`Paquete: ${lead.packageInterest} | `}
+										{displayChannel(lead.channel)}
+									</>
+								}
+								{...actions}
+							/>
 						))}
 					</div>
 				)}
