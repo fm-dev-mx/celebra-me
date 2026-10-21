@@ -22,7 +22,8 @@ dashboard styles, exports and duplicated schemas. No migrations.
   ships with this release (#407, #411).
 - Dashboard guest, lead and draft schemas share their duplicated blocks (#410).
 - The board verifier is versioned with implicit pull request and branch checks (#404).
-- Agent docs, skills and samples follow the current code (#412).
+- Agent docs, skills and samples follow the current code (#412); duplicated rules, skills and
+  release steps are merged into one place each (#413).
 
 ### Removed
 
