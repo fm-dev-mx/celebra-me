@@ -1,53 +1,75 @@
-// Jewelry Box Wedding boda demo — a restrained ivory stationery set. A directional veil reserves the
-// generated hero's left negative space for text; the ledger, venue plates, envelope and reply card
-// are retinted in warm walnut ink. Section owners keep the geometry; this profile sets tokens only.
+// Jewelry Box Wedding boda demo — «Costa Dorada, Lino y Palapa a la Luz de las Velas».
+// Opening chapters breathe in warm bleached linen, sun-baked sand, and coastal olive ink;
+// after the sunset altar interlude, the invitation crosses into candlelit teak and warm
+// champagne gold for the night-route venues and stacked-cards program, returns to linen
+// gallery & stationery gifts, and culminates in a deep teak confirmation chapter and
+// full-bleed sunset closing with held footer. Token-only per profile boundary rules.
 
 .event--demo-boda-jewelry-box-wedding.theme-preset--jewelry-box-wedding {
+	// Palette anchors & held footer choreography
+	--coastal-linen: rgb(250 245 236);
+	--coastal-linen-rgb: 250 245 236;
+	--coastal-sand: rgb(242 232 215);
+	--coastal-sand-rgb: 242 232 215;
+	--coastal-teak: rgb(28 22 18);
+	--coastal-teak-rgb: 28 22 18;
+	--coastal-teak-elevated: rgb(40 31 25);
+	--coastal-teak-panel: rgb(46 35 28);
+	--coastal-walnut: rgb(58 41 29);
+	--coastal-walnut-rgb: 58 41 29;
+	--coastal-champagne: rgb(212 175 118);
+	--coastal-champagne-rgb: 212 175 118;
+	--coastal-amber: rgb(232 182 106);
+	--coastal-bronze: rgb(146 105 64);
+	--invitation-footer-reveal: held;
+	--invitation-footer-reply: on;
+
+	// Hero — directional coastal dusk veil on the left, golden-hour portrait on the right
 	.invitation-hero[data-variant='standard'] {
 		--hero-overlay: transparent;
 		--hero-overlay-gradient:
 			linear-gradient(
-				90deg,
-				rgb(33 24 17 / 78%) 0%,
-				rgb(33 24 17 / 64%) 30%,
-				rgb(33 24 17 / 18%) 54%,
-				transparent 74%
+				92deg,
+				rgb(29 21 16 / 82%) 0%,
+				rgb(29 21 16 / 64%) 32%,
+				rgb(29 21 16 / 22%) 56%,
+				transparent 76%
 			),
-			linear-gradient(0deg, rgb(24 17 12 / 52%) 0%, transparent 46%);
-		--hero-badge-text: rgb(255 250 240);
-		--hero-label-color: rgb(255 250 240);
-		--hero-scroll-indicator-color: rgb(255 250 240 / 88%);
+			linear-gradient(0deg, rgb(22 16 12 / 58%) 0%, transparent 44%);
+		--hero-badge-text: rgb(255 250 241);
+		--hero-label-color: rgb(255 250 241);
+		--hero-scroll-indicator-color: rgb(255 250 241 / 90%);
 		--hero-scroll-z-index: 1;
-		--hero-copy-shadow: 0 2px 12px rgb(0 0 0 / 34%);
+		--hero-copy-shadow: 0 2px 14px rgb(0 0 0 / 38%);
 		--hero-align: flex-start;
 		--hero-text-align: left;
 		--hero-content-z-index: 1;
 		--hero-content-width: min(42rem, 48vw);
 		--hero-content-margin: 0 0 clamp(6.5rem, 13vh, 9rem) clamp(1.8rem, 7vw, 7rem);
 		--hero-eyebrow-font: var(--font-label);
-		--hero-eyebrow-size: 0.7rem;
+		--hero-eyebrow-size: 0.72rem;
 		--hero-eyebrow-weight: 600;
 		--hero-eyebrow-tracking: 0.28em;
-		--hero-heading-size: clamp(3rem, 5.6vw, 5.75rem);
+		--hero-heading-size: clamp(3.15rem, 5.8vw, 5.85rem);
 		--hero-heading-weight: 500;
-		--hero-heading-line-height: 0.98;
+		--hero-heading-line-height: 0.96;
 		--hero-heading-paint: none;
 		--hero-heading-fill: currentcolor;
-		--hero-divider-margin: 1.5rem 0;
-		--hero-divider-fill: rgb(216 186 134);
+		--hero-divider-margin: 1.45rem 0;
+		--hero-divider-fill: var(--coastal-champagne);
 		--hero-details-align: flex-start;
 		--hero-date-font: var(--font-label);
-		--hero-date-size: clamp(0.72rem, 1.2vw, 0.84rem);
+		--hero-date-size: clamp(0.74rem, 1.2vw, 0.86rem);
 		--hero-date-weight: 600;
-		--hero-date-tracking: 0.18em;
+		--hero-date-tracking: 0.2em;
 		--hero-date-transform: uppercase;
 
 		@media (width <= 61.9375rem) {
 			--hero-overlay-gradient: linear-gradient(
 				0deg,
-				rgb(26 18 13 / 72%) 0%,
-				rgb(26 18 13 / 28%) 58%,
-				transparent 100%
+				rgb(24 17 12 / 80%) 0%,
+				rgb(24 17 12 / 38%) 54%,
+				transparent 92%
 			);
 			--hero-align: center;
 			--hero-text-align: center;
@@ -55,69 +77,197 @@
 			--hero-content-margin: 0 auto 6.75rem;
 			--hero-content-rail: 6.75rem;
 			--hero-heading-size: clamp(3rem, 14vw, 4.6rem);
-			--hero-divider-margin: 1.5rem auto;
+			--hero-divider-margin: 1.45rem auto;
 			--hero-details-align: center;
 		}
 	}
 
-	.itinerary[data-variant='editorial-ledger'] {
-		--editorial-ledger-rule: rgb(90 62 39 / 18%);
-		--editorial-ledger-spine: rgb(90 62 39 / 28%);
-		--itinerary-item-label-color: rgb(67 46 32);
-		--itinerary-item-time-color: rgb(141 101 65);
-		--itinerary-item-time-font: var(--font-label);
-		--itinerary-item-time-weight: 600;
-		--itinerary-item-time-tracking: 0.14em;
-		--itinerary-item-desc-color: rgb(67 46 32 / 72%);
+	// Quote — warm cotton paper with fine-line coastal shell & horizon ornament
+	.quote-section {
+		--quote-bg: linear-gradient(180deg, var(--coastal-linen) 0%, var(--coastal-sand) 100%);
+		--quote-padding-block: clamp(4.5rem, 8vw, 6.5rem);
+		--quote-container-max-width: 40rem;
+		--quote-text-color: var(--coastal-walnut);
+		--quote-content-size: clamp(1.65rem, 3.4vw, 2.35rem);
+		--quote-content-line-height: 1.42;
+		--quote-content-style: italic;
+		--quote-author-font: var(--font-label);
+		--quote-author-size: 0.74rem;
+		--quote-author-tracking: 0.24em;
+		--quote-author-color: var(--coastal-bronze);
+		--quote-accent-color: var(--coastal-champagne);
+		--quote-top-art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 36' fill='none' stroke='%23926940' stroke-width='1.1' stroke-linecap='round'%3E%3Cpath d='M12 26c16-6 32-6 48 0 16-6 32-6 48 0' opacity='.55'/%3E%3Cpath d='M60 7v14M60 21l-9-9M60 21l9-9M60 21l-15-4M60 21l15-4'/%3E%3Ccircle cx='60' cy='5' r='1.6' fill='%23d4af76' stroke='none'/%3E%3C/svg%3E");
+		--quote-top-art-width: 4.75rem;
+		--quote-top-art-height: 1.5rem;
 	}
 
-	.event-location[data-variant='stacked-venue-plates'] {
-		--location-bg: linear-gradient(180deg, rgb(247 240 228) 0%, rgb(252 248 240) 100%);
-		--location-container-max-width: 62rem;
-		--location-card-bg: rgb(251 247 238);
-		--location-card-border: 1px solid rgb(106 75 46 / 22%);
-		--location-card-shadow: none;
-		--location-place-color: rgb(64 44 30);
-		--location-title-color: rgb(132 97 63);
-		--location-address-color: rgb(64 44 30 / 76%);
-		--location-flourish-color: rgb(178 138 88);
-		--location-indication-icon-color: rgb(118 80 52);
-		--location-indication-icon-border: 1px solid rgb(118 80 52 / 28%);
-		--location-indication-icon-bg: transparent;
-		--location-plates-intro-max-width: 38rem;
-		--location-intro-heading-color: rgb(64 44 30);
+	// Countdown — editorial folio feel on warm sand paper
+	.countdown-section {
+		--countdown-bg: var(--coastal-sand);
+		--countdown-number-color: var(--coastal-walnut);
+		--countdown-label-color: var(--coastal-bronze);
+		--countdown-title-color: var(--coastal-walnut);
+		--countdown-accent-color: var(--coastal-champagne);
+	}
+
+	// Family — split-groups with featured sunset beach portrait
+	.family[data-variant='split-groups'] {
+		--family-bg: linear-gradient(180deg, var(--coastal-sand) 0%, var(--coastal-linen) 100%);
+		--family-accent: var(--coastal-bronze);
+		--family-split-divider: rgb(146 105 64 / 26%);
+		--family-split-content-max-width: 48rem;
+		--family-title-color: var(--coastal-walnut);
+		--family-eyebrow-color: var(--coastal-bronze);
+		--family-message-color: rgb(58 41 29 / 82%);
+		--family-group-title-color: var(--coastal-bronze);
+		--family-name-color: var(--coastal-walnut);
+		--family-meta-color: rgb(146 105 64 / 88%);
+		--family-media-aspect-ratio: 3 / 2;
+		--family-media-radius: 10px;
+		--family-media-image-radius: 8px;
+		--family-media-border: 1px solid rgb(146 105 64 / 24%);
+		--family-media-shadow: 0 20px 44px -24px rgb(46 31 19 / 28%);
+	}
+
+	// Location — night-route: candlelit teak sky, warm champagne route rail & real venue photos
+	.event-location[data-variant='night-route'] {
+		--location-route-sky: linear-gradient(
+			180deg,
+			rgb(34 26 21) 0%,
+			var(--coastal-teak) 54%,
+			rgb(22 17 14) 100%
+		);
+		--location-route-sky-deep: var(--coastal-teak);
+		--location-route-sky-panel: var(--coastal-teak-panel);
+		--location-route-ink: rgb(252 246 236);
+		--location-route-muted: rgb(242 232 215 / 80%);
+		--location-route-accent: var(--coastal-champagne);
+		--location-route-window: var(--coastal-amber);
+		--location-route-track: rgb(212 175 118 / 34%);
+		--location-route-marker-bg: var(--coastal-teak-elevated);
+		--location-route-panel-radius: 0.95rem;
+		--location-route-panel-pad: clamp(1.2rem, 2.8vw, 1.65rem);
 		--location-outer-frame-padding: 0;
 		--location-outer-frame-bg: transparent;
 		--location-outer-frame-shadow: none;
 		--location-inner-frame-padding: 0;
-		--location-image-aspect-ratio: 4 / 3;
-		--location-image-border-bottom: 1px solid rgb(106 75 46 / 18%);
-		--location-content-padding: clamp(1.35rem, 3vw, 1.85rem);
-		--location-plates-content-align: left;
+		--location-image-aspect-ratio: 16 / 10;
+		--location-image-radius: 0.65rem;
+		--location-image-border-bottom: 1px solid rgb(212 175 118 / 26%);
 		--location-date-font-family: var(--font-label);
-		--location-date-font-size: 0.7rem;
+		--location-date-font-size: 0.72rem;
 		--location-date-font-weight: 600;
 		--location-date-letter-spacing: 0.16em;
-		--location-date-color: rgb(118 80 52);
+		--location-date-color: var(--coastal-champagne);
 		--location-hour-font-family: var(--font-label);
-		--location-hour-font-size: 0.7rem;
+		--location-hour-font-size: 0.76rem;
 		--location-hour-font-weight: 600;
 		--location-hour-letter-spacing: 0.16em;
-		--location-hour-color: rgb(118 80 52);
-		--location-plates-notes-max-width: 46rem;
-		--location-plates-notes-border-inline: 0;
-		--location-plates-notes-bg: transparent;
+		--location-hour-color: var(--coastal-champagne);
 
 		.event-location__card-title {
 			--location-title-font-family: var(--font-label);
-			--location-title-font-size: 0.7rem;
+			--location-title-font-size: 0.72rem;
 			--location-title-font-weight: 600;
-			--location-title-letter-spacing: 0.25em;
-			--location-title-color: rgb(118 80 52);
+			--location-title-letter-spacing: 0.24em;
+			--location-title-color: var(--coastal-champagne);
 		}
 	}
 
-	// A restrained ivory stationery object; the reveal state machine stays untouched.
+	// Itinerary — stacked-cards: candlelit palapa cards over deep teak backdrop
+	.itinerary[data-variant='stacked-cards'] {
+		--stacked-cards-section-bg: linear-gradient(
+			180deg,
+			rgb(22 17 14) 0%,
+			var(--coastal-teak) 68%,
+			rgb(36 27 21) 100%
+		);
+		--stacked-cards-padding-block: clamp(4.5rem, 8vw, 6.5rem);
+		--stacked-cards-header-gap: clamp(3rem, 6vw, 4.5rem);
+		--stacked-cards-title-color: rgb(252 246 236);
+		--stacked-cards-title-size: clamp(2.15rem, 5vw, 3rem);
+		--stacked-cards-max-width: 34rem;
+		--stacked-cards-paper: linear-gradient(165deg, rgb(252 247 238) 0%, rgb(243 233 216) 100%);
+		--stacked-cards-ink: var(--coastal-walnut);
+		--stacked-cards-accent: var(--coastal-bronze);
+		--stacked-cards-desc-color: rgb(58 41 29 / 82%);
+		--stacked-cards-border: 1px solid rgb(212 175 118 / 46%);
+		--stacked-cards-radius: 1rem;
+		--stacked-cards-shadow: 0 22px 48px -20px rgb(0 0 0 / 48%);
+		--stacked-cards-lantern-line: var(--coastal-bronze);
+		--stacked-cards-lantern-fill: var(--coastal-amber);
+		--stacked-cards-shade: rgb(18 13 10);
+		--stacked-cards-shade-strength: 18%;
+		--stacked-cards-time-size: clamp(2.85rem, 7vw, 3.65rem);
+		--stacked-cards-label-size: clamp(1.45rem, 3.6vw, 1.75rem);
+		--stacked-cards-ornament-display: block;
+		--stacked-cards-ornament-ratio: 3 / 2;
+		--stacked-cards-ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 48' fill='none' stroke='%23d4af76' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M36 6v32M26 16l10-10 10 10M20 42h32'/%3E%3Ccircle cx='36' cy='24' r='6' stroke-opacity='.65'/%3E%3C/svg%3E");
+	}
+
+	// Gallery — pinned-track: warm bleached linen exhibition with bronze counter & progress rail
+	.gallery-section[data-variant='pinned-track'] {
+		--gallery-section-bg: var(--coastal-linen);
+		--gallery-track-accent: var(--coastal-bronze);
+		--gallery-track-rail: rgb(146 105 64 / 22%);
+		--gallery-title-color: var(--coastal-walnut);
+		--gallery-subtitle-color: rgb(58 41 29 / 76%);
+		--gallery-item-radius: 6px;
+		--gallery-item-image-radius: 6px;
+		--gallery-item-border: 1px solid rgb(146 105 64 / 18%);
+		--gallery-item-shadow: 0 18px 38px -22px rgb(46 31 19 / 24%);
+	}
+
+	// Gifts — printed linen stationery enclosure with fine-line crest mark
+	.gifts-section {
+		--gifts-bg: linear-gradient(180deg, var(--coastal-linen) 0%, var(--coastal-sand) 100%);
+		--gifts-header-mark-display: block;
+		--gifts-header-mark-size: 3.25rem;
+		--gifts-header-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 40' fill='none' stroke='%23926940' stroke-width='1.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='10' y='10' width='44' height='24' rx='2'/%3E%3Cpath d='M10 12l22 13 22-13'/%3E%3Ccircle cx='32' cy='23' r='3.2' fill='%23d4af76' stroke='%23926940'/%3E%3C/svg%3E");
+		--gifts-card-bg: rgb(252 248 241 / 92%);
+		--gifts-card-border: 1px solid rgb(146 105 64 / 24%);
+		--gifts-card-shadow: 0 14px 32px -22px rgb(58 41 29 / 18%);
+	}
+
+	// Personalized Access + RSVP — unified candlelit teak & warm cream formal confirmation chapter
+	--formal-chapter-band: rgb(38 28 22);
+	--formal-chapter-band-rgb: 38 28 22;
+	--formal-chapter-cream: rgb(250 244 234);
+	--formal-chapter-cream-rgb: 250 244 234;
+	--formal-chapter-sand-rgb: 234 220 198;
+	--formal-chapter-metal: rgb(212 175 118);
+	--formal-chapter-metal-rgb: 212 175 118;
+	--formal-chapter-ink: rgb(42 30 22);
+	--formal-chapter-ink-rgb: 42 30 22;
+	--formal-chapter-title: rgb(74 49 33);
+	--formal-chapter-muted: rgb(98 80 66);
+	--formal-chapter-meta: rgb(146 105 64);
+
+	.rsvp-section {
+		--formal-chapter-band: rgb(38 28 22);
+		--formal-chapter-band-rgb: 38 28 22;
+		--formal-chapter-cream: rgb(250 244 234);
+		--formal-chapter-cream-rgb: 250 244 234;
+		--formal-chapter-metal: rgb(212 175 118);
+		--formal-chapter-metal-rgb: 212 175 118;
+		--formal-chapter-padding-end: 1.5rem;
+		--formal-chapter-footer-margin-end: 0;
+		--rsvp-section-min-height: auto;
+	}
+
+	.rsvp[data-variant='formal-register'] {
+		--formal-register-open: formal-register-open;
+	}
+
+	// Thank You — full-bleed sunset closing with warm linen translucent letter card
+	.thank-you-section[data-variant='full-bleed-photo'] {
+		--sacred-thank-you-monogram: 'X·D';
+		--thank-you-bleed-name-display: block;
+		--thank-you-bleed-padding-end: clamp(4.5rem, 9vw, 6.5rem);
+		--thank-you-bleed-message-border: 1px solid rgb(212 175 118 / 48%);
+	}
+
+	// Envelope — tactile coastal linen & warm wax seal; reveal state machine untouched
 	.envelope-wrapper[data-variant='jewelry-box-wedding'] {
 		--env-bg:
 			radial-gradient(circle at 50% 28%, rgb(255 252 244 / 92%), transparent 42%),
@@ -152,8 +302,6 @@
 		--reveal-card-shadow:
 			0 2px 3px rgb(56 39 24 / 8%), 0 22px 48px rgb(56 39 24 / 18%),
 			inset 0 0 0 1px rgb(255 255 255 / 62%);
-
-		// Inner hairline frame (0.62rem inset) drawn as four background lines over the paper.
 		--reveal-card-sheen:
 			linear-gradient(var(--reveal-card-border), var(--reveal-card-border)) left 0.62rem top
 				0.62rem / calc(100% - 1.24rem) 1px no-repeat,
@@ -198,17 +346,5 @@
 			--env-open-label-spacing-compact: 0.25em;
 			--env-seal-hint-color: var(--env-text-secondary);
 		}
-	}
-
-	.rsvp-section {
-		--formal-chapter-band: rgb(56 39 29);
-		--formal-chapter-band-rgb: 56 39 29;
-		--formal-chapter-cream: rgb(248 240 226);
-		--formal-chapter-cream-rgb: 248 240 226;
-		--formal-chapter-metal: rgb(208 170 117);
-		--formal-chapter-metal-rgb: 208 170 117;
-		--formal-chapter-padding-end: 1.5rem;
-		--formal-chapter-footer-margin-end: 0;
-		--rsvp-section-min-height: auto;
 	}
 }

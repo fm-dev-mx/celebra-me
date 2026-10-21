@@ -5,8 +5,8 @@ export default defineDemoInvitation({
 	eventType: 'boda',
 	showroom: {
 		title: 'Boda estilo Jewelry Box',
-		description: 'Clásica, cálida y elegante.',
-		styleTags: ['clásica', 'elegante'],
+		description: 'Editorial de costa dorada, lino cálido y velada frente al mar.',
+		styleTags: ['clásica', 'elegante', 'editorial'],
 		views: 11,
 		visibility: 'featured',
 		reviewStatus: 'approved',
@@ -16,7 +16,7 @@ export default defineDemoInvitation({
 			'Hola, revisé la demo de boda Jewelry Box y quisiera cotizar una invitación basada en este estilo.',
 		thumbnail: {
 			key: 'hero',
-			alt: 'Vista principal del demo de boda estilo Jewelry Box',
+			alt: 'Vista principal del demo de boda estilo Jewelry Box en la costa al atardecer',
 		},
 	},
 });

@@ -1,19 +1,23 @@
-import hero from './assets/prewedding-hero.webp';
-import portrait from './assets/prewedding-portrait.webp';
-import chapel from './assets/venue-chapel.webp';
-import hacienda from './assets/venue-hacienda.webp';
-import stationery from './assets/stationery-prewedding.webp';
+import hero from './assets/hero.webp';
+import portrait from './assets/portrait.webp';
+import ceremony from './assets/ceremony.webp';
+import reception from './assets/reception.webp';
+import family from './assets/family.webp';
+import gallery01 from './assets/gallery-01.webp';
+import gallery02 from './assets/gallery-02.webp';
+import gallery03 from './assets/gallery-03.webp';
+import thankYouPortrait from './assets/thank-you-portrait.webp';
 
 export const assets = {
 	hero,
 	portrait,
-	ceremony: chapel,
-	reception: hacienda,
-	jardin: hacienda,
-	signature: stationery,
-	family: portrait,
-	interlude01: hacienda,
-	interlude02: stationery,
-	thankYouPortrait: portrait,
-	gallery: [chapel, stationery, hacienda, portrait, hero],
+	ceremony,
+	reception,
+	jardin: reception,
+	signature: ceremony,
+	family,
+	interlude01: ceremony,
+	interlude02: reception,
+	thankYouPortrait,
+	gallery: [gallery01, gallery02, gallery03],
 };

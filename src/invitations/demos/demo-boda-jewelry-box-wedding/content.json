@@ -4,118 +4,159 @@
     "templateId": "boda-jewelry-box-wedding",
     "_assetSlug": "demo-boda-jewelry-box-wedding",
     "visualProfileId": "demo-boda-jewelry-box-wedding",
-    "title": "Sofía & Alejandro",
-    "description": "Una invitación editorial de preboda en Puebla: arquitectura, papelería y retratos que anticipan una celebración íntima.",
+    "title": "Ximena & Diego",
+    "description": "Una invitación editorial de boda frente al Pacífico: lino crudo, luz dorada de atardecer y una velada bajo palapa iluminada por velas.",
     "theme": {
-        "preset": "jewelry-box-wedding"
+        "preset": "jewelry-box-wedding",
+        "motion": "editorial"
     },
     "sectionOrder": [
         "quote",
-        "personalizedAccess",
-        "family",
-        "gallery",
         "countdown",
+        "family",
         "location",
         "itinerary",
-        "rsvp",
+        "gallery",
         "gifts",
+        "personalizedAccess",
+        "rsvp",
         "thankYou"
     ],
     "composition": {
-        "intersections": {}
+        "intersections": {
+            "quote": {
+                "family": "atmospheric-blend",
+                "source": "hero"
+            },
+            "interlude-after-family": {
+                "family": "overlap",
+                "source": "family"
+            },
+            "location": {
+                "family": "atmospheric-blend",
+                "source": "interlude-after-family"
+            },
+            "itinerary": {
+                "family": "stack",
+                "source": "location"
+            },
+            "gallery": {
+                "family": "atmospheric-blend",
+                "source": "itinerary"
+            },
+            "interlude-after-gifts": {
+                "family": "arch",
+                "source": "gifts"
+            },
+            "personalized-access": {
+                "family": "atmospheric-blend",
+                "source": "interlude-after-gifts"
+            },
+            "rsvp": {
+                "family": "stack",
+                "source": "personalized-access"
+            }
+        }
     },
     "hero": {
         "presentation": {
             "venueIndex": 1
         },
-        "name": "Sofía",
-        "secondaryName": "Alejandro",
-        "label": "Nuestro enlace",
-        "date": "2026-12-12T18:00:00.000Z",
+        "name": "Ximena",
+        "secondaryName": "Diego",
+        "label": "Nuestro enlace frente al mar",
+        "date": "2026-11-14T17:30:00.000Z",
+        "scrollLabel": "Deslice",
         "backgroundImage": "hero",
         "backgroundImageMobile": "portrait",
-        "focalPoint": "68% 46%",
-        "focalPointMobile": "55% 38%",
-        "focalPointDesktop": "70% 44%",
+        "focalPoint": "62% 38%",
+        "focalPointMobile": "54% 34%",
+        "focalPointDesktop": "64% 36%",
         "variant": "standard"
     },
     "location": {
         "accessPolicy": {
             "visibility": "public"
         },
-        "introEyebrow": "Puebla de los Ángeles",
-        "introHeading": "Sábado, 12 de diciembre de 2026",
-        "introLede": "Dos lugares que han acompañado el comienzo de esta historia y recibirán la celebración que está por venir.",
+        "introEyebrow": "Punta Mita · Riviera Nayarit",
+        "introHeading": "Sábado, 14 de noviembre de 2026",
+        "introLede": "Dos escenarios frente al Pacífico donde la brisa de la tarde se transforma en una velada a la luz de las velas.",
+        "indicationsHeading": "Notas de hospitalidad",
         "indications": [
             {
                 "iconName": "DressCode",
                 "styleVariant": "default",
-                "title": "Vestimenta",
-                "text": "Gala formal en tonos sobrios."
+                "title": "Vestimenta · Etiqueta de costa",
+                "text": "Lino formal y sedas fluidas en tonos arena, oliva, terracota o azul noche. El color <strong>marfil y blanco</strong> queda reservado para la novia."
             },
             {
                 "iconName": "Forbidden",
                 "styleVariant": "reserved",
-                "title": "Acceso",
-                "text": "Celebración reservada para adultos."
+                "title": "Recepción reservada",
+                "text": "Celebración pensada exclusivamente para adultos. Agradecemos su comprensión y puntualidad."
             }
         ],
-        "variant": "stacked-venue-plates",
+        "variant": "night-route",
         "presentation": "with-photo",
         "presentationOptions": {
-            "showFlourishes": true
+            "showFlourishes": true,
+            "showNavigationButtons": true,
+            "showCalendarLinks": true
         },
         "venues": [
             {
-                "venueEvent": "Ceremonia Religiosa",
-                "venueName": "Capilla de la Inmaculada",
-                "address": "Calle de los Artistas #45, Centro",
-                "city": "Puebla",
-                "date": "12 de diciembre de 2026",
-                "time": "18:00",
+                "venueEvent": "Ceremonia al Atardecer",
+                "venueName": "Playa Kupuri · Altar del Pacífico",
+                "address": "Paseo de los Corales s/n, Bahía de Banderas, 63734 Punta Mita, Nay.",
+                "city": "Punta Mita",
+                "date": "14 de noviembre de 2026",
+                "time": "17:30",
                 "type": "ceremony",
                 "image": "ceremony",
-                "focalPoint": "52% 43%",
+                "focalPoint": "50% 48%",
                 "isVisible": true,
-                "googleMapsUrl": "https://maps.app.goo.gl/example-church"
+                "googleMapsUrl": "https://maps.app.goo.gl/example-playa-kupuri"
             },
             {
-                "venueEvent": "Recepción",
-                "venueName": "Hacienda Mendocinas",
-                "address": "Ex Hacienda de Mendocinas",
-                "city": "Puebla",
-                "date": "12 de diciembre de 2026",
-                "time": "20:00",
+                "venueEvent": "Recepción y Cena bajo Palapa",
+                "venueName": "Club de Playa Sufito",
+                "address": "Camino a Litibú Km 3.2, Punta de Mita, 63734 Riviera Nayarit, Nay.",
+                "city": "Punta Mita",
+                "date": "14 de noviembre de 2026",
+                "time": "19:30",
                 "type": "reception",
                 "image": "reception",
-                "focalPoint": "50% 43%",
+                "focalPoint": "50% 52%",
                 "isVisible": true,
-                "googleMapsUrl": "https://maps.app.goo.gl/example-reception"
+                "googleMapsUrl": "https://maps.app.goo.gl/example-palapa-sufito"
             }
         ],
         "mapStyle": "dark"
     },
     "rsvp": {
-        "title": "Favor de confirmar asistencia",
-        "subcopy": "Será un honor recibirles. Les pedimos confirmar su asistencia desde esta invitación para preparar cada detalle con el cuidado que la ocasión merece.",
+        "title": "Confirmación de asistencia",
+        "subcopy": "Será un honor contar con su presencia frente al mar. Le agradecemos confirmar su asistencia antes del 15 de octubre de 2026 para disponer cada mesa con dedicación.",
         "guestCap": 10,
         "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por acompañarnos en el inicio de esta nueva etapa.",
+        "confirmationMessage": "Gracias por acompañarnos en este capítulo frente al mar.",
         "confirmationMode": "both",
         "personalizedAccess": {
-            "variant": "ornamented"
+            "title": "Su lugar reservado en la costa",
+            "subtitle": "Invitación personal e intransferible",
+            "footerText": "Confirme a continuación para registrar sus lugares",
+            "variant": "formal-pass"
         },
         "whatsappConfig": {
             "phone": "5210000000001",
-            "confirmedTemplate": "Hola. Somos {name}. Confirmamos con mucho gusto nuestra asistencia a la boda de Sofía y Alejandro. Asistentes: {guestCount}.",
-            "declinedTemplate": "Hola. Somos {name}. Lamentamos no poder acompañarles, pero les enviamos nuestros mejores deseos.",
+            "confirmedTemplate": "Hola. Somos {name}. Confirmamos con mucho gusto nuestra asistencia a la boda de Ximena y Diego en Punta Mita. Asistentes: {guestCount}.",
+            "declinedTemplate": "Hola. Somos {name}. Lamentamos no poder acompañarles en Punta Mita, pero les enviamos nuestro cariño y mejores deseos.",
             "omitTitle": true
         },
         "variant": "formal-register"
     },
     "quote": {
-        "text": "Donde tú vayas, yo iré; donde tú vivas, yo viviré. Tu pueblo será mi pueblo y tu Dios será mi Dios.",
-        "author": "Rut 1:16"
+        "text": "Como el mar regresa siempre a la orilla, así nuestros pasos encontraron en esta luz su lugar de calma y promesa.",
+        "author": "Ximena & Diego"
     },
     "family": {
         "groups": [
@@ -123,11 +164,11 @@
                 "title": "Padres de la Novia",
                 "items": [
                     {
-                        "name": "Bernardo Silva",
+                        "name": "Alejandro Morales Villarreal",
                         "role": "Padre"
                     },
                     {
-                        "name": "Alicia Montes",
+                        "name": "Valeria Elizondo de Morales",
                         "role": "Madre"
                     }
                 ]
@@ -136,133 +177,134 @@
                 "title": "Padres del Novio",
                 "items": [
                     {
-                        "name": "Roberto García",
+                        "name": "Hernán Santamaría Cárdenas",
                         "role": "Padre"
                     },
                     {
-                        "name": "Elena Torres",
-                        "role": "Madre",
-                        "deceased": true
+                        "name": "Lucía Montemayor de Santamaría",
+                        "role": "Madre"
                     }
                 ]
             }
         ],
         "godparents": [
             {
-                "name": "Carlos Ruiz",
-                "role": "Padrino de Velación"
+                "name": "Rodrigo Elizondo & Mariana Cárdenas",
+                "role": "Padrinos de Velación"
             },
             {
-                "name": "Marta Sosa",
-                "role": "Madrina de Velación"
+                "name": "Esteban Morales & Sofía Santamaría",
+                "role": "Padrinos de Lazo"
             }
         ],
         "featuredImage": "family",
+        "featuredImageAlt": "Ximena y Diego acompañados por los padres de la novia en la playa al atardecer",
         "labels": {
             "sectionTitle": "Nuestras familias",
-            "sectionSubtitle": "El origen de nuestra historia",
-            "parentsTitle": "Con la bendición de nuestros padres",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Con gratitud honramos a quienes nos han dado ejemplo, cuidado y bendición para llegar a este día."
+            "sectionSubtitle": "Con la bendición de quienes nos dieron raíz",
+            "parentsTitle": "Nuestros padres",
+            "godparentsTitle": "Padrinos de honor",
+            "sectionMessage": "Con profunda gratitud honramos a quienes nos enseñaron el valor de caminar juntos y hoy nos acompañan frente al mar."
         },
-        "variant": "standard"
+        "variant": "split-groups"
     },
     "gallery": {
-        "variant": "uniform-grid",
-        "eyebrow": "Galería",
-        "title": "Crónica de un sí",
-        "subtitle": "Una historia antes de la boda: la ciudad, la luz y los pequeños gestos que la han hecho nuestra.",
+        "variant": "pinned-track",
+        "eyebrow": "Crónica de costa",
+        "title": "Antes del atardecer",
+        "subtitle": "Tres instantes junto a la orilla donde comenzó la promesa de esta celebración.",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "La hacienda aguarda."
+                "alt": "Ximena y Diego caminando por la orilla del mar al atardecer",
+                "caption": "La brisa dorada de la tarde."
             },
             {
                 "image": "gallery02",
-                "caption": "La promesa en papel."
+                "alt": "Retrato editorial de Ximena y Diego tomados de la mano en la arena",
+                "caption": "Lino, seda y calma frente al Pacífico."
             },
             {
                 "image": "gallery03",
-                "caption": "Arquitectura en calma."
-            },
-            {
-                "image": "gallery04",
-                "caption": "El comienzo de nosotros."
-            },
-            {
-                "image": "gallery05",
-                "caption": "La luz de Puebla."
+                "alt": "Retrato cercano de Ximena y Diego sonriendo al atardecer",
+                "caption": "La complicidad de cada promesa."
             }
         ]
     },
     "gifts": {
         "title": "Mesa de regalos",
-        "subtitle": "Su presencia será nuestro mayor regalo. Para quienes deseen tener un detalle con nosotros, hemos preparado una mesa de regalos en Liverpool. También podrán acompañarnos con un sobre de buenos deseos el día de la recepción.",
+        "subtitle": "Su presencia en Punta Mita es nuestro mayor regalo. Para quienes deseen tener una atención adicional con nuestro nuevo hogar, hemos dispuesto las siguientes opciones.",
         "items": [
             {
                 "type": "store",
-                "title": "Liverpool",
-                "url": "https://www.liverpool.com.mx/tienda/giftregistry/example",
-                "logo": "LIVERPOOL",
-                "description": "Mesa seleccionada para quienes deseen tener un detalle adicional."
+                "title": "El Palacio de Hierro",
+                "url": "https://www.elpalaciodehierro.com/celebra/example",
+                "logo": "PALACIO",
+                "description": "Mesa de regalos seleccionada para nuestro hogar."
+            },
+            {
+                "type": "cash",
+                "title": "Fondo de luna de miel",
+                "text": "También contaremos con un buzón de sobres en la recepción para nuestra travesía por el Mediterráneo."
             }
         ],
         "variant": "standard"
     },
     "itinerary": {
-        "title": "Programa del día",
+        "title": "Bitácora de la velada",
         "items": [
             {
                 "iconName": "Church",
-                "label": "Ceremonia religiosa",
-                "time": "18:00",
-                "description": "Capilla de la Inmaculada."
+                "label": "Ceremonia frente al mar",
+                "time": "17:30",
+                "description": "Altar de madera y flores blancas sobre la arena de Playa Kupuri."
             },
             {
                 "iconName": "Toast",
-                "label": "Cóctel de bienvenida",
-                "time": "19:30",
-                "description": "Jardín Central."
+                "label": "Cóctel de puesta de sol",
+                "time": "18:45",
+                "description": "Brindis con cítricos de costa, ostiones frescos y cuerdas acústicas."
             },
             {
                 "iconName": "Dinner",
-                "label": "Cena de gala",
-                "time": "21:00",
-                "description": "Salón Mendocinas."
+                "label": "Cena bajo la palapa",
+                "time": "20:15",
+                "description": "Banquete de mar y tierra iluminado por cientos de velas y lámparas de mimbre."
             },
             {
                 "iconName": "Waltz",
                 "label": "Primer baile",
-                "time": "22:30",
-                "description": "Bajo las estrellas."
+                "time": "22:00",
+                "description": "A la orilla iluminada, bajo el cielo despejado del Pacífico."
             },
             {
                 "iconName": "Party",
-                "label": "Celebración",
-                "time": "23:00",
-                "description": "Música, brindis y despedida de la noche."
+                "label": "Celebración junto a las olas",
+                "time": "22:30",
+                "description": "Música en vivo, coctelería nocturna y fogata en la arena."
             }
         ],
-        "variant": "editorial-ledger"
+        "variant": "stacked-cards"
     },
     "thankYou": {
-        "message": "Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.",
-        "closingName": "Sofía & Alejandro",
+        "message": "Gracias por viajar hasta esta orilla para compartir con nosotros el comienzo de nuestra vida juntos. Su cariño quedará guardado en cada recuerdo de este atardecer.",
+        "closingName": "Ximena & Diego",
+        "date": "14 de noviembre de 2026",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 38%",
-        "variant": "standard"
+        "focalPoint": "50% 42%",
+        "variant": "full-bleed-photo"
     },
     "countdown": {
         "variant": "standard",
-        "title": "Nuestra boda comienza en",
-        "footerText": "Puebla, Puebla"
+        "title": "Nos encontramos frente al mar en",
+        "footerText": "14 de noviembre de 2026 · Punta Mita, Nayarit"
     },
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "monogram",
-        "sealInitials": "S·A",
-        "documentLabel": "S & A",
+        "sealInitials": "X·D",
+        "documentLabel": "X & D",
         "stampText": "BODA",
         "stampYear": "2026",
         "microcopy": "Abrir invitación"
@@ -270,15 +312,22 @@
     "interludes": [
         {
             "image": "interlude01",
-            "afterSection": "personalizedAccess",
-            "alt": "Corredor de hacienda con flores marfil y luz cálida",
-            "height": "screen"
+            "afterSection": "family",
+            "alt": "Altar de boda en la playa al atardecer con arco de madera y rosas blancas",
+            "height": "screen",
+            "focalPoint": "50% 52%"
         },
         {
             "image": "interlude02",
             "afterSection": "gifts",
-            "alt": "Detalle ceremonial con copas, flores y sobre sellado",
-            "height": "screen"
+            "alt": "Palapa iluminada con velas, lámparas tejidas y flores blancas junto al mar de noche",
+            "height": "screen",
+            "focalPoint": "50% 54%"
         }
-    ]
+    ],
+    "eventTiming": {
+        "localDateTime": "2026-11-14T17:30",
+        "timeZone": "America/Mazatlan",
+        "startsAtUtc": "2026-11-15T00:30:00.000Z"
+    }
 }
