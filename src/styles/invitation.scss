@@ -1,11 +1,10 @@
+// Always-on invitation core. Editorial cover, collector and ornament sets are separate sheets
+// that the CSS load plan adds only to the pages that use them (`invitation-features/`).
 @use 'layout/event-wrapper';
 @use 'invitation/envelope-reveal';
 @use 'invitation/reveal-card';
-@use 'invitation/editorial-cover';
-@use 'invitation/editorial-cover-collector';
 @use 'invitation/motion-system';
 @use 'invitation/scroll-scene';
 @use 'invitation/section-intersections';
-@use 'invitation/ornament-sets';
 @use 'invitation/edition-labels';
 @use 'themes/sections';

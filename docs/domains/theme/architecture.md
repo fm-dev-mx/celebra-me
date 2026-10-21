@@ -113,9 +113,10 @@ equal to the contract). Profiles relabel a folio with its `--editorial-folio-*` 
 ### Ornament set `storybook-lanterns`
 
 The set tells the tale with light: a gold-leaf thread at the thresholds and lantern-light fields
-behind the countdown and the closing (`src/styles/invitation/_ornament-sets.scss`). The earlier
-drawn rendering (plait and paper lanterns) was removed with its last consumer; a drawn look returns
-as its own registered ornament set, never as a branch on an invitation class.
+behind the countdown and the closing (`src/styles/invitation/_ornament-set-storybook-lanterns.scss`,
+motifs and mixins shared with the other sets in `_ornament-sets.scss`). The earlier drawn rendering
+(plait and paper lanterns) was removed with its last consumer; a drawn look returns as its own
+registered ornament set, never as a branch on an invitation class.
 
 ### Optional stationery treatments
 
@@ -484,7 +485,9 @@ Bounded controls retain their canonical section owner:
 ## Runtime CSS Delivery
 
 - `src/styles/invitation.scss` keeps shared invitation structure and imports the existing
-  `src/styles/themes/sections/_index.scss` barrel for shared section bases.
+  `src/styles/themes/sections/_index.scss` barrel for shared section bases. The editorial cover, its
+  collector edition and each ornament set are not part of it: they are
+  `src/styles/invitation-features/*.scss` sheets that only the pages using them load (step 6).
 - `src/styles/invitation-presets/*.scss` remain the preset and font entrypoints.
 - `src/styles/invitation-sections-by-preset/*.scss` import canonical `src/styles/themes/sections/**`
   modules directly. Their import order is the emitted cascade order, and a bundle may explicitly
@@ -500,7 +503,11 @@ Bounded controls retain their canonical section owner:
      (`themes/sections/reveal/_{entrypoint}.scss`) — render-blocking;
   4. each requested canonical section variant partial — render-blocking for the hero, deferred for
      the other sections;
-  5. the active visual profile (`invitation-profiles/{visualProfileId}.scss`) — render-blocking.
+  5. the active visual profile (`invitation-profiles/{visualProfileId}.scss`) — render-blocking;
+  6. feature sheets (`invitation-features/`), in the order they held inside the shared sheet: the
+     editorial cover when the reveal is `editorial-cover` — render-blocking — then
+     `editorial-cover-collector` for the collector edition — render-blocking — then
+     `ornaments-{set}` for `composition.ornaments` — deferred. A missing feature sheet throws.
 
   A missing bundle is omitted, never replaced by a default preset. Canonical section partials are
   not exposed through a general per-section passthrough directory. Section bundles never `@use` a
