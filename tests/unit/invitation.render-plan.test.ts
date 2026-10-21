@@ -20,7 +20,7 @@ describe('buildInvitationRenderPlan', () => {
 	it('inserts interludes after their specified sections', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+			data: loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 		} as EventContentEntry;
 
 		const viewModel = adaptEvent(contentDocumentFromEntry(event));
@@ -72,7 +72,7 @@ describe('buildInvitationRenderPlan', () => {
 	it('uses explicit sectionOrder when an event defines one', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+			data: loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 		} as EventContentEntry;
 
 		const viewModel = adaptEvent(contentDocumentFromEntry(event));
@@ -97,7 +97,7 @@ describe('buildInvitationRenderPlan', () => {
 	it('uses cinematic interludes in the baptism angelic presence demo', () => {
 		const event = {
 			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
-			data: loadFixture('src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json'),
+			data: loadFixture('src/invitations/demos/demo-bautizo-angelic-presence/content.json'),
 		} as EventContentEntry;
 
 		const viewModel = adaptEvent(contentDocumentFromEntry(event));
@@ -127,7 +127,7 @@ describe('buildInvitationRenderPlan', () => {
 	it('includes interludes in the render plan with correct ordering', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+			data: loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 		} as EventContentEntry;
 
 		const viewModel = adaptEvent(contentDocumentFromEntry(event));
@@ -146,7 +146,7 @@ describe('buildInvitationRenderPlan', () => {
 	});
 
 	it('forwards authored interlude desktop focal points into the render plan', () => {
-		const data = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json') as {
+		const data = loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json') as {
 			interludes?: Array<Record<string, unknown>>;
 		};
 		const firstInterlude = data.interludes?.[0];
@@ -170,7 +170,7 @@ describe('buildInvitationRenderPlan', () => {
 	it('publishes the Celestial pilot intersection treatments in sequential order', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-celestial-blue',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-celestial-blue.json'),
+			data: loadFixture('src/invitations/demos/demo-xv-celestial-blue/content.json'),
 		} as EventContentEntry;
 
 		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
@@ -209,13 +209,13 @@ describe('buildInvitationRenderPlan', () => {
 
 describe('published demo interlude placement', () => {
 	it.each([
-		'bautizo/demo-bautizo-angelic-presence',
-		'boda/demo-boda-jewelry-box-wedding',
-		'primera-comunion/demo-primera-comunion-angelic-presence',
+		'demo-bautizo-angelic-presence',
+		'demo-boda-jewelry-box-wedding',
+		'demo-primera-comunion-angelic-presence',
 	])('keeps the first interlude after personalized access in %s', (fixture) => {
 		const event = {
-			id: `event-demos/${fixture}`,
-			data: loadFixture(`src/content/event-demos/${fixture}.json`),
+			id: fixture,
+			data: loadFixture(`src/invitations/demos/${fixture}/content.json`),
 		} as EventContentEntry;
 		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
 		expect(

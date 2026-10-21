@@ -5,14 +5,14 @@ import { ICON_CATALOG } from '@/lib/icons/icon-catalog';
 import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
 import { eventContentSchema as eventSchema } from '@/lib/schemas/content/base-event.schema';
 
-const contentRoots = ['src/content/event-demos'];
+const contentRoots = ['src/invitations/demos'];
 const primeraComunionDemoPath = path.resolve(
 	process.cwd(),
-	'src/content/event-demos/primera-comunion/demo-primera-comunion-angelic-presence.json',
+	'src/invitations/demos/demo-primera-comunion-angelic-presence/content.json',
 );
 const primeraComunionAssetIndexPath = path.resolve(
 	process.cwd(),
-	'src/assets/images/events/demo-primera-comunion-angelic-presence/index.ts',
+	'src/invitations/demos/demo-primera-comunion-angelic-presence/assets.ts',
 );
 
 function getJsonContentFiles(root: string): string[] {

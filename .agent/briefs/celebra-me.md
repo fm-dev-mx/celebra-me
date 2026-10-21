@@ -41,7 +41,7 @@ The platform offers:
 | Primera Comunión      | `demo-primera-comunion-angelic-presence`                                | Illustrated, gentle         |
 
 Baby shower is a supported event type without a routable demo. Demos hold fictitious showcase
-content only (`src/content/event-demos/`); real client invitations are never demo examples.
+content only (`src/invitations/demos/`); real client invitations are never demo examples.
 
 ## Visual Identity
 

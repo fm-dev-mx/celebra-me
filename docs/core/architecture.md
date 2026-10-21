@@ -227,7 +227,7 @@ are not a temporary fallback for real/client invitations.
 
 ### Active Collection Layout
 
-- `src/content/event-demos/**.json` for showcase demos
+- `src/invitations/demos/*/content.json` for showcase demos
 
 ### Rules
 

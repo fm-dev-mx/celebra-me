@@ -3,7 +3,7 @@ import { adaptEvent } from '@/lib/adapters/event';
 import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { resolveLocationShowNavigationButtons } from '@/lib/invitation/location-presentation';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
-import demoBodaJewelryBoxWedding from '../../src/content/event-demos/boda/demo-boda-jewelry-box-wedding.json';
+import demoBodaJewelryBoxWedding from '../../src/invitations/demos/demo-boda-jewelry-box-wedding/content.json';
 import fs from 'node:fs';
 import path from 'node:path';
 import {

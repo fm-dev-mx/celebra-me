@@ -100,7 +100,7 @@ test('family retains original delivery dimensions through content resolution', a
 	const delivered = await page.request.get(actual.src);
 	expect(delivered.ok()).toBe(true);
 	const source = readFileSync(
-		resolve('src/assets/images/events/demo-xv-celestial-blue/family-group.webp'),
+		resolve('src/invitations/demos/demo-xv-celestial-blue/assets/family-group.webp'),
 	);
 	expect(sha256(await delivered.body())).toBe(sha256(source));
 });

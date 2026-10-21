@@ -194,7 +194,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		} else if (selectionMode === 'select-demo') {
 			const demos = discoverStaticDemos();
 			if (demos.length === 0) {
-				console.warn('  ⚠ No event demos found in src/content/event-demos.');
+				console.warn('  ⚠ No event demos found in src/invitations/demos.');
 				return null;
 			}
 			const chosenRoute = await select<string>({
@@ -212,7 +212,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		} else if (selectionMode === 'all-demos') {
 			const demos = discoverStaticDemos();
 			if (demos.length === 0) {
-				console.warn('  ⚠ No event demos found in src/content/event-demos.');
+				console.warn('  ⚠ No event demos found in src/invitations/demos.');
 				return null;
 			}
 			resolvedUrls = demos.map((d) => ({ name: d.slug, url: d.route }));

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
-const demo = JSON.parse(read('src/content/event-demos/xv/demo-xv-celestial-blue.json'));
+const demo = JSON.parse(read('src/invitations/demos/demo-xv-celestial-blue/content.json'));
 
 it('uses the selected Paulo Coelho quote in Celestial Blue', () => {
 	expect(demo.quote).toEqual({
@@ -39,12 +39,15 @@ it('keeps the family portrait complete and the approved open composition scoped 
 		family: 'atmospheric-blend',
 		source: 'hero',
 	});
-	expect(read('src/assets/images/events/demo-xv-celestial-blue/index.ts')).toContain(
-		"import family from './family-group.webp'",
+	expect(read('src/invitations/demos/demo-xv-celestial-blue/assets.ts')).toContain(
+		"import family from './assets/family-group.webp'",
 	);
 	expect(
 		fs.existsSync(
-			path.join(process.cwd(), 'src/assets/images/events/demo-xv-celestial-blue/family.webp'),
+			path.join(
+				process.cwd(),
+				'src/invitations/demos/demo-xv-celestial-blue/assets/family.webp',
+			),
 		),
 	).toBe(true);
 });

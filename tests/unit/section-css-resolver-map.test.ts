@@ -1,4 +1,5 @@
 import {
+	buildInvitationProfileUrlMap,
 	buildSectionBundleUrlMap,
 	buildSectionUrlMap,
 	resolveInvitationCssLoadPlan,
@@ -439,6 +440,22 @@ describe('section-css-resolver-map', () => {
 				envelopeVariant: 'jewelry-box',
 			}),
 		).toEqual(['/_astro/jewelry-bundle.css', '/_astro/reveal-shared-light.css']);
+	});
+
+	it('keys visual profiles by file name, or by folder for an invitation profile.scss', () => {
+		expect(
+			buildInvitationProfileUrlMap({
+				'/src/styles/invitation-profiles/valentina-hernandez.scss': {
+					default: '/_astro/valentina-profile.css',
+				},
+				'/src/invitations/demos/demo-xv-celestial-blue/profile.scss': {
+					default: '/_astro/celestial-profile.css',
+				},
+			}),
+		).toEqual({
+			'valentina-hernandez': '/_astro/valentina-profile.css',
+			'demo-xv-celestial-blue': '/_astro/celestial-profile.css',
+		});
 	});
 
 	it('loads only the active visual profile and deduplicates repeated URLs', () => {

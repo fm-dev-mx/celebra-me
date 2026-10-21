@@ -21,7 +21,7 @@ function makeMinimalEvent(location: Record<string, unknown>) {
 
 describe('adaptEvent', () => {
 	it('preserves the family image description and original delivery without changing the fallback', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-celestial-blue.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-celestial-blue/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-celestial-blue',
 			data: fixture,
@@ -36,12 +36,12 @@ describe('adaptEvent', () => {
 	});
 
 	it('all events default to branding visible when called via adaptEvent (no guest context)', () => {
-		const demos = ['event-demos/xv/demo-xv-editorial', 'event-demos/xv/demo-xv-enchanted-rose'];
+		const demos = ['demo-xv-editorial', 'demo-xv-enchanted-rose'];
 
 		for (const demoPath of demos) {
 			const event = {
 				id: demoPath,
-				data: loadFixture(`src/content/${demoPath}.json`),
+				data: loadFixture(`src/invitations/demos/${demoPath}/content.json`),
 			} as EventContentEntry;
 
 			expect(adaptEvent(contentDocumentFromEntry(event)).brandingVisibility).toEqual({
@@ -131,7 +131,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('treats gallery.variant as the canonical structural authority', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-editorial/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
 			data: {
@@ -218,7 +218,7 @@ describe('adaptEvent', () => {
 		const event = {
 			id: 'event-demos/primera-comunion/demo-primera-comunion-angelic-presence',
 			data: loadFixture(
-				'src/content/event-demos/primera-comunion/demo-primera-comunion-angelic-presence.json',
+				'src/invitations/demos/demo-primera-comunion-angelic-presence/content.json',
 			),
 		} as EventContentEntry;
 
@@ -256,7 +256,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('honors canonical location presentationOptions', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-editorial/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
 			data: {
@@ -278,7 +278,7 @@ describe('adaptEvent', () => {
 
 	it('preserves thank-you overlay composition metadata', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json',
+			'src/invitations/demos/demo-bautizo-angelic-presence/content.json',
 		);
 		const event = {
 			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
@@ -313,7 +313,7 @@ describe('adaptEvent', () => {
 	it('keeps interludes independent of the theme preset', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-editorial.json'),
+			data: loadFixture('src/invitations/demos/demo-xv-editorial/content.json'),
 		} as EventContentEntry;
 
 		const viewModel = adaptEvent(contentDocumentFromEntry(event));
@@ -477,7 +477,9 @@ describe('adaptEvent', () => {
 
 	describe('location presentation defaults', () => {
 		it('does not inject enchanted-rose location copy when intro fields are missing', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+			const fixture = loadFixture(
+				'src/invitations/demos/demo-xv-enchanted-rose/content.json',
+			);
 			const location = { ...fixture.location };
 			delete location.introEyebrow;
 			delete location.introHeading;
@@ -503,7 +505,7 @@ describe('adaptEvent', () => {
 			const event = {
 				id: 'event-demos/xv/demo-xv-enchanted-rose',
 				data: {
-					...loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+					...loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 					location: {
 						introEyebrow: 'Custom Eyebrow',
 						introHeading: 'Custom Heading',
@@ -535,7 +537,7 @@ describe('adaptEvent', () => {
 			const event = {
 				id: 'event-demos/xv/demo-xv-enchanted-rose',
 				data: {
-					...loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+					...loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 					location: {
 						introEyebrow: 'Eyebrow',
 						introHeading: 'Heading',

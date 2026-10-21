@@ -106,7 +106,7 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('builds explicit section order for the enchanted rose demo', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: fixture,
@@ -166,7 +166,7 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('enchanted rose hero and interlude focal points', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: fixture,
@@ -185,7 +185,7 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('enchanted rose gallery data integrity', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json');
 
 		const locationVenues = fixture.location?.venues as
 			Array<{ type?: string; image?: string }> | undefined;
