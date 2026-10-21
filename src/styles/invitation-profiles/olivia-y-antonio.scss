@@ -29,6 +29,26 @@
 	--olivia-ivory: rgb(250 247 240);
 	--olivia-ivory-rgb: 250 247 240;
 
+	// Night paper: laid navy stock under a champagne glow, shared by the pass and the gift cards.
+	--olivia-night-paper:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.98 0 0 0 0 0.96 0 0 0 0 0.92 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"),
+		repeating-linear-gradient(
+			0deg,
+			rgb(var(--olivia-champagne-rgb) / 3.5%) 0 1px,
+			transparent 1px 7px
+		),
+		radial-gradient(
+			120% 55% at 50% 0%,
+			rgb(var(--olivia-champagne-rgb) / 12%) 0%,
+			transparent 70%
+		),
+		linear-gradient(
+			165deg,
+			rgb(var(--olivia-slate-rgb) / 55%) 0%,
+			var(--olivia-navy) 55%,
+			rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
+		);
+
 	// Preset surfaces, actions and text on the couple's palette. The paper keeps the preset's
 	// champagne-50; the section backgrounds below are scoped so base defaults do not shadow them.
 	--color-surface-dark: var(--olivia-navy);
@@ -200,65 +220,114 @@
 		--gifts-header-mark-color: var(--olivia-champagne-ink);
 		--gifts-header-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20' fill='none' stroke='%23000' stroke-width='1'%3E%3Crect x='.5' y='.5' width='29' height='19' rx='1'/%3E%3Cpath d='M.5 .5 15 11 29.5 .5M.5 19.5 11 8.2M29.5 19.5 19 8.2'/%3E%3C/svg%3E");
 
-		// Both gift cards share one height, the shorter one centred in it.
+		// The header keeps only its envelope mark; the flourish and the rule would repeat it.
+		--gifts-flourish-display: none;
+		--gifts-separator-display: none;
+		--gifts-header-margin-bottom: 2.5rem;
+
+		// The gifts are two night cards of the pass's stock: laid navy paper, a champagne double
+		// rule set in from the edge, a fine champagne medallion. Side by side when there is room, one height,
+		// still under the hand (no lift).
+		--gifts-grid-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+		--gifts-grid-gap: 1.25rem;
 		--gifts-grid-auto-rows: 1fr;
 		--gifts-card-justify: center;
 		--gifts-card-inner-height: auto;
+		--gifts-card-bg: var(--olivia-night-paper), var(--olivia-navy);
+		--gifts-card-border: 1px solid rgb(var(--olivia-champagne-rgb) / 55%);
+		--gifts-card-corner: 2px;
+		--gifts-card-drop: 0 1.5rem 3rem rgb(var(--olivia-navy-deep-rgb) / 28%);
+		--gifts-card-inset-padding: clamp(2.25rem, 7vw, 2.75rem) clamp(1.5rem, 6vw, 2.25rem);
+		--gifts-card-frame: 1px solid rgb(var(--olivia-champagne-rgb) / 32%);
+		--gifts-card-frame-inset: 7px;
+		--gifts-card-frame-radius: 0;
+		--gifts-card-lift: none;
+		--gifts-card-lift-shadow: var(--gifts-card-drop);
+		--gifts-card-hover-border-color: rgb(var(--olivia-champagne-rgb) / 55%);
+		--gifts-card-hover-transform: none;
+		--gifts-card-wide-columns: minmax(0, 1fr);
+		--gifts-card-wide-align: center;
+		--gifts-icon-size: 3.25rem;
+		--gifts-icon-bg: transparent;
+		--gifts-icon-border: 1px solid rgb(var(--olivia-champagne-rgb) / 45%);
+		--gifts-icon-shadow: none;
+		--gifts-icon-color: var(--olivia-champagne);
+		--gifts-card-title-size: 1.625rem;
+		--gifts-card-title-color: var(--olivia-ivory);
+		--gifts-card-title-rule: '';
+		--gifts-card-title-rule-color: rgb(var(--olivia-champagne-rgb) / 70%);
+		--gifts-card-description-font: var(--font-display);
+		--gifts-card-description-size: 1.0625rem;
+		--gifts-card-description-color: rgb(var(--olivia-mist-rgb) / 88%);
 
-		// Transfer details read like the stationery: centred, a champagne label over each navy
-		// value, no glass panel or side rule.
+		// Transfer details: centred, a champagne label over each ivory value, no panel or rule.
 		--gifts-bank-surface: transparent;
+		--gifts-bank-blur: none;
 		--gifts-bank-rule: none;
 		--gifts-bank-radius: 0;
 		--gifts-bank-align: center;
 		--gifts-bank-padding: 0;
 		--gifts-bank-margin-bottom: 0;
-		--gifts-bank-item-gap: 0.75rem;
+		--gifts-bank-item-gap: 0.85rem;
 		--gifts-bank-label-display: block;
 		--gifts-bank-label-font: var(--font-label);
 		--gifts-bank-label-size: 0.6875rem;
 		--gifts-bank-label-tracking: var(--olivia-label-tracking);
 		--gifts-bank-label-gap: 0;
 		--gifts-bank-label-colon-display: none;
-		--gifts-bank-label-ink: var(--olivia-champagne-ink);
+		--gifts-bank-label-ink: var(--olivia-champagne);
 		--gifts-bank-value-font: var(--font-display);
-		--gifts-bank-value-size: 1rem;
-		--gifts-bank-text-color: var(--olivia-navy);
+		--gifts-bank-value-size: 1.0625rem;
+		--gifts-bank-text-color: var(--olivia-ivory);
 
-		// The card number is the figure of the card: one line, lining numerals on a faint navy wash.
+		// The card number is the figure of the card: champagne lining numerals on one line,
+		// between two hairlines rather than in a box.
 		--gifts-number-direction: column;
 		--gifts-number-justify: center;
-		--gifts-number-margin-top: 0.5rem;
-		--gifts-number-gap: 0.75rem;
+		--gifts-number-margin-top: 0.75rem;
+		--gifts-number-gap: 1.25rem;
 		--gifts-account-display: inline-block;
 		--gifts-account-font: var(--font-display);
 		--gifts-account-numeric: lining-nums tabular-nums;
-		--gifts-account-size: 1.45rem;
-		--gifts-account-tracking: 0.06em;
-		--gifts-account-padding: 0.45rem 0.9rem;
-		--gifts-account-bg: rgb(var(--olivia-navy-rgb) / 4%);
-		--gifts-account-color: var(--olivia-navy);
+		--gifts-account-size: 1.5rem;
+		--gifts-account-tracking: 0.08em;
+		--gifts-account-padding: 0.6rem 0.25rem;
+		--gifts-account-bg:
+			linear-gradient(
+					to right,
+					transparent,
+					rgb(var(--olivia-champagne-rgb) / 55%),
+					transparent
+				)
+				top / 100% 1px no-repeat,
+			linear-gradient(
+					to right,
+					transparent,
+					rgb(var(--olivia-champagne-rgb) / 55%),
+					transparent
+				)
+				bottom / 100% 1px no-repeat;
+		--gifts-account-color: var(--olivia-champagne);
 		--gifts-account-white-space: nowrap;
 
-		// Copy stays quiet under the number: a hairline pill with its wording, navy ink, filling
-		// only faintly on hover; it turns slate on success.
+		// Copy: a champagne hairline pill with its wording, filling faintly on hover.
 		--gifts-copy-label-display: inline;
 		--gifts-copy-label-font: var(--font-label);
 		--gifts-copy-label-size: 0.6875rem;
-		--gifts-copy-label-tracking: 0.12em;
-		--gifts-copy-gap: 0.45rem;
+		--gifts-copy-label-tracking: 0.14em;
+		--gifts-copy-gap: 0.5rem;
 		--gifts-copy-min-height: 2.5rem;
-		--gifts-copy-padding: 0.45rem 1.1rem;
+		--gifts-copy-padding: 0.5rem 1.25rem;
 		--gifts-copy-radius: 999px;
 		--gifts-copy-bg: transparent;
-		--gifts-copy-icon-border: 1px solid rgb(var(--olivia-navy-rgb) / 28%);
-		--gifts-copy-icon-color: var(--olivia-navy);
+		--gifts-copy-icon-border: 1px solid rgb(var(--olivia-champagne-rgb) / 55%);
+		--gifts-copy-icon-color: var(--olivia-champagne);
 		--gifts-copy-opacity: 100%;
 		--gifts-copy-hover-transform: none;
-		--gifts-copy-hover-bg: rgb(var(--olivia-navy-rgb) / 6%);
-		--gifts-copy-hover-color: var(--olivia-navy);
-		--gifts-copy-success-bg: transparent;
-		--gifts-copy-success-color: var(--olivia-slate);
+		--gifts-copy-hover-bg: rgb(var(--olivia-champagne-rgb) / 12%);
+		--gifts-copy-hover-color: var(--olivia-ivory);
+		--gifts-copy-success-bg: rgb(var(--olivia-champagne-rgb) / 12%);
+		--gifts-copy-success-color: var(--olivia-ivory);
 	}
 
 	// The vow: italic Playfair on ivory, the last clause apart in slate.
@@ -534,24 +603,7 @@
 
 		// Laid paper: a fine grain and faint horizontal chain lines under a champagne glow at
 		// the head, over the navy gradient. The ticket breathes inside wider margins.
-		--pa-card-bg-image:
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.98 0 0 0 0 0.96 0 0 0 0 0.92 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"),
-			repeating-linear-gradient(
-				0deg,
-				rgb(var(--olivia-champagne-rgb) / 3.5%) 0 1px,
-				transparent 1px 7px
-			),
-			radial-gradient(
-				120% 55% at 50% 0%,
-				rgb(var(--olivia-champagne-rgb) / 12%) 0%,
-				transparent 70%
-			),
-			linear-gradient(
-				165deg,
-				rgb(var(--olivia-slate-rgb) / 55%) 0%,
-				var(--olivia-navy) 55%,
-				rgb(var(--olivia-navy-deep-rgb) / 96%) 100%
-			);
+		--pa-card-bg-image: var(--olivia-night-paper);
 		--pa-card-shadow: 0 1.25rem 2.5rem rgb(0 0 0 / 35%);
 		--pa-count-color: var(--olivia-champagne);
 		--pa-welcome-size: 1.125rem;
