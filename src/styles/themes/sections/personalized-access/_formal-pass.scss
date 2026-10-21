@@ -332,8 +332,8 @@
 		grid-row: 1;
 		font: 500 0.75rem / 1.6 var(--formal-chapter-body);
 		letter-spacing: 0.15em;
-		max-width: 12ch;
-		overflow-wrap: anywhere;
+		max-width: var(--pa-seats-label-max-width, 12ch);
+		overflow-wrap: var(--pa-seats-label-wrap, anywhere);
 	}
 
 	.access-card__count-frame {

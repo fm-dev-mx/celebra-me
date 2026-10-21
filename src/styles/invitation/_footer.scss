@@ -72,23 +72,24 @@
 
 @media (prefers-reduced-motion: no-preference) {
 	.invitation-footer[data-footer-reveal='open'] > * {
-		animation: footer-reveal 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation: footer-reveal var(--footer-reveal-duration, 360ms) cubic-bezier(0.22, 1, 0.36, 1)
+			both;
 	}
 
 	// Counted past the reply block, so the footer's own rows keep their stagger with or without it.
 	.invitation-footer[data-footer-reveal='open'] > :nth-child(2 of :not(.footer-reply)) {
-		animation-delay: 50ms;
+		animation-delay: var(--footer-reveal-stagger, 50ms);
 	}
 
 	.invitation-footer[data-footer-reveal='open'] > :nth-child(3 of :not(.footer-reply)) {
-		animation-delay: 100ms;
+		animation-delay: calc(var(--footer-reveal-stagger, 50ms) * 2);
 	}
 }
 
 @keyframes footer-reveal {
 	0% {
 		opacity: 0%;
-		translate: 0 1rem;
+		translate: 0 var(--footer-reveal-rise, 1rem);
 	}
 
 	100% {
@@ -111,6 +112,12 @@
 //   --footer-pull-label / -label-color / -label-size
 //                        Words above the resting lantern (default none); they fade as it climbs
 //   --footer-pull-breathe Keyframes on the resting lantern's glow (default none)
+//   --footer-pull-away-duration / -away-rise  How long (default 320ms) and how far (default
+//                        -4rem) the lantern rises as the footer opens
+//   --footer-open-glide  Page glide onto the opened footer, in ms (default 320ms; read by
+//                        footer-reveal.ts)
+//   --footer-reveal-duration / -stagger / -rise  The footer rows' entrance: length (default
+//                        360ms), delay between rows (default 50ms) and rise (default 1rem)
 // A paper lantern's outline: a little fuller below than above.
 $lantern-shape: 40% 40% 45% 45%;
 
@@ -205,7 +212,8 @@ $lantern-shape: 40% 40% 45% 45%;
 	}
 
 	&[data-state='away'] {
-		animation: footer-pull-away 320ms cubic-bezier(0.3, 0.6, 0.4, 1) forwards;
+		animation: footer-pull-away var(--footer-pull-away-duration, 320ms)
+			cubic-bezier(0.3, 0.6, 0.4, 1) forwards;
 	}
 }
 
@@ -223,7 +231,7 @@ $lantern-shape: 40% 40% 45% 45%;
 @keyframes footer-pull-away {
 	100% {
 		opacity: 0%;
-		translate: -50% -4rem;
+		translate: -50% var(--footer-pull-away-rise, -4rem);
 	}
 }
 
