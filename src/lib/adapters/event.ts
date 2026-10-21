@@ -16,6 +16,7 @@ import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import type { VenueEntryInput } from '@/lib/schemas/content/location.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
+import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
@@ -206,21 +207,27 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
 
 	if (!data.envelope || data.envelope.disabled) return { enabled: false };
+	// Demos follow the no-abbreviated-month standard; client invitations keep their accepted look.
+	const dateStyle = data.isDemo ? 'long' : 'short';
 	const opening = buildOpeningViewModel({
 		hero: data.hero,
 		envelope: data.envelope,
+		dateStyle,
 	});
 
 	const venueName = pickVenueValue(data.location, 'venueName');
 	const venueCity = pickVenueValue(data.location, 'city');
 	// Teaser uses lowercase `es-MX` date ("25 abr 2026 • Venue") intentionally
 	// distinct from the reveal-card's uppercase dot-separated format ("25 · ABR · 2026").
-	const teaserDate = new Intl.DateTimeFormat('es-MX', {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-		timeZone: 'UTC',
-	}).format(new Date(data.hero.date));
+	const teaserDate =
+		dateStyle === 'long'
+			? formatSpanishLongDate(data.hero.date)
+			: new Intl.DateTimeFormat('es-MX', {
+					day: 'numeric',
+					month: 'short',
+					year: 'numeric',
+					timeZone: 'UTC',
+				}).format(new Date(data.hero.date));
 	const derivedTeaser = venueName
 		? `${teaserDate} • ${venueName}`
 		: venueCity

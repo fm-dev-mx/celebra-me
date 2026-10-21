@@ -1,6 +1,6 @@
 import hero from './assets/hero.webp';
 import portrait from './assets/portrait.webp';
-import family from './assets/family-editorial.png';
+import family from './assets/family-editorial.webp';
 import gallery01 from './assets/gallery-01.webp';
 import gallery02 from './assets/gallery-02.webp';
 import gallery03 from './assets/gallery-03.webp';

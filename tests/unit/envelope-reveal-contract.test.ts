@@ -67,6 +67,15 @@ describe('buildRevealCard', () => {
 		});
 		expect(card.date).toBe('25 · DIC · 2026');
 	});
+
+	it('spells the month out for the long date style', () => {
+		const card = buildRevealCard({
+			name: 'Test',
+			date: '2027-09-12T19:00:00.000Z',
+			dateStyle: 'long',
+		});
+		expect(card.date).toBe('12 de septiembre de 2027');
+	});
 });
 
 describe('buildOpeningViewModel', () => {
@@ -143,14 +152,10 @@ describe('envelope seal icon variants', () => {
 		const parametric = ['monogram', 'wax-organic', 'wax-medallion'];
 		const nonParametric = ['vector-icon', 'raster'];
 
-		expect(parametric).toContain(
-			resolveSealPresentation({ sealIcon: 'monogram' }).renderer,
-		);
+		expect(parametric).toContain(resolveSealPresentation({ sealIcon: 'monogram' }).renderer);
 		expect(parametric).toContain(
 			resolveSealPresentation({ sealIcon: 'wax-monogram' }).renderer,
 		);
-		expect(nonParametric).toContain(
-			resolveSealPresentation({ sealIcon: 'flower' }).renderer,
-		);
+		expect(nonParametric).toContain(resolveSealPresentation({ sealIcon: 'flower' }).renderer);
 	});
 });
