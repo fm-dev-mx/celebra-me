@@ -41,6 +41,7 @@
         "validate:ui-governance": "node scripts/validate-ui-governance.mjs",
         "validate:no-pii": "node scripts/validate-no-real-pii-in-content.mjs",
         "validate:invitation-preparation": "tsx scripts/validate-invitation-preparation.ts",
+        "validate:invitation-note-retirement": "tsx scripts/validate-invitation-note-retirement.ts",
         "validate:invitation-publication-transitions": "tsx scripts/validate-invitation-publication-transitions.ts",
         "lint-staged": "lint-staged",
         "prepare": "husky",
