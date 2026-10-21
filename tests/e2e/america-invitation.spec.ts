@@ -98,7 +98,7 @@ test.describe('America XV invitation content', () => {
 		await expect(location).toContainText('Jardín Los Mangos');
 		await expect(
 			page.locator('.invitation-section-wrapper[data-section-kind="gifts"]'),
-		).toContainText('habrá lluvia de sobres en la recepción');
+		).toContainText('puede ser un regalo o en efectivo');
 		await expect(
 			page.locator('.invitation-section-wrapper[data-section-kind="gallery"]'),
 		).toContainText('Mis cuatro looks');

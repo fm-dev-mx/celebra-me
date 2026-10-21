@@ -218,6 +218,14 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--gifts-title-weight: 400;
 	--gifts-title-line-height: 1.1;
 	--gifts-title-color: var(--color-violet-ink);
+
+	// A small tied gift above «Regalos», in the gold ink of the quote's sun.
+	--gifts-header-mark: url('../../assets/invitations/america/gift-mark.svg');
+	--gifts-header-mark-display: block;
+	--gifts-header-mark-ratio: 48 / 44;
+	--gifts-header-mark-width: 3rem;
+	--gifts-header-mark-color: var(--color-gold-ink);
+	--gifts-header-mark-gap: 1.25rem;
 	--itinerary-title-tracking: 0;
 	--location-intro-heading-style: normal;
 

@@ -9,7 +9,7 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
  * no characters. Map links are address searches until
  * the client sends pins; the song is omitted until supplied. The program uses the moments and
  * hours most common across our XV invitations (owner-approved placeholder until the client
- * confirms them), gifts are an envelope shower, and replies close 15 days before the event.
+ * confirms them), gifts are a gift or cash (client pick), and replies close 15 days before the event.
  * Adults only, with personalized passes of fixed seats.
  */
 const AMERICA_TIMING = {
@@ -276,7 +276,8 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Regalos',
 		presentation: 'legend-only',
-		subtitle: 'Lo importante es que venga. Si quiere traer algo más, habrá lluvia de sobres.',
+		subtitle:
+			'Lo importante es que venga. Si desea tener un detalle conmigo, puede ser un regalo o en efectivo.',
 	},
 	rsvp: {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
