@@ -1,0 +1,1119 @@
+// América, "editorial album": the storybook-lilac preset reduced to a printed photo album. Two flat
+// grounds (lilac paper and lilac mist) alternate section by section, and the countdown is the one
+// short night band. No painted art, light fields, deckle or gradients: the photographs lead, and
+// type carries the rest in two families (Cormorant for titles, EB Garamond for reading and small
+// capital labels; the script stays on the name). Three joins out of eleven boundaries, in a
+// bridge, bridge, climax cadence: the night rises on a slow horizon under the patio photograph, the
+// save-the-date print hangs out of the night into the paper, and the closing door rises into the
+// reply card under an asymmetric arch. Layout stays with the variants; the profile only sets tokens.
+// Rapunzel line motifs for the program: the Corona sun, a braided rule with three small flowers
+// and the tower, in the gold ink (night gold on the waltz card).
+$america-sun: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23C9A45C' stroke-width='1.2' stroke-linejoin='round'%3E%3Ccircle cx='50' cy='50' r='16'/%3E%3Ccircle cx='50' cy='50' r='9'/%3E%3Cpath d='M71.7 46.6Q88.9 59.3 96.0 50.0Q87.0 41.1 71.7 53.4M71.4 55.1Q75.9 68.8 85.1 64.5Q79.6 54.7 68.8 61.5M67.8 62.9Q70.9 84.1 82.5 82.5Q82.4 69.9 62.9 67.8M61.5 68.8Q55.0 81.6 64.5 85.1Q67.6 74.3 55.1 71.4M53.4 71.7Q40.7 88.9 50.0 96.0Q58.9 87.0 46.6 71.7M44.9 71.4Q31.2 75.9 35.5 85.1Q45.3 79.6 38.5 68.8M37.1 67.8Q15.9 70.9 17.5 82.5Q30.1 82.4 32.2 62.9M31.2 61.5Q18.4 55.0 14.9 64.5Q25.7 67.6 28.6 55.1M28.3 53.4Q11.1 40.7 4.0 50.0Q13.0 58.9 28.3 46.6M28.6 44.9Q24.1 31.2 14.9 35.5Q20.4 45.3 31.2 38.5M32.2 37.1Q29.1 15.9 17.5 17.5Q17.6 30.1 37.1 32.2M38.5 31.2Q45.0 18.4 35.5 14.9Q32.4 25.7 44.9 28.6M46.6 28.3Q59.3 11.1 50.0 4.0Q41.1 13.0 53.4 28.3M55.1 28.6Q68.8 24.1 64.5 14.9Q54.7 20.4 61.5 31.2M62.9 32.2Q84.1 29.1 82.5 17.5Q69.9 17.6 67.8 37.1M68.8 38.5Q81.6 45.0 85.1 35.5Q74.3 32.4 71.4 44.9'/%3E%3C/svg%3E");
+$america-sun-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23F3D9A4' stroke-width='1.2' stroke-linejoin='round'%3E%3Ccircle cx='50' cy='50' r='16'/%3E%3Ccircle cx='50' cy='50' r='9'/%3E%3Cpath d='M71.7 46.6Q88.9 59.3 96.0 50.0Q87.0 41.1 71.7 53.4M71.4 55.1Q75.9 68.8 85.1 64.5Q79.6 54.7 68.8 61.5M67.8 62.9Q70.9 84.1 82.5 82.5Q82.4 69.9 62.9 67.8M61.5 68.8Q55.0 81.6 64.5 85.1Q67.6 74.3 55.1 71.4M53.4 71.7Q40.7 88.9 50.0 96.0Q58.9 87.0 46.6 71.7M44.9 71.4Q31.2 75.9 35.5 85.1Q45.3 79.6 38.5 68.8M37.1 67.8Q15.9 70.9 17.5 82.5Q30.1 82.4 32.2 62.9M31.2 61.5Q18.4 55.0 14.9 64.5Q25.7 67.6 28.6 55.1M28.3 53.4Q11.1 40.7 4.0 50.0Q13.0 58.9 28.3 46.6M28.6 44.9Q24.1 31.2 14.9 35.5Q20.4 45.3 31.2 38.5M32.2 37.1Q29.1 15.9 17.5 17.5Q17.6 30.1 37.1 32.2M38.5 31.2Q45.0 18.4 35.5 14.9Q32.4 25.7 44.9 28.6M46.6 28.3Q59.3 11.1 50.0 4.0Q41.1 13.0 53.4 28.3M55.1 28.6Q68.8 24.1 64.5 14.9Q54.7 20.4 61.5 31.2M62.9 32.2Q84.1 29.1 82.5 17.5Q69.9 17.6 67.8 37.1M68.8 38.5Q81.6 45.0 85.1 35.5Q74.3 32.4 71.4 44.9'/%3E%3C/svg%3E");
+$america-braid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23C9A45C' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M14 6C17 0 19 0 22 6S27 12 30 6C33 0 35 0 38 6S43 12 46 6C49 0 51 0 54 6S59 12 62 6C65 0 67 0 70 6S75 12 78 6C81 0 83 0 86 6S91 12 94 6'/%3E%3Cpath d='M14 6C17 12 19 12 22 6S27 0 30 6C33 12 35 12 38 6S43 0 46 6C49 12 51 12 54 6S59 0 62 6C65 12 67 12 70 6S75 0 78 6C81 12 83 12 86 6S91 0 94 6'/%3E%3Cg transform='translate%286 6%29'%3E%3Ccircle r='1.6' fill='%23C9A45C'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3Cg transform='translate%2898 6%29'%3E%3Ccircle r='1.6' fill='%23C9A45C'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3Cg transform='translate%2854 6%29'%3E%3Ccircle r='1.6' fill='%23C9A45C'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3C/svg%3E");
+$america-braid-vertical: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 24' fill='none' stroke='%23C9A45C' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M6 0C11 4 11 8 6 12S1 20 6 24'/%3E%3Cpath d='M6 0C1 4 1 8 6 12S11 20 6 24'/%3E%3C/svg%3E");
+$america-braid-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23F3D9A4' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M14 6C17 0 19 0 22 6S27 12 30 6C33 0 35 0 38 6S43 12 46 6C49 0 51 0 54 6S59 12 62 6C65 0 67 0 70 6S75 12 78 6C81 0 83 0 86 6S91 12 94 6'/%3E%3Cpath d='M14 6C17 12 19 12 22 6S27 0 30 6C33 12 35 12 38 6S43 0 46 6C49 12 51 12 54 6S59 0 62 6C65 12 67 12 70 6S75 0 78 6C81 12 83 12 86 6S91 0 94 6'/%3E%3Cg transform='translate%286 6%29'%3E%3Ccircle r='1.6' fill='%23F3D9A4'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3Cg transform='translate%2898 6%29'%3E%3Ccircle r='1.6' fill='%23F3D9A4'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3Cg transform='translate%2854 6%29'%3E%3Ccircle r='1.6' fill='%23F3D9A4'/%3E%3Ccircle cx='3.20' cy='0.00' r='1.7'/%3E%3Ccircle cx='0.99' cy='3.04' r='1.7'/%3E%3Ccircle cx='-2.59' cy='1.88' r='1.7'/%3E%3Ccircle cx='-2.59' cy='-1.88' r='1.7'/%3E%3Ccircle cx='0.99' cy='-3.04' r='1.7'/%3E%3C/g%3E%3C/svg%3E");
+$america-tower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 72' fill='none' stroke='%23C9A45C' stroke-width='1.2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M24 2v6M12 26 24 8l12 18'/%3E%3Cpath d='M14 26h20v44H14z'/%3E%3Cpath d='M10 26h28'/%3E%3Cpath d='M20 44v-6a4 4 0 0 1 8 0v6z'/%3E%3Cpath d='M26 44c3 6-4 10 0 16s-3 8 0 10'/%3E%3Cpath d='M14 56h-4M38 56h-4M14 64h20'/%3E%3C/svg%3E");
+
+// The night's horizon (a slow rise, deep on the left, under a gold hairline) and the small
+// flat lanterns that leave it into the mist.
+// Line icons for the venue buttons, used as masks so they take the button ink.
+$america-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
+$america-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14.5' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
+$america-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
+$america-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23211938' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
+
+// The same horizon turned the other way, for the top of the patio window: the cream of the
+// phrase hangs deep on the right, the mist rises on the left, and the gold hairline rides the cream.
+$america-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23FBF8F3' d='M0 0H400V94C280 94 200 26 0 20z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 6C200 12 280 80 400 80'/%3E%3C/svg%3E");
+$america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30'%3E%3Ccircle cx='12' cy='16' r='11' fill='%23E8A040' opacity='.16'/%3E%3Cpath fill='%23E8A040' d='M9.5 6h5v1.6c3 1 5 4 5 8.2 0 4.3-2.3 6.9-3.8 7.6H8.3c-1.5-.7-3.8-3.3-3.8-7.6 0-4.2 2-7.2 5-8.2z'/%3E%3Cpath fill='%23F3D9A4' opacity='.75' d='M11 10.5h2v9h-2z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-width='.8' d='M12 6V2'/%3E%3C/svg%3E");
+
+.event--demo-xv-lantern-garden.theme-preset--storybook-lilac {
+	// Depths of the three joins, each reserved as padding on the side it enters.
+	--america-cut: clamp(4.5rem, 14vw, 6.5rem);
+	--america-print-overlap: clamp(5rem, 22vw, 9rem);
+	--america-band-padding: clamp(4.5rem, 12vw, 7.5rem);
+	--america-gutter: clamp(1.5rem, 6vw, 4rem);
+	--america-rule: rgb(var(--color-violet-ink-rgb) / 18%);
+
+	// The album's paper and mist.
+	--color-lilac-paper: rgb(251 248 243);
+	--color-lilac-paper-rgb: 251 248 243;
+	--color-lilac-mist: rgb(233 223 245);
+	--color-lilac-mist-rgb: 233 223 245;
+	--america-night: rgb(28 21 48);
+	--america-night-rgb: 28 21 48;
+	--america-night-gold: rgb(243 217 164);
+	--america-night-gold-rgb: 243 217 164;
+
+	// Flat grounds: the album paper carries no grain.
+	--storybook-paper: var(--color-lilac-paper);
+	--storybook-paper-mist: var(--color-lilac-mist);
+	--storybook-night: var(--color-violet-night);
+	--invitation-paper: var(--color-lilac-paper);
+
+	// Two families: labels and controls read in the body Garamond.
+	--font-label: var(--font-body);
+	--font-ui: var(--font-body);
+
+	// Cover, the tower door: the photograph stands in an arch on the paper, like the patio window,
+	// with a gold hairline inside its edge. A braid hangs from the top of the page to the apex and
+	// comes back under the facts as the scroll cue, growing as the cover leaves; the photograph
+	// settles from a slight zoom on that first scroll. The name is written in once, and the letter
+	// waits for the envelope night to mostly fade.
+	--hero-bleed-photo-veil-wide: none;
+	--hero-bleed-photo-drift: none;
+	--hero-bleed-photo-settle: hero-bleed-settle;
+	--hero-bleed-entrance: hero-bleed-rise;
+	--hero-bleed-name-entrance: hero-bleed-write;
+	--hero-bleed-entrance-wait: 900ms;
+	--hero-bleed-photo-frame: 1px solid rgb(201 164 92 / 85%);
+	--hero-bleed-photo-frame-inset: 0.5rem;
+	--hero-bleed-scroll-line-width: 12px;
+	--hero-bleed-scroll-line-bg: none;
+	--hero-bleed-scroll-braid: #{$america-braid-vertical} center top / 12px 24px repeat-y;
+	--hero-bleed-scroll-grow: hero-bleed-scroll-grow;
+
+	// Quote as a pause on plain paper: the small sun in place of the rule, then the line, then
+	// the closing words in gold ink.
+	--storybook-quote-art: none;
+	--storybook-quote-padding-block: 7rem;
+	--quote-top-art: url('./assets/art/sun-corona-mark.svg');
+	--quote-top-art-display: block;
+	--quote-top-art-ink: var(--color-gold-ink);
+	--quote-content-weight: 400;
+	--quote-content-size: 1.75rem;
+	--quote-content-line-height: 1.35;
+	--quote-closing-line-color: var(--color-gold-ink);
+
+	// Family on mist, titles upright in the display face.
+	--family-bg: var(--color-lilac-mist);
+	--family-title-style: normal;
+
+	// Prints lie flat: no 3D settle on the framed photographs or the closing portrait.
+	--interlude-framed-settle: none;
+	--thank-you-keepsake-settle: none;
+
+	// Chapter titles share one upright display voice: Cormorant 400 at 34 px, set tight. Small
+	// capital labels share one size, tracking and gold ink.
+	--america-title-size: 2.125rem;
+	--america-label-size: 0.8125rem;
+	--america-label-tracking: 0.14em;
+
+	// Practical words never fall under the label size: the desktop links and the menu's subtitle
+	// and footer.
+	--header-action-size: var(--america-label-size);
+	--mobile-nav-subtitle-size: var(--america-label-size);
+	--mobile-nav-copy-size: 0.75rem;
+	--mobile-drawer-cta-font: var(--font-body);
+	--family-title-size: var(--america-title-size);
+	--family-title-line-height: 1.1;
+	--family-title-letter-spacing: 0;
+	--family-eyebrow-size: var(--america-label-size);
+	--family-eyebrow-letter-spacing: var(--america-label-tracking);
+	--family-group-title-size: var(--america-label-size);
+	--family-group-title-letter-spacing: var(--america-label-tracking);
+	--family-name-size: 1.375rem;
+	--family-name-line-height: 1.2;
+
+	// Family as a dedication page: the message reads as an epigraph in the display italic, a
+	// braid stands for the rules, the Corona sun rests faint behind the names, and each pair is
+	// joined by a gold "y". Parents are set a step above the godparents.
+	--family-message-font: var(--font-display);
+	--family-message-size: clamp(1.25rem, 4.6vw, 1.45rem);
+	--family-message-style: italic;
+	--family-message-line-height: 1.4;
+	--family-message-color: var(--color-violet-ink);
+	--family-divider: #{$america-braid} center / contain no-repeat;
+	--family-divider-width: 6.5rem;
+	--family-divider-height: 0.75rem;
+	--family-divider-opacity: 100%;
+	--family-group-divider-width: 6.5rem;
+	--family-group-divider-height: 0.75rem;
+	--family-group-divider-opacity: 100%;
+	--family-group-padding: clamp(2.25rem, 7vw, 3rem) 0 0;
+	--family-group-title-color: var(--color-gold-ink);
+
+	// The Corona sun stands behind the parents as a medallion and turns a little as the page
+	// passes; the message is signed by her, and the parents lead the godparents in size.
+	--family-padding-block: clamp(3rem, 8vw, 4rem) clamp(4.5rem, 10vw, 6rem);
+	--family-parents-medallion: #{$america-sun};
+	--family-parents-medallion-size: min(20rem, 84vw);
+	--family-parents-medallion-opacity: 17%;
+	--family-parents-medallion-spin: family-medallion-spin;
+	--family-message-signature: '— Luciana';
+	--family-message-signature-font: var(--font-calligraphy);
+	--family-message-signature-size: 2rem;
+	--family-message-signature-color: var(--color-gold-ink);
+	--family-member-joiner: 'y';
+	--family-member-joiner-color: var(--color-gold-ink);
+	--family-name-max-width: 22ch;
+	--family-message-max-width: min(22rem, 100%);
+
+	// Each name is lit like a lantern as it rises up the screen: warm ink spreads across it from
+	// the first letter, with a soft amber glow, and stays lit. The braid between the parents and
+	// the godparents is drawn out from its centre on the way.
+	--family-shine: linear-gradient(
+		100deg,
+		var(--color-gold-ink) 0 40%,
+		color-mix(in srgb, var(--color-lantern-amber) 60%, var(--color-gold-ink)) 47%,
+		currentcolor 54% 100%
+	);
+	--family-shine-size: 220% 100%;
+	--family-shine-clip: text;
+	--family-shine-fill: transparent;
+	--family-shine-name: family-light;
+	--family-shine-timeline: --family-name-light;
+	--family-shine-range: entry 100% cover 55%;
+	--family-shine-range-godparents: entry 100% cover 55%;
+	--family-shine-glow: rgb(232 160 64 / 45%);
+	--family-divider-draw: family-divider-draw;
+
+	// The last lantern: it waits larger at the bottom of the closing, breathing, with a line
+	// that asks for the pull; pulling lights the edge of the night until it lets go.
+	--footer-pull-scale: 1.7;
+	--footer-pull-body:
+		radial-gradient(
+			circle at 50% 65%,
+			rgb(255 236 196) 0,
+			rgb(243 196 112) 35%,
+			transparent 75%
+		),
+		repeating-linear-gradient(90deg, transparent 0 22%, rgb(170 100 30 / 35%) 22% 26%),
+		rgb(232 160 64);
+	--footer-pull-glow: rgb(232 160 64 / 45%);
+	--footer-pull-pool: radial-gradient(
+		ellipse 60% 100% at 50% 100%,
+		rgb(232 160 64 / 26%),
+		transparent 70%
+	);
+	--footer-pull-label: 'Deslice hacia arriba para encender la última linterna';
+	--footer-pull-label-color: rgb(var(--america-night-gold-rgb) / 85%);
+	--footer-pull-label-size: var(--america-label-size);
+	--footer-pull-breathe: footer-pull-breathe;
+	--location-intro-heading-size: var(--america-title-size);
+	--location-intro-heading-line-height: 1.1;
+	--location-enclosure-heading-line-height: 1.1;
+	--location-program-label-size: var(--america-label-size);
+	--location-program-label-caps: normal;
+	--location-program-label-transform: uppercase;
+	--location-program-label-color: var(--color-gold-ink);
+	--stacked-cards-title-size: var(--america-title-size);
+	--stacked-cards-title-color: var(--color-violet-ink);
+	--reply-card-title-size: var(--america-title-size);
+	--reply-card-title-line-height: 1.1;
+
+	// No text under 12 px; the footer links keep a 44 px tap height.
+	--footer-rights-size: 0.75rem;
+	--footer-powered-size: 0.75rem;
+	--footer-replay-font-size: 0.75rem;
+	--footer-control-font-size: 0.75rem;
+	--footer-link-tap-padding: 0.875rem;
+
+	// Chapter titles share one upright display voice.
+	--gifts-title-style: normal;
+	--gifts-title-transform: none;
+	--gifts-title-letter-spacing: 0;
+	--gifts-title-size: var(--america-title-size);
+	--gifts-title-weight: 400;
+	--gifts-title-line-height: 1.1;
+	--gifts-title-color: var(--color-violet-ink);
+
+	// A small tied gift above «Regalos», in the gold ink of the quote's sun.
+	--gifts-header-mark: url('./assets/art/gift-mark.svg');
+	--gifts-header-mark-display: block;
+	--gifts-header-mark-ratio: 48 / 44;
+	--gifts-header-mark-width: 3rem;
+	--gifts-header-mark-color: var(--color-gold-ink);
+	--gifts-header-mark-gap: 1.25rem;
+	--itinerary-title-tracking: 0;
+	--location-intro-heading-style: normal;
+
+	// Grounds of the sections whose variants paint their own background (the preset paints them
+	// with the night). The gallery and gifts grounds are set on their sections below, where the
+	// base section styles declare them.
+	--location-bg: var(--color-lilac-mist);
+
+	// The night of the route starts right under the save-the-date print: pinned, it rises over
+	// the program's top padding, so no strip of mist shows between them.
+	--america-location-top: clamp(4.5rem, 12vw, 7.5rem);
+	--location-program-padding-block: var(--america-location-top) clamp(5rem, 12vw, 8rem);
+	--location-route-lift: var(--america-location-top);
+
+	// Place: plain mist, the program as type on the page.
+	--location-program-art-display: none;
+	--location-program-art: none;
+	--location-program-margin-top: 0;
+	--location-text-color: var(--color-violet-ink-soft);
+	--location-enclosure-bg: var(--color-story-cream);
+	--location-enclosure-shadow: none;
+	--location-enclosure-reserved-title-font: var(--font-display);
+	--location-enclosure-reserved-title-size: clamp(1.6rem, 6vw, 2rem);
+	--location-enclosure-reserved-title-caps: normal;
+	--location-enclosure-reserved-title-line-height: 1.1;
+	--location-enclosure-reserved-title-tracking: 0;
+	--location-enclosure-reserved-title-color: var(--color-lilac-deep);
+	--location-enclosure-reserved-title-tilt: 0deg;
+
+	// The dress code is a tag (an «etiqueta») hung on the braid: cut corners, an eyelet at the
+	// top with the cord through it, a hairline that follows the cut, and a slight swing as it
+	// arrives. «Formal» leads; the reserved lilac is a medallion with a gold ring; adults only
+	// closes in small capitals. The Corona sun rises faintly from its foot.
+	--location-enclosure-shape: polygon(
+		2.5rem 0,
+		calc(100% - 2.5rem) 0,
+		100% 2.5rem,
+		100% 100%,
+		0 100%,
+		0 2.5rem
+	);
+	--location-enclosure-outline: 0 solid transparent;
+	--location-enclosure-frame-display: block;
+	--location-enclosure-frame-inset: 0.6rem;
+	--location-enclosure-frame-shape: polygon(
+		2.2rem 0,
+		calc(100% - 2.2rem) 0,
+		100% 2.2rem,
+		100% 100%,
+		0 100%,
+		0 2.2rem
+	);
+	--location-enclosure-mask: radial-gradient(
+		circle at 50% 1.9rem,
+		transparent 0.42rem,
+		rgb(0 0 0) 0.47rem
+	);
+	--location-enclosure-frame-art:
+		radial-gradient(
+			circle at 50% calc(1.9rem - 0.6rem - 1px),
+			transparent 0.55rem,
+			rgb(201 164 92 / 85%) 0.58rem 0.68rem,
+			transparent 0.72rem
+		),
+		#{$america-sun} 50% calc(100% + 4.75rem) / 8rem no-repeat;
+	--location-enclosure-padding: 3.75rem 1.75rem 4.25rem;
+	--location-enclosure-max-width: 24rem;
+	--location-enclosure-hanger-display: block;
+	--location-enclosure-hanger: #{$america-braid-vertical} center bottom / 12px 24px repeat-y;
+	--location-enclosure-hanger-width: 12px;
+	--location-enclosure-hanger-height: 3rem;
+	--location-enclosure-hanger-to: 1.9rem;
+	--location-enclosure-swing: location-enclosure-swing;
+	--location-enclosure-swing-origin: 50% -3rem;
+	--location-enclosure-edge-shadow: drop-shadow(
+		0 14px 22px rgb(var(--color-violet-ink-rgb) / 16%)
+	);
+	--location-enclosure-heading-font: var(--font-label);
+	--location-enclosure-heading-size: var(--america-label-size);
+	--location-enclosure-heading-transform: uppercase;
+	--location-enclosure-heading-tracking: var(--america-label-tracking);
+	--location-enclosure-heading-color: var(--color-gold-ink);
+	--location-enclosure-lead-title-font: var(--font-display);
+	--location-enclosure-lead-title-size: clamp(2.5rem, 11vw, 3rem);
+	--location-enclosure-lead-title-caps: normal;
+	--location-enclosure-lead-title-tracking: 0;
+	--location-enclosure-lead-title-color: var(--color-violet-ink);
+	--location-enclosure-swatch-size: 2.25rem;
+	--location-enclosure-swatch-ring:
+		inset 0 0 0 1px rgb(255 255 255 / 45%), 0 0 0 3px var(--color-story-cream),
+		0 0 0 4px rgb(201 164 92 / 85%);
+	--location-enclosure-last-text-font: var(--font-label);
+	--location-enclosure-last-text-size: var(--america-label-size);
+	--location-enclosure-last-text-transform: uppercase;
+	--location-enclosure-last-text-tracking: 0.14em;
+	--location-enclosure-last-text-color: var(--color-gold-ink);
+	--location-enclosure-note-rule-width: 40%;
+
+	// Program hierarchy: the place leads, the hour follows the label in its gold, the address and
+	// links step back. The lede is a line in the display italic under the title, and the dress
+	// code card is titled one step below the chapter.
+	--location-program-lede-font: var(--font-display);
+	--location-program-lede-size: clamp(1.3rem, 5vw, 1.6rem);
+	--location-program-lede-style: italic;
+	--location-program-lede-line-height: 1.3;
+	--location-program-entry-gap: 0.35rem;
+	--location-program-time-font: var(--font-display);
+	--location-program-time-size: clamp(1.2rem, 4.5vw, 1.4rem);
+	--location-program-place-size: clamp(2.1rem, 8.5vw, 2.75rem);
+	--location-program-place-weight: 400;
+	--location-program-place-gap: 0.15rem;
+	--location-program-address-size: 1rem;
+	--location-program-address-margin: 0.35rem 0 0.5rem;
+
+	// Program: a ruled timetable on the paper, hour then moment, no sheet, marker or rail.
+	--itinerary-paper-section-bg: var(--color-lilac-paper);
+	--itinerary-paper-title-color: var(--color-violet-ink);
+	--itinerary-paper-subtitle-color: var(--color-violet-ink-soft);
+	--itinerary-paper-tilt: 0deg;
+	--itinerary-paper-ink-filter: none;
+	--itinerary-paper-ink-will-change: auto;
+	--itinerary-paper-edge-filter: none;
+	--itinerary-paper-edge-will-change: auto;
+	--itinerary-paper-surface-bg: transparent;
+	--itinerary-paper-mask: none;
+	--itinerary-paper-panel-filter: none;
+	--itinerary-paper-radius: 0;
+	--itinerary-paper-radius-sm: 0;
+	--itinerary-paper-shadow: none;
+	--itinerary-paper-texture-display: none;
+	--itinerary-paper-rule: transparent;
+	--itinerary-paper-rule-inset: 0;
+	--itinerary-paper-edge-highlight: none;
+	--itinerary-paper-curl-display: none;
+	--itinerary-paper-monogram-display: none;
+	--itinerary-paper-corner-opacity: 0;
+	--itinerary-paper-flourish-display: none;
+	--itinerary-paper-letterpress: none;
+	--itinerary-paper-title-style: normal;
+	--itinerary-paper-row-rule: var(--america-rule);
+	--itinerary-paper-row-padding: 1.15rem;
+	--itinerary-paper-row-padding-sm: 1.1rem;
+	--itinerary-paper-row-columns: 7rem minmax(0, 1fr);
+	--itinerary-paper-row-columns-xl: 7rem minmax(0, 1fr);
+	--itinerary-paper-row-columns-sm: 5.75rem minmax(0, 1fr);
+	--itinerary-paper-row-areas: 'time content' 'num content';
+	--itinerary-paper-row-areas-sm: 'time content' 'num content';
+	--itinerary-paper-row-gap-sm: 0 0.85rem;
+	--itinerary-paper-num-size: 0;
+	--itinerary-paper-num-size-sm: 0;
+	--itinerary-paper-num-box: 0;
+	--itinerary-paper-num-mask: none;
+	--itinerary-paper-rail-display: none;
+	--itinerary-paper-time-font: var(--font-display);
+	--itinerary-paper-time-weight: 500;
+	--itinerary-paper-time-transform: none;
+	--itinerary-paper-time-caps: normal;
+	--itinerary-paper-time-tracking: 0.02em;
+	--itinerary-paper-time-size: 1.35rem;
+	--itinerary-paper-time-size-sm: 1.3rem;
+	--itinerary-paper-time-opacity: 100%;
+	--itinerary-paper-time-opacity-sm: 100%;
+	--itinerary-paper-time-align-sm: start;
+	--itinerary-paper-title-margin-top: 0;
+	--itinerary-paper-title-line-height: 1.2;
+	--itinerary-paper-title-line-height-sm: 1.2;
+	--itinerary-paper-title-size: 1.5rem;
+	--itinerary-paper-title-size-sm: 1.35rem;
+	--itinerary-paper-desc-size: 1.1rem;
+	--itinerary-paper-desc-size-sm: 1rem;
+	--itinerary-paper-desc-color: var(--color-violet-ink-soft);
+	--itinerary-paper-desc-color-sm: var(--color-violet-ink-soft);
+
+	// Reply card: one cream ticket with a hairline, lifted off the mist. Pass and reply share one
+	// width and meet on a perforation, punched at both ends like a stub to tear off; the pass is
+	// crowned by the Corona sun, the guest's name is written in the display italic (the script
+	// stays hers) and the seats sit in a lantern-lit ring.
+	--reply-card-bg: var(--color-story-cream);
+	--reply-card-max-width: 30rem;
+	--reply-card-guest-size: clamp(2rem, 9vw, 2.75rem);
+	--reply-card-guest-style: italic;
+	--reply-card-guest-weight: 400;
+	--reply-card-divider:
+		radial-gradient(circle, var(--color-gold-ink) 2.5px, transparent 3px) center / 7px 7px
+			no-repeat,
+		linear-gradient(
+				rgb(var(--color-leaf-gold-rgb) / 70%),
+				rgb(var(--color-leaf-gold-rgb) / 70%)
+			)
+			center / 100% 1px no-repeat;
+	--reply-card-divider-width: 5rem;
+	--reply-card-divider-height: 7px;
+	--reply-card-seam: repeating-linear-gradient(
+		90deg,
+		rgb(var(--color-leaf-gold-rgb) / 70%) 0 4px,
+		transparent 4px 9px
+	);
+	--reply-card-seam-width: calc(100% - 2 * (var(--america-punch) + 0.5rem));
+	--america-punch: 0.8rem;
+	--reply-card-mask-upper:
+		radial-gradient(
+				circle at 0 100%,
+				transparent var(--america-punch),
+				rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+			)
+			intersect,
+		radial-gradient(
+			circle at 100% 50%,
+			transparent var(--america-punch),
+			rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+		);
+	--reply-card-mask-lower:
+		radial-gradient(
+				circle at 0 0,
+				transparent var(--america-punch),
+				rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+			)
+			intersect,
+		radial-gradient(
+			circle at 100% 50%,
+			transparent var(--america-punch),
+			rgb(0 0 0) calc(var(--america-punch) + 0.5px)
+		);
+	--reply-card-mask-locked: none;
+	--reply-card-shadow-upper: none;
+	--reply-card-shadow-lower: none;
+	--reply-card-edge-shadow: drop-shadow(0 14px 14px rgb(var(--color-violet-ink-rgb) / 12%));
+	--reply-card-crest-content: '';
+	--reply-card-crest: #{$america-sun};
+	--reply-card-crest-size: 3rem;
+	--reply-card-count-size: 3.25rem;
+	--reply-card-count-frame-size: 6.5rem;
+	--reply-card-count-frame-ratio: 1;
+	--reply-card-count-frame-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 60%);
+	--reply-card-count-frame-bg: radial-gradient(
+		circle,
+		rgb(var(--color-candle-gold-rgb) / 16%),
+		transparent 70%
+	);
+	--pa-count-frame-radius: 50%;
+	--pa-count-frame-inner-display: block;
+	--pa-count-frame-inner-inset: 5px;
+	--pa-count-frame-inner-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 28%);
+	--reply-card-option-bg: rgb(255 255 255 / 55%);
+	--reply-card-option-rule: rgb(var(--color-leaf-gold-rgb) / 55%);
+	--reply-card-option-hover-rule: var(--color-gold-ink);
+	--reply-card-option-checked-rule: var(--color-gold-ink);
+
+	// Closing: the door photograph with an asymmetric arch crown, no painted tower behind it.
+	--thank-you-keepsake-ambient: none;
+	--thank-you-keepsake-ambient-stacked: none;
+	--thank-you-keepsake-image-radius: 64% 36% 0 0 / 16% 10% 0 0;
+
+	// The reply card's answers, fields and steps declare their inks on themselves, so they are set
+	// there: centred answers with a gold ring that fills with ink, fields on the cream with a gold
+	// rule, a gold track and a centred step heading.
+	.rsvp[data-variant='reply-card'] {
+		--rsvp-radio-card-justify: center;
+		--rsvp-radio-bg-hover: rgb(var(--color-candle-gold-rgb) / 8%);
+		--rsvp-radio-indicator-border: rgb(var(--color-leaf-gold-rgb) / 80%);
+		--rsvp-radio-selected-border: var(--color-gold-ink);
+		--rsvp-radio-indicator-dot: var(--color-gold-ink);
+		--rsvp-radio-label-color: var(--color-violet-ink);
+		--rsvp-radio-label-color-selected: var(--color-violet-ink);
+		--rsvp-radio-focus-ring: 0 0 0 3px rgb(var(--color-candle-gold-rgb) / 30%);
+		--rsvp-field-bg: rgb(255 255 255 / 60%);
+		--rsvp-field-bg-focus: rgb(255 255 255 / 92%);
+		--rsvp-field-border: rgb(var(--color-leaf-gold-rgb) / 55%);
+	}
+
+	[data-rsvp-flow='steps'] {
+		--rsvp-steps-track: rgb(var(--color-leaf-gold-rgb) / 35%);
+		--rsvp-steps-heading-align: center;
+	}
+
+	// The quote section declares its measure itself, so it is set on the section.
+	.quote-section {
+		--quote-content-max-width: 18ch;
+	}
+
+	// The program's moment titles are set in the display face (the script is only for the name).
+	.itinerary {
+		--font-calligraphy: var(--font-display);
+	}
+
+	// The contact sheet keeps the page gutter and a narrow gap between prints;
+	// its title is set in the ink of the other chapter titles.
+	.gallery-section {
+		--gallery-section-bg: var(--color-lilac-mist);
+		--gallery-title-style: normal;
+		--gallery-title-color: var(--color-violet-ink);
+		--gallery-title-size: var(--america-title-size);
+		--gallery-title-weight: 400;
+		--gallery-title-line-height: 1.1;
+		--gallery-mosaic-gap: 0.5rem;
+		--gallery-mosaic-max-width: min(calc(100% - 2 * var(--america-gutter)), 60rem);
+
+		// The album's scroll cue speaks in the italic of the other quiet asides.
+		--gallery-album-hint-font: var(--font-display);
+		--gallery-album-hint-style: italic;
+
+		// The first print is already falling as the album page scrolls in.
+		--gallery-album-lead: 1;
+	}
+
+	.gifts-section {
+		--gifts-bg: var(--color-lilac-paper);
+	}
+
+	// Every section after the night returns to the day: its own ground (paper or mist, below) and
+	// the day inks of the preset.
+	.invitation-section-wrapper:is(
+		[data-section-kind='location'],
+		[data-section-kind='family'],
+		[data-section-kind='itinerary'],
+		[data-section-kind='gallery'],
+		[data-section-kind='gifts'],
+		[data-section-kind='personalized-access'],
+		[data-section-kind='rsvp'],
+		[data-section-kind='thankYou']
+	),
+	.invitation-footer {
+		--america-ground: var(--color-lilac-paper);
+		--america-ground-rgb: var(--color-lilac-paper-rgb);
+		--section-band-paper: var(--america-ground);
+		--intersection-surface: var(--america-ground);
+		--intersection-surface-fill: var(--america-ground);
+		--intersection-blend: none;
+		--color-surface-primary: var(--america-ground);
+		--color-surface-primary-rgb: var(--america-ground-rgb);
+		--color-surface-secondary: var(--color-lilac-mist);
+		--color-surface-secondary-rgb: var(--color-lilac-mist-rgb);
+		--color-surface-soft: var(--color-lilac-veil);
+		--color-action-accent: var(--color-lilac-deep);
+		--color-action-accent-rgb: var(--color-lilac-deep-rgb);
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+		--color-text-emphasis: var(--color-gold-ink);
+		--color-text-muted: var(--color-violet-ink-soft);
+		--color-border-subtle: var(--america-rule);
+		--color-border-premium: rgb(var(--color-leaf-gold-rgb) / 62%);
+		--color-ornament-gold: var(--color-leaf-gold);
+	}
+
+	.invitation-section-wrapper:is(
+		[data-section-kind='family'],
+		[data-section-kind='gallery'],
+		[data-section-kind='personalized-access'],
+		[data-section-kind='rsvp']
+	) {
+		--america-ground: var(--color-lilac-mist);
+		--america-ground-rgb: var(--color-lilac-mist-rgb);
+	}
+
+	// The closing writes its signature in ink on the day paper. Its base tints the paper toward the
+	// accent; the tint is set to the paper itself, so the closing ground stays flat. The first
+	// letter keeps the message ink instead of a gold initial.
+	// The closing is the night the story ends in: the door photograph fades into it through a
+	// radial mask, under the lantern sky, with the message and the name in candle gold.
+	.invitation-section-wrapper[data-section-kind='thankYou'] {
+		--america-ground: var(--america-night);
+		--america-ground-rgb: var(--america-night-rgb);
+	}
+
+	// The footer waits below the closing: the invitation stops on the night, and a second scroll
+	// at the bottom lets a quiet strip of the same night rise, in small lilac type with a plain
+	// text contact link.
+	.invitation-footer {
+		--invitation-footer-reveal: held;
+		--footer-open-glide: 720ms;
+		--footer-reveal-duration: 560ms;
+		--footer-reveal-stagger: 0ms;
+		--footer-reveal-rise: 0.35rem;
+		--footer-reply-overshoot: 0;
+
+		// The reply waits for the end: no button floats over the reading; the footer opens on the
+		// last lantern, lit, with the question and the reply under it, in candle gold.
+		--invitation-footer-reply: on;
+		--footer-reply-eyebrow: 'La última linterna es la suya';
+		--footer-reply-question: '¿Me acompaña el 16 de octubre?';
+		--footer-reply-note: 'Confirme hasta el sábado 2 de octubre';
+		--footer-reply-answered: 'Su linterna ya está encendida.';
+		--footer-reply-ink: var(--color-candle-cream);
+		--footer-reply-muted: var(--color-night-lilac);
+		--footer-reply-accent: var(--america-night-gold);
+		--footer-reply-eyebrow-size: var(--america-label-size);
+		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
+		--footer-reply-button-bg: var(--america-night-gold);
+		--footer-reply-button-ink: var(--america-night);
+		--footer-reply-button-font: var(--font-label);
+		--footer-reply-glint: linear-gradient(
+			105deg,
+			transparent 40%,
+			rgb(255 255 255 / 55%) 50%,
+			transparent 60%
+		);
+		--footer-bg: var(--america-night);
+		--footer-border-color: rgb(var(--america-night-gold-rgb) / 14%);
+		--footer-closing-color: rgb(var(--america-night-gold-rgb) / 78%);
+		--footer-divider-line: rgb(var(--america-night-gold-rgb) / 30%);
+		--footer-divider-glow: 0 0 8px rgb(232 160 64 / 55%);
+		--footer-logo-filter: brightness(0) invert(0.85);
+		--footer-contact-border: 0;
+		--footer-contact-bg: none;
+		--footer-contact-padding: 0.5rem 0.25rem;
+		--footer-replay-color: var(--color-night-lilac);
+		--footer-replay-opacity: 72%;
+
+		// Three tiers: the reply, then the invitation's own sign-off with the replay under it, and
+		// last the platform, set apart by a short gold rule on one quiet line with the legal note.
+		--footer-reply-gap: 3.25rem;
+		--footer-closing-size: clamp(1.1rem, 3vw, 1.25rem);
+		--footer-divider-display: none;
+		--footer-replay-order: -1;
+		--footer-content-gap: 1rem;
+		--footer-primary-row-direction: row;
+		--footer-platform-rule: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--america-night-gold-rgb) / 45%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.5rem;
+		--footer-contact-color: var(--color-night-lilac);
+		--footer-contact-weight: 400;
+		--footer-contact-icon-filter: brightness(0) invert(0.85);
+
+		// The music button rests in the bottom corner; the legal line ends above it.
+		--footer-padding-bottom: 5.5rem;
+		--color-text-primary: var(--color-night-lilac);
+		--color-action-accent: rgb(232 160 64);
+		--color-action-accent-rgb: 232 160 64;
+	}
+
+	.thank-you-section {
+		--color-surface-primary: var(--america-night);
+		--color-surface-primary-rgb: var(--america-night-rgb);
+		--color-action-primary: var(--america-night-gold);
+		--color-action-primary-rgb: var(--america-night-gold-rgb);
+		--color-action-accent: var(--america-night-gold);
+		--color-action-accent-rgb: var(--america-night-rgb);
+		--color-text-primary: rgb(var(--america-night-gold-rgb) / 85%);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-emphasis: var(--america-night-gold);
+		--thank-you-keepsake-image-mask: radial-gradient(
+			ellipse 75% 70% at 50% 42%,
+			rgb(0 0 0) 55%,
+			transparent 100%
+		);
+		--storybook-closing-sky-display: block;
+		--storybook-sky-light: var(--color-candle-cream);
+		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-lantern: var(--color-lantern-amber);
+	}
+
+	// Stacked under the photograph (phones held upright), the name is the cover's headline: the
+	// narrow script needs a larger size than the variant default to hold the paper's width.
+	// The photograph fills the width and gives up the stone above the door instead (the figure
+	// stays whole, head to shoes), so the larger name never narrows it.
+	.invitation-hero[data-variant='bleed-portrait'] {
+		--hero-title-size: clamp(4.5rem, 24vw, 6.5rem);
+		--hero-bleed-photo-img-width: 100%;
+		--hero-bleed-photo-img-height: 100%;
+		--hero-bleed-photo-position-stack: 50% 88%;
+
+		// The print is the whole door, with América a third of its width; the arch frames her
+		// closer, from her head to her knees, and the iron gate becomes the frame around her.
+		--hero-bleed-photo-transform: scale(1.55);
+		--hero-bleed-photo-transform-origin: 52% 78%;
+
+		// Stacked: the arch sits under the header on paper, and the name rises over its lower
+		// edge, where the photograph fades into the paper (the hairline fades with it).
+		--hero-bleed-frame-top-stack: 4.5rem;
+
+		// A round arch at any width; on tablets the arch stays a door's width.
+		--hero-bleed-frame-side-stack: max(1.25rem, 50% - 15rem);
+		--hero-bleed-photo-radius: 50% 50% 0 0 / min(50vw - 1.25rem, 15rem)
+			min(50vw - 1.25rem, 15rem) 0 0;
+		--hero-bleed-photo-frame-radius: 50% 50% 0 0 / min(50vw - 1.75rem, 14.5rem)
+			min(50vw - 1.75rem, 14.5rem) 0 0;
+		--hero-bleed-photo-frame-mask: linear-gradient(to top, transparent 0, rgb(0 0 0) 40%);
+		--hero-bleed-photo-veil: linear-gradient(
+			to top,
+			var(--color-surface-primary) 0,
+			var(--color-surface-primary) 6%,
+			color-mix(in srgb, var(--color-surface-primary) 72%, transparent) 17%,
+			transparent 34%
+		);
+		--hero-bleed-letter-overlap-stack: 6rem;
+
+		// One word that fits once the script loads; never broken across lines by the fallback.
+		--hero-bleed-name-overflow-wrap: normal;
+		--hero-bleed-apex-display: block;
+		--hero-bleed-apex-width: 12px;
+		--hero-bleed-apex: #{$america-braid-vertical} center bottom / 12px 24px repeat-y;
+
+		// The facts in two short lines; the long reading returns side by side.
+		--hero-bleed-summary-display: grid;
+		--hero-bleed-facts-display-stack: none;
+		--hero-bleed-scroll-line-stack: 3.5rem;
+	}
+
+	// Side by side, the date never wraps and shares the letter with the photograph and the facts
+	// label column, so near 62rem (or on a sideways phone) it would run past the screen. These
+	// sizes follow the width left for the date (photograph, letter padding, label column and a
+	// scrollbar subtracted; the date is ~11.4 times its font size wide) and stop at the preset's
+	// 1.7rem, so wide screens keep it unchanged.
+	@media (width >= 62rem) {
+		.invitation-hero[data-variant='bleed-portrait'] {
+			--hero-bleed-when-size: min(
+				2rem,
+				(100vw - min(50vw, 100svh * 2 / 3) - 2 * min(8vw, 8rem) - 9.75rem) / 11.4
+			);
+		}
+	}
+
+	// Wide and tall, the letter holds the half beside the photograph: the name and the facts are
+	// set larger, so the cover does not read as a small block on empty paper. The hour and the
+	// venue follow the date down where the date must shrink to fit.
+	@media (width >= 62rem) and (height > 500px) {
+		.invitation-hero[data-variant='bleed-portrait'] {
+			--hero-bleed-title-size-desktop: clamp(8rem, 11vw, 11rem);
+			--hero-bleed-occasion-size-wide: 1.125rem;
+			--hero-bleed-facts-gap: 2.25rem;
+			--hero-bleed-time-size: max(1rem, min(1.25rem, var(--hero-bleed-when-size) * 0.62));
+			--hero-bleed-where-size: max(
+				0.875rem,
+				min(1.0625rem, var(--hero-bleed-when-size) * 0.53)
+			);
+		}
+	}
+
+	// A phone held sideways keeps the photograph at full height, without the arch.
+	@media (orientation: landscape) and (height <= 500px) {
+		.invitation-hero[data-variant='bleed-portrait'] {
+			--hero-bleed-photo-radius-wide: 0;
+			--hero-bleed-photo-frame: none;
+			--hero-bleed-when-size: min(
+				1.7rem,
+				(
+						100vw - min(50vw, 100svh * 2 / 3) - clamp(1.5rem, 5vw, 3rem) - max(
+								1.5rem,
+								env(safe-area-inset-right)
+							) -
+							7.25rem
+					) /
+					11.4
+			);
+		}
+	}
+
+	// Join 1, the bridge into the night: the patio photograph is a tower window on the mist, an
+	// arched top under a gold hairline that follows it. The mist comes out of the phrase on the
+	// mirror of the night's horizon (it rises under the phrase's empty foot), so the window sits
+	// between two slow curves, and its bottom padding holds the horizon the night rises on.
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+		--interlude-framed-radius: 50% 50% 0.75rem 0.75rem / 8.5rem 8.5rem 0.75rem 0.75rem;
+		--interlude-framed-image-radius: var(--interlude-framed-radius);
+		--section-band-paper: var(--color-lilac-mist);
+		--interlude-pull-up: calc(-0.5 * var(--america-cut));
+		--interlude-framed-bg:
+			#{$america-mist-rise} left top / 100% var(--america-cut) no-repeat,
+			var(--color-lilac-mist);
+		--interlude-framed-padding: calc(clamp(1.75rem, 5vw, 2.75rem) + 0.9 * var(--america-cut))
+			var(--america-gutter) calc(clamp(2rem, 6vw, 3.5rem) + var(--america-cut));
+		--interlude-framed-max-width: 26rem;
+		--interlude-framed-mat: 0;
+		--interlude-framed-mat-bg: transparent;
+		--interlude-framed-border: 0;
+		--interlude-framed-outline: 1px solid rgb(201 164 92 / 70%);
+		--interlude-framed-outline-offset: 0.6rem;
+		--interlude-framed-shadow: none;
+	}
+
+	// The night band: the countdown's ground rises out of the mist on a slow curve, deep on the
+	// left, drawn over the patio padding under a gold hairline, and three small lanterns have
+	// already left it. Its own padding holds the horizon above and the hanging print below.
+	.invitation-section-wrapper[data-section-kind='countdown'] {
+		--intersection-depth: var(--america-cut);
+		--section-band-paper:
+			#{$america-lantern} left 8% top calc(var(--america-cut) * 0.36) / 1rem auto no-repeat,
+			#{$america-lantern} left 19% top calc(var(--america-cut) * 0.1) / 0.75rem auto no-repeat,
+			#{$america-lantern} left 30% top calc(var(--america-cut) * 0.02) / 1.15rem auto
+				no-repeat,
+			#{$america-horizon} left top / 100% var(--america-cut) no-repeat,
+			linear-gradient(var(--color-violet-night) 0 0) left calc(var(--america-cut) - 1px) /
+				100% 100% no-repeat;
+	}
+
+	.countdown-section {
+		--america-band-padding: 7rem;
+		--countdown-written-bg: transparent;
+		--countdown-written-padding-block: calc(var(--america-band-padding) + var(--america-cut))
+			calc(var(--america-band-padding) + var(--america-print-overlap));
+		--countdown-written-muted: var(--color-night-lilac);
+		--countdown-written-title-size: 0.8125rem;
+		--countdown-written-title-tracking: 0.14em;
+		--countdown-written-title-caps: normal;
+		--countdown-written-title-transform: uppercase;
+		--countdown-written-title-color: var(--america-night-gold);
+		--countdown-written-numeral: 6.5rem;
+		--countdown-written-numeral-weight: 400;
+		--countdown-written-numeral-color: var(--america-night-gold);
+		--countdown-written-numeral-shadow: 0 0 24px rgb(232 160 64 / 35%);
+		--event-calendar-ink: var(--america-night-gold);
+		--event-calendar-mark-ink: var(--america-night-gold);
+
+		// The reason reads with the count: "para encender las linternas" sits under the nights,
+		// before the calendar; wide, the lead, the count and the reason stand together beside
+		// the calendar, centred on it.
+		--countdown-written-calendar-order: 1;
+		--countdown-written-date-row: 1 / span 3;
+		--countdown-written-footer-column: 1;
+		--countdown-written-footer-row: 3;
+		--countdown-written-title-row: 1;
+		--countdown-written-title-align: end;
+		--countdown-written-timer-row: 2;
+		--countdown-written-timer-align: start;
+
+		// Wide, the calendar's column no longer borrows the reason's width; it keeps its own.
+		@media (width >= 62rem) {
+			--event-calendar-width: 16rem;
+		}
+
+		--storybook-ambient-lanterns-display: block;
+		--storybook-sky-light: var(--color-candle-cream);
+		--storybook-sky-lantern: var(--color-lantern-amber);
+	}
+
+	.family__group--parents {
+		--family-group-padding: clamp(0.5rem, 2vw, 1rem) 0 0;
+		--family-name-size: clamp(1.75rem, 7vw, 2.25rem);
+	}
+
+	.family__group--godparents {
+		--family-name-size: clamp(1.4rem, 5.5vw, 1.7rem);
+	}
+
+	// The hour takes the label's gold, read where the entry sits (the night stage remaps it).
+	// Venue actions as buttons: the map is the primary one, filled in the link color, with the
+	// calendar and the copy beside each other as outlined buttons below it; each carries a line
+	// icon. Wide screens set the three on one line. Read at the entry, where the night stage
+	// remaps the link colors.
+	.event-location__program-entry {
+		--location-program-time-color: var(--location-program-label-color);
+		--location-program-action-flex: 1 1 0;
+		--location-program-action-primary-flex: 1 1 100%;
+		--location-program-links-gap: 0.625rem;
+		--location-program-links-row-gap: 0.625rem;
+		--location-program-link-width: 100%;
+		--location-program-link-justify: center;
+		--location-program-link-padding: 0.35rem 1rem;
+		--location-program-link-border: 1px solid
+			color-mix(in srgb, var(--location-program-link) 55%, transparent);
+		--location-program-link-radius: 999px;
+		--location-program-link-decoration: none;
+		--location-program-link-size: 0.95rem;
+		--location-program-link-tracking: 0.1em;
+		--location-program-link-primary-bg: var(--location-program-link);
+		--location-program-link-primary-color: var(--location-program-link-ink);
+		--location-program-link-primary-border: 1px solid var(--location-program-link);
+		--location-program-link-icon: '';
+		--location-program-map-icon: #{$america-icon-pin};
+		--location-program-calendar-icon: #{$america-icon-calendar};
+		--location-program-copy-icon: #{$america-icon-copy};
+
+		@media (width >= 768px) {
+			--location-program-action-flex: 0 1 auto;
+			--location-program-action-primary-flex: 0 1 auto;
+			--location-program-link-width: auto;
+			--location-program-link-padding: 0.35rem 1.35rem;
+		}
+	}
+
+	// Program: one card per moment under a dusk sky (paper into the gallery's mist). Each card is a
+	// tower window: an arched top with the lantern at its apex, the moment's numeral and hour in
+	// gold small capitals, a braided rule, then the moment set large and its line in the soft ink;
+	// the Corona sun rests faintly at its foot. The waltz card is set in the night.
+	.itinerary[data-variant='stacked-cards'] {
+		--stacked-cards-section-bg:
+			radial-gradient(90% 40% at 50% 92%, rgb(232 160 64 / 10%), transparent 70%),
+			linear-gradient(
+				180deg,
+				var(--color-lilac-paper) 0%,
+				var(--color-lilac-paper) 35%,
+				var(--color-lilac-mist) 100%
+			);
+		--stacked-cards-paper: var(--color-lilac-paper);
+		--stacked-cards-ink: var(--color-violet-ink);
+		--stacked-cards-accent: var(--color-gold-ink);
+		--stacked-cards-border: 1px solid rgb(201 164 92 / 45%);
+		--stacked-cards-radius: 50% 50% 1rem 1rem / 4.5rem 4.5rem 1rem 1rem;
+		--stacked-cards-min-height: 36svh;
+		--stacked-cards-top: calc(var(--invitation-header-offset, 72px) + 0.5rem);
+		--stacked-cards-step: 14px;
+		--stacked-cards-time-size: 1.25rem;
+		--stacked-cards-time-pending-size: 1.125rem;
+		--stacked-cards-label-size: clamp(2rem, 8vw, 2.5rem);
+		--stacked-cards-desc-size: 1.0625rem;
+		--stacked-cards-shade: var(--america-night);
+		--stacked-cards-shade-strength: 8%;
+		--stacked-cards-max-width: 26rem;
+		--stacked-cards-align: center;
+		--stacked-cards-text-align: center;
+		--stacked-cards-padding: 2.25rem 1.75rem 4.5rem;
+		--stacked-cards-gap: 0.35rem;
+		--stacked-cards-shadow: 0 18px 40px -28px rgb(var(--color-violet-ink-rgb) / 45%);
+		--stacked-cards-lantern-size: 1.5rem;
+		--stacked-cards-time-font: var(--font-label);
+		--stacked-cards-time-caps: all-small-caps;
+		--stacked-cards-time-tracking: 0.16em;
+		--stacked-cards-numeral: counter(moment, upper-roman) ' · ' / '';
+		--stacked-cards-rule: #{$america-braid};
+		--stacked-cards-rule-display: block;
+		--stacked-cards-rule-ratio: 104 / 12;
+		--stacked-cards-motif: #{$america-sun};
+		--stacked-cards-motif-position: 50% calc(100% + 3rem);
+		--stacked-cards-motif-size: 7.5rem;
+		--stacked-cards-label-line-height: 1.05;
+		--stacked-cards-desc-color: var(--color-violet-ink-soft);
+		--stacked-cards-desc-measure: 30ch;
+		--stacked-cards-ornament: #{$america-tower};
+		--stacked-cards-ornament-display: block;
+		--stacked-cards-ornament-ratio: 48 / 72;
+		--stacked-cards-header-gap: clamp(2rem, 6vw, 3rem);
+		--stacked-cards-timeline-padding: 0;
+	}
+
+	.stacked-card[data-moment='Waltz'] {
+		--stacked-cards-paper: var(--america-night);
+		--stacked-cards-ink: var(--america-night-gold);
+		--stacked-cards-accent: var(--america-night-gold);
+		--stacked-cards-lantern-line: var(--america-night-gold);
+		--stacked-cards-border: 1px solid rgb(var(--america-night-gold-rgb) / 35%);
+		--stacked-cards-motif: #{$america-sun-night};
+		--stacked-cards-rule: #{$america-braid-night};
+		--stacked-cards-desc-color: rgb(var(--america-night-gold-rgb) / 82%);
+	}
+
+	// Join 2, the second bridge: the save-the-date print hangs out of the night into the paper on
+	// a cream mat with a soft contact shadow. The print's top lies on the night, so its paper
+	// starts below the overlap.
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'] {
+		--intersection-depth: var(--america-print-overlap);
+	}
+
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
+		--section-band-paper: none;
+		--interlude-framed-bg: linear-gradient(
+			transparent 0 var(--america-print-overlap),
+			var(--color-lilac-paper) var(--america-print-overlap)
+		);
+		--interlude-framed-padding: 0 var(--america-gutter) clamp(3.5rem, 9vw, 6rem);
+		--interlude-framed-max-width: 22.5rem;
+		--interlude-framed-mat: 0.875rem 0.875rem 2.75rem;
+		--interlude-framed-mat-bg: var(--color-story-cream);
+		--interlude-framed-border: 0;
+		--interlude-framed-outline: 0;
+		--interlude-framed-shadow:
+			0 1px 0 var(--america-rule), 0 18px 40px -24px rgb(var(--color-violet-ink-rgb) / 45%);
+	}
+
+	// Join 3, the climax: the closing rises into the reply card's mist under the mirrored arch
+	// (crown right, opposite to the horizon's rise), cut from the closing paper with no ink line.
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
+		--intersection-arch-ink: transparent;
+	}
+
+	@media (width >= 64rem) {
+		--thank-you-keepsake-image-radius: 64% 36% 0 0 / 22% 14% 0 0;
+
+		.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+			--interlude-framed-max-width: 26rem;
+		}
+
+		.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
+			--interlude-framed-max-width: 26rem;
+		}
+	}
+
+	// Side by side (the hero's lg split), the links cross both the photograph and the paper column,
+	// so over the cover the bar is already the night it turns into on scroll.
+	@media (width >= 62rem) {
+		#event-header.header-base--transparent {
+			--nav-bg: rgb(var(--america-night-rgb) / 94%);
+			--nav-scrim-opacity: 0;
+			--header-nav-shadow-transparent: none;
+			--header-nav-filter-transparent: none;
+		}
+	}
+
+	// Stacked, the header rests on the paper above the arch, so it takes the night ink (sideways
+	// phones keep the photograph under it).
+	@media (width < 62rem) and (orientation: portrait), (width < 62rem) and (height > 500px) {
+		#event-header.header-base--transparent:not(.header-base--menu-open) {
+			--nav-scrim-opacity: 0;
+			--hamburger-color: var(--america-night);
+			--header-nav-color-transparent: var(--america-night);
+			--header-nav-shadow-transparent: none;
+			--header-nav-filter-transparent: none;
+		}
+	}
+
+	// Sideways phones: the menu button sits on the paper beside the photograph.
+	@media (width < 62rem) and (orientation: landscape) and (height <= 500px) {
+		#event-header.header-base--transparent:not(.header-base--menu-open) {
+			--nav-scrim-opacity: 0;
+			--hamburger-color: var(--america-night);
+		}
+	}
+
+	// Side by side on a tall enough screen, the arch stands on paper below the night bar.
+	@media (width >= 62rem) and (height > 500px) {
+		.invitation-hero[data-variant='bleed-portrait'] {
+			--hero-bleed-frame-top-wide: 7.5rem;
+			--hero-bleed-frame-bottom-wide: 2.5rem;
+			--hero-bleed-frame-side-wide: clamp(2rem, 5vw, 5rem);
+			--hero-bleed-photo-radius-wide: 50% 50% 0.75rem 0.75rem / 14rem 14rem 0.75rem 0.75rem;
+			--hero-bleed-photo-frame-radius: 50% 50% 0.4rem 0.4rem / 13.5rem 13.5rem 0.4rem 0.4rem;
+			--hero-bleed-photo-frame-mask: none;
+
+			// The taller arch keeps her whole, down to her shoes.
+			--hero-bleed-photo-transform: scale(1.4);
+			--hero-bleed-photo-transform-origin: 52% 92%;
+		}
+	}
+
+	// The envelope is the night the story ends in, violet paper under a sky of distant lights and
+	// rising lanterns, a gold-leaf hairline on the flap, the wax sun, and warm light spilling from
+	// inside as the flap turns. The card inside stays cream paper with day inks and no drawn art.
+	--storybook-seal-art: url('./assets/art/sun-corona-mark.svg');
+	--storybook-seal-art-display: block;
+	--storybook-seal-icon-opacity: 0%;
+
+	.envelope-wrapper[data-variant='storybook-lanterns'] {
+		// The lights live on the depth sky (see the reveal skin); the field is the night alone.
+		--storybook-sky-display: block;
+		--storybook-send-off: lanterns;
+		--storybook-sky-light: var(--color-candle-cream);
+		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-lantern: var(--color-lantern-amber);
+		--storybook-field: radial-gradient(
+			ellipse 120% 70% at 50% 100%,
+			var(--color-violet-dusk) 0%,
+			var(--color-violet-night) 55%,
+			var(--color-violet-midnight) 100%
+		);
+		--storybook-envelope-paper: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--color-violet-dusk) 72%, var(--color-violet-night)),
+			var(--color-violet-night)
+		);
+		--storybook-paper-grain: var(--storybook-night-grain);
+		--storybook-ink: var(--color-candle-gold);
+		--storybook-liner-paper: radial-gradient(
+			ellipse 90% 80% at 50% 0%,
+			var(--color-candle-cream) 0%,
+			var(--color-candle-gold) 34%,
+			var(--color-violet-dusk) 100%
+		);
+		--storybook-instruction-ink: var(--color-night-lilac);
+		--storybook-seal-rim-shadow:
+			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 60%),
+			0 10px 22px -6px rgb(var(--color-violet-midnight-rgb) / 80%),
+			inset 0 1px 0 rgb(255 255 255 / 55%);
+		--storybook-card-ornament-display: none;
+		--color-text-primary: var(--color-candle-cream);
+		--color-text-primary-rgb: var(--color-candle-cream-rgb);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-secondary-rgb: var(--color-night-lilac-rgb);
+		--env-shadow-container:
+			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 28%),
+			0 34px 64px -26px rgb(var(--color-violet-midnight-rgb) / 90%);
+		--env-shadow-seal:
+			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 50%),
+			0 4px 10px rgb(var(--color-violet-midnight-rgb) / 55%),
+			inset 1px 1px 0 rgb(255 255 255 / 55%), inset -1px -2px 3px rgb(0 0 0 / 22%);
+		--reveal-card-text-primary: var(--color-violet-ink);
+		--reveal-card-text-secondary: var(--color-violet-ink-soft);
+		--reveal-card-shadow: 0 1px 2px rgb(var(--color-violet-midnight-rgb) / 40%);
+	}
+
+	.envelope-wrapper[data-variant='storybook-lanterns'] .invitation-reveal-card {
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+	}
+}

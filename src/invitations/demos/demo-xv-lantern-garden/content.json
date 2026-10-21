@@ -1,0 +1,343 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "templateId": "xv-storybook-lilac",
+    "title": "Mis XV años — Luciana Isabel",
+    "description": "Una carta bajo las linternas para celebrar los quince años de Luciana Isabel, el sábado 16 de octubre de 2027 en Los Mochis, Sinaloa.",
+    "theme": {
+        "preset": "storybook-lilac",
+        "fontFamily": "serif",
+        "motion": "editorial"
+    },
+    "eventTiming": {
+        "localDateTime": "2027-10-16T18:00",
+        "timeZone": "America/Mazatlan",
+        "startsAtUtc": "2027-10-17T01:00:00.000Z"
+    },
+    "sectionOrder": [
+        "quote",
+        "countdown",
+        "location",
+        "family",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": {
+        "intersections": {
+            "countdown": {
+                "family": "overlap",
+                "source": "interlude-after-quote"
+            },
+            "interlude-after-countdown": {
+                "family": "overlap",
+                "source": "countdown"
+            },
+            "thankYou": {
+                "family": "arch",
+                "source": "rsvp"
+            }
+        }
+    },
+    "interludes": [
+        {
+            "image": "gallery01",
+            "afterSection": "quote",
+            "alt": "Luciana de pie con su vestido lila entre las linternas del jardín.",
+            "height": "medium",
+            "presentation": "framed"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "countdown",
+            "alt": "Luciana con su vestido lila frente al cielo del atardecer.",
+            "height": "medium",
+            "presentation": "framed"
+        }
+    ],
+    "hero": {
+        "variant": "bleed-portrait",
+        "name": "Luciana",
+        "label": "Mis XV años",
+        "date": "2027-10-16T18:00:00.000Z",
+        "backgroundImage": "hero",
+        "focalPoint": "50% 55%",
+        "focalPointMobile": "50% 55%",
+        "presentation": {
+            "venueIndex": 0
+        }
+    },
+    "envelope": {
+        "disabled": false,
+        "revealVariant": "storybook-lanterns",
+        "sealStyle": "wax",
+        "sealIcon": "sunburst",
+        "sealInitials": "L",
+        "envelopeName": "Luciana",
+        "cardName": "Luciana",
+        "cardLabel": "Mis XV años",
+        "guestLabel": "Para",
+        "microcopy": "Toque el sello para abrir"
+    },
+    "quote": {
+        "text": "Quince años y una lista muy corta de personas que no pueden faltar.",
+        "closingLine": "Usted está en ella."
+    },
+    "family": {
+        "variant": "standard",
+        "presentation": "text-only",
+        "parentsOrder": "father-first",
+        "parents": {
+            "father": "Andrés Montes Salazar",
+            "mother": "Elena Rivera Castañeda"
+        },
+        "godparents": [
+            {
+                "name": "Mariana Rivera Castañeda",
+                "role": "Madrina"
+            },
+            {
+                "name": "Javier Ortega León",
+                "role": "Padrino"
+            }
+        ],
+        "labels": {
+            "sectionTitle": "Mi familia",
+            "sectionSubtitle": "",
+            "parentsTitle": "Mis papás",
+            "godparentsTitle": "Mis padrinos",
+            "sectionMessage": "Me han acompañado a crecer y a descubrir mis sueños. Mis padrinos, siempre cerca. Esa noche quiero que usted también esté."
+        }
+    },
+    "countdown": {
+        "variant": "written-days",
+        "title": "Faltan",
+        "footerText": "para encender las linternas",
+        "presentationOptions": {
+            "dayUnit": "nights",
+            "calendar": {
+                "mark": "sun"
+            }
+        }
+    },
+    "location": {
+        "variant": "program-sheet",
+        "accessPolicy": {
+            "visibility": "public"
+        },
+        "mapStyle": "minimal",
+        "presentationOptions": {
+            "showCalendarLinks": false,
+            "indicationsLayout": "enclosure",
+            "scene": "lantern-route",
+            "showNavigationButtons": false
+        },
+        "introHeading": "Apunte la fecha",
+        "introLede": "Misa a las seis, fiesta a las siete y media. Celebración ficticia; los espacios son ilustrativos.",
+        "indicationsHeading": "Código de vestimenta",
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "styleVariant": "default",
+                "title": "Formal",
+                "text": "Le agradecemos acompañarnos con atuendo formal."
+            },
+            {
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "title": "Lila",
+                "text": "El lila es mi color esa noche; ¿me ayuda a que siga siendo solo mío?"
+            },
+            {
+                "iconName": "Forbidden",
+                "styleVariant": "default",
+                "text": "Esta vez, solo adultos."
+            }
+        ],
+        "venues": [
+            {
+                "type": "ceremony",
+                "venueEvent": "Ceremonia de acción de gracias",
+                "venueName": "Capilla de la Luz",
+                "address": "Espacio ilustrativo · Los Mochis, Sinaloa",
+                "date": "2027-10-16",
+                "time": "18:00",
+                "city": "Los Mochis",
+                "isVisible": true
+            },
+            {
+                "type": "reception",
+                "venueEvent": "Recepción",
+                "venueName": "Jardín de las Linternas",
+                "address": "Espacio ilustrativo · Los Mochis, Sinaloa",
+                "date": "2027-10-16",
+                "time": "19:30",
+                "city": "Los Mochis",
+                "isVisible": true
+            }
+        ]
+    },
+    "itinerary": {
+        "variant": "stacked-cards",
+        "title": "Así será mi noche",
+        "items": [
+            {
+                "time": "18:00",
+                "iconName": "Church",
+                "label": "Misa",
+                "description": "Para empezar, dar gracias."
+            },
+            {
+                "time": "19:30",
+                "iconName": "Reception",
+                "label": "Recepción",
+                "description": "Abren las puertas del jardín."
+            },
+            {
+                "time": "20:30",
+                "iconName": "Waltz",
+                "label": "Vals",
+                "description": "Ensayé más de lo que voy a admitir."
+            },
+            {
+                "time": "20:45",
+                "iconName": "Sparkles",
+                "label": "Baile sorpresa",
+                "description": "No le cuento nada. Llegue a tiempo."
+            },
+            {
+                "time": "21:00",
+                "iconName": "Dinner",
+                "label": "Cena",
+                "description": "A la mesa, que la noche todavía es larga."
+            },
+            {
+                "time": "01:00",
+                "iconName": "Party",
+                "label": "Cierre",
+                "description": "La última canción, ya el domingo 17 de octubre."
+            }
+        ]
+    },
+    "gallery": {
+        "variant": "album-assemble",
+        "eyebrow": "",
+        "title": "Antes de la noche",
+        "subtitle": "Lila, flores y la luz del jardín.",
+        "items": [
+            {
+                "image": "gallery02",
+                "alt": "Los zapatos de Luciana junto al vestido lila y una linterna.",
+                "focalPoint": "50% 50%"
+            },
+            {
+                "image": "gallery03",
+                "alt": "Luciana sostiene un ramo de flores en el jardín.",
+                "focalPoint": "50% 50%"
+            },
+            {
+                "image": "gallery04",
+                "alt": "Luciana junto a sus padres en un patio iluminado.",
+                "focalPoint": "50% 50%"
+            },
+            {
+                "image": "gallery05",
+                "alt": "Luciana gira con su vestido lila bajo las linternas.",
+                "focalPoint": "50% 50%"
+            },
+            {
+                "image": "gallery06",
+                "alt": "Luciana en el patio del jardín al anochecer.",
+                "focalPoint": "50% 50%"
+            }
+        ]
+    },
+    "gifts": {
+        "variant": "standard",
+        "title": "Regalos",
+        "presentation": "legend-only",
+        "subtitle": "Lo importante es que venga. Si desea tener un detalle conmigo, puede ser un regalo o en efectivo."
+    },
+    "rsvp": {
+        "variant": "reply-card",
+        "title": "¿Me acompaña?",
+        "subcopy": "Confírmeme a más tardar el sábado 2 de octubre de 2027.",
+        "lockedMessage": "Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.",
+        "guestCap": 4,
+        "accessMode": "personalized-only",
+        "confirmationMode": "api",
+        "flow": "steps",
+        "personalizedAccess": {
+            "variant": "reply-card",
+            "title": "Su lugar ya está apartado",
+            "subtitle": "Lleva su nombre.",
+            "footerText": "Confírmelo abajo."
+        },
+        "labels": {
+            "name": "Su nombre",
+            "notesLabel": "Pida un deseo para mis quince",
+            "notesPlaceholder": "Lo guardo para cuando se apaguen las luces.",
+            "guestHint": "Tiene {count} lugares. Si vienen menos, ajústelo aquí.",
+            "stepAttendance": "Primero lo importante",
+            "stepDetails": "¿Quiénes le acompañan?"
+        },
+        "confirmationMessage": "Respuesta de prueba completada. Esta demo no registra asistencia. La celebración ficticia es el sábado 16 de octubre de 2027.",
+        "responseMessages": {
+            "confirmed": {
+                "title": "Ya le espero, {guestName}.",
+                "subtitle": "Si algo cambia, puede modificar su respuesta aquí mismo."
+            },
+            "declined": {
+                "title": "Le voy a extrañar, {guestName}.",
+                "subtitle": "Gracias por avisarme."
+            }
+        }
+    },
+    "thankYou": {
+        "variant": "portrait-keepsake",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 40%",
+        "message": "Esa noche cada linterna tendrá un nombre. Ojalá una lleve el suyo.",
+        "closingName": "Luciana",
+        "closingPhrase": "Luciana · XV años · Los Mochis · MMXXVII"
+    },
+    "navigation": [
+        {
+            "label": "Lugar",
+            "href": "#event-location"
+        },
+        {
+            "label": "Familia",
+            "href": "#family-section"
+        },
+        {
+            "label": "Programa",
+            "href": "#itinerary"
+        },
+        {
+            "label": "Galería",
+            "href": "#galeria"
+        },
+        {
+            "label": "Regalos",
+            "href": "#regalos"
+        },
+        {
+            "label": "Confirmar",
+            "href": "#rsvp"
+        }
+    ],
+    "sharing": {
+        "ogImage": "hero",
+        "ogDescription": "Sábado 16 de octubre de 2027 · Los Mochis, Sinaloa. Misa a las 18:00 y recepción a las 19:30. Celebración ficticia.",
+        "shareMessages": {
+            "invitation": "Hola, {{invitado}}: cumplo quince y usted está en mi lista. Aquí va su invitación, con su pase y la opción para confirmar:\n\n{{enlace}}",
+            "reminder": "Hola, {{invitado}}: {{hora_evento}} Las linternas ya casi están listas.\n\nSi aún no confirma, tiene hasta el sábado 2 de octubre de 2027:\n{{enlace}}"
+        }
+    },
+    "visualProfileId": "demo-xv-lantern-garden",
+    "_assetSlug": "demo-xv-lantern-garden"
+}
