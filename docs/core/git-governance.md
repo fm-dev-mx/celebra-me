@@ -28,7 +28,8 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
   example, a branch that adds a CI job for the memories end-to-end tests is `chore/memories-e2e-ci`,
   and a branch that fixes a broken test is `fix/*`). Dependabot's own `dependabot/*` branches are
   the only exception. Persistent lane branches are forbidden.
-- Annotated tags (`vX.Y.Z`) mark releases.
+- Annotated tags (`vX.Y.Z`) mark releases. The release session creates and pushes them within the
+  release authorization once the promoted `main` SHA is verified.
 
 ## Four-Lane Worktree Model
 
@@ -577,8 +578,10 @@ git merge --ff-only origin/main
 git push origin develop
 ```
 
-3. Tag the deployed `main` SHA following
-   [Create and push the annotated tag](release-process.md#7-create-and-push-the-annotated-tag).
+3. In the same turn that `pnpm ops:release-status` reports `VERIFIED` for the deployed `main` SHA,
+   the release session tags it and pushes the tag following
+   [Create and push the annotated tag](release-process.md#7-create-and-push-the-annotated-tag). The
+   release authorization already covers this step; it is not a separate owner step.
 
 Rules:
 
@@ -592,8 +595,9 @@ Rules:
 - Release PR titles name the version and the primary shipped outcome. Bodies list included changes,
   material risks, visual/schema/content impact and separately authorized operations.
 - Never rewrite or force-push `main` or `develop`; never use a bypass.
-- Every release merge on `main` gets its version tag, and every version tag is pushed to `origin`.
-  `git ls-remote --tags origin` must list each local `vX.Y.Z` tag.
+- Every release merge on `main` gets its version tag, created and pushed to `origin` by the release
+  session within the release authorization. `git ls-remote --tags origin` must list each local
+  `vX.Y.Z` tag.
 - `archive/<topic>-<YYYY-MM-DD>` annotated tags keep recovery points for history that no branch
   holds any more (for example a stash or a retired lane state). Push them when the history must
   survive this machine; never reuse the `v` prefix for them.
