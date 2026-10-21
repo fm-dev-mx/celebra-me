@@ -221,6 +221,7 @@ const GA4_EVENT_MAP: Record<string, string> = {
 	cta_clicked: 'cta_click',
 	package_viewed: 'view_item',
 	demo_viewed: 'view_item',
+	envelope_opened: 'envelope_open',
 	whatsapp_contact_clicked: 'contact',
 	form_started: 'form_start',
 	form_submitted: 'form_submit',

@@ -4,7 +4,10 @@ jest.mock('@/lib/tracking/meta-pixel', () => ({
 	forwardToMetaPixel: jest.fn(),
 }));
 jest.mock('@/lib/tracking/consent-client', () => ({ readConsent: jest.fn() }));
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { readConsent } from '@/lib/tracking/consent-client';
+import { forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
 import { initCommercialTracking } from '@/lib/tracking/client';
 import { hasUnsafeEventProperties } from '@/lib/tracking/event-contract';
 
@@ -69,4 +72,39 @@ it('accepts digit-heavy UUIDs while still rejecting phone numbers in properties'
 		false,
 	);
 	expect(hasUnsafeEventProperties({ event_id: '+521234567890' })).toBe(true);
+});
+it('tracks the first envelope opening in the browser only, never posting it', () => {
+	initCommercialTracking();
+	const open = () =>
+		window.dispatchEvent(
+			new CustomEvent('envelope:open-requested', {
+				detail: { eventSlug: 'demo-xv-celestial-blue' },
+			}),
+		);
+	open();
+	open();
+	const layer = (window as unknown as { dataLayer: Array<Record<string, unknown>> }).dataLayer;
+	const opened = layer.filter((entry) => entry.event === 'envelope_opened');
+	expect(opened).toHaveLength(1);
+	expect(opened[0]).toMatchObject({
+		demo_slug: 'demo-xv-celestial-blue',
+		event_type: 'xv',
+		is_demo: true,
+	});
+	expect(jest.mocked(forwardToGA4)).toHaveBeenCalledWith(
+		'envelope_opened',
+		expect.objectContaining({ demo_slug: 'demo-xv-celestial-blue' }),
+	);
+	expect(payloads().filter((p) => p.eventName === 'envelope_opened')).toHaveLength(0);
+});
+it('names every demo-opening card by the demo it opens', () => {
+	const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
+	expect(read('src/components/showroom/DemoCard.astro')).toContain(
+		'data-track-cta={`demo_open_${item.slug}`}',
+	);
+	const selector = read('src/components/home/EventTypeSelector.astro');
+	expect(selector).toContain('data-track-cta={`demo_open_${demoSlug}`}');
+	expect(selector).toContain('data-track-cta={`demo_open_${firstDemoSlug}`}');
+	expect(selector).toContain('`demo_open_${demoSlug}`);');
+	expect(selector).not.toMatch(/showroom_(preview|view_demo)_/);
 });
