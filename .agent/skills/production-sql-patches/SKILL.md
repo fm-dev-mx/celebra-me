@@ -14,24 +14,21 @@ preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
   - Read .agent/rules/database.md
-  - Read .agent/rules/manual-sql-manifest.md
+  - Read the Manual SQL Manifest section of .agent/rules/database.md
   - Explicit user authorization before any production-oriented write guidance that implies execution
 related_skills:
   - supabase
-  - supabase-postgres
   - client-invitation-audit
 related_docs:
-  - .agent/rules/manual-sql-manifest.md
   - docs/database-workflow.md
 ---
 
 # Production SQL Patches
 
 Operational authoring for patches under `scripts/manual/production-patches/`. **Manifest format** is
-owned by [`.agent/rules/manual-sql-manifest.md`](../../rules/manual-sql-manifest.md); the lint,
-plan, and owner apply flow is owned by
-[`docs/database-workflow.md`](../../../docs/database-workflow.md). This skill owns continuation-safe
-SQL patterns.
+owned by [`.agent/rules/database.md`](../../rules/database.md#manual-sql-manifest); the lint, plan,
+and owner apply flow is owned by [`docs/database-workflow.md`](../../../docs/database-workflow.md).
+This skill owns continuation-safe SQL patterns.
 
 ## When a patch is the wrong tool
 
@@ -82,8 +79,9 @@ reads `app.owner_user_id`.
 ### 5. Manifest
 
 Every new patch starts with the `@script-id` / `@purpose` / `@env: production` / dry-run / rollback
-header from `manual-sql-manifest.md`. `@expected-rows-min` may be `0` for continuation. Residual and
-paired-store discovery rules live in that manifest; do not restate them here.
+header from the Manual SQL Manifest in `database.md`. `@expected-rows-min` may be `0` for
+continuation. Residual and paired-store discovery rules live in that manifest; do not restate them
+here.
 
 ### 6. Rollback
 

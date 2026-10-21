@@ -6,9 +6,9 @@ This directory holds reviewed SQL patches for exceptional, owner-applied Product
 Patches are not a substitute for versioned migrations (`pnpm prod:apply -- --schema`) or for managed
 invitation content (`pnpm prod:apply -- --slug <slug>`); see
 [`.agent/rules/database.md`](../../../.agent/rules/database.md). The required header is owned by
-[`.agent/rules/manual-sql-manifest.md`](../../../.agent/rules/manual-sql-manifest.md); the lint,
-plan, and apply sequence is owned by
-[`docs/database-workflow.md`](../../../docs/database-workflow.md) (Check a manual production patch).
+[`.agent/rules/database.md`](../../../.agent/rules/database.md#manual-sql-manifest); the lint, plan,
+and apply sequence is owned by [`docs/database-workflow.md`](../../../docs/database-workflow.md)
+(Check a manual production patch).
 
 ## Active status catalog
 
