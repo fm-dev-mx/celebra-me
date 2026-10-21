@@ -1,6 +1,7 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
 import '@/styles/invitation/_music-player.scss';
+import { shouldBufferMusicAfterPaint } from '@/lib/invitation/music-preload';
 
 interface Props {
 	url?: string;
@@ -35,9 +36,14 @@ const audioSrc = hasAudio && startSeconds > 0 ? `${url}#t=${startSeconds}` : url
 const promptText = 'Reproducir música';
 const isVisualCapture =
 	Astro.url.searchParams.has('screenshot') || Astro.url.searchParams.has('skipEnvelope');
-// Music that starts with the envelope tap must be buffered by then; other tracks load on demand.
-const preload =
-	!isVisualCapture && hasAudio && autoPlay && revealMode === 'envelope' ? 'auto' : 'none';
+// The song never downloads during page load: music that starts with the envelope tap is buffered
+// after paint by the script below, other tracks load on demand.
+const bufferAfterPaint = shouldBufferMusicAfterPaint({
+	hasAudio,
+	autoPlay,
+	revealMode,
+	isVisualCapture,
+});
 ---
 
 <div
@@ -53,7 +59,13 @@ const preload =
 	data-fade-in-ms={fadeInMs !== undefined ? String(fadeInMs) : undefined}
 >
 	{hasAudio ? (
-		<audio src={audioSrc} loop={startSeconds === 0} preload={preload} data-music-audio></audio>
+		<audio
+			src={audioSrc}
+			loop={startSeconds === 0}
+			preload="none"
+			data-music-audio
+			data-buffer-after-paint={bufferAfterPaint ? 'true' : undefined}
+		></audio>
 	) : null}
 
 	<span class="music-player__prompt" data-music-prompt>{promptText}</span>
@@ -72,6 +84,8 @@ const preload =
 </div>
 
 <script>
+	import { scheduleMusicBufferAfterPaint } from '@/lib/invitation/music-preload';
+
 	const players = Array.from(document.querySelectorAll('[data-music-player]'));
 
 	// Volume ramp length; 1.2 s unless the content sets `music.fadeInSeconds`.
@@ -96,6 +110,7 @@ const preload =
 		const hasAudio = player.dataset.hasAudio === 'true';
 		const audioTitle = player.dataset.title || 'Reproducir música';
 		const startAt = Number(player.dataset.startAt || 0);
+		const bufferMusicNow = scheduleMusicBufferAfterPaint(audio);
 
 		// Offset playback: make sure the first play starts at `startAt` and every loop returns there.
 		if (audio instanceof HTMLAudioElement && startAt > 0) {
@@ -249,6 +264,7 @@ const preload =
 
 		const startAudio = () => {
 			removeStartListeners();
+			bufferMusicNow();
 			play(true);
 		};
 
