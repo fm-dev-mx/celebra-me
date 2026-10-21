@@ -17,8 +17,9 @@ related_docs:
 
 Approved by the owner on 2026-10-20: run phases A, B and C in order, one pull request per row into
 `develop`, merged when every check is green. The evidence lives in the point-in-time report
-`.agent/tmp/reports/2026-10-19-auditoria-post-migracion.md` (Integration checkout), measured on
-`main` `dd758333c`. Finding ids (H*, P*) refer to that report.
+`2026-10-19-auditoria-post-migracion.md`, kept outside Git in the Integration checkout's ignored
+reports folder (`.agent/tmp/reports/`), measured on `main` `dd758333c`. Finding ids (H*, P*) refer
+to that report.
 
 ## Progress
 
@@ -37,8 +38,11 @@ Approved by the owner on 2026-10-20: run phases A, B and C in order, one pull re
 | 11    | Done        | #400                                                        |
 | 12    | Done        | #402                                                        |
 | 13–19 | Pending     | —                                                           |
-| 20    | In progress | This pull request adds rows 20–25                           |
-| 21–25 | Pending     | —                                                           |
+| 20    | Done        | #406                                                        |
+| 21    | Done        | #408                                                        |
+| 22    | Done        | #410                                                        |
+| 23    | In progress | This pull request                                           |
+| 24–25 | Pending     | —                                                           |
 
 Owner decisions: the `/privacidad` text needs only the owner's approval, no legal review; full
 visual parity runs nightly on `develop` instead of on every pull request into `develop`. Questions 1

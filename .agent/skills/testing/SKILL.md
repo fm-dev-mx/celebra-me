@@ -74,8 +74,9 @@ work.
 ## Test File Conventions
 
 - **Naming**: `*.test.ts` or `*.test.tsx`
-- **Location**: Mirror `src/` structure in `tests/`
-- **Example**: `src/utils/email.ts` → `tests/utils/email.test.ts`
+- **Location**: unit tests live in `tests/unit/`; integration, end-to-end and script tests in
+  `tests/integration/`, `tests/e2e/` and `tests/scripts/`
+- **Example**: `src/utils/whatsapp.ts` → `tests/unit/whatsapp-contact.test.ts`
 
 ## Invitation Copy Assertions
 
@@ -177,7 +178,7 @@ Playwright is configured; specs live in `tests/e2e/`. Run them through the `test
 `package.json`.
 
 ```ts
-// tests/e2e/invitation.spec.ts
+// tests/e2e/<feature>.spec.ts (illustrative)
 import { test, expect } from '@playwright/test';
 
 test('XV invitation loads correctly', async ({ page }) => {
@@ -216,12 +217,12 @@ Before submitting a PR:
 
 ## Coverage Thresholds
 
-| Category                        | Target   | Priority |
-| ------------------------------- | -------- | -------- |
-| Critical utilities (`email.ts`) | 80%+     | High     |
-| React components with state     | 70%+     | Medium   |
-| Content schemas                 | 90%+     | Medium   |
-| Static display components       | Optional | Low      |
+| Category                           | Target   | Priority |
+| ---------------------------------- | -------- | -------- |
+| Critical utilities (`whatsapp.ts`) | 80%+     | High     |
+| React components with state        | 70%+     | Medium   |
+| Content schemas                    | 90%+     | Medium   |
+| Static display components          | Optional | Low      |
 
 ## Troubleshooting
 

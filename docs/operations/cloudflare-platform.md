@@ -86,18 +86,18 @@ Workers plan fails any SSR request above 10 ms of CPU, so Paid is mandatory for 
 
 ## 4. Code rules on workerd
 
-| Constraint                 | Rule                                                                                                                                                            |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bindings                   | Read with `import { env } from 'cloudflare:workers'`; Astro 7 has no `Astro.locals.runtime.env`                                                                 |
-| `process.env`              | Populated from Wrangler `vars` and secrets; read through `getEnv()` only, never at module scope                                                                 |
-| `NODE_ENV`                 | Literal reads are fixed at build time and dynamic reads are empty; never decide on it                                                                           |
-| `child_process`, real `fs` | Not available; local-only tooling (status CLI, editor divergence) stays out of Worker routes                                                                    |
-| `sharp`                    | Not available at runtime; pixel work (re-encoding) uses the Images binding                                                                                      |
-| Images binding             | The local emulator does not reproduce every transform; only a deployed check counts                                                                             |
-| Post-response work         | Use `runAfterResponse()` (`waitUntil`); never fire-and-forget                                                                                                   |
-| Client IP and origin       | `getClientIp()` reads `CF-Connecting-IP`; do not trust `x-forwarded-*` for security decisions                                                                   |
-| Memories ECDSA signing     | Pass the PEM string (or WebCrypto) to `sign()`; workerd rejects a `KeyObject` in `options.key`                                                                  |
-| Headers and redirects      | Security headers and the legacy `301` redirects live in middleware (parity with `public/_headers`); `/_astro/*` is `immutable` through the adapter's `_headers` |
+| Constraint                 | Rule                                                                                                                                                                                                                                                             |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bindings                   | Read with `import { env } from 'cloudflare:workers'`; Astro 7 has no `Astro.locals.runtime.env`                                                                                                                                                                  |
+| `process.env`              | Populated from Wrangler `vars` and secrets; read through `getEnv()` only, never at module scope                                                                                                                                                                  |
+| `NODE_ENV`                 | Literal reads are fixed at build time and dynamic reads are empty; never decide on it                                                                                                                                                                            |
+| `child_process`, real `fs` | Not available; local-only tooling (status CLI, editor divergence) stays out of Worker routes                                                                                                                                                                     |
+| `sharp`                    | Not available at runtime; pixel work (re-encoding) uses the Images binding                                                                                                                                                                                       |
+| Images binding             | The local emulator does not reproduce every transform; only a deployed check counts                                                                                                                                                                              |
+| Post-response work         | Use `runAfterResponse()` (`waitUntil`); never fire-and-forget                                                                                                                                                                                                    |
+| Client IP and origin       | `getClientIp()` reads `CF-Connecting-IP`; do not trust `x-forwarded-*` for security decisions                                                                                                                                                                    |
+| Memories ECDSA signing     | Pass the PEM string (or WebCrypto) to `sign()`; workerd rejects a `KeyObject` in `options.key`                                                                                                                                                                   |
+| Headers and redirects      | Security headers and the legacy `301` redirects live in middleware; static assets get the same headers from the `_headers` rule that `scripts/shared/cloudflare-static-headers.ts` appends at build; `/_astro/*` is `immutable` through the adapter's `_headers` |
 
 Prerendered pages never invoke the Worker (Workers Assets serves them with 0 CPU), so moving a
 static page to `prerender` is free of CPU.
