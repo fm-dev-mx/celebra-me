@@ -51,7 +51,7 @@ export function currentReleaseCheckEnvironment(): ReleaseCheckEnvironment {
 	};
 }
 
-function matchesEnvironment(
+export function matchesEnvironment(
 	evidence: ReleaseCheckEvidence,
 	environment: ReleaseCheckEnvironment,
 ): boolean {

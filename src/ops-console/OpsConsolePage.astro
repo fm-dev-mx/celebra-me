@@ -1,0 +1,274 @@
+---
+/**
+ * Local operations console, stage 1: read-only diagnosis. Injected only by `astro dev` with
+ * CELEBRA_OPS_CONSOLE=1 (see astro.config.mjs), so `astro build` never compiles it. It has no
+ * forms, buttons or POST handlers: every write stays in the owner's terminal.
+ */
+import type {
+	GitSection,
+	OpsCommit,
+	OpsItem,
+	PreflightSection,
+} from '../../scripts/ops/ops-console-snapshot.ts';
+import { isLocalProcess } from '@/lib/server/deploy-identity';
+import OpsItemList from './OpsItemList.astro';
+import {
+	resolveIntegrationCheckout,
+	runDbsSnapshot,
+	runGitSnapshot,
+	runPreflightSnapshot,
+} from './run-snapshot';
+import { OPS_CONSOLE_SENTINEL } from './sentinel';
+import './ops-console.scss';
+
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+const host = (Astro.request.headers.get('host') ?? '').replace(/:\d+$/, '');
+if (!import.meta.env.DEV || !isLocalProcess() || !LOCAL_HOSTS.has(host)) {
+	return new Response(null, { status: 404 });
+}
+
+interface DbsEnvironment {
+	environment: string;
+	schemaLifecycle: string;
+	appliedCount: number | null;
+	expectedCount: number;
+	pendingMigrations: string[];
+	invitationAttentionCount: number;
+}
+
+interface DbsAction {
+	id: string;
+	title: string;
+	summary: string;
+	steps?: { command?: string }[];
+}
+
+interface DbsView {
+	generatedAt: string;
+	expectedMigrationHead: string;
+	operationalPlan?: {
+		health?: { label: string; summary: string };
+		actions?: DbsAction[];
+	};
+	environments: Record<string, DbsEnvironment>;
+}
+
+const ENVIRONMENT_LABEL: Record<string, string> = {
+	local: 'Local',
+	preview: 'Preview',
+	production: 'Production',
+};
+
+const checkout = await resolveIntegrationCheckout();
+const checkoutName = checkout.split(/[\\/]/).filter(Boolean).at(-1) ?? checkout;
+const [gitResult, preflightResult, dbsResult] = await Promise.all([
+	runGitSnapshot<GitSection>(),
+	runPreflightSnapshot<PreflightSection>(checkout),
+	runDbsSnapshot<DbsView>(checkout),
+]);
+
+const formatDate = (iso: string) =>
+	new Date(iso).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
+const formatAge = (hours: number) =>
+	hours < 1
+		? `${Math.round(hours * 60)} min`
+		: hours < 48
+			? `${Math.round(hours)} h`
+			: `${Math.round(hours / 24)} días`;
+const shortSha = (sha: string) => sha.slice(0, 9);
+const failureItems = (label: string, error: string): OpsItem[] => [
+	{ id: 'error', label, status: 'unknown', detail: `No se pudo leer: ${error}` },
+];
+const firstRows = (commits: readonly OpsCommit[]) => commits.slice(0, 15);
+const dbsActions: DbsAction[] = dbsResult.ok ? (dbsResult.data.operationalPlan?.actions ?? []) : [];
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex" />
+		<title>Consola de operaciones · local</title>
+	</head>
+	<body class="ops" data-ops-console={OPS_CONSOLE_SENTINEL}>
+		<header class="ops-header">
+			<h1 class="ops-header__title">Consola de operaciones</h1>
+			<p class="ops-header__lead">
+				Solo lectura. Esta página no escribe en ninguna base de datos ni en Git: cada paso de
+				Production se sigue confirmando en su terminal con <code>pnpm prod:apply</code>.
+			</p>
+			<p class="ops-header__meta">
+				Checkout examinado: <strong>{checkoutName}</strong> · Recargue la página para actualizar.
+			</p>
+		</header>
+
+		<main class="ops-grid">
+			<section class="ops-card" aria-labelledby="ops-git">
+				<h2 id="ops-git" class="ops-card__title">Releases y tags</h2>
+				{
+					gitResult.ok ? (
+						<>
+							<OpsItemList items={gitResult.data.items} />
+							{gitResult.data.untaggedMainCommits.length > 0 && (
+								<>
+									<h3 class="ops-card__subtitle">Uniones a main sin tag</h3>
+									<table class="ops-table">
+										<thead>
+											<tr>
+												<th scope="col">Commit</th>
+												<th scope="col">Unión</th>
+												<th scope="col">Espera</th>
+											</tr>
+										</thead>
+										<tbody>
+											{firstRows(gitResult.data.untaggedMainCommits).map((commit) => (
+												<tr>
+													<td>
+														<code>{shortSha(commit.sha)}</code>
+													</td>
+													<td>{commit.subject}</td>
+													<td>{formatAge(commit.ageHours)}</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</>
+							)}
+							<p class="ops-card__note">
+								{gitResult.data.latestTag
+									? `Último tag: ${gitResult.data.latestTag.name} (${formatDate(gitResult.data.latestTag.date)}).`
+									: 'No se encontró un tag de release en las últimas uniones.'}{' '}
+								Tags leídos de{' '}
+								{gitResult.data.tagSource === 'origin' ? 'origin' : 'este equipo (sin conexión)'}.
+							</p>
+							{gitResult.data.developAheadCommits.length > 0 && (
+								<>
+									<h3 class="ops-card__subtitle">
+										En develop, aún no en main ({gitResult.data.developAhead})
+									</h3>
+									<table class="ops-table">
+										<thead>
+											<tr>
+												<th scope="col">Commit</th>
+												<th scope="col">Cambio</th>
+												<th scope="col">Hace</th>
+											</tr>
+										</thead>
+										<tbody>
+											{firstRows(gitResult.data.developAheadCommits).map((commit) => (
+												<tr>
+													<td>
+														<code>{shortSha(commit.sha)}</code>
+													</td>
+													<td>{commit.subject}</td>
+													<td>{formatAge(commit.ageHours)}</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</>
+							)}
+						</>
+					) : (
+						<OpsItemList items={failureItems('Git', gitResult.error)} />
+					)
+				}
+			</section>
+
+			<section class="ops-card" aria-labelledby="ops-preflight">
+				<h2 id="ops-preflight" class="ops-card__title">Antes de prod:apply</h2>
+				{
+					preflightResult.ok ? (
+						<>
+							<p class="ops-card__note">
+								Rama <strong>{preflightResult.data.branch}</strong>
+								{preflightResult.data.headSha
+									? ` en ${shortSha(preflightResult.data.headSha)}`
+									: ''}
+								. Resuelva lo marcado como «Bloquea» antes de abrir su terminal.
+							</p>
+							<OpsItemList items={preflightResult.data.items} />
+						</>
+					) : (
+						<OpsItemList items={failureItems('Diagnóstico previo', preflightResult.error)} />
+					)
+				}
+			</section>
+
+			<section class="ops-card ops-card--wide" aria-labelledby="ops-dbs">
+				<h2 id="ops-dbs" class="ops-card__title">Bases de datos y migraciones</h2>
+				{
+					dbsResult.ok ? (
+						<>
+							{dbsResult.data.operationalPlan?.health && (
+								<p class="ops-card__note">
+									<strong>{dbsResult.data.operationalPlan.health.label}.</strong>{' '}
+									{dbsResult.data.operationalPlan.health.summary}
+								</p>
+							)}
+							<table class="ops-table">
+								<thead>
+									<tr>
+										<th scope="col">Entorno</th>
+										<th scope="col">Esquema</th>
+										<th scope="col">Migraciones</th>
+										<th scope="col">Pendientes</th>
+										<th scope="col">Invitaciones por revisar</th>
+									</tr>
+								</thead>
+								<tbody>
+									{Object.values(dbsResult.data.environments).map((env) => (
+										<tr>
+											<th scope="row">
+												{ENVIRONMENT_LABEL[env.environment] ?? env.environment}
+											</th>
+											<td>{env.schemaLifecycle}</td>
+											<td>
+												{env.appliedCount ?? '¿?'} de {env.expectedCount}
+											</td>
+											<td>
+												{env.pendingMigrations.length > 0
+													? env.pendingMigrations.map((version) => (
+															<code class="ops-chip">{version}</code>
+														))
+													: env.appliedCount === null
+														? 'Sin datos'
+														: 'Ninguna'}
+											</td>
+											<td>{env.invitationAttentionCount}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+							<p class="ops-card__note">
+								Última migración esperada: <code>{dbsResult.data.expectedMigrationHead}</code> · leído{' '}
+								{formatDate(dbsResult.data.generatedAt)}
+							</p>
+							{dbsActions.length > 0 && (
+								<>
+									<h3 class="ops-card__subtitle">Acciones que propone dbs</h3>
+									<ul class="ops-actions">
+										{dbsActions.map((action) => (
+											<li>
+												<strong>{action.title}:</strong> {action.summary}
+												{action.steps?.[0]?.command && (
+													<>
+														{' '}
+														En su terminal: <code>{action.steps[0].command}</code>
+													</>
+												)}
+											</li>
+										))}
+									</ul>
+								</>
+							)}
+						</>
+					) : (
+						<OpsItemList items={failureItems('pnpm dbs', dbsResult.error)} />
+					)
+				}
+			</section>
+		</main>
+	</body>
+</html>
