@@ -18,12 +18,10 @@ related_skills:
   - branch-lane
   - production-sql-patches
   - supabase
-  - supabase-postgres
 related_docs:
   - docs/database-workflow.md
   - docs/domains/database/overview.md
   - .agent/rules/database.md
-  - .agent/rules/manual-sql-manifest.md
 ---
 
 # Database Parity

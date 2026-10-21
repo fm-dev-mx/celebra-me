@@ -1,7 +1,8 @@
 # Agent Routing Rules — Celebra-me
 
-This file defines how an orchestrator routes work to provider-neutral roles. A runtime may perform a
-role directly or use any compatible temporary-subagent capability.
+This file defines the agent operating procedure and how an orchestrator routes work to
+provider-neutral roles. A runtime may perform a role directly or use any compatible
+temporary-subagent capability.
 
 ## Prerequisites
 
@@ -10,6 +11,46 @@ Before routing, read:
 - `AGENTS.md` — entry point and non-negotiables
 - `.agent/rules/gatekeeper.md` — review/remediation contract
 - `.agent/rules/git-safety.md` — Git write policy
+
+## Operating Procedure
+
+1. **Load Governance:** Read mandatory bootstrap rules (`gatekeeper.md`, `git-safety.md`). Consult
+   `.agent/routing-matrix.yaml` (or `.agent/index.md`) for domain-specific context additions.
+2. **Preflight Assigned Checkout:** Stay in the checkout assigned to the task; do not enumerate,
+   inspect, select, or claim a sibling worktree. Confirm the current checkout path, branch, and
+   working-tree state. If it does not match the requested lane, stop and ask the user rather than
+   switching or continuing elsewhere. A second checkout may be touched only when the user names it
+   and authorizes the exact operation, following `.agent/rules/git-safety.md`.
+3. **Set Scope:** Establish the Task Contract for this work (objective, `operation_mode`, authorized
+   actions, scope, non-goals, invariants, acceptance, verification, stop conditions) per
+   `.agent/plans/README.md`. State file boundaries explicitly. Gather every material owner decision
+   and ask them all in one round now (at most four questions, recommended option first); ask again
+   only when new evidence appears. Approval gates keep their explicit yes. For mutable sessions, run
+   `pnpm agent:git-safety:start` (interactive plumbing; see `.agent/rules/git-safety.md`).
+4. **Implement Narrowly:** Edit only authorized files within scope. Keep the implementation simple,
+   avoid duplicate owners and speculative legacy compatibility, and do not clean unrelated working
+   tree changes. Update only the canonical documents and discovery references whose contracts
+   changed.
+5. **Verify Proportionally:** Run the Gatekeeper validation tier matching the change scope (Tier A:
+   `validate:changed`, Tier B: `type-check`, Tier C: `pnpm run ci`).
+6. **Finish Session:** Close the mutable session with `pnpm agent:git-safety:finish`. On failure,
+   preserve evidence, report drift, and do not auto-remediate.
+7. **Report:** Close with the Handoff Contract fields that apply (completed work, evidence,
+   validation passed/failed/not run, risks, authorization/exceptions, git/worktree state, next
+   decision) per `.agent/plans/README.md`.
+
+### Proportional Execution & Tooling Rules
+
+- **Reusable Evidence:** Reuse unchanged evidence. Repeat a read or search when a new question,
+  relevant file change, or stale context requires it.
+- **Fail-Fast Credential Access:** If required credentials or environment variables are missing,
+  stop the dependent operation and report an `Environmental Blocker`. Continue independent work;
+  never infer healthy/empty state, edit `.env` speculatively, or guess secrets.
+- **Subagent Delegation:** Delegate to subagents only when work is self-contained, has explicit file
+  boundaries, clear verification criteria, and justifies handoff overhead per the delegation
+  sections below.
+- **Stop Conditions:** Stop when acceptance criteria are supported by evidence. Do not reopen
+  planning or expand scope without new evidence or an explicit task-contract change.
 
 ---
 
