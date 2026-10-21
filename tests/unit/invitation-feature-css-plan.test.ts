@@ -145,7 +145,7 @@ describe('invitation feature inputs from the page', () => {
 
 	it('asks for no editorial cover when the page opens with an envelope or with none', () => {
 		expect(
-			input({ variant: 'night-envelope', coverExperience: 'collector' }).editorialCover,
+			input({ variant: 'celestial-blue', coverExperience: 'collector' }).editorialCover,
 		).toBe(undefined);
 		expect(input(undefined).editorialCover).toBeUndefined();
 	});
