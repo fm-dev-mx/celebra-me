@@ -7,7 +7,7 @@ export type DemoShowroomPublicSlug =
 type DemoShowroomVisibility = 'featured' | 'hidden';
 type DemoShowroomReviewStatus = 'approved' | 'needs-review';
 
-interface DemoShowroomThumbnail {
+export interface DemoShowroomThumbnail {
 	assetSlug: string;
 	key: EventAssetKey;
 	alt: string;
