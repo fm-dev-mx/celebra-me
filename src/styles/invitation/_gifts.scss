@@ -130,8 +130,9 @@
 	&__subtitle {
 		font-family: var(--font-body);
 		font-size: var(--gifts-subtitle-size);
-		line-height: 1.6;
-		max-width: 600px;
+		line-height: var(--gifts-subtitle-line-height, 1.6);
+		max-width: var(--gifts-subtitle-max-width, 600px);
+		text-wrap: var(--gifts-subtitle-wrap, wrap);
 		margin: 0 auto;
 		opacity: 90%;
 		color: var(--gifts-subtitle-color, var(--gifts-subtitle-color-fallback));
@@ -193,6 +194,16 @@
 		}
 	}
 
+	// Optional hairline between consecutive gifts (off by default).
+	& + &::before {
+		content: var(--gifts-card-divider, none);
+		display: block;
+		width: 3rem;
+		height: 1px;
+		margin: 0 auto var(--gifts-card-divider-gap, 2rem);
+		background: var(--gifts-card-divider-color, currentcolor);
+	}
+
 	&__inner {
 		display: flex;
 		flex-direction: column;
@@ -243,10 +254,11 @@
 	}
 
 	&__title {
-		font-family: var(--font-display);
+		font-family: var(--gifts-card-title-font, var(--font-display));
 		font-size: var(--gifts-card-title-size, 1.35rem);
-		font-weight: 500;
-		letter-spacing: 0.03em;
+		font-weight: var(--gifts-card-title-weight, 500);
+		letter-spacing: var(--gifts-card-title-tracking, 0.03em);
+		text-transform: var(--gifts-card-title-transform, none);
 		margin-bottom: 0.35rem;
 		color: var(--gifts-card-title-color);
 		overflow-wrap: anywhere;
@@ -265,7 +277,9 @@
 	&__description {
 		font-family: var(--gifts-card-description-font, var(--font-body));
 		font-size: var(--gifts-card-description-size, 0.95rem);
+		font-style: var(--gifts-card-description-style, normal);
 		line-height: 1.5;
+		text-wrap: var(--gifts-card-description-wrap, wrap);
 		margin-top: 0.25rem;
 		opacity: 90%;
 		color: var(--gifts-card-description-color, var(--color-text-secondary));
@@ -358,15 +372,42 @@
 	}
 }
 
+// Opt-in card layout: --gifts-bank-display: grid plus --gifts-bank-card: '' draws a card face behind
+// the bank, number and holder rows (placed by the *-row tokens); the copy button sits below it.
 .bank-details {
+	display: var(--gifts-bank-display, block);
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: var(--gifts-bank-rows, none);
+	isolation: isolate;
+	width: var(--gifts-bank-width, auto);
 	text-align: var(--gifts-bank-align, left);
 	padding: var(--gifts-bank-padding, var(--spacing-md));
 	border-radius: 8px;
 	margin-bottom: var(--gifts-bank-margin-bottom, var(--spacing-lg));
+	margin-inline: var(--gifts-bank-margin-inline, 0);
 	background: var(--gifts-bank-bg);
 	border-left: none;
 
+	&::before {
+		content: var(--gifts-bank-card, none);
+		grid-area: 1 / 1 / 4 / 2;
+		z-index: -1;
+		border: var(--gifts-bank-card-border, none);
+		border-radius: var(--gifts-bank-card-radius, 0);
+		background: var(--gifts-bank-card-bg, none);
+		box-shadow: var(--gifts-bank-card-shadow, none);
+	}
+
+	.copy-icon-button {
+		grid-area: var(--gifts-copy-row, auto) / 1;
+		justify-self: center;
+		margin-top: var(--gifts-copy-margin-top, 0);
+	}
+
 	&__item {
+		grid-column: 1;
+		align-self: var(--gifts-bank-row-align, auto);
+		padding-inline: var(--gifts-bank-card-inset, 0);
 		margin-bottom: var(--gifts-bank-item-gap, 0.5rem);
 		font-family: var(--gifts-bank-value-font, inherit);
 		font-size: var(--gifts-bank-value-size, 1rem);
@@ -387,8 +428,33 @@
 		}
 	}
 
+	&__item--bank,
+	&__item--holder {
+		font-family: var(--gifts-bank-meta-font, var(--gifts-bank-value-font, inherit));
+		letter-spacing: var(--gifts-bank-meta-tracking, normal);
+		text-transform: var(--gifts-bank-meta-transform, none);
+	}
+
+	&__item--bank {
+		grid-row: var(--gifts-bank-name-row, auto);
+		font-size: var(--gifts-bank-name-size, var(--gifts-bank-value-size, 1rem));
+		font-weight: var(--gifts-bank-name-weight, inherit);
+		color: var(--gifts-bank-name-color, var(--gifts-bank-text-color));
+	}
+
+	&__item--holder {
+		grid-row: var(--gifts-bank-holder-row, auto);
+		font-size: var(--gifts-bank-holder-size, var(--gifts-bank-value-size, 1rem));
+		font-weight: var(--gifts-bank-holder-weight, inherit);
+		color: var(--gifts-bank-holder-color, var(--gifts-bank-text-color));
+	}
+
+	&__item--number {
+		grid-row: var(--gifts-number-row, auto);
+	}
+
 	&__clabe-wrapper {
-		display: flex;
+		display: var(--gifts-number-display, flex);
 		flex-flow: var(--gifts-number-direction, row) wrap;
 		justify-content: var(--gifts-number-justify, space-between);
 		align-items: center;

@@ -289,16 +289,16 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 
 								{gift.type === 'bank' && (
 									<div class="bank-details">
-										<p class="bank-details__item">
+										<p class="bank-details__item bank-details__item--bank">
 											<strong>{labels.bank}<span class="bank-details__colon">:</span></strong>
 											<span data-status={gift.bankName.includes('PENDIENTE') ? 'pending' : undefined}>{gift.bankName}</span>
 										</p>
-										<p class="bank-details__item">
+										<p class="bank-details__item bank-details__item--holder">
 											<strong>{labels.titular}<span class="bank-details__colon">:</span></strong>
 											<span data-status={gift.accountHolder.includes('PENDIENTE') ? 'pending' : undefined}>{gift.accountHolder}</span>
 										</p>
 										<div class="bank-details__clabe-wrapper">
-											<p class="bank-details__item">
+											<p class="bank-details__item bank-details__item--number">
 												<strong>{bankNumberLabel(gift)}<span class="bank-details__colon">:</span></strong>
 												<span class="clabe-number">{formatBankNumber(gift)}</span>
 											</p>

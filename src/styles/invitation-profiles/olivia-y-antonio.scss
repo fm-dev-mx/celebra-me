@@ -220,114 +220,120 @@
 		--gifts-header-mark-color: var(--olivia-champagne-ink);
 		--gifts-header-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20' fill='none' stroke='%23000' stroke-width='1'%3E%3Crect x='.5' y='.5' width='29' height='19' rx='1'/%3E%3Cpath d='M.5 .5 15 11 29.5 .5M.5 19.5 11 8.2M29.5 19.5 19 8.2'/%3E%3C/svg%3E");
 
+		// The lede reads at body size, as in the other sections, so the title keeps the lead.
+		--gifts-subtitle-size: 1rem;
+		--gifts-subtitle-line-height: 1.7;
+		--gifts-subtitle-max-width: 30ch;
+		--gifts-subtitle-wrap: balance;
+
 		// The header keeps only its envelope mark; the flourish and the rule would repeat it.
 		--gifts-flourish-display: none;
 		--gifts-separator-display: none;
-		--gifts-header-margin-bottom: 2.5rem;
+		--gifts-header-margin-bottom: 2.25rem;
 
-		// The gifts are two night cards of the pass's stock: laid navy paper, a champagne double
-		// rule set in from the edge, a fine champagne medallion. Side by side when there is room, one height,
-		// still under the hand (no lift).
-		--gifts-grid-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
-		--gifts-grid-gap: 1.25rem;
-		--gifts-grid-auto-rows: 1fr;
-		--gifts-card-justify: center;
-		--gifts-card-inner-height: auto;
-		--gifts-card-bg: var(--olivia-night-paper), var(--olivia-navy);
-		--gifts-card-border: 1px solid rgb(var(--olivia-champagne-rgb) / 55%);
-		--gifts-card-corner: 2px;
-		--gifts-card-drop: 0 1.5rem 3rem rgb(var(--olivia-navy-deep-rgb) / 28%);
-		--gifts-card-inset-padding: clamp(2.25rem, 7vw, 2.75rem) clamp(1.5rem, 6vw, 2.25rem);
-		--gifts-card-frame: 1px solid rgb(var(--olivia-champagne-rgb) / 32%);
-		--gifts-card-frame-inset: 7px;
-		--gifts-card-frame-radius: 0;
+		// The gifts read as a printed note on the same paper, not as cards: no surface, frame,
+		// shadow or medallion. Each gift opens with a small champagne caption and the two are
+		// parted by a hairline, so the section stays quiet between the gallery and the pass.
+		--gifts-grid-columns: minmax(0, 1fr);
+		--gifts-grid-gap: 2rem;
+		--gifts-card-bg: transparent;
+		--gifts-card-border: none;
+		--gifts-card-corner: 0;
+		--gifts-card-drop: none;
+		--gifts-card-shadow: none;
+		--gifts-card-inset-padding: 0;
+		--gifts-card-frame: none;
 		--gifts-card-lift: none;
-		--gifts-card-lift-shadow: var(--gifts-card-drop);
-		--gifts-card-hover-border-color: rgb(var(--olivia-champagne-rgb) / 55%);
+		--gifts-card-lift-shadow: none;
 		--gifts-card-hover-transform: none;
+		--gifts-card-hover-shadow: none;
+		--gifts-card-hover-border-color: transparent;
 		--gifts-card-wide-columns: minmax(0, 1fr);
 		--gifts-card-wide-align: center;
-		--gifts-icon-size: 3.25rem;
-		--gifts-icon-bg: transparent;
-		--gifts-icon-border: 1px solid rgb(var(--olivia-champagne-rgb) / 45%);
-		--gifts-icon-shadow: none;
-		--gifts-icon-color: var(--olivia-champagne);
-		--gifts-card-title-size: 1.625rem;
-		--gifts-card-title-color: var(--olivia-ivory);
-		--gifts-card-title-rule: '';
-		--gifts-card-title-rule-color: rgb(var(--olivia-champagne-rgb) / 70%);
+		--gifts-card-divider: '';
+		--gifts-card-divider-gap: 2rem;
+		--gifts-card-divider-color: rgb(var(--olivia-champagne-rgb) / 70%);
+		--gifts-icon-display: none;
+		--gifts-card-title-font: var(--font-label);
+		--gifts-card-title-size: var(--olivia-label-size);
+		--gifts-card-title-weight: 600;
+		--gifts-card-title-tracking: var(--olivia-label-tracking);
+		--gifts-card-title-transform: uppercase;
+		--gifts-card-title-color: var(--olivia-champagne-ink);
 		--gifts-card-description-font: var(--font-display);
 		--gifts-card-description-size: 1.0625rem;
-		--gifts-card-description-color: rgb(var(--olivia-mist-rgb) / 88%);
+		--gifts-card-description-wrap: balance;
+		--gifts-card-description-style: italic;
+		--gifts-card-description-color: var(--olivia-navy);
 
-		// Transfer details: centred, a champagne label over each ivory value, no panel or rule.
+		// Transfer: the details sit on a quiet card face (bank on top, number across the middle,
+		// holder below, as on the card itself) and the copy action stays outside, under it.
 		--gifts-bank-surface: transparent;
-		--gifts-bank-blur: none;
 		--gifts-bank-rule: none;
+		--gifts-bank-blur: none;
 		--gifts-bank-radius: 0;
-		--gifts-bank-align: center;
+		--gifts-bank-display: grid;
+		--gifts-bank-rows: 3rem clamp(4.75rem, 22vw, 5.5rem) 3rem auto;
+		--gifts-bank-width: min(100%, 18.5rem);
+		--gifts-bank-margin-inline: auto;
+		--gifts-bank-align: left;
 		--gifts-bank-padding: 0;
 		--gifts-bank-margin-bottom: 0;
-		--gifts-bank-item-gap: 0.85rem;
-		--gifts-bank-label-display: block;
-		--gifts-bank-label-font: var(--font-label);
-		--gifts-bank-label-size: 0.6875rem;
-		--gifts-bank-label-tracking: var(--olivia-label-tracking);
-		--gifts-bank-label-gap: 0;
-		--gifts-bank-label-colon-display: none;
-		--gifts-bank-label-ink: var(--olivia-champagne);
-		--gifts-bank-value-font: var(--font-display);
-		--gifts-bank-value-size: 1.0625rem;
-		--gifts-bank-text-color: var(--olivia-ivory);
-
-		// The card number is the figure of the card: champagne lining numerals on one line,
-		// between two hairlines rather than in a box.
-		--gifts-number-direction: column;
-		--gifts-number-justify: center;
-		--gifts-number-margin-top: 0.75rem;
-		--gifts-number-gap: 1.25rem;
+		--gifts-bank-item-gap: 0;
+		--gifts-bank-row-align: center;
+		--gifts-bank-card: '';
+		--gifts-bank-card-inset: 1.25rem;
+		--gifts-bank-card-radius: 0.875rem;
+		--gifts-bank-card-border: 1px solid rgb(var(--olivia-champagne-rgb) / 55%);
+		--gifts-bank-card-bg: linear-gradient(
+			135deg,
+			rgb(var(--olivia-champagne-rgb) / 12%),
+			rgb(var(--olivia-champagne-rgb) / 4%) 55%,
+			rgb(var(--olivia-champagne-rgb) / 10%)
+		);
+		--gifts-bank-card-shadow: 0 14px 28px -22px rgb(var(--olivia-navy-rgb) / 45%);
+		--gifts-bank-label-display: none;
+		--gifts-bank-meta-font: var(--font-label);
+		--gifts-bank-meta-tracking: var(--olivia-label-tracking);
+		--gifts-bank-meta-transform: uppercase;
+		--gifts-bank-name-row: 1;
+		--gifts-bank-name-size: 0.8125rem;
+		--gifts-bank-name-weight: 600;
+		--gifts-bank-name-color: var(--olivia-champagne-ink);
+		--gifts-bank-holder-row: 3;
+		--gifts-bank-holder-size: 0.75rem;
+		--gifts-bank-holder-weight: 500;
+		--gifts-bank-holder-color: var(--olivia-slate);
+		--gifts-number-display: contents;
+		--gifts-number-row: 2;
 		--gifts-account-display: inline-block;
 		--gifts-account-font: var(--font-display);
 		--gifts-account-numeric: lining-nums tabular-nums;
-		--gifts-account-size: 1.5rem;
+		--gifts-account-size: 1.1875rem;
 		--gifts-account-tracking: 0.08em;
-		--gifts-account-padding: 0.6rem 0.25rem;
-		--gifts-account-bg:
-			linear-gradient(
-					to right,
-					transparent,
-					rgb(var(--olivia-champagne-rgb) / 55%),
-					transparent
-				)
-				top / 100% 1px no-repeat,
-			linear-gradient(
-					to right,
-					transparent,
-					rgb(var(--olivia-champagne-rgb) / 55%),
-					transparent
-				)
-				bottom / 100% 1px no-repeat;
-		--gifts-account-color: var(--olivia-champagne);
+		--gifts-account-padding: 0;
+		--gifts-account-bg: transparent;
+		--gifts-account-color: var(--olivia-navy);
 		--gifts-account-white-space: nowrap;
-
-		// Copy: a champagne hairline pill with its wording, filling faintly on hover.
+		--gifts-copy-row: 4;
+		--gifts-copy-margin-top: 0.75rem;
 		--gifts-copy-label-display: inline;
 		--gifts-copy-label-font: var(--font-label);
 		--gifts-copy-label-size: 0.6875rem;
 		--gifts-copy-label-tracking: 0.14em;
-		--gifts-copy-gap: 0.5rem;
-		--gifts-copy-min-height: 2.5rem;
-		--gifts-copy-padding: 0.5rem 1.25rem;
-		--gifts-copy-radius: 999px;
+		--gifts-copy-gap: 0.4rem;
+		--gifts-copy-min-height: 2.75rem;
+		--gifts-copy-padding: 0 0.75rem;
+		--gifts-copy-radius: 0;
 		--gifts-copy-bg: transparent;
-		--gifts-copy-icon-border: 1px solid rgb(var(--olivia-champagne-rgb) / 55%);
-		--gifts-copy-icon-color: var(--olivia-champagne);
+		--gifts-copy-icon-border: none;
+		--gifts-copy-icon-color: var(--olivia-champagne-ink);
 		--gifts-copy-opacity: 100%;
 		--gifts-copy-hover-transform: none;
-		--gifts-copy-hover-bg: rgb(var(--olivia-champagne-rgb) / 12%);
-		--gifts-copy-hover-color: var(--olivia-ivory);
-		--gifts-copy-success-bg: rgb(var(--olivia-champagne-rgb) / 12%);
-		--gifts-copy-success-color: var(--olivia-ivory);
+		--gifts-copy-hover-bg: transparent;
+		--gifts-copy-hover-color: var(--olivia-navy);
+		--gifts-copy-success-bg: transparent;
+		--gifts-copy-success-color: var(--olivia-slate);
 	}
 
 	// The vow: italic Playfair on ivory, the last clause apart in slate.

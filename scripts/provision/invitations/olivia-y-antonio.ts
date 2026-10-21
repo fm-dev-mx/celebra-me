@@ -287,17 +287,17 @@ const content: CanonicalEventContentInput = {
 		subtitle: 'Su presencia es nuestro mejor regalo. Si desea tener un detalle con nosotros:',
 		items: [
 			{
+				type: 'cash',
+				title: 'Lluvia de sobres',
+				text: 'Habrá recepción de sobres durante la recepción.',
+			},
+			{
 				type: 'bank',
 				title: 'Transferencia',
 				bankName: 'BBVA',
 				accountHolder: 'José Antonio Vázquez Flores',
 				clabe: '4152 3146 2062 2954',
 				accountKind: 'card',
-			},
-			{
-				type: 'cash',
-				title: 'Lluvia de sobres',
-				text: 'Habrá recepción de sobres durante la recepción.',
 			},
 		],
 	},
