@@ -41,8 +41,9 @@ to that report.
 | 20    | Done        | #406                                                        |
 | 21    | Done        | #408                                                        |
 | 22    | Done        | #410                                                        |
-| 23    | In progress | This pull request                                           |
-| 24–25 | Pending     | —                                                           |
+| 23    | Done        | #412                                                        |
+| 24    | Done        | #413                                                        |
+| 25    | In progress | This pull request                                           |
 
 Owner decisions: the `/privacidad` text needs only the owner's approval, no legal review; full
 visual parity runs nightly on `develop` instead of on every pull request into `develop`. Questions 1

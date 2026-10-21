@@ -109,8 +109,9 @@ conversation unless a structured handoff or tracked plan is already justified.
 1. Record the live route, component, preset, and primary mobile viewport.
 2. Capture or cite current-state visual evidence before proposing changes. For a new surface, record
    that no implementation exists and cite the closest live internal comparison as the baseline.
-3. Inspect internal product references first: verified demos, sibling presets/components,
-   `docs/invitations/**`, and current theme contracts.
+3. Read [`invitation-standards.md`](../../../docs/domains/theme/invitation-standards.md) first and
+   note which Repeat and Avoid entries apply. Then inspect internal product references: verified
+   demos, sibling presets/components, `docs/invitations/**`, and current theme contracts.
 4. Label external references as non-authoritative inspiration.
 5. For real invitations, complete `client-invitation-audit` and classify every proposed change as
    Lane A or Lane B before implementation.

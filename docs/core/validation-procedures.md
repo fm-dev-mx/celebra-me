@@ -201,12 +201,13 @@ type-checks or visual certification into pre-push (see
 #### Remote CI coverage and efficiency
 
 `pnpm run ci` does not include every check in `.github/workflows/commit-validation.yml`. Repository
-Policy additionally checks commit messages, documentation links, Markdown tables and invitation
-publication transitions, and runs the advisory `ops:classify-release`. The application tiers add the
-Memories Worker bundle dry-run and the disposable RSVP, managed and event-memories database
-contracts. Browser CI uses canonical fixtures, accepted visual references and the pinned Linux
-image; a local diagnostic capture run is not equivalent to that comparison or to human reference
-acceptance.
+Policy additionally checks commit messages, documentation links, Markdown tables, invitation
+publication transitions and invitation note retirement (a deleted `docs/invitations/<slug>.md` needs
+its row in the [standards retro log](../domains/theme/invitation-standards.md#retro-log)), and runs
+the advisory `ops:classify-release`. The application tiers add the Memories Worker bundle dry-run
+and the disposable RSVP, managed and event-memories database contracts. Browser CI uses canonical
+fixtures, accepted visual references and the pinned Linux image; a local diagnostic capture run is
+not equivalent to that comparison or to human reference acceptance.
 
 Repository CI runs on pushes to `develop`, on pull requests into `develop` or `main`, and by manual
 dispatch. A push to a task branch alone runs nothing: run focused local checks while editing, then
