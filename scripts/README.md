@@ -107,7 +107,7 @@ Status evidence classes and retention notes:
 [`docs/domains/database/cheatsheets/README.md`](../docs/domains/database/cheatsheets/README.md).
 
 Behavior and safety rules live in [`docs/database-workflow.md`](../docs/database-workflow.md) and
-the [manual SQL manifest](../.agent/rules/manual-sql-manifest.md).
+the [manual SQL manifest](../.agent/rules/database.md#manual-sql-manifest).
 
 ## Ownership Rules
 

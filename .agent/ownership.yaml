@@ -57,7 +57,7 @@ ownership:
           - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Agent operating procedure'
-      owner: '.agent/rules/workflow.md'
+      owner: '.agent/rules/agent-routing.md'
       non_owners:
           - 'Human branch/release policy docs'
 

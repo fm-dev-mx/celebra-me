@@ -350,24 +350,7 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
 
 ## Migration Strategy
 
-Do not freeze a migration count in active documentation. Production owner apply is
-`pnpm prod:apply -- --schema --apply` (schema primitive: `pnpm db:migrate -- --target production`).
-Hosted state must be read through `pnpm db:prod:audit`.
-
-**For persistent-local**: use `pnpm db:migrate -- --target local` (preflight-first), then explicit
-`--apply` after review. Then run `pnpm db:local:validate`. To import production-shaped data, use the
-non-destructive backup and restore workflow in `docs/database-workflow.md`.
-
-**For destructive reconstruction tests**: use `pnpm db:disposable:reset`. It targets the isolated
-disposable database, never persistent-local. Full reset applies migrations via the shared disposable
-migrate policy; truncated `--baseline` / `--max-version` remain disposable-only.
-
-**For Preview**: use `pnpm db:migrate -- --target preview` with the exact Preview project perimeter
-and clean-HEAD release identity.
-
-**For production**: never rewrite, delete, or squash already-applied migrations. Always add
-corrective migrations. Migration history is append-only. Do not push local data dumps to production;
-use `pnpm prod:apply -- --schema --apply`. Hosted candidates require an explicit rollout registry
-phase.
-
-For refreshes, backups, and production migration operations, see `docs/database-workflow.md`.
+Migration history is append-only: never rewrite, delete, or squash an applied migration; add a
+corrective migration instead. Every target (persistent-local, disposable-test, Preview, Production),
+its commands and the owner gate are in [`docs/database-workflow.md`](../../database-workflow.md);
+the operator cards are in [`cheatsheets/schema-migrate.md`](cheatsheets/schema-migrate.md).
