@@ -650,6 +650,7 @@ export function adaptEvent(document: InvitationContentDocument): InvitationViewM
 					url: playableMusicUrl,
 					autoPlay: originalData.music?.autoPlay ?? false,
 					title: originalData.music?.title,
+					creditsUrl: originalData.music?.creditsUrl,
 					startAt: originalData.music?.startAt,
 					fadeInSeconds: originalData.music?.fadeInSeconds,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',

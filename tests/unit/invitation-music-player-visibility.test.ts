@@ -3,6 +3,7 @@ import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
+import { musicSchema } from '@/lib/schemas/content/shared.schema';
 
 const PLAYABLE_URL = 'https://cdn.example.com/example/video/upload/song.mp3';
 
@@ -59,6 +60,20 @@ function buildPage(viewModel: InvitationViewModel) {
 }
 
 describe('invitation music player visibility', () => {
+	it('keeps same-site music credits through the adapter and page resolver', () => {
+		const creditsUrl = '/music/example-credits.html';
+		const music = musicSchema.parse({ url: PLAYABLE_URL, creditsUrl });
+		const viewModel = adaptEvent(contentDocumentFromEntry(makeMinimalEvent(music)));
+		expect(buildPage(viewModel).musicPlayer?.creditsUrl).toBe(creditsUrl);
+		for (const unsafeUrl of [
+			'javascript:alert(1)',
+			'//example.com/credits.html',
+			'/music/../admin.html',
+		]) {
+			expect(musicSchema.safeParse({ ...music, creditsUrl: unsafeUrl }).success).toBe(false);
+		}
+	});
+
 	describe('adaptEvent', () => {
 		it('keeps playable music for the page resolver', () => {
 			const viewModel = adaptEvent(
