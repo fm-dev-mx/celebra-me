@@ -6,7 +6,6 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validateDeployIdentityReads } from './validate-deploy-identity-reads.mjs';
 import { validateStaticSharpImports } from './validate-static-sharp-imports.mjs';
-import { validateOpsConsoleImports } from './validate-ops-console-imports.mjs';
 import {
 	reportRetiredProviderWarnings,
 	validateNoVercelReferences,
@@ -797,7 +796,6 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 		...validatePortablePaths(root, tracked),
 		...validateDeployIdentityReads(root, tracked),
 		...validateStaticSharpImports(root, tracked),
-		...validateOpsConsoleImports(root, tracked),
 		...validateTrackedFiles(root, tracked),
 	].sort();
 }

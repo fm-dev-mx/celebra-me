@@ -202,6 +202,11 @@ $commandDetails = @{
         UseCase = "Capturar imagenes del renderizado de invitaciones para revision de diseño visual."
         Help    = "Ingrese '--help' (o '--interactive' para selector guiado de capturas)"
     }
+    "ops:status"                = @{
+        Desc    = "Estado de operacion en texto, solo lectura (secciones git y preflight)."
+        UseCase = "Ver develop frente a main, uniones a main sin tag y el diagnostico de prod:apply antes de operar."
+        Help    = "Ingrese '--section git' o '--section preflight' (o '--json' para salida JSON)"
+    }
 }
 $commandDetails["pwsh"] = $commandDetails["terminal"]
 

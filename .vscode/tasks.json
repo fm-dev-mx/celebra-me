@@ -426,6 +426,32 @@
                 "panel": "dedicated",
                 "focus": false
             }
+        },
+        {
+            "label": "Estado (ops:status)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "ops:status"
+            ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "pulse",
+                "color": "terminal.ansiCyan"
+            },
+            "presentation": {
+                "echo": false,
+                "clear": false,
+                "reveal": "silent",
+                "panel": "dedicated",
+                "focus": false
+            }
         }
     ]
 }

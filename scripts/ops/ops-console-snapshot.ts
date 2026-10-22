@@ -1,5 +1,6 @@
 /**
- * Read-only snapshot for the local operations console (`/ops`, dev server only) and the terminal.
+ * Read-only operations snapshot for the terminal; `pnpm ops:status` (scripts/ops/ops-status.ts)
+ * prints both sections from the VS Code task «Estado (ops:status)».
  *
  *   tsx scripts/ops/ops-console-snapshot.ts --section git --json
  *   tsx scripts/ops/ops-console-snapshot.ts --section preflight --json
