@@ -6,6 +6,7 @@ import family from './assets/family.webp';
 import gallery01 from './assets/gallery-01.webp';
 import gallery02 from './assets/gallery-02.webp';
 import gallery03 from './assets/gallery-03.webp';
+import gallery04 from './assets/gallery-04.webp';
 import thankYouPortrait from './assets/thank-you-portrait.webp';
 
 export const assets = {
@@ -19,5 +20,5 @@ export const assets = {
 	interlude01: ceremony,
 	interlude02: reception,
 	thankYouPortrait,
-	gallery: [gallery01, gallery02, gallery03],
+	gallery: [gallery01, gallery02, gallery03, gallery04],
 };

@@ -63,16 +63,17 @@
             "venueIndex": 1
         },
         "name": "Ximena",
-        "secondaryName": "Diego",
+        "secondaryName": " Diego",
         "label": "Nuestro enlace frente al mar",
         "date": "2026-11-14T17:30:00.000Z",
         "scrollLabel": "Deslice",
-        "backgroundImage": "hero",
+        "backgroundImage": "portrait",
         "backgroundImageMobile": "portrait",
-        "focalPoint": "62% 38%",
-        "focalPointMobile": "54% 34%",
-        "focalPointDesktop": "64% 36%",
-        "variant": "standard"
+        "backgroundImageDesktop": "portrait",
+        "focalPoint": "50% 30%",
+        "focalPointMobile": "50% 30%",
+        "focalPointDesktop": "50% 30%",
+        "variant": "night-arch"
     },
     "location": {
         "accessPolicy": {
@@ -199,6 +200,7 @@
         ],
         "featuredImage": "family",
         "featuredImageAlt": "Ximena y Diego acompañados por los padres de la novia en la playa al atardecer",
+        "godparentsLayout": "by-role",
         "labels": {
             "sectionTitle": "Nuestras familias",
             "sectionSubtitle": "Con la bendición de quienes nos dieron raíz",
@@ -206,7 +208,7 @@
             "godparentsTitle": "Padrinos de honor",
             "sectionMessage": "Con profunda gratitud honramos a quienes nos enseñaron el valor de caminar juntos y hoy nos acompañan frente al mar."
         },
-        "variant": "split-groups"
+        "variant": "asymmetric-groups"
     },
     "gallery": {
         "variant": "pinned-track",
@@ -228,6 +230,11 @@
                 "image": "gallery03",
                 "alt": "Retrato cercano de Ximena y Diego sonriendo al atardecer",
                 "caption": "La complicidad de cada promesa."
+            },
+            {
+                "image": "gallery04",
+                "alt": "Detalle de los anillos de boda y el ramo de novia frente al mar",
+                "caption": "Promesa frente al horizonte."
             }
         ]
     },
@@ -284,7 +291,7 @@
                 "description": "Música en vivo, coctelería nocturna y fogata en la arena."
             }
         ],
-        "variant": "stacked-cards"
+        "variant": "timeline-paper"
     },
     "thankYou": {
         "message": "Gracias por viajar hasta esta orilla para compartir con nosotros el comienzo de nuestra vida juntos. Su cariño quedará guardado en cada recuerdo de este atardecer.",
