@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-22T20:36:37.457Z",
+    "generatedAt": "2026-10-22T21:01:33.412Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-        "cssSha256": "62c04cc4ad7c362314bb0a94bfc1275f6c078c7a0bff4464a9c45bb62b8a825f",
+        "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
         "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -20,7 +20,7 @@
     "status": "ACCEPTED",
     "mode": "accepted",
     "totalCaptures": 180,
-    "matrixHash": "99890c468b5e7ca58ade15658f8e7ef252f3553a18ed1327a5f1e1055172e572",
+    "matrixHash": "3ea7d6e0c70fec409a681799b3efa696202054f71febe6dbd1b6ee180e8da41e",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2286,6 +2286,30 @@
         },
         {
             "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/demo-boda-demo-brisa-mobile.png",
+            "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
+            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/demo-boda-demo-brisa-desktop.png",
+            "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
+            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
             "slug": "demo-cumple-luxury-hacienda",
             "eventType": "cumple",
             "preset": "luxury-hacienda",
@@ -2427,35 +2451,11 @@
             "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
             "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
             "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-brisa",
-            "eventType": "boda",
-            "preset": "jewelry-box-wedding",
-            "viewport": "mobile",
-            "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
-            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
-            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-brisa",
-            "eventType": "boda",
-            "preset": "jewelry-box-wedding",
-            "viewport": "desktop",
-            "file": "pages/demo-boda-demo-brisa-desktop.png",
-            "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
-            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
-            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
-            "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "f3741617dc713c4492e7898e664c41d9d613b38b",
+    "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a",
     "variantManifest": {
-        "generatedAt": "2026-10-22T20:36:37.457Z",
+        "generatedAt": "2026-10-22T21:01:33.412Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2468,7 +2468,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "62c04cc4ad7c362314bb0a94bfc1275f6c078c7a0bff4464a9c45bb62b8a825f",
+            "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4357,10 +4357,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "f3741617dc713c4492e7898e664c41d9d613b38b"
+        "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-22T20:36:37.466Z",
+        "generatedAt": "2026-10-22T21:01:33.424Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4373,7 +4373,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "62c04cc4ad7c362314bb0a94bfc1275f6c078c7a0bff4464a9c45bb62b8a825f",
+            "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4381,7 +4381,7 @@
         "status": "CANDIDATE",
         "mode": "candidate",
         "totalCaptures": 46,
-        "matrixHash": "c9860e5406f36a822e3174e3a1480258eccc28bcef95ad6ba6e6a07324cf25fe",
+        "matrixHash": "6fdac48d24a6474245aefdb7c36381d9e268e977c8c3ab9c50eb1e2c496a897e",
         "cases": 23,
         "captures": [
             {
@@ -4770,26 +4770,26 @@
             },
             {
                 "kind": "demo",
-                "slug": "demo-boda-jewelry-box-wedding",
+                "slug": "demo-brisa",
                 "eventType": "boda",
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
-                "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-                "sha256": "e8a021152dec34b5d6ebb25d724271e946264ac475b9f52ef9602c85f3880868",
-                "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-                "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
+                "file": "pages/demo-boda-demo-brisa-mobile.png",
+                "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
+                "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+                "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
             {
                 "kind": "demo",
-                "slug": "demo-boda-jewelry-box-wedding",
+                "slug": "demo-brisa",
                 "eventType": "boda",
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
-                "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-                "sha256": "192a2cb0213d96f00cc4831f35ae1b123145495135069a231133824223c93871",
-                "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-                "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
+                "file": "pages/demo-boda-demo-brisa-desktop.png",
+                "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
+                "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+                "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4937,9 +4937,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "f3741617dc713c4492e7898e664c41d9d613b38b"
+        "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a"
     },
-    "candidateManifestSha256": "46d2491d41f5ea5009d5f0018d2607572275e029bd5838d66ad0989b43129bc3",
-    "acceptedFromCommit": "f3741617dc713c4492e7898e664c41d9d613b38b",
-    "acceptedAt": "2026-10-22T20:47:51.295Z"
+    "candidateManifestSha256": "699c302bbb7f9127303fb0e9ea3cee6d5f737b7a15572b2887e9ae22189d636f",
+    "acceptedFromCommit": "d89bc3e3852deb29e625f923df58461840f1011a",
+    "acceptedAt": "2026-10-22T21:02:57.807Z"
 }
