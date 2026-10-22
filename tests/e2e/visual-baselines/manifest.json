@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-21T20:54:20.760Z",
+    "generatedAt": "2026-10-22T17:18:44.095Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-        "cssSha256": "28afe2f7e2a8fe2f7ccb5f715c3e61533e5b9619881ab55b64974ef7ee5fc09a",
+        "cssSha256": "9f44a9bfd7f8e446bd7e64e22e71b9d0362769db0d293d9f0d377fb696b307f7",
         "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -20,7 +20,7 @@
     "status": "ACCEPTED",
     "mode": "accepted",
     "totalCaptures": 178,
-    "matrixHash": "a0f42c1415a14c46de5c2d94724cedda730dff27909c2650ed21588a893fb459",
+    "matrixHash": "ac343f5a821c2fc5af3a81b4ca4af2bbd4d4fbf08dadc8a22e260f5225c0d6c3",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -1932,7 +1932,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-cumple-norma-hernandez-mobile.png",
             "sha256": "181938dfa3a23c1f388e0e387fdd80a77b4bc63a23190cd2b2789b56f0cc2964",
-            "contentHash": "9b2cdf15d79124e9fb70b3b489b4ceeff2261a21e48f75f7c5105d078959d277",
+            "contentHash": "36beeedf10a5423f5443e6a6456fb830695b67cdd1a8ea5aee7a361add3cfac0",
             "assetHash": "d330adf7e20eaa717b86def1be7caa7651cb2dfcd9e2b37177cd1daf1bf0b2b4",
             "comparisonResult": "ACCEPTED"
         },
@@ -1944,7 +1944,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-cumple-norma-hernandez-desktop.png",
             "sha256": "777c03e040af1c9b4d94a907c970ac7bb2073a697b69eb6939dc2e4f0366655e",
-            "contentHash": "9b2cdf15d79124e9fb70b3b489b4ceeff2261a21e48f75f7c5105d078959d277",
+            "contentHash": "36beeedf10a5423f5443e6a6456fb830695b67cdd1a8ea5aee7a361add3cfac0",
             "assetHash": "d330adf7e20eaa717b86def1be7caa7651cb2dfcd9e2b37177cd1daf1bf0b2b4",
             "comparisonResult": "ACCEPTED"
         },
@@ -1980,7 +1980,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-abril-michelle-becerra-rea-mobile.png",
             "sha256": "0edabccf6c30386ba83e67418f226fa50f61b93406b9f3e2d79a03d6d321863d",
-            "contentHash": "fd55d4f782a919403a66deea40c5b4c2a4d7a5cad3f6bb89ddce9d18d44f2a14",
+            "contentHash": "30d160de07ac70557f66feac9e250a1aef75456da0a71259f37b28a032f5e3a8",
             "assetHash": "1a290d118a2eb4c4e424832a789b64959a720a9bed24c6eda4d12aa19c863312",
             "comparisonResult": "ACCEPTED"
         },
@@ -1992,7 +1992,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-abril-michelle-becerra-rea-desktop.png",
             "sha256": "321c08f4a9bd61ccd768b84befc5e4ff3e2dfea55ecb4d014da1ab5ea9aef1ce",
-            "contentHash": "fd55d4f782a919403a66deea40c5b4c2a4d7a5cad3f6bb89ddce9d18d44f2a14",
+            "contentHash": "30d160de07ac70557f66feac9e250a1aef75456da0a71259f37b28a032f5e3a8",
             "assetHash": "1a290d118a2eb4c4e424832a789b64959a720a9bed24c6eda4d12aa19c863312",
             "comparisonResult": "ACCEPTED"
         },
@@ -2028,7 +2028,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
             "sha256": "a0c326a33899c1ce4d05fc1309ea8f3893d170e7843c4a0deb467d1c4a8d78bb",
-            "contentHash": "4dd9e848cb15da4d98a331e1ba4b2642f0403f6cc2877b1ad34c31aa75807aee",
+            "contentHash": "ad6158dfae3dbeef730ef8d66f0d3e34c30ce2ca735b33ea937dfb43f178a0b6",
             "assetHash": "3551f63e330caafaf932b0882eaa6d065539f864947f7281a30c368b0f107fd3",
             "comparisonResult": "ACCEPTED"
         },
@@ -2040,7 +2040,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
             "sha256": "6d1c8da1137594aca8dbe4acd84813cebef667951c64296be30f65412f1f0b05",
-            "contentHash": "4dd9e848cb15da4d98a331e1ba4b2642f0403f6cc2877b1ad34c31aa75807aee",
+            "contentHash": "ad6158dfae3dbeef730ef8d66f0d3e34c30ce2ca735b33ea937dfb43f178a0b6",
             "assetHash": "3551f63e330caafaf932b0882eaa6d065539f864947f7281a30c368b0f107fd3",
             "comparisonResult": "ACCEPTED"
         },
@@ -2052,7 +2052,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
             "sha256": "2d35e0dbade68d7fade108a007a5a9682cb3a2f3bd46cbb784266b853f36336c",
-            "contentHash": "90355103195bdcd3b40c66578ee59c10fdaa27264f8553839ebc1c5c60f9cfeb",
+            "contentHash": "6b3ef035ee8eba8c0df4d3122f0c0ee7453a48436c37a10b104645083efffd47",
             "assetHash": "97b5e1cd31eb17c3ccd143676a6dc29f4c1ed6d1c71fee0239c5d6c3b2158296",
             "comparisonResult": "ACCEPTED"
         },
@@ -2064,7 +2064,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
             "sha256": "d4e09adbcfa292d413f45f5c9db9806b2523cc7c92588b8927a3c115e0860914",
-            "contentHash": "90355103195bdcd3b40c66578ee59c10fdaa27264f8553839ebc1c5c60f9cfeb",
+            "contentHash": "6b3ef035ee8eba8c0df4d3122f0c0ee7453a48436c37a10b104645083efffd47",
             "assetHash": "97b5e1cd31eb17c3ccd143676a6dc29f4c1ed6d1c71fee0239c5d6c3b2158296",
             "comparisonResult": "ACCEPTED"
         },
@@ -2076,7 +2076,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-boda-melissa-y-luis-osmar-mobile.png",
             "sha256": "21827d3cffeb4ca6233cf069ae0587b5ec4d87d806621732a78d12ec4685bfcc",
-            "contentHash": "55a6590a1c805e5b441e14cfec4ebb9e1bb5936e8c5abf8d597d0b2b9f09ece8",
+            "contentHash": "8141d56efa4ff2fab37469969366710ec7b50e31726bd6408536f2597319533b",
             "assetHash": "2a64edfaa7428254e0932282ee5203c6092cbed0c77d4ddb9e94912180a55a43",
             "comparisonResult": "ACCEPTED"
         },
@@ -2088,7 +2088,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-boda-melissa-y-luis-osmar-desktop.png",
             "sha256": "33c183c70cbbd984591b38148d557c8ff29e5cb2d26c6b4757f405511de96b01",
-            "contentHash": "55a6590a1c805e5b441e14cfec4ebb9e1bb5936e8c5abf8d597d0b2b9f09ece8",
+            "contentHash": "8141d56efa4ff2fab37469969366710ec7b50e31726bd6408536f2597319533b",
             "assetHash": "2a64edfaa7428254e0932282ee5203c6092cbed0c77d4ddb9e94912180a55a43",
             "comparisonResult": "ACCEPTED"
         },
@@ -2124,7 +2124,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-leslie-perez-mobile.png",
             "sha256": "bfc7af909aac22e3182355ebcb38f85babad97491638174f7906336d3c878c3d",
-            "contentHash": "da0b56989f1b82477fc389ac3d07e55e274944f3b33563823236a48004011c5e",
+            "contentHash": "b18ad1319b0249736edd81e2849436ca1f931832e8291c4d832640507e0452bd",
             "assetHash": "b6c73dda63211e86581b7306adcc9619be0f81b097c775ca2d66d3de56623f7b",
             "comparisonResult": "ACCEPTED"
         },
@@ -2136,7 +2136,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-leslie-perez-desktop.png",
             "sha256": "f1d711535a371c76ba3bd5ab0f3b569b50871e1fa0000e76fe19389ae7af0587",
-            "contentHash": "da0b56989f1b82477fc389ac3d07e55e274944f3b33563823236a48004011c5e",
+            "contentHash": "b18ad1319b0249736edd81e2849436ca1f931832e8291c4d832640507e0452bd",
             "assetHash": "b6c73dda63211e86581b7306adcc9619be0f81b097c775ca2d66d3de56623f7b",
             "comparisonResult": "ACCEPTED"
         },
@@ -2148,7 +2148,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-valentina-hernandez-mobile.png",
             "sha256": "241d3dd9ccd292fbe5aba1de897c61e5b4c04d4ec0db233448b1fa48b6f5aaf9",
-            "contentHash": "a828d5441e5b5e87a1de2a01f8e24a82240cdd63341da897eca7d524ae8758e7",
+            "contentHash": "51e98e92bd6514e7e68064389bc00fcc028324703a3d94ecf01561b46a2d512a",
             "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
             "comparisonResult": "ACCEPTED"
         },
@@ -2160,7 +2160,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-valentina-hernandez-desktop.png",
             "sha256": "038f7a0ad3c0ed891bd880e218b38cd5979974cf18a5dc3d98866babf6643005",
-            "contentHash": "a828d5441e5b5e87a1de2a01f8e24a82240cdd63341da897eca7d524ae8758e7",
+            "contentHash": "51e98e92bd6514e7e68064389bc00fcc028324703a3d94ecf01561b46a2d512a",
             "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
             "comparisonResult": "ACCEPTED"
         },
@@ -2172,7 +2172,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-mia-pintor-mobile.png",
             "sha256": "6a26dd9cfb44cb59c27b9dab1756b15aa91507ea2065e3009414d668dd6aabb0",
-            "contentHash": "2ba4b8c8979e155d499cf3d427737c87f5d4aeabd36abbbd76ba28422e6cc701",
+            "contentHash": "357022c372804a322fb49c8d0af5ea1fc5252dd8fb4bf7912652d33a8c54d50d",
             "assetHash": "964ad5ec4e19359bfc4855a719deb9f49da3bfd8cc4d2f8d3587ba4744d8d1cc",
             "comparisonResult": "ACCEPTED"
         },
@@ -2184,7 +2184,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-mia-pintor-desktop.png",
             "sha256": "5011f2ca971da233e9c05b5bb60d8b4e06dc41e66772e66d5975c446532f2c58",
-            "contentHash": "2ba4b8c8979e155d499cf3d427737c87f5d4aeabd36abbbd76ba28422e6cc701",
+            "contentHash": "357022c372804a322fb49c8d0af5ea1fc5252dd8fb4bf7912652d33a8c54d50d",
             "assetHash": "964ad5ec4e19359bfc4855a719deb9f49da3bfd8cc4d2f8d3587ba4744d8d1cc",
             "comparisonResult": "ACCEPTED"
         },
@@ -2196,7 +2196,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-cumple-aithan-darell-mobile.png",
             "sha256": "2a63a94caa0b4557b6f2360dfe67892ef099fb4df7adf62492dabc5ac613e646",
-            "contentHash": "6310f17291fff7feb2d8d2873b0abaf5cd61e6500498bd58d855135813f8dcc4",
+            "contentHash": "1fd3c5e33a0ae89a89b1c8e4f1668942ce601583369879315503c79283c51b79",
             "assetHash": "6fec9bde6997dfda7834d2aafedc05a50bb58bbf8877aa78164854effecbe22d",
             "comparisonResult": "ACCEPTED"
         },
@@ -2208,7 +2208,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-cumple-aithan-darell-desktop.png",
             "sha256": "a5c977222ca3cb264a34701795d4d786116ad3c9d25ebdabb5ddc53bb2062344",
-            "contentHash": "6310f17291fff7feb2d8d2873b0abaf5cd61e6500498bd58d855135813f8dcc4",
+            "contentHash": "1fd3c5e33a0ae89a89b1c8e4f1668942ce601583369879315503c79283c51b79",
             "assetHash": "6fec9bde6997dfda7834d2aafedc05a50bb58bbf8877aa78164854effecbe22d",
             "comparisonResult": "ACCEPTED"
         },
@@ -2244,7 +2244,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
             "sha256": "ad874d686f90c0d3c7e6de6e0ca2d0f0f2cbd72b73da59786ac487ca12b55cf7",
-            "contentHash": "e33c7091cdda66c6c3d9e6540b81e21d3cce8f9307de75d9faf177b74a1844d2",
+            "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
             "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
             "comparisonResult": "ACCEPTED"
         },
@@ -2256,7 +2256,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
             "sha256": "09b565f2e82f25559a2de9497f7e180fc487b85bb15694dfd0b987f496194347",
-            "contentHash": "e33c7091cdda66c6c3d9e6540b81e21d3cce8f9307de75d9faf177b74a1844d2",
+            "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
             "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
             "comparisonResult": "ACCEPTED"
         },
@@ -2286,26 +2286,26 @@
         },
         {
             "kind": "demo",
-            "slug": "demo-boda-jewelry-box-wedding",
+            "slug": "demo-brisa",
             "eventType": "boda",
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
-            "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-            "sha256": "e8a021152dec34b5d6ebb25d724271e946264ac475b9f52ef9602c85f3880868",
-            "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-            "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
+            "file": "pages/demo-boda-demo-brisa-mobile.png",
+            "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
+            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
         },
         {
             "kind": "demo",
-            "slug": "demo-boda-jewelry-box-wedding",
+            "slug": "demo-brisa",
             "eventType": "boda",
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
-            "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-            "sha256": "192a2cb0213d96f00cc4831f35ae1b123145495135069a231133824223c93871",
-            "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-            "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
+            "file": "pages/demo-boda-demo-brisa-desktop.png",
+            "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
+            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2429,9 +2429,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "785648948b952336c67ac46558f6fcf2c42f37b7",
+    "referenceSha": "a6cfddf161b9d56035fec8b8b228c57f28167d7a",
     "variantManifest": {
-        "generatedAt": "2026-10-21T20:54:20.760Z",
+        "generatedAt": "2026-10-22T17:18:44.095Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2444,7 +2444,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "28afe2f7e2a8fe2f7ccb5f715c3e61533e5b9619881ab55b64974ef7ee5fc09a",
+            "cssSha256": "9f44a9bfd7f8e446bd7e64e22e71b9d0362769db0d293d9f0d377fb696b307f7",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4333,10 +4333,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "785648948b952336c67ac46558f6fcf2c42f37b7"
+        "referenceSha": "a6cfddf161b9d56035fec8b8b228c57f28167d7a"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-21T20:54:20.765Z",
+        "generatedAt": "2026-10-22T17:18:44.100Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4349,7 +4349,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "28afe2f7e2a8fe2f7ccb5f715c3e61533e5b9619881ab55b64974ef7ee5fc09a",
+            "cssSha256": "9f44a9bfd7f8e446bd7e64e22e71b9d0362769db0d293d9f0d377fb696b307f7",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4357,7 +4357,7 @@
         "status": "CANDIDATE",
         "mode": "candidate",
         "totalCaptures": 44,
-        "matrixHash": "7f4f17c6b931ab157fb2182abcedcd132719541f72c025e76676e7effb76529c",
+        "matrixHash": "6abc864830d78b90bbe73a71a68e332ab995fc49bd0710dc1173825f58ae1c07",
         "cases": 22,
         "captures": [
             {
@@ -4392,7 +4392,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-cumple-norma-hernandez-mobile.png",
                 "sha256": "181938dfa3a23c1f388e0e387fdd80a77b4bc63a23190cd2b2789b56f0cc2964",
-                "contentHash": "9b2cdf15d79124e9fb70b3b489b4ceeff2261a21e48f75f7c5105d078959d277",
+                "contentHash": "36beeedf10a5423f5443e6a6456fb830695b67cdd1a8ea5aee7a361add3cfac0",
                 "assetHash": "d330adf7e20eaa717b86def1be7caa7651cb2dfcd9e2b37177cd1daf1bf0b2b4",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4404,7 +4404,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-cumple-norma-hernandez-desktop.png",
                 "sha256": "777c03e040af1c9b4d94a907c970ac7bb2073a697b69eb6939dc2e4f0366655e",
-                "contentHash": "9b2cdf15d79124e9fb70b3b489b4ceeff2261a21e48f75f7c5105d078959d277",
+                "contentHash": "36beeedf10a5423f5443e6a6456fb830695b67cdd1a8ea5aee7a361add3cfac0",
                 "assetHash": "d330adf7e20eaa717b86def1be7caa7651cb2dfcd9e2b37177cd1daf1bf0b2b4",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4440,7 +4440,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-abril-michelle-becerra-rea-mobile.png",
                 "sha256": "0edabccf6c30386ba83e67418f226fa50f61b93406b9f3e2d79a03d6d321863d",
-                "contentHash": "fd55d4f782a919403a66deea40c5b4c2a4d7a5cad3f6bb89ddce9d18d44f2a14",
+                "contentHash": "30d160de07ac70557f66feac9e250a1aef75456da0a71259f37b28a032f5e3a8",
                 "assetHash": "1a290d118a2eb4c4e424832a789b64959a720a9bed24c6eda4d12aa19c863312",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4452,7 +4452,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-abril-michelle-becerra-rea-desktop.png",
                 "sha256": "321c08f4a9bd61ccd768b84befc5e4ff3e2dfea55ecb4d014da1ab5ea9aef1ce",
-                "contentHash": "fd55d4f782a919403a66deea40c5b4c2a4d7a5cad3f6bb89ddce9d18d44f2a14",
+                "contentHash": "30d160de07ac70557f66feac9e250a1aef75456da0a71259f37b28a032f5e3a8",
                 "assetHash": "1a290d118a2eb4c4e424832a789b64959a720a9bed24c6eda4d12aa19c863312",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4488,7 +4488,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
                 "sha256": "a0c326a33899c1ce4d05fc1309ea8f3893d170e7843c4a0deb467d1c4a8d78bb",
-                "contentHash": "4dd9e848cb15da4d98a331e1ba4b2642f0403f6cc2877b1ad34c31aa75807aee",
+                "contentHash": "ad6158dfae3dbeef730ef8d66f0d3e34c30ce2ca735b33ea937dfb43f178a0b6",
                 "assetHash": "3551f63e330caafaf932b0882eaa6d065539f864947f7281a30c368b0f107fd3",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4500,7 +4500,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
                 "sha256": "6d1c8da1137594aca8dbe4acd84813cebef667951c64296be30f65412f1f0b05",
-                "contentHash": "4dd9e848cb15da4d98a331e1ba4b2642f0403f6cc2877b1ad34c31aa75807aee",
+                "contentHash": "ad6158dfae3dbeef730ef8d66f0d3e34c30ce2ca735b33ea937dfb43f178a0b6",
                 "assetHash": "3551f63e330caafaf932b0882eaa6d065539f864947f7281a30c368b0f107fd3",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4512,7 +4512,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
                 "sha256": "2d35e0dbade68d7fade108a007a5a9682cb3a2f3bd46cbb784266b853f36336c",
-                "contentHash": "90355103195bdcd3b40c66578ee59c10fdaa27264f8553839ebc1c5c60f9cfeb",
+                "contentHash": "6b3ef035ee8eba8c0df4d3122f0c0ee7453a48436c37a10b104645083efffd47",
                 "assetHash": "97b5e1cd31eb17c3ccd143676a6dc29f4c1ed6d1c71fee0239c5d6c3b2158296",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4524,7 +4524,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
                 "sha256": "d4e09adbcfa292d413f45f5c9db9806b2523cc7c92588b8927a3c115e0860914",
-                "contentHash": "90355103195bdcd3b40c66578ee59c10fdaa27264f8553839ebc1c5c60f9cfeb",
+                "contentHash": "6b3ef035ee8eba8c0df4d3122f0c0ee7453a48436c37a10b104645083efffd47",
                 "assetHash": "97b5e1cd31eb17c3ccd143676a6dc29f4c1ed6d1c71fee0239c5d6c3b2158296",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4536,7 +4536,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-melissa-y-luis-osmar-mobile.png",
                 "sha256": "21827d3cffeb4ca6233cf069ae0587b5ec4d87d806621732a78d12ec4685bfcc",
-                "contentHash": "55a6590a1c805e5b441e14cfec4ebb9e1bb5936e8c5abf8d597d0b2b9f09ece8",
+                "contentHash": "8141d56efa4ff2fab37469969366710ec7b50e31726bd6408536f2597319533b",
                 "assetHash": "2a64edfaa7428254e0932282ee5203c6092cbed0c77d4ddb9e94912180a55a43",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4548,7 +4548,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-melissa-y-luis-osmar-desktop.png",
                 "sha256": "33c183c70cbbd984591b38148d557c8ff29e5cb2d26c6b4757f405511de96b01",
-                "contentHash": "55a6590a1c805e5b441e14cfec4ebb9e1bb5936e8c5abf8d597d0b2b9f09ece8",
+                "contentHash": "8141d56efa4ff2fab37469969366710ec7b50e31726bd6408536f2597319533b",
                 "assetHash": "2a64edfaa7428254e0932282ee5203c6092cbed0c77d4ddb9e94912180a55a43",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4584,7 +4584,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-leslie-perez-mobile.png",
                 "sha256": "bfc7af909aac22e3182355ebcb38f85babad97491638174f7906336d3c878c3d",
-                "contentHash": "da0b56989f1b82477fc389ac3d07e55e274944f3b33563823236a48004011c5e",
+                "contentHash": "b18ad1319b0249736edd81e2849436ca1f931832e8291c4d832640507e0452bd",
                 "assetHash": "b6c73dda63211e86581b7306adcc9619be0f81b097c775ca2d66d3de56623f7b",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4596,7 +4596,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-leslie-perez-desktop.png",
                 "sha256": "f1d711535a371c76ba3bd5ab0f3b569b50871e1fa0000e76fe19389ae7af0587",
-                "contentHash": "da0b56989f1b82477fc389ac3d07e55e274944f3b33563823236a48004011c5e",
+                "contentHash": "b18ad1319b0249736edd81e2849436ca1f931832e8291c4d832640507e0452bd",
                 "assetHash": "b6c73dda63211e86581b7306adcc9619be0f81b097c775ca2d66d3de56623f7b",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4608,7 +4608,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-valentina-hernandez-mobile.png",
                 "sha256": "241d3dd9ccd292fbe5aba1de897c61e5b4c04d4ec0db233448b1fa48b6f5aaf9",
-                "contentHash": "a828d5441e5b5e87a1de2a01f8e24a82240cdd63341da897eca7d524ae8758e7",
+                "contentHash": "51e98e92bd6514e7e68064389bc00fcc028324703a3d94ecf01561b46a2d512a",
                 "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4620,7 +4620,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-valentina-hernandez-desktop.png",
                 "sha256": "038f7a0ad3c0ed891bd880e218b38cd5979974cf18a5dc3d98866babf6643005",
-                "contentHash": "a828d5441e5b5e87a1de2a01f8e24a82240cdd63341da897eca7d524ae8758e7",
+                "contentHash": "51e98e92bd6514e7e68064389bc00fcc028324703a3d94ecf01561b46a2d512a",
                 "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4632,7 +4632,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-mia-pintor-mobile.png",
                 "sha256": "6a26dd9cfb44cb59c27b9dab1756b15aa91507ea2065e3009414d668dd6aabb0",
-                "contentHash": "2ba4b8c8979e155d499cf3d427737c87f5d4aeabd36abbbd76ba28422e6cc701",
+                "contentHash": "357022c372804a322fb49c8d0af5ea1fc5252dd8fb4bf7912652d33a8c54d50d",
                 "assetHash": "964ad5ec4e19359bfc4855a719deb9f49da3bfd8cc4d2f8d3587ba4744d8d1cc",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4644,7 +4644,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-mia-pintor-desktop.png",
                 "sha256": "5011f2ca971da233e9c05b5bb60d8b4e06dc41e66772e66d5975c446532f2c58",
-                "contentHash": "2ba4b8c8979e155d499cf3d427737c87f5d4aeabd36abbbd76ba28422e6cc701",
+                "contentHash": "357022c372804a322fb49c8d0af5ea1fc5252dd8fb4bf7912652d33a8c54d50d",
                 "assetHash": "964ad5ec4e19359bfc4855a719deb9f49da3bfd8cc4d2f8d3587ba4744d8d1cc",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4656,7 +4656,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-cumple-aithan-darell-mobile.png",
                 "sha256": "2a63a94caa0b4557b6f2360dfe67892ef099fb4df7adf62492dabc5ac613e646",
-                "contentHash": "6310f17291fff7feb2d8d2873b0abaf5cd61e6500498bd58d855135813f8dcc4",
+                "contentHash": "1fd3c5e33a0ae89a89b1c8e4f1668942ce601583369879315503c79283c51b79",
                 "assetHash": "6fec9bde6997dfda7834d2aafedc05a50bb58bbf8877aa78164854effecbe22d",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4668,7 +4668,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-cumple-aithan-darell-desktop.png",
                 "sha256": "a5c977222ca3cb264a34701795d4d786116ad3c9d25ebdabb5ddc53bb2062344",
-                "contentHash": "6310f17291fff7feb2d8d2873b0abaf5cd61e6500498bd58d855135813f8dcc4",
+                "contentHash": "1fd3c5e33a0ae89a89b1c8e4f1668942ce601583369879315503c79283c51b79",
                 "assetHash": "6fec9bde6997dfda7834d2aafedc05a50bb58bbf8877aa78164854effecbe22d",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4704,7 +4704,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
                 "sha256": "ad874d686f90c0d3c7e6de6e0ca2d0f0f2cbd72b73da59786ac487ca12b55cf7",
-                "contentHash": "e33c7091cdda66c6c3d9e6540b81e21d3cce8f9307de75d9faf177b74a1844d2",
+                "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
                 "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4716,7 +4716,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
                 "sha256": "09b565f2e82f25559a2de9497f7e180fc487b85bb15694dfd0b987f496194347",
-                "contentHash": "e33c7091cdda66c6c3d9e6540b81e21d3cce8f9307de75d9faf177b74a1844d2",
+                "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
                 "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4746,26 +4746,26 @@
             },
             {
                 "kind": "demo",
-                "slug": "demo-boda-jewelry-box-wedding",
+                "slug": "demo-brisa",
                 "eventType": "boda",
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
-                "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-                "sha256": "e8a021152dec34b5d6ebb25d724271e946264ac475b9f52ef9602c85f3880868",
-                "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-                "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
+                "file": "pages/demo-boda-demo-brisa-mobile.png",
+                "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
+                "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+                "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
             {
                 "kind": "demo",
-                "slug": "demo-boda-jewelry-box-wedding",
+                "slug": "demo-brisa",
                 "eventType": "boda",
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
-                "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-                "sha256": "192a2cb0213d96f00cc4831f35ae1b123145495135069a231133824223c93871",
-                "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-                "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
+                "file": "pages/demo-boda-demo-brisa-desktop.png",
+                "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
+                "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+                "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4889,9 +4889,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "785648948b952336c67ac46558f6fcf2c42f37b7"
+        "referenceSha": "a6cfddf161b9d56035fec8b8b228c57f28167d7a"
     },
-    "candidateManifestSha256": "372178c32aba4b40f67e26bee818a713358bfc6f08c31fa9c9a0dad9de57e3ed",
-    "acceptedFromCommit": "785648948b952336c67ac46558f6fcf2c42f37b7",
-    "acceptedAt": "2026-10-21T20:57:04.064Z"
+    "candidateManifestSha256": "6f2d95c729333342f3cc4d0966239da4f9d30ce086ef8532c3c93f25314bf482",
+    "acceptedFromCommit": "a6cfddf161b9d56035fec8b8b228c57f28167d7a",
+    "acceptedAt": "2026-10-22T17:48:11.903Z"
 }
