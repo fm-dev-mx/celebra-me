@@ -7,6 +7,11 @@
   opens it too, and a page too short to scroll shows it at once. With reduced motion there is no
   lantern: the next gesture opens the footer without movement. Without this script the footer is
   simply shown.
+
+  The opening is not a one-time event. Once the guest scrolls back up and leaves the open footer
+  well behind (half a screen below the fold, so nothing on screen moves when it folds away), the
+  footer is held again; the next rest at the bottom brings the lantern back and the whole opening
+  plays again. It stays open while focus is inside it, so a keyboard reader is never clipped away.
 */
 
 // A gesture only counts once the guest has been at the bottom this long, so the momentum of
@@ -25,6 +30,10 @@ const REDUCED_OPEN = 0.34;
 const OPEN_GLIDE_MS = 320;
 // The cue is removed by this time even if its exit animation never reports its end.
 const CUE_REMOVE_FALLBACK_MS = 1000;
+// The open footer is held again once it sits this far below the viewport (an IntersectionObserver
+// root margin, relative to the viewport height): folding it away then moves nothing on screen,
+// and a wiggle at the edge never flickers it.
+export const REARM_ROOT_MARGIN = '0px 0px 50% 0px';
 const REVEAL_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
 
 export function shouldHoldFooter(value: string): boolean {
@@ -68,15 +77,21 @@ function createPullCue(footer: HTMLElement): HTMLElement {
 	return cue;
 }
 
-function glideToBottom(root: HTMLElement, duration: number): void {
+function glideToBottom(root: HTMLElement, duration: number, onComplete?: () => void): void {
 	const start = window.scrollY;
 	const startedAt = performance.now();
 	const step = (now: number) => {
 		const t = Math.min(1, (now - startedAt) / duration);
-		const eased = 1 - (1 - t) ** 3;
+		// Zero velocity and acceleration at both ends keeps the handoff from the pull continuous.
+		const eased = t * t * t * (t * (t * 6 - 15) + 10);
 		const end = root.scrollHeight - window.innerHeight;
-		window.scrollTo(0, start + (end - start) * eased);
-		if (t < 1) requestAnimationFrame(step);
+		// This loop owns interpolation; native CSS smooth scrolling must not restart each frame.
+		window.scrollTo({ top: start + (end - start) * eased, behavior: 'instant' });
+		if (t < 1) {
+			requestAnimationFrame(step);
+		} else {
+			onComplete?.();
+		}
 	};
 	requestAnimationFrame(step);
 }
@@ -96,13 +111,16 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		return;
 	}
 
-	const cue = reduced ? null : createPullCue(footer);
-	let restingSince: number | null = atBottom() ? performance.now() : null;
+	let cue: HTMLElement | null = null;
+	let restingSince: number | null = null;
 	let touchStartY: number | null = null;
 	let wheelPulled = 0;
 	let wheelIdle = 0;
 	let peekTimer = 0;
 	let opened = false;
+	let leaveWatch: IntersectionObserver | null = null;
+	// The cue let go on the last opening, until its exit has run or a new arming clears it.
+	let leaving: HTMLElement | null = null;
 	const rested = () => restingSince !== null && performance.now() - restingSince >= REST_MS;
 
 	const show = (progress: number, state: 'idle' | 'pulling' | 'settling') => {
@@ -130,13 +148,17 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 			restingSince = null;
 			window.clearTimeout(peekTimer);
 			show(0, 'settling');
+			releasePull();
 		} else if (restingSince === null) {
 			restingSince = performance.now();
 			schedulePeek();
+			armPull();
 		}
 	};
 	const onWheel = (event: WheelEvent) => {
 		if (event.deltaY <= 0 || !rested()) return;
+		// The pull is consumed here, otherwise the browser also scrolls the newly opened space.
+		event.preventDefault();
 		wheelPulled += wheelPixels(event);
 		pull(pullProgress(wheelPulled, WHEEL_PULL));
 		if (opened) return;
@@ -152,6 +174,7 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 	const onTouchMove = (event: TouchEvent) => {
 		const y = event.touches[0]?.clientY;
 		if (touchStartY === null || y === undefined) return;
+		if (touchStartY > y) event.preventDefault();
 		pull(pullProgress(touchStartY - y, TOUCH_PULL_PX));
 		// A short tick where the phone supports it, as the lantern lets go.
 		if (opened && cue) navigator.vibrate?.(12);
@@ -169,42 +192,127 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 			target?.closest('input, textarea, select, button, a, [contenteditable]')
 		)
 			return;
+		event.preventDefault();
 		open();
 	};
 
-	function open() {
-		if (!(footer instanceof HTMLElement) || opened) return;
-		opened = true;
-		window.removeEventListener('scroll', onScroll);
+	// Wheel and touch moves may cancel scrolling only while the reader rests at the bottom; the
+	// rest of the reading keeps passive listeners, so the browser never waits on them to scroll.
+	let pullArmed = false;
+	function armPull() {
+		if (pullArmed || opened) return;
+		pullArmed = true;
+		window.addEventListener('wheel', onWheel, { passive: false });
+		window.addEventListener('touchmove', onTouchMove, { passive: false });
+	}
+	function releasePull() {
+		if (!pullArmed) return;
+		pullArmed = false;
 		window.removeEventListener('wheel', onWheel);
-		window.removeEventListener('touchstart', onTouchStart);
 		window.removeEventListener('touchmove', onTouchMove);
+	}
+
+	// Hold the footer and wait for the gesture; the lantern returns with it on every arming.
+	function arm() {
+		if (!(footer instanceof HTMLElement)) return;
+		opened = false;
+		wheelPulled = 0;
+		touchStartY = null;
+		leaving?.remove();
+		leaving = null;
+		cue = reduced ? null : createPullCue(footer);
+		restingSince = atBottom() ? performance.now() : null;
+		if (restingSince !== null) {
+			schedulePeek();
+			armPull();
+		}
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('touchstart', onTouchStart, { passive: true });
+		window.addEventListener('touchend', onTouchEnd, { passive: true });
+		window.addEventListener('touchcancel', onTouchEnd, { passive: true });
+		window.addEventListener('keydown', onKeyDown);
+		footer.addEventListener('focusin', open);
+	}
+
+	function disarm() {
+		if (!(footer instanceof HTMLElement)) return;
+		window.removeEventListener('scroll', onScroll);
+		releasePull();
+		window.removeEventListener('touchstart', onTouchStart);
 		window.removeEventListener('touchend', onTouchEnd);
 		window.removeEventListener('touchcancel', onTouchEnd);
 		window.removeEventListener('keydown', onKeyDown);
 		footer.removeEventListener('focusin', open);
 		window.clearTimeout(wheelIdle);
 		window.clearTimeout(peekTimer);
+	}
+
+	function open() {
+		if (!(footer instanceof HTMLElement) || opened) return;
+		opened = true;
+		disarm();
 		footer.dataset.footerReveal = 'open';
-		if (cue) {
+		const away = cue;
+		cue = null;
+		leaving = away;
+		if (away) {
 			// The lantern lets go of its thread and rises out of view as the footer arrives.
-			cue.dataset.state = 'away';
-			cue.addEventListener('animationend', () => cue.remove(), { once: true });
-			window.setTimeout(() => cue.remove(), Math.max(CUE_REMOVE_FALLBACK_MS, glideMs + 400));
+			away.dataset.state = 'away';
+			away.addEventListener('animationend', () => away.remove(), { once: true });
+			window.setTimeout(() => away.remove(), Math.max(CUE_REMOVE_FALLBACK_MS, glideMs + 400));
 		}
 		requestAnimationFrame(() => {
-			if (reduced) window.scrollTo({ top: root.scrollHeight, behavior: 'auto' });
-			else glideToBottom(root, glideMs);
+			if (reduced) {
+				window.scrollTo({ top: root.scrollHeight, behavior: 'auto' });
+				watchForLeave();
+			} else {
+				// While gliding, absorb wheel and touch drags so native inertial scroll does not fight the glide.
+				const absorbInput = (event: Event) => {
+					if (event.cancelable) event.preventDefault();
+				};
+				window.addEventListener('wheel', absorbInput, { passive: false });
+				window.addEventListener('touchmove', absorbInput, { passive: false });
+				const finishGlide = () => {
+					window.removeEventListener('wheel', absorbInput);
+					window.removeEventListener('touchmove', absorbInput);
+					watchForLeave();
+				};
+				glideToBottom(root, glideMs, finishGlide);
+			}
 		});
 	}
 
-	if (restingSince !== null) schedulePeek();
-	window.addEventListener('scroll', onScroll, { passive: true });
-	window.addEventListener('wheel', onWheel, { passive: true });
-	window.addEventListener('touchstart', onTouchStart, { passive: true });
-	window.addEventListener('touchmove', onTouchMove, { passive: true });
-	window.addEventListener('touchend', onTouchEnd, { passive: true });
-	window.addEventListener('touchcancel', onTouchEnd, { passive: true });
-	window.addEventListener('keydown', onKeyDown);
-	footer.addEventListener('focusin', open);
+	// Once the open footer has settled, wait for the guest to leave it well behind, then hold it
+	// again so the next visit to the end plays the opening once more. The observer reports the
+	// current state on attach, so a footer still in view simply keeps waiting.
+	function watchForLeave() {
+		if (!(footer instanceof HTMLElement) || typeof IntersectionObserver === 'undefined') return;
+		leaveWatch?.disconnect();
+		let inView = true;
+		const holdAgain = () => {
+			if (inView || !leaveWatch) return;
+			// A reader tabbing through the footer keeps it; folding it away would clip their focus.
+			if (footer.contains(document.activeElement)) return;
+			leaveWatch.disconnect();
+			leaveWatch = null;
+			footer.removeEventListener('focusout', onFocusOut);
+			footer.dataset.footerReveal = 'held';
+			arm();
+		};
+		// Focus leaving a footer already out of view re-arms it; the observer will not report
+		// again until the footer moves. The check waits a task so `activeElement` has settled
+		// (a window blur keeps focus inside the footer).
+		const onFocusOut = () => window.setTimeout(holdAgain, 0);
+		leaveWatch = new IntersectionObserver(
+			(entries) => {
+				inView = entries.some((entry) => entry.isIntersecting);
+				holdAgain();
+			},
+			{ rootMargin: REARM_ROOT_MARGIN },
+		);
+		leaveWatch.observe(footer);
+		footer.addEventListener('focusout', onFocusOut);
+	}
+
+	arm();
 }

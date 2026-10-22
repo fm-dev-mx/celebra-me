@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-22T17:18:44.095Z",
+    "generatedAt": "2026-10-22T21:01:33.412Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,16 +11,16 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-        "cssSha256": "9f44a9bfd7f8e446bd7e64e22e71b9d0362769db0d293d9f0d377fb696b307f7",
+        "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
+        "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
         "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 178,
-    "matrixHash": "ac343f5a821c2fc5af3a81b4ca4af2bbd4d4fbf08dadc8a22e260f5225c0d6c3",
+    "totalCaptures": 180,
+    "matrixHash": "3ea7d6e0c70fec409a681799b3efa696202054f71febe6dbd1b6ee180e8da41e",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -453,7 +453,7 @@
             "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
             "fixtureIdentity": "synthetic:location.program-sheet",
             "file": "jewelry-box-mobile-location-program-sheet.png",
-            "sha256": "bb2eb5dd4d783e1df5720790d1238943c5844cb4f69c32c793dfc22415c60559",
+            "sha256": "027efbe2e3b80f1780fa80405c59561c496597185781f79c3954c05da5cb235a",
             "contentHash": "25c518ae755856d2ab67d5c737f3af395627d0e48980e2a3144c1a1baf747989",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -467,7 +467,7 @@
             "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
             "fixtureIdentity": "synthetic:location.program-sheet",
             "file": "jewelry-box-desktop-location-program-sheet.png",
-            "sha256": "d7dbcee7130e79a6c768fbb585a65bd235662f415c08dd44a0a35f857442d778",
+            "sha256": "17772033df04e26cf986fa1d997182e03c356550c3b02ea773e454c958f5b625",
             "contentHash": "25c518ae755856d2ab67d5c737f3af395627d0e48980e2a3144c1a1baf747989",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -593,7 +593,7 @@
             "cssOwner": "src/styles/themes/sections/itinerary/_stacked-cards.scss",
             "fixtureIdentity": "synthetic:itinerary.stacked-cards",
             "file": "jewelry-box-mobile-itinerary-stacked-cards.png",
-            "sha256": "4c74f290d017012998bb0e1348d18ef53c7774f85ea677087c510e15939094bd",
+            "sha256": "a3a20e6c7d686dde9e9e2e1b303e98517f3a6f81c9bb86cc7d8353754b1df31a",
             "contentHash": "215223205e6b5e44e8343d7b618f07b2939376db02631eeb6cae4eb3288330ef",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -607,7 +607,7 @@
             "cssOwner": "src/styles/themes/sections/itinerary/_stacked-cards.scss",
             "fixtureIdentity": "synthetic:itinerary.stacked-cards",
             "file": "jewelry-box-desktop-itinerary-stacked-cards.png",
-            "sha256": "ea7d115e6a262e7d278c2f30d2c4601d8eaaffa3ad76e8ed03fcdd3b3bff21ae",
+            "sha256": "76f6ad65af34affbb7aa903dccc5ba56710e1613a825a84cbb866f8e4400b910",
             "contentHash": "215223205e6b5e44e8343d7b618f07b2939376db02631eeb6cae4eb3288330ef",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2219,8 +2219,8 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-mobile.png",
-            "sha256": "8243d2b7214e0202d91d68589ce70e668f25b376e964a3112964d3ea809fd177",
-            "contentHash": "12c8111253e2e94db733b724048d5cefd250d99cd3590d613f1d5612493984db",
+            "sha256": "7ffc3e11452b580d7dc5790f7c0fa4f01c61e9f977fafeb13bcda46bb7946189",
+            "contentHash": "dba8280bfa514f534111b7b64f08ae5cc83f20ca2c1d906fcad43c3c93ee38dd",
             "assetHash": "9adf1562c7503defcd0917838c405582a149a4e76960da93c0a41fe05f172e1c",
             "comparisonResult": "ACCEPTED"
         },
@@ -2231,8 +2231,8 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-desktop.png",
-            "sha256": "0f8047c91a99935accfbc3756a8fa9c00e6b92e9920858248683f4206c5dc24d",
-            "contentHash": "12c8111253e2e94db733b724048d5cefd250d99cd3590d613f1d5612493984db",
+            "sha256": "2253f1af0af8ada23e4090b239e972c8cd9b066a4db2e3606b357af1164f9e9d",
+            "contentHash": "dba8280bfa514f534111b7b64f08ae5cc83f20ca2c1d906fcad43c3c93ee38dd",
             "assetHash": "9adf1562c7503defcd0917838c405582a149a4e76960da93c0a41fe05f172e1c",
             "comparisonResult": "ACCEPTED"
         },
@@ -2427,11 +2427,35 @@
             "contentHash": "b0720bfc76375caa3a7de376a2438c63ba846351b53cabe120add864a8c05a73",
             "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-lantern-garden",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
+            "sha256": "4e5f805fec86166b833e7ae419a1bacc2e1f5a305ee7795d523f9895843a4004",
+            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-lantern-garden",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
+            "sha256": "ab4ff3bf46bb0da6d1c26a3322a7cdc22d5505726d6669d191813e12d0d31c0a",
+            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+            "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "a6cfddf161b9d56035fec8b8b228c57f28167d7a",
+    "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a",
     "variantManifest": {
-        "generatedAt": "2026-10-22T17:18:44.095Z",
+        "generatedAt": "2026-10-22T21:01:33.412Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2443,8 +2467,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "9f44a9bfd7f8e446bd7e64e22e71b9d0362769db0d293d9f0d377fb696b307f7",
+            "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
+            "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2885,7 +2909,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
                 "fixtureIdentity": "synthetic:location.program-sheet",
                 "file": "jewelry-box-mobile-location-program-sheet.png",
-                "sha256": "bb2eb5dd4d783e1df5720790d1238943c5844cb4f69c32c793dfc22415c60559",
+                "sha256": "027efbe2e3b80f1780fa80405c59561c496597185781f79c3954c05da5cb235a",
                 "contentHash": "25c518ae755856d2ab67d5c737f3af395627d0e48980e2a3144c1a1baf747989",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2899,7 +2923,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
                 "fixtureIdentity": "synthetic:location.program-sheet",
                 "file": "jewelry-box-desktop-location-program-sheet.png",
-                "sha256": "d7dbcee7130e79a6c768fbb585a65bd235662f415c08dd44a0a35f857442d778",
+                "sha256": "17772033df04e26cf986fa1d997182e03c356550c3b02ea773e454c958f5b625",
                 "contentHash": "25c518ae755856d2ab67d5c737f3af395627d0e48980e2a3144c1a1baf747989",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3025,7 +3049,7 @@
                 "cssOwner": "src/styles/themes/sections/itinerary/_stacked-cards.scss",
                 "fixtureIdentity": "synthetic:itinerary.stacked-cards",
                 "file": "jewelry-box-mobile-itinerary-stacked-cards.png",
-                "sha256": "4c74f290d017012998bb0e1348d18ef53c7774f85ea677087c510e15939094bd",
+                "sha256": "a3a20e6c7d686dde9e9e2e1b303e98517f3a6f81c9bb86cc7d8353754b1df31a",
                 "contentHash": "215223205e6b5e44e8343d7b618f07b2939376db02631eeb6cae4eb3288330ef",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3039,7 +3063,7 @@
                 "cssOwner": "src/styles/themes/sections/itinerary/_stacked-cards.scss",
                 "fixtureIdentity": "synthetic:itinerary.stacked-cards",
                 "file": "jewelry-box-desktop-itinerary-stacked-cards.png",
-                "sha256": "ea7d115e6a262e7d278c2f30d2c4601d8eaaffa3ad76e8ed03fcdd3b3bff21ae",
+                "sha256": "76f6ad65af34affbb7aa903dccc5ba56710e1613a825a84cbb866f8e4400b910",
                 "contentHash": "215223205e6b5e44e8343d7b618f07b2939376db02631eeb6cae4eb3288330ef",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4333,10 +4357,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a6cfddf161b9d56035fec8b8b228c57f28167d7a"
+        "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-22T17:18:44.100Z",
+        "generatedAt": "2026-10-22T21:01:33.424Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4348,17 +4372,17 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "f788a132fce2e41c66f12421fc7288ed0e2c7447e33f26389fb74fb0df4c7b8d",
-            "cssSha256": "9f44a9bfd7f8e446bd7e64e22e71b9d0362769db0d293d9f0d377fb696b307f7",
+            "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
+            "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 44,
-        "matrixHash": "6abc864830d78b90bbe73a71a68e332ab995fc49bd0710dc1173825f58ae1c07",
-        "cases": 22,
+        "totalCaptures": 46,
+        "matrixHash": "6fdac48d24a6474245aefdb7c36381d9e268e977c8c3ab9c50eb1e2c496a897e",
+        "cases": 23,
         "captures": [
             {
                 "kind": "invitation",
@@ -4679,8 +4703,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-mobile.png",
-                "sha256": "8243d2b7214e0202d91d68589ce70e668f25b376e964a3112964d3ea809fd177",
-                "contentHash": "12c8111253e2e94db733b724048d5cefd250d99cd3590d613f1d5612493984db",
+                "sha256": "7ffc3e11452b580d7dc5790f7c0fa4f01c61e9f977fafeb13bcda46bb7946189",
+                "contentHash": "dba8280bfa514f534111b7b64f08ae5cc83f20ca2c1d906fcad43c3c93ee38dd",
                 "assetHash": "9adf1562c7503defcd0917838c405582a149a4e76960da93c0a41fe05f172e1c",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4691,8 +4715,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-desktop.png",
-                "sha256": "0f8047c91a99935accfbc3756a8fa9c00e6b92e9920858248683f4206c5dc24d",
-                "contentHash": "12c8111253e2e94db733b724048d5cefd250d99cd3590d613f1d5612493984db",
+                "sha256": "2253f1af0af8ada23e4090b239e972c8cd9b066a4db2e3606b357af1164f9e9d",
+                "contentHash": "dba8280bfa514f534111b7b64f08ae5cc83f20ca2c1d906fcad43c3c93ee38dd",
                 "assetHash": "9adf1562c7503defcd0917838c405582a149a4e76960da93c0a41fe05f172e1c",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4887,11 +4911,35 @@
                 "contentHash": "b0720bfc76375caa3a7de376a2438c63ba846351b53cabe120add864a8c05a73",
                 "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-lantern-garden",
+                "eventType": "xv",
+                "preset": "storybook-lilac",
+                "viewport": "mobile",
+                "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
+                "sha256": "4e5f805fec86166b833e7ae419a1bacc2e1f5a305ee7795d523f9895843a4004",
+                "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+                "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-lantern-garden",
+                "eventType": "xv",
+                "preset": "storybook-lilac",
+                "viewport": "desktop",
+                "file": "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
+                "sha256": "ab4ff3bf46bb0da6d1c26a3322a7cdc22d5505726d6669d191813e12d0d31c0a",
+                "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+                "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+                "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a6cfddf161b9d56035fec8b8b228c57f28167d7a"
+        "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a"
     },
-    "candidateManifestSha256": "6f2d95c729333342f3cc4d0966239da4f9d30ce086ef8532c3c93f25314bf482",
-    "acceptedFromCommit": "a6cfddf161b9d56035fec8b8b228c57f28167d7a",
-    "acceptedAt": "2026-10-22T17:48:11.903Z"
+    "candidateManifestSha256": "699c302bbb7f9127303fb0e9ea3cee6d5f737b7a15572b2887e9ae22189d636f",
+    "acceptedFromCommit": "d89bc3e3852deb29e625f923df58461840f1011a",
+    "acceptedAt": "2026-10-22T21:02:57.807Z"
 }

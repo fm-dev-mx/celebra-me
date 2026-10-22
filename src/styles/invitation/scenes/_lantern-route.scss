@@ -17,6 +17,7 @@
 //   --location-route-lantern               Lantern body
 //   --location-route-lift                  How far the pinned night rises over the section's top
 //                                          padding (default 0); unpinned, the padding stays
+//   --location-route-cue-bottom / -cue-space  Cue offset and reserved space for floating controls
 // ==========================================================================
 
 // The route draws over this slice of the pinned span; entries swap around its middle.
@@ -42,6 +43,66 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 		.location-route__sky,
 		.location-route__map {
 			display: none;
+		}
+
+		.scroll-scene__stage > .location-route__continuation {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.875rem;
+			width: fit-content;
+			max-width: calc(100% - 2.5rem);
+			margin: 2rem auto 0;
+			padding: 0.75rem 1.25rem 0;
+			border-top: 1px solid color-mix(in srgb, currentcolor 35%, transparent);
+			font-family: var(--font-body);
+			font-size: var(--location-intro-text-size, 1rem);
+			line-height: 1.4;
+			text-align: start;
+			color: var(--color-gold-ink);
+
+			@include scene.pinned {
+				position: absolute;
+				inset-inline: 1.25rem;
+				bottom: calc(
+					var(--location-route-cue-bottom, 1.5rem) + env(safe-area-inset-bottom, 0px)
+				);
+				z-index: 2;
+				margin-inline: auto;
+				margin-block: 0;
+				color: var(--location-route-glow);
+
+				--location-continuation-detail-ink: var(--location-route-ink);
+			}
+		}
+
+		.location-route__continuation-label {
+			display: block;
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+
+		.location-route__continuation-detail {
+			display: block;
+			margin-top: 0.125rem;
+			font-size: var(--location-program-link-size, 0.875rem);
+			color: var(--location-continuation-detail-ink, var(--color-text-primary));
+		}
+
+		.location-route__continuation-mark {
+			flex: none;
+
+			@media (prefers-reduced-motion: no-preference) {
+				animation: pulse-chevron-relative 2.8s ease-in-out infinite;
+			}
+		}
+
+		.location-route__next {
+			--section-nav-animation: none;
+			--section-nav-label-size: 1rem;
+			--section-nav-label-opacity: 100%;
+			--section-nav-label-tracking: 0.04em;
 		}
 
 		// Pinned, the scene bleeds to the viewport (the section clips it); the stage restores the gutters. The
@@ -83,7 +144,7 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 				// The bottom padding clears the floating section nav.
 				padding: calc(var(--invitation-header-offset, calc(70px + 1.5rem)) + 0.25rem)
 					max(1.25rem, env(safe-area-inset-right, 0px), calc((100% - 72rem) / 2))
-					calc(4.5rem + env(safe-area-inset-bottom, 0px))
+					calc(var(--location-route-cue-space, 6rem) + env(safe-area-inset-bottom, 0px))
 					max(1.25rem, env(safe-area-inset-left, 0px), calc((100% - 72rem) / 2));
 				color: var(--location-route-ink);
 
@@ -175,6 +236,8 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 
 		.location-route__map {
 			@include scene.pinned {
+				position: relative;
+				container-type: size;
 				display: block;
 				flex: 1;
 				width: 100%;
@@ -188,6 +251,78 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 					grid-column: 2;
 					height: min(70svh, 40rem);
 					align-self: center;
+				}
+			}
+		}
+
+		.location-route__map-plane {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 50%;
+			height: min(100%, 128.2051cqw);
+			aspect-ratio: 390 / 500;
+			transform: translateX(-50%);
+		}
+
+		.location-route__drawing {
+			display: block;
+			width: 100%;
+			height: 100%;
+			overflow: visible;
+		}
+
+		.location-route__note {
+			display: none;
+		}
+
+		// Follow the very same route/timeline as the lantern; HTML text keeps its readable size
+		// while the SVG drawing scales. Older engines retain the static continuation below.
+		@supports (offset-path: shape(from 0% 0%, line to 100% 100%)) {
+			.scroll-scene__stage > .location-route__continuation {
+				@include scene.pinned {
+					display: none;
+				}
+			}
+
+			.location-route__note {
+				@include scene.pinned {
+					position: absolute;
+					display: block;
+					inset: 0 auto auto 0;
+					width: max-content;
+					margin: 0;
+					padding: 0.15rem 0.25rem;
+					color: var(--location-route-glow);
+					font-family: var(--font-body);
+					font-size: var(--location-intro-text-size, 1rem);
+					font-weight: 500;
+					line-height: 1.3;
+					white-space: nowrap;
+					text-shadow: 0 1px 3px var(--location-route-night-deep);
+					pointer-events: none;
+					offset-path: shape(
+						from 17.9487% 8%,
+						curve to 64.1026% 54% with 84.6154% 18% / 10.2564% 42%,
+						smooth to 30.7692% 94% with 76.9231% 86%
+					);
+					offset-anchor: 0% 50%;
+					offset-rotate: 0deg;
+					translate: 1rem 0;
+				}
+
+				@include scene.timeline {
+					animation:
+						route-walk linear both,
+						route-note-out linear both;
+					animation-timeline: --scroll-scene, --scroll-scene;
+					animation-range:
+						contain $route-start contain $route-end,
+						contain 42% contain 50%;
+				}
+
+				@include scene.scripted {
+					offset-distance: calc(var(--route-t) * 100%);
+					opacity: var(--route-out);
 				}
 			}
 		}
@@ -345,6 +480,12 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 	@keyframes route-draw {
 		100% {
 			stroke-dashoffset: 0;
+		}
+	}
+
+	@keyframes route-note-out {
+		to {
+			opacity: 0%;
 		}
 	}
 

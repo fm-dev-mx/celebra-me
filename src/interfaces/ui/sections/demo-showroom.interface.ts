@@ -57,6 +57,8 @@ export interface DemoShowroomItem {
 	sortOrder: number;
 	/** Short style name shown in the in-page sales block (e.g. "Celestial Blue"). */
 	styleName: string;
+	/** Insert commercial gallery/closing panels; enabled unless explicitly disabled. */
+	showConversion?: boolean;
 	ctaMessage: string;
 	thumbnail: DemoShowroomThumbnail;
 	selectorThumbnail?: DemoShowroomThumbnail;

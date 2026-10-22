@@ -67,7 +67,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpDeadline          | 2026-11-06 (viernes 6 de noviembre)                                          | inferred       | owner-session | 15 days before the event (D9); in RSVP copy and reminder |
 | gifts                 | Regalo o efectivo                                                            | confirmed      | client        | Client pick (2026-10-20); replaces the envelope shower   |
 | musicUrl              | «Veo en ti la luz» (Chayanne y Danna Paola), looped cut                      | confirmed      | client        | Client pick (2026-10-20); cut before the spoken lines    |
-| itinerary             | Misa 18:00, Recepción 20:00, Vals 21:30, Cena 22:30, Cierre 01:00            | inferred       | owner-session | Most common XV program (D8); owner adjusts later         |
+| itinerary             | Misa 18:00, Recepción 20:00, Vals 20:30, Cena 21:30, Cierre 01:00            | confirmed      | owner-session | Program adjusted per owner request (Vals 20:30)          |
 | memories              | QR de recuerdos (add-on)                                                     | verified       | owner-session | D12; needs a memory space first, see Owner Decisions     |
 | specialMessages       | Copy proposed by agent                                                       | inferred       | owner-session | Pending client approval                                  |
 | clientReferences      | mia-pintor, naydelin-paredes                                                 | verified       | owner-session | The two samples the client approved (D3)                 |

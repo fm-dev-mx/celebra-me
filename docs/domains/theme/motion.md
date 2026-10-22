@@ -141,7 +141,10 @@ The `editorial` recipe is the documented exception to rules 3, 5 and 6; its cont
   `-label-size`) and let its glow breathe while it waits
   (`--footer-pull-breathe: footer-pull-breathe`). The cue is a sibling of the footer, so these
   tokens go on the invitation root. Where the phone supports it, the footer opening gives one 12 ms
-  vibration.
+  vibration. The opening replays: once the guest scrolls back up and leaves the open footer half a
+  screen below the fold (an `IntersectionObserver` root margin, so nothing on screen moves when it
+  folds away), the footer is held again and the next rest at the bottom brings the lantern back. It
+  stays open while focus is inside it.
 - **Floating reply glint.** `--floating-cta-glint` (a gradient) crosses the floating reply button
   once, in 1.1 s, when it first shows and again when it changes to the calendar. It is time-based,
   not scroll-linked, and does not run under reduced motion.

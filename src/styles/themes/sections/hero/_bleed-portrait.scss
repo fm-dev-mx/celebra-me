@@ -203,6 +203,7 @@
 		}
 	}
 
+	.framed-portrait-hero__affordance,
 	.framed-portrait-hero__scroll-line {
 		position: absolute;
 		left: calc(
@@ -220,8 +221,23 @@
 				clamp(3rem, 8vw, 8rem)
 		);
 		bottom: 2.5rem;
-		height: var(--hero-bleed-scroll-line, 2.5rem);
+		height: auto;
 		margin: 0;
+	}
+
+	.framed-portrait-hero__affordance {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		pointer-events: none;
+
+		.framed-portrait-hero__scroll-line {
+			position: static;
+			left: auto;
+			bottom: auto;
+			height: var(--hero-bleed-scroll-line, 2.5rem);
+		}
 	}
 }
 
@@ -250,6 +266,7 @@
 		position: relative;
 		width: 100%;
 		min-height: 0;
+		background: var(--hero-bleed-layout-bg, none);
 	}
 
 	.framed-portrait-hero__photograph {
@@ -265,6 +282,8 @@
 		padding: 0;
 		border-radius: var(--hero-bleed-photo-radius, 0);
 		overflow: hidden;
+		box-shadow: var(--hero-bleed-photo-shadow, none);
+		border: var(--hero-bleed-photo-outer-border, none);
 
 		// Optional hairline inside the photograph, following its shape; the mask lets it fade
 		// where the photograph fades into the paper.
@@ -338,8 +357,8 @@
 	// Short reading of the facts (stacked layout, opt-in) in place of the long one.
 	.framed-portrait-hero__summary {
 		display: var(--hero-bleed-summary-display, none);
-		gap: 0.15rem;
-		margin: var(--hero-bleed-facts-margin, 0.4rem 0 0);
+		gap: var(--hero-bleed-summary-gap, 0.35rem);
+		margin: var(--hero-bleed-facts-margin, 0.5rem 0 0);
 		font-family: var(--font-body);
 		line-height: 1.35;
 		text-wrap: balance;
@@ -349,19 +368,24 @@
 		}
 
 		// The day reads like the written date, the second line like the venue.
-		p:first-child {
+		p:first-child,
+		.framed-portrait-hero__summary-date {
 			font-family: var(--hero-bleed-when-font-family, inherit);
-			font-size: var(--hero-bleed-summary-size, clamp(1.08rem, 2vw, 1.4rem));
+			font-size: var(--hero-bleed-summary-size, clamp(1.1rem, 3.8vw, 1.45rem));
 			font-style: var(--hero-bleed-when-style, inherit);
+			font-weight: var(--hero-bleed-summary-weight, 500);
 			color: var(--hero-bleed-when-color, inherit);
+			letter-spacing: var(--hero-bleed-summary-tracking, 0.02em);
 		}
 
-		p + p {
+		p + p,
+		.framed-portrait-hero__summary-venue {
 			font-family: var(--hero-bleed-where-font-family, inherit);
-			font-size: var(--hero-bleed-summary-detail-size, 1rem);
+			font-size: var(--hero-bleed-summary-detail-size, 0.95rem);
 			font-variant-caps: var(--hero-bleed-where-caps, normal);
-			letter-spacing: var(--hero-bleed-where-tracking, normal);
+			letter-spacing: var(--hero-bleed-where-tracking, 0.04em);
 			color: var(--hero-bleed-where-color, var(--color-text-secondary));
+			opacity: var(--hero-bleed-summary-venue-opacity, 90%);
 		}
 	}
 
@@ -395,6 +419,7 @@
 		letter-spacing: var(--hero-name-letter-spacing, 0);
 		text-wrap: balance;
 		overflow-wrap: var(--hero-bleed-name-overflow-wrap, anywhere);
+		color: var(--hero-name-color, inherit);
 	}
 
 	.framed-portrait-hero__facts {
@@ -468,6 +493,34 @@
 		}
 	}
 
+	.framed-portrait-hero__affordance {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.45rem;
+		margin: var(--hero-bleed-scroll-margin, 0 auto);
+		pointer-events: none;
+		user-select: none;
+	}
+
+	.framed-portrait-hero__scroll-prompt {
+		display: var(--hero-bleed-scroll-prompt-display, none);
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--hero-bleed-scroll-prompt-size, 0.725rem);
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.22em;
+		text-transform: none;
+		color: var(
+			--hero-bleed-scroll-prompt-color,
+			var(--color-gold-ink, var(--color-text-secondary))
+		);
+		opacity: var(--hero-bleed-scroll-prompt-opacity, 85%);
+		white-space: nowrap;
+		animation: var(--hero-bleed-scroll-prompt-animation, hero-bleed-prompt-pulse) 3.6s
+			ease-in-out infinite;
+	}
+
 	.framed-portrait-hero__scroll-line {
 		position: relative;
 		display: block;
@@ -526,6 +579,7 @@
 			}
 		}
 
+		.framed-portrait-hero__affordance,
 		.framed-portrait-hero__scroll-line {
 			display: none;
 		}
@@ -547,6 +601,7 @@
 		.framed-portrait-hero__name,
 		.framed-portrait-hero__summary,
 		.framed-portrait-hero__facts,
+		.framed-portrait-hero__affordance,
 		.framed-portrait-hero__scroll-line {
 			animation-name: var(--hero-bleed-entrance, none);
 			animation-timing-function: var(--motion-reveal-ease, var(--ease-premium));
@@ -570,6 +625,7 @@
 			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-details-delay));
 		}
 
+		.framed-portrait-hero__affordance,
 		.framed-portrait-hero__scroll-line {
 			animation-duration: var(--motion-hero-affordance-duration);
 			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-affordance-delay));
@@ -737,5 +793,18 @@
 
 	to {
 		scale: 1.04;
+	}
+}
+
+@keyframes hero-bleed-prompt-pulse {
+	0%,
+	100% {
+		opacity: 65%;
+		transform: translateY(0);
+	}
+
+	50% {
+		opacity: 100%;
+		transform: translateY(2px);
 	}
 }

@@ -99,7 +99,7 @@ const calendarFor = (venue: GroupedVenue) =>
 const isIndicationsBand = indicationsLayout === 'band';
 // Enclosure: the indications become a small details card of the suite, without icons.
 const isIndicationsEnclosure = indicationsLayout === 'enclosure';
-// The printed-program variant owns its rhythm: no venue cards and no section nav button.
+// The printed program owns its rhythm; pinned routes also guide guests to the next chapter.
 const isProgramSheet = variant === 'program-sheet';
 // The lantern route pins the intro and the program together; it needs two stops to travel.
 const isLanternRoute = scene === 'lantern-route' && isProgramSheet && !isLocked && displayVenues.length >= 2;
@@ -148,7 +148,9 @@ const venueType = (venue: GroupedVenue) =>
 		isProgramSheet ? (
 		<>
 		{isLanternRoute && (
-			<svg class="location-route__map" viewBox="0 0 390 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<div class="location-route__map">
+			<div class="location-route__map-plane">
+			<svg class="location-route__drawing" viewBox="0 0 390 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
 				<path class="location-route__trail" d={ROUTE_PATH} />
 				<path class="location-route__path" d={ROUTE_PATH} pathLength="1" />
 				<circle class="location-route__stop" cx="70" cy="40" r="6" />
@@ -159,6 +161,9 @@ const venueType = (venue: GroupedVenue) =>
 					<path class="location-route__lantern-cap" d="M-5 -23h10v7h-10Z" />
 				</g>
 			</svg>
+			<p class="location-route__note">Siga bajando <span aria-hidden="true">↓</span></p>
+			</div>
+			</div>
 		)}
 		<div class={`event-location__program ${isSingleVenue ? 'event-location__program--single' : ''}`}>
 			{displayVenues.map((venue: GroupedVenue) => (
@@ -184,6 +189,17 @@ const venueType = (venue: GroupedVenue) =>
 			))}
 		</div>
 		)
+	)}
+	{isLanternRoute && (
+		<p class="location-route__continuation">
+			<svg class="location-route__continuation-mark" width="24" height="44" viewBox="0 0 24 44" fill="none" aria-hidden="true" focusable="false">
+				<path d="M12 1v5M8 7h8M8 23h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+				<path d="M8 8h8l2 4v6l-2 4H8l-2-4v-6z" stroke="currentColor" stroke-width="1.2" />
+				<path d="M12 11v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+				<path d="M12 27v5M7 36l5 5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+			</svg>
+			<span><span class="location-route__continuation-label">Siga bajando</span><span class="location-route__continuation-detail">La invitación continúa</span></span>
+		</p>
 	)}
 	</SceneWrapper>
 	{indications && indications.length > 0 && isIndicationsEnclosure && (
@@ -250,12 +266,12 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 	)}
 
-	{nextSectionLink && !isProgramSheet && (
-		<div class="nav-button-container">
+	{nextSectionLink && (!isProgramSheet || isLanternRoute) && (
+		<div class:list={['nav-button-container', { 'location-route__next': isLanternRoute }]}>
 			<SectionNavButton
 				href={nextSectionLink.href}
 				class="event-location"
-				section={nextSectionLink.label}
+				section={isLanternRoute ? `Continúe: ${nextSectionLink.label ?? 'siguiente capítulo'}` : nextSectionLink.label}
 			/>
 		</div>
 	)}

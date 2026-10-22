@@ -48,8 +48,13 @@ it('keeps commercial closing after the invitation farewell and retains tracking 
 });
 
 it('gives every demo its own sales message, label and closing photo', () => {
-	for (const { slug, eventType } of DEMO_INVITATIONS) {
+	for (const { slug, eventType, showroom } of DEMO_INVITATIONS) {
 		const demo = getDemoConversion(slug);
+		if ('showConversion' in showroom && showroom.showConversion === false) {
+			expect(demo).toBeUndefined();
+			expect(hasDemoConversion(slug, true)).toBe(false);
+			continue;
+		}
 		expect(demo).toMatchObject({ slug, eventType });
 		expect(demo?.quoteLink).toContain(encodeURIComponent(demo!.styleName));
 		expect(demo?.celebrationLabel).toMatch(/^sus? /);
