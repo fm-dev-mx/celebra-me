@@ -247,10 +247,10 @@ describe('canonical URL generation (main invitation routes)', () => {
 	});
 
 	it('uses per-route canonical for demo route', () => {
-		const pathname = '/boda/demo-boda-jewelry-box-wedding';
+		const pathname = '/brisa';
 		const canonicalUrl = new URL(pathname, CANONICAL_ORIGIN).href;
 
-		expect(canonicalUrl).toBe('https://www.celebra-me.com/boda/demo-boda-jewelry-box-wedding');
+		expect(canonicalUrl).toBe('https://www.celebra-me.com/brisa');
 		expect(canonicalUrl).not.toBe('https://www.celebra-me.com/');
 	});
 

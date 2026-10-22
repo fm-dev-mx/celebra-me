@@ -1,14 +1,15 @@
 name: Production Scheduled Monitors
 
 # Read-only: each monitor reads Workers Logs or lists the off-site backup bucket with read-only
-# credentials. The GitHub token writes nothing but the alert issue.
+# credentials. The GitHub token writes nothing but the alert issue. Quota figures come from the
+# Production collector's summary event in Workers Logs, so no database credential is needed here.
 permissions:
     contents: read
     issues: write
 
 on:
     schedule:
-        # After the memories cleanup cron (15:17 UTC) and the daily backup (~10:00 UTC).
+        # After the memories cleanup cron (15:17 UTC) and the daily backup (operator Task Scheduler, ~10:00 UTC).
         - cron: '40 16 * * *'
     workflow_dispatch:
 
@@ -31,6 +32,15 @@ jobs:
                     - monitor: backup-freshness
                       title: Off-site backup freshness
                       alert: 'Monitor de Producción: el respaldo externo no está al día'
+                    - monitor: worker-errors
+                      title: Worker 5xx and exceptions
+                      alert: 'Monitor de Producción: demasiados errores 5xx en el Worker'
+                    - monitor: worker-limits
+                      title: Worker CPU and memory limits
+                      alert: 'Monitor de Producción: requests cortadas por límite de CPU o memoria'
+                    - monitor: platform-quotas
+                      title: Platform quotas
+                      alert: 'Monitor de Producción: una cuota llegó al 80 % o el collector no corrió'
         steps:
             - name: Checkout
               uses: actions/checkout@v7

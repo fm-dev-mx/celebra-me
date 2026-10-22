@@ -125,7 +125,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		message: 'What do you want to screenshot?',
 		choices: [
 			{
-				name: 'Invitation page / Event Demo   (e.g. /boda/demo-boda-jewelry-box-wedding)',
+				name: 'Invitation page / Event Demo   (e.g. /brisa)',
 				value: 'invitation',
 			},
 			{
@@ -152,7 +152,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 	let resolvedUrls: { name: string; url: string }[];
 	const defaultRoute =
 		pageType === 'invitation'
-			? '/boda/demo-boda-jewelry-box-wedding'
+			? '/brisa'
 			: pageType === 'landing'
 				? '/'
 				: pageType === 'dashboard'
@@ -233,7 +233,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		resolvedUrls = [{ name: createPageSlug(urlInput), url: urlInput }];
 	}
 
-	// Base URL resolution (lane-aware: Integration/dev-local 4321, dev-extra 4322, dev-preview 4323)
+	// Base URL resolution (lane-aware: Integration 4321, other lanes 4320 + F-key, e.g. f08-demos 4328)
 	const laneContext = resolveScreenshotLaneContext();
 	let baseUrl = laneContext.baseUrl;
 	const hasRelativeRoute = resolvedUrls.some((item) => !/^https?:\/\//i.test(item.url.trim()));

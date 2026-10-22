@@ -6,6 +6,7 @@ import type {
 } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventType } from '@/lib/theme/theme-contract';
 import { DEMO_INVITATIONS } from '@/invitations/demos';
+import { buildPublicInvitationPath } from '@/utils/invitation-link';
 /** Shared home-selector quote CTA; it sends the general quote of the promo calendar. */
 const SHOWROOM_QUOTE_CTA = {
 	label: 'Quiero una invitación así',
@@ -114,7 +115,7 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = DEMO_INVITATIONS
 			eventType,
 			publicSlug: event.publicSlug,
 			slug,
-			href: `/${eventType}/${slug}`,
+			href: buildPublicInvitationPath(eventType, slug),
 			...card,
 			thumbnail: { assetSlug: slug, ...thumbnail },
 			...(selectorThumbnail

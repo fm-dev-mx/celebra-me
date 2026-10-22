@@ -48,7 +48,7 @@ export function isDevMfaBypassEnabled(input?: DevMfaBypassInput): boolean {
 		return false;
 	}
 
-	// Local Supabase (integration / dev-local) or Preview project + target=preview
+	// Local Supabase (Integration and the Local-runtime lanes) or Preview project + target=preview
 	if (isLocalSupabaseUrl(env.supabaseUrl)) return true;
 	if (
 		env.celebraRuntimeTarget?.trim().toLowerCase() === 'preview' &&

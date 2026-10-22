@@ -15,7 +15,6 @@
         "scripts/db/publication-stale-baseline-test.ts",
         "scripts/db/memories-concurrency-test.ts",
         "scripts/db/system-concurrency-test.ts",
-        "src/ops-console/OpsConsolePage.astro",
         "src/assets/images/events/*/index.ts",
         "jest.*.config.cjs",
         ".cursor/hooks/*.{ts,mjs}",

@@ -176,6 +176,7 @@ Reset `[Unreleased]` to an empty pending section after the promotion.
 ### 4. Commit the changes through `develop`
 
 ```bash
+# Run in an explicitly assigned external lane, including F12 when assigned.
 git switch -c candidate/vX.Y.Z develop
 git add package.json CHANGELOG.md
 git commit -m "chore(release): publish vX.Y.Z checkpoint"
@@ -211,9 +212,11 @@ with the [`production-pr`](../../.agent/skills/production-pr/SKILL.md) skill.
 
 ### 6. Verify the promoted deployment
 
-Verify the automatic Production deployment and critical smoke routes for the merged `main` SHA. If
-the deployment fails, revert on a task branch, integrate it into `develop`, and release again; never
-rewrite `main`.
+Upload the Production Worker through the manual workflow, obtain scoped activation approval,
+activate the exact version and verify the domain smoke for the merged `main` SHA. Follow
+[release execution](release-execution.md); an upload alone does not route traffic. If the deployment
+fails, revert on a task branch, integrate it into `develop`, and release again; never rewrite
+`main`.
 
 ### 7. Create and push the annotated tag
 

@@ -208,25 +208,55 @@ describe('buildInvitationRenderPlan', () => {
 });
 
 describe('published demo interlude placement', () => {
-	it.each([
-		'demo-bautizo-angelic-presence',
-		'demo-boda-jewelry-box-wedding',
-		'demo-primera-comunion-angelic-presence',
-	])('keeps the first interlude after personalized access in %s', (fixture) => {
+	it.each(['demo-bautizo-angelic-presence', 'demo-primera-comunion-angelic-presence'])(
+		'keeps the first interlude after personalized access in %s',
+		(fixture) => {
+			const event = {
+				id: fixture,
+				data: loadFixture(`src/invitations/demos/${fixture}/content.json`),
+			} as EventContentEntry;
+			const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
+			expect(
+				plan
+					.slice(0, 3)
+					.map((item) => (item.type === 'section' ? item.section : item.type)),
+			).toEqual(['quote', 'personalized-access', 'interlude']);
+			expect(plan[2]).toEqual(
+				expect.objectContaining({
+					type: 'interlude',
+					afterSection: 'personalizedAccess',
+					intersection: {
+						family: 'neutral',
+						source: 'interlude-after-personalizedAccess',
+					},
+				}),
+			);
+		},
+	);
+
+	it('places the wedding demo interludes after countdown and family', () => {
 		const event = {
-			id: fixture,
-			data: loadFixture(`src/invitations/demos/${fixture}/content.json`),
+			id: 'demo-brisa',
+			data: loadFixture('src/invitations/demos/demo-brisa/content.json'),
 		} as EventContentEntry;
 		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
+		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
+			'quote',
+			'countdown',
+			'interlude',
+			'family',
+			'interlude',
+			'location',
+			'gallery',
+			'gifts',
+			'personalized-access',
+			'rsvp',
+			'thankYou',
+		]);
 		expect(
-			plan.slice(0, 3).map((item) => (item.type === 'section' ? item.section : item.type)),
-		).toEqual(['quote', 'personalized-access', 'interlude']);
-		expect(plan[2]).toEqual(
-			expect.objectContaining({
-				type: 'interlude',
-				afterSection: 'personalizedAccess',
-				intersection: { family: 'neutral', source: 'interlude-after-personalizedAccess' },
-			}),
-		);
+			plan.find((item) => item.type === 'section' && item.section === 'rsvp'),
+		).toMatchObject({
+			intersection: { family: 'stack', source: 'personalized-access' },
+		});
 	});
 });

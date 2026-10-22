@@ -72,24 +72,24 @@
 
 @media (prefers-reduced-motion: no-preference) {
 	.invitation-footer[data-footer-reveal='open'] > * {
-		animation: footer-reveal var(--footer-reveal-duration, 360ms) cubic-bezier(0.22, 1, 0.36, 1)
+		animation: footer-reveal var(--footer-reveal-duration, 480ms) cubic-bezier(0.16, 1, 0.3, 1)
 			both;
 	}
 
 	// Counted past the reply block, so the footer's own rows keep their stagger with or without it.
 	.invitation-footer[data-footer-reveal='open'] > :nth-child(2 of :not(.footer-reply)) {
-		animation-delay: var(--footer-reveal-stagger, 50ms);
+		animation-delay: var(--footer-reveal-stagger, 0ms);
 	}
 
 	.invitation-footer[data-footer-reveal='open'] > :nth-child(3 of :not(.footer-reply)) {
-		animation-delay: calc(var(--footer-reveal-stagger, 50ms) * 2);
+		animation-delay: calc(var(--footer-reveal-stagger, 0ms) * 2);
 	}
 }
 
 @keyframes footer-reveal {
 	0% {
 		opacity: 0%;
-		translate: 0 var(--footer-reveal-rise, 1rem);
+		translate: 0 var(--footer-reveal-rise, 0.25rem);
 	}
 
 	100% {
@@ -443,6 +443,7 @@ $lantern-shape: 40% 40% 45% 45%;
 //   --footer-reply-question-font / -question-size / -eyebrow-size / -note-size
 //   --footer-reply-lantern / -lantern-glow   Lantern fill (default the pull lantern's) and light
 //   --footer-reply-lantern-height   Lantern height (default 1.8rem; its width is 1.4rem)
+//   --footer-reply-overshoot    Final lantern overshoot; zero removes its settling bounce
 //   --footer-reply-button-bg / -button-ink / -button-font / -button-size
 //   --footer-reply-glint      A light crossing the button as the footer opens (default none)
 //   --footer-reply-gap        Space under the block, above the closing phrase (default 2.5rem)
@@ -572,7 +573,7 @@ $footer-reply-pill: 999px;
 @media (prefers-reduced-motion: no-preference) {
 	.invitation-footer[data-footer-reveal='open'] {
 		.footer-reply__lantern {
-			animation: footer-reply-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+			animation: footer-reply-rise 640ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
 		}
 
 		.footer-reply__button {
@@ -580,21 +581,16 @@ $footer-reply-pill: 999px;
 				var(--footer-reply-glint, linear-gradient(transparent, transparent)) 150% 0 / 250%
 					100% no-repeat,
 				var(--footer-reply-button-bg, var(--color-action-accent));
-			animation: footer-reply-glint 1.1s cubic-bezier(0.4, 0, 0.2, 1) 700ms both;
+			animation: footer-reply-glint 1.1s cubic-bezier(0.4, 0, 0.2, 1) 500ms both;
 		}
 	}
 }
 
-// The pull lantern, let go, arrives from below and settles on its thread.
+// The pull lantern, let go, arrives smoothly from below and settles on its thread.
 @keyframes footer-reply-rise {
 	0% {
 		opacity: 0%;
-		translate: 0 3rem;
-	}
-
-	70% {
-		opacity: 100%;
-		translate: 0 -0.2rem;
+		translate: 0 var(--footer-reply-rise, 0.75rem);
 	}
 
 	100% {

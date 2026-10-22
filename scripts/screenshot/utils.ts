@@ -327,9 +327,9 @@ export interface ScreenshotLaneContext {
  * Resolve the default screenshot base URL for the current worktree lane.
  *
  * Ports match Astro `server.port` / `getWorktreeDevServerPort`:
- * - Integration (`develop` trunk) / `dev-local` → 4321
- * - `dev-extra` → 4322
- * - `dev-preview` → 4323
+ * - Integration (`develop` trunk, Win + F4) → 4321
+ * - every other lane → 4320 + its F-key (`f05-plataforma` → 4325 … `f12-release` → 4332)
+ * - unknown checkout → 4399
  *
  * `ASTRO_PORT` overrides the lane table (same contract as `astro.config.mjs`).
  * Explicit `--base-url` / config `baseUrl` should be passed via `explicitBaseUrl`.
@@ -427,7 +427,7 @@ export function resolveUrl(input: string, baseUrl: string = resolveScreenshotBas
 /**
  * Create a human-readable page slug from a URL, using all pathname segments.
  * Examples:
- *   /boda/demo-boda-jewelry-box-wedding  → boda-demo-boda-jewelry-box-wedding
+ *   /boda/demo-brisa  → boda-demo-brisa
  *   /dashboard                           → dashboard
  *   /                                    → home
  *   /login                               → login

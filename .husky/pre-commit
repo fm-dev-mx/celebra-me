@@ -18,6 +18,9 @@ if [ "$current_branch" = "main" ]; then
   exit 1
 fi
 
+# Lane guard: commits only from a canonical lane, and Integration only on develop
+node scripts/agent/lane-guard.mjs --commit
+
 echo "🛡️ Running pre-commit checks..."
 pnpm lint-staged
 pnpm test:changed

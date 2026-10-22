@@ -22,7 +22,7 @@ pnpm screenshot
 
 # Direct — invitation (flags) — VERIFIED
 # Relative routes use the lane-aware base URL (see Lane ports below)
-pnpm screenshot:invite --url=/boda/demo-boda-jewelry-box-wedding
+pnpm screenshot:invite --url=/brisa
 
 # Direct — general page (flags) — VERIFIED for landing
 pnpm screenshot --url=/
@@ -32,12 +32,8 @@ pnpm screenshot --url=/
 
 `pnpm screenshot` detects the current worktree lane and targets the same Astro port as `pnpm dev`:
 
-| Lane                          | Worktree                             | Default base URL        |
-| ----------------------------- | ------------------------------------ | ----------------------- |
-| Integration (`develop` trunk) | repo root                            | `http://localhost:4321` |
-| `dev-local`                   | `…/celebra-me-worktrees/dev-local`   | `http://localhost:4321` |
-| `dev-extra`                   | `…/celebra-me-worktrees/dev-extra`   | `http://localhost:4322` |
-| `dev-preview`                 | `…/celebra-me-worktrees/dev-preview` | `http://localhost:4323` |
+The [lane guide](../../docs/core/worktrees/README.md) lists all lanes. Integration uses port 4321;
+F5–F12 use ports 4325–4332 respectively. The executable lane table owns these defaults.
 
 Overrides (in order): `--base-url=…` / config `baseUrl`, then `ASTRO_PORT`, then the lane table.
 Absolute `--url=http://…` values are left unchanged.
@@ -125,12 +121,12 @@ $ pnpm screenshot
 📸  Celebra-me Screenshot Tool
 
 ? What do you want to screenshot?
-  ❯ Invitation page   (e.g. /boda/demo-boda-jewelry-box-wedding)
+  ❯ Invitation page   (e.g. /brisa)
     Landing page      (e.g. /)
     Dashboard / Admin (e.g. /dashboard)
     ...
 
-? URL or route to capture: /boda/demo-boda-jewelry-box-wedding
+? URL or route to capture: /brisa
 
 ? What is the target of this screenshot run?
   ❯ Critical QA set
@@ -184,7 +180,7 @@ pnpm screenshot \
 
 # Short forms
 pnpm screenshot:invite \
-  --url=/boda/demo-boda-jewelry-box-wedding \
+  --url=/brisa \
   --profile=invitation \
   --set=essential \
   --reveal=auto
@@ -245,7 +241,7 @@ section, but they cannot add persisted tasks to an explicit section request. `al
 
 ```
 screenshots/
-  demo-boda-jewelry-box-wedding/
+  demo-brisa/
     mobile-standard/
       01-initial-closed-viewport.png
       02-reveal-closed.png

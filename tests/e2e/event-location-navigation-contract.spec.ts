@@ -19,7 +19,7 @@ test.describe('event location navigation contract', () => {
 	});
 
 	test('the existing wedding invitation keeps provider navigation buttons', async ({ page }) => {
-		await page.goto('/boda/demo-boda-jewelry-box-wedding?skipEnvelope=true', {
+		await page.goto('/boda/demo-brisa?skipEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 

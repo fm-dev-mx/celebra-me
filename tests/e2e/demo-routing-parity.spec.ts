@@ -1,6 +1,56 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Demo Routing Parity', () => {
+	for (const width of [390, 1440]) {
+		test(`Brisa keeps five gallery photos and two independent venue cards @ ${width}`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+			const response = await page.goto('/brisa?skipEnvelope=true');
+			expect(response?.status()).toBe(200);
+			await expect(page.locator('[data-gallery-track] [data-gallery-item]')).toHaveCount(5);
+			await expect(page.locator('.demo-conversion')).toHaveCount(2);
+			await expect(page.locator('.event-location__card')).toHaveCount(2);
+			const mapLinks = await page
+				.locator('.event-location__nav-button--directions')
+				.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+			expect(mapLinks).toHaveLength(2);
+			expect(new Set(mapLinks).size).toBe(2);
+			const photos = await page
+				.locator('[data-gallery-track] [data-gallery-item]')
+				.evaluateAll((items) => items.map((item) => item.getAttribute('data-gallery-src')));
+			expect(new Set(photos).size).toBe(5);
+			const sections = await page
+				.locator('.invitation-section-wrapper[data-section-kind]')
+				.evaluateAll((items) =>
+					items.map((item) => item.getAttribute('data-section-kind')),
+				);
+			expect(sections.slice(0, 5)).toEqual([
+				'quote',
+				'countdown',
+				'interlude',
+				'family',
+				'interlude',
+			]);
+			await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/brisa$/);
+		});
+	}
+	test('resolves Brisa and permanently redirects its retired URL with query parameters', async ({
+		request,
+	}) => {
+		const legacy = await request.get(
+			'/boda/demo-boda-jewelry-box-wedding?skipEnvelope=true&utm_source=shared',
+			{ maxRedirects: 0 },
+		);
+		expect(legacy.status()).toBe(301);
+		expect(legacy.headers().location).toBe('/brisa?skipEnvelope=true&utm_source=shared');
+		const current = await request.get('/brisa?skipEnvelope=true');
+		expect(current.status()).toBe(200);
+		const html = await current.text();
+		expect(html).toContain('event--demo-brisa');
+		expect(html).toContain('canonical');
+		expect(html).not.toContain('href="/boda/demo-boda-jewelry-box-wedding');
+	});
 	test('keeps an unknown invitation unavailable publicly', async ({ request }) => {
 		const response = await request.get('/cumple/e2e-nonexistent-invitation');
 		expect(response.status()).toBe(404);
@@ -433,9 +483,7 @@ test.describe('Demo Routing Parity', () => {
 			await expect(page.locator('.demo-lookbook__copy .demo-showroom__eyebrow')).toHaveText(
 				'Estilo disponible',
 			);
-			await expect(page.locator('#demo-showroom-featured-title')).toHaveText(
-				'Boda estilo Jewelry Box',
-			);
+			await expect(page.locator('#demo-showroom-featured-title')).toHaveText('Brisa');
 
 			// Selector section must not be present in DOM
 			await expect(page.locator('.demo-showroom__selector')).not.toBeVisible();
@@ -478,7 +526,6 @@ test.describe('Demo Routing Parity', () => {
 
 for (const route of [
 	'/bautizo/demo-bautizo-angelic-presence',
-	'/boda/demo-boda-jewelry-box-wedding',
 	'/primera-comunion/demo-primera-comunion-angelic-presence',
 ]) {
 	for (const viewport of [

@@ -7,7 +7,7 @@
  *   - Container:     celebra-me-test-db
  *   - Port:          54332
  *   - Credentials:   supabase_admin / postgres (or postgres / postgres)
- *   - Image:         ghcr.io/supabase/postgres:17.6.1.143 (digest-pinned)
+ *   - Image:         docker.io/supabase/postgres:17.6.1.143 (digest-pinned)
  *   - Data:          synthetic test data only
  *
  * Usage:
@@ -27,6 +27,7 @@ import { resolve } from 'node:path';
 import { BASELINE_CUTOFF_VERSION, fail, runCommand } from './db-workflow-lib.ts';
 import { invalidateDisposableMigrationProof } from './disposable-migration-proof.ts';
 import { DISPOSABLE_DB_URL, DISPOSABLE_TEST, redactCredentials } from './db-target-config.ts';
+import { IMAGE_RETRY_COUNT, pullImageWithRetry } from './image-pull-retry.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -45,27 +46,11 @@ const DISPOSABLE_PORTS = {
 
 const POSTGREST_CONTAINER = DISPOSABLE_TEST.postgrestContainerName;
 
-/** Immutable Supabase images used by the disposable database contract tests. */
+/** Upstream Docker Hub images; digests match the former GHCR mirrors byte for byte. */
 export const POSTGRES_IMAGE =
-	'ghcr.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453';
+	'docker.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453';
 export const POSTGREST_IMAGE =
-	'ghcr.io/supabase/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012';
-
-export type ImagePullFailureClass = 'rate-limit' | 'registry-rejected' | 'transient';
-
-export function classifyImagePullFailure(errorOutput: string): ImagePullFailureClass {
-	if (/toomanyrequests|data limit exceeded|rate.?limit|\b429\b/i.test(errorOutput)) {
-		return 'rate-limit';
-	}
-	if (
-		/unauthorized|authentication required|denied:|forbidden|manifest unknown|name unknown|not found|no matching manifest|invalid reference format/i.test(
-			errorOutput,
-		)
-	) {
-		return 'registry-rejected';
-	}
-	return 'transient';
-}
+	'docker.io/postgrest/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012';
 
 /**
  * Bounded wait for a fresh disposable PostgreSQL container to become ready.
@@ -76,10 +61,6 @@ const READINESS_TIMEOUT_MS = 120_000;
 
 /** How long between readiness poll cycles. */
 const READINESS_POLL_MS = 1_000;
-
-/** Docker image-pull retry budget. */
-const IMAGE_RETRY_COUNT = 3;
-const IMAGE_RETRY_DELAY_MS = 5_000;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -173,7 +154,7 @@ function containerExists(): boolean {
 
 /**
  * Ensure the Docker image is available locally. If absent, pull it with
- * bounded retry and backoff. Fails closed after all attempts are exhausted.
+ * bounded retry, backoff, and jitter. Fails closed after all attempts are exhausted.
  */
 function ensureImageExists(imageName = POSTGRES_IMAGE): void {
 	// Check if image already exists locally
@@ -189,35 +170,17 @@ function ensureImageExists(imageName = POSTGRES_IMAGE): void {
 	console.info(
 		`  Pulling ${imageName} from ${registry} (up to ${IMAGE_RETRY_COUNT} attempts)...`,
 	);
-	let lastFailure = '';
-	let lastFailureClass: ImagePullFailureClass = 'transient';
-	let attempts = 0;
-	for (let attempt = 1; attempt <= IMAGE_RETRY_COUNT; attempt++) {
-		if (attempt > 1) {
-			const delay = IMAGE_RETRY_DELAY_MS * attempt;
-			console.info(`  Retry ${attempt}/${IMAGE_RETRY_COUNT} after ${delay}ms...`);
-			sleep(delay);
-		}
-		const pullResult = runCommand('docker', ['pull', imageName], {
-			throwOnError: false,
-		});
-		attempts = attempt;
-		if (pullResult.status === 0) {
-			console.info(`  Image ${imageName} pulled successfully.`);
-			return;
-		}
-		lastFailure =
-			redactCredentials(pullResult.stderr.trim()) ||
-			`docker pull exited with status ${pullResult.status}`;
-		lastFailureClass = classifyImagePullFailure(lastFailure);
-		console.warn(
-			`  docker pull attempt ${attempt}/${IMAGE_RETRY_COUNT} failed (${lastFailureClass}): ${lastFailure.slice(0, 300) || `exit ${pullResult.status}`}`,
-		);
-		if (lastFailureClass !== 'transient') break;
+	const result = pullImageWithRetry(imageName, {
+		pull: (name) => runCommand('docker', ['pull', name], { throwOnError: false }),
+		sleep,
+	});
+	if (result.ok) {
+		console.info(`  Image ${imageName} pulled successfully.`);
+		return;
 	}
-	const failureDetail = lastFailure || 'Docker returned no error details.';
+	const failureDetail = result.failure || 'Docker returned no error details.';
 	fail(
-		`Failed to pull ${imageName} from ${registry} after ${attempts} attempt(s) (${lastFailureClass}). ${failureDetail}`,
+		`Failed to pull ${imageName} from ${registry} after ${result.attempts} attempt(s) (${result.failureClass}). ${failureDetail}`,
 	);
 }
 

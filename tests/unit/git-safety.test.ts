@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { cleanupFixture, initGitRepo } from '../helpers/git-fixture';
+import { cleanupFixture, createLaneFixture, initGitRepo } from '../helpers/git-fixture';
 import { runCommand, sanitizeEnv } from '../helpers/run-command';
 
 const ROOT = process.cwd();
@@ -15,13 +15,21 @@ function runGitSafety(repoRoot: string, args: string[]) {
 	});
 }
 
-function createRepo() {
-	const repoRoot = mkdtempSync(path.join(tmpdir(), 'git-safety-'));
-	initGitRepo(repoRoot, 'Git Safety Tester', 'git-safety@example.com');
-	writeFileSync(path.join(repoRoot, 'README.md'), '# fixture\n', 'utf8');
-	runCommand('git', ['add', 'README.md'], { cwd: repoRoot, env: sanitizeEnv() });
-	runCommand('git', ['commit', '-m', 'initial'], { cwd: repoRoot, env: sanitizeEnv() });
-	return repoRoot;
+const laneParents: string[] = [];
+
+afterAll(() => {
+	for (const parent of laneParents) cleanupFixture(parent);
+});
+
+function newParent(prefix: string) {
+	const parent = mkdtempSync(path.join(tmpdir(), prefix));
+	laneParents.push(parent);
+	return parent;
+}
+
+/** Linked worktree at a canonical lane path, so the lane guard lets `start` run. */
+function createRepo(segment = 'f10-libre') {
+	return createLaneFixture(newParent('git-safety-'), segment, 'Git Safety Tester');
 }
 
 function baselinePath(repoRoot: string) {
@@ -354,9 +362,15 @@ describe('git-safety start/finish lifecycle', () => {
 	});
 
 	it('supports unborn HEAD and authorized first commit', () => {
-		const repoRoot = mkdtempSync(path.join(tmpdir(), 'git-safety-unborn-'));
+		// Unborn Integration checkout on `develop`: the lane guard allows it.
+		const repoRoot = path.join(newParent('git-safety-unborn-'), 'celebra-me');
+		mkdirSync(repoRoot);
 		try {
 			initGitRepo(repoRoot, 'Git Safety Tester', 'git-safety@example.com');
+			runCommand('git', ['symbolic-ref', 'HEAD', 'refs/heads/develop'], {
+				cwd: repoRoot,
+				env: sanitizeEnv(),
+			});
 			const start = runGitSafety(repoRoot, ['start']);
 			expect(start.status).toBe(0);
 			const baseline = JSON.parse(readFileSync(baselinePath(repoRoot), 'utf8'));
@@ -430,5 +444,48 @@ describe('git-safety start/finish lifecycle', () => {
 		} finally {
 			cleanupFixture(repoRoot);
 		}
+	});
+});
+
+describe('git-safety start lane guard', () => {
+	it('refuses a mutable session outside a canonical lane', () => {
+		const repoRoot = mkdtempSync(path.join(tmpdir(), 'git-safety-unknown-'));
+		try {
+			const integration = createRepo();
+			// A linked worktree outside <repo>-worktrees/ is the unknown lane.
+			runCommand('git', ['worktree', 'add', '--detach', path.join(repoRoot, 'loose')], {
+				cwd: integration,
+				env: sanitizeEnv(),
+			});
+			const loose = path.join(repoRoot, 'loose');
+			const start = runGitSafety(loose, ['start']);
+			expect(start.status).toBe(1);
+			expect(start.stderr).toContain('lane: unknown');
+			expect(start.stderr).toContain('f05-plataforma (Win + F5)');
+			expect(existsSync(baselinePath(loose))).toBe(false);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('allows Integration only on develop', () => {
+		const repoRoot = createLaneFixture(newParent('git-safety-integration-'), null, 'Tester');
+
+		runCommand('git', ['switch', '-c', 'feature/task'], { cwd: repoRoot, env: sanitizeEnv() });
+		const onFeature = runGitSafety(repoRoot, ['start']);
+		expect(onFeature.status).toBe(1);
+		expect(onFeature.stderr).toContain('Integration (Win + F4) only takes commits on develop');
+		expect(existsSync(baselinePath(repoRoot))).toBe(false);
+
+		runCommand('git', ['switch', 'develop'], { cwd: repoRoot, env: sanitizeEnv() });
+		const onDevelop = runGitSafety(repoRoot, ['start']);
+		expect(onDevelop.status).toBe(0);
+		expect(existsSync(baselinePath(repoRoot))).toBe(true);
+	});
+
+	it('allows a canonical lane on a task branch', () => {
+		const repoRoot = createRepo('f07-invitaciones');
+		const start = runGitSafety(repoRoot, ['start']);
+		expect(start.status).toBe(0);
 	});
 });

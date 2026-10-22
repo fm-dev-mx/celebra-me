@@ -72,23 +72,24 @@ test.describe('America XV invitation content', () => {
 		).toContainText('sábado 21 de noviembre de 2026');
 	});
 
-	test('lists the five moments of the program in order', async ({ page }) => {
+	test('lists the six moments of the program in order', async ({ page }) => {
 		const itinerary = page.locator(
 			'.invitation-section-wrapper[data-section-kind="itinerary"]',
 		);
 		await expect(itinerary).toContainText('Así será mi noche');
-		const rows = itinerary.locator('.itinerary__program-row');
-		await expect(rows).toHaveCount(5);
+		const cards = itinerary.locator('.stacked-card');
+		await expect(cards).toHaveCount(6);
 		const expected = [
-			[/6:00\s*PM|18:00/, 'Misa'],
-			[/8:00\s*PM|20:00/, 'Recepción'],
-			[/9:30\s*PM|21:30/, 'Vals'],
-			[/10:30\s*PM|22:30/, 'Cena'],
-			[/1:00\s*AM|01:00/, 'Cierre'],
+			['6:00 p. m.', 'Misa'],
+			['8:00 p. m.', 'Recepción'],
+			['8:30 p. m.', 'Vals'],
+			['9:00 p. m.', 'Baile sorpresa'],
+			['9:30 p. m.', 'Cena'],
+			['1:00 a. m.', 'Cierre'],
 		] as const;
 		for (const [index, [time, label]] of expected.entries()) {
-			await expect(rows.nth(index)).toContainText(time);
-			await expect(rows.nth(index)).toContainText(label);
+			await expect(cards.nth(index).locator('.stacked-card__time')).toHaveText(time);
+			await expect(cards.nth(index).locator('.stacked-card__label')).toHaveText(label);
 		}
 	});
 

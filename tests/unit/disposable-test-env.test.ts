@@ -2,10 +2,16 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
 	buildPostgrestDockerArgs,
-	classifyImagePullFailure,
 	POSTGRES_IMAGE,
 	POSTGREST_IMAGE,
 } from '../../scripts/db/disposable-test-env.ts';
+import {
+	classifyImagePullFailure,
+	computeImagePullRetryDelayMs,
+	IMAGE_RETRY_COUNT,
+	parseRetryAfterMs,
+	pullImageWithRetry,
+} from '../../scripts/db/image-pull-retry.ts';
 import {
 	DISPOSABLE_START_COMMAND,
 	ensureDisposableDbAvailable,
@@ -18,19 +24,20 @@ import { redactCredentials } from '../../scripts/db/db-target-config.ts';
 // ---------------------------------------------------------------------------
 describe('disposable-test-env — cross-platform fixes', () => {
 	describe('Supabase disposable image references', () => {
-		it('uses the existing PostgreSQL and PostgREST versions from immutable GHCR digests', () => {
+		it('uses upstream Docker Hub images without changing the pinned versions or digests', () => {
 			expect(POSTGRES_IMAGE).toBe(
-				'ghcr.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453',
+				'docker.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453',
 			);
 			expect(POSTGREST_IMAGE).toBe(
-				'ghcr.io/supabase/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012',
+				'docker.io/postgrest/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012',
 			);
 		});
 
-		it('classifies registry quota responses as non-retriable', () => {
-			expect(classifyImagePullFailure('toomanyrequests: Data limit exceeded')).toBe(
-				'rate-limit',
-			);
+		it.each([
+			'toomanyrequests: Data limit exceeded',
+			'toomanyrequests: retry-after: 904.5µs, allowed: 44000/minute',
+		])('classifies registry quota responses as rate-limit: %s', (errorOutput) => {
+			expect(classifyImagePullFailure(errorOutput)).toBe('rate-limit');
 		});
 
 		it.each([
@@ -42,6 +49,100 @@ describe('disposable-test-env — cross-platform fixes', () => {
 
 		it('keeps transient network failures eligible for bounded retry', () => {
 			expect(classifyImagePullFailure('TLS handshake timeout')).toBe('transient');
+		});
+	});
+
+	describe('image pull retry', () => {
+		const GHCR_RATE_LIMIT =
+			'Error response from daemon: toomanyrequests: retry-after: 904.5µs, allowed: 44000/minute';
+
+		it.each([
+			['toomanyrequests: retry-after: 904.5µs', 0.9045],
+			['retry-after: 1.5s', 1_500],
+			['Retry-After: 30', 30_000],
+			['retry-after: 2m', 120_000],
+			['retry-after: 250ms', 250],
+		])('parses retry-after hint %s', (errorOutput, expected) => {
+			expect(parseRetryAfterMs(errorOutput)).toBeCloseTo(expected);
+		});
+
+		it('returns null without a retry-after hint', () => {
+			expect(parseRetryAfterMs('toomanyrequests: Data limit exceeded')).toBeNull();
+		});
+
+		it('floors tiny rate-limit retry-after hints and backs off exponentially', () => {
+			const noJitter = () => 0;
+			expect(computeImagePullRetryDelayMs(1, 'rate-limit', GHCR_RATE_LIMIT, noJitter)).toBe(
+				15_000,
+			);
+			expect(computeImagePullRetryDelayMs(2, 'rate-limit', GHCR_RATE_LIMIT, noJitter)).toBe(
+				30_000,
+			);
+			expect(computeImagePullRetryDelayMs(3, 'rate-limit', GHCR_RATE_LIMIT, noJitter)).toBe(
+				60_000,
+			);
+		});
+
+		it('honors a longer retry-after up to the cap', () => {
+			const noJitter = () => 0;
+			expect(
+				computeImagePullRetryDelayMs(1, 'rate-limit', 'retry-after: 40s', noJitter),
+			).toBe(40_000);
+			expect(
+				computeImagePullRetryDelayMs(1, 'rate-limit', 'retry-after: 10m', noJitter),
+			).toBe(60_000);
+		});
+
+		it('adds bounded jitter', () => {
+			expect(computeImagePullRetryDelayMs(1, 'transient', '', () => 0)).toBe(5_000);
+			expect(computeImagePullRetryDelayMs(1, 'transient', '', () => 0.999)).toBeLessThan(
+				6_250,
+			);
+		});
+
+		function fakeDeps(results: Array<{ status: number; stderr: string }>) {
+			const sleeps: number[] = [];
+			let pulls = 0;
+			return {
+				sleeps,
+				pulls: () => pulls,
+				deps: {
+					pull: () => results[pulls++] ?? { status: 1, stderr: 'unexpected extra pull' },
+					sleep: (ms: number) => sleeps.push(ms),
+					random: () => 0,
+					log: () => {},
+				},
+			};
+		}
+
+		it('uses every attempt when the registry keeps rate-limiting', () => {
+			const fake = fakeDeps(Array(4).fill({ status: 1, stderr: GHCR_RATE_LIMIT }));
+			const result = pullImageWithRetry('ghcr.io/x/y:1', fake.deps, 4);
+			expect(result).toMatchObject({ ok: false, attempts: 4, failureClass: 'rate-limit' });
+			expect(fake.pulls()).toBe(4);
+			expect(fake.sleeps).toEqual([15_000, 30_000, 60_000]);
+		});
+
+		it('succeeds after a rate-limited attempt', () => {
+			const fake = fakeDeps([
+				{ status: 1, stderr: GHCR_RATE_LIMIT },
+				{ status: 0, stderr: '' },
+			]);
+			expect(pullImageWithRetry('ghcr.io/x/y:1', fake.deps, 4)).toEqual({
+				ok: true,
+				attempts: 2,
+			});
+			expect(fake.sleeps).toEqual([15_000]);
+		});
+
+		it('stops immediately on a permanent registry rejection', () => {
+			const fake = fakeDeps([{ status: 1, stderr: 'manifest unknown' }]);
+			expect(pullImageWithRetry('ghcr.io/x/y:1', fake.deps, 4)).toMatchObject({
+				ok: false,
+				attempts: 1,
+				failureClass: 'registry-rejected',
+			});
+			expect(fake.sleeps).toEqual([]);
 		});
 	});
 
@@ -291,15 +392,8 @@ describe('startup resilience', () => {
 	});
 
 	it('image pull retries are bounded (IMAGE_RETRY_COUNT)', () => {
-		const source = readFileSync(
-			resolve(process.cwd(), 'scripts/db/disposable-test-env.ts'),
-			'utf8',
-		);
-		const match = source.match(/IMAGE_RETRY_COUNT\s*=\s*(\d+)/);
-		expect(match).not.toBeNull();
-		const count = parseInt(match![1]!, 10);
-		expect(count).toBeGreaterThan(0);
-		expect(count).toBeLessThan(10); // no unbounded retries
+		expect(IMAGE_RETRY_COUNT).toBeGreaterThan(1);
+		expect(IMAGE_RETRY_COUNT).toBeLessThan(10); // no unbounded retries
 	});
 
 	it('emits docker container state and logs diagnostics on failure', () => {

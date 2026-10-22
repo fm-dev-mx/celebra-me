@@ -165,9 +165,7 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 			expect(
 				classifySlugCategory('demo-xv-jewelry-box', false, undefined, false, 'demo'),
 			).toBe('demo');
-			expect(
-				classifySlugCategory('demo-boda-jewelry-box-wedding', false, undefined, false),
-			).toBe('demo');
+			expect(classifySlugCategory('demo-brisa', false, undefined, false)).toBe('demo');
 		});
 
 		it('classifies unmanaged rows', () => {

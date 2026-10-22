@@ -10,6 +10,39 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.42.0-beta.1] - 2026-10-22
+
+New XV lantern garden demo, the coastal wedding demo renamed to Brisa, and daily monitoring alerts.
+América shows program times in the Spanish form and a refined footer opening; Olivia y Antonio's
+footer opens in one soft movement. No migrations.
+
+### Added
+
+- XV lantern garden demo with richer lantern-route scenes (#439).
+- Daily alerts for Worker errors, platform limits and quota usage (#441); the monitoring map lists
+  them (#442).
+- `ops:status` task replaces the retired `/ops` page (#443).
+
+### Changed
+
+- The coastal wedding demo is renamed Brisa and answers at a `/brisa` alias (#444).
+- América: stacked-card times read «6:00 p. m.», the hero framing and typography are refined, and
+  the footer opening replays on every return (#439).
+- Olivia y Antonio: the footer rows rise together in one soft movement and the legal line ends above
+  the music button (#439).
+- Worktree tooling uses nine lanes keyed by F4–F12, with separate ports and merge-only commits in
+  Integration (#446).
+- Environment synchronization initializes only assigned runtime configuration, preserves conflicting
+  files and excludes Production and hosted-test credentials (#446).
+- Metrics and monitoring docs match live behavior (#440).
+- sanitize-html 2.18.1 (#396).
+
+### Fixed
+
+- Disposable database tests pull the same pinned images from their upstream Docker Hub repositories
+  instead of the rate-limited GHCR mirrors, and retry rate-limited pulls (#445, #446).
+- Each Brisa keyboard reveal test gets its own time budget (#448).
+
 ## [0.41.0-beta.1] - 2026-10-21
 
 Faster invitations: background music buffers after the page paints and plays shorter loop cuts, each

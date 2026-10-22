@@ -29,6 +29,10 @@ $america-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30'%3E%3Ccircle cx='12' cy='16' r='11' fill='%23E8A040' opacity='.16'/%3E%3Cpath fill='%23E8A040' d='M9.5 6h5v1.6c3 1 5 4 5 8.2 0 4.3-2.3 6.9-3.8 7.6H8.3c-1.5-.7-3.8-3.3-3.8-7.6 0-4.2 2-7.2 5-8.2z'/%3E%3Cpath fill='%23F3D9A4' opacity='.75' d='M11 10.5h2v9h-2z'/%3E%3Cpath fill='none' stroke='%23C9A45C' stroke-width='.8' d='M12 6V2'/%3E%3C/svg%3E");
 
 .event--america.theme-preset--storybook-lilac {
+	// Keep the location cue above the floating music controls.
+	--location-route-cue-bottom: 4.5rem;
+	--location-route-cue-space: 9rem;
+
 	// Depths of the three joins, each reserved as padding on the side it enters.
 	--america-cut: clamp(4.5rem, 14vw, 6.5rem);
 	--america-print-overlap: clamp(5rem, 22vw, 9rem);
@@ -73,6 +77,37 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--hero-bleed-scroll-line-bg: none;
 	--hero-bleed-scroll-braid: #{$america-braid-vertical} center top / 12px 24px repeat-y;
 	--hero-bleed-scroll-grow: hero-bleed-scroll-grow;
+
+	// Hero Jewelry Box & Motion Enhancements:
+	--hero-bleed-photo-shadow:
+		0 16px 48px -8px color-mix(in srgb, var(--color-lantern-amber) 24%, transparent),
+		0 4px 18px -2px color-mix(in srgb, var(--color-gold-ink) 18%, transparent);
+	--hero-bleed-photo-outer-border: 1px solid
+		color-mix(in srgb, var(--color-gold-ink) 30%, transparent);
+	--hero-bleed-layout-bg: radial-gradient(
+		ellipse 85% 55% at 50% 28%,
+		color-mix(in srgb, var(--color-lantern-amber) 14%, transparent) 0%,
+		color-mix(in srgb, var(--color-lantern-amber) 4%, transparent) 45%,
+		transparent 75%
+	);
+	--hero-bleed-occasion-display: inline-flex;
+	--hero-bleed-occasion-rule: clamp(1.5rem, 4vw, 2.5rem);
+	--hero-bleed-occasion-gap: 0.75rem;
+	--hero-bleed-rule-entrance: hero-bleed-rule-draw;
+	--hero-bleed-rule: color-mix(in srgb, var(--color-gold-ink) 55%, transparent);
+	--hero-name-color: var(--color-violet-ink);
+	--hero-bleed-when-font-family: var(--font-display);
+	--hero-bleed-when-color: var(--color-violet-ink);
+	--hero-bleed-where-color: color-mix(in srgb, var(--color-violet-ink) 82%, transparent);
+	--hero-bleed-scroll-prompt-display: block;
+	--hero-bleed-scroll-margin: 1rem auto 0;
+	--hero-bleed-scroll-line-margin: 0 auto;
+	--hero-bleed-scroll-prompt-color: var(--color-gold-ink);
+	--hero-bleed-scroll-cue: hero-bleed-scroll-cue;
+	--hero-bleed-scroll-cue-ink: color-mix(in srgb, var(--color-gold-ink) 85%, transparent);
+	--hero-bleed-scroll-cue-iterations: infinite;
+	--hero-bleed-scroll-cue-duration: 2.4s;
+	--hero-bleed-scroll-cue-delay: 1.2s;
 
 	// Quote as a pause on plain paper: the small sun in place of the rule, then the line, then
 	// the closing words in gold ink.
@@ -332,10 +367,11 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-program-lede-style: italic;
 	--location-program-lede-line-height: 1.3;
 	--location-program-entry-gap: 0.35rem;
-	--location-program-time-font: var(--font-display);
-	--location-program-time-size: clamp(1.2rem, 4.5vw, 1.4rem);
-	--location-program-place-size: clamp(2.1rem, 8.5vw, 2.75rem);
-	--location-program-place-weight: 400;
+	--location-program-time-font: var(--font-body);
+	--location-program-time-size: clamp(1.2rem, 4.2vw, 1.45rem);
+	--location-program-time-weight: 600;
+	--location-program-place-size: clamp(1.8rem, 7vw, 2.35rem);
+	--location-program-place-weight: 500;
 	--location-program-place-gap: 0.15rem;
 	--location-program-address-size: 1rem;
 	--location-program-address-margin: 0.35rem 0 0.5rem;
@@ -597,6 +633,11 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// text contact link.
 	.invitation-footer {
 		--invitation-footer-reveal: held;
+		--footer-open-glide: 720ms;
+		--footer-reveal-duration: 520ms;
+		--footer-reveal-stagger: 0ms;
+		--footer-reveal-rise: 0.25rem;
+		--footer-reply-overshoot: 0;
 
 		// The reply waits for the end: no button floats over the reading; the footer opens on the
 		// last lantern, lit, with the question and the reply under it, in candle gold.
@@ -683,7 +724,7 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// The photograph fills the width and gives up the stone above the door instead (the figure
 	// stays whole, head to shoes), so the larger name never narrows it.
 	.invitation-hero[data-variant='bleed-portrait'] {
-		--hero-title-size: clamp(4.5rem, 24vw, 6.5rem);
+		--hero-title-size: clamp(4.2rem, 22vw, 6.5rem);
 		--hero-bleed-photo-img-width: 100%;
 		--hero-bleed-photo-img-height: 100%;
 		--hero-bleed-photo-position-stack: 50% 88%;
@@ -711,7 +752,7 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 			color-mix(in srgb, var(--color-surface-primary) 72%, transparent) 17%,
 			transparent 34%
 		);
-		--hero-bleed-letter-overlap-stack: 6rem;
+		--hero-bleed-letter-overlap-stack: clamp(4.5rem, 14vw, 6rem);
 
 		// One word that fits once the script loads; never broken across lines by the fallback.
 		--hero-bleed-name-overflow-wrap: normal;
@@ -721,6 +762,8 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 
 		// The facts in two short lines; the long reading returns side by side.
 		--hero-bleed-summary-display: grid;
+		--hero-bleed-summary-size: clamp(1.15rem, 3.8vw, 1.45rem);
+		--hero-bleed-summary-detail-size: clamp(0.875rem, 2.8vw, 1.05rem);
 		--hero-bleed-facts-display-stack: none;
 		--hero-bleed-scroll-line-stack: 3.5rem;
 	}
@@ -918,10 +961,10 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--stacked-cards-min-height: 36svh;
 		--stacked-cards-top: calc(var(--invitation-header-offset, 72px) + 0.5rem);
 		--stacked-cards-step: 14px;
-		--stacked-cards-time-size: 1.25rem;
-		--stacked-cards-time-pending-size: 1.125rem;
-		--stacked-cards-label-size: clamp(2rem, 8vw, 2.5rem);
-		--stacked-cards-desc-size: 1.0625rem;
+		--stacked-cards-time-size: clamp(1.4rem, 4.5vw, 1.75rem);
+		--stacked-cards-time-pending-size: 1.15rem;
+		--stacked-cards-label-size: clamp(1.55rem, 5.2vw, 1.95rem);
+		--stacked-cards-desc-size: clamp(0.925rem, 2.4vw, 1.025rem);
 		--stacked-cards-shade: var(--america-night);
 		--stacked-cards-shade-strength: 8%;
 		--stacked-cards-max-width: 26rem;
@@ -931,10 +974,11 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--stacked-cards-gap: 0.35rem;
 		--stacked-cards-shadow: 0 18px 40px -28px rgb(var(--color-violet-ink-rgb) / 45%);
 		--stacked-cards-lantern-size: 1.5rem;
-		--stacked-cards-time-font: var(--font-label);
-		--stacked-cards-time-caps: all-small-caps;
-		--stacked-cards-time-tracking: 0.16em;
-		--stacked-cards-numeral: counter(moment, upper-roman) ' · ' / '';
+		--stacked-cards-time-font: var(--font-body);
+		--stacked-cards-time-weight: 700;
+		--stacked-cards-time-caps: normal;
+		--stacked-cards-time-tracking: 0.04em;
+		--stacked-cards-numeral: none;
 		--stacked-cards-rule: #{$america-braid};
 		--stacked-cards-rule-display: block;
 		--stacked-cards-rule-ratio: 104 / 12;

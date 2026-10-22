@@ -8,7 +8,7 @@
 */
 import CalendarOptions from './CalendarOptions.astro';
 import { resolveVenueMapPreviewUrl, type GroupedVenue } from '@/lib/invitation/location-helper';
-import { formatVenueTimeInWords } from '@/lib/invitation/venue-datetime';
+import { formatVenueTimeForDisplay, formatVenueTimeInWords } from '@/lib/invitation/venue-datetime';
 import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 
 interface Props {
@@ -20,7 +20,7 @@ interface Props {
 }
 
 const { venue, type, calendar, reveal = true } = Astro.props;
-const writtenTime = formatVenueTimeInWords(venue.time);
+const displayTime = formatVenueTimeForDisplay(venue.time) ?? formatVenueTimeInWords(venue.time);
 const addressPending = /\[\[PENDIENTE:/u.test(venue.address);
 const displayAddress = addressPending ? 'Dirección pendiente de confirmar' : venue.address;
 const mapUrl = resolveVenueMapPreviewUrl(venue);
@@ -56,12 +56,12 @@ const mapUrl = resolveVenueMapPreviewUrl(venue);
 		<ul class="event-location__program-schedule">
 			{venue.events.map((evt) => (
 				<li>
-					<span>{evt.name}</span> <span>{formatVenueTimeInWords(evt.time)}</span>
+					<span>{evt.name}</span> <span>{formatVenueTimeForDisplay(evt.time) ?? formatVenueTimeInWords(evt.time)}</span>
 				</li>
 			))}
 		</ul>
 	) : (
-		writtenTime && <p class="event-location__program-time">{writtenTime}</p>
+		displayTime && <p class="event-location__program-time">{displayTime}</p>
 	)}
 	<p class="event-location__program-place">{venue.venueName}</p>
 	<p class="event-location__program-address">{displayAddress}</p>
