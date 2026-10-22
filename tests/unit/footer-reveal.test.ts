@@ -237,4 +237,109 @@ describe('footer reveal', () => {
 			jest.restoreAllMocks();
 		}
 	});
+
+	it('replays the opening on every return to the bottom, by wheel, keys and focus', () => {
+		jest.useFakeTimers();
+		const originalMedia = window.matchMedia;
+		const originalObserver = window.IntersectionObserver;
+		const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')!;
+		const frames: FrameRequestCallback[] = [];
+		const bottom = 2000 - window.innerHeight;
+		jest.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(2000);
+		const now = jest.spyOn(performance, 'now').mockReturnValue(0);
+		jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
+		jest.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+			frames.push(callback);
+			return frames.length;
+		});
+		const add = jest.spyOn(window, 'addEventListener');
+		Object.defineProperty(window, 'scrollY', { configurable: true, writable: true, value: 0 });
+		window.matchMedia = jest.fn().mockReturnValue({ matches: false });
+		FakeIntersectionObserver.instances = [];
+		window.IntersectionObserver =
+			FakeIntersectionObserver as unknown as typeof IntersectionObserver;
+		const footer = document.createElement('footer');
+		footer.style.setProperty('--invitation-footer-reveal', 'held');
+		const link = document.createElement('a');
+		link.href = '#';
+		footer.append(link);
+		document.body.append(footer);
+		let clock = 0;
+		const tick = (ms: number) => now.mockReturnValue((clock += ms));
+		const scrollTo = (y: number) => {
+			window.scrollY = y;
+			window.dispatchEvent(new Event('scroll'));
+		};
+		const blockingPulls = () =>
+			add.mock.calls.filter(
+				([type, , options]) =>
+					type === 'wheel' && typeof options === 'object' && options?.passive === false,
+			).length;
+		// The glide runs to its end and the observer that waits for the guest to leave attaches.
+		const settle = () => {
+			while (frames.length) frames.shift()!((clock += 1000));
+			return FakeIntersectionObserver.instances.at(-1)!;
+		};
+		const arriveAndRest = () => {
+			scrollTo(bottom);
+			tick(400);
+			expect(footer.dataset.footerReveal).toBe('held');
+		};
+
+		try {
+			holdFooterUntilSecondScroll(footer);
+			expect(blockingPulls()).toBe(0);
+
+			// Down by wheel, then up and out of view. Listeners left by earlier tests in this
+			// window may add their own pulls, so only the change is counted.
+			arriveAndRest();
+			expect(blockingPulls()).toBeGreaterThan(0);
+			window.dispatchEvent(new WheelEvent('wheel', { deltaY: 400, cancelable: true }));
+			expect(footer.dataset.footerReveal).toBe('open');
+			let watch = settle();
+			scrollTo(0);
+			watch.leave();
+			expect(footer.dataset.footerReveal).toBe('held');
+
+			// Down by keyboard: the reading above the end never blocks scrolling.
+			const pullsBefore = blockingPulls();
+			scrollTo(bottom / 2);
+			expect(blockingPulls()).toBe(pullsBefore);
+			arriveAndRest();
+			window.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', cancelable: true }));
+			expect(footer.dataset.footerReveal).toBe('open');
+			watch = settle();
+			scrollTo(0);
+			watch.leave();
+			expect(footer.dataset.footerReveal).toBe('held');
+
+			// Down again; the guest tabs into the footer and scrolls away while it holds focus.
+			arriveAndRest();
+			link.focus();
+			expect(footer.dataset.footerReveal).toBe('open');
+			watch = settle();
+			scrollTo(0);
+			watch.leave();
+			expect(footer.dataset.footerReveal).toBe('open');
+			// Focus moving on re-arms the footer without the observer reporting again.
+			link.blur();
+			jest.runOnlyPendingTimers();
+			expect(footer.dataset.footerReveal).toBe('held');
+
+			// And the next return opens it once more.
+			arriveAndRest();
+			window.dispatchEvent(
+				new KeyboardEvent('keydown', { key: 'PageDown', cancelable: true }),
+			);
+			expect(footer.dataset.footerReveal).toBe('open');
+		} finally {
+			jest.runOnlyPendingTimers();
+			document.body.replaceChildren();
+			window.matchMedia = originalMedia;
+			window.IntersectionObserver = originalObserver;
+			Object.defineProperty(window, 'scrollY', originalScrollY);
+			jest.restoreAllMocks();
+			jest.useRealTimers();
+		}
+	});
 });

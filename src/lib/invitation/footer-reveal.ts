@@ -288,19 +288,30 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 	function watchForLeave() {
 		if (!(footer instanceof HTMLElement) || typeof IntersectionObserver === 'undefined') return;
 		leaveWatch?.disconnect();
+		let inView = true;
+		const holdAgain = () => {
+			if (inView || !leaveWatch) return;
+			// A reader tabbing through the footer keeps it; folding it away would clip their focus.
+			if (footer.contains(document.activeElement)) return;
+			leaveWatch.disconnect();
+			leaveWatch = null;
+			footer.removeEventListener('focusout', onFocusOut);
+			footer.dataset.footerReveal = 'held';
+			arm();
+		};
+		// Focus leaving a footer already out of view re-arms it; the observer will not report
+		// again until the footer moves. The check waits a task so `activeElement` has settled
+		// (a window blur keeps focus inside the footer).
+		const onFocusOut = () => window.setTimeout(holdAgain, 0);
 		leaveWatch = new IntersectionObserver(
 			(entries) => {
-				if (entries.some((entry) => entry.isIntersecting)) return;
-				// A reader tabbing through the footer keeps it; folding it away would clip their focus.
-				if (footer.contains(document.activeElement)) return;
-				leaveWatch?.disconnect();
-				leaveWatch = null;
-				footer.dataset.footerReveal = 'held';
-				arm();
+				inView = entries.some((entry) => entry.isIntersecting);
+				holdAgain();
 			},
 			{ rootMargin: REARM_ROOT_MARGIN },
 		);
 		leaveWatch.observe(footer);
+		footer.addEventListener('focusout', onFocusOut);
 	}
 
 	arm();
