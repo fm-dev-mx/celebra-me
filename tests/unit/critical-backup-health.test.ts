@@ -9,8 +9,8 @@ import {
 describe('critical backup health', () => {
 	it('names the checkout that owns the backup store being read', () => {
 		expect(
-			backupStoreCheckoutLabel(join('repo-worktrees', 'dev-local', '.backups', 'prod')),
-		).toBe('dev-local');
+			backupStoreCheckoutLabel(join('repo-worktrees', 'f05-plataforma', '.backups', 'prod')),
+		).toBe('f05-plataforma');
 	});
 
 	it('flags a missing or stale daily report without treating a fresh standalone set as daily evidence', () => {

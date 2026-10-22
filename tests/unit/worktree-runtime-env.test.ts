@@ -16,6 +16,7 @@ import {
 	resolveRuntimeTarget,
 } from '../../scripts/shared/celebra-runtime-env';
 import {
+	checkLaneWorkPolicy,
 	detectWorktreeLane,
 	getWorktreeDevServerPort,
 	listExpectedLanePaths,
@@ -23,26 +24,42 @@ import {
 } from '../../scripts/shared/worktree-lane';
 
 describe('worktree lane detection', () => {
-	it('recognizes Integration and the four persistent development lanes', () => {
+	const laneSegments = [
+		'f05-plataforma',
+		'f06-landing',
+		'f07-invitaciones',
+		'f08-demos',
+		'f09-docs',
+		'f10-libre',
+		'f11-preview',
+		'f12-release',
+	] as const;
+
+	it('recognizes Integration and the eight keyed lanes', () => {
 		expect(detectWorktreeLane('/mock/celebra-me').id).toBe('integration');
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local').id).toBe('dev-local');
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-preview').id).toBe('dev-preview');
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-extra').id).toBe('dev-extra');
+		for (const segment of laneSegments) {
+			expect(detectWorktreeLane(`/mock/celebra-me-worktrees/${segment}`).id).toBe(segment);
+		}
 	});
 
 	it('detects lanes from Unix-style checkout roots as well', () => {
 		expect(detectWorktreeLane('/home/dev/celebra-me').id).toBe('integration');
-		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/dev-local').id).toBe('dev-local');
-		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/dev-preview').id).toBe(
-			'dev-preview',
+		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/f05-plataforma').id).toBe(
+			'f05-plataforma',
 		);
-		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/dev-extra').id).toBe('dev-extra');
+		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/f11-preview').id).toBe(
+			'f11-preview',
+		);
 	});
 
 	it('does not recognize paths outside the canonical external layout', () => {
-		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-local').id).toBe('unknown');
-		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-lane').id).toBe('unknown');
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local2').id).toBe('unknown');
+		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/f05-plataforma').id).toBe('unknown');
+		expect(detectWorktreeLane('/mock/celebra-me/.claude/worktrees/task-1a2b').id).toBe(
+			'unknown',
+		);
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f05-plataforma2').id).toBe('unknown');
+		// Retired lane folders are no longer lanes.
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local').id).toBe('unknown');
 	});
 
 	it('does not treat a linked worktree named like the repository as Integration', () => {
@@ -59,32 +76,76 @@ describe('worktree lane detection', () => {
 	});
 
 	it('detects lanes from subdirectories of a lane checkout', () => {
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-extra/src').id).toBe('dev-extra');
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f10-libre/src').id).toBe('f10-libre');
 	});
 
-	it('lists expected lane paths under the repository root', () => {
+	it('lists expected lane paths, keys and runtimes under the repository root', () => {
 		const lanes = listExpectedLanePaths('/mock/celebra-me');
-		expect(lanes.map((lane) => lane.id)).toEqual([
-			'integration',
-			'dev-local',
-			'dev-preview',
-			'dev-extra',
-		]);
-		expect(lanes.find((lane) => lane.id === 'dev-preview')?.runtimeDefault).toBe('preview');
+		expect(lanes.map((lane) => lane.id)).toEqual(['integration', ...laneSegments]);
+		expect(lanes.map((lane) => lane.key)).toEqual([4, 5, 6, 7, 8, 9, 10, 11, 12]);
+		expect(
+			lanes.filter((lane) => lane.runtimeDefault === 'preview').map((lane) => lane.id),
+		).toEqual(['f11-preview', 'f12-release']);
 	});
 
-	it('assigns stable non-colliding Astro ports for parallel Local lanes', () => {
+	it('derives ports from the lane key', () => {
 		expect(getWorktreeDevServerPort('integration')).toBe(4321);
-		expect(getWorktreeDevServerPort('dev-local')).toBe(4321);
-		expect(getWorktreeDevServerPort('dev-extra')).toBe(4322);
-		expect(getWorktreeDevServerPort('dev-preview')).toBe(4323);
-		// Lanes that can run in parallel must not share a port. `integration` and
-		// `dev-local` intentionally share 4321 (the root repo and its main worktree
-		// are the same Local runtime); `unknown` is a non-canonical cwd fallback.
-		const parallelPorts = (['dev-local', 'dev-extra', 'dev-preview'] as const).map(
-			(lane) => WORKTREE_DEV_SERVER_PORTS[lane],
+		expect(getWorktreeDevServerPort('f05-plataforma')).toBe(4325);
+		expect(getWorktreeDevServerPort('f08-demos')).toBe(4328);
+		expect(getWorktreeDevServerPort('f11-preview')).toBe(4331);
+		expect(getWorktreeDevServerPort('f12-release')).toBe(4332);
+		expect(getWorktreeDevServerPort('unknown')).toBe(4399);
+	});
+
+	it('never lets two Local lanes share a port', () => {
+		const localPorts = listExpectedLanePaths('/mock/celebra-me')
+			.filter((lane) => lane.runtimeDefault === 'local')
+			.map((lane) => WORKTREE_DEV_SERVER_PORTS[lane.id]);
+		expect(localPorts).toHaveLength(7);
+		expect(new Set(localPorts).size).toBe(localPorts.length);
+		expect(localPorts).not.toContain(WORKTREE_DEV_SERVER_PORTS.unknown);
+	});
+});
+
+describe('lane work policy', () => {
+	const lane = (path: string) => detectWorktreeLane(path);
+
+	it('refuses the unknown lane and names every keyed lane', () => {
+		const message = checkLaneWorkPolicy({
+			lane: lane('/mock/celebra-me/.claude/worktrees/x'),
+			branch: 'feat/x',
+		});
+		expect(message).toContain('lane: unknown');
+		expect(message).toContain('f05-plataforma (Win + F5)');
+		expect(message).toContain('f12-release (Win + F12)');
+	});
+
+	it('allows Integration sessions on develop and only merge commits on develop', () => {
+		const integration = lane('/mock/celebra-me');
+		expect(checkLaneWorkPolicy({ lane: integration, branch: 'develop' })).toBeNull();
+		expect(
+			checkLaneWorkPolicy({ lane: integration, branch: 'feat/x', merging: true }),
+		).toContain('only takes commits on develop');
+		expect(
+			checkLaneWorkPolicy({ lane: integration, branch: 'develop', operation: 'commit' }),
+		).toContain('direct task commits are forbidden');
+		expect(
+			checkLaneWorkPolicy({
+				lane: integration,
+				branch: 'develop',
+				operation: 'commit',
+				merging: true,
+			}),
+		).toBeNull();
+		expect(checkLaneWorkPolicy({ lane: integration, branch: 'feat/x' })).toContain(
+			'only takes commits on develop (current: feat/x)',
 		);
-		expect(new Set(parallelPorts).size).toBe(parallelPorts.length);
+		expect(checkLaneWorkPolicy({ lane: integration, branch: null })).toContain('detached HEAD');
+	});
+
+	it('allows any branch in a keyed lane', () => {
+		const docs = lane('/mock/celebra-me-worktrees/f09-docs');
+		expect(checkLaneWorkPolicy({ lane: docs, branch: 'chore/x' })).toBeNull();
 	});
 });
 
@@ -125,8 +186,8 @@ describe('celebra runtime env bootstrap', () => {
 		);
 	});
 
-	it('resolves Preview runtime from the dev-preview worktree without a deploy identity', () => {
-		const cwd = writeLane('dev-preview');
+	it('resolves Preview runtime from the f11-preview worktree without a deploy identity', () => {
+		const cwd = writeLane('f11-preview');
 		expect(resolveRuntimeTarget({ cwd }).target).toBe('preview');
 	});
 
@@ -140,7 +201,7 @@ describe('celebra runtime env bootstrap', () => {
 		}
 		expect(() =>
 			resolveRuntimeTarget({
-				cwd: writeLane('dev-local'),
+				cwd: writeLane('f05-plataforma'),
 				env: { CELEBRA_DEPLOY_ENV: 'Production' },
 			}),
 		).toThrow(/must be exactly/);
@@ -174,7 +235,7 @@ describe('celebra runtime env bootstrap', () => {
 	});
 
 	it('bootstraps Preview lane from .env.preview.local', () => {
-		const cwd = writeLane('dev-preview');
+		const cwd = writeLane('f11-preview');
 		writeFileSync(
 			join(cwd, '.env.local'),
 			[
@@ -202,7 +263,7 @@ describe('celebra runtime env bootstrap', () => {
 	});
 
 	it('fails closed when Preview lane lacks .env.preview.local', () => {
-		const cwd = writeLane('dev-preview');
+		const cwd = writeLane('f11-preview');
 		writeFileSync(
 			join(cwd, '.env.local'),
 			[
