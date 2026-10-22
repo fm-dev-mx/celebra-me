@@ -2,7 +2,7 @@
  * Storage Provider Abstraction.
  *
  * Provides a unified contract for storing and resolving invitation assets:
- * - Local (dev-local): Supabase Storage local (http://127.0.0.1:54321 / invitation-assets)
+ * - Local (Local-runtime lanes): Supabase Storage local (http://127.0.0.1:54321 / invitation-assets)
  * - Preview / Production on the Cloudflare Worker: R2 (https://media.celebra-me.com/...)
  */
 

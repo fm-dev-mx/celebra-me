@@ -96,7 +96,7 @@ describe('isDevMfaBypassEnabled', () => {
 		});
 	});
 
-	describe('Preview runtime bypass (dev-preview lane)', () => {
+	describe('Preview runtime bypass (f11-preview lane)', () => {
 		it('returns true with CELEBRA_RUNTIME_TARGET=preview and Preview project URL', () => {
 			expect(
 				isDevMfaBypassEnabled(

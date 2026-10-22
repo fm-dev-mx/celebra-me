@@ -15,6 +15,9 @@ export interface LaneConfig {
 	name: string;
 	path: string;
 	runtimeDefault: 'local' | 'preview';
+	/** Function key (Win + F<key>) and dev server port, when the lane comes from the lane table. */
+	key?: number;
+	port?: number;
 }
 
 export interface LaneStatus {
@@ -27,6 +30,8 @@ export interface LaneStatus {
 	head: string;
 	relation: string;
 	runtimeDefault: 'local' | 'preview';
+	key?: number;
+	port?: number;
 	diagnostics: string[];
 	modifiedCount: number;
 }
@@ -39,6 +44,8 @@ export const LANES: LaneConfig[] = listExpectedLanePaths(REPO_ROOT).map((lane) =
 	name: lane.displayName,
 	path: lane.path,
 	runtimeDefault: lane.runtimeDefault,
+	key: lane.key,
+	port: lane.port,
 }));
 
 function runGit(args: string[], cwd: string): GitCommandResult {
@@ -126,6 +133,8 @@ export function inspectLane(lane: LaneConfig, runner: GitRunner = runGit): LaneS
 			head: 'unknown',
 			relation: 'UNVERIFIED',
 			runtimeDefault: lane.runtimeDefault,
+			key: lane.key,
+			port: lane.port,
 			diagnostics: ['directory missing'],
 			modifiedCount: 0,
 		};
@@ -163,6 +172,8 @@ export function inspectLane(lane: LaneConfig, runner: GitRunner = runGit): LaneS
 		head,
 		relation,
 		runtimeDefault: lane.runtimeDefault,
+		key: lane.key,
+		port: lane.port,
 		diagnostics,
 		modifiedCount: statusLines.length,
 	};
@@ -170,11 +181,11 @@ export function inspectLane(lane: LaneConfig, runner: GitRunner = runGit): LaneS
 
 function printHuman(statuses: LaneStatus[]): void {
 	console.log('\n=============================================================');
-	console.log(' Celebra-me Four-Lane Worktree Status (Read-Only)');
+	console.log(' Celebra-me Lane Status (Win + F4–F12, Read-Only)');
 	console.log('=============================================================\n');
 
 	for (const info of statuses) {
-		console.log(`📌 ${info.name}`);
+		console.log(`📌 ${info.key ? `F${info.key} · ` : ''}${info.name}`);
 		console.log(`   Path:        ${info.path}`);
 		console.log(`   Inspection:  ${info.inspection}`);
 		console.log(
@@ -183,6 +194,7 @@ function printHuman(statuses: LaneStatus[]): void {
 		console.log(`   Branch:      ${info.branch === 'HEAD' ? '(detached HEAD)' : info.branch}`);
 		console.log(`   HEAD:        ${info.head}`);
 		console.log(`   Runtime:     ${info.runtimeDefault} default`);
+		if (info.port) console.log(`   Port:        ${info.port}`);
 		console.log(`   Develop:     ${info.relation}`);
 		for (const diagnostic of info.diagnostics) console.log(`   Diagnostic:  ${diagnostic}`);
 		console.log('');

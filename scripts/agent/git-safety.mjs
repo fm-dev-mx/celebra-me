@@ -18,6 +18,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
+import { evaluateLaneGuard } from './lane-guard.mjs';
 
 export const BASELINE_VERSION = 3;
 export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
@@ -554,6 +555,14 @@ export function readBaseline(baselineFile) {
 export function cmdStart(options = {}) {
 	const paths = resolvePaths(options.repoRoot, options.session);
 	console.log('agent:git-safety:start');
+
+	const lane = evaluateLaneGuard(paths.repoRoot);
+	if (!lane.ok) {
+		console.error('FAILED');
+		console.error(lane.message);
+		process.exitCode = 1;
+		return { ok: false, reason: 'lane', lane };
+	}
 
 	const state = captureProtectedState(paths.repoRoot);
 

@@ -12,7 +12,7 @@ describe('validation evidence is independent from operational status', () => {
 				startedAt: '2026-08-01T00:00:00.000Z',
 				completedAt: '2026-08-01T00:01:00.000Z',
 				status: 'pass',
-				branch: 'dev-local',
+				branch: 'feat/task',
 				commitSha: 'abc',
 				workingTreeDirty: false,
 				inputFingerprint: 'old',
@@ -25,7 +25,7 @@ describe('validation evidence is independent from operational status', () => {
 			},
 			{ inputFingerprint: 'current', corpusFingerprint: 'corpus' },
 			{
-				branch: 'dev-local',
+				branch: 'feat/task',
 				commitSha: 'abc',
 				workingTreeDirty: false,
 				degraded: false,

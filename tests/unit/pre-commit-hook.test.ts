@@ -28,6 +28,7 @@ describe('pre-commit shell exit propagation', () => {
 		const result = spawnSync(shell, ['-s'], {
 			encoding: 'utf8',
 			input: `git() { echo feature/test; }
+node() { echo "CHECK:$1"; return 0; }
 pnpm() { echo "CHECK:$1"; if [ "$1" = lint-staged ]; then return ${failure === 7 ? 7 : 0}; fi; return ${failure === 9 ? 9 : 0}; }
 ${hook}
 echo HOOK_COMPLETE
@@ -35,10 +36,28 @@ echo HOOK_COMPLETE
 		});
 		expect(result.error).toBeUndefined();
 		expect(result.status).toBe(failure);
+		expect(result.stdout).toContain('CHECK:scripts/agent/lane-guard.mjs');
 		expect(result.stdout).toContain('CHECK:lint-staged');
 		if (failure === 7) expect(result.stdout).not.toContain('CHECK:test:changed');
 		else expect(result.stdout).toContain('CHECK:test:changed');
 		if (failure) expect(result.stdout).not.toContain('HOOK_COMPLETE');
 		else expect(result.stdout).toContain('HOOK_COMPLETE');
+	});
+
+	it('stops before the checks when the lane guard refuses the checkout', () => {
+		const result = spawnSync(shell, ['-s'], {
+			encoding: 'utf8',
+			input: `git() { echo feature/test; }
+node() { echo "CHECK:$1"; return 1; }
+pnpm() { echo "CHECK:$1"; return 0; }
+${hook}
+echo HOOK_COMPLETE
+`,
+		});
+		expect(result.error).toBeUndefined();
+		expect(result.status).toBe(1);
+		expect(result.stdout).toContain('CHECK:scripts/agent/lane-guard.mjs');
+		expect(result.stdout).not.toContain('CHECK:lint-staged');
+		expect(result.stdout).not.toContain('HOOK_COMPLETE');
 	});
 });

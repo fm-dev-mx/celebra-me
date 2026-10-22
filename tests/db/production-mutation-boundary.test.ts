@@ -390,7 +390,7 @@ describe('owner-apply ledger and authorization integrity', () => {
 					planId: 'aa'.repeat(32),
 					releaseSha: 'abc1234',
 					projectRef: SUPABASE_PROJECT_REFS.production,
-					worktree: 'dev-local',
+					worktree: 'f05-plataforma',
 				},
 				{ ledgerDir },
 			);

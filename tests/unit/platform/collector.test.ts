@@ -607,6 +607,7 @@ describe('runPlatformUsageCollector', () => {
 			},
 			missingPermissions: ['Disk Config Read'],
 			purged: true,
+			quotaAlerts: [],
 		});
 	});
 

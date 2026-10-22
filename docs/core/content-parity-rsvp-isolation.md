@@ -272,7 +272,7 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 
 Image storage and delivery follows an environment-deterministic abstraction (`StorageProvider`):
 
-- **Local (`dev-local`):** Uses **Supabase Storage local** (`http://127.0.0.1:54321` / bucket
+- **Local (`f05-plataforma`):** Uses **Supabase Storage local** (`http://127.0.0.1:54321` / bucket
   `invitation-assets`). Dashboard uploads and
   `pnpm invitation:release -- --targets local --slug <slug> --apply` persist locally with
   `provider: 'supabase'` and require zero third-party credentials.
@@ -281,7 +281,7 @@ Image storage and delivery follows an environment-deterministic abstraction (`St
   closed if local or Supabase Storage URLs are referenced).
 - **Demos:** Resolve through the Astro/Vite static image pipeline across all environments.
 
-| Flow                                   | Local (`dev-local`)                                                                           | Preview / Production                                                                                                |
+| Flow                                   | Local (`f05-plataforma`)                                                                      | Preview / Production                                                                                                |
 | -------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Dashboard Intake / Upload              | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                             | Uploads to R2 with SHA-256 content-addressed keys                                                                   |
 | Managed release (`invitation:release`) | Local target uploads normalized binaries to Supabase Storage                                  | Preview target uploads/reconciles canonical binaries to R2                                                          |

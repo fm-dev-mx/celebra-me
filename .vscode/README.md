@@ -28,7 +28,15 @@ Colores ANSI**:
     `--slug`, `--patch`) (`shield`, rojo)
   - `Migraciones BD (db:migrate)` — Migraciones de base de datos (`database`, cian)
 - **7 Tareas Especializadas Bajo Demanda:** Disponibles desde la paleta de tareas
-  (`Ctrl + Shift + P` -> `Tasks: Run Task`).
+  (`Ctrl + Shift + P` -> `Tasks: Run Task`):
+  - `Linter estilos (lint:styles)` — Stylelint sobre SCSS (`paintcan`, amarillo)
+  - `Paridad de rama (db:branch:parity)` — Paridad de esquema entre ramas (`git-compare`, cian)
+  - `Respaldo Producción (db:prod:backup)` — Respaldo de la BD de Producción (`archive`, rojo)
+  - `Reconciliar (reconcile)` — `invitation:reconcile` (`sync`, magenta)
+  - `Auditoría PII (published-audit)` — `invitation:published-audit` (`eye`, magenta)
+  - `Capturas visuales (screenshot)` — Capturas de invitaciones (`device-camera`, magenta)
+  - `Estado (ops:status)` — Estado de operación en texto, solo lectura: develop frente a main,
+    uniones a main sin tag y diagnóstico de `prod:apply` (`pulse`, cian)
 
 ### 2. `.vscode/task-runner.ps1`
 
@@ -67,3 +75,10 @@ Carpeta local que contiene los archivos de historial de ejecuciones en disco.
 3. **Ejecutar Tareas Secundarias:**
    - Presiona `Ctrl + Shift + P` -> `Tasks: Run Task` -> Selecciona la tarea deseada (ej.
      `pnpm screenshot` o `pnpm lint:styles`).
+
+## Lane discovery
+
+The terminal fallback reads the executable lane table rather than maintaining editor-specific paths.
+Use `lanes` to display canonical ids and `lane <id>` to navigate when explicitly assigned. See the
+[lane guide](../docs/core/worktrees/README.md). Keyboard/profile installation is separate; the
+repository does not install shortcuts or move checkouts.

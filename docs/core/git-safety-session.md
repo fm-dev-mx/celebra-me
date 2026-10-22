@@ -23,6 +23,14 @@ session failure.
 Working-tree content remains intentionally editable during implementation. The detector does not
 prove absence of remote pushes or of transient mutate-then-restore activity.
 
+### Lane boundary
+
+Mutable work uses an explicitly assigned canonical lane. Integration starts sessions on `develop`
+for integration operations only; ordinary task and release checkpoint commits belong in external
+lanes. The pre-commit guard allows Integration merge completion on `develop`, and refuses direct
+task commits, unknown checkouts and Integration task branches. A session baseline grants no Git
+authority. See the [lane guide](worktrees/README.md).
+
 ### Start mutable session
 
 ```sh

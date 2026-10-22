@@ -31,22 +31,18 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 - Annotated tags (`vX.Y.Z`) mark releases. The release session creates and pushes them within the
   release authorization once the promoted `main` SHA is verified.
 
-## Four-Lane Worktree Model
+## Lane model (Win + F4–F12)
 
-Persistent native Git worktrees isolate parallel work. `<worktrees-root>` is the sibling
-`<repo-dir>-worktrees/` directory, derived by
-[`scripts/shared/worktree-lane.ts`](../../scripts/shared/worktree-lane.ts).
+Nine persistent native Git lanes isolate tasks. The executable source for lane ids, paths, runtime
+defaults and ports is [worktree-lane.ts](../../scripts/shared/worktree-lane.ts). See the
+[lane guide](worktrees/README.md) for the map and environment-specific cards.
 
-| Lane          | Path                           | Purpose                                    | Runtime | Port |
-| ------------- | ------------------------------ | ------------------------------------------ | ------- | ---- |
-| Integration   | repository root                | Idle on `develop`: integration and release | Local   | 4321 |
-| `dev-local`   | `<worktrees-root>/dev-local`   | Primary feature/fix lane                   | Local   | 4321 |
-| `dev-extra`   | `<worktrees-root>/dev-extra`   | Parallel Local lane                        | Local   | 4322 |
-| `dev-preview` | `<worktrees-root>/dev-preview` | Preview validation lane                    | Preview | 4323 |
+Integration stays on `develop` for integration and authorized operations. External lanes host task
+branches, including release checkpoint preparation. Lane roles are scheduling defaults, never access
+privileges or domain restrictions. Do not create ad hoc lane directories. Unknown and temporary
+checkouts, including app-managed checkouts, are read-only under the lane guard.
 
-Lane cards with environment-file facts live in [`docs/core/worktrees/`](worktrees/). Runtime
-defaults are described in [`docs/env-workflow.md`](../env-workflow.md); runtime connectivity is not
-mutation authorization.
+Runtime connectivity never authorizes database, publication or release mutations.
 
 ## Task Lifecycle
 
@@ -57,9 +53,9 @@ mutation authorization.
    ```
 
    One active task = one branch = one worktree. Never switch, stash, reset, clean or repurpose
-   another active lane. Integration may host a task assigned to it with the same command; return it
-   to `develop` before integrating ([lane card](worktrees/integration.md)). Commits are never
-   authored directly on `develop` or `main`.
+   another active lane. Integration never hosts ordinary task branches; use an explicitly assigned
+   external lane, including for release checkpoint preparation. Commits are never authored directly
+   on `develop` or `main`; Integration accepts merge completion on `develop` only.
 
 2. **Stay current** when needed: `pnpm lane:sync` previews and `pnpm lane:sync -- --apply` fetches
    `origin/develop` and merges it into the task branch. `--ff-only` is available; `--rebase` is
@@ -169,11 +165,9 @@ Rules:
 - A task branch never tracks `origin/develop` as its upstream; `git status` then reports the trunk
   as the branch's remote and `git push` targets the wrong ref. Push with
   `git push -u origin <branch>`.
-- Agent worktrees are ephemeral and are not lanes. The Claude desktop app creates
-  `.claude/worktrees/<name>` with a `claude/<name>` branch (ignored through `.git/info/exclude`);
-  Codex creates worktrees under its own home directory. When the agent session ends, its task branch
-  is integrated or abandoned explicitly, and the worktree and `claude/<name>` branch are removed
-  with the app or with `git worktree remove` (never with `--force` while it holds work).
+- Temporary agent checkouts are not lanes and are read-only. Existing branches, work and sessions
+  remain user-owned; removal or migration needs explicit scoped authorization. Never create or
+  repurpose a checkout automatically.
 - Before treating a worktree as dirty, compare the modified files with their committed content. A
   worktree whose Git LFS filter is not active lists every LFS image as modified even when the
   content is identical (`sha256sum <file>` equals the `oid` in `git show HEAD:<file>`).
@@ -182,9 +176,8 @@ Rules:
   to make a pull request look current.
 - Dependabot commits land through their own pull request or task branch, never inside an unrelated
   task branch (see the merge rules above).
-- Only the four lanes and `.claude/worktrees/*` exist. A session that needs another checkout uses an
-  idle lane; a new directory under `<worktrees-root>` (for example `plataforma-ui`) needs the
-  owner's approval and a lane card.
+- Only the nine lanes in the executable table host mutable work. Any additional lane requires an
+  explicitly approved table and policy change, not an ad hoc directory.
 - The session that merges a task releases its worktree in the same turn:
   `git switch --detach develop` in a lane, or the desktop app's clean-up for `.claude/worktrees/*`.
   Then it deletes the local branch with `git branch -d`.
