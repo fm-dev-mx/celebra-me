@@ -17,6 +17,7 @@ import {
 	type WorktreeLaneDefinition,
 } from '../shared/worktree-lane';
 import { inspectLane } from './worktree-status';
+import { assertCheckoutRuntime } from './env-files';
 
 type Category = 'Location' | 'Git state' | 'Dependencies' | 'Environment';
 
@@ -147,38 +148,21 @@ function checkDependencies(cwd: string): Finding[] {
 }
 
 function checkEnvironment(cwd: string, lane: WorktreeLaneDefinition): Finding[] {
-	const findings: Finding[] = [];
-	const envLocal = resolve(cwd, '.env.local');
-	if (!existsSync(envLocal)) {
-		findings.push({
-			category: 'Environment',
-			severity: 'warning',
-			title: 'Missing .env.local',
-			remediation:
-				'Run pnpm env:sync -- --apply to copy the Integration files, or copy .env.example.',
-		});
-	} else {
-		const content = readFileSync(envLocal, 'utf8');
-		if (content.includes('supabase.co') && !content.includes('127.0.0.1')) {
-			findings.push({
+	try {
+		assertCheckoutRuntime(cwd, lane.runtimeDefault);
+		return [];
+	} catch (error: unknown) {
+		// assertCheckoutRuntime messages name files and keys only, never values.
+		const reason = error instanceof Error ? ` ${error.message}` : '';
+		return [
+			{
 				category: 'Environment',
-				severity: 'warning',
-				title: '.env.local points at a remote Supabase URL',
-				remediation:
-					'Keep Local values in .env.local; Preview values belong in .env.preview.local.',
-			});
-		}
+				severity: 'error',
+				title: `File configuration for ${lane.runtimeDefault} runtime is incomplete or invalid.${reason}`,
+				remediation: `Run pnpm env:check -- --runtime ${lane.runtimeDefault}. Request a named, purpose-scoped sync; preserve local conflicts. Shell overrides and live connectivity require separate checks.`,
+			},
+		];
 	}
-	if (lane.runtimeDefault === 'preview' && !existsSync(resolve(cwd, '.env.preview.local'))) {
-		findings.push({
-			category: 'Environment',
-			severity: 'error',
-			title: 'Missing .env.preview.local (required by the Preview lane)',
-			remediation:
-				'Run pnpm env:sync -- --apply to copy the Integration files, or copy .env.preview.local.example.',
-		});
-	}
-	return findings;
 }
 
 function printReport(findings: Finding[]): void {
