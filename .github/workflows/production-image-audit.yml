@@ -1,7 +1,9 @@
 name: Production Image Audit
 
+# The GitHub token writes nothing but the alert issue.
 permissions:
     contents: read
+    issues: write
 
 on:
     schedule:
@@ -35,6 +37,38 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Verify Production image delivery
+              id: verify
               env:
                   PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
               run: pnpm invitation:media:verify -- --target production --all --origin https://www.celebra-me.com --json
+
+            # Daily job: the first failure opens the issue (GitHub e-mails the repository watchers)
+            # and later failures comment on it.
+            - name: Alert
+              if: failure() && steps.verify.outcome == 'failure'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: 'Monitor de Producción: la auditoría de imágenes falló'
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "Sigue fallando: $RUN_URL"
+                  else
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$ALERT_TITLE" --body \
+                          "La auditoría diaria de imágenes de Producción falló. Revise el log: $RUN_URL"
+                  fi
+
+            - name: Close the alert after recovery
+              if: success()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: 'Monitor de Producción: la auditoría de imágenes falló'
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Recuperado: $RUN_URL"
+                  fi

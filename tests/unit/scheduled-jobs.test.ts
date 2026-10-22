@@ -133,7 +133,9 @@ describe('runScheduledJob', () => {
 		},
 		missingPermissions: [],
 		purged: true,
+		quotaAlerts: [],
 	};
+	const summary = (line: unknown) => JSON.parse(String(line)) as unknown;
 
 	it('runs the platform usage collector only on the Production identity', async () => {
 		collector.mockResolvedValue(collected);
@@ -152,7 +154,13 @@ describe('runScheduledJob', () => {
 			status: 'completed',
 		});
 		expect(collector).toHaveBeenCalledTimes(1);
-		expect(info).toHaveBeenCalledWith('[platform][collector] completed', collected);
+		expect(summary(info.mock.calls.at(-1)?.[0])).toEqual({
+			event: 'platform_usage_summary',
+			phase: 'completed',
+			...collected,
+			quotaAlertCount: 0,
+			quotaAlertText: '',
+		});
 	});
 
 	it('warns when a dataset failed and logs only status and code when the insert fails', async () => {
@@ -165,10 +173,19 @@ describe('runScheduledJob', () => {
 		await expect(runScheduledJob(SCHEDULED_JOB_CRONS.platform_usage)).resolves.toMatchObject({
 			status: 'completed',
 		});
-		expect(warn).toHaveBeenCalledWith(
-			'[platform][collector] completed',
-			expect.objectContaining({ missingPermissions: ['Disk Config Read'] }),
-		);
+		expect(summary(warn.mock.calls.at(-1)?.[0])).toMatchObject({
+			missingPermissions: ['Disk Config Read'],
+		});
+
+		collector.mockResolvedValueOnce({
+			...collected,
+			quotaAlerts: [{ id: 'cfR2ClassA', percent: 83 }],
+		});
+		await runScheduledJob(SCHEDULED_JOB_CRONS.platform_usage);
+		expect(summary(warn.mock.calls.at(-1)?.[0])).toMatchObject({
+			quotaAlertCount: 1,
+			quotaAlertText: 'cfR2ClassA 83%',
+		});
 
 		collector.mockRejectedValueOnce(
 			new SupabaseHttpError(404, '{"payload":"echo"}', 'PGRST205'),
