@@ -17,7 +17,7 @@ const isGallery = placement === 'gallery';
 const image = isGallery ? galleryItem?.image : demo.closingImage;
 const rawSource = image?.src;
 const imageSource = typeof rawSource === 'string' ? rawSource : rawSource?.src;
-const imageAlt = isGallery ? (galleryItem?.alt || galleryItem?.caption || `Retrato de la demo ${demo.styleName}`) : '';
+const imageAlt = isGallery ? (galleryItem?.alt || galleryItem?.caption || `Retrato de la demo ${demo.styleName}`) : (demo.closingImageAlt ?? '');
 const headingId = `demo-conversion-${placement}-title`;
 const channelId = `demo-conversion-${placement}-channel`;
 ---

@@ -1,10 +1,14 @@
-import { discoverAllInvitations, discoverStaticDemos, discoverProvisionedInvitations } from '../../../scripts/screenshot/discovery';
+import {
+	discoverAllInvitations,
+	discoverStaticDemos,
+	discoverProvisionedInvitations,
+} from '../../../scripts/screenshot/discovery';
 
 describe('screenshot discovery service', () => {
 	it('discovers static event demos', () => {
 		const demos = discoverStaticDemos();
 		expect(demos.length).toBeGreaterThan(0);
-		expect(demos.some((d) => d.route.includes('/boda/demo-boda-jewelry-box-wedding'))).toBe(true);
+		expect(demos.some((d) => d.route.includes('/brisa'))).toBe(true);
 	});
 
 	it('discovers canonical provisioned invitations including Abril Michelle', () => {

@@ -166,6 +166,11 @@ export const musicSchema = z
 		url: z.string(),
 		autoPlay: z.boolean().default(false),
 		title: z.string().optional(),
+		/** Optional same-site credit page for licensed demonstration tracks. */
+		creditsUrl: z
+			.string()
+			.regex(/^\/music\/[a-z0-9-]+\.html$/)
+			.optional(),
 		/** Second at which playback starts (and loops back to), e.g. to skip an intro. */
 		startAt: z.number().min(0).optional(),
 		/** Seconds of volume ramp when playback starts or loops back (default 1.2). */

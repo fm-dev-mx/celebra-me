@@ -9,6 +9,7 @@
 //   --thank-you-bleed-message-color / -message-style / -message-size / -message-line-height
 //   --thank-you-bleed-name-display    Closing name (default `none`); --thank-you-bleed-name-size (below md)
 //   --thank-you-bleed-photo-veil-content  `''` repeats the veil over the photo itself (default `none`)
+//   --thank-you-bleed-content-align     Desktop copy alignment (`end` keeps upper faces clear)
 
 :is(.event-theme-wrapper, body) .thank-you-section[data-variant='full-bleed-photo'] {
 	--thank-you-overlay-gap: clamp(2rem, 6vw, 5rem);
@@ -81,7 +82,7 @@
 		position: static;
 		z-index: 2;
 		display: grid;
-		align-self: center;
+		align-self: var(--thank-you-bleed-content-align, center);
 		width: min(100%, 1080px);
 		max-width: none;
 		margin: 1rem 2rem;

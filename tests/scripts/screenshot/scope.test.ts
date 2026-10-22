@@ -22,6 +22,18 @@ function request(overrides: Record<string, unknown> = {}) {
 }
 
 describe('canonical screenshot scope resolver', () => {
+	it('resolves a registered short demo alias without changing its internal identity', () => {
+		const plan = resolveScreenshotPlan(
+			request({
+				routes: ['/brisa'],
+				target: 'single-section',
+				sections: 'gallery',
+				viewports: ['mobile-standard'],
+			}),
+			{ invitationRoutes: ['/brisa'] },
+		);
+		expect(plan.invitations[0]).toMatchObject({ eventType: 'boda', slug: 'demo-brisa' });
+	});
 	it('maps legacy sets to explicit targets and plans full-page artifacts exactly', () => {
 		const plan = resolveScreenshotPlan(request({ invitationSet: 'full-page' }), catalog);
 		const invitation = plan.invitations[0];

@@ -1,0 +1,372 @@
+{
+    "eventType": "boda",
+    "isDemo": true,
+    "templateId": "boda-jewelry-box-wedding",
+    "_assetSlug": "demo-brisa",
+    "visualProfileId": "demo-brisa",
+    "title": "Ximena & Diego",
+    "description": "Una boda frente al Pacífico entre tonos verde mar, lino y papel marfil.",
+    "theme": {
+        "preset": "jewelry-box-wedding",
+        "motion": "editorial"
+    },
+    "sectionOrder": [
+        "quote",
+        "countdown",
+        "family",
+        "location",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": {
+        "intersections": {
+            "quote": {
+                "family": "atmospheric-blend",
+                "source": "hero"
+            },
+            "countdown": {
+                "family": "atmospheric-blend",
+                "source": "quote"
+            },
+            "interlude-after-countdown": {
+                "family": "atmospheric-blend",
+                "source": "countdown"
+            },
+            "family": {
+                "family": "atmospheric-blend",
+                "source": "interlude-after-countdown"
+            },
+            "interlude-after-family": {
+                "family": "overlap",
+                "source": "family"
+            },
+            "location": {
+                "family": "arch",
+                "source": "interlude-after-family"
+            },
+            "gallery": {
+                "family": "atmospheric-blend",
+                "source": "location"
+            },
+            "gifts": {
+                "family": "atmospheric-blend",
+                "source": "gallery"
+            },
+            "personalized-access": {
+                "family": "atmospheric-blend",
+                "source": "gifts"
+            },
+            "rsvp": {
+                "family": "stack",
+                "source": "personalized-access"
+            },
+            "thankYou": {
+                "family": "atmospheric-blend",
+                "source": "rsvp"
+            }
+        }
+    },
+    "hero": {
+        "presentation": {
+            "timeFormat": "12h"
+        },
+        "name": "Ximena",
+        "secondaryName": "Diego",
+        "label": "Nuestra boda",
+        "date": "2026-11-14T17:30:00.000Z",
+        "scrollLabel": "Descubra más",
+        "backgroundImage": "portrait",
+        "backgroundImageMobile": "portrait",
+        "backgroundImageDesktop": "portrait",
+        "focalPoint": "50% 45%",
+        "focalPointMobile": "50% 45%",
+        "focalPointDesktop": "50% 45%",
+        "variant": "night-arch"
+    },
+    "location": {
+        "accessPolicy": {
+            "visibility": "public"
+        },
+        "introEyebrow": "Punta Mita, Nayarit",
+        "introHeading": "Dónde celebraremos",
+        "introLede": "Sábado, 14 de noviembre de 2026. Le esperamos en la misa y después en el jardín para celebrar juntos frente al Pacífico.",
+        "indicationsHeading": "Consideraciones",
+        "indications": [
+            {
+                "title": "Vestimenta",
+                "iconName": "DressCode",
+                "styleVariant": "default",
+                "text": "Formal de playa. Le pedimos amablemente reservar el blanco y el marfil para la novia."
+            },
+            {
+                "title": "Pase personal",
+                "iconName": "Enveloped",
+                "styleVariant": "default",
+                "text": "Su invitación es personal y los lugares corresponden a su pase. Le pedimos confirmar a más tardar el sábado 7 de noviembre."
+            }
+        ],
+        "variant": "night-route",
+        "presentation": "simple",
+        "presentationOptions": {
+            "showFlourishes": false,
+            "showNavigationButtons": true,
+            "venueCard": "compact",
+            "showCalendarLinks": true
+        },
+        "venues": [
+            {
+                "venueEvent": "Misa",
+                "venueName": "Parroquia de San Pedro y San Pablo",
+                "address": "Calle Hidalgo 25, 63727 Punta de Mita, Nayarit",
+                "city": "Punta Mita",
+                "date": "2026-11-14",
+                "time": "17:30",
+                "type": "ceremony",
+                "isVisible": true,
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Iglesia+de+San+Pedro+y+San+Pablo+Punta+de+Mita&query_place_id=ChIJI4ksqLETIYQReTlPgHDIGMw",
+                "id": "brisa-mass"
+            },
+            {
+                "venueEvent": "Recepción",
+                "venueName": "Jardín Haramara · Conrad Punta de Mita",
+                "address": "Carretera Punta de Mita–Sayulita km 2, 63734 Punta de Mita, Nayarit",
+                "city": "Punta Mita",
+                "date": "2026-11-14",
+                "time": "19:30",
+                "type": "reception",
+                "isVisible": true,
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Conrad+Punta+de+Mita+Carretera+Punta+de+Mita+Sayulita+Km+2",
+                "id": "brisa-reception"
+            }
+        ],
+        "mapStyle": "dark"
+    },
+    "rsvp": {
+        "variant": "formal-register",
+        "title": "Confirme su asistencia",
+        "guestCap": 2,
+        "subcopy": "Le pedimos registrar su respuesta a más tardar el sábado 7 de noviembre. El número de lugares corresponde al pase asignado.",
+        "lockedMessage": "Esta invitación es personal. Abra su pase para confirmar su asistencia.",
+        "accessMode": "personalized-only",
+        "confirmationMode": "api",
+        "confirmationMessage": "Ha completado la demostración. No se envió ninguna respuesta.",
+        "labels": {
+            "name": "Su nombre",
+            "notesLabel": "Mensaje para Ximena y Diego",
+            "notesPlaceholder": "Escriba unas palabras para los novios…"
+        },
+        "responseMessages": {
+            "confirmed": {
+                "title": "Confirmación de ejemplo, {guestName}.",
+                "subtitle": "Ha probado la confirmación. No se registró ninguna respuesta real."
+            },
+            "declined": {
+                "title": "Aviso de ejemplo, {guestName}.",
+                "subtitle": "Ha probado la respuesta. No se registró ningún aviso real."
+            }
+        },
+        "calendar": {
+            "title": "Boda de Ximena y Diego · Demostración",
+            "description": "Evento ficticio. Misa a las 17:30 en la Parroquia de San Pedro y San Pablo. Recepción a las 19:30 en el Jardín Haramara de Conrad Punta de Mita.",
+            "startsAt": "2026-11-15T00:30:00.000Z"
+        },
+        "personalizedAccess": {
+            "variant": "formal-pass",
+            "ticket": {
+                "signature": "Ximena & Diego",
+                "monogram": "X · D"
+            },
+            "title": "Pase personal",
+            "subtitle": "Será un placer celebrar con usted.",
+            "noteText": "Su pase incluye a {count} {personWord}. Gracias por acompañarnos.",
+            "footerText": "Confirme su asistencia y celebremos juntos."
+        }
+    },
+    "quote": {
+        "text": "El amor es paciente, es bondadoso. Todo lo disculpa, todo lo cree, todo lo espera,",
+        "closingLine": "todo lo soporta.",
+        "author": "1 Corintios 13:4–7"
+    },
+    "family": {
+        "groups": [
+            {
+                "title": "Padres de la novia",
+                "items": [
+                    {
+                        "name": "Alejandro Morales Villarreal"
+                    },
+                    {
+                        "name": "Valeria Elizondo de Morales"
+                    }
+                ]
+            },
+            {
+                "title": "Padres del novio",
+                "items": [
+                    {
+                        "name": "Hernán Santamaría Cárdenas"
+                    },
+                    {
+                        "name": "Lucía Montemayor de Santamaría"
+                    }
+                ]
+            }
+        ],
+        "godparents": [
+            {
+                "name": "Rodrigo Elizondo",
+                "role": "Velación"
+            },
+            {
+                "name": "Mariana Cárdenas",
+                "role": "Velación"
+            },
+            {
+                "name": "Esteban Morales",
+                "role": "Lazo"
+            },
+            {
+                "name": "Sofía Santamaría",
+                "role": "Lazo"
+            }
+        ],
+        "featuredImage": "family",
+        "featuredImageAlt": "Ximena y Diego acompañados por los padres de la novia en la playa al atardecer",
+        "godparentsLayout": "by-role",
+        "labels": {
+            "sectionSubtitle": "Nuestras familias",
+            "sectionTitle": "Con la bendición de Dios, de nuestros padres y padrinos",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Su amor y su guía nos acompañan en este día."
+        },
+        "variant": "asymmetric-groups",
+        "presentation": "with-photo",
+        "focalPoint": "50% 30%"
+    },
+    "gallery": {
+        "variant": "pinned-track",
+        "eyebrow": "Galería",
+        "title": "Nuestra historia",
+        "subtitle": "Retratos frente al mar antes del gran día.",
+        "items": [
+            {
+                "image": "gallery01",
+                "alt": "Ximena y Diego de frente, caminando por la playa.",
+                "aspectRatio": "3 / 4",
+                "focalPoint": "50% 30%"
+            },
+            {
+                "image": "gallery02",
+                "alt": "Ximena y Diego junto a un arco de piedra en el jardín.",
+                "aspectRatio": "2 / 3",
+                "focalPoint": "50% 30%"
+            },
+            {
+                "image": "gallery03",
+                "alt": "Ximena y Diego sentados en una escalinata de piedra.",
+                "aspectRatio": "2 / 3",
+                "focalPoint": "50% 30%"
+            },
+            {
+                "image": "gallery04",
+                "alt": "Ximena y Diego entre palmeras frente al mar.",
+                "aspectRatio": "2 / 3",
+                "focalPoint": "50% 30%"
+            },
+            {
+                "image": "gallery05",
+                "alt": "Ximena y Diego juntos en un sendero junto a las dunas.",
+                "aspectRatio": "2 / 3",
+                "focalPoint": "50% 30%"
+            }
+        ]
+    },
+    "gifts": {
+        "variant": "standard",
+        "title": "Regalos",
+        "presentation": "catalog",
+        "subtitle": "Su presencia es nuestro mejor regalo. Si desea tener un detalle con nosotros:",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de sobres",
+                "text": "Habrá lluvia de sobres durante la fiesta."
+            },
+            {
+                "type": "bank",
+                "title": "Transferencia de ejemplo",
+                "bankName": "Banco de demostración",
+                "accountHolder": "Ximena y Diego · Datos ficticios",
+                "clabe": "1234 5678 9012 3456",
+                "accountKind": "card"
+            }
+        ]
+    },
+    "thankYou": {
+        "message": "Gracias por acompañarnos en el comienzo de esta nueva etapa y por hacer de este día un recuerdo inolvidable.",
+        "closingName": "Ximena & Diego",
+        "date": "14 de noviembre de 2026",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 20%",
+        "variant": "full-bleed-photo"
+    },
+    "countdown": {
+        "variant": "standard",
+        "title": "Falta poco para decir que sí",
+        "footerText": "Punta Mita, Nayarit",
+        "presentationOptions": {
+            "calendar": {
+                "mark": "ring"
+            }
+        }
+    },
+    "envelope": {
+        "disabled": false,
+        "revealVariant": "night-envelope",
+        "cardLabel": "BODA",
+        "envelopeName": "Ximena & Diego",
+        "teaserDetails": "14 · NOV · 2026 · PUNTA MITA",
+        "cardName": "Ximena",
+        "cardSecondaryName": "Diego",
+        "guestPlacement": "outside-envelope",
+        "sealStyle": "wax",
+        "sealIcon": "monogram",
+        "sealInitials": "X·D",
+        "documentLabel": "X & D",
+        "stampText": "BODA",
+        "stampYear": "2026",
+        "microcopy": "Tenemos el honor de invitarle",
+        "tooltipText": "Abrir invitación"
+    },
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "countdown",
+            "alt": "Ximena y Diego sonrientes en una terraza frente al mar.",
+            "height": "medium",
+            "presentation": "framed",
+            "focalPoint": "50% 30%"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "family",
+            "alt": "Ximena y Diego sentados juntos en las dunas.",
+            "height": "tall",
+            "focalPoint": "50% 30%"
+        }
+    ],
+    "eventTiming": {
+        "localDateTime": "2026-11-14T17:30",
+        "timeZone": "America/Mazatlan",
+        "startsAtUtc": "2026-11-15T00:30:00.000Z"
+    },
+    "music": {
+        "url": "https://media.celebra-me.com/shared/music/dreams-become-real-a9783da4464f0e4ff3ad6daef3aa1da85c8a1171dc5f6cd6ae8cd831b4d37294.mp3",
+        "title": "Dreams Become Real — Kevin MacLeod",
+        "autoPlay": true,
+        "creditsUrl": "/music/dreams-become-real-credits.html"
+    }
+}

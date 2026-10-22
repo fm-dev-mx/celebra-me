@@ -427,7 +427,7 @@ export function resolveUrl(input: string, baseUrl: string = resolveScreenshotBas
 /**
  * Create a human-readable page slug from a URL, using all pathname segments.
  * Examples:
- *   /boda/demo-boda-jewelry-box-wedding  → boda-demo-boda-jewelry-box-wedding
+ *   /boda/demo-brisa  → boda-demo-brisa
  *   /dashboard                           → dashboard
  *   /                                    → home
  *   /login                               → login

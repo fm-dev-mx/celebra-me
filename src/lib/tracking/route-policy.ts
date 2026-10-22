@@ -1,3 +1,4 @@
+import { findDemoByRouteSlug } from '@/lib/invitation/demo-routes';
 import { isReservedInvitationSlug } from '@/lib/invitation/slug-policy';
 
 export type TrackingRouteClass =
@@ -128,6 +129,16 @@ export function classifyTrackingRoute(input: string | URL): TrackingRoutePolicy 
 			gaAllowed: true,
 			metaAllowed: true,
 			reason: 'demo_showroom_route',
+		};
+	}
+
+	if (findDemoByRouteSlug(pathname.replace(/^\//, ''))) {
+		return {
+			routeClass: 'demo',
+			internalAllowed: true,
+			gaAllowed: true,
+			metaAllowed: true,
+			reason: 'demo_catalog_route',
 		};
 	}
 

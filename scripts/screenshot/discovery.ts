@@ -7,6 +7,7 @@ import * as path from 'node:path';
 import { DEMO_INVITATIONS_DIR, listDemoInvitationFiles } from '../shared/demo-invitation-files.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
 import { assertInvitationCatalogIntegrity } from './registry-validation.js';
+import { buildPublicInvitationPath } from '../../src/utils/invitation-link.ts';
 
 export interface DiscoveredInvitation {
 	name: string;
@@ -27,7 +28,7 @@ export function discoverStaticDemos(): DiscoveredInvitation[] {
 			typeof content.title === 'string' && content.title
 				? content.title
 				: `${eventType}: ${slug}`,
-		route: `/${eventType}/${slug}`,
+		route: buildPublicInvitationPath(eventType, slug),
 		slug,
 		eventType,
 		source: 'demo',

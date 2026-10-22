@@ -22,7 +22,7 @@ pnpm screenshot
 
 # Direct — invitation (flags) — VERIFIED
 # Relative routes use the lane-aware base URL (see Lane ports below)
-pnpm screenshot:invite --url=/boda/demo-boda-jewelry-box-wedding
+pnpm screenshot:invite --url=/brisa
 
 # Direct — general page (flags) — VERIFIED for landing
 pnpm screenshot --url=/
@@ -121,12 +121,12 @@ $ pnpm screenshot
 📸  Celebra-me Screenshot Tool
 
 ? What do you want to screenshot?
-  ❯ Invitation page   (e.g. /boda/demo-boda-jewelry-box-wedding)
+  ❯ Invitation page   (e.g. /brisa)
     Landing page      (e.g. /)
     Dashboard / Admin (e.g. /dashboard)
     ...
 
-? URL or route to capture: /boda/demo-boda-jewelry-box-wedding
+? URL or route to capture: /brisa
 
 ? What is the target of this screenshot run?
   ❯ Critical QA set
@@ -180,7 +180,7 @@ pnpm screenshot \
 
 # Short forms
 pnpm screenshot:invite \
-  --url=/boda/demo-boda-jewelry-box-wedding \
+  --url=/brisa \
   --profile=invitation \
   --set=essential \
   --reveal=auto
@@ -241,7 +241,7 @@ section, but they cannot add persisted tasks to an explicit section request. `al
 
 ```
 screenshots/
-  demo-boda-jewelry-box-wedding/
+  demo-brisa/
     mobile-standard/
       01-initial-closed-viewport.png
       02-reveal-closed.png

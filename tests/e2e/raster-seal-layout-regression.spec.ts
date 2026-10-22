@@ -45,7 +45,7 @@ const INVENTORIED_ROUTES = [
 		renderer: 'monogram',
 	},
 	{
-		route: '/boda/demo-boda-jewelry-box-wedding?forceEnvelope=true',
+		route: '/boda/demo-brisa?forceEnvelope=true',
 		name: 'Jewelry Box Wedding (Demo)',
 		renderer: 'vector-icon',
 	},
