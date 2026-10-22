@@ -21,7 +21,10 @@ export const PRODUCTION_WORKER = 'celebra-me';
 export const CLEANUP_EVENT = 'memories_cleanup_summary';
 /** The cleanup cron runs daily at 15:17 UTC; 26 hours tolerates a late run without hiding a miss. */
 export const CLEANUP_LOOKBACK_MS = 26 * HOUR_MS;
-/** The daily backup lands around 10:00 UTC; 30 hours tolerates a late copy without hiding a miss. */
+/**
+ * The daily backup is triggered by the operator machine's Windows Task Scheduler (docs/database-workflow.md),
+ * not by this repository; 30 hours tolerates a late copy without hiding a miss.
+ */
 export const BACKUP_MAX_AGE_MS = 30 * HOUR_MS;
 export const OFFSITE_BACKUP_BUCKET = 'celebra-me-prod-backups';
 

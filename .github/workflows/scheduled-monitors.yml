@@ -8,7 +8,7 @@ permissions:
 
 on:
     schedule:
-        # After the memories cleanup cron (15:17 UTC) and the daily backup (~10:00 UTC).
+        # After the memories cleanup cron (15:17 UTC) and the daily backup (operator Task Scheduler, ~10:00 UTC).
         - cron: '40 16 * * *'
     workflow_dispatch:
 
