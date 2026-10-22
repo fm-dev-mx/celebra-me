@@ -23,7 +23,7 @@ export interface CriticalBackupHealth {
 	orphanCount: number;
 	attention: boolean;
 	summary: string;
-	/** Checkout directory that owns the backup store read (e.g. `dev-local`). */
+	/** Checkout directory that owns the backup store read (e.g. `f05-plataforma`). */
 	checkoutLabel?: string;
 }
 

@@ -87,8 +87,8 @@ current task.
 
 ## Worktree Lanes & Path Privilege Invariant
 
-The four lanes and the task lifecycle are owned by
-[`docs/core/git-governance.md`](../../docs/core/git-governance.md#four-lane-worktree-model).
+The nine lanes and the task lifecycle are owned by
+[`docs/core/git-governance.md`](../../docs/core/git-governance.md#lane-model-win--f4f12).
 
 ### Task Checkout Boundary
 
@@ -109,8 +109,8 @@ The four lanes and the task lifecycle are owned by
 
 ### Path Authorization Invariant
 
-Being located inside a development worktree (`dev-local`, `dev-preview`, or `dev-extra`) **does not
-grant** Git write permissions or environment/database mutation authority.
+Being located inside a development worktree (F5–F12) **does not grant** Git write permissions or
+environment/database mutation authority.
 
 ```text
 Environment authorization =
@@ -121,8 +121,8 @@ task scope
 ```
 
 Worktree path is an isolation directory, not an authorization token. Preview runtime connectivity on
-`dev-preview` is not Preview administrative privilege. Agents inside any lane remain bound by
-task-scoped authorization for Git writes, database mutations, and remote operational calls.
+F11/F12 is not Preview administrative privilege. Agents inside any lane remain bound by task-scoped
+authorization for Git writes, database mutations, and remote operational calls.
 
 ### Multi-Agent Lane Ownership & Preflight
 

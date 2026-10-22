@@ -42,15 +42,15 @@ shell, the Cloudflare Worker, or gitignored secret paths documented by the ownin
 
 ## Validation Role of Preview vs Local Default
 
-- **Local Default (Integration, `dev-local`, `dev-extra`)**: Local development
-  (`SUPABASE_URL=http://127.0.0.1:54321`) is the default application runtime for Integration and the
-  Local development lanes. Use it for normal development, unit testing, component/SCSS iteration,
-  and disposable destructive migration reconstruction.
-- **Preview Runtime Default (`dev-preview`)**: `dev-preview` (canonical external worktree)
-  intentionally runs local Astro against the dedicated Preview Supabase project. Application runtime
-  values come from `.env.preview.local` (overlay) and set `CELEBRA_RUNTIME_TARGET=preview`. This is
-  **runtime connectivity only** — it does not authorize Preview DB migrations, syncs, invitation
-  updates, or E2E provision/publish.
+- **Local Default (Integration, F5–F10)**: Local development (`SUPABASE_URL=http://127.0.0.1:54321`)
+  is the default application runtime for Integration and the Local development lanes. Use it for
+  normal development, unit testing, component/SCSS iteration, and disposable destructive migration
+  reconstruction.
+- **Preview Runtime Default (F11/F12)**: `f11-preview` and `f12-release` (canonical external
+  worktree) intentionally runs local Astro against the dedicated Preview Supabase project.
+  Application runtime values come from `.env.preview.local` (overlay) and set
+  `CELEBRA_RUNTIME_TARGET=preview`. This is **runtime connectivity only** — it does not authorize
+  Preview DB migrations, syncs, invitation updates, or E2E provision/publish.
 - **Preview Validation / Ops Role**: Preview (`PREVIEW_DB_URL`, the Cloudflare Preview Worker,
   Preview E2E) remains the hosted validation environment for workflows requiring broader
   verification, including:
@@ -155,7 +155,7 @@ substitute for the other.
 | Variable                 | Question it answers                         | Who sets it                            | `preview` means                                                      |
 | ------------------------ | ------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- |
 | `CELEBRA_DEPLOY_ENV`     | Which hosted deployment is this?            | Each hosted environment (Wrangler)     | A hosted Preview deployment built from `develop`                     |
-| `CELEBRA_RUNTIME_TARGET` | Which database does a local process target? | Lane bootstrap or an intentional shell | A local Astro process (`dev-preview`) talking to the Preview project |
+| `CELEBRA_RUNTIME_TARGET` | Which database does a local process target? | Lane bootstrap or an intentional shell | A local Astro process (`f11-preview`) talking to the Preview project |
 
 - A hosted deployment is identified only by `CELEBRA_DEPLOY_ENV`, read only by
   `src/lib/server/deploy-identity.ts`. `CELEBRA_RUNTIME_TARGET` never forges hosted identity, so a
@@ -257,8 +257,8 @@ logs, or evidence.
 - Astro/Vite bootstrap runs `scripts/shared/celebra-runtime-env.ts` from `astro.config.mjs` before
   app runtime modules access environment values.
 - Lane detection (`scripts/shared/worktree-lane.ts`) selects the runtime default:
-  - Integration / `dev-local` / `dev-extra` → Local
-  - `dev-preview` → Preview
+  - Integration / F5–F10 → Local
+  - `f11-preview` / `f12-release` → Preview
 - File loading for local processes (`NODE_ENV=development`, no hosted deploy identity):
   1. Vite `loadEnv` merges `.env`, `.env.local`, `.env.[mode]`, `.env.[mode].local`
   2. Preview lane additionally overlays `.env.preview.local` (required) for Preview runtime keys
@@ -289,10 +289,12 @@ allowed name (`pnpm env:check` compares a checkout with the templates; names onl
 
 Rules:
 
-- The Integration checkout (repository root) holds the canonical copies. Development lanes receive
-  identical copies with `pnpm env:sync -- --all --apply` (without `--apply` it is a dry run). The
-  command refuses to copy when an Integration file has a name its template does not allow. Restart
-  running dev servers after a sync.
+- The Integration checkout holds canonical files per purpose. `pnpm env:sync` previews the current
+  assigned lane; `--apply` initializes missing `.env.local` and, for F11/F12, the required Preview
+  overlay. It never reads or copies Production/E2E configuration. Different destination files,
+  template mismatches, unknown/foreign lanes and symbolic targets block the operation before any
+  copy. Identical files are no-ops. `--all` is diagnostic only; bulk apply is refused. Resolve each
+  concrete conflict with separate scoped authority. No sync is performed as part of lane migration.
 - A name lives in exactly one template, except the Preview overlay, which repeats the runtime names
   it overrides. A unit test (`tests/unit/env-templates.test.ts`) fails when a template lists a name
   that no code reads, a name without a comment, an empty section, or a comment naming a retired
@@ -303,13 +305,12 @@ Rules:
   secrets).
 - Ephemeral agent worktrees (for example under `.claude/worktrees/`) never receive env files.
 
-| Worktree      | Files used at runtime                                    | Notes                   |
-| ------------- | -------------------------------------------------------- | ----------------------- |
-| Integration   | `.env.local`                                             | Canonical copies        |
-| `dev-local`   | `.env.local`                                             | Local default           |
-| `dev-preview` | `.env.local` + **required** `.env.preview.local` overlay | Preview runtime default |
-| `dev-extra`   | `.env.local`                                             | Local default           |
-| Any lane      | `.env.e2e.local` only for Preview Playwright and smoke   | Hosted test runner      |
+| Worktree    | Files used at runtime                                    | Notes                   |
+| ----------- | -------------------------------------------------------- | ----------------------- |
+| Integration | `.env.local`                                             | Canonical copies        |
+| F5–F10      | `.env.local`                                             | Local default           |
+| F11/F12     | `.env.local` + **required** `.env.preview.local` overlay | Preview runtime default |
+| Any lane    | `.env.e2e.local` only for Preview Playwright and smoke   | Hosted test runner      |
 
 ## External Preview E2E
 

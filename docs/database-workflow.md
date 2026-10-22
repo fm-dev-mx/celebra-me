@@ -286,10 +286,10 @@ categories, and precedence notes.
 - Production credentials must come from shell environment variables or the single canonical
   gitignored secret file `.env.production.local` (no tracked template).
 - Preview credentials must come from `PREVIEW_DB_URL` or the single canonical gitignored secret file
-  `.env.preview.local` (no tracked template). On the `dev-preview` worktree, `.env.preview.local`
-  also supplies the Preview **application** runtime (`SUPABASE_*` / `PUBLIC_SUPABASE_*`) via lane
-  bootstrap; that runtime overlay does not authorize `db:preview:*` or `invitation:release`
-  mutations.
+  `.env.preview.local` (no tracked template). On the `f11-preview` and `f12-release` worktrees,
+  `.env.preview.local` also supplies the Preview **application** runtime (`SUPABASE_*` /
+  `PUBLIC_SUPABASE_*`) via lane bootstrap; that runtime overlay does not authorize `db:preview:*` or
+  `invitation:release` mutations.
 - `.tmp/` and `.backups/` are never committed.
 - Never print or paste a full production or preview connection string in logs, docs, issues, or
   chat.
