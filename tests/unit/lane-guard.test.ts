@@ -63,6 +63,27 @@ describe('lane guard', () => {
 		expect(runGuard(checkout).status).toBe(0);
 	});
 
+	it('refuses commits on develop from an external lane', () => {
+		const checkout = createCheckout('f12-release');
+		git(checkout, ['switch', '--ignore-other-worktrees', 'develop']);
+		expect(runGuard(checkout).status).toBe(0);
+		const result = runGuard(checkout, true);
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain('Direct task commits on develop are forbidden');
+	});
+
+	it('inspects the checkout even when a hook passes inherited Git location variables', () => {
+		const integration = createCheckout(null);
+		const lane = createCheckout('f06-landing');
+		// Without the scrub, GIT_DIR would report Integration's develop and refuse the commit.
+		const result = runCommand(process.execPath, [GUARD_PATH, '--commit'], {
+			cwd: lane,
+			allowFailure: true,
+			env: { ...sanitizeEnv(), GIT_DIR: path.join(integration, '.git') },
+		});
+		expect(result.status).toBe(0);
+	});
+
 	it('accepts Integration on develop and refuses it on a task branch', () => {
 		const checkout = createCheckout(null);
 		expect(runGuard(checkout).status).toBe(0);
