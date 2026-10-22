@@ -2,7 +2,7 @@
 // src/components/invitation/ItineraryStackedCards.astro
 /* eslint-disable no-restricted-syntax -- per-card index and scroll-timeline names are generated per item */
 import type { ItineraryItem } from '@/lib/adapters/types';
-import { formatTime12h, isValidTime } from '@/lib/time/time-format';
+import { formatTimeSpanish, isValidTime } from '@/lib/time/time-format';
 
 interface Props {
 	items: ItineraryItem[];
@@ -34,7 +34,7 @@ const timelineScope = items.map((_, index) => timelineName(index)).join(', ');
 						<path class="stacked-card__lantern-line" d="M16 9c6.5 0 10 5 10 13.5S22 36 16 36 6 31 6 22.5 9.5 9 16 9Zm-4 0V5h8v4m-8 27v3h8v-3M16 1v4" />
 					</svg>
 					{timeValid ? (
-						<p class="stacked-card__time">{formatTime12h(item.time)}</p>
+						<p class="stacked-card__time">{formatTimeSpanish(item.time)}</p>
 					) : (
 						<p class="stacked-card__time stacked-card__time--pending" data-itinerary-time-pending>
 							Por confirmar
