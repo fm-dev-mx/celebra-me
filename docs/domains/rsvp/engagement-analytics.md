@@ -4,9 +4,9 @@
 > `supabase/migrations/20261010120000_guest_engagement_events.sql`; snapshots and anonymization:
 > `20261010130000_invitation_engagement_snapshots.sql`; ingestion:
 > `/api/invitacion/:inviteId/events` (`src/lib/rsvp/engagement/`); browser:
-> `src/lib/invitation/invitation-analytics.ts`; maintenance: `GET /api/cron/engagement-maintenance`.
-> The legacy `/view` route is gone and `track_guest_invitation_view_public` is dropped by the
-> contract migration `20261013110000`.
+> `src/lib/invitation/invitation-analytics.ts`; maintenance: the Worker `scheduled` handler, cron
+> `43 10 * * *` (`src/lib/server/scheduled-jobs.ts`). The legacy `/view` route is gone and
+> `track_guest_invitation_view_public` is dropped by the contract migration `20261013110000`.
 
 ## Purpose and boundaries
 
@@ -175,27 +175,6 @@ Snapshots capture the published content's design at compute time, with a `design
 | RSVP mode        | `rsvp.accessMode`, `rsvp.confirmationMode`                                    |
 
 Snapshots never contain guest identifiers, names, phone numbers, or free text.
-
-### Ranking query v1 (phase 2, retired)
-
-Retired by contract `20261014120000` once the v2 client was deployed; kept here as history.
-`list_invitation_engagement_ranking(p_event_type text, p_group_key text default 'themePreset')`
-(`20261013120000`, `security definer`, execute granted to `service_role` only) returned the rows the
-administrator's ranking view compared. It applies the comparison rules in the database:
-
-- same event type only; `metrics_version = 1` rows;
-- one snapshot per event: `final` when it exists, else `rolling`; snapshots whose event was deleted
-  (`event_id` null) are returned with `event_deleted = true` and no label;
-- `sample_state` is `eligible` when `guests_shared >= 20`, otherwise `insufficient`;
-- `group_value` is the design attribute selected by `p_group_key` (`themePreset`, `templateId`,
-  `fontFamily`, `visualProfileId`, `personalizedAccessVariant`, `rsvpConfirmationMode`,
-  `rsvpAccessMode`, `musicEnabled`; unknown keys raise `22023`), with `group_size` and
-  `group_eligible` counted per value (`null` groups rows without design data).
-
-Ranks and medians are computed by the application
-(`src/lib/rsvp/engagement/engagement-ranking.service.ts`); a group is ranked only when
-`group_eligible >= 5`, and insufficient rows are shown, never hidden. The routine never reads
-`guest_engagement_events` or `guest_invitations`.
 
 ### Confidence levels (phase 2.1)
 
