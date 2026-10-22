@@ -51,14 +51,13 @@ if ($isTerminalMode) {
 
     # Fallback nativo: Garantizar disponibilidad de funciones Celebra-me Lanes
     if (-not (Get-Command lanes -ErrorAction SilentlyContinue)) {
-        $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-        $worktreesRoot = Join-Path (Split-Path $repoRoot) "celebra-me-worktrees"
-
-        $script:CelebraLanes = [ordered]@{
-            main    = @{ Path = $repoRoot; Description = "Repositorio principal e integración." }
-            local   = @{ Path = (Join-Path $worktreesRoot "dev-local"); Description = "Desarrollo persistente con entorno y base de datos Local." }
-            preview = @{ Path = (Join-Path $worktreesRoot "dev-preview"); Description = "Validación persistente contra el entorno Preview." }
-            extra   = @{ Path = (Join-Path $worktreesRoot "dev-extra"); Description = "Lane auxiliar para trabajo paralelo o temporal." }
+        $checkoutRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+        $laneModule = Join-Path $checkoutRoot "scripts/shared/worktree-lane.ts"
+        $laneJson = & node --input-type=module -e 'import { pathToFileURL } from "node:url"; const lanes = await import(pathToFileURL(process.argv[1])); console.log(JSON.stringify(lanes.listExpectedLanePaths(lanes.findRepoRoot(process.argv[2]))));' $laneModule $checkoutRoot
+        if ($LASTEXITCODE -ne 0) { throw "No se pudo cargar la tabla de carriles." }
+        $script:CelebraLanes = [ordered]@{}
+        foreach ($entry in ($laneJson | ConvertFrom-Json)) {
+            $script:CelebraLanes[$entry.id] = @{ Path = $entry.path; Description = "$($entry.displayName) · $($entry.runtimeDefault) · puerto $($entry.port)" }
         }
 
         function global:lanes {
@@ -91,7 +90,11 @@ if ($isTerminalMode) {
         }
 
         function global:lane {
-            param([ValidateSet("main", "local", "preview", "extra")][string]$Name = "main")
+            param([string]$Name = "integration")
+            if (-not $script:CelebraLanes.Contains($Name)) {
+                Write-Error "Carril desconocido: $Name. Ejecute lanes para ver los nombres."
+                return
+            }
             $target = $script:CelebraLanes[$Name].Path
             if (Test-Path -LiteralPath $target) {
                 Set-Location -LiteralPath $target
@@ -201,6 +204,11 @@ $commandDetails = @{
         Desc    = "Generacion automatizada de capturas de pantalla visuales."
         UseCase = "Capturar imagenes del renderizado de invitaciones para revision de diseño visual."
         Help    = "Ingrese '--help' (o '--interactive' para selector guiado de capturas)"
+    }
+    "ops:status"                = @{
+        Desc    = "Estado de operacion en texto, solo lectura (secciones git y preflight)."
+        UseCase = "Ver develop frente a main, uniones a main sin tag y el diagnostico de prod:apply antes de operar."
+        Help    = "Ingrese '--section git' o '--section preflight' (o '--json' para salida JSON)"
     }
 }
 $commandDetails["pwsh"] = $commandDetails["terminal"]

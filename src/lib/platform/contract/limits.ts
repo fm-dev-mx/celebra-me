@@ -52,3 +52,5 @@ export const R2_OVERAGE_PRICES_USD = {
 /** Share of an allowance at which the console warns, then flags as critical. */
 export const PLATFORM_USAGE_WARNING_RATIO = 0.7;
 export const PLATFORM_USAGE_CRITICAL_RATIO = 0.9;
+/** Share of an allowance at which the collector logs a quota alert for the daily monitor. */
+export const PLATFORM_QUOTA_ALERT_RATIO = 0.8;

@@ -16,6 +16,10 @@ import {
 } from '@/lib/memories/server/cleanup-evidence';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
 import { serializeOperationalEvidenceEvent } from '@/lib/operations/operational-evidence';
+import {
+	PLATFORM_USAGE_SUMMARY_EVENT,
+	formatQuotaAlerts,
+} from '@/lib/platform/server/collector/quota-alerts';
 import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
@@ -115,8 +119,19 @@ async function runPlatformUsageJob(): Promise<ScheduledJobOutcome['status']> {
 	try {
 		const result = await runPlatformUsageCollector();
 		const degraded =
-			!result.purged || Object.values(result.datasets).some((collected) => !collected);
-		(degraded ? console.warn : console.info)('[platform][collector] completed', result);
+			!result.purged ||
+			Object.values(result.datasets).some((collected) => !collected) ||
+			result.quotaAlerts?.length !== 0;
+		// A JSON line: Workers Logs parses it into top-level fields the daily quota monitor filters on.
+		(degraded ? console.warn : console.info)(
+			JSON.stringify({
+				event: PLATFORM_USAGE_SUMMARY_EVENT,
+				phase: 'completed',
+				...result,
+				quotaAlertCount: result.quotaAlerts?.length ?? null,
+				quotaAlertText: result.quotaAlerts ? formatQuotaAlerts(result.quotaAlerts) : null,
+			}),
+		);
 		return 'completed';
 	} catch (error) {
 		// Status and PostgREST code only: the error body could echo the inserted payload.

@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "astro dev",
         "build": "pnpm type-check && pnpm build:app",
-        "build:app": "astro build && node scripts/check-ops-console-bundle.mjs",
+        "build:app": "astro build",
         "preview": "astro preview",
         "astro": "astro",
         "test": "jest",
@@ -105,6 +105,7 @@
         "ops:release-checks": "tsx scripts/ops/release-readiness.ts",
         "ops:release-status": "tsx scripts/ops/release-status.ts",
         "ops:classify-release": "tsx scripts/ops/classify-release.ts",
+        "ops:status": "tsx scripts/ops/ops-status.ts",
         "ops:cloudflare:preview:secrets": "tsx scripts/ops/cloudflare-worker-secrets.ts --env preview",
         "ops:cloudflare:production:secrets": "tsx scripts/ops/cloudflare-worker-secrets.ts --env production",
         "ops:cloudflare:preview:smoke": "tsx scripts/ops/cloudflare-worker-smoke.ts --env preview",
@@ -114,7 +115,6 @@
         "agent:git-safety:check": "node scripts/agent/git-safety.mjs check",
         "agent:git-safety:finish": "node scripts/agent/git-safety.mjs finish",
         "board:verify": "node scripts/board/verify-board.mjs",
-        "ops:console": "node scripts/ops/start-ops-console.mjs",
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb",
         "dbs": "tsx scripts/provision/dbs-cli.ts",
         "invitation:release": "tsx scripts/provision/invitation-release-cli.ts",
@@ -182,7 +182,7 @@
         "qrcode": "^1.5.4",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
-        "sanitize-html": "^2.17.7",
+        "sanitize-html": "^2.18.1",
         "zod": "^4.6.5"
     },
     "devDependencies": {

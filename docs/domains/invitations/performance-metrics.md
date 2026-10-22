@@ -2,7 +2,7 @@
 title: Invitation delivery and performance metrics
 lifecycle: evergreen
 domain: invitation-delivery
-last_reviewed: 2026-08-18
+last_reviewed: 2026-10-22
 ---
 
 # Invitation delivery and performance metrics
@@ -16,7 +16,7 @@ Cache **correctness** for public and private responses remains
 that policy.
 
 Numeric baselines below come from production `www.celebra-me.com` on 2026-08-16, measured on the
-former host before the Cloudflare Workers cutover, via
+former host before the Cloudflare Workers cutover (not re-measured on Workers yet), via
 `pnpm invitation:delivery:baseline --slug <eventType>/<slug>`. Canonical metric name: **HTML decoded
 size**. The recorded field `htmlBytes` is the decoded UTF-8 byte length of the HTML response body
 after HTTP decompression (`response.text()` → `Buffer.byteLength(html, "utf8")`). It is not
@@ -47,7 +47,7 @@ environment-dependent; **Low** = weakly observable. Low-confidence metrics must 
 | RSVP submit ops             | count / request      | High                                  | Service layer; RPC helper also re-reads guest |
 | RSVP functional outcome     | boolean              | High in disposable DB                 | Production guests are never mutated           |
 | HTML decoded size           | UTF-8 bytes          | High                                  | Not compressed `Content-Length`               |
-| LCP / CLS / INP             | p75 ms / score       | Medium                                | Web Analytics UI; no in-repo vitals API       |
+| LCP / CLS / INP             | p75 ms / score       | Medium                                | Web Analytics; no in-repo consumer            |
 | TTFB / render spans         | ms                   | Low–Medium                            | Range ≈ proposed thresholds                   |
 | RSVP errors                 | log events           | Medium                                | No in-repo success-rate series                |
 | Provider usage vs traffic   | totals / ratio       | Medium                                | Manual pairing; no per-invite billing         |
@@ -636,14 +636,16 @@ image transforms — always compared with invitation open and RSVP volume.
 an efficiency bug (extra queries, transform amplification, duplicate downloads).
 
 **Measurement.** Provider-native dashboards (Cloudflare, Supabase). Provider totals are **account**
-or project scope — not per-invitation or per-route. Cloudflare Web Analytics counts
-pageviews/visitors and is a traffic denominator, not Web Vitals. Supabase usage is dashboard-only in
-this workflow. Ratios are **manual**: pair a usage window with Analytics volume for the same period.
-No in-repo replica, alert, or billing series.
+or project scope — not per-invitation or per-route. Cloudflare Web Analytics pageviews/visitors are
+the traffic denominator. The platform usage collector (Worker cron `*/15`,
+`src/lib/platform/server/collector/`) snapshots Worker, R2, and Supabase size totals for the admin
+dashboard and logs a `platform_usage_summary` event listing every metric at or above 80 % of its
+plan allowance; the daily `platform-quotas` monitor alerts on it. Usage-vs-traffic ratios stay
+**manual**: pair a usage window with Analytics volume for the same period. No billing series.
 
 **Confidence.** Medium for account totals. Low for attributing a spike to one invitation.
 
-**Enforcement.** Runtime. No automated provider-billing alert is configured in this repository.
+**Enforcement.** Runtime. Quota alert at 80 % of an allowance (daily monitor); no spend alert.
 
 **Baseline.** Do not claim billed savings. Calibration recorded delivery bytes, not invoices.
 
@@ -660,7 +662,24 @@ raising a silent budget.
 
 ## Monitoring map
 
-There is **no** in-repository PagerDuty/Datadog/Grafana alert. “Trigger” means when a human should
+There is **no** PagerDuty/Datadog/Grafana alert. The only automated alerts are GitHub issues opened
+by scheduled workflows (GitHub e-mails the repository watchers):
+
+- `production-uptime.yml`: page smoke, `/api/auth/session` and `/api/health` against Production;
+  opens an issue after two consecutive failures. The cron says every 15 minutes, but GitHub delays
+  scheduled runs; observed spacing in October 2026 was about 4 hours.
+- `scheduled-monitors.yml` (daily, `pnpm ops:monitor <name>`), one issue per monitor:
+  - `cleanup-heartbeat`: the memories cleanup cron logged a completed summary.
+  - `backup-freshness`: the off-site bucket holds a daily backup newer than 30 hours.
+  - `worker-errors`: more than 10 5xx responses plus uncaught exceptions in 24 hours.
+  - `worker-limits`: any request cut off by a CPU or memory limit in 24 hours.
+  - `platform-quotas`: the usage collector logged no summary in 24 hours, or a run found a metric at
+    or above 80 % of its allowance.
+- `nightly-visual-parity.yml` (daily): visual parity run.
+- `production-image-audit.yml` (daily): published invitation images still resolve.
+
+The Worker monitors read Workers Logs with a read-only token and fail instead of passing when a
+query comes back sampled. Every row below is a manual trigger: “Trigger” means when a human should
 investigate.
 
 | Metric           | Where                            | Trigger                                                             | Response                                |
@@ -668,11 +687,12 @@ investigate.
 | LCP, CLS, INP    | Cloudflare Web Analytics         | Sustained p75 worsening on invitation routes (days, not one sample) | Hero/path, layout, islands              |
 | TTFB             | Web Analytics + baseline script  | Sustained origin-time rise vs traffic                               | Query-count tests, personalization span |
 | Document cache   | Baseline script; deploy checks   | Public TTL or document HIT                                          | Restore origin-revalidate / no-store    |
-| RSVP API errors  | Worker logs / errors             | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
+| RSVP API errors  | Worker logs; `worker-errors`     | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
 | Usage vs traffic | Cloudflare / Supabase dashboards | Consumption rising faster than opens/RSVPs                          | Operation contracts, media path         |
 
-Cloudflare Web Analytics (the beacon in `Layout.astro`) is pageview telemetry, not a Web Vital. It
-can help as a traffic denominator. Commercial GA4 is consent-gated and must not be required for
+Cloudflare Web Analytics (the beacon in `Layout.astro`) reports both pageviews (the traffic
+denominator) and Core Web Vitals p75 per path (dashboard or GraphQL
+`rumWebVitalsEventsAdaptiveGroups`). Commercial GA4 is consent-gated and must not be required for
 these operational metrics.
 
 ## CI contract

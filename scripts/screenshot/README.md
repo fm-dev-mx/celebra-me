@@ -32,12 +32,8 @@ pnpm screenshot --url=/
 
 `pnpm screenshot` detects the current worktree lane and targets the same Astro port as `pnpm dev`:
 
-| Lane                          | Worktree                             | Default base URL        |
-| ----------------------------- | ------------------------------------ | ----------------------- |
-| Integration (`develop` trunk) | repo root                            | `http://localhost:4321` |
-| `dev-local`                   | `…/celebra-me-worktrees/dev-local`   | `http://localhost:4321` |
-| `dev-extra`                   | `…/celebra-me-worktrees/dev-extra`   | `http://localhost:4322` |
-| `dev-preview`                 | `…/celebra-me-worktrees/dev-preview` | `http://localhost:4323` |
+The [lane guide](../../docs/core/worktrees/README.md) lists all lanes. Integration uses port 4321;
+F5–F12 use ports 4325–4332 respectively. The executable lane table owns these defaults.
 
 Overrides (in order): `--base-url=…` / config `baseUrl`, then `ASTRO_PORT`, then the lane table.
 Absolute `--url=http://…` values are left unchanged.

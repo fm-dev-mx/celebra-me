@@ -17,6 +17,7 @@ import {
 	readCloudflareCollectorConfig,
 	readSupabaseCollectorConfig,
 } from './collector-config';
+import { type PlatformQuotaAlert, quotaAlertsForRows } from './quota-alerts';
 import {
 	insertPlatformSnapshots,
 	purgePlatformSnapshots,
@@ -111,6 +112,8 @@ export interface PlatformCollectorResult {
 	/** Permissions a provider reported missing, for the operator log. */
 	missingPermissions: string[];
 	purged: boolean;
+	/** Metrics at or above the alert share of their allowance; null when scoring failed. */
+	quotaAlerts: PlatformQuotaAlert[] | null;
 }
 
 export async function runPlatformUsageCollector(
@@ -128,6 +131,12 @@ export async function runPlatformUsageCollector(
 		// Purge retries on the next run; the fresh snapshots are already stored.
 		purged = false;
 	}
+	let quotaAlerts: PlatformQuotaAlert[] | null = null;
+	try {
+		quotaAlerts = await quotaAlertsForRows(rows);
+	} catch {
+		// Scoring never blocks a run; the summary reports the alerts as unknown.
+	}
 	const missingPermissions = [
 		...new Set(
 			rows
@@ -142,5 +151,6 @@ export async function runPlatformUsageCollector(
 		>,
 		missingPermissions,
 		purged,
+		quotaAlerts,
 	};
 }

@@ -4,20 +4,27 @@
  *
  * Each ignored file has one purpose and one tracked template (`ENV_FILES`). The Integration
  * checkout (repo root) holds the canonical copies; the development lanes receive identical copies.
- * Output lists names, file states and short digests only — never values.
+ * Output lists names and file states only — never values or value-derived digests.
  *
  * Usage:
  *   pnpm env:check                      # compare this checkout's files with their templates
  *   pnpm env:sync                       # dry run: what would change in this checkout
  *   pnpm env:sync -- --all              # dry run for every development lane
- *   pnpm env:sync -- --all --apply      # copy the Integration files into every development lane
+ *   pnpm env:sync -- --apply            # initialize missing runtime files in this assigned lane
  *   pnpm env:audit                      # templates vs code: unread, undocumented, stale names
  */
-import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+	existsSync,
+	lstatSync,
+	readFileSync,
+	readdirSync,
+	realpathSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
 import { basename, extname, join, relative, resolve } from 'node:path';
 import { parseEnv } from 'node:util';
-import { findRepoRoot, listExpectedLanePaths } from '../shared/worktree-lane';
+import { detectWorktreeLane, findRepoRoot, listExpectedLanePaths } from '../shared/worktree-lane';
 
 export interface EnvFileSpec {
 	/** Ignored file holding real values. */
@@ -189,11 +196,6 @@ function readValues(path: string): Record<string, string> | null {
 	return parseEnv(readFileSync(path, 'utf8')) as Record<string, string>;
 }
 
-function digest(path: string): string | null {
-	if (!existsSync(path)) return null;
-	return createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 12);
-}
-
 function checkCheckout(cwd: string): boolean {
 	let ok = true;
 	for (const spec of ENV_FILES) {
@@ -239,60 +241,126 @@ function syncTargets(repoRoot: string, all: boolean): string[] {
 		.map((lane) => lane.path);
 }
 
-/** Canonical files must match this checkout's templates before they are copied anywhere. */
-function sourceIsClean(source: string): boolean {
-	let clean = true;
-	for (const spec of ENV_FILES) {
-		const values = readValues(resolve(source, spec.file));
-		if (!values) continue;
-		const report = compareEnvFile(
-			spec.file,
-			readTemplateNames(readFileSync(resolve(process.cwd(), spec.template), 'utf8')),
-			values,
-		);
-		if (report.unknown.length || report.missing.length) {
-			console.error(
-				`✖ Integration ${spec.file} does not match ${spec.template} (unknown: ${report.unknown.join(', ') || 'none'}; missing: ${report.missing.join(', ') || 'none'}).`,
+interface EnvSyncEntry {
+	from: string;
+	to: string;
+	file: string;
+	content: Buffer;
+	state: 'identical' | 'absent';
+}
+
+/** Preflight every selected target before writing; Production/E2E are never generic sync inputs. */
+export function planEnvSync(repoRoot: string, targets: readonly string[]): EnvSyncEntry[] {
+	const source = resolve(repoRoot);
+	const entries: EnvSyncEntry[] = [];
+	const pathKey = (value: string) => (process.platform === 'win32' ? value.toLowerCase() : value);
+	for (const target of targets) {
+		const destination = resolve(target);
+		if (destination === source) continue;
+		const lane = detectWorktreeLane(destination, source);
+		const expected = listExpectedLanePaths(source).find((entry) => entry.id === lane.id);
+		if (
+			!expected ||
+			lane.id === 'integration' ||
+			pathKey(expected.path) !== pathKey(destination) ||
+			pathKey(realpathSync(destination)) !== pathKey(destination) ||
+			pathKey(findRepoRoot(destination)) !== pathKey(source)
+		) {
+			throw new Error(
+				'Refusing env sync: destination must be a canonical lane of this repository.',
 			);
-			clean = false;
+		}
+		const specs = ENV_FILES.filter(
+			(spec) =>
+				spec.file === '.env.local' ||
+				(lane.runtimeDefault === 'preview' && spec.file === '.env.preview.local'),
+		);
+		for (const spec of specs) {
+			const from = resolve(source, spec.file);
+			const to = resolve(destination, spec.file);
+			if (
+				lstatSync(from, { throwIfNoEntry: false })?.isSymbolicLink() ||
+				lstatSync(to, { throwIfNoEntry: false })?.isSymbolicLink()
+			) {
+				throw new Error('Refusing env sync: symbolic configuration files are unsupported.');
+			}
+			if (!existsSync(from))
+				throw new Error('Required Integration source is missing: ' + spec.file);
+			const names = readTemplateNames(readFileSync(resolve(source, spec.template), 'utf8'));
+			const targetNames = readTemplateNames(
+				readFileSync(resolve(destination, spec.template), 'utf8'),
+			);
+			if (JSON.stringify([...names].sort()) !== JSON.stringify([...targetNames].sort())) {
+				throw new Error('Incompatible destination template: ' + spec.template);
+			}
+			const content = readFileSync(from);
+			const values = Object.fromEntries(
+				Object.entries(parseEnv(content.toString('utf8'))).filter(
+					(entry): entry is [string, string] => typeof entry[1] === 'string',
+				),
+			);
+			const report = compareEnvFile(spec.file, names, values);
+			if (report.unknown.length || report.missing.length) {
+				throw new Error('Integration source does not match its template: ' + spec.file);
+			}
+			const present = existsSync(to);
+			if (present && !content.equals(readFileSync(to))) {
+				throw new Error(
+					'Configuration conflict; preserve and resolve explicitly: ' + spec.file,
+				);
+			}
+			entries.push({
+				from,
+				to,
+				file: spec.file,
+				content,
+				state: present ? 'identical' : 'absent',
+			});
 		}
 	}
-	return clean;
+	return entries;
 }
 
 function sync(repoRoot: string, all: boolean, apply: boolean): void {
-	const source = resolve(repoRoot);
-	if (!sourceIsClean(source)) {
-		process.exitCode = 1;
-		if (apply) throw new Error('Refusing to copy: fix the Integration files first.');
-	}
-	for (const target of syncTargets(repoRoot, all)) {
-		if (resolve(target) === source) {
+	if (all && apply)
+		throw new Error(
+			'Bulk apply is unsupported; run env:sync -- --apply in each explicitly assigned lane.',
+		);
+	const entries = planEnvSync(repoRoot, syncTargets(repoRoot, all));
+	// Recheck the complete plan before the first write; copies never replace a differing file.
+	if (apply)
+		for (const entry of entries) {
+			if (
+				!entry.content.equals(readFileSync(entry.from)) ||
+				(entry.state === 'absent'
+					? existsSync(entry.to)
+					: !entry.content.equals(readFileSync(entry.to)))
+			) {
+				throw new Error('Configuration changed after preflight; no files copied.');
+			}
+		}
+	let copied = 0;
+	try {
+		for (const entry of entries) {
+			if (apply && entry.state === 'absent') {
+				writeFileSync(entry.to, entry.content, { flag: 'wx', mode: 0o600 });
+				copied++;
+			}
 			console.info(
-				`• ${basename(target)}: Integration holds the canonical files; nothing to copy.`,
+				relative(repoRoot, entry.to) +
+					': ' +
+					entry.state +
+					(apply && entry.state === 'absent' ? ' — copied' : ''),
 			);
-			continue;
 		}
-		console.info(`${basename(target)}:`);
-		for (const spec of ENV_FILES) {
-			const from = resolve(source, spec.file);
-			const to = resolve(target, spec.file);
-			const sourceDigest = digest(from);
-			if (!sourceDigest) {
-				console.warn(`    ${spec.file}: absent in Integration; left untouched`);
-				continue;
-			}
-			const targetDigest = digest(to);
-			if (sourceDigest === targetDigest) {
-				console.info(`    ${spec.file}: identical`);
-				continue;
-			}
-			const state = targetDigest ? `differs (${targetDigest} → ${sourceDigest})` : 'absent';
-			if (apply) copyFileSync(from, to);
-			console.info(`    ${spec.file}: ${state}${apply ? ' — copied' : ' — would copy'}`);
-		}
+	} catch {
+		throw new Error(
+			'Environment sync stopped after ' +
+				copied +
+				' completed copies; inspect before retrying.',
+		);
 	}
-	if (!apply) console.info('Dry run: nothing copied. Add --apply to copy.');
+	if (!apply) console.info('Dry run: nothing copied. Apply only in an explicitly assigned lane.');
 }
 
 function auditCheckout(root: string): boolean {

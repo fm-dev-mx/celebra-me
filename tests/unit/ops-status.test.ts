@@ -1,8 +1,4 @@
-import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { readFileSync } from 'node:fs';
 import {
 	classifyBackupAge,
 	classifyProductionVariables,
@@ -11,18 +7,17 @@ import {
 	parseRemoteTags,
 	splitUntagged,
 	worstStatus,
+	type GitSection,
 	type OpsCommit,
+	type PreflightSection,
 } from '../../scripts/ops/ops-console-snapshot.ts';
+import {
+	formatOpsItem,
+	formatOpsSection,
+	formatOpsStatus,
+	parseOpsStatusArgs,
+} from '../../scripts/ops/ops-status.ts';
 import type { ReleaseCheckEvidence } from '../../scripts/db/release-check.ts';
-import { OPS_CONSOLE_SENTINEL } from '../../src/ops-console/sentinel.ts';
-
-const BUNDLE_CHECK = resolve('scripts/check-ops-console-bundle.mjs');
-const IMPORT_GUARD_URL = pathToFileURL(resolve('scripts/validate-ops-console-imports.mjs')).href;
-
-function runNode(args: string[]): { status: number | null; output: string } {
-	const result = spawnSync(process.execPath, args, { encoding: 'utf8' });
-	return { status: result.status, output: `${result.stdout}${result.stderr}` };
-}
 
 const NOW = Date.parse('2026-10-21T20:00:00Z');
 const commit = (sha: string, hoursAgo: number): OpsCommit => ({
@@ -32,7 +27,7 @@ const commit = (sha: string, hoursAgo: number): OpsCommit => ({
 	subject: `Merge ${sha}`,
 });
 
-describe('ops console git snapshot', () => {
+describe('ops status git snapshot', () => {
 	it('maps annotated tags to the commit they peel to and ignores non-release tags', () => {
 		const tags = parseRemoteTags(
 			[
@@ -74,7 +69,7 @@ describe('ops console git snapshot', () => {
 	});
 });
 
-describe('ops console prod:apply pre-flight', () => {
+describe('ops status prod:apply pre-flight', () => {
 	const environment = { lockfileSha256: 'lock', nodeVersion: 'v24.14.1' };
 	const evidence: ReleaseCheckEvidence = {
 		version: 2,
@@ -142,78 +137,81 @@ describe('ops console prod:apply pre-flight', () => {
 	});
 });
 
-describe('ops console isolation guards', () => {
-	let root: string;
-
-	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'ops-console-'));
-	});
-
-	afterEach(() => {
-		rmSync(root, { recursive: true, force: true });
-	});
-
-	const write = (relative: string, content: string): void => {
-		const path = join(root, relative);
-		mkdirSync(join(path, '..'), { recursive: true });
-		writeFileSync(path, content);
+describe('ops status text output', () => {
+	const git: GitSection = {
+		section: 'git',
+		generatedAt: new Date(NOW).toISOString(),
+		originFetchedAt: null,
+		tagSource: 'origin',
+		latestTag: { name: 'v0.1.0', sha: 'm1', date: commit('m1', 30).date },
+		untaggedMainCommits: [commit('m2', 3)],
+		developAhead: 2,
+		developBehind: 0,
+		developAheadCommits: [],
+		items: [
+			{
+				id: 'main-tags',
+				label: 'Uniones a main sin tag',
+				status: 'block',
+				detail: '1 unión lleva 3 h sin tag.',
+				fix: 'pnpm release:tag',
+			},
+			{
+				id: 'develop-vs-main',
+				label: 'develop frente a main',
+				status: 'ok',
+				detail: '+2/-0.',
+			},
+		],
+	};
+	const preflight: PreflightSection = {
+		section: 'preflight',
+		generatedAt: new Date(NOW).toISOString(),
+		checkout: 'celebra-me',
+		branch: 'develop',
+		headSha: 'a'.repeat(40),
+		verdict: 'warn',
+		items: [{ id: 'checkout', label: 'Checkout', status: 'warn', detail: 'Rama develop.' }],
 	};
 
-	it('keeps the bundle check sentinel equal to the console sentinel', () => {
-		expect(readFileSync(BUNDLE_CHECK, 'utf8')).toContain(
-			`export const OPS_CONSOLE_SENTINEL = '${OPS_CONSOLE_SENTINEL}';`,
+	it('prints one line per item with the status, label, detail and optional command', () => {
+		expect(formatOpsItem(git.items[0]!)).toBe(
+			'[block] Uniones a main sin tag: 1 unión lleva 3 h sin tag.  → pnpm release:tag',
 		);
+		expect(formatOpsItem(git.items[1]!)).toBe('[ok] develop frente a main: +2/-0.');
 	});
 
-	it('fails the build output check when the console sentinel reaches dist/', () => {
-		write('dist/client/index.html', '<p>ok</p>');
-		expect(runNode([BUNDLE_CHECK, join(root, 'dist')]).status).toBe(0);
-		write('dist/server/chunks/page.mjs', `const a = "${OPS_CONSOLE_SENTINEL}";`);
-		const leaked = runNode([BUNDLE_CHECK, join(root, 'dist')]);
-		expect(leaked.status).toBe(1);
-		expect(leaked.output).toContain(
-			`server/chunks/page.mjs contains "${OPS_CONSOLE_SENTINEL}"`,
-		);
-		expect(runNode([BUNDLE_CHECK, join(root, 'missing')]).status).toBe(1);
+	it('prints each section under a heading and both sections separated by a blank line', () => {
+		const text = formatOpsStatus([git, preflight]);
+		const lines = text.split('\n');
+		expect(lines[0]).toBe('== git · develop +2/-0 frente a main · tags de origin');
+		expect(lines[1]).toBe(formatOpsItem(git.items[0]!));
+		expect(lines[3]).toBe('');
+		expect(lines[4]).toBe('== preflight · celebra-me (develop en aaaaaaaaa) · veredicto: warn');
+		expect(lines[5]).toBe('[warn] Checkout: Rama develop.');
+		expect(formatOpsSection(preflight)).toBe(lines.slice(4).join('\n'));
 	});
 
-	it('rejects imports of src/ops-console/ from pages, components and other bundled code', () => {
-		write(
-			'src/pages/leak.astro',
-			"---\nimport { OPS_CONSOLE_SENTINEL } from '../ops-console/sentinel';\n---\n",
-		);
-		write(
-			'src/components/Leak.ts',
-			"export const load = () => import('@/ops-console/run-snapshot');\n",
-		);
-		write('src/ops-console/OpsConsolePage.astro', "---\nimport './run-snapshot';\n---\n");
-		write('src/pages/ok.astro', '---\n---\n<p>ok</p>\n');
-		const files = [
-			'src/pages/leak.astro',
-			'src/components/Leak.ts',
-			'src/ops-console/OpsConsolePage.astro',
-			'src/pages/ok.astro',
-		];
-		const result = runNode([
-			'--input-type=module',
-			'-e',
-			`const { validateOpsConsoleImports } = await import(${JSON.stringify(IMPORT_GUARD_URL)});` +
-				`console.log(JSON.stringify(validateOpsConsoleImports(${JSON.stringify(root)}, ${JSON.stringify(files)})));`,
-		]);
-		const errors = JSON.parse(result.output) as string[];
-		expect(errors).toHaveLength(2);
-		expect(errors[0]).toMatch(/^src\/pages\/leak\.astro:2:/);
-		expect(errors[1]).toMatch(/^src\/components\/Leak\.ts:1:/);
+	it('runs both sections by default and only the requested one with --section', () => {
+		expect(parseOpsStatusArgs([])).toEqual({ sections: ['git', 'preflight'], json: false });
+		expect(parseOpsStatusArgs(['--json'])).toEqual({
+			sections: ['git', 'preflight'],
+			json: true,
+		});
+		expect(parseOpsStatusArgs(['--section', 'preflight'])).toEqual({
+			sections: ['preflight'],
+			json: false,
+		});
+		expect(() => parseOpsStatusArgs(['--section', 'dbs'])).toThrow(/git o preflight/);
 	});
 
-	it('is wired into validate:structure and build:app', () => {
-		const structure = readFileSync('scripts/validate-structure.mjs', 'utf8');
-		expect(structure).toContain('...validateOpsConsoleImports(root, tracked)');
+	it('is the script behind pnpm ops:status and the VS Code task', () => {
 		const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
 			scripts: Record<string, string>;
 		};
-		expect(pkg.scripts['build:app']).toBe(
-			'astro build && node scripts/check-ops-console-bundle.mjs',
-		);
+		expect(pkg.scripts['ops:status']).toBe('tsx scripts/ops/ops-status.ts');
+		expect(pkg.scripts['ops:console']).toBeUndefined();
+		expect(pkg.scripts['build:app']).toBe('astro build');
+		expect(readFileSync('.vscode/tasks.json', 'utf8')).toContain('"Estado (ops:status)"');
 	});
 });
