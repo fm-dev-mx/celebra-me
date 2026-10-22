@@ -122,7 +122,7 @@ reuse it without per-invitation comparison rules.
   - **Owner:** `eventContentSchema` and the adapter consume only declared section variants; legacy
     aliases are rejected
 - **Concern:** Publication projection
-  - **Owner:** `preparePublicationProjection` / `canonicalizePublicationValue`
+  - **Owner:** `canonicalizePublicationValue`
 
 `hashPublicationProjection` remains the publication optimistic-lock fingerprint. It is **not** the
 cross-environment semantic owner.

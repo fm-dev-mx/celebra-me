@@ -1,4 +1,5 @@
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
@@ -47,7 +48,7 @@ function makeMinimalEvent(music?: Record<string, unknown>) {
 			envelope: { enabled: true },
 			...(music ? { music } : {}),
 		},
-	} as unknown as Parameters<typeof adaptEvent>[0];
+	} as unknown as EventContentEntry;
 }
 
 function buildPage(viewModel: InvitationViewModel) {
@@ -61,11 +62,13 @@ describe('invitation music player visibility', () => {
 	describe('adaptEvent', () => {
 		it('keeps playable music for the page resolver', () => {
 			const viewModel = adaptEvent(
-				makeMinimalEvent({
-					url: `  ${PLAYABLE_URL}  `,
-					autoPlay: true,
-					title: 'Vals',
-				}),
+				contentDocumentFromEntry(
+					makeMinimalEvent({
+						url: `  ${PLAYABLE_URL}  `,
+						autoPlay: true,
+						title: 'Vals',
+					}),
+				),
 			);
 
 			expect(viewModel.music).toEqual({
@@ -81,7 +84,7 @@ describe('invitation music player visibility', () => {
 			['empty url', { url: '' }],
 			['whitespace url', { url: '   ' }],
 		])('drops %s so the view model has no music', (_label, music) => {
-			const viewModel = adaptEvent(makeMinimalEvent(music));
+			const viewModel = adaptEvent(contentDocumentFromEntry(makeMinimalEvent(music)));
 			expect(viewModel.music).toBeUndefined();
 		});
 	});
@@ -166,7 +169,7 @@ describe('invitation music player visibility', () => {
 		it('keeps the player hidden through adaptEvent + page assembly on a hosted runtime', () => {
 			asHostedDeploy('production', { isDevServer: true });
 
-			const viewModel = adaptEvent(makeMinimalEvent());
+			const viewModel = adaptEvent(contentDocumentFromEntry(makeMinimalEvent()));
 			const page = buildPage(viewModel);
 
 			expect(viewModel.music).toBeUndefined();

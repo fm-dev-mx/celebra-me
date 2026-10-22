@@ -1,7 +1,5 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { naydelinInvitation } from '../../scripts/provision/invitations/naydelin-paredes';
-import { getInvitationAssetSourceDir } from '../../scripts/provision/invitations/invitation-definition';
+import { hasDeclaredAssetSource } from '../helpers/invitation-media';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 function buildContent() {
@@ -31,9 +29,8 @@ describe('naydelin-paredes invitation definition', () => {
 	});
 
 	it('ships every declared delivery asset from its source directory', () => {
-		const assetDir = join(process.cwd(), getInvitationAssetSourceDir(naydelinInvitation));
 		for (const asset of naydelinInvitation.assets) {
-			expect(existsSync(join(assetDir, asset.relativePath))).toBe(true);
+			expect(hasDeclaredAssetSource(naydelinInvitation, asset)).toBe(true);
 		}
 	});
 

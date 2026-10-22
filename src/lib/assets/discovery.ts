@@ -7,8 +7,12 @@ export function discoverEventModules() {
 	// Vite-specific dynamic discovery
 	// This will be replaced by Vite during build/dev
 	// In Jest, we will mock this file.
-	return import.meta.glob('../../assets/images/events/*/index.ts', {
-		import: 'assets',
-		eager: true,
-	});
+	// Both paths end in `<slug>/<file>.ts`, so the parent folder names the event.
+	return import.meta.glob(
+		['../../assets/images/events/*/index.ts', '../../invitations/demos/*/assets.ts'],
+		{
+			import: 'assets',
+			eager: true,
+		},
+	);
 }

@@ -3,8 +3,14 @@ import { expect, test, type Locator } from '@playwright/test';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { readInvitationMediaManifest } from '../../scripts/provision/invitation-media-manifest';
 
 const sha256 = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
+/** Published digest of a frozen invitation asset, from its committed media manifest. */
+const manifestSha256 = (slug: string, relativePath: string): string | undefined =>
+	readInvitationMediaManifest(resolve('src/assets/invitations', slug))?.assets.find(
+		(entry) => entry.relativePath === relativePath,
+	)?.sha256;
 
 async function loadedImage(image: Locator) {
 	await expect
@@ -40,10 +46,7 @@ for (const viewport of [
 		const actual = await loadedImage(image);
 		expect(actual.src).toMatch(/^data:image\/webp;base64,/);
 		const bytes = Buffer.from(actual.src.split(',')[1], 'base64');
-		const source = readFileSync(
-			resolve('src/assets/invitations/norma-hernandez/childhood.webp'),
-		);
-		expect(sha256(bytes)).toBe(sha256(source));
+		expect(sha256(bytes)).toBe(manifestSha256('norma-hernandez', 'childhood.webp'));
 		expect([actual.width, actual.height]).toEqual([900, 1600]);
 	});
 }
@@ -100,7 +103,7 @@ test('family retains original delivery dimensions through content resolution', a
 	const delivered = await page.request.get(actual.src);
 	expect(delivered.ok()).toBe(true);
 	const source = readFileSync(
-		resolve('src/assets/images/events/demo-xv-celestial-blue/family-group.webp'),
+		resolve('src/invitations/demos/demo-xv-celestial-blue/assets/family-group.webp'),
 	);
 	expect(sha256(await delivered.body())).toBe(sha256(source));
 });
@@ -135,8 +138,7 @@ test('mobile hero delivers the prepared file without a runtime transformation', 
 	const actual = await loadedImage(image);
 	expect(actual.src).toMatch(/^data:image\/webp;base64,/);
 	expect([actual.width, actual.height]).toEqual([1280, 1920]);
-	const prepared = readFileSync(
-		resolve('src/assets/invitations/romina-rios-chaparro/hero-mobile.webp'),
+	expect(sha256(Buffer.from(actual.src.split(',')[1], 'base64'))).toBe(
+		manifestSha256('romina-rios-chaparro', 'hero-mobile.webp'),
 	);
-	expect(Buffer.from(actual.src.split(',')[1], 'base64').equals(prepared)).toBe(true);
 });

@@ -8,6 +8,8 @@ const INDICATION_HTML_OPTIONS: sanitizeHtml.IOptions = {
 	allowedSchemesAppliedToAttributes: ['href'],
 	allowProtocolRelative: false,
 	disallowedTagsMode: 'discard',
+	// No style attribute is allowed; this also keeps postcss out of the server build.
+	parseStyleAttributes: false,
 	transformTags: {
 		// Non-https links become a disallowed tag, so their text stays and the link is dropped.
 		a: (_tagName, attribs): sanitizeHtml.Tag => {

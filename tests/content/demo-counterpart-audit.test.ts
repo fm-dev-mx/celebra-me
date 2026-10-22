@@ -8,9 +8,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { EVENT_KEYS } from '@/lib/assets/asset-keys';
+import {
+	listDemoInvitationFiles,
+	resolveEventAssetManifest,
+} from '../../scripts/shared/demo-invitation-files.ts';
 
 const projectRoot = process.cwd();
-const demosRoot = path.join(projectRoot, 'src/content/event-demos');
 const assetsRoot = path.join(projectRoot, 'src/assets/images/events');
 
 interface DemoInfo {
@@ -31,25 +34,11 @@ function getRealInvitationAssetDirs(): string[] {
 }
 
 function getAllDemos(): DemoInfo[] {
-	const demos: DemoInfo[] = [];
-	if (!fs.existsSync(demosRoot)) return demos;
-
-	const walkDir = (dir: string) => {
-		const entries = fs.readdirSync(dir, { withFileTypes: true });
-		for (const entry of entries) {
-			const fullPath = path.join(dir, entry.name);
-			if (entry.isDirectory()) {
-				walkDir(fullPath);
-			} else if (entry.name.endsWith('.json') && !entry.name.startsWith('_')) {
-				const raw = fs.readFileSync(fullPath, 'utf8');
-				const data = JSON.parse(raw);
-				const relPath = path.relative(projectRoot, fullPath);
-				demos.push({ file: relPath, slug: entry.name.replace(/\.json$/, ''), data });
-			}
-		}
-	};
-	walkDir(demosRoot);
-	return demos;
+	return listDemoInvitationFiles().map(({ slug, contentPath, content }) => ({
+		file: path.relative(projectRoot, contentPath),
+		slug,
+		data: content,
+	}));
 }
 
 /**
@@ -126,8 +115,8 @@ function extractReferencedAssetKeys(data: Record<string, unknown>): string[] {
 
 /** Get the exported keys from an asset registry index.ts */
 function getAssetRegistryKeys(assetSlug: string): string[] {
-	const registryPath = path.join(assetsRoot, assetSlug, 'index.ts');
-	if (!fs.existsSync(registryPath)) return [];
+	const registryPath = resolveEventAssetManifest(assetSlug);
+	if (!registryPath) return [];
 
 	const content = fs.readFileSync(registryPath, 'utf8');
 
@@ -241,9 +230,8 @@ describe('Strict Demo Counterpart Audit', () => {
 		for (const demo of demos) {
 			const slug = demo.data._assetSlug as string;
 			if (!slug) continue;
-			it(`demo "${demo.slug}" _assetSlug directory "${slug}" exists`, () => {
-				const dir = path.join(assetsRoot, slug);
-				expect(fs.existsSync(dir)).toBe(true);
+			it(`demo "${demo.slug}" _assetSlug manifest "${slug}" exists`, () => {
+				expect(resolveEventAssetManifest(slug)).not.toBeNull();
 			});
 		}
 	});

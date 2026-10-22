@@ -2,7 +2,7 @@ import { supportsEnvelopeSealColorOptions } from '@/lib/intake/labels';
 import { ENVELOPE_SEAL_COLORS, isEnvelopeSealColor } from '@/lib/invitation/reveal-card';
 import { ENVELOPE_SEAL_COLOR_LABELS } from '@/lib/intake/labels';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 
 function buildEnvelopeStyles(sealAccent?: string) {
@@ -49,7 +49,7 @@ describe('Envelope seal color options', () => {
 
 	describe('end-to-end page context', () => {
 		it('preserves sealColor for profile CSS without injecting profile tokens into scoped styles', () => {
-			const viewModel = adaptDbEvent({
+			const viewModel = adaptEvent({
 				slug: 'client-slug',
 				assetSlug: 'demo-xv-celestial-blue',
 				content: {

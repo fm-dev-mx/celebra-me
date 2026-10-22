@@ -10,17 +10,18 @@
  * `tests/content/event-type-contract.test.ts`. Widening a list needs a definition or demo that uses
  * the new value plus its visual verification.
  */
-import type {
-	EventType,
-	InvitationRenderSectionKey,
-	ThemePreset,
+import {
+	listThemePresetsForEventType,
+	type EventType,
+	type InvitationRenderSectionKey,
+	type ThemePreset,
 } from '@/lib/theme/theme-contract';
 
 export interface EventTypeStructureContract {
 	eventType: EventType;
 	/** Sections that must appear in `sectionOrder`. Hero is implicit and always first. */
 	requiredSections: readonly InvitationRenderSectionKey[];
-	/** Theme presets with a published invitation or demo of this type. */
+	/** Theme presets with a published invitation or demo of this type (`THEME_PRESET_METADATA`). */
 	presets: readonly ThemePreset[];
 	/** Edition wording printed by editorial variants (folios, press pass, catalog). */
 	editionLabel: string;
@@ -30,47 +31,34 @@ export interface EventTypeStructureContract {
 
 const CORE_SECTIONS = ['countdown', 'rsvp', 'thankYou'] as const;
 
-const EVENT_TYPE_CONTRACTS: Record<EventType, EventTypeStructureContract> = {
+const EVENT_TYPE_CONTRACTS: Record<EventType, Omit<EventTypeStructureContract, 'presets'>> = {
 	xv: {
 		eventType: 'xv',
 		requiredSections: ['family', 'location', 'gallery', ...CORE_SECTIONS],
-		presets: [
-			'celestial-blue',
-			'editorial',
-			'editorial-magazine',
-			'enchanted-rose',
-			'jewelry-box',
-			'premiere-floral',
-			'storybook-lilac',
-		],
 		editionLabel: 'EDICIÓN XV',
 		editionMark: 'XV',
 	},
 	boda: {
 		eventType: 'boda',
 		requiredSections: ['family', 'location', ...CORE_SECTIONS],
-		presets: ['jewelry-box-wedding'],
 		editionLabel: 'EDICIÓN BODA',
 		editionMark: 'BODA',
 	},
 	cumple: {
 		eventType: 'cumple',
 		requiredSections: ['location', ...CORE_SECTIONS],
-		presets: ['editorial-magazine', 'luxury-hacienda'],
 		editionLabel: 'EDICIÓN CUMPLEAÑOS',
 		editionMark: 'CUMPLE',
 	},
 	bautizo: {
 		eventType: 'bautizo',
 		requiredSections: ['family', 'location', ...CORE_SECTIONS],
-		presets: ['angelic-presence', 'sacred-keepsake'],
 		editionLabel: 'EDICIÓN BAUTIZO',
 		editionMark: 'BAUTIZO',
 	},
 	'baby-shower': {
 		eventType: 'baby-shower',
 		requiredSections: ['location', ...CORE_SECTIONS],
-		presets: ['celestial-blue'],
 		editionLabel: 'EDICIÓN BABY SHOWER',
 		editionMark: 'BABY SHOWER',
 	},
@@ -78,14 +66,13 @@ const EVENT_TYPE_CONTRACTS: Record<EventType, EventTypeStructureContract> = {
 		eventType: 'primera-comunion',
 		// Location may be revealed inside RSVP through its access policy instead of its own fold.
 		requiredSections: ['family', ...CORE_SECTIONS],
-		presets: ['angelic-presence'],
 		editionLabel: 'EDICIÓN PRIMERA COMUNIÓN',
 		editionMark: 'COMUNIÓN',
 	},
 };
 
 function getEventTypeStructureContract(eventType: EventType): EventTypeStructureContract {
-	return EVENT_TYPE_CONTRACTS[eventType];
+	return { ...EVENT_TYPE_CONTRACTS[eventType], presets: listThemePresetsForEventType(eventType) };
 }
 
 /**
@@ -104,7 +91,9 @@ export function resolveEventEdition(eventType: string | undefined): {
 }
 
 export function listEventTypeStructureContracts(): EventTypeStructureContract[] {
-	return Object.values(EVENT_TYPE_CONTRACTS);
+	return Object.values(EVENT_TYPE_CONTRACTS).map((contract) =>
+		getEventTypeStructureContract(contract.eventType),
+	);
 }
 
 /** Contract violations for one invitation's canonical content; empty when it conforms. */

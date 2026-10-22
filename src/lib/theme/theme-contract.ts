@@ -34,42 +34,54 @@ export type InvitationRenderSectionKey = (typeof INVITATION_RENDER_SECTION_KEYS)
 // THEME PRESETS - Single source of truth
 // ==========================================
 
-export const THEME_PRESETS = [
-	'jewelry-box',
-	'jewelry-box-wedding',
-	'luxury-hacienda',
-	'editorial',
-	'editorial-magazine',
-	'premiere-floral',
-	'celestial-blue',
-	'enchanted-rose',
-	'sacred-keepsake',
-	'angelic-presence',
-	'storybook-lilac',
-] as const;
+export interface ThemePresetMetadata {
+	/** The hero renders `hero.portrait` visibly; other presets hide it (e.g. `display: none`). */
+	portrait: boolean;
+	/** Event types with a published invitation or demo on this preset. Widening one needs a
+	 * definition or demo that uses it plus its visual verification. */
+	eventTypes: readonly EventType[];
+}
+
+/**
+ * One row per theme preset. Each preset also needs its stylesheet entrypoints in
+ * `src/styles/invitation-presets/` and `src/styles/invitation-sections-by-preset/`.
+ */
+export const THEME_PRESET_METADATA = {
+	'jewelry-box': { portrait: false, eventTypes: ['xv'] },
+	'jewelry-box-wedding': { portrait: false, eventTypes: ['boda'] },
+	'luxury-hacienda': { portrait: false, eventTypes: ['cumple'] },
+	editorial: { portrait: true, eventTypes: ['xv'] },
+	'editorial-magazine': { portrait: true, eventTypes: ['xv', 'cumple'] },
+	'premiere-floral': { portrait: true, eventTypes: ['xv'] },
+	'celestial-blue': { portrait: false, eventTypes: ['xv', 'baby-shower'] },
+	'enchanted-rose': { portrait: false, eventTypes: ['xv'] },
+	'sacred-keepsake': { portrait: true, eventTypes: ['bautizo'] },
+	'angelic-presence': { portrait: true, eventTypes: ['bautizo', 'primera-comunion'] },
+	'storybook-lilac': { portrait: false, eventTypes: ['xv'] },
+} as const satisfies Record<string, ThemePresetMetadata>;
 
 /**
  * The primary identifier for an invitation theme.
  */
-export type ThemePreset = (typeof THEME_PRESETS)[number];
+export type ThemePreset = keyof typeof THEME_PRESET_METADATA;
+
+export const THEME_PRESETS = Object.keys(THEME_PRESET_METADATA) as [ThemePreset, ...ThemePreset[]];
 
 // ==========================================
 // THEME CAPABILITIES
 // ==========================================
 
-/**
- * Themes whose hero section renders `hero.portrait` visibly.
- * Themes not in this set hide the portrait (e.g. via `display: none`).
- *
- * When adding a new theme, update this list (and matching CSS if portrait is hidden).
- */
-export const PORTRAIT_SUPPORTED_THEMES: ReadonlySet<ThemePreset> = new Set([
-	'editorial',
-	'editorial-magazine',
-	'premiere-floral',
-	'sacred-keepsake',
-	'angelic-presence',
-]);
+/** Themes whose hero section renders `hero.portrait` visibly. */
+export const PORTRAIT_SUPPORTED_THEMES: ReadonlySet<ThemePreset> = new Set(
+	THEME_PRESETS.filter((preset) => THEME_PRESET_METADATA[preset].portrait),
+);
+
+/** Presets verified for one event type, in table order. */
+export function listThemePresetsForEventType(eventType: EventType): ThemePreset[] {
+	return THEME_PRESETS.filter((preset) =>
+		(THEME_PRESET_METADATA[preset].eventTypes as readonly EventType[]).includes(eventType),
+	);
+}
 
 export function themeSupportsPortrait(themeId: string): boolean {
 	return PORTRAIT_SUPPORTED_THEMES.has(themeId as ThemePreset);

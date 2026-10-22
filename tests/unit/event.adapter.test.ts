@@ -1,4 +1,5 @@
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { loadFixture } from '../helpers/json-fixture';
 
 function makeMinimalEvent(location: Record<string, unknown>) {
@@ -15,33 +16,35 @@ function makeMinimalEvent(location: Record<string, unknown>) {
 			theme: { preset: 'enchanted-rose' },
 			location,
 		},
-	} as Parameters<typeof adaptEvent>[0];
+	} as EventContentEntry;
 }
 
 describe('adaptEvent', () => {
 	it('preserves the family image description and original delivery without changing the fallback', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-celestial-blue.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-celestial-blue/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-celestial-blue',
 			data: fixture,
-		} as Parameters<typeof adaptEvent>[0];
-		const image = adaptEvent(event).sections.family?.featuredImage;
+		} as EventContentEntry;
+		const image = adaptEvent(contentDocumentFromEntry(event)).sections.family?.featuredImage;
 		expect(image?.alt).toBe(fixture.family.featuredImageAlt);
 		expect(image?.delivery).toEqual({ mode: 'original', width: 1122, height: 1402 });
 		delete fixture.family.featuredImageAlt;
-		expect(adaptEvent(event).sections.family?.featuredImage?.alt).toBe(fixture.hero.name);
+		expect(
+			adaptEvent(contentDocumentFromEntry(event)).sections.family?.featuredImage?.alt,
+		).toBe(fixture.hero.name);
 	});
 
 	it('all events default to branding visible when called via adaptEvent (no guest context)', () => {
-		const demos = ['event-demos/xv/demo-xv-editorial', 'event-demos/xv/demo-xv-enchanted-rose'];
+		const demos = ['demo-xv-editorial', 'demo-xv-enchanted-rose'];
 
 		for (const demoPath of demos) {
 			const event = {
 				id: demoPath,
-				data: loadFixture(`src/content/${demoPath}.json`),
-			} as Parameters<typeof adaptEvent>[0];
+				data: loadFixture(`src/invitations/demos/${demoPath}/content.json`),
+			} as EventContentEntry;
 
-			expect(adaptEvent(event).brandingVisibility).toEqual({
+			expect(adaptEvent(contentDocumentFromEntry(event)).brandingVisibility).toEqual({
 				showFooterBranding: true,
 				showContactCta: true,
 			});
@@ -52,9 +55,9 @@ describe('adaptEvent', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.family?.godparents).toEqual([
 			{ name: 'Juan Carlos Mendoza', role: 'Padrino de Honor' },
@@ -73,9 +76,9 @@ describe('adaptEvent', () => {
 					godparents: undefined,
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.family?.godparents).toBeUndefined();
 	});
@@ -98,9 +101,9 @@ describe('adaptEvent', () => {
 					],
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.family?.godparentGroups).toEqual([
 			{
@@ -115,9 +118,9 @@ describe('adaptEvent', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.theme.preset).toBe('jewelry-box');
 		expect(viewModel.sections.location?.venues[0]).toBeDefined();
@@ -128,7 +131,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('treats gallery.variant as the canonical structural authority', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-editorial/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
 			data: {
@@ -138,9 +141,9 @@ describe('adaptEvent', () => {
 					variant: 'uniform-grid',
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.gallery?.variant).toBe('uniform-grid');
 	});
@@ -158,9 +161,9 @@ describe('adaptEvent', () => {
 					introLede: 'Guarda la ruta y llega con calma.',
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.location).toMatchObject({
 			introEyebrow: 'EL CAMINO AL PALACIO',
@@ -187,9 +190,9 @@ describe('adaptEvent', () => {
 					presentation: { portraitEnabled: true },
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
@@ -203,9 +206,9 @@ describe('adaptEvent', () => {
 				...fixture,
 				hero: { ...fixture.hero, presentation: { nameLeadWords: 1 } },
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.hero.nameLeadWords).toBe(1);
 		expect(viewModel.hero.name).toBe(fixture.hero.name);
@@ -215,11 +218,11 @@ describe('adaptEvent', () => {
 		const event = {
 			id: 'event-demos/primera-comunion/demo-primera-comunion-angelic-presence',
 			data: loadFixture(
-				'src/content/event-demos/primera-comunion/demo-primera-comunion-angelic-presence.json',
+				'src/invitations/demos/demo-primera-comunion-angelic-presence/content.json',
 			),
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.id).toBe('demo-primera-comunion-angelic-presence');
 		expect(viewModel.theme.preset).toBe('angelic-presence');
@@ -244,16 +247,16 @@ describe('adaptEvent', () => {
 					},
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.hero.backgroundImageMobile).toBeDefined();
 		expect(viewModel.hero.backgroundImageMobile?.src).toBe('/images/mobile-bg.webp');
 	});
 
 	it('honors canonical location presentationOptions', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial.json');
+		const fixture = loadFixture('src/invitations/demos/demo-xv-editorial/content.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
 			data: {
@@ -266,16 +269,16 @@ describe('adaptEvent', () => {
 					},
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.location?.showFlourishes).toBe(false);
 	});
 
 	it('preserves thank-you overlay composition metadata', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json',
+			'src/invitations/demos/demo-bautizo-angelic-presence/content.json',
 		);
 		const event = {
 			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
@@ -292,9 +295,9 @@ describe('adaptEvent', () => {
 					},
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.thankYou).toMatchObject({
 			overlayAnchor: 'left',
@@ -310,10 +313,10 @@ describe('adaptEvent', () => {
 	it('keeps interludes independent of the theme preset', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-editorial.json'),
-		} as Parameters<typeof adaptEvent>[0];
+			data: loadFixture('src/invitations/demos/demo-xv-editorial/content.json'),
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.theme.preset).toBe('editorial');
 		expect(viewModel.interludes?.every((i) => !('variant' in i))).toBe(true);
@@ -331,9 +334,9 @@ describe('adaptEvent', () => {
 					startsAtUtc: '2026-04-26T01:00:00.000Z',
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.countdown).toBeDefined();
 		expect(viewModel.sections.countdown?.targetIso).toBe('2026-04-26T01:00:00.000Z');
@@ -347,9 +350,9 @@ describe('adaptEvent', () => {
 				...loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 				eventTiming: undefined,
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.countdown).toBeDefined();
 		expect(viewModel.sections.countdown?.targetIso).toBe(viewModel.hero.date);
@@ -366,9 +369,9 @@ describe('adaptEvent', () => {
 				countdown: undefined,
 				sectionOrder: undefined,
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.countdown).toBeUndefined();
 	});
@@ -388,9 +391,9 @@ describe('adaptEvent', () => {
 					date: '2026-06-21',
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.countdown).toBeUndefined();
 	});
@@ -413,9 +416,9 @@ describe('adaptEvent', () => {
 					'thankYou',
 				],
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.countdown).toBeUndefined();
 		expect(viewModel.sectionOrder).toBeDefined();
@@ -445,9 +448,9 @@ describe('adaptEvent', () => {
 					'thankYou',
 				],
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		const viewModel = adaptEvent(event);
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.sections.countdown).toBeUndefined();
 		expect(viewModel.sectionOrder).toBeDefined();
@@ -465,16 +468,18 @@ describe('adaptEvent', () => {
 					preset: 'broken-preset',
 				},
 			},
-		} as Parameters<typeof adaptEvent>[0];
+		} as EventContentEntry;
 
-		expect(() => adaptEvent(event)).toThrow(
+		expect(() => adaptEvent(contentDocumentFromEntry(event))).toThrow(
 			'[ThemePreset] Invalid preset "broken-preset". Expected one of:',
 		);
 	});
 
 	describe('location presentation defaults', () => {
 		it('does not inject enchanted-rose location copy when intro fields are missing', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+			const fixture = loadFixture(
+				'src/invitations/demos/demo-xv-enchanted-rose/content.json',
+			);
 			const location = { ...fixture.location };
 			delete location.introEyebrow;
 			delete location.introHeading;
@@ -486,9 +491,9 @@ describe('adaptEvent', () => {
 					...fixture,
 					location,
 				},
-			} as Parameters<typeof adaptEvent>[0];
+			} as EventContentEntry;
 
-			const viewModel = adaptEvent(event);
+			const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 			expect(viewModel.sections.location?.introEyebrow).toBeUndefined();
 			expect(viewModel.sections.location?.introHeading).toBeUndefined();
@@ -500,7 +505,7 @@ describe('adaptEvent', () => {
 			const event = {
 				id: 'event-demos/xv/demo-xv-enchanted-rose',
 				data: {
-					...loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+					...loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 					location: {
 						introEyebrow: 'Custom Eyebrow',
 						introHeading: 'Custom Heading',
@@ -518,9 +523,9 @@ describe('adaptEvent', () => {
 						],
 					},
 				},
-			} as Parameters<typeof adaptEvent>[0];
+			} as EventContentEntry;
 
-			const viewModel = adaptEvent(event);
+			const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 			expect(viewModel.sections.location?.introEyebrow).toBe('Custom Eyebrow');
 			expect(viewModel.sections.location?.introHeading).toBe('Custom Heading');
@@ -532,7 +537,7 @@ describe('adaptEvent', () => {
 			const event = {
 				id: 'event-demos/xv/demo-xv-enchanted-rose',
 				data: {
-					...loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+					...loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 					location: {
 						introEyebrow: 'Eyebrow',
 						introHeading: 'Heading',
@@ -550,9 +555,9 @@ describe('adaptEvent', () => {
 						],
 					},
 				},
-			} as Parameters<typeof adaptEvent>[0];
+			} as EventContentEntry;
 
-			const viewModel = adaptEvent(event);
+			const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 			expect(viewModel.sections.location?.indicationsHeading).toBe('');
 		});
@@ -594,9 +599,9 @@ describe('adaptEvent', () => {
 						],
 					},
 				},
-			} as Parameters<typeof adaptEvent>[0];
+			} as EventContentEntry;
 
-			const viewModel = adaptEvent(event);
+			const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 			const indications = viewModel.sections.location?.indications ?? [];
 			expect(indications).toContainEqual(
@@ -617,39 +622,42 @@ describe('adaptEvent', () => {
 
 		it('passes location.venues through to the view model when present', () => {
 			const vm = adaptEvent(
-				makeMinimalEvent({
-					introHeading: 'Ubicaciones',
-					venues: [
-						{
-							id: 'v1',
-							type: 'reception',
-							label: 'Recepción',
-							venueName: 'Salón Principal',
-							address: 'Calle 1',
-							city: 'Querétaro',
-							date: '2027-11-20',
-							time: '20:00',
-							mapUrl: 'https://maps.example.com',
-							googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Salon',
-							appleMapsUrl: 'https://maps.apple.com/?q=Salon',
-							wazeUrl: 'https://waze.com/ul?q=Salon',
-							venueEvent: 'Recepción',
-							isVisible: true,
-						},
-						{
-							id: 'v2',
-							type: 'custom',
-							label: 'Cena',
-							venueName: 'Jardín Secreto',
-							address: 'Calle 2',
-							city: 'Querétaro',
-							date: '2027-11-20',
-							time: '22:00',
-							venueEvent: 'Cena',
-							isVisible: true,
-						},
-					],
-				}),
+				contentDocumentFromEntry(
+					makeMinimalEvent({
+						introHeading: 'Ubicaciones',
+						venues: [
+							{
+								id: 'v1',
+								type: 'reception',
+								label: 'Recepción',
+								venueName: 'Salón Principal',
+								address: 'Calle 1',
+								city: 'Querétaro',
+								date: '2027-11-20',
+								time: '20:00',
+								mapUrl: 'https://maps.example.com',
+								googleMapsUrl:
+									'https://www.google.com/maps/search/?api=1&query=Salon',
+								appleMapsUrl: 'https://maps.apple.com/?q=Salon',
+								wazeUrl: 'https://waze.com/ul?q=Salon',
+								venueEvent: 'Recepción',
+								isVisible: true,
+							},
+							{
+								id: 'v2',
+								type: 'custom',
+								label: 'Cena',
+								venueName: 'Jardín Secreto',
+								address: 'Calle 2',
+								city: 'Querétaro',
+								date: '2027-11-20',
+								time: '22:00',
+								venueEvent: 'Cena',
+								isVisible: true,
+							},
+						],
+					}),
+				),
 			);
 			const loc = vm.sections.location!;
 
@@ -671,23 +679,25 @@ describe('adaptEvent', () => {
 
 		it('resolves venue images through asset registry for venues array', () => {
 			const viewModel = adaptEvent(
-				makeMinimalEvent({
-					introHeading: 'Ubicaciones',
-					venues: [
-						{
-							id: 'v1',
-							type: 'reception',
-							label: 'Recepción',
-							venueName: 'Salón',
-							address: 'Calle 1',
-							date: '2027-11-20',
-							time: '20:00',
-							image: { type: 'external', src: '/images/venue.jpg' },
-							venueEvent: 'Recepción',
-							isVisible: true,
-						},
-					],
-				}),
+				contentDocumentFromEntry(
+					makeMinimalEvent({
+						introHeading: 'Ubicaciones',
+						venues: [
+							{
+								id: 'v1',
+								type: 'reception',
+								label: 'Recepción',
+								venueName: 'Salón',
+								address: 'Calle 1',
+								date: '2027-11-20',
+								time: '20:00',
+								image: { type: 'external', src: '/images/venue.jpg' },
+								venueEvent: 'Recepción',
+								isVisible: true,
+							},
+						],
+					}),
+				),
 			);
 
 			expect(viewModel.sections.location?.venues?.[0]?.image).toBeDefined();
@@ -696,33 +706,35 @@ describe('adaptEvent', () => {
 
 		it('does not filter venues by isVisible in adapter (filtering happens in publish mapper)', () => {
 			const viewModel = adaptEvent(
-				makeMinimalEvent({
-					introHeading: 'Ubicaciones',
-					venues: [
-						{
-							id: 'v1',
-							type: 'ceremony',
-							label: 'Ceremonia',
-							venueName: 'Iglesia',
-							address: 'Calle 1',
-							date: '2027-11-20',
-							time: '18:00',
-							venueEvent: 'Ceremonia',
-							isVisible: false,
-						},
-						{
-							id: 'v2',
-							type: 'reception',
-							label: 'Recepción',
-							venueName: 'Salón',
-							address: 'Calle 2',
-							date: '2027-11-20',
-							time: '20:00',
-							venueEvent: 'Recepción',
-							isVisible: undefined,
-						},
-					],
-				}),
+				contentDocumentFromEntry(
+					makeMinimalEvent({
+						introHeading: 'Ubicaciones',
+						venues: [
+							{
+								id: 'v1',
+								type: 'ceremony',
+								label: 'Ceremonia',
+								venueName: 'Iglesia',
+								address: 'Calle 1',
+								date: '2027-11-20',
+								time: '18:00',
+								venueEvent: 'Ceremonia',
+								isVisible: false,
+							},
+							{
+								id: 'v2',
+								type: 'reception',
+								label: 'Recepción',
+								venueName: 'Salón',
+								address: 'Calle 2',
+								date: '2027-11-20',
+								time: '20:00',
+								venueEvent: 'Recepción',
+								isVisible: undefined,
+							},
+						],
+					}),
+				),
 			);
 
 			expect(viewModel.sections.location?.venues).toHaveLength(2);
@@ -732,10 +744,12 @@ describe('adaptEvent', () => {
 
 		it('preserves an explicit empty canonical venues array', () => {
 			const viewModel = adaptEvent(
-				makeMinimalEvent({
-					introHeading: 'Ubicaciones',
-					venues: [],
-				}),
+				contentDocumentFromEntry(
+					makeMinimalEvent({
+						introHeading: 'Ubicaciones',
+						venues: [],
+					}),
+				),
 			);
 
 			expect(viewModel.sections.location?.venues).toEqual([]);
@@ -743,29 +757,31 @@ describe('adaptEvent', () => {
 
 		it('passes canonical ceremony and reception venue entries', () => {
 			const viewModel = adaptEvent(
-				makeMinimalEvent({
-					introHeading: 'Ubicación',
-					venues: [
-						{
-							id: 'ceremony',
-							type: 'ceremony',
-							venueName: 'Iglesia',
-							address: 'Calle L',
-							city: 'Querétaro',
-							date: '2027-11-20',
-							time: '18:00',
-						},
-						{
-							id: 'reception',
-							type: 'reception',
-							venueName: 'Salón',
-							address: 'Calle R',
-							city: 'Querétaro',
-							date: '2027-11-20',
-							time: '20:00',
-						},
-					],
-				}),
+				contentDocumentFromEntry(
+					makeMinimalEvent({
+						introHeading: 'Ubicación',
+						venues: [
+							{
+								id: 'ceremony',
+								type: 'ceremony',
+								venueName: 'Iglesia',
+								address: 'Calle L',
+								city: 'Querétaro',
+								date: '2027-11-20',
+								time: '18:00',
+							},
+							{
+								id: 'reception',
+								type: 'reception',
+								venueName: 'Salón',
+								address: 'Calle R',
+								city: 'Querétaro',
+								date: '2027-11-20',
+								time: '20:00',
+							},
+						],
+					}),
+				),
 			);
 
 			expect(viewModel.sections.location?.venues.map((venue) => venue.type)).toEqual([
@@ -809,9 +825,9 @@ describe('adaptEvent', () => {
 						],
 					},
 				},
-			} as Parameters<typeof adaptEvent>[0];
+			} as EventContentEntry;
 
-			const viewModel = adaptEvent(event);
+			const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 			expect(viewModel.sections.location?.introEyebrow).toBeUndefined();
 			expect(viewModel.sections.location?.introHeading).toBeUndefined();
@@ -823,10 +839,12 @@ describe('adaptEvent', () => {
 	describe('envelope variant resolution', () => {
 		it('falls back to the invitation theme preset when envelope.variant is omitted', () => {
 			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
-			const viewModel = adaptEvent({
-				id: 'event-demos/xv/demo-xv-jewelry-box',
-				data: fixture,
-			} as Parameters<typeof adaptEvent>[0]);
+			const viewModel = adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/demo-xv-jewelry-box',
+					data: fixture,
+				} as EventContentEntry),
+			);
 
 			expect(viewModel.theme.preset).toBe('jewelry-box');
 			expect(viewModel.envelope.data?.variant).toBe('jewelry-box');
@@ -834,17 +852,19 @@ describe('adaptEvent', () => {
 
 		it('honors an explicit envelope.variant independently of the theme preset', () => {
 			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
-			const viewModel = adaptEvent({
-				id: 'event-demos/xv/demo-xv-jewelry-box',
-				data: {
-					...fixture,
-					theme: { ...fixture.theme, preset: 'editorial' },
-					envelope: {
-						...fixture.envelope,
-						variant: 'premiere-floral',
+			const viewModel = adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/demo-xv-jewelry-box',
+					data: {
+						...fixture,
+						theme: { ...fixture.theme, preset: 'editorial' },
+						envelope: {
+							...fixture.envelope,
+							variant: 'premiere-floral',
+						},
 					},
-				},
-			} as Parameters<typeof adaptEvent>[0]);
+				} as EventContentEntry),
+			);
 
 			expect(viewModel.theme.preset).toBe('editorial');
 			expect(viewModel.envelope.data?.variant).toBe('premiere-floral');
@@ -854,10 +874,12 @@ describe('adaptEvent', () => {
 	describe('envelope teaser derivation', () => {
 		it('derives a date and venue teaser when teaserDetails is omitted', () => {
 			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
-			const viewModel = adaptEvent({
-				id: 'event-demos/xv/demo-xv-jewelry-box',
-				data: fixture,
-			} as Parameters<typeof adaptEvent>[0]);
+			const viewModel = adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/demo-xv-jewelry-box',
+					data: fixture,
+				} as EventContentEntry),
+			);
 
 			expect(viewModel.envelope.enabled).toBe(true);
 			expect(viewModel.envelope.data?.teaserDetails).toBeTruthy();
@@ -866,16 +888,18 @@ describe('adaptEvent', () => {
 
 		it('honors an explicit empty teaser instead of deriving date and venue', () => {
 			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
-			const viewModel = adaptEvent({
-				id: 'event-demos/xv/demo-xv-jewelry-box',
-				data: {
-					...fixture,
-					envelope: {
-						...fixture.envelope,
-						teaserDetails: '',
+			const viewModel = adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/demo-xv-jewelry-box',
+					data: {
+						...fixture,
+						envelope: {
+							...fixture.envelope,
+							teaserDetails: '',
+						},
 					},
-				},
-			} as Parameters<typeof adaptEvent>[0]);
+				} as EventContentEntry),
+			);
 
 			expect(viewModel.envelope.enabled).toBe(true);
 			expect(viewModel.envelope.data?.teaserDetails).toBe('');

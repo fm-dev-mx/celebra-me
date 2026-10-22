@@ -27,6 +27,10 @@ import {
 	resolveDefinitionValidityWindow,
 	type InvitationDefinition,
 } from './invitations/invitation-definition.ts';
+import {
+	clientInvitationDir,
+	LEGACY_DEFINITIONS_DIR,
+} from '../shared/invitation-definition-files.ts';
 
 export const RELEASE_HASH_BASELINE_PATH = 'scripts/provision/release-hash-baseline.json';
 export const RELEASE_HASH_UPDATE_COMMAND = 'pnpm invitation:hash-baseline -- --update';
@@ -62,11 +66,15 @@ export function ownsChangedFile(
 	definition: Pick<InvitationDefinition, 'slug' | 'assetDir'>,
 	changedFiles: readonly string[],
 ): boolean {
-	const definitionFile = `scripts/provision/invitations/${definition.slug}.ts`;
+	const definitionFile = `${LEGACY_DEFINITIONS_DIR}/${definition.slug}.ts`;
+	const folder = `${clientInvitationDir(definition.slug)}/`;
 	const assetDir = `${normalize(getInvitationAssetSourceDir(definition as InvitationDefinition))}/`;
 	return changedFiles
 		.map(normalize)
-		.some((file) => file === definitionFile || file.startsWith(assetDir));
+		.some(
+			(file) =>
+				file === definitionFile || file.startsWith(folder) || file.startsWith(assetDir),
+		);
 }
 
 export function diffReleaseHashes(input: {

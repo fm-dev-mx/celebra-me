@@ -1,6 +1,7 @@
 ---
 import Countdown from '@/components/invitation/Countdown.astro';
 import DemoConversion from '@/components/invitation/DemoConversion.astro';
+import type { DemoConversionContext } from '@/lib/invitation/demo-conversion';
 import EventLocation from '@/components/invitation/EventLocation.astro';
 import Family from '@/components/invitation/Family.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
@@ -20,10 +21,10 @@ import {
 
 interface Props {
 	pageContext: InvitationPageContext;
-	showDemoConversion?: boolean;
+	demoConversion?: DemoConversionContext;
 }
 
-const { pageContext, showDemoConversion = false } = Astro.props;
+const { pageContext, demoConversion } = Astro.props;
 const sections = buildInvitationSectionRenderDescriptors(pageContext);
 
 const interludeIndices = new Map<number, number>();
@@ -84,9 +85,9 @@ const expectedSectionIds = [
 					{component === 'interlude' && <Interlude {...props} interludeIndex={interludeIndex} />}
 					{component === 'quote' && <Quote {...props} />}
 					{component === 'family' && <Family {...props} />}
-					{component === 'gallery' && (showDemoConversion && props.items?.length ? (
+					{component === 'gallery' && (demoConversion && props.items?.length ? (
 						<Gallery {...props}>
-							<DemoConversion slot="last-item" placement="gallery" galleryItem={props.items[props.items.length - 1]} />
+							<DemoConversion slot="last-item" placement="gallery" demo={demoConversion} galleryItem={props.items[props.items.length - 1]} />
 						</Gallery>
 					) : <Gallery {...props} />)}
 					{component === 'countdown' && <Countdown {...props} />}

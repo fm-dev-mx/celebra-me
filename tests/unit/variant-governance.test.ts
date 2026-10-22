@@ -228,12 +228,11 @@ describe('canonical variant governance', () => {
 		expect(read('jest.config.cjs')).not.toContain('.tmp/');
 	});
 
-	it('restricts legacy location normalizer strictly to authorized ingress/intake boundaries', () => {
+	it('restricts legacy location normalizer strictly to the draft intake boundaries', () => {
 		const allowedConsumers = [
 			'src/lib/intake/mappers/draft-to-published.mapper.ts',
 			'src/lib/intake/services/draft-content-mapper.ts',
 			'src/lib/intake/services/draft-section-mappers.ts',
-			'src/lib/invitation/content-resolver.ts',
 		]
 			.map(toPosix)
 			.sort();

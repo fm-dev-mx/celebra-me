@@ -215,8 +215,8 @@ Managed client invitations are created only through the definition registry +
 `pnpm invitation:release` (Local/Preview). Owner Production apply is
 `pnpm prod:apply -- --slug <slug> --apply`. The Dashboard has no create or duplicate endpoint, and
 it lists and edits only `kind = 'client'` rows. Demos are versioned content
-(`src/content/event-demos/**`) rendered from Git; they are not mirrored into the database, and no
-service copies a demo into a client record.
+(`src/invitations/demos/*/content.json`) rendered from Git; they are not mirrored into the database,
+and no service copies a demo into a client record.
 
 ### Internal Admin Editing
 

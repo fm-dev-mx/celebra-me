@@ -89,7 +89,7 @@ describe('storybook presentation contracts', () => {
 
 	it('keeps the lantern drift behind the reduced-motion preference', () => {
 		const ornaments = fs.readFileSync(
-			path.join(projectRoot, 'src/styles/invitation/_ornament-sets.scss'),
+			path.join(projectRoot, 'src/styles/invitation/_ornament-set-storybook-lanterns.scss'),
 			'utf8',
 		);
 		const fieldMixin = ornaments.slice(ornaments.indexOf('@mixin storybook-light-field'));

@@ -59,7 +59,7 @@ Built from the repository, then checked against the origin:
 
 - `/`, `/login`, `/privacidad`, `/terminos`;
 - the demo showrooms (`/demos/xv`, `/demos/boda`, `/demos/bautizo`, `/demos/cumpleanos`);
-- every demo in `src/content/event-demos`;
+- every demo in `src/invitations/demos/`;
 - every active invitation definition. Definitions marked `in_progress` are captured only when the
   origin serves them (for example `/xv/naydelin-paredes` answers 200 in Production); a 404 is
   recorded and skipped. Disabled invitations answer 403 by design and are captured as such;

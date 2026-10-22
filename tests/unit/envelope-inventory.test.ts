@@ -30,7 +30,7 @@ export interface DiscoveredEnvelopeRoute {
 }
 
 export function discoverCanonicalEnvelopeRoutes(): DiscoveredEnvelopeRoute[] {
-	const contentDir = path.resolve('src/content');
+	const contentDir = path.resolve('src/invitations/demos');
 	const routes: DiscoveredEnvelopeRoute[] = [];
 
 	function scanDirectory(dir: string) {
@@ -39,14 +39,14 @@ export function discoverCanonicalEnvelopeRoutes(): DiscoveredEnvelopeRoute[] {
 			const fullPath = path.join(dir, entry.name);
 			if (entry.isDirectory()) {
 				scanDirectory(fullPath);
-			} else if (entry.isFile() && entry.name.endsWith('.json')) {
+			} else if (entry.isFile() && entry.name === 'content.json') {
 				try {
 					const content: RawEventJson = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
 					const showEnvelope =
 						content.showEnvelope ?? content.envelope?.showEnvelope ?? true;
 					if (!showEnvelope) continue;
 
-					const slug = content.slug || path.basename(entry.name, '.json');
+					const slug = content.slug || path.basename(dir);
 					const eventType = content.eventType || 'xv';
 
 					// Resolve presentation

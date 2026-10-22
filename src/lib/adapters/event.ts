@@ -4,7 +4,7 @@ import type { AssetSource } from '@/lib/assets/asset-source';
 import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
 import { THEME_PRESETS, type ThemePreset, themeSupportsPortrait } from '@/lib/theme/theme-contract';
 import type { ItineraryVariant } from '@/lib/invitation/section-variants';
-import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
+import type { InvitationContentDocument } from '@/lib/content/events';
 import type {
 	InvitationViewModel,
 	HeroViewModel,
@@ -16,6 +16,7 @@ import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import type { VenueEntryInput } from '@/lib/schemas/content/location.schema';
 import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
+import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
@@ -206,21 +207,27 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
 
 	if (!data.envelope || data.envelope.disabled) return { enabled: false };
+	// Demos follow the no-abbreviated-month standard; client invitations keep their accepted look.
+	const dateStyle = data.isDemo ? 'long' : 'short';
 	const opening = buildOpeningViewModel({
 		hero: data.hero,
 		envelope: data.envelope,
+		dateStyle,
 	});
 
 	const venueName = pickVenueValue(data.location, 'venueName');
 	const venueCity = pickVenueValue(data.location, 'city');
 	// Teaser uses lowercase `es-MX` date ("25 abr 2026 • Venue") intentionally
 	// distinct from the reveal-card's uppercase dot-separated format ("25 · ABR · 2026").
-	const teaserDate = new Intl.DateTimeFormat('es-MX', {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-		timeZone: 'UTC',
-	}).format(new Date(data.hero.date));
+	const teaserDate =
+		dateStyle === 'long'
+			? formatSpanishLongDate(data.hero.date)
+			: new Intl.DateTimeFormat('es-MX', {
+					day: 'numeric',
+					month: 'short',
+					year: 'numeric',
+					timeZone: 'UTC',
+				}).format(new Date(data.hero.date));
 	const derivedTeaser = venueName
 		? `${teaserDate} • ${venueName}`
 		: venueCity
@@ -584,17 +591,13 @@ function buildMemoriesSectionData(context: AdaptationContext) {
 	};
 }
 
-export function adaptEvent(
-	event: EventContentEntry,
-	assetSlugOverride?: string,
-): InvitationViewModel {
-	const { data: rawData, id: contentEntryId } = event;
+export function adaptEvent(document: InvitationContentDocument): InvitationViewModel {
 	// Astro content and publication validate the full canonical schema before adaptation.
-	const originalData = rawData as CanonicalEventContent;
-	const entrySlug = getContentEntrySlug(contentEntryId);
+	const originalData = document.content as unknown as CanonicalEventContent;
+	const entrySlug = document.slug;
 	const contentAssetSlug =
 		typeof originalData._assetSlug === 'string' ? originalData._assetSlug : undefined;
-	const eventSlug = assetSlugOverride ?? contentAssetSlug ?? entrySlug;
+	const eventSlug = document.assetSlug ?? contentAssetSlug ?? entrySlug;
 
 	const normalizedPreset = pickPreset(originalData.theme.preset);
 	const context: AdaptationContext = {

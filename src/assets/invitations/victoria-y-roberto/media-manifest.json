@@ -1,0 +1,85 @@
+{
+    "schemaVersion": 1,
+    "slug": "victoria-y-roberto",
+    "eventType": "boda",
+    "assets": [
+        {
+            "key": "gallery-01",
+            "relativePath": "gallery-01.webp",
+            "sha256": "87593c41f20ed140f981fb24293420ff301c6f7dea7530841c89d408c5447533",
+            "mimeType": "image/webp",
+            "width": 933,
+            "height": 1400,
+            "fileSize": 176838,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 176658,
+            "originalSha256": "ba77324a8f02cff60c5def84c8763aaca6c7e21417258e8a9156c977cb8eb6e3"
+        },
+        {
+            "key": "hero-desktop",
+            "relativePath": "hero-desktop.webp",
+            "sha256": "a11cf87ed1d5b3456a55282b69a60968c33b4f771231814ff8ddf0e6b554e0c9",
+            "mimeType": "image/webp",
+            "width": 1067,
+            "height": 1600,
+            "fileSize": 129554,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 133374,
+            "originalSha256": "1a2f38782373415c2ba1483b1d7af360fa90483272269ff9560eb26114095c96"
+        },
+        {
+            "key": "hero-mobile",
+            "relativePath": "hero-mobile.webp",
+            "sha256": "8afe4cc80c564dfd45c6612293ac2f37544bfc3919771d04e84b9861877a018c",
+            "mimeType": "image/webp",
+            "width": 800,
+            "height": 1200,
+            "fileSize": 72516,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 74658,
+            "originalSha256": "e1326c719d95bf9c14b21d480fdf8fe21f0a8fd6c6ff4ceb14477461d79c0bf4"
+        },
+        {
+            "key": "interlude-01",
+            "relativePath": "interlude01.webp",
+            "sha256": "02cdc34529d8319726cfdbfaed624f43da85d35efb8506b8bbda99257abaeb1f",
+            "mimeType": "image/webp",
+            "width": 1800,
+            "height": 1200,
+            "fileSize": 162350,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 170994,
+            "originalSha256": "5759dc8d021a0e461711c9eefed9b04af2e6319715531d43b5e250861deadfff"
+        },
+        {
+            "key": "interlude-02",
+            "relativePath": "interlude02.webp",
+            "sha256": "07e25e8b802f4f7209cb18857f5817ac338f6db7825952708318d8f1eb691d13",
+            "mimeType": "image/webp",
+            "width": 1800,
+            "height": 1200,
+            "fileSize": 94138,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 97408,
+            "originalSha256": "f77b9f979fe5a5ef48a5318c23e25d349f1865860be55059b07930862403a7dc"
+        },
+        {
+            "key": "thank-you",
+            "relativePath": "thank-you.webp",
+            "sha256": "93db16ea565567f49a24ffe93e122542e0505ab3be9885fce445ec76a02e1f97",
+            "mimeType": "image/webp",
+            "width": 800,
+            "height": 1200,
+            "fileSize": 52502,
+            "validationVersion": 1,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 53550,
+            "originalSha256": "eef9fbb239ffdd66a96482d2a95a8482bc02f0b869ab6aa1999e93931fb1c099"
+        }
+    ]
+}

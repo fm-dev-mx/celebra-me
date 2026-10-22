@@ -19,7 +19,8 @@ const MANAGED_INVITATION_RENDERING_SURFACES = [
 	/^src\/components\/invitation\//u,
 	/^src\/lib\/(?:adapters|invitation)\//u,
 	/^src\/lib\/intake\/(?:schemas\/|services\/section-content-mapper(?:\.ts)?$)/u,
-	/^src\/styles\/(?:invitation|invitation-profiles|themes\/sections)\//u,
+	/^src\/styles\/(?:invitation|invitation-features|invitation-profiles|themes\/sections)\//u,
+	/^src\/invitations\//u,
 	/^scripts\/provision\/invitations\//u,
 	/^scripts\/provision\/local-render-corpus\//u,
 	/^tests\/provision\/(?:managed-invitation-regression|local-render-corpus-regression)\.test\.ts$/u,
@@ -30,10 +31,11 @@ const RELEASE_HASH_SURFACES = [
 	/^scripts\/provision\//u,
 	/^src\/lib\/(?:intake|invitation|schemas)\//u,
 	/^src\/assets\/invitations\//u,
+	/^src\/invitations\/clients\//u,
 ];
 /** Files that can make a hash move "expected" (an invitation's own definition or assets). */
 const RELEASE_HASH_OWNED_FILES =
-	/^(?:scripts\/provision\/invitations\/[^/]+\.ts|src\/assets\/invitations\/.+)$/u;
+	/^(?:scripts\/provision\/invitations\/[^/]+\.ts|src\/assets\/invitations\/.+|src\/invitations\/clients\/.+)$/u;
 
 function resolveCommand(command, args) {
 	if (command !== 'pnpm') {

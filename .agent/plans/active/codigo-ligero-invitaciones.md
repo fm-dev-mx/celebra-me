@@ -23,31 +23,54 @@ to that report.
 
 ## Progress
 
-| Row   | State       | Evidence                                                    |
-| ----- | ----------- | ----------------------------------------------------------- |
-| 1     | Done        | `c5ebacae3` on `develop`                                    |
-| 2     | Done        | #329                                                        |
-| 3     | Done        | #343                                                        |
-| 4     | Done        | #330                                                        |
-| 5     | Done        | #331                                                        |
-| 6     | Done        | #347 (contract migration; ships through the migration flow) |
-| 7     | Done        | #344                                                        |
-| 8     | Done        | #332                                                        |
-| 9     | Done        | #360                                                        |
-| 10    | Done        | #333                                                        |
-| 11    | Done        | #400                                                        |
-| 12    | Done        | #402                                                        |
-| 13–19 | Pending     | —                                                           |
-| 20    | Done        | #406                                                        |
-| 21    | Done        | #408                                                        |
-| 22    | Done        | #410                                                        |
-| 23    | Done        | #412                                                        |
-| 24    | Done        | #413                                                        |
-| 25    | In progress | This pull request                                           |
+| Row | State | Evidence                                                                                                                                                           |
+| --- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Done  | `c5ebacae3` on `develop`                                                                                                                                           |
+| 2   | Done  | #329                                                                                                                                                               |
+| 3   | Done  | #343                                                                                                                                                               |
+| 4   | Done  | #330                                                                                                                                                               |
+| 5   | Done  | #331                                                                                                                                                               |
+| 6   | Done  | #347 (contract migration; ships through the migration flow)                                                                                                        |
+| 7   | Done  | #344                                                                                                                                                               |
+| 8   | Done  | #332                                                                                                                                                               |
+| 9   | Done  | #360                                                                                                                                                               |
+| 10  | Done  | #333                                                                                                                                                               |
+| 11  | Done  | #400                                                                                                                                                               |
+| 12  | Done  | #402                                                                                                                                                               |
+| 13  | Done  | #417 (13a); 13b skipped by owner decision d108                                                                                                                     |
+| 14  | Done  | #419                                                                                                                                                               |
+| 15  | Done  | #420                                                                                                                                                               |
+| 16  | Done  | #421                                                                                                                                                               |
+| 17  | Done  | #422                                                                                                                                                               |
+| 18  | Done  | #423 (soft-delete patch, d113) + code PR (d115: Local keeps the supabase branch, url() files and frozen profiles untouched, backup tools keep the supabase filter) |
+| 19  | Done  | This pull request (owner decision d114: no data migration)                                                                                                         |
+| 20  | Done  | #406                                                                                                                                                               |
+| 21  | Done  | #408                                                                                                                                                               |
+| 22  | Done  | #410                                                                                                                                                               |
+| 23  | Done  | #412                                                                                                                                                               |
+| 24  | Done  | #413                                                                                                                                                               |
+| 25  | Done  | #415                                                                                                                                                               |
 
 Owner decisions: the `/privacidad` text needs only the owner's approval, no legal review; full
-visual parity runs nightly on `develop` instead of on every pull request into `develop`. Questions 1
-and 3 below are asked when phase C starts.
+visual parity runs nightly on `develop` instead of on every pull request into `develop`. On
+2026-10-21 the owner answered questions 1 and 3: QR check-in at arrival is not planned, and the twin
+presets do not merge for now (published invitations use all four; revisit when they expire).
+
+Row 13 runs in two parts. 13a adds `THEME_PRESET_METADATA` and derives `THEME_PRESETS`,
+`PORTRAIT_SUPPORTED_THEMES` and the event-type preset lists from it, with a test that keeps the two
+stylesheet directories in step with the table. 13b, generating those directories from the table, was
+skipped by the owner (d108): it needed a Vite plugin, some section bundles hold real styles (the
+`editorial-magazine` folios), and the test already keeps table and directories in step.
+
+Row 14 found that `InvitationDeferredCssPromotion` is only the name of the shared chunk with the
+whole invitation render tree. Its avoidable weight was `sanitize-html`'s postcss and source-map-js,
+which indication HTML never calls; with `@zip.js/zip.js`, both are stubbed in the server build
+(`dist/server` 6,293 → 5,789 KiB).
+
+Row 16 gave each demo a folder under `src/invitations/demos/<slug>/`. Row 17 does the same for new
+client invitations under `src/invitations/clients/<slug>/`, listed in a generated
+`client-registry.generated.ts` (`pnpm invitation:registry`). The legacy list counts 17 definitions
+by then, not 13; a test freezes it so it can only shrink.
 
 ## Goal
 
@@ -96,7 +119,7 @@ byte-identical. Prove it with `pnpm invitation:hash-baseline` before and after.
 | **16. `feat/invitation-document-demos`**    | Introduce `InvitationDocument` (one directory per invitation: `invitation.ts`, an optional token-only `profile.scss`, an asset manifest). Migrate the 7 demos first: they carry no client hash. `demo-showroom.data.ts` gets absorbed. The `event-demos` collection reads the new tree |          ±600 | Demo routing parity, `premium-demo-quality-gate`, visual baselines of the demos             | revert                           |
 | **17. `feat/invitation-document-new-only`** | New real invitations use `InvitationDocument`. `registry.ts` is generated by glob. The 13 legacy definitions stay frozen                                                                                                                                                               |          ±300 | `invitation-profile-boundary` digests unchanged, `hash-baseline`                            | revert                           |
 | **18. `refactor/r2-only-runtime-assets`**   | Once Production has no `supabase` rows outside Local, `provider` stops being a branch in `asset-delivery.ts`, `storage-provider.ts` and `remote-media-hosting.ts`. Binaries move from `src/assets/invitations/` (62 MB) to R2 with a hash manifest                                     |  −400, −62 MB | `image-delivery-contract.spec`, `production-image-audit`                                    | revert, plus keep the R2 objects |
-| **19. `refactor/drop-location-compat`**     | Remove `normalizeLegacyLocationInContent` and `location-presentation-compatibility.ts`, after a contract release that migrates the published data                                                                                                                                      |          −200 | Contract tests + a published-content audit                                                  | A forward fix                    |
+| **19. `refactor/drop-location-compat`**     | Remove `normalizeLegacyLocationInContent` and `location-presentation-compatibility.ts` without migrating published data (d114); a legacy published row now fails closed                                                                                                                |          −200 | Contract tests + a published-content audit                                                  | A forward fix                    |
 
 The 13 legacy definitions and their profiles (≈ 20k SCSS lines) are not migrated. Each one leaves
 when its invitation expires (the first on 2027-02-21; `sacred-keepsake` on 2027-06-20) in a deletion
@@ -121,13 +144,11 @@ read them. About a month after the event, a retro records what worked, what look
 and what took the most review rounds; the note leaves with the invitation's definition, profile and
 assets when it expires.
 
-## Open questions for the owner
+## Owner questions (answered)
 
-1. Is QR check-in at arrival a planned feature? It does not exist today, and nothing tests it.
-2. The new `/privacidad` text (PR 3): does it need legal review?
-3. Can the twin presets `jewelry-box` / `jewelry-box-wedding` and `editorial` / `editorial-magazine`
-   merge? This needs a token diff first.
-4. Should full visual parity run nightly instead of on every PR (PR 11)?
+All four were answered (see Progress). Token diff behind question 3, on `develop` `a5733331a`:
+`jewelry-box-wedding` shares 69 of its 121 token declarations with `jewelry-box`;
+`editorial-magazine` shares 5 of 109 with `editorial`.
 
 ## Expected result
 

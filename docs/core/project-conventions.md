@@ -291,14 +291,16 @@ the source of truth for real invitation governance.
 
 For a new managed invitation:
 
-1. **Place source binaries** in `src/assets/invitations/<slug>/` (the default `assetDir`). No
-   `index.ts` is needed: the managed definition maps semantic asset keys to these files and the
-   release pipeline uploads them.
+1. **Create the folder** `src/invitations/clients/<slug>/` with `invitation.ts` (the definition,
+   default export), an optional token-only `profile.scss`, and the source binaries in `assets/` (the
+   definition's `assetDir`). No `index.ts` is needed: the definition maps semantic asset keys to
+   these files and the release pipeline uploads them. Then run `pnpm invitation:registry`.
 2. **Do not set `_assetSlug`.** It remains only on demos and on legacy definitions (see the
    [creation contract](./invitation-creation-contract.md#documented-exceptions)).
 3. **Verify the content and theme contract** with the narrow relevant commands from
    `docs/domains/content/event-governance.md`.
 
-Demos remain under `src/content/event-demos`, with their assets under `src/assets/images/events/`.
+Demos live one folder each under `src/invitations/demos/<slug>/` (`content.json`, `invitation.ts`,
+`assets.ts` with `assets/`, optional token-only `profile.scss`).
 
 Conventions are agreements to reduce friction, not obstacles to progress.

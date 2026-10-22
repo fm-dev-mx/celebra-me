@@ -5,6 +5,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import { splitLeadWords } from '@/lib/invitation/name-split';
 import { formatVenueTimeInWords } from '@/lib/invitation/venue-datetime';
+import { PORTRAIT_HERO_SIZES } from '@/lib/invitation/hero-image-preload';
 
 interface Props {
 	name: string;
@@ -50,7 +51,7 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 <section id="inicio" class="invitation-hero framed-portrait-hero" data-variant={variant} data-screenshot="invitation-open-hero" data-screenshot-section="hero">
 	<div class="framed-portrait-hero__layout">
 		<figure class="framed-portrait-hero__photograph">
-			<CacheSafeImage src={source} delivery={delivery} alt={`Fotografía de ${name}`} width={width} height={height} loading="eager" fetchpriority={highPriority ? 'high' : undefined} />
+			<CacheSafeImage src={source} delivery={delivery} alt={`Fotografía de ${name}`} width={width} height={height} sizes={PORTRAIT_HERO_SIZES} loading="eager" fetchpriority={highPriority ? 'high' : undefined} />
 		</figure>
 		<div class="framed-portrait-hero__letter">
 			{label && <p class="framed-portrait-hero__occasion">{label}</p>}

@@ -173,7 +173,8 @@ Resolve how content reaches the browser (see live `content-resolver`):
 
 Inventory for `<slug>`:
 
-- `scripts/provision/invitations/<slug>.ts`, `src/content/event-demos`
+- `src/invitations/clients/<slug>/invitation.ts` (legacy:
+  `scripts/provision/invitations/<slug>.ts`), `src/invitations/demos/`
 - `scripts/manual/production-patches`
 - `.agent/plans/active` payloads/specs
 - `src/assets/images/events` / `src/assets/invitations`

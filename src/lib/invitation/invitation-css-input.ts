@@ -29,5 +29,10 @@ export function buildInvitationCssResolverInput(input: {
 			page.envelope?.variant,
 		),
 		visualProfileId: viewModel.visualProfileId,
+		editorialCover:
+			page.envelope?.revealVariant === 'editorial-cover'
+				? (page.envelope.coverExperience ?? 'standard')
+				: undefined,
+		ornamentSet: viewModel.composition?.ornaments,
 	};
 }

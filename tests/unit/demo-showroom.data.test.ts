@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { DEMO_INVITATIONS_DIR } from '../../scripts/shared/demo-invitation-files.ts';
 
 import {
 	DEMO_SHOWROOM_EVENTS,
@@ -10,26 +11,9 @@ import {
 } from '@/data/demo-showroom.data';
 
 const projectRoot = process.cwd();
-const demosRoot = path.join(projectRoot, 'src/content/event-demos');
 
 function demoContentExists(slug: string): boolean {
-	const stack = [demosRoot];
-
-	while (stack.length > 0) {
-		const current = stack.pop();
-		if (!current) continue;
-
-		for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
-			const nextPath = path.join(current, entry.name);
-			if (entry.isDirectory()) {
-				stack.push(nextPath);
-				continue;
-			}
-			if (entry.isFile() && entry.name === `${slug}.json`) return true;
-		}
-	}
-
-	return false;
+	return fs.existsSync(path.join(projectRoot, DEMO_INVITATIONS_DIR, slug, 'content.json'));
 }
 
 describe('demo showroom public metadata', () => {

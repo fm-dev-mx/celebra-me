@@ -276,7 +276,7 @@ describe('Style boundary governance', () => {
 
 	it('location section exposes editable heading copy and legacy hash alias', () => {
 		const eventLocation = read('src/components/invitation/EventLocation.astro');
-		const enchantedRoseDemo = read('src/content/event-demos/xv/demo-xv-enchanted-rose.json');
+		const enchantedRoseDemo = read('src/invitations/demos/demo-xv-enchanted-rose/content.json');
 
 		expect(eventLocation).toContain('id="location"');
 		expect(eventLocation).toContain('event-location__intro');

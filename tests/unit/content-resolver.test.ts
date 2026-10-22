@@ -1,4 +1,5 @@
 jest.mock('@/lib/content/events', () => ({
+	...jest.requireActual('@/lib/content/events'),
 	getRoutableEventEntry: jest.fn(),
 }));
 
@@ -12,22 +13,6 @@ jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 
 jest.mock('@/lib/adapters/event', () => ({
 	adaptEvent: jest.fn(() => ({
-		id: 'lucia-fixture',
-		isDemo: false,
-		title: 'XV Anos — Ana Sofia',
-		theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
-		hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
-		envelope: { enabled: false },
-		brandingVisibility: {
-			showFooterBranding: true,
-			showContactCta: true,
-		},
-		sections: {},
-	})),
-}));
-
-jest.mock('@/lib/adapters/db-event-adapter', () => ({
-	adaptDbEvent: jest.fn(() => ({
 		id: 'my-invitation',
 		isDemo: false,
 		title: 'Published Event',
@@ -54,7 +39,6 @@ import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import validPublishedContentJson from '../fixtures/content/xv-jewelry-box.json';
 import {
 	ANONYMOUS_PUBLISHED_CONTENT_READS,
@@ -69,7 +53,6 @@ const mockFindPublishedWithAccess =
 		typeof findPublishedWithAccessBySlugAndEventType
 	>;
 const mockAdaptEvent = adaptEvent as jest.Mock;
-const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
 const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.MockedFunction<
 	typeof isInvitationArchivedBySlug
 >;
@@ -118,8 +101,10 @@ describe('resolveInvitationContent', () => {
 
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('published');
-		expect(mockAdaptDbEvent).toHaveBeenCalled();
-		expect(mockAdaptEvent).not.toHaveBeenCalled();
+		expect(mockAdaptEvent).toHaveBeenCalledWith({
+			slug: 'my-invitation',
+			content: expect.objectContaining({ title: validPublishedContent.title }),
+		});
 		expect(mockGetRoutable).not.toHaveBeenCalled();
 		assertObservedOperationCount(
 			mockFindPublishedWithAccess.mock.calls.length,
@@ -142,7 +127,7 @@ describe('resolveInvitationContent', () => {
 
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('static');
-		expect(mockAdaptEvent).toHaveBeenCalled();
+		expect(mockAdaptEvent).toHaveBeenCalledWith({ slug: 'demo-xv', content: { isDemo: true } });
 	});
 
 	it('resolves static demo when all Supabase calls fail with credential errors', async () => {
@@ -218,7 +203,7 @@ describe('resolveInvitationContent', () => {
 		expect(result).not.toBeNull();
 		expect(result!.source).toBe('published');
 		expect(result!.viewModel.title).toBe('Published Event');
-		expect(mockAdaptDbEvent).toHaveBeenCalled();
+		expect(mockAdaptEvent).toHaveBeenCalled();
 		expect(mockGetRoutable).not.toHaveBeenCalled();
 	});
 
@@ -326,7 +311,7 @@ describe('resolveInvitationContent', () => {
 		const result = await resolveInvitationContent('broken-invitation', 'xv');
 
 		expect(result).toBeNull();
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
 		expect(consoleError).toHaveBeenCalledWith(
 			'[invitation-content] Invalid published content',
 			expect.objectContaining({
@@ -344,6 +329,38 @@ describe('resolveInvitationContent', () => {
 		consoleError.mockRestore();
 	});
 
+	it('fails closed on a published row that still carries legacy ceremony/reception', async () => {
+		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		const { venues, ...location } = validPublishedContent.location as {
+			venues: Record<string, unknown>[];
+		};
+		mockFindPublishedWithAccess.mockResolvedValue({
+			id: 'published-legacy',
+			invitationId: 'invitation-legacy',
+			slug: 'legacy-location',
+			eventType: 'xv',
+			isDemo: false,
+			content: {
+				...validPublishedContent,
+				location: { ...location, ceremony: venues[0], reception: venues[1] },
+			},
+			version: 3,
+		} as any);
+
+		const result = await resolveInvitationContent('legacy-location', 'xv');
+
+		expect(result).toBeNull();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
+		expect(consoleError).toHaveBeenCalledWith(
+			'[invitation-content] Invalid published content',
+			expect.objectContaining({
+				publishedContentId: 'published-legacy',
+				slug: 'legacy-location',
+			}),
+		);
+		consoleError.mockRestore();
+	});
+
 	it('keeps schema-compatible legacy published snapshots renderable', async () => {
 		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'legacy-invitation',
@@ -355,7 +372,7 @@ describe('resolveInvitationContent', () => {
 		const result = await resolveInvitationContent('legacy-invitation', 'xv');
 
 		expect(result?.source).toBe('published');
-		expect(mockAdaptDbEvent).toHaveBeenCalledWith(
+		expect(mockAdaptEvent).toHaveBeenCalledWith(
 			expect.objectContaining({
 				content: expect.objectContaining({
 					title: validPublishedContent.title,
@@ -415,7 +432,7 @@ describe('resolvePublicInvitation access state', () => {
 		const result = await resolvePublicInvitation('my-invitation', 'xv');
 
 		expect(result).toEqual({ source: 'unavailable' });
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+		expect(mockAdaptEvent).not.toHaveBeenCalled();
 		expect(mockGetRoutable).not.toHaveBeenCalled();
 		expect(mockIsInvitationArchivedBySlug).not.toHaveBeenCalled();
 	});
@@ -432,12 +449,12 @@ describe('resolvePublicInvitation access state', () => {
 				'published',
 			);
 
-			mockAdaptDbEvent.mockClear();
+			mockAdaptEvent.mockClear();
 			jest.setSystemTime(new Date('2027-11-22T06:00:00.000Z'));
 			expect(await resolvePublicInvitation('my-invitation', 'xv')).toEqual({
 				source: 'unavailable',
 			});
-			expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+			expect(mockAdaptEvent).not.toHaveBeenCalled();
 			await expect(resolveInvitationContent('my-invitation', 'xv')).resolves.toBeNull();
 		} finally {
 			jest.setSystemTime(PINNED_NOW);
@@ -487,7 +504,7 @@ describe('resolvePublicInvitation access state', () => {
 			brandingVisibility: { showFooterBranding: true, showContactCta: true },
 			sections: {},
 		};
-		mockAdaptDbEvent.mockReturnValueOnce(heroViewModel).mockReturnValueOnce(heroViewModel);
+		mockAdaptEvent.mockReturnValueOnce(heroViewModel).mockReturnValueOnce(heroViewModel);
 
 		mockFindPublishedWithAccess.mockResolvedValue(
 			publishedEntry({ paymentStatus: 'unpaid', publicAccess: 'enabled' }),

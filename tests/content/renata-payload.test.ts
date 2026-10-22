@@ -10,9 +10,10 @@ import {
 } from '../../scripts/provision/invitations/renata.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
 import { buildTestAssets } from '../helpers/managed-payload';
+import { invitationMediaPaths } from '../helpers/invitation-media';
 
 const profilePath = path.join(process.cwd(), 'src/styles/invitation-profiles/renata.scss');
-const assetDir = path.join(process.cwd(), 'src/assets/invitations/renata');
+const assetDir = invitationMediaPaths(getInvitationDefinition('renata'));
 const prepPath = path.join(process.cwd(), 'docs/invitations/renata.md');
 
 describe('XV Renata provision contract', () => {
@@ -119,7 +120,7 @@ describe('XV Renata provision contract', () => {
 	it('has a source file for every declared asset path', () => {
 		const uniquePaths = new Set(RENATA_ASSET_SPECS.map((spec) => spec.relativePath));
 		for (const relativePath of uniquePaths) {
-			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
+			expect(assetDir.has(relativePath)).toBe(true);
 		}
 	});
 

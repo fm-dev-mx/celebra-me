@@ -50,10 +50,15 @@ function extractThemePresets() {
 		path.join(__dirname, '..', 'src/lib/theme/theme-contract.ts'),
 		'utf8',
 	);
-	const declaration = /export const THEME_PRESETS = \[([\s\S]*?)\] as const;/.exec(source);
-	if (!declaration) throw new Error('THEME_PRESETS not found in theme-contract.ts');
-	const presets = [...declaration[1].matchAll(/'([^']+)'/g)].map((match) => match[1]);
-	if (presets.length === 0) throw new Error('THEME_PRESETS is empty in theme-contract.ts');
+	const declaration = /export const THEME_PRESET_METADATA = \{([\s\S]*?)\n\} as const/.exec(
+		source,
+	);
+	if (!declaration) throw new Error('THEME_PRESET_METADATA not found in theme-contract.ts');
+	const presets = [...declaration[1].matchAll(/^\t'?([a-z0-9-]+)'?: \{/gm)].map(
+		(match) => match[1],
+	);
+	if (presets.length === 0)
+		throw new Error('THEME_PRESET_METADATA is empty in theme-contract.ts');
 	return new Set(presets);
 }
 

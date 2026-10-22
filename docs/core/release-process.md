@@ -222,8 +222,11 @@ git tag -a v0.X.Y -m "v0.X.Y - Short description of checkpoint"
 git push origin v0.X.Y
 ```
 
-The tag is created only after the exact promoted deployment is verified. Do not force-update an
-existing tag.
+The release session creates and pushes the annotated tag as soon as `pnpm ops:release-status`
+reports `VERIFIED` for the promoted `main` SHA, in the same turn and within the same release
+authorization. The tag is part of the authorized release scope, so the session does not ask the
+owner again and does not hand the tag back as a separate owner step. The tag is never created before
+the exact promoted deployment is `VERIFIED`. Do not force-update an existing tag.
 
 ## Database-dependent releases
 

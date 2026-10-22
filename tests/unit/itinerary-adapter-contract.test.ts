@@ -1,4 +1,5 @@
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 const baseItinerary = {
@@ -32,25 +33,28 @@ function eventWith(overrides: Record<string, unknown>) {
 			rsvp: { variant: 'standard', personalizedAccess: { variant: 'standard' } },
 			...overrides,
 		},
-	} as Parameters<typeof adaptEvent>[0];
+	} as EventContentEntry;
 }
 
 describe('itinerary canonical variant contract', () => {
 	it('preserves an explicit canonical standard variant through the adapter', () => {
-		const viewModel = adaptEvent(eventWith({}));
+		const viewModel = adaptEvent(contentDocumentFromEntry(eventWith({})));
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');
 	});
 
 	it('preserves an explicit non-default variant through the adapter', () => {
 		const viewModel = adaptEvent(
-			eventWith({ itinerary: { ...baseItinerary, variant: 'editorial-program' } }),
+			contentDocumentFromEntry(
+				eventWith({ itinerary: { ...baseItinerary, variant: 'editorial-program' } }),
+			),
 		);
 		expect(viewModel.sections.itinerary?.variant).toBe('editorial-program');
 	});
 
 	it('rejects the removed presentation behavior alias', () => {
 		const result = eventContentSchema.safeParse(
-			eventWith({ itinerary: { ...baseItinerary, presentation: { behavior: 'standard' } } }).data,
+			eventWith({ itinerary: { ...baseItinerary, presentation: { behavior: 'standard' } } })
+				.data,
 		);
 		expect(result.success).toBe(false);
 	});

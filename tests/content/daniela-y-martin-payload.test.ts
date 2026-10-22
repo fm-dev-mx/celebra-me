@@ -1,8 +1,9 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { resolveLocationShowNavigationButtons } from '@/lib/invitation/location-presentation';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
-import demoBodaJewelryBoxWedding from '../../src/content/event-demos/boda/demo-boda-jewelry-box-wedding.json';
+import demoBodaJewelryBoxWedding from '../../src/invitations/demos/demo-boda-jewelry-box-wedding/content.json';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -11,13 +12,15 @@ import {
 	buildDanielaPublishedContent,
 } from '../../scripts/provision/invitations/daniela-y-martin.ts';
 import { buildTestAssets } from '../helpers/managed-payload';
+import { invitationMediaPaths } from '../helpers/invitation-media';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
 
 const profilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/daniela-y-martin.scss',
 );
 
-const assetDir = path.join(process.cwd(), 'src/assets/invitations/daniela-y-martin');
+const assetDir = invitationMediaPaths(getInvitationDefinition('daniela-y-martin'));
 
 function publishedContent() {
 	return buildDanielaPublishedContent(buildTestAssets(DANIELA_ASSET_SPECS));
@@ -85,14 +88,14 @@ describe('Boda Daniela y Martín provision contract', () => {
 		expect(heroDesktop?.relativePath).toBe('hero-source.jpg');
 		expect(heroMobile?.relativePath).toBe('hero-source.jpg');
 		expect(heroDesktop?.focalPoint).not.toEqual(heroMobile?.focalPoint);
-		expect(fs.existsSync(path.join(assetDir, 'hero-source.jpg'))).toBe(true);
-		expect(fs.existsSync(path.join(assetDir, 'hero-mobile-source.jpg'))).toBe(false);
+		expect(assetDir.has('hero-source.jpg')).toBe(true);
+		expect(assetDir.has('hero-mobile-source.jpg')).toBe(false);
 	});
 
 	it('has source files for every declared asset path', () => {
 		const uniquePaths = new Set(DANIELA_ASSET_SPECS.map((spec) => spec.relativePath));
 		for (const relativePath of uniquePaths) {
-			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
+			expect(assetDir.has(relativePath)).toBe(true);
 		}
 	});
 
@@ -158,10 +161,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 			}),
 		]);
 
-		const viewModel = adaptEvent({
-			id: 'events/daniela-y-martin',
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/daniela-y-martin',
+				data: content,
+			} as EventContentEntry),
+		);
 		const renderPlan = buildInvitationRenderPlan(viewModel);
 		expect(renderPlan.filter((item) => item.type === 'interlude')).toHaveLength(2);
 		expect(
@@ -326,10 +331,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 
 		// The adapter must surface the opt-out on the section data the
 		// render plan and EventLocation consume.
-		const viewModel = adaptEvent({
-			id: 'events/daniela-y-martin',
-			data: published,
-		} as unknown as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/daniela-y-martin',
+				data: published,
+			} as unknown as EventContentEntry),
+		);
 		expect(viewModel.sections.location?.presentation).toBe('simple');
 		expect(viewModel.sections.location?.showNavigationButtons).toBe(false);
 	});
@@ -337,10 +344,12 @@ describe('Boda Daniela y Martín provision contract', () => {
 	it('keeps provider navigation enabled for the existing wedding control invitation', () => {
 		expect(resolveLocationShowNavigationButtons(undefined)).toBe(true);
 
-		const viewModel = adaptEvent({
-			id: 'event-demos/boda/demo-boda-jewelry-box-wedding.json',
-			data: demoBodaJewelryBoxWedding,
-		} as unknown as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'event-demos/boda/demo-boda-jewelry-box-wedding.json',
+				data: demoBodaJewelryBoxWedding,
+			} as unknown as EventContentEntry),
+		);
 
 		expect(viewModel.sections.location?.showNavigationButtons).toBe(true);
 	});

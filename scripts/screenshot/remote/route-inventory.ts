@@ -1,5 +1,8 @@
-import { readdirSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { resolve } from 'node:path';
+import {
+	DEMO_INVITATIONS_DIR,
+	listDemoInvitationFiles,
+} from '../../shared/demo-invitation-files.ts';
 
 /**
  * Remote route inventory: every public route a guest or prospect can reach on a live origin.
@@ -117,14 +120,8 @@ export async function loadRepositoryRouteSources(root: string): Promise<RouteSou
 			import('../../../src/data/demo-showroom.data.ts'),
 			import('../../../src/lib/server/security-headers.ts'),
 		]);
-	const demosRoot = resolve(root, 'src/content/event-demos');
-	const demos = readdirSync(demosRoot, { withFileTypes: true })
-		.filter((entry) => entry.isDirectory())
-		.flatMap((entry) =>
-			readdirSync(join(demosRoot, entry.name))
-				.filter((file) => file.endsWith('.json'))
-				.map((file) => ({ eventType: entry.name, slug: basename(file, '.json') })),
-		)
+	const demos = listDemoInvitationFiles(resolve(root, DEMO_INVITATIONS_DIR))
+		.map(({ eventType, slug }) => ({ eventType, slug }))
 		.sort((a, b) => `${a.eventType}/${a.slug}`.localeCompare(`${b.eventType}/${b.slug}`));
 	return {
 		definitions: listActiveInvitationDefinitions().map((definition) => ({

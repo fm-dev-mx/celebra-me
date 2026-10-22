@@ -1,0 +1,329 @@
+@use '../global/mixins' as mixins;
+@use 'ornament-sets' as *;
+
+// Storybook lanterns, loaded only by pages whose `composition.ornaments` is `storybook-lanterns`.
+// Motifs and mixins live in `_ornament-sets.scss`.
+
+// One threshold thread: a single line of gold leaf, fading out toward both ends.
+@mixin storybook-thread($edge) {
+	content: '';
+	position: absolute;
+	left: 50%;
+	#{$edge}: var(--ornament-thread-inset);
+	z-index: 1;
+	width: var(--ornament-thread-width);
+	height: 1px;
+	background: var(--ornament-foil);
+	mask: linear-gradient(90deg, transparent, rgb(0 0 0) 24%, rgb(0 0 0) 76%, transparent);
+	translate: -50% 0;
+	pointer-events: none;
+
+	// The thread draws itself from the center out as its threshold scrolls in; without scroll
+	// timelines, or with reduced motion, it simply rests drawn.
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			animation: storybook-thread-draw linear both;
+			animation-timeline: view();
+			animation-range: entry 10% cover 30%;
+		}
+	}
+}
+
+// A field of lantern lights behind a section's content. Each field is one layer of depth: far
+// points are sharp and dim, near ones are large, soft and out of focus. Lights only ever move by
+// transform and opacity, so no layout or paint of the content is involved.
+@mixin storybook-light-field($layers, $duration) {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	display: var(--ornament-lights-display, block);
+	background: $layers;
+	mix-blend-mode: screen;
+
+	// Keeps the text column clear: no light ever sits on a letter.
+	mask: var(--ornament-lights-clear, none);
+	pointer-events: none;
+
+	@media (prefers-reduced-motion: no-preference) {
+		animation: storybook-light-drift $duration ease-in-out infinite alternate;
+	}
+
+	// Lights kindle as their section scrolls in (where scroll timelines exist), then keep drifting.
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			animation:
+				storybook-light-kindle linear both,
+				storybook-light-drift $duration ease-in-out infinite alternate;
+			animation-timeline: view(), auto;
+			animation-range:
+				entry 0% cover 40%,
+				normal;
+		}
+	}
+}
+
+@keyframes storybook-thread-draw {
+	from {
+		clip-path: inset(0 50%);
+	}
+
+	to {
+		clip-path: inset(0 0);
+	}
+}
+
+@keyframes storybook-light-kindle {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: 100%;
+	}
+}
+
+// Slow rise: lanterns float up and sway a little, never fast enough to pull the eye from the text.
+@keyframes storybook-light-drift {
+	from {
+		transform: translate3d(-0.2rem, 0.6rem, 0);
+	}
+
+	to {
+		transform: translate3d(0.3rem, -1.4rem, 0);
+	}
+}
+
+// storybook-lanterns tells the tale with light: the gold thread at the thresholds and the
+// lantern-light fields behind the countdown and the closing. The compound wrapper class keeps the
+// set's selector weight above the section bases it overrides.
+.ornament-set--storybook-lanterns.event-theme-wrapper {
+	--ornament-ink: var(--color-ornament-gold, var(--color-border-premium));
+	--ornament-thread-width: min(24rem, 66%);
+	--ornament-thread-inset: clamp(1.75rem, 5vw, 3rem);
+	--ornament-foil: linear-gradient(
+		100deg,
+		var(--color-gold-ink, var(--ornament-ink)) 0%,
+		var(--color-leaf-gold, var(--ornament-ink)) 20%,
+		var(--color-candle-cream, var(--ornament-ink)) 34%,
+		var(--color-candle-gold, var(--ornament-ink)) 48%,
+		var(--color-leaf-gold, var(--ornament-ink)) 66%,
+		var(--color-candle-gold, var(--ornament-ink)) 82%,
+		var(--color-gold-ink, var(--ornament-ink)) 100%
+	);
+	--ornament-motif-lantern: #{$storybook-lantern};
+	--ornament-motif-tower: #{$storybook-tower};
+	--ornament-motif-sun: #{$storybook-sun};
+	--ornament-motif-sprig: #{$storybook-sprig};
+	--ornament-motif-sun-flower: #{$storybook-sun-flower};
+	--ornament-motif-sparkle: #{$storybook-sparkle};
+
+	// Light colors: a cream core inside a candle-gold halo.
+	--ornament-light-core: rgb(var(--color-candle-cream-rgb, 246 239 224) / 95%);
+	--ornament-light-halo: rgb(var(--color-candle-gold-rgb, 228 200 126) / 46%);
+	--ornament-light-bokeh: rgb(var(--color-lantern-amber-rgb, var(--color-leaf-gold-rgb)) / 34%);
+	--ornament-light-bokeh-edge: rgb(
+		var(--color-lantern-amber-rgb, var(--color-leaf-gold-rgb)) / 11%
+	);
+
+	// Far: sharp pin points scattered over the whole sky.
+	--ornament-lights-far:
+		radial-gradient(circle at 12% 8%, var(--ornament-light-core) 0 1.2px, transparent 2px),
+		radial-gradient(circle at 27% 21%, var(--ornament-light-core) 0 1px, transparent 1.8px),
+		radial-gradient(circle at 44% 5%, var(--ornament-light-core) 0 1.4px, transparent 2.2px),
+		radial-gradient(circle at 63% 14%, var(--ornament-light-core) 0 1px, transparent 1.8px),
+		radial-gradient(circle at 81% 9%, var(--ornament-light-core) 0 1.3px, transparent 2px),
+		radial-gradient(circle at 92% 27%, var(--ornament-light-core) 0 1px, transparent 1.8px),
+		radial-gradient(circle at 7% 36%, var(--ornament-light-core) 0 1.2px, transparent 2px),
+		radial-gradient(circle at 33% 44%, var(--ornament-light-core) 0 1px, transparent 1.8px),
+		radial-gradient(circle at 71% 38%, var(--ornament-light-core) 0 1.1px, transparent 1.9px),
+		radial-gradient(circle at 88% 52%, var(--ornament-light-core) 0 1.3px, transparent 2px),
+		radial-gradient(circle at 18% 61%, var(--ornament-light-core) 0 1px, transparent 1.8px),
+		radial-gradient(circle at 54% 68%, var(--ornament-light-core) 0 1.2px, transparent 2px),
+		radial-gradient(circle at 79% 74%, var(--ornament-light-core) 0 1px, transparent 1.8px),
+		radial-gradient(circle at 9% 83%, var(--ornament-light-core) 0 1.2px, transparent 2px),
+		radial-gradient(circle at 39% 90%, var(--ornament-light-core) 0 1px, transparent 1.8px),
+		radial-gradient(circle at 93% 91%, var(--ornament-light-core) 0 1.1px, transparent 1.9px),
+		radial-gradient(circle at 58% 24%, var(--ornament-light-core) 0 0.9px, transparent 1.6px),
+		radial-gradient(circle at 23% 31%, var(--ornament-light-core) 0 0.9px, transparent 1.6px);
+
+	// Middle: lit lanterns, a bright core with a warm halo, kept to the edges of the text column.
+	--ornament-lights-mid:
+		radial-gradient(
+			circle at 20% 15%,
+			var(--ornament-light-core) 0 3px,
+			var(--ornament-light-halo) 6px,
+			transparent 11px
+		),
+		radial-gradient(
+			circle at 78% 20%,
+			var(--ornament-light-core) 0 3.5px,
+			var(--ornament-light-halo) 7px,
+			transparent 13px
+		),
+		radial-gradient(
+			circle at 10% 49%,
+			var(--ornament-light-core) 0 3px,
+			var(--ornament-light-halo) 6px,
+			transparent 11px
+		),
+		radial-gradient(
+			circle at 91% 44%,
+			var(--ornament-light-core) 0 3.5px,
+			var(--ornament-light-halo) 7px,
+			transparent 13px
+		),
+		radial-gradient(
+			circle at 27% 82%,
+			var(--ornament-light-core) 0 2.5px,
+			var(--ornament-light-halo) 5px,
+			transparent 9px
+		),
+		radial-gradient(
+			circle at 70% 86%,
+			var(--ornament-light-core) 0 3px,
+			var(--ornament-light-halo) 6px,
+			transparent 11px
+		),
+		radial-gradient(
+			circle at 86% 68%,
+			var(--ornament-light-core) 0 2.5px,
+			var(--ornament-light-halo) 5px,
+			transparent 9px
+		),
+		radial-gradient(
+			circle at 48% 6%,
+			var(--ornament-light-core) 0 2px,
+			var(--ornament-light-halo) 4px,
+			transparent 8px
+		);
+
+	// Near: large out-of-focus lights at the edges, the depth the drawn lanterns never had.
+	--ornament-lights-near:
+		radial-gradient(
+			circle at 5% 24%,
+			var(--ornament-light-bokeh) 0 26px,
+			var(--ornament-light-bokeh-edge) 38px,
+			transparent 46px
+		),
+		radial-gradient(
+			circle at 95% 10%,
+			var(--ornament-light-bokeh) 0 34px,
+			var(--ornament-light-bokeh-edge) 48px,
+			transparent 58px
+		),
+		radial-gradient(
+			circle at 98% 58%,
+			var(--ornament-light-bokeh) 0 22px,
+			var(--ornament-light-bokeh-edge) 32px,
+			transparent 40px
+		),
+		radial-gradient(
+			circle at 3% 78%,
+			var(--ornament-light-bokeh) 0 30px,
+			var(--ornament-light-bokeh-edge) 44px,
+			transparent 54px
+		),
+		radial-gradient(
+			circle at 62% 99%,
+			var(--ornament-light-bokeh) 0 24px,
+			var(--ornament-light-bokeh-edge) 34px,
+			transparent 42px
+		);
+
+	// Thresholds: quote opening, family close and location close.
+	.quote-section::before {
+		@include storybook-thread(top);
+	}
+
+	.family::after {
+		@include storybook-thread(bottom);
+	}
+
+	.event-location::after {
+		@include storybook-thread(bottom);
+	}
+
+	// Generic dividers, flourishes and venue drawings give way to the thread and to type.
+	.quote-divider-top,
+	.quote-divider-bottom,
+	.event-location__card-flourish,
+	.event-location__program-drawing,
+	.gifts-section__flourish {
+		display: none;
+	}
+
+	// Countdown: the lantern sky. Far points and lit lanterns rise slowly behind the count; the near,
+	// out-of-focus lights drift faster, so the depth reads as parallax.
+	.countdown-section {
+		--ornament-lights-clear: radial-gradient(
+			ellipse 46% 36% at 50% 48%,
+			transparent 70%,
+			rgb(0 0 0) 100%
+		);
+	}
+
+	.countdown-section::before {
+		@include storybook-light-field(
+			(var(--ornament-lights-far), var(--ornament-lights-mid)),
+			34s
+		);
+	}
+
+	.countdown-section::after {
+		@include storybook-light-field(var(--ornament-lights-near), 22s);
+	}
+
+	// Pass: an opt-in sun above the reply card (off by default).
+	.personalized-access {
+		position: relative;
+	}
+
+	.personalized-access::after {
+		@include motif-spot-absolute(pass-sun, $storybook-sun);
+	}
+
+	// Closing: the sky again, higher and farther, and the thread ending under the signature.
+	.thank-you-editorial {
+		--ornament-lights-clear: radial-gradient(
+			ellipse 48% 16% at 50% 70%,
+			transparent 72%,
+			rgb(0 0 0) 100%
+		);
+
+		position: relative;
+
+		// Wide screens set the copy in a column right of the print.
+		@include mixins.respond-to(lg) {
+			--ornament-lights-clear: radial-gradient(
+				ellipse 28% 30% at 68% 46%,
+				transparent 70%,
+				rgb(0 0 0) 100%
+			);
+		}
+	}
+
+	// `--ornament-lights-closing` lets an invitation fill the last sky with more lanterns than the
+	// countdown, so the lights grow along the story (off by default).
+	.thank-you-editorial::before {
+		@include storybook-light-field(
+			(
+				var(--ornament-lights-closing, none),
+				var(--ornament-lights-far),
+				var(--ornament-lights-mid)
+			),
+			40s
+		);
+	}
+
+	.signature-block::after {
+		content: '';
+		display: block;
+		width: min(8rem, 60%);
+		height: 1px;
+		margin: 1.6rem auto 0;
+		background: var(--ornament-foil);
+		mask: linear-gradient(90deg, transparent, rgb(0 0 0) 30%, rgb(0 0 0) 70%, transparent);
+		pointer-events: none;
+	}
+}

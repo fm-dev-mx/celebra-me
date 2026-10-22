@@ -1,7 +1,9 @@
 /**
  * registry.ts — Invitation Definition Registry
  *
- * Central sitemap/registry for single-file invitation definitions.
+ * Central sitemap/registry for invitation definitions. New invitations get a folder under
+ * src/invitations/clients/ and arrive through client-registry.generated.ts. The legacy list below
+ * is frozen: a test refuses new single-file definitions, and each one leaves when it expires.
  */
 
 import {
@@ -25,6 +27,7 @@ import { naydelinInvitation } from './naydelin-paredes.ts';
 import { aithanInvitation } from './aithan-darell.ts';
 import { americaSolisInvitation } from './america.ts';
 import { oliviaAntonioInvitation } from './olivia-y-antonio.ts';
+import { CLIENT_INVITATION_DEFINITIONS } from './client-registry.generated.ts';
 
 const registry = new Map<string, InvitationDefinition>();
 const hostLoginAliases = new Map<string, string>();
@@ -73,7 +76,7 @@ function registerInvitation(definition: InvitationDefinition): void {
 	managedIdentities.set(definition.managedIdentityId, definition.slug);
 }
 
-// Register canonical invitations
+// Register the frozen legacy definitions
 registerInvitation(allisonInvitation);
 registerInvitation(normaInvitation);
 registerInvitation(albaInvitation);
@@ -91,6 +94,8 @@ registerInvitation(miaInvitation);
 registerInvitation(aithanInvitation);
 registerInvitation(americaSolisInvitation);
 registerInvitation(oliviaAntonioInvitation);
+
+for (const definition of CLIENT_INVITATION_DEFINITIONS) registerInvitation(definition);
 
 /**
  * Resolve an invitation definition by slug.

@@ -1,0 +1,85 @@
+{
+    "schemaVersion": 1,
+    "slug": "norma-hernandez",
+    "eventType": "cumple",
+    "assets": [
+        {
+            "key": "childhood",
+            "relativePath": "childhood.webp",
+            "sha256": "47e78b242c30f1a2ff739735db73204975a167e2e12bf943e9b92f4c7fb37c3d",
+            "mimeType": "image/webp",
+            "width": 900,
+            "height": 1600,
+            "fileSize": 55490,
+            "validationVersion": 4,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 55490,
+            "originalSha256": "47e78b242c30f1a2ff739735db73204975a167e2e12bf943e9b92f4c7fb37c3d"
+        },
+        {
+            "key": "children",
+            "relativePath": "children.webp",
+            "sha256": "e9da59d2e5e3d2c47d3b807ffb03ba791c1cd4a1a63046531a97f093bf471e69",
+            "mimeType": "image/webp",
+            "width": 900,
+            "height": 1600,
+            "fileSize": 177418,
+            "validationVersion": 4,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 177418,
+            "originalSha256": "e9da59d2e5e3d2c47d3b807ffb03ba791c1cd4a1a63046531a97f093bf471e69"
+        },
+        {
+            "key": "closing",
+            "relativePath": "closing.webp",
+            "sha256": "62bfbb70796eadbe545df7033330889f308ce316d849aa43b58ec1e3d55114de",
+            "mimeType": "image/webp",
+            "width": 1024,
+            "height": 1536,
+            "fileSize": 164770,
+            "validationVersion": 4,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 164770,
+            "originalSha256": "62bfbb70796eadbe545df7033330889f308ce316d849aa43b58ec1e3d55114de"
+        },
+        {
+            "key": "family",
+            "relativePath": "family.webp",
+            "sha256": "b3d5e211f61cdc05ecaa3a3385c9a771249055b8e30f963291e05095c2b0ffce",
+            "mimeType": "image/webp",
+            "width": 1600,
+            "height": 900,
+            "fileSize": 182526,
+            "validationVersion": 4,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 182526,
+            "originalSha256": "b3d5e211f61cdc05ecaa3a3385c9a771249055b8e30f963291e05095c2b0ffce"
+        },
+        {
+            "key": "grandchildren",
+            "relativePath": "grandchildren.webp",
+            "sha256": "67c713363d5a847bd63d1b643d34c3336b48d4708d9947c56c96980d0d328b50",
+            "mimeType": "image/webp",
+            "width": 900,
+            "height": 1600,
+            "fileSize": 180542,
+            "validationVersion": 4,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 180542,
+            "originalSha256": "67c713363d5a847bd63d1b643d34c3336b48d4708d9947c56c96980d0d328b50"
+        },
+        {
+            "key": "life",
+            "relativePath": "life.webp",
+            "sha256": "2900786910f50183cf55a9a73263eaaa0198e006418e21b5395f68e6f45a3887",
+            "mimeType": "image/webp",
+            "width": 1086,
+            "height": 1448,
+            "fileSize": 183480,
+            "validationVersion": 4,
+            "originalMimeType": "image/webp",
+            "originalFileSize": 183480,
+            "originalSha256": "2900786910f50183cf55a9a73263eaaa0198e006418e21b5395f68e6f45a3887"
+        }
+    ]
+}

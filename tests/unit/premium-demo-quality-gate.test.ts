@@ -1,30 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { DEMO_INVITATIONS_DIR } from '../../scripts/shared/demo-invitation-files.ts';
 import { getFeaturedDemoShowroomItems } from '@/data/demo-showroom.data';
 import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
 import { getEventAsset } from '@/lib/assets/asset-registry';
 
 const projectRoot = process.cwd();
-const demosRoot = path.join(projectRoot, 'src/content/event-demos');
 
 function getDemoFilePath(slug: string): string | null {
-	const stack = [demosRoot];
-
-	while (stack.length > 0) {
-		const current = stack.pop();
-		if (!current) continue;
-
-		for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
-			const nextPath = path.join(current, entry.name);
-			if (entry.isDirectory()) {
-				stack.push(nextPath);
-				continue;
-			}
-			if (entry.isFile() && entry.name === `${slug}.json`) return nextPath;
-		}
-	}
-
-	return null;
+	const file = path.join(projectRoot, DEMO_INVITATIONS_DIR, slug, 'content.json');
+	return fs.existsSync(file) ? file : null;
 }
 
 // Recursively search for any placeholder strings inside parsed JSON objects

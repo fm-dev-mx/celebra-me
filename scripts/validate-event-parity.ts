@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { PROJECT_ROOT } from './db/db-workflow-lib.ts';
 import { LOCAL_HOSTS, parseEnvContent } from './shared/celebra-runtime-env.ts';
-
-const ROUTABLE_CONTENT_DIRS = [path.join(PROJECT_ROOT, 'src', 'content', 'event-demos')];
+import { DEMO_INVITATIONS_DIR, listDemoInvitationFiles } from './shared/demo-invitation-files.ts';
 
 interface DbEvent {
 	eventType: string;
@@ -100,28 +99,16 @@ function collectRoutableSlugConflicts(): SlugConflict[] {
 	const slugOwners = new Map<string, string>();
 	const conflicts: SlugConflict[] = [];
 
-	for (const dir of ROUTABLE_CONTENT_DIRS) {
-		if (!existsSync(dir)) continue;
-
-		const files = readdirSync(dir, { recursive: true }).filter(
-			(file): file is string => typeof file === 'string' && file.endsWith('.json'),
-		);
-
-		for (const file of files) {
-			const fullPath = path.join(dir, file);
-			const parsed = JSON.parse(readFileSync(fullPath, 'utf8')) as Record<string, unknown>;
-			const slug = path.basename(file, '.json');
-			const eventType = String(parsed.eventType || '').trim();
-			const owner = `${eventType}:${path.relative(PROJECT_ROOT, fullPath).replace(/\\/g, '/')}`;
-
-			const existing = slugOwners.get(slug);
-			if (existing && existing !== owner) {
-				conflicts.push({ slug, first: existing, second: owner });
-				continue;
-			}
-
-			slugOwners.set(slug, owner);
+	for (const { slug, eventType, contentPath } of listDemoInvitationFiles(
+		path.join(PROJECT_ROOT, DEMO_INVITATIONS_DIR),
+	)) {
+		const owner = `${eventType}:${path.relative(PROJECT_ROOT, contentPath).replace(/\\/g, '/')}`;
+		const existing = slugOwners.get(slug);
+		if (existing && existing !== owner) {
+			conflicts.push({ slug, first: existing, second: owner });
+			continue;
 		}
+		slugOwners.set(slug, owner);
 	}
 
 	return conflicts;

@@ -64,6 +64,14 @@
 		}
 	}
 
+	// Doubled class outranks preset heading rules such as `.theme-preset--x h2`.
+	& &__title {
+		font-family: var(--font-display);
+		letter-spacing: 0;
+		text-transform: none;
+		color: inherit;
+	}
+
 	&__description {
 		max-width: 31ch;
 		margin: 20px 0 0;

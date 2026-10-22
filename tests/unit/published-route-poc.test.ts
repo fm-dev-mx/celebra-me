@@ -1,4 +1,5 @@
 jest.mock('@/lib/content/events', () => ({
+	...jest.requireActual('@/lib/content/events'),
 	getRoutableEventEntry: jest.fn(),
 }));
 
@@ -10,57 +11,58 @@ jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 	isInvitationArchivedBySlug: jest.fn(),
 }));
 
+// Bundled demos (content.isDemo true) and published rows get distinct view models.
 jest.mock('@/lib/adapters/event', () => ({
-	adaptEvent: jest.fn(() => ({
-		id: 'demo-xv',
-		isDemo: true,
-		title: 'Demo Event',
-		theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
-		hero: {
-			name: 'Lucia',
-			label: 'Demo',
-			date: '2027-01-01',
-			backgroundImage: { src: '/img.jpg' },
-		},
-		envelope: { enabled: false },
-		brandingVisibility: {
-			showFooterBranding: true,
-			showContactCta: true,
-		},
-		sections: {},
-	})),
-}));
-
-jest.mock('@/lib/adapters/db-event-adapter', () => ({
-	adaptDbEvent: jest.fn(() => ({
-		id: 'my-invitation',
-		isDemo: false,
-		title: 'Published Event',
-		theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
-		hero: {
-			name: 'Published',
-			label: 'Event',
-			date: '2027-01-01',
-			backgroundImage: { src: '/img.jpg' },
-		},
-		envelope: { enabled: false },
-		brandingVisibility: {
-			showFooterBranding: true,
-			showContactCta: true,
-		},
-		sections: {
-			rsvp: {
-				title: 'Confirma',
-				guestCap: 4,
-				accessMode: 'hybrid',
-				eventSlug: 'my-invitation',
-				eventType: 'xv',
-			},
-			gifts: { items: [] },
-			quote: { text: 'Quote' },
-			thankYou: { message: 'Thanks' },
-		},
-	})),
+	adaptEvent: jest.fn((document: { content: Record<string, unknown> }) =>
+		document.content.isDemo === true
+			? {
+					id: 'demo-xv',
+					isDemo: true,
+					title: 'Demo Event',
+					theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
+					hero: {
+						name: 'Lucia',
+						label: 'Demo',
+						date: '2027-01-01',
+						backgroundImage: { src: '/img.jpg' },
+					},
+					envelope: { enabled: false },
+					brandingVisibility: {
+						showFooterBranding: true,
+						showContactCta: true,
+					},
+					sections: {},
+				}
+			: {
+					id: 'my-invitation',
+					isDemo: false,
+					title: 'Published Event',
+					theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
+					hero: {
+						name: 'Published',
+						label: 'Event',
+						date: '2027-01-01',
+						backgroundImage: { src: '/img.jpg' },
+					},
+					envelope: { enabled: false },
+					brandingVisibility: {
+						showFooterBranding: true,
+						showContactCta: true,
+					},
+					sections: {
+						rsvp: {
+							title: 'Confirma',
+							guestCap: 4,
+							accessMode: 'hybrid',
+							eventSlug: 'my-invitation',
+							eventType: 'xv',
+						},
+						gifts: { items: [] },
+						quote: { text: 'Quote' },
+						thankYou: { message: 'Thanks' },
+					},
+				},
+	),
 }));
 
 jest.mock('@/lib/environment', () => ({
@@ -74,7 +76,7 @@ import {
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
-import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
+import { adaptEvent } from '@/lib/adapters/event';
 import validPublishedContentJson from '../fixtures/content/xv-jewelry-box.json';
 
 const validPublishedContent = {
@@ -87,7 +89,7 @@ const mockFindPublishedWithAccess =
 	findPublishedWithAccessBySlugAndEventType as jest.MockedFunction<
 		typeof findPublishedWithAccessBySlugAndEventType
 	>;
-const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
+const mockAdaptEvent = adaptEvent as jest.Mock;
 const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.MockedFunction<
 	typeof isInvitationArchivedBySlug
 >;
@@ -136,7 +138,7 @@ describe('published route POC', () => {
 		expect(
 			(result! as Extract<ContentResolution, { source: 'published' }>).rawContent,
 		).toBeDefined();
-		expect(mockAdaptDbEvent).toHaveBeenCalled();
+		expect(mockAdaptEvent).toHaveBeenCalled();
 	});
 
 	it('resolver uses DB content even when static content exists', async () => {
@@ -265,8 +267,8 @@ describe('published route POC', () => {
 		expect(viewModel.tokenHash).toBeUndefined();
 	});
 
-	it('adaptDbEvent produces view model matching rendering shape', () => {
-		const dbResult = adaptDbEvent({
+	it('adaptEvent produces view model matching rendering shape', () => {
+		const dbResult = adaptEvent({
 			slug: 'my-invitation',
 			content: {
 				eventType: 'xv',

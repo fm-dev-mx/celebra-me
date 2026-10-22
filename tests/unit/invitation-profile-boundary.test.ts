@@ -3,10 +3,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry.ts';
+import {
+	CLIENT_INVITATIONS_DIR,
+	listClientInvitationSlugs,
+} from '../../scripts/shared/invitation-definition-files.ts';
 import { resolveInvitationValidityWindow } from '../../src/lib/invitation/access/invitation-validity-window.ts';
+import {
+	DEMO_INVITATIONS_DIR,
+	listDemoInvitationFiles,
+} from '../../scripts/shared/demo-invitation-files.ts';
 
 const PROFILES_DIR = path.join(process.cwd(), 'src/styles/invitation-profiles');
-const DEMOS_DIR = path.join(process.cwd(), 'src/content/event-demos');
 
 /**
  * Delivered profiles that predate the token-only rule. Each is a closed deliverable: it is not
@@ -48,34 +55,46 @@ const RETAINED_UNTIL_EXPIRY: Record<string, { eventDate: string; timeZone: strin
 	'xareni-iyarit': { eventDate: '2026-09-12', timeZone: 'America/Mexico_City' },
 };
 
+/** Profile stylesheets by id: legacy client profiles in PROFILES_DIR, others in their folder. */
+function profilePaths(): Map<string, string> {
+	const paths = new Map<string, string>();
+	for (const name of fs.readdirSync(PROFILES_DIR)) {
+		if (name.endsWith('.scss') && !name.startsWith('_'))
+			paths.set(name.replace(/\.scss$/u, ''), path.join(PROFILES_DIR, name));
+	}
+	for (const { slug, contentPath } of listDemoInvitationFiles()) {
+		const profile = path.join(path.dirname(contentPath), 'profile.scss');
+		if (fs.existsSync(profile)) paths.set(slug, profile);
+	}
+	for (const slug of listClientInvitationSlugs()) {
+		const profile = path.join(CLIENT_INVITATIONS_DIR, slug, 'profile.scss');
+		if (fs.existsSync(profile)) paths.set(slug, path.resolve(profile));
+	}
+	return new Map([...paths].sort(([a], [b]) => a.localeCompare(b)));
+}
+
+const PROFILE_PATHS = profilePaths();
+
 function profileIds(): string[] {
-	return fs
-		.readdirSync(PROFILES_DIR)
-		.filter((name) => name.endsWith('.scss') && !name.startsWith('_'))
-		.map((name) => name.replace(/\.scss$/u, ''))
-		.sort();
+	return [...PROFILE_PATHS.keys()];
 }
 
 function readProfile(id: string): string {
-	return fs.readFileSync(path.join(PROFILES_DIR, `${id}.scss`), 'utf8').replace(/\r\n/gu, '\n');
+	const file = PROFILE_PATHS.get(id) ?? path.join(PROFILES_DIR, `${id}.scss`);
+	return fs.readFileSync(file, 'utf8').replace(/\r\n/gu, '\n');
+}
+
+/** Visual profile id declared by each demo, keyed by demo slug. */
+function demoProfilesBySlug(): Map<string, string> {
+	return new Map(
+		listDemoInvitationFiles().flatMap(({ slug, content }): [string, string][] =>
+			typeof content.visualProfileId === 'string' ? [[slug, content.visualProfileId]] : [],
+		),
+	);
 }
 
 function demoProfileIds(): Set<string> {
-	const ids = new Set<string>();
-	const walk = (dir: string) => {
-		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-			const full = path.join(dir, entry.name);
-			if (entry.isDirectory()) walk(full);
-			else if (entry.name.endsWith('.json')) {
-				const { visualProfileId } = JSON.parse(fs.readFileSync(full, 'utf8')) as {
-					visualProfileId?: string;
-				};
-				if (visualProfileId) ids.add(visualProfileId);
-			}
-		}
-	};
-	walk(DEMOS_DIR);
-	return ids;
+	return new Set(demoProfilesBySlug().values());
 }
 
 const FONTS_DIR = path.join(process.cwd(), 'src/styles/fonts');
@@ -345,6 +364,15 @@ describe('invitation profile boundary', () => {
 		for (const id of demoProfiles) {
 			expect(id.startsWith('demo-')).toBe(true);
 			expect(managedProfiles.has(id)).toBe(false);
+		}
+	});
+
+	it('keeps each demo profile in the folder of the demo that declares it', () => {
+		for (const [slug, id] of demoProfilesBySlug()) {
+			expect({ slug, id }).toEqual({ slug, id: slug });
+			expect(PROFILE_PATHS.get(id)).toBe(
+				path.join(process.cwd(), DEMO_INVITATIONS_DIR, slug, 'profile.scss'),
+			);
 		}
 	});
 });

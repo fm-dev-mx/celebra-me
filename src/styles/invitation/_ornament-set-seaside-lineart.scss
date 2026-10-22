@@ -1,0 +1,222 @@
+@use '../global/mixins' as mixins;
+@use 'ornament-sets' as *;
+
+// Seaside line art, loaded only by pages whose `composition.ornaments` is `seaside-lineart`.
+// Motifs and mixins live in `_ornament-sets.scss`.
+
+.ornament-set--seaside-lineart {
+	--ornament-ink: var(--seaside-ink-strong, var(--color-text-secondary));
+	--ornament-shoreline-height: clamp(0.85rem, 1.6vw, 1.35rem);
+	--ornament-shoreline-inset: clamp(1.25rem, 4vw, 2.5rem);
+	--ornament-hairline: rgb(var(--color-text-primary-rgb, 16 24 32) / 18%);
+
+	// The shoreline as a color edge (opt-in). The trace is exposed as masks, so a profile can
+	// paint the band above a top threshold with the previous section's paper
+	// (`--shoreline-upper`) and the band below a bottom threshold with the next section's paper
+	// (`--shoreline-lower`), following the curve; `transparent` (default) paints nothing. The
+	// same masks serve an `arch` intersection (`--intersection-arch-mask` / `-ink-mask`).
+	--ornament-shoreline-mask: #{$shoreline};
+	--ornament-shoreline-fill-below: #{$shoreline-fill-below};
+	--ornament-shoreline-fill-above: #{$shoreline-fill-above};
+	--shoreline-upper: transparent;
+	--shoreline-lower: transparent;
+
+	// Quote opening: the band above the shoreline.
+	.quote-section::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		top: 0;
+		z-index: 0;
+		height: calc(var(--ornament-shoreline-inset) + var(--ornament-shoreline-height));
+		background: var(--shoreline-upper);
+		mask:
+			#{$shoreline-fill-above} center bottom / 100% var(--ornament-shoreline-height) no-repeat,
+			linear-gradient(rgb(0 0 0) var(--ornament-shoreline-inset), transparent 0) center / 100%
+				100% no-repeat;
+		pointer-events: none;
+	}
+
+	// Location close: the band below the shoreline.
+	.event-location::before {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		bottom: 0;
+		z-index: 0;
+		height: calc(var(--ornament-shoreline-inset) + var(--ornament-shoreline-height));
+		background: var(--shoreline-lower);
+		mask:
+			#{$shoreline-fill-below} center top / 100% var(--ornament-shoreline-height) no-repeat,
+			linear-gradient(transparent var(--ornament-shoreline-height), rgb(0 0 0) 0) center /
+				100% 100% no-repeat;
+		pointer-events: none;
+	}
+
+	.signature-block {
+		position: relative;
+	}
+
+	// Closing: below the shoreline, the paper of what follows, down to the section's edge (the
+	// section clips the overflow).
+	.signature-block::before {
+		content: '';
+		position: absolute;
+		top: calc(100% + clamp(1.25rem, 4vw, 2.5rem) + 3rem);
+		inset-inline: calc((100% - 100vw) / 2);
+		z-index: 0;
+		height: 100vh;
+		background: var(--shoreline-lower);
+		mask:
+			#{$shoreline-fill-below} center top / 100% var(--ornament-shoreline-height) no-repeat,
+			linear-gradient(transparent var(--ornament-shoreline-height), rgb(0 0 0) 0) center /
+				100% 100% no-repeat;
+		pointer-events: none;
+
+		@include mixins.respond-to(lg) {
+			inset-inline: var(--ornament-closing-inset-wide, calc((100% - 100vw) / 2));
+		}
+	}
+
+	// Thresholds: quote opening, family close and location close.
+	.quote-section::before {
+		@include shoreline-threshold(top);
+	}
+
+	.family::after {
+		@include shoreline-threshold(bottom);
+	}
+
+	.event-location::after {
+		@include shoreline-threshold(bottom);
+	}
+
+	// Generic dividers and flourishes give way; structure keeps a plain hairline only where a
+	// separator carries meaning (indications).
+	.quote-divider-top,
+	.quote-divider-bottom,
+	.event-location__card-flourish,
+	.gifts-section__flourish {
+		display: none;
+	}
+
+	.event-location__divider {
+		height: 1px;
+		border: 0;
+		background: var(--ornament-hairline);
+		opacity: 100%;
+	}
+
+	// Marine motifs (opt-in; every spot is a free pseudo-element with no content and is off by
+	// default). See `motif-spot` for the per-spot tokens. The masks are exposed as tokens so a
+	// profile can compose several pieces in one spot.
+	--ornament-motif-starfish: #{$starfish};
+	--ornament-motif-alga: #{$alga};
+	--ornament-motif-wave: #{$wave-short};
+	--ornament-motif-gull: #{$gull};
+	--ornament-motif-shell: #{$shell};
+
+	// Containing blocks for the absolute spots below (no visual change on their own).
+	.event-location__program,
+	.itinerary__program {
+		position: relative;
+	}
+
+	// Quote: gulls in the sky between the opening shoreline and the quote.
+	.quote-container::after {
+		@include motif-spot-absolute(quote-motif, $gull);
+	}
+
+	// Family: pieces resting on the ice by the passe-partout, never on the photograph.
+	.family__media::after {
+		@include motif-spot-absolute(family-motif, $starfish);
+	}
+
+	// Countdown: two algae flanking the title (the second one mirrored by default).
+	.countdown-title::before {
+		@include motif-spot(countdown-motif, $alga);
+
+		margin: 0 var(--ornament-countdown-motif-gap, 1rem);
+		vertical-align: var(--ornament-countdown-motif-align, -0.2em);
+	}
+
+	.countdown-title::after {
+		@include motif-spot(countdown-motif, $alga);
+
+		margin: 0 var(--ornament-countdown-motif-gap, 1rem);
+		vertical-align: var(--ornament-countdown-motif-align, -0.2em);
+		transform: scaleX(-1);
+	}
+
+	// Framed interlude: pieces in the paper margin above the mat.
+	.invitation-interlude[data-presentation='framed']::before {
+		@include motif-spot-absolute(meadow-motif, $gull);
+	}
+
+	// Location: one piece under the heading, and one on the divider between the two venues.
+	.event-location__intro::after {
+		@include motif-spot(location-intro-motif, $shell);
+
+		margin: var(--ornament-location-intro-motif-margin, 1rem auto 0);
+	}
+
+	.event-location__program::before {
+		@include motif-spot-absolute(location-motif, $shell);
+	}
+
+	// Itinerary: one piece under the header, and pieces in the side margins of the sheet.
+	.itinerary__header::after {
+		@include motif-spot(itinerary-motif, $starfish);
+
+		margin: var(--ornament-itinerary-motif-margin, 1rem auto 0);
+	}
+
+	.itinerary__program::after {
+		@include motif-spot-absolute(itinerary-margin-motif, $gull);
+	}
+
+	// Gallery: a short wave closing the header, centered on the grid.
+	.gallery-section__header::after {
+		@include motif-spot(gallery-motif, $wave-short);
+
+		margin: var(--ornament-gallery-motif-margin, 0.9rem auto 0);
+	}
+
+	// Pass: pieces in the side margins of the reply card (wide screens).
+	.personalized-access {
+		position: relative;
+	}
+
+	.personalized-access::after {
+		@include motif-spot-absolute(pass-motif, $alga);
+	}
+
+	// Closing: pieces in the ice above the print.
+	.thank-you-editorial::before {
+		@include motif-spot-absolute(closing-gull, $gull);
+	}
+
+	// Closing: the shoreline runs edge to edge under the signature with the shell resting on it.
+	// Anchored to the centered closing layout so it spans the viewport on every width.
+	.signature-block::after {
+		content: '';
+		position: absolute;
+		top: calc(100% + clamp(1.25rem, 4vw, 2.5rem));
+		inset-inline: calc((100% - 100vw) / 2);
+		height: calc(var(--ornament-shoreline-height) + 3rem);
+		background-color: var(--ornament-ink);
+
+		// `--ornament-closing-extra-mask` adds one more piece resting on the shoreline (same ink).
+		mask:
+			var(--ornament-closing-extra-mask, none)
+				var(--ornament-closing-extra-position, left bottom) /
+				var(--ornament-closing-extra-size, 0 0) no-repeat,
+			$shell center top / 3.2rem 2.9rem no-repeat,
+			$shoreline center bottom / 100% var(--ornament-shoreline-height) no-repeat;
+		pointer-events: none;
+
+		@include mixins.respond-to(lg) {
+			inset-inline: var(--ornament-closing-inset-wide, calc((100% - 100vw) / 2));
+		}
+	}
+}

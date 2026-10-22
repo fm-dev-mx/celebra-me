@@ -294,12 +294,12 @@ describe('Aithan Darell managed definition', () => {
 	it('publishes the hosted "Life Is a Highway" music track', () => {
 		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.music).toMatchObject({
-			url: 'https://media.celebra-me.com/invitations/cumple/aithan-darell/music-9aec3fe1ce5960c85623c934f273a4d2ad6e868897d8f6bfd93f731a60067155.mp3',
+			url: 'https://media.celebra-me.com/invitations/cumple/aithan-darell/music-a92b0539a46702a0d9b7de9502a9c05b4b1b5405aecb85eb4aa8af332e058214.mp3',
 			title: 'Life Is a Highway',
 			autoPlay: true,
-			// Client request: start where the vocals begin, entering with a gentle ramp.
-			startAt: 49,
+			// The hosted loop cut already starts where the vocals begin; the ramp stays.
 			fadeInSeconds: 3,
 		});
+		expect(parsed.music?.startAt).toBeUndefined();
 	});
 });

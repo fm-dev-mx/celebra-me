@@ -1,7 +1,7 @@
 /**
  * Read-only Published content migration audit.
  *
- * Inventories legacy venue date/time prose and showFlourishes ownership conflicts.
+ * Inventories legacy venue date/time prose.
  * With --usage it reports the shapes every active invitation row still carries (identity
  * columns, variants, asset namespaces, superseded fields) for published and draft documents.
  * Never mutates data.
@@ -47,7 +47,7 @@ function runMigrationAudit(target: PersistedContentTarget, dbUrl: string): void 
 		console.log(`Published content audit — read-only (${target}/${slug})`);
 		console.log(`Ready for machine migration: ${audit.readyForMachineMigration}`);
 		console.log(
-			`Legacy date/time: ${audit.legacyDateTimeCount}; safe conversions: ${audit.safeConversionCount}; unparseable: ${audit.unparseableCount}; showFlourishes conflicts: ${audit.showFlourishesConflicts}`,
+			`Legacy date/time: ${audit.legacyDateTimeCount}; safe conversions: ${audit.safeConversionCount}; unparseable: ${audit.unparseableCount}`,
 		);
 		console.log(`Findings (${actionable.length}):`);
 		for (const finding of actionable) {

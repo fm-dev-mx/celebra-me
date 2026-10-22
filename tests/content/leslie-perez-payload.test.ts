@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import {
@@ -138,7 +139,7 @@ describe('Leslie Perez provision contract', () => {
 			items: [{ type: 'cash' }],
 		});
 		expect(content.music).toEqual({
-			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3e1816ec21b0f3d3d0cfbdeb6ad9ad4e271eab616894203135a2fb7e13c7b802.mp3',
+			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3f23298fd1defa947d191cad8fc0de355daec6d642716aea206e61f3e243a326.mp3',
 			autoPlay: true,
 		});
 		expect(content.sectionOrder).toEqual([
@@ -157,10 +158,12 @@ describe('Leslie Perez provision contract', () => {
 	});
 
 	it('renders the closed section sequence', () => {
-		const viewModel = adaptEvent({
-			id: `events/${LESLIE_EVENT.slug}`,
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: `events/${LESLIE_EVENT.slug}`,
+				data: content,
+			} as EventContentEntry),
+		);
 
 		expect(viewModel.hero.variant).toBe('split-cover');
 		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
@@ -171,7 +174,7 @@ describe('Leslie Perez provision contract', () => {
 		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess.variant).toBe('formal-pass');
 		expect(viewModel.music).toEqual({
-			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3e1816ec21b0f3d3d0cfbdeb6ad9ad4e271eab616894203135a2fb7e13c7b802.mp3',
+			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3f23298fd1defa947d191cad8fc0de355daec6d642716aea206e61f3e243a326.mp3',
 			autoPlay: true,
 			revealMode: 'envelope',
 			title: undefined,
@@ -204,10 +207,12 @@ describe('Leslie Perez provision contract', () => {
 	});
 
 	it('assembles the music player on hosted Production from published music', () => {
-		const viewModel = adaptEvent({
-			id: `events/${LESLIE_EVENT.slug}`,
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: `events/${LESLIE_EVENT.slug}`,
+				data: content,
+			} as EventContentEntry),
+		);
 		asHostedDeploy('production', { isDevServer: true });
 
 		const page = buildPageContextFromViewModel({
@@ -215,13 +220,13 @@ describe('Leslie Perez provision contract', () => {
 			eventType: LESLIE_EVENT.eventType,
 		});
 		expect(viewModel.music).toEqual({
-			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3e1816ec21b0f3d3d0cfbdeb6ad9ad4e271eab616894203135a2fb7e13c7b802.mp3',
+			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3f23298fd1defa947d191cad8fc0de355daec6d642716aea206e61f3e243a326.mp3',
 			autoPlay: true,
 			revealMode: 'envelope',
 			title: undefined,
 		});
 		expect(page.musicPlayer).toEqual({
-			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3e1816ec21b0f3d3d0cfbdeb6ad9ad4e271eab616894203135a2fb7e13c7b802.mp3',
+			url: 'https://media.celebra-me.com/invitations/xv/leslie-perez/music-3f23298fd1defa947d191cad8fc0de355daec6d642716aea206e61f3e243a326.mp3',
 			autoPlay: true,
 			title: undefined,
 			revealMode: 'envelope',
@@ -231,10 +236,12 @@ describe('Leslie Perez provision contract', () => {
 
 	it('does not assemble a music player on hosted Production when no music is published', () => {
 		const unpublished = { ...content, music: undefined };
-		const viewModel = adaptEvent({
-			id: `events/${LESLIE_EVENT.slug}`,
-			data: unpublished,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: `events/${LESLIE_EVENT.slug}`,
+				data: unpublished,
+			} as EventContentEntry),
+		);
 		asHostedDeploy('production', { isDevServer: true });
 
 		const page = buildPageContextFromViewModel({

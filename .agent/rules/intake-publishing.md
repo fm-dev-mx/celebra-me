@@ -229,7 +229,7 @@ confirmation. A globally unique idempotency record binds the request to its resu
 retry returns the already-completed publication without a second version bump while a key reused
 with different parameters is rejected.
 
-Demos have no publication flow: they are versioned JSON under `src/content/event-demos/`, rendered
+Demos have no publication flow: they are versioned JSON under `src/invitations/demos/`, rendered
 from Git and never mirrored into the database.
 
 ## Content Source Derivation

@@ -45,11 +45,11 @@ const JEWELRY_BOX_SLUG = 'demo-xv-jewelry-box';
 
 function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 	const eventEntry = {
-		id: `event-demos/xv/${fixtureSlug}`,
+		id: fixtureSlug,
 		data: loadFixture(
 			fixtureSlug === JEWELRY_BOX_SLUG
 				? 'tests/fixtures/content/xv-jewelry-box.json'
-				: `src/content/event-demos/xv/${fixtureSlug}.json`,
+				: `src/invitations/demos/${fixtureSlug}/content.json`,
 		),
 	} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
@@ -415,7 +415,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	it('includes interludes in lucia-fixture descriptors', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
+			data: loadFixture('src/invitations/demos/demo-xv-enchanted-rose/content.json'),
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
 		const pageContext = prepareInvitationPageContext({
@@ -438,7 +438,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 	it('passes thank-you overlay composition metadata to the render descriptor', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json',
+			'src/invitations/demos/demo-bautizo-angelic-presence/content.json',
 		);
 		const eventEntry = {
 			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',

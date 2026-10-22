@@ -1,5 +1,6 @@
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
+import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,6 +11,7 @@ import {
 } from '../../scripts/provision/invitations/victoria-y-roberto.ts';
 import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
 import { buildTestAssets } from '../helpers/managed-payload';
+import { invitationMediaPaths } from '../helpers/invitation-media';
 
 const profilePath = path.join(
 	process.cwd(),
@@ -20,7 +22,7 @@ const singleKeepsakeStylesPath = path.join(
 	'src/styles/themes/sections/gallery/_single-keepsake.scss',
 );
 
-const assetDir = path.join(process.cwd(), 'src/assets/invitations/victoria-y-roberto');
+const assetDir = invitationMediaPaths(getInvitationDefinition('victoria-y-roberto'));
 
 describe('Boda Victoria y Roberto provision contract', () => {
 	it('registers the managed definition with jewelry-box catalog identity', () => {
@@ -67,7 +69,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 	it('has a prepared file for every declared asset path', () => {
 		const uniquePaths = new Set(VICTORIA_ASSET_SPECS.map((spec) => spec.relativePath));
 		for (const relativePath of uniquePaths) {
-			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
+			expect(assetDir.has(relativePath)).toBe(true);
 		}
 	});
 
@@ -125,7 +127,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		});
 		expect(content).toHaveProperty('itinerary');
 		expect(content.music).toEqual({
-			url: 'https://media.celebra-me.com/invitations/boda/victoria-y-roberto/music-c4844f86fbd15f2ce2711bdaf7a83c80871b691c64d9b31fd999473a3884a1d3.mp3',
+			url: 'https://media.celebra-me.com/invitations/boda/victoria-y-roberto/music-59c4fc7945c68213cb4921f7866d0bd612e74dc3add4aafa7ef90829bd81c7d0.mp3',
 			title: 'Stephen Sanchez — Until I Found You',
 			autoPlay: true,
 		});
@@ -275,10 +277,12 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(thankYou.image).toBeDefined();
 		expect(thankYou.closingName?.trim()).not.toBe('');
 
-		const viewModel = adaptEvent({
-			id: 'events/victoria-y-roberto',
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/victoria-y-roberto',
+				data: content,
+			} as EventContentEntry),
+		);
 		expect(viewModel.sections.itinerary?.variant).toBe('editorial-ledger');
 		expect(viewModel.sections.rsvp?.variant).toBe('formal-register');
 		expect(viewModel.sections.rsvp?.personalizedAccess?.variant).toBe('formal-pass');
@@ -369,10 +373,12 @@ describe('Boda Victoria y Roberto provision contract', () => {
 
 	it('keys the first invitation section handoff to source=hero without encoding a fixed successor', () => {
 		const content = buildVictoriaPublishedContent(buildTestAssets(VICTORIA_ASSET_SPECS));
-		const viewModel = adaptEvent({
-			id: 'events/victoria-y-roberto',
-			data: content,
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptEvent(
+			contentDocumentFromEntry({
+				id: 'events/victoria-y-roberto',
+				data: content,
+			} as EventContentEntry),
+		);
 		const renderPlan = buildInvitationRenderPlan(viewModel);
 		const firstSection = renderPlan.find((item) => item.type === 'section');
 

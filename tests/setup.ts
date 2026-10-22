@@ -220,12 +220,20 @@ jest.mock('@/lib/assets/discovery', () => {
 	) as typeof import('@/lib/assets/asset-keys');
 	const asset = '/test-asset.webp';
 	const assets = Object.fromEntries(EVENT_KEYS.map((key) => [key, asset]));
-	const eventRoot = join(process.cwd(), 'src', 'assets', 'images', 'events');
-	const modules = Object.fromEntries(
-		readdirSync(eventRoot, { withFileTypes: true })
+	const folders = (root: string) =>
+		readdirSync(join(process.cwd(), root), { withFileTypes: true })
 			.filter((entry) => entry.isDirectory())
-			.map((entry) => [`../../assets/images/events/${entry.name}/index.ts`, assets]),
-	);
+			.map((entry) => entry.name);
+	const modules = Object.fromEntries([
+		...folders('src/assets/images/events').map((name) => [
+			`../../assets/images/events/${name}/index.ts`,
+			assets,
+		]),
+		...folders('src/invitations/demos').map((name) => [
+			`../../invitations/demos/${name}/assets.ts`,
+			assets,
+		]),
+	]);
 
 	return { discoverEventModules: jest.fn(() => modules) };
 });

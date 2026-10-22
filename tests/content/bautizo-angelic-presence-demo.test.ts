@@ -6,7 +6,7 @@ import { collections } from '@/content.config';
 const projectRoot = process.cwd();
 const demoContentPath = path.join(
 	projectRoot,
-	'src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json',
+	'src/invitations/demos/demo-bautizo-angelic-presence/content.json',
 );
 
 const rawSchema = collections['event-demos'].schema;

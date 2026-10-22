@@ -26,7 +26,7 @@ export function classifyReleaseFiles(
 		)
 			return 'schema-dependent';
 		if (
-			/^(scripts\/provision\/invitations\/|docs\/invitations\/|src\/assets\/invitations\/|src\/styles\/invitation-profiles\/)/u.test(
+			/^(scripts\/provision\/invitations\/|docs\/invitations\/|src\/assets\/invitations\/|src\/styles\/invitation-profiles\/|src\/invitations\/clients\/)/u.test(
 				path,
 			)
 		)

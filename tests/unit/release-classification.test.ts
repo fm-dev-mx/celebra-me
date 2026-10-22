@@ -12,6 +12,7 @@ describe('release classification', () => {
 		['src/pages/index.astro', 'application'],
 		['supabase/migrations/20260101000000_example.sql', 'schema-dependent'],
 		['scripts/provision/invitations/example.ts', 'invitation-content'],
+		['src/invitations/clients/example/invitation.ts', 'invitation-content'],
 	])('classifies %s as %s', (path, category) => expect(classify(path).category).toBe(category));
 	it('escalates unknown and mixed categories conservatively', () => {
 		expect(classify('unknown.file').category).toBe('application');

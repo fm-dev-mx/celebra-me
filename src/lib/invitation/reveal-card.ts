@@ -1,5 +1,6 @@
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 
 /** Canonical editable seal palette accepted by the Envelope contract. */
 export const ENVELOPE_SEAL_COLORS = [
@@ -204,7 +205,11 @@ function joinHonoreeNames(primaryName: string, secondaryName: string | undefined
 	return secondary ? `${primary} y ${secondary}` : primary;
 }
 
-function formatCardDate(date: string): string {
+/** `short` is the legacy dot-separated card date; `long` spells the month out (standard A8). */
+export type RevealCardDateStyle = 'short' | 'long';
+
+function formatCardDate(date: string, style: RevealCardDateStyle = 'short'): string {
+	if (style === 'long') return formatSpanishLongDate(date);
 	const rawFormatted = new Intl.DateTimeFormat('es-MX', {
 		day: 'numeric',
 		month: 'short',
@@ -221,6 +226,7 @@ function formatCardDate(date: string): string {
 
 export function buildRevealCard(input: {
 	date: string;
+	dateStyle?: RevealCardDateStyle;
 	guestName?: string;
 	guestLabel?: string;
 	label?: string;
@@ -232,7 +238,7 @@ export function buildRevealCard(input: {
 		label: input.label || 'Invitación',
 		primaryName: input.name,
 		secondaryName: optionalTrim(input.secondaryName),
-		date: formatCardDate(input.date),
+		date: formatCardDate(input.date, input.dateStyle),
 		guestLabel: input.guestLabel || 'Entrega especial para:',
 		guestName: input.guestName,
 		tagline: input.tagline,
@@ -243,6 +249,7 @@ export function buildOpeningViewModel(input: {
 	hero: OpeningHeroInput;
 	envelope?: OpeningEnvelopeInput;
 	guestName?: string;
+	dateStyle?: RevealCardDateStyle;
 }): OpeningViewModel {
 	const envelope = input.envelope ?? {};
 	const primaryName = optionalTrim(envelope.cardName) ?? input.hero.name;
@@ -260,6 +267,7 @@ export function buildOpeningViewModel(input: {
 			name: primaryName,
 			secondaryName,
 			date: input.hero.date,
+			dateStyle: input.dateStyle,
 			label:
 				optionalTrim(envelope.cardLabel) ??
 				optionalTrim(envelope.documentLabel) ??

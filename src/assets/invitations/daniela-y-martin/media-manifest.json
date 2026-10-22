@@ -1,0 +1,72 @@
+{
+    "schemaVersion": 1,
+    "slug": "daniela-y-martin",
+    "eventType": "boda",
+    "assets": [
+        {
+            "key": "gallery-01",
+            "relativePath": "gallery-01-source.jpg",
+            "sha256": "82a4ba12e27ed954cb15601dac53a1eb63eee29e959922f955f16e68f129c0e4",
+            "mimeType": "image/webp",
+            "width": 1707,
+            "height": 2560,
+            "fileSize": 114366,
+            "validationVersion": 1,
+            "originalMimeType": "image/jpeg",
+            "originalFileSize": 7353857,
+            "originalSha256": "c251c18c4e8af87869241a5f8caa7be07893aabc67ccc5df3c8165233a6df898"
+        },
+        {
+            "key": "hero-desktop",
+            "relativePath": "hero-source.jpg",
+            "sha256": "31ce0456afd14de8bf047341735c27a8c4243f11e1d2966163c47a46bcf9b4fc",
+            "mimeType": "image/webp",
+            "width": 1707,
+            "height": 2560,
+            "fileSize": 164460,
+            "validationVersion": 1,
+            "originalMimeType": "image/jpeg",
+            "originalFileSize": 8331970,
+            "originalSha256": "0bbf4c98bfc34fee3a1add91c4db157b36026aaeecadb0beef596f736ed3cc30"
+        },
+        {
+            "key": "hero-mobile",
+            "relativePath": "hero-source.jpg",
+            "sha256": "31ce0456afd14de8bf047341735c27a8c4243f11e1d2966163c47a46bcf9b4fc",
+            "mimeType": "image/webp",
+            "width": 1707,
+            "height": 2560,
+            "fileSize": 164460,
+            "validationVersion": 1,
+            "originalMimeType": "image/jpeg",
+            "originalFileSize": 8331970,
+            "originalSha256": "0bbf4c98bfc34fee3a1add91c4db157b36026aaeecadb0beef596f736ed3cc30"
+        },
+        {
+            "key": "interlude-01",
+            "relativePath": "interlude-01.png",
+            "sha256": "1817663f4e9fb0ef3901a58de917730ad36e2d6865825792da3a5a5859d761f6",
+            "mimeType": "image/webp",
+            "width": 1024,
+            "height": 1536,
+            "fileSize": 300212,
+            "validationVersion": 1,
+            "originalMimeType": "image/png",
+            "originalFileSize": 3007038,
+            "originalSha256": "b8d387b5125275c4ff6dff84f50c9752dc4d46412b905bf38477c9dcb333ac93"
+        },
+        {
+            "key": "interlude-02",
+            "relativePath": "interlude-02.png",
+            "sha256": "8b4520cb88fb61805129df4b28b4572ea559f03590988b4322f2be00b4a98a5a",
+            "mimeType": "image/webp",
+            "width": 1024,
+            "height": 1536,
+            "fileSize": 106746,
+            "validationVersion": 1,
+            "originalMimeType": "image/png",
+            "originalFileSize": 2035625,
+            "originalSha256": "f7920db8c8f04bf75bc5efc77107998e1438d72a4d823b7008f41d1124076b0f"
+        }
+    ]
+}

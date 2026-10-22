@@ -7,10 +7,7 @@ import type { InvitationPackageData } from './invitation-package.ts';
 import { STORAGE_URL_PLACEHOLDER } from './invitation-package.ts';
 import type { ResourcePlanAction } from './invitation-import-engine.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
-import {
-	canonicalizePublicationValue,
-	preparePublicationProjection,
-} from '../../src/lib/intake/services/publication-canonicalize.ts';
+import { canonicalizePublicationValue } from '../../src/lib/intake/services/publication-canonicalize.ts';
 import { ASSET_KEY_PREFIX, semanticAssetRef } from './normalized-invitation-release.ts';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import { isRecord } from '../../src/lib/shared/data-utils.ts';
@@ -198,9 +195,7 @@ function asContentRecord(value: unknown): Record<string, unknown> {
  */
 export function canonicalizeManagedInvitationContent(value: unknown): unknown {
 	if (value === null || value === undefined) return null;
-	return canonicalizeValue(
-		stripHostOwnedSharing(canonicalizePublicationValue(preparePublicationProjection(value))),
-	);
+	return canonicalizeValue(stripHostOwnedSharing(canonicalizePublicationValue(value)));
 }
 
 export function hashManagedInvitationContent(value: unknown): string {

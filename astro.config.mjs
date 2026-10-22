@@ -14,6 +14,7 @@ import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
 import { SECURITY_HEADERS } from './src/lib/server/security-headers.ts';
 import { appendStaticSecurityHeaders } from './scripts/shared/cloudflare-static-headers.ts';
+import { serverBundleStubs } from './scripts/shared/server-bundle-stubs.ts';
 import { readFile, writeFile } from 'node:fs/promises';
 
 const isBuildCommand = process.argv.includes('build');
@@ -85,6 +86,29 @@ function testVariantHarnessIntegration() {
 					injectRoute({
 						pattern: '/test/variant',
 						entrypoint: './tests/e2e/harness/variant.astro',
+						prerender: false,
+					});
+				}
+			},
+		},
+	};
+}
+
+/**
+ * Dev-only integration: injects the read-only operations console (/ops) when `astro dev` runs
+ * with CELEBRA_OPS_CONSOLE=1 (`pnpm ops:console`). The console lives in src/ops-console/, outside
+ * src/pages/, so `astro build` never compiles it; scripts/check-ops-console-bundle.mjs fails the
+ * build if it ever reaches dist/.
+ */
+function opsConsoleIntegration() {
+	return {
+		name: 'ops-console',
+		hooks: {
+			'astro:config:setup': ({ command, injectRoute }) => {
+				if (command === 'dev' && process.env.CELEBRA_OPS_CONSOLE === '1') {
+					injectRoute({
+						pattern: '/ops',
+						entrypoint: './src/ops-console/OpsConsolePage.astro',
 						prerender: false,
 					});
 				}
@@ -181,6 +205,7 @@ export default defineConfig({
 		// Open site, private paths closed, AI training refused, AI assistants kept off invitations.
 		robotsTxt({ policy: buildRobotsPolicy() }),
 		testVariantHarnessIntegration(),
+		opsConsoleIntegration(),
 		supabaseDevPreflightIntegration(),
 		cloudflareStaticSecurityHeadersIntegration(),
 	],
@@ -227,6 +252,8 @@ export default defineConfig({
 	},
 	vite: {
 		envPrefix: ['PUBLIC_', 'VITE_'],
+		// Keeps browser-only and never-called modules out of the Worker upload.
+		plugins: [serverBundleStubs()],
 		server: {
 			// Immutable browser fixtures must not consume Astro's buffered startup reload.
 			// Keep hot reload available for normal interactive development.

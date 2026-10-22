@@ -118,8 +118,10 @@ static page to `prerender` is free of CPU.
 - **Subrequests.** Workers Paid allows 1,000 per request (Free allows 50). Measured: editor publish
   uses 14 fixed (14-19 with optional adders), bulk guest import 4 fixed (4-8 with adders), none per
   asset or per row. Recount after adding Supabase calls to those routes.
-- **Bundle.** About 7 MB raw / 1.6 MB gzip at the last measurement (Paid limit 10 MiB gzip), startup
-  under 30 ms. Large server chunks are the first thing to inspect if the limit ever matters.
+- **Bundle.** `dist/server` measured 5.8 MiB raw / 1.2 MiB gzip on 2026-10-21 (Paid limit 10 MiB
+  gzip), startup under 30 ms. Large server chunks are the first thing to inspect if the limit ever
+  matters. `scripts/shared/server-bundle-stubs.ts` keeps modules the server never runs out of the
+  upload (the memories ZIP library, and postcss inside `sanitize-html`); each stub throws if called.
 
 ## 6. External configuration
 
