@@ -24,12 +24,12 @@ import { redactCredentials } from '../../scripts/db/db-target-config.ts';
 // ---------------------------------------------------------------------------
 describe('disposable-test-env — cross-platform fixes', () => {
 	describe('Supabase disposable image references', () => {
-		it('uses the existing PostgreSQL and PostgREST versions from immutable GHCR digests', () => {
+		it('uses upstream Docker Hub images without changing the pinned versions or digests', () => {
 			expect(POSTGRES_IMAGE).toBe(
-				'ghcr.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453',
+				'docker.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453',
 			);
 			expect(POSTGREST_IMAGE).toBe(
-				'ghcr.io/supabase/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012',
+				'docker.io/postgrest/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012',
 			);
 		});
 

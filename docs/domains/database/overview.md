@@ -249,7 +249,7 @@ Visitor → `/{eventType}/{slug}` → `resolveInvitationContent()`:
 ### Asset Library
 
 Admin uploads through `/api/dashboard/intake/[id]/assets/**` create `invitation_assets` metadata
-rows for a specific invitation. In Local (`dev-local`), binaries are stored in Supabase Storage
+rows for a specific invitation. In Local (`f05-plataforma`), binaries are stored in Supabase Storage
 local (`invitation-assets` bucket); in Preview and Production, binaries are hosted on R2 with
 SHA-256 deduplication. Postgres stores provider, display names, alt text, object paths, MIME type,
 size, dimensions, secure URLs, and soft-delete state.

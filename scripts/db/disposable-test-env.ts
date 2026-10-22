@@ -7,7 +7,7 @@
  *   - Container:     celebra-me-test-db
  *   - Port:          54332
  *   - Credentials:   supabase_admin / postgres (or postgres / postgres)
- *   - Image:         ghcr.io/supabase/postgres:17.6.1.143 (digest-pinned)
+ *   - Image:         docker.io/supabase/postgres:17.6.1.143 (digest-pinned)
  *   - Data:          synthetic test data only
  *
  * Usage:
@@ -46,11 +46,11 @@ const DISPOSABLE_PORTS = {
 
 const POSTGREST_CONTAINER = DISPOSABLE_TEST.postgrestContainerName;
 
-/** Immutable Supabase images used by the disposable database contract tests. */
+/** Upstream Docker Hub images; digests match the former GHCR mirrors byte for byte. */
 export const POSTGRES_IMAGE =
-	'ghcr.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453';
+	'docker.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453';
 export const POSTGREST_IMAGE =
-	'ghcr.io/supabase/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012';
+	'docker.io/postgrest/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012';
 
 /**
  * Bounded wait for a fresh disposable PostgreSQL container to become ready.

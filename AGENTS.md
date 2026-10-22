@@ -45,8 +45,8 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
 - **Git Safety:** Task-scoped Git authorization (`.agent/rules/git-safety.md`). Do not
   stage/commit/reset/push/create PRs or otherwise mutate Git state without explicit current-task
   authorization.
-- **Path ≠ Privilege:** Worktree lane location (`dev-local`, `dev-preview`, `dev-extra`,
-  `Integration`) grants no database or environment mutation privileges.
+- **Path ≠ Privilege:** Worktree lane location (Integration and F5–F12) grants no database or
+  environment mutation privileges.
 - **Database Safety:** Operations on persistent local (`celebra-me-rsvp`), Preview, and Production
   DBs require guarded workflows (`.agent/rules/database.md`). Resets allowed only on
   `disposable-test`.

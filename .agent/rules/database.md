@@ -44,7 +44,7 @@ Four distinct database targets exist:
 Unknown targets cause an immediate abort. The guard script `scripts/db/db-guard.ts` enforces these
 boundaries through classification, identity verification, and per-target policy checks.
 
-Worktree location (`dev-preview`, `dev-local`, `dev-extra`, or Integration) **never** grants
+Worktree location (`f11-preview`, `f05-plataforma`, `f08-demos`, or Integration) **never** grants
 database mutation privileges, even when a lane's runtime targets Preview Supabase. Environment
 authorization is task scope + target environment + operation risk + existing repository safety rules
 (see [`docs/env-workflow.md`](../../docs/env-workflow.md)).

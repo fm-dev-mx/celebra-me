@@ -218,32 +218,32 @@ describe('screenshot CLI utilities', () => {
 	it('resolves screenshot base URL from the worktree lane port table', () => {
 		expect(
 			resolveScreenshotLaneContext({
-				cwd: '/mock/celebra-me-worktrees/dev-extra',
+				cwd: '/mock/celebra-me-worktrees/f08-demos',
 			}),
 		).toMatchObject({
-			laneId: 'dev-extra',
-			port: 4322,
-			baseUrl: 'http://localhost:4322',
+			laneId: 'f08-demos',
+			port: 4328,
+			baseUrl: 'http://localhost:4328',
 			portSource: 'lane',
 		});
-		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/dev-local' })).toBe(
-			'http://localhost:4321',
+		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/f05-plataforma' })).toBe(
+			'http://localhost:4325',
 		);
-		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/dev-preview' })).toBe(
-			'http://localhost:4323',
+		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/f11-preview' })).toBe(
+			'http://localhost:4331',
 		);
 		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me' })).toBe('http://localhost:4321');
 
 		// Unix checkout root: lane detection is platform-agnostic (marker-based).
 		expect(
-			resolveScreenshotBaseUrl({ cwd: '/home/dev/celebra-me-worktrees/dev-preview' }),
-		).toBe('http://localhost:4323');
+			resolveScreenshotBaseUrl({ cwd: '/home/dev/celebra-me-worktrees/f12-release' }),
+		).toBe('http://localhost:4332');
 	});
 
 	it('lets ASTRO_PORT and explicit base URL override the lane table', () => {
 		expect(
 			resolveScreenshotLaneContext({
-				cwd: '/mock/celebra-me-worktrees/dev-extra',
+				cwd: '/mock/celebra-me-worktrees/f10-libre',
 				env: { ASTRO_PORT: '4390' },
 			}),
 		).toMatchObject({
@@ -253,7 +253,7 @@ describe('screenshot CLI utilities', () => {
 		});
 		expect(
 			resolveScreenshotLaneContext({
-				cwd: '/mock/celebra-me-worktrees/dev-extra',
+				cwd: '/mock/celebra-me-worktrees/f10-libre',
 				explicitBaseUrl: 'http://127.0.0.1:9999/',
 			}),
 		).toMatchObject({

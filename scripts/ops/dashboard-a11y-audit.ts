@@ -15,8 +15,10 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium, type BrowserContext, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { detectWorktreeLane, getWorktreeDevServerPort } from '../shared/worktree-lane';
 
-const DEFAULT_BASE_URL = 'http://localhost:4322';
+// The current lane's dev server (Integration 4321, other lanes 4320 + F-key).
+const DEFAULT_BASE_URL = `http://localhost:${getWorktreeDevServerPort(detectWorktreeLane().id)}`;
 const DEFAULT_STORAGE_STATE = 'playwright/.auth/user.json';
 const DEFAULT_OUTPUT_ROOT = '.agent/tmp/dashboard-a11y';
 const MIN_TOUCH_TARGET_PX = 44;
