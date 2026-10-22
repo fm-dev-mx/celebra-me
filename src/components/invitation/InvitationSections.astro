@@ -25,6 +25,9 @@ interface Props {
 }
 
 const { pageContext, demoConversion } = Astro.props;
+const standaloneGalleryConversion = demoConversion?.galleryImage
+	? { demo: demoConversion, image: demoConversion.galleryImage }
+	: undefined;
 const sections = buildInvitationSectionRenderDescriptors(pageContext);
 
 const interludeIndices = new Map<number, number>();
@@ -85,7 +88,11 @@ const expectedSectionIds = [
 					{component === 'interlude' && <Interlude {...props} interludeIndex={interludeIndex} />}
 					{component === 'quote' && <Quote {...props} />}
 					{component === 'family' && <Family {...props} />}
-					{component === 'gallery' && (demoConversion && props.items?.length ? (
+					{component === 'gallery' && (standaloneGalleryConversion ? (
+						<Gallery {...props}>
+							<DemoConversion slot="after-gallery" placement="gallery" demo={standaloneGalleryConversion.demo} galleryItem={standaloneGalleryConversion.image} />
+						</Gallery>
+					) : demoConversion && props.items?.length ? (
 						<Gallery {...props}>
 							<DemoConversion slot="last-item" placement="gallery" demo={demoConversion} galleryItem={props.items[props.items.length - 1]} />
 						</Gallery>

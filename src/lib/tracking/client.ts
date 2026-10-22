@@ -1,3 +1,4 @@
+import { findDemoByRouteSlug } from '@/lib/invitation/demo-routes';
 import { createLeadCode } from '@/lib/tracking/lead-code';
 import { readConsent } from '@/lib/tracking/consent-client';
 import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
@@ -277,7 +278,8 @@ function bindEnvelopeOpen(routeClass: string): void {
 			if (document.body.dataset.envelopeOpenTracked === 'true') return;
 			document.body.dataset.envelopeOpenTracked = 'true';
 			const detail = (event as CustomEvent<{ eventSlug?: string }>).detail;
-			const [, eventType = ''] = window.location.pathname.split('/');
+			const [, routeType = ''] = window.location.pathname.split('/');
+			const eventType = findDemoByRouteSlug(routeType)?.eventType ?? routeType;
 			trackEvent('envelope_opened', {
 				demo_slug: detail?.eventSlug ?? '',
 				event_type: eventType,
@@ -484,7 +486,10 @@ export function initCommercialTracking(): void {
 
 	void trackEvent('page_viewed', { page_type: routeClass });
 	if (routeClass === 'demo') {
-		const [, eventType = '', demoSlug = ''] = window.location.pathname.split('/');
+		const [, routeType = '', routeSlug = ''] = window.location.pathname.split('/');
+		const demo = findDemoByRouteSlug(routeType);
+		const eventType = demo?.eventType ?? routeType;
+		const demoSlug = demo?.slug ?? routeSlug;
 		void trackEvent('demo_viewed', {
 			demo_slug: demoSlug,
 			event_type: eventType,

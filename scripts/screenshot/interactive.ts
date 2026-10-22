@@ -125,7 +125,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 		message: 'What do you want to screenshot?',
 		choices: [
 			{
-				name: 'Invitation page / Event Demo   (e.g. /boda/demo-boda-jewelry-box-wedding)',
+				name: 'Invitation page / Event Demo   (e.g. /brisa)',
 				value: 'invitation',
 			},
 			{
@@ -152,7 +152,7 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 	let resolvedUrls: { name: string; url: string }[];
 	const defaultRoute =
 		pageType === 'invitation'
-			? '/boda/demo-boda-jewelry-box-wedding'
+			? '/brisa'
 			: pageType === 'landing'
 				? '/'
 				: pageType === 'dashboard'

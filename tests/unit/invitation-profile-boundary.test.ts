@@ -103,7 +103,7 @@ const FONTS_DIR = path.join(process.cwd(), 'src/styles/fonts');
 const ALLOWED_WRAPPING_AT_RULES = new Set(['media', 'supports', 'container']);
 
 /** `@use` targets allowed in a token-only profile: shared modules that emit only `@font-face`. */
-const ALLOWED_USE_TARGET = /^\.\.\/fonts\/([a-z0-9-]+)$/u;
+const ALLOWED_USE_TARGET = /^(?:\.\.\/fonts\/|\.\.\/\.\.\/\.\.\/styles\/fonts\/)([a-z0-9-]+)$/u;
 
 const COMMENT_OR_STRING = /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'/gu;
 
@@ -272,6 +272,7 @@ describe('invitation profile boundary', () => {
 
 		const allowed = [
 			"@use '../fonts/montserrat-italic-display' as display;",
+			"@use '../../../styles/fonts/cinzel' as labels;",
 			'$mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'/%3E");',
 			wrap(
 				'\t--mask: #{$mask};\n\t@media (width < 992px) { --ok: 2px; }\n\t.child { --ok: 3px; }',

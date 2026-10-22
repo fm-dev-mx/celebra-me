@@ -158,7 +158,7 @@
 		}
 
 		.gallery-grid__item img {
-			width: 116%;
+			width: var(--gallery-track-image-width, 116%);
 			max-width: none;
 		}
 	}
@@ -198,7 +198,7 @@
 		}
 
 		.gallery-grid__item img {
-			translate: calc(var(--scene-progress, 0) * -13.8%) 0;
+			translate: calc(var(--scene-progress, 0) * var(--gallery-track-image-drift, -13.8%)) 0;
 		}
 	}
 }
@@ -219,7 +219,7 @@
 	}
 
 	to {
-		translate: -13.8% 0;
+		translate: var(--gallery-track-image-drift, -13.8%) 0;
 	}
 }
 

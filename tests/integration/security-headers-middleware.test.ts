@@ -31,6 +31,14 @@ const EXPECTED_PREVIEW_HEADERS: Record<string, string> = {
 
 const EXPECTED_REDIRECTS = [
 	{
+		source: '/boda/demo-boda-jewelry-box-wedding',
+		destination: '/brisa',
+	},
+	{
+		source: '/boda/demo-boda-jewelry-box-wedding/',
+		destination: '/brisa',
+	},
+	{
 		source: '/bautizo/demo-bautismo-angelic-presence',
 		destination: '/bautizo/demo-bautizo-angelic-presence',
 	},

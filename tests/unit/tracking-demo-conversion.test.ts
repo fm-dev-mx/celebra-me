@@ -50,6 +50,15 @@ it('emits one view per navigation and one event per activation after repeated in
 	expect(payloads().filter((p) => p.eventName === 'cta_clicked')).toHaveLength(0);
 	expect(payloads().every((p) => p.eventId === p.eventProperties.event_id)).toBe(true);
 });
+it('keeps the internal demo identity when viewing a short catalog alias', () => {
+	window.history.replaceState({}, '', '/brisa');
+	initCommercialTracking();
+	expect(payloads().find((p) => p.eventName === 'demo_viewed')?.eventProperties).toMatchObject({
+		demo_slug: 'demo-brisa',
+		event_type: 'boda',
+		content_name: 'demo-brisa',
+	});
+});
 it('keeps navigation available without consent and does not reconstruct a pre-consent view', () => {
 	grant(false, false);
 	initCommercialTracking();

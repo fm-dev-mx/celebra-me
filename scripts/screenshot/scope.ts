@@ -4,6 +4,7 @@
 // =============================================================================
 
 import * as path from 'node:path';
+import { findDemoByRouteSlug } from '../../src/lib/invitation/demo-routes.ts';
 import {
 	type AuthMethod,
 	type CaptureTarget,
@@ -199,6 +200,10 @@ export function normalizeRouteIdentity(
 
 function routeParts(identity: RouteIdentity): { eventType: string; slug: string } | null {
 	const parts = identity.pathname.split('/').filter(Boolean);
+	if (parts.length === 1) {
+		const demo = findDemoByRouteSlug(parts[0]);
+		return demo ? { eventType: demo.eventType, slug: demo.slug } : null;
+	}
 	if (parts.length !== 2) return null;
 	return { eventType: parts[0], slug: parts[1] };
 }
@@ -219,7 +224,7 @@ function validateRoute(
 	const parts = routeParts(identity);
 	if (!parts) {
 		throw new ScreenshotScopeError(
-			`Invitation route must be /<eventType>/<slug>: "${route}".`,
+			`Invitation route must be /<eventType>/<slug> or a registered demo alias: "${route}".`,
 			'INVALID_INVITATION_ROUTE',
 		);
 	}

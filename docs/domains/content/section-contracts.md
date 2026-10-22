@@ -306,7 +306,9 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Required Inputs**: `url`.
 - **Defaulted Inputs**: `autoPlay` (`false`).
 - **Optional Inputs**: `title`, `startAt` (seconds, ≥0; playback starts and loops back here),
-  `fadeInSeconds` (0–10).
+  `fadeInSeconds` (0–10), `creditsUrl` (a same-site `/music/<name>.html` credit page, where `<name>`
+  contains lowercase letters, digits or hyphens). The player shows the credit link only when
+  supplied; demo content may use it without configuring dashboard music editing.
 
 ---
 
@@ -351,3 +353,15 @@ validated by the schemas; the second table is **authoring guidance, not validate
 | `gifts.editorial-catalog`     | Provide `items` or an explicit compatible `presentation` |
 | `gallery` item-based variants | Provide items; an empty `items[]` passes the schema      |
 | `itinerary` (all variants)    | Provide items; an empty `items[]` passes the schema      |
+
+## Demo presentation hooks
+
+Demo catalog metadata may declare `conversionPhotos.gallery` and `conversionPhotos.closing` using
+registered asset keys and Spanish alternative text. An explicit gallery conversion photo uses the
+`after-gallery` slot and preserves every authored gallery item. Demos without that metadata retain
+the legacy `last-item` replacement behavior.
+
+The bank details card supports opt-in `--gifts-bank-chip-display`, `--gifts-bank-number-align` and
+`--gifts-bank-number-inset` hooks. The chip is decorative; account data and copying remain semantic
+text and a button. `--night-envelope-spark` controls decorative stars independently from envelope
+text, with the existing celestial palette as its default.

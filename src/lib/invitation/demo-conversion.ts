@@ -5,6 +5,7 @@ import type { EventAssetKey } from '@/lib/assets/asset-keys';
 import { getEventAsset } from '@/lib/assets/asset-registry';
 import type { EventType } from '@/lib/theme/theme-contract';
 import { getWhatsAppLink } from '@/utils/whatsapp';
+import { DEMO_INVITATIONS } from '@/invitations/demos';
 
 /** Possessive phrase for the visitor's own celebration, in the "usted" register. */
 const CELEBRATION_LABELS: Record<EventType, string> = {
@@ -32,6 +33,8 @@ export interface DemoConversionContext {
 	quoteLink: string;
 	browseHref: string;
 	closingImage?: ImageMetadata;
+	closingImageAlt?: string;
+	galleryImage?: { image: ImageMetadata; alt: string };
 }
 
 function findDemoItem(slug: string): DemoShowroomItem | undefined {
@@ -47,6 +50,8 @@ export function getDemoConversion(slug: string): DemoConversionContext | undefin
 	const item = findDemoItem(slug);
 	if (!item) return undefined;
 	const closingKey = CLOSING_IMAGE_KEYS.find((key) => getEventAsset(slug, key));
+	const photos = DEMO_INVITATIONS.find((demo) => demo.slug === slug)?.conversionPhotos;
+	const galleryImage = photos ? getEventAsset(slug, photos.gallery.key) : undefined;
 	return {
 		slug,
 		eventType: item.eventType,
@@ -54,6 +59,13 @@ export function getDemoConversion(slug: string): DemoConversionContext | undefin
 		celebrationLabel: CELEBRATION_LABELS[item.eventType],
 		quoteLink: getWhatsAppLink(item.ctaMessage),
 		browseHref: `/demos/${item.publicSlug}`,
-		closingImage: closingKey ? getEventAsset(slug, closingKey) : undefined,
+		closingImage: photos
+			? getEventAsset(slug, photos.closing.key)
+			: closingKey
+				? getEventAsset(slug, closingKey)
+				: undefined,
+		closingImageAlt: photos?.closing.alt,
+		galleryImage:
+			galleryImage && photos ? { image: galleryImage, alt: photos.gallery.alt } : undefined,
 	};
 }

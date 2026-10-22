@@ -14,6 +14,7 @@ import type {
 } from './types.js';
 import { KNOWN_SECTIONS, VIEWPORT_PROFILES } from './types.js';
 import { isRecord } from '../../src/lib/shared/data-utils.ts';
+import { buildPublicInvitationPath } from '../../src/utils/invitation-link.ts';
 
 export const VALID_PAGE_TYPES: readonly PageType[] = [
 	'invitation',
@@ -447,7 +448,11 @@ export function assertInvitationCatalogIntegrity(entries: readonly InvitationCat
 			fail(`Duplicate invitation identity "${identity}".`, 'DUPLICATE_IDENTITY');
 		routes.add(routeKey);
 		identities.add(identity);
-		if (routeKey !== `http://localhost:4321/${entry.eventType}/${entry.slug}`) {
+		if (
+			routeKey !== `http://localhost:4321/${entry.eventType}/${entry.slug}` &&
+			routeKey !==
+				`http://localhost:4321${buildPublicInvitationPath(entry.eventType, entry.slug)}`
+		) {
 			fail(
 				`Invitation registry identity does not match route "${entry.route}".`,
 				'IDENTITY_MISMATCH',

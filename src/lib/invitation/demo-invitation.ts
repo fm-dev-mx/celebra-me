@@ -26,6 +26,12 @@ export type DemoShowroomCard = Omit<
 export interface DemoInvitationDocument {
 	slug: string;
 	eventType: EventType;
+	/** Optional short public route, distinct from the internal demo asset identity. */
+	routeSlug?: string;
+	conversionPhotos?: {
+		gallery: DemoInvitationThumbnail;
+		closing: DemoInvitationThumbnail;
+	};
 	showroom: DemoShowroomCard;
 }
 

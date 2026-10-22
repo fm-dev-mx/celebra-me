@@ -466,6 +466,7 @@ export interface InvitationViewModel {
 		url: string;
 		autoPlay: boolean;
 		title?: string;
+		creditsUrl?: string;
 		/** Second at which playback starts and loops back to. */
 		startAt?: number;
 		/** Seconds of volume ramp when playback starts or loops back. */
