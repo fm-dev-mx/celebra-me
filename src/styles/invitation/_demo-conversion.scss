@@ -3,7 +3,7 @@
 	isolation: isolate;
 	display: flex;
 	align-items: end;
-	min-height: 500px;
+	min-height: var(--demo-conversion-min-height, 500px);
 	background: var(--color-surface-dark);
 	color: var(--color-text-on-dark);
 	font-family: var(--font-body);
@@ -16,7 +16,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		object-position: 50% 0%;
+		object-position: var(--demo-conversion-photo-position, 50% 0%);
 	}
 
 	&::before {
@@ -170,7 +170,7 @@
 		.demo-conversion__photo {
 			left: auto;
 			width: 67%;
-			object-position: 50% 65%;
+			object-position: var(--demo-conversion-photo-position, 50% 65%);
 		}
 
 		&::before {
@@ -249,7 +249,7 @@
 			.demo-conversion__photo {
 				width: 100%;
 				height: 350px;
-				object-position: 50% 50%;
+				object-position: var(--demo-conversion-photo-position, 50% 50%);
 			}
 
 			&::before {

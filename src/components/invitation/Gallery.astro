@@ -81,6 +81,7 @@ if (!items || items.length === 0) return null;
 			</div>
 		</ScrollScene>
 		<slot name="last-item" />
+		<slot name="after-gallery" />
 	) : (
 	<SceneWrapper {...sceneProps}>
 	<div class="gallery-section__container" data-gallery>

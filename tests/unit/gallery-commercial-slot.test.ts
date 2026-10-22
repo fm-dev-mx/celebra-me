@@ -19,6 +19,20 @@ it('replaces the last photo only through an explicitly provided slot', () => {
 	expect(hasDemoConversion('olivia-y-antonio', true)).toBe(false);
 });
 
+it('preserves all Brisa gallery photos and supplies independent commercial images', () => {
+	const demo = getDemoConversion('demo-brisa');
+	expect(demo?.galleryImage?.image).toBeDefined();
+	expect(demo?.closingImage).toBeDefined();
+	const metadata = DEMO_INVITATIONS.find((item) => item.slug === 'demo-brisa');
+	expect(metadata?.conversionPhotos?.gallery.key).not.toBe(
+		metadata?.conversionPhotos?.closing.key,
+	);
+	expect(getDemoConversion('demo-xv-celestial-blue')?.galleryImage).toBeUndefined();
+	expect(read('src/components/invitation/Gallery.astro')).toContain(
+		'<slot name="after-gallery" />',
+	);
+});
+
 it('keeps commercial closing after the invitation farewell and retains tracking contracts', () => {
 	const route = read('src/pages/[eventType]/[slug].astro');
 	expect(route.indexOf('<DemoConversion placement="closing"')).toBeGreaterThan(

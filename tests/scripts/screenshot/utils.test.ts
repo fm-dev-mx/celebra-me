@@ -513,8 +513,8 @@ describe('screenshot CLI utilities', () => {
 		});
 
 		it('joins routes that intentionally begin with a slash', () => {
-			expect(resolveUrl('/boda/demo-boda-jewelry-box-wedding', base)).toBe(
-				'http://localhost:4321/boda/demo-boda-jewelry-box-wedding',
+			expect(resolveUrl('/boda/demo-brisa', base)).toBe(
+				'http://localhost:4321/boda/demo-brisa',
 			);
 			expect(resolveUrl('/', base)).toBe('http://localhost:4321/');
 		});
@@ -526,9 +526,9 @@ describe('screenshot CLI utilities', () => {
 		});
 
 		it('recovers Git for Windows conversion (C:/Program Files/Git prefix)', () => {
-			expect(
-				resolveUrl('C:/Program Files/Git/boda/demo-boda-jewelry-box-wedding', base),
-			).toBe('http://localhost:4321/boda/demo-boda-jewelry-box-wedding');
+			expect(resolveUrl('C:/Program Files/Git/boda/demo-brisa', base)).toBe(
+				'http://localhost:4321/boda/demo-brisa',
+			);
 		});
 
 		it('recovers MSYS2 conversion (C:/msys64 prefix)', () => {

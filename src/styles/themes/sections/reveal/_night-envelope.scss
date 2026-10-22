@@ -37,6 +37,8 @@ $night-ease-rise: cubic-bezier(0.25, 0.1, 0.25, 1);
 	--night-ink: var(--night-envelope-ink, var(--color-action-accent));
 	--night-field: var(--night-envelope-field, var(--color-surface-dark));
 	--night-star: var(--night-envelope-star, var(--color-text-on-dark));
+	--night-spark: var(--night-envelope-spark, var(--night-star));
+	--night-accent-spark: var(--night-envelope-spark, var(--night-ink));
 	--night-paper: var(
 		--night-envelope-paper,
 		color-mix(in srgb, var(--night-field) 90%, var(--night-star))
@@ -129,14 +131,22 @@ $night-ease-rise: cubic-bezier(0.25, 0.1, 0.25, 1);
 		inset: 0;
 		z-index: -1;
 		background:
-			night-star(12% 14%, 1px, color-mix(in srgb, var(--night-star) 70%, transparent)),
-			night-star(82% 10%, 1px, color-mix(in srgb, var(--night-star) 55%, transparent)),
-			night-star(70% 30%, 1.5px, color-mix(in srgb, var(--night-ink) 70%, transparent)),
-			night-star(24% 40%, 1px, color-mix(in srgb, var(--night-star) 45%, transparent)),
-			night-star(90% 62%, 1px, color-mix(in srgb, var(--night-star) 50%, transparent)),
-			night-star(8% 78%, 1px, color-mix(in srgb, var(--night-star) 40%, transparent)),
-			night-star(56% 88%, 1.5px, color-mix(in srgb, var(--night-ink) 55%, transparent)),
-			night-star(38% 6%, 1px, color-mix(in srgb, var(--night-star) 50%, transparent)),
+			night-star(12% 14%, 1px, color-mix(in srgb, var(--night-spark) 70%, transparent)),
+			night-star(82% 10%, 1px, color-mix(in srgb, var(--night-spark) 55%, transparent)),
+			night-star(
+				70% 30%,
+				1.5px,
+				color-mix(in srgb, var(--night-accent-spark) 70%, transparent)
+			),
+			night-star(24% 40%, 1px, color-mix(in srgb, var(--night-spark) 45%, transparent)),
+			night-star(90% 62%, 1px, color-mix(in srgb, var(--night-spark) 50%, transparent)),
+			night-star(8% 78%, 1px, color-mix(in srgb, var(--night-spark) 40%, transparent)),
+			night-star(
+				56% 88%,
+				1.5px,
+				color-mix(in srgb, var(--night-accent-spark) 55%, transparent)
+			),
+			night-star(38% 6%, 1px, color-mix(in srgb, var(--night-spark) 50%, transparent)),
 			radial-gradient(
 				130% 50% at 50% 0%,
 				color-mix(in srgb, var(--night-paper) 70%, transparent),
@@ -197,12 +207,12 @@ $night-ease-rise: cubic-bezier(0.25, 0.1, 0.25, 1);
 	.envelope-flap-shadow {
 		z-index: 3;
 		background:
-			night-star(30% 20%, 1px, color-mix(in srgb, var(--night-star) 80%, transparent)),
-			night-star(62% 34%, 1px, color-mix(in srgb, var(--night-star) 70%, transparent)),
-			night-star(48% 12%, 1.5px, var(--night-ink)),
-			night-star(72% 14%, 1px, color-mix(in srgb, var(--night-star) 60%, transparent)),
-			night-star(40% 60%, 1px, color-mix(in srgb, var(--night-star) 70%, transparent)),
-			night-star(54% 46%, 1.5px, var(--night-ink)),
+			night-star(30% 20%, 1px, color-mix(in srgb, var(--night-spark) 80%, transparent)),
+			night-star(62% 34%, 1px, color-mix(in srgb, var(--night-spark) 70%, transparent)),
+			night-star(48% 12%, 1.5px, var(--night-accent-spark)),
+			night-star(72% 14%, 1px, color-mix(in srgb, var(--night-spark) 60%, transparent)),
+			night-star(40% 60%, 1px, color-mix(in srgb, var(--night-spark) 70%, transparent)),
+			night-star(54% 46%, 1.5px, var(--night-accent-spark)),
 			linear-gradient(
 				0deg,
 				var(--night-liner),

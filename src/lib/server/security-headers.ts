@@ -86,6 +86,14 @@ export interface PermanentRedirectRule {
 /** Permanent (301) redirects for retired URLs. */
 export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 	{
+		source: '/boda/demo-boda-jewelry-box-wedding',
+		destination: '/brisa',
+	},
+	{
+		source: '/boda/demo-boda-jewelry-box-wedding/',
+		destination: '/brisa',
+	},
+	{
 		source: '/bautizo/demo-bautismo-angelic-presence',
 		destination: '/bautizo/demo-bautizo-angelic-presence',
 	},

@@ -7,6 +7,7 @@ interface Props {
 	url?: string;
 	autoPlay?: boolean;
 	title?: string;
+	creditsUrl?: string;
 	revealMode?: 'envelope' | 'immediate';
 	variant?: string;
 	/** Second at which playback starts and loops back to (skips an intro). */
@@ -19,6 +20,7 @@ const {
 	url = '',
 	autoPlay = false,
 	title = 'Reproducir música',
+	creditsUrl,
 	revealMode = 'envelope',
 	variant,
 	startAt = 0,
@@ -71,6 +73,11 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 	<span class="music-player__prompt" data-music-prompt>{promptText}</span>
 
 	<div class="music-player__controls">
+		{creditsUrl && (
+			<a class="music-player__credits" href={creditsUrl} target="_blank" rel="noopener noreferrer" aria-label="Créditos y licencia de la música">
+				Créditos
+			</a>
+		)}
 		<button
 			type="button"
 			class="music-player__button music-player__button--play music-player__button--pulsing"

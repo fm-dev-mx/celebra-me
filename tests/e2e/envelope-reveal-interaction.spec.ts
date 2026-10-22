@@ -2,23 +2,27 @@ import { expect, test, type Page } from '@playwright/test';
 
 const representativeRoutes = [
 	'/cumple/demo-cumple-luxury-hacienda',
-	'/boda/demo-boda-jewelry-box-wedding',
+	'/boda/demo-brisa',
 	'/xv/demo-xv-celestial-blue',
 	'/bautizo/demo-bautizo-angelic-presence',
 	'/xv/allison-scarlett',
 ] as const;
 
+// Classic envelopes only: the night envelope (demo-brisa) draws its own larger wax seal.
 const sealSizingRoutes = [
 	'/boda/victoria-y-roberto',
-	'/boda/demo-boda-jewelry-box-wedding',
 	'/boda/daniela-y-martin',
 	'/cumple/alba-rosa-quinonez',
 ] as const;
+
+// The night envelope's arch hand-over (card rise, hold, photo flight) takes about 5.4s.
+const REVEAL_TIMEOUT_MS = 10_000;
 
 async function expectRevealed(page: Page) {
 	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
 		'data-reveal-state',
 		'revealed',
+		{ timeout: REVEAL_TIMEOUT_MS },
 	);
 	await expect(page.locator('.envelope-wrapper')).toBeHidden();
 	await expect(page.locator('#inicio')).toBeVisible();
@@ -71,7 +75,7 @@ test.describe('shared envelope reveal interaction', () => {
 	}
 
 	test('supports Enter and Space and never finalizes twice', async ({ page }) => {
-		await page.goto('/boda/demo-boda-jewelry-box-wedding', { waitUntil: 'domcontentloaded' });
+		await page.goto('/boda/demo-brisa', { waitUntil: 'domcontentloaded' });
 		await page.evaluate(() => {
 			(window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount = 0;
 			window.addEventListener('envelope:opened', () => {
@@ -83,6 +87,7 @@ test.describe('shared envelope reveal interaction', () => {
 		});
 
 		const cta = page.getByRole('button', { name: 'Abrir la invitación' });
+		await expect(cta).toBeEnabled();
 		await cta.focus();
 		await page.keyboard.press('Space');
 		await expectRevealed(page);
@@ -95,7 +100,7 @@ test.describe('shared envelope reveal interaction', () => {
 			)
 			.toBe(1);
 
-		await page.goto('/boda/demo-boda-jewelry-box-wedding?forceEnvelope=true', {
+		await page.goto('/boda/demo-brisa?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 		await page.evaluate(() => {
@@ -121,10 +126,11 @@ test.describe('shared envelope reveal interaction', () => {
 			)
 			.toBe(1);
 
-		await page.goto('/boda/demo-boda-jewelry-box-wedding?forceEnvelope=true', {
+		await page.goto('/boda/demo-brisa?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 		const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
+		await expect(seal).toBeEnabled();
 		await seal.focus();
 		await page.keyboard.press('Enter');
 		await expectRevealed(page);

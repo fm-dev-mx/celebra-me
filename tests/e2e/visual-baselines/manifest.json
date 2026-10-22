@@ -2286,30 +2286,6 @@
         },
         {
             "kind": "demo",
-            "slug": "demo-boda-jewelry-box-wedding",
-            "eventType": "boda",
-            "preset": "jewelry-box-wedding",
-            "viewport": "mobile",
-            "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-            "sha256": "e8a021152dec34b5d6ebb25d724271e946264ac475b9f52ef9602c85f3880868",
-            "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-            "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-boda-jewelry-box-wedding",
-            "eventType": "boda",
-            "preset": "jewelry-box-wedding",
-            "viewport": "desktop",
-            "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-            "sha256": "192a2cb0213d96f00cc4831f35ae1b123145495135069a231133824223c93871",
-            "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
-            "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
             "slug": "demo-cumple-luxury-hacienda",
             "eventType": "cumple",
             "preset": "luxury-hacienda",
@@ -2450,6 +2426,30 @@
             "sha256": "ab4ff3bf46bb0da6d1c26a3322a7cdc22d5505726d6669d191813e12d0d31c0a",
             "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
             "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/demo-boda-demo-brisa-mobile.png",
+            "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
+            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/demo-boda-demo-brisa-desktop.png",
+            "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
+            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
         }
     ],

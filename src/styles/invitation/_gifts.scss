@@ -398,6 +398,31 @@
 		box-shadow: var(--gifts-bank-card-shadow, none);
 	}
 
+	// The chip is decorative and opt-in; all transfer data remains accessible text.
+	&::after {
+		content: '';
+		display: var(--gifts-bank-chip-display, none);
+		grid-area: 2 / 1;
+		align-self: start;
+		width: 2rem;
+		height: 1.45rem;
+		margin: 0.15rem var(--gifts-bank-card-inset, 1.25rem) 0;
+		border: 1px solid rgb(92 74 45 / 45%);
+		border-radius: var(--radius-sm);
+		background:
+			linear-gradient(
+				90deg,
+				transparent 31%,
+				rgb(92 74 45 / 35%) 32% 34%,
+				transparent 35% 65%,
+				rgb(92 74 45 / 35%) 66% 68%,
+				transparent 69%
+			),
+			linear-gradient(0deg, transparent 44%, rgb(92 74 45 / 35%) 45% 49%, transparent 50%),
+			var(--color-action-accent);
+		pointer-events: none;
+	}
+
 	.copy-icon-button {
 		grid-area: var(--gifts-copy-row, auto) / 1;
 		justify-self: center;
@@ -451,6 +476,8 @@
 
 	&__item--number {
 		grid-row: var(--gifts-number-row, auto);
+		align-self: var(--gifts-bank-number-align, var(--gifts-bank-row-align, auto));
+		padding-block-end: var(--gifts-bank-number-inset, 0);
 	}
 
 	&__clabe-wrapper {

@@ -1,8 +1,11 @@
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { usesShortInvitationPath } from '@/lib/invitation/slug-policy';
+import { getDemoRouteSlug } from '@/lib/invitation/demo-routes';
 
 /** Public path of an invitation: `/{slug}` for short-URL invitations, else `/{eventType}/{slug}`. */
 export function buildPublicInvitationPath(eventType: string, slug: string): string {
+	const demoRouteSlug = getDemoRouteSlug(slug);
+	if (demoRouteSlug) return `/${encodeURIComponent(demoRouteSlug)}`;
 	const encodedSlug = encodeURIComponent(slug);
 	return usesShortInvitationPath(slug)
 		? `/${encodedSlug}`
