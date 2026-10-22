@@ -505,7 +505,7 @@
 	}
 
 	.framed-portrait-hero__scroll-prompt {
-		display: var(--hero-bleed-scroll-prompt-display, block);
+		display: var(--hero-bleed-scroll-prompt-display, none);
 		font-family: var(--font-label, var(--font-body));
 		font-size: var(--hero-bleed-scroll-prompt-size, 0.725rem);
 		font-variant-caps: all-small-caps;
