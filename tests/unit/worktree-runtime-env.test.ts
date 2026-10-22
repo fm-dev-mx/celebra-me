@@ -147,6 +147,24 @@ describe('lane work policy', () => {
 		const docs = lane('/mock/celebra-me-worktrees/f09-docs');
 		expect(checkLaneWorkPolicy({ lane: docs, branch: 'chore/x' })).toBeNull();
 	});
+
+	it('lets a keyed lane start on develop but never commit there, even while merging', () => {
+		const docs = lane('/mock/celebra-me-worktrees/f09-docs');
+		expect(checkLaneWorkPolicy({ lane: docs, branch: 'develop' })).toBeNull();
+		for (const merging of [false, true]) {
+			expect(
+				checkLaneWorkPolicy({
+					lane: docs,
+					branch: 'develop',
+					operation: 'commit',
+					merging,
+				}),
+			).toContain('Direct task commits on develop are forbidden');
+		}
+		expect(
+			checkLaneWorkPolicy({ lane: docs, branch: 'chore/x', operation: 'commit' }),
+		).toBeNull();
+	});
 });
 
 describe('celebra runtime env bootstrap', () => {
@@ -234,8 +252,8 @@ describe('celebra runtime env bootstrap', () => {
 		).toThrow(/Production/);
 	});
 
-	it('bootstraps Preview lane from .env.preview.local', () => {
-		const cwd = writeLane('f11-preview');
+	it.each(['f11-preview', 'f12-release'])('bootstraps %s from .env.preview.local', (segment) => {
+		const cwd = writeLane(segment);
 		writeFileSync(
 			join(cwd, '.env.local'),
 			[
@@ -262,18 +280,21 @@ describe('celebra runtime env bootstrap', () => {
 		expect(classifySupabaseUrl(process.env.PUBLIC_SUPABASE_URL)).toBe('preview');
 	});
 
-	it('fails closed when Preview lane lacks .env.preview.local', () => {
-		const cwd = writeLane('f11-preview');
-		writeFileSync(
-			join(cwd, '.env.local'),
-			[
-				'NODE_ENV=development',
-				'SUPABASE_URL=http://127.0.0.1:54321',
-				'PUBLIC_SUPABASE_URL=http://127.0.0.1:54321',
-			].join('\n'),
-		);
-		expect(() => bootstrapCelebraRuntimeEnv({ cwd, validate: true })).toThrow(
-			/\.env\.preview\.local/,
-		);
-	});
+	it.each(['f11-preview', 'f12-release'])(
+		'fails closed when %s lacks .env.preview.local',
+		(segment) => {
+			const cwd = writeLane(segment);
+			writeFileSync(
+				join(cwd, '.env.local'),
+				[
+					'NODE_ENV=development',
+					'SUPABASE_URL=http://127.0.0.1:54321',
+					'PUBLIC_SUPABASE_URL=http://127.0.0.1:54321',
+				].join('\n'),
+			);
+			expect(() => bootstrapCelebraRuntimeEnv({ cwd, validate: true })).toThrow(
+				/\.env\.preview\.local/,
+			);
+		},
+	);
 });

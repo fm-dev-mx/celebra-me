@@ -289,12 +289,21 @@ allowed name (`pnpm env:check` compares a checkout with the templates; names onl
 
 Rules:
 
-- The Integration checkout holds canonical files per purpose. `pnpm env:sync` previews the current
-  assigned lane; `--apply` initializes missing `.env.local` and, for F11/F12, the required Preview
-  overlay. It never reads or copies Production/E2E configuration. Different destination files,
-  template mismatches, unknown/foreign lanes and symbolic targets block the operation before any
-  copy. Identical files are no-ops. `--all` is diagnostic only; bulk apply is refused. Resolve each
-  concrete conflict with separate scoped authority. No sync is performed as part of lane migration.
+- The Integration checkout holds canonical files per purpose. Every sync names its destination lanes
+  and purposes: `pnpm env:sync -- --target f09-docs --purpose local` previews one copy;
+  `pnpm env:sync -- --target f11-preview --purpose local --purpose preview --apply` initializes both
+  runtime files of a Preview lane. Supported purposes are `local` (any external lane) and `preview`
+  (F11/F12 only). It never reads or copies Production/E2E configuration, and there is no `--all` or
+  force option.
+- Before any copy, every selected pair is preflighted: unknown or foreign lanes, directory or file
+  redirects, template mismatches, missing sources and different destination files refuse the whole
+  request. Identical files are no-ops. The plan is rechecked before each write, and copies never
+  replace a destination created meanwhile. Resolve each concrete conflict with separate scoped
+  authority. No sync is performed as part of lane migration.
+- `pnpm env:check` is template inventory only. `pnpm env:check -- --runtime local` (or `preview`)
+  validates the files a lane runtime needs (Supabase identity and required keys) without reading
+  operator or hosted-test files; `pnpm ops worktree-doctor` runs the same check for the lane's
+  default runtime. Neither certifies shell overrides or live connectivity.
 - A name lives in exactly one template, except the Preview overlay, which repeats the runtime names
   it overrides. A unit test (`tests/unit/env-templates.test.ts`) fails when a template lists a name
   that no code reads, a name without a comment, an empty section, or a comment naming a retired

@@ -213,6 +213,13 @@ export function collectStatus(
 }
 
 function main(): void {
+	// Lane table only: never inspects sibling checkouts, so it works from any lane.
+	if (process.argv.includes('--layout')) {
+		console.log(
+			JSON.stringify({ repoRoot: REPO_ROOT, lanes: listExpectedLanePaths(REPO_ROOT) }),
+		);
+		return;
+	}
 	const statuses = collectStatus();
 	if (parseJsonFlag(process.argv.slice(2))) {
 		console.log(

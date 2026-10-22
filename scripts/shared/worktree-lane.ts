@@ -174,11 +174,27 @@ export function findRepoRoot(cwd?: string): string {
 			cwd: cwd ?? process.cwd(),
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
+			env: gitInspectionEnv(),
 		}).trim();
 		return resolve(cwd ?? process.cwd(), commonDir, '..');
 	} catch {
 		return resolve(cwd ?? process.cwd());
 	}
+}
+
+/** Inspect the named cwd, even when invoked from a hook with inherited Git location variables. */
+export function gitInspectionEnv(): NodeJS.ProcessEnv {
+	const env = { ...process.env };
+	for (const key of [
+		'GIT_DIR',
+		'GIT_WORK_TREE',
+		'GIT_COMMON_DIR',
+		'GIT_INDEX_FILE',
+		'GIT_OBJECT_DIRECTORY',
+		'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+	])
+		delete env[key];
+	return env;
 }
 
 // ─── Detection helpers (extracted for complexity limits) ───────────────────────
@@ -280,9 +296,10 @@ export function listExpectedLanePaths(repoRoot: string): Array<{
 
 /**
  * Lane guard shared by the pre-commit hook and `git-safety start`: mutable work
- * runs only in a canonical lane, and Integration only on `develop`. Commit-time checks only allow merge completion on develop; session start on develop
- * allows the authorized integration to begin. There is no bypass: change
- * WORKTREE_LANES in a pull request when a task needs another lane.
+ * runs only in a canonical lane, and Integration only on `develop`. Commits on
+ * develop are refused everywhere except a merge completed in Integration; session
+ * start on develop allows the authorized integration to begin. There is no
+ * bypass: change WORKTREE_LANES in a pull request when a task needs another lane.
  *
  * Returns null when allowed, otherwise the refusal message.
  */
@@ -295,7 +312,7 @@ export function checkLaneWorkPolicy(input: {
 	const freeLanes = WORKTREE_LANES.filter((lane) => lane.segment)
 		.map((lane) => `${lane.segment} (Win + F${lane.key})`)
 		.join(', ');
-	const hint = `Use a free lane under <repo>-worktrees/: ${freeLanes}.`;
+	const hint = `Request an explicit task assignment to a lane under <repo>-worktrees/: ${freeLanes}. Do not switch checkouts automatically.`;
 	if (input.lane.id === 'unknown') {
 		return `This checkout is not a canonical lane (lane: unknown). ${hint} Folders such as .claude/worktrees/* are for read-only subagents only.`;
 	}
@@ -305,6 +322,13 @@ export function checkLaneWorkPolicy(input: {
 	}
 	if (input.lane.id === 'integration' && input.operation === 'commit' && !input.merging) {
 		return `Integration only completes merges on develop; direct task commits are forbidden. ${hint}`;
+	}
+	if (
+		input.lane.id !== 'integration' &&
+		input.operation === 'commit' &&
+		input.branch === 'develop'
+	) {
+		return 'Direct task commits on develop are forbidden. Create a task branch from develop in this lane.';
 	}
 	return null;
 }

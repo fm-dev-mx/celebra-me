@@ -14,11 +14,16 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { checkLaneWorkPolicy, detectWorktreeLane, findRepoRoot } from '../shared/worktree-lane.ts';
+import {
+	checkLaneWorkPolicy,
+	detectWorktreeLane,
+	findRepoRoot,
+	gitInspectionEnv,
+} from '../shared/worktree-lane.ts';
 
 /** @param {string} cwd @param {string[]} args */
 function gitOutput(cwd, args) {
-	const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+	const result = spawnSync('git', args, { cwd, env: gitInspectionEnv(), encoding: 'utf8' });
 	return result.status === 0 ? String(result.stdout).trim() : null;
 }
 
