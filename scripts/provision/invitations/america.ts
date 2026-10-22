@@ -192,9 +192,8 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	itinerary: {
-		// The moments and hours most common across our XV programs (vals 1h30 after the reception,
-		// a surprise dance, dinner an hour later, closing at 01:00), until the client confirms her
-		// own.
+		// The moments and hours most common across our XV programs (vals at 20:30,
+		// a surprise dance, dinner at 21:30, closing at 01:00), per owner confirmation.
 		variant: 'stacked-cards',
 		title: 'Así será mi noche',
 		items: [
@@ -211,19 +210,19 @@ const content: CanonicalEventContentInput = {
 				description: 'Abren las puertas del jardín.',
 			},
 			{
-				time: '21:30',
+				time: '20:30',
 				iconName: 'Waltz',
 				label: 'Vals',
 				description: 'Ensayé más de lo que voy a admitir.',
 			},
 			{
-				time: '22:00',
+				time: '21:00',
 				iconName: 'Sparkles',
 				label: 'Baile sorpresa',
 				description: 'No le cuento nada. Llegue a tiempo.',
 			},
 			{
-				time: '22:30',
+				time: '21:30',
 				iconName: 'Dinner',
 				label: 'Cena',
 				description: 'A la mesa, que la noche todavía es larga.',

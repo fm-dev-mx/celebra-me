@@ -158,10 +158,13 @@
 	}
 
 	.event-location__program-time {
-		margin: var(--location-program-time-margin, 0);
-		font-family: var(--location-program-time-font, var(--font-display));
-		font-size: var(--location-program-time-size, clamp(1.45rem, 5vw, 1.9rem));
-		font-style: var(--location-program-time-style, italic);
+		margin: var(--location-program-time-margin, 0.2rem 0 0.35rem);
+		font-family: var(--location-program-time-font, var(--font-body));
+		font-size: var(--location-program-time-size, clamp(1.25rem, 4.5vw, 1.55rem));
+		font-weight: var(--location-program-time-weight, 600);
+		font-style: var(--location-program-time-style, normal);
+		font-variant-numeric: tabular-nums lining-nums;
+		letter-spacing: 0.02em;
 		line-height: 1.25;
 		color: var(--location-program-time-color, inherit);
 	}

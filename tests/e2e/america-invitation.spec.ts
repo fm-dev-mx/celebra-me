@@ -82,8 +82,8 @@ test.describe('America XV invitation content', () => {
 		const expected = [
 			[/6:00\s*PM|18:00/, 'Misa'],
 			[/8:00\s*PM|20:00/, 'Recepción'],
-			[/9:30\s*PM|21:30/, 'Vals'],
-			[/10:30\s*PM|22:30/, 'Cena'],
+			[/8:30\s*PM|20:30/, 'Vals'],
+			[/9:30\s*PM|21:30/, 'Cena'],
 			[/1:00\s*AM|01:00/, 'Cierre'],
 		] as const;
 		for (const [index, [time, label]] of expected.entries()) {

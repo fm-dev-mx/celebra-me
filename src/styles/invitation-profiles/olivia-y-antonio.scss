@@ -128,13 +128,14 @@
 	--footer-pull-breathe: footer-pull-breathe;
 
 	// The moon is not snatched away: it drifts up and fades while the page glides onto the footer,
-	// and the footer rows rise after it one by one, all in one slow breath.
+	// and the footer rows rise softly and cohesively, all in one slow breath.
 	--footer-open-glide: 720ms;
 	--footer-pull-away-duration: 680ms;
 	--footer-pull-away-rise: -7rem;
-	--footer-reveal-duration: 640ms;
-	--footer-reveal-stagger: 110ms;
-	--footer-reveal-rise: 1.5rem;
+	--footer-reveal-duration: 520ms;
+	--footer-reveal-stagger: 0ms;
+	--footer-reveal-rise: 0.25rem;
+	--footer-reply-overshoot: 0;
 
 	// The shore pause after the families stays a breath, not a full screen, on phones.
 	--interlude-min-height-2-sm: 62svh;

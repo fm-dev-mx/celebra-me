@@ -68,7 +68,7 @@ function createPullCue(footer: HTMLElement): HTMLElement {
 	return cue;
 }
 
-function glideToBottom(root: HTMLElement, duration: number): void {
+function glideToBottom(root: HTMLElement, duration: number, onComplete?: () => void): void {
 	const start = window.scrollY;
 	const startedAt = performance.now();
 	const step = (now: number) => {
@@ -78,7 +78,11 @@ function glideToBottom(root: HTMLElement, duration: number): void {
 		const end = root.scrollHeight - window.innerHeight;
 		// This loop owns interpolation; native CSS smooth scrolling must not restart each frame.
 		window.scrollTo({ top: start + (end - start) * eased, behavior: 'instant' });
-		if (t < 1) requestAnimationFrame(step);
+		if (t < 1) {
+			requestAnimationFrame(step);
+		} else {
+			onComplete?.();
+		}
 	};
 	requestAnimationFrame(step);
 }
@@ -199,8 +203,21 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 			window.setTimeout(() => cue.remove(), Math.max(CUE_REMOVE_FALLBACK_MS, glideMs + 400));
 		}
 		requestAnimationFrame(() => {
-			if (reduced) window.scrollTo({ top: root.scrollHeight, behavior: 'auto' });
-			else glideToBottom(root, glideMs);
+			if (reduced) {
+				window.scrollTo({ top: root.scrollHeight, behavior: 'auto' });
+			} else {
+				// While gliding, absorb wheel and touch drags so native inertial scroll does not fight the glide.
+				const absorbInput = (event: Event) => {
+					if (event.cancelable) event.preventDefault();
+				};
+				window.addEventListener('wheel', absorbInput, { passive: false });
+				window.addEventListener('touchmove', absorbInput, { passive: false });
+				const finishGlide = () => {
+					window.removeEventListener('wheel', absorbInput);
+					window.removeEventListener('touchmove', absorbInput);
+				};
+				glideToBottom(root, glideMs, finishGlide);
+			}
 		});
 	}
 

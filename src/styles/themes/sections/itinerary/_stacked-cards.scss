@@ -134,9 +134,9 @@
 		font-size: var(--stacked-cards-time-size, 4rem);
 		font-variant-caps: var(--stacked-cards-time-caps, normal);
 		font-variant-numeric: lining-nums tabular-nums;
-		font-weight: 400;
+		font-weight: var(--stacked-cards-time-weight, 600);
 		letter-spacing: var(--stacked-cards-time-tracking, normal);
-		line-height: 1;
+		line-height: var(--stacked-cards-time-line-height, 1.1);
 
 		&::before {
 			content: var(--stacked-cards-numeral, none);
