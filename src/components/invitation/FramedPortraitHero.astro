@@ -22,10 +22,11 @@ interface Props {
 	venueEvent?: string;
 }
 
-const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel = 'Deslice para descubrir', highPriority = true, variant = 'framed-portrait', time, venueName, venueEvent } = Astro.props;
+const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel: scrollLabelProp, highPriority = true, variant = 'framed-portrait', time, venueName, venueEvent } = Astro.props;
 // bleed-portrait: the photograph runs to the edges and the letter states when and where in
 // written form; the scroll cue is a silver line instead of a phrase with an arrow.
 const isBleed = variant === 'bleed-portrait';
+const scrollLabel = scrollLabelProp ?? (isBleed ? 'Deslice para descubrir' : 'Descubra mi historia');
 // Optional split into a display line and a secondary line; profiles style the two spans.
 const nameSplit = splitLeadWords(name, nameLeadWords);
 const formattedDate = formatSpanishLongDate(date);

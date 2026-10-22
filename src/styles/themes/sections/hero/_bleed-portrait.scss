@@ -499,7 +499,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 0.45rem;
-		margin: var(--hero-bleed-scroll-margin, 1rem auto 0);
+		margin: var(--hero-bleed-scroll-margin, 0 auto);
 		pointer-events: none;
 		user-select: none;
 	}
@@ -527,7 +527,7 @@
 		width: var(--hero-bleed-scroll-line-width, 1px);
 		height: var(--hero-bleed-scroll-line-stack, 2.5rem);
 		flex: none;
-		margin: var(--hero-bleed-scroll-line-margin, 0 auto);
+		margin: var(--hero-bleed-scroll-line-margin, 1.25rem auto 0);
 		overflow: hidden;
 		background: var(
 			--hero-bleed-scroll-line-bg,

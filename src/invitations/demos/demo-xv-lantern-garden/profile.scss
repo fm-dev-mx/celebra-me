@@ -96,6 +96,8 @@ $america-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--hero-bleed-when-color: var(--color-violet-ink);
 	--hero-bleed-where-color: color-mix(in srgb, var(--color-violet-ink) 82%, transparent);
 	--hero-bleed-scroll-prompt-display: block;
+	--hero-bleed-scroll-margin: 1rem auto 0;
+	--hero-bleed-scroll-line-margin: 0 auto;
 	--hero-bleed-scroll-prompt-color: var(--color-gold-ink);
 	--hero-bleed-scroll-cue: hero-bleed-scroll-cue;
 	--hero-bleed-scroll-cue-ink: color-mix(in srgb, var(--color-gold-ink) 85%, transparent);
