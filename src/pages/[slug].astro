@@ -1,12 +1,17 @@
 ---
-// Short public route: /{slug}. Resolves the event type from the published row and renders the
-// canonical invitation page in place (the long /{eventType}/{slug} form keeps resolving too).
+// Short public route: /{slug}. Catalog aliases resolve from static metadata before managed lookup.
+// Both forms render through the shared invitation page without changing demo privacy boundaries.
 export const prerender = false;
 
 import { findPublishedEventTypeBySlug } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { resolveShortRouteEventType } from '@/lib/invitation/short-route';
+import { findDemoByRouteSlug } from '@/lib/invitation/demo-routes';
 
 const slug = Astro.params.slug!;
+const demo = findDemoByRouteSlug(slug);
+if (demo) {
+	return Astro.rewrite(`/${demo.eventType}/${encodeURIComponent(demo.slug)}${Astro.url.search}`);
+}
 const eventType = await resolveShortRouteEventType(slug, findPublishedEventTypeBySlug);
 
 if (!eventType) {

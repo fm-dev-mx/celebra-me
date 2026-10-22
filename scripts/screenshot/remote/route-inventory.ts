@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { buildPublicInvitationPath } from '../../../src/utils/invitation-link.ts';
 import {
 	DEMO_INVITATIONS_DIR,
 	listDemoInvitationFiles,
@@ -82,7 +83,11 @@ export function buildRouteCandidates(sources: RouteSources): RemoteRouteCandidat
 	for (const path of SITE_PATHS) add({ path, kind: 'page', group: 'site' });
 	for (const path of sources.showroomPaths) add({ path, kind: 'page', group: 'showroom' });
 	for (const demo of sources.demos) {
-		add({ path: `/${demo.eventType}/${demo.slug}`, kind: 'page', group: 'demo' });
+		add({
+			path: buildPublicInvitationPath(demo.eventType, demo.slug),
+			kind: 'page',
+			group: 'demo',
+		});
 	}
 	const definitions = [...sources.definitions].sort((a, b) =>
 		`${a.eventType}/${a.slug}`.localeCompare(`${b.eventType}/${b.slug}`),

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 const representativeRoutes = [
 	'/cumple/demo-cumple-luxury-hacienda',
-	'/boda/demo-boda-jewelry-box-wedding',
+	'/boda/demo-brisa',
 	'/xv/demo-xv-celestial-blue',
 	'/bautizo/demo-bautizo-angelic-presence',
 	'/xv/allison-scarlett',
@@ -10,7 +10,7 @@ const representativeRoutes = [
 
 const sealSizingRoutes = [
 	'/boda/victoria-y-roberto',
-	'/boda/demo-boda-jewelry-box-wedding',
+	'/boda/demo-brisa',
 	'/boda/daniela-y-martin',
 	'/cumple/alba-rosa-quinonez',
 ] as const;
@@ -71,7 +71,7 @@ test.describe('shared envelope reveal interaction', () => {
 	}
 
 	test('supports Enter and Space and never finalizes twice', async ({ page }) => {
-		await page.goto('/boda/demo-boda-jewelry-box-wedding', { waitUntil: 'domcontentloaded' });
+		await page.goto('/boda/demo-brisa', { waitUntil: 'domcontentloaded' });
 		await page.evaluate(() => {
 			(window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount = 0;
 			window.addEventListener('envelope:opened', () => {
@@ -95,7 +95,7 @@ test.describe('shared envelope reveal interaction', () => {
 			)
 			.toBe(1);
 
-		await page.goto('/boda/demo-boda-jewelry-box-wedding?forceEnvelope=true', {
+		await page.goto('/boda/demo-brisa?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 		await page.evaluate(() => {
@@ -121,7 +121,7 @@ test.describe('shared envelope reveal interaction', () => {
 			)
 			.toBe(1);
 
-		await page.goto('/boda/demo-boda-jewelry-box-wedding?forceEnvelope=true', {
+		await page.goto('/boda/demo-brisa?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 		const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });

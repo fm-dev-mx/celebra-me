@@ -234,22 +234,21 @@ describe('published demo interlude placement', () => {
 		},
 	);
 
-	it('places coastal transition interludes after family and gifts in demo-boda-jewelry-box-wedding', () => {
+	it('places the wedding demo interludes after countdown and family', () => {
 		const event = {
-			id: 'demo-boda-jewelry-box-wedding',
-			data: loadFixture('src/invitations/demos/demo-boda-jewelry-box-wedding/content.json'),
+			id: 'demo-brisa',
+			data: loadFixture('src/invitations/demos/demo-brisa/content.json'),
 		} as EventContentEntry;
 		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
 		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
 			'quote',
 			'countdown',
+			'interlude',
 			'family',
 			'interlude',
 			'location',
-			'itinerary',
 			'gallery',
 			'gifts',
-			'interlude',
 			'personalized-access',
 			'rsvp',
 			'thankYou',

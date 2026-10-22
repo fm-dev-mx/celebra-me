@@ -3,7 +3,7 @@ import { adaptEvent } from '@/lib/adapters/event';
 import { contentDocumentFromEntry, type EventContentEntry } from '@/lib/content/events';
 import { resolveLocationShowNavigationButtons } from '@/lib/invitation/location-presentation';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
-import demoBodaJewelryBoxWedding from '../../src/invitations/demos/demo-boda-jewelry-box-wedding/content.json';
+import demoBodaJewelryBoxWedding from '../../src/invitations/demos/demo-brisa/content.json';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -346,7 +346,7 @@ describe('Boda Daniela y Martín provision contract', () => {
 
 		const viewModel = adaptEvent(
 			contentDocumentFromEntry({
-				id: 'event-demos/boda/demo-boda-jewelry-box-wedding.json',
+				id: 'event-demos/boda/demo-brisa.json',
 				data: demoBodaJewelryBoxWedding,
 			} as unknown as EventContentEntry),
 		);
