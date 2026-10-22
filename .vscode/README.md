@@ -75,3 +75,10 @@ Carpeta local que contiene los archivos de historial de ejecuciones en disco.
 3. **Ejecutar Tareas Secundarias:**
    - Presiona `Ctrl + Shift + P` -> `Tasks: Run Task` -> Selecciona la tarea deseada (ej.
      `pnpm screenshot` o `pnpm lint:styles`).
+
+## Lane discovery
+
+The terminal fallback reads the executable lane table rather than maintaining editor-specific paths.
+Use `lanes` to display canonical ids and `lane <id>` to navigate when explicitly assigned. See the
+[lane guide](../docs/core/worktrees/README.md). Keyboard/profile installation is separate; the
+repository does not install shortcuts or move checkouts.

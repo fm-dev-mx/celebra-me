@@ -10,6 +10,13 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Changed
+
+- Worktree tooling uses nine lanes keyed by F4–F12, with separate ports and merge-only commits in
+  Integration.
+- Environment synchronization initializes only assigned runtime configuration, preserves conflicting
+  files and excludes Production and hosted-test credentials.
+
 ## [0.41.0-beta.1] - 2026-10-21
 
 Faster invitations: background music buffers after the page paints and plays shorter loop cuts, each
