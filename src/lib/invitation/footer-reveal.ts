@@ -7,6 +7,11 @@
   opens it too, and a page too short to scroll shows it at once. With reduced motion there is no
   lantern: the next gesture opens the footer without movement. Without this script the footer is
   simply shown.
+
+  The opening is not a one-time event. Once the guest scrolls back up and leaves the open footer
+  well behind (half a screen below the fold, so nothing on screen moves when it folds away), the
+  footer is held again; the next rest at the bottom brings the lantern back and the whole opening
+  plays again. It stays open while focus is inside it, so a keyboard reader is never clipped away.
 */
 
 // A gesture only counts once the guest has been at the bottom this long, so the momentum of
@@ -25,6 +30,10 @@ const REDUCED_OPEN = 0.34;
 const OPEN_GLIDE_MS = 320;
 // The cue is removed by this time even if its exit animation never reports its end.
 const CUE_REMOVE_FALLBACK_MS = 1000;
+// The open footer is held again once it sits this far below the viewport (an IntersectionObserver
+// root margin, relative to the viewport height): folding it away then moves nothing on screen,
+// and a wiggle at the edge never flickers it.
+export const REARM_ROOT_MARGIN = '0px 0px 50% 0px';
 const REVEAL_KEYS = new Set(['ArrowDown', 'PageDown', 'End', ' ']);
 
 export function shouldHoldFooter(value: string): boolean {
@@ -102,13 +111,16 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		return;
 	}
 
-	const cue = reduced ? null : createPullCue(footer);
-	let restingSince: number | null = atBottom() ? performance.now() : null;
+	let cue: HTMLElement | null = null;
+	let restingSince: number | null = null;
 	let touchStartY: number | null = null;
 	let wheelPulled = 0;
 	let wheelIdle = 0;
 	let peekTimer = 0;
 	let opened = false;
+	let leaveWatch: IntersectionObserver | null = null;
+	// The cue let go on the last opening, until its exit has run or a new arming clears it.
+	let leaving: HTMLElement | null = null;
 	const rested = () => restingSince !== null && performance.now() - restingSince >= REST_MS;
 
 	const show = (progress: number, state: 'idle' | 'pulling' | 'settling') => {
@@ -182,9 +194,29 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		open();
 	};
 
-	function open() {
-		if (!(footer instanceof HTMLElement) || opened) return;
-		opened = true;
+	// Hold the footer and wait for the gesture; the lantern returns with it on every arming.
+	function arm() {
+		if (!(footer instanceof HTMLElement)) return;
+		opened = false;
+		wheelPulled = 0;
+		touchStartY = null;
+		leaving?.remove();
+		leaving = null;
+		cue = reduced ? null : createPullCue(footer);
+		restingSince = atBottom() ? performance.now() : null;
+		if (restingSince !== null) schedulePeek();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('wheel', onWheel, { passive: false });
+		window.addEventListener('touchstart', onTouchStart, { passive: true });
+		window.addEventListener('touchmove', onTouchMove, { passive: false });
+		window.addEventListener('touchend', onTouchEnd, { passive: true });
+		window.addEventListener('touchcancel', onTouchEnd, { passive: true });
+		window.addEventListener('keydown', onKeyDown);
+		footer.addEventListener('focusin', open);
+	}
+
+	function disarm() {
+		if (!(footer instanceof HTMLElement)) return;
 		window.removeEventListener('scroll', onScroll);
 		window.removeEventListener('wheel', onWheel);
 		window.removeEventListener('touchstart', onTouchStart);
@@ -195,16 +227,26 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		footer.removeEventListener('focusin', open);
 		window.clearTimeout(wheelIdle);
 		window.clearTimeout(peekTimer);
+	}
+
+	function open() {
+		if (!(footer instanceof HTMLElement) || opened) return;
+		opened = true;
+		disarm();
 		footer.dataset.footerReveal = 'open';
-		if (cue) {
+		const away = cue;
+		cue = null;
+		leaving = away;
+		if (away) {
 			// The lantern lets go of its thread and rises out of view as the footer arrives.
-			cue.dataset.state = 'away';
-			cue.addEventListener('animationend', () => cue.remove(), { once: true });
-			window.setTimeout(() => cue.remove(), Math.max(CUE_REMOVE_FALLBACK_MS, glideMs + 400));
+			away.dataset.state = 'away';
+			away.addEventListener('animationend', () => away.remove(), { once: true });
+			window.setTimeout(() => away.remove(), Math.max(CUE_REMOVE_FALLBACK_MS, glideMs + 400));
 		}
 		requestAnimationFrame(() => {
 			if (reduced) {
 				window.scrollTo({ top: root.scrollHeight, behavior: 'auto' });
+				watchForLeave();
 			} else {
 				// While gliding, absorb wheel and touch drags so native inertial scroll does not fight the glide.
 				const absorbInput = (event: Event) => {
@@ -215,19 +257,33 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 				const finishGlide = () => {
 					window.removeEventListener('wheel', absorbInput);
 					window.removeEventListener('touchmove', absorbInput);
+					watchForLeave();
 				};
 				glideToBottom(root, glideMs, finishGlide);
 			}
 		});
 	}
 
-	if (restingSince !== null) schedulePeek();
-	window.addEventListener('scroll', onScroll, { passive: true });
-	window.addEventListener('wheel', onWheel, { passive: false });
-	window.addEventListener('touchstart', onTouchStart, { passive: true });
-	window.addEventListener('touchmove', onTouchMove, { passive: false });
-	window.addEventListener('touchend', onTouchEnd, { passive: true });
-	window.addEventListener('touchcancel', onTouchEnd, { passive: true });
-	window.addEventListener('keydown', onKeyDown);
-	footer.addEventListener('focusin', open);
+	// Once the open footer has settled, wait for the guest to leave it well behind, then hold it
+	// again so the next visit to the end plays the opening once more. The observer reports the
+	// current state on attach, so a footer still in view simply keeps waiting.
+	function watchForLeave() {
+		if (!(footer instanceof HTMLElement) || typeof IntersectionObserver === 'undefined') return;
+		leaveWatch?.disconnect();
+		leaveWatch = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) return;
+				// A reader tabbing through the footer keeps it; folding it away would clip their focus.
+				if (footer.contains(document.activeElement)) return;
+				leaveWatch?.disconnect();
+				leaveWatch = null;
+				footer.dataset.footerReveal = 'held';
+				arm();
+			},
+			{ rootMargin: REARM_ROOT_MARGIN },
+		);
+		leaveWatch.observe(footer);
+	}
+
+	arm();
 }

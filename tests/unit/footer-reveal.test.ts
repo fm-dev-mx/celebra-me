@@ -1,4 +1,5 @@
 import {
+	REARM_ROOT_MARGIN,
 	holdFooterUntilSecondScroll,
 	isAtBottom,
 	openGlideMs,
@@ -6,6 +7,26 @@ import {
 	shouldHoldFooter,
 	wheelPixels,
 } from '@/lib/invitation/footer-reveal';
+
+type LeaveCallback = (entries: Array<Pick<IntersectionObserverEntry, 'isIntersecting'>>) => void;
+
+/** Stands in for IntersectionObserver so a test can report the footer leaving the viewport. */
+class FakeIntersectionObserver {
+	static instances: FakeIntersectionObserver[] = [];
+	observe = jest.fn();
+	disconnect = jest.fn();
+
+	constructor(
+		public callback: LeaveCallback,
+		public options?: IntersectionObserverInit,
+	) {
+		FakeIntersectionObserver.instances.push(this);
+	}
+
+	leave(): void {
+		this.callback([{ isIntersecting: false }]);
+	}
+}
 
 describe('footer reveal', () => {
 	it('holds the footer only for the held token', () => {
@@ -85,6 +106,92 @@ describe('footer reveal', () => {
 			jest.runOnlyPendingTimers();
 			document.body.replaceChildren();
 			window.matchMedia = originalMedia;
+			Object.defineProperty(window, 'scrollY', originalScrollY);
+			jest.restoreAllMocks();
+			jest.useRealTimers();
+		}
+	});
+
+	it('holds the footer again once the guest leaves it well behind, and opens it once more', () => {
+		jest.useFakeTimers();
+		const originalMedia = window.matchMedia;
+		const originalObserver = window.IntersectionObserver;
+		const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')!;
+		const frames: FrameRequestCallback[] = [];
+		const start = 2000 - window.innerHeight;
+		const height = jest
+			.spyOn(document.documentElement, 'scrollHeight', 'get')
+			.mockReturnValue(2000);
+		const now = jest.spyOn(performance, 'now').mockReturnValue(0);
+		jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
+		jest.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+			frames.push(callback);
+			return frames.length;
+		});
+		Object.defineProperty(window, 'scrollY', { configurable: true, value: start });
+		window.matchMedia = jest.fn().mockReturnValue({ matches: false });
+		FakeIntersectionObserver.instances = [];
+		window.IntersectionObserver =
+			FakeIntersectionObserver as unknown as typeof IntersectionObserver;
+		const footer = document.createElement('footer');
+		footer.style.setProperty('--invitation-footer-reveal', 'held');
+		document.body.append(footer);
+		const openWith = (key: string) =>
+			window.dispatchEvent(new KeyboardEvent('keydown', { key, cancelable: true }));
+
+		try {
+			holdFooterUntilSecondScroll(footer);
+			const firstCue = document.querySelector('.footer-pull');
+			expect(firstCue).not.toBeNull();
+			now.mockReturnValue(400);
+			openWith('PageDown');
+			expect(footer.dataset.footerReveal).toBe('open');
+			expect(firstCue?.getAttribute('data-state')).toBe('away');
+			// Nothing watches for the guest leaving until the glide has settled.
+			height.mockReturnValue(2600);
+			frames.shift()!(400);
+			expect(FakeIntersectionObserver.instances).toHaveLength(0);
+			frames.shift()!(1120);
+			expect(FakeIntersectionObserver.instances).toHaveLength(1);
+			const watch = FakeIntersectionObserver.instances[0];
+			expect(watch.options?.rootMargin).toBe(REARM_ROOT_MARGIN);
+			expect(watch.observe).toHaveBeenCalledWith(footer);
+
+			// A footer still in view keeps waiting; a reader with focus inside it keeps it open.
+			watch.callback([{ isIntersecting: true }]);
+			expect(footer.dataset.footerReveal).toBe('open');
+			const link = document.createElement('a');
+			link.href = '#';
+			footer.append(link);
+			link.focus();
+			watch.leave();
+			expect(footer.dataset.footerReveal).toBe('open');
+			link.blur();
+
+			// Left well behind, the footer is held again and the lantern waits at the edge anew.
+			height.mockReturnValue(2000);
+			now.mockReturnValue(1500);
+			watch.leave();
+			expect(watch.disconnect).toHaveBeenCalled();
+			expect(footer.dataset.footerReveal).toBe('held');
+			const secondCue = document.querySelector('.footer-pull');
+			expect(secondCue).not.toBeNull();
+			expect(secondCue).not.toBe(firstCue);
+			expect(secondCue?.getAttribute('data-state')).toBeNull();
+
+			// The same gesture opens it a second time, after the same rest.
+			now.mockReturnValue(1600);
+			openWith('PageDown');
+			expect(footer.dataset.footerReveal).toBe('held');
+			now.mockReturnValue(1900);
+			openWith('PageDown');
+			expect(footer.dataset.footerReveal).toBe('open');
+			expect(secondCue?.getAttribute('data-state')).toBe('away');
+		} finally {
+			jest.runOnlyPendingTimers();
+			document.body.replaceChildren();
+			window.matchMedia = originalMedia;
+			window.IntersectionObserver = originalObserver;
 			Object.defineProperty(window, 'scrollY', originalScrollY);
 			jest.restoreAllMocks();
 			jest.useRealTimers();

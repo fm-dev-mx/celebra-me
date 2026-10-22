@@ -803,6 +803,9 @@
 		--footer-contact-padding: 0.5rem 0.25rem;
 		--footer-contact-color: rgb(var(--olivia-mist-rgb) / 70%);
 		--footer-contact-weight: 400;
+
+		// The music button rests in the bottom corner; the legal line ends above it.
+		--footer-padding-bottom: 5.5rem;
 		--color-text-primary: var(--olivia-ivory);
 		--color-text-secondary: var(--olivia-ivory);
 		--color-text-muted: rgb(var(--olivia-mist-rgb) / 82%);
