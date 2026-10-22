@@ -639,12 +639,13 @@ an efficiency bug (extra queries, transform amplification, duplicate downloads).
 or project scope — not per-invitation or per-route. Cloudflare Web Analytics pageviews/visitors are
 the traffic denominator. The platform usage collector (Worker cron `*/15`,
 `src/lib/platform/server/collector/`) snapshots Worker, R2, and Supabase size totals for the admin
-dashboard; it has no thresholds. Ratios are **manual**: pair a usage window with Analytics volume
-for the same period. No in-repo replica, alert, or billing series.
+dashboard and logs a `platform_usage_summary` event listing every metric at or above 80 % of its
+plan allowance; the daily `platform-quotas` monitor alerts on it. Usage-vs-traffic ratios stay
+**manual**: pair a usage window with Analytics volume for the same period. No billing series.
 
 **Confidence.** Medium for account totals. Low for attributing a spike to one invitation.
 
-**Enforcement.** Runtime. No automated provider-billing alert is configured in this repository.
+**Enforcement.** Runtime. Quota alert at 80 % of an allowance (daily monitor); no spend alert.
 
 **Baseline.** Do not claim billed savings. Calibration recorded delivery bytes, not invoices.
 
@@ -667,18 +668,26 @@ by scheduled workflows (GitHub e-mails the repository watchers):
 - `production-uptime.yml`: page smoke, `/api/auth/session` and `/api/health` against Production;
   opens an issue after two consecutive failures. The cron says every 15 minutes, but GitHub delays
   scheduled runs; observed spacing in October 2026 was about 4 hours.
-- `scheduled-monitors.yml` (daily): memories cleanup heartbeat and off-site backup freshness.
+- `scheduled-monitors.yml` (daily, `pnpm ops:monitor <name>`), one issue per monitor:
+  - `cleanup-heartbeat`: the memories cleanup cron logged a completed summary.
+  - `backup-freshness`: the off-site bucket holds a daily backup newer than 30 hours.
+  - `worker-errors`: more than 10 5xx responses plus uncaught exceptions in 24 hours.
+  - `worker-limits`: any request cut off by a CPU or memory limit in 24 hours.
+  - `platform-quotas`: the usage collector logged no summary in 24 hours, or a run found a metric at
+    or above 80 % of its allowance.
 - `nightly-visual-parity.yml` (daily): visual parity run.
+- `production-image-audit.yml` (daily): published invitation images still resolve.
 
-`production-image-audit.yml` runs daily but opens no issue on failure. Every other row below is a
-manual trigger: “Trigger” means when a human should investigate.
+The Worker monitors read Workers Logs with a read-only token and fail instead of passing when a
+query comes back sampled. Every row below is a manual trigger: “Trigger” means when a human should
+investigate.
 
 | Metric           | Where                            | Trigger                                                             | Response                                |
 | ---------------- | -------------------------------- | ------------------------------------------------------------------- | --------------------------------------- |
 | LCP, CLS, INP    | Cloudflare Web Analytics         | Sustained p75 worsening on invitation routes (days, not one sample) | Hero/path, layout, islands              |
 | TTFB             | Web Analytics + baseline script  | Sustained origin-time rise vs traffic                               | Query-count tests, personalization span |
 | Document cache   | Baseline script; deploy checks   | Public TTL or document HIT                                          | Restore origin-revalidate / no-store    |
-| RSVP API errors  | Worker logs / errors             | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
+| RSVP API errors  | Worker logs; `worker-errors`     | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
 | Usage vs traffic | Cloudflare / Supabase dashboards | Consumption rising faster than opens/RSVPs                          | Operation contracts, media path         |
 
 Cloudflare Web Analytics (the beacon in `Layout.astro`) reports both pageviews (the traffic
