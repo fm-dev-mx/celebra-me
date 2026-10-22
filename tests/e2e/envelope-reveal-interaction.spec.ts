@@ -74,8 +74,9 @@ test.describe('shared envelope reveal interaction', () => {
 		});
 	}
 
-	test('supports Enter and Space and never finalizes twice', async ({ page }) => {
-		await page.goto('/boda/demo-brisa', { waitUntil: 'domcontentloaded' });
+	// Each night-envelope reveal takes about 7.6s (arch hand-over plus host exit), so every
+	// scenario gets its own test budget instead of chaining three reveals in one.
+	async function trackEnvelopeOpened(page: Page) {
 		await page.evaluate(() => {
 			(window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount = 0;
 			window.addEventListener('envelope:opened', () => {
@@ -85,6 +86,21 @@ test.describe('shared envelope reveal interaction', () => {
 					current + 1;
 			});
 		});
+	}
+
+	async function expectOpenedOnce(page: Page) {
+		await expect
+			.poll(() =>
+				page.evaluate(
+					() => (window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount,
+				),
+			)
+			.toBe(1);
+	}
+
+	test('opens from Space on the external call to action', async ({ page }) => {
+		await page.goto('/boda/demo-brisa', { waitUntil: 'domcontentloaded' });
+		await trackEnvelopeOpened(page);
 
 		const cta = page.getByRole('button', { name: 'Abrir la invitación' });
 		await expect(cta).toBeEnabled();
@@ -92,25 +108,15 @@ test.describe('shared envelope reveal interaction', () => {
 		await page.keyboard.press('Space');
 		await expectRevealed(page);
 		await expect(page.locator('.envelope-wrapper')).toHaveCount(1);
-		await expect
-			.poll(() =>
-				page.evaluate(
-					() => (window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount,
-				),
-			)
-			.toBe(1);
+		await expectOpenedOnce(page);
+	});
 
+	test('never finalizes twice on a double activation', async ({ page }) => {
 		await page.goto('/boda/demo-brisa?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
+		await trackEnvelopeOpened(page);
 		await page.evaluate(() => {
-			(window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount = 0;
-			window.addEventListener('envelope:opened', () => {
-				const current =
-					(window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount ?? 0;
-				(window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount =
-					current + 1;
-			});
 			const button = document.querySelector<HTMLButtonElement>(
 				'.envelope-external-instruction__button',
 			);
@@ -118,14 +124,10 @@ test.describe('shared envelope reveal interaction', () => {
 			button?.click();
 		});
 		await expectRevealed(page);
-		await expect
-			.poll(() =>
-				page.evaluate(
-					() => (window as Window & { envelopeOpenedCount?: number }).envelopeOpenedCount,
-				),
-			)
-			.toBe(1);
+		await expectOpenedOnce(page);
+	});
 
+	test('opens from Enter on the seal', async ({ page }) => {
 		await page.goto('/boda/demo-brisa?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
