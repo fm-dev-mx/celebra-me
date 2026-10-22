@@ -3,6 +3,7 @@ import {
 	buildSectionUrlMap,
 	buildInvitationProfileUrlMap,
 	buildSectionBundleUrlMap,
+	buildInvitationFeatureUrlMap,
 	resolveInvitationCssLoadPlan as resolveInvitationCssLoadPlanFromMaps,
 	type InvitationCssLoadItem,
 	type InvitationCssResolverInput,
@@ -30,9 +31,15 @@ const invitationProfileModules = import.meta.glob(
 	},
 ) as Record<string, { default: string }>;
 
+const invitationFeatureModules = import.meta.glob('/src/styles/invitation-features/*.scss', {
+	query: '?url',
+	eager: true,
+}) as Record<string, { default: string }>;
+
 const sectionVariantUrlMap = buildSectionUrlMap(sectionVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
+const invitationFeatureUrlMap = buildInvitationFeatureUrlMap(invitationFeatureModules);
 
 if (import.meta.env.DEV) {
 	const map = new Map(Object.entries(sectionBundleUrlMap));
@@ -53,5 +60,6 @@ export function resolveInvitationCssLoadPlan(
 		sectionVariantUrlMap,
 		input,
 		invitationProfileUrlMap,
+		invitationFeatureUrlMap,
 	);
 }

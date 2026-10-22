@@ -46,7 +46,7 @@ describe('Norma invitation publication contract', () => {
 			confirmationMode: 'api',
 		});
 		expect(content.music).toEqual({
-			url: 'https://media.celebra-me.com/invitations/cumple/norma-hernandez/music-43346b16137fa243a2af6e4d7b33a384155d04db6f2481cf046173f08e481f42.mp3',
+			url: 'https://media.celebra-me.com/invitations/cumple/norma-hernandez/music-7c4a7c1760bf40a18ca0df9ca13136a4491c730b7e1c845070d65a3660cde45f.mp3',
 			autoPlay: true,
 		});
 		expect(content.gifts?.variant).toBe('standard');

@@ -270,7 +270,8 @@ are not a temporary fallback for real/client invitations.
 ### 8.2 Invitation CSS Delivery
 
 - `src/styles/invitation.scss` emits shared invitation structure and the shared section bases
-  exposed by `src/styles/themes/sections/_index.scss`.
+  exposed by `src/styles/themes/sections/_index.scss`. Editorial cover, collector and ornament-set
+  CSS live in `src/styles/invitation-features/*.scss`, loaded only by pages that use them.
 - `src/styles/invitation-presets/*.scss` are runtime preset entrypoints. They load preset tokens and
   preset-specific font packages.
 - `src/styles/invitation-sections-by-preset/*.scss` are runtime section-bundle entrypoints. They
@@ -281,9 +282,10 @@ are not a temporary fallback for real/client invitations.
   asset.
 - Public invitation and dashboard preview routes use the same resolver and preserve stylesheet
   document order: preset, section bundle, optional footer/gallery override, envelope reveal,
-  optional structural partials, then optional visual profile. Sheets not required to paint the
-  sealed envelope are non-blocking (`media="not all"`) until first paint, envelope open, a bounded
-  paint fallback, or an envelope-skipped visit.
+  optional structural partials, optional visual profile, then the page's feature sheets (editorial
+  cover, collector, ornament set). Sheets not required to paint the sealed envelope are non-blocking
+  (`media="not all"`) until first paint, envelope open, a bounded paint fallback, or an
+  envelope-skipped visit.
 
 Visual audit tooling records capture-workspace fingerprints and post-capture presentation/resource
 evidence in the existing screenshot report. Full invitation harness captures must include active

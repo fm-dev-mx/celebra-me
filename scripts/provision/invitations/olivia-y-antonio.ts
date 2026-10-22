@@ -43,7 +43,7 @@ const content: CanonicalEventContentInput = {
 	description: `Invitación a la boda de Olivia y Antonio, el ${EVENT_DATE_LONG} en Los Mochis, Sinaloa.`,
 	theme: { preset: 'jewelry-box-wedding', motion: 'editorial' },
 	music: {
-		url: 'https://media.celebra-me.com/invitations/boda/olivia-y-antonio/music-df7a7ba0de4eeafe507278cad85ced121d20f569c3c1a953c04ab7f19a15e817.mp3',
+		url: 'https://media.celebra-me.com/invitations/boda/olivia-y-antonio/music-e19e90b0128f53b42ba90ccbbbfe1b55f96224dce5edd070e8c6375080228c32.mp3',
 		title: 'Alex Warren — Ordinary',
 		autoPlay: true,
 	},

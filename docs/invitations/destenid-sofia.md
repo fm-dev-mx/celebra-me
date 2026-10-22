@@ -290,8 +290,8 @@ crops so the full dress is not revealed.
 - Client copy corrections (light, meaning unchanged): opening phrase uses a typographic ellipsis
   ("inolvidables… hoy"); gallery phrase punctuates the interjection ("¡Lit! Mi fiesta…"). Thank-you
   phrase and prayer unchanged (already correct; mixed English is intentional).
-- Music: "Rebelde · RBD" from the client-supplied hosted MP3 (full 4:00 track), starting at 0:39 and
-  looping back to 0:39 via the opt-in `music.startAt` (shared, backward compatible).
+- Music: "Rebelde · RBD", a 76 s hosted loop cut that starts near 0:39 (owner-approved 2026-10-21);
+  it no longer needs `music.startAt`.
 - Instagram: the "Recuerdos" indication links `@desteny_ts` (https-only links are now allowed by
   `sanitizeIndicationHtml`, forced to `target=_blank rel=noopener noreferrer`); the profile adds a
   gold Instagram glyph.
