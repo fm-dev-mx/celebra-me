@@ -8,9 +8,14 @@ import {
 	CLEANUP_LOOKBACK_MS,
 	CLEANUP_SLICE_MS,
 	MONITOR_ENV,
+	WORKER_ERROR_THRESHOLD,
+	WORKER_LOOKBACK_MS,
 	buildCleanupHeartbeatQuery,
 	checkBackupFreshness,
 	checkCleanupHeartbeat,
+	checkPlatformQuotas,
+	checkWorkerErrors,
+	checkWorkerLimits,
 	evaluateBackupFreshness,
 	planCleanupSlices,
 } from '../../scripts/ops/scheduled-monitors';
@@ -292,16 +297,166 @@ describe('off-site backup freshness', () => {
 	});
 });
 
+type CountQuery = {
+	queryId: string;
+	view: string;
+	timeframe: { from: number; to: number };
+	parameters: { filters: { key: string; operation: string; value: unknown }[] };
+};
+
+/** Fake calculations answers keyed by queryId; an unknown queryId answers an empty count. */
+function fakeCounts(
+	answers: Record<string, { groupKey: string; value: number }[]>,
+	options: { abrLevel?: number; alertText?: string } = {},
+) {
+	return jest.fn(async (_url: string, init: RequestInit) => {
+		const query = JSON.parse(init.body as string) as CountQuery;
+		if (query.view === 'events') {
+			return jsonResponse({
+				success: true,
+				result: {
+					events: {
+						count: 1,
+						events: [{ source: { quotaAlertText: options.alertText } }],
+					},
+				},
+			});
+		}
+		return jsonResponse({
+			success: true,
+			result: {
+				calculations: [{ aggregates: answers[query.queryId] ?? [] }],
+				statistics: { abr_level: options.abrLevel ?? 1 },
+			},
+		});
+	});
+}
+
+describe('worker errors and limits', () => {
+	it('counts 5xx responses and exceptions of the Production Worker over the last day', async () => {
+		const fetchImpl = fakeCounts({
+			'celebra-me-server-errors': [{ groupKey: 'ok', value: 3 }],
+			'celebra-me-failed-outcomes': [{ groupKey: 'exception', value: 2 }],
+		});
+		const result = await checkWorkerErrors(ENV, NOW, fetchImpl as unknown as typeof fetch);
+		expect(result).toEqual({
+			ok: true,
+			detail: '3 5xx response(s) and 2 uncaught exception(s) in the last 24 hours (alert above 10).',
+		});
+		const query = JSON.parse(fetchImpl.mock.calls[0][1].body as string) as CountQuery;
+		expect(query.timeframe).toEqual({ from: NOW - WORKER_LOOKBACK_MS, to: NOW });
+		expect(query.parameters.filters).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ key: '$metadata.service', value: 'celebra-me' }),
+				expect.objectContaining({
+					key: '$workers.event.response.status',
+					operation: 'gte',
+					value: 500,
+				}),
+			]),
+		);
+	});
+
+	it('fails above the daily error threshold', async () => {
+		const fetchImpl = fakeCounts({
+			'celebra-me-server-errors': [{ groupKey: 'ok', value: WORKER_ERROR_THRESHOLD }],
+			'celebra-me-failed-outcomes': [{ groupKey: 'exception', value: 1 }],
+		});
+		const result = await checkWorkerErrors(ENV, NOW, fetchImpl as unknown as typeof fetch);
+		expect(result.ok).toBe(false);
+		expect(result.detail).toContain('Failed outcomes: exception 1.');
+	});
+
+	it('fails when Workers Logs sampled the day instead of reading every row', async () => {
+		const fetchImpl = fakeCounts({}, { abrLevel: 10 });
+		const result = await checkWorkerErrors(ENV, NOW, fetchImpl as unknown as typeof fetch);
+		expect(result).toEqual({
+			ok: false,
+			detail: 'Workers Logs query failed: Workers Logs sampled the day, so rare events may be missing.',
+		});
+	});
+
+	it('flags requests cut off by CPU or memory limits and ignores plain exceptions', async () => {
+		const clean = fakeCounts({
+			'celebra-me-failed-outcomes': [{ groupKey: 'exception', value: 4 }],
+		});
+		await expect(
+			checkWorkerLimits(ENV, NOW, clean as unknown as typeof fetch),
+		).resolves.toMatchObject({ ok: true });
+
+		const limited = fakeCounts({
+			'celebra-me-failed-outcomes': [
+				{ groupKey: 'exceededCpu', value: 2 },
+				{ groupKey: 'exception', value: 1 },
+			],
+		});
+		await expect(
+			checkWorkerLimits(ENV, NOW, limited as unknown as typeof fetch),
+		).resolves.toEqual({
+			ok: false,
+			detail: 'Requests cut off by a platform limit in the last 24 hours: exceededCpu 2.',
+		});
+	});
+});
+
+describe('platform quotas', () => {
+	it('passes when the collector ran and reported no quota alert', async () => {
+		const fetchImpl = fakeCounts({
+			'celebra-me-usage-summaries': [{ groupKey: 'platform_usage_summary', value: 96 }],
+		});
+		await expect(
+			checkPlatformQuotas(ENV, NOW, fetchImpl as unknown as typeof fetch),
+		).resolves.toEqual({ ok: true, detail: '96 collector run(s); no quota reached 80 %.' });
+	});
+
+	it('fails when the collector logged no summary in the last day', async () => {
+		const fetchImpl = fakeCounts({});
+		const result = await checkPlatformQuotas(ENV, NOW, fetchImpl as unknown as typeof fetch);
+		expect(result.ok).toBe(false);
+		expect(result.detail).toContain('the collector cron did not run');
+	});
+
+	it('fails with the newest alert text when a run found a quota at 80 % or more', async () => {
+		const fetchImpl = fakeCounts(
+			{
+				'celebra-me-usage-summaries': [{ groupKey: 'platform_usage_summary', value: 96 }],
+				'celebra-me-usage-alerts': [{ groupKey: 'platform_usage_summary', value: 4 }],
+			},
+			{ alertText: 'cfR2ClassA 83%' },
+		);
+		await expect(
+			checkPlatformQuotas(ENV, NOW, fetchImpl as unknown as typeof fetch),
+		).resolves.toEqual({
+			ok: false,
+			detail: '4 of 96 collector run(s) found a quota at or above 80 %. Latest: cfR2ClassA 83%.',
+		});
+		const alertQuery = JSON.parse(fetchImpl.mock.calls[1][1].body as string) as CountQuery;
+		expect(alertQuery.parameters.filters).toEqual(
+			expect.arrayContaining([
+				{ key: 'event', operation: 'eq', type: 'string', value: 'platform_usage_summary' },
+				{ key: 'quotaAlertCount', operation: 'gt', type: 'number', value: 0 },
+			]),
+		);
+	});
+});
+
 describe('scheduled monitors workflow', () => {
 	const workflow = readFileSync(
 		resolve('.github', 'workflows', 'scheduled-monitors.yml'),
 		'utf8',
 	);
 
-	it('runs both monitors daily after the cleanup cron and the backup', () => {
+	it('runs every monitor daily after the cleanup cron and the backup', () => {
 		expect(workflow).toContain("- cron: '40 16 * * *'");
-		expect(workflow).toContain('monitor: cleanup-heartbeat');
-		expect(workflow).toContain('monitor: backup-freshness');
+		for (const monitor of [
+			'cleanup-heartbeat',
+			'backup-freshness',
+			'worker-errors',
+			'worker-limits',
+			'platform-quotas',
+		]) {
+			expect(workflow).toContain(`monitor: ${monitor}`);
+		}
 		expect(workflow).toContain('pnpm ops:monitor ${{ matrix.monitor }}');
 		expect(workflow).toContain('gh issue create');
 	});
