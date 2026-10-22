@@ -267,20 +267,39 @@ browser input run the tier. A run that skipped the tier records a `skipped` brow
 never a source for evidence reuse or for a later scope assessment; the release pull request then
 runs every tier.
 
-When a pull request into `develop` runs the browser tier, it skips the two complete visual parity
-suites (`canonical-invitation-page-parity` and `structural-variant-portability`): the browser step
-sets `VISUAL_PARITY_DEFERRED=true` and both suites call `test.skip`, while every other browser check
-still runs. The host guest import flow (`guest-import-flow.spec.ts`) follows the same gate; it signs
-in with the synthetic host token of the canonical fixture transport and mocks every dashboard API.
-The `develop` push, pull requests into `main`, manual dispatches and the nightly
-`Nightly Visual Parity` workflow (`nightly-visual-parity.yml`, 08:30 UTC) run them in full. The
-nightly workflow dispatches Repository CI on `develop`, waits for it and opens or comments an issue
-titled «CI nocturna: la paridad visual completa de develop falló» when it fails; it closes that
-issue after the next green night. Scheduled workflows run from `main`, so the nightly run starts
-after the release that carries it. A branch that changes rendered invitations still generates a
-candidate and accepts new references before merge (see
-[visual certification](#visual-certification-and-candidates)); the pull request no longer catches a
-missed reference, the next `develop` push or night does.
+`Browser scope` also decides whether the browser tier runs the two complete visual parity suites
+(`canonical-invitation-page-parity` and `structural-variant-portability`). A pull request into
+`develop` that changes a visual parity input runs them before merge: demos and invitation sources
+(`src/invitations/`), invitation, preset, section and shared styles (`src/styles/` except the auth,
+dashboard, home, intake, landing and showroom styles), components outside the dashboard, home,
+intake and showroom, section interfaces, `src/lib/invitation/`, `src/data/`, layouts, the invitation
+route, assets, served images and fonts, the provisioning corpus, the screenshot and Playwright
+harness, the two suites, their accepted references, fixtures, the CI workflow, the scope scripts and
+the package, lockfile, Astro and Playwright configuration (`VISUAL_PARITY_INPUT_PATTERNS` in
+`scripts/ops/ci-browser-scope.ts`). Only a pull request into `develop` without such an input skips
+them (an unreadable diff counts as visual): the browser step sets `VISUAL_PARITY_DEFERRED=true` and
+both suites call `test.skip`, while every other browser check still runs.
+
+Whenever the complete suites run under `Browser scope` (a `develop` or `main` push, or a visual pull
+request into `develop`), the browser job splits into two parallel jobs through
+`PLAYWRIGHT_BROWSER_PART`: `Application / browser (pages)` runs only the complete page suite and
+`Application / browser (rest)` every other browser check, including the variant suite. Each part
+keeps whole suites, so the teardown of each still proves the complete capture matrix of every suite
+it ran. Runs without `Browser scope` (pull requests into `main`, dispatches and visual candidates)
+keep one `Application / browser` job. Evidence reuse and the scope assessment accept a split run
+only when every part passed (`scripts/ops/ci-browser-jobs.ts`).
+
+The host guest import flow (`guest-import-flow.spec.ts`) follows the same deferral gate; it signs in
+with the synthetic host token of the canonical fixture transport and mocks every dashboard API.
+Visual pull requests into `develop`, the `develop` push, pull requests into `main`, manual
+dispatches and the nightly `Nightly Visual Parity` workflow (`nightly-visual-parity.yml`, 08:30 UTC)
+run them in full. The nightly workflow dispatches Repository CI on `develop`, waits for it and opens
+or comments an issue titled «CI nocturna: la paridad visual completa de develop falló» when it
+fails; it closes that issue after the next green night. Scheduled workflows run from `main`, so the
+nightly run starts after the release that carries it. A branch that changes rendered invitations
+still generates a candidate and accepts new references before merge (see
+[visual certification](#visual-certification-and-candidates)); its pull request fails on a missed
+reference before merge.
 
 Evidence is reusable only for the same SHA, range, configuration, runtime and command. A new final
 integration SHA, changed inputs or an unresolved failure justifies revalidation; PR merge-SHA

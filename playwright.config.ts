@@ -42,6 +42,14 @@ const visualParitySnapshotRoot =
 		? 'tests/e2e/visual-baselines'
 		: '.tmp/visual-parity/candidate');
 
+// Repository CI may split the browser job: `pages` runs only the complete page parity suite and
+// `rest` every other browser check. Each part keeps whole suites, so its teardown still proves the
+// complete capture matrix of every suite it ran.
+const browserPart = process.env.PLAYWRIGHT_BROWSER_PART?.trim() || 'all';
+if (!['all', 'pages', 'rest'].includes(browserPart))
+	throw new Error(`Unknown PLAYWRIGHT_BROWSER_PART: ${browserPart}`);
+const PAGE_PARITY_SPEC = '**/canonical-invitation-page-parity.spec.ts';
+
 export default defineConfig({
 	globalSetup: './tests/e2e/harness/visual-environment-preflight.ts',
 	globalTeardown: './tests/e2e/harness/visual-record-teardown.ts',
@@ -51,7 +59,8 @@ export default defineConfig({
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 1 : undefined,
 	reporter: [['list'], ['json', { outputFile: 'test-results/results.json' }]],
-	testIgnore: ['preview/**'],
+	...(browserPart === 'pages' ? { testMatch: [PAGE_PARITY_SPEC] } : {}),
+	testIgnore: ['preview/**', ...(browserPart === 'rest' ? [PAGE_PARITY_SPEC] : [])],
 	use: {
 		baseURL: runtime.baseURL,
 		trace: runtime.isExternal ? 'off' : 'on-first-retry',

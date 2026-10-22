@@ -81,6 +81,9 @@ jobs:
         outputs:
             browser: ${{ steps.assessment.outputs.browser }}
             source-run-id: ${{ steps.assessment.outputs.source_run_id }}
+            # `deferred` only for a pull request into develop that changes no visual parity input.
+            visual: ${{ steps.assessment.outputs.visual }}
+            browser-parts: ${{ steps.assessment.outputs.browser_parts }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v7
@@ -303,8 +306,11 @@ jobs:
               if: matrix.tier == 'database'
               run: pnpm test:db:memories-contracts
 
+    # Complete visual parity splits the job in two parallel parts: `pages` runs the complete page
+    # parity suite and `rest` every other browser check. Runs without Browser scope (release
+    # promotions, dispatches and visual candidates) keep one `all` job.
     browser-validation:
-        name: Application / browser
+        name: Application / browser${{ matrix.part != 'all' && format(' ({0})', matrix.part) || '' }}
         needs: [evidence-reuse, browser-scope]
         # A scope assessment that failed or never ran leaves its output empty, which runs the tier.
         if: >-
@@ -313,6 +319,10 @@ jobs:
             needs.browser-scope.outputs.browser != 'skip'
         outputs:
             check-outcome: ${{ steps.browser-outcome.outputs.classification }}
+        strategy:
+            fail-fast: false
+            matrix:
+                part: ${{ fromJSON(needs.browser-scope.outputs.browser-parts || '["all"]') }}
         runs-on: ubuntu-24.04
         timeout-minutes: 25
         container:
@@ -344,10 +354,12 @@ jobs:
               id: browser-checks
               if: github.event.inputs.visual_mode != 'candidate'
               continue-on-error: true
-              # A pull request into develop skips the complete visual parity suites; the develop
-              # push, release promotions and the nightly dispatch (nightly-visual-parity.yml) run them.
+              # A pull request into develop that changes no visual parity input skips the complete
+              # visual parity suites; the develop push, release promotions and the nightly dispatch
+              # (nightly-visual-parity.yml) run them.
               env:
-                  VISUAL_PARITY_DEFERRED: ${{ github.event_name == 'pull_request' && github.base_ref == 'develop' }}
+                  VISUAL_PARITY_DEFERRED: ${{ needs.browser-scope.outputs.visual == 'deferred' }}
+                  PLAYWRIGHT_BROWSER_PART: ${{ matrix.part }}
               run: pnpm test:e2e:ci --max-failures=5 --workers=4
 
             - name: Classify browser outcome
@@ -377,7 +389,7 @@ jobs:
               if: always()
               uses: actions/upload-artifact@v7
               with:
-                  name: visual-failures
+                  name: visual-failures-${{ matrix.part }}
                   path: |
                       test-results/**/*-actual.png
                       test-results/**/*-diff.png

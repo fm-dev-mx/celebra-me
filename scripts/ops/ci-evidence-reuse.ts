@@ -1,6 +1,7 @@
 import { appendFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { githubApi } from '../lib/github-api.ts';
+import { BROWSER_JOB_NAME, jobPassed } from './ci-browser-jobs.ts';
 
 export const EVIDENCE_WORKFLOW_FILE = 'commit-validation.yml';
 export const EVIDENCE_SOURCE_BRANCH = 'develop';
@@ -11,7 +12,7 @@ export const REQUIRED_SOURCE_JOBS = [
 	'Application / unit',
 	'Application / database',
 	'Application / workerd',
-	'Application / browser',
+	BROWSER_JOB_NAME,
 	'Application / browser memories',
 	'Application Suite',
 ] as const;
@@ -72,9 +73,7 @@ function isCompleteSourceRun(run: SourceRun, request: EvidenceRequest): boolean 
 		run.headSha === request.headSha &&
 		run.headRepository === request.repository &&
 		run.conclusion === 'success' &&
-		REQUIRED_SOURCE_JOBS.every((name) =>
-			run.jobs.some((job) => job.name === name && job.conclusion === 'success'),
-		)
+		REQUIRED_SOURCE_JOBS.every((name) => jobPassed(run.jobs, name))
 	);
 }
 
