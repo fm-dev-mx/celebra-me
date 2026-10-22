@@ -148,9 +148,11 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 			restingSince = null;
 			window.clearTimeout(peekTimer);
 			show(0, 'settling');
+			releasePull();
 		} else if (restingSince === null) {
 			restingSince = performance.now();
 			schedulePeek();
+			armPull();
 		}
 	};
 	const onWheel = (event: WheelEvent) => {
@@ -194,6 +196,22 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		open();
 	};
 
+	// Wheel and touch moves may cancel scrolling only while the reader rests at the bottom; the
+	// rest of the reading keeps passive listeners, so the browser never waits on them to scroll.
+	let pullArmed = false;
+	function armPull() {
+		if (pullArmed || opened) return;
+		pullArmed = true;
+		window.addEventListener('wheel', onWheel, { passive: false });
+		window.addEventListener('touchmove', onTouchMove, { passive: false });
+	}
+	function releasePull() {
+		if (!pullArmed) return;
+		pullArmed = false;
+		window.removeEventListener('wheel', onWheel);
+		window.removeEventListener('touchmove', onTouchMove);
+	}
+
 	// Hold the footer and wait for the gesture; the lantern returns with it on every arming.
 	function arm() {
 		if (!(footer instanceof HTMLElement)) return;
@@ -204,11 +222,12 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 		leaving = null;
 		cue = reduced ? null : createPullCue(footer);
 		restingSince = atBottom() ? performance.now() : null;
-		if (restingSince !== null) schedulePeek();
+		if (restingSince !== null) {
+			schedulePeek();
+			armPull();
+		}
 		window.addEventListener('scroll', onScroll, { passive: true });
-		window.addEventListener('wheel', onWheel, { passive: false });
 		window.addEventListener('touchstart', onTouchStart, { passive: true });
-		window.addEventListener('touchmove', onTouchMove, { passive: false });
 		window.addEventListener('touchend', onTouchEnd, { passive: true });
 		window.addEventListener('touchcancel', onTouchEnd, { passive: true });
 		window.addEventListener('keydown', onKeyDown);
@@ -218,9 +237,8 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 	function disarm() {
 		if (!(footer instanceof HTMLElement)) return;
 		window.removeEventListener('scroll', onScroll);
-		window.removeEventListener('wheel', onWheel);
+		releasePull();
 		window.removeEventListener('touchstart', onTouchStart);
-		window.removeEventListener('touchmove', onTouchMove);
 		window.removeEventListener('touchend', onTouchEnd);
 		window.removeEventListener('touchcancel', onTouchEnd);
 		window.removeEventListener('keydown', onKeyDown);

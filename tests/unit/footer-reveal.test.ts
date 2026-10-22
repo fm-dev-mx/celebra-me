@@ -197,4 +197,44 @@ describe('footer reveal', () => {
 			jest.useRealTimers();
 		}
 	});
+
+	it('lets wheel and touch moves cancel scrolling only while resting at the bottom', () => {
+		const originalMedia = window.matchMedia;
+		const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY')!;
+		const bottom = 2000 - window.innerHeight;
+		jest.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(2000);
+		const add = jest.spyOn(window, 'addEventListener');
+		const remove = jest.spyOn(window, 'removeEventListener');
+		Object.defineProperty(window, 'scrollY', { configurable: true, writable: true, value: 0 });
+		window.matchMedia = jest.fn().mockReturnValue({ matches: false });
+		const footer = document.createElement('footer');
+		footer.style.setProperty('--invitation-footer-reveal', 'held');
+		document.body.append(footer);
+		const blocking = () =>
+			add.mock.calls.filter(
+				([type, , options]) =>
+					(type === 'wheel' || type === 'touchmove') &&
+					typeof options === 'object' &&
+					options?.passive === false,
+			);
+
+		try {
+			holdFooterUntilSecondScroll(footer);
+			expect(blocking()).toHaveLength(0);
+
+			window.scrollY = bottom;
+			window.dispatchEvent(new Event('scroll'));
+			expect(blocking().map(([type]) => type)).toEqual(['wheel', 'touchmove']);
+
+			window.scrollY = 0;
+			window.dispatchEvent(new Event('scroll'));
+			const released = remove.mock.calls.map(([type]) => type);
+			expect(released).toEqual(expect.arrayContaining(['wheel', 'touchmove']));
+		} finally {
+			document.body.replaceChildren();
+			window.matchMedia = originalMedia;
+			Object.defineProperty(window, 'scrollY', originalScrollY);
+			jest.restoreAllMocks();
+		}
+	});
 });
