@@ -95,29 +95,6 @@ function testVariantHarnessIntegration() {
 }
 
 /**
- * Dev-only integration: injects the read-only operations console (/ops) when `astro dev` runs
- * with CELEBRA_OPS_CONSOLE=1 (`pnpm ops:console`). The console lives in src/ops-console/, outside
- * src/pages/, so `astro build` never compiles it; scripts/check-ops-console-bundle.mjs fails the
- * build if it ever reaches dist/.
- */
-function opsConsoleIntegration() {
-	return {
-		name: 'ops-console',
-		hooks: {
-			'astro:config:setup': ({ command, injectRoute }) => {
-				if (command === 'dev' && process.env.CELEBRA_OPS_CONSOLE === '1') {
-					injectRoute({
-						pattern: '/ops',
-						entrypoint: './src/ops-console/OpsConsolePage.astro',
-						prerender: false,
-					});
-				}
-			},
-		},
-	};
-}
-
-/**
  * Dev-only integration: checks if local Supabase is responding and warns if unreachable.
  * Service recovery belongs to the operator; starting Astro must not restart shared containers.
  */
@@ -205,7 +182,6 @@ export default defineConfig({
 		// Open site, private paths closed, AI training refused, AI assistants kept off invitations.
 		robotsTxt({ policy: buildRobotsPolicy() }),
 		testVariantHarnessIntegration(),
-		opsConsoleIntegration(),
 		supabaseDevPreflightIntegration(),
 		cloudflareStaticSecurityHeadersIntegration(),
 	],
