@@ -1,4 +1,4 @@
-import { daysUntil, eventFromHash, withWhatsAppText } from '@/lib/landing/vitrina';
+import { eventFromHash, withWhatsAppText } from '@/lib/landing/vitrina';
 
 /** CSS viewport width each device frame renders the live demo at, before scaling it down. */
 const LIVE_VIEWPORT_WIDTH: Record<string, number> = { phone: 390, tablet: 820, pc: 1280 };
@@ -42,7 +42,6 @@ export function initLandingShowroom(root: Document = document): void {
 
 	let currentEvent = eventSlugs[0];
 	let currentDemo = firstDemoOf(currentEvent) ?? '';
-	let nudged = false;
 	let liveWanted = false;
 
 	const screen = section.querySelector<HTMLElement>('.vitrina__screen');
@@ -81,16 +80,6 @@ export function initLandingShowroom(root: Document = document): void {
 		section.querySelectorAll<HTMLElement>(selector).forEach((element) => {
 			element.hidden = element.dataset.vitrinaFor !== active;
 		});
-	};
-
-	const updateCountdown = () => {
-		const count = section.querySelector<HTMLElement>(
-			`.mini[data-vitrina-for="${currentDemo}"] [data-countdown]`,
-		);
-		const days = count?.querySelector('[data-countdown-days]');
-		if (count?.dataset.countdown && days) {
-			days.textContent = String(daysUntil(count.dataset.countdown, new Date()));
-		}
 	};
 
 	const updateHeaderCta = () => {
@@ -141,10 +130,10 @@ export function initLandingShowroom(root: Document = document): void {
 	const render = () => {
 		showOnly('.vitrina__eyebrow, .vitrina__styles-group', currentEvent);
 		showOnly(
-			'.vitrina__bar [data-vitrina-for], .mini, .vitrina__detail [data-vitrina-for]',
+			'.vitrina__bar [data-vitrina-for], .vitrina__poster, .vitrina__detail [data-vitrina-for]',
 			currentDemo,
 		);
-		root.querySelectorAll<HTMLElement>('.hero-prime__chip, .vitrina__event').forEach((link) => {
+		section.querySelectorAll<HTMLElement>('.vitrina__event').forEach((link) => {
 			if (link.dataset.vitrinaEvent === currentEvent)
 				link.setAttribute('aria-current', 'true');
 			else link.removeAttribute('aria-current');
@@ -152,7 +141,6 @@ export function initLandingShowroom(root: Document = document): void {
 		section.querySelectorAll<HTMLElement>('[data-vitrina-demo]').forEach((button) => {
 			button.setAttribute('aria-pressed', String(button.dataset.vitrinaDemo === currentDemo));
 		});
-		updateCountdown();
 		updateQuote();
 		updateLive();
 		announce();
@@ -175,23 +163,7 @@ export function initLandingShowroom(root: Document = document): void {
 		section.querySelectorAll<HTMLButtonElement>('[data-vitrina-device]').forEach((button) => {
 			const active = button.dataset.vitrinaDevice === device;
 			button.setAttribute('aria-pressed', String(active));
-			if (active) {
-				const hint = section.querySelector('[data-vitrina-hint]');
-				if (hint) hint.textContent = button.dataset.hint ?? '';
-			}
 		});
-	};
-
-	// One gentle scroll inside the screen, so visitors see the invitation is live.
-	const nudge = () => {
-		if (nudged || prefersReducedMotion()) return;
-		nudged = true;
-		const mini = section.querySelector<HTMLElement>(`.mini[data-vitrina-for="${currentDemo}"]`);
-		if (!mini) return;
-		window.setTimeout(() => {
-			mini.scrollTo({ top: mini.clientHeight * 0.55, behavior: 'smooth' });
-			window.setTimeout(() => mini.scrollTo({ top: 0, behavior: 'smooth' }), 1300);
-		}, 900);
 	};
 
 	root.addEventListener('click', (event) => {
@@ -252,16 +224,6 @@ export function initLandingShowroom(root: Document = document): void {
 				{ rootMargin: '300px 0px' },
 			);
 			liveObserver.observe(device);
-			const observer = new IntersectionObserver(
-				(entries) => {
-					if (entries.some((entry) => entry.isIntersecting)) {
-						nudge();
-						observer.disconnect();
-					}
-				},
-				{ threshold: 0.5 },
-			);
-			observer.observe(device);
 		}
 	}
 

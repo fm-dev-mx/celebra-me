@@ -9,8 +9,8 @@ import {
 import { DEMO_INVITATIONS } from '@/invitations/demos';
 
 /**
- * Landing showroom ("vitrina"): event chips, a device mockup with a scrollable mini-invitation per
- * demo, and a WhatsApp quote whose message carries a reference code, `Ref. XV-JARDIN-VITRINA`
+ * Landing showroom ("vitrina"): event tabs, a device mockup with the live demo, and a WhatsApp
+ * quote whose message carries a reference code, `Ref. XV-JARDIN-VITRINA`
  * (event, style, entry point), so each conversation says which demo and which button started it.
  */
 
@@ -35,10 +35,7 @@ export interface VitrinaEventConfig {
 	icon: string;
 }
 
-/** Mini-invitation palette: page background, ink, accent band and text on the accent band. */
-type VitrinaPalette = readonly [string, string, string, string];
-
-/** Showroom copy and preview data per demo; names, dates and places are preview-only samples. */
+/** Showroom copy and preview data per demo; names and dates are preview-only samples. */
 interface VitrinaDemoPresentation {
 	name: string;
 	ref: string;
@@ -48,14 +45,9 @@ interface VitrinaDemoPresentation {
 	person: string;
 	/** Preview date, `YYYY-MM-DD`. */
 	date: string;
-	place: string;
-	palette: VitrinaPalette;
 	/** Focal point of the phone cover, so the face stays centered on every frame. */
 	focal: string;
 	cover: EventAssetKey;
-	/** Wide photo for the PC frame; without it the cover sits whole over a blurred copy. */
-	wideCover?: EventAssetKey;
-	gallery: readonly EventAssetKey[];
 }
 
 export interface VitrinaDemo extends VitrinaDemoPresentation {
@@ -97,11 +89,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: 'Mis XV años',
 		person: 'Luciana',
 		date: '2027-10-16',
-		place: 'Jardín de las Linternas',
-		palette: ['hsl(265 30% 14%)', 'hsl(40 60% 88%)', 'hsl(275 35% 72%)', 'hsl(265 30% 14%)'],
 		focal: '50% 45%',
 		cover: 'hero',
-		gallery: ['gallery01', 'gallery02', 'gallery03'],
 	},
 	'demo-xv-celestial-blue': {
 		name: 'Celestial Blue',
@@ -111,12 +100,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: 'Mis XV años',
 		person: 'Camila',
 		date: '2027-09-12',
-		place: 'Cuernavaca',
-		palette: ['hsl(220 45% 14%)', 'hsl(45 50% 92%)', 'hsl(42 60% 60%)', 'hsl(220 45% 14%)'],
 		focal: '50% 25%',
 		cover: 'portrait',
-		wideCover: 'heroDesktop',
-		gallery: ['gallery01', 'gallery02', 'gallery03'],
 	},
 	'demo-xv-enchanted-rose': {
 		name: 'Enchanted Rose',
@@ -126,12 +111,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: 'Mis XV años',
 		person: 'Isabella',
 		date: '2027-11-20',
-		place: 'Salón Versalles',
-		palette: ['hsl(345 30% 97%)', 'hsl(345 40% 22%)', 'hsl(345 45% 42%)', 'hsl(0 0% 100%)'],
 		focal: '62% 38%',
 		cover: 'portrait',
-		wideCover: 'heroDesktop',
-		gallery: ['gallery01', 'gallery02', 'gallery03'],
 	},
 	'demo-xv-editorial': {
 		name: 'Editorial',
@@ -141,11 +122,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: 'XV años',
 		person: 'Valentina',
 		date: '2027-09-18',
-		place: 'Ciudad de México',
-		palette: ['hsl(0 0% 98%)', 'hsl(0 0% 8%)', 'hsl(0 0% 8%)', 'hsl(0 0% 98%)'],
 		focal: '50% 40%',
 		cover: 'portrait',
-		gallery: ['gallery01', 'gallery02', 'gallery03'],
 	},
 	'demo-brisa': {
 		name: 'Brisa',
@@ -155,11 +133,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: 'Nos casamos',
 		person: 'Ximena & Diego',
 		date: '2027-11-13',
-		place: 'Punta Mita',
-		palette: ['hsl(40 40% 97%)', 'hsl(200 35% 20%)', 'hsl(190 35% 45%)', 'hsl(0 0% 100%)'],
 		focal: '50% 35%',
 		cover: 'portrait',
-		gallery: ['ceremony', 'reception', 'family'],
 	},
 	'demo-bautizo-angelic-presence': {
 		name: 'Angelical',
@@ -169,11 +144,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: 'Mi bautizo',
 		person: 'María',
 		date: '2027-10-17',
-		place: 'Ciudad de México',
-		palette: ['hsl(40 40% 97%)', 'hsl(215 25% 25%)', 'hsl(205 45% 80%)', 'hsl(215 25% 20%)'],
 		focal: '55% 40%',
 		cover: 'hero',
-		gallery: ['ceremony', 'reception', 'family'],
 	},
 	'demo-primera-comunion-angelic-presence': {
 		name: 'Angelical ilustrada',
@@ -183,11 +155,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: 'Mi primera comunión',
 		person: 'Camila Aurora',
 		date: '2027-09-11',
-		place: 'Parroquia del Carmen',
-		palette: ['hsl(45 40% 97%)', 'hsl(210 25% 25%)', 'hsl(45 55% 70%)', 'hsl(210 25% 20%)'],
 		focal: '50% 70%',
 		cover: 'hero',
-		gallery: ['ceremony', 'reception'],
 	},
 	'demo-cumple-luxury-hacienda': {
 		name: 'Hacienda',
@@ -197,11 +166,8 @@ const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
 		kicker: '60 años',
 		person: 'Alberto',
 		date: '2027-10-23',
-		place: 'Hacienda San Gabriel',
-		palette: ['hsl(35 30% 95%)', 'hsl(25 35% 18%)', 'hsl(25 40% 32%)', 'hsl(35 30% 95%)'],
 		focal: '45% 40%',
 		cover: 'portrait',
-		gallery: ['jardin', 'signature', 'family'],
 	},
 };
 
@@ -259,16 +225,13 @@ export function findVitrinaDemo(slug: string): VitrinaDemo | undefined {
 }
 
 /**
- * Per-demo palette and photo focal point as `[data-demo-style]` rules, rendered once by the
+ * Per-demo photo focal point as `[data-demo-style]` rules, rendered once by the
  * showroom for the hero fan, the showroom and the sticky bar (inline style attributes are not
  * allowed in components).
  */
 export function buildVitrinaDemoStyles(): string {
 	return VITRINA_EVENTS.flatMap((event) => event.demos)
-		.map((demo) => {
-			const [bg, ink, accent, onAccent] = demo.palette;
-			return `[data-demo-style='${demo.slug}']{--demo-focal:${demo.focal};--mini-bg:${bg};--mini-ink:${ink};--mini-accent:${accent};--mini-on-accent:${onAccent}}`;
-		})
+		.map((demo) => `[data-demo-style='${demo.slug}']{--demo-focal:${demo.focal}}`)
 		.join('');
 }
 

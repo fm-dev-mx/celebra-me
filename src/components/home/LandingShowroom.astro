@@ -2,10 +2,10 @@
 /**
  * src/components/home/LandingShowroom.astro
  *
- * Landing showroom ("vitrina"): event chips, a phone/tablet/PC frame, a strip of styles and a
+ * Landing showroom ("vitrina"): event tabs, a phone/tablet/PC frame, a strip of styles and a
  * detail card with the full demo link and a WhatsApp quote that carries `Ref. EVENT-STYLE-VITRINA`.
  * The frame shows the real demo in an iframe (envelope included) once it scrolls near; a
- * server-rendered mini-invitation per demo is the poster while it loads. The script only toggles
+ * server-rendered cover per demo is the poster while it loads. The script only toggles
  * `hidden`, so images of hidden demos are fetched when they are first shown.
  * `#<event>` anchors (e.g. `/#boda`) open the showroom on that event.
  */
@@ -34,45 +34,16 @@ const [initialEvent] = events;
 if (!initialEvent) throw new Error('The landing showroom needs at least one event.');
 const initialDemo = initialEvent.demos[0];
 
-const MONTHS = [
-	'enero',
-	'febrero',
-	'marzo',
-	'abril',
-	'mayo',
-	'junio',
-	'julio',
-	'agosto',
-	'septiembre',
-	'octubre',
-	'noviembre',
-	'diciembre',
-];
-
-function formatDate(isoDate: string) {
-	const [year, month, day] = isoDate.split('-').map(Number);
-	return {
-		short: `${String(day).padStart(2, '0')} · ${String(month).padStart(2, '0')} · ${year}`,
-		long: `${day} de ${MONTHS[month - 1]} de ${year}`,
-	};
-}
-
 function imagesFor(demo: VitrinaDemo) {
 	return {
 		cover: getEventAsset(demo.slug, demo.cover),
-		wide: demo.wideCover ? getEventAsset(demo.slug, demo.wideCover) : undefined,
-		gallery: demo.gallery.flatMap((key) => getEventAsset(demo.slug, key) ?? []),
 	};
 }
 
 const DEVICES = [
-	{ id: 'phone', label: 'Celular', hint: 'Toque el sobre y deslice dentro del celular' },
-	{ id: 'tablet', label: 'Tablet', hint: 'Toque el sobre y deslice dentro de la tablet' },
-	{
-		id: 'pc',
-		label: 'PC',
-		hint: 'Haga clic en el sobre y use la rueda del ratón dentro de la pantalla',
-	},
+	{ id: 'phone', label: 'Celular' },
+	{ id: 'tablet', label: 'Tablet' },
+	{ id: 'pc', label: 'PC' },
 ] as const;
 
 const showrooms = events.map((event) => ({
@@ -80,7 +51,6 @@ const showrooms = events.map((event) => ({
 	demos: event.demos.map((demo) => ({
 		demo,
 		images: imagesFor(demo),
-		date: formatDate(demo.date),
 		ref: buildVitrinaRef(event, demo, 'VITRINA'),
 		message: buildVitrinaMessage(event, demo, 'VITRINA'),
 		barMessage: buildVitrinaMessage(event, demo, 'BARRA'),
@@ -147,7 +117,6 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 							<button
 								type="button"
 								data-vitrina-device={device.id}
-								data-hint={device.hint}
 								aria-pressed={device.id === 'phone' ? 'true' : 'false'}
 							>
 								<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -182,78 +151,22 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 						<div class="vitrina__screen">
 							{
 								showrooms.flatMap(({ demos }) =>
-									demos.map(({ demo, images, date, isInitial }) => (
+									demos.map(({ demo, images, isInitial }) => (
 										<div
-											class="mini"
+											class="vitrina__poster"
 											data-vitrina-for={demo.slug}
 											hidden={!isInitial}
-											tabindex="0"
-											role="group"
-											aria-label={`Vista previa de ${demo.name}; deslice para recorrerla`}
 											data-demo-style={demo.slug}
 										>
-											<div class:list={['mini__cover', { 'mini__cover--wide': images.wide }]}>
-												{images.cover && (
-													<Fragment>
-														<Image
-															class="mini__backdrop"
-															src={images.cover}
-															alt=""
-															width={160}
-															loading="lazy"
-														/>
-														<Image
-															class="mini__photo"
-															src={images.cover}
-															alt={`Portada de la demo ${demo.name}`}
-															widths={[360, 640]}
-															sizes="(min-width: 900px) 420px, 64vw"
-															loading={isInitial ? 'eager' : 'lazy'}
-														/>
-													</Fragment>
-												)}
-												{images.wide && (
-													<Image
-														class="mini__wide"
-														src={images.wide}
-														alt=""
-														widths={[640, 1024]}
-														sizes="640px"
-														loading="lazy"
-													/>
-												)}
-												<div class="mini__shade" />
-												<div class="mini__title">
-													<span class="mini__kicker">{demo.kicker}</span>
-													<span class="mini__name">{demo.person}</span>
-													<span class="mini__date">{date.short}</span>
-												</div>
-											</div>
-											<div class="mini__band mini__band--accent">
-												<span class="mini__label">Faltan</span>
-												<div class="mini__count" data-countdown={demo.date}>
-													<div><b data-countdown-days>120</b><span>días</span></div>
-													<div><b>08</b><span>horas</span></div>
-													<div><b>24</b><span>min</span></div>
-												</div>
-											</div>
-											<div class="mini__band">
-												<span class="mini__label">Le esperamos</span>
-												<span class="mini__big">{date.long}</span>
-												<span class="mini__text">{demo.place}</span>
-											</div>
-											<div class="mini__gallery">
-												{images.gallery.map((image) => (
-													<Image src={image} alt="" widths={[200, 360]} sizes="160px" loading="lazy" />
-												))}
-											</div>
-											<div class="mini__band">
-												<span class="mini__label">Pase para</span>
-												<span class="mini__big">Familia Rivas</span>
-												<span class="mini__text">2 lugares</span>
-												<span class="mini__rsvp">Confirmar asistencia</span>
-											</div>
-											<p class="mini__brand">Demo de Celebra-me</p>
+											{images.cover && (
+												<Image
+													src={images.cover}
+													alt={`Portada de la demo ${demo.name}`}
+													widths={[360, 640]}
+													sizes="(min-width: 900px) 420px, 64vw"
+													loading={isInitial ? 'eager' : 'lazy'}
+												/>
+											)}
 										</div>
 									)),
 								)
@@ -266,10 +179,6 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 						</div>
 					</div>
 				</div>
-				<p class="vitrina__hint" aria-live="polite">
-					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m0 0-5-5m5 5 5-5" /></svg>
-					<span data-vitrina-hint>{DEVICES[0].hint}</span>
-				</p>
 			</div>
 
 			<div class="vitrina__panel">

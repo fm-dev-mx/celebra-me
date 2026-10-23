@@ -7,7 +7,6 @@ import ProductProof from '@/components/home/ProductProof.astro';
 import LandingShowroom from '@/components/home/LandingShowroom.astro';
 import EnvelopeScene from '@/components/home/EnvelopeScene.astro';
 import WhatsAppScene from '@/components/home/WhatsAppScene.astro';
-import GuestExperience from '@/components/home/GuestExperience.astro';
 import Testimonials from '@/components/home/Testimonials.astro';
 import Pricing from '@/components/home/Pricing.astro';
 import HowItWorks from '@/components/home/HowItWorks.astro';
@@ -77,7 +76,7 @@ const schemaJsonLd = {
 >
 	<script is:inline type="application/ld+json" set:html={JSON.stringify(schemaJsonLd)} slot="head"></script>
 	<div class="landing-sections-wrapper">
-		<Hero data={landingData.hero} events={VITRINA_EVENTS} fan={heroFan} />
+		<Hero data={landingData.hero} fan={heroFan} />
 		<LandingShowroom
 			events={VITRINA_EVENTS}
 			title={landingData.vitrina.title}
@@ -86,13 +85,13 @@ const schemaJsonLd = {
 		<EnvelopeScene demo={leadDemo} />
 		<WhatsAppScene demo={leadDemo} eventLabel={leadEvent.messageLabel} />
 		<ProductProof data={landingData.productProof} />
-		<GuestExperience data={landingData.guestExperience} />
 		<Testimonials data={landingData.testimonials} />
 		<Pricing data={landingData.pricing} />
 		<HowItWorks data={landingData.howItWorks} />
 		<FAQ data={landingData.faq} />
 		<Contact data={landingData.contact} />
-		<Footer data={footerData} />
+		{/* The contact section above already carries WhatsApp, email and city. */}
+		<Footer data={{ ...footerData, contact: undefined }} />
 	</div>
 	<StickyWhatsAppBar event={leadEvent} demo={leadDemo} />
 	<PromoStatus />

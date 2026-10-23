@@ -38,7 +38,6 @@ describe('landing showroom data', () => {
 	it('gives every demo a complete presentation', () => {
 		for (const event of VITRINA_EVENTS) {
 			for (const demo of event.demos) {
-				expect(demo.palette).toHaveLength(4);
 				expect(demo.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 				expect(demo.href).toMatch(/^\/[a-z0-9-]+$/);
 				expect(demo.href.startsWith(`/${event.eventType}/`)).toBe(false);

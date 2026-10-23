@@ -1,14 +1,13 @@
 ---
 /**
  * src/components/home/Hero.astro
- * Landing hero: promise, price, WhatsApp CTA, event chips and a fan of three demo phones. Chips and
- * phones are links to the showroom (`#<event>`); the showroom script selects the event or demo.
+ * Landing hero: promise, price, WhatsApp CTA and a fan of three demo phones. The phones are links to
+ * the showroom (`#<event>`); the showroom script selects the event and demo.
  */
 import { Image } from 'astro:assets';
-import Icon from '@/components/common/icons/Icon.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
-import type { VitrinaDemo, VitrinaEvent } from '@/data/landing-vitrina.data';
+import type { VitrinaDemo } from '@/data/landing-vitrina.data';
 import {
 	formatMxn,
 	getStartingPrice,
@@ -21,12 +20,11 @@ import '@/styles/home/_landing-hero.scss';
 
 interface Props {
 	data: HeroData;
-	events: readonly VitrinaEvent[];
 	/** Left, right and center phones; the center one is the largest and loads first. */
 	fan: readonly VitrinaDemo[];
 }
 
-const { data, events, fan } = Astro.props;
+const { data, fan } = Astro.props;
 // Built with the campaign of the build day; PromoStatus.astro switches it for the visitor's date.
 const campaign = getRenderCampaign();
 
@@ -82,34 +80,6 @@ const fanPhones = fan.map((demo, index) => ({
 				<p class="hero-prime__payment-note">{data.paymentNote}</p>
 			</div>
 
-			<nav class="hero-prime__events" aria-labelledby="hero-events-label">
-				<span class="hero-prime__events-label" id="hero-events-label">{data.eventsLabel}</span>
-				<div class="hero-prime__chips">
-					{
-						events.map((event) => (
-							<a
-								class="hero-prime__chip"
-								href={`#${event.publicSlug}`}
-								data-vitrina-event={event.publicSlug}
-								data-track-event="cta_clicked"
-								data-track-section="hero"
-								data-track-cta="hero_event_chip"
-								data-track-label={event.label}
-								data-track-intent="demo_showroom"
-								data-track-destination="demo"
-								data-event-type={event.eventType}
-							>
-								<Icon name={event.icon} size={18} />
-								{event.label}
-								<small>
-									{event.demos.length}
-									<span class="sr-only">{event.demos.length === 1 ? 'estilo' : 'estilos'}</span>
-								</small>
-							</a>
-						))
-					}
-				</div>
-			</nav>
 		</div>
 
 		<div class="hero-prime__fan">

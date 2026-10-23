@@ -191,8 +191,156 @@
 	}
 }
 
+// Notes on what sets the invitation apart. At rest they are a plain list under the envelope (phone)
+// or two columns beside it, each with a hairline pointing at the envelope (desktop).
+.envelope-notes {
+	display: grid;
+	gap: 0.9rem;
+	width: min(100%, 32ch);
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+	text-align: center;
+
+	&__item {
+		position: relative;
+		display: grid;
+		gap: 0.2rem;
+
+		strong {
+			font-family: var(--font-display);
+			font-size: var(--scene-fs-body);
+			font-weight: 600;
+			line-height: 1.2;
+		}
+
+		> span:last-child {
+			color: var(--scene-muted);
+			font-size: var(--scene-fs-small);
+			line-height: 1.4;
+		}
+	}
+
+	&__number {
+		color: var(--color-border-gold);
+		font-size: var(--scene-fs-tiny);
+		letter-spacing: 0.2em;
+	}
+
+	@media (width >= 900px) {
+		display: contents;
+
+		&__item {
+			grid-column: 1;
+			max-width: 26ch;
+			justify-self: end;
+			text-align: end;
+
+			&::after {
+				content: '';
+				position: absolute;
+				top: 0.55em;
+				inset-inline-end: -2.75rem;
+				width: 2.25rem;
+				height: 1px;
+				background: var(--color-border-gold);
+			}
+
+			&:nth-child(2n) {
+				grid-row: 3;
+			}
+
+			&:nth-child(2n + 1) {
+				grid-row: 2;
+			}
+
+			&:nth-child(n + 3) {
+				grid-column: 3;
+				justify-self: start;
+				text-align: start;
+
+				&::after {
+					inset-inline: -2.75rem auto;
+				}
+			}
+		}
+	}
+}
+
+@media (width >= 900px) {
+	.envelope-scene__stage {
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		grid-template-rows: 190px repeat(2, auto) auto;
+		column-gap: 3rem;
+		width: min(100%, 1140px);
+		margin-inline: auto;
+		padding-inline: 1rem;
+	}
+
+	.envelope {
+		grid-area: 1 / 2 / 4;
+	}
+
+	.envelope-scene__progress {
+		grid-area: 4 / 2;
+	}
+}
+
 @supports (animation-timeline: view()) {
 	@media (prefers-reduced-motion: no-preference) {
+		.envelope-notes__item {
+			animation: envelope-note-in linear both;
+			animation-timeline: --envelope;
+		}
+
+		// Desktop: each note appears with its stage and stays.
+		.envelope-notes__item:nth-child(1) {
+			animation-range: contain 0% contain 6%;
+		}
+
+		.envelope-notes__item:nth-child(2) {
+			animation-range: contain 8% contain 18%;
+		}
+
+		.envelope-notes__item:nth-child(3) {
+			animation-range: contain 40% contain 60%;
+		}
+
+		.envelope-notes__item:nth-child(4) {
+			animation-range: contain 80% contain 92%;
+		}
+
+		// Phone: one note at a time in the same spot under the envelope.
+		@media (width < 900px) {
+			.envelope-notes {
+				grid-template-areas: 'note';
+				min-height: 6.5rem;
+				align-items: start;
+			}
+
+			.envelope-notes__item {
+				grid-area: note;
+				animation-name: envelope-note-window;
+			}
+
+			.envelope-notes__item:nth-child(1) {
+				animation-range: contain 0% contain 18%;
+			}
+
+			.envelope-notes__item:nth-child(2) {
+				animation-range: contain 18% contain 38%;
+			}
+
+			.envelope-notes__item:nth-child(3) {
+				animation-range: contain 38% contain 72%;
+			}
+
+			.envelope-notes__item:nth-child(4) {
+				animation-name: envelope-note-in;
+				animation-range: contain 72% contain 86%;
+			}
+		}
+
 		.envelope-scene__track {
 			height: 240svh;
 			view-timeline-name: --envelope;
@@ -292,6 +440,36 @@
 	100% {
 		transform: translateY(-36%) scale(1.06);
 		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes envelope-note-in {
+	from {
+		opacity: 0%;
+		translate: 0 8px;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes envelope-note-window {
+	0% {
+		opacity: 0%;
+		translate: 0 8px;
+	}
+
+	20%,
+	80% {
+		opacity: 100%;
+		translate: 0 0;
+	}
+
+	100% {
+		opacity: 0%;
+		translate: 0 -8px;
 	}
 }
 

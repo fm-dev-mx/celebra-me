@@ -27,8 +27,8 @@ export const landingData: LandingPageData = {
 		title: 'Invitaciones con pase y confirmación para cada invitado',
 		titleEmphasis: 'confirmación',
 		subtitle:
-			'Usted la envía por WhatsApp y ve quién confirmó. Elija su evento y recorra cada estilo como lo verán sus invitados.',
-		mobileSubtitle: 'Usted la envía por WhatsApp y ve quién confirmó.',
+			'La diseñamos para su evento y usted la comparte desde su panel. Abajo puede recorrer cada estilo como lo verán sus invitados.',
+		mobileSubtitle: 'La diseñamos para su evento; usted la comparte desde su panel.',
 		priceLine: {
 			prefix: 'Desde',
 			suffix: 'MXN, pago único.',
@@ -36,7 +36,6 @@ export const landingData: LandingPageData = {
 		paymentNote: 'Sin anticipo: pague al recibir su invitación terminada.',
 		primaryCtaLabel: PRIMARY_CTA_LABEL,
 		primaryCtaTrustLine: PRIMARY_CTA_TRUST_LINE,
-		eventsLabel: '¿Qué celebra?',
 		fanLabel: 'Toque una para verla abajo',
 	},
 	vitrina: {
@@ -60,38 +59,6 @@ export const landingData: LandingPageData = {
 			},
 			{ title: 'Exportación', text: 'Descargue su lista con las respuestas.' },
 		],
-		cta: {
-			label: PRIMARY_CTA_LABEL,
-		},
-	},
-	guestExperience: {
-		eyebrow: 'PARA SUS INVITADOS',
-		title: 'Una invitación clara desde el primer mensaje',
-		description:
-			'Todo lo que necesitan para llegar, confirmar y celebrar con usted, en un solo enlace.',
-		values: [
-			{
-				name: 'Su nombre y sus pases',
-				description: 'Cada invitación muestra a quién va dirigida y cuántos lugares tiene.',
-			},
-			{
-				name: 'Confirmación en un toque',
-				description: 'Responden desde la misma invitación.',
-			},
-			{
-				name: 'Cómo llegar',
-				description:
-					'Google Maps, Waze y Apple Maps. La ubicación se muestra a quienes confirman.',
-			},
-			{
-				name: 'Calendario y mesa de regalos',
-				description:
-					'Guardan la fecha con un toque y ven su mesa de regalos en la invitación.',
-			},
-		],
-		cta: {
-			label: PRIMARY_CTA_LABEL,
-		},
 	},
 	testimonials: {
 		title: 'Lo que dicen nuestros clientes',
@@ -168,16 +135,13 @@ export const landingData: LandingPageData = {
 	},
 	howItWorks: {
 		eyebrow: 'PROCESO',
-		title: 'Nosotros la diseñamos. Usted la envía desde su panel.',
+		title: 'De la idea a su invitación, en cuatro pasos',
 		steps: [
 			{ title: 'Nos envía los datos de su evento.' },
 			{ title: 'Diseñamos su invitación.' },
-			{ title: 'La revisa terminada y paga al aprobarla.' },
-			{ title: 'La envía por WhatsApp y ve quién confirmó.' },
+			{ title: 'La revisa terminada y la aprueba.' },
+			{ title: 'La comparte con sus invitados.' },
 		],
-		cta: {
-			label: PRIMARY_CTA_LABEL,
-		},
 	},
 	contact: {
 		eyebrow: 'COTIZACIÓN',

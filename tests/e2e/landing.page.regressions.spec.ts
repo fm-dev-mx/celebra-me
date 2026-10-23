@@ -101,7 +101,7 @@ test.describe('Landing page regressions', () => {
 			await expect(page.locator('[data-nav-mobile-toggle]')).toBeVisible();
 			await expect(page.locator('.header-base__desktop-nav')).toBeHidden();
 			await expect(
-				page.locator('#experiencia-invitados .guest-experience__value-item').first(),
+				page.locator('#prueba-producto .proof-rail-flow__item').first(),
 			).toBeVisible();
 
 			await page.locator('[data-nav-mobile-toggle]').click();
@@ -269,12 +269,12 @@ test.describe('Landing page regressions', () => {
 		);
 		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
 		await expect(heroCta).toBeVisible();
-		// Event chips and the phone fan open the showroom below on that event.
-		await expect(page.locator('.hero-prime__chip[href="#xv"]')).toBeVisible();
+		// The phone fan opens the showroom below; the showroom tabs are the only event selector.
+		await expect(page.locator('.hero-prime__chip')).toHaveCount(0);
 		await expect(page.locator('.hero-prime__phone')).toHaveCount(3);
 		await expect(page.locator('#tipo-evento .vitrina__events')).toBeVisible();
 		await expect(
-			page.locator('#tipo-evento .mini[data-vitrina-for]:not([hidden])'),
+			page.locator('#tipo-evento .vitrina__poster[data-vitrina-for]:not([hidden])'),
 		).toHaveCount(1);
 	});
 
@@ -328,15 +328,15 @@ test.describe('Landing page regressions', () => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/', { waitUntil: 'load' });
 
-		await page.locator('.hero-prime__chip[href="#boda"]').click();
+		await page.locator('.hero-prime__phone[href="#boda"]').click();
 		await expect(page).toHaveURL(/#boda$/);
 		await expect(page.locator('.vitrina__event[href="#boda"]')).toHaveAttribute(
 			'aria-current',
 			'true',
 		);
-		await expect(page.locator('.mini[data-vitrina-for="demo-brisa"]')).not.toHaveAttribute(
-			'hidden',
-		);
+		await expect(
+			page.locator('.vitrina__poster[data-vitrina-for="demo-brisa"]'),
+		).not.toHaveAttribute('hidden');
 
 		await expect(page.locator('.vitrina__open:visible')).toHaveAttribute(
 			'data-track-cta',
@@ -420,12 +420,10 @@ test.describe('Landing page regressions', () => {
 			'data-track-section',
 			'event-types',
 		);
+		// The sticky bar is the quote button over the middle of the page.
 		await expect(
-			page.locator('#prueba-producto [data-track-cta="whatsapp-product-proof"]'),
-		).toHaveCount(1);
-		await expect(
-			page.locator('#prueba-producto [data-track-cta="whatsapp-product-proof"]'),
-		).toBeVisible();
+			page.locator('#prueba-producto [data-track-event="whatsapp_contact_clicked"]'),
+		).toHaveCount(0);
 	});
 
 	test('orders sections from product proof to the decision', async ({ page }) => {
@@ -439,7 +437,6 @@ test.describe('Landing page regressions', () => {
 				'envelope-title',
 				'chat-scene-title',
 				'prueba-producto',
-				'experiencia-invitados',
 				'testimonios',
 				'pricing',
 				'como-funciona',
@@ -451,17 +448,19 @@ test.describe('Landing page regressions', () => {
 		);
 		expect(order).toEqual([...order].sort((a, b) => a - b));
 		await expect(page.locator('#servicios, .photo-interlude')).toHaveCount(0);
-		// One WhatsApp quote CTA per section.
-		for (const id of [
-			'prueba-producto',
-			'experiencia-invitados',
-			'como-funciona',
-			'contacto',
-		]) {
+		await expect(page.locator('#experiencia-invitados')).toHaveCount(0);
+		// Middle sections leave the quote to the sticky bar; the contact section keeps its own.
+		for (const [id, count] of [
+			['prueba-producto', 0],
+			['como-funciona', 0],
+			['contacto', 1],
+		] as const) {
 			await expect(
 				page.locator(`#${id} [data-track-event="whatsapp_contact_clicked"]`),
-			).toHaveCount(1);
+			).toHaveCount(count);
 		}
+		// The envelope scene points at what sets the invitation apart, one note per stage.
+		await expect(page.locator('.envelope-notes__item')).toHaveCount(4);
 	});
 
 	test('sends pricing CTAs directly to WhatsApp with package context', async ({ page }) => {
@@ -773,7 +772,7 @@ test.describe('Landing page regressions', () => {
 		await expect(terms).toContainText(formatMxn(getExpressDelivery().price));
 	});
 
-	test('shows real social links, contact details and a full-width copyright row', async ({
+	test('shows real social links and a full-width copyright row without repeating contact', async ({
 		page,
 	}) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
@@ -785,16 +784,9 @@ test.describe('Landing page regressions', () => {
 			.locator('.social-link')
 			.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
 		expect(socialHrefs).toEqual(footerData.socialLinks?.links.map((link) => link.href));
-		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.email);
-		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.city);
-		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
-			'data-campaign-code',
-			buildCampaignCode('FOOTER', GENERAL_CODE),
-		);
-		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
-			'aria-label',
-			'Quiero mi invitación por WhatsApp',
-		);
+		// On the landing the contact section carries WhatsApp, email and city; the footer does not repeat them.
+		await expect(footer.locator('.footer-contact')).toHaveCount(0);
+		await expect(page.locator('#contacto')).toContainText(footerData.contact!.email);
 
 		const rowWidths = await footer.evaluate((element) => {
 			const containers = element.querySelectorAll('.container');
@@ -827,17 +819,15 @@ test.describe('Landing page regressions', () => {
 			]),
 		);
 
-		const guestCta = page.locator(
-			'#experiencia-invitados [data-track-event="whatsapp_contact_clicked"]',
-		);
-		await expect(guestCta).toHaveAttribute('data-track-cta', 'whatsapp-guest-experience');
-		await expect(guestCta).toHaveAttribute('data-track-section', 'guest-experience');
-		await expect(guestCta).toHaveAttribute(
+		const heroCta = page.locator('#inicio [data-track-event="whatsapp_contact_clicked"]');
+		await expect(heroCta).toHaveAttribute('data-track-cta', 'whatsapp-hero');
+		await expect(heroCta).toHaveAttribute('data-track-section', 'hero');
+		await expect(heroCta).toHaveAttribute(
 			'data-campaign-code',
-			buildCampaignCode('GUESTS', GENERAL_CODE),
+			buildCampaignCode('HERO', GENERAL_CODE),
 		);
-		await expect(guestCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
-		await expect(guestCta).toContainText('Quiero mi invitación');
+		await expect(heroCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
+		await expect(heroCta).toContainText('Quiero mi invitación');
 	});
 
 	test('shows the sticky WhatsApp bar after the hero and hides it over the contact form', async ({
