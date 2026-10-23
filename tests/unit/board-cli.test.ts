@@ -203,6 +203,44 @@ describe('pnpm board', () => {
 		expect(claude.find((r: Json) => r.id === 'imagenes').color).toBe('block');
 	});
 
+	it('requires a #N pull request for review and merge states and normalizes its form', () => {
+		const dir = makeBoard({
+			tareas: [task('con-pr', { rama: 'fix/x' }), task('con-url'), task('auditoria')],
+		});
+		expect(board(dir, 'set', 'auditoria', '--rev=1', 'estado=en revision').status).toBe(0);
+		const merged = board(dir, 'set', 'auditoria', '--rev=2', 'estado=unida');
+		expect(merged.status).toBe(2);
+		expect(merged.err).toContain('unida requiere pr=#<número>');
+		const missing = board(dir, 'set', 'con-pr', '--rev=1', 'estado=en revision');
+		expect(missing.status).toBe(2);
+		expect(missing.err).toContain('en revision requiere pr=#<número>');
+		expect(board(dir, 'set', 'con-pr', '--rev=1', 'estado=en revision', 'pr=475').status).toBe(
+			0,
+		);
+		expect(readTask(dir, 'con-pr').pr).toBe('#475');
+		const url = 'pr=https://github.com/fm-dev-mx/celebra-me/pull/473';
+		expect(board(dir, 'set', 'con-url', '--rev=1', 'estado=unida', url).status).toBe(0);
+		expect(readTask(dir, 'con-url').pr).toBe('#473');
+		const bad = board(dir, 'set', 'con-url', '--rev=2', 'pr=pendiente');
+		expect(bad.status).toBe(2);
+		expect(bad.err).toContain('pr debe ser #<número>');
+		const foreign = 'pr=https://github.com/otro/repo/pull/12';
+		const other = board(dir, 'set', 'con-url', '--rev=2', foreign);
+		expect(other.status).toBe(2);
+		expect(other.err).toContain('pr de otro repositorio');
+	});
+
+	it('enforces the PR rule on a legacy record once a write touches its state', () => {
+		const legacy = { pr: 'https://github.com/otro/repo/pull/12' };
+		const dir = makeBoard({ tareas: [task('heredada', legacy)] });
+		expect(board(dir, 'set', 'heredada', '--rev=1', 'ahora=sigue').status).toBe(0);
+		const merged = board(dir, 'set', 'heredada', '--rev=2', 'estado=unida');
+		expect(merged.status).toBe(2);
+		expect(merged.err).toContain('pr de otro repositorio');
+		expect(readTask(dir, 'heredada').estado).not.toBe('unida');
+		expect(board(dir, 'set', 'heredada', '--rev=2', 'estado=unida', 'pr=12').status).toBe(0);
+	});
+
 	it('locks a task for one agent and refuses a move while locked', () => {
 		const dir = makeBoard({ tareas: [task('compartida')] });
 		expect(board(dir, 'claim', 'compartida', '--agente=codex').status).toBe(0);

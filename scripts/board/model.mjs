@@ -214,8 +214,37 @@ const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));
 const subsetOf = (list, allowed) => Array.isArray(list) && list.every((x) => allowed.includes(x));
 
 const optional = (v, ok) => v === undefined || ok(v);
+
+/** Merged always needs a PR; under review only when the task has a branch (audits ship none). */
+const needsPr = (t) => t.estado === 'unida' || (t.estado === 'en revision' && !!t.rama);
+
+const OWN_PULL = /^(?:https?:\/\/)?github\.com\/fm-dev-mx\/celebra-me\/pull\/([1-9]\d*)\/?$/;
+const isForeignPull = (p) => /\/pull\/\d+/.test(String(p)) && !OWN_PULL.test(String(p).trim());
+
+/** Canonical `#N` from 398, "398", "#398" or this repository's pull URL; anything else stays. */
+export function normalizePr(pr) {
+	if (pr === undefined || pr === null || String(pr).trim() === '') return undefined;
+	const s = String(pr).trim();
+	const m = s.match(/^#?([1-9]\d*)$/) ?? s.match(OWN_PULL);
+	return m ? `#${m[1]}` : pr;
+}
 const validLock = (c) =>
 	AGENTES.includes(c?.agente) && c.agente !== 'cualquiera' && isDate(c.desde);
+
+/** The PR invariant, also enforced on legacy records whenever a write touches pr, estado or rama. */
+const PR_CHECKS = [
+	[
+		(t) => !optional(t.pr, (p) => /^#[1-9]\d*$/.test(p)),
+		(t) =>
+			isForeignPull(t.pr)
+				? 'pr de otro repositorio: use un PR de fm-dev-mx/celebra-me'
+				: 'pr debe ser #<número>',
+	],
+	[(t) => needsPr(t) && !t.pr, (t) => `${t.estado} requiere pr=#<número>`],
+];
+
+/** PR problems of a task, without the other shape checks. */
+export const prIssues = (t) => PR_CHECKS.filter(([bad]) => bad(t)).map(([, msg]) => msg(t));
 
 /** Field checks: [problem, message] where `problem(t)` is true when the field is wrong. */
 const FIELD_CHECKS = [
@@ -245,6 +274,7 @@ const FIELD_CHECKS = [
 		() => 'requisitos debe ser una lista (vacía si no espera nada)',
 	],
 	[(t) => !optional(t.candado, validLock), () => 'candado debe ser {agente, desde}'],
+	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
 	[(t) => !optional(t.archivada, isDate), () => 'archivada no es fecha'],
 	[
