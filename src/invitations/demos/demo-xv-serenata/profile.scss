@@ -1,0 +1,58 @@
+// Serenata: the sage-champagne preset as a garden letter. Tokens only; layout stays with the
+// variants. The cover is a full-width photograph under a champagne hairline (no arch), the only
+// scroll-linked accent is the photograph settling as the cover leaves, and the reply progress is a
+// plain champagne mark.
+.event--demo-xv-serenata.theme-preset--sage-champagne {
+	--hero-bleed-photo-frame: 1px solid rgb(var(--color-champagne-light-rgb) / 90%);
+	--hero-bleed-photo-frame-inset: 0.75rem;
+	--hero-bleed-photo-settle: hero-bleed-settle;
+	--hero-bleed-occasion-display: inline-flex;
+	--hero-bleed-occasion-rule: clamp(1.5rem, 4vw, 2.5rem);
+	--hero-bleed-occasion-gap: 0.75rem;
+	--hero-bleed-rule: rgb(var(--color-champagne-rgb) / 70%);
+	--hero-bleed-when-color: var(--color-forest-ink);
+	--hero-bleed-where-color: var(--color-forest-ink-soft);
+
+	// The pass and its reply half share one width.
+	--reply-card-max-width: 30rem;
+
+	// Stacked (phones held upright): the photograph fills the width and keeps her whole.
+	.invitation-hero[data-variant='bleed-portrait'] {
+		--hero-bleed-photo-img-width: 100%;
+		--hero-bleed-photo-img-height: 100%;
+		--hero-bleed-photo-position-stack: 62% 45%;
+	}
+
+	// The program as a card of the same letter: cream sheet, champagne hairline, sage rules.
+	.itinerary[data-variant='editorial-ledger'] {
+		--editorial-ledger-rule: rgb(var(--color-sage-deep-rgb) / 22%);
+		--editorial-ledger-spine: rgb(var(--color-champagne-rgb) / 45%);
+		--editorial-ledger-panel-width: 44rem;
+		--editorial-ledger-panel-padding: clamp(1.75rem, 6vw, 3.5rem) clamp(1.25rem, 5vw, 3.5rem);
+		--editorial-ledger-panel-bg: var(--color-cream);
+		--editorial-ledger-panel-outline: 1px solid rgb(var(--color-champagne-rgb) / 55%);
+		--editorial-ledger-panel-shadow: 0 18px 40px -28px rgb(var(--color-forest-ink-rgb) / 45%);
+		--editorial-ledger-icon-display: none;
+		--editorial-ledger-row-space: 0.35rem;
+		--itinerary-title-tracking: 0.02em;
+		--itinerary-item-time-color: var(--color-champagne-ink);
+		--itinerary-item-label-color: var(--color-forest-ink);
+		--itinerary-item-desc-color: var(--color-forest-ink-soft);
+	}
+
+	// The album: the first print lands while the page scrolls in, so it never arrives empty.
+	.gallery-section[data-variant='album-assemble'] {
+		--gallery-album-accent: var(--color-champagne-ink);
+		--gallery-album-hint-font: var(--font-display);
+		--gallery-album-hint-style: italic;
+		--gallery-album-hint-size: 1rem;
+		--gallery-album-lead: 1;
+	}
+
+	// One step at a time, marked in champagne without a glow.
+	[data-rsvp-flow='steps'] {
+		--rsvp-steps-track: rgb(var(--color-forest-ink-rgb) / 14%);
+		--rsvp-steps-lantern: var(--color-champagne);
+		--rsvp-steps-glow: transparent;
+	}
+}
