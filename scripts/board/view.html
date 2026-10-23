@@ -251,7 +251,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos). Violeta: lista y un agente la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y solo se escriben con <code>pnpm board</code>; esta página solo lee y muestra cada cambio al instante.</footer>
 </div>
 <script type="module">
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -397,7 +397,7 @@ function renderTop(){
 function renderMine(){
   const all=mQueue(S.board),tag=t=>t.num?'T'+t.num:'';
   const tasks=all.filter(t=>mColor(t,S.board)==='own');
-  const asks=all.flatMap(t=>requisitos(t,S.board).filter(r=>r.tipo==='dueno'&&!r.ok).map(r=>({t,r})));
+  const asks=ownerAsks(S.board);
   let h='<h2>Le toca a usted</h2>';
   if(!tasks.length&&!asks.length)h+='<p class="none">Usted: nada por ahora.</p>';
   h+=tasks.map(t=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}</span></button>`).join('');

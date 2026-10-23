@@ -109,6 +109,65 @@ describe('pnpm board', () => {
 		]);
 	});
 
+	it('keeps owner tasks and answers out of sight until their date and tasks are met', () => {
+		const MODEL_PATH = path.join(ROOT, 'scripts', 'board', 'model.mjs');
+		const tareas = [
+			task('pronto', { urgencia: 'alta' }),
+			task('dueno-fecha', {
+				actor: 'dueno',
+				requisitos: [{ tipo: 'fecha', ref: '2026-10-26T00:00:00Z' }],
+			}),
+			task('precio', {
+				requisitos: [
+					{ tipo: 'fecha', ref: '2026-12-10T00:00:00Z' },
+					{ tipo: 'dueno', ref: 'Decidir el precio' },
+				],
+			}),
+			task('base', { estado: 'en curso' }),
+			task('tras-base', {
+				requisitos: [
+					{ tipo: 'tarea', ref: 'base' },
+					{ tipo: 'dueno', ref: 'Elegir la foto' },
+				],
+			}),
+			task('ya', { requisitos: [{ tipo: 'dueno', ref: 'Elegir el color' }] }),
+		];
+		// Prints the queue with colors and the owner answers due at a given time.
+		const probe = String.raw`
+			const m = await import(process.argv[1]);
+			const board = { tareas: JSON.parse(process.argv[2]) };
+			const at = (iso) => {
+				const now = Date.parse(iso);
+				return {
+					queue: m.queue(board, now).map((t) => t.id + ':' + m.color(t, board, { now })),
+					asks: m.ownerAsks(board, now).map(({ t, r }) => t.id + ':' + r.ref),
+				};
+			};
+			console.log(JSON.stringify([at(process.argv[3]), at(process.argv[4])]));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(MODEL_PATH).href,
+				JSON.stringify(tareas),
+				NOW,
+				'2026-12-11T00:00:00Z',
+			],
+			{ cwd: ROOT, allowFailure: true },
+		);
+		expect(result.status).toBe(0);
+		const [before, after] = JSON.parse(String(result.stdout));
+		expect(before.queue[0]).toBe('pronto:auto');
+		expect(before.queue).toContain('dueno-fecha:block');
+		expect(before.asks).toEqual(['ya:Elegir el color']);
+		expect(after.queue[0]).toBe('dueno-fecha:own');
+		expect(after.asks).toEqual(expect.arrayContaining(['precio:Decidir el precio']));
+		expect(after.asks).not.toContain('tras-base:Elegir la foto');
+	});
+
 	it('gives each agent only tasks it can finish alone', () => {
 		const dir = makeBoard({
 			tareas: [

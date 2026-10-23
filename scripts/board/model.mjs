@@ -139,6 +139,18 @@ export function queue(board, now = Date.now()) {
 	return out;
 }
 
+/**
+ * Answers the owner owes now (d163): unmet «dueno» requisites of open tasks whose date and task
+ * requisites are already met, so an answer that is not due yet stays out of sight.
+ */
+export function ownerAsks(board, now = Date.now()) {
+	return queue(board, now).flatMap((t) => {
+		const reqs = requisitos(t, board, now);
+		if (reqs.some((r) => (r.tipo === 'fecha' || r.tipo === 'tarea') && !r.ok)) return [];
+		return reqs.filter((r) => r.tipo === 'dueno' && !r.ok).map((r) => ({ t, r }));
+	});
+}
+
 /** Whether the task shows under an agent tab: «libres» are unlocked tasks for any agent. */
 export function inTab(t, tab) {
 	if (!tab || tab === 'todas') return true;
