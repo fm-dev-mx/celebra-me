@@ -196,6 +196,21 @@ export function normalizePr(pr) {
 const validLock = (c) =>
 	AGENTES.includes(c?.agente) && c.agente !== 'cualquiera' && isDate(c.desde);
 
+/** The PR invariant, also enforced on legacy records whenever a write touches pr, estado or rama. */
+const PR_CHECKS = [
+	[
+		(t) => !optional(t.pr, (p) => /^#[1-9]\d*$/.test(p)),
+		(t) =>
+			isForeignPull(t.pr)
+				? 'pr de otro repositorio: use un PR de fm-dev-mx/celebra-me'
+				: 'pr debe ser #<número>',
+	],
+	[(t) => needsPr(t) && !t.pr, (t) => `${t.estado} requiere pr=#<número>`],
+];
+
+/** PR problems of a task, without the other shape checks. */
+export const prIssues = (t) => PR_CHECKS.filter(([bad]) => bad(t)).map(([, msg]) => msg(t));
+
 /** Field checks: [problem, message] where `problem(t)` is true when the field is wrong. */
 const FIELD_CHECKS = [
 	[(t) => !String(t.titulo ?? '').trim(), () => 'falta titulo'],
@@ -224,14 +239,7 @@ const FIELD_CHECKS = [
 		() => 'requisitos debe ser una lista (vacía si no espera nada)',
 	],
 	[(t) => !optional(t.candado, validLock), () => 'candado debe ser {agente, desde}'],
-	[
-		(t) => !optional(t.pr, (p) => /^#[1-9]\d*$/.test(p)),
-		(t) =>
-			isForeignPull(t.pr)
-				? 'pr de otro repositorio: use un PR de fm-dev-mx/celebra-me'
-				: 'pr debe ser #<número>',
-	],
-	[(t) => needsPr(t) && !t.pr, (t) => `${t.estado} requiere pr=#<número>`],
+	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
 	// d046: every prompt asks all owner decisions in one round at the start.
 	[

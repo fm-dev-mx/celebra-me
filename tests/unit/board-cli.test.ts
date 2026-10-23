@@ -145,6 +145,17 @@ describe('pnpm board', () => {
 		expect(other.err).toContain('pr de otro repositorio');
 	});
 
+	it('enforces the PR rule on a legacy record once a write touches its state', () => {
+		const legacy = { pr: 'https://github.com/otro/repo/pull/12' };
+		const dir = makeBoard({ tareas: [task('heredada', legacy)] });
+		expect(board(dir, 'set', 'heredada', '--rev=1', 'ahora=sigue').status).toBe(0);
+		const merged = board(dir, 'set', 'heredada', '--rev=2', 'estado=unida');
+		expect(merged.status).toBe(2);
+		expect(merged.err).toContain('pr de otro repositorio');
+		expect(readTask(dir, 'heredada').estado).not.toBe('unida');
+		expect(board(dir, 'set', 'heredada', '--rev=2', 'estado=unida', 'pr=12').status).toBe(0);
+	});
+
 	it('locks a task for one agent and refuses a move while locked', () => {
 		const dir = makeBoard({ tareas: [task('compartida')] });
 		expect(board(dir, 'claim', 'compartida', '--agente=codex').status).toBe(0);

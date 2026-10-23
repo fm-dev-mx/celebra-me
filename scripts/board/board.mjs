@@ -35,6 +35,7 @@ import {
 	color,
 	nextFor,
 	normalizePr,
+	prIssues,
 	queue,
 	requisitos,
 	stage,
@@ -135,7 +136,10 @@ function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	if (pr === undefined) delete t.pr;
 	else t.pr = pr;
 	const old = before ? new Set(taskIssues(before)) : new Set();
-	const added = taskIssues(t).filter((m) => !old.has(m));
+	// A legacy record keeps unrelated problems, but a write that touches the PR rule must satisfy it.
+	const touchesPr = ['pr', 'estado', 'rama'].some((k) => before?.[k] !== t[k]);
+	const strict = new Set(touchesPr ? prIssues(t) : []);
+	const added = taskIssues(t).filter((m) => strict.has(m) || !old.has(m));
 	if (added.length) throw new UsageError(`no se escribió ${t.id}: ${added.join('; ')}`);
 	writeDoc(dir, 'tareas', t.id, t);
 	if ((before?.estado ?? null) !== t.estado)
