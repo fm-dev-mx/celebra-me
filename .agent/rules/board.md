@@ -25,13 +25,16 @@ authorization.
 - **Execution number**: urgency → ready before blocked → `hasta` → `orden` → title; an open task it
   waits for goes right before it.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
-  finish. `claim`/`release` hold a lock (`candado`) for one agent at a time; `move` hands a task
-  over only without a lock and logs it; `review <id> --agente=<b>` creates the child `<id>-revision`
+  finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
+  agent at a time; `move` hands a task over only without a lock, logs it and warns when the new
+  agent lacks a `requiere` capability; `review <id> --agente=<b>` creates the child `<id>-revision`
   with `origen`. Never duplicate a task. Rules are the same for every agent.
 - **Writes**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
-  `vigente: false`).
+  `vigente: false`). Aliases: `get`, `update`, `decision`, `log`, `verify`; every command takes
+  `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 5 per
+  document).
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change and per `move`; no rows for reviews

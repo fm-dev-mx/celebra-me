@@ -4,10 +4,14 @@
  *
  * The store lives in the ignored `.agent/tmp/board/` of the Integration checkout, found through the Git common
  * dir, so every lane and agent shares one board. CELEBRA_BOARD_DIR overrides it (tests).
+ *
+ * Before a document is overwritten, its previous content is copied to
+ * <dir>/.respaldos/<collection>/<id>/<time>.json; the newest BACKUPS_KEPT copies per document stay.
  */
 import { execFileSync } from 'node:child_process';
 import {
 	closeSync,
+	copyFileSync,
 	existsSync,
 	mkdirSync,
 	openSync,
@@ -31,6 +35,8 @@ export const COLLECTIONS = [
 ];
 const SAFE_ID = /^[A-Za-z0-9._~:@+-]{1,200}$/;
 const LOCK_STALE_MS = 30_000;
+export const BACKUP_DIR = '.respaldos';
+export const BACKUPS_KEPT = 5;
 
 export function boardDir(cwd = process.cwd()) {
 	if (process.env.CELEBRA_BOARD_DIR) return resolve(cwd, process.env.CELEBRA_BOARD_DIR);
@@ -84,9 +90,24 @@ export function writeDoc(dir, collection, id, data) {
 	const rest = { ...data };
 	delete rest.id;
 	const f = join(d, `${assertId(id)}.json`);
+	if (existsSync(f)) backup(dir, collection, id, f);
 	const tmp = `${f}.${process.pid}.tmp`;
 	writeFileSync(tmp, `${JSON.stringify(rest, null, '\t')}\n`);
 	renameSync(tmp, f);
+}
+
+/** Keep the previous version of a document, rotating out all but the newest BACKUPS_KEPT copies. */
+function backup(dir, collection, id, file) {
+	const d = join(dir, BACKUP_DIR, collection, id);
+	mkdirSync(d, { recursive: true });
+	const stamp = new Date().toISOString().replace(/[-:.]/g, '');
+	let name = `${stamp}.json`;
+	for (let i = 2; existsSync(join(d, name)); i++) name = `${stamp}-${i}.json`;
+	copyFileSync(file, join(d, name));
+	const copies = readdirSync(d)
+		.filter((n) => n.endsWith('.json'))
+		.sort();
+	for (const old of copies.slice(0, -BACKUPS_KEPT)) rmSync(join(d, old), { force: true });
 }
 
 /** Run `fn` holding the store lock, so two agents never interleave a read-modify-write. */

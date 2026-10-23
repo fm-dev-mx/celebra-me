@@ -73,6 +73,8 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
 - Read `.agent/rules/gatekeeper.md` for review/remediation tiers and `.agent/rules/git-safety.md`
   for Git rules.
 - Load only the smallest relevant rule, skill, or domain doc.
+- Task board: every agent reads and writes it only with `pnpm board` and follows
+  `.agent/rules/board.md`.
 
 ## Definition of Done & Planning
 

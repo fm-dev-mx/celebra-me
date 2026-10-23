@@ -1,7 +1,7 @@
 /**
  * One-time migration of the ArtifactData export (board v2) into the local store (board v3).
  * `espera`, `usted` and `deps` become `requisitos`; `mapa` (task id → fields) sets what only a person can judge,
- * such as urgencia, actor, agente or toca.
+ * such as urgencia, actor, agente or toca. Tasks default to `agente: claude`.
  */
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -36,7 +36,7 @@ export function toV3(t, extra = {}) {
 		estado: t.estado ?? 'pendiente',
 		urgencia: 'normal',
 		actor: t.espera === 'usted' ? 'dueno' : 'sesion',
-		agente: 'cualquiera',
+		agente: 'claude', // d144: board v2 only had Claude sessions
 		toca,
 		requisitos: req,
 		...extra,

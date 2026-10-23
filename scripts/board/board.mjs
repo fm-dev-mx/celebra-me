@@ -7,7 +7,8 @@
  *   show <id> [--json]
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
- *   claim <id> --agente=<a> [--sesion=<id>]     lock: one owner at a time
+ *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
+ *                                               (rama defaults to the current branch)
  *   release <id> --agente=<a>
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
@@ -16,12 +17,15 @@
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--json]
  *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
+ *   verify [--json]                             same as pnpm board:verify
  *   view [--port=4320]                          local read-only page at http://127.0.0.1:<port>/, live
  *
+ * Aliases: get = show, update = set, decision = decide, log = history. Every command takes --json.
  * Values are JSON when they look like JSON (numbers, true/false/null, [..], {..}); `campo=` removes the field.
  */
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
 	canFinish,
@@ -54,6 +58,21 @@ const COLOR_LABEL = {
 const LOOKS_JSON = /^(\[|\{|true$|false$|null$|-?\d+(\.\d+)?$)/;
 
 class UsageError extends Error {}
+
+/** Print `text`, or `data` as JSON when the command got --json. */
+const say = (flags, out, data, text) => out(flags.json ? JSON.stringify(data, null, 2) : text);
+
+function currentBranch() {
+	try {
+		return execFileSync('git', ['branch', '--show-current'], {
+			cwd: process.env.INIT_CWD || process.cwd(),
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+	} catch {
+		return '';
+	}
+}
 
 export function parseArgs(argv) {
 	const flags = {};
@@ -226,7 +245,8 @@ const commands = {
 		return withLock(dir, () => {
 			if (readDoc(dir, 'tareas', id)) throw new UsageError(`ya existe la tarea ${id}`);
 			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
-			out(`${saveTask(dir, null, t, { quien: flags.quien }).id} creada (rev 1)`);
+			const saved = saveTask(dir, null, t, { quien: flags.quien });
+			say(flags, out, saved, `${saved.id} creada (rev 1)`);
 		});
 	},
 	set({ pos, pairs, flags }, dir, out) {
@@ -237,7 +257,7 @@ const commands = {
 			const data = flags.data ? JSON.parse(readFileSync(resolve(flags.data), 'utf8')) : {};
 			const merged = applyPairs({ ...before, ...data, id }, pairs);
 			const t = saveTask(dir, before, merged, flags);
-			out(`${t.id} rev ${t.rev}`);
+			say(flags, out, t, `${t.id} rev ${t.rev}`);
 		});
 	},
 	claim({ pos, flags }, dir, out) {
@@ -256,26 +276,29 @@ const commands = {
 				throw new UsageError(
 					`${agente} no tiene todo lo que pide requiere: ${(before.requiere ?? []).join(', ')}`,
 				);
-			const candado = {
-				agente,
-				desde: nowIso(),
-				...(flags.sesion ? { sesion: flags.sesion } : {}),
-			};
+			const rama = typeof flags.rama === 'string' ? flags.rama : currentBranch();
+			const candado = { agente, desde: nowIso() };
+			for (const [k, v] of Object.entries({
+				sesion: flags.sesion,
+				carril: flags.carril,
+				rama,
+			}))
+				if (v && v !== true) candado[k] = v;
 			const t = saveTask(dir, before, { ...before, candado });
-			out(`${t.id} es de ${agente} (rev ${t.rev})`);
+			say(flags, out, t, `${t.id} es de ${agente} (rev ${t.rev})`);
 		});
 	},
 	release({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente');
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (!before.candado) return out(`${before.id} no tiene candado`);
+			if (!before.candado) return say(flags, out, before, `${before.id} no tiene candado`);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
 			const rest = { ...before };
 			delete rest.candado;
 			const t = saveTask(dir, before, rest);
-			out(`${t.id} libre (rev ${t.rev})`);
+			say(flags, out, t, `${t.id} libre (rev ${t.rev})`);
 		});
 	},
 	move({ pos, flags }, dir, out) {
@@ -287,6 +310,10 @@ const commands = {
 					`${before.id} tiene candado de ${before.candado.agente}: primero «release»`,
 				);
 			const t = saveTask(dir, before, { ...before, agente });
+			const aviso =
+				agente === 'cualquiera' || canFinish(t, agente, loadBoard(dir))
+					? ''
+					: `aviso: ${agente} no tiene todo lo que pide requiere (${(t.requiere ?? []).join(', ')}); la tarea queda gris para ${agente}.`;
 			logRow(dir, {
 				tarea: t.id,
 				de: before.agente ?? 'cualquiera',
@@ -294,7 +321,8 @@ const commands = {
 				quien: flags.quien,
 				corrio: 'pnpm board move',
 			});
-			out(`${t.id} pasa a ${agente} (rev ${t.rev})`);
+			const text = `${t.id} pasa a ${agente} (rev ${t.rev})${aviso ? `\n${aviso}` : ''}`;
+			say(flags, out, aviso ? { ...t, aviso } : t, text);
 		});
 	},
 	review({ pos, flags }, dir, out) {
@@ -316,10 +344,11 @@ const commands = {
 				...(src.rama ? { rama: src.rama } : {}),
 				...(src.pr ? { pr: src.pr } : {}),
 			};
-			out(`${saveTask(dir, null, t, { quien: flags.quien }).id} creada para ${agente}`);
+			const saved = saveTask(dir, null, t, { quien: flags.quien });
+			say(flags, out, saved, `${saved.id} creada para ${agente}`);
 		});
 	},
-	decide({ pairs }, dir, out) {
+	decide({ pairs, flags }, dir, out) {
 		need(pairs.decision, 'falta decision=…');
 		return withLock(dir, () => {
 			const all = readCollection(dir, 'decisiones');
@@ -332,15 +361,16 @@ const commands = {
 				writeDoc(dir, 'decisiones', old.id, { ...old, vigente: false });
 			}
 			const tareas = pairs.tareas ? pairs.tareas.split(',').filter(Boolean) : [];
-			writeDoc(dir, 'decisiones', id, {
+			const d = {
 				...pairs,
 				tareas,
 				id,
 				en: nowIso(),
 				vigente: true,
 				quien: pairs.quien ?? 'dueño',
-			});
-			out(`${id} registrada`);
+			};
+			writeDoc(dir, 'decisiones', id, d);
+			say(flags, out, d, `${id} registrada`);
 		});
 	},
 	carril({ pos, pairs, flags }, dir, out) {
@@ -354,7 +384,7 @@ const commands = {
 				comprobadoEn: nowIso(),
 			};
 			writeDoc(dir, 'carriles', id, l);
-			out(`${id} rev ${l.rev}`);
+			say(flags, out, { ...l, id }, `${id} rev ${l.rev}`);
 		});
 	},
 	estado({ pairs, flags }, dir, out) {
@@ -363,7 +393,7 @@ const commands = {
 			checkRev(before, flags);
 			const e = { ...applyPairs(before, pairs), rev: (before.rev ?? 0) + 1, revEn: nowIso() };
 			writeDoc(dir, 'estado', 'actual', e);
-			out(`estado rev ${e.rev}`);
+			say(flags, out, { ...e, id: 'actual' }, `estado rev ${e.rev}`);
 		});
 	},
 	history({ flags }, dir, out) {
@@ -404,7 +434,10 @@ const commands = {
 					'el tablero local ya tiene tareas: use --force para reemplazarlas',
 				);
 			const r = importExport(src, dir, mapa);
-			out(
+			say(
+				flags,
+				out,
+				r,
 				`importadas: ${Object.entries(r)
 					.map(([k, v]) => `${v} ${k}`)
 					.join(', ')}`,
@@ -415,9 +448,33 @@ const commands = {
 		const { serveView } = await import('./view-server.mjs');
 		const port = Number(flags.port ?? 4320);
 		await serveView(dir, port);
-		out(`Tablero en http://127.0.0.1:${port}/  (Ctrl+C para cerrar)`);
+		const url = `http://127.0.0.1:${port}/`;
+		say(flags, out, { url }, `Tablero en ${url}  (Ctrl+C para cerrar)`);
+	},
+	verify({ flags }, dir, out) {
+		const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-board.mjs');
+		const args = [script, dir, ...(flags.json ? ['--json'] : [])];
+		try {
+			out(execFileSync(process.execPath, args, { encoding: 'utf8' }).trimEnd());
+		} catch (e) {
+			// Exit 1 = the board has shape problems: the report is still the answer.
+			if (e.status === 1 && e.stdout) {
+				out(String(e.stdout).trimEnd());
+				process.exitCode = 1;
+				return;
+			}
+			throw new UsageError(String(e.stderr ?? '').trim() || 'board:verify falló', {
+				cause: e,
+			});
+		}
 	},
 };
+Object.assign(commands, {
+	get: commands.show,
+	update: commands.set,
+	decision: commands.decide,
+	log: commands.history,
+});
 
 export async function run(argv, { dir = boardDir(), out = console.log } = {}) {
 	const [cmd, ...rest] = argv;

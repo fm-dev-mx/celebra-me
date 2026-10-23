@@ -112,6 +112,47 @@ describe('pnpm board', () => {
 		expect(log).toHaveLength(1);
 	});
 
+	it('records where a lock was taken and warns when a move lacks a capability', () => {
+		const dir = makeBoard({ tareas: [task('fotos', { requiere: ['imagenes'] })] });
+		const claim = board(
+			dir,
+			'claim',
+			'fotos',
+			'--agente=gemini',
+			'--sesion=s1',
+			'--carril=f08-demos',
+			'--rama=feat/fotos',
+			'--json',
+		);
+		expect(JSON.parse(claim.out).candado).toMatchObject({
+			agente: 'gemini',
+			sesion: 's1',
+			carril: 'f08-demos',
+			rama: 'feat/fotos',
+		});
+		board(dir, 'release', 'fotos', '--agente=gemini');
+		const move = board(dir, 'move', 'fotos', '--agente=codex');
+		expect(move.status).toBe(0);
+		expect(move.out).toContain('aviso: codex no tiene todo lo que pide requiere (imagenes)');
+	});
+
+	it('answers the aliases and keeps rotating backups of each overwrite', () => {
+		const dir = makeBoard({ tareas: [task('alias')] });
+		expect(JSON.parse(board(dir, 'get', 'alias', '--json').out).rev).toBe(1);
+		for (let rev = 1; rev <= 7; rev++)
+			expect(board(dir, 'update', 'alias', `--rev=${rev}`, `ahora=paso ${rev}`).status).toBe(
+				0,
+			);
+		expect(readdirSync(path.join(dir, '.respaldos', 'tareas', 'alias'))).toHaveLength(5);
+		expect(JSON.parse(board(dir, 'decision', 'decision=usar alias', '--json').out).id).toBe(
+			'd001',
+		);
+		expect(JSON.parse(board(dir, 'log', '--json').out)[0].txt).toContain('usar alias');
+		const verify = board(dir, 'verify', '--json');
+		expect(verify.status).toBe(0);
+		expect(JSON.parse(verify.out).inconsistencias).toEqual([]);
+	});
+
 	it('pins writes to the rev read, rejects bad shapes and logs estado changes', () => {
 		const dir = makeBoard({ tareas: [task('pin')] });
 		const stale = board(dir, 'set', 'pin', '--rev=0', 'estado=en curso');
@@ -210,6 +251,7 @@ describe('pnpm board', () => {
 		const t = readTask(dir, 'vieja');
 		expect(t).toMatchObject({
 			urgencia: 'alta',
+			agente: 'claude',
 			actor: 'dueno',
 			toca: ['main', 'produccion'],
 			requisitos: [
