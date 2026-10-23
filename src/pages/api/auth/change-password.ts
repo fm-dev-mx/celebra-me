@@ -20,6 +20,7 @@ import {
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
 import { ChangePasswordSchema } from '@/lib/schemas';
+import { logSecurityEvent } from '@/lib/server/security-events';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
@@ -59,6 +60,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			});
 		} catch (error) {
 			if (!isRejectedAuthCredential(error)) throw error;
+			logSecurityEvent('login_failed', { route: 'change-password' });
 			throw new ApiError(401, 'unauthorized', 'La contraseña actual es incorrecta.');
 		}
 

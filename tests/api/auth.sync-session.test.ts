@@ -52,6 +52,7 @@ describe('API: /api/auth/sync-session', () => {
 			id: 'user-2',
 			amr: [{ method: 'mfa' }],
 		});
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
 		const response = await syncSession({
 			request: createMockRequest(
@@ -62,6 +63,16 @@ describe('API: /api/auth/sync-session', () => {
 		} as unknown as APIContext);
 
 		expect(response.status).toBe(403);
+		expect(warn.mock.calls).toEqual([
+			[
+				JSON.stringify({
+					event: 'security_event',
+					kind: 'mfa_failed',
+					reason: 'invalid_elevated_token',
+				}),
+			],
+		]);
+		warn.mockRestore();
 	});
 
 	it('rejects when elevated token is not MFA-elevated', async () => {
@@ -74,6 +85,7 @@ describe('API: /api/auth/sync-session', () => {
 			id: 'user-1',
 			amr: [{ method: 'password' }],
 		});
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
 		const response = await syncSession({
 			request: createMockRequest(
@@ -84,6 +96,16 @@ describe('API: /api/auth/sync-session', () => {
 		} as unknown as APIContext);
 
 		expect(response.status).toBe(403);
+		expect(warn.mock.calls).toEqual([
+			[
+				JSON.stringify({
+					event: 'security_event',
+					kind: 'mfa_failed',
+					reason: 'missing_mfa_evidence',
+				}),
+			],
+		]);
+		warn.mockRestore();
 	});
 
 	it('stores session when elevated token is valid and MFA-proven', async () => {

@@ -11,12 +11,12 @@ when_to_use:
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
-  - Read docs/core/invitation-preparation-contract.md
+  - Read docs/core/invitation-creation-contract.md
 related_skills:
   - client-invitation-audit
   - theme-architecture
 related_docs:
-  - docs/core/invitation-preparation-contract.md
+  - docs/core/invitation-creation-contract.md
   - .agent/templates/invitation/preparation-state.md
 ---
 
@@ -36,7 +36,7 @@ Load in this order; do not copy semantics across layers:
 
 1. This skill — preparation sequence, conversational checkpoints, handoff boundary.
 2. `.agent/skills/client-invitation-audit` — reusable analysis + phase script references.
-3. `docs/core/invitation-preparation-contract.md` — classification, hygiene, placeholders, readiness
+3. `docs/core/invitation-creation-contract.md` — classification, hygiene, placeholders, readiness
    policy, Markdown schema.
 4. Executable helpers — `src/lib/invitation-preparation/` (**SSOT** for completeness, readiness,
    placeholders, owner pack, image plan). Cite helpers when recording prepReadiness; confirm with

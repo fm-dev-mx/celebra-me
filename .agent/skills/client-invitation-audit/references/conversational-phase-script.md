@@ -1,8 +1,9 @@
 # Conversational Phase Script — Invitation Preparation
 
 Provider-neutral script for interactive preparation. Orchestration owner:
-[`.agent/skills/invitation-preparation/SKILL.md`](../../invitation-preparation/SKILL.md).
-Semantics SSOT: [`docs/core/invitation-preparation-contract.md`](../../../../docs/core/invitation-preparation-contract.md).
+[`.agent/skills/invitation-preparation/SKILL.md`](../../invitation-preparation/SKILL.md). Semantics
+SSOT:
+[`docs/core/invitation-creation-contract.md`](../../../../docs/core/invitation-creation-contract.md).
 Executable evaluation: `src/lib/invitation-preparation/` (cite helpers; do not invent readiness).
 
 Use with live `EVENT_TYPES` (`cumple`, not `cumpleanos`). Client-specific hard-stops override
@@ -12,11 +13,11 @@ generic ones when the owner states them.
 
 ## Intake channels (session)
 
-| Channel | Role | Persisted how |
-| ------- | ---- | ------------- |
-| Full chat / WhatsApp export (text + photos/videos) | **Evidence** for facts, preferences, constraints, ambiguities | Opaque source label in Markdown; classified facts only — never raw dump |
-| High-resolution (HR) photo URL or approved cloud/folder path | **Authoritative asset source** for inventory | Opaque label or repo-relative path in Sources / Photograph Inventory |
-| Chat attachments alone | Evidence that photos exist; **not** managed assets | Claim in Fact Register; still require HR URL / explicit asset root |
+| Channel                                                      | Role                                                          | Persisted how                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Full chat / WhatsApp export (text + photos/videos)           | **Evidence** for facts, preferences, constraints, ambiguities | Opaque source label in Markdown; classified facts only — never raw dump |
+| High-resolution (HR) photo URL or approved cloud/folder path | **Authoritative asset source** for inventory                  | Opaque label or repo-relative path in Sources / Photograph Inventory    |
+| Chat attachments alone                                       | Evidence that photos exist; **not** managed assets            | Claim in Fact Register; still require HR URL / explicit asset root      |
 
 Never call WhatsApp APIs. Never treat chat media as `production-ready` without the asset-preparation
 protocol and quality labels.
@@ -120,8 +121,7 @@ session. Vocabulary: **prepReadiness** (this) vs **envReadiness** (`invitation:r
 **Rules:**
 
 - `onlyNonProductionImages` / any assigned role still `provisional-whatsapp` (with no
-  `production-ready` set) ⇒ at best `READY_WITH_PLACEHOLDERS`, **never**
-  `READY_FOR_IMPLEMENTATION`.
+  `production-ready` set) ⇒ at best `READY_WITH_PLACEHOLDERS`, **never** `READY_FOR_IMPLEMENTATION`.
 - Markdown that disagrees with the helper is invalid — correct the Markdown.
 
 **Checkpoint:** prepReadiness line + history row match helper; run
@@ -134,10 +134,10 @@ session. Vocabulary: **prepReadiness** (this) vs **envReadiness** (`invitation:r
 
 ### C8 — Handoff
 
-| prepReadiness | Action |
-| ------------- | ------ |
-| `NOT_READY` | Stop. Owner pack only. |
-| `READY_WITH_PLACEHOLDERS` | Implementation allowed only with documented provisional assets + replacement requirements. |
+| prepReadiness              | Action                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `NOT_READY`                | Stop. Owner pack only.                                                                                |
+| `READY_WITH_PLACEHOLDERS`  | Implementation allowed only with documented provisional assets + replacement requirements.            |
 | `READY_FOR_IMPLEMENTATION` | Implementation allowed when task authorizes; then design-reference / managed lifecycle as authorized. |
 
 Publication, merge conflicts, Preview/Production = **out of scope** for this script.

@@ -17,6 +17,7 @@ import {
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
 import { resolvePasswordAuthEmail } from '@/lib/rsvp/services/auth-identifier.service';
+import { logSecurityEvent } from '@/lib/server/security-events';
 
 /**
  * Classifies an error thrown during signInWithPassword into an appropriate
@@ -64,6 +65,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		assertValidPassword(password);
 		const authEmail = await resolvePasswordAuthEmail(identifier);
 		if (!authEmail) {
+			logSecurityEvent('login_failed', { route: 'login-host' });
 			return errorResponse(new ApiError(401, 'unauthorized', 'Credenciales inválidas.'));
 		}
 		let auth: Awaited<ReturnType<typeof signInWithPassword>>;
@@ -73,7 +75,11 @@ export const POST: APIRoute = async ({ request, url }) => {
 				password,
 			});
 		} catch (cause) {
-			throw classifySignInError(cause);
+			const classified = classifySignInError(cause);
+			if (classified instanceof ApiError && classified.status === 401) {
+				logSecurityEvent('login_failed', { route: 'login-host' });
+			}
+			throw classified;
 		}
 		if (!normalizeAppRole(auth.user.app_metadata?.role)) {
 			throw new ApiError(

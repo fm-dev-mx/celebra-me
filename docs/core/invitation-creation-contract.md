@@ -1,19 +1,330 @@
-# Canonical Invitation Creation Contract — Celebra-me
+# Canonical Invitation Contract — Celebra-me
 
-**Owns:** identity and required fields for any managed invitation (what must exist before apply).
+**Owns:** the order in which an invitation is created; preparation semantics (classifications,
+canonical Markdown, placeholders, asset preparation, preparation readiness); identity and required
+fields (what must exist before apply); the authoring boundaries of profiles, slug compositions,
+variants and presets; and the pre-push check.
 
-**Does not own:** operational runbook steps, CLI flags, packaging, target order, or agent safety
-constraints. Those live in:
+**Does not own:** operational runbook steps, CLI flags, packaging, target order, agent safety
+constraints, the dashboard draft/publish state machine, or technical Local/Preview/Production
+readiness (`invitation-readiness.ts` / **envReadiness**). Those live in:
 
 - Runbook — [`docs/domains/intake/production-flow.md`](../domains/intake/production-flow.md)
 - Safety constraints —
   [`.agent/rules/invitation-production.md`](../../.agent/rules/invitation-production.md)
+- Dashboard draft → publish —
+  [`.agent/rules/intake-publishing.md`](../../.agent/rules/intake-publishing.md)
+
+Related authorities:
+
+- Preparation workflow —
+  [`.agent/skills/invitation-preparation/SKILL.md`](../../.agent/skills/invitation-preparation/SKILL.md)
+- Analysis skill —
+  [`.agent/skills/client-invitation-audit/SKILL.md`](../../.agent/skills/client-invitation-audit/SKILL.md)
+- Executable preparation SSOT —
+  [`src/lib/invitation-preparation/`](../../src/lib/invitation-preparation/)
+- Markdown template —
+  [`.agent/templates/invitation/preparation-state.md`](../../.agent/templates/invitation/preparation-state.md)
+- Durable per-invite state — `docs/invitations/<slug>.md`
 
 See the invitation authority chain in [`.agent/index.md`](../../.agent/index.md).
 
 ---
 
-## 1. Global Invitation Identity & Requirements
+## Creation workflow
+
+Every new invitation follows these steps in order. A step may be revisited, but none is skipped.
+
+| Step               | Output                                                                   | Section                                                      |
+| ------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| 1. Preparation     | `docs/invitations/<slug>.md` with a helper-backed `prepReadiness`        | [Preparation](#1-preparation)                                |
+| 2. Aesthetic brief | Three references, hero decisions and one owner-accepted viewport         | [Aesthetic brief](#2-aesthetic-brief)                        |
+| 3. Definition      | `src/invitations/clients/<slug>/invitation.ts` with every required field | [Identity](#3-invitation-identity--requirements)             |
+| 4. Styling         | Tokens, then an optional slug composition; variants stay experimental    | [Styling](#4-styling-tokens-composition-variants-presets)    |
+| 5. Pre-push        | Every local guard green before the first push                            | [Pre-push](#5-pre-push)                                      |
+| 6. Acceptance      | Readable composition and the human creative outcome                      | [Acceptance](#6-acceptance)                                  |
+| 7. Release         | Preview, approval and Production by the runbook                          | [`production-flow.md`](../domains/intake/production-flow.md) |
+
+Conceptual lifecycle: **Preparation → Implementation → Managed lifecycle / publication**.
+
+---
+
+## 1. Preparation
+
+### 1.1 Intake channels
+
+| Channel                                                     | Role             | Notes                                                                                 |
+| ----------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------- |
+| Full chat / WhatsApp (text, photos, videos)                 | **Evidence**     | Facts, preferences, constraints, ambiguities; media proves claims, not managed assets |
+| High-resolution (HR) photo URL or approved folder/repo path | **Asset source** | Required before photograph inventory                                                  |
+| Dashboard intake / editor publish state                     | **Out of scope** | Owned by intake-publishing + publication chain — not this contract                    |
+
+WhatsApp / conversation material is a source of client facts, event requirements, preferences,
+explicit decisions, constraints, textual content, and unresolved ambiguities.
+
+It is **not** the authoritative source of invitation photographs or managed visual assets. Chat
+attachments must not be ingested into managed asset storage. Photos for production inventory must
+come from an explicit high-resolution URL and/or filesystem/repository path supplied for the
+invitation, then processed under the asset-preparation protocol.
+
+Do not implement WhatsApp API synchronization in this contract. The workflow operates on supplied
+conversation material only.
+
+### 1.2 Information classifications
+
+Canonical states (executable: `InfoClassification` in
+`src/lib/invitation-preparation/classification.ts`):
+
+| State                     | Meaning                                                                  |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `verified`                | Explicit supporting client/source evidence exists                        |
+| `inferred`                | Agent-derived; must include basis; never presented as a client statement |
+| `ambiguous`               | Competing interpretations preserved in notes                             |
+| `missing`                 | Not present; absence is not consent                                      |
+| `not_applicable`          | Event contract or invitation scope excludes the field                    |
+| `requires_owner_decision` | Subjective/commercial choice; recommendation must not auto-apply         |
+
+Creative recommendations must be stored under **Agent Recommendations**, never as `verified` client
+requirements until explicitly approved.
+
+**Ambiguous-fact discipline:** `ambiguous` on a required or conditional completeness field is
+**blocking** until resolved or validly marked `not_applicable`. Do not describe the invitation as
+complete, done, or release-ready while such ambiguity remains.
+
+**Media evidence interpretability:** Supplied audio, image, or video material may provide evidence
+only when its substantive information can be reliably interpreted. Unavailable, unintelligible, or
+otherwise unreliable media must never be reconstructed from surrounding conversational context and
+must remain `ambiguous` or `missing`, as appropriate, when material to preparation. This does not
+change the WhatsApp-vs-HR asset boundary (§1.1) or info-hygiene (§1.4.1): raw transcripts and media
+dumps must not become durable preparation state.
+
+**Identity spelling freeze:** Before freezing `slug` and `hostLoginAlias`, celebrant/honoree name
+orthography must be `verified` (or an explicit owner override recorded). Do not lock identity on
+inferred spelling.
+
+**Slug vs route:** Never include `eventType` in the slug. The public path is already
+`/{eventType}/{slug}` — see Canonical Slug in [Identity](#3-invitation-identity--requirements).
+
+### 1.3 Event-type completeness
+
+Executable contracts live in `src/lib/invitation-preparation/event-completeness.ts` (**SSOT**).
+
+Each field supports: `required` | `conditional` | `recommended` | `optional`.
+
+Contract maturity:
+
+| Maturity          | Meaning                                                           |
+| ----------------- | ----------------------------------------------------------------- |
+| `evidence-backed` | Sufficient verified practice to evaluate preparation completeness |
+| `partial`         | Some fields evidenced; gaps documented                            |
+
+Current posture:
+
+- `xv` — evidence-backed
+- `boda`, `cumple`, `baby-shower`, `bautizo`, `primera-comunion` — partial (evidenced field lists in
+  `event-completeness-contracts.ts`; the two sacraments come from one invitation each)
+
+**Process for partial contracts:** Evaluate only defined fields; record maturity gaps in Markdown;
+apply client-specific constraints from chat as classified facts. Do not invent XV-scale matrices for
+under-evidenced event types.
+
+Live event-type identifiers use `cumple` (not `cumpleanos`).
+
+The structure side of the same event-type contract (required sections and verified theme presets)
+lives in `src/lib/invitation/event-type-contract.ts`. `defineInvitation` rejects a definition that
+breaks it, and `tests/content/event-type-contract.test.ts` checks every definition and demo.
+
+`evaluateEventCompleteness(eventType, facts)` answers deterministically whether available
+information is sufficient to prepare (no blocking unresolved required/conditional fields).
+
+### 1.4 Canonical invitation Markdown
+
+Path: `docs/invitations/<slug>.md`
+
+This file is the durable preparation source of truth. Update it in place. Conversation context and
+tracked plans must not replace it.
+
+Required sections match `.agent/templates/invitation/preparation-state.md`:
+
+Identity, Sources, Fact Register, Event Completeness, Placeholders, Owner Decisions, Agent
+Recommendations, Sections, Design Direction, Photograph Inventory (including uniqueness),
+Implementation Constraints, Preparation Readiness.
+
+#### 1.4.1 Info-hygiene — persist vs session-only
+
+| May persist in `docs/invitations/<slug>.md`                                         | Session-only / never commit                                          |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Opaque source labels (e.g. `source:wa-export`, `source:hr-photos`)                  | Absolute OneDrive / `Clientes\` / user-profile paths                 |
+| Classified facts needed to build the invite (names, dates, venues as event content) | Full chat exports, raw transcripts, photo/video dumps                |
+| Repo-relative asset paths under the repository                                      | Chat folder titles that embed contact names (`WhatsApp Chat - …`)    |
+| High-level “HR photo URL on file (session)” without the secret URL                  | Paste of payroll / HR-portal / credential-bearing / environment URLs |
+| Quality labels, role map, uniqueness table                                          | Screenshots of private chats committed as binaries                   |
+
+**Forbidden in durable prep docs and agent commits:** absolute machine paths to client folders;
+chat-title dumps as durable identity; human-resources/payroll/internal portal URLs; secrets;
+credential-bearing links.
+
+**Demo crossover:** never point a demo `_assetSlug` at a real client asset directory (see skill
+content-profile invariants).
+
+### 1.5 Missing-information semantics
+
+| Kind                      | Effect                                                               |
+| ------------------------- | -------------------------------------------------------------------- |
+| Blocking missing data     | Prevents READY_*; implementation forbidden when `NOT_READY`          |
+| Non-blocking missing data | May use a controlled placeholder; preparation may continue           |
+| Ambiguous data            | Requires resolution; blocking when the field is required/conditional |
+| Owner decision            | Cannot be inferred                                                   |
+| Not applicable            | Valid closed state                                                   |
+
+Do not fabricate plausible client content as a substitute for missing information.
+
+### 1.6 Placeholder policy
+
+Tokens: `[[PENDIENTE:FIELD_ID]]` (grep-able).
+
+- Register every placeholder in the Markdown.
+- Identify the real missing datum and replacement requirement.
+- Never treat a placeholder as verified production content.
+- Blocking placeholders ⇒ `NOT_READY`.
+- `READY_WITH_PLACEHOLDERS` may contain only documented non-blocking placeholders.
+
+Helpers: `createPlaceholderToken`, `findPlaceholderTokens`, `validatePlaceholderRecords`.
+
+### 1.7 Asset preparation
+
+1. Require an explicit high-resolution URL and/or source asset path (opaque label in Markdown).
+2. Inventory images; preserve originals.
+3. Record dimensions, format, orientation, weight, quality, role, duplicates, processing.
+4. Classify WhatsApp-compressed material as `provisional-whatsapp`.
+5. Produce a **photo uniqueness** map: each production role has a distinct source unless intentional
+   multi-role reuse is documented.
+6. Produce a role-aware optimization **plan** using the canonical transfer-weight targets in
+   `image-optimization.ts`; role-aware managed delivery enforces those targets while generic and
+   historical assets retain the hard safety limits for compatibility.
+7. Do not bind one uploaded asset (same spec key / asset id) to published paths with different
+   delivery roles. Same source photograph + two role-encoded derivatives is the allowed form of
+   multi-role reuse (`hero.backgroundImage` vs `hero.backgroundImageMobile`). Dashboard publish and
+   managed release both validate bytes against `getImageOptimizationRoleForPath(path)`.
+8. Do not recompress already suitable images solely for process theater.
+9. Generate derivatives only when crop/DPR/role weight justifies it.
+10. **Double-encode note:** Prefer delivering already-normalized managed-release WebPs without a
+    second Astro/`getImage` encode that upscales or re-compresses past native width (see Hero
+    managed-URL direct delivery). Record the risk when sources are provisional.
+
+Prepared managed media must use direct delivery. Storage and R2 URLs do not request an implicit
+Astro transformation, including content-addressed objects. Preserve explicit `original` dimensions
+on references where layout requires them. Historical explicit `optimized` contracts remain readable
+until their prepared replacements are published; new canonical managed references must not depend on
+this compatibility path. Bundled demo/template assets retain their separate Astro pipeline.
+
+Existing `normalizeInvitationImage` and publish dimension gates remain the runtime enforcers.
+WhatsApp attachments never become managed assets without this protocol and explicit quality labels.
+
+Helpers: `planImageOptimization`, `summarizeAssetQuality`, `isProductionAuthoritativeImage`.
+
+### 1.8 Theme preset and visual decisions
+
+Invitations do not depend on demos: a demo is only a visual reference for its theme preset, and the
+preparation record carries no base demo (`baseDemoId` is not a preparation field).
+
+- Record the decision in the Design Direction row `Selected theme preset`; it gates readiness.
+- Client-selected preset (or a chosen demo, which identifies its preset) ⇒ `verified`.
+- No selection ⇒ recommend options; final choice `requires_owner_decision`.
+- Client colors preserved when stated; otherwise recommend separately until approved.
+
+### 1.9 Preparation readiness (**prepReadiness**)
+
+Independent from technical publication readiness (**envReadiness** — `invitation-readiness.ts` /
+`pnpm invitation:release -- --status`).
+
+| State                      | Meaning                                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------------------------- |
+| `NOT_READY`                | Blocking gaps/assets/decisions remain; **no** payload/SCSS implementation                           |
+| `READY_WITH_PLACEHOLDERS`  | Structure resolved; only documented non-blocking placeholders and/or provisional asset replacements |
+| `READY_FOR_IMPLEMENTATION` | Required facts/assets/decisions resolved; production-authoritative assets; no placeholders remain   |
+
+#### 1.9.1 Helper is SSOT
+
+Executable evaluation in `src/lib/invitation-preparation/readiness.ts` is the **only** authority for
+prepReadiness:
+
+- `evaluatePreparationReadiness`
+- `summarizeAssetQuality` / `onlyNonProductionImages`
+- `canBeginImplementation` / `assertImplementationAllowed`
+
+**Markdown must mirror the helper.** Hand-editing `READY_FOR_IMPLEMENTATION` while assigned
+production roles remain `provisional-whatsapp` (or `summarizeAssetQuality` reports
+`onlyNonProductionImages: true`) is **invalid**. The correct ceiling is `READY_WITH_PLACEHOLDERS`
+until production-ready assets exist.
+
+Agents must **cite** the helper outcome when updating Preparation Readiness (session note + history
+row). Repository gate: `pnpm validate:invitation-preparation` (Markdown prepReadiness ↔ helpers +
+hygiene). Prose alignment to the helpers remains mandatory between runs.
+
+#### 1.9.2 Creative acceptance is a separate human gate
+
+The canonical machine-readable field is `**Human creative outcome:**` followed by exactly one of
+`PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`. Only exact `ACCEPTED`, together with
+a `prepReadiness` other than `NOT_READY`, permits a future `in_progress -> published` transition.
+Existing published definitions are audited as warnings and are not rewritten.
+
+`prepReadiness` answers whether preparation is sufficiently resolved to begin implementation. It
+does **not** mean that the rendered invitation is creatively finished. After implementation and
+before final acceptance or release, the invitation must receive a lightweight creative-QA review
+recorded in the canonical preparation Markdown (and optionally detailed in the existing
+[`creative-qa-report.md`](../../.agent/templates/creative/creative-qa-report.md)).
+
+The review is whole-invitation, not a collection of isolated screenshots. At minimum inspect one
+representative mobile viewport and one desktop viewport (the default proof pair is 390 × 844 and
+1440 × 900; a focused browser review may use equivalent dimensions when documented), and assess:
+
+- typography roles, vertical rhythm/density, and surface hierarchy;
+- photographic treatment and focal crops;
+- section boundaries, intersection intent, and narrative continuity;
+- local exceptions to the selected preset;
+- responsive reflow, legibility, focus, reduced motion, and visible/operational placeholders.
+
+Record mechanical capture/render status separately from the human outcome. The human outcome is one
+of `PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`; only an explicit human `ACCEPTED`
+may clear creative acceptance. `ACCEPTED_WITH_BLOCKERS` names a non-creative dependency and remains
+blocking for the applicable release boundary. Pixel thresholds, image diffs, and visual snapshots
+are not part of this contract.
+
+This gate does not replace executable readiness or publication preflight. The helpers and release
+checks remain authoritative for their respective invariants; the QA record supplies the explicit
+human decision that automation cannot make.
+
+### 1.10 Owner interaction
+
+Before asking the owner anything, exhaust conversation material, canonical Markdown, event contract,
+assets, repository conventions, compatible demos, and deterministic project knowledge.
+
+Then emit one consolidated owner decision pack (`buildOwnerDecisionPack`) whenever feasible.
+
+Conversational phase script (checkpoints and hard-stops): [`.agent/skills/client-invitation-audit/references/conversational-phase-script.md`](../../.agent/skills/client-invitation-audit/references/conversational-phase-script.md).
+---
+
+## 2. Aesthetic brief
+
+Before any definition, profile or SCSS, settle the visual direction with the owner in one brief,
+recorded in the Design Direction table of `docs/invitations/<slug>.md`:
+
+1. **Three references.** Three images or published pages that show the intended look (a demo, a
+   previous invitation, an external reference), each with one line on what to take from it (palette,
+   typography, hero framing, ornament).
+2. **Hero decisions.** Photo or illustration, the focal crop, and the size of the celebrant's name
+   relative to the viewport (for example "name fills about 60 % of the mobile width").
+3. **One accepted viewport.** A single capture or mock-up of the first mobile screen (390 × 844)
+   that the owner explicitly accepts. Record the acceptance with its date.
+
+Implementation starts only when the three items exist and `prepReadiness` allows it. Direction
+changes after the accepted viewport are new brief rounds: record them in the same table instead of
+iterating directly in code.
+
+---
+
+## 3. Invitation Identity & Requirements
 
 Every managed digital invitation must define:
 
@@ -126,6 +437,12 @@ Every managed digital invitation must define:
   - **Override**: `--owner-user-id <UUID>` is optional assertion/override only; happy path does not
     require a manually discovered owner. Preview admin / shared operator accounts are not the
     default owner for new client invitations.
+- **Initial administrative state**: a new invitation exists only through its managed definition; the
+  dashboard editor edits existing invitations and has no create or duplicate endpoint. A new row
+  starts with work status `in_progress` and no manual review, and with `payment_status: unpaid` and
+  `public_access: enabled`, so it renders as the unpaid preview until an administrator marks it
+  paid. Release never copies these decisions between environments
+  ([intake-publishing](../../.agent/rules/intake-publishing.md)).
 - **Event Date & Time Zone**: ISO date string (`hero.date`) and IANA time zone (e.g.
   `America/Mexico_City`).
 - **Validity window**: a client invitation stays public until the end of the anniversary of its own
@@ -166,6 +483,10 @@ canonical [Invitation Section Intersection System](../domains/theme/section-inte
 theme-domain document owns the reusable patterns and review criteria; this creation contract does
 not redefine them.
 
+---
+
+## 4. Styling: tokens, composition, variants, presets
+
 ### Variant, style, and asset contract
 
 New managed content must follow the canonical
@@ -180,25 +501,131 @@ New managed content must follow the canonical
   derive variants from `theme.preset`.
 - Supply every variant-specific field required by its discriminated section schema. Unknown and
   incompatible configurations must fail publication validation.
-- Keep profile SCSS to custom-property declarations: client palette token remap and
-  rhythm/intersection token overrides. Client text belongs in content data, never in CSS `content:`
-  or baked into an image. Canonical grid, order, required visibility, and structural breakpoints
-  belong to the section variant's semantic SCSS entrypoint. See
+- Client text belongs in content data, never in CSS `content:` or baked into an image. Canonical
+  grid, order, required visibility, and structural breakpoints belong to the section variant's
+  semantic SCSS entrypoint. See
   [`docs/domains/theme/architecture.md`](../domains/theme/architecture.md#invitation-css-ownership-normative).
 - Reference client photographs and artwork through the invitation's typed semantic asset keys. Do
   not import another invitation's files from reusable code or styles.
 - Author non-neutral boundary choices in typed `composition.intersections`; do not derive them from
   slug or profile identity.
 
-A reusable variant may originate during invitation work, but its name and implementation must
-describe design, structure, or behavior and retain no originating-client identity. Promotion
-requires an explicit typed contract, isolated CSS delivery, invalid/incompatible tests, and a
-non-origin portability proof without the originating profile or assets. One-off profile composition
-remains invitation-specific until that evidence exists.
+### Profile in two levels
+
+An invitation's own styling has two levels, both in `src/invitations/clients/<slug>/`:
+
+1. **Tokens — `profile.scss`.** Custom-property declarations only: client palette remap and
+   rhythm/intersection token overrides. Selectors and wrapping `@media`/`@supports`/`@container` may
+   scope tokens; nothing else emits output. Example:
+   `.event--ana-lopez { --color-action-accent: rgb(186 140 74); }`.
+2. **Composition — `composition.scss` (optional).** Real declarations for what tokens cannot express
+   (a tower-door hero frame, a perforated ticket edge). `profile.scss` loads it with
+   `@use './composition';` as its first line. Its limits:
+   - every top-level rule starts with the invitation's own `.event--<slug>` selector, so nothing
+     leaks into another invitation;
+   - at most **600 lines**;
+   - it never edits, `@use`s, `@forward`s or overrides `src/styles/invitation/scenes/**`, and never
+     imports another invitation's files; it may `@use` `src/styles/tools/**` and font-face modules;
+   - client text still comes from content data (`content:` stays for ornaments only).
+
+Reach for the composition only after trying tokens. A composition that approaches the line limit is
+a signal to promote part of it as a variant (below).
+`tests/unit/invitation-profile-boundary.test.ts` enforces both levels.
+
+### Experimental variants
+
+A reusable variant may originate during invitation work: it starts as an **experimental variant**
+inside the slug composition: rules under `.event--<slug>` that reshape an existing canonical
+variant's DOM, with tokens that may carry the slug's own prefix (`--ana-lopez-ticket-edge`). It
+ships with the invitation and changes nothing for any other invitation.
+
+Promotion to the shared library is a **separate PR** after the invitation is accepted:
+
+- the variant gets a design name (never the client's), a typed `section.variant` contract, isolated
+  CSS delivery and invalid/incompatible tests;
+- its tokens move to the variant prefix (`--ticket-edge-*`) or to `--scene-*` for scene-wide values;
+  shared SCSS never reads a `--<slug>-*` token;
+- a portability proof renders it in a non-origin invitation or demo without the originating profile
+  or assets;
+- the token-shadowing guard runs and the PR names every published invitation whose look changes.
+
+The originating invitation then swaps its experimental rules for the promoted variant in the same PR
+or a later one; until then its composition stays as it is.
+
+### Presets and derived presets
+
+A **preset** is a reusable atmosphere (semantic color, type, radius, motion and public component
+tokens) under `.theme-preset--<name>`. A new standalone preset needs two consumers (invitations or
+demos) when it is created.
+
+A **derived preset** extends an existing base preset and declares only its overrides; it may start
+with **one consumer**. Use it when an invitation's look is a coherent variation of a base preset
+that would otherwise push hundreds of token lines into a profile. Its rules:
+
+- a new `THEME_PRESET_METADATA` row and its own `_<name>.scss` partial, whose header comment names
+  the base preset; it re-declares only the tokens that differ;
+- it owns no section layout or client-specific values (names, photos, slug selectors);
+- it leaves with its last consumer, like any preset.
+
+`jewelry-box-wedding` (base `jewelry-box`) is the existing example of the pattern.
 
 ---
 
-## 2. Required Pipeline Invariants
+## 5. Pre-push
+
+Run the guards locally before the **first** push of an invitation branch, and again before any push
+that touches SCSS, a definition or a profile. CI repeats them; it is not the place to discover them.
+
+```sh
+pnpm validate:changed
+pnpm visual:matrix:check
+pnpm exec jest tests/unit/invitation-token-shadowing.test.ts tests/unit/style-scale-literals.test.ts tests/unit/visual-coverage-lifecycle.test.ts tests/unit/invitation-profile-boundary.test.ts
+pnpm invitation:hash-baseline -- --strict
+```
+
+- `validate:changed` runs lint, types and the tests related to the changed files.
+- `visual:matrix:check` fails when a published invitation was added or changed and the visual matrix
+  hash is stale; regenerate it as the message says.
+- The token-shadowing test fails when a variant token redeclares a token another invitation
+  inherits; scope the token under the variant instead.
+- `invitation:hash-baseline -- --strict` must report no collateral move for invitations outside the
+  task. A changed `sourceHash` of a published invitation means its definition moved and forces a
+  re-release.
+- When the change is visual, produce the pinned candidate for the affected pages and have it
+  accepted before pushing ([CSS visual parity](../domains/theme/css-visual-parity.md)); a branch
+  that reaches CI without its accepted captures stays red.
+
+---
+
+## 6. Acceptance
+
+### Readable composition
+
+Before accepting a new invitation or variant, verify complete names (including accented and
+multiline surnames) inside their content area without clipping or ellipsis. Titles, date/venue
+information, credits, scroll cues and music prompts must not overlap. Maintain the music control's
+accessible label and minimum 44px touch target. Small informational text requires at least 4.5:1
+contrast.
+
+Reuse the canonical visual matrix (390×844 and 1440×900, defined in
+`scripts/screenshot/visual-coverage-contract.ts`) and shared geometry checks for affected flows.
+Exercise representative long names and wrapped venue/date content in shared variant fixtures.
+Geometry regressions and approved screenshots provide complementary evidence; neither replaces human
+inspection of photographic contrast and ornamental lettering.
+
+Follow [CSS visual parity](../domains/theme/css-visual-parity.md) for complete-page capture, pinned
+runtime, scoped exceptions and exact-artifact human acceptance. A published invitation passing
+schema or route tests alone is not visually accepted.
+
+### Creative outcome
+
+The human creative outcome gate is defined in
+[Creative acceptance](#192-creative-acceptance-is-a-separate-human-gate): only an explicit owner
+`ACCEPTED` clears it.
+
+---
+
+## 7. Required Pipeline Invariants
 
 These are contract invariants, not a substitute for the production runbook. Follow
 [`production-flow.md`](../domains/intake/production-flow.md) for procedure, packaging, target order,
@@ -225,7 +652,7 @@ approval, and recovery.
 
 ---
 
-## 3. Local Render Corpus vs Canonical Registry
+## 8. Local Render Corpus vs Canonical Registry
 
 The **Canonical Managed Registry** (`scripts/provision/invitations/registry.ts`) owns managed
 release lifecycle definitions.
@@ -241,7 +668,7 @@ projection. The corpus has no independent invitation category or source contract
 
 ---
 
-## 4. Environment Observability & Identity Rekey Boundaries
+## 9. Environment Observability & Identity Rekey Boundaries
 
 `pnpm dbs` is the read-only status command for schema and managed invitation state across Local,
 Preview, and Production. Its flags live in the
@@ -255,24 +682,6 @@ not query it; `pnpm lane:sync` prints the same bounded status after synchronizat
 - Production fails closed with `IDENTITY_REKEY_UNSUPPORTED_TARGET`.
 - Rekeying preserves the invitation UUID, event ownership, and RSVP records while updating the
   canonical slug and release provenance.
-
-## Readable composition acceptance
-
-Before accepting a new invitation or variant, verify complete names (including accented and
-multiline surnames) inside their content area without clipping or ellipsis. Titles, date/venue
-information, credits, scroll cues and music prompts must not overlap. Maintain the music control's
-accessible label and minimum 44px touch target. Small informational text requires at least 4.5:1
-contrast.
-
-Reuse the canonical visual matrix (390×844 and 1440×900, defined in
-`scripts/screenshot/visual-coverage-contract.ts`) and shared geometry checks for affected flows.
-Exercise representative long names and wrapped venue/date content in shared variant fixtures.
-Geometry regressions and approved screenshots provide complementary evidence; neither replaces human
-inspection of photographic contrast and ornamental lettering.
-
-Follow [CSS visual parity](../domains/theme/css-visual-parity.md) for complete-page capture, pinned
-runtime, scoped exceptions and exact-artifact human acceptance. A published invitation passing
-schema or route tests alone is not visually accepted.
 
 ---
 
@@ -330,13 +739,15 @@ profile's window has closed, so it is removed with its digest. Remove `sacred-ke
 
 ### Presets and their consumers
 
-A new preset needs two consumers (invitations or demos) when it is created; otherwise use a section
-variant or a visual profile. An existing preset may remain while at least one live invitation or
-demo uses it, and leaves with its last consumer. Single-consumer presets today: `jewelry-box`
-(`naydelin-paredes`), `storybook-lilac` (`america`), `enchanted-rose` (its demo) and
-`sacred-keepsake` (the published `cesar-ramses` until it expires; see above). This wording
-supersedes the "≥2 consumers" existence rule in the
-[theme architecture](../domains/theme/architecture.md) for presets that already exist.
+A new standalone preset needs two consumers (invitations or demos) when it is created; a derived
+preset may start with one ([Presets and derived presets](#presets-and-derived-presets)); otherwise
+use a section variant, a visual profile or a slug composition. An existing preset may remain while
+at least one live invitation or demo uses it, and leaves with its last consumer. Single-consumer
+presets today: `jewelry-box` (`naydelin-paredes`), `storybook-lilac` (`america`), `enchanted-rose`
+(its demo) and `sacred-keepsake` (the published `cesar-ramses` until it expires; see above). This
+wording supersedes the "≥2 consumers" existence rule in the
+[theme architecture](../domains/theme/architecture.md) for presets that already exist and for
+derived presets.
 
 ### Tooling modules under `src/lib`
 

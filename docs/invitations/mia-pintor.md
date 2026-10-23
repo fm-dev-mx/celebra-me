@@ -1,6 +1,6 @@
 # Canonical Invitation Preparation State — `mia-pintor`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
+> Schema owner: `docs/core/invitation-creation-contract.md` Executable evaluation:
 > `src/lib/invitation-preparation/` (**prepReadiness SSOT**) Skill:
 > `.agent/skills/invitation-preparation/SKILL.md`
 

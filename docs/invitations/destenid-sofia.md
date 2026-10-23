@@ -1,6 +1,6 @@
 # Canonical Invitation Preparation State — `destenid-sofia`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md`  
+> Schema owner: `docs/core/invitation-creation-contract.md`  
 > Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
 > Skill: `.agent/skills/invitation-preparation/SKILL.md`
 

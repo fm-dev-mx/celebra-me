@@ -18,6 +18,7 @@ import {
 import { getHostSessionFromRequest, getSupabaseUserByAccessToken } from '@/lib/rsvp/auth/auth';
 import { createTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
+import { logSecurityEvent } from '@/lib/server/security-events';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
@@ -47,6 +48,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 		const elevatedUser = await getSupabaseUserByAccessToken(elevatedAccessToken);
 		if (!elevatedUser || elevatedUser.id !== currentSession.userId) {
+			logSecurityEvent('mfa_failed', { reason: 'invalid_elevated_token' });
 			throw new ApiError(403, 'forbidden', 'Elevated token is invalid.');
 		}
 
@@ -55,6 +57,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			amr: elevatedUser.amr,
 		});
 		if (!hasMfa) {
+			logSecurityEvent('mfa_failed', { reason: 'missing_mfa_evidence' });
 			throw new ApiError(403, 'forbidden', 'The session does not contain MFA verification.');
 		}
 

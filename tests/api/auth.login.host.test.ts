@@ -84,6 +84,7 @@ describe('API: /api/auth/login-host', () => {
 		signInMock.mockRejectedValue(
 			new AuthRequestError({ kind: 'http', operation: 'password_sign_in', status: 401 }),
 		);
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
 		const response = await loginHost({
 			request: createMockRequest({
@@ -97,6 +98,36 @@ describe('API: /api/auth/login-host', () => {
 		expect(response.status).toBe(401);
 		const data = await response.json();
 		expect(data.error.code).toBe('unauthorized');
+		expect(warn.mock.calls).toEqual([
+			[
+				JSON.stringify({
+					event: 'security_event',
+					kind: 'login_failed',
+					route: 'login-host',
+				}),
+			],
+		]);
+		warn.mockRestore();
+	});
+
+	it('logs a failed login for an unknown identifier without the identifier', async () => {
+		resolvePasswordAuthEmailMock.mockResolvedValue(null);
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+		const response = await loginHost({
+			request: createMockRequest({
+				email: 'nobody@test.com',
+				password: 'wrongPassword',
+				method: 'password',
+			}),
+			url: new URL('http://localhost/api/auth/login-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(401);
+		expect(warn).toHaveBeenCalledTimes(1);
+		expect(String(warn.mock.calls[0][0])).toContain('"kind":"login_failed"');
+		expect(String(warn.mock.calls[0][0])).not.toContain('nobody');
+		warn.mockRestore();
 	});
 
 	it('Scenario: Successful Alias Password Login', async () => {
