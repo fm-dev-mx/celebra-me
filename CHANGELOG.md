@@ -10,6 +10,31 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.44.0-beta.1] - 2026-10-23
+
+Short links for every catalog demo, a calmer music control, photo zoom and a smoother lightbox, and
+a weekly check of invitation page weight. No migrations and no published invitation content changes.
+
+### Added
+
+- Every catalog demo is shared at a short alias such as `/celestial`, `/editorial` or `/hacienda`;
+  the long link still answers 200 with a canonical link to the short one (#458).
+- An optional `control: "equalizer"` music setting shows a quieter control that dims when idle; the
+  Brisa demo uses it with the song «In This Moment» by Scott Buckley (#465).
+- A weekly workflow checks invitation HTML size against budgets re-measured on Workers (#467).
+
+### Changed
+
+- In every invitation the gallery lightbox fades in and out, the music button always reads
+  «Reproducir música» or «Pausar música», and the footer prints the music credit line when the
+  invitation has one (#465).
+- In demos the conversion photo itself opens the lightbox (#465).
+- The monitoring map lists the five UptimeRobot monitors (#466).
+
+### Fixed
+
+- Git Safety closes a lane left detached at a commit and accepts branch names as session ids (#468).
+
 ## [0.43.0-beta.1] - 2026-10-22
 
 A health check for live client invitations, daily security event alerts, complete visual parity on
