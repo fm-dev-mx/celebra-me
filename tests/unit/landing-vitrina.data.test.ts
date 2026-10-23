@@ -28,7 +28,9 @@ describe('landing showroom data', () => {
 	});
 
 	it('leads XV with the lead demo and marks only it as the lead', () => {
+		expect(VITRINA_LEAD_DEMO_SLUG).toBe('demo-xv-serenata');
 		const xv = getVitrinaEvent('xv');
+		expect(xv?.demos[0]?.href).toBe('/serenata');
 		expect(xv?.demos[0]?.slug).toBe(VITRINA_LEAD_DEMO_SLUG);
 		expect(getVitrinaLeadDemo().slug).toBe(VITRINA_LEAD_DEMO_SLUG);
 		const leads = VITRINA_EVENTS.flatMap((event) => event.demos.filter((demo) => demo.isLead));

@@ -10,15 +10,12 @@ import { DEMO_INVITATIONS } from '@/invitations/demos';
 
 /**
  * Landing showroom ("vitrina"): event tabs, a device mockup with the live demo, and a WhatsApp
- * quote whose message carries a reference code, `Ref. XV-JARDIN-VITRINA`
+ * quote whose message carries a reference code, `Ref. XV-SERENATA-VITRINA`
  * (event, style, entry point), so each conversation says which demo and which button started it.
  */
 
-/**
- * Demo that opens the XV showroom and the hero. Lantern Garden is hidden from the catalog; the
- * owner authorized showing it here until the new main XV demo is merged, then this points there.
- */
-export const VITRINA_LEAD_DEMO_SLUG = 'demo-xv-lantern-garden';
+/** Demo that opens the XV showroom and the hero: Serenata, the main XV demo. */
+export const VITRINA_LEAD_DEMO_SLUG = 'demo-xv-serenata';
 
 /** Where a quote starts: the showroom detail, the mobile sticky bar or the header button. */
 export type VitrinaEntry = 'VITRINA' | 'BARRA' | 'HEADER';
@@ -80,16 +77,16 @@ const EVENT_CONFIG: Record<
 };
 
 const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
-	'demo-xv-lantern-garden': {
-		name: 'Jardín de Luz',
-		ref: 'JARDIN',
-		tags: ['Nocturna', 'Emotiva'],
+	'demo-xv-serenata': {
+		name: 'Serenata',
+		ref: 'SERENATA',
+		tags: ['Jardín', 'Elegante'],
 		description:
-			'Una noche lila, una carta y el cariño de su familia. Sobre, música y galería.',
+			'Verde salvia y champaña bajo un olivar, con sobre, música y una canción dedicada.',
 		kicker: 'Mis XV años',
-		person: 'Luciana',
-		date: '2027-10-16',
-		focal: '50% 45%',
+		person: 'Regina',
+		date: '2027-11-20',
+		focal: '72% 55%',
 		cover: 'hero',
 	},
 	'demo-xv-celestial-blue': {
@@ -235,7 +232,7 @@ export function buildVitrinaDemoStyles(): string {
 		.join('');
 }
 
-/** `XV-JARDIN-VITRINA`: event, style and entry point. */
+/** `XV-SERENATA-VITRINA`: event, style and entry point. */
 export function buildVitrinaRef(
 	event: VitrinaEventConfig,
 	demo: VitrinaDemo,
