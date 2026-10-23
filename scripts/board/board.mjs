@@ -16,7 +16,7 @@
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--json]
  *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
- *   view [--port=4390]                          local read-only page at http://127.0.0.1:<port>/
+ *   view [--port=4320]                          local read-only page at http://127.0.0.1:<port>/, live
  *
  * Values are JSON when they look like JSON (numbers, true/false/null, [..], {..}); `campo=` removes the field.
  */
@@ -413,7 +413,7 @@ const commands = {
 	},
 	async view({ flags }, dir, out) {
 		const { serveView } = await import('./view-server.mjs');
-		const port = Number(flags.port ?? 4390);
+		const port = Number(flags.port ?? 4320);
 		await serveView(dir, port);
 		out(`Tablero en http://127.0.0.1:${port}/  (Ctrl+C para cerrar)`);
 	},

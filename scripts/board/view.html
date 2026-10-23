@@ -235,7 +235,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
     </div>
   </section>
 
-  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos). Violeta: lista y un agente la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y solo se escriben con <code>pnpm board</code>; esta página solo lee y se actualiza sola cada 10 s.</footer>
+  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos). Violeta: lista y un agente la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y solo se escriben con <code>pnpm board</code>; esta página solo lee y muestra cada cambio al instante.</footer>
 </div>
 <script type="module">
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab } from '/model.mjs';
@@ -408,17 +408,11 @@ setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 try{const a=localStorage.getItem('board-ag');if(a)setAgent(a)}catch(e){}
 
-let last='';
-async function load(){
-  try{
-    const res=await fetch('/api/board',{cache:'no-store'});
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    if(text===last){renderTop();return}
-    last=text;S.board=JSON.parse(text);S.ready=true;render();
-  }catch(e){if(!S.ready){S.ready=true;$('list').innerHTML=`<div class="empty">No se pudo leer el tablero (${esc(e.message||e)}). ¿Sigue abierto <code>pnpm board view</code>?</div>`}}
-}
-load();setInterval(load,10000);
+// The server pushes the whole board on connect and after every write; EventSource reconnects by itself.
+const stream=new EventSource('/api/stream');
+stream.onmessage=ev=>{S.board=JSON.parse(ev.data);S.ready=true;render()};
+stream.onerror=()=>{if(!S.ready){S.ready=true;$('list').innerHTML='<div class="empty">No se pudo leer el tablero. ¿Sigue abierto <code>pnpm board:serve</code>?</div>'}};
+setInterval(()=>{if(S.board)renderTop()},30000);
 </script>
 </body>
 </html>

@@ -1,11 +1,13 @@
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/run-command';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
+const SERVER_PATH = path.join(ROOT, 'scripts', 'board', 'view-server.mjs');
 const NOW = '2026-10-20T20:00:00Z';
 
 type Json = Record<string, unknown>;
@@ -141,6 +143,45 @@ describe('pnpm board', () => {
 			rama: 'fix/origen',
 			requisitos: [{ tipo: 'tarea', ref: 'origen' }],
 		});
+	});
+
+	it('pushes the board to the view as soon as a write lands', () => {
+		const dir = makeBoard({ tareas: [task('viva')] });
+		// Opens the stream, writes through the CLI, and prints the tasks of every pushed board.
+		const probe = String.raw`
+			import { request } from 'node:http';
+			import { spawnSync } from 'node:child_process';
+			const { serveView } = await import(process.argv[1]);
+			const server = await serveView(process.env.CELEBRA_BOARD_DIR, 0);
+			const seen = [];
+			const done = (code) => { console.log(JSON.stringify(seen)); server.closeAllConnections(); server.close(); process.exit(code); };
+			setTimeout(() => done(1), 8000);
+			request({ port: server.address().port, path: '/api/stream' }, (res) => {
+				let buf = '';
+				res.on('data', (chunk) => {
+					buf += chunk;
+					for (const m of buf.split('\n\n').slice(0, -1)) {
+						if (!m.startsWith('data: ')) continue;
+						seen.push(JSON.parse(m.slice(6)).tareas.map((t) => t.id + ':' + t.estado));
+						if (seen.length === 1)
+							spawnSync(process.execPath, [process.argv[2], 'set', 'viva', '--rev=1', 'estado=en curso']);
+						else done(0);
+					}
+					buf = buf.slice(buf.lastIndexOf('\n\n') + 2);
+				});
+			}).end();
+		`;
+		const result = runCommand(
+			process.execPath,
+			['--input-type=module', '-e', probe, pathToFileURL(SERVER_PATH).href, SCRIPT_PATH],
+			{
+				cwd: ROOT,
+				allowFailure: true,
+				env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir, INIT_CWD: ROOT }),
+			},
+		);
+		expect(result.status).toBe(0);
+		expect(JSON.parse(String(result.stdout))).toEqual([['viva:pendiente'], ['viva:en curso']]);
 	});
 
 	it('imports a v2 export, turning espera and deps into requisitos', () => {
