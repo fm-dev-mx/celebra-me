@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-22T21:01:33.412Z",
+    "generatedAt": "2026-10-23T04:05:10.345Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-        "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
+        "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
         "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2291,8 +2291,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
-            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "sha256": "08e000db437ceb90fdb0d6984c602eeeb8a11ae56b326fedfb41c831b2ea681a",
+            "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
         },
@@ -2303,8 +2303,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/demo-boda-demo-brisa-desktop.png",
-            "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
-            "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+            "sha256": "5485ddccc32d5bf5e48e8b60ade8f4b87ea7bddf83dc058b869bc0b6bd84f9cf",
+            "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
         },
@@ -2453,9 +2453,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a",
+    "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518",
     "variantManifest": {
-        "generatedAt": "2026-10-22T21:01:33.412Z",
+        "generatedAt": "2026-10-23T04:05:10.345Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2468,7 +2468,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
+            "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4357,10 +4357,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a"
+        "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-22T21:01:33.424Z",
+        "generatedAt": "2026-10-23T04:05:10.392Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4373,7 +4373,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "8ea1a0c3656c30c7f0ce02b19850e006d3e69e8561bcd744efa31759ca0917b3",
+            "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4775,8 +4775,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/demo-boda-demo-brisa-mobile.png",
-                "sha256": "16ad1bdc7d14d4c89e781f1234827d2508195c9c6d259235d8195bf39fa7128f",
-                "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+                "sha256": "08e000db437ceb90fdb0d6984c602eeeb8a11ae56b326fedfb41c831b2ea681a",
+                "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
                 "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4787,8 +4787,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/demo-boda-demo-brisa-desktop.png",
-                "sha256": "5528480f803be013d44ac325fc658143b11e0b414b848bddaff1dff7036cfa97",
-                "contentHash": "edc087657120ae2e5fcd2877f769206a278ee10c627516960a3360ee7b5b08ec",
+                "sha256": "5485ddccc32d5bf5e48e8b60ade8f4b87ea7bddf83dc058b869bc0b6bd84f9cf",
+                "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
                 "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4937,9 +4937,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "d89bc3e3852deb29e625f923df58461840f1011a"
+        "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518"
     },
-    "candidateManifestSha256": "699c302bbb7f9127303fb0e9ea3cee6d5f737b7a15572b2887e9ae22189d636f",
-    "acceptedFromCommit": "d89bc3e3852deb29e625f923df58461840f1011a",
-    "acceptedAt": "2026-10-22T21:02:57.807Z"
+    "candidateManifestSha256": "c622a23bb6133fadaf935f96c562b492bee039d21e1d7520b5048dfdefb41d81",
+    "acceptedFromCommit": "70542b87b99746af413ff1e86ffcc6a8c10d3518",
+    "acceptedAt": "2026-10-23T04:14:38.470Z"
 }

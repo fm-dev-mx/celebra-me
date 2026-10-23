@@ -14,6 +14,8 @@ interface Props {
 	closingPhrase?: string;
 	showFooterBranding?: boolean;
 	showContactCta?: boolean;
+	/** Attribution line for a licensed song, linking to its same-site credit page. */
+	musicCredit?: { title?: string; creditsUrl: string };
 	class?: string;
 }
 
@@ -24,6 +26,7 @@ const {
 	closingPhrase,
 	showFooterBranding = true,
 	showContactCta = true,
+	musicCredit,
 	class: className,
 } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
@@ -117,6 +120,15 @@ const rightsYear = new Date().getFullYear();
 			<p class="footer__rights">
 				© {rightsYear} Celebra-me · Diseño protegido ·{' '}
 				<a href="/terminos#propiedad-intelectual">Términos</a>
+			</p>
+		)}
+
+		{musicCredit && (
+			<p class="footer__music-credit">
+				Música: {musicCredit.title ? `${musicCredit.title} · ` : ''}
+				<a href={musicCredit.creditsUrl} target="_blank" rel="noopener noreferrer">
+					Créditos y licencia
+				</a>
 			</p>
 		)}
 

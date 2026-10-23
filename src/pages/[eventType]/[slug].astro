@@ -344,6 +344,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								closingPhrase={page.footerClosingPhrase}
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding && !isDemoConversion}
 								showContactCta={page.viewModel.brandingVisibility.showContactCta && !isDemoConversion}
+								musicCredit={page.musicPlayer?.creditsUrl ? { title: page.musicPlayer.title, creditsUrl: page.musicPlayer.creditsUrl } : undefined}
 							/>
 							{demoConversion && <DemoConversion placement="closing" demo={demoConversion} />}
 

@@ -113,6 +113,19 @@ describe('git-safety start/finish lifecycle', () => {
 		}
 	});
 
+	it('accepts a branch name as session id and flattens its slashes', () => {
+		const repoRoot = createRepo();
+		const flattened = path.join(repoRoot, '.agent', 'tmp', 'git-safety-baseline.feat-x.json');
+		try {
+			expect(runGitSafety(repoRoot, ['start', '--session=feat/x']).status).toBe(0);
+			expect(existsSync(flattened)).toBe(true);
+			expect(runGitSafety(repoRoot, ['finish', '--session=feat/x']).status).toBe(0);
+			expect(existsSync(flattened)).toBe(false);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
 	it('rejects session ids that could escape the baseline directory', () => {
 		const repoRoot = createRepo();
 		try {
@@ -289,6 +302,60 @@ describe('git-safety start/finish lifecycle', () => {
 			]);
 			expect(finish.status).toBe(0);
 			expect(existsSync(baselinePath(repoRoot))).toBe(false);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('accepts an authorized branch-switch to a detached HEAD at the named commit', () => {
+		const repoRoot = createRepo();
+		try {
+			const head = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: repoRoot,
+				env: sanitizeEnv(),
+			}).stdout.trim();
+			runCommand('git', ['switch', '-c', 'task'], { cwd: repoRoot, env: sanitizeEnv() });
+			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
+			runCommand('git', ['switch', '--detach', head], { cwd: repoRoot, env: sanitizeEnv() });
+
+			const wrongSha = runGitSafety(repoRoot, [
+				'finish',
+				'--authorized-operation=branch-switch',
+				'--branch=detached@0000000',
+			]);
+			expect(wrongSha.status).toBe(1);
+			expect(`${wrongSha.stdout}
+${wrongSha.stderr}`).toContain('expected branch "detached@0000000"');
+			expect(existsSync(baselinePath(repoRoot))).toBe(true);
+
+			const finish = runGitSafety(repoRoot, [
+				'finish',
+				'--authorized-operation=branch-switch',
+				`--branch=detached@${head.slice(0, 7)}`,
+			]);
+			expect(finish.status).toBe(0);
+			expect(existsSync(baselinePath(repoRoot))).toBe(false);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('rejects detached@<sha> while a branch is checked out', () => {
+		const repoRoot = createRepo();
+		try {
+			const head = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: repoRoot,
+				env: sanitizeEnv(),
+			}).stdout.trim();
+			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
+			runCommand('git', ['switch', '-c', 'other'], { cwd: repoRoot, env: sanitizeEnv() });
+			const finish = runGitSafety(repoRoot, [
+				'finish',
+				'--authorized-operation=branch-switch',
+				`--branch=detached@${head}`,
+			]);
+			expect(finish.status).toBe(1);
+			expect(existsSync(baselinePath(repoRoot))).toBe(true);
 		} finally {
 			cleanupFixture(repoRoot);
 		}

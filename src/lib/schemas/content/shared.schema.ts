@@ -175,6 +175,11 @@ export const musicSchema = z
 		startAt: z.number().min(0).optional(),
 		/** Seconds of volume ramp when playback starts or loops back (default 1.2). */
 		fadeInSeconds: z.number().min(0).max(10).optional(),
+		/**
+		 * Floating control: the round play/pause button (default) or a quieter equalizer that
+		 * moves while the song plays and dims after a few seconds without interaction.
+		 */
+		control: z.enum(['button', 'equalizer']).optional(),
 	})
 	.optional();
 

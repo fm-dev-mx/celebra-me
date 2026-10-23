@@ -307,7 +307,9 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Defaulted Inputs**: `autoPlay` (`false`).
 - **Optional Inputs**: `title`, `startAt` (seconds, ≥0; playback starts and loops back here),
   `fadeInSeconds` (0–10), `creditsUrl` (a same-site `/music/<name>.html` credit page, where `<name>`
-  contains lowercase letters, digits or hyphens). The player shows the credit link only when
+  contains lowercase letters, digits or hyphens), `control` (`button`, the default round play/pause
+  button, or `equalizer`, a quieter 44 px control whose bars move while the song plays and that dims
+  after a few idle seconds). The footer prints the credit line and link only when `creditsUrl` is
   supplied; demo content may use it without configuring dashboard music editing.
 
 ---

@@ -6,10 +6,18 @@ import { shouldBufferMusicAfterPaint } from '@/lib/invitation/music-preload';
 interface Props {
 	url?: string;
 	autoPlay?: boolean;
+	/** Song title; shown as the control's tooltip, never as its accessible name. */
 	title?: string;
+	/** Same-site credit page; the footer prints the attribution line, not the player. */
 	creditsUrl?: string;
 	revealMode?: 'envelope' | 'immediate';
 	variant?: string;
+	/**
+	 * `button` (default): round play/pause button with a pulse while paused and a hint pill.
+	 * `equalizer`: one quiet 44 px control whose bars move while the song plays; it dims after a
+	 * few seconds without interaction and wakes on scroll, touch, hover or focus.
+	 */
+	control?: 'button' | 'equalizer';
 	/** Second at which playback starts and loops back to (skips an intro). */
 	startAt?: number;
 	/** Seconds of volume ramp when playback starts or loops back (default 1.2). */
@@ -19,14 +27,15 @@ interface Props {
 const {
 	url = '',
 	autoPlay = false,
-	title = 'Reproducir música',
-	creditsUrl,
+	title,
 	revealMode = 'envelope',
 	variant,
+	control = 'button',
 	startAt = 0,
 	fadeInSeconds,
 } = Astro.props;
 
+const isEqualizer = control === 'equalizer';
 const hasAudio = Boolean(url.trim());
 const startSeconds = Number.isFinite(startAt) && startAt > 0 ? startAt : 0;
 const fadeInMs =
@@ -54,8 +63,8 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 	data-auto-play={hasAudio && autoPlay ? 'true' : 'false'}
 	data-reveal-mode={revealMode}
 	data-variant={variant}
+	data-control={control}
 	data-has-audio={hasAudio ? 'true' : 'false'}
-	data-title={title || promptText}
 	data-pending-label={promptText}
 	data-start-at={startSeconds > 0 ? String(startSeconds) : undefined}
 	data-fade-in-ms={fadeInMs !== undefined ? String(fadeInMs) : undefined}
@@ -70,22 +79,31 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		></audio>
 	) : null}
 
-	<span class="music-player__prompt" data-music-prompt>{promptText}</span>
+	{/* The equalizer speaks through its bars; the pill only returns when autoplay is refused. */}
+	<span class="music-player__prompt" data-music-prompt hidden={isEqualizer}>{promptText}</span>
 
 	<div class="music-player__controls">
-		{creditsUrl && (
-			<a class="music-player__credits" href={creditsUrl} target="_blank" rel="noopener noreferrer" aria-label="Créditos y licencia de la música">
-				Créditos
-			</a>
-		)}
 		<button
 			type="button"
-			class="music-player__button music-player__button--play music-player__button--pulsing"
+			class:list={[
+				'music-player__button',
+				'music-player__button--play',
+				{ 'music-player__button--pulsing': !isEqualizer },
+			]}
 			data-music-toggle
-			aria-label={title || promptText}
+			aria-label={promptText}
+			title={title || undefined}
 		>
-			<span data-icon-play><Icon name="Play" size={24} /></span>
-			<span data-icon-pause hidden><Icon name="Pause" size={24} /></span>
+			{isEqualizer ? (
+				<span class="music-player__bars" aria-hidden="true">
+					<span></span><span></span><span></span>
+				</span>
+			) : (
+				<Fragment>
+					<span data-icon-play><Icon name="Play" size={24} /></span>
+					<span data-icon-pause hidden><Icon name="Pause" size={24} /></span>
+				</Fragment>
+			)}
 		</button>
 	</div>
 </div>
@@ -115,7 +133,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		const autoPlay = player.dataset.autoPlay === 'true';
 		const revealMode = player.dataset.revealMode || 'envelope';
 		const hasAudio = player.dataset.hasAudio === 'true';
-		const audioTitle = player.dataset.title || 'Reproducir música';
+		const isEqualizer = player.dataset.control === 'equalizer';
 		const startAt = Number(player.dataset.startAt || 0);
 		const bufferMusicNow = scheduleMusicBufferAfterPaint(audio);
 
@@ -131,11 +149,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		}
 		const pendingTitle = player.dataset.pendingLabel || 'La canción se anunciará pronto';
 
-		if (
-			!(toggle instanceof HTMLButtonElement) ||
-			!(playIcon instanceof HTMLElement) ||
-			!(pauseIcon instanceof HTMLElement)
-		) {
+		if (!(toggle instanceof HTMLButtonElement)) {
 			return;
 		}
 
@@ -147,11 +161,37 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		let dismissTimer: number | undefined = undefined;
 
 		const syncState = () => {
-			playIcon.hidden = isPlaying;
-			pauseIcon.hidden = !isPlaying;
-			toggle.classList.toggle('music-player__button--pulsing', hasAudio && !isPlaying);
-			toggle.setAttribute('aria-label', isPlaying ? 'Pausar música' : hasAudio ? audioTitle : pendingTitle);
+			if (playIcon instanceof HTMLElement) playIcon.hidden = isPlaying;
+			if (pauseIcon instanceof HTMLElement) pauseIcon.hidden = !isPlaying;
+			player.classList.toggle('is-playing', isPlaying);
+			toggle.classList.toggle(
+				'music-player__button--pulsing',
+				!isEqualizer && hasAudio && !isPlaying,
+			);
+			// The accessible name says what the tap does; the song title stays in the tooltip.
+			toggle.setAttribute(
+				'aria-label',
+				isPlaying ? 'Pausar música' : hasAudio ? promptText : pendingTitle,
+			);
 		};
+
+		// Equalizer: the control fades to a low opacity after a few seconds without interaction
+		// and comes back on scroll, touch, pointer movement, keyboard use or focus.
+		const IDLE_MS = 4000;
+		let idleTimer: number | undefined = undefined;
+		const wake = () => {
+			player.classList.remove('is-idle');
+			window.clearTimeout(idleTimer);
+			idleTimer = window.setTimeout(() => player.classList.add('is-idle'), IDLE_MS);
+		};
+		if (isEqualizer) {
+			for (const type of ['scroll', 'touchstart', 'pointermove', 'keydown'] as const) {
+				window.addEventListener(type, wake, { passive: true });
+			}
+			player.addEventListener('focusin', wake);
+			player.addEventListener('pointerenter', wake);
+			wake();
+		}
 
 		const fadeOutPrompt = () => {
 			if (!(prompt instanceof HTMLElement)) {
@@ -225,7 +265,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 					if (withFade && FADE_IN_MS > 0) {
 						fadeIn(audio);
 					}
-					if (announce) {
+					if (announce && !isEqualizer) {
 						showPrompt('Pausar música');
 						hidePromptLater();
 					}

@@ -318,6 +318,21 @@ describe('post-deploy smoke', () => {
 		expect(workflow).not.toMatch(/prod:apply|--apply|cloudinary.*secret/i);
 	});
 
+	it('runs a weekly read-only invitation delivery budget that alerts by issue', () => {
+		const workflow = readFileSync(
+			resolve('.github', 'workflows', 'invitation-delivery-budget.yml'),
+			'utf8',
+		);
+		expect(workflow).toContain('schedule:');
+		expect(workflow).toContain('workflow_dispatch:');
+		expect(workflow).not.toMatch(/pull_request|push:/);
+		expect(workflow).toContain('pnpm invitation:delivery:baseline');
+		expect(workflow).toContain('--origin https://www.celebra-me.com');
+		expect(workflow).toContain('--assert-budget');
+		expect(workflow).toContain('gh issue create');
+		expect(workflow).not.toMatch(/\$\{\{\s*secrets\.|prod:apply|--apply/);
+	});
+
 	it('runs a read-only Production smoke every 15 minutes and alerts after two failures', () => {
 		const workflow = readFileSync(
 			resolve('.github', 'workflows', 'production-uptime.yml'),

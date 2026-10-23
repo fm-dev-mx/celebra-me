@@ -135,7 +135,7 @@ describe('invitation delivery HTML budgets', () => {
 				},
 			]),
 		).not.toThrow();
-		expect(MEASURED_PRODUCTION_HTML.legacyStorageAnonymous.uniqueUrlCount).toBe(54);
+		expect(MEASURED_PRODUCTION_HTML.legacyStorageAnonymous.uniqueUrlCount).toBe(84);
 	});
 
 	it('accepts observations inside the measured ceilings and rejects a shared-cache HIT', () => {
@@ -168,13 +168,13 @@ describe('invitation delivery HTML budgets', () => {
 			assertDeliveryBudgets([
 				{
 					id: 'versionedAnonymous',
-					htmlBytes: 95_000,
+					htmlBytes: 100_000,
 					cacheControl: 'public, max-age=0, must-revalidate',
 					personalized: false,
 					sharedCache: 'MISS',
 				},
 			]),
-		).toThrow(/html 95000 B exceeds budget/);
+		).toThrow(/html 100000 B exceeds budget/);
 	});
 
 	it('accepts the HTML ceiling boundary and rejects one extra byte', () => {

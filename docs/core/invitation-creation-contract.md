@@ -349,8 +349,9 @@ Every managed digital invitation must define:
     (`/boda/boda-daniela-y-martin`) and is forbidden for new invitations.
   - **Short public route (from 2026-10-19):** every invitation is shared as `/{slug}` (e.g.
     `/daniela-y-martin`), including those published earlier. The long `/{eventType}/{slug}` form
-    keeps resolving to the same page with no redirect. Static catalog demos (`demo-*`) use the long
-    form unless their catalog metadata declares a unique `routeSlug`, shared as `/{routeSlug}`.
+    keeps resolving to the same page with no redirect. Every static catalog demo (`demo-*`) declares
+    a unique `routeSlug` in its catalog metadata and is shared as `/{routeSlug}` (e.g. `/brisa`);
+    its long `/{eventType}/{slug}` form keeps resolving with a canonical link to the short one.
     Catalog aliases are reserved against managed invitation slugs; retired demo URLs use the shared
     permanent redirect registry. Slugs must be unique across all event types and must not be
     reserved: first-level routes (`dashboard`, `login`, `demos`, `api`, `i`, `r`, `terminos`,

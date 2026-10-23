@@ -74,17 +74,48 @@ const { variant } = Astro.props;
 			}
 		};
 
-		const closeLightbox = () => {
+		const prefersReducedMotion = () =>
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const isOpen = () => lightbox.classList.contains('is-open');
+		let closeTimer: number | undefined;
+
+		// Open and close animate `opacity` and `transform` through the `is-open` class (styles in
+		// `_gallery.scss`); the element is only hidden once the closing fade has ended.
+		const finishClose = () => {
+			window.clearTimeout(closeTimer);
+			lightbox.removeEventListener('transitionend', onCloseTransitionEnd);
 			lightbox.hidden = true;
+		};
+		const onCloseTransitionEnd = (event: TransitionEvent) => {
+			if (event.target === lightbox) finishClose();
+		};
+
+		const closeLightbox = () => {
+			if (lightbox.hidden || !isOpen()) return;
+			lightbox.classList.remove('is-open');
 			document.body.style.overflow = '';
 			lightbox.removeEventListener('keydown', trapFocus);
 			lastFocusedElement?.focus();
+			if (prefersReducedMotion()) {
+				finishClose();
+				return;
+			}
+			lightbox.addEventListener('transitionend', onCloseTransitionEnd);
+			closeTimer = window.setTimeout(finishClose, 600);
 		};
 
-		const showLightbox = () => {
+		// `animate: false` when a view transition already drives the entrance.
+		const showLightbox = (animate = true) => {
+			window.clearTimeout(closeTimer);
+			lightbox.removeEventListener('transitionend', onCloseTransitionEnd);
 			lightbox.hidden = false;
 			document.body.style.overflow = 'hidden';
 			lightbox.addEventListener('keydown', trapFocus);
+			if (animate && !prefersReducedMotion()) {
+				// Paint the hidden state first so the transition has somewhere to start from.
+				void lightbox.offsetWidth;
+			}
+			lightbox.classList.add('is-open');
 		};
 
 		// Editorial motion grows the tapped thumbnail into the large photo with a view transition;
@@ -108,7 +139,7 @@ const { variant } = Astro.props;
 				const transition = document.startViewTransition(() => {
 					origin.style.viewTransitionName = '';
 					lightboxImage.style.viewTransitionName = 'gallery-photo';
-					showLightbox();
+					showLightbox(false);
 				});
 				transition.finished.finally(() => {
 					lightboxImage.style.viewTransitionName = '';
@@ -133,7 +164,7 @@ const { variant } = Astro.props;
 		content.addEventListener('click', (event) => event.stopPropagation());
 
 		window.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'Escape' && !lightbox.hidden) {
+			if (event.key === 'Escape' && isOpen()) {
 				closeLightbox();
 			}
 		});

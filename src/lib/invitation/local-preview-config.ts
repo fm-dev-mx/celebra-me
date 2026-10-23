@@ -21,6 +21,7 @@ export type InvitationMusicPlayerProps = {
 	fadeInSeconds?: number;
 	revealMode: 'envelope' | 'immediate';
 	variant?: string;
+	control?: 'button' | 'equalizer';
 };
 
 function canUseLocalInvitationPreview(): boolean {
@@ -52,6 +53,7 @@ export function resolveInvitationMusicPlayer(input: {
 		startAt?: number;
 		fadeInSeconds?: number;
 		revealMode?: 'envelope' | 'immediate';
+		control?: 'button' | 'equalizer';
 	};
 	envelopeEnabled: boolean;
 }): InvitationMusicPlayerProps | undefined {
@@ -66,5 +68,6 @@ export function resolveInvitationMusicPlayer(input: {
 		fadeInSeconds: input.music?.fadeInSeconds,
 		revealMode: input.music?.revealMode ?? (input.envelopeEnabled ? 'envelope' : 'immediate'),
 		variant: 'standard',
+		control: input.music?.control,
 	};
 }

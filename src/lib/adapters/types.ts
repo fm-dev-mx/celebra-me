@@ -472,6 +472,8 @@ export interface InvitationViewModel {
 		/** Seconds of volume ramp when playback starts or loops back. */
 		fadeInSeconds?: number;
 		revealMode: 'envelope' | 'immediate';
+		/** Floating control style; the round button unless the content asks for the equalizer. */
+		control?: 'button' | 'equalizer';
 	};
 	interludes?: Interlude[];
 	navigation?: Array<{ label: string; href: string }>;

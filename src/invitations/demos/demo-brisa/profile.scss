@@ -201,9 +201,13 @@
 		--gifts-bank-rule: none;
 		--gifts-bank-blur: none;
 		--gifts-bank-radius: 0;
+
+		// Bank card: deep sea face with a sand chip. Bank name small in sand, the number large in
+		// blocks of four, the holder under it; the copy button is a sand pill below the card that
+		// fills in when the number has been copied.
 		--gifts-bank-display: grid;
-		--gifts-bank-rows: 3.4rem 4.4rem 3rem auto;
-		--gifts-bank-width: min(100%, 19rem);
+		--gifts-bank-rows: 3.5rem 5rem 3.25rem auto;
+		--gifts-bank-width: min(100%, 21rem);
 		--gifts-bank-margin-inline: auto;
 		--gifts-bank-align: left;
 		--gifts-bank-padding: 0;
@@ -212,55 +216,63 @@
 		--gifts-bank-row-align: center;
 		--gifts-bank-card: '';
 		--gifts-bank-chip-display: block;
-		--gifts-bank-card-inset: 1.25rem;
-		--gifts-bank-card-radius: 0.875rem;
-		--gifts-bank-card-border: none;
-		--gifts-bank-card-bg: var(--brisa-paper);
-		--gifts-bank-card-shadow: 0 14px 28px -22px rgb(var(--brisa-sea-rgb) / 45%);
+		--gifts-bank-card-inset: 1.5rem;
+		--gifts-bank-card-radius: 1rem;
+		--gifts-bank-card-border: 1px solid rgb(var(--brisa-sand-rgb) / 35%);
+		--gifts-bank-card-bg:
+			radial-gradient(
+				120% 90% at 100% 0%,
+				rgb(var(--brisa-slate-rgb) / 70%),
+				transparent 60%
+			),
+			linear-gradient(135deg, var(--brisa-sea-deep), var(--brisa-sea) 70%);
+		--gifts-bank-card-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 10%),
+			0 22px 36px -24px rgb(var(--brisa-sea-deep-rgb) / 70%);
 		--gifts-bank-label-display: none;
 		--gifts-bank-meta-font: var(--font-label);
-		--gifts-bank-meta-tracking: 0.045em;
+		--gifts-bank-meta-tracking: 0.18em;
 		--gifts-bank-meta-transform: uppercase;
 		--gifts-bank-name-row: 1;
-		--gifts-bank-name-size: 0.8125rem;
+		--gifts-bank-name-size: 0.6875rem;
 		--gifts-bank-name-weight: 600;
-		--gifts-bank-name-color: var(--brisa-ivory);
+		--gifts-bank-name-color: var(--brisa-sand);
 		--gifts-bank-holder-row: 3;
 		--gifts-bank-holder-size: 0.75rem;
 		--gifts-bank-holder-weight: 500;
-		--gifts-bank-holder-color: var(--brisa-mist);
+		--gifts-bank-holder-color: rgb(var(--brisa-ivory-rgb) / 92%);
 		--gifts-number-display: contents;
 		--gifts-number-row: 2;
 		--gifts-bank-number-align: end;
-		--gifts-bank-number-inset: 0.35rem;
+		--gifts-bank-number-inset: 0.5rem;
 		--gifts-account-display: inline-block;
 		--gifts-account-font: var(--font-mono, monospace);
 		--gifts-account-numeric: lining-nums tabular-nums;
-		--gifts-account-size: 1.1875rem;
-		--gifts-account-tracking: 0.035em;
+		--gifts-account-size: 1.375rem;
+		--gifts-account-tracking: 0.04em;
 		--gifts-account-padding: 0;
 		--gifts-account-bg: transparent;
 		--gifts-account-color: var(--brisa-ivory);
 		--gifts-account-white-space: nowrap;
 		--gifts-copy-row: 4;
-		--gifts-copy-margin-top: 0.75rem;
+		--gifts-copy-margin-top: 1rem;
 		--gifts-copy-label-display: inline;
 		--gifts-copy-label-font: var(--font-label);
 		--gifts-copy-label-size: 0.6875rem;
 		--gifts-copy-label-tracking: 0.14em;
-		--gifts-copy-gap: 0.4rem;
+		--gifts-copy-gap: 0.5rem;
 		--gifts-copy-min-height: 2.75rem;
-		--gifts-copy-padding: 0 0.75rem;
-		--gifts-copy-radius: 0;
+		--gifts-copy-padding: 0 1.25rem;
+		--gifts-copy-radius: 999px;
 		--gifts-copy-bg: transparent;
-		--gifts-copy-icon-border: none;
-		--gifts-copy-icon-color: var(--brisa-sand-ink);
+		--gifts-copy-icon-border: 1px solid var(--brisa-sand);
+		--gifts-copy-icon-color: var(--brisa-sea);
 		--gifts-copy-opacity: 100%;
 		--gifts-copy-hover-transform: none;
-		--gifts-copy-hover-bg: transparent;
-		--gifts-copy-hover-color: var(--brisa-sea);
-		--gifts-copy-success-bg: transparent;
-		--gifts-copy-success-color: var(--brisa-slate);
+		--gifts-copy-hover-bg: rgb(var(--brisa-sand-rgb) / 22%);
+		--gifts-copy-hover-color: var(--brisa-sea-deep);
+		--gifts-copy-success-bg: var(--brisa-sea);
+		--gifts-copy-success-color: var(--brisa-ivory);
 	}
 
 	.quote-section {

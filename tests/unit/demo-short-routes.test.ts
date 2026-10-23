@@ -17,9 +17,15 @@ describe('catalog short routes', () => {
 		expect(isReservedInvitationSlug(' Brisa ')).toBe(true);
 	});
 
-	it('leaves non-aliased demos and managed invitation links unchanged', () => {
+	it('shares every catalog demo at its short alias and keeps managed links unchanged', () => {
 		expect(findDemoByRouteSlug('unknown')).toBeUndefined();
-		expect(buildPublicInvitationPath('xv', 'demo-xv-editorial')).toBe('/xv/demo-xv-editorial');
+		expect(DEMO_INVITATIONS).toHaveLength(8);
+		for (const demo of DEMO_INVITATIONS) {
+			expect(demo.routeSlug).toBeTruthy();
+			expect(getDemoRouteSlug(demo.slug)).toBe(demo.routeSlug);
+			expect(findDemoByRouteSlug(demo.routeSlug as string)?.slug).toBe(demo.slug);
+			expect(buildPublicInvitationPath(demo.eventType, demo.slug)).toBe(`/${demo.routeSlug}`);
+		}
 		expect(buildPublicInvitationPath('boda', 'sample-couple')).toBe('/sample-couple');
 	});
 
