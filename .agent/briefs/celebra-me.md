@@ -71,7 +71,7 @@ content only (`src/invitations/demos/`); real client invitations are never demo 
 ## Image and Visual Content
 
 - Invitations use real client photography; derivatives follow the asset rules in
-  `docs/core/invitation-preparation-contract.md`
+  `docs/core/invitation-creation-contract.md`
 - Prefer warm lighting, natural skin texture, and elegant composition
 - Avoid plastic-looking skin, overly saturated colors, and cartoon styles
 

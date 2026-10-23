@@ -6,7 +6,7 @@ the retro log that lets an invitation note leave the repository.
 **Does not own:** the hero contract and quality criteria
 ([visual design reference](visual-design-reference.md)), implementation rules
 ([theme architecture](architecture.md)) or the preparation schema
-([`docs/core/invitation-preparation-contract.md`](../../core/invitation-preparation-contract.md)).
+([`docs/core/invitation-creation-contract.md`](../../core/invitation-creation-contract.md)).
 
 Read this page before the
 [design-reference brief](../../../.agent/templates/creative/design-reference-brief.md) of a new
