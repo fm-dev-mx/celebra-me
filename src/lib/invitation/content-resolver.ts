@@ -1,5 +1,8 @@
 import { getRoutableEventEntry, contentDocumentFromEntry } from '@/lib/content/events';
-import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import {
+	findPublishedWithAccessBySlugAndEventType,
+	type PublicPublishedInvitationContent,
+} from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import type { InvitationViewModel } from '@/lib/adapters/types';
@@ -148,6 +151,52 @@ function resolvePublishedAccess(entry: {
 }
 
 /**
+ * Resolution of one DB-published client invitation row: unavailable when disabled or
+ * expired, null when its content fails the schema, otherwise the renderable view model.
+ * Shared by the public route and `/api/health/invitations`, so both judge a row alike.
+ */
+export function resolvePublishedClientEntry(
+	publishedEntry: PublicPublishedInvitationContent,
+	now = new Date(),
+): PublicInvitationResolution | null {
+	const access = resolvePublishedAccess(publishedEntry);
+	if (
+		isInvitationPubliclyDisabled(access) ||
+		resolveInvitationContentValidity(
+			'client',
+			toInvitationTimingProjection(publishedEntry.content),
+			now,
+		).expired
+	) {
+		return { source: 'unavailable' };
+	}
+	const parsedContent = eventContentSchema.safeParse(publishedEntry.content);
+	if (!parsedContent.success) {
+		logInvalidPublishedContent({
+			id: publishedEntry.id,
+			invitationId: publishedEntry.invitationId,
+			slug: publishedEntry.slug,
+			eventType: publishedEntry.eventType,
+			version: publishedEntry.version,
+			issues: parsedContent.error.issues,
+		});
+		return null;
+	}
+
+	const rawContent = parsedContent.data;
+	// Unpaid previews keep their original photos; the page banner is the preview cue.
+	const viewModel = adaptEvent({ slug: publishedEntry.slug, content: rawContent });
+	return {
+		source: 'published',
+		invitationId: publishedEntry.invitationId,
+		viewModel,
+		rawContent,
+		version: publishedEntry.version,
+		access,
+	};
+}
+
+/**
  * Public route resolution, including the administrator's access decision and the
  * validity window (event date + 1 year) for DB-published client invitations. Static
  * demos are always reachable.
@@ -163,40 +212,7 @@ export async function resolvePublicInvitation(
 		try {
 			const publishedEntry = await findPublishedWithAccessBySlugAndEventType(slug, eventType);
 			if (publishedEntry && publishedEntry.isDemo !== true) {
-				const access = resolvePublishedAccess(publishedEntry);
-				if (
-					isInvitationPubliclyDisabled(access) ||
-					resolveInvitationContentValidity(
-						'client',
-						toInvitationTimingProjection(publishedEntry.content),
-					).expired
-				) {
-					return { source: 'unavailable' };
-				}
-				const parsedContent = eventContentSchema.safeParse(publishedEntry.content);
-				if (!parsedContent.success) {
-					logInvalidPublishedContent({
-						id: publishedEntry.id,
-						invitationId: publishedEntry.invitationId,
-						slug: publishedEntry.slug,
-						eventType: publishedEntry.eventType,
-						version: publishedEntry.version,
-						issues: parsedContent.error.issues,
-					});
-					return null;
-				}
-
-				const rawContent = parsedContent.data;
-				// Unpaid previews keep their original photos; the page banner is the preview cue.
-				const viewModel = adaptEvent({ slug, content: rawContent });
-				return {
-					source: 'published',
-					invitationId: publishedEntry.invitationId,
-					viewModel,
-					rawContent,
-					version: publishedEntry.version,
-					access,
-				};
+				return resolvePublishedClientEntry(publishedEntry);
 			}
 		} catch (error) {
 			if (!staticFallbackReason(error)) throw error;
