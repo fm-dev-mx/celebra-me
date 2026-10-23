@@ -1,0 +1,328 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "templateId": "xv-sage-champagne",
+    "title": "Mis XV años — Regina Sofía",
+    "description": "Una tarde entre olivos para celebrar los quince años de Regina Sofía, el sábado 20 de noviembre de 2027 en Querétaro.",
+    "theme": {
+        "preset": "sage-champagne",
+        "fontFamily": "serif",
+        "motion": "editorial"
+    },
+    "eventTiming": {
+        "localDateTime": "2027-11-20T18:00",
+        "timeZone": "America/Mexico_City",
+        "startsAtUtc": "2027-11-21T00:00:00.000Z"
+    },
+    "sectionOrder": [
+        "quote",
+        "countdown",
+        "location",
+        "family",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "composition": {
+        "intersections": {
+            "thankYou": {
+                "family": "arch",
+                "source": "rsvp"
+            },
+            "quote": {
+                "family": "atmospheric-blend",
+                "source": "hero"
+            }
+        }
+    },
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "family",
+            "alt": "Una hilera de olivos al atardecer sobre el pasto dorado.",
+            "height": "medium",
+            "presentation": "framed"
+        }
+    ],
+    "hero": {
+        "variant": "night-arch",
+        "name": "Regina",
+        "label": "Mis XV años",
+        "scrollLabel": "Descubra más",
+        "date": "2027-11-20T18:00:00.000Z",
+        "backgroundImage": "hero",
+        "focalPoint": "72% 62%",
+        "focalPointMobile": "72% 62%",
+        "presentation": {
+            "venueIndex": 0,
+            "timeFormat": "12h"
+        }
+    },
+    "envelope": {
+        "disabled": false,
+        "revealVariant": "night-envelope",
+        "cardLabel": "MIS XV AÑOS",
+        "envelopeName": "Regina Sofía",
+        "teaserDetails": "20 · NOV · 2027 · QUERÉTARO",
+        "cardName": "Regina",
+        "guestPlacement": "outside-envelope",
+        "sealStyle": "wax",
+        "sealIcon": "monogram",
+        "sealInitials": "R",
+        "documentLabel": "R · XV",
+        "stampText": "XV",
+        "stampYear": "2027",
+        "microcopy": "Le guardé un lugar en mi noche",
+        "tooltipText": "Abrir invitación"
+    },
+    "quote": {
+        "text": "Hay canciones que se dedican una sola vez en la vida.",
+        "closingLine": "Esa noche quiero que usted la escuche conmigo."
+    },
+    "family": {
+        "variant": "standard",
+        "presentation": "text-only",
+        "parentsOrder": "father-first",
+        "parents": {
+            "father": "Tomás Alcázar Ruiz",
+            "mother": "Paulina Medina Ortiz"
+        },
+        "godparents": [
+            {
+                "name": "Adriana Medina Ortiz",
+                "role": "Madrina"
+            },
+            {
+                "name": "Ernesto Villaseñor Paz",
+                "role": "Padrino"
+            }
+        ],
+        "labels": {
+            "sectionTitle": "Mi familia",
+            "sectionSubtitle": "",
+            "parentsTitle": "Mis papás",
+            "godparentsTitle": "Mis padrinos",
+            "sectionMessage": "Me enseñaron que lo bonito se celebra con la gente que uno quiere. Por eso esa noche quiero que usted esté."
+        }
+    },
+    "countdown": {
+        "variant": "written-days",
+        "title": "Faltan",
+        "footerText": "para la serenata"
+    },
+    "location": {
+        "variant": "program-sheet",
+        "accessPolicy": {
+            "visibility": "public"
+        },
+        "mapStyle": "minimal",
+        "presentationOptions": {
+            "showCalendarLinks": false,
+            "indicationsLayout": "enclosure",
+            "showNavigationButtons": false
+        },
+        "introHeading": "Apunte la fecha",
+        "introLede": "Misa a las seis y fiesta a las siete y media, en el mismo jardín.",
+        "indicationsHeading": "Código de vestimenta",
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "styleVariant": "default",
+                "title": "Formal",
+                "text": "Le agradecemos acompañarnos con atuendo formal."
+            },
+            {
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "title": "Verde salvia",
+                "text": "Es el color de mi fajín esa noche; le pido que lo deje solo para mí."
+            },
+            {
+                "iconName": "Forbidden",
+                "styleVariant": "default",
+                "text": "Esta vez, solo adultos."
+            }
+        ],
+        "venues": [
+            {
+                "type": "ceremony",
+                "venueEvent": "Misa de acción de gracias",
+                "venueName": "Capilla del Olivar",
+                "address": "Espacio ilustrativo · Querétaro, Qro.",
+                "date": "2027-11-20",
+                "time": "18:00",
+                "city": "Querétaro",
+                "isVisible": true
+            },
+            {
+                "type": "reception",
+                "venueEvent": "Recepción",
+                "venueName": "Quinta Los Olivos",
+                "address": "Espacio ilustrativo · Querétaro, Qro.",
+                "date": "2027-11-20",
+                "time": "19:30",
+                "city": "Querétaro",
+                "isVisible": true
+            }
+        ]
+    },
+    "itinerary": {
+        "variant": "editorial-ledger",
+        "title": "Así será mi noche",
+        "items": [
+            {
+                "time": "18:00",
+                "iconName": "Church",
+                "label": "Misa",
+                "description": "Para empezar, dar gracias."
+            },
+            {
+                "time": "19:30",
+                "iconName": "Reception",
+                "label": "Recepción",
+                "description": "Nos vemos bajo la pérgola."
+            },
+            {
+                "time": "20:30",
+                "iconName": "Waltz",
+                "label": "Vals",
+                "description": "Con mi papá, como lo ensayamos."
+            },
+            {
+                "time": "21:00",
+                "iconName": "Dinner",
+                "label": "Cena",
+                "description": "A la mesa, entre olivos."
+            },
+            {
+                "time": "22:00",
+                "iconName": "Sparkles",
+                "label": "Serenata",
+                "description": "Una canción que no le voy a adelantar."
+            },
+            {
+                "time": "01:00",
+                "iconName": "Party",
+                "label": "Cierre",
+                "description": "La última canción, ya el domingo 21 de noviembre."
+            }
+        ]
+    },
+    "gallery": {
+        "variant": "album-assemble",
+        "eyebrow": "",
+        "title": "Antes de la noche",
+        "subtitle": "Olivos, salvia y la luz de la tarde.",
+        "items": [
+            {
+                "image": "gallery01",
+                "alt": "Regina sonríe junto a un muro de piedra clara con enredadera.",
+                "focalPoint": "50% 30%"
+            },
+            {
+                "image": "gallery02",
+                "alt": "Un ramo de rosas blancas y ramas de olivo con listón verde salvia junto a las zapatillas de Regina.",
+                "focalPoint": "50% 50%"
+            },
+            {
+                "image": "gallery03",
+                "alt": "Regina camina por un sendero entre olivos sosteniendo su falda.",
+                "focalPoint": "60% 45%"
+            },
+            {
+                "image": "gallery04",
+                "alt": "Regina ríe con su ramo entre las manos.",
+                "focalPoint": "50% 35%"
+            },
+            {
+                "image": "gallery05",
+                "alt": "Regina escucha su serenata bajo la pérgola iluminada.",
+                "focalPoint": "65% 40%"
+            }
+        ]
+    },
+    "gifts": {
+        "variant": "standard",
+        "title": "Regalos",
+        "presentation": "legend-only",
+        "subtitle": "Lo importante es que venga. Si desea tener un detalle conmigo, puede ser un regalo o en efectivo."
+    },
+    "rsvp": {
+        "variant": "reply-card",
+        "title": "¿Me acompaña?",
+        "subcopy": "Confírmeme a más tardar el sábado 6 de noviembre de 2027.",
+        "lockedMessage": "Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.",
+        "guestCap": 4,
+        "accessMode": "personalized-only",
+        "confirmationMode": "api",
+        "flow": "steps",
+        "personalizedAccess": {
+            "variant": "reply-card",
+            "title": "Su lugar ya está apartado",
+            "subtitle": "Lleva su nombre.",
+            "footerText": "Confírmelo abajo."
+        },
+        "labels": {
+            "name": "Su nombre",
+            "notesLabel": "Un mensaje para mí",
+            "notesPlaceholder": "Lo leeré cuando termine la serenata.",
+            "guestHint": "Tiene {count} lugares. Si vienen menos, ajústelo aquí.",
+            "stepAttendance": "Primero lo importante",
+            "stepDetails": "¿Cuántas personas vienen?"
+        },
+        "confirmationMessage": "Respuesta de prueba completada. Esta demo no registra asistencia.",
+        "responseMessages": {
+            "confirmed": {
+                "title": "Ya le espero, {guestName}.",
+                "subtitle": "Si algo cambia, puede modificar su respuesta aquí mismo."
+            },
+            "declined": {
+                "title": "Le voy a extrañar, {guestName}.",
+                "subtitle": "Gracias por avisarme."
+            }
+        }
+    },
+    "thankYou": {
+        "variant": "portrait-keepsake",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 35%",
+        "message": "Gracias por ser parte de mi historia. Esa noche la canción también será para usted.",
+        "closingName": "Regina",
+        "closingPhrase": "Regina Sofía · XV años · Querétaro · MMXXVII"
+    },
+    "navigation": [
+        {
+            "label": "Lugar",
+            "href": "#event-location"
+        },
+        {
+            "label": "Familia",
+            "href": "#family-section"
+        },
+        {
+            "label": "Programa",
+            "href": "#itinerary"
+        },
+        {
+            "label": "Galería",
+            "href": "#galeria"
+        },
+        {
+            "label": "Confirmar",
+            "href": "#rsvp"
+        }
+    ],
+    "sharing": {
+        "ogImage": "ogShare",
+        "ogDescription": "Sábado 20 de noviembre de 2027 · Querétaro. Misa a las 18:00 y recepción a las 19:30.",
+        "shareMessages": {
+            "invitation": "Hola, {{invitado}}: cumplo quince y usted está en mi lista. Aquí va su invitación, con su pase y la opción para confirmar:\n\n{{enlace}}",
+            "reminder": "Hola, {{invitado}}: {{hora_evento}} Ya casi es la serenata.\n\nSi aún no confirma, tiene hasta el sábado 6 de noviembre de 2027:\n{{enlace}}"
+        }
+    },
+    "visualProfileId": "demo-xv-serenata",
+    "_assetSlug": "demo-xv-serenata"
+}

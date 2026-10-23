@@ -77,7 +77,7 @@ afterEach(() => {
 });
 
 describe('pnpm board', () => {
-	it('numbers the queue by urgency, readiness and dependencies, and colors it', () => {
+	it('numbers the queue owner first, then by urgency, readiness and dependencies, and colors it', () => {
 		const dir = makeBoard({
 			tareas: [
 				task('normal-lista'),
@@ -94,13 +94,98 @@ describe('pnpm board', () => {
 		expect(status).toBe(0);
 		const rows = JSON.parse(out) as { id: string; color: string }[];
 		expect(rows.map((r) => [r.id, r.color])).toEqual([
+			// d163: the owner's ready task comes first, whatever its urgency.
+			['del-dueno', 'own'],
 			// A blocked «alta» task still waits behind the task it needs.
 			['base', 'auto'],
 			['alta-espera', 'block'],
-			['del-dueno', 'own'],
 			['normal-lista', 'auto'],
 			['sin-prompt', 'block'],
 		]);
+	});
+
+	it('keeps a prerequisite before the owner task that waits for it', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('urgente', { urgencia: 'urgente' }),
+				task('del-dueno', { actor: 'dueno', urgencia: 'baja' }),
+				task('dueno-espera', {
+					actor: 'dueno',
+					requisitos: [{ tipo: 'tarea', ref: 'prep' }],
+				}),
+				task('prep', { estado: 'en curso' }),
+			],
+		});
+		const rows = JSON.parse(board(dir, 'list', '--json').out) as {
+			id: string;
+			color: string;
+		}[];
+		// An owner task that is not ready yet is gray, so it keeps the usual order.
+		expect(rows.map((r) => [r.id, r.color])).toEqual([
+			['del-dueno', 'own'],
+			['urgente', 'auto'],
+			['prep', 'run'],
+			['dueno-espera', 'block'],
+		]);
+	});
+
+	it('keeps owner tasks and answers out of sight until their date and tasks are met', () => {
+		const MODEL_PATH = path.join(ROOT, 'scripts', 'board', 'model.mjs');
+		const tareas = [
+			task('pronto', { urgencia: 'alta' }),
+			task('dueno-fecha', {
+				actor: 'dueno',
+				requisitos: [{ tipo: 'fecha', ref: '2026-10-26T00:00:00Z' }],
+			}),
+			task('precio', {
+				requisitos: [
+					{ tipo: 'fecha', ref: '2026-12-10T00:00:00Z' },
+					{ tipo: 'dueno', ref: 'Decidir el precio' },
+				],
+			}),
+			task('base', { estado: 'en curso' }),
+			task('tras-base', {
+				requisitos: [
+					{ tipo: 'tarea', ref: 'base' },
+					{ tipo: 'dueno', ref: 'Elegir la foto' },
+				],
+			}),
+			task('ya', { requisitos: [{ tipo: 'dueno', ref: 'Elegir el color' }] }),
+		];
+		// Prints the queue with colors and the owner answers due at a given time.
+		const probe = String.raw`
+			const m = await import(process.argv[1]);
+			const board = { tareas: JSON.parse(process.argv[2]) };
+			const at = (iso) => {
+				const now = Date.parse(iso);
+				return {
+					queue: m.queue(board, now).map((t) => t.id + ':' + m.color(t, board, { now })),
+					asks: m.ownerAsks(board, now).map(({ t, r }) => t.id + ':' + r.ref),
+				};
+			};
+			console.log(JSON.stringify([at(process.argv[3]), at(process.argv[4])]));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(MODEL_PATH).href,
+				JSON.stringify(tareas),
+				NOW,
+				'2026-12-11T00:00:00Z',
+			],
+			{ cwd: ROOT, allowFailure: true },
+		);
+		expect(result.status).toBe(0);
+		const [before, after] = JSON.parse(String(result.stdout));
+		expect(before.queue[0]).toBe('pronto:auto');
+		expect(before.queue).toContain('dueno-fecha:block');
+		expect(before.asks).toEqual(['ya:Elegir el color']);
+		expect(after.queue[0]).toBe('dueno-fecha:own');
+		expect(after.asks).toEqual(expect.arrayContaining(['precio:Decidir el precio']));
+		expect(after.asks).not.toContain('tras-base:Elegir la foto');
 	});
 
 	it('gives each agent only tasks it can finish alone', () => {
@@ -116,6 +201,44 @@ describe('pnpm board', () => {
 		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).id).toBe('de-codex');
 		const claude = JSON.parse(board(dir, 'list', '--agente=claude', '--json').out);
 		expect(claude.find((r: Json) => r.id === 'imagenes').color).toBe('block');
+	});
+
+	it('requires a #N pull request for review and merge states and normalizes its form', () => {
+		const dir = makeBoard({
+			tareas: [task('con-pr', { rama: 'fix/x' }), task('con-url'), task('auditoria')],
+		});
+		expect(board(dir, 'set', 'auditoria', '--rev=1', 'estado=en revision').status).toBe(0);
+		const merged = board(dir, 'set', 'auditoria', '--rev=2', 'estado=unida');
+		expect(merged.status).toBe(2);
+		expect(merged.err).toContain('unida requiere pr=#<número>');
+		const missing = board(dir, 'set', 'con-pr', '--rev=1', 'estado=en revision');
+		expect(missing.status).toBe(2);
+		expect(missing.err).toContain('en revision requiere pr=#<número>');
+		expect(board(dir, 'set', 'con-pr', '--rev=1', 'estado=en revision', 'pr=475').status).toBe(
+			0,
+		);
+		expect(readTask(dir, 'con-pr').pr).toBe('#475');
+		const url = 'pr=https://github.com/fm-dev-mx/celebra-me/pull/473';
+		expect(board(dir, 'set', 'con-url', '--rev=1', 'estado=unida', url).status).toBe(0);
+		expect(readTask(dir, 'con-url').pr).toBe('#473');
+		const bad = board(dir, 'set', 'con-url', '--rev=2', 'pr=pendiente');
+		expect(bad.status).toBe(2);
+		expect(bad.err).toContain('pr debe ser #<número>');
+		const foreign = 'pr=https://github.com/otro/repo/pull/12';
+		const other = board(dir, 'set', 'con-url', '--rev=2', foreign);
+		expect(other.status).toBe(2);
+		expect(other.err).toContain('pr de otro repositorio');
+	});
+
+	it('enforces the PR rule on a legacy record once a write touches its state', () => {
+		const legacy = { pr: 'https://github.com/otro/repo/pull/12' };
+		const dir = makeBoard({ tareas: [task('heredada', legacy)] });
+		expect(board(dir, 'set', 'heredada', '--rev=1', 'ahora=sigue').status).toBe(0);
+		const merged = board(dir, 'set', 'heredada', '--rev=2', 'estado=unida');
+		expect(merged.status).toBe(2);
+		expect(merged.err).toContain('pr de otro repositorio');
+		expect(readTask(dir, 'heredada').estado).not.toBe('unida');
+		expect(board(dir, 'set', 'heredada', '--rev=2', 'estado=unida', 'pr=12').status).toBe(0);
 	});
 
 	it('locks a task for one agent and refuses a move while locked', () => {

@@ -42,6 +42,12 @@ authorization.
   `vigente: false`). Aliases: `get`, `update`, `decision`, `log`, `verify`; every command takes
   `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 5 per
   document).
+- **PR number**: `pr` is always `#N`; the command normalizes `398`, `"#398"` or a
+  `fm-dev-mx/celebra-me` pull URL and refuses a pull URL from another repository. `unida` always
+  needs it; `en revision` needs it only when the task has a `rama` (audits and handoffs go to review
+  without one). Record it in the same write that opens the PR. Every mention of a task that has a PR
+  — replies, messages, handoffs, reports, prompts — writes it next to the id:
+  `pasarela-pago-estudio (PR #475)`. Same rule for every agent.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change and per `move`; no rows for reviews

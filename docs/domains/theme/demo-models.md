@@ -56,3 +56,29 @@ farewell on the following Sunday. Demonstration guest: María Fernanda Solís, f
 by the shared demo pipeline. This replaces the proposed Sofía Navarro to avoid a second guest
 mechanism. The completed demo must simulate replies without persistent writes. Venue names are
 fictional; no invented street addresses, payment details or misleading venue-map links.
+
+## Regina Sofía Alcázar Medina
+
+- Model identifier: `regina-alcazar-v1`.
+- Full name: Regina Sofía Alcázar Medina. Cover, envelope and signature: Regina; closing line:
+  Regina Sofía.
+- Persona monogram: R. Fictional birth date: 20 November 2012 (internal consistency only).
+- Hometown: Querétaro, Querétaro, México.
+- Father: Tomás Alcázar Ruiz. Mother: Paulina Medina Ortiz.
+- Godparents: Adriana Medina Ortiz and Ernesto Villaseñor Paz (text only).
+- Visual anchors: champagne satin gown with a full floor-length skirt and a sage sash, a small gold
+  olive-leaf comb, pearl studs, olive grove, wooden pergola and a plain stone chapel without a bell
+  tower. Never lanterns, towers, braids, crowns, a sun motif or lilac, so the design never recalls
+  America.
+- Voice: warm and direct, the serenade is the night's promise; Spanish guest-facing copy uses
+  “usted.”
+- Source: owner-approved synthetic session «Serenata» (twelve shots, review log in the owner's
+  creative-ops session folder `demo-photo-sessions/xv-serenata/`). Slots: 03 cover, 09 interlude,
+  01, 04, 05, 06 and 11 gallery, 12 closing, 05 cropped for the share card; 02, 07, 08 and 10 stay
+  in reserve.
+- Active candidate: `src/invitations/demos/demo-xv-serenata/content.json` (route `/serenata`, hidden
+  in the showroom until the owner approves it).
+
+The 2027 XV edition is Saturday 20 November 2027 in Querétaro: 18:00 mass, 19:30 reception, 20:30
+waltz, 21:00 dinner, 22:00 serenade and 01:00 farewell on Sunday. The same event-edition rules as
+above apply to any reuse.

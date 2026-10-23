@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-23T04:05:10.345Z",
+    "generatedAt": "2026-10-23T22:26:02.290Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-        "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
+        "cssSha256": "a6ed99ea32499aeb8d2aaeb1579ed580bb52927e5b73d4f60528f00ef26158ac",
         "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 180,
-    "matrixHash": "3ea7d6e0c70fec409a681799b3efa696202054f71febe6dbd1b6ee180e8da41e",
+    "totalCaptures": 182,
+    "matrixHash": "f450d45070cd0561d2eb8d80c30f5903f542a30c6bf9451ff32be54419e52223",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2451,11 +2451,35 @@
             "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
             "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
             "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
+            "sha256": "d3282a330e34b97b040037da9440d405e154033acb13d0740cc6547f265c4363",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "6b9f74c93934af12c63b35d2207ee5096c274ac4f725845ebfa07c9c45e78406",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
+            "sha256": "39f377dbad36701685a89c3c1f9a3b49244b063e710547b74064724cbb7fbae4",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "6b9f74c93934af12c63b35d2207ee5096c274ac4f725845ebfa07c9c45e78406",
+            "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518",
+    "referenceSha": "90afec9445bb01802c8d5a231b1b8edfade4754e",
     "variantManifest": {
-        "generatedAt": "2026-10-23T04:05:10.345Z",
+        "generatedAt": "2026-10-23T22:26:02.290Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2468,7 +2492,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
+            "cssSha256": "a6ed99ea32499aeb8d2aaeb1579ed580bb52927e5b73d4f60528f00ef26158ac",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4357,10 +4381,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518"
+        "referenceSha": "90afec9445bb01802c8d5a231b1b8edfade4754e"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-23T04:05:10.392Z",
+        "generatedAt": "2026-10-23T22:26:02.295Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4373,16 +4397,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
+            "cssSha256": "a6ed99ea32499aeb8d2aaeb1579ed580bb52927e5b73d4f60528f00ef26158ac",
             "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 46,
-        "matrixHash": "6fdac48d24a6474245aefdb7c36381d9e268e977c8c3ab9c50eb1e2c496a897e",
-        "cases": 23,
+        "totalCaptures": 48,
+        "matrixHash": "8e04d01fc30d7ad3e2828cdf8680ed46b82987fd4d2cbb574c9c50d7a906c3dc",
+        "cases": 24,
         "captures": [
             {
                 "kind": "invitation",
@@ -4935,11 +4959,35 @@
                 "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
                 "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
                 "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-serenata",
+                "eventType": "xv",
+                "preset": "sage-champagne",
+                "viewport": "mobile",
+                "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
+                "sha256": "d3282a330e34b97b040037da9440d405e154033acb13d0740cc6547f265c4363",
+                "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+                "assetHash": "6b9f74c93934af12c63b35d2207ee5096c274ac4f725845ebfa07c9c45e78406",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-serenata",
+                "eventType": "xv",
+                "preset": "sage-champagne",
+                "viewport": "desktop",
+                "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
+                "sha256": "39f377dbad36701685a89c3c1f9a3b49244b063e710547b74064724cbb7fbae4",
+                "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+                "assetHash": "6b9f74c93934af12c63b35d2207ee5096c274ac4f725845ebfa07c9c45e78406",
+                "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518"
+        "referenceSha": "90afec9445bb01802c8d5a231b1b8edfade4754e"
     },
-    "candidateManifestSha256": "c622a23bb6133fadaf935f96c562b492bee039d21e1d7520b5048dfdefb41d81",
-    "acceptedFromCommit": "70542b87b99746af413ff1e86ffcc6a8c10d3518",
-    "acceptedAt": "2026-10-23T04:14:38.470Z"
+    "candidateManifestSha256": "3d6bcdf55a72377f67fe148d9700ebc7bc4bf0c4705c2b1831b184d3ffb26fdb",
+    "acceptedFromCommit": "90afec9445bb01802c8d5a231b1b8edfade4754e",
+    "acceptedAt": "2026-10-23T22:27:46.445Z"
 }
