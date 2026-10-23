@@ -132,7 +132,7 @@ describe('remote route inventory', () => {
 			'/terminos',
 			'/demos/xv',
 			'/demos/cumpleanos',
-			'/xv/demo-xv-editorial',
+			'/editorial',
 			'/boda/daniela-y-martin',
 			'/xv/naydelin-paredes',
 			'/r/victoria-y-roberto',

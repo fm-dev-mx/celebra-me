@@ -3,6 +3,7 @@ import { defineDemoInvitation } from '@/lib/invitation/demo-invitation';
 export default defineDemoInvitation({
 	slug: 'demo-xv-enchanted-rose',
 	eventType: 'xv',
+	routeSlug: 'rose',
 	showroom: {
 		title: 'Enchanted Rose',
 		description: 'Floral y romántica.',

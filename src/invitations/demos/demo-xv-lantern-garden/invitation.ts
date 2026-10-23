@@ -3,6 +3,7 @@ import { defineDemoInvitation } from '@/lib/invitation/demo-invitation';
 export default defineDemoInvitation({
 	slug: 'demo-xv-lantern-garden',
 	eventType: 'xv',
+	routeSlug: 'jardin-de-luz',
 	showroom: {
 		title: 'Jardín de Luz',
 		styleName: 'Jardín de Luz',

@@ -3,6 +3,7 @@ import { defineDemoInvitation } from '@/lib/invitation/demo-invitation';
 export default defineDemoInvitation({
 	slug: 'demo-cumple-luxury-hacienda',
 	eventType: 'cumple',
+	routeSlug: 'hacienda',
 	showroom: {
 		title: 'Cumpleaños estilo Hacienda',
 		description: 'Cálida, hacienda y con carácter.',
