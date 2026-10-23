@@ -38,6 +38,7 @@ export const EVENT_KEYS = [
 	'interlude03',
 	'interlude04',
 	'thankYouPortrait',
+	'ogShare',
 ] as const;
 
 const COMMON_KEYS = ['logo', 'heroBgDesktop', 'heroBgMobile', 'headerLogo'] as const;
