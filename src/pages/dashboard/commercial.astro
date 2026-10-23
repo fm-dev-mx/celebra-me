@@ -19,6 +19,7 @@ import DemoConversionReport from '@/components/dashboard/commercial/DemoConversi
 import { loadDemoConversionReport } from '@/lib/tracking/demo-conversion-report.server';
 import DemoCatalog from '@/components/dashboard/commercial/DemoCatalog';
 import { loadDemoLinks } from '@/lib/commercial/demo-inventory.server';
+import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
 import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 import { getEnv } from '@/lib/server/env';
@@ -126,7 +127,7 @@ const revenueAttribution = dashboardData
 			</div>
 		)}
 
-		<DemoCatalog client:load demos={demoLinks} />
+		<DemoCatalog client:load demos={demoLinks} shareOrigin={resolvePublicSiteOrigin()} />
 		<DemoConversionReport report={demoReport} />
 		{dashboardData && viewModel && (
 			<>

@@ -40,11 +40,11 @@ const EXPECTED_REDIRECTS = [
 	},
 	{
 		source: '/bautizo/demo-bautismo-angelic-presence',
-		destination: '/bautizo/demo-bautizo-angelic-presence',
+		destination: '/angelical',
 	},
 	{
 		source: '/primera-comunion/demo-primera-comunion-illustrated',
-		destination: '/primera-comunion/demo-primera-comunion-angelic-presence',
+		destination: '/comunion-angelical',
 	},
 ];
 
@@ -199,9 +199,7 @@ describe('Middleware permanent redirects', () => {
 
 		if (!(response instanceof Response)) throw new Error('Expected a Response.');
 		expect(response.status).toBe(301);
-		expect(response.headers.get('Location')).toBe(
-			'/bautizo/demo-bautizo-angelic-presence?utm_source=whatsapp',
-		);
+		expect(response.headers.get('Location')).toBe('/angelical?utm_source=whatsapp');
 		expect(response.headers.get('X-Frame-Options')).toBe('DENY');
 		expect(next).not.toHaveBeenCalled();
 	});
@@ -215,9 +213,7 @@ describe('Middleware permanent redirects', () => {
 
 		if (!(response instanceof Response)) throw new Error('Expected a Response.');
 		expect(response.status).toBe(301);
-		expect(response.headers.get('Location')).toBe(
-			'/primera-comunion/demo-primera-comunion-angelic-presence',
-		);
+		expect(response.headers.get('Location')).toBe('/comunion-angelical');
 		expect(next).not.toHaveBeenCalled();
 	});
 });
