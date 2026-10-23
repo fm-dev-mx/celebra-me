@@ -223,8 +223,9 @@
 	}
 
 	&__mobile-toggle {
-		min-width: var(--header-control-min-height, 0);
-		min-height: var(--header-control-min-height, 0);
+		// 44 px tap target by default; the bare icon plus padding was 40×36 px.
+		min-width: var(--header-control-min-height, 44px);
+		min-height: var(--header-control-min-height, 44px);
 		position: relative;
 		z-index: var(--layer-nav-toggle);
 		padding: 0.5rem;
@@ -232,7 +233,8 @@
 		border: none;
 		cursor: pointer;
 		color: var(--hamburger-color, var(--hamburger-color-fallback));
-		display: block;
+		display: grid;
+		place-items: center;
 
 		@include mixins.respond-to(lg) {
 			display: none;

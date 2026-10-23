@@ -183,6 +183,14 @@
 	}
 
 	.rsvp__button {
+		// Hover keeps white type on the ink: the generic hover tokens swap in dark text over a
+		// dark accent, which read about 1.1:1 here (and stuck on phones after a tap).
+		--rsvp-button-color-hover: rgb(255 255 255);
+		--rsvp-button-bg-hover: var(--reply-card-ink, var(--color-text-primary));
+		--rsvp-button-border-hover: var(--reply-card-ink, var(--color-text-primary));
+		--rsvp-button-shadow-hover: none;
+		--rsvp-button-filter-hover: brightness(1.18);
+
 		min-height: 52px;
 		border-radius: 0;
 		background: var(--reply-card-ink, var(--color-text-primary));
@@ -193,6 +201,14 @@
 		letter-spacing: 0.16em;
 		text-transform: none;
 		box-shadow: none;
+
+		// Touch screens keep :hover after a tap; only a real pointer gets the lift and the glow.
+		@media (hover: none) {
+			&:hover:not(:disabled) {
+				transform: none;
+				filter: none;
+			}
+		}
 	}
 
 	.rsvp__demo-footer {
