@@ -54,7 +54,6 @@ function board(dir: string, ...args: string[]) {
 	if (args[0] === 'claim') {
 		if (!args[1].endsWith('-revision') && !args.some((a) => a.startsWith('--carril=')))
 			args.push('--carril=f10-libre');
-		if (!args.some((a) => a.startsWith('--rama='))) args.push(`--rama=fix/${args[1]}`);
 	}
 	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
 		args.push('--coordinador');
@@ -291,6 +290,85 @@ describe('pnpm board', () => {
 		).toBe(2);
 		expect(board(dir, 'release', 'first', '--agente=codex', '--sesion=other').status).toBe(2);
 		expect(readTask(dir, 'first').rev).toBe(2);
+	});
+
+	it('claims declared branches independently of task ids without inferring the caller branch', () => {
+		const dir = makeBoard({
+			tareas: [task('demo', { rama: 'feat/demo-xv-principal' }), task('audit')],
+		});
+		expect(board(dir, 'claim', 'demo', '--agente=codex').status).toBe(0);
+		expect(readTask(dir, 'demo').candado.rama).toBe('feat/demo-xv-principal');
+		board(dir, 'release', 'demo', '--agente=codex');
+		expect(board(dir, 'claim', 'audit', '--agente=codex').status).toBe(0);
+		expect(readTask(dir, 'audit').rama).toBeUndefined();
+		expect(readTask(dir, 'audit').candado.rama).toBeUndefined();
+	});
+
+	it('accepts an explicit branch whose name differs from the task id', () => {
+		const dir = makeBoard({ tareas: [task('landing')] });
+		expect(board(dir, 'claim', 'landing', '--agente=codex', '--rama=feat/vitrina').status).toBe(
+			0,
+		);
+		expect(readTask(dir, 'landing')).toMatchObject({
+			rama: 'feat/vitrina',
+			candado: { rama: 'feat/vitrina', carril: 'f10-libre' },
+		});
+	});
+
+	it('allows only explicitly declared coordinator claims in canonical Integration', () => {
+		const dir = makeBoard({ tareas: [task('coord', { actor: 'coordinador' }), task('code')] });
+		expect(board(dir, 'claim', 'coord', '--agente=codex', '--carril=integration').status).toBe(
+			2,
+		);
+		expect(
+			board(dir, 'claim', 'code', '--agente=codex', '--carril=integration', '--coordinador')
+				.status,
+		).toBe(2);
+		expect(readTask(dir, 'code').candado).toBeUndefined();
+		expect(
+			board(dir, 'claim', 'coord', '--agente=codex', '--carril=integration', '--coordinador')
+				.status,
+		).toBe(0);
+		expect(readTask(dir, 'coord').candado).toMatchObject({
+			carril: 'integration',
+			sesion: 'codex-test',
+			agente: 'codex',
+		});
+	});
+
+	it.each(['unknown', 'f04-integracion', ''])(
+		'rejects non-canonical or missing lane %s without writing',
+		(lane) => {
+			const dir = makeBoard({ tareas: [task('location')] });
+			const result = board(dir, 'claim', 'location', '--agente=codex', `--carril=${lane}`);
+			expect(result.status).toBe(2);
+			expect(result.err).toContain('carril canónico');
+			expect(readTask(dir, 'location')).toMatchObject({ rev: 1 });
+			expect(readTask(dir, 'location').candado).toBeUndefined();
+		},
+	);
+
+	it('rejects lane claims on a review child without changing its revision or lock', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('origin', { pr: 474, estado: 'en revision' }),
+				task('origin-revision', {
+					origen: 'origin',
+					requisitos: [{ tipo: 'revision', ref: 'origin' }],
+				}),
+			],
+		});
+		const result = board(
+			dir,
+			'claim',
+			'origin-revision',
+			'--agente=codex',
+			'--carril=f10-libre',
+		);
+		expect(result.status).toBe(2);
+		expect(result.err).toContain('omita --carril');
+		expect(readTask(dir, 'origin-revision').rev).toBe(1);
+		expect(readTask(dir, 'origin-revision').candado).toBeUndefined();
 	});
 
 	it('requires successful or explicitly archived prerequisites and a current decision', () => {

@@ -8,7 +8,7 @@
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
- *                                               (rama defaults to the current branch)
+ *                                               (rama defaults to the task's declared branch)
  *   release <id> --agente=<a>
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
@@ -64,18 +64,6 @@ class UsageError extends Error {}
 
 /** Print `text`, or `data` as JSON when the command got --json. */
 const say = (flags, out, data, text) => out(flags.json ? JSON.stringify(data, null, 2) : text);
-
-function currentBranch() {
-	try {
-		return execFileSync('git', ['branch', '--show-current'], {
-			cwd: process.env.INIT_CWD || process.cwd(),
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return '';
-	}
-}
 
 export function parseArgs(argv) {
 	const flags = {};
@@ -207,14 +195,19 @@ function reviewSha(task, flags) {
 }
 
 function claimLocation(before, flags, board) {
-	const rama = typeof flags.rama === 'string' ? flags.rama : before.rama || currentBranch();
+	const rama = typeof flags.rama === 'string' ? flags.rama : before.rama;
 	const carril = flags.carril;
 	if (before.origen && carril)
 		throw new UsageError('la revisión no toma el carril del autor; omita --carril');
-	if (!before.origen && rama.replace(/^[^/]+\//, '') !== before.id)
-		throw new UsageError('rama debe ser tipo/<id>');
-	if (!before.origen && !WORKTREE_LANES.some((lane) => lane.segment && lane.id === carril))
-		throw new UsageError('falta --carril=<carril canónico f05-f12>');
+	if (
+		!before.origen &&
+		!WORKTREE_LANES.some(
+			(lane) => lane.id === carril && (lane.segment || before.actor === 'coordinador'),
+		)
+	)
+		throw new UsageError(
+			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
+		);
 	if (carril && board.tareas.some((t) => t.id !== before.id && t.candado?.carril === carril))
 		throw new UsageError(`el carril ${carril} tiene otra tarea con candado`);
 	return { rama, carril };
@@ -359,7 +352,7 @@ const commands = {
 			const candado = { agente, desde: nowIso() };
 			for (const [k, v] of Object.entries({
 				sesion: flags.sesion,
-				carril: flags.carril,
+				carril,
 				rama,
 			}))
 				if (v && v !== true) candado[k] = v;

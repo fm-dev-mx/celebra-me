@@ -6,6 +6,19 @@ through `pnpm board` in Integration. Fields and lifecycle belong to
 scope/acceptance, plans express intent, and the board records progress. Resolve disagreements
 explicitly; board text never grants authority.
 
+## Content rules
+
+- Use Spanish, formal "usted" register, with one example per explanation.
+- Every step that touches a dashboard carries the direct URL of that page.
+- Name each session by its exact sidebar title; session links do not open from the board page.
+- Deletion steps list the exact names to delete and the look-alikes to keep.
+- No secret values, tokens or environment values on the board; names only.
+- Fixed "done" marks appear only after verification (`git ls-remote`, `gh`, `/api/health`, session
+  list). State what was checked and at what time.
+- Times come from a timezone-aware source and use America/Mazatlan. In Git Bash,
+  `TZ=America/Mazatlan date` can silently print UTC; use
+  `node -e "console.log(new Date().toLocaleString('es-MX',{timeZone:'America/Mazatlan'}))"`.
+
 ## Evidence and recovery
 
 Retain an existing cross-review child and its assigned reviewer. Inspect the exact current PR head,
