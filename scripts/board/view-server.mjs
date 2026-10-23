@@ -1,8 +1,15 @@
 /**
- * Read-only local server for the board view: the page, the shared model and the board as JSON.
+ * Local server for the board view: the page, the shared model and the board as JSON.
  * `/api/stream` pushes the board as Server-Sent Events whenever a file in the store changes, so the page
  * shows a write in under a second; `/api/board` stays for one-off reads.
+ *
+ * The only write is `POST /api/sync` (the «Sincronizar» button), which runs the no-AI `scripts/board/sync.mjs`.
+ * Any website can make the browser send a request to 127.0.0.1, so every request must carry a local `Host`
+ * (DNS rebinding), and the POST must also come from the page's own `Origin` with the per-process random token
+ * the page embeds.
  */
+import { execFile } from 'node:child_process';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, watch } from 'node:fs';
 import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
@@ -16,6 +23,59 @@ const FILES = {
 };
 const SETTLE_MS = 150;
 const HEARTBEAT_MS = 25_000;
+const SYNC_TIMEOUT_MS = 120_000;
+const TOKEN_SLOT = '__BOARD_TOKEN__';
+
+/** Runs `pnpm board:sync --json [--dry-run]` against this store and resolves its parsed report. */
+export function runSyncScript(dir, { dryRun }) {
+	const args = [join(here, 'sync.mjs'), '--json', ...(dryRun ? ['--dry-run'] : [])];
+	return new Promise((ok, fail) => {
+		execFile(
+			process.execPath,
+			args,
+			{
+				env: { ...process.env, CELEBRA_BOARD_DIR: dir },
+				timeout: SYNC_TIMEOUT_MS,
+				windowsHide: true,
+				maxBuffer: 4 * 1024 * 1024,
+			},
+			(error, stdout, stderr) => {
+				try {
+					return ok(JSON.parse(stdout));
+				} catch {
+					fail(new Error(String(stderr).trim() || error?.message || 'board:sync falló'));
+				}
+			},
+		);
+	});
+}
+
+const sameToken = (a, b) => {
+	const x = Buffer.from(String(a ?? ''));
+	const y = Buffer.from(b);
+	return x.length === y.length && timingSafeEqual(x, y);
+};
+
+function readJson(req, limit = 1024) {
+	return new Promise((ok, fail) => {
+		let body = '';
+		req.on('data', (c) => {
+			body += c;
+			if (body.length > limit) {
+				fail(new Error('too large'));
+				req.destroy();
+			}
+		});
+		req.on('end', () => {
+			try {
+				ok(JSON.parse(body || '{}'));
+			} catch (e) {
+				fail(e);
+			}
+		});
+		req.on('error', fail);
+	});
+}
 
 /** Calls `onChange(json)` once a burst of writes settles and the board really changed. */
 function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFactory }) {
@@ -102,8 +162,11 @@ export function serveView(
 		reconcileMs = 30_000,
 		heartbeatMs = HEARTBEAT_MS,
 		watchFactory = watch,
+		sync = (opts) => runSyncScript(dir, opts),
 	} = {},
 ) {
+	const token = randomBytes(32).toString('hex');
+	let syncing = false;
 	const clients = new Set();
 	const stalled = new WeakMap();
 	const send = (res, json, event) => {
@@ -140,8 +203,53 @@ export function serveView(
 		for (const res of clients) send(res, JSON.stringify(board.status()), 'status');
 	}, heartbeatMs);
 
+	const json = (res, status, data) =>
+		res
+			.writeHead(status, {
+				'content-type': 'application/json; charset=utf-8',
+				'cache-control': 'no-store',
+			})
+			.end(JSON.stringify(data));
+	const localHosts = () => {
+		const { port } = server.address();
+		return [`127.0.0.1:${port}`, `localhost:${port}`];
+	};
+
+	const handleSync = async (req, res) => {
+		const hosts = localHosts();
+		if (
+			!hosts.some((h) => req.headers.origin === `http://${h}`) ||
+			!sameToken(req.headers['x-board-token'], token) ||
+			!String(req.headers['content-type'] ?? '').startsWith('application/json')
+		)
+			return json(res, 403, { error: 'Solicitud no autorizada' });
+		let body;
+		try {
+			body = await readJson(req);
+		} catch {
+			return json(res, 400, { error: 'Cuerpo no válido' });
+		}
+		if (syncing) return json(res, 409, { error: 'Ya hay una sincronización en curso' });
+		syncing = true;
+		try {
+			json(res, 200, await sync({ dryRun: body.dryRun === true }));
+		} catch (e) {
+			json(res, 500, { error: e.message });
+		} finally {
+			syncing = false;
+		}
+	};
+
 	const server = createServer((req, res) => {
 		const path = new URL(req.url ?? '/', 'http://localhost').pathname;
+		if (!localHosts().includes(String(req.headers.host ?? ''))) {
+			res.writeHead(421).end();
+			return;
+		}
+		if (req.method === 'POST' && path === '/api/sync') {
+			handleSync(req, res);
+			return;
+		}
 		if (req.method !== 'GET') {
 			res.writeHead(405).end();
 			return;
@@ -176,7 +284,8 @@ export function serveView(
 			return;
 		}
 		res.writeHead(200, { 'content-type': f[1], 'cache-control': 'no-store' });
-		res.end(readFileSync(join(here, f[0])));
+		const content = readFileSync(join(here, f[0]), 'utf8');
+		res.end(path === '/' ? content.replace(TOKEN_SLOT, token) : content);
 	});
 	const cleanup = () => {
 		clearInterval(heartbeat);

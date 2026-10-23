@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Seguimiento Celebra-me</title>
+<meta name="board-token" content="__BOARD_TOKEN__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
@@ -133,6 +134,8 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .btn{border:1px solid var(--line-2);background:var(--panel);border-radius:8px;padding:8px 14px;font-weight:600;font-size:.9rem;min-height:44px}
 .btn.primary{background:var(--c,var(--accent));border-color:var(--c,var(--accent));color:var(--panel)}
 .btn:disabled{opacity:.55;cursor:default}
+.sync{display:flex;gap:6px;margin-left:auto}
+.syncout{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.84rem;white-space:pre-wrap;font-family:var(--mono)}
 .msg{font-size:.82rem;color:var(--muted)}
 .box{display:grid;gap:6px}
 .box h3{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint)}
@@ -198,7 +201,12 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
     <h1>Seguimiento Celebra-me<small>v3</small></h1>
     <span class="rev" id="rev">Cargando…</span>
     <span role="status" aria-live="polite" id="connection">Conectando…</span>
+    <span class="sync">
+      <button type="button" class="btn" id="sync-dry" title="Muestra qué cambiaría sin escribir nada">Ver cambios</button>
+      <button type="button" class="btn primary" id="sync-run" title="Actualiza el tablero con las ramas y los PR de GitHub">Sincronizar</button>
+    </span>
   </div>
+  <div class="syncout" id="syncout" role="status" aria-live="polite" hidden></div>
   <div class="strip" id="strip"><span class="eyebrow">Producción</span><span>Cargando el estado…</span></div>
 
   <nav class="tabs" role="tablist" aria-label="Vistas">
@@ -432,6 +440,26 @@ setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
 try{const a=localStorage.getItem('board-ag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','libres'].includes(a)))setAgent(a)}catch(e){}
+
+// «Sincronizar» runs the no-AI pnpm board:sync on the server; the token proves the request comes from this page.
+const TOKEN=document.querySelector('meta[name="board-token"]').content;
+async function sync(dryRun){
+  const out=$('syncout');const btns=[$('sync-dry'),$('sync-run')];
+  btns.forEach(b=>b.disabled=true);out.hidden=false;out.textContent=dryRun?'Calculando cambios…':'Sincronizando con GitHub…';
+  try{
+    const res=await fetch('/api/sync',{method:'POST',headers:{'content-type':'application/json','x-board-token':TOKEN},body:JSON.stringify({dryRun})});
+    const r=await res.json();
+    if(!res.ok)throw new Error(r.error||('Error '+res.status));
+    const lines=r.cambios.map(c=>c.ok===false?'NO SE ESCRIBIÓ '+c.texto+': '+c.resultado:(dryRun?'Cambiaría: ':'Hecho: ')+c.texto);
+    if(!r.cambios.length)lines.push('Sin cambios: el tablero ya coincide con GitHub.');
+    for(const o of r.omitidas)lines.push('Omitida: '+o.texto);
+    for(const a of r.avisos)lines.push('Aviso: '+a.texto);
+    out.textContent=(dryRun?'Prueba, nada escrito · ':'Sincronizado · ')+fmt(r.en)+'\n'+lines.join('\n');
+  }catch(e){out.textContent='No se pudo sincronizar: '+e.message}
+  finally{btns.forEach(b=>b.disabled=false)}
+}
+$('sync-dry').addEventListener('click',()=>sync(true));
+$('sync-run').addEventListener('click',()=>sync(false));
 
 // The server pushes the whole board on connect and after every write; EventSource reconnects by itself.
 const stream=new EventSource('/api/stream');
