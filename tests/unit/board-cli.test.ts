@@ -308,23 +308,24 @@ describe('pnpm board', () => {
 		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).id).toBe('archived');
 	});
 
-	it('exposes agent/lane/state reads and separates Antigravity from Gemini', () => {
+	it('exposes agent/lane/state reads and keeps a single Gemini identity', () => {
 		const dir = makeBoard({ tareas: [task('art', { requiere: ['imagenes'] })] });
 		const agents = JSON.parse(board(dir, 'agentes', '--json').out);
-		expect(agents.find((a: Json) => a.id === 'antigravity').capacidades).toEqual([]);
-		expect(JSON.parse(board(dir, 'next', '--agente=antigravity', '--json').out)).toBeNull();
+		expect(agents.map((a: Json) => a.id)).toEqual(['claude', 'codex', 'gemini']);
+		expect(agents.find((a: Json) => a.id === 'gemini').capacidades).toContain('imagenes');
+		expect(board(dir, 'agentes', 'antigravity', '--coordinador', '--rev=0').status).toBe(2);
 		expect(
 			board(
 				dir,
 				'agentes',
-				'antigravity',
+				'gemini',
 				'--rev=0',
 				'--coordinador',
 				'capacidades=["imagenes"]',
 				'--json',
 			).status,
 		).toBe(0);
-		expect(JSON.parse(board(dir, 'next', '--agente=antigravity', '--json').out).id).toBe('art');
+		expect(JSON.parse(board(dir, 'next', '--agente=gemini', '--json').out).id).toBe('art');
 		expect(JSON.parse(board(dir, 'carril', '--json').out)).toEqual([]);
 		expect(JSON.parse(board(dir, 'estado', '--json').out)).toBeNull();
 	});

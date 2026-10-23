@@ -12,7 +12,6 @@ export const AGENT_REGISTRY = {
 	},
 	codex: { nombre: 'Codex', capacidades: ['codigo', 'git', 'gh'] },
 	gemini: { nombre: 'Gemini', capacidades: ['codigo', 'git', 'gh', 'imagenes'] },
-	antigravity: { nombre: 'Antigravity', capacidades: [] },
 };
 export const AGENTES = [...Object.keys(AGENT_REGISTRY), 'cualquiera'];
 export const TOCA = ['main', 'produccion', 'migracion', 'secretos'];
