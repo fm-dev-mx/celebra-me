@@ -50,6 +50,20 @@ authorization.
 
 ## Session ownership and review
 
+The [coordinator contract](../../docs/core/coordinator-board.md#master-coordination-and-dispatch)
+owns the master/worker chat workflow. The persistent Integration master assigns and monitors;
+implementation runs in a new user-visible worker chat in the assigned lane's existing saved app
+project with local execution, subject to explicit human workflow authorization and product
+safeguards. Discover and verify actual runtime identities; never fabricate project/chat IDs or
+create automatic managed worktrees. Resume the recorded worker for continuations; replacement
+requires an inactive prior writer and scoped claim reconciliation. Do not duplicate board tasks, PRs
+or review children for chat lifecycle changes.
+
+`sesion` records the actual worker chat ID/name; `candado.sesion` is the unique CLI claim token.
+Workers preserve both, publish only their assigned progress/evidence and return an actionable
+handoff to the master. Messaging requires human authorization for its identified recipients.
+Independent review uses a separate chat/session bound to the exact PR SHA, never the author's lane.
+
 - `claim` requires `--sesion`, readiness, no owner gate, and an exclusive `--carril` for
   implementation. Another session of the same agent cannot replace it. An identical claim is
   idempotent.

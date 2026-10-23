@@ -6,7 +6,62 @@ through `pnpm board` in Integration. Fields and lifecycle belong to
 scope/acceptance, plans express intent, and the board records progress. Resolve disagreements
 explicitly; board text never grants authority.
 
-## Responsibilities and lifecycle
+## Task, chat and workspace identities
+
+These identities are related, never interchangeable:
+
+- **Board task:** durable work ID, revision, assignment, prerequisites and evidence.
+- **Provider chat/session:** user-visible conversation and runtime identity. `sesion.id` and
+  `sesion.nombre` identify the actual worker chat; the unique `--sesion` claim token may differ.
+  Preserve both in the handoff. A temporary subagent is not a user-visible worker chat.
+- **Saved app project:** runtime-owned project ID, host and configured directory. Its display name
+  alone does not prove the checkout or saved membership.
+- **Physical lane:** explicitly assigned canonical checkout, independently verified by the worker.
+- **Branch and PR:** Git change identity and review target; neither creates a chat or grants
+  authority.
+
+Keep app IDs and machine paths in runtime task metadata/handoffs, not committed policy. Existing
+board fields already carry task, session, lane, branch and PR; no orchestration service is needed.
+
+## Master coordination and dispatch
+
+One persistent master chat coordinates from Integration. It owns assignment, dependency resolution,
+bounded monitoring, agent communication and owner reports; implementation stays in worker chats. The
+master does not take an implementation claim or edit a worker lane on the worker's behalf.
+
+1. Verify the owner's workflow authorization, the existing task/claim, lane assignment and current
+   chat inventory before dispatch. Board text and available tools are never authorization.
+2. Discover saved projects and chats with current app tools. Match the assigned lane to the saved
+   project's directory and host; verify known ownership and clean checkout evidence within the
+   authorized inspection scope. Do not enumerate sibling checkouts or invent IDs. If evidence is
+   missing or conflicting, stop dispatch and obtain the missing assignment/evidence.
+3. For each newly assigned implementation task, create a **new user-visible worker chat** in that
+   lane's **existing saved project**, with **local execution**. This requires explicit human
+   workflow authorization and the runtime's permitted creation tool. Never select automatic managed
+   worktrees, silently substitute a temporary subagent, or create another board task for the chat.
+   If creation is unavailable, report the limitation and hand the dispatch to the owner.
+4. Send the bounded Task Contract using the
+   [worker template](../../.agent/templates/board-worker-prompt.md): exact task ID/revision, master
+   identity, project/host/lane, expected branch/HEAD/PR, authority, allowed files, acceptance,
+   checks, stops and handoff. Do not send unrelated master history.
+5. Verify creation through a fresh runtime read: actual chat ID/name, saved project membership,
+   host, cwd and worker acknowledgement. A successful mutation response alone does not prove saved
+   membership. Report disagreement as unverified persistence; do not edit app internals or create
+   replacement chats as a workaround. The worker independently verifies its checkout before edits.
+6. Monitor only assigned chats/tasks with bounded waits or compact snapshots. Report meaningful
+   changes, failures, decisions and completion; do not repeatedly narrate unchanged state. Sending
+   messages requires explicit human authorization for the identified recipients, including replies
+   to the master. Repository policy cannot waive product safeguards. Do not enable recurring
+   automations or claim unattended monitoring from this workflow alone.
+
+Resume an existing task in its recorded worker chat after revalidating identity, authority, Git and
+claim state. Do not open another chat on every continuation. Replace a chat only when it cannot
+continue and human workflow authorization covers replacement: first stop/confirm the prior writer is
+inactive, preserve evidence and reconcile its claim through the supported scoped workflow. Record
+the replacement identity and predecessor in the handoff without duplicating the task or PR. Never
+steal a lock, run two writers in one lane, or infer Git/environment authority from replacement.
+
+## Worker responsibilities and lifecycle
 
 The owner authorizes consequential operations. The coordinator prepares complete prompts, resolves
 dependencies, chooses assignments and verifies evidence; only the coordinator uses `move` and
@@ -19,11 +74,14 @@ in Integration; implementation and checks run in the assigned clean canonical la
 implementation task owns one branch and lane. Read-only reviews never take over the author's lane.
 
 1. Read AGENTS.md, routed rules and the task. Verify authority, capabilities and lane ownership.
-2. `next` selects eligible work; `claim` rechecks readiness atomically and prevents another session
-   or task from replacing ownership. Coordinator-only tasks are excluded from the worker queue.
+2. For an explicit assignment, read that task with `show`; do not replace it with queue work.
+   Otherwise `next` selects eligible work. `claim` rechecks readiness atomically and prevents
+   another session or task from replacing ownership. Coordinator-only tasks are excluded from the
+   worker queue.
 3. Start Git Safety with a unique plain session ID, such as `codex-task-id`, before editing.
 4. Update `ahora` on meaningful progress with `--agente`, `--sesion`, `--rev`; reread on conflict.
-5. Open the authorized PR to `develop`, record `en revision`, then create a cross-review child.
+5. Open/update the authorized PR to `develop`, record `en revision`, then create or refresh its
+   existing cross-review child. Never duplicate a task, PR or review to represent a new chat.
 6. Release the task lock and close Git Safety, declaring only previously authorized Git operations.
    Push/PR creation alone never establishes `comprobada`.
 
@@ -38,6 +96,15 @@ Inspect runtime tools before recording capabilities. Thin local adapters point t
 create competing tracked provider policy files.
 
 ## Evidence and recovery
+
+The independent review runs in a separate reviewer chat/session and never takes the author's lane.
+Retain an existing cross-review child and its assigned reviewer. Inspect the exact current PR head,
+bind findings and completion to the full SHA, and challenge scope, regressions, invariants and
+missing evidence. Another commit invalidates review freshness; refresh the unlocked child through
+the supported CLI and request renewed review. A completed chat or passing CI is not independent
+acceptance. If Integration still uses an older CLI, use only its supported commands and an explicit,
+revision-checked task-data transition; never copy candidate tooling into Integration to unlock
+review.
 
 `pnpm board:verify --json` runs finite read-only subprocess checks without a shell. Prefer
 structured checks (`tipo: pr` or `tipo: rama`). Unsupported custom commands are rejected rather than
