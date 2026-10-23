@@ -39,6 +39,37 @@ describe('rsvp rateLimitProvider', () => {
 		expect(second).toBe(false);
 	});
 
+	it('logs a rejection as a security event with the namespace only', async () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+		try {
+			const input = {
+				namespace: 'auth' as const,
+				entityId: 'login:host@test.invalid',
+				ip: '198.51.100.7',
+				maxHits: 1,
+				windowSec: 60,
+			};
+			expect(await checkRateLimit(input)).toBe(true);
+			expect(warn).not.toHaveBeenCalled();
+			expect(await checkRateLimit(input)).toBe(false);
+			expect(warn.mock.calls).toEqual([
+				[
+					JSON.stringify({
+						event: 'security_event',
+						kind: 'rate_limited',
+						namespace: 'auth',
+					}),
+				],
+			]);
+			const line = String(warn.mock.calls[0][0]);
+			expect(line).not.toContain('host@test.invalid');
+			expect(line).not.toContain('198.51.100');
+			expect(line).not.toContain(hashIp('198.51.100.7'));
+		} finally {
+			warn.mockRestore();
+		}
+	});
+
 	it('allows 20 concurrent users sharing one IP without cross-limiting', async () => {
 		const results = await Promise.all(
 			Array.from({ length: 20 }, (_, index) =>
@@ -118,8 +149,11 @@ describe('rsvp rateLimitProvider', () => {
 				};
 				expect(await checkRateLimit(input)).toBe(true);
 				expect(await checkRateLimit(input)).toBe(false);
-				expect(warn).toHaveBeenCalledTimes(1);
-				expect(warn.mock.calls[0][0]).toContain('RATE_LIMIT_CTX_1_60');
+				expect(await checkRateLimit(input)).toBe(false);
+				const missing = warn.mock.calls.filter(([line]) =>
+					String(line).includes('RATE_LIMIT_CTX_1_60'),
+				);
+				expect(missing).toHaveLength(1);
 			} finally {
 				warn.mockRestore();
 			}
