@@ -17,9 +17,11 @@
 		font-size: clamp(0.92rem, 3vw, 1.15rem);
 		font-weight: 600;
 		letter-spacing: 0.08em;
-		line-height: var(--header-control-min-height, 1);
+
+		// 44 px tap target by default: a short monogram («L») was a 9×15 px link.
+		line-height: var(--header-control-min-height, 44px);
 		max-width: min(62vw, 18rem);
-		min-width: var(--header-control-min-height, 0);
+		min-width: var(--header-control-min-height, 44px);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;

@@ -116,11 +116,6 @@ requirement to create subagents.
 
 ## When to Delegate
 
-For board implementation assignments, apply the
-[master/worker chat contract](../../docs/core/coordinator-board.md#master-coordination-and-dispatch).
-A temporary role subagent does not substitute for the authorized user-visible worker chat. Runtime
-capability availability does not authorize creating chats or messaging other sessions.
-
 Use a temporary subagent only when the work meets **all** of these criteria:
 
 1. It has enough independent value to justify handoff overhead.
