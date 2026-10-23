@@ -180,13 +180,17 @@ const subsetOf = (list, allowed) => Array.isArray(list) && list.every((x) => all
 
 const optional = (v, ok) => v === undefined || ok(v);
 
-/** States that only exist with a pull request: under review or merged. */
-export const PR_ESTADOS = ['en revision', 'unida'];
+/** Merged always needs a PR; under review only when the task has a branch (audits ship none). */
+const needsPr = (t) => t.estado === 'unida' || (t.estado === 'en revision' && !!t.rama);
 
-/** Canonical `#N` from 398, "398", "#398" or a pull URL; empty becomes undefined, anything else stays. */
+const OWN_PULL = /^(?:https?:\/\/)?github\.com\/fm-dev-mx\/celebra-me\/pull\/([1-9]\d*)\/?$/;
+const isForeignPull = (p) => /\/pull\/\d+/.test(String(p)) && !OWN_PULL.test(String(p).trim());
+
+/** Canonical `#N` from 398, "398", "#398" or this repository's pull URL; anything else stays. */
 export function normalizePr(pr) {
 	if (pr === undefined || pr === null || String(pr).trim() === '') return undefined;
-	const m = String(pr).match(/(?:^#?|\/pull\/)([1-9]\d*)\s*$/);
+	const s = String(pr).trim();
+	const m = s.match(/^#?([1-9]\d*)$/) ?? s.match(OWN_PULL);
 	return m ? `#${m[1]}` : pr;
 }
 const validLock = (c) =>
@@ -220,8 +224,14 @@ const FIELD_CHECKS = [
 		() => 'requisitos debe ser una lista (vacía si no espera nada)',
 	],
 	[(t) => !optional(t.candado, validLock), () => 'candado debe ser {agente, desde}'],
-	[(t) => !optional(t.pr, (p) => /^#[1-9]\d*$/.test(p)), () => 'pr debe ser #<número>'],
-	[(t) => PR_ESTADOS.includes(t.estado) && !t.pr, (t) => `${t.estado} requiere pr=#<número>`],
+	[
+		(t) => !optional(t.pr, (p) => /^#[1-9]\d*$/.test(p)),
+		(t) =>
+			isForeignPull(t.pr)
+				? 'pr de otro repositorio: use un PR de fm-dev-mx/celebra-me'
+				: 'pr debe ser #<número>',
+	],
+	[(t) => needsPr(t) && !t.pr, (t) => `${t.estado} requiere pr=#<número>`],
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
 	// d046: every prompt asks all owner decisions in one round at the start.
 	[

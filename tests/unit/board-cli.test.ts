@@ -119,7 +119,13 @@ describe('pnpm board', () => {
 	});
 
 	it('requires a #N pull request for review and merge states and normalizes its form', () => {
-		const dir = makeBoard({ tareas: [task('con-pr'), task('con-url')] });
+		const dir = makeBoard({
+			tareas: [task('con-pr', { rama: 'fix/x' }), task('con-url'), task('auditoria')],
+		});
+		expect(board(dir, 'set', 'auditoria', '--rev=1', 'estado=en revision').status).toBe(0);
+		const merged = board(dir, 'set', 'auditoria', '--rev=2', 'estado=unida');
+		expect(merged.status).toBe(2);
+		expect(merged.err).toContain('unida requiere pr=#<número>');
 		const missing = board(dir, 'set', 'con-pr', '--rev=1', 'estado=en revision');
 		expect(missing.status).toBe(2);
 		expect(missing.err).toContain('en revision requiere pr=#<número>');
@@ -133,6 +139,10 @@ describe('pnpm board', () => {
 		const bad = board(dir, 'set', 'con-url', '--rev=2', 'pr=pendiente');
 		expect(bad.status).toBe(2);
 		expect(bad.err).toContain('pr debe ser #<número>');
+		const foreign = 'pr=https://github.com/otro/repo/pull/12';
+		const other = board(dir, 'set', 'con-url', '--rev=2', foreign);
+		expect(other.status).toBe(2);
+		expect(other.err).toContain('pr de otro repositorio');
 	});
 
 	it('locks a task for one agent and refuses a move while locked', () => {
