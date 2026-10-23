@@ -31,7 +31,11 @@ import { VISUAL_PARITY_RUNTIME } from '../../tests/e2e/harness/visual-parity-met
 import { assertVisualRuntimeReady } from '../../tests/e2e/harness/visual-baseline-policy.ts';
 import {
 	buildVisualCoverageCases,
+	buildVisualPageCases,
 	computeVisualMatrixHash,
+	describeVisualMatrixDrift,
+	selectVisualPageCases,
+	VISUAL_CANDIDATE_COMMAND,
 	VISUAL_VIEWPORTS,
 } from './visual-coverage-contract.ts';
 import { expectedVisualCaptures } from './visual-record-aggregator.ts';
@@ -51,6 +55,8 @@ const EXPECTED_PAGE_CAPTURES =
 const EXPECTED_CAPTURE_COUNT = VISUAL_COVERAGE.cases.length;
 const CANDIDATE_ROOT = resolve(ROOT, '.tmp/visual-parity/candidate');
 const COMPARE_ROOT = resolve(ROOT, '.tmp/visual-parity/compare');
+const AFFECTED_ROOT = resolve(ROOT, '.tmp/visual-parity/affected');
+const PAGE_SPEC = 'tests/e2e/canonical-invitation-page-parity.spec.ts';
 const ACCEPTED_ROOT = resolve(ROOT, 'tests/e2e/visual-baselines');
 const PLAYWRIGHT_CLI = resolve(ROOT, 'node_modules/@playwright/test/cli.js');
 const ACCEPTED_MANIFEST = join(ACCEPTED_ROOT, 'manifest.json');
@@ -322,9 +328,7 @@ export function assertCoverageMatrix(
 		manifest.captures as unknown as Array<Record<string, unknown>>,
 	);
 	if (manifest.matrixHash !== actualHash || actualHash !== expectedHash) {
-		throw new Error(
-			`Visual coverage matrix drifted: expected ${expectedHash}, found ${manifest.matrixHash ?? actualHash}.`,
-		);
+		throw new Error(describeVisualMatrixDrift(manifest.matrixHash ?? actualHash, expectedHash));
 	}
 }
 export function readPreviousAccepted(root = ACCEPTED_ROOT): CaptureManifest | null {
@@ -644,6 +648,41 @@ function certifiedBrowser(args: string[]): void {
 		throw new Error(`Certified browser suite failed (exit ${result.status}).`);
 }
 
+/**
+ * Compares only the named complete pages with their accepted references in the pinned runtime.
+ * It fails when any of them changed, so an unaccepted capture is found before the push; it never
+ * writes a candidate or a manifest that `accept` could take.
+ */
+function affected(pages: string | undefined): void {
+	const cases = selectVisualPageCases(buildVisualPageCases(), pages);
+	if (!pages || cases.length === 0) {
+		throw new Error('Usage: visual-parity-cli.ts affected --pages <slug>[,<slug>...]');
+	}
+	assertCaptureEnvironment('compare');
+	const slugs = cases.map((entry) => entry.slug).join(',');
+	rmSync(AFFECTED_ROOT, { recursive: true, force: true });
+	failurePhase = 'BROWSER';
+	const result = spawnSync(process.execPath, [PLAYWRIGHT_CLI, 'test', PAGE_SPEC], {
+		cwd: ROOT,
+		stdio: 'inherit',
+		env: {
+			...process.env,
+			VISUAL_PARITY_MODE: 'compare',
+			VISUAL_PARITY_PAGES: slugs,
+			PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true',
+			VISUAL_PARITY_OUTPUT_ROOT: relative(ROOT, AFFECTED_ROOT).replace(/\\/g, '/'),
+			VISUAL_PARITY_SNAPSHOT_ROOT: relative(ROOT, ACCEPTED_ROOT).replace(/\\/g, '/'),
+		},
+		shell: false,
+	});
+	if (result.status !== 0) {
+		throw new Error(
+			`Affected pages differ from their accepted references: ${slugs}. Review the diffs in test-results/, then generate the full candidate: ${VISUAL_CANDIDATE_COMMAND}.`,
+		);
+	}
+	console.log(`Affected pages match their accepted references: ${slugs}.`);
+}
+
 function parseCliFlag(args: string[], name: string): string | undefined {
 	const inline = args.find((arg) => arg.startsWith(`${name}=`));
 	const positional = args.findIndex((arg) => arg === name);
@@ -667,7 +706,16 @@ export function checkAcceptedReferences(root = ACCEPTED_ROOT): void {
 
 async function main(): Promise<void> {
 	const [operation, ...args] = process.argv.slice(2);
+	if (
+		process.env.VISUAL_PARITY_PAGES &&
+		['candidate', 'compare', 'accept'].includes(operation ?? '')
+	) {
+		throw new Error(
+			`VISUAL_PARITY_PAGES scopes only the affected operation, not ${operation}.`,
+		);
+	}
 	if (operation === 'check') return checkAcceptedReferences();
+	if (operation === 'affected') return affected(parseCliFlag(args, '--pages'));
 	if (operation === 'browser') return certifiedBrowser(args);
 	if (operation === 'diagnose') {
 		const { diagnoseSections } = await import('./section-visual-diagnosis.ts');
@@ -684,7 +732,7 @@ async function main(): Promise<void> {
 		return accept(referenceSha, matrixHash, candidateManifestSha256);
 	}
 	throw new Error(
-		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|compare|accept [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]|diagnose',
+		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|affected --pages <slugs>|compare|accept [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]|diagnose',
 	);
 }
 

@@ -149,6 +149,8 @@
         "screenshot:css-parity": "tsx scripts/screenshot/css-visual-parity.ts",
         "visual:parity:candidate": "tsx scripts/screenshot/visual-parity-cli.ts candidate",
         "visual:parity:candidate:certified": "tsx scripts/ops/visual-prepush-certification.ts --candidate",
+        "visual:parity:affected": "tsx scripts/screenshot/visual-parity-cli.ts affected",
+        "visual:parity:affected:certified": "tsx scripts/ops/visual-prepush-certification.ts --affected",
         "visual:parity:diagnose": "tsx scripts/screenshot/visual-parity-cli.ts diagnose",
         "visual:parity:compare": "tsx scripts/screenshot/visual-parity-cli.ts compare",
         "visual:parity:accept": "tsx scripts/screenshot/visual-parity-cli.ts accept",
