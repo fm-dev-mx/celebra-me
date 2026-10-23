@@ -3,6 +3,7 @@ import { defineDemoInvitation } from '@/lib/invitation/demo-invitation';
 export default defineDemoInvitation({
 	slug: 'demo-bautizo-angelic-presence',
 	eventType: 'bautizo',
+	routeSlug: 'angelical',
 	showroom: {
 		title: 'Bautizo estilo Angelical',
 		description: 'Delicada, familiar y luminosa.',

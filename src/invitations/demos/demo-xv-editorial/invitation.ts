@@ -3,6 +3,7 @@ import { defineDemoInvitation } from '@/lib/invitation/demo-invitation';
 export default defineDemoInvitation({
 	slug: 'demo-xv-editorial',
 	eventType: 'xv',
+	routeSlug: 'editorial',
 	showroom: {
 		title: 'Editorial',
 		description: 'Moderna, limpia y editorial.',

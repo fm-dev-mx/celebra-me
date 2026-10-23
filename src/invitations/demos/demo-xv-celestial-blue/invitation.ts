@@ -3,6 +3,7 @@ import { defineDemoInvitation } from '@/lib/invitation/demo-invitation';
 export default defineDemoInvitation({
 	slug: 'demo-xv-celestial-blue',
 	eventType: 'xv',
+	routeSlug: 'celestial',
 	showroom: {
 		title: 'XV Celestial Blue',
 		description: 'Luminosa, elegante y ceremonial.',

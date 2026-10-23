@@ -47,7 +47,7 @@ describe('demo showroom public metadata', () => {
 		expect(featuredItems.every((item) => item.visibility === 'featured')).toBe(true);
 		expect(featuredItems.every((item) => item.reviewStatus === 'approved')).toBe(true);
 		expect(getFeaturedDemoShowroomItems('primera-comunion').map((item) => item.href)).toEqual([
-			'/primera-comunion/demo-primera-comunion-angelic-presence',
+			'/comunion-angelical',
 		]);
 	});
 
@@ -74,7 +74,7 @@ describe('demo showroom public metadata', () => {
 			'demo-xv-editorial',
 		]);
 		expect(getFeaturedDemoShowroomItems('cumple').map((item) => item.href)).toEqual([
-			'/cumple/demo-cumple-luxury-hacienda',
+			'/hacienda',
 		]);
 	});
 

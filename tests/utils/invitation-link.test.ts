@@ -93,8 +93,8 @@ describe('buildPublicInvitationPath', () => {
 		expect(buildPublicInvitationPath(eventType, slug)).toBe(expected);
 	});
 
-	it('keeps the long path for static catalog demos', () => {
-		expect(buildPublicInvitationPath('xv', 'demo-xv-editorial')).toBe('/xv/demo-xv-editorial');
+	it('uses the catalog alias for static catalog demos', () => {
+		expect(buildPublicInvitationPath('xv', 'demo-xv-editorial')).toBe('/editorial');
 	});
 
 	it('encodes the slug', () => {
