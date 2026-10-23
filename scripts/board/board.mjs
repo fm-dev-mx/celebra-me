@@ -9,7 +9,7 @@
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
  *                                               (rama defaults to the task's declared branch)
- *   release <id> --agente=<a>
+ *   release <id> --agente=<a> [--coordinador]   --coordinador frees only a legacy lock without sesion
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task from «Finalizadas» (bitácora row)
@@ -426,7 +426,8 @@ const commands = {
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!before.candado) return say(flags, out, before, `${before.id} no tiene candado`);
-			assertOwner(before, flags);
+			// A lock from before sessions were recorded has no sesion: only a declared coordinator frees it.
+			if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
 			const rest = { ...before };

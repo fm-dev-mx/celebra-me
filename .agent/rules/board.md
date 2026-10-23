@@ -81,7 +81,9 @@ authorization.
   `integration` lane; `f04-integracion` is not a canonical id. Claims grant no editing authority.
 - `set` and `release` require matching `--agente` and `--sesion`. Unlocked coordination edits
   require `--coordinador`; the flag declares a role, never grants authority or overrides a lock.
-  `set` cannot replace ownership, lane, origin or review SHA.
+  `set` cannot replace ownership, lane, origin or review SHA. One exception: a legacy lock without
+  `sesion` (taken before sessions were recorded) is freed by
+  `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
 - `review` requires the origin PR in `en revision`, generates an English prompt and records
   `revisionSha` (from GitHub, or explicit `--sha`). It can refresh an unlocked child at a new SHA.
   Reviews become executable before merge and do not inherit the author's lane. Completion declares

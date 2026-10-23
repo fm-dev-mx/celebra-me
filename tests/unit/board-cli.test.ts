@@ -505,6 +505,27 @@ describe('pnpm board', () => {
 		expect(readTask(dir, 'held').rev).toBe(1);
 	});
 
+	it('lets a coordinator release only a legacy lock without sesion', () => {
+		const lock = { agente: 'claude', desde: NOW, carril: 'f12-release' };
+		const dir = makeBoard({
+			tareas: [
+				task('legacy', { estado: 'unida', candado: lock }),
+				task('owned', { estado: 'unida', candado: { ...lock, sesion: 's1' } }),
+			],
+		});
+		expect(board(dir, 'release', 'legacy', '--agente=claude').err).toMatch(/otra sesión/);
+		expect(board(dir, 'release', 'legacy', '--agente=codex', '--coordinador').err).toMatch(
+			/el candado es de claude/,
+		);
+		expect(board(dir, 'release', 'legacy', '--agente=claude', '--coordinador').status).toBe(0);
+		expect(readTask(dir, 'legacy').candado).toBeUndefined();
+		expect(board(dir, 'release', 'owned', '--agente=claude', '--coordinador').err).toMatch(
+			/otra sesión/,
+		);
+		expect(readTask(dir, 'owned').candado.sesion).toBe('s1');
+		expect(board(dir, 'release', 'owned', '--agente=claude', '--sesion=s1').status).toBe(0);
+	});
+
 	it('searches by T number, id, title and «ahora» without case or accents', () => {
 		const probe = String.raw`
 			const { matches } = await import(process.argv[1]);
