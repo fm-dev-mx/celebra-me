@@ -127,13 +127,14 @@ const depIds = (t) => (t.requisitos ?? []).filter((r) => r.tipo === 'tarea').map
 const urgRank = (u) => (URGENCIAS.includes(u) ? URGENCIAS.indexOf(u) : 2);
 
 /**
- * The numbered queue: urgency → ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a
- * task never comes before one it waits for.
+ * The numbered queue: the owner's ready tasks (d163) → urgency → ready before blocked → due date (`hasta`) →
+ * `orden` → title, then a pass so a task never comes before one it waits for.
  */
 export function queue(board, now = Date.now()) {
 	const open = (board.tareas ?? []).filter((t) => isOpen(t, board, now));
 	const ids = new Set(open.map((t) => t.id));
 	const key = (t) => [
+		color(t, board, { now }) === 'own' ? 0 : 1,
 		urgRank(t.urgencia),
 		stage(t, board, now) === 'bloqueada' ? 1 : 0,
 		Number.isNaN(time(t.hasta)) ? 9e15 : time(t.hasta),
@@ -157,6 +158,18 @@ export function queue(board, now = Date.now()) {
 	};
 	for (const t of rest) place(t);
 	return out;
+}
+
+/**
+ * Answers the owner owes now (d163): unmet «dueno» requisites of open tasks whose date and task
+ * requisites are already met, so an answer that is not due yet stays out of sight.
+ */
+export function ownerAsks(board, now = Date.now()) {
+	return queue(board, now).flatMap((t) => {
+		const reqs = requisitos(t, board, now);
+		if (reqs.some((r) => (r.tipo === 'fecha' || r.tipo === 'tarea') && !r.ok)) return [];
+		return reqs.filter((r) => r.tipo === 'dueno' && !r.ok).map((r) => ({ t, r }));
+	});
 }
 
 /** Whether the task shows under an agent tab: «libres» are unlocked tasks for any agent. */
