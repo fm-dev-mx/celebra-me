@@ -12,13 +12,18 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [0.43.0-beta.1] - 2026-10-22
 
-A health check for live client invitations, complete visual parity on visual pull requests, and
-stricter lane tooling. No migrations and no published invitation content changes.
+A health check for live client invitations, daily security event alerts, complete visual parity on
+visual pull requests, and stricter lane tooling. No migrations and no published invitation content
+changes.
 
 ### Added
 
 - `GET /api/health/invitations` resolves every live client invitation the way the public route does
   and answers 200 with counts, or 503 when one fails or the database read fails (#455).
+- Failed logins, rejected MFA sessions and rate limits write a `security_event` log line without
+  personal data, and a daily monitor alerts above 50 events (#456).
+- `ops:status` shows worktree, database and cleanup sweep sections (#457).
+- Invitation contract v2 documents how a new invitation is created (#459).
 
 ### Changed
 
@@ -27,6 +32,8 @@ stricter lane tooling. No migrations and no published invitation content changes
 - Environment sync runs per lane and purpose, refuses foreign lanes and differing files, and
   `env:check -- --runtime` validates a lane's runtime files (#452).
 - The invitation hash baseline records América after its itinerary release (#451).
+- Shared scene styles read neutral `--scene-*` tokens instead of América's, with the same colors; a
+  test keeps invitation slug tokens out of shared SCSS (#460).
 
 ### Fixed
 
