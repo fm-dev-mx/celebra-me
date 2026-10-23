@@ -72,21 +72,22 @@ export interface DeliveryHtmlSnapshot {
  * Canonical policy: `docs/domains/invitations/performance-metrics.md`.
  *
  * HTML-size ceilings are decoded UTF-8 body bytes from production measurements
- * on 2026-08-16 (www.celebra-me.com), plus a provisional ~35% regression margin.
- * Enforced only by `pnpm invitation:delivery:baseline --assert-budget`.
+ * on 2026-10-22 (www.celebra-me.com on Cloudflare Workers), plus a ~20% regression margin.
+ * Enforced by `pnpm invitation:delivery:baseline --assert-budget`, weekly in
+ * `.github/workflows/invitation-delivery-budget.yml`.
  * Unique URL counts and timing metrics are intentionally absent.
  */
 export const DELIVERY_HTML_BUDGETS: Record<DeliveryBudgetScenario, DeliveryBudgetCeiling> = {
-	versionedAnonymous: { htmlBytes: 94_000 },
-	legacyStorageAnonymous: { htmlBytes: 103_000 },
-	personalizedLookupMiss: { htmlBytes: 94_000 },
+	versionedAnonymous: { htmlBytes: 99_000 },
+	legacyStorageAnonymous: { htmlBytes: 116_000 },
+	personalizedLookupMiss: { htmlBytes: 99_000 },
 };
 
 /** Production document snapshot used to derive the ceilings above. Not a CI fetch. */
 export const MEASURED_PRODUCTION_HTML: Record<DeliveryBudgetScenario, DeliveryHtmlSnapshot> = {
-	versionedAnonymous: { htmlBytes: 69_382, uniqueUrlCount: 40 },
-	legacyStorageAnonymous: { htmlBytes: 75_902, uniqueUrlCount: 54 },
-	personalizedLookupMiss: { htmlBytes: 69_413, uniqueUrlCount: 40 },
+	versionedAnonymous: { htmlBytes: 82_040, uniqueUrlCount: 71 },
+	legacyStorageAnonymous: { htmlBytes: 96_414, uniqueUrlCount: 84 },
+	personalizedLookupMiss: { htmlBytes: 82_071, uniqueUrlCount: 71 },
 };
 
 export interface DeliveryBudgetObservation {

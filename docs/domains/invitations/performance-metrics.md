@@ -15,8 +15,8 @@ Cache **correctness** for public and private responses remains
 [`public-response-cache-policy.md`](public-response-cache-policy.md). This document does not change
 that policy.
 
-Numeric baselines below come from production `www.celebra-me.com` on 2026-08-16, measured on the
-former host before the Cloudflare Workers cutover (not re-measured on Workers yet), via
+Numeric baselines below come from production `www.celebra-me.com` on Cloudflare Workers on
+2026-10-22 (the 2026-08-16 baseline was measured on the former host), via
 `pnpm invitation:delivery:baseline --slug <eventType>/<slug>`. Canonical metric name: **HTML decoded
 size**. The recorded field `htmlBytes` is the decoded UTF-8 byte length of the HTML response body
 after HTTP decompression (`response.text()` → `Buffer.byteLength(html, "utf8")`). It is not
@@ -26,7 +26,8 @@ Benchmark roles are architectural (`buildDeliveryBenchmarkScenarios`). The opera
 invitations: `--slug <eventType>/<slug>` (versioned content-addressed media, also used for the
 personalized miss) and, while an invitation still serves mutable Storage media,
 `--legacy-slug <eventType>/<slug>`. The 2026 measurements below used `renata` and
-`romina-rios-chaparro`.
+`romina-rios-chaparro`. Since the R2 migration romina serves no Storage URLs (0 on 2026-10-22), so
+the `legacyStorageAnonymous` slot now measures a second, heavier invitation.
 
 A metric is canonical only if a meaningful change can trigger a concrete decision. Timing metrics
 are not CI gates.
@@ -86,8 +87,10 @@ a Jest proof.
 | Informational | Investigation aids that do not predict harm by themselves | No                   |
 
 **Budget** enforcement is
-`pnpm invitation:delivery:baseline --slug <eventType>/<slug> --assert-budget`. It is not part of
-`pnpm test` or `pnpm run ci`. Do not add TTFB, LCP, CLS, or INP thresholds to those suites.
+`pnpm invitation:delivery:baseline --slug <eventType>/<slug> --assert-budget`, run weekly by
+`invitation-delivery-budget.yml` (see [Monitoring map](#monitoring-map)). It is not part of
+`pnpm test` or `pnpm run ci` and never blocks a pull request. Do not add TTFB, LCP, CLS, or INP
+thresholds to those suites.
 
 ## Cost-per-operation model
 
@@ -144,15 +147,17 @@ a budget: they do not equal executed requests and do not reliably predict LCP or
 
 | Scenario                     | Baseline (B) | Budget (B) | Status      |
 | ---------------------------- | -----------: | ---------: | ----------- |
-| Versioned anonymous (renata) |       69 382 |     94 000 | Provisional |
-| Legacy Storage (romina)      |       75 902 |    103 000 | Provisional |
-| Personalized miss (renata)   |       69 413 |     94 000 | Provisional |
+| Versioned anonymous (renata) |       82 040 |     99 000 | Provisional |
+| Second invitation (romina)   |       96 414 |    116 000 | Provisional |
+| Personalized miss (renata)   |       82 071 |     99 000 | Provisional |
 
-**Derivation:** measured HTML bytes on 2026-08-16 plus about 35% headroom. That percentage is a
-**provisional regression margin** for substantial structural growth (new critical CSS/JS, duplicated
-documents, accidental inlining). It is not an HTML optimization target. Increases below the ceiling
-can still warrant review when the cause is suspicious (for example a second copy of a view-model in
-the document).
+**Derivation:** measured HTML bytes on 2026-10-22 on Workers plus about 20% headroom. The 2026-08-16
+baseline on the former host was 69 382 / 75 902 / 69 413 B (budgets 94 000 / 103 000 / 94 000 B);
+the documents grew 18–27% with two months of features and the host move (unique URLs 40 → 71 and 54
+→ 84), and the re-baseline accepted that cost. That percentage is a **provisional regression
+margin** for substantial structural growth (new critical CSS/JS, duplicated documents, accidental
+inlining). It is not an HTML optimization target. Increases below the ceiling can still warrant
+review when the cause is suspicious (for example a second copy of a view-model in the document).
 
 **Normal variation:** HTML bytes were identical across two 5-sample runs. Timing was not.
 
@@ -701,6 +706,13 @@ still answer 200 with the error screen, which an HTTP monitor does not see.
     rejecting a session sync without MFA evidence.
 - `nightly-visual-parity.yml` (daily): visual parity run.
 - `production-image-audit.yml` (daily): published invitation images still resolve.
+- `invitation-delivery-budget.yml` (weekly, Monday 17:10 UTC, also manual): runs
+  `pnpm invitation:delivery:baseline --assert-budget` against Production for `xv/renata` and
+  `xv/romina-rios-chaparro` (manual runs accept other slugs). Opens one issue when an HTML document
+  exceeds its [budget](#budget-registry), a public document loses origin-revalidate, the
+  personalized miss loses `private, no-store`, or a document is a shared-cache HIT; closes it after
+  a passing run. Follow the budget-update policy before raising a ceiling. Swap the slugs when
+  either invitation leaves its validity window (403).
 
 The Worker monitors read Workers Logs with a read-only token and fail instead of passing when a
 query comes back sampled. Every row below is a manual trigger: “Trigger” means when a human should
