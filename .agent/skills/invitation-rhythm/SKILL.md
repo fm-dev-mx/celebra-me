@@ -25,6 +25,7 @@ outputs:
   - Reveal recipe assignments
   - Rhythm validation checklist result
 related_skills:
+  - invitation-visual-iteration
   - theme-architecture
   - animation-motion
   - frontend-design
@@ -54,6 +55,17 @@ duplicates no normative values.
 5. Assign the reveal recipe for each section from the boundary role table.
 6. Declare shadow values as profile custom properties; verify shadow rules by surface context.
 7. Apply the rhythm validation protocol before marking the profile complete.
+
+## Visual iteration checklist
+
+Run this before each commit that changes the look; the full loop is the
+[`invitation-visual-iteration`](../invitation-visual-iteration/SKILL.md) skill.
+
+- [ ] Variant tokens carry the variant prefix and sit under `[data-variant]`, never on the
+      invitation wrapper.
+- [ ] `pnpm exec jest tests/unit/invitation-token-shadowing.test.ts` passes before the commit.
+- [ ] When `visual-coverage-lifecycle` reports matrix drift, follow the commands it prints: full
+      candidate for the commit, owner review, then accept with `--matrix-hash=<current>`.
 
 ## Authority boundary
 

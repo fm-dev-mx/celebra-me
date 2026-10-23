@@ -15,6 +15,7 @@ related_skills:
   - frontend-design
   - theme-architecture
   - client-invitation-audit
+  - invitation-visual-iteration
 related_docs:
   - .agent/briefs/celebra-me.md
   - docs/domains/theme/architecture.md
@@ -200,6 +201,17 @@ Keep technical status and human creative acceptance separate. After presentation
 register in `creative-qa-report` to distinguish defects, missed brief criteria and new preferences.
 Establish a baseline before promising reductions in rework. No process guarantees subjective quality
 from the first proposal.
+
+## Visual iteration checklist
+
+Run this before each commit that changes the look; the full loop is the
+[`invitation-visual-iteration`](../invitation-visual-iteration/SKILL.md) skill.
+
+- [ ] Variant tokens carry the variant prefix and sit under `[data-variant]`, never on the
+      invitation wrapper.
+- [ ] `pnpm exec jest tests/unit/invitation-token-shadowing.test.ts` passes before the commit.
+- [ ] When `visual-coverage-lifecycle` reports matrix drift, follow the commands it prints: full
+      candidate for the commit, owner review, then accept with `--matrix-hash=<current>`.
 
 ## Phase 6 — Sync and Handoff
 

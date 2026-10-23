@@ -41,6 +41,11 @@ routes:
       skills:
           - 'invitation-rhythm'
 
+    - task_type: 'invitation_visual_iteration'
+      description: 'Owner feedback rounds on an invitation or demo look'
+      skills:
+          - 'invitation-visual-iteration'
+
     - task_type: 'design_reference_redesign'
       description: 'Visual redesign requiring interpretation of supplied or cited references'
       rules:
