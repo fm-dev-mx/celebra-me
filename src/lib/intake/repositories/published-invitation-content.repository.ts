@@ -94,6 +94,23 @@ export async function findPublishedWithAccessBySlugAndEventType(
 	return row ? { ...toRow(row), access: readEmbeddedInvitationAccess(row) } : null;
 }
 
+/**
+ * Every non-demo published row with its access state, for `/api/health/invitations`.
+ * Validity and access are judged by the caller, the same way the public route does.
+ */
+export async function listPublishedClientEntriesWithAccess(
+	timeoutMs?: number,
+): Promise<PublicPublishedInvitationContent[]> {
+	const rows = await supabaseRestRequest<
+		(PublishedInvitationContentRow & { invitation?: unknown })[]
+	>({
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS},${PUBLISHED_ACCESS_EMBED}&is_demo=eq.false&${ACTIVE_FILTER}`,
+		useServiceRole: true,
+		timeoutMs,
+	});
+	return rows.map((row) => ({ ...toRow(row), access: readEmbeddedInvitationAccess(row) }));
+}
+
 export async function updatePublishedContentSnapshot(input: {
 	id: string;
 	content: Record<string, unknown>;
