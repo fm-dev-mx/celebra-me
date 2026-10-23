@@ -303,7 +303,7 @@ test.describe('shared envelope reveal interaction', () => {
 		await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
 		await expectRevealed(page);
 		const toggle = page.locator('[data-music-toggle]');
-		await expect(toggle).toHaveAttribute('aria-label', 'Música de fondo');
+		await expect(toggle).toHaveAttribute('aria-label', 'Reproducir música');
 		expect(await musicCalls()).toEqual({ play: 0, pause: 0 });
 
 		await toggle.click();
@@ -312,7 +312,7 @@ test.describe('shared envelope reveal interaction', () => {
 		expect(await musicCalls()).toEqual({ play: 1, pause: 0 });
 
 		await toggle.click();
-		await expect(toggle).toHaveAttribute('aria-label', 'Música de fondo');
+		await expect(toggle).toHaveAttribute('aria-label', 'Reproducir música');
 		await expect(toggle.locator('[data-icon-play]')).toBeVisible();
 		expect(await musicCalls()).toEqual({ play: 1, pause: 1 });
 	});

@@ -331,7 +331,8 @@ $lantern-shape: 40% 40% 45% 45%;
 	}
 }
 
-.footer__rights {
+.footer__rights,
+.footer__music-credit {
 	margin: 0;
 	font-size: var(--footer-rights-size, 0.62rem);
 	letter-spacing: 0.08em;

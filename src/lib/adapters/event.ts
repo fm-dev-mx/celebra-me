@@ -544,6 +544,24 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 	};
 }
 
+function buildMusic(
+	music: CanonicalEventContent['music'],
+	playableMusicUrl: string,
+	envelopeEnabled: boolean,
+): InvitationViewModel['music'] {
+	if (!hasPlayableMusicUrl(playableMusicUrl)) return undefined;
+	return {
+		url: playableMusicUrl,
+		autoPlay: music?.autoPlay ?? false,
+		title: music?.title,
+		creditsUrl: music?.creditsUrl,
+		startAt: music?.startAt,
+		fadeInSeconds: music?.fadeInSeconds,
+		revealMode: envelopeEnabled ? 'envelope' : 'immediate',
+		control: music?.control,
+	};
+}
+
 function buildGiftsSectionData(context: AdaptationContext) {
 	const { data, eventSlug } = context;
 	if (!data.gifts) return undefined;
@@ -645,17 +663,7 @@ export function adaptEvent(document: InvitationContentDocument): InvitationViewM
 		sectionOrder: originalData.sectionOrder,
 		composition: originalData.composition,
 		sections,
-		music: hasPlayableMusicUrl(playableMusicUrl)
-			? {
-					url: playableMusicUrl,
-					autoPlay: originalData.music?.autoPlay ?? false,
-					title: originalData.music?.title,
-					creditsUrl: originalData.music?.creditsUrl,
-					startAt: originalData.music?.startAt,
-					fadeInSeconds: originalData.music?.fadeInSeconds,
-					revealMode: envelope.enabled ? 'envelope' : 'immediate',
-				}
-			: undefined,
+		music: buildMusic(originalData.music, playableMusicUrl, envelope.enabled),
 		interludes: buildInterludes(context),
 		navigation: buildCanonicalNavigation(sections, originalData.navigation),
 		sharing: originalData.sharing

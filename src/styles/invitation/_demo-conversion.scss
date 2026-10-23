@@ -35,11 +35,19 @@
 		);
 	}
 
+	// The text sits above the zoom button but lets taps through its empty padding
+	// (`pointer-events`), so the photo stays reachable; only words and links catch the pointer.
 	&__content {
 		position: relative;
+		z-index: 1;
 		width: 100%;
 		min-width: 0;
 		padding: 260px 42px 34px;
+		pointer-events: none;
+
+		> * {
+			pointer-events: auto;
+		}
 	}
 
 	&__eyebrow {
@@ -88,8 +96,7 @@
 	}
 
 	&__primary,
-	&__secondary,
-	&__enlarge {
+	&__secondary {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -143,21 +150,51 @@
 		}
 	}
 
-	&__enlarge {
+	// The photo is the control: a transparent button over the whole slot, under the text.
+	&__zoom {
 		position: absolute;
-		inset: 18px auto auto 18px;
-		z-index: 1;
-		min-height: 44px;
-		padding: 8px 12px;
-		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 65%);
-		border-radius: 3px;
-		background: rgb(var(--color-surface-dark-rgb) / 88%);
-		font-size: 0.8125rem;
-		cursor: pointer;
+		inset: 0;
+		z-index: 0;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: var(--color-text-on-dark);
+		cursor: zoom-in;
 
-		&:hover {
-			background: var(--color-surface-dark);
+		&:focus-visible {
+			outline: 3px solid var(--color-action-accent);
+			outline-offset: -6px;
 		}
+	}
+
+	&__zoom-hint {
+		position: absolute;
+		top: 18px;
+		right: 18px;
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 45%);
+		border-radius: 50%;
+		background: rgb(var(--color-surface-dark-rgb) / 55%);
+		backdrop-filter: blur(6px);
+		opacity: 0%;
+		transition: opacity 200ms ease;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		@media (hover: none) {
+			opacity: 70%;
+		}
+	}
+
+	&__zoom:hover &__zoom-hint,
+	&__zoom:focus-visible &__zoom-hint {
+		opacity: 100%;
 	}
 
 	&[data-placement='gallery'] {
@@ -279,7 +316,7 @@
 	@media (prefers-reduced-motion: reduce) {
 		&__primary,
 		&__secondary,
-		&__enlarge {
+		&__zoom-hint {
 			transition: none;
 		}
 	}
