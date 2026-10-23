@@ -129,6 +129,14 @@ not a supervised service. After an authorized code update, its operator restarts
 load new server code and verifies the connection indicator. Never kill an unowned process or launch
 competing servers. Unattended service installation is a separate operational decision.
 
+`pnpm board:watch` (`scripts/board/watch.mjs`, d164) is a no-AI watcher: it reads the board and
+shows one Windows notification per agent with the ready tasks it has not announced yet, for example
+«Codex tiene 1 tarea lista: T34 serenata-fotos». It never writes the board or wakes an agent; it
+remembers announced tasks in `.agent/tmp/board-watch.json`. `--dry-run` only prints. The owner
+registers it in the Windows Task Scheduler (every 10 minutes) from Integration with
+`pnpm board:watch:register` and removes it with `pnpm board:watch:unregister`; agents never register
+it.
+
 After a CLI writer crash, inspect the exact `.agent/tmp/board/.lock` PID and process identity. Age
 alone does not establish an orphan. Obtain scoped authority to remove that orphan file, preserving
 all board documents and backups. Never reset or reimport the board as automatic recovery.
