@@ -32,6 +32,13 @@ function task(id: string, fields: Json = {}): Json {
 function makeBoard(collections: Record<string, Json[]>) {
 	const dir = mkdtempSync(path.join(tmpdir(), 'board-cli-'));
 	dirs.push(dir);
+	writeFileSync(
+		path.join(dir, 'answers.json'),
+		JSON.stringify({
+			'gh pr list --state open --json number,headRefName,title --limit 100': '[]',
+			'git worktree list --porcelain': '',
+		}),
+	);
 	for (const [name, docs] of Object.entries(collections)) {
 		mkdirSync(path.join(dir, name), { recursive: true });
 		for (const { id, ...doc } of docs)
@@ -41,10 +48,24 @@ function makeBoard(collections: Record<string, Json[]>) {
 }
 
 function board(dir: string, ...args: string[]) {
+	const agent = args.find((a) => a.startsWith('--agente='))?.slice(9) ?? 'codex';
+	if (['claim', 'release'].includes(args[0]) && !args.some((a) => a.startsWith('--sesion=')))
+		args.push(`--sesion=${agent}-test`);
+	if (args[0] === 'claim') {
+		if (!args[1].endsWith('-revision') && !args.some((a) => a.startsWith('--carril=')))
+			args.push('--carril=f10-libre');
+		if (!args.some((a) => a.startsWith('--rama='))) args.push(`--rama=fix/${args[1]}`);
+	}
+	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
+		args.push('--coordinador');
 	const result = runCommand(process.execPath, [SCRIPT_PATH, ...args], {
 		cwd: ROOT,
 		allowFailure: true,
-		env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir, INIT_CWD: ROOT }),
+		env: sanitizeEnv({
+			CELEBRA_BOARD_DIR: dir,
+			INIT_CWD: ROOT,
+			CELEBRA_BOARD_COMMAND_FIXTURE: path.join(dir, 'answers.json'),
+		}),
 	});
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
 }
@@ -130,7 +151,7 @@ describe('pnpm board', () => {
 			carril: 'f08-demos',
 			rama: 'feat/fotos',
 		});
-		board(dir, 'release', 'fotos', '--agente=gemini');
+		board(dir, 'release', 'fotos', '--agente=gemini', '--sesion=s1');
 		const move = board(dir, 'move', 'fotos', '--agente=codex');
 		expect(move.status).toBe(0);
 		expect(move.out).toContain('aviso: codex no tiene todo lo que pide requiere (imagenes)');
@@ -173,21 +194,143 @@ describe('pnpm board', () => {
 		});
 	});
 
-	it('creates a cross-review child task that waits for its origin', () => {
+	it('makes a cross-review executable before merge and binds completion to its SHA', () => {
 		const dir = makeBoard({
-			tareas: [task('origen', { agente: 'claude', rama: 'fix/origen' })],
+			tareas: [
+				task('origen', {
+					agente: 'claude',
+					rama: 'fix/origen',
+					pr: 398,
+					estado: 'en revision',
+				}),
+			],
 		});
-		expect(board(dir, 'review', 'origen', '--agente=codex').status).toBe(0);
+		const sha = 'a'.repeat(40);
+		expect(board(dir, 'review', 'origen', '--agente=codex', `--sha=${sha}`).status).toBe(0);
 		expect(readTask(dir, 'origen-revision')).toMatchObject({
 			agente: 'codex',
 			origen: 'origen',
 			rama: 'fix/origen',
-			requisitos: [{ tipo: 'tarea', ref: 'origen' }],
+			requisitos: [{ tipo: 'revision', ref: 'origen' }],
+			revisionSha: sha,
 		});
+		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).id).toBe(
+			'origen-revision',
+		);
+		expect(
+			board(dir, 'claim', 'origen-revision', '--agente=codex', '--rama=fix/origen').status,
+		).toBe(0);
+		expect(
+			board(
+				dir,
+				'set',
+				'origen-revision',
+				'--rev=2',
+				'estado=hecha',
+				'--agente=codex',
+				'--sesion=codex-test',
+			).status,
+		).toBe(2);
+		expect(
+			board(
+				dir,
+				'set',
+				'origen-revision',
+				'--rev=2',
+				'estado=hecha',
+				'--agente=codex',
+				'--sesion=codex-test',
+				`--sha=${sha}`,
+			).status,
+		).toBe(0);
+		expect(board(dir, 'release', 'origen-revision', '--agente=codex').status).toBe(0);
+		expect(
+			board(dir, 'review', 'origen', '--agente=codex', `--sha=${'b'.repeat(40)}`).status,
+		).toBe(0);
+		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).revisionSha).toBe(
+			'b'.repeat(40),
+		);
+	});
+
+	it('refuses blocked, owner and closed claims and protects locks between sessions', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('blocked', { requisitos: [{ tipo: 'dueno', ref: 'approval' }] }),
+				task('owner', { toca: ['produccion'] }),
+				task('closed', { estado: 'hecha' }),
+				task('first'),
+				task('second'),
+			],
+		});
+		for (const id of ['blocked', 'owner', 'closed'])
+			expect(board(dir, 'claim', id, '--agente=codex').status).toBe(2);
+		expect(board(dir, 'claim', 'first', '--agente=codex').status).toBe(0);
+		expect(board(dir, 'claim', 'first', '--agente=codex', '--sesion=other').status).toBe(2);
+		expect(board(dir, 'claim', 'second', '--agente=claude').status).toBe(2);
+		expect(
+			board(
+				dir,
+				'set',
+				'first',
+				'--rev=2',
+				'ahora=stolen',
+				'--agente=codex',
+				'--sesion=other',
+			).status,
+		).toBe(2);
+		expect(
+			board(
+				dir,
+				'set',
+				'first',
+				'--rev=2',
+				'candado=',
+				'--agente=codex',
+				'--sesion=codex-test',
+			).status,
+		).toBe(2);
+		expect(board(dir, 'release', 'first', '--agente=codex', '--sesion=other').status).toBe(2);
+		expect(readTask(dir, 'first').rev).toBe(2);
+	});
+
+	it('requires successful or explicitly archived prerequisites and a current decision', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('cancelled', { estado: 'cancelada' }),
+				task('wait', { requisitos: [{ tipo: 'tarea', ref: 'cancelled' }] }),
+				task('missing', { requisitos: [{ tipo: 'tarea', ref: 'absent' }] }),
+				task('old-decision', { requisitos: [{ tipo: 'decision', ref: 'd1', ok: true }] }),
+				task('archived', { requisitos: [{ tipo: 'tarea', ref: 'finished' }] }),
+			],
+			decisiones: [{ id: 'd1', vigente: false }],
+			archivo: [{ id: 'finished', estado: 'comprobada' }],
+		});
+		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).id).toBe('archived');
+	});
+
+	it('exposes agent/lane/state reads and separates Antigravity from Gemini', () => {
+		const dir = makeBoard({ tareas: [task('art', { requiere: ['imagenes'] })] });
+		const agents = JSON.parse(board(dir, 'agentes', '--json').out);
+		expect(agents.find((a: Json) => a.id === 'antigravity').capacidades).toEqual([]);
+		expect(JSON.parse(board(dir, 'next', '--agente=antigravity', '--json').out)).toBeNull();
+		expect(
+			board(
+				dir,
+				'agentes',
+				'antigravity',
+				'--rev=0',
+				'--coordinador',
+				'capacidades=["imagenes"]',
+				'--json',
+			).status,
+		).toBe(0);
+		expect(JSON.parse(board(dir, 'next', '--agente=antigravity', '--json').out).id).toBe('art');
+		expect(JSON.parse(board(dir, 'carril', '--json').out)).toEqual([]);
+		expect(JSON.parse(board(dir, 'estado', '--json').out)).toBeNull();
 	});
 
 	it('pushes the board to the view as soon as a write lands', () => {
-		const dir = makeBoard({ tareas: [task('viva')] });
+		const dir = makeBoard({ tareas: [task('viva', { ahora: 'x'.repeat(100_000) })] });
 		// Opens the stream, writes through the CLI, and prints the tasks of every pushed board.
 		const probe = String.raw`
 			import { request } from 'node:http';
@@ -195,20 +338,23 @@ describe('pnpm board', () => {
 			const { serveView } = await import(process.argv[1]);
 			const server = await serveView(process.env.CELEBRA_BOARD_DIR, 0);
 			const seen = [];
+			let writtenAt = 0;
 			const done = (code) => { console.log(JSON.stringify(seen)); server.closeAllConnections(); server.close(); process.exit(code); };
 			setTimeout(() => done(1), 8000);
 			request({ port: server.address().port, path: '/api/stream' }, (res) => {
 				let buf = '';
 				res.on('data', (chunk) => {
 					buf += chunk;
-					for (const m of buf.split('\n\n').slice(0, -1)) {
+					const frames = buf.split('\n\n');
+					buf = frames.pop();
+					for (const m of frames) {
 						if (!m.startsWith('data: ')) continue;
 						seen.push(JSON.parse(m.slice(6)).tareas.map((t) => t.id + ':' + t.estado));
-						if (seen.length === 1)
-							spawnSync(process.execPath, [process.argv[2], 'set', 'viva', '--rev=1', 'estado=en curso']);
-						else done(0);
+						if (seen.length === 1) {
+							writtenAt = Date.now();
+							spawnSync(process.execPath, [process.argv[2], 'set', 'viva', '--rev=1', 'estado=en curso', '--coordinador']);
+						} else done(Date.now() - writtenAt < 1000 ? 0 : 1);
 					}
-					buf = buf.slice(buf.lastIndexOf('\n\n') + 2);
 				});
 			}).end();
 		`;
@@ -261,5 +407,103 @@ describe('pnpm board', () => {
 		});
 		expect(t.espera).toBeUndefined();
 		expect(board(dir, 'import', src).status).toBe(2);
+	});
+
+	it('recovers missed events and corrupt JSON, and delivers to two SSE clients within one second', () => {
+		const dir = makeBoard({ tareas: [task('recovery')] });
+		const probe = String.raw`
+			import { request } from 'node:http';
+			import { EventEmitter } from 'node:events';
+			import { readFileSync, writeFileSync } from 'node:fs';
+			import { join } from 'node:path';
+			const { serveView } = await import(process.argv[1]);
+			const watchers=[];
+			const watchFactory=()=>{ const w=new EventEmitter();w.close=()=>{};watchers.push(w);return w; };
+			const options={reconcileMs:100,heartbeatMs:100,watchFactory};
+			let server=await serveView(process.env.CELEBRA_BOARD_DIR,0,options);
+			const file=join(process.env.CELEBRA_BOARD_DIR,'tareas','recovery.json');
+			const original=readFileSync(file,'utf8');
+			const get=()=>new Promise((resolve,reject)=>{
+				request({host:'127.0.0.1',port:server.address().port,path:'/api/board'},res=>{
+					let body='';res.on('data',c=>body+=c);res.on('end',()=>resolve({status:res.statusCode,body}));
+				}).on('error',reject).end();
+			});
+			const wait=async(fn)=>{for(let i=0;i<40;i++){if(await fn())return;await new Promise(r=>setTimeout(r,25));}throw new Error('condition timed out');};
+			const sockets=[];const seen=[[],[]];
+			try {
+				for(let i=0;i<2;i++)await new Promise(resolve=>{
+					const req=request({host:'127.0.0.1',port:server.address().port,path:'/api/stream'},res=>{
+						let buf='';res.on('data',c=>{buf+=c;const frames=buf.split('\n\n');buf=frames.pop();
+							for(const frame of frames)if(frame.startsWith('data: ')){seen[i].push(JSON.parse(frame.slice(6)).tareas[0].estado);resolve();}});
+					});sockets.push(req);req.end();
+				});
+				const changed={...JSON.parse(original),estado:'en curso'};
+				const start=Date.now();writeFileSync(file,JSON.stringify(changed));
+				await wait(()=>seen.every(s=>s.includes('en curso')));
+				const latency=Date.now()-start;
+				writeFileSync(file,'{invalid');
+				await wait(async()=> (await get()).status===503);
+				writeFileSync(file,original);
+				await wait(async()=> (await get()).status===200);
+				watchers[0].emit('error',new Error('missed watcher'));
+				await wait(()=>watchers.length>1);
+				await wait(async()=> (await get()).status===200);
+				for(const req of sockets)req.destroy();
+				await new Promise(r=>{server.closeAllConnections();server.close(r);});
+				server=await serveView(process.env.CELEBRA_BOARD_DIR,0,options);
+				if((await get()).status!==200)throw new Error('restart did not converge');
+				console.log(JSON.stringify({latency,clients:seen.length,recovered:true,restarted:true}));
+				if(latency>=1000)process.exitCode=1;
+			}finally{for(const req of sockets)req.destroy();server.closeAllConnections();await new Promise(r=>server.close(r));}
+		`;
+		const result = runCommand(
+			process.execPath,
+			['--input-type=module', '-e', probe, pathToFileURL(SERVER_PATH).href],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir }) },
+		);
+		expect(result.stderr).toBe('');
+		expect(result.status).toBe(0);
+		expect(JSON.parse(result.stdout)).toMatchObject({
+			clients: 2,
+			recovered: true,
+			restarted: true,
+		});
+	});
+
+	it('serializes simultaneous claims without losing a revision or stealing a live file lock', () => {
+		const dir = makeBoard({ tareas: [task('race')] });
+		const probe = String.raw`
+			import { spawn } from 'node:child_process';
+			import { readFileSync, writeFileSync, utimesSync, unlinkSync } from 'node:fs';
+			import { join } from 'node:path';
+			const { withLock }=await import(process.argv[2]);
+			const run=(session)=>new Promise(resolve=>{
+				const p=spawn(process.execPath,[process.argv[1],'claim','race','--agente=codex','--sesion='+session,'--carril=f10-libre','--rama=fix/race'],{stdio:'ignore'});
+				p.on('exit',resolve);
+			});
+			const codes=await Promise.all([run('one'),run('two')]);
+			const task=JSON.parse(readFileSync(join(process.env.CELEBRA_BOARD_DIR,'tareas','race.json'),'utf8'));
+			const lock=join(process.env.CELEBRA_BOARD_DIR,'.lock');writeFileSync(lock,'live');utimesSync(lock,1,1);
+			let refused=false;try{withLock(process.env.CELEBRA_BOARD_DIR,()=>{}, {waitMs:0});}catch{refused=true;}
+			const retained=readFileSync(lock,'utf8');unlinkSync(lock);
+			console.log(JSON.stringify({codes:codes.sort(),rev:task.rev,refused,retained}));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				SCRIPT_PATH,
+				pathToFileURL(path.join(ROOT, 'scripts/board/store.mjs')).href,
+			],
+			{ cwd: ROOT, env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir }) },
+		);
+		expect(JSON.parse(result.stdout)).toEqual({
+			codes: [0, 2],
+			rev: 2,
+			refused: true,
+			retained: 'live',
+		});
 	});
 });

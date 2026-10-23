@@ -41,9 +41,16 @@ function makeExport(tareas: Json[], extra: { sesiones?: Json[]; decisiones?: Jso
 	return dir;
 }
 
-function verify(dir: string, answers: Record<string, string>) {
+function verify(dir: string, answers: Record<string, unknown>) {
 	const fixture = path.join(dir, 'answers.json');
-	writeFileSync(fixture, JSON.stringify(answers));
+	writeFileSync(
+		fixture,
+		JSON.stringify({
+			'gh pr list --state open --json number,headRefName,title --limit 100': '[]',
+			'git worktree list --porcelain': '',
+			...answers,
+		}),
+	);
 	const result = runCommand(process.execPath, [SCRIPT_PATH, dir, '--json'], {
 		cwd: ROOT,
 		allowFailure: true,
@@ -57,6 +64,71 @@ afterEach(() => {
 });
 
 describe('board:verify', () => {
+	it.each([
+		'gh api repos/o/r/pulls/1 --raw-field title=changed',
+		'curl -s --output audit-output.txt https://example.invalid',
+		'gh pr view 1 --json state --web',
+		'git ls-remote origin refs/heads/x;whoami',
+		'git -c core.sshCommand=evil ls-remote origin refs/heads/x',
+	])('refuses stored command side effects: %s', (cmd) => {
+		const dir = makeExport([task('unsafe', { chequeo: { cmd } })]);
+		expect(verify(dir, {}).report.filas[0].veredicto).toBe('RECHAZADO');
+	});
+
+	it('keeps failed and malformed checks UNVERIFIED, even when stdout looks successful', () => {
+		const dir = makeExport([
+			task('failed', { pr: 1, estado: 'hecha' }),
+			task('invalid', { pr: 2 }),
+		]);
+		const { report } = verify(dir, {
+			'gh pr view 1 --json state': {
+				ok: false,
+				output: '{"state":"MERGED"}',
+				error: 'timeout',
+			},
+			'gh pr view 2 --json state': 'not-json',
+			'gh pr list --state open --json number,headRefName,title --limit 100': 'not-json',
+			'git worktree list --porcelain': { ok: false, output: '', error: 'timeout' },
+		});
+		expect(report.filas.map((r: Json) => r.veredicto)).toEqual(['UNVERIFIED', 'UNVERIFIED']);
+		expect(report.comprobar).toEqual([]);
+		expect(report.cobertura).toEqual({ prs: 'UNVERIFIED', ramas: 'UNVERIFIED' });
+	});
+
+	it('accepts a structured PR check without an arbitrary shell command', () => {
+		const dir = makeExport([task('structured', { chequeo: { tipo: 'pr', pr: 3 } })]);
+		expect(
+			verify(dir, { 'gh pr view 3 --json state': '{"state":"MERGED"}' }).report.filas[0]
+				.veredicto,
+		).toContain('CUMPLE');
+	});
+	it('does not certify a review after the PR head changes', () => {
+		const dir = makeExport([
+			task('origin-revision', {
+				origen: 'origin',
+				pr: 4,
+				estado: 'hecha',
+				revisionSha: 'a'.repeat(40),
+			}),
+		]);
+		const { report } = verify(dir, {
+			'gh pr view 4 --json headRefOid': JSON.stringify({ headRefOid: 'b'.repeat(40) }),
+		});
+		expect(report.filas[0].veredicto).toBe('NO CUMPLE');
+		expect(report.comprobar).toEqual([]);
+	});
+	it('reports dependency cycles instead of treating the queue as healthy', () => {
+		const dir = makeExport([
+			task('a', { requisitos: [{ tipo: 'tarea', ref: 'b' }] }),
+			task('b', { requisitos: [{ tipo: 'tarea', ref: 'a' }] }),
+		]);
+		expect(verify(dir, {}).report.inconsistencias).toEqual(
+			expect.arrayContaining([
+				{ id: 'a', msg: 'ciclo de requisitos' },
+				{ id: 'b', msg: 'ciclo de requisitos' },
+			]),
+		);
+	});
 	it('derives the implicit check from pr and proposes comprobada for a merged «unida» task', () => {
 		const dir = makeExport([
 			task('olivia-gallery', { estado: 'unida', pr: '#398', rama: 'fix/olivia-gallery' }),

@@ -9,15 +9,17 @@ authorization.
 
 - **Task id** = the branch without its type prefix: `fix/olivia-gallery` → `olivia-gallery`.
 - **Fields**: `titulo`, `estado`, `urgencia` (`urgente|alta|normal|baja`), `actor`
-  (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
-  `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
-  (the only status line), `pr`, `rama`, `sesion {id, nombre}`, `hasta`, `orden`, `origen`, `plan`,
-  `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are
-  set by the command. `espera`, `usted` and `deps` no longer exist.
-- **Requisitos**: `[{tipo: tarea|decision|fecha|dueno, ref, ok?}]`, checked live: a `tarea` is met
-  when that task is `hecha`/`unida`/`comprobada` or left the board, a `fecha` when its time passed,
-  a `decision` when it exists and is `vigente`, a `dueno` only with `ok: true`. A pending task
-  without a prompt waits for one automatically (except `actor: coordinador`).
+  (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|antigravity|cualquiera`), `toca`
+  (subset of `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities),
+  `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, nombre}`, `hasta`, `orden`,
+  `origen`, `plan`, `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and
+  `actualizado` are set by the command. `espera`, `usted` and `deps` no longer exist.
+- **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
+  is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
+  canceled tasks do not satisfy it. A `revision` requires an origin PR in
+  `en revision`/`hecha`/`unida`. A `fecha` is met when its time passed, a `decision` when it exists
+  and is `vigente`, a `dueno` only with `ok: true`. A pending task without a prompt waits for one
+  automatically (except `actor: coordinador`).
 - **Stage and color**: ready = every requisito met. Green = ready and the owner acts (`actor: dueno`
   or anything in `toca`); violet = ready and an agent finishes it alone (it has every capability in
   `requiere`); gray = blocked; blue = `en curso`; teal = `hecha`/`unida`/`en revision`. Urgency is
@@ -43,4 +45,37 @@ authorization.
   under «LISTAS PARA comprobada»), or with the owner's explicit authorization. Clear `prompt` and
   release the lock when closing.
 - **Prompt**: «Sigue .agent/rules/board.md con tarea `<id>`» plus the task-specific scope only, with
-  a `DECISIONES` section (d046).
+  a `DECISIONES` section (d046). Prompts/contracts are English; visible copy and reports are formal
+  Spanish. Use the [worker template](../templates/board-worker-prompt.md).
+
+## Session ownership and review
+
+- `claim` requires `--sesion`, readiness, no owner gate, and an exclusive `--carril` for
+  implementation. Another session of the same agent cannot replace it. An identical claim is
+  idempotent.
+- Worker `set` and `release` require matching `--agente` and `--sesion`. Unlocked coordination edits
+  require `--coordinador`; the flag declares a role, never grants authority or overrides a lock.
+  `set` cannot replace ownership, lane, origin or review SHA.
+- `review` requires the origin PR in `en revision`, generates an English prompt and records
+  `revisionSha` (from GitHub, or explicit `--sha`). It can refresh an unlocked child at a new SHA.
+  Reviews become executable before merge and do not inherit the author's lane. Completion declares
+  `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
+- `agentes --json` discovers the shared registry and capability overrides. Antigravity is distinct
+  from Gemini and starts with no capabilities. Only explicit coordinator updates use
+  `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before declaring
+  them.
+- `carril` without an id and `estado` without fields are read-only inventory commands.
+
+## Checks and freshness
+
+Prefer structured `chequeo: {tipo: pr, pr: N}` or `{tipo: rama, rama: type/id}`. Legacy `cmd` is
+accepted only by the finite `commandArgs` grammar, executed as argument arrays without a shell.
+Arbitrary HTTP/API commands are rejected. Failures/timeouts/malformed PR responses are `UNVERIFIED`;
+inventory coverage is separate. Branch existence or MERGED alone does not prove every task
+criterion.
+
+SSE reports live/degraded status. Default reconciliation and time-dependent redraw: 30 seconds;
+normal event debounce: 150 ms. Sub-second delivery is a measured target, not an availability
+guarantee. A filesystem transaction lock is never stolen solely because it is old. After a writer
+crash the coordinator inspects its PID/process and obtains scoped recovery authority before removing
+the exact orphan lock. A worker's task claim is separate from this short-lived transaction lock.
