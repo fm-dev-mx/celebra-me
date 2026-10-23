@@ -272,13 +272,13 @@ test.describe('Demo Routing Parity', () => {
 
 			// Default CTA points to Celestial Blue
 			const ctaPrimary = page.locator('[data-track-cta="demo_hero_open"]');
-			await expect(ctaPrimary).toHaveAttribute('href', /demo-xv-celestial-blue/);
+			await expect(ctaPrimary).toHaveAttribute('href', /^\/celestial(?:[?#]|$)/);
 
 			// After selecting Enchanted Rose, CTA should point to Enchanted Rose
 			await page.locator('.demo-style[data-demo-slug="demo-xv-enchanted-rose"]').click();
 			await expect(page.locator('[data-track-cta="demo_hero_open"]')).toHaveAttribute(
 				'href',
-				/demo-xv-enchanted-rose/,
+				/^\/rose(?:[?#]|$)/,
 			);
 		});
 
@@ -508,9 +508,7 @@ test.describe('Demo Routing Parity', () => {
 			await expect(
 				page.getByRole('heading', { name: 'Lo adaptamos a su primera comunión' }),
 			).toBeVisible();
-			const featuredLink = page.locator(
-				'a[href="/primera-comunion/demo-primera-comunion-angelic-presence"]',
-			);
+			const featuredLink = page.locator('a[href="/comunion-angelical"]');
 			await expect(featuredLink.first()).toBeVisible();
 		});
 	});
