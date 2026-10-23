@@ -40,7 +40,9 @@ pnpm agent:git-safety:start
 When another agent session may work in the same checkout, pass `--session=<id>` (for example the
 task branch, or set `CELEBRA_GIT_SAFETY_SESSION`) to `start`, `check` and `finish`. Each session
 then keeps its own `.agent/tmp/git-safety-baseline.<id>.json`, so closing one session never consumes
-another session's evidence. Without it, sessions share the legacy baseline file.
+another session's evidence. Without it, sessions share the legacy baseline file. A branch name is a
+valid id: each `/` becomes `-` in the file name, so `--session=feat/x` keeps
+`.agent/tmp/git-safety-baseline.feat-x.json`.
 
 Replaces an existing baseline only when it shows no protected drift; a drifted or invalid baseline
 fails closed and is preserved. Writes `.agent/tmp/git-safety-baseline.json` with schema version,
@@ -88,6 +90,7 @@ pnpm agent:git-safety:finish --authorized-operation=stage --paths=path/a,path/b
 pnpm agent:git-safety:finish --authorized-operation=commit
 pnpm agent:git-safety:finish --authorized-operation=history
 pnpm agent:git-safety:finish --authorized-operation=branch-switch,commit --branch=feat/x
+pnpm agent:git-safety:finish --authorized-operation=branch-switch --branch=detached@e05def3
 ```
 
 Rules:
@@ -95,6 +98,9 @@ Rules:
 - Supported operations: `stage` / `unstage` (index paths in `--paths`), `commit` (HEAD must move),
   `history` (HEAD may move: rebase, merge, pull) and `branch-switch` (current branch must equal
   `--branch`). Combine them with commas when one session performs several.
+- Closing a lane with `git switch --detach origin/develop` is a `branch-switch` to
+  `--branch=detached@<sha>`: HEAD must be detached at a commit starting with that sha (7+ hex
+  characters). The finish report prints the current value in the same `detached@<sha>` form.
 - Unknown operations fail closed.
 - Every protected drift must be covered by a declared operation; anything else fails.
 - The CLI declaration is **not** proof of human authorization — only a detector hint for authority
