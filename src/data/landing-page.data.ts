@@ -1,16 +1,10 @@
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
-import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
 import { formatMxn, getCatalogPackage, getExpressDelivery } from '@/data/promo-campaign.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 
 export const PRIMARY_CTA_LABEL = 'Quiero mi invitación';
 /** Small reassurance line shown under the primary WhatsApp CTA in the header and the hero. */
 export const PRIMARY_CTA_TRUST_LINE = 'Respuesta en minutos · Sin compromiso';
-
-/** Featured demo opened by the hero secondary action ("Ver una invitación"). */
-const HERO_DEMO_SLUG = 'demo-xv-celestial-blue';
-const heroDemo = DEMO_SHOWROOM_ITEMS.find((item) => item.slug === HERO_DEMO_SLUG);
-if (!heroDemo) throw new Error(`Missing hero demo: ${HERO_DEMO_SLUG}`);
 
 const expressDelivery = getExpressDelivery();
 const expressDeliveryPackages = expressDelivery.appliesTo
@@ -29,8 +23,12 @@ export const landingData: LandingPageData = {
 			'Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp, sin anticipo.',
 	},
 	hero: {
-		title: 'Invitaciones digitales con pase y confirmación para cada invitado',
-		subtitle: 'Usted la envía por WhatsApp y ve quién confirmó.',
+		eyebrow: 'Invitaciones digitales',
+		title: 'Invitaciones con pase y confirmación para cada invitado',
+		titleEmphasis: 'confirmación',
+		subtitle:
+			'Usted la envía por WhatsApp y ve quién confirmó. Elija su evento y recorra cada estilo como lo verán sus invitados.',
+		mobileSubtitle: 'Usted la envía por WhatsApp y ve quién confirmó.',
 		priceLine: {
 			prefix: 'Desde',
 			suffix: 'MXN, pago único.',
@@ -38,14 +36,13 @@ export const landingData: LandingPageData = {
 		paymentNote: 'Sin anticipo: pague al recibir su invitación terminada.',
 		primaryCtaLabel: PRIMARY_CTA_LABEL,
 		primaryCtaTrustLine: PRIMARY_CTA_TRUST_LINE,
-		secondaryCtaLabel: 'Ver una invitación',
-		secondaryCtaUrl: heroDemo.href,
-		secondaryCtaDemoSlug: heroDemo.slug,
+		eventsLabel: '¿Qué celebra?',
+		fanLabel: 'Toque una para verla abajo',
 	},
-	eventSelector: {
-		eyebrow: 'DEMOS POR EVENTO',
-		title: 'Vea cómo puede lucir su invitación',
-		description: 'Elija su evento y abra la demo completa.',
+	vitrina: {
+		title: 'Así la verán sus invitados',
+		description:
+			'Deslice dentro de la pantalla para recorrerla. Cambie a Tablet o PC para verla en otra pantalla.',
 	},
 	productProof: {
 		eyebrow: 'SU PANEL DE INVITADOS',

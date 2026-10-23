@@ -1,75 +1,77 @@
 ---
 /**
  * src/components/home/Hero.astro
- * Hero "Prime" Component
+ * Landing hero: promise, price, WhatsApp CTA, event chips and a fan of three demo phones. Chips and
+ * phones are links to the showroom (`#<event>`); the showroom script selects the event or demo.
  */
-import ActionBase from '@/components/common/actions/ActionBase.astro';
+import { Image } from 'astro:assets';
+import Icon from '@/components/common/icons/Icon.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
+import type { VitrinaDemo, VitrinaEvent } from '@/data/landing-vitrina.data';
 import {
-	buildCampaignCode,
 	formatMxn,
-	getGeneralPromoCode,
 	getStartingPrice,
 	getRenderCampaign,
 	getStartingRegularPrice,
-	PROMO_CURRENCY,
 } from '@/data/promo-campaign.data';
+import { getEventAsset } from '@/lib/assets/asset-registry';
 
-// One static, event-neutral image: a laid table with a place card, the "pass for every guest".
-import heroDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
-import heroMobile from '@/assets/images/hero/hero-detail-mobile.webp';
-
-import '@/styles/components/_hero.scss';
+import '@/styles/home/_landing-hero.scss';
 
 interface Props {
 	data: HeroData;
+	events: readonly VitrinaEvent[];
+	/** Left, right and center phones; the center one is the largest and loads first. */
+	fan: readonly VitrinaDemo[];
 }
 
-const { data } = Astro.props;
+const { data, events, fan } = Astro.props;
 // Built with the campaign of the build day; PromoStatus.astro switches it for the visitor's date.
 const campaign = getRenderCampaign();
 
+const [titleLead, titleTail] =
+	data.titleEmphasis && data.title.includes(data.titleEmphasis)
+		? data.title.split(data.titleEmphasis)
+		: [data.title, undefined];
+
+const fanPhones = fan.map((demo, index) => ({
+	demo,
+	image: getEventAsset(demo.slug, demo.cover),
+	isCenter: index === fan.length - 1,
+}));
 ---
 
-<section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title" data-track-section="hero" data-screenshot="landing-hero">
-	<div class="hero-prime__bg" aria-hidden="true">
-		<picture>
-			<source media="(min-width: 768px)" srcset={heroDesktop.src} width={heroDesktop.width} height={heroDesktop.height} />
-			<img
-				src={heroMobile.src}
-				alt=""
-				width={heroMobile.width}
-				height={heroMobile.height}
-				loading="eager"
-				decoding="sync"
-				fetchpriority="high"
-			/>
-		</picture>
-	</div>
-
-	<div class="hero-prime__overlay" aria-hidden="true"></div>
-
+<section
+	class="hero-prime"
+	id="inicio"
+	role="region"
+	aria-labelledby="hero-title"
+	data-track-section="hero"
+	data-screenshot="landing-hero"
+>
 	<div class="hero-prime__content">
 		<div class="hero-prime__left">
-			{data.eyebrow && <p class="hero-prime__eyebrow stagger-1">{data.eyebrow}</p>}
+			{data.eyebrow && <p class="hero-prime__eyebrow">{data.eyebrow}</p>}
 
-			<h1 class="hero-prime__title stagger-2" id="hero-title">
-				<span class="hero-prime__copy-desktop">{data.title}</span>
-				<span class="hero-prime__copy-mobile">{data.mobileTitle ?? data.title}</span>
+			<h1 class="hero-prime__title" id="hero-title">
+				{titleLead}{titleTail !== undefined && <em>{data.titleEmphasis}</em>}{titleTail}
 			</h1>
 
-			<p class="hero-prime__subtitle stagger-3">
+			<p class="hero-prime__subtitle">
 				<span class="hero-prime__copy-desktop">{data.subtitle}</span>
-				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>{' '}
-				<span class="hero-prime__price-line">
-					{data.priceLine.prefix}{' '}
-					{campaign && <span data-promo-only data-promo-field="starting-price">{formatMxn(getStartingPrice(campaign))}</span>}<span data-promo-fallback={campaign ? '' : undefined}>{formatMxn(getStartingRegularPrice())}</span>{' '}
-					{data.priceLine.suffix}
-				</span>
+				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>
 			</p>
 
-			<div class="hero-prime__actions stagger-4">
+			<p class="hero-prime__price-line">
+				{data.priceLine.prefix}{' '}
+				<strong>
+					{campaign && <span data-promo-only data-promo-field="starting-price">{formatMxn(getStartingPrice(campaign))}</span>}<span data-promo-fallback={campaign ? '' : undefined}>{formatMxn(getStartingRegularPrice())}</span>
+				</strong>{' '}
+				{data.priceLine.suffix}
+			</p>
+
+			<div class="hero-prime__actions">
 				<WhatsAppButton
 					label={data.primaryCtaLabel}
 					trackSection="hero"
@@ -78,31 +80,63 @@ const campaign = getRenderCampaign();
 				/>
 				<p class="hero-prime__trust-line">{data.primaryCtaTrustLine}</p>
 				<p class="hero-prime__payment-note">{data.paymentNote}</p>
-				<ActionBase
-					as="a"
-					href={data.secondaryCtaUrl || '#tipo-evento'}
-					variant="text"
-					color="white"
-					class="hero-prime__secondary-action"
-					data-track-event="cta_clicked"
-					data-track-section="hero"
-					data-track-cta="hero_secondary"
-					data-track-label={data.secondaryCtaLabel}
-					data-track-intent="demo_showroom"
-					data-track-destination="demo"
-					data-demo-slug={data.secondaryCtaDemoSlug}
-					data-campaign-code={buildCampaignCode('DEMO', getGeneralPromoCode(campaign))}
-					data-promo-code={getGeneralPromoCode(campaign) ?? undefined}
-					data-track-value={getStartingPrice(campaign)}
-					data-track-currency={PROMO_CURRENCY}
-					data-promo-quote="general"
-					data-campaign-section="DEMO"
-				>
-					{data.secondaryCtaLabel}
-				</ActionBase>
 			</div>
 
-			{data.proofLine && <p class="hero-prime__proof-line stagger-5">{data.proofLine}</p>}
+			<nav class="hero-prime__events" aria-labelledby="hero-events-label">
+				<span class="hero-prime__events-label" id="hero-events-label">{data.eventsLabel}</span>
+				<div class="hero-prime__chips">
+					{
+						events.map((event) => (
+							<a
+								class="hero-prime__chip"
+								href={`#${event.publicSlug}`}
+								data-vitrina-event={event.publicSlug}
+								data-track-event="cta_clicked"
+								data-track-section="hero"
+								data-track-cta="hero_event_chip"
+								data-track-label={event.label}
+								data-track-intent="demo_showroom"
+								data-track-destination="demo"
+								data-event-type={event.eventType}
+							>
+								<Icon name={event.icon} size={18} />
+								{event.label}
+								<small>
+									{event.demos.length}
+									<span class="sr-only">{event.demos.length === 1 ? 'estilo' : 'estilos'}</span>
+								</small>
+							</a>
+						))
+					}
+				</div>
+			</nav>
+		</div>
+
+		<div class="hero-prime__fan">
+			{
+				fanPhones.map(({ demo, image, isCenter }) =>
+					image ? (
+						<a
+							class:list={['hero-prime__phone', { 'hero-prime__phone--center': isCenter }]}
+							href={`#${demo.publicSlug}`}
+							data-vitrina-event={demo.publicSlug}
+							data-vitrina-pick={demo.slug}
+							aria-label={`Ver la demo ${demo.name}`}
+						>
+							<Image
+								src={image}
+								alt=""
+								widths={[240, 420]}
+								sizes="(min-width: 900px) 210px, 118px"
+								loading={isCenter ? 'eager' : 'lazy'}
+								fetchpriority={isCenter ? 'high' : undefined}
+								data-demo-style={demo.slug}
+							/>
+						</a>
+					) : null,
+				)
+			}
+			<span class="hero-prime__fan-label">{data.fanLabel}</span>
 		</div>
 	</div>
 </section>

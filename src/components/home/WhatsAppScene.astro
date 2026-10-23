@@ -1,0 +1,68 @@
+---
+/**
+ * src/components/home/WhatsAppScene.astro
+ *
+ * How the invitation travels: three steps beside a WhatsApp chat sample whose bubbles fade in as
+ * the chat scrolls into view (CSS view timeline; static without support or with reduced motion).
+ */
+import { Image } from 'astro:assets';
+import type { VitrinaDemo } from '@/data/landing-vitrina.data';
+import { getEventAsset } from '@/lib/assets/asset-registry';
+
+import '@/styles/home/_landing-scenes.scss';
+
+interface Props {
+	demo: VitrinaDemo;
+	eventLabel: string;
+}
+
+const { demo, eventLabel } = Astro.props;
+const cover = getEventAsset(demo.slug, demo.cover);
+---
+
+<section class="chat-scene" aria-labelledby="chat-scene-title" data-track-section="whatsapp_scene">
+	<div class="chat-scene__inner">
+		<div class="chat-scene__copy">
+			<p class="chat-scene__eyebrow">Envío y confirmación</p>
+			<h2 class="chat-scene__title" id="chat-scene-title">
+				Usted la manda por WhatsApp y ve quién confirmó
+			</h2>
+			<ol class="chat-scene__steps">
+				<li>Envía a cada invitado su enlace, con su nombre y sus pases.</li>
+				<li>El invitado abre el sobre y confirma con un toque.</li>
+				<li>Usted ve en su panel quién confirmó y cuántos lugares usará.</li>
+			</ol>
+		</div>
+		<figure class="chat" aria-label="Ejemplo de conversación de WhatsApp">
+			<div class="chat__head"><i aria-hidden="true"></i>Tía Lupe</div>
+			<div class="chat__body">
+				<div class="chat__bubble chat__bubble--out">
+					<div class="chat__link">
+						{
+							cover && (
+								<Image
+									src={cover}
+									alt=""
+									widths={[320, 560]}
+									sizes="300px"
+									loading="lazy"
+								/>
+							)
+						}
+						<div>
+							<b>Demo {eventLabel} · {demo.person} — Celebra-me</b>
+							<span>celebra-me.com{demo.href}</span>
+						</div>
+					</div>
+					Tía, aquí está su invitación con sus 2 pases.
+					<small>18:02 ✓✓</small>
+				</div>
+				<div class="chat__bubble">
+					¡Qué bonita! Ya confirmé, ahí estaremos.
+					<small>18:10</small>
+				</div>
+				<p class="chat__rsvp">✓ Lupe Rivas confirmó · 2 pases</p>
+			</div>
+		</figure>
+	</div>
+</section>

@@ -58,7 +58,7 @@ export function getDemoConversion(slug: string): DemoConversionContext | undefin
 		styleName: item.styleName,
 		celebrationLabel: CELEBRATION_LABELS[item.eventType],
 		quoteLink: getWhatsAppLink(item.ctaMessage),
-		browseHref: `/demos/${item.publicSlug}`,
+		browseHref: `/#${item.publicSlug}`,
 		closingImage: photos
 			? getEventAsset(slug, photos.closing.key)
 			: closingKey

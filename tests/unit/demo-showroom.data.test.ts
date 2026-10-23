@@ -4,7 +4,6 @@ import { DEMO_INVITATIONS_DIR } from '../../scripts/shared/demo-invitation-files
 
 import {
 	DEMO_SHOWROOM_EVENTS,
-	DEMO_SHOWROOM_HOME_EVENTS,
 	DEMO_SHOWROOM_ITEMS,
 	getDemoShowroomByPublicSlug,
 	getFeaturedDemoShowroomItems,
@@ -19,24 +18,18 @@ function demoContentExists(slug: string): boolean {
 describe('demo showroom public metadata', () => {
 	it('exposes the approved public showroom routes and maps cumpleanos to cumple internally', () => {
 		expect(DEMO_SHOWROOM_EVENTS.map((event) => event.showroomHref)).toEqual([
-			'/demos/xv',
-			'/demos/boda',
-			'/demos/bautizo',
-			'/demos/primera-comunion',
-			'/demos/cumpleanos',
-		]);
-		expect(DEMO_SHOWROOM_HOME_EVENTS.map((event) => event.eventType)).toEqual([
-			'xv',
-			'boda',
-			'bautizo',
-			'cumple',
+			'/#xv',
+			'/#boda',
+			'/#bautizo',
+			'/#primera-comunion',
+			'/#cumpleanos',
 		]);
 		expect(getDemoShowroomByPublicSlug('baby-shower')).toBeUndefined();
 
 		expect(getDemoShowroomByPublicSlug('cumpleanos')).toMatchObject({
 			eventType: 'cumple',
 			label: 'Cumpleaños y eventos',
-			showroomHref: '/demos/cumpleanos',
+			showroomHref: '/#cumpleanos',
 		});
 	});
 
@@ -150,11 +143,5 @@ describe('showroom interaction model', () => {
 
 	it('single-demo customization copy is accurate', () => {
 		expect(getFeaturedDemoShowroomItems('boda').length).toBe(1);
-	});
-
-	it('leaves the quote itself to the promo calendar', () => {
-		for (const event of DEMO_SHOWROOM_HOME_EVENTS) {
-			expect(Object.keys(event.homeSelector.quoteCta)).toEqual(['label']);
-		}
 	});
 });

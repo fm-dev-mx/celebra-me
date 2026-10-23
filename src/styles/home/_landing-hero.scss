@@ -1,0 +1,294 @@
+// Landing hero (Hero.astro): copy, price, WhatsApp CTA and event chips beside a fan of three demo
+// phones. Light ivory band under the solid header; the phones and chips open the showroom below.
+@use '../components/actions/whatsapp-button';
+@use '../tokens/type-scale';
+
+.hero-prime {
+	--hero-fs-title: clamp(1.85rem, 6.2vw, 3.2rem);
+	--hero-fs-lede: 1rem;
+	--hero-fs-small: 0.84rem;
+	--hero-fs-tiny: 0.72rem;
+	--hero-phone-width: 118px;
+	--hero-phone-radius: 20px;
+	--hero-screen-radius: 16px;
+
+	position: relative;
+	width: 100%;
+	overflow: clip;
+	color: var(--color-text-dark);
+	background:
+		radial-gradient(90% 70% at 90% 10%, rgb(var(--color-champagne-rgb) / 20%), transparent 60%),
+		var(--color-ivory);
+
+	&__content {
+		width: min(100%, 1140px);
+		margin: 0 auto;
+		padding: calc(var(--nav-current-height, 72px) + 1.5rem) 1rem 2rem;
+		display: grid;
+		gap: 1.5rem;
+		align-items: center;
+
+		@media (width >= 900px) {
+			grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+			gap: 2.5rem;
+			padding: calc(var(--nav-current-height, 72px) + 3rem) 1.5rem 3.5rem;
+		}
+	}
+
+	&__left {
+		display: grid;
+		gap: 0.9rem;
+		min-width: 0;
+	}
+
+	&__eyebrow {
+		@include type-scale.text(eyebrow);
+
+		margin: 0;
+		color: var(--color-border-gold);
+	}
+
+	&__title {
+		margin: 0;
+		max-width: 17ch;
+		font-family: var(--font-display);
+		font-size: var(--hero-fs-title);
+		font-weight: 600;
+		line-height: 1.12;
+		text-wrap: balance;
+
+		em {
+			font-style: italic;
+			font-weight: 500;
+			color: var(--color-border-gold);
+		}
+	}
+
+	&__subtitle {
+		margin: 0;
+		max-width: 44ch;
+		color: rgb(var(--color-text-dark-rgb) / 78%);
+		font-size: var(--hero-fs-lede);
+		line-height: 1.55;
+	}
+
+	&__copy-desktop {
+		@media (width < 768px) {
+			display: none;
+		}
+	}
+
+	&__copy-mobile {
+		@media (width >= 768px) {
+			display: none;
+		}
+	}
+
+	&__price-line {
+		margin: 0;
+		font-size: var(--hero-fs-small);
+
+		strong {
+			font-size: 1.3em;
+		}
+	}
+
+	&__actions {
+		display: grid;
+		justify-items: start;
+		gap: 0.35rem;
+
+		.whatsapp-button {
+			min-width: 240px;
+			min-height: 48px;
+		}
+
+		@media (width < 600px) {
+			justify-items: stretch;
+			text-align: center;
+		}
+	}
+
+	&__trust-line,
+	&__payment-note {
+		margin: 0;
+		font-size: var(--hero-fs-small);
+		color: rgb(var(--color-text-dark-rgb) / 72%);
+	}
+
+	&__trust-line {
+		font-weight: 600;
+	}
+
+	&__events {
+		display: grid;
+		gap: 0.5rem;
+		min-width: 0;
+		margin-top: 0.25rem;
+	}
+
+	&__events-label {
+		font-size: var(--hero-fs-small);
+		font-weight: 600;
+	}
+
+	&__chips {
+		display: flex;
+		gap: 0.5rem;
+		overflow-x: auto;
+		scrollbar-width: none;
+		padding: 2px 4px 6px;
+		margin-inline: -4px;
+		scroll-snap-type: x proximity;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		@media (width >= 900px) {
+			flex-wrap: wrap;
+			overflow: visible;
+		}
+	}
+
+	&__chip {
+		flex: none;
+		scroll-snap-align: start;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 46px;
+		padding: 0 1rem 0 0.75rem;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-pill);
+		background: rgb(255 255 255);
+		color: var(--color-text-dark);
+		font-size: var(--hero-fs-small);
+		font-weight: 600;
+		text-decoration: none;
+		transition:
+			background-color var(--duration-snappy, 220ms) ease,
+			color var(--duration-snappy, 220ms) ease,
+			border-color var(--duration-snappy, 220ms) ease;
+
+		svg {
+			width: 18px;
+			height: 18px;
+			color: var(--color-border-gold);
+		}
+
+		small {
+			font-size: var(--hero-fs-tiny);
+			font-weight: 500;
+			color: rgb(var(--color-text-dark-rgb) / 70%);
+		}
+
+		&:hover,
+		&[aria-current='true'] {
+			border-color: var(--color-text-dark);
+		}
+
+		&[aria-current='true'] {
+			background: var(--color-text-dark);
+			color: var(--color-ivory);
+
+			svg,
+			small {
+				color: var(--color-champagne);
+			}
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--color-border-gold);
+			outline-offset: 3px;
+		}
+	}
+
+	&__fan {
+		position: relative;
+		height: 250px;
+		display: flex;
+		justify-content: center;
+		align-items: flex-end;
+		margin-bottom: 1.25rem;
+
+		@media (width >= 900px) {
+			--hero-phone-width: 210px;
+			--hero-phone-radius: 32px;
+			--hero-screen-radius: 25px;
+
+			height: 470px;
+		}
+	}
+
+	&__phone {
+		position: absolute;
+		bottom: 0;
+		width: var(--hero-phone-width);
+		aspect-ratio: 9 / 19;
+		padding: calc(var(--hero-phone-width) * 0.04);
+		border-radius: var(--hero-phone-radius);
+		background: var(--color-ink);
+		box-shadow: 0 24px 40px -18px rgb(40 20 0 / 55%);
+		transform-origin: bottom center;
+		transition: transform 420ms var(--ease-premium, ease);
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: var(--demo-focal, 50% 50%);
+			border-radius: var(--hero-screen-radius);
+		}
+
+		&:nth-child(1) {
+			transform: translateX(-62%) rotate(-9deg) scale(0.88);
+		}
+
+		&:nth-child(2) {
+			transform: translateX(62%) rotate(9deg) scale(0.88);
+		}
+
+		&--center {
+			z-index: 2;
+			transform: translateY(-4%);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--color-border-gold);
+			outline-offset: 4px;
+		}
+
+		@media (hover: hover) {
+			&:nth-child(1):hover {
+				transform: translateX(-66%) rotate(-11deg) scale(0.9);
+			}
+
+			&:nth-child(2):hover {
+				transform: translateX(66%) rotate(11deg) scale(0.9);
+			}
+
+			&--center:hover {
+				transform: translateY(-8%);
+			}
+		}
+	}
+
+	&__fan-label {
+		position: absolute;
+		left: 50%;
+		bottom: 0;
+		translate: -50% 130%;
+		font-size: var(--hero-fs-tiny);
+		color: rgb(var(--color-text-dark-rgb) / 70%);
+		white-space: nowrap;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&__phone,
+		&__chip {
+			transition: none;
+		}
+	}
+}

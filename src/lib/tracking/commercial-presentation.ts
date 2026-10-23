@@ -37,6 +37,9 @@ const ATTRIBUTION_TERMS: Record<string, string> = {
 	organic: 'Orgánico',
 	event: 'Evento',
 	types: 'Tipos',
+	showroom: 'Vitrina',
+	tab: 'Pestaña',
+	chip: 'Botón de evento',
 };
 
 export interface CommercialAttributionPresentation {

@@ -1,0 +1,389 @@
+---
+/**
+ * src/components/home/LandingShowroom.astro
+ *
+ * Landing showroom ("vitrina"): event chips, a phone/tablet/PC frame with a scrollable
+ * mini-invitation per demo, a strip of styles and a detail card with the full demo link and a
+ * WhatsApp quote that carries `Ref. EVENT-STYLE-VITRINA`. Everything is server-rendered; the script
+ * only toggles `hidden`, so images of hidden demos are fetched when they are first shown.
+ * `#<event>` anchors (e.g. `/#boda`) open the showroom on that event.
+ */
+import { Image } from 'astro:assets';
+import Icon from '@/components/common/icons/Icon.astro';
+import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
+import {
+	buildVitrinaDemoStyles,
+	buildVitrinaMessage,
+	buildVitrinaRef,
+	type VitrinaDemo,
+	type VitrinaEvent,
+} from '@/data/landing-vitrina.data';
+import { getEventAsset } from '@/lib/assets/asset-registry';
+
+import '@/styles/home/_landing-showroom.scss';
+
+interface Props {
+	events: readonly VitrinaEvent[];
+	title: string;
+	description: string;
+}
+
+const { events, title, description } = Astro.props;
+const [initialEvent] = events;
+if (!initialEvent) throw new Error('The landing showroom needs at least one event.');
+const initialDemo = initialEvent.demos[0];
+
+const MONTHS = [
+	'enero',
+	'febrero',
+	'marzo',
+	'abril',
+	'mayo',
+	'junio',
+	'julio',
+	'agosto',
+	'septiembre',
+	'octubre',
+	'noviembre',
+	'diciembre',
+];
+
+function formatDate(isoDate: string) {
+	const [year, month, day] = isoDate.split('-').map(Number);
+	return {
+		short: `${String(day).padStart(2, '0')} · ${String(month).padStart(2, '0')} · ${year}`,
+		long: `${day} de ${MONTHS[month - 1]} de ${year}`,
+	};
+}
+
+function imagesFor(demo: VitrinaDemo) {
+	return {
+		cover: getEventAsset(demo.slug, demo.cover),
+		wide: demo.wideCover ? getEventAsset(demo.slug, demo.wideCover) : undefined,
+		gallery: demo.gallery.flatMap((key) => getEventAsset(demo.slug, key) ?? []),
+	};
+}
+
+const DEVICES = [
+	{ id: 'phone', label: 'Celular', hint: 'Deslice dentro del celular' },
+	{ id: 'tablet', label: 'Tablet', hint: 'Deslice dentro de la tablet' },
+	{ id: 'pc', label: 'PC', hint: 'Use la rueda del ratón dentro de la pantalla' },
+] as const;
+
+const showrooms = events.map((event) => ({
+	event,
+	demos: event.demos.map((demo) => ({
+		demo,
+		images: imagesFor(demo),
+		date: formatDate(demo.date),
+		ref: buildVitrinaRef(event, demo, 'VITRINA'),
+		message: buildVitrinaMessage(event, demo, 'VITRINA'),
+		barMessage: buildVitrinaMessage(event, demo, 'BARRA'),
+		headerMessage: buildVitrinaMessage(event, demo, 'HEADER'),
+		isInitial: demo.slug === initialDemo.slug,
+	})),
+}));
+const initialQuote = showrooms[0]?.demos.find(({ isInitial }) => isInitial);
+if (!initialQuote) throw new Error('The landing showroom needs an initial demo.');
+---
+
+<style is:inline set:html={buildVitrinaDemoStyles()}></style>
+
+<section
+	class="vitrina"
+	id="tipo-evento"
+	aria-labelledby="vitrina-title"
+	data-vitrina
+	data-device="phone"
+	data-track-section="event-types"
+	data-screenshot="landing-event-selector"
+>
+	{events.map((event) => <span class="vitrina__anchor" id={event.publicSlug} aria-hidden="true" />)}
+	<div class="vitrina__inner">
+		<header class="vitrina__head">
+			{
+				events.map((event) => (
+					<p class="vitrina__eyebrow" data-vitrina-for={event.publicSlug} hidden={event !== initialEvent}>
+						Demos de {event.label}
+					</p>
+				))
+			}
+			<h2 class="vitrina__title" id="vitrina-title">{title}</h2>
+			<p class="vitrina__lede">{description}</p>
+		</header>
+
+		<nav class="vitrina__events" aria-label="Tipo de evento">
+			{
+				events.map((event) => (
+					<a
+						class="vitrina__event"
+						href={`#${event.publicSlug}`}
+						data-vitrina-event={event.publicSlug}
+						aria-current={event === initialEvent ? 'true' : undefined}
+						data-track-event="cta_clicked"
+						data-track-cta="event_showroom_tab"
+						data-track-label={event.label}
+						data-track-intent="demo_showroom"
+						data-track-destination="demo"
+						data-event-type={event.eventType}
+					>
+						<Icon name={event.icon} size={16} />
+						{event.label}
+					</a>
+				))
+			}
+		</nav>
+
+		<div class="vitrina__stage">
+			<div class="vitrina__device-area">
+				<div class="vitrina__seg" role="group" aria-label="Tipo de pantalla">
+					{
+						DEVICES.map((device) => (
+							<button
+								type="button"
+								data-vitrina-device={device.id}
+								data-hint={device.hint}
+								aria-pressed={device.id === 'phone' ? 'true' : 'false'}
+							>
+								<svg viewBox="0 0 24 24" aria-hidden="true">
+									{device.id === 'phone' && <rect x="7" y="2" width="10" height="20" rx="2" />}
+									{device.id === 'tablet' && <rect x="4" y="2" width="16" height="20" rx="2" />}
+									{device.id === 'pc' && (
+										<Fragment>
+											<rect x="2" y="4" width="20" height="13" rx="1.5" />
+											<path d="M8 21h8" />
+										</Fragment>
+									)}
+								</svg>
+								{device.label}
+							</button>
+						))
+					}
+				</div>
+				<div class="vitrina__device-slot">
+					<div class="vitrina__device">
+						<div class="vitrina__bar" aria-hidden="true">
+							<i></i><i></i><i></i>
+							{
+								showrooms.flatMap(({ demos }) =>
+									demos.map(({ demo, isInitial }) => (
+										<span data-vitrina-for={demo.slug} hidden={!isInitial}>
+											celebra-me.com{demo.href}
+										</span>
+									)),
+								)
+							}
+						</div>
+						<div class="vitrina__screen">
+							{
+								showrooms.flatMap(({ demos }) =>
+									demos.map(({ demo, images, date, isInitial }) => (
+										<div
+											class="mini"
+											data-vitrina-for={demo.slug}
+											hidden={!isInitial}
+											tabindex="0"
+											role="group"
+											aria-label={`Vista previa de ${demo.name}; deslice para recorrerla`}
+											data-demo-style={demo.slug}
+										>
+											<div class:list={['mini__cover', { 'mini__cover--wide': images.wide }]}>
+												{images.cover && (
+													<Fragment>
+														<Image
+															class="mini__backdrop"
+															src={images.cover}
+															alt=""
+															width={160}
+															loading="lazy"
+														/>
+														<Image
+															class="mini__photo"
+															src={images.cover}
+															alt={`Portada de la demo ${demo.name}`}
+															widths={[360, 640]}
+															sizes="(min-width: 900px) 420px, 64vw"
+															loading={isInitial ? 'eager' : 'lazy'}
+														/>
+													</Fragment>
+												)}
+												{images.wide && (
+													<Image
+														class="mini__wide"
+														src={images.wide}
+														alt=""
+														widths={[640, 1024]}
+														sizes="640px"
+														loading="lazy"
+													/>
+												)}
+												<div class="mini__shade" />
+												<div class="mini__title">
+													<span class="mini__kicker">{demo.kicker}</span>
+													<span class="mini__name">{demo.person}</span>
+													<span class="mini__date">{date.short}</span>
+												</div>
+											</div>
+											<div class="mini__band mini__band--accent">
+												<span class="mini__label">Faltan</span>
+												<div class="mini__count" data-countdown={demo.date}>
+													<div><b data-countdown-days>120</b><span>días</span></div>
+													<div><b>08</b><span>horas</span></div>
+													<div><b>24</b><span>min</span></div>
+												</div>
+											</div>
+											<div class="mini__band">
+												<span class="mini__label">Le esperamos</span>
+												<span class="mini__big">{date.long}</span>
+												<span class="mini__text">{demo.place}</span>
+											</div>
+											<div class="mini__gallery">
+												{images.gallery.map((image) => (
+													<Image src={image} alt="" widths={[200, 360]} sizes="160px" loading="lazy" />
+												))}
+											</div>
+											<div class="mini__band">
+												<span class="mini__label">Pase para</span>
+												<span class="mini__big">Familia Rivas</span>
+												<span class="mini__text">2 lugares</span>
+												<span class="mini__rsvp">Confirmar asistencia</span>
+											</div>
+											<p class="mini__brand">Demo de Celebra-me</p>
+										</div>
+									)),
+								)
+							}
+						</div>
+					</div>
+				</div>
+				<p class="vitrina__hint" aria-live="polite">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m0 0-5-5m5 5 5-5" /></svg>
+					<span data-vitrina-hint>{DEVICES[0].hint}</span>
+				</p>
+			</div>
+
+			<div class="vitrina__panel">
+				{
+					showrooms.map(({ event, demos }) => (
+						<div class="vitrina__styles-group" data-vitrina-for={event.publicSlug} hidden={event !== initialEvent}>
+							<p class="vitrina__styles-label" id={`vitrina-styles-${event.publicSlug}`}>
+								{demos.length} {demos.length === 1 ? 'estilo' : 'estilos'} de {event.label}
+							</p>
+							<div class="vitrina__styles" role="group" aria-labelledby={`vitrina-styles-${event.publicSlug}`}>
+								{demos.map(({ demo, images }, index) => (
+									<button
+										type="button"
+										class="vitrina__style"
+										data-vitrina-demo={demo.slug}
+										aria-pressed={demo.slug === initialDemo.slug ? 'true' : 'false'}
+									>
+										{index === 0 && demos.length > 1 && <span class="vitrina__style-tag">Principal</span>}
+										<span class="vitrina__style-thumb">
+											{images.cover && (
+												<Image
+													src={images.cover}
+													alt=""
+													widths={[120, 240]}
+													sizes="116px"
+													loading="lazy"
+													data-demo-style={demo.slug}
+												/>
+											)}
+										</span>
+										<span class="vitrina__style-name">{demo.name}</span>
+										<span class="vitrina__style-meta">{demo.person}</span>
+									</button>
+								))}
+							</div>
+						</div>
+					))
+				}
+
+				<article class="vitrina__detail" aria-live="polite">
+					{
+						showrooms.flatMap(({ event, demos }) =>
+							demos.map(({ demo, message, barMessage, headerMessage, isInitial }, index) => (
+								<div
+									class="vitrina__detail-body"
+									data-vitrina-for={demo.slug}
+									data-vitrina-event-of={event.publicSlug}
+									data-event-type={event.eventType}
+									data-event-label={event.label}
+									data-quote-name={demo.name}
+									data-quote-message={message}
+									data-bar-label={`${event.label} · ${demo.name}`}
+									data-bar-message={barMessage}
+									data-header-message={headerMessage}
+									hidden={!isInitial}
+								>
+									<p class="vitrina__detail-kicker">
+										{index === 0 && demos.length > 1 ? `Estilo principal de ${event.label}` : `Estilo de ${event.label}`}
+									</p>
+									<h3 class="vitrina__detail-name">{demo.name}</h3>
+									<ul class="vitrina__detail-tags">
+										{demo.tags.map((tag) => <li>{tag}</li>)}
+									</ul>
+									<p class="vitrina__detail-desc">{demo.description}</p>
+								</div>
+							)),
+						)
+					}
+					<div class="vitrina__detail-actions">
+						{
+							showrooms.flatMap(({ event, demos }) =>
+								demos.map(({ demo, isInitial }) => (
+									<a
+										class="vitrina__open"
+										href={demo.href}
+										target="_blank"
+										rel="noopener"
+										data-vitrina-for={demo.slug}
+										hidden={!isInitial}
+										data-track-event="cta_clicked"
+										data-track-cta={`demo_open_${demo.slug}`}
+										data-track-label="Ver demo completa"
+										data-track-intent="demo_showroom"
+										data-track-destination="demo"
+										data-demo-slug={demo.slug}
+										data-event-type={event.eventType}
+									>
+										Ver demo completa
+									</a>
+								)),
+							)
+						}
+						<WhatsAppButton
+							className="vitrina__quote"
+							label="Quiero una así"
+							ariaLabel={`Quiero una invitación como ${initialDemo.name} por WhatsApp`}
+							message={initialQuote.message}
+							trackSection="event_showroom"
+							trackCta="event_showroom_whatsapp"
+							campaignSection="DEMO"
+							eventType={initialEvent.eventType}
+							eventLabel={initialEvent.label}
+						/>
+					</div>
+					{
+						showrooms.flatMap(({ demos }) =>
+							demos.map(({ demo, ref, message, isInitial }) => (
+								<div class="vitrina__message" data-vitrina-for={demo.slug} hidden={!isInitial}>
+									<span>Mensaje que le llega por WhatsApp:</span>
+									<p>
+										{message.replace(` Ref. ${ref}`, '')} Ref. <b>{ref}</b>
+									</p>
+								</div>
+							)),
+						)
+					}
+				</article>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	import { initLandingShowroom } from '@/lib/landing/vitrina-client';
+
+	initLandingShowroom();
+</script>

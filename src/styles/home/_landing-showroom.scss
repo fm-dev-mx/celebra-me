@@ -1,0 +1,768 @@
+// Landing showroom (LandingShowroom.astro): dark band with event tabs, a phone/tablet/PC frame
+// holding a scrollable mini-invitation, a style strip and a detail card with the WhatsApp quote.
+// Each cover keeps its focal point; on tablet and PC a portrait cover sits whole over a blurred
+// copy instead of being cropped to the wider frame.
+@use '../tokens/type-scale';
+
+.vitrina {
+	--vitrina-fs-title: clamp(1.45rem, 4.6vw, 2.15rem);
+	--vitrina-fs-h3: 1.4rem;
+	--vitrina-fs-body: 0.9rem;
+	--vitrina-fs-small: 0.78rem;
+	--vitrina-fs-tiny: 0.66rem;
+	--vitrina-fs-micro: 0.56rem;
+	--vitrina-muted: rgb(var(--color-ivory-rgb) / 72%);
+	--vitrina-line: rgb(var(--color-ivory-rgb) / 14%);
+	--device-radius: 36px;
+	--device-screen-radius: 27px;
+	--style-radius: 14px;
+
+	position: relative;
+	color: var(--color-ivory);
+	background:
+		radial-gradient(70% 50% at 30% 0%, rgb(var(--color-champagne-rgb) / 12%), transparent 70%),
+		linear-gradient(180deg, var(--color-text-dark), var(--color-ink));
+
+	// The id outranks every class rule below that sets `display`, so toggled parts stay hidden.
+	&#tipo-evento [hidden] {
+		display: none;
+	}
+
+	&__anchor {
+		position: absolute;
+		top: 0;
+	}
+
+	&__inner {
+		width: min(100%, 1140px);
+		margin-inline: auto;
+		padding-inline: 1rem;
+		display: grid;
+		gap: 1.25rem;
+
+		@media (width >= 900px) {
+			padding-inline: 1.5rem;
+		}
+	}
+
+	&__head {
+		display: grid;
+		gap: 0.4rem;
+	}
+
+	&__eyebrow {
+		@include type-scale.text(eyebrow);
+
+		margin: 0;
+		color: var(--color-champagne);
+	}
+
+	&__title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: var(--vitrina-fs-title);
+		font-weight: 600;
+		line-height: 1.12;
+		color: var(--color-ivory);
+	}
+
+	&__lede {
+		margin: 0;
+		max-width: 52ch;
+		color: var(--vitrina-muted);
+		font-size: var(--vitrina-fs-body);
+	}
+
+	&__events {
+		display: flex;
+		gap: 0.4rem;
+		overflow-x: auto;
+		scrollbar-width: none;
+		padding-bottom: 4px;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		@media (width >= 900px) {
+			flex-wrap: wrap;
+		}
+	}
+
+	&__event {
+		flex: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		min-height: 44px;
+		padding: 0 0.9rem;
+		border: 1px solid var(--vitrina-line);
+		border-radius: var(--radius-pill);
+		color: var(--vitrina-muted);
+		font-size: var(--vitrina-fs-small);
+		font-weight: 600;
+		text-decoration: none;
+
+		svg {
+			width: 16px;
+			height: 16px;
+			color: var(--color-champagne);
+		}
+
+		&:hover {
+			border-color: rgb(var(--color-champagne-rgb) / 55%);
+			color: var(--color-ivory);
+		}
+
+		&[aria-current='true'] {
+			background: var(--color-ivory);
+			border-color: var(--color-ivory);
+			color: var(--color-text-dark);
+
+			svg {
+				color: var(--color-border-gold);
+			}
+		}
+	}
+
+	&__stage {
+		display: grid;
+		gap: 1.4rem;
+
+		@media (width >= 900px) {
+			grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+			gap: 2.75rem;
+			align-items: start;
+		}
+	}
+
+	&__device-area {
+		display: grid;
+		gap: 0.75rem;
+		justify-items: center;
+		min-width: 0;
+	}
+
+	&__seg {
+		display: inline-flex;
+		padding: 4px;
+		border: 1px solid var(--vitrina-line);
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-ivory-rgb) / 8%);
+
+		button {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.375rem;
+			min-width: 78px;
+			min-height: 44px;
+			padding: 0 0.75rem;
+			border: 0;
+			border-radius: var(--radius-pill);
+			background: transparent;
+			color: var(--vitrina-muted);
+			font: inherit;
+			font-size: var(--vitrina-fs-small);
+			font-weight: 600;
+			cursor: pointer;
+
+			&[aria-pressed='true'] {
+				background: var(--color-ivory);
+				color: var(--color-text-dark);
+			}
+		}
+
+		svg {
+			width: 14px;
+			height: 14px;
+			fill: none;
+			stroke: currentcolor;
+			stroke-width: 2;
+		}
+	}
+
+	&__device-slot {
+		width: 100%;
+		display: grid;
+		place-items: center;
+
+		@media (width >= 900px) {
+			min-height: 560px;
+		}
+	}
+
+	&__device {
+		position: relative;
+		width: min(232px, 64vw);
+		max-width: 100%;
+		padding: 10px;
+		border-radius: var(--device-radius);
+		background: var(--color-ink);
+		box-shadow:
+			0 34px 70px -24px rgb(0 0 0 / 70%),
+			inset 0 0 0 1px var(--vitrina-line);
+		transition:
+			width 520ms var(--ease-premium, ease),
+			padding 520ms var(--ease-premium, ease);
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: 17px;
+			left: 50%;
+			z-index: 3;
+			width: 62px;
+			height: 17px;
+			translate: -50% 0;
+			border-radius: var(--radius-pill);
+			background: var(--color-ink);
+		}
+	}
+
+	&__screen {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 9 / 19.5;
+		border-radius: var(--device-screen-radius);
+		background: var(--color-ivory);
+	}
+
+	&__bar {
+		display: none;
+	}
+
+	&[data-device='tablet'] {
+		--device-radius: 26px;
+		--device-screen-radius: 12px;
+
+		.vitrina__device {
+			width: min(360px, 86vw);
+			padding: 13px;
+
+			&::after {
+				display: none;
+			}
+		}
+
+		.vitrina__screen {
+			aspect-ratio: 3 / 4;
+		}
+	}
+
+	&[data-device='pc'] {
+		--device-radius: var(--radius-lg);
+
+		.vitrina__device {
+			width: min(640px, 100%);
+			padding: 0;
+			background: hsl(30deg 10% 84%);
+
+			&::after {
+				display: none;
+			}
+		}
+
+		.vitrina__screen {
+			aspect-ratio: 16 / 10;
+			border-end-start-radius: var(--radius-lg);
+			border-end-end-radius: var(--radius-lg);
+		}
+
+		.vitrina__bar {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			height: 28px;
+			padding: 0 10px;
+			border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+			background: hsl(30deg 10% 90%);
+
+			i {
+				width: 9px;
+				height: 9px;
+				border-radius: 50%;
+				background: hsl(30deg 10% 70%);
+			}
+
+			span {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				height: 17px;
+				margin-left: 8px;
+				padding: 0 8px;
+				overflow: hidden;
+				border-radius: var(--radius-sm);
+				background: rgb(255 255 255);
+				color: hsl(30deg 10% 35%);
+				font-size: var(--vitrina-fs-tiny);
+				white-space: nowrap;
+			}
+		}
+	}
+
+	&__hint {
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		margin: 0;
+		color: var(--vitrina-muted);
+		font-size: var(--vitrina-fs-small);
+
+		svg {
+			width: 14px;
+			height: 14px;
+			fill: none;
+			stroke: currentcolor;
+			stroke-width: 2;
+			stroke-linecap: round;
+		}
+	}
+
+	&__panel {
+		display: grid;
+		gap: 1rem;
+		min-width: 0;
+	}
+
+	&__styles-group {
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	&__styles-label {
+		margin: 0;
+		color: var(--vitrina-muted);
+		font-size: var(--vitrina-fs-small);
+	}
+
+	&__styles {
+		display: flex;
+		gap: 0.625rem;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+		padding-bottom: 4px;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		@media (width >= 900px) {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+			overflow: visible;
+		}
+	}
+
+	&__style {
+		position: relative;
+		flex: 0 0 116px;
+		min-width: 0;
+		display: grid;
+		gap: 4px;
+		padding: 5px 5px 9px;
+		border: 1px solid var(--vitrina-line);
+		border-radius: var(--style-radius);
+		background: rgb(var(--color-ivory-rgb) / 4%);
+		color: var(--color-ivory);
+		font: inherit;
+		text-align: left;
+		scroll-snap-align: start;
+		cursor: pointer;
+
+		&:hover {
+			border-color: rgb(var(--color-champagne-rgb) / 55%);
+		}
+
+		&[aria-pressed='true'] {
+			border-color: var(--color-champagne);
+			background: rgb(var(--color-champagne-rgb) / 13%);
+		}
+	}
+
+	&__style-thumb {
+		display: block;
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+		border-radius: calc(var(--style-radius) - 5px);
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: var(--demo-focal, 50% 50%);
+		}
+	}
+
+	&__style-name {
+		padding-inline: 4px;
+		overflow: hidden;
+		font-size: var(--vitrina-fs-small);
+		font-weight: 600;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	&__style-meta {
+		padding-inline: 4px;
+		color: var(--vitrina-muted);
+		font-size: var(--vitrina-fs-tiny);
+	}
+
+	&__style-tag {
+		position: absolute;
+		top: 10px;
+		left: 10px;
+		padding: 3px 7px;
+		border-radius: var(--radius-pill);
+		background: var(--color-champagne);
+		color: var(--color-ink);
+		font-size: var(--vitrina-fs-micro);
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	&__detail {
+		display: grid;
+		gap: 0.75rem;
+		padding: 1.1rem;
+		border: 1px solid rgb(var(--color-ivory-rgb) / 10%);
+		border-radius: var(--radius-xl);
+		background: rgb(var(--color-ivory-rgb) / 6%);
+	}
+
+	&__detail-body {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	&__detail-kicker {
+		@include type-scale.text(eyebrow);
+
+		margin: 0;
+		color: var(--color-champagne);
+	}
+
+	&__detail-name {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: var(--vitrina-fs-h3);
+		color: var(--color-ivory);
+	}
+
+	&__detail-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			padding: 3px 9px;
+			border: 1px solid rgb(var(--color-ivory-rgb) / 22%);
+			border-radius: var(--radius-pill);
+			color: var(--vitrina-muted);
+			font-size: var(--vitrina-fs-tiny);
+		}
+	}
+
+	&__detail-desc {
+		margin: 0;
+		color: var(--vitrina-muted);
+		font-size: var(--vitrina-fs-body);
+	}
+
+	&__detail-actions {
+		display: grid;
+		gap: 0.625rem;
+
+		@media (width >= 480px) {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.whatsapp-button {
+			min-width: 0;
+			min-height: 48px;
+			padding-inline: 1rem;
+		}
+	}
+
+	&__open {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 48px;
+		padding: 0 1rem;
+		border: 1px solid rgb(var(--color-ivory-rgb) / 45%);
+		border-radius: var(--radius-pill);
+		color: var(--color-ivory);
+		font-weight: 600;
+		text-decoration: none;
+
+		&:hover {
+			border-color: var(--color-champagne);
+		}
+	}
+
+	&__message {
+		display: grid;
+		gap: 5px;
+		font-size: var(--vitrina-fs-small);
+
+		span {
+			color: var(--vitrina-muted);
+		}
+
+		p {
+			margin: 0;
+			padding: 9px 12px;
+			border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 3px;
+			background: hsl(105deg 40% 88%);
+			color: hsl(150deg 25% 12%);
+			line-height: 1.45;
+		}
+
+		b {
+			padding: 1px 5px;
+			border-radius: var(--radius-xs);
+			background: hsl(105deg 35% 78%);
+			font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+		}
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--color-champagne);
+		outline-offset: 3px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&__device {
+			transition: none;
+		}
+	}
+}
+
+// Mini-invitation inside the device screen.
+.mini {
+	--mini-fs-name: 1.45rem;
+	--mini-fs-big: 1.6rem;
+	--mini-fs-count: 1.3rem;
+	--mini-fs-text: 0.68rem;
+	--mini-fs-label: 0.56rem;
+
+	position: absolute;
+	inset: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: none;
+	background: var(--mini-bg);
+	color: var(--mini-ink);
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+
+	&__cover {
+		position: relative;
+		height: 100%;
+		display: grid;
+		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+		overflow: hidden;
+
+		img {
+			grid-area: 1 / 1;
+			width: 100%;
+			height: 100%;
+			min-height: 0;
+			object-fit: cover;
+		}
+	}
+
+	&__photo {
+		object-position: var(--demo-focal, 50% 50%);
+	}
+
+	&__backdrop,
+	&__wide {
+		display: none;
+	}
+
+	&__shade {
+		grid-area: 1 / 1;
+		position: relative;
+		background: linear-gradient(180deg, rgb(0 0 0 / 5%) 35%, rgb(0 0 0 / 66%));
+	}
+
+	&__title {
+		grid-area: 1 / 1;
+		position: relative;
+		align-self: end;
+		display: grid;
+		gap: 3px;
+		padding: 16px 14px 26px;
+		color: rgb(255 255 255);
+		text-align: center;
+	}
+
+	&__kicker,
+	&__date {
+		font-size: var(--mini-fs-label);
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		opacity: 88%;
+	}
+
+	&__name {
+		font-family: var(--font-display);
+		font-size: var(--mini-fs-name);
+		font-style: italic;
+		font-weight: 500;
+		line-height: 1.05;
+	}
+
+	&__band {
+		display: grid;
+		gap: 4px;
+		padding: 22px 16px;
+		text-align: center;
+
+		&--accent {
+			background: var(--mini-accent);
+			color: var(--mini-on-accent);
+		}
+	}
+
+	&__label {
+		font-size: var(--mini-fs-label);
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		opacity: 75%;
+	}
+
+	&__big {
+		font-family: var(--font-display);
+		font-size: var(--mini-fs-big);
+		line-height: 1;
+	}
+
+	&__count {
+		display: flex;
+		justify-content: center;
+		gap: 12px;
+		font-variant-numeric: tabular-nums;
+
+		div {
+			display: grid;
+		}
+
+		b {
+			font-family: var(--font-display);
+			font-size: var(--mini-fs-count);
+			font-weight: 500;
+		}
+
+		span {
+			font-size: var(--mini-fs-label);
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			opacity: 75%;
+		}
+	}
+
+	&__text {
+		font-size: var(--mini-fs-text);
+		opacity: 85%;
+	}
+
+	&__gallery {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 4px;
+		padding: 0 10px 14px;
+
+		img {
+			width: 100%;
+			height: auto;
+			aspect-ratio: 3 / 4;
+			object-fit: cover;
+			border-radius: var(--radius-xs);
+		}
+
+		img:first-child {
+			grid-column: span 2;
+			aspect-ratio: 4 / 3;
+		}
+	}
+
+	&__rsvp {
+		justify-self: center;
+		margin-top: 6px;
+		padding: 8px 16px;
+		border-radius: var(--radius-pill);
+		background: var(--mini-ink);
+		color: var(--mini-bg);
+		font-size: var(--mini-fs-text);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	&__brand {
+		margin: 0;
+		padding: 12px;
+		font-size: var(--mini-fs-label);
+		letter-spacing: 0.1em;
+		text-align: center;
+		opacity: 60%;
+	}
+
+	.vitrina[data-device='tablet'] & {
+		--mini-fs-name: 2rem;
+	}
+
+	.vitrina[data-device='pc'] & {
+		--mini-fs-name: 2.3rem;
+	}
+
+	// Wider frames: a portrait cover sits whole and centered over a blurred copy of itself.
+	.vitrina:is([data-device='tablet'], [data-device='pc']) & .mini__backdrop {
+		display: block;
+		filter: blur(22px) saturate(1.1);
+		transform: scale(1.15);
+	}
+
+	.vitrina:is([data-device='tablet'], [data-device='pc']) & .mini__photo {
+		position: relative;
+		object-fit: contain;
+		object-position: 50% 50%;
+	}
+
+	// PC with a wide photo: use it edge to edge instead.
+	.vitrina[data-device='pc'] & .mini__cover--wide {
+		.mini__backdrop,
+		.mini__photo {
+			display: none;
+		}
+
+		.mini__wide {
+			display: block;
+			object-position: 50% 35%;
+		}
+	}
+
+	.vitrina[data-device='pc'] & .mini__gallery {
+		grid-template-columns: repeat(3, 1fr);
+		max-width: 80%;
+		margin-inline: auto;
+
+		img:first-child {
+			grid-column: auto;
+			aspect-ratio: 3 / 4;
+		}
+	}
+}

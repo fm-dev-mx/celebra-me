@@ -4,7 +4,9 @@ export const prerender = true;
 import Layout from '@/layouts/Layout.astro';
 import Hero from '@/components/home/Hero.astro';
 import ProductProof from '@/components/home/ProductProof.astro';
-import EventTypeSelector from '@/components/home/EventTypeSelector.astro';
+import LandingShowroom from '@/components/home/LandingShowroom.astro';
+import EnvelopeScene from '@/components/home/EnvelopeScene.astro';
+import WhatsAppScene from '@/components/home/WhatsAppScene.astro';
 import GuestExperience from '@/components/home/GuestExperience.astro';
 import Testimonials from '@/components/home/Testimonials.astro';
 import Pricing from '@/components/home/Pricing.astro';
@@ -14,14 +16,18 @@ import Contact from '@/components/home/Contact.astro';
 import Footer from '@/components/home/Footer.astro';
 import PromoStatus from '@/components/home/PromoStatus.astro';
 import StickyWhatsAppBar from '@/components/home/StickyWhatsAppBar.astro';
-import { DEMO_SHOWROOM_HOME_EVENTS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
 import { footerData } from '@/data/footer.data';
-import heroDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
-import heroMobile from '@/assets/images/hero/hero-detail-mobile.webp';
+import { VITRINA_EVENTS, findVitrinaDemo, getVitrinaLeadDemo } from '@/data/landing-vitrina.data';
 import '@/styles/landing.scss';
 
 const siteOrigin = 'https://www.celebra-me.com';
+const leadDemo = getVitrinaLeadDemo();
+const leadEvent = VITRINA_EVENTS.find((event) => event.publicSlug === leadDemo.publicSlug)!;
+// Hero fan: left, right, then the larger center phone (the lead demo).
+const heroFan = ['demo-xv-celestial-blue', 'demo-brisa']
+	.flatMap((slug) => findVitrinaDemo(slug) ?? [])
+	.concat(leadDemo);
 const schemaJsonLd = {
 	'@context': 'https://schema.org',
 	'@graph': [
@@ -64,32 +70,21 @@ const schemaJsonLd = {
 <Layout
 	title={landingData.seo.title}
 	description={landingData.seo.description}
-	image="/images/og/og-home.jpg"
-	imageAlt="La invitación que su evento merece - Celebra-me"
+	image="/images/og/og-vitrina.jpg"
+	imageAlt="Tres invitaciones digitales de Celebra-me en celulares: XV años y boda"
 	className="theme-preset--jewelry-box-landing"
-	headLinks={[
-		{
-			rel: 'preload',
-			as: 'image',
-			href: heroMobile.src,
-			type: 'image/webp',
-			media: '(max-width: 767px)',
-			fetchpriority: 'high',
-		},
-		{
-			rel: 'preload',
-			as: 'image',
-			href: heroDesktop.src,
-			type: 'image/webp',
-			media: '(min-width: 768px)',
-			fetchpriority: 'high',
-		},
-	]}
+	transparentHeader={false}
 >
 	<script is:inline type="application/ld+json" set:html={JSON.stringify(schemaJsonLd)} slot="head"></script>
 	<div class="landing-sections-wrapper">
-		<Hero data={landingData.hero} />
-		<EventTypeSelector events={DEMO_SHOWROOM_HOME_EVENTS} landingData={landingData} />
+		<Hero data={landingData.hero} events={VITRINA_EVENTS} fan={heroFan} />
+		<LandingShowroom
+			events={VITRINA_EVENTS}
+			title={landingData.vitrina.title}
+			description={landingData.vitrina.description}
+		/>
+		<EnvelopeScene demo={leadDemo} />
+		<WhatsAppScene demo={leadDemo} eventLabel={leadEvent.messageLabel} />
 		<ProductProof data={landingData.productProof} />
 		<GuestExperience data={landingData.guestExperience} />
 		<Testimonials data={landingData.testimonials} />
@@ -99,7 +94,7 @@ const schemaJsonLd = {
 		<Contact data={landingData.contact} />
 		<Footer data={footerData} />
 	</div>
-	<StickyWhatsAppBar />
+	<StickyWhatsAppBar event={leadEvent} demo={leadDemo} />
 	<PromoStatus />
 </Layout>
 <script>

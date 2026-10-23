@@ -1,4 +1,3 @@
-import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 import {
@@ -12,14 +11,12 @@ describe('landing product value data', () => {
 	it('states the hero promise and folds guest features into one section', () => {
 		const hero = landingData.hero;
 
-		expect(hero.title).toBe(
-			'Invitaciones digitales con pase y confirmación para cada invitado',
-		);
-		expect(hero.subtitle).toBe('Usted la envía por WhatsApp y ve quién confirmó.');
-		expect(hero.eyebrow).toBeUndefined();
+		expect(hero.title).toBe('Invitaciones con pase y confirmación para cada invitado');
+		expect(hero.title).toContain(hero.titleEmphasis);
+		expect(hero.mobileSubtitle).toBe('Usted la envía por WhatsApp y ve quién confirmó.');
+		expect(hero.eyebrow).toBe('Invitaciones digitales');
 		expect(hero.paymentNote).toBe('Sin anticipo: pague al recibir su invitación terminada.');
-		expect(hero.secondaryCtaLabel).toBe('Ver una invitación');
-		expect(DEMO_SHOWROOM_ITEMS.some((item) => item.href === hero.secondaryCtaUrl)).toBe(true);
+		expect(hero.eventsLabel).toBe('¿Qué celebra?');
 
 		expect(landingData.guestExperience.values.map((value) => value.name)).toEqual([
 			'Su nombre y sus pases',
