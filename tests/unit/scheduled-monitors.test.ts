@@ -8,12 +8,14 @@ import {
 	CLEANUP_LOOKBACK_MS,
 	CLEANUP_SLICE_MS,
 	MONITOR_ENV,
+	SECURITY_EVENT_THRESHOLD,
 	WORKER_ERROR_THRESHOLD,
 	WORKER_LOOKBACK_MS,
 	buildCleanupHeartbeatQuery,
 	checkBackupFreshness,
 	checkCleanupHeartbeat,
 	checkPlatformQuotas,
+	checkSecurityEvents,
 	checkWorkerErrors,
 	checkWorkerLimits,
 	evaluateBackupFreshness,
@@ -440,6 +442,65 @@ describe('platform quotas', () => {
 	});
 });
 
+describe('security events', () => {
+	it('counts the security events of the Production Worker by kind over the last day', async () => {
+		const fetchImpl = fakeCounts({
+			'celebra-me-security-events': [
+				{ groupKey: 'rate_limited', value: 6 },
+				{ groupKey: 'login_failed', value: 3 },
+			],
+		});
+		await expect(
+			checkSecurityEvents(ENV, NOW, fetchImpl as unknown as typeof fetch),
+		).resolves.toEqual({
+			ok: true,
+			detail: '9 security event(s) in the last 24 hours (alert above 50): rate_limited 6, login_failed 3.',
+		});
+		const query = JSON.parse(fetchImpl.mock.calls[0][1].body as string) as CountQuery & {
+			parameters: { groupBys: { value: string }[] };
+		};
+		expect(query.timeframe).toEqual({ from: NOW - WORKER_LOOKBACK_MS, to: NOW });
+		expect(query.parameters.filters).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ key: '$metadata.service', value: 'celebra-me' }),
+				{ key: 'event', operation: 'eq', type: 'string', value: 'security_event' },
+			]),
+		);
+		expect(query.parameters.groupBys).toEqual([{ type: 'string', value: 'kind' }]);
+	});
+
+	it('passes at the threshold and fails above it', async () => {
+		const atThreshold = fakeCounts({
+			'celebra-me-security-events': [
+				{ groupKey: 'rate_limited', value: SECURITY_EVENT_THRESHOLD },
+			],
+		});
+		await expect(
+			checkSecurityEvents(ENV, NOW, atThreshold as unknown as typeof fetch),
+		).resolves.toMatchObject({ ok: true });
+
+		const above = fakeCounts({
+			'celebra-me-security-events': [
+				{ groupKey: 'login_failed', value: SECURITY_EVENT_THRESHOLD },
+				{ groupKey: 'mfa_failed', value: 1 },
+			],
+		});
+		await expect(
+			checkSecurityEvents(ENV, NOW, above as unknown as typeof fetch),
+		).resolves.toEqual({
+			ok: false,
+			detail: '51 security event(s) in the last 24 hours (alert above 50): login_failed 50, mfa_failed 1.',
+		});
+	});
+
+	it('fails when Workers Logs sampled the day', async () => {
+		const fetchImpl = fakeCounts({}, { abrLevel: 10 });
+		await expect(
+			checkSecurityEvents(ENV, NOW, fetchImpl as unknown as typeof fetch),
+		).resolves.toMatchObject({ ok: false });
+	});
+});
+
 describe('scheduled monitors workflow', () => {
 	const workflow = readFileSync(
 		resolve('.github', 'workflows', 'scheduled-monitors.yml'),
@@ -454,6 +515,7 @@ describe('scheduled monitors workflow', () => {
 			'worker-errors',
 			'worker-limits',
 			'platform-quotas',
+			'security-events',
 		]) {
 			expect(workflow).toContain(`monitor: ${monitor}`);
 		}
