@@ -1,6 +1,6 @@
 # Canonical Invitation Preparation State — `victoria-y-roberto`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
+> Schema owner: `docs/core/invitation-creation-contract.md` Executable evaluation:
 > `src/lib/invitation-preparation/` (**prepReadiness SSOT**) Workflow:
 > `.agent/skills/invitation-preparation/SKILL.md`
 

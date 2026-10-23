@@ -1,7 +1,7 @@
 # Asset Preparation Protocol
 
 The procedure is owned by
-[`docs/core/invitation-preparation-contract.md`](../../../../docs/core/invitation-preparation-contract.md)
+[`docs/core/invitation-creation-contract.md`](../../../../docs/core/invitation-creation-contract.md)
 §7. Use it after an explicit high-resolution (HR) photo URL and/or source asset path is provided;
 WhatsApp attachments are never the authoritative photo source.
 

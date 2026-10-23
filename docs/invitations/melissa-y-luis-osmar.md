@@ -1,6 +1,6 @@
 # Canonical Invitation Preparation State — `melissa-y-luis-osmar`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md`  
+> Schema owner: `docs/core/invitation-creation-contract.md`  
 > Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
 > Scope: implementation and managed application in Local and Preview only, including the dedicated
 > technical host identity created by the canonical release workflow. Production, guest creation and

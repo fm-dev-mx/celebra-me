@@ -68,9 +68,7 @@ routes matching the touched surfaces.
 ### Intake & Client Invitations
 
 - [`docs/core/invitation-creation-contract.md`](../docs/core/invitation-creation-contract.md) —
-  Creation requirements contract
-- [`docs/core/invitation-preparation-contract.md`](../docs/core/invitation-preparation-contract.md)
-  — Preparation contract & readiness
+  Invitation contract: creation order, preparation & readiness, identity, styling, pre-push
 - [`docs/domains/intake/production-flow.md`](../docs/domains/intake/production-flow.md) — Invitation
   production runbook
 - [`docs/invitations/README.md`](../docs/invitations/README.md) — Per-client invitation Markdown

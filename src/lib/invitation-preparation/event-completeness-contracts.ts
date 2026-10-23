@@ -60,7 +60,7 @@ const XV_FIELDS: readonly CompletenessFieldDefinition[] = [
 		blockingWhenUnresolved: true,
 		allowsPlaceholder: false,
 		evidenceNotes:
-			'Preparation contract: photos never come from WhatsApp as authoritative assets.',
+			'Creation contract: photos never come from WhatsApp as authoritative assets.',
 	},
 	{
 		id: 'sectionOrder',

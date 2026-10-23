@@ -189,6 +189,73 @@ function positionalSelectors(source: string): string[] {
 
 const STYLES_DIR = path.join(process.cwd(), 'src/styles');
 
+/** A client profile loads its optional slug composition with exactly this first statement. */
+const COMPOSITION_USE = /^\s*@use\s+(['"])\.\/composition\1\s*;/u;
+const COMPOSITION_MAX_LINES = 600;
+/** `@use` targets a slug composition may load: shared tools and font-face modules. */
+const COMPOSITION_USE_TARGET =
+	/^(?:\.\.\/){3}styles\/(?:tools\/[a-z0-9_/-]+|fonts\/[a-z0-9-]+)$|^sass:[a-z]+$/u;
+
+/** Client profiles that load their composition, keyed by slug. */
+function clientCompositions(): Map<string, string> {
+	const compositions = new Map<string, string>();
+	for (const slug of listClientInvitationSlugs()) {
+		const file = path.resolve(CLIENT_INVITATIONS_DIR, slug, 'composition.scss');
+		if (fs.existsSync(file)) compositions.set(slug, file);
+	}
+	return compositions;
+}
+
+/** Selector preludes of the outermost style rules; wrapping at-rules (`@media`, …) are transparent. */
+function topLevelSelectors(source: string): string[] {
+	const stripped = sanitize(source);
+	const selectors: string[] = [];
+	const openBlocks: boolean[] = [];
+	let prelude = '';
+	for (const char of stripped) {
+		if (char === '{') {
+			const head = prelude.trim();
+			const atRule = head.startsWith('@');
+			if (!atRule && openBlocks.every(Boolean)) selectors.push(head);
+			openBlocks.push(atRule);
+			prelude = '';
+		} else if (char === '}') {
+			openBlocks.pop();
+			prelude = '';
+		} else if (char === ';') {
+			prelude = '';
+		} else {
+			prelude += char;
+		}
+	}
+	return selectors;
+}
+
+/** Violations of the slug-composition limits (docs/core/invitation-creation-contract.md). */
+function compositionViolations(slug: string, source: string): string[] {
+	const findings: string[] = [];
+	const lines = source.replace(/\r\n/gu, '\n').replace(/\n$/u, '').split('\n').length;
+	if (lines > COMPOSITION_MAX_LINES) {
+		findings.push(`${lines} lines (max ${COMPOSITION_MAX_LINES})`);
+	}
+	const withStrings = sanitize(source, true);
+	if (withStrings.includes('invitation/scenes')) findings.push('reads invitation/scenes');
+	for (const match of withStrings.matchAll(/@(use|forward|import)\s+(['"])([^'"]+)\2/gu)) {
+		if (match[1] !== 'use' || !COMPOSITION_USE_TARGET.test(match[3])) {
+			findings.push(`@${match[1]} ${match[3]}`);
+		}
+	}
+	const scope = `.event--${slug}`;
+	for (const selector of topLevelSelectors(source)) {
+		for (const part of selector.split(',')) {
+			const head = part.trim();
+			const scoped = head.startsWith(scope) && !/^[a-z0-9-]/u.test(head.slice(scope.length));
+			if (!scoped) findings.push(`unscoped selector ${head}`);
+		}
+	}
+	return findings;
+}
+
 function scssFilesOutsideProfiles(dir: string): string[] {
 	const files: string[] = [];
 	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -242,12 +309,58 @@ describe('invitation profile boundary', () => {
 	});
 
 	it('restricts every other profile to token declarations', () => {
+		const compositions = clientCompositions();
 		for (const id of ids.filter((candidate) => !(candidate in FROZEN_PROFILE_SHA256))) {
-			expect({ id, nonToken: nonTokenDeclarations(readProfile(id)) }).toEqual({
+			const source = compositions.has(id)
+				? readProfile(id).replace(COMPOSITION_USE, '')
+				: readProfile(id);
+			expect({ id, nonToken: nonTokenDeclarations(source) }).toEqual({
 				id,
 				nonToken: [],
 			});
 		}
+	});
+
+	it('loads each slug composition from its profile and keeps it scoped and bounded', () => {
+		for (const [slug, file] of clientCompositions()) {
+			const profile = readProfile(slug);
+			expect({ slug, loaded: COMPOSITION_USE.test(profile) }).toEqual({ slug, loaded: true });
+			expect({
+				slug,
+				violations: compositionViolations(slug, fs.readFileSync(file, 'utf8')),
+			}).toEqual({ slug, violations: [] });
+		}
+	});
+
+	it('rejects out-of-bounds constructs in the composition detector', () => {
+		const rule = (body: string) => `${body}\n.event--ana-lopez .hero { color: red; }\n`;
+		const cases: Record<string, string> = {
+			unscoped: '.hero { color: red; }',
+			unscopedInMedia: '@media (width >= 40rem) { .hero { color: red; } }',
+			otherInvitation: '.event--ana-lopez-2 .hero { color: red; }',
+			sceneUse: "@use '../../../styles/invitation/scenes/lantern-route';",
+			sharedUse: "@use '../../../styles/themes/sections/rsvp/base';",
+			forward: "@forward '../../../styles/tools/functions';",
+			tooLong: Array.from({ length: COMPOSITION_MAX_LINES }, () => '// line').join('\n'),
+		};
+		for (const [name, body] of Object.entries(cases)) {
+			expect({
+				name,
+				rejected: compositionViolations('ana-lopez', rule(body)).length > 0,
+			}).toEqual({ name, rejected: true });
+		}
+		expect(
+			compositionViolations(
+				'ana-lopez',
+				[
+					"@use 'sass:math';",
+					"@use '../../../styles/tools/breakpoints' as bp;",
+					'.event--ana-lopez .hero, .event--ana-lopez[data-variant] { color: red; }',
+					'.event--ana-lopez { @media (width >= 40rem) { .hero { inset: 0; } } }',
+					'@media (width >= 40rem) { .event--ana-lopez .hero { inset: 1rem; } }',
+				].join('\n'),
+			),
+		).toEqual([]);
 	});
 
 	it('rejects every non-token construct in the token-only detector', () => {

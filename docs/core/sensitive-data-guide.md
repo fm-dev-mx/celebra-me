@@ -4,7 +4,7 @@
 
 This guide says which client data may live in the repository and which may not. Preparation-document
 hygiene is owned by
-[`invitation-preparation-contract.md`](invitation-preparation-contract.md#41-info-hygiene--persist-vs-session-only).
+[`invitation-creation-contract.md`](invitation-creation-contract.md#141-info-hygiene--persist-vs-session-only).
 
 ## Where real client data may live
 

@@ -16,7 +16,7 @@ must stay Local-renderable are listed in the [Local Render Corpus](../core/local
 
 | Concern                                        | Owner                                               |
 | ---------------------------------------------- | --------------------------------------------------- |
-| Preparation schema, hygiene, creative gate     | `docs/core/invitation-preparation-contract.md`      |
+| Preparation schema, hygiene, creative gate     | `docs/core/invitation-creation-contract.md`         |
 | Markdown template                              | `.agent/templates/invitation/preparation-state.md`  |
 | Preparation procedure                          | `.agent/skills/invitation-preparation/SKILL.md`     |
 | Executable evaluation (**prepReadiness SSOT**) | `src/lib/invitation-preparation/`                   |
