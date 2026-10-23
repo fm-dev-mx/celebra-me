@@ -1,26 +1,71 @@
 // Serenata: the sage-champagne preset as a garden letter. Tokens only; layout stays with the
-// variants. The cover is a full-width photograph under a champagne hairline (no arch), the only
-// scroll-linked accent is the photograph settling as the cover leaves, and the reply progress is a
+// variants. The opening is a forest-night envelope whose arched window flies onto the cover arch,
+// the only scroll-linked accents are the cover leaving and the album, and the reply progress is a
 // plain champagne mark.
 .event--demo-xv-serenata.theme-preset--sage-champagne {
-	--hero-bleed-photo-frame: 1px solid rgb(var(--color-champagne-light-rgb) / 90%);
-	--hero-bleed-photo-frame-inset: 0.75rem;
-	--hero-bleed-photo-settle: hero-bleed-settle;
-	--hero-bleed-occasion-display: inline-flex;
-	--hero-bleed-occasion-rule: clamp(1.5rem, 4vw, 2.5rem);
-	--hero-bleed-occasion-gap: 0.75rem;
-	--hero-bleed-rule: rgb(var(--color-champagne-rgb) / 70%);
-	--hero-bleed-when-color: var(--color-forest-ink);
-	--hero-bleed-where-color: var(--color-forest-ink-soft);
-
 	// The pass and its reply half share one width.
 	--reply-card-max-width: 30rem;
 
-	// Stacked (phones held upright): the photograph fills the width and keeps her whole.
-	.invitation-hero[data-variant='bleed-portrait'] {
-		--hero-bleed-photo-img-width: 100%;
-		--hero-bleed-photo-img-height: 100%;
-		--hero-bleed-photo-position-stack: 62% 45%;
+	// The reserved color is her gown's dusty rose.
+	--location-enclosure-swatch: rgb(186 120 126);
+
+	// The cover: her photograph in an arched window on a forest night, ringed in champagne.
+	.invitation-hero[data-variant='night-arch'] {
+		--hero-arch-sky:
+			radial-gradient(1px 1px at 14% 20%, rgb(var(--color-cream-rgb) / 55%), transparent 60%),
+			radial-gradient(
+				1.5px 1.5px at 80% 14%,
+				rgb(var(--color-champagne-light-rgb) / 70%),
+				transparent 60%
+			),
+			radial-gradient(1px 1px at 88% 58%, rgb(var(--color-cream-rgb) / 40%), transparent 60%),
+			radial-gradient(
+				1px 1px at 8% 72%,
+				rgb(var(--color-champagne-light-rgb) / 45%),
+				transparent 60%
+			),
+			radial-gradient(
+				120% 70% at 50% 0%,
+				rgb(var(--color-sage-deep-rgb) / 45%),
+				transparent 70%
+			),
+			linear-gradient(
+				180deg,
+				rgb(var(--color-forest-night-rgb)) 0%,
+				rgb(var(--color-forest-midnight-rgb)) 100%
+			);
+		--hero-arch-sky-deep: rgb(var(--color-forest-midnight-rgb));
+		--hero-arch-ring: rgb(var(--color-champagne-light-rgb) / 85%);
+		--hero-arch-moulding: rgb(var(--color-champagne-light-rgb) / 40%);
+		--hero-arch-accent: var(--color-champagne-light);
+		--hero-arch-ink: var(--color-cream);
+		--hero-arch-muted: rgb(var(--color-sage-mist-rgb) / 90%);
+		--hero-arch-photo-shade: linear-gradient(
+			0deg,
+			rgb(var(--color-forest-midnight-rgb) / 85%) 0%,
+			transparent 42%
+		);
+		--hero-scroll-indicator-color: rgb(var(--color-cream-rgb) / 88%);
+		--hero-scroll-z-index: 1;
+		--hero-heading-paint: none;
+		--hero-heading-fill: currentcolor;
+		--hero-divider-fill: var(--color-champagne-light);
+	}
+
+	// The opening: an envelope of the same forest night, champagne wax and an ivory letter.
+	.envelope-wrapper[data-variant='night-envelope'] {
+		--night-envelope-field: var(--color-forest-night);
+		--night-envelope-field-deep: var(--color-forest-midnight);
+		--night-envelope-ink: var(--color-champagne-light);
+		--night-envelope-star: var(--color-cream);
+		--night-envelope-spark: rgb(var(--color-champagne-light-rgb) / 80%);
+		--night-envelope-paper: var(--color-forest-dusk);
+		--night-envelope-liner: var(--color-sage-deep);
+		--night-envelope-wax: var(--color-champagne);
+		--night-envelope-wax-deep: var(--color-champagne-ink);
+		--night-envelope-card-bg: var(--color-cream);
+		--night-envelope-card-ink: var(--color-forest-ink);
+		--night-envelope-card-label-ink: var(--color-champagne-ink);
 	}
 
 	// The program as a card of the same letter: cream sheet, champagne hairline, sage rules.

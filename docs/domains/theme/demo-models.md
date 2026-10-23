@@ -66,14 +66,17 @@ fictional; no invented street addresses, payment details or misleading venue-map
 - Hometown: Querétaro, Querétaro, México.
 - Father: Tomás Alcázar Ruiz. Mother: Paulina Medina Ortiz.
 - Godparents: Adriana Medina Ortiz and Ernesto Villaseñor Paz (text only).
-- Visual anchors: champagne satin gown with a sage sash, a small gold olive-leaf comb, olive grove,
-  wooden pergola and a plain stone chapel without a bell tower. Never lanterns, towers, braids,
-  crowns, a sun motif or lilac, so the design never recalls America.
+- Visual anchors (target session): champagne satin gown with a sage sash, a small gold olive-leaf
+  comb, olive grove, wooden pergola and a plain stone chapel without a bell tower. Never lanterns,
+  towers, braids, crowns, a sun motif or lilac, so the design never recalls America.
 - Voice: warm and direct, the serenade is the night's promise; Spanish guest-facing copy uses
   “usted.”
 - Source: owner-generated synthetic session «Serenata» (twelve shots, slot map in the owner's
-  creative-ops session folder `demo-photo-sessions/xv-serenata/`). Until it arrives the demo ships
-  labelled placeholders at the delivery sizes.
+  creative-ops session folder `demo-photo-sessions/xv-serenata/`). Until it arrives the demo uses
+  the model-library set `media/modelos/xv manus v2` as interim photos (dusty-rose gown, stone garden
+  with cypresses and a fountain, mother in sage): 03 cover, 09 interlude, 01, 04, 11, 06 and 08
+  gallery, 12 closing, 01 cropped for the share card. Copy and alt texts follow the interim photos
+  and change with the final session.
 - Active candidate: `src/invitations/demos/demo-xv-serenata/content.json` (route `/serenata`, hidden
   in the showroom until the owner approves it).
 
