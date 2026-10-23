@@ -49,6 +49,8 @@ const EXPECTED_REDIRECTS = [
 ];
 
 const PREVIEW_PATH = /^\/dashboard\/invitaciones\/[^/]+\/preview$/;
+// The landing showroom frames the demo short routes.
+const FRAMEABLE_DEMO_PATHS = new Set(['/brisa', '/jardin-de-luz']);
 
 const SAMPLE_PATHS = [
 	'/',
@@ -68,6 +70,10 @@ const SAMPLE_PATHS = [
 	'/wp-admin/index.php',
 	'/bautizo/demo-bautismo-angelic-presence',
 	'/primera-comunion/demo-primera-comunion-illustrated',
+	'/brisa',
+	'/jardin-de-luz',
+	'/brisa/extra',
+	'/america',
 ];
 
 function toHeaderRecord(entries: Iterable<readonly [string, string]>): Record<string, string> {
@@ -77,7 +83,9 @@ function toHeaderRecord(entries: Iterable<readonly [string, string]>): Record<st
 }
 
 function expectedHeaders(pathname: string): Record<string, string> {
-	return PREVIEW_PATH.test(pathname) ? EXPECTED_PREVIEW_HEADERS : EXPECTED_GLOBAL_HEADERS;
+	return PREVIEW_PATH.test(pathname) || FRAMEABLE_DEMO_PATHS.has(pathname)
+		? EXPECTED_PREVIEW_HEADERS
+		: EXPECTED_GLOBAL_HEADERS;
 }
 
 function createContext(path: string) {

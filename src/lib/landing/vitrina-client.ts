@@ -1,5 +1,8 @@
 import { daysUntil, eventFromHash, withWhatsAppText } from '@/lib/landing/vitrina';
 
+/** CSS viewport width each device frame renders the live demo at, before scaling it down. */
+const LIVE_VIEWPORT_WIDTH: Record<string, number> = { phone: 390, tablet: 820, pc: 1280 };
+
 /**
  * Landing showroom behavior. The markup is complete without it (first event and demo visible);
  * this switches events, demos and the device frame by toggling `hidden`, follows `#<event>`
@@ -40,6 +43,39 @@ export function initLandingShowroom(root: Document = document): void {
 	let currentEvent = eventSlugs[0];
 	let currentDemo = firstDemoOf(currentEvent) ?? '';
 	let nudged = false;
+	let liveWanted = false;
+
+	const screen = section.querySelector<HTMLElement>('.vitrina__screen');
+	const live = section.querySelector<HTMLIFrameElement>('[data-vitrina-live]');
+
+	// The iframe renders at the device's real width and is scaled to the frame, so the demo shows
+	// its phone, tablet or desktop layout.
+	const fitLive = () => {
+		if (!screen || !live || screen.clientWidth === 0) return;
+		const width = LIVE_VIEWPORT_WIDTH[section.dataset.device ?? 'phone'] ?? 390;
+		const scale = screen.clientWidth / width;
+		screen.style.setProperty('--live-width', `${width}px`);
+		screen.style.setProperty('--live-height', `${screen.clientHeight / scale}px`);
+		screen.style.setProperty('--live-scale', String(scale));
+	};
+
+	const updateLive = () => {
+		if (!liveWanted || !screen || !live) return;
+		const href = section
+			.querySelector<HTMLAnchorElement>(`a.vitrina__open[data-vitrina-for="${currentDemo}"]`)
+			?.getAttribute('href');
+		if (!href || live.dataset.src === href) return;
+		const name = detailFor(currentDemo)?.dataset.quoteName;
+		live.title = name ? `Invitación demo ${name} en vivo` : 'Invitación demo en vivo';
+		live.dataset.src = href;
+		delete screen.dataset.live;
+		fitLive();
+		live.src = href;
+	};
+
+	live?.addEventListener('load', () => {
+		if (screen && live.dataset.src) screen.dataset.live = 'ready';
+	});
 
 	const showOnly = (selector: string, active: string) => {
 		section.querySelectorAll<HTMLElement>(selector).forEach((element) => {
@@ -118,6 +154,7 @@ export function initLandingShowroom(root: Document = document): void {
 		});
 		updateCountdown();
 		updateQuote();
+		updateLive();
 		announce();
 	};
 
@@ -134,6 +171,7 @@ export function initLandingShowroom(root: Document = document): void {
 
 	const setDevice = (device: string) => {
 		section.dataset.device = device;
+		fitLive();
 		section.querySelectorAll<HTMLButtonElement>('[data-vitrina-device]').forEach((button) => {
 			const active = button.dataset.vitrinaDevice === device;
 			button.setAttribute('aria-pressed', String(active));
@@ -197,9 +235,23 @@ export function initLandingShowroom(root: Document = document): void {
 	};
 	window.addEventListener('hashchange', fromHash);
 
+	if (screen && 'ResizeObserver' in window) new ResizeObserver(fitLive).observe(screen);
+
 	if ('IntersectionObserver' in window) {
 		const device = section.querySelector('.vitrina__device');
 		if (device) {
+			// The live demo loads only when the frame comes near, so the landing stays light.
+			const liveObserver = new IntersectionObserver(
+				(entries) => {
+					if (entries.some((entry) => entry.isIntersecting)) {
+						liveWanted = true;
+						updateLive();
+						liveObserver.disconnect();
+					}
+				},
+				{ rootMargin: '300px 0px' },
+			);
+			liveObserver.observe(device);
 			const observer = new IntersectionObserver(
 				(entries) => {
 					if (entries.some((entry) => entry.isIntersecting)) {

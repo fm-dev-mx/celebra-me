@@ -42,7 +42,7 @@ export const landingData: LandingPageData = {
 	vitrina: {
 		title: 'Así la verán sus invitados',
 		description:
-			'Deslice dentro de la pantalla para recorrerla. Cambie a Tablet o PC para verla en otra pantalla.',
+			'Es la invitación real: toque el sobre para abrirla y deslice para recorrerla. Cambie a Tablet o PC para verla en otra pantalla.',
 	},
 	productProof: {
 		eyebrow: 'SU PANEL DE INVITADOS',

@@ -334,7 +334,9 @@ test.describe('Landing page regressions', () => {
 			'aria-current',
 			'true',
 		);
-		await expect(page.locator('.mini[data-vitrina-for="demo-brisa"]')).toBeVisible();
+		await expect(page.locator('.mini[data-vitrina-for="demo-brisa"]')).not.toHaveAttribute(
+			'hidden',
+		);
 
 		await expect(page.locator('.vitrina__open:visible')).toHaveAttribute(
 			'data-track-cta',
@@ -356,6 +358,22 @@ test.describe('Landing page regressions', () => {
 		expect(decodeWhatsAppText(await headerCta.getAttribute('href'))).toContain(
 			'Ref. BODA-BRISA-HEADER',
 		);
+	});
+
+	test('shows the real demo inside the device frame', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/#boda', { waitUntil: 'load' });
+		await page.locator('.vitrina__device').scrollIntoViewIfNeeded();
+
+		const live = page.locator('[data-vitrina-live]');
+		await expect(live).toHaveAttribute('src', '/brisa');
+		await expect(page.locator('.vitrina__screen')).toHaveAttribute('data-live', 'ready');
+		await expect(live).toHaveAttribute('title', 'Invitación demo Brisa en vivo');
+
+		const frame = live.contentFrame();
+		await expect(frame.locator('body')).toContainText('Ximena');
+		// The landing asks for cookies once; the framed demo stays clean.
+		await expect(frame.locator('#consent-banner-bar')).toBeHidden();
 	});
 
 	test('answers old showroom links with the landing anchor', async ({ page }) => {

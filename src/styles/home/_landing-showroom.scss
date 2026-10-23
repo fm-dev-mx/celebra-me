@@ -226,6 +226,29 @@
 		aspect-ratio: 9 / 19.5;
 		border-radius: var(--device-screen-radius);
 		background: var(--color-ivory);
+
+		// The real demo, drawn at the device's width and scaled into the frame; the mini below is
+		// its poster until it loads.
+		&[data-live='ready'] .mini {
+			visibility: hidden;
+		}
+	}
+
+	&__live {
+		position: absolute;
+		inset: 0 auto auto 0;
+		z-index: 1;
+		width: var(--live-width, 100%);
+		height: var(--live-height, 100%);
+		border: 0;
+		transform: scale(var(--live-scale, 1));
+		transform-origin: 0 0;
+		visibility: hidden;
+		background: var(--color-ivory);
+
+		.vitrina__screen[data-live='ready'] & {
+			visibility: visible;
+		}
 	}
 
 	&__bar {
