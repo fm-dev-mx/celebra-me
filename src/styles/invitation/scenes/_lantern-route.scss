@@ -29,12 +29,12 @@ $route-path: 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
 
 @mixin styles {
 	.event-location[data-location-scene='lantern-route'] {
-		--location-route-night: var(--america-night, rgb(28 21 48));
+		--location-route-night: var(--scene-night, rgb(28 21 48));
 		--location-route-night-deep: rgb(14 10 26);
 		--location-route-ink: rgb(248 244 252);
 		--location-route-muted: rgb(248 244 252 / 72%);
 		--location-route-trail: rgb(248 244 252 / 24%);
-		--location-route-glow: var(--america-night-gold, rgb(243 217 164));
+		--location-route-glow: var(--scene-night-gold, rgb(243 217 164));
 		--location-route-lantern: rgb(232 160 64);
 
 		// `clip`, not `hidden`: a scroll container here would break the sticky stage.

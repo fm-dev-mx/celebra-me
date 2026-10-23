@@ -7,8 +7,9 @@
  *   pnpm ops:monitor worker-errors       # 5xx responses and uncaught exceptions stay rare
  *   pnpm ops:monitor worker-limits       # no request was cut off by a CPU or memory limit
  *   pnpm ops:monitor platform-quotas     # the usage collector ran and no quota reached 80 %
+ *   pnpm ops:monitor security-events     # rate-limit rejections, failed logins and MFA failures stay rare
  *
- * `cleanup-heartbeat`, `worker-errors`, `worker-limits` and `platform-quotas` query Workers Logs
+ * `cleanup-heartbeat`, `worker-errors`, `worker-limits`, `platform-quotas` and `security-events` query Workers Logs
  * through the Workers Observability API with a read-only token (MONITOR_CLOUDFLARE_API_TOKEN). `backup-freshness` lists the off-site R2 bucket with a
  * read-only R2 key (MONITOR_OFFSITE_R2_ACCESS_KEY_ID / MONITOR_OFFSITE_R2_SECRET_ACCESS_KEY).
  * Neither command writes anything.
@@ -18,6 +19,7 @@ import { appendFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { PLATFORM_QUOTA_ALERT_RATIO } from '../../src/lib/platform/contract/limits.ts';
 import { PLATFORM_USAGE_SUMMARY_EVENT } from '../../src/lib/platform/server/collector/quota-alerts.ts';
+import { SECURITY_EVENT } from '../../src/lib/server/security-events.ts';
 import { listOffsiteObjects, type OffsiteObject } from '../db/offsite-backup.ts';
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -36,6 +38,12 @@ export const OFFSITE_BACKUP_BUCKET = 'celebra-me-prod-backups';
 export const WORKER_LOOKBACK_MS = 24 * HOUR_MS;
 /** More 5xx responses plus uncaught exceptions than this in a day opens the alert. */
 export const WORKER_ERROR_THRESHOLD = 10;
+/**
+ * More security events (rate-limit rejections, failed logins, MFA failures) than this in a day
+ * opens the alert. A normal day has a handful; a credential-stuffing bot trying 10 passwords a
+ * minute for 10 minutes already logs 100.
+ */
+export const SECURITY_EVENT_THRESHOLD = 50;
 /** Worker outcomes for a request cut off by a platform limit. */
 export const RESOURCE_LIMIT_OUTCOMES = ['exceededCpu', 'exceededMemory', 'exceededResources'];
 
@@ -483,12 +491,35 @@ export async function checkPlatformQuotas(
 	};
 }
 
+export async function checkSecurityEvents(
+	env: NodeJS.ProcessEnv,
+	nowMs: number,
+	fetchImpl: Fetch = fetch,
+): Promise<MonitorResult> {
+	const events = await countLastDay(
+		observabilityClient(env, fetchImpl),
+		nowMs,
+		'celebra-me-security-events',
+		[{ key: 'event', operation: 'eq', type: 'string', value: SECURITY_EVENT }],
+		'kind',
+	);
+	if (events.kind === 'failed') {
+		return { ok: false, detail: `Workers Logs query failed: ${events.reason}.` };
+	}
+	const total = sum(events.counts);
+	const detail =
+		`${total} security event(s) in the last 24 hours (alert above ${SECURITY_EVENT_THRESHOLD}): ` +
+		`${describeCounts(events.counts)}.`;
+	return total > SECURITY_EVENT_THRESHOLD ? { ok: false, detail } : { ok: true, detail };
+}
+
 const MONITORS = {
 	'cleanup-heartbeat': checkCleanupHeartbeat,
 	'backup-freshness': checkBackupFreshness,
 	'worker-errors': checkWorkerErrors,
 	'worker-limits': checkWorkerLimits,
 	'platform-quotas': checkPlatformQuotas,
+	'security-events': checkSecurityEvents,
 } as const;
 
 async function main(): Promise<void> {

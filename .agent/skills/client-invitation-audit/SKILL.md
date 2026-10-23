@@ -13,7 +13,7 @@ when_to_use:
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
-  - Read docs/core/invitation-preparation-contract.md
+  - Read docs/core/invitation-creation-contract.md
   - Read .agent/skills/invitation-preparation/SKILL.md when running preparation
   - Load src/lib/invitation-preparation/ helpers as evaluation SSOT (cite outcomes; run `pnpm
     validate:invitation-preparation`)
@@ -23,7 +23,7 @@ related_skills:
   - frontend-design
   - copywriting-es
 related_docs:
-  - docs/core/invitation-preparation-contract.md
+  - docs/core/invitation-creation-contract.md
   - .agent/skills/invitation-preparation/SKILL.md
   - .agent/templates/invitation/preparation-state.md
   - docs/domains/content/event-governance.md

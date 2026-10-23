@@ -1,6 +1,6 @@
 # Canonical Invitation Preparation State — `olivia-y-antonio`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md`  
+> Schema owner: `docs/core/invitation-creation-contract.md`  
 > Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
 > Skill: `.agent/skills/invitation-preparation/SKILL.md`  
 > Scope: publication authorized by the owner on 2026-10-20 (tracking board decision d076).

@@ -2,7 +2,7 @@
 
 WhatsApp / conversation material participates in invitation preparation under these rules only.
 Parent policy:
-[`docs/core/invitation-preparation-contract.md`](../../../../docs/core/invitation-preparation-contract.md)
+[`docs/core/invitation-creation-contract.md`](../../../../docs/core/invitation-creation-contract.md)
 §1 and §4.1. Conversational script:
 [`conversational-phase-script.md`](conversational-phase-script.md).
 
@@ -48,7 +48,7 @@ Helpers: `assertClassificationRules` (`src/lib/invitation-preparation/`).
 | Absence         | Never treat as consent, preference, or demo selection                         |
 | Recommendations | Stay in Agent Recommendations until owner approval                            |
 
-Media interpretability (audio/image/video; no reconstruction from context): preparation contract §2.
+Media interpretability (audio/image/video; no reconstruction from context): creation contract §1.2.
 
 ## Process limits
 

@@ -167,7 +167,7 @@ routes:
           - 'client-invitation-audit'
           - 'invitation-preparation'
       docs:
-          - 'docs/core/invitation-preparation-contract.md'
+          - 'docs/core/invitation-creation-contract.md'
 
     - task_type: 'invitation_publication'
       description: 'Publishing or managed lifecycle changes for client invitations'

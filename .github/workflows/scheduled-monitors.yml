@@ -41,6 +41,9 @@ jobs:
                     - monitor: platform-quotas
                       title: Platform quotas
                       alert: 'Monitor de Producción: una cuota llegó al 80 % o el collector no corrió'
+                    - monitor: security-events
+                      title: Security events
+                      alert: 'Monitor de Producción: demasiados rechazos, logins fallidos o fallos de MFA'
         steps:
             - name: Checkout
               uses: actions/checkout@v7

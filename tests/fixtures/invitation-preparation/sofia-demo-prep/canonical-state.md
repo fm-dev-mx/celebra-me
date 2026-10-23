@@ -1,7 +1,7 @@
 # Canonical Invitation Preparation State — sofia-demo-prep
 
 > Synthetic verification fixture for the invitation-preparation workflow.  
-> Schema: `docs/core/invitation-preparation-contract.md`
+> Schema: `docs/core/invitation-creation-contract.md`
 
 ## Identity
 

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { logSecurityEvent } from '@/lib/server/security-events';
 
 export type RateLimitNamespace =
 	| 'ctx'
@@ -178,7 +179,10 @@ function toRateLimitRequest(input: RateLimitInput): RateLimitRequest {
 }
 
 export async function checkRateLimit(input: RateLimitInput): Promise<boolean> {
-	return resolveBackend().allow(toRateLimitRequest(input));
+	const allowed = await resolveBackend().allow(toRateLimitRequest(input));
+	// The namespace only: the key carries entity ids and the hashed IP.
+	if (!allowed) logSecurityEvent('rate_limited', { namespace: input.namespace });
+	return allowed;
 }
 
 /**
