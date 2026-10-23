@@ -13,6 +13,8 @@ const LIVE_VIEWPORT_WIDTH: Record<string, number> = { phone: 390, tablet: 820, p
 export interface VitrinaChangeDetail {
 	slug: string;
 	label: string;
+	eventType: string;
+	eventLabel: string;
 	barMessage: string;
 	thumbSrc: string;
 }
@@ -120,6 +122,8 @@ export function initLandingShowroom(root: Document = document): void {
 				detail: {
 					slug: currentDemo,
 					label: detail.dataset.barLabel ?? '',
+					eventType: detail.dataset.eventType ?? '',
+					eventLabel: detail.dataset.eventLabel ?? '',
 					barMessage: detail.dataset.barMessage ?? '',
 					thumbSrc: thumb?.currentSrc || thumb?.src || '',
 				},

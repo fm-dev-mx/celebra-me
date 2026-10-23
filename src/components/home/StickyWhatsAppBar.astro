@@ -65,7 +65,7 @@ const thumb = getEventAsset(demo.slug, demo.cover);
 
 	if (bar) {
 		document.addEventListener(VITRINA_CHANGE_EVENT, (event) => {
-			const { slug, label, barMessage, thumbSrc } = (event as CustomEvent<VitrinaChangeDetail>)
+			const { slug, label, eventType, eventLabel, barMessage, thumbSrc } = (event as CustomEvent<VitrinaChangeDetail>)
 			.detail;
 			const labelElement = bar.querySelector('[data-sticky-label]');
 			const thumb = bar.querySelector<HTMLImageElement>('[data-sticky-thumb]');
@@ -76,7 +76,11 @@ const thumb = getEventAsset(demo.slug, demo.cover);
 				thumb.src = thumbSrc;
 				thumb.dataset.demoStyle = slug;
 			}
-			if (link && barMessage) link.href = withWhatsAppText(link.href, barMessage, window.location.href);
+			if (!link) return;
+			if (barMessage) link.href = withWhatsAppText(link.href, barMessage, window.location.href);
+			// Attribution follows the chosen event, not the one rendered first.
+			if (eventType) link.dataset.eventType = eventType;
+			if (eventLabel) link.dataset.eventLabel = eventLabel;
 		});
 	}
 

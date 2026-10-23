@@ -345,6 +345,12 @@ test.describe('Landing page regressions', () => {
 		const quote = page.locator('#tipo-evento [data-track-cta="event_showroom_whatsapp"]');
 		await expect(quote).toHaveCount(1);
 		await expect(quote).toHaveAttribute('data-event-type', 'boda');
+		// The sticky bar starts on another event and must follow the chosen one.
+		const sticky = page.locator('[data-sticky-cta] [data-track-cta="whatsapp-sticky"]');
+		await expect(sticky).toHaveAttribute('data-event-type', 'boda');
+		expect(decodeWhatsAppText(await sticky.getAttribute('href'))).toMatch(
+			/Ref\. BODA-[A-Z]+-BARRA$/,
+		);
 		await expect(quote).toHaveAttribute(
 			'data-campaign-code',
 			buildCampaignCode('DEMO', GENERAL_CODE),
