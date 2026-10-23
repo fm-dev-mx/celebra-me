@@ -34,6 +34,7 @@ import {
 	AGENT_REGISTRY,
 	color,
 	nextFor,
+	normalizePr,
 	queue,
 	requisitos,
 	stage,
@@ -142,6 +143,9 @@ function logRow(dir, { tarea, de, a, quien, corrio, salio }) {
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	const pr = normalizePr(t.pr);
+	if (pr === undefined) delete t.pr;
+	else t.pr = pr;
 	const old = before ? new Set(taskIssues(before)) : new Set();
 	const added = taskIssues(t).filter((m) => !old.has(m));
 	if (added.length) throw new UsageError(`no se escribió ${t.id}: ${added.join('; ')}`);

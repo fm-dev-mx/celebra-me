@@ -48,7 +48,7 @@ renewed review. Report missing evidence explicitly.
 
 Finally release <id> --agente=<agent> --sesion=<session>. Close Git Safety with the same session and
 only detector declarations for operations already authorized by the owner. Report in formal Spanish:
-Usted: nada / N cosas; task/revision, chat/project/lane, claim token, PR/full SHA, exact checks and
+Usted: nada / N cosas; task/revision with its PR number (`<id> (PR #N)`), chat/project/lane, claim token, PR/full SHA, exact checks and
 results, session closure, reviewer readiness, residual risks and next responsibility. Send the
 handoff to the identified master only if the human authorized that messaging. Report unavailable
 runtime verification explicitly; do not claim live integration or all-provider acceptance.

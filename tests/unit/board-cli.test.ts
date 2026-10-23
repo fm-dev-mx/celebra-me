@@ -119,6 +119,23 @@ describe('pnpm board', () => {
 		expect(claude.find((r: Json) => r.id === 'imagenes').color).toBe('block');
 	});
 
+	it('requires a #N pull request for review and merge states and normalizes its form', () => {
+		const dir = makeBoard({ tareas: [task('con-pr'), task('con-url')] });
+		const missing = board(dir, 'set', 'con-pr', '--rev=1', 'estado=en revision');
+		expect(missing.status).toBe(2);
+		expect(missing.err).toContain('en revision requiere pr=#<número>');
+		expect(board(dir, 'set', 'con-pr', '--rev=1', 'estado=en revision', 'pr=475').status).toBe(
+			0,
+		);
+		expect(readTask(dir, 'con-pr').pr).toBe('#475');
+		const url = 'pr=https://github.com/fm-dev-mx/celebra-me/pull/473';
+		expect(board(dir, 'set', 'con-url', '--rev=1', 'estado=unida', url).status).toBe(0);
+		expect(readTask(dir, 'con-url').pr).toBe('#473');
+		const bad = board(dir, 'set', 'con-url', '--rev=2', 'pr=pendiente');
+		expect(bad.status).toBe(2);
+		expect(bad.err).toContain('pr debe ser #<número>');
+	});
+
 	it('locks a task for one agent and refuses a move while locked', () => {
 		const dir = makeBoard({ tareas: [task('compartida')] });
 		expect(board(dir, 'claim', 'compartida', '--agente=codex').status).toBe(0);

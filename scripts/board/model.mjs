@@ -180,6 +180,16 @@ const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));
 const subsetOf = (list, allowed) => Array.isArray(list) && list.every((x) => allowed.includes(x));
 
 const optional = (v, ok) => v === undefined || ok(v);
+
+/** States that only exist with a pull request: under review or merged. */
+export const PR_ESTADOS = ['en revision', 'unida'];
+
+/** Canonical `#N` from 398, "398", "#398" or a pull URL; empty becomes undefined, anything else stays. */
+export function normalizePr(pr) {
+	if (pr === undefined || pr === null || String(pr).trim() === '') return undefined;
+	const m = String(pr).match(/(?:^#?|\/pull\/)([1-9]\d*)\s*$/);
+	return m ? `#${m[1]}` : pr;
+}
 const validLock = (c) =>
 	AGENTES.includes(c?.agente) && c.agente !== 'cualquiera' && isDate(c.desde);
 
@@ -211,6 +221,8 @@ const FIELD_CHECKS = [
 		() => 'requisitos debe ser una lista (vacía si no espera nada)',
 	],
 	[(t) => !optional(t.candado, validLock), () => 'candado debe ser {agente, desde}'],
+	[(t) => !optional(t.pr, (p) => /^#[1-9]\d*$/.test(p)), () => 'pr debe ser #<número>'],
+	[(t) => PR_ESTADOS.includes(t.estado) && !t.pr, (t) => `${t.estado} requiere pr=#<número>`],
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
 	// d046: every prompt asks all owner decisions in one round at the start.
 	[
