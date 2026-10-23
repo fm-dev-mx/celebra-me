@@ -29,18 +29,25 @@ export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
 const SUPPORTED_OPERATIONS = new Set(['stage', 'unstage', 'commit', 'history', 'branch-switch']);
 const NO_AUTHORIZATION = Object.freeze({ operations: [], paths: [], branch: null });
 
-const SESSION_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+const SESSION_PATTERN = /^[A-Za-z0-9._/-]{1,64}$/;
+const DETACHED_BRANCH_PATTERN = /^detached@([0-9a-f]{7,40})$/i;
 
 /**
  * Concurrent agent sessions in one checkout keep separate baselines so that closing one session
  * never consumes another session's evidence. Without a session id the shared legacy file is used.
+ * A branch name works as the id: each `/` becomes `-` in the file name (`feat/x` → `feat-x`).
  * @param {string | null | undefined} session
  */
 export function baselineFileName(session) {
 	if (!session) return BASELINE_FILE_NAME;
-	if (!SESSION_PATTERN.test(session))
-		throw new Error('--session must match [A-Za-z0-9._-]{1,64} (for example the task branch).');
-	return `git-safety-baseline.${session}.json`;
+	if (
+		!SESSION_PATTERN.test(session) ||
+		session.split('/').some((part) => ['', '.', '..'].includes(part))
+	)
+		throw new Error(
+			'--session must match [A-Za-z0-9._/-]{1,64} (for example the task branch).',
+		);
+	return `git-safety-baseline.${session.replaceAll('/', '-')}.json`;
 }
 
 /**
@@ -404,7 +411,7 @@ function evaluateDrift(auth, state) {
 			`HEAD changed from ${state.baseline.head ?? '(unborn)'} to ${state.current.head ?? '(unborn)'} without authorization`,
 		);
 	}
-	if (switchesBranch && state.current.branch !== auth.branch) {
+	if (switchesBranch && !matchesAuthorizedBranch(auth.branch, state.current)) {
 		failures.push(
 			`authorized branch-switch expected branch "${auth.branch}", current is ${formatBranch(state.current)}`,
 		);
@@ -415,6 +422,19 @@ function evaluateDrift(auth, state) {
 		);
 	}
 	return failures;
+}
+
+/**
+ * `--branch=<name>` expects that branch; `--branch=detached@<sha>` (7+ hex characters) expects a
+ * detached HEAD at a commit starting with that sha.
+ * @param {string | null} expected
+ * @param {{ head: string | null, branch: string | null, detached: boolean }} current
+ */
+export function matchesAuthorizedBranch(expected, current) {
+	const detachedAt = expected ? DETACHED_BRANCH_PATTERN.exec(expected) : null;
+	if (!detachedAt) return current.branch === expected;
+	const sha = detachedAt[1].toLowerCase();
+	return current.detached && Boolean(current.head?.toLowerCase().startsWith(sha));
 }
 
 /**
@@ -762,17 +782,18 @@ function printUsage() {
 	console.error(`Usage:
   node scripts/agent/git-safety.mjs start [--session=<id>]
   node scripts/agent/git-safety.mjs check [--session=<id>]
-  node scripts/agent/git-safety.mjs finish [--session=<id>] [--authorized-operation=<op>[,<op>...]] [--paths=a,b] [--branch=name]
+  node scripts/agent/git-safety.mjs finish [--session=<id>] [--authorized-operation=<op>[,<op>...]] [--paths=a,b] [--branch=<name>|detached@<sha>]
 
 --session keeps a separate baseline per concurrent agent session in one checkout
-(defaults to CELEBRA_GIT_SAFETY_SESSION, else the shared baseline).
+(defaults to CELEBRA_GIT_SAFETY_SESSION, else the shared baseline); a branch name such as
+feat/x is accepted and stored as git-safety-baseline.feat-x.json.
 
 Supported authorized operations (ephemeral, non-persistent, not proof of consent; combinable):
   stage          requires --paths
   unstage        requires --paths
   commit         HEAD must move
   history        HEAD may move (rebase, merge, pull)
-  branch-switch  requires --branch`);
+  branch-switch  requires --branch (detached@<sha> for a detached HEAD, 7+ hex characters)`);
 }
 
 function main() {
