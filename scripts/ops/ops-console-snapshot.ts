@@ -1,10 +1,19 @@
 /**
  * Read-only operations snapshot for the terminal; `pnpm ops:status` (scripts/ops/ops-status.ts)
- * prints both sections from the VS Code task «Estado (ops:status)».
+ * prints its sections from the VS Code task «Estado (ops:status)».
  *
  *   tsx scripts/ops/ops-console-snapshot.ts --section git --json
  *   tsx scripts/ops/ops-console-snapshot.ts --section preflight --json
+ *   tsx scripts/ops/ops-console-snapshot.ts --section worktrees --json
+ *   tsx scripts/ops/ops-console-snapshot.ts --section dbs --json
+ *   tsx scripts/ops/ops-console-snapshot.ts --section migrations --remote --json
  *
+ * `worktrees` runs `checkSweep` (scripts/agent/worktree-doctor.ts): merged worktrees and branches,
+ * stale git-safety baselines and non-lane folders, each with the cleanup command.
+ * `dbs` and `migrations` read `pnpm dbs --json`, the read-only status CLI: `dbs` covers Local
+ * (schema and publication drift), `migrations` covers Preview and Production and needs
+ * `--remote`. Neither writes to a database; their commands are read-only plans or the canonical
+ * guarded workflow the owner runs.
  * `git` reads local refs plus `git ls-remote --tags origin`; it never fetches or writes refs.
  * `preflight` diagnoses what `pnpm prod:apply --apply` would stop on in the checkout it runs in
  * (process.cwd()): release-check evidence, CI on HEAD, backup age and the Production variables.
@@ -29,6 +38,8 @@ import {
 	type ReleaseCheckEvidence,
 } from '../db/release-check.ts';
 import { loadRemoteChecks, requireReleaseChecks } from './release-readiness.ts';
+import { checkSweep, type SweepFinding } from '../agent/worktree-doctor.ts';
+import { findRepoRoot } from '../shared/worktree-lane.ts';
 
 export type OpsStatus = 'ok' | 'warn' | 'block' | 'unknown';
 
@@ -70,6 +81,28 @@ export interface PreflightSection {
 	verdict: OpsStatus;
 	items: OpsItem[];
 }
+
+export interface WorktreesSection {
+	section: 'worktrees';
+	generatedAt: string;
+	repoRoot: string;
+	items: OpsItem[];
+}
+
+export interface DbsSection {
+	section: 'dbs';
+	generatedAt: string;
+	items: OpsItem[];
+}
+
+export interface MigrationsSection {
+	section: 'migrations';
+	generatedAt: string;
+	items: OpsItem[];
+}
+
+export type OpsSnapshotSection =
+	GitSection | PreflightSection | WorktreesSection | DbsSection | MigrationsSection;
 
 type Git = (args: string[]) => string;
 
@@ -468,15 +501,278 @@ function collectPreflightSection(git: Git = defaultGit, nowMs = Date.now()): Pre
 	};
 }
 
+const SWEEP_LABEL: Record<SweepFinding['kind'], string> = {
+	worktree: 'Worktree unido',
+	branch: 'Rama unida',
+	baseline: 'Baseline viejo de git-safety',
+	folder: 'Carpeta fuera de carril',
+};
+
+export function sweepToItems(sweep: readonly SweepFinding[]): OpsItem[] {
+	if (sweep.length === 0) {
+		return [
+			{
+				id: 'sweep',
+				label: 'Limpieza',
+				status: 'ok',
+				detail: 'No hay worktrees, ramas, baselines ni carpetas por barrer.',
+			},
+		];
+	}
+	return sweep.map((finding) => ({
+		id: `sweep-${finding.kind}:${finding.subject}`,
+		label: SWEEP_LABEL[finding.kind],
+		// Without gh an open PR cannot be ruled out, so the owner checks before running the command.
+		status: finding.prChecked ? 'warn' : 'unknown',
+		detail: finding.detail,
+		fix: finding.command,
+	}));
+}
+
+function collectWorktreesSection(nowMs = Date.now()): WorktreesSection {
+	const repoRoot = findRepoRoot(process.cwd());
+	return {
+		section: 'worktrees',
+		generatedAt: new Date(nowMs).toISOString(),
+		repoRoot: repoRoot.replaceAll('\\', '/'),
+		items: sweepToItems(checkSweep(repoRoot)),
+	};
+}
+
+/** The fields of `pnpm dbs --json` (src/lib/status/dbs-json.ts) these sections read. */
+export interface DbsEnvironmentSummary {
+	environment: string;
+	schemaLifecycle: string;
+	migrationHead: string | null;
+	pendingMigrations: string[];
+	extraMigrations: string[];
+	identityConflictsCount: number;
+	schemaNextAction: string | null;
+	evidence: string;
+}
+
+export interface DbsSnapshot {
+	environments: Partial<Record<DbsTarget, DbsEnvironmentSummary | null>>;
+	operationalPlan: {
+		actions: Array<{
+			id: string;
+			title: string;
+			why?: string;
+			summary?: string;
+			steps: Array<{ command?: string | null; optional?: boolean }>;
+		}>;
+	};
+}
+
+export type DbsTarget = 'local' | 'preview' | 'production';
+export type DbsReader = (targets: readonly DbsTarget[]) => DbsSnapshot;
+
+const DBS_TARGET_LABEL: Record<DbsTarget, string> = {
+	local: 'Local',
+	preview: 'Preview',
+	production: 'Production',
+};
+/** Read-only plans: each prints what is pending and how to apply it, without writing. */
+const MIGRATION_REVIEW_COMMAND: Record<DbsTarget, string> = {
+	local: 'pnpm db:migrate -- --target local',
+	preview: 'pnpm db:migrate -- --target preview',
+	production: 'pnpm prod:apply -- --schema',
+};
+const DBS_ACTION_LIMIT = 12;
+
+/** `pnpm dbs` is the read-only status CLI; it never writes to any database. */
+const defaultDbsReader: DbsReader = (targets) => {
+	const stdout = execFileSync(
+		process.execPath,
+		[
+			'--import',
+			'tsx',
+			resolve(process.cwd(), 'scripts/provision/dbs-cli.ts'),
+			'--targets',
+			targets.join(','),
+			'--json',
+		],
+		{
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+			timeout: 120_000,
+			maxBuffer: 64 * 1024 * 1024,
+			windowsHide: true,
+		},
+	);
+	const start = stdout.indexOf('{');
+	if (start === -1) throw new Error('pnpm dbs no devolvió JSON.');
+	return JSON.parse(stdout.slice(start)) as DbsSnapshot;
+};
+
+/** Last stderr line of a failed child (its own message), else the error's first line. */
+function failureLine(error: unknown): string {
+	const stderr = (error as { stderr?: unknown } | null)?.stderr;
+	const lines = (typeof stderr === 'string' ? stderr : '').split(/\r?\n/).filter((l) => l.trim());
+	const message = error instanceof Error ? error.message : String(error);
+	return (
+		(lines.at(-1) ?? message.split(/\r?\n/)[0] ?? '').trim().slice(0, 200) ||
+		'error desconocido'
+	);
+}
+
+export function classifySchema(
+	target: DbsTarget,
+	env: DbsEnvironmentSummary | null | undefined,
+): OpsItem {
+	const base = {
+		id: `schema-${target}`,
+		label: `Migraciones en ${DBS_TARGET_LABEL[target]}`,
+	};
+	if (!env || env.evidence === 'UNAVAILABLE') {
+		return {
+			...base,
+			status: 'unknown',
+			detail: 'Sin comprobar: dbs no pudo leer este entorno.',
+			fix: `pnpm dbs --targets ${target}`,
+		};
+	}
+	if (env.extraMigrations.length > 0) {
+		return {
+			...base,
+			status: 'block',
+			detail: `La base tiene ${env.extraMigrations.length} migración(es) que el repositorio no conoce: ${env.extraMigrations.join(', ')}.`,
+			fix: `pnpm dbs --targets ${target} --verbose`,
+		};
+	}
+	if (env.pendingMigrations.length > 0) {
+		return {
+			...base,
+			status: 'warn',
+			detail: `${env.pendingMigrations.length} pendiente(s): ${env.pendingMigrations.join(', ')}.`,
+			fix: env.schemaNextAction ?? MIGRATION_REVIEW_COMMAND[target],
+		};
+	}
+	return {
+		...base,
+		status: 'ok',
+		detail: `Al día${env.migrationHead ? ` (última: ${env.migrationHead})` : ''}.`,
+	};
+}
+
+export function dbsLocalItems(snapshot: DbsSnapshot): OpsItem[] {
+	const local = snapshot.environments.local;
+	const items = [classifySchema('local', local)];
+	if (local && local.identityConflictsCount > 0) {
+		items.push({
+			id: 'identity-local',
+			label: 'Identidad de invitaciones en Local',
+			status: 'warn',
+			detail: `${local.identityConflictsCount} conflicto(s) de identidad.`,
+			fix: 'pnpm dbs --targets local --verbose',
+		});
+	}
+	const actions = snapshot.operationalPlan.actions;
+	for (const action of actions.slice(0, DBS_ACTION_LIMIT)) {
+		const step = action.steps.find((candidate) => candidate.command && !candidate.optional);
+		items.push({
+			id: `dbs-${action.id}`,
+			label: action.title,
+			status: 'warn',
+			detail: action.why ?? action.summary ?? 'Requiere atención.',
+			fix: step?.command ?? undefined,
+		});
+	}
+	if (actions.length > DBS_ACTION_LIMIT) {
+		items.push({
+			id: 'dbs-more',
+			label: 'Más acciones de dbs',
+			status: 'warn',
+			detail: `${actions.length - DBS_ACTION_LIMIT} acción(es) más.`,
+			fix: 'pnpm dbs --targets local',
+		});
+	}
+	if (items.length === 1 && items[0]!.status === 'ok') {
+		items.push({
+			id: 'dbs-in-sync',
+			label: 'Invitaciones en Local',
+			status: 'ok',
+			detail: 'Local coincide con el canónico.',
+		});
+	}
+	return items;
+}
+
+export function collectDbsSection(
+	read: DbsReader = defaultDbsReader,
+	nowMs = Date.now(),
+): DbsSection {
+	let items: OpsItem[];
+	try {
+		items = dbsLocalItems(read(['local']));
+	} catch (error) {
+		items = [
+			{
+				id: 'dbs-local',
+				label: 'dbs en Local',
+				status: 'unknown',
+				detail: `Sin comprobar: ${failureLine(error)}. ¿Está corriendo Supabase local?`,
+				fix: 'pnpm dbs --targets local',
+			},
+		];
+	}
+	return { section: 'dbs', generatedAt: new Date(nowMs).toISOString(), items };
+}
+
+const REMOTE_TARGETS = ['preview', 'production'] as const satisfies readonly DbsTarget[];
+
+export function collectMigrationsSection(
+	read: DbsReader = defaultDbsReader,
+	nowMs = Date.now(),
+): MigrationsSection {
+	let snapshot: DbsSnapshot | null = null;
+	let failure = '';
+	try {
+		snapshot = read(REMOTE_TARGETS);
+	} catch (error) {
+		failure = failureLine(error);
+	}
+	const items = REMOTE_TARGETS.map((target) => {
+		const item = classifySchema(target, snapshot?.environments[target]);
+		return snapshot ? item : { ...item, detail: `Sin comprobar: ${failure}.` };
+	});
+	return { section: 'migrations', generatedAt: new Date(nowMs).toISOString(), items };
+}
+
+const SECTIONS = ['git', 'preflight', 'worktrees', 'dbs', 'migrations'] as const;
+type SectionName = (typeof SECTIONS)[number];
+
+function collectSection(section: SectionName): OpsSnapshotSection {
+	switch (section) {
+		case 'git':
+			return collectGitSection();
+		case 'preflight':
+			return collectPreflightSection();
+		case 'worktrees':
+			return collectWorktreesSection();
+		case 'dbs':
+			return collectDbsSection();
+		case 'migrations':
+			return collectMigrationsSection();
+	}
+}
+
 function main(argv: string[]): void {
 	const sectionIndex = argv.indexOf('--section');
 	const section = sectionIndex === -1 ? undefined : argv[sectionIndex + 1];
-	if (section !== 'git' && section !== 'preflight') {
-		process.stderr.write('Uso: ops-console-snapshot --section git|preflight [--json]\n');
+	if (!SECTIONS.includes(section as SectionName)) {
+		process.stderr.write(
+			`Uso: ops-console-snapshot --section ${SECTIONS.join('|')} [--remote] [--json]\n`,
+		);
 		process.exitCode = 2;
 		return;
 	}
-	const result = section === 'git' ? collectGitSection() : collectPreflightSection();
+	if (section === 'migrations' && !argv.includes('--remote')) {
+		process.stderr.write('La sección migrations lee Preview y Production: agregue --remote.\n');
+		process.exitCode = 2;
+		return;
+	}
+	const result = collectSection(section as SectionName);
 	if (argv.includes('--json')) {
 		process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 		return;

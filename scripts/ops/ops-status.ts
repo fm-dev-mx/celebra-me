@@ -1,40 +1,52 @@
 /**
- * Prints the `git` and `preflight` sections of scripts/ops/ops-console-snapshot.ts as text, one
- * line per item, for the VS Code task «Estado (ops:status)» and the terminal.
+ * Prints the sections of scripts/ops/ops-console-snapshot.ts as text, one line per item, for the
+ * VS Code task «Estado (ops:status)» and the terminal.
  *
- *   pnpm ops:status                          # both sections
- *   pnpm ops:status --section git|preflight  # one section
- *   pnpm ops:status --json                   # array with the requested sections
+ *   pnpm ops:status                  # git, preflight, worktrees and dbs
+ *   pnpm ops:status --remote         # also migrations pending in Preview and Production
+ *   pnpm ops:status --section <name> # one section (migrations needs --remote)
+ *   pnpm ops:status --json           # array with the requested sections
  *
- * Line format: `[ok|warn|block] etiqueta: detalle  → comando` (the command only when the snapshot
- * suggests one; the owner runs it in their own terminal). Read-only: it only runs the snapshot
- * script with `--json`, which never fetches, writes refs or touches a database.
+ * Line format: `[ok|warn|block|unknown] etiqueta: detalle  → comando` (the command only when the
+ * snapshot suggests one; the owner runs it in their own terminal). Read-only: it only runs the
+ * snapshot script with `--json`, which never fetches, writes refs or writes to a database.
  */
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import type { GitSection, PreflightSection } from './ops-console-snapshot.ts';
+import type { OpsSnapshotSection } from './ops-console-snapshot.ts';
 
-export type OpsSection = GitSection | PreflightSection;
+export type OpsSection = OpsSnapshotSection;
 export type OpsSectionName = OpsSection['section'];
 
 export interface OpsStatusOptions {
 	sections: OpsSectionName[];
 	json: boolean;
+	remote: boolean;
 }
 
-const ALL_SECTIONS: readonly OpsSectionName[] = ['git', 'preflight'];
+const LOCAL_SECTIONS: readonly OpsSectionName[] = ['git', 'preflight', 'worktrees', 'dbs'];
+const ALL_SECTIONS: readonly OpsSectionName[] = [...LOCAL_SECTIONS, 'migrations'];
 /** Resolved from the checkout `pnpm ops:status` runs in, like the other `pnpm ops:*` scripts. */
 const SNAPSHOT_SCRIPT = resolve(process.cwd(), 'scripts/ops/ops-console-snapshot.ts');
-const USAGE = 'Uso: ops-status [--section git|preflight] [--json]';
+const USAGE = `Uso: ops-status [--section ${ALL_SECTIONS.join('|')}] [--remote] [--json]`;
 
 export function parseOpsStatusArgs(argv: readonly string[]): OpsStatusOptions {
+	const json = argv.includes('--json');
+	const remote = argv.includes('--remote');
 	const sectionIndex = argv.indexOf('--section');
-	if (sectionIndex === -1) return { sections: [...ALL_SECTIONS], json: argv.includes('--json') };
-	const section = argv[sectionIndex + 1];
-	if (section !== 'git' && section !== 'preflight') {
-		throw new Error(`${USAGE}\n--section debe ser git o preflight.`);
+	if (sectionIndex === -1) {
+		return { sections: remote ? [...ALL_SECTIONS] : [...LOCAL_SECTIONS], json, remote };
 	}
-	return { sections: [section], json: argv.includes('--json') };
+	const section = argv[sectionIndex + 1] as OpsSectionName;
+	if (!ALL_SECTIONS.includes(section)) {
+		throw new Error(`${USAGE}\n--section debe ser ${ALL_SECTIONS.join(', ')}.`);
+	}
+	if (section === 'migrations' && !remote) {
+		throw new Error(
+			`${USAGE}\nLa sección migrations lee Preview y Production: agregue --remote.`,
+		);
+	}
+	return { sections: [section], json, remote };
 }
 
 export function formatOpsItem(item: OpsSection['items'][number]): string {
@@ -42,15 +54,29 @@ export function formatOpsItem(item: OpsSection['items'][number]): string {
 	return item.fix ? `${line}  → ${item.fix}` : line;
 }
 
-function sectionHeading(section: OpsSection): string {
-	if (section.section === 'git') {
-		const tags = section.tagSource === 'origin' ? 'tags de origin' : 'tags locales (sin red)';
-		return `== git · develop +${section.developAhead}/-${section.developBehind} frente a main · ${tags}`;
-	}
-	const head = section.headSha ? ` en ${section.headSha.slice(0, 9)}` : '';
-	return `== preflight · ${section.checkout} (${section.branch}${head}) · veredicto: ${section.verdict}`;
+function pending(section: OpsSection): number {
+	return section.items.filter((item) => item.status !== 'ok').length;
 }
 
+function sectionHeading(section: OpsSection): string {
+	switch (section.section) {
+		case 'git': {
+			const tags =
+				section.tagSource === 'origin' ? 'tags de origin' : 'tags locales (sin red)';
+			return `== git · develop +${section.developAhead}/-${section.developBehind} frente a main · ${tags}`;
+		}
+		case 'preflight': {
+			const head = section.headSha ? ` en ${section.headSha.slice(0, 9)}` : '';
+			return `== preflight · ${section.checkout} (${section.branch}${head}) · veredicto: ${section.verdict}`;
+		}
+		case 'worktrees':
+			return `== limpieza · ${pending(section)} pendiente(s) en ${section.repoRoot} y sus worktrees`;
+		case 'dbs':
+			return `== dbs · Local (solo lectura) · ${pending(section)} pendiente(s)`;
+		case 'migrations':
+			return `== migraciones · Preview y Production (--remote, solo lectura) · ${pending(section)} pendiente(s)`;
+	}
+}
 export function formatOpsSection(section: OpsSection): string {
 	return [sectionHeading(section), ...section.items.map(formatOpsItem)].join('\n');
 }
@@ -62,11 +88,20 @@ export function formatOpsStatus(sections: readonly OpsSection[]): string {
 function runSnapshot(section: OpsSectionName): OpsSection {
 	const stdout = execFileSync(
 		process.execPath,
-		['--import', 'tsx', SNAPSHOT_SCRIPT, '--section', section, '--json'],
+		[
+			'--import',
+			'tsx',
+			SNAPSHOT_SCRIPT,
+			'--section',
+			section,
+			...(section === 'migrations' ? ['--remote'] : []),
+			'--json',
+		],
 		{
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'inherit'],
-			timeout: 90_000,
+			// dbs probes inside the snapshot can take up to two minutes.
+			timeout: 180_000,
 			maxBuffer: 32 * 1024 * 1024,
 			windowsHide: true,
 		},

@@ -36,7 +36,8 @@ Colores ANSI**:
   - `Auditoría PII (published-audit)` — `invitation:published-audit` (`eye`, magenta)
   - `Capturas visuales (screenshot)` — Capturas de invitaciones (`device-camera`, magenta)
   - `Estado (ops:status)` — Estado de operación en texto, solo lectura: develop frente a main,
-    uniones a main sin tag y diagnóstico de `prod:apply` (`pulse`, cian)
+    uniones a main sin tag, diagnóstico de `prod:apply`, limpieza pendiente con su comando y `dbs`
+    de Local; con `--remote`, migraciones pendientes en Preview y Production (`pulse`, cian)
 
 ### 2. `.vscode/task-runner.ps1`
 
