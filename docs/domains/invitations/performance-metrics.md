@@ -662,8 +662,27 @@ raising a silent budget.
 
 ## Monitoring map
 
-There is **no** PagerDuty/Datadog/Grafana alert. The only automated alerts are GitHub issues opened
-by scheduled workflows (GitHub e-mails the repository watchers):
+There is **no** PagerDuty/Datadog/Grafana alert. Automated alerts come from two places.
+
+**UptimeRobot** (free plan, owner's account, e-mail alert to the owner) checks Production every 5
+minutes, so an outage is reported within minutes instead of waiting for the GitHub cron:
+
+| Monitor                                             | Catches                                                           |
+| --------------------------------------------------- | ----------------------------------------------------------------- |
+| `https://www.celebra-me.com/api/health`             | Worker down or database unreachable (503)                         |
+| `https://www.celebra-me.com/api/health/invitations` | Any live client invitation whose content no longer resolves (503) |
+| `https://www.celebra-me.com/boda/olivia-y-antonio`  | Full invitation page render broken                                |
+| `https://www.celebra-me.com/america`                | Short `/{slug}` route of a live invitation broken                 |
+| `https://celebra-me.com`                            | Apex redirect to `www` broken                                     |
+
+`/api/health/invitations` runs the public route's resolution for every published, non-demo
+invitation that is enabled and inside its validity window, without rendering. It answers only counts
+(`active`, `failing`); failing routes are logged to Workers Logs as `[health/invitations]`. The two
+single-invitation monitors stop being useful once their event leaves the validity window (event date
+plus one year, then 403): point them at another live invitation. A page that fails mid-render can
+still answer 200 with the error screen, which an HTTP monitor does not see.
+
+**GitHub issues** opened by scheduled workflows (GitHub e-mails the repository watchers):
 
 - `production-uptime.yml`: page smoke, `/api/auth/session` and `/api/health` against Production;
   opens an issue after two consecutive failures. The cron says every 15 minutes, but GitHub delays
