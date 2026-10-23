@@ -1,0 +1,100 @@
+name: Invitation Delivery Budget
+
+# Read-only HTTP checks against Production; no secrets. The GitHub token writes nothing but the
+# alert issue. Not a pull request check: an oversized document opens an issue instead of blocking.
+permissions:
+    contents: read
+    issues: write
+
+on:
+    schedule:
+        # Mondays, after the daily scheduled monitors window.
+        - cron: '10 17 * * 1'
+    workflow_dispatch:
+        inputs:
+            slug:
+                description: 'Invitation with versioned media (<eventType>/<slug>)'
+                required: false
+                default: 'xv/renata'
+            second_slug:
+                description: 'Second, heavier invitation (<eventType>/<slug>)'
+                required: false
+                default: 'xv/romina-rios-chaparro'
+
+concurrency:
+    group: invitation-delivery-budget
+    cancel-in-progress: false
+
+jobs:
+    budget:
+        name: Invitation HTML size and cache budget
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Measure Production and assert budgets
+              id: budget
+              env:
+                  SLUG: ${{ inputs.slug || 'xv/renata' }}
+                  SECOND_SLUG: ${{ inputs.second_slug || 'xv/romina-rios-chaparro' }}
+              run: |
+                  set -o pipefail
+                  pnpm invitation:delivery:baseline --slug "$SLUG" --legacy-slug "$SECOND_SLUG" \
+                      --origin https://www.celebra-me.com --samples 3 --assert-budget 2>&1 \
+                      | tee delivery-budget.log
+
+            # Always publish the measurement, pass or fail.
+            - name: Job summary
+              if: always() && steps.budget.outcome != 'skipped'
+              run: |
+                  {
+                      echo '### Invitation delivery budget'
+                      echo '```'
+                      cat delivery-budget.log 2>/dev/null || echo '(no output)'
+                      echo '```'
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+            # Weekly job: the first failure opens the issue (GitHub e-mails the repository watchers)
+            # and later failures comment on it.
+            - name: Alert
+              if: failure() && steps.budget.outcome == 'failure'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: 'Monitor de Producción: una invitación pasó su presupuesto de HTML o caché'
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "Sigue fallando: $RUN_URL"
+                  else
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$ALERT_TITLE" --body \
+                          "La revisión semanal del tamaño de HTML y la caché de invitaciones falló. Revise el Job Summary: $RUN_URL. Antes de subir un presupuesto, siga la Budget-update policy de docs/domains/invitations/performance-metrics.md."
+                  fi
+
+            - name: Close the alert after recovery
+              if: success()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ALERT_TITLE: 'Monitor de Producción: una invitación pasó su presupuesto de HTML o caché'
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: |
+                  open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                      --search "\"$ALERT_TITLE\" in:title" --json number --jq '.[0].number // empty')
+                  if [ -n "$open" ]; then
+                      gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Recuperado: $RUN_URL"
+                  fi
