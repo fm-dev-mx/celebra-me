@@ -590,9 +590,12 @@ pnpm invitation:hash-baseline -- --strict
 - `invitation:hash-baseline -- --strict` must report no collateral move for invitations outside the
   task. A changed `sourceHash` of a published invitation means its definition moved and forces a
   re-release.
-- When the change is visual, produce the pinned candidate for the affected pages and have it
-  accepted before pushing ([CSS visual parity](../domains/theme/css-visual-parity.md)); a branch
-  that reaches CI without its accepted captures stays red.
+- When the change is visual and touches only this invitation's own files, compare just its page with
+  `pnpm visual:parity:affected:certified -- --sha <commit> --base-sha <base commit>`. When it
+  touches shared files or changes the matrix, produce the pinned full candidate and have it accepted
+  before pushing ([CSS visual parity](../domains/theme/css-visual-parity.md)); a branch that reaches
+  CI without its accepted captures stays red. The owner feedback loop is the
+  `invitation-visual-iteration` skill.
 
 ---
 

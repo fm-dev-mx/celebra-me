@@ -167,7 +167,14 @@ skips the pin (`CELEBRA_TEST_SCOPE=commit`) and the sequence is commit the lifec
 change → `pnpm visual:parity:candidate:certified -- --sha <that commit>` → owner review →
 `pnpm visual:parity:accept` → commit the references. A branch that publishes, retires or adds a
 demo, invitation or variant must carry its approved candidate before integration; matrix drift must
-not reach a release.
+not reach a release. When the pin fails it prints the accepted and current hashes and the candidate
+and accept commands to run.
+
+`pnpm visual:parity:affected:certified -- --sha <commit> [--base-sha <base>] [--pages a,b]` compares
+only the complete pages whose own files changed (client or demo folder, assets, provision
+definition, profile SCSS) against the accepted references, in the same pinned runtime. It is a fast
+local check, not an acceptance: a change to shared SCSS, components or tooling refuses scoping and
+needs the full candidate, and CI still runs the complete compare.
 
 ### Release-time visual confirmation
 
