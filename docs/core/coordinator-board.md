@@ -1,9 +1,11 @@
 # Coordinator Board
 
-Rules for the coordinator board: one private web page that the coordinator session keeps for the
-owner while several sessions work on one rollout. The board is a projection of the active plan in
-`.agent/plans/active/`; when they disagree, the plan wins, and for operation-night steps the owning
-runbook in `docs/operations/` wins.
+Rules for the coordinator board: the local store and view that the coordinator keeps for the owner
+while several sessions and agents work (`pnpm board`, `pnpm board view`). Task fields, requisitos,
+colors, the execution number and how agents write live in
+[`.agent/rules/board.md`](../../.agent/rules/board.md); this page covers the content of each action.
+The board is a projection of the active plan in `.agent/plans/active/`; when they disagree, the plan
+wins, and for operation-night steps the owning runbook in `docs/operations/` wins.
 
 ## Roles
 
@@ -37,17 +39,9 @@ Every action on the board is one card with all of these fields:
    condition ("if anything fails, stop and explain without retrying"), and what must not be touched.
 5. **Done when**: observable evidence (a green run, a header, a file, a count).
 
-The board computes each card's state from the current Mazatlan time, the card's start time, its
-dependencies and the owner's marks:
-
-| State   | Meaning                                                 |
-| ------- | ------------------------------------------------------- |
-| Espera  | Start time not reached, or a dependency is not done yet |
-| Ahora   | Due: the owner may paste the prompt                     |
-| Vencida | Deadline passed and not done                            |
-| Hecho   | Marked done                                             |
-
-The owner never pastes a prompt whose card is not in the `Ahora` or `Vencida` state.
+The board computes each card's stage from its requisitos (start time as a `fecha`, the cards it
+depends on as `tarea`, owner steps as `dueno`): Bloqueada → Lista → En curso → En revisión → Hecha.
+The owner never pastes a prompt whose card is not green (ready, and the owner's turn).
 
 ## Content rules
 
