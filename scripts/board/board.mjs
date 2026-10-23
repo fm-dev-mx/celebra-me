@@ -34,6 +34,8 @@ import {
 	AGENT_REGISTRY,
 	color,
 	nextFor,
+	normalizePr,
+	prIssues,
 	queue,
 	requisitos,
 	stage,
@@ -130,8 +132,14 @@ function logRow(dir, { tarea, de, a, quien, corrio, salio }) {
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	const pr = normalizePr(t.pr);
+	if (pr === undefined) delete t.pr;
+	else t.pr = pr;
 	const old = before ? new Set(taskIssues(before)) : new Set();
-	const added = taskIssues(t).filter((m) => !old.has(m));
+	// A legacy record keeps unrelated problems, but a write that touches the PR rule must satisfy it.
+	const touchesPr = ['pr', 'estado', 'rama'].some((k) => before?.[k] !== t[k]);
+	const strict = new Set(touchesPr ? prIssues(t) : []);
+	const added = taskIssues(t).filter((m) => strict.has(m) || !old.has(m));
 	if (added.length) throw new UsageError(`no se escribió ${t.id}: ${added.join('; ')}`);
 	writeDoc(dir, 'tareas', t.id, t);
 	if ((before?.estado ?? null) !== t.estado)
