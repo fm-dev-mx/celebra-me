@@ -12,13 +12,15 @@
  *   release <id> --agente=<a>
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
+ *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task from «Finalizadas» (bitácora row)
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--json]
  *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
  *   verify [--json]                             same as pnpm board:verify
- *   view [--port=4320]                          local read-only page at http://127.0.0.1:<port>/, live
+ *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
+ *                                               archive/unarchive, same-origin from 127.0.0.1
  *
  * Aliases: get = show, update = set, decision = decide, log = history. Every command takes --json.
  * Values are JSON when they look like JSON (numbers, true/false/null, [..], {..}); `campo=` removes the field.
@@ -39,6 +41,7 @@ import {
 	stage,
 	taskIssues,
 	inTab,
+	isFinished,
 } from './model.mjs';
 import {
 	assertId,
@@ -194,6 +197,59 @@ function reviewSha(task, flags) {
 	return sha;
 }
 
+/**
+ * Archive (`archivar: true`) or unarchive one finished, unlocked task, with a bitácora row (d167). The
+ * `archive`/`unarchive` commands and the view's POST share it; the task file is never deleted.
+ */
+export function setArchived(dir, id, archivar, { rev, quien, corrio } = {}) {
+	return withLock(dir, () => {
+		const before = getTask(dir, need(id, 'falta <id>'));
+		if (rev !== undefined) checkRev(before, { rev });
+		if (!isFinished(before))
+			throw new UsageError(`${before.id} sigue abierta: solo se archivan tareas finalizadas`);
+		if (before.candado)
+			throw new UsageError(
+				`${before.id} tiene candado de ${before.candado.agente}: no se archiva`,
+			);
+		if (archivar === Boolean(before.archivada)) return before;
+		const after = { ...before };
+		if (archivar) after.archivada = nowIso();
+		else delete after.archivada;
+		const t = saveTask(dir, before, after);
+		logRow(dir, {
+			tarea: t.id,
+			de: archivar ? t.estado : 'archivada',
+			a: archivar ? 'archivada' : t.estado,
+			quien,
+			corrio,
+		});
+		return t;
+	});
+}
+
+/** The view server's `archive` option: a refused write comes back as `{ error }` for a 409. */
+export function viewArchiver(dir) {
+	return (id, archivar, opts) => {
+		try {
+			return { task: setArchived(dir, id, archivar, opts) };
+		} catch (e) {
+			if (e instanceof UsageError) return { error: e.message };
+			throw e;
+		}
+	};
+}
+
+function archiveCommand(archivar) {
+	return ({ pos, flags }, dir, out) => {
+		const t = setArchived(dir, pos[0], archivar, {
+			rev: flags.rev,
+			quien: flags.quien,
+			corrio: archivar ? 'pnpm board archive' : 'pnpm board unarchive',
+		});
+		say(flags, out, t, `${t.id} ${t.archivada ? 'archivada' : 'sin archivar'} (rev ${t.rev})`);
+	};
+}
+
 function claimLocation(before, flags, board) {
 	const rama = typeof flags.rama === 'string' ? flags.rama : before.rama;
 	const carril = flags.carril;
@@ -306,7 +362,7 @@ const commands = {
 			checkRev(before, flags);
 			assertOwner(before, flags);
 			const data = flags.data ? JSON.parse(readFileSync(resolve(flags.data), 'utf8')) : {};
-			for (const key of ['candado', 'agente', 'carril', 'origen', 'revisionSha'])
+			for (const key of ['candado', 'agente', 'carril', 'origen', 'revisionSha', 'archivada'])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
 			const merged = applyPairs({ ...before, ...data, id }, pairs);
@@ -575,7 +631,7 @@ const commands = {
 	async view({ flags }, dir, out) {
 		const { serveView } = await import('./view-server.mjs');
 		const port = Number(flags.port ?? 4320);
-		await serveView(dir, port);
+		await serveView(dir, port, { archive: viewArchiver(dir) });
 		const url = `http://127.0.0.1:${port}/`;
 		say(flags, out, { url }, `Tablero en ${url}  (Ctrl+C para cerrar)`);
 	},
@@ -598,6 +654,8 @@ const commands = {
 	},
 };
 Object.assign(commands, {
+	archive: archiveCommand(true),
+	unarchive: archiveCommand(false),
 	get: commands.show,
 	update: commands.set,
 	decision: commands.decide,

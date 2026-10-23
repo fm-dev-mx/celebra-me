@@ -72,6 +72,7 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .tab{border:0;background:none;padding:9px 12px;font:600 .92rem var(--body);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 .tab .n{font:600 .72rem var(--mono);color:var(--faint);margin-left:4px}
+@media (max-width:420px){.tab{padding:9px 7px}}
 
 /* legend */
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem;color:var(--muted)}
@@ -171,7 +172,7 @@ pre.prompt{margin:8px 0 0;padding:10px 12px;white-space:pre-wrap;word-break:brea
 
 /* history */
 .tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
-#q{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;flex:1 1 220px;min-width:0;max-width:420px;min-height:44px}
+#q,#tq{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;flex:1 1 220px;min-width:0;max-width:420px;min-height:44px}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
 .fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
 .fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -190,6 +191,13 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .agents{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:10px}
 .lock{font:600 .72rem var(--mono);color:var(--muted)}
+/* finished tasks (d167): one row each, with its archive button on the right (below it on phones) */
+.fr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+.fr:last-child{border-bottom:0}
+.fr .ttl{font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.fr .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted);margin-top:2px}
+.fr.archived{opacity:.75}
+@media (max-width:560px){.fr{grid-template-columns:1fr}.fr .btn{justify-self:start}}
 </style>
 </head>
 <body>
@@ -203,6 +211,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 
   <nav class="tabs" role="tablist" aria-label="Vistas">
     <button class="tab" role="tab" type="button" data-tab="cola" id="t-cola">Cola<span class="n" id="n-cola"></span></button>
+    <button class="tab" role="tab" type="button" data-tab="finalizadas" id="t-finalizadas">Finalizadas<span class="n" id="n-fin"></span></button>
     <button class="tab" role="tab" type="button" data-tab="carriles" id="t-carriles">Carriles</button>
     <button class="tab" role="tab" type="button" data-tab="historial" id="t-historial">Historial</button>
   </nav>
@@ -215,6 +224,11 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
     <span><i class="sw" style="background:var(--rev)"></i>En revisión</span>
   </div>
 
+  <div class="tools" id="tsearch">
+    <input id="tq" type="search" placeholder="Buscar: serenata, T34, olivia…" aria-label="Buscar tareas por número, nombre o estado actual">
+    <span class="msg" id="tqmsg" aria-live="polite"></span>
+  </div>
+
   <section id="p-cola" role="tabpanel" aria-labelledby="t-cola">
     <div class="agents chips" id="agents" aria-label="Agente">
       <button class="fchip" type="button" data-ag="todas" aria-pressed="true">Todas</button>
@@ -224,6 +238,16 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
     <div class="cola">
       <div class="list" id="list"><div class="empty">Cargando la cola. Aquí aparecen las tareas abiertas, numeradas en el orden en que conviene hacerlas.</div></div>
       <aside class="sheet" id="sheet" aria-label="Ficha de la tarea"><div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div></aside>
+    </div>
+  </section>
+
+  <section id="p-finalizadas" role="tabpanel" aria-labelledby="t-finalizadas" hidden>
+    <div class="board">
+      <div class="tools">
+        <label class="chk"><input type="checkbox" id="arch"> Ver archivadas</label>
+        <span class="msg" id="finmsg" role="status" aria-live="polite"></span>
+      </div>
+      <div id="fin"><div class="empty">Cargando las tareas finalizadas…</div></div>
     </div>
   </section>
 
@@ -246,10 +270,10 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
     </div>
   </section>
 
-  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos). Violeta: lista y un agente la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y solo se escriben con <code>pnpm board</code>; esta página solo lee y muestra cada cambio al instante.</footer>
+  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos). Violeta: lista y un agente la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada, siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, AGENT_REGISTRY } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, matches, isFinished, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -262,6 +286,8 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
+const ESTADO={hecha:'Hecha',unida:'Unida',comprobada:'Comprobada',cancelada:'Cancelada'};
+const TABS=['cola','finalizadas','carriles','historial'];
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
 const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas'};
 const $=id=>document.getElementById(id);
@@ -287,7 +313,8 @@ function label(r){
   return r.ref+' (usted)';
 }
 const reqs=t=>requisitos(t,S.board).map(r=>({...r,label:label(r)}));
-const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag));
+const found=t=>matches(t,$('tq').value);
+const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&found(t));
 let NUM={};
 const tN=t=>t.num?`<span class="tn">T${esc(t.num)}</span> · `:'';
 const urgHtml=t=>{const u=URG[t.urgencia]?t.urgencia:'normal';return `<span class="urg u-${u}" title="Urgencia">${ICON[u]}${URG[u].l}</span>`};
@@ -309,14 +336,16 @@ function itemHtml(t){
 function renderCola(){
   const all=mQueue(S.board);NUM={};all.forEach((t,i)=>NUM[t.id]=i+1);
   const q=queue();
-  const rev=S.board.tareas.filter(t=>stage(t)==='revision'&&inTab(t,S.ag)).sort((a,b)=>T(b.actualizado)-T(a.actualizado));
+  const rev=S.board.tareas.filter(t=>stage(t)==='revision'&&!t.archivada&&inTab(t,S.ag)&&found(t)).sort((a,b)=>T(b.actualizado)-T(a.actualizado));
   $('n-cola').textContent=all.length||'';
   if(!S.ready)return;
-  let h=q.length?q.map(itemHtml).join(''):'<div class="empty">No hay tareas abiertas en esta pestaña.</div>';
+  const none=$('tq').value.trim()?'Ninguna tarea abierta coincide con esa búsqueda.':'No hay tareas abiertas en esta pestaña.';
+  let h=q.length?q.map(itemHtml).join(''):`<div class="empty">${none}</div>`;
   if(rev.length)h+=`<div class="grp">En revisión · ${rev.length}<span style="font-weight:500;text-transform:none;letter-spacing:0">(hechas, falta comprobarlas)</span></div>`+rev.map(itemHtml).join('');
   $('list').innerHTML=h;
   renderMine();
-  if(!S.sel||!byId(S.sel))S.sel=(q[0]||rev[0]||{}).id||null;
+  const searching=$('tq').value.trim()!=='';
+  if(!S.sel||!byId(S.sel)||(searching&&!q.concat(rev).some(t=>t.id===S.sel)))S.sel=(q[0]||rev[0]||{}).id||null;
   renderSheet(false);
 }
 function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
@@ -358,7 +387,7 @@ function renderBoard(){
   if(!S.ready)return;
   const lanes=S.board.carriles.slice().sort((a,b)=>(a.orden||99)-(b.orden||99));
   const known=new Set(lanes.map(l=>l.id));
-  const tareas=S.board.tareas.filter(t=>inTab(t,S.ag));
+  const tareas=S.board.tareas.filter(t=>!t.archivada&&inTab(t,S.ag));
   const loose=tareas.filter(t=>!known.has(t.carril));
   if(loose.length)lanes.push({id:'sin-carril',uso:'Tareas sin carril o de rutina.'});
   const chip=t=>`<button type="button" class="chip c-${color(t)}" data-sel="${esc(t.id)}" data-jump="1"><b>${t.num?'T'+t.num:'·'}</b><span>${esc(t.titulo)}${NUM[t.id]?` <span class="pos" title="Lugar en la cola">#${NUM[t.id]}</span>`:''}</span></button>`;
@@ -368,6 +397,34 @@ function renderBoard(){
     const ses=l.sesion&&l.sesion.nombre?`Sesión ${esc(l.sesion.nombre)}`:(l.estado==='ocioso'?'Libre':esc(l.estado||''));
     return `<div class="brow"><div class="lh"><b>${esc(l.id)}</b><span>${[l.tecla,l.puerto?'puerto '+l.puerto:''].filter(Boolean).map(esc).join(' · ')}</span><span>${ses}</span></div>${STAGES.map(([s,n])=>{const g=ts.filter(t=>stage(t)===s).sort((a,b)=>(NUM[a.id]||999)-(NUM[b.id]||999));return `<div class="cell">${g.length?`<span class="lbl">${n}</span>${g.map(chip).join('')}`:''}</div>`}).join('')}</div>`;
   }).join('');
+}
+
+// Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).
+function renderFin(){
+  const fin=S.board.tareas.filter(isFinished);
+  $('n-fin').textContent=fin.filter(t=>!t.archivada).length||'';
+  if(!S.ready)return;
+  const arch=$('arch').checked;
+  const rows=fin.filter(t=>Boolean(t.archivada)===arch&&found(t)).sort((a,b)=>T(b.archivada||b.actualizado)-T(a.archivada||a.actualizado));
+  const row=t=>{
+    const locked=t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)}: libérela antes de archivar</span>`:'';
+    const when=arch?'archivada '+fmtDay(t.archivada):fmtDay(t.actualizado);
+    return `<div class="fr${arch?' archived':''}"><div><div class="ttl">${tN(t)}${esc(t.titulo)}</div>
+      <div class="line"><span class="pill c-${t.estado==='cancelada'?'block':'rev'}">${esc(ESTADO[t.estado]||t.estado)}</span><span class="mono">${esc(when)}</span><span class="lane">${esc(t.id)}</span>${locked}</div></div>
+      <button type="button" class="btn" data-arch="${esc(t.id)}" data-rev="${esc(t.rev)}" data-to="${arch?'0':'1'}" ${t.candado?'disabled':''}>${arch?'Desarchivar':'Archivar'}</button></div>`;
+  };
+  const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
+  $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
+}
+async function archive(btn){
+  const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
+  btn.disabled=true;m.textContent=(archivar?'Archivando ':'Desarchivando ')+(t&&t.num?'T'+t.num:id)+'…';
+  try{
+    const res=await fetch('/api/archivar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id,archivar,rev:Number(btn.dataset.rev)})});
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
+    m.textContent=(t&&t.num?'T'+t.num:id)+(archivar?' archivada. Está en «Ver archivadas».':' vuelve a Finalizadas.');
+  }catch(e){btn.disabled=false;m.textContent='No se pudo: '+e.message}
 }
 
 function renderHist(){
@@ -407,12 +464,13 @@ function youBtn(){
   if(!mine.length)return '<button type="button" class="you none" disabled>Usted: nada</button>';
   return `<button type="button" class="you" data-sel="${esc(mine[0].id)}" data-jump="1" data-all="1">Usted: ${mine.length} ${mine.length>1?'cosas':'cosa'}</button>`;
 }
-function render(){renderCola();renderTop();renderBoard();renderHist()}
+function render(){renderCola();renderFin();renderTop();renderBoard();renderHist()}
 
 function setTab(tab,push){
-  S.tab=['cola','carriles','historial'].includes(tab)?tab:'cola';
+  S.tab=TABS.includes(tab)?tab:'cola';
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)));
-  ['cola','carriles','historial'].forEach(k=>$('p-'+k).hidden=k!==S.tab);
+  TABS.forEach(k=>$('p-'+k).hidden=k!==S.tab);
+  $('tsearch').hidden=!['cola','finalizadas'].includes(S.tab);
   if(push){try{history.replaceState(null,'','#'+S.tab)}catch(e){}}
 }
 function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ag===ag)));try{localStorage.setItem('board-ag',ag)}catch(e){}renderCola();renderBoard()}
@@ -421,6 +479,7 @@ document.addEventListener('click',ev=>{
   const ag=ev.target.closest('[data-ag]');if(ag){setAgent(ag.dataset.ag);return}
   const sel=ev.target.closest('[data-sel]');if(sel){if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump)setTab('cola',true);openSheet(sel.dataset.sel);return}
   if(ev.target.closest('[data-close]')){closeSheet();return}
+  const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}
   if(ev.target.closest('[data-copy]')){const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
     try{navigator.clipboard.writeText(t.prompt).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».'},fallback)}catch(e){fallback()}return}
@@ -428,6 +487,7 @@ document.addEventListener('click',ev=>{
 });
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet()});
 $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',renderHist);
+$('tq').addEventListener('input',()=>{renderCola();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));

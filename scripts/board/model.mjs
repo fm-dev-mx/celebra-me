@@ -35,6 +35,9 @@ export const DEFAULT_CAPACIDADES = Object.fromEntries(
 );
 
 const SUCCESS = new Set(['hecha', 'unida', 'comprobada']);
+/** Finished tasks (the «Finalizadas» tab): only these can be archived (d167). */
+export const FINALIZADOS = ['hecha', 'unida', 'comprobada', 'cancelada'];
+export const isFinished = (t) => FINALIZADOS.includes(t.estado);
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /**
@@ -172,6 +175,25 @@ export function ownerAsks(board, now = Date.now()) {
 	});
 }
 
+const fold = (s) =>
+	String(s ?? '')
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase();
+
+/**
+ * Search box match (d167): «T34» names task 34 exactly (never T340); any other query must find every word
+ * in the id, title or «ahora», ignoring case and accents.
+ */
+export function matches(t, q) {
+	const query = fold(q).trim();
+	if (!query) return true;
+	const n = /^t(\d+)$/.exec(query);
+	if (n) return t.num !== undefined && Number(t.num) === Number(n[1]);
+	const text = fold([t.id, t.titulo, t.ahora].join(' '));
+	return query.split(/\s+/).every((w) => text.includes(w));
+}
+
 /** Whether the task shows under an agent tab: «libres» are unlocked tasks for any agent. */
 export function inTab(t, tab) {
 	if (!tab || tab === 'todas') return true;
@@ -224,6 +246,11 @@ const FIELD_CHECKS = [
 	],
 	[(t) => !optional(t.candado, validLock), () => 'candado debe ser {agente, desde}'],
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
+	[(t) => !optional(t.archivada, isDate), () => 'archivada no es fecha'],
+	[
+		(t) => t.archivada !== undefined && !isFinished(t),
+		() => 'archivada solo en tareas finalizadas',
+	],
 	// d046: every prompt asks all owner decisions in one round at the start.
 	[
 		(t) => t.prompt && !t.prompt.includes('\nDECISIONES\n'),

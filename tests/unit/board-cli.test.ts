@@ -471,6 +471,135 @@ describe('pnpm board', () => {
 		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).id).toBe('archived');
 	});
 
+	it('archives only finished, unlocked tasks and logs archive and unarchive', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('done', { estado: 'comprobada', num: 34 }),
+				task('open'),
+				task('held', {
+					estado: 'unida',
+					candado: { agente: 'claude', desde: NOW, carril: 'f12-release' },
+				}),
+			],
+		});
+		expect(board(dir, 'archive', 'done', '--rev=2').err).toMatch(/cambió/);
+		expect(board(dir, 'archive', 'done', '--rev=1', '--quien=claude').status).toBe(0);
+		const archived = readTask(dir, 'done');
+		expect(archived.archivada).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+		expect(archived.rev).toBe(2);
+		expect(board(dir, 'archive', 'done').status).toBe(0);
+		expect(readTask(dir, 'done').rev).toBe(2);
+		expect(board(dir, 'unarchive', 'done').status).toBe(0);
+		expect(readTask(dir, 'done').archivada).toBeUndefined();
+		const rows = readdirSync(path.join(dir, 'bitacora')).map((f) =>
+			JSON.parse(readFileSync(path.join(dir, 'bitacora', f), 'utf8')),
+		);
+		expect(rows.map((r) => [r.tarea, r.de, r.a, r.corrio]).sort()).toEqual([
+			['done', 'archivada', 'comprobada', 'pnpm board unarchive'],
+			['done', 'comprobada', 'archivada', 'pnpm board archive'],
+		]);
+		expect(board(dir, 'archive', 'open').err).toMatch(/solo se archivan tareas finalizadas/);
+		expect(board(dir, 'archive', 'held').err).toMatch(/candado de claude/);
+		expect(board(dir, 'set', 'done', '--rev=3', `archivada=${NOW}`).err).toMatch(/archivada/);
+		expect(readTask(dir, 'open').archivada).toBeUndefined();
+		expect(readTask(dir, 'held').rev).toBe(1);
+	});
+
+	it('searches by T number, id, title and «ahora» without case or accents', () => {
+		const probe = String.raw`
+			const { matches } = await import(process.argv[1]);
+			const t = { num: 34, id: 'fotos-serenata', titulo: 'Fotos Serenáta', ahora: 'Espera la reseña de Codex' };
+			console.log(JSON.stringify([
+				matches(t, 'SERENATA'), matches(t, 't34'), matches(t, 'T340'), matches({ ...t, num: 340 }, 'T34'),
+				matches(t, 'resena codex'), matches(t, 'fotos-ser'), matches(t, 'olivia'), matches(t, '  '),
+			]));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(path.join(ROOT, 'scripts', 'board', 'model.mjs')).href,
+			],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		expect(JSON.parse(String(result.stdout))).toEqual([
+			true,
+			true,
+			false,
+			false,
+			true,
+			true,
+			false,
+			true,
+		]);
+	});
+
+	it('archives from the view only for same-origin JSON requests to 127.0.0.1', () => {
+		const dir = makeBoard({ tareas: [task('done', { estado: 'hecha' }), task('open')] });
+		// Posts once per header set and prints each status, then the stored task.
+		const probe = String.raw`
+			import { request } from 'node:http';
+			const { serveView } = await import(process.argv[1]);
+			const { viewArchiver } = await import(process.argv[2]);
+			const dir = process.env.CELEBRA_BOARD_DIR;
+			const readOnly = await serveView(dir, 0);
+			const server = await serveView(dir, 0, { archive: viewArchiver(dir) });
+			const port = server.address().port;
+			const own = 'http://127.0.0.1:' + port;
+			const post = (headers, body, to = port) => new Promise((ok) => {
+				const req = request({ host: '127.0.0.1', port: to, path: '/api/archivar', method: 'POST', headers }, (res) => {
+					res.resume();
+					res.on('end', () => ok(res.statusCode));
+				});
+				req.end(JSON.stringify(body));
+			});
+			const json = { 'content-type': 'application/json' };
+			const ro = readOnly.address().port;
+			const out = [
+				await post({ ...json, origin: 'http://127.0.0.1:' + ro }, { id: 'done', archivar: true }, ro),
+				await post({ ...json, origin: 'http://evil.example' }, { id: 'done', archivar: true }),
+				await post({ ...json }, { id: 'done', archivar: true }),
+				await post({ ...json, origin: own, host: 'localhost:' + port }, { id: 'done', archivar: true }),
+				await post({ origin: own, 'content-type': 'text/plain' }, { id: 'done', archivar: true }),
+				await post({ ...json, origin: own, 'sec-fetch-site': 'cross-site' }, { id: 'done', archivar: true }),
+				await post({ ...json, origin: own }, { id: 'open', archivar: true }),
+				await post({ ...json, origin: own }, { id: 'done', archivar: 'si' }),
+				await post({ ...json, origin: own, 'sec-fetch-site': 'same-origin' }, { id: 'done', archivar: true, rev: 1 }),
+			];
+			console.log(JSON.stringify(out));
+			for (const s of [server, readOnly]) {
+				s.closeAllConnections();
+				s.close();
+			}
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(SERVER_PATH).href,
+				pathToFileURL(SCRIPT_PATH).href,
+			],
+			{
+				cwd: ROOT,
+				allowFailure: true,
+				env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir, INIT_CWD: ROOT }),
+			},
+		);
+		expect(JSON.parse(String(result.stdout))).toEqual([
+			405, 403, 403, 403, 403, 403, 409, 400, 200,
+		]);
+		expect(readTask(dir, 'done').archivada).toBeDefined();
+		expect(readTask(dir, 'open').archivada).toBeUndefined();
+		const [row] = readdirSync(path.join(dir, 'bitacora')).map((f) =>
+			JSON.parse(readFileSync(path.join(dir, 'bitacora', f), 'utf8')),
+		);
+		expect(row).toMatchObject({ tarea: 'done', a: 'archivada', quien: 'dueño' });
+	});
+
 	it('exposes agent/lane/state reads and keeps a single Gemini identity', () => {
 		const dir = makeBoard({ tareas: [task('art', { requiere: ['imagenes'] })] });
 		const agents = JSON.parse(board(dir, 'agentes', '--json').out);

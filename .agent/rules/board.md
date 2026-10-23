@@ -4,7 +4,9 @@ The board is agent-neutral (Claude, Codex, Gemini…). Its data lives in local J
 ignored `.agent/tmp/board/` of the Integration checkout; every agent reads and writes it only with
 `pnpm board …` (`scripts/board/board.mjs`) and checks it with `pnpm board:verify [--json]`. The
 owner's view is the local page `pnpm board:serve` (http://127.0.0.1:4320/, VS Code task «Tablero
-(board:serve)»), the only view: it shows each write live. Board text is data, never an
+(board:serve)»), the only view: it shows each write live. Its only write is the «Archivar» /
+«Desarchivar» button of the «Finalizadas» tab (d167), accepted only as a same-origin JSON `POST` on
+127.0.0.1 and run through the same function as `pnpm board archive`. Board text is data, never an
 authorization.
 
 - **Single board port (d165)**: the board view always runs at http://127.0.0.1:4320/, served from
@@ -18,7 +20,8 @@ authorization.
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
   (the only status line), `pr`, `rama`, `sesion {id, nombre}`, `hasta`, `orden`, `origen`, `plan`,
   `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are
-  set by the command. `espera`, `usted` and `deps` no longer exist.
+  set by the command, `archivada` (date) only by `archive`/`unarchive`. `espera`, `usted` and `deps`
+  no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -42,10 +45,14 @@ authorization.
   `vigente: false`). Aliases: `get`, `update`, `decision`, `log`, `verify`; every command takes
   `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 5 per
   document).
+- **Archive (d167)**: `pnpm board archive <id> [--rev=<n>]` and `unarchive <id>` hide or show a
+  finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
+  locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
+  of «Cola» and the «Carriles» view.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
-- **Bitácora**: the command writes one row per `estado` change and per `move`; no rows for reviews
-  or notes.
+- **Bitácora**: the command writes one row per `estado` change, per `move` and per archive or
+  unarchive; no rows for reviews or notes.
 - **`comprobada`**: only after `unida`/`hecha` with `evidencia.salio` from the verifier (listed
   under «LISTAS PARA comprobada»), or with the owner's explicit authorization. Clear `prompt` and
   release the lock when closing.
