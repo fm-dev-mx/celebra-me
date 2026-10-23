@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { expect, test } from './public-preview-test';
 import {
 	buildVisualPageCases,
+	visualPageRoute,
 	VISUAL_VIEWPORTS,
 } from '../../../scripts/screenshot/visual-coverage-contract';
 import { listInvitationDefinitions } from '../../../scripts/provision/invitations/registry';
@@ -43,11 +44,11 @@ for (const { entry, viewports } of selectContentProbeCases(
 				});
 			});
 			const response = await page.goto(
-				`/${entry.eventType}/${entry.slug}?skipEnvelope=true&animations=off`,
+				`${visualPageRoute(entry)}?skipEnvelope=true&animations=off`,
 				{ waitUntil: 'load' },
 			);
 			expect(response?.status()).toBe(200);
-			expect(new URL(page.url()).pathname).toBe(`/${entry.eventType}/${entry.slug}`);
+			expect(new URL(page.url()).pathname).toBe(visualPageRoute(entry));
 			const root = page.locator('.event-theme-wrapper');
 			if (definition) {
 				await expect(root).toHaveAttribute('data-content-source', 'published');

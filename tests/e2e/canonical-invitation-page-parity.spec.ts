@@ -28,6 +28,7 @@ import {
 } from './harness/visual-capture-settlement';
 import {
 	buildVisualPageCases,
+	visualPageRoute,
 	selectVisualPageCases,
 	VISUAL_VIEWPORTS,
 	visualPageCaseFile,
@@ -127,12 +128,9 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					screenshot: 'true',
 					animations: 'off',
 				});
-				const response = await page.goto(
-					`/${entry.eventType}/${entry.slug}?${query.toString()}`,
-					{
-						waitUntil: 'load',
-					},
-				);
+				const response = await page.goto(`${visualPageRoute(entry)}?${query.toString()}`, {
+					waitUntil: 'load',
+				});
 				expect(response?.status()).toBe(200);
 				// Only configured application assets and map tiles may leave the page origin.
 				expect(
