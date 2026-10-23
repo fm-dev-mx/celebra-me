@@ -8,7 +8,7 @@
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
- *                                               (rama defaults to the current branch)
+ *                                               (rama defaults to the task's declared branch)
  *   release <id> --agente=<a>
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
@@ -27,8 +27,11 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
 	canFinish,
+	claimable,
+	AGENT_REGISTRY,
 	color,
 	nextFor,
 	queue,
@@ -61,18 +64,6 @@ class UsageError extends Error {}
 
 /** Print `text`, or `data` as JSON when the command got --json. */
 const say = (flags, out, data, text) => out(flags.json ? JSON.stringify(data, null, 2) : text);
-
-function currentBranch() {
-	try {
-		return execFileSync('git', ['branch', '--show-current'], {
-			cwd: process.env.INIT_CWD || process.cwd(),
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		}).trim();
-	} catch {
-		return '';
-	}
-}
 
 export function parseArgs(argv) {
 	const flags = {};
@@ -161,6 +152,65 @@ function checkRev(doc, flags) {
 		throw new UsageError(
 			`${doc?.id ?? 'documento'} cambió: está en rev ${have}, usted leyó ${want}. Vuelva a leerla.`,
 		);
+}
+
+function assertOwner(task, flags) {
+	if (!task.candado) {
+		if (!flags.coordinador)
+			throw new UsageError(
+				'sin candado: primero claim o use --coordinador para coordinación explícita',
+			);
+		return;
+	}
+	if (
+		task.candado.agente !== flags.agente ||
+		!flags.sesion ||
+		task.candado.sesion !== flags.sesion
+	)
+		throw new UsageError(
+			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
+		);
+}
+
+function reviewSha(task, flags) {
+	const sha =
+		typeof flags.sha === 'string'
+			? flags.sha
+			: execFileSync(
+					'gh',
+					[
+						'pr',
+						'view',
+						String(task.pr).replace(/^#/, ''),
+						'--json',
+						'headRefOid',
+						'--jq',
+						'.headRefOid',
+					],
+					{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+				).trim();
+	if (!/^[a-f0-9]{40}$/.test(sha))
+		throw new UsageError('falta un SHA completo del PR (--sha=<40 hex>)');
+	return sha;
+}
+
+function claimLocation(before, flags, board) {
+	const rama = typeof flags.rama === 'string' ? flags.rama : before.rama;
+	const carril = flags.carril;
+	if (before.origen && carril)
+		throw new UsageError('la revisión no toma el carril del autor; omita --carril');
+	if (
+		!before.origen &&
+		!WORKTREE_LANES.some(
+			(lane) => lane.id === carril && (lane.segment || before.actor === 'coordinador'),
+		)
+	)
+		throw new UsageError(
+			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
+		);
+	if (carril && board.tareas.some((t) => t.id !== before.id && t.candado?.carril === carril))
+		throw new UsageError(`el carril ${carril} tiene otra tarea con candado`);
+	return { rama, carril };
 }
 
 function row(t, n, board, agente) {
@@ -254,37 +304,64 @@ const commands = {
 		return withLock(dir, () => {
 			const before = getTask(dir, id);
 			checkRev(before, flags);
+			assertOwner(before, flags);
 			const data = flags.data ? JSON.parse(readFileSync(resolve(flags.data), 'utf8')) : {};
+			for (const key of ['candado', 'agente', 'carril', 'origen', 'revisionSha'])
+				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
+					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
 			const merged = applyPairs({ ...before, ...data, id }, pairs);
+			if (before.candado?.rama && merged.rama !== before.candado.rama)
+				throw new UsageError('rama distinta del candado');
+			if (
+				before.origen &&
+				['hecha', 'comprobada'].includes(merged.estado) &&
+				flags.sha !== before.revisionSha
+			)
+				throw new UsageError('la revisión debe declarar --sha igual al SHA revisado');
 			const t = saveTask(dir, before, merged, flags);
 			say(flags, out, t, `${t.id} rev ${t.rev}`);
 		});
 	},
 	claim({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente');
+		const sesion = need(flags.sesion, 'falta --sesion=<id>');
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (before.candado && before.candado.agente !== agente)
+			if (
+				before.candado &&
+				(before.candado.agente !== agente || before.candado.sesion !== sesion)
+			)
 				throw new UsageError(
 					`${before.id} ya la tiene ${before.candado.agente} desde ${before.candado.desde}`,
 				);
+			if (before.candado)
+				return say(flags, out, before, `${before.id} ya pertenece a esta sesión`);
 			if (before.agente && before.agente !== 'cualquiera' && before.agente !== agente)
 				throw new UsageError(
 					`${before.id} es de ${before.agente}: pídale al coordinador un «move»`,
 				);
-			if (!canFinish(before, agente, loadBoard(dir)))
+			const board = loadBoard(dir);
+			if (
+				!claimable(before, agente, board) ||
+				(before.actor === 'coordinador' && !flags.coordinador)
+			)
 				throw new UsageError(
-					`${agente} no tiene todo lo que pide requiere: ${(before.requiere ?? []).join(', ')}`,
+					`${before.id} no está lista para ${agente} o requiere acción del dueño`,
 				);
-			const rama = typeof flags.rama === 'string' ? flags.rama : currentBranch();
+			const { rama, carril } = claimLocation(before, flags, board);
 			const candado = { agente, desde: nowIso() };
 			for (const [k, v] of Object.entries({
 				sesion: flags.sesion,
-				carril: flags.carril,
+				carril,
 				rama,
 			}))
 				if (v && v !== true) candado[k] = v;
-			const t = saveTask(dir, before, { ...before, candado });
+			const t = saveTask(dir, before, {
+				...before,
+				candado,
+				...(carril ? { carril } : {}),
+				...(rama ? { rama } : {}),
+			});
 			say(flags, out, t, `${t.id} es de ${agente} (rev ${t.rev})`);
 		});
 	},
@@ -293,6 +370,7 @@ const commands = {
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!before.candado) return say(flags, out, before, `${before.id} no tiene candado`);
+			assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
 			const rest = { ...before };
@@ -329,8 +407,15 @@ const commands = {
 		const agente = need(flags.agente, 'falta --agente=<revisor>');
 		return withLock(dir, () => {
 			const src = getTask(dir, need(pos[0], 'falta <id>'));
+			if (!src.pr || src.estado !== 'en revision')
+				throw new UsageError('el origen requiere PR y estado en revision');
+			if (src.agente === agente)
+				throw new UsageError('la revisión cruzada requiere otro agente');
+			const sha = reviewSha(src, flags);
 			const id = `${src.id}-revision`;
-			if (readDoc(dir, 'tareas', id)) throw new UsageError(`ya existe ${id}`);
+			const previous = readDoc(dir, 'tareas', id);
+			if (previous?.candado)
+				throw new UsageError('la revisión tiene candado; primero release');
 			const t = {
 				id,
 				titulo: `Revisión cruzada: ${src.titulo}`,
@@ -339,12 +424,13 @@ const commands = {
 				actor: 'sesion',
 				agente,
 				origen: src.id,
-				carril: src.carril,
-				requisitos: [{ tipo: 'tarea', ref: src.id }],
+				revisionSha: sha,
+				prompt: `Follow .agent/rules/board.md for task ${id}. Review PR ${src.pr} of ${src.id} at ${sha}. Inspect correctness, regressions, tests and AGENTS.md. Submit findings with gh pr review. Do not edit the author lane or merge. Finish with --sha=${sha}.\nDECISIONES\n- Review only; report missing evidence and request no adjacent permissions.`,
+				requisitos: [{ tipo: 'revision', ref: src.id }],
 				...(src.rama ? { rama: src.rama } : {}),
 				...(src.pr ? { pr: src.pr } : {}),
 			};
-			const saved = saveTask(dir, null, t, { quien: flags.quien });
+			const saved = saveTask(dir, previous, t, { quien: flags.quien });
 			say(flags, out, saved, `${saved.id} creada para ${agente}`);
 		});
 	},
@@ -374,6 +460,13 @@ const commands = {
 		});
 	},
 	carril({ pos, pairs, flags }, dir, out) {
+		if (!pos.length)
+			return say(
+				flags,
+				out,
+				readCollection(dir, 'carriles'),
+				JSON.stringify(readCollection(dir, 'carriles'), null, 2),
+			);
 		const id = assertId(need(pos[0], 'falta <id>'));
 		return withLock(dir, () => {
 			const before = readDoc(dir, 'carriles', id) ?? { id };
@@ -388,12 +481,47 @@ const commands = {
 		});
 	},
 	estado({ pairs, flags }, dir, out) {
+		if (!Object.keys(pairs).length)
+			return say(
+				flags,
+				out,
+				readDoc(dir, 'estado', 'actual'),
+				JSON.stringify(readDoc(dir, 'estado', 'actual'), null, 2),
+			);
 		return withLock(dir, () => {
 			const before = readDoc(dir, 'estado', 'actual') ?? { id: 'actual' };
 			checkRev(before, flags);
 			const e = { ...applyPairs(before, pairs), rev: (before.rev ?? 0) + 1, revEn: nowIso() };
 			writeDoc(dir, 'estado', 'actual', e);
 			say(flags, out, { ...e, id: 'actual' }, `estado rev ${e.rev}`);
+		});
+	},
+	agentes({ pos, flags, pairs }, dir, out) {
+		if (!pos.length) {
+			const records = Object.entries(AGENT_REGISTRY).map(([id, a]) => ({
+				id,
+				...a,
+				...readDoc(dir, 'agentes', id),
+			}));
+			return say(flags, out, records, JSON.stringify(records, null, 2));
+		}
+		if (!flags.coordinador) throw new UsageError('capacidades requieren --coordinador');
+		const id = pos[0];
+		if (!Object.hasOwn(AGENT_REGISTRY, id)) throw new UsageError('agente desconocido');
+		return withLock(dir, () => {
+			const before = readDoc(dir, 'agentes', id);
+			checkRev(before, flags);
+			if (Object.keys(pairs).some((k) => k !== 'capacidades'))
+				throw new UsageError('solo se actualiza capacidades');
+			const after = applyPairs({ id, ...before }, pairs);
+			if (
+				!Array.isArray(after.capacidades) ||
+				after.capacidades.some((c) => typeof c !== 'string')
+			)
+				throw new UsageError('capacidades debe ser lista de texto');
+			after.rev = (before?.rev ?? 0) + 1;
+			writeDoc(dir, 'agentes', id, after);
+			say(flags, out, after, `${id} rev ${after.rev}`);
 		});
 	},
 	history({ flags }, dir, out) {
@@ -458,9 +586,9 @@ const commands = {
 			out(execFileSync(process.execPath, args, { encoding: 'utf8' }).trimEnd());
 		} catch (e) {
 			// Exit 1 = the board has shape problems: the report is still the answer.
-			if (e.status === 1 && e.stdout) {
+			if ([1, 2].includes(e.status) && e.stdout) {
 				out(String(e.stdout).trimEnd());
-				process.exitCode = 1;
+				process.exitCode = e.status;
 				return;
 			}
 			throw new UsageError(String(e.stderr ?? '').trim() || 'board:verify falló', {
