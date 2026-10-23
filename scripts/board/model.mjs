@@ -106,13 +106,14 @@ const depIds = (t) => (t.requisitos ?? []).filter((r) => r.tipo === 'tarea').map
 const urgRank = (u) => (URGENCIAS.includes(u) ? URGENCIAS.indexOf(u) : 2);
 
 /**
- * The numbered queue: urgency → ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a
- * task never comes before one it waits for.
+ * The numbered queue: the owner's ready tasks (d163) → urgency → ready before blocked → due date (`hasta`) →
+ * `orden` → title, then a pass so a task never comes before one it waits for.
  */
 export function queue(board, now = Date.now()) {
 	const open = (board.tareas ?? []).filter((t) => isOpen(t, board, now));
 	const ids = new Set(open.map((t) => t.id));
 	const key = (t) => [
+		color(t, board, { now }) === 'own' ? 0 : 1,
 		urgRank(t.urgencia),
 		stage(t, board, now) === 'bloqueada' ? 1 : 0,
 		Number.isNaN(time(t.hasta)) ? 9e15 : time(t.hasta),

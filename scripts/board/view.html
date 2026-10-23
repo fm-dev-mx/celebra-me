@@ -99,6 +99,15 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .req{display:inline-flex;gap:3px;align-items:center}
 .req i{font-style:normal;font-family:var(--mono);font-size:.72rem}
 .lane{font:500 .76rem var(--mono);color:var(--muted)}
+/* «Le toca a usted» (d163): the owner's ready tasks and the answers tasks wait for, above the queue */
+.mine{background:var(--own-soft);border:1px solid var(--own);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:grid;gap:6px}
+.mine h2{margin:0;font:700 1rem var(--display);color:var(--own)}
+.mine .row{display:flex;gap:8px;align-items:baseline;text-align:left;width:100%;min-height:44px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink)}
+.mine .row:hover{background:var(--panel-2)}
+.mine .row b{font:700 .9rem var(--mono);color:var(--own);flex:none}
+.mine .row span{min-width:0;overflow-wrap:anywhere}
+.mine .sub{font-size:.8rem;color:var(--muted);margin:4px 0 0}
+.mine .none{margin:0;color:var(--muted);font-size:.9rem}
 .empty{background:var(--panel);border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
 
 /* task sheet */
@@ -210,6 +219,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
       <button class="fchip" type="button" data-ag="gemini" aria-pressed="false">Gemini</button>
       <button class="fchip" type="button" data-ag="libres" aria-pressed="false">Libres</button>
     </div>
+    <div class="mine" id="mine" aria-live="polite"></div>
     <div class="cola">
       <div class="list" id="list"><div class="empty">Cargando la cola. Aquí aparecen las tareas abiertas, numeradas en el orden en que conviene hacerlas.</div></div>
       <aside class="sheet" id="sheet" aria-label="Ficha de la tarea"><div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div></aside>
@@ -303,6 +313,7 @@ function renderCola(){
   let h=q.length?q.map(itemHtml).join(''):'<div class="empty">No hay tareas abiertas en esta pestaña.</div>';
   if(rev.length)h+=`<div class="grp">En revisión · ${rev.length}<span style="font-weight:500;text-transform:none;letter-spacing:0">(hechas, falta comprobarlas)</span></div>`+rev.map(itemHtml).join('');
   $('list').innerHTML=h;
+  renderMine();
   if(!S.sel||!byId(S.sel))S.sel=(q[0]||rev[0]||{}).id||null;
   renderSheet(false);
 }
@@ -377,6 +388,17 @@ function renderTop(){
     const ver=String(e.version||'').split(' ')[0];
     $('strip').innerHTML=`<span class="eyebrow">Producción</span><span><span class="pulse ${stale?'stale':''}"></span><b>${esc(ver)}</b></span><span class="mono">main ${esc(e.main||'')}</span><span>${esc(e.sirve||'')}</span><span class="mono" title="${esc(fmt(e.comprobadoEn))}">${stale?'sin comprobar '+esc(ago(e.comprobadoEn)):'comprobado '+esc(ago(e.comprobadoEn))}</span>`+youBtn();
   }else if(S.ready){$('strip').innerHTML='<span class="eyebrow">Producción</span><span>Sin registro de estado.</span>'+youBtn()}
+}
+// The whole board, not the agent tab: what the owner must do never hides behind a filter.
+function renderMine(){
+  const all=mQueue(S.board),tag=t=>t.num?'T'+t.num:'#'+NUM[t.id];
+  const tasks=all.filter(t=>mColor(t,S.board)==='own');
+  const asks=all.flatMap(t=>requisitos(t,S.board).filter(r=>r.tipo==='dueno'&&!r.ok).map(r=>({t,r})));
+  let h='<h2>Le toca a usted</h2>';
+  if(!tasks.length&&!asks.length)h+='<p class="none">Usted: nada por ahora.</p>';
+  h+=tasks.map(t=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}</span></button>`).join('');
+  if(asks.length)h+='<p class="sub">Decisiones que esperan su respuesta</p>'+asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(r.ref)}<span class="sub"> · la espera «${esc(t.titulo)}»</span></span></button>`).join('');
+  $('mine').innerHTML=h;
 }
 function youBtn(){
   const mine=mQueue(S.board).filter(t=>mColor(t,S.board)==='own');

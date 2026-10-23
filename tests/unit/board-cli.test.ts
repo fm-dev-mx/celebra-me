@@ -57,7 +57,7 @@ afterEach(() => {
 });
 
 describe('pnpm board', () => {
-	it('numbers the queue by urgency, readiness and dependencies, and colors it', () => {
+	it('numbers the queue owner first, then by urgency, readiness and dependencies, and colors it', () => {
 		const dir = makeBoard({
 			tareas: [
 				task('normal-lista'),
@@ -74,12 +74,38 @@ describe('pnpm board', () => {
 		expect(status).toBe(0);
 		const rows = JSON.parse(out) as { id: string; color: string }[];
 		expect(rows.map((r) => [r.id, r.color])).toEqual([
+			// d163: the owner's ready task comes first, whatever its urgency.
+			['del-dueno', 'own'],
 			// A blocked «alta» task still waits behind the task it needs.
 			['base', 'auto'],
 			['alta-espera', 'block'],
-			['del-dueno', 'own'],
 			['normal-lista', 'auto'],
 			['sin-prompt', 'block'],
+		]);
+	});
+
+	it('keeps a prerequisite before the owner task that waits for it', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('urgente', { urgencia: 'urgente' }),
+				task('del-dueno', { actor: 'dueno', urgencia: 'baja' }),
+				task('dueno-espera', {
+					actor: 'dueno',
+					requisitos: [{ tipo: 'tarea', ref: 'prep' }],
+				}),
+				task('prep', { estado: 'en curso' }),
+			],
+		});
+		const rows = JSON.parse(board(dir, 'list', '--json').out) as {
+			id: string;
+			color: string;
+		}[];
+		// An owner task that is not ready yet is gray, so it keeps the usual order.
+		expect(rows.map((r) => [r.id, r.color])).toEqual([
+			['del-dueno', 'own'],
+			['urgente', 'auto'],
+			['prep', 'run'],
+			['dueno-espera', 'block'],
 		]);
 	});
 
