@@ -9,7 +9,7 @@ export default defineDemoInvitation({
 		styleName: 'Serenata',
 		showConversion: false,
 		description:
-			'Un sobre de noche verde que se abre a un jardín, palo de rosa y champaña, y una canción dedicada.',
+			'Un sobre de noche verde que se abre a un olivar, verde salvia y champaña, y una canción dedicada.',
 		styleTags: ['Jardín', 'Elegante'],
 		visibility: 'hidden',
 		reviewStatus: 'needs-review',
@@ -17,8 +17,8 @@ export default defineDemoInvitation({
 		ctaMessage: 'Hola, quisiera conocer el estilo Serenata para una invitación de XV años.',
 		thumbnail: {
 			key: 'hero',
-			alt: 'Regina con vestido palo de rosa junto a la fuente del jardín',
-			objectPosition: '62% 36%',
+			alt: 'Regina con vestido champaña y fajín verde salvia bajo una pérgola con enredadera',
+			objectPosition: '72% 55%',
 		},
 	},
 });

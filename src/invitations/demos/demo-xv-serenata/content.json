@@ -3,7 +3,7 @@
     "isDemo": true,
     "templateId": "xv-sage-champagne",
     "title": "Mis XV años — Regina Sofía",
-    "description": "Una tarde de jardín para celebrar los quince años de Regina Sofía, el sábado 20 de noviembre de 2027 en Querétaro.",
+    "description": "Una tarde entre olivos para celebrar los quince años de Regina Sofía, el sábado 20 de noviembre de 2027 en Querétaro.",
     "theme": {
         "preset": "sage-champagne",
         "fontFamily": "serif",
@@ -42,7 +42,7 @@
         {
             "image": "interlude01",
             "afterSection": "family",
-            "alt": "La capilla de piedra clara del jardín, con la puerta de madera abierta.",
+            "alt": "Una hilera de olivos al atardecer sobre el pasto dorado.",
             "height": "medium",
             "presentation": "framed"
         }
@@ -54,8 +54,8 @@
         "scrollLabel": "Descubra más",
         "date": "2027-11-20T18:00:00.000Z",
         "backgroundImage": "hero",
-        "focalPoint": "62% 36%",
-        "focalPointMobile": "62% 36%",
+        "focalPoint": "72% 62%",
+        "focalPointMobile": "72% 62%",
         "presentation": {
             "venueIndex": 0,
             "timeFormat": "12h"
@@ -125,7 +125,7 @@
             "showNavigationButtons": false
         },
         "introHeading": "Apunte la fecha",
-        "introLede": "Misa a las seis en la capilla y fiesta a las siete y media, en el mismo jardín.",
+        "introLede": "Misa a las seis y fiesta a las siete y media, en el mismo jardín.",
         "indicationsHeading": "Código de vestimenta",
         "indications": [
             {
@@ -137,8 +137,8 @@
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "title": "Palo de rosa",
-                "text": "Es el color de mi vestido; le pido que lo deje solo para mí."
+                "title": "Verde salvia",
+                "text": "Es el color de mi fajín esa noche; le pido que lo deje solo para mí."
             },
             {
                 "iconName": "Forbidden",
@@ -150,7 +150,7 @@
             {
                 "type": "ceremony",
                 "venueEvent": "Misa de acción de gracias",
-                "venueName": "Capilla de la Fuente",
+                "venueName": "Capilla del Olivar",
                 "address": "Espacio ilustrativo · Querétaro, Qro.",
                 "date": "2027-11-20",
                 "time": "18:00",
@@ -160,7 +160,7 @@
             {
                 "type": "reception",
                 "venueEvent": "Recepción",
-                "venueName": "Jardín Los Cipreses",
+                "venueName": "Quinta Los Olivos",
                 "address": "Espacio ilustrativo · Querétaro, Qro.",
                 "date": "2027-11-20",
                 "time": "19:30",
@@ -183,7 +183,7 @@
                 "time": "19:30",
                 "iconName": "Reception",
                 "label": "Recepción",
-                "description": "Nos vemos junto a la fuente."
+                "description": "Nos vemos bajo la pérgola."
             },
             {
                 "time": "20:30",
@@ -195,7 +195,7 @@
                 "time": "21:00",
                 "iconName": "Dinner",
                 "label": "Cena",
-                "description": "A la mesa, bajo las luces del jardín."
+                "description": "A la mesa, entre olivos."
             },
             {
                 "time": "22:00",
@@ -215,32 +215,32 @@
         "variant": "album-assemble",
         "eyebrow": "",
         "title": "Antes de la noche",
-        "subtitle": "El jardín, mi mamá y el vals que ensayamos.",
+        "subtitle": "Olivos, salvia y la luz de la tarde.",
         "items": [
             {
                 "image": "gallery01",
-                "alt": "Regina sonríe junto a un muro de piedra clara.",
-                "focalPoint": "55% 30%"
+                "alt": "Regina sonríe junto a un muro de piedra clara con enredadera.",
+                "focalPoint": "50% 30%"
             },
             {
                 "image": "gallery02",
-                "alt": "Un ramo de rosas blancas y rosa pálido junto a las zapatillas de Regina, sobre el borde de la fuente.",
+                "alt": "Un ramo de rosas blancas y ramas de olivo con listón verde salvia junto a las zapatillas de Regina.",
                 "focalPoint": "50% 50%"
             },
             {
                 "image": "gallery03",
-                "alt": "Regina baila el vals con su papá bajo las luces del jardín.",
-                "focalPoint": "55% 40%"
+                "alt": "Regina camina por un sendero entre olivos sosteniendo su falda.",
+                "focalPoint": "60% 45%"
             },
             {
                 "image": "gallery04",
-                "alt": "Su mamá le acomoda el cabello a Regina antes de la misa.",
+                "alt": "Regina ríe con su ramo entre las manos.",
                 "focalPoint": "50% 35%"
             },
             {
                 "image": "gallery05",
-                "alt": "Regina entre su papá y su mamá, en el jardín.",
-                "focalPoint": "50% 40%"
+                "alt": "Regina escucha su serenata bajo la pérgola iluminada.",
+                "focalPoint": "65% 40%"
             }
         ]
     },
@@ -288,7 +288,7 @@
     "thankYou": {
         "variant": "portrait-keepsake",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 30%",
+        "focalPoint": "50% 35%",
         "message": "Gracias por ser parte de mi historia. Esa noche la canción también será para usted.",
         "closingName": "Regina",
         "closingPhrase": "Regina Sofía · XV años · Querétaro · MMXXVII"
