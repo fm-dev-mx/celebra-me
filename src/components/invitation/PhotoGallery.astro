@@ -108,7 +108,10 @@ const revealAttrs = revealItems && variant !== 'pinned-track' ? { 'data-reveal-i
 	const initGallery = () => {
 		const gallery = document.querySelector('[data-gallery]');
 		if (!gallery) return;
-		const galleryItems = Array.from(gallery.querySelectorAll('[data-gallery-item]'));
+		// The commercial slot of a pinned-track gallery sits beside the container, inside the
+		// section, so items are collected from the section to keep its photo enlargeable.
+		const itemScope = gallery.closest('.gallery-section') ?? gallery;
+		const galleryItems = Array.from(itemScope.querySelectorAll('[data-gallery-item]'));
 
 		const invitationRoot = gallery.closest('[data-event-slug]');
 

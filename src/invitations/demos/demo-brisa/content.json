@@ -364,9 +364,11 @@
         "startsAtUtc": "2026-11-15T00:30:00.000Z"
     },
     "music": {
-        "url": "https://media.celebra-me.com/shared/music/dreams-become-real-a9783da4464f0e4ff3ad6daef3aa1da85c8a1171dc5f6cd6ae8cd831b4d37294.mp3",
-        "title": "Dreams Become Real — Kevin MacLeod",
+        "url": "https://media.celebra-me.com/shared/music/in-this-moment-43b9990a6e989695303d12079cab826951ade8b599eb0f73ed092431a81baf92.mp3",
+        "title": "«In This Moment», Scott Buckley",
         "autoPlay": true,
-        "creditsUrl": "/music/dreams-become-real-credits.html"
+        "control": "equalizer",
+        "fadeInSeconds": 2,
+        "creditsUrl": "/music/in-this-moment-credits.html"
     }
 }

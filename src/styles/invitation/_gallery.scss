@@ -251,6 +251,15 @@
 	justify-content: center;
 	padding: 2rem;
 
+	// Open and close: the veil fades while the photo settles in from slightly below and smaller
+	// (`is-open`, set by GalleryLightbox.astro). Only `opacity` and `transform` move.
+	opacity: 0%;
+	transition: opacity var(--gallery-lightbox-duration, 360ms) var(--ease-standard, ease-out);
+
+	&.is-open {
+		opacity: 100%;
+	}
+
 	@media (width <= 480px) {
 		padding: 1rem;
 	}
@@ -296,6 +305,11 @@
 		max-width: 90%;
 		max-height: 85svh;
 		position: relative;
+		opacity: 0%;
+		transform: translateY(14px) scale(0.96);
+		transition:
+			opacity var(--gallery-lightbox-duration, 360ms) ease-out,
+			transform var(--gallery-lightbox-content-duration, 480ms) cubic-bezier(0.22, 1, 0.36, 1);
 
 		img {
 			width: 100%;
@@ -308,6 +322,11 @@
 			);
 			border-radius: var(--gallery-lightbox-image-radius, 4px);
 		}
+	}
+
+	&.is-open &__content {
+		opacity: 100%;
+		transform: none;
 	}
 
 	&__footer {
@@ -332,5 +351,15 @@
 	.gallery-grid__overlay {
 		/* stylelint-disable-next-line declaration-no-important */
 		transition-duration: 1ms !important;
+	}
+
+	.gallery-lightbox,
+	.gallery-lightbox__content,
+	.gallery-lightbox__close {
+		transition: none;
+	}
+
+	.gallery-lightbox__content {
+		transform: none;
 	}
 }

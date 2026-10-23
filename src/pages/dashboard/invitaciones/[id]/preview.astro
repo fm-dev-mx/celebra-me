@@ -234,6 +234,7 @@ const headLinks = pageCtx
 					closingPhrase={pageCtx.footerClosingPhrase}
 					showFooterBranding={pageCtx.viewModel.brandingVisibility.showFooterBranding}
 					showContactCta={pageCtx.viewModel.brandingVisibility.showContactCta}
+					musicCredit={pageCtx.musicPlayer?.creditsUrl ? { title: pageCtx.musicPlayer.title, creditsUrl: pageCtx.musicPlayer.creditsUrl } : undefined}
 				/>
 
 				{pageCtx.musicPlayer && <MusicPlayer {...pageCtx.musicPlayer} />}

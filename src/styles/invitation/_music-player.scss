@@ -63,16 +63,62 @@
 		gap: 0.5rem;
 	}
 
-	&__credits {
-		display: grid;
-		place-items: center;
-		min-height: 44px;
-		padding-inline: 0.6rem;
-		font-family: var(--font-body);
-		font-size: type.size(ui);
-		color: var(--music-player-button-color, var(--color-text-on-dark));
-		background: var(--music-player-button-bg, var(--color-surface-dark));
-		border-radius: var(--radius-sm);
+	// Equalizer control: three bars that move while the song plays and rest at uneven heights
+	// when paused. The whole player dims while idle (`is-idle`, set by the script) and comes back
+	// on hover or focus at once.
+	&__bars {
+		display: flex;
+		align-items: flex-end;
+		gap: 3px;
+		height: 18px;
+
+		span {
+			width: 3px;
+			height: 100%;
+			border-radius: var(--radius-pill);
+			background: currentcolor;
+			transform-origin: bottom;
+			transform: scaleY(0.4);
+			transition: transform var(--duration-standard, 240ms) var(--ease-standard, ease-out);
+
+			&:nth-child(2) {
+				transform: scaleY(0.7);
+			}
+
+			&:nth-child(3) {
+				transform: scaleY(0.5);
+			}
+		}
+	}
+
+	&.is-playing &__bars span {
+		animation: musicPlayerBars 0.9s ease-in-out infinite alternate;
+
+		&:nth-child(2) {
+			animation-delay: -0.3s;
+		}
+
+		&:nth-child(3) {
+			animation-delay: -0.6s;
+		}
+	}
+
+	&[data-control='equalizer'] {
+		transition: opacity var(--duration-slower, 600ms) ease;
+
+		&.is-idle {
+			opacity: var(--music-player-idle-opacity, 40%);
+		}
+
+		&:hover,
+		&:focus-within {
+			opacity: 100%;
+		}
+
+		.music-player__button--play {
+			width: 2.75rem;
+			height: 2.75rem;
+		}
 	}
 
 	&__button {
@@ -190,6 +236,34 @@
 			overflow-wrap: anywhere;
 			text-align: right;
 		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.music-player {
+		&__button--pulsing,
+		&__button--pulsing::before {
+			animation: none;
+		}
+
+		&.is-playing .music-player__bars span {
+			animation: none;
+			transform: scaleY(0.85);
+		}
+
+		&[data-control='equalizer'] {
+			transition: none;
+		}
+	}
+}
+
+@keyframes musicPlayerBars {
+	from {
+		transform: scaleY(0.25);
+	}
+
+	to {
+		transform: scaleY(1);
 	}
 }
 
