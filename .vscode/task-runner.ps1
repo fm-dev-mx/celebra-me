@@ -205,6 +205,11 @@ $commandDetails = @{
         UseCase = "Capturar imagenes del renderizado de invitaciones para revision de diseño visual."
         Help    = "Ingrese '--help' (o '--interactive' para selector guiado de capturas)"
     }
+    "board:serve"               = @{
+        Desc    = "Tablero de tareas en http://127.0.0.1:4320/, solo lectura y en vivo."
+        UseCase = "Ver la cola, los carriles y el historial del tablero; cada cambio de pnpm board aparece al instante."
+        Help    = "Presione Enter para abrirlo (o '--port=<n>' para otro puerto); Ctrl+C lo cierra."
+    }
     "ops:status"                = @{
         Desc    = "Estado de operacion en texto, solo lectura (git, preflight, limpieza, dbs y, con --remote, migraciones)."
         UseCase = "Ver develop frente a main, el diagnostico de prod:apply, que limpiar con su comando y las migraciones pendientes por entorno."

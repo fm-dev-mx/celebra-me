@@ -12,7 +12,17 @@ type Json = Record<string, unknown>;
 const dirs: string[] = [];
 
 function task(id: string, fields: Json): Json {
-	return { id, titulo: id, estado: 'en-curso', espera: '', rev: 1, actualizado: NOW, ...fields };
+	return {
+		id,
+		titulo: id,
+		estado: 'en curso',
+		urgencia: 'normal',
+		actor: 'sesion',
+		requisitos: [],
+		rev: 1,
+		actualizado: NOW,
+		...fields,
+	};
 }
 
 function makeExport(tareas: Json[], extra: { sesiones?: Json[]; decisiones?: Json[] } = {}) {
@@ -137,6 +147,13 @@ describe('board:verify', () => {
 			[
 				task('cerrada', { estado: 'comprobada', evidencia: {} }),
 				task('otro-id', { rama: 'fix/rama-real', rev: 0 }),
+				task('vieja', { espera: 'usted', urgencia: 'ya' }),
+				task('espera', {
+					requisitos: [
+						{ tipo: 'tarea', ref: 'archivada' },
+						{ tipo: 'decision', ref: 'd404' },
+					],
+				}),
 			],
 			{
 				decisiones: [
@@ -151,6 +168,8 @@ describe('board:verify', () => {
 			expect.arrayContaining([
 				{ id: 'cerrada', msg: 'comprobada sin evidencia' },
 				{ id: 'otro-id', msg: 'rev debe ser un entero desde 1' },
+				{ id: 'vieja', msg: 'urgencia debe ser urgente/alta/normal/baja' },
+				{ id: 'vieja', msg: 'espera y deps ya no existen: use requisitos' },
 				{ id: 'd002', msg: 'reemplaza a una decisión inexistente: d999' },
 			]),
 		);
@@ -158,6 +177,8 @@ describe('board:verify', () => {
 			expect.arrayContaining([
 				{ id: 'otro-id', msg: 'id distinto de la rama sin prefijo (rama-real)' },
 				{ id: 'd002', msg: 'decisión sin vigente: true|false' },
+				{ id: 'espera', msg: 'requisito a una tarea fuera del tablero: archivada' },
+				{ id: 'espera', msg: 'requisito a una decisión inexistente: d404' },
 			]),
 		);
 	});

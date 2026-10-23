@@ -2,8 +2,9 @@
 /**
  * Read-only verifier for the «Seguimiento Celebra-me» coordinator board (rules: .agent/rules/board.md).
  *
- * Usage: pnpm board:verify <dir> [--json] [--sesiones=<file.json>]
- *   <dir> holds the ArtifactData export: tareas/*.json, and optionally bitacora/*.json and decisiones/*.json.
+ * Usage: pnpm board:verify [<dir>] [--json] [--sesiones=<file.json>]
+ *   <dir> defaults to the local store (`.agent/tmp/board/` of Integration, d143); an ArtifactData export with the
+ *   same layout (tareas/*.json, and optionally bitacora/*.json and decisiones/*.json) works too.
  *   --sesiones: JSON list of Claude sessions [{ id, nombre?, rama?, archivada? | estado? }]; defaults to
  *   <dir>/sesiones.json when present.
  *
@@ -17,6 +18,8 @@ import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { taskIssues } from './model.mjs';
+import { boardDir } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -31,8 +34,7 @@ const FORBIDDEN =
 const SAFE_BRANCH = /^[A-Za-z0-9._/-]{1,200}$/;
 const BASE_BRANCHES = new Set(['develop', 'main', 'master']);
 
-const ESPERAS = ['usted', 'sesion', 'rutina', 'fecha', 'tarea', ''];
-const SCOPES = ['produccion', 'migracion', 'release'];
+const LOCK_STALE_MS = 24 * 3600_000;
 
 /** Task id rule: the branch name without its type prefix (`fix/olivia-gallery` → `olivia-gallery`). */
 export const taskIdFromBranch = (branch) => String(branch ?? '').replace(/^[^/]+\//, '');
@@ -118,7 +120,7 @@ export function worktreeBranches(porcelain) {
 	return [...String(porcelain).matchAll(/^branch refs\/heads\/(.+)$/gm)].map((m) => m[1].trim());
 }
 
-const isClosed = (t) => ['hecha', 'comprobada', 'cancelada'].includes(t?.estado);
+const isClosed = (t) => ['hecha', 'unida', 'comprobada', 'cancelada'].includes(t?.estado);
 const claims = (t, { branch, pr }) =>
 	(pr && prNumber(t.pr) === pr) ||
 	(branch && (t.rama === branch || t.id === taskIdFromBranch(branch)));
@@ -194,72 +196,46 @@ function closingIssues(t) {
 	return out;
 }
 
-function depIssues(t, byId) {
-	const out = [];
-	for (const d of t.deps ?? []) {
-		if (!byId[d]) out.push(`dep inexistente: ${d}`);
-		// d038: si su dep sigue abierta, el prompt debe frenar en el prerrequisito.
-		else if (
-			!isClosed(byId[d]) &&
-			t.prompt &&
-			!t.prompt.includes('Comprueba primero el prerrequisito')
-		)
-			out.push(`tiene prompt sin freno y espera a ${d}`);
-	}
-	return out;
-}
-
-function ustedOk(usted) {
-	// usted is plain text or a list of steps [{t, cmd?, cmds?, url?, ir?}] (diseño d4).
-	if (Array.isArray(usted))
-		return usted.length > 0 && usted.every((s) => String(s?.t ?? '').trim());
-	return !!String(usted ?? '').trim();
-}
-
-function shapeIssues(t) {
-	const out = [];
-	if (!t.titulo?.trim()) out.push('falta titulo');
-	if (t.toca !== undefined && !(Array.isArray(t.toca) && t.toca.every((s) => SCOPES.includes(s))))
-		out.push(`toca debe ser lista de ${SCOPES.join('/')}`);
-	if (!ESPERAS.includes(t.espera ?? '')) out.push(`espera desconocida: ${t.espera}`);
-	// d046: every prompt asks all owner decisions in one round at the start.
-	if (t.prompt && !t.prompt.includes('\nDECISIONES\n'))
-		out.push('prompt sin sección DECISIONES (d046)');
-	if (t.espera === 'usted' && !ustedOk(t.usted))
-		out.push('espera a usted pero no dice qué hacer (campo usted)');
-	return out;
-}
-
-/** Dates, rev and log freshness. */
-function dateIssues(t, lastLog) {
-	const out = [];
-	for (const k of ['desde', 'hasta'])
-		if (t[k] && Number.isNaN(Date.parse(t[k]))) out.push(`${k} no es fecha`);
-	if (!Number.isInteger(t.rev) || t.rev < 1) out.push('rev debe ser un entero desde 1');
-	if (Number.isNaN(Date.parse(t.actualizado ?? ''))) out.push('actualizado no es fecha');
+/** A log row newer than the task means a change without a new rev. */
+function logIssues(t, lastLog) {
 	const last = lastLog[t.id];
-	if (last && Date.parse(last) > Date.parse(t.actualizado ?? 0) + 60_000)
-		out.push(`bitácora de ${last} más nueva que actualizado: suba rev`);
+	return last && Date.parse(last) > Date.parse(t.actualizado ?? 0) + 60_000
+		? [`bitácora de ${last} más nueva que actualizado: suba rev`]
+		: [];
+}
+
+/** Requisitos naming a missing task or decision, and locks left behind. */
+function taskWarnings(t, byId, decIds, now) {
+	const out = [];
+	for (const r of Array.isArray(t.requisitos) ? t.requisitos : []) {
+		if (r.tipo === 'tarea' && !byId[r.ref])
+			out.push(`requisito a una tarea fuera del tablero: ${r.ref}`);
+		if (r.tipo === 'decision' && !decIds.has(r.ref))
+			out.push(`requisito a una decisión inexistente: ${r.ref}`);
+	}
+	if (t.candado && isClosed(t)) out.push(`cerrada con candado de ${t.candado.agente}`);
+	else if (t.candado && now - Date.parse(t.candado.desde) > LOCK_STALE_MS)
+		out.push(`candado de ${t.candado.agente} desde ${t.candado.desde}: ¿sigue trabajando?`);
 	return out;
 }
 
-function boardIssues(tareas, bitacora, decisiones) {
+function boardIssues(tareas, bitacora, decisiones, now) {
 	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
+	const decIds = new Set(decisiones.map((d) => d.id));
 	const lastLog = lastLogByTask(bitacora);
 	const inconsistencias = [];
 	const avisos = [];
 	for (const t of tareas) {
 		const msgs = closingIssues(t);
-		if (!isClosed(t))
-			msgs.push(...shapeIssues(t), ...dateIssues(t, lastLog), ...depIssues(t, byId));
+		if (!isClosed(t)) msgs.push(...taskIssues(t), ...logIssues(t, lastLog));
 		for (const msg of msgs) inconsistencias.push({ id: t.id, msg });
+		for (const msg of taskWarnings(t, byId, decIds, now)) avisos.push({ id: t.id, msg });
 		if (t.rama && t.id !== taskIdFromBranch(t.rama))
 			avisos.push({
 				id: t.id,
 				msg: `id distinto de la rama sin prefijo (${taskIdFromBranch(t.rama)})`,
 			});
 	}
-	const decIds = new Set(decisiones.map((d) => d.id));
 	for (const d of decisiones) {
 		if (typeof d.vigente !== 'boolean')
 			avisos.push({ id: d.id, msg: 'decisión sin vigente: true|false' });
@@ -275,6 +251,7 @@ function boardIssues(tareas, bitacora, decisiones) {
 export function verifyBoard(
 	{ tareas, bitacora = [], decisiones = [], sesiones = null },
 	run = defaultRunner(),
+	now = Date.now(),
 ) {
 	const live = tareas
 		.filter((t) => t.estado !== 'comprobada' && t.estado !== 'cancelada')
@@ -293,7 +270,7 @@ export function verifyBoard(
 		comprobar,
 		...unclaimedWork(tareas, run),
 		sesionArchivada: archivedSessions(tareas, sesiones),
-		...boardIssues(tareas, bitacora, decisiones),
+		...boardIssues(tareas, bitacora, decisiones, now),
 	};
 }
 
@@ -339,18 +316,17 @@ function printText(r) {
 function main(argv) {
 	const json = argv.includes('--json');
 	const sesionesArg = argv.find((a) => a.startsWith('--sesiones='))?.slice('--sesiones='.length);
-	const dir = argv.find((a) => !a.startsWith('--'));
-	if (!dir) {
+	// pnpm runs scripts from the repository root; INIT_CWD keeps relative paths relative to the caller.
+	const cwd = process.env.INIT_CWD || process.cwd();
+	const arg = argv.find((a) => !a.startsWith('--'));
+	const dir = arg ? resolve(cwd, arg) : boardDir();
+	if (!existsSync(dir)) {
 		console.error(
-			'Uso: pnpm board:verify <dir con tareas/*.json> [--json] [--sesiones=<archivo.json>]',
+			`No hay tablero en ${dir}. Uso: pnpm board:verify [<dir>] [--json] [--sesiones=<archivo.json>]`,
 		);
 		process.exit(2);
 	}
-	// pnpm runs scripts from the repository root; INIT_CWD keeps relative paths relative to the caller.
-	const cwd = process.env.INIT_CWD || process.cwd();
-	const result = verifyBoard(
-		loadExport(resolve(cwd, dir), sesionesArg && resolve(cwd, sesionesArg)),
-	);
+	const result = verifyBoard(loadExport(dir, sesionesArg && resolve(cwd, sesionesArg)));
 	if (json) console.log(JSON.stringify(result, null, 2));
 	else printText(result);
 	if (result.inconsistencias.length) process.exitCode = 1;
