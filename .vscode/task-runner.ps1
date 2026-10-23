@@ -206,9 +206,9 @@ $commandDetails = @{
         Help    = "Ingrese '--help' (o '--interactive' para selector guiado de capturas)"
     }
     "ops:status"                = @{
-        Desc    = "Estado de operacion en texto, solo lectura (secciones git y preflight)."
-        UseCase = "Ver develop frente a main, uniones a main sin tag y el diagnostico de prod:apply antes de operar."
-        Help    = "Ingrese '--section git' o '--section preflight' (o '--json' para salida JSON)"
+        Desc    = "Estado de operacion en texto, solo lectura (git, preflight, limpieza, dbs y, con --remote, migraciones)."
+        UseCase = "Ver develop frente a main, el diagnostico de prod:apply, que limpiar con su comando y las migraciones pendientes por entorno."
+        Help    = "Ingrese '--remote' para migraciones de Preview y Production, '--section <git|preflight|worktrees|dbs|migrations>' o '--json'"
     }
 }
 $commandDetails["pwsh"] = $commandDetails["terminal"]

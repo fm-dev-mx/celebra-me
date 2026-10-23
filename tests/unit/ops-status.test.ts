@@ -192,17 +192,29 @@ describe('ops status text output', () => {
 		expect(formatOpsSection(preflight)).toBe(lines.slice(4).join('\n'));
 	});
 
-	it('runs both sections by default and only the requested one with --section', () => {
-		expect(parseOpsStatusArgs([])).toEqual({ sections: ['git', 'preflight'], json: false });
+	it('runs the local sections by default, adds migrations with --remote and one with --section', () => {
+		const local = ['git', 'preflight', 'worktrees', 'dbs'];
+		expect(parseOpsStatusArgs([])).toEqual({ sections: local, json: false, remote: false });
 		expect(parseOpsStatusArgs(['--json'])).toEqual({
-			sections: ['git', 'preflight'],
+			sections: local,
 			json: true,
+			remote: false,
+		});
+		expect(parseOpsStatusArgs(['--remote'])).toEqual({
+			sections: [...local, 'migrations'],
+			json: false,
+			remote: true,
 		});
 		expect(parseOpsStatusArgs(['--section', 'preflight'])).toEqual({
 			sections: ['preflight'],
 			json: false,
+			remote: false,
 		});
-		expect(() => parseOpsStatusArgs(['--section', 'dbs'])).toThrow(/git o preflight/);
+		expect(() => parseOpsStatusArgs(['--section', 'deploys'])).toThrow(/--section debe ser/);
+		expect(() => parseOpsStatusArgs(['--section', 'migrations'])).toThrow(/agregue --remote/);
+		expect(parseOpsStatusArgs(['--section', 'migrations', '--remote']).sections).toEqual([
+			'migrations',
+		]);
 	});
 
 	it('is the script behind pnpm ops:status and the VS Code task', () => {
