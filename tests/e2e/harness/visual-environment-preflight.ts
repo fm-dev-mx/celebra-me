@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { request, type FullConfig } from '@playwright/test';
-import { buildVisualPageCases } from '../../../scripts/screenshot/visual-coverage-contract';
+import {
+	buildVisualPageCases,
+	visualPageRoute,
+} from '../../../scripts/screenshot/visual-coverage-contract';
 import { VISUAL_PARITY_RUNTIME, VISUAL_PARITY_RUNTIME_ENV } from './visual-parity-metadata';
 import { beginVisualRecordRun } from './visual-capture-record';
 
@@ -30,7 +33,7 @@ export default async function visualEnvironmentPreflight(config: FullConfig): Pr
 	if (!baseURL) throw new Error('Visual environment requires an explicit base URL.');
 	const client = await request.newContext({ baseURL, timeout: 10_000 });
 	try {
-		const routes = buildVisualPageCases().map((entry) => `/${entry.eventType}/${entry.slug}`);
+		const routes = buildVisualPageCases().map(visualPageRoute);
 		let next = 0;
 		const check = async (): Promise<void> => {
 			while (next < routes.length) {

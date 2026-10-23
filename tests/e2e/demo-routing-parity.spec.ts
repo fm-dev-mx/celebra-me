@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { DEMO_INVITATIONS } from '@/invitations/demos';
 
 test.describe('Demo Routing Parity', () => {
 	for (const width of [390, 1440]) {
@@ -51,6 +52,24 @@ test.describe('Demo Routing Parity', () => {
 		expect(html).toContain('canonical');
 		expect(html).not.toContain('href="/boda/demo-boda-jewelry-box-wedding');
 	});
+	for (const demo of DEMO_INVITATIONS) {
+		test(`moves the long ${demo.slug} URL to /${demo.routeSlug} with its query`, async ({
+			request,
+		}) => {
+			const long = await request.get(
+				`/${demo.eventType}/${demo.slug}?ref=wa&skipEnvelope=true`,
+				{
+					maxRedirects: 0,
+				},
+			);
+			expect(long.status()).toBe(301);
+			expect(long.headers().location).toBe(`/${demo.routeSlug}?ref=wa&skipEnvelope=true`);
+			const short = await request.get(`/${demo.routeSlug}?ref=wa&skipEnvelope=true`, {
+				maxRedirects: 0,
+			});
+			expect(short.status()).toBe(200);
+		});
+	}
 	test('keeps an unknown invitation unavailable publicly', async ({ request }) => {
 		const response = await request.get('/cumple/e2e-nonexistent-invitation');
 		expect(response.status()).toBe(404);

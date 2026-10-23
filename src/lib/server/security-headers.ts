@@ -95,11 +95,11 @@ export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 	},
 	{
 		source: '/bautizo/demo-bautismo-angelic-presence',
-		destination: '/bautizo/demo-bautizo-angelic-presence',
+		destination: '/angelical',
 	},
 	{
 		source: '/primera-comunion/demo-primera-comunion-illustrated',
-		destination: '/primera-comunion/demo-primera-comunion-angelic-presence',
+		destination: '/comunion-angelical',
 	},
 ];
 
