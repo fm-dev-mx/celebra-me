@@ -197,6 +197,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <div class="top">
     <h1>Seguimiento Celebra-me<small>v3</small></h1>
     <span class="rev" id="rev">Cargando…</span>
+    <span role="status" aria-live="polite" id="connection">Conectando…</span>
   </div>
   <div class="strip" id="strip"><span class="eyebrow">Producción</span><span>Cargando el estado…</span></div>
 
@@ -217,9 +218,6 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <section id="p-cola" role="tabpanel" aria-labelledby="t-cola">
     <div class="agents chips" id="agents" aria-label="Agente">
       <button class="fchip" type="button" data-ag="todas" aria-pressed="true">Todas</button>
-      <button class="fchip" type="button" data-ag="claude" aria-pressed="false">Claude</button>
-      <button class="fchip" type="button" data-ag="codex" aria-pressed="false">Codex</button>
-      <button class="fchip" type="button" data-ag="gemini" aria-pressed="false">Gemini</button>
       <button class="fchip" type="button" data-ag="libres" aria-pressed="false">Libres</button>
     </div>
     <div class="mine" id="mine" aria-live="polite"></div>
@@ -251,7 +249,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos). Violeta: lista y un agente la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y solo se escriben con <code>pnpm board</code>; esta página solo lee y muestra cada cambio al instante.</footer>
 </div>
 <script type="module">
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -264,7 +262,7 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const AGENT={claude:'Claude',codex:'Codex',gemini:'Gemini',cualquiera:'Cualquiera'};
+const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
 const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -277,7 +275,7 @@ function rich(s){let h=esc(s);h=h.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,(m,p
 const byId=id=>S.board.tareas.find(t=>t.id===id);
 const decById=id=>S.board.decisiones.find(d=>d.id===id);
 const laneOf=t=>S.board.carriles.find(l=>l.id===t.carril);
-const agentTab=()=>['claude','codex','gemini'].includes(S.ag)?S.ag:undefined;
+const agentTab=()=>Object.hasOwn(AGENT_REGISTRY,S.ag)?S.ag:undefined;
 const stage=t=>mStage(t,S.board);
 const color=t=>mColor(t,S.board,{agente:agentTab()});
 
@@ -321,7 +319,7 @@ function renderCola(){
   if(!S.sel||!byId(S.sel))S.sel=(q[0]||rev[0]||{}).id||null;
   renderSheet(false);
 }
-function sesHtml(x){if(!x)return '';const id=String(x.id||'');return id?`<a href="claude://claude.ai/epitaxy/${esc(id)}">${esc(x.nombre||id)}</a> <span class="code">#${esc(id)}</span>`:esc(x.nombre||'')}
+function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
 function renderSheet(open){
   const sh=$('sheet'),t=S.sel&&byId(S.sel);
   if(!t){sh.innerHTML='<div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div>';return}
@@ -432,13 +430,19 @@ document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('sheet').classL
 $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',renderHist);
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
-try{const a=localStorage.getItem('board-ag');if(a)setAgent(a)}catch(e){}
+document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
+try{const a=localStorage.getItem('board-ag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','libres'].includes(a)))setAgent(a)}catch(e){}
 
 // The server pushes the whole board on connect and after every write; EventSource reconnects by itself.
 const stream=new EventSource('/api/stream');
-stream.onmessage=ev=>{S.board=JSON.parse(ev.data);S.ready=true;render()};
-stream.onerror=()=>{if(!S.ready){S.ready=true;$('list').innerHTML='<div class="empty">No se pudo leer el tablero. ¿Sigue abierto <code>pnpm board:serve</code>?</div>'}};
-setInterval(()=>{if(S.board)renderTop()},30000);
+let lastSignal=Date.now();
+const connection=text=>{$('connection').textContent=text};
+stream.onmessage=ev=>{try{S.board=JSON.parse(ev.data);S.ready=true;render()}catch{connection('Datos inválidos; esperando recuperación…')}};
+stream.addEventListener('status',ev=>{try{const status=JSON.parse(ev.data);lastSignal=Date.now();connection(status.state==='live'?'En vivo · comprobado '+fmt(status.observedAt):'Sin sincronizar · datos anteriores')}catch{connection('Sin sincronizar')}});
+stream.onerror=()=>{connection('Reconectando · datos anteriores');if(!S.ready)$('list').innerHTML='<div class="empty">No se pudo leer el tablero. Compruebe que sigue abierto <code>pnpm board:serve</code>.</div>'};
+setInterval(()=>{if(S.ready)render();if(Date.now()-lastSignal>60000)connection('Sin señal · datos anteriores')},30000);
+addEventListener('online',()=>connection('Reconectando…'));
+addEventListener('offline',()=>connection('Sin conexión · datos anteriores'));
 </script>
 </body>
 </html>

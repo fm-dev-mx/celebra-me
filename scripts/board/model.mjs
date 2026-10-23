@@ -5,9 +5,17 @@
 
 export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
 export const ACTORES = ['dueno', 'sesion', 'coordinador'];
-export const AGENTES = ['claude', 'codex', 'gemini', 'cualquiera'];
+export const AGENT_REGISTRY = {
+	claude: {
+		nombre: 'Claude',
+		capacidades: ['codigo', 'git', 'gh', 'navegador', 'artifact', 'sesiones'],
+	},
+	codex: { nombre: 'Codex', capacidades: ['codigo', 'git', 'gh'] },
+	gemini: { nombre: 'Gemini', capacidades: ['codigo', 'git', 'gh', 'imagenes'] },
+};
+export const AGENTES = [...Object.keys(AGENT_REGISTRY), 'cualquiera'];
 export const TOCA = ['main', 'produccion', 'migracion', 'secretos'];
-export const REQUISITOS = ['tarea', 'decision', 'fecha', 'dueno'];
+export const REQUISITOS = ['tarea', 'decision', 'fecha', 'dueno', 'revision'];
 export const ESTADOS = [
 	'pendiente',
 	'bloqueada',
@@ -22,13 +30,11 @@ export const ESTADOS = [
 export const STAGES = ['bloqueada', 'lista', 'curso', 'revision', 'hecha'];
 
 /** Capabilities each agent has unless the store's `agentes/<id>.json` says otherwise. */
-export const DEFAULT_CAPACIDADES = {
-	claude: ['codigo', 'git', 'gh', 'navegador', 'artifact', 'sesiones'],
-	codex: ['codigo', 'git', 'gh'],
-	gemini: ['codigo', 'git', 'gh', 'imagenes'],
-};
+export const DEFAULT_CAPACIDADES = Object.fromEntries(
+	Object.entries(AGENT_REGISTRY).map(([id, agent]) => [id, agent.capacidades]),
+);
 
-const DONE = new Set(['hecha', 'unida', 'comprobada', 'cancelada']);
+const SUCCESS = new Set(['hecha', 'unida', 'comprobada']);
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /**
@@ -41,13 +47,17 @@ export function requisitos(t, board, now = Date.now()) {
 	const list = (Array.isArray(t.requisitos) ? t.requisitos : []).map((r) => {
 		if (r.tipo === 'tarea') {
 			const d = tareas.find((x) => x.id === r.ref);
-			// A task that left the board was archived when it closed.
-			return { ...r, ok: d ? DONE.has(d.estado) : true };
+			const archived = (board.archivo ?? []).find((x) => x.id === r.ref);
+			return { ...r, ok: SUCCESS.has((d ?? archived)?.estado) };
+		}
+		if (r.tipo === 'revision') {
+			const d = tareas.find((x) => x.id === r.ref);
+			return { ...r, ok: !!d?.pr && ['en revision', 'hecha', 'unida'].includes(d.estado) };
 		}
 		if (r.tipo === 'fecha') return { ...r, ok: now >= time(r.ref) };
 		if (r.tipo === 'decision') {
 			const d = decisiones.find((x) => x.id === r.ref);
-			return { ...r, ok: r.ok === true || (!!d && d.vigente !== false) };
+			return { ...r, ok: !!d && d.vigente === true };
 		}
 		return { ...r, ok: r.ok === true };
 	});
@@ -75,8 +85,19 @@ export function capacidades(agente, board) {
 
 /** Whether `agente` can finish the task alone: it has every capability in `requiere`. */
 export function canFinish(t, agente, board) {
+	if (!Object.hasOwn(AGENT_REGISTRY, agente)) return false;
 	const has = new Set(capacidades(agente, board));
 	return (t.requiere ?? []).every((c) => has.has(c));
+}
+
+/** Same eligibility predicate for discovery and the locked claim transaction. */
+export function claimable(t, agente, board, now) {
+	return (
+		stage(t, board, now) === 'lista' &&
+		!needsOwner(t) &&
+		(t.agente === agente || !t.agente || t.agente === 'cualquiera') &&
+		canFinish(t, agente, board)
+	);
 }
 
 /** Agents the task is for: its own `agente`, or every known agent when it is «cualquiera» or unset. */
@@ -162,12 +183,7 @@ export function inTab(t, tab) {
 export function nextFor(agente, board, now = Date.now()) {
 	return (
 		queue(board, now).find(
-			(t) =>
-				stage(t, board, now) === 'lista' &&
-				!t.candado &&
-				!needsOwner(t) &&
-				(t.agente === agente || !t.agente || t.agente === 'cualquiera') &&
-				canFinish(t, agente, board),
+			(t) => claimable(t, agente, board, now) && !t.candado && t.actor !== 'coordinador',
 		) ?? null
 	);
 }

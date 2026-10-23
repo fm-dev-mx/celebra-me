@@ -11,10 +11,10 @@
  * Every open, «unida» or «hecha» task is checked. A task's own `chequeo: { cmd, espera }` wins; otherwise the
  * implicit check is `gh pr view <pr> --json state` → MERGED, or `git ls-remote origin <rama>` → the ref exists.
  * It also lists open PRs and worktree branches without a task, tasks whose session is archived, and tasks
- * ready to move to «comprobada». Commands run from the repository root through cmd.exe on Windows, so ^ and %
- * are refused in cmd. CELEBRA_BOARD_COMMAND_FIXTURE (a JSON map cmd → output) answers commands in tests.
+ * ready to move to «comprobada». Only finite read-only argument arrays run, without a shell.
+ * CELEBRA_BOARD_COMMAND_FIXTURE supplies explicit subprocess results in hermetic tests.
  */
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,14 +23,6 @@ import { boardDir } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-const ALLOWED = [
-	/^git (ls-remote|log|rev-parse|show|cat-file|branch --list|merge-base|grep|worktree list)( |$)/,
-	/^git -C [^ ]+ (worktree list|status --porcelain|branch --list)( |$)/,
-	/^gh (pr view|pr checks|pr list|run list|run view|api repos\/[^ ]+\/(pulls|commits|actions)[^ ]*) ?/,
-	/^curl -s(I|S)? /,
-];
-const FORBIDDEN =
-	/[;&|<>`$\\^%]|--apply|\bpush\b|\bdelete\b|\s-X\b|--method|\s-[fF]\s|--field|--input/;
 const SAFE_BRANCH = /^[A-Za-z0-9._/-]{1,200}$/;
 const BASE_BRANCHES = new Set(['develop', 'main', 'master']);
 
@@ -45,12 +37,36 @@ export function prNumber(pr) {
 	return m ? Number(m[1]) : null;
 }
 
-export function isAllowedCommand(cmd) {
-	return ALLOWED.some((r) => r.test(cmd)) && !FORBIDDEN.test(cmd);
+/** Finite read-only grammar. Never execute stored shell text or arbitrary API/HTTP options. */
+export function commandArgs(cmd) {
+	if (typeof cmd !== 'string') return null;
+	if (cmd === 'git worktree list --porcelain') return ['git', 'worktree', 'list', '--porcelain'];
+	if (cmd === 'gh pr list --state open --json number,headRefName,title --limit 100')
+		return cmd.split(' ');
+	if (/^gh pr view [1-9]\d* --json (state|headRefOid)$/.test(cmd)) return cmd.split(' ');
+	if (/^git ls-remote origin refs\/heads\/[A-Za-z0-9._/-]{1,200}$/.test(cmd))
+		return cmd.split(' ');
+	return null;
 }
+export const isAllowedCommand = (cmd) => commandArgs(cmd) !== null;
 
 /** The check a task runs: its own `chequeo`, else the implicit one derived from `pr` or `rama`. */
 export function checkFor(t) {
+	if (t.origen && /^[a-f0-9]{40}$/.test(t.revisionSha ?? '') && prNumber(t.pr))
+		return {
+			cmd: `gh pr view ${prNumber(t.pr)} --json headRefOid`,
+			espera: `"headRefOid":\\s*"${t.revisionSha}"`,
+			implicito: true,
+		};
+	if (t.chequeo?.tipo === 'pr' && /^[1-9]\d*$/.test(String(t.chequeo.pr)))
+		return checkFor({ pr: t.chequeo.pr });
+	if (
+		t.chequeo?.tipo === 'rama' &&
+		typeof t.chequeo.rama === 'string' &&
+		SAFE_BRANCH.test(t.chequeo.rama)
+	)
+		return checkFor({ rama: t.chequeo.rama });
+	if (t.chequeo?.tipo) return { cmd: '', implicito: false };
 	if (t.chequeo?.cmd) return { ...t.chequeo, implicito: false };
 	const pr = prNumber(t.pr);
 	if (pr)
@@ -62,7 +78,7 @@ export function checkFor(t) {
 	if (t.rama && SAFE_BRANCH.test(t.rama))
 		return {
 			cmd: `git ls-remote origin refs/heads/${t.rama}`,
-			espera: `refs/heads/${t.rama}$`,
+			espera: `^[a-f0-9]+\\s+refs/heads/${t.rama.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
 			implicito: true,
 		};
 	return null;
@@ -72,18 +88,26 @@ function defaultRunner() {
 	const fixture = process.env.CELEBRA_BOARD_COMMAND_FIXTURE;
 	if (fixture) {
 		const answers = JSON.parse(readFileSync(fixture, 'utf8'));
-		return (cmd) => answers[cmd] ?? '';
+		return (cmd) =>
+			answers[cmd] ?? { ok: false, output: '', error: 'sin respuesta de fixture' };
 	}
 	return (cmd) => {
+		const args = commandArgs(cmd);
+		if (!args) return { ok: false, output: '', error: 'comando rechazado' };
 		try {
-			return execSync(cmd, {
-				encoding: 'utf8',
-				cwd: repoRoot,
-				timeout: 60_000,
-				stdio: ['ignore', 'pipe', 'pipe'],
-			});
-		} catch (e) {
-			return String(e.stdout || '') + String(e.stderr || '');
+			return {
+				ok: true,
+				output: execFileSync(args[0], args.slice(1), {
+					encoding: 'utf8',
+					cwd: repoRoot,
+					timeout: 60_000,
+					stdio: ['ignore', 'pipe', 'pipe'],
+					shell: false,
+				}),
+				error: '',
+			};
+		} catch {
+			return { ok: false, output: '', error: 'comando falló o agotó su tiempo' };
 		}
 	};
 }
@@ -141,8 +165,29 @@ function checkTask(t, run) {
 			veredicto: 'RECHAZADO',
 			salida: 'comando fuera de la lista de solo lectura',
 		};
-	const out = run(c.cmd);
-	const ok = expectationMet(c.espera, out);
+	const result = commandResult(run, c.cmd);
+	if (!result.ok) return { ...row, veredicto: 'UNVERIFIED', salida: result.error, cmd: c.cmd };
+	const out = result.output;
+	let ok;
+	try {
+		if (c.cmd.startsWith('gh pr view')) {
+			const parsed = JSON.parse(out);
+			if (
+				c.cmd.endsWith('headRefOid')
+					? !/^[a-f0-9]{40}$/.test(parsed.headRefOid ?? '')
+					: !['OPEN', 'CLOSED', 'MERGED'].includes(parsed.state)
+			)
+				throw new Error('invalid PR response');
+		}
+		ok = expectationMet(c.espera, out);
+	} catch {
+		return {
+			...row,
+			veredicto: 'UNVERIFIED',
+			salida: 'respuesta o expectativa inválida',
+			cmd: c.cmd,
+		};
+	}
 	const ready = ok && (t.estado === 'unida' || t.estado === 'hecha');
 	let veredicto = 'NO CUMPLE';
 	if (ok) veredicto = ready ? 'CUMPLE → comprobada' : 'CUMPLE (¿ya está unida?)';
@@ -150,18 +195,36 @@ function checkTask(t, run) {
 	return { ...row, veredicto, salida, cmd: c.cmd, implicito: c.implicito, ready };
 }
 
+function commandResult(run, cmd) {
+	try {
+		const result = run(cmd);
+		return typeof result === 'string' ? { ok: true, output: result } : result;
+	} catch {
+		return { ok: false, output: '', error: 'no se pudo comprobar' };
+	}
+}
+
 function unclaimedWork(tareas, run) {
-	const openPrs = parseJson(
-		run('gh pr list --state open --json number,headRefName,title --limit 100'),
-		[],
+	const prResult = commandResult(
+		run,
+		'gh pr list --state open --json number,headRefName,title --limit 100',
 	);
+	const openPrs = prResult.ok ? parseJson(prResult.output, null) : null;
+	const branchResult = commandResult(run, 'git worktree list --porcelain');
 	const prsSinTarea = (Array.isArray(openPrs) ? openPrs : [])
 		.filter((p) => !tareas.some((t) => claims(t, { branch: p.headRefName, pr: p.number })))
 		.map((p) => ({ pr: p.number, rama: p.headRefName, titulo: p.title }));
-	const ramasSinTarea = worktreeBranches(run('git worktree list --porcelain'))
+	const ramasSinTarea = worktreeBranches(branchResult.ok ? branchResult.output : '')
 		.filter((b) => !BASE_BRANCHES.has(b) && !tareas.some((t) => claims(t, { branch: b })))
 		.filter((b) => !prsSinTarea.some((p) => p.rama === b));
-	return { prsSinTarea, ramasSinTarea };
+	return {
+		prsSinTarea,
+		ramasSinTarea,
+		cobertura: {
+			prs: Array.isArray(openPrs) ? 'VERIFIED' : 'UNVERIFIED',
+			ramas: branchResult.ok ? 'VERIFIED' : 'UNVERIFIED',
+		},
+	};
 }
 
 function archivedSessions(tareas, sesiones) {
@@ -225,12 +288,27 @@ function boardIssues(tareas, bitacora, decisiones, now) {
 	const lastLog = lastLogByTask(bitacora);
 	const inconsistencias = [];
 	const avisos = [];
+	const visited = new Set();
+	const cycles = new Set();
+	const visit = (id, path = []) => {
+		const start = path.indexOf(id);
+		if (start >= 0) {
+			for (const member of path.slice(start)) cycles.add(member);
+			return;
+		}
+		if (visited.has(id)) return;
+		visited.add(id);
+		for (const r of byId[id]?.requisitos ?? [])
+			if (['tarea', 'revision'].includes(r.tipo)) visit(r.ref, [...path, id]);
+	};
+	for (const t of tareas) visit(t.id);
+	for (const id of cycles) inconsistencias.push({ id, msg: 'ciclo de requisitos' });
 	for (const t of tareas) {
 		const msgs = closingIssues(t);
 		if (!isClosed(t)) msgs.push(...taskIssues(t), ...logIssues(t, lastLog));
 		for (const msg of msgs) inconsistencias.push({ id: t.id, msg });
 		for (const msg of taskWarnings(t, byId, decIds, now)) avisos.push({ id: t.id, msg });
-		if (t.rama && t.id !== taskIdFromBranch(t.rama))
+		if (t.rama && (t.origen ?? t.id) !== taskIdFromBranch(t.rama))
 			avisos.push({
 				id: t.id,
 				msg: `id distinto de la rama sin prefijo (${taskIdFromBranch(t.rama)})`,
@@ -305,6 +383,11 @@ function printText(r) {
 		(x) => `${x.id.padEnd(32)} ${x.sesion} ${x.nombre}`,
 	);
 	section('AVISOS', r.avisos, (x) => `${x.id.padEnd(32)} ${x.msg}`);
+	section(
+		'COBERTURA NO VERIFICADA',
+		Object.entries(r.cobertura).filter(([, value]) => value === 'UNVERIFIED'),
+		([name]) => name,
+	);
 	console.log(
 		r.inconsistencias.length
 			? `\nINCONSISTENCIAS (${r.inconsistencias.length}):`
@@ -330,6 +413,11 @@ function main(argv) {
 	if (json) console.log(JSON.stringify(result, null, 2));
 	else printText(result);
 	if (result.inconsistencias.length) process.exitCode = 1;
+	else if (
+		result.filas.some((r) => r.veredicto === 'UNVERIFIED') ||
+		Object.values(result.cobertura).includes('UNVERIFIED')
+	)
+		process.exitCode = 2;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))

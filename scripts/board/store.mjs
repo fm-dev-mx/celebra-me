@@ -19,7 +19,6 @@ import {
 	readFileSync,
 	renameSync,
 	rmSync,
-	statSync,
 	writeFileSync,
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -31,10 +30,10 @@ export const COLLECTIONS = [
 	'carriles',
 	'estado',
 	'agentes',
+	'archivo',
 	'prompts',
 ];
 const SAFE_ID = /^[A-Za-z0-9._~:@+-]{1,200}$/;
-const LOCK_STALE_MS = 30_000;
 export const BACKUP_DIR = '.respaldos';
 export const BACKUPS_KEPT = 5;
 
@@ -79,6 +78,7 @@ export function loadBoard(dir) {
 		bitacora: readCollection(dir, 'bitacora'),
 		carriles: readCollection(dir, 'carriles'),
 		agentes: readCollection(dir, 'agentes'),
+		archivo: readCollection(dir, 'archivo'),
 		estado: estado ?? null,
 	};
 }
@@ -117,16 +117,25 @@ export function withLock(dir, fn, { waitMs = 5000 } = {}) {
 	const until = Date.now() + waitMs;
 	for (;;) {
 		try {
-			closeSync(openSync(lock, 'wx'));
+			const fd = openSync(lock, 'wx');
+			try {
+				writeFileSync(
+					fd,
+					JSON.stringify({ pid: process.pid, desde: new Date().toISOString() }),
+				);
+			} finally {
+				closeSync(fd);
+			}
 			break;
 		} catch (e) {
 			if (e.code !== 'EEXIST') throw e;
-			if (Date.now() - statSync(lock, { throwIfNoEntry: false })?.mtimeMs > LOCK_STALE_MS)
-				rmSync(lock, { force: true });
-			else if (Date.now() > until)
-				throw new Error('el tablero está ocupado por otra escritura; reintente', {
-					cause: e,
-				});
+			if (Date.now() > until)
+				throw new Error(
+					'el tablero está ocupado; reintente. Si el escritor terminó, el coordinador debe inspeccionar el candado antes de recuperarlo.',
+					{
+						cause: e,
+					},
+				);
 			else Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
 		}
 	}
