@@ -1,0 +1,161 @@
+// Sage champagne, theme-wide token blocks that need section DOM knowledge: the quote's own
+// component defaults, the header over the forest night, the night band itself (a remap of the
+// semantic color bridge for the countdown, the gifts and the closing) and the reply card.
+// Custom properties only; geometry stays with the section bases and registered variants.
+
+.theme-preset--sage-champagne {
+	// The quote section declares its own component defaults, so its tokens are set on it. An
+	// invitation may lay drawn art over the paper (`--sage-quote-art`, background layers) and
+	// open room for it (`--sage-quote-padding-block`); both default to the plain page.
+	.quote-section {
+		--quote-bg-fallback: var(--sage-quote-art, none), var(--sage-paper);
+		--quote-text-color-fallback: var(--color-forest-ink);
+		--quote-author-color-fallback: var(--color-champagne-ink);
+		--quote-accent-color-fallback: var(--color-champagne);
+		--quote-padding-block: var(--sage-quote-padding-block, clamp(4.5rem, 12vh, 7.5rem));
+
+		// 30rem keeps the closing words of a two-sentence quote together on desktop.
+		--quote-content-max-width: 30rem;
+		--quote-content-font-fallback: var(--font-display);
+		--quote-content-size-fallback: clamp(1.55rem, 4.4vw, 2.35rem);
+		--quote-content-line-height-fallback: 1.35;
+		--quote-content-letter-spacing-fallback: 0;
+		--quote-divider-display-fallback: none;
+		--quote-ornament-color-fallback: var(--color-champagne);
+		--quote-ornament-opacity: 0.6;
+		--quote-texture-bg: none;
+		--quote-texture-opacity: 0;
+		--quote-content-style: italic;
+	}
+
+	// Full names (two given names, two surnames) stay on one line wherever the column allows it.
+	.family {
+		--family-name-max-width: 30ch;
+	}
+
+	// The gallery section declares its own title defaults (tracked capitals), so the chapter
+	// title is set here, in the display italic of the other chapters.
+	.gallery-section {
+		--gallery-title-transform: none;
+		--gallery-title-letter-spacing: 0;
+		--gallery-title-style: italic;
+		--gallery-title-size: clamp(2.1rem, 5vw, 3.2rem);
+	}
+
+	// Header over the forest night: ivory links, champagne hover.
+	.header-base {
+		--header-bg-scrolled-fallback: rgb(var(--color-forest-night-rgb) / 92%);
+		--header-border-color: rgb(var(--color-champagne-light-rgb) / 18%);
+		--header-nav-title-color-fallback: var(--color-ivory);
+		--header-nav-color-fallback: var(--color-ivory);
+		--header-nav-color-transparent-fallback: var(--color-ivory);
+		--header-nav-hover-color-fallback: var(--color-champagne-light);
+		--header-nav-shadow-transparent: 0 1px 6px rgb(var(--color-forest-night-rgb) / 34%);
+		--header-nav-cta-bg-fallback: rgb(var(--color-ivory-rgb) / 10%);
+		--header-nav-cta-color-fallback: var(--color-ivory);
+		--header-nav-cta-border-fallback: rgb(var(--color-champagne-light-rgb) / 50%);
+		--header-nav-cta-hover-bg-fallback: rgb(var(--color-champagne-light-rgb) / 18%);
+		--header-nav-cta-hover-color-fallback: var(--color-ivory);
+		--header-nav-cta-hover-border-fallback: rgb(var(--color-champagne-light-rgb) / 70%);
+		--mobile-drawer-bg: rgb(var(--color-forest-night-rgb) / 97%);
+		--mobile-drawer-border: rgb(var(--color-champagne-light-rgb) / 18%);
+		--mobile-drawer-link-color-fallback: var(--color-ivory);
+		--mobile-drawer-link-hover-fallback: var(--color-champagne-light);
+		--mobile-drawer-cta-bg-fallback: var(--color-champagne-light);
+		--mobile-drawer-cta-color-fallback: var(--color-forest-night);
+		--hamburger-color-fallback: var(--color-ivory);
+		--hamburger-color-menu-open-fallback: var(--color-ivory);
+	}
+
+	// Night band: only the countdown, the gifts and the closing read against the forest night;
+	// every other chapter stays on day paper or sage mist. Arch joins paint the night color, so a
+	// day section above closes on the silhouette of a door.
+	.invitation-section-wrapper:is(
+		[data-section-kind='countdown'],
+		[data-section-kind='gifts'],
+		[data-section-kind='thankYou']
+	),
+	.invitation-footer {
+		--section-band-paper: var(--sage-night);
+		--intersection-surface: var(--color-forest-night);
+		--intersection-surface-fill: var(--sage-night);
+		--intersection-blend-fallback: radial-gradient(
+			ellipse 140% 100% at 50% 0%,
+			rgb(var(--color-champagne-light-rgb) / 14%) 0%,
+			transparent 72%
+		);
+		--color-surface-primary: var(--color-forest-night);
+		--color-surface-primary-rgb: var(--color-forest-night-rgb);
+		--color-surface-secondary: var(--color-forest-midnight);
+		--color-surface-secondary-rgb: var(--color-forest-midnight-rgb);
+		--color-surface-soft: var(--color-forest-dusk);
+		--color-action-accent: var(--color-champagne-light);
+		--color-action-accent-rgb: var(--color-champagne-light-rgb);
+		--color-text-primary: var(--color-ivory);
+		--color-text-primary-rgb: var(--color-ivory-rgb);
+		--color-text-secondary: var(--color-night-sage);
+		--color-text-secondary-rgb: var(--color-night-sage-rgb);
+		--color-text-emphasis: var(--color-champagne-light);
+		--color-text-muted: var(--color-night-sage);
+		--color-border-subtle: rgb(var(--color-champagne-light-rgb) / 18%);
+		--color-border-premium: rgb(var(--color-champagne-light-rgb) / 54%);
+		--color-ornament-gold: var(--color-champagne-light);
+
+		// The elevated surface stays cream, so the calendar menu needs its own night pair.
+		--location-calendar-menu-bg: var(--color-forest-midnight);
+		--location-calendar-menu-ink: var(--color-ivory);
+	}
+
+	// Radio rings read as controls on the cream card (sage deep, above 3:1), and the chosen answer
+	// is inked in champagne. `.rsvp` declares these defaults itself, so they are set on it. The
+	// confirm button keeps cream on forest ink when hovered (or after a tap on a phone), instead of
+	// the base night-on-ink pair.
+	.rsvp {
+		--rsvp-button-color-hover: var(--color-cream);
+		--rsvp-button-bg-hover: rgb(var(--color-forest-ink-rgb) / 88%);
+		--rsvp-radio-indicator-border: var(--color-sage-deep);
+		--rsvp-radio-selected-border: var(--color-champagne-ink);
+		--rsvp-radio-indicator-dot: var(--color-champagne-ink);
+		--rsvp-radio-selected-bg: rgb(var(--color-champagne-light-rgb) / 14%);
+		--rsvp-radio-label-color-selected: var(--color-forest-ink);
+	}
+
+	// The reply card is printed paper on the mist: its sections keep the day inks.
+	.personalized-access,
+	.rsvp-section {
+		--color-action-accent: var(--color-champagne-ink);
+		--color-action-accent-rgb: var(--color-champagne-ink-rgb);
+		--color-text-primary: var(--color-forest-ink);
+		--color-text-primary-rgb: var(--color-forest-ink-rgb);
+		--color-text-secondary: var(--color-forest-ink-soft);
+		--color-text-secondary-rgb: var(--color-forest-ink-soft-rgb);
+		--color-text-muted: var(--color-forest-ink-soft);
+		--color-border-subtle: rgb(var(--color-champagne-rgb) / 24%);
+		--color-border-premium: rgb(var(--color-champagne-rgb) / 58%);
+		--reply-card-ink: var(--color-forest-ink);
+		--reply-card-muted: var(--color-forest-ink-soft);
+		--reply-card-rule: rgb(var(--color-champagne-rgb) / 55%);
+		--reply-card-accent: var(--color-champagne-ink);
+
+		// The two answers are ruled rows on the paper, not form boxes.
+		--reply-card-option-bg: transparent;
+
+		// The pass subtitle is a quiet line under the label, not a second heading.
+		--pa-subtitle-weight: 400;
+	}
+
+	// The closing copy is centered under the signature, and the message opens without a drop cap,
+	// so no initial detaches from its word.
+	.thank-you-section {
+		--color-action-primary: var(--color-ivory);
+		--color-action-primary-rgb: var(--color-ivory-rgb);
+		--thank-you-keepsake-copy-align: center;
+		--thank-you-keepsake-text-align: center;
+		--thank-you-drop-cap-float: none;
+		--thank-you-drop-cap-margin: 0;
+		--thank-you-drop-cap-size: 1em;
+		--thank-you-drop-cap-size-desktop: 1em;
+		--thank-you-drop-cap-weight: inherit;
+		--thank-you-drop-cap-line-height: inherit;
+	}
+}
