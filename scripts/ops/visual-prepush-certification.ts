@@ -14,6 +14,12 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { visualImpactFiles } from './visual-impact.ts';
+import { affectedVisualPages } from '../screenshot/visual-affected-pages.ts';
+import {
+	buildVisualPageCases,
+	selectVisualPageCases,
+	VISUAL_CANDIDATE_COMMAND,
+} from '../screenshot/visual-coverage-contract.ts';
 import {
 	readCandidateReview,
 	type CandidateReview,
@@ -183,7 +189,8 @@ function runDocker(
 	sourceArchive: string,
 	evidence: string,
 	sha: string,
-	operation: 'candidate' | 'compare',
+	operation: 'candidate' | 'compare' | 'affected',
+	pages = '',
 ): number {
 	const nodeStore = gitPath('visual-runtime-cache/node-v24.14.1');
 	mkdirSync(nodeStore, { recursive: true });
@@ -219,7 +226,9 @@ function runDocker(
 			'browser',
 			operation === 'candidate'
 				? `pnpm visual:parity:candidate -- --sha ${sha}`
-				: CERTIFIED_BROWSER_COMMAND,
+				: operation === 'affected'
+					? `pnpm visual:parity:affected -- --pages ${pages}`
+					: CERTIFIED_BROWSER_COMMAND,
 		),
 	].join(' && ');
 	const result = spawnSync(
@@ -245,7 +254,7 @@ function runDocker(
 			'--env',
 			'PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT=true',
 			'--env',
-			`VISUAL_PARITY_MODE=${operation}`,
+			`VISUAL_PARITY_MODE=${operation === 'affected' ? 'compare' : operation}`,
 			'--env',
 			`VISUAL_PARITY_OS_IMAGE_DIGEST=${PLAYWRIGHT_IMAGE.slice(PLAYWRIGHT_IMAGE.indexOf('@') + 1)}`,
 			'--env',
@@ -496,18 +505,72 @@ function materializeCandidateWorkspace(evidence: string, root: string, sha: stri
 	printVisualCandidateSummary(targetCandidate, root, sha);
 }
 
+/**
+ * Pages to check in affected mode: `--pages` when given, otherwise the pages whose own files
+ * changed between `--base-sha` and the commit. A shared visual change cannot be scoped.
+ */
+export function resolveAffectedPages(
+	pagesFlag: string | undefined,
+	changed: () => string[],
+): string {
+	const cases = buildVisualPageCases();
+	if (pagesFlag) {
+		return selectVisualPageCases(cases, pagesFlag)
+			.map((entry) => entry.slug)
+			.join(',');
+	}
+	const { pages, shared } = affectedVisualPages(changed(), cases);
+	if (shared.length > 0) {
+		throw new Error(
+			`Shared visual files changed, so any page may move:\n  ${shared.join('\n  ')}\nName the pages to check with --pages <slug>[,<slug>...], or run the full candidate: ${VISUAL_CANDIDATE_COMMAND}.`,
+		);
+	}
+	if (pages.length === 0) throw new Error('No complete page owns the changed files.');
+	return pages.map((entry) => entry.slug).join(',');
+}
+
+function compareAffectedPages(
+	sourceArchive: string,
+	evidence: string,
+	sha: string,
+	pages: string,
+): void {
+	const exitCode = timedHostStep('docker', () =>
+		runDocker(sourceArchive, evidence, sha, 'affected', pages),
+	);
+	if (exitCode !== 0) {
+		const category = classifyVisualFailure(evidence);
+		throw new Error(
+			`${category}: affected pages differ from their accepted references for ${sha} (${pages}). Next: ${VISUAL_CANDIDATE_COMMAND.replace('<commit>', sha)}.`,
+		);
+	}
+	console.log(`Affected pages match their accepted references for ${sha}.`);
+}
+
+function parseAffectedPages(sha: string): string | undefined {
+	if (!process.argv.slice(2).includes('--affected')) return undefined;
+	const pages = resolveAffectedPages(parseFlag('--pages'), () =>
+		changedPaths(parseFlag('--base-sha'), sha),
+	);
+	console.log(`Affected pages: ${pages}`);
+	return pages;
+}
+
 function main(): void {
 	const sha = assertExactCommit(parseFlag('--sha') ?? '');
 	const repositoryRoot = git(['rev-parse', '--show-toplevel']);
 	const candidateMode = process.argv.slice(2).includes('--candidate');
+	const affectedPages = parseAffectedPages(sha);
+	// Candidate and affected runs skip the ref-update certification checks.
+	const certifying = !candidateMode && !affectedPages;
 	const targetRef = parseFlag('--target-ref') ?? 'refs/heads/develop';
 	const baseSha = parseFlag('--base-sha');
-	const paths = candidateMode ? [] : changedPaths(baseSha, sha);
-	if (!candidateMode && !shouldRequireVisualCertification(targetRef, paths)) {
+	const paths = certifying ? changedPaths(baseSha, sha) : [];
+	if (certifying && !shouldRequireVisualCertification(targetRef, paths)) {
 		console.log('Visual certification is not required for this ref update.');
 		return;
 	}
-	const identity = candidateMode ? undefined : identityForCommit(sha);
+	const identity = certifying ? identityForCommit(sha) : undefined;
 	const certificationPath = gitPath(`visual-certifications/${sha}.json`);
 	if (identity && hasReusableCertification(certificationPath, identity)) {
 		console.log(`Visual certification cache hit for ${sha}.`);
@@ -552,6 +615,10 @@ function main(): void {
 			const [tar, args] = sourceArchiveCommand(checkout, sourceArchive);
 			execFileSync(tar, args, { stdio: 'inherit' });
 		});
+		if (affectedPages) {
+			compareAffectedPages(sourceArchive, evidence, sha, affectedPages);
+			return;
+		}
 		if (candidateMode) {
 			const exitCode = timedHostStep('docker', () =>
 				runDocker(sourceArchive, evidence, sha, 'candidate'),

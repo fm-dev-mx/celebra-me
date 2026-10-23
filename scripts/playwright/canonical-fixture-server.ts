@@ -86,6 +86,9 @@ if (accessSource) {
 }
 
 const UNSUPPORTED = Symbol('unsupported');
+// Guest lookups (`?invite=`) take the transient-failure path on purpose: the page keeps the public
+// fallback and the param, which the routing and access e2e specs rely on.
+const SIMULATED_GUEST_LOOKUP_FAILURE = Symbol('simulated-guest-lookup-failure');
 const eqParam = (url: URL, name: string) => url.searchParams.get(name)?.replace(/^eq\./, '');
 
 /** Access row (payment and public access) of a canonical fixture invitation. */
@@ -124,6 +127,8 @@ function resolveFixtureResult(url: URL, authorization: string | undefined): unkn
 		case '/rest/v1/events':
 			// No canonical RSVP event links an invitation: memories and RSVP see no access row.
 			return [];
+		case '/rest/v1/guest_invitations':
+			return SIMULATED_GUEST_LOOKUP_FAILURE;
 		case '/rest/v1/event_memory_settings':
 			return eqParam(url, 'public_slug') === CANONICAL_MEMORIES_SLUG
 				? [buildCanonicalMemorySpaceRow()]
@@ -150,6 +155,12 @@ const server = createServer((request, response) => {
 		return;
 	}
 	const result = resolveFixtureResult(url, request.headers.authorization);
+	if (result === SIMULATED_GUEST_LOOKUP_FAILURE) {
+		response
+			.writeHead(503)
+			.end('Fixture transport: guest lookups are a simulated transient failure (expected).');
+		return;
+	}
 	if (result === UNSUPPORTED) {
 		response.writeHead(404).end('Unsupported fixture request.');
 		return;

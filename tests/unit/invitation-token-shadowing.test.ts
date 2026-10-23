@@ -17,11 +17,13 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry';
 
 const ROOT = process.cwd();
 const PROFILES_DIR = path.join(ROOT, 'src/styles/invitation-profiles');
 const BASE_DIRS = ['src/styles/invitation', 'src/styles/themes/sections'];
 const BASELINE_PATH = path.join(ROOT, 'tests/fixtures/invitation-token-shadowing/baseline.json');
+const DEMOS_DIR = path.join(ROOT, 'src/invitations/demos');
 
 const PROFILE_ROOT_SELECTOR = /^\.event--([\w-]+)(?:\.theme-preset--([\w-]+))?$/u;
 // Declarations on these selectors sit on (or above) the wrapper, so a profile token still wins.
@@ -140,6 +142,26 @@ function findShadowedTokens(): Map<string, Map<string, string>> {
 	return shadowed;
 }
 
+/** Published invitation routes and demo slugs that render with each visual profile. */
+function readProfilePages(): Map<string, string[]> {
+	const pages = new Map<string, string[]>();
+	const add = (profileId: string | undefined, page: string) => {
+		if (!profileId) return;
+		pages.set(profileId, [...(pages.get(profileId) ?? []), page]);
+	};
+	for (const definition of listInvitationDefinitions()) {
+		if (definition.lifecycle !== 'published') continue;
+		add(definition.visualProfileId, `/${definition.eventType}/${definition.slug}`);
+	}
+	for (const entry of fs.readdirSync(DEMOS_DIR, { withFileTypes: true })) {
+		const content = path.join(DEMOS_DIR, entry.name, 'content.json');
+		if (!entry.isDirectory() || !fs.existsSync(content)) continue;
+		const match = fs.readFileSync(content, 'utf8').match(/"visualProfileId"\s*:\s*"([\w-]+)"/u);
+		add(match?.[1], `demo ${entry.name}`);
+	}
+	return pages;
+}
+
 function readBaseline(): Record<string, string[]> {
 	return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8')) as Record<string, string[]>;
 }
@@ -155,14 +177,25 @@ describe('invitation profile tokens are not shadowed by base section defaults', 
 	});
 
 	it('adds no shadowed token beyond the baseline', () => {
+		const profilePages = readProfilePages();
 		const added: string[] = [];
 		for (const [id, tokens] of shadowed) {
 			const allowed = new Set(baseline[id] ?? []);
+			const pages = profilePages.get(id)?.join(', ') || 'no published page';
 			for (const [token, site] of tokens) {
-				if (!allowed.has(token)) added.push(`${id}: ${token} is redeclared by ${site}`);
+				if (allowed.has(token)) continue;
+				added.push(
+					`${id}: ${token} is redeclared by ${site}; affects ${pages}. ` +
+						'Move the base default into the var() fallback, or scope the variant token ' +
+						'under [data-variant] with a variant prefix.',
+				);
 			}
 		}
 		expect(added).toEqual([]);
+	});
+
+	it('names the published pages behind each profile', () => {
+		expect(readProfilePages().get('america')).toContain('/xv/america');
 	});
 
 	it('keeps the baseline free of pairs that no longer shadow anything', () => {

@@ -3,8 +3,12 @@ import * as registry from '../../scripts/provision/invitations/registry';
 import {
 	buildVisualPageCases,
 	buildVisualCoverageCases,
+	describeVisualMatrixDrift,
 	discoverDemoCases,
+	selectVisualPageCases,
+	VISUAL_CANDIDATE_COMMAND,
 } from '../../scripts/screenshot/visual-coverage-contract';
+import { affectedVisualPages } from '../../scripts/screenshot/visual-affected-pages';
 
 describe('visual coverage lifecycle', () => {
 	afterEach(() => jest.restoreAllMocks());
@@ -46,6 +50,44 @@ describe('visual coverage lifecycle', () => {
 			readFileSync('tests/e2e/visual-baselines/manifest.json', 'utf8'),
 		) as { matrixHash: string };
 		// Publishing or retiring a demo or invitation needs an approved candidate in the same branch.
-		expect(manifest.matrixHash).toBe(buildVisualCoverageCases().matrixHash);
+		const { matrixHash } = buildVisualCoverageCases();
+		if (manifest.matrixHash !== matrixHash) {
+			throw new Error(describeVisualMatrixDrift(manifest.matrixHash, matrixHash));
+		}
+	});
+	it('scopes complete-page cases to named slugs and rejects unknown ones', () => {
+		const cases = buildVisualPageCases();
+		const [first, second] = cases;
+		expect(selectVisualPageCases(cases, undefined)).toEqual(cases);
+		expect(
+			selectVisualPageCases(cases, ` ${second.slug},${first.slug} `).map((c) => c.slug),
+		).toEqual([first.slug, second.slug]);
+		expect(() => selectVisualPageCases(cases, 'no-such-page')).toThrow('no-such-page');
+	});
+	it('maps changed files to the pages that own them and keeps shared files apart', () => {
+		const cases = buildVisualPageCases();
+		const america = cases.find((entry) => entry.slug === 'america');
+		const demo = cases.find((entry) => entry.kind === 'demo');
+		expect(america && demo).toBeTruthy();
+		const result = affectedVisualPages(
+			[
+				'scripts/provision/invitations/america.ts',
+				'src/styles/invitation-profiles/america.scss',
+				`src/invitations/demos/${demo!.slug}/content.json`,
+				'src/styles/invitation/scenes/_lantern-route.scss',
+				'docs/core/invitation-creation-contract.md',
+			],
+			cases,
+		);
+		expect(result.pages.map((entry) => entry.slug).sort()).toEqual(
+			['america', demo!.slug].sort(),
+		);
+		expect(result.shared).toEqual(['src/styles/invitation/scenes/_lantern-route.scss']);
+	});
+	it('names the current hash and the regeneration commands when the matrix drifts', () => {
+		const message = describeVisualMatrixDrift('a'.repeat(64), 'b'.repeat(64));
+		expect(message).toContain(`accepted ${'a'.repeat(64)}, current ${'b'.repeat(64)}`);
+		expect(message).toContain(VISUAL_CANDIDATE_COMMAND);
+		expect(message).toContain(`--matrix-hash=${'b'.repeat(64)}`);
 	});
 });
