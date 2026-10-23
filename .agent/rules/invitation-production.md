@@ -10,13 +10,14 @@ creation contract → production runbook → this rule → live CLI help. See
 The canonical operational source is
 [`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md). Read it
 before creating, editing, publishing, or validating an invitation. Content structure is defined by
-[`docs/core/content-schema.md`](../../docs/core/content-schema.md). Identity requirements live in
-[`docs/core/invitation-creation-contract.md`](../../docs/core/invitation-creation-contract.md).
-Preparation semantics (classifications, placeholders, preparation readiness) live in
-[`docs/core/invitation-preparation-contract.md`](../../docs/core/invitation-preparation-contract.md)
-and `.agent/skills/invitation-preparation/SKILL.md`. Content promote/mirror vs RSVP isolation lives
-in [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
-Do not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
+[`docs/core/content-schema.md`](../../docs/core/content-schema.md). Creation order, preparation
+semantics (classifications, placeholders, preparation readiness), identity requirements and styling
+boundaries live in
+[`docs/core/invitation-creation-contract.md`](../../docs/core/invitation-creation-contract.md); the
+preparation workflow is `.agent/skills/invitation-preparation/SKILL.md`. Content promote/mirror vs
+RSVP isolation lives in
+[`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md). Do
+not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
 
 Managed assets go through the preparation asset protocol and the provision release normalization.
 
@@ -49,7 +50,7 @@ Managed assets go through the preparation asset protocol and the provision relea
   migrations precede dependent application deployment. Never infer production alignment.
 - Run the narrow relevant checks plus production-oriented build/E2E checks proportional to risk. Do
   not stage, commit, deploy, or mutate production unless explicitly requested.
-- Treat creative acceptance as a separate human gate (preparation contract §9.2); render or
+- Treat creative acceptance as a separate human gate (creation contract §1.9.2); render or
   screenshot success is mechanical evidence only.
 
 ## Managed updates

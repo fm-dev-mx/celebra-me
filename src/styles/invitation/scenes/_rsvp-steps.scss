@@ -20,7 +20,7 @@ $lantern-shape: 40% 40% 45% 45%;
 @mixin styles {
 	[data-rsvp-flow='steps'] {
 		--rsvp-steps-track: rgb(var(--color-text-primary-rgb, 16 24 32) / 16%);
-		--rsvp-steps-lantern: var(--america-lantern, rgb(232 160 64));
+		--rsvp-steps-lantern: var(--scene-lantern, rgb(232 160 64));
 		--rsvp-steps-glow: rgb(232 160 64 / 35%);
 		--rsvp-steps-ink: var(--reply-card-ink, var(--color-text-primary));
 		--rsvp-steps-muted: var(--reply-card-muted, var(--color-text-secondary));

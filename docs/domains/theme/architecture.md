@@ -32,7 +32,8 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
   tokens.
 - **Must not:** Own section layout/geometry or client-specific overrides.
 - **Existence rule:** Only when ≥2 invitations or demos share the pack; otherwise use a variant or a
-  profile.
+  profile. A derived preset (a base preset plus overrides) may start with one consumer; see
+  [presets and derived presets](../../core/invitation-creation-contract.md#presets-and-derived-presets).
 
 ### Invitation profile
 
@@ -40,6 +41,11 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
   every managed invitation)
 - **Owns:** Custom-property declarations only: client palette token remap and rhythm/intersection
   token overrides that differ from the preset.
+- **Slug composition:** A client profile in `src/invitations/clients/<slug>/` may load an optional
+  `composition.scss` that declares real properties under `.event--<slug>`, at most 600 lines and
+  never touching `src/styles/invitation/scenes/**`
+  ([profile in two levels](../../core/invitation-creation-contract.md#profile-in-two-levels)). The
+  rules below apply to the profile file itself.
 - **Must not:** Declare any non-custom property; re-declare section layout; style one section
   relative to another; render client text through `content:`; select by position or by data such as
   an image key; duplicate active variant or preset rules.

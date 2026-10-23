@@ -675,6 +675,11 @@ by scheduled workflows (GitHub e-mails the repository watchers):
   - `worker-limits`: any request cut off by a CPU or memory limit in 24 hours.
   - `platform-quotas`: the usage collector logged no summary in 24 hours, or a run found a metric at
     or above 80 % of its allowance.
+  - `security-events`: more than 50 `security_event` lines in 24 hours, counted by `kind`
+    (`rate_limited`, `login_failed`, `mfa_failed`). The Worker logs fixed labels only (namespace,
+    route or reason), never e-mails, IPs or passwords (`src/lib/server/security-events.ts`). MFA
+    codes are checked between the browser and Supabase, so `mfa_failed` counts only the server
+    rejecting a session sync without MFA evidence.
 - `nightly-visual-parity.yml` (daily): visual parity run.
 - `production-image-audit.yml` (daily): published invitation images still resolve.
 
@@ -689,6 +694,7 @@ investigate.
 | Document cache   | Baseline script; deploy checks   | Public TTL or document HIT                                          | Restore origin-revalidate / no-store    |
 | RSVP API errors  | Worker logs; `worker-errors`     | Cluster of 5xx or RPC failures after deploy                         | RPC, auth, rate limit                   |
 | Usage vs traffic | Cloudflare / Supabase dashboards | Consumption rising faster than opens/RSVPs                          | Operation contracts, media path         |
+| Security events  | Worker logs; `security-events`   | Above 50 a day, or one `kind` dominating                            | Rate limits, account lockout, WAF rule  |
 
 Cloudflare Web Analytics (the beacon in `Layout.astro`) reports both pageviews (the traffic
 denominator) and Core Web Vitals p75 per path (dashboard or GraphQL

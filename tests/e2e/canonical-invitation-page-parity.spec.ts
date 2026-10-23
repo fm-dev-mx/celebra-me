@@ -28,6 +28,7 @@ import {
 } from './harness/visual-capture-settlement';
 import {
 	buildVisualPageCases,
+	selectVisualPageCases,
 	VISUAL_VIEWPORTS,
 	visualPageCaseFile,
 	type VisualPageCase,
@@ -41,7 +42,7 @@ const ACCEPTED_BASELINES_MANIFEST = path.resolve(
 );
 assertVisualComparisonReady(VISUAL_PARITY_MODE, ACCEPTED_BASELINES_MANIFEST);
 
-const PAGE_CASES: VisualPageCase[] = buildVisualPageCases();
+const PAGE_CASES: VisualPageCase[] = selectVisualPageCases(buildVisualPageCases());
 
 function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 	let url: URL;

@@ -1,9 +1,9 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.42.0-beta.1",
+    "version": "0.43.0-beta.1",
     "engines": {
-        "node": ">=22.13.0 <25"
+        "node": ">=22.18.0 <25"
     },
     "packageManager": "pnpm@11.23.0+sha512.f00082e5b283a199b74e079da28d155c008fe232f44c8a06ea7ddfa014ecf719fc362f790ecc67b28106ddac2afb24c49a9a079159da560b2ce7d1e98efd11af",
     "scripts": {
@@ -149,6 +149,8 @@
         "screenshot:css-parity": "tsx scripts/screenshot/css-visual-parity.ts",
         "visual:parity:candidate": "tsx scripts/screenshot/visual-parity-cli.ts candidate",
         "visual:parity:candidate:certified": "tsx scripts/ops/visual-prepush-certification.ts --candidate",
+        "visual:parity:affected": "tsx scripts/screenshot/visual-parity-cli.ts affected",
+        "visual:parity:affected:certified": "tsx scripts/ops/visual-prepush-certification.ts --affected",
         "visual:parity:diagnose": "tsx scripts/screenshot/visual-parity-cli.ts diagnose",
         "visual:parity:compare": "tsx scripts/screenshot/visual-parity-cli.ts compare",
         "visual:parity:accept": "tsx scripts/screenshot/visual-parity-cli.ts accept",

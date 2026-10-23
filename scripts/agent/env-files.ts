@@ -2,29 +2,34 @@
 /**
  * env-files.ts — Check and synchronize the ignored local env files of the worktree lanes.
  *
- * Each ignored file has one purpose and one tracked template (`ENV_FILES`). The Integration
- * checkout (repo root) holds the canonical copies; the development lanes receive identical copies.
- * Output lists names and file states only — never values or value-derived digests.
+ * Integration holds the canonical files. Only named lanes and purposes receive copies.
+ * Differing files are preserved; Production and hosted-test files are never distributed.
+ * Preview copies go only to Preview-default lanes. Output contains no values.
  *
  * Usage:
  *   pnpm env:check                      # compare this checkout's files with their templates
- *   pnpm env:sync                       # dry run: what would change in this checkout
- *   pnpm env:sync -- --all              # dry run for every development lane
- *   pnpm env:sync -- --apply            # initialize missing runtime files in this assigned lane
+ *   pnpm env:check -- --runtime local   # validate the runtime files this lane needs (or preview)
+ *   pnpm env:sync -- --target f09-docs --purpose local          # dry run
+ *   pnpm env:sync -- --target f11-preview --purpose preview --apply
  *   pnpm env:audit                      # templates vs code: unread, undocumented, stale names
  */
+import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import {
 	existsSync,
+	linkSync,
 	lstatSync,
 	readFileSync,
 	readdirSync,
 	realpathSync,
 	statSync,
+	unlinkSync,
 	writeFileSync,
 } from 'node:fs';
 import { basename, extname, join, relative, resolve } from 'node:path';
 import { parseEnv } from 'node:util';
-import { detectWorktreeLane, findRepoRoot, listExpectedLanePaths } from '../shared/worktree-lane';
+import { findRepoRoot, gitInspectionEnv, listExpectedLanePaths } from '../shared/worktree-lane';
+import { assertRuntimeSupabaseIdentity } from '../shared/celebra-runtime-env';
 
 export interface EnvFileSpec {
 	/** Ignored file holding real values. */
@@ -193,10 +198,15 @@ export function auditTemplate(source: string): TemplateAudit {
 
 function readValues(path: string): Record<string, string> | null {
 	if (!existsSync(path)) return null;
-	return parseEnv(readFileSync(path, 'utf8')) as Record<string, string>;
+	try {
+		return parseEnv(readFileSync(path, 'utf8')) as Record<string, string>;
+	} catch {
+		throw new Error(`Cannot parse configuration file: ${basename(path)}.`);
+	}
 }
 
 function checkCheckout(cwd: string): boolean {
+	console.info('Template inventory only; this does not certify runtime or operation readiness.');
 	let ok = true;
 	for (const spec of ENV_FILES) {
 		const templatePath = resolve(cwd, spec.template);
@@ -234,133 +244,261 @@ function checkCheckout(cwd: string): boolean {
 	return ok;
 }
 
-function syncTargets(repoRoot: string, all: boolean): string[] {
-	if (!all) return [process.cwd()];
-	return listExpectedLanePaths(repoRoot)
-		.filter((lane) => lane.id !== 'integration' && existsSync(lane.path))
-		.map((lane) => lane.path);
+export type EnvPurpose = 'local' | 'preview';
+const PURPOSE_FILES: Record<EnvPurpose, string> = {
+	local: '.env.local',
+	preview: '.env.preview.local',
+};
+
+export interface SyncOptions {
+	targets: string[];
+	purposes: EnvPurpose[];
+	apply: boolean;
 }
 
-interface EnvSyncEntry {
+/** Reject broad/unknown requests before opening configuration or other checkouts. */
+export function parseSyncArgs(args: string[]): SyncOptions {
+	const options: SyncOptions = { targets: [], purposes: [], apply: false };
+	for (let index = 0; index < args.length; index++) {
+		const arg = args[index];
+		if (arg === '--apply') {
+			options.apply = true;
+			continue;
+		}
+		const value = args[++index];
+		if (!value || value.startsWith('--'))
+			throw new Error(
+				'Expected --target <lane> and --purpose <local|preview>; --all is not supported.',
+			);
+		if (arg === '--target') options.targets.push(value);
+		else if (arg === '--purpose' && Object.hasOwn(PURPOSE_FILES, value))
+			options.purposes.push(value as EnvPurpose);
+		else
+			throw new Error(
+				'Unsupported sync option/purpose. Production, hosted-test and bulk sync are excluded.',
+			);
+	}
+	if (!options.targets.length || !options.purposes.length)
+		throw new Error('Name at least one --target <lane> and --purpose <local|preview>.');
+	return options;
+}
+
+interface SyncEntry {
 	from: string;
 	to: string;
-	file: string;
+	label: string;
 	content: Buffer;
-	state: 'identical' | 'absent';
+	targetContent: Buffer | null;
+	template: string;
+	sourceSchema: string;
+	targetSchema: string;
 }
 
-/** Preflight every selected target before writing; Production/E2E are never generic sync inputs. */
-export function planEnvSync(repoRoot: string, targets: readonly string[]): EnvSyncEntry[] {
-	const source = resolve(repoRoot);
-	const entries: EnvSyncEntry[] = [];
-	const pathKey = (value: string) => (process.platform === 'win32' ? value.toLowerCase() : value);
-	for (const target of targets) {
-		const destination = resolve(target);
-		if (destination === source) continue;
-		const lane = detectWorktreeLane(destination, source);
-		const expected = listExpectedLanePaths(source).find((entry) => entry.id === lane.id);
-		if (
-			!expected ||
-			lane.id === 'integration' ||
-			pathKey(expected.path) !== pathKey(destination) ||
-			pathKey(realpathSync(destination)) !== pathKey(destination) ||
-			pathKey(findRepoRoot(destination)) !== pathKey(source)
-		) {
-			throw new Error(
-				'Refusing env sync: destination must be a canonical lane of this repository.',
-			);
-		}
-		const specs = ENV_FILES.filter(
-			(spec) =>
-				spec.file === '.env.local' ||
-				(lane.runtimeDefault === 'preview' && spec.file === '.env.preview.local'),
+class EnvSyncError extends Error {}
+
+/** Never print filesystem errors, which can carry machine paths or secret fragments. */
+function checkedFile(path: string, required: boolean): Buffer | null {
+	const info = lstatSync(path, { throwIfNoEntry: false });
+	if (!info) {
+		if (required) throw new EnvSyncError(`Required file is missing: ${basename(path)}.`);
+		return null;
+	}
+	if (!info.isFile() || info.isSymbolicLink())
+		throw new EnvSyncError(`Expected a regular file: ${basename(path)}.`);
+	return readFileSync(path);
+}
+
+function canonicalPath(value: string): string {
+	return process.platform === 'win32' ? resolve(value).toLowerCase() : resolve(value);
+}
+
+function assertRealDirectory(path: string): void {
+	const info = lstatSync(path);
+	if (
+		!info.isDirectory() ||
+		info.isSymbolicLink() ||
+		canonicalPath(realpathSync(path)) !== canonicalPath(path)
+	) {
+		throw new EnvSyncError('Directory redirection is not allowed for configuration sync.');
+	}
+}
+
+function schemaAt(root: string, template: string): string {
+	const source = checkedFile(resolve(root, template), true)!.toString('utf8');
+	const names = readTemplateNames(source);
+	if (!names.length || new Set(names).size !== names.length)
+		throw new EnvSyncError(`Invalid schema: ${template}.`);
+	return names.sort().join('\n');
+}
+
+function assertSyncTarget(repoRoot: string, target: string): void {
+	assertRealDirectory(target);
+	let commonDir: string;
+	try {
+		commonDir = execFileSync('git', ['rev-parse', '--git-common-dir'], {
+			cwd: target,
+			env: gitInspectionEnv(),
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+	} catch {
+		throw new EnvSyncError('Destination repository identity is unavailable.');
+	}
+	if (
+		canonicalPath(realpathSync(resolve(target, commonDir))) !==
+		canonicalPath(realpathSync(resolve(repoRoot, '.git')))
+	) {
+		throw new EnvSyncError('Destination belongs to another repository.');
+	}
+}
+
+function syncEntry(repoRoot: string, target: string, spec: EnvFileSpec): SyncEntry {
+	const sourceSchema = schemaAt(repoRoot, spec.template);
+	const targetSchema = schemaAt(target, spec.template);
+	if (sourceSchema !== targetSchema)
+		throw new EnvSyncError(`Destination template is incompatible: ${spec.template}.`);
+	const from = resolve(repoRoot, spec.file);
+	const content = checkedFile(from, true)!;
+	let values: Record<string, string>;
+	try {
+		values = parseEnv(content.toString('utf8')) as Record<string, string>;
+	} catch {
+		throw new EnvSyncError(`Invalid configuration syntax: ${spec.file}.`);
+	}
+	const report = compareEnvFile(spec.file, sourceSchema.split('\n'), values);
+	if (report.unknown.length || report.missing.length)
+		throw new EnvSyncError(`Source does not match its template: ${spec.file}.`);
+	const to = resolve(target, spec.file);
+	const targetContent = checkedFile(to, false);
+	if (targetContent && !targetContent.equals(content))
+		throw new EnvSyncError(
+			`Conflict preserved: ${basename(target)}/${spec.file}. Resolve the named file separately.`,
 		);
-		for (const spec of specs) {
-			const from = resolve(source, spec.file);
-			const to = resolve(destination, spec.file);
-			if (
-				lstatSync(from, { throwIfNoEntry: false })?.isSymbolicLink() ||
-				lstatSync(to, { throwIfNoEntry: false })?.isSymbolicLink()
-			) {
-				throw new Error('Refusing env sync: symbolic configuration files are unsupported.');
-			}
-			if (!existsSync(from))
-				throw new Error('Required Integration source is missing: ' + spec.file);
-			const names = readTemplateNames(readFileSync(resolve(source, spec.template), 'utf8'));
-			const targetNames = readTemplateNames(
-				readFileSync(resolve(destination, spec.template), 'utf8'),
+	return {
+		from,
+		to,
+		label: `${basename(target)}/${spec.file}`,
+		content,
+		targetContent,
+		template: spec.template,
+		sourceSchema,
+		targetSchema,
+	};
+}
+
+/** Plans are transient, contain secrets and must never be serialized or persisted. */
+function prepareSync(repoRoot: string, options: SyncOptions): SyncEntry[] {
+	const lanes = listExpectedLanePaths(repoRoot);
+	// Validate every id before inspecting any destination.
+	const selected = [...new Set(options.targets)].map((id) => {
+		const lane = lanes.find((entry) => entry.id === id && entry.id !== 'integration');
+		if (!lane)
+			throw new EnvSyncError('Destination must be an explicitly named external lane id.');
+		return lane;
+	});
+	const purposes = [...new Set(options.purposes)];
+	const specs = purposes.map((purpose) => {
+		const file = Object.hasOwn(PURPOSE_FILES, purpose) ? PURPOSE_FILES[purpose] : undefined;
+		if (!file)
+			throw new EnvSyncError(
+				'Production is excluded from configuration sync; so is hosted-test configuration.',
 			);
-			if (JSON.stringify([...names].sort()) !== JSON.stringify([...targetNames].sort())) {
-				throw new Error('Incompatible destination template: ' + spec.template);
-			}
-			const content = readFileSync(from);
-			const values = Object.fromEntries(
-				Object.entries(parseEnv(content.toString('utf8'))).filter(
-					(entry): entry is [string, string] => typeof entry[1] === 'string',
-				),
+		return ENV_FILES.find((spec) => spec.file === file)!;
+	});
+	// The Preview overlay belongs only to Preview-default lanes (F11/F12).
+	if (purposes.includes('preview') && selected.some((lane) => lane.runtimeDefault !== 'preview'))
+		throw new EnvSyncError('The preview purpose is limited to Preview-default lanes.');
+	const targets = selected.map((lane) => lane.path);
+	assertRealDirectory(repoRoot);
+	return targets.flatMap((target) => {
+		assertSyncTarget(repoRoot, target);
+		return specs.map((spec) => syncEntry(repoRoot, target, spec));
+	});
+}
+
+function recheckSync(repoRoot: string, entries: SyncEntry[]): void {
+	assertRealDirectory(repoRoot);
+	for (const entry of entries) {
+		const target = resolve(entry.to, '..');
+		assertSyncTarget(repoRoot, target);
+		const current = checkedFile(entry.to, false);
+		if (
+			!checkedFile(entry.from, true)!.equals(entry.content) ||
+			(current === null) !== (entry.targetContent === null) ||
+			(current && !current.equals(entry.targetContent!)) ||
+			schemaAt(repoRoot, entry.template) !== entry.sourceSchema ||
+			schemaAt(target, entry.template) !== entry.targetSchema
+		) {
+			throw new EnvSyncError(
+				'Configuration changed after preflight; nothing further will be copied.',
 			);
-			const report = compareEnvFile(spec.file, names, values);
-			if (report.unknown.length || report.missing.length) {
-				throw new Error('Integration source does not match its template: ' + spec.file);
-			}
-			const present = existsSync(to);
-			if (present && !content.equals(readFileSync(to))) {
-				throw new Error(
-					'Configuration conflict; preserve and resolve explicitly: ' + spec.file,
-				);
-			}
-			entries.push({
-				from,
-				to,
-				file: spec.file,
-				content,
-				state: present ? 'identical' : 'absent',
-			});
 		}
 	}
-	return entries;
 }
 
-function sync(repoRoot: string, all: boolean, apply: boolean): void {
-	if (all && apply)
-		throw new Error(
-			'Bulk apply is unsupported; run env:sync -- --apply in each explicitly assigned lane.',
-		);
-	const entries = planEnvSync(repoRoot, syncTargets(repoRoot, all));
-	// Recheck the complete plan before the first write; copies never replace a differing file.
-	if (apply)
-		for (const entry of entries) {
-			if (
-				!entry.content.equals(readFileSync(entry.from)) ||
-				(entry.state === 'absent'
-					? existsSync(entry.to)
-					: !entry.content.equals(readFileSync(entry.to)))
-			) {
-				throw new Error('Configuration changed after preflight; no files copied.');
-			}
-		}
+/** Publish a complete file without replacing a destination created concurrently. */
+function publishCopy(entry: SyncEntry): void {
+	const temporary = `${entry.to}.${randomUUID()}.tmp`;
+	try {
+		writeFileSync(temporary, entry.content, { flag: 'wx', mode: 0o600 });
+		linkSync(temporary, entry.to);
+	} finally {
+		if (existsSync(temporary)) unlinkSync(temporary);
+	}
+}
+
+export function synchronizeEnv(
+	repoRoot: string,
+	options: SyncOptions,
+	log: (message: string) => void = console.info,
+): void {
 	let copied = 0;
 	try {
+		const entries = prepareSync(repoRoot, options);
+		if (options.apply) recheckSync(repoRoot, entries);
 		for (const entry of entries) {
-			if (apply && entry.state === 'absent') {
-				writeFileSync(entry.to, entry.content, { flag: 'wx', mode: 0o600 });
+			const state = entry.targetContent
+				? 'identical'
+				: options.apply
+					? 'copied'
+					: 'would copy';
+			if (options.apply && !entry.targetContent) {
+				recheckSync(repoRoot, entries);
+				publishCopy(entry);
 				copied++;
+				entry.targetContent = entry.content;
 			}
-			console.info(
-				relative(repoRoot, entry.to) +
-					': ' +
-					entry.state +
-					(apply && entry.state === 'absent' ? ' — copied' : ''),
-			);
+			log(`${entry.label}: ${state}`);
 		}
-	} catch {
+		log(options.apply ? `Completed: ${copied} file(s) copied.` : 'Dry run: nothing copied.');
+	} catch (error: unknown) {
+		const reason =
+			error instanceof EnvSyncError
+				? error.message
+				: 'File access or repository identity check failed.';
 		throw new Error(
-			'Environment sync stopped after ' +
-				copied +
-				' completed copies; inspect before retrying.',
+			`Configuration sync refused or failed; ${copied} file(s) copied. ${reason} No files were overwritten.`,
+			{ cause: error },
 		);
 	}
-	if (!apply) console.info('Dry run: nothing copied. Apply only in an explicitly assigned lane.');
+}
+
+/** Selected runtime check: never opens operator or hosted-test configuration. */
+export function assertCheckoutRuntime(cwd: string, target: 'local' | 'preview'): void {
+	const local = readValues(resolve(cwd, '.env.local'));
+	if (!local) throw new Error('Required runtime file is missing: .env.local.');
+	const preview = target === 'preview' ? readValues(resolve(cwd, '.env.preview.local')) : null;
+	if (target === 'preview' && !preview)
+		throw new Error('Required runtime file is missing: .env.preview.local.');
+	const values = { ...local, ...preview };
+	assertRuntimeSupabaseIdentity(values, target);
+	for (const key of [
+		'SUPABASE_ANON_KEY',
+		'PUBLIC_SUPABASE_ANON_KEY',
+		'SUPABASE_SERVICE_ROLE_KEY',
+	]) {
+		if (!values[key]?.trim()) throw new Error(`Required runtime name is empty: ${key}.`);
+	}
 }
 
 function auditCheckout(root: string): boolean {
@@ -388,18 +526,35 @@ function auditCheckout(root: string): boolean {
 function main(): void {
 	const [command = 'check', ...rest] = process.argv.slice(2).filter((arg) => arg !== '--');
 	if (command === 'check') {
+		if (rest.length) {
+			const target = rest[1];
+			if (
+				rest.length !== 2 ||
+				rest[0] !== '--runtime' ||
+				(target !== 'local' && target !== 'preview')
+			)
+				throw new Error('Usage: env:check -- --runtime local|preview');
+			assertCheckoutRuntime(process.cwd(), target);
+			console.info(
+				`File configuration for ${target} runtime is valid; shell overrides, operation authority and live connectivity are not certified.`,
+			);
+			return;
+		}
 		if (!checkCheckout(process.cwd())) process.exitCode = 1;
 		return;
 	}
 	if (command === 'sync') {
-		sync(findRepoRoot(), rest.includes('--all'), rest.includes('--apply'));
+		const options = parseSyncArgs(rest);
+		synchronizeEnv(findRepoRoot(), options);
 		return;
 	}
 	if (command === 'audit') {
 		if (!auditCheckout(findRepoRoot())) process.exitCode = 1;
 		return;
 	}
-	throw new Error('Usage: env-files.ts check | audit | sync [--all] [--apply]');
+	throw new Error(
+		'Usage: env-files.ts check [--runtime local|preview] | audit | sync --target <lane> --purpose <local|preview> [--apply]',
+	);
 }
 
 if (process.argv[1] && /^env-files\.(?:ts|js)$/.test(basename(process.argv[1]))) {

@@ -191,14 +191,18 @@ describe('canonical validation contract', () => {
 		},
 	);
 
-	it('defers complete visual parity only on pull requests into develop and runs it nightly', () => {
+	it('defers complete visual parity only on non-visual pull requests into develop and runs it nightly', () => {
 		const workflow = fs.readFileSync(
 			path.resolve(process.cwd(), '.github/workflows/commit-validation.yml'),
 			'utf8',
 		);
 		expect(workflow).toContain(
-			"VISUAL_PARITY_DEFERRED: ${{ github.event_name == 'pull_request' && github.base_ref == 'develop' }}",
+			"VISUAL_PARITY_DEFERRED: ${{ needs.browser-scope.outputs.visual == 'deferred' }}",
 		);
+		expect(workflow).toContain(
+			'part: ${{ fromJSON(needs.browser-scope.outputs.browser-parts || \'["all"]\') }}',
+		);
+		expect(workflow).toContain('PLAYWRIGHT_BROWSER_PART: ${{ matrix.part }}');
 		expect(workflow).toContain('-${{ github.event_name }}');
 		for (const spec of [
 			'tests/e2e/canonical-invitation-page-parity.spec.ts',

@@ -1,4 +1,5 @@
 import {
+	resolveAffectedPages,
 	CERTIFICATION_COMMAND_VERSION,
 	CERTIFICATION_SCHEMA_VERSION,
 	CERTIFIED_BROWSER_COMMAND,
@@ -217,5 +218,20 @@ describe('certification container inputs', () => {
 
 	it('keeps the pnpm store in a named Docker volume', () => {
 		expect(PNPM_STORE_VOLUME).toMatch(/^[a-z0-9][a-z0-9_.-]+$/u);
+	});
+
+	it('resolves affected pages from --pages or from page-owned changes only', () => {
+		expect(resolveAffectedPages('america', () => [])).toBe('america');
+		expect(
+			resolveAffectedPages(undefined, () => ['scripts/provision/invitations/america.ts']),
+		).toBe('america');
+		expect(() =>
+			resolveAffectedPages(undefined, () => [
+				'src/styles/invitation/scenes/_rsvp-steps.scss',
+			]),
+		).toThrow('--pages');
+		expect(() => resolveAffectedPages(undefined, () => ['docs/readme.md'])).toThrow(
+			'No complete page',
+		);
 	});
 });

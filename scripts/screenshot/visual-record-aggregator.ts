@@ -17,6 +17,7 @@ import {
 import type { VisualParityMode } from '../../tests/e2e/harness/visual-baseline-policy.ts';
 import {
 	buildVisualPageCases,
+	selectVisualPageCases,
 	buildVisualVariantCases,
 	computeVisualMatrixHash,
 	visualPageCaseFile,
@@ -55,7 +56,7 @@ export function expectedVisualCaptures(suite: VisualSuite): ExpectedVisualCaptur
 			viewport: entry.viewport,
 		}));
 	}
-	return buildVisualPageCases().flatMap((entry) =>
+	return selectVisualPageCases(buildVisualPageCases()).flatMap((entry) =>
 		VISUAL_VIEWPORTS.map((viewport) => ({
 			file: visualPageCaseFile(entry, viewport.name),
 			viewport: viewport.name,

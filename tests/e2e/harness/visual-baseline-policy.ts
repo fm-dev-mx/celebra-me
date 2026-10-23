@@ -14,8 +14,9 @@ export function resolveVisualParityMode(): VisualParityMode {
 }
 
 /**
- * Pull requests into develop defer the complete visual parity suites to the develop push, release
- * promotions and the nightly run on develop; every other browser check still runs.
+ * Pull requests into develop that change no visual parity input defer the complete visual parity
+ * suites to the develop push, release promotions and the nightly run on develop; every other
+ * browser check still runs.
  */
 export function isVisualParityDeferred(): boolean {
 	return process.env.VISUAL_PARITY_DEFERRED === 'true';

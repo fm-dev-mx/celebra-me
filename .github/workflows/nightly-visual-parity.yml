@@ -1,7 +1,7 @@
 name: Nightly Visual Parity
 
-# Pull requests into develop skip the complete visual parity suites (VISUAL_PARITY_DEFERRED in
-# commit-validation.yml). Once a night this dispatches the full Repository CI on develop, so a
+# Pull requests into develop that change no visual parity input skip the complete visual parity
+# suites (VISUAL_PARITY_DEFERRED in commit-validation.yml). Once a night this dispatches the full Repository CI on develop, so a
 # visual regression that merged without them surfaces within a day even when no develop push ran
 # the browser tier. The token only starts and reads that run and writes the alert issue.
 permissions:

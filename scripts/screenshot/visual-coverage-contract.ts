@@ -180,3 +180,37 @@ export function computeVisualMatrixHash(cases: readonly VisualCoverageCase[]): s
 		});
 	return crypto.createHash('sha256').update(JSON.stringify(identities)).digest('hex');
 }
+
+/** Commands that regenerate accepted references after the matrix or a page changes. */
+export const VISUAL_CANDIDATE_COMMAND = 'pnpm visual:parity:candidate:certified -- --sha <commit>';
+export const VISUAL_ACCEPT_COMMAND =
+	'pnpm visual:parity:accept -- --reference-sha=<commit> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>';
+
+/** Failure text for an accepted manifest whose matrix hash no longer matches the current matrix. */
+export function describeVisualMatrixDrift(acceptedHash: string | undefined, currentHash: string) {
+	return [
+		`Visual coverage matrix drifted: accepted ${acceptedHash ?? 'none'}, current ${currentHash}.`,
+		`Regenerate the references from the commit that changes the matrix: ${VISUAL_CANDIDATE_COMMAND},`,
+		`then, after the owner reviews the candidate: ${VISUAL_ACCEPT_COMMAND.replace('--matrix-hash=<hash>', `--matrix-hash=${currentHash}`)}.`,
+	].join('\n');
+}
+
+/**
+ * Restricts complete-page cases to the comma-separated slugs of `VISUAL_PARITY_PAGES` (all cases
+ * when unset). Scoped runs only answer "did these pages change?"; they never produce a candidate.
+ */
+export function selectVisualPageCases(
+	cases: readonly VisualPageCase[],
+	pages = process.env.VISUAL_PARITY_PAGES,
+): VisualPageCase[] {
+	const slugs = (pages ?? '')
+		.split(',')
+		.map((slug) => slug.trim())
+		.filter(Boolean);
+	if (slugs.length === 0) return [...cases];
+	const unknown = slugs.filter((slug) => !cases.some((entry) => entry.slug === slug));
+	if (unknown.length > 0) {
+		throw new Error(`Unknown visual page slug(s): ${unknown.join(', ')}.`);
+	}
+	return cases.filter((entry) => slugs.includes(entry.slug));
+}

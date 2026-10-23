@@ -95,7 +95,7 @@ ownership:
           - 'Safety rule'
 
     - aspect: 'Invitation preparation semantics'
-      owner: 'docs/core/invitation-preparation-contract.md'
+      owner: 'docs/core/invitation-creation-contract.md'
       non_owners:
           - 'Per-invite Markdown'
           - 'Publication readiness'

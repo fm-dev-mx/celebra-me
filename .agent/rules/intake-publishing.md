@@ -107,9 +107,11 @@ Rules:
 
 ## Editor Surface
 
-The dashboard editor under `/dashboard/invitaciones` edits existing managed invitations only; it has
-no create or duplicate endpoint (`src/pages/api/dashboard/intake/index.ts` exports `GET` only). The
-end-to-end operation lives in
+The dashboard editor under `/dashboard/invitaciones` edits existing managed invitations only
+(`src/pages/api/dashboard/intake/index.ts` exports `GET` only); how an invitation is created and its
+initial state belong to the
+[creation contract](../../docs/core/invitation-creation-contract.md#3-invitation-identity--requirements).
+The end-to-end operation lives in
 [`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md).
 
 - The editor consumes flat `DraftContent`, never raw published shapes.
@@ -134,7 +136,8 @@ owns these fields; `PATCH /api/dashboard/intake/[id]/workflow` writes them with 
 (migration `20260910160000_invitation_workflow.sql`).
 
 - `in_progress` / `completed` are administrative decisions. Neither changes publication, content
-  parity, visual acceptance, RSVP, or release checks. New rows start in progress with no review.
+  parity, visual acceptance, RSVP, or release checks. Initial values:
+  [creation contract](../../docs/core/invitation-creation-contract.md#3-invitation-identity--requirements).
 - Only the owner account may record or clear a manual review; agents must never invoke that action,
   including through browser automation. Agents may change work status within an authorized task. The
   recorded date is historical, not certification of the current deployment.
@@ -151,8 +154,10 @@ through `PATCH /api/dashboard/intake/[id]/access` → RPC `set_invitation_access
 `version`, `audit_logs` row in the same transaction). Hosts have no route, grant or RLS path to
 them.
 
-- New invitations start unpaid; an unpaid client invitation renders as the preview (banner only), a
-  disabled one renders the neutral unavailable page. Demos never carry access state.
+- An unpaid client invitation renders as the preview (banner only), a disabled one renders the
+  neutral unavailable page (initial values:
+  [creation contract](../../docs/core/invitation-creation-contract.md#3-invitation-identity--requirements)).
+  Demos never carry access state.
 - Changing either value does not touch `invitations.updated_at`, so an open editor keeps its token.
 - Publication, promotion (`invitation:release`, `prod:apply`) and the Production → Preview mirror
   never copy these decisions; each environment owns its own.

@@ -313,8 +313,8 @@ The canonical visual matrix is 390 × 844 and 1440 × 900
 
 The technical checks below are not the creative acceptance decision. Record the human outcome in
 `docs/invitations/<slug>.md` per the creative acceptance gate in the
-[preparation contract](../../core/invitation-preparation-contract.md). A successful screenshot or
-browser run proves capture/runtime integrity only.
+[creation contract](../../core/invitation-creation-contract.md#192-creative-acceptance-is-a-separate-human-gate).
+A successful screenshot or browser run proves capture/runtime integrity only.
 
 Required cases:
 

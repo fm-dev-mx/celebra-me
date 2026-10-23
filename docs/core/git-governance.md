@@ -129,8 +129,9 @@ Runtime connectivity never authorizes database, publication or release mutations
    git branch -d <task-branch>
    ```
 
-`pnpm ops worktree-status` reports every lane read-only. Astro uses the lane port with `strictPort`;
-override it with `ASTRO_PORT`. Local-runtime lanes share the persistent Local Supabase database.
+`pnpm ops worktree-status` reports every lane read-only; `--layout` prints only the lane table as
+JSON, without inspecting other checkouts. Astro uses the lane port with `strictPort`; override it
+with `ASTRO_PORT`. Local-runtime lanes share the persistent Local Supabase database.
 
 ## Branch and Worktree Hygiene
 
@@ -538,8 +539,9 @@ judgment.
 
 ## Active Hooks and CI Sequence
 
-1. `pre-commit` blocks detached HEAD and direct commits to `main`, then runs `pnpm lint-staged` and
-   `pnpm test:changed`.
+1. `pre-commit` blocks detached HEAD and direct commits to `main`, then runs the lane guard: unknown
+   checkouts and direct commits on `develop` are refused, except a merge concluded in Integration.
+   It then runs `pnpm lint-staged` and `pnpm test:changed`.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
 3. `pre-push` replays commitlint over the pushed range in one process with
    `scripts/validate-commits.mjs --strict-size` (the hard size limit blocks; other hygiene warnings
