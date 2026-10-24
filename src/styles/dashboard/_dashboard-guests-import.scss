@@ -312,6 +312,12 @@
 	min-width: 32px;
 	min-height: 32px;
 	padding: 0.3rem;
+
+	// Touch layouts keep the 44px target.
+	@include mixins.respond-below(lg) {
+		min-width: 44px;
+		min-height: 44px;
+	}
 }
 
 // --- API error alert ---

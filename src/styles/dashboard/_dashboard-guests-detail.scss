@@ -283,6 +283,11 @@
 	&:focus-visible {
 		@include mixins.focus-ring;
 	}
+
+	// Touch layouts keep the 44px target.
+	@include mixins.respond-below(lg) {
+		min-height: 44px;
+	}
 }
 
 /* --- "Más datos" disclosure --- */
@@ -369,6 +374,11 @@
 
 	.btn-primary {
 		min-height: 40px;
+
+		// Touch layouts keep the 44px target.
+		@include mixins.respond-below(lg) {
+			min-height: 44px;
+		}
 	}
 }
 
