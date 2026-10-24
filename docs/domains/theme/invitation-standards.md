@@ -65,7 +65,9 @@ before reusing a value.
   redeclared `--location-card-shadow` and changed three published invitations (#371).
 - **A7.** Informal «tú» copy and hardcoded uppercase in shared components; guest-facing copy uses
   «usted». Example: `naydelin-paredes`; learned 2026-10-17; evidence: follow-ups in its note:
-  «Contáctanos», the RSVP hints and «ENVIAR RESPUESTA».
+  «Contáctanos», the RSVP hints and «ENVIAR RESPUESTA». Rule: each definition declares its register
+  in `voice` (default `usted`, [contract §3](../../core/invitation-creation-contract.md)); a unit
+  test rejects «tú» forms in unpublished `usted` definitions. Published invitations keep their copy.
 - **A8.** Abbreviated months on the reveal card («17 · OCT · 2026»); write the full date. Example:
   `naydelin-paredes`; learned 2026-10-17; evidence: its envelope letter shows the full date and
   hides the abbreviated card date.

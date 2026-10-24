@@ -53,6 +53,8 @@ interface InvitationEventTiming {
 type InvitationLifecycle = 'in_progress' | 'published';
 
 export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'assets-only';
+/** Grammatical register the guest-facing copy uses. */
+export type InvitationVoice = 'usted' | 'tu';
 type ManagedIdentityProvenance = 'persisted' | 'owner-approved';
 
 const MANAGED_IDENTITY_UUID_RE =
@@ -86,6 +88,11 @@ export interface InvitationDefinition<K extends string = string> {
 	lifecycle: InvitationLifecycle;
 	/** Maximum managed scope authorized by the canonical definition. */
 	deliveryScope: InvitationDeliveryScope;
+	/**
+	 * Register of the guest-facing copy; absent means «usted». Authoring metadata only: it never
+	 * enters the published content, the release metadata, or any hash.
+	 */
+	voice?: InvitationVoice;
 	eventType: string;
 	title: string;
 	clientName: string;
@@ -99,6 +106,13 @@ export interface InvitationDefinition<K extends string = string> {
 	assetDir?: string;
 	assets: readonly InvitationAssetSpec[];
 	buildPublishedContent(assets: UploadedAssetMap<K>): Record<string, unknown>;
+}
+
+/** Register the definition's guest-facing copy uses; «usted» unless it opts into «tú». */
+export function resolveInvitationVoice(
+	definition: Pick<InvitationDefinition, 'voice'>,
+): InvitationVoice {
+	return definition.voice ?? 'usted';
 }
 
 export function getInvitationAssetSourceDir(definition: InvitationDefinition): string {
@@ -279,6 +293,13 @@ function validateInvitationStructure<K extends string>(definition: InvitationDef
 		definition.deliveryScope !== 'assets-only'
 	) {
 		throw new Error('Invitation definition requires an explicit managed delivery scope.');
+	}
+	if (
+		definition.voice !== undefined &&
+		definition.voice !== 'usted' &&
+		definition.voice !== 'tu'
+	) {
+		throw new Error('Invitation voice must be "usted" or "tu".');
 	}
 	if (!Array.isArray(definition.assets)) {
 		throw new Error('Invitation definition requires an assets array.');
