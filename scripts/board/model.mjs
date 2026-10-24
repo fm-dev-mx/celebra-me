@@ -177,6 +177,107 @@ export const isFinished = (t) => FINALIZADOS.includes(t?.estado);
  * rounds). An origin alone also marks follow-up implementation work, so it never makes a task a review.
  */
 export const isReview = (t) => Boolean(t.revisionSha) || /-revision(?:-\d+)?$/.test(String(t.id));
+/** Round of a review child: 1 for `<id>-revision`, n for `<id>-revision-<n>`. */
+export const reviewRound = (t) => Number(/-revision-(\d+)$/.exec(String(t.id))?.[1] ?? 1);
+
+/** Review rounds of a task, first to last, archived ones included, so the view lists them one below another. */
+export function reviewRounds(origen, board) {
+	const prefix = `${origen}-revision`;
+	const own = (t) =>
+		t.origen === origen &&
+		(t.id === prefix ||
+			(t.id.startsWith(`${prefix}-`) && /^\d+$/.test(t.id.slice(prefix.length + 1))));
+	const byId = new Map(
+		[...(board.archivo ?? []), ...(board.tareas ?? [])].filter(own).map((t) => [t.id, t]),
+	);
+	return [...byId.values()].sort((a, b) => reviewRound(a) - reviewRound(b));
+}
+
+/** Review rounds of a task or of a round's origin, as `show` prints them: `vuelta 2 · 1a2b3c4 · pendiente · x-revision-2`. */
+export function roundLines(t, board) {
+	const rounds = reviewRounds(isReview(t) && t.origen ? t.origen : t.id, board);
+	if (!rounds.length) return [];
+	return [
+		'VUELTAS DE REVISIÓN',
+		...rounds.map(
+			(r) =>
+				`  vuelta ${reviewRound(r)} · ${String(r.revisionSha ?? '').slice(0, 7)} · ${r.estado ?? 'pendiente'} · ${r.id}`,
+		),
+	];
+}
+
+/** The agent whose work a task is: its own `agente`, else the lock's or the last session's. */
+export function authorOf(t) {
+	const known = (a) => (Object.hasOwn(AGENT_REGISTRY, a) ? a : undefined);
+	return known(t.agente) ?? known(t.candado?.agente) ?? known(t.sesion?.agente);
+}
+
+/** d183: Claude reviews Codex and Gemini; Gemini reviews Claude unless Codex is asked for. */
+export const defaultReviewer = (author) =>
+	author === 'claude'
+		? 'gemini'
+		: author === 'codex' || author === 'gemini'
+			? 'claude'
+			: undefined;
+
+/** Why `reviewer` may not review work by `author` (d183), or null. */
+export function reviewerIssue(author, reviewer) {
+	if (!Object.hasOwn(AGENT_REGISTRY, reviewer ?? '')) return `revisor desconocido: ${reviewer}`;
+	if (reviewer === author) return 'la revisión cruzada requiere otro agente';
+	if (author && author !== 'claude' && reviewer !== 'claude')
+		return `d183: el trabajo de ${author} lo revisa claude`;
+	return null;
+}
+
+const ROUND_WORDS = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA'];
+const roundWord = (n) => ROUND_WORDS[n - 1] ?? `VUELTA ${n}`;
+
+/**
+ * The title and prompt of review round `n` of `src` at `sha`; from round 2 on they name the previous round's SHA
+ * and start from the diff between both, so a reviewer never answers the earlier round again (T79).
+ */
+function reviewText(src, { id, n, sha, prev }) {
+	const short = (s) => String(s).slice(0, 7);
+	const decisiones =
+		'\nDECISIONES\n- Review only; report missing evidence and request no adjacent permissions.';
+	const finish = 'Submit findings with gh pr review. Do not edit the author lane or merge.';
+	if (n < 2)
+		return {
+			titulo: `Revisión cruzada: ${src.titulo}`,
+			prompt: `Follow .agent/rules/board.md for task ${id}. Review PR ${src.pr} of ${src.id} at ${sha}. Inspect correctness, regressions, tests and AGENTS.md. ${finish} Finish with --sha=${sha}.${decisiones}`,
+		};
+	return {
+		titulo: `Revisión cruzada, vuelta ${n} (${short(sha)}): ${src.titulo}`,
+		prompt:
+			[
+				`Follow .agent/rules/board.md for task ${id}. ${roundWord(n)} VUELTA: round ${n} of the review of PR ${src.pr} of ${src.id}.`,
+				`Previous round (${prev.id}) reviewed ${prev.revisionSha}; the PR head is now ${sha}.`,
+				`Start from what changed: git fetch origin && git diff ${prev.revisionSha}..${sha}`,
+				`Check that the previous round's findings were addressed and that the new commits add no regression; inspect correctness, tests and AGENTS.md where the diff reaches. ${finish} Finish with --sha=${sha}.`,
+			].join('\n') + decisiones,
+	};
+}
+
+/** The child task of the next review round of `src`, after `prev` (the latest round, if any). */
+export function reviewChild(src, { agente, sha, prev }) {
+	const n = prev ? reviewRound(prev) + 1 : 1;
+	const id = n > 1 ? `${src.id}-revision-${n}` : `${src.id}-revision`;
+	return {
+		id,
+		...reviewText(src, { id, n, sha, prev }),
+		estado: 'pendiente',
+		urgencia: src.urgencia,
+		actor: 'sesion',
+		agente,
+		origen: src.id,
+		revisionSha: sha,
+		vuelta: n,
+		requisitos: [{ tipo: 'revision', ref: src.id }],
+		...(src.rama ? { rama: src.rama } : {}),
+		...(src.pr ? { pr: src.pr } : {}),
+	};
+}
+
 /** `T34 serenata-fotos`, or the id alone when the task has no number (d159). */
 export const taskLabel = (t) => (Number.isInteger(t.num) ? `T${t.num} ${t.id}` : t.id);
 /** `T34`, or the id when the task has no number. */
@@ -608,6 +709,10 @@ const FIELD_CHECKS = [
 	[
 		(t) => !optional(t.carrilPlaneado, (c) => typeof c === 'string' && /^[a-z0-9-]+$/.test(c)),
 		() => 'carrilPlaneado debe ser el id de un carril',
+	],
+	[
+		(t) => !optional(t.vuelta, (n) => Number.isInteger(n) && n >= 1),
+		() => 'vuelta debe ser un entero desde 1',
 	],
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],

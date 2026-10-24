@@ -17,7 +17,8 @@
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
- *   review <id> --agente=<b>                    child task <id>-revision for a cross review
+ *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
+ *                                               without --agente the reviewer follows d183
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
  *         [--pr=#N] [--commit=<sha>] [--rev=<n>]   d178: closing summary (lock owner, or --coordinador to
  *                                               complete it); repeat a flag for each line or item, «ninguna»
@@ -63,7 +64,13 @@ import {
 	isFinished,
 	isReview,
 	laneAllowed as laneAllowedIn,
+	authorOf,
 	buildLogRow,
+	defaultReviewer,
+	reviewerIssue,
+	reviewChild,
+	roundLines,
+	reviewRounds,
 	historyRows,
 	logRowError,
 	laneLines,
@@ -462,7 +469,7 @@ const commands = {
 		])
 			if (t[k] !== undefined)
 				out(`  ${k}: ${typeof t[k] === 'string' ? t[k] : JSON.stringify(t[k])}`);
-		for (const line of cierreBlock(t, board)) out(line);
+		for (const line of [...roundLines(t, board), ...cierreBlock(t, board)]) out(line);
 		if (t.prompt) out(`\n${t.prompt}`);
 	},
 	add({ pos, pairs, flags }, dir, out) {
@@ -669,39 +676,28 @@ const commands = {
 			say(flags, out, aviso ? { ...t, aviso } : t, text);
 		});
 	},
+	/** T79: every round is a new child `<id>-revision`, `-revision-2`, … with its own prompt; d183 picks the reviewer. */
 	review({ pos, flags }, dir, out) {
-		const agente = need(flags.agente, 'falta --agente=<revisor>');
 		return withLock(dir, () => {
 			const src = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!src.pr || src.estado !== 'en revision')
 				throw new UsageError('el origen requiere PR y estado en revision');
-			if (src.agente === agente)
-				throw new UsageError('la revisión cruzada requiere otro agente');
+			const author = authorOf(src);
+			const agente =
+				typeof flags.agente === 'string' ? flags.agente : defaultReviewer(author);
+			if (!agente)
+				throw new UsageError('falta --agente=<revisor>: la tarea no dice su autor');
+			const issue = reviewerIssue(author, agente);
+			if (issue) throw new UsageError(issue);
 			const sha = reviewSha(src, flags);
-			const id = `${src.id}-revision`;
-			const previous = readDoc(dir, 'tareas', id);
-			if (previous?.candado)
-				throw new UsageError('la revisión tiene candado; primero release');
-			const t = {
-				id,
-				titulo: `Revisión cruzada: ${src.titulo}`,
-				estado: 'pendiente',
-				urgencia: src.urgencia,
-				actor: 'sesion',
-				agente,
-				origen: src.id,
-				revisionSha: sha,
-				prompt: `Follow .agent/rules/board.md for task ${id}. Review PR ${src.pr} of ${src.id} at ${sha}. Inspect correctness, regressions, tests and AGENTS.md. Submit findings with gh pr review. Do not edit the author lane or merge. Finish with --sha=${sha}.\nDECISIONES\n- Review only; report missing evidence and request no adjacent permissions.`,
-				requisitos: [{ tipo: 'revision', ref: src.id }],
-				...(src.rama ? { rama: src.rama } : {}),
-				...(src.pr ? { pr: src.pr } : {}),
-			};
-			// --agente names the reviewer here, not the writer.
-			const saved = saveTask(dir, previous, t, {
-				quien: flags.quien,
-				coordinador: flags.coordinador,
-			});
-			say(flags, out, saved, `${saved.id} creada para ${agente}`);
+			const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
+			if (prev?.revisionSha === sha)
+				return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
+			const t = reviewChild(src, { agente, sha, prev });
+			// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
+			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
+			const saved = saveTask(dir, readDoc(dir, 'tareas', t.id), t, who);
+			say(flags, out, saved, `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})`);
 		});
 	},
 	decide({ pairs, flags }, dir, out) {

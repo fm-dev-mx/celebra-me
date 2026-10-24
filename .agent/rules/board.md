@@ -20,9 +20,9 @@ authorization.
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
   (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`,
-  `plan`, `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and
-  `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`, `cierre`
-  only by `close`. `espera`, `usted` and `deps` no longer exist.
+  `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`,
+  `prompt`; `rev` and `actualizado` are set by the command, `archivada` (date) only by
+  `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -40,8 +40,8 @@ authorization.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
   finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
   agent at a time; `move` hands a task over only without a lock, logs it and warns when the new
-  agent lacks a `requiere` capability; `review <id> --agente=<b>` creates the child `<id>-revision`
-  with `origen`. Never duplicate a task. Rules are the same for every agent.
+  agent lacks a `requiere` capability; `review <id> [--agente=<b>]` creates the review child with
+  `origen` (one per round, see below). Never duplicate a task. Rules are the same for every agent.
 - **Planned lane (d177)**: the coordinator gives every ready `actor: sesion` task a canonical lane
   (`WORKTREE_LANES`, f05–f12) when it creates or prepares it:
   `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador` (`--carril=` clears it, only
@@ -159,8 +159,15 @@ authorization.
   exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
   `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
 - `review` requires the origin PR in `en revision`, generates an English prompt and records
-  `revisionSha` (from GitHub, or explicit `--sha`). It can refresh an unlocked child at a new SHA.
-  Reviews become executable before merge and do not inherit the author's lane. Completion declares
+  `revisionSha` (from GitHub, or explicit `--sha`). Every round is a new task: `<id>-revision`, then
+  `<id>-revision-2`, `-3`… for each new PR head, with `vuelta`, the short SHA in the title and its
+  own prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names
+  the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
+  rounds are never rewritten; the same SHA again creates nothing. Without `--agente` the reviewer
+  follows d183: work by Codex or Gemini goes to Claude, work by Claude to Gemini (`--agente=codex`
+  when asked); any other pairing is refused. The author is the task's `agente`, else its lock's or
+  last session's. `show` and the view's sheet list the rounds one below another. Reviews become
+  executable before merge and do not inherit the author's lane. Completion declares
   `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
 - `agentes --json` discovers the shared registry and capability overrides. Only explicit coordinator
   updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before

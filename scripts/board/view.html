@@ -188,6 +188,7 @@ pre.prompt{margin:8px 0 0;padding:10px 12px;white-space:pre-wrap;word-break:brea
 .tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
 #q,#tq{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;flex:1 1 220px;min-width:0;max-width:420px;min-height:44px}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
+.rounds{display:grid;gap:4px}
 .fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
 .fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .chk{display:inline-flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted)}
@@ -297,7 +298,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 </div>
 <script type="module">
 import { archiveBlock, cierreLines } from '/model.mjs';
-import { ordenOf, prNumber, taskLane, taskTag, logChange } from '/model.mjs';
+import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
@@ -383,6 +384,8 @@ function renderCola(){
 // d178: «Hecho: …», «Comprobaciones: …», «Pendiente: …» with the label in bold; the first line (estado, PR) is shown apart.
 const cierreHtml=t=>{const l=cierreLines(t,S.board).slice(1);return l.length?`<div class="cierre">${l.map(x=>{const i=x.indexOf(': ');return `<p><b>${esc(x.slice(0,i+1))}</b>${rich(x.slice(i+1))}</p>`}).join('')}</div>`:''};
 const cierreRef=t=>{const c=t.cierre||{},pr=c.pr||t.pr;return [pr?'PR '+pr:'',c.commit||''].filter(Boolean).join(', ')};
+// T79: each review round is its own task; the sheet lists them one below another, first round on top.
+function roundsHtml(t){const rs=reviewRounds(isReview(t)&&t.origen?t.origen:t.id,S.board);if(!rs.length)return '';return `<div class="box"><h3>Vueltas de revisión · ${rs.length}</h3><div class="rounds">${rs.map(r=>`<button type="button" class="chip c-${color(r)}" data-sel="${esc(r.id)}"${r.id===t.id?' aria-current="true"':''}><b>${reviewRound(r)}</b><span>${esc(String(r.revisionSha||'').slice(0,7))} · ${esc(r.estado||'pendiente')} · ${esc(AGENT[r.agente]||r.agente||'')}</span></button>`).join('')}</div></div>`}
 function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
 function renderSheet(open){
   const sh=$('sheet'),t=S.sel&&byId(S.sel);
@@ -416,6 +419,7 @@ function renderSheet(open){
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>
     ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span><span class="t">${esc(x.tipo==='dueno'?'usted':x.tipo)}</span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
     ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
+    ${roundsHtml(t)}
     ${t.cierre?`<div class="box"><h3>Cierre${cierreRef(t)?' · '+rich(cierreRef(t)):''}</h3>${cierreHtml(t)}</div>`:''}
     ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><pre class="prompt" id="prtext">${esc(p)}</pre></details>`:''}`;
 }

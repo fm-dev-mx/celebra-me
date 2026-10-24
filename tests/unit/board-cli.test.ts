@@ -681,10 +681,74 @@ describe('pnpm board', () => {
 		expect(
 			board(dir, 'review', 'origen', '--agente=codex', `--sha=${'b'.repeat(40)}`).status,
 		).toBe(0);
-		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).revisionSha).toBe(
-			'b'.repeat(40),
+		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out)).toMatchObject({
+			id: 'origen-revision-2',
+			revisionSha: 'b'.repeat(40),
+			vuelta: 2,
+		});
+		expect(readTask(dir, 'origen-revision')).toMatchObject({
+			num: reviewNum,
+			estado: 'hecha',
+			revisionSha: sha,
+		});
+	});
+
+	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('de-claude', {
+					agente: 'claude',
+					rama: 'feat/a',
+					pr: 10,
+					estado: 'en revision',
+				}),
+				task('de-codex', {
+					agente: 'codex',
+					rama: 'feat/b',
+					pr: 11,
+					estado: 'en revision',
+				}),
+				task('sin-autor', { rama: 'feat/c', pr: 12, estado: 'en revision' }),
+			],
+		});
+		const [a, b, c] = ['a', 'b', 'c'].map((x) => x.repeat(40));
+		expect(board(dir, 'review', 'de-claude', `--sha=${a}`).status).toBe(0);
+		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ agente: 'gemini', vuelta: 1 });
+		expect(board(dir, 'review', 'de-codex', `--sha=${a}`).status).toBe(0);
+		expect(readTask(dir, 'de-codex-revision').agente).toBe('claude');
+		expect(board(dir, 'review', 'de-codex', '--agente=gemini', `--sha=${b}`).err).toContain(
+			'd183: el trabajo de codex lo revisa claude',
 		);
-		expect(readTask(dir, 'origen-revision').num).toBe(reviewNum);
+		expect(board(dir, 'review', 'sin-autor', `--sha=${a}`).err).toContain('falta --agente');
+		// Same SHA: no new round.
+		expect(board(dir, 'review', 'de-claude', `--sha=${a}`).out).toContain(
+			`de-claude-revision ya revisa ${a}`,
+		);
+		expect(board(dir, 'review', 'de-claude', '--agente=codex', `--sha=${b}`).status).toBe(0);
+		expect(board(dir, 'review', 'de-claude', `--sha=${c}`).status).toBe(0);
+		const second = readTask(dir, 'de-claude-revision-2');
+		expect(second).toMatchObject({
+			agente: 'codex',
+			vuelta: 2,
+			revisionSha: b,
+			origen: 'de-claude',
+		});
+		expect(second.titulo).toContain('vuelta 2 (bbbbbbb)');
+		expect(second.prompt).toContain('SEGUNDA VUELTA');
+		expect(second.prompt).toContain(`Previous round (de-claude-revision) reviewed ${a}`);
+		expect(second.prompt).toContain(`git diff ${a}..${b}`);
+		expect(second.prompt).toContain('\nDECISIONES\n');
+		const third = readTask(dir, 'de-claude-revision-3');
+		expect(third).toMatchObject({ agente: 'gemini', vuelta: 3 });
+		expect(third.prompt).toContain('TERCERA VUELTA');
+		expect(third.prompt).toContain(`git diff ${b}..${c}`);
+		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ revisionSha: a, vuelta: 1 });
+		const show = board(dir, 'show', 'de-claude-revision-2').out;
+		expect(show).toContain('VUELTAS DE REVISIÓN');
+		expect(show.indexOf('vuelta 1 · aaaaaaa')).toBeLessThan(show.indexOf('vuelta 2 · bbbbbbb'));
+		expect(show.indexOf('vuelta 2 · bbbbbbb')).toBeLessThan(show.indexOf('vuelta 3 · ccccccc'));
+		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
+		expect(html).toContain('${roundsHtml(t)}');
 	});
 
 	it('refuses blocked, owner and closed claims and protects locks between sessions', () => {
