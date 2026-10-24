@@ -273,6 +273,8 @@ details.more li::marker{color:var(--faint)}
 details.more .meta{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--muted);font-size:.8rem;padding-top:4px}
 .nm{font-family:var(--mono);font-size:.86em;color:var(--muted);overflow-wrap:anywhere}
 .sha{font:500 .84em var(--mono);color:var(--muted);background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:0 4px;cursor:copy;vertical-align:baseline}
+/* On touch screens and narrow widths the copy button is a full 44px target; its line grows instead of overlapping. */
+@media (pointer:coarse),(max-width:560px){.sha{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 8px;vertical-align:middle}}
 .sha[data-copied]{color:var(--own);border-color:var(--own-rule)}
 a.tl,a.dl{font-family:var(--mono);font-weight:600;font-size:.92em;color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,currentColor 40%,transparent)}
 a.tl:hover,a.dl:hover{border-bottom-color:currentColor}
@@ -523,7 +525,8 @@ function renderSheet(open){
     ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><div class="prompt" id="prtext">${promptHtml(p)}</div></details>`:''}`;
 }
 function openSheet(id){S.sel=id;document.querySelectorAll('.item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===id)));renderSheet(true);if(matchMedia('(max-width:959px)').matches){document.body.classList.add('locked');$('sheet').scrollTop=0;const c=$('sheet').querySelector('.close');if(c)c.focus()}}
-function closeSheet(){$('sheet').classList.remove('open');document.body.classList.remove('locked');const b=document.querySelector(`.item[data-sel="${CSS.escape(S.sel||'')}"]`);if(b)b.focus()}
+// The card is an article since T151: focus goes back to its title button, the control that opened the sheet.
+function closeSheet(){$('sheet').classList.remove('open');document.body.classList.remove('locked');const b=document.querySelector(`.item[data-sel="${CSS.escape(S.sel||'')}"] .tbtn`);if(b)b.focus()}
 
 function renderBoard(){
   if(!S.ready)return;

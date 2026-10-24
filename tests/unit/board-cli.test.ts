@@ -1018,6 +1018,11 @@ describe('pnpm board', () => {
 		);
 		expect(html).toContain('const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));');
 		expect(html).toContain("['Carril',taskLane(t)?");
+		// Closing the sheet returns focus to the card's title button, not to the unfocusable article.
+		expect(html).toContain('"] .tbtn`);if(b)b.focus()');
+		expect(html).toMatch(
+			/@media \(pointer:coarse\),\(max-width:560px\)\{\.sha\{[^}]*min-height:44px/,
+		);
 	});
 
 	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
