@@ -205,13 +205,17 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .agents{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:10px}
 .lock{font:600 .72rem var(--mono);color:var(--muted)}
-/* finished tasks (d167): one row each, with its archive button on the right (below it on phones) */
-.fr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+/* finished tasks (d167): one row each, its closing summary (d178) above the archive button */
+.fr{display:grid;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .fr:last-child{border-bottom:0}
+.fr .fa{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.fr .fa .msg{color:var(--u-alta);font-weight:600}
+.cierre{display:grid;gap:2px;font-size:.86rem;line-height:1.45;max-width:80ch;overflow-wrap:anywhere}
+.cierre p{margin:0}
+.cierre b{font-weight:600}
 .fr .ttl{font-weight:600;line-height:1.3;overflow-wrap:anywhere}
 .fr .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted);margin-top:2px}
 .fr.archived{opacity:.75}
-@media (max-width:560px){.fr{grid-template-columns:1fr}.fr .btn{justify-self:start}}
 </style>
 </head>
 <body>
@@ -292,6 +296,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
+import { archiveBlock, cierreLines } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
@@ -374,6 +379,9 @@ function renderCola(){
   if(!S.sel||!byId(S.sel)||(searching&&!q.concat(rev).some(t=>t.id===S.sel)))S.sel=(q[0]||rev[0]||{}).id||null;
   renderSheet(false);
 }
+// d178: «Hecho: …», «Comprobaciones: …», «Pendiente: …» with the label in bold; the first line (estado, PR) is shown apart.
+const cierreHtml=t=>{const l=cierreLines(t,S.board).slice(1);return l.length?`<div class="cierre">${l.map(x=>{const i=x.indexOf(': ');return `<p><b>${esc(x.slice(0,i+1))}</b>${rich(x.slice(i+1))}</p>`}).join('')}</div>`:''};
+const cierreRef=t=>{const c=t.cierre||{},pr=c.pr||t.pr;return [pr?'PR '+pr:'',c.commit||''].filter(Boolean).join(', ')};
 function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
 function renderSheet(open){
   const sh=$('sheet'),t=S.sel&&byId(S.sel);
@@ -407,6 +415,7 @@ function renderSheet(open){
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>
     ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span><span class="t">${esc(x.tipo==='dueno'?'usted':x.tipo)}</span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
     ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
+    ${t.cierre?`<div class="box"><h3>Cierre${cierreRef(t)?' · '+rich(cierreRef(t)):''}</h3>${cierreHtml(t)}</div>`:''}
     ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><pre class="prompt" id="prtext">${esc(p)}</pre></details>`:''}`;
 }
 function openSheet(id){S.sel=id;document.querySelectorAll('.item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===id)));renderSheet(true);if(matchMedia('(max-width:959px)').matches){document.body.classList.add('locked');$('sheet').scrollTop=0;const c=$('sheet').querySelector('.close');if(c)c.focus()}}
@@ -440,9 +449,12 @@ function renderFin(){
   const row=t=>{
     const locked=t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)}: libérela antes de archivar</span>`:'';
     const when=arch?'archivada '+fmtDay(t.archivada):fmtDay(t.actualizado);
+    // d178: without its closing summary (or with a pendiente that names no task) «Archivar» stays disabled and says why.
+    const why=!arch&&!t.candado&&archiveBlock(t,S.board),ref=cierreRef(t);
     return `<div class="fr${arch?' archived':''}"><div><div class="ttl">${tN(t)}${esc(t.titulo)}</div>
-      <div class="line"><span class="pill c-${t.estado==='cancelada'?'block':'rev'}">${esc(ESTADO[t.estado]||t.estado)}</span><span class="mono">${esc(when)}</span><span class="lane">${esc(t.id)}</span>${locked}</div></div>
-      <button type="button" class="btn" data-arch="${esc(t.id)}" data-rev="${esc(t.rev)}" data-to="${arch?'0':'1'}" ${t.candado?'disabled':''}>${arch?'Desarchivar':'Archivar'}</button></div>`;
+      <div class="line"><span class="pill c-${t.estado==='cancelada'?'block':'rev'}">${esc(ESTADO[t.estado]||t.estado)}</span>${ref?`<span class="mono">${rich(ref)}</span>`:''}<span class="mono">${esc(when)}</span><span class="lane">${esc(t.id)}</span>${locked}</div></div>
+      ${cierreHtml(t)}
+      <div class="fa"><button type="button" class="btn" data-arch="${esc(t.id)}" data-rev="${esc(t.rev)}" data-to="${arch?'0':'1'}" ${t.candado||why?'disabled':''}${why?` title="${esc(why)}"`:''}>${arch?'Desarchivar':'Archivar'}</button>${why?`<span class="msg">${esc(why)}</span>`:''}</div></div>`;
   };
   const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
   $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;

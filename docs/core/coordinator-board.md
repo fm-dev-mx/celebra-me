@@ -80,7 +80,8 @@ NO HAGAS
 AL TERMINAR
 1. <validación que debe quedar en verde>
 2. <estado y campos del tablero>
-3. <revisión cruzada y aviso de una línea>
+3. Cierre (d178): pnpm board close <id> --resumen=… --comprobacion=… --saltada=… --pendiente="<texto>→T<n>"
+4. <revisión cruzada y aviso de una línea>
 ```
 
 Omit a section only when it has nothing to say; keep `DÓNDE CORRE`, `AUTORIZO` and `NO HAGAS`

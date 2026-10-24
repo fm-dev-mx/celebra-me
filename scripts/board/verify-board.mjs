@@ -23,7 +23,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
-import { isReview, stage, taskIssues } from './model.mjs';
+import { cierreIssues, isReview, NO_CIERRE, stage, taskIssues } from './model.mjs';
 import { boardDir } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -436,6 +436,19 @@ function taskWarnings(t, byId, decIds, now) {
 	return out;
 }
 
+/** d178: a finished task not archived yet needs its closing summary before «Archivar». */
+function cierreWarnings(t, board) {
+	if (!isClosed(t) || t.archivada) return [];
+	const issues = cierreIssues(t, board);
+	if (!issues.length) return [];
+	const fix = `pnpm board close ${t.id} --resumen=… --coordinador`;
+	return [
+		issues[0] === NO_CIERRE
+			? `finalizada sin resumen de cierre: ${fix}`
+			: `cierre incompleto (${issues.join('; ')}): ${fix}`,
+	];
+}
+
 /** Numbers remain mandatory and unique even after a task is closed or archived. */
 function numberIssues(tareas) {
 	const issues = [];
@@ -522,6 +535,7 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 		if (!isClosed(t)) msgs.push(...taskIssues(t), ...logIssues(t, lastLog));
 		for (const msg of msgs) inconsistencias.push({ id: t.id, msg });
 		for (const msg of taskWarnings(t, byId, decIds, now)) avisos.push({ id: t.id, msg });
+		for (const msg of cierreWarnings(t, { tareas, archivo })) avisos.push({ id: t.id, msg });
 		if (t.rama && (t.origen ?? t.id) !== taskIdFromBranch(t.rama))
 			avisos.push({
 				id: t.id,
