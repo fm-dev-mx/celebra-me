@@ -49,6 +49,120 @@ export const ESTADOS = [
 /** Stages of the «Carriles» view, in column order. */
 export const STAGES = ['bloqueada', 'lista', 'curso', 'revision', 'hecha'];
 
+/** Who writes a bitácora row: an agent, the coordinator or the owner. */
+export const QUIEN = ['claude', 'codex', 'gemini', 'coordinador', 'dueno'];
+/** States a row may move between: the task's, `archivada` for archive/unarchive, '' before the task existed. */
+const LOG_ESTADOS = ['', ...ESTADOS, 'archivada'];
+const QUIEN_ALIAS = { dueño: 'dueno' };
+
+/** The writer of a command: `--quien` (dueño → dueno), else a declared coordinator, else `--agente`. */
+export function quienOf({ quien, coordinador, agente } = {}) {
+	const given = typeof quien === 'string' && quien ? quien : undefined;
+	const who = given ?? (coordinador ? 'coordinador' : agente);
+	return typeof who === 'string' ? (QUIEN_ALIAS[who] ?? who) : undefined;
+}
+
+/**
+ * Shape problems of a bitácora row `{tarea, en, quien, corrio?, salio?}` plus exactly one change: `de`/`a`
+ * (estado), `agente {de, a}` or `carril {de, a}` ('' = none). Rows converted by `migrate-log` carry `legado` and
+ * may lack `quien`, since most old rows never recorded it.
+ */
+export function logRowIssues(r) {
+	const out = [];
+	if (!String(r?.tarea ?? '').trim()) out.push('fila sin tarea');
+	if (!isDate(r?.en)) out.push('fila sin fecha en');
+	if (!QUIEN.includes(r?.quien) && !(r?.legado && r.quien === undefined))
+		out.push(`quien debe ser ${QUIEN.join('/')}${r?.quien ? `, no ${r.quien}` : ''}`);
+	return [...out, ...changeIssues(r)];
+}
+
+/** The single change a row records: estado `de`/`a`, `agente {de, a}` or `carril {de, a}`. */
+function changeIssues(r) {
+	const kinds = ['estado', 'agente', 'carril'].filter((k) =>
+		k === 'estado' ? r?.de !== undefined || r?.a !== undefined : r?.[k] !== undefined,
+	);
+	if (kinds.length !== 1) return ['la fila cambia una sola cosa: estado (de/a), agente o carril'];
+	if (kinds[0] === 'estado')
+		return ['de', 'a']
+			.filter((k) => !LOG_ESTADOS.includes(r[k] ?? ''))
+			.map((k) => `estado desconocido en ${k}: ${r[k]}`);
+	const c = r[kinds[0]];
+	const ok = kinds[0] === 'agente' ? (v) => AGENTES.includes(v) : (v) => typeof v === 'string';
+	return c && typeof c === 'object' && ok(c.de) && ok(c.a)
+		? []
+		: [`${kinds[0]} debe ser {de, a}`];
+}
+
+/**
+ * A new bitácora row: `change` is `{de, a}` for an estado, or `{agente}` / `{carril}` holding `{de, a}`; `who`
+ * holds --quien, --coordinador and --agente (see quienOf).
+ */
+export function buildLogRow(tarea, change, who, { corrio, salio } = {}, en) {
+	return {
+		tarea,
+		en,
+		quien: quienOf(who),
+		...(change.agente || change.carril ? change : { de: change.de ?? '', a: change.a ?? '' }),
+		...(corrio ? { corrio } : {}),
+		...(salio ? { salio } : {}),
+	};
+}
+
+/** Why `pnpm board` refuses to write this row, or null. */
+export function logRowError(row) {
+	const issues = logRowIssues(row);
+	if (!issues.length) return null;
+	if (row.quien === undefined)
+		return `falta quién escribe la fila: use --quien=${QUIEN.join('|')}, --agente o --coordinador`;
+	return `no se escribió la bitácora de ${row.tarea}: ${issues.join('; ')}`;
+}
+
+/** What a row changed, for `history` and the view: `hecha → unida`, `agente codex → claude`, `carril — → f10`. */
+export function logChange(r) {
+	const pair = (c) => `${c.de || '—'} → ${c.a || '—'}`;
+	if (r.agente) return `agente ${pair(r.agente)}`;
+	if (r.carril) return `carril ${pair(r.carril)}`;
+	return r.de || r.a ? pair(r) : '';
+}
+
+/** Decisions and bitácora rows of `pnpm board history`, newest first. */
+export function historyRows(board) {
+	return [
+		...(board.decisiones ?? []).map((d) => ({
+			en: d.en,
+			txt: `${d.id}${d.vigente === false ? ' (reemplazada)' : ''} ${d.decision ?? ''}`,
+		})),
+		...(board.bitacora ?? []).map((b) => ({
+			en: b.en,
+			txt: `${b.tarea} ${logChange(b)} ${b.corrio ?? ''}`,
+		})),
+	].sort((a, b) => Date.parse(b.en) - Date.parse(a.en));
+}
+
+const LANE_LIKE = /^(?:sin carril|integration|f\d{2}-[a-z0-9-]+)$/;
+const LEGACY_QUIEN = { dueño: 'dueno', coordinador: 'coordinador', claude: 'claude' };
+const LEGACY_ESTADO = { en_curso: 'en curso', '—': '' };
+
+/**
+ * One old file-per-row bitácora document in the current shape, nothing dropped: estados normalized, agent and
+ * lane hand-overs moved out of `de`/`a`, a free-text `quien` kept as `quienTexto`, the file name in `archivo`.
+ */
+export function legacyLogRow(old, archivo) {
+	const { id, de, a, quien, ...rest } = old;
+	const norm = (v) => LEGACY_ESTADO[v ?? ''] ?? v ?? '';
+	const row = { ...rest, legado: true, archivo: archivo ?? id };
+	const who = LEGACY_QUIEN[quien];
+	if (who) row.quien = who;
+	else if (String(quien ?? '').trim()) row.quienTexto = quien;
+	const [d, x] = [norm(de), norm(a)];
+	const both = (test) => test(d) && test(x);
+	if (both((v) => AGENTES.includes(v)) && !ESTADOS.includes(d)) row.agente = { de: d, a: x };
+	else if (both((v) => LANE_LIKE.test(v)))
+		row.carril = { de: d === 'sin carril' ? '' : d, a: x === 'sin carril' ? '' : x };
+	else Object.assign(row, { de: d, a: x });
+	return row;
+}
+
 /** Capabilities each agent has unless the store's `agentes/<id>.json` says otherwise. */
 export const DEFAULT_CAPACIDADES = Object.fromEntries(
 	Object.entries(AGENT_REGISTRY).map(([id, agent]) => [id, agent.capacidades]),
@@ -57,9 +171,127 @@ export const DEFAULT_CAPACIDADES = Object.fromEntries(
 const SUCCESS = new Set(['hecha', 'unida', 'comprobada']);
 /** Finished tasks (the «Finalizadas» tab): only these can be archived (d167). */
 export const FINALIZADOS = ['hecha', 'unida', 'comprobada', 'cancelada'];
-export const isFinished = (t) => FINALIZADOS.includes(t.estado);
-/** An origin can also identify follow-up implementation work, not just a cross-review. */
-export const isReview = (t) => Boolean(t.revisionSha) || String(t.id).endsWith('-revision');
+export const isFinished = (t) => FINALIZADOS.includes(t?.estado);
+/**
+ * A cross-review child: it carries the reviewed SHA or its id ends in `-revision` (`-revision-2`, … for later
+ * rounds). An origin alone also marks follow-up implementation work, so it never makes a task a review.
+ */
+export const isReview = (t) => Boolean(t.revisionSha) || /-revision(?:-\d+)?$/.test(String(t.id));
+/** Round of a review child: 1 for `<id>-revision`, n for `<id>-revision-<n>`. */
+export const reviewRound = (t) => Number(/-revision-(\d+)$/.exec(String(t.id))?.[1] ?? 1);
+
+/** Review rounds of a task, first to last, archived ones included, so the view lists them one below another. */
+export function reviewRounds(origen, board) {
+	const prefix = `${origen}-revision`;
+	const own = (t) =>
+		t.origen === origen &&
+		(t.id === prefix ||
+			(t.id.startsWith(`${prefix}-`) && /^\d+$/.test(t.id.slice(prefix.length + 1))));
+	const byId = new Map(
+		[...(board.archivo ?? []), ...(board.tareas ?? [])].filter(own).map((t) => [t.id, t]),
+	);
+	return [...byId.values()].sort((a, b) => reviewRound(a) - reviewRound(b));
+}
+
+/** Review rounds of a task or of a round's origin, as `show` prints them: `vuelta 2 · 1a2b3c4 · pendiente · x-revision-2`. */
+export function roundLines(t, board) {
+	const rounds = reviewRounds(isReview(t) && t.origen ? t.origen : t.id, board);
+	if (!rounds.length) return [];
+	return [
+		'VUELTAS DE REVISIÓN',
+		...rounds.map(
+			(r) =>
+				`  vuelta ${reviewRound(r)} · ${String(r.revisionSha ?? '').slice(0, 7)} · ${r.estado ?? 'pendiente'} · ${r.id}`,
+		),
+	];
+}
+
+/** The agent whose work a task is: its own `agente`, else the lock's or the last session's. */
+export function authorOf(t) {
+	const known = (a) => (Object.hasOwn(AGENT_REGISTRY, a) ? a : undefined);
+	return known(t.agente) ?? known(t.candado?.agente) ?? known(t.sesion?.agente);
+}
+
+/** d183: Claude reviews Codex and Gemini; Gemini reviews Claude unless Codex is asked for. */
+export const defaultReviewer = (author) =>
+	author === 'claude'
+		? 'gemini'
+		: author === 'codex' || author === 'gemini'
+			? 'claude'
+			: undefined;
+
+/** Why `reviewer` may not review work by `author` (d183), or null. */
+export function reviewerIssue(author, reviewer) {
+	if (!Object.hasOwn(AGENT_REGISTRY, reviewer ?? '')) return `revisor desconocido: ${reviewer}`;
+	if (reviewer === author) return 'la revisión cruzada requiere otro agente';
+	if (author && author !== 'claude' && reviewer !== 'claude')
+		return `d183: el trabajo de ${author} lo revisa claude`;
+	return null;
+}
+
+const ROUND_WORDS = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA'];
+const roundWord = (n) => ROUND_WORDS[n - 1] ?? `VUELTA ${n}`;
+
+/**
+ * The title and prompt of review round `n` of `src` at `sha`; from round 2 on they name the previous round's SHA
+ * and start from the diff between both, so a reviewer never answers the earlier round again (T79).
+ */
+function reviewText(src, { id, n, sha, prev }) {
+	const short = (s) => String(s).slice(0, 7);
+	const decisiones =
+		'\nDECISIONES\n- Review only; report missing evidence and request no adjacent permissions.';
+	const finish = 'Submit findings with gh pr review. Do not edit the author lane or merge.';
+	if (n < 2)
+		return {
+			titulo: `Revisión cruzada: ${src.titulo}`,
+			prompt: `Follow .agent/rules/board.md for task ${id}. Review PR ${src.pr} of ${src.id} at ${sha}. Inspect correctness, regressions, tests and AGENTS.md. ${finish} Finish with --sha=${sha}.${decisiones}`,
+		};
+	return {
+		titulo: `Revisión cruzada, vuelta ${n} (${short(sha)}): ${src.titulo}`,
+		prompt:
+			[
+				`Follow .agent/rules/board.md for task ${id}. ${roundWord(n)} VUELTA: round ${n} of the review of PR ${src.pr} of ${src.id}.`,
+				`Previous round (${prev.id}) reviewed ${prev.revisionSha}; the PR head is now ${sha}.`,
+				`Start from what changed: git fetch origin && git diff ${prev.revisionSha}..${sha}`,
+				`Check that the previous round's findings were addressed and that the new commits add no regression; inspect correctness, tests and AGENTS.md where the diff reaches. ${finish} Finish with --sha=${sha}.`,
+			].join('\n') + decisiones,
+	};
+}
+
+/** The child task of the next review round of `src`, after `prev` (the latest round, if any). */
+export function reviewChild(src, { agente, sha, prev }) {
+	const n = prev ? reviewRound(prev) + 1 : 1;
+	const id = n > 1 ? `${src.id}-revision-${n}` : `${src.id}-revision`;
+	return {
+		id,
+		...reviewText(src, { id, n, sha, prev }),
+		estado: 'pendiente',
+		urgencia: src.urgencia,
+		actor: 'sesion',
+		agente,
+		origen: src.id,
+		revisionSha: sha,
+		vuelta: n,
+		requisitos: [{ tipo: 'revision', ref: src.id }],
+		...(src.rama ? { rama: src.rama } : {}),
+		...(src.pr ? { pr: src.pr } : {}),
+	};
+}
+
+/** `T34 serenata-fotos`, or the id alone when the task has no number (d159). */
+export const taskLabel = (t) => (Number.isInteger(t.num) ? `T${t.num} ${t.id}` : t.id);
+/** `T34`, or the id when the task has no number. */
+export const taskTag = (t) => (t.num ? `T${t.num}` : t.id);
+/** Sort rank of a task or lane `orden`; an unset one goes last. */
+export const ordenOf = (x) => x?.orden ?? 999;
+/** Task id rule: the branch name without its type prefix (`fix/olivia-gallery` → `olivia-gallery`). */
+export const taskIdFromBranch = (branch) => String(branch ?? '').replace(/^[^/]+\//, '');
+/** A lock is old after this many hours; `pnpm board:sync --horas` or CELEBRA_BOARD_LOCK_HOURS overrides it. */
+export const STALE_LOCK_HOURS = 6;
+const HOUR_MS = 3_600_000;
+/** Whether a lock was taken more than `hours` ago. */
+export const isStaleLock = (candado, now = Date.now(), hours = STALE_LOCK_HOURS) =>
+	now - Date.parse(candado?.desde ?? '') >= hours * HOUR_MS;
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /** The task a closing «pendiente» points to: `T58` by its number, anything else by id; null when absent. */
@@ -359,6 +591,16 @@ export function nextFor(agente, board, now = Date.now()) {
 	);
 }
 
+/** The lane a task sits in: its lock's, else the planned one (d177), else its recorded `carril`. */
+export const taskLane = (t) => t.candado?.carril ?? t.carrilPlaneado ?? t.carril;
+
+/**
+ * Whether `carril` is a canonical lane this task may use (`lanes`: WORKTREE_LANES, passed in so the view needs
+ * no Node module); Integration only for coordinator tasks.
+ */
+export const laneAllowed = (carril, task, lanes) =>
+	lanes.some((lane) => lane.id === carril && (lane.segment || task.actor === 'coordinador'));
+
 /** Folder of a lane relative to the repository's parent directory (d177): never an absolute path. */
 export const laneFolder = (id) =>
 	id === 'integration' ? 'celebra-me' : `celebra-me-worktrees/${id}`;
@@ -380,7 +622,6 @@ export const CATEGORIA_CARRIL = {
 export const CATEGORIAS = Object.keys(CATEGORIA_CARRIL);
 /** The task lanes f05–f12, in order: the ones a suggestion picks from. */
 const TASK_LANES = Object.values(CATEGORIA_CARRIL);
-const tN = (t) => (t.num ? `T${t.num}` : t.id);
 
 /** Another task whose lock holds `lane`, or null. Same predicate as claim: any lock counts, also one left on a finished task before its release. */
 function laneHolder(lane, board, exceptId) {
@@ -446,11 +687,11 @@ function suggestionLines(t, board) {
 	const s = suggestedLane(t, board);
 	const holder = preferred && !s?.propio ? laneHolder(preferred, board, t.id) : null;
 	const why = holder
-		? `; ${preferred} de su categoría ${t.categoria} está ocupado por ${tN(holder)}`
+		? `; ${preferred} de su categoría ${t.categoria} está ocupado por ${taskTag(holder)}`
 		: '';
 	if (!s)
 		return holder
-			? [`${preferred.split('-')[0]} ocupado por ${tN(holder)}; ningún carril libre`]
+			? [`${preferred.split('-')[0]} ocupado por ${taskTag(holder)}; ningún carril libre`]
 			: [];
 	const head = s.propio
 		? `Carril sugerido: ${s.carril} (categoría ${t.categoria}), libre`
@@ -470,7 +711,7 @@ export function laneLines(t, board) {
 	const lines = [`Corre en: ${lane} · carpeta ${laneFolder(lane)}`, ...pasteLine(t, lane)];
 	const busy = laneBusy(t, board);
 	if (busy)
-		lines.push(`${lane.split('-')[0]} ocupado por ${tN(busy)}; espere o pida otro carril`);
+		lines.push(`${lane.split('-')[0]} ocupado por ${taskTag(busy)}; espere o pida otro carril`);
 	else if (!t.candado) lines.push('carril libre');
 	const mismatch = categoryMismatch(t, lane);
 	return mismatch ? [...lines, mismatch] : lines;
@@ -500,6 +741,12 @@ export function normalizePr(pr) {
 	const s = String(pr).trim();
 	const m = s.match(/^#?([1-9]\d*)$/) ?? s.match(OWN_PULL);
 	return m ? `#${m[1]}` : pr;
+}
+
+/** The PR number of a task's `pr` (`#398`, 398 or this repository's pull URL); null when it holds none. */
+export function prNumber(pr) {
+	const m = String(normalizePr(pr) ?? '').match(/^#(\d+)$/);
+	return m ? Number(m[1]) : null;
 }
 const validLock = (c) =>
 	AGENTES.includes(c?.agente) && c.agente !== 'cualquiera' && isDate(c.desde);
@@ -550,6 +797,10 @@ const FIELD_CHECKS = [
 	[
 		(t) => !optional(t.carrilPlaneado, (c) => typeof c === 'string' && /^[a-z0-9-]+$/.test(c)),
 		() => 'carrilPlaneado debe ser el id de un carril',
+	],
+	[
+		(t) => !optional(t.vuelta, (n) => Number.isInteger(n) && n >= 1),
+		() => 'vuelta debe ser un entero desde 1',
 	],
 	[
 		(t) => !optional(t.categoria, (c) => CATEGORIAS.includes(c)),

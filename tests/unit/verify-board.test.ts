@@ -433,7 +433,7 @@ describe('board:verify', () => {
 		});
 	});
 
-	it('fails on inconsistencies and warns on id/branch and decision drift', () => {
+	it('fails on inconsistencies and warns on decision drift, never on id/branch (d188)', () => {
 		const dir = makeExport(
 			[
 				task('cerrada', { estado: 'comprobada', evidencia: {} }),
@@ -466,11 +466,14 @@ describe('board:verify', () => {
 		);
 		expect(report.avisos).toEqual(
 			expect.arrayContaining([
-				{ id: 'otro-id', msg: 'id distinto de la rama sin prefijo (rama-real)' },
 				{ id: 'd002', msg: 'decisión sin vigente: true|false' },
 				{ id: 'espera', msg: 'requisito a una tarea fuera del tablero: archivada' },
 				{ id: 'espera', msg: 'requisito a una decisión inexistente: d404' },
 			]),
+		);
+		// d188: the id does not have to match its branch.
+		expect(report.avisos.map((a: { msg: string }) => a.msg).join('\n')).not.toContain(
+			'id distinto de la rama',
 		);
 	});
 
@@ -532,6 +535,31 @@ DECISIONES
 		expect(report.inconsistencias).toContainEqual({
 			id: 'rara',
 			msg: 'carril planeado no canónico: f13-nuevo',
+		});
+	});
+
+	it('accepts Integration only for coordinator tasks and calls a 10 h lock old, like the sync', () => {
+		const desde = new Date(Date.now() - 10 * 3_600_000).toISOString();
+		const dir = makeExport([
+			task('de-sesion', { estado: 'pendiente', carrilPlaneado: 'integration' }),
+			task('de-coordinador', {
+				estado: 'pendiente',
+				actor: 'coordinador',
+				carrilPlaneado: 'integration',
+			}),
+			task('con-candado', { candado: { agente: 'codex', desde } }),
+		]);
+		const { report } = verify(dir, {});
+		expect(report.inconsistencias).toContainEqual({
+			id: 'de-sesion',
+			msg: 'carril planeado no canónico: integration',
+		});
+		expect(report.inconsistencias.map((i: { id: string }) => i.id)).not.toContain(
+			'de-coordinador',
+		);
+		expect(report.avisos).toContainEqual({
+			id: 'con-candado',
+			msg: `candado de codex desde ${desde}: ¿sigue trabajando?`,
 		});
 	});
 

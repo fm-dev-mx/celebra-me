@@ -14,14 +14,16 @@ authorization.
   port. A PR preview of the view may run only briefly, to check it, and is stopped right after.
 
 - **Task id convention**: the branch without its type prefix: `fix/olivia-gallery` →
-  `olivia-gallery`. Existing assigned branches may differ; the verifier reports a warning.
+  `olivia-gallery`. The id does not have to match its branch, which lives in `rama`; the verifier
+  never warns about it (d188).
 - **Fields**: `titulo`, `estado`, `urgencia` (`urgente|alta|normal|baja`), `actor`
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
   `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
-  `orden`, `origen`, `plan`, `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`;
-  `rev` and `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`,
-  `cierre` only by `close`. `espera`, `usted` and `deps` no longer exist.
+  `orden`, `origen`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
+  `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are set by the command, `archivada`
+  (date) only by `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no
+  longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -41,8 +43,8 @@ authorization.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
   finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
   agent at a time; `move` hands a task over only without a lock, logs it and warns when the new
-  agent lacks a `requiere` capability; `review <id> --agente=<b>` creates the child `<id>-revision`
-  with `origen`. Never duplicate a task. Rules are the same for every agent.
+  agent lacks a `requiere` capability; `review <id> [--agente=<b>]` creates the review child with
+  `origen` (one per round, see below). Never duplicate a task. Rules are the same for every agent.
 - **Planned lane (d177)**: the coordinator gives every open task a canonical lane (`WORKTREE_LANES`,
   f05–f12) when it creates or prepares it:
   `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador` (`--carril=` clears it, only
@@ -91,6 +93,10 @@ authorization.
   without one). Record it in the same write that opens the PR. Every mention of a task that has a PR
   — replies, messages, handoffs, reports, prompts — writes it next to the id:
   `pasarela-pago-estudio (PR #475)`. Same rule for every agent.
+- **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`, lane checks
+  (`laneAllowed`, `taskLane`), finished states (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the
+  stale-lock threshold and PR parsing (`normalizePr`, `prNumber`); `board`, `sync`, `verify`,
+  `watch` and the view import them instead of keeping a copy.
 - **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
   «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
   `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open
@@ -101,14 +107,26 @@ authorization.
   `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
   still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
   open PR are only reported; review children are never touched. A lock older than `--horas` (default
-  6, or `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is
-  flagged «posible sesión cerrada» and never released by the sync (the owning session or the
-  coordinator with authority does). The button's POST needs the page's per-process token and its own
-  `Origin`, and every request needs a local `Host`. No agent is ever launched from the view.
+  `STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
+  `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
+  «posible sesión cerrada» and never released by the sync (the owning session or the coordinator
+  with authority does). The button's POST needs the page's per-process token and its own `Origin`,
+  and every request needs a local `Host`. No agent is ever launched from the view.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
-- **Bitácora**: the command writes one row per `estado` change, per `move` and per archive or
-  unarchive; no rows for reviews or notes.
+- **Bitácora**: the command writes one row per `estado` change, per `move`, per `plan` and per
+  archive or unarchive; no rows for reviews or notes. Rows live in one JSONL file per UTC day,
+  `bitacora/2026-10-24.jsonl`: `{tarea, en, quien, corrio?, salio?}` plus exactly one change —
+  `de`/`a` (estados, `archivada` for archive/unarchive, `''` before the task existed),
+  `agente {de, a}` or `carril {de, a}` (`''` = none). `quien` is required and is one of `claude`,
+  `codex`, `gemini`, `coordinador`, `dueno`: `--quien`, else `--coordinador`, else `--agente` (in
+  `move` and `review` `--agente` names the new agent or reviewer, so only `--quien`/`--coordinador`
+  count); a write without it, or with an unknown estado, writes nothing.
+  `pnpm board migrate-log [--dry-run]` converts the old one-file-per-row documents without dropping
+  any: estados normalized, agent and lane hand-overs moved to their own field, `legado: true`, the
+  file name in `archivo` and an unmapped `quien` kept as `quienTexto`; the old files move to
+  `.respaldos/bitacora-legado/`. The verifier reports rows still in the old format and every invalid
+  new row.
 - **`comprobada`**: only after `unida`/`hecha` with `evidencia.salio` from the verifier (listed
   under «LISTAS PARA comprobada»), or with the owner's explicit authorization. Clear `prompt` and
   release the lock when closing.
@@ -144,17 +162,25 @@ authorization.
   refused unless `--coordinador`. `pnpm board verify` warns about a ready, unlocked session task
   without a planned lane and about two ready tasks planned in the same lane.
 - Claims use the explicit `--rama` or the task's declared branch; they never infer the caller's
-  branch. Read-only work may remain without a branch. A different branch name is a verifier warning,
-  not a claim failure. Only `actor: coordinador` with `--coordinador` may claim the canonical
-  `integration` lane; `f04-integracion` is not a canonical id. Claims grant no editing authority.
+  branch. Read-only work may remain without a branch. A branch that differs from the id is neither a
+  claim failure nor a verifier warning (d188). Only `actor: coordinador` with `--coordinador` may
+  claim the canonical `integration` lane; `f04-integracion` is not a canonical id. Claims grant no
+  editing authority.
 - `set` and `release` require matching `--agente` and session (`--sesion`, or Claude's variable).
   Unlocked coordination edits require `--coordinador`; the flag declares a role, never grants
   authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
   exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
   `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
 - `review` requires the origin PR in `en revision`, generates an English prompt and records
-  `revisionSha` (from GitHub, or explicit `--sha`). It can refresh an unlocked child at a new SHA.
-  Reviews become executable before merge and do not inherit the author's lane. Completion declares
+  `revisionSha` (from GitHub, or explicit `--sha`). Every round is a new task: `<id>-revision`, then
+  `<id>-revision-2`, `-3`… for each new PR head, with `vuelta`, the short SHA in the title and its
+  own prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names
+  the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
+  rounds are never rewritten; the same SHA again creates nothing. Without `--agente` the reviewer
+  follows d183: work by Codex or Gemini goes to Claude, work by Claude to Gemini (`--agente=codex`
+  when asked); any other pairing is refused. The author is the task's `agente`, else its lock's or
+  last session's. `show` and the view's sheet list the rounds one below another. Reviews become
+  executable before merge and do not inherit the author's lane. Completion declares
   `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
 - `agentes --json` discovers the shared registry and capability overrides. Only explicit coordinator
   updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before

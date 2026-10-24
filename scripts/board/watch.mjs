@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AGENT_REGISTRY, claimable, queue } from './model.mjs';
+import { AGENT_REGISTRY, claimable, queue, taskLabel as label } from './model.mjs';
 import { boardDir, loadBoard } from './store.mjs';
 
 export const TITLE = 'Tablero Celebra-me';
@@ -32,8 +32,6 @@ export function readyByAgent(board, now = Date.now()) {
 		]),
 	);
 }
-
-const label = (t) => (Number.isInteger(t.num) ? `T${t.num} ${t.id}` : t.id);
 
 /** «Codex tiene 1 tarea lista: T34 serenata-fotos» or «… tiene 2 tareas listas: T34 a, T35 b». */
 export function message(agente, tasks) {

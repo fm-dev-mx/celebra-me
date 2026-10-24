@@ -78,6 +78,12 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	}
 	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
 		args.push('--coordinador');
+	// A bitácora row needs its writer; --agente names the new agent or the reviewer in these commands.
+	if (
+		['add', 'move', 'review', 'archive', 'unarchive'].includes(args[0]) &&
+		!args.some((a) => a.startsWith('--quien=') || a === '--coordinador')
+	)
+		args.push('--coordinador');
 	return exec(dir, env, args);
 }
 
@@ -100,6 +106,17 @@ function exec(dir: string, env: NodeJS.ProcessEnv, args: string[]) {
 	});
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
 }
+
+/** Every bitácora row, from the daily JSONL files. */
+const readLog = (dir: string): Json[] =>
+	readdirSync(path.join(dir, 'bitacora'))
+		.filter((f) => f.endsWith('.jsonl'))
+		.flatMap((f) =>
+			readFileSync(path.join(dir, 'bitacora', f), 'utf8')
+				.split('\n')
+				.filter(Boolean)
+				.map((line) => JSON.parse(line)),
+		);
 
 const readTask = (dir: string, id: string) =>
 	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
@@ -552,8 +569,13 @@ describe('pnpm board', () => {
 		expect(board(dir, 'release', 'compartida', '--agente=codex').status).toBe(0);
 		expect(board(dir, 'move', 'compartida', '--agente=claude').status).toBe(0);
 		expect(readTask(dir, 'compartida')).toMatchObject({ agente: 'claude', rev: 4 });
-		const log = readdirSync(path.join(dir, 'bitacora'));
-		expect(log).toHaveLength(1);
+		expect(readLog(dir)).toEqual([
+			expect.objectContaining({
+				tarea: 'compartida',
+				agente: { de: 'cualquiera', a: 'claude' },
+				quien: 'coordinador',
+			}),
+		]);
 	});
 
 	it('records where a lock was taken and warns when a move lacks a capability', () => {
@@ -608,8 +630,8 @@ describe('pnpm board', () => {
 			0,
 		);
 		expect(readTask(dir, 'pin')).toMatchObject({ estado: 'en curso', rev: 2 });
-		const [row] = readdirSync(path.join(dir, 'bitacora'));
-		expect(JSON.parse(readFileSync(path.join(dir, 'bitacora', row), 'utf8'))).toMatchObject({
+		const [row] = readLog(dir);
+		expect(row).toMatchObject({
 			tarea: 'pin',
 			de: 'pendiente',
 			a: 'en curso',
@@ -672,10 +694,74 @@ describe('pnpm board', () => {
 		expect(
 			board(dir, 'review', 'origen', '--agente=codex', `--sha=${'b'.repeat(40)}`).status,
 		).toBe(0);
-		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).revisionSha).toBe(
-			'b'.repeat(40),
+		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out)).toMatchObject({
+			id: 'origen-revision-2',
+			revisionSha: 'b'.repeat(40),
+			vuelta: 2,
+		});
+		expect(readTask(dir, 'origen-revision')).toMatchObject({
+			num: reviewNum,
+			estado: 'hecha',
+			revisionSha: sha,
+		});
+	});
+
+	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('de-claude', {
+					agente: 'claude',
+					rama: 'feat/a',
+					pr: 10,
+					estado: 'en revision',
+				}),
+				task('de-codex', {
+					agente: 'codex',
+					rama: 'feat/b',
+					pr: 11,
+					estado: 'en revision',
+				}),
+				task('sin-autor', { rama: 'feat/c', pr: 12, estado: 'en revision' }),
+			],
+		});
+		const [a, b, c] = ['a', 'b', 'c'].map((x) => x.repeat(40));
+		expect(board(dir, 'review', 'de-claude', `--sha=${a}`).status).toBe(0);
+		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ agente: 'gemini', vuelta: 1 });
+		expect(board(dir, 'review', 'de-codex', `--sha=${a}`).status).toBe(0);
+		expect(readTask(dir, 'de-codex-revision').agente).toBe('claude');
+		expect(board(dir, 'review', 'de-codex', '--agente=gemini', `--sha=${b}`).err).toContain(
+			'd183: el trabajo de codex lo revisa claude',
 		);
-		expect(readTask(dir, 'origen-revision').num).toBe(reviewNum);
+		expect(board(dir, 'review', 'sin-autor', `--sha=${a}`).err).toContain('falta --agente');
+		// Same SHA: no new round.
+		expect(board(dir, 'review', 'de-claude', `--sha=${a}`).out).toContain(
+			`de-claude-revision ya revisa ${a}`,
+		);
+		expect(board(dir, 'review', 'de-claude', '--agente=codex', `--sha=${b}`).status).toBe(0);
+		expect(board(dir, 'review', 'de-claude', `--sha=${c}`).status).toBe(0);
+		const second = readTask(dir, 'de-claude-revision-2');
+		expect(second).toMatchObject({
+			agente: 'codex',
+			vuelta: 2,
+			revisionSha: b,
+			origen: 'de-claude',
+		});
+		expect(second.titulo).toContain('vuelta 2 (bbbbbbb)');
+		expect(second.prompt).toContain('SEGUNDA VUELTA');
+		expect(second.prompt).toContain(`Previous round (de-claude-revision) reviewed ${a}`);
+		expect(second.prompt).toContain(`git diff ${a}..${b}`);
+		expect(second.prompt).toContain('\nDECISIONES\n');
+		const third = readTask(dir, 'de-claude-revision-3');
+		expect(third).toMatchObject({ agente: 'gemini', vuelta: 3 });
+		expect(third.prompt).toContain('TERCERA VUELTA');
+		expect(third.prompt).toContain(`git diff ${b}..${c}`);
+		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ revisionSha: a, vuelta: 1 });
+		const show = board(dir, 'show', 'de-claude-revision-2').out;
+		expect(show).toContain('VUELTAS DE REVISIÓN');
+		expect(show.indexOf('vuelta 1 · aaaaaaa')).toBeLessThan(show.indexOf('vuelta 2 · bbbbbbb'));
+		expect(show.indexOf('vuelta 2 · bbbbbbb')).toBeLessThan(show.indexOf('vuelta 3 · ccccccc'));
+		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
+		expect(html).toContain('${roundsHtml(t)}');
 	});
 
 	it('refuses blocked, owner and closed claims and protects locks between sessions', () => {
@@ -867,7 +953,7 @@ describe('pnpm board', () => {
 		expect(html).toContain('${runsHtml(t)}');
 		expect(html).toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
-		expect(html).toContain('const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;');
+		expect(html).toContain('const laneId=taskLane;');
 	});
 
 	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
@@ -1176,6 +1262,150 @@ describe('pnpm board', () => {
 		},
 	);
 
+	it('refuses a bitácora row without a known writer and writes nothing', () => {
+		const dir = makeBoard({ tareas: [task('base')] });
+		const add = ['add', 'nueva', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion'];
+		expect(raw(dir, ...add).err).toContain('falta quién escribe la fila');
+		expect(raw(dir, ...add, '--quien=sesion').err).toContain(
+			'quien debe ser claude/codex/gemini/coordinador/dueno, no sesion',
+		);
+		expect(readdirSync(path.join(dir, 'tareas'))).toEqual(['base.json']);
+		expect(raw(dir, ...add, '--quien=dueño').status).toBe(0);
+		expect(
+			board(dir, 'plan', 'nueva', '--rev=1', '--carril=f11-preview', '--coordinador').status,
+		).toBe(0);
+		const files = readdirSync(path.join(dir, 'bitacora'));
+		expect(files).toHaveLength(1);
+		expect(files[0]).toMatch(/^\d{4}-\d{2}-\d{2}\.jsonl$/);
+		expect(readLog(dir)).toEqual([
+			expect.objectContaining({ tarea: 'nueva', de: '', a: 'pendiente', quien: 'dueno' }),
+			expect.objectContaining({
+				tarea: 'nueva',
+				carril: { de: '', a: 'f11-preview' },
+				quien: 'coordinador',
+			}),
+		]);
+		expect(readLog(dir)[1]).not.toHaveProperty('de');
+	});
+
+	it('converts the old one-file-per-row bitácora into daily files without losing a row', () => {
+		const dir = makeBoard({
+			tareas: [task('a')],
+			bitacora: [
+				{
+					id: '20261023T101500Z-a',
+					tarea: 'a',
+					de: '',
+					a: 'pendiente',
+					en: '2026-10-23T10:15:00Z',
+					quien: '',
+					corrio: 'pnpm board add',
+					salio: '',
+				},
+				{
+					id: 'b-20261023-a',
+					tarea: 'a',
+					de: 'pendiente',
+					a: 'en_curso',
+					en: '2026-10-23T11:00:00Z',
+					quien: 'f09 · Tablero v3',
+					corrio: '',
+					salio: '',
+				},
+				{
+					id: '2026-10-22-a-hecha',
+					tarea: 'a',
+					de: 'codex',
+					a: 'claude',
+					en: '2026-10-22T09:00:00Z',
+					quien: 'dueño',
+					corrio: 'pnpm board move',
+					salio: '',
+				},
+				{
+					id: 'a-2026-10-24T0100Z',
+					tarea: 'a',
+					de: 'sin carril',
+					a: 'f12-release',
+					en: '2026-10-24T01:00:00Z',
+					quien: 'coordinador',
+					corrio: 'pnpm board plan',
+					salio: '',
+					enlace: 'x',
+				},
+				{
+					id: 'a-raya',
+					tarea: 'a',
+					de: '—',
+					a: '—',
+					en: '2026-10-24T02:00:00Z',
+					quien: 'sesión',
+					corrio: 'nota',
+					salio: '',
+				},
+			],
+		});
+		const dry = board(dir, 'migrate-log', '--dry-run', '--json');
+		expect(JSON.parse(dry.out)).toMatchObject({
+			filas: 5,
+			sinQuien: 3,
+			agente: 1,
+			carril: 1,
+			escrito: false,
+		});
+		expect(readdirSync(path.join(dir, 'bitacora'))).toHaveLength(5);
+		const run = JSON.parse(board(dir, 'migrate-log', '--json').out);
+		expect(run).toMatchObject({
+			filas: 5,
+			escrito: true,
+			dias: ['2026-10-22', '2026-10-23', '2026-10-24'],
+		});
+		expect(readdirSync(path.join(dir, 'bitacora')).sort()).toEqual([
+			'2026-10-22.jsonl',
+			'2026-10-23.jsonl',
+			'2026-10-24.jsonl',
+		]);
+		expect(readdirSync(run.respaldo)).toHaveLength(5);
+		const rows = readLog(dir);
+		expect(rows).toHaveLength(5);
+		expect(rows).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					archivo: '20261023T101500Z-a.json',
+					de: '',
+					a: 'pendiente',
+					legado: true,
+				}),
+				expect.objectContaining({
+					archivo: 'b-20261023-a.json',
+					a: 'en curso',
+					quienTexto: 'f09 · Tablero v3',
+				}),
+				expect.objectContaining({
+					archivo: '2026-10-22-a-hecha.json',
+					agente: { de: 'codex', a: 'claude' },
+					quien: 'dueno',
+				}),
+				expect.objectContaining({
+					archivo: 'a-2026-10-24T0100Z.json',
+					carril: { de: '', a: 'f12-release' },
+					enlace: 'x',
+				}),
+				expect.objectContaining({
+					archivo: 'a-raya.json',
+					de: '',
+					a: '',
+					quienTexto: 'sesión',
+				}),
+			]),
+		);
+		expect(rows.filter((r) => r.quien === undefined)).toHaveLength(3);
+		expect(JSON.parse(board(dir, 'history', '--json').out).map((r: Json) => r.txt)).toContain(
+			'a agente codex → claude pnpm board move',
+		);
+		expect(JSON.parse(board(dir, 'migrate-log', '--json').out)).toMatchObject({ filas: 0 });
+	});
+
 	it('archives only finished, unlocked tasks and logs archive and unarchive', () => {
 		const dir = makeBoard({
 			tareas: [
@@ -1196,9 +1426,7 @@ describe('pnpm board', () => {
 		expect(readTask(dir, 'done').rev).toBe(2);
 		expect(board(dir, 'unarchive', 'done').status).toBe(0);
 		expect(readTask(dir, 'done').archivada).toBeUndefined();
-		const rows = readdirSync(path.join(dir, 'bitacora')).map((f) =>
-			JSON.parse(readFileSync(path.join(dir, 'bitacora', f), 'utf8')),
-		);
+		const rows = readLog(dir);
 		expect(rows.map((r) => [r.tarea, r.de, r.a, r.corrio]).sort()).toEqual([
 			['done', 'archivada', 'comprobada', 'pnpm board unarchive'],
 			['done', 'comprobada', 'archivada', 'pnpm board archive'],
@@ -1494,10 +1722,8 @@ describe('pnpm board', () => {
 		]);
 		expect(readTask(dir, 'done').archivada).toBeDefined();
 		expect(readTask(dir, 'open').archivada).toBeUndefined();
-		const [row] = readdirSync(path.join(dir, 'bitacora')).map((f) =>
-			JSON.parse(readFileSync(path.join(dir, 'bitacora', f), 'utf8')),
-		);
-		expect(row).toMatchObject({ tarea: 'done', a: 'archivada', quien: 'dueño' });
+		const [row] = readLog(dir);
+		expect(row).toMatchObject({ tarea: 'done', a: 'archivada', quien: 'dueno' });
 	});
 
 	it('exposes agent/lane/state reads and keeps a single Gemini identity', () => {
@@ -1677,7 +1903,7 @@ describe('pnpm board', () => {
 			const codes=await Promise.all([run('one'),run('two')]);
 			const task=JSON.parse(readFileSync(join(process.env.CELEBRA_BOARD_DIR,'tareas','race.json'),'utf8'));
 			const add=(id)=>new Promise(resolve=>{
-				const p=spawn(process.execPath,[process.argv[1],'add',id,'titulo='+id,'urgencia=normal','actor=coordinador'],{stdio:'ignore'});
+				const p=spawn(process.execPath,[process.argv[1],'add',id,'titulo='+id,'urgencia=normal','actor=coordinador','--coordinador'],{stdio:'ignore'});
 				p.on('exit',resolve);
 			});
 			const added=await Promise.all([add('first'),add('second')]);
