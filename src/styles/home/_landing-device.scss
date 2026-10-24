@@ -13,12 +13,12 @@
 	margin: 0;
 	padding: var(--landing-phone-bezel);
 	border-radius: var(--landing-phone-radius);
-	background: linear-gradient(150deg, #4a4239 0%, #17120e 46%, #2f2821 100%);
+	background: linear-gradient(150deg, #4b3a43 0%, #1a0f15 46%, #33252c 100%);
 	box-shadow:
 		inset 0 0 0 1px rgb(255 255 255 / 14%),
 		inset 0 1px 0 rgb(255 255 255 / 22%),
-		0 1.75rem 3.5rem rgb(17 13 9 / 26%),
-		0 0.4rem 1rem rgb(17 13 9 / 16%);
+		0 1.75rem 3.5rem rgb(var(--color-ink-rgb) / 26%),
+		0 0.4rem 1rem rgb(var(--color-ink-rgb) / 16%);
 	isolation: isolate;
 
 	&__screen {
@@ -39,7 +39,7 @@
 			width: 3.4rem;
 			height: 0.95rem;
 			border-radius: 999px;
-			background: #0d0a08;
+			background: #120a0e;
 			transform: translateX(-50%);
 		}
 	}

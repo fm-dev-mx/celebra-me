@@ -20,10 +20,14 @@
 	@include type-scale.text(eyebrow);
 
 	margin: 0;
-	color: var(--color-border-gold);
+	color: var(--color-rose-deep);
 }
 
 .envelope-scene {
+	// Room above the envelope for the risen card (its top ends 0.61 envelope widths up).
+	--envelope-width: min(300px, 78vw);
+	--envelope-headroom: calc(var(--envelope-width) * 0.68);
+
 	background: var(--color-paper);
 
 	&__intro {
@@ -69,43 +73,55 @@
 	--envelope-radius: var(--radius-sm);
 
 	position: relative;
-	width: min(300px, 78vw);
+	width: var(--envelope-width);
 	aspect-ratio: 4 / 3;
-	margin-top: 190px;
+	margin-top: var(--envelope-headroom);
 	perspective: 900px;
 
 	&__back {
 		position: absolute;
 		inset: 0;
 		border-radius: var(--envelope-radius);
-		background: hsl(40deg 35% 84%);
-		box-shadow: 0 26px 50px -24px rgb(60 30 0 / 50%);
+		background: hsl(8deg 34% 84%);
+		box-shadow: 0 26px 50px -24px rgb(var(--color-espresso-rgb) / 45%);
 	}
 
-	// Stacking never changes: flap 1 (behind the pocket), pocket 3, seal 6, card 7.
+	// Stacking never changes: flap 1, card pocket 2, front 3, seal 6. The card always sits behind
+	// the front, so the envelope itself hides whatever part of the card is still inside.
 	&__flap {
 		position: absolute;
 		inset: 0 0 auto;
 		z-index: 1;
 		height: 58%;
-		background: linear-gradient(180deg, hsl(40deg 36% 88%), hsl(40deg 30% 79%));
+		background: linear-gradient(180deg, hsl(8deg 38% 89%), hsl(8deg 28% 80%));
 		clip-path: polygon(0 0, 100% 0, 50% 100%);
 		transform: rotateX(180deg);
 		transform-origin: top center;
 	}
 
+	// Clips only below the envelope, so the card can rise freely above it.
+	&__pocket {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		clip-path: inset(-300% -50% 0);
+	}
+
+	// Portrait card, like a printed invitation. Rest position: risen, its foot below the pocket's V.
 	&__card {
 		position: absolute;
-		inset: 3% 6% auto;
-		z-index: 7;
-		height: 94%;
+		top: 0;
+		left: 12%;
+		width: 76%;
+		aspect-ratio: 3 / 4;
 		display: grid;
 		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
 		overflow: hidden;
-		border-radius: var(--radius-md);
+		border: 4px solid var(--color-ivory);
+		border-radius: var(--radius-sm);
 		background: var(--color-ivory);
-		box-shadow: 0 18px 40px -14px rgb(40 20 0 / 50%);
-		transform: translateY(-36%) scale(1.06);
+		box-shadow: 0 18px 40px -14px rgb(var(--color-espresso-rgb) / 45%);
+		transform: translateY(-60%);
 
 		img {
 			grid-area: 1 / 1;
@@ -119,7 +135,7 @@
 
 	&__shade {
 		grid-area: 1 / 1;
-		background: linear-gradient(180deg, rgb(0 0 0 / 50%), transparent 40%);
+		background: linear-gradient(180deg, rgb(var(--color-espresso-rgb) / 62%), transparent 42%);
 	}
 
 	&__title {
@@ -155,7 +171,7 @@
 		justify-content: center;
 		padding-bottom: 12%;
 		border-radius: var(--envelope-radius);
-		background: linear-gradient(160deg, hsl(40deg 40% 92%), hsl(40deg 32% 83%));
+		background: linear-gradient(160deg, hsl(10deg 42% 93%), hsl(8deg 30% 85%));
 		clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
 
 		span {
@@ -177,13 +193,13 @@
 		place-items: center;
 		translate: -50% -50%;
 		border-radius: 50%;
-		background: radial-gradient(
-			circle at 35% 30%,
-			hsl(40deg 70% 64%),
-			var(--color-border-gold)
-		);
-		box-shadow: 0 4px 10px rgb(0 0 0 / 28%);
-		color: var(--color-ink);
+
+		// Wine wax seal with a champagne initial.
+		background: radial-gradient(circle at 35% 30%, hsl(340deg 38% 42%), var(--color-espresso));
+		box-shadow:
+			inset 0 0 0 3px rgb(var(--color-border-gold-rgb) / 35%),
+			0 4px 10px rgb(0 0 0 / 28%);
+		color: var(--color-border-gold);
 		font-family: var(--font-display);
 		font-size: 1.15em;
 		font-style: italic;
@@ -270,7 +286,7 @@
 @media (width >= 900px) {
 	.envelope-scene__stage {
 		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-		grid-template-rows: 190px repeat(2, auto) auto;
+		grid-template-rows: var(--envelope-headroom) repeat(2, auto) auto;
 		column-gap: 3rem;
 		width: min(100%, 1140px);
 		margin-inline: auto;
@@ -423,23 +439,17 @@
 	}
 }
 
-// The card is clipped at the envelope mouth while it is inside, rises out, then settles in front.
+// Inside, the card top sits below the pocket's V so the closed envelope shows only the flap. It
+// rises once the flap is open and stops with its foot still in the pocket.
 @keyframes envelope-card {
 	0%,
-	38% {
-		transform: translateY(0);
-		clip-path: inset(0 0 100% 0);
+	36% {
+		transform: translateY(44%);
 	}
 
-	68% {
-		transform: translateY(-86%);
-		clip-path: inset(0 0 17% 0);
-	}
-
-	92%,
+	88%,
 	100% {
-		transform: translateY(-36%) scale(1.06);
-		clip-path: inset(0 0 0 0);
+		transform: translateY(-60%);
 	}
 }
 
@@ -555,7 +565,7 @@
 	border: 1px solid var(--color-border-subtle);
 	border-radius: var(--chat-radius);
 	background: hsl(38deg 30% 89%);
-	box-shadow: 0 22px 44px -24px rgb(60 30 0 / 45%);
+	box-shadow: 0 22px 44px -24px rgb(var(--color-espresso-rgb) / 45%);
 
 	&__head {
 		display: flex;
@@ -617,7 +627,9 @@
 			height: auto;
 			aspect-ratio: 1.91 / 1;
 			object-fit: cover;
-			object-position: 50% 42%;
+
+			// The wide link-preview crop sits low on the portrait cover so the face stays whole.
+			object-position: 50% 68%;
 		}
 
 		div {

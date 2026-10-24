@@ -1,0 +1,118 @@
+@use 'ornament-sets' as *;
+
+// Fine butterflies, loaded only by pages whose `composition.ornaments` is `fine-butterflies`.
+// One hairline butterfly, drawn as a mask so it takes the ornament ink, rests at a few thresholds:
+// two beside the cover portrait, one over the opening quote, one closing the family chapter and
+// one beside the closing signature, never more than two on one screen. Purely decorative
+// pseudo-elements. They flutter only when the visitor allows motion; the resting frame is complete.
+//   --ornament-ink                    Line color (default the ornament gold)
+//   --ornament-butterfly-<spot>-*     Per-spot overrides from the motif-spot mixin (display, size,
+//                                     top / right / bottom / left, transform, ink); spots are
+//                                     hero-a, hero-b, quote, family and closing
+
+$butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 86' fill='none' stroke='%23000' stroke-width='1.8' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M50 44C58 22 82 10 90 22c7 12-12 26-40 24zM50 44C42 22 18 10 10 22c-7 12 12 26 40 24zM50 47c12 4 26 16 20 28-6 10-16-2-20-24zM50 47c-12 4-26 16-20 28 6 10 16-2 20-24zM50 40v22M50 40c-2-10-6-16-12-20M50 40c2-10 6-16 12-20'/%3E%3C/svg%3E");
+
+// One butterfly spot taken out of flow. The flutter folds the wings toward the body around the
+// spot's own transform, slowly and with a long rest, so it never pulls the eye from the text.
+@mixin butterfly($name) {
+	@include motif-spot-absolute($name, $butterfly);
+
+	aspect-ratio: 100 / 86;
+	height: auto;
+	opacity: var(--ornament-butterfly-opacity, 90%);
+
+	@media (prefers-reduced-motion: no-preference) {
+		animation: fine-butterfly-flutter var(--ornament-#{$name}-duration, 7s) ease-in-out infinite;
+		animation-delay: var(--ornament-#{$name}-delay, 0s);
+	}
+}
+
+@keyframes fine-butterfly-flutter {
+	0%,
+	62%,
+	100% {
+		scale: 1 1;
+		translate: 0 0;
+	}
+
+	70% {
+		scale: 0.72 1;
+		translate: 0 -0.15rem;
+	}
+
+	78% {
+		scale: 1 1;
+		translate: 0 -0.3rem;
+	}
+
+	86% {
+		scale: 0.8 1;
+		translate: 0 -0.15rem;
+	}
+}
+
+// The compound wrapper class keeps the set's selector weight above the section bases.
+.ornament-set--fine-butterflies.event-theme-wrapper {
+	--ornament-ink: var(--color-ornament-gold, var(--color-border-premium));
+	--ornament-butterfly-hero-a-display: block;
+	--ornament-butterfly-hero-a-size: clamp(2.6rem, 9vw, 3.6rem);
+
+	// Below the fixed menu button, on the portrait's shoulder.
+	--ornament-butterfly-hero-a-top: clamp(8rem, 18svh, 10rem);
+	--ornament-butterfly-hero-a-right: clamp(0.5rem, 3vw, 22%);
+	--ornament-butterfly-hero-a-transform: rotate(14deg);
+	--ornament-butterfly-hero-b-display: block;
+	--ornament-butterfly-hero-b-size: clamp(1.7rem, 6vw, 2.3rem);
+	--ornament-butterfly-hero-b-top: clamp(16rem, 38svh, 24rem);
+	--ornament-butterfly-hero-b-left: clamp(1rem, 8vw, 18%);
+	--ornament-butterfly-hero-b-transform: rotate(-18deg);
+	--ornament-butterfly-hero-b-delay: 2.4s;
+	--ornament-butterfly-quote-display: block;
+	--ornament-butterfly-quote-size: 2rem;
+	--ornament-butterfly-quote-top: clamp(1.5rem, 4vw, 2.5rem);
+	--ornament-butterfly-quote-left: calc(50% - 1rem);
+	--ornament-butterfly-family-display: block;
+	--ornament-butterfly-family-size: 1.8rem;
+	--ornament-butterfly-family-bottom: clamp(1.5rem, 4vw, 2.5rem);
+	--ornament-butterfly-family-right: clamp(1.5rem, 12vw, 30%);
+	--ornament-butterfly-family-transform: rotate(10deg);
+	--ornament-butterfly-family-delay: 1.2s;
+	--ornament-butterfly-closing-display: block;
+	--ornament-butterfly-closing-size: 2.2rem;
+	--ornament-butterfly-closing-top: -0.5rem;
+	--ornament-butterfly-closing-right: -2.75rem;
+	--ornament-butterfly-closing-transform: rotate(16deg);
+	--ornament-butterfly-closing-delay: 3s;
+
+	.framed-portrait-hero__layout::before {
+		@include butterfly('butterfly-hero-a');
+	}
+
+	.framed-portrait-hero__layout::after {
+		@include butterfly('butterfly-hero-b');
+	}
+
+	.quote-section {
+		position: relative;
+	}
+
+	.quote-section::before {
+		@include butterfly('butterfly-quote');
+	}
+
+	.family {
+		position: relative;
+	}
+
+	.family::after {
+		@include butterfly('butterfly-family');
+	}
+
+	.signature-block {
+		position: relative;
+	}
+
+	.signature-block::after {
+		@include butterfly('butterfly-closing');
+	}
+}

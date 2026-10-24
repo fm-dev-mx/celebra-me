@@ -9,6 +9,8 @@
  *   `--storybook-ambient-lanterns-display`; paused while the section is off screen.
  * - `send-off`: an inert template of lanterns the envelope releases over the cover once it has
  *   opened (`--storybook-send-off: lanterns`); each is removed when its flight ends.
+ * `motif="butterflies"` (envelope and send-off scenes) draws butterflies folding their wings in
+ * place of the lanterns, for the `storybook-butterflies` envelope; placement and flight stay the same.
  * Purely decorative and never announced; the section scenes are styled in
  * `src/styles/invitation/_lantern-flight.scss` and stay still under reduced motion.
  */
@@ -17,14 +19,26 @@ import '@/styles/invitation/_lantern-flight.scss';
 interface Props {
 	class?: string;
 	scene?: 'envelope' | 'closing' | 'ambient' | 'send-off';
+	motif?: 'lanterns' | 'butterflies';
 }
 
-const { class: className, scene = 'envelope' } = Astro.props;
+const { class: className, scene = 'envelope', motif = 'lanterns' } = Astro.props;
+const isButterfly = motif === 'butterflies';
 
 // Same silhouette as the card art (48 × 64 grid), filled so it reads as a lit lantern at small size.
 const body = 'M11.5 16C11.5 7.2 36.5 7.2 36.5 16L34 45.5C33.6 48.6 14.4 48.6 14 45.5Z';
 const bands = 'M11.9 21C19 23.4 29 23.4 36.1 21M13 34C20 36.2 28 36.2 35 34';
 const flame = 'M24 51.6C27.2 54.4 26.8 57.8 24 60 21.2 57.8 20.8 54.4 24 51.6Z';
+
+// A butterfly seen from above on the same grid, head up: two wing pairs about a slim body.
+const wings = [
+	'M23 26C14 12 3 12 4 22 5 30 14 33 23 31Z',
+	'M23 32C14 33 8 40 11 46 14 51 21 45 23 37Z',
+	'M25 26C34 12 45 12 44 22 43 30 34 33 25 31Z',
+	'M25 32C34 33 40 40 37 46 34 51 27 45 25 37Z',
+];
+const butterflyBody = 'M24 20C25.2 20 25.8 25 25.8 32S25.2 44 24 44 22.2 39 22.2 32 22.8 20 24 20Z';
+const antennae = 'M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14';
 
 // Placement, size and rise timing of each lantern live in the stylesheets (by position).
 const lanternCount = scene === 'envelope' || scene === 'closing' ? 5 : 6;
@@ -36,12 +50,22 @@ const lanterns = Array.from({ length: lanternCount }, (_, index) => index);
 		<template data-lantern-send-off>
 			<div class="lantern-send-off" aria-hidden="true">
 				{lanterns.map(() => (
-					<span class="lantern-flight__lantern">
-						<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
-							<path class="storybook-sky__lantern-body" d={body} />
-							<path class="storybook-sky__lantern-bands" d={bands} fill="none" />
-							<path class="storybook-sky__lantern-flame" d={flame} />
-						</svg>
+					<span class:list={['lantern-flight__lantern', { 'storybook-sky__butterfly': isButterfly }]}>
+						{isButterfly ? (
+							<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
+								<g class="storybook-sky__butterfly-wings">
+									{wings.map((wing) => <path class="storybook-sky__butterfly-wing" d={wing} />)}
+								</g>
+								<path class="storybook-sky__butterfly-body" d={butterflyBody} />
+								<path class="storybook-sky__butterfly-antennae" d={antennae} fill="none" />
+							</svg>
+						) : (
+							<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
+								<path class="storybook-sky__lantern-body" d={body} />
+								<path class="storybook-sky__lantern-bands" d={bands} fill="none" />
+								<path class="storybook-sky__lantern-flame" d={flame} />
+							</svg>
+						)}
 					</span>
 				))}
 			</div>
@@ -64,12 +88,22 @@ const lanterns = Array.from({ length: lanternCount }, (_, index) => index);
 				<div class="storybook-sky__plane storybook-sky__plane--mid"></div>
 				<div class="storybook-sky__plane storybook-sky__plane--near">
 					{lanterns.map(() => (
-						<span class="storybook-sky__lantern">
+						<span class:list={['storybook-sky__lantern', { 'storybook-sky__butterfly': isButterfly }]}>
+							{isButterfly ? (
 							<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
-								<path class="storybook-sky__lantern-body" d={body} />
-								<path class="storybook-sky__lantern-bands" d={bands} fill="none" />
-								<path class="storybook-sky__lantern-flame" d={flame} />
+								<g class="storybook-sky__butterfly-wings">
+									{wings.map((wing) => <path class="storybook-sky__butterfly-wing" d={wing} />)}
+								</g>
+								<path class="storybook-sky__butterfly-body" d={butterflyBody} />
+								<path class="storybook-sky__butterfly-antennae" d={antennae} fill="none" />
 							</svg>
+						) : (
+								<svg viewBox="0 0 48 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
+									<path class="storybook-sky__lantern-body" d={body} />
+									<path class="storybook-sky__lantern-bands" d={bands} fill="none" />
+									<path class="storybook-sky__lantern-flame" d={flame} />
+								</svg>
+							)}
 						</span>
 					))}
 				</div>

@@ -196,9 +196,10 @@ only; elsewhere the same markup renders as a normal section.
   pinned at a 390 × 844 viewport. Two scenes are never adjacent; a normal section sits between them.
   A scene never traps scrolling: no scroll snapping, no wheel or touch interception.
 - **Scenes in use.** `gallery.album-assemble` (prints drop onto the album page, with a counter) and
-  `location.program-sheet` with `presentationOptions.scene: 'lantern-route'` (two or more venues:
-  under a night sky the route draws itself, a lantern walks it and the entries take turns; the next
-  entry settles from above so its links stay under the visible one).
+  `location.program-sheet` with `presentationOptions.scene: 'lantern-route'` or `'butterfly-route'`
+  (two or more venues: the route draws itself, a traveler follows it and the entries take turns; the
+  next entry settles from above so its links stay under the visible one). The lantern walks under a
+  starry night; the butterfly flies, facing its way, over the section's own day grounds.
 - **Not scenes.** `rsvp.flow: 'steps'` (one question per step, a lantern on the progress track and
   one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
   motion it keeps the progress and drops the movement.

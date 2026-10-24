@@ -69,6 +69,12 @@
 	}
 }
 
+// While the closed envelope covers the screen the page under it stays put: a swipe would
+// otherwise scroll the invitation out of place before the guest has opened it.
+html.envelope-open:has(ds-envelope-reveal:not([hidden], .is-preview-opened, .is-letter-held)) {
+	overflow: hidden;
+}
+
 .envelope-container {
 	position: relative;
 	container-type: inline-size;

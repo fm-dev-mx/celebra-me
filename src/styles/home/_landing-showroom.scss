@@ -185,6 +185,8 @@
 		width: 100%;
 		display: grid;
 		place-items: center;
+		align-content: center;
+		gap: 1rem;
 
 		@media (width >= 900px) {
 			min-height: 560px;
@@ -247,6 +249,46 @@
 
 		.vitrina__screen[data-live='ready'] & {
 			visibility: visible;
+		}
+	}
+
+	// Outside the frame, so it reads at a glance while the demo's envelope waits closed.
+	&__open-hint {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 44px;
+		padding: 0 1.25rem;
+		border: 1px solid rgb(var(--color-champagne-rgb) / 55%);
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-champagne-rgb) / 14%);
+		color: var(--color-champagne);
+		font: inherit;
+		font-size: var(--vitrina-fs-small);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		cursor: pointer;
+		animation: vitrina-open-hint 2.4s var(--ease-standard, ease-in-out) infinite;
+
+		&[hidden] {
+			display: none;
+		}
+
+		&:hover {
+			background: rgb(var(--color-champagne-rgb) / 24%);
+		}
+
+		svg {
+			width: 18px;
+			height: 18px;
+			fill: none;
+			stroke: currentcolor;
+			stroke-width: 1.6;
+			stroke-linejoin: round;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
 		}
 	}
 
@@ -561,5 +603,16 @@
 		height: 100%;
 		object-fit: cover;
 		object-position: var(--demo-focal, 50% 50%);
+	}
+}
+
+@keyframes vitrina-open-hint {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgb(var(--color-champagne-rgb) / 35%);
+	}
+
+	60% {
+		box-shadow: 0 0 0 10px rgb(var(--color-champagne-rgb) / 0%);
 	}
 }

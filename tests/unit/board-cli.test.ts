@@ -1,4 +1,12 @@
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -75,6 +83,9 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	if (args[0] === 'claim') {
 		if (!args[1].endsWith('-revision') && !args.some((a) => a.startsWith('--carril=')))
 			args.push('--carril=f10-libre');
+		// T126: a task created under the contract needs the session title; tests that check it pass their own.
+		if (!args.some((a) => a.startsWith('--titulo=')))
+			args.push(`--titulo=${claimTitle(dir, args)}`);
 	}
 	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
 		args.push('--coordinador');
@@ -85,6 +96,16 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	)
 		args.push('--coordinador');
 	return exec(dir, env, args);
+}
+
+/** `f10 · T3 · prueba` for a claim in f10-libre of task 3; a review runs in f04. */
+function claimTitle(dir: string, args: string[]) {
+	const file = path.join(dir, 'tareas', `${args[1]}.json`);
+	const byNumber = /^T\d+$/.test(args[1]) ? args[1].slice(1) : undefined;
+	const num = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).num : byNumber;
+	const given = args.find((a) => a.startsWith('--carril='))?.slice(9);
+	const lane = given === 'integration' ? 'f04' : given;
+	return `${/-revision(-\d+)?$/.test(args[1]) || !lane ? 'f04' : lane.split('-')[0]} · T${num} · prueba`;
 }
 
 /** Runs the CLI exactly as given, without the test defaults of `board`. */

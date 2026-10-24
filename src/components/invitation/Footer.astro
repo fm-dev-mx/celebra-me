@@ -167,6 +167,9 @@ const rightsYear = new Date().getFullYear();
 				}
 
 				localStorage.removeItem(`envelope-opened-${slug}`);
+				// The replayed opening lands on the hero, not back here at the footer; the gate
+				// itself holds the reloaded page at the top.
+				window.scrollTo(0, 0);
 				window.location.reload();
 			});
 		}

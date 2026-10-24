@@ -5,6 +5,10 @@ $ErrorActionPreference = 'Stop'
 $taskName = 'Celebra-me vigilante del tablero'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $node = (Get-Command node -ErrorAction Stop).Source
+# fnm puts node behind a per-shell junction that it deletes later; the task needs the real install.
+# After installing another Node version, register the task again.
+$nodeDir = Get-Item (Split-Path $node)
+if ($nodeDir.LinkType) { $node = Join-Path @($nodeDir.Target)[0] (Split-Path $node -Leaf) }
 $watch = Join-Path $root 'scripts\board\watch.mjs'
 
 # conhost --headless keeps a console window from flashing every 10 minutes.

@@ -31,10 +31,10 @@
 	-webkit-text-fill-color: currentcolor;
 }
 
-// While the magazine covers the screen: no page scrollbar, and the reserved scrollbar gutter
-// (fixed elements cannot paint into it) takes the table's colour instead of a light strip.
+// While the magazine covers the screen (the page is locked in `_editorial-cover.scss`), the
+// reserved scrollbar gutter (fixed elements cannot paint into it) takes the table's colour
+// instead of a light strip.
 html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not([hidden])) {
-	overflow: hidden;
 	background-color: rgb(20 18 16);
 }
 

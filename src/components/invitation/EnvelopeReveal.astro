@@ -70,7 +70,8 @@ const sealPresentation = resolveSealPresentation({
 });
 
 const isSeaside = revealVariant === 'seaside-lineart';
-const isStorybook = revealVariant === 'storybook-lanterns';
+const isStorybook = revealVariant === 'storybook-lanterns' || revealVariant === 'storybook-butterflies';
+const skyMotif = revealVariant === 'storybook-butterflies' ? 'butterflies' : 'lanterns';
 const isNight = revealVariant === 'night-envelope';
 // Storybook and night letters sit inside the envelope, behind the pocket front, and rise out of it.
 const letterInPocket = isStorybook || isNight;
@@ -101,15 +102,15 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	data-arch-handoff={isNight ? 'true' : undefined}
 >
 	{backdropImage && <img class="envelope-ambient" src={plainImgSrc(backdropImage.src)} alt="" width="960" height="1440" decoding="async" />}
-	{isStorybook && <StorybookLanternSky />}
-	{isStorybook && <StorybookLanternSky scene="send-off" />}
+	{isStorybook && <StorybookLanternSky motif={skyMotif} />}
+	{isStorybook && <StorybookLanternSky scene="send-off" motif={skyMotif} />}
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
 		{
 			letterInPocket && (
 				<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
 					<InvitationRevealCard card={card} showGuest={guestPlacement !== 'outside-envelope'}>
-						{isStorybook && <StorybookLanternsArt slot="ornament" class="invitation-reveal-card__ornament" />}
+						{revealVariant === 'storybook-lanterns' && <StorybookLanternsArt slot="ornament" class="invitation-reveal-card__ornament" />}
 						{
 							isNight && (
 								<span slot="ornament" class="night-envelope-window" data-arch-window>
@@ -248,7 +249,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 </ds-envelope-reveal>
 
 <script>
-	import { RevealManager, getMotionPreference } from '@/lib/invitation/reveal-manager';
+	import {
+		RevealManager,
+		getMotionPreference,
+		holdPageAtTopWhileGated,
+	} from '@/lib/invitation/reveal-manager';
 	import { playEnvelopeOpenChime } from '@/lib/invitation/envelope-chime';
 
 	const EXIT_ANIMATION_MS = 2200;
@@ -339,13 +344,13 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			};
 			fillArchWindow();
 
-			// Opt-in send-off (`--storybook-send-off: lanterns`): once the envelope has opened, a few
-			// lanterns rise from the bottom center over the cover and are removed as each one leaves.
+			// Opt-in send-off (`--storybook-send-off: lanterns` or `butterflies`, matching the sky's
+			// motif): once the envelope has opened, a few rise from the bottom center over the cover
+			// and are removed as each one leaves.
 			const releaseLanterns = () => {
 				if (envelopeSkipped || getMotionPreference() || isScreenshotCaptureMode()) return;
-				if (getComputedStyle(this).getPropertyValue('--storybook-send-off').trim() !== 'lanterns') {
-					return;
-				}
+				const sendOff = getComputedStyle(this).getPropertyValue('--storybook-send-off').trim();
+				if (sendOff !== 'lanterns' && sendOff !== 'butterflies') return;
 				const template = this.querySelector<HTMLTemplateElement>('template[data-lantern-send-off]');
 				const layer = template?.content.firstElementChild?.cloneNode(true);
 				if (!(layer instanceof HTMLElement) || typeof layer.animate !== 'function') return;
@@ -457,12 +462,14 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			}
 
 			let stopSkyTilt = () => {};
+			let releaseScrollHold = () => {};
 
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
 				setControlsDisabled(true);
 				stopSkyTilt();
+				releaseScrollHold();
 
 				document.documentElement.classList.remove('envelope-open');
 				showCardToAccessibility();
@@ -540,6 +547,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			}
 
 			document.documentElement.classList.add('envelope-open');
+			releaseScrollHold = holdPageAtTopWhileGated();
 
 			// The lantern sky leans a few degrees toward a fine pointer; touch keeps its own drift.
 			const sky = this.querySelector<HTMLElement>('.storybook-sky');
