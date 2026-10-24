@@ -476,6 +476,8 @@ export function initCommercialTracking(): void {
 	}
 
 	if (!document.body.dataset.trackingRouteClass || shouldIgnoreTracking()) return;
+	// A demo framed by the landing showroom is not a visit of its own; the landing tracks it.
+	if (window.self !== window.top) return;
 	if (document.body.dataset.commercialTrackingBound === 'true') return;
 	document.body.dataset.commercialTrackingBound = 'true';
 	const routeClass = document.body.dataset.trackingRouteClass;

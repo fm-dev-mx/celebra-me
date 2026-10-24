@@ -101,7 +101,7 @@ test.describe('Landing page regressions', () => {
 			await expect(page.locator('[data-nav-mobile-toggle]')).toBeVisible();
 			await expect(page.locator('.header-base__desktop-nav')).toBeHidden();
 			await expect(
-				page.locator('#experiencia-invitados .guest-experience__value-item').first(),
+				page.locator('#prueba-producto .proof-rail-flow__item').first(),
 			).toBeVisible();
 
 			await page.locator('[data-nav-mobile-toggle]').click();
@@ -254,35 +254,28 @@ test.describe('Landing page regressions', () => {
 		await page.goto('/', { waitUntil: 'load' });
 
 		await expect(page.locator('#hero-title')).toContainText(
-			'Invitaciones digitales con pase y confirmación para cada invitado',
+			'Invitaciones con pase y confirmación para cada invitado',
 		);
-		// The headline already names the product; the hero carries no eyebrow.
-		await expect(page.locator('.hero-prime__eyebrow')).toHaveCount(0);
+		await expect(page.locator('.hero-prime__eyebrow')).toHaveText(landingData.hero.eyebrow!);
 		await expect(page.locator('.hero-prime__subtitle')).toContainText(
-			landingData.hero.subtitle,
+			landingData.hero.mobileSubtitle!,
 		);
-		await expect(page.locator('.hero-prime__subtitle')).toContainText(
+		await expect(page.locator('.hero-prime__price-line')).toContainText(
 			`Desde ${formatMxn(getStartingPrice(CAMPAIGN))} MXN, pago único.`,
 			{ useInnerText: true },
 		);
 		await expect(page.locator('.hero-prime__payment-note')).toHaveText(
 			'Sin anticipo: pague al recibir su invitación terminada.',
 		);
-		await expect(page.locator('.hero-prime__secondary-action')).toHaveAttribute(
-			'href',
-			landingData.hero.secondaryCtaUrl,
-		);
 		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
 		await expect(heroCta).toBeVisible();
-		await expect(page.locator('.hero-prime__selector')).toHaveCount(0);
-		await expect(page.locator('.hero-prime .phone-mockup')).toHaveCount(0);
-		await expect(page.locator('.hero-prime__proof')).toHaveCount(0);
-		await expect(page.locator('#tipo-evento .event-showroom__tabs')).toBeVisible();
-		// The showroom phone shows a real demo screen, not overlay copy.
+		// The phone fan opens the showroom below; the showroom tabs are the only event selector.
+		await expect(page.locator('.hero-prime__chip')).toHaveCount(0);
+		await expect(page.locator('.hero-prime__phone')).toHaveCount(3);
+		await expect(page.locator('#tipo-evento .vitrina__events')).toBeVisible();
 		await expect(
-			page.locator('#tipo-evento [data-panel-event="xv"] [data-showroom-screen]'),
-		).toHaveAttribute('alt', /demo de XV años/);
-		await expect(page.locator('#tipo-evento [data-showroom-title]')).toHaveCount(0);
+			page.locator('#tipo-evento .vitrina__poster[data-vitrina-for]:not([hidden])'),
+		).toHaveCount(1);
 	});
 
 	test('keeps the hero CTA in reach on narrow mobile', async ({ page }) => {
@@ -329,47 +322,76 @@ test.describe('Landing page regressions', () => {
 		expect(clickedHref).toBe(heroHref);
 	});
 
-	test('keeps the event showroom personalization wired to WhatsApp context', async ({ page }) => {
+	test('opens the showroom on the chosen event and quotes the style with its reference', async ({
+		page,
+	}) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/', { waitUntil: 'load' });
-		await page.locator('#tipo-evento').scrollIntoViewIfNeeded();
 
-		await page.locator('[data-tab-event="boda"]').click();
-
-		const eventCta = page.locator('[data-track-cta="showroom_quote_boda"]');
-		await expect(page.locator('html')).toHaveAttribute('data-selected-event', 'boda');
-		await expect(page.locator('.event-showroom__tab-btn[data-tab-event="boda"]')).toHaveClass(
-			/active/,
+		await page.locator('.hero-prime__phone[href="#boda"]').click();
+		await expect(page).toHaveURL(/#boda$/);
+		await expect(page.locator('.vitrina__event[href="#boda"]')).toHaveAttribute(
+			'aria-current',
+			'true',
 		);
-		await expect(page.locator('[data-panel-event="boda"]')).toHaveClass(/active/);
 		await expect(
-			page.locator('[data-panel-event="boda"] [data-showroom-screen]'),
-		).toHaveAttribute('alt', /demo de boda/);
-		await expect(eventCta).toHaveAttribute('data-event-type', 'boda');
-		await expect(eventCta).toHaveAttribute('data-event-label', 'Boda');
-		await expect(eventCta).not.toHaveAttribute('data-package-interest');
-		await expect(eventCta).not.toHaveAttribute('data-package-name');
-		await expect(eventCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
-		await expect(eventCta).toHaveAttribute(
+			page.locator('.vitrina__poster[data-vitrina-for="demo-brisa"]'),
+		).not.toHaveAttribute('hidden');
+
+		await expect(page.locator('.vitrina__open:visible')).toHaveAttribute(
+			'data-track-cta',
+			'demo_open_demo-brisa',
+		);
+		const quote = page.locator('#tipo-evento [data-track-cta="event_showroom_whatsapp"]');
+		await expect(quote).toHaveCount(1);
+		await expect(quote).toHaveAttribute('data-event-type', 'boda');
+		// The sticky bar starts on another event and must follow the chosen one.
+		const sticky = page.locator('[data-sticky-cta] [data-track-cta="whatsapp-sticky"]');
+		await expect(sticky).toHaveAttribute('data-event-type', 'boda');
+		expect(decodeWhatsAppText(await sticky.getAttribute('href'))).toMatch(
+			/Ref\. BODA-[A-Z]+-BARRA$/,
+		);
+		await expect(quote).toHaveAttribute(
 			'data-campaign-code',
 			buildCampaignCode('DEMO', GENERAL_CODE),
 		);
-		await expect(eventCta).toHaveAttribute(
-			'data-track-value',
-			String(getStartingPrice(CAMPAIGN)),
-		);
-		expect(decodeWhatsAppText(await eventCta.getAttribute('href'))).toBe(
-			buildGeneralMessage(CAMPAIGN),
+		expect(decodeWhatsAppText(await quote.getAttribute('href'))).toContain(
+			'Ref. BODA-BRISA-VITRINA',
 		);
 
-		const clickedHref = await eventCta.evaluate((anchor) => {
-			anchor.addEventListener('click', (event) => event.preventDefault(), { once: true });
-			anchor.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-			return anchor.getAttribute('href');
-		});
-		const clickedMessage = decodeWhatsAppText(clickedHref);
-		expect(clickedMessage).toBe(buildGeneralMessage(CAMPAIGN));
-		expect(clickedMessage).not.toMatch(/Folio/);
+		// Once the visitor picks an event, the header quote names that style.
+		const headerCta = page.locator('#home-header a.whatsapp-button').first();
+		expect(decodeWhatsAppText(await headerCta.getAttribute('href'))).toContain(
+			'Ref. BODA-BRISA-HEADER',
+		);
+	});
+
+	test('shows the real demo inside the device frame', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/#boda', { waitUntil: 'load' });
+		await page.locator('.vitrina__device').scrollIntoViewIfNeeded();
+
+		const live = page.locator('[data-vitrina-live]');
+		await expect(live).toHaveAttribute('src', '/brisa');
+		await expect(page.locator('.vitrina__screen')).toHaveAttribute('data-live', 'ready');
+		await expect(live).toHaveAttribute('title', 'Invitación demo Brisa en vivo');
+
+		const frame = live.contentFrame();
+		await expect(frame.locator('body')).toContainText('Ximena');
+		// The landing asks for cookies once; the framed demo stays clean.
+		await expect(frame.locator('#consent-banner-bar')).toBeHidden();
+	});
+
+	test('answers old showroom links with the landing anchor', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/#cumpleanos', { waitUntil: 'load' });
+
+		await expect(page.locator('.vitrina__event[href="#cumpleanos"]')).toHaveAttribute(
+			'aria-current',
+			'true',
+		);
+		await page.locator('[data-vitrina-device="pc"]').click();
+		await expect(page.locator('[data-vitrina]')).toHaveAttribute('data-device', 'pc');
 	});
 
 	test('shows event categories before product proof', async ({ page }) => {
@@ -404,12 +426,10 @@ test.describe('Landing page regressions', () => {
 			'data-track-section',
 			'event-types',
 		);
+		// The sticky bar is the quote button over the middle of the page.
 		await expect(
-			page.locator('#prueba-producto [data-track-cta="whatsapp-product-proof"]'),
-		).toHaveCount(1);
-		await expect(
-			page.locator('#prueba-producto [data-track-cta="whatsapp-product-proof"]'),
-		).toBeVisible();
+			page.locator('#prueba-producto [data-track-event="whatsapp_contact_clicked"]'),
+		).toHaveCount(0);
 	});
 
 	test('orders sections from product proof to the decision', async ({ page }) => {
@@ -418,9 +438,11 @@ test.describe('Landing page regressions', () => {
 
 		const order = await page.evaluate(() =>
 			[
+				'inicio',
 				'tipo-evento',
+				'envelope-title',
+				'chat-scene-title',
 				'prueba-producto',
-				'experiencia-invitados',
 				'testimonios',
 				'pricing',
 				'como-funciona',
@@ -432,17 +454,19 @@ test.describe('Landing page regressions', () => {
 		);
 		expect(order).toEqual([...order].sort((a, b) => a - b));
 		await expect(page.locator('#servicios, .photo-interlude')).toHaveCount(0);
-		// One WhatsApp quote CTA per section.
-		for (const id of [
-			'prueba-producto',
-			'experiencia-invitados',
-			'como-funciona',
-			'contacto',
-		]) {
+		await expect(page.locator('#experiencia-invitados')).toHaveCount(0);
+		// Middle sections leave the quote to the sticky bar; the contact section keeps its own.
+		for (const [id, count] of [
+			['prueba-producto', 0],
+			['como-funciona', 0],
+			['contacto', 1],
+		] as const) {
 			await expect(
 				page.locator(`#${id} [data-track-event="whatsapp_contact_clicked"]`),
-			).toHaveCount(1);
+			).toHaveCount(count);
 		}
+		// The envelope scene points at what sets the invitation apart, one note per stage.
+		await expect(page.locator('.envelope-notes__item')).toHaveCount(4);
 	});
 
 	test('sends pricing CTAs directly to WhatsApp with package context', async ({ page }) => {
@@ -648,10 +672,12 @@ test.describe('Landing page regressions', () => {
 				)
 				.toBe('1');
 		}
-		await expect(page.locator('.hero-prime__selector')).toHaveCount(0);
 		await page.locator('#tipo-evento').scrollIntoViewIfNeeded();
-		await page.locator('[data-tab-event="cumple"]').click();
-		await expect(page.locator('[data-panel-event="cumple"]')).toHaveClass(/active/);
+		await page.locator('.vitrina__event[href="#cumpleanos"]').click();
+		await expect(page.locator('.vitrina__event[href="#cumpleanos"]')).toHaveAttribute(
+			'aria-current',
+			'true',
+		);
 	});
 
 	test('does not create horizontal overflow on narrow mobile', async ({ page }) => {
@@ -752,7 +778,7 @@ test.describe('Landing page regressions', () => {
 		await expect(terms).toContainText(formatMxn(getExpressDelivery().price));
 	});
 
-	test('shows real social links, contact details and a full-width copyright row', async ({
+	test('shows real social links and a full-width copyright row without repeating contact', async ({
 		page,
 	}) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
@@ -764,16 +790,9 @@ test.describe('Landing page regressions', () => {
 			.locator('.social-link')
 			.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
 		expect(socialHrefs).toEqual(footerData.socialLinks?.links.map((link) => link.href));
-		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.email);
-		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.city);
-		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
-			'data-campaign-code',
-			buildCampaignCode('FOOTER', GENERAL_CODE),
-		);
-		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
-			'aria-label',
-			'Quiero mi invitación por WhatsApp',
-		);
+		// On the landing the contact section carries WhatsApp, email and city; the footer does not repeat them.
+		await expect(footer.locator('.footer-contact')).toHaveCount(0);
+		await expect(page.locator('#contacto')).toContainText(footerData.contact!.email);
 
 		const rowWidths = await footer.evaluate((element) => {
 			const containers = element.querySelectorAll('.container');
@@ -801,22 +820,20 @@ test.describe('Landing page regressions', () => {
 		expect(new Set(labels)).toEqual(
 			new Set([
 				'Quiero mi invitación',
-				'Quiero una invitación así',
+				'Quiero una así',
 				...PACKAGE_CATALOG.map((pkg) => `Quiero el paquete ${pkg.name}`),
 			]),
 		);
 
-		const guestCta = page.locator(
-			'#experiencia-invitados [data-track-event="whatsapp_contact_clicked"]',
-		);
-		await expect(guestCta).toHaveAttribute('data-track-cta', 'whatsapp-guest-experience');
-		await expect(guestCta).toHaveAttribute('data-track-section', 'guest-experience');
-		await expect(guestCta).toHaveAttribute(
+		const heroCta = page.locator('#inicio [data-track-event="whatsapp_contact_clicked"]');
+		await expect(heroCta).toHaveAttribute('data-track-cta', 'whatsapp-hero');
+		await expect(heroCta).toHaveAttribute('data-track-section', 'hero');
+		await expect(heroCta).toHaveAttribute(
 			'data-campaign-code',
-			buildCampaignCode('GUESTS', GENERAL_CODE),
+			buildCampaignCode('HERO', GENERAL_CODE),
 		);
-		await expect(guestCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
-		await expect(guestCta).toContainText('Quiero mi invitación');
+		await expect(heroCta).toHaveAttribute('data-promo-code', GENERAL_CODE);
+		await expect(heroCta).toContainText('Quiero mi invitación');
 	});
 
 	test('shows the sticky WhatsApp bar after the hero and hides it over the contact form', async ({
@@ -846,11 +863,9 @@ test.describe('Landing page regressions', () => {
 
 		await page.locator('#pricing').scrollIntoViewIfNeeded();
 		await expect(bar).toHaveClass(/sticky-cta--visible/);
-		await expect(cta).toContainText(
-			`WhatsApp · desde ${formatMxn(getStartingPrice(CAMPAIGN))}`,
-			{
-				useInnerText: true,
-			},
+		await expect(cta).toContainText('Quiero una así');
+		expect(decodeWhatsAppText(await cta.getAttribute('href'))).toMatch(
+			/Ref\. XV-[A-Z]+-BARRA$/,
 		);
 
 		await page.locator('#contacto .contact-whatsapp-card').scrollIntoViewIfNeeded();

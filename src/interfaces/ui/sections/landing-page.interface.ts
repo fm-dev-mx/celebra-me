@@ -15,9 +15,10 @@ export interface HeroData {
 	primaryCtaLabel: string;
 	/** Reassurance line rendered right under the primary CTA. */
 	primaryCtaTrustLine: string;
-	secondaryCtaLabel: string;
-	secondaryCtaUrl: string;
-	secondaryCtaDemoSlug?: string;
+	/** Words of the title set in italics, e.g. "confirmación". */
+	titleEmphasis?: string;
+	/** Hint under the three phones; each phone opens its demo in the showroom. */
+	fanLabel: string;
 	proofLine?: string;
 }
 
@@ -30,25 +31,6 @@ export interface ProductProofData {
 		title: string;
 		text: string;
 	}>;
-	cta: {
-		label: string;
-		message?: string;
-	};
-}
-
-export interface GuestExperienceData {
-	eyebrow?: string;
-	title: string;
-	description: string;
-	values: Array<{
-		name: string;
-		description: string;
-	}>;
-	closingLine?: string;
-	cta: {
-		label: string;
-		message?: string;
-	};
 }
 
 interface PricingTierDetail {
@@ -159,14 +141,11 @@ export interface LandingPageData {
 		description: string;
 	};
 	hero: HeroData;
-	eventSelector?: {
-		eyebrow: string;
+	vitrina: {
 		title: string;
 		description: string;
-		cta?: string;
 	};
 	productProof: ProductProofData;
-	guestExperience: GuestExperienceData;
 	pricing: PricingData;
 	testimonials: TestimonialsData;
 	faq: FAQData;

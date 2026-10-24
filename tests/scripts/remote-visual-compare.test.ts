@@ -110,7 +110,6 @@ describe('remote route inventory', () => {
 			{ eventType: 'boda', slug: 'daniela-y-martin', lifecycle: 'published' },
 		],
 		demos: [{ eventType: 'xv', slug: 'demo-xv-editorial' }],
-		showroomPaths: ['/demos/xv', '/demos/cumpleanos'],
 		redirects: [
 			{
 				source: '/:eventType/:slug/antiguo',
@@ -123,15 +122,13 @@ describe('remote route inventory', () => {
 		memoriesPaths: ['/r/victoria-y-roberto'],
 	};
 
-	it('lists site pages, showrooms, demos, definitions, memories and redirects', () => {
+	it('lists site pages, demos, definitions, memories and redirects', () => {
 		const routes = buildRouteCandidates(sources);
 		expect(routes.map((route) => route.path)).toEqual([
 			'/',
 			'/login',
 			'/privacidad',
 			'/terminos',
-			'/demos/xv',
-			'/demos/cumpleanos',
 			'/editorial',
 			'/boda/daniela-y-martin',
 			'/xv/naydelin-paredes',

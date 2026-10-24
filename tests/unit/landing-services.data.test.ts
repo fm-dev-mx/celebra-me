@@ -1,4 +1,3 @@
-import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 import {
@@ -9,24 +8,19 @@ import {
 } from '@/data/promo-campaign.data';
 
 describe('landing product value data', () => {
-	it('states the hero promise and folds guest features into one section', () => {
+	it('states the hero promise without repeating the WhatsApp scene', () => {
 		const hero = landingData.hero;
 
-		expect(hero.title).toBe(
-			'Invitaciones digitales con pase y confirmación para cada invitado',
+		expect(hero.title).toBe('Invitaciones con pase y confirmación para cada invitado');
+		expect(hero.title).toContain(hero.titleEmphasis);
+		expect(hero.mobileSubtitle).toBe(
+			'La diseñamos para su evento; usted la comparte desde su panel.',
 		);
-		expect(hero.subtitle).toBe('Usted la envía por WhatsApp y ve quién confirmó.');
-		expect(hero.eyebrow).toBeUndefined();
+		expect(hero.eyebrow).toBe('Invitaciones digitales');
 		expect(hero.paymentNote).toBe('Sin anticipo: pague al recibir su invitación terminada.');
-		expect(hero.secondaryCtaLabel).toBe('Ver una invitación');
-		expect(DEMO_SHOWROOM_ITEMS.some((item) => item.href === hero.secondaryCtaUrl)).toBe(true);
 
-		expect(landingData.guestExperience.values.map((value) => value.name)).toEqual([
-			'Su nombre y sus pases',
-			'Confirmación en un toque',
-			'Cómo llegar',
-			'Calendario y mesa de regalos',
-		]);
+		// The envelope scene carries the guest features; the section that repeated them is gone.
+		expect('guestExperience' in landingData).toBe(false);
 		expect('services' in landingData).toBe(false);
 	});
 
@@ -102,14 +96,11 @@ describe('landing package catalog', () => {
 
 describe('landing primary CTA and trust copy', () => {
 	it('uses a single primary WhatsApp CTA label', () => {
-		const labels = [
-			landingData.hero.primaryCtaLabel,
-			landingData.productProof.cta.label,
-			landingData.guestExperience.cta.label,
-			landingData.howItWorks.cta?.label,
-			landingData.contact.cta?.label,
-		];
+		const labels = [landingData.hero.primaryCtaLabel, landingData.contact.cta?.label];
 		expect(new Set(labels)).toEqual(new Set(['Quiero mi invitación']));
+		// The sticky bar covers the middle of the page; those sections carry no button of their own.
+		expect('cta' in landingData.productProof).toBe(false);
+		expect(landingData.howItWorks.cta).toBeUndefined();
 	});
 
 	it('publishes real, anonymous testimonials with a privacy notice', () => {

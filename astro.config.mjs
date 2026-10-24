@@ -12,6 +12,7 @@ import {
 } from './scripts/shared/celebra-runtime-env.ts';
 import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
+import { buildDemoSitemapPages } from './src/lib/seo/demo-sitemap-pages.ts';
 import { SECURITY_HEADERS } from './src/lib/server/security-headers.ts';
 import { appendStaticSecurityHeaders } from './scripts/shared/cloudflare-static-headers.ts';
 import { serverBundleStubs } from './scripts/shared/server-bundle-stubs.ts';
@@ -166,6 +167,11 @@ export default defineConfig({
 	integrations: [
 		react(),
 		sitemap({
+			// Featured demos render on request; list their short addresses explicitly.
+			customPages: buildDemoSitemapPages(
+				publicSiteUrl,
+				fileURLToPath(new URL('./src/invitations/demos', import.meta.url)),
+			),
 			filter: (page) => {
 				const url = new URL(page);
 				const p = url.pathname;

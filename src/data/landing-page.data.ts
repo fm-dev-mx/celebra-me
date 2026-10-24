@@ -1,16 +1,10 @@
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
-import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
 import { formatMxn, getCatalogPackage, getExpressDelivery } from '@/data/promo-campaign.data';
 import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 
 export const PRIMARY_CTA_LABEL = 'Quiero mi invitación';
 /** Small reassurance line shown under the primary WhatsApp CTA in the header and the hero. */
 export const PRIMARY_CTA_TRUST_LINE = 'Respuesta en minutos · Sin compromiso';
-
-/** Featured demo opened by the hero secondary action ("Ver una invitación"). */
-const HERO_DEMO_SLUG = 'demo-xv-celestial-blue';
-const heroDemo = DEMO_SHOWROOM_ITEMS.find((item) => item.slug === HERO_DEMO_SLUG);
-if (!heroDemo) throw new Error(`Missing hero demo: ${HERO_DEMO_SLUG}`);
 
 const expressDelivery = getExpressDelivery();
 const expressDeliveryPackages = expressDelivery.appliesTo
@@ -29,8 +23,12 @@ export const landingData: LandingPageData = {
 			'Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp, sin anticipo.',
 	},
 	hero: {
-		title: 'Invitaciones digitales con pase y confirmación para cada invitado',
-		subtitle: 'Usted la envía por WhatsApp y ve quién confirmó.',
+		eyebrow: 'Invitaciones digitales',
+		title: 'Invitaciones con pase y confirmación para cada invitado',
+		titleEmphasis: 'confirmación',
+		subtitle:
+			'La diseñamos para su evento y usted la comparte desde su panel. Abajo puede recorrer cada estilo como lo verán sus invitados.',
+		mobileSubtitle: 'La diseñamos para su evento; usted la comparte desde su panel.',
 		priceLine: {
 			prefix: 'Desde',
 			suffix: 'MXN, pago único.',
@@ -38,14 +36,12 @@ export const landingData: LandingPageData = {
 		paymentNote: 'Sin anticipo: pague al recibir su invitación terminada.',
 		primaryCtaLabel: PRIMARY_CTA_LABEL,
 		primaryCtaTrustLine: PRIMARY_CTA_TRUST_LINE,
-		secondaryCtaLabel: 'Ver una invitación',
-		secondaryCtaUrl: heroDemo.href,
-		secondaryCtaDemoSlug: heroDemo.slug,
+		fanLabel: 'Toque una para verla abajo',
 	},
-	eventSelector: {
-		eyebrow: 'DEMOS POR EVENTO',
-		title: 'Vea cómo puede lucir su invitación',
-		description: 'Elija su evento y abra la demo completa.',
+	vitrina: {
+		title: 'Así la verán sus invitados',
+		description:
+			'Es la invitación real: toque el sobre para abrirla y deslice para recorrerla. Cambie a Tablet o PC para verla en otra pantalla.',
 	},
 	productProof: {
 		eyebrow: 'SU PANEL DE INVITADOS',
@@ -63,38 +59,6 @@ export const landingData: LandingPageData = {
 			},
 			{ title: 'Exportación', text: 'Descargue su lista con las respuestas.' },
 		],
-		cta: {
-			label: PRIMARY_CTA_LABEL,
-		},
-	},
-	guestExperience: {
-		eyebrow: 'PARA SUS INVITADOS',
-		title: 'Una invitación clara desde el primer mensaje',
-		description:
-			'Todo lo que necesitan para llegar, confirmar y celebrar con usted, en un solo enlace.',
-		values: [
-			{
-				name: 'Su nombre y sus pases',
-				description: 'Cada invitación muestra a quién va dirigida y cuántos lugares tiene.',
-			},
-			{
-				name: 'Confirmación en un toque',
-				description: 'Responden desde la misma invitación.',
-			},
-			{
-				name: 'Cómo llegar',
-				description:
-					'Google Maps, Waze y Apple Maps. La ubicación se muestra a quienes confirman.',
-			},
-			{
-				name: 'Calendario y mesa de regalos',
-				description:
-					'Guardan la fecha con un toque y ven su mesa de regalos en la invitación.',
-			},
-		],
-		cta: {
-			label: PRIMARY_CTA_LABEL,
-		},
 	},
 	testimonials: {
 		title: 'Lo que dicen nuestros clientes',
@@ -171,16 +135,13 @@ export const landingData: LandingPageData = {
 	},
 	howItWorks: {
 		eyebrow: 'PROCESO',
-		title: 'Nosotros la diseñamos. Usted la envía desde su panel.',
+		title: 'De la idea a su invitación, en cuatro pasos',
 		steps: [
 			{ title: 'Nos envía los datos de su evento.' },
 			{ title: 'Diseñamos su invitación.' },
-			{ title: 'La revisa terminada y paga al aprobarla.' },
-			{ title: 'La envía por WhatsApp y ve quién confirmó.' },
+			{ title: 'La revisa terminada y la aprueba.' },
+			{ title: 'La comparte con sus invitados.' },
 		],
-		cta: {
-			label: PRIMARY_CTA_LABEL,
-		},
 	},
 	contact: {
 		eyebrow: 'COTIZACIÓN',

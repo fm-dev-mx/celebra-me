@@ -105,5 +105,18 @@ describe('music preload', () => {
 			bufferNow();
 			expect(audio.preload).toBe('auto');
 		});
+
+		it('waits for the tap inside a frame', () => {
+			readyState = 'complete';
+			const audio = createAudio();
+			const framed = { self: window, top: {} } as unknown as Window;
+
+			const bufferNow = scheduleMusicBufferAfterPaint(audio, framed);
+			jest.runAllTimers();
+			expect(audio.preload).toBe('none');
+
+			bufferNow();
+			expect(audio.preload).toBe('auto');
+		});
 	});
 });

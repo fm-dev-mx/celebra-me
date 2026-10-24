@@ -108,12 +108,7 @@ it('tracks the first envelope opening in the browser only, never posting it', ()
 });
 it('names every demo-opening card by the demo it opens', () => {
 	const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
-	expect(read('src/components/showroom/DemoCard.astro')).toContain(
-		'data-track-cta={`demo_open_${item.slug}`}',
-	);
-	const selector = read('src/components/home/EventTypeSelector.astro');
-	expect(selector).toContain('data-track-cta={`demo_open_${demoSlug}`}');
-	expect(selector).toContain('data-track-cta={`demo_open_${firstDemoSlug}`}');
-	expect(selector).toContain('`demo_open_${demoSlug}`);');
-	expect(selector).not.toMatch(/showroom_(preview|view_demo)_/);
+	const showroom = read('src/components/home/LandingShowroom.astro');
+	expect(showroom).toContain('data-track-cta={`demo_open_${demo.slug}`}');
+	expect(showroom).not.toMatch(/showroom_(preview|view_demo)_/);
 });
