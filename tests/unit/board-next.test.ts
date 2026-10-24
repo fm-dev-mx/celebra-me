@@ -180,6 +180,17 @@ describe('board heartbeat and session title (T126)', () => {
 			cli(dir, ['set', 'nueva', '--rev=2', 'contrato=2', '--agente=codex', '--sesion=cx-1'])
 				.err,
 		).toContain('contrato requiere su comando');
+		// Releasing without --nombre keeps the claim's title as the session name.
+		const rev = String(readTask(dir, 'nueva').rev);
+		expect(
+			cli(dir, ['release', 'nueva', '--agente=codex', '--sesion=cx-1', `--rev=${rev}`])
+				.status,
+		).toBe(0);
+		expect(readTask(dir, 'nueva').sesion).toEqual({
+			id: 'cx-1',
+			agente: 'codex',
+			nombre: 'f10 · T2 · Nueva',
+		});
 	});
 });
 

@@ -1022,12 +1022,11 @@ export function unlocked(task, flags) {
 	delete rest.candado;
 	const { sesion: id, agente } = task.candado ?? {};
 	if (!id) return rest;
+	// The claim's --titulo (T126) is the session name when release or merged gives no --nombre.
 	const nombre =
 		typeof flags.nombre === 'string'
 			? flags.nombre
-			: task.sesion?.id === id
-				? task.sesion.nombre
-				: undefined;
+			: (task.candado.titulo ?? (task.sesion?.id === id ? task.sesion.nombre : undefined));
 	return { ...rest, sesion: { id, agente, ...(nombre ? { nombre } : {}) } };
 }
 
