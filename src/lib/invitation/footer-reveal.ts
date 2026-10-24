@@ -262,7 +262,16 @@ export function holdFooterUntilSecondScroll(footer: Element | null): void {
 			window.setTimeout(() => away.remove(), Math.max(CUE_REMOVE_FALLBACK_MS, glideMs + 400));
 		}
 		requestAnimationFrame(() => {
-			if (reduced) {
+			const focused = document.activeElement;
+			if (
+				document.body.classList.contains('is-demo') &&
+				focused instanceof HTMLElement &&
+				footer.contains(focused)
+			) {
+				// Demos can have sales content after the footer; keep the keyboard target in view.
+				focused.scrollIntoView({ block: 'center', behavior: 'instant' });
+				watchForLeave();
+			} else if (reduced) {
 				window.scrollTo({ top: root.scrollHeight, behavior: 'auto' });
 				watchForLeave();
 			} else {
