@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 /**
- * Re-encodes every invitation song at 96 kbps MP3 and reports the size before and after.
+ * Re-encodes invitation songs above 96 kbps to 96 kbps MP3 and reports the size before and after.
+ * Tracks already at or below 96 kbps are marked `KEEP` (64 kbps is the floor, 96 kbps optional).
  * Dry-run by default: tracks are downloaded and encoded in a temporary folder that is deleted.
  * With `--write` the new files stay in `.tmp/music-96k/<slug>/` and nothing else changes: no
  * upload, no definition edit. Each file is named by its own sha256, so publishing it means a new
