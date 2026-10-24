@@ -203,6 +203,74 @@ describe('pnpm board', () => {
 		expect(claude.find((r: Json) => r.id === 'imagenes').color).toBe('block');
 	});
 
+	it('turns ready Codex or Gemini tasks green for the owner to paste, without changing claims', () => {
+		const tareas = [
+			task('normal'),
+			task('de-codex', { agente: 'codex' }),
+			task('de-gemini', { agente: 'gemini' }),
+			task('imagenes', { requiere: ['imagenes'] }),
+			task('cualquiera'),
+			task('coordina', { actor: 'coordinador', agente: 'codex' }),
+			task('apartada', {
+				agente: 'codex',
+				candado: { agente: 'codex', desde: NOW, sesion: 's1' },
+			}),
+			task('espera', { agente: 'codex', requisitos: [{ tipo: 'dueno', ref: 'Elegir' }] }),
+		];
+		// Prints, per task, who the owner pastes into and its color for everyone, Claude, Codex and Gemini
+		// (an agent's color judges that agent's capabilities only; its tab hides other agents' tasks).
+		const probe = String.raw`
+			const m = await import(process.argv[1]);
+			const board = JSON.parse(process.argv[2]);
+			const color = (t, agente) => m.color(t, board, { agente });
+			console.log(JSON.stringify({
+				rows: board.tareas.map((t) => [t.id, m.ownerLaunches(t, board), color(t), color(t, 'claude'), color(t, 'codex'), color(t, 'gemini')]),
+				queue: m.queue(board).map((t) => t.id),
+				next: ['claude', 'codex', 'gemini'].map((a) => m.nextFor(a, board)?.id ?? null),
+				claimable: board.tareas.filter((t) => m.claimable(t, 'codex', board)).map((t) => t.id),
+			}));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(path.join(ROOT, 'scripts', 'board', 'model.mjs')).href,
+				JSON.stringify({ tareas, decisiones: [] }),
+			],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		const out = JSON.parse(String(result.stdout));
+		expect(out.rows).toEqual([
+			['normal', [], 'auto', 'auto', 'auto', 'auto'],
+			['de-codex', ['codex'], 'own', 'auto', 'own', 'auto'],
+			['de-gemini', ['gemini'], 'own', 'auto', 'auto', 'own'],
+			// «cualquiera» that only Gemini can finish: the owner pastes it into Gemini.
+			['imagenes', ['gemini'], 'own', 'block', 'block', 'own'],
+			// «cualquiera» that Claude can finish starts alone.
+			['cualquiera', [], 'auto', 'auto', 'auto', 'auto'],
+			['coordina', [], 'auto', 'auto', 'auto', 'auto'],
+			// Already claimed: the owner pasted it, so it is no longer theirs.
+			['apartada', [], 'auto', 'auto', 'auto', 'auto'],
+			['espera', [], 'block', 'block', 'block', 'block'],
+		]);
+		// d163: the paste tasks join the owner's turn at the top of the queue.
+		expect(out.queue.slice(0, 3).sort()).toEqual(['de-codex', 'de-gemini', 'imagenes']);
+		expect(out.next).toEqual(['cualquiera', 'de-codex', 'de-gemini']);
+		expect(out.claimable).toEqual(['normal', 'de-codex', 'cualquiera', 'coordina', 'apartada']);
+	});
+
+	it('labels paste tasks «Pegar en …» in the view with their own «Copiar prompt»', () => {
+		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
+		expect(html).toContain(
+			"ownerLaunches, matches, isFinished, AGENT_REGISTRY } from '/model.mjs'",
+		);
+		expect(html).toContain("'Pegar en '+esc(to)");
+		expect(html).toContain('data-copy="${esc(t.id)}">Copiar prompt</button>');
+		expect(html).toContain("if(cp.dataset.copy!=='1')");
+	});
+
 	it('requires a #N pull request for review and merge states and normalizes its form', () => {
 		const dir = makeBoard({
 			tareas: [task('con-pr', { rama: 'fix/x' }), task('con-url'), task('auditoria')],

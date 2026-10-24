@@ -110,9 +110,24 @@ export function agentsFor(t) {
 		: AGENTES.filter((a) => a !== 'cualquiera');
 }
 
+/** Agents that start a ready task without the owner (`pnpm board next`); Codex and Gemini wait for a paste. */
+export const SELF_STARTING = ['claude'];
+
 /**
- * Color: own (green, the owner's turn), auto (violet, an agent finishes it alone), block (gray), run, rev, done.
- * A ready task no agent can finish is gray too. With `agente`, autonomy is judged for that agent only.
+ * The agents whose chat the owner pastes the prompt into (d169): a ready, unlocked task no self-starting agent
+ * can finish, but Codex or Gemini can. Empty otherwise, so a «cualquiera» task Claude can finish stays violet.
+ */
+export function ownerLaunches(t, board, now) {
+	if (stage(t, board, now) !== 'lista' || needsOwner(t) || t.actor === 'coordinador' || t.candado)
+		return [];
+	const able = agentsFor(t).filter((a) => canFinish(t, a, board));
+	return able.some((a) => SELF_STARTING.includes(a)) ? [] : able;
+}
+
+/**
+ * Color: own (green, the owner's turn, including a paste into Codex or Gemini), auto (violet, an agent
+ * starts and finishes it alone), block (gray), run, rev, done. A ready task no agent can finish is gray too.
+ * With `agente`, autonomy is judged for that agent only.
  */
 export function color(t, board, { agente, now } = {}) {
 	const s = stage(t, board, now);
@@ -121,6 +136,8 @@ export function color(t, board, { agente, now } = {}) {
 	if (needsOwner(t)) return 'own';
 	if (t.actor === 'coordinador') return 'auto';
 	const who = agente && agente !== 'cualquiera' ? [agente] : agentsFor(t);
+	const paste = ownerLaunches(t, board, now);
+	if (who.some((a) => paste.includes(a))) return 'own';
 	return who.some((a) => canFinish(t, a, board)) ? 'auto' : 'block';
 }
 

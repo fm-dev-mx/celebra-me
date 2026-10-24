@@ -112,6 +112,10 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .mine .row span{min-width:0;overflow-wrap:anywhere}
 .mine .sub{font-size:.8rem;color:var(--muted);margin:4px 0 0}
 .mine .none{margin:0;color:var(--muted);font-size:.9rem}
+.mine .paste{display:flex;gap:6px;align-items:stretch;--c:var(--own)}
+.mine .paste .row{flex:1;min-width:0}
+.mine .paste .btn{flex:none}
+@media (max-width:560px){.mine .paste{flex-direction:column}}
 .empty{background:var(--panel);border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
 
 /* task sheet */
@@ -217,8 +221,8 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   </nav>
 
   <div class="legend" aria-label="Colores">
-    <span><i class="sw" style="background:var(--own)"></i>Le toca a usted</span>
-    <span><i class="sw" style="background:var(--auto)"></i>Autónoma (corre sola)</span>
+    <span><i class="sw" style="background:var(--own)"></i>Le toca a usted (también «Pegar en Codex/Gemini»)</span>
+    <span><i class="sw" style="background:var(--auto)"></i>Autónoma (arranca sola)</span>
     <span><i class="sw" style="background:var(--run)"></i>En curso</span>
     <span><i class="sw" style="background:var(--block)"></i>Bloqueada</span>
     <span><i class="sw" style="background:var(--rev)"></i>En revisión</span>
@@ -270,10 +274,10 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
     </div>
   </section>
 
-  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos). Violeta: lista y un agente la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada, siempre con su línea en la bitácora.</footer>
+  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada, siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, matches, isFinished, AGENT_REGISTRY } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -318,7 +322,9 @@ const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&found(t));
 let NUM={};
 const tN=t=>t.num?`<span class="tn">T${esc(t.num)}</span> · `:'';
 const urgHtml=t=>{const u=URG[t.urgencia]?t.urgencia:'normal';return `<span class="urg u-${u}" title="Urgencia">${ICON[u]}${URG[u].l}</span>`};
-const pill=t=>`<span class="pill">${COLOR[color(t)]}</span>`;
+// d169: a ready task only Codex or Gemini can finish waits for the owner to paste its prompt there.
+const pasteTo=t=>ownerLaunches(t,S.board).map(a=>AGENT[a]||a).join(' o ');
+const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):COLOR[c]}</span>`};
 const agHtml=t=>t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)}</span>`:t.agente&&t.agente!=='cualquiera'?`<span class="lock">${esc(AGENT[t.agente]||t.agente)}</span>`:'';
 function firstBlock(t){const r=reqs(t).find(x=>!x.ok);if(r)return 'Espera: '+r.label;return color(t)==='block'?'Ningún agente tiene todo lo que pide: '+(t.requiere||[]).join(', '):''}
 function reqSummary(t){const r=reqs(t);if(!r.length)return '';const ok=r.filter(x=>x.ok).length;return `<span class="req" title="Requisitos cumplidos"><i>${ok===r.length?'✓':'○'}</i>${ok}/${r.length} requisitos</span>`}
@@ -370,7 +376,8 @@ function renderSheet(open){
     ['Versión',t.rev?`v${esc(t.rev)}${t.actualizado?' · '+esc(fmt(t.actualizado))+' ('+esc(ago(t.actualizado))+')':''}`:'']
   ].filter(x=>x[1]);
   const p=t.prompt||'';
-  const who=c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
+  const to=c==='own'&&pasteTo(t);
+  const who=to?'Copie el prompt y péguelo en un chat nuevo de '+to+'.':c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
   sh.className='sheet c-'+c+(open?' open':sh.classList.contains('open')?' open':'');
   sh.innerHTML=`<div class="sh-top"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span><h2>${tN(t)}${esc(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
       <div class="line">${pill(t)}${urgHtml(t)}<span class="lane">${esc(t.id)}</span></div></div>
@@ -455,7 +462,8 @@ function renderMine(){
   const asks=ownerAsks(S.board);
   let h='<h2>Le toca a usted</h2>';
   if(!tasks.length&&!asks.length)h+='<p class="none">Usted: nada por ahora.</p>';
-  h+=tasks.map(t=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}</span></button>`).join('');
+  h+=tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}${to?`<span class="sub"> · Pegar en ${esc(to)}</span>`:''}</span></button>`;
+    return to?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row}).join('');
   if(asks.length)h+='<p class="sub">Decisiones que esperan su respuesta</p>'+asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(r.ref)}<span class="sub"> · la espera «${esc(t.titulo)}»</span></span></button>`).join('');
   $('mine').innerHTML=h;
 }
@@ -480,7 +488,10 @@ document.addEventListener('click',ev=>{
   const sel=ev.target.closest('[data-sel]');if(sel){if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump)setTab('cola',true);openSheet(sel.dataset.sel);return}
   if(ev.target.closest('[data-close]')){closeSheet();return}
   const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}
-  if(ev.target.closest('[data-copy]')){const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');
+  const cp=ev.target.closest('[data-copy]');if(cp){
+    // The sheet's button copies the open task; a «Pegar en Codex» row copies its own and opens its sheet, where the message shows.
+    if(cp.dataset.copy!=='1'){if(S.ag!=='todas')setAgent('todas');openSheet(cp.dataset.copy)}
+    const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
     try{navigator.clipboard.writeText(t.prompt).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».'},fallback)}catch(e){fallback()}return}
   const k=ev.target.closest('[data-kind]');if(k){S.kind=k.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===k)));renderHist()}
