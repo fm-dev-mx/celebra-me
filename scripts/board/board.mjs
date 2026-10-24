@@ -28,9 +28,12 @@
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
- *   history [--q=<texto>] [--json]
+ *   history [--q=<texto>] [--todas] [--json]   replaced decisions only with --todas
+ *   compact --antes=7d [--dry-run]              d187: tasks archived 7+ days ago → one line in mensual/resumen-<mes>.md,
+ *                                               the whole file in mensual/<mes>.zip, a small archivo record
+ *   restore <id> [--dry-run]                    a compacted task back from its .zip
+ *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
- *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
  *   verify [--json]                             same as pnpm board:verify
  *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
  *                                               archive/unarchive, same-origin from 127.0.0.1
@@ -77,6 +80,9 @@ import {
 	promptWithLane,
 	lockSessionIssue,
 	sessionOf,
+	cleaned,
+	CLEANED_ON,
+	unlocked,
 } from './model.mjs';
 import {
 	appendLog,
@@ -85,11 +91,15 @@ import {
 	migrateLogLines,
 	boardDir,
 	loadBoard,
+	monthlyZip,
 	readCollection,
 	readDoc,
 	withLock,
 	writeDoc,
 } from './store.mjs';
+import { UsageError, say } from './cli.mjs';
+import { maintenanceCommands } from './maintenance.mjs';
+import { addToZip } from './zip.mjs';
 
 const COLOR_LABEL = {
 	own: 'USTED',
@@ -100,11 +110,6 @@ const COLOR_LABEL = {
 	done: 'HECHA',
 };
 const LOOKS_JSON = /^(\[|\{|true$|false$|null$|-?\d+(\.\d+)?$)/;
-
-class UsageError extends Error {}
-
-/** Print `text`, or `data` as JSON when the command got --json. */
-const say = (flags, out, data, text) => out(flags.json ? JSON.stringify(data, null, 2) : text);
 
 export function parseArgs(argv) {
 	const flags = {};
@@ -166,7 +171,7 @@ function logEntry(tarea, change, who, extra) {
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, opts = {}) {
 	const { corrio, salio } = opts;
-	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	const t = { ...cleaned(after, opts), rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
 	// numbering existed gets the next number on its first write, like a new one.
 	t.num = Number.isSafeInteger(before?.num)
@@ -189,24 +194,22 @@ function saveTask(dir, before, after, opts = {}) {
 	const row =
 		(before?.estado ?? null) !== t.estado &&
 		logEntry(t.id, { de: before?.estado, a: t.estado }, opts, { corrio, salio });
-	writeDoc(dir, 'tareas', t.id, t);
+	archiveLostPrompt(dir, before, after, t);
+	writeDoc(dir, 'tareas', t.id, t, { backup: !isFinished(before) });
 	if (row) appendLog(dir, row);
 	return t;
 }
 
-/** The task without its lock; the lock's session stays in `sesion` so it can still be found, renamed or archived. */
-function unlocked(task, flags) {
-	const rest = { ...task };
-	delete rest.candado;
-	const { sesion: id, agente } = task.candado ?? {};
-	if (!id) return rest;
-	const nombre =
-		typeof flags.nombre === 'string'
-			? flags.nombre
-			: task.sesion?.id === id
-				? task.sesion.nombre
-				: undefined;
-	return { ...rest, sesion: { id, agente, ...(nombre ? { nombre } : {}) } };
+/**
+ * The prompt reaches the month's .zip before a closed task loses it, also when the write itself clears it: a
+ * finished task gets no backup that would keep it.
+ */
+function archiveLostPrompt(dir, before, after, t) {
+	const lost = !t.prompt && (after.prompt ?? before?.prompt);
+	if (lost && (CLEANED_ON.has(t.estado) || isFinished(before)))
+		addToZip(monthlyZip(dir, t.actualizado.slice(0, 7)), [
+			{ name: `prompts/${t.id}.rev${t.rev}.md`, data: lost },
+		]);
 }
 
 function getTask(dir, id) {
@@ -477,6 +480,9 @@ const commands = {
 		const id = assertId(need(pos[0], 'falta <id>'));
 		return withLock(dir, () => {
 			if (readDoc(dir, 'tareas', id)) throw new UsageError(`ya existe la tarea ${id}`);
+			// A compacted task keeps its id: it comes back with restore, never as a new task.
+			if (readDoc(dir, 'archivo', id))
+				throw new UsageError(`${id} está compactada: use pnpm board restore ${id}`);
 			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
 			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
 			const saved = saveTask(dir, null, t, {
@@ -800,41 +806,11 @@ const commands = {
 	},
 	history({ flags }, dir, out) {
 		const q = typeof flags.q === 'string' ? flags.q.toLowerCase() : '';
-		const rows = historyRows(loadBoard(dir)).filter(
+		const rows = historyRows(loadBoard(dir), { todas: flags.todas === true }).filter(
 			(r) => !q || r.txt.toLowerCase().includes(q),
 		);
 		if (flags.json) return out(JSON.stringify(rows, null, 2));
 		for (const r of rows.slice(0, 50)) out(`${r.en}  ${r.txt.slice(0, 140)}`);
-	},
-	async import({ pos, flags }, dir, out) {
-		const { importExport } = await import('./import.mjs');
-		const src = resolve(
-			process.env.INIT_CWD || process.cwd(),
-			need(pos[0], 'falta <export dir>'),
-		);
-		const mapa = flags.mapa
-			? JSON.parse(
-					readFileSync(
-						resolve(process.env.INIT_CWD || process.cwd(), flags.mapa),
-						'utf8',
-					),
-				)
-			: {};
-		return withLock(dir, () => {
-			if (readCollection(dir, 'tareas').length && !flags.force)
-				throw new UsageError(
-					'el tablero local ya tiene tareas: use --force para reemplazarlas',
-				);
-			const r = importExport(src, dir, mapa);
-			say(
-				flags,
-				out,
-				r,
-				`importadas: ${Object.entries(r)
-					.map(([k, v]) => `${v} ${k}`)
-					.join(', ')}`,
-			);
-		});
 	},
 	async view({ flags }, dir, out) {
 		const { serveView } = await import('./view-server.mjs');
@@ -861,7 +837,7 @@ const commands = {
 		}
 	},
 };
-Object.assign(commands, {
+Object.assign(commands, maintenanceCommands, {
 	close: closeCommand,
 	archive: archiveCommand(true),
 	unarchive: archiveCommand(false),

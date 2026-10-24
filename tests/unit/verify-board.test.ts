@@ -598,3 +598,36 @@ DECISIONES
 		);
 	});
 });
+
+describe('prompt lane (H13)', () => {
+	it('warns when the prompt «DÓNDE CORRE» names a lane other than the planned one', () => {
+		const prompt = (lane: string) =>
+			`QUÉ SE BUSCA\nVer f09-docs.\n\nDÓNDE CORRE\nSesión en el carril ${lane}.\n\nAUTORIZO\nNada.`;
+		const dir = makeExport([
+			task('distinto', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f12-release',
+				prompt: prompt('f06-landing'),
+			}),
+			task('igual', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f06-landing',
+				prompt: prompt('f06-landing'),
+			}),
+			task('sin-seccion', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f06-landing',
+				prompt: 'Corre en f07-invitaciones.',
+			}),
+		]);
+		const { report } = verify(dir, {});
+		const msgs = report.avisos.filter((a: { msg: string }) => /el prompt dice/.test(a.msg));
+		expect(msgs).toEqual([
+			{ id: 'distinto', msg: 'T1 el prompt dice f06-landing, pero corre en f12-release' },
+			{
+				id: 'sin-seccion',
+				msg: 'T3 el prompt dice f07-invitaciones, pero corre en f06-landing',
+			},
+		]);
+	});
+});

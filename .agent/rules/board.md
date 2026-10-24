@@ -68,12 +68,21 @@ authorization.
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
   `vigente: false`). Aliases: `get`, `update`, `decision`, `log`, `verify`; every command takes
-  `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 5 per
-  document).
+  `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 2 per
+  document, none for a finished task, d185); `pnpm board prune-backups --dry-run` lists the copies
+  over that rule and only `--aplicar` removes them.
 - **Archive (d167)**: `pnpm board archive <id> [--rev=<n>]` and `unarchive <id>` hide or show a
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
   of «Cola» and the «Carriles» view.
+- **Monthly archive (d187)**: `pnpm board compact --antes=7d [--dry-run]` takes every task archived
+  7 or more days ago: one line in `.agent/tmp/board/mensual/resumen-<YYYY-MM>.md` (for example
+  `T31 tablero-arreglos-cli · unida · PR #492 · 2026-10-24`), the whole task file in
+  `mensual/<YYYY-MM>.zip` (`tareas/<id>.json`) and a small `archivo` record that keeps its number,
+  estado and PR for requisitos and numbering; the task file leaves `tareas/` only after the `.zip`
+  holds an identical copy. Run `--dry-run` first. `pnpm board restore <id> [--dry-run]` puts a
+  compacted task back exactly as the `.zip` kept it. Replaced decisions (`vigente: false`) leave
+  `pnpm board history` (`--todas` shows them) and the view's default history.
 - **Closing summary (d178)**:
   `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien}`, written only
   with
@@ -128,8 +137,12 @@ authorization.
   `.respaldos/bitacora-legado/`. The verifier reports rows still in the old format and every invalid
   new row.
 - **`comprobada`**: only after `unida`/`hecha` with `evidencia.salio` from the verifier (listed
-  under «LISTAS PARA comprobada»), or with the owner's explicit authorization. Clear `prompt` and
-  release the lock when closing.
+  under «LISTAS PARA comprobada»), or with the owner's explicit authorization.
+- **Closing cleanup (d186)**: every write that leaves a task `comprobada` or `unida` moves its
+  `prompt` to `.agent/tmp/board/mensual/<YYYY-MM>.zip` (`prompts/<id>.rev<n>.md`) and drops its
+  `carril` and lock (the lock's session stays in `sesion`); the closing summary stays.
+  `board:verify` warns when the prompt's «DÓNDE CORRE» section (the whole prompt if it has none)
+  names a canonical lane other than the task's lane.
 - **Prompt**: «Sigue .agent/rules/board.md con tarea `<id>`» plus the task-specific scope only, with
   a `DECISIONES` section (d046). Layout: the prompt template in
   [the coordinator board guide](../../docs/core/coordinator-board.md#prompts-d153).

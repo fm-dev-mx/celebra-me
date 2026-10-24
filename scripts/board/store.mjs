@@ -1,6 +1,6 @@
 /**
  * Local JSON store of the board (d143). One file per document: <dir>/<collection>/<id>.json, the same layout as an
- * ArtifactData export, so `pnpm board:verify` and `pnpm board import` read both.
+ * ArtifactData export, so `pnpm board:verify` reads both.
  *
  * The store lives in the ignored `.agent/tmp/board/` of the Integration checkout, found through the Git common
  * dir, so every lane and agent shares one board. CELEBRA_BOARD_DIR overrides it (tests).
@@ -9,7 +9,10 @@
  * Old one-file-per-row documents are still read until `pnpm board migrate-log` converts them.
  *
  * Before a document is overwritten, its previous content is copied to
- * <dir>/.respaldos/<collection>/<id>/<time>.json; the newest BACKUPS_KEPT copies per document stay.
+ * <dir>/.respaldos/<collection>/<id>/<time>.json; the newest BACKUPS_KEPT copies per document stay (d185). A
+ * finished task gets no new copy: its closing summary and the month's .zip already keep what it was.
+ *
+ * What leaves the live board goes to <dir>/mensual/<YYYY-MM>.zip (d186, d187), never to the bin.
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -23,10 +26,11 @@ import {
 	readFileSync,
 	renameSync,
 	rmSync,
+	statSync,
 	writeFileSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { legacyLogRow, logRowIssues } from './model.mjs';
+import { dirname, join, relative, resolve, sep } from 'node:path';
+import { isFinished, legacyLogRow, logRowIssues } from './model.mjs';
 
 export const COLLECTIONS = [
 	'tareas',
@@ -40,7 +44,11 @@ export const COLLECTIONS = [
 ];
 const SAFE_ID = /^[A-Za-z0-9._~:@+-]{1,200}$/;
 export const BACKUP_DIR = '.respaldos';
-export const BACKUPS_KEPT = 5;
+export const BACKUPS_KEPT = 2;
+export const MONTHLY_DIR = 'mensual';
+
+/** The month's .zip file, `month` as YYYY-MM. */
+export const monthlyZip = (dir, month) => join(dir, MONTHLY_DIR, `${month}.zip`);
 
 export function boardDir(cwd = process.cwd()) {
 	if (process.env.CELEBRA_BOARD_DIR) return resolve(cwd, process.env.CELEBRA_BOARD_DIR);
@@ -169,13 +177,13 @@ export function migrateLogLines(r) {
 }
 
 /** Write through a temp file and rename, so a reader never sees half a document. */
-export function writeDoc(dir, collection, id, data) {
+export function writeDoc(dir, collection, id, data, { backup: keep = true } = {}) {
 	const d = join(dir, collection);
 	mkdirSync(d, { recursive: true });
 	const rest = { ...data };
 	delete rest.id;
 	const f = join(d, `${assertId(id)}.json`);
-	if (existsSync(f)) backup(dir, collection, id, f);
+	if (keep && existsSync(f)) backup(dir, collection, id, f);
 	const tmp = `${f}.${process.pid}.tmp`;
 	writeFileSync(tmp, `${JSON.stringify(rest, null, '\t')}\n`);
 	renameSync(tmp, f);
@@ -193,6 +201,49 @@ function backup(dir, collection, id, file) {
 		.filter((n) => n.endsWith('.json'))
 		.sort();
 	for (const old of copies.slice(0, -BACKUPS_KEPT)) rmSync(join(d, old), { force: true });
+}
+
+/**
+ * Backup copies `pnpm board prune-backups` removes (d185): all but the newest BACKUPS_KEPT per document, and
+ * every copy of a task that is finished or no longer in tareas/. Paths are relative to the board directory.
+ */
+export function surplusBackups(dir) {
+	const root = join(dir, BACKUP_DIR);
+	const open = new Set(
+		readCollection(dir, 'tareas')
+			.filter((t) => !isFinished(t))
+			.map((t) => t.id),
+	);
+	const out = [];
+	for (const collection of COLLECTIONS.filter((c) => existsSync(join(root, c))))
+		for (const id of readdirSync(join(root, collection))) {
+			const d = join(root, collection, id);
+			const copies = readdirSync(d)
+				.filter((n) => n.endsWith('.json'))
+				.sort();
+			const drop =
+				collection === 'tareas' && !open.has(id) ? copies : copies.slice(0, -BACKUPS_KEPT);
+			for (const name of drop) {
+				const file = join(d, name);
+				out.push({
+					archivo: relative(dir, file).split(sep).join('/'),
+					bytes: statSync(file).size,
+				});
+			}
+		}
+	return out;
+}
+
+/** Remove the surplus copies (and the folders they leave empty); `aplicar: false` only lists them. */
+export function pruneBackups(dir, { aplicar = false } = {}) {
+	const sobran = surplusBackups(dir);
+	if (aplicar)
+		for (const { archivo } of sobran) {
+			const file = join(dir, archivo);
+			rmSync(file, { force: true });
+			if (!readdirSync(dirname(file)).length) rmSync(dirname(file), { recursive: true });
+		}
+	return { sobran, bytes: sobran.reduce((n, x) => n + x.bytes, 0), aplicado: aplicar };
 }
 
 /** Run `fn` holding the store lock, so two agents never interleave a read-modify-write. */
