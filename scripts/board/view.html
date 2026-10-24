@@ -104,6 +104,13 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .req{display:inline-flex;gap:3px;align-items:center}
 .req i{font-style:normal;font-family:var(--mono);font-size:.72rem}
 .lane{font:500 .76rem var(--mono);color:var(--muted)}
+.runs{grid-column:2;font-weight:700;font-size:.95rem;line-height:1.35;min-width:0;overflow-wrap:anywhere}
+.runs .more,.runs .busy{display:block;font-weight:600;font-size:.84rem;color:var(--muted)}
+.runs .busy{color:var(--u-alta)}
+.runbox{margin:10px 0;padding:10px 12px;border:2px solid var(--line);border-radius:8px}
+.runbox p{margin:0;line-height:1.45}
+.runbox p:first-child{font-weight:700;font-size:1.05rem}
+.runbox .busy{color:var(--u-alta);font-weight:600}
 /* «Le toca a usted» (d163): the owner's ready tasks and the answers tasks wait for, above the queue */
 .mine{background:var(--own-soft);border:1px solid var(--own);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:grid;gap:6px}
 .mine h2{margin:0;font:700 1rem var(--display);color:var(--own)}
@@ -285,7 +292,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, AGENT_REGISTRY } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -337,13 +344,18 @@ const agHtml=t=>t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t
 function firstBlock(t){const r=reqs(t).find(x=>!x.ok);if(r)return 'Espera: '+r.label;return color(t)==='block'?'Ningún agente tiene todo lo que pide: '+(t.requiere||[]).join(', '):''}
 function reqSummary(t){const r=reqs(t);if(!r.length)return '';const ok=r.filter(x=>x.ok).length;return `<span class="req" title="Requisitos cumplidos"><i>${ok===r.length?'✓':'○'}</i>${ok}/${r.length} requisitos</span>`}
 
+// d177: an open task without a lock says in large type where it runs, and whether that lane is busy.
+const runLines=t=>t.candado||isFinished(t)?[]:laneLines(t,S.board);
+const runsHtml=t=>{const lines=runLines(t);if(!lines.length)return '';const busy=laneBusy(t,S.board);
+  return `<span class="runs">${lines.map((x,i)=>i?`<span class="${busy&&i===lines.length-1?'busy':'more'}">${esc(x)}</span>`:esc(x)).join('')}</span>`};
 function itemHtml(t){
   const c=color(t),n=NUM[t.id];
   const why=c==='block'?firstBlock(t):String(t.ahora||'').split('\n')[0];
   return `<button type="button" class="item c-${c}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}">
     <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
     <span class="ttl">${tN(t)}${esc(t.titulo)}</span>
-    <span class="line">${pill(t)}${urgHtml(t)}${reqSummary(t)}${agHtml(t)}${t.carril?`<span class="lane">${esc(t.carril)}</span>`:''}${t.hasta?`<span class="mono">límite ${esc(fmtDay(t.hasta))}</span>`:''}</span>
+    ${runsHtml(t)}
+    <span class="line">${pill(t)}${urgHtml(t)}${reqSummary(t)}${agHtml(t)}${t.carril&&!runLines(t).length?`<span class="lane">${esc(t.carril)}</span>`:''}${t.hasta?`<span class="mono">límite ${esc(fmtDay(t.hasta))}</span>`:''}</span>
     ${why?`<span class="why">${rich(why)}</span>`:''}
   </button>`;
 }
@@ -383,13 +395,15 @@ function renderSheet(open){
     ['Evidencia',t.evidencia&&(t.evidencia.cmd||t.evidencia.salio)?`<code>${esc(t.evidencia.cmd||'')}</code> → ${rich(t.evidencia.salio||'')}`:''],
     ['Versión',t.rev?`v${esc(t.rev)}${t.actualizado?' · '+esc(fmt(t.actualizado))+' ('+esc(ago(t.actualizado))+')':''}`:'']
   ].filter(x=>x[1]);
-  const p=t.prompt||'';
+  const p=promptWithLane(t,S.board)||'';
+  const run=runLines(t),busy=laneBusy(t,S.board);
   const to=c==='own'&&pasteTo(t);
   const who=to?'Copie el prompt y péguelo en un chat nuevo de '+to+'.':c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
   sh.className='sheet c-'+c+(open?' open':sh.classList.contains('open')?' open':'');
   sh.innerHTML=`<div class="sh-top"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span><h2>${tN(t)}${esc(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
       <div class="line">${pill(t)}${urgHtml(t)}<span class="lane">${esc(t.id)}</span></div></div>
     ${t.ahora?`<p class="now">${rich(String(t.ahora))}</p>`:''}
+    ${run.length?`<div class="runbox">${run.map((x,i)=>`<p class="${busy&&i===run.length-1?'busy':''}">${esc(x)}</p>`).join('')}</div>`:''}
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>
     ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span><span class="t">${esc(x.tipo==='dueno'?'usted':x.tipo)}</span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
     ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
@@ -403,12 +417,14 @@ function renderBoard(){
   const lanes=S.board.carriles.slice().sort((a,b)=>(a.orden||99)-(b.orden||99));
   const known=new Set(lanes.map(l=>l.id));
   const tareas=S.board.tareas.filter(t=>!t.archivada&&inTab(t,S.ag));
-  const loose=tareas.filter(t=>!known.has(t.carril));
+  // d177: a task not claimed yet sits in the lane the coordinator planned for it.
+  const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;
+  const loose=tareas.filter(t=>!known.has(laneId(t)));
   if(loose.length)lanes.push({id:'sin-carril',uso:'Tareas sin carril o de rutina.'});
   const chip=t=>`<button type="button" class="chip c-${color(t)}" data-sel="${esc(t.id)}" data-jump="1"><b>${t.num?'T'+t.num:'·'}</b><span>${esc(t.titulo)}${NUM[t.id]?` <span class="pos" title="Lugar en la cola">#${NUM[t.id]}</span>`:''}</span></button>`;
   const head=`<div class="bhead"><div>Carril</div>${STAGES.map(s=>`<div>${s[1]}</div>`).join('')}</div>`;
   $('board').innerHTML=head+lanes.map(l=>{
-    const ts=l.id==='sin-carril'?loose:tareas.filter(t=>t.carril===l.id);
+    const ts=l.id==='sin-carril'?loose:tareas.filter(t=>laneId(t)===l.id);
     const ses=l.sesion&&l.sesion.nombre?`Sesión ${esc(l.sesion.nombre)}`:(l.estado==='ocioso'?'Libre':esc(l.estado||''));
     return `<div class="brow"><div class="lh"><b>${esc(l.id)}</b><span>${[l.tecla,l.puerto?'puerto '+l.puerto:''].filter(Boolean).map(esc).join(' · ')}</span><span>${ses}</span></div>${STAGES.map(([s,n])=>{const g=ts.filter(t=>stage(t)===s).sort((a,b)=>(NUM[a.id]||999)-(NUM[b.id]||999));return `<div class="cell">${g.length?`<span class="lbl">${n}</span>${g.map(chip).join('')}`:''}</div>`}).join('')}</div>`;
   }).join('');
@@ -499,9 +515,9 @@ document.addEventListener('click',ev=>{
   const cp=ev.target.closest('[data-copy]');if(cp){
     // The sheet's button copies the open task; a «Pegar en Codex» row copies its own and opens its sheet, where the message shows.
     if(cp.dataset.copy!=='1'){if(S.ag!=='todas')setAgent('todas');openSheet(cp.dataset.copy)}
-    const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');
+    const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
-    try{navigator.clipboard.writeText(t.prompt).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».'},fallback)}catch(e){fallback()}return}
+    try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».'},fallback)}catch(e){fallback()}return}
   const k=ev.target.closest('[data-kind]');if(k){S.kind=k.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===k)));renderHist()}
 });
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet()});
