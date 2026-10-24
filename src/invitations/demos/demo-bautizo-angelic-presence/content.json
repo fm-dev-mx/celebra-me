@@ -184,7 +184,7 @@
         "author": "Mateo 18:20"
     },
     "rsvp": {
-        "title": "Confirma tu asistencia",
+        "title": "Confirme su asistencia",
         "guestCap": 4,
         "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
         "confirmationMode": "api",

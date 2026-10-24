@@ -170,7 +170,7 @@
         "author": "Juan 6:35"
     },
     "rsvp": {
-        "title": "Confirma tu asistencia",
+        "title": "Confirme su asistencia",
         "guestCap": 4,
         "confirmationMessage": "Gracias por confirmar y acompañarnos en este día de fe.",
         "confirmationMode": "api",

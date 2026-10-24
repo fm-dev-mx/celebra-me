@@ -104,7 +104,7 @@
         "variant": "feature-mosaic"
     },
     "rsvp": {
-        "title": "Confirma tu asistencia.",
+        "title": "Confirme su asistencia.",
         "guestCap": 8,
         "confirmationMessage": "Será un honor contar con su presencia.",
         "confirmationMode": "both",
@@ -120,7 +120,7 @@
         }
     },
     "quote": {
-        "text": "La vida no se mide por los años, sino por los momentos que te dejan sin aliento y la familia que camina a tu lado.",
+        "text": "La vida no se mide por los años, sino por los momentos que nos dejan sin aliento y la familia que camina a nuestro lado.",
         "author": "Don Alberto"
     },
     "family": {
@@ -240,7 +240,7 @@
     },
     "sharing": {
         "shareMessages": {
-            "invitation": "Hola {name}, es un gusto invitarte a {eventTitle} 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}",
+            "invitation": "Hola {name}, es un gusto invitarle a {eventTitle} 🥂\n\nPuede ver todos los detalles y confirmar su asistencia aquí:\n\n✨ {inviteUrl}",
             "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
         }
     },
