@@ -3,6 +3,7 @@ export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import DemoConversion from '@/components/invitation/DemoConversion.astro';
+import DemoFloatingQuote from '@/components/invitation/DemoFloatingQuote.astro';
 import { getDemoConversion, hasDemoConversion } from '@/lib/invitation/demo-conversion';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
@@ -355,6 +356,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								musicCredit={page.musicPlayer?.creditsUrl ? { title: page.musicPlayer.title, creditsUrl: page.musicPlayer.creditsUrl } : undefined}
 							/>
 							{demoConversion && <DemoConversion placement="closing" demo={demoConversion} />}
+							{demoConversion && <DemoFloatingQuote demo={demoConversion} />}
 
 							{page.musicPlayer && <MusicPlayer {...page.musicPlayer} />}
 						</div>

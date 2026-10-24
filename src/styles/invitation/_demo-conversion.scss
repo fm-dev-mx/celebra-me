@@ -96,7 +96,8 @@
 	}
 
 	&__primary,
-	&__secondary {
+	&__secondary,
+	&__next {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -148,6 +149,38 @@
 		&:hover {
 			color: var(--color-action-accent);
 		}
+	}
+
+	// Closing navigation: the next demo of the same event, then back to the landing showroom.
+	&__nav {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 4px 24px;
+		margin-top: 20px;
+		padding-top: 12px;
+		border-top: 1px solid rgb(var(--color-text-on-dark-rgb) / 22%);
+
+		.demo-conversion__secondary {
+			margin-top: 0;
+		}
+	}
+
+	&__next {
+		gap: 12px;
+		min-height: 44px;
+		font-size: var(--demo-conversion-next-size, 0.875rem);
+		text-decoration: none;
+
+		&:hover {
+			color: var(--color-action-accent);
+		}
+	}
+
+	&__next-name {
+		margin-left: 0.4em;
+		font-family: var(--font-display);
+		font-style: italic;
 	}
 
 	// The photo is the control: a transparent button over the whole slot, under the text.
@@ -316,6 +349,7 @@
 	@media (prefers-reduced-motion: reduce) {
 		&__primary,
 		&__secondary,
+		&__next,
 		&__zoom-hint {
 			transition: none;
 		}

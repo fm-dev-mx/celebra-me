@@ -1,0 +1,93 @@
+---
+/**
+ * Discreet floating quote of a demo (not a content section), quieter than the gallery and closing
+ * panels. It appears once the invitation is open and the hero has left the screen, so the visitor
+ * can quote before reaching the gallery, and hides over the sales panels, the farewell and the
+ * cookie consent bar. Its message carries `Ref. EVENT-STYLE-FLOTANTE`.
+ */
+import type { DemoConversionContext } from '@/lib/invitation/demo-conversion';
+import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import '@/styles/invitation/_demo-floating-quote.scss';
+
+interface Props {
+	demo: DemoConversionContext;
+}
+const { demo } = Astro.props;
+// Without a real contact number the panels fall back to the contact form; the extra quote stays out.
+const available = !isPlaceholderContactPhone(getContactPhone());
+---
+
+{available && <a class="demo-floating-quote" href={demo.quoteLinks.floating} target="_blank" rel="noopener noreferrer"
+	data-demo-floating-quote inert aria-label="Quiero una invitación así por WhatsApp"
+	data-track-event="whatsapp_contact_clicked" data-track-cta="demo_quote_floating"
+	data-track-section="demo_floating" data-track-intent="whatsapp"
+	data-track-label="Quiero una invitación así por WhatsApp" data-event-type={demo.eventType}
+	data-demo-slug={demo.slug} data-preserve-message="true">
+	<span>Quiero una invitación así</span><span aria-hidden="true">↗</span>
+</a>}
+
+<script>
+	const quote = document.querySelector<HTMLElement>('[data-demo-floating-quote]');
+	const sections = document.getElementById('invitation-sections-container');
+	const root = sections?.closest<HTMLElement>('[data-reveal-state]');
+	const hero = document.getElementById('inicio');
+	const consentBar = document.getElementById('consent-banner-bar');
+	const hideZones = [...document.querySelectorAll('.demo-conversion, .demo-conversion-farewell')];
+
+	if (quote && sections && 'IntersectionObserver' in window) {
+		let sectionsVisible = false;
+		let heroVisible = hero !== null;
+		const visibleHideZones = new Set<Element>();
+
+		const isRevealed = () => !root || root.dataset.revealState === 'revealed';
+		const isConsentOpen = () =>
+			consentBar instanceof HTMLElement && getComputedStyle(consentBar).display !== 'none';
+
+		const update = () => {
+			const visible =
+				isRevealed() &&
+				!heroVisible &&
+				sectionsVisible &&
+				visibleHideZones.size === 0 &&
+				!isConsentOpen();
+			quote.classList.toggle('demo-floating-quote--visible', visible);
+			quote.inert = !visible;
+		};
+
+		new IntersectionObserver(([entry]) => {
+			sectionsVisible = entry.isIntersecting;
+			update();
+		}).observe(sections);
+		if (hero) {
+			new IntersectionObserver(([entry]) => {
+				heroVisible = entry.isIntersecting;
+				update();
+			}).observe(hero);
+		}
+
+		const zoneObserver = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) visibleHideZones.add(entry.target);
+				else visibleHideZones.delete(entry.target);
+			});
+			update();
+		});
+		hideZones.forEach((zone) => zoneObserver.observe(zone));
+
+		if (root) {
+			new MutationObserver(update).observe(root, {
+				attributes: true,
+				attributeFilter: ['data-reveal-state'],
+			});
+		}
+		// The consent bar toggles its inline display; keep the quote out of its way.
+		if (consentBar) {
+			new MutationObserver(update).observe(consentBar, {
+				attributes: true,
+				attributeFilter: ['style', 'class'],
+			});
+		}
+
+		update();
+	}
+</script>
