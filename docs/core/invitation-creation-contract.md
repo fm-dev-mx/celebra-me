@@ -419,6 +419,15 @@ Every managed digital invitation must define:
   Three-way reconciliation must use this declared scope and report out-of-scope changes rather than
   applying or hiding them. `pnpm invitation:release` inherits this value unless the operator passes
   `--update-scope` or `--content-only`.
+- **Voice** (`voice`, optional, default `usted`): the register of the guest-facing copy, `usted` or
+  `tu`. A definition without the field is treated as `usted` (`resolveInvitationVoice`); `tu` is an
+  explicit client request. It is authoring metadata only: it never enters the published content, the
+  release metadata, or any hash, so adding it changes no `sourceHash` or `packageHash`.
+  `tests/unit/invitation-voice-register.test.ts` checks every unpublished `usted` definition for
+  «tú» forms (list in `tests/helpers/tu-register.ts`); copy addressed to someone other than the
+  guests, such as a prayer to God, is exempted there by slug and content path. Published definitions
+  are not rewritten to adopt it (A7 in
+  [invitation standards](../domains/theme/invitation-standards.md)).
 - **Client Details**: client name, the WhatsApp RSVP destination when the invitation publishes one,
   and photo reception status. Definitions carry no client email
   ([sensitive data guide](./sensitive-data-guide.md)); provisioning writes the empty value that the
