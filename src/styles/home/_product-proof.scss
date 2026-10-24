@@ -4,7 +4,7 @@
 // Host-side proof: what the guest panel shows, on a dark espresso surface.
 .product-proof {
 	position: relative;
-	background: linear-gradient(180deg, var(--color-espresso) 0%, #1a110c 100%);
+	background: linear-gradient(180deg, var(--color-espresso) 0%, var(--color-ink) 100%);
 	color: var(--color-ivory);
 
 	&__container {
@@ -131,7 +131,7 @@
 	flex-direction: column;
 	gap: 0.7rem;
 	padding: 2.4rem 0.75rem 0.75rem;
-	background: #f6f1e8;
+	background: var(--color-ivory);
 	color: var(--color-text-dark);
 	font-family: var(--font-body);
 

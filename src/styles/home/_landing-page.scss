@@ -45,6 +45,13 @@ html {
 		margin-bottom: var(--spacing-sm);
 	}
 
+	// On light sections champagne is too faint for small caps; they take the deep rosé instead.
+	.how-it-works__eyebrow,
+	.pricing-eyebrow,
+	.contact-eyebrow {
+		color: var(--color-rose-deep);
+	}
+
 	// Headings
 	.product-proof__title,
 	.how-it-works__title,

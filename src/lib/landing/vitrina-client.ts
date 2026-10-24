@@ -75,6 +75,13 @@ export function initLandingShowroom(root: Document = document): void {
 	};
 
 	live?.addEventListener('load', () => {
+		// The demo is same-origin; a desktop scrollbar would show as a light strip down the
+		// frame's right edge, so the framed page scrolls without one.
+		try {
+			live.contentDocument?.documentElement.style.setProperty('scrollbar-width', 'none');
+		} catch {
+			// Cross-origin frame: leave its scrollbar alone.
+		}
 		if (screen && live.dataset.src) screen.dataset.live = 'ready';
 	});
 
