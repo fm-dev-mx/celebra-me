@@ -13,6 +13,20 @@ export function shouldRespectStoredReveal(input: {
 	return !input.isDemo && !input.forceEnvelope && input.storedOpened;
 }
 
+/**
+ * A closed gate always opens onto the hero. A reload (the footer's "Volver a ver la apertura",
+ * or a refresh mid-page) would otherwise restore the old scroll position under the gate, and
+ * the reveal would land on the footer.
+ */
+export function holdPageAtTopWhileGated(): void {
+	try {
+		history.scrollRestoration = 'manual';
+	} catch {
+		// Some sandboxed frames refuse; the scroll below still applies.
+	}
+	window.scrollTo(0, 0);
+}
+
 export class RevealManager {
 	private storageKey: string;
 	private isDemoInvitation: boolean;

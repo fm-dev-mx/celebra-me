@@ -429,7 +429,11 @@ const shouldRenderHidden =
 <script>
 	import { setupCollectorReveal } from './editorial-cover/collector-reveal';
 	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
-	import { buildRevealStorageKey, shouldRespectStoredReveal } from '@/lib/invitation/reveal-manager';
+	import {
+		buildRevealStorageKey,
+		holdPageAtTopWhileGated,
+		shouldRespectStoredReveal,
+	} from '@/lib/invitation/reveal-manager';
 
 	const EXIT_ANIMATION_MS = 1600;
 	const EXIT_COMPLETION_FALLBACK_MS = EXIT_ANIMATION_MS + 600;
@@ -555,6 +559,7 @@ const shouldRenderHidden =
 			}
 
 			document.documentElement.classList.add('envelope-open');
+			holdPageAtTopWhileGated();
 
 			const rememberOpened = () => {
 				if (isDemoInvitation) return;
