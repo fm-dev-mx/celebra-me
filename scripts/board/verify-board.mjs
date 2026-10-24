@@ -34,6 +34,7 @@ import {
 	NO_CIERRE,
 	ordenOf,
 	prNumber,
+	promptLanes,
 	stage,
 	taskIdFromBranch,
 	taskIssues,
@@ -500,6 +501,12 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 			avisos.push({
 				id: t.id,
 				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
+			});
+	for (const t of tareas.filter((x) => !isClosed(x) && !isReview(x)))
+		for (const lane of promptLanes(t, WORKTREE_LANES))
+			avisos.push({
+				id: t.id,
+				msg: `${t.num ? `T${t.num} ` : ''}el prompt dice ${lane}, pero corre en ${taskLane(t)}`,
 			});
 	const ready = tareas.filter(
 		(t) =>

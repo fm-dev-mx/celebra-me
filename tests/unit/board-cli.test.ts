@@ -121,6 +121,24 @@ const readLog = (dir: string): Json[] =>
 const readTask = (dir: string, id: string) =>
 	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
 
+/** Name → text of every entry of a monthly .zip, read with scripts/board/zip.mjs. */
+function zipEntries(file: string): Record<string, string> {
+	const probe = `const { readZip } = await import(process.argv[1]);
+		console.log(JSON.stringify(Object.fromEntries(readZip(process.argv[2]).map((e) => [e.name, e.data.toString('utf8')]))));`;
+	const result = runCommand(
+		process.execPath,
+		[
+			'--input-type=module',
+			'-e',
+			probe,
+			pathToFileURL(path.join(ROOT, 'scripts/board/zip.mjs')).href,
+			file,
+		],
+		{ cwd: ROOT, env: sanitizeEnv({}) },
+	);
+	return JSON.parse(String(result.stdout));
+}
+
 afterEach(() => {
 	for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
@@ -1932,5 +1950,66 @@ describe('pnpm board', () => {
 			refused: true,
 			retained: 'live',
 		});
+	});
+});
+
+describe('closing cleanup (d186)', () => {
+	it('moves the prompt of a task reaching unida to the month .zip and drops its lane and lock', () => {
+		const candado = { agente: 'codex', sesion: 'codex-test', carril: 'f10-libre', desde: NOW };
+		const dir = makeBoard({
+			tareas: [
+				task('cerrar', {
+					estado: 'en revision',
+					pr: '#7',
+					rama: 'chore/cerrar',
+					carril: 'f10-libre',
+					candado: { ...candado, rama: 'chore/cerrar' },
+					cierre: CIERRE,
+				}),
+				task('abierta', { estado: 'en curso', carril: 'f09-docs' }),
+			],
+		});
+		const r = raw(
+			dir,
+			'set',
+			'cerrar',
+			'--rev=1',
+			'estado=unida',
+			'--agente=codex',
+			'--sesion=codex-test',
+		);
+		expect(r.status).toBe(0);
+		const t = readTask(dir, 'cerrar');
+		expect(t).not.toHaveProperty('prompt');
+		expect(t).not.toHaveProperty('carril');
+		expect(t).not.toHaveProperty('candado');
+		expect(t.sesion).toEqual({ id: 'codex-test', agente: 'codex' });
+		expect(t.cierre).toEqual(CIERRE);
+		const month = String(t.actualizado).slice(0, 7);
+		expect(zipEntries(path.join(dir, 'mensual', `${month}.zip`))).toEqual({
+			'prompts/cerrar.rev2.md': task('cerrar').prompt,
+		});
+		// An open task keeps its prompt and lane.
+		expect(board(dir, 'set', 'abierta', '--rev=1', 'ahora=sigue').status).toBe(0);
+		expect(readTask(dir, 'abierta')).toMatchObject({
+			carril: 'f09-docs',
+			prompt: expect.any(String),
+		});
+	});
+
+	it('keeps every closed prompt in the same month file', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('a', { estado: 'hecha', evidencia: { salio: 'ok' } }),
+				task('b', { estado: 'hecha', evidencia: { salio: 'ok' } }),
+			],
+		});
+		expect(board(dir, 'set', 'a', '--rev=1', 'estado=comprobada').status).toBe(0);
+		expect(board(dir, 'set', 'b', '--rev=1', 'estado=comprobada').status).toBe(0);
+		const month = String(readTask(dir, 'a').actualizado).slice(0, 7);
+		expect(Object.keys(zipEntries(path.join(dir, 'mensual', `${month}.zip`))).sort()).toEqual([
+			'prompts/a.rev2.md',
+			'prompts/b.rev2.md',
+		]);
 	});
 });

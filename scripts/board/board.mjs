@@ -77,6 +77,8 @@ import {
 	promptWithLane,
 	lockSessionIssue,
 	sessionOf,
+	cleaned,
+	unlocked,
 } from './model.mjs';
 import {
 	appendLog,
@@ -85,11 +87,13 @@ import {
 	migrateLogLines,
 	boardDir,
 	loadBoard,
+	monthlyZip,
 	readCollection,
 	readDoc,
 	withLock,
 	writeDoc,
 } from './store.mjs';
+import { addToZip } from './zip.mjs';
 
 const COLOR_LABEL = {
 	own: 'USTED',
@@ -166,7 +170,7 @@ function logEntry(tarea, change, who, extra) {
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, opts = {}) {
 	const { corrio, salio } = opts;
-	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	const t = { ...cleaned(after, opts), rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
 	// numbering existed gets the next number on its first write, like a new one.
 	t.num = Number.isSafeInteger(before?.num)
@@ -189,24 +193,14 @@ function saveTask(dir, before, after, opts = {}) {
 	const row =
 		(before?.estado ?? null) !== t.estado &&
 		logEntry(t.id, { de: before?.estado, a: t.estado }, opts, { corrio, salio });
+	// The prompt reaches the month's .zip before the task loses it.
+	if (after.prompt && !t.prompt)
+		addToZip(monthlyZip(dir, t.actualizado.slice(0, 7)), [
+			{ name: `prompts/${t.id}.rev${t.rev}.md`, data: after.prompt },
+		]);
 	writeDoc(dir, 'tareas', t.id, t);
 	if (row) appendLog(dir, row);
 	return t;
-}
-
-/** The task without its lock; the lock's session stays in `sesion` so it can still be found, renamed or archived. */
-function unlocked(task, flags) {
-	const rest = { ...task };
-	delete rest.candado;
-	const { sesion: id, agente } = task.candado ?? {};
-	if (!id) return rest;
-	const nombre =
-		typeof flags.nombre === 'string'
-			? flags.nombre
-			: task.sesion?.id === id
-				? task.sesion.nombre
-				: undefined;
-	return { ...rest, sesion: { id, agente, ...(nombre ? { nombre } : {}) } };
 }
 
 function getTask(dir, id) {

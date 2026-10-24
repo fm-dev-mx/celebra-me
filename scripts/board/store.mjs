@@ -10,6 +10,8 @@
  *
  * Before a document is overwritten, its previous content is copied to
  * <dir>/.respaldos/<collection>/<id>/<time>.json; the newest BACKUPS_KEPT copies per document stay.
+ *
+ * What leaves the live board goes to <dir>/mensual/<YYYY-MM>.zip (d186, d187), never to the bin.
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -41,6 +43,10 @@ export const COLLECTIONS = [
 const SAFE_ID = /^[A-Za-z0-9._~:@+-]{1,200}$/;
 export const BACKUP_DIR = '.respaldos';
 export const BACKUPS_KEPT = 5;
+export const MONTHLY_DIR = 'mensual';
+
+/** The month's .zip file, `month` as YYYY-MM. */
+export const monthlyZip = (dir, month) => join(dir, MONTHLY_DIR, `${month}.zip`);
 
 export function boardDir(cwd = process.cwd()) {
 	if (process.env.CELEBRA_BOARD_DIR) return resolve(cwd, process.env.CELEBRA_BOARD_DIR);

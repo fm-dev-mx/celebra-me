@@ -594,6 +594,29 @@ export function nextFor(agente, board, now = Date.now()) {
 /** The lane a task sits in: its lock's, else the planned one (d177), else its recorded `carril`. */
 export const taskLane = (t) => t.candado?.carril ?? t.carrilPlaneado ?? t.carril;
 
+const HEADING = /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ,.:]{3,}$/;
+
+/**
+ * H13: canonical lanes (`lanes`: WORKTREE_LANES) the prompt names other than the task's own lane. Only its
+ * «DÓNDE CORRE» section counts when it has one, so a prompt may still mention another lane elsewhere.
+ */
+export function promptLanes(t, lanes) {
+	const own = taskLane(t);
+	if (!own || typeof t.prompt !== 'string') return [];
+	let lines = t.prompt.split('\n').map((l) => l.trim());
+	const at = lines.findIndex((l) => /^D[OÓ]NDE CORRE\b/.test(l));
+	if (at >= 0) {
+		lines = lines.slice(at + 1);
+		const next = lines.findIndex((l) => HEADING.test(l));
+		if (next >= 0) lines = lines.slice(0, next);
+	}
+	const text = lines.join('\n');
+	return lanes
+		.filter((l) => l.segment && l.id !== own)
+		.filter((l) => new RegExp(`(?<![a-z0-9-])${l.id}(?![a-z0-9-])`).test(text))
+		.map((l) => l.id);
+}
+
 /**
  * Whether `carril` is a canonical lane this task may use (`lanes`: WORKTREE_LANES, passed in so the view needs
  * no Node module); Integration only for coordinator tasks.
@@ -863,4 +886,30 @@ export function taskIssues(t) {
 	}
 	if (t.cierre !== undefined) out.push(...cierreShapeIssues(t.cierre));
 	return out;
+}
+
+/** States that close a task for good: its prompt, lane and lock leave it (d186); the closing summary stays. */
+export const CLEANED_ON = new Set(['comprobada', 'unida']);
+
+export function cleaned(task, opts) {
+	if (!CLEANED_ON.has(task.estado)) return task;
+	const t = task.candado ? unlocked(task, opts) : { ...task };
+	delete t.prompt;
+	delete t.carril;
+	return t;
+}
+
+/** The task without its lock; the lock's session stays in `sesion` so it can still be found, renamed or archived. */
+export function unlocked(task, flags) {
+	const rest = { ...task };
+	delete rest.candado;
+	const { sesion: id, agente } = task.candado ?? {};
+	if (!id) return rest;
+	const nombre =
+		typeof flags.nombre === 'string'
+			? flags.nombre
+			: task.sesion?.id === id
+				? task.sesion.nombre
+				: undefined;
+	return { ...rest, sesion: { id, agente, ...(nombre ? { nombre } : {}) } };
 }

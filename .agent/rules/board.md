@@ -128,8 +128,12 @@ authorization.
   `.respaldos/bitacora-legado/`. The verifier reports rows still in the old format and every invalid
   new row.
 - **`comprobada`**: only after `unida`/`hecha` with `evidencia.salio` from the verifier (listed
-  under «LISTAS PARA comprobada»), or with the owner's explicit authorization. Clear `prompt` and
-  release the lock when closing.
+  under «LISTAS PARA comprobada»), or with the owner's explicit authorization.
+- **Closing cleanup (d186)**: every write that leaves a task `comprobada` or `unida` moves its
+  `prompt` to `.agent/tmp/board/mensual/<YYYY-MM>.zip` (`prompts/<id>.rev<n>.md`) and drops its
+  `carril` and lock (the lock's session stays in `sesion`); the closing summary stays.
+  `board:verify` warns when the prompt's «DÓNDE CORRE» section (the whole prompt if it has none)
+  names a canonical lane other than the task's lane.
 - **Prompt**: «Sigue .agent/rules/board.md con tarea `<id>`» plus the task-specific scope only, with
   a `DECISIONES` section (d046). Layout: the prompt template in
   [the coordinator board guide](../../docs/core/coordinator-board.md#prompts-d153).
