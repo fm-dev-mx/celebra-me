@@ -1,20 +1,24 @@
 # Removes the board server task that scripts/board/serve-register.ps1 registered and stops its server.
-# Stopping the task leaves its node child running, so that child is ended by its command line, which
-# holds the absolute path to board.mjs (unquoted); a manual `pnpm board:serve` runs a relative path and is kept.
+# Stopping the task ends its conhost process but leaves the node child running, so the children of the
+# task's running instances are collected first and ended after it. Only those children are stopped: a
+# server started any other way, such as a manual `pnpm board:serve`, is never touched.
 $ErrorActionPreference = 'Stop'
 $taskName = 'Celebra-me servidor del tablero'
-$root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$board = Join-Path $root 'scripts\board\board.mjs'
-if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
-	Stop-ScheduledTask -TaskName $taskName
-	Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-	Write-Output "Tarea programada quitada: `"$taskName`"."
-} else {
+if (-not (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue)) {
 	Write-Output "No hay tarea programada `"$taskName`"."
+	return
 }
-Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
-	Where-Object { $_.CommandLine -like "*$board view*" } |
-	ForEach-Object {
-		Stop-Process -Id $_.ProcessId -Confirm:$false
-		Write-Output "Servidor del tablero detenido (proceso $($_.ProcessId))."
+$scheduler = New-Object -ComObject Schedule.Service
+$scheduler.Connect()
+$children = @(
+	@($scheduler.GetRunningTasks(0)) | Where-Object { $_.Name -eq $taskName } | ForEach-Object {
+		Get-CimInstance Win32_Process -Filter "ParentProcessId=$($_.EnginePID) AND Name='node.exe'"
 	}
+)
+Stop-ScheduledTask -TaskName $taskName
+Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+Write-Output "Tarea programada quitada: `"$taskName`"."
+foreach ($child in $children) {
+	Stop-Process -Id $child.ProcessId -Confirm:$false
+	Write-Output "Servidor del tablero detenido (proceso $($child.ProcessId))."
+}
