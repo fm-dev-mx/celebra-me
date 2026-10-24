@@ -7,6 +7,7 @@ import { runCommand, sanitizeEnv } from '../helpers/run-command';
 
 const ROOT = process.cwd();
 const SYNC_PATH = path.join(ROOT, 'scripts', 'board', 'sync.mjs');
+const BOARD_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
 const SERVER_PATH = path.join(ROOT, 'scripts', 'board', 'view-server.mjs');
 const NOW = '2026-10-20T20:00:00Z';
 
@@ -49,6 +50,7 @@ const SOURCES = {
 		pr(15, 'docs/por-convencion'),
 		pr(16, 'fix/old-name', 'MERGED'),
 		pr(17, 'fix/old-name'),
+		pr(18, 'fix/candado-abierto'),
 	],
 };
 
@@ -81,7 +83,7 @@ afterEach(() => {
 });
 
 describe('pnpm board:sync', () => {
-	it('plans PR states per open task and only reports closed PRs, locks and branches without PR', () => {
+	it('plans PR states, releases locks of merged PRs (d170) and only reports closed PRs, open locks and bare branches', () => {
 		const board = {
 			tareas: [
 				task('unido', { num: 1, rama: 'fix/unido', estado: 'en revision', pr: '10' }),
@@ -105,13 +107,43 @@ describe('pnpm board:sync', () => {
 					rama: 'feat/abierto',
 					estado: 'pendiente',
 				}),
+				task('candado-abierto', {
+					num: 13,
+					rama: 'fix/candado-abierto',
+					candado: { agente: 'codex', desde: NOW },
+				}),
+				task('candado-cerrada', {
+					num: 14,
+					rama: 'fix/con-candado',
+					estado: 'unida',
+					pr: '#14',
+					candado: { agente: 'claude', desde: NOW, sesion: 'local_x' },
+				}),
 			],
 		};
 		const p = probe(
 			SYNC_PATH,
 			`console.log(JSON.stringify(m.plan(${JSON.stringify(board)}, ${JSON.stringify(SOURCES)})));`,
 		);
-		expect(p.cambios.map((c: Json) => [c.id, c.set, c.texto])).toEqual([
+		expect(
+			p.cambios
+				.filter((c: Json) => c.cmd === 'merged')
+				.map((c: Json) => [c.id, c.pr, c.texto]),
+		).toEqual([
+			[
+				'con-candado',
+				'#14',
+				'T5 con-candado → PR #14 unido: pasa a unida · suelta el candado de claude (d170)',
+			],
+			[
+				'candado-cerrada',
+				'#14',
+				'T14 candado-cerrada → PR #14 unido · suelta el candado de claude (d170)',
+			],
+		]);
+		expect(
+			p.cambios.filter((c: Json) => !c.cmd).map((c: Json) => [c.id, c.set, c.texto]),
+		).toEqual([
 			['unido', { estado: 'unida' }, 'T1 unido → PR #10 unido: pasa a unida'],
 			[
 				'abierto',
@@ -131,7 +163,7 @@ describe('pnpm board:sync', () => {
 			],
 		]);
 		expect(p.omitidas.map((o: Json) => o.texto)).toEqual([
-			'T5 con-candado → PR #14 unido: pasa a unida (tiene candado de claude: lo cambia su sesión)',
+			'T13 candado-abierto → PR #18 abierto: pasa a en revision (tiene candado de codex: lo cambia su sesión)',
 		]);
 		expect(p.avisos.map((a: Json) => a.texto)).toEqual([
 			'T4 cerrado: PR #13 cerrado sin unir',
@@ -194,6 +226,52 @@ describe('pnpm board:sync', () => {
 		expect(out.hours).toEqual([2, 12, 6, 6]);
 	});
 
+	it('pnpm board merged drops any lock only for a PR merged on GitHub and refuses the rest', () => {
+		const lock = { agente: 'codex', desde: NOW, sesion: 'local_otra' };
+		const dir = makeBoard([
+			task('unida-ya', { pr: '#20', estado: 'en revision', rama: 'fix/x', candado: lock }),
+			task('sigue-abierta', {
+				pr: '#21',
+				estado: 'en revision',
+				rama: 'fix/y',
+				candado: lock,
+			}),
+			task('sin-pr', { candado: lock }),
+			task('rev-hija', {
+				pr: '#20',
+				estado: 'en curso',
+				origen: 'x',
+				revisionSha: 'a'.repeat(40),
+			}),
+		]);
+		const out = probe(
+			BOARD_PATH,
+			`const states = { '#20': 'MERGED', '#21': 'OPEN' };
+			const prState = (pr) => states[pr] ?? '';
+			const dir = process.env.CELEBRA_BOARD_DIR;
+			const tryRun = async (argv) => { try { let s = ''; await m.run(argv, { dir, prState, out: (x) => (s = x) }); return s; } catch (e) { return 'ERR ' + e.message; } };
+			console.log(JSON.stringify([
+				await tryRun(['merged', 'unida-ya']),
+				await tryRun(['merged', 'unida-ya', '--coordinador']),
+				await tryRun(['merged', 'unida-ya', '--coordinador']),
+				await tryRun(['merged', 'sigue-abierta', '--coordinador']),
+				await tryRun(['merged', 'sin-pr', '--coordinador']),
+				await tryRun(['merged', 'rev-hija', '--coordinador']),
+			]));`,
+			{ CELEBRA_BOARD_DIR: dir },
+		);
+		expect(out).toEqual([
+			'ERR merged requiere --coordinador (d170)',
+			'unida-ya unida (rev 2); candado de codex suelto',
+			'unida-ya ya está unida',
+			'ERR #21 no está unido en GitHub (OPEN)',
+			'ERR sin-pr no tiene pr: indique --pr=#<número>',
+			'ERR una revisión se cierra con su --sha, no con merged',
+		]);
+		expect(readTask(dir, 'unida-ya').candado).toBeUndefined();
+		expect(readTask(dir, 'sigue-abierta').candado).toEqual(lock);
+	});
+
 	it('reads lanes from git worktree list', () => {
 		const out = probe(
 			SYNC_PATH,
@@ -209,16 +287,30 @@ describe('pnpm board:sync', () => {
 		const dir = makeBoard([
 			task('unido', { num: 1, rama: 'fix/unido', estado: 'en revision', pr: '10' }),
 			task('abierto', { num: 2, rama: 'feat/abierto', estado: 'pendiente' }),
+			task('con-candado', {
+				num: 5,
+				rama: 'fix/con-candado',
+				candado: {
+					agente: 'claude',
+					desde: NOW,
+					sesion: 'local_otra',
+					carril: 'f07-invitaciones',
+				},
+			}),
 		]);
 		const run = (dryRun: boolean) =>
 			`console.log(JSON.stringify(await m.run({ dryRun: ${dryRun}, dir: process.env.CELEBRA_BOARD_DIR, sources: () => (${JSON.stringify(SOURCES)}) })));`;
 		const dry = probe(SYNC_PATH, run(true), { CELEBRA_BOARD_DIR: dir });
 		expect(dry.prueba).toBe(true);
-		expect(dry.cambios.map((c: Json) => c.ok)).toEqual([null, null]);
+		expect(dry.cambios.map((c: Json) => c.ok)).toEqual([null, null, null]);
+		expect(readTask(dir, 'con-candado').candado).toBeDefined();
 		expect(readTask(dir, 'unido').rev).toBe(1);
 
 		const real = probe(SYNC_PATH, run(false), { CELEBRA_BOARD_DIR: dir });
-		expect(real.cambios.map((c: Json) => c.ok)).toEqual([true, true]);
+		expect(real.cambios.map((c: Json) => c.ok)).toEqual([true, true, true]);
+		const freed = readTask(dir, 'con-candado');
+		expect(freed).toMatchObject({ estado: 'unida', pr: '#14', rev: 2 });
+		expect(freed.candado).toBeUndefined();
 		expect(readTask(dir, 'unido')).toMatchObject({ estado: 'unida', pr: '#10', rev: 2 });
 		expect(readTask(dir, 'abierto')).toMatchObject({ estado: 'en revision', pr: '#11' });
 		const rows = readdirSync(path.join(dir, 'bitacora')).map((f) =>
@@ -231,6 +323,14 @@ describe('pnpm board:sync', () => {
 				quien: 'board:sync',
 				corrio: 'pnpm board:sync',
 				salio: 'PR #10 MERGED',
+			}),
+		);
+		expect(rows).toContainEqual(
+			expect.objectContaining({
+				tarea: 'con-candado',
+				a: 'unida',
+				quien: 'board:sync',
+				salio: 'PR #14 MERGED',
 			}),
 		);
 

@@ -5,10 +5,11 @@
  * PR and writes only through `pnpm board set` (same lock, rev and shape checks as any agent):
  *
  *   - an open PR records `pr` (and `rama` when missing); a pending/in-progress task moves to «en revision»;
- *   - a merged PR moves the task to «unida»;
- *   - a PR closed without merge, a locked task or a branch without PR is only reported;
+ *   - a merged PR moves the task to «unida»; a locked task goes through `pnpm board merged`, which also drops
+ *     the lock (d170), and so does a finished task that still holds one;
+ *   - a PR closed without merge, a locked task with an open PR or a branch without PR is only reported;
  *   - a lock older than --horas (default 6, or CELEBRA_BOARD_LOCK_HOURS) whose `rama` got no commit on origin
- *     since the lock was taken is flagged «posible sesión cerrada». The lock itself is never released.
+ *     since the lock was taken is flagged «posible sesión cerrada». Only a merged PR releases a lock.
  *
  *   node scripts/board/sync.mjs [--dry-run] [--json] [--horas=<n>]   --dry-run prints the plan and writes nothing
  *
@@ -203,7 +204,14 @@ export function plan(board, src, opts = {}) {
 		: [];
 	const omitidas = [];
 	for (const t of (board.tareas ?? []).slice().sort((a, b) => (a.num ?? 0) - (b.num ?? 0))) {
-		if (CLOSED.has(t.estado ?? 'pendiente') || isReview(t)) continue;
+		if (isReview(t)) continue;
+		if (CLOSED.has(t.estado ?? 'pendiente')) {
+			// d170: a finished task whose PR merged must not keep its lock.
+			const p = t.candado && t.estado !== 'cancelada' ? matchPr(t, src.prs) : null;
+			if (p?.state === 'MERGED')
+				cambios.push(mergedRelease(t, p, `${label(t)} → PR #${p.number} unido`));
+			continue;
+		}
 		const p = matchPr(t, src.prs);
 		if (!p) {
 			if (t.pr) avisos.push({ id: t.id, texto: `${label(t)}: ${t.pr} no aparece en GitHub` });
@@ -217,33 +225,58 @@ export function plan(board, src, opts = {}) {
 		}
 		if (!Object.keys(change.set).length) continue;
 		const { texto } = change;
-		if (t.candado)
+		if (t.candado && p.state === 'MERGED') cambios.push(mergedRelease(t, p, texto));
+		else if (t.candado)
 			omitidas.push({
 				...change,
 				texto: `${texto} (tiene candado de ${t.candado.agente}: lo cambia su sesión)`,
 			});
 		else cambios.push(change);
 	}
-	return { cambios, avisos, omitidas, candadosViejos: staleLocks(board, src, opts) };
+	const freed = new Set(cambios.filter((c) => c.cmd === 'merged').map((c) => c.id));
+	const candadosViejos = staleLocks(board, src, opts).filter((c) => !freed.has(c.id));
+	return { cambios, avisos, omitidas, candadosViejos };
 }
 
-/** Each change is one `pnpm board set` pinned to the rev the plan read; a refused write is reported, not retried. */
-export async function apply(cambios, dir) {
+/** A merged PR on a locked task: `pnpm board merged` moves it to unida and drops the lock (d170). */
+function mergedRelease(t, p, texto) {
+	return {
+		id: t.id,
+		rev: t.rev,
+		cmd: 'merged',
+		pr: `#${p.number}`,
+		set: {},
+		texto: `${texto} · suelta el candado de ${t.candado.agente} (d170)`,
+		salio: `PR #${p.number} MERGED`,
+	};
+}
+
+/**
+ * Each change is one `pnpm board set` (or `merged`) pinned to the rev the plan read; a refused write is reported,
+ * not retried. `prState` answers `merged` with the PR state the sync already listed.
+ */
+export async function apply(cambios, dir, { prState } = {}) {
 	const out = [];
 	for (const c of cambios) {
-		const args = [
-			'set',
-			c.id,
+		const common = [
 			`--rev=${c.rev}`,
 			'--coordinador',
 			'--quien=board:sync',
 			'--corrio=pnpm board:sync',
-			`--salio=${c.salio}`,
-			...Object.entries(c.set).map(([k, v]) => `${k}=${v}`),
 		];
+		const args =
+			c.cmd === 'merged'
+				? ['merged', c.id, ...common, `--pr=${c.pr}`]
+				: [
+						'set',
+						c.id,
+						...common,
+						`--salio=${c.salio}`,
+						...Object.entries(c.set).map(([k, v]) => `${k}=${v}`),
+					];
 		try {
 			let said = '';
-			await board(args, { dir, out: (s) => (said = s) });
+			await board(args, { dir, out: (s) => (said = s), prState });
 			out.push({ ...c, ok: true, resultado: said });
 		} catch (e) {
 			out.push({ ...c, ok: false, resultado: e.message });
@@ -259,10 +292,12 @@ export async function run({
 	now = new Date(),
 	hours = lockHours(),
 } = {}) {
-	const p = plan(loadBoard(dir), sources(), { now: now.getTime(), hours });
+	const src = sources();
+	const p = plan(loadBoard(dir), src, { now: now.getTime(), hours });
+	const prState = (pr) => src.prs.find((x) => `#${x.number}` === pr)?.state ?? '';
 	const cambios = dryRun
 		? p.cambios.map((c) => ({ ...c, ok: null }))
-		: await apply(p.cambios, dir);
+		: await apply(p.cambios, dir, { prState });
 	return { prueba: dryRun, en: now.toISOString(), ...p, cambios };
 }
 
