@@ -19,7 +19,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
-import { stage, taskIssues } from './model.mjs';
+import { isReview, stage, taskIssues } from './model.mjs';
 import { boardDir } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -284,6 +284,29 @@ function taskWarnings(t, byId, decIds, now) {
 	return out;
 }
 
+/** Numbers remain mandatory and unique even after a task is closed or archived. */
+function numberIssues(tareas) {
+	const issues = [];
+	const numbers = new Map();
+	for (const t of tareas) {
+		if (!Number.isSafeInteger(t.num) || t.num < 1) {
+			issues.push({
+				id: t.id,
+				msg: 'num debe ser un entero positivo (falta o no es válido)',
+			});
+			continue;
+		}
+		const ids = numbers.get(t.num) ?? [];
+		ids.push(t.id);
+		numbers.set(t.num, ids);
+	}
+	for (const [num, ids] of numbers)
+		if (ids.length > 1)
+			for (const id of ids)
+				issues.push({ id, msg: `num repetido: T${num} (${ids.join(', ')})` });
+	return issues;
+}
+
 /**
  * d177: a ready, unlocked agent task needs a planned canonical lane, and two of them never share one; a review
  * child runs where its reviewer is and needs none.
@@ -300,7 +323,8 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 				msg: `carril planeado no canónico: ${t.carrilPlaneado}`,
 			});
 	const ready = tareas.filter(
-		(t) => t.actor === 'sesion' && !t.origen && !t.candado && stage(t, board, now) === 'lista',
+		(t) =>
+			t.actor === 'sesion' && !isReview(t) && !t.candado && stage(t, board, now) === 'lista',
 	);
 	for (const t of ready) {
 		if (!t.carrilPlaneado)
@@ -324,7 +348,7 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
 	const decIds = new Set(decisiones.map((d) => d.id));
 	const lastLog = lastLogByTask(bitacora);
-	const inconsistencias = [];
+	const inconsistencias = numberIssues(tareas);
 	const avisos = [];
 	const visited = new Set();
 	const cycles = new Set();

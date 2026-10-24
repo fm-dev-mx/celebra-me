@@ -32,8 +32,11 @@ function makeExport(
 	const dir = mkdtempSync(path.join(tmpdir(), 'verify-board-'));
 	dirs.push(dir);
 	mkdirSync(path.join(dir, 'tareas'));
-	for (const t of tareas)
-		writeFileSync(path.join(dir, 'tareas', `${t.id}.json`), JSON.stringify(t));
+	for (const [index, t] of tareas.entries())
+		writeFileSync(
+			path.join(dir, 'tareas', `${t.id}.json`),
+			JSON.stringify({ num: index + 1, ...t }),
+		);
 	if (extra.decisiones) {
 		mkdirSync(path.join(dir, 'decisiones'));
 		for (const d of extra.decisiones)
