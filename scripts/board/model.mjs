@@ -14,6 +14,26 @@ export const AGENT_REGISTRY = {
 	gemini: { nombre: 'Gemini', capacidades: ['codigo', 'git', 'gh', 'imagenes'] },
 };
 export const AGENTES = [...Object.keys(AGENT_REGISTRY), 'cualquiera'];
+/** Claude Desktop's app id (list, archive, rename, #local_ links); CLAUDE_CODE_SESSION_ID is the process id. */
+export const CLAUDE_SESSION_ENV = 'CLAUDE_CODE_HOST_SESSION_ID';
+export const CLAUDE_SESSION_PREFIX = 'local_';
+
+/** The session a lock names: an explicit --sesion, else Claude's app id from `env` (codex/gemini: none yet). */
+export function sessionOf(agente, given, env) {
+	if (typeof given === 'string' && given) return given;
+	return agente === 'claude' ? env?.[CLAUDE_SESSION_ENV] || undefined : undefined;
+}
+
+/** Why a new lock cannot record this session, or null; only Claude ids are checked (T55/T56 define the rest). */
+export function lockSessionIssue(agente, sesion) {
+	if (!sesion)
+		return agente === 'claude'
+			? `falta --sesion: la variable ${CLAUDE_SESSION_ENV} está vacía`
+			: 'falta --sesion=<id>';
+	if (agente === 'claude' && !sesion.startsWith(CLAUDE_SESSION_PREFIX))
+		return `--sesion=${sesion} no es un id de la app de Claude: debe empezar con ${CLAUDE_SESSION_PREFIX} (use ${CLAUDE_SESSION_ENV}, no CLAUDE_CODE_SESSION_ID)`;
+	return null;
+}
 export const TOCA = ['main', 'produccion', 'migracion', 'secretos'];
 export const REQUISITOS = ['tarea', 'decision', 'fecha', 'dueno', 'revision'];
 export const ESTADOS = [
@@ -231,15 +251,14 @@ export function nextFor(agente, board, now = Date.now()) {
 export const laneFolder = (id) =>
 	id === 'integration' ? 'celebra-me' : `celebra-me-worktrees/${id}`;
 
-/** Another task whose lock holds the lane `t` is planned in, or null (d177). */
+/**
+ * Another task whose lock holds the lane `t` is planned in, or null (d177). Same predicate as claim: any lock
+ * counts, also one left on a finished task before its release.
+ */
 export function laneBusy(t, board) {
 	const lane = t.carrilPlaneado;
 	if (!lane) return null;
-	return (
-		(board.tareas ?? []).find(
-			(x) => x.id !== t.id && !isFinished(x) && x.candado?.carril === lane,
-		) ?? null
-	);
+	return (board.tareas ?? []).find((x) => x.id !== t.id && x.candado?.carril === lane) ?? null;
 }
 
 /** The «Corre en» lines of a task planned in a lane, for the card, `show`, `next` and a pasted prompt. */

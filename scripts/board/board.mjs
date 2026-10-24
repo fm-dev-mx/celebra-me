@@ -8,10 +8,12 @@
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
- *                                               (rama defaults to the task's declared branch; carril to the
- *                                               planned lane, and another lane needs --coordinador)
- *   plan <id> --carril=<id> --coordinador [--rev=<n>]   d177: the lane a ready task runs in; --carril= clears it
- *   release <id> --agente=<a> [--coordinador]   --coordinador frees only a legacy lock without sesion
+ *                                               (rama defaults to the task's declared branch; Claude's sesion
+ *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
+ *                                               carril defaults to the planned lane, another needs --coordinador)
+ *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
+ *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
+ *                                               --coordinador frees only a legacy lock without sesion
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
@@ -50,6 +52,8 @@ import {
 	isFinished,
 	laneLines,
 	promptWithLane,
+	lockSessionIssue,
+	sessionOf,
 } from './model.mjs';
 import {
 	assertId,
@@ -156,6 +160,21 @@ function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	return t;
 }
 
+/** The task without its lock; the lock's session stays in `sesion` so it can still be found, renamed or archived. */
+function unlocked(task, flags) {
+	const rest = { ...task };
+	delete rest.candado;
+	const { sesion: id, agente } = task.candado ?? {};
+	if (!id) return rest;
+	const nombre =
+		typeof flags.nombre === 'string'
+			? flags.nombre
+			: task.sesion?.id === id
+				? task.sesion.nombre
+				: undefined;
+	return { ...rest, sesion: { id, agente, ...(nombre ? { nombre } : {}) } };
+}
+
 function getTask(dir, id) {
 	const t = readDoc(dir, 'tareas', assertId(id));
 	if (!t) throw new UsageError(`no existe la tarea ${id}`);
@@ -179,11 +198,8 @@ function assertOwner(task, flags) {
 			);
 		return;
 	}
-	if (
-		task.candado.agente !== flags.agente ||
-		!flags.sesion ||
-		task.candado.sesion !== flags.sesion
-	)
+	const sesion = sessionOf(flags.agente, flags.sesion, process.env);
+	if (task.candado.agente !== flags.agente || !sesion || task.candado.sesion !== sesion)
 		throw new UsageError(
 			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
 		);
@@ -431,7 +447,9 @@ const commands = {
 	},
 	claim({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente');
-		const sesion = need(flags.sesion, 'falta --sesion=<id>');
+		const sesion = sessionOf(agente, flags.sesion, process.env);
+		const issue = lockSessionIssue(agente, sesion);
+		if (issue) throw new UsageError(issue);
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			if (
@@ -458,7 +476,7 @@ const commands = {
 			const { rama, carril } = claimLocation(before, flags, board);
 			const candado = { agente, desde: nowIso() };
 			for (const [k, v] of Object.entries({
-				sesion: flags.sesion,
+				sesion,
 				carril,
 				rama,
 			}))
@@ -477,7 +495,7 @@ const commands = {
 		if (typeof flags.carril !== 'string') throw new UsageError('falta --carril=<carril>');
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (flags.rev !== undefined) checkRev(before, flags);
+			checkRev(before, flags);
 			const carril = flags.carril || undefined;
 			if (carril) assertPlan(before, carril, flags);
 			else if (!flags.coordinador)
@@ -533,8 +551,7 @@ const commands = {
 			const state = prState(pr);
 			if (state !== 'MERGED')
 				throw new UsageError(`${pr} no está unido en GitHub (${state || 'sin respuesta'})`);
-			const after = { ...before, pr };
-			delete after.candado;
+			const after = { ...unlocked(before, flags), pr };
 			if (!['unida', 'comprobada'].includes(after.estado)) after.estado = 'unida';
 			if (!before.candado && after.estado === before.estado)
 				return say(flags, out, before, `${before.id} ya está ${before.estado}`);
@@ -556,9 +573,7 @@ const commands = {
 			if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
-			const rest = { ...before };
-			delete rest.candado;
-			const t = saveTask(dir, before, rest);
+			const t = saveTask(dir, before, unlocked(before, flags));
 			say(flags, out, t, `${t.id} libre (rev ${t.rev})`);
 		});
 	},

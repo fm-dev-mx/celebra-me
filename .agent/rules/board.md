@@ -18,10 +18,10 @@ authorization.
 - **Fields**: `titulo`, `estado`, `urgencia` (`urgente|alta|normal|baja`), `actor`
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
-  (the only status line), `pr`, `rama`, `sesion {id, nombre}`, `hasta`, `orden`, `origen`, `plan`,
-  `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are
-  set by the command, `archivada` (date) only by `archive`/`unarchive`. `espera`, `usted` and `deps`
-  no longer exist.
+  (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`,
+  `plan`, `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and
+  `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`. `espera`,
+  `usted` and `deps` no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -43,13 +43,13 @@ authorization.
   with `origen`. Never duplicate a task. Rules are the same for every agent.
 - **Planned lane (d177)**: the coordinator gives every ready `actor: sesion` task a canonical lane
   (`WORKTREE_LANES`, f05–f12) when it creates or prepares it:
-  `pnpm board plan <id> --carril=<lane> --coordinador` (`--carril=` clears it, only without a lock;
-  `add … carrilPlaneado=<lane> --coordinador` works too). Only `plan`/`add --coordinador` write
-  `carrilPlaneado`; `set` refuses it. The card, `show` and `next` show «Corre en: <lane> · carpeta
-  celebra-me-worktrees/<lane>», «Codex/Gemini: abra el proyecto <lane>» and, when another task's
-  lock holds that lane, «f10 ocupado por T55; espere o pida otro carril». «Copiar prompt» and `next`
-  put these lines first under `CARRIL`, so the prompt's «DÓNDE CORRE» no longer repeats the lane by
-  hand. Review children have no planned lane.
+  `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador` (`--carril=` clears it, only
+  without a lock; `add … carrilPlaneado=<lane> --coordinador` works too). Only
+  `plan`/`add --coordinador` write `carrilPlaneado`; `set` refuses it. The card, `show` and `next`
+  show «Corre en: <lane> · carpeta celebra-me-worktrees/<lane>», «Codex/Gemini: abra el proyecto
+  <lane>» and, when another task's lock holds that lane, «f10 ocupado por T55; espere o pida otro
+  carril». «Copiar prompt» and `next` put these lines first under `CARRIL`, so the prompt's «DÓNDE
+  CORRE» no longer repeats the lane by hand. Review children have no planned lane.
 - **Writes**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
@@ -103,9 +103,18 @@ authorization.
 
 ## Session ownership and review
 
-- `claim` requires `--sesion`, readiness, no owner gate, and an exclusive `--carril` for
+- `claim` requires a session, readiness, no owner gate, and an exclusive `--carril` for
   implementation. Another session of the same agent cannot replace it. An identical claim is
   idempotent.
+- **Session id**: the lock records the id the agent's app knows, so the session can later be found,
+  renamed and archived. Claude omits `--sesion`: `claim`, `set` and `release` read the Claude
+  Desktop id from `CLAUDE_CODE_HOST_SESSION_ID` (`local_…`, the same id as a `#local_…` link). A
+  Claude `claim` with an id that does not start with `local_` is refused; `CLAUDE_CODE_SESSION_ID`
+  is the process id and the app does not know it. Codex and Gemini still pass `--sesion=<id>` until
+  their own id is defined.
+- `release` and `merged` copy the lock's session into the task's `sesion {id, agente, nombre}` as
+  history; `--nombre=<session title>` sets the name, otherwise the name already recorded for that id
+  stays. Nobody writes `sesion` by hand.
 - A planned task's `claim` takes `carrilPlaneado` without `--carril`; a different `--carril` is
   refused unless `--coordinador`. `pnpm board verify` warns about a ready, unlocked session task
   without a planned lane and about two ready tasks planned in the same lane.
@@ -113,10 +122,10 @@ authorization.
   branch. Read-only work may remain without a branch. A different branch name is a verifier warning,
   not a claim failure. Only `actor: coordinador` with `--coordinador` may claim the canonical
   `integration` lane; `f04-integracion` is not a canonical id. Claims grant no editing authority.
-- `set` and `release` require matching `--agente` and `--sesion`. Unlocked coordination edits
-  require `--coordinador`; the flag declares a role, never grants authority or overrides a lock.
-  `set` cannot replace ownership, lane, origin or review SHA. One exception: a legacy lock without
-  `sesion` (taken before sessions were recorded) is freed by
+- `set` and `release` require matching `--agente` and session (`--sesion`, or Claude's variable).
+  Unlocked coordination edits require `--coordinador`; the flag declares a role, never grants
+  authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
+  exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
   `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
 - `review` requires the origin PR in `en revision`, generates an English prompt and records
   `revisionSha` (from GitHub, or explicit `--sha`). It can refresh an unlocked child at a new SHA.

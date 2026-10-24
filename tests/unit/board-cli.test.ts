@@ -48,20 +48,33 @@ function makeBoard(collections: Record<string, Json[]>) {
 }
 
 function board(dir: string, ...args: string[]) {
+	return boardEnv(dir, {}, ...args);
+}
+
+function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	const agent = args.find((a) => a.startsWith('--agente='))?.slice(9) ?? 'codex';
-	if (['claim', 'release'].includes(args[0]) && !args.some((a) => a.startsWith('--sesion=')))
-		args.push(`--sesion=${agent}-test`);
+	const auto = !('CLAUDE_CODE_HOST_SESSION_ID' in env);
+	if (
+		auto &&
+		['claim', 'release'].includes(args[0]) &&
+		!args.some((a) => a.startsWith('--sesion='))
+	)
+		args.push(`--sesion=${agent === 'claude' ? 'local_' : ''}${agent}-test`);
 	if (args[0] === 'claim') {
 		if (!args[1].endsWith('-revision') && !args.some((a) => a.startsWith('--carril=')))
 			args.push('--carril=f10-libre');
 	}
 	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
 		args.push('--coordinador');
-	return raw(dir, ...args);
+	return exec(dir, env, args);
 }
 
 /** Runs the CLI exactly as given, without the test defaults of `board`. */
 function raw(dir: string, ...args: string[]) {
+	return exec(dir, {}, args);
+}
+
+function exec(dir: string, env: NodeJS.ProcessEnv, args: string[]) {
 	const result = runCommand(process.execPath, [SCRIPT_PATH, ...args], {
 		cwd: ROOT,
 		allowFailure: true,
@@ -69,6 +82,8 @@ function raw(dir: string, ...args: string[]) {
 			CELEBRA_BOARD_DIR: dir,
 			INIT_CWD: ROOT,
 			CELEBRA_BOARD_COMMAND_FIXTURE: path.join(dir, 'answers.json'),
+			CLAUDE_CODE_HOST_SESSION_ID: '',
+			...env,
 		}),
 	});
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
@@ -533,15 +548,30 @@ describe('pnpm board', () => {
 	});
 
 	it('lets only the coordinator plan a canonical lane and claims it without --carril (d177)', () => {
-		const dir = makeBoard({ tareas: [task('planeada', { agente: 'codex' }), task('otra')] });
-		expect(raw(dir, 'plan', 'planeada', '--carril=f10-libre').status).toBe(2);
-		expect(
-			raw(dir, 'plan', 'planeada', '--carril=f04-integracion', '--coordinador').status,
-		).toBe(2);
-		expect(raw(dir, 'plan', 'planeada', '--carril=integration', '--coordinador').status).toBe(
-			2,
-		);
+		const dir = makeBoard({
+			tareas: [
+				task('planeada', { agente: 'codex' }),
+				task('otra'),
+				task('tercera'),
+				// Finished before its release: the lock still holds the lane, for claim and for the card.
+				task('vieja', {
+					estado: 'hecha',
+					candado: { agente: 'codex', desde: NOW, sesion: 's0', carril: 'f11-preview' },
+				}),
+			],
+		});
+		expect(raw(dir, 'plan', 'planeada', '--rev=1', '--carril=f10-libre').status).toBe(2);
+		for (const lane of ['f04-integracion', 'integration'])
+			expect(
+				raw(dir, 'plan', 'planeada', '--rev=1', `--carril=${lane}`, '--coordinador').status,
+			).toBe(2);
+		// Every plan names the revision it read: a missing or stale one writes nothing.
+		for (const rev of [[], ['--rev=5']])
+			expect(
+				raw(dir, 'plan', 'planeada', ...rev, '--carril=f10-libre', '--coordinador').status,
+			).toBe(2);
 		expect(readTask(dir, 'planeada')).toMatchObject({ rev: 1 });
+		expect(readTask(dir, 'planeada').carrilPlaneado).toBeUndefined();
 		const plan = raw(dir, 'plan', 'planeada', '--carril=f10-libre', '--coordinador', '--rev=1');
 		expect(plan.status).toBe(0);
 		expect(plan.out).toContain('Corre en: f10-libre · carpeta celebra-me-worktrees/f10-libre');
@@ -563,6 +593,10 @@ describe('pnpm board', () => {
 		expect(raw(dir, ...add).status).toBe(2);
 		expect(raw(dir, ...add, '--coordinador').status).toBe(0);
 		expect(readTask(dir, 'nueva').carrilPlaneado).toBe('f09-docs');
+		// Clearing a plan also needs the revision read.
+		expect(raw(dir, 'plan', 'nueva', '--carril=', '--coordinador').status).toBe(2);
+		expect(raw(dir, 'plan', 'nueva', '--rev=1', '--carril=', '--coordinador').status).toBe(0);
+		expect(readTask(dir, 'nueva').carrilPlaneado).toBeUndefined();
 		// The prompt an agent receives starts with the lane.
 		const next = raw(dir, 'next', '--agente=codex');
 		expect(next.out).toContain('CARRIL\nCorre en: f10-libre');
@@ -583,17 +617,21 @@ describe('pnpm board', () => {
 			candado: { carril: 'f10-libre', sesion: 's1' },
 		});
 		// Locked: the plan cannot move, and a task planned in the same lane says it is busy.
-		expect(raw(dir, 'plan', 'planeada', '--carril=f09-docs', '--coordinador').status).toBe(2);
-		expect(raw(dir, 'plan', 'otra', '--carril=f10-libre', '--coordinador').status).toBe(0);
+		expect(
+			raw(dir, 'plan', 'planeada', '--rev=3', '--carril=f09-docs', '--coordinador').status,
+		).toBe(2);
+		expect(
+			raw(dir, 'plan', 'otra', '--rev=1', '--carril=f10-libre', '--coordinador').status,
+		).toBe(0);
 		const show = raw(dir, 'show', 'otra');
 		expect(show.out).toContain('f10 ocupado por planeada; espere o pida otro carril');
-		expect(raw(dir, 'claim', 'otra', '--agente=claude', '--sesion=s2').status).toBe(2);
+		expect(raw(dir, 'claim', 'otra', '--agente=claude', '--sesion=local_s2').status).toBe(2);
 		const moved = raw(
 			dir,
 			'claim',
 			'otra',
 			'--agente=claude',
-			'--sesion=s2',
+			'--sesion=local_s2',
 			'--carril=f12-release',
 			'--coordinador',
 		);
@@ -602,6 +640,10 @@ describe('pnpm board', () => {
 			carril: 'f12-release',
 			carrilPlaneado: 'f10-libre',
 		});
+		expect(
+			raw(dir, 'plan', 'tercera', '--rev=1', '--carril=f11-preview', '--coordinador').out,
+		).toContain('f11 ocupado por vieja; espere o pida otro carril');
+		expect(raw(dir, 'claim', 'tercera', '--agente=codex', '--sesion=s3').status).toBe(2);
 	});
 
 	it('shows «Corre en» on the card and the sheet and copies the prompt with its lane', () => {
@@ -715,6 +757,67 @@ describe('pnpm board', () => {
 		);
 		expect(readTask(dir, 'owned').candado.sesion).toBe('s1');
 		expect(board(dir, 'release', 'owned', '--agente=claude', '--sesion=s1').status).toBe(0);
+	});
+
+	it('takes the Claude app session id from the environment and refuses other ids', () => {
+		const dir = makeBoard({ tareas: [task('propia'), task('mano')] });
+		const app = { CLAUDE_CODE_HOST_SESSION_ID: 'local_abc' };
+		const claim = boardEnv(dir, app, 'claim', 'propia', '--agente=claude', '--json');
+		expect(claim.status).toBe(0);
+		expect(JSON.parse(claim.out).candado.sesion).toBe('local_abc');
+		const internal = board(dir, 'claim', 'mano', '--agente=claude', '--sesion=5424a3c1');
+		expect(internal.status).toBe(2);
+		expect(internal.err).toMatch(/local_.*CLAUDE_CODE_HOST_SESSION_ID/);
+		const empty = boardEnv(
+			dir,
+			{ CLAUDE_CODE_HOST_SESSION_ID: '' },
+			'claim',
+			'mano',
+			'--agente=claude',
+		);
+		expect(empty.err).toMatch(/variable CLAUDE_CODE_HOST_SESSION_ID está vacía/);
+		expect(readTask(dir, 'mano').candado).toBeUndefined();
+		expect(
+			board(dir, 'claim', 'mano', '--agente=codex', '--sesion=chat-1', '--carril=f09-docs')
+				.status,
+		).toBe(0);
+		expect(readTask(dir, 'mano').candado.sesion).toBe('chat-1');
+	});
+
+	it('keeps the released session in sesion as history', () => {
+		const lock = { agente: 'claude', desde: NOW, carril: 'f12-release' };
+		const dir = makeBoard({
+			tareas: [
+				task('nombrada', { candado: { ...lock, sesion: 'local_a' } }),
+				task('heredada', {
+					candado: { ...lock, sesion: 'local_b' },
+					sesion: { id: 'local_b', nombre: 'f12 · T9 · Vieja' },
+				}),
+			],
+		});
+		const app = { CLAUDE_CODE_HOST_SESSION_ID: 'local_a' };
+		expect(
+			boardEnv(
+				dir,
+				app,
+				'release',
+				'nombrada',
+				'--agente=claude',
+				'--nombre=f12 · T8 · Nueva',
+			).status,
+		).toBe(0);
+		expect(readTask(dir, 'nombrada')).toMatchObject({
+			sesion: { id: 'local_a', agente: 'claude', nombre: 'f12 · T8 · Nueva' },
+		});
+		expect(readTask(dir, 'nombrada').candado).toBeUndefined();
+		expect(
+			board(dir, 'release', 'heredada', '--agente=claude', '--sesion=local_b').status,
+		).toBe(0);
+		expect(readTask(dir, 'heredada').sesion).toEqual({
+			id: 'local_b',
+			agente: 'claude',
+			nombre: 'f12 · T9 · Vieja',
+		});
 	});
 
 	it('searches by T number, id, title and «ahora» without case or accents', () => {

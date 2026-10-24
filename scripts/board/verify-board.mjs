@@ -128,6 +128,7 @@ export function loadExport(dir, sesionesFile) {
 		tareas: readJsonDir(base),
 		bitacora: readJsonDir(join(root, 'bitacora')),
 		decisiones: readJsonDir(join(root, 'decisiones')),
+		archivo: readJsonDir(join(root, 'archivo')),
 		sesiones: existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null,
 	};
 }
@@ -287,8 +288,8 @@ function taskWarnings(t, byId, decIds, now) {
  * d177: a ready, unlocked agent task needs a planned canonical lane, and two of them never share one; a review
  * child runs where its reviewer is and needs none.
  */
-function laneWarnings(tareas, decisiones, now) {
-	const board = { tareas, decisiones };
+function laneWarnings(tareas, decisiones, archivo, now) {
+	const board = { tareas, decisiones, archivo };
 	const avisos = [];
 	const inconsistencias = [];
 	const byLane = {};
@@ -305,7 +306,7 @@ function laneWarnings(tareas, decisiones, now) {
 		if (!t.carrilPlaneado)
 			avisos.push({
 				id: t.id,
-				msg: `lista sin carril planeado: pnpm board plan ${t.id} --carril=<carril> --coordinador`,
+				msg: `lista sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
 			});
 		else (byLane[t.carrilPlaneado] ??= []).push(t.id);
 	}
@@ -319,7 +320,7 @@ function laneWarnings(tareas, decisiones, now) {
 	return { avisos, inconsistencias };
 }
 
-function boardIssues(tareas, bitacora, decisiones, now) {
+function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
 	const decIds = new Set(decisiones.map((d) => d.id));
 	const lastLog = lastLogByTask(bitacora);
@@ -360,14 +361,14 @@ function boardIssues(tareas, bitacora, decisiones, now) {
 				msg: `reemplaza a una decisión inexistente: ${d.reemplaza}`,
 			});
 	}
-	const lanes = laneWarnings(tareas, decisiones, now);
+	const lanes = laneWarnings(tareas, decisiones, archivo, now);
 	avisos.push(...lanes.avisos);
 	inconsistencias.push(...lanes.inconsistencias);
 	return { inconsistencias, avisos };
 }
 
 export function verifyBoard(
-	{ tareas, bitacora = [], decisiones = [], sesiones = null },
+	{ tareas, bitacora = [], decisiones = [], archivo = [], sesiones = null },
 	run = defaultRunner(),
 	now = Date.now(),
 ) {
@@ -388,7 +389,7 @@ export function verifyBoard(
 		comprobar,
 		...unclaimedWork(tareas, run),
 		sesionArchivada: archivedSessions(tareas, sesiones),
-		...boardIssues(tareas, bitacora, decisiones, now),
+		...boardIssues(tareas, bitacora, decisiones, archivo, now),
 	};
 }
 
