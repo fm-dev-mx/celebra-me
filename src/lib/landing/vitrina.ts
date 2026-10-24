@@ -6,14 +6,6 @@ export function eventFromHash(hash: string, eventSlugs: readonly string[]): stri
 	return eventSlugs.includes(slug) ? slug : undefined;
 }
 
-/** Whole days from `now` to a `YYYY-MM-DD` local date; never negative. */
-export function daysUntil(isoDate: string, now: Date): number {
-	const [year, month, day] = isoDate.split('-').map(Number);
-	const target = new Date(year, month - 1, day);
-	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-	return Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
-}
-
 /**
  * Replaces the `text` parameter of a WhatsApp link, keeping its host: wa.me on server-rendered
  * pages, the `/api/whatsapp` redirect on prerendered ones.

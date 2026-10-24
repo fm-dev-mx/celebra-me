@@ -10,7 +10,7 @@ import {
 	getVitrinaLeadDemo,
 } from '@/data/landing-vitrina.data';
 import { DEMO_INVITATIONS } from '@/invitations/demos';
-import { daysUntil, eventFromHash, withWhatsAppText } from '@/lib/landing/vitrina';
+import { eventFromHash, withWhatsAppText } from '@/lib/landing/vitrina';
 import { listFeaturedDemoRouteSlugs } from '@/lib/seo/demo-sitemap-pages';
 
 describe('landing showroom data', () => {
@@ -63,13 +63,6 @@ describe('landing showroom helpers', () => {
 		expect(eventFromHash('#boda', ['xv', 'boda'])).toBe('boda');
 		expect(eventFromHash('#tipo-evento', ['xv', 'boda'])).toBeUndefined();
 		expect(eventFromHash('', ['xv'])).toBeUndefined();
-	});
-
-	it('counts whole days to the event and never goes negative', () => {
-		const now = new Date(2026, 9, 23, 18, 30);
-		expect(daysUntil('2026-10-24', now)).toBe(1);
-		expect(daysUntil('2026-10-23', now)).toBe(0);
-		expect(daysUntil('2026-01-01', now)).toBe(0);
 	});
 
 	it('swaps the WhatsApp text and keeps the link host', () => {
