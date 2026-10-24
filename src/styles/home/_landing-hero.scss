@@ -8,6 +8,10 @@
 	--hero-fs-lede: 1rem;
 	--hero-fs-small: 0.84rem;
 	--hero-fs-tiny: 0.72rem;
+
+	// Miniature steps for the text drawn on the phone screens: they scale with the phone (container
+	// units), with a floor that keeps the label from vanishing on the smallest fan.
+	--hero-fs-phone-label: max(6px, 4.6cqi);
 	--hero-phone-width: 118px;
 	--hero-phone-radius: 20px;
 	--hero-screen-radius: 16px;
@@ -221,10 +225,8 @@
 	}
 
 	&__phone-kicker {
-		--phone-kicker-size: max(6px, 4.6cqi);
-
 		font-family: var(--font-ui);
-		font-size: var(--phone-kicker-size);
+		font-size: var(--hero-fs-phone-label);
 		font-weight: 600;
 		letter-spacing: 0.24em;
 		text-transform: uppercase;
