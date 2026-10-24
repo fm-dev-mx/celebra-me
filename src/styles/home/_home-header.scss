@@ -1,4 +1,3 @@
-@use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
 
 /*
@@ -265,11 +264,6 @@
 	border-radius: 9999px;
 	background: rgb(var(--color-ink-rgb) / 18%);
 	backdrop-filter: blur(10px);
-
-	// The id selector above outranks HeaderBase's own desktop rule; keep the toggle phone-only.
-	@include mixins.respond-to(lg) {
-		display: none;
-	}
 }
 
 // Hidden off-screen, the header must not leave its drop shadow hanging over the page.
