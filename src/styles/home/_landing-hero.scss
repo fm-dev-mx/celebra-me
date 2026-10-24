@@ -14,9 +14,9 @@
 	// its own step: a large garden script, a small engraved crest, a two-line coastal pair.
 	--hero-fs-phone-label: max(8px, 4.6cqi);
 	--hero-fs-phone-label-script: max(10px, 6cqi);
-	--hero-fs-phone-name-garden: 25cqi;
-	--hero-fs-phone-name-crest: 12cqi;
-	--hero-fs-phone-name-coast: 15cqi;
+	--hero-fs-phone-name-garden: 22cqi;
+	--hero-fs-phone-name-crest: 11cqi;
+	--hero-fs-phone-name-coast: 13.5cqi;
 	--hero-phone-width: 118px;
 	--hero-phone-radius: 20px;
 	--hero-screen-radius: 16px;
@@ -250,7 +250,7 @@
 			text-align: left;
 			background: radial-gradient(
 				120% 100% at 0% 0%,
-				rgb(248 246 238 / 82%) 35%,
+				rgb(248 246 238 / 62%) 30%,
 				rgb(248 246 238 / 0%) 75%
 			);
 		}
@@ -261,7 +261,7 @@
 			font-style: italic;
 			font-weight: 600;
 			letter-spacing: 0.04em;
-			color: hsl(36deg 46% 34%);
+			color: hsl(36deg 36% 36%);
 		}
 
 		.hero-prime__phone-name {
@@ -270,7 +270,7 @@
 			font-style: italic;
 			font-weight: 600;
 			letter-spacing: -0.01em;
-			color: hsl(150deg 30% 20%);
+			color: hsl(150deg 22% 26%);
 
 			&::after {
 				content: '';
@@ -278,7 +278,7 @@
 				width: 2.6em;
 				height: 0.32em;
 				margin-top: 0.06em;
-				background: hsl(140deg 22% 38%);
+				background: hsl(140deg 18% 42% / 75%);
 				mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 20'%3E%3Cpath d='M2 14 C30 4 58 20 118 6' fill='none' stroke='black' stroke-width='2'/%3E%3Cellipse cx='34' cy='7' rx='6' ry='2.6' transform='rotate(-28 34 7)'/%3E%3Cellipse cx='62' cy='16' rx='6' ry='2.6' transform='rotate(24 62 16)'/%3E%3Cellipse cx='90' cy='6' rx='6' ry='2.6' transform='rotate(-22 90 6)'/%3E%3C/svg%3E")
 					left center / contain no-repeat;
 			}
@@ -293,7 +293,7 @@
 			gap: 2cqi;
 			padding: 7cqi 6cqi 12cqi;
 			text-align: center;
-			background: linear-gradient(to bottom, rgb(10 12 24 / 72%), rgb(10 12 24 / 0%));
+			background: linear-gradient(to bottom, rgb(10 12 24 / 52%), rgb(10 12 24 / 0%));
 		}
 
 		.hero-prime__phone-name {
@@ -302,10 +302,8 @@
 			font-size: var(--hero-fs-phone-name-crest);
 			font-weight: 600;
 			letter-spacing: 0.16em;
-			color: transparent;
-			background: linear-gradient(180deg, hsl(44deg 86% 84%), hsl(38deg 60% 56%));
-			background-clip: text;
-			filter: drop-shadow(0 1px 4px rgb(10 12 24 / 80%));
+			color: hsl(40deg 46% 70%);
+			text-shadow: 0 1px 6px rgb(10 12 24 / 70%);
 		}
 
 		.hero-prime__phone-kicker {
@@ -316,7 +314,7 @@
 			font-weight: 500;
 			letter-spacing: 0.16em;
 			text-transform: uppercase;
-			color: hsl(40deg 54% 74%);
+			color: hsl(40deg 36% 70% / 85%);
 
 			&::before,
 			&::after {
@@ -338,7 +336,7 @@
 			text-align: right;
 			background: radial-gradient(
 				120% 100% at 100% 0%,
-				rgb(242 245 248 / 70%) 30%,
+				rgb(242 245 248 / 52%) 28%,
 				rgb(242 245 248 / 0%) 72%
 			);
 		}
@@ -348,7 +346,7 @@
 			font-size: var(--hero-fs-phone-name-coast);
 			font-style: italic;
 			font-weight: 500;
-			color: hsl(212deg 42% 20%);
+			color: hsl(212deg 30% 26%);
 		}
 
 		.hero-prime__phone-line + .hero-prime__phone-line {
@@ -358,7 +356,7 @@
 		.hero-prime__phone-amp {
 			font-size: 1.3em;
 			font-weight: 400;
-			color: hsl(14deg 64% 52%);
+			color: hsl(14deg 48% 52%);
 		}
 
 		.hero-prime__phone-kicker {
@@ -370,7 +368,7 @@
 			font-weight: 600;
 			letter-spacing: 0.14em;
 			text-transform: uppercase;
-			color: hsl(24deg 40% 36%);
+			color: hsl(24deg 30% 38%);
 
 			&::before {
 				content: '';
