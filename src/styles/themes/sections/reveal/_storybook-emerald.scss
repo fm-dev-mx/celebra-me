@@ -1,0 +1,56 @@
+// Storybook emerald envelope: an ivory envelope on an emerald night lit low by pale gold, closed
+// with a gold wax monogram. Tokens only; geometry and motion stay with the envelope base.
+.envelope-wrapper[data-variant='storybook-emerald'] {
+	--env-bg-fallback:
+		radial-gradient(
+			ellipse 78% 52% at 50% 38%,
+			rgb(var(--color-emerald-dusk-rgb) / 70%) 0%,
+			transparent 72%
+		),
+		radial-gradient(
+			ellipse 80% 55% at 50% 100%,
+			rgb(var(--color-pale-gold-rgb) / 12%) 0%,
+			transparent 70%
+		),
+		var(--color-emerald-night);
+	--env-paper-bg:
+		var(--storybook-paper-grain),
+		linear-gradient(
+			160deg,
+			var(--color-story-cream) 0%,
+			var(--color-ivory-paper) 58%,
+			var(--color-sage-mist) 100%
+		);
+	--env-paper-border: rgb(var(--color-leaf-gold-rgb) / 55%);
+	--env-text-primary: var(--color-forest-ink);
+	--env-text-secondary: var(--color-gold-ink);
+	--env-instruction-color: var(--color-night-sage);
+	--env-accent-fallback: var(--color-leaf-gold);
+	--env-seal-accent: var(--color-leaf-gold);
+	--env-seal-bg: radial-gradient(
+		circle at 36% 30%,
+		var(--storybook-wax-light) 0%,
+		var(--storybook-wax) 52%,
+		var(--storybook-wax-deep) 100%
+	);
+	--env-seal-icon: var(--storybook-wax-press);
+
+	// The embossed wax SVG reads its own tokens: the same pale gold, pressed darker for the letter.
+	--wax-seal-highlight-fallback: var(--storybook-wax-light);
+	--wax-seal-mid-fallback: var(--storybook-wax);
+	--wax-seal-deep-fallback: var(--storybook-wax-deep);
+	--wax-seal-letter-fallback: var(--storybook-wax-press);
+	--wax-seal-shadow-fallback: var(--color-emerald-midnight);
+	--wax-seal-emboss-shadow-fallback: rgb(var(--color-forest-ink-rgb) / 35%);
+	--env-shadow-seal:
+		0 1px 0 rgb(var(--color-forest-ink-rgb) / 26%),
+		0 4px 8px rgb(var(--color-forest-ink-rgb) / 18%), inset 1px 1px 0 rgb(255 255 255 / 55%),
+		inset -1px -2px 3px rgb(0 0 0 / 22%);
+	--env-shadow-container-fallback: 0 1px 2px rgb(0 0 0 / 18%), 0 30px 60px -30px rgb(0 0 0 / 55%);
+	--env-container-radius-fallback: 2px;
+	--reveal-card-bg: var(--color-story-cream);
+	--reveal-card-text-primary: var(--color-forest-ink);
+	--reveal-card-text-secondary: var(--color-gold-ink);
+	--reveal-card-border: rgb(var(--color-leaf-gold-rgb) / 40%);
+	--reveal-card-accent: rgb(var(--color-leaf-gold-rgb) / 60%);
+}

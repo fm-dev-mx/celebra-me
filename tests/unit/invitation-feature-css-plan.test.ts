@@ -26,6 +26,9 @@ const featureUrlMap = buildInvitationFeatureUrlMap({
 	'/src/styles/invitation-features/ornaments-storybook-lanterns.scss': {
 		default: '/_astro/ornaments-storybook-lanterns.css',
 	},
+	'/src/styles/invitation-features/ornaments-fine-butterflies.scss': {
+		default: '/_astro/ornaments-fine-butterflies.css',
+	},
 });
 const bundleUrlMap = { 'storybook-lilac': '/_astro/storybook-lilac-bundle.css' };
 const profileUrlMap = { america: '/_astro/america-profile.css' };

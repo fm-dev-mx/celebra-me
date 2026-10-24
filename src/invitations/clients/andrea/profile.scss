@@ -1,0 +1,45 @@
+// Andrea: the storybook-emerald preset as an ivory album. Tokens only; layout stays with the
+// variants. The cover follows the accepted first screen: her portrait in an arch ringed by a gold
+// hairline, the name in emerald script under it, and everything centered on the phone.
+.event--andrea.theme-preset--storybook-emerald {
+	.invitation-hero[data-variant='framed-portrait'] {
+		--color-text-primary: var(--color-emerald-deep);
+		--color-action-accent: var(--color-gold-ink);
+		--hero-arc-opacity: 0;
+		--hero-letter-align: center;
+		--hero-scroll-align: center;
+		--hero-portrait-margin: 0 auto;
+		--hero-portrait-max-width: 100%;
+		--hero-portrait-width-mobile: min(78vw, 19rem);
+		--hero-portrait-height-mobile: auto;
+
+		// On desktop the arch and its hairline clear the fixed menu bar.
+		--hero-section-padding-desktop: 6.5rem 4rem 2rem;
+		--hero-portrait-height-desktop: min(68svh, 38rem);
+		--hero-portrait-radius: 50% 50% 0.375rem 0.375rem / 36% 36% 0.375rem 0.375rem;
+		--hero-portrait-outline: 1px solid rgb(var(--color-leaf-gold-rgb) / 70%);
+		--hero-portrait-outline-offset: 0.4rem;
+		--hero-title-max-width: none;
+		--hero-title-size: clamp(5.5rem, 26vw, 8.5rem);
+		--hero-name-margin: 0.1rem 0 0;
+		--hero-occasion-text-transform: uppercase;
+		--hero-occasion-letter-spacing: 0.22em;
+		--hero-occasion-color: var(--color-gold-ink);
+		--hero-details-font: italic 400 clamp(1.2rem, 4.8vw, 1.4rem) / 1.45 var(--font-display);
+	}
+
+	// The cover is ivory, so while the menu floats over it, it reads in ink with no photo scrim;
+	// once scrolled, the solid emerald bar keeps the preset's light text.
+	#event-header {
+		--nav-transparent-scrim: none;
+		--header-nav-color-transparent: var(--color-emerald-deep);
+		--header-nav-shadow-transparent: none;
+	}
+
+	#event-header.header-base--transparent {
+		--hamburger-color: var(--color-emerald-deep);
+		--header-nav-title-color: var(--color-emerald-deep);
+		--header-nav-cta-color: var(--color-emerald-deep);
+		--header-nav-cta-border: var(--color-leaf-gold);
+	}
+}
