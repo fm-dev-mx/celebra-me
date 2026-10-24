@@ -104,6 +104,15 @@ html {
 	color: var(--color-text-primary);
 }
 
+// Demo navigation honors motion preferences without changing published invitation styles.
+html:has(body.is-demo) {
+	scroll-behavior: auto;
+
+	@media (prefers-reduced-motion: no-preference) {
+		scroll-behavior: smooth;
+	}
+}
+
 h1,
 h2,
 h3,

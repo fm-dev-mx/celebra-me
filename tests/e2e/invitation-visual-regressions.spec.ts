@@ -311,3 +311,65 @@ for (const viewport of [
 		},
 	);
 }
+
+for (const route of ['/brisa', '/jardin-de-luz']) {
+	for (const width of [375, 1280]) {
+		for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+			test(`demo footer keeps keyboard focus in view: ${route}, ${width}, ${reducedMotion}`, async ({
+				page,
+			}) => {
+				await page.setViewportSize({ width, height: 800 });
+				await page.emulateMedia({ reducedMotion });
+				await page.goto(`${route}?skipEnvelope=true`);
+				await expect(page.locator('[data-reveal-state]')).toHaveAttribute(
+					'data-reveal-state',
+					'revealed',
+				);
+				const footer = page.locator('.invitation-footer');
+				await expect(footer).toHaveAttribute('data-footer-reveal', 'held');
+				const confirm = footer.locator('[data-footer-reply-confirm]');
+				await expect(footer.locator('[data-footer-reply]')).not.toHaveAttribute(
+					'hidden',
+					'',
+				);
+				await expect(page.locator('html')).toHaveCSS(
+					'scroll-behavior',
+					reducedMotion === 'reduce' ? 'auto' : 'smooth',
+				);
+				// Start at the preceding real control, then enter the held footer with Tab.
+				await confirm.evaluate((element) => {
+					const controls = [
+						...document.querySelectorAll<HTMLElement>(
+							'a[href], button, input, select, textarea',
+						),
+					];
+					const previous = controls
+						.slice(0, controls.indexOf(element as HTMLElement))
+						.reverse()
+						.find(
+							(control) =>
+								control.tabIndex >= 0 &&
+								!control.matches(':disabled') &&
+								control.getClientRects().length > 0 &&
+								getComputedStyle(control).visibility !== 'hidden',
+						);
+					if (!previous) throw new Error('No preceding keyboard control');
+					previous.focus();
+				});
+				await page.keyboard.press('Tab');
+				await expect(confirm).toBeFocused();
+				await expect(footer).toHaveAttribute('data-footer-reveal', 'open');
+				// Wait past the existing glide: it must not later move focus off screen.
+				await page.waitForTimeout(1100);
+				await expect(confirm).toBeInViewport({ ratio: 1 });
+				if (reducedMotion === 'reduce') {
+					await expect(page.locator('.footer-pull')).toHaveCount(0);
+					await expect(footer.locator(':scope > [data-footer-reply]')).toHaveCSS(
+						'animation-name',
+						'none',
+					);
+				}
+			});
+		}
+	}
+}
