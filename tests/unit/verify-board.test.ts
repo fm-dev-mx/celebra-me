@@ -25,7 +25,10 @@ function task(id: string, fields: Json): Json {
 	};
 }
 
-function makeExport(tareas: Json[], extra: { sesiones?: Json[]; decisiones?: Json[] } = {}) {
+function makeExport(
+	tareas: Json[],
+	extra: { sesiones?: Json[]; decisiones?: Json[]; archivo?: Json[] } = {},
+) {
 	const dir = mkdtempSync(path.join(tmpdir(), 'verify-board-'));
 	dirs.push(dir);
 	mkdirSync(path.join(dir, 'tareas'));
@@ -35,6 +38,11 @@ function makeExport(tareas: Json[], extra: { sesiones?: Json[]; decisiones?: Jso
 		mkdirSync(path.join(dir, 'decisiones'));
 		for (const d of extra.decisiones)
 			writeFileSync(path.join(dir, 'decisiones', `${d.id}.json`), JSON.stringify(d));
+	}
+	if (extra.archivo) {
+		mkdirSync(path.join(dir, 'archivo'));
+		for (const a of extra.archivo)
+			writeFileSync(path.join(dir, 'archivo', `${a.id}.json`), JSON.stringify(a));
 	}
 	if (extra.sesiones)
 		writeFileSync(path.join(dir, 'sesiones.json'), JSON.stringify(extra.sesiones));
@@ -461,5 +469,51 @@ describe('board:verify', () => {
 				{ id: 'espera', msg: 'requisito a una decisión inexistente: d404' },
 			]),
 		);
+	});
+
+	it('warns about ready tasks without a planned lane or sharing one (d177)', () => {
+		const ready = (id: string, fields: Json = {}) =>
+			task(id, {
+				estado: 'pendiente',
+				prompt: `Task ${id}.\nDECISIONES\n- none`,
+				...fields,
+			});
+		const dir = makeExport(
+			[
+				ready('sin-carril'),
+				ready('uno', { carrilPlaneado: 'f10-libre' }),
+				ready('dos', { carrilPlaneado: 'f10-libre' }),
+				ready('sola', { carrilPlaneado: 'f12-release' }),
+				ready('rara', { carrilPlaneado: 'f13-nuevo' }),
+				ready('del-coordinador', { actor: 'coordinador' }),
+				ready('apartada', { candado: { agente: 'codex', desde: NOW, carril: 'f09-docs' } }),
+				task('en-curso', {}),
+				// Ready because its prerequisite is archived as done, so it needs a lane too.
+				ready('tras-archivada', { requisitos: [{ tipo: 'tarea', ref: 'archivada' }] }),
+			],
+			{ archivo: [{ id: 'archivada', estado: 'hecha' }] },
+		);
+		const { report } = verify(dir, {});
+		const lanes = report.avisos.filter((a: { msg: string }) => /carril/.test(a.msg));
+		const shared = 'carril f10-libre planeado para 2 tareas listas: ';
+		expect(lanes).toHaveLength(4);
+		expect(lanes).toEqual(
+			expect.arrayContaining([
+				{
+					id: 'sin-carril',
+					msg: 'lista sin carril planeado: pnpm board plan sin-carril --rev=1 --carril=<carril> --coordinador',
+				},
+				{
+					id: 'tras-archivada',
+					msg: 'lista sin carril planeado: pnpm board plan tras-archivada --rev=1 --carril=<carril> --coordinador',
+				},
+				{ id: 'uno', msg: expect.stringContaining(shared) },
+				{ id: 'dos', msg: expect.stringContaining(shared) },
+			]),
+		);
+		expect(report.inconsistencias).toContainEqual({
+			id: 'rara',
+			msg: 'carril planeado no canónico: f13-nuevo',
+		});
 	});
 });

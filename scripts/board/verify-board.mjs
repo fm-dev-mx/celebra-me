@@ -22,7 +22,8 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { taskIssues } from './model.mjs';
+import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
+import { stage, taskIssues } from './model.mjs';
 import { boardDir } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -138,6 +139,7 @@ export function loadExport(dir, sesionesFile) {
 		tareas: readJsonDir(base),
 		bitacora: readJsonDir(join(root, 'bitacora')),
 		decisiones: readJsonDir(join(root, 'decisiones')),
+		archivo: readJsonDir(join(root, 'archivo')),
 		cierres: readJsonDir(join(root, 'cierres')),
 		sesiones: existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null,
 	};
@@ -434,7 +436,43 @@ function taskWarnings(t, byId, decIds, now) {
 	return out;
 }
 
-function boardIssues(tareas, bitacora, decisiones, now) {
+/**
+ * d177: a ready, unlocked agent task needs a planned canonical lane, and two of them never share one; a review
+ * child runs where its reviewer is and needs none.
+ */
+function laneWarnings(tareas, decisiones, archivo, now) {
+	const board = { tareas, decisiones, archivo };
+	const avisos = [];
+	const inconsistencias = [];
+	const byLane = {};
+	for (const t of tareas.filter((x) => !isClosed(x) && x.carrilPlaneado !== undefined))
+		if (!WORKTREE_LANES.some((lane) => lane.id === t.carrilPlaneado))
+			inconsistencias.push({
+				id: t.id,
+				msg: `carril planeado no canónico: ${t.carrilPlaneado}`,
+			});
+	const ready = tareas.filter(
+		(t) => t.actor === 'sesion' && !t.origen && !t.candado && stage(t, board, now) === 'lista',
+	);
+	for (const t of ready) {
+		if (!t.carrilPlaneado)
+			avisos.push({
+				id: t.id,
+				msg: `lista sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
+			});
+		else (byLane[t.carrilPlaneado] ??= []).push(t.id);
+	}
+	for (const [lane, ids] of Object.entries(byLane))
+		if (ids.length > 1)
+			for (const id of ids)
+				avisos.push({
+					id,
+					msg: `carril ${lane} planeado para ${ids.length} tareas listas: ${ids.join(', ')}`,
+				});
+	return { avisos, inconsistencias };
+}
+
+function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
 	const decIds = new Set(decisiones.map((d) => d.id));
 	const lastLog = lastLogByTask(bitacora);
@@ -475,11 +513,14 @@ function boardIssues(tareas, bitacora, decisiones, now) {
 				msg: `reemplaza a una decisión inexistente: ${d.reemplaza}`,
 			});
 	}
+	const lanes = laneWarnings(tareas, decisiones, archivo, now);
+	avisos.push(...lanes.avisos);
+	inconsistencias.push(...lanes.inconsistencias);
 	return { inconsistencias, avisos };
 }
 
 export function verifyBoard(
-	{ tareas, bitacora = [], decisiones = [], cierres = [], sesiones = null },
+	{ tareas, bitacora = [], decisiones = [], archivo = [], cierres = [], sesiones = null },
 	run = defaultRunner(),
 	now = Date.now(),
 ) {
@@ -515,7 +556,7 @@ export function verifyBoard(
 		prCerradoSinUnir: branches.prCerradoSinUnir,
 		cierresPendientes: staleClosings(cierres, now),
 		cobertura: { ...unclaimed.cobertura, ...branches.cobertura },
-		...boardIssues(tareas, bitacora, decisiones, now),
+		...boardIssues(tareas, bitacora, decisiones, archivo, now),
 	};
 }
 

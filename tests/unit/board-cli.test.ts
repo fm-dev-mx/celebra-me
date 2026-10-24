@@ -67,6 +67,15 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	}
 	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
 		args.push('--coordinador');
+	return exec(dir, env, args);
+}
+
+/** Runs the CLI exactly as given, without the test defaults of `board`. */
+function raw(dir: string, ...args: string[]) {
+	return exec(dir, {}, args);
+}
+
+function exec(dir: string, env: NodeJS.ProcessEnv, args: string[]) {
 	const result = runCommand(process.execPath, [SCRIPT_PATH, ...args], {
 		cwd: ROOT,
 		allowFailure: true,
@@ -276,7 +285,7 @@ describe('pnpm board', () => {
 	it('labels paste tasks «Pegar en …» in the view with their own «Copiar prompt»', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
 		expect(html).toContain(
-			"ownerLaunches, matches, isFinished, AGENT_REGISTRY } from '/model.mjs'",
+			"ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs'",
 		);
 		expect(html).toContain("'Pegar en '+esc(to)");
 		expect(html).toContain('data-copy="${esc(t.id)}">Copiar prompt</button>');
@@ -537,6 +546,113 @@ describe('pnpm board', () => {
 			sesion: 'codex-test',
 			agente: 'codex',
 		});
+	});
+
+	it('lets only the coordinator plan a canonical lane and claims it without --carril (d177)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('planeada', { agente: 'codex' }),
+				task('otra'),
+				task('tercera'),
+				// Finished before its release: the lock still holds the lane, for claim and for the card.
+				task('vieja', {
+					estado: 'hecha',
+					candado: { agente: 'codex', desde: NOW, sesion: 's0', carril: 'f11-preview' },
+				}),
+			],
+		});
+		expect(raw(dir, 'plan', 'planeada', '--rev=1', '--carril=f10-libre').status).toBe(2);
+		for (const lane of ['f04-integracion', 'integration'])
+			expect(
+				raw(dir, 'plan', 'planeada', '--rev=1', `--carril=${lane}`, '--coordinador').status,
+			).toBe(2);
+		// Every plan names the revision it read: a missing or stale one writes nothing.
+		for (const rev of [[], ['--rev=5']])
+			expect(
+				raw(dir, 'plan', 'planeada', ...rev, '--carril=f10-libre', '--coordinador').status,
+			).toBe(2);
+		expect(readTask(dir, 'planeada')).toMatchObject({ rev: 1 });
+		expect(readTask(dir, 'planeada').carrilPlaneado).toBeUndefined();
+		const plan = raw(dir, 'plan', 'planeada', '--carril=f10-libre', '--coordinador', '--rev=1');
+		expect(plan.status).toBe(0);
+		expect(plan.out).toContain('Corre en: f10-libre · carpeta celebra-me-worktrees/f10-libre');
+		expect(plan.out).toContain('Codex: abra el proyecto f10-libre');
+		expect(readTask(dir, 'planeada')).toMatchObject({ carrilPlaneado: 'f10-libre', rev: 2 });
+		// Only plan writes it: set refuses, and add needs the coordinator.
+		expect(
+			raw(dir, 'set', 'planeada', '--rev=2', 'carrilPlaneado=f09-docs', '--coordinador')
+				.status,
+		).toBe(2);
+		const add = [
+			'add',
+			'nueva',
+			'titulo=Nueva',
+			'urgencia=normal',
+			'actor=sesion',
+			'carrilPlaneado=f09-docs',
+		];
+		expect(raw(dir, ...add).status).toBe(2);
+		expect(raw(dir, ...add, '--coordinador').status).toBe(0);
+		expect(readTask(dir, 'nueva').carrilPlaneado).toBe('f09-docs');
+		// Clearing a plan also needs the revision read.
+		expect(raw(dir, 'plan', 'nueva', '--carril=', '--coordinador').status).toBe(2);
+		expect(raw(dir, 'plan', 'nueva', '--rev=1', '--carril=', '--coordinador').status).toBe(0);
+		expect(readTask(dir, 'nueva').carrilPlaneado).toBeUndefined();
+		// The prompt an agent receives starts with the lane.
+		const next = raw(dir, 'next', '--agente=codex');
+		expect(next.out).toContain('CARRIL\nCorre en: f10-libre');
+		// A different lane needs the coordinator; the planned one needs no flag.
+		const other = raw(
+			dir,
+			'claim',
+			'planeada',
+			'--agente=codex',
+			'--sesion=s1',
+			'--carril=f09-docs',
+		);
+		expect(other.status).toBe(2);
+		expect(other.err).toContain('corre en f10-libre');
+		expect(raw(dir, 'claim', 'planeada', '--agente=codex', '--sesion=s1').status).toBe(0);
+		expect(readTask(dir, 'planeada')).toMatchObject({
+			carril: 'f10-libre',
+			candado: { carril: 'f10-libre', sesion: 's1' },
+		});
+		// Locked: the plan cannot move, and a task planned in the same lane says it is busy.
+		expect(
+			raw(dir, 'plan', 'planeada', '--rev=3', '--carril=f09-docs', '--coordinador').status,
+		).toBe(2);
+		expect(
+			raw(dir, 'plan', 'otra', '--rev=1', '--carril=f10-libre', '--coordinador').status,
+		).toBe(0);
+		const show = raw(dir, 'show', 'otra');
+		expect(show.out).toContain('f10 ocupado por planeada; espere o pida otro carril');
+		expect(raw(dir, 'claim', 'otra', '--agente=claude', '--sesion=local_s2').status).toBe(2);
+		const moved = raw(
+			dir,
+			'claim',
+			'otra',
+			'--agente=claude',
+			'--sesion=local_s2',
+			'--carril=f12-release',
+			'--coordinador',
+		);
+		expect(moved.status).toBe(0);
+		expect(readTask(dir, 'otra')).toMatchObject({
+			carril: 'f12-release',
+			carrilPlaneado: 'f10-libre',
+		});
+		expect(
+			raw(dir, 'plan', 'tercera', '--rev=1', '--carril=f11-preview', '--coordinador').out,
+		).toContain('f11 ocupado por vieja; espere o pida otro carril');
+		expect(raw(dir, 'claim', 'tercera', '--agente=codex', '--sesion=s3').status).toBe(2);
+	});
+
+	it('shows «Corre en» on the card and the sheet and copies the prompt with its lane', () => {
+		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
+		expect(html).toContain('${runsHtml(t)}');
+		expect(html).toContain('<div class="runbox">');
+		expect(html).toContain('navigator.clipboard.writeText(text)');
+		expect(html).toContain('const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;');
 	});
 
 	it.each(['unknown', 'f04-integracion', ''])(
