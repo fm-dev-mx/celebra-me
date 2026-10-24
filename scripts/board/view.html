@@ -222,7 +222,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 <body>
 <div class="wrap">
   <div class="top">
-    <h1>Seguimiento Celebra-me<small>v3</small></h1>
+    <h1>Seguimiento Celebra-me</h1>
     <span class="rev" id="rev">Cargando…</span>
     <span role="status" aria-live="polite" id="connection">Conectando…</span>
     <span class="sync">
@@ -495,7 +495,7 @@ function renderTop(){
   const e=S.board.estado;
   if(e){
     const stale=Date.now()-T(e.comprobadoEn)>24*36e5;
-    $('rev').textContent='Tablero v'+(e.rev||'—')+' · comprobado '+ago(e.comprobadoEn);
+    $('rev').textContent='Producción comprobada '+ago(e.comprobadoEn);
     const ver=String(e.version||'').split(' ')[0];
     $('strip').innerHTML=`<span class="eyebrow">Producción</span><span><span class="pulse ${stale?'stale':''}"></span><b>${esc(ver)}</b></span><span class="mono">main ${esc(e.main||'')}</span><span>${esc(e.sirve||'')}</span><span class="mono" title="${esc(fmt(e.comprobadoEn))}">${stale?'sin comprobar '+esc(ago(e.comprobadoEn)):'comprobado '+esc(ago(e.comprobadoEn))}</span>`+youBtn();
   }else if(S.ready){$('strip').innerHTML='<span class="eyebrow">Producción</span><span>Sin registro de estado.</span>'+youBtn()}
