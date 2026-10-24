@@ -8,8 +8,10 @@
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
- *                                               (rama defaults to the task's declared branch)
- *   release <id> --agente=<a> [--coordinador]   --coordinador frees only a legacy lock without sesion
+ *                                               (rama defaults to the task's declared branch; Claude's sesion
+ *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_)
+ *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
+ *                                               --coordinador frees only a legacy lock without sesion
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task from «Finalizadas» (bitácora row)
@@ -44,6 +46,8 @@ import {
 	taskIssues,
 	inTab,
 	isFinished,
+	lockSessionIssue,
+	sessionOf,
 } from './model.mjs';
 import {
 	assertId,
@@ -173,11 +177,8 @@ function assertOwner(task, flags) {
 			);
 		return;
 	}
-	if (
-		task.candado.agente !== flags.agente ||
-		!flags.sesion ||
-		task.candado.sesion !== flags.sesion
-	)
+	const sesion = sessionOf(flags.agente, flags.sesion, process.env);
+	if (task.candado.agente !== flags.agente || !sesion || task.candado.sesion !== sesion)
 		throw new UsageError(
 			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
 		);
@@ -388,7 +389,9 @@ const commands = {
 	},
 	claim({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente');
-		const sesion = need(flags.sesion, 'falta --sesion=<id>');
+		const sesion = sessionOf(agente, flags.sesion, process.env);
+		const issue = lockSessionIssue(agente, sesion);
+		if (issue) throw new UsageError(issue);
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			if (
@@ -415,7 +418,7 @@ const commands = {
 			const { rama, carril } = claimLocation(before, flags, board);
 			const candado = { agente, desde: nowIso() };
 			for (const [k, v] of Object.entries({
-				sesion: flags.sesion,
+				sesion,
 				carril,
 				rama,
 			}))
@@ -440,6 +443,17 @@ const commands = {
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
 			const rest = { ...before };
 			delete rest.candado;
+			const { sesion: id, agente: lockAgent } = before.candado;
+			// The released session stays as history, so it can still be found, renamed or archived.
+			if (id) {
+				const nombre =
+					typeof flags.nombre === 'string'
+						? flags.nombre
+						: before.sesion?.id === id
+							? before.sesion.nombre
+							: undefined;
+				rest.sesion = { id, agente: lockAgent, ...(nombre ? { nombre } : {}) };
+			}
 			const t = saveTask(dir, before, rest);
 			say(flags, out, t, `${t.id} libre (rev ${t.rev})`);
 		});
