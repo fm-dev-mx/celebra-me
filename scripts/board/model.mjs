@@ -169,8 +169,9 @@ const depIds = (t) => (t.requisitos ?? []).filter((r) => r.tipo === 'tarea').map
 const urgRank = (u) => (URGENCIAS.includes(u) ? URGENCIAS.indexOf(u) : 2);
 
 /**
- * The numbered queue: the owner's ready tasks (d163) → urgency → ready before blocked → due date (`hasta`) →
- * `orden` → title, then a pass so a task never comes before one it waits for.
+ * The numbered queue: the owner's ready tasks (d163) → urgency → free lane before busy or none (`laneRank`) →
+ * ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a task never comes before one
+ * it waits for.
  */
 export function queue(board, now = Date.now()) {
 	const open = (board.tareas ?? []).filter((t) => isOpen(t, board, now));
@@ -178,6 +179,7 @@ export function queue(board, now = Date.now()) {
 	const key = (t) => [
 		color(t, board, { now }) === 'own' ? 0 : 1,
 		urgRank(t.urgencia),
+		laneRank(t, board),
 		stage(t, board, now) === 'bloqueada' ? 1 : 0,
 		Number.isNaN(time(t.hasta)) ? 9e15 : time(t.hasta),
 		t.orden ?? 999,
@@ -263,8 +265,25 @@ export function laneBusy(t, board) {
 	return (board.tareas ?? []).find((x) => x.id !== t.id && x.candado?.carril === lane) ?? null;
 }
 
-/** The «Corre en» lines of a task planned in a lane, for the card, `show`, `next` and a pasted prompt. */
+/** Where a review runs: it has no planned lane (d177) and reads the Integration checkout only. */
+export const REVIEW_RUNS = `Corre en: Integración (carpeta ${laneFolder('integration')}), solo lectura`;
+
+/**
+ * Queue rank of a task's lane: 0 free (a review always is, and so is the lane a task's own lock holds),
+ * 1 held by another task's lock, 2 none.
+ */
+export function laneRank(t, board) {
+	if (isReview(t)) return 0;
+	if (!t.carrilPlaneado) return t.candado?.carril ? 0 : 2;
+	return laneBusy(t, board) ? 1 : 0;
+}
+
+/**
+ * The «Corre en» lines of a review or a task planned in a lane, for the card, `show`, `next` and a pasted
+ * prompt; an unlocked planned task also says whether its lane is free.
+ */
 export function laneLines(t, board) {
+	if (isReview(t)) return [REVIEW_RUNS];
 	const lane = t.carrilPlaneado;
 	if (!lane) return [];
 	const lines = [`Corre en: ${lane} · carpeta ${laneFolder(lane)}`];
@@ -278,6 +297,7 @@ export function laneLines(t, board) {
 		lines.push(
 			`${lane.split('-')[0]} ocupado por ${busy.num ? `T${busy.num}` : busy.id}; espere o pida otro carril`,
 		);
+	else if (!t.candado) lines.push('carril libre');
 	return lines;
 }
 

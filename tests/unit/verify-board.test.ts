@@ -266,23 +266,31 @@ describe('board:verify', () => {
 		);
 	});
 
-	it('warns about ready tasks without a planned lane or sharing one (d177)', () => {
+	it('warns about every open task without a planned lane, and ready ones sharing one (d177)', () => {
 		const ready = (id: string, fields: Json = {}) =>
 			task(id, {
 				estado: 'pendiente',
-				prompt: `Task ${id}.\nDECISIONES\n- none`,
+				prompt: `Task ${id}.
+DECISIONES
+- none`,
 				...fields,
 			});
 		const dir = makeExport(
 			[
-				ready('sin-carril'),
+				ready('sin-carril', { num: 30 }),
 				ready('uno', { carrilPlaneado: 'f10-libre' }),
 				ready('dos', { carrilPlaneado: 'f10-libre' }),
 				ready('sola', { carrilPlaneado: 'f12-release' }),
 				ready('rara', { carrilPlaneado: 'f13-nuevo' }),
 				ready('del-coordinador', { actor: 'coordinador' }),
+				ready('del-dueno', { actor: 'dueno' }),
+				// The lane its lock holds is where it runs.
 				ready('apartada', { candado: { agente: 'codex', desde: NOW, carril: 'f09-docs' } }),
 				task('en-curso', {}),
+				ready('bloqueada', { requisitos: [{ tipo: 'dueno', ref: 'Elegir' }] }),
+				// Reviews run read-only in Integration; finished tasks no longer run.
+				ready('uno-revision', { requisitos: [{ tipo: 'revision', ref: 'uno' }] }),
+				task('terminada', { estado: 'hecha' }),
 				// Ready because its prerequisite is archived as done, so it needs a lane too.
 				ready('tras-archivada', { requisitos: [{ tipo: 'tarea', ref: 'archivada' }] }),
 			],
@@ -290,18 +298,25 @@ describe('board:verify', () => {
 		);
 		const { report } = verify(dir, {});
 		const lanes = report.avisos.filter((a: { msg: string }) => /carril/.test(a.msg));
+		// The export numbers every task, so each warning names its T<n>.
+		const missing = (id: string, num = String.raw`T\d+`) => ({
+			id,
+			msg: expect.stringMatching(
+				new RegExp(
+					`^${num} sin carril planeado: pnpm board plan ${id} --rev=1 --carril=<carril> --coordinador$`,
+				),
+			),
+		});
 		const shared = 'carril f10-libre planeado para 2 tareas listas: ';
-		expect(lanes).toHaveLength(4);
+		expect(lanes).toHaveLength(8);
 		expect(lanes).toEqual(
 			expect.arrayContaining([
-				{
-					id: 'sin-carril',
-					msg: 'lista sin carril planeado: pnpm board plan sin-carril --rev=1 --carril=<carril> --coordinador',
-				},
-				{
-					id: 'tras-archivada',
-					msg: 'lista sin carril planeado: pnpm board plan tras-archivada --rev=1 --carril=<carril> --coordinador',
-				},
+				missing('sin-carril', 'T30'),
+				missing('del-coordinador'),
+				missing('del-dueno'),
+				missing('en-curso'),
+				missing('bloqueada'),
+				missing('tras-archivada'),
 				{ id: 'uno', msg: expect.stringContaining(shared) },
 				{ id: 'dos', msg: expect.stringContaining(shared) },
 			]),

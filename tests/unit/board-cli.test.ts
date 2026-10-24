@@ -847,6 +847,102 @@ describe('pnpm board', () => {
 		expect(html).toContain('const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;');
 	});
 
+	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
+		const lock = { agente: 'codex', desde: NOW, sesion: 's1', carril: 'f08-demos' };
+		const tareas = [
+			task('ocupada', { agente: 'claude', carrilPlaneado: 'f08-demos' }),
+			task('sin-carril'),
+			task('libre', { agente: 'claude', carrilPlaneado: 'f09-docs' }),
+			task('origen', { estado: 'en revision', pr: '#7', rama: 'feat/x' }),
+			task('origen-revision', { requisitos: [{ tipo: 'revision', ref: 'origen' }] }),
+			task('dueno', { actor: 'dueno', urgencia: 'baja' }),
+			task('urgente-ocupada', { urgencia: 'alta', carrilPlaneado: 'f08-demos' }),
+			task('base', { carrilPlaneado: 'f08-demos' }),
+			task('tras-base', {
+				carrilPlaneado: 'f10-libre',
+				requisitos: [{ tipo: 'tarea', ref: 'base' }],
+			}),
+			task('tiene', { num: 10, estado: 'en curso', candado: lock }),
+		];
+		const probe = String.raw`
+			const m = await import(process.argv[1]);
+			const board = { tareas: JSON.parse(process.argv[2]) };
+			const at = (id) => board.tareas.find((t) => t.id === id);
+			console.log(JSON.stringify({
+				queue: m.queue(board).map((t) => t.id),
+				ranks: ['libre', 'ocupada', 'sin-carril', 'origen-revision', 'tiene'].map((id) => m.laneRank(at(id), board)),
+				lines: ['libre', 'ocupada', 'origen-revision', 'tiene', 'sin-carril'].map((id) => m.laneLines(at(id), board)),
+				prompt: m.promptWithLane(at('origen-revision'), board),
+			}));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(path.join(ROOT, 'scripts', 'board', 'model.mjs')).href,
+				JSON.stringify(tareas),
+			],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		expect(result.status).toBe(0);
+		const out = JSON.parse(String(result.stdout));
+		// d163 owner first, then urgency; within «normal» a free lane (or a review) before a busy one or none,
+		// «tiene» runs in the lane its own lock holds, and «base» still comes right before the task waiting for it.
+		expect(out.queue).toEqual([
+			'dueno',
+			'urgente-ocupada',
+			'libre',
+			'origen-revision',
+			'tiene',
+			'base',
+			'tras-base',
+			'ocupada',
+			'sin-carril',
+		]);
+		expect(out.ranks).toEqual([0, 1, 2, 0, 0]);
+		const runs = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		expect(out.lines).toEqual([
+			['Corre en: f09-docs · carpeta celebra-me-worktrees/f09-docs', 'carril libre'],
+			[
+				'Corre en: f08-demos · carpeta celebra-me-worktrees/f08-demos',
+				'f08 ocupado por T10; espere o pida otro carril',
+			],
+			[runs],
+			[],
+			[],
+		]);
+		expect(out.prompt.startsWith(`CARRIL\n${runs}\n\n`)).toBe(true);
+	});
+
+	it('shows where a review runs in show and next, and plan still refuses it a lane', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('origen', { estado: 'en revision', pr: '#7', rama: 'feat/x' }),
+				task('origen-revision', {
+					agente: 'gemini',
+					requisitos: [{ tipo: 'revision', ref: 'origen' }],
+				}),
+				task('libre', { agente: 'codex', carrilPlaneado: 'f09-docs' }),
+			],
+		});
+		const runs = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		expect(raw(dir, 'show', 'origen-revision').out).toContain(`  ${runs}`);
+		expect(raw(dir, 'next', '--agente=gemini').out).toContain(`CARRIL\n${runs}\n`);
+		expect(raw(dir, 'next', '--agente=codex').out).toContain('carril libre');
+		const plan = raw(
+			dir,
+			'plan',
+			'origen-revision',
+			'--rev=1',
+			'--carril=f10-libre',
+			'--coordinador',
+		);
+		expect(plan.status).toBe(2);
+		expect(plan.err).toContain('una revisión no tiene carril planeado');
+	});
+
 	it.each(['unknown', 'f04-integracion', ''])(
 		'rejects non-canonical or missing lane %s without writing',
 		(lane) => {
