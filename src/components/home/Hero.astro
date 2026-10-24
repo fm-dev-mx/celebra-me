@@ -2,7 +2,8 @@
 /**
  * src/components/home/Hero.astro
  * Landing hero: promise, price, WhatsApp CTA and a fan of three demo phones. The phones are links to
- * the showroom (`#<event>`); the showroom script selects the event and demo.
+ * the showroom (`#<event>`); the showroom script selects the event and demo. Each screen carries
+ * the demo's sample name in its own layout, face and colour, placed where it covers no one.
  */
 import { Image } from 'astro:assets';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
@@ -16,6 +17,10 @@ import {
 } from '@/data/promo-campaign.data';
 import { getEventAsset } from '@/lib/assets/asset-registry';
 
+// Display faces of the fan's sample names, one per demo style (see `_landing-hero.scss`).
+import '@fontsource-variable/bodoni-moda/wght-italic.css';
+import '@fontsource-variable/cinzel/wght.css';
+import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 import '@/styles/home/_landing-hero.scss';
 
 interface Props {
@@ -91,6 +96,7 @@ const fanPhones = fan.map((demo, index) => ({
 							href={`#${demo.publicSlug}`}
 							data-vitrina-event={demo.publicSlug}
 							data-vitrina-pick={demo.slug}
+							data-hero-style={demo.slug}
 							aria-label={`Ver la demo ${demo.name}`}
 						>
 							<Image
@@ -102,6 +108,17 @@ const fanPhones = fan.map((demo, index) => ({
 								fetchpriority={isCenter ? 'high' : undefined}
 								data-demo-style={demo.slug}
 							/>
+							<span class="hero-prime__phone-title" aria-hidden="true">
+								<span class="hero-prime__phone-kicker">{demo.kicker}</span>
+								<span class="hero-prime__phone-name">
+									{demo.person.split(' & ').map((name, line) => (
+										<span class="hero-prime__phone-line">
+											{line > 0 && <span class="hero-prime__phone-amp">&amp; </span>}
+											{name}
+										</span>
+									))}
+								</span>
+							</span>
 						</a>
 					) : null,
 				)
