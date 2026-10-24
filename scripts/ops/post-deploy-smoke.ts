@@ -10,7 +10,7 @@ import {
 	type OperationalEvidenceV1,
 } from '../../src/lib/operations/operational-evidence.ts';
 import { listPublishedInvitationDefinitions } from '../provision/invitations/registry.ts';
-import { discoverDemoCases } from '../screenshot/visual-coverage-contract.ts';
+import { discoverDemoCases, visualPageRoute } from '../screenshot/visual-coverage-contract.ts';
 
 export type PostDeployEnvironment = 'preview' | 'production';
 
@@ -334,7 +334,7 @@ export async function runDeploymentSmoke(
 		await probe(`${route.kind}_failed:${target}`, route.kind, target, async () => {
 			const { response, retryCount } = await fetchWithOneRetry(
 				request,
-				`${baseUrl}/${route.eventType}/${route.slug}`,
+				`${baseUrl}${visualPageRoute(route)}`,
 			);
 			const html = await response.text();
 			return {

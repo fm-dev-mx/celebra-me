@@ -3,11 +3,10 @@ import {
 	runCloudflareWorkerSmoke,
 } from '../../scripts/ops/cloudflare-worker-smoke.ts';
 import { listSmokePageRoutes } from '../../scripts/ops/post-deploy-smoke.ts';
+import { visualPageRoute } from '../../scripts/screenshot/visual-coverage-contract.ts';
 
 const sha = 'a'.repeat(40);
-const PAGE_PATHS = new Set(
-	listSmokePageRoutes().map((route) => `/${route.eventType}/${route.slug}`),
-);
+const PAGE_PATHS = new Set(listSmokePageRoutes().map(visualPageRoute));
 const stableHost = 'celebra-me-preview.celebra-me-com.workers.dev';
 const versionHost = '1a2b3c4d-celebra-me-preview.celebra-me-com.workers.dev';
 const accessHeaders = {
