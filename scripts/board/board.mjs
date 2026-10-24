@@ -8,7 +8,9 @@
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
- *                                               (rama defaults to the task's declared branch)
+ *                                               (rama defaults to the task's declared branch; carril to the
+ *                                               planned lane, and another lane needs --coordinador)
+ *   plan <id> --carril=<id> --coordinador [--rev=<n>]   d177: the lane a ready task runs in; --carril= clears it
  *   release <id> --agente=<a> [--coordinador]   --coordinador frees only a legacy lock without sesion
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
@@ -46,6 +48,8 @@ import {
 	taskIssues,
 	inTab,
 	isFinished,
+	laneLines,
+	promptWithLane,
 } from './model.mjs';
 import {
 	assertId,
@@ -269,17 +273,34 @@ function archiveCommand(archivar) {
 	};
 }
 
+/** Whether `carril` is a canonical lane this task may use; Integration only for coordinator tasks. */
+const laneAllowed = (carril, task) =>
+	WORKTREE_LANES.some(
+		(lane) => lane.id === carril && (lane.segment || task.actor === 'coordinador'),
+	);
+
+/** d177: only a declared coordinator plans a lane, and only a canonical one. */
+function assertPlan(task, carril, flags) {
+	if (!flags.coordinador)
+		throw new UsageError('el carril planeado lo asigna el coordinador: use --coordinador');
+	if (!laneAllowed(carril, task))
+		throw new UsageError(
+			`carril ${carril} no es canónico (f05-f12; integration solo para coordinador)`,
+		);
+}
+
 function claimLocation(before, flags, board) {
 	const rama = typeof flags.rama === 'string' ? flags.rama : before.rama;
-	const carril = flags.carril;
-	if (before.origen && carril)
+	const planned = before.carrilPlaneado;
+	const given = typeof flags.carril === 'string' ? flags.carril : undefined;
+	if (planned && given && given !== planned && !flags.coordinador)
+		throw new UsageError(
+			`${before.id} corre en ${planned}: omita --carril o pida al coordinador otro carril`,
+		);
+	const carril = given ?? planned;
+	if (before.origen && given)
 		throw new UsageError('la revisión no toma el carril del autor; omita --carril');
-	if (
-		!before.origen &&
-		!WORKTREE_LANES.some(
-			(lane) => lane.id === carril && (lane.segment || before.actor === 'coordinador'),
-		)
-	)
+	if (!before.origen && !laneAllowed(carril, before))
 		throw new UsageError(
 			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
 		);
@@ -326,7 +347,7 @@ const commands = {
 		const t = nextFor(agente, loadBoard(dir));
 		if (flags.json) return out(JSON.stringify(t, null, 2));
 		if (!t) return out(`Nada listo para ${agente}.`);
-		out(`${t.id} (rev ${t.rev}) — ${t.titulo}\n\n${t.prompt ?? ''}`);
+		out(`${t.id} (rev ${t.rev}) — ${t.titulo}\n\n${promptWithLane(t, loadBoard(dir)) ?? ''}`);
 	},
 	show({ pos, flags }, dir, out) {
 		const t = getTask(dir, need(pos[0], 'falta <id>'));
@@ -347,6 +368,7 @@ const commands = {
 		out(
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.titulo}`,
 		);
+		for (const line of laneLines(t, board)) out(`  ${line}`);
 		for (const r of requisitos(t, board)) out(`  ${r.ok ? '✓' : '○'} ${r.tipo} ${r.ref}`);
 		for (const k of [
 			'urgencia',
@@ -355,6 +377,7 @@ const commands = {
 			'toca',
 			'requiere',
 			'candado',
+			'carrilPlaneado',
 			'carril',
 			'rama',
 			'pr',
@@ -370,6 +393,7 @@ const commands = {
 		return withLock(dir, () => {
 			if (readDoc(dir, 'tareas', id)) throw new UsageError(`ya existe la tarea ${id}`);
 			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
+			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
 			const saved = saveTask(dir, null, t, { quien: flags.quien });
 			say(flags, out, saved, `${saved.id} creada (rev 1)`);
 		});
@@ -381,7 +405,15 @@ const commands = {
 			checkRev(before, flags);
 			assertOwner(before, flags);
 			const data = flags.data ? JSON.parse(readFileSync(resolve(flags.data), 'utf8')) : {};
-			for (const key of ['candado', 'agente', 'carril', 'origen', 'revisionSha', 'archivada'])
+			for (const key of [
+				'candado',
+				'agente',
+				'carril',
+				'carrilPlaneado',
+				'origen',
+				'revisionSha',
+				'archivada',
+			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
 			const merged = applyPairs({ ...before, ...data, id }, pairs);
@@ -438,6 +470,49 @@ const commands = {
 				...(rama ? { rama } : {}),
 			});
 			say(flags, out, t, `${t.id} es de ${agente} (rev ${t.rev})`);
+		});
+	},
+	/** d177: the coordinator plans the lane a task runs in; claim then takes it without --carril. */
+	plan({ pos, flags }, dir, out) {
+		if (typeof flags.carril !== 'string') throw new UsageError('falta --carril=<carril>');
+		return withLock(dir, () => {
+			const before = getTask(dir, need(pos[0], 'falta <id>'));
+			if (flags.rev !== undefined) checkRev(before, flags);
+			const carril = flags.carril || undefined;
+			if (carril) assertPlan(before, carril, flags);
+			else if (!flags.coordinador)
+				throw new UsageError(
+					'el carril planeado lo quita el coordinador: use --coordinador',
+				);
+			if (before.origen) throw new UsageError('una revisión no tiene carril planeado');
+			if (before.candado)
+				throw new UsageError(
+					`${before.id} tiene candado de ${before.candado.agente}: el carril ya está en uso`,
+				);
+			if (carril === before.carrilPlaneado)
+				return say(
+					flags,
+					out,
+					before,
+					`${before.id} ya corre en ${carril ?? 'ningún carril'}`,
+				);
+			const after = { ...before };
+			if (carril) after.carrilPlaneado = carril;
+			else delete after.carrilPlaneado;
+			const t = saveTask(dir, before, after);
+			logRow(dir, {
+				tarea: t.id,
+				de: before.carrilPlaneado ?? 'sin carril',
+				a: carril ?? 'sin carril',
+				quien: flags.quien,
+				corrio: 'pnpm board plan',
+			});
+			say(
+				flags,
+				out,
+				t,
+				[`${t.id} rev ${t.rev}`, ...laneLines(t, loadBoard(dir))].join('\n'),
+			);
 		});
 	},
 	/**

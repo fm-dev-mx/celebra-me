@@ -227,6 +227,46 @@ export function nextFor(agente, board, now = Date.now()) {
 	);
 }
 
+/** Folder of a lane relative to the repository's parent directory (d177): never an absolute path. */
+export const laneFolder = (id) =>
+	id === 'integration' ? 'celebra-me' : `celebra-me-worktrees/${id}`;
+
+/** Another task whose lock holds the lane `t` is planned in, or null (d177). */
+export function laneBusy(t, board) {
+	const lane = t.carrilPlaneado;
+	if (!lane) return null;
+	return (
+		(board.tareas ?? []).find(
+			(x) => x.id !== t.id && !isFinished(x) && x.candado?.carril === lane,
+		) ?? null
+	);
+}
+
+/** The «Corre en» lines of a task planned in a lane, for the card, `show`, `next` and a pasted prompt. */
+export function laneLines(t, board) {
+	const lane = t.carrilPlaneado;
+	if (!lane) return [];
+	const lines = [`Corre en: ${lane} · carpeta ${laneFolder(lane)}`];
+	const paste = agentsFor(t).filter((a) => a !== 'claude' && Object.hasOwn(AGENT_REGISTRY, a));
+	if (paste.length)
+		lines.push(
+			`${paste.map((a) => AGENT_REGISTRY[a].nombre).join(' o ')}: abra el proyecto ${lane}`,
+		);
+	const busy = laneBusy(t, board);
+	if (busy)
+		lines.push(
+			`${lane.split('-')[0]} ocupado por ${busy.num ? `T${busy.num}` : busy.id}; espere o pida otro carril`,
+		);
+	return lines;
+}
+
+/** The prompt an agent receives: the planned lane first, so nobody has to repeat it by hand. */
+export function promptWithLane(t, board) {
+	const lines = laneLines(t, board);
+	if (!t.prompt || !lines.length) return t.prompt;
+	return `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`;
+}
+
 const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));
 const subsetOf = (list, allowed) => Array.isArray(list) && list.every((x) => allowed.includes(x));
 
@@ -291,6 +331,10 @@ const FIELD_CHECKS = [
 		() => 'requisitos debe ser una lista (vacía si no espera nada)',
 	],
 	[(t) => !optional(t.candado, validLock), () => 'candado debe ser {agente, desde}'],
+	[
+		(t) => !optional(t.carrilPlaneado, (c) => typeof c === 'string' && /^[a-z0-9-]+$/.test(c)),
+		() => 'carrilPlaneado debe ser el id de un carril',
+	],
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
 	[(t) => !optional(t.archivada, isDate), () => 'archivada no es fecha'],

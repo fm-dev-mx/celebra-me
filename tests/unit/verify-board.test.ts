@@ -254,4 +254,41 @@ describe('board:verify', () => {
 			]),
 		);
 	});
+
+	it('warns about ready tasks without a planned lane or sharing one (d177)', () => {
+		const ready = (id: string, fields: Json = {}) =>
+			task(id, {
+				estado: 'pendiente',
+				prompt: `Task ${id}.\nDECISIONES\n- none`,
+				...fields,
+			});
+		const dir = makeExport([
+			ready('sin-carril'),
+			ready('uno', { carrilPlaneado: 'f10-libre' }),
+			ready('dos', { carrilPlaneado: 'f10-libre' }),
+			ready('sola', { carrilPlaneado: 'f12-release' }),
+			ready('rara', { carrilPlaneado: 'f13-nuevo' }),
+			ready('del-coordinador', { actor: 'coordinador' }),
+			ready('apartada', { candado: { agente: 'codex', desde: NOW, carril: 'f09-docs' } }),
+			task('en-curso', {}),
+		]);
+		const { report } = verify(dir, {});
+		const lanes = report.avisos.filter((a: { msg: string }) => /carril/.test(a.msg));
+		const shared = 'carril f10-libre planeado para 2 tareas listas: ';
+		expect(lanes).toHaveLength(3);
+		expect(lanes).toEqual(
+			expect.arrayContaining([
+				{
+					id: 'sin-carril',
+					msg: 'lista sin carril planeado: pnpm board plan sin-carril --carril=<carril> --coordinador',
+				},
+				{ id: 'uno', msg: expect.stringContaining(shared) },
+				{ id: 'dos', msg: expect.stringContaining(shared) },
+			]),
+		);
+		expect(report.inconsistencias).toContainEqual({
+			id: 'rara',
+			msg: 'carril planeado no canónico: f13-nuevo',
+		});
+	});
 });
