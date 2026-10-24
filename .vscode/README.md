@@ -9,12 +9,17 @@ Temáticos** para el proyecto Celebra-me en VS Code.
 
 ### 1. `.vscode/tasks.json`
 
-Define las 17 tareas del proyecto registrándolas en VS Code con sus respectivos **Iconos Codicons y
+Define las 19 tareas del proyecto registrándolas en VS Code con sus respectivos **Iconos Codicons y
 Colores ANSI**:
 
-- **10 Tareas Core Automáticas (`folderOpen`):** Se abren en modo Standby al iniciar cualquier
+- **12 Tareas Core Automáticas (`folderOpen`):** Se abren en modo Standby al iniciar cualquier
   worktree:
-  - `Servidor dev (pnpm dev)` — Servidor de desarrollo local (`play`, verde)
+  - `Servidor dev (pnpm dev)` — Servidor de desarrollo local (`play`, verde). Enter siempre arranca:
+    primero cierra el proceso `node` que ocupe el puerto de ese carril (nunca otro programa).
+  - `Tablero (board:serve)` — Tablero en `127.0.0.1:4320` (`checklist`, magenta). Desde cualquier
+    carril corre el código de Integration; Enter cierra el `node` que ocupe el 4320 y lo reinicia.
+  - `Sincronizar tablero (board:sync)` — Sincronización sin IA con ramas, PRs y carriles, con el
+    código de Integration; `--dry-run` solo muestra los cambios (`sync`, magenta)
   - `Tipos (type-check)` — Verificación de tipos TS (`check-all`, azul)
   - `Pruebas (test)` — Pruebas unitarias Jest (`beaker`, verde)
   - `Pruebas cambiadas (test:changed)` — Pruebas en archivos modificados (`beaker`, verde)
