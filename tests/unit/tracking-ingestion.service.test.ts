@@ -37,9 +37,12 @@ beforeEach(() => {
 	});
 });
 
-function makeRequest(path = '/'): Request {
+const BROWSER_USER_AGENT =
+	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36';
+
+function makeRequest(path = '/', userAgent = BROWSER_USER_AGENT): Request {
 	return new Request(`https://www.celebra-me.com${path}`, {
-		headers: { cookie: '' },
+		headers: { cookie: '', 'user-agent': userAgent },
 	});
 }
 
@@ -184,6 +187,53 @@ describe('ingestTrackingEvent', () => {
 		},
 	);
 
+	describe('automated traffic', () => {
+		const commercialPayload = {
+			sessionId: '11111111-1111-4111-8111-111111111111',
+			visitorId: 'visitor_123456',
+			eventName: 'page_viewed',
+			routePath: '/',
+			routeClass: 'commercial',
+			eventProperties: {},
+			consentSnapshot: { necessary: true, analytics: true, marketing: true },
+		};
+
+		it.each([
+			[
+				'Googlebot',
+				'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+			],
+			['an empty user agent', ''],
+			['the WhatsApp link-preview fetcher', 'WhatsApp/2.23.20.0'],
+		])('drops %s before any write', async (_label, userAgent) => {
+			const result = await ingestTrackingEvent({
+				request: makeRequest('/', userAgent),
+				deployEnvironment: 'production',
+				payload: commercialPayload,
+			});
+
+			expect(result).toEqual({ accepted: false, reason: 'automated_traffic' });
+			expect(mockUpsertVisitorSession).not.toHaveBeenCalled();
+			expect(mockInsertTrackingEvent).not.toHaveBeenCalled();
+			expect(mockCreateLeadFromTrackingEvent).not.toHaveBeenCalled();
+		});
+
+		it('accepts a regular iPhone browser', async () => {
+			const result = await ingestTrackingEvent({
+				request: makeRequest(
+					'/',
+					'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+				),
+				deployEnvironment: 'production',
+				payload: commercialPayload,
+			});
+
+			expect(result).toEqual({ accepted: true, eventId: 'event-id' });
+			expect(mockUpsertVisitorSession).toHaveBeenCalledTimes(1);
+			expect(mockInsertTrackingEvent).toHaveBeenCalledTimes(1);
+		});
+	});
+
 	describe('WhatsApp lead auto-creation', () => {
 		it('auto-creates a lead when whatsapp_contact_clicked carries a lead_code', async () => {
 			mockInsertTrackingEvent.mockResolvedValue({
@@ -326,7 +376,7 @@ describe('ingestTrackingEvent', () => {
 describe('Attribution referrer from payload, not request Referer header [T3, T4b]', () => {
 	function makeRequestWithReferer(referer: string, path = '/'): Request {
 		return new Request(`https://www.celebra-me.com${path}`, {
-			headers: { cookie: '', referer },
+			headers: { cookie: '', referer, 'user-agent': BROWSER_USER_AGENT },
 		});
 	}
 

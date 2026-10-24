@@ -3,6 +3,7 @@ import { isProductionDeployment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { createHash, randomUUID } from 'node:crypto';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import { safeErr } from '@/lib/server/safe-error';
 
 interface ProcessResult {
 	processed: number;
@@ -117,7 +118,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 				result.ambiguous++;
 			}
 		} catch (error) {
-			console.error(`[meta-capi] Error processing outbox event ${row.id}:`, error);
+			console.error(`[meta-capi] Error processing outbox event ${row.id}:`, safeErr(error));
 			result.failed++;
 		}
 	}

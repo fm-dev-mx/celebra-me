@@ -30,6 +30,17 @@ class DashboardApiError extends Error {
 
 const DASHBOARD_DEBUG = isDebugMode();
 
+/** Debug logs carry shapes, never guest rows. */
+function summarizeDebugData(data: unknown): { count: number } | { keys: string[] } | null {
+	if (Array.isArray(data)) return { count: data.length };
+	if (data && typeof data === 'object') {
+		const items = (data as { items?: unknown }).items;
+		if (Array.isArray(items)) return { count: items.length };
+		return { keys: Object.keys(data) };
+	}
+	return null;
+}
+
 class GuestsApi {
 	private handleResponse<T>(result: ApiResult<T>, context: string): T {
 		if (!result.ok) {
@@ -48,7 +59,7 @@ class GuestsApi {
 			console.info('[dashboard][client][api:ok]', {
 				context,
 				status: result.status,
-				data: result.data,
+				data: summarizeDebugData(result.data),
 			});
 		}
 		return result.data;

@@ -70,8 +70,34 @@ describe('uploadToStorage', () => {
 		expect(console.error).toHaveBeenCalledWith(
 			'[storage] Storage upload failed:',
 			expect.objectContaining({
-				body: expect.stringContaining('<redacted>'),
+				providerError: 'Unauthorized',
 			}),
 		);
+		expect(JSON.stringify(jest.mocked(console.error).mock.calls)).not.toContain(SECRET_KEY);
+	});
+
+	it('logs no field the Storage body echoes back', async () => {
+		const email = 'guest@example.invalid';
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+			ok: false,
+			status: 400,
+			statusText: 'Bad Request',
+			text: async () =>
+				`{"statusCode":"400","error":"InvalidRequest","message":"Owner ${email} (Fictional Guest) rejected"}`,
+		} as Response);
+
+		await expect(
+			uploadToStorage(
+				'invitation-assets',
+				'invitations/inv-1/original/asset.webp',
+				new Blob(['image']),
+				'image/webp',
+			),
+		).rejects.toThrow('No se pudo subir la imagen. Intenta nuevamente.');
+
+		const logged = JSON.stringify(jest.mocked(console.error).mock.calls);
+		expect(logged).toContain('InvalidRequest');
+		expect(logged).not.toContain(email);
+		expect(logged).not.toContain('Fictional Guest');
 	});
 });

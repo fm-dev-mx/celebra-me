@@ -1,5 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { TrackingEventName } from '@/lib/tracking/event-contract';
+import { safeErr } from '@/lib/server/safe-error';
 
 /**
  * Fire-and-forget utility to record an internal commercial tracking event
@@ -41,6 +42,9 @@ export async function emitCommercialTrackingEvent(input: {
 			},
 		});
 	} catch (error) {
-		console.error(`[commercial-tracking] Failed to emit ${input.eventName} event:`, error);
+		console.error(
+			`[commercial-tracking] Failed to emit ${input.eventName} event:`,
+			safeErr(error),
+		);
 	}
 }

@@ -30,6 +30,12 @@ const payload = {
 	consentSnapshot: { necessary: true, analytics: true, marketing: false },
 };
 
+const BROWSER_HEADERS = {
+	'content-type': 'application/json',
+	'user-agent':
+		'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+};
+
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockCheckRateLimit.mockResolvedValue(true);
@@ -40,7 +46,7 @@ describe('/api/tracking/events', () => {
 	it('ingests a valid tracking event', async () => {
 		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
-			headers: { 'content-type': 'application/json' },
+			headers: BROWSER_HEADERS,
 			body: JSON.stringify(payload),
 		});
 
@@ -72,7 +78,7 @@ describe('/api/tracking/events', () => {
 		mockIngestTrackingEvent.mockResolvedValue({ accepted: false, reason: 'route_not_allowed' });
 		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
-			headers: { 'content-type': 'application/json' },
+			headers: BROWSER_HEADERS,
 			body: JSON.stringify(payload),
 		});
 
@@ -83,11 +89,31 @@ describe('/api/tracking/events', () => {
 		expect(body.data).toEqual({ accepted: false, reason: 'route_not_allowed' });
 	});
 
+	it('answers 202 when automated traffic is dropped', async () => {
+		mockIngestTrackingEvent.mockResolvedValue({ accepted: false, reason: 'automated_traffic' });
+		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json',
+				'user-agent':
+					'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+			},
+			body: JSON.stringify(payload),
+		});
+
+		const response = await POST(createApiContext(request) as never);
+		const body = await response.json();
+
+		expect(response.status).toBe(202);
+		expect(body.data).toEqual({ accepted: false, reason: 'automated_traffic' });
+		expect(mockIngestTrackingEvent).toHaveBeenCalledWith(expect.objectContaining({ request }));
+	});
+
 	it('rate limits noisy clients', async () => {
 		mockCheckRateLimit.mockResolvedValue(false);
 		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
-			headers: { 'content-type': 'application/json' },
+			headers: BROWSER_HEADERS,
 			body: JSON.stringify(payload),
 		});
 
@@ -105,7 +131,7 @@ describe('/api/tracking/events', () => {
 		);
 		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
-			headers: { 'content-type': 'application/json' },
+			headers: BROWSER_HEADERS,
 			body: JSON.stringify({ ...payload, eventName: 'order_created' }),
 		});
 

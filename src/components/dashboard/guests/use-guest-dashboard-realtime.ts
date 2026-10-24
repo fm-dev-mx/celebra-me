@@ -102,7 +102,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 			if (isDebugMode()) {
 				console.info('[dashboard][client][loadEvents]', {
 					initialEventId,
-					hostEvents: data.items,
+					hostEvents: { count: data.items.length },
 					debug: data.debug || null,
 					resolvedEventId: nextEventId || '',
 					eventsError,
