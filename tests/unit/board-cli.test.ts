@@ -230,6 +230,19 @@ describe('pnpm board', () => {
 		expect(JSON.parse(board(only, 'next', '--agente=codex', '--json').out)).toBeNull();
 	});
 
+	it('numbers a task saved without num on its next write and keeps that number after', () => {
+		const dir = makeBoard({
+			tareas: [task('vieja', { num: undefined }), task('otra', { num: 7 })],
+			archivo: [{ id: 'archivada', num: 9, estado: 'hecha' }],
+		});
+		expect(readTask(dir, 'vieja').num).toBeUndefined();
+		expect(board(dir, 'set', 'vieja', '--rev=1', 'ahora=uno').status).toBe(0);
+		expect(readTask(dir, 'vieja')).toMatchObject({ num: 10, rev: 2 });
+		expect(board(dir, 'set', 'vieja', '--rev=2', 'ahora=dos').status).toBe(0);
+		expect(readTask(dir, 'vieja')).toMatchObject({ num: 10, rev: 3 });
+		expect(readTask(dir, 'otra').num).toBe(7);
+	});
+
 	it('reports missing, invalid and duplicate numbers even on finished and archived tasks', () => {
 		const dir = makeBoard({
 			tareas: [

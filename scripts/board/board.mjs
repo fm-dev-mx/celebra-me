@@ -147,14 +147,16 @@ function logRow(dir, { tarea, de, a, quien, corrio, salio }) {
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
-	// Archive never deletes tasks; both collections reserve their numbers permanently.
-	t.num = before
+	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
+	// numbering existed gets the next number on its first write, like a new one.
+	const numbered = Number.isSafeInteger(before?.num);
+	t.num = numbered
 		? before.num
 		: [...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
 				(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
 				0,
 			) + 1;
-	if (!before && !Number.isSafeInteger(t.num))
+	if (!numbered && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
