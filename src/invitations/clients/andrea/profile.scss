@@ -26,6 +26,8 @@ $andrea-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 $andrea-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23E8D6A2' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23E8D6A2' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
 
 // The wax seal's press: a ring of leaves closed by a small butterfly, the monogram struck inside.
+// The footer's last butterfly: the tag's outline, filled in pale gold so it reads at pull size.
+$andrea-footer-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='%23E8D6A2' stroke='%23E8D6A2' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill-opacity='.85'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
 $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M40.1 84.6A36 36 0 0 1 30.9 19.5M59.9 84.6A36 36 0 0 0 69.1 19.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cellipse cx='33.9' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28244 33.9 86.2%29'/%3E%3Cellipse cx='33.3' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28171 33.3 77.7%29'/%3E%3Cellipse cx='22.3' cy='78.3' rx='4.4' ry='1.8' transform='rotate%28264 22.3 78.3%29'/%3E%3Cellipse cx='24.7' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28191 24.7 70.2%29'/%3E%3Cellipse cx='14.2' cy='66.9' rx='4.2' ry='1.7' transform='rotate%28285 14.2 66.9%29'/%3E%3Cellipse cx='19.2' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28212 19.2 60.1%29'/%3E%3Cellipse cx='10.6' cy='53.5' rx='4.0' ry='1.7' transform='rotate%28305 10.6 53.5%29'/%3E%3Cellipse cx='17.6' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28-128 17.6 48.8%29'/%3E%3Cellipse cx='11.8' cy='39.5' rx='3.8' ry='1.6' transform='rotate%28-35 11.8 39.5%29'/%3E%3Cellipse cx='20.1' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28-108 20.1 37.6%29'/%3E%3Cellipse cx='17.8' cy='26.9' rx='3.6' ry='1.5' transform='rotate%28-14 17.8 26.9%29'/%3E%3Cellipse cx='26.2' cy='28.0' rx='3.6' ry='1.5' transform='rotate%28-87 26.2 28.0%29'/%3E%3Cellipse cx='27.9' cy='17.2' rx='3.4' ry='1.4' transform='rotate%286 27.9 17.2%29'/%3E%3Cellipse cx='35.3' cy='21.1' rx='3.4' ry='1.4' transform='rotate%28-67 35.3 21.1%29'/%3E%3Cellipse cx='66.1' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28116 66.1 86.2%29'/%3E%3Cellipse cx='66.7' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28189 66.7 77.7%29'/%3E%3Cellipse cx='77.7' cy='78.3' rx='4.4' ry='1.8' transform='rotate%2896 77.7 78.3%29'/%3E%3Cellipse cx='75.3' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28169 75.3 70.2%29'/%3E%3Cellipse cx='85.8' cy='66.9' rx='4.2' ry='1.7' transform='rotate%2875 85.8 66.9%29'/%3E%3Cellipse cx='80.8' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28148 80.8 60.1%29'/%3E%3Cellipse cx='89.4' cy='53.5' rx='4.0' ry='1.7' transform='rotate%2855 89.4 53.5%29'/%3E%3Cellipse cx='82.4' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28128 82.4 48.8%29'/%3E%3Cellipse cx='88.2' cy='39.5' rx='3.8' ry='1.6' transform='rotate%2835 88.2 39.5%29'/%3E%3Cellipse cx='79.9' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28108 79.9 37.6%29'/%3E%3Cellipse cx='82.2' cy='26.9' rx='3.6' ry='1.5' transform='rotate%2814 82.2 26.9%29'/%3E%3Cellipse cx='73.8' cy='28.0' rx='3.6' ry='1.5' transform='rotate%2887 73.8 28.0%29'/%3E%3Cellipse cx='72.1' cy='17.2' rx='3.4' ry='1.4' transform='rotate%28-6 72.1 17.2%29'/%3E%3Cellipse cx='64.7' cy='21.1' rx='3.4' ry='1.4' transform='rotate%2867 64.7 21.1%29'/%3E%3Cg transform='translate%2841.84 3.12%29 scale%280.34%29'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31Z'/%3E%3Cpath d='M23 32C14 33 8 40 11 46 14 51 21 45 23 37Z'/%3E%3Cpath d='M25 26C34 12 45 12 44 22 43 30 34 33 25 31Z'/%3E%3Cpath d='M25 32C34 33 40 40 37 46 34 51 27 45 25 37Z'/%3E%3Cpath d='M24 20C25.2 20 25.8 25 25.8 32S25.2 44 24 44 22.2 39 22.2 32 22.8 20 24 20Z'/%3E%3C/g%3E%3C/svg%3E");
 
 .event--andrea.theme-preset--storybook-emerald {
@@ -453,6 +455,101 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 			rgb(0 0 0) 55%,
 			transparent 100%
 		);
+	}
+
+	// The last butterfly: it waits larger at the bottom of the closing, breathing, with a line that
+	// asks for the pull; pulling lifts it on its thread into a pale-gold light.
+	--footer-pull-scale: 1.7;
+	--footer-pull-height: 0.95rem;
+	--footer-pull-shape: 0;
+	--footer-pull-color: var(--color-pale-gold);
+	--footer-pull-body: #{$andrea-footer-butterfly} center / contain no-repeat;
+	--footer-pull-glow: transparent;
+	--footer-pull-pool: radial-gradient(
+		ellipse 60% 100% at 50% 100%,
+		rgb(var(--color-pale-gold-rgb) / 24%),
+		transparent 70%
+	);
+	--footer-pull-label: 'Deslice hacia arriba para dejar volar la última mariposa';
+	--footer-pull-label-color: rgb(var(--color-pale-gold-rgb) / 85%);
+	--footer-pull-label-size: 0.8125rem;
+	--footer-pull-breathe: footer-pull-breathe;
+
+	// No text under 12 px; the footer links keep a 44 px tap height.
+	--footer-rights-size: 0.75rem;
+	--footer-powered-size: 0.75rem;
+	--footer-replay-font-size: 0.75rem;
+	--footer-control-font-size: 0.75rem;
+	--footer-link-tap-padding: 0.875rem;
+
+	// The footer waits below the closing: the invitation stops on the night, and a second scroll
+	// at the bottom lets a quiet strip of the same night rise, with the reply first.
+	.invitation-footer {
+		--invitation-footer-reveal: held;
+		--footer-open-glide: 720ms;
+		--footer-reveal-duration: 520ms;
+		--footer-reveal-stagger: 0ms;
+		--footer-reveal-rise: 0.25rem;
+		--footer-reply-overshoot: 0;
+
+		// The reply waits for the end: the footer opens on the last butterfly, with the question and
+		// the reply under it, in pale gold.
+		--invitation-footer-reply: on;
+		--footer-reply-eyebrow: 'La última mariposa es la suya';
+		--footer-reply-question: '¿Me acompaña el 3 de julio?';
+		--footer-reply-note: 'Antes del viernes 18 de junio';
+		--footer-reply-answered: 'Su mariposa ya llegó. Gracias.';
+		--footer-reply-lantern-height: 1.87rem;
+		--footer-reply-lantern-glow: transparent;
+		--footer-reply-ink: var(--color-story-cream);
+		--footer-reply-muted: var(--color-night-sage);
+		--footer-reply-accent: var(--color-pale-gold);
+		--footer-reply-eyebrow-size: 0.8125rem;
+		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
+		--footer-reply-button-bg: var(--color-pale-gold);
+		--footer-reply-button-ink: var(--color-emerald-night);
+		--footer-reply-button-font: var(--font-label);
+		--footer-reply-glint: linear-gradient(
+			105deg,
+			transparent 40%,
+			rgb(255 255 255 / 55%) 50%,
+			transparent 60%
+		);
+		--footer-bg: var(--color-emerald-night);
+		--footer-border-color: rgb(var(--color-pale-gold-rgb) / 14%);
+		--footer-closing-color: rgb(var(--color-pale-gold-rgb) / 78%);
+		--footer-divider-line: rgb(var(--color-pale-gold-rgb) / 30%);
+		--footer-logo-filter: brightness(0) invert(0.85);
+		--footer-contact-border: 0;
+		--footer-contact-bg: none;
+		--footer-contact-padding: 0.5rem 0.25rem;
+		--footer-replay-color: var(--color-night-sage);
+		--footer-replay-opacity: 72%;
+
+		// Three tiers: the reply, then the invitation's own sign-off with the replay under it, and
+		// last the platform, set apart by a short gold rule on one quiet line with the legal note.
+		--footer-reply-gap: 3.25rem;
+		--footer-closing-size: clamp(1.1rem, 3vw, 1.25rem);
+		--footer-divider-display: none;
+		--footer-replay-order: -1;
+		--footer-content-gap: 1rem;
+		--footer-primary-row-direction: row;
+		--footer-platform-rule: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--color-pale-gold-rgb) / 45%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.5rem;
+		--footer-contact-color: var(--color-night-sage);
+		--footer-contact-weight: 400;
+		--footer-contact-icon-filter: brightness(0) invert(0.85);
+
+		// The music button rests in the bottom corner; the legal line ends above it.
+		--footer-padding-bottom: 5.5rem;
+		--color-text-primary: var(--color-night-sage);
+		--color-action-accent: var(--color-pale-gold);
+		--color-action-accent-rgb: var(--color-pale-gold-rgb);
 	}
 
 	// Join 3, the climax: the closing rises into the reply card's sage under the arch, cut from the

@@ -162,6 +162,9 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Andrea in t
 - Pass: «Su lugar ya está apartado».
 - RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 18 de junio.»
 - Closing: «Gracias por ser parte de mis quince años. Le espero el 3 de julio.» · «Andrea».
+- Footer: «Deslice hacia arriba para dejar volar la última mariposa» · «La última mariposa es la
+  suya» · «¿Me acompaña el 3 de julio?» · «Antes del viernes 18 de junio» · «Su mariposa ya llegó.
+  Gracias.»
 
 ---
 
@@ -275,6 +278,8 @@ repository.
   indications as an emerald hang tag with a gold butterfly, through `--location-enclosure-*` tokens.
 - Venue actions: «Ver mapa» is the filled primary button; «Agendar» and «Copiar dirección» are
   outlined secondaries with line icons. All three are profile tokens on the program entry.
+- Footer: America's held footer adapted by tokens. The last butterfly waits at the bottom edge and a
+  pull opens the emerald night strip with the reply first, then the sign-off and the platform.
 - Butterflies animate only without `prefers-reduced-motion`; the resting frame is complete.
 
 ---
