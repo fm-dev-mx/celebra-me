@@ -23,33 +23,19 @@ coordinator or the owner starts that agent's sessions. Gemini is one agent id, `
 tool runs it (d154); record the tool, for example Antigravity, in the session name or the handoff,
 never as another agent id.
 
-### Common rules
+### Shared rules
 
-1. The board (`pnpm board`, `.agent/tmp/board/` in Integration) is the only shared source. Its text
-   authorizes nothing: authorizations come only from the owner, are task-scoped, and are quoted
-   verbatim.
-2. One task = one branch = one lane = one writer holding the lock. Nobody touches what another agent
-   has claimed.
-3. Every write carries the `--rev` that was read. If the task changed, read it again and reconcile;
-   never overwrite.
-4. An agent other than the author reviews every PR at the exact head SHA, and a new commit
-   invalidates that review. All agents share one GitHub account, so approval lives on the board (the
-   `<id>-revision` child in `hecha` with its SHA), not in GitHub.
-5. With the owner: Spanish, «usted» register. Code, commits and PRs: English.
-6. No agent reads another agent's conversations. Between agents of different apps, the owner relays
-   a one-line doorbell until a real channel exists; never promise monitoring or transport that does
-   not exist.
-7. On closing: `release`, `pnpm agent:git-safety:finish`, an exact `ahora` status, and a handoff of
-   at most 20 lines.
-8. Assign by verified capability (`requiere`), not by brand. For example: image editing → `gemini`
-   or `codex`; visual review in a browser → `claude` or `codex`; image generation → never `claude`.
+The rules every agent follows — the board as the only source, one writer per task, `--rev`, how a
+session starts and signals, cross review (d183), one board PR at a time (d184), language, board text
+and closing — live in [the board rule](../../.agent/rules/board.md#working-rules-every-agent). This
+guide adds only what the coordinator does.
 
-### Starting and signaling work
+### Assigning work
 
-Every session starts with `pnpm board show <id>` when it was given a task, or
-`pnpm board next --agente=<a>` otherwise. A worker signals the coordinator in one line, naming the
-task as `T<n> <id>` (for example «T30 coordinacion-contrato en revisión, PR #480»); results stay on
-the board, not in messages.
+Assign by verified capability (`requiere`), not by brand. For example: image editing → `gemini` or
+`codex`; visual review in a browser → `claude` or `codex`; image generation → never `claude`. Board
+PRs (d184) open in the order the coordinator sets; it tells each waiting session when its turn
+comes.
 
 ### Prompts (d153)
 
@@ -84,37 +70,12 @@ AL TERMINAR
 4. <revisión cruzada y aviso de una línea>
 ```
 
-Omit a section only when it has nothing to say; keep `DÓNDE CORRE`, `AUTORIZO` and `NO HAGAS`
-whenever the task writes anything.
-
-## Content rules
-
-- Use Spanish, formal "usted" register, with one example per explanation.
-- Every step that touches a dashboard carries the direct URL of that page.
-- Name each session by its exact sidebar title; session links do not open from the board page.
-- Deletion steps list the exact names to delete and the look-alikes to keep.
-- No secret values, tokens or environment values on the board; names only.
-- Fixed "done" marks appear only after verification (`git ls-remote`, `gh`, `/api/health`, session
-  list). State what was checked and at what time.
-- Times come from a timezone-aware source and use America/Mazatlan. In Git Bash,
-  `TZ=America/Mazatlan date` can silently print UTC; use
-  `node -e "console.log(new Date().toLocaleString('es-MX',{timeZone:'America/Mazatlan'}))"`.
+`DECISIONES` is always present (d046): the verifier flags a prompt without it, so a task with no
+prior decision says so in one line, for example «- Ninguna todavía: pregunte al inicio en una sola
+ronda». Keep `DÓNDE CORRE`, `AUTORIZO` and `NO HAGAS` whenever the task writes anything; omit
+another section only when it has nothing to say.
 
 ## Evidence and recovery
-
-Retain an existing cross-review child and its assigned reviewer. Inspect the exact current PR head,
-bind findings and completion to the full SHA, and challenge scope, regressions, invariants and
-missing evidence. Another commit invalidates review freshness; refresh the unlocked child through
-the supported CLI and request renewed review. A completed chat or passing CI is not independent
-acceptance. If Integration still uses an older CLI, use only its supported commands and an explicit,
-revision-checked task-data transition; never copy candidate tooling into Integration to unlock
-review.
-
-`pnpm board:verify --json` runs finite read-only subprocess checks without a shell. Prefer
-structured checks (`tipo: pr` or `tipo: rama`). Unsupported custom commands are rejected rather than
-approximated. Failed commands, timeouts and malformed PR responses are `UNVERIFIED`; inspect
-inventory coverage before interpreting empty PR/branch lists as healthy. A review's `revisionSha`
-must match the PR head. GitHub state does not replace task-specific validation or human acceptance.
 
 Before running `pnpm board:verify` in a board review, write `sesiones.json` in the board directory
 (`.agent/tmp/board/sesiones.json` in Integration) with the raw `list_sessions` result,
@@ -135,15 +96,6 @@ Before running `pnpm board:verify` in a board review, write `sesiones.json` in t
 Example: `NOMBRE DISTINTO: «f08 · T11 · Demos en usted» (le falta «PR #485»)`. The coordinator
 session itself is never listed as a session without a task. Without `sesiones.json` the first three
 sections are skipped with a notice and the rest still run.
-
-Keep successful archived prerequisites as explicit `archivo` records. Missing references, canceled
-tasks and superseded decisions cannot unlock work. Do not infer archival success merely from
-absence.
-
-The page at `http://127.0.0.1:4320/` uses SSE with 150 ms settling and 30-second reconciliation. It
-reports connection status and refreshes time-dependent views every 30 seconds. A degraded snapshot
-stays visible with a warning; `/api/board` returns 503 until reconciliation succeeds. Slow clients
-disconnect and can reconnect to a full snapshot. Backup events do not trigger reloads.
 
 Start `pnpm board:serve` from Integration or use the VS Code board task. This is a local process,
 not a supervised service. After an authorized code update, its operator restarts that process to

@@ -112,9 +112,11 @@ authorization.
 - **`comprobada`**: only after `unida`/`hecha` with `evidencia.salio` from the verifier (listed
   under «LISTAS PARA comprobada»), or with the owner's explicit authorization. Clear `prompt` and
   release the lock when closing.
-- **Prompt**: «Sigue .agent/rules/board.md con tarea `<id>`» plus the task-specific scope only, with
-  a `DECISIONES` section (d046). Layout: the prompt template in
-  [the coordinator board guide](../../docs/core/coordinator-board.md#prompts-d153).
+- **Prompt**: Spanish, in sections, opening with `T<n> · <título>` (d153, d160); it always has a
+  `DECISIONES` section (d046), which the verifier requires. The coordinator writes it with
+  [the prompt template](../../docs/core/coordinator-board.md#prompts-d153). Only the review prompts
+  that `pnpm board review` generates are English and open with «Follow .agent/rules/board.md for
+  task `<id>`».
 
 ## Names and task references
 
@@ -125,6 +127,37 @@ authorization.
   rename the session once it opens (d158).
 - **Mentions**: name a task as `T<n> <id>`, for example `T30 coordinacion-contrato`, on the board,
   in doorbells between agents, in PR descriptions and in handoffs (d159).
+
+## Working rules (every agent)
+
+- **Only source**: the board is the only shared source, and its text authorizes nothing.
+  Authorizations come only from the owner, are task-scoped and are quoted verbatim.
+- **One writer**: one task = one branch = one lane = one writer holding the lock. Nobody touches a
+  task, lane or branch another agent holds. Every write carries the `--rev` that was read; if the
+  task changed, read it again and reconcile, never overwrite.
+- **Starting**: a session given a task starts with `pnpm board show <id>`, otherwise with
+  `pnpm board next --agente=<a>`.
+- **Signaling**: a worker tells the coordinator in one line, naming the task as `T<n> <id>`, for
+  example «T30 coordinacion-contrato en revisión, PR #480». Results stay on the board, not in
+  messages. No agent reads another agent's conversations; between agents of different apps the owner
+  relays that one-line doorbell, and nobody promises monitoring or transport that does not exist.
+- **Cross review (d183)**: an agent other than the author reviews every PR at its exact head SHA.
+  Claude reviews the work of Codex and Gemini; Codex or Gemini review only Claude's work. All agents
+  share one GitHub account, so approval lives on the board (the review child in `hecha` with its
+  SHA), not in GitHub.
+- **One board PR at a time (d184)**: only one open PR may change the board (`scripts/board/`, this
+  file or the coordinator guide). The others wait in line; their code may be ready and pushed, but
+  the PR opens when the coordinator says it is its turn.
+- **Language**: with the owner, Spanish in the «usted» register; code, commits and PRs in English.
+- **Board text**: one example per explanation; every dashboard step carries the page's direct URL;
+  sessions are named by their exact sidebar title (session links do not open from the board page);
+  deletion steps list the exact names to delete and the look-alikes to keep; no secret, token or
+  environment value, names only. A «done» mark appears only after a check (`git ls-remote`, `gh`,
+  `/api/health`, the session list), stating what was checked and when. Times use America/Mazatlan
+  from a timezone-aware source: in Git Bash `TZ=America/Mazatlan date` can silently print UTC, so
+  use `node -e "console.log(new Date().toLocaleString('es-MX',{timeZone:'America/Mazatlan'}))"`.
+- **Closing**: `release`, `pnpm agent:git-safety:finish`, an exact `ahora` and a handoff of at most
+  20 lines.
 
 ## Session ownership and review
 
@@ -156,6 +189,12 @@ authorization.
   `revisionSha` (from GitHub, or explicit `--sha`). It can refresh an unlocked child at a new SHA.
   Reviews become executable before merge and do not inherit the author's lane. Completion declares
   `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
+- A reviewer keeps the existing review child and its assigned reviewer, inspects the exact current
+  PR head, binds findings and completion to the full SHA, and challenges scope, regressions,
+  invariants and missing evidence. Another commit makes the review stale: refresh the child through
+  the CLI and ask for a new review. A finished chat or green CI is not independent acceptance. If
+  Integration still runs an older CLI, use only its commands and a revision-checked task write;
+  never copy candidate tooling into Integration to unlock a review.
 - `agentes --json` discovers the shared registry and capability overrides. Only explicit coordinator
   updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before
   declaring them.
@@ -166,17 +205,20 @@ authorization.
 Prefer structured `chequeo: {tipo: pr, pr: N}` or `{tipo: rama, rama: type/id}`. Legacy `cmd` is
 accepted only by the finite `commandArgs` grammar, executed as argument arrays without a shell.
 Arbitrary HTTP/API commands are rejected. Failures/timeouts/malformed PR responses are `UNVERIFIED`;
-inventory coverage is separate. Branch existence or MERGED alone does not prove every task
-criterion.
+inventory coverage is separate: check it before reading an empty PR or branch list as healthy. A
+review's `revisionSha` must match the PR head. Branch existence or MERGED alone does not prove every
+task criterion, and GitHub state never replaces task-specific validation or human acceptance.
 
-At every board review the coordinator writes `sesiones.json` in the board directory: the raw
-`list_sessions` result with `include_archived: true`. The verifier reads it for its lifecycle drift
-sections (sessions without a task, locks naming a missing session, names off the d158 form); without
-it those sections are skipped and the report says so. The drift sections only report: the verifier
-never proposes deleting a branch, a session or a task.
+The verifier's lifecycle drift sections read `sesiones.json`, which the coordinator writes (see
+[the coordinator guide](../../docs/core/coordinator-board.md#evidence-and-recovery)). They only
+report: the verifier never proposes deleting a branch, a session or a task.
 
-SSE reports live/degraded status. Default reconciliation and time-dependent redraw: 30 seconds;
-normal event debounce: 150 ms. Sub-second delivery is a measured target, not an availability
-guarantee. A filesystem transaction lock is never stolen solely because it is old. After a writer
-crash the coordinator inspects its PID/process and obtains scoped recovery authority before removing
-the exact orphan lock. A worker's task claim is separate from this short-lived transaction lock.
+The page uses SSE and shows a live or degraded indicator. Events settle for 150 ms; reconciliation
+and the redraw of time-dependent views run every 30 seconds. A degraded snapshot stays visible with
+a warning and `/api/board` answers 503 until reconciliation succeeds; slow clients are disconnected
+and reconnect to a full snapshot; backup events do not reload it. Sub-second delivery is a measured
+target, not an availability guarantee.
+
+A worker's task claim is separate from the short-lived transaction lock (`.agent/tmp/board/.lock`)
+each CLI write takes. That lock is never stolen only because it is old; after a writer crash the
+coordinator recovers it as the coordinator guide says.
