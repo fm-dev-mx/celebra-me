@@ -48,7 +48,6 @@ function verify(dir: string, answers: Record<string, unknown>) {
 		JSON.stringify({
 			'gh pr list --state open --json number,headRefName,title --limit 100': '[]',
 			'git worktree list --porcelain': '',
-			'gh pr list --state closed --json number,headRefName,state --limit 100': '[]',
 			'git ls-remote --heads origin': '',
 			...answers,
 		}),
@@ -313,15 +312,22 @@ describe('board:verify', () => {
 				}),
 				task('abierta', { num: 20, rama: 'docs/abierta' }),
 			]);
+			const closed = (head: string, rows: Json[]) => ({
+				[`gh pr list --state closed --head ${head} --json number,headRefName,state --limit 100`]:
+					JSON.stringify(rows),
+			});
+			// Old PRs on purpose: a repository-wide list of the latest 100 would miss them.
 			const { report } = verify(dir, {
 				'git ls-remote origin refs/heads/docs/abierta': '',
-				'gh pr list --state closed --json number,headRefName,state --limit 100':
-					JSON.stringify([
-						{ number: 433, headRefName: 'test/baselines', state: 'MERGED' },
-						{ number: 470, headRefName: 'feat/borrada', state: 'MERGED' },
-						{ number: 475, headRefName: 'docs/pasarela', state: 'CLOSED' },
-						{ number: 476, headRefName: 'docs/abierta', state: 'CLOSED' },
-					]),
+				...closed('test/baselines', [
+					{ number: 33, headRefName: 'test/baselines', state: 'MERGED' },
+				]),
+				...closed('docs/pasarela', [
+					{ number: 75, headRefName: 'docs/pasarela', state: 'CLOSED' },
+				]),
+				...closed('docs/abierta', [
+					{ number: 76, headRefName: 'docs/abierta', state: 'CLOSED' },
+				]),
 				'git ls-remote --heads origin': [
 					'a1\trefs/heads/develop',
 					'a2\trefs/heads/docs/pasarela',
@@ -331,15 +337,63 @@ describe('board:verify', () => {
 					'worktree D:/wt/f08\nbranch refs/heads/test/baselines\n',
 			});
 			expect(report.ramasUnidasSinBorrar).toEqual([
-				{ pr: 433, rama: 'test/baselines', donde: 'carril' },
+				{ pr: 33, rama: 'test/baselines', donde: 'carril' },
 			]);
 			expect(report.prCerradoSinUnir).toEqual([
-				{ pr: 475, rama: 'docs/pasarela', tarea: 'T19' },
+				{ pr: 75, rama: 'docs/pasarela', tarea: 'T19' },
 			]);
 			expect(report.cobertura).toMatchObject({
 				prsCerrados: 'VERIFIED',
 				ramasRemotas: 'VERIFIED',
 			});
+		});
+
+		it('keeps closed-PR coverage UNVERIFIED when a branch query fails or hits its limit', () => {
+			const dir = makeExport([task('t', {})]);
+			const full = Array.from({ length: 100 }, (_, i) => ({
+				number: i + 1,
+				headRefName: 'feat/llena',
+				state: 'CLOSED',
+			}));
+			const { report } = verify(dir, {
+				'git ls-remote --heads origin':
+					'a1\trefs/heads/feat/llena\na2\trefs/heads/feat/sin',
+				'gh pr list --state closed --head feat/llena --json number,headRefName,state --limit 100':
+					JSON.stringify(full),
+			});
+			expect(report.cobertura.prsCerrados).toBe('UNVERIFIED');
+		});
+
+		it('accepts any lane in a review session name, since reviews have no lane', () => {
+			const dir = makeExport(
+				[
+					task('revisar', {
+						num: 67,
+						estado: 'en curso',
+						pr: '#489',
+						candado: { agente: 'claude', desde: NOW, sesion: 'local_r' },
+					}),
+					task('revisar-mal', {
+						num: 68,
+						estado: 'en curso',
+						pr: '#490',
+						candado: { agente: 'claude', desde: NOW, sesion: 'local_m' },
+					}),
+				],
+				{
+					sesiones: [
+						{
+							sessionId: 'local_r',
+							title: 'f04 · T67 · PR #489 · Revisar',
+							isArchived: false,
+						},
+						{ sessionId: 'local_m', title: 'f04 · T68 · Revisar', isArchived: false },
+					],
+				},
+			);
+			expect(verify(dir, {}).report.nombreDistinto).toEqual([
+				expect.objectContaining({ tarea: 'T68', msg: 'le falta «PR #490»' }),
+			]);
 		});
 
 		it('lists close-queue entries still pending after a day', () => {

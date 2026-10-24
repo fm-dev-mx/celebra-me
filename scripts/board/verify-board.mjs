@@ -47,7 +47,11 @@ export function commandArgs(cmd) {
 	if (cmd === 'git worktree list --porcelain') return ['git', 'worktree', 'list', '--porcelain'];
 	if (cmd === 'gh pr list --state open --json number,headRefName,title --limit 100')
 		return cmd.split(' ');
-	if (cmd === 'gh pr list --state closed --json number,headRefName,state --limit 100')
+	if (
+		/^gh pr list --state closed --head [A-Za-z0-9._/-]{1,200} --json number,headRefName,state --limit 100$/.test(
+			cmd,
+		)
+	)
 		return cmd.split(' ');
 	if (cmd === 'git ls-remote --heads origin') return cmd.split(' ');
 	if (/^gh pr view [1-9]\d* --json (state|headRefOid)$/.test(cmd)) return cmd.split(' ');
@@ -277,13 +281,15 @@ const isCoordinator = (s) => /coordinador/i.test(s.nombre);
 
 /** Session name rule d158: `<lane> · T<n> · PR #<n> · <description>`; no PR part before it opens. */
 export function nameDrift(t, nombre) {
-	const base = `${laneTag(t.candado?.carril ?? t.carril)} · T${t.num} · `;
+	// Review tasks run without a lane (they never inherit the author's), so any lane prefix fits.
+	const lane = laneTag(t.candado?.carril ?? t.carril);
+	const laneRe = lane ? lane.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '[^\\s·]+';
 	const pr = prNumber(t.pr);
-	const head = pr ? `${base}PR #${pr} · ` : base;
-	if (nombre.startsWith(head) && nombre.length > head.length) return null;
-	if (pr && nombre.startsWith(base) && !nombre.includes(`PR #${pr}`))
+	const base = `^${laneRe} · T${t.num} · `;
+	if (new RegExp(`${base}${pr ? `PR #${pr} · ` : ''}\\S`).test(nombre)) return null;
+	if (pr && new RegExp(base).test(nombre) && !nombre.includes(`PR #${pr}`))
 		return `le falta «PR #${pr}»`;
-	return `se espera «${head}<descripción>»`;
+	return `se espera «${lane || '<carril>'} · T${t.num} · ${pr ? `PR #${pr} · ` : ''}<descripción>»`;
 }
 
 /** Drift between tasks and the sessions snapshot (d158, d175); null without a snapshot. */
@@ -332,18 +338,28 @@ function lifecycleDrift(tareas) {
 
 /** Merged PR branches still present, and PRs closed without merge whose task is closed. Report only. */
 function branchDrift(tareas, run, laneBranches) {
-	const closedResult = commandResult(
-		run,
-		'gh pr list --state closed --json number,headRefName,state --limit 100',
-	);
-	const closedPrs = closedResult.ok ? parseJson(closedResult.output, null) : null;
 	const remoteResult = commandResult(run, 'git ls-remote --heads origin');
 	const remote = new Set(
 		remoteResult.ok
 			? [...String(remoteResult.output).matchAll(/refs\/heads\/(\S+)/g)].map((m) => m[1])
 			: [],
 	);
-	const prs = Array.isArray(closedPrs) ? closedPrs : [];
+	// One query per present branch: a repository-wide closed list would stop at its limit and
+	// silently skip older PRs whose branch still exists.
+	const present = [...new Set([...remote, ...laneBranches])].filter(
+		(b) => !BASE_BRANCHES.has(b) && SAFE_BRANCH.test(b),
+	);
+	const prs = [];
+	let complete = true;
+	for (const branch of present) {
+		const result = commandResult(
+			run,
+			`gh pr list --state closed --head ${branch} --json number,headRefName,state --limit 100`,
+		);
+		const rows = result.ok ? parseJson(result.output, null) : null;
+		if (!Array.isArray(rows) || rows.length >= 100) complete = false;
+		if (Array.isArray(rows)) prs.push(...rows.filter((p) => p.headRefName === branch));
+	}
 	const ramasUnidasSinBorrar = [];
 	for (const p of prs.filter((x) => x.state === 'MERGED' && !BASE_BRANCHES.has(x.headRefName))) {
 		if (remote.has(p.headRefName))
@@ -361,7 +377,7 @@ function branchDrift(tareas, run, laneBranches) {
 		ramasUnidasSinBorrar,
 		prCerradoSinUnir,
 		cobertura: {
-			prsCerrados: Array.isArray(closedPrs) ? 'VERIFIED' : 'UNVERIFIED',
+			prsCerrados: complete ? 'VERIFIED' : 'UNVERIFIED',
 			ramasRemotas: remoteResult.ok ? 'VERIFIED' : 'UNVERIFIED',
 		},
 	};

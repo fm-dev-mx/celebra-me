@@ -37,7 +37,6 @@ function makeBoard(collections: Record<string, Json[]>) {
 		JSON.stringify({
 			'gh pr list --state open --json number,headRefName,title --limit 100': '[]',
 			'git worktree list --porcelain': '',
-			'gh pr list --state closed --json number,headRefName,state --limit 100': '[]',
 			'git ls-remote --heads origin': '',
 		}),
 	);
