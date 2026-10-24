@@ -41,6 +41,7 @@ export const COLLECTIONS = [
 	'agentes',
 	'archivo',
 	'prompts',
+	'bandejas',
 ];
 const SAFE_ID = /^[A-Za-z0-9._~:@+-]{1,200}$/;
 export const BACKUP_DIR = '.respaldos';
@@ -92,6 +93,7 @@ export function loadBoard(dir) {
 		carriles: readCollection(dir, 'carriles'),
 		agentes: readCollection(dir, 'agentes'),
 		archivo: readCollection(dir, 'archivo'),
+		bandejas: readCollection(dir, 'bandejas'),
 		estado: estado ?? null,
 	};
 }

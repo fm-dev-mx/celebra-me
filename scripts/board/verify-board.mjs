@@ -409,8 +409,9 @@ function staleClosings(cierres, now) {
 /** Newest log row per task, to catch a change without a new rev. */
 function lastLogByTask(bitacora) {
 	const last = {};
+	// A message (T126) changes no task, so it never asks for a new rev.
 	for (const r of bitacora)
-		if (r.tarea && r.en && !(Date.parse(last[r.tarea] ?? 0) >= Date.parse(r.en)))
+		if (r.tarea && r.en && !r.mensaje && !(Date.parse(last[r.tarea] ?? 0) >= Date.parse(r.en)))
 			last[r.tarea] = r.en;
 	return last;
 }

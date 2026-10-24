@@ -4,6 +4,7 @@
  * live streams so the page reconnects to the new worker, and exits once its last request is answered.
  */
 import { viewArchiver } from './board.mjs';
+import { readLive } from './live.mjs';
 import { boardDir } from './store.mjs';
 import { serveView } from './view-server.mjs';
 
@@ -11,6 +12,7 @@ const dir = boardDir();
 try {
 	const server = await serveView(dir, Number(process.env.BOARD_VIEW_PORT), {
 		archive: viewArchiver(dir),
+		live: (board) => readLive(dir, board),
 		token: process.env.BOARD_VIEW_TOKEN,
 		version: process.env.BOARD_VIEW_VERSION,
 	});

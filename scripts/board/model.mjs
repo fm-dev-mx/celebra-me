@@ -54,6 +54,8 @@ export const QUIEN = ['claude', 'codex', 'gemini', 'coordinador', 'dueno'];
 /** States a row may move between: the task's, `archivada` for archive/unarchive, '' before the task existed. */
 const LOG_ESTADOS = ['', ...ESTADOS, 'archivada'];
 const QUIEN_ALIAS = { dueño: 'dueno' };
+/** Who a board message goes to (T126): `pnpm board msg <id> --de=<a> --para=<b> "texto"`. */
+export const DESTINOS = ['coordinador', 'dueno', 'codex', 'gemini', 'claude'];
 
 /** The writer of a command: `--quien` (dueño → dueno), else a declared coordinator, else `--agente`. */
 export function quienOf({ quien, coordinador, agente } = {}) {
@@ -64,7 +66,7 @@ export function quienOf({ quien, coordinador, agente } = {}) {
 
 /**
  * Shape problems of a bitácora row `{tarea, en, quien, corrio?, salio?}` plus exactly one change: `de`/`a`
- * (estado), `agente {de, a}` or `carril {de, a}` ('' = none). Rows converted by `migrate-log` carry `legado` and
+ * (estado), `agente {de, a}`, `carril {de, a}` ('' = none) or `mensaje {id, para, texto}` (T126). Rows converted by `migrate-log` carry `legado` and
  * may lack `quien`, since most old rows never recorded it.
  */
 export function logRowIssues(r) {
@@ -76,12 +78,14 @@ export function logRowIssues(r) {
 	return [...out, ...changeIssues(r)];
 }
 
-/** The single change a row records: estado `de`/`a`, `agente {de, a}` or `carril {de, a}`. */
+/** The single change a row records: estado `de`/`a`, `agente {de, a}`, `carril {de, a}` or a `mensaje`. */
 function changeIssues(r) {
-	const kinds = ['estado', 'agente', 'carril'].filter((k) =>
+	const kinds = ['estado', 'agente', 'carril', 'mensaje'].filter((k) =>
 		k === 'estado' ? r?.de !== undefined || r?.a !== undefined : r?.[k] !== undefined,
 	);
-	if (kinds.length !== 1) return ['la fila cambia una sola cosa: estado (de/a), agente o carril'];
+	if (kinds.length !== 1)
+		return ['la fila cambia una sola cosa: estado (de/a), agente, carril o mensaje'];
+	if (kinds[0] === 'mensaje') return messageIssues(r.mensaje);
 	if (kinds[0] === 'estado')
 		return ['de', 'a']
 			.filter((k) => !LOG_ESTADOS.includes(r[k] ?? ''))
@@ -91,6 +95,20 @@ function changeIssues(r) {
 	return c && typeof c === 'object' && ok(c.de) && ok(c.a)
 		? []
 		: [`${kinds[0]} debe ser {de, a}`];
+}
+
+function messageIssues(m) {
+	if (!m || typeof m !== 'object') return ['mensaje debe ser {id, para, texto}'];
+	const out = [];
+	if (!String(m.id ?? '').trim()) out.push('mensaje sin id');
+	if (!DESTINOS.includes(m.para)) out.push(`para debe ser ${DESTINOS.join('|')}`);
+	if (!String(m.texto ?? '').trim()) out.push('mensaje sin texto');
+	return out;
+}
+
+/** A bitácora row carrying a message about task `tarea` from `de` to `para` (T126). */
+export function buildMessageRow(tarea, { de, para, texto, id }, en) {
+	return { tarea, en, quien: quienOf({ quien: de }), mensaje: { id, para, texto } };
 }
 
 /**
@@ -122,6 +140,7 @@ export function logChange(r) {
 	const pair = (c) => `${c.de || '—'} → ${c.a || '—'}`;
 	if (r.agente) return `agente ${pair(r.agente)}`;
 	if (r.carril) return `carril ${pair(r.carril)}`;
+	if (r.mensaje) return `mensaje ${r.quien ?? '—'} → ${r.mensaje.para}`;
 	return r.de || r.a ? pair(r) : '';
 }
 
@@ -136,7 +155,7 @@ export function historyRows(board, { todas = false } = {}) {
 			})),
 		...(board.bitacora ?? []).map((b) => ({
 			en: b.en,
-			txt: `${b.tarea} ${logChange(b)} ${b.corrio ?? ''}`,
+			txt: `${b.tarea} ${logChange(b)} ${b.mensaje?.texto ?? b.corrio ?? ''}`,
 		})),
 	].sort((a, b) => Date.parse(b.en) - Date.parse(a.en));
 }
@@ -242,7 +261,7 @@ function reviewText(src, { id, n, sha, prev }) {
 	const short = (s) => String(s).slice(0, 7);
 	const decisiones =
 		'\nDECISIONES\n- Review only; report missing evidence and request no adjacent permissions.';
-	const finish = 'Submit findings with gh pr review. Do not edit the author lane or merge.';
+	const finish = `Claim it with --titulo="f04 · T<n> · PR ${src.pr} · Revisión" (T<n> is this task's number). Submit findings with gh pr review. Do not edit the author lane or merge.`;
 	if (n < 2)
 		return {
 			titulo: `Revisión cruzada: ${src.titulo}`,
@@ -271,6 +290,7 @@ export function reviewChild(src, { agente, sha, prev }) {
 		urgencia: src.urgencia,
 		actor: 'sesion',
 		agente,
+		contrato: CONTRATO,
 		origen: src.id,
 		revisionSha: sha,
 		vuelta: n,
@@ -720,7 +740,7 @@ export const CATEGORIAS = Object.keys(CATEGORIA_CARRIL);
 const TASK_LANES = Object.values(CATEGORIA_CARRIL);
 
 /** Another task whose lock holds `lane`, or null. Same predicate as claim: any lock counts, also one left on a finished task before its release. */
-function laneHolder(lane, board, exceptId) {
+export function laneHolder(lane, board, exceptId) {
 	return (
 		(board.tareas ?? []).find((x) => x.id !== exceptId && x.candado?.carril === lane) ?? null
 	);
@@ -801,6 +821,7 @@ function suggestionLines(t, board) {
  * is not its category's lane, and an unplanned one gets a suggestion.
  */
 export function laneLines(t, board) {
+	if (t.actor === 'dueno') return ownerWhereLines(t);
 	if (isReadOnly(t)) return [REVIEW_RUNS];
 	const lane = t.carrilPlaneado;
 	if (!lane) return suggestionLines(t, board);
@@ -813,10 +834,26 @@ export function laneLines(t, board) {
 	return mismatch ? [...lines, mismatch] : lines;
 }
 
+/**
+ * Where the owner does an owner task (T126): its `donde`, else the first line of its prompt's «DÓNDE CORRE»,
+ * for example «En la app de Claude, sesión f07 · T112»; never a lane suggestion or a paste line.
+ */
+export function ownerWhere(t) {
+	if (typeof t.donde === 'string' && t.donde.trim()) return t.donde.trim();
+	const lines = String(t.prompt ?? '').split('\n');
+	const at = lines.findIndex((l) => /^D[OÓ]NDE CORRE\b/.test(l.trim()));
+	const first = at < 0 ? '' : (lines.slice(at + 1).find((l) => l.trim()) ?? '');
+	return first.trim() && !HEADING.test(first.trim()) ? first.trim() : null;
+}
+const ownerWhereLines = (t) => {
+	const where = ownerWhere(t);
+	return where ? [`Dónde: ${where}`] : [];
+};
+
 /** The prompt an agent receives: the planned lane first, so nobody has to repeat it by hand. */
 export function promptWithLane(t, board) {
 	const lines = laneLines(t, board);
-	if (!t.prompt || !lines.length) return t.prompt;
+	if (!t.prompt || !lines.length || t.actor === 'dueno') return t.prompt;
 	return `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`;
 }
 
@@ -845,7 +882,10 @@ export function prNumber(pr) {
 	return m ? Number(m[1]) : null;
 }
 const validLock = (c) =>
-	AGENTES.includes(c?.agente) && c.agente !== 'cualquiera' && isDate(c.desde);
+	AGENTES.includes(c?.agente) &&
+	c.agente !== 'cualquiera' &&
+	isDate(c.desde) &&
+	optional(c.latido, isDate);
 
 /** The PR invariant, also enforced on legacy records whenever a write touches pr, estado or rama. */
 const PR_CHECKS = [
@@ -897,6 +937,10 @@ const FIELD_CHECKS = [
 	[
 		(t) => !optional(t.vuelta, (n) => Number.isInteger(n) && n >= 1),
 		() => 'vuelta debe ser un entero desde 1',
+	],
+	[
+		(t) => !optional(t.contrato, (n) => Number.isInteger(n) && n >= 1),
+		() => 'contrato debe ser un entero desde 1',
 	],
 	[
 		(t) => !optional(t.categoria, (c) => CATEGORIAS.includes(c)),
@@ -978,11 +1022,16 @@ export function unlocked(task, flags) {
 	delete rest.candado;
 	const { sesion: id, agente } = task.candado ?? {};
 	if (!id) return rest;
+	// The claim's --titulo (T126) is the session name when release or merged gives no --nombre.
 	const nombre =
 		typeof flags.nombre === 'string'
 			? flags.nombre
-			: task.sesion?.id === id
-				? task.sesion.nombre
-				: undefined;
+			: (task.candado.titulo ?? (task.sesion?.id === id ? task.sesion.nombre : undefined));
 	return { ...rest, sesion: { id, agente, ...(nombre ? { nombre } : {}) } };
 }
+
+/**
+ * Version of the task contract a new task is created under (T126): `add` and `review` stamp it, so only tasks
+ * created after it exist must follow it (`claim --titulo`); open tasks without it keep the old rules.
+ */
+export const CONTRATO = 1;
