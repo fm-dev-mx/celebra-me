@@ -1,4 +1,4 @@
-import { redactLogText, safeErr } from '@/lib/server/safe-error';
+import { safeErr } from '@/lib/server/safe-error';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 
@@ -32,23 +32,29 @@ describe('safeErr', () => {
 		});
 	});
 
-	it('keeps ApiError code and message but drops details', () => {
+	it('keeps the ApiError code and status but never its message or details', () => {
 		const error = new ApiError(500, 'internal_error', 'Insert failed.', { phone: PHONE });
-		const result = safeErr(error);
+		error.stack =
+			'ApiError: Insert failed.\n    at insertGuest (/app/src/lib/rsvp/guest.service.ts:42:9)';
 
-		expect(result).toEqual({ code: 'internal_error', message: 'Insert failed.' });
-		expectNoValues(result);
+		expect(safeErr(error)).toEqual({
+			code: 'internal_error',
+			message: 'ApiError (500) at guest.service.ts:42:9',
+		});
 	});
 
-	it('redacts values interpolated into an ApiError message', () => {
+	it('does not log unquoted names or short credentials from an ApiError message', () => {
 		const error = new ApiError(
 			500,
 			'internal_error',
-			`Guest ${EMAIL} with phone ${PHONE} failed.`,
+			`Failed to process guest Fictional Guest with token short-token-123 (${EMAIL}, ${PHONE})`,
 		);
+		error.stack = undefined;
 		const result = safeErr(error);
 
-		expect(result.code).toBe('internal_error');
+		expect(result).toEqual({ code: 'internal_error', message: 'ApiError (500)' });
+		expect(JSON.stringify(result)).not.toContain('Fictional Guest');
+		expect(JSON.stringify(result)).not.toContain('short-token-123');
 		expectNoValues(result);
 	});
 
@@ -90,21 +96,5 @@ describe('safeErr', () => {
 			code: 'unknown',
 			message: 'Non-Error value thrown (string)',
 		});
-	});
-});
-
-describe('redactLogText', () => {
-	it('removes emails, phones, tokens, quoted values and query strings', () => {
-		const text = redactLogText(
-			`Lookup "${EMAIL}" for ${PHONE} using ${TOKEN} at /rest/v1/guests?email=eq.x failed`,
-		);
-
-		expectNoValues(text);
-		expect(text).toContain('Lookup');
-		expect(text).toContain('failed');
-	});
-
-	it('caps the length', () => {
-		expect(redactLogText('a '.repeat(500))).toHaveLength(200);
 	});
 });

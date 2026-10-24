@@ -322,7 +322,7 @@ describe('errorResponse — server logs carry no row values', () => {
 
 		expect(consoleError).toHaveBeenCalledWith('[rsvp] Error:', {
 			code: 'internal_error',
-			message: 'Insert failed.',
+			message: expect.stringMatching(/^ApiError \(500\)/),
 		});
 		expect(loggedArgs()).not.toContain(error);
 		expect(JSON.stringify(loggedArgs())).not.toContain(ROW_VALUE);
