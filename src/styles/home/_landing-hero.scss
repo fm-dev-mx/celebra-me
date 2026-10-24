@@ -8,6 +8,10 @@
 	--hero-fs-lede: 1rem;
 	--hero-fs-small: 0.84rem;
 	--hero-fs-tiny: 0.72rem;
+
+	// Miniature steps for the text drawn on the phone screens: they scale with the phone (container
+	// units), with a floor that keeps the label from vanishing on the smallest fan.
+	--hero-fs-phone-label: max(6px, 4.6cqi);
 	--hero-phone-width: 118px;
 	--hero-phone-radius: 20px;
 	--hero-screen-radius: 16px;
@@ -160,6 +164,7 @@
 		box-shadow: 0 24px 40px -18px rgb(var(--color-espresso-rgb) / 55%);
 		transform-origin: bottom center;
 		transition: transform 420ms var(--ease-premium, ease);
+		container-type: inline-size;
 
 		img {
 			display: block;
@@ -201,6 +206,81 @@
 				transform: translateY(-8%);
 			}
 		}
+	}
+
+	// Sample name on each screen, in the empty band above the people (sky, wall, garden), so it
+	// never covers a face or a body. Small label first, then the name in the demo's own face.
+	// Sizes follow the phone width, so the fan keeps one hierarchy from mobile to desktop.
+	&__phone-title {
+		position: absolute;
+		inset: calc(var(--hero-phone-width) * 0.04) calc(var(--hero-phone-width) * 0.04) auto;
+		display: grid;
+		justify-items: center;
+		gap: 2.5cqi;
+		padding: 12cqi 6cqi 14cqi;
+		border-radius: var(--hero-screen-radius) var(--hero-screen-radius) 0 0;
+		background: linear-gradient(to bottom, var(--phone-title-scrim), transparent);
+		text-align: center;
+		pointer-events: none;
+	}
+
+	&__phone-kicker {
+		font-family: var(--font-ui);
+		font-size: var(--hero-fs-phone-label);
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--phone-kicker-color);
+	}
+
+	&__phone-name {
+		font-family: var(--phone-name-font);
+		font-size: var(--phone-name-size);
+		font-style: var(--phone-name-style, normal);
+		font-weight: var(--phone-name-weight, 500);
+		letter-spacing: var(--phone-name-tracking, 0);
+		line-height: 1;
+		white-space: nowrap;
+		color: var(--phone-name-color);
+		text-shadow: 0 1px 10px var(--phone-title-scrim);
+	}
+
+	// XV in a garden: soft serif italic over the pale sky, deep sage like the demo.
+	[data-hero-style='demo-xv-serenata'] {
+		--phone-title-scrim: rgb(246 244 236 / 60%);
+		--phone-kicker-color: hsl(36deg 42% 36%);
+		--phone-name-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
+		--phone-name-size: 22cqi;
+		--phone-name-style: italic;
+		--phone-name-weight: 600;
+		--phone-name-color: hsl(150deg 28% 18%);
+	}
+
+	// XV in navy and gold: engraved capitals in gold over the dark wall.
+	[data-hero-style='demo-xv-celestial-blue'] {
+		--phone-title-scrim: rgb(12 14 26 / 62%);
+		--phone-kicker-color: rgb(248 244 236 / 82%);
+		--phone-name-font: 'Cinzel Variable', 'Cinzel', serif;
+		--phone-name-size: 14cqi;
+		--phone-name-weight: 600;
+
+		// The tiara starts high in the frame: the title sits closer to the top edge.
+		.hero-prime__phone-title {
+			padding-top: 8cqi;
+		}
+
+		--phone-name-tracking: 0.08em;
+		--phone-name-color: hsl(40deg 62% 72%);
+	}
+
+	// Beach wedding: fashion italic in ink blue over the sky, sand-toned label.
+	[data-hero-style='demo-brisa'] {
+		--phone-title-scrim: rgb(240 243 246 / 58%);
+		--phone-kicker-color: hsl(24deg 38% 38%);
+		--phone-name-font: 'Bodoni Moda Variable', 'Bodoni Moda', serif;
+		--phone-name-size: 12cqi;
+		--phone-name-style: italic;
+		--phone-name-color: hsl(212deg 38% 20%);
 	}
 
 	&__fan-label {
