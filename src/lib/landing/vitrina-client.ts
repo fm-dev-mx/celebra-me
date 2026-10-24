@@ -48,6 +48,22 @@ export function initLandingShowroom(root: Document = document): void {
 
 	const screen = section.querySelector<HTMLElement>('.vitrina__screen');
 	const live = section.querySelector<HTMLIFrameElement>('[data-vitrina-live]');
+	const openHint = section.querySelector<HTMLButtonElement>('[data-vitrina-open-envelope]');
+
+	// The demo's closed envelope or cover, when it is still waiting to be opened.
+	const closedEnvelope = () => {
+		try {
+			const cover = live?.contentDocument?.querySelector<HTMLElement>(
+				'ds-envelope-reveal, ds-editorial-cover',
+			);
+			return cover && !cover.hidden ? cover : null;
+		} catch {
+			return null;
+		}
+	};
+	const showOpenHint = (visible: boolean) => {
+		if (openHint) openHint.hidden = !visible;
+	};
 
 	// The iframe renders at the device's real width and is scaled to the frame, so the demo shows
 	// its phone, tablet or desktop layout.
@@ -70,6 +86,7 @@ export function initLandingShowroom(root: Document = document): void {
 		live.title = name ? `Invitación demo ${name} en vivo` : 'Invitación demo en vivo';
 		live.dataset.src = href;
 		delete screen.dataset.live;
+		showOpenHint(false);
 		fitLive();
 		live.src = href;
 	};
@@ -83,6 +100,20 @@ export function initLandingShowroom(root: Document = document): void {
 			// Cross-origin frame: leave its scrollbar alone.
 		}
 		if (screen && live.dataset.src) screen.dataset.live = 'ready';
+		// A visitor may not know the seal opens the demo: point at it outside the frame until it
+		// opens, from the seal or from this button.
+		showOpenHint(Boolean(closedEnvelope()));
+		live.contentWindow?.addEventListener('envelope:opened', () => showOpenHint(false), {
+			once: true,
+		});
+	});
+
+	openHint?.addEventListener('click', () => {
+		const trigger = closedEnvelope()?.querySelector<HTMLButtonElement>(
+			'[data-envelope-open]:not([disabled]), [data-editorial-open]:not([disabled])',
+		);
+		showOpenHint(false);
+		trigger?.click();
 	});
 
 	const showOnly = (selector: string, active: string) => {
