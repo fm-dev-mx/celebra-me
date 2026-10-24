@@ -11,7 +11,7 @@
  *                                               (rama defaults to the task's declared branch; Claude's sesion
  *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
  *                                               carril defaults to the planned lane, another needs --coordinador)
- *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
+ *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it; d191 warns off its categoria
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees only a legacy lock without sesion
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
@@ -51,6 +51,7 @@ import {
 	inTab,
 	isFinished,
 	isReview,
+	categoryMismatch,
 	laneLines,
 	promptWithLane,
 	lockSessionIssue,
@@ -421,6 +422,7 @@ const commands = {
 			'toca',
 			'requiere',
 			'candado',
+			'categoria',
 			'carrilPlaneado',
 			'carril',
 			'rama',
@@ -439,7 +441,8 @@ const commands = {
 			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
 			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
 			const saved = saveTask(dir, null, t, { quien: flags.quien });
-			say(flags, out, saved, `${saved.id} creada (rev 1)`);
+			const warning = categoryMismatch(saved, saved.carrilPlaneado);
+			say(flags, out, saved, `${saved.id} creada (rev 1)${warning ? `\n${warning}` : ''}`);
 		});
 	},
 	set({ pos, pairs, flags }, dir, out) {
@@ -558,7 +561,13 @@ const commands = {
 				flags,
 				out,
 				t,
-				[`${t.id} rev ${t.rev}`, ...laneLines(t, loadBoard(dir))].join('\n'),
+				[
+					`${t.id} rev ${t.rev}`,
+					...laneLines(t, loadBoard(dir)),
+					categoryMismatch(t, carril),
+				]
+					.filter(Boolean)
+					.join('\n'),
 			);
 		});
 	},
