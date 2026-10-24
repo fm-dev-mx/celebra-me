@@ -627,7 +627,7 @@ describe('pnpm board', () => {
 			expect(board(dir, 'update', 'alias', `--rev=${rev}`, `ahora=paso ${rev}`).status).toBe(
 				0,
 			);
-		expect(readdirSync(path.join(dir, '.respaldos', 'tareas', 'alias'))).toHaveLength(5);
+		expect(readdirSync(path.join(dir, '.respaldos', 'tareas', 'alias'))).toHaveLength(2);
 		expect(JSON.parse(board(dir, 'decision', 'decision=usar alias', '--json').out).id).toBe(
 			'd001',
 		);
@@ -2011,5 +2011,67 @@ describe('closing cleanup (d186)', () => {
 			'prompts/a.rev2.md',
 			'prompts/b.rev2.md',
 		]);
+	});
+});
+
+describe('light backups (d185)', () => {
+	const copies = (dir: string, id: string) => {
+		try {
+			return readdirSync(path.join(dir, '.respaldos', 'tareas', id)).sort();
+		} catch {
+			return [];
+		}
+	};
+
+	it('keeps 2 copies per document and none for a finished task', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('abierta', { estado: 'en curso' }),
+				task('lista', { estado: 'hecha', evidencia: { salio: 'ok' } }),
+			],
+		});
+		for (let rev = 1; rev <= 4; rev++)
+			expect(board(dir, 'set', 'abierta', `--rev=${rev}`, `ahora=paso ${rev}`).status).toBe(
+				0,
+			);
+		expect(copies(dir, 'abierta')).toHaveLength(2);
+		expect(board(dir, 'set', 'lista', '--rev=1', 'ahora=cerrada').status).toBe(0);
+		expect(copies(dir, 'lista')).toEqual([]);
+	});
+
+	it('lists surplus copies with --dry-run and removes them only with --aplicar', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('abierta', { estado: 'en curso' }),
+				task('vieja', { estado: 'cancelada', cierre: CIERRE }),
+			],
+		});
+		const seed = (id: string, names: string[]) => {
+			mkdirSync(path.join(dir, '.respaldos', 'tareas', id), { recursive: true });
+			for (const n of names)
+				writeFileSync(path.join(dir, '.respaldos', 'tareas', id, n), '{}');
+		};
+		seed('abierta', ['1.json', '2.json', '3.json', '4.json', '5.json']);
+		seed('vieja', ['1.json', '2.json']);
+		seed('compactada', ['1.json']);
+		const dry = raw(dir, 'prune-backups', '--dry-run', '--json');
+		expect(dry.status).toBe(0);
+		const listed = JSON.parse(dry.out);
+		expect(listed.aplicado).toBe(false);
+		expect(listed.sobran.map((x: Json) => x.archivo).sort()).toEqual([
+			'.respaldos/tareas/abierta/1.json',
+			'.respaldos/tareas/abierta/2.json',
+			'.respaldos/tareas/abierta/3.json',
+			'.respaldos/tareas/compactada/1.json',
+			'.respaldos/tareas/vieja/1.json',
+			'.respaldos/tareas/vieja/2.json',
+		]);
+		expect(copies(dir, 'abierta')).toHaveLength(5);
+		expect(raw(dir, 'prune-backups').out).toContain('Para quitarlos: --aplicar');
+		expect(copies(dir, 'abierta')).toHaveLength(5);
+		expect(raw(dir, 'prune-backups', '--aplicar').status).toBe(0);
+		expect(copies(dir, 'abierta')).toEqual(['4.json', '5.json']);
+		expect(copies(dir, 'vieja')).toEqual([]);
+		expect(readdirSync(path.join(dir, '.respaldos', 'tareas'))).toEqual(['abierta']);
 	});
 });

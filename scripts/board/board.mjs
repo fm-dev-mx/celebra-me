@@ -29,6 +29,7 @@
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--json]
+ *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
  *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
  *   verify [--json]                             same as pnpm board:verify
@@ -93,6 +94,8 @@ import {
 	withLock,
 	writeDoc,
 } from './store.mjs';
+import { UsageError, say } from './cli.mjs';
+import { maintenanceCommands } from './maintenance.mjs';
 import { addToZip } from './zip.mjs';
 
 const COLOR_LABEL = {
@@ -104,11 +107,6 @@ const COLOR_LABEL = {
 	done: 'HECHA',
 };
 const LOOKS_JSON = /^(\[|\{|true$|false$|null$|-?\d+(\.\d+)?$)/;
-
-class UsageError extends Error {}
-
-/** Print `text`, or `data` as JSON when the command got --json. */
-const say = (flags, out, data, text) => out(flags.json ? JSON.stringify(data, null, 2) : text);
 
 export function parseArgs(argv) {
 	const flags = {};
@@ -198,7 +196,7 @@ function saveTask(dir, before, after, opts = {}) {
 		addToZip(monthlyZip(dir, t.actualizado.slice(0, 7)), [
 			{ name: `prompts/${t.id}.rev${t.rev}.md`, data: after.prompt },
 		]);
-	writeDoc(dir, 'tareas', t.id, t);
+	writeDoc(dir, 'tareas', t.id, t, { backup: !isFinished(before) });
 	if (row) appendLog(dir, row);
 	return t;
 }
@@ -855,7 +853,7 @@ const commands = {
 		}
 	},
 };
-Object.assign(commands, {
+Object.assign(commands, maintenanceCommands, {
 	close: closeCommand,
 	archive: archiveCommand(true),
 	unarchive: archiveCommand(false),

@@ -68,8 +68,9 @@ authorization.
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
   `vigente: false`). Aliases: `get`, `update`, `decision`, `log`, `verify`; every command takes
-  `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 5 per
-  document).
+  `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 2 per
+  document, none for a finished task, d185); `pnpm board prune-backups --dry-run` lists the copies
+  over that rule and only `--aplicar` removes them.
 - **Archive (d167)**: `pnpm board archive <id> [--rev=<n>]` and `unarchive <id>` hide or show a
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
