@@ -337,16 +337,18 @@ crops so the full dress is not revealed.
   layout. WA0069 replaced WA0035 in the thank-you so the window scene is not shown three times.
   Face-safety spec also checks both plates.
 - Copy review (owner-requested): hero tagline "Quince años, una sola vez." (the label already reads
-  "Mis XV"); family title "En tus manos" (it repeated the prayer's opening); location lede "Será un
-  honor celebrar con usted." and heading "Viernes, 13 de noviembre"; gallery title "Mis looks"
-  (subtitle already says "icónicos"); gifts subtitle "Si desea hacerme un obsequio, le comparto dos
-  opciones." (the thank-you already says the presence is the best gift), cash item "Lluvia de
-  sobres" / "Podrá entregarlo el día de la fiesta."; RSVP subcopy without a third "confirme su
-  asistencia" and a single "Acceso privado" kicker at every size; section folios match the cover
-  index (oración pág. 04, programa pág. 07); running heads use "SECCIÓN / MIS XV". Two light fixes
-  to the prayer: "el futuro que hoy te confío" and "Te pido que me bendigas" (repeated "pongo en tus
-  manos" and "nueva etapa"). Known shared gap: the program prints "7:00 PM" while hero and venue use
-  "7:00 p. m." (shared time formatter).
+  "Mis XV"); family title "En manos de Dios" (first "En tus manos", which repeated the prayer's
+  opening; moved to «usted» with `voice: 'usted'` on 2026-10-23, along with the gallery's "sin
+  usted" and the quote's "Acompáñeme"; the prayer keeps «tú» because it speaks to God); location
+  lede "Será un honor celebrar con usted." and heading "Viernes, 13 de noviembre"; gallery title
+  "Mis looks" (subtitle already says "icónicos"); gifts subtitle "Si desea hacerme un obsequio, le
+  comparto dos opciones." (the thank-you already says the presence is the best gift), cash item
+  "Lluvia de sobres" / "Podrá entregarlo el día de la fiesta."; RSVP subcopy without a third
+  "confirme su asistencia" and a single "Acceso privado" kicker at every size; section folios match
+  the cover index (oración pág. 04, programa pág. 07); running heads use "SECCIÓN / MIS XV". Two
+  light fixes to the prayer: "el futuro que hoy te confío" and "Te pido que me bendigas" (repeated
+  "pongo en tus manos" and "nueva etapa"). Known shared gap: the program prints "7:00 PM" while hero
+  and venue use "7:00 p. m." (shared time formatter).
 - Hero, cinematic pass (profile SCSS only): one colour grade (`--ds-hero-grade`) on the hero
   photograph, the magazine's first-page photo and the hand-off clone (so colour never shifts); film
   grain; a 9 s push-in from scale 1 (never jumps after the hand-off; anchored at the top on desktop
