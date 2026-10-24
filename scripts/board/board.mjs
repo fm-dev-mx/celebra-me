@@ -35,6 +35,8 @@
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
  *   verify [--json]                             same as pnpm board:verify
+ *   sesiones [--json]                           d211: open Codex and Gemini chats crossed with the board, read-only;
+ *                                               says which ones the owner can archive by hand
  *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
  *                                               archive/unarchive, same-origin from 127.0.0.1
  *
@@ -102,6 +104,7 @@ import {
 	writeDoc,
 } from './store.mjs';
 import { UsageError, say } from './cli.mjs';
+import { externalSessionLines, externalSessions } from './external-sessions.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
 import { addToZip } from './zip.mjs';
 
@@ -834,6 +837,10 @@ const commands = {
 		await serveView(dir, port, { archive: viewArchiver(dir) });
 		const url = `http://127.0.0.1:${port}/`;
 		say(flags, out, { url }, `Tablero en ${url}  (Ctrl+C para cerrar)`);
+	},
+	async sesiones({ flags }, dir, out) {
+		const r = await externalSessions(loadBoard(dir));
+		say(flags, out, r, externalSessionLines(r).join('\n'));
 	},
 	verify({ flags }, dir, out) {
 		const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-board.mjs');

@@ -79,6 +79,10 @@ authorization.
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
   of «Cola» and the «Carriles» view.
+- **Codex and Gemini chats (d211)**: `pnpm board sesiones [--json]` opens `~/.codex/state_5.sqlite`
+  and `~/.gemini/antigravity/conversation_summaries.db` read-only, crosses each open chat's `T<n>`
+  with the board and says «archivar» (task finished or archived), «dejar» or «sin tarea»; the
+  dispatcher's runs fold into one line. It writes nothing: the owner archives by hand.
 - **Monthly archive (d187)**: `pnpm board compact --antes=7d [--dry-run]` takes every task archived
   7 or more days ago: one line in `.agent/tmp/board/mensual/resumen-<YYYY-MM>.md` (for example
   `T31 tablero-arreglos-cli · unida · PR #492 · 2026-10-24`), the whole task file in
