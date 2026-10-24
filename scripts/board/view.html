@@ -329,7 +329,7 @@ const ago=s=>{const d=Date.now()-T(s);if(isNaN(d))return '';if(d<6e4)return 'hac
 function rich(s){let h=esc(s);h=h.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,(m,p,u)=>`${p}<a href="${u}" target="_blank" rel="noopener">${u}</a>`);h=h.replace(/(^|[\s(])#(\d{2,4})\b/g,(m,p,n)=>`${p}<a href="${GH}/pull/${n}" target="_blank" rel="noopener">#${n}</a>`);return h.replace(/`([^`]+)`/g,'<code>$1</code>')}
 const byId=id=>S.board.tareas.find(t=>t.id===id);
 const decById=id=>S.board.decisiones.find(d=>d.id===id);
-const laneOf=t=>S.board.carriles.find(l=>l.id===t.carril);
+const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));
 const agentTab=()=>Object.hasOwn(AGENT_REGISTRY,S.ag)?S.ag:undefined;
 const stage=t=>mStage(t,S.board);
 const color=t=>mColor(t,S.board,{agente:agentTab()});
@@ -359,7 +359,7 @@ function itemHtml(t){
     <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
     <span class="ttl">${tN(t)}${esc(t.titulo)}</span>
     ${runsHtml(t)}
-    <span class="line">${pill(t)}${urgHtml(t)}${reqSummary(t)}${agHtml(t)}${t.carril&&!runLines(t).length?`<span class="lane">${esc(t.carril)}</span>`:''}${t.hasta?`<span class="mono">límite ${esc(fmtDay(t.hasta))}</span>`:''}</span>
+    <span class="line">${pill(t)}${urgHtml(t)}${reqSummary(t)}${agHtml(t)}${taskLane(t)&&!runLines(t).length?`<span class="lane">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span class="mono">límite ${esc(fmtDay(t.hasta))}</span>`:''}</span>
     ${why?`<span class="why">${rich(why)}</span>`:''}
   </button>`;
 }
@@ -394,7 +394,7 @@ function renderSheet(open){
   const rows=[
     ['Agente',t.agente?esc(AGENT[t.agente]||t.agente)+(t.candado?` · 🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)} desde ${esc(fmt(t.candado.desde))}`:''):''],
     ['Requiere',(t.requiere||[]).length?t.requiere.map(esc).join(', '):''],
-    ['Carril',t.carril?`<span class="code">${esc(t.carril)}</span>${l.tecla?' · '+esc(l.tecla):''}`:''],
+    ['Carril',taskLane(t)?`<span class="code">${esc(taskLane(t))}</span>${l.tecla?' · '+esc(l.tecla):''}`:''],
     ['Worktree',l.worktree?`<span class="code">${esc(l.worktree)}</span>`:''],
     ['Puerto',l.puerto?`<span class="mono">${esc(l.puerto)}</span>`:''],
     ['Sesión',sesHtml(t.sesion)],

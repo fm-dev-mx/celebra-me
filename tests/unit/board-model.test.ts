@@ -109,14 +109,32 @@ describe('board model shared rules', () => {
 						m.laneAllowed('integration', { actor: 'coordinador' }, lanes),
 						m.laneAllowed('f13-nuevo', { actor: 'coordinador' }, lanes),
 					],
-					lane: [m.taskLane({ candado: { carril: 'f10' }, carrilPlaneado: 'f11' }), m.taskLane({ carrilPlaneado: 'f11', carril: 'f12' }), m.taskLane({ carril: 'f12' })],
+					lane: [
+						m.taskLane({ candado: { carril: 'f10' }, carrilPlaneado: 'f11' }),
+						m.taskLane({ carrilPlaneado: 'f11', carril: 'f12' }),
+						m.taskLane({ carril: 'f12' }),
+						m.taskLane({ id: 'demo-revision' }),
+						m.taskLane({ id: 'doc-audit', soloLectura: true }),
+						m.taskLane({ id: 'nada' }),
+						m.taskLane({ id: 'x', soloLectura: true, carrilPlaneado: 'f10-libre', candado: { carril: 'f10-libre' } }),
+					],
+					readonly: [m.READONLY_LANE, m.isReadOnly({ id: 'demo-revision' }), m.isReadOnly({ id: 'normal' })],
 				}))`,
 			),
 		).toEqual({
 			horas: 6,
 			viejo: [false, true, true],
 			carril: [true, false, true, false],
-			lane: ['f10', 'f11', 'f12'],
+			lane: [
+				'f10',
+				'f11',
+				'f12',
+				'f04-integracion',
+				'f04-integracion',
+				null,
+				'f04-integracion',
+			],
+			readonly: ['f04-integracion', true, false],
 		});
 		expect(probe('sync.mjs', 'console.log(JSON.stringify(m.STALE_LOCK_HOURS))')).toBe(6);
 	});

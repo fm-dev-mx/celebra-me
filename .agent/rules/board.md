@@ -55,7 +55,11 @@ authorization.
   carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` put these
   lines first under `CARRIL`, so the prompt's «DÓNDE CORRE» no longer repeats the lane by hand.
   Review children have no planned lane (`plan` refuses one): they show «Corre en: Integración
-  (carpeta celebra-me), solo lectura». `board:verify` warns about every open task, reviews aside,
+  (carpeta celebra-me), solo lectura» and always resolve to `f04-integracion` in `taskLane` (the
+  view's card, sheet and «Carriles» row). A task with `soloLectura: true` is read-only the same way:
+  `plan`, `add` and `claim` refuse it a planned or explicit lane, so its lock holds no lane and
+  never disagrees with the prompt; a legacy planned lane is cleared with
+  `plan --carril= --coordinador`. `board:verify` warns about every open task, read-only tasks aside,
   with neither a planned lane nor a lock on one, naming its T<n>.
 - **Category (d191)**: `categoria` is a preference, never a restriction: `plataforma`
   f05-plataforma, `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs`
@@ -102,10 +106,11 @@ authorization.
   without one). Record it in the same write that opens the PR. Every mention of a task that has a PR
   — replies, messages, handoffs, reports, prompts — writes it next to the id:
   `pasarela-pago-estudio (PR #475)`. Same rule for every agent.
-- **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`, lane checks
-  (`laneAllowed`, `taskLane`), finished states (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the
-  stale-lock threshold and PR parsing (`normalizePr`, `prNumber`); `board`, `sync`, `verify`,
-  `watch` and the view import them instead of keeping a copy.
+- **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`,
+  `isReadOnly`, `READONLY_LANE`, lane checks (`laneAllowed`, `taskLane`), finished states
+  (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the stale-lock threshold and PR parsing
+  (`normalizePr`, `prNumber`); `board`, `sync`, `verify`, `watch` and the view import them instead
+  of keeping a copy.
 - **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
   «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
   `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open

@@ -27,7 +27,7 @@ import {
 	cierreIssues,
 	isFinished as isClosed,
 	isOpen,
-	isReview,
+	isReadOnly,
 	isStaleLock,
 	laneAllowed,
 	logRowIssues,
@@ -292,8 +292,8 @@ const isCoordinator = (s) => /coordinador/i.test(s.nombre);
 
 /** Session name rule d158: `<lane> · T<n> · PR #<n> · <description>`; no PR part before it opens. */
 export function nameDrift(t, nombre) {
-	// Review tasks run without a lane (they never inherit the author's), so any lane prefix fits.
-	const lane = laneTag(taskLane(t));
+	// Read-only tasks never inherit the author's lane, so any lane prefix fits.
+	const lane = isReadOnly(t) ? '' : laneTag(taskLane(t));
 	const laneRe = lane ? lane.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '[^\\s·]+';
 	const pr = prNumber(t.pr);
 	const base = `^${laneRe} · T${t.num} · `;
@@ -497,12 +497,12 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 				msg: `carril planeado no canónico: ${t.carrilPlaneado}`,
 			});
 	for (const t of tareas)
-		if (isOpen(t, board, now) && !isReview(t) && !t.carrilPlaneado && !t.candado?.carril)
+		if (isOpen(t, board, now) && !isReadOnly(t) && !t.carrilPlaneado && !t.candado?.carril)
 			avisos.push({
 				id: t.id,
 				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
 			});
-	for (const t of tareas.filter((x) => !isClosed(x) && !isReview(x)))
+	for (const t of tareas.filter((x) => !isClosed(x) && !isReadOnly(x)))
 		for (const lane of promptLanes(t, WORKTREE_LANES))
 			avisos.push({
 				id: t.id,
@@ -511,7 +511,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 	const ready = tareas.filter(
 		(t) =>
 			t.actor === 'sesion' &&
-			!isReview(t) &&
+			!isReadOnly(t) &&
 			!t.candado &&
 			t.carrilPlaneado &&
 			stage(t, board, now) === 'lista',
