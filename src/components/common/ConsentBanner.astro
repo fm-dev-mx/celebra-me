@@ -87,6 +87,8 @@ const showBanner = !Astro.url.searchParams.has('screenshot') && (routePolicy.rou
 import { readConsent, saveConsent, hasConsentDecision } from '@/lib/tracking/consent-client';
 
 function initConsentBanner(): void {
+  // A demo framed by the landing showroom: the landing around it already asks.
+  if (window.self !== window.top) return;
   const bar = document.getElementById('consent-banner-bar');
   const modal = document.getElementById('consent-preferences-modal');
   if (!bar || !modal) return;

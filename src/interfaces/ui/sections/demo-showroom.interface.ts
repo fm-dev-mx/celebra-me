@@ -14,17 +14,6 @@ export interface DemoShowroomThumbnail {
 	objectPosition?: string;
 }
 
-/** The quote itself (message, promo code, value) is the general one from the promo calendar. */
-interface DemoShowroomQuoteCta {
-	label: string;
-}
-
-interface DemoShowroomHomeSelector {
-	/** Alt text for the real demo screen shown in the landing phone frame. */
-	screenAlt: string;
-	quoteCta: DemoShowroomQuoteCta;
-}
-
 export interface DemoShowroomEvent {
 	eventType: EventType;
 	publicSlug: DemoShowroomPublicSlug;
@@ -36,12 +25,8 @@ export interface DemoShowroomEvent {
 	heroTitle: string;
 	heroDescription: string;
 	whatsAppMessage: string;
-	/** Present only for events with a tab in the landing event selector. */
-	homeSelector?: DemoShowroomHomeSelector;
 	sortOrder: number;
 }
-
-export type DemoShowroomHomeEvent = DemoShowroomEvent & { homeSelector: DemoShowroomHomeSelector };
 
 export interface DemoShowroomItem {
 	eventType: EventType;

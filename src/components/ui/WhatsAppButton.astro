@@ -78,14 +78,15 @@ const campaignCode =
 const currency = trackCurrency ?? (promoValue !== undefined ? PROMO_CURRENCY : undefined);
 const message =
 	explicitMessage ?? (pkg ? buildPackageMessage(pkg.id, campaign) : buildGeneralMessage(campaign));
-// PromoStatus.astro rewrites the quote (message, codes, value) for the visitor's date; CTAs with
-// their own message, code or campaign keep what they were given.
+// PromoStatus.astro rewrites the quote (codes, value and message) for the visitor's date. CTAs with
+// their own code, campaign or value keep what they were given; CTAs with their own message keep the
+// message but still switch codes and value, so prerendered pages never report a past campaign.
 const switchesWithCalendar =
 	!withoutPromo &&
-	explicitMessage === undefined &&
 	explicitPromoCode === undefined &&
 	trackCampaign === undefined &&
 	trackValue === undefined;
+const switchesMessage = switchesWithCalendar && explicitMessage === undefined;
 
 // Prerendered pages get the /api/whatsapp redirect, which reads the Worker secret at request time.
 const whatsappUrl = getWhatsAppLink(message);
@@ -113,7 +114,7 @@ const whatsappUrl = getWhatsAppLink(message);
 	data-track-currency={currency}
 	data-preserve-message={preserveMessage ? 'true' : undefined}
 	data-promo-quote={switchesWithCalendar ? (pkg?.id ?? 'general') : undefined}
-	data-promo-message={switchesWithCalendar ? 'true' : undefined}
+	data-promo-message={switchesMessage ? 'true' : undefined}
 	data-campaign-section={switchesWithCalendar ? campaignSection : undefined}
 >
 	<Icon name="WhatsApp" size={20} />

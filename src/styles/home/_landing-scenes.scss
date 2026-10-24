@@ -1,0 +1,671 @@
+// Landing scenes: the envelope that opens on scroll (EnvelopeScene.astro) and the WhatsApp chat
+// sample (WhatsAppScene.astro). Default styles are the complete resting layout; scroll-linked
+// motion lives only under `@supports (animation-timeline: view())` with motion allowed, animates
+// transform, opacity and clip-path only, and pins one sticky stage (`svh`, no scroll trapping).
+@use '../tokens/type-scale';
+
+.envelope-scene,
+.chat-scene {
+	--scene-fs-title: clamp(1.4rem, 4.4vw, 2.05rem);
+	--scene-fs-body: 0.95rem;
+	--scene-fs-small: 0.8rem;
+	--scene-fs-tiny: 0.66rem;
+	--scene-muted: rgb(var(--color-text-dark-rgb) / 72%);
+
+	color: var(--color-text-dark);
+}
+
+.envelope-scene__eyebrow,
+.chat-scene__eyebrow {
+	@include type-scale.text(eyebrow);
+
+	margin: 0;
+	color: var(--color-border-gold);
+}
+
+.envelope-scene {
+	background: var(--color-paper);
+
+	&__intro {
+		display: grid;
+		gap: 0.5rem;
+		justify-items: center;
+		width: min(100%, 1140px);
+		margin-inline: auto;
+		padding-inline: 1rem;
+		text-align: center;
+	}
+
+	&__title {
+		margin: 0;
+		max-width: 20ch;
+		font-family: var(--font-display);
+		font-size: var(--scene-fs-title);
+		line-height: 1.15;
+		text-wrap: balance;
+	}
+
+	&__lede {
+		margin: 0;
+		max-width: 44ch;
+		color: var(--scene-muted);
+		font-size: var(--scene-fs-body);
+	}
+
+	&__stage {
+		display: grid;
+		place-items: center;
+		align-content: center;
+		padding-block: 1rem 1.5rem;
+		overflow: clip;
+	}
+
+	&__progress {
+		display: none;
+	}
+}
+
+.envelope {
+	--envelope-radius: var(--radius-sm);
+
+	position: relative;
+	width: min(300px, 78vw);
+	aspect-ratio: 4 / 3;
+	margin-top: 190px;
+	perspective: 900px;
+
+	&__back {
+		position: absolute;
+		inset: 0;
+		border-radius: var(--envelope-radius);
+		background: hsl(40deg 35% 84%);
+		box-shadow: 0 26px 50px -24px rgb(60 30 0 / 50%);
+	}
+
+	// Stacking never changes: flap 1 (behind the pocket), pocket 3, seal 6, card 7.
+	&__flap {
+		position: absolute;
+		inset: 0 0 auto;
+		z-index: 1;
+		height: 58%;
+		background: linear-gradient(180deg, hsl(40deg 36% 88%), hsl(40deg 30% 79%));
+		clip-path: polygon(0 0, 100% 0, 50% 100%);
+		transform: rotateX(180deg);
+		transform-origin: top center;
+	}
+
+	&__card {
+		position: absolute;
+		inset: 3% 6% auto;
+		z-index: 7;
+		height: 94%;
+		display: grid;
+		grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+		overflow: hidden;
+		border-radius: var(--radius-md);
+		background: var(--color-ivory);
+		box-shadow: 0 18px 40px -14px rgb(40 20 0 / 50%);
+		transform: translateY(-36%) scale(1.06);
+
+		img {
+			grid-area: 1 / 1;
+			width: 100%;
+			height: 100%;
+			min-height: 0;
+			object-fit: cover;
+			object-position: 50% 30%;
+		}
+	}
+
+	&__shade {
+		grid-area: 1 / 1;
+		background: linear-gradient(180deg, rgb(0 0 0 / 50%), transparent 40%);
+	}
+
+	&__title {
+		grid-area: 1 / 1;
+		align-self: start;
+		display: grid;
+		padding: 10px 12px;
+		color: rgb(255 255 255);
+		text-align: center;
+
+		span {
+			font-size: var(--scene-fs-tiny);
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			opacity: 88%;
+		}
+
+		strong {
+			font-family: var(--font-display);
+			font-size: 1.6em;
+			font-style: italic;
+			font-weight: 500;
+			line-height: 1.1;
+		}
+	}
+
+	&__front {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		padding-bottom: 12%;
+		border-radius: var(--envelope-radius);
+		background: linear-gradient(160deg, hsl(40deg 40% 92%), hsl(40deg 32% 83%));
+		clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+
+		span {
+			font-family: var(--font-display);
+			font-size: var(--scene-fs-small);
+			font-style: italic;
+			color: var(--color-text-dark);
+		}
+	}
+
+	&__seal {
+		position: absolute;
+		top: 54%;
+		left: 50%;
+		z-index: 6;
+		width: 48px;
+		height: 48px;
+		display: grid;
+		place-items: center;
+		translate: -50% -50%;
+		border-radius: 50%;
+		background: radial-gradient(
+			circle at 35% 30%,
+			hsl(40deg 70% 64%),
+			var(--color-border-gold)
+		);
+		box-shadow: 0 4px 10px rgb(0 0 0 / 28%);
+		color: var(--color-ink);
+		font-family: var(--font-display);
+		font-size: 1.15em;
+		font-style: italic;
+		opacity: 0%;
+	}
+}
+
+// Notes on what sets the invitation apart. At rest they are a plain list under the envelope (phone)
+// or two columns beside it, each with a hairline pointing at the envelope (desktop).
+.envelope-notes {
+	display: grid;
+	gap: 0.9rem;
+	width: min(100%, 32ch);
+	margin: 1.25rem 0 0;
+	padding: 0;
+	list-style: none;
+	text-align: center;
+
+	&__item {
+		position: relative;
+		display: grid;
+		gap: 0.2rem;
+
+		strong {
+			font-family: var(--font-display);
+			font-size: var(--scene-fs-body);
+			font-weight: 600;
+			line-height: 1.2;
+		}
+
+		> span:last-child {
+			color: var(--scene-muted);
+			font-size: var(--scene-fs-small);
+			line-height: 1.4;
+		}
+	}
+
+	&__number {
+		color: var(--color-border-gold);
+		font-size: var(--scene-fs-tiny);
+		letter-spacing: 0.2em;
+	}
+
+	@media (width >= 900px) {
+		display: contents;
+
+		&__item {
+			grid-column: 1;
+			max-width: 26ch;
+			justify-self: end;
+			text-align: end;
+
+			&::after {
+				content: '';
+				position: absolute;
+				top: 0.55em;
+				inset-inline-end: -2.75rem;
+				width: 2.25rem;
+				height: 1px;
+				background: var(--color-border-gold);
+			}
+
+			&:nth-child(2n) {
+				grid-row: 3;
+			}
+
+			&:nth-child(2n + 1) {
+				grid-row: 2;
+			}
+
+			&:nth-child(n + 3) {
+				grid-column: 3;
+				justify-self: start;
+				text-align: start;
+
+				&::after {
+					inset-inline: -2.75rem auto;
+				}
+			}
+		}
+	}
+}
+
+@media (width >= 900px) {
+	.envelope-scene__stage {
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		grid-template-rows: 190px repeat(2, auto) auto;
+		column-gap: 3rem;
+		width: min(100%, 1140px);
+		margin-inline: auto;
+		padding-inline: 1rem;
+	}
+
+	.envelope {
+		grid-area: 1 / 2 / 4;
+	}
+
+	.envelope-scene__progress {
+		grid-area: 4 / 2;
+	}
+}
+
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.envelope-notes__item {
+			animation: envelope-note-in linear both;
+			animation-timeline: --envelope;
+		}
+
+		// Desktop: each note appears with its stage and stays.
+		.envelope-notes__item:nth-child(1) {
+			animation-range: contain 0% contain 6%;
+		}
+
+		.envelope-notes__item:nth-child(2) {
+			animation-range: contain 8% contain 18%;
+		}
+
+		.envelope-notes__item:nth-child(3) {
+			animation-range: contain 40% contain 60%;
+		}
+
+		.envelope-notes__item:nth-child(4) {
+			animation-range: contain 80% contain 92%;
+		}
+
+		// Phone: one note at a time in the same spot under the envelope.
+		@media (width < 900px) {
+			.envelope-notes {
+				grid-template-areas: 'note';
+				min-height: 6.5rem;
+				align-items: start;
+			}
+
+			.envelope-notes__item {
+				grid-area: note;
+				animation-name: envelope-note-window;
+			}
+
+			.envelope-notes__item:nth-child(1) {
+				animation-range: contain 0% contain 18%;
+			}
+
+			.envelope-notes__item:nth-child(2) {
+				animation-range: contain 18% contain 38%;
+			}
+
+			.envelope-notes__item:nth-child(3) {
+				animation-range: contain 38% contain 72%;
+			}
+
+			.envelope-notes__item:nth-child(4) {
+				animation-name: envelope-note-in;
+				animation-range: contain 72% contain 86%;
+			}
+		}
+
+		.envelope-scene__track {
+			height: 240svh;
+			view-timeline-name: --envelope;
+		}
+
+		.envelope-scene__stage {
+			position: sticky;
+			top: 0;
+			height: 100svh;
+			padding-block: 0;
+		}
+
+		.envelope__flap,
+		.envelope__seal,
+		.envelope__card,
+		.envelope-scene__progress i {
+			animation-timeline: --envelope;
+			animation-range: contain 0% contain 100%;
+			animation-fill-mode: both;
+			animation-timing-function: linear;
+		}
+
+		.envelope__flap {
+			animation-name: envelope-flap;
+		}
+
+		.envelope__seal {
+			animation-name: envelope-seal;
+		}
+
+		.envelope__card {
+			animation-name: envelope-card;
+		}
+
+		.envelope-scene__progress {
+			display: block;
+			width: 120px;
+			height: 3px;
+			margin-top: 14px;
+			overflow: clip;
+			border-radius: var(--radius-pill);
+			background: var(--color-border-subtle);
+
+			i {
+				display: block;
+				height: 100%;
+				background: var(--color-border-gold);
+				transform-origin: left;
+				animation-name: envelope-progress;
+			}
+		}
+	}
+}
+
+// Closed, the flap folds down over the pocket; it sits behind the pocket layer, so while closed it
+// is drawn by the pocket's own top edge and the seal. It opens upward behind the card.
+@keyframes envelope-flap {
+	0%,
+	8% {
+		transform: rotateX(0deg);
+	}
+
+	45%,
+	100% {
+		transform: rotateX(180deg);
+	}
+}
+
+@keyframes envelope-seal {
+	0%,
+	6% {
+		opacity: 100%;
+		scale: 1;
+	}
+
+	16%,
+	100% {
+		opacity: 0%;
+		scale: 0.6;
+	}
+}
+
+// The card is clipped at the envelope mouth while it is inside, rises out, then settles in front.
+@keyframes envelope-card {
+	0%,
+	38% {
+		transform: translateY(0);
+		clip-path: inset(0 0 100% 0);
+	}
+
+	68% {
+		transform: translateY(-86%);
+		clip-path: inset(0 0 17% 0);
+	}
+
+	92%,
+	100% {
+		transform: translateY(-36%) scale(1.06);
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes envelope-note-in {
+	from {
+		opacity: 0%;
+		translate: 0 8px;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes envelope-note-window {
+	0% {
+		opacity: 0%;
+		translate: 0 8px;
+	}
+
+	20%,
+	80% {
+		opacity: 100%;
+		translate: 0 0;
+	}
+
+	100% {
+		opacity: 0%;
+		translate: 0 -8px;
+	}
+}
+
+@keyframes envelope-progress {
+	from {
+		transform: scaleX(0);
+	}
+
+	to {
+		transform: scaleX(1);
+	}
+}
+
+.chat-scene {
+	background: var(--color-ivory);
+	border-block: 1px solid var(--color-border-subtle);
+
+	&__inner {
+		width: min(100%, 1140px);
+		margin-inline: auto;
+		padding-inline: 1rem;
+		display: grid;
+		gap: 1.6rem;
+
+		@media (width >= 900px) {
+			grid-template-columns: 1fr 1fr;
+			align-items: center;
+			padding-inline: 1.5rem;
+		}
+	}
+
+	&__copy {
+		display: grid;
+		gap: 0.625rem;
+	}
+
+	&__title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: var(--scene-fs-title);
+		line-height: 1.15;
+	}
+
+	&__steps {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0.375rem 0 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: chat-step;
+
+		li {
+			display: grid;
+			grid-template-columns: 26px 1fr;
+			gap: 0.625rem;
+			align-items: start;
+			font-size: var(--scene-fs-body);
+			counter-increment: chat-step;
+
+			&::before {
+				content: counter(chat-step);
+				width: 26px;
+				height: 26px;
+				display: grid;
+				place-items: center;
+				border-radius: 50%;
+				background: var(--color-text-dark);
+				color: var(--color-ivory);
+				font-size: var(--scene-fs-small);
+				font-weight: 600;
+			}
+		}
+	}
+}
+
+.chat {
+	--chat-radius: 22px;
+
+	justify-self: center;
+	width: min(330px, 100%);
+	margin: 0;
+	overflow: hidden;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: var(--chat-radius);
+	background: hsl(38deg 30% 89%);
+	box-shadow: 0 22px 44px -24px rgb(60 30 0 / 45%);
+
+	&__head {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		padding: 10px 14px;
+		background: hsl(165deg 40% 22%);
+		color: rgb(255 255 255);
+		font-size: var(--scene-fs-small);
+		font-weight: 600;
+
+		i {
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			background: var(--color-champagne);
+		}
+	}
+
+	&__body {
+		display: grid;
+		gap: 0.625rem;
+		padding: 14px;
+	}
+
+	&__bubble {
+		justify-self: start;
+		max-width: 86%;
+		padding: 8px 10px;
+		border-radius: var(--radius-lg);
+		background: rgb(255 255 255);
+		box-shadow: 0 1px 1px rgb(0 0 0 / 8%);
+		font-size: var(--scene-fs-small);
+		line-height: 1.4;
+
+		&--out {
+			justify-self: end;
+			background: hsl(100deg 55% 86%);
+		}
+
+		small {
+			display: block;
+			margin-top: 2px;
+			color: hsl(30deg 10% 42%);
+			font-size: var(--scene-fs-tiny);
+			text-align: right;
+		}
+	}
+
+	&__link {
+		display: grid;
+		margin-bottom: 6px;
+		overflow: hidden;
+		border-radius: var(--radius-md);
+		background: hsl(40deg 30% 95%);
+
+		img {
+			width: 100%;
+			height: auto;
+			aspect-ratio: 1.91 / 1;
+			object-fit: cover;
+			object-position: 50% 42%;
+		}
+
+		div {
+			display: grid;
+			gap: 1px;
+			padding: 6px 8px;
+		}
+
+		b {
+			font-size: var(--scene-fs-small);
+		}
+
+		span {
+			color: hsl(30deg 10% 38%);
+			font-size: var(--scene-fs-tiny);
+		}
+	}
+
+	&__rsvp {
+		justify-self: center;
+		margin: 0;
+		padding: 7px 12px;
+		border-radius: var(--radius-pill);
+		background: hsl(142deg 45% 92%);
+		color: hsl(142deg 60% 20%);
+		font-size: var(--scene-fs-small);
+		font-weight: 600;
+	}
+}
+
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.chat__body > * {
+			animation: chat-bubble-in linear both;
+			animation-timeline: view();
+			animation-range: entry 30% cover 40%;
+		}
+	}
+}
+
+@keyframes chat-bubble-in {
+	from {
+		opacity: 0%;
+		transform: translateY(14px) scale(0.97);
+	}
+
+	to {
+		opacity: 100%;
+		transform: none;
+	}
+}

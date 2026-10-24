@@ -2,7 +2,8 @@
  * Background music never downloads while the page loads: the `<audio>` ships `preload="none"` so
  * the song (1–2 MB) does not compete with the stylesheets, fonts and hero photo. Music that starts
  * with the envelope tap is buffered once the page has painted (window `load`, then an idle
- * callback), or right away when the guest taps first.
+ * callback), or right away when the guest taps first. Inside a frame (the landing showroom, the
+ * dashboard preview) the song waits for the tap: a framed preview rarely plays it.
  */
 
 export type MusicPreload = 'none' | 'auto';
@@ -58,6 +59,8 @@ export const scheduleMusicBufferAfterPaint = (
 			win.setTimeout(bufferNow, MUSIC_BUFFER_FALLBACK_MS);
 		}
 	};
+
+	if (win.self !== win.top) return bufferNow;
 
 	if (win.document.readyState === 'complete') {
 		scheduleIdle();
