@@ -1,6 +1,6 @@
 /**
  * Local JSON store of the board (d143). One file per document: <dir>/<collection>/<id>.json, the same layout as an
- * ArtifactData export, so `pnpm board:verify` and `pnpm board import` read both.
+ * ArtifactData export, so `pnpm board:verify` reads both.
  *
  * The store lives in the ignored `.agent/tmp/board/` of the Integration checkout, found through the Git common
  * dir, so every lane and agent shares one board. CELEBRA_BOARD_DIR overrides it (tests).

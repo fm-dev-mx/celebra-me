@@ -34,7 +34,6 @@
  *   restore <id> [--dry-run]                    a compacted task back from its .zip
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
- *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
  *   verify [--json]                             same as pnpm board:verify
  *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
  *                                               archive/unarchive, same-origin from 127.0.0.1
@@ -800,36 +799,6 @@ const commands = {
 		);
 		if (flags.json) return out(JSON.stringify(rows, null, 2));
 		for (const r of rows.slice(0, 50)) out(`${r.en}  ${r.txt.slice(0, 140)}`);
-	},
-	async import({ pos, flags }, dir, out) {
-		const { importExport } = await import('./import.mjs');
-		const src = resolve(
-			process.env.INIT_CWD || process.cwd(),
-			need(pos[0], 'falta <export dir>'),
-		);
-		const mapa = flags.mapa
-			? JSON.parse(
-					readFileSync(
-						resolve(process.env.INIT_CWD || process.cwd(), flags.mapa),
-						'utf8',
-					),
-				)
-			: {};
-		return withLock(dir, () => {
-			if (readCollection(dir, 'tareas').length && !flags.force)
-				throw new UsageError(
-					'el tablero local ya tiene tareas: use --force para reemplazarlas',
-				);
-			const r = importExport(src, dir, mapa);
-			say(
-				flags,
-				out,
-				r,
-				`importadas: ${Object.entries(r)
-					.map(([k, v]) => `${v} ${k}`)
-					.join(', ')}`,
-			);
-		});
 	},
 	async view({ flags }, dir, out) {
 		const { serveView } = await import('./view-server.mjs');

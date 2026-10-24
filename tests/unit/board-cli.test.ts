@@ -1808,44 +1808,6 @@ describe('pnpm board', () => {
 		expect(JSON.parse(String(result.stdout))).toEqual([['viva:pendiente'], ['viva:en curso']]);
 	});
 
-	it('imports a v2 export, turning espera and deps into requisitos', () => {
-		const src = makeBoard({
-			tareas: [
-				{
-					id: 'vieja',
-					titulo: 'Vieja',
-					estado: 'pendiente',
-					espera: 'usted',
-					usted: [{ t: 'Aprobar el PR' }],
-					deps: ['otra'],
-					toca: ['release'],
-					rev: 3,
-					actualizado: NOW,
-				},
-			],
-			decisiones: [{ id: 'd001', decision: 'x', vigente: true }],
-		});
-		const dir = makeBoard({});
-		const mapa = path.join(src, 'mapa.json');
-		writeFileSync(mapa, JSON.stringify({ vieja: { urgencia: 'alta' } }));
-		const { status, out } = board(dir, 'import', src, `--mapa=${mapa}`);
-		expect(status).toBe(0);
-		expect(out).toContain('1 tareas');
-		const t = readTask(dir, 'vieja');
-		expect(t).toMatchObject({
-			urgencia: 'alta',
-			agente: 'claude',
-			actor: 'dueno',
-			toca: ['main', 'produccion'],
-			requisitos: [
-				{ tipo: 'tarea', ref: 'otra' },
-				{ tipo: 'dueno', ref: 'Aprobar el PR', ok: false },
-			],
-		});
-		expect(t.espera).toBeUndefined();
-		expect(board(dir, 'import', src).status).toBe(2);
-	});
-
 	it('recovers missed events and corrupt JSON, and delivers to two SSE clients within one second', () => {
 		const dir = makeBoard({ tareas: [task('recovery')] });
 		const probe = String.raw`
