@@ -20,8 +20,8 @@ authorization.
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
   (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`,
   `plan`, `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and
-  `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`. `espera`,
-  `usted` and `deps` no longer exist.
+  `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`, `cierre`
+  only by `close`. `espera`, `usted` and `deps` no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -60,6 +60,19 @@ authorization.
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
   of «Cola» and the «Carriles» view.
+- **Closing summary (d178)**:
+  `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien}`, written only
+  with
+  `pnpm board close <id> --resumen=<line> [--resumen=<line>…] --comprobacion=<check>… --saltada=<check>… --pendiente="<text>→T<n>"… [--pr=#N] [--commit=<sha>]`
+  (repeat a flag per line or item; `--saltada=ninguna` / `--pendiente=ninguno` for an empty list).
+  The summary is 1–4 lines. Every `pendiente` names the board task that will do it (`T58` or its id,
+  stored as the id); one without a task, with a task not on the board or pointing to itself is
+  refused. The lock owner writes it; `--coordinador` completes it later (for example the merge
+  commit), and flags not given keep their previous value. «Finalizadas» shows it above «Archivar»,
+  the sheet shows it too, and `archive` (button or command) is refused with «Falta el resumen de
+  cierre» while it is missing or invalid. Tasks archived before d178 are left as they are;
+  `unarchive` never needs it. `pnpm board verify` warns about each finished, unarchived task without
+  a valid one.
 - **PR number**: `pr` is always `#N`; the command normalizes `398`, `"#398"` or a
   `fm-dev-mx/celebra-me` pull URL and refuses a pull URL from another repository. `unida` always
   needs it; `en revision` needs it only when the task has a `rama` (audits and handoffs go to review

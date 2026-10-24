@@ -308,4 +308,39 @@ describe('board:verify', () => {
 			msg: 'carril planeado no canónico: f13-nuevo',
 		});
 	});
+
+	it('warns about finished, unarchived tasks without a valid closing summary (d178)', () => {
+		const cierre = {
+			resumen: 'Hecho.',
+			comprobaciones: [],
+			saltadas: [],
+			pendientes: [{ texto: 'Segunda vuelta', tarea: 'T58' }],
+			en: NOW,
+		};
+		const dir = makeExport([
+			task('sin-cierre', { estado: 'unida', pr: '#12' }),
+			task('archivada', { estado: 'comprobada', archivada: NOW, evidencia: { salio: 'x' } }),
+			task('con-cierre', { estado: 'cancelada', cierre }),
+			task('huerfano', {
+				estado: 'cancelada',
+				cierre: { ...cierre, pendientes: [{ texto: 'X', tarea: 'T99' }] },
+			}),
+			task('siguiente', { num: 58 }),
+		]);
+		const { report } = verify(dir, { 'gh pr view 12 --json state': '{"state":"MERGED"}' });
+		const msgs = report.avisos.filter((a: { msg: string }) => /cierre/.test(a.msg));
+		expect(msgs).toHaveLength(2);
+		expect(msgs).toEqual(
+			expect.arrayContaining([
+				{
+					id: 'sin-cierre',
+					msg: 'finalizada sin resumen de cierre: pnpm board close sin-cierre --resumen=… --coordinador',
+				},
+				{
+					id: 'huerfano',
+					msg: 'cierre incompleto (el pendiente «X» apunta a T99, que no está en el tablero): pnpm board close huerfano --resumen=… --coordinador',
+				},
+			]),
+		);
+	});
 });

@@ -12,6 +12,14 @@ const NOW = '2026-10-20T20:00:00Z';
 
 type Json = Record<string, unknown>;
 const dirs: string[] = [];
+/** A valid closing summary (d178), so a finished fixture task can be archived. */
+const CIERRE = {
+	resumen: 'Hecho.',
+	comprobaciones: ['validate:changed'],
+	saltadas: [],
+	pendientes: [],
+	en: NOW,
+};
 
 function task(id: string, fields: Json = {}): Json {
 	return {
@@ -707,7 +715,7 @@ describe('pnpm board', () => {
 	it('archives only finished, unlocked tasks and logs archive and unarchive', () => {
 		const dir = makeBoard({
 			tareas: [
-				task('done', { estado: 'comprobada', num: 34 }),
+				task('done', { estado: 'comprobada', num: 34, cierre: CIERRE }),
 				task('open'),
 				task('held', {
 					estado: 'unida',
@@ -736,6 +744,117 @@ describe('pnpm board', () => {
 		expect(board(dir, 'set', 'done', '--rev=3', `archivada=${NOW}`).err).toMatch(/archivada/);
 		expect(readTask(dir, 'open').archivada).toBeUndefined();
 		expect(readTask(dir, 'held').rev).toBe(1);
+	});
+
+	it('writes the closing summary with close and refuses a pendiente without its task (d178)', () => {
+		const lock = {
+			agente: 'claude',
+			desde: NOW,
+			sesion: 'local_claude-test',
+			carril: 'f11-preview',
+		};
+		const dir = makeBoard({
+			tareas: [
+				task('demos', {
+					num: 11,
+					estado: 'en revision',
+					rama: 'feat/demos',
+					pr: '#485',
+					candado: lock,
+				}),
+				task('segunda-vuelta', { num: 58 }),
+			],
+		});
+		const close = (...args: string[]) =>
+			raw(dir, 'close', 'demos', '--agente=claude', '--sesion=local_claude-test', ...args);
+		const before = readTask(dir, 'demos');
+		expect(close('--resumen=Textos', '--pendiente=Falta la segunda vuelta').err).toContain(
+			'pendiente sin tarea: «Falta la segunda vuelta»',
+		);
+		expect(close('--resumen=Textos', '--pendiente=Falta algo→T999').err).toContain(
+			'apunta a T999, que no está en el tablero',
+		);
+		expect(close('--resumen=Textos', '--pendiente=Yo misma→T11').err).toContain(
+			'la misma tarea',
+		);
+		expect(close('--pendiente=ninguno').err).toContain('cierre sin resumen');
+		expect(raw(dir, 'close', 'demos', '--agente=codex', '--resumen=x').err).toMatch(
+			/otra sesión/,
+		);
+		expect(readTask(dir, 'demos')).toEqual(before);
+		const ok = close(
+			'--resumen=Textos de las demos en «usted».',
+			'--resumen=RSVP con sus textos.',
+			'--comprobacion=validate:changed',
+			'--comprobacion=type-check',
+			'--saltada=ninguna',
+			'--pendiente=Falta la segunda vuelta de revisión→T58',
+		);
+		expect(ok.status).toBe(0);
+		expect(readTask(dir, 'demos').cierre).toEqual({
+			resumen: 'Textos de las demos en «usted».\nRSVP con sus textos.',
+			comprobaciones: ['validate:changed', 'type-check'],
+			saltadas: [],
+			pendientes: [{ texto: 'Falta la segunda vuelta de revisión', tarea: 'segunda-vuelta' }],
+			en: expect.stringMatching(/^\d{4}-/),
+			quien: 'claude',
+		});
+		// The coordinator completes it later; the flags it omits keep their value.
+		expect(raw(dir, 'close', 'demos', '--coordinador', '--commit=6fb99dca7').status).toBe(0);
+		const shown = raw(dir, 'show', 'demos').out;
+		expect(shown).toContain('en revision (PR #485, 6fb99dca7)');
+		expect(shown).toContain('Comprobaciones: validate:changed, type-check. Saltadas: ninguna.');
+		expect(shown).toContain('Pendiente: Falta la segunda vuelta de revisión → T58');
+		expect(readTask(dir, 'demos').cierre).toMatchObject({
+			quien: 'coordinador',
+			commit: '6fb99dca7',
+		});
+		expect(
+			raw(
+				dir,
+				'set',
+				'demos',
+				'--rev=3',
+				'--agente=claude',
+				'--sesion=local_claude-test',
+				'cierre={}',
+			).err,
+		).toMatch(/cierre requiere su comando/);
+	});
+
+	it('refuses to archive a finished task without its closing summary, never an unarchive (d178)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('sin-cierre', { estado: 'unida', pr: '#12' }),
+				task('vieja', { estado: 'comprobada', archivada: NOW }),
+				task('huerfano', {
+					estado: 'hecha',
+					cierre: { ...CIERRE, pendientes: [{ texto: 'Algo', tarea: 'borrada' }] },
+				}),
+			],
+		});
+		expect(board(dir, 'archive', 'sin-cierre').err).toContain(
+			'sin-cierre: Falta el resumen de cierre',
+		);
+		expect(raw(dir, 'show', 'sin-cierre').out).toContain(
+			'CIERRE\n  Falta el resumen de cierre',
+		);
+		expect(board(dir, 'archive', 'huerfano').err).toContain(
+			'Falta el resumen de cierre: el pendiente «Algo» apunta a borrada',
+		);
+		expect(board(dir, 'unarchive', 'vieja').status).toBe(0);
+		expect(raw(dir, 'close', 'sin-cierre', '--coordinador', '--resumen=Unida.').status).toBe(0);
+		expect(board(dir, 'archive', 'sin-cierre').status).toBe(0);
+		expect(readTask(dir, 'sin-cierre').archivada).toBeDefined();
+	});
+
+	it('shows the closing summary above «Archivar» and disables it with its reason', () => {
+		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
+		expect(html).toContain("import { archiveBlock, cierreLines } from '/model.mjs';");
+		expect(html).toContain('const why=!arch&&!t.candado&&archiveBlock(t,S.board)');
+		expect(html).toContain("${t.candado||why?'disabled':''}");
+		expect(html).toMatch(/\$\{cierreHtml\(t\)\}\s*<div class="fa"><button/);
+		expect(html).toContain('<h3>Cierre');
 	});
 
 	it('lets a coordinator release only a legacy lock without sesion', () => {
@@ -852,7 +971,9 @@ describe('pnpm board', () => {
 	});
 
 	it('archives from the view only for same-origin JSON requests to 127.0.0.1', () => {
-		const dir = makeBoard({ tareas: [task('done', { estado: 'hecha' }), task('open')] });
+		const dir = makeBoard({
+			tareas: [task('done', { estado: 'hecha', cierre: CIERRE }), task('open')],
+		});
 		// Posts once per header set and prints each status, then the stored task.
 		const probe = String.raw`
 			import { request } from 'node:http';

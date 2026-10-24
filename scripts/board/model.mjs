@@ -60,6 +60,101 @@ export const FINALIZADOS = ['hecha', 'unida', 'comprobada', 'cancelada'];
 export const isFinished = (t) => FINALIZADOS.includes(t.estado);
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
+/** The task a closing «pendiente» points to: `T58` by its number, anything else by id; null when absent. */
+export function findTask(ref, board) {
+	const all = [...(board.tareas ?? []), ...(board.archivo ?? [])];
+	const n = /^T(\d+)$/i.exec(String(ref ?? '').trim());
+	if (n) return all.find((x) => x.num !== undefined && Number(x.num) === Number(n[1])) ?? null;
+	return all.find((x) => x.id === ref) ?? null;
+}
+
+/** `texto→T58` (or `texto->T58`) → `{ texto, tarea: 'T58' }`; a text without an arrow has no tarea. */
+export function parsePendiente(s) {
+	const text = String(s ?? '');
+	const i = Math.max(text.lastIndexOf('→'), text.lastIndexOf('->'));
+	if (i < 0) return { texto: text.trim(), tarea: '' };
+	const arrow = text.startsWith('→', i) ? 1 : 2;
+	return { texto: text.slice(0, i).trim(), tarea: text.slice(i + arrow).trim() };
+}
+
+/** Values of a repeatable flag; «ninguna»/«ninguno» alone means an empty list. */
+function listFlag(lists, key) {
+	const values = (lists[key] ?? []).filter((v) => typeof v === 'string' && v.trim());
+	return values.length === 1 && /^ningun[oa]$/i.test(values[0].trim()) ? [] : values;
+}
+
+/**
+ * The `cierre` that `pnpm board close` writes from its repeatable flags (`lists`: resumen, comprobacion, saltada,
+ * pendiente): a flag not given keeps the previous value, and a pendiente's task is stored by its id.
+ */
+export function buildCierre(prev = {}, lists, board, { pr, commit, en, quien }) {
+	const given = (k, fallback) => (Object.hasOwn(lists, k) ? listFlag(lists, k) : fallback);
+	const pendientes = given('pendiente', null)?.map((s) => {
+		const p = parsePendiente(s);
+		const d = p.tarea && findTask(p.tarea, board);
+		return d ? { ...p, tarea: d.id } : p;
+	});
+	const cierre = {
+		resumen: given('resumen', null)?.join('\n') ?? prev.resumen ?? '',
+		comprobaciones: given('comprobacion', prev.comprobaciones ?? []),
+		saltadas: given('saltada', prev.saltadas ?? []),
+		pendientes: pendientes ?? prev.pendientes ?? [],
+		en,
+		...(quien ? { quien } : {}),
+	};
+	if (pr ?? prev.pr) cierre.pr = pr ?? prev.pr;
+	if (commit ?? prev.commit) cierre.commit = commit ?? prev.commit;
+	return cierre;
+}
+
+export const NO_CIERRE = 'Falta el resumen de cierre';
+
+/**
+ * Problems of a task's closing summary (d178), checked against the board: missing, empty, or a «pendiente» that
+ * does not point to another task on the board. Empty when «Archivar» may run.
+ */
+export function cierreIssues(t, board) {
+	if (!t.cierre) return [NO_CIERRE];
+	const out = cierreShapeIssues(t.cierre);
+	for (const p of Array.isArray(t.cierre.pendientes) ? t.cierre.pendientes : []) {
+		if (!String(p?.tarea ?? '').trim()) continue;
+		const d = findTask(p.tarea, board);
+		if (!d)
+			out.push(`el pendiente «${p.texto}» apunta a ${p.tarea}, que no está en el tablero`);
+		else if (d.id === t.id) out.push(`el pendiente «${p.texto}» apunta a la misma tarea`);
+	}
+	return out;
+}
+
+/** Why «Archivar» stays disabled (d178), or null. Unarchiving never needs it. */
+export function archiveBlock(t, board) {
+	const issues = cierreIssues(t, board);
+	if (!issues.length) return null;
+	return issues[0] === NO_CIERRE ? NO_CIERRE : `${NO_CIERRE}: ${issues.join('; ')}`;
+}
+
+/** The summary lines the card, the sheet and `show` print, without the task's title. */
+export function cierreLines(t, board) {
+	const c = t.cierre;
+	if (!c) return [];
+	const list = (xs, none) => (Array.isArray(xs) && xs.length ? xs.join(', ') : none);
+	const ref = (p) => {
+		const d = findTask(p.tarea, board);
+		return d?.num ? `T${d.num}` : p.tarea || '¿?';
+	};
+	const pend = Array.isArray(c.pendientes) ? c.pendientes : [];
+	const pr = c.pr ?? t.pr;
+	const merged = [pr ? `PR ${pr}` : '', c.commit].filter(Boolean).join(', ');
+	return [
+		`${t.estado ?? 'pendiente'}${merged ? ` (${merged})` : ''}`,
+		`Hecho: ${c.resumen}`,
+		`Comprobaciones: ${list(c.comprobaciones, 'ninguna')}. Saltadas: ${list(c.saltadas, 'ninguna')}.`,
+		pend.length
+			? `Pendiente: ${pend.map((p) => `${p.texto} → ${ref(p)}`).join('; ')}`
+			: 'Pendiente: ninguno.',
+	];
+}
+
 /**
  * A task's requisitos, each re-checked against the board right now. A pending task without a prompt gets an
  * automatic «prompt» requisito, except when the coordinator itself is the actor.
@@ -370,6 +465,31 @@ const FIELD_CHECKS = [
 	[(t) => !isDate(t.actualizado), () => 'actualizado no es fecha'],
 ];
 
+const strList = (x) => Array.isArray(x) && x.every((s) => typeof s === 'string' && s.trim());
+
+/** Shape of `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien?}` (d178). */
+function cierreShapeIssues(c) {
+	if (!c || typeof c !== 'object' || Array.isArray(c)) return ['cierre debe ser un objeto'];
+	const out = [];
+	const resumen = String(c.resumen ?? '').trim();
+	if (!resumen) out.push('cierre sin resumen');
+	else if (resumen.split('\n').length > 4) out.push('el resumen de cierre tiene más de 4 líneas');
+	if (!optional(c.pr, (p) => /^#[1-9]\d*$/.test(p))) out.push('cierre.pr debe ser #<número>');
+	if (!optional(c.commit, (s) => /^[a-f0-9]{7,40}$/.test(s)))
+		out.push('cierre.commit debe ser un SHA');
+	if (!strList(c.comprobaciones)) out.push('cierre.comprobaciones debe ser una lista de texto');
+	if (!strList(c.saltadas)) out.push('cierre.saltadas debe ser una lista de texto');
+	if (!Array.isArray(c.pendientes)) out.push('cierre.pendientes debe ser una lista');
+	else
+		for (const p of c.pendientes) {
+			if (!String(p?.texto ?? '').trim()) out.push('pendiente de cierre sin texto');
+			else if (!String(p.tarea ?? '').trim())
+				out.push(`pendiente sin tarea: «${p.texto}» (escriba texto→T<n>)`);
+		}
+	if (!isDate(c.en)) out.push('cierre.en no es fecha');
+	return out;
+}
+
 function requisitoIssue(r) {
 	if (!REQUISITOS.includes(r?.tipo)) return `requisito de tipo desconocido: ${r?.tipo}`;
 	if (!String(r.ref ?? '').trim()) return `requisito ${r.tipo} sin ref`;
@@ -384,5 +504,6 @@ export function taskIssues(t) {
 		const issue = requisitoIssue(r);
 		if (issue) out.push(issue);
 	}
+	if (t.cierre !== undefined) out.push(...cierreShapeIssues(t.cierre));
 	return out;
 }
