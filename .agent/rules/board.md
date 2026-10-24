@@ -55,6 +55,20 @@ authorization.
   without one). Record it in the same write that opens the PR. Every mention of a task that has a PR
   — replies, messages, handoffs, reports, prompts — writes it next to the id:
   `pasarela-pago-estudio (PR #475)`. Same rule for every agent.
+- **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
+  «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
+  `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open
+  task by `pr`, then `rama`, then the id convention, and writes only with
+  `pnpm board set --coordinador` at the rev it read: an open PR sets `pr` (and a missing `rama`) and
+  moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the task to `unida`.
+  **d170**: a merged PR also drops the task's lock, whoever holds it, through
+  `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
+  still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
+  open PR are only reported; review children are never touched. A lock older than `--horas` (default
+  6, or `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is
+  flagged «posible sesión cerrada» and never released by the sync (the owning session or the
+  coordinator with authority does). The button's POST needs the page's per-process token and its own
+  `Origin`, and every request needs a local `Host`. No agent is ever launched from the view.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change, per `move` and per archive or
