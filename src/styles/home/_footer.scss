@@ -49,6 +49,9 @@
 	}
 
 	.footer-link {
+		display: inline-flex;
+		align-items: center;
+		min-block-size: 44px;
 		color: var(--footer-link-color);
 		text-decoration: none;
 		opacity: var(--footer-link-opacity);
@@ -111,8 +114,8 @@
 	.social-link {
 		color: var(--footer-social-color);
 		background: var(--footer-social-bg);
-		width: 40px;
-		height: 40px;
+		width: 44px;
+		height: 44px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -170,6 +173,10 @@
 
 		a,
 		.footer-link--cookie {
+			display: inline-flex;
+			align-items: center;
+			min-block-size: 44px;
+			padding-block: 0.5rem;
 			color: white;
 			text-decoration: none;
 			transition: opacity 0.3s ease;
@@ -180,7 +187,7 @@
 		}
 
 		.footer-link--cookie {
-			padding: 0;
+			padding-inline: 0;
 			background: none;
 			border: 0;
 			font: inherit;
