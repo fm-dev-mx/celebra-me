@@ -65,9 +65,9 @@ Workers plan fails any SSR request above 10 ms of CPU, so Paid is mandatory for 
   lock the zone routes. The smoke fails when a version URL answers without the token.
 - **Cron Triggers are non-versioned.** `wrangler versions upload`, `versions deploy` and
   `secret bulk` never apply them. Production schedules are `17 15 * * *` (memories cleanup) and
-  `43 10 * * *` (engagement maintenance), UTC, declared in `wrangler.jsonc`. Jobs run only through
-  the Worker `scheduled()` handler (`src/worker.ts` → `src/lib/server/scheduled-jobs.ts`); there are
-  no HTTP cron routes and no `CRON_SECRET`.
+  `43 10 * * *` (engagement maintenance and commercial analytics retention), UTC, declared in
+  `wrangler.jsonc`. Jobs run only through the Worker `scheduled()` handler (`src/worker.ts` →
+  `src/lib/server/scheduled-jobs.ts`); there are no HTTP cron routes and no `CRON_SECRET`.
 - **Rate limiting uses `ratelimits` bindings**, one `RATE_LIMIT_*` binding per
   `(namespace, maxHits, windowSec)` pair that `src/lib/rsvp/security/rate-limit-provider.ts` uses.
   The public namespaces are `auth`, `rsvp`, `rsvp-public`, `engagement`, `memories`, `tracking` and
