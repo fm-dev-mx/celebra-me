@@ -58,6 +58,8 @@ const SUCCESS = new Set(['hecha', 'unida', 'comprobada']);
 /** Finished tasks (the «Finalizadas» tab): only these can be archived (d167). */
 export const FINALIZADOS = ['hecha', 'unida', 'comprobada', 'cancelada'];
 export const isFinished = (t) => FINALIZADOS.includes(t.estado);
+/** An origin can also identify follow-up implementation work, not just a cross-review. */
+export const isReview = (t) => Boolean(t.revisionSha) || String(t.id).endsWith('-revision');
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /** The task a closing «pendiente» points to: `T58` by its number, anything else by id; null when absent. */
@@ -87,7 +89,11 @@ function listFlag(lists, key) {
  * The `cierre` that `pnpm board close` writes from its repeatable flags (`lists`: resumen, comprobacion, saltada,
  * pendiente): a flag not given keeps the previous value, and a pendiente's task is stored by its id.
  */
-export function buildCierre(prev = {}, lists, board, { pr, commit, en, quien }) {
+export function buildCierre(prev = {}, { flags, lists }, board, en) {
+	const pick = (k) => (typeof flags[k] === 'string' ? flags[k] : undefined);
+	const pr = pick('pr') && normalizePr(pick('pr'));
+	const commit = pick('commit');
+	const quien = pick('quien') ?? (flags.coordinador ? 'coordinador' : flags.agente);
 	const given = (k, fallback) => (Object.hasOwn(lists, k) ? listFlag(lists, k) : fallback);
 	const pendientes = given('pendiente', null)?.map((s) => {
 		const p = parsePendiente(s);
@@ -108,6 +114,15 @@ export function buildCierre(prev = {}, lists, board, { pr, commit, en, quien }) 
 }
 
 export const NO_CIERRE = 'Falta el resumen de cierre';
+
+/** The CIERRE block of `pnpm board show`: the summary, and why «Archivar» is refused; empty for open tasks. */
+export function cierreBlock(t, board) {
+	if (!t.cierre && !isFinished(t)) return [];
+	const why = !t.archivada && archiveBlock(t, board);
+	return ['', 'CIERRE', ...cierreLines(t, board), ...(why ? [why] : [])].map((l, i) =>
+		i > 1 ? `  ${l}` : l,
+	);
+}
 
 /**
  * Problems of a task's closing summary (d178), checked against the board: missing, empty, or a «pendiente» that

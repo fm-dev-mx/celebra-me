@@ -4,7 +4,7 @@
  *
  *   list [--agente=<a>|--tab=libres] [--json]   numbered queue with its color
  *   next --agente=<a> [--json]                  first ready, unlocked task that agent finishes alone
- *   show <id> [--json]
+ *   show <id|T<n>> [--json]                    set and claim also accept the fixed task number
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
@@ -45,6 +45,7 @@ import {
 	archiveBlock,
 	buildCierre,
 	canFinish,
+	cierreBlock,
 	cierreIssues,
 	cierreLines,
 	claimable,
@@ -59,6 +60,7 @@ import {
 	taskIssues,
 	inTab,
 	isFinished,
+	isReview,
 	laneLines,
 	promptWithLane,
 	lockSessionIssue,
@@ -123,7 +125,7 @@ export function parseValue(v) {
 function applyPairs(doc, pairs) {
 	const out = { ...doc };
 	for (const [k, v] of Object.entries(pairs)) {
-		if (k === 'id' || k === 'rev' || k === 'actualizado')
+		if (['id', 'num', 'rev', 'actualizado'].includes(k))
 			throw new UsageError(`${k} lo pone el comando`);
 		const value = parseValue(v);
 		if (value === undefined) delete out[k];
@@ -157,6 +159,15 @@ function logRow(dir, { tarea, de, a, quien, corrio, salio }) {
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	// Archive never deletes tasks; both collections reserve their numbers permanently.
+	t.num = before
+		? before.num
+		: [...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
+				(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
+				0,
+			) + 1;
+	if (!before && !Number.isSafeInteger(t.num))
+		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
 	else t.pr = pr;
@@ -188,7 +199,15 @@ function unlocked(task, flags) {
 }
 
 function getTask(dir, id) {
-	const t = readDoc(dir, 'tareas', assertId(id));
+	const number = /^T([1-9]\d*)$/i.exec(id);
+	let t;
+	if (number) {
+		const matches = readCollection(dir, 'tareas').filter(
+			(task) => task.num === Number(number[1]),
+		);
+		if (matches.length > 1) throw new UsageError(`número de tarea repetido: ${id}`);
+		[t] = matches;
+	} else t = readDoc(dir, 'tareas', assertId(id));
 	if (!t) throw new UsageError(`no existe la tarea ${id}`);
 	return t;
 }
@@ -312,23 +331,13 @@ function closeCommand({ pos, flags, lists }, dir, out) {
 		// The lock owner writes it; a declared coordinator completes it, also after the lock is gone.
 		if (!flags.coordinador) assertOwner(before, flags);
 		const board = loadBoard(dir);
-		const pick = (k) => (typeof flags[k] === 'string' ? flags[k] : undefined);
-		const cierre = buildCierre(before.cierre, lists, board, {
-			pr: pick('pr') && normalizePr(pick('pr')),
-			commit: pick('commit'),
-			en: nowIso(),
-			quien: pick('quien') ?? (flags.coordinador ? 'coordinador' : flags.agente),
-		});
+		const cierre = buildCierre(before.cierre, { flags, lists }, board, nowIso());
 		const issues = cierreIssues({ ...before, cierre }, board);
 		if (issues.length)
 			throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
 		const t = saveTask(dir, before, { ...before, cierre });
-		say(
-			flags,
-			out,
-			t,
-			[`${t.id} con cierre (rev ${t.rev})`, ...cierreLines(t, board)].join('\n'),
-		);
+		const text = [`${t.id} con cierre (rev ${t.rev})`, ...cierreLines(t, board)];
+		say(flags, out, t, text.join('\n'));
 	});
 }
 
@@ -357,9 +366,9 @@ function claimLocation(before, flags, board) {
 			`${before.id} corre en ${planned}: omita --carril o pida al coordinador otro carril`,
 		);
 	const carril = given ?? planned;
-	if (before.origen && given)
+	if (isReview(before) && given)
 		throw new UsageError('la revisión no toma el carril del autor; omita --carril');
-	if (!before.origen && !laneAllowed(carril, before))
+	if (!isReview(before) && !laneAllowed(carril, before))
 		throw new UsageError(
 			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
 		);
@@ -374,7 +383,7 @@ function row(t, n, board, agente) {
 	const first = requisitos(t, board).find((r) => !r.ok);
 	const why =
 		stage(t, board) === 'bloqueada' && first ? `espera ${first.tipo} ${first.ref}`.trim() : '';
-	return `${String(n).padStart(2)}. ${COLOR_LABEL[c].padEnd(11)} ${String(t.urgencia ?? '').padEnd(8)} ${t.id}${lock}${why ? `  — ${why}` : ''}`;
+	return `${String(n).padStart(2)}. ${COLOR_LABEL[c].padEnd(11)} ${String(t.urgencia ?? '').padEnd(8)} ${t.num ? `T${t.num} ` : ''}${t.titulo} · ${t.id}${lock}${why ? `  — ${why}` : ''}`;
 }
 
 const commands = {
@@ -382,11 +391,15 @@ const commands = {
 		const board = loadBoard(dir);
 		const tab = flags.agente ?? flags.tab;
 		const q = queue(board).filter((t) => inTab(t, tab));
+		const review = board.tareas
+			.filter((t) => stage(t, board) === 'revision' && !t.archivada && inTab(t, tab))
+			.sort((a, b) => Date.parse(b.actualizado) - Date.parse(a.actualizado));
 		if (flags.json)
 			return out(
 				JSON.stringify(
-					q.map((t, i) => ({
-						n: i + 1,
+					[...q, ...review].map((t, i) => ({
+						n: i < q.length ? i + 1 : null,
+						num: t.num,
 						id: t.id,
 						titulo: t.titulo,
 						color: color(t, board, { agente: flags.agente }),
@@ -396,17 +409,23 @@ const commands = {
 					2,
 				),
 			);
-		if (!q.length) return out('Sin tareas abiertas.');
+		if (!q.length) out('Sin tareas abiertas.');
 		q.forEach((t, i) => out(row(t, i + 1, board, flags.agente)));
 		const mine = q.filter((t) => color(t, board) === 'own').length;
 		out(`\nUsted: ${mine ? `${mine} ${mine > 1 ? 'cosas' : 'cosa'}` : 'nada'}`);
+		if (review.length) {
+			out(`\nEn revisión (${review.length}):`);
+			for (const t of review) out(row(t, '·', board, flags.agente));
+		}
 	},
 	next({ flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente=claude|codex|gemini');
 		const t = nextFor(agente, loadBoard(dir));
 		if (flags.json) return out(JSON.stringify(t, null, 2));
 		if (!t) return out(`Nada listo para ${agente}.`);
-		out(`${t.id} (rev ${t.rev}) — ${t.titulo}\n\n${promptWithLane(t, loadBoard(dir)) ?? ''}`);
+		out(
+			`${t.id} (rev ${t.rev}) — ${t.num ? `T${t.num} ` : ''}${t.titulo}\n\n${promptWithLane(t, loadBoard(dir)) ?? ''}`,
+		);
 	},
 	show({ pos, flags }, dir, out) {
 		const t = getTask(dir, need(pos[0], 'falta <id>'));
@@ -425,7 +444,7 @@ const commands = {
 				),
 			);
 		out(
-			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.titulo}`,
+			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
 		for (const line of laneLines(t, board)) out(`  ${line}`);
 		for (const r of requisitos(t, board)) out(`  ${r.ok ? '✓' : '○'} ${r.tipo} ${r.ref}`);
@@ -445,12 +464,7 @@ const commands = {
 		])
 			if (t[k] !== undefined)
 				out(`  ${k}: ${typeof t[k] === 'string' ? t[k] : JSON.stringify(t[k])}`);
-		if (t.cierre || isFinished(t)) {
-			out('\nCIERRE');
-			for (const line of cierreLines(t, board)) out(`  ${line}`);
-			const why = !t.archivada && archiveBlock(t, board);
-			if (why) out(`  ${why}`);
-		}
+		for (const line of cierreBlock(t, board)) out(line);
 		if (t.prompt) out(`\n${t.prompt}`);
 	},
 	add({ pos, pairs, flags }, dir, out) {
@@ -479,14 +493,15 @@ const commands = {
 				'revisionSha',
 				'archivada',
 				'cierre',
+				'num',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
-			const merged = applyPairs({ ...before, ...data, id }, pairs);
+			const merged = applyPairs({ ...before, ...data, id: before.id }, pairs);
 			if (before.candado?.rama && merged.rama !== before.candado.rama)
 				throw new UsageError('rama distinta del candado');
 			if (
-				before.origen &&
+				isReview(before) &&
 				['hecha', 'comprobada'].includes(merged.estado) &&
 				flags.sha !== before.revisionSha
 			)
@@ -552,7 +567,7 @@ const commands = {
 				throw new UsageError(
 					'el carril planeado lo quita el coordinador: use --coordinador',
 				);
-			if (before.origen) throw new UsageError('una revisión no tiene carril planeado');
+			if (isReview(before)) throw new UsageError('una revisión no tiene carril planeado');
 			if (before.candado)
 				throw new UsageError(
 					`${before.id} tiene candado de ${before.candado.agente}: el carril ya está en uso`,

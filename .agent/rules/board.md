@@ -157,6 +157,12 @@ Arbitrary HTTP/API commands are rejected. Failures/timeouts/malformed PR respons
 inventory coverage is separate. Branch existence or MERGED alone does not prove every task
 criterion.
 
+At every board review the coordinator writes `sesiones.json` in the board directory: the raw
+`list_sessions` result with `include_archived: true`. The verifier reads it for its lifecycle drift
+sections (sessions without a task, locks naming a missing session, names off the d158 form); without
+it those sections are skipped and the report says so. The drift sections only report: the verifier
+never proposes deleting a branch, a session or a task.
+
 SSE reports live/degraded status. Default reconciliation and time-dependent redraw: 30 seconds;
 normal event debounce: 150 ms. Sub-second delivery is a measured target, not an availability
 guarantee. A filesystem transaction lock is never stolen solely because it is old. After a writer
