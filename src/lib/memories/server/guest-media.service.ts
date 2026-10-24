@@ -55,6 +55,7 @@ import {
 	type MemoriesInspectionResult,
 	type MemoriesUploadCapability,
 } from './worker-gateway';
+import { safeErr } from '@/lib/server/safe-error';
 
 const RESERVATION_ERRORS: Record<
 	string,
@@ -315,7 +316,7 @@ export async function reserveGuestMemoryItem(input: {
 				'Demasiadas solicitudes. Intente de nuevo más tarde.',
 			);
 		}
-		console.error('[memories] Upload capability failed after reservation.', error);
+		console.error('[memories] Upload capability failed after reservation.', safeErr(error));
 		throw new ApiError(
 			503,
 			'service_unavailable',

@@ -11,6 +11,7 @@ import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { z } from 'zod';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
+import { safeErr } from '@/lib/server/safe-error';
 
 const BulkGuestSchema = z.object({
 	full_name: z.string().min(1),
@@ -108,7 +109,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			message: 'Importación completada correctamente.',
 		});
 	} catch (err) {
-		console.error('[rsvp] [BulkImport] Error:', err);
+		console.error('[rsvp] [BulkImport] Error:', safeErr(err));
 		if (isApiError(err)) {
 			return errorResponse(err);
 		}

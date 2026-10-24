@@ -1,5 +1,6 @@
 import { isReservedInvitationSlug } from '@/lib/invitation/slug-policy';
 import { isEventType, type EventType } from '@/lib/theme/theme-contract';
+import { safeErr } from '@/lib/server/safe-error';
 
 type EventTypeLookup = (slug: string) => Promise<string | null>;
 
@@ -16,7 +17,7 @@ export async function resolveShortRouteEventType(
 		const eventType = await lookup(slug);
 		return eventType && isEventType(eventType) ? eventType : null;
 	} catch (error) {
-		console.error(`[ShortRoute] Slug lookup failed for "${slug}":`, error);
+		console.error(`[ShortRoute] Slug lookup failed for "${slug}":`, safeErr(error));
 		return null;
 	}
 }

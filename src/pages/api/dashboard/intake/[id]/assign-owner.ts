@@ -3,6 +3,7 @@ import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { assignInvitationOwnerService } from '@/lib/intake/services/invitation.service';
+import { safeErr } from '@/lib/server/safe-error';
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
@@ -21,7 +22,7 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		if (error instanceof ApiError && error.status < 500) {
 			console.warn(`[assign-owner] Expected error: ${error.code} — ${error.message}`);
 		} else {
-			console.error(`[assign-owner] Unexpected error:`, error);
+			console.error(`[assign-owner] Unexpected error:`, safeErr(error));
 		}
 		return errorResponse(error);
 	}

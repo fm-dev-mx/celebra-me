@@ -5,6 +5,8 @@
  * work after the response is sent, so swapping the hosting platform touches one file.
  */
 
+import { safeErr } from '@/lib/server/safe-error';
+
 /** Something that can keep a request alive until a background promise settles. */
 export interface AfterResponseContext {
 	waitUntil(promise: Promise<unknown>): void;
@@ -106,7 +108,7 @@ export function runAfterResponse(
 	const settled = promise.then(
 		() => undefined,
 		(error: unknown) => {
-			console.error(`[${label}] Background task failed after the response:`, error);
+			console.error(`[${label}] Background task failed after the response:`, safeErr(error));
 		},
 	);
 	if (ctx) ctx.waitUntil(settled);
