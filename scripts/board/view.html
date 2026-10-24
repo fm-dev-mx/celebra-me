@@ -125,6 +125,12 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .mine .paste .row{flex:1;min-width:0}
 .mine .paste .btn{flex:none}
 @media (max-width:560px){.mine .paste{flex-direction:column}}
+/* T126: «Le toca al coordinador» and «Detenidas» sit next to «Le toca a usted» */
+.whats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:14px;align-items:start}
+.whats .mine{margin-bottom:0}
+.mine.coord{--own:var(--auto);--own-soft:var(--auto-soft)}
+.mine.stall{--own:var(--u-alta);--own-soft:var(--panel)}
+.mine .row .meta{font:500 .76rem var(--mono);color:var(--muted)}
 .empty{background:var(--panel);border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
 
 /* task sheet */
@@ -259,7 +265,11 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
       <button class="fchip" type="button" data-ag="todas" aria-pressed="true">Todas</button>
       <button class="fchip" type="button" data-ag="libres" aria-pressed="false">Libres</button>
     </div>
-    <div class="mine" id="mine" aria-live="polite"></div>
+    <div class="whats">
+      <div class="mine" id="mine" aria-live="polite"></div>
+      <div class="mine coord" id="coord" aria-live="polite"></div>
+      <div class="mine stall" id="stall" aria-live="polite"></div>
+    </div>
     <div class="cola">
       <div class="list" id="list"><div class="empty">Cargando la cola. Aquí aparecen las tareas abiertas, numeradas en el orden en que conviene hacerlas.</div></div>
       <aside class="sheet" id="sheet" aria-label="Ficha de la tarea"><div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div></aside>
@@ -304,6 +314,7 @@ import { requisitoText, taskName } from '/model.mjs';
 import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
+import { laneRows, nextSections } from '/next.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -430,6 +441,7 @@ function renderBoard(){
   if(!S.ready)return;
   const lanes=S.board.carriles.slice().sort((a,b)=>ordenOf(a)-ordenOf(b));
   const known=new Set(lanes.map(l=>l.id));
+  const git=S.board.vivo?Object.fromEntries(laneRows(S.board,S.board.vivo.carriles).map(x=>[x.id,x])):{};
   const tareas=S.board.tareas.filter(t=>!t.archivada&&inTab(t,S.ag));
   // d177: a task not claimed yet sits in the lane the coordinator planned for it.
   const laneId=taskLane;
@@ -439,7 +451,9 @@ function renderBoard(){
   const head=`<div class="bhead"><div>Carril</div>${STAGES.map(s=>`<div>${s[1]}</div>`).join('')}</div>`;
   $('board').innerHTML=head+lanes.map(l=>{
     const ts=l.id==='sin-carril'?loose:tareas.filter(t=>laneId(t)===l.id);
-    const ses=l.sesion&&l.sesion.nombre?`Sesión ${esc(l.sesion.nombre)}`:(l.estado==='ocioso'?'Libre':esc(l.estado||''));
+    // T126: with the server's Git read the lane says its branch, whether it is clean and its locked task.
+    const g=git[l.id];
+    const ses=g?esc(g.texto.slice(l.id.length+3)):l.sesion&&l.sesion.nombre?`Sesión ${esc(l.sesion.nombre)}`:(l.estado==='ocioso'?'Libre':esc(l.estado||''));
     return `<div class="brow"><div class="lh"><b>${esc(l.id)}</b><span>${[l.tecla,l.puerto?'puerto '+l.puerto:''].filter(Boolean).map(esc).join(' · ')}</span><span>${ses}</span></div>${STAGES.map(([s,n])=>{const g=ts.filter(t=>stage(t)===s).sort((a,b)=>(NUM[a.id]||999)-(NUM[b.id]||999));return `<div class="cell">${g.length?`<span class="lbl">${n}</span>${g.map(chip).join('')}`:''}</div>`}).join('')}</div>`;
   }).join('');
 }
@@ -485,7 +499,7 @@ function renderHist(){
   const q=$('q').value.trim().toLowerCase(),vig=$('vig').checked;
   let rows=[];
   if(S.kind!=='bit')rows=rows.concat(S.board.decisiones.filter(d=>!vig||d.vigente===true).map(d=>({en:d.en,txt:[d.id,d.decision,d.motivo,(d.tareas||[]).join(' ')].join(' '),html:`<div class="lr dec ${d.vigente===false?'old':''}"><span class="when">${esc(fmt(d.en))}</span><div class="what"><span class="tag">${esc(d.id)}${d.vigente===true?' · vigente':d.vigente===false?' · reemplazada':''}</span>${rich(d.decision)}${d.motivo?`<div class="sub">Motivo: ${rich(d.motivo)}</div>`:''}</div></div>`})));
-  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
+  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
   if(q)rows=rows.filter(r=>r.txt.toLowerCase().includes(q));
   rows.sort((a,b)=>T(b.en)-T(a.en));
   const shown=rows.slice(0,200);
@@ -504,15 +518,23 @@ function renderTop(){
 // The whole board, not the agent tab: what the owner must do never hides behind a filter.
 function renderMine(){
   const all=mQueue(S.board),tag=t=>t.num?'T'+t.num:'';
-  const tasks=all.filter(t=>mColor(t,S.board)==='own');
+  const next=nextSections(S.board,{prs:S.board.vivo&&S.board.vivo.prs?S.board.vivo.prs:undefined});
+  const late=new Set(next.usted.filter(x=>x.texto.startsWith('Correr el despachador')).map(x=>x.id));
+  const tasks=all.filter(t=>mColor(t,S.board)==='own'&&!late.has(t.id));
   const asks=ownerAsks(S.board);
   let h='<h2>Le toca a usted</h2>';
-  if(!tasks.length&&!asks.length)h+='<p class="none">Usted: nada por ahora.</p>';
+  if(!tasks.length&&!asks.length&&!next.usted.length)h+='<p class="none">Usted: nada por ahora.</p>';
   h+=tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}${to?`<span class="sub"> · Pegar en ${esc(to)}</span>`:''}</span></button>`;
     return to?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row}).join('');
   if(asks.length)h+='<p class="sub">Decisiones que esperan su respuesta</p>'+asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(r.ref)}<span class="sub"> · la espera «${esc(t.titulo)}»</span></span></button>`).join('');
+  // T126: what the owner's own rows above do not say yet: a stalled Codex or Gemini task, a message to the owner.
+  const extra=next.usted.filter(x=>/^(Correr el despachador|Mensaje:)/.test(x.texto));
+  if(extra.length)h+='<p class="sub">Detenido o con mensaje</p>'+extra.map(nextRow).join('');
   $('mine').innerHTML=h;
+  $('coord').innerHTML='<h2>Le toca al coordinador</h2>'+(next.coordinador.length?next.coordinador.map(nextRow).join(''):'<p class="none">Nada por ahora.</p>')+(next.prsLeidos?'':'<p class="sub">Sin leer GitHub todavía: faltan los PR abiertos.</p>');
+  $('stall').innerHTML='<h2>Detenidas</h2>'+(next.detenidas.length?next.detenidas.map(nextRow).join(''):'<p class="none">Ninguna.</p>');
 }
+const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1"><b>${esc(x.tarea)}</b><span>${esc(x.texto)}</span></button>`:`<div class="row"><span>${rich(x.texto)}</span></div>`;
 function youBtn(){
   const mine=mQueue(S.board).filter(t=>mColor(t,S.board)==='own');
   if(!mine.length)return '<button type="button" class="you none" disabled>Usted: nada</button>';

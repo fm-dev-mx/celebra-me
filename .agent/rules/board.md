@@ -209,6 +209,9 @@ authorization.
 - `claim` requires a session, readiness, no owner gate, and an exclusive `--carril` for
   implementation. Another session of the same agent cannot replace it. An identical claim is
   idempotent.
+- **Claim title (T126)**: tasks added after T126 carry `contrato: 1`, and their `claim` requires
+  `--titulo="<lane> · T<n> · …"` (the session name), stored in the lock. Older tasks are not asked
+  for it.
 - **Session id**: the lock records the id the agent's app knows, so the session can later be found,
   renamed and archived. Claude omits `--sesion`: `claim`, `set` and `release` read the Claude
   Desktop id from `CLAUDE_CODE_HOST_SESSION_ID` (`local_…`, the same id as a `#local_…` link). A
@@ -252,6 +255,25 @@ authorization.
   updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before
   declaring them.
 - `carril` without an id and `estado` without fields are read-only inventory commands.
+
+## What is next and messages (T126)
+
+- `pnpm board msg <id> --de=<agent> --para=coordinador|dueno|codex|gemini|claude "text"` stores a
+  `mensaje` row in the bitácora; `pnpm board inbox --agente=<a>` lists the unread ones and marks
+  them read in `bandejas/<a>.json` (`--todos` lists read ones too). Results still go on the task.
+- **Heartbeat**: every successful command renews `candado.latido` on the caller's locks (`--agente`
+  or `--de`, with its session); `move`, `review`, `view` and `verify` do not. A lock silent for 2 h
+  shows in «Detenidas»; a ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as
+  «Correr el despachador de Codex (T<n>)»; an idle Claude task goes to the coordinator.
+- `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al coordinador» and
+  «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), reviews with
+  findings (pass them to the author), open PRs without a task, ready Claude tasks without a session
+  and messages for it. `list` prints the same sections without reading GitHub.
+- `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
+  and the task holding its lock.
+- Owner tasks (`actor: dueno`) show only what to do and where (`donde`, else the first line under
+  «DÓNDE CORRE»), never a suggested lane. The coordinator records every owner action as an
+  `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
 
 ## Checks and freshness
 

@@ -24,6 +24,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const FILES = {
 	'/': ['view.html', 'text/html; charset=utf-8'],
 	'/model.mjs': ['model.mjs', 'text/javascript; charset=utf-8'],
+	'/next.mjs': ['next.mjs', 'text/javascript; charset=utf-8'],
 };
 const SETTLE_MS = 150;
 const HEARTBEAT_MS = 25_000;
@@ -32,6 +33,8 @@ const TOKEN_SLOT = '__BOARD_TOKEN__';
 const VERSION_SLOT = '__BOARD_VERSION__';
 // The page reconnects one second after a worker swap ends its stream.
 const RETRY_MS = 1000;
+/** How often the `live` reads (Git lanes, open PRs) refresh; they ride along in the board as `vivo` (T126). */
+const LIVE_MS = 60_000;
 
 /** Runs `pnpm board:sync --json [--dry-run]` against this store and resolves its parsed report. */
 export function runSyncScript(dir, { dryRun }) {
@@ -147,8 +150,11 @@ function archiveRequest(archive, req, res) {
 	});
 }
 
-/** Calls `onChange(json)` once a burst of writes settles and the board really changed. */
-function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFactory }) {
+/**
+ * Calls `onChange(json)` once a burst of writes settles and the board really changed; `extra()` adds fields
+ * that do not live in the store (the `vivo` reads).
+ */
+function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFactory, extra }) {
 	if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 	let last = null;
 	let status = { state: 'connecting', observedAt: null };
@@ -168,7 +174,7 @@ function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFacto
 				report('degraded');
 				return;
 			}
-			next = JSON.stringify(loadBoard(dir));
+			next = JSON.stringify({ ...loadBoard(dir), ...extra() });
 			if (existsSync(join(dir, '.lock'))) {
 				report('degraded');
 				return;
@@ -189,7 +195,8 @@ function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFacto
 			watcher = watchFactory(dir, { recursive: true }, (_event, file) => {
 				const name = String(file ?? '');
 				if (name.includes('.respaldos')) return;
-				if (file && !name.endsWith('.json') && name !== '.lock') return;
+				// .jsonl: a bitácora row, such as a message (T126), shows without waiting for reconciliation.
+				if (file && !/\.jsonl?$/.test(name) && name !== '.lock') return;
 				// A bounded leading debounce cannot be starved by continuous writes.
 				if (!timer)
 					timer = setTimeout(() => {
@@ -214,6 +221,7 @@ function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFacto
 		check();
 	}, reconcileMs);
 	return {
+		check,
 		current: () => last,
 		status: () => status,
 		close: () => {
@@ -234,6 +242,8 @@ export function serveView(
 		watchFactory = watch,
 		sync = (opts) => runSyncScript(dir, opts),
 		archive,
+		live,
+		liveMs = LIVE_MS,
 		token = randomBytes(32).toString('hex'),
 		version = 'dev',
 	} = {},
@@ -261,6 +271,8 @@ export function serveView(
 			res.once('close', recover);
 		}
 	};
+	// T126: `live(board)` resolves `{carriles, prs, en}` from Git and GitHub; the last answer rides in `vivo`.
+	let vivo;
 	const board = watchBoard(
 		dir,
 		(json) => {
@@ -269,8 +281,23 @@ export function serveView(
 		(status) => {
 			for (const res of clients) send(res, JSON.stringify(status), 'status');
 		},
-		{ settleMs, reconcileMs, watchFactory },
+		{ settleMs, reconcileMs, watchFactory, extra: () => (vivo ? { vivo } : {}) },
 	);
+	let reading = false;
+	const readLive = async () => {
+		if (!live || reading) return;
+		reading = true;
+		try {
+			vivo = await live(loadBoard(dir));
+			board.check();
+		} catch {
+			// The page keeps the previous reads; the hand-written lane records still show.
+		} finally {
+			reading = false;
+		}
+	};
+	readLive();
+	const liveTimer = live ? setInterval(readLive, liveMs) : null;
 	const heartbeat = setInterval(() => {
 		for (const res of clients) send(res, JSON.stringify(board.status()), 'status');
 	}, heartbeatMs);
@@ -369,6 +396,7 @@ export function serveView(
 		if (cleaned) return;
 		cleaned = true;
 		clearInterval(heartbeat);
+		clearInterval(liveTimer);
 		board.close();
 		for (const res of clients) res.end();
 	};

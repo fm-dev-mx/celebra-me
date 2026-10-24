@@ -7,7 +7,9 @@
  *   show <id|T<n>> [--json]                    set and claim also accept the fixed task number
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
- *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
+ *   claim <id> --agente=<a> [--titulo="f05 · T<n> · …"] [--sesion=<id>] [--carril=<id>] [--rama=<b>]
+ *                                               lock: one owner at a time; --titulo (the session name) is
+ *                                               required for tasks created under the contract (T126)
  *                                               (rama defaults to the task's declared branch; Claude's sesion
  *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
  *                                               carril defaults to the planned lane, another needs --coordinador)
@@ -35,6 +37,11 @@
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
  *   verify [--json]                             same as pnpm board:verify
+ *   msg <id> --de=<a> --para=<b> "texto"        T126: a message about a task, kept in the bitácora
+ *   inbox --agente=<a> [--todos]                messages to <a> not read yet; marks them read
+ *   sigue [--json]                              T126: «Le toca a usted», «Le toca al coordinador» and «Detenidas»,
+ *                                               with GitHub's open PRs (list prints them without GitHub)
+ *   carriles [--json]                           T126: each lane's branch, clean or not, and its locked task, from git
  *   sesiones [--json]                           d211: open Codex and Gemini chats crossed with the board, read-only;
  *                                               says which ones the owner can archive by hand
  *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
@@ -42,6 +49,7 @@
  *                                               code by itself without closing the port (view-supervisor.mjs)
  *
  * Aliases: get = show, update = set, decision = decide, log = history. Every command takes --json.
+ * Every command renews the heartbeat (`candado.latido`) of the locks its --agente and session hold (T126).
  * Values are JSON when they look like JSON (numbers, true/false/null, [..], {..}); `campo=` removes the field.
  */
 import { execFileSync } from 'node:child_process';
@@ -90,7 +98,10 @@ import {
 	cleaned,
 	CLEANED_ON,
 	unlocked,
+	CONTRATO,
 } from './model.mjs';
+import { claimTitleIssue, nextSections, sectionLines } from './next.mjs';
+import { beatCaller, nextCommands } from './next-commands.mjs';
 import {
 	appendLog,
 	assertId,
@@ -442,6 +453,7 @@ const commands = {
 		q.forEach((t, i) => out(row(t, i + 1, board, flags.agente)));
 		const mine = q.filter((t) => color(t, board) === 'own').length;
 		out(`\nUsted: ${mine ? `${mine} ${mine > 1 ? 'cosas' : 'cosa'}` : 'nada'}`);
+		for (const line of sectionLines(nextSections(board))) out(line);
 		if (review.length) {
 			out(`\nEn revisión (${review.length}):`);
 			for (const t of review) out(row(t, '·', board, flags.agente));
@@ -503,7 +515,10 @@ const commands = {
 			// A compacted task keeps its id: it comes back with restore, never as a new task.
 			if (readDoc(dir, 'archivo', id))
 				throw new UsageError(`${id} está compactada: use pnpm board restore ${id}`);
-			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
+			const t = {
+				...applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs),
+				contrato: CONTRATO,
+			};
 			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
 			const saved = saveTask(dir, null, t, {
 				quien: flags.quien,
@@ -529,6 +544,7 @@ const commands = {
 				'archivada',
 				'cierre',
 				'num',
+				'contrato',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
@@ -574,11 +590,14 @@ const commands = {
 					`${before.id} no está lista para ${agente} o requiere acción del dueño`,
 				);
 			const { rama, carril } = claimLocation(before, flags, board);
+			const titleIssue = claimTitleIssue(before, flags.titulo, carril);
+			if (titleIssue) throw new UsageError(titleIssue);
 			const candado = { agente, desde: nowIso() };
 			for (const [k, v] of Object.entries({
 				sesion,
 				carril,
 				rama,
+				titulo: typeof flags.titulo === 'string' ? flags.titulo.trim() : undefined,
 			}))
 				if (v && v !== true) candado[k] = v;
 			const t = saveTask(dir, before, {
@@ -862,7 +881,7 @@ const commands = {
 		}
 	},
 };
-Object.assign(commands, maintenanceCommands, {
+Object.assign(commands, maintenanceCommands, nextCommands({ getTask }), {
 	close: closeCommand,
 	archive: archiveCommand(true),
 	unarchive: archiveCommand(false),
@@ -879,7 +898,10 @@ export async function run(argv, { dir = boardDir(), out = console.log, prState }
 		throw new UsageError(
 			`comando desconocido: ${cmd ?? '(ninguno)'}. Use: ${Object.keys(commands).join(', ')}`,
 		);
-	return fn(parseArgs(rest), dir, out, prState ? { prState } : undefined);
+	const args = parseArgs(rest);
+	const result = await fn(args, dir, out, prState ? { prState } : undefined);
+	beatCaller(dir, cmd, args.flags);
+	return result;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
