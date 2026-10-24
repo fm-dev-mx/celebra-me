@@ -37,6 +37,11 @@ before reusing a value.
   with content and artwork hashes unchanged.
 - **R7.** Add songs and other content through the typed content, not new styles. Example:
   `olivia-y-antonio`; learned 2026-10-20; evidence: the song shipped in two files (#394).
+- **R8.** Music at 64 kbps MP3 as the floor and 96 kbps optional; do not re-encode published tracks
+  upward. Example: `america` (96 kbps); learned 2026-10-23; evidence: 12 of 13 tracks are at 64 kbps
+  and only America is at 96, so moving all of them to 96 would add about 50 % in size; the
+  `pnpm invitation:music:reencode` dry-run marks tracks at or below 96 kbps `KEEP`; final audit of
+  2026-10-23.
 
 ## Avoid
 
@@ -60,7 +65,9 @@ before reusing a value.
   redeclared `--location-card-shadow` and changed three published invitations (#371).
 - **A7.** Informal «tú» copy and hardcoded uppercase in shared components; guest-facing copy uses
   «usted». Example: `naydelin-paredes`; learned 2026-10-17; evidence: follow-ups in its note:
-  «Contáctanos», the RSVP hints and «ENVIAR RESPUESTA».
+  «Contáctanos», the RSVP hints and «ENVIAR RESPUESTA». Rule: each definition declares its register
+  in `voice` (default `usted`, [contract §3](../../core/invitation-creation-contract.md)); a unit
+  test rejects «tú» forms in unpublished `usted` definitions. Published invitations keep their copy.
 - **A8.** Abbreviated months on the reveal card («17 · OCT · 2026»); write the full date. Example:
   `naydelin-paredes`; learned 2026-10-17; evidence: its envelope letter shows the full date and
   hides the abbreviated card date.

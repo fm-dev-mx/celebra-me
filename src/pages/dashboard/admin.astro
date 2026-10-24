@@ -1,6 +1,7 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { prepareDashboardAdminPageData } from '@/lib/dashboard/admin-page-data';
+import { safeErr } from '@/lib/server/safe-error';
 
 let pageData = null;
 let errorMsg = null;
@@ -8,7 +9,7 @@ let errorMsg = null;
 try {
 	pageData = await prepareDashboardAdminPageData();
 } catch (error) {
-	console.error('[Admin Dashboard] Failed to load admin page data:', error instanceof Error ? error.message : String(error));
+	console.error('[Admin Dashboard] Failed to load admin page data:', safeErr(error));
 	
 	const isDbOrAuthError = error instanceof Error && (
 		error.message.includes('Supabase') ||

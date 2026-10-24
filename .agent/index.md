@@ -19,8 +19,8 @@ routes matching the touched surfaces.
   tiers
 - [`.agent/rules/git-safety.md`](./rules/git-safety.md) — Task-scoped Git authorization and worktree
   safety
-- [`.agent/rules/board.md`](./rules/board.md) — Coordinator board task fields, writes and closing
-  (`pnpm board:verify`)
+- [`.agent/rules/board.md`](./rules/board.md) — Coordinator board v3: local store, `pnpm board`,
+  requisitos, colors, agents and closing (`pnpm board:verify`)
 - [`.agent/rules/agent-routing.md`](./rules/agent-routing.md) — Provider-neutral role routing and
   subagent boundaries
 - [`.agent/load-skills.md`](./load-skills.md) — Runtime-neutral skill loading protocol

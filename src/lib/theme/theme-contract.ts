@@ -58,6 +58,7 @@ export const THEME_PRESET_METADATA = {
 	'sacred-keepsake': { portrait: true, eventTypes: ['bautizo'] },
 	'angelic-presence': { portrait: true, eventTypes: ['bautizo', 'primera-comunion'] },
 	'storybook-lilac': { portrait: false, eventTypes: ['xv'] },
+	'sage-champagne': { portrait: false, eventTypes: ['xv'] },
 } as const satisfies Record<string, ThemePresetMetadata>;
 
 /**

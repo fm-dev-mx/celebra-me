@@ -28,6 +28,7 @@ const KEY_LABELS: Record<string, string> = {
 	interlude03: 'Interludio 3',
 	interlude04: 'Interludio 4',
 	thankYouPortrait: 'Retrato de agradecimiento',
+	ogShare: 'Vista previa al compartir',
 };
 
 export function getBundledEventAssets(assetSlug: string): BundledAssetEntry[] {

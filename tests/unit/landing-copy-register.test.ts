@@ -1,43 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { tuFormPattern } from '../helpers/tu-register';
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
-
-/**
- * Informal "tú" forms that must not appear in landing copy (visible UI uses "usted").
- * Ambiguous forms shared with the "usted" present tense are intentionally not listed.
- */
-const TU_FORMS = [
-	'tú',
-	'tu',
-	'tus',
-	'te',
-	'ti',
-	'contigo',
-	'puedes',
-	'quieres',
-	'sabes',
-	'tienes',
-	'necesitas',
-	'estás',
-	'recibes',
-	'prefieres',
-	'compartes',
-	'envías',
-	'agregas',
-	'eliges',
-	'elige',
-	'cuéntanos',
-	'déjanos',
-	'escríbenos',
-	'contáctanos',
-];
-
-/** Word boundaries that also treat accented letters as word characters. */
-const tuFormPattern = new RegExp(
-	`(?<![\\p{L}\\p{N}_])(${TU_FORMS.join('|')})(?![\\p{L}\\p{N}_])`,
-	'iu',
-);
 
 /** Extracts quoted string and template literal contents (the visible copy) from a TS source. */
 function stringLiterals(source: string): string[] {

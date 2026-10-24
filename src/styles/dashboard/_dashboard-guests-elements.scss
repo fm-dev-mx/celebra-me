@@ -1,4 +1,5 @@
 @use './common' as *;
+@use '../global/mixins' as mixins;
 
 .guest-nota-btn {
 	display: inline-flex;
@@ -26,6 +27,11 @@
 
 	svg {
 		flex-shrink: 0;
+	}
+
+	// Touch layouts keep the 44px target.
+	@include mixins.respond-below(lg) {
+		min-height: 44px;
 	}
 }
 

@@ -75,7 +75,6 @@
 	}
 
 	@include mixins.respond-below(xs) {
-		min-height: 36px;
 		padding: 0.35rem 0.9rem;
 		font-size: 0.78rem;
 	}

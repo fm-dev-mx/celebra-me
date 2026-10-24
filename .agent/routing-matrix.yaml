@@ -107,7 +107,7 @@ routes:
           - '.agent/rules/agent-routing.md'
 
     - task_type: 'coordinator_board'
-      description: 'Coordinator board tasks, their fields and closing, and pnpm board:verify'
+      description: 'Coordinator board tasks, pnpm board, their fields and closing, and pnpm board:verify'
       rules:
           - '.agent/rules/board.md'
       docs:

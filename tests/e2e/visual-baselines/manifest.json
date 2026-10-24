@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-23T04:05:10.345Z",
+    "generatedAt": "2026-10-24T04:59:23.472Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-        "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
-        "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
+        "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+        "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 180,
-    "matrixHash": "3ea7d6e0c70fec409a681799b3efa696202054f71febe6dbd1b6ee180e8da41e",
+    "totalCaptures": 182,
+    "matrixHash": "f450d45070cd0561d2eb8d80c30f5903f542a30c6bf9451ff32be54419e52223",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2267,8 +2267,8 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "8c7de71b0e4191732471185072d117857a513529d52feac7f0af90d032724710",
-            "contentHash": "86e6cb2f63605926687c4610f70f2afa64b872f58b89cef20524eebdf615721c",
+            "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
+            "contentHash": "34e0f9faf69cf21b9790344187514cbc2f3ff95b2a627c0cd9cad85e7d8f23a4",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2280,7 +2280,7 @@
             "viewport": "desktop",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
             "sha256": "1d99101a5ab635f2ad2d2a9e250cb77179bf4af132189a71abfc938c76b68898",
-            "contentHash": "86e6cb2f63605926687c4610f70f2afa64b872f58b89cef20524eebdf615721c",
+            "contentHash": "34e0f9faf69cf21b9790344187514cbc2f3ff95b2a627c0cd9cad85e7d8f23a4",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2291,8 +2291,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "08e000db437ceb90fdb0d6984c602eeeb8a11ae56b326fedfb41c831b2ea681a",
-            "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
+            "sha256": "21ef9246b6dc38f9e6bf106049006dbb0752298f0a395b6d04ef4393e2fb79fc",
+            "contentHash": "bb7a12d124f3e95557bb9561fc73c6608ee574e79565242584299ad9e4295fbb",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
         },
@@ -2304,7 +2304,7 @@
             "viewport": "desktop",
             "file": "pages/demo-boda-demo-brisa-desktop.png",
             "sha256": "5485ddccc32d5bf5e48e8b60ade8f4b87ea7bddf83dc058b869bc0b6bd84f9cf",
-            "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
+            "contentHash": "bb7a12d124f3e95557bb9561fc73c6608ee574e79565242584299ad9e4295fbb",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
         },
@@ -2315,8 +2315,8 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "5b3b805f96113be668bb2f7d11eab1497739d1b45cb4a104e4d6119023c4c288",
-            "contentHash": "16d891d66bf43bc4d1cae3e5be712f4967dd525c725f38d201394c4918ba62f4",
+            "sha256": "29c1b87d983836e4931cac5daeca51c8719201291f294511d5786c898473c01d",
+            "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2327,8 +2327,8 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "3d821834670229de3f314eb85190630a3bbe7a44fa79cd0b082057c2b7a3916f",
-            "contentHash": "16d891d66bf43bc4d1cae3e5be712f4967dd525c725f38d201394c4918ba62f4",
+            "sha256": "bc81921c8fd217778e54ea4782a5678b27d993ffd4c4adc421db991e6f98a88e",
+            "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2339,8 +2339,8 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "sha256": "74cc8c60ebfe28192fba934f37ff91e9a88014b911b3f7d7e8340632f0020e78",
-            "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
+            "sha256": "1f21d95539323cd161ac0afb36cd3f456932a4ec1b8430ea220d66f045433c94",
+            "contentHash": "3bac5ae9626b94e2a5d9645afd6c690102f3b5560651c144e671ecc0ed05a038",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2352,7 +2352,7 @@
             "viewport": "desktop",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
             "sha256": "7768ad1c8cf6244d36305217e9548bca0de04b0c81af69960e28f88009ab6f7e",
-            "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
+            "contentHash": "3bac5ae9626b94e2a5d9645afd6c690102f3b5560651c144e671ecc0ed05a038",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2363,8 +2363,8 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "d9cb98e639ce46b329e491e9eab5663cc9df409287ec8653c2753ea99d2afa85",
-            "contentHash": "3a3a732aa08b4ba8689db2f8f490fe351a7531fe4cf3162d6dd623d3bd41fb68",
+            "sha256": "b07a19f87da9d0739926c35bd79127a64b6a383c5a24441181c51e823f5c28cb",
+            "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
         },
@@ -2376,7 +2376,7 @@
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
             "sha256": "86d195bb0e06848a94a80d7e5f2063cf407ca65ec4e48d769de47d7a19f8b3b3",
-            "contentHash": "3a3a732aa08b4ba8689db2f8f490fe351a7531fe4cf3162d6dd623d3bd41fb68",
+            "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
         },
@@ -2387,7 +2387,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "100c4ded511655f01674a09a4b8b7c6aa1a8f90927e4b4a8a4b0966f672ae55e",
+            "sha256": "f04adc61908fa31bed944a9478fdd2669fca2192fb2aa95d2d82d78a41fd74b7",
             "contentHash": "a86902a4a58bf40e90a3581cda1850576f02ed9ae9715b04866f473cb1a8ec91",
             "assetHash": "371ee46afe576e89fa2a3f272a914e1575168bbef5e69e6130000c145fc7abc1",
             "comparisonResult": "ACCEPTED"
@@ -2411,8 +2411,8 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-            "sha256": "434bf816e9359db748bb4589c52e5f152bb1fecdbd84dd7dcf42aa47b294a7e5",
-            "contentHash": "b0720bfc76375caa3a7de376a2438c63ba846351b53cabe120add864a8c05a73",
+            "sha256": "08492a877ee87582299bcd5595b847e9257117caf567171f8ac5488961382ee2",
+            "contentHash": "f7190856648b484e09fa9a7ad5b10a5e9597ca1a4f833efb90d76a457274543e",
             "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
         },
@@ -2424,7 +2424,7 @@
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
             "sha256": "13b259cb86af17863569708bc3c19862b44d8f115525006778c1a31179bdb2e3",
-            "contentHash": "b0720bfc76375caa3a7de376a2438c63ba846351b53cabe120add864a8c05a73",
+            "contentHash": "f7190856648b484e09fa9a7ad5b10a5e9597ca1a4f833efb90d76a457274543e",
             "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
         },
@@ -2451,11 +2451,35 @@
             "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
             "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
             "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
+            "sha256": "d3282a330e34b97b040037da9440d405e154033acb13d0740cc6547f265c4363",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
+            "sha256": "39f377dbad36701685a89c3c1f9a3b49244b063e710547b74064724cbb7fbae4",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+            "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518",
+    "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064",
     "variantManifest": {
-        "generatedAt": "2026-10-23T04:05:10.345Z",
+        "generatedAt": "2026-10-24T04:59:23.472Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2468,8 +2492,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
-            "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
+            "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+            "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4357,10 +4381,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518"
+        "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-23T04:05:10.392Z",
+        "generatedAt": "2026-10-24T04:59:23.484Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4373,16 +4397,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "d3940abdceb37153dc7562c448246ebcacba0b1c043d083aa2e7532490fe0f10",
-            "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
+            "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+            "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 46,
-        "matrixHash": "6fdac48d24a6474245aefdb7c36381d9e268e977c8c3ab9c50eb1e2c496a897e",
-        "cases": 23,
+        "totalCaptures": 48,
+        "matrixHash": "8e04d01fc30d7ad3e2828cdf8680ed46b82987fd4d2cbb574c9c50d7a906c3dc",
+        "cases": 24,
         "captures": [
             {
                 "kind": "invitation",
@@ -4751,8 +4775,8 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-                "sha256": "8c7de71b0e4191732471185072d117857a513529d52feac7f0af90d032724710",
-                "contentHash": "86e6cb2f63605926687c4610f70f2afa64b872f58b89cef20524eebdf615721c",
+                "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
+                "contentHash": "34e0f9faf69cf21b9790344187514cbc2f3ff95b2a627c0cd9cad85e7d8f23a4",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4764,7 +4788,7 @@
                 "viewport": "desktop",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
                 "sha256": "1d99101a5ab635f2ad2d2a9e250cb77179bf4af132189a71abfc938c76b68898",
-                "contentHash": "86e6cb2f63605926687c4610f70f2afa64b872f58b89cef20524eebdf615721c",
+                "contentHash": "34e0f9faf69cf21b9790344187514cbc2f3ff95b2a627c0cd9cad85e7d8f23a4",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4775,8 +4799,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/demo-boda-demo-brisa-mobile.png",
-                "sha256": "08e000db437ceb90fdb0d6984c602eeeb8a11ae56b326fedfb41c831b2ea681a",
-                "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
+                "sha256": "21ef9246b6dc38f9e6bf106049006dbb0752298f0a395b6d04ef4393e2fb79fc",
+                "contentHash": "bb7a12d124f3e95557bb9561fc73c6608ee574e79565242584299ad9e4295fbb",
                 "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4788,7 +4812,7 @@
                 "viewport": "desktop",
                 "file": "pages/demo-boda-demo-brisa-desktop.png",
                 "sha256": "5485ddccc32d5bf5e48e8b60ade8f4b87ea7bddf83dc058b869bc0b6bd84f9cf",
-                "contentHash": "175123ee5679291a2585a18608b016e0c524fa64e6571c2af39608140d5d1f2c",
+                "contentHash": "bb7a12d124f3e95557bb9561fc73c6608ee574e79565242584299ad9e4295fbb",
                 "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4799,8 +4823,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-                "sha256": "5b3b805f96113be668bb2f7d11eab1497739d1b45cb4a104e4d6119023c4c288",
-                "contentHash": "16d891d66bf43bc4d1cae3e5be712f4967dd525c725f38d201394c4918ba62f4",
+                "sha256": "29c1b87d983836e4931cac5daeca51c8719201291f294511d5786c898473c01d",
+                "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4811,8 +4835,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-                "sha256": "3d821834670229de3f314eb85190630a3bbe7a44fa79cd0b082057c2b7a3916f",
-                "contentHash": "16d891d66bf43bc4d1cae3e5be712f4967dd525c725f38d201394c4918ba62f4",
+                "sha256": "bc81921c8fd217778e54ea4782a5678b27d993ffd4c4adc421db991e6f98a88e",
+                "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4823,8 +4847,8 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-                "sha256": "74cc8c60ebfe28192fba934f37ff91e9a88014b911b3f7d7e8340632f0020e78",
-                "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
+                "sha256": "1f21d95539323cd161ac0afb36cd3f456932a4ec1b8430ea220d66f045433c94",
+                "contentHash": "3bac5ae9626b94e2a5d9645afd6c690102f3b5560651c144e671ecc0ed05a038",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4836,7 +4860,7 @@
                 "viewport": "desktop",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
                 "sha256": "7768ad1c8cf6244d36305217e9548bca0de04b0c81af69960e28f88009ab6f7e",
-                "contentHash": "2d84986b1a8d2f9853a194996bb03d0eb8c8e7a45e57039e631a33d07820aef1",
+                "contentHash": "3bac5ae9626b94e2a5d9645afd6c690102f3b5560651c144e671ecc0ed05a038",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4847,8 +4871,8 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-                "sha256": "d9cb98e639ce46b329e491e9eab5663cc9df409287ec8653c2753ea99d2afa85",
-                "contentHash": "3a3a732aa08b4ba8689db2f8f490fe351a7531fe4cf3162d6dd623d3bd41fb68",
+                "sha256": "b07a19f87da9d0739926c35bd79127a64b6a383c5a24441181c51e823f5c28cb",
+                "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4860,7 +4884,7 @@
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
                 "sha256": "86d195bb0e06848a94a80d7e5f2063cf407ca65ec4e48d769de47d7a19f8b3b3",
-                "contentHash": "3a3a732aa08b4ba8689db2f8f490fe351a7531fe4cf3162d6dd623d3bd41fb68",
+                "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4871,7 +4895,7 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-                "sha256": "100c4ded511655f01674a09a4b8b7c6aa1a8f90927e4b4a8a4b0966f672ae55e",
+                "sha256": "f04adc61908fa31bed944a9478fdd2669fca2192fb2aa95d2d82d78a41fd74b7",
                 "contentHash": "a86902a4a58bf40e90a3581cda1850576f02ed9ae9715b04866f473cb1a8ec91",
                 "assetHash": "371ee46afe576e89fa2a3f272a914e1575168bbef5e69e6130000c145fc7abc1",
                 "comparisonResult": "CANDIDATE"
@@ -4895,8 +4919,8 @@
                 "preset": "enchanted-rose",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-                "sha256": "434bf816e9359db748bb4589c52e5f152bb1fecdbd84dd7dcf42aa47b294a7e5",
-                "contentHash": "b0720bfc76375caa3a7de376a2438c63ba846351b53cabe120add864a8c05a73",
+                "sha256": "08492a877ee87582299bcd5595b847e9257117caf567171f8ac5488961382ee2",
+                "contentHash": "f7190856648b484e09fa9a7ad5b10a5e9597ca1a4f833efb90d76a457274543e",
                 "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4908,7 +4932,7 @@
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
                 "sha256": "13b259cb86af17863569708bc3c19862b44d8f115525006778c1a31179bdb2e3",
-                "contentHash": "b0720bfc76375caa3a7de376a2438c63ba846351b53cabe120add864a8c05a73",
+                "contentHash": "f7190856648b484e09fa9a7ad5b10a5e9597ca1a4f833efb90d76a457274543e",
                 "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4935,11 +4959,35 @@
                 "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
                 "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
                 "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-serenata",
+                "eventType": "xv",
+                "preset": "sage-champagne",
+                "viewport": "mobile",
+                "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
+                "sha256": "d3282a330e34b97b040037da9440d405e154033acb13d0740cc6547f265c4363",
+                "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+                "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-serenata",
+                "eventType": "xv",
+                "preset": "sage-champagne",
+                "viewport": "desktop",
+                "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
+                "sha256": "39f377dbad36701685a89c3c1f9a3b49244b063e710547b74064724cbb7fbae4",
+                "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+                "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+                "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "70542b87b99746af413ff1e86ffcc6a8c10d3518"
+        "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064"
     },
-    "candidateManifestSha256": "c622a23bb6133fadaf935f96c562b492bee039d21e1d7520b5048dfdefb41d81",
-    "acceptedFromCommit": "70542b87b99746af413ff1e86ffcc6a8c10d3518",
-    "acceptedAt": "2026-10-23T04:14:38.470Z"
+    "candidateManifestSha256": "997a7e8c53bfaea3fb77da0150318dd3542bb7c03749990327365fc132ad7e56",
+    "acceptedFromCommit": "98d8d8986971e39d361c71d72010fdd376b1e064",
+    "acceptedAt": "2026-10-24T05:07:26.095Z"
 }

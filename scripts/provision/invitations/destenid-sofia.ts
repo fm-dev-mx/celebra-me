@@ -66,6 +66,10 @@ const MUSIC_URL =
 const GIFT_TRANSFER_CARD = '4152314678661714';
 const GIFT_TRANSFER_HOLDER = 'Destenid Sofía Magaña Almaraz';
 
+/**
+ * Addressed to God, not to the guests: Spanish prayer keeps «tú» (an «usted» prayer reads forced),
+ * so the voice register test exempts this one field.
+ */
 const PRAYER =
 	'Gracias, Dios, por estos 15 años llenos de vida, amor y aprendizaje. Hoy pongo en tus manos esta nueva etapa que comienza; sé siempre la luz que guíe mis pasos y el refugio de mis sueños. Te doy gracias por el milagro de mi vida, por la infancia que con amor dejo atrás y por el futuro que hoy te confío. Gracias por mi familia y por cada persona que ha sido un reflejo de tu amor en mi camino. Te pido que me bendigas, ilumines mi corazón y me des la sabiduría para caminar siempre de tu mano. Amén.';
 
@@ -240,15 +244,15 @@ export function buildDestenidPublishedContent(
 			tagline: 'Quince años, una sola vez.',
 		},
 		quote: {
-			// Client phrase; only the three dots became a typographic ellipsis.
-			text: 'Un día me dijeron que la vida se mide en momentos inolvidables… hoy empieza uno de los más grandes. Acompáñame a escribir este capítulo.',
+			// Client phrase; the ellipsis became typographic and «Acompáñame» moved to «usted».
+			text: 'Un día me dijeron que la vida se mide en momentos inolvidables… hoy empieza uno de los más grandes. Acompáñeme a escribir este capítulo.',
 			author: CELEBRANT_NAME,
 		},
 		family: {
 			variant: 'standard',
 			featuredImage: assets.prayerPortrait,
 			labels: {
-				sectionTitle: 'En tus manos',
+				sectionTitle: 'En manos de Dios',
 				sectionSubtitle: 'Mi oración',
 				sectionMessage: PRAYER,
 			},
@@ -330,8 +334,9 @@ export function buildDestenidPublishedContent(
 			eyebrow: 'Galería',
 			title: 'Mis looks',
 			subtitle:
-				// Client phrase; "Lit" is an interjection, so it gets its exclamation marks.
-				'¡Lit! Mi fiesta no sería lo mismo sin ti. Gracias por acompañarme en los momentos más icónicos.',
+				// Client phrase; "Lit" is an interjection, so it gets its exclamation marks, and
+				// «sin ti» moved to «usted».
+				'¡Lit! Mi fiesta no sería lo mismo sin usted. Gracias por acompañarme en los momentos más icónicos.',
 			items: [
 				galleryItem(assets, 'gallery01'),
 				galleryItem(assets, 'gallery02'),
@@ -463,6 +468,7 @@ export const destenidInvitation: InvitationDefinition<DestenidAssetKey> = define
 	createdAt: '2026-09-29T00:00:00.000Z',
 	lifecycle: 'in_progress',
 	deliveryScope: 'content-and-assets',
+	voice: 'usted',
 	eventType: DESTENID_EVENT.eventType,
 	title: DESTENID_EVENT.title,
 	clientName: CELEBRANT_NAME,

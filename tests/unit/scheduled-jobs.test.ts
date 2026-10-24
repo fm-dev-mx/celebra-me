@@ -4,6 +4,9 @@ jest.mock('@/lib/memories/server/cleanup.service', () => ({
 jest.mock('@/lib/rsvp/engagement/engagement-maintenance.service', () => ({
 	runEngagementMaintenance: jest.fn(),
 }));
+jest.mock('@/lib/commercial/commercial-retention.service', () => ({
+	runCommercialRetention: jest.fn(),
+}));
 jest.mock('@/lib/platform/server/collector/run-collector', () => ({
 	runPlatformUsageCollector: jest.fn(),
 }));
@@ -11,6 +14,7 @@ jest.mock('@/lib/server/deploy-identity', () => ({
 	readDeployEnvironment: jest.fn(() => 'preview'),
 }));
 
+import { runCommercialRetention } from '@/lib/commercial/commercial-retention.service';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
 import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
@@ -22,6 +26,7 @@ const cleanup = runMemoriesCleanup as jest.MockedFunction<typeof runMemoriesClea
 const maintenance = runEngagementMaintenance as jest.MockedFunction<
 	typeof runEngagementMaintenance
 >;
+const retention = runCommercialRetention as jest.MockedFunction<typeof runCommercialRetention>;
 const collector = runPlatformUsageCollector as jest.MockedFunction<
 	typeof runPlatformUsageCollector
 >;
@@ -44,6 +49,21 @@ const cleanResult = {
 	auditPurged: 0,
 };
 
+const retentionResult = {
+	trackingEventsDeleted: 7,
+	visitorSessionsDeleted: 2,
+	batches: 1,
+	complete: true,
+};
+
+const maintenanceResult = {
+	snapshotsWritten: 0,
+	snapshotsUnchanged: 0,
+	snapshotsFailed: 0,
+	anonymizedEvents: 0,
+	anonymizationComplete: true,
+};
+
 describe('runScheduledJob', () => {
 	let info: jest.SpyInstance;
 	let warn: jest.SpyInstance;
@@ -52,6 +72,7 @@ describe('runScheduledJob', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		deployEnvironment.mockReturnValue('preview');
+		retention.mockResolvedValue(retentionResult);
 		info = jest.spyOn(console, 'info').mockImplementation(() => undefined);
 		warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 		error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -120,6 +141,54 @@ describe('runScheduledJob', () => {
 			'[engagement][maintenance] completed',
 			expect.objectContaining({ snapshotsWritten: 3 }),
 		);
+	});
+
+	it('runs the commercial retention purge on the engagement maintenance cron', async () => {
+		maintenance.mockResolvedValue(maintenanceResult);
+		await expect(runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance)).resolves.toEqual({
+			job: 'engagement_maintenance',
+			status: 'completed',
+		});
+		expect(retention).toHaveBeenCalledTimes(1);
+		expect(info).toHaveBeenCalledWith('[commercial][retention] completed', retentionResult);
+
+		retention.mockResolvedValueOnce({ ...retentionResult, batches: 20, complete: false });
+		await runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance);
+		expect(warn).toHaveBeenCalledWith(
+			'[commercial][retention] completed',
+			expect.objectContaining({ complete: false }),
+		);
+	});
+
+	it('never purges commercial analytics without a declared deploy identity', async () => {
+		deployEnvironment.mockReturnValue(null);
+		maintenance.mockResolvedValue(maintenanceResult);
+		await expect(runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance)).resolves.toEqual({
+			job: 'engagement_maintenance',
+			status: 'completed',
+		});
+		expect(maintenance).toHaveBeenCalledTimes(1);
+		expect(retention).not.toHaveBeenCalled();
+	});
+
+	it('fails the job when either daily analytics step fails, after running both', async () => {
+		maintenance.mockResolvedValue(maintenanceResult);
+		retention.mockRejectedValueOnce(new SupabaseHttpError(500, '{"row":"echo"}', 'XX000'));
+		await expect(runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance)).resolves.toEqual({
+			job: 'engagement_maintenance',
+			status: 'failed',
+		});
+		expect(error).toHaveBeenCalledWith('[commercial][retention] failed', {
+			status: 500,
+			code: 'XX000',
+		});
+
+		maintenance.mockRejectedValueOnce(new Error('rpc down'));
+		await expect(runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance)).resolves.toEqual({
+			job: 'engagement_maintenance',
+			status: 'failed',
+		});
+		expect(retention).toHaveBeenCalledTimes(2);
 	});
 
 	const collected = {

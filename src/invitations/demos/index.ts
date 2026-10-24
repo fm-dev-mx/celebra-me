@@ -3,6 +3,7 @@ import xvCelestialBlue from './demo-xv-celestial-blue/invitation';
 import xvEnchantedRose from './demo-xv-enchanted-rose/invitation';
 import xvEditorial from './demo-xv-editorial/invitation';
 import xvLanternGarden from './demo-xv-lantern-garden/invitation';
+import xvSerenata from './demo-xv-serenata/invitation';
 import bodaBrisa from './demo-brisa/invitation';
 import bautizoAngelicPresence from './demo-bautizo-angelic-presence/invitation';
 import primeraComunionAngelicPresence from './demo-primera-comunion-angelic-presence/invitation';
@@ -14,6 +15,7 @@ export const DEMO_INVITATIONS: readonly DemoInvitationDocument[] = [
 	xvEnchantedRose,
 	xvEditorial,
 	xvLanternGarden,
+	xvSerenata,
 	bodaBrisa,
 	bautizoAngelicPresence,
 	primeraComunionAngelicPresence,

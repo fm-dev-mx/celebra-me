@@ -2,53 +2,94 @@
 /**
  * Read-only verifier for the «Seguimiento Celebra-me» coordinator board (rules: .agent/rules/board.md).
  *
- * Usage: pnpm board:verify <dir> [--json] [--sesiones=<file.json>]
- *   <dir> holds the ArtifactData export: tareas/*.json, and optionally bitacora/*.json and decisiones/*.json.
- *   --sesiones: JSON list of Claude sessions [{ id, nombre?, rama?, archivada? | estado? }]; defaults to
- *   <dir>/sesiones.json when present.
+ * Usage: pnpm board:verify [<dir>] [--json] [--sesiones=<file.json>]
+ *   <dir> defaults to the local store (`.agent/tmp/board/` of Integration, d143); an ArtifactData export with the
+ *   same layout (tareas/*.json, and optionally bitacora/*.jsonl or *.json and decisiones/*.json) works too.
+ *   --sesiones: JSON list of Claude sessions, either the raw `list_sessions` snapshot the coordinator writes
+ *   ({ sessionId, title, isArchived }, archived sessions included) or the short form
+ *   { id, nombre?, rama?, archivada? }; defaults to <dir>/sesiones.json. Without it the session drift
+ *   sections are skipped and the report says so.
  *
  * Every open, «unida» or «hecha» task is checked. A task's own `chequeo: { cmd, espera }` wins; otherwise the
  * implicit check is `gh pr view <pr> --json state` → MERGED, or `git ls-remote origin <rama>` → the ref exists.
  * It also lists open PRs and worktree branches without a task, tasks whose session is archived, and tasks
- * ready to move to «comprobada». Commands run from the repository root through cmd.exe on Windows, so ^ and %
- * are refused in cmd. CELEBRA_BOARD_COMMAND_FIXTURE (a JSON map cmd → output) answers commands in tests.
+ * ready to move to «comprobada», plus lifecycle drift between task, session, branch and PR: sessions without a
+ * task, locks naming a missing session, session names off the d158 form, merged PR branches still present, PRs
+ * closed without merge and stale close-queue entries. It only reports; it never proposes deletions. Only finite read-only argument arrays run, without a shell.
+ * CELEBRA_BOARD_COMMAND_FIXTURE supplies explicit subprocess results in hermetic tests.
  */
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
+import {
+	cierreIssues,
+	isFinished as isClosed,
+	isOpen,
+	isReview,
+	isStaleLock,
+	laneAllowed,
+	logRowIssues,
+	NO_CIERRE,
+	ordenOf,
+	prNumber,
+	promptLanes,
+	stage,
+	taskIdFromBranch,
+	taskIssues,
+	taskLane,
+	taskTag as tag,
+} from './model.mjs';
+import { boardDir, readLog } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-const ALLOWED = [
-	/^git (ls-remote|log|rev-parse|show|cat-file|branch --list|merge-base|grep|worktree list)( |$)/,
-	/^git -C [^ ]+ (worktree list|status --porcelain|branch --list)( |$)/,
-	/^gh (pr view|pr checks|pr list|run list|run view|api repos\/[^ ]+\/(pulls|commits|actions)[^ ]*) ?/,
-	/^curl -s(I|S)? /,
-];
-const FORBIDDEN =
-	/[;&|<>`$\\^%]|--apply|\bpush\b|\bdelete\b|\s-X\b|--method|\s-[fF]\s|--field|--input/;
 const SAFE_BRANCH = /^[A-Za-z0-9._/-]{1,200}$/;
 const BASE_BRANCHES = new Set(['develop', 'main', 'master']);
 
-const ESPERAS = ['usted', 'sesion', 'rutina', 'fecha', 'tarea', ''];
-const SCOPES = ['produccion', 'migracion', 'release'];
+/** A close-queue step still pending after this long is stale. */
+const CLOSING_STALE_MS = 24 * 3600_000;
 
-/** Task id rule: the branch name without its type prefix (`fix/olivia-gallery` → `olivia-gallery`). */
-export const taskIdFromBranch = (branch) => String(branch ?? '').replace(/^[^/]+\//, '');
+export { prNumber, taskIdFromBranch };
 
-/** PR number from 398, "#398" or a pull URL; null when the field holds none. */
-export function prNumber(pr) {
-	const m = String(pr ?? '').match(/(\d+)\s*$/);
-	return m ? Number(m[1]) : null;
+/** Finite read-only grammar. Never execute stored shell text or arbitrary API/HTTP options. */
+export function commandArgs(cmd) {
+	if (typeof cmd !== 'string') return null;
+	if (cmd === 'git worktree list --porcelain') return ['git', 'worktree', 'list', '--porcelain'];
+	if (cmd === 'gh pr list --state open --json number,headRefName,title --limit 100')
+		return cmd.split(' ');
+	if (
+		/^gh pr list --state closed --head [A-Za-z0-9._/-]{1,200} --json number,headRefName,state --limit 100$/.test(
+			cmd,
+		)
+	)
+		return cmd.split(' ');
+	if (cmd === 'git ls-remote --heads origin') return cmd.split(' ');
+	if (/^gh pr view [1-9]\d* --json (state|headRefOid)$/.test(cmd)) return cmd.split(' ');
+	if (/^git ls-remote origin refs\/heads\/[A-Za-z0-9._/-]{1,200}$/.test(cmd))
+		return cmd.split(' ');
+	return null;
 }
-
-export function isAllowedCommand(cmd) {
-	return ALLOWED.some((r) => r.test(cmd)) && !FORBIDDEN.test(cmd);
-}
+export const isAllowedCommand = (cmd) => commandArgs(cmd) !== null;
 
 /** The check a task runs: its own `chequeo`, else the implicit one derived from `pr` or `rama`. */
 export function checkFor(t) {
+	if (t.origen && /^[a-f0-9]{40}$/.test(t.revisionSha ?? '') && prNumber(t.pr))
+		return {
+			cmd: `gh pr view ${prNumber(t.pr)} --json headRefOid`,
+			espera: `"headRefOid":\\s*"${t.revisionSha}"`,
+			implicito: true,
+		};
+	if (t.chequeo?.tipo === 'pr' && /^[1-9]\d*$/.test(String(t.chequeo.pr)))
+		return checkFor({ pr: t.chequeo.pr });
+	if (
+		t.chequeo?.tipo === 'rama' &&
+		typeof t.chequeo.rama === 'string' &&
+		SAFE_BRANCH.test(t.chequeo.rama)
+	)
+		return checkFor({ rama: t.chequeo.rama });
+	if (t.chequeo?.tipo) return { cmd: '', implicito: false };
 	if (t.chequeo?.cmd) return { ...t.chequeo, implicito: false };
 	const pr = prNumber(t.pr);
 	if (pr)
@@ -60,7 +101,7 @@ export function checkFor(t) {
 	if (t.rama && SAFE_BRANCH.test(t.rama))
 		return {
 			cmd: `git ls-remote origin refs/heads/${t.rama}`,
-			espera: `refs/heads/${t.rama}$`,
+			espera: `^[a-f0-9]+\\s+refs/heads/${t.rama.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
 			implicito: true,
 		};
 	return null;
@@ -70,18 +111,26 @@ function defaultRunner() {
 	const fixture = process.env.CELEBRA_BOARD_COMMAND_FIXTURE;
 	if (fixture) {
 		const answers = JSON.parse(readFileSync(fixture, 'utf8'));
-		return (cmd) => answers[cmd] ?? '';
+		return (cmd) =>
+			answers[cmd] ?? { ok: false, output: '', error: 'sin respuesta de fixture' };
 	}
 	return (cmd) => {
+		const args = commandArgs(cmd);
+		if (!args) return { ok: false, output: '', error: 'comando rechazado' };
 		try {
-			return execSync(cmd, {
-				encoding: 'utf8',
-				cwd: repoRoot,
-				timeout: 60_000,
-				stdio: ['ignore', 'pipe', 'pipe'],
-			});
-		} catch (e) {
-			return String(e.stdout || '') + String(e.stderr || '');
+			return {
+				ok: true,
+				output: execFileSync(args[0], args.slice(1), {
+					encoding: 'utf8',
+					cwd: repoRoot,
+					timeout: 60_000,
+					stdio: ['ignore', 'pipe', 'pipe'],
+					shell: false,
+				}),
+				error: '',
+			};
+		} catch {
+			return { ok: false, output: '', error: 'comando falló o agotó su tiempo' };
 		}
 	};
 }
@@ -99,8 +148,10 @@ export function loadExport(dir, sesionesFile) {
 	const file = sesionesFile ?? join(root, 'sesiones.json');
 	return {
 		tareas: readJsonDir(base),
-		bitacora: readJsonDir(join(root, 'bitacora')),
+		bitacora: readLog(root),
 		decisiones: readJsonDir(join(root, 'decisiones')),
+		archivo: readJsonDir(join(root, 'archivo')),
+		cierres: readJsonDir(join(root, 'cierres')),
 		sesiones: existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null,
 	};
 }
@@ -118,7 +169,6 @@ export function worktreeBranches(porcelain) {
 	return [...String(porcelain).matchAll(/^branch refs\/heads\/(.+)$/gm)].map((m) => m[1].trim());
 }
 
-const isClosed = (t) => ['hecha', 'comprobada', 'cancelada'].includes(t?.estado);
 const claims = (t, { branch, pr }) =>
 	(pr && prNumber(t.pr) === pr) ||
 	(branch && (t.rama === branch || t.id === taskIdFromBranch(branch)));
@@ -139,8 +189,29 @@ function checkTask(t, run) {
 			veredicto: 'RECHAZADO',
 			salida: 'comando fuera de la lista de solo lectura',
 		};
-	const out = run(c.cmd);
-	const ok = expectationMet(c.espera, out);
+	const result = commandResult(run, c.cmd);
+	if (!result.ok) return { ...row, veredicto: 'UNVERIFIED', salida: result.error, cmd: c.cmd };
+	const out = result.output;
+	let ok;
+	try {
+		if (c.cmd.startsWith('gh pr view')) {
+			const parsed = JSON.parse(out);
+			if (
+				c.cmd.endsWith('headRefOid')
+					? !/^[a-f0-9]{40}$/.test(parsed.headRefOid ?? '')
+					: !['OPEN', 'CLOSED', 'MERGED'].includes(parsed.state)
+			)
+				throw new Error('invalid PR response');
+		}
+		ok = expectationMet(c.espera, out);
+	} catch {
+		return {
+			...row,
+			veredicto: 'UNVERIFIED',
+			salida: 'respuesta o expectativa inválida',
+			cmd: c.cmd,
+		};
+	}
 	const ready = ok && (t.estado === 'unida' || t.estado === 'hecha');
 	let veredicto = 'NO CUMPLE';
 	if (ok) veredicto = ready ? 'CUMPLE → comprobada' : 'CUMPLE (¿ya está unida?)';
@@ -148,34 +219,191 @@ function checkTask(t, run) {
 	return { ...row, veredicto, salida, cmd: c.cmd, implicito: c.implicito, ready };
 }
 
+function commandResult(run, cmd) {
+	try {
+		const result = run(cmd);
+		return typeof result === 'string' ? { ok: true, output: result } : result;
+	} catch {
+		return { ok: false, output: '', error: 'no se pudo comprobar' };
+	}
+}
+
 function unclaimedWork(tareas, run) {
-	const openPrs = parseJson(
-		run('gh pr list --state open --json number,headRefName,title --limit 100'),
-		[],
+	const prResult = commandResult(
+		run,
+		'gh pr list --state open --json number,headRefName,title --limit 100',
 	);
+	const openPrs = prResult.ok ? parseJson(prResult.output, null) : null;
+	const branchResult = commandResult(run, 'git worktree list --porcelain');
 	const prsSinTarea = (Array.isArray(openPrs) ? openPrs : [])
 		.filter((p) => !tareas.some((t) => claims(t, { branch: p.headRefName, pr: p.number })))
 		.map((p) => ({ pr: p.number, rama: p.headRefName, titulo: p.title }));
-	const ramasSinTarea = worktreeBranches(run('git worktree list --porcelain'))
+	const laneBranches = worktreeBranches(branchResult.ok ? branchResult.output : '');
+	const ramasSinTarea = laneBranches
 		.filter((b) => !BASE_BRANCHES.has(b) && !tareas.some((t) => claims(t, { branch: b })))
 		.filter((b) => !prsSinTarea.some((p) => p.rama === b));
-	return { prsSinTarea, ramasSinTarea };
+	return {
+		prsSinTarea,
+		ramasSinTarea,
+		laneBranches,
+		cobertura: {
+			prs: Array.isArray(openPrs) ? 'VERIFIED' : 'UNVERIFIED',
+			ramas: branchResult.ok ? 'VERIFIED' : 'UNVERIFIED',
+		},
+	};
+}
+
+/** One shape for the raw `list_sessions` rows and the short form. */
+export function normalizeSession(s) {
+	return {
+		id: s.sessionId ?? s.id,
+		nombre: s.title ?? s.nombre ?? '',
+		rama: s.rama,
+		archivada:
+			s.isArchived === true ||
+			s.archivada === true ||
+			s.estado === 'archivada' ||
+			s.state === 'archived',
+	};
 }
 
 function archivedSessions(tareas, sesiones) {
 	if (!Array.isArray(sesiones)) return [];
-	const archived = (s) =>
-		s.archivada === true || s.estado === 'archivada' || s.state === 'archived';
 	const found = [];
 	for (const t of tareas.filter((x) => !isClosed(x) && x.estado !== 'unida')) {
 		const s = sesiones.find(
 			(x) =>
 				(t.sesion?.id && x.id === t.sesion.id) || (x.rama && claims(t, { branch: x.rama })),
 		);
-		if (s && archived(s))
-			found.push({ id: t.id, sesion: s.id, nombre: s.nombre ?? t.sesion?.nombre ?? '' });
+		if (s?.archivada)
+			found.push({ id: t.id, sesion: s.id, nombre: s.nombre || t.sesion?.nombre || '' });
 	}
 	return found;
+}
+
+const titleNum = (title) => {
+	const m = String(title).match(/\bT(\d+)\b/);
+	return m ? Number(m[1]) : null;
+};
+/** Lane part of a session name: `f08-demos` → `f08`. */
+const laneTag = (carril) => String(carril ?? '').match(/^f\d+/)?.[0] ?? String(carril ?? '');
+// The coordinator session owns no task of its own.
+const isCoordinator = (s) => /coordinador/i.test(s.nombre);
+
+/** Session name rule d158: `<lane> · T<n> · PR #<n> · <description>`; no PR part before it opens. */
+export function nameDrift(t, nombre) {
+	// Review tasks run without a lane (they never inherit the author's), so any lane prefix fits.
+	const lane = laneTag(taskLane(t));
+	const laneRe = lane ? lane.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '[^\\s·]+';
+	const pr = prNumber(t.pr);
+	const base = `^${laneRe} · T${t.num} · `;
+	if (new RegExp(`${base}${pr ? `PR #${pr} · ` : ''}\\S`).test(nombre)) return null;
+	if (pr && new RegExp(base).test(nombre) && !nombre.includes(`PR #${pr}`))
+		return `le falta «PR #${pr}»`;
+	return `se espera «${lane || '<carril>'} · T${t.num} · ${pr ? `PR #${pr} · ` : ''}<descripción>»`;
+}
+
+/** Drift between tasks and the sessions snapshot (d158, d175); null without a snapshot. */
+function sessionDrift(tareas, sesiones) {
+	if (!Array.isArray(sesiones)) return null;
+	const open = sesiones.filter((s) => !s.archivada);
+	const nums = new Set(tareas.map((t) => t.num).filter(Boolean));
+	const nombreDistinto = [];
+	for (const t of tareas.filter((x) => x.num && !isClosed(x))) {
+		const own = open.find((s) => s.id === t.candado?.sesion);
+		for (const s of own ? [own] : open.filter((x) => titleNum(x.nombre) === t.num)) {
+			const msg = nameDrift(t, s.nombre);
+			if (msg)
+				nombreDistinto.push({
+					id: t.id,
+					tarea: tag(t),
+					sesion: s.id,
+					nombre: s.nombre,
+					msg,
+				});
+		}
+	}
+	return {
+		sesionesSinTarea: open
+			.filter((s) => !isCoordinator(s) && !nums.has(titleNum(s.nombre)))
+			.map((s) => ({ sesion: s.id, nombre: s.nombre })),
+		candadoSinSesion: tareas
+			.filter((t) => t.candado?.agente === 'claude' && t.candado.sesion)
+			.filter((t) => !sesiones.some((s) => s.id === t.candado.sesion))
+			.map((t) => ({ id: t.id, tarea: tag(t), sesion: t.candado.sesion })),
+		nombreDistinto,
+	};
+}
+
+/** Lifecycle drift that needs no sessions snapshot. */
+function lifecycleDrift(tareas) {
+	return {
+		enCursoSinSesion: tareas
+			.filter((t) => t.estado === 'en curso' && !t.candado)
+			.map((t) => ({ id: t.id, tarea: tag(t) })),
+		unidasConCandado: tareas
+			.filter((t) => ['unida', 'hecha'].includes(t.estado) && t.candado)
+			.map((t) => ({ id: t.id, tarea: tag(t), carril: t.candado.carril ?? '' })),
+	};
+}
+
+/** Merged PR branches still present, and PRs closed without merge whose task is closed. Report only. */
+function branchDrift(tareas, run, laneBranches) {
+	const remoteResult = commandResult(run, 'git ls-remote --heads origin');
+	const remote = new Set(
+		remoteResult.ok
+			? [...String(remoteResult.output).matchAll(/refs\/heads\/(\S+)/g)].map((m) => m[1])
+			: [],
+	);
+	// One query per present branch: a repository-wide closed list would stop at its limit and
+	// silently skip older PRs whose branch still exists.
+	const present = [...new Set([...remote, ...laneBranches])].filter(
+		(b) => !BASE_BRANCHES.has(b) && SAFE_BRANCH.test(b),
+	);
+	const prs = [];
+	let complete = true;
+	for (const branch of present) {
+		const result = commandResult(
+			run,
+			`gh pr list --state closed --head ${branch} --json number,headRefName,state --limit 100`,
+		);
+		const rows = result.ok ? parseJson(result.output, null) : null;
+		if (!Array.isArray(rows) || rows.length >= 100) complete = false;
+		if (Array.isArray(rows)) prs.push(...rows.filter((p) => p.headRefName === branch));
+	}
+	const ramasUnidasSinBorrar = [];
+	for (const p of prs.filter((x) => x.state === 'MERGED' && !BASE_BRANCHES.has(x.headRefName))) {
+		if (remote.has(p.headRefName))
+			ramasUnidasSinBorrar.push({ pr: p.number, rama: p.headRefName, donde: 'remota' });
+		if (laneBranches.includes(p.headRefName))
+			ramasUnidasSinBorrar.push({ pr: p.number, rama: p.headRefName, donde: 'carril' });
+	}
+	const prCerradoSinUnir = [];
+	for (const p of prs.filter((x) => x.state === 'CLOSED' && remote.has(x.headRefName))) {
+		const t = tareas.find((x) => claims(x, { branch: p.headRefName, pr: p.number }));
+		if (isClosed(t))
+			prCerradoSinUnir.push({ pr: p.number, rama: p.headRefName, tarea: tag(t) });
+	}
+	return {
+		ramasUnidasSinBorrar,
+		prCerradoSinUnir,
+		cobertura: {
+			prsCerrados: complete ? 'VERIFIED' : 'UNVERIFIED',
+			ramasRemotas: remoteResult.ok ? 'VERIFIED' : 'UNVERIFIED',
+		},
+	};
+}
+
+/** Close-queue entries (`cierres/*.json`) with a step still pending after a day, or undated. */
+function staleClosings(cierres, now) {
+	return cierres
+		.filter((c) => Object.values(c.pasos ?? {}).includes('pendiente'))
+		.filter((c) => !c.creada || now - Date.parse(c.creada) > CLOSING_STALE_MS)
+		.map((c) => ({
+			id: c.tarea ?? c.id,
+			nombre: c.nombre ?? '',
+			pendiente: Object.keys(c.pasos).filter((k) => c.pasos[k] === 'pendiente'),
+		}));
 }
 
 /** Newest log row per task, to catch a change without a new rev. */
@@ -194,72 +422,139 @@ function closingIssues(t) {
 	return out;
 }
 
-function depIssues(t, byId) {
-	const out = [];
-	for (const d of t.deps ?? []) {
-		if (!byId[d]) out.push(`dep inexistente: ${d}`);
-		// d038: si su dep sigue abierta, el prompt debe frenar en el prerrequisito.
-		else if (
-			!isClosed(byId[d]) &&
-			t.prompt &&
-			!t.prompt.includes('Comprueba primero el prerrequisito')
-		)
-			out.push(`tiene prompt sin freno y espera a ${d}`);
-	}
-	return out;
-}
-
-function ustedOk(usted) {
-	// usted is plain text or a list of steps [{t, cmd?, cmds?, url?, ir?}] (diseño d4).
-	if (Array.isArray(usted))
-		return usted.length > 0 && usted.every((s) => String(s?.t ?? '').trim());
-	return !!String(usted ?? '').trim();
-}
-
-function shapeIssues(t) {
-	const out = [];
-	if (!t.titulo?.trim()) out.push('falta titulo');
-	if (t.toca !== undefined && !(Array.isArray(t.toca) && t.toca.every((s) => SCOPES.includes(s))))
-		out.push(`toca debe ser lista de ${SCOPES.join('/')}`);
-	if (!ESPERAS.includes(t.espera ?? '')) out.push(`espera desconocida: ${t.espera}`);
-	// d046: every prompt asks all owner decisions in one round at the start.
-	if (t.prompt && !t.prompt.includes('\nDECISIONES\n'))
-		out.push('prompt sin sección DECISIONES (d046)');
-	if (t.espera === 'usted' && !ustedOk(t.usted))
-		out.push('espera a usted pero no dice qué hacer (campo usted)');
-	return out;
-}
-
-/** Dates, rev and log freshness. */
-function dateIssues(t, lastLog) {
-	const out = [];
-	for (const k of ['desde', 'hasta'])
-		if (t[k] && Number.isNaN(Date.parse(t[k]))) out.push(`${k} no es fecha`);
-	if (!Number.isInteger(t.rev) || t.rev < 1) out.push('rev debe ser un entero desde 1');
-	if (Number.isNaN(Date.parse(t.actualizado ?? ''))) out.push('actualizado no es fecha');
+/** A log row newer than the task means a change without a new rev. */
+function logIssues(t, lastLog) {
 	const last = lastLog[t.id];
-	if (last && Date.parse(last) > Date.parse(t.actualizado ?? 0) + 60_000)
-		out.push(`bitácora de ${last} más nueva que actualizado: suba rev`);
+	return last && Date.parse(last) > Date.parse(t.actualizado ?? 0) + 60_000
+		? [`bitácora de ${last} más nueva que actualizado: suba rev`]
+		: [];
+}
+
+/** Requisitos naming a missing task or decision, and locks left behind. */
+function taskWarnings(t, byId, decIds, now) {
+	const out = [];
+	for (const r of Array.isArray(t.requisitos) ? t.requisitos : []) {
+		if (r.tipo === 'tarea' && !byId[r.ref])
+			out.push(`requisito a una tarea fuera del tablero: ${r.ref}`);
+		if (r.tipo === 'decision' && !decIds.has(r.ref))
+			out.push(`requisito a una decisión inexistente: ${r.ref}`);
+	}
+	if (t.candado && isClosed(t)) out.push(`cerrada con candado de ${t.candado.agente}`);
+	else if (t.candado && isStaleLock(t.candado, now))
+		out.push(`candado de ${t.candado.agente} desde ${t.candado.desde}: ¿sigue trabajando?`);
 	return out;
 }
 
-function boardIssues(tareas, bitacora, decisiones) {
-	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
-	const lastLog = lastLogByTask(bitacora);
-	const inconsistencias = [];
-	const avisos = [];
+/** d178: a finished task not archived yet needs its closing summary before «Archivar». */
+function cierreWarnings(t, board) {
+	if (!isClosed(t) || t.archivada) return [];
+	const issues = cierreIssues(t, board);
+	if (!issues.length) return [];
+	const fix = `pnpm board close ${t.id} --resumen=… --coordinador`;
+	return [
+		issues[0] === NO_CIERRE
+			? `finalizada sin resumen de cierre: ${fix}`
+			: `cierre incompleto (${issues.join('; ')}): ${fix}`,
+	];
+}
+
+/** Numbers remain mandatory and unique even after a task is closed or archived. */
+function numberIssues(tareas) {
+	const issues = [];
+	const numbers = new Map();
 	for (const t of tareas) {
-		const msgs = closingIssues(t);
-		if (!isClosed(t))
-			msgs.push(...shapeIssues(t), ...dateIssues(t, lastLog), ...depIssues(t, byId));
-		for (const msg of msgs) inconsistencias.push({ id: t.id, msg });
-		if (t.rama && t.id !== taskIdFromBranch(t.rama))
+		if (!Number.isSafeInteger(t.num) || t.num < 1) {
+			issues.push({
+				id: t.id,
+				msg: 'num debe ser un entero positivo (falta o no es válido)',
+			});
+			continue;
+		}
+		const ids = numbers.get(t.num) ?? [];
+		ids.push(t.id);
+		numbers.set(t.num, ids);
+	}
+	for (const [num, ids] of numbers)
+		if (ids.length > 1)
+			for (const id of ids)
+				issues.push({ id, msg: `num repetido: T${num} (${ids.join(', ')})` });
+	return issues;
+}
+
+/**
+ * d177: every open task says where it runs: a planned canonical lane, or the lane its lock holds; a review
+ * child runs read-only in Integration and needs none. Two ready, unlocked agent tasks never share a lane.
+ */
+function laneWarnings(tareas, decisiones, archivo, now) {
+	const board = { tareas, decisiones, archivo };
+	const avisos = [];
+	const inconsistencias = [];
+	const byLane = {};
+	for (const t of tareas.filter((x) => !isClosed(x) && x.carrilPlaneado !== undefined))
+		if (!laneAllowed(t.carrilPlaneado, t, WORKTREE_LANES))
+			inconsistencias.push({
+				id: t.id,
+				msg: `carril planeado no canónico: ${t.carrilPlaneado}`,
+			});
+	for (const t of tareas)
+		if (isOpen(t, board, now) && !isReview(t) && !t.carrilPlaneado && !t.candado?.carril)
 			avisos.push({
 				id: t.id,
-				msg: `id distinto de la rama sin prefijo (${taskIdFromBranch(t.rama)})`,
+				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
 			});
-	}
+	for (const t of tareas.filter((x) => !isClosed(x) && !isReview(x)))
+		for (const lane of promptLanes(t, WORKTREE_LANES))
+			avisos.push({
+				id: t.id,
+				msg: `${t.num ? `T${t.num} ` : ''}el prompt dice ${lane}, pero corre en ${taskLane(t)}`,
+			});
+	const ready = tareas.filter(
+		(t) =>
+			t.actor === 'sesion' &&
+			!isReview(t) &&
+			!t.candado &&
+			t.carrilPlaneado &&
+			stage(t, board, now) === 'lista',
+	);
+	for (const t of ready) (byLane[t.carrilPlaneado] ??= []).push(t.id);
+	for (const [lane, ids] of Object.entries(byLane))
+		if (ids.length > 1)
+			for (const id of ids)
+				avisos.push({
+					id,
+					msg: `carril ${lane} planeado para ${ids.length} tareas listas: ${ids.join(', ')}`,
+				});
+	return { avisos, inconsistencias };
+}
+
+function boardIssues(tareas, bitacora, decisiones, archivo, now) {
+	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
 	const decIds = new Set(decisiones.map((d) => d.id));
+	const lastLog = lastLogByTask(bitacora);
+	const inconsistencias = numberIssues(tareas);
+	const avisos = [];
+	const visited = new Set();
+	const cycles = new Set();
+	const visit = (id, path = []) => {
+		const start = path.indexOf(id);
+		if (start >= 0) {
+			for (const member of path.slice(start)) cycles.add(member);
+			return;
+		}
+		if (visited.has(id)) return;
+		visited.add(id);
+		for (const r of byId[id]?.requisitos ?? [])
+			if (['tarea', 'revision'].includes(r.tipo)) visit(r.ref, [...path, id]);
+	};
+	for (const t of tareas) visit(t.id);
+	for (const id of cycles) inconsistencias.push({ id, msg: 'ciclo de requisitos' });
+	for (const t of tareas) {
+		const msgs = closingIssues(t);
+		if (!isClosed(t)) msgs.push(...taskIssues(t), ...logIssues(t, lastLog));
+		for (const msg of msgs) inconsistencias.push({ id: t.id, msg });
+		for (const msg of taskWarnings(t, byId, decIds, now)) avisos.push({ id: t.id, msg });
+		for (const msg of cierreWarnings(t, { tareas, archivo })) avisos.push({ id: t.id, msg });
+	}
 	for (const d of decisiones) {
 		if (typeof d.vigente !== 'boolean')
 			avisos.push({ id: d.id, msg: 'decisión sin vigente: true|false' });
@@ -269,16 +564,33 @@ function boardIssues(tareas, bitacora, decisiones) {
 				msg: `reemplaza a una decisión inexistente: ${d.reemplaza}`,
 			});
 	}
+	// Old one-file-per-row documents carry their file name as id; daily JSONL rows have none.
+	const legacy = bitacora.filter((r) => r.id !== undefined).length;
+	if (legacy)
+		avisos.push({
+			id: 'bitacora',
+			msg: `${legacy} filas de bitácora en el formato viejo: pnpm board migrate-log --dry-run`,
+		});
+	for (const r of bitacora.filter((x) => x.id === undefined))
+		for (const msg of logRowIssues(r))
+			inconsistencias.push({ id: r.tarea || 'bitacora', msg: `bitácora ${r.en}: ${msg}` });
+	const lanes = laneWarnings(tareas, decisiones, archivo, now);
+	avisos.push(...lanes.avisos);
+	inconsistencias.push(...lanes.inconsistencias);
 	return { inconsistencias, avisos };
 }
 
 export function verifyBoard(
-	{ tareas, bitacora = [], decisiones = [], sesiones = null },
+	{ tareas, bitacora = [], decisiones = [], archivo = [], cierres = [], sesiones = null },
 	run = defaultRunner(),
+	now = Date.now(),
 ) {
+	const snapshot = Array.isArray(sesiones) ? sesiones.map(normalizeSession) : null;
+	const unclaimed = unclaimedWork(tareas, run);
+	const branches = branchDrift(tareas, run, unclaimed.laneBranches);
 	const live = tareas
 		.filter((t) => t.estado !== 'comprobada' && t.estado !== 'cancelada')
-		.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
+		.sort((a, b) => ordenOf(a) - ordenOf(b));
 	const checked = live.map((t) => checkTask(t, run));
 	const filas = checked.map((r) => {
 		const row = { ...r };
@@ -291,9 +603,21 @@ export function verifyBoard(
 	return {
 		filas,
 		comprobar,
-		...unclaimedWork(tareas, run),
-		sesionArchivada: archivedSessions(tareas, sesiones),
-		...boardIssues(tareas, bitacora, decisiones),
+		prsSinTarea: unclaimed.prsSinTarea,
+		ramasSinTarea: unclaimed.ramasSinTarea,
+		sesionArchivada: archivedSessions(tareas, snapshot),
+		sesiones: snapshot ? 'VERIFIED' : 'SIN FOTO',
+		...(sessionDrift(tareas, snapshot) ?? {
+			sesionesSinTarea: [],
+			candadoSinSesion: [],
+			nombreDistinto: [],
+		}),
+		...lifecycleDrift(tareas),
+		ramasUnidasSinBorrar: branches.ramasUnidasSinBorrar,
+		prCerradoSinUnir: branches.prCerradoSinUnir,
+		cierresPendientes: staleClosings(cierres, now),
+		cobertura: { ...unclaimed.cobertura, ...branches.cobertura },
+		...boardIssues(tareas, bitacora, decisiones, archivo, now),
 	};
 }
 
@@ -327,7 +651,37 @@ function printText(r) {
 		r.sesionArchivada,
 		(x) => `${x.id.padEnd(32)} ${x.sesion} ${x.nombre}`,
 	);
+	const drift = (title, list, fmt) =>
+		console.log(`  ${title}: ${list.length ? list.map(fmt).join(', ') : 'ninguna'}`);
+	console.log('\nDESFASES (solo informa):');
+	if (r.sesiones === 'SIN FOTO')
+		console.log(
+			'  SESIONES: no hay sesiones.json (foto de list_sessions); se omiten SESIONES SIN TAREA, CANDADO CON SESIÓN INEXISTENTE y NOMBRE DISTINTO.',
+		);
+	else {
+		drift('SESIONES SIN TAREA', r.sesionesSinTarea, (x) => `«${x.nombre}»`);
+		drift('CANDADO CON SESIÓN INEXISTENTE', r.candadoSinSesion, (x) => x.tarea);
+		drift('NOMBRE DISTINTO', r.nombreDistinto, (x) => `«${x.nombre}» (${x.msg})`);
+	}
+	drift('TAREAS EN CURSO SIN SESIÓN', r.enCursoSinSesion, (x) => x.tarea);
+	drift('UNIDAS CON CANDADO', r.unidasConCandado, (x) => `${x.tarea} (${x.carril})`);
+	drift(
+		'RAMAS UNIDAS SIN BORRAR',
+		r.ramasUnidasSinBorrar,
+		(x) => `${x.rama} (PR #${x.pr}, ${x.donde})`,
+	);
+	drift('PR CERRADO SIN UNIR', r.prCerradoSinUnir, (x) => `${x.rama} (PR #${x.pr}, ${x.tarea})`);
+	drift(
+		'ARCHIVADAS CON CIERRE PENDIENTE',
+		r.cierresPendientes,
+		(x) => `${x.id} (${x.pendiente.join(', ')})`,
+	);
 	section('AVISOS', r.avisos, (x) => `${x.id.padEnd(32)} ${x.msg}`);
+	section(
+		'COBERTURA NO VERIFICADA',
+		Object.entries(r.cobertura).filter(([, value]) => value === 'UNVERIFIED'),
+		([name]) => name,
+	);
 	console.log(
 		r.inconsistencias.length
 			? `\nINCONSISTENCIAS (${r.inconsistencias.length}):`
@@ -339,21 +693,25 @@ function printText(r) {
 function main(argv) {
 	const json = argv.includes('--json');
 	const sesionesArg = argv.find((a) => a.startsWith('--sesiones='))?.slice('--sesiones='.length);
-	const dir = argv.find((a) => !a.startsWith('--'));
-	if (!dir) {
+	// pnpm runs scripts from the repository root; INIT_CWD keeps relative paths relative to the caller.
+	const cwd = process.env.INIT_CWD || process.cwd();
+	const arg = argv.find((a) => !a.startsWith('--'));
+	const dir = arg ? resolve(cwd, arg) : boardDir();
+	if (!existsSync(dir)) {
 		console.error(
-			'Uso: pnpm board:verify <dir con tareas/*.json> [--json] [--sesiones=<archivo.json>]',
+			`No hay tablero en ${dir}. Uso: pnpm board:verify [<dir>] [--json] [--sesiones=<archivo.json>]`,
 		);
 		process.exit(2);
 	}
-	// pnpm runs scripts from the repository root; INIT_CWD keeps relative paths relative to the caller.
-	const cwd = process.env.INIT_CWD || process.cwd();
-	const result = verifyBoard(
-		loadExport(resolve(cwd, dir), sesionesArg && resolve(cwd, sesionesArg)),
-	);
+	const result = verifyBoard(loadExport(dir, sesionesArg && resolve(cwd, sesionesArg)));
 	if (json) console.log(JSON.stringify(result, null, 2));
 	else printText(result);
 	if (result.inconsistencias.length) process.exitCode = 1;
+	else if (
+		result.filas.some((r) => r.veredicto === 'UNVERIFIED') ||
+		Object.values(result.cobertura).includes('UNVERIFIED')
+	)
+		process.exitCode = 2;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))

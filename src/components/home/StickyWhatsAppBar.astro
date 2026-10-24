@@ -2,46 +2,87 @@
 /**
  * src/components/home/StickyWhatsAppBar.astro
  *
- * Fixed mobile CTA (not a content section). It appears once the hero leaves the viewport, hides
- * over the contact section and footer, and yields to the cookie consent bar while that bar is open.
+ * Fixed mobile CTA (not a content section). It shows the demo open in the showroom and quotes it
+ * with `Ref. EVENT-STYLE-BARRA`. It appears once the hero leaves the viewport, hides over the
+ * contact section and footer, and yields to the cookie consent bar while that bar is open.
  */
+import { Image } from 'astro:assets';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
-import {
-	formatMxn,
-	getRenderCampaign,
-	getStartingPrice,
-	getStartingRegularPrice,
-} from '@/data/promo-campaign.data';
+import { buildVitrinaMessage, type VitrinaDemo, type VitrinaEvent } from '@/data/landing-vitrina.data';
+import { getEventAsset } from '@/lib/assets/asset-registry';
 
 import '@/styles/home/_sticky-cta.scss';
 
-// Built with the campaign of the build day; PromoStatus.astro switches it for the visitor's date.
-const campaign = getRenderCampaign();
-const promoPrice = formatMxn(getStartingPrice(campaign));
-const regularPrice = formatMxn(getStartingRegularPrice());
+interface Props {
+	event: VitrinaEvent;
+	demo: VitrinaDemo;
+}
+
+const { event, demo } = Astro.props;
+const thumb = getEventAsset(demo.slug, demo.cover);
 ---
 
 <div class="sticky-cta" data-sticky-cta inert>
+	{
+		thumb && (
+			<Image
+				class="sticky-cta__thumb"
+				src={thumb}
+				alt=""
+				width={76}
+				height={76}
+				loading="lazy"
+				data-sticky-thumb
+				data-demo-style={demo.slug}
+			/>
+		)
+	}
+	<p class="sticky-cta__text">
+		<b data-sticky-label>{event.label} · {demo.name}</b>
+		¿Le gusta este estilo?
+	</p>
 	<WhatsAppButton
 		className="sticky-cta__button"
-		label="WhatsApp · desde"
-		ariaLabel="Quiero mi invitación por WhatsApp"
+		label="Quiero una así"
+		ariaLabel="Quiero una invitación así por WhatsApp"
+		message={buildVitrinaMessage(event, demo, 'BARRA')}
 		trackSection="sticky"
 		trackCta="whatsapp-sticky"
 		campaignSection="STICKY"
-	>
-		<span>
-			WhatsApp · desde{' '}
-			{campaign && <span data-promo-only data-promo-field="starting-price">{promoPrice}</span>}<span data-promo-fallback={campaign ? '' : undefined}>{regularPrice}</span>
-		</span>
-	</WhatsAppButton>
+		eventType={event.eventType}
+		eventLabel={event.label}
+	/>
 </div>
 
 <script>
+	import { withWhatsAppText } from '@/lib/landing/vitrina';
+	import { VITRINA_CHANGE_EVENT, type VitrinaChangeDetail } from '@/lib/landing/vitrina-client';
+
 	const bar = document.querySelector<HTMLElement>('[data-sticky-cta]');
 	const hero = document.getElementById('inicio');
 	const consentBar = document.getElementById('consent-banner-bar');
 	const hideZones = [document.getElementById('contacto'), document.querySelector('.footer-section')];
+
+	if (bar) {
+		document.addEventListener(VITRINA_CHANGE_EVENT, (event) => {
+			const { slug, label, eventType, eventLabel, barMessage, thumbSrc } = (event as CustomEvent<VitrinaChangeDetail>)
+			.detail;
+			const labelElement = bar.querySelector('[data-sticky-label]');
+			const thumb = bar.querySelector<HTMLImageElement>('[data-sticky-thumb]');
+			const link = bar.querySelector<HTMLAnchorElement>('a.whatsapp-button');
+			if (labelElement && label) labelElement.textContent = label;
+			if (thumb && thumbSrc) {
+				thumb.removeAttribute('srcset');
+				thumb.src = thumbSrc;
+				thumb.dataset.demoStyle = slug;
+			}
+			if (!link) return;
+			if (barMessage) link.href = withWhatsAppText(link.href, barMessage, window.location.href);
+			// Attribution follows the chosen event, not the one rendered first.
+			if (eventType) link.dataset.eventType = eventType;
+			if (eventLabel) link.dataset.eventLabel = eventLabel;
+		});
+	}
 
 	if (bar && hero && 'IntersectionObserver' in window) {
 		let heroVisible = true;

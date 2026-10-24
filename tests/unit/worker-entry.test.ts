@@ -15,6 +15,14 @@ jest.mock('@/lib/memories/server/cleanup.service', () => ({
 jest.mock('@/lib/rsvp/engagement/engagement-maintenance.service', () => ({
 	runEngagementMaintenance: jest.fn(),
 }));
+jest.mock('@/lib/commercial/commercial-retention.service', () => ({
+	runCommercialRetention: jest.fn(async () => ({
+		trackingEventsDeleted: 0,
+		visitorSessionsDeleted: 0,
+		batches: 1,
+		complete: true,
+	})),
+}));
 jest.mock('@/lib/server/deploy-identity', () => ({
 	readDeployEnvironment: jest.fn(() => 'preview'),
 }));

@@ -1,7 +1,6 @@
 ---
 import Container from '@/components/layout/Container.astro';
 import Section from '@/components/layout/Section.astro';
-import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import type { ProductProofData } from '@/interfaces/ui/sections/landing-page.interface';
 
 import '@/styles/home/_product-proof.scss';
@@ -83,14 +82,6 @@ const sampleGuests = [
 					</li>
 				))}
 			</ul>
-
-			<WhatsAppButton
-				className="product-proof__cta"
-				label={data.cta.label}
-				trackSection="product-proof"
-				trackCta="whatsapp-product-proof"
-				campaignSection="PROOF"
-			/>
 		</div>
 	</Container>
 </Section>

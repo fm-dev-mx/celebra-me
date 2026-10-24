@@ -20,8 +20,16 @@ bypass app route policy or consent policy.
 
 ## Retention
 
-- Analytics-event and marketing-audience retention: not established in this repository; requires an
-  explicit privacy decision before being treated as a current contract.
+- Commercial analytics (`tracking_events`, `visitor_sessions`): 13 months. The daily engagement
+  maintenance cron (`43 10 * * *`, `src/lib/server/scheduled-jobs.ts`) calls
+  `public.purge_commercial_analytics` in batches of 5,000 rows (at most 20 batches per run) and logs
+  the deleted counts as `[commercial][retention] completed`. The rule lives only in
+  `public.commercial_analytics_retention_cutoff`: on 2027-11-24 the events of 2026-10-23 and earlier
+  are deleted. Sessions go once they are past retention and no event, lead or order references them;
+  events and sessions that a lead or an order references are kept, so the purge never rewrites
+  `leads`, `customers`, `sales_orders` or `meta_conversion_*`.
+- Marketing-audience retention: not established in this repository; requires an explicit privacy
+  decision before being treated as a current contract.
 - Contact/lead data: duration of the commercial relationship + 2 years
 
 ## Identifier Chain

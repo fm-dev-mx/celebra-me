@@ -24,6 +24,7 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'scripts/validate-retired-provider-references.mjs',
 	'scripts/validate-structure.mjs',
 	'scripts/agent/env-files.ts',
+	'scripts/security/scan-secrets.mjs',
 	'tests/unit/validate-structure-script.test.ts',
 	'tests/unit/layout-web-analytics.test.ts',
 	'tests/unit/hostname-validation.test.ts',

@@ -162,6 +162,14 @@
 	font-weight: 700;
 }
 
+#home-header .mobile-nav-links__link,
+#home-header .mobile-nav-actions__login {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-block-size: 44px;
+}
+
 #home-header .mobile-nav-actions__cta-group {
 	display: flex;
 	flex-direction: column;

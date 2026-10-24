@@ -10,6 +10,51 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.45.0-beta.1] - 2026-10-23
+
+The home page becomes a demo showroom, a new hidden Serenata XV demo, demos addressed in «usted»
+with a floating quote button and next-demo navigation, 44 px touch targets, server logs without
+personal data, and a daily 13-month purge of commercial analytics. One expand-only migration
+(`20261023120000_commercial_analytics_retention`); no published invitation content changes.
+
+### Added
+
+- The home page is a demo showroom: event chips and a fan of three phones in the hero, a
+  phone/tablet/PC frame with a style picker, and one shared WhatsApp quote per demo shown;
+  `/demos/<event>` answers 301 to `/#<event>` and featured short links join the sitemap (#478).
+- Hidden XV demo «Serenata» at `/serenata` on a new `sage-champagne` preset with a night envelope
+  opening (#476); it leads the home page share image (#487).
+- Demos show a floating «Quiero una invitación así» button once the hero leaves the screen, and the
+  closing panel offers «Siguiente demo» and «Volver al inicio», each with its own quote reference
+  and tracking id (#499).
+- A daily job purges commercial analytics older than 13 months in batches, keeping sessions that a
+  lead or order references; migration `20261023120000` adds the cutoff and purge functions and an
+  `occurred_at` index (#496).
+- Invitation definitions accept an optional `voice` register (`usted` by default) that never enters
+  published hashes; a test keeps «tú» out of unpublished «usted» definitions (#502).
+- `pnpm security:secrets` fails CI when a versioned file holds a credential (#501).
+
+### Changed
+
+- Catalog demos are served only at their short address: the long route answers 301 to the alias and
+  the commercial catalog copies the short public link (#472).
+- Demo copy addresses guests with «usted»; Valentina Noir keeps «tú» by decision (#485).
+- Landing and dashboard touch targets reach 44 px on phones (#494); invitation header controls and
+  «Cambiar su respuesta» fall back to 44 px (#473).
+- Commercial tracking drops bots, empty user agents and link-preview fetchers before writing (#493).
+- Music guidance sets 64 kbps as the floor with 96 kbps optional (#497).
+- The invitation hash baseline records Destenid after its move to «usted» (#502).
+- The local task board gains lane planning, search, archiving, closing summaries, a watcher and a
+  readable view, with its rules in one place (#471, #474, #477, #479–#483, #486, #488, #489, #491,
+  #492, #495, #500, #503, #504, #506); VS Code dev and board tasks force-restart their port (#490).
+
+### Fixed
+
+- Server logs print only an error code and message, never provider bodies or row values (#484).
+- The reply-card RSVP button keeps readable text on hover (#473).
+- Keyboard focus stays visible when Tab enters a demo footer, and demo smooth scrolling honors
+  reduced motion (#505).
+
 ## [0.44.0-beta.1] - 2026-10-23
 
 Short links for every catalog demo, a calmer music control, photo zoom and a smoother lightbox, and

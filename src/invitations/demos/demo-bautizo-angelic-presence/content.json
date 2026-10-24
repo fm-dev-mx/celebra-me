@@ -184,13 +184,32 @@
         "author": "Mateo 18:20"
     },
     "rsvp": {
-        "title": "Confirma tu asistencia",
+        "title": "Confirme su asistencia",
         "guestCap": 4,
         "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
         "confirmationMode": "api",
         "variant": "standard",
         "personalizedAccess": {
+            "title": "Pase de acceso",
+            "subtitle": "Este pase le identifica como invitado y muestra el número de lugares reservados.",
+            "footerText": "Confirme su asistencia en la sección de RSVP al final de la invitación.",
             "variant": "standard"
+        },
+        "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración familiar.",
+        "labels": {
+            "name": "Su nombre",
+            "notesPlaceholder": "Escriba un mensaje para María…",
+            "guestHint": "Hemos reservado {count} lugares para su invitación. Puede ajustar el número si asistirán menos personas."
+        },
+        "responseMessages": {
+            "confirmed": {
+                "title": "¡Gracias por confirmar, {guestName}!",
+                "subtitle": "Su confirmación ha sido registrada."
+            },
+            "declined": {
+                "title": "Lamentamos que no pueda acompañarnos, {guestName}.",
+                "subtitle": "Gracias por avisarnos."
+            }
         }
     },
     "thankYou": {

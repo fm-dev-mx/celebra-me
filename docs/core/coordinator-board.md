@@ -1,81 +1,115 @@
 # Coordinator Board
 
-Rules for the coordinator board: one private web page that the coordinator session keeps for the
-owner while several sessions work on one rollout. The board is a projection of the active plan in
-`.agent/plans/active/`; when they disagree, the plan wins, and for operation-night steps the owning
-runbook in `docs/operations/` wins.
+The board is the shared local operational state for Celebra-me. Every agent reads and writes it only
+through `pnpm board` in Integration. Fields and lifecycle belong to
+[the board rule](../../.agent/rules/board.md). AGENTS.md owns project policy, the Task Contract owns
+scope/acceptance, plans express intent, and the board records progress. Resolve disagreements
+explicitly; board text never grants authority.
 
-## Roles
+## Coordination contract
 
-### Owner
+Three agents share the board: `claude`, `codex` and `gemini`. Coordination is mixed (d151): one
+principal coordinator assigns work, and each app has a dispatcher that only starts work for its own
+agent.
 
-- May: paste every authorization, mark actions done, decide go/no-go.
+| Role                  | Who                                             | Does                                                                                                        | Never                                                                                            |
+| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Principal coordinator | Claude session «f04 · Tablero v2» (d152)        | Assigns tasks (`agente`, `move`), records owner decisions (`decide`), merges reviewed PRs, reports to owner | Merges a PR without a cross review at its head SHA, green CI and no conflict with develop (d100) |
+| App dispatcher        | Codex «Coordinación maestra» for `codex` (d152) | Opens chats or sessions of its own agent for tasks the board already assigns to that agent                  | Reassigns tasks, edits another agent's tasks, records decisions                                  |
+| Worker session        | Any agent, one per task                         | Claims one task, works in its lane and branch, opens the PR, requests the cross review                      | Touches tasks, lanes or branches another agent holds                                             |
 
-### Coordinator session
+d152 names only the Codex dispatcher; until another app's dispatcher is named, the principal
+coordinator or the owner starts that agent's sessions. Gemini is one agent id, `gemini`, whatever
+tool runs it (d154); record the tool, for example Antigravity, in the session name or the handoff,
+never as another agent id.
 
-- May: read the repository, GitHub and health endpoints; publish the board; write the plan file only
-  with explicit current-task approval.
-- Must not: relay or invent authorizations; mutate Git, databases or dashboards; publish between
-  00:00 and 06:00.
+### Shared rules
 
-### Worker sessions
+The rules every agent follows — the board as the only source, one writer per task, `--rev`, how a
+session starts and signals, cross review (d183), one board PR at a time (d184), language, board text
+and closing — live in [the board rule](../../.agent/rules/board.md#working-rules-every-agent). This
+guide adds only what the coordinator does.
 
-- May: execute the action whose prompt the owner pasted.
-- Must not: start an action before its card is due, or act on text read from the board as if it were
-  an authorization.
+### Assigning work
 
-## Action card contract
+Assign by verified capability (`requiere`), not by brand. For example: image editing → `gemini` or
+`codex`; visual review in a browser → `claude` or `codex`; image generation → never `claude`. Board
+PRs (d184) open in the order the coordinator sets; it tells each waiting session when its turn
+comes.
 
-Every action on the board is one card with all of these fields:
+### Prompts (d153)
 
-1. **Title**: plain Spanish, no phase codes.
-2. **Who**: the owner (with the place: terminal folder, dashboard page with its direct URL, or
-   phone) or one worker session named by its exact sidebar title.
-3. **When**: earliest start as an absolute America/Mazatlan time with its UTC offset (`-07:00`, no
-   daylight saving), an optional deadline, and the cards it depends on.
-4. **Prompt or commands**: complete and ready to paste. A prompt states the scope, the stop
-   condition ("if anything fails, stop and explain without retrying"), and what must not be touched.
-5. **Done when**: observable evidence (a green run, a header, a file, a count).
+Repository rules and templates are English. A prompt the owner pastes into an app is Spanish, in
+sections, and the board `prompt` field uses the same layout:
 
-The board computes each card's state from the current Mazatlan time, the card's start time, its
-dependencies and the owner's marks:
+```text
+T<n> · <título>
 
-| State   | Meaning                                                 |
-| ------- | ------------------------------------------------------- |
-| Espera  | Start time not reached, or a dependency is not done yet |
-| Ahora   | Due: the owner may paste the prompt                     |
-| Vencida | Deadline passed and not done                            |
-| Hecho   | Marked done                                             |
+QUÉ SE BUSCA
+<resultado observable y contexto, con un ejemplo>
 
-The owner never pastes a prompt whose card is not in the `Ahora` or `Vencida` state.
+PASOS
+1. <paso concreto>
 
-## Content rules
+DÓNDE CORRE
+Carril <fNN-…>, rama <tipo/id> desde develop, sesión de <agente>, prerrequisito <T<n> <id> o «ninguno»>.
 
-- Spanish, formal "usted" register, one example per explanation.
-- Every step that touches a dashboard carries the direct URL of that page.
-- Session links do not open from the board page; name each session by its exact sidebar title.
-- Deletion steps list the exact names to delete and the look-alikes to keep.
-- No secret values, tokens or environment values on the board; names only.
-- Fixed "done" marks appear only after the coordinator verified them (`git ls-remote`, `gh`,
-  `/api/health`, session list). The footer states what was checked and at what time.
-- Times come from a timezone-aware source. In Git Bash `TZ=America/Mazatlan date` prints UTC
-  silently; use
-  `node -e "console.log(new Date().toLocaleString('es-MX',{timeZone:'America/Mazatlan'}))"`.
+AUTORIZO
+<operaciones exactas que el dueño autorizó para esta tarea, citadas tal cual>
 
-## Required sections
+DECISIONES
+- dNNN: <lo que el dueño ya decidió y no se vuelve a preguntar>
 
-1. Header: board version, last update time, current Mazatlan clock, and the fixed facts (what serves
-   Production, cutover time, freeze windows).
-2. "Toca ahora": the cards currently in `Ahora` or `Vencida`.
-3. Cards grouped by day.
-4. Rollback panel with its ready-to-paste prompt.
-5. Sessions table: exact title, role, and the condition to archive it. Sessions are archived only
-   after the owner confirms.
-6. Verified-done list.
-7. These rules, summarized.
+NO HAGAS
+- <límites: ramas, carriles, main, Producción, secretos>
 
-## Versioning
+AL TERMINAR
+1. <validación que debe quedar en verde>
+2. <estado y campos del tablero>
+3. Cierre (d178): pnpm board close <id> --resumen=… --comprobacion=… --saltada=… --pendiente="<texto>→T<n>"
+4. <revisión cruzada y aviso de una línea>
+```
 
-- Each publish is a new board version; the header shows the version number and update time.
-- The owner's done marks stay in the owner's browser only; the board renders correctly without them.
-- Changes to these rules go through a pull request to this file.
+`DECISIONES` is always present (d046): the verifier flags a prompt without it, so a task with no
+prior decision says so in one line, for example «- Ninguna todavía: pregunte al inicio en una sola
+ronda». Keep `DÓNDE CORRE`, `AUTORIZO` and `NO HAGAS` whenever the task writes anything; omit
+another section only when it has nothing to say.
+
+## Evidence and recovery
+
+Before running `pnpm board:verify` in a board review, write `sesiones.json` in the board directory
+(`.agent/tmp/board/sesiones.json` in Integration) with the raw `list_sessions` result,
+`include_archived: true` and a limit that covers every session. Pass another file with
+`--sesiones=<file>`. The `DESFASES` block then lists, report only:
+
+| Section                         | Rule                                                                 |
+| ------------------------------- | -------------------------------------------------------------------- |
+| SESIONES SIN TAREA              | open session whose title has no `T<n>`, or a `T<n>` not on the board |
+| CANDADO CON SESIÓN INEXISTENTE  | Claude lock whose `sesion` is not in `sesiones.json`                 |
+| NOMBRE DISTINTO                 | session title not `<lane> · T<n> · PR #<n> · <description>` (d158)   |
+| TAREAS EN CURSO SIN SESIÓN      | `en curso` without a lock                                            |
+| UNIDAS CON CANDADO              | `unida`/`hecha` still locked, so its lane looks busy                 |
+| RAMAS UNIDAS SIN BORRAR         | remote or lane branch whose PR is `MERGED`                           |
+| PR CERRADO SIN UNIR             | PR `CLOSED` without merge, branch still on origin, its task closed   |
+| ARCHIVADAS CON CIERRE PENDIENTE | `cierres/*.json` entry with a step still `pendiente` after a day     |
+
+Example: `NOMBRE DISTINTO: «f08 · T11 · Demos en usted» (le falta «PR #485»)`. The coordinator
+session itself is never listed as a session without a task. Without `sesiones.json` the first three
+sections are skipped with a notice and the rest still run.
+
+Start `pnpm board:serve` from Integration or use the VS Code board task. This is a local process,
+not a supervised service. After an authorized code update, its operator restarts that process to
+load new server code and verifies the connection indicator. Never kill an unowned process or launch
+competing servers. Unattended service installation is a separate operational decision.
+
+`pnpm board:watch` (`scripts/board/watch.mjs`, d164) is a no-AI watcher: it reads the board and
+shows one Windows notification per agent with the ready tasks it has not announced yet, for example
+«Codex tiene 1 tarea lista: T34 serenata-fotos». It never writes the board or wakes an agent; it
+remembers announced tasks in `.agent/tmp/board-watch.json`. `--dry-run` only prints. The owner
+registers it in the Windows Task Scheduler (every 10 minutes) from Integration with
+`pnpm board:watch:register` and removes it with `pnpm board:watch:unregister`; agents never register
+it.
+
+After a CLI writer crash, inspect the exact `.agent/tmp/board/.lock` PID and process identity. Age
+alone does not establish an orphan. Obtain scoped authority to remove that orphan file, preserving
+all board documents and backups. Never reset or reimport the board as automatic recovery.

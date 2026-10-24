@@ -182,7 +182,7 @@ describe('invitation route personalization', () => {
 			expect(result).toEqual({ guestContext: null, redirectPath: null });
 			expect(warnSpy).toHaveBeenCalledWith(
 				'[invitation][route-personalization] Unable to resolve invite context.',
-				expect.any(Error),
+				{ code: expect.any(String), message: expect.any(String) },
 			);
 		} finally {
 			warnSpy.mockRestore();

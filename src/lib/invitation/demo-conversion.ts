@@ -1,5 +1,11 @@
 import type { ImageMetadata } from 'astro';
 import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
+import {
+	buildVitrinaMessage,
+	findVitrinaDemo,
+	getVitrinaEvent,
+	type VitrinaEntry,
+} from '@/data/landing-vitrina.data';
 import type { DemoShowroomItem } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventAssetKey } from '@/lib/assets/asset-keys';
 import { getEventAsset } from '@/lib/assets/asset-registry';
@@ -25,13 +31,26 @@ const CLOSING_IMAGE_KEYS: readonly EventAssetKey[] = [
 	'hero',
 ];
 
+/** Where a demo quotes: the floating button (extra, discreet) and the two sales panels. */
+export type DemoQuotePlacement = 'floating' | 'gallery' | 'closing';
+
+const QUOTE_ENTRIES: Record<DemoQuotePlacement, VitrinaEntry> = {
+	floating: 'FLOTANTE',
+	gallery: 'GALERIA',
+	closing: 'CIERRE',
+};
+
 export interface DemoConversionContext {
 	slug: string;
 	eventType: EventType;
 	styleName: string;
 	celebrationLabel: string;
-	quoteLink: string;
-	browseHref: string;
+	/** WhatsApp link per placement; each message carries its own `Ref. EVENT-STYLE-ENTRY`. */
+	quoteLinks: Record<DemoQuotePlacement, string>;
+	/** Landing showroom open on this event (`/#xv`). */
+	homeHref: string;
+	/** Following showroom demo of the same event, wrapping to the first; absent when it is the only one. */
+	nextDemo?: { href: string; name: string };
 	closingImage?: ImageMetadata;
 	closingImageAlt?: string;
 	galleryImage?: { image: ImageMetadata; alt: string };
@@ -46,6 +65,28 @@ export function hasDemoConversion(slug: string, isDemo: boolean): boolean {
 	return isDemo && findDemoItem(slug) !== undefined;
 }
 
+/** Showroom quote (`Ref. XV-CELESTIAL-CIERRE`); a demo outside the showroom keeps its own message. */
+function buildQuoteLinks(item: DemoShowroomItem): Record<DemoQuotePlacement, string> {
+	const event = getVitrinaEvent(item.publicSlug);
+	const demo = findVitrinaDemo(item.slug);
+	const message = (placement: DemoQuotePlacement) =>
+		event && demo
+			? buildVitrinaMessage(event, demo, QUOTE_ENTRIES[placement])
+			: item.ctaMessage;
+	return {
+		floating: getWhatsAppLink(message('floating')),
+		gallery: getWhatsAppLink(message('gallery')),
+		closing: getWhatsAppLink(message('closing')),
+	};
+}
+
+function findNextDemo(item: DemoShowroomItem): DemoConversionContext['nextDemo'] {
+	const demos = getVitrinaEvent(item.publicSlug)?.demos ?? [];
+	const index = demos.findIndex((demo) => demo.slug === item.slug);
+	const next = demos[(index + 1) % demos.length];
+	return next && next.slug !== item.slug ? { href: next.href, name: next.name } : undefined;
+}
+
 export function getDemoConversion(slug: string): DemoConversionContext | undefined {
 	const item = findDemoItem(slug);
 	if (!item) return undefined;
@@ -57,8 +98,9 @@ export function getDemoConversion(slug: string): DemoConversionContext | undefin
 		eventType: item.eventType,
 		styleName: item.styleName,
 		celebrationLabel: CELEBRATION_LABELS[item.eventType],
-		quoteLink: getWhatsAppLink(item.ctaMessage),
-		browseHref: `/demos/${item.publicSlug}`,
+		quoteLinks: buildQuoteLinks(item),
+		homeHref: `/#${item.publicSlug}`,
+		nextDemo: findNextDemo(item),
 		closingImage: photos
 			? getEventAsset(slug, photos.closing.key)
 			: closingKey

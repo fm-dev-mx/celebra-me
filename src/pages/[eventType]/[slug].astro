@@ -3,6 +3,7 @@ export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import DemoConversion from '@/components/invitation/DemoConversion.astro';
+import DemoFloatingQuote from '@/components/invitation/DemoFloatingQuote.astro';
 import { getDemoConversion, hasDemoConversion } from '@/lib/invitation/demo-conversion';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
@@ -33,6 +34,8 @@ import InvitationUnavailable from '@/components/invitation/InvitationUnavailable
 import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
 import { isEventType } from '@/lib/theme/theme-contract';
 import { buildPublicInvitationPath } from '@/utils/invitation-link';
+import { getDemoRouteSlug } from '@/lib/invitation/demo-routes';
+import { safeErr } from '@/lib/server/safe-error';
 
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
@@ -43,6 +46,12 @@ if (!isEventType(eventType)) {
 	return Astro.rewrite(
 		`/i/${encodeURIComponent(eventType)}/${encodeURIComponent(slug)}`,
 	);
+}
+// Catalog demos live at their short alias. `/brisa` rewrites here, so only a direct request for
+// the long route (`/boda/demo-brisa?ref=wa`) is moved, keeping its query string.
+const demoRouteSlug = getDemoRouteSlug(slug);
+if (demoRouteSlug && Astro.originPathname.replace(/\/+$/, '') !== `/${demoRouteSlug}`) {
+	return Astro.redirect(`/${encodeURIComponent(demoRouteSlug)}${Astro.url.search}`, 301);
 }
 const inviteId = Astro.url.searchParams.get('invite');
 const hasInviteParam = Astro.url.searchParams.has('invite');
@@ -150,7 +159,7 @@ try {
 } catch (error) {
 	console.error(
 		`[PublicRoute] Error rendering invitation slug="${slug}" eventType="${eventType}":`,
-		error instanceof Error ? error.stack : String(error),
+		safeErr(error),
 	);
 	renderError =
 		error instanceof Error ? error.message : 'Error desconocido al cargar la invitación.';
@@ -347,6 +356,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								musicCredit={page.musicPlayer?.creditsUrl ? { title: page.musicPlayer.title, creditsUrl: page.musicPlayer.creditsUrl } : undefined}
 							/>
 							{demoConversion && <DemoConversion placement="closing" demo={demoConversion} />}
+							{demoConversion && <DemoFloatingQuote demo={demoConversion} />}
 
 							{page.musicPlayer && <MusicPlayer {...page.musicPlayer} />}
 						</div>

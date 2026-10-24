@@ -27,6 +27,8 @@ export interface CanonicalInvitationOptions {
 	/** Explicit: hosted targets only receive `published` definitions, so no default is implied. */
 	lifecycle: InvitationDefinition['lifecycle'];
 	deliveryScope?: InvitationDefinition['deliveryScope'];
+	/** Guest-facing register; omitted means «usted». */
+	voice?: InvitationDefinition['voice'];
 }
 
 function toAssetSpecs(
@@ -97,6 +99,7 @@ export function defineCanonicalInvitation(
 		createdAt: '2026-08-29T00:00:00.000Z',
 		lifecycle: options.lifecycle,
 		deliveryScope: options.deliveryScope ?? 'content-only',
+		...(options.voice ? { voice: options.voice } : {}),
 		eventType: options.eventType,
 		title: options.title,
 		clientName: options.clientName ?? options.title,

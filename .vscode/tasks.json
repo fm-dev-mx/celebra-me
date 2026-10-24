@@ -452,6 +452,60 @@
                 "panel": "dedicated",
                 "focus": false
             }
+        },
+        {
+            "label": "Tablero (board:serve)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "board:serve"
+            ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "checklist",
+                "color": "terminal.ansiMagenta"
+            },
+            "presentation": {
+                "echo": false,
+                "clear": false,
+                "reveal": "silent",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": { "runOn": "folderOpen" }
+        },
+        {
+            "label": "Sincronizar tablero (board:sync)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/task-runner.ps1",
+                "board:sync"
+            ],
+            "isBackground": true,
+            "problemMatcher": [],
+            "icon": {
+                "id": "sync",
+                "color": "terminal.ansiMagenta"
+            },
+            "presentation": {
+                "echo": false,
+                "clear": false,
+                "reveal": "silent",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": { "runOn": "folderOpen" }
         }
     ]
 }

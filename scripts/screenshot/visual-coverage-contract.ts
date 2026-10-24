@@ -6,6 +6,7 @@ import {
 	CANONICAL_VARIANT_REGISTRY,
 	type CanonicalVariantSection,
 } from '../../src/lib/invitation/section-variants.ts';
+import { getDemoRouteSlug } from '../../src/lib/invitation/demo-routes.ts';
 
 export type VisualCoverageCase = Record<string, unknown>;
 
@@ -59,6 +60,14 @@ export interface VisualPageCase {
 	preset?: string;
 	sourcePath?: string;
 	assetSlug?: string;
+}
+
+/** Public path a case is served at: demos answer only at their short alias (`/brisa`). */
+export function visualPageRoute(
+	entry: Pick<VisualPageCase, 'kind' | 'slug' | 'eventType'>,
+): string {
+	const routeSlug = entry.kind === 'demo' ? getDemoRouteSlug(entry.slug) : undefined;
+	return routeSlug ? `/${routeSlug}` : `/${entry.eventType}/${entry.slug}`;
 }
 
 /** Discover repository demos; the directory is the only demo inventory. */

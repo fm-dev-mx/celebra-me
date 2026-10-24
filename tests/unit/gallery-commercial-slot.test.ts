@@ -41,8 +41,9 @@ it('keeps commercial closing after the invitation farewell and retains tracking 
 	const component = read('src/components/invitation/DemoConversion.astro');
 	expect(component).toContain('data-preserve-message="true"');
 	expect(component).toContain('data-track-cta={`demo_quote_${placement}`}');
-	expect(component).toContain('data-track-cta="demo_browse_styles"');
-	expect(component).toContain('href={demo.quoteLink}');
+	expect(component).toContain('data-track-cta="demo_next"');
+	expect(component).toContain('data-track-cta="demo_back_home"');
+	expect(component).toContain('href={demo.quoteLinks[placement]}');
 	expect(component).toContain('aria-describedby={channelId}');
 	expect(component).not.toMatch(/onclick|preventDefault|trackEvent/);
 });
@@ -56,7 +57,7 @@ it('gives every demo its own sales message, label and closing photo', () => {
 			continue;
 		}
 		expect(demo).toMatchObject({ slug, eventType });
-		expect(demo?.quoteLink).toContain(encodeURIComponent(demo!.styleName));
+		for (const link of Object.values(demo!.quoteLinks)) expect(link).toMatch(/Ref\.%20/);
 		expect(demo?.celebrationLabel).toMatch(/^sus? /);
 		expect(demo?.closingImage).toBeDefined();
 	}
@@ -105,4 +106,35 @@ it('isolates native enlargement and commercial navigation while preserving legac
 		document.removeEventListener('gallery:open', listener);
 		document.body.innerHTML = '';
 	}
+});
+
+it('quotes each demo position with its own reference and a distinct tracked cta', () => {
+	const demo = getDemoConversion('demo-xv-celestial-blue')!;
+	const text = (link: string) => new URL(link).searchParams.get('text');
+	expect(text(demo.quoteLinks.floating)).toMatch(/Ref\. XV-CELESTIAL-FLOTANTE$/);
+	expect(text(demo.quoteLinks.gallery)).toMatch(/Ref\. XV-CELESTIAL-GALERIA$/);
+	expect(text(demo.quoteLinks.closing)).toMatch(/Ref\. XV-CELESTIAL-CIERRE$/);
+	const floating = read('src/components/invitation/DemoFloatingQuote.astro');
+	expect(floating).toContain('href={demo.quoteLinks.floating}');
+	expect(floating).toContain('data-track-cta="demo_quote_floating"');
+	expect(floating).toContain('data-preserve-message="true"');
+	expect(read('src/pages/[eventType]/[slug].astro')).toContain(
+		'<DemoFloatingQuote demo={demoConversion} />',
+	);
+});
+
+it('links every demo to the next one of its event, wrapping to the first, and back home', () => {
+	const xv = ['demo-xv-celestial-blue', 'demo-xv-enchanted-rose', 'demo-xv-editorial'].map(
+		(slug) => getDemoConversion(slug)!,
+	);
+	const hrefs = xv.map((demo) => demo.nextDemo?.href);
+	expect(new Set(hrefs).size).toBe(xv.length);
+	for (const demo of xv) expect(demo.homeHref).toBe('/#xv');
+	expect(getDemoConversion('demo-xv-editorial')?.nextDemo).toEqual({
+		href: '/serenata',
+		name: 'Serenata',
+	});
+	// The only demo of its event has nowhere next to go.
+	expect(getDemoConversion('demo-brisa')?.nextDemo).toBeUndefined();
+	expect(getDemoConversion('demo-brisa')?.homeHref).toBe('/#boda');
 });

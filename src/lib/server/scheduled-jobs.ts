@@ -5,8 +5,10 @@
  * The expressions are the ones declared under `triggers.crons` in `wrangler.jsonc`.
  * Jobs listed in `PRODUCTION_ONLY_JOBS` are declared only on the Production Worker and
  * skip on any other deploy identity.
+ * The engagement maintenance cron also runs the commercial analytics retention purge.
  */
 import { randomUUID } from 'node:crypto';
+import { runCommercialRetention } from '@/lib/commercial/commercial-retention.service';
 import { readBuildIdentity } from '@/lib/environment';
 import {
 	MEMORIES_CLEANUP_EVENT_NAME,
@@ -24,6 +26,7 @@ import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-c
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
 import { readDeployEnvironment } from '@/lib/server/deploy-identity';
+import { safeErr } from '@/lib/server/safe-error';
 
 export type ScheduledJobName = 'memories_cleanup' | 'engagement_maintenance' | 'platform_usage';
 
@@ -104,10 +107,41 @@ async function runEngagementMaintenanceJob(): Promise<ScheduledJobOutcome['statu
 		return 'completed';
 	} catch (error) {
 		console.error('[engagement][maintenance] failed', {
-			error: error instanceof Error ? error.message : String(error),
+			error: safeErr(error),
 		});
 		return 'failed';
 	}
+}
+
+async function runCommercialRetentionJob(): Promise<ScheduledJobOutcome['status']> {
+	// The purge deletes rows, so an unverified deploy identity never runs it.
+	if (!readDeployEnvironment()) {
+		console.error(
+			'[scheduled][commercial_retention] skipped: deploy identity is not declared.',
+		);
+		return 'skipped';
+	}
+	try {
+		const result = await runCommercialRetention();
+		(result.complete ? console.info : console.warn)(
+			'[commercial][retention] completed',
+			result,
+		);
+		return 'completed';
+	} catch (error) {
+		console.error('[commercial][retention] failed', {
+			status: error instanceof SupabaseHttpError ? error.status : null,
+			code: error instanceof SupabaseHttpError ? error.code : null,
+		});
+		return 'failed';
+	}
+}
+
+/** Both daily analytics steps run even when the other fails; any failure fails the job. */
+async function runDailyAnalyticsMaintenanceJob(): Promise<ScheduledJobOutcome['status']> {
+	const engagement = await runEngagementMaintenanceJob();
+	const retention = await runCommercialRetentionJob();
+	return engagement === 'failed' || retention === 'failed' ? 'failed' : 'completed';
 }
 
 async function runPlatformUsageJob(): Promise<ScheduledJobOutcome['status']> {
@@ -147,7 +181,7 @@ const JOB_RUNNERS: Readonly<
 	Record<ScheduledJobName, () => Promise<ScheduledJobOutcome['status']>>
 > = {
 	memories_cleanup: runMemoriesCleanupJob,
-	engagement_maintenance: runEngagementMaintenanceJob,
+	engagement_maintenance: runDailyAnalyticsMaintenanceJob,
 	platform_usage: runPlatformUsageJob,
 };
 

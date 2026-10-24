@@ -7,11 +7,13 @@ import '@/styles/dashboard/_demo-catalog.scss';
 
 interface Props {
 	demos: DemoLinkItem[];
+	/** Canonical public origin (`https://www.celebra-me.com`), never the dashboard host. */
+	shareOrigin: string;
 }
 
 const COPY_FEEDBACK_MS = 2000;
 
-const DemoCatalog: FC<Props> = ({ demos }) => {
+const DemoCatalog: FC<Props> = ({ demos, shareOrigin }) => {
 	const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 	const [copyError, setCopyError] = useState('');
 
@@ -21,15 +23,20 @@ const DemoCatalog: FC<Props> = ({ demos }) => {
 		return () => clearTimeout(timer);
 	}, [copiedSlug]);
 
-	const copyLink = useCallback(async (demo: DemoLinkItem) => {
-		setCopyError('');
-		try {
-			await navigator.clipboard.writeText(`${window.location.origin}${demo.href}`);
-			setCopiedSlug(demo.slug);
-		} catch {
-			setCopyError('No se pudo copiar el enlace. Ábralo y copie la dirección del navegador.');
-		}
-	}, []);
+	const copyLink = useCallback(
+		async (demo: DemoLinkItem) => {
+			setCopyError('');
+			try {
+				await navigator.clipboard.writeText(`${shareOrigin}${demo.href}`);
+				setCopiedSlug(demo.slug);
+			} catch {
+				setCopyError(
+					'No se pudo copiar el enlace. Ábralo y copie la dirección del navegador.',
+				);
+			}
+		},
+		[shareOrigin],
+	);
 
 	return (
 		<section className="dashboard-card demo-catalog" aria-labelledby="demo-catalog-title">

@@ -7,9 +7,11 @@
  * that rule for its own CDN.
  */
 
+import { findDemoByRouteSlug } from '@/lib/invitation/demo-routes';
+
 export type HeaderEntry = readonly [name: string, value: string];
 
-/** Security headers applied to every response except the invitation preview frame. */
+/** Security headers applied to every response except the same-origin frames below. */
 export const SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['X-Content-Type-Options', 'nosniff'],
 	['X-Frame-Options', 'DENY'],
@@ -20,8 +22,9 @@ export const SECURITY_HEADERS: readonly HeaderEntry[] = [
 ];
 
 /**
- * The dashboard embeds `/dashboard/invitaciones/:id/preview` in an iframe, so
- * that page must allow same-origin framing instead of denying it outright.
+ * The dashboard embeds `/dashboard/invitaciones/:id/preview` and the landing showroom embeds the
+ * demo short routes (`/brisa`) in an iframe, so those pages allow same-origin framing instead of
+ * denying it outright.
  */
 export const INVITATION_PREVIEW_SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['X-Content-Type-Options', 'nosniff'],
@@ -35,12 +38,20 @@ export const INVITATION_PREVIEW_SECURITY_HEADERS: readonly HeaderEntry[] = [
 
 const INVITATION_PREVIEW_PATH = /^\/dashboard\/invitaciones\/[^/]+\/preview$/;
 
+const SHORT_ROUTE_PATH = /^\/([a-z0-9-]+)$/;
+
 function isInvitationPreviewPath(pathname: string): boolean {
 	return INVITATION_PREVIEW_PATH.test(pathname);
 }
 
+/** Demo short routes only: public sample content, never a guest's invitation. */
+function isDemoShortRoutePath(pathname: string): boolean {
+	const routeSlug = SHORT_ROUTE_PATH.exec(pathname)?.[1];
+	return routeSlug !== undefined && findDemoByRouteSlug(routeSlug) !== undefined;
+}
+
 export function resolveSecurityHeaders(pathname: string): readonly HeaderEntry[] {
-	return isInvitationPreviewPath(pathname)
+	return isInvitationPreviewPath(pathname) || isDemoShortRoutePath(pathname)
 		? INVITATION_PREVIEW_SECURITY_HEADERS
 		: SECURITY_HEADERS;
 }
@@ -95,11 +106,11 @@ export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 	},
 	{
 		source: '/bautizo/demo-bautismo-angelic-presence',
-		destination: '/bautizo/demo-bautizo-angelic-presence',
+		destination: '/angelical',
 	},
 	{
 		source: '/primera-comunion/demo-primera-comunion-illustrated',
-		destination: '/primera-comunion/demo-primera-comunion-angelic-presence',
+		destination: '/comunion-angelical',
 	},
 ];
 

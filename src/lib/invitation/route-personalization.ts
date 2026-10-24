@@ -2,6 +2,7 @@ import { buildInvitationPath } from '@/utils/invitation-link';
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { isApiError } from '@/lib/rsvp/core/errors';
+import { safeErr } from '@/lib/server/safe-error';
 
 function stripInviteParam(pathWithQuery: string): string {
 	const url = new URL(pathWithQuery, 'http://local');
@@ -92,7 +93,7 @@ export async function resolveRoutePersonalization(input: {
 		}
 		console.warn(
 			'[invitation][route-personalization] Unable to resolve invite context.',
-			error,
+			safeErr(error),
 		);
 		return {
 			guestContext: null,

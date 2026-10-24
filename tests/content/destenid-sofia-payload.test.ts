@@ -83,7 +83,7 @@ describe('Destenid Sofía managed definition', () => {
 			['Cierre', '02:00'],
 		]);
 		expect(parsed.gallery?.subtitle).toBe(
-			'¡Lit! Mi fiesta no sería lo mismo sin ti. Gracias por acompañarme en los momentos más icónicos.',
+			'¡Lit! Mi fiesta no sería lo mismo sin usted. Gracias por acompañarme en los momentos más icónicos.',
 		);
 		expect(parsed.gallery?.items?.every((item) => Boolean(item.alt))).toBe(true);
 		// The client's chosen photograph leads both the mobile and desktop cover.

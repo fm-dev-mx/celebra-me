@@ -6,6 +6,7 @@ import {
 	runEngagementMaintenance,
 	type EngagementMaintenanceResult,
 } from './engagement-maintenance.service';
+import { safeErr } from '@/lib/server/safe-error';
 
 const ENGAGEMENT_MAINTENANCE_SCHEDULED_SOURCE = 'scheduled_cron';
 
@@ -33,7 +34,7 @@ export async function runEngagementMaintenanceJob(
 		return { kind: 'completed', result };
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		log.error('[engagement][maintenance] failed', { source, error: message });
+		log.error('[engagement][maintenance] failed', { source, error: safeErr(error) });
 		return { kind: 'exception', message };
 	}
 }

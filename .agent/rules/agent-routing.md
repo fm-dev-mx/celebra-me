@@ -150,6 +150,16 @@ Restrictions in role contracts and handoffs are mandatory instructions unless th
 enforce them mechanically. Never claim hard tool isolation without verifying that capability.
 Model/provider selection is runtime-owned and must not be encoded in repository role contracts.
 
+## Multi-Agent Coordination
+
+Claude, Codex and Gemini coordinate through the local board, not through each other's conversations.
+The coordination contract in `docs/core/coordinator-board.md` owns the roles (one principal
+coordinator, one dispatcher per app that never reassigns, one worker session per task), the common
+rules, and the Spanish prompt template; `.agent/rules/board.md` owns the board commands, fields,
+session names and `T<n> <id>` task references. This file's roles and delegation rules apply inside
+one agent's session; they never assign work to another agent. Assignment across agents happens only
+on the board, by verified capability (`requiere`).
+
 ## Routing Conflict Resolution
 
 If a task spans multiple roles (e.g., "write copy AND build the component"):
