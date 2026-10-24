@@ -297,7 +297,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 </div>
 <script type="module">
 import { archiveBlock, cierreLines } from '/model.mjs';
-import { ordenOf, prNumber, taskLane, taskTag } from '/model.mjs';
+import { ordenOf, prNumber, taskLane, taskTag, logChange } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
@@ -476,7 +476,7 @@ function renderHist(){
   const q=$('q').value.trim().toLowerCase(),vig=$('vig').checked;
   let rows=[];
   if(S.kind!=='bit')rows=rows.concat(S.board.decisiones.filter(d=>!vig||d.vigente===true).map(d=>({en:d.en,txt:[d.id,d.decision,d.motivo,(d.tareas||[]).join(' ')].join(' '),html:`<div class="lr dec ${d.vigente===false?'old':''}"><span class="when">${esc(fmt(d.en))}</span><div class="what"><span class="tag">${esc(d.id)}${d.vigente===true?' · vigente':d.vigente===false?' · reemplazada':''}</span>${rich(d.decision)}${d.motivo?`<div class="sub">Motivo: ${rich(d.motivo)}</div>`:''}</div></div>`})));
-  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.de,b.a,b.quien].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${b.de||b.a?' · '+esc(b.de||'')+' → '+esc(b.a||''):''}</span>${rich(b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
+  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
   if(q)rows=rows.filter(r=>r.txt.toLowerCase().includes(q));
   rows.sort((a,b)=>T(b.en)-T(a.en));
   const shown=rows.slice(0,200);

@@ -263,12 +263,7 @@ function mergedRelease(t, p, texto) {
 export async function apply(cambios, dir, { prState } = {}) {
 	const out = [];
 	for (const c of cambios) {
-		const common = [
-			`--rev=${c.rev}`,
-			'--coordinador',
-			'--quien=board:sync',
-			'--corrio=pnpm board:sync',
-		];
+		const common = [`--rev=${c.rev}`, '--coordinador', '--corrio=pnpm board:sync'];
 		const args =
 			c.cmd === 'merged'
 				? ['merged', c.id, ...common, `--pr=${c.pr}`]

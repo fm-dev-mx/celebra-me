@@ -101,8 +101,19 @@ authorization.
   and every request needs a local `Host`. No agent is ever launched from the view.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
-- **Bitácora**: the command writes one row per `estado` change, per `move` and per archive or
-  unarchive; no rows for reviews or notes.
+- **Bitácora**: the command writes one row per `estado` change, per `move`, per `plan` and per
+  archive or unarchive; no rows for reviews or notes. Rows live in one JSONL file per UTC day,
+  `bitacora/2026-10-24.jsonl`: `{tarea, en, quien, corrio?, salio?}` plus exactly one change —
+  `de`/`a` (estados, `archivada` for archive/unarchive, `''` before the task existed),
+  `agente {de, a}` or `carril {de, a}` (`''` = none). `quien` is required and is one of `claude`,
+  `codex`, `gemini`, `coordinador`, `dueno`: `--quien`, else `--coordinador`, else `--agente` (in
+  `move` and `review` `--agente` names the new agent or reviewer, so only `--quien`/`--coordinador`
+  count); a write without it, or with an unknown estado, writes nothing.
+  `pnpm board migrate-log [--dry-run]` converts the old one-file-per-row documents without dropping
+  any: estados normalized, agent and lane hand-overs moved to their own field, `legado: true`, the
+  file name in `archivo` and an unmapped `quien` kept as `quienTexto`; the old files move to
+  `.respaldos/bitacora-legado/`. The verifier reports rows still in the old format and every invalid
+  new row.
 - **`comprobada`**: only after `unida`/`hecha` with `evidencia.salio` from the verifier (listed
   under «LISTAS PARA comprobada»), or with the owner's explicit authorization. Clear `prompt` and
   release the lock when closing.

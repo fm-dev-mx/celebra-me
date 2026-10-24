@@ -49,6 +49,120 @@ export const ESTADOS = [
 /** Stages of the «Carriles» view, in column order. */
 export const STAGES = ['bloqueada', 'lista', 'curso', 'revision', 'hecha'];
 
+/** Who writes a bitácora row: an agent, the coordinator or the owner. */
+export const QUIEN = ['claude', 'codex', 'gemini', 'coordinador', 'dueno'];
+/** States a row may move between: the task's, `archivada` for archive/unarchive, '' before the task existed. */
+const LOG_ESTADOS = ['', ...ESTADOS, 'archivada'];
+const QUIEN_ALIAS = { dueño: 'dueno' };
+
+/** The writer of a command: `--quien` (dueño → dueno), else a declared coordinator, else `--agente`. */
+export function quienOf({ quien, coordinador, agente } = {}) {
+	const given = typeof quien === 'string' && quien ? quien : undefined;
+	const who = given ?? (coordinador ? 'coordinador' : agente);
+	return typeof who === 'string' ? (QUIEN_ALIAS[who] ?? who) : undefined;
+}
+
+/**
+ * Shape problems of a bitácora row `{tarea, en, quien, corrio?, salio?}` plus exactly one change: `de`/`a`
+ * (estado), `agente {de, a}` or `carril {de, a}` ('' = none). Rows converted by `migrate-log` carry `legado` and
+ * may lack `quien`, since most old rows never recorded it.
+ */
+export function logRowIssues(r) {
+	const out = [];
+	if (!String(r?.tarea ?? '').trim()) out.push('fila sin tarea');
+	if (!isDate(r?.en)) out.push('fila sin fecha en');
+	if (!QUIEN.includes(r?.quien) && !(r?.legado && r.quien === undefined))
+		out.push(`quien debe ser ${QUIEN.join('/')}${r?.quien ? `, no ${r.quien}` : ''}`);
+	return [...out, ...changeIssues(r)];
+}
+
+/** The single change a row records: estado `de`/`a`, `agente {de, a}` or `carril {de, a}`. */
+function changeIssues(r) {
+	const kinds = ['estado', 'agente', 'carril'].filter((k) =>
+		k === 'estado' ? r?.de !== undefined || r?.a !== undefined : r?.[k] !== undefined,
+	);
+	if (kinds.length !== 1) return ['la fila cambia una sola cosa: estado (de/a), agente o carril'];
+	if (kinds[0] === 'estado')
+		return ['de', 'a']
+			.filter((k) => !LOG_ESTADOS.includes(r[k] ?? ''))
+			.map((k) => `estado desconocido en ${k}: ${r[k]}`);
+	const c = r[kinds[0]];
+	const ok = kinds[0] === 'agente' ? (v) => AGENTES.includes(v) : (v) => typeof v === 'string';
+	return c && typeof c === 'object' && ok(c.de) && ok(c.a)
+		? []
+		: [`${kinds[0]} debe ser {de, a}`];
+}
+
+/**
+ * A new bitácora row: `change` is `{de, a}` for an estado, or `{agente}` / `{carril}` holding `{de, a}`; `who`
+ * holds --quien, --coordinador and --agente (see quienOf).
+ */
+export function buildLogRow(tarea, change, who, { corrio, salio } = {}, en) {
+	return {
+		tarea,
+		en,
+		quien: quienOf(who),
+		...(change.agente || change.carril ? change : { de: change.de ?? '', a: change.a ?? '' }),
+		...(corrio ? { corrio } : {}),
+		...(salio ? { salio } : {}),
+	};
+}
+
+/** Why `pnpm board` refuses to write this row, or null. */
+export function logRowError(row) {
+	const issues = logRowIssues(row);
+	if (!issues.length) return null;
+	if (row.quien === undefined)
+		return `falta quién escribe la fila: use --quien=${QUIEN.join('|')}, --agente o --coordinador`;
+	return `no se escribió la bitácora de ${row.tarea}: ${issues.join('; ')}`;
+}
+
+/** What a row changed, for `history` and the view: `hecha → unida`, `agente codex → claude`, `carril — → f10`. */
+export function logChange(r) {
+	const pair = (c) => `${c.de || '—'} → ${c.a || '—'}`;
+	if (r.agente) return `agente ${pair(r.agente)}`;
+	if (r.carril) return `carril ${pair(r.carril)}`;
+	return r.de || r.a ? pair(r) : '';
+}
+
+/** Decisions and bitácora rows of `pnpm board history`, newest first. */
+export function historyRows(board) {
+	return [
+		...(board.decisiones ?? []).map((d) => ({
+			en: d.en,
+			txt: `${d.id}${d.vigente === false ? ' (reemplazada)' : ''} ${d.decision ?? ''}`,
+		})),
+		...(board.bitacora ?? []).map((b) => ({
+			en: b.en,
+			txt: `${b.tarea} ${logChange(b)} ${b.corrio ?? ''}`,
+		})),
+	].sort((a, b) => Date.parse(b.en) - Date.parse(a.en));
+}
+
+const LANE_LIKE = /^(?:sin carril|integration|f\d{2}-[a-z0-9-]+)$/;
+const LEGACY_QUIEN = { dueño: 'dueno', coordinador: 'coordinador', claude: 'claude' };
+const LEGACY_ESTADO = { en_curso: 'en curso', '—': '' };
+
+/**
+ * One old file-per-row bitácora document in the current shape, nothing dropped: estados normalized, agent and
+ * lane hand-overs moved out of `de`/`a`, a free-text `quien` kept as `quienTexto`, the file name in `archivo`.
+ */
+export function legacyLogRow(old, archivo) {
+	const { id, de, a, quien, ...rest } = old;
+	const norm = (v) => LEGACY_ESTADO[v ?? ''] ?? v ?? '';
+	const row = { ...rest, legado: true, archivo: archivo ?? id };
+	const who = LEGACY_QUIEN[quien];
+	if (who) row.quien = who;
+	else if (String(quien ?? '').trim()) row.quienTexto = quien;
+	const [d, x] = [norm(de), norm(a)];
+	const both = (test) => test(d) && test(x);
+	if (both((v) => AGENTES.includes(v)) && !ESTADOS.includes(d)) row.agente = { de: d, a: x };
+	else if (both((v) => LANE_LIKE.test(v)))
+		row.carril = { de: d === 'sin carril' ? '' : d, a: x === 'sin carril' ? '' : x };
+	else Object.assign(row, { de: d, a: x });
+	return row;
+}
+
 /** Capabilities each agent has unless the store's `agentes/<id>.json` says otherwise. */
 export const DEFAULT_CAPACIDADES = Object.fromEntries(
 	Object.entries(AGENT_REGISTRY).map(([id, agent]) => [id, agent.capacidades]),

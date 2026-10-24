@@ -57,6 +57,43 @@ describe('board model shared rules', () => {
 		});
 	});
 
+	it('validates who wrote a bitácora row, its estados and its single change', () => {
+		expect(
+			probe(
+				'model.mjs',
+				`const en = '2026-10-24T01:00:00Z';
+				const row = (x) => ({ tarea: 't', en, quien: 'claude', ...x });
+				console.log(JSON.stringify({
+					quien: [m.quienOf({ quien: 'dueño' }), m.quienOf({ coordinador: true, agente: 'codex' }), m.quienOf({ agente: 'gemini' }), m.quienOf({})],
+					issues: [
+						row({ de: 'pendiente', a: 'en curso' }),
+						row({ de: 'hecha', a: 'archivada' }),
+						row({ de: '', a: 'en_curso' }),
+						row({ quien: 'sesion', de: '', a: 'pendiente' }),
+						row({ agente: { de: 'codex', a: 'claude' } }),
+						row({ carril: { de: '', a: 'f10-libre' } }),
+						row({ de: 'pendiente', a: 'hecha', agente: { de: 'codex', a: 'claude' } }),
+						{ tarea: 't', en, legado: true, de: '', a: 'pendiente' },
+					].map(m.logRowIssues),
+					change: [m.logChange(row({ de: 'hecha', a: 'unida' })), m.logChange(row({ carril: { de: '', a: 'f10' } }))],
+				}))`,
+			),
+		).toEqual({
+			quien: ['dueno', 'coordinador', 'gemini', null],
+			issues: [
+				[],
+				[],
+				['estado desconocido en a: en_curso'],
+				['quien debe ser claude/codex/gemini/coordinador/dueno, no sesion'],
+				[],
+				[],
+				['la fila cambia una sola cosa: estado (de/a), agente o carril'],
+				[],
+			],
+			change: ['hecha → unida', 'carril — → f10'],
+		});
+	});
+
 	it('keeps one stale-lock threshold and one lane rule', () => {
 		expect(
 			probe(

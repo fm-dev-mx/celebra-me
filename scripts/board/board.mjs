@@ -28,6 +28,7 @@
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--json]
+ *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
  *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
  *   verify [--json]                             same as pnpm board:verify
  *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
@@ -62,13 +63,19 @@ import {
 	isFinished,
 	isReview,
 	laneAllowed as laneAllowedIn,
+	buildLogRow,
+	historyRows,
+	logRowError,
 	laneLines,
 	promptWithLane,
 	lockSessionIssue,
 	sessionOf,
 } from './model.mjs';
 import {
+	appendLog,
 	assertId,
+	migrateLegacyLog,
+	migrateLogLines,
 	boardDir,
 	loadBoard,
 	readCollection,
@@ -141,24 +148,17 @@ const need = (v, msg) => {
 	return v;
 };
 
-function logRow(dir, { tarea, de, a, quien, corrio, salio }) {
-	const en = nowIso();
-	const base = `${en.replace(/[-:]/g, '')}-${tarea}`;
-	let id = base;
-	for (let i = 2; readDoc(dir, 'bitacora', id); i++) id = `${base}-${i}`;
-	writeDoc(dir, 'bitacora', id, {
-		tarea,
-		de: de ?? '',
-		a: a ?? '',
-		en,
-		quien: quien ?? '',
-		corrio: corrio ?? '',
-		salio: salio ?? '',
-	});
+/** A bitácora row checked before anything is written (see buildLogRow). */
+function logEntry(tarea, change, who, extra) {
+	const row = buildLogRow(tarea, change, who, extra, nowIso());
+	const why = logRowError(row);
+	if (why) throw new UsageError(why);
+	return row;
 }
 
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
-function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
+function saveTask(dir, before, after, opts = {}) {
+	const { corrio, salio } = opts;
 	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	// Archive never deletes tasks; both collections reserve their numbers permanently.
 	t.num = before
@@ -178,9 +178,11 @@ function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	const strict = new Set(touchesPr ? prIssues(t) : []);
 	const added = taskIssues(t).filter((m) => strict.has(m) || !old.has(m));
 	if (added.length) throw new UsageError(`no se escribió ${t.id}: ${added.join('; ')}`);
+	const row =
+		(before?.estado ?? null) !== t.estado &&
+		logEntry(t.id, { de: before?.estado, a: t.estado }, opts, { corrio, salio });
 	writeDoc(dir, 'tareas', t.id, t);
-	if ((before?.estado ?? null) !== t.estado)
-		logRow(dir, { tarea: t.id, de: before?.estado, a: t.estado, quien, corrio, salio });
+	if (row) appendLog(dir, row);
 	return t;
 }
 
@@ -272,7 +274,7 @@ function reviewSha(task, flags) {
  * Archive (`archivar: true`) or unarchive one finished, unlocked task, with a bitácora row (d167). The
  * `archive`/`unarchive` commands and the view's POST share it; the task file is never deleted.
  */
-export function setArchived(dir, id, archivar, { rev, quien, corrio } = {}) {
+export function setArchived(dir, id, archivar, { rev, quien, coordinador, corrio } = {}) {
 	return withLock(dir, () => {
 		const before = getTask(dir, need(id, 'falta <id>'));
 		if (rev !== undefined) checkRev(before, { rev });
@@ -289,14 +291,12 @@ export function setArchived(dir, id, archivar, { rev, quien, corrio } = {}) {
 		const after = { ...before };
 		if (archivar) after.archivada = nowIso();
 		else delete after.archivada;
+		const change = archivar
+			? { de: before.estado, a: 'archivada' }
+			: { de: 'archivada', a: before.estado };
+		const row = logEntry(before.id, change, { quien, coordinador }, { corrio });
 		const t = saveTask(dir, before, after);
-		logRow(dir, {
-			tarea: t.id,
-			de: archivar ? t.estado : 'archivada',
-			a: archivar ? 'archivada' : t.estado,
-			quien,
-			corrio,
-		});
+		appendLog(dir, row);
 		return t;
 	});
 }
@@ -318,6 +318,7 @@ function archiveCommand(archivar) {
 		const t = setArchived(dir, pos[0], archivar, {
 			rev: flags.rev,
 			quien: flags.quien,
+			coordinador: flags.coordinador,
 			corrio: archivar ? 'pnpm board archive' : 'pnpm board unarchive',
 		});
 		say(flags, out, t, `${t.id} ${t.archivada ? 'archivada' : 'sin archivar'} (rev ${t.rev})`);
@@ -470,7 +471,10 @@ const commands = {
 			if (readDoc(dir, 'tareas', id)) throw new UsageError(`ya existe la tarea ${id}`);
 			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
 			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
-			const saved = saveTask(dir, null, t, { quien: flags.quien });
+			const saved = saveTask(dir, null, t, {
+				quien: flags.quien,
+				coordinador: flags.coordinador,
+			});
 			say(flags, out, saved, `${saved.id} creada (rev 1)`);
 		});
 	},
@@ -579,14 +583,14 @@ const commands = {
 			const after = { ...before };
 			if (carril) after.carrilPlaneado = carril;
 			else delete after.carrilPlaneado;
+			const row = logEntry(
+				before.id,
+				{ carril: { de: before.carrilPlaneado ?? '', a: carril ?? '' } },
+				{ quien: flags.quien, coordinador: flags.coordinador },
+				{ corrio: 'pnpm board plan' },
+			);
 			const t = saveTask(dir, before, after);
-			logRow(dir, {
-				tarea: t.id,
-				de: before.carrilPlaneado ?? 'sin carril',
-				a: carril ?? 'sin carril',
-				quien: flags.quien,
-				corrio: 'pnpm board plan',
-			});
+			appendLog(dir, row);
 			say(
 				flags,
 				out,
@@ -619,6 +623,7 @@ const commands = {
 				return say(flags, out, before, `${before.id} ya está ${before.estado}`);
 			const t = saveTask(dir, before, after, {
 				quien: flags.quien,
+				coordinador: true,
 				corrio: typeof flags.corrio === 'string' ? flags.corrio : 'pnpm board merged',
 				salio: `PR ${pr} MERGED`,
 			});
@@ -647,18 +652,19 @@ const commands = {
 				throw new UsageError(
 					`${before.id} tiene candado de ${before.candado.agente}: primero «release»`,
 				);
+			// --agente names the new agent here, not the writer.
+			const row = logEntry(
+				before.id,
+				{ agente: { de: before.agente ?? 'cualquiera', a: agente } },
+				{ quien: flags.quien, coordinador: flags.coordinador },
+				{ corrio: 'pnpm board move' },
+			);
 			const t = saveTask(dir, before, { ...before, agente });
+			appendLog(dir, row);
 			const aviso =
 				agente === 'cualquiera' || canFinish(t, agente, loadBoard(dir))
 					? ''
 					: `aviso: ${agente} no tiene todo lo que pide requiere (${(t.requiere ?? []).join(', ')}); la tarea queda gris para ${agente}.`;
-			logRow(dir, {
-				tarea: t.id,
-				de: before.agente ?? 'cualquiera',
-				a: agente,
-				quien: flags.quien,
-				corrio: 'pnpm board move',
-			});
 			const text = `${t.id} pasa a ${agente} (rev ${t.rev})${aviso ? `\n${aviso}` : ''}`;
 			say(flags, out, aviso ? { ...t, aviso } : t, text);
 		});
@@ -690,7 +696,11 @@ const commands = {
 				...(src.rama ? { rama: src.rama } : {}),
 				...(src.pr ? { pr: src.pr } : {}),
 			};
-			const saved = saveTask(dir, previous, t, { quien: flags.quien });
+			// --agente names the reviewer here, not the writer.
+			const saved = saveTask(dir, previous, t, {
+				quien: flags.quien,
+				coordinador: flags.coordinador,
+			});
 			say(flags, out, saved, `${saved.id} creada para ${agente}`);
 		});
 	},
@@ -784,21 +794,18 @@ const commands = {
 			say(flags, out, after, `${id} rev ${after.rev}`);
 		});
 	},
+	/** Old one-file-per-row bitácora → one JSONL file per day, keeping every row; --dry-run only counts. */
+	'migrate-log'({ flags }, dir, out) {
+		return withLock(dir, () => {
+			const r = migrateLegacyLog(dir, { dryRun: Boolean(flags['dry-run']) });
+			say(flags, out, r, migrateLogLines(r).join('\n'));
+		});
+	},
 	history({ flags }, dir, out) {
-		const board = loadBoard(dir);
 		const q = typeof flags.q === 'string' ? flags.q.toLowerCase() : '';
-		const rows = [
-			...board.decisiones.map((d) => ({
-				en: d.en,
-				txt: `${d.id}${d.vigente === false ? ' (reemplazada)' : ''} ${d.decision ?? ''}`,
-			})),
-			...board.bitacora.map((b) => ({
-				en: b.en,
-				txt: `${b.tarea} ${b.de ?? ''} → ${b.a ?? ''} ${b.corrio ?? ''}`,
-			})),
-		]
-			.filter((r) => !q || r.txt.toLowerCase().includes(q))
-			.sort((a, b) => Date.parse(b.en) - Date.parse(a.en));
+		const rows = historyRows(loadBoard(dir)).filter(
+			(r) => !q || r.txt.toLowerCase().includes(q),
+		);
 		if (flags.json) return out(JSON.stringify(rows, null, 2));
 		for (const r of rows.slice(0, 50)) out(`${r.en}  ${r.txt.slice(0, 140)}`);
 	},

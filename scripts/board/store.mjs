@@ -5,11 +5,15 @@
  * The store lives in the ignored `.agent/tmp/board/` of the Integration checkout, found through the Git common
  * dir, so every lane and agent shares one board. CELEBRA_BOARD_DIR overrides it (tests).
  *
+ * The bitácora is the exception: one JSONL file per UTC day, <dir>/bitacora/<YYYY-MM-DD>.jsonl, one row per line.
+ * Old one-file-per-row documents are still read until `pnpm board migrate-log` converts them.
+ *
  * Before a document is overwritten, its previous content is copied to
  * <dir>/.respaldos/<collection>/<id>/<time>.json; the newest BACKUPS_KEPT copies per document stay.
  */
 import { execFileSync } from 'node:child_process';
 import {
+	appendFileSync,
 	closeSync,
 	copyFileSync,
 	existsSync,
@@ -22,6 +26,7 @@ import {
 	writeFileSync,
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { legacyLogRow, logRowIssues } from './model.mjs';
 
 export const COLLECTIONS = [
 	'tareas',
@@ -75,12 +80,92 @@ export function loadBoard(dir) {
 	return {
 		tareas: readCollection(dir, 'tareas'),
 		decisiones: readCollection(dir, 'decisiones'),
-		bitacora: readCollection(dir, 'bitacora'),
+		bitacora: readLog(dir),
 		carriles: readCollection(dir, 'carriles'),
 		agentes: readCollection(dir, 'agentes'),
 		archivo: readCollection(dir, 'archivo'),
 		estado: estado ?? null,
 	};
+}
+
+export const LOG_DIR = 'bitacora';
+const LOG_FILE = /^\d{4}-\d{2}-\d{2}\.jsonl$/;
+
+/** Every bitácora row: the daily JSONL files, then any old one-file-per-row document not converted yet. */
+export function readLog(dir) {
+	const d = join(dir, LOG_DIR);
+	if (!existsSync(d)) return [];
+	const files = readdirSync(d).sort();
+	const rows = files
+		.filter((f) => LOG_FILE.test(f))
+		.flatMap((f) =>
+			readFileSync(join(d, f), 'utf8')
+				.split('\n')
+				.filter((line) => line.trim())
+				.map((line) => JSON.parse(line)),
+		);
+	return [...rows, ...readCollection(dir, LOG_DIR)];
+}
+
+/** Append one row to its day's file; the caller holds the store lock. */
+export function appendLog(dir, row) {
+	const d = join(dir, LOG_DIR);
+	mkdirSync(d, { recursive: true });
+	appendFileSync(join(d, `${row.en.slice(0, 10)}.jsonl`), `${JSON.stringify(row)}\n`);
+}
+
+/**
+ * `pnpm board migrate-log`: every old one-file-per-row document becomes a line of its day's JSONL file (via
+ * legacyLogRow), then the old files move to <dir>/.respaldos/bitacora-legado/<time>/; nothing is deleted. The
+ * move happens only when the daily files hold every converted row. `dryRun` counts and writes nothing.
+ */
+export function migrateLegacyLog(dir, { dryRun = false } = {}) {
+	const d = join(dir, LOG_DIR);
+	const old = existsSync(d) ? readdirSync(d).filter((f) => f.endsWith('.json')) : [];
+	const rows = old.map((f) => legacyLogRow(JSON.parse(readFileSync(join(d, f), 'utf8')), f));
+	const days = {};
+	for (const r of rows.sort((x, y) => Date.parse(x.en) - Date.parse(y.en)))
+		(days[String(r.en).slice(0, 10)] ??= []).push(r);
+	const report = {
+		filas: rows.length,
+		dias: Object.keys(days).sort(),
+		sinQuien: rows.filter((r) => !r.quien).length,
+		agente: rows.filter((r) => r.agente).length,
+		carril: rows.filter((r) => r.carril).length,
+		problemas: rows.flatMap((r) => logRowIssues(r).map((msg) => `${r.archivo}: ${msg}`)),
+	};
+	if (dryRun || !rows.length) return { ...report, escrito: false };
+	if (report.problemas.length || report.dias.some((day) => !/^\d{4}-\d{2}-\d{2}$/.test(day)))
+		throw new Error(
+			`no se convirtió la bitácora: ${report.problemas.join('; ') || 'fila sin fecha'}`,
+		);
+	// Daily-file rows before and after the append; the old files are still in place both times.
+	const before = readLog(dir).length - old.length;
+	for (const [day, list] of Object.entries(days))
+		appendFileSync(join(d, `${day}.jsonl`), list.map((r) => `${JSON.stringify(r)}\n`).join(''));
+	if (readLog(dir).length - old.length !== before + rows.length)
+		throw new Error(
+			'la bitácora convertida no tiene todas las filas; los archivos viejos siguen en su lugar',
+		);
+	const keep = join(
+		dir,
+		BACKUP_DIR,
+		'bitacora-legado',
+		new Date().toISOString().replace(/[-:.]/g, ''),
+	);
+	mkdirSync(keep, { recursive: true });
+	for (const f of old) renameSync(join(d, f), join(keep, f));
+	return { ...report, escrito: true, respaldo: keep };
+}
+
+/** What `pnpm board migrate-log` prints for a migrateLegacyLog report. */
+export function migrateLogLines(r) {
+	return [
+		`${r.escrito ? 'Convertidas' : 'Se convertirían'} ${r.filas} filas en ${r.dias.length} archivos por día.`,
+		`Sin quién (quedan con legado y quienTexto): ${r.sinQuien}. Cambios de agente: ${r.agente}. De carril: ${r.carril}.`,
+		...r.problemas.map((p) => `Problema: ${p}`),
+		...(r.respaldo ? [`Archivos viejos en ${r.respaldo}`] : []),
+	];
 }
 
 /** Write through a temp file and rename, so a reader never sees half a document. */

@@ -4,7 +4,7 @@
  *
  * Usage: pnpm board:verify [<dir>] [--json] [--sesiones=<file.json>]
  *   <dir> defaults to the local store (`.agent/tmp/board/` of Integration, d143); an ArtifactData export with the
- *   same layout (tareas/*.json, and optionally bitacora/*.json and decisiones/*.json) works too.
+ *   same layout (tareas/*.json, and optionally bitacora/*.jsonl or *.json and decisiones/*.json) works too.
  *   --sesiones: JSON list of Claude sessions, either the raw `list_sessions` snapshot the coordinator writes
  *   ({ sessionId, title, isArchived }, archived sessions included) or the short form
  *   { id, nombre?, rama?, archivada? }; defaults to <dir>/sesiones.json. Without it the session drift
@@ -29,6 +29,7 @@ import {
 	isReview,
 	isStaleLock,
 	laneAllowed,
+	logRowIssues,
 	NO_CIERRE,
 	ordenOf,
 	prNumber,
@@ -38,7 +39,7 @@ import {
 	taskLane,
 	taskTag as tag,
 } from './model.mjs';
-import { boardDir } from './store.mjs';
+import { boardDir, readLog } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -145,7 +146,7 @@ export function loadExport(dir, sesionesFile) {
 	const file = sesionesFile ?? join(root, 'sesiones.json');
 	return {
 		tareas: readJsonDir(base),
-		bitacora: readJsonDir(join(root, 'bitacora')),
+		bitacora: readLog(root),
 		decisiones: readJsonDir(join(root, 'decisiones')),
 		archivo: readJsonDir(join(root, 'archivo')),
 		cierres: readJsonDir(join(root, 'cierres')),
@@ -552,6 +553,16 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 				msg: `reemplaza a una decisión inexistente: ${d.reemplaza}`,
 			});
 	}
+	// Old one-file-per-row documents carry their file name as id; daily JSONL rows have none.
+	const legacy = bitacora.filter((r) => r.id !== undefined).length;
+	if (legacy)
+		avisos.push({
+			id: 'bitacora',
+			msg: `${legacy} filas de bitácora en el formato viejo: pnpm board migrate-log --dry-run`,
+		});
+	for (const r of bitacora.filter((x) => x.id === undefined))
+		for (const msg of logRowIssues(r))
+			inconsistencias.push({ id: r.tarea || 'bitacora', msg: `bitácora ${r.en}: ${msg}` });
 	const lanes = laneWarnings(tareas, decisiones, archivo, now);
 	avisos.push(...lanes.avisos);
 	inconsistencias.push(...lanes.inconsistencias);
