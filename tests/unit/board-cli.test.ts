@@ -41,8 +41,11 @@ function makeBoard(collections: Record<string, Json[]>) {
 	);
 	for (const [name, docs] of Object.entries(collections)) {
 		mkdirSync(path.join(dir, name), { recursive: true });
-		for (const { id, ...doc } of docs)
-			writeFileSync(path.join(dir, name, `${id}.json`), JSON.stringify(doc));
+		for (const [index, { id, ...doc }] of docs.entries())
+			writeFileSync(
+				path.join(dir, name, `${id}.json`),
+				JSON.stringify(name === 'tareas' ? { num: index + 1, ...doc } : doc),
+			);
 	}
 	return dir;
 }
@@ -77,6 +80,193 @@ afterEach(() => {
 });
 
 describe('pnpm board', () => {
+	it('assigns fixed numbers after the highest task or archive number, including finished tasks', () => {
+		const dir = makeBoard({});
+		const add = (id: string, ...extra: string[]) =>
+			board(dir, 'add', id, `titulo=${id}`, 'urgencia=normal', 'actor=coordinador', ...extra);
+		expect(add('first').status).toBe(0);
+		expect(readTask(dir, 'first').num).toBe(1);
+		expect(add('manual', 'num=100').status).toBe(2);
+		expect(board(dir, 'set', 'first', '--rev=1', 'estado=cancelada').status).toBe(0);
+		expect(board(dir, 'archive', 'first', '--rev=2').status).toBe(0);
+		expect(add('second').status).toBe(0);
+		expect(readTask(dir, 'second').num).toBe(2);
+
+		const reserved = makeBoard({
+			tareas: [task('cancelled', { estado: 'cancelada', num: 21 })],
+			archivo: [{ id: 'old', estado: 'comprobada', num: 40 }],
+		});
+		expect(
+			board(reserved, 'add', 'new', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion').status,
+		).toBe(0);
+		expect(readTask(reserved, 'new').num).toBe(41);
+	});
+
+	it('resolves show, claim and set by fixed number while preserving canonical ids and ownership', () => {
+		const dir = makeBoard({ tareas: [task('numbered', { num: 31 })] });
+		expect(JSON.parse(board(dir, 'show', 'T31', '--json').out).id).toBe('numbered');
+		expect(board(dir, 'show', 'T310').status).toBe(2);
+		expect(board(dir, 'claim', 'T31', '--agente=codex').status).toBe(0);
+		expect(
+			board(dir, 'set', 'T31', '--rev=2', '--agente=codex', '--sesion=other', 'ahora=stolen')
+				.status,
+		).toBe(2);
+		expect(
+			board(
+				dir,
+				'set',
+				'T31',
+				'--rev=1',
+				'--agente=codex',
+				'--sesion=codex-test',
+				'ahora=stale',
+			).status,
+		).toBe(2);
+		expect(
+			board(
+				dir,
+				'set',
+				'T31',
+				'--rev=2',
+				'--agente=codex',
+				'--sesion=codex-test',
+				'ahora=updated',
+			).status,
+		).toBe(0);
+		expect(readTask(dir, 'numbered')).toMatchObject({ num: 31, rev: 3, ahora: 'updated' });
+		expect(JSON.parse(board(dir, 'show', 'T31', '--json').out).id).toBe('numbered');
+		expect(readdirSync(path.join(dir, 'tareas'))).toEqual(['numbered.json']);
+		expect(
+			board(dir, 'set', 'T31', '--rev=3', '--agente=codex', '--sesion=codex-test', 'num=32')
+				.status,
+		).toBe(2);
+		const data = path.join(dir, 'data.json');
+		writeFileSync(data, JSON.stringify({ num: 32 }));
+		expect(
+			board(
+				dir,
+				'set',
+				'T31',
+				'--rev=3',
+				'--agente=codex',
+				'--sesion=codex-test',
+				`--data=${data}`,
+			).status,
+		).toBe(2);
+		expect(readTask(dir, 'numbered').num).toBe(31);
+	});
+
+	it('rejects ambiguous fixed numbers instead of choosing a task to read or mutate', () => {
+		const dir = makeBoard({ tareas: [task('one', { num: 3 }), task('two', { num: 3 })] });
+		for (const cmd of ['show', 'set', 'claim']) {
+			const result = board(dir, cmd, 'T3', '--agente=codex', '--rev=1', 'ahora=wrong');
+			expect(result.status).toBe(2);
+			expect(result.err).toContain('número de tarea repetido');
+		}
+		expect(readTask(dir, 'one').rev).toBe(1);
+		expect(readTask(dir, 'two').rev).toBe(1);
+	});
+
+	it('lists a final review group like the view, including review-only boards and agent filters', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('ready', { num: 31 }),
+				task('review', {
+					estado: 'en revision',
+					num: 32,
+					actualizado: '2026-10-21T20:00:00Z',
+				}),
+				task('done', { estado: 'hecha', num: 33 }),
+				task('merged', {
+					estado: 'unida',
+					pr: '#1',
+					num: 34,
+					actualizado: '2026-10-19T20:00:00Z',
+				}),
+				task('archived', { estado: 'hecha', archivada: NOW }),
+				task('verified', { estado: 'comprobada' }),
+				task('other', { estado: 'en revision', agente: 'claude' }),
+			],
+		});
+		const result = board(dir, 'list', '--agente=codex');
+		expect(result.status).toBe(0);
+		expect(result.out).toContain('T31 ready');
+		expect(result.out).toContain('En revisión (3):');
+		expect(result.out.indexOf('En revisión')).toBeGreaterThan(result.out.indexOf('Usted:'));
+		expect(result.out).toContain('T32 review');
+		expect(result.out).not.toMatch(/archived|verified|other/);
+		const rows = JSON.parse(board(dir, 'list', '--agente=codex', '--json').out);
+		expect(rows.map((r: Json) => [r.num, r.n, r.stage])).toEqual([
+			[31, 1, 'lista'],
+			[32, null, 'revision'],
+			[33, null, 'revision'],
+			[34, null, 'revision'],
+		]);
+		expect(board(dir, 'next', '--agente=codex').out).toContain('T31 ready');
+		expect(board(dir, 'show', 'T31').out).toContain('T31 ready');
+		const only = makeBoard({ tareas: [task('only', { estado: 'en revision', num: 90 })] });
+		expect(board(only, 'list').out).toContain('En revisión (1):');
+		expect(board(only, 'list').out).toContain('T90 only');
+		expect(JSON.parse(board(only, 'next', '--agente=codex', '--json').out)).toBeNull();
+	});
+
+	it('reports missing, invalid and duplicate numbers even on finished and archived tasks', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('missing', { num: undefined }),
+				task('invalid', { num: 0 }),
+				task('one', { num: 20 }),
+				task('two', { num: 20, estado: 'cancelada', archivada: NOW }),
+			],
+		});
+		const result = board(dir, 'verify', '--json');
+		expect(result.status).toBe(1);
+		const { inconsistencias } = JSON.parse(result.out);
+		expect(inconsistencias).toEqual(
+			expect.arrayContaining([
+				{ id: 'missing', msg: expect.stringContaining('num debe ser') },
+				{ id: 'invalid', msg: expect.stringContaining('num debe ser') },
+				{ id: 'one', msg: expect.stringContaining('num repetido: T20') },
+				{ id: 'two', msg: expect.stringContaining('num repetido: T20') },
+			]),
+		);
+	});
+
+	it('claims a derived implementation task with a lane even when it has an origin', () => {
+		const dir = makeBoard({
+			tareas: [task('derived', { origen: 'parent', carril: 'f10-libre' })],
+		});
+		expect(
+			board(dir, 'claim', 'derived', '--agente=codex', '--carril=f07-invitaciones').status,
+		).toBe(0);
+		expect(readTask(dir, 'derived')).toMatchObject({
+			origen: 'parent',
+			carril: 'f07-invitaciones',
+			candado: { carril: 'f07-invitaciones' },
+		});
+		expect(
+			board(
+				dir,
+				'set',
+				'derived',
+				'--rev=2',
+				'--agente=codex',
+				'--sesion=codex-test',
+				'estado=hecha',
+			).status,
+		).toBe(0);
+	});
+
+	it('recognizes a review by its SHA even without the review id suffix', () => {
+		const dir = makeBoard({
+			tareas: [task('audit', { origen: 'parent', revisionSha: 'a'.repeat(40) })],
+		});
+		const result = board(dir, 'claim', 'audit', '--agente=codex', '--carril=f07-invitaciones');
+		expect(result.status).toBe(2);
+		expect(result.err).toContain('omita --carril');
+		expect(readTask(dir, 'audit').candado).toBeUndefined();
+	});
+
 	it('numbers the queue owner first, then by urgency, readiness and dependencies, and colors it', () => {
 		const dir = makeBoard({
 			tareas: [
@@ -397,6 +587,8 @@ describe('pnpm board', () => {
 		});
 		const sha = 'a'.repeat(40);
 		expect(board(dir, 'review', 'origen', '--agente=codex', `--sha=${sha}`).status).toBe(0);
+		const reviewNum = readTask(dir, 'origen-revision').num;
+		expect(reviewNum).toBe(2);
 		expect(readTask(dir, 'origen-revision')).toMatchObject({
 			agente: 'codex',
 			origen: 'origen',
@@ -440,6 +632,7 @@ describe('pnpm board', () => {
 		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).revisionSha).toBe(
 			'b'.repeat(40),
 		);
+		expect(readTask(dir, 'origen-revision').num).toBe(reviewNum);
 	});
 
 	it('refuses blocked, owner and closed claims and protects locks between sessions', () => {
@@ -576,6 +769,56 @@ describe('pnpm board', () => {
 		});
 		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).id).toBe('archived');
 	});
+
+	it.each([
+		['tareas', 'cancelada', false],
+		['archivo', 'cancelada', false],
+		['tareas', 'en curso', false],
+		['tareas', 'hecha', true],
+		['tareas', 'unida', true],
+		['tareas', 'comprobada', true],
+		['archivo', 'comprobada', true],
+		['archivo', undefined, false],
+	])(
+		'rechecks a task prerequisite in %s with state %s despite stored ok:true',
+		(collection, estado, ok) => {
+			const dependency = estado ? [task('dependency', { estado })] : [];
+			const dir = makeBoard({
+				tareas: [
+					task('dependent', {
+						requisitos: [{ tipo: 'tarea', ref: 'dependency', ok: true }],
+					}),
+					...(collection === 'tareas' ? dependency : []),
+				],
+				archivo: collection === 'archivo' ? dependency : [],
+			});
+			const shown = JSON.parse(board(dir, 'show', 'dependent', '--json').out);
+			expect(shown.requisitos[0].ok).toBe(ok);
+			expect(shown.stage).toBe(ok ? 'lista' : 'bloqueada');
+			expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out)?.id ?? null).toBe(
+				ok ? 'dependent' : null,
+			);
+			expect(board(dir, 'claim', 'dependent', '--agente=codex').status).toBe(ok ? 0 : 2);
+		},
+	);
+
+	it.each([false, true, undefined])(
+		'rechecks a decision with vigente=%s despite stored ok:true',
+		(vigente) => {
+			const dir = makeBoard({
+				tareas: [
+					task('dependent', { requisitos: [{ tipo: 'decision', ref: 'd1', ok: true }] }),
+				],
+				decisiones: vigente === undefined ? [] : [{ id: 'd1', vigente }],
+			});
+			expect(JSON.parse(board(dir, 'show', 'dependent', '--json').out).requisitos[0].ok).toBe(
+				vigente === true,
+			);
+			expect(board(dir, 'claim', 'dependent', '--agente=codex').status).toBe(
+				vigente === true ? 0 : 2,
+			);
+		},
+	);
 
 	it('archives only finished, unlocked tasks and logs archive and unarchive', () => {
 		const dir = makeBoard({
@@ -890,7 +1133,7 @@ describe('pnpm board', () => {
 		});
 	});
 
-	it('serializes simultaneous claims without losing a revision or stealing a live file lock', () => {
+	it('serializes simultaneous claims and task numbers without stealing a live file lock', () => {
 		const dir = makeBoard({ tareas: [task('race')] });
 		const probe = String.raw`
 			import { spawn } from 'node:child_process';
@@ -903,10 +1146,16 @@ describe('pnpm board', () => {
 			});
 			const codes=await Promise.all([run('one'),run('two')]);
 			const task=JSON.parse(readFileSync(join(process.env.CELEBRA_BOARD_DIR,'tareas','race.json'),'utf8'));
+			const add=(id)=>new Promise(resolve=>{
+				const p=spawn(process.execPath,[process.argv[1],'add',id,'titulo='+id,'urgencia=normal','actor=coordinador'],{stdio:'ignore'});
+				p.on('exit',resolve);
+			});
+			const added=await Promise.all([add('first'),add('second')]);
+			const nums=['first','second'].map(id=>JSON.parse(readFileSync(join(process.env.CELEBRA_BOARD_DIR,'tareas',id+'.json'),'utf8')).num).sort();
 			const lock=join(process.env.CELEBRA_BOARD_DIR,'.lock');writeFileSync(lock,'live');utimesSync(lock,1,1);
 			let refused=false;try{withLock(process.env.CELEBRA_BOARD_DIR,()=>{}, {waitMs:0});}catch{refused=true;}
 			const retained=readFileSync(lock,'utf8');unlinkSync(lock);
-			console.log(JSON.stringify({codes:codes.sort(),rev:task.rev,refused,retained}));
+			console.log(JSON.stringify({codes:codes.sort(),rev:task.rev,added,nums,refused,retained}));
 		`;
 		const result = runCommand(
 			process.execPath,
@@ -922,6 +1171,8 @@ describe('pnpm board', () => {
 		expect(JSON.parse(result.stdout)).toEqual({
 			codes: [0, 2],
 			rev: 2,
+			added: [0, 0],
+			nums: [2, 3],
 			refused: true,
 			retained: 'live',
 		});

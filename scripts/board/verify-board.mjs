@@ -282,11 +282,34 @@ function taskWarnings(t, byId, decIds, now) {
 	return out;
 }
 
+/** Numbers remain mandatory and unique even after a task is closed or archived. */
+function numberIssues(tareas) {
+	const issues = [];
+	const numbers = new Map();
+	for (const t of tareas) {
+		if (!Number.isSafeInteger(t.num) || t.num < 1) {
+			issues.push({
+				id: t.id,
+				msg: 'num debe ser un entero positivo (falta o no es válido)',
+			});
+			continue;
+		}
+		const ids = numbers.get(t.num) ?? [];
+		ids.push(t.id);
+		numbers.set(t.num, ids);
+	}
+	for (const [num, ids] of numbers)
+		if (ids.length > 1)
+			for (const id of ids)
+				issues.push({ id, msg: `num repetido: T${num} (${ids.join(', ')})` });
+	return issues;
+}
+
 function boardIssues(tareas, bitacora, decisiones, now) {
 	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
 	const decIds = new Set(decisiones.map((d) => d.id));
 	const lastLog = lastLogByTask(bitacora);
-	const inconsistencias = [];
+	const inconsistencias = numberIssues(tareas);
 	const avisos = [];
 	const visited = new Set();
 	const cycles = new Set();

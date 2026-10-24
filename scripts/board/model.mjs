@@ -38,6 +38,8 @@ const SUCCESS = new Set(['hecha', 'unida', 'comprobada']);
 /** Finished tasks (the «Finalizadas» tab): only these can be archived (d167). */
 export const FINALIZADOS = ['hecha', 'unida', 'comprobada', 'cancelada'];
 export const isFinished = (t) => FINALIZADOS.includes(t.estado);
+/** An origin can also identify follow-up implementation work, not just a cross-review. */
+export const isReview = (t) => Boolean(t.revisionSha) || String(t.id).endsWith('-revision');
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /**
