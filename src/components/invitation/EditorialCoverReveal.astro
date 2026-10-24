@@ -493,9 +493,11 @@ const shouldRenderHidden =
 			let touchStartY = 0;
 			// Disabling the button drops focus to <body>, so remember where focus was at commit.
 			let focusWasInside = false;
+			let releaseScrollHold = () => {};
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
+				releaseScrollHold();
 
 				// Clean up CTA scroll hint
 				window.clearTimeout(ctaHintTimer);
@@ -559,7 +561,7 @@ const shouldRenderHidden =
 			}
 
 			document.documentElement.classList.add('envelope-open');
-			holdPageAtTopWhileGated();
+			releaseScrollHold = holdPageAtTopWhileGated();
 
 			const rememberOpened = () => {
 				if (isDemoInvitation) return;

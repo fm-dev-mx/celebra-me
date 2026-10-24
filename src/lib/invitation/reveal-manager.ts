@@ -17,14 +17,30 @@ export function shouldRespectStoredReveal(input: {
  * A closed gate always opens onto the hero. A reload (the footer's "Volver a ver la apertura",
  * or a refresh mid-page) would otherwise restore the old scroll position under the gate, and
  * the reveal would land on the footer.
+ *
+ * Returns the release to call once the gate opens: it puts back the page's previous scroll
+ * restoration, so Back and Forward inside the opened invitation keep their positions.
  */
-export function holdPageAtTopWhileGated(): void {
+export function holdPageAtTopWhileGated(): () => void {
+	let previous: ScrollRestoration | undefined;
 	try {
+		previous = history.scrollRestoration;
 		history.scrollRestoration = 'manual';
 	} catch {
 		// Some sandboxed frames refuse; the scroll below still applies.
 	}
 	window.scrollTo(0, 0);
+
+	let released = false;
+	return () => {
+		if (released || !previous) return;
+		released = true;
+		try {
+			history.scrollRestoration = previous;
+		} catch {
+			// Same sandbox refusal as above.
+		}
+	};
 }
 
 export class RevealManager {
