@@ -48,6 +48,8 @@ function verify(dir: string, answers: Record<string, unknown>) {
 		JSON.stringify({
 			'gh pr list --state open --json number,headRefName,title --limit 100': '[]',
 			'git worktree list --porcelain': '',
+			'gh pr list --state closed --json number,headRefName,state --limit 100': '[]',
+			'git ls-remote --heads origin': '',
 			...answers,
 		}),
 	);
@@ -92,7 +94,7 @@ describe('board:verify', () => {
 		});
 		expect(report.filas.map((r: Json) => r.veredicto)).toEqual(['UNVERIFIED', 'UNVERIFIED']);
 		expect(report.comprobar).toEqual([]);
-		expect(report.cobertura).toEqual({ prs: 'UNVERIFIED', ramas: 'UNVERIFIED' });
+		expect(report.cobertura).toMatchObject({ prs: 'UNVERIFIED', ramas: 'UNVERIFIED' });
 	});
 
 	it('accepts a structured PR check without an arbitrary shell command', () => {
@@ -212,6 +214,158 @@ describe('board:verify', () => {
 		expect(verify(dir, {}).report.sesionArchivada).toEqual([
 			{ id: 'america-footer', sesion: 'local_47f9', nombre: 'América' },
 		]);
+	});
+
+	describe('lifecycle drift', () => {
+		const lock = (sesion: string, carril = 'f08-demos') => ({
+			agente: 'claude',
+			desde: NOW,
+			sesion,
+			carril,
+		});
+		// Raw list_sessions rows, as the coordinator writes sesiones.json.
+		const snapshot = [
+			{ sessionId: 'local_coord', title: 'f04 · Coordinador principal', isArchived: false },
+			{ sessionId: 'local_t11', title: 'f08 · T11 · Demos en usted', isArchived: false },
+			{ sessionId: 'local_t30', title: 'f09 · T30 · PR #480 · Reglas', isArchived: false },
+			{ sessionId: 'local_t40', title: 'f10 · T40 · Pendiente', isArchived: false },
+			{ sessionId: 'local_btn', title: 'Botón para iniciar Claude Code', isArchived: false },
+			{ sessionId: 'local_t99', title: 'f05 · T99 · Fantasma', isArchived: false },
+			{ sessionId: 'local_old', title: 'f07 · T12 · Vieja', isArchived: true },
+		];
+		const tasks = [
+			task('demos-usted', {
+				num: 11,
+				estado: 'en revision',
+				pr: '#485',
+				candado: lock('local_t11'),
+			}),
+			task('reglas', {
+				num: 30,
+				estado: 'en revision',
+				pr: '#480',
+				candado: lock('local_t30', 'f09-docs'),
+			}),
+			task('pendiente', { num: 40, carril: 'f10-libre', estado: 'pendiente' }),
+			task('pegar', { num: 53, candado: lock('local_gone', 'f11-preview') }),
+			task('logs', { num: 12, candado: lock('5f6e4a6e-interno', 'f07-x') }),
+			task('suelta', { num: 60, estado: 'en curso' }),
+			task('fondo', { num: 32, estado: 'unida', pr: '#470', candado: lock('local_t30') }),
+		];
+
+		it('lists sessions without a task, missing lock sessions and off-form names', () => {
+			const { report } = verify(makeExport(tasks, { sesiones: snapshot }), {});
+			expect(report.sesiones).toBe('VERIFIED');
+			expect(report.sesionesSinTarea).toEqual([
+				{ sesion: 'local_btn', nombre: 'Botón para iniciar Claude Code' },
+				{ sesion: 'local_t99', nombre: 'f05 · T99 · Fantasma' },
+			]);
+			expect(report.candadoSinSesion.map((x: Json) => x.tarea).sort()).toEqual([
+				'T12',
+				'T53',
+			]);
+			expect(report.nombreDistinto).toEqual([
+				{
+					id: 'demos-usted',
+					tarea: 'T11',
+					sesion: 'local_t11',
+					nombre: 'f08 · T11 · Demos en usted',
+					msg: 'le falta «PR #485»',
+				},
+			]);
+		});
+
+		it('flags open tasks without a lock and merged tasks still locked', () => {
+			const { report } = verify(makeExport(tasks, { sesiones: snapshot }), {
+				'gh pr view 470 --json state': '{"state":"MERGED"}',
+			});
+			expect(report.enCursoSinSesion).toEqual([{ id: 'suelta', tarea: 'T60' }]);
+			expect(report.unidasConCandado).toEqual([
+				{ id: 'fondo', tarea: 'T32', carril: 'f08-demos' },
+			]);
+		});
+
+		it('says the snapshot is missing and skips only the session sections', () => {
+			const dir = makeExport(tasks);
+			const { report } = verify(dir, {});
+			expect(report.sesiones).toBe('SIN FOTO');
+			expect(report.sesionesSinTarea).toEqual([]);
+			expect(report.enCursoSinSesion).toHaveLength(1);
+			const text = runCommand(process.execPath, [SCRIPT_PATH, dir], {
+				cwd: ROOT,
+				allowFailure: true,
+				env: sanitizeEnv({
+					CELEBRA_BOARD_COMMAND_FIXTURE: path.join(dir, 'answers.json'),
+					INIT_CWD: ROOT,
+				}),
+			}).stdout;
+			expect(text).toContain('SESIONES: no hay sesiones.json');
+			expect(text).toContain('TAREAS EN CURSO SIN SESIÓN: T60');
+		});
+
+		it('reports merged branches still present and PRs closed without merge, never deleting', () => {
+			const dir = makeExport([
+				task('pasarela', {
+					num: 19,
+					estado: 'comprobada',
+					rama: 'docs/pasarela',
+					evidencia: { salio: 'x' },
+				}),
+				task('abierta', { num: 20, rama: 'docs/abierta' }),
+			]);
+			const { report } = verify(dir, {
+				'git ls-remote origin refs/heads/docs/abierta': '',
+				'gh pr list --state closed --json number,headRefName,state --limit 100':
+					JSON.stringify([
+						{ number: 433, headRefName: 'test/baselines', state: 'MERGED' },
+						{ number: 470, headRefName: 'feat/borrada', state: 'MERGED' },
+						{ number: 475, headRefName: 'docs/pasarela', state: 'CLOSED' },
+						{ number: 476, headRefName: 'docs/abierta', state: 'CLOSED' },
+					]),
+				'git ls-remote --heads origin': [
+					'a1\trefs/heads/develop',
+					'a2\trefs/heads/docs/pasarela',
+					'a3\trefs/heads/docs/abierta',
+				].join('\n'),
+				'git worktree list --porcelain':
+					'worktree D:/wt/f08\nbranch refs/heads/test/baselines\n',
+			});
+			expect(report.ramasUnidasSinBorrar).toEqual([
+				{ pr: 433, rama: 'test/baselines', donde: 'carril' },
+			]);
+			expect(report.prCerradoSinUnir).toEqual([
+				{ pr: 475, rama: 'docs/pasarela', tarea: 'T19' },
+			]);
+			expect(report.cobertura).toMatchObject({
+				prsCerrados: 'VERIFIED',
+				ramasRemotas: 'VERIFIED',
+			});
+		});
+
+		it('lists close-queue entries still pending after a day', () => {
+			const dir = makeExport([task('t', {})]);
+			mkdirSync(path.join(dir, 'cierres'));
+			const entry = (tarea: string, creada: string, sesion: string) => ({
+				tarea,
+				creada,
+				pasos: { sesion, rama: 'hecho' },
+			});
+			writeFileSync(
+				path.join(dir, 'cierres', 'vieja.json'),
+				JSON.stringify(entry('vieja', '2026-10-18T00:00:00Z', 'pendiente')),
+			);
+			writeFileSync(
+				path.join(dir, 'cierres', 'nueva.json'),
+				JSON.stringify(entry('nueva', new Date().toISOString(), 'pendiente')),
+			);
+			writeFileSync(
+				path.join(dir, 'cierres', 'lista.json'),
+				JSON.stringify(entry('lista', '2026-10-18T00:00:00Z', 'hecho')),
+			);
+			expect(verify(dir, {}).report.cierresPendientes).toEqual([
+				{ id: 'vieja', nombre: '', pendiente: ['sesion'] },
+			]);
+		});
 	});
 
 	it('fails on inconsistencies and warns on id/branch and decision drift', () => {
