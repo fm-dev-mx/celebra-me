@@ -167,14 +167,15 @@ function logEntry(tarea, change, who, extra) {
 function saveTask(dir, before, after, opts = {}) {
 	const { corrio, salio } = opts;
 	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
-	// Archive never deletes tasks; both collections reserve their numbers permanently.
-	t.num = before
+	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
+	// numbering existed gets the next number on its first write, like a new one.
+	t.num = Number.isSafeInteger(before?.num)
 		? before.num
 		: [...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
 				(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
 				0,
 			) + 1;
-	if (!before && !Number.isSafeInteger(t.num))
+	if (t.num !== before?.num && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;

@@ -257,6 +257,19 @@ describe('pnpm board', () => {
 		expect(JSON.parse(board(only, 'next', '--agente=codex', '--json').out)).toBeNull();
 	});
 
+	it('numbers a task saved without num on its next write and keeps that number after', () => {
+		const dir = makeBoard({
+			tareas: [task('vieja', { num: undefined }), task('otra', { num: 7 })],
+			archivo: [{ id: 'archivada', num: 9, estado: 'hecha' }],
+		});
+		expect(readTask(dir, 'vieja').num).toBeUndefined();
+		expect(board(dir, 'set', 'vieja', '--rev=1', 'ahora=uno').status).toBe(0);
+		expect(readTask(dir, 'vieja')).toMatchObject({ num: 10, rev: 2 });
+		expect(board(dir, 'set', 'vieja', '--rev=2', 'ahora=dos').status).toBe(0);
+		expect(readTask(dir, 'vieja')).toMatchObject({ num: 10, rev: 3 });
+		expect(readTask(dir, 'otra').num).toBe(7);
+	});
+
 	it('reports missing, invalid and duplicate numbers even on finished and archived tasks', () => {
 		const dir = makeBoard({
 			tareas: [
@@ -941,6 +954,212 @@ describe('pnpm board', () => {
 		expect(html).toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
 		expect(html).toContain('const laneId=taskLane;');
+	});
+
+	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
+		const lock = { agente: 'codex', desde: NOW, sesion: 's1', carril: 'f08-demos' };
+		const tareas = [
+			task('ocupada', { agente: 'claude', carrilPlaneado: 'f08-demos' }),
+			task('sin-carril'),
+			task('libre', { agente: 'claude', carrilPlaneado: 'f09-docs' }),
+			task('origen', { estado: 'en revision', pr: '#7', rama: 'feat/x' }),
+			task('origen-revision', { requisitos: [{ tipo: 'revision', ref: 'origen' }] }),
+			task('dueno', { actor: 'dueno', urgencia: 'baja' }),
+			task('urgente-ocupada', { urgencia: 'alta', carrilPlaneado: 'f08-demos' }),
+			task('base', { carrilPlaneado: 'f08-demos' }),
+			task('tras-base', {
+				carrilPlaneado: 'f10-libre',
+				requisitos: [{ tipo: 'tarea', ref: 'base' }],
+			}),
+			task('tiene', { num: 10, estado: 'en curso', candado: lock }),
+		];
+		const probe = String.raw`
+			const m = await import(process.argv[1]);
+			const board = { tareas: JSON.parse(process.argv[2]) };
+			const at = (id) => board.tareas.find((t) => t.id === id);
+			console.log(JSON.stringify({
+				queue: m.queue(board).map((t) => t.id),
+				ranks: ['libre', 'ocupada', 'sin-carril', 'origen-revision', 'tiene'].map((id) => m.laneRank(at(id), board)),
+				lines: ['libre', 'ocupada', 'origen-revision', 'tiene', 'sin-carril'].map((id) => m.laneLines(at(id), board)),
+				prompt: m.promptWithLane(at('origen-revision'), board),
+			}));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(path.join(ROOT, 'scripts', 'board', 'model.mjs')).href,
+				JSON.stringify(tareas),
+			],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		expect(result.status).toBe(0);
+		const out = JSON.parse(String(result.stdout));
+		// d163 owner first, then urgency; within «normal» a free lane (or a review) before a busy one or none,
+		// «tiene» runs in the lane its own lock holds, and «base» still comes right before the task waiting for it.
+		expect(out.queue).toEqual([
+			'dueno',
+			'urgente-ocupada',
+			'libre',
+			'origen-revision',
+			'tiene',
+			'base',
+			'tras-base',
+			'ocupada',
+			'sin-carril',
+		]);
+		expect(out.ranks).toEqual([0, 2, 3, 0, 0]);
+		const runs = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		expect(out.lines).toEqual([
+			['Corre en: f09-docs · carpeta celebra-me-worktrees/f09-docs', 'carril libre'],
+			[
+				'Corre en: f08-demos · carpeta celebra-me-worktrees/f08-demos',
+				'f08 ocupado por T10; espere o pida otro carril',
+			],
+			[runs],
+			[],
+			// No planned lane: a free one is suggested (d191).
+			[
+				'Carril sugerido: f05-plataforma, libre (tarea sin categoría) · carpeta celebra-me-worktrees/f05-plataforma',
+				'Codex o Gemini: abra el proyecto f05-plataforma',
+			],
+		]);
+		expect(out.prompt.startsWith(`CARRIL\n${runs}\n\n`)).toBe(true);
+	});
+
+	it('prefers the lane of a task category without requiring it (d191)', () => {
+		const lock = (carril: string) => ({ agente: 'codex', desde: NOW, sesion: 's1', carril });
+		const tareas = [
+			task('fuera', { agente: 'claude', categoria: 'docs', carrilPlaneado: 'f06-landing' }),
+			task('sin-plan', { agente: 'claude', categoria: 'herramientas' }),
+			task('propia', { agente: 'claude', categoria: 'docs', carrilPlaneado: 'f09-docs' }),
+			task('demo-ocupada', { agente: 'claude', categoria: 'demos' }),
+			task('sin-categoria', { agente: 'claude' }),
+			task('tiene-f08', { num: 20, estado: 'en curso', candado: lock('f08-demos') }),
+			task('tiene-f05', { num: 21, estado: 'en curso', candado: lock('f05-plataforma') }),
+			task('mala', { categoria: 'otra' }),
+		];
+		const probe = String.raw`
+			const m = await import(process.argv[1]);
+			const board = { tareas: JSON.parse(process.argv[2]) };
+			const at = (id) => board.tareas.find((t) => t.id === id);
+			const ids = ['fuera', 'sin-plan', 'propia', 'demo-ocupada', 'sin-categoria'];
+			console.log(JSON.stringify({
+				lanes: m.CATEGORIA_CARRIL,
+				queue: m.queue(board).map((t) => t.id).filter((id) => ids.includes(id)),
+				ranks: ids.map((id) => m.laneRank(at(id), board)),
+				suggested: ids.map((id) => m.suggestedLane(at(id), board)),
+				lines: ['sin-plan', 'demo-ocupada', 'sin-categoria'].map((id) => m.laneLines(at(id), board)),
+				mismatch: [m.categoryMismatch(at('fuera'), 'f06-landing'), m.categoryMismatch(at('propia'), 'f09-docs')],
+				issues: m.taskIssues(at('mala')),
+			}));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(path.join(ROOT, 'scripts', 'board', 'model.mjs')).href,
+				JSON.stringify(tareas),
+			],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		expect(result.status).toBe(0);
+		const out = JSON.parse(String(result.stdout));
+		expect(out.lanes).toEqual({
+			plataforma: 'f05-plataforma',
+			landing: 'f06-landing',
+			invitaciones: 'f07-invitaciones',
+			demos: 'f08-demos',
+			docs: 'f09-docs',
+			herramientas: 'f10-libre',
+			preview: 'f11-preview',
+			release: 'f12-release',
+		});
+		// Its category's free lane first, then another free lane, then a busy one, then none.
+		expect(out.ranks).toEqual([1, 0, 0, 2, 3]);
+		expect(out.queue).toEqual(['propia', 'sin-plan', 'fuera', 'demo-ocupada', 'sin-categoria']);
+		expect(out.suggested).toEqual([
+			null,
+			{ carril: 'f10-libre', propio: true },
+			null,
+			{ carril: 'f06-landing', propio: false },
+			{ carril: 'f06-landing', propio: false },
+		]);
+		expect(out.lines).toEqual([
+			[
+				'Carril sugerido: f10-libre (categoría herramientas), libre · carpeta celebra-me-worktrees/f10-libre',
+			],
+			[
+				'Carril sugerido: f06-landing, libre; f08-demos de su categoría demos está ocupado por T20 · carpeta celebra-me-worktrees/f06-landing',
+			],
+			[
+				'Carril sugerido: f06-landing, libre (tarea sin categoría) · carpeta celebra-me-worktrees/f06-landing',
+			],
+		]);
+		expect(out.mismatch).toEqual([
+			'aviso: f06-landing no es el carril de su categoría docs (f09-docs)',
+			null,
+		]);
+		expect(out.issues).toEqual([expect.stringContaining('categoria debe ser plataforma/')]);
+	});
+
+	it('plans a lane outside the category with a warning and suggests one in next (d191)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('docs', { agente: 'codex', categoria: 'docs' }),
+				task('herramienta', {
+					agente: 'claude',
+					categoria: 'herramientas',
+					urgencia: 'alta',
+				}),
+			],
+		});
+		const plan = raw(dir, 'plan', 'docs', '--rev=1', '--carril=f06-landing', '--coordinador');
+		expect(plan.status).toBe(0);
+		expect(plan.out).toContain(
+			'aviso: f06-landing no es el carril de su categoría docs (f09-docs)',
+		);
+		expect(readTask(dir, 'docs')).toMatchObject({ carrilPlaneado: 'f06-landing', rev: 2 });
+		expect(raw(dir, 'show', 'docs').out).toContain(
+			'  aviso: f06-landing no es el carril de su categoría docs (f09-docs)',
+		);
+		expect(raw(dir, 'next', '--agente=claude').out).toContain(
+			'CARRIL\nCarril sugerido: f10-libre (categoría herramientas), libre',
+		);
+		expect(raw(dir, 'set', 'docs', '--rev=2', 'categoria=otra', '--coordinador').status).toBe(
+			2,
+		);
+	});
+
+	it('shows where a review runs in show and next, and plan still refuses it a lane', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('origen', { estado: 'en revision', pr: '#7', rama: 'feat/x' }),
+				task('origen-revision', {
+					agente: 'gemini',
+					requisitos: [{ tipo: 'revision', ref: 'origen' }],
+				}),
+				task('libre', { agente: 'codex', carrilPlaneado: 'f09-docs' }),
+			],
+		});
+		const runs = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		expect(raw(dir, 'show', 'origen-revision').out).toContain(`  ${runs}`);
+		expect(raw(dir, 'next', '--agente=gemini').out).toContain(`CARRIL\n${runs}\n`);
+		expect(raw(dir, 'next', '--agente=codex').out).toContain('carril libre');
+		const plan = raw(
+			dir,
+			'plan',
+			'origen-revision',
+			'--rev=1',
+			'--carril=f10-libre',
+			'--coordinador',
+		);
+		expect(plan.status).toBe(2);
+		expect(plan.err).toContain('una revisión no tiene carril planeado');
 	});
 
 	it.each(['unknown', 'f04-integracion', ''])(

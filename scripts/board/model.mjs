@@ -509,8 +509,9 @@ const depIds = (t) => (t.requisitos ?? []).filter((r) => r.tipo === 'tarea').map
 const urgRank = (u) => (URGENCIAS.includes(u) ? URGENCIAS.indexOf(u) : 2);
 
 /**
- * The numbered queue: the owner's ready tasks (d163) → urgency → ready before blocked → due date (`hasta`) →
- * `orden` → title, then a pass so a task never comes before one it waits for.
+ * The numbered queue: the owner's ready tasks (d163) → urgency → free lane before busy or none (`laneRank`) →
+ * ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a task never comes before one
+ * it waits for.
  */
 export function queue(board, now = Date.now()) {
 	const open = (board.tareas ?? []).filter((t) => isOpen(t, board, now));
@@ -518,6 +519,7 @@ export function queue(board, now = Date.now()) {
 	const key = (t) => [
 		color(t, board, { now }) === 'own' ? 0 : 1,
 		urgRank(t.urgencia),
+		laneRank(t, board),
 		stage(t, board, now) === 'bloqueada' ? 1 : 0,
 		Number.isNaN(time(t.hasta)) ? 9e15 : time(t.hasta),
 		t.orden ?? 999,
@@ -604,29 +606,115 @@ export const laneFolder = (id) =>
 	id === 'integration' ? 'celebra-me' : `celebra-me-worktrees/${id}`;
 
 /**
- * Another task whose lock holds the lane `t` is planned in, or null (d177). Same predicate as claim: any lock
- * counts, also one left on a finished task before its release.
+ * d191: a task's `categoria` names the lane it prefers, never one it must use. Each category is the use of one
+ * lane from f05 to f12; the board and other tooling go in f10-libre.
  */
-export function laneBusy(t, board) {
-	const lane = t.carrilPlaneado;
-	if (!lane) return null;
-	return (board.tareas ?? []).find((x) => x.id !== t.id && x.candado?.carril === lane) ?? null;
+export const CATEGORIA_CARRIL = {
+	plataforma: 'f05-plataforma',
+	landing: 'f06-landing',
+	invitaciones: 'f07-invitaciones',
+	demos: 'f08-demos',
+	docs: 'f09-docs',
+	herramientas: 'f10-libre',
+	preview: 'f11-preview',
+	release: 'f12-release',
+};
+export const CATEGORIAS = Object.keys(CATEGORIA_CARRIL);
+/** The task lanes f05–f12, in order: the ones a suggestion picks from. */
+const TASK_LANES = Object.values(CATEGORIA_CARRIL);
+
+/** Another task whose lock holds `lane`, or null. Same predicate as claim: any lock counts, also one left on a finished task before its release. */
+function laneHolder(lane, board, exceptId) {
+	return (
+		(board.tareas ?? []).find((x) => x.id !== exceptId && x.candado?.carril === lane) ?? null
+	);
 }
 
-/** The «Corre en» lines of a task planned in a lane, for the card, `show`, `next` and a pasted prompt. */
-export function laneLines(t, board) {
-	const lane = t.carrilPlaneado;
-	if (!lane) return [];
-	const lines = [`Corre en: ${lane} · carpeta ${laneFolder(lane)}`];
+/** Another task whose lock holds the lane `t` is planned in, or null (d177). */
+export function laneBusy(t, board) {
+	return t.carrilPlaneado ? laneHolder(t.carrilPlaneado, board, t.id) : null;
+}
+
+/** The warning a planned lane outside the task's category gets, without refusing it (d191). */
+export function categoryMismatch(t, carril) {
+	const preferred = CATEGORIA_CARRIL[t.categoria];
+	if (!carril || !preferred || carril === preferred) return null;
+	return `aviso: ${carril} no es el carril de su categoría ${t.categoria} (${preferred})`;
+}
+
+/**
+ * The lane `next` suggests for a task with no planned lane and no lock (d191): its category's lane when free,
+ * else the first free one from f05 to f12; null when none is free or nothing applies.
+ */
+export function suggestedLane(t, board) {
+	if (isReview(t) || t.carrilPlaneado || t.candado) return null;
+	const preferred = CATEGORIA_CARRIL[t.categoria];
+	if (preferred && !laneHolder(preferred, board, t.id))
+		return { carril: preferred, propio: true };
+	const free = TASK_LANES.find((lane) => !laneHolder(lane, board, t.id));
+	return free ? { carril: free, propio: false } : null;
+}
+
+/** Where a review runs: it has no planned lane (d177) and reads the Integration checkout only. */
+export const REVIEW_RUNS = `Corre en: Integración (carpeta ${laneFolder('integration')}), solo lectura`;
+
+/**
+ * Queue rank of a task's lane, preferring its category's (d191): 0 runs in its category's lane, free (so do
+ * a review, the lane its own lock holds, and a free planned lane of a task without category); 1 another free
+ * planned lane; 2 a lane another task's lock holds; 3 no lane to run in.
+ */
+export function laneRank(t, board) {
+	if (isReview(t) || t.candado?.carril) return 0;
+	const preferred = CATEGORIA_CARRIL[t.categoria];
+	if (t.carrilPlaneado) {
+		if (laneBusy(t, board)) return 2;
+		return !preferred || t.carrilPlaneado === preferred ? 0 : 1;
+	}
+	if (!preferred) return 3;
+	return laneHolder(preferred, board, t.id) ? 2 : 0;
+}
+
+const pasteLine = (t, lane) => {
 	const paste = agentsFor(t).filter((a) => a !== 'claude' && Object.hasOwn(AGENT_REGISTRY, a));
-	if (paste.length)
-		lines.push(
-			`${paste.map((a) => AGENT_REGISTRY[a].nombre).join(' o ')}: abra el proyecto ${lane}`,
-		);
+	return paste.length
+		? [`${paste.map((a) => AGENT_REGISTRY[a].nombre).join(' o ')}: abra el proyecto ${lane}`]
+		: [];
+};
+
+/** «Carril sugerido» lines of a task without a planned lane (d191), or none. */
+function suggestionLines(t, board) {
+	const preferred = CATEGORIA_CARRIL[t.categoria];
+	const s = suggestedLane(t, board);
+	const holder = preferred && !s?.propio ? laneHolder(preferred, board, t.id) : null;
+	const why = holder
+		? `; ${preferred} de su categoría ${t.categoria} está ocupado por ${taskTag(holder)}`
+		: '';
+	if (!s)
+		return holder
+			? [`${preferred.split('-')[0]} ocupado por ${taskTag(holder)}; ningún carril libre`]
+			: [];
+	const head = s.propio
+		? `Carril sugerido: ${s.carril} (categoría ${t.categoria}), libre`
+		: `Carril sugerido: ${s.carril}, libre${why || (preferred ? '' : ' (tarea sin categoría)')}`;
+	return [`${head} · carpeta ${laneFolder(s.carril)}`, ...pasteLine(t, s.carril)];
+}
+
+/**
+ * The «Corre en» lines of a review or a task planned in a lane, for the card, `show`, `plan`, `next` and a
+ * pasted prompt; an unlocked planned task also says whether its lane is free, any planned task warns when it
+ * is not its category's lane, and an unplanned one gets a suggestion.
+ */
+export function laneLines(t, board) {
+	if (isReview(t)) return [REVIEW_RUNS];
+	const lane = t.carrilPlaneado;
+	if (!lane) return suggestionLines(t, board);
+	const lines = [`Corre en: ${lane} · carpeta ${laneFolder(lane)}`, ...pasteLine(t, lane)];
 	const busy = laneBusy(t, board);
 	if (busy)
 		lines.push(`${lane.split('-')[0]} ocupado por ${taskTag(busy)}; espere o pida otro carril`);
-	return lines;
+	else if (!t.candado) lines.push('carril libre');
+	const mismatch = categoryMismatch(t, lane);
+	return mismatch ? [...lines, mismatch] : lines;
 }
 
 /** The prompt an agent receives: the planned lane first, so nobody has to repeat it by hand. */
@@ -713,6 +801,10 @@ const FIELD_CHECKS = [
 	[
 		(t) => !optional(t.vuelta, (n) => Number.isInteger(n) && n >= 1),
 		() => 'vuelta debe ser un entero desde 1',
+	],
+	[
+		(t) => !optional(t.categoria, (c) => CATEGORIAS.includes(c)),
+		() => `categoria debe ser ${CATEGORIAS.join('/')}`,
 	],
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],

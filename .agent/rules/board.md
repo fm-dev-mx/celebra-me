@@ -18,11 +18,12 @@ authorization.
   never warns about it (d188).
 - **Fields**: `titulo`, `estado`, `urgencia` (`urgente|alta|normal|baja`), `actor`
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
-  `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
-  (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`,
-  `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`,
-  `prompt`; `rev` and `actualizado` are set by the command, `archivada` (date) only by
-  `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no longer exist.
+  `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
+  `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
+  `orden`, `origen`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
+  `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are set by the command, `archivada`
+  (date) only by `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no
+  longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -35,22 +36,34 @@ authorization.
   `ownerLaunches`; `claim` and `next` are unchanged); violet = ready and an agent that starts alone
   (Claude, or the coordinator) finishes it (it has every capability in `requiere`); gray = blocked;
   blue = `en curso`; teal = `hecha`/`unida`/`en revision`. Urgency is an icon, never green.
-- **Execution number**: urgency → ready before blocked → `hasta` → `orden` → title; an open task it
-  waits for goes right before it.
+- **Execution number**: the owner's ready tasks (d163) → urgency → lane (`laneRank`: its category's
+  lane free, a review or the lane a task's own lock holds; then another free planned lane; then a
+  lane another task's lock holds; then no lane) → ready before blocked → `hasta` → `orden` → title;
+  an open task it waits for goes right before it.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
   finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
   agent at a time; `move` hands a task over only without a lock, logs it and warns when the new
   agent lacks a `requiere` capability; `review <id> [--agente=<b>]` creates the review child with
   `origen` (one per round, see below). Never duplicate a task. Rules are the same for every agent.
-- **Planned lane (d177)**: the coordinator gives every ready `actor: sesion` task a canonical lane
-  (`WORKTREE_LANES`, f05–f12) when it creates or prepares it:
+- **Planned lane (d177)**: the coordinator gives every open task a canonical lane (`WORKTREE_LANES`,
+  f05–f12) when it creates or prepares it:
   `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador` (`--carril=` clears it, only
   without a lock; `add … carrilPlaneado=<lane> --coordinador` works too). Only
   `plan`/`add --coordinador` write `carrilPlaneado`; `set` refuses it. The card, `show` and `next`
   show «Corre en: <lane> · carpeta celebra-me-worktrees/<lane>», «Codex/Gemini: abra el proyecto
   <lane>» and, when another task's lock holds that lane, «f10 ocupado por T55; espere o pida otro
-  carril». «Copiar prompt» and `next` put these lines first under `CARRIL`, so the prompt's «DÓNDE
-  CORRE» no longer repeats the lane by hand. Review children have no planned lane.
+  carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` put these
+  lines first under `CARRIL`, so the prompt's «DÓNDE CORRE» no longer repeats the lane by hand.
+  Review children have no planned lane (`plan` refuses one): they show «Corre en: Integración
+  (carpeta celebra-me), solo lectura». `board:verify` warns about every open task, reviews aside,
+  with neither a planned lane nor a lock on one, naming its T<n>.
+- **Category (d191)**: `categoria` is a preference, never a restriction: `plataforma`
+  f05-plataforma, `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs`
+  f09-docs, `herramientas` (the board and other tooling) f10-libre, `preview` f11-preview, `release`
+  f12-release (`CATEGORIA_CARRIL` in `model.mjs`). `plan`, `show` and the card warn, without
+  refusing, when the planned lane is not the category's. A task without a planned lane or lock shows
+  «Carril sugerido» on the card, `show` and `next`: its category's lane when free, else the first
+  free one.
 - **Writes**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
