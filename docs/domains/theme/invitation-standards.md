@@ -37,6 +37,11 @@ before reusing a value.
   with content and artwork hashes unchanged.
 - **R7.** Add songs and other content through the typed content, not new styles. Example:
   `olivia-y-antonio`; learned 2026-10-20; evidence: the song shipped in two files (#394).
+- **R8.** Music at 64 kbps MP3 as the floor and 96 kbps optional; do not re-encode published tracks
+  upward. Example: `america` (96 kbps); learned 2026-10-23; evidence: 12 of 13 tracks are at 64 kbps
+  and only America is at 96, so moving all of them to 96 would add about 50 % in size; the
+  `pnpm invitation:music:reencode` dry-run marks tracks at or below 96 kbps `KEEP`; final audit of
+  2026-10-23.
 
 ## Avoid
 
