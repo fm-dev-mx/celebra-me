@@ -11,14 +11,19 @@
  *                                               (rama defaults to the task's declared branch; Claude's sesion
  *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
  *                                               carril defaults to the planned lane, another needs --coordinador)
- *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it; d191 warns off its categoria
+ *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees only a legacy lock without sesion
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
- *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task from «Finalizadas» (bitácora row)
+ *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
+ *         [--pr=#N] [--commit=<sha>] [--rev=<n>]   d178: closing summary (lock owner, or --coordinador to
+ *                                               complete it); repeat a flag for each line or item, «ninguna»
+ *                                               for an empty list; a pendiente without its task is refused
+ *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task with its closing summary from
+ *                                               «Finalizadas» (bitácora row)
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
@@ -37,7 +42,12 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
+	archiveBlock,
+	buildCierre,
 	canFinish,
+	cierreBlock,
+	cierreIssues,
+	cierreLines,
 	claimable,
 	AGENT_REGISTRY,
 	color,
@@ -51,7 +61,6 @@ import {
 	inTab,
 	isFinished,
 	isReview,
-	categoryMismatch,
 	laneLines,
 	promptWithLane,
 	lockSessionIssue,
@@ -84,18 +93,21 @@ const say = (flags, out, data, text) => out(flags.json ? JSON.stringify(data, nu
 
 export function parseArgs(argv) {
 	const flags = {};
+	const lists = {};
 	const pairs = {};
 	const pos = [];
 	for (const a of argv) {
 		if (a.startsWith('--')) {
 			const [k, ...v] = a.slice(2).split('=');
 			flags[k] = v.length ? v.join('=') : true;
+			// A repeated flag keeps its last value in `flags` and every value in `lists`.
+			(lists[k] ??= []).push(flags[k]);
 		} else if (/^[A-Za-z_][\w]*=/.test(a)) {
 			const i = a.indexOf('=');
 			pairs[a.slice(0, i)] = a.slice(i + 1);
 		} else pos.push(a);
 	}
-	return { flags, pairs, pos };
+	return { flags, lists, pairs, pos };
 }
 
 export function parseValue(v) {
@@ -149,14 +161,13 @@ function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	const t = { ...after, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
 	// numbering existed gets the next number on its first write, like a new one.
-	const numbered = Number.isSafeInteger(before?.num);
-	t.num = numbered
+	t.num = Number.isSafeInteger(before?.num)
 		? before.num
 		: [...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
 				(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
 				0,
 			) + 1;
-	if (!numbered && !Number.isSafeInteger(t.num))
+	if (t.num !== before?.num && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
@@ -272,6 +283,9 @@ export function setArchived(dir, id, archivar, { rev, quien, corrio } = {}) {
 				`${before.id} tiene candado de ${before.candado.agente}: no se archiva`,
 			);
 		if (archivar === Boolean(before.archivada)) return before;
+		// d178: archiving needs the closing summary; tasks archived before it stay as they are.
+		const why = archivar && archiveBlock(before, loadBoard(dir));
+		if (why) throw new UsageError(`${before.id}: ${why}`);
 		const after = { ...before };
 		if (archivar) after.archivada = nowIso();
 		else delete after.archivada;
@@ -308,6 +322,24 @@ function archiveCommand(archivar) {
 		});
 		say(flags, out, t, `${t.id} ${t.archivada ? 'archivada' : 'sin archivar'} (rev ${t.rev})`);
 	};
+}
+
+/** d178: the closing summary a session writes when it finishes (or the coordinator completes). */
+function closeCommand({ pos, flags, lists }, dir, out) {
+	return withLock(dir, () => {
+		const before = getTask(dir, need(pos[0], 'falta <id>'));
+		if (flags.rev !== undefined) checkRev(before, flags);
+		// The lock owner writes it; a declared coordinator completes it, also after the lock is gone.
+		if (!flags.coordinador) assertOwner(before, flags);
+		const board = loadBoard(dir);
+		const cierre = buildCierre(before.cierre, { flags, lists }, board, nowIso());
+		const issues = cierreIssues({ ...before, cierre }, board);
+		if (issues.length)
+			throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
+		const t = saveTask(dir, before, { ...before, cierre });
+		const text = [`${t.id} con cierre (rev ${t.rev})`, ...cierreLines(t, board)];
+		say(flags, out, t, text.join('\n'));
+	});
 }
 
 /** Whether `carril` is a canonical lane this task may use; Integration only for coordinator tasks. */
@@ -424,7 +456,6 @@ const commands = {
 			'toca',
 			'requiere',
 			'candado',
-			'categoria',
 			'carrilPlaneado',
 			'carril',
 			'rama',
@@ -434,6 +465,7 @@ const commands = {
 		])
 			if (t[k] !== undefined)
 				out(`  ${k}: ${typeof t[k] === 'string' ? t[k] : JSON.stringify(t[k])}`);
+		for (const line of cierreBlock(t, board)) out(line);
 		if (t.prompt) out(`\n${t.prompt}`);
 	},
 	add({ pos, pairs, flags }, dir, out) {
@@ -443,8 +475,7 @@ const commands = {
 			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
 			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
 			const saved = saveTask(dir, null, t, { quien: flags.quien });
-			const warning = categoryMismatch(saved, saved.carrilPlaneado);
-			say(flags, out, saved, `${saved.id} creada (rev 1)${warning ? `\n${warning}` : ''}`);
+			say(flags, out, saved, `${saved.id} creada (rev 1)`);
 		});
 	},
 	set({ pos, pairs, flags }, dir, out) {
@@ -462,6 +493,7 @@ const commands = {
 				'origen',
 				'revisionSha',
 				'archivada',
+				'cierre',
 				'num',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
@@ -563,13 +595,7 @@ const commands = {
 				flags,
 				out,
 				t,
-				[
-					`${t.id} rev ${t.rev}`,
-					...laneLines(t, loadBoard(dir)),
-					categoryMismatch(t, carril),
-				]
-					.filter(Boolean)
-					.join('\n'),
+				[`${t.id} rev ${t.rev}`, ...laneLines(t, loadBoard(dir))].join('\n'),
 			);
 		});
 	},
@@ -836,6 +862,7 @@ const commands = {
 	},
 };
 Object.assign(commands, {
+	close: closeCommand,
 	archive: archiveCommand(true),
 	unarchive: archiveCommand(false),
 	get: commands.show,

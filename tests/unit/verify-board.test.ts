@@ -59,6 +59,7 @@ function verify(dir: string, answers: Record<string, unknown>) {
 		JSON.stringify({
 			'gh pr list --state open --json number,headRefName,title --limit 100': '[]',
 			'git worktree list --porcelain': '',
+			'git ls-remote --heads origin': '',
 			...answers,
 		}),
 	);
@@ -103,7 +104,7 @@ describe('board:verify', () => {
 		});
 		expect(report.filas.map((r: Json) => r.veredicto)).toEqual(['UNVERIFIED', 'UNVERIFIED']);
 		expect(report.comprobar).toEqual([]);
-		expect(report.cobertura).toEqual({ prs: 'UNVERIFIED', ramas: 'UNVERIFIED' });
+		expect(report.cobertura).toMatchObject({ prs: 'UNVERIFIED', ramas: 'UNVERIFIED' });
 	});
 
 	it('accepts a structured PR check without an arbitrary shell command', () => {
@@ -225,6 +226,213 @@ describe('board:verify', () => {
 		]);
 	});
 
+	describe('lifecycle drift', () => {
+		const lock = (sesion: string, carril = 'f08-demos') => ({
+			agente: 'claude',
+			desde: NOW,
+			sesion,
+			carril,
+		});
+		// Raw list_sessions rows, as the coordinator writes sesiones.json.
+		const snapshot = [
+			{ sessionId: 'local_coord', title: 'f04 · Coordinador principal', isArchived: false },
+			{ sessionId: 'local_t11', title: 'f08 · T11 · Demos en usted', isArchived: false },
+			{ sessionId: 'local_t30', title: 'f09 · T30 · PR #480 · Reglas', isArchived: false },
+			{ sessionId: 'local_t40', title: 'f10 · T40 · Pendiente', isArchived: false },
+			{ sessionId: 'local_btn', title: 'Botón para iniciar Claude Code', isArchived: false },
+			{ sessionId: 'local_t99', title: 'f05 · T99 · Fantasma', isArchived: false },
+			{ sessionId: 'local_old', title: 'f07 · T12 · Vieja', isArchived: true },
+		];
+		const tasks = [
+			task('demos-usted', {
+				num: 11,
+				estado: 'en revision',
+				pr: '#485',
+				candado: lock('local_t11'),
+			}),
+			task('reglas', {
+				num: 30,
+				estado: 'en revision',
+				pr: '#480',
+				candado: lock('local_t30', 'f09-docs'),
+			}),
+			task('pendiente', { num: 40, carril: 'f10-libre', estado: 'pendiente' }),
+			task('pegar', { num: 53, candado: lock('local_gone', 'f11-preview') }),
+			task('logs', { num: 12, candado: lock('5f6e4a6e-interno', 'f07-x') }),
+			task('suelta', { num: 60, estado: 'en curso' }),
+			task('fondo', { num: 32, estado: 'unida', pr: '#470', candado: lock('local_t30') }),
+		];
+
+		it('lists sessions without a task, missing lock sessions and off-form names', () => {
+			const { report } = verify(makeExport(tasks, { sesiones: snapshot }), {});
+			expect(report.sesiones).toBe('VERIFIED');
+			expect(report.sesionesSinTarea).toEqual([
+				{ sesion: 'local_btn', nombre: 'Botón para iniciar Claude Code' },
+				{ sesion: 'local_t99', nombre: 'f05 · T99 · Fantasma' },
+			]);
+			expect(report.candadoSinSesion.map((x: Json) => x.tarea).sort()).toEqual([
+				'T12',
+				'T53',
+			]);
+			expect(report.nombreDistinto).toEqual([
+				{
+					id: 'demos-usted',
+					tarea: 'T11',
+					sesion: 'local_t11',
+					nombre: 'f08 · T11 · Demos en usted',
+					msg: 'le falta «PR #485»',
+				},
+			]);
+		});
+
+		it('flags open tasks without a lock and merged tasks still locked', () => {
+			const { report } = verify(makeExport(tasks, { sesiones: snapshot }), {
+				'gh pr view 470 --json state': '{"state":"MERGED"}',
+			});
+			expect(report.enCursoSinSesion).toEqual([{ id: 'suelta', tarea: 'T60' }]);
+			expect(report.unidasConCandado).toEqual([
+				{ id: 'fondo', tarea: 'T32', carril: 'f08-demos' },
+			]);
+		});
+
+		it('says the snapshot is missing and skips only the session sections', () => {
+			const dir = makeExport(tasks);
+			const { report } = verify(dir, {});
+			expect(report.sesiones).toBe('SIN FOTO');
+			expect(report.sesionesSinTarea).toEqual([]);
+			expect(report.enCursoSinSesion).toHaveLength(1);
+			const text = runCommand(process.execPath, [SCRIPT_PATH, dir], {
+				cwd: ROOT,
+				allowFailure: true,
+				env: sanitizeEnv({
+					CELEBRA_BOARD_COMMAND_FIXTURE: path.join(dir, 'answers.json'),
+					INIT_CWD: ROOT,
+				}),
+			}).stdout;
+			expect(text).toContain('SESIONES: no hay sesiones.json');
+			expect(text).toContain('TAREAS EN CURSO SIN SESIÓN: T60');
+		});
+
+		it('reports merged branches still present and PRs closed without merge, never deleting', () => {
+			const dir = makeExport([
+				task('pasarela', {
+					num: 19,
+					estado: 'comprobada',
+					rama: 'docs/pasarela',
+					evidencia: { salio: 'x' },
+				}),
+				task('abierta', { num: 20, rama: 'docs/abierta' }),
+			]);
+			const closed = (head: string, rows: Json[]) => ({
+				[`gh pr list --state closed --head ${head} --json number,headRefName,state --limit 100`]:
+					JSON.stringify(rows),
+			});
+			// Old PRs on purpose: a repository-wide list of the latest 100 would miss them.
+			const { report } = verify(dir, {
+				'git ls-remote origin refs/heads/docs/abierta': '',
+				...closed('test/baselines', [
+					{ number: 33, headRefName: 'test/baselines', state: 'MERGED' },
+				]),
+				...closed('docs/pasarela', [
+					{ number: 75, headRefName: 'docs/pasarela', state: 'CLOSED' },
+				]),
+				...closed('docs/abierta', [
+					{ number: 76, headRefName: 'docs/abierta', state: 'CLOSED' },
+				]),
+				'git ls-remote --heads origin': [
+					'a1\trefs/heads/develop',
+					'a2\trefs/heads/docs/pasarela',
+					'a3\trefs/heads/docs/abierta',
+				].join('\n'),
+				'git worktree list --porcelain':
+					'worktree D:/wt/f08\nbranch refs/heads/test/baselines\n',
+			});
+			expect(report.ramasUnidasSinBorrar).toEqual([
+				{ pr: 33, rama: 'test/baselines', donde: 'carril' },
+			]);
+			expect(report.prCerradoSinUnir).toEqual([
+				{ pr: 75, rama: 'docs/pasarela', tarea: 'T19' },
+			]);
+			expect(report.cobertura).toMatchObject({
+				prsCerrados: 'VERIFIED',
+				ramasRemotas: 'VERIFIED',
+			});
+		});
+
+		it('keeps closed-PR coverage UNVERIFIED when a branch query fails or hits its limit', () => {
+			const dir = makeExport([task('t', {})]);
+			const full = Array.from({ length: 100 }, (_, i) => ({
+				number: i + 1,
+				headRefName: 'feat/llena',
+				state: 'CLOSED',
+			}));
+			const { report } = verify(dir, {
+				'git ls-remote --heads origin':
+					'a1\trefs/heads/feat/llena\na2\trefs/heads/feat/sin',
+				'gh pr list --state closed --head feat/llena --json number,headRefName,state --limit 100':
+					JSON.stringify(full),
+			});
+			expect(report.cobertura.prsCerrados).toBe('UNVERIFIED');
+		});
+
+		it('accepts any lane in a review session name, since reviews have no lane', () => {
+			const dir = makeExport(
+				[
+					task('revisar', {
+						num: 67,
+						estado: 'en curso',
+						pr: '#489',
+						candado: { agente: 'claude', desde: NOW, sesion: 'local_r' },
+					}),
+					task('revisar-mal', {
+						num: 68,
+						estado: 'en curso',
+						pr: '#490',
+						candado: { agente: 'claude', desde: NOW, sesion: 'local_m' },
+					}),
+				],
+				{
+					sesiones: [
+						{
+							sessionId: 'local_r',
+							title: 'f04 · T67 · PR #489 · Revisar',
+							isArchived: false,
+						},
+						{ sessionId: 'local_m', title: 'f04 · T68 · Revisar', isArchived: false },
+					],
+				},
+			);
+			expect(verify(dir, {}).report.nombreDistinto).toEqual([
+				expect.objectContaining({ tarea: 'T68', msg: 'le falta «PR #490»' }),
+			]);
+		});
+
+		it('lists close-queue entries still pending after a day', () => {
+			const dir = makeExport([task('t', {})]);
+			mkdirSync(path.join(dir, 'cierres'));
+			const entry = (tarea: string, creada: string, sesion: string) => ({
+				tarea,
+				creada,
+				pasos: { sesion, rama: 'hecho' },
+			});
+			writeFileSync(
+				path.join(dir, 'cierres', 'vieja.json'),
+				JSON.stringify(entry('vieja', '2026-10-18T00:00:00Z', 'pendiente')),
+			);
+			writeFileSync(
+				path.join(dir, 'cierres', 'nueva.json'),
+				JSON.stringify(entry('nueva', new Date().toISOString(), 'pendiente')),
+			);
+			writeFileSync(
+				path.join(dir, 'cierres', 'lista.json'),
+				JSON.stringify(entry('lista', '2026-10-18T00:00:00Z', 'hecho')),
+			);
+			expect(verify(dir, {}).report.cierresPendientes).toEqual([
+				{ id: 'vieja', nombre: '', pendiente: ['sesion'] },
+			]);
+		});
+	});
+
 	it('fails on inconsistencies and warns on id/branch and decision drift', () => {
 		const dir = makeExport(
 			[
@@ -325,5 +533,40 @@ DECISIONES
 			id: 'rara',
 			msg: 'carril planeado no canónico: f13-nuevo',
 		});
+	});
+
+	it('warns about finished, unarchived tasks without a valid closing summary (d178)', () => {
+		const cierre = {
+			resumen: 'Hecho.',
+			comprobaciones: [],
+			saltadas: [],
+			pendientes: [{ texto: 'Segunda vuelta', tarea: 'T58' }],
+			en: NOW,
+		};
+		const dir = makeExport([
+			task('sin-cierre', { estado: 'unida', pr: '#12' }),
+			task('archivada', { estado: 'comprobada', archivada: NOW, evidencia: { salio: 'x' } }),
+			task('con-cierre', { estado: 'cancelada', cierre }),
+			task('huerfano', {
+				estado: 'cancelada',
+				cierre: { ...cierre, pendientes: [{ texto: 'X', tarea: 'T99' }] },
+			}),
+			task('siguiente', { num: 58 }),
+		]);
+		const { report } = verify(dir, { 'gh pr view 12 --json state': '{"state":"MERGED"}' });
+		const msgs = report.avisos.filter((a: { msg: string }) => /cierre/.test(a.msg));
+		expect(msgs).toHaveLength(2);
+		expect(msgs).toEqual(
+			expect.arrayContaining([
+				{
+					id: 'sin-cierre',
+					msg: 'finalizada sin resumen de cierre: pnpm board close sin-cierre --resumen=… --coordinador',
+				},
+				{
+					id: 'huerfano',
+					msg: 'cierre incompleto (el pendiente «X» apunta a T99, que no está en el tablero): pnpm board close huerfano --resumen=… --coordinador',
+				},
+			]),
+		);
 	});
 });

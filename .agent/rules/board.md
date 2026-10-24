@@ -20,8 +20,8 @@ authorization.
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
   `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
   `orden`, `origen`, `plan`, `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`;
-  `rev` and `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`.
-  `espera`, `usted` and `deps` no longer exist.
+  `rev` and `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`,
+  `cierre` only by `close`. `espera`, `usted` and `deps` no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -58,9 +58,10 @@ authorization.
 - **Category (d191)**: `categoria` is a preference, never a restriction: `plataforma`
   f05-plataforma, `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs`
   f09-docs, `herramientas` (the board and other tooling) f10-libre, `preview` f11-preview, `release`
-  f12-release (`CATEGORIA_CARRIL` in `model.mjs`). `plan` and `add` warn, without refusing, when the
-  planned lane is not the category's. A task without a planned lane or lock shows «Carril sugerido»
-  on the card, `show` and `next`: its category's lane when free, else the first free one.
+  f12-release (`CATEGORIA_CARRIL` in `model.mjs`). `plan`, `show` and the card warn, without
+  refusing, when the planned lane is not the category's. A task without a planned lane or lock shows
+  «Carril sugerido» on the card, `show` and `next`: its category's lane when free, else the first
+  free one.
 - **Writes**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
@@ -71,6 +72,19 @@ authorization.
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
   of «Cola» and the «Carriles» view.
+- **Closing summary (d178)**:
+  `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien}`, written only
+  with
+  `pnpm board close <id> --resumen=<line> [--resumen=<line>…] --comprobacion=<check>… --saltada=<check>… --pendiente="<text>→T<n>"… [--pr=#N] [--commit=<sha>]`
+  (repeat a flag per line or item; `--saltada=ninguna` / `--pendiente=ninguno` for an empty list).
+  The summary is 1–4 lines. Every `pendiente` names the board task that will do it (`T58` or its id,
+  stored as the id); one without a task, with a task not on the board or pointing to itself is
+  refused. The lock owner writes it; `--coordinador` completes it later (for example the merge
+  commit), and flags not given keep their previous value. «Finalizadas» shows it above «Archivar»,
+  the sheet shows it too, and `archive` (button or command) is refused with «Falta el resumen de
+  cierre» while it is missing or invalid. Tasks archived before d178 are left as they are;
+  `unarchive` never needs it. `pnpm board verify` warns about each finished, unarchived task without
+  a valid one.
 - **PR number**: `pr` is always `#N`; the command normalizes `398`, `"#398"` or a
   `fm-dev-mx/celebra-me` pull URL and refuses a pull URL from another repository. `unida` always
   needs it; `en revision` needs it only when the task has a `rama` (audits and handoffs go to review
@@ -154,6 +168,12 @@ accepted only by the finite `commandArgs` grammar, executed as argument arrays w
 Arbitrary HTTP/API commands are rejected. Failures/timeouts/malformed PR responses are `UNVERIFIED`;
 inventory coverage is separate. Branch existence or MERGED alone does not prove every task
 criterion.
+
+At every board review the coordinator writes `sesiones.json` in the board directory: the raw
+`list_sessions` result with `include_archived: true`. The verifier reads it for its lifecycle drift
+sections (sessions without a task, locks naming a missing session, names off the d158 form); without
+it those sections are skipped and the report says so. The drift sections only report: the verifier
+never proposes deleting a branch, a session or a task.
 
 SSE reports live/degraded status. Default reconciliation and time-dependent redraw: 30 seconds;
 normal event debounce: 150 ms. Sub-second delivery is a measured target, not an availability

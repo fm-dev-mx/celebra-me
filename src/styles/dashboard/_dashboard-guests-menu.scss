@@ -111,9 +111,13 @@
 		}
 	}
 
+	// Touch layouts keep the 44px target.
+	@include mixins.respond-below(lg) {
+		min-height: 44px;
+	}
+
 	@include mixins.respond-below(xs) {
 		font-size: 0.72rem;
 		padding: 0.3rem 0.6rem;
-		min-height: 34px;
 	}
 }

@@ -153,6 +153,12 @@
 	&--open svg {
 		transform: rotate(180deg);
 	}
+
+	// Touch layouts keep the 44px target.
+	@include mixins.respond-below(lg) {
+		width: 44px;
+		height: 44px;
+	}
 }
 
 @keyframes expanded-fade-in {

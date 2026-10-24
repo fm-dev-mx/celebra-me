@@ -80,7 +80,8 @@ NO HAGAS
 AL TERMINAR
 1. <validación que debe quedar en verde>
 2. <estado y campos del tablero>
-3. <revisión cruzada y aviso de una línea>
+3. Cierre (d178): pnpm board close <id> --resumen=… --comprobacion=… --saltada=… --pendiente="<texto>→T<n>"
+4. <revisión cruzada y aviso de una línea>
 ```
 
 Omit a section only when it has nothing to say; keep `DÓNDE CORRE`, `AUTORIZO` and `NO HAGAS`
@@ -114,6 +115,26 @@ structured checks (`tipo: pr` or `tipo: rama`). Unsupported custom commands are 
 approximated. Failed commands, timeouts and malformed PR responses are `UNVERIFIED`; inspect
 inventory coverage before interpreting empty PR/branch lists as healthy. A review's `revisionSha`
 must match the PR head. GitHub state does not replace task-specific validation or human acceptance.
+
+Before running `pnpm board:verify` in a board review, write `sesiones.json` in the board directory
+(`.agent/tmp/board/sesiones.json` in Integration) with the raw `list_sessions` result,
+`include_archived: true` and a limit that covers every session. Pass another file with
+`--sesiones=<file>`. The `DESFASES` block then lists, report only:
+
+| Section                         | Rule                                                                 |
+| ------------------------------- | -------------------------------------------------------------------- |
+| SESIONES SIN TAREA              | open session whose title has no `T<n>`, or a `T<n>` not on the board |
+| CANDADO CON SESIÓN INEXISTENTE  | Claude lock whose `sesion` is not in `sesiones.json`                 |
+| NOMBRE DISTINTO                 | session title not `<lane> · T<n> · PR #<n> · <description>` (d158)   |
+| TAREAS EN CURSO SIN SESIÓN      | `en curso` without a lock                                            |
+| UNIDAS CON CANDADO              | `unida`/`hecha` still locked, so its lane looks busy                 |
+| RAMAS UNIDAS SIN BORRAR         | remote or lane branch whose PR is `MERGED`                           |
+| PR CERRADO SIN UNIR             | PR `CLOSED` without merge, branch still on origin, its task closed   |
+| ARCHIVADAS CON CIERRE PENDIENTE | `cierres/*.json` entry with a step still `pendiente` after a day     |
+
+Example: `NOMBRE DISTINTO: «f08 · T11 · Demos en usted» (le falta «PR #485»)`. The coordinator
+session itself is never listed as a session without a task. Without `sesiones.json` the first three
+sections are skipped with a notice and the rest still run.
 
 Keep successful archived prerequisites as explicit `archivo` records. Missing references, canceled
 tasks and superseded decisions cannot unlock work. Do not infer archival success merely from

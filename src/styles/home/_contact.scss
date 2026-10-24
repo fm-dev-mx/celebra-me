@@ -141,6 +141,9 @@
 }
 
 .contact-about__email {
+	display: inline-flex;
+	align-items: center;
+	min-block-size: 44px;
 	color: var(--color-action-accent);
 	font-size: 0.9rem;
 }
