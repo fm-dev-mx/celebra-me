@@ -9,7 +9,10 @@
 // the page in its own slice of the scroll, framed as a print and turned slightly by hand, with a
 // 01 / NN counter and a progress line. When the scene is not pinned (reduced motion, no editorial
 // motion, no engine) the same prints rest in a two-column (three on wide screens) grid.
-// Supports three to eight items; slot positions are fixed per index.
+// Supports three to eight items; slot positions are fixed per index. Below lg the slots sit on a
+// centred page no wider than 60 % of the album height, so tall prints on wide-and-short areas
+// (tablets) end above the progress line; on desktop a set of fewer prints than the slots were
+// tuned for shifts right so it stays centred.
 // Tokens (all optional):
 //   --gallery-album-paper / -print / -ink        Page tint, print frame and caption ink
 //   --gallery-album-accent                       Counter and progress line
@@ -45,6 +48,24 @@ $album-slots-desktop: (
 	(16%, 46%, 30%, -2deg)
 );
 
+// Below lg the page is at most this share of the album height wide.
+$album-page-ratio: 0.6;
+
+// Horizontal shift that centres the first $count desktop slots on the page (0% when the set
+// already spans it evenly, as five or more prints do).
+@function album-desktop-shift($count) {
+	$start: 100%;
+	$end: 0%;
+
+	@for $index from 1 through $count {
+		$slot: list.nth($album-slots-desktop, $index);
+		$start: math.min($start, list.nth($slot, 3));
+		$end: math.max($end, list.nth($slot, 3) + list.nth($slot, 1));
+	}
+
+	@return math.div(100% - $start - $end, 2);
+}
+
 // Photographs land during the first 85 % of the pinned span; the finished page holds for the rest.
 $album-land-share: 0.85;
 
@@ -76,6 +97,14 @@ $album-land-share: 0.85;
 		&:has(.gallery-grid__item:nth-child(#{$count}):last-child) {
 			--album-count: #{$count};
 			--album-count-name: album-count-#{$count};
+
+			$shift: album-desktop-shift($count);
+
+			@if $shift != 0% {
+				@include m.respond-to(lg) {
+					--album-desktop-shift: #{$shift};
+				}
+			}
 		}
 	}
 
@@ -215,6 +244,16 @@ $album-land-share: 0.85;
 			display: block;
 			flex: 1;
 			min-height: 0;
+
+			// The page the mobile slots are laid out on: the full width on phones, narrower and
+			// centred where the album area is wide for its height.
+			--album-page: min(100cqw, #{$album-page-ratio * 100}cqh);
+		}
+
+		@include m.respond-below(lg) {
+			@include scene.pinned {
+				container-type: size;
+			}
 		}
 	}
 
@@ -292,8 +331,11 @@ $album-land-share: 0.85;
 
 				@include scene.pinned {
 					top: list.nth($mobile, 2);
-					left: list.nth($mobile, 3);
-					width: list.nth($mobile, 1);
+					left: calc(
+						(100cqw - var(--album-page)) / 2 + #{math.div(list.nth($mobile, 3), 100%)} *
+							var(--album-page)
+					);
+					width: calc(#{math.div(list.nth($mobile, 1), 100%)} * var(--album-page));
 				}
 
 				@include m.respond-to(lg) {
@@ -301,7 +343,7 @@ $album-land-share: 0.85;
 						--album-rotate: #{list.nth($desktop, 4)};
 
 						top: list.nth($desktop, 2);
-						left: list.nth($desktop, 3);
+						left: calc(#{list.nth($desktop, 3)} + var(--album-desktop-shift, 0%));
 						width: list.nth($desktop, 1);
 					}
 				}
