@@ -10,8 +10,13 @@
 	--hero-fs-tiny: 0.72rem;
 
 	// Miniature steps for the text drawn on the phone screens: they scale with the phone (container
-	// units), with a floor that keeps the label from vanishing on the smallest fan.
-	--hero-fs-phone-label: max(6px, 4.6cqi);
+	// units), with a floor that keeps the label legible on the smallest fan. Each demo's name has
+	// its own step: a large garden script, a small engraved crest, a two-line coastal pair.
+	--hero-fs-phone-label: max(8px, 4.6cqi);
+	--hero-fs-phone-label-script: max(10px, 6cqi);
+	--hero-fs-phone-name-garden: 25cqi;
+	--hero-fs-phone-name-crest: 12cqi;
+	--hero-fs-phone-name-coast: 15cqi;
 	--hero-phone-width: 118px;
 	--hero-phone-radius: 20px;
 	--hero-screen-radius: 16px;
@@ -208,79 +213,172 @@
 		}
 	}
 
-	// Sample name on each screen, in the empty band above the people (sky, wall, garden), so it
-	// never covers a face or a body. Small label first, then the name in the demo's own face.
-	// Sizes follow the phone width, so the fan keeps one hierarchy from mobile to desktop.
+	// Sample name on each screen. Every demo sets its own placement, scale, label and colour, always in
+	// the open part of its photo (sky, garden, wall) so the text never covers a face or a body.
 	&__phone-title {
 		position: absolute;
 		inset: calc(var(--hero-phone-width) * 0.04) calc(var(--hero-phone-width) * 0.04) auto;
-		display: grid;
-		justify-items: center;
-		gap: 2.5cqi;
-		padding: 12cqi 6cqi 14cqi;
+		display: flex;
+		flex-direction: column;
 		border-radius: var(--hero-screen-radius) var(--hero-screen-radius) 0 0;
-		background: linear-gradient(to bottom, var(--phone-title-scrim), transparent);
-		text-align: center;
+		overflow: clip;
 		pointer-events: none;
 	}
 
 	&__phone-kicker {
-		font-family: var(--font-ui);
 		font-size: var(--hero-fs-phone-label);
-		font-weight: 600;
-		letter-spacing: 0.24em;
-		text-transform: uppercase;
-		color: var(--phone-kicker-color);
+		line-height: 1.2;
+		white-space: nowrap;
 	}
 
 	&__phone-name {
-		font-family: var(--phone-name-font);
-		font-size: var(--phone-name-size);
-		font-style: var(--phone-name-style, normal);
-		font-weight: var(--phone-name-weight, 500);
-		letter-spacing: var(--phone-name-tracking, 0);
 		line-height: 1;
 		white-space: nowrap;
-		color: var(--phone-name-color);
-		text-shadow: 0 1px 10px var(--phone-title-scrim);
 	}
 
-	// XV in a garden: soft serif italic over the pale sky, deep sage like the demo.
+	&__phone-line {
+		display: block;
+	}
+
+	// XV in a garden: a large romantic italic hung at the top left like a botanical label, with a
+	// vine drawn under it; the label is a soft italic line, not capitals.
 	[data-hero-style='demo-xv-serenata'] {
-		--phone-title-scrim: rgb(246 244 236 / 60%);
-		--phone-kicker-color: hsl(36deg 42% 36%);
-		--phone-name-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
-		--phone-name-size: 22cqi;
-		--phone-name-style: italic;
-		--phone-name-weight: 600;
-		--phone-name-color: hsl(150deg 28% 18%);
-	}
-
-	// XV in navy and gold: engraved capitals in gold over the dark wall.
-	[data-hero-style='demo-xv-celestial-blue'] {
-		--phone-title-scrim: rgb(12 14 26 / 62%);
-		--phone-kicker-color: rgb(248 244 236 / 82%);
-		--phone-name-font: 'Cinzel Variable', 'Cinzel', serif;
-		--phone-name-size: 14cqi;
-		--phone-name-weight: 600;
-
-		// The tiara starts high in the frame: the title sits closer to the top edge.
 		.hero-prime__phone-title {
-			padding-top: 8cqi;
+			align-items: flex-start;
+			gap: 1.5cqi;
+			padding: 10cqi 8cqi 16cqi;
+			text-align: left;
+			background: radial-gradient(
+				120% 100% at 0% 0%,
+				rgb(248 246 238 / 82%) 35%,
+				rgb(248 246 238 / 0%) 75%
+			);
 		}
 
-		--phone-name-tracking: 0.08em;
-		--phone-name-color: hsl(40deg 62% 72%);
+		.hero-prime__phone-kicker {
+			font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
+			font-size: var(--hero-fs-phone-label-script);
+			font-style: italic;
+			font-weight: 600;
+			letter-spacing: 0.04em;
+			color: hsl(36deg 46% 34%);
+		}
+
+		.hero-prime__phone-name {
+			font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
+			font-size: var(--hero-fs-phone-name-garden);
+			font-style: italic;
+			font-weight: 600;
+			letter-spacing: -0.01em;
+			color: hsl(150deg 30% 20%);
+
+			&::after {
+				content: '';
+				display: block;
+				width: 2.6em;
+				height: 0.32em;
+				margin-top: 0.06em;
+				background: hsl(140deg 22% 38%);
+				mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 20'%3E%3Cpath d='M2 14 C30 4 58 20 118 6' fill='none' stroke='black' stroke-width='2'/%3E%3Cellipse cx='34' cy='7' rx='6' ry='2.6' transform='rotate(-28 34 7)'/%3E%3Cellipse cx='62' cy='16' rx='6' ry='2.6' transform='rotate(24 62 16)'/%3E%3Cellipse cx='90' cy='6' rx='6' ry='2.6' transform='rotate(-22 90 6)'/%3E%3C/svg%3E")
+					left center / contain no-repeat;
+			}
+		}
 	}
 
-	// Beach wedding: fashion italic in ink blue over the sky, sand-toned label.
+	// XV in navy and gold: a small engraved crest. Gold capitals centred above the tiara, the label
+	// set beneath them between two gold rules, as on an embossed card.
+	[data-hero-style='demo-xv-celestial-blue'] {
+		.hero-prime__phone-title {
+			align-items: center;
+			gap: 2cqi;
+			padding: 7cqi 6cqi 12cqi;
+			text-align: center;
+			background: linear-gradient(to bottom, rgb(10 12 24 / 72%), rgb(10 12 24 / 0%));
+		}
+
+		.hero-prime__phone-name {
+			order: -1;
+			font-family: 'Cinzel Variable', Cinzel, serif;
+			font-size: var(--hero-fs-phone-name-crest);
+			font-weight: 600;
+			letter-spacing: 0.16em;
+			color: transparent;
+			background: linear-gradient(180deg, hsl(44deg 86% 84%), hsl(38deg 60% 56%));
+			background-clip: text;
+			filter: drop-shadow(0 1px 4px rgb(10 12 24 / 80%));
+		}
+
+		.hero-prime__phone-kicker {
+			display: flex;
+			align-items: center;
+			gap: 0.6em;
+			font-family: 'Cinzel Variable', Cinzel, serif;
+			font-weight: 500;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			color: hsl(40deg 54% 74%);
+
+			&::before,
+			&::after {
+				content: '';
+				width: 1.4em;
+				height: 1px;
+				background: currentcolor;
+			}
+		}
+	}
+
+	// Beach wedding: an editorial pair set flush right over the sky, the second name stepped in
+	// after a sunset ampersand, and the label last with a short rule, like a magazine caption.
 	[data-hero-style='demo-brisa'] {
-		--phone-title-scrim: rgb(240 243 246 / 58%);
-		--phone-kicker-color: hsl(24deg 38% 38%);
-		--phone-name-font: 'Bodoni Moda Variable', 'Bodoni Moda', serif;
-		--phone-name-size: 12cqi;
-		--phone-name-style: italic;
-		--phone-name-color: hsl(212deg 38% 20%);
+		.hero-prime__phone-title {
+			align-items: flex-end;
+			gap: 2.5cqi;
+			padding: 9cqi 8cqi 12cqi;
+			text-align: right;
+			background: radial-gradient(
+				120% 100% at 100% 0%,
+				rgb(242 245 248 / 70%) 30%,
+				rgb(242 245 248 / 0%) 72%
+			);
+		}
+
+		.hero-prime__phone-name {
+			font-family: 'Bodoni Moda Variable', 'Bodoni Moda', serif;
+			font-size: var(--hero-fs-phone-name-coast);
+			font-style: italic;
+			font-weight: 500;
+			color: hsl(212deg 42% 20%);
+		}
+
+		.hero-prime__phone-line + .hero-prime__phone-line {
+			margin-top: 0.08em;
+		}
+
+		.hero-prime__phone-amp {
+			font-size: 1.3em;
+			font-weight: 400;
+			color: hsl(14deg 64% 52%);
+		}
+
+		.hero-prime__phone-kicker {
+			order: 1;
+			display: flex;
+			align-items: center;
+			gap: 0.5em;
+			font-family: var(--font-ui);
+			font-weight: 600;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			color: hsl(24deg 40% 36%);
+
+			&::before {
+				content: '';
+				width: 1.4em;
+				height: 1px;
+				background: currentcolor;
+			}
+		}
 	}
 
 	&__fan-label {
