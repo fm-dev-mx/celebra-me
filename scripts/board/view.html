@@ -190,6 +190,7 @@ details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--a
 .rounds{display:grid;gap:4px}
 .fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
 .fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.fchip .n{font:600 .72rem var(--mono);opacity:.75;margin-left:2px}
 .chk{display:inline-flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted)}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .lr{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:2px 12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.87rem}
@@ -267,6 +268,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <section id="p-finalizadas" role="tabpanel" aria-labelledby="t-finalizadas" hidden>
     <div class="board">
       <div class="tools">
+        <div class="chips" id="finag" aria-label="Agente"></div>
         <label class="chk"><input type="checkbox" id="arch"> Ver archivadas</label>
         <span class="msg" id="finmsg" role="status" aria-live="polite"></span>
       </div>
@@ -298,6 +300,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 <script type="module">
 import { archiveBlock, cierreLines } from '/model.mjs';
 import { requisitoText, taskName } from '/model.mjs';
+import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
@@ -315,7 +318,7 @@ const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secreto
 const ESTADO={hecha:'Hecha',unida:'Unida',comprobada:'Comprobada',cancelada:'Cancelada'};
 const TABS=['cola','finalizadas','carriles','historial'];
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
-const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas'};
+const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas',finag:'todas'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const T=s=>s?new Date(s).getTime():NaN;
@@ -446,18 +449,23 @@ function renderFin(){
   $('n-fin').textContent=fin.filter(t=>!t.archivada).length||'';
   if(!S.ready)return;
   const arch=$('arch').checked;
-  const rows=fin.filter(t=>Boolean(t.archivada)===arch&&found(t)).sort((a,b)=>T(b.archivada||b.actualizado)-T(a.archivada||a.actualizado));
+  // The agent chips count what the archive toggle and the search leave, so each number matches its list.
+  const shown=fin.filter(t=>Boolean(t.archivada)===arch&&found(t));
+  const by=ag=>ag==='todas'?shown:shown.filter(t=>(authorOf(t)||'ninguno')===ag);
+  const ags=[...Object.keys(AGENT_REGISTRY),...(shown.some(t=>!authorOf(t))?['ninguno']:[])];
+  $('finag').innerHTML=['todas',...ags].map(ag=>`<button class="fchip" type="button" data-finag="${esc(ag)}" aria-pressed="${ag===S.finag}">${esc(ag==='todas'?'Todas':ag==='ninguno'?'Sin agente':AGENT[ag])} <span class="n">${by(ag).length}</span></button>`).join('');
+  const rows=by(S.finag).sort((a,b)=>T(b.archivada||b.actualizado)-T(a.archivada||a.actualizado));
   const row=t=>{
     const locked=t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)}: libérela antes de archivar</span>`:'';
     const when=arch?'archivada '+fmtDay(t.archivada):fmtDay(t.actualizado);
     // d178: without its closing summary (or with a pendiente that names no task) «Archivar» stays disabled and says why.
     const why=!arch&&!t.candado&&archiveBlock(t,S.board),ref=cierreRef(t);
     return `<div class="fr${arch?' archived':''}"><div><div class="ttl">${tN(t)}${esc(t.titulo)}</div>
-      <div class="line"><span class="pill c-${t.estado==='cancelada'?'block':'rev'}">${esc(ESTADO[t.estado]||t.estado)}</span>${ref?`<span class="mono">${rich(ref)}</span>`:''}<span class="mono">${esc(when)}</span><span class="lane">${esc(t.id)}</span>${locked}</div></div>
+      <div class="line"><span class="pill c-${t.estado==='cancelada'?'block':'rev'}">${esc(ESTADO[t.estado]||t.estado)}</span>${ref?`<span class="mono">${rich(ref)}</span>`:''}<span class="mono">${esc(when)}</span><span class="lane">${esc(t.id)}</span>${authorOf(t)?`<span class="lock">${esc(AGENT[authorOf(t)])}</span>`:''}${locked}</div></div>
       ${cierreHtml(t)}
       <div class="fa"><button type="button" class="btn" data-arch="${esc(t.id)}" data-rev="${esc(t.rev)}" data-to="${arch?'0':'1'}" ${t.candado||why?'disabled':''}${why?` title="${esc(why)}"`:''}>${arch?'Desarchivar':'Archivar'}</button>${why?`<span class="msg">${esc(why)}</span>`:''}</div></div>`;
   };
-  const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
+  const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':S.finag!=='todas'?'Ese agente no tiene tareas aquí.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
   $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
 async function archive(btn){
@@ -522,6 +530,7 @@ function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>
 document.addEventListener('click',ev=>{
   const tab=ev.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab,true);return}
   const ag=ev.target.closest('[data-ag]');if(ag){setAgent(ag.dataset.ag);return}
+  const fa=ev.target.closest('[data-finag]');if(fa){S.finag=fa.dataset.finag;try{localStorage.setItem('board-finag',S.finag)}catch(e){}renderFin();return}
   const sel=ev.target.closest('[data-sel]');if(sel){if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump)setTab('cola',true);openSheet(sel.dataset.sel);return}
   if(ev.target.closest('[data-close]')){closeSheet();return}
   const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}
@@ -539,6 +548,7 @@ $('tq').addEventListener('input',()=>{renderCola();renderFin()});$('arch').addEv
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
+try{const a=localStorage.getItem('board-finag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','ninguno'].includes(a)))S.finag=a}catch(e){}
 try{const a=localStorage.getItem('board-ag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','libres'].includes(a)))setAgent(a)}catch(e){}
 
 // «Sincronizar» runs the no-AI pnpm board:sync on the server; the token proves the request comes from this page.
