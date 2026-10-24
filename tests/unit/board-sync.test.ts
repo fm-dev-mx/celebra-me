@@ -141,6 +141,59 @@ describe('pnpm board:sync', () => {
 		]);
 	});
 
+	it('flags an old lock without new commits on origin and never a recent or still-pushing one', () => {
+		const old = '2026-10-20T08:00:00Z';
+		const board = {
+			tareas: [
+				task('sin-commits', {
+					num: 1,
+					rama: 'feat/sin-commits',
+					candado: { agente: 'claude', desde: old, rama: 'feat/sin-commits' },
+				}),
+				task('con-commit', {
+					num: 2,
+					rama: 'feat/con-commit',
+					candado: { agente: 'codex', desde: old },
+				}),
+				task('reciente', {
+					num: 3,
+					rama: 'feat/sin-commits',
+					candado: { agente: 'claude', desde: '2026-10-20T18:00:00Z' },
+				}),
+				task('sin-rama', { num: 4, candado: { agente: 'gemini', desde: old } }),
+				task('borrada', {
+					num: 5,
+					rama: 'feat/borrada',
+					candado: { agente: 'claude', desde: old },
+				}),
+			],
+		};
+		const src = {
+			...SOURCES,
+			remoteDates: {
+				'feat/sin-commits': '2026-10-20T07:00:00Z',
+				'feat/con-commit': '2026-10-20T12:00:00Z',
+			},
+		};
+		const now = Date.parse(NOW);
+		const out = probe(
+			SYNC_PATH,
+			`const b = ${JSON.stringify(board)}, s = ${JSON.stringify(src)};
+			console.log(JSON.stringify({
+				def: m.plan(b, s, { now: ${now} }).candadosViejos.map((c) => c.texto),
+				wide: m.staleLocks(b, s, { now: ${now}, hours: 24 }).length,
+				hours: [m.lockHours(['--horas=2'], {}), m.lockHours([], { CELEBRA_BOARD_LOCK_HOURS: '12' }), m.lockHours([], {}), m.lockHours(['--horas=x'], {})],
+			}));`,
+		);
+		expect(out.def).toEqual([
+			'T1 sin-commits: posible sesión cerrada — candado de claude desde hace 12 h, sin commits nuevos en origin/feat/sin-commits',
+			'T4 sin-rama: posible sesión cerrada — candado de gemini desde hace 12 h, sin rama',
+			'T5 borrada: posible sesión cerrada — candado de claude desde hace 12 h, rama feat/borrada no está en origin',
+		]);
+		expect(out.wide).toBe(0);
+		expect(out.hours).toEqual([2, 12, 6, 6]);
+	});
+
 	it('reads lanes from git worktree list', () => {
 		const out = probe(
 			SYNC_PATH,

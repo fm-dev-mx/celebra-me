@@ -514,6 +514,7 @@ async function sync(dryRun){
     if(!r.cambios.length)lines.push('Sin cambios: el tablero ya coincide con GitHub.');
     for(const o of r.omitidas)lines.push('Omitida: '+o.texto);
     for(const a of r.avisos)lines.push('Aviso: '+a.texto);
+    for(const c of r.candadosViejos||[])lines.push('Candado: '+c.texto);
     out.textContent=(dryRun?'Prueba, nada escrito · ':'Sincronizado · ')+fmt(r.en)+'\n'+lines.join('\n');
   }catch(e){out.textContent='No se pudo sincronizar: '+e.message}
   finally{btns.forEach(b=>b.disabled=false)}

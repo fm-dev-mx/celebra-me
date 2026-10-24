@@ -6,9 +6,13 @@
  *
  *   - an open PR records `pr` (and `rama` when missing); a pending/in-progress task moves to «en revision»;
  *   - a merged PR moves the task to «unida»;
- *   - a PR closed without merge, a locked task or a branch without PR is only reported.
+ *   - a PR closed without merge, a locked task or a branch without PR is only reported;
+ *   - a lock older than --horas (default 6, or CELEBRA_BOARD_LOCK_HOURS) whose `rama` got no commit on origin
+ *     since the lock was taken is flagged «posible sesión cerrada». The lock itself is never released.
  *
- *   node scripts/board/sync.mjs [--dry-run] [--json]    --dry-run prints the planned changes and writes nothing
+ *   node scripts/board/sync.mjs [--dry-run] [--json] [--horas=<n>]   --dry-run prints the plan and writes nothing
+ *
+ * Remote branches are read after `git fetch --prune origin`, so a branch deleted on GitHub no longer counts.
  *
  * Matching: the task's `pr`, else its `rama` as PR head, else the id convention (`fix/<id>`). Closed tasks and
  * cross-review children are never touched. The local view runs it from its «Sincronizar» button.
@@ -23,6 +27,8 @@ import { boardDir, loadBoard } from './store.mjs';
 const CLOSED = new Set(['hecha', 'unida', 'comprobada', 'cancelada']);
 const TO_REVIEW = new Set(['pendiente', 'en curso', 'bloqueada']);
 const PR_LIMIT = 200;
+export const STALE_LOCK_HOURS = 6;
+const HOUR_MS = 3_600_000;
 
 const label = (t) => (Number.isInteger(t.num) ? `T${t.num} ${t.id}` : t.id);
 const isReview = (t) => !!t.revisionSha || (!!t.origen && t.id === `${t.origen}-revision`);
@@ -52,6 +58,31 @@ export function readSources(cwd = process.cwd()) {
 		sh('git', ['for-each-ref', '--format=%(refname:short)', prefix], cwd)
 			.split(/\r?\n/)
 			.filter(Boolean);
+	let fetchError = null;
+	try {
+		sh('git', ['fetch', '--prune', '--quiet', 'origin'], cwd);
+	} catch (e) {
+		fetchError = String(e.stderr ?? e.message).trim();
+	}
+	// Tip commit date of each origin branch: the evidence that a locked task's session is still pushing.
+	const remoteDates = Object.fromEntries(
+		sh(
+			'git',
+			[
+				'for-each-ref',
+				'--format=%(refname:short)%09%(committerdate:iso-strict)',
+				'refs/remotes/origin',
+			],
+			cwd,
+		)
+			.split(/\r?\n/)
+			.filter(Boolean)
+			.map((line) => {
+				const [ref, date] = line.split('\t');
+				return [ref.replace(/^origin\//, ''), date];
+			})
+			.filter(([ref]) => ref !== 'HEAD' && ref !== 'origin'),
+	);
 	let prs;
 	try {
 		prs = JSON.parse(
@@ -79,7 +110,9 @@ export function readSources(cwd = process.cwd()) {
 	return {
 		worktrees: parseWorktrees(sh('git', ['worktree', 'list', '--porcelain'], cwd)),
 		local: refs('refs/heads'),
-		remote: refs('refs/remotes/origin').map((r) => r.replace(/^origin\//, '')),
+		remote: Object.keys(remoteDates),
+		remoteDates,
+		fetchError,
 		prs,
 	};
 }
@@ -114,12 +147,60 @@ function branchNote(t, src) {
 }
 
 /**
- * Pure plan: `cambios` are writes (`set` holds the fields), `avisos` are facts the sync never writes, and
- * `omitidas` are changes a lock keeps for its owning session.
+ * Locks older than `hours` with no commit on origin since they were taken: «posible sesión cerrada». Only a
+ * flag: the owning session, or the coordinator with authority, releases a lock.
  */
-export function plan(board, src) {
+export function staleLocks(board, src, { now = Date.now(), hours = STALE_LOCK_HOURS } = {}) {
+	const out = [];
+	for (const t of (board.tareas ?? []).slice().sort((a, b) => (a.num ?? 0) - (b.num ?? 0))) {
+		const since = Date.parse(t.candado?.desde ?? '');
+		if (Number.isNaN(since) || now - since < hours * HOUR_MS) continue;
+		const rama = t.candado.rama ?? t.rama;
+		const tip = Date.parse(src.remoteDates?.[rama] ?? '');
+		if (!Number.isNaN(tip) && tip > since) continue;
+		const why = !rama
+			? 'sin rama'
+			: Number.isNaN(tip)
+				? `rama ${rama} no está en origin`
+				: `sin commits nuevos en origin/${rama}`;
+		out.push({
+			id: t.id,
+			desde: t.candado.desde,
+			texto: `${label(t)}: posible sesión cerrada — candado de ${t.candado.agente} desde hace ${Math.floor((now - since) / HOUR_MS)} h, ${why}`,
+		});
+	}
+	return out;
+}
+
+/** The write a task's PR calls for (`set` may be empty), or `{ aviso }` for a PR closed without merge. */
+function prChange(t, p) {
+	const pr = `#${p.number}`;
+	if (p.state === 'CLOSED') return { aviso: `${label(t)}: PR ${pr} cerrado sin unir` };
+	const set = {};
+	if (normalizePr(t.pr) !== pr) set.pr = pr;
+	if (!t.rama && p.headRefName) set.rama = p.headRefName;
+	let texto = `${label(t)} → PR ${pr} abierto`;
+	if (p.state === 'MERGED') {
+		set.estado = 'unida';
+		texto = `${label(t)} → PR ${pr} unido: pasa a unida`;
+	} else if (p.isDraft) texto = `${label(t)} → PR ${pr} en borrador`;
+	else if (TO_REVIEW.has(t.estado ?? 'pendiente')) {
+		set.estado = 'en revision';
+		texto = `${label(t)} → PR ${pr} abierto: pasa a en revision`;
+	}
+	if (set.rama) texto += ` · rama ${set.rama}`;
+	return { id: t.id, rev: t.rev, set, texto, salio: `PR ${pr} ${p.state}` };
+}
+
+/**
+ * Pure plan: `cambios` are writes (`set` holds the fields), `avisos` are facts the sync never writes,
+ * `omitidas` are changes a lock keeps for its owning session and `candadosViejos` are flagged stale locks.
+ */
+export function plan(board, src, opts = {}) {
 	const cambios = [];
-	const avisos = [];
+	const avisos = src.fetchError
+		? [{ id: '', texto: `git fetch falló; las ramas pueden estar viejas: ${src.fetchError}` }]
+		: [];
 	const omitidas = [];
 	for (const t of (board.tareas ?? []).slice().sort((a, b) => (a.num ?? 0) - (b.num ?? 0))) {
 		if (CLOSED.has(t.estado ?? 'pendiente') || isReview(t)) continue;
@@ -129,25 +210,13 @@ export function plan(board, src) {
 			else if (t.rama) avisos.push({ id: t.id, texto: `${label(t)}: ${branchNote(t, src)}` });
 			continue;
 		}
-		const pr = `#${p.number}`;
-		const set = {};
-		if (normalizePr(t.pr) !== pr) set.pr = pr;
-		if (!t.rama && p.headRefName) set.rama = p.headRefName;
-		let texto = `${label(t)} → PR ${pr} abierto`;
-		if (p.state === 'MERGED') {
-			set.estado = 'unida';
-			texto = `${label(t)} → PR ${pr} unido: pasa a unida`;
-		} else if (p.state === 'CLOSED') {
-			avisos.push({ id: t.id, texto: `${label(t)}: PR ${pr} cerrado sin unir` });
+		const change = prChange(t, p);
+		if (change.aviso) {
+			avisos.push({ id: t.id, texto: change.aviso });
 			continue;
-		} else if (p.isDraft) texto = `${label(t)} → PR ${pr} en borrador`;
-		else if (TO_REVIEW.has(t.estado ?? 'pendiente')) {
-			set.estado = 'en revision';
-			texto = `${label(t)} → PR ${pr} abierto: pasa a en revision`;
 		}
-		if (!Object.keys(set).length) continue;
-		if (set.rama) texto += ` · rama ${set.rama}`;
-		const change = { id: t.id, rev: t.rev, set, texto, salio: `PR ${pr} ${p.state}` };
+		if (!Object.keys(change.set).length) continue;
+		const { texto } = change;
 		if (t.candado)
 			omitidas.push({
 				...change,
@@ -155,7 +224,7 @@ export function plan(board, src) {
 			});
 		else cambios.push(change);
 	}
-	return { cambios, avisos, omitidas };
+	return { cambios, avisos, omitidas, candadosViejos: staleLocks(board, src, opts) };
 }
 
 /** Each change is one `pnpm board set` pinned to the rev the plan read; a refused write is reported, not retried. */
@@ -188,8 +257,9 @@ export async function run({
 	dir = boardDir(),
 	sources = readSources,
 	now = new Date(),
+	hours = lockHours(),
 } = {}) {
-	const p = plan(loadBoard(dir), sources());
+	const p = plan(loadBoard(dir), sources(), { now: now.getTime(), hours });
 	const cambios = dryRun
 		? p.cambios.map((c) => ({ ...c, ok: null }))
 		: await apply(p.cambios, dir);
@@ -207,7 +277,16 @@ export function summary(r) {
 	if (!r.cambios.length) lines.push(`${head}Sin cambios: el tablero ya coincide con GitHub.`);
 	for (const o of r.omitidas) lines.push(`Omitida: ${o.texto}`);
 	for (const a of r.avisos) lines.push(`Aviso: ${a.texto}`);
+	for (const c of r.candadosViejos ?? []) lines.push(`Candado: ${c.texto}`);
 	return lines;
+}
+
+/** Stale-lock threshold: --horas=<n>, else CELEBRA_BOARD_LOCK_HOURS, else 6. */
+export function lockHours(argv = process.argv, env = process.env) {
+	const raw =
+		argv.find((a) => a.startsWith('--horas='))?.slice(8) ?? env.CELEBRA_BOARD_LOCK_HOURS;
+	const n = Number(raw);
+	return raw !== undefined && raw !== '' && Number.isFinite(n) && n > 0 ? n : STALE_LOCK_HOURS;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
