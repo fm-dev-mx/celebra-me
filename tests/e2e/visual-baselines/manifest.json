@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-24T01:27:56.657Z",
+    "generatedAt": "2026-10-24T04:59:23.472Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,8 +12,8 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-        "cssSha256": "87acb7f1db4d3ff7ba50d50a1b2dd03727727fe2a1c612b19662c99d5084b883",
-        "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
+        "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+        "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -2267,7 +2267,7 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "8c7de71b0e4191732471185072d117857a513529d52feac7f0af90d032724710",
+            "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
             "contentHash": "34e0f9faf69cf21b9790344187514cbc2f3ff95b2a627c0cd9cad85e7d8f23a4",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
@@ -2291,7 +2291,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "08e000db437ceb90fdb0d6984c602eeeb8a11ae56b326fedfb41c831b2ea681a",
+            "sha256": "21ef9246b6dc38f9e6bf106049006dbb0752298f0a395b6d04ef4393e2fb79fc",
             "contentHash": "bb7a12d124f3e95557bb9561fc73c6608ee574e79565242584299ad9e4295fbb",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
@@ -2315,7 +2315,7 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "0d83caa7c42bde84e414cd1866e4707db483cc7c11c17973876772298fb619a2",
+            "sha256": "29c1b87d983836e4931cac5daeca51c8719201291f294511d5786c898473c01d",
             "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
@@ -2327,7 +2327,7 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "3d821834670229de3f314eb85190630a3bbe7a44fa79cd0b082057c2b7a3916f",
+            "sha256": "bc81921c8fd217778e54ea4782a5678b27d993ffd4c4adc421db991e6f98a88e",
             "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
@@ -2339,7 +2339,7 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "sha256": "ea7c2a4434cdf7bb60b016802f51d41ca5d1e1ee7037fdcb6848930ed87300c2",
+            "sha256": "1f21d95539323cd161ac0afb36cd3f456932a4ec1b8430ea220d66f045433c94",
             "contentHash": "3bac5ae9626b94e2a5d9645afd6c690102f3b5560651c144e671ecc0ed05a038",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
@@ -2363,7 +2363,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "d9cb98e639ce46b329e491e9eab5663cc9df409287ec8653c2753ea99d2afa85",
+            "sha256": "b07a19f87da9d0739926c35bd79127a64b6a383c5a24441181c51e823f5c28cb",
             "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
@@ -2387,7 +2387,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "100c4ded511655f01674a09a4b8b7c6aa1a8f90927e4b4a8a4b0966f672ae55e",
+            "sha256": "f04adc61908fa31bed944a9478fdd2669fca2192fb2aa95d2d82d78a41fd74b7",
             "contentHash": "a86902a4a58bf40e90a3581cda1850576f02ed9ae9715b04866f473cb1a8ec91",
             "assetHash": "371ee46afe576e89fa2a3f272a914e1575168bbef5e69e6130000c145fc7abc1",
             "comparisonResult": "ACCEPTED"
@@ -2411,7 +2411,7 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-            "sha256": "434bf816e9359db748bb4589c52e5f152bb1fecdbd84dd7dcf42aa47b294a7e5",
+            "sha256": "08492a877ee87582299bcd5595b847e9257117caf567171f8ac5488961382ee2",
             "contentHash": "f7190856648b484e09fa9a7ad5b10a5e9597ca1a4f833efb90d76a457274543e",
             "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
@@ -2477,9 +2477,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "6fb99dca75ab4f44c9033e8e19317accc148a3cf",
+    "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064",
     "variantManifest": {
-        "generatedAt": "2026-10-24T01:27:56.657Z",
+        "generatedAt": "2026-10-24T04:59:23.472Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2492,8 +2492,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "87acb7f1db4d3ff7ba50d50a1b2dd03727727fe2a1c612b19662c99d5084b883",
-            "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
+            "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+            "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4381,10 +4381,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "6fb99dca75ab4f44c9033e8e19317accc148a3cf"
+        "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-24T01:27:56.662Z",
+        "generatedAt": "2026-10-24T04:59:23.484Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4397,8 +4397,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "87acb7f1db4d3ff7ba50d50a1b2dd03727727fe2a1c612b19662c99d5084b883",
-            "assetSha256": "c77832f77514bc48c6d254c00ab614d307936655c802c88735c3f598b71bfcb1",
+            "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+            "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4775,7 +4775,7 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-                "sha256": "8c7de71b0e4191732471185072d117857a513529d52feac7f0af90d032724710",
+                "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
                 "contentHash": "34e0f9faf69cf21b9790344187514cbc2f3ff95b2a627c0cd9cad85e7d8f23a4",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
@@ -4799,7 +4799,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/demo-boda-demo-brisa-mobile.png",
-                "sha256": "08e000db437ceb90fdb0d6984c602eeeb8a11ae56b326fedfb41c831b2ea681a",
+                "sha256": "21ef9246b6dc38f9e6bf106049006dbb0752298f0a395b6d04ef4393e2fb79fc",
                 "contentHash": "bb7a12d124f3e95557bb9561fc73c6608ee574e79565242584299ad9e4295fbb",
                 "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
                 "comparisonResult": "CANDIDATE"
@@ -4823,7 +4823,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-                "sha256": "0d83caa7c42bde84e414cd1866e4707db483cc7c11c17973876772298fb619a2",
+                "sha256": "29c1b87d983836e4931cac5daeca51c8719201291f294511d5786c898473c01d",
                 "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
@@ -4835,7 +4835,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-                "sha256": "3d821834670229de3f314eb85190630a3bbe7a44fa79cd0b082057c2b7a3916f",
+                "sha256": "bc81921c8fd217778e54ea4782a5678b27d993ffd4c4adc421db991e6f98a88e",
                 "contentHash": "d63823913cff455f4c7e6f5d222b0bdd118a132982327843e605c062e364c10a",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
@@ -4847,7 +4847,7 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-                "sha256": "ea7c2a4434cdf7bb60b016802f51d41ca5d1e1ee7037fdcb6848930ed87300c2",
+                "sha256": "1f21d95539323cd161ac0afb36cd3f456932a4ec1b8430ea220d66f045433c94",
                 "contentHash": "3bac5ae9626b94e2a5d9645afd6c690102f3b5560651c144e671ecc0ed05a038",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
@@ -4871,7 +4871,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-                "sha256": "d9cb98e639ce46b329e491e9eab5663cc9df409287ec8653c2753ea99d2afa85",
+                "sha256": "b07a19f87da9d0739926c35bd79127a64b6a383c5a24441181c51e823f5c28cb",
                 "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
@@ -4895,7 +4895,7 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-                "sha256": "100c4ded511655f01674a09a4b8b7c6aa1a8f90927e4b4a8a4b0966f672ae55e",
+                "sha256": "f04adc61908fa31bed944a9478fdd2669fca2192fb2aa95d2d82d78a41fd74b7",
                 "contentHash": "a86902a4a58bf40e90a3581cda1850576f02ed9ae9715b04866f473cb1a8ec91",
                 "assetHash": "371ee46afe576e89fa2a3f272a914e1575168bbef5e69e6130000c145fc7abc1",
                 "comparisonResult": "CANDIDATE"
@@ -4919,7 +4919,7 @@
                 "preset": "enchanted-rose",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-                "sha256": "434bf816e9359db748bb4589c52e5f152bb1fecdbd84dd7dcf42aa47b294a7e5",
+                "sha256": "08492a877ee87582299bcd5595b847e9257117caf567171f8ac5488961382ee2",
                 "contentHash": "f7190856648b484e09fa9a7ad5b10a5e9597ca1a4f833efb90d76a457274543e",
                 "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
@@ -4985,9 +4985,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "6fb99dca75ab4f44c9033e8e19317accc148a3cf"
+        "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064"
     },
-    "candidateManifestSha256": "290100d538083e7bb433eb7065451bef3bc35181889207aa97e15572006c6bfb",
-    "acceptedFromCommit": "6fb99dca75ab4f44c9033e8e19317accc148a3cf",
-    "acceptedAt": "2026-10-24T01:38:12.694Z"
+    "candidateManifestSha256": "997a7e8c53bfaea3fb77da0150318dd3542bb7c03749990327365fc132ad7e56",
+    "acceptedFromCommit": "98d8d8986971e39d361c71d72010fdd376b1e064",
+    "acceptedAt": "2026-10-24T05:07:26.095Z"
 }

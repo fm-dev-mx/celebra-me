@@ -4,7 +4,7 @@
  *
  * Usage: pnpm board:verify [<dir>] [--json] [--sesiones=<file.json>]
  *   <dir> defaults to the local store (`.agent/tmp/board/` of Integration, d143); an ArtifactData export with the
- *   same layout (tareas/*.json, and optionally bitacora/*.json and decisiones/*.json) works too.
+ *   same layout (tareas/*.json, and optionally bitacora/*.jsonl or *.json and decisiones/*.json) works too.
  *   --sesiones: JSON list of Claude sessions, either the raw `list_sessions` snapshot the coordinator writes
  *   ({ sessionId, title, isArchived }, archived sessions included) or the short form
  *   { id, nombre?, rama?, archivada? }; defaults to <dir>/sesiones.json. Without it the session drift
@@ -23,24 +23,35 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
-import { cierreIssues, isOpen, isReview, NO_CIERRE, stage, taskIssues } from './model.mjs';
-import { boardDir } from './store.mjs';
+import {
+	cierreIssues,
+	isFinished as isClosed,
+	isOpen,
+	isReview,
+	isStaleLock,
+	laneAllowed,
+	logRowIssues,
+	NO_CIERRE,
+	ordenOf,
+	prNumber,
+	promptLanes,
+	stage,
+	taskIdFromBranch,
+	taskIssues,
+	taskLane,
+	taskTag as tag,
+} from './model.mjs';
+import { boardDir, readLog } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const SAFE_BRANCH = /^[A-Za-z0-9._/-]{1,200}$/;
 const BASE_BRANCHES = new Set(['develop', 'main', 'master']);
 
-const LOCK_STALE_MS = 24 * 3600_000;
+/** A close-queue step still pending after this long is stale. */
+const CLOSING_STALE_MS = 24 * 3600_000;
 
-/** Task id rule: the branch name without its type prefix (`fix/olivia-gallery` → `olivia-gallery`). */
-export const taskIdFromBranch = (branch) => String(branch ?? '').replace(/^[^/]+\//, '');
-
-/** PR number from 398, "#398" or a pull URL; null when the field holds none. */
-export function prNumber(pr) {
-	const m = String(pr ?? '').match(/(\d+)\s*$/);
-	return m ? Number(m[1]) : null;
-}
+export { prNumber, taskIdFromBranch };
 
 /** Finite read-only grammar. Never execute stored shell text or arbitrary API/HTTP options. */
 export function commandArgs(cmd) {
@@ -137,7 +148,7 @@ export function loadExport(dir, sesionesFile) {
 	const file = sesionesFile ?? join(root, 'sesiones.json');
 	return {
 		tareas: readJsonDir(base),
-		bitacora: readJsonDir(join(root, 'bitacora')),
+		bitacora: readLog(root),
 		decisiones: readJsonDir(join(root, 'decisiones')),
 		archivo: readJsonDir(join(root, 'archivo')),
 		cierres: readJsonDir(join(root, 'cierres')),
@@ -158,7 +169,6 @@ export function worktreeBranches(porcelain) {
 	return [...String(porcelain).matchAll(/^branch refs\/heads\/(.+)$/gm)].map((m) => m[1].trim());
 }
 
-const isClosed = (t) => ['hecha', 'unida', 'comprobada', 'cancelada'].includes(t?.estado);
 const claims = (t, { branch, pr }) =>
 	(pr && prNumber(t.pr) === pr) ||
 	(branch && (t.rama === branch || t.id === taskIdFromBranch(branch)));
@@ -275,7 +285,6 @@ const titleNum = (title) => {
 	const m = String(title).match(/\bT(\d+)\b/);
 	return m ? Number(m[1]) : null;
 };
-const tag = (t) => (t.num ? `T${t.num}` : t.id);
 /** Lane part of a session name: `f08-demos` → `f08`. */
 const laneTag = (carril) => String(carril ?? '').match(/^f\d+/)?.[0] ?? String(carril ?? '');
 // The coordinator session owns no task of its own.
@@ -284,7 +293,7 @@ const isCoordinator = (s) => /coordinador/i.test(s.nombre);
 /** Session name rule d158: `<lane> · T<n> · PR #<n> · <description>`; no PR part before it opens. */
 export function nameDrift(t, nombre) {
 	// Review tasks run without a lane (they never inherit the author's), so any lane prefix fits.
-	const lane = laneTag(t.candado?.carril ?? t.carril);
+	const lane = laneTag(taskLane(t));
 	const laneRe = lane ? lane.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '[^\\s·]+';
 	const pr = prNumber(t.pr);
 	const base = `^${laneRe} · T${t.num} · `;
@@ -389,7 +398,7 @@ function branchDrift(tareas, run, laneBranches) {
 function staleClosings(cierres, now) {
 	return cierres
 		.filter((c) => Object.values(c.pasos ?? {}).includes('pendiente'))
-		.filter((c) => !c.creada || now - Date.parse(c.creada) > LOCK_STALE_MS)
+		.filter((c) => !c.creada || now - Date.parse(c.creada) > CLOSING_STALE_MS)
 		.map((c) => ({
 			id: c.tarea ?? c.id,
 			nombre: c.nombre ?? '',
@@ -431,7 +440,7 @@ function taskWarnings(t, byId, decIds, now) {
 			out.push(`requisito a una decisión inexistente: ${r.ref}`);
 	}
 	if (t.candado && isClosed(t)) out.push(`cerrada con candado de ${t.candado.agente}`);
-	else if (t.candado && now - Date.parse(t.candado.desde) > LOCK_STALE_MS)
+	else if (t.candado && isStaleLock(t.candado, now))
 		out.push(`candado de ${t.candado.agente} desde ${t.candado.desde}: ¿sigue trabajando?`);
 	return out;
 }
@@ -482,7 +491,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 	const inconsistencias = [];
 	const byLane = {};
 	for (const t of tareas.filter((x) => !isClosed(x) && x.carrilPlaneado !== undefined))
-		if (!WORKTREE_LANES.some((lane) => lane.id === t.carrilPlaneado))
+		if (!laneAllowed(t.carrilPlaneado, t, WORKTREE_LANES))
 			inconsistencias.push({
 				id: t.id,
 				msg: `carril planeado no canónico: ${t.carrilPlaneado}`,
@@ -492,6 +501,12 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 			avisos.push({
 				id: t.id,
 				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
+			});
+	for (const t of tareas.filter((x) => !isClosed(x) && !isReview(x)))
+		for (const lane of promptLanes(t, WORKTREE_LANES))
+			avisos.push({
+				id: t.id,
+				msg: `${t.num ? `T${t.num} ` : ''}el prompt dice ${lane}, pero corre en ${taskLane(t)}`,
 			});
 	const ready = tareas.filter(
 		(t) =>
@@ -539,11 +554,6 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 		for (const msg of msgs) inconsistencias.push({ id: t.id, msg });
 		for (const msg of taskWarnings(t, byId, decIds, now)) avisos.push({ id: t.id, msg });
 		for (const msg of cierreWarnings(t, { tareas, archivo })) avisos.push({ id: t.id, msg });
-		if (t.rama && (t.origen ?? t.id) !== taskIdFromBranch(t.rama))
-			avisos.push({
-				id: t.id,
-				msg: `id distinto de la rama sin prefijo (${taskIdFromBranch(t.rama)})`,
-			});
 	}
 	for (const d of decisiones) {
 		if (typeof d.vigente !== 'boolean')
@@ -554,6 +564,16 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 				msg: `reemplaza a una decisión inexistente: ${d.reemplaza}`,
 			});
 	}
+	// Old one-file-per-row documents carry their file name as id; daily JSONL rows have none.
+	const legacy = bitacora.filter((r) => r.id !== undefined).length;
+	if (legacy)
+		avisos.push({
+			id: 'bitacora',
+			msg: `${legacy} filas de bitácora en el formato viejo: pnpm board migrate-log --dry-run`,
+		});
+	for (const r of bitacora.filter((x) => x.id === undefined))
+		for (const msg of logRowIssues(r))
+			inconsistencias.push({ id: r.tarea || 'bitacora', msg: `bitácora ${r.en}: ${msg}` });
 	const lanes = laneWarnings(tareas, decisiones, archivo, now);
 	avisos.push(...lanes.avisos);
 	inconsistencias.push(...lanes.inconsistencias);
@@ -570,7 +590,7 @@ export function verifyBoard(
 	const branches = branchDrift(tareas, run, unclaimed.laneBranches);
 	const live = tareas
 		.filter((t) => t.estado !== 'comprobada' && t.estado !== 'cancelada')
-		.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
+		.sort((a, b) => ordenOf(a) - ordenOf(b));
 	const checked = live.map((t) => checkTask(t, run));
 	const filas = checked.map((r) => {
 		const row = { ...r };

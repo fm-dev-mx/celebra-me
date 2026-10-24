@@ -1,0 +1,66 @@
+// Floating demo quote (DemoFloatingQuote.astro): a small pill at the bottom left, clear of the
+// music player on the right. Quieter than the panels' primary buttons: dark glass, thin border.
+// On phones the player's "Reproducir música" label reaches the left half, so the pill sits above it.
+
+.demo-floating-quote {
+	position: fixed;
+	bottom: calc(1.5rem + env(safe-area-inset-bottom));
+	left: max(1rem, env(safe-area-inset-left));
+	z-index: 990;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 44px;
+	padding: 0 16px;
+	border: 1px solid rgb(var(--color-text-on-dark-rgb) / 35%);
+	border-radius: var(--radius-pill);
+	background: rgb(var(--color-surface-dark-rgb) / 78%);
+	backdrop-filter: blur(8px);
+	color: var(--color-text-on-dark);
+	font-family: var(--font-body);
+	font-size: var(--demo-floating-quote-size, 0.8125rem);
+	line-height: 1.2;
+	text-decoration: none;
+	white-space: nowrap;
+	box-shadow: 0 6px 18px rgb(0 0 0 / 22%);
+	opacity: 0%;
+	transform: translateY(12px);
+	visibility: hidden;
+	transition:
+		opacity 0.25s ease,
+		transform 0.25s ease,
+		visibility 0s linear 0.25s;
+
+	&--visible {
+		opacity: 100%;
+		transform: translateY(0);
+		visibility: visible;
+		transition:
+			opacity 0.25s ease,
+			transform 0.25s ease,
+			visibility 0s;
+	}
+
+	&:hover {
+		border-color: var(--color-action-accent);
+		color: var(--color-action-accent);
+	}
+
+	&:focus-visible {
+		outline: 3px solid var(--color-action-accent);
+		outline-offset: 3px;
+	}
+
+	@media (width <= 600px) {
+		bottom: calc(5.25rem + env(safe-area-inset-bottom));
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transform: none;
+		transition: none;
+
+		&--visible {
+			transition: none;
+		}
+	}
+}

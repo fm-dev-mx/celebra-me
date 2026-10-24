@@ -187,6 +187,7 @@ details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--a
 .tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
 #q,#tq{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;flex:1 1 220px;min-width:0;max-width:420px;min-height:44px}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
+.rounds{display:grid;gap:4px}
 .fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
 .fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .chk{display:inline-flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted)}
@@ -286,7 +287,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
           <button class="fchip" type="button" data-kind="dec" aria-pressed="false">Decisiones</button>
           <button class="fchip" type="button" data-kind="bit" aria-pressed="false">Bitácora</button>
         </div>
-        <label class="chk"><input type="checkbox" id="vig"> Solo decisiones vigentes</label>
+        <label class="chk"><input type="checkbox" id="vig" checked> Solo decisiones vigentes</label>
       </div>
       <div id="hist"><div class="empty">Cargando el historial…</div></div>
     </div>
@@ -297,6 +298,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 <script type="module">
 import { archiveBlock, cierreLines } from '/model.mjs';
 import { requisitoText, taskName } from '/model.mjs';
+import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
@@ -378,12 +380,14 @@ const cierreHtml=t=>{const l=cierreLines(t,S.board).slice(1);return l.length?`<d
 const cierreRef=t=>{const c=t.cierre||{},pr=c.pr||t.pr;return [pr?'PR '+pr:'',c.commit||''].filter(Boolean).join(', ')};
 // T41: the prompt reads as a document: its title and section names (QUÉ SE BUSCA, PASOS…) in bold, links live.
 const promptHtml=p=>String(p).split('\n').map((x,i)=>i===0||/^T\d+ · /.test(x)||/^[A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ ]{2,}$/.test(x.trim())?`<b class="ph">${esc(x)}</b>`:rich(x)).join('\n');
+// T79: each review round is its own task; the sheet lists them one below another, first round on top.
+function roundsHtml(t){const rs=reviewRounds(isReview(t)&&t.origen?t.origen:t.id,S.board);if(!rs.length)return '';return `<div class="box"><h3>Vueltas de revisión · ${rs.length}</h3><div class="rounds">${rs.map(r=>`<button type="button" class="chip c-${color(r)}" data-sel="${esc(r.id)}"${r.id===t.id?' aria-current="true"':''}><b>${reviewRound(r)}</b><span>${esc(String(r.revisionSha||'').slice(0,7))} · ${esc(r.estado||'pendiente')} · ${esc(AGENT[r.agente]||r.agente||'')}</span></button>`).join('')}</div></div>`}
 function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
 function renderSheet(open){
   const sh=$('sheet'),t=S.sel&&byId(S.sel);
   if(!t){sh.innerHTML='<div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div>';return}
   const c=color(t),l=laneOf(t)||{},r=reqs(t);
-  const pr=t.pr?String(t.pr).match(/(\d+)\s*$/):null;
+  const pr=prNumber(t.pr);
   const rows=[
     ['Agente',t.agente?esc(AGENT[t.agente]||t.agente)+(t.candado?` · 🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)} desde ${esc(fmt(t.candado.desde))}`:''):''],
     ['Requiere',(t.requiere||[]).length?t.requiere.map(esc).join(', '):''],
@@ -392,7 +396,7 @@ function renderSheet(open){
     ['Puerto',l.puerto?`<span class="mono">${esc(l.puerto)}</span>`:''],
     ['Sesión',sesHtml(t.sesion)],
     ['Rama',t.rama?`<span class="code">${esc(t.rama)}</span>`:''],
-    ['PR',pr?`<a href="${GH}/pull/${pr[1]}" target="_blank" rel="noopener">#${pr[1]}</a>`:''],
+    ['PR',pr?`<a href="${GH}/pull/${pr}" target="_blank" rel="noopener">#${pr}</a>`:''],
     ['Origen',t.origen?esc(taskName(t.origen,S.board)):''],
     ['Toca',(t.toca||[]).length?t.toca.map(x=>esc(TOCA[x]||x)).join(', ')+' · necesita su aprobación':''],
     ['Límite',t.hasta?esc(fmt(t.hasta)):''],
@@ -411,6 +415,7 @@ function renderSheet(open){
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>
     ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
     ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
+    ${roundsHtml(t)}
     ${t.cierre?`<div class="box"><h3>Cierre${cierreRef(t)?' · '+rich(cierreRef(t)):''}</h3>${cierreHtml(t)}</div>`:''}
     ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><div class="prompt" id="prtext">${promptHtml(p)}</div></details>`:''}`;
 }
@@ -419,11 +424,11 @@ function closeSheet(){$('sheet').classList.remove('open');document.body.classLis
 
 function renderBoard(){
   if(!S.ready)return;
-  const lanes=S.board.carriles.slice().sort((a,b)=>(a.orden||99)-(b.orden||99));
+  const lanes=S.board.carriles.slice().sort((a,b)=>ordenOf(a)-ordenOf(b));
   const known=new Set(lanes.map(l=>l.id));
   const tareas=S.board.tareas.filter(t=>!t.archivada&&inTab(t,S.ag));
   // d177: a task not claimed yet sits in the lane the coordinator planned for it.
-  const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;
+  const laneId=taskLane;
   const loose=tareas.filter(t=>!known.has(laneId(t)));
   if(loose.length)lanes.push({id:'sin-carril',uso:'Tareas sin carril o de rutina.'});
   const chip=t=>`<button type="button" class="chip c-${color(t)}" data-sel="${esc(t.id)}" data-jump="1"><b>${t.num?'T'+t.num:'·'}</b><span>${esc(t.titulo)}${NUM[t.id]?` <span class="pos" title="Lugar en la cola">#${NUM[t.id]}</span>`:''}</span></button>`;
@@ -457,12 +462,12 @@ function renderFin(){
 }
 async function archive(btn){
   const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
-  btn.disabled=true;m.textContent=(archivar?'Archivando ':'Desarchivando ')+(t&&t.num?'T'+t.num:id)+'…';
+  btn.disabled=true;m.textContent=(archivar?'Archivando ':'Desarchivando ')+(t?taskTag(t):id)+'…';
   try{
     const res=await fetch('/api/archivar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id,archivar,rev:Number(btn.dataset.rev)})});
     const body=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
-    m.textContent=(t&&t.num?'T'+t.num:id)+(archivar?' archivada. Está en «Ver archivadas».':' vuelve a Finalizadas.');
+    m.textContent=(t?taskTag(t):id)+(archivar?' archivada. Está en «Ver archivadas».':' vuelve a Finalizadas.');
   }catch(e){btn.disabled=false;m.textContent='No se pudo: '+e.message}
 }
 
@@ -471,7 +476,7 @@ function renderHist(){
   const q=$('q').value.trim().toLowerCase(),vig=$('vig').checked;
   let rows=[];
   if(S.kind!=='bit')rows=rows.concat(S.board.decisiones.filter(d=>!vig||d.vigente===true).map(d=>({en:d.en,txt:[d.id,d.decision,d.motivo,(d.tareas||[]).join(' ')].join(' '),html:`<div class="lr dec ${d.vigente===false?'old':''}"><span class="when">${esc(fmt(d.en))}</span><div class="what"><span class="tag">${esc(d.id)}${d.vigente===true?' · vigente':d.vigente===false?' · reemplazada':''}</span>${rich(d.decision)}${d.motivo?`<div class="sub">Motivo: ${rich(d.motivo)}</div>`:''}</div></div>`})));
-  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.de,b.a,b.quien].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${b.de||b.a?' · '+esc(b.de||'')+' → '+esc(b.a||''):''}</span>${rich(b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
+  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
   if(q)rows=rows.filter(r=>r.txt.toLowerCase().includes(q));
   rows.sort((a,b)=>T(b.en)-T(a.en));
   const shown=rows.slice(0,200);

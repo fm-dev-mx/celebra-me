@@ -433,7 +433,7 @@ describe('board:verify', () => {
 		});
 	});
 
-	it('fails on inconsistencies and warns on id/branch and decision drift', () => {
+	it('fails on inconsistencies and warns on decision drift, never on id/branch (d188)', () => {
 		const dir = makeExport(
 			[
 				task('cerrada', { estado: 'comprobada', evidencia: {} }),
@@ -466,11 +466,14 @@ describe('board:verify', () => {
 		);
 		expect(report.avisos).toEqual(
 			expect.arrayContaining([
-				{ id: 'otro-id', msg: 'id distinto de la rama sin prefijo (rama-real)' },
 				{ id: 'd002', msg: 'decisión sin vigente: true|false' },
 				{ id: 'espera', msg: 'requisito a una tarea fuera del tablero: archivada' },
 				{ id: 'espera', msg: 'requisito a una decisión inexistente: d404' },
 			]),
+		);
+		// d188: the id does not have to match its branch.
+		expect(report.avisos.map((a: { msg: string }) => a.msg).join('\n')).not.toContain(
+			'id distinto de la rama',
 		);
 	});
 
@@ -535,6 +538,31 @@ DECISIONES
 		});
 	});
 
+	it('accepts Integration only for coordinator tasks and calls a 10 h lock old, like the sync', () => {
+		const desde = new Date(Date.now() - 10 * 3_600_000).toISOString();
+		const dir = makeExport([
+			task('de-sesion', { estado: 'pendiente', carrilPlaneado: 'integration' }),
+			task('de-coordinador', {
+				estado: 'pendiente',
+				actor: 'coordinador',
+				carrilPlaneado: 'integration',
+			}),
+			task('con-candado', { candado: { agente: 'codex', desde } }),
+		]);
+		const { report } = verify(dir, {});
+		expect(report.inconsistencias).toContainEqual({
+			id: 'de-sesion',
+			msg: 'carril planeado no canónico: integration',
+		});
+		expect(report.inconsistencias.map((i: { id: string }) => i.id)).not.toContain(
+			'de-coordinador',
+		);
+		expect(report.avisos).toContainEqual({
+			id: 'con-candado',
+			msg: `candado de codex desde ${desde}: ¿sigue trabajando?`,
+		});
+	});
+
 	it('warns about finished, unarchived tasks without a valid closing summary (d178)', () => {
 		const cierre = {
 			resumen: 'Hecho.',
@@ -568,5 +596,38 @@ DECISIONES
 				},
 			]),
 		);
+	});
+});
+
+describe('prompt lane (H13)', () => {
+	it('warns when the prompt «DÓNDE CORRE» names a lane other than the planned one', () => {
+		const prompt = (lane: string) =>
+			`QUÉ SE BUSCA\nVer f09-docs.\n\nDÓNDE CORRE\nSesión en el carril ${lane}.\n\nAUTORIZO\nNada.`;
+		const dir = makeExport([
+			task('distinto', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f12-release',
+				prompt: prompt('f06-landing'),
+			}),
+			task('igual', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f06-landing',
+				prompt: prompt('f06-landing'),
+			}),
+			task('sin-seccion', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f06-landing',
+				prompt: 'Corre en f07-invitaciones.',
+			}),
+		]);
+		const { report } = verify(dir, {});
+		const msgs = report.avisos.filter((a: { msg: string }) => /el prompt dice/.test(a.msg));
+		expect(msgs).toEqual([
+			{ id: 'distinto', msg: 'T1 el prompt dice f06-landing, pero corre en f12-release' },
+			{
+				id: 'sin-seccion',
+				msg: 'T3 el prompt dice f07-invitaciones, pero corre en f06-landing',
+			},
+		]);
 	});
 });

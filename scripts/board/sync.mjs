@@ -22,17 +22,22 @@ import { execFileSync } from 'node:child_process';
 import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run as board } from './board.mjs';
-import { normalizePr } from './model.mjs';
+import {
+	isFinished,
+	isReview,
+	isStaleLock,
+	normalizePr,
+	STALE_LOCK_HOURS,
+	taskIdFromBranch,
+	taskLabel as label,
+} from './model.mjs';
 import { boardDir, loadBoard } from './store.mjs';
 
-const CLOSED = new Set(['hecha', 'unida', 'comprobada', 'cancelada']);
 const TO_REVIEW = new Set(['pendiente', 'en curso', 'bloqueada']);
 const PR_LIMIT = 200;
-export const STALE_LOCK_HOURS = 6;
+export { STALE_LOCK_HOURS };
 const HOUR_MS = 3_600_000;
 
-const label = (t) => (Number.isInteger(t.num) ? `T${t.num} ${t.id}` : t.id);
-const isReview = (t) => !!t.revisionSha || (!!t.origen && t.id === `${t.origen}-revision`);
 const sh = (cmd, args, cwd) =>
 	execFileSync(cmd, args, {
 		cwd,
@@ -136,7 +141,7 @@ export function matchPr(t, prs) {
 	if (typeof own === 'string' && own.startsWith('#'))
 		return prs.find((p) => `#${p.number}` === own) ?? null;
 	if (t.rama) return newestFor(prs, (p) => p.headRefName === t.rama);
-	return newestFor(prs, (p) => p.headRefName.replace(/^[^/]+\//, '') === t.id);
+	return newestFor(prs, (p) => taskIdFromBranch(p.headRefName) === t.id);
 }
 
 function branchNote(t, src) {
@@ -155,7 +160,7 @@ export function staleLocks(board, src, { now = Date.now(), hours = STALE_LOCK_HO
 	const out = [];
 	for (const t of (board.tareas ?? []).slice().sort((a, b) => (a.num ?? 0) - (b.num ?? 0))) {
 		const since = Date.parse(t.candado?.desde ?? '');
-		if (Number.isNaN(since) || now - since < hours * HOUR_MS) continue;
+		if (Number.isNaN(since) || !isStaleLock(t.candado, now, hours)) continue;
 		const rama = t.candado.rama ?? t.rama;
 		const tip = Date.parse(src.remoteDates?.[rama] ?? '');
 		if (!Number.isNaN(tip) && tip > since) continue;
@@ -205,7 +210,7 @@ export function plan(board, src, opts = {}) {
 	const omitidas = [];
 	for (const t of (board.tareas ?? []).slice().sort((a, b) => (a.num ?? 0) - (b.num ?? 0))) {
 		if (isReview(t)) continue;
-		if (CLOSED.has(t.estado ?? 'pendiente')) {
+		if (isFinished(t)) {
 			// d170: a finished task whose PR merged must not keep its lock.
 			const p = t.candado && t.estado !== 'cancelada' ? matchPr(t, src.prs) : null;
 			if (p?.state === 'MERGED')
@@ -258,12 +263,7 @@ function mergedRelease(t, p, texto) {
 export async function apply(cambios, dir, { prState } = {}) {
 	const out = [];
 	for (const c of cambios) {
-		const common = [
-			`--rev=${c.rev}`,
-			'--coordinador',
-			'--quien=board:sync',
-			'--corrio=pnpm board:sync',
-		];
+		const common = [`--rev=${c.rev}`, '--coordinador', '--corrio=pnpm board:sync'];
 		const args =
 			c.cmd === 'merged'
 				? ['merged', c.id, ...common, `--pr=${c.pr}`]

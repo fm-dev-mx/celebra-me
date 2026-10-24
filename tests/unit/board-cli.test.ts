@@ -78,6 +78,12 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	}
 	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
 		args.push('--coordinador');
+	// A bitácora row needs its writer; --agente names the new agent or the reviewer in these commands.
+	if (
+		['add', 'move', 'review', 'archive', 'unarchive'].includes(args[0]) &&
+		!args.some((a) => a.startsWith('--quien=') || a === '--coordinador')
+	)
+		args.push('--coordinador');
 	return exec(dir, env, args);
 }
 
@@ -101,8 +107,37 @@ function exec(dir: string, env: NodeJS.ProcessEnv, args: string[]) {
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
 }
 
+/** Every bitácora row, from the daily JSONL files. */
+const readLog = (dir: string): Json[] =>
+	readdirSync(path.join(dir, 'bitacora'))
+		.filter((f) => f.endsWith('.jsonl'))
+		.flatMap((f) =>
+			readFileSync(path.join(dir, 'bitacora', f), 'utf8')
+				.split('\n')
+				.filter(Boolean)
+				.map((line) => JSON.parse(line)),
+		);
+
 const readTask = (dir: string, id: string) =>
 	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
+
+/** Name → text of every entry of a monthly .zip, read with scripts/board/zip.mjs. */
+function zipEntries(file: string): Record<string, string> {
+	const probe = `const { readZip } = await import(process.argv[1]);
+		console.log(JSON.stringify(Object.fromEntries(readZip(process.argv[2]).map((e) => [e.name, e.data.toString('utf8')]))));`;
+	const result = runCommand(
+		process.execPath,
+		[
+			'--input-type=module',
+			'-e',
+			probe,
+			pathToFileURL(path.join(ROOT, 'scripts/board/zip.mjs')).href,
+			file,
+		],
+		{ cwd: ROOT, env: sanitizeEnv({}) },
+	);
+	return JSON.parse(String(result.stdout));
+}
 
 afterEach(() => {
 	for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
@@ -572,8 +607,13 @@ describe('pnpm board', () => {
 		expect(board(dir, 'release', 'compartida', '--agente=codex').status).toBe(0);
 		expect(board(dir, 'move', 'compartida', '--agente=claude').status).toBe(0);
 		expect(readTask(dir, 'compartida')).toMatchObject({ agente: 'claude', rev: 4 });
-		const log = readdirSync(path.join(dir, 'bitacora'));
-		expect(log).toHaveLength(1);
+		expect(readLog(dir)).toEqual([
+			expect.objectContaining({
+				tarea: 'compartida',
+				agente: { de: 'cualquiera', a: 'claude' },
+				quien: 'coordinador',
+			}),
+		]);
 	});
 
 	it('records where a lock was taken and warns when a move lacks a capability', () => {
@@ -607,7 +647,7 @@ describe('pnpm board', () => {
 			expect(board(dir, 'update', 'alias', `--rev=${rev}`, `ahora=paso ${rev}`).status).toBe(
 				0,
 			);
-		expect(readdirSync(path.join(dir, '.respaldos', 'tareas', 'alias'))).toHaveLength(5);
+		expect(readdirSync(path.join(dir, '.respaldos', 'tareas', 'alias'))).toHaveLength(2);
 		expect(JSON.parse(board(dir, 'decision', 'decision=usar alias', '--json').out).id).toBe(
 			'd001',
 		);
@@ -628,8 +668,8 @@ describe('pnpm board', () => {
 			0,
 		);
 		expect(readTask(dir, 'pin')).toMatchObject({ estado: 'en curso', rev: 2 });
-		const [row] = readdirSync(path.join(dir, 'bitacora'));
-		expect(JSON.parse(readFileSync(path.join(dir, 'bitacora', row), 'utf8'))).toMatchObject({
+		const [row] = readLog(dir);
+		expect(row).toMatchObject({
 			tarea: 'pin',
 			de: 'pendiente',
 			a: 'en curso',
@@ -692,10 +732,74 @@ describe('pnpm board', () => {
 		expect(
 			board(dir, 'review', 'origen', '--agente=codex', `--sha=${'b'.repeat(40)}`).status,
 		).toBe(0);
-		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).revisionSha).toBe(
-			'b'.repeat(40),
+		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out)).toMatchObject({
+			id: 'origen-revision-2',
+			revisionSha: 'b'.repeat(40),
+			vuelta: 2,
+		});
+		expect(readTask(dir, 'origen-revision')).toMatchObject({
+			num: reviewNum,
+			estado: 'hecha',
+			revisionSha: sha,
+		});
+	});
+
+	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('de-claude', {
+					agente: 'claude',
+					rama: 'feat/a',
+					pr: 10,
+					estado: 'en revision',
+				}),
+				task('de-codex', {
+					agente: 'codex',
+					rama: 'feat/b',
+					pr: 11,
+					estado: 'en revision',
+				}),
+				task('sin-autor', { rama: 'feat/c', pr: 12, estado: 'en revision' }),
+			],
+		});
+		const [a, b, c] = ['a', 'b', 'c'].map((x) => x.repeat(40));
+		expect(board(dir, 'review', 'de-claude', `--sha=${a}`).status).toBe(0);
+		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ agente: 'gemini', vuelta: 1 });
+		expect(board(dir, 'review', 'de-codex', `--sha=${a}`).status).toBe(0);
+		expect(readTask(dir, 'de-codex-revision').agente).toBe('claude');
+		expect(board(dir, 'review', 'de-codex', '--agente=gemini', `--sha=${b}`).err).toContain(
+			'd183: el trabajo de codex lo revisa claude',
 		);
-		expect(readTask(dir, 'origen-revision').num).toBe(reviewNum);
+		expect(board(dir, 'review', 'sin-autor', `--sha=${a}`).err).toContain('falta --agente');
+		// Same SHA: no new round.
+		expect(board(dir, 'review', 'de-claude', `--sha=${a}`).out).toContain(
+			`de-claude-revision ya revisa ${a}`,
+		);
+		expect(board(dir, 'review', 'de-claude', '--agente=codex', `--sha=${b}`).status).toBe(0);
+		expect(board(dir, 'review', 'de-claude', `--sha=${c}`).status).toBe(0);
+		const second = readTask(dir, 'de-claude-revision-2');
+		expect(second).toMatchObject({
+			agente: 'codex',
+			vuelta: 2,
+			revisionSha: b,
+			origen: 'de-claude',
+		});
+		expect(second.titulo).toContain('vuelta 2 (bbbbbbb)');
+		expect(second.prompt).toContain('SEGUNDA VUELTA');
+		expect(second.prompt).toContain(`Previous round (de-claude-revision) reviewed ${a}`);
+		expect(second.prompt).toContain(`git diff ${a}..${b}`);
+		expect(second.prompt).toContain('\nDECISIONES\n');
+		const third = readTask(dir, 'de-claude-revision-3');
+		expect(third).toMatchObject({ agente: 'gemini', vuelta: 3 });
+		expect(third.prompt).toContain('TERCERA VUELTA');
+		expect(third.prompt).toContain(`git diff ${b}..${c}`);
+		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ revisionSha: a, vuelta: 1 });
+		const show = board(dir, 'show', 'de-claude-revision-2').out;
+		expect(show).toContain('VUELTAS DE REVISIÓN');
+		expect(show.indexOf('vuelta 1 · aaaaaaa')).toBeLessThan(show.indexOf('vuelta 2 · bbbbbbb'));
+		expect(show.indexOf('vuelta 2 · bbbbbbb')).toBeLessThan(show.indexOf('vuelta 3 · ccccccc'));
+		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
+		expect(html).toContain('${roundsHtml(t)}');
 	});
 
 	it('refuses blocked, owner and closed claims and protects locks between sessions', () => {
@@ -887,7 +991,7 @@ describe('pnpm board', () => {
 		expect(html).toContain('${runsHtml(t)}');
 		expect(html).toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
-		expect(html).toContain('const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;');
+		expect(html).toContain('const laneId=taskLane;');
 	});
 
 	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
@@ -1196,6 +1300,150 @@ describe('pnpm board', () => {
 		},
 	);
 
+	it('refuses a bitácora row without a known writer and writes nothing', () => {
+		const dir = makeBoard({ tareas: [task('base')] });
+		const add = ['add', 'nueva', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion'];
+		expect(raw(dir, ...add).err).toContain('falta quién escribe la fila');
+		expect(raw(dir, ...add, '--quien=sesion').err).toContain(
+			'quien debe ser claude/codex/gemini/coordinador/dueno, no sesion',
+		);
+		expect(readdirSync(path.join(dir, 'tareas'))).toEqual(['base.json']);
+		expect(raw(dir, ...add, '--quien=dueño').status).toBe(0);
+		expect(
+			board(dir, 'plan', 'nueva', '--rev=1', '--carril=f11-preview', '--coordinador').status,
+		).toBe(0);
+		const files = readdirSync(path.join(dir, 'bitacora'));
+		expect(files).toHaveLength(1);
+		expect(files[0]).toMatch(/^\d{4}-\d{2}-\d{2}\.jsonl$/);
+		expect(readLog(dir)).toEqual([
+			expect.objectContaining({ tarea: 'nueva', de: '', a: 'pendiente', quien: 'dueno' }),
+			expect.objectContaining({
+				tarea: 'nueva',
+				carril: { de: '', a: 'f11-preview' },
+				quien: 'coordinador',
+			}),
+		]);
+		expect(readLog(dir)[1]).not.toHaveProperty('de');
+	});
+
+	it('converts the old one-file-per-row bitácora into daily files without losing a row', () => {
+		const dir = makeBoard({
+			tareas: [task('a')],
+			bitacora: [
+				{
+					id: '20261023T101500Z-a',
+					tarea: 'a',
+					de: '',
+					a: 'pendiente',
+					en: '2026-10-23T10:15:00Z',
+					quien: '',
+					corrio: 'pnpm board add',
+					salio: '',
+				},
+				{
+					id: 'b-20261023-a',
+					tarea: 'a',
+					de: 'pendiente',
+					a: 'en_curso',
+					en: '2026-10-23T11:00:00Z',
+					quien: 'f09 · Tablero v3',
+					corrio: '',
+					salio: '',
+				},
+				{
+					id: '2026-10-22-a-hecha',
+					tarea: 'a',
+					de: 'codex',
+					a: 'claude',
+					en: '2026-10-22T09:00:00Z',
+					quien: 'dueño',
+					corrio: 'pnpm board move',
+					salio: '',
+				},
+				{
+					id: 'a-2026-10-24T0100Z',
+					tarea: 'a',
+					de: 'sin carril',
+					a: 'f12-release',
+					en: '2026-10-24T01:00:00Z',
+					quien: 'coordinador',
+					corrio: 'pnpm board plan',
+					salio: '',
+					enlace: 'x',
+				},
+				{
+					id: 'a-raya',
+					tarea: 'a',
+					de: '—',
+					a: '—',
+					en: '2026-10-24T02:00:00Z',
+					quien: 'sesión',
+					corrio: 'nota',
+					salio: '',
+				},
+			],
+		});
+		const dry = board(dir, 'migrate-log', '--dry-run', '--json');
+		expect(JSON.parse(dry.out)).toMatchObject({
+			filas: 5,
+			sinQuien: 3,
+			agente: 1,
+			carril: 1,
+			escrito: false,
+		});
+		expect(readdirSync(path.join(dir, 'bitacora'))).toHaveLength(5);
+		const run = JSON.parse(board(dir, 'migrate-log', '--json').out);
+		expect(run).toMatchObject({
+			filas: 5,
+			escrito: true,
+			dias: ['2026-10-22', '2026-10-23', '2026-10-24'],
+		});
+		expect(readdirSync(path.join(dir, 'bitacora')).sort()).toEqual([
+			'2026-10-22.jsonl',
+			'2026-10-23.jsonl',
+			'2026-10-24.jsonl',
+		]);
+		expect(readdirSync(run.respaldo)).toHaveLength(5);
+		const rows = readLog(dir);
+		expect(rows).toHaveLength(5);
+		expect(rows).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					archivo: '20261023T101500Z-a.json',
+					de: '',
+					a: 'pendiente',
+					legado: true,
+				}),
+				expect.objectContaining({
+					archivo: 'b-20261023-a.json',
+					a: 'en curso',
+					quienTexto: 'f09 · Tablero v3',
+				}),
+				expect.objectContaining({
+					archivo: '2026-10-22-a-hecha.json',
+					agente: { de: 'codex', a: 'claude' },
+					quien: 'dueno',
+				}),
+				expect.objectContaining({
+					archivo: 'a-2026-10-24T0100Z.json',
+					carril: { de: '', a: 'f12-release' },
+					enlace: 'x',
+				}),
+				expect.objectContaining({
+					archivo: 'a-raya.json',
+					de: '',
+					a: '',
+					quienTexto: 'sesión',
+				}),
+			]),
+		);
+		expect(rows.filter((r) => r.quien === undefined)).toHaveLength(3);
+		expect(JSON.parse(board(dir, 'history', '--json').out).map((r: Json) => r.txt)).toContain(
+			'a agente codex → claude pnpm board move',
+		);
+		expect(JSON.parse(board(dir, 'migrate-log', '--json').out)).toMatchObject({ filas: 0 });
+	});
+
 	it('archives only finished, unlocked tasks and logs archive and unarchive', () => {
 		const dir = makeBoard({
 			tareas: [
@@ -1216,9 +1464,7 @@ describe('pnpm board', () => {
 		expect(readTask(dir, 'done').rev).toBe(2);
 		expect(board(dir, 'unarchive', 'done').status).toBe(0);
 		expect(readTask(dir, 'done').archivada).toBeUndefined();
-		const rows = readdirSync(path.join(dir, 'bitacora')).map((f) =>
-			JSON.parse(readFileSync(path.join(dir, 'bitacora', f), 'utf8')),
-		);
+		const rows = readLog(dir);
 		expect(rows.map((r) => [r.tarea, r.de, r.a, r.corrio]).sort()).toEqual([
 			['done', 'archivada', 'comprobada', 'pnpm board unarchive'],
 			['done', 'comprobada', 'archivada', 'pnpm board archive'],
@@ -1514,10 +1760,8 @@ describe('pnpm board', () => {
 		]);
 		expect(readTask(dir, 'done').archivada).toBeDefined();
 		expect(readTask(dir, 'open').archivada).toBeUndefined();
-		const [row] = readdirSync(path.join(dir, 'bitacora')).map((f) =>
-			JSON.parse(readFileSync(path.join(dir, 'bitacora', f), 'utf8')),
-		);
-		expect(row).toMatchObject({ tarea: 'done', a: 'archivada', quien: 'dueño' });
+		const [row] = readLog(dir);
+		expect(row).toMatchObject({ tarea: 'done', a: 'archivada', quien: 'dueno' });
 	});
 
 	it('exposes agent/lane/state reads and keeps a single Gemini identity', () => {
@@ -1582,44 +1826,6 @@ describe('pnpm board', () => {
 		);
 		expect(result.status).toBe(0);
 		expect(JSON.parse(String(result.stdout))).toEqual([['viva:pendiente'], ['viva:en curso']]);
-	});
-
-	it('imports a v2 export, turning espera and deps into requisitos', () => {
-		const src = makeBoard({
-			tareas: [
-				{
-					id: 'vieja',
-					titulo: 'Vieja',
-					estado: 'pendiente',
-					espera: 'usted',
-					usted: [{ t: 'Aprobar el PR' }],
-					deps: ['otra'],
-					toca: ['release'],
-					rev: 3,
-					actualizado: NOW,
-				},
-			],
-			decisiones: [{ id: 'd001', decision: 'x', vigente: true }],
-		});
-		const dir = makeBoard({});
-		const mapa = path.join(src, 'mapa.json');
-		writeFileSync(mapa, JSON.stringify({ vieja: { urgencia: 'alta' } }));
-		const { status, out } = board(dir, 'import', src, `--mapa=${mapa}`);
-		expect(status).toBe(0);
-		expect(out).toContain('1 tareas');
-		const t = readTask(dir, 'vieja');
-		expect(t).toMatchObject({
-			urgencia: 'alta',
-			agente: 'claude',
-			actor: 'dueno',
-			toca: ['main', 'produccion'],
-			requisitos: [
-				{ tipo: 'tarea', ref: 'otra' },
-				{ tipo: 'dueno', ref: 'Aprobar el PR', ok: false },
-			],
-		});
-		expect(t.espera).toBeUndefined();
-		expect(board(dir, 'import', src).status).toBe(2);
 	});
 
 	it('recovers missed events and corrupt JSON, and delivers to two SSE clients within one second', () => {
@@ -1697,7 +1903,7 @@ describe('pnpm board', () => {
 			const codes=await Promise.all([run('one'),run('two')]);
 			const task=JSON.parse(readFileSync(join(process.env.CELEBRA_BOARD_DIR,'tareas','race.json'),'utf8'));
 			const add=(id)=>new Promise(resolve=>{
-				const p=spawn(process.execPath,[process.argv[1],'add',id,'titulo='+id,'urgencia=normal','actor=coordinador'],{stdio:'ignore'});
+				const p=spawn(process.execPath,[process.argv[1],'add',id,'titulo='+id,'urgencia=normal','actor=coordinador','--coordinador'],{stdio:'ignore'});
 				p.on('exit',resolve);
 			});
 			const added=await Promise.all([add('first'),add('second')]);
@@ -1726,5 +1932,242 @@ describe('pnpm board', () => {
 			refused: true,
 			retained: 'live',
 		});
+	});
+});
+
+describe('closing cleanup (d186)', () => {
+	it('moves the prompt of a task reaching unida to the month .zip and drops its lane and lock', () => {
+		const candado = { agente: 'codex', sesion: 'codex-test', carril: 'f10-libre', desde: NOW };
+		const dir = makeBoard({
+			tareas: [
+				task('cerrar', {
+					estado: 'en revision',
+					pr: '#7',
+					rama: 'chore/cerrar',
+					carril: 'f10-libre',
+					candado: { ...candado, rama: 'chore/cerrar' },
+					cierre: CIERRE,
+				}),
+				task('abierta', { estado: 'en curso', carril: 'f09-docs' }),
+			],
+		});
+		const r = raw(
+			dir,
+			'set',
+			'cerrar',
+			'--rev=1',
+			'estado=unida',
+			'--agente=codex',
+			'--sesion=codex-test',
+		);
+		expect(r.status).toBe(0);
+		const t = readTask(dir, 'cerrar');
+		expect(t).not.toHaveProperty('prompt');
+		expect(t).not.toHaveProperty('carril');
+		expect(t).not.toHaveProperty('candado');
+		expect(t.sesion).toEqual({ id: 'codex-test', agente: 'codex' });
+		expect(t.cierre).toEqual(CIERRE);
+		const month = String(t.actualizado).slice(0, 7);
+		expect(zipEntries(path.join(dir, 'mensual', `${month}.zip`))).toEqual({
+			'prompts/cerrar.rev2.md': task('cerrar').prompt,
+		});
+		// An open task keeps its prompt and lane.
+		expect(board(dir, 'set', 'abierta', '--rev=1', 'ahora=sigue').status).toBe(0);
+		expect(readTask(dir, 'abierta')).toMatchObject({
+			carril: 'f09-docs',
+			prompt: expect.any(String),
+		});
+	});
+
+	it('keeps the prompt a closing write clears explicitly', () => {
+		const dir = makeBoard({
+			tareas: [task('x', { estado: 'hecha', evidencia: { salio: 'ok' } })],
+		});
+		expect(board(dir, 'set', 'x', '--rev=1', 'estado=comprobada', 'prompt=').status).toBe(0);
+		const month = String(readTask(dir, 'x').actualizado).slice(0, 7);
+		expect(zipEntries(path.join(dir, 'mensual', `${month}.zip`))).toEqual({
+			'prompts/x.rev2.md': task('x').prompt,
+		});
+	});
+
+	it('keeps every closed prompt in the same month file', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('a', { estado: 'hecha', evidencia: { salio: 'ok' } }),
+				task('b', { estado: 'hecha', evidencia: { salio: 'ok' } }),
+			],
+		});
+		expect(board(dir, 'set', 'a', '--rev=1', 'estado=comprobada').status).toBe(0);
+		expect(board(dir, 'set', 'b', '--rev=1', 'estado=comprobada').status).toBe(0);
+		const month = String(readTask(dir, 'a').actualizado).slice(0, 7);
+		expect(Object.keys(zipEntries(path.join(dir, 'mensual', `${month}.zip`))).sort()).toEqual([
+			'prompts/a.rev2.md',
+			'prompts/b.rev2.md',
+		]);
+	});
+});
+
+describe('light backups (d185)', () => {
+	const copies = (dir: string, id: string) => {
+		try {
+			return readdirSync(path.join(dir, '.respaldos', 'tareas', id)).sort();
+		} catch {
+			return [];
+		}
+	};
+
+	it('keeps 2 copies per document and none for a finished task', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('abierta', { estado: 'en curso' }),
+				task('lista', { estado: 'hecha', evidencia: { salio: 'ok' } }),
+			],
+		});
+		for (let rev = 1; rev <= 4; rev++)
+			expect(board(dir, 'set', 'abierta', `--rev=${rev}`, `ahora=paso ${rev}`).status).toBe(
+				0,
+			);
+		expect(copies(dir, 'abierta')).toHaveLength(2);
+		expect(board(dir, 'set', 'lista', '--rev=1', 'ahora=cerrada').status).toBe(0);
+		expect(copies(dir, 'lista')).toEqual([]);
+	});
+
+	it('lists surplus copies with --dry-run and removes them only with --aplicar', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('abierta', { estado: 'en curso' }),
+				task('vieja', { estado: 'cancelada', cierre: CIERRE }),
+			],
+		});
+		const seed = (id: string, names: string[]) => {
+			mkdirSync(path.join(dir, '.respaldos', 'tareas', id), { recursive: true });
+			for (const n of names)
+				writeFileSync(path.join(dir, '.respaldos', 'tareas', id, n), '{}');
+		};
+		seed('abierta', ['1.json', '2.json', '3.json', '4.json', '5.json']);
+		seed('vieja', ['1.json', '2.json']);
+		seed('compactada', ['1.json']);
+		const dry = raw(dir, 'prune-backups', '--dry-run', '--json');
+		expect(dry.status).toBe(0);
+		const listed = JSON.parse(dry.out);
+		expect(listed.aplicado).toBe(false);
+		expect(listed.sobran.map((x: Json) => x.archivo).sort()).toEqual([
+			'.respaldos/tareas/abierta/1.json',
+			'.respaldos/tareas/abierta/2.json',
+			'.respaldos/tareas/abierta/3.json',
+			'.respaldos/tareas/compactada/1.json',
+			'.respaldos/tareas/vieja/1.json',
+			'.respaldos/tareas/vieja/2.json',
+		]);
+		expect(copies(dir, 'abierta')).toHaveLength(5);
+		expect(raw(dir, 'prune-backups').out).toContain('Para quitarlos: --aplicar');
+		expect(copies(dir, 'abierta')).toHaveLength(5);
+		expect(raw(dir, 'prune-backups', '--aplicar').status).toBe(0);
+		expect(copies(dir, 'abierta')).toEqual(['4.json', '5.json']);
+		expect(copies(dir, 'vieja')).toEqual([]);
+		expect(readdirSync(path.join(dir, '.respaldos', 'tareas'))).toEqual(['abierta']);
+	});
+});
+
+describe('monthly archive (d187)', () => {
+	const old = '2026-10-01T10:00:00Z';
+	const finished = (id: string, fields: Json = {}) =>
+		task(id, { estado: 'unida', pr: '#492', cierre: CIERRE, archivada: old, ...fields });
+
+	it('summarizes tasks archived 7+ days ago, keeps them in the .zip and restores one', () => {
+		const dir = makeBoard({
+			tareas: [
+				finished('tablero-arreglos-cli'),
+				finished('reciente', { archivada: new Date().toISOString() }),
+				finished('sin-pr', { estado: 'cancelada', pr: undefined }),
+				task('espera', { requisitos: [{ tipo: 'tarea', ref: 'tablero-arreglos-cli' }] }),
+			],
+		});
+		const original = readFileSync(
+			path.join(dir, 'tareas', 'tablero-arreglos-cli.json'),
+			'utf8',
+		);
+		const dry = raw(dir, 'compact', '--antes=7d', '--dry-run');
+		expect(dry.status).toBe(0);
+		expect(dry.out).toContain('Se resumirían 2 tareas archivadas:');
+		expect(dry.out).toContain('T1 tablero-arreglos-cli · unida · PR #492 · 2026-10-01');
+		expect(readdirSync(path.join(dir, 'tareas'))).toHaveLength(4);
+
+		expect(raw(dir, 'compact', '--antes=7d').status).toBe(0);
+		expect(readdirSync(path.join(dir, 'tareas')).sort()).toEqual([
+			'espera.json',
+			'reciente.json',
+		]);
+		expect(readFileSync(path.join(dir, 'mensual', 'resumen-2026-10.md'), 'utf8')).toBe(
+			'# Tareas resumidas · 2026-10\n\n- T1 tablero-arreglos-cli · unida · PR #492 · 2026-10-01\n- T3 sin-pr · cancelada · 2026-10-01\n',
+		);
+		const zip = zipEntries(path.join(dir, 'mensual', '2026-10.zip'));
+		expect(zip['tareas/tablero-arreglos-cli.json']).toBe(original);
+		expect(
+			JSON.parse(
+				readFileSync(path.join(dir, 'archivo', 'tablero-arreglos-cli.json'), 'utf8'),
+			),
+		).toMatchObject({
+			num: 1,
+			estado: 'unida',
+			pr: '#492',
+			zip: 'mensual/2026-10.zip',
+		});
+		// The archivo record still meets requisitos and keeps the number taken.
+		expect(JSON.parse(board(dir, 'show', 'espera', '--json').out).requisitos[0].ok).toBe(true);
+		expect(
+			board(dir, 'add', 'nueva', 'titulo=Nueva', 'urgencia=normal', 'actor=coordinador')
+				.status,
+		).toBe(0);
+		expect(readTask(dir, 'nueva').num).toBe(5);
+
+		expect(raw(dir, 'restore', 'tablero-arreglos-cli', '--dry-run').out).toContain(
+			'se restauraría',
+		);
+		expect(readdirSync(path.join(dir, 'tareas'))).not.toContain('tablero-arreglos-cli.json');
+		expect(raw(dir, 'restore', 'tablero-arreglos-cli').status).toBe(0);
+		expect(readTask(dir, 'tablero-arreglos-cli')).toEqual(JSON.parse(original));
+		expect(readdirSync(path.join(dir, 'archivo'))).toEqual(['sin-pr.json']);
+		expect(raw(dir, 'restore', 'tablero-arreglos-cli').err).toContain('ya está en el tablero');
+	});
+
+	it('keeps a compacted id reserved and one summary line per task across restore cycles', () => {
+		const dir = makeBoard({ tareas: [finished('same')] });
+		expect(raw(dir, 'compact', '--antes=7d').status).toBe(0);
+		const dup = board(
+			dir,
+			'add',
+			'same',
+			'titulo=Otra',
+			'urgencia=normal',
+			'actor=coordinador',
+		);
+		expect(dup.status).toBe(2);
+		expect(dup.err).toContain('same está compactada: use pnpm board restore same');
+		expect(raw(dir, 'restore', 'same').status).toBe(0);
+		expect(raw(dir, 'compact', '--antes=7d').status).toBe(0);
+		expect(readFileSync(path.join(dir, 'mensual', 'resumen-2026-10.md'), 'utf8')).toBe(
+			'# Tareas resumidas · 2026-10\n\n- T1 same · unida · PR #492 · 2026-10-01\n',
+		);
+	});
+
+	it('refuses an age that is not <n>d', () => {
+		const dir = makeBoard({ tareas: [finished('x')] });
+		const r = raw(dir, 'compact', '--antes=semana');
+		expect(r.status).toBe(2);
+		expect(r.err).toContain('--antes debe ser <n>d');
+	});
+
+	it('leaves replaced decisions out of history unless --todas', () => {
+		const dir = makeBoard({
+			decisiones: [
+				{ id: 'd001', decision: 'Vieja', en: NOW, vigente: false },
+				{ id: 'd002', decision: 'Nueva', en: NOW, vigente: true },
+			],
+		});
+		const txt = (...args: string[]) =>
+			JSON.parse(raw(dir, 'history', '--json', ...args).out).map((r: Json) => r.txt);
+		expect(txt()).toEqual(['d002 Nueva']);
+		expect(txt('--todas').sort()).toEqual(['d001 (reemplazada) Vieja', 'd002 Nueva']);
 	});
 });

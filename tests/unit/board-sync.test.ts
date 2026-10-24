@@ -314,14 +314,17 @@ describe('pnpm board:sync', () => {
 		expect(freed.candado).toBeUndefined();
 		expect(readTask(dir, 'unido')).toMatchObject({ estado: 'unida', pr: '#10', rev: 2 });
 		expect(readTask(dir, 'abierto')).toMatchObject({ estado: 'en revision', pr: '#11' });
-		const rows = readdirSync(path.join(dir, 'bitacora')).map((f) =>
-			JSON.parse(readFileSync(path.join(dir, 'bitacora', f), 'utf8')),
+		const rows = readdirSync(path.join(dir, 'bitacora')).flatMap((f) =>
+			readFileSync(path.join(dir, 'bitacora', f), 'utf8')
+				.split('\n')
+				.filter(Boolean)
+				.map((line) => JSON.parse(line)),
 		);
 		expect(rows).toContainEqual(
 			expect.objectContaining({
 				tarea: 'unido',
 				a: 'unida',
-				quien: 'board:sync',
+				quien: 'coordinador',
 				corrio: 'pnpm board:sync',
 				salio: 'PR #10 MERGED',
 			}),
@@ -330,7 +333,7 @@ describe('pnpm board:sync', () => {
 			expect.objectContaining({
 				tarea: 'con-candado',
 				a: 'unida',
-				quien: 'board:sync',
+				quien: 'coordinador',
 				salio: 'PR #14 MERGED',
 			}),
 		);
