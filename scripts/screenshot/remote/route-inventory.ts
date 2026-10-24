@@ -7,12 +7,11 @@ import {
 
 /**
  * Remote route inventory: every public route a guest or prospect can reach on a live origin.
- * Candidates come from the repository (definitions, demos, showrooms, redirects); the live probe
+ * Candidates come from the repository (definitions, demos, redirects); the live probe
  * then decides which authoring definitions are actually served.
  */
 type RemoteRouteKind = 'page' | 'redirect' | 'asset';
-type RemoteRouteGroup =
-	'site' | 'showroom' | 'demo' | 'invitation' | 'memories' | 'redirect' | 'preview-photo';
+type RemoteRouteGroup = 'site' | 'demo' | 'invitation' | 'memories' | 'redirect' | 'preview-photo';
 
 export interface RemoteRouteCandidate {
 	path: string;
@@ -41,7 +40,6 @@ interface RedirectRuleSource {
 export interface RouteSources {
 	definitions: RouteDefinitionSource[];
 	demos: Array<{ eventType: string; slug: string }>;
-	showroomPaths: string[];
 	redirects: RedirectRuleSource[];
 	memoriesPaths: string[];
 }
@@ -81,7 +79,6 @@ export function buildRouteCandidates(sources: RouteSources): RemoteRouteCandidat
 	};
 
 	for (const path of SITE_PATHS) add({ path, kind: 'page', group: 'site' });
-	for (const path of sources.showroomPaths) add({ path, kind: 'page', group: 'showroom' });
 	for (const demo of sources.demos) {
 		add({
 			path: buildPublicInvitationPath(demo.eventType, demo.slug),
@@ -119,12 +116,10 @@ export function buildRouteCandidates(sources: RouteSources): RemoteRouteCandidat
 
 /** Repository sources at `root`. Imported lazily so unit tests can stay hermetic. */
 export async function loadRepositoryRouteSources(root: string): Promise<RouteSources> {
-	const [{ listActiveInvitationDefinitions }, { DEMO_SHOWROOM_EVENTS }, { PERMANENT_REDIRECTS }] =
-		await Promise.all([
-			import('../../provision/invitations/registry.ts'),
-			import('../../../src/data/demo-showroom.data.ts'),
-			import('../../../src/lib/server/security-headers.ts'),
-		]);
+	const [{ listActiveInvitationDefinitions }, { PERMANENT_REDIRECTS }] = await Promise.all([
+		import('../../provision/invitations/registry.ts'),
+		import('../../../src/lib/server/security-headers.ts'),
+	]);
 	const demos = listDemoInvitationFiles(resolve(root, DEMO_INVITATIONS_DIR))
 		.map(({ eventType, slug }) => ({ eventType, slug }))
 		.sort((a, b) => `${a.eventType}/${a.slug}`.localeCompare(`${b.eventType}/${b.slug}`));
@@ -135,7 +130,6 @@ export async function loadRepositoryRouteSources(root: string): Promise<RouteSou
 			lifecycle: definition.lifecycle,
 		})),
 		demos,
-		showroomPaths: DEMO_SHOWROOM_EVENTS.map((event) => event.showroomHref),
 		redirects: PERMANENT_REDIRECTS.map((rule) => ({ ...rule, permanent: true })),
 		memoriesPaths: [...MEMORIES_PATHS],
 	};
