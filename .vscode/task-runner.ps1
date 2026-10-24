@@ -158,7 +158,7 @@ $commandDetails = @{
     "dev"                       = @{
         Desc    = "Servidor de desarrollo local de Astro."
         UseCase = "Levantar la app en localhost para previsualizar invitaciones en el navegador."
-        Help    = "Ingrese '--help' (o '--host' / '--port 3000' para cambiar puerto/red)"
+        Help    = "Enter siempre arranca: cierra lo que ocupe el puerto de este carril y reinicia ('--host' / '--port 3000' para cambiar puerto/red)"
     }
     "dbs"                       = @{
         Desc    = "CLI de operaciones de base de datos y provisionamiento."
@@ -208,9 +208,14 @@ $commandDetails = @{
     "board:serve"               = @{
         Desc    = "Tablero de tareas en http://127.0.0.1:4320/, solo lectura y en vivo."
         UseCase = "Ver la cola, los carriles y el historial del tablero; cada cambio de pnpm board aparece al instante."
-        Help    = "Presione Enter para abrirlo (o '--port=<n>' para otro puerto); Ctrl+C lo cierra."
+        Help    = "Presione Enter para (re)abrirlo: cierra lo que ocupe el 4320 y corre el codigo de Integration desde cualquier carril."
     }
-    "ops:status"                = @{
+    "board:sync"                = @{
+        Desc    = "Sincroniza el tablero con ramas, PRs y carriles, sin IA (lo mismo que el boton Sincronizar)."
+        UseCase = "Pasar tareas a 'en revision' o 'unida' segun su PR y ver candados viejos de sesiones cerradas."
+        Help    = "Presione Enter para sincronizar (o '--dry-run' para solo ver los cambios, '--horas=<n>' para candados viejos)."
+    }
+    "ops:status"              = @{
         Desc    = "Estado de operacion en texto, solo lectura (git, preflight, limpieza, dbs y, con --remote, migraciones)."
         UseCase = "Ver develop frente a main, el diagnostico de prod:apply, que limpiar con su comando y las migraciones pendientes por entorno."
         Help    = "Ingrese '--remote' para migraciones de Preview y Production, '--section <git|preflight|worktrees|dbs|migrations>' o '--json'"
@@ -236,6 +241,53 @@ if (-not (Test-Path $historyDir)) {
 $safeCmdName = $Command -replace ':', '_'
 $historyFile = Join-Path $historyDir "$safeCmdName.log"
 $lastOutputFile = Join-Path $historyDir "$safeCmdName`_last_output.log"
+#endregion
+
+#region Forced restart and Integration-only commands
+$checkoutRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+
+# The board data lives in Integration and the board is served from there (d165), so these commands
+# run Integration's code from any lane; a lane on an older commit would otherwise serve an old board.
+$integrationCommands = @("board:serve", "board:sync")
+$commandRoot = $checkoutRoot
+if ($integrationCommands -contains $Command) {
+    $commonDir = git -C $checkoutRoot rev-parse --path-format=absolute --git-common-dir 2>$null
+    if ($LASTEXITCODE -eq 0 -and $commonDir) { $commandRoot = (Resolve-Path (Split-Path $commonDir.Trim())).Path }
+}
+
+# Enter always runs these: whatever node process holds the command's port is stopped first.
+$forceRestartCommands = @("dev", "board:serve")
+
+function Get-ForcedPort([string]$ArgsText) {
+    if ($ArgsText -match '--port[= ](\d+)') { return [int]$Matches[1] }
+    if ($Command -eq "board:serve") { return 4320 }
+    if ($env:ASTRO_PORT) { return [int]$env:ASTRO_PORT }
+    $laneModule = Join-Path $checkoutRoot "scripts/shared/worktree-lane.ts"
+    $port = & node --input-type=module -e 'import { pathToFileURL } from "node:url"; const l = await import(pathToFileURL(process.argv[1])); console.log(l.getWorktreeDevServerPort(l.detectWorktreeLane(process.argv[2], l.findRepoRoot(process.argv[2])).id));' $laneModule $checkoutRoot
+    if ($LASTEXITCODE -eq 0 -and $port) { return [int]$port }
+    return $null
+}
+
+function Stop-PortOwner([int]$Port) {
+    $owners = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique
+    foreach ($procId in $owners) {
+        $proc = Get-Process -Id $procId -ErrorAction SilentlyContinue
+        if (-not $proc) { continue }
+        # Only node servers are ours to restart; anything else on the port is reported, never killed.
+        if ($proc.ProcessName -ne "node") {
+            Write-Host "  [force] El puerto $Port lo usa $($proc.ProcessName) (PID $procId); no es un servidor node, no se cierra." -ForegroundColor Red
+            continue
+        }
+        Write-Host "  [force] Puerto $Port ocupado por node (PID $procId): se cierra para reiniciar." -ForegroundColor Yellow
+        Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
+    }
+    for ($i = 0; $i -lt 20; $i++) {
+        if (-not (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)) { return }
+        Start-Sleep -Milliseconds 250
+    }
+    Write-Host "  [force] El puerto $Port sigue ocupado; el servidor puede fallar al arrancar." -ForegroundColor Red
+}
 #endregion
 
 #region Loop Principal de Ejecucion
@@ -335,6 +387,13 @@ while ($true) {
                 $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command -- $scriptArgs" }
             } else {
                 $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command $scriptArgs" }
+            }
+            if ($commandRoot -ne $checkoutRoot) {
+                $fullCmd = $fullCmd -replace '^pnpm ', "pnpm -C `"$commandRoot`" "
+            }
+            if ($forceRestartCommands -contains $Command) {
+                $forcedPort = Get-ForcedPort $scriptArgs
+                if ($forcedPort) { Stop-PortOwner $forcedPort }
             }
         }
 
