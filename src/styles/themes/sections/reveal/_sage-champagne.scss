@@ -1,0 +1,48 @@
+// Sage champagne envelope: an ivory garden envelope on a deep forest field lit low by sage, closed
+// with a champagne wax monogram. Tokens only; geometry and motion stay with the envelope base.
+.envelope-wrapper[data-variant='sage-champagne'] {
+	--env-bg-fallback:
+		radial-gradient(
+			ellipse 78% 52% at 50% 38%,
+			rgb(var(--color-sage-deep-rgb) / 38%) 0%,
+			transparent 72%
+		),
+		radial-gradient(
+			ellipse 80% 55% at 50% 100%,
+			rgb(var(--color-champagne-light-rgb) / 12%) 0%,
+			transparent 70%
+		),
+		var(--color-forest-night);
+	--env-paper-bg:
+		var(--sage-paper-grain),
+		linear-gradient(
+			160deg,
+			var(--color-cream) 0%,
+			var(--color-sage-paper) 58%,
+			color-mix(in srgb, var(--color-sage-mist) 70%, var(--color-sage-paper)) 100%
+		);
+	--env-paper-border: rgb(var(--color-champagne-rgb) / 55%);
+	--env-text-primary: var(--color-forest-ink);
+	--env-text-secondary: var(--color-champagne-ink);
+	--env-instruction-color: var(--color-night-sage);
+	--env-accent-fallback: var(--color-champagne);
+	--env-seal-accent: var(--color-champagne);
+	--env-seal-bg: radial-gradient(
+		circle at 36% 30%,
+		var(--sage-wax-light) 0%,
+		var(--sage-wax) 52%,
+		var(--sage-wax-deep) 100%
+	);
+	--env-seal-icon: var(--sage-wax-press);
+	--env-shadow-seal:
+		0 1px 0 rgb(var(--color-forest-ink-rgb) / 26%),
+		0 4px 8px rgb(var(--color-forest-ink-rgb) / 18%), inset 1px 1px 0 rgb(255 255 255 / 55%),
+		inset -1px -2px 3px rgb(0 0 0 / 22%);
+	--env-shadow-container-fallback: 0 1px 2px rgb(0 0 0 / 18%), 0 30px 60px -30px rgb(0 0 0 / 55%);
+	--env-container-radius-fallback: 2px;
+	--reveal-card-bg: var(--color-cream);
+	--reveal-card-text-primary: var(--color-forest-ink);
+	--reveal-card-text-secondary: var(--color-champagne-ink);
+	--reveal-card-border: rgb(var(--color-champagne-rgb) / 40%);
+	--reveal-card-accent: rgb(var(--color-champagne-rgb) / 60%);
+}

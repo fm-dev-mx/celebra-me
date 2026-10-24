@@ -3,10 +3,11 @@
  * `/api/stream` pushes the board as Server-Sent Events whenever a file in the store changes, so the page
  * shows a write in under a second; `/api/board` stays for one-off reads.
  *
- * The only write is `POST /api/sync` (the «Sincronizar» button), which runs the no-AI `scripts/board/sync.mjs`.
- * Any website can make the browser send a request to 127.0.0.1, so every request must carry a local `Host`
- * (DNS rebinding), and the POST must also come from the page's own `Origin` with the per-process random token
- * the page embeds.
+ * Two writes, both only from this same page on 127.0.0.1: `POST /api/archivar` (d167) archives or unarchives a
+ * finished task through the `archive` option `pnpm board view` passes (without it the server stays read-only),
+ * and `POST /api/sync` (the «Sincronizar» button) runs the no-AI `scripts/board/sync.mjs`. Any website can make
+ * the browser send a request to 127.0.0.1, so every request must carry a local `Host` (DNS rebinding), and the
+ * sync POST must also come from the page's own `Origin` with the per-process random token the page embeds.
  */
 import { execFile } from 'node:child_process';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
@@ -74,6 +75,69 @@ function readJson(req, limit = 1024) {
 			}
 		});
 		req.on('error', fail);
+	});
+}
+
+const LOOPBACK = new Set(['127.0.0.1', '::ffff:127.0.0.1']);
+const MAX_BODY = 4096;
+
+/**
+ * A write must come from this page: loopback socket, Host and Origin equal to this server's own
+ * 127.0.0.1 address (no other site, no DNS rebinding) and a JSON body, which a plain cross-site form
+ * cannot send without a preflight this server never answers.
+ */
+function sameOrigin(req) {
+	const own = `127.0.0.1:${req.socket.localPort}`;
+	const site = req.headers['sec-fetch-site'];
+	return (
+		LOOPBACK.has(req.socket.remoteAddress) &&
+		req.headers.host === own &&
+		req.headers.origin === `http://${own}` &&
+		(site === undefined || site === 'same-origin') &&
+		/^application\/json\b/i.test(req.headers['content-type'] ?? '')
+	);
+}
+
+function json(res, status, body) {
+	res.writeHead(status, {
+		'content-type': 'application/json; charset=utf-8',
+		'cache-control': 'no-store',
+	});
+	res.end(JSON.stringify(body));
+}
+
+/** `archive(id, archivar, opts)` answers `{ task }` or `{ error }` for a refused write, and throws otherwise. */
+function archiveRequest(archive, req, res) {
+	if (!sameOrigin(req)) {
+		req.resume();
+		return json(res, 403, { error: 'Solo se archiva desde esta página en 127.0.0.1.' });
+	}
+	let body = '';
+	req.setEncoding('utf8');
+	req.on('data', (chunk) => {
+		body += chunk;
+		if (body.length > MAX_BODY) req.destroy();
+	});
+	req.on('end', () => {
+		let input;
+		try {
+			input = JSON.parse(body);
+		} catch {
+			return json(res, 400, { error: 'Petición no válida.' });
+		}
+		if (typeof input?.id !== 'string' || typeof input.archivar !== 'boolean')
+			return json(res, 400, { error: 'Falta id o archivar.' });
+		try {
+			const { task: t, error } = archive(input.id, input.archivar, {
+				rev: input.rev === undefined ? undefined : String(input.rev),
+				quien: 'dueño',
+				corrio: input.archivar ? 'Archivar en la página' : 'Desarchivar en la página',
+			});
+			if (error) return json(res, 409, { error });
+			json(res, 200, { id: t.id, rev: t.rev, archivada: t.archivada ?? null });
+		} catch (e) {
+			json(res, 500, { error: String(e.message ?? e) });
+		}
 	});
 }
 
@@ -163,6 +227,7 @@ export function serveView(
 		heartbeatMs = HEARTBEAT_MS,
 		watchFactory = watch,
 		sync = (opts) => runSyncScript(dir, opts),
+		archive,
 	} = {},
 ) {
 	const token = randomBytes(32).toString('hex');
@@ -203,13 +268,6 @@ export function serveView(
 		for (const res of clients) send(res, JSON.stringify(board.status()), 'status');
 	}, heartbeatMs);
 
-	const json = (res, status, data) =>
-		res
-			.writeHead(status, {
-				'content-type': 'application/json; charset=utf-8',
-				'cache-control': 'no-store',
-			})
-			.end(JSON.stringify(data));
 	const localHosts = () => {
 		const { port } = server.address();
 		return [`127.0.0.1:${port}`, `localhost:${port}`];
@@ -248,6 +306,10 @@ export function serveView(
 		}
 		if (req.method === 'POST' && path === '/api/sync') {
 			handleSync(req, res);
+			return;
+		}
+		if (archive && req.method === 'POST' && path === '/api/archivar') {
+			archiveRequest(archive, req, res);
 			return;
 		}
 		if (req.method !== 'GET') {

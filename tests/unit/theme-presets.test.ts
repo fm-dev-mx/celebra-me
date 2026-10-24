@@ -513,3 +513,93 @@ describe('Storybook lilac theme isolation', () => {
 		expect(bundle).not.toContain('.theme-preset--storybook-lilac');
 	});
 });
+
+describe('Sage champagne theme isolation', () => {
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'sage-champagne');
+	const sageContent = fs.readFileSync(path.join(presetsDir, '_sage-champagne.scss'), 'utf8');
+	const ownFiles = [
+		`${presetsDir}/_sage-champagne.scss`,
+		'src/styles/themes/sections/theme-shell/_sage-champagne.scss',
+		'src/styles/themes/sections/reveal/_sage-champagne.scss',
+		'src/styles/invitation-presets/sage-champagne.scss',
+		'src/styles/invitation-sections-by-preset/sage-champagne.scss',
+		'src/invitations/demos/demo-xv-serenata/profile.scss',
+	];
+	// America and the «Jardín de luz» demo keep their own preset; none of their files may learn
+	// about the new one.
+	const protectedFiles = [
+		`${presetsDir}/_storybook-lilac.scss`,
+		'src/styles/themes/sections/theme-shell/_storybook-lilac.scss',
+		'src/styles/invitation-presets/storybook-lilac.scss',
+		'src/styles/invitation-sections-by-preset/storybook-lilac.scss',
+		'src/styles/invitation-profiles/america.scss',
+		'src/invitations/demos/demo-xv-lantern-garden/profile.scss',
+		'src/invitations/demos/demo-xv-lantern-garden/content.json',
+		'src/invitations/demos/demo-xv-lantern-garden/invitation.ts',
+	];
+	const read = (file: string) => fs.readFileSync(path.join(projectRoot, file), 'utf8');
+
+	it('defines the expected theme root scope only', () => {
+		expect(getTopLevelSelectors(sageContent)).toEqual(['.theme-preset--sage-champagne']);
+	});
+
+	it('does not reference other registered presets', () => {
+		for (const preset of otherPresets) {
+			expect(hasPresetReference(sageContent, preset)).toBe(false);
+		}
+	});
+
+	it('does not contain !important or event-specific content', () => {
+		expect(sageContent).not.toContain('!important');
+		expect(sageContent).not.toMatch(/\bXV\b/);
+		expect(sageContent).not.toMatch(/events[/-]/i);
+	});
+
+	it('styles interludes, family and location through the base contracts', () => {
+		expectInterludeContract(sageContent);
+		expectFamilyContract(sageContent);
+		expect(sageContent).toContain('--location-bg');
+		expect(sageContent).toContain('--location-indications-grid-template');
+	});
+
+	it('paints its night band through tokens on section kinds, never through geometry', () => {
+		const shell = read('src/styles/themes/sections/theme-shell/_sage-champagne.scss');
+		expect(shell).toContain("[data-section-kind='countdown']");
+		const declarations = shell
+			.replace(/\/\/.*$/gm, '')
+			.split(/[;{}]/)
+			.map((part) => part.trim())
+			.filter((part) => /^[a-z-]+\s*:/.test(part));
+		expect(declarations.filter((part) => !part.startsWith('--'))).toEqual([]);
+	});
+
+	it('scopes its envelope skin to its own variant', () => {
+		const reveal = read('src/styles/themes/sections/reveal/_sage-champagne.scss');
+		expect(getTopLevelSelectors(reveal)).toEqual([
+			".envelope-wrapper[data-variant='sage-champagne']",
+		]);
+	});
+
+	it('borrows no identity from America or the lantern garden demo', () => {
+		for (const file of ownFiles) {
+			const source = read(file);
+			expect({
+				file,
+				match:
+					source.match(
+						/america|storybook|lilac|lantern-garden|braid|tower|corona/i,
+					)?.[0] ?? null,
+			}).toEqual({ file, match: null });
+		}
+	});
+
+	it('leaves the storybook lilac preset, America and the lantern garden demo unaware of it', () => {
+		for (const file of protectedFiles) {
+			const source = read(file);
+			expect({ file, match: source.match(/sage-champagne|serenata/i)?.[0] ?? null }).toEqual({
+				file,
+				match: null,
+			});
+		}
+	});
+});

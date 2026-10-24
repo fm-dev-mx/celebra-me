@@ -19,7 +19,7 @@ describe('catalog short routes', () => {
 
 	it('shares every catalog demo at its short alias and keeps managed links unchanged', () => {
 		expect(findDemoByRouteSlug('unknown')).toBeUndefined();
-		expect(DEMO_INVITATIONS).toHaveLength(8);
+		expect(DEMO_INVITATIONS).toHaveLength(9);
 		for (const demo of DEMO_INVITATIONS) {
 			expect(demo.routeSlug).toBeTruthy();
 			expect(getDemoRouteSlug(demo.slug)).toBe(demo.routeSlug);
