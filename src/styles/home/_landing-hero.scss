@@ -221,8 +221,10 @@
 	}
 
 	&__phone-kicker {
+		--phone-kicker-size: max(6px, 4.6cqi);
+
 		font-family: var(--font-ui);
-		font-size: max(6px, 4.6cqi);
+		font-size: var(--phone-kicker-size);
 		font-weight: 600;
 		letter-spacing: 0.24em;
 		text-transform: uppercase;
