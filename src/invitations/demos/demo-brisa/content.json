@@ -156,7 +156,8 @@
         "labels": {
             "name": "Su nombre",
             "notesLabel": "Mensaje para Ximena y Diego",
-            "notesPlaceholder": "Escriba unas palabras para los novios…"
+            "notesPlaceholder": "Escriba unas palabras para los novios…",
+            "guestHint": "Hemos reservado {count} lugares para su invitación. Puede ajustar el número si asistirán menos personas."
         },
         "responseMessages": {
             "confirmed": {
