@@ -29,9 +29,11 @@ authorization.
   and is `vigente`, a `dueno` only with `ok: true`. A pending task without a prompt waits for one
   automatically (except `actor: coordinador`).
 - **Stage and color**: ready = every requisito met. Green = ready and the owner acts (`actor: dueno`
-  or anything in `toca`); violet = ready and an agent finishes it alone (it has every capability in
-  `requiere`); gray = blocked; blue = `en curso`; teal = `hecha`/`unida`/`en revision`. Urgency is
-  an icon, never green.
+  or anything in `toca`), or ready and unlocked with only Codex or Gemini able to finish it: the
+  owner pastes its prompt there, labeled «Pegar en Codex/Gemini» with «Copiar prompt» (d169,
+  `ownerLaunches`; `claim` and `next` are unchanged); violet = ready and an agent that starts alone
+  (Claude, or the coordinator) finishes it (it has every capability in `requiere`); gray = blocked;
+  blue = `en curso`; teal = `hecha`/`unida`/`en revision`. Urgency is an icon, never green.
 - **Execution number**: urgency → ready before blocked → `hasta` → `orden` → title; an open task it
   waits for goes right before it.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
