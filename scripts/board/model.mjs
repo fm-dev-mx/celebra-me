@@ -654,8 +654,21 @@ export function nextFor(agente, board, now = Date.now()) {
 	);
 }
 
-/** The lane a task sits in: its lock's, else the planned one (d177), else its recorded `carril`. */
-export const taskLane = (t) => t.candado?.carril ?? t.carrilPlaneado ?? t.carril;
+/** Board lane where read-only tasks run by default: the Integration checkout. */
+export const READONLY_LANE = 'f04-integracion';
+
+/** Whether `t` is a read-only task: a cross-review, or one marked `soloLectura`. */
+export const isReadOnly = (t) => Boolean(isReview(t) || t?.soloLectura);
+
+/**
+ * The lane a task sits in: its lock's, else the planned one (d177), else its recorded `carril`, else
+ * READONLY_LANE for a read-only task.
+ */
+export const taskLane = (t) =>
+	t?.candado?.carril ??
+	t?.carrilPlaneado ??
+	t?.carril ??
+	(isReadOnly(t) ? READONLY_LANE : undefined);
 
 const HEADING = /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ,.:]{3,}$/;
 
@@ -689,7 +702,7 @@ export const laneAllowed = (carril, task, lanes) =>
 
 /** Folder of a lane relative to the repository's parent directory (d177): never an absolute path. */
 export const laneFolder = (id) =>
-	id === 'integration' ? 'celebra-me' : `celebra-me-worktrees/${id}`;
+	id === 'integration' || id === READONLY_LANE ? 'celebra-me' : `celebra-me-worktrees/${id}`;
 
 /**
  * d191: a task's `categoria` names the lane it prefers, never one it must use. Each category is the use of one
@@ -733,7 +746,7 @@ export function categoryMismatch(t, carril) {
  * else the first free one from f05 to f12; null when none is free or nothing applies.
  */
 export function suggestedLane(t, board) {
-	if (isReview(t) || t.carrilPlaneado || t.candado) return null;
+	if (isReadOnly(t) || t.carrilPlaneado || t.candado) return null;
 	const preferred = CATEGORIA_CARRIL[t.categoria];
 	if (preferred && !laneHolder(preferred, board, t.id))
 		return { carril: preferred, propio: true };
@@ -750,7 +763,7 @@ export const REVIEW_RUNS = `Corre en: Integración (carpeta ${laneFolder('integr
  * planned lane; 2 a lane another task's lock holds; 3 no lane to run in.
  */
 export function laneRank(t, board) {
-	if (isReview(t) || t.candado?.carril) return 0;
+	if (isReadOnly(t) || t.candado?.carril) return 0;
 	const preferred = CATEGORIA_CARRIL[t.categoria];
 	if (t.carrilPlaneado) {
 		if (laneBusy(t, board)) return 2;
@@ -791,7 +804,7 @@ function suggestionLines(t, board) {
  * is not its category's lane, and an unplanned one gets a suggestion.
  */
 export function laneLines(t, board) {
-	if (isReview(t)) return [REVIEW_RUNS];
+	if (isReadOnly(t)) return [REVIEW_RUNS];
 	const lane = t.carrilPlaneado;
 	if (!lane) return suggestionLines(t, board);
 	const lines = [`Corre en: ${lane} · carpeta ${laneFolder(lane)}`, ...pasteLine(t, lane)];

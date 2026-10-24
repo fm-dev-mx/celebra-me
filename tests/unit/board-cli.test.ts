@@ -992,6 +992,11 @@ describe('pnpm board', () => {
 		expect(html).toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
 		expect(html).toContain('const laneId=taskLane;');
+		expect(html).toContain(
+			'${taskLane(t)&&!runLines(t).length?`<span class="lane">${esc(taskLane(t))}</span>`:',
+		);
+		expect(html).toContain('const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));');
+		expect(html).toContain("['Carril',taskLane(t)?");
 	});
 
 	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
