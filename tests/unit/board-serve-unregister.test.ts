@@ -1,9 +1,14 @@
 import { spawnSync } from 'node:child_process';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from '@jest/globals';
 
 const SCRIPT = path.join(process.cwd(), 'scripts', 'board', 'serve-unregister.ps1');
 const TASK = 'Celebra-me servidor del tablero';
+// Server command lines are built from paths resolved at run time: this checkout, and a repository
+// directory with spaces, which `node` must quote.
+const BOARD = path.join('scripts', 'board', 'board.mjs');
+const SPACED_REPO = path.join(os.tmpdir(), 'my repo');
 
 /** The first PowerShell on this machine, or undefined (the suite is skipped without one). */
 const SHELL = ['pwsh', 'powershell'].find(
@@ -60,7 +65,7 @@ const manual = {
 	ProcessId: 41,
 	ParentProcessId: 40,
 	Name: 'node.exe',
-	CommandLine: 'node D:\\code\\celebra-me\\scripts\\board\\board.mjs view',
+	CommandLine: `node ${path.join(process.cwd(), BOARD)} view`,
 };
 
 (SHELL ? describe : describe.skip)('serve-unregister.ps1', () => {
@@ -73,8 +78,7 @@ const manual = {
 			ProcessId: 61,
 			ParentProcessId: 60,
 			Name: 'node.exe',
-			CommandLine:
-				'"C:\\Program Files\\nodejs\\node.exe" "D:\\my repo\\scripts\\board\\board.mjs" view',
+			CommandLine: `"${process.execPath}" "${path.join(SPACED_REPO, BOARD)}" view`,
 		};
 		const calls = unregister({
 			registered: true,
