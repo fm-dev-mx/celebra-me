@@ -58,10 +58,10 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Variant precedence**: `envelope.variant` falls back to `theme.preset` when omitted
   (`buildEnvelope` in `src/lib/adapters/event.ts`). `envelope.revealVariant` then decides the
   experience: `editorial-cover` replaces the envelope with the editorial cover reveal;
-  `satin-filigree`, `seaside-lineart`, and `storybook-lanterns` are standalone reveal skins that
-  replace the preset-driven `data-variant` (`resolveEnvelopeDataVariant` in
-  `src/lib/invitation/reveal-card.ts`); `celestial-blue` keeps the preset-driven `data-variant` and
-  layers on top of it. See also
+  `satin-filigree`, `seaside-lineart`, `storybook-lanterns` and `storybook-butterflies` are
+  standalone reveal skins that replace the preset-driven `data-variant`
+  (`resolveEnvelopeDataVariant` in `src/lib/invitation/reveal-card.ts`); `celestial-blue` keeps the
+  preset-driven `data-variant` and layers on top of it. See also
   [`invitation-creation-contract.md`](../../core/invitation-creation-contract.md).
 - **Seal Renderer Model**:
   - `wax-organic` (default for new invitations): Organic melted-wax geometry with shape-conforming

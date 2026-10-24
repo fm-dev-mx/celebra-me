@@ -79,6 +79,7 @@ const STANDALONE_REVEAL_VARIANTS = [
 	'satin-filigree',
 	'seaside-lineart',
 	'storybook-lanterns',
+	'storybook-butterflies',
 ] as const;
 type StandaloneRevealVariant = (typeof STANDALONE_REVEAL_VARIANTS)[number];
 

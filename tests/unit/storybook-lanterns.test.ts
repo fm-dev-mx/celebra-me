@@ -68,6 +68,39 @@ describe('storybook-lanterns reveal contract', () => {
 	});
 });
 
+describe('storybook-butterflies reveal contract', () => {
+	it('is a standalone reveal that shares the storybook stylesheet', () => {
+		expect(envelopeSchema.safeParse({ revealVariant: 'storybook-butterflies' }).success).toBe(
+			true,
+		);
+		expect(resolveEnvelopeDataVariant('storybook-butterflies', 'storybook-emerald')).toBe(
+			'storybook-butterflies',
+		);
+
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/reveal/_storybook-lanterns.scss': {
+				default: '/_astro/reveal-storybook-lanterns.css',
+			},
+		});
+		expect(
+			resolveInvitationCssUrls({}, sectionUrlMap, {
+				themePreset: 'storybook-emerald',
+				envelopeVariant: 'storybook-butterflies',
+			}),
+		).toContain('/_astro/reveal-storybook-lanterns.css');
+	});
+
+	it('styles both variants from the one skin selector', () => {
+		const skin = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/sections/reveal/_storybook-lanterns.scss'),
+			'utf8',
+		);
+		expect(skin).toContain("[data-variant='storybook-lanterns']");
+		expect(skin).toContain("[data-variant='storybook-butterflies']");
+		expect(skin).not.toMatch(/^\.envelope-wrapper\[data-variant=/m);
+	});
+});
+
 describe('storybook presentation contracts', () => {
 	it('registers the storybook-lilac preset and its stylesheet entrypoints', () => {
 		expect(THEME_PRESETS).toContain('storybook-lilac');

@@ -181,6 +181,11 @@ invitation profiles.
   `--storybook-*` tokens. Proven on the America invitation (`/xv/america`); the e2e harness renders
   it through `/test/variant?full=1&eventType=xv&slug=america`, without a synthetic portability
   fixture.
+- envelope.revealVariant storybook-butterflies: the `storybook-lanterns` letter with butterflies in
+  place of the lanterns: they fold their wings on the depth sky and rise over the cover in the
+  send-off (`--storybook-send-off: butterflies`). It loads the same reveal stylesheet and draws no
+  card art; the seal press comes from the profile (`--storybook-seal-art`). Proven on the Andrea
+  invitation (`/xv/andrea`).
 - envelope.revealVariant night-envelope: a letter under a December night. Navy paper with a fine
   grain and champagne fold hairlines, a star liner shown while the flap turns, a glowing seal with
   the couple's monogram that is pressed but never broken, and an ivory card whose arched window

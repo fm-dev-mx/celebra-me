@@ -8,8 +8,7 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * the garden plate, the sealed-letter print hangs out of it, and the closing rises into the reply
  * card under an arch. Fine gold butterflies are the only motif. The cover frames the portrait in
  * an arch over the name. The photographs come from an AI session edited from the client's
- * snapshots, upscaled 2× with a resampling filter that invents no detail; the two plates and two
- * album prints are temporary copies until the second session's photos arrive. Map links are address searches until the client sends pins; the song is
+ * snapshots, upscaled 2× with a resampling filter that invents no detail. The song is
  * omitted until its file is hosted on the media domain. The program, gifts, reply deadline and
  * every guest-facing line are drafts for the client's approval. The family section is «Mi
  * familia» (never «Mis padres») and has no godparents. Adults only, with personalized passes.
@@ -89,8 +88,10 @@ const content: CanonicalEventContentInput = {
 	envelope: {
 		disabled: false,
 		variant: 'storybook-emerald',
+		revealVariant: 'storybook-butterflies',
 		sealStyle: 'wax',
-		sealIcon: 'wax-monogram',
+		// Hidden under the profile's pressed ring of leaves; the monogram is struck on top.
+		sealIcon: 'flower',
 		sealInitials: 'A',
 		envelopeName: CELEBRANT_NAME,
 		cardName: CELEBRANT_NAME,
@@ -167,9 +168,7 @@ const content: CanonicalEventContentInput = {
 				city: 'Guadalupe',
 				date: '2027-07-03',
 				time: '17:30',
-				// Address search until the client sends a pin.
-				googleMapsUrl:
-					'https://www.google.com/maps/search/?api=1&query=Parroquia+San+Juan+Mar%C3%ADa+Bautista+Vianney+Tepaneca+301+Fraccionamiento+Azteca+Guadalupe+Nuevo+Le%C3%B3n',
+				googleMapsUrl: 'https://maps.app.goo.gl/9SMypwvSG2JTLXUy6',
 				isVisible: true,
 			},
 			{
@@ -180,9 +179,7 @@ const content: CanonicalEventContentInput = {
 				city: 'Guadalupe',
 				date: '2027-07-03',
 				time: '20:00',
-				// Address search until the client sends a pin.
-				googleMapsUrl:
-					'https://www.google.com/maps/search/?api=1&query=Luna+Boutique+Eventos+5+de+Mayo+620+Fraccionamiento+Marte+Guadalupe+Nuevo+Le%C3%B3n',
+				googleMapsUrl: 'https://maps.app.goo.gl/aUGB93WmVMLgnXKr7',
 				isVisible: true,
 			},
 		],
@@ -288,6 +285,11 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Regalos', href: '#regalos' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
+	music: {
+		url: 'https://media.celebra-me.com/invitations/xv/andrea/music-62b002fb8800ac0195e08cfc858eea3bb836f057f0c148c0d3749ec77d7979ad.mp3',
+		title: 'Beauty and the Beast · Solo Piano',
+		autoPlay: true,
+	},
 	sharing: {
 		ogImage: 'ogShare',
 		ogDescription: `Sábado ${EVENT_DATE_LABEL} · Guadalupe, Nuevo León. Misa a las 17:30 y recepción a las 20:00.`,

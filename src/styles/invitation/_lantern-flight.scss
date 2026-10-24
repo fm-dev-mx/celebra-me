@@ -4,7 +4,7 @@
 // Only transform and opacity move. Every scene is hidden unless a profile opts in:
 //   --storybook-closing-sky-display     `block` shows the sky behind a closing section
 //   --storybook-ambient-lanterns-display `block` shows the small lanterns behind a section's text
-//   --storybook-send-off                `lanterns` releases lanterns over the cover after the envelope
+//   --storybook-send-off                `lanterns` (or `butterflies`) releases them over the cover after the envelope
 // Colors: --storybook-sky-light / -glow / -lantern (as on the envelope sky).
 
 .storybook-sky--closing,
@@ -28,6 +28,30 @@
 
 	.storybook-sky__lantern-flame {
 		fill: var(--sky-light);
+	}
+
+	.storybook-sky__butterfly-wings {
+		transform-box: view-box;
+		transform-origin: 50% 50%;
+		animation: lantern-flight-flap 0.8s ease-in-out infinite alternate;
+	}
+
+	// Outlined in a deeper gold: the butterflies leave the night and cross the day cover.
+	.storybook-sky__butterfly-wing {
+		fill: color-mix(in srgb, var(--sky-lantern) 78%, var(--sky-light));
+		stroke: color-mix(in srgb, var(--sky-lantern) 50%, black);
+		stroke-opacity: 55%;
+		stroke-width: 1;
+	}
+
+	.storybook-sky__butterfly-body {
+		fill: color-mix(in srgb, var(--sky-lantern) 55%, black);
+	}
+
+	.storybook-sky__butterfly-antennae {
+		stroke: color-mix(in srgb, var(--sky-lantern) 55%, black);
+		stroke-linecap: round;
+		stroke-width: 0.9;
 	}
 
 	svg {
@@ -170,6 +194,16 @@
 	100% {
 		opacity: 0%;
 		transform: translate3d(-8px, -115cqh, 0);
+	}
+}
+
+@keyframes lantern-flight-flap {
+	from {
+		transform: scaleX(1);
+	}
+
+	to {
+		transform: scaleX(0.28);
 	}
 }
 

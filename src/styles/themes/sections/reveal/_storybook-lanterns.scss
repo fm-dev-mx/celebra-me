@@ -5,8 +5,10 @@
 // turns, a gold wax sun seal with the honoree's monogram pressed in, and a cream letter with one
 // gold hairline inset, set in the album's type roles (label, name, rule, date, guest). Colors resolve through semantic tokens; profiles
 // may override the optional `--storybook-*` hooks, which this skin consumes with fallbacks and
-// never declares.
+// never declares. `storybook-butterflies` is the same letter with butterflies in place of the
+// lanterns on the sky and in the send-off.
 
+$storybook-reveal: ".envelope-wrapper:is([data-variant='storybook-lanterns'], [data-variant='storybook-butterflies'])";
 $storybook-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.29 0 0 0 0 0.22 0 0 0 0 0.4 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url%28%23n%29'/%3E%3C/svg%3E");
 $storybook-liner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M9 4c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5ZM27 22c.3 2.2 1.2 3.1 3.4 3.4-2.2.3-3.1 1.2-3.4 3.4-.3-2.2-1.2-3.1-3.4-3.4 2.2-.3 3.1-1.2 3.4-3.4Z' fill='%23b0883a' fill-opacity='.55'/%3E%3C/svg%3E");
 
@@ -93,7 +95,7 @@ $sb-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 $sb-ease-in: cubic-bezier(0.55, 0, 0.85, 0.3);
 $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 
-.envelope-wrapper[data-variant='storybook-lanterns'] {
+#{$storybook-reveal} {
 	--storybook-gold: var(--storybook-ink, var(--color-ornament-gold, var(--color-border-premium)));
 	--env-bg-fallback:
 		#{$storybook-grain},
@@ -601,6 +603,35 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 		fill: var(--sky-light);
 	}
 
+	// Butterflies fold their wings about the body as they climb; the bloom stays softer than a
+	// lantern's flame.
+	.storybook-sky__butterfly::before {
+		inset: -40% -50%;
+	}
+
+	.storybook-sky__butterfly-wings {
+		transform-box: view-box;
+		transform-origin: 50% 50%;
+		animation: storybook-butterfly-flap 0.9s ease-in-out var(--phase) infinite alternate;
+	}
+
+	.storybook-sky__butterfly-wing {
+		fill: color-mix(in srgb, var(--sky-lantern) 78%, var(--sky-light));
+		stroke: var(--sky-light);
+		stroke-opacity: 45%;
+		stroke-width: 0.8;
+	}
+
+	.storybook-sky__butterfly-body {
+		fill: color-mix(in srgb, var(--sky-lantern) 55%, black);
+	}
+
+	.storybook-sky__butterfly-antennae {
+		stroke: color-mix(in srgb, var(--sky-lantern) 55%, black);
+		stroke-linecap: round;
+		stroke-width: 0.9;
+	}
+
 	// Opening moves the eye toward the envelope: the near lanterns pass by, the stars barely move.
 
 	.envelope-base {
@@ -737,8 +768,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 // Hand-over: the letter lifts away while the night still covers the page, and the night starts
 // to fade only once the letter is gone, so the cover never shows through a letter that carries
 // the same name.
-.event-theme-wrapper[data-reveal-state='revealed']
-	.envelope-wrapper[data-variant='storybook-lanterns'] {
+.event-theme-wrapper[data-reveal-state='revealed'] #{$storybook-reveal} {
 	--env-exit-delay: var(--storybook-letter-exit, 320ms);
 
 	.envelope-reveal-stage {
@@ -803,6 +833,16 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 
 	to {
 		opacity: 65%;
+	}
+}
+
+@keyframes storybook-butterfly-flap {
+	from {
+		transform: scaleX(1);
+	}
+
+	to {
+		transform: scaleX(0.28);
 	}
 }
 
@@ -962,7 +1002,7 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 }
 
 @include mixins.reduced-motion {
-	.envelope-wrapper[data-variant='storybook-lanterns'] {
+	#{$storybook-reveal} {
 		.storybook-sky *,
 		.storybook-sky *::before,
 		.storybook-sky *::after,
