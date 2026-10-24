@@ -8,8 +8,12 @@
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--sesion=<id>] [--carril=<id>] [--rama=<b>]   lock: one owner at a time
- *                                               (rama defaults to the task's declared branch)
- *   release <id> --agente=<a> [--coordinador]   --coordinador frees only a legacy lock without sesion
+ *                                               (rama defaults to the task's declared branch; Claude's sesion
+ *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_)
+ *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
+ *                                               --coordinador frees only a legacy lock without sesion
+ *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
+ *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> --agente=<b>                    child task <id>-revision for a cross review
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task from «Finalizadas» (bitácora row)
@@ -44,6 +48,8 @@ import {
 	taskIssues,
 	inTab,
 	isFinished,
+	lockSessionIssue,
+	sessionOf,
 } from './model.mjs';
 import {
 	assertId,
@@ -150,6 +156,21 @@ function saveTask(dir, before, after, { quien, corrio, salio } = {}) {
 	return t;
 }
 
+/** The task without its lock; the lock's session stays in `sesion` so it can still be found, renamed or archived. */
+function unlocked(task, flags) {
+	const rest = { ...task };
+	delete rest.candado;
+	const { sesion: id, agente } = task.candado ?? {};
+	if (!id) return rest;
+	const nombre =
+		typeof flags.nombre === 'string'
+			? flags.nombre
+			: task.sesion?.id === id
+				? task.sesion.nombre
+				: undefined;
+	return { ...rest, sesion: { id, agente, ...(nombre ? { nombre } : {}) } };
+}
+
 function getTask(dir, id) {
 	const t = readDoc(dir, 'tareas', assertId(id));
 	if (!t) throw new UsageError(`no existe la tarea ${id}`);
@@ -173,14 +194,20 @@ function assertOwner(task, flags) {
 			);
 		return;
 	}
-	if (
-		task.candado.agente !== flags.agente ||
-		!flags.sesion ||
-		task.candado.sesion !== flags.sesion
-	)
+	const sesion = sessionOf(flags.agente, flags.sesion, process.env);
+	if (task.candado.agente !== flags.agente || !sesion || task.candado.sesion !== sesion)
 		throw new UsageError(
 			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
 		);
+}
+
+/** `gh pr view <n> --json state` → OPEN, MERGED or CLOSED. */
+function ghPrState(pr) {
+	return execFileSync(
+		'gh',
+		['pr', 'view', String(pr).replace(/^#/, ''), '--json', 'state', '--jq', '.state'],
+		{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+	).trim();
 }
 
 function reviewSha(task, flags) {
@@ -388,7 +415,9 @@ const commands = {
 	},
 	claim({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente');
-		const sesion = need(flags.sesion, 'falta --sesion=<id>');
+		const sesion = sessionOf(agente, flags.sesion, process.env);
+		const issue = lockSessionIssue(agente, sesion);
+		if (issue) throw new UsageError(issue);
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			if (
@@ -415,7 +444,7 @@ const commands = {
 			const { rama, carril } = claimLocation(before, flags, board);
 			const candado = { agente, desde: nowIso() };
 			for (const [k, v] of Object.entries({
-				sesion: flags.sesion,
+				sesion,
 				carril,
 				rama,
 			}))
@@ -429,6 +458,37 @@ const commands = {
 			say(flags, out, t, `${t.id} es de ${agente} (rev ${t.rev})`);
 		});
 	},
+	/**
+	 * d170: once a task's PR is merged the board moves it to unida and drops its lock without waiting for the
+	 * session. The PR state is read from GitHub (`prState` lets board:sync pass the state it just listed).
+	 */
+	merged({ pos, flags }, dir, out, { prState = ghPrState } = {}) {
+		if (!flags.coordinador) throw new UsageError('merged requiere --coordinador (d170)');
+		return withLock(dir, () => {
+			const before = getTask(dir, need(pos[0], 'falta <id>'));
+			if (before.revisionSha)
+				throw new UsageError('una revisión se cierra con su --sha, no con merged');
+			if (flags.rev !== undefined) checkRev(before, flags);
+			const given = typeof flags.pr === 'string' ? normalizePr(flags.pr) : undefined;
+			const pr = normalizePr(before.pr) ?? given;
+			if (!pr) throw new UsageError(`${before.id} no tiene pr: indique --pr=#<número>`);
+			if (given && given !== pr) throw new UsageError(`${before.id} ya tiene ${pr}`);
+			const state = prState(pr);
+			if (state !== 'MERGED')
+				throw new UsageError(`${pr} no está unido en GitHub (${state || 'sin respuesta'})`);
+			const after = { ...unlocked(before, flags), pr };
+			if (!['unida', 'comprobada'].includes(after.estado)) after.estado = 'unida';
+			if (!before.candado && after.estado === before.estado)
+				return say(flags, out, before, `${before.id} ya está ${before.estado}`);
+			const t = saveTask(dir, before, after, {
+				quien: flags.quien,
+				corrio: typeof flags.corrio === 'string' ? flags.corrio : 'pnpm board merged',
+				salio: `PR ${pr} MERGED`,
+			});
+			const freed = before.candado ? `; candado de ${before.candado.agente} suelto` : '';
+			say(flags, out, t, `${t.id} ${t.estado} (rev ${t.rev})${freed}`);
+		});
+	},
 	release({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente');
 		return withLock(dir, () => {
@@ -438,9 +498,7 @@ const commands = {
 			if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
-			const rest = { ...before };
-			delete rest.candado;
-			const t = saveTask(dir, before, rest);
+			const t = saveTask(dir, before, unlocked(before, flags));
 			say(flags, out, t, `${t.id} libre (rev ${t.rev})`);
 		});
 	},
@@ -671,14 +729,14 @@ Object.assign(commands, {
 	log: commands.history,
 });
 
-export async function run(argv, { dir = boardDir(), out = console.log } = {}) {
+export async function run(argv, { dir = boardDir(), out = console.log, prState } = {}) {
 	const [cmd, ...rest] = argv;
 	const fn = commands[cmd];
 	if (!fn)
 		throw new UsageError(
 			`comando desconocido: ${cmd ?? '(ninguno)'}. Use: ${Object.keys(commands).join(', ')}`,
 		);
-	return fn(parseArgs(rest), dir, out);
+	return fn(parseArgs(rest), dir, out, prState ? { prState } : undefined);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

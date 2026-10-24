@@ -18,10 +18,10 @@ authorization.
 - **Fields**: `titulo`, `estado`, `urgencia` (`urgente|alta|normal|baja`), `actor`
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
-  (the only status line), `pr`, `rama`, `sesion {id, nombre}`, `hasta`, `orden`, `origen`, `plan`,
-  `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are
-  set by the command, `archivada` (date) only by `archive`/`unarchive`. `espera`, `usted` and `deps`
-  no longer exist.
+  (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`,
+  `plan`, `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`; `rev` and
+  `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`. `espera`,
+  `usted` and `deps` no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -29,9 +29,11 @@ authorization.
   and is `vigente`, a `dueno` only with `ok: true`. A pending task without a prompt waits for one
   automatically (except `actor: coordinador`).
 - **Stage and color**: ready = every requisito met. Green = ready and the owner acts (`actor: dueno`
-  or anything in `toca`); violet = ready and an agent finishes it alone (it has every capability in
-  `requiere`); gray = blocked; blue = `en curso`; teal = `hecha`/`unida`/`en revision`. Urgency is
-  an icon, never green.
+  or anything in `toca`), or ready and unlocked with only Codex or Gemini able to finish it: the
+  owner pastes its prompt there, labeled «Pegar en Codex/Gemini» with «Copiar prompt» (d169,
+  `ownerLaunches`; `claim` and `next` are unchanged); violet = ready and an agent that starts alone
+  (Claude, or the coordinator) finishes it (it has every capability in `requiere`); gray = blocked;
+  blue = `en curso`; teal = `hecha`/`unida`/`en revision`. Urgency is an icon, never green.
 - **Execution number**: urgency → ready before blocked → `hasta` → `orden` → title; an open task it
   waits for goes right before it.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
@@ -55,6 +57,20 @@ authorization.
   without one). Record it in the same write that opens the PR. Every mention of a task that has a PR
   — replies, messages, handoffs, reports, prompts — writes it next to the id:
   `pasarela-pago-estudio (PR #475)`. Same rule for every agent.
+- **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
+  «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
+  `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open
+  task by `pr`, then `rama`, then the id convention, and writes only with
+  `pnpm board set --coordinador` at the rev it read: an open PR sets `pr` (and a missing `rama`) and
+  moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the task to `unida`.
+  **d170**: a merged PR also drops the task's lock, whoever holds it, through
+  `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
+  still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
+  open PR are only reported; review children are never touched. A lock older than `--horas` (default
+  6, or `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is
+  flagged «posible sesión cerrada» and never released by the sync (the owning session or the
+  coordinator with authority does). The button's POST needs the page's per-process token and its own
+  `Origin`, and every request needs a local `Host`. No agent is ever launched from the view.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change, per `move` and per archive or
@@ -78,17 +94,26 @@ authorization.
 
 ## Session ownership and review
 
-- `claim` requires `--sesion`, readiness, no owner gate, and an exclusive `--carril` for
+- `claim` requires a session, readiness, no owner gate, and an exclusive `--carril` for
   implementation. Another session of the same agent cannot replace it. An identical claim is
   idempotent.
+- **Session id**: the lock records the id the agent's app knows, so the session can later be found,
+  renamed and archived. Claude omits `--sesion`: `claim`, `set` and `release` read the Claude
+  Desktop id from `CLAUDE_CODE_HOST_SESSION_ID` (`local_…`, the same id as a `#local_…` link). A
+  Claude `claim` with an id that does not start with `local_` is refused; `CLAUDE_CODE_SESSION_ID`
+  is the process id and the app does not know it. Codex and Gemini still pass `--sesion=<id>` until
+  their own id is defined.
+- `release` and `merged` copy the lock's session into the task's `sesion {id, agente, nombre}` as
+  history; `--nombre=<session title>` sets the name, otherwise the name already recorded for that id
+  stays. Nobody writes `sesion` by hand.
 - Claims use the explicit `--rama` or the task's declared branch; they never infer the caller's
   branch. Read-only work may remain without a branch. A different branch name is a verifier warning,
   not a claim failure. Only `actor: coordinador` with `--coordinador` may claim the canonical
   `integration` lane; `f04-integracion` is not a canonical id. Claims grant no editing authority.
-- `set` and `release` require matching `--agente` and `--sesion`. Unlocked coordination edits
-  require `--coordinador`; the flag declares a role, never grants authority or overrides a lock.
-  `set` cannot replace ownership, lane, origin or review SHA. One exception: a legacy lock without
-  `sesion` (taken before sessions were recorded) is freed by
+- `set` and `release` require matching `--agente` and session (`--sesion`, or Claude's variable).
+  Unlocked coordination edits require `--coordinador`; the flag declares a role, never grants
+  authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
+  exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
   `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
 - `review` requires the origin PR in `en revision`, generates an English prompt and records
   `revisionSha` (from GitHub, or explicit `--sha`). It can refresh an unlocked child at a new SHA.

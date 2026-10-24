@@ -50,9 +50,18 @@ function makeBoard(collections: Record<string, Json[]>) {
 }
 
 function board(dir: string, ...args: string[]) {
+	return boardEnv(dir, {}, ...args);
+}
+
+function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	const agent = args.find((a) => a.startsWith('--agente='))?.slice(9) ?? 'codex';
-	if (['claim', 'release'].includes(args[0]) && !args.some((a) => a.startsWith('--sesion=')))
-		args.push(`--sesion=${agent}-test`);
+	const auto = !('CLAUDE_CODE_HOST_SESSION_ID' in env);
+	if (
+		auto &&
+		['claim', 'release'].includes(args[0]) &&
+		!args.some((a) => a.startsWith('--sesion='))
+	)
+		args.push(`--sesion=${agent === 'claude' ? 'local_' : ''}${agent}-test`);
 	if (args[0] === 'claim') {
 		if (!args[1].endsWith('-revision') && !args.some((a) => a.startsWith('--carril=')))
 			args.push('--carril=f10-libre');
@@ -66,6 +75,8 @@ function board(dir: string, ...args: string[]) {
 			CELEBRA_BOARD_DIR: dir,
 			INIT_CWD: ROOT,
 			CELEBRA_BOARD_COMMAND_FIXTURE: path.join(dir, 'answers.json'),
+			CLAUDE_CODE_HOST_SESSION_ID: '',
+			...env,
 		}),
 	});
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
@@ -203,6 +214,74 @@ describe('pnpm board', () => {
 		expect(JSON.parse(board(dir, 'next', '--agente=codex', '--json').out).id).toBe('de-codex');
 		const claude = JSON.parse(board(dir, 'list', '--agente=claude', '--json').out);
 		expect(claude.find((r: Json) => r.id === 'imagenes').color).toBe('block');
+	});
+
+	it('turns ready Codex or Gemini tasks green for the owner to paste, without changing claims', () => {
+		const tareas = [
+			task('normal'),
+			task('de-codex', { agente: 'codex' }),
+			task('de-gemini', { agente: 'gemini' }),
+			task('imagenes', { requiere: ['imagenes'] }),
+			task('cualquiera'),
+			task('coordina', { actor: 'coordinador', agente: 'codex' }),
+			task('apartada', {
+				agente: 'codex',
+				candado: { agente: 'codex', desde: NOW, sesion: 's1' },
+			}),
+			task('espera', { agente: 'codex', requisitos: [{ tipo: 'dueno', ref: 'Elegir' }] }),
+		];
+		// Prints, per task, who the owner pastes into and its color for everyone, Claude, Codex and Gemini
+		// (an agent's color judges that agent's capabilities only; its tab hides other agents' tasks).
+		const probe = String.raw`
+			const m = await import(process.argv[1]);
+			const board = JSON.parse(process.argv[2]);
+			const color = (t, agente) => m.color(t, board, { agente });
+			console.log(JSON.stringify({
+				rows: board.tareas.map((t) => [t.id, m.ownerLaunches(t, board), color(t), color(t, 'claude'), color(t, 'codex'), color(t, 'gemini')]),
+				queue: m.queue(board).map((t) => t.id),
+				next: ['claude', 'codex', 'gemini'].map((a) => m.nextFor(a, board)?.id ?? null),
+				claimable: board.tareas.filter((t) => m.claimable(t, 'codex', board)).map((t) => t.id),
+			}));
+		`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				probe,
+				pathToFileURL(path.join(ROOT, 'scripts', 'board', 'model.mjs')).href,
+				JSON.stringify({ tareas, decisiones: [] }),
+			],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		const out = JSON.parse(String(result.stdout));
+		expect(out.rows).toEqual([
+			['normal', [], 'auto', 'auto', 'auto', 'auto'],
+			['de-codex', ['codex'], 'own', 'auto', 'own', 'auto'],
+			['de-gemini', ['gemini'], 'own', 'auto', 'auto', 'own'],
+			// «cualquiera» that only Gemini can finish: the owner pastes it into Gemini.
+			['imagenes', ['gemini'], 'own', 'block', 'block', 'own'],
+			// «cualquiera» that Claude can finish starts alone.
+			['cualquiera', [], 'auto', 'auto', 'auto', 'auto'],
+			['coordina', [], 'auto', 'auto', 'auto', 'auto'],
+			// Already claimed: the owner pasted it, so it is no longer theirs.
+			['apartada', [], 'auto', 'auto', 'auto', 'auto'],
+			['espera', [], 'block', 'block', 'block', 'block'],
+		]);
+		// d163: the paste tasks join the owner's turn at the top of the queue.
+		expect(out.queue.slice(0, 3).sort()).toEqual(['de-codex', 'de-gemini', 'imagenes']);
+		expect(out.next).toEqual(['cualquiera', 'de-codex', 'de-gemini']);
+		expect(out.claimable).toEqual(['normal', 'de-codex', 'cualquiera', 'coordina', 'apartada']);
+	});
+
+	it('labels paste tasks «Pegar en …» in the view with their own «Copiar prompt»', () => {
+		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
+		expect(html).toContain(
+			"ownerLaunches, matches, isFinished, AGENT_REGISTRY } from '/model.mjs'",
+		);
+		expect(html).toContain("'Pegar en '+esc(to)");
+		expect(html).toContain('data-copy="${esc(t.id)}">Copiar prompt</button>');
+		expect(html).toContain("if(cp.dataset.copy!=='1')");
 	});
 
 	it('requires a #N pull request for review and merge states and normalizes its form', () => {
@@ -564,6 +643,67 @@ describe('pnpm board', () => {
 		);
 		expect(readTask(dir, 'owned').candado.sesion).toBe('s1');
 		expect(board(dir, 'release', 'owned', '--agente=claude', '--sesion=s1').status).toBe(0);
+	});
+
+	it('takes the Claude app session id from the environment and refuses other ids', () => {
+		const dir = makeBoard({ tareas: [task('propia'), task('mano')] });
+		const app = { CLAUDE_CODE_HOST_SESSION_ID: 'local_abc' };
+		const claim = boardEnv(dir, app, 'claim', 'propia', '--agente=claude', '--json');
+		expect(claim.status).toBe(0);
+		expect(JSON.parse(claim.out).candado.sesion).toBe('local_abc');
+		const internal = board(dir, 'claim', 'mano', '--agente=claude', '--sesion=5424a3c1');
+		expect(internal.status).toBe(2);
+		expect(internal.err).toMatch(/local_.*CLAUDE_CODE_HOST_SESSION_ID/);
+		const empty = boardEnv(
+			dir,
+			{ CLAUDE_CODE_HOST_SESSION_ID: '' },
+			'claim',
+			'mano',
+			'--agente=claude',
+		);
+		expect(empty.err).toMatch(/variable CLAUDE_CODE_HOST_SESSION_ID está vacía/);
+		expect(readTask(dir, 'mano').candado).toBeUndefined();
+		expect(
+			board(dir, 'claim', 'mano', '--agente=codex', '--sesion=chat-1', '--carril=f09-docs')
+				.status,
+		).toBe(0);
+		expect(readTask(dir, 'mano').candado.sesion).toBe('chat-1');
+	});
+
+	it('keeps the released session in sesion as history', () => {
+		const lock = { agente: 'claude', desde: NOW, carril: 'f12-release' };
+		const dir = makeBoard({
+			tareas: [
+				task('nombrada', { candado: { ...lock, sesion: 'local_a' } }),
+				task('heredada', {
+					candado: { ...lock, sesion: 'local_b' },
+					sesion: { id: 'local_b', nombre: 'f12 · T9 · Vieja' },
+				}),
+			],
+		});
+		const app = { CLAUDE_CODE_HOST_SESSION_ID: 'local_a' };
+		expect(
+			boardEnv(
+				dir,
+				app,
+				'release',
+				'nombrada',
+				'--agente=claude',
+				'--nombre=f12 · T8 · Nueva',
+			).status,
+		).toBe(0);
+		expect(readTask(dir, 'nombrada')).toMatchObject({
+			sesion: { id: 'local_a', agente: 'claude', nombre: 'f12 · T8 · Nueva' },
+		});
+		expect(readTask(dir, 'nombrada').candado).toBeUndefined();
+		expect(
+			board(dir, 'release', 'heredada', '--agente=claude', '--sesion=local_b').status,
+		).toBe(0);
+		expect(readTask(dir, 'heredada').sesion).toEqual({
+			id: 'local_b',
+			agente: 'claude',
+			nombre: 'f12 · T9 · Vieja',
+		});
 	});
 
 	it('searches by T number, id, title and «ahora» without case or accents', () => {
