@@ -116,7 +116,26 @@
         },
         "variant": "standard",
         "personalizedAccess": {
+            "title": "Pase de acceso",
+            "subtitle": "Este pase le identifica como invitado y muestra el número de lugares reservados.",
+            "footerText": "Confirme su asistencia en la sección de RSVP al final de la invitación.",
             "variant": "standard"
+        },
+        "subcopy": "Su confirmación nos ayuda a preparar cada detalle de esta velada tan especial.",
+        "labels": {
+            "name": "Su nombre",
+            "notesPlaceholder": "Escriba un mensaje para Alberto…",
+            "guestHint": "Hemos reservado {count} lugares para su invitación. Puede ajustar el número si asistirán menos personas."
+        },
+        "responseMessages": {
+            "confirmed": {
+                "title": "¡Gracias por confirmar, {guestName}!",
+                "subtitle": "Su confirmación ha sido registrada."
+            },
+            "declined": {
+                "title": "Lamentamos que no pueda acompañarnos, {guestName}.",
+                "subtitle": "Gracias por avisarnos."
+            }
         }
     },
     "quote": {

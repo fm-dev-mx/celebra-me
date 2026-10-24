@@ -167,9 +167,27 @@
         "confirmationMessage": "Gracias por confirmar. Será una alegría recibirles en esta noche especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
+            "title": "Pase de acceso",
+            "subtitle": "Este pase le identifica como invitado y muestra el número de lugares reservados.",
+            "footerText": "Confirme su asistencia en la sección de RSVP al final de la invitación.",
             "variant": "ornamented"
         },
-        "variant": "standard"
+        "variant": "standard",
+        "labels": {
+            "name": "Su nombre",
+            "notesPlaceholder": "Escriba un mensaje para Isabella…",
+            "guestHint": "Hemos reservado {count} lugares para su invitación. Puede ajustar el número si asistirán menos personas."
+        },
+        "responseMessages": {
+            "confirmed": {
+                "title": "¡Gracias por confirmar, {guestName}!",
+                "subtitle": "Su confirmación ha sido registrada."
+            },
+            "declined": {
+                "title": "Lamentamos que no pueda acompañarnos, {guestName}.",
+                "subtitle": "Gracias por avisarnos."
+            }
+        }
     },
     "quote": {
         "text": "Entre rosas y luz de velas, comienza una noche que guardaré para siempre.",

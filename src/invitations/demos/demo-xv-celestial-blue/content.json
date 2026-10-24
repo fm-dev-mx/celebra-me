@@ -175,7 +175,18 @@
         "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración especial.",
         "labels": {
             "name": "Su nombre",
-            "notesPlaceholder": "Escriba un mensaje para Camila…"
+            "notesPlaceholder": "Escriba un mensaje para Camila…",
+            "guestHint": "Hemos reservado {count} lugares para su invitación. Puede ajustar el número si asistirán menos personas."
+        },
+        "responseMessages": {
+            "confirmed": {
+                "title": "¡Gracias por confirmar, {guestName}!",
+                "subtitle": "Su confirmación ha sido registrada."
+            },
+            "declined": {
+                "title": "Lamentamos que no pueda acompañarnos, {guestName}.",
+                "subtitle": "Gracias por avisarnos."
+            }
         }
     },
     "quote": {
