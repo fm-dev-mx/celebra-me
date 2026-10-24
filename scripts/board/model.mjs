@@ -125,13 +125,15 @@ export function logChange(r) {
 	return r.de || r.a ? pair(r) : '';
 }
 
-/** Decisions and bitácora rows of `pnpm board history`, newest first. */
-export function historyRows(board) {
+/** Decisions and bitácora rows of `pnpm board history`, newest first; replaced decisions only with `todas` (d187). */
+export function historyRows(board, { todas = false } = {}) {
 	return [
-		...(board.decisiones ?? []).map((d) => ({
-			en: d.en,
-			txt: `${d.id}${d.vigente === false ? ' (reemplazada)' : ''} ${d.decision ?? ''}`,
-		})),
+		...(board.decisiones ?? [])
+			.filter((d) => todas || d.vigente !== false)
+			.map((d) => ({
+				en: d.en,
+				txt: `${d.id}${d.vigente === false ? ' (reemplazada)' : ''} ${d.decision ?? ''}`,
+			})),
 		...(board.bitacora ?? []).map((b) => ({
 			en: b.en,
 			txt: `${b.tarea} ${logChange(b)} ${b.corrio ?? ''}`,

@@ -75,6 +75,14 @@ authorization.
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
   of «Cola» and the «Carriles» view.
+- **Monthly archive (d187)**: `pnpm board compact --antes=7d [--dry-run]` takes every task archived
+  7 or more days ago: one line in `.agent/tmp/board/mensual/resumen-<YYYY-MM>.md` (for example
+  `T31 tablero-arreglos-cli · unida · PR #492 · 2026-10-24`), the whole task file in
+  `mensual/<YYYY-MM>.zip` (`tareas/<id>.json`) and a small `archivo` record that keeps its number,
+  estado and PR for requisitos and numbering; the task file leaves `tareas/` only after the `.zip`
+  holds an identical copy. Run `--dry-run` first. `pnpm board restore <id> [--dry-run]` puts a
+  compacted task back exactly as the `.zip` kept it. Replaced decisions (`vigente: false`) leave
+  `pnpm board history` (`--todas` shows them) and the view's default history.
 - **Closing summary (d178)**:
   `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien}`, written only
   with

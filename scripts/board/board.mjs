@@ -28,7 +28,10 @@
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
- *   history [--q=<texto>] [--json]
+ *   history [--q=<texto>] [--todas] [--json]   replaced decisions only with --todas
+ *   compact --antes=7d [--dry-run]              d187: tasks archived 7+ days ago → one line in mensual/resumen-<mes>.md,
+ *                                               the whole file in mensual/<mes>.zip, a small archivo record
+ *   restore <id> [--dry-run]                    a compacted task back from its .zip
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
  *   import <export dir> [--mapa=<file.json>] [--force]   one-time migration from the ArtifactData export
@@ -792,7 +795,7 @@ const commands = {
 	},
 	history({ flags }, dir, out) {
 		const q = typeof flags.q === 'string' ? flags.q.toLowerCase() : '';
-		const rows = historyRows(loadBoard(dir)).filter(
+		const rows = historyRows(loadBoard(dir), { todas: flags.todas === true }).filter(
 			(r) => !q || r.txt.toLowerCase().includes(q),
 		);
 		if (flags.json) return out(JSON.stringify(rows, null, 2));
