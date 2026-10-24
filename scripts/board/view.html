@@ -154,13 +154,12 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .reqs{list-style:none;margin:0;padding:0;display:grid;gap:4px}
 .reqs li{display:grid;grid-template-columns:1.4rem minmax(0,1fr);gap:6px;align-items:baseline;font-size:.88rem;overflow-wrap:anywhere}
 .reqs .ok{color:var(--own);font-weight:700}.reqs .no{color:var(--block);font-weight:700}
-.reqs .t{font:600 .66rem var(--mono);text-transform:uppercase;color:var(--faint);margin-right:6px}
 dl.ficha{margin:0;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;font-size:.86rem;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 dl.ficha dt{font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:700;padding-top:2px}
 dl.ficha dd{margin:0;min-width:0;overflow-wrap:anywhere}
 code,.code{font-family:var(--mono);font-size:.84em;background:var(--code-bg);border-radius:4px;padding:0 4px;overflow-wrap:anywhere}
 details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
-pre.prompt{margin:8px 0 0;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font:12.5px/1.5 var(--mono);background:var(--code-bg);border:1px solid var(--line);border-radius:8px;max-height:420px;overflow:auto}
+.prompt{margin:8px 0 0;padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:.92rem;line-height:1.6;background:var(--panel);border:1px solid var(--line);border-radius:8px;max-height:420px;overflow:auto}
 @media (max-width:420px){dl.ficha{grid-template-columns:1fr;gap:1px}dl.ficha dd{padding-bottom:6px}}
 
 /* lanes board */
@@ -297,6 +296,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 </div>
 <script type="module">
 import { archiveBlock, cierreLines } from '/model.mjs';
+import { requisitoText, taskName } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
@@ -329,13 +329,7 @@ const agentTab=()=>Object.hasOwn(AGENT_REGISTRY,S.ag)?S.ag:undefined;
 const stage=t=>mStage(t,S.board);
 const color=t=>mColor(t,S.board,{agente:agentTab()});
 
-function label(r){
-  if(r.tipo==='tarea'){const d=byId(r.ref);return d?'Termina «'+d.titulo+'»':'Termina '+r.ref+' (ya archivada)'}
-  if(r.tipo==='fecha')return 'Llega el '+fmtDay(r.ref);
-  if(r.tipo==='decision'){const d=decById(r.ref),txt=String(d&&d.decision||'');return 'Decisión '+r.ref+(d?': '+txt.slice(0,90)+(txt.length>90?'…':''):'')}
-  if(r.tipo==='prompt')return 'Falta el prompt (lo escribe el coordinador)';
-  return r.ref+' (usted)';
-}
+const label=r=>requisitoText(r,S.board);
 const reqs=t=>requisitos(t,S.board).map(r=>({...r,label:label(r)}));
 const found=t=>matches(t,$('tq').value);
 const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&found(t));
@@ -346,7 +340,7 @@ const urgHtml=t=>{const u=URG[t.urgencia]?t.urgencia:'normal';return `<span clas
 const pasteTo=t=>ownerLaunches(t,S.board).map(a=>AGENT[a]||a).join(' o ');
 const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):COLOR[c]}</span>`};
 const agHtml=t=>t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)}</span>`:t.agente&&t.agente!=='cualquiera'?`<span class="lock">${esc(AGENT[t.agente]||t.agente)}</span>`:'';
-function firstBlock(t){const r=reqs(t).find(x=>!x.ok);if(r)return 'Espera: '+r.label;return color(t)==='block'?'Ningún agente tiene todo lo que pide: '+(t.requiere||[]).join(', '):''}
+function firstBlock(t){const r=reqs(t).find(x=>!x.ok);if(r)return requisitoText(r,S.board,{espera:true});return color(t)==='block'?'Ningún agente tiene todo lo que pide: '+(t.requiere||[]).join(', '):''}
 function reqSummary(t){const r=reqs(t);if(!r.length)return '';const ok=r.filter(x=>x.ok).length;return `<span class="req" title="Requisitos cumplidos"><i>${ok===r.length?'✓':'○'}</i>${ok}/${r.length} requisitos</span>`}
 
 // d177: an open task without a lock says in large type where it runs, and whether that lane is busy.
@@ -382,6 +376,8 @@ function renderCola(){
 // d178: «Hecho: …», «Comprobaciones: …», «Pendiente: …» with the label in bold; the first line (estado, PR) is shown apart.
 const cierreHtml=t=>{const l=cierreLines(t,S.board).slice(1);return l.length?`<div class="cierre">${l.map(x=>{const i=x.indexOf(': ');return `<p><b>${esc(x.slice(0,i+1))}</b>${rich(x.slice(i+1))}</p>`}).join('')}</div>`:''};
 const cierreRef=t=>{const c=t.cierre||{},pr=c.pr||t.pr;return [pr?'PR '+pr:'',c.commit||''].filter(Boolean).join(', ')};
+// T41: the prompt reads as a document: its title and section names (QUÉ SE BUSCA, PASOS…) in bold, links live.
+const promptHtml=p=>String(p).split('\n').map((x,i)=>i===0||/^T\d+ · /.test(x)||/^[A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ ]{2,}$/.test(x.trim())?`<b class="ph">${esc(x)}</b>`:rich(x)).join('\n');
 function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
 function renderSheet(open){
   const sh=$('sheet'),t=S.sel&&byId(S.sel);
@@ -397,7 +393,7 @@ function renderSheet(open){
     ['Sesión',sesHtml(t.sesion)],
     ['Rama',t.rama?`<span class="code">${esc(t.rama)}</span>`:''],
     ['PR',pr?`<a href="${GH}/pull/${pr[1]}" target="_blank" rel="noopener">#${pr[1]}</a>`:''],
-    ['Origen',t.origen?`<span class="code">${esc(t.origen)}</span>`:''],
+    ['Origen',t.origen?esc(taskName(t.origen,S.board)):''],
     ['Toca',(t.toca||[]).length?t.toca.map(x=>esc(TOCA[x]||x)).join(', ')+' · necesita su aprobación':''],
     ['Límite',t.hasta?esc(fmt(t.hasta)):''],
     ['Evidencia',t.evidencia&&(t.evidencia.cmd||t.evidencia.salio)?`<code>${esc(t.evidencia.cmd||'')}</code> → ${rich(t.evidencia.salio||'')}`:''],
@@ -413,10 +409,10 @@ function renderSheet(open){
     ${t.ahora?`<p class="now">${rich(String(t.ahora))}</p>`:''}
     ${run.length?`<div class="runbox">${run.map((x,i)=>`<p class="${busy&&i===run.length-1?'busy':''}">${esc(x)}</p>`).join('')}</div>`:''}
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>
-    ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span><span class="t">${esc(x.tipo==='dueno'?'usted':x.tipo)}</span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
+    ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
     ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
     ${t.cierre?`<div class="box"><h3>Cierre${cierreRef(t)?' · '+rich(cierreRef(t)):''}</h3>${cierreHtml(t)}</div>`:''}
-    ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><pre class="prompt" id="prtext">${esc(p)}</pre></details>`:''}`;
+    ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><div class="prompt" id="prtext">${promptHtml(p)}</div></details>`:''}`;
 }
 function openSheet(id){S.sel=id;document.querySelectorAll('.item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===id)));renderSheet(true);if(matchMedia('(max-width:959px)').matches){document.body.classList.add('locked');$('sheet').scrollTop=0;const c=$('sheet').querySelector('.close');if(c)c.focus()}}
 function closeSheet(){$('sheet').classList.remove('open');document.body.classList.remove('locked');const b=document.querySelector(`.item[data-sel="${CSS.escape(S.sel||'')}"]`);if(b)b.focus()}

@@ -56,6 +56,8 @@ import {
 	prIssues,
 	queue,
 	requisitos,
+	requisitoLine,
+	blockedText,
 	stage,
 	taskIssues,
 	inTab,
@@ -381,9 +383,7 @@ function claimLocation(before, flags, board) {
 function row(t, n, board, agente) {
 	const c = color(t, board, { agente });
 	const lock = t.candado ? ` [${t.candado.agente}]` : '';
-	const first = requisitos(t, board).find((r) => !r.ok);
-	const why =
-		stage(t, board) === 'bloqueada' && first ? `espera ${first.tipo} ${first.ref}`.trim() : '';
+	const why = blockedText(t, board);
 	return `${String(n).padStart(2)}. ${COLOR_LABEL[c].padEnd(11)} ${String(t.urgencia ?? '').padEnd(8)} ${t.num ? `T${t.num} ` : ''}${t.titulo} · ${t.id}${lock}${why ? `  — ${why}` : ''}`;
 }
 
@@ -448,7 +448,7 @@ const commands = {
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
 		for (const line of laneLines(t, board)) out(`  ${line}`);
-		for (const r of requisitos(t, board)) out(`  ${r.ok ? '✓' : '○'} ${r.tipo} ${r.ref}`);
+		for (const r of requisitos(t, board)) out(`  ${requisitoLine(r, board)}`);
 		for (const k of [
 			'urgencia',
 			'actor',

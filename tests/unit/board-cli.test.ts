@@ -132,6 +132,26 @@ describe('pnpm board', () => {
 		expect(readTask(reserved, 'new').num).toBe(41);
 	});
 
+	it('prints requisitos as readable text in list and show (T41)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('board-agent-alignment', {
+					num: 35,
+					titulo: 'Dividir reglas del tablero',
+					estado: 'en curso',
+				}),
+				task('sigue', {
+					num: 36,
+					requisitos: [{ tipo: 'tarea', ref: 'board-agent-alignment' }],
+				}),
+			],
+		});
+		expect(board(dir, 'list').out).toContain('— Espera T35 · Dividir reglas del tablero');
+		const shown = board(dir, 'show', 'sigue').out;
+		expect(shown).toContain('○ Termina T35 · Dividir reglas del tablero');
+		expect(shown).not.toContain('tarea board-agent-alignment');
+	});
+
 	it('resolves show, claim and set by fixed number while preserving canonical ids and ownership', () => {
 		const dir = makeBoard({ tareas: [task('numbered', { num: 31 })] });
 		expect(JSON.parse(board(dir, 'show', 'T31', '--json').out).id).toBe('numbered');
