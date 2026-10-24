@@ -1240,6 +1240,19 @@ describe('pnpm board', () => {
 		expect(readTask(dir, 'origin-revision').candado).toBeUndefined();
 	});
 
+	it('claims a soloLectura task without --carril in the lane it announces', () => {
+		const dir = makeBoard({ tareas: [task('doc-audit', { soloLectura: true })] });
+		const announced = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		expect(board(dir, 'show', 'doc-audit').out).toContain(announced);
+		const result = raw(dir, 'claim', 'doc-audit', '--agente=codex', '--sesion=codex-test');
+		expect(result.status).toBe(0);
+		const claimed = readTask(dir, 'doc-audit');
+		expect(claimed.candado.agente).toBe('codex');
+		// No lock lane: taskLane falls back to READONLY_LANE, the lane `show` announces.
+		expect(claimed.candado.carril).toBeUndefined();
+		expect(board(dir, 'show', 'doc-audit').out).toContain(announced);
+	});
+
 	it('requires successful or explicitly archived prerequisites and a current decision', () => {
 		const dir = makeBoard({
 			tareas: [

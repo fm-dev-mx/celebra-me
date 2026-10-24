@@ -67,6 +67,7 @@ import {
 	taskIssues,
 	inTab,
 	isFinished,
+	isReadOnly,
 	isReview,
 	laneAllowed as laneAllowedIn,
 	authorOf,
@@ -379,7 +380,8 @@ function claimLocation(before, flags, board) {
 	const carril = given ?? planned;
 	if (isReview(before) && given)
 		throw new UsageError('la revisión no toma el carril del autor; omita --carril');
-	if (!isReview(before) && !laneAllowed(carril, before))
+	// A read-only task without a lane runs in READONLY_LANE, the lane its prompt announces.
+	if (!(isReadOnly(before) && !carril) && !laneAllowed(carril, before))
 		throw new UsageError(
 			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
 		);
