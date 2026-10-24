@@ -116,6 +116,7 @@ describe('board model shared rules', () => {
 						m.taskLane({ id: 'demo-revision' }),
 						m.taskLane({ id: 'doc-audit', soloLectura: true }),
 						m.taskLane({ id: 'nada' }),
+						m.taskLane({ id: 'x', soloLectura: true, carrilPlaneado: 'f10-libre', candado: { carril: 'f10-libre' } }),
 					],
 					readonly: [m.READONLY_LANE, m.isReadOnly({ id: 'demo-revision' }), m.isReadOnly({ id: 'normal' })],
 				}))`,
@@ -124,7 +125,15 @@ describe('board model shared rules', () => {
 			horas: 6,
 			viejo: [false, true, true],
 			carril: [true, false, true, false],
-			lane: ['f10', 'f11', 'f12', 'f04-integracion', 'f04-integracion', null],
+			lane: [
+				'f10',
+				'f11',
+				'f12',
+				'f04-integracion',
+				'f04-integracion',
+				null,
+				'f04-integracion',
+			],
 			readonly: ['f04-integracion', true, false],
 		});
 		expect(probe('sync.mjs', 'console.log(JSON.stringify(m.STALE_LOCK_HOURS))')).toBe(6);

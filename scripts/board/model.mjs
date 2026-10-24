@@ -661,14 +661,11 @@ export const READONLY_LANE = 'f04-integracion';
 export const isReadOnly = (t) => Boolean(isReview(t) || t?.soloLectura);
 
 /**
- * The lane a task sits in: its lock's, else the planned one (d177), else its recorded `carril`, else
- * READONLY_LANE for a read-only task.
+ * The lane a task sits in: READONLY_LANE for a read-only task (it never takes another), else its lock's,
+ * else the planned one (d177), else its recorded `carril`.
  */
 export const taskLane = (t) =>
-	t?.candado?.carril ??
-	t?.carrilPlaneado ??
-	t?.carril ??
-	(isReadOnly(t) ? READONLY_LANE : undefined);
+	isReadOnly(t) ? READONLY_LANE : (t?.candado?.carril ?? t?.carrilPlaneado ?? t?.carril);
 
 const HEADING = /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ,.:]{3,}$/;
 

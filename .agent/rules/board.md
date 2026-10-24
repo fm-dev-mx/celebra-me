@@ -55,10 +55,12 @@ authorization.
   carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` put these
   lines first under `CARRIL`, so the prompt's «DÓNDE CORRE» no longer repeats the lane by hand.
   Review children have no planned lane (`plan` refuses one): they show «Corre en: Integración
-  (carpeta celebra-me), solo lectura» and default to `f04-integracion` in `taskLane` (the view's
-  card, sheet and «Carriles» row). A task with `soloLectura: true` is read-only the same way.
-  `board:verify` warns about every open task, read-only tasks aside, with neither a planned lane nor
-  a lock on one, naming its T<n>.
+  (carpeta celebra-me), solo lectura» and always resolve to `f04-integracion` in `taskLane` (the
+  view's card, sheet and «Carriles» row). A task with `soloLectura: true` is read-only the same way:
+  `plan`, `add` and `claim` refuse it a planned or explicit lane, so its lock holds no lane and
+  never disagrees with the prompt; a legacy planned lane is cleared with
+  `plan --carril= --coordinador`. `board:verify` warns about every open task, read-only tasks aside,
+  with neither a planned lane nor a lock on one, naming its T<n>.
 - **Category (d191)**: `categoria` is a preference, never a restriction: `plataforma`
   f05-plataforma, `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs`
   f09-docs, `herramientas` (the board and other tooling) f10-libre, `preview` f11-preview, `release`

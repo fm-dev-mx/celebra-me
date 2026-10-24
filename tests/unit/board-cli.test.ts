@@ -1253,6 +1253,48 @@ describe('pnpm board', () => {
 		expect(board(dir, 'show', 'doc-audit').out).toContain(announced);
 	});
 
+	it('keeps lock, lane and prompt on Integration when a soloLectura task is given a lane', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('doc-audit', { soloLectura: true }),
+				task('doc-planned', { soloLectura: true, carrilPlaneado: 'f10-libre' }),
+			],
+		});
+		const announced = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		const explicit = board(dir, 'claim', 'doc-audit', '--agente=codex', '--carril=f10-libre');
+		expect(explicit.status).toBe(2);
+		expect(explicit.err).toContain('omita --carril');
+		expect(readTask(dir, 'doc-audit').candado).toBeUndefined();
+		const plan = board(
+			dir,
+			'plan',
+			'doc-audit',
+			'--rev=1',
+			'--carril=f10-libre',
+			'--coordinador',
+		);
+		expect(plan.status).toBe(2);
+		expect(plan.err).toContain('no tiene carril planeado');
+		expect(readTask(dir, 'doc-audit').carrilPlaneado).toBeUndefined();
+		// A legacy planned lane is refused, never inherited, so the lock never disagrees with the prompt.
+		const planned = raw(dir, 'claim', 'doc-planned', '--agente=codex', '--sesion=codex-test');
+		expect(planned.status).toBe(2);
+		expect(planned.err).toContain('plan --carril=');
+		expect(readTask(dir, 'doc-planned').candado).toBeUndefined();
+		for (const id of ['doc-audit', 'doc-planned']) {
+			const shown = board(dir, 'show', id).out;
+			expect(shown).toContain(announced);
+			expect(shown).not.toContain('Corre en: f10-libre');
+		}
+		expect(
+			board(dir, 'plan', 'doc-planned', '--rev=1', '--carril=', '--coordinador').status,
+		).toBe(0);
+		expect(
+			raw(dir, 'claim', 'doc-planned', '--agente=codex', '--sesion=codex-test').status,
+		).toBe(0);
+		expect(readTask(dir, 'doc-planned').candado.carril).toBeUndefined();
+	});
+
 	it('requires successful or explicitly archived prerequisites and a current decision', () => {
 		const dir = makeBoard({
 			tareas: [

@@ -69,6 +69,7 @@ import {
 	isFinished,
 	isReadOnly,
 	isReview,
+	READONLY_LANE,
 	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
@@ -363,11 +364,18 @@ const laneAllowed = (carril, task) => laneAllowedIn(carril, task, WORKTREE_LANES
 function assertPlan(task, carril, flags) {
 	if (!flags.coordinador)
 		throw new UsageError('el carril planeado lo asigna el coordinador: use --coordinador');
+	if (isReadOnly(task)) throw new UsageError(readOnlyLaneError(task, 'carril planeado'));
 	if (!laneAllowed(carril, task))
 		throw new UsageError(
 			`carril ${carril} no es canónico (f05-f12; integration solo para coordinador)`,
 		);
 }
+
+/** Read-only tasks always run in READONLY_LANE, so they never take a lane of their own. */
+const readOnlyLaneError = (task, what) =>
+	isReview(task)
+		? `una revisión no tiene ${what}`
+		: `una tarea de solo lectura corre en ${READONLY_LANE}: no tiene ${what}`;
 
 function claimLocation(before, flags, board) {
 	const rama = typeof flags.rama === 'string' ? flags.rama : before.rama;
@@ -380,8 +388,14 @@ function claimLocation(before, flags, board) {
 	const carril = given ?? planned;
 	if (isReview(before) && given)
 		throw new UsageError('la revisión no toma el carril del autor; omita --carril');
-	// A read-only task without a lane runs in READONLY_LANE, the lane its prompt announces.
-	if (!(isReadOnly(before) && !carril) && !laneAllowed(carril, before))
+	// A read-only task runs in READONLY_LANE, the lane its prompt announces, and its lock holds none.
+	if (isReadOnly(before) && given)
+		throw new UsageError(`${readOnlyLaneError(before, 'carril propio')}; omita --carril`);
+	if (isReadOnly(before) && planned)
+		throw new UsageError(
+			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador`,
+		);
+	if (!isReadOnly(before) && !laneAllowed(carril, before))
 		throw new UsageError(
 			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
 		);
