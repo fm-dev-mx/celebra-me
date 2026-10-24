@@ -603,3 +603,91 @@ describe('Sage champagne theme isolation', () => {
 		}
 	});
 });
+
+describe('Storybook emerald theme isolation', () => {
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'storybook-emerald');
+	const emeraldContent = fs.readFileSync(
+		path.join(presetsDir, '_storybook-emerald.scss'),
+		'utf8',
+	);
+	const ownFiles = [
+		`${presetsDir}/_storybook-emerald.scss`,
+		'src/styles/themes/sections/theme-shell/_storybook-emerald.scss',
+		'src/styles/themes/sections/reveal/_storybook-emerald.scss',
+		'src/styles/invitation-presets/storybook-emerald.scss',
+		'src/styles/invitation-sections-by-preset/storybook-emerald.scss',
+		'src/invitations/clients/andrea/profile.scss',
+	];
+	// The emerald preset is a sibling of the lilac one, not a variant of it: the lilac preset and
+	// America keep their files untouched.
+	const protectedFiles = [
+		`${presetsDir}/_storybook-lilac.scss`,
+		'src/styles/themes/sections/theme-shell/_storybook-lilac.scss',
+		'src/styles/invitation-presets/storybook-lilac.scss',
+		'src/styles/invitation-sections-by-preset/storybook-lilac.scss',
+		'src/styles/invitation-profiles/america.scss',
+	];
+	const read = (file: string) => fs.readFileSync(path.join(projectRoot, file), 'utf8');
+
+	it('defines the expected theme root scope only', () => {
+		expect(getTopLevelSelectors(emeraldContent)).toEqual(['.theme-preset--storybook-emerald']);
+	});
+
+	it('does not reference other registered presets', () => {
+		for (const preset of otherPresets) {
+			expect(hasPresetReference(emeraldContent, preset)).toBe(false);
+		}
+	});
+
+	it('does not contain !important or event-specific content', () => {
+		expect(emeraldContent).not.toContain('!important');
+		expect(emeraldContent).not.toMatch(/\bXV\b/);
+		expect(emeraldContent).not.toMatch(/events[/-]/i);
+	});
+
+	it('styles interludes, family and location through the base contracts', () => {
+		expectInterludeContract(emeraldContent);
+		expectFamilyContract(emeraldContent);
+		expect(emeraldContent).toContain('--location-bg');
+		expect(emeraldContent).toContain('--location-indications-grid-template');
+	});
+
+	it('paints its night band through tokens on section kinds, never through geometry', () => {
+		const shell = read('src/styles/themes/sections/theme-shell/_storybook-emerald.scss');
+		expect(shell).toContain("[data-section-kind='countdown']");
+		const declarations = shell
+			.replace(/\/\/.*$/gm, '')
+			.split(/[;{}]/)
+			.map((part) => part.trim())
+			.filter((part) => /^[a-z-]+\s*:/.test(part));
+		expect(declarations.filter((part) => !part.startsWith('--'))).toEqual([]);
+	});
+
+	it('scopes its envelope skin to its own variant', () => {
+		const reveal = read('src/styles/themes/sections/reveal/_storybook-emerald.scss');
+		expect(getTopLevelSelectors(reveal)).toEqual([
+			".envelope-wrapper[data-variant='storybook-emerald']",
+		]);
+	});
+
+	it('borrows no identity from the lilac preset or America', () => {
+		for (const file of ownFiles) {
+			const source = read(file);
+			expect({
+				file,
+				match:
+					source.match(/america|lilac|violet|lantern-garden|candle|blush/i)?.[0] ?? null,
+			}).toEqual({ file, match: null });
+		}
+	});
+
+	it('leaves the storybook lilac preset and America unaware of it', () => {
+		for (const file of protectedFiles) {
+			const source = read(file);
+			expect({ file, match: source.match(/emerald|butterfl/i)?.[0] ?? null }).toEqual({
+				file,
+				match: null,
+			});
+		}
+	});
+});

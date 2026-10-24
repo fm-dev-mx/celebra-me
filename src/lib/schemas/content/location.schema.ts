@@ -99,7 +99,8 @@ function collectVisibleVenues(location: { venues: Array<{ isVisible?: boolean }>
 	return location.venues.filter((venue) => venue.isVisible !== false);
 }
 
-function validateLanternRoute(
+function validateRouteScene(
+	scene: string,
 	location: { variant: string; venues: Array<{ isVisible?: boolean }> },
 	context: z.RefinementCtx,
 ): void {
@@ -107,8 +108,7 @@ function validateLanternRoute(
 	context.addIssue({
 		code: 'custom',
 		path: ['presentationOptions', 'scene'],
-		message:
-			'location.presentationOptions.scene=lantern-route requires program-sheet with at least two visible venues',
+		message: `location.presentationOptions.scene=${scene} requires program-sheet with at least two visible venues`,
 	});
 }
 
@@ -144,8 +144,8 @@ export const locationSchema = z
 			});
 		}
 
-		if (location.presentationOptions?.scene === 'lantern-route') {
-			validateLanternRoute(location, context);
+		if (location.presentationOptions?.scene) {
+			validateRouteScene(location.presentationOptions.scene, location, context);
 		}
 
 		if (

@@ -101,21 +101,25 @@ const isIndicationsBand = indicationsLayout === 'band';
 const isIndicationsEnclosure = indicationsLayout === 'enclosure';
 // The printed program owns its rhythm; pinned routes also guide guests to the next chapter.
 const isProgramSheet = variant === 'program-sheet';
-// The lantern route pins the intro and the program together; it needs two stops to travel.
-const isLanternRoute = scene === 'lantern-route' && isProgramSheet && !isLocked && displayVenues.length >= 2;
-const SceneWrapper = isLanternRoute ? ScrollScene : Fragment;
-const sceneProps = isLanternRoute ? { length: 3 as const, class: 'location-route' } : {};
-// Route between the first and the last stop, drawn in a 390 × 500 box; the lantern's offset-path
+// A route scene pins the intro and the program together; it needs two stops to travel.
+const isRouteScene = scene !== undefined && isProgramSheet && !isLocked && displayVenues.length >= 2;
+const isButterflyRoute = isRouteScene && scene === 'butterfly-route';
+const SceneWrapper = isRouteScene ? ScrollScene : Fragment;
+const sceneProps = isRouteScene ? { length: 3 as const, class: 'location-route' } : {};
+// Route between the first and the last stop, drawn in a 390 × 500 box; the traveler's offset-path
 // in _lantern-route.scss repeats it.
 const ROUTE_PATH = 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
+// Hairline butterfly in a 100 × 86 box, head up; the route turns it to face its way.
+const BUTTERFLY_PATH =
+	'M50 44C58 22 82 10 90 22c7 12-12 26-40 24zM50 44C42 22 18 10 10 22c-7 12 12 26 40 24zM50 47c12 4 26 16 20 28-6 10-16-2-20-24zM50 47c-12 4-26 16-20 28 6 10 16-2 20-24zM50 40v22M50 40c-2-10-6-16-12-20M50 40c2-10 6-16 12-20';
 const venueType = (venue: GroupedVenue) =>
 	venue.type === 'ceremony' || venue.type === 'reception' || venue.type === 'grouped' ? venue.type : 'custom';
 ---
 
-<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation} data-location-scene={isLanternRoute ? scene : undefined}>
+<section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation} data-location-scene={isRouteScene ? scene : undefined}>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
 	<SceneWrapper {...sceneProps}>
-	{isLanternRoute && <div class="location-route__sky" aria-hidden="true"></div>}
+	{isRouteScene && <div class="location-route__sky" aria-hidden="true"></div>}
 	{(introEyebrow || introHeading || introLede) && (
 		<header class="event-location__intro">
 			{introEyebrow && <p class="event-location__eyebrow" data-reveal-role="label">{introEyebrow}</p>}
@@ -147,7 +151,7 @@ const venueType = (venue: GroupedVenue) =>
 	) : (
 		isProgramSheet ? (
 		<>
-		{isLanternRoute && (
+		{isRouteScene && (
 			<div class="location-route__map">
 			<div class="location-route__map-plane">
 			<svg class="location-route__drawing" viewBox="0 0 390 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
@@ -155,11 +159,17 @@ const venueType = (venue: GroupedVenue) =>
 				<path class="location-route__path" d={ROUTE_PATH} pathLength="1" />
 				<circle class="location-route__stop" cx="70" cy="40" r="6" />
 				<circle class="location-route__stop" cx="120" cy="470" r="6" />
+				{isButterflyRoute ? (
+				<g class="location-route__butterfly">
+					<path class="location-route__butterfly-wings" transform="translate(-30 -26) scale(0.6)" d={BUTTERFLY_PATH} />
+				</g>
+				) : (
 				<g class="location-route__lantern">
 					<circle class="location-route__lantern-glow" r="30" />
 					<path class="location-route__lantern-body" d="M-10 -16h20l3 30h-26Z" />
 					<path class="location-route__lantern-cap" d="M-5 -23h10v7h-10Z" />
 				</g>
+				)}
 			</svg>
 			<p class="location-route__note">Siga bajando <span aria-hidden="true">↓</span></p>
 			</div>
@@ -167,7 +177,7 @@ const venueType = (venue: GroupedVenue) =>
 		)}
 		<div class={`event-location__program ${isSingleVenue ? 'event-location__program--single' : ''}`}>
 			{displayVenues.map((venue: GroupedVenue) => (
-				<VenueProgramEntry venue={venue} type={venueType(venue)} calendar={calendarFor(venue)} reveal={!isLanternRoute} />
+				<VenueProgramEntry venue={venue} type={venueType(venue)} calendar={calendarFor(venue)} reveal={!isRouteScene} />
 			))}
 		</div>
 		</>
@@ -190,14 +200,21 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 		)
 	)}
-	{isLanternRoute && (
+	{isRouteScene && (
 		<p class="location-route__continuation">
+			{isButterflyRoute ? (
+			<svg class="location-route__continuation-mark" width="24" height="44" viewBox="0 0 24 44" fill="none" aria-hidden="true" focusable="false">
+				<path transform="translate(1 2) scale(0.22)" d={BUTTERFLY_PATH} stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
+				<path d="M12 27v5M7 36l5 5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+			</svg>
+			) : (
 			<svg class="location-route__continuation-mark" width="24" height="44" viewBox="0 0 24 44" fill="none" aria-hidden="true" focusable="false">
 				<path d="M12 1v5M8 7h8M8 23h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
 				<path d="M8 8h8l2 4v6l-2 4H8l-2-4v-6z" stroke="currentColor" stroke-width="1.2" />
 				<path d="M12 11v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
 				<path d="M12 27v5M7 36l5 5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
 			</svg>
+			)}
 			<span><span class="location-route__continuation-label">Siga bajando</span><span class="location-route__continuation-detail">La invitación continúa</span></span>
 		</p>
 	)}
@@ -266,12 +283,12 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 	)}
 
-	{nextSectionLink && (!isProgramSheet || isLanternRoute) && (
-		<div class:list={['nav-button-container', { 'location-route__next': isLanternRoute }]}>
+	{nextSectionLink && (!isProgramSheet || isRouteScene) && (
+		<div class:list={['nav-button-container', { 'location-route__next': isRouteScene }]}>
 			<SectionNavButton
 				href={nextSectionLink.href}
 				class="event-location"
-				section={isLanternRoute ? `Continúe: ${nextSectionLink.label ?? 'siguiente capítulo'}` : nextSectionLink.label}
+				section={isRouteScene ? `Continúe: ${nextSectionLink.label ?? 'siguiente capítulo'}` : nextSectionLink.label}
 			/>
 		</div>
 	)}

@@ -58,6 +58,7 @@ export const THEME_PRESET_METADATA = {
 	'sacred-keepsake': { portrait: true, eventTypes: ['bautizo'] },
 	'angelic-presence': { portrait: true, eventTypes: ['bautizo', 'primera-comunion'] },
 	'storybook-lilac': { portrait: false, eventTypes: ['xv'] },
+	'storybook-emerald': { portrait: false, eventTypes: ['xv'] },
 	'sage-champagne': { portrait: false, eventTypes: ['xv'] },
 } as const satisfies Record<string, ThemePresetMetadata>;
 
@@ -132,4 +133,8 @@ export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[n
  * Decorative line-art sets that sections pick up at fixed positions (heading emblems, rule
  * separators, closing horizon). Purely presentational: CSS pseudo-elements, aria-hidden by nature.
  */
-export const SECTION_ORNAMENT_SETS = ['seaside-lineart', 'storybook-lanterns'] as const;
+export const SECTION_ORNAMENT_SETS = [
+	'seaside-lineart',
+	'storybook-lanterns',
+	'fine-butterflies',
+] as const;

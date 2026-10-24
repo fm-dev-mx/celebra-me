@@ -55,6 +55,10 @@
 		background: transparent;
 		box-shadow: none;
 
+		// Optional hairline that follows the frame's radius a few pixels out; none by default.
+		outline: var(--hero-portrait-outline, none);
+		outline-offset: var(--hero-portrait-outline-offset, 0);
+
 		img {
 			display: block;
 			width: var(--hero-portrait-width-mobile, auto);
