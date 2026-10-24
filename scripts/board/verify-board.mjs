@@ -23,7 +23,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
-import { cierreIssues, isReview, NO_CIERRE, stage, taskIssues } from './model.mjs';
+import { cierreIssues, isOpen, isReview, NO_CIERRE, stage, taskIssues } from './model.mjs';
 import { boardDir } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -473,8 +473,8 @@ function numberIssues(tareas) {
 }
 
 /**
- * d177: a ready, unlocked agent task needs a planned canonical lane, and two of them never share one; a review
- * child runs where its reviewer is and needs none.
+ * d177: every open task says where it runs: a planned canonical lane, or the lane its lock holds; a review
+ * child runs read-only in Integration and needs none. Two ready, unlocked agent tasks never share a lane.
  */
 function laneWarnings(tareas, decisiones, archivo, now) {
 	const board = { tareas, decisiones, archivo };
@@ -487,18 +487,21 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 				id: t.id,
 				msg: `carril planeado no canónico: ${t.carrilPlaneado}`,
 			});
-	const ready = tareas.filter(
-		(t) =>
-			t.actor === 'sesion' && !isReview(t) && !t.candado && stage(t, board, now) === 'lista',
-	);
-	for (const t of ready) {
-		if (!t.carrilPlaneado)
+	for (const t of tareas)
+		if (isOpen(t, board, now) && !isReview(t) && !t.carrilPlaneado && !t.candado?.carril)
 			avisos.push({
 				id: t.id,
-				msg: `lista sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
+				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
 			});
-		else (byLane[t.carrilPlaneado] ??= []).push(t.id);
-	}
+	const ready = tareas.filter(
+		(t) =>
+			t.actor === 'sesion' &&
+			!isReview(t) &&
+			!t.candado &&
+			t.carrilPlaneado &&
+			stage(t, board, now) === 'lista',
+	);
+	for (const t of ready) (byLane[t.carrilPlaneado] ??= []).push(t.id);
 	for (const [lane, ids] of Object.entries(byLane))
 		if (ids.length > 1)
 			for (const id of ids)
