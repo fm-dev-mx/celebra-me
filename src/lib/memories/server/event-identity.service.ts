@@ -10,6 +10,7 @@ import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { resolveInvitationSchedule } from '@/lib/intake/invitation-validity';
 import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import type { MemoriesSpaceRecord } from '@/lib/memories/contract/catalog';
+import { safeErr } from '@/lib/server/safe-error';
 
 export interface MemoriesEventIdentity {
 	/** Display names as the invitation shows them, e.g. «Daniela & Martín»; the title otherwise. */
@@ -61,7 +62,10 @@ export async function resolveMemoriesEventIdentity(
 			coverImage,
 		};
 	} catch (error) {
-		console.error('[memories] Event identity unavailable; using the space title.', error);
+		console.error(
+			'[memories] Event identity unavailable; using the space title.',
+			safeErr(error),
+		);
 		return fallback;
 	}
 }

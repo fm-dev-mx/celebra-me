@@ -24,6 +24,7 @@ import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-c
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
 import { readDeployEnvironment } from '@/lib/server/deploy-identity';
+import { safeErr } from '@/lib/server/safe-error';
 
 export type ScheduledJobName = 'memories_cleanup' | 'engagement_maintenance' | 'platform_usage';
 
@@ -104,7 +105,7 @@ async function runEngagementMaintenanceJob(): Promise<ScheduledJobOutcome['statu
 		return 'completed';
 	} catch (error) {
 		console.error('[engagement][maintenance] failed', {
-			error: error instanceof Error ? error.message : String(error),
+			error: safeErr(error),
 		});
 		return 'failed';
 	}

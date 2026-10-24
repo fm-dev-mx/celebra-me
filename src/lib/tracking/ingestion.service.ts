@@ -10,6 +10,7 @@ import { shouldExcludeInternalTraffic } from '@/lib/tracking/internal-exclusion'
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import { safeErr } from '@/lib/server/safe-error';
 
 export interface IngestTrackingEventInput {
 	request: Request;
@@ -120,7 +121,10 @@ export async function ingestTrackingEvent(
 						: undefined,
 				});
 			} catch (leadError) {
-				console.error('[tracking] Failed to auto-create WhatsApp lead:', leadError);
+				console.error(
+					'[tracking] Failed to auto-create WhatsApp lead:',
+					safeErr(leadError),
+				);
 			}
 		}
 	}

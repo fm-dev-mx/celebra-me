@@ -280,3 +280,51 @@ describe('parseJsonBody', () => {
 		await expect(parseJsonBody(jsonRequest('  '))).resolves.toEqual({});
 	});
 });
+
+describe('errorResponse — server logs carry no row values', () => {
+	const ROW_VALUE = '+52 55 0000 0000';
+	let consoleError: jest.SpyInstance;
+
+	beforeEach(() => {
+		consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+	});
+
+	afterEach(() => {
+		consoleError.mockRestore();
+	});
+
+	function loggedArgs(): unknown[] {
+		return consoleError.mock.calls.flat();
+	}
+
+	it('logs only code and message for an unexpected provider error', () => {
+		const body = JSON.stringify({
+			code: '23505',
+			message: 'duplicate key value violates unique constraint "guests_phone_key"',
+			details: `Key (phone)=(${ROW_VALUE}) already exists.`,
+		});
+		const error = new SupabaseHttpError(409, body, '23505');
+
+		errorResponse(error);
+
+		expect(consoleError).toHaveBeenCalledWith('[rsvp] Unexpected Error:', {
+			code: '23505',
+			message: 'SupabaseHttpError (409)',
+		});
+		expect(loggedArgs()).not.toContain(error);
+		expect(JSON.stringify(loggedArgs())).not.toContain(ROW_VALUE);
+	});
+
+	it('does not log the ApiError object or its details on server errors', () => {
+		const error = new ApiError(500, 'internal_error', 'Insert failed.', { phone: ROW_VALUE });
+
+		errorResponse(error);
+
+		expect(consoleError).toHaveBeenCalledWith('[rsvp] Error:', {
+			code: 'internal_error',
+			message: expect.stringMatching(/^ApiError \(500\)/),
+		});
+		expect(loggedArgs()).not.toContain(error);
+		expect(JSON.stringify(loggedArgs())).not.toContain(ROW_VALUE);
+	});
+});
