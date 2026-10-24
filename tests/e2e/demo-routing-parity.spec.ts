@@ -36,6 +36,52 @@ test.describe('Demo Routing Parity', () => {
 			await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/brisa$/);
 		});
 	}
+	for (const viewport of [
+		{ width: 375, height: 812 },
+		{ width: 1024, height: 768 },
+	]) {
+		test(`quotes from a floating button and moves to the next demo @ ${viewport.width}`, async ({
+			page,
+		}) => {
+			await page.addInitScript(() => {
+				// Keep the cookie banner closed: the floating quote yields to it.
+				window.localStorage.setItem(
+					'cm_consent',
+					JSON.stringify({
+						necessary: true,
+						analytics: false,
+						marketing: false,
+						updatedAt: new Date().toISOString(),
+					}),
+				);
+			});
+			await page.setViewportSize(viewport);
+			await page.goto('/celestial?skipEnvelope=true');
+			const floating = page.locator('[data-demo-floating-quote]');
+			await expect(floating).not.toHaveClass(/demo-floating-quote--visible/);
+			await page.locator('[data-section-kind="location"]').scrollIntoViewIfNeeded();
+			await expect(floating).toHaveClass(/demo-floating-quote--visible/);
+			await expect(floating).toHaveAttribute('data-track-cta', 'demo_quote_floating');
+			const text = async (link: ReturnType<typeof page.locator>) =>
+				new URL((await link.getAttribute('href')) ?? '').searchParams.get('text');
+			expect(await text(floating)).toMatch(/Ref\. XV-CELESTIAL-FLOTANTE$/);
+
+			const closing = page.locator('.demo-conversion[data-placement="closing"]');
+			await closing.scrollIntoViewIfNeeded();
+			await expect(floating).not.toHaveClass(/demo-floating-quote--visible/);
+			expect(await text(closing.locator('.demo-conversion__primary'))).toMatch(
+				/Ref\. XV-CELESTIAL-CIERRE$/,
+			);
+			await expect(closing.getByRole('link', { name: 'Volver al inicio' })).toHaveAttribute(
+				'href',
+				'/#xv',
+			);
+			const next = closing.locator('.demo-conversion__next');
+			await expect(next).toContainText('Enchanted Rose');
+			await next.click();
+			await expect(page).toHaveURL(/\/rose$/);
+		});
+	}
 	test('resolves Brisa and permanently redirects its retired URL with query parameters', async ({
 		request,
 	}) => {

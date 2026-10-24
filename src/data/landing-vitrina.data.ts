@@ -17,8 +17,11 @@ import { DEMO_INVITATIONS } from '@/invitations/demos';
 /** Demo that opens the XV showroom and the hero: Serenata, the main XV demo. */
 export const VITRINA_LEAD_DEMO_SLUG = 'demo-xv-serenata';
 
-/** Where a quote starts: the showroom detail, the mobile sticky bar or the header button. */
-export type VitrinaEntry = 'VITRINA' | 'BARRA' | 'HEADER';
+/**
+ * Where a quote starts: the showroom detail, the mobile sticky bar or the header button on the
+ * landing; inside a demo, its floating button, gallery panel or closing panel.
+ */
+export type VitrinaEntry = 'VITRINA' | 'BARRA' | 'HEADER' | 'FLOTANTE' | 'GALERIA' | 'CIERRE';
 
 export interface VitrinaEventConfig {
 	publicSlug: DemoShowroomPublicSlug;

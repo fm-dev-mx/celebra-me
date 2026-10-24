@@ -53,7 +53,7 @@ const channelId = `demo-conversion-${placement}-channel`;
 	{!isGallery && <p class="demo-conversion__description">Consulte las opciones de personalización para {demo.celebrationLabel}.</p>}
 	<div class="demo-conversion__action">
 	{available ? (
-		<a class="demo-conversion__primary" href={demo.quoteLink} target="_blank" rel="noopener noreferrer"
+		<a class="demo-conversion__primary" href={demo.quoteLinks[placement]} target="_blank" rel="noopener noreferrer"
 			aria-describedby={channelId}
 			data-track-event="whatsapp_contact_clicked" data-track-cta={`demo_quote_${placement}`}
 			data-track-section={`demo_${placement}`} data-track-intent="whatsapp"
@@ -67,10 +67,20 @@ const channelId = `demo-conversion-${placement}-channel`;
 	{available && <span class="demo-conversion__channel" id={channelId}>Por WhatsApp</span>}
 	</div>
 	{!isGallery && (
-		<a class="demo-conversion__secondary" href={demo.browseHref}
-			data-track-event="cta_clicked" data-track-cta="demo_browse_styles"
-			data-track-section="demo_closing" data-track-intent="showroom"
-			data-event-type={demo.eventType} data-demo-slug={demo.slug}>Ver otros estilos</a>
+		<nav class="demo-conversion__nav" aria-label="Más demos">
+			{demo.nextDemo && (
+				<a class="demo-conversion__next" href={demo.nextDemo.href}
+					data-track-event="cta_clicked" data-track-cta="demo_next"
+					data-track-section="demo_closing" data-track-intent="showroom"
+					data-track-label="Siguiente demo" data-event-type={demo.eventType} data-demo-slug={demo.slug}>
+					<span>Siguiente demo<span class="demo-conversion__next-name">{demo.nextDemo.name}</span></span><span aria-hidden="true">→</span>
+				</a>
+			)}
+			<a class="demo-conversion__secondary" href={demo.homeHref}
+				data-track-event="cta_clicked" data-track-cta="demo_back_home"
+				data-track-section="demo_closing" data-track-intent="showroom"
+				data-event-type={demo.eventType} data-demo-slug={demo.slug}>Volver al inicio</a>
+		</nav>
 	)}
 	</div>
 </aside>
