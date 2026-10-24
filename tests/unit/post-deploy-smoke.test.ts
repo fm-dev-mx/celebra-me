@@ -7,6 +7,7 @@ import {
 	runProductionSmoke,
 	type PostDeployEvidence,
 } from '../../scripts/ops/post-deploy-smoke';
+import { visualPageRoute } from '../../scripts/screenshot/visual-coverage-contract';
 
 function response(status: number, body = '', headers: Record<string, string> = {}): Response {
 	return {
@@ -18,7 +19,7 @@ function response(status: number, body = '', headers: Record<string, string> = {
 }
 
 const PAGE_ROUTES = listSmokePageRoutes();
-const PAGE_PATHS = new Set(PAGE_ROUTES.map((route) => `/${route.eventType}/${route.slug}`));
+const PAGE_PATHS = new Set(PAGE_ROUTES.map(visualPageRoute));
 
 function productionFetch(): jest.MockedFunction<
 	(input: string, init?: RequestInit) => Promise<Response>
@@ -124,6 +125,23 @@ describe('post-deploy smoke', () => {
 			0,
 		);
 		expect(PAGE_ROUTES.filter((route) => route.kind === 'demo').length).toBeGreaterThan(0);
+	});
+
+	it('opens a catalog demo at its short alias instead of the redirecting long route', async () => {
+		const pages = [{ kind: 'demo', eventType: 'boda', slug: 'demo-brisa' }] as const;
+		const baseFetch = productionFetch();
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async (input: string) => {
+			const pathname = new URL(input).pathname;
+			if (pathname === '/boda/demo-brisa') return response(301);
+			if (pathname === '/brisa') return response(200, '<title>Brisa</title>');
+			return baseFetch(input);
+		});
+
+		const result = await runProductionSmoke('https://celebra-me.com', fetchMock, { pages });
+
+		expect(result.failureCodes).toEqual([]);
+		expect(fetchMock).toHaveBeenCalledWith('https://celebra-me.com/brisa', expect.anything());
 	});
 
 	it('opens each page and accepts 403 only for an administrator-disabled invitation', async () => {
