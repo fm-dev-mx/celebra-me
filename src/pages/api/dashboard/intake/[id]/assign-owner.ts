@@ -20,7 +20,7 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		return jsonResponse({ invitation });
 	} catch (error) {
 		if (error instanceof ApiError && error.status < 500) {
-			console.warn(`[assign-owner] Expected error: ${error.code} — ${error.message}`);
+			console.warn('[assign-owner] Expected error:', safeErr(error));
 		} else {
 			console.error(`[assign-owner] Unexpected error:`, safeErr(error));
 		}

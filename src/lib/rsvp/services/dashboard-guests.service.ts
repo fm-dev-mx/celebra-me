@@ -50,6 +50,7 @@ import {
 } from '@/lib/rsvp/services/shared/share-message-date';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 import { getEventEngagementSummary } from '@/lib/rsvp/repositories/engagement.repository';
+import { safeErr } from '@/lib/server/safe-error';
 
 export function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let totalInvitations = 0;
@@ -209,7 +210,7 @@ async function loadEngagementSummary(
 		return await getEventEngagementSummary(eventId, hostAccessToken);
 	} catch (error) {
 		console.warn('[dashboard] Engagement summary unavailable:', {
-			error: error instanceof Error ? error.message : String(error),
+			error: safeErr(error),
 		});
 		return null;
 	}

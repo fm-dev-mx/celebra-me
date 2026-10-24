@@ -14,6 +14,7 @@ import {
 	deviceClassFromRequest,
 	type TrafficEnvironment,
 } from './traffic-classifier';
+import { safeErr } from '@/lib/server/safe-error';
 
 function trafficEnvironment(): TrafficEnvironment {
 	return { deployEnvironment: readHostedDeployEnvironment() };
@@ -111,7 +112,7 @@ export async function recordServerEngagementEvent(
 	} catch (error) {
 		console.warn('[engagement] Non-critical server event failed:', {
 			eventName: event.eventName,
-			error: error instanceof Error ? error.message : String(error),
+			error: safeErr(error),
 		});
 	}
 }
