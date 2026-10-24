@@ -223,9 +223,9 @@ invitation profiles.
 - location.program-sheet: venues as printed-program entries (line drawing for ceremony/reception,
   label, time in words, venue, address, text links of 44 px for map, calendar and copy). No cards
   and no section nav button; two columns with a vertical hairline on wide screens.
-  `--location-program-*`. Optional `presentationOptions.scene: 'lantern-route'` (two or more visible
-  venues) sets the program in a pinned night scene; see [Motion](motion.md#scroll-scenes).
-  `--location-route-*`.
+  `--location-program-*`. Optional `presentationOptions.scene: 'lantern-route'` (night, lantern) or
+  `'butterfly-route'` (day, butterfly), two or more visible venues, sets the program in a pinned
+  route scene; see [Motion](motion.md#scroll-scenes). `--location-route-*`.
 - hero.bleed-portrait: framed-portrait markup with the photograph to the edges (full width at its
   own proportion on phones, full-height left half on wide screens), written when/where facts and a
   silver scroll line. `--hero-bleed-*`.

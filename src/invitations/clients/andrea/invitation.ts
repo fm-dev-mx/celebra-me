@@ -2,11 +2,14 @@ import { defineCanonicalInvitation } from '../../../../scripts/provision/invitat
 import type { CanonicalEventContentInput } from '../../../lib/schemas/content/base-event.schema.ts';
 
 /**
- * XV invitation on the storybook-emerald preset: an ivory album that turns into an emerald night
- * from the countdown on, with fine gold butterflies at a few thresholds. The cover frames the
- * portrait in an arch over the name. The five photographs come from an AI session edited from the
- * client's snapshots (accepted by the owner 2026-10-24), upscaled 2× with a resampling filter that
- * invents no detail. Map links are address searches until the client sends pins; the song is
+ * XV invitation on the storybook-emerald preset, staged as a printed photo album: ivory paper and
+ * sage mist alternate by section, the countdown is one short emerald night between two framed
+ * plates, and the closing is the night again. Three joins carry the story: the night rises under
+ * the garden plate, the sealed-letter print hangs out of it, and the closing rises into the reply
+ * card under an arch. Fine gold butterflies are the only motif. The cover frames the portrait in
+ * an arch over the name. The photographs come from an AI session edited from the client's
+ * snapshots, upscaled 2× with a resampling filter that invents no detail; the two plates and two
+ * album prints are temporary copies until the second session's photos arrive. Map links are address searches until the client sends pins; the song is
  * omitted until its file is hosted on the media domain. The program, gifts, reply deadline and
  * every guest-facing line are drafts for the client's approval. The family section is «Mi
  * familia» (never «Mis padres») and has no godparents. Adults only, with personalized passes.
@@ -30,9 +33,9 @@ const content: CanonicalEventContentInput = {
 	eventTiming: ANDREA_TIMING,
 	sectionOrder: [
 		'quote',
-		'family',
 		'countdown',
 		'location',
+		'family',
 		'itinerary',
 		'gallery',
 		'gifts',
@@ -43,11 +46,33 @@ const content: CanonicalEventContentInput = {
 	composition: {
 		ornaments: 'fine-butterflies',
 		intersections: {
-			// One designed join: the ivory family chapter closes on the silhouette of a door as the
-			// night begins; every other boundary is a clean cut.
-			countdown: { family: 'arch', source: 'family' },
+			// Three joins in a bridge, bridge, climax cadence; every other boundary is a clean cut
+			// between ivory and sage. The night rises on a slow horizon under the garden plate, the
+			// sealed-letter print hangs out of the night into the paper, and the closing rises into
+			// the reply card under an arch. The profile draws the horizon and reserves each depth.
+			countdown: { family: 'overlap', source: 'interlude-after-quote' },
+			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
+			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
+	interludes: [
+		{
+			// The garden terrace, laid on the sage as an arched plate before the night.
+			image: 'interludeGarden',
+			afterSection: 'quote',
+			alt: 'Andrea con vestido verde esmeralda en una terraza de piedra con plantas.',
+			height: 'medium',
+			presentation: 'framed',
+		},
+		{
+			// Her hands on the sealed letter: the invitation itself, framed like a print.
+			image: 'interludeDetail',
+			afterSection: 'countdown',
+			alt: 'Las manos de Andrea sostienen un sobre marfil con sello dorado sobre su falda verde.',
+			height: 'medium',
+			presentation: 'framed',
+		},
+	],
 	hero: {
 		// The portrait stands in an arch over the name, as in the accepted first screen.
 		variant: 'framed-portrait',
@@ -108,6 +133,8 @@ const content: CanonicalEventContentInput = {
 		presentationOptions: {
 			showCalendarLinks: true,
 			indicationsLayout: 'enclosure',
+			// From the church to the hall: a gold butterfly flies the route while the entries swap.
+			scene: 'butterfly-route',
 		},
 		introHeading: 'Dónde y cuándo',
 		introLede: 'Primero daremos gracias en misa y después celebraremos juntos.',
@@ -173,8 +200,8 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gallery: {
-		// Two portraits side by side: the face sheet and the full gown.
-		variant: 'paired-portraits',
+		// An album page that assembles itself, one look per stretch of the scroll.
+		variant: 'album-assemble',
 		eyebrow: '',
 		title: 'Antes de mi gran noche',
 		items: [
@@ -187,6 +214,16 @@ const content: CanonicalEventContentInput = {
 				image: 'gallery02',
 				alt: 'Andrea de cuerpo entero con vestido verde esmeralda y un ramo blanco.',
 				focalPoint: '50% 30%',
+			},
+			{
+				image: 'albumStaircase',
+				alt: 'Andrea baja una escalera clásica con una mano en el barandal.',
+				focalPoint: '50% 30%',
+			},
+			{
+				image: 'albumWindow',
+				alt: 'Andrea sentada junto a un ventanal, con la falda extendida a su alrededor.',
+				focalPoint: '50% 35%',
 			},
 		],
 	},
@@ -286,6 +323,10 @@ export default defineCanonicalInvitation({
 		thankYouPortrait: 'thank-you.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
+		albumStaircase: 'album-staircase.webp',
+		albumWindow: 'album-window.webp',
+		interludeGarden: 'interlude-garden.webp',
+		interludeDetail: 'interlude-detail.webp',
 		ogShare: 'og-share.webp',
 	},
 	deliveryScope: 'content-and-assets',
