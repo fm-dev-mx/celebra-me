@@ -61,6 +61,7 @@ import {
 	inTab,
 	isFinished,
 	isReview,
+	laneAllowed as laneAllowedIn,
 	laneLines,
 	promptWithLane,
 	lockSessionIssue,
@@ -341,11 +342,7 @@ function closeCommand({ pos, flags, lists }, dir, out) {
 	});
 }
 
-/** Whether `carril` is a canonical lane this task may use; Integration only for coordinator tasks. */
-const laneAllowed = (carril, task) =>
-	WORKTREE_LANES.some(
-		(lane) => lane.id === carril && (lane.segment || task.actor === 'coordinador'),
-	);
+const laneAllowed = (carril, task) => laneAllowedIn(carril, task, WORKTREE_LANES);
 
 /** d177: only a declared coordinator plans a lane, and only a canonical one. */
 function assertPlan(task, carril, flags) {

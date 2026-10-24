@@ -297,6 +297,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 </div>
 <script type="module">
 import { archiveBlock, cierreLines } from '/model.mjs';
+import { ordenOf, prNumber, taskLane, taskTag } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 const TZ='America/Mazatlan';
 const GH='https://github.com/fm-dev-mx/celebra-me';
@@ -387,7 +388,7 @@ function renderSheet(open){
   const sh=$('sheet'),t=S.sel&&byId(S.sel);
   if(!t){sh.innerHTML='<div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div>';return}
   const c=color(t),l=laneOf(t)||{},r=reqs(t);
-  const pr=t.pr?String(t.pr).match(/(\d+)\s*$/):null;
+  const pr=prNumber(t.pr);
   const rows=[
     ['Agente',t.agente?esc(AGENT[t.agente]||t.agente)+(t.candado?` · 🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)} desde ${esc(fmt(t.candado.desde))}`:''):''],
     ['Requiere',(t.requiere||[]).length?t.requiere.map(esc).join(', '):''],
@@ -396,7 +397,7 @@ function renderSheet(open){
     ['Puerto',l.puerto?`<span class="mono">${esc(l.puerto)}</span>`:''],
     ['Sesión',sesHtml(t.sesion)],
     ['Rama',t.rama?`<span class="code">${esc(t.rama)}</span>`:''],
-    ['PR',pr?`<a href="${GH}/pull/${pr[1]}" target="_blank" rel="noopener">#${pr[1]}</a>`:''],
+    ['PR',pr?`<a href="${GH}/pull/${pr}" target="_blank" rel="noopener">#${pr}</a>`:''],
     ['Origen',t.origen?`<span class="code">${esc(t.origen)}</span>`:''],
     ['Toca',(t.toca||[]).length?t.toca.map(x=>esc(TOCA[x]||x)).join(', ')+' · necesita su aprobación':''],
     ['Límite',t.hasta?esc(fmt(t.hasta)):''],
@@ -423,11 +424,11 @@ function closeSheet(){$('sheet').classList.remove('open');document.body.classLis
 
 function renderBoard(){
   if(!S.ready)return;
-  const lanes=S.board.carriles.slice().sort((a,b)=>(a.orden||99)-(b.orden||99));
+  const lanes=S.board.carriles.slice().sort((a,b)=>ordenOf(a)-ordenOf(b));
   const known=new Set(lanes.map(l=>l.id));
   const tareas=S.board.tareas.filter(t=>!t.archivada&&inTab(t,S.ag));
   // d177: a task not claimed yet sits in the lane the coordinator planned for it.
-  const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;
+  const laneId=taskLane;
   const loose=tareas.filter(t=>!known.has(laneId(t)));
   if(loose.length)lanes.push({id:'sin-carril',uso:'Tareas sin carril o de rutina.'});
   const chip=t=>`<button type="button" class="chip c-${color(t)}" data-sel="${esc(t.id)}" data-jump="1"><b>${t.num?'T'+t.num:'·'}</b><span>${esc(t.titulo)}${NUM[t.id]?` <span class="pos" title="Lugar en la cola">#${NUM[t.id]}</span>`:''}</span></button>`;
@@ -461,12 +462,12 @@ function renderFin(){
 }
 async function archive(btn){
   const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
-  btn.disabled=true;m.textContent=(archivar?'Archivando ':'Desarchivando ')+(t&&t.num?'T'+t.num:id)+'…';
+  btn.disabled=true;m.textContent=(archivar?'Archivando ':'Desarchivando ')+(t?taskTag(t):id)+'…';
   try{
     const res=await fetch('/api/archivar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id,archivar,rev:Number(btn.dataset.rev)})});
     const body=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
-    m.textContent=(t&&t.num?'T'+t.num:id)+(archivar?' archivada. Está en «Ver archivadas».':' vuelve a Finalizadas.');
+    m.textContent=(t?taskTag(t):id)+(archivar?' archivada. Está en «Ver archivadas».':' vuelve a Finalizadas.');
   }catch(e){btn.disabled=false;m.textContent='No se pudo: '+e.message}
 }
 

@@ -854,7 +854,7 @@ describe('pnpm board', () => {
 		expect(html).toContain('${runsHtml(t)}');
 		expect(html).toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
-		expect(html).toContain('const laneId=t=>t.candado?.carril||t.carrilPlaneado||t.carril;');
+		expect(html).toContain('const laneId=taskLane;');
 	});
 
 	it.each(['unknown', 'f04-integracion', ''])(

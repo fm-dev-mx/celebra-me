@@ -14,7 +14,8 @@ authorization.
   port. A PR preview of the view may run only briefly, to check it, and is stopped right after.
 
 - **Task id convention**: the branch without its type prefix: `fix/olivia-gallery` →
-  `olivia-gallery`. Existing assigned branches may differ; the verifier reports a warning.
+  `olivia-gallery`. The id does not have to match its branch, which lives in `rama`; the verifier
+  never warns about it (d188).
 - **Fields**: `titulo`, `estado`, `urgencia` (`urgente|alta|normal|baja`), `actor`
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `carril`, `ahora`
@@ -79,6 +80,10 @@ authorization.
   without one). Record it in the same write that opens the PR. Every mention of a task that has a PR
   — replies, messages, handoffs, reports, prompts — writes it next to the id:
   `pasarela-pago-estudio (PR #475)`. Same rule for every agent.
+- **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`, lane checks
+  (`laneAllowed`, `taskLane`), finished states (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the
+  stale-lock threshold and PR parsing (`normalizePr`, `prNumber`); `board`, `sync`, `verify`,
+  `watch` and the view import them instead of keeping a copy.
 - **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
   «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
   `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open
@@ -89,10 +94,11 @@ authorization.
   `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
   still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
   open PR are only reported; review children are never touched. A lock older than `--horas` (default
-  6, or `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is
-  flagged «posible sesión cerrada» and never released by the sync (the owning session or the
-  coordinator with authority does). The button's POST needs the page's per-process token and its own
-  `Origin`, and every request needs a local `Host`. No agent is ever launched from the view.
+  `STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
+  `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
+  «posible sesión cerrada» and never released by the sync (the owning session or the coordinator
+  with authority does). The button's POST needs the page's per-process token and its own `Origin`,
+  and every request needs a local `Host`. No agent is ever launched from the view.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change, per `move` and per archive or
@@ -132,9 +138,10 @@ authorization.
   refused unless `--coordinador`. `pnpm board verify` warns about a ready, unlocked session task
   without a planned lane and about two ready tasks planned in the same lane.
 - Claims use the explicit `--rama` or the task's declared branch; they never infer the caller's
-  branch. Read-only work may remain without a branch. A different branch name is a verifier warning,
-  not a claim failure. Only `actor: coordinador` with `--coordinador` may claim the canonical
-  `integration` lane; `f04-integracion` is not a canonical id. Claims grant no editing authority.
+  branch. Read-only work may remain without a branch. A branch that differs from the id is neither a
+  claim failure nor a verifier warning (d188). Only `actor: coordinador` with `--coordinador` may
+  claim the canonical `integration` lane; `f04-integracion` is not a canonical id. Claims grant no
+  editing authority.
 - `set` and `release` require matching `--agente` and session (`--sesion`, or Claude's variable).
   Unlocked coordination edits require `--coordinador`; the flag declares a role, never grants
   authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One

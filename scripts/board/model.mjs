@@ -57,9 +57,26 @@ export const DEFAULT_CAPACIDADES = Object.fromEntries(
 const SUCCESS = new Set(['hecha', 'unida', 'comprobada']);
 /** Finished tasks (the «Finalizadas» tab): only these can be archived (d167). */
 export const FINALIZADOS = ['hecha', 'unida', 'comprobada', 'cancelada'];
-export const isFinished = (t) => FINALIZADOS.includes(t.estado);
-/** An origin can also identify follow-up implementation work, not just a cross-review. */
-export const isReview = (t) => Boolean(t.revisionSha) || String(t.id).endsWith('-revision');
+export const isFinished = (t) => FINALIZADOS.includes(t?.estado);
+/**
+ * A cross-review child: it carries the reviewed SHA or its id ends in `-revision` (`-revision-2`, … for later
+ * rounds). An origin alone also marks follow-up implementation work, so it never makes a task a review.
+ */
+export const isReview = (t) => Boolean(t.revisionSha) || /-revision(?:-\d+)?$/.test(String(t.id));
+/** `T34 serenata-fotos`, or the id alone when the task has no number (d159). */
+export const taskLabel = (t) => (Number.isInteger(t.num) ? `T${t.num} ${t.id}` : t.id);
+/** `T34`, or the id when the task has no number. */
+export const taskTag = (t) => (t.num ? `T${t.num}` : t.id);
+/** Sort rank of a task or lane `orden`; an unset one goes last. */
+export const ordenOf = (x) => x?.orden ?? 999;
+/** Task id rule: the branch name without its type prefix (`fix/olivia-gallery` → `olivia-gallery`). */
+export const taskIdFromBranch = (branch) => String(branch ?? '').replace(/^[^/]+\//, '');
+/** A lock is old after this many hours; `pnpm board:sync --horas` or CELEBRA_BOARD_LOCK_HOURS overrides it. */
+export const STALE_LOCK_HOURS = 6;
+const HOUR_MS = 3_600_000;
+/** Whether a lock was taken more than `hours` ago. */
+export const isStaleLock = (candado, now = Date.now(), hours = STALE_LOCK_HOURS) =>
+	now - Date.parse(candado?.desde ?? '') >= hours * HOUR_MS;
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /** The task a closing «pendiente» points to: `T58` by its number, anything else by id; null when absent. */
@@ -357,6 +374,16 @@ export function nextFor(agente, board, now = Date.now()) {
 	);
 }
 
+/** The lane a task sits in: its lock's, else the planned one (d177), else its recorded `carril`. */
+export const taskLane = (t) => t.candado?.carril ?? t.carrilPlaneado ?? t.carril;
+
+/**
+ * Whether `carril` is a canonical lane this task may use (`lanes`: WORKTREE_LANES, passed in so the view needs
+ * no Node module); Integration only for coordinator tasks.
+ */
+export const laneAllowed = (carril, task, lanes) =>
+	lanes.some((lane) => lane.id === carril && (lane.segment || task.actor === 'coordinador'));
+
 /** Folder of a lane relative to the repository's parent directory (d177): never an absolute path. */
 export const laneFolder = (id) =>
 	id === 'integration' ? 'celebra-me' : `celebra-me-worktrees/${id}`;
@@ -383,9 +410,7 @@ export function laneLines(t, board) {
 		);
 	const busy = laneBusy(t, board);
 	if (busy)
-		lines.push(
-			`${lane.split('-')[0]} ocupado por ${busy.num ? `T${busy.num}` : busy.id}; espere o pida otro carril`,
-		);
+		lines.push(`${lane.split('-')[0]} ocupado por ${taskTag(busy)}; espere o pida otro carril`);
 	return lines;
 }
 
@@ -413,6 +438,12 @@ export function normalizePr(pr) {
 	const s = String(pr).trim();
 	const m = s.match(/^#?([1-9]\d*)$/) ?? s.match(OWN_PULL);
 	return m ? `#${m[1]}` : pr;
+}
+
+/** The PR number of a task's `pr` (`#398`, 398 or this repository's pull URL); null when it holds none. */
+export function prNumber(pr) {
+	const m = String(normalizePr(pr) ?? '').match(/^#(\d+)$/);
+	return m ? Number(m[1]) : null;
 }
 const validLock = (c) =>
 	AGENTES.includes(c?.agente) && c.agente !== 'cualquiera' && isDate(c.desde);
