@@ -97,10 +97,16 @@ Example: `NOMBRE DISTINTO: «f08 · T11 · Demos en usted» (le falta «PR #485�
 session itself is never listed as a session without a task. Without `sesiones.json` the first three
 sections are skipped with a notice and the rest still run.
 
-Start `pnpm board:serve` from Integration or use the VS Code board task. This is a local process,
-not a supervised service. After an authorized code update, its operator restarts that process to
-load new server code and verifies the connection indicator. Never kill an unowned process or launch
-competing servers. Unattended service installation is a separate operational decision.
+The owner registers the board server once from Integration with `pnpm board:serve:register`
+(`scripts/board/serve-register.ps1`): a Windows Task Scheduler task «Celebra-me servidor del
+tablero» starts `pnpm board:serve` at sign-in and retries every 5 minutes, so the page comes back
+«En vivo» after the server stops. A retry while the server runs, or while a manual
+`pnpm board:serve` holds port 4320, does nothing. `pnpm board:serve:unregister` stops and removes
+it; agents never register it. Without the task, start `pnpm board:serve` from Integration or use the
+VS Code board task. After an authorized code update, the owner restarts the server so it loads the
+new server code (`pnpm board:serve:unregister`, then `pnpm board:serve:register`; or close and
+reopen the manual process) and checks the connection indicator. Never kill an unowned process or
+launch competing servers.
 
 `pnpm board:watch` (`scripts/board/watch.mjs`, d164) is a no-AI watcher: it reads the board and
 shows one Windows notification per agent with the ready tasks it has not announced yet, for example

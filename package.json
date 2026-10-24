@@ -116,6 +116,8 @@
         "agent:git-safety:finish": "node scripts/agent/git-safety.mjs finish",
         "board": "node scripts/board/board.mjs",
         "board:serve": "node scripts/board/board.mjs view",
+        "board:serve:register": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/serve-register.ps1",
+        "board:serve:unregister": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/serve-unregister.ps1",
         "board:sync": "node scripts/board/sync.mjs",
         "board:verify": "node scripts/board/verify-board.mjs",
         "board:watch": "node scripts/board/watch.mjs",
