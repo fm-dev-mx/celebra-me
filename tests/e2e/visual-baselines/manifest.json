@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-24T04:59:23.472Z",
+    "generatedAt": "2026-10-24T23:08:29.237Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,16 +11,16 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-        "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+        "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
+        "cssSha256": "45af2e91c8b80094c79900c3589e538ec8f6b227aa8f4e40f2fe0e9300a509fe",
         "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 182,
-    "matrixHash": "f450d45070cd0561d2eb8d80c30f5903f542a30c6bf9451ff32be54419e52223",
+    "totalCaptures": 184,
+    "matrixHash": "975d966811cb9bacaa799785b35a8b5cc63537a8b7853ac6f99a6a5c48940741",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2261,6 +2261,30 @@
             "comparisonResult": "ACCEPTED"
         },
         {
+            "kind": "invitation",
+            "slug": "andrea",
+            "eventType": "xv",
+            "preset": "storybook-emerald",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-andrea-mobile.png",
+            "sha256": "ba7e28f5f60f4969b0116b90fade8f5e4fe9001dca839d3b1efc26ee31039b09",
+            "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
+            "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "andrea",
+            "eventType": "xv",
+            "preset": "storybook-emerald",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-andrea-desktop.png",
+            "sha256": "92501b9ec8249a92bda69a7f9fd08d35a5350a67c3815f76104b3b79e3f57dfd",
+            "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
+            "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
             "kind": "demo",
             "slug": "demo-bautizo-angelic-presence",
             "eventType": "bautizo",
@@ -2477,9 +2501,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064",
+    "referenceSha": "0d8ffae4975f9c335017f39da9869dd6c06bf977",
     "variantManifest": {
-        "generatedAt": "2026-10-24T04:59:23.472Z",
+        "generatedAt": "2026-10-24T23:08:29.237Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2491,8 +2515,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+            "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
+            "cssSha256": "45af2e91c8b80094c79900c3589e538ec8f6b227aa8f4e40f2fe0e9300a509fe",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4381,10 +4405,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064"
+        "referenceSha": "0d8ffae4975f9c335017f39da9869dd6c06bf977"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-24T04:59:23.484Z",
+        "generatedAt": "2026-10-24T23:08:29.243Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4396,17 +4420,17 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "42d44809eaa038284ee3af1a5afa278d8b96b6e57b8f4442ff41f119136a8c1a",
-            "cssSha256": "2c7fa33cc9e14c55825d4eae2e0d5cc39cf154aa95f8f715ab3723b39c97b77d",
+            "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
+            "cssSha256": "45af2e91c8b80094c79900c3589e538ec8f6b227aa8f4e40f2fe0e9300a509fe",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 48,
-        "matrixHash": "8e04d01fc30d7ad3e2828cdf8680ed46b82987fd4d2cbb574c9c50d7a906c3dc",
-        "cases": 24,
+        "totalCaptures": 50,
+        "matrixHash": "7f6c437e79eb077a501c8fdd629691f7a4bdeffd0c95fcde3c60df25014e6502",
+        "cases": 25,
         "captures": [
             {
                 "kind": "invitation",
@@ -4769,6 +4793,30 @@
                 "comparisonResult": "CANDIDATE"
             },
             {
+                "kind": "invitation",
+                "slug": "andrea",
+                "eventType": "xv",
+                "preset": "storybook-emerald",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-andrea-mobile.png",
+                "sha256": "ba7e28f5f60f4969b0116b90fade8f5e4fe9001dca839d3b1efc26ee31039b09",
+                "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
+                "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "andrea",
+                "eventType": "xv",
+                "preset": "storybook-emerald",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-andrea-desktop.png",
+                "sha256": "92501b9ec8249a92bda69a7f9fd08d35a5350a67c3815f76104b3b79e3f57dfd",
+                "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
+                "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
                 "kind": "demo",
                 "slug": "demo-bautizo-angelic-presence",
                 "eventType": "bautizo",
@@ -4985,9 +5033,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "98d8d8986971e39d361c71d72010fdd376b1e064"
+        "referenceSha": "0d8ffae4975f9c335017f39da9869dd6c06bf977"
     },
-    "candidateManifestSha256": "997a7e8c53bfaea3fb77da0150318dd3542bb7c03749990327365fc132ad7e56",
-    "acceptedFromCommit": "98d8d8986971e39d361c71d72010fdd376b1e064",
-    "acceptedAt": "2026-10-24T05:07:26.095Z"
+    "candidateManifestSha256": "90d6f3d9b576321fa3c100ed440e9d143a01ebb25152ba49b9128a1591533052",
+    "acceptedFromCommit": "0d8ffae4975f9c335017f39da9869dd6c06bf977",
+    "acceptedAt": "2026-10-24T23:19:45.332Z"
 }
