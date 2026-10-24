@@ -1,9 +1,10 @@
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
-import { runCommand, sanitizeEnv } from '../helpers/run-command';
+import { sanitizeEnv } from '../helpers/run-command';
 
 const ROOT = process.cwd();
 const SUPERVISOR = pathToFileURL(path.join(ROOT, 'scripts', 'board', 'view-supervisor.mjs')).href;
@@ -27,13 +28,18 @@ server.listen(Number(process.env.BOARD_VIEW_PORT), '127.0.0.1');
 process.on('message', (m) => { if (m === 'drain') server.close(() => process.exit(0)); });
 `;
 
-/** `quiet: false` when a worker is meant to fail and print its error. */
+/**
+ * Runs a probe in its own Node process, killed after 20 s so a stuck socket fails the test instead of
+ * hanging the suite. `quiet: false` when a worker is meant to fail and print its error.
+ */
 function probe(script: string, args: string[], { quiet = true } = {}) {
-	const result = runCommand(process.execPath, ['--input-type=module', '-e', script, ...args], {
+	const result = spawnSync(process.execPath, ['--input-type=module', '-e', script, ...args], {
 		cwd: ROOT,
-		allowFailure: true,
+		encoding: 'utf8',
 		env: sanitizeEnv(),
+		timeout: 20_000,
 	});
+	expect(result.signal).toBeNull();
 	if (quiet) expect(result.stderr).toBe('');
 	expect(result.status).toBe(0);
 	return JSON.parse(result.stdout);
@@ -52,7 +58,7 @@ describe('board view hot reload (d210)', () => {
 			const free = await new Promise((ok) => { const s = createServer().listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => ok(p)); }); });
 			const logs = [];
 			const view = await superviseView({ port: free, exec: join(code, 'worker.mjs'), watchDirs: [code], settleMs: 50, reconcileMs: 60_000, drainMs: 2000, log: (l) => logs.push(l) });
-			const ask = () => new Promise((ok) => get({ host: '127.0.0.1', port: free, path: '/', agent: false }, (res) => { let b = ''; res.on('data', (c) => (b += c)); res.on('end', () => ok(b)); }).on('error', () => ok('ERROR')));
+			const ask = () => new Promise((ok) => get({ host: '127.0.0.1', port: free, path: '/', agent: false, timeout: 2000 }, (res) => { let b = ''; res.on('data', (c) => (b += c)); res.on('end', () => ok(b)); }).on('timeout', function () { this.destroy(); }).on('error', () => ok('ERROR')));
 			const answers = [];
 			let polling = true;
 			const poller = (async () => { while (polling) { answers.push(await ask()); await new Promise((r) => setTimeout(r, 10)); } })();
@@ -112,15 +118,17 @@ describe('board view hot reload (d210)', () => {
 			const token = 'a'.repeat(64);
 			const server = await serveView(dir, 0, { token, version: 'abc123', reconcileMs: 60_000 });
 			const port = server.address().port;
-			const closed = new Promise((ok) => server.once('close', ok));
-			const page = await new Promise((ok) => request({ host: '127.0.0.1', port, path: '/' }, (res) => { let b = ''; res.on('data', (c) => (b += c)); res.on('end', () => ok(b)); }).end());
-			const stream = await new Promise((ok) => {
-				request({ host: '127.0.0.1', port, path: '/api/stream' }, (res) => {
+			const bounded = (promise, what) => Promise.race([promise, new Promise((_, fail) => setTimeout(() => fail(new Error(what + ' timed out')), 5000).unref())]);
+			const closed = bounded(new Promise((ok) => server.once('close', ok)), 'server close');
+			const page = await bounded(new Promise((ok, fail) => request({ host: '127.0.0.1', port, path: '/', agent: false }, (res) => { let b = ''; res.on('data', (c) => (b += c)); res.on('end', () => ok(b)); }).on('error', fail).end()), 'page');
+			let drained = false;
+			const stream = await bounded(new Promise((ok, fail) => {
+				request({ host: '127.0.0.1', port, path: '/api/stream', agent: false }, (res) => {
 					let b = '';
-					res.on('data', (c) => { b += c; if (b.includes('event: version')) server.drain(); });
+					res.on('data', (c) => { b += c; if (!drained && b.includes('event: version')) { drained = true; server.drain(); } });
 					res.on('end', () => ok(b));
-				}).end();
-			});
+				}).on('error', fail).end();
+			}), 'stream end');
 			await closed;
 			console.log(JSON.stringify({
 				token: page.includes('content="' + token + '"'),

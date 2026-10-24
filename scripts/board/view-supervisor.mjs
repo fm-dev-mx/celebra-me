@@ -63,6 +63,9 @@ export function superviseView({
 	log = () => {},
 } = {}) {
 	if (!cluster.isPrimary) throw new Error('superviseView runs only in the primary process');
+	// Workers accept from one shared socket (the Windows default). Round-robin, the Linux default, can
+	// hand a connection to a draining worker, and that request then never gets an answer.
+	cluster.schedulingPolicy = cluster.SCHED_NONE;
 	// No inherited execArgv: a primary started with `-e` would make each worker run that script again.
 	cluster.setupPrimary({ exec, args: [], execArgv: [], silent: false, windowsHide: true });
 	const token = randomBytes(32).toString('hex');
