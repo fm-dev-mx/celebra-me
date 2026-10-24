@@ -81,6 +81,7 @@ import {
 	lockSessionIssue,
 	sessionOf,
 	cleaned,
+	CLEANED_ON,
 	unlocked,
 } from './model.mjs';
 import {
@@ -193,14 +194,22 @@ function saveTask(dir, before, after, opts = {}) {
 	const row =
 		(before?.estado ?? null) !== t.estado &&
 		logEntry(t.id, { de: before?.estado, a: t.estado }, opts, { corrio, salio });
-	// The prompt reaches the month's .zip before the task loses it.
-	if (after.prompt && !t.prompt)
-		addToZip(monthlyZip(dir, t.actualizado.slice(0, 7)), [
-			{ name: `prompts/${t.id}.rev${t.rev}.md`, data: after.prompt },
-		]);
+	archiveLostPrompt(dir, before, after, t);
 	writeDoc(dir, 'tareas', t.id, t, { backup: !isFinished(before) });
 	if (row) appendLog(dir, row);
 	return t;
+}
+
+/**
+ * The prompt reaches the month's .zip before a closed task loses it, also when the write itself clears it: a
+ * finished task gets no backup that would keep it.
+ */
+function archiveLostPrompt(dir, before, after, t) {
+	const lost = !t.prompt && (after.prompt ?? before?.prompt);
+	if (lost && (CLEANED_ON.has(t.estado) || isFinished(before)))
+		addToZip(monthlyZip(dir, t.actualizado.slice(0, 7)), [
+			{ name: `prompts/${t.id}.rev${t.rev}.md`, data: lost },
+		]);
 }
 
 function getTask(dir, id) {
@@ -471,6 +480,9 @@ const commands = {
 		const id = assertId(need(pos[0], 'falta <id>'));
 		return withLock(dir, () => {
 			if (readDoc(dir, 'tareas', id)) throw new UsageError(`ya existe la tarea ${id}`);
+			// A compacted task keeps its id: it comes back with restore, never as a new task.
+			if (readDoc(dir, 'archivo', id))
+				throw new UsageError(`${id} está compactada: use pnpm board restore ${id}`);
 			const t = applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs);
 			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
 			const saved = saveTask(dir, null, t, {

@@ -1959,6 +1959,17 @@ describe('closing cleanup (d186)', () => {
 		});
 	});
 
+	it('keeps the prompt a closing write clears explicitly', () => {
+		const dir = makeBoard({
+			tareas: [task('x', { estado: 'hecha', evidencia: { salio: 'ok' } })],
+		});
+		expect(board(dir, 'set', 'x', '--rev=1', 'estado=comprobada', 'prompt=').status).toBe(0);
+		const month = String(readTask(dir, 'x').actualizado).slice(0, 7);
+		expect(zipEntries(path.join(dir, 'mensual', `${month}.zip`))).toEqual({
+			'prompts/x.rev2.md': task('x').prompt,
+		});
+	});
+
 	it('keeps every closed prompt in the same month file', () => {
 		const dir = makeBoard({
 			tareas: [
@@ -2098,6 +2109,26 @@ describe('monthly archive (d187)', () => {
 		expect(readTask(dir, 'tablero-arreglos-cli')).toEqual(JSON.parse(original));
 		expect(readdirSync(path.join(dir, 'archivo'))).toEqual(['sin-pr.json']);
 		expect(raw(dir, 'restore', 'tablero-arreglos-cli').err).toContain('ya está en el tablero');
+	});
+
+	it('keeps a compacted id reserved and one summary line per task across restore cycles', () => {
+		const dir = makeBoard({ tareas: [finished('same')] });
+		expect(raw(dir, 'compact', '--antes=7d').status).toBe(0);
+		const dup = board(
+			dir,
+			'add',
+			'same',
+			'titulo=Otra',
+			'urgencia=normal',
+			'actor=coordinador',
+		);
+		expect(dup.status).toBe(2);
+		expect(dup.err).toContain('same está compactada: use pnpm board restore same');
+		expect(raw(dir, 'restore', 'same').status).toBe(0);
+		expect(raw(dir, 'compact', '--antes=7d').status).toBe(0);
+		expect(readFileSync(path.join(dir, 'mensual', 'resumen-2026-10.md'), 'utf8')).toBe(
+			'# Tareas resumidas · 2026-10\n\n- T1 same · unida · PR #492 · 2026-10-01\n',
+		);
 	});
 
 	it('refuses an age that is not <n>d', () => {

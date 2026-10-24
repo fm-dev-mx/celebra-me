@@ -2,14 +2,7 @@
  * `pnpm board` commands that keep the store light (d185–d187): they remove or move board data, so each one
  * lists what it would do first and changes nothing until asked.
  */
-import {
-	appendFileSync,
-	existsSync,
-	readdirSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { UsageError, say } from './cli.mjs';
 import { taskLabel } from './model.mjs';
@@ -92,15 +85,26 @@ export function compactArchived(dir, { antesMs, now = Date.now(), dryRun = false
 		const lost = docs.filter((d) => stored.get(d.name) !== d.data).map((d) => d.name);
 		if (lost.length)
 			throw new Error(`el .zip ${mes} no guardó ${lost.join(', ')}: nada se quitó`);
-		const resumen = join(dir, MONTHLY_DIR, `resumen-${mes}.md`);
-		if (!existsSync(resumen)) writeFileSync(resumen, `# Tareas resumidas · ${mes}\n\n`);
-		appendFileSync(resumen, list.map((t) => `- ${summaryLine(t)}\n`).join(''));
+		writeSummary(join(dir, MONTHLY_DIR, `resumen-${mes}.md`), mes, list);
 		for (const t of list) {
 			writeDoc(dir, 'archivo', t.id, archiveRecord(t, en));
 			rmSync(join(dir, 'tareas', `${t.id}.json`));
 		}
 	}
 	return { tareas, escrito: true };
+}
+
+/** One line per task: a task compacted again (after restore, or on a retry) replaces its own line. */
+function writeSummary(file, mes, list) {
+	const text = existsSync(file) ? readFileSync(file, 'utf8') : `# Tareas resumidas · ${mes}\n\n`;
+	const own = list.map((t) => `- ${taskLabel(t)} · `);
+	const kept = text.split('\n').filter((l) => !own.some((p) => l.startsWith(p)));
+	const body = kept.join('\n');
+	writeFileSync(
+		file,
+		(body.endsWith('\n') ? body : `${body}\n`) +
+			list.map((t) => `- ${summaryLine(t)}\n`).join(''),
+	);
 }
 
 const readTaskFile = (dir, id) => readFileSync(join(dir, 'tareas', `${assertId(id)}.json`), 'utf8');
