@@ -139,25 +139,16 @@ const content: CanonicalEventContentInput = {
 		},
 		introHeading: 'Dónde y cuándo',
 		introLede: 'Primero daremos gracias en misa y después celebraremos juntos.',
-		indicationsHeading: 'Código de vestimenta',
+		indicationsHeading: 'Vestimenta',
 		indications: [
-			{
-				iconName: 'DressCode',
-				styleVariant: 'default',
-				title: 'Formal',
-				text: 'Favor de respetar el código de vestimenta.',
-			},
+			{ iconName: 'DressCode', styleVariant: 'default', title: 'Etiqueta', text: 'Formal' },
 			{
 				iconName: 'DressCode',
 				styleVariant: 'reserved',
 				title: 'Verde esmeralda y dorado',
-				text: 'El verde esmeralda y dorado se reservan para la quinceañera.',
+				text: 'Reservados para la quinceañera',
 			},
-			{
-				iconName: 'Forbidden',
-				styleVariant: 'default',
-				text: 'NO NIÑOS',
-			},
+			{ iconName: 'Forbidden', styleVariant: 'default', text: 'NO NIÑOS' },
 		],
 		venues: [
 			{

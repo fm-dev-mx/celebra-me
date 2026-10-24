@@ -17,6 +17,14 @@ $andrea-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 $andrea-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23A8843F' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
 $andrea-rule-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23E8D6A2' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
 
+// Line icons for the venue actions (map pin, calendar, copy), painted as masks in the link ink.
+$andrea-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
+$andrea-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14.5' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
+$andrea-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
+
+// A pale-gold butterfly that rests at the head of the dress-code tag.
+$andrea-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23E8D6A2' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23E8D6A2' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
+
 // The wax seal's press: a ring of leaves closed by a small butterfly, the monogram struck inside.
 $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M40.1 84.6A36 36 0 0 1 30.9 19.5M59.9 84.6A36 36 0 0 0 69.1 19.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cellipse cx='33.9' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28244 33.9 86.2%29'/%3E%3Cellipse cx='33.3' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28171 33.3 77.7%29'/%3E%3Cellipse cx='22.3' cy='78.3' rx='4.4' ry='1.8' transform='rotate%28264 22.3 78.3%29'/%3E%3Cellipse cx='24.7' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28191 24.7 70.2%29'/%3E%3Cellipse cx='14.2' cy='66.9' rx='4.2' ry='1.7' transform='rotate%28285 14.2 66.9%29'/%3E%3Cellipse cx='19.2' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28212 19.2 60.1%29'/%3E%3Cellipse cx='10.6' cy='53.5' rx='4.0' ry='1.7' transform='rotate%28305 10.6 53.5%29'/%3E%3Cellipse cx='17.6' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28-128 17.6 48.8%29'/%3E%3Cellipse cx='11.8' cy='39.5' rx='3.8' ry='1.6' transform='rotate%28-35 11.8 39.5%29'/%3E%3Cellipse cx='20.1' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28-108 20.1 37.6%29'/%3E%3Cellipse cx='17.8' cy='26.9' rx='3.6' ry='1.5' transform='rotate%28-14 17.8 26.9%29'/%3E%3Cellipse cx='26.2' cy='28.0' rx='3.6' ry='1.5' transform='rotate%28-87 26.2 28.0%29'/%3E%3Cellipse cx='27.9' cy='17.2' rx='3.4' ry='1.4' transform='rotate%286 27.9 17.2%29'/%3E%3Cellipse cx='35.3' cy='21.1' rx='3.4' ry='1.4' transform='rotate%28-67 35.3 21.1%29'/%3E%3Cellipse cx='66.1' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28116 66.1 86.2%29'/%3E%3Cellipse cx='66.7' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28189 66.7 77.7%29'/%3E%3Cellipse cx='77.7' cy='78.3' rx='4.4' ry='1.8' transform='rotate%2896 77.7 78.3%29'/%3E%3Cellipse cx='75.3' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28169 75.3 70.2%29'/%3E%3Cellipse cx='85.8' cy='66.9' rx='4.2' ry='1.7' transform='rotate%2875 85.8 66.9%29'/%3E%3Cellipse cx='80.8' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28148 80.8 60.1%29'/%3E%3Cellipse cx='89.4' cy='53.5' rx='4.0' ry='1.7' transform='rotate%2855 89.4 53.5%29'/%3E%3Cellipse cx='82.4' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28128 82.4 48.8%29'/%3E%3Cellipse cx='88.2' cy='39.5' rx='3.8' ry='1.6' transform='rotate%2835 88.2 39.5%29'/%3E%3Cellipse cx='79.9' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28108 79.9 37.6%29'/%3E%3Cellipse cx='82.2' cy='26.9' rx='3.6' ry='1.5' transform='rotate%2814 82.2 26.9%29'/%3E%3Cellipse cx='73.8' cy='28.0' rx='3.6' ry='1.5' transform='rotate%2887 73.8 28.0%29'/%3E%3Cellipse cx='72.1' cy='17.2' rx='3.4' ry='1.4' transform='rotate%28-6 72.1 17.2%29'/%3E%3Cellipse cx='64.7' cy='21.1' rx='3.4' ry='1.4' transform='rotate%2867 64.7 21.1%29'/%3E%3Cg transform='translate%2841.84 3.12%29 scale%280.34%29'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31Z'/%3E%3Cpath d='M23 32C14 33 8 40 11 46 14 51 21 45 23 37Z'/%3E%3Cpath d='M25 26C34 12 45 12 44 22 43 30 34 33 25 31Z'/%3E%3Cpath d='M25 32C34 33 40 40 37 46 34 51 27 45 25 37Z'/%3E%3Cpath d='M24 20C25.2 20 25.8 25 25.8 32S25.2 44 24 44 22.2 39 22.2 32 22.8 20 24 20Z'/%3E%3C/g%3E%3C/svg%3E");
 
@@ -48,8 +56,118 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--location-program-art: none;
 	--location-program-margin-top: 0;
 	--location-text-color: var(--color-forest-ink-soft);
-	--location-enclosure-bg: var(--color-story-cream);
+
+	// The dress code hangs from a gold thread as a small emerald tag with clipped corners: a
+	// butterfly at its head, the etiquette, the colors kept for her (a half-emerald, half-gold
+	// swatch) and one closing line in spaced capitals.
+	--location-enclosure-bg: var(--color-emerald-night);
+	--location-enclosure-ink: var(--color-pale-cream);
+	--location-enclosure-muted: var(--color-night-sage);
+	--location-enclosure-rule: rgb(var(--color-pale-gold-rgb) / 35%);
 	--location-enclosure-shadow: none;
+	--location-enclosure-shape: polygon(
+		1.25rem 0,
+		calc(100% - 1.25rem) 0,
+		100% 1.25rem,
+		100% calc(100% - 1.25rem),
+		calc(100% - 1.25rem) 100%,
+		1.25rem 100%,
+		0 calc(100% - 1.25rem),
+		0 1.25rem
+	);
+	--location-enclosure-outline: 0 solid transparent;
+	--location-enclosure-frame-display: block;
+	--location-enclosure-frame-inset: 0.55rem;
+	--location-enclosure-frame: rgb(var(--color-pale-gold-rgb) / 55%);
+	--location-enclosure-frame-shape: polygon(
+		0.85rem 0,
+		calc(100% - 0.85rem) 0,
+		100% 0.85rem,
+		100% calc(100% - 0.85rem),
+		calc(100% - 0.85rem) 100%,
+		0.85rem 100%,
+		0 calc(100% - 0.85rem),
+		0 0.85rem
+	);
+	--location-enclosure-frame-art: #{$andrea-tag-butterfly} center 1.5rem / 2.2rem auto no-repeat;
+	--location-enclosure-padding: 5.4rem 1.75rem 2.75rem;
+	--location-enclosure-max-width: 22rem;
+	--location-enclosure-hanger-display: block;
+	--location-enclosure-hanger: linear-gradient(var(--color-leaf-gold), var(--color-leaf-gold))
+		center / 1px 100% no-repeat;
+	--location-enclosure-hanger-width: 8px;
+	--location-enclosure-hanger-height: 3rem;
+	--location-enclosure-hanger-to: 0.55rem;
+	--location-enclosure-swing: location-enclosure-swing;
+	--location-enclosure-swing-origin: 50% -3rem;
+	--location-enclosure-edge-shadow: drop-shadow(
+		0 18px 26px rgb(var(--color-emerald-midnight-rgb) / 28%)
+	);
+	--location-enclosure-heading-size: clamp(1.75rem, 6.5vw, 2.1rem);
+	--location-enclosure-heading-color: var(--color-pale-gold);
+	--location-enclosure-note-padding: 0.85rem;
+	--location-enclosure-note-rule-width: 3rem;
+	--location-enclosure-lead-title-color: var(--color-night-sage);
+	--location-enclosure-swatch: conic-gradient(
+		from 45deg,
+		var(--color-emerald-glow) 0 50%,
+		var(--color-pale-gold) 0
+	);
+	--location-enclosure-swatch-size: 1.4rem;
+	--location-enclosure-swatch-ring: 0 0 0 1px rgb(var(--color-pale-gold-rgb) / 70%);
+	--location-enclosure-reserved-title-font: var(--font-display);
+	--location-enclosure-reserved-title-size: clamp(1.4rem, 5vw, 1.6rem);
+	--location-enclosure-reserved-title-caps: normal;
+	--location-enclosure-reserved-title-line-height: 1.15;
+	--location-enclosure-reserved-title-tracking: 0;
+	--location-enclosure-reserved-title-color: var(--color-pale-gold);
+	--location-enclosure-last-text-font: var(--font-label);
+	--location-enclosure-last-text-size: 0.95rem;
+	--location-enclosure-last-text-transform: uppercase;
+	--location-enclosure-last-text-tracking: 0.22em;
+	--location-enclosure-last-text-color: var(--color-pale-gold);
+
+	// Venue entries read top-down: the moment in gold ink, the hour, the venue large in the
+	// section's ink, the address soft. The map is the primary action, filled in emerald; the
+	// calendar and the copy sit beside each other as outlined buttons below it, and wide screens
+	// set the three on one line. Set at the entry so it wins over the route stage's gold remaps.
+	.event-location__program-entry {
+		--location-program-label-color: var(--color-gold-ink);
+		--location-program-label-size: 1.05rem;
+		--location-program-time-color: var(--color-forest-ink-soft);
+		--location-program-address-color: var(--color-forest-ink-soft);
+		--location-program-link: var(--color-emerald-deep);
+		--location-program-link-ink: var(--color-story-cream);
+		--location-program-action-flex: 1 1 0;
+		--location-program-action-primary-flex: 1 1 100%;
+		--location-program-links-gap: 0.625rem;
+		--location-program-links-row-gap: 0.625rem;
+		--location-program-link-width: 100%;
+		--location-program-link-justify: center;
+		--location-program-link-padding: 0.35rem 1rem;
+		--location-program-link-border: 1px solid rgb(var(--color-emerald-deep-rgb) / 45%);
+		--location-program-link-bg: rgb(var(--color-story-cream-rgb) / 55%);
+		--location-program-link-radius: 999px;
+		--location-program-link-decoration: none;
+		--location-program-link-size: 0.95rem;
+		--location-program-link-tracking: 0.1em;
+		--location-program-link-primary-bg: var(--color-emerald-deep);
+		--location-program-link-primary-color: var(--color-story-cream);
+		--location-program-link-primary-border: 1px solid var(--color-emerald-deep);
+		--location-program-link-icon: '';
+		--location-program-map-icon: #{$andrea-icon-pin};
+		--location-program-calendar-icon: #{$andrea-icon-calendar};
+		--location-program-copy-icon: #{$andrea-icon-copy};
+		--location-calendar-menu-bg: var(--color-story-cream);
+		--location-calendar-menu-ink: var(--color-forest-ink);
+
+		@media (width >= 768px) {
+			--location-program-action-flex: 0 1 auto;
+			--location-program-action-primary-flex: 0 1 auto;
+			--location-program-link-width: auto;
+			--location-program-link-padding: 0.35rem 1.35rem;
+		}
+	}
 
 	// The route is flown by day: the sage of the sealed-letter print clears into the paper, with
 	// a faint gold light low on the page.

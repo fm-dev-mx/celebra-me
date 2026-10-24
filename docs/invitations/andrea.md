@@ -56,9 +56,9 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | familyLabel           | Mi familia                                                                                   | verified       | wa-export     | Never "Mis padres" (explicit client request)               |
 | godparents            | —                                                                                            | not_applicable | wa-export     | "No hay padrinos"                                          |
 | dressCode             | Formal                                                                                       | verified       | wa-export     | With long-gown and suit art                                |
-| dressCodeNote         | Favor de respetar el código de vestimenta                                                    | verified       | wa-export     |                                                            |
-| reservedColor         | El verde esmeralda y dorado se reservan para la quinceañera                                  | verified       | wa-export     | Client wording                                             |
-| adultsOnly            | NO NIÑOS                                                                                     | verified       | wa-export     | Uppercase, mandatory for the client                        |
+| dressCodeNote         | — (dropped as redundant at the owner's request)                                              | inferred       | owner-session | Client approval pending (D4)                               |
+| reservedColor         | Verde esmeralda y dorado — Reservados para la quinceañera                                    | inferred       | owner-session | Shortened from client wording; approval pending (D4)       |
+| adultsOnly            | NO NIÑOS                                                                                     | verified       | wa-export     | Uppercase, mandatory for the client; kept verbatim         |
 | clientColors          | Verde esmeralda, dorado pálido; mariposas discretas                                          | verified       | wa-export     | Butterflies very subtle                                    |
 | dressColor            | Verde esmeralda                                                                              | verified       | wa-export     | Similar to a client reference, with more sparkle           |
 | rsvpConfirmationMode  | api                                                                                          | verified       | wa-export     | Personalized passes; host manages guests                   |
@@ -151,8 +151,9 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Andrea in t
   paso hasta esta noche.»
 - Countdown: «Faltan N días para mi gran noche».
 - Location: «Dónde y cuándo» · «Primero daremos gracias en misa y después celebraremos juntos.»
-- Indications: «Código de vestimenta: Formal» · «Favor de respetar el código de vestimenta.» · «El
-  verde esmeralda y dorado se reservan para la quinceañera.» · «NO NIÑOS».
+- Indications: «Vestimenta» · «Etiqueta: Formal» · «Verde esmeralda y dorado — Reservados para la
+  quinceañera» · «NO NIÑOS». Shortened at the owner's request; the shortened lines await client
+  approval (D4).
 - Program: «Así será mi noche» · Misa 17:30 · Recepción 20:00 · Vals 21:30 · Cena 22:30 · Cierre
   01:00.
 - Gallery: «Antes de mi gran noche».
@@ -270,7 +271,10 @@ repository.
   under `scripts/provision/invitations/` are frozen.
 - Lane B (generic, no client identity): preset `storybook-emerald` and the butterfly ornament art.
 - Adults-only and reserved colour use the existing indication pattern (`Forbidden` icon, `reserved`
-  swatch coloured by a token); "NO NIÑOS" stays uppercase.
+  swatch coloured by a token); "NO NIÑOS" stays uppercase and verbatim. The profile draws the
+  indications as an emerald hang tag with a gold butterfly, through `--location-enclosure-*` tokens.
+- Venue actions: «Ver mapa» is the filled primary button; «Agendar» and «Copiar dirección» are
+  outlined secondaries with line icons. All three are profile tokens on the program entry.
 - Butterflies animate only without `prefers-reduced-motion`; the resting frame is complete.
 
 ---
