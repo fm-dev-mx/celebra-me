@@ -269,6 +269,7 @@ describe('pnpm board:sync', () => {
 			'ERR una revisión se cierra con su --sha, no con merged',
 		]);
 		expect(readTask(dir, 'unida-ya').candado).toBeUndefined();
+		expect(readTask(dir, 'unida-ya').sesion).toEqual({ id: 'local_otra', agente: 'codex' });
 		expect(readTask(dir, 'sigue-abierta').candado).toEqual(lock);
 	});
 
