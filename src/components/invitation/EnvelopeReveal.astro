@@ -248,7 +248,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 </ds-envelope-reveal>
 
 <script>
-	import { RevealManager, getMotionPreference } from '@/lib/invitation/reveal-manager';
+	import {
+		RevealManager,
+		getMotionPreference,
+		holdPageAtTopWhileGated,
+	} from '@/lib/invitation/reveal-manager';
 	import { playEnvelopeOpenChime } from '@/lib/invitation/envelope-chime';
 
 	const EXIT_ANIMATION_MS = 2200;
@@ -457,12 +461,14 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			}
 
 			let stopSkyTilt = () => {};
+			let releaseScrollHold = () => {};
 
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
 				setControlsDisabled(true);
 				stopSkyTilt();
+				releaseScrollHold();
 
 				document.documentElement.classList.remove('envelope-open');
 				showCardToAccessibility();
@@ -540,6 +546,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			}
 
 			document.documentElement.classList.add('envelope-open');
+			releaseScrollHold = holdPageAtTopWhileGated();
 
 			// The lantern sky leans a few degrees toward a fine pointer; touch keeps its own drift.
 			const sky = this.querySelector<HTMLElement>('.storybook-sky');

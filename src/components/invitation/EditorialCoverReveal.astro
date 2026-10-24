@@ -429,7 +429,11 @@ const shouldRenderHidden =
 <script>
 	import { setupCollectorReveal } from './editorial-cover/collector-reveal';
 	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
-	import { buildRevealStorageKey, shouldRespectStoredReveal } from '@/lib/invitation/reveal-manager';
+	import {
+		buildRevealStorageKey,
+		holdPageAtTopWhileGated,
+		shouldRespectStoredReveal,
+	} from '@/lib/invitation/reveal-manager';
 
 	const EXIT_ANIMATION_MS = 1600;
 	const EXIT_COMPLETION_FALLBACK_MS = EXIT_ANIMATION_MS + 600;
@@ -489,9 +493,11 @@ const shouldRenderHidden =
 			let touchStartY = 0;
 			// Disabling the button drops focus to <body>, so remember where focus was at commit.
 			let focusWasInside = false;
+			let releaseScrollHold = () => {};
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
+				releaseScrollHold();
 
 				// Clean up CTA scroll hint
 				window.clearTimeout(ctaHintTimer);
@@ -555,6 +561,7 @@ const shouldRenderHidden =
 			}
 
 			document.documentElement.classList.add('envelope-open');
+			releaseScrollHold = holdPageAtTopWhileGated();
 
 			const rememberOpened = () => {
 				if (isDemoInvitation) return;

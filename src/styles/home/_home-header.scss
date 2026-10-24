@@ -22,7 +22,10 @@
 			height: 100%;
 			width: auto;
 			transition: var(--transition-snappy);
-			filter: invert(50%) brightness(1.8);
+
+			// The logo artwork is dark ink; on the wine header it reads as crisp ivory, not grey.
+			filter: brightness(0) invert(1);
+			opacity: 92%;
 		}
 	}
 }
@@ -102,15 +105,20 @@
 		}
 	}
 
-	// The CTA and its reassurance line stack as one unit; the line hangs under the pill.
+	// The reassurance line hangs under the pill out of flow, so the pill shares the nav's
+	// centre line instead of riding high in the compact header.
 	&__cta-group {
+		position: relative;
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 0.3rem;
 	}
 
 	&__trust {
+		position: absolute;
+		top: calc(100% + 0.2rem);
+		left: 50%;
+		translate: -50% 0;
+		white-space: nowrap;
 		color: var(--header-nav-login-color);
 		font-family: var(--font-body);
 		font-size: 0.68em;
@@ -254,8 +262,13 @@
 	place-items: center;
 	border: 1px solid rgb(255 255 255 / 22%);
 	border-radius: 9999px;
-	background: rgb(17 13 9 / 18%);
+	background: rgb(var(--color-ink-rgb) / 18%);
 	backdrop-filter: blur(10px);
+}
+
+// Hidden off-screen, the header must not leave its drop shadow hanging over the page.
+#home-header.header-base--hidden {
+	--nav-shadow: none;
 }
 
 #home-header.header-base--scrolled .header-base__mobile-toggle,
