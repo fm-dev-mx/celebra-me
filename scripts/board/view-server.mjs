@@ -8,6 +8,9 @@
  * and `POST /api/sync` (the «Sincronizar» button) runs the no-AI `scripts/board/sync.mjs`. Any website can make
  * the browser send a request to 127.0.0.1, so every request must carry a local `Host` (DNS rebinding), and the
  * sync POST must also come from the page's own `Origin` with the per-process random token the page embeds.
+ *
+ * Under `view-supervisor.mjs` (d210) the token and a code `version` come from the supervisor, so they stay the
+ * same across worker swaps; the stream announces the version and the page reloads itself when it changes.
  */
 import { execFile } from 'node:child_process';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
@@ -26,6 +29,9 @@ const SETTLE_MS = 150;
 const HEARTBEAT_MS = 25_000;
 const SYNC_TIMEOUT_MS = 120_000;
 const TOKEN_SLOT = '__BOARD_TOKEN__';
+const VERSION_SLOT = '__BOARD_VERSION__';
+// The page reconnects one second after a worker swap ends its stream.
+const RETRY_MS = 1000;
 
 /** Runs `pnpm board:sync --json [--dry-run]` against this store and resolves its parsed report. */
 export function runSyncScript(dir, { dryRun }) {
@@ -228,9 +234,10 @@ export function serveView(
 		watchFactory = watch,
 		sync = (opts) => runSyncScript(dir, opts),
 		archive,
+		token = randomBytes(32).toString('hex'),
+		version = 'dev',
 	} = {},
 ) {
-	const token = randomBytes(32).toString('hex');
 	let syncing = false;
 	const clients = new Set();
 	const stalled = new WeakMap();
@@ -322,6 +329,10 @@ export function serveView(
 				'cache-control': 'no-store',
 				connection: 'keep-alive',
 			});
+			res.write(`retry: ${RETRY_MS}
+
+`);
+			send(res, JSON.stringify({ version }), 'version');
 			if (board.current() !== null) send(res, board.current());
 			send(res, JSON.stringify(board.status()), 'status');
 			clients.add(res);
@@ -347,14 +358,29 @@ export function serveView(
 		}
 		res.writeHead(200, { 'content-type': f[1], 'cache-control': 'no-store' });
 		const content = readFileSync(join(here, f[0]), 'utf8');
-		res.end(path === '/' ? content.replace(TOKEN_SLOT, token) : content);
+		res.end(
+			path === '/'
+				? content.replace(TOKEN_SLOT, token).replace(VERSION_SLOT, version)
+				: content,
+		);
 	});
+	let cleaned = false;
 	const cleanup = () => {
+		if (cleaned) return;
+		cleaned = true;
 		clearInterval(heartbeat);
 		board.close();
 		for (const res of clients) res.end();
 	};
 	server.on('close', cleanup);
+	/** Stops taking requests and ends the live streams; 'close' follows once the last request is answered. */
+	server.drain = () => {
+		cleanup();
+		server.close();
+		server.closeIdleConnections();
+		// An ended stream leaves its keep-alive socket idle only after the response flushes.
+		setTimeout(() => server.closeIdleConnections(), 100).unref();
+	};
 	return new Promise((ok, fail) => {
 		server.once('error', (error) => {
 			cleanup();

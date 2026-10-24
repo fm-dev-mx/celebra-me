@@ -36,7 +36,8 @@
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
  *   verify [--json]                             same as pnpm board:verify
  *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
- *                                               archive/unarchive, same-origin from 127.0.0.1
+ *                                               archive/unarchive, same-origin from 127.0.0.1; it takes new
+ *                                               code by itself without closing the port (view-supervisor.mjs)
  *
  * Aliases: get = show, update = set, decision = decide, log = history. Every command takes --json.
  * Values are JSON when they look like JSON (numbers, true/false/null, [..], {..}); `campo=` removes the field.
@@ -828,12 +829,13 @@ const commands = {
 		if (flags.json) return out(JSON.stringify(rows, null, 2));
 		for (const r of rows.slice(0, 50)) out(`${r.en}  ${r.txt.slice(0, 140)}`);
 	},
+	/** d210: a supervisor keeps the port open and swaps in new code by itself; nobody restarts it by hand. */
 	async view({ flags }, dir, out) {
-		const { serveView } = await import('./view-server.mjs');
+		const { superviseView } = await import('./view-supervisor.mjs');
 		const port = Number(flags.port ?? 4320);
-		await serveView(dir, port, { archive: viewArchiver(dir) });
+		await superviseView({ port, env: { CELEBRA_BOARD_DIR: dir }, log: console.error });
 		const url = `http://127.0.0.1:${port}/`;
-		say(flags, out, { url }, `Tablero en ${url}  (Ctrl+C para cerrar)`);
+		say(flags, out, { url }, `Tablero en ${url}  (se actualiza solo; Ctrl+C para cerrar)`);
 	},
 	verify({ flags }, dir, out) {
 		const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-board.mjs');
