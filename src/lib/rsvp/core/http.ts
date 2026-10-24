@@ -7,6 +7,7 @@ import {
 import { isRecord } from '@/lib/shared/data-utils';
 import { PRIVATE_CACHE_CONTROL, withPrivateNoStore } from '@/lib/http/private-cache-path';
 import { getClientIp } from '@/lib/server/platform-request';
+import { safeErr } from '@/lib/server/safe-error';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
@@ -143,7 +144,7 @@ export function errorResponse(error: unknown): Response {
 	if (isApiError(error)) {
 		// Only log server errors (5xx), not client errors (4xx)
 		if (error.status >= 500) {
-			console.error('[rsvp] Error:', error);
+			console.error('[rsvp] Error:', safeErr(error));
 		}
 		const response = jsonResponse(
 			{
@@ -165,7 +166,7 @@ export function errorResponse(error: unknown): Response {
 	// Schema drift is an operator fix (apply migrations), so name it with a stable code
 	// while keeping the provider body server-side.
 	if (isSchemaDriftError(error)) {
-		console.error('[rsvp] Database schema is behind the application:', error);
+		console.error('[rsvp] Database schema is behind the application:', safeErr(error));
 		const response = jsonResponse(
 			{
 				success: false,
@@ -188,7 +189,7 @@ export function errorResponse(error: unknown): Response {
 		Object.keys(error).length === 0;
 
 	if (!isEmptyObject) {
-		console.error('[rsvp] Unexpected Error:', error);
+		console.error('[rsvp] Unexpected Error:', safeErr(error));
 	}
 
 	const errorCode = isEmptyObject ? 'bad_request' : 'internal_error';

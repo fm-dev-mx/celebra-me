@@ -1,4 +1,5 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { isAutomatedUserAgent } from '@/lib/rsvp/engagement/traffic-classifier';
 import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import {
 	hasUnsafeEventProperties,
@@ -10,6 +11,7 @@ import { shouldExcludeInternalTraffic } from '@/lib/tracking/internal-exclusion'
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import { safeErr } from '@/lib/server/safe-error';
 
 export interface IngestTrackingEventInput {
 	request: Request;
@@ -53,6 +55,12 @@ export async function ingestTrackingEvent(
 	});
 	if (exclusion.exclude) {
 		return { accepted: false, reason: exclusion.reason ?? 'internal_traffic' };
+	}
+
+	// Crawlers, link-preview fetchers and headless browsers may accept cookies and
+	// replay consent; drop them before any write so the sales funnel counts people only.
+	if (isAutomatedUserAgent(input.request.headers.get('user-agent') ?? '')) {
+		return { accepted: false, reason: 'automated_traffic' };
 	}
 
 	const consentSnapshot = payload.consentSnapshot;
@@ -120,7 +128,10 @@ export async function ingestTrackingEvent(
 						: undefined,
 				});
 			} catch (leadError) {
-				console.error('[tracking] Failed to auto-create WhatsApp lead:', leadError);
+				console.error(
+					'[tracking] Failed to auto-create WhatsApp lead:',
+					safeErr(leadError),
+				);
 			}
 		}
 	}

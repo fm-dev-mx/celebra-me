@@ -15,6 +15,7 @@ import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
 import { UNAVAILABLE_INVITATION_ROBOTS } from '@/lib/invitation/access/invitation-access';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { isGuestLinkBlocked, recordGuestLinkFailure } from '@/lib/invitation/guest-link-rate-limit';
+import { safeErr } from '@/lib/server/safe-error';
 
 /** Seconds a blocked connection waits: the failed-code window. */
 const GUEST_LINK_RETRY_AFTER = '3600';
@@ -212,7 +213,7 @@ async function resolveGuestLinkRequest(
 		context = await lookup();
 	} catch (error) {
 		const notFound = isUnknownCodeError(error);
-		if (!notFound) console.error('[invitation][shortId] Error:', error);
+		if (!notFound) console.error('[invitation][shortId] Error:', safeErr(error));
 		return { kind: 'error', notFound };
 	}
 
@@ -254,7 +255,7 @@ async function resolveGuestLinkRequest(
 			}
 		}
 	} catch (error) {
-		console.error('[invitation][shortId] Error resolving invitation content:', error);
+		console.error('[invitation][shortId] Error resolving invitation content:', safeErr(error));
 	}
 
 	return {

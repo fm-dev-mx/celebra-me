@@ -1,5 +1,6 @@
 import { createAuditLog } from '@/lib/rsvp/repositories/audit.repository';
 import { sanitize } from '@/lib/rsvp/core/utils';
+import { safeErr } from '@/lib/server/safe-error';
 
 export async function logAdminAction(input: {
 	actorId: string;
@@ -16,7 +17,7 @@ export async function logAdminAction(input: {
 			useServiceRole: true,
 		});
 	} catch (error) {
-		console.error('[Audit] Failed to log admin action:', error);
+		console.error('[Audit] Failed to log admin action:', safeErr(error));
 	}
 }
 

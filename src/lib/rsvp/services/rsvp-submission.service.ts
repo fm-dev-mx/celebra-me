@@ -189,7 +189,7 @@ async function persistRsvpResponse(
 					responseSource,
 				});
 
-		console.info(`[rsvp] Success: RSVP submitted for invite ${updated.inviteId}`);
+		console.info('[rsvp] Success: RSVP submitted.');
 
 		return {
 			attendanceStatus: updated.attendanceStatus ?? attendanceStatus,

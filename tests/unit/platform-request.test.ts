@@ -155,11 +155,11 @@ describe('runAfterResponse', () => {
 
 		expect(consoleError).toHaveBeenCalledWith(
 			'[capi] Background task failed after the response:',
-			expect.objectContaining({ message: 'capi down' }),
+			{ code: 'Error', message: expect.stringMatching(/^Unexpected Error/) },
 		);
 		expect(consoleError).toHaveBeenCalledWith(
 			'[after-response] Background task failed after the response:',
-			expect.objectContaining({ message: 'tracking down' }),
+			{ code: 'Error', message: expect.stringMatching(/^Unexpected Error/) },
 		);
 	});
 
@@ -174,7 +174,7 @@ describe('runAfterResponse', () => {
 		await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBeUndefined();
 		expect(consoleError).toHaveBeenCalledWith(
 			'[after-response] Background task failed after the response:',
-			expect.objectContaining({ message: 'boom' }),
+			{ code: 'Error', message: expect.stringMatching(/^Unexpected Error/) },
 		);
 	});
 });

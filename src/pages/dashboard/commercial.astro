@@ -24,6 +24,7 @@ import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 import { getEnv } from '@/lib/server/env';
 import type { LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
+import { safeErr } from '@/lib/server/safe-error';
 
 if (!Astro.locals.session?.isSuperAdmin) {
 	return Astro.redirect('/dashboard/invitados');
@@ -42,13 +43,13 @@ const dashboardServer = await import('@/lib/tracking/commercial-dashboard.server
 try {
 	dashboardData = await dashboardServer.loadCommercialDashboardData();
 } catch (error) {
-	console.error('[commercial-dashboard] Unable to load commercial analytics.', error);
+	console.error('[commercial-dashboard] Unable to load commercial analytics.', safeErr(error));
 	loadError = true;
 }
 try {
 	initialConversions = await dashboardServer.loadCommercialDashboardOutbox();
 } catch (error) {
-	console.error('[commercial-dashboard] Error loading outbox data (non-critical):', error);
+	console.error('[commercial-dashboard] Error loading outbox data (non-critical):', safeErr(error));
 }
 
 const viewModel = dashboardData

@@ -56,7 +56,7 @@ describe('runEngagementMaintenanceJob', () => {
 		expect(outcome).toEqual({ kind: 'exception', message: 'db down' });
 		expect(log.error).toHaveBeenCalledWith('[engagement][maintenance] failed', {
 			source: 'scheduled_cron',
-			error: 'db down',
+			error: { code: 'Error', message: expect.stringMatching(/^Unexpected Error/) },
 		});
 	});
 });
