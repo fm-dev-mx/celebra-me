@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Seguimiento Celebra-me</title>
 <meta name="board-token" content="__BOARD_TOKEN__">
+<meta name="board-version" content="__BOARD_VERSION__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
@@ -572,13 +573,27 @@ async function sync(dryRun){
 $('sync-dry').addEventListener('click',()=>sync(true));
 $('sync-run').addEventListener('click',()=>sync(false));
 
-// The server pushes the whole board on connect and after every write; EventSource reconnects by itself.
-const stream=new EventSource('/api/stream');
-let lastSignal=Date.now();
+// The server pushes the whole board on connect and after every write. When the board's code changes (d210)
+// the server swaps itself and ends the stream: the page reconnects quietly and reloads on a new version.
+const VERSION=document.querySelector('meta[name="board-version"]').content;
+let lastSignal=Date.now(),failedSince=0;
 const connection=text=>{$('connection').textContent=text};
-stream.onmessage=ev=>{try{S.board=JSON.parse(ev.data);S.ready=true;render()}catch{connection('Datos inválidos; esperando recuperación…')}};
-stream.addEventListener('status',ev=>{try{const status=JSON.parse(ev.data);lastSignal=Date.now();connection(status.state==='live'?'En vivo · comprobado '+fmt(status.observedAt):'Sin sincronizar · datos anteriores')}catch{connection('Sin sincronizar')}});
-stream.onerror=()=>{connection('Reconectando · datos anteriores');if(!S.ready)$('list').innerHTML='<div class="empty">No se pudo leer el tablero. Compruebe que sigue abierto <code>pnpm board:serve</code>.</div>'};
+function connect(){
+  const stream=new EventSource('/api/stream');
+  stream.onopen=()=>{failedSince=0};
+  stream.onmessage=ev=>{try{S.board=JSON.parse(ev.data);S.ready=true;render()}catch{connection('Datos inválidos; esperando recuperación…')}};
+  stream.addEventListener('version',ev=>{try{if(JSON.parse(ev.data).version!==VERSION)location.reload()}catch{}});
+  stream.addEventListener('status',ev=>{try{const status=JSON.parse(ev.data);lastSignal=Date.now();connection(status.state==='live'?'En vivo · comprobado '+fmt(status.observedAt):'Sin sincronizar · datos anteriores')}catch{connection('Sin sincronizar')}});
+  stream.onerror=()=>{
+    failedSince||=Date.now();
+    connection('Actualizando…');
+    // A brief drop is a code update; only a long one means the server is really gone.
+    if(!S.ready&&Date.now()-failedSince>15000)$('list').innerHTML='<div class="empty">No se pudo leer el tablero. Compruebe que sigue abierto <code>pnpm board:serve</code>.</div>';
+    // EventSource gives up on a non-stream answer: start a new one instead of staying closed.
+    if(stream.readyState===EventSource.CLOSED)setTimeout(connect,2000);
+  };
+}
+connect();
 setInterval(()=>{if(S.ready)render();if(Date.now()-lastSignal>60000)connection('Sin señal · datos anteriores')},30000);
 addEventListener('online',()=>connection('Reconectando…'));
 addEventListener('offline',()=>connection('Sin conexión · datos anteriores'));

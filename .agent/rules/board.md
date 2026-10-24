@@ -12,6 +12,11 @@ authorization.
 - **Single board port (d165)**: the board view always runs at http://127.0.0.1:4320/, served from
   the Integration checkout with `pnpm board:serve`. No session or agent starts a board on another
   port. A PR preview of the view may run only briefly, to check it, and is stopped right after.
+- **No manual restarts (d210)**: no session stops or restarts the board on 4320, not even after a
+  merge that changes it. `pnpm board:serve` runs a supervisor (`scripts/board/view-supervisor.mjs`)
+  that keeps the port open, watches `scripts/board/` and `scripts/shared/`, and swaps in a new
+  worker once the new code starts; code that fails to start leaves the previous version serving. The
+  page reconnects by itself and reloads when the code version changes.
 
 - **Task id convention**: the branch without its type prefix: `fix/olivia-gallery` →
   `olivia-gallery`. The id does not have to match its branch, which lives in `rama`; the verifier
