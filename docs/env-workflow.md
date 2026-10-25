@@ -93,6 +93,53 @@ Worker deployments, R2 memories storage) must perform a credential preflight che
 
 ## Variable Categories
 
+### Meta aggregate insight reads
+
+`META_GRAPH_ACCESS_TOKEN` is a server-only read credential, separate from `META_CAPI_ACCESS_TOKEN`.
+Store it as a secret of the explicitly selected Worker environment; never expose it through
+`PUBLIC_*`, URLs, logs or browser code. `META_AD_ACCOUNT_ID` (the `act_<id>` account identifier),
+`META_PAGE_ID` and `META_IG_USER_ID` (the professional Instagram account) are server-only runtime
+configuration. These names are declared in `src/env.d.ts`; `readMetaInsightsConfig()` reads only the
+process environment when called, without file access. This foundation does not schedule reads or
+write snapshots at runtime.
+
+The caller injects the authorized token into `src/lib/meta/graph-client.ts`. It pins `v26.0`, uses
+GET and bearer headers, times out connection and body consumption after 10 seconds, and allows two
+retries per page. Pagination streams at most 20 pages by default and rejects cross-origin,
+cross-endpoint and cross-version links. Recovery waits longer than 10 seconds produce a sanitized
+`MetaGraphError` with `retryAfterMs` for a later invocation. Usage headers (`X-App-Usage`,
+`X-Ad-Account-Usage`, `X-Business-Use-Case-Usage`) and `Retry-After` inform backoff; 90% usage
+triggers a short pause, 100% defers the next call. These thresholds are client policy, not a
+guarantee of remaining Meta quota. Do not silently treat a partial iteration as a complete sync; the
+future collector must handle pagination failures and Worker invocation/subrequest budgets.
+
+Before enabling a collector, verify permissions for the selected login flow and assigned assets:
+Marketing insights use `ads_read`; Page insights require `read_insights` and
+`pages_read_engagement`; Instagram with Facebook Login uses `instagram_basic`,
+`instagram_manage_insights` and the relevant Page access. Discovery and business asset management
+may additionally need `pages_show_list` or `business_management`. A system-user token still requires
+asset assignment, appropriate app access and revocation/expiry handling; its existence does not
+establish access to all three APIs. Page endpoints may require a Page access token. Do not assume a
+universal non-expiring token, a fixed retention period or a default attribution window. The
+collector must explicitly choose supported metrics, daily timezone boundaries, attribution settings
+and a rolling refresh period, preserving those semantics in each snapshot.
+
+`meta_ads_insights_daily` keys account, level, object, date and explicit attribution window.
+`meta_organic_insights_daily` additionally keys the platform; its window is the explicit metric
+period (`day` for daily snapshots), not an advertising attribution window. Both store aggregate rows
+as raw JSON objects, not Graph envelopes, paging URLs, credentials or individual user data. RLS is
+forced with no browser policies; only the service role can select, insert or update. No migration
+execution or hosted secret configuration is part of this foundation.
+
+Primary references:
+[Meta SDK version](https://github.com/facebook/facebook-python-business-sdk/blob/main/facebook_business/apiconfig.py),
+[pagination](https://developers.facebook.com/docs/graph-api/results/),
+[usage limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/),
+[Marketing insights](https://developers.facebook.com/docs/marketing-api/insights/), and
+[Instagram insights](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-facebook-login/insights/).
+
+### General categories
+
 - **Public client-safe (`PUBLIC_*`):** Anything prefixed `PUBLIC_` can reach the browser. Never
   expose `SUPABASE_SERVICE_ROLE_KEY` or other server-only secrets with a `PUBLIC_` prefix.
 - **Server-only app/runtime:** Read at runtime from `process.env`, normally through
