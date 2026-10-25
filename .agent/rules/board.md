@@ -207,15 +207,17 @@ data, never an authorization.
   and every request needs a local `Host`. No agent is ever launched from the view. **Hygiene
   (d268)**: after those writes, on the board as they left it, the sync moves every unlocked
   `unida`/`hecha` task whose check passes (the verifier's `checkTask`; a PR state comes from the
-  list it already read) to `comprobada` with that `evidencia`, archives every finished, unlocked
-  task with a valid cierre (a review round only once its origin is finished), runs
-  `compact --antes=7d` and `prune-backups --aplicar`, and detaches each free, clean lane f05–f12 at
-  `origin/develop` (`git switch --detach`). A lane is free when no lock and no open task's `carril`
-  holds it and it is detached or on a branch whose newest PR merged; a free lane with uncommitted or
-  untracked changes, or on a branch without a merged PR, is only reported. Right before each switch,
-  inside the store lock (so no `claim` can take the lane in between), the sync reads the board, the
-  lane's branch, HEAD and `git status` again and skips the lane, reporting why, when any changed.
-  `--dry-run` lists every step and writes nothing; the result carries them under `higiene`.
+  list it already read) to `comprobada` with that `evidencia`, runs `compact --antes=7d` (it only
+  summarizes tasks the owner already archived) and `prune-backups --aplicar`, and detaches each
+  free, clean lane f05–f12 at `origin/develop` (`git switch --detach`). A lane is free when no lock
+  and no open task's `carril` holds it and it is detached or on a branch whose newest PR merged; a
+  free lane with uncommitted or untracked changes, or on a branch without a merged PR, is only
+  reported. Right before each switch, inside the store lock (so no `claim` can take the lane in
+  between), the sync reads the board, the lane's branch, HEAD and `git status` again and skips the
+  lane, reporting why, when any changed. `--dry-run` lists every step and writes nothing; the result
+  carries them under `higiene`. The sync never archives a task (d278): only the owner archives
+  finished tasks, from the «Finalizadas» tab or `pnpm board archive`, to watch progress; no command
+  or routine archives on its own.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change, per `move`, per `plan` and per

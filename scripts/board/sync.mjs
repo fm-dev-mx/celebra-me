@@ -12,10 +12,10 @@
  *     since the lock was taken is flagged «posible sesión cerrada». Only a merged PR releases a lock.
  *
  * Then the hygiene (d268), on the board as those writes left it: an unlocked unida/hecha task whose check passes
- * moves to comprobada with that evidencia, every finished, unlocked task with a valid cierre is archived (a review
- * round only once its origin is finished), `compact --antes=7d` and `prune-backups --aplicar` run, and each free,
+ * moves to comprobada with that evidencia, `compact --antes=7d` and `prune-backups --aplicar` run, and each free,
  * clean lane f05–f12 (no lock or open task holds it, detached or on a branch whose PR merged) is detached at
- * origin/develop. A lane with changes, or on a branch without a merged PR, is only reported.
+ * origin/develop. A lane with changes, or on a branch without a merged PR, is only reported. The sync never archives
+ * a task (d278): only the owner does, from «Finalizadas» or `pnpm board archive`.
  *
  *   node scripts/board/sync.mjs [--dry-run] [--json] [--horas=<n>]   --dry-run prints the plan and writes nothing
  *
@@ -29,7 +29,6 @@ import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import { run as board } from './board.mjs';
-import { archiveBlock } from './cierre.mjs';
 import {
 	isFinished,
 	isReview,
@@ -350,19 +349,6 @@ export function toVerify(board, run) {
 	return out;
 }
 
-/** d268: finished, unlocked, unarchived tasks with a valid cierre; a review round waits for its origin. */
-export function toArchive(board) {
-	const out = [];
-	for (const t of byNum(board)) {
-		if (t.archivada || t.candado || !isFinished(t)) continue;
-		const origin = isReview(t) && (board.tareas ?? []).find((x) => x.id === t.origen);
-		if (origin && !isFinished(origin)) continue;
-		if (archiveBlock(t, board)) continue;
-		out.push({ id: t.id, rev: t.rev, cmd: 'archive', texto: `${label(t)} → archivada` });
-	}
-	return out;
-}
-
 /**
  * d268: free, clean task lanes to detach at origin/develop. A lane is free when no lock and no open task holds
  * it, and it is detached or on a branch whose newest PR merged; `avisos` names free lanes left as they are.
@@ -414,19 +400,17 @@ export function syncRunner(prs, fallback = defaultRunner()) {
 	};
 }
 
-/** One hygiene write (`set` to comprobada, or `archive`) through `pnpm board`; a refused one is reported. */
+/** One hygiene write (`set` to comprobada) through `pnpm board`; a refused one is reported. */
 async function applyOne(c, dir) {
-	const common = [`--rev=${c.rev}`, '--coordinador', `--corrio=${HYGIENE}`];
-	const args =
-		c.cmd === 'archive'
-			? ['archive', c.id, ...common]
-			: [
-					'set',
-					c.id,
-					...common,
-					`--salio=${c.salio}`,
-					...Object.entries(c.set).map(([k, v]) => `${k}=${v}`),
-				];
+	const args = [
+		'set',
+		c.id,
+		`--rev=${c.rev}`,
+		'--coordinador',
+		`--corrio=${HYGIENE}`,
+		`--salio=${c.salio}`,
+		...Object.entries(c.set).map(([k, v]) => `${k}=${v}`),
+	];
 	try {
 		let said = '';
 		await board(args, { dir, out: (s) => (said = s) });
@@ -485,7 +469,7 @@ function alignLanes(alinear, develop, git, dir) {
 	});
 }
 
-/** d268: the hygiene after the PR writes; a dry run plans every step on the board as it is and writes nothing. */
+/** d268, narrowed by d278 (never archives): the hygiene after the PR writes; a dry run plans every step on the board as it is and writes nothing. */
 export async function hygiene(
 	dir,
 	src,
@@ -498,13 +482,12 @@ export async function hygiene(
 		return out;
 	};
 	const comprobadas = await each(toVerify(loadBoard(dir), run));
-	const archivadas = await each(toArchive(loadBoard(dir)));
 	const almacen = await storeUpkeep(dir, dryRun);
 	const lanes = lanePlan(loadBoard(dir), src);
 	const carriles = dryRun
 		? lanes.alinear.map((l) => ({ ...l, ok: null }))
 		: alignLanes(lanes.alinear, src.develop, git, dir);
-	return { comprobadas, archivadas, almacen, carriles, avisosCarril: lanes.avisos };
+	return { comprobadas, almacen, carriles, avisosCarril: lanes.avisos };
 }
 
 export async function run({
@@ -530,7 +513,6 @@ export async function run({
 export const writes = (r) => [
 	...r.cambios,
 	...(r.higiene?.comprobadas ?? []),
-	...(r.higiene?.archivadas ?? []),
 	...(r.higiene?.carriles ?? []),
 ];
 
@@ -550,7 +532,7 @@ export function summary(r) {
 	if (!h) return lines;
 	const item = (c) =>
 		`${head}${c.ok === false ? `NO SE ESCRIBIÓ ${c.texto}: ${c.resultado}` : c.texto}`;
-	for (const c of [...h.comprobadas, ...h.archivadas]) lines.push(`Higiene: ${item(c)}`);
+	for (const c of h.comprobadas) lines.push(`Higiene: ${item(c)}`);
 	const { resumidas, respaldos } = h.almacen;
 	if (resumidas.length)
 		lines.push(

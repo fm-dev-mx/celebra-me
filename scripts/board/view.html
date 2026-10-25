@@ -857,7 +857,7 @@ async function sync(dryRun){
     const h=r.higiene;
     if(h){
       const item=c=>c.ok===false?'NO SE ESCRIBIÓ '+c.texto+': '+c.resultado:(dryRun?'Cambiaría: ':'Hecho: ')+c.texto;
-      for(const c of [...h.comprobadas,...h.archivadas])lines.push('Higiene: '+item(c));
+      for(const c of h.comprobadas)lines.push('Higiene: '+item(c));
       if(h.almacen.resumidas.length)lines.push('Higiene: '+h.almacen.resumidas.length+' archivadas '+(dryRun?'se resumirían':'resumidas')+' (compact --antes=7d)');
       if(h.almacen.respaldos)lines.push('Higiene: '+h.almacen.respaldos+' respaldos '+(dryRun?'sobran':'quitados')+' (prune-backups)');
       for(const c of h.carriles)lines.push('Carril: '+item(c));
