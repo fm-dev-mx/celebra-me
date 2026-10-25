@@ -270,6 +270,12 @@
             "phase": "expand",
             "provides": ["visitor_sessions_client_signals"],
             "notes": "Adds visitor_sessions.client_ip_address and client_user_agent (nullable, length-checked) and keeps their first value in the first-touch trigger. Additive: the deployed application does not name the columns. Must be applied before the application that writes them is deployed, because PostgREST rejects unknown columns on the session upsert."
+        },
+        "20261025120000": {
+            "phase": "contract",
+            "provides": ["meta_conversion_events_browser_events"],
+            "revokes": ["meta_conversion_events_purchase_only"],
+            "notes": "Lets meta_conversion_events hold browser Contact and Lead rows: adds session_id (no foreign key) and event_source_path, drops NOT NULL on order_id, customer_id and value, widens the event_name and trigger_status checks, and adds a shape check that keeps Purchase rows as strict as before. Registered as contract only because the check swaps use DROP CONSTRAINT and DROP NOT NULL; every change widens, so no rows change and the deployed application keeps working. Must be applied before the application that enqueues Contact and Lead rows is deployed, or those inserts fail (ingestion logs and continues)."
         }
     },
     "appCapabilities": {
@@ -311,6 +317,9 @@
         },
         "visitor_session_client_signals_client": {
             "requiresDbCapabilities": ["visitor_sessions_client_signals"]
+        },
+        "meta_capi_browser_events_client": {
+            "requiresDbCapabilities": ["meta_conversion_events_browser_events"]
         }
     }
 }

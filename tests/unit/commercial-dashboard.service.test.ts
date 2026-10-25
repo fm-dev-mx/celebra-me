@@ -144,6 +144,23 @@ describe('summarizeCommercialAnalytics', () => {
 		expect(summary.topRevenueByEventType).toEqual([]);
 	});
 
+	it('flags only Purchase outbox rows without an order, never browser Contact or Lead rows', () => {
+		const summary = summarizeCommercialAnalytics({
+			sessions: [],
+			events: [],
+			leads: [],
+			orders: [],
+			conversions: [
+				{ id: 'contact', event_name: 'Contact', order_id: null, status: 'sent' },
+				{ id: 'lead', event_name: 'Lead', order_id: null, status: 'pending' },
+				{ id: 'purchase', event_name: 'Purchase', order_id: null, status: 'pending' },
+				{ id: 'legacy', order_id: 'missing-order', status: 'sent' },
+			],
+		});
+
+		expect(summary.outboxRowsMissingOrder).toBe(2);
+	});
+
 	it('builds honest sales labels and helper text for weak attribution metrics', () => {
 		const summary = summarizeCommercialAnalytics({
 			sessions: [],
