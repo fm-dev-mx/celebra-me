@@ -52,7 +52,7 @@ function makeExport(
 	return dir;
 }
 
-function verify(dir: string, answers: Record<string, unknown>) {
+function verify(dir: string, answers: Record<string, unknown>, ...args: string[]) {
 	const fixture = path.join(dir, 'answers.json');
 	writeFileSync(
 		fixture,
@@ -63,7 +63,7 @@ function verify(dir: string, answers: Record<string, unknown>) {
 			...answers,
 		}),
 	);
-	const result = runCommand(process.execPath, [SCRIPT_PATH, dir, '--json'], {
+	const result = runCommand(process.execPath, [SCRIPT_PATH, dir, '--json', ...args], {
 		cwd: ROOT,
 		allowFailure: true,
 		env: sanitizeEnv({ CELEBRA_BOARD_COMMAND_FIXTURE: fixture, INIT_CWD: ROOT }),
@@ -128,6 +128,49 @@ describe('board:verify', () => {
 		});
 		expect(report.filas[0].veredicto).toBe('NO CUMPLE');
 		expect(report.comprobar).toEqual([]);
+	});
+	it('checks a superseded review round by PR state, the last round by PR head', () => {
+		const review = (id: string, sha: string) =>
+			task(id, { origen: 'origin', pr: 4, estado: 'hecha', revisionSha: sha.repeat(40) });
+		const dir = makeExport([review('origin-revision', 'a'), review('origin-revision-2', 'b')], {
+			archivo: [{ id: 'origin-revision-3', origen: 'origin', revisionSha: 'c'.repeat(40) }],
+		});
+		const { report } = verify(dir, {
+			'gh pr view 4 --json state': '{"state":"MERGED"}',
+			'gh pr view 4 --json headRefOid': JSON.stringify({ headRefOid: 'c'.repeat(40) }),
+		});
+		const byId = (filas: Json[]) =>
+			Object.fromEntries(filas.map((r) => [r.id, [r.cmd, r.veredicto]]));
+		expect(byId(report.filas)).toEqual({
+			'origin-revision': ['gh pr view 4 --json state', 'CUMPLE → comprobada'],
+			'origin-revision-2': ['gh pr view 4 --json state', 'CUMPLE → comprobada'],
+		});
+
+		const last = makeExport([review('origin-revision', 'a'), review('origin-revision-2', 'b')]);
+		const lastReport = verify(last, {
+			'gh pr view 4 --json state': '{"state":"MERGED"}',
+			'gh pr view 4 --json headRefOid': JSON.stringify({ headRefOid: 'c'.repeat(40) }),
+		}).report;
+		expect(byId(lastReport.filas)).toEqual({
+			'origin-revision': ['gh pr view 4 --json state', 'CUMPLE → comprobada'],
+			'origin-revision-2': ['gh pr view 4 --json headRefOid', 'NO CUMPLE'],
+		});
+	});
+	it('skips archived tasks unless --archivadas asks for the history', () => {
+		const dir = makeExport([
+			task('live', { pr: 5, estado: 'hecha' }),
+			task('old', { pr: 6, estado: 'unida', archivada: NOW }),
+		]);
+		const answers = {
+			'gh pr view 5 --json state': '{"state":"MERGED"}',
+			'gh pr view 6 --json state': '{"state":"MERGED"}',
+		};
+		const { report } = verify(dir, answers);
+		expect(report.filas.map((r: Json) => r.id)).toEqual(['live']);
+		expect(report.archivadasSinChequeo).toBe(1);
+		const all = verify(dir, answers, '--archivadas').report;
+		expect(all.filas.map((r: Json) => r.id).sort()).toEqual(['live', 'old']);
+		expect(all.archivadasSinChequeo).toBe(0);
 	});
 	it('reports dependency cycles instead of treating the queue as healthy', () => {
 		const dir = makeExport([

@@ -18,16 +18,20 @@ export const SOURCES = {
 
 /** Only chats a person or an agent opened; guardian reviews and subagents are not owner-facing. */
 const CODEX_SQL = `select coalesce(name, title) as titulo, cwd as carpeta, archived as archivado,
-	updated_at_ms as en from threads where thread_source in ('user', 'agent_created_thread')`;
+	updated_at_ms as en, (thread_source = 'user') as usuario from threads
+	where thread_source in ('user', 'agent_created_thread')`;
 /** One row per conversation: the full-text index keeps several chunks of each, any of them may carry the flag. */
 const GEMINI_SQL = `select s.title as titulo, s.workspace_uris as carpeta, s.last_modified_time as en,
 	coalesce((select max(f.archived) from conversations_fts f where f.conversation_id = s.conversation_id), 0)
-	as archivado from conversation_summaries s`;
+	as archivado, 1 as usuario from conversation_summaries s`;
 
 const PROJECT = /celebra-me/i;
 const DISPATCHER = /Despachador (Codex|Gemini)/i;
 const TASK_NUM = /\bT(\d+)\b/;
 const TITLE_MAX = 90;
+const UNTITLED = '(sin título)';
+/** A chat without a task stays listed only while a person used it this recently. */
+const RECENT_MS = 48 * 3600_000;
 
 /** Codex falls back to the first prompt as a title: keep its first line, short enough for one row. */
 export function shortTitle(v) {
@@ -35,7 +39,7 @@ export function shortTitle(v) {
 		.trim()
 		.split(/\r?\n/)[0]
 		.trim();
-	if (!line) return '(sin título)';
+	if (!line) return UNTITLED;
 	return line.length > TITLE_MAX ? `${line.slice(0, TITLE_MAX - 1)}…` : line;
 }
 
@@ -73,6 +77,7 @@ async function readSource(key, home) {
 					titulo: shortTitle(r.titulo),
 					archivado: Number(r.archivado) === 1,
 					en: toMs(r.en),
+					usuario: Number(r.usuario) === 1,
 				})),
 		};
 	} catch (e) {
@@ -101,12 +106,19 @@ function verdict(tarea) {
 	return DONE.has(tarea.estado) ? 'archivar' : 'dejar';
 }
 
-/** Open chats per source with their verdict; the dispatcher's runs fold into one line each. */
-export function crossChats(key, rows, board) {
+/** A chat without a task worth listing: titled, opened by a person and used in the last 48 h. */
+const listed = (r, now) => r.titulo !== UNTITLED && r.usuario !== false && now - r.en <= RECENT_MS;
+
+/**
+ * Open chats per source with their verdict; the dispatcher's runs fold into one line each. Chats without a task
+ * that are untitled, agent-made or idle for 48 h only count in `omitidosSinTarea`.
+ */
+export function crossChats(key, rows, board, now = Date.now()) {
 	const fuente = SOURCES[key].label;
 	const open = rows.filter((r) => !r.archivado).sort((a, b) => b.en - a.en);
 	const despachadores = [];
 	const chats = [];
+	let omitidosSinTarea = 0;
 	for (const r of open) {
 		if (DISPATCHER.test(r.titulo)) {
 			const d = despachadores.find((x) => x.titulo === r.titulo);
@@ -120,6 +132,10 @@ export function crossChats(key, rows, board) {
 			continue;
 		}
 		const tarea = taskOf(r.titulo, board);
+		if (!tarea && !listed(r, now)) {
+			omitidosSinTarea += 1;
+			continue;
+		}
 		chats.push({
 			fuente,
 			titulo: r.titulo,
@@ -140,34 +156,38 @@ export function crossChats(key, rows, board) {
 			ultimo: new Date(d.ultimo).toISOString(),
 		})),
 		archivados: rows.length - open.length,
+		omitidosSinTarea,
 	};
 }
 
-export async function externalSessions(board, { home = homedir() } = {}) {
+export async function externalSessions(board, { home = homedir(), now = Date.now() } = {}) {
 	const fuentes = {};
 	const chats = [];
 	const despachadores = [];
+	let omitidosSinTarea = 0;
 	for (const key of Object.keys(SOURCES)) {
 		const r = await readSource(key, home);
 		if (r.error) {
 			fuentes[key] = { disponible: false, motivo: r.error };
 			continue;
 		}
-		const x = crossChats(key, r.rows, board);
+		const x = crossChats(key, r.rows, board, now);
 		fuentes[key] = {
 			disponible: true,
 			abiertos:
 				x.chats.reduce((s, c) => s + c.total, 0) +
-				x.despachadores.reduce((s, d) => s + d.total, 0),
+				x.despachadores.reduce((s, d) => s + d.total, 0) +
+				x.omitidosSinTarea,
 			archivados: x.archivados,
 		};
 		chats.push(...x.chats);
 		despachadores.push(...x.despachadores);
+		omitidosSinTarea += x.omitidosSinTarea;
 	}
-	return { fuentes, chats, despachadores };
+	return { fuentes, chats, despachadores, omitidosSinTarea };
 }
 
-export function externalSessionLines({ fuentes, chats, despachadores }) {
+export function externalSessionLines({ fuentes, chats, despachadores, omitidosSinTarea = 0 }) {
 	const lines = ['Chats de Codex y Gemini sin archivar (el dueño los archiva a mano):'];
 	for (const c of chats) {
 		const why = c.estado ? `tarea ${c.estado} → ` : '';
@@ -189,6 +209,9 @@ export function externalSessionLines({ fuentes, chats, despachadores }) {
 			? `${SOURCES[k].label}: ${f.abiertos} abiertos, ${f.archivados} archivados`
 			: `${SOURCES[k].label}: no disponible (${f.motivo})`,
 	);
-	lines.push(`Por archivar: ${porArchivar}. ${estado.join(' · ')}.`);
+	const omitidos = omitidosSinTarea
+		? ` Omitidos sin tarea: ${omitidosSinTarea} (sin título, de agente o sin uso en 48 h).`
+		: '';
+	lines.push(`Por archivar: ${porArchivar}.${omitidos} ${estado.join(' · ')}.`);
 	return lines;
 }

@@ -54,7 +54,7 @@
  *   restore <id> [--dry-run]                    a compacted task back from its .zip
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
- *   verify [--json]                             same as pnpm board:verify
+ *   verify [--json] [--archivadas]              same as pnpm board:verify
  *   msg <id> --de=<a> --para=<b> "texto"        T126: a message about a task, kept in the bitácora
  *   inbox --agente=<a> [--todos]                messages to <a> not read yet; marks them read
  *   sigue [--json]                              T126: «Le toca a usted», «Le toca al coordinador» and «Detenidas»,
@@ -809,7 +809,12 @@ const commands = {
 	},
 	verify({ flags }, dir, out) {
 		const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-board.mjs');
-		const args = [script, dir, ...(flags.json ? ['--json'] : [])];
+		const args = [
+			script,
+			dir,
+			...(flags.json ? ['--json'] : []),
+			...(flags.archivadas ? ['--archivadas'] : []),
+		];
 		try {
 			out(execFileSync(process.execPath, args, { encoding: 'utf8' }).trimEnd());
 		} catch (e) {

@@ -109,6 +109,10 @@ function sesiones(dir: string, home: string, ...args: string[]) {
 }
 
 const cwd = path.join('D:', PROJECT);
+/** Chats without a task are listed only while used in the last 48 h, so these stamps follow the real clock. */
+const RECENT = Date.now() - 3600_000;
+const STALE = Date.now() - 72 * 3600_000;
+const geminiTime = (ms: number) => new Date(ms).toISOString().replace('T', ' ');
 const uris = JSON.stringify([`file:///d%3A/${PROJECT.replace(/\\/g, '/')}`]);
 
 describe('board sesiones (d211)', () => {
@@ -132,7 +136,11 @@ describe('board sesiones (d211)', () => {
 				{ name: 'Guardián', cwd, en: 7, source: 'guardian_review' },
 				{ name: 'Subagente', cwd, en: 8, source: 'subagent' },
 				{ name: 'Otro proyecto T118', cwd: path.join('D:', 'code', 'otro'), en: 9 },
-				{ title: 'Analiza demo\nsegunda línea', cwd, en: 10 },
+				{ title: 'Analiza demo\nsegunda línea', cwd, en: RECENT },
+				{ title: '', cwd, en: RECENT },
+				{ name: 'Security Deep Scan', cwd, en: STALE },
+				{ name: 'Security Deep Scan', cwd, en: STALE - 1 },
+				{ name: 'Hilo de agente', cwd, en: RECENT, source: 'agent_created_thread' },
 				{ name: 'f04 · Despachador Codex', cwd, en: 11 },
 			],
 			gemini: [
@@ -149,7 +157,8 @@ describe('board sesiones (d211)', () => {
 					uris,
 					archived: 1,
 				},
-				{ title: 'Review PR 516', en: '2026-10-24 17:00:00+00:00', uris },
+				{ title: 'Review PR 516', en: geminiTime(RECENT), uris },
+				{ title: 'Revisión vieja', en: geminiTime(STALE), uris },
 			],
 		});
 
@@ -167,11 +176,13 @@ describe('board sesiones (d211)', () => {
 			'  Gemini · Review PR 516 → sin tarea',
 			'  Codex · f04 · Despachador Codex ×1 → dejar (es la más reciente)',
 			'  Gemini · f04 · Despachador Gemini ×3 → archivar 2, dejar la más reciente',
-			'Por archivar: 5. Codex: 7 abiertos, 1 archivados · Gemini: 4 abiertos, 1 archivados.',
+			'Por archivar: 5. Omitidos sin tarea: 5 (sin título, de agente o sin uso en 48 h). Codex: 11 abiertos, 1 archivados · Gemini: 5 abiertos, 1 archivados.',
 		]);
 
 		const json = JSON.parse(sesiones(dir, home, '--json').out);
-		expect(json.fuentes.codex).toEqual({ disponible: true, abiertos: 7, archivados: 1 });
+		expect(json.fuentes.codex).toEqual({ disponible: true, abiertos: 11, archivados: 1 });
+		expect(json.omitidosSinTarea).toBe(5);
+		expect(json.chats.map((c: Json) => c.titulo)).not.toContain('(sin título)');
 		expect(json.despachadores[1]).toMatchObject({
 			fuente: 'Gemini',
 			total: 3,
