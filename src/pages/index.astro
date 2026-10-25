@@ -18,59 +18,27 @@ import StickyWhatsAppBar from '@/components/home/StickyWhatsAppBar.astro';
 import { landingData } from '@/data/landing-page.data';
 import { footerData } from '@/data/footer.data';
 import { VITRINA_EVENTS, findVitrinaDemo, getVitrinaLeadDemo } from '@/data/landing-vitrina.data';
+import { buildLandingSchemaJsonLd, DEFAULT_SITE_ORIGIN } from '@/lib/seo/landing-schema';
 import '@/styles/landing.scss';
 
-const siteOrigin = 'https://www.celebra-me.com';
+const siteOrigin = DEFAULT_SITE_ORIGIN;
 const leadDemo = getVitrinaLeadDemo();
 const leadEvent = VITRINA_EVENTS.find((event) => event.publicSlug === leadDemo.publicSlug)!;
 // Hero fan: left, right, then the larger center phone (the lead demo).
 const heroFan = ['demo-xv-celestial-blue', 'demo-brisa']
 	.flatMap((slug) => findVitrinaDemo(slug) ?? [])
 	.concat(leadDemo);
-const schemaJsonLd = {
-	'@context': 'https://schema.org',
-	'@graph': [
-		{
-			'@type': 'Organization',
-			'@id': `${siteOrigin}/#organization`,
-			name: 'Celebra-me',
-			url: siteOrigin,
-			logo: `${siteOrigin}/favicon.svg`,
-			description:
-				'Invitaciones digitales interactivas de alta gama con confirmación de asistencia RSVP en tiempo real.',
-		},
-		{
-			'@type': 'WebSite',
-			'@id': `${siteOrigin}/#website`,
-			url: siteOrigin,
-			name: 'Celebra-me',
-			description: landingData.seo.description,
-			publisher: {
-				'@id': `${siteOrigin}/#organization`,
-			},
-			inLanguage: 'es-MX',
-		},
-		{
-			'@type': 'FAQPage',
-			'@id': `${siteOrigin}/#faq`,
-			mainEntity: landingData.faq.faqs.map((faq) => ({
-				'@type': 'Question',
-				name: faq.question,
-				acceptedAnswer: {
-					'@type': 'Answer',
-					text: faq.answer,
-				},
-			})),
-		},
-	],
-};
+const schemaJsonLd = buildLandingSchemaJsonLd(siteOrigin);
 ---
 
 <Layout
 	title={landingData.seo.title}
 	description={landingData.seo.description}
-	image="/images/og/og-vitrina.jpg"
+	ogTitle={landingData.seo.ogTitle}
+	ogDescription={landingData.seo.ogDescription}
+	image={landingData.seo.ogImage ?? '/images/og/og-vitrina.jpg'}
 	imageAlt="Tres invitaciones digitales de Celebra-me en celulares: XV años y boda"
+	canonicalPath="/"
 	className="theme-preset--jewelry-box-landing"
 	transparentHeader={false}
 >

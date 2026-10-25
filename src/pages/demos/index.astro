@@ -1,0 +1,59 @@
+---
+export const prerender = true;
+// src/pages/demos/index.astro
+import Layout from '@/layouts/Layout.astro';
+import LandingShowroom from '@/components/home/LandingShowroom.astro';
+import Footer from '@/components/home/Footer.astro';
+import StickyWhatsAppBar from '@/components/home/StickyWhatsAppBar.astro';
+import { landingData } from '@/data/landing-page.data';
+import { footerData } from '@/data/footer.data';
+import { VITRINA_EVENTS, getVitrinaLeadDemo } from '@/data/landing-vitrina.data';
+import '@/styles/landing.scss';
+
+const leadDemo = getVitrinaLeadDemo();
+const leadEvent = VITRINA_EVENTS.find((event) => event.publicSlug === leadDemo.publicSlug)!;
+
+const title = 'Demos de Invitaciones Digitales | Celebra-me';
+const description =
+	'Explore nuestras demostraciones interactivas de invitaciones digitales para XV años, bodas, bautizos y cumpleaños. Pruebe música, pases y confirmación RSVP en vivo.';
+const ogTitle = 'Demos de Invitaciones Digitales | Celebra-me';
+const ogDescription =
+	'Explore nuestras demostraciones interactivas de invitaciones digitales para XV años, bodas, bautizos y cumpleaños. Pruebe música, pases y confirmación RSVP en vivo.';
+const ogImage = '/images/og/og-vitrina.jpg';
+---
+
+<Layout
+	title={title}
+	description={description}
+	ogTitle={ogTitle}
+	ogDescription={ogDescription}
+	canonicalPath="/demos"
+	image={ogImage}
+	imageAlt="Demostraciones de invitaciones digitales de Celebra-me en celulares"
+	className="theme-preset--jewelry-box-landing"
+	transparentHeader={false}
+>
+	<div class="landing-sections-wrapper">
+		<LandingShowroom
+			events={VITRINA_EVENTS}
+			title={landingData.vitrina.title}
+			description={landingData.vitrina.description}
+		/>
+		<Footer data={{ ...footerData, contact: undefined }} />
+	</div>
+	<StickyWhatsAppBar event={leadEvent} demo={leadDemo} />
+</Layout>
+<script>
+	import { createIntersectionObserver } from '@/utils/animations';
+
+	createIntersectionObserver(
+		'section',
+		(target) => {
+			target.classList.add('is-visible');
+		},
+		{
+			threshold: 0.1,
+			rootMargin: '0px 0px -10% 0px',
+		},
+	);
+</script>

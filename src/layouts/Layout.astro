@@ -22,6 +22,8 @@ import type { ImageMetadata } from 'astro';
 interface Props {
 	title: string;
 	description?: string;
+	ogTitle?: string;
+	ogDescription?: string;
 	image?: string | ImageMetadata;
 	imageAlt?: string;
 	robots?: string;
@@ -50,6 +52,8 @@ interface Props {
 const {
 	title,
 	description = 'Celebra-me - Invitaciones digitales',
+	ogTitle,
+	ogDescription,
 	image = '/images/og/og-home.jpg',
 	imageAlt,
 	robots,
@@ -77,6 +81,9 @@ if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
 	canonicalUrl.pathname = canonicalUrl.pathname.replace(/\/+$/, '');
 }
 
+const resolvedOgTitle = ogTitle ?? title;
+const resolvedOgDescription = ogDescription ?? description;
+
 const socialImage = buildSocialImageMetadata(resolvedImageSrc, { origin: canonicalOrigin });
 const ogImage = socialImage.url;
 
@@ -103,26 +110,26 @@ const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
 
 		<!-- Open Graph -->
 		<meta property="og:type" content="website" />
-		{!omitCanonical && <meta property="og:url" content={canonicalUrl} />}
-		<meta property="og:title" content={title} />
-		<meta property="og:description" content={description} />
+		{!omitCanonical && <meta property="og:url" content={canonicalUrl.href} />}
+		<meta property="og:title" content={resolvedOgTitle} />
+		<meta property="og:description" content={resolvedOgDescription} />
 		<meta property="og:image" content={ogImage} />
 		<meta property="og:image:secure_url" content={ogImage} />
 		<meta property="og:image:width" content={String(socialImage.width)} />
 		<meta property="og:image:height" content={String(socialImage.height)} />
 		<meta property="og:image:type" content={socialImage.type} />
-		<meta property="og:image:alt" content={imageAlt ?? title} />
-		{!omitCanonical && <link rel="canonical" href={canonicalUrl} />}
+		<meta property="og:image:alt" content={imageAlt ?? resolvedOgTitle} />
+		{!omitCanonical && <link rel="canonical" href={canonicalUrl.href} />}
 		<meta property="og:locale" content="es_MX" />
 		<meta property="og:site_name" content="Celebra-me" />
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
-		{!omitCanonical && <meta name="twitter:url" content={canonicalUrl} />}
-		<meta name="twitter:title" content={title} />
-		<meta name="twitter:description" content={description} />
+		{!omitCanonical && <meta name="twitter:url" content={canonicalUrl.href} />}
+		<meta name="twitter:title" content={resolvedOgTitle} />
+		<meta name="twitter:description" content={resolvedOgDescription} />
 		<meta name="twitter:image" content={ogImage} />
-		<meta name="twitter:image:alt" content={imageAlt ?? title} />
+		<meta name="twitter:image:alt" content={imageAlt ?? resolvedOgTitle} />
 
 		{
 			headLinks.map((l) => (
