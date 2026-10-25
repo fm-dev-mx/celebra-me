@@ -29,7 +29,9 @@ authorization.
   `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see Task kinds); `rev` and
   `actualizado` are set by the command, `agregadaPor` and `seguimientoPor` by the commands that add
   or follow up a task (T172, see Session ownership), `archivada` (date) only by
-  `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no longer exist.
+  `archive`/`unarchive`, `entregada {agente, desde}` only by `entregada` and the view's «Copiar
+  prompt» (d249, see Agents), `cierre` only by `close`. `espera`, `usted` and `deps` no longer
+  exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -53,6 +55,12 @@ authorization.
   only without a lock, logs it and warns when the new agent lacks a `requiere` capability;
   `review <id> [--agente=<b>]` creates the review child with `origen` (one per round, see below).
   Never duplicate a task. Rules are the same for every agent.
+- **Delivered prompt (d249)**: «Copiar prompt» in the view on a ready, unlocked task an agent does,
+  and `pnpm board entregada <id> --agente=<a>` (the dispatchers run it when they open the chat),
+  write `entregada {agente, desde}` (`delivery.mjs`). The task then leaves «Le toca a usted» and
+  shows «Entregada a <agente> · <hora> · esperando que la tome»; after 30 min without a claim it
+  comes back as «Entregada hace 30 min y nadie la tomó». `claim` clears the mark; a task the owner
+  does or one with a lock refuses it.
 - **Planned lane (d177)**: the coordinator gives every open task a canonical lane (`WORKTREE_LANES`,
   f05–f12) when it creates or prepares it:
   `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador` (`--carril=` clears it, only

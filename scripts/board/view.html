@@ -391,7 +391,9 @@ import { requisitoText, taskName } from '/model.mjs';
 import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
-import { laneRows, nextSections, readyToMerge } from '/next.mjs';
+import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
+import { needsOwner } from '/model.mjs';
+import { awaitingClaim } from '/delivery.mjs';
 const TZ='America/Mazatlan';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
 const ICON={
@@ -430,7 +432,10 @@ const tN=t=>t.num?`<span class="tn">T${esc(t.num)}</span> · `:'';
 const urgHtml=t=>{const u=URG[t.urgencia]?t.urgencia:'normal';return `<span class="urg u-${u}" title="Urgencia">${ICON[u]}${URG[u].l}</span>`};
 // d169: a ready task only Codex or Gemini can finish waits for the owner to paste its prompt there.
 const pasteTo=t=>ownerLaunches(t,S.board).map(a=>AGENT[a]||a).join(' o ');
-const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):COLOR[c]}</span>`};
+const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):awaitingClaim(t)?'Entregada':COLOR[c]}</span>`};
+// d249: «Copiar prompt» on a ready, unlocked task an agent does marks it as delivered to that agent.
+const deliverable=t=>stage(t)==='lista'&&!t.candado&&!needsOwner(t);
+const deliverTo=t=>{const a=ownerLaunches(t,S.board);return a.length===1?a[0]:a.length?'cualquiera':t.agente||'cualquiera'};
 // T151: each agent keeps its own color wherever it appears.
 const agChip=(key,label,{lock=false}={})=>`<span class="ag ag-${esc(key)}"${lock?' title="La está haciendo ahora (candado)"':''}>${lock?'🔒 ':''}${esc(label)}</span>`;
 const agHtml=t=>t.candado?agChip(t.candado.agente,AGENT[t.candado.agente]||t.candado.agente,{lock:true}):t.agente&&t.agente!=='cualquiera'?agChip(t.agente,AGENT[t.agente]||t.agente):'';
@@ -448,7 +453,7 @@ const mergeChip=t=>{const r=readyToMerge(t,S.board,livePrs());return r?`<span cl
 const byHtml=t=>{const b=traceText(t,S.board);return b?`<span class="by" title="${esc(b.title)}">${esc(b.text)}</span>`:''};
 function itemHtml(t){
   const c=color(t),n=NUM[t.id];
-  const why=c==='block'?firstBlock(t):String(t.ahora||'').split('\n')[0];
+  const why=c==='block'?firstBlock(t):deliveryLine(t)||String(t.ahora||'').split('\n')[0];
   // T151: the card is an article (its free text holds links); the whole card still opens the sheet, the title is its button.
   return `<article class="item c-${c}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}">
     <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
@@ -529,6 +534,7 @@ function renderSheet(open){
   const pr=prNumber(t.pr);
   const rows=[
     ['Agente',t.agente?esc(AGENT[t.agente]||t.agente)+(t.candado?` · 🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)} desde ${esc(fmt(t.candado.desde))}`:''):''],
+    ['Entregada',esc(deliveryLine(t))],
     ['Requiere',(t.requiere||[]).length?t.requiere.map(esc).join(', '):''],
     ['Carril',taskLane(t)?`<span class="code">${esc(taskLane(t))}</span>${l.tecla?' · '+esc(l.tecla):''}`:''],
     ['Worktree',l.worktree?`<span class="code">${esc(l.worktree)}</span>`:''],
@@ -545,7 +551,7 @@ function renderSheet(open){
   const p=promptWithLane(t,S.board)||'';
   const run=runLines(t),busy=laneBusy(t,S.board);
   const to=c==='own'&&pasteTo(t);
-  const who=to?'Copie el prompt y péguelo en un chat nuevo de '+to+'.':c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
+  const who=awaitingClaim(t)?deliveryLine(t)+'. Si la pega en otro chat, cópielo de nuevo.':to?'Copie el prompt y péguelo en un chat nuevo de '+to+'.':c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
   sh.className='sheet c-'+c+(open?' open':sh.classList.contains('open')?' open':'');
   sh.innerHTML=`<div class="sh-top"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span><h2>${tN(t)}${esc(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
       <div class="line">${pill(t)}${urgHtml(t)}<span class="lane">${esc(t.id)}</span></div></div>
@@ -607,6 +613,15 @@ function renderFin(){
   const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':S.finag!=='todas'?'Ese agente no tiene tareas aquí.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
   $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
+// d249: the server writes entregada {agente, desde}; the stream then moves the task out of «Le toca a usted».
+async function deliver(t,m){
+  try{
+    const res=await fetch('/api/entregada',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:t.id,agente:deliverTo(t)})});
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
+    m.textContent='Prompt copiado y marcado como entregado. Péguelo donde dice «DÓNDE CORRE».';
+  }catch(e){m.textContent='Prompt copiado, pero no se marcó como entregado: '+e.message}
+}
 async function archive(btn){
   const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
   btn.disabled=true;m.textContent=(archivar?'Archivando ':'Desarchivando ')+(t?taskTag(t):id)+'…';
@@ -648,7 +663,7 @@ function renderMine(){
   const asks=ownerAsks(S.board);
   let h='<h2>Le toca a usted</h2>';
   if(!tasks.length&&!asks.length&&!next.usted.length)h+='<p class="none">Usted: nada por ahora.</p>';
-  h+=tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}${to?`<span class="sub"> · Pegar en ${esc(to)}</span>`:''}</span></button>`;
+  h+=tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}${to?`<span class="sub"> · Pegar en ${esc(to)}</span>`:''}${deliveryLine(t)?`<span class="sub"> · ${esc(deliveryLine(t))}</span>`:''}</span></button>`;
     return to?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row}).join('');
   if(asks.length)h+='<p class="sub">Decisiones que esperan su respuesta</p>'+asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(r.ref)}<span class="sub"> · la espera «${esc(t.titulo)}»</span></span></button>`).join('');
   // T126: what the owner's own rows above do not say yet: a stalled Codex or Gemini task, a message to the owner.
@@ -693,7 +708,7 @@ document.addEventListener('click',ev=>{
     if(cp.dataset.copy!=='1'){if(S.ag!=='todas')setAgent('todas');openSheet(cp.dataset.copy)}
     const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
-    try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».'},fallback)}catch(e){fallback()}return}
+    try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».';if(deliverable(t))deliver(t,m)},fallback)}catch(e){fallback()}return}
   const k=ev.target.closest('[data-kind]');if(k){S.kind=k.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===k)));renderHist()}
 });
 // The SHA button copies the full SHA and says so for a moment.

@@ -19,6 +19,8 @@
  *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
  *                                               carril defaults to the planned lane, another needs --coordinador;
  *                                               T172: a pendiente task becomes en curso)
+ *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
+ *                                               a usted» until 30 min pass without a claim (claim clears it)
  *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees only a legacy lock without sesion;
@@ -112,8 +114,10 @@ import {
 } from './model.mjs';
 import { archiveBlock, cierreBlock } from './cierre.mjs';
 import { cancelOnSet, cancelReplaced, closeCommands } from './close-commands.mjs';
-import { claimTitleIssue, nextSections, sectionLines } from './next.mjs';
+import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
+import { deliveryCommands } from './delivery-commands.mjs';
+import { undelivered } from './delivery.mjs';
 import {
 	appendLog,
 	assertId,
@@ -395,7 +399,7 @@ function claimLocation(before, flags, board) {
 function row(t, n, board, agente) {
 	const c = color(t, board, { agente });
 	const lock = t.candado ? ` [${t.candado.agente}]` : '';
-	const why = blockedText(t, board);
+	const why = blockedText(t, board) || deliveryLine(t);
 	return `${String(n).padStart(2)}. ${COLOR_LABEL[c].padEnd(11)} ${String(t.urgencia ?? '').padEnd(8)} ${t.num ? `T${t.num} ` : ''}${t.titulo} · ${t.id}${lock}${why ? `  — ${why}` : ''}`;
 }
 
@@ -462,6 +466,8 @@ const commands = {
 		);
 		const trace = traceText(t, board);
 		if (trace) out(`  ${trace.text}`);
+		const delivered = deliveryLine(t);
+		if (delivered) out(`  ${delivered}`);
 		for (const line of laneLines(t, board)) out(`  ${line}`);
 		for (const r of requisitos(t, board)) out(`  ${requisitoLine(r, board)}`);
 		for (const k of [
@@ -525,6 +531,7 @@ const commands = {
 				'contrato',
 				'agregadaPor',
 				'seguimientoPor',
+				'entregada',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
@@ -593,7 +600,8 @@ const commands = {
 				dir,
 				before,
 				{
-					...before,
+					// d249: a claim ends the wait the delivery mark announced.
+					...undelivered(before),
 					candado,
 					...(carril ? { carril } : {}),
 					...(rama ? { rama } : {}),
@@ -815,11 +823,15 @@ const commands = {
 	},
 };
 const inventory = inventoryCommands({ applyPairs, checkRev });
+const delivery = deliveryCommands({ getTask, saveTask });
+/** The view server's `deliver` option (d249), used by «Copiar prompt». */
+export const viewDeliverer = delivery.viewDeliverer;
 Object.assign(
 	commands,
 	maintenanceCommands,
 	inventory,
 	nextCommands({ getTask }),
+	delivery.commands,
 	closeCommands({ getTask, saveTask, checkRev, assertOwner }),
 	kindCommands({ getTask, saveTask, checkRev, assertOwner }),
 	{

@@ -2,6 +2,7 @@
  * Board v3 model shared by `pnpm board`, `pnpm board:verify` and the local view (rules: .agent/rules/board.md).
  * Pure functions only: no Node APIs, so the view imports this same file in the browser.
  */
+import { awaitingClaim } from './delivery.mjs';
 import { isPromptV1, promptSection, promptV1Issues, reviewText, withRunLines } from './prompt.mjs';
 
 export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
@@ -495,6 +496,8 @@ export const SELF_STARTING = ['claude'];
 export function ownerLaunches(t, board, now) {
 	if (stage(t, board, now) !== 'lista' || needsOwner(t) || t.actor === 'coordinador' || t.candado)
 		return [];
+	// d249: a prompt the owner already pasted waits for its claim, until it is DELIVERY_STALE_MINUTES old.
+	if (awaitingClaim(t, now)) return [];
 	const able = agentsFor(t).filter((a) => canFinish(t, a, board));
 	return able.some((a) => SELF_STARTING.includes(a)) ? [] : able;
 }
