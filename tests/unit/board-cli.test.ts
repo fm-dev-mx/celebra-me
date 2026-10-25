@@ -795,6 +795,42 @@ describe('pnpm board', () => {
 		});
 	});
 
+	it('refuses a cross-review of a reopened cancelled task whose cierre breaks the contract (d255)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('reabierta', {
+					agente: 'claude',
+					rama: 'feat/r',
+					pr: 21,
+					estado: 'pendiente',
+					contrato: 2,
+				}),
+			],
+		});
+		const sha = 'a'.repeat(40);
+		const cancel = board(
+			dir,
+			'set',
+			'reabierta',
+			'--rev=1',
+			'estado=cancelada',
+			'--motivo=Ya no hace falta.',
+			'--coordinador',
+		);
+		expect(cancel.status).toBe(0);
+		expect(readTask(dir, 'reabierta').cierre).toBeTruthy();
+		expect(
+			board(dir, 'set', 'reabierta', '--rev=2', 'estado=en revision', '--coordinador').status,
+		).toBe(0);
+		const refused = board(dir, 'review', 'reabierta', '--agente=codex', `--sha=${sha}`);
+		expect(refused.status).toBe(2);
+		expect(refused.err).toContain('reabierta su resumen de cierre no vale');
+		expect(refused.err).toContain('falta cierre.resultado del código');
+		expect(existsSync(path.join(dir, 'tareas', 'reabierta-revision.json'))).toBe(false);
+		// «Le toca al coordinador» asks for it too, although the task has a cierre.
+		expect(board(dir, 'sigue').out).toContain('Pedir el resumen de cierre de T1');
+	});
+
 	it('refuses a cross-review while the task has no closing summary (d255)', () => {
 		const dir = makeBoard({
 			tareas: [

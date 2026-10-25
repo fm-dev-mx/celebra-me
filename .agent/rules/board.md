@@ -294,24 +294,25 @@ authorization.
   authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
   exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
   `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
-- `review` requires the origin PR in `en revision` and its `cierre` (d255: no task reaches review
-  without its closing summary; the refusal prints the `pnpm board close <id> …` to run first, and
-  `--coordinador` gets no bypass: the coordinator completes the summary with `close --coordinador`).
-  It generates an English prompt and records `revisionSha` (from GitHub, or explicit `--sha`). Every
-  round is a new task: `<id>-revision`, then `<id>-revision-2`, `-3`… for each new PR head, with
-  `vuelta`, the short SHA in the title and its own prompt; from the second round on the prompt opens
-  with «SEGUNDA VUELTA» («TERCERA»…), names the previous round's SHA and the new one and starts from
-  `git diff <previous>..<new>`. Earlier rounds are never rewritten, except that a still-open one is
-  cancelled with its cierre (T129); the same SHA again creates nothing. Without `--agente` the
-  reviewer follows d183: work by Codex or Gemini goes to Claude; work by Claude goes (d209, d240) to
-  whichever of Gemini and Codex has less load (reviews open or updated in the last 7 days plus open
-  normal tasks; a tie goes to Gemini), and to Gemini while Codex's last `rate_limits` in
-  `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90 % 5-hour use before its reset; the message prints
-  both loads and the quota. An explicit `--agente` always wins; any other pairing is refused. The
-  author is the task's `agente`, else its lock's or last session's. `show` and the view's sheet list
-  the rounds one below another. Reviews become executable before merge and do not inherit the
-  author's lane. Completion declares `--sha=<reviewed SHA>`; the verifier compares it against the
-  current PR head.
+- `review` requires the origin PR in `en revision` and a valid `cierre` (d255: no task reaches
+  review without its closing summary; the same `cierreIssues` as «Archivar», so a cancelled task
+  reopened with a cierre lacking `resultado` is refused too; the refusal prints the
+  `pnpm board close <id> …` to run first, and `--coordinador` gets no bypass: the coordinator
+  completes the summary with `close --coordinador`). It generates an English prompt and records
+  `revisionSha` (from GitHub, or explicit `--sha`). Every round is a new task: `<id>-revision`, then
+  `<id>-revision-2`, `-3`… for each new PR head, with `vuelta`, the short SHA in the title and its
+  own prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names
+  the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
+  rounds are never rewritten, except that a still-open one is cancelled with its cierre (T129); the
+  same SHA again creates nothing. Without `--agente` the reviewer follows d183: work by Codex or
+  Gemini goes to Claude; work by Claude goes (d209, d240) to whichever of Gemini and Codex has less
+  load (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to Gemini),
+  and to Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90
+  % 5-hour use before its reset; the message prints both loads and the quota. An explicit `--agente`
+  always wins; any other pairing is refused. The author is the task's `agente`, else its lock's or
+  last session's. `show` and the view's sheet list the rounds one below another. Reviews become
+  executable before merge and do not inherit the author's lane. Completion declares
+  `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
 - A reviewer keeps its round's task and assigned reviewer, inspects the exact PR head of that round,
   binds findings and completion to the full SHA, and challenges scope, regressions, invariants and
   missing evidence. Another commit makes the review stale: `pnpm board review` creates the next
@@ -338,8 +339,8 @@ authorization.
 - `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al coordinador» and
   «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), blocked
   reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el resumen de cierre
-  de T<n>» for every task `en revision` or `unida` without a `cierre` (d255; a merged PR still moves
-  a task to `unida`, because the merge is a fact), open PRs without a task, ready Claude tasks
+  de T<n>» for every task `en revision` or `unida` without a valid `cierre` (d255; a merged PR still
+  moves a task to `unida`, because the merge is a fact), open PRs without a task, ready Claude tasks
   without a session and messages for it. `list` prints the same sections without reading GitHub.
 - **Findings to the author (d251, T212)**: `close` of a review round with `--veredicto=cambios`
   writes one message about the origin task to its author (`authorOf`), from the reviewer, naming the

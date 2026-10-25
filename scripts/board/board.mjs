@@ -750,7 +750,7 @@ const commands = {
 			const src = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!src.pr || src.estado !== 'en revision')
 				throw new UsageError('el origen requiere PR y estado en revision');
-			const noCierre = reviewCierreIssue(src);
+			const noCierre = reviewCierreIssue(src, loadBoard(dir));
 			if (noCierre) throw new UsageError(noCierre);
 			const author = authorOf(src);
 			// d209: without --agente, Claude's work goes to the less loaded of Gemini and Codex.
