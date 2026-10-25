@@ -211,7 +211,10 @@ It is supported by an interactive administration workspace under `/dashboard/com
 event carries marketing consent, keep their first value like the other first-touch columns, and
 follow the 13-month commercial analytics retention. The IP comes from `getClientIp()`
 (`CF-Connecting-IP` on Workers). The application that writes them needs the migration applied first,
-because PostgREST rejects unknown columns on the session upsert.
+because PostgREST rejects unknown columns on the session upsert. `/privacidad` discloses this
+server-side send (owner decision d242): the signals stay 13 months with the visit, or as long as the
+contact record when a lead or order still references the session, because
+`purge_commercial_analytics` keeps referenced sessions.
 
 ### Route Privacy Policy
 
