@@ -15,6 +15,7 @@ import {
 	fail,
 	runCommand,
 	runCommandSequencesInParallel,
+	type CommandJob,
 	type CommandResult,
 } from './db-workflow-lib.ts';
 import { formatOperatorFailure, parsePorcelainDirtyFiles } from './operator-cli-ux.ts';
@@ -240,6 +241,22 @@ export function ensureValidReleaseCheckEvidence(
 	});
 }
 
+/**
+ * `pnpm test` beside `type-check → build:app`. No job inherits the terminal: on a TTY, jest's
+ * interactive redraw and astro's output raced on one console and froze every child. Echoed,
+ * piped output makes a TTY run behave like the non-TTY run.
+ */
+export function releaseCheckParallelSequences(): CommandJob[][] {
+	const options = { throwOnError: false, echoOutput: true };
+	return [
+		[{ command: 'pnpm', args: ['test'], options }],
+		[
+			{ command: 'pnpm', args: ['type-check'], options },
+			{ command: 'pnpm', args: ['build:app'], options },
+		],
+	];
+}
+
 export function runReleaseCheck(
 	options: {
 		runner?: typeof runCommand;
@@ -275,21 +292,9 @@ export function runReleaseCheck(
 		}
 	} else {
 		console.info('release-check: running pnpm test || (type-check → build:app)...');
-		const [testResults, compileResults] = runCommandSequencesInParallel([
-			[{ command: 'pnpm', args: ['test'], options: { throwOnError: false, inherit: true } }],
-			[
-				{
-					command: 'pnpm',
-					args: ['type-check'],
-					options: { throwOnError: false, inherit: true },
-				},
-				{
-					command: 'pnpm',
-					args: ['build:app'],
-					options: { throwOnError: false, inherit: true },
-				},
-			],
-		]);
+		const [testResults, compileResults] = runCommandSequencesInParallel(
+			releaseCheckParallelSequences(),
+		);
 		const failures: string[] = [];
 		if (testResults[0]?.status !== 0)
 			failures.push(`pnpm test (exit ${String(testResults[0]?.status)})`);
