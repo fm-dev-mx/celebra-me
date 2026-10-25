@@ -54,6 +54,8 @@
 }
 
 .dashboard-guests {
+	--dashboard-dock-height: 82px;
+
 	max-width: 1400px;
 	margin: 0 auto;
 	padding: var(--spacing-lg) clamp(var(--spacing-md), 4vw, var(--spacing-xl));

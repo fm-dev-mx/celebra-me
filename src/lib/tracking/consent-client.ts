@@ -18,6 +18,9 @@ export interface ConsentState {
 
 const STORAGE_KEY = 'cm_consent';
 
+/** localStorage key of the commercial tracking visitor ID, written by the tracking client. */
+export const VISITOR_STORAGE_KEY = 'cm_visitor_id';
+
 const CONSENT_DEFAULT: ConsentState = {
 	necessary: true as const,
 	analytics: false,
@@ -74,7 +77,89 @@ export function saveConsent(analytics: boolean, marketing: boolean): ConsentStat
 			// Isolate observer errors so one bad listener doesn't break the rest.
 		}
 	});
+	if (marketing) {
+		clearPendingWithdrawal();
+	} else {
+		queueMarketingWithdrawal(state);
+	}
 	return state;
+}
+
+/** localStorage key of a withdrawal the server has not confirmed yet. */
+const PENDING_WITHDRAWAL_KEY = 'cm_consent_withdrawal_pending';
+
+interface PendingWithdrawal {
+	visitorId: string;
+	analytics: boolean;
+	decidedAt: string;
+}
+
+function clearPendingWithdrawal(): void {
+	try {
+		localStorage.removeItem(PENDING_WITHDRAWAL_KEY);
+	} catch {
+		// Nothing to clear when localStorage is unavailable.
+	}
+}
+
+/**
+ * Tell the server that marketing consent is off so it stops sending this visitor's queued
+ * conversions to Meta. The withdrawal stays pending in localStorage until the server confirms
+ * it; visitors that were never tracked have no ID and send nothing.
+ */
+function queueMarketingWithdrawal(state: ConsentState): void {
+	let pending: PendingWithdrawal;
+	try {
+		const visitorId = localStorage.getItem(VISITOR_STORAGE_KEY);
+		if (!visitorId) return;
+		pending = { visitorId, analytics: state.analytics, decidedAt: state.updatedAt };
+		localStorage.setItem(PENDING_WITHDRAWAL_KEY, JSON.stringify(pending));
+	} catch {
+		return;
+	}
+	sendWithdrawal(pending);
+}
+
+/** Resend a withdrawal that a previous page could not deliver. Call once per page load. */
+export function retryPendingConsentWithdrawal(): void {
+	let pending: PendingWithdrawal | null;
+	try {
+		const raw = localStorage.getItem(PENDING_WITHDRAWAL_KEY);
+		pending = raw ? (JSON.parse(raw) as PendingWithdrawal) : null;
+	} catch {
+		return;
+	}
+	if (pending?.visitorId && pending.decidedAt) sendWithdrawal(pending);
+}
+
+function sendWithdrawal(pending: PendingWithdrawal): void {
+	try {
+		void fetch('/api/tracking/consent', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(pending),
+			keepalive: true,
+		})
+			.then((response) => {
+				if (response.ok) clearConfirmedWithdrawal(pending.decidedAt);
+			})
+			.catch(() => {
+				// The pending withdrawal is resent on the next page load.
+			});
+	} catch {
+		// Degrade gracefully if keepalive fetch is not supported/throws.
+	}
+}
+
+/** Clear the pending withdrawal unless a newer choice replaced it meanwhile. */
+function clearConfirmedWithdrawal(decidedAt: string): void {
+	try {
+		const raw = localStorage.getItem(PENDING_WITHDRAWAL_KEY);
+		const current = raw ? (JSON.parse(raw) as Partial<PendingWithdrawal>) : null;
+		if (current?.decidedAt === decidedAt) localStorage.removeItem(PENDING_WITHDRAWAL_KEY);
+	} catch {
+		// Keep the pending withdrawal; resending it is harmless.
+	}
 }
 
 /**

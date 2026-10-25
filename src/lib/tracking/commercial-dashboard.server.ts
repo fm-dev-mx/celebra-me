@@ -69,7 +69,7 @@ export async function loadCommercialDashboardData(): Promise<CommercialDashboard
 			'sales_orders?select=id,order_number,customer_id,lead_id,status,event_type,package_name,total_amount,amount_paid,deposit_amount,created_at,deposit_paid_at',
 		),
 		loadCommercialRows<ConversionSummaryRow & { id: string }>(
-			'meta_conversion_events?select=id,order_id,lead_id,event_id,customer_id,status,created_at,updated_at,last_error_message,next_attempt_at,claimed_at,claim_expires_at',
+			'meta_conversion_events?select=id,order_id,lead_id,event_id,event_name,customer_id,status,created_at,updated_at,last_error_message,next_attempt_at,claimed_at,claim_expires_at',
 		),
 		loadCommercialRows<CommercialRecordClassification & { id: string }>(
 			'commercial_record_classifications?classification=eq.test_qa&revoked_at=is.null&select=id,record_type,record_id',
