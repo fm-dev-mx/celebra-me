@@ -268,6 +268,37 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		await cancelSendBtn.click();
 		await expect(sendModal).not.toBeVisible();
 
+		// 4b. PLANTILLAS DE MENSAJE: Open share templates modal and verify 44px cancel button
+		const actionsTrigger = page.locator('.toolbar-actions-menu__trigger');
+		await expect(actionsTrigger).toBeVisible();
+		await actionsTrigger.click();
+
+		const templatesMenuItem = page.locator(
+			'.guest-actions-menu__item:has-text("Plantillas de mensaje")',
+		);
+		await expect(templatesMenuItem).toBeVisible();
+		await templatesMenuItem.click();
+
+		const shareTemplatesModal = page.locator('.dashboard-modal--share-templates');
+		await expect(shareTemplatesModal).toBeVisible();
+
+		// Check close button 44px touch target
+		const closeShareBtn = shareTemplatesModal.locator('.btn-close');
+		await expect(closeShareBtn).toBeVisible();
+		const closeShareBox = await closeShareBtn.boundingBox();
+		expect(closeShareBox).not.toBeNull();
+		expect(closeShareBox!.width).toBeGreaterThanOrEqual(44);
+		expect(closeShareBox!.height).toBeGreaterThanOrEqual(44);
+
+		// Accessible mobile cancel button must be visible in footer and meet 44px touch target
+		const cancelShareBtn = shareTemplatesModal.locator('.dashboard-modal__footer-cancel');
+		await expect(cancelShareBtn).toBeVisible();
+		const cancelShareBox = await cancelShareBtn.boundingBox();
+		expect(cancelShareBox).not.toBeNull();
+		expect(cancelShareBox!.height).toBeGreaterThanOrEqual(44);
+		await cancelShareBtn.click();
+		await expect(shareTemplatesModal).not.toBeVisible();
+
 		// 5. CONFIRMAR: Open details -> Edit -> Confirm attendance
 		const carlosDetailsBtn = carlosCard.locator('.guest-card__details-btn');
 		await carlosDetailsBtn.click();
