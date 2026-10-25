@@ -199,17 +199,18 @@ authorization.
   one short `.agent/kinds/<tipo>.yaml`: `lee` (routing-matrix `task_type` names, never copied
   lists), `pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve` (the
   T129 `resultado` fields), `listo_si` (validation level), `al_terminar` (steps before the close
-  line) and the optional `tras_cierre` (steps after it: `codigo` puts `pnpm board review` there,
-  d255). The coordinator writes only `busca` (the `QUÉ SE BUSCA` text, with «Terminado cuando:»)
-  and, when the task needs them, `corto` (the session name's description), `pasos`, `autorizo`,
-  `noHagas`, `lee` and `decisiones` (dNNN ids; decisions naming the task in `tareas` and `decision`
-  requisitos count too). `add`, `set` and `plan` regenerate the prompt-v1 when one of those fields,
-  the lane or the branch changes, and refuse a hand-written `prompt` on a typed task;
-  `pnpm board prompt <id>` prints it and `--guardar --rev=<n>` saves it after a decision or kind
-  file changed. `board:verify` checks the kind files and warns when a saved prompt is not the one
-  its kind generates now. Session tasks created under `contrato: 3` need `tipo`; older tasks and
-  tasks without `tipo` keep their hand-written prompts. Review rounds from `pnpm board review` get
-  `tipo: revision` and keep the prompt `review` writes.
+  line) and the optional `tras_cierre` (steps after it: `codigo` puts there the move to
+  `en revision` with `set … "estado=en revision" "pr=#<n>"`, because sync does not move a locked
+  task, and then `pnpm board review`, d255). The coordinator writes only `busca` (the `QUÉ SE BUSCA`
+  text, with «Terminado cuando:») and, when the task needs them, `corto` (the session name's
+  description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones` (dNNN ids; decisions naming
+  the task in `tareas` and `decision` requisitos count too). `add`, `set` and `plan` regenerate the
+  prompt-v1 when one of those fields, the lane or the branch changes, and refuse a hand-written
+  `prompt` on a typed task; `pnpm board prompt <id>` prints it and `--guardar --rev=<n>` saves it
+  after a decision or kind file changed. `board:verify` checks the kind files and warns when a saved
+  prompt is not the one its kind generates now. Session tasks created under `contrato: 3` need
+  `tipo`; older tasks and tasks without `tipo` keep their hand-written prompts. Review rounds from
+  `pnpm board review` get `tipo: revision` and keep the prompt `review` writes.
 - **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`.
   **Inherited acceptance**: what the owner already accepted in a task (its `AUTORIZO`, `DECISIONES`

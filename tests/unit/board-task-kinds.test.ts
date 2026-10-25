@@ -227,7 +227,12 @@ describe('task kinds (T130): generated prompt', () => {
 			l.includes('pnpm board review tipos-y-prompts'),
 		);
 		expect(close).toBeGreaterThan(-1);
-		expect(review).toBeGreaterThan(close);
+		// A locked task is not moved by sync, so the session moves it to «en revision» itself.
+		const move = steps.findIndex((l: string) =>
+			l.includes('pnpm board set tipos-y-prompts --rev='),
+		);
+		expect(move).toBeGreaterThan(close);
+		expect(review).toBeGreaterThan(move);
 		expect(r.meta).toMatchObject({
 			formato: 'prompt-v1',
 			tarea: 'T130 tipos-y-prompts',

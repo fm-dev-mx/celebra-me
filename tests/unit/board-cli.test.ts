@@ -803,6 +803,7 @@ describe('pnpm board', () => {
 					rama: 'feat/x',
 					pr: 20,
 					estado: 'en revision',
+					contrato: 2,
 				}),
 			],
 		});
@@ -817,6 +818,18 @@ describe('pnpm board', () => {
 			board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`, '--coordinador')
 				.status,
 		).toBe(2);
+		// The suggested command is complete for a `contrato: 2` task once each `…` is filled in.
+		const suggested = /pnpm board close (.+)$/mu.exec(refused.err)?.[1] ?? '';
+		const args = suggested
+			.replace('<sha del PR>', sha)
+			.replace('--resumen=…', '--resumen=Hecho.')
+			.trim()
+			.split(' ')
+			.map((a) => a.replace('…', 'ninguna'));
+		const closed = board(dir, 'close', ...args, '--coordinador');
+		expect(closed.err).toBe('');
+		expect(closed.status).toBe(0);
+		expect(board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`).status).toBe(0);
 	});
 
 	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {

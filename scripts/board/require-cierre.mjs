@@ -5,14 +5,21 @@
  */
 import { isReview, taskTag } from './model.mjs';
 
-/** The command that writes the missing summary, as the refusal and the coordinator item print it. */
-export const closeCommand = (id) =>
-	`pnpm board close ${id} --resumen=… --comprobacion=… --saltada=… --sha=<sha del PR> --nivel=type-check`;
+/**
+ * The command that writes the missing summary, with every list and resultado flag a `contrato: 2` task needs
+ * (T129), so `close` accepts it once each `…` is filled in.
+ */
+export const closeCommand = (t) =>
+	[
+		`pnpm board close ${t.id} --resumen=… --comprobacion=… --saltada=…`,
+		'--fallida=… --riesgo=… --duda=… --excepcion=…',
+		`--pr=${t.pr ?? '#<n>'} --sha=<sha del PR> --nivel=type-check`,
+	].join(' ');
 
 /** Why `review` refuses `t` (d255), or null when its closing summary exists. */
 export function reviewCierreIssue(t) {
 	if (t.cierre) return null;
-	return `${t.id} no tiene resumen de cierre (d255): corra primero ${closeCommand(t.id)}`;
+	return `${t.id} no tiene resumen de cierre (d255): corra primero ${closeCommand(t)}`;
 }
 
 /** Coordinator items `{tipo: 'cierre', t, texto}` for the tasks under review or merged without a summary. */
