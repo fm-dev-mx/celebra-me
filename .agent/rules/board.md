@@ -57,15 +57,15 @@ authorization.
   `plan`/`add --coordinador` write `carrilPlaneado`; `set` refuses it. The card, `show` and `next`
   show «Corre en: <lane> · carpeta celebra-me-worktrees/<lane>», «Codex/Gemini: abra el proyecto
   <lane>» and, when another task's lock holds that lane, «f10 ocupado por T55; espere o pida otro
-  carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` put these
-  lines first under `CARRIL`, so the prompt's «DÓNDE CORRE» no longer repeats the lane by hand.
-  Review children have no planned lane (`plan` refuses one): they show «Corre en: Integración
-  (carpeta celebra-me), solo lectura» and always resolve to `f04-integracion` in `taskLane` (the
-  view's card, sheet and «Carriles» row). A task with `soloLectura: true` is read-only the same way:
-  `plan`, `add` and `claim` refuse it a planned or explicit lane, so its lock holds no lane and
-  never disagrees with the prompt; a legacy planned lane is cleared with
-  `plan --carril= --coordinador`. `board:verify` warns about every open task, read-only tasks aside,
-  with neither a planned lane nor a lock on one, naming its T<n>.
+  carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` add these
+  lines as `corre:` lines at the end of a `prompt-v1`'s `METADATOS` (first under `CARRIL` in an
+  older prompt), so the prompt never repeats the lane by hand. Review children have no planned lane
+  (`plan` refuses one): they show «Corre en: Integración (carpeta celebra-me), solo lectura» and
+  always resolve to `f04-integracion` in `taskLane` (the view's card, sheet and «Carriles» row). A
+  task with `soloLectura: true` is read-only the same way: `plan`, `add` and `claim` refuse it a
+  planned or explicit lane, so its lock holds no lane and never disagrees with the prompt; a legacy
+  planned lane is cleared with `plan --carril= --coordinador`. `board:verify` warns about every open
+  task, read-only tasks aside, with neither a planned lane nor a lock on one, naming its T<n>.
 - **Category (d191)**: `categoria` is a preference, never a restriction: `plataforma`
   f05-plataforma, `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs`
   f09-docs, `herramientas` (the board and other tooling) f10-libre, `preview` f11-preview, `release`
@@ -169,13 +169,22 @@ authorization.
 - **Closing cleanup (d186)**: every write that leaves a task `comprobada` or `unida` moves its
   `prompt` to `.agent/tmp/board/mensual/<YYYY-MM>.zip` (`prompts/<id>.rev<n>.md`) and drops its
   `carril` and lock (the lock's session stays in `sesion`); the closing summary stays.
-  `board:verify` warns when the prompt's «DÓNDE CORRE» section (the whole prompt if it has none)
-  names a canonical lane other than the task's lane.
-- **Prompt**: Spanish, in sections, opening with `T<n> · <título>` (d153, d160); it always has a
-  `DECISIONES` section (d046), which the verifier requires. The coordinator writes it with
-  [the prompt template](../../docs/core/coordinator-board.md#prompts-d153). Only the review prompts
-  that `pnpm board review` generates are English and open with «Follow .agent/rules/board.md for
-  task `<id>`».
+  `board:verify` warns when the prompt's «DÓNDE CORRE» section (in a `prompt-v1`, `ANTES DE EMPEZAR`
+  and `carril:`; else the whole prompt) names a canonical lane other than the task's lane.
+- **Prompt (`prompt-v1`, T160)**: Spanish, «usted», in the sections of
+  [the prompt template](../../docs/core/coordinator-board.md#prompts-d153): line 1 is the session
+  name `<lane> · T<n> · PR #<n> · <description>`, then `QUÉ SE BUSCA` (with «Terminado cuando:»),
+  `ANTES DE EMPEZAR`, `PASOS`, `AUTORIZO`, `NO HAGAS`, `DECISIONES` (d046, always required),
+  `PARE Y PREGUNTE SI`, `AL TERMINAR`, and last `METADATOS` (`formato: prompt-v1`, one
+  `clave: valor` per line). `pnpm board` refuses a `prompt-v1` that breaks this shape;
+  `board:verify` warns when line 1 names another `T<n>` or lane. `pnpm board review` writes its
+  prompts the same way. Prompts without `formato: prompt-v1` predate T160, keep their old layout
+  (opening `T<n> · <título>`, or English «Follow .agent/rules/board.md…» for reviews) and are never
+  rewritten.
+- **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
+  app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`.
+  **Inherited acceptance**: what the owner already accepted in a task (its `AUTORIZO`, `DECISIONES`
+  or an answered question) holds for its review rounds and follow-ups, which never ask it again.
 
 ## Names and task references
 
@@ -287,8 +296,8 @@ authorization.
 - `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
   and the task holding its lock.
 - Owner tasks (`actor: dueno`) show only what to do and where (`donde`, else the first line under
-  «DÓNDE CORRE»), never a suggested lane. The coordinator records every owner action as an
-  `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
+  «DÓNDE CORRE» of an older prompt), never a suggested lane. The coordinator records every owner
+  action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
 
 ## Checks and freshness
 

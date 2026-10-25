@@ -813,7 +813,11 @@ describe('pnpm board', () => {
 		});
 		expect(second.titulo).toContain('vuelta 2 (bbbbbbb)');
 		expect(second.prompt).toContain('SEGUNDA VUELTA');
-		expect(second.prompt).toContain(`Previous round (de-claude-revision) reviewed ${a}`);
+		expect(second.prompt).toContain(`La vuelta anterior (de-claude-revision) revisó ${a}`);
+		expect(second.prompt.split('\n')[0]).toBe(
+			`f04 · T${second.num} · PR #10 · Revisión vuelta 2`,
+		);
+		expect(second.prompt).toContain(`\nsha: ${b}\n`);
 		expect(second.prompt).toContain(`git diff ${a}..${b}`);
 		expect(second.prompt).toContain('\nDECISIONES\n');
 		const third = readTask(dir, 'de-claude-revision-3');
