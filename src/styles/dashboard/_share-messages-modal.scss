@@ -699,20 +699,7 @@
 		}
 
 		.dashboard-modal__footer-cancel {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 100%;
-			min-height: 44px;
-			padding: 0.5rem;
-			font-size: var(--font-size-ui-btn, 0.9375rem);
-			font-weight: 600;
-			color: var(--color-text-secondary);
-			border-radius: var(--radius-md, 10px);
-
-			&:focus-visible {
-				@include mixins.focus-ring;
-			}
+			@include mixins.modal-footer-cancel-mobile;
 		}
 	}
 }

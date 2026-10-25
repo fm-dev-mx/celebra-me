@@ -265,6 +265,8 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		const cancelBox = await cancelSendBtn.boundingBox();
 		expect(cancelBox).not.toBeNull();
 		expect(cancelBox!.height).toBeGreaterThanOrEqual(44);
+		await cancelSendBtn.focus();
+		await expect(cancelSendBtn).toBeFocused();
 		await cancelSendBtn.click();
 		await expect(sendModal).not.toBeVisible();
 
@@ -296,6 +298,8 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		const cancelShareBox = await cancelShareBtn.boundingBox();
 		expect(cancelShareBox).not.toBeNull();
 		expect(cancelShareBox!.height).toBeGreaterThanOrEqual(44);
+		await cancelShareBtn.focus();
+		await expect(cancelShareBtn).toBeFocused();
 		await cancelShareBtn.click();
 		await expect(shareTemplatesModal).not.toBeVisible();
 
