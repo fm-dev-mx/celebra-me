@@ -251,9 +251,20 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		const sendModal = page.locator('.dashboard-modal--send-invitation');
 		await expect(sendModal).toBeVisible();
 
-		// Accessible mobile cancel button must be visible in footer
+		// Check close button 44px touch target
+		const closeBtn = sendModal.locator('.btn-close');
+		await expect(closeBtn).toBeVisible();
+		const closeBox = await closeBtn.boundingBox();
+		expect(closeBox).not.toBeNull();
+		expect(closeBox!.width).toBeGreaterThanOrEqual(44);
+		expect(closeBox!.height).toBeGreaterThanOrEqual(44);
+
+		// Accessible mobile cancel button must be visible in footer and meet 44px touch target
 		const cancelSendBtn = sendModal.locator('.dashboard-modal__footer-cancel');
 		await expect(cancelSendBtn).toBeVisible();
+		const cancelBox = await cancelSendBtn.boundingBox();
+		expect(cancelBox).not.toBeNull();
+		expect(cancelBox!.height).toBeGreaterThanOrEqual(44);
 		await cancelSendBtn.click();
 		await expect(sendModal).not.toBeVisible();
 

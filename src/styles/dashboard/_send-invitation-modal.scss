@@ -381,6 +381,10 @@
 			font-weight: 600;
 			color: var(--color-text-secondary);
 			border-radius: var(--radius-md, 10px);
+
+			&:focus-visible {
+				@include mixins.focus-ring;
+			}
 		}
 
 		.send-invitation__footer-secondary {
