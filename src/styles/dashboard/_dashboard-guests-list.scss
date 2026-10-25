@@ -91,7 +91,10 @@
 	}
 
 	@include mixins.respond-below(lg) {
-		margin-bottom: calc(var(--dashboard-dock-height, 82px) + var(--spacing-md, 1rem));
+		margin-bottom: calc(
+			var(--dashboard-dock-height, 82px) + env(safe-area-inset-bottom, 0px) +
+				var(--spacing-md, 1rem)
+		);
 	}
 }
 
@@ -295,25 +298,32 @@
 		flex-wrap: wrap;
 		gap: 0.5rem;
 
-		.guest-card__details-btn {
-			flex: 1 0 auto;
-		}
-
+		.guest-card__details-btn,
+		.guest-card__copy-btn,
 		.btn-primary,
 		.btn-icon {
-			min-height: 52px;
+			min-height: 48px;
 			border-radius: 14px;
-			font-size: 1.0625rem;
+			font-size: 1rem;
+		}
+
+		.guest-card__details-btn,
+		.guest-card__copy-btn {
+			flex: 1 1 0;
+			min-width: 0;
+			padding: 0 0.75rem;
+			font-weight: 700;
+			justify-content: center;
 		}
 
 		.btn-icon {
 			flex-shrink: 0;
-			min-width: 52px;
+			min-width: 48px;
 		}
 
 		/* The card's main action fills the row as a solid charcoal button */
 		.dashboard-guests__share-button {
-			flex: 1 1 auto;
+			flex: 1 1 100%;
 			justify-content: center;
 			min-width: 0;
 			padding: 0.5rem 1rem;

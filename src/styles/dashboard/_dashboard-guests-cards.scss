@@ -89,8 +89,9 @@
 /* ───── Footer actions ───── */
 .guest-card__actions {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.4rem;
+	gap: 0.5rem;
 	justify-content: flex-end;
 	margin-top: 0.25rem;
 }
@@ -137,7 +138,10 @@
 
 	/* Bottom spacing so mobile dock doesn't cover last card */
 	@include mixins.respond-below(lg) {
-		padding-bottom: calc(var(--dashboard-dock-height, 82px) + var(--spacing-md, 1rem));
+		padding-bottom: calc(
+			var(--dashboard-dock-height, 82px) + env(safe-area-inset-bottom, 0px) +
+				var(--spacing-md, 1rem)
+		);
 	}
 }
 
