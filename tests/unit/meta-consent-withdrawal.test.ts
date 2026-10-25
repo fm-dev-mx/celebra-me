@@ -55,15 +55,27 @@ interface StoredSession {
 
 let storage: Map<string, string>;
 let sessions: StoredSession[];
+let withdrawals: Map<string, string>;
 
 /** In-memory stand-in for the Supabase REST tables touched by withdrawal and delivery. */
 function fakeRest(options: { pathWithQuery: string; method?: string; body?: unknown }): unknown {
 	const { pathWithQuery: path, method, body } = options;
-	if (path.startsWith('visitor_sessions?visitor_id=eq.') && method === 'PATCH') {
-		const visitorId = decodeURIComponent(path.split('eq.')[1]);
-		const patch = body as Pick<StoredSession, 'consent_snapshot'>;
+	// Mirrors record_visitor_marketing_withdrawal: record per visitor, then switch stored sessions.
+	if (path === 'rpc/record_visitor_marketing_withdrawal') {
+		const params = body as { p_visitor_id: string; p_analytics: boolean; p_decided_at: string };
+		withdrawals.set(params.p_visitor_id, params.p_decided_at);
 		sessions = sessions.map((row) =>
-			row.visitor_id === visitorId ? { ...row, ...patch } : row,
+			row.visitor_id === params.p_visitor_id
+				? {
+						...row,
+						consent_snapshot: {
+							necessary: true,
+							analytics: params.p_analytics,
+							marketing: false,
+							decidedAt: params.p_decided_at,
+						},
+					}
+				: row,
 		);
 		return null;
 	}
@@ -115,6 +127,7 @@ beforeEach(() => {
 		},
 	});
 	sessions = [session('session-a', true), session('session-b', true)];
+	withdrawals = new Map();
 	mockRestRequest.mockReset();
 	mockRestRequest.mockImplementation(async (options) => fakeRest(options) as never);
 	mockCheckRateLimit.mockResolvedValue(true);
@@ -174,6 +187,26 @@ describe('marketing consent withdrawal', () => {
 				body: expect.objectContaining({ p_error_code: 'CONSENT_REQUIRED' }),
 			}),
 		);
+	});
+
+	it('records the withdrawal for the visitor even before any session is stored', async () => {
+		sessions = [];
+		storage.set(VISITOR_STORAGE_KEY, VISITOR_ID);
+		const withdrawal = saveConsent(true, false);
+
+		const response = await forwardWithdrawalToRoute();
+		expect(response.status).toBe(200);
+		expect(mockRestRequest).toHaveBeenCalledWith({
+			pathWithQuery: 'rpc/record_visitor_marketing_withdrawal',
+			method: 'POST',
+			useServiceRole: true,
+			body: {
+				p_visitor_id: VISITOR_ID,
+				p_analytics: true,
+				p_decided_at: withdrawal.updatedAt,
+			},
+		});
+		expect(withdrawals.get(VISITOR_ID)).toBe(withdrawal.updatedAt);
 	});
 
 	it('sends nothing for a visitor that was never tracked', () => {
