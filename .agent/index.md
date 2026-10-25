@@ -11,7 +11,7 @@ routes matching the touched surfaces.
 - [`.agent/routing-matrix.yaml`](./routing-matrix.yaml) — Context routing matrix per task domain
   (SSOT)
 - `.agent/kinds/<tipo>.yaml` — Board task kinds that generate task prompts (T130, see
-  [`board.md`](./rules/board.md))
+  [`.agent/rules/board.md`](./rules/board.md))
 
 ## Start Here
 
