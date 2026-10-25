@@ -2,10 +2,23 @@
 
 const { spawn } = require('node:child_process');
 const { writeFileSync, writeSync } = require('node:fs');
+const tty = require('node:tty');
 const { workerData } = require('node:worker_threads');
 
 const { sequences, resultPath, sab } = workerData;
 const lock = new Int32Array(sab);
+
+// One writer per fd. A terminal gets a tty.WriteStream (blocking on Windows, and it encodes
+// for the console, where raw UTF-8 bytes from writeSync print ✓ as mojibake).
+const terminalStreams = new Map();
+function writeToFd(fd, text) {
+	if (!terminalStreams.has(fd)) {
+		terminalStreams.set(fd, tty.isatty(fd) ? new tty.WriteStream(fd) : null);
+	}
+	const stream = terminalStreams.get(fd);
+	if (stream) stream.write(text);
+	else writeSync(fd, text);
+}
 
 // Echo whole lines from this thread: the main thread is blocked in Atomics.wait, so
 // process.stdout would not flush until every job ends. Whole lines keep parallel jobs readable.
@@ -13,7 +26,7 @@ function createLineEcho(fd) {
 	let pending = '';
 	const write = (text) => {
 		try {
-			writeSync(fd, text);
+			writeToFd(fd, text);
 		} catch {
 			// A closed or busy parent stream must not fail the job; output is still captured.
 		}
@@ -97,6 +110,11 @@ Promise.all(sequences.map((jobs) => runSequence(jobs)))
 	})
 	.catch((error) => {
 		writeFileSync(resultPath, `${JSON.stringify({ error: String(error) })}\n`);
+	})
+	.then(() => {
+		// Let echoed terminal lines reach the console before the main thread resumes.
+		const streams = [...terminalStreams.values()].filter(Boolean);
+		return Promise.all(streams.map((stream) => new Promise((done) => stream.write('', done))));
 	})
 	.finally(() => {
 		Atomics.store(lock, 0, 1);
