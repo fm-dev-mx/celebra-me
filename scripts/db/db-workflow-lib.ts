@@ -44,6 +44,12 @@ export interface RunOptions {
 	inherit?: boolean;
 	/** Stream child stderr live while still capturing stdout (backup progress). */
 	inheritStderr?: boolean;
+	/**
+	 * Parallel jobs only: pipe the child's output and echo it line by line to this process's
+	 * stdout/stderr, with stdin closed. Children never share the terminal, so a TTY run behaves
+	 * like a non-TTY run (no interactive redraws racing on one console, no reads from the TTY).
+	 */
+	echoOutput?: boolean;
 	redact?: string[];
 	throwOnError?: boolean;
 	/** Hard wall-clock timeout for spawnSync (ms). */
@@ -310,11 +316,13 @@ interface PreparedCommandJob {
 	stdio: SpawnOptions['stdio'];
 	input?: string;
 	timeoutMs?: number;
+	echoOutput?: boolean;
 }
 
 const PARALLEL_COMMAND_WAIT_MS = 40 * 60 * 1000;
 
-function prepareCommandJob(
+/** @internal Exported for tests. */
+export function prepareCommandJob(
 	command: string,
 	args: string[],
 	options: RunOptions = {},
@@ -344,13 +352,16 @@ function prepareCommandJob(
 		cwd: PROJECT_ROOT,
 		env: { ...(options.env ?? process.env) },
 		shell: useShell,
-		stdio: options.inherit
-			? 'inherit'
-			: options.inheritStderr
-				? ['pipe', 'pipe', 'inherit']
-				: 'pipe',
+		stdio: options.echoOutput
+			? [options.input == null ? 'ignore' : 'pipe', 'pipe', 'pipe']
+			: options.inherit
+				? 'inherit'
+				: options.inheritStderr
+					? ['pipe', 'pipe', 'inherit']
+					: 'pipe',
 		input: options.input,
 		timeoutMs: options.timeoutMs,
+		echoOutput: options.echoOutput,
 	};
 }
 

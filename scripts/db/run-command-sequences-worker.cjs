@@ -1,11 +1,37 @@
 'use strict';
 
 const { spawn } = require('node:child_process');
-const { writeFileSync } = require('node:fs');
+const { writeFileSync, writeSync } = require('node:fs');
 const { workerData } = require('node:worker_threads');
 
 const { sequences, resultPath, sab } = workerData;
 const lock = new Int32Array(sab);
+
+// Echo whole lines from this thread: the main thread is blocked in Atomics.wait, so
+// process.stdout would not flush until every job ends. Whole lines keep parallel jobs readable.
+function createLineEcho(fd) {
+	let pending = '';
+	const write = (text) => {
+		try {
+			writeSync(fd, text);
+		} catch {
+			// A closed or busy parent stream must not fail the job; output is still captured.
+		}
+	};
+	return {
+		push(chunk) {
+			pending += chunk;
+			const end = pending.lastIndexOf('\n');
+			if (end === -1) return;
+			write(pending.slice(0, end + 1));
+			pending = pending.slice(end + 1);
+		},
+		flush() {
+			if (pending) write(pending);
+			pending = '';
+		},
+	};
+}
 
 function runPreparedJob(job) {
 	return new Promise((resolve, reject) => {
@@ -17,16 +43,20 @@ function runPreparedJob(job) {
 		});
 		let stdout = '';
 		let stderr = '';
+		const stdoutEcho = job.echoOutput ? createLineEcho(1) : null;
+		const stderrEcho = job.echoOutput ? createLineEcho(2) : null;
 		if (child.stdout) {
 			child.stdout.setEncoding('utf8');
 			child.stdout.on('data', (chunk) => {
 				stdout += chunk;
+				stdoutEcho?.push(chunk);
 			});
 		}
 		if (child.stderr) {
 			child.stderr.setEncoding('utf8');
 			child.stderr.on('data', (chunk) => {
 				stderr += chunk;
+				stderrEcho?.push(chunk);
 			});
 		}
 		if (job.input != null && child.stdin) {
@@ -44,6 +74,8 @@ function runPreparedJob(job) {
 		});
 		child.on('close', (status) => {
 			if (timer) clearTimeout(timer);
+			stdoutEcho?.flush();
+			stderrEcho?.flush();
 			resolve({ status, stdout, stderr });
 		});
 	});
