@@ -76,7 +76,7 @@ const lane = (name: string, fields: Json = {}) => ({
 });
 
 describe('board:sync hygiene (d268)', () => {
-	it('moves checked tasks to comprobada, archives finished ones with a cierre and compacts old archives', () => {
+	it('moves checked tasks to comprobada, never archives (d278) and compacts old archives', () => {
 		const dir = makeBoard([
 			task('unida-ok', { num: 1, pr: '#10', cierre: CIERRE }),
 			task('unida-sin-cierre', { num: 2, pr: '#11' }),
@@ -143,14 +143,10 @@ describe('board:sync hygiene (d268)', () => {
 		// A lock keeps its task for its session; an open PR is not evidence.
 		expect(readTask(dir, 'con-candado').estado).toBe('hecha');
 		expect(readTask(dir, 'pr-abierto').estado).toBe('hecha');
-		// Archived: finished, unlocked and with a valid cierre; a review waits while its origin is open.
-		expect(real.higiene.archivadas.map((c: Json) => [c.id, c.ok])).toEqual([
-			['unida-ok', true],
-			['cancelada', true],
-		]);
-		expect(readTask(dir, 'unida-ok').archivada).toBeDefined();
-		expect(readTask(dir, 'unida-sin-cierre').archivada).toBeUndefined();
-		expect(readTask(dir, 'origen-revision').archivada).toBeUndefined();
+		// d278: only the owner archives, so finished tasks with a valid cierre stay in «Finalizadas».
+		expect(real.higiene).not.toHaveProperty('archivadas');
+		for (const id of ['unida-ok', 'unida-sin-cierre', 'cancelada', 'origen-revision'])
+			expect(readTask(dir, id).archivada).toBeUndefined();
 		// compact --antes=7d moved the old archived task to the month's .zip.
 		expect(existsSync(path.join(dir, 'tareas', 'vieja.json'))).toBe(false);
 		expect(existsSync(path.join(dir, 'archivo', 'vieja.json'))).toBe(true);

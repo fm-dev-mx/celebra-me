@@ -192,7 +192,6 @@ describe('periodic tasks (cada, d268)', () => {
 		const prs = [pr(42, 'chore/weekly-health'), pr(43, 'fix/sin-pr'), pr(44, 'chore/con-flag')];
 		const r = sync(dir, prs);
 		expect(r.cambios).toEqual([]);
-		expect(r.higiene.archivadas).toEqual([]);
 		for (const id of ['weekly-health', 'sin-pr', 'con-flag']) {
 			const t = read(dir, id);
 			expect(t.estado).toBe('pendiente');
