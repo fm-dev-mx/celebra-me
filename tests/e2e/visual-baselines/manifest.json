@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-24T23:08:29.237Z",
+    "generatedAt": "2026-10-25T00:25:59.426Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
-        "cssSha256": "45af2e91c8b80094c79900c3589e538ec8f6b227aa8f4e40f2fe0e9300a509fe",
+        "cssSha256": "fbbdb221d0d5d9a2afa25f83575d128c7226c0dc43964f7d902fd725e9df7941",
         "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2279,7 +2279,7 @@
             "preset": "storybook-emerald",
             "viewport": "desktop",
             "file": "pages/invitation-xv-andrea-desktop.png",
-            "sha256": "92501b9ec8249a92bda69a7f9fd08d35a5350a67c3815f76104b3b79e3f57dfd",
+            "sha256": "70fa2db4c2625cbe21fcb6b66e3a7e9b99ab2d65d61796a97f9c4bc3b7aef601",
             "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
             "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
             "comparisonResult": "ACCEPTED"
@@ -2501,9 +2501,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "0d8ffae4975f9c335017f39da9869dd6c06bf977",
+    "referenceSha": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c",
     "variantManifest": {
-        "generatedAt": "2026-10-24T23:08:29.237Z",
+        "generatedAt": "2026-10-25T00:25:59.426Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2516,7 +2516,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
-            "cssSha256": "45af2e91c8b80094c79900c3589e538ec8f6b227aa8f4e40f2fe0e9300a509fe",
+            "cssSha256": "fbbdb221d0d5d9a2afa25f83575d128c7226c0dc43964f7d902fd725e9df7941",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4405,10 +4405,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0d8ffae4975f9c335017f39da9869dd6c06bf977"
+        "referenceSha": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-24T23:08:29.243Z",
+        "generatedAt": "2026-10-25T00:25:59.433Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4421,7 +4421,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
-            "cssSha256": "45af2e91c8b80094c79900c3589e538ec8f6b227aa8f4e40f2fe0e9300a509fe",
+            "cssSha256": "fbbdb221d0d5d9a2afa25f83575d128c7226c0dc43964f7d902fd725e9df7941",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4811,7 +4811,7 @@
                 "preset": "storybook-emerald",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-andrea-desktop.png",
-                "sha256": "92501b9ec8249a92bda69a7f9fd08d35a5350a67c3815f76104b3b79e3f57dfd",
+                "sha256": "70fa2db4c2625cbe21fcb6b66e3a7e9b99ab2d65d61796a97f9c4bc3b7aef601",
                 "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
                 "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
                 "comparisonResult": "CANDIDATE"
@@ -5033,9 +5033,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0d8ffae4975f9c335017f39da9869dd6c06bf977"
+        "referenceSha": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c"
     },
-    "candidateManifestSha256": "90d6f3d9b576321fa3c100ed440e9d143a01ebb25152ba49b9128a1591533052",
-    "acceptedFromCommit": "0d8ffae4975f9c335017f39da9869dd6c06bf977",
-    "acceptedAt": "2026-10-24T23:19:45.332Z"
+    "candidateManifestSha256": "fb15c6823da894b01c2158734a4e2c52231c8f221ca3dbaa6757896bbf426772",
+    "acceptedFromCommit": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c",
+    "acceptedAt": "2026-10-25T01:42:03.523Z"
 }
