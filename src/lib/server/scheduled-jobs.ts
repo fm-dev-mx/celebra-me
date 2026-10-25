@@ -196,10 +196,12 @@ async function runMetaCapiOutboxSweepJob(): Promise<ScheduledJobOutcome['status'
 	}
 	try {
 		const result = await processPendingMetaConversionEvents();
-		(result.failed > 0 || result.ambiguous > 0 ? console.warn : console.info)(
-			'[meta-capi][sweep] completed',
-			result,
-		);
+		// Failed or ambiguous rows are retried later, but this run did not deliver them.
+		if (result.failed > 0 || result.ambiguous > 0) {
+			console.warn('[meta-capi][sweep] failed deliveries', result);
+			return 'failed';
+		}
+		console.info('[meta-capi][sweep] completed', result);
 		return 'completed';
 	} catch (error) {
 		console.error('[meta-capi][sweep] failed', {

@@ -322,6 +322,21 @@ describe('runScheduledJob', () => {
 			expect(sweep).not.toHaveBeenCalled();
 		});
 
+		it.each([
+			{ processed: 0, failed: 1, skipped: 0, ambiguous: 0 },
+			{ processed: 3, failed: 0, skipped: 0, ambiguous: 1 },
+		])('fails the job when the batch returns undelivered rows: %o', async (batch) => {
+			deployEnvironment.mockReturnValue('production');
+			deliveryEnabled.mockReturnValue(true);
+			sweep.mockResolvedValueOnce(batch);
+			await expect(runScheduledJob('*/15 * * * *')).resolves.toEqual({
+				job: 'platform_usage',
+				status: 'failed',
+			});
+			expect(warn).toHaveBeenCalledWith('[meta-capi][sweep] failed deliveries', batch);
+			expect(info).not.toHaveBeenCalledWith('[meta-capi][sweep] completed', batch);
+		});
+
 		it('fails the job when the sweep throws, after the collector still ran', async () => {
 			deployEnvironment.mockReturnValue('production');
 			deliveryEnabled.mockReturnValue(true);

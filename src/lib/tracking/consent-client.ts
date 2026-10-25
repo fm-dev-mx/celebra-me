@@ -18,6 +18,9 @@ export interface ConsentState {
 
 const STORAGE_KEY = 'cm_consent';
 
+/** localStorage key of the commercial tracking visitor ID, written by the tracking client. */
+export const VISITOR_STORAGE_KEY = 'cm_visitor_id';
+
 const CONSENT_DEFAULT: ConsentState = {
 	necessary: true as const,
 	analytics: false,
@@ -74,7 +77,35 @@ export function saveConsent(analytics: boolean, marketing: boolean): ConsentStat
 			// Isolate observer errors so one bad listener doesn't break the rest.
 		}
 	});
+	if (!marketing) notifyMarketingWithdrawal(analytics);
 	return state;
+}
+
+/**
+ * Tell the server that marketing consent is off so it stops sending this visitor's queued
+ * conversions to Meta. Sent on every save without marketing, so a lost request is retried on
+ * the next choice; visitors that were never tracked have no ID and send nothing.
+ */
+function notifyMarketingWithdrawal(analytics: boolean): void {
+	let visitorId: string | null;
+	try {
+		visitorId = localStorage.getItem(VISITOR_STORAGE_KEY);
+	} catch {
+		return;
+	}
+	if (!visitorId) return;
+	try {
+		void fetch('/api/tracking/consent', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ visitorId, analytics }),
+			keepalive: true,
+		}).catch(() => {
+			// A failed withdrawal is resent on the next consent choice.
+		});
+	} catch {
+		// Degrade gracefully if keepalive fetch is not supported/throws.
+	}
 }
 
 /**

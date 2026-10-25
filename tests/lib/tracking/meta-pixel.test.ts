@@ -30,6 +30,7 @@ jest.mock('@/lib/tracking/meta-pixel-env', () => ({
 }));
 
 jest.mock('@/lib/tracking/consent-client', () => ({
+	VISITOR_STORAGE_KEY: 'cm_visitor_id',
 	readConsent: jest.fn(() => ({
 		necessary: true as const,
 		analytics: true,

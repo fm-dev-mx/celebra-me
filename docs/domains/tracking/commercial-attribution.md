@@ -212,11 +212,14 @@ them. It is supported by an interactive administration workspace under `/dashboa
    applies), the row creation time as `event_time`, and no `custom_data`. It skips with
    `CONSENT_REQUIRED` when the session's latest consent snapshot no longer grants marketing, and
    with `MISSING_CLIENT_USER_AGENT` when the session has no user agent, which Meta requires for
-   website events.
+   website events. Withdrawing marketing consent in the banner posts the stored visitor ID to
+   `POST /api/tracking/consent` (rate-limited, needs no tracking consent), which sets marketing off
+   on every session of that visitor, so rows still queued for those sessions are skipped.
 4. The Production-only `*/15 * * * *` cron runs the platform usage collector and then
    `processPendingMetaConversionEvents()` (up to 20 due rows, oldest first). The sweep skips outside
    Production and while `META_CAPI_DELIVERY_MODE=disabled`, so rows stay `pending` instead of being
-   marked `skipped`. The dashboard «Filas sin pedido» check counts only Purchase rows.
+   marked `skipped`. A batch with failed or ambiguous deliveries fails the job (the rows are retried
+   later). The dashboard «Filas sin pedido» check counts only Purchase rows.
 
 ### Environment Variables
 

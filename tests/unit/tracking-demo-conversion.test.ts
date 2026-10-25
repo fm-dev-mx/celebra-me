@@ -3,7 +3,10 @@ jest.mock('@/lib/tracking/meta-pixel', () => ({
 	initMetaPixel: jest.fn(),
 	forwardToMetaPixel: jest.fn(),
 }));
-jest.mock('@/lib/tracking/consent-client', () => ({ readConsent: jest.fn() }));
+jest.mock('@/lib/tracking/consent-client', () => ({
+	VISITOR_STORAGE_KEY: 'cm_visitor_id',
+	readConsent: jest.fn(),
+}));
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readConsent } from '@/lib/tracking/consent-client';
