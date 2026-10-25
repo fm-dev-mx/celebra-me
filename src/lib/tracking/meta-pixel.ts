@@ -9,13 +9,16 @@
  *   4. marketing consent === true
  *   5. internal exclusion does not apply
  *
- * Only client-side events are implemented in this phase:
- *   - PageView  (from first-party page_viewed forwarding, or late-consent catch-up)
- *   - ViewContent
- *   - Contact
- *   - Lead
+ * Browser events:
+ *   - PageView    (from first-party page_viewed forwarding, or late-consent catch-up)
+ *   - ViewContent (demo_viewed, package_viewed)
+ *   - Contact     (whatsapp_contact_clicked; the conversion ads optimize for), followed by the
+ *                 custom WhatsAppClick copy so earlier custom conversions keep counting
+ *   - Lead        (form_submitted; no live emitter since the contact form was removed)
  *
- * Lead, Purchase, and CAPI are reserved for future phases.
+ * Every event of one activation carries the first-party technical UUID as `eventID`.
+ * Purchase is sent only server-side through the Conversions API
+ * (src/lib/commercial/meta-capi/service.ts).
  *
  * Automatic Advanced Matching / auto-config is explicitly disabled
  * so the Pixel never auto-collects form fields or PII from the page.
@@ -323,6 +326,9 @@ export function forwardToMetaPixel(
 
 	const payload = buildMetaPayload(eventName, eventProperties);
 	trackMetaEvent(metaEvent, payload.parameters, payload.options);
+	for (const copy of META_EVENT_COPIES[eventName] ?? []) {
+		trackMetaEvent(copy, payload.parameters, payload.options);
+	}
 }
 
 /**
@@ -337,11 +343,20 @@ const META_EVENT_MAP: Record<string, string> = {
 	page_viewed: 'PageView',
 	demo_viewed: 'ViewContent',
 	package_viewed: 'ViewContent',
-	whatsapp_contact_clicked: 'WhatsAppClick',
+	whatsapp_contact_clicked: 'Contact',
 	form_submitted: 'Lead',
 	// lead_created is currently server-side only; mapped here for
 	// code-level versioning of the tracking contract.
 	lead_created: 'Lead',
+};
+
+/**
+ * Custom events sent right after the mapped standard event with the same parameters and
+ * `eventID`. Meta deduplicates by event name plus ID, so a copy never merges with its
+ * standard event. WhatsAppClick keeps custom conversions created before Contact returned.
+ */
+const META_EVENT_COPIES: Record<string, readonly string[]> = {
+	whatsapp_contact_clicked: ['WhatsAppClick'],
 };
 
 function mapToMetaEvent(firstPartyName: string): string | undefined {

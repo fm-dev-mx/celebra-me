@@ -16,6 +16,7 @@ interface OutboxDetail {
 	id: string;
 	event_name: string;
 	event_id: string;
+	customer_id?: string | null;
 	value: number;
 	currency: string;
 	customers: { email?: string | null; phone_e164?: string | null } | null;
@@ -53,6 +54,10 @@ interface FinalizedOutboxRow {
 
 const PROVIDER_ERROR_MAX_LENGTH = 300;
 const SAFE_PROVIDER_ERROR_FALLBACK = 'Meta CAPI delivery failed without a safe provider message.';
+// Current Graph API version (released 2026-07-29); see the Meta Graph API changelog before bumping.
+const META_GRAPH_API_VERSION = 'v26.0';
+// A deposit is agreed and registered after the WhatsApp conversation, not on the website.
+const META_PURCHASE_ACTION_SOURCE = 'chat';
 // Ten seconds stays well inside the 120-second claim lease while allowing normal Graph API latency.
 const META_CAPI_REQUEST_TIMEOUT_MS = 10_000;
 
@@ -70,10 +75,13 @@ export function sanitizeProviderError(value: unknown): string {
 
 interface SessionDetail {
 	id: string;
+	visitor_id?: string | null;
 	fbp: string | null;
 	fbc: string | null;
 	fbclid: string | null;
 	landing_path: string | null;
+	client_ip_address?: string | null;
+	client_user_agent?: string | null;
 }
 
 export function hashSha256(val: string): string {
@@ -128,7 +136,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 
 async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null> {
 	const details = await supabaseRestRequest<OutboxDetail[]>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,fbp,fbc,fbclid)`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,customer_id,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,fbp,fbc,fbclid)`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -137,18 +145,18 @@ async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null>
 
 async function fetchSessionDetails(sessionId: string): Promise<SessionDetail | null> {
 	const sessionRows = await supabaseRestRequest<SessionDetail[]>({
-		pathWithQuery: `visitor_sessions?id=eq.${encodeURIComponent(sessionId)}&select=id,fbp,fbc,fbclid,landing_path`,
+		pathWithQuery: `visitor_sessions?id=eq.${encodeURIComponent(sessionId)}&select=id,visitor_id,fbp,fbc,fbclid,landing_path,client_ip_address,client_user_agent`,
 		method: 'GET',
 		useServiceRole: true,
 	});
 	return sessionRows[0] || null;
 }
 
-function buildUserData(
-	detail: OutboxDetail,
-	session: SessionDetail | null,
-): Record<string, string | string[]> {
-	const userData: Record<string, string | string[]> = {};
+type UserData = Record<string, string | string[]>;
+
+/** Hashed customer keys: email, phone and the external ID. */
+function buildIdentityKeys(detail: OutboxDetail, session: SessionDetail | null): UserData {
+	const userData: UserData = {};
 
 	const emailHash = normalizeAndHashEmail(detail.customers?.email);
 	if (emailHash) {
@@ -160,6 +168,20 @@ function buildUserData(
 		userData.ph = [phoneHash];
 	}
 
+	// The first-party visitor ID is shared by every event of the same browser; the customer ID
+	// is the fallback when the order has no session.
+	const externalId = session?.visitor_id?.trim() || detail.customer_id?.trim();
+	if (externalId) {
+		userData.external_id = [hashSha256(externalId)];
+	}
+
+	return userData;
+}
+
+/** Browser keys: Meta cookies, IP address and user agent. Meta requires the last two unhashed. */
+function buildBrowserKeys(detail: OutboxDetail, session: SessionDetail | null): UserData {
+	const userData: UserData = {};
+
 	const fbp = session?.fbp || detail.leads?.fbp;
 	if (fbp) {
 		userData.fbp = fbp;
@@ -170,7 +192,21 @@ function buildUserData(
 		userData.fbc = fbc;
 	}
 
+	const clientIpAddress = session?.client_ip_address?.trim();
+	if (clientIpAddress) {
+		userData.client_ip_address = clientIpAddress;
+	}
+
+	const clientUserAgent = session?.client_user_agent?.trim();
+	if (clientUserAgent) {
+		userData.client_user_agent = clientUserAgent;
+	}
+
 	return userData;
+}
+
+function buildUserData(detail: OutboxDetail, session: SessionDetail | null): UserData {
+	return { ...buildIdentityKeys(detail, session), ...buildBrowserKeys(detail, session) };
 }
 
 function resolveEventSourceUrl(session: SessionDetail | null): string {
@@ -207,7 +243,7 @@ function buildEventPayload(
 		event_name: detail.event_name || 'Purchase',
 		event_time: eventTimeUnix,
 		event_id: detail.event_id,
-		action_source: 'website',
+		action_source: META_PURCHASE_ACTION_SOURCE,
 		event_source_url: eventSourceUrl,
 		user_data: userData,
 		custom_data: {
@@ -226,13 +262,14 @@ async function dispatchCapiPayload(
 	accessToken: string,
 	requestBody: Record<string, unknown>,
 ): Promise<ProviderResult> {
-	const metaUrl = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
+	// The token travels in the JSON body so it never reaches URL logs.
+	const metaUrl = `https://graph.facebook.com/${META_GRAPH_API_VERSION}/${encodeURIComponent(pixelId)}/events`;
 	const response = await fetch(metaUrl, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
-		body: JSON.stringify(requestBody),
+		body: JSON.stringify({ ...requestBody, access_token: accessToken }),
 		signal: AbortSignal.timeout(META_CAPI_REQUEST_TIMEOUT_MS),
 	});
 

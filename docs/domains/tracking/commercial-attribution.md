@@ -135,13 +135,13 @@ secrets are exposed client-side.
 
 ### Browser-side event map
 
-| First-party event          | Meta event      | When it fires                                                        | Metadata sent                                                                              | Dedup key                 |
-| -------------------------- | --------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
-| `page_viewed`              | `PageView`      | Commercial/demo page load after marketing consent                    | `content_category=page`, optional `content_name`, `source_area`                            | —                         |
-| `demo_viewed`              | `ViewContent`   | Demo page load on real showroom/demo routes                          | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                         |
-| `package_viewed`           | `ViewContent`   | Pricing/package card becomes visible on the landing page             | `content_name`, `content_category=package`, `source_area`                                  | —                         |
-| `whatsapp_contact_clicked` | `WhatsAppClick` | Commercial WhatsApp CTA click                                        | `content_name`, `content_category`, optional `event_type`, `source_area`                   | Technical `event_id` UUID |
-| `form_submitted`           | `Lead`          | No live emitter since the contact form was removed; kept for history | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | Technical `event_id` UUID |
+| First-party event          | Meta event    | When it fires                                                        | Metadata sent                                                                              | Dedup key                 |
+| -------------------------- | ------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
+| `page_viewed`              | `PageView`    | Commercial/demo page load after marketing consent                    | `content_category=page`, optional `content_name`, `source_area`                            | —                         |
+| `demo_viewed`              | `ViewContent` | Demo page load on real showroom/demo routes                          | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                         |
+| `package_viewed`           | `ViewContent` | Pricing/package card becomes visible on the landing page             | `content_name`, `content_category=package`, `source_area`                                  | —                         |
+| `whatsapp_contact_clicked` | `Contact`     | Commercial WhatsApp CTA click; then the custom `WhatsAppClick` copy  | `content_name`, `content_category`, optional `event_type`, `source_area`                   | Technical `event_id` UUID |
+| `form_submitted`           | `Lead`        | No live emitter since the contact form was removed; kept for history | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | Technical `event_id` UUID |
 
 Notes:
 
@@ -149,6 +149,9 @@ Notes:
   messages, invite tokens, and claim codes.
 - Browser `eventID` uses only the per-activation technical UUID. Consultation codes are never sent
   to GA4, Meta, or the public data layer. Server Purchase IDs remain unchanged.
+- `Contact` is the conversion ads optimize for (owner decision of 2026-10-24). The custom
+  `WhatsAppClick` copy carries the same parameters and `eventID`, so custom conversions built on it
+  keep counting; Meta deduplicates by event name plus ID, so the two never merge.
 - Pixel loading stays route-gated and consent-gated through `route-policy.ts`, `consent-client.ts`,
   and `meta-pixel.ts`.
 
@@ -183,8 +186,11 @@ It is supported by an interactive administration workspace under `/dashboard/com
    → deliverMetaConversionEvent() is fired in the background with a timeout
 4. Meta Graph API Delivery
    → Hashes email/phone (digits-only E.164 without leading '+') via SHA-256
+   → Adds fbp/fbc, the session client IP and user agent (unhashed, as Meta requires) and a
+     SHA-256 external_id (session visitor_id, else customer_id)
+   → Sets action_source=chat: the deposit is agreed over WhatsApp and registered in the dashboard
    → Enforces route safety on event_source_url (fallback to homepage if guest path)
-   → Dispatches POST to Facebook Graph API
+   → Dispatches POST to Graph API v26.0 with the access token in the JSON body, never in the URL
 5. Status Update
    → Updates ledger status: 'pending' → 'sending' → 'sent' or 'failed' / 'skipped'
 ```
@@ -197,6 +203,15 @@ It is supported by an interactive administration workspace under `/dashboard/com
 | `META_CAPI_ACCESS_TOKEN`  | Meta Graph API access token                                                               |
 | `META_PIXEL_ID`           | Meta Pixel Identifier (fallback to `PUBLIC_META_PIXEL_ID`)                                |
 | `META_TEST_EVENT_CODE`    | Required in `test` mode to register events in Meta Events Manager                         |
+
+### Match keys
+
+`visitor_sessions.client_ip_address` and `client_user_agent` (migration
+`20261024180000_visitor_sessions_client_signals`) are written by tracking ingestion only when the
+event carries marketing consent, keep their first value like the other first-touch columns, and
+follow the 13-month commercial analytics retention. The IP comes from `getClientIp()`
+(`CF-Connecting-IP` on Workers). The application that writes them needs the migration applied first,
+because PostgREST rejects unknown columns on the session upsert.
 
 ### Route Privacy Policy
 
@@ -471,12 +486,13 @@ causality.
 
 ### Measurement rollout
 
-Mapping authored on 2026-09-25; **production effective date and deployment SHA: pending
-validation**. The WhatsApp browser mapping changes from standard `Contact` to custom
-`WhatsAppClick`. Historical records retain their original meaning. Neither event proves a received
-conversation. Before release, validate current official Meta documentation, dataset configuration,
-Test Events, GA4 mapping and QA exclusions under separately authorized provider access. No provider
-setup or new server-side contact integration is included.
+Mapping authored on 2026-09-25 and revised on 2026-10-24; **production effective date and deployment
+SHA: pending validation**. The WhatsApp browser click went from standard `Contact` to custom
+`WhatsAppClick` on 2026-09-25 and returns to standard `Contact` on 2026-10-24, with `WhatsAppClick`
+kept as a custom copy. Historical records retain their original meaning. Neither event proves a
+received conversation. Before release, validate current official Meta documentation, dataset
+configuration, Test Events, GA4 mapping and QA exclusions under separately authorized provider
+access. No provider setup or new server-side contact integration is included.
 
 ### Existing dashboard and administrative persistence
 
