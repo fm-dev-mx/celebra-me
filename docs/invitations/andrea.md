@@ -210,7 +210,7 @@ romantic display), and the client's own emerald gown reference (colour and spark
 - **concern:** Envelope reveal
   - **decision / evidence:** America's letter (`storybook-butterflies`): emerald night envelope,
     butterflies on the depth sky and over the cover, a wax ring of leaves with the monogram
-  - **status:** pending owner review (requested 2026-10-24)
+  - **status:** accepted (owner, 2026-10-24)
 - **concern:** Local exceptions to the selected preset
   - **decision / evidence:** Profile tokens only: cover, menu, day grounds after the countdown,
     plates, arched program cards, album
@@ -225,7 +225,7 @@ romantic display), and the client's own emerald gown reference (colour and spark
 | Section boundaries and narrative continuity | America's scene cadence in emerald, with a day butterfly route for the venues; no copied texts or motifs |
 | Human creative outcome                      | `ACCEPTED` (scenes and butterfly route re-accepted 2026-10-24)                                           |
 | Reviewer and date                           | Owner, 2026-10-24                                                                                        |
-| Blocking reason or owner follow-up          | Envelope replica (owner review); copy pending client approval (D4)                                       |
+| Blocking reason or owner follow-up          | Copy pending client approval (D4)                                                                        |
 
 ---
 
