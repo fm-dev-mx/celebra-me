@@ -6,6 +6,14 @@ const nobleHashesEsmPackage = '@noble[\\\\/]hashes';
 // age-encryption (off-site backup bundles) and the rest of its pure-ESM crypto graph.
 const ageEncryptionEsmPackages =
 	'(?:age-encryption|@noble[\\\\/](?:ciphers|curves|post-quantum)|@scure[\\\\/]base)';
+// Nested agent worktrees and review fixtures under the ignored agent scratch directory hold full
+// repository copies with their own tests and dependencies. Anchored to <rootDir> so a run inside
+// one of those copies still collects its own tests.
+const nestedRepositoryCopyPatterns = [
+	'<rootDir>/.worktrees/',
+	'<rootDir>/.claude/worktrees/',
+	'<rootDir>/.agent/tmp/',
+];
 
 module.exports = {
 	// ESM + TypeScript preset
@@ -81,8 +89,8 @@ module.exports = {
 
 	coverageDirectory: '<rootDir>/coverage',
 	coverageReporters: ['text', 'lcov'],
-	// Nested agent worktrees hold full repository copies with their own dependencies.
-	modulePathIgnorePatterns: ['<rootDir>/.worktrees/', '<rootDir>/.claude/worktrees/'],
+	modulePathIgnorePatterns: nestedRepositoryCopyPatterns,
+	watchPathIgnorePatterns: nestedRepositoryCopyPatterns,
 
 	...(strictRsvpCoverage
 		? {
@@ -110,7 +118,7 @@ module.exports = {
 	testPathIgnorePatterns: [
 		'/node_modules/',
 		'/dist/',
-		'/\\.worktrees/',
+		...nestedRepositoryCopyPatterns,
 		'/tests/e2e/',
 		// Disposable PostgreSQL/PostgREST contracts — run via `pnpm test:db:rsvp-contracts`.
 		'/tests/db/public-guest-rsvp-db-boundary\\.test\\.ts$',
