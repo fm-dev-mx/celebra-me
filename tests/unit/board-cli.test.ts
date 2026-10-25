@@ -507,7 +507,8 @@ describe('pnpm board', () => {
 		expect(result.status).toBe(0);
 		const [before, after] = JSON.parse(String(result.stdout));
 		expect(before.queue[0]).toBe('pronto:auto');
-		expect(before.queue).toContain('dueno-fecha:block');
+		// d276: a task that only waits for its date sits in the «Calendario», out of the queue.
+		expect(before.queue).not.toContain('dueno-fecha:block');
 		expect(before.asks).toEqual(['ya:Elegir el color']);
 		expect(after.queue[0]).toBe('dueno-fecha:own');
 		expect(after.asks).toEqual(expect.arrayContaining(['precio:Decidir el precio']));
@@ -2376,5 +2377,35 @@ describe('monthly archive (d187)', () => {
 			JSON.parse(raw(dir, 'history', '--json', ...args).out).map((r: Json) => r.txt);
 		expect(txt()).toEqual(['d002 Nueva']);
 		expect(txt('--todas').sort()).toEqual(['d001 (reemplazada) Vieja', 'd002 Nueva']);
+	});
+});
+
+describe('subtasks and calendar (d174, d276)', () => {
+	it('stores padre by id, refuses a loop and lists the subtasks and the calendar', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('madre'),
+				task('hija', { fase: 1 }),
+				task('espera-fecha', {
+					requisitos: [{ tipo: 'fecha', ref: '2099-01-05T15:00:00Z' }],
+				}),
+			],
+		});
+		expect(board(dir, 'set', 'hija', '--rev=1', 'padre=T1').status).toBe(0);
+		const hija = JSON.parse(readFileSync(path.join(dir, 'tareas', 'hija.json'), 'utf8'));
+		expect(hija.padre).toBe('madre');
+		expect(board(dir, 'set', 'madre', '--rev=1', 'padre=hija').err).toContain(
+			'padre forma un ciclo: madre → hija → madre',
+		);
+		expect(board(dir, 'set', 'madre', '--rev=1', 'padre=nadie').err).toContain(
+			'padre nadie no está en el tablero',
+		);
+		const shown = board(dir, 'show', 'madre').out;
+		expect(shown).toContain('Subtareas · 0/1 (0 %)');
+		expect(shown).toContain('○ T2 · F1 · hija · pendiente');
+		expect(board(dir, 'show', 'hija').out).toContain('Parte de T1 · madre · 0/1 listas');
+		const list = board(dir, 'list').out;
+		expect(list).not.toContain('· espera-fecha');
+		expect(list.trimEnd().split('\n').at(-1)).toMatch(/^Calendario \(1\): próxima T3 el /);
 	});
 });

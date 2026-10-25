@@ -31,6 +31,8 @@ const FILES = {
 	'/cierre.mjs': ['cierre.mjs', 'text/javascript; charset=utf-8'],
 	'/format.mjs': ['format.mjs', 'text/javascript; charset=utf-8'],
 	'/delivery.mjs': ['delivery.mjs', 'text/javascript; charset=utf-8'],
+	'/requisito-text.mjs': ['requisito-text.mjs', 'text/javascript; charset=utf-8'],
+	'/subtasks.mjs': ['subtasks.mjs', 'text/javascript; charset=utf-8'],
 	'/findings.mjs': ['findings.mjs', 'text/javascript; charset=utf-8'],
 	'/require-cierre.mjs': ['require-cierre.mjs', 'text/javascript; charset=utf-8'],
 };

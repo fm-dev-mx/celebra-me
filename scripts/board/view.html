@@ -234,6 +234,30 @@ details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--a
 #q,#tq{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;flex:1 1 220px;min-width:0;max-width:420px;min-height:44px}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
 .rounds{display:grid;gap:4px}
+/* d174: a mother task's progress, one segment per state in the stage colors: done, running, in review, left. */
+.prog{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--line-2);max-width:360px}
+.prog i{display:block;height:100%}.prog .p-done{background:var(--block)}.prog .p-run{background:var(--run-rule)}.prog .p-rev{background:var(--rev-rule)}
+.psum{display:grid;gap:4px;font-size:.8rem;color:var(--muted)}
+.item .psum{grid-column:2}
+.fase{font:600 .72rem var(--mono);color:var(--muted);border:1px solid var(--line-2);border-radius:4px;padding:0 4px}
+.item.sub{margin-left:1.6rem;width:calc(100% - 1.6rem)}
+.ghead{display:grid;gap:4px;padding:10px 12px;border:1px dashed var(--line-2);border-radius:10px;background:var(--panel-2)}
+.ghead .ttl{font:600 .95rem/1.3 var(--body);overflow-wrap:anywhere}
+details.subs{margin-left:1.6rem}
+details.subs>summary{display:inline-flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600;font-size:.84rem;color:var(--accent)}
+.subs ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.srow{display:flex;gap:8px;align-items:center;width:100%;min-height:36px;padding:2px 6px;border:0;border-radius:6px;background:none;text-align:left;font:inherit;font-size:.84rem;color:var(--ink)}
+button.srow:hover{background:var(--panel-2)}
+.srow .mk{width:1em;text-align:center;font-weight:700;color:var(--muted)}.srow .mk.ok{color:var(--own)}.srow .mk.run{color:var(--run)}
+.srow .st{margin-left:auto;color:var(--faint);font-size:.78rem;white-space:nowrap}
+.crumb{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0;border:0;background:none;font:inherit;font-size:.84rem;font-weight:600;color:var(--accent);text-align:left;overflow-wrap:anywhere}
+span.crumb{color:var(--muted)}
+/* d276: tasks that only wait for a date, by week. */
+.cal{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:2px 12px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--line)}
+.cal:last-child{border-bottom:0}
+.cal .day{font:600 .84rem var(--mono);color:var(--muted)}
+.cal .tbtn{min-height:36px;padding:2px 0;font-weight:600}
+.cal .line{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
 .fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
 .fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .fchip .n{font:600 .72rem var(--mono);opacity:.75;margin-left:2px}
@@ -317,6 +341,7 @@ a.prl{font-weight:600}
 
   <nav class="tabs" role="tablist" aria-label="Vistas">
     <button class="tab" role="tab" type="button" data-tab="cola" id="t-cola">Cola<span class="n" id="n-cola"></span></button>
+    <button class="tab" role="tab" type="button" data-tab="calendario" id="t-calendario" title="Tareas que solo esperan una fecha; vuelven solas a la Cola ese día">Calendario<span class="n" id="n-cal"></span></button>
     <button class="tab" role="tab" type="button" data-tab="finalizadas" id="t-finalizadas">Finalizadas<span class="n" id="n-fin"></span></button>
     <button class="tab" role="tab" type="button" data-tab="carriles" id="t-carriles">Carriles</button>
     <button class="tab" role="tab" type="button" data-tab="historial" id="t-historial">Historial</button>
@@ -351,6 +376,10 @@ a.prl{font-weight:600}
     </div>
   </section>
 
+  <section id="p-calendario" role="tabpanel" aria-labelledby="t-calendario" hidden>
+    <div class="board"><div id="cal"><div class="empty">Cargando el calendario…</div></div></div>
+  </section>
+
   <section id="p-finalizadas" role="tabpanel" aria-labelledby="t-finalizadas" hidden>
     <div class="board">
       <div class="tools">
@@ -381,7 +410,7 @@ a.prl{font-weight:600}
     </div>
   </section>
 
-  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
+  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Una tarea que solo espera una fecha pasa a «Calendario» y vuelve sola a la cola ese día. Una tarea madre muestra su barra de avance y guarda sus subtareas en «Ver N subtareas»; la que toca ejecutar ahora sigue a la vista. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
 import { findTask } from '/model.mjs';
@@ -393,6 +422,7 @@ import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound,
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
+import { calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
 const TZ='America/Mazatlan';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -405,7 +435,7 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const TABS=['cola','finalizadas','carriles','historial'];
+const TABS=['cola','calendario','finalizadas','carriles','historial'];
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
 const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas',finag:'todas'};
 const $=id=>document.getElementById(id);
@@ -451,17 +481,55 @@ const livePrs=()=>S.board.vivo&&S.board.vivo.prs?S.board.vivo.prs:undefined;
 const mergeChip=t=>{const r=readyToMerge(t,S.board,livePrs());return r?`<span class="oc oc-ok" title="${esc(taskTag(r))} aprobó ${esc(String(r.revisionSha).slice(0,7))}">Lista para unir</span>`:''};
 // T172: «agregó gemini · seg. coordinador», a silent note after the time.
 const byHtml=t=>{const b=traceText(t,S.board);return b?`<span class="by" title="${esc(b.title)}">${esc(b.text)}</span>`:''};
-function itemHtml(t){
+// d174: a mother task or group shows «Fase N de M · X de Y completadas (Z %)» over a bar split by state.
+function progHtml(p){
+  const seg=(k,n)=>n?`<i class="p-${k}" style="width:${(n*100/p.total).toFixed(2)}%"></i>`:'';
+  return `<span class="psum"><span class="prog" role="img" aria-label="${esc(progressText(p))}">${seg('done',p.hechas)}${seg('run',p.enCurso)}${seg('rev',p.enRevision)}</span><span>${esc(progressText(p))}</span></span>`;
+}
+const faseHtml=t=>Number.isInteger(t.fase)?`<span class="fase" title="Fase ${esc(t.fase)}">F${esc(t.fase)}</span>`:'';
+function itemHtml(t,{sub=false}={}){
   const c=color(t),n=NUM[t.id];
   const why=c==='block'?firstBlock(t):deliveryLine(t)||String(t.ahora||'').split('\n')[0];
+  const subs=subtasksOf(t,S.board).length;
   // T151: the card is an article (its free text holds links); the whole card still opens the sheet, the title is its button.
-  return `<article class="item c-${c}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}">
+  return `<article class="item c-${c}${sub?' sub':''}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}">
     <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
     <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${tN(t)}${esc(t.titulo)}</button></h3>
     ${runsHtml(t)}
-    <span class="line">${pill(t)}${mergeChip(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}${byHtml(t)}</span>
+    ${subs?progHtml(groupProgress(t,S.board)):''}
+    <span class="line">${faseHtml(t)}${pill(t)}${mergeChip(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}${byHtml(t)}</span>
     ${why?`<span class="why">${rich(why)}</span>`:''}
   </article>`;
+}
+// d174: the block a queued task belongs to: its own when it heads subtasks, else its mother's or its group's.
+function blockOf(t){
+  if(subtasksOf(t,S.board).length)return {key:t.id,mother:t};
+  const m=parentOf(t,S.board);if(m)return {key:m.id,mother:m};
+  const g=headlessGroup(t,S.board);return g?{key:'grupo:'+g,grupo:g}:null;
+}
+// d174: «Ver N subtareas», the live checklist; a compacted subtask has no sheet, so its row stays plain.
+function subsHtml(key,subs){
+  const row=x=>{const mk=subtaskMark(x),cls=mk==='✓'?' ok':mk==='●'?' run':'',ag=subtaskAgent(x);
+    const inner=`<span class="mk${cls}" aria-hidden="true">${mk}</span><b class="tn">${esc(taskTag(x))}</b>${faseHtml(x)}<span>${esc(x.titulo||x.id)}</span><span class="st">${esc(x.estado||'pendiente')}${ag?' · '+esc(AGENT[ag]||ag):''}</span>`;
+    return `<li>${byId(x.id)?`<button type="button" class="srow" data-sel="${esc(x.id)}">${inner}</button>`:`<span class="srow">${inner}</span>`}</li>`};
+  const k='subs:'+key;
+  return `<details class="subs" data-more="${esc(k)}"${OPEN.has(k)?' open':''}><summary>Ver ${subs.length} subtarea${subs.length>1?'s':''}</summary><ul>${subs.map(row).join('')}</ul></details>`;
+}
+// d174: a mother card (or a header when the mother is not in the queue) carries the progress; under it only the
+// subtasks ready or running now keep their card (all of them while searching), the rest fold into the checklist.
+function groupedHtml(q){
+  const blocks=[],byKey={};
+  for(const t of q){const b=blockOf(t),key=b?b.key:'#'+t.id;if(!byKey[key])blocks.push(byKey[key]={...(b||{}),tasks:[]});byKey[key].tasks.push(t)}
+  const searching=$('tq').value.trim()!=='';
+  return blocks.map(b=>{
+    if(!b.key)return itemHtml(b.tasks[0]);
+    const head=b.tasks.find(t=>t.id===b.mother?.id);
+    const subs=subtasksOf(b.mother||{grupo:b.grupo},S.board);
+    const p=groupProgress(b.mother||{grupo:b.grupo},S.board);
+    const top=head?itemHtml(head):`<div class="ghead">${b.mother?`<h3 class="ttl"><button type="button" class="crumb" data-sel="${esc(b.mother.id)}">${tN(b.mother)}${esc(b.mother.titulo||b.mother.id)}</button></h3>`:`<h3 class="ttl">Grupo ${esc(b.grupo)}</h3>`}${progHtml(p)}</div>`;
+    const shown=b.tasks.filter(t=>t!==head&&(searching||['lista','curso'].includes(stage(t))||S.sel===t.id));
+    return top+shown.map(t=>itemHtml(t,{sub:true})).join('')+subsHtml(b.key,subs);
+  }).join('');
 }
 function renderCola(){
   const all=mQueue(S.board);NUM={};all.forEach((t,i)=>NUM[t.id]=i+1);
@@ -470,7 +538,7 @@ function renderCola(){
   $('n-cola').textContent=all.length||'';
   if(!S.ready)return;
   const none=$('tq').value.trim()?'Ninguna tarea abierta coincide con esa búsqueda.':'No hay tareas abiertas en esta pestaña.';
-  let h=q.length?q.map(itemHtml).join(''):`<div class="empty">${none}</div>`;
+  let h=q.length?groupedHtml(q):`<div class="empty">${none}</div>`;
   if(rev.length)h+=`<div class="grp">En revisión · ${rev.length}<span style="font-weight:500;text-transform:none;letter-spacing:0">(hechas, falta comprobarlas)</span></div>`+rev.map(itemHtml).join('');
   $('list').innerHTML=h;
   renderMine();
@@ -526,6 +594,21 @@ function cierreHtml(t){
 const promptHtml=p=>String(p).split('\n').map((x,i)=>i===0||/^T\d+ · /.test(x)||/^[A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ ]{2,}$/.test(x.trim())?`<b class="ph">${esc(x)}</b>`:rich(x)).join('\n');
 // T79: each review round is its own task; the sheet lists them one below another, first round on top.
 function roundsHtml(t){const rs=reviewRounds(isReview(t)&&t.origen?t.origen:t.id,S.board);if(!rs.length)return '';return `<div class="box"><h3>Vueltas de revisión · ${rs.length}</h3><div class="rounds">${rs.map(r=>`<button type="button" class="chip c-${color(r)}" data-sel="${esc(r.id)}"${r.id===t.id?' aria-current="true"':''}><b>${reviewRound(r)}</b><span>${esc(String(r.revisionSha||'').slice(0,7))} · ${esc(r.estado||'pendiente')} · ${esc(AGENT[r.agente]||r.agente||'')}</span></button>`).join('')}</div></div>`}
+// d174: a subtask's sheet starts with the way up to its mother, one click away.
+function crumbHtml(t){
+  const m=parentOf(t,S.board),g=!m&&headlessGroup(t,S.board);
+  if(!m&&!g)return '';
+  const p=groupProgress(m||{grupo:g},S.board),text=`Parte de ${m?taskTag(m)+' · '+(m.titulo||m.id):'el grupo '+g} · ${p.hechas}/${p.total} listas`;
+  return m&&byId(m.id)?`<button type="button" class="crumb" data-sel="${esc(m.id)}"><span aria-hidden="true">↑</span>${esc(text)}</button>`:`<span class="crumb">${esc(text)}</span>`;
+}
+// d174: a mother's sheet lists its subtasks as chips that open each one's sheet.
+function subBoxHtml(t){
+  const subs=subtasksOf(t,S.board);if(!subs.length)return '';
+  const p=groupProgress(t,S.board);
+  const chip=x=>{const ag=subtaskAgent(x),txt=[Number.isInteger(x.fase)?'F'+x.fase:'',x.titulo||x.id,x.estado||'pendiente',ag?AGENT[ag]||ag:''].filter(Boolean).join(' · ');
+    return byId(x.id)?`<button type="button" class="chip c-${color(x)}" data-sel="${esc(x.id)}"><b>${esc(taskTag(x))}</b><span>${esc(txt)}</span></button>`:`<span class="chip c-done" title="Archivada y compactada"><b>${esc(taskTag(x))}</b><span>${esc(txt)}</span></span>`};
+  return `<div class="box"><h3>Subtareas · ${p.hechas}/${p.total} (${p.pct} %)</h3>${progHtml(p)}<div class="rounds">${subs.map(chip).join('')}</div></div>`;
+}
 function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
 function renderSheet(open){
   const sh=$('sheet'),t=S.sel&&byId(S.sel);
@@ -553,13 +636,14 @@ function renderSheet(open){
   const to=c==='own'&&pasteTo(t);
   const who=awaitingClaim(t)?deliveryLine(t)+'. Si la pega en otro chat, cópielo de nuevo.':to?'Copie el prompt y péguelo en un chat nuevo de '+to+'.':c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
   sh.className='sheet c-'+c+(open?' open':sh.classList.contains('open')?' open':'');
-  sh.innerHTML=`<div class="sh-top"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span><h2>${tN(t)}${esc(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
+  sh.innerHTML=`${crumbHtml(t)}<div class="sh-top"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span><h2>${tN(t)}${esc(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
       <div class="line">${pill(t)}${urgHtml(t)}<span class="lane">${esc(t.id)}</span></div></div>
     ${t.ahora?`<p class="now">${rich(String(t.ahora))}</p>`:''}
     ${run.length?`<div class="runbox">${run.map((x,i)=>`<p class="${busy&&i===run.length-1?'busy':''}">${esc(x)}</p>`).join('')}</div>`:''}
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>
     ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
     ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
+    ${subBoxHtml(t)}
     ${roundsHtml(t)}
     ${t.cierre?`<div class="box"><h3>Cómo terminó</h3>${statusHtml(t)}${cierreHtml(t)}</div>`:''}
     ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><div class="prompt" id="prtext">${promptHtml(p)}</div></details>`:''}`;
@@ -589,6 +673,16 @@ function renderBoard(){
   }).join('');
 }
 
+// d276: tasks whose only pending requisito is a date, soonest first and by week; each comes back to the queue that day.
+function renderCal(){
+  const all=mCalendar(S.board);
+  $('n-cal').textContent=all.length||'';
+  if(!S.ready)return;
+  const weeks=calendarWeeks(S.board).map(w=>({...w,tareas:w.tareas.filter(x=>found(x.t))})).filter(w=>w.tareas.length);
+  const row=({t,fecha})=>`<article class="cal"><span class="day" title="${esc(fmt(fecha))}">${esc(fmtDay(fecha))}</span><h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${esc(t.titulo)}</button></h3><span class="line">${faseHtml(t)}${agHtml(t)}${urgHtml(t)}</span></article>`;
+  const empty=$('tq').value.trim()?'Ninguna tarea del calendario coincide con esa búsqueda.':'Ninguna tarea espera solo una fecha.';
+  $('cal').innerHTML=weeks.length?weeks.map(w=>`<div class="grp">Semana del ${esc(fmtDay(w.semana+'T12:00:00Z'))} · ${w.tareas.length}</div><div class="log">${w.tareas.map(row).join('')}</div>`).join(''):`<div class="empty">${empty}</div>`;
+}
 // Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).
 function renderFin(){
   const fin=S.board.tareas.filter(isFinished);
@@ -682,13 +776,13 @@ function youBtn(){
   if(!mine.length)return '<button type="button" class="you none" disabled>Usted: nada</button>';
   return `<button type="button" class="you" data-sel="${esc(mine[0].id)}" data-jump="1" data-all="1">Usted: ${mine.length} ${mine.length>1?'cosas':'cosa'}</button>`;
 }
-function render(){renderCola();renderFin();renderTop();renderBoard();renderHist()}
+function render(){renderCola();renderCal();renderFin();renderTop();renderBoard();renderHist()}
 
 function setTab(tab,push){
   S.tab=TABS.includes(tab)?tab:'cola';
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)));
   TABS.forEach(k=>$('p-'+k).hidden=k!==S.tab);
-  $('tsearch').hidden=!['cola','finalizadas'].includes(S.tab);
+  $('tsearch').hidden=!['cola','calendario','finalizadas'].includes(S.tab);
   if(push){try{history.replaceState(null,'','#'+S.tab)}catch(e){}}
 }
 function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ag===ag)));try{localStorage.setItem('board-ag',ag)}catch(e){}renderCola();renderBoard()}
@@ -718,7 +812,7 @@ function copySha(b){
 }
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet()});
 $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',renderHist);
-$('tq').addEventListener('input',()=>{renderCola();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
+$('tq').addEventListener('input',()=>{renderCola();renderCal();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));

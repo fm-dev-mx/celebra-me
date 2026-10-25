@@ -26,13 +26,13 @@ data, never an authorization.
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
   `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
-  `orden`, `origen`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
-  `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see Task kinds); `rev` and
-  `actualizado` are set by the command, `agregadaPor` and `seguimientoPor` by the commands that add
-  or follow up a task (T172, see Session ownership), `archivada` (date) only by
-  `archive`/`unarchive`, `entregada {agente, desde}` only by `entregada` and the view's «Copiar
-  prompt» (d249, see Agents), `cierre` only by `close`. `espera`, `usted` and `deps` no longer
-  exist.
+  `orden`, `origen`, `padre`, `grupo`, `fase` (see Subtasks), `plan`, `vuelta` (review round),
+  `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written
+  fields (see Task kinds); `rev` and `actualizado` are set by the command, `agregadaPor` and
+  `seguimientoPor` by the commands that add or follow up a task (T172, see Session ownership),
+  `archivada` (date) only by `archive`/`unarchive`, `entregada {agente, desde}` only by `entregada`
+  and the view's «Copiar prompt» (d249, see Agents), `cierre` only by `close`. `espera`, `usted` and
+  `deps` no longer exist.
 - **Periodic tasks (d268)**: the optional `cada` (`<n>d`, for example `7d` or `14d`) makes a task
   recurring. `close` of a started cycle (any open estado but `pendiente`) ends only that cycle: the
   task goes back to `pendiente` without its lock, `carril`, `pr`, `rama` or delivery mark (the
@@ -60,6 +60,24 @@ data, never an authorization.
   lane free, a review or the lane a task's own lock holds; then another free planned lane; then a
   lane another task's lock holds; then no lane) → ready before blocked → `hasta` → `orden` → title;
   an open task it waits for goes right before it.
+- **Calendario (d276)**: a `pendiente`, unlocked task whose only unmet requisitos are `fecha` leaves
+  the queue and `pnpm board list` for the view's «Calendario» tab (by date, grouped by week, its
+  count on the tab); it comes back to the queue on its own when the date arrives. A task that also
+  waits for a task, a decision, an owner answer or its prompt stays in the queue as blocked.
+  `pnpm board list` ends with `Calendario (N): próxima T<n> el <fecha>` (model `calendar`,
+  `calendarWeeks`, `calendarLine`).
+- **Subtasks (d174)**: a task names its mother with `padre` (`padre=T12` is stored as the mother's
+  id) and/or an initiative with `grupo`, plus an optional `fase` (integer `>= 1`). A task's subtasks
+  are those whose `padre` or `grupo` is its id, archived and compacted ones included (`subtasksOf`,
+  ordered by `fase`, `orden`, number); a `grupo` no task heads shows under its own header.
+  `groupProgress` counts
+  `{total, hechas, enCurso, enRevision, pendientes, pct, faseActual, totalFases}` without cancelled
+  subtasks. The queue shows the mother's bar («Fase N de M · X de Y completadas (Z %)») and folds
+  blocked subtasks into «Ver N subtareas» (✓ done, ● running or in review, ○ pending); a subtask
+  ready or running now keeps its card (and stays in «Le toca a usted» and `next`), each with its
+  `F<n>` tag. The sheet and `pnpm board show` list a mother's «Subtareas · X/Y (Z %)» and give a
+  subtask «Parte de T<n> · <título> · X/Y listas». A `padre` that names no task, the task itself or
+  a loop of mothers is refused on write and reported by `pnpm board:verify`.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
   finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
   agent at a time; `claim` moves a `pendiente` task to `en curso` with its bitácora row and
