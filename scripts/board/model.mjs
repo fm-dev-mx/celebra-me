@@ -2,6 +2,7 @@
  * Board v3 model shared by `pnpm board`, `pnpm board:verify` and the local view (rules: .agent/rules/board.md).
  * Pure functions only: no Node APIs, so the view imports this same file in the browser.
  */
+import { isPromptV1, promptSection, promptV1Issues, reviewText, withRunLines } from './prompt.mjs';
 
 export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
 export const ACTORES = ['dueno', 'sesion', 'coordinador'];
@@ -250,42 +251,29 @@ export function reviewerIssue(author, reviewer) {
 	return null;
 }
 
-const ROUND_WORDS = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA'];
-const roundWord = (n) => ROUND_WORDS[n - 1] ?? `VUELTA ${n}`;
-
-/**
- * The title and prompt of review round `n` of `src` at `sha`; from round 2 on they name the previous round's SHA
- * and start from the diff between both, so a reviewer never answers the earlier round again (T79).
- */
-function reviewText(src, { id, n, sha, prev }) {
-	const short = (s) => String(s).slice(0, 7);
-	const decisiones =
-		'\nDECISIONES\n- Review only; report missing evidence and request no adjacent permissions.';
-	const finish = `Claim it with --titulo="f04 · T<n> · PR ${src.pr} · Revisión" (T<n> is this task's number). Submit findings with gh pr review. Do not edit the author lane or merge.`;
-	if (n < 2)
-		return {
-			titulo: `Revisión cruzada: ${src.titulo}`,
-			prompt: `Follow .agent/rules/board.md for task ${id}. Review PR ${src.pr} of ${src.id} at ${sha}. Inspect correctness, regressions, tests and AGENTS.md. ${finish} Finish with --sha=${sha}.${decisiones}`,
-		};
-	return {
-		titulo: `Revisión cruzada, vuelta ${n} (${short(sha)}): ${src.titulo}`,
-		prompt:
-			[
-				`Follow .agent/rules/board.md for task ${id}. ${roundWord(n)} VUELTA: round ${n} of the review of PR ${src.pr} of ${src.id}.`,
-				`Previous round (${prev.id}) reviewed ${prev.revisionSha}; the PR head is now ${sha}.`,
-				`Start from what changed: git fetch origin && git diff ${prev.revisionSha}..${sha}`,
-				`Check that the previous round's findings were addressed and that the new commits add no regression; inspect correctness, tests and AGENTS.md where the diff reaches. ${finish} Finish with --sha=${sha}.`,
-			].join('\n') + decisiones,
-	};
+/** The id of the next review round of `src`, after `prev` (the latest round, if any). */
+export function reviewChildId(src, prev) {
+	const n = prev ? reviewRound(prev) + 1 : 1;
+	return n > 1 ? `${src.id}-revision-${n}` : `${src.id}-revision`;
 }
 
-/** The child task of the next review round of `src`, after `prev` (the latest round, if any). */
-export function reviewChild(src, { agente, sha, prev }) {
+/** The child task of the next review round of `src`, after `prev`, numbered `num` (T160). */
+export function reviewChild(src, { agente, sha, prev, num, generado = new Date().toISOString() }) {
 	const n = prev ? reviewRound(prev) + 1 : 1;
-	const id = n > 1 ? `${src.id}-revision-${n}` : `${src.id}-revision`;
+	const id = reviewChildId(src, prev);
 	return {
 		id,
-		...reviewText(src, { id, n, sha, prev }),
+		...reviewText(src, {
+			id,
+			num,
+			n,
+			sha,
+			prev,
+			agente,
+			generado,
+			carril: READONLY_LANE,
+			carpeta: laneFolder('integration'),
+		}),
 		estado: 'pendiente',
 		urgencia: src.urgencia,
 		actor: 'sesion',
@@ -617,6 +605,12 @@ export function promptLanes(t, lanes) {
 	const own = taskLane(t);
 	if (!own || typeof t.prompt !== 'string') return [];
 	let lines = t.prompt.split('\n').map((l) => l.trim());
+	// A prompt-v1 (T160) says where it runs in ANTES DE EMPEZAR and in METADATOS «carril:».
+	if (isPromptV1(t.prompt))
+		lines = [
+			...(promptSection(t.prompt, 'ANTES DE EMPEZAR') ?? []),
+			...(promptSection(t.prompt, 'METADATOS') ?? []).filter((l) => l.startsWith('carril:')),
+		];
 	const at = lines.findIndex((l) => /^D[OÓ]NDE CORRE\b/.test(l));
 	if (at >= 0) {
 		lines = lines.slice(at + 1);
@@ -770,10 +764,15 @@ const ownerWhereLines = (t) => {
 	return where ? [`Dónde: ${where}`] : [];
 };
 
-/** The prompt an agent receives: the planned lane first, so nobody has to repeat it by hand. */
+/**
+ * The prompt an agent receives, with the planned lane so nobody has to repeat it by hand: a prompt-v1 (T160)
+ * keeps its session name on line 1 and gets the lane as `corre:` lines in METADATOS; a legacy prompt gets a
+ * leading `CARRIL` block.
+ */
 export function promptWithLane(t, board) {
 	const lines = laneLines(t, board);
 	if (!t.prompt || !lines.length || t.actor === 'dueno') return t.prompt;
+	if (isPromptV1(t.prompt)) return withRunLines(t.prompt, lines);
 	return `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`;
 }
 
@@ -978,6 +977,8 @@ export function taskIssues(t) {
 		if (issue) out.push(issue);
 	}
 	if (t.cierre !== undefined) out.push(...cierreShapeIssues(t.cierre, t));
+	// T160: only a prompt marked «formato: prompt-v1» must follow it; legacy prompts keep working.
+	if (typeof t.prompt === 'string') out.push(...promptV1Issues(t.prompt));
 	return out;
 }
 

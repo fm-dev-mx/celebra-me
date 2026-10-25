@@ -89,6 +89,7 @@ import {
 	defaultReviewer,
 	reviewerIssue,
 	reviewChild,
+	reviewChildId,
 	roundLines,
 	reviewRounds,
 	historyRows,
@@ -191,18 +192,20 @@ function logEntry(tarea, change, who, extra) {
 	return row;
 }
 
+/** The number the next new task gets: one past the highest in either collection. */
+const nextNum = (dir) =>
+	[...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
+		(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
+		0,
+	) + 1;
+
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, opts = {}) {
 	const { corrio, salio } = opts;
 	const t = { ...cleaned(after, opts), rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
 	// numbering existed gets the next number on its first write, like a new one.
-	t.num = Number.isSafeInteger(before?.num)
-		? before.num
-		: [...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
-				(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
-				0,
-			) + 1;
+	t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
 	if (t.num !== before?.num && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
@@ -730,10 +733,14 @@ const commands = {
 			const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
 			if (prev?.revisionSha === sha)
 				return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
-			const t = reviewChild(src, { agente, sha, prev });
+			const id = reviewChildId(src, prev);
+			const before = readDoc(dir, 'tareas', id);
+			// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
+			const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+			const t = reviewChild(src, { agente, sha, prev, num, generado: nowIso() });
 			// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
 			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
-			const saved = saveTask(dir, readDoc(dir, 'tareas', t.id), t, who);
+			const saved = saveTask(dir, before, t, who);
 			const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
 			const text = `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})${live ? `; ${live.id} cancelada` : ''}`;
 			say(flags, out, saved, text);

@@ -1,0 +1,195 @@
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { describe, expect, it } from '@jest/globals';
+import { runCommand, sanitizeEnv } from '../helpers/run-command';
+
+const ROOT = process.cwd();
+const moduleUrl = (name: string) => pathToFileURL(path.join(ROOT, 'scripts', 'board', name)).href;
+const SHA = 'd'.repeat(40);
+
+/** Runs `body` in Node with `p` (prompt.mjs) and `m` (model.mjs) loaded; the last value printed is JSON. */
+function probe(body: string, input: unknown = null) {
+	const script = String.raw`
+		const p = await import(process.argv[1]);
+		const m = await import(process.argv[2]);
+		const input = JSON.parse(process.argv[3]);
+		${body}
+	`;
+	const result = runCommand(
+		process.execPath,
+		[
+			'--input-type=module',
+			'-e',
+			script,
+			moduleUrl('prompt.mjs'),
+			moduleUrl('model.mjs'),
+			JSON.stringify(input),
+		],
+		{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+	);
+	expect(result.stderr).toBe('');
+	return JSON.parse(String(result.stdout));
+}
+
+/** A task prompt in prompt-v1, as the coordinator writes it. */
+const TASK_PROMPT = [
+	'f05 · T160 · Formato de prompts v1',
+	'',
+	'QUÉ SE BUSCA',
+	'Que cada prompt siga prompt-v1.',
+	'Terminado cuando: las pruebas lo fijan.',
+	'',
+	'ANTES DE EMPEZAR',
+	'Carril f05-plataforma. Compruebe la rev del tablero; si cambió, pare.',
+	'',
+	'PASOS',
+	'1. Cambie la plantilla.',
+	'',
+	'AUTORIZO',
+	'Modo rápido hasta develop.',
+	'',
+	'NO HAGAS',
+	'- No toque main ni f10-libre.',
+	'',
+	'DECISIONES',
+	'- d230: avisos al dueño también por board msg.',
+	'',
+	'PARE Y PREGUNTE SI',
+	'La propuesta deja algo abierto.',
+	'',
+	'AL TERMINAR',
+	'1. pnpm validate:changed en verde.',
+	'',
+	'METADATOS',
+	'formato: prompt-v1',
+	'tarea: formato-prompts',
+	'agente: claude',
+	'carril: f05-plataforma',
+	'rama: feat/board-prompt-v1',
+	'base: develop',
+	`sha: ${SHA}`,
+	'decisiones: d230',
+	'tablero: rev 3',
+	'generado: 2026-10-25T02:55:37Z',
+].join('\n');
+
+const task = (fields: Record<string, unknown>) => ({
+	id: 'formato-prompts',
+	num: 160,
+	titulo: 'Formato de prompts',
+	estado: 'pendiente',
+	urgencia: 'normal',
+	actor: 'sesion',
+	requisitos: [],
+	rev: 4,
+	actualizado: '2026-10-25T02:55:37Z',
+	...fields,
+});
+
+describe('prompt-v1 (T160)', () => {
+	it('accepts a task prompt and keeps its session name on line 1 when copied', () => {
+		const t = task({ prompt: TASK_PROMPT, carrilPlaneado: 'f05-plataforma' });
+		const out = probe(
+			`console.log(JSON.stringify({
+				v1: p.isPromptV1(input.prompt),
+				issues: m.taskIssues(input),
+				meta: p.promptMetadata(input.prompt),
+				copied: m.promptWithLane(input, { tareas: [input] }),
+				lanes: m.promptLanes(input, [{ id: 'f05-plataforma', segment: 'f05' }, { id: 'f10-libre', segment: 'f10' }]),
+			}));`,
+			t,
+		);
+		expect(out.v1).toBe(true);
+		expect(out.issues).toEqual([]);
+		expect(out.meta).toMatchObject({ formato: 'prompt-v1', sha: SHA, tablero: 'rev 3' });
+		const copied = out.copied.split('\n');
+		expect(copied[0]).toBe('f05 · T160 · Formato de prompts v1');
+		expect(out.copied).not.toContain('CARRIL\n');
+		expect(copied.slice(-3)).toEqual([
+			'corre: f05-plataforma · carpeta celebra-me-worktrees/f05-plataforma',
+			'corre: Codex o Gemini: abra el proyecto f05-plataforma',
+			'corre: carril libre',
+		]);
+		// Only ANTES DE EMPEZAR and «carril:» say where a prompt-v1 runs; NO HAGAS may name another lane.
+		expect(out.lanes).toEqual([]);
+	});
+
+	it('keeps a legacy prompt working: no prompt-v1 checks, CARRIL first', () => {
+		const legacy = 'T12 · Algo\n\nQUÉ SE BUSCA\nX.\n\nDECISIONES\n- ninguna';
+		const out = probe(
+			`console.log(JSON.stringify({
+				issues: m.taskIssues(input),
+				copied: m.promptWithLane(input, { tareas: [input] }),
+			}));`,
+			task({ prompt: legacy, carrilPlaneado: 'f05-plataforma' }),
+		);
+		expect(out.issues).toEqual([]);
+		expect(out.copied.startsWith('CARRIL\nCorre en: f05-plataforma')).toBe(true);
+		expect(out.copied.endsWith(legacy)).toBe(true);
+	});
+
+	it('lists what a broken prompt-v1 lacks', () => {
+		const broken = TASK_PROMPT.replace('f05 · T160 · ', 'T160 · ')
+			.replace('Terminado cuando: las pruebas lo fijan.\n', '')
+			.replace('PARE Y PREGUNTE SI\nLa propuesta deja algo abierto.\n\n', '')
+			.replace(`sha: ${SHA}`, 'sha: abc1234')
+			.replace('tablero: rev 3', 'tablero: 3\ncolor: rojo\nsuelta');
+		const out = probe('console.log(JSON.stringify(p.promptV1Issues(input)));', broken);
+		expect(out).toEqual([
+			'prompt-v1: la línea 1 debe ser el nombre de la sesión «<carril> · T<n> · PR #<n> · <descripción>»',
+			'prompt-v1: falta la sección PARE Y PREGUNTE SI',
+			'prompt-v1: QUÉ SE BUSCA sin «Terminado cuando:»',
+			'prompt-v1: sha debe tener 40 caracteres hexadecimales',
+			'prompt-v1: tablero debe ser «rev N»',
+			'prompt-v1: clave de METADATOS desconocida: color',
+			'prompt-v1: línea de METADATOS sin «clave: valor»: suelta',
+		]);
+	});
+
+	it('writes review prompts in prompt-v1, in Spanish, with the SHA in METADATOS', () => {
+		const src = {
+			id: 'origen',
+			num: 7,
+			titulo: 'Origen',
+			pr: '#522',
+			rama: 'feat/x',
+			urgencia: 'normal',
+		};
+		const prev = { id: 'origen-revision', vuelta: 1, revisionSha: 'a'.repeat(40) };
+		const out = probe(
+			`const first = m.reviewChild(input.src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-25T03:00:00Z' });
+			const second = m.reviewChild(input.src, { agente: 'gemini', sha: input.sha, prev: input.prev, num: 10, generado: '2026-10-25T03:00:00Z' });
+			const issues = (t) => m.taskIssues({ ...t, rev: 1, actualizado: '2026-10-25T03:00:00Z' });
+			console.log(JSON.stringify({
+				first: first.prompt, second: second.prompt,
+				issues: [issues(first), issues(second)],
+				meta: p.promptMetadata(first.prompt),
+			}));`,
+			{ src, sha: SHA, prev },
+		);
+		expect(out.issues).toEqual([[], []]);
+		expect(out.first.split('\n')[0]).toBe('f04 · T9 · PR #522 · Revisión');
+		expect(out.second.split('\n')[0]).toBe('f04 · T10 · PR #522 · Revisión vuelta 2');
+		expect(out.first).not.toContain('Follow .agent/rules/board.md');
+		expect(out.first).toContain(
+			'pnpm board claim origen-revision --agente=codex --titulo="f04 · T9 · PR #522 · Revisión"',
+		);
+		expect(out.first).toContain('--para=dueno');
+		expect(out.second).toContain('SEGUNDA VUELTA');
+		expect(out.second).toContain(`git diff ${'a'.repeat(40)}..${SHA}`);
+		expect(out.meta).toEqual({
+			formato: 'prompt-v1',
+			tarea: 'T9 origen-revision',
+			origen: 'T7 origen',
+			agente: 'codex',
+			carril: 'f04-integracion (solo lectura)',
+			carpeta: 'celebra-me',
+			rama: 'feat/x',
+			pr: '#522',
+			sha: SHA,
+			decisiones: 'd183',
+			tablero: 'rev 1',
+			generado: '2026-10-25T03:00:00Z',
+		});
+	});
+});

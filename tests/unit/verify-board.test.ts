@@ -599,6 +599,49 @@ DECISIONES
 	});
 });
 
+describe('prompt-v1 identity (T160)', () => {
+	it('warns when line 1 names another T<n> or lane than the task', () => {
+		const prompt = (first: string) =>
+			[
+				first,
+				'QUÉ SE BUSCA\nX.\nTerminado cuando: Y.',
+				'ANTES DE EMPEZAR\nCarril f06-landing.',
+				'PASOS\n1. Z.',
+				'AUTORIZO\nNada.',
+				'NO HAGAS\n- Nada.',
+				'DECISIONES\n- Ninguna.',
+				'PARE Y PREGUNTE SI\nDuda.',
+				'AL TERMINAR\n1. Cierre.',
+				'METADATOS\nformato: prompt-v1\ncarril: f06-landing',
+			].join('\n\n');
+		const dir = makeExport([
+			task('bien', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f06-landing',
+				prompt: prompt('f06 · T1 · Bien'),
+			}),
+			task('otro-num', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f06-landing',
+				prompt: prompt('f06 · T9 · Mal'),
+			}),
+			task('otro-carril', {
+				estado: 'pendiente',
+				carrilPlaneado: 'f12-release',
+				prompt: prompt('f06 · T3 · Mal'),
+			}),
+		]);
+		const { report } = verify(dir, {});
+		const msgs = report.avisos.filter((a: { msg: string }) =>
+			/el prompt empieza con/.test(a.msg),
+		);
+		expect(msgs).toEqual([
+			{ id: 'otro-carril', msg: 'T3 el prompt empieza con f06, pero corre en f12-release' },
+			{ id: 'otro-num', msg: 'T2 el prompt empieza con T9' },
+		]);
+	});
+});
+
 describe('prompt lane (H13)', () => {
 	it('warns when the prompt «DÓNDE CORRE» names a lane other than the planned one', () => {
 		const prompt = (lane: string) =>

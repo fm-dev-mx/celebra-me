@@ -40,6 +40,7 @@ import {
 	taskTag as tag,
 } from './model.mjs';
 import { cierreIssues, NO_CIERRE } from './cierre.mjs';
+import { promptIdentity } from './prompt.mjs';
 import { boardDir, readLog } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -481,6 +482,24 @@ function numberIssues(tareas) {
 	return issues;
 }
 
+/** T160: a prompt-v1 opens with the session name, so its T<n> and lane must be the task's own. */
+function identityWarnings(tareas) {
+	const out = [];
+	for (const t of tareas.filter((x) => !isClosed(x))) {
+		const who = promptIdentity(t.prompt);
+		if (!who) continue;
+		const lane = taskLane(t)?.split('-')[0];
+		if (t.num && who.num !== t.num)
+			out.push({ id: t.id, msg: `T${t.num} el prompt empieza con T${who.num}` });
+		if (lane && who.segmento !== lane)
+			out.push({
+				id: t.id,
+				msg: `${t.num ? `T${t.num} ` : ''}el prompt empieza con ${who.segmento}, pero corre en ${taskLane(t)}`,
+			});
+	}
+	return out;
+}
+
 /**
  * d177: every open task says where it runs: a planned canonical lane, or the lane its lock holds; a review
  * child runs read-only in Integration and needs none. Two ready, unlocked agent tasks never share a lane.
@@ -508,6 +527,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 				id: t.id,
 				msg: `${t.num ? `T${t.num} ` : ''}el prompt dice ${lane}, pero corre en ${taskLane(t)}`,
 			});
+	avisos.push(...identityWarnings(tareas));
 	const ready = tareas.filter(
 		(t) =>
 			t.actor === 'sesion' &&
