@@ -304,8 +304,8 @@ export default defineCanonicalInvitation({
 	eventTiming: ANDREA_TIMING,
 	content,
 	managedIdentityId: '2096dd70-942d-4d00-ae01-63cb684a81ea',
-	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	// Provisional: the celebrant's surname is not in the intake.
 	hostLoginAlias: 'andrea_xv',
 	assetDir: 'src/invitations/clients/andrea/assets',
