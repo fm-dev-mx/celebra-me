@@ -123,6 +123,29 @@ describe('board messages (T126)', () => {
 	});
 });
 
+describe('owner messages about finished tasks (d265)', () => {
+	it('drops a message to the owner once its task is finished or archived, but keeps it in inbox', () => {
+		const r = probe(`
+			const msg = (id, tarea) => ({ tarea, en: '2026-10-24T19:00:00Z', quien: 'claude', mensaje: { id, para: 'dueno', texto: id } });
+			const t = (id, num, estado) => ({ id, num, titulo: id, estado, urgencia: 'normal', actor: 'sesion', agente: 'claude', requisitos: [], rev: 1, actualizado: '2026-10-24T19:00:00Z' });
+			const board = {
+				tareas: [t('abierta', 1, 'en curso'), t('unida', 2, 'unida'), t('hecha', 3, 'hecha'), t('revision', 4, 'en revision')],
+				archivo: [t('archivada', 5, 'pendiente')],
+				bitacora: [msg('m1', 'abierta'), msg('m2', 'unida'), msg('m3', 'hecha'), msg('m4', 'archivada'), msg('m5', 'revision'), msg('m6', 'perdida')],
+			};
+			console.log(JSON.stringify({
+				usted: n.nextSections(board, { now: ${NOW} }).usted.map((x) => x.texto),
+				inbox: n.unreadFor('dueno', board).map((x) => x.mensaje.id),
+			}));`);
+		expect(r.usted).toEqual([
+			'Mensaje: claude → dueno sobre T1: m1',
+			'Mensaje: claude → dueno sobre T4: m5',
+			'Mensaje: claude → dueno sobre perdida: m6',
+		]);
+		expect(r.inbox).toEqual(['m1', 'm2', 'm3', 'm4', 'm5', 'm6']);
+	});
+});
+
 describe('board heartbeat and session title (T126)', () => {
 	it('renews the caller lock heartbeat on every command without a new rev', () => {
 		const lock = { agente: 'codex', desde: ago(300), sesion: 'cx-1', carril: 'f10-libre' };

@@ -5,6 +5,7 @@
  */
 import {
 	AGENT_REGISTRY,
+	authorOf,
 	claimable,
 	color,
 	findTask,
@@ -26,7 +27,7 @@ import {
 	VEREDICTOS,
 } from './model.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
-import { findingsSent } from './findings.mjs';
+import { authorSession, findingsSent } from './findings.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
 
 const MINUTE_MS = 60_000;
@@ -198,7 +199,16 @@ function reviewItem(t, board, prs) {
 			t,
 			texto: `Resolver el bloqueo que ${taskTag(last)} encontró en ${ref}`,
 		};
-	if (findingsSent(last.id, board).length) return null;
+	if (findingsSent(last.id, board).length) {
+		// d269: the findings reached the author's inbox, but nobody wakes the author's session.
+		if (verdict !== 'cambios') return null;
+		const sesion = authorSession(t, authorOf(t))?.nombre;
+		return {
+			tipo: 'avisar',
+			t,
+			texto: `Avisar al autor de ${ref}: ${taskTag(last)} pidió cambios en ${short} y el PR sigue en ese SHA${sha ? '' : ' (SHA del PR sin comprobar)'}${sesion ? ` · sesión «${sesion}»` : ''}`,
+		};
+	}
 	return {
 		tipo: 'hallazgos',
 		t,
@@ -239,6 +249,8 @@ function sessionItems(board, now) {
  * - `unir`: the last review round approved the PR's current head SHA;
  * - `vuelta`: the PR head moved past its last finished round, so it needs `pnpm board review` again;
  * - `hallazgos`: the last round found something at the current head that `close` did not send to the author;
+ * - `avisar`: the last round asked for changes, `close` sent them to the author and the PR head has not moved
+ *   since (d269), so the author's session must be told to read its inbox;
  * - `cierre`: a task «en revision» or «unida» without its closing summary (d255);
  * - `sin-tarea`: an open PR no task names;
  * - `sesion`: a ready task for Claude or the coordinator that no session holds;
@@ -261,6 +273,18 @@ export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 		...sessionItems(board, now),
 		...messages,
 	];
+}
+
+/**
+ * d265: unread messages to the owner whose task is still open; a message about a task that is finished
+ * (hecha, unida, comprobada, cancelada) or archived no longer asks for anything. `inbox` keeps every message.
+ */
+export function ownerMessages(board) {
+	const archived = new Set((board.archivo ?? []).map((t) => t.id));
+	return unreadFor('dueno', board).filter((r) => {
+		const t = findTask(r.tarea, board);
+		return !t || !(isFinished(t) || archived.has(t.id));
+	});
 }
 
 /**
@@ -293,7 +317,7 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`),
 		),
 		...dueno.map(({ t, texto }) => row(t, texto)),
-		...unreadFor('dueno', board).map((r) =>
+		...ownerMessages(board).map((r) =>
 			row(findTask(r.tarea, board), `Mensaje: ${messageLine(r, board)}`),
 		),
 	];
