@@ -447,7 +447,8 @@ export function stage(t, board, now) {
 	const e = t.estado ?? 'pendiente';
 	if (e === 'comprobada' || e === 'cancelada') return 'hecha';
 	if (e === 'hecha' || e === 'unida' || e === 'en revision') return 'revision';
-	if (e === 'en curso') return 'curso';
+	// T172: a locked pendiente task (claimed before claim moved it to en curso) is running too.
+	if (e === 'en curso' || (e === 'pendiente' && Boolean(t.candado))) return 'curso';
 	if (e === 'bloqueada') return 'bloqueada';
 	return requisitos(t, board, now).every((r) => r.ok) ? 'lista' : 'bloqueada';
 }

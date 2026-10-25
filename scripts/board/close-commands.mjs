@@ -65,7 +65,12 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 				const issues = cierreIssues({ ...before, cierre }, board);
 				if (issues.length)
 					throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
-				const t = saveTask(dir, before, { ...before, cierre });
+				const t = saveTask(
+					dir,
+					before,
+					{ ...before, cierre },
+					{ ...flags, seguimiento: true },
+				);
 				// T129: the one-line signal the agent hands back, built only from the cierre.
 				const senal = signalLine(t, board);
 				const text = [`${t.id} con cierre (rev ${t.rev})`, ...cierreLines(t, board), senal];

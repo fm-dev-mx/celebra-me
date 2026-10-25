@@ -577,14 +577,15 @@ describe('pnpm board', () => {
 			// «cualquiera» that Claude can finish starts alone.
 			['cualquiera', [], 'auto', 'auto', 'auto', 'auto'],
 			['coordina', [], 'auto', 'auto', 'auto', 'auto'],
-			// Already claimed: the owner pasted it, so it is no longer theirs.
-			['apartada', [], 'auto', 'auto', 'auto', 'auto'],
+			// Already claimed: the owner pasted it, so it is no longer theirs; its lock runs it (T172).
+			['apartada', [], 'run', 'run', 'run', 'run'],
 			['espera', [], 'block', 'block', 'block', 'block'],
 		]);
 		// d163: the paste tasks join the owner's turn at the top of the queue.
 		expect(out.queue.slice(0, 3).sort()).toEqual(['de-codex', 'de-gemini', 'imagenes']);
 		expect(out.next).toEqual(['cualquiera', 'de-codex', 'de-gemini']);
-		expect(out.claimable).toEqual(['normal', 'de-codex', 'cualquiera', 'coordina', 'apartada']);
+		// T172: a locked task is running, so nobody else can claim it.
+		expect(out.claimable).toEqual(['normal', 'de-codex', 'cualquiera', 'coordina']);
 	});
 
 	it('labels paste tasks «Pegar en …» in the view with their own «Copiar prompt»', () => {
@@ -644,8 +645,19 @@ describe('pnpm board', () => {
 		expect(board(dir, 'move', 'compartida', '--agente=claude').status).toBe(2);
 		expect(board(dir, 'release', 'compartida', '--agente=codex').status).toBe(0);
 		expect(board(dir, 'move', 'compartida', '--agente=claude').status).toBe(0);
-		expect(readTask(dir, 'compartida')).toMatchObject({ agente: 'claude', rev: 4 });
+		expect(readTask(dir, 'compartida')).toMatchObject({
+			agente: 'claude',
+			estado: 'pendiente',
+			rev: 4,
+		});
+		// T172: claim starts the task and a release before it ends puts it back in the queue.
 		expect(readLog(dir)).toEqual([
+			expect.objectContaining({ de: 'pendiente', a: 'en curso', corrio: 'pnpm board claim' }),
+			expect.objectContaining({
+				de: 'en curso',
+				a: 'pendiente',
+				corrio: 'pnpm board release',
+			}),
 			expect.objectContaining({
 				tarea: 'compartida',
 				agente: { de: 'cualquiera', a: 'claude' },

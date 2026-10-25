@@ -219,6 +219,57 @@ export function whoOf(t) {
 	return null;
 }
 
+/** Each task's bitácora rows with a writer, oldest first, built once per bitácora (the view renders every card). */
+const TRACE_ROWS = new WeakMap();
+function traceRows(bitacora) {
+	let byTask = TRACE_ROWS.get(bitacora);
+	if (byTask) return byTask;
+	byTask = new Map();
+	const rows = bitacora
+		.filter((r) => r.tarea && !r.mensaje && r.quien)
+		.sort((a, b) => String(a.en).localeCompare(String(b.en)));
+	for (const r of rows) (byTask.get(r.tarea) ?? byTask.set(r.tarea, []).get(r.tarea)).push(r);
+	TRACE_ROWS.set(bitacora, byTask);
+	return byTask;
+}
+
+/**
+ * T172: who added a task and who last followed it up, `{agregada, seguimiento?}`. The stored `agregadaPor` and
+ * `seguimientoPor` win; an older task falls back to its bitácora: the creation row (`de: ''`) and the last row
+ * after it. `seguimiento` is left out when nobody but the one who added it followed up.
+ */
+export function traceOf(t, board = {}) {
+	const rows = traceRows(board.bitacora ?? []).get(t.id) ?? [];
+	const created = rows.find((r) => r.de === '' && r.a);
+	const agregada = t.agregadaPor ?? created?.quien;
+	const later = rows.filter((r) => r !== created).at(-1)?.quien;
+	const seguimiento = t.seguimientoPor ?? (created ? later : undefined);
+	if (!agregada && !seguimiento) return null;
+	return {
+		...(agregada ? { agregada } : {}),
+		...(seguimiento && seguimiento !== agregada ? { seguimiento } : {}),
+	};
+}
+
+const TRACE_NAME = { dueno: 'usted' };
+/** «agregó gemini · seg. coordinador» and its tooltip, or null when the task has no trace. */
+export function traceText(t, board) {
+	const tr = traceOf(t, board);
+	if (!tr) return null;
+	const name = (w) => TRACE_NAME[w] ?? w;
+	const parts = [
+		tr.agregada ? `agregó ${name(tr.agregada)}` : '',
+		tr.seguimiento ? `seg. ${name(tr.seguimiento)}` : '',
+	].filter(Boolean);
+	const title = [
+		tr.agregada ? `Agregada por ${name(tr.agregada)}` : '',
+		tr.seguimiento ? `último seguimiento de ${name(tr.seguimiento)}` : '',
+	]
+		.filter(Boolean)
+		.join('; ');
+	return { text: parts.join(' · '), title };
+}
+
 const PRIORITY_RANK = { P0: 0, P1: 1, P2: 2, P3: 3 };
 /** A review's typed findings (T129), most severe first; empty for any other task. */
 export function findingsOf(t) {
