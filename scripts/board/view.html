@@ -739,6 +739,15 @@ async function sync(dryRun){
     for(const o of r.omitidas)lines.push('Omitida: '+o.texto);
     for(const a of r.avisos)lines.push('Aviso: '+a.texto);
     for(const c of r.candadosViejos||[])lines.push('Candado: '+c.texto);
+    const h=r.higiene;
+    if(h){
+      const item=c=>c.ok===false?'NO SE ESCRIBIÓ '+c.texto+': '+c.resultado:(dryRun?'Cambiaría: ':'Hecho: ')+c.texto;
+      for(const c of [...h.comprobadas,...h.archivadas])lines.push('Higiene: '+item(c));
+      if(h.almacen.resumidas.length)lines.push('Higiene: '+h.almacen.resumidas.length+' archivadas '+(dryRun?'se resumirían':'resumidas')+' (compact --antes=7d)');
+      if(h.almacen.respaldos)lines.push('Higiene: '+h.almacen.respaldos+' respaldos '+(dryRun?'sobran':'quitados')+' (prune-backups)');
+      for(const c of h.carriles)lines.push('Carril: '+item(c));
+      for(const a of h.avisosCarril)lines.push('Aviso: '+a.texto);
+    }
     out.textContent=(dryRun?'Prueba, nada escrito · ':'Sincronizado · ')+fmt(r.en)+'\n'+lines.join('\n');
   }catch(e){out.textContent='No se pudo sincronizar: '+e.message}
   finally{btns.forEach(b=>b.disabled=false)}

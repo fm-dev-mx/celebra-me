@@ -924,6 +924,8 @@ const FIELD_CHECKS = [
 	]),
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
+	// d268: a periodic task's `cada`, the rule of recurring.mjs's CADA_RE.
+	[(t) => !optional(t.cada, (c) => /^[1-9]\d*d$/.test(c)), () => 'cada debe ser <n>d (7d)'],
 	[(t) => !optional(t.archivada, isDate), () => 'archivada no es fecha'],
 	[
 		(t) => t.archivada !== undefined && !isFinished(t),

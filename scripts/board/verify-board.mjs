@@ -125,7 +125,8 @@ export function checkFor(t, board) {
 	return null;
 }
 
-function defaultRunner() {
+/** Runs the read-only check commands (or answers them from CELEBRA_BOARD_COMMAND_FIXTURE). */
+export function defaultRunner() {
 	const fixture = process.env.CELEBRA_BOARD_COMMAND_FIXTURE;
 	if (fixture) {
 		const answers = JSON.parse(readFileSync(fixture, 'utf8'));
@@ -197,7 +198,8 @@ function expectationMet(espera, out) {
 	return espera ? new RegExp(espera, 'm').test(out) : out.trim().length > 0;
 }
 
-function checkTask(t, run, board) {
+/** One task's check row; `ready` says an unida/hecha task met it and may move to comprobada. */
+export function checkTask(t, run, board) {
 	const c = checkFor(t, board);
 	const row = { id: t.id, estado: t.estado };
 	if (!c) return { ...row, veredicto: 'SIN CHEQUEO', salida: '' };

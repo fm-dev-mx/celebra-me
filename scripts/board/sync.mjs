@@ -11,6 +11,12 @@
  *   - a lock older than --horas (default 6, or CELEBRA_BOARD_LOCK_HOURS) whose `rama` got no commit on origin
  *     since the lock was taken is flagged «posible sesión cerrada». Only a merged PR releases a lock.
  *
+ * Then the hygiene (d268), on the board as those writes left it: an unlocked unida/hecha task whose check passes
+ * moves to comprobada with that evidencia, every finished, unlocked task with a valid cierre is archived (a review
+ * round only once its origin is finished), `compact --antes=7d` and `prune-backups --aplicar` run, and each free,
+ * clean lane f05–f12 (no lock or open task holds it, detached or on a branch whose PR merged) is detached at
+ * origin/develop. A lane with changes, or on a branch without a merged PR, is only reported.
+ *
  *   node scripts/board/sync.mjs [--dry-run] [--json] [--horas=<n>]   --dry-run prints the plan and writes nothing
  *
  * Remote branches are read after `git fetch --prune origin`, so a branch deleted on GitHub no longer counts.
@@ -21,7 +27,9 @@
 import { execFileSync } from 'node:child_process';
 import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import { run as board } from './board.mjs';
+import { archiveBlock } from './cierre.mjs';
 import {
 	isFinished,
 	isReview,
@@ -31,12 +39,16 @@ import {
 	taskIdFromBranch,
 	taskLabel as label,
 } from './model.mjs';
-import { boardDir, loadBoard } from './store.mjs';
+import { boardDir, loadBoard, withLock } from './store.mjs';
+import { checkTask, defaultRunner } from './verify-board.mjs';
 
 const TO_REVIEW = new Set(['pendiente', 'en curso', 'bloqueada']);
 const PR_LIMIT = 200;
 export { STALE_LOCK_HOURS };
 const HOUR_MS = 3_600_000;
+/** The task lanes the sync may realign; Integration is never touched. */
+const FREE_LANES = new Set(WORKTREE_LANES.map((l) => l.segment).filter(Boolean));
+const HYGIENE = 'pnpm board:sync';
 
 const sh = (cmd, args, cwd) =>
 	execFileSync(cmd, args, {
@@ -46,14 +58,17 @@ const sh = (cmd, args, cwd) =>
 		windowsHide: true,
 	});
 
-/** `git worktree list --porcelain` → [{lane, path, rama}] (rama is null when detached). */
+/** `git worktree list --porcelain` → [{lane, path, rama, head}] (rama is null when detached). */
 export function parseWorktrees(text) {
 	return String(text)
 		.split(/\r?\n\r?\n/)
 		.map((block) => {
 			const path = block.match(/^worktree (.+)$/m)?.[1];
 			const ref = block.match(/^branch refs\/heads\/(.+)$/m)?.[1] ?? null;
-			return path ? { lane: basename(path.trim()), path: path.trim(), rama: ref } : null;
+			const head = block.match(/^HEAD (\S+)$/m)?.[1] ?? null;
+			return path
+				? { lane: basename(path.trim()), path: path.trim(), rama: ref, head }
+				: null;
 		})
 		.filter(Boolean);
 }
@@ -113,8 +128,26 @@ export function readSources(cwd = process.cwd()) {
 			{ cause: e },
 		);
 	}
+	// A task lane counts as clean only when `git status` answers and lists nothing (untracked files included).
+	const clean = (path) => {
+		try {
+			return sh('git', ['status', '--porcelain'], path).trim() === '';
+		} catch {
+			return null;
+		}
+	};
+	// Without origin/develop no lane is realigned.
+	let develop;
+	try {
+		develop = sh('git', ['rev-parse', 'refs/remotes/origin/develop'], cwd).trim();
+	} catch {
+		develop = null;
+	}
 	return {
-		worktrees: parseWorktrees(sh('git', ['worktree', 'list', '--porcelain'], cwd)),
+		worktrees: parseWorktrees(sh('git', ['worktree', 'list', '--porcelain'], cwd)).map((w) =>
+			FREE_LANES.has(w.lane) ? { ...w, limpio: clean(w.path) } : w,
+		),
+		develop,
 		local: refs('refs/heads'),
 		remote: Object.keys(remoteDates),
 		remoteDates,
@@ -140,8 +173,13 @@ export function matchPr(t, prs) {
 	const own = normalizePr(t.pr);
 	if (typeof own === 'string' && own.startsWith('#'))
 		return prs.find((p) => `#${p.number}` === own) ?? null;
-	if (t.rama) return newestFor(prs, (p) => p.headRefName === t.rama);
-	return newestFor(prs, (p) => taskIdFromBranch(p.headRefName) === t.id);
+	// d268: a periodic task's earlier cycles keep their PRs (`prsPrevios`), and it never matches by id, so a
+	// merged PR of a past cycle cannot finish the next one.
+	const past = new Set(Array.isArray(t.prsPrevios) ? t.prsPrevios : []);
+	const live = prs.filter((p) => !past.has(`#${p.number}`));
+	if (t.rama) return newestFor(live, (p) => p.headRefName === t.rama);
+	if (t.cada) return null;
+	return newestFor(live, (p) => taskIdFromBranch(p.headRefName) === t.id);
 }
 
 function branchNote(t, src) {
@@ -285,12 +323,198 @@ export async function apply(cambios, dir, { prState } = {}) {
 	return out;
 }
 
+const byNum = (board) => (board.tareas ?? []).slice().sort((a, b) => (a.num ?? 0) - (b.num ?? 0));
+
+/**
+ * d268: unlocked unida/hecha tasks whose check passes, with the evidencia `set` records. `run` answers a check
+ * command; review rounds are never touched.
+ */
+export function toVerify(board, run) {
+	const out = [];
+	for (const t of byNum(board)) {
+		if (t.archivada || t.candado || isReview(t) || !['unida', 'hecha'].includes(t.estado))
+			continue;
+		const r = checkTask(t, run, board);
+		if (!r.ready) continue;
+		out.push({
+			id: t.id,
+			rev: t.rev,
+			set: {
+				estado: 'comprobada',
+				evidencia: JSON.stringify({ cmd: r.cmd, salio: r.salida }),
+			},
+			salio: r.salida,
+			texto: `${label(t)} → cumple su chequeo: pasa a comprobada`,
+		});
+	}
+	return out;
+}
+
+/** d268: finished, unlocked, unarchived tasks with a valid cierre; a review round waits for its origin. */
+export function toArchive(board) {
+	const out = [];
+	for (const t of byNum(board)) {
+		if (t.archivada || t.candado || !isFinished(t)) continue;
+		const origin = isReview(t) && (board.tareas ?? []).find((x) => x.id === t.origen);
+		if (origin && !isFinished(origin)) continue;
+		if (archiveBlock(t, board)) continue;
+		out.push({ id: t.id, rev: t.rev, cmd: 'archive', texto: `${label(t)} → archivada` });
+	}
+	return out;
+}
+
+/**
+ * d268: free, clean task lanes to detach at origin/develop. A lane is free when no lock and no open task holds
+ * it, and it is detached or on a branch whose newest PR merged; `avisos` names free lanes left as they are.
+ */
+/** A lane is held by any lock on it, or by an open task's `carril`. */
+const laneHeld = (tareas, lane) =>
+	tareas.some((t) => t.candado?.carril === lane || (!isFinished(t) && t.carril === lane));
+
+export function lanePlan(board, src) {
+	const alinear = [];
+	const avisos = [];
+	const develop = src.develop;
+	if (!develop) return { alinear, avisos };
+	const tareas = board.tareas ?? [];
+	for (const w of src.worktrees ?? []) {
+		if (!FREE_LANES.has(w.lane) || (!w.rama && w.head === develop)) continue;
+		if (laneHeld(tareas, w.lane)) continue;
+		const where = w.rama ? `la rama ${w.rama}` : String(w.head).slice(0, 7);
+		const aviso = (why) =>
+			avisos.push({ id: '', texto: `carril ${w.lane} libre ${why}: no se alinea` });
+		if (w.limpio !== true) {
+			if (w.limpio === false) aviso(`con cambios sin confirmar en ${where}`);
+			continue;
+		}
+		const p = w.rama ? newestFor(src.prs ?? [], (x) => x.headRefName === w.rama) : null;
+		if (w.rama && p?.state !== 'MERGED') {
+			aviso(`en ${where} sin PR unido`);
+			continue;
+		}
+		alinear.push({
+			lane: w.lane,
+			path: w.path,
+			rama: w.rama,
+			head: w.head,
+			texto: `carril ${w.lane} libre: de ${where} a origin/develop (${develop.slice(0, 7)})`,
+		});
+	}
+	return { alinear, avisos };
+}
+
+/** `gh pr view <n> --json state` answered from the PR list the sync already read; anything else runs. */
+export function syncRunner(prs, fallback = defaultRunner()) {
+	return (cmd) => {
+		const n = /^gh pr view (\d+) --json state$/.exec(cmd)?.[1];
+		const p = n && prs.find((x) => String(x.number) === n);
+		return p
+			? { ok: true, output: JSON.stringify({ state: p.state }), error: '' }
+			: fallback(cmd);
+	};
+}
+
+/** One hygiene write (`set` to comprobada, or `archive`) through `pnpm board`; a refused one is reported. */
+async function applyOne(c, dir) {
+	const common = [`--rev=${c.rev}`, '--coordinador', `--corrio=${HYGIENE}`];
+	const args =
+		c.cmd === 'archive'
+			? ['archive', c.id, ...common]
+			: [
+					'set',
+					c.id,
+					...common,
+					`--salio=${c.salio}`,
+					...Object.entries(c.set).map(([k, v]) => `${k}=${v}`),
+				];
+	try {
+		let said = '';
+		await board(args, { dir, out: (s) => (said = s) });
+		return { ...c, ok: true, resultado: said };
+	} catch (e) {
+		return { ...c, ok: false, resultado: e.message };
+	}
+}
+
+/** `compact --antes=7d` and `prune-backups --aplicar` (a dry run only lists), as their JSON results. */
+async function storeUpkeep(dir, dryRun) {
+	const json = async (args) => {
+		let said = '';
+		await board([...args, '--json'], { dir, out: (s) => (said = s) });
+		return JSON.parse(said);
+	};
+	const compact = await json(['compact', '--antes=7d', ...(dryRun ? ['--dry-run'] : [])]);
+	const prune = await json(['prune-backups', ...(dryRun ? [] : ['--aplicar'])]);
+	return { resumidas: compact.tareas.map((x) => x.linea), respaldos: prune.sobran.length };
+}
+
+/** Detach each planned lane at origin/develop; a refused switch is reported, not retried. */
+/**
+ * Why a planned lane may no longer be switched, read again right before the switch: a lock or open task took it,
+ * its branch or HEAD moved, or it has changes. Null when it is still the lane the plan saw.
+ */
+function laneDrift(l, board, git) {
+	if (laneHeld(board.tareas ?? [], l.lane)) return `carril ${l.lane} tomado después del plan`;
+	const out = (args) => String(git(args, l.path) ?? '').trim();
+	if ((out(['branch', '--show-current']) || null) !== (l.rama ?? null))
+		return `carril ${l.lane} cambió de rama desde el plan`;
+	if (out(['rev-parse', 'HEAD']) !== l.head)
+		return `carril ${l.lane} cambió de HEAD desde el plan`;
+	if (out(['status', '--porcelain'])) return `carril ${l.lane} tiene cambios sin confirmar`;
+	return null;
+}
+
+/**
+ * Detach each planned lane at origin/develop. Each one is checked again and switched inside the board's store
+ * lock, so a claim cannot take it in between; any drift fails closed and is reported, not retried.
+ */
+function alignLanes(alinear, develop, git, dir) {
+	return alinear.map((l) => {
+		try {
+			const drift = withLock(dir, () => {
+				const why = laneDrift(l, loadBoard(dir), git);
+				if (!why) git(['switch', '--detach', '--quiet', develop], l.path);
+				return why;
+			});
+			return drift
+				? { ...l, ok: false, resultado: `${drift}: no se alinea` }
+				: { ...l, ok: true };
+		} catch (e) {
+			return { ...l, ok: false, resultado: String(e.stderr ?? e.message).trim() };
+		}
+	});
+}
+
+/** d268: the hygiene after the PR writes; a dry run plans every step on the board as it is and writes nothing. */
+export async function hygiene(
+	dir,
+	src,
+	{ dryRun = false, runner, git = (args, cwd) => sh('git', args, cwd) } = {},
+) {
+	const run = syncRunner(src.prs ?? [], runner);
+	const each = async (list) => {
+		const out = [];
+		for (const c of list) out.push(dryRun ? { ...c, ok: null } : await applyOne(c, dir));
+		return out;
+	};
+	const comprobadas = await each(toVerify(loadBoard(dir), run));
+	const archivadas = await each(toArchive(loadBoard(dir)));
+	const almacen = await storeUpkeep(dir, dryRun);
+	const lanes = lanePlan(loadBoard(dir), src);
+	const carriles = dryRun
+		? lanes.alinear.map((l) => ({ ...l, ok: null }))
+		: alignLanes(lanes.alinear, src.develop, git, dir);
+	return { comprobadas, archivadas, almacen, carriles, avisosCarril: lanes.avisos };
+}
+
 export async function run({
 	dryRun = false,
 	dir = boardDir(),
 	sources = readSources,
 	now = new Date(),
 	hours = lockHours(),
+	runner,
+	git,
 } = {}) {
 	const src = sources();
 	const p = plan(loadBoard(dir), src, { now: now.getTime(), hours });
@@ -298,8 +522,17 @@ export async function run({
 	const cambios = dryRun
 		? p.cambios.map((c) => ({ ...c, ok: null }))
 		: await apply(p.cambios, dir, { prState });
-	return { prueba: dryRun, en: now.toISOString(), ...p, cambios };
+	const higiene = await hygiene(dir, src, { dryRun, runner, git });
+	return { prueba: dryRun, en: now.toISOString(), ...p, cambios, higiene };
 }
+
+/** Every write the run attempted, PR changes and hygiene alike: `ok: false` means it was refused. */
+export const writes = (r) => [
+	...r.cambios,
+	...(r.higiene?.comprobadas ?? []),
+	...(r.higiene?.archivadas ?? []),
+	...(r.higiene?.carriles ?? []),
+];
 
 /** Human summary, one line per change, then avisos and locked tasks. */
 export function summary(r) {
@@ -313,6 +546,22 @@ export function summary(r) {
 	for (const o of r.omitidas) lines.push(`Omitida: ${o.texto}`);
 	for (const a of r.avisos) lines.push(`Aviso: ${a.texto}`);
 	for (const c of r.candadosViejos ?? []) lines.push(`Candado: ${c.texto}`);
+	const h = r.higiene;
+	if (!h) return lines;
+	const item = (c) =>
+		`${head}${c.ok === false ? `NO SE ESCRIBIÓ ${c.texto}: ${c.resultado}` : c.texto}`;
+	for (const c of [...h.comprobadas, ...h.archivadas]) lines.push(`Higiene: ${item(c)}`);
+	const { resumidas, respaldos } = h.almacen;
+	if (resumidas.length)
+		lines.push(
+			`Higiene: ${head}${resumidas.length} archivadas ${r.prueba ? 'se resumirían' : 'resumidas'} (compact --antes=7d)`,
+		);
+	if (respaldos)
+		lines.push(
+			`Higiene: ${head}${respaldos} respaldos ${r.prueba ? 'sobran' : 'quitados'} (prune-backups)`,
+		);
+	for (const c of h.carriles) lines.push(`Carril: ${item(c)}`);
+	for (const a of h.avisosCarril) lines.push(`Aviso: ${a.texto}`);
 	return lines;
 }
 
@@ -329,7 +578,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 	run({ dryRun: process.argv.includes('--dry-run') })
 		.then((r) => {
 			console.log(json ? JSON.stringify(r, null, 2) : summary(r).join('\n'));
-			if (r.cambios.some((c) => c.ok === false)) process.exitCode = 1;
+			if (writes(r).some((c) => c.ok === false)) process.exitCode = 1;
 		})
 		.catch((e) => {
 			console.error(`board:sync: ${e.message}`);
