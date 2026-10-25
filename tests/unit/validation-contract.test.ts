@@ -158,8 +158,7 @@ describe('canonical validation contract', () => {
 				// Every `ci:static` command, in parallel lanes (scripts/ops/ci-static-parallel.ts).
 				'pnpm ci:static:parallel',
 				'pnpm test',
-				// Each of the four browser shards runs at most two workers.
-				'pnpm test:e2e:ci --max-failures=5 --workers=2',
+				'pnpm test:e2e:ci --max-failures=5 --workers=4',
 				// Guest memories specs run on every device project of playwright.memories.config.ts.
 				'pnpm test:e2e:memories --max-failures=5 --workers=2',
 			]) {
@@ -257,10 +256,7 @@ describe('canonical validation contract', () => {
 		const workflowCommand = workflow.match(/run: (pnpm test:e2e:ci .*)/)?.[1];
 
 		expect(workflow).not.toContain('VISUAL_PARITY_PARALLEL');
-		// Each CI shard runs at most two workers; every other flag matches the certified command.
-		const withoutWorkers = (command = '') => command.replace(/ --workers=\d+/u, '');
-		expect(withoutWorkers(workflowCommand)).toBe(withoutWorkers(CERTIFIED_BROWSER_COMMAND));
-		expect(Number(workflowCommand?.match(/--workers=(\d+)/u)?.[1])).toBeLessThanOrEqual(2);
+		expect(workflowCommand).toBe(CERTIFIED_BROWSER_COMMAND);
 	});
 
 	it('skips application tiers only for confirmed integration evidence', () => {

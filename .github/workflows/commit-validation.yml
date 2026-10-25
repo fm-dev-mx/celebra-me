@@ -364,7 +364,7 @@ jobs:
               env:
                   VISUAL_PARITY_DEFERRED: ${{ needs.browser-scope.outputs.visual == 'deferred' }}
                   PLAYWRIGHT_BROWSER_PART: ${{ matrix.part }}
-              run: pnpm test:e2e:ci --max-failures=5 --workers=2
+              run: pnpm test:e2e:ci --max-failures=5 --workers=4
 
             # A shard skips the teardown matrix proof; this asserts everything but coverage for its
             # own captures, and `browser-visual-coverage` asserts coverage across every shard.
