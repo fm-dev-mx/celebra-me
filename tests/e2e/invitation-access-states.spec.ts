@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { DEMO_INVITATIONS } from '@/invitations/demos';
 import {
 	CANONICAL_ACCESS_FIXTURE_SLUGS,
 	resolveCanonicalAccessFixtureEventType,
@@ -89,11 +90,30 @@ test.describe('Invitation access states', () => {
 		await expect(page.locator('[data-preview-banner]')).toHaveCount(0);
 	});
 
-	test('static demos stay indexable', async ({ page }) => {
-		const response = await page.goto('/xv/demo-xv-enchanted-rose');
+	test('public static demos stay indexable and allow large previews', async ({ page }) => {
+		const response = await page.goto('/rose?skipEnvelope=true');
 
 		expect(response?.status()).toBe(200);
-		expect(response?.headers()['x-robots-tag']).toBeUndefined();
-		await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
+		expect(response?.headers()['x-robots-tag']).toBe('index, follow, max-image-preview:large');
+		await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+			'content',
+			'index, follow, max-image-preview:large',
+		);
 	});
+
+	for (const demo of DEMO_INVITATIONS.filter(
+		(demo) =>
+			demo.showroom.visibility !== 'featured' || demo.showroom.reviewStatus !== 'approved',
+	)) {
+		test(`hidden static demo ${demo.routeSlug} stays unindexed`, async ({ page }) => {
+			const response = await page.goto(`/${demo.routeSlug}?skipEnvelope=true`);
+
+			expect(response?.status()).toBe(200);
+			expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow');
+			await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+				'content',
+				'noindex, nofollow',
+			);
+		});
+	}
 });
