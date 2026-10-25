@@ -2,7 +2,7 @@
 /**
  * Read-only verifier for the «Seguimiento Celebra-me» coordinator board (rules: .agent/rules/board.md).
  *
- * Usage: pnpm board:verify [<dir>] [--json] [--sesiones=<file.json>]
+ * Usage: pnpm board:verify [<dir>] [--json] [--sesiones=<file.json>] [--archivadas]
  *   <dir> defaults to the local store (`.agent/tmp/board/` of Integration, d143); an ArtifactData export with the
  *   same layout (tareas/*.json, and optionally bitacora/*.jsonl or *.json and decisiones/*.json) works too.
  *   --sesiones: JSON list of Claude sessions, either the raw `list_sessions` snapshot the coordinator writes
@@ -10,8 +10,10 @@
  *   { id, nombre?, rama?, archivada? }; defaults to <dir>/sesiones.json. Without it the session drift
  *   sections are skipped and the report says so.
  *
- * Every open, «unida» or «hecha» task is checked. A task's own `chequeo: { cmd, espera }` wins; otherwise the
- * implicit check is `gh pr view <pr> --json state` → MERGED, or `git ls-remote origin <rama>` → the ref exists.
+ * Every open, «unida» or «hecha» task is checked, archived ones only with --archivadas. A task's own
+ * `chequeo: { cmd, espera }` wins; otherwise the implicit check is `gh pr view <pr> --json state` → MERGED, or
+ * `git ls-remote origin <rama>` → the ref exists. A review round asks the PR head to still be its `revisionSha`;
+ * a round a later one superseded only asks for the PR state. Each distinct command runs once per report.
  * It also lists open PRs and worktree branches without a task, tasks whose session is archived, and tasks
  * ready to move to «comprobada», plus lifecycle drift between task, session, branch and PR: sessions without a
  * task, locks naming a missing session, session names off the d158 form, merged PR branches still present, PRs
@@ -27,12 +29,14 @@ import {
 	isFinished as isClosed,
 	isOpen,
 	isReadOnly,
+	isReview,
 	isStaleLock,
 	laneAllowed,
 	logRowIssues,
 	ordenOf,
 	prNumber,
 	promptLanes,
+	reviewRounds,
 	stage,
 	taskIdFromBranch,
 	taskIssues,
@@ -75,9 +79,21 @@ export function commandArgs(cmd) {
 }
 export const isAllowedCommand = (cmd) => commandArgs(cmd) !== null;
 
+/** A review round a later round of the same origin superseded: its SHA is history, not the PR head. */
+export function isSupersededRound(t, board) {
+	if (!board || !t.origen || !isReview(t)) return false;
+	const last = reviewRounds(t.origen, board).at(-1);
+	return Boolean(last) && last.id !== t.id;
+}
+
 /** The check a task runs: its own `chequeo`, else the implicit one derived from `pr` or `rama`. */
-export function checkFor(t) {
-	if (t.origen && /^[a-f0-9]{40}$/.test(t.revisionSha ?? '') && prNumber(t.pr))
+export function checkFor(t, board) {
+	if (
+		t.origen &&
+		/^[a-f0-9]{40}$/.test(t.revisionSha ?? '') &&
+		prNumber(t.pr) &&
+		!isSupersededRound(t, board)
+	)
 		return {
 			cmd: `gh pr view ${prNumber(t.pr)} --json headRefOid`,
 			espera: `"headRefOid":\\s*"${t.revisionSha}"`,
@@ -181,8 +197,8 @@ function expectationMet(espera, out) {
 	return espera ? new RegExp(espera, 'm').test(out) : out.trim().length > 0;
 }
 
-function checkTask(t, run) {
-	const c = checkFor(t);
+function checkTask(t, run, board) {
+	const c = checkFor(t, board);
 	const row = { id: t.id, estado: t.estado };
 	if (!c) return { ...row, veredicto: 'SIN CHEQUEO', salida: '' };
 	if (!isAllowedCommand(c.cmd))
@@ -633,19 +649,31 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now, kinds) {
 	return { inconsistencias, avisos };
 }
 
+/** Each distinct read-only command runs once per report: review rounds of one PR share its answer. */
+function memoized(run) {
+	const seen = new Map();
+	return (cmd) => {
+		if (!seen.has(cmd)) seen.set(cmd, commandResult(run, cmd));
+		return seen.get(cmd);
+	};
+}
+
 export function verifyBoard(
 	{ tareas, bitacora = [], decisiones = [], archivo = [], cierres = [], sesiones = null },
-	run = defaultRunner(),
+	runner = defaultRunner(),
 	now = Date.now(),
 	kinds = loadKinds(),
+	{ archivadas = false } = {},
 ) {
+	const run = memoized(runner);
 	const snapshot = Array.isArray(sesiones) ? sesiones.map(normalizeSession) : null;
 	const unclaimed = unclaimedWork(tareas, run);
 	const branches = branchDrift(tareas, run, unclaimed.laneBranches);
-	const live = tareas
-		.filter((t) => t.estado !== 'comprobada' && t.estado !== 'cancelada')
+	const pending = tareas.filter((t) => t.estado !== 'comprobada' && t.estado !== 'cancelada');
+	const live = pending
+		.filter((t) => archivadas || !t.archivada)
 		.sort((a, b) => ordenOf(a) - ordenOf(b));
-	const checked = live.map((t) => checkTask(t, run));
+	const checked = live.map((t) => checkTask(t, run, { tareas, archivo }));
 	const filas = checked.map((r) => {
 		const row = { ...r };
 		delete row.ready;
@@ -656,6 +684,7 @@ export function verifyBoard(
 		.map((r) => ({ id: r.id, evidencia: { cmd: r.cmd, salio: r.salida } }));
 	return {
 		filas,
+		archivadasSinChequeo: pending.length - live.length,
 		comprobar,
 		prsSinTarea: unclaimed.prsSinTarea,
 		ramasSinTarea: unclaimed.ramasSinTarea,
@@ -685,8 +714,11 @@ function printText(r) {
 		);
 	const hits = r.filas.filter((f) => f.veredicto.startsWith('CUMPLE')).length;
 	const none = r.filas.filter((f) => f.veredicto === 'SIN CHEQUEO').length;
+	const skipped = r.archivadasSinChequeo
+		? ` · ${r.archivadasSinChequeo} archivadas sin chequear (--archivadas)`
+		: '';
 	console.log(
-		`\n${r.filas.length} tareas abiertas · ${hits} cumplen su chequeo · ${none} sin chequeo`,
+		`\n${r.filas.length} tareas abiertas · ${hits} cumplen su chequeo · ${none} sin chequeo${skipped}`,
 	);
 	const section = (title, list, fmt) => {
 		if (!list.length) return;
@@ -746,6 +778,7 @@ function printText(r) {
 
 function main(argv) {
 	const json = argv.includes('--json');
+	const archivadas = argv.includes('--archivadas');
 	const sesionesArg = argv.find((a) => a.startsWith('--sesiones='))?.slice('--sesiones='.length);
 	// pnpm runs scripts from the repository root; INIT_CWD keeps relative paths relative to the caller.
 	const cwd = process.env.INIT_CWD || process.cwd();
@@ -753,11 +786,17 @@ function main(argv) {
 	const dir = arg ? resolve(cwd, arg) : boardDir();
 	if (!existsSync(dir)) {
 		console.error(
-			`No hay tablero en ${dir}. Uso: pnpm board:verify [<dir>] [--json] [--sesiones=<archivo.json>]`,
+			`No hay tablero en ${dir}. Uso: pnpm board:verify [<dir>] [--json] [--sesiones=<archivo.json>] [--archivadas]`,
 		);
 		process.exit(2);
 	}
-	const result = verifyBoard(loadExport(dir, sesionesArg && resolve(cwd, sesionesArg)));
+	const result = verifyBoard(
+		loadExport(dir, sesionesArg && resolve(cwd, sesionesArg)),
+		undefined,
+		undefined,
+		undefined,
+		{ archivadas },
+	);
 	if (json) console.log(JSON.stringify(result, null, 2));
 	else printText(result);
 	if (result.inconsistencias.length) process.exitCode = 1;
