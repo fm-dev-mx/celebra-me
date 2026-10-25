@@ -258,6 +258,12 @@ span.crumb{color:var(--muted)}
 .cal .day{font:600 .84rem var(--mono);color:var(--muted)}
 .cal .tbtn{min-height:36px;padding:2px 0;font-weight:600}
 .cal .line{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
+/* T258: blocked tasks, each with what it still waits for. */
+.blk{padding:8px 12px;border-bottom:1px solid var(--line)}
+.blk:last-child{border-bottom:0}
+.blk .tbtn{min-height:36px;padding:2px 0;font-weight:600}
+.blk .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
+.blk ul{margin:4px 0 0;padding-left:1.2em;font-size:.86rem;overflow-wrap:anywhere}
 .fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
 .fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .fchip .n{font:600 .72rem var(--mono);opacity:.75;margin-left:2px}
@@ -342,6 +348,7 @@ a.prl{font-weight:600}
   <nav class="tabs" role="tablist" aria-label="Vistas">
     <button class="tab" role="tab" type="button" data-tab="cola" id="t-cola">Cola<span class="n" id="n-cola"></span></button>
     <button class="tab" role="tab" type="button" data-tab="calendario" id="t-calendario" title="Tareas que solo esperan una fecha; vuelven solas a la Cola ese día">Calendario<span class="n" id="n-cal"></span></button>
+    <button class="tab" role="tab" type="button" data-tab="bloqueadas" id="t-bloqueadas" title="Tareas que esperan otra tarea, una decisión, su prompt o una respuesta; vuelven solas a la Cola al desbloquearse">Bloqueadas<span class="n" id="n-blk"></span></button>
     <button class="tab" role="tab" type="button" data-tab="finalizadas" id="t-finalizadas">Finalizadas<span class="n" id="n-fin"></span></button>
     <button class="tab" role="tab" type="button" data-tab="carriles" id="t-carriles">Carriles</button>
     <button class="tab" role="tab" type="button" data-tab="historial" id="t-historial">Historial</button>
@@ -380,6 +387,10 @@ a.prl{font-weight:600}
     <div class="board"><div id="cal"><div class="empty">Cargando el calendario…</div></div></div>
   </section>
 
+  <section id="p-bloqueadas" role="tabpanel" aria-labelledby="t-bloqueadas" hidden>
+    <div class="board"><div id="blk"><div class="empty">Cargando las tareas bloqueadas…</div></div></div>
+  </section>
+
   <section id="p-finalizadas" role="tabpanel" aria-labelledby="t-finalizadas" hidden>
     <div class="board">
       <div class="tools">
@@ -410,7 +421,7 @@ a.prl{font-weight:600}
     </div>
   </section>
 
-  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Una tarea que solo espera una fecha pasa a «Calendario» y vuelve sola a la cola ese día. Una tarea madre muestra su barra de avance y guarda sus subtareas en «Ver N subtareas»; la que toca ejecutar ahora sigue a la vista. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
+  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Una tarea que solo espera una fecha pasa a «Calendario» y vuelve sola a la cola ese día; la que espera otra tarea, una decisión, su prompt o una respuesta pasa a «Bloqueadas», con lo que le falta, y vuelve sola a la cola al desbloquearse. Una tarea madre muestra su barra de avance y guarda sus subtareas en «Ver N subtareas»; la que toca ejecutar ahora sigue a la vista. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
 import { findTask } from '/model.mjs';
@@ -422,7 +433,7 @@ import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound,
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
-import { calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
+import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
 const TZ='America/Mazatlan';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -435,7 +446,7 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const TABS=['cola','calendario','finalizadas','carriles','historial'];
+const TABS=['cola','calendario','bloqueadas','finalizadas','carriles','historial'];
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
 const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas',finag:'todas'};
 const $=id=>document.getElementById(id);
@@ -683,6 +694,16 @@ function renderCal(){
   const empty=$('tq').value.trim()?'Ninguna tarea del calendario coincide con esa búsqueda.':'Ninguna tarea espera solo una fecha.';
   $('cal').innerHTML=weeks.length?weeks.map(w=>`<div class="grp">Semana del ${esc(fmtDay(w.semana+'T12:00:00Z'))} · ${w.tareas.length}</div><div class="log">${w.tareas.map(row).join('')}</div>`).join(''):`<div class="empty">${empty}</div>`;
 }
+// T258: tasks blocked by a task, a decision, their prompt or an answer, each with what it waits for; each comes back to the queue once unblocked.
+function renderBlk(){
+  const all=mBlocked(S.board);
+  $('n-blk').textContent=all.length||'';
+  if(!S.ready)return;
+  const shown=all.filter(x=>found(x.t));
+  const row=({t,motivos})=>`<article class="blk"><h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${esc(t.titulo)}</button></h3><span class="line">${faseHtml(t)}${agHtml(t)}${urgHtml(t)}</span><ul aria-label="Qué la bloquea">${motivos.map(m=>`<li>${rich(m)}</li>`).join('')}</ul></article>`;
+  const empty=$('tq').value.trim()?'Ninguna tarea bloqueada coincide con esa búsqueda.':'Ninguna tarea está bloqueada.';
+  $('blk').innerHTML=shown.length?`<div class="log">${shown.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
+}
 // Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).
 function renderFin(){
   const fin=S.board.tareas.filter(isFinished);
@@ -776,13 +797,13 @@ function youBtn(){
   if(!mine.length)return '<button type="button" class="you none" disabled>Usted: nada</button>';
   return `<button type="button" class="you" data-sel="${esc(mine[0].id)}" data-jump="1" data-all="1">Usted: ${mine.length} ${mine.length>1?'cosas':'cosa'}</button>`;
 }
-function render(){renderCola();renderCal();renderFin();renderTop();renderBoard();renderHist()}
+function render(){renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist()}
 
 function setTab(tab,push){
   S.tab=TABS.includes(tab)?tab:'cola';
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)));
   TABS.forEach(k=>$('p-'+k).hidden=k!==S.tab);
-  $('tsearch').hidden=!['cola','calendario','finalizadas'].includes(S.tab);
+  $('tsearch').hidden=!['cola','calendario','bloqueadas','finalizadas'].includes(S.tab);
   if(push){try{history.replaceState(null,'','#'+S.tab)}catch(e){}}
 }
 function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ag===ag)));try{localStorage.setItem('board-ag',ag)}catch(e){}renderCola();renderBoard()}
@@ -812,7 +833,7 @@ function copySha(b){
 }
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet()});
 $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',renderHist);
-$('tq').addEventListener('input',()=>{renderCola();renderCal();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
+$('tq').addEventListener('input',()=>{renderCola();renderCal();renderBlk();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));

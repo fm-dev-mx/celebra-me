@@ -119,7 +119,7 @@ import {
 	CONTRATO,
 	findTask,
 } from './model.mjs';
-import { calendarLine, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
+import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
 import { reviewPreflight } from './review-preflight.mjs';
 import { authorSession } from './findings.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
@@ -445,10 +445,12 @@ const commands = {
 		const review = board.tareas
 			.filter((t) => stage(t, board) === 'revision' && !t.archivada && inTab(t, tab))
 			.sort((a, b) => Date.parse(b.actualizado) - Date.parse(a.actualizado));
+		// T258: blocked tasks are not numbered; --json still lists them, after the queue.
+		const stuck = blocked(board).flatMap(({ t }) => (inTab(t, tab) ? [t] : []));
 		if (flags.json)
 			return out(
 				JSON.stringify(
-					[...q, ...review].map((t, i) => ({
+					[...q, ...stuck, ...review].map((t, i) => ({
 						n: i < q.length ? i + 1 : null,
 						num: t.num,
 						id: t.id,
@@ -460,7 +462,7 @@ const commands = {
 					2,
 				),
 			);
-		if (!q.length) out('Sin tareas abiertas.');
+		if (!q.length) out('Sin tareas en la cola.');
 		q.forEach((t, i) => out(row(t, i + 1, board, flags.agente)));
 		const mine = q.filter((t) => color(t, board) === 'own').length;
 		out(`\nUsted: ${mine ? `${mine} ${mine > 1 ? 'cosas' : 'cosa'}` : 'nada'}`);
@@ -469,11 +471,9 @@ const commands = {
 			out(`\nEn revisión (${review.length}):`);
 			for (const t of review) out(row(t, '·', board, flags.agente));
 		}
-		// d276: tasks that only wait for a date left the queue; one line says when the next one comes back.
-		const calendar = calendarLine(board);
-		if (calendar)
-			out(`
-${calendar}`);
+		// d276/T258: tasks waiting for a date or blocked left the queue; their lines close the list.
+		const tail = listTail(board);
+		if (tail) out(tail);
 	},
 	next({ flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente=claude|codex|gemini');

@@ -70,7 +70,7 @@ describe('board subtasks (d174)', () => {
 		expect(out[3]).toBeNull();
 	});
 
-	it('keeps unreadable dates in the queue with a warning without breaking calendar weeks', () => {
+	it('keeps unreadable dates out of the calendar, among the blocked, with a warning', () => {
 		const board = {
 			tareas: [
 				task('bad', { requisitos: [{ tipo: 'fecha', ref: 'unreadable' }] }),
@@ -86,12 +86,12 @@ describe('board subtasks (d174)', () => {
 		const out = probe(
 			board,
 			`console.log(JSON.stringify({
-			week:m.weekOf('unreadable'), queue:m.queue(board,${NOW}).map(t=>t.id),
+			week:m.weekOf('unreadable'), blocked:m.blocked(board,${NOW}).map(x=>x.t.id),
 			calendar:m.calendarWeeks(board,${NOW}), warning:m.requisitoLine(board.tareas[0].requisitos[0],board)
 		}));`,
 		);
 		expect(out.week).toBeNull();
-		expect(out.queue.sort()).toEqual(['bad', 'mixed']);
+		expect(out.blocked.sort()).toEqual(['bad', 'mixed']);
 		expect(out.calendar).toHaveLength(1);
 		expect(out.calendar[0].tareas[0].t.id).toBe('good');
 		expect(out.warning).toContain('Fecha inválida');
@@ -238,7 +238,8 @@ describe('board calendar (d276)', () => {
 				]))`,
 			),
 		).toEqual([
-			['fecha-y-tarea', 'otra', 'sin-prompt', 'ya-llego'],
+			// T258: a task that also waits for a task or its prompt sits in «Bloqueadas» instead.
+			['otra', 'ya-llego'],
 			[
 				['dos-fechas', '2026-10-28T15:00:00Z'],
 				['fecha-sola', '2026-11-03T15:00:00Z'],
@@ -274,5 +275,128 @@ describe('board calendar (d276)', () => {
 			expect.stringMatching(/^Calendario \(2\): próxima T11 el mié,? 28 (de )?oct/),
 			'',
 		]);
+	});
+});
+
+describe('board blocked tab (T258)', () => {
+	const board = {
+		decisiones: [{ id: 'd300', vigente: false }],
+		tareas: [
+			task('base', { num: 1, estado: 'en curso' }),
+			task('espera-tarea', { num: 2, requisitos: [{ tipo: 'tarea', ref: 'base' }] }),
+			task('espera-decision', {
+				num: 3,
+				urgencia: 'alta',
+				requisitos: [{ tipo: 'decision', ref: 'd300' }],
+			}),
+			task('sin-prompt', { num: 4, prompt: undefined }),
+			task('manual', { num: 5, estado: 'bloqueada' }),
+			task('respuesta', { num: 6, requisitos: [{ tipo: 'dueno', ref: '¿Qué color?' }] }),
+			task('fecha', { num: 7, requisitos: [{ tipo: 'fecha', ref: '2099-01-01T00:00:00Z' }] }),
+		],
+	};
+
+	it('moves blocked tasks out of the queue into «Bloqueadas» with what each waits for', () => {
+		expect(
+			probe(
+				board,
+				`console.log(JSON.stringify([
+					m.queue(board, ${NOW}).map((t) => t.id),
+					m.blocked(board, ${NOW}).map((x) => [x.t.id, x.motivos]),
+					m.calendar(board, ${NOW}).map((x) => x.t.id),
+				]))`,
+			),
+		).toEqual([
+			['base'],
+			[
+				['espera-decision', ['Espera la decisión d300 (ya no vigente)']],
+				['espera-tarea', ['Espera T1 · base']],
+				['sin-prompt', [expect.stringMatching(/^Espera su prompt/)]],
+				['manual', ['Marcada como bloqueada']],
+				['respuesta', ['Espera su respuesta: ¿Qué color?']],
+			],
+			// A task that only waits for a date stays in the «Calendario», never in both.
+			['fecha'],
+		]);
+	});
+
+	it('brings a task back to the queue on its own once its block is met', () => {
+		const unblocked = {
+			...board,
+			decisiones: [{ id: 'd300', vigente: true }],
+			tareas: board.tareas.map((t) => (t.id === 'base' ? { ...t, estado: 'comprobada' } : t)),
+		};
+		const [queue, blocked] = probe(
+			unblocked,
+			`console.log(JSON.stringify([
+				m.queue(board, ${NOW}).map((t) => t.id),
+				m.blocked(board, ${NOW}).map((x) => x.t.id),
+			]))`,
+		);
+		expect(queue).toEqual(expect.arrayContaining(['espera-tarea', 'espera-decision']));
+		expect(blocked).toEqual(['sin-prompt', 'manual', 'respuesta']);
+	});
+
+	it('lets a blocked urgent task still lift the task it waits for', () => {
+		const lifted = {
+			tareas: [
+				task('normal-lista', { num: 1 }),
+				task('base', { num: 2, urgencia: 'baja' }),
+				task('urgente-espera', {
+					num: 3,
+					urgencia: 'urgente',
+					requisitos: [{ tipo: 'tarea', ref: 'base' }],
+				}),
+			],
+		};
+		expect(
+			probe(lifted, `console.log(JSON.stringify(m.queue(board, ${NOW}).map((t) => t.id)))`),
+		).toEqual(['base', 'normal-lista']);
+	});
+
+	it('keeps the owner answer a blocked task waits for in «Le toca a usted»', () => {
+		expect(
+			probe(
+				board,
+				`console.log(JSON.stringify(m.ownerAsks(board, ${NOW}).map(({ t, r }) => [t.id, r.ref])))`,
+			),
+		).toEqual([['respuesta', '¿Qué color?']]);
+	});
+
+	it('writes the list line, shortened after max tasks, and nothing when none is blocked', () => {
+		expect(
+			probe(
+				board,
+				`console.log(JSON.stringify([
+					m.blockedLine(board, ${NOW}),
+					m.blockedLine(board, ${NOW}, 2),
+					m.blockedLine({ tareas: [] }, ${NOW}),
+					m.listTail(board, ${NOW}),
+					m.listTail({ tareas: [] }, ${NOW}),
+				]))`,
+			),
+		).toEqual([
+			'Bloqueadas (5): T3, T2, T4, T5, T6',
+			'Bloqueadas (5): T3, T2, …',
+			'',
+			expect.stringMatching(
+				/^\nCalendario \(1\): próxima T7 el .*\nBloqueadas \(5\): T3, T2, T4, T5, T6$/,
+			),
+			'',
+		]);
+	});
+
+	it('shows the «Bloqueadas» tab between Calendario and Finalizadas, with count and search', () => {
+		const html = readFileSync(path.join(ROOT, 'scripts/board/view.html'), 'utf8');
+		const tabs = [...html.matchAll(/data-tab="([a-z]+)" id="t-/g)].map((x) => x[1]);
+		expect(tabs.slice(0, 4)).toEqual(['cola', 'calendario', 'bloqueadas', 'finalizadas']);
+		expect(html).toContain(
+			"const TABS=['cola','calendario','bloqueadas','finalizadas','carriles','historial'];",
+		);
+		expect(html).toContain('id="n-blk"');
+		expect(html).toContain("['cola','calendario','bloqueadas','finalizadas'].includes(S.tab)");
+		expect(html).toMatch(
+			/function renderBlk\(\)\{[\s\S]*?mBlocked\(S\.board\)[\s\S]*?found\(x\.t\)/,
+		);
 	});
 });

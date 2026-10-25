@@ -506,13 +506,20 @@ export function calendarDate(t, board, now = Date.now()) {
 }
 export const onCalendar = (t, board, now) => calendarDate(t, board, now) !== null;
 
+/**
+ * T258: an open task blocked by something other than a date (a task, a decision, its prompt, an answer, or a
+ * manual «bloqueada»). It leaves the queue for the «Bloqueadas» tab and comes back on its own once unblocked.
+ */
+export const isBlocked = (t, board, now) =>
+	stage(t, board, now) === 'bloqueada' && !onCalendar(t, board, now);
+
 const depIds = (t) => (t.requisitos ?? []).filter((r) => r.tipo === 'tarea').map((r) => r.ref);
 const urgRank = (u) => (URGENCIAS.includes(u) ? URGENCIAS.indexOf(u) : 2);
 
 /**
- * The numbered queue: the owner's ready tasks (d163) → urgency → free lane before busy or none (`laneRank`) →
- * ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a task never comes before one
- * it waits for.
+ * The numbered queue of ready and running tasks: the owner's ready tasks (d163) → urgency → free lane before
+ * busy or none (`laneRank`) → ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a task never comes before one
+ * it waits for. Blocked tasks (`isBlocked`) order that pass but are left out.
  */
 export function queue(board, now = Date.now()) {
 	// d276: a task that only waits for a date sits in the «Calendario» until that day.
@@ -545,7 +552,8 @@ export function queue(board, now = Date.now()) {
 		out.push(t);
 	};
 	for (const t of rest) place(t);
-	return out;
+	// T258: blocked tasks still lift their prerequisites above, then leave for the «Bloqueadas» tab.
+	return out.filter((t) => !isBlocked(t, board, now));
 }
 
 /**
@@ -553,7 +561,9 @@ export function queue(board, now = Date.now()) {
  * requisites are already met, so an answer that is not due yet stays out of sight.
  */
 export function ownerAsks(board, now = Date.now()) {
-	return queue(board, now).flatMap((t) => {
+	// T258: a task waiting for the owner's answer is blocked, so it sits outside the queue.
+	const waiting = (board.tareas ?? []).filter((t) => isBlocked(t, board, now));
+	return [...queue(board, now), ...waiting].flatMap((t) => {
 		const reqs = requisitos(t, board, now);
 		if (reqs.some((r) => (r.tipo === 'fecha' || r.tipo === 'tarea') && !r.ok)) return [];
 		return reqs.filter((r) => r.tipo === 'dueno' && !r.ok).map((r) => ({ t, r }));
