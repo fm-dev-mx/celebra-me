@@ -44,6 +44,7 @@ import {
 	taskTag as tag,
 } from './model.mjs';
 import { cierreIssues, NO_CIERRE } from './cierre.mjs';
+import { parentIssue } from './subtasks.mjs';
 import { kindPrompt, promptDiff } from './kind-prompt.mjs';
 import { loadKinds } from './kinds.mjs';
 import { promptIdentity } from './prompt.mjs';
@@ -621,6 +622,9 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now, kinds) {
 	for (const t of tareas) {
 		const msgs = closingIssues(t);
 		if (!isClosed(t)) msgs.push(...taskIssues(t), ...logIssues(t, lastLog));
+		// d174: a mother off the board or a loop of mothers.
+		const parent = !isClosed(t) && parentIssue(t, { tareas, archivo });
+		if (parent) msgs.push(parent);
 		for (const msg of msgs) inconsistencias.push({ id: t.id, msg });
 		for (const msg of taskWarnings(t, byId, decIds, now)) avisos.push({ id: t.id, msg });
 		for (const msg of cierreWarnings(t, { tareas, archivo })) avisos.push({ id: t.id, msg });

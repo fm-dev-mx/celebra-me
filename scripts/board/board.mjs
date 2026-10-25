@@ -115,7 +115,9 @@ import {
 	isSilentLock,
 	SILENT_LOCK_HOURS,
 	CONTRATO,
+	findTask,
 } from './model.mjs';
+import { calendarLine, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
 import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
 import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
@@ -235,6 +237,7 @@ function saveTask(dir, before, after, opts = {}) {
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
 	else t.pr = pr;
+	withParent(dir, before, t);
 	const old = before ? new Set(taskIssues(before)) : new Set();
 	// A legacy record keeps unrelated problems, but a write that touches the PR rule must satisfy it.
 	const touchesPr = ['pr', 'estado', 'rama'].some((k) => before?.[k] !== t[k]);
@@ -248,6 +251,19 @@ function saveTask(dir, before, after, opts = {}) {
 	writeDoc(dir, 'tareas', t.id, t, { backup: !isFinished(before) });
 	if (row) appendLog(dir, row);
 	return t;
+}
+
+/** d174: `padre=T12` becomes the mother's id; a mother off the board or a loop of mothers is refused. */
+function withParent(dir, before, t) {
+	if (t.padre === undefined || t.padre === before?.padre) return;
+	const board = {
+		tareas: readCollection(dir, 'tareas'),
+		archivo: readCollection(dir, 'archivo'),
+	};
+	const mother = findTask(t.padre, board);
+	if (mother) t.padre = mother.id;
+	const issue = parentIssue(t, board);
+	if (issue) throw new UsageError(`no se escribió ${t.id}: ${issue}`);
 }
 
 /**
@@ -449,6 +465,11 @@ const commands = {
 			out(`\nEn revisión (${review.length}):`);
 			for (const t of review) out(row(t, '·', board, flags.agente));
 		}
+		// d276: tasks that only wait for a date left the queue; one line says when the next one comes back.
+		const calendar = calendarLine(board);
+		if (calendar)
+			out(`
+${calendar}`);
 	},
 	next({ flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente=claude|codex|gemini');
@@ -478,6 +499,8 @@ const commands = {
 		out(
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
+		const up = parentText(t, board);
+		if (up) out(`  ${up}`);
 		const trace = traceText(t, board);
 		if (trace) out(`  ${trace.text}`);
 		const delivered = deliveryLine(t);
@@ -500,7 +523,12 @@ const commands = {
 		])
 			if (t[k] !== undefined)
 				out(`  ${k}: ${typeof t[k] === 'string' ? t[k] : JSON.stringify(t[k])}`);
-		for (const line of [...roundLines(t, board), ...cierreBlock(t, board)]) out(line);
+		for (const line of [
+			...subtaskLines(t, board),
+			...roundLines(t, board),
+			...cierreBlock(t, board),
+		])
+			out(line);
 		if (t.prompt) out(`\n${t.prompt}`);
 	},
 	add({ pos, pairs, flags }, dir, out) {

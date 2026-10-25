@@ -52,7 +52,22 @@ export const summaryLine = (t) =>
 
 /** What stays on the board for a compacted task: enough for numbers, requisitos and review rounds. */
 function archiveRecord(t, en) {
-	const keep = ['num', 'titulo', 'estado', 'pr', 'rama', 'origen', 'revisionSha', 'archivada'];
+	// d174: a compacted subtask still counts toward its mother's progress.
+	const keep = [
+		'num',
+		'titulo',
+		'estado',
+		'pr',
+		'rama',
+		'origen',
+		'revisionSha',
+		'archivada',
+		'padre',
+		'grupo',
+		'fase',
+		'orden',
+		'agente',
+	];
 	const r = Object.fromEntries(keep.filter((k) => t[k] !== undefined).map((k) => [k, t[k]]));
 	return { ...r, compactada: en, zip: `${MONTHLY_DIR}/${String(t.archivada).slice(0, 7)}.zip` };
 }
