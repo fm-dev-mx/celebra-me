@@ -219,7 +219,8 @@ describe('pnpm board', () => {
 				}),
 			],
 		});
-		expect(board(dir, 'list').out).toContain('— Espera T35 · Dividir reglas del tablero');
+		// T258: the blocked task leaves the numbered list; its reason shows in «Bloqueadas» and in show.
+		expect(board(dir, 'list').out).toContain('\nBloqueadas (1): T36');
 		const shown = board(dir, 'show', 'sigue').out;
 		expect(shown).toContain('○ Termina T35 · Dividir reglas del tablero');
 		expect(shown).not.toContain('tarea board-agent-alignment');
@@ -418,15 +419,15 @@ describe('pnpm board', () => {
 		});
 		const { status, out } = board(dir, 'list', '--json');
 		expect(status).toBe(0);
-		const rows = JSON.parse(out) as { id: string; color: string }[];
-		expect(rows.map((r) => [r.id, r.color])).toEqual([
+		const rows = JSON.parse(out) as { n: number | null; id: string; color: string }[];
+		expect(rows.map((r) => [r.n, r.id, r.color])).toEqual([
 			// d163: the owner's ready task comes first, whatever its urgency.
-			['del-dueno', 'own'],
-			// A blocked «alta» task still waits behind the task it needs.
-			['base', 'auto'],
-			['alta-espera', 'block'],
-			['normal-lista', 'auto'],
-			['sin-prompt', 'block'],
+			[1, 'del-dueno', 'own'],
+			// A blocked «alta» task lifts the task it needs, then leaves the numbered queue (T258).
+			[2, 'base', 'auto'],
+			[3, 'normal-lista', 'auto'],
+			[null, 'alta-espera', 'block'],
+			[null, 'sin-prompt', 'block'],
 		]);
 	});
 
@@ -1183,7 +1184,8 @@ describe('pnpm board', () => {
 		expect(result.status).toBe(0);
 		const out = JSON.parse(String(result.stdout));
 		// d163 owner first, then urgency; within «normal» a free lane (or a review) before a busy one or none,
-		// «tiene» runs in the lane its own lock holds, and «base» still comes right before the task waiting for it.
+		// «tiene» runs in the lane its own lock holds, and «base» keeps the place of «tras-base», which waits
+		// for it in «Bloqueadas» (T258).
 		expect(out.queue).toEqual([
 			'dueno',
 			'urgente-ocupada',
@@ -1191,7 +1193,6 @@ describe('pnpm board', () => {
 			'origen-revision',
 			'tiene',
 			'base',
-			'tras-base',
 			'ocupada',
 			'sin-carril',
 		]);

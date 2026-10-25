@@ -1,9 +1,17 @@
 /**
- * Subtasks (d174) and the «Calendario» (d276) of the board: pure functions shared by `pnpm board`,
+ * Subtasks (d174), the «Calendario» (d276) and «Bloqueadas» (T258) of the board: pure functions shared by `pnpm board`,
  * `pnpm board:verify` and the view (as /subtasks.mjs). Rules: .agent/rules/board.md.
  */
-import { calendarDate, findTask, ordenOf, taskTag } from './model.mjs';
-import { dayOf } from './requisito-text.mjs';
+import {
+	calendarDate,
+	findTask,
+	isBlocked,
+	ordenOf,
+	requisitos,
+	taskTag,
+	URGENCIAS,
+} from './model.mjs';
+import { dayOf, requisitoText } from './requisito-text.mjs';
 
 /** Estados that count a subtask as done. */
 const DONE = new Set(['hecha', 'unida', 'comprobada']);
@@ -48,6 +56,45 @@ export function calendarLine(board, now = Date.now()) {
 	if (!all.length) return '';
 	const [{ t, fecha }] = all;
 	return `Calendario (${all.length}): próxima ${taskTag(t)} el ${dayOf(fecha)}`;
+}
+
+/** Shown for a task marked «bloqueada» by hand while every requisito is met. */
+export const MANUAL_BLOCK = 'Marcada como bloqueada';
+
+const urgOf = (t) => (URGENCIAS.includes(t.urgencia) ? URGENCIAS.indexOf(t.urgencia) : 2);
+
+/**
+ * T258: the «Bloqueadas» tasks as `{t, motivos}`, `motivos` being what each still waits for (every unmet
+ * requisito, or MANUAL_BLOCK); most urgent first, then `orden` and number.
+ */
+export function blocked(board, now = Date.now()) {
+	return (board.tareas ?? [])
+		.filter((t) => isBlocked(t, board, now))
+		.map((t) => {
+			const unmet = requisitos(t, board, now).filter((r) => !r.ok);
+			const motivos = unmet.map((r) => requisitoText(r, board, { espera: true }));
+			return { t, motivos: motivos.length ? motivos : [MANUAL_BLOCK] };
+		})
+		.sort(
+			(a, b) =>
+				urgOf(a.t) - urgOf(b.t) ||
+				ordenOf(a.t) - ordenOf(b.t) ||
+				(a.t.num ?? 0) - (b.t.num ?? 0),
+		);
+}
+
+/** T258: the line of `pnpm board list` after the Calendario's, «Bloqueadas (2): T12, T15»; '' when empty. */
+export function blockedLine(board, now = Date.now(), max = 8) {
+	const all = blocked(board, now);
+	if (!all.length) return '';
+	const tags = all.slice(0, max).map(({ t }) => taskTag(t));
+	return `Bloqueadas (${all.length}): ${tags.join(', ')}${all.length > max ? ', …' : ''}`;
+}
+
+/** The close of `pnpm board list`: a blank line, then the Calendario and Bloqueadas lines; '' when both are empty. */
+export function listTail(board, now = Date.now()) {
+	const lines = [calendarLine(board, now), blockedLine(board, now)].filter(Boolean);
+	return lines.length ? `\n${lines.join('\n')}` : '';
 }
 
 /**

@@ -59,13 +59,22 @@ data, never an authorization.
 - **Execution number**: the owner's ready tasks (d163) → urgency → lane (`laneRank`: its category's
   lane free, a review or the lane a task's own lock holds; then another free planned lane; then a
   lane another task's lock holds; then no lane) → ready before blocked → `hasta` → `orden` → title;
-  an open task it waits for goes right before it.
+  an open task it waits for goes right before it. Blocked tasks take part in that order, so an
+  urgent blocked task still lifts its prerequisites, and are then left out (T258).
 - **Calendario (d276)**: a `pendiente`, unlocked task whose only unmet requisitos are `fecha` leaves
   the queue and `pnpm board list` for the view's «Calendario» tab (by date, grouped by week, its
   count on the tab); it comes back to the queue on its own when the date arrives. A task that also
-  waits for a task, a decision, an owner answer or its prompt stays in the queue as blocked.
+  waits for a task, a decision, an owner answer or its prompt is blocked instead (below).
   `pnpm board list` ends with `Calendario (N): próxima T<n> el <fecha>` (model `calendar`,
   `calendarWeeks`, `calendarLine`).
+- **Bloqueadas (T258)**: any other blocked open task (`isBlocked`: stage `bloqueada` and not in the
+  Calendario; it waits for a task, a decision, an owner answer or its prompt, or is marked
+  `bloqueada` by hand) leaves the queue for the view's «Bloqueadas» tab, between Calendario and
+  Finalizadas, with its count, the search box and every unmet requisito as «Espera …» («Marcada como
+  bloqueada» when none). It comes back to the queue on its own once unblocked. An owner answer it
+  waits for still shows in «Le toca a usted» (`ownerAsks`). `pnpm board list` adds
+  `Bloqueadas (N): T<n>, …` after the Calendario line; `--json` lists blocked tasks after the queue
+  with `n: null` (model `isBlocked`; `blocked`, `blockedLine` in `subtasks.mjs`).
 - **Subtasks (d174)**: a task names its mother with `padre` (`padre=T12` is stored as the mother's
   id) and/or an initiative with `grupo`, plus an optional `fase` (integer `>= 1`). A task's subtasks
   are those whose `padre` or `grupo` is its id, archived and compacted ones included (`subtasksOf`,
