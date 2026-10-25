@@ -202,26 +202,37 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		await expect(page.locator('text=Sofía Martínez')).toBeVisible();
 		await expect(page.locator('text=Carlos Gómez')).toBeVisible();
 
+		// Verify no horizontal overflow in initial list view at 390px
+		const hasListOverflow = await page.evaluate(
+			() => document.documentElement.scrollWidth > window.innerWidth,
+		);
+		expect(hasListOverflow).toBe(false);
+
 		// 2. Switch to Tarjetas view and verify button layout styling
 		const cardsToggle = page.locator('.guest-view-toggle__option:has-text("Tarjetas")');
-		if (await cardsToggle.isVisible()) {
-			await cardsToggle.click();
-			await page.waitForTimeout(300);
+		await expect(cardsToggle).toBeVisible();
+		await cardsToggle.click();
+		await page.waitForTimeout(300);
 
-			const copyBtn = page.locator('.guest-card__copy-btn').first();
-			const detailsBtn = page.locator('.guest-card__details-btn').first();
+		// Verify no horizontal overflow in cards view at 390px
+		const hasCardsOverflow = await page.evaluate(
+			() => document.documentElement.scrollWidth > window.innerWidth,
+		);
+		expect(hasCardsOverflow).toBe(false);
 
-			await expect(copyBtn).toBeVisible();
-			await expect(detailsBtn).toBeVisible();
+		const copyBtn = page.locator('.guest-card__copy-btn').first();
+		const detailsBtn = page.locator('.guest-card__details-btn').first();
 
-			// Layout check: Verify 48px height and 14px border radius alignment
-			const copyBox = await copyBtn.boundingBox();
-			const detailsBox = await detailsBtn.boundingBox();
-			expect(copyBox).not.toBeNull();
-			expect(detailsBox).not.toBeNull();
-			expect(copyBox!.height).toBeGreaterThanOrEqual(47);
-			expect(detailsBox!.height).toBeGreaterThanOrEqual(47);
-		}
+		await expect(copyBtn).toBeVisible();
+		await expect(detailsBtn).toBeVisible();
+
+		// Layout check: Verify 48px height touch target alignment
+		const copyBox = await copyBtn.boundingBox();
+		const detailsBox = await detailsBtn.boundingBox();
+		expect(copyBox).not.toBeNull();
+		expect(detailsBox).not.toBeNull();
+		expect(copyBox!.height).toBeGreaterThanOrEqual(47);
+		expect(detailsBox!.height).toBeGreaterThanOrEqual(47);
 
 		// 3. COPIAR ENLACE
 		const copyButton = page.locator('.guest-card__copy-btn, .guest-row__copy').first();

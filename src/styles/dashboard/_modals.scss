@@ -281,7 +281,7 @@
 		min-height: 44px;
 		padding: 0;
 		border: none;
-		border-radius: 8px;
+		border-radius: var(--radius-md, 8px);
 		background: none;
 		color: var(--color-text-secondary);
 		font-size: 1.5rem;
