@@ -20,7 +20,17 @@ export interface VisitorSessionInput {
 	isInternal: boolean;
 	consentSnapshot: ConsentSnapshot;
 	metaAttribution?: MetaAttribution;
+	clientSignals?: VisitorClientSignals;
 }
+
+/** Browser IP and user agent kept for Meta CAPI matching; callers pass them only with marketing consent. */
+export interface VisitorClientSignals {
+	ipAddress?: string | null;
+	userAgent?: string | null;
+}
+
+const MAX_CLIENT_IP_LENGTH = 100;
+const MAX_CLIENT_USER_AGENT_LENGTH = 512;
 
 export interface TrackingEventRepositoryInput {
 	eventId?: string;
@@ -78,6 +88,12 @@ export async function upsertVisitorSession(input: VisitorSessionInput): Promise<
 			fbp: emptyToUndefined(input.metaAttribution?.fbp),
 			fbc: emptyToUndefined(input.metaAttribution?.fbc),
 			fbclid: emptyToUndefined(input.metaAttribution?.fbclid),
+			client_ip_address: emptyToUndefined(
+				input.clientSignals?.ipAddress?.slice(0, MAX_CLIENT_IP_LENGTH),
+			),
+			client_user_agent: emptyToUndefined(
+				input.clientSignals?.userAgent?.slice(0, MAX_CLIENT_USER_AGENT_LENGTH),
+			),
 		},
 	});
 }

@@ -11,6 +11,7 @@ import { shouldExcludeInternalTraffic } from '@/lib/tracking/internal-exclusion'
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import { getClientIp } from '@/lib/server/platform-request';
 import { safeErr } from '@/lib/server/safe-error';
 
 export interface IngestTrackingEventInput {
@@ -59,7 +60,8 @@ export async function ingestTrackingEvent(
 
 	// Crawlers, link-preview fetchers and headless browsers may accept cookies and
 	// replay consent; drop them before any write so the sales funnel counts people only.
-	if (isAutomatedUserAgent(input.request.headers.get('user-agent') ?? '')) {
+	const userAgent = input.request.headers.get('user-agent') ?? '';
+	if (isAutomatedUserAgent(userAgent)) {
 		return { accepted: false, reason: 'automated_traffic' };
 	}
 
@@ -85,6 +87,10 @@ export async function ingestTrackingEvent(
 		isInternal: false,
 		consentSnapshot,
 		metaAttribution: consentSnapshot.marketing ? payload.metaAttribution : undefined,
+		// Meta CAPI matching signals; the browser Pixel already sends both under the same consent.
+		clientSignals: consentSnapshot.marketing
+			? { ipAddress: getClientIp(input.request), userAgent }
+			: undefined,
 	});
 
 	const event = await insertTrackingEvent({

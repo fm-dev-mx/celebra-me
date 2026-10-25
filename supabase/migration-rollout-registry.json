@@ -265,6 +265,11 @@
             "phase": "expand",
             "provides": ["events_guest_code_links"],
             "notes": "Adds events.guest_code_links (boolean, NOT NULL). Existing events get false, then the default turns true so events created afterwards opt in; america and olivia-y-antonio are set to true. Additive: the deployed application does not read the column. Apply together with 20261020120000, before the application that reads it is deployed."
+        },
+        "20261024180000": {
+            "phase": "expand",
+            "provides": ["visitor_sessions_client_signals"],
+            "notes": "Adds visitor_sessions.client_ip_address and client_user_agent (nullable, length-checked) and keeps their first value in the first-touch trigger. Additive: the deployed application does not name the columns. Must be applied before the application that writes them is deployed, because PostgREST rejects unknown columns on the session upsert."
         }
     },
     "appCapabilities": {
@@ -303,6 +308,9 @@
         },
         "guest_link_code_client": {
             "requiresDbCapabilities": ["guest_invitations_guest_code", "events_guest_code_links"]
+        },
+        "visitor_session_client_signals_client": {
+            "requiresDbCapabilities": ["visitor_sessions_client_signals"]
         }
     }
 }

@@ -160,23 +160,26 @@ describe('forwardToMetaPixel', () => {
 		});
 	});
 
-	it('forwards a WhatsApp click as a custom event with a technical ID, never a lead code', () => {
+	it('forwards a WhatsApp click as standard Contact plus the custom copy, sharing the technical ID and never a lead code', () => {
 		forwardToMetaPixel('whatsapp_contact_clicked', {
 			event_id: '11111111-1111-4111-8111-111111111111',
 			lead_code: 'CM-ABC123',
 			package_name: 'Premium',
 			source_area: 'pricing',
 		});
-		expect(fbq()).toHaveBeenCalledWith(
-			'trackCustom',
-			'WhatsAppClick',
-			{
-				content_category: 'package',
-				content_name: 'Premium',
-				source_area: 'pricing',
-			},
-			{ eventID: '11111111-1111-4111-8111-111111111111' },
+		const parameters = {
+			content_category: 'package',
+			content_name: 'Premium',
+			source_area: 'pricing',
+		};
+		const options = { eventID: '11111111-1111-4111-8111-111111111111' };
+		const trackCalls = fbq().mock.calls.filter(
+			(call: unknown[]) => call[0] === 'track' || call[0] === 'trackCustom',
 		);
+		expect(trackCalls).toEqual([
+			['track', 'Contact', parameters, options],
+			['trackCustom', 'WhatsAppClick', parameters, options],
+		]);
 	});
 
 	it('forwards successful form_submitted as fbq("track", "Lead", ...)', () => {
@@ -331,9 +334,10 @@ describe('pending-event queue [T4]', () => {
 		const trackCalls = fbqMock.mock.calls.filter(
 			(call) => call[0] === 'track' || call[0] === 'trackCustom',
 		);
-		expect(trackCalls).toHaveLength(2);
+		expect(trackCalls).toHaveLength(3);
 		expect(trackCalls[0]?.[1]).toBe('PageView');
-		expect(trackCalls[1]?.[1]).toBe('WhatsAppClick');
+		expect(trackCalls[1]?.[1]).toBe('Contact');
+		expect(trackCalls[2]?.[1]).toBe('WhatsAppClick');
 	});
 
 	it('[T4b] pending queue is not flushed after onerror — events are discarded', async () => {
