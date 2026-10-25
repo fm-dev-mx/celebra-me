@@ -1,0 +1,34 @@
+.meta-insights-report {
+	display: grid;
+	gap: var(--spacing-md);
+	margin-block: var(--spacing-lg);
+
+	:focus-visible {
+		outline: 2px solid var(--dashboard-focus-ring);
+		outline-offset: 2px;
+	}
+
+	&__table {
+		overflow-x: auto;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		font-variant-numeric: tabular-nums;
+	}
+
+	th,
+	td {
+		padding: var(--spacing-md);
+		text-align: left;
+		border-bottom: 1px solid var(--dashboard-card-border);
+		white-space: nowrap;
+	}
+
+	tfoot th,
+	tfoot td {
+		font-weight: 600;
+		border-bottom: 0;
+	}
+}

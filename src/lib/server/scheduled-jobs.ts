@@ -5,17 +5,20 @@
  * The expressions are the ones declared under `triggers.crons` in `wrangler.jsonc`.
  * Jobs listed in `PRODUCTION_ONLY_JOBS` are declared only on the Production Worker and
  * skip on any other deploy identity.
- * The engagement maintenance cron also runs the commercial analytics retention purge.
- * The platform usage cron (every 15 minutes) also sweeps the Meta conversion outbox, so the
- * Production Worker needs no extra cron trigger.
+ * The engagement maintenance cron also runs the commercial analytics retention purge and, on the
+ * Production Worker only, the daily Meta Insights collector for the last completed day.
+ * The platform usage cron (every 15 minutes) also sweeps the Meta conversion outbox and runs
+ * the Meta conversion retention purge, so the Production Worker needs no extra cron trigger.
  */
 import { randomUUID } from 'node:crypto';
 import { runCommercialRetention } from '@/lib/commercial/commercial-retention.service';
+import { runMetaConversionRetention } from '@/lib/commercial/meta-capi/retention.service';
 import {
 	isMetaCapiDeliveryEnabled,
 	processPendingMetaConversionEvents,
 } from '@/lib/commercial/meta-capi/service';
 import { readBuildIdentity } from '@/lib/environment';
+import { runMetaInsightsCollector } from '@/lib/meta/insights-collector';
 import {
 	MEMORIES_CLEANUP_EVENT_NAME,
 	createMemoriesCleanupCompletedEvidence,
@@ -143,11 +146,34 @@ async function runCommercialRetentionJob(): Promise<ScheduledJobOutcome['status'
 	}
 }
 
-/** Both daily analytics steps run even when the other fails; any failure fails the job. */
+async function runMetaInsightsJob(): Promise<ScheduledJobOutcome['status']> {
+	// Insights describe the shared Production ad account and assets; any other identity skips.
+	if (readDeployEnvironment() !== 'production') {
+		console.info('[meta-insights][collector] skipped: deploy identity is not production.');
+		return 'skipped';
+	}
+	try {
+		const result = await runMetaInsightsCollector();
+		// Outcomes hold failure kinds and status codes only, never tokens, URLs or bodies.
+		(result.status === 'failed' ? console.warn : console.info)(
+			'[meta-insights][collector] ' + result.status,
+			result,
+		);
+		return result.status;
+	} catch {
+		console.error('[meta-insights][collector] failed');
+		return 'failed';
+	}
+}
+
+/** Every daily analytics step runs even when another fails; any failure fails the job. */
 async function runDailyAnalyticsMaintenanceJob(): Promise<ScheduledJobOutcome['status']> {
-	const engagement = await runEngagementMaintenanceJob();
-	const retention = await runCommercialRetentionJob();
-	return engagement === 'failed' || retention === 'failed' ? 'failed' : 'completed';
+	const steps = [
+		await runEngagementMaintenanceJob(),
+		await runCommercialRetentionJob(),
+		await runMetaInsightsJob(),
+	];
+	return steps.includes('failed') ? 'failed' : 'completed';
 }
 
 async function runPlatformUsageJob(): Promise<ScheduledJobOutcome['status']> {
@@ -212,12 +238,34 @@ async function runMetaCapiOutboxSweepJob(): Promise<ScheduledJobOutcome['status'
 	}
 }
 
-/** Both quarter-hour steps run even when the other fails; any failure fails the job. */
+async function runMetaRetentionJob(): Promise<ScheduledJobOutcome['status']> {
+	// The purge deletes rows; only Production runs the quarter-hour cron, so any other identity skips.
+	if (readDeployEnvironment() !== 'production') {
+		console.info('[meta-capi][retention] skipped: deploy identity is not production.');
+		return 'skipped';
+	}
+	try {
+		const result = await runMetaConversionRetention();
+		(result.complete ? console.info : console.warn)('[meta-capi][retention] completed', result);
+		return 'completed';
+	} catch (error) {
+		console.error('[meta-capi][retention] failed', {
+			status: error instanceof SupabaseHttpError ? error.status : null,
+			code: error instanceof SupabaseHttpError ? error.code : null,
+		});
+		return 'failed';
+	}
+}
+
+/** Every quarter-hour step runs even when another fails; any failure fails the job. */
 async function runQuarterHourJobs(): Promise<ScheduledJobOutcome['status']> {
-	const platform = await runPlatformUsageJob();
-	const sweep = await runMetaCapiOutboxSweepJob();
-	if (platform === 'failed' || sweep === 'failed') return 'failed';
-	return platform === 'skipped' && sweep === 'skipped' ? 'skipped' : 'completed';
+	const steps = [
+		await runPlatformUsageJob(),
+		await runMetaCapiOutboxSweepJob(),
+		await runMetaRetentionJob(),
+	];
+	if (steps.includes('failed')) return 'failed';
+	return steps.every((step) => step === 'skipped') ? 'skipped' : 'completed';
 }
 
 const JOB_RUNNERS: Readonly<

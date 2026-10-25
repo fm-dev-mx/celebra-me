@@ -271,11 +271,21 @@
             "provides": ["visitor_sessions_client_signals"],
             "notes": "Adds visitor_sessions.client_ip_address and client_user_agent (nullable, length-checked) and keeps their first value in the first-touch trigger. Additive: the deployed application does not name the columns. Must be applied before the application that writes them is deployed, because PostgREST rejects unknown columns on the session upsert."
         },
+        "20261025040000": {
+            "phase": "expand",
+            "provides": ["meta_insights_daily_tables"],
+            "notes": "Creates meta_ads_insights_daily and meta_organic_insights_daily with forced RLS and service-role-only select/insert/update. Additive: no deployed application code reads or writes the tables yet. Applied to Preview and Production with v0.47.0-beta.1."
+        },
         "20261025120000": {
             "phase": "contract",
             "provides": ["meta_conversion_events_browser_events"],
             "revokes": ["meta_conversion_events_purchase_only"],
             "notes": "Lets meta_conversion_events hold browser Contact and Lead rows: adds session_id (no foreign key) and event_source_path, drops NOT NULL on order_id, customer_id and value, widens the event_name and trigger_status checks, and adds a shape check that keeps Purchase rows as strict as before. Also adds visitor_consent_withdrawals, the record_visitor_marketing_withdrawal RPC and a visitor_sessions insert/update trigger that keeps a marketing withdrawal until a strictly newer consent decision. Registered as contract only because the check swaps use DROP CONSTRAINT and DROP NOT NULL; every change widens, so no rows change and the deployed application keeps working. Must be applied before the application that enqueues Contact and Lead rows is deployed, or those inserts fail (ingestion logs and continues)."
+        },
+        "20261025150000": {
+            "phase": "expand",
+            "provides": ["meta_conversion_retention_purge"],
+            "notes": "Adds meta_conversion_retention_cutoff (30 days), the service-role purge_meta_conversion_retention RPC and three indexes. The RPC deletes at most p_batch sent or skipped browser Contact/Lead rows older than 30 days (never Purchase rows, unfinished rows or rows with an operator recovery; delivery attempts cascade) and at most p_batch visitor_consent_withdrawals older than the oldest stored visitor session. Additive: no existing object changes. Must be applied before the application whose quarter-hour cron calls the RPC is deployed, or that step logs failed every 15 minutes."
         }
     },
     "appCapabilities": {
@@ -320,6 +330,9 @@
         },
         "meta_capi_browser_events_client": {
             "requiresDbCapabilities": ["meta_conversion_events_browser_events"]
+        },
+        "meta_conversion_retention_client": {
+            "requiresDbCapabilities": ["meta_conversion_retention_purge"]
         }
     }
 }

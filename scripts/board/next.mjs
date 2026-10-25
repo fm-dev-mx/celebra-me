@@ -27,6 +27,7 @@ import {
 } from './model.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
 import { findingsSent } from './findings.mjs';
+import { missingCierreItems } from './require-cierre.mjs';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
@@ -238,6 +239,7 @@ function sessionItems(board, now) {
  * - `unir`: the last review round approved the PR's current head SHA;
  * - `vuelta`: the PR head moved past its last finished round, so it needs `pnpm board review` again;
  * - `hallazgos`: the last round found something at the current head that `close` did not send to the author;
+ * - `cierre`: a task «en revision» or «unida» without its closing summary (d255);
  * - `sin-tarea`: an open PR no task names;
  * - `sesion`: a ready task for Claude or the coordinator that no session holds;
  * - `mensaje`: unread messages to the coordinator.
@@ -252,7 +254,13 @@ export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 		t: findTask(r.tarea, board),
 		texto: `Mensaje: ${messageLine(r, board)}`,
 	}));
-	return [...reviews, ...prsWithoutTask(board, prs), ...sessionItems(board, now), ...messages];
+	return [
+		...reviews,
+		...missingCierreItems(board),
+		...prsWithoutTask(board, prs),
+		...sessionItems(board, now),
+		...messages,
+	];
 }
 
 /**

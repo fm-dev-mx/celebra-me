@@ -1,0 +1,54 @@
+---
+// Server-rendered only: no client directive, the table ships as static HTML.
+import type { MetaInsightsTable } from '@/lib/meta/insights-dashboard';
+import { formatCount, formatCurrency } from '@/lib/tracking/commercial-dashboard';
+import '@/styles/dashboard/_meta-insights-report.scss';
+interface Props { table: MetaInsightsTable | null }
+const { table } = Astro.props;
+const NOT_COLLECTED = 'Sin registro';
+const count = (value: number | null) => value === null ? NOT_COLLECTED : formatCount(value);
+const money = (value: number | null) => value === null ? NOT_COLLECTED : formatCurrency(value);
+const shortDate = (date: string) =>
+	new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+---
+<section class="dashboard-card meta-insights-report" aria-labelledby="meta-insights-report-title">
+	<h2 id="meta-insights-report-title">Meta: anuncios y alcance, últimos 30 días</h2>
+	{table ? <>
+		<p>{table.startDate} a {table.endDate}. No incluye hoy. Días con datos: {table.collectedDays} de {table.days.length}.</p>
+		<p>Los datos se guardan una vez al día con el día anterior. «{NOT_COLLECTED}» significa que ese día no se guardó información o que no hubo anuncios activos; no se interpreta como cero.</p>
+		<div class="meta-insights-report__table" tabindex="0" role="region" aria-label="Métricas diarias de Meta">
+			<table>
+				<thead>
+					<tr>
+						<th scope="col">Día</th>
+						<th scope="col">Gasto en anuncios</th>
+						<th scope="col">Clics</th>
+						<th scope="col">Alcance de la página</th>
+						<th scope="col">Alcance de Instagram</th>
+					</tr>
+				</thead>
+				<tbody>
+					{table.days.map((day) => (
+						<tr>
+							<th scope="row"><time datetime={day.date}>{shortDate(day.date)}</time></th>
+							<td>{money(day.spend)}</td>
+							<td>{count(day.clicks)}</td>
+							<td>{count(day.pageReach)}</td>
+							<td>{count(day.instagramReach)}</td>
+						</tr>
+					))}
+				</tbody>
+				<tfoot>
+					<tr>
+						<th scope="row">Total</th>
+						<td>{formatCurrency(table.totals.spend)}</td>
+						<td>{formatCount(table.totals.clicks)}</td>
+						<td>No se suma</td>
+						<td>No se suma</td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+		<p>El alcance cuenta personas únicas por día; una misma persona puede aparecer en varios días, por eso no se suma. El alcance de la página usa la métrica de espectadores únicos que Meta ofrece desde la versión 26.</p>
+	</> : <p role="status">Datos de Meta no disponibles o consulta incompleta. No se muestran totales parciales. Revise la conexión y el esquema antes de reintentar.</p>}
+</section>

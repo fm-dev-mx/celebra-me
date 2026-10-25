@@ -10,6 +10,31 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.49.0-beta.1] - 2026-10-25
+
+The commercial dashboard shows 30 days of Meta Ads, Page and Instagram results collected daily, old
+browser conversions and consent withdrawals are purged automatically, and board closing summaries
+become mandatory before review. One expand migration; no published invitation content changes.
+
+### Added
+
+- Daily Meta Insights collector on the Production `43 10` cron: stores the last completed day's
+  campaign spend, impressions and clicks, Page unique media viewers and Instagram reach by upsert,
+  and skips cleanly while secrets are missing. The commercial dashboard shows a server-rendered
+  30-day table of spend, clicks, Page reach and Instagram reach (#554).
+- Meta conversion retention on the quarter-hour sweep: delivered or skipped browser `Contact` and
+  `Lead` rows are deleted after 30 days, and marketing withdrawals older than every stored visitor
+  session are removed; `Purchase`, unfinished and recovered rows are kept (#551).
+
+### Changed
+
+- Board: `pnpm board review` refuses a task without its closing summary and prints the
+  `pnpm board close` command to run first; the coordinator queue asks for missing summaries (#547).
+- Board: `board:verify` skips archived tasks unless `--archivadas` is passed, checks superseded
+  review rounds by PR state, and `board sesiones` hides idle untitled chats (#553).
+- The migration rollout registry records `20261025040000_meta_insights_daily` as an expand migration
+  (#549).
+
 ## [0.48.0-beta.1] - 2026-10-25
 
 WhatsApp clicks and form submissions reach Meta from the server as `Contact` and `Lead` events that

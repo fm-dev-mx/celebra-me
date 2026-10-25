@@ -54,7 +54,7 @@
  *   restore <id> [--dry-run]                    a compacted task back from its .zip
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
- *   verify [--json]                             same as pnpm board:verify
+ *   verify [--json] [--archivadas]              same as pnpm board:verify
  *   msg <id> --de=<a> --para=<b> "texto"        T126: a message about a task, kept in the bitácora
  *   inbox --agente=<a> [--todos]                messages to <a> not read yet; marks them read
  *   sigue [--json]                              T126: «Le toca a usted», «Le toca al coordinador» and «Detenidas»,
@@ -138,6 +138,7 @@ import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
 import { ghPrState, reviewSha } from './github.mjs';
 import { codexQuota, pickReviewer } from './reviewer.mjs';
+import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
@@ -749,6 +750,8 @@ const commands = {
 			const src = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!src.pr || src.estado !== 'en revision')
 				throw new UsageError('el origen requiere PR y estado en revision');
+			const noCierre = reviewCierreIssue(src, loadBoard(dir));
+			if (noCierre) throw new UsageError(noCierre);
 			const author = authorOf(src);
 			// d209: without --agente, Claude's work goes to the less loaded of Gemini and Codex.
 			const pick =
@@ -806,7 +809,12 @@ const commands = {
 	},
 	verify({ flags }, dir, out) {
 		const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-board.mjs');
-		const args = [script, dir, ...(flags.json ? ['--json'] : [])];
+		const args = [
+			script,
+			dir,
+			...(flags.json ? ['--json'] : []),
+			...(flags.archivadas ? ['--archivadas'] : []),
+		];
 		try {
 			out(execFileSync(process.execPath, args, { encoding: 'utf8' }).trimEnd());
 		} catch (e) {

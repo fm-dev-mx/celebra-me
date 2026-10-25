@@ -32,6 +32,7 @@ const FILES = {
 	'/format.mjs': ['format.mjs', 'text/javascript; charset=utf-8'],
 	'/delivery.mjs': ['delivery.mjs', 'text/javascript; charset=utf-8'],
 	'/findings.mjs': ['findings.mjs', 'text/javascript; charset=utf-8'],
+	'/require-cierre.mjs': ['require-cierre.mjs', 'text/javascript; charset=utf-8'],
 };
 const SETTLE_MS = 150;
 const HEARTBEAT_MS = 25_000;

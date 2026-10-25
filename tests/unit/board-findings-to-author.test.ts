@@ -48,7 +48,14 @@ function task(id: string, fields: Json = {}): Json {
 }
 
 const SESSION = { id: 'local_abc', agente: 'claude', nombre: 'f05 · T1 · codigo' };
-const ORIGIN = task('codigo', { num: 1, estado: 'en revision', pr: '#530', sesion: SESSION });
+// d255: `review` needs the origin's closing summary.
+const ORIGIN = task('codigo', {
+	num: 1,
+	estado: 'en revision',
+	pr: '#530',
+	sesion: SESSION,
+	cierre: { resumen: 'Hecho.', comprobaciones: [], saltadas: [], pendientes: [], en: NOW },
+});
 
 /** A closed review round of `codigo` with `veredicto` and its findings. */
 function round(veredicto: string, hallazgos: Json[] = []): Json {

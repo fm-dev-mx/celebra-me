@@ -735,6 +735,7 @@ describe('pnpm board', () => {
 					rama: 'fix/origen',
 					pr: 398,
 					estado: 'en revision',
+					cierre: CIERRE,
 				}),
 			],
 		});
@@ -794,6 +795,79 @@ describe('pnpm board', () => {
 		});
 	});
 
+	it('refuses a cross-review of a reopened cancelled task whose cierre breaks the contract (d255)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('reabierta', {
+					agente: 'claude',
+					rama: 'feat/r',
+					pr: 21,
+					estado: 'pendiente',
+					contrato: 2,
+				}),
+			],
+		});
+		const sha = 'a'.repeat(40);
+		const cancel = board(
+			dir,
+			'set',
+			'reabierta',
+			'--rev=1',
+			'estado=cancelada',
+			'--motivo=Ya no hace falta.',
+			'--coordinador',
+		);
+		expect(cancel.status).toBe(0);
+		expect(readTask(dir, 'reabierta').cierre).toBeTruthy();
+		expect(
+			board(dir, 'set', 'reabierta', '--rev=2', 'estado=en revision', '--coordinador').status,
+		).toBe(0);
+		const refused = board(dir, 'review', 'reabierta', '--agente=codex', `--sha=${sha}`);
+		expect(refused.status).toBe(2);
+		expect(refused.err).toContain('reabierta su resumen de cierre no vale');
+		expect(refused.err).toContain('falta cierre.resultado del código');
+		expect(existsSync(path.join(dir, 'tareas', 'reabierta-revision.json'))).toBe(false);
+		// «Le toca al coordinador» asks for it too, although the task has a cierre.
+		expect(board(dir, 'sigue').out).toContain('Pedir el resumen de cierre de T1');
+	});
+
+	it('refuses a cross-review while the task has no closing summary (d255)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('sin-cierre', {
+					agente: 'claude',
+					rama: 'feat/x',
+					pr: 20,
+					estado: 'en revision',
+					contrato: 2,
+				}),
+			],
+		});
+		const sha = 'a'.repeat(40);
+		const refused = board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`);
+		expect(refused.status).toBe(2);
+		expect(refused.err).toContain('sin-cierre no tiene resumen de cierre (d255)');
+		expect(refused.err).toContain('pnpm board close sin-cierre --resumen=');
+		expect(existsSync(path.join(dir, 'tareas', 'sin-cierre-revision.json'))).toBe(false);
+		// The coordinator gets no bypass either: it completes the summary with `close --coordinador`.
+		expect(
+			board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`, '--coordinador')
+				.status,
+		).toBe(2);
+		// The suggested command is complete for a `contrato: 2` task once each `…` is filled in.
+		const suggested = /pnpm board close (.+)$/mu.exec(refused.err)?.[1] ?? '';
+		const args = suggested
+			.replace('<sha del PR>', sha)
+			.replace('--resumen=…', '--resumen=Hecho.')
+			.trim()
+			.split(' ')
+			.map((a) => a.replace('…', 'ninguna'));
+		const closed = board(dir, 'close', ...args, '--coordinador');
+		expect(closed.err).toBe('');
+		expect(closed.status).toBe(0);
+		expect(board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`).status).toBe(0);
+	});
+
 	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
 		const dir = makeBoard({
 			tareas: [
@@ -802,14 +876,21 @@ describe('pnpm board', () => {
 					rama: 'feat/a',
 					pr: 10,
 					estado: 'en revision',
+					cierre: CIERRE,
 				}),
 				task('de-codex', {
 					agente: 'codex',
 					rama: 'feat/b',
 					pr: 11,
 					estado: 'en revision',
+					cierre: CIERRE,
 				}),
-				task('sin-autor', { rama: 'feat/c', pr: 12, estado: 'en revision' }),
+				task('sin-autor', {
+					rama: 'feat/c',
+					pr: 12,
+					estado: 'en revision',
+					cierre: CIERRE,
+				}),
 			],
 		});
 		const [a, b, c] = ['a', 'b', 'c'].map((x) => x.repeat(40));

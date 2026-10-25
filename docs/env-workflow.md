@@ -131,6 +131,18 @@ as raw JSON objects, not Graph envelopes, paging URLs, credentials or individual
 forced with no browser policies; only the service role can select, insert or update. No migration
 execution or hosted secret configuration is part of this foundation.
 
+The daily collector (`src/lib/meta/insights-collector.ts`) runs on the Production Worker only,
+inside the `43 10 * * *` analytics cron, for the last completed day in `America/Chihuahua`. It reads
+campaign-level `spend`, `impressions` and `clicks` with `use_unified_attribution_setting=true`
+(stored as attribution window `unified`), Page `page_total_media_view_unique` (the v26.0 replacement
+for the removed `page_impressions_unique`) and Instagram `reach` with `metric_type=total_value`,
+each with `period=day`. Each source upserts by its table key, so a rerun of the same day refreshes
+its rows. Without `META_GRAPH_ACCESS_TOKEN` the run skips; a missing or malformed id skips only that
+source. `META_AD_ACCOUNT_ID` may carry the `act_` prefix once or none. A usage limit or other Graph
+failure fails only that source, writes nothing for it, and logs the failure kind, HTTP status and
+recovery delay, never the token, URLs or bodies. A missed day is not backfilled automatically. The
+commercial dashboard reads the last 30 days server-side only.
+
 Primary references:
 [Meta SDK version](https://github.com/facebook/facebook-python-business-sdk/blob/main/facebook_business/apiconfig.py),
 [pagination](https://developers.facebook.com/docs/graph-api/results/),

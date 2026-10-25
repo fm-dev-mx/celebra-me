@@ -127,7 +127,7 @@ describe('task kinds (T130): kind files', () => {
 			`const doc = k.parseKind(input.text);
 			let bad; try { k.parseKind('tipo: codigo\\n  oops'); } catch (e) { bad = e.message; }
 			let orphan; try { k.parseKind('  - suelto'); } catch (e) { orphan = e.message; }
-			const issues = k.kindIssues({ ...doc, devuelve: ['pr'], extra: 'x', pasos: ['{otro}'] }, 'codigo', ['testing_qa']);
+			const issues = k.kindIssues({ ...doc, devuelve: ['pr'], extra: 'x', pasos: ['{otro}'], tras_cierre: 'x' }, 'codigo', ['testing_qa']);
 			console.log(JSON.stringify({ doc, bad, orphan, issues }));`,
 			{
 				text: "# c\ntipo: codigo\ndescripcion: 'It''s'\nlee:\n    - 'testing_qa'\nvacia: []\n",
@@ -148,6 +148,7 @@ describe('task kinds (T130): kind files', () => {
 				'devuelve debe ser [pr, sha, nivel], el contrato de T129',
 				'marcador desconocido: {otro}',
 				'falta listo_si',
+				'tras_cierre debe ser una lista',
 			]),
 		);
 	});
@@ -217,6 +218,21 @@ describe('task kinds (T130): generated prompt', () => {
 		expect(closing).toContain('1. pnpm validate:changed y pnpm type-check en verde.');
 		expect(closing).toContain('--excepcion=… --pr=#<n> --sha=<sha del PR> --nivel=type-check');
 		expect(closing).toContain('{"pr":"#<n>","sha":"<sha de 40>","nivel":"type-check"}');
+		// d255: `review` refuses a task without its cierre, so the close line comes first.
+		const steps = r.sections['AL TERMINAR'];
+		const close = steps.findIndex((l: string) =>
+			l.includes('pnpm board close tipos-y-prompts'),
+		);
+		const review = steps.findIndex((l: string) =>
+			l.includes('pnpm board review tipos-y-prompts'),
+		);
+		expect(close).toBeGreaterThan(-1);
+		// A locked task is not moved by sync, so the session moves it to «en revision» itself.
+		const move = steps.findIndex((l: string) =>
+			l.includes('pnpm board set tipos-y-prompts --rev='),
+		);
+		expect(move).toBeGreaterThan(close);
+		expect(review).toBeGreaterThan(move);
 		expect(r.meta).toMatchObject({
 			formato: 'prompt-v1',
 			tarea: 'T130 tipos-y-prompts',
