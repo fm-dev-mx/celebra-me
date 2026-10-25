@@ -164,6 +164,9 @@ afterEach(() => {
 	for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
+/** T130: a session task added now names its kind and its QUÉ SE BUSCA. */
+const TYPED = ['tipo=auditoria', 'busca=Que funcione.\nTerminado cuando: pasa.'];
+
 describe('pnpm board', () => {
 	it('assigns fixed numbers after the highest task or archive number, including finished tasks', () => {
 		const dir = makeBoard({});
@@ -189,7 +192,15 @@ describe('pnpm board', () => {
 			archivo: [{ id: 'old', estado: 'comprobada', num: 40 }],
 		});
 		expect(
-			board(reserved, 'add', 'new', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion').status,
+			board(
+				reserved,
+				'add',
+				'new',
+				'titulo=Nueva',
+				'urgencia=normal',
+				'actor=sesion',
+				...TYPED,
+			).status,
 		).toBe(0);
 		expect(readTask(reserved, 'new').num).toBe(41);
 	});
@@ -960,6 +971,7 @@ describe('pnpm board', () => {
 			'urgencia=normal',
 			'actor=sesion',
 			'carrilPlaneado=f09-docs',
+			...TYPED,
 		];
 		expect(raw(dir, ...add).status).toBe(2);
 		expect(raw(dir, ...add, '--coordinador').status).toBe(0);
@@ -1398,7 +1410,7 @@ describe('pnpm board', () => {
 
 	it('refuses a bitácora row without a known writer and writes nothing', () => {
 		const dir = makeBoard({ tareas: [task('base')] });
-		const add = ['add', 'nueva', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion'];
+		const add = ['add', 'nueva', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion', ...TYPED];
 		expect(raw(dir, ...add).err).toContain('falta quién escribe la fila');
 		expect(raw(dir, ...add, '--quien=sesion').err).toContain(
 			'quien debe ser claude/codex/gemini/coordinador/dueno, no sesion',

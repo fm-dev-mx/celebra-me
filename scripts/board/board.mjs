@@ -6,6 +6,11 @@
  *   next --agente=<a> [--json]                  first ready, unlocked task that agent finishes alone
  *   show <id|T<n>> [--json]                    set and claim also accept the fixed task number
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
+ *                                               T130: a session task needs tipo=codigo|revision|release|invitacion|
+ *                                               creativo|auditoria|operacion and busca=… (its QUÉ SE BUSCA);
+ *                                               add, set and plan then generate its prompt from .agent/kinds/
+ *   prompt <id> [--guardar --rev=<n>] [--json]  T130: the prompt generated from the task's tipo and how the
+ *                                               saved one differs; --guardar saves it (lock owner or --coordinador)
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--titulo="f05 · T<n> · …"] [--sesion=<id>] [--carril=<id>] [--rama=<b>]
  *                                               lock: one owner at a time; --titulo (the session name) is
@@ -121,7 +126,9 @@ import {
 } from './store.mjs';
 import { UsageError, say } from './cli.mjs';
 import { externalSessionLines, externalSessions } from './external-sessions.mjs';
+import { kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
+import { ghPrState, reviewSha } from './github.mjs';
 import { codexQuota, pickReviewer } from './reviewer.mjs';
 import { addToZip } from './zip.mjs';
 
@@ -274,37 +281,6 @@ function assertOwner(task, flags) {
 		throw new UsageError(
 			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
 		);
-}
-
-/** `gh pr view <n> --json state` → OPEN, MERGED or CLOSED. */
-function ghPrState(pr) {
-	return execFileSync(
-		'gh',
-		['pr', 'view', String(pr).replace(/^#/, ''), '--json', 'state', '--jq', '.state'],
-		{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-	).trim();
-}
-
-function reviewSha(task, flags) {
-	const sha =
-		typeof flags.sha === 'string'
-			? flags.sha
-			: execFileSync(
-					'gh',
-					[
-						'pr',
-						'view',
-						String(task.pr).replace(/^#/, ''),
-						'--json',
-						'headRefOid',
-						'--jq',
-						'.headRefOid',
-					],
-					{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-				).trim();
-	if (!/^[a-f0-9]{40}$/.test(sha))
-		throw new UsageError('falta un SHA completo del PR (--sha=<40 hex>)');
-	return sha;
 }
 
 /**
@@ -504,11 +480,13 @@ const commands = {
 			// A compacted task keeps its id: it comes back with restore, never as a new task.
 			if (readDoc(dir, 'archivo', id))
 				throw new UsageError(`${id} está compactada: use pnpm board restore ${id}`);
-			const t = {
+			const draft = {
 				...applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs),
 				contrato: CONTRATO,
 			};
-			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
+			if (draft.carrilPlaneado !== undefined) assertPlan(draft, draft.carrilPlaneado, flags);
+			// T130: a typed task gets its prompt from its kind (once it has a lane).
+			const t = withKindPrompt(null, draft, dir, { num: nextNum(dir), pairs });
 			const saved = saveTask(dir, null, t, {
 				quien: flags.quien,
 				coordinador: flags.coordinador,
@@ -538,11 +516,13 @@ const commands = {
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
 			// T129: a cancellation writes its cierre in the same command.
-			const merged = cancelOnSet(
+			// T130: a typed task regenerates its prompt when what it is built from changes.
+			const edited = cancelOnSet(
 				before,
 				applyPairs({ ...before, ...data, id: before.id }, pairs),
 				flags,
 			);
+			const merged = withKindPrompt(before, edited, dir, { pairs: { ...data, ...pairs } });
 			if (before.candado?.rama && merged.rama !== before.candado.rama)
 				throw new UsageError('rama distinta del candado');
 			if (
@@ -627,9 +607,10 @@ const commands = {
 					before,
 					`${before.id} ya corre en ${carril ?? 'ningún carril'}`,
 				);
-			const after = { ...before };
-			if (carril) after.carrilPlaneado = carril;
-			else delete after.carrilPlaneado;
+			const planned = { ...before };
+			if (carril) planned.carrilPlaneado = carril;
+			else delete planned.carrilPlaneado;
+			const after = withKindPrompt(before, planned, dir);
 			const row = logEntry(
 				before.id,
 				{ carril: { de: before.carrilPlaneado ?? '', a: carril ?? '' } },
@@ -890,6 +871,7 @@ Object.assign(
 	maintenanceCommands,
 	nextCommands({ getTask }),
 	closeCommands({ getTask, saveTask, checkRev, assertOwner }),
+	kindCommands({ getTask, saveTask, checkRev, assertOwner }),
 	{
 		archive: archiveCommand(true),
 		unarchive: archiveCommand(false),

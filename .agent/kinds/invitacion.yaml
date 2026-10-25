@@ -1,0 +1,22 @@
+# Task kind «invitacion»: preparing or publishing a client invitation (T130, rules: .agent/rules/board.md).
+tipo: invitacion
+descripcion: 'Preparar o publicar la invitación de un cliente.'
+lee:
+    - 'invitation_preparation'
+    - 'invitation_publication'
+pasos_inicio:
+    - 'pnpm agent:git-safety:start --session={rama}'
+    - 'pnpm board claim {id} --agente={agente} --rama={rama} --titulo="{nombre}"'
+pasos:
+    - '1. Siga docs/core/invitation-creation-contract.md: la ruta es /<tipo de evento>/<slug>, sin prefijo en el slug.'
+autorizado_por_defecto:
+    - 'Modo rápido hasta develop: git-safety, commit, push y PR a develop de {rama}.'
+no_hagas:
+    - '- No publique en Producción sin la aprobación del cliente y del dueño.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
+pare_si:
+    - 'Falta un dato del cliente o una foto, o el cliente no ha aprobado.'
+devuelve: []
+listo_si: 'type-check'
+al_terminar:
+    - 'Anote en --resumen la URL, el digest y si el cliente aprobó.'
