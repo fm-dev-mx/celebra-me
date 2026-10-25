@@ -191,6 +191,30 @@ describe('board sesiones (d211)', () => {
 		});
 	});
 
+	it('filters each chat without a task before folding namesakes', () => {
+		const dir = makeBoard([task('hecha', 118, 'hecha')]);
+		const home = makeHome({
+			codex: [
+				{ name: 'Security Deep Scan', cwd, en: RECENT },
+				{ name: 'Security Deep Scan', cwd, en: STALE },
+				{ name: 'Revisión libre', cwd, en: RECENT - 1 },
+				{
+					name: 'Revisión libre',
+					cwd,
+					en: RECENT - 2,
+					source: 'agent_created_thread',
+				},
+			],
+		});
+		const json = JSON.parse(sesiones(dir, home, '--json').out);
+		expect(json.chats.map((c: Json) => [c.titulo, c.total])).toEqual([
+			['Security Deep Scan', 1],
+			['Revisión libre', 1],
+		]);
+		expect(json.omitidosSinTarea).toBe(2);
+		expect(json.fuentes.codex).toMatchObject({ abiertos: 4 });
+	});
+
 	it('reports a missing or unreadable store and still answers for the other', () => {
 		const dir = makeBoard([task('hecha', 118, 'hecha')]);
 		const missing = makeHome({ gemini: [{ title: 'f04 · T118 · Hecha', en: NOW, uris }] });

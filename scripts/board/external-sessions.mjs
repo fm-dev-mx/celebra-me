@@ -126,14 +126,15 @@ export function crossChats(key, rows, board, now = Date.now()) {
 			else despachadores.push({ fuente, titulo: r.titulo, total: 1, ultimo: r.en });
 			continue;
 		}
-		const same = chats.find((c) => c.titulo === r.titulo);
-		if (same) {
-			same.total += 1;
-			continue;
-		}
+		// Filter each row before folding: a listed chat must not absorb an idle or agent-made namesake.
 		const tarea = taskOf(r.titulo, board);
 		if (!tarea && !listed(r, now)) {
 			omitidosSinTarea += 1;
+			continue;
+		}
+		const same = chats.find((c) => c.titulo === r.titulo);
+		if (same) {
+			same.total += 1;
 			continue;
 		}
 		chats.push({
