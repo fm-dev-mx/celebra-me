@@ -1,0 +1,21 @@
+# Task kind «auditoria»: a read-only audit with a written report (T130, rules: .agent/rules/board.md).
+tipo: auditoria
+descripcion: 'Auditoría de solo lectura con informe.'
+lee:
+    - 'documentation_governance'
+pasos_inicio:
+    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+pasos:
+    - '1. Revise el área de QUÉ SE BUSCA sin editar nada.'
+    - '2. Escriba el informe en .agent/tmp/reports/<AAAA-MM-DD>-<tema>.md de Integración.'
+autorizado_por_defecto:
+    - '(solo lectura) Leer el repositorio y escribir el informe en .agent/tmp/reports/.'
+no_hagas:
+    - '- No edite archivos versionados ni haga commits.'
+    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+pare_si:
+    - 'Un hallazgo pide una decisión del dueño antes de seguir.'
+devuelve: []
+listo_si: 'ninguno'
+al_terminar:
+    - 'Anote en --resumen la ruta del informe y las decisiones que pide.'

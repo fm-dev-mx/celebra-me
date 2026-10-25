@@ -146,11 +146,13 @@ describe('board heartbeat and session title (T126)', () => {
 			'urgencia=normal',
 			'actor=sesion',
 			'agente=codex',
-			'prompt=T2 · Nueva\nDECISIONES\n- ninguna',
+			'tipo=auditoria',
+			'busca=Que funcione.\nTerminado cuando: pasa.',
+			'carrilPlaneado=f10-libre',
 			'--coordinador',
 		]);
 		expect(add.status).toBe(0);
-		expect(readTask(dir, 'nueva').contrato).toBe(2);
+		expect(readTask(dir, 'nueva').contrato).toBe(3);
 		const claim = (id: string, ...rest: string[]) =>
 			cli(dir, [
 				'claim',

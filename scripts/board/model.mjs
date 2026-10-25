@@ -278,6 +278,7 @@ export function reviewChild(src, { agente, sha, prev, num, generado = new Date()
 		urgencia: src.urgencia,
 		actor: 'sesion',
 		agente,
+		tipo: 'revision',
 		contrato: CONTRATO,
 		origen: src.id,
 		revisionSha: sha,
@@ -321,11 +322,31 @@ export const HANDOFF_LISTS = [
 ];
 export const VEREDICTOS = ['aprobado', 'cambios', 'bloqueado'];
 const PRIORIDADES = ['P0', 'P1', 'P2', 'P3'];
-const NIVELES = ['validate:changed', 'type-check', 'ci'];
+export const NIVELES = ['validate:changed', 'type-check', 'ci'];
+
+/**
+ * T130: what a task does (`tipo`), each with its `.agent/kinds/<tipo>.yaml`; `categoria` only picks its lane.
+ * RESULT_FIELDS are the `resultado` fields a kind's close returns (T129); the other kinds return the common
+ * Handoff lists only.
+ */
+export const TIPOS = [
+	'codigo',
+	'revision',
+	'release',
+	'invitacion',
+	'creativo',
+	'auditoria',
+	'operacion',
+];
+export const RESULT_FIELDS = {
+	codigo: ['pr', 'sha', 'nivel'],
+	revision: ['veredicto', 'sha', 'hallazgos'],
+};
 
 /** Which typed `resultado` a task's close returns (T129): a review round, code with a PR, or none. */
 export function resultKind(t) {
-	if (isReview(t)) return 'revision';
+	if (isReview(t) || t.tipo === 'revision') return 'revision';
+	if (t.tipo === 'codigo') return 'codigo';
 	return t.pr || t.cierre?.pr ? 'codigo' : null;
 }
 
@@ -822,6 +843,13 @@ const PR_CHECKS = [
 export const prIssues = (t) => PR_CHECKS.filter(([bad]) => bad(t)).map(([, msg]) => msg(t));
 
 /** Field checks: [problem, message] where `problem(t)` is true when the field is wrong. */
+/** T130: hand-written lists a typed task adds to its kind's prompt sections. */
+export const KIND_LISTS = ['lee', 'pasos', 'autorizo', 'noHagas', 'decisiones'];
+
+/** Whether `t` must carry a `tipo`: a session task created under contrato 3 or later, except a review round. */
+const needsKind = (t) =>
+	Number.isInteger(t.contrato) && t.contrato >= 3 && t.actor === 'sesion' && !isReview(t);
+
 const FIELD_CHECKS = [
 	[(t) => !String(t.titulo ?? '').trim(), () => 'falta titulo'],
 	[(t) => !ESTADOS.includes(t.estado ?? 'pendiente'), (t) => `estado desconocido: ${t.estado}`],
@@ -865,6 +893,32 @@ const FIELD_CHECKS = [
 		(t) => !optional(t.categoria, (c) => CATEGORIAS.includes(c)),
 		() => `categoria debe ser ${CATEGORIAS.join('/')}`,
 	],
+	[(t) => !optional(t.tipo, (k) => TIPOS.includes(k)), () => `tipo debe ser ${TIPOS.join('/')}`],
+	// T130: a session task created under contrato 3 says what it does, and a typed task writes only busca.
+	[
+		(t) => needsKind(t) && t.tipo === undefined,
+		() => `falta tipo=${TIPOS.join('|')} (contrato 3)`,
+	],
+	[
+		(t) =>
+			t.tipo !== undefined &&
+			!isReview(t) &&
+			!String(t.busca ?? '').includes('Terminado cuando:'),
+		() => 'una tarea con tipo necesita busca=… con «Terminado cuando:» (su QUÉ SE BUSCA)',
+	],
+	[(t) => !optional(t.busca, (s) => typeof s === 'string'), () => 'busca debe ser texto'],
+	[
+		(t) => !optional(t.corto, (s) => typeof s === 'string' && s.trim()),
+		() => 'corto debe ser texto',
+	],
+	...KIND_LISTS.map((k) => [
+		(t) =>
+			!optional(
+				t[k],
+				(x) => Array.isArray(x) && x.every((s) => typeof s === 'string' && s.trim()),
+			),
+		() => `${k} debe ser una lista de texto`,
+	]),
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
 	[(t) => !optional(t.archivada, isDate), () => 'archivada no es fecha'],
@@ -1010,6 +1064,7 @@ export function unlocked(task, flags) {
 /**
  * Version of the task contract a new task is created under (T126): `add` and `review` stamp it, so only tasks
  * created after it exist must follow it; open tasks without it keep the old rules. 1: `claim --titulo`.
- * 2: the T129 return contract of `close` (`missingReturn`).
+ * 2: the T129 return contract of `close` (`missingReturn`). 3: a session task has a `tipo` and its prompt is
+ * generated from it (T130).
  */
-export const CONTRATO = 2;
+export const CONTRATO = 3;

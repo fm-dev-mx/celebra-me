@@ -1,0 +1,21 @@
+# Task kind «creativo»: copy, images or visual direction (T130, rules: .agent/rules/board.md).
+tipo: creativo
+descripcion: 'Textos, imágenes o dirección visual.'
+lee:
+    - 'copywriting'
+    - 'visual_ui'
+pasos_inicio:
+    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+pasos:
+    - '1. Parta del brief de marca y de las plantillas de creative/; edite, no regenere, lo ya aceptado.'
+autorizado_por_defecto:
+    - 'Crear archivos de trabajo en .agent/tmp/; nada se publica sin el visto bueno del dueño.'
+no_hagas:
+    - '- No suba imágenes a Producción ni cambie las ya aceptadas.'
+    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+pare_si:
+    - 'El brief no alcanza para decidir el tono o falta una imagen de referencia.'
+devuelve: []
+listo_si: 'ninguno'
+al_terminar:
+    - 'Anote en --resumen los archivos entregados y quién los aceptó.'

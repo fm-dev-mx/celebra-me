@@ -1,0 +1,20 @@
+# Task kind «operacion»: a database, Production or secrets operation (T130, rules: .agent/rules/board.md).
+tipo: operacion
+descripcion: 'Operación sobre base de datos, Producción o secretos.'
+lee:
+    - 'database_ops'
+pasos_inicio:
+    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+pasos:
+    - '1. Use solo el flujo protegido de .agent/rules/database.md y guarde la salida de cada comando.'
+autorizado_por_defecto:
+    - 'Solo el comando y el entorno que esta tarea cita aquí.'
+no_hagas:
+    - '- No reinicie bases persistentes; los reinicios solo en disposable-test.'
+    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+pare_si:
+    - 'El entorno no es el que esta tarea autoriza o falta el plan de rollback.'
+devuelve: []
+listo_si: 'ninguno'
+al_terminar:
+    - 'Anote en --resumen el comando, el entorno, la evidencia y el rollback.'

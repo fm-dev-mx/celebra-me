@@ -1,0 +1,23 @@
+# Task kind «release»: a Preview or Production delivery (T130, rules: .agent/rules/board.md).
+tipo: release
+descripcion: 'Entrega a Preview o Producción con su evidencia.'
+lee:
+    - 'code_release_execution'
+    - 'production_pr_preparation'
+    - 'database_parity'
+pasos_inicio:
+    - 'pnpm agent:git-safety:start --session={rama}'
+    - 'pnpm board claim {id} --agente={agente} --rama={rama} --titulo="{nombre}"'
+pasos:
+    - '1. Siga el skill de release paso a paso y guarde la evidencia de cada puerta.'
+autorizado_por_defecto:
+    - 'Solo lo que esta tarea cita aquí; main, Producción y migraciones piden la autorización del dueño en esta tarea.'
+no_hagas:
+    - '- No una nada a develop durante la entrega.'
+    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+pare_si:
+    - 'Una puerta del release falla o falta una autorización del dueño.'
+devuelve: []
+listo_si: 'ci'
+al_terminar:
+    - 'Anote en --resumen el SHA de main, el id del Worker, el destino de rollback, la etiqueta y las migraciones.'
