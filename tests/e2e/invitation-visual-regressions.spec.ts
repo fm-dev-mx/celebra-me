@@ -35,6 +35,42 @@ test('complete-page capture waits for deferred island hydration', async ({ page 
 	await expect(page.locator('button')).toHaveCSS('opacity', '1');
 });
 
+test('complete-page preparation pins accepted gallery framing and settles gift frames', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	const image =
+		'data:image/svg+xml,' +
+		encodeURIComponent(
+			'<svg xmlns="http://www.w3.org/2000/svg" width="390" height="300"><rect width="390" height="300" fill="red"/></svg>',
+		);
+	await page.setContent(
+		'<style>body{margin:0}.gallery-grid{display:flex;overflow-x:auto;width:390px;scroll-snap-type:x mandatory}' +
+			'img{flex:none;scroll-snap-align:start}.gift-card{height:900px;border:1px solid red;transition:border-color 30s}</style>' +
+			'<section data-section-id="gallery"><div class="gallery-grid">' +
+			Array.from({ length: 3 }, () => `<img width="390" height="300" src="${image}">`).join(
+				'',
+			) +
+			'</div></section><section data-section-id="gifts"><div class="gift-card">Regalos</div></section>',
+	);
+	await page.evaluate(() => {
+		const card = document.querySelector<HTMLElement>('.gift-card')!;
+		const observer = new IntersectionObserver((entries) => {
+			if (entries.some((entry) => entry.isIntersecting)) {
+				card.style.borderColor = 'rgb(0, 128, 0)';
+				observer.disconnect();
+			}
+		});
+		observer.observe(card);
+	});
+	await prepareCompletePage(page, { galleryScrollLeft: 146 });
+	expect(await page.locator('.gallery-grid').evaluate((rail) => rail.scrollLeft)).toBe(146);
+	await page.screenshot({ fullPage: true, animations: 'disabled' });
+	expect(await page.locator('.gallery-grid').evaluate((rail) => rail.scrollLeft)).toBe(146);
+	await expect(page.locator('.gift-card')).toHaveCSS('border-top-color', 'rgb(0, 128, 0)');
+	expect(await page.evaluate(() => scrollY)).toBe(0);
+});
+
 for (const variant of ['editorial-press-pass', 'formal-register']) {
 	test('RSVP capture remains stable after hydration: ' + variant, async ({ page }) => {
 		await initializeVisualCapture(page);
