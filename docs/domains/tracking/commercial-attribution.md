@@ -28,6 +28,19 @@ bypass app route policy or consent policy.
   are deleted. Sessions go once they are past retention and no event, lead or order references them;
   events and sessions that a lead or an order references are kept, so the purge never rewrites
   `leads`, `customers`, `sales_orders` or `meta_conversion_*`.
+- Meta conversion outbox (`meta_conversion_events`): browser `Contact` and `Lead` rows that are
+  `sent` or `skipped` are deleted 30 days after `created_at` (their delivery attempts cascade). The
+  quarter-hour Production cron (`*/15 * * * *`) calls `public.purge_meta_conversion_retention` after
+  the outbox sweep, in batches of 500 rows (at most 4 batches per run), and logs
+  `[meta-capi][retention] completed`; it runs even while delivery is disabled. The rule lives only
+  in `public.meta_conversion_retention_cutoff`: on 2026-11-30 the rows created before 2026-10-31 go.
+  `Purchase` rows (owned by a sales order), rows still `pending`, `sending`, `failed` or
+  `ambiguous`, and rows an operator recovered are kept. Meta only accepts server events up to 7 days
+  old and deduplicates within 48 hours, so 30 days covers every retry.
+- Marketing withdrawals (`visitor_consent_withdrawals`): kept while any stored visitor session
+  started on or before the withdrawal's `updated_at`; the same purge deletes a withdrawal once it is
+  older than the oldest stored session. In practice that follows the 13-month session retention;
+  with no stored session nothing is deleted.
 - Marketing-audience retention: not established in this repository; requires an explicit privacy
   decision before being treated as a current contract.
 - Contact/lead data: duration of the commercial relationship + 2 years
