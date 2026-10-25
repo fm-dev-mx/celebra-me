@@ -109,6 +109,20 @@ authorization.
   cierre» while it is missing or invalid. Tasks archived before d178 are left as they are;
   `unarchive` never needs it. `pnpm board verify` warns about each finished, unarchived task without
   a valid one.
+- **Return contract (T129)**: the `cierre` is the Handoff Contract (`.agent/plans/README.md`). Next
+  to the fields above it carries the lists `fallidas`, `riesgos`, `dudas` and `excepcion`
+  (`--fallida=… --riesgo=… --duda=… --excepcion=…`, each repeatable, `=ninguna` for an empty one)
+  and a typed `resultado`. A review round:
+  `{veredicto: aprobado|cambios|bloqueado, sha, hallazgos[{p: P0-P3, archivo, texto}]}` from
+  `--veredicto`, `--sha` (the reviewed SHA) and `--hallazgo="P2|archivo:línea|texto"`; an approval
+  has no P0/P1 finding. Code with a PR: `{pr, sha, nivel: validate:changed|type-check|ci}` from
+  `--pr`, `--sha` (the PR head) and `--nivel`. Tasks created under `contrato: 2` or later must name
+  all of them or `close` and «Archivar» refuse; older tasks may add them. `close` prints a one-line
+  signal to hand back, e.g.
+  `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`. An approved last
+  round at the PR's current SHA shows its origin as «Lista para unir». Cancelling with
+  `set <id> estado=cancelada --motivo=<reason>` writes the cierre in the same command (the reason is
+  the summary); `review` cancels an open earlier round the same way when it opens the next one.
 - **PR number**: `pr` is always `#N`; the command normalizes `398`, `"#398"` or a
   `fm-dev-mx/celebra-me` pull URL and refuses a pull URL from another repository. `unida` always
   needs it; `en revision` needs it only when the task has a `rama` (audits and handoffs go to review
@@ -239,12 +253,13 @@ authorization.
   `<id>-revision-2`, `-3`… for each new PR head, with `vuelta`, the short SHA in the title and its
   own prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names
   the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
-  rounds are never rewritten; the same SHA again creates nothing. Without `--agente` the reviewer
-  follows d183: work by Codex or Gemini goes to Claude, work by Claude to Gemini (`--agente=codex`
-  when asked); any other pairing is refused. The author is the task's `agente`, else its lock's or
-  last session's. `show` and the view's sheet list the rounds one below another. Reviews become
-  executable before merge and do not inherit the author's lane. Completion declares
-  `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
+  rounds are never rewritten, except that a still-open one is cancelled with its cierre (T129); the
+  same SHA again creates nothing. Without `--agente` the reviewer follows d183: work by Codex or
+  Gemini goes to Claude, work by Claude to Gemini (`--agente=codex` when asked); any other pairing
+  is refused. The author is the task's `agente`, else its lock's or last session's. `show` and the
+  view's sheet list the rounds one below another. Reviews become executable before merge and do not
+  inherit the author's lane. Completion declares `--sha=<reviewed SHA>`; the verifier compares it
+  against the current PR head.
 - A reviewer keeps its round's task and assigned reviewer, inspects the exact PR head of that round,
   binds findings and completion to the full SHA, and challenges scope, regressions, invariants and
   missing evidence. Another commit makes the review stale: `pnpm board review` creates the next

@@ -71,7 +71,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .eyebrow{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint)}
 
 /* header and production strip */
-.top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 12px}
+.top h1{grid-column:1}
+.top .state{grid-column:1;display:flex;gap:4px 10px;min-width:0;font-size:.8rem;color:var(--muted)}
+.top .state>span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .state>span:empty{display:none}
+.top .sync{grid-column:2;grid-row:1 / span 2;margin-left:0}
+@media (max-width:420px){.top{grid-template-columns:minmax(0,1fr)}.top .sync{grid-column:1;grid-row:auto}.top .state{flex-direction:column}}
 h1{font:700 1.5rem/1.05 var(--display);letter-spacing:-.005em}
 h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-soft);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:4px;letter-spacing:0}
 .rev{font-size:.8rem;color:var(--muted)}
@@ -93,8 +99,9 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 @media (max-width:420px){.tab{padding:9px 7px}}
 
 /* legend */
-.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem;color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend{display:flex;gap:4px 14px;font-size:.78rem;color:var(--muted);overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.legend::-webkit-scrollbar{display:none}
+.legend span{display:inline-flex;align-items:center;gap:5px;flex:none}
 .sw{width:8px;height:8px;border-radius:50%;display:inline-block}
 
 /* queue */
@@ -129,6 +136,8 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .runs{grid-column:2;font-weight:700;font-size:.95rem;line-height:1.35;min-width:0;overflow-wrap:anywhere}
 .runs .more,.runs .busy{display:block;font-weight:600;font-size:.84rem;color:var(--muted)}
 .runs .busy{color:var(--warn)}
+.runs.quiet{font-weight:500;font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.runs.quiet .more,.runs.quiet .busy{display:none}
 .runbox{margin:10px 0;padding:10px 12px;border:2px solid var(--line);border-radius:8px}
 .runbox p{margin:0;line-height:1.45}
 .runbox p:first-child{font-weight:700;font-size:1.05rem}
@@ -148,12 +157,17 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .mine .paste .btn{flex:none}
 @media (max-width:560px){.mine .paste{flex-direction:column}}
 /* T126: «Le toca al coordinador» and «Detenidas» sit next to «Le toca a usted» */
-.whats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:14px;align-items:start}
-.whats .mine{margin-bottom:0}
+.whats{display:flex;flex-wrap:wrap;gap:8px 12px;margin-bottom:14px;align-items:flex-start}
+.whats .mine{margin-bottom:0;flex:1 1 280px;min-width:0;order:1}
+/* Empty panels go first and shrink to one line each, so they share a row instead of leaving holes. */
+.whats .mine.is-empty{order:0;flex:0 1 auto;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:6px 12px}
+.whats .mine.is-empty h2{font-size:.9rem}
+.whats .mine.is-empty .none,.whats .mine.is-empty .sub{margin:0;font-size:.84rem}
 .mine.coord{--own:var(--auto);--own-rule:var(--auto-rule)}
 .mine.stall{--own:var(--warn);--own-rule:var(--warn-rule)}
 .mine .row .meta{font:500 .76rem var(--mono);color:var(--muted)}
 .empty{background:var(--panel);border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
+.list>.empty{padding:8px 12px;font-size:.86rem}
 
 /* task sheet */
 .sheet{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:grid;gap:12px;padding:14px 16px 16px;min-width:0;align-content:start}
@@ -263,6 +277,8 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 .pend .txt{min-width:0;font-size:.92rem;font-weight:600;color:var(--ink)}
 .pend .to{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;font-size:.86rem;color:var(--muted)}
 .pend .to .arw{font-weight:700;color:var(--faint)}
+.pend.find{box-shadow:inset 3px 0 0 var(--rev-rule)}.pend.find .pl{color:var(--rev)}
+.pend.find.p0,.pend.find.p1{box-shadow:inset 3px 0 0 var(--warn-rule)}.pend.find.p0 .pl,.pend.find.p1 .pl{color:var(--warn)}
 .pend .to a.tl{display:inline-flex;align-items:center;min-height:44px;border-bottom:0;text-decoration:underline;text-underline-offset:3px}
 .nopend{font-size:.82rem;color:var(--faint)}
 details.more>summary{display:inline-flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
@@ -288,8 +304,7 @@ a.prl{font-weight:600}
 <div class="wrap">
   <div class="top">
     <h1>Seguimiento Celebra-me</h1>
-    <span class="rev" id="rev">Cargando…</span>
-    <span role="status" aria-live="polite" id="connection">Conectando…</span>
+    <span class="state"><span class="rev" id="rev">Cargando…</span><span role="status" aria-live="polite" id="connection">Conectando…</span></span>
     <span class="sync">
       <button type="button" class="btn" id="sync-dry" title="Muestra qué cambiaría sin escribir nada">Ver cambios</button>
       <button type="button" class="btn primary" id="sync-run" title="Actualiza el tablero con las ramas y los PR de GitHub">Sincronizar</button>
@@ -306,8 +321,8 @@ a.prl{font-weight:600}
   </nav>
 
   <div class="legend" aria-label="Colores">
-    <span><i class="sw" style="background:var(--own-rule)"></i>Le toca a usted (también «Pegar en Codex/Gemini»)</span>
-    <span><i class="sw" style="background:var(--auto-rule)"></i>Autónoma (arranca sola)</span>
+    <span title="También «Pegar en Codex/Gemini»"><i class="sw" style="background:var(--own-rule)"></i>Le toca a usted</span>
+    <span title="Arranca sola"><i class="sw" style="background:var(--auto-rule)"></i>Autónoma</span>
     <span><i class="sw" style="background:var(--run-rule)"></i>En curso</span>
     <span><i class="sw" style="background:var(--block-rule)"></i>Bloqueada</span>
     <span><i class="sw" style="background:var(--rev-rule)"></i>En revisión</span>
@@ -367,13 +382,14 @@ a.prl{font-weight:600}
   <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
-import { archiveBlock, findTask } from '/model.mjs';
-import { GH, leadOf, outcomeOf, relTime, richText, shaHtml, whoOf } from '/format.mjs';
+import { findTask } from '/model.mjs';
+import { archiveBlock, signalLine } from '/cierre.mjs';
+import { GH, HANDOFF_HEADINGS, findingsOf, leadOf, outcomeOf, relTime, richText, shaHtml, whoOf } from '/format.mjs';
 import { requisitoText, taskName } from '/model.mjs';
 import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
-import { laneRows, nextSections } from '/next.mjs';
+import { laneRows, nextSections, readyToMerge } from '/next.mjs';
 const TZ='America/Mazatlan';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
 const ICON={
@@ -422,7 +438,10 @@ function reqSummary(t){const r=reqs(t);if(!r.length)return '';const ok=r.filter(
 // d177: an open task without a lock says in large type where it runs, and whether that lane is busy.
 const runLines=t=>t.candado||isFinished(t)?[]:laneLines(t,S.board);
 const runsHtml=t=>{const lines=runLines(t);if(!lines.length)return '';const busy=laneBusy(t,S.board);
-  return `<span class="runs">${lines.map((x,i)=>i?`<span class="${busy&&i===lines.length-1?'busy':'more'}">${esc(x)}</span>`:esc(x)).join('')}</span>`};
+  return `<span class="runs${stage(t)==='revision'?' quiet':''}" title="${esc(lines.join(' · '))}">${lines.map((x,i)=>i?`<span class="${busy&&i===lines.length-1?'busy':'more'}">${esc(x)}</span>`:esc(x)).join('')}</span>`};
+// T129: an approved review at the PR's current SHA makes its origin «lista para unir».
+const livePrs=()=>S.board.vivo&&S.board.vivo.prs?S.board.vivo.prs:undefined;
+const mergeChip=t=>{const r=readyToMerge(t,S.board,livePrs());return r?`<span class="oc oc-ok" title="${esc(taskTag(r))} aprobó ${esc(String(r.revisionSha).slice(0,7))}">Lista para unir</span>`:''};
 function itemHtml(t){
   const c=color(t),n=NUM[t.id];
   const why=c==='block'?firstBlock(t):String(t.ahora||'').split('\n')[0];
@@ -431,7 +450,7 @@ function itemHtml(t){
     <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
     <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${tN(t)}${esc(t.titulo)}</button></h3>
     ${runsHtml(t)}
-    <span class="line">${pill(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}</span>
+    <span class="line">${pill(t)}${mergeChip(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}</span>
     ${why?`<span class="why">${rich(why)}</span>`:''}
   </article>`;
 }
@@ -468,18 +487,29 @@ function pendHtml(p){
 // «Ver detalles» stays open across the live re-renders.
 const OPEN=new Set();
 document.addEventListener('toggle',ev=>{const d=ev.target;if(d.dataset&&d.dataset.more)d.open?OPEN.add(d.dataset.more):OPEN.delete(d.dataset.more)},true);
+// T129: a review's typed findings, most severe first, each with its file.
+function findingHtml(h){
+  const p=String(h.p||'');
+  return `<div class="pend find ${esc(p.toLowerCase())}"><span class="pl">${esc(p)} · hallazgo</span><span class="txt">${rich(h.texto||'')}</span>${h.archivo?`<span class="to"><span class="nm">${esc(h.archivo)}</span></span>`:''}</div>`;
+}
 function cierreHtml(t){
   const c=t.cierre;if(!c)return '';
   const {lead,rest}=leadOf(c.resumen,t);
   const pend=Array.isArray(c.pendientes)?c.pendientes:[];
+  const finds=findingsOf(t),r=c.resultado||{};
   const list=xs=>Array.isArray(xs)&&xs.length?`<ul>${xs.map(x=>`<li>${rich(x)}</li>`).join('')}</ul>`:'<p class="nopend">Ninguna.</p>';
-  const meta=[c.commit?`Commit ${shaHtml(c.commit)}`:'',t.rama?`Rama <span class="nm">${esc(t.rama)}</span>`:'',`Id <span class="nm">${esc(t.id)}</span>`].filter(Boolean);
+  // The Handoff Contract lists (T129) show only on tasks that returned them.
+  const handoff=HANDOFF_HEADINGS.filter(([k])=>Array.isArray(c[k])).map(([k,h])=>`<h4>${esc(h)}</h4>${list(c[k])}`).join('');
+  const meta=[r.sha?`${r.veredicto?'Revisado':'PR en'} ${shaHtml(r.sha)}`:'',r.nivel?`Nivel <span class="nm">${esc(r.nivel)}</span>`:'',c.commit?`Commit ${shaHtml(c.commit)}`:'',t.rama?`Rama <span class="nm">${esc(t.rama)}</span>`:'',`Id <span class="nm">${esc(t.id)}</span>`].filter(Boolean);
   return `${lead?`<p class="lead">${rich(lead)}</p>`:''}
-    ${pend.length?pend.map(pendHtml).join(''):'<p class="nopend">Sin pendientes.</p>'}
+    ${finds.map(findingHtml).join('')}
+    ${pend.length?pend.map(pendHtml).join(''):finds.length?'':'<p class="nopend">Sin pendientes.</p>'}
     <details class="more" data-more="${esc(t.id)}"${OPEN.has(t.id)?' open':''}><summary>Ver detalles</summary><div class="body">
       ${rest?rest.split('\n').map(x=>`<p>${rich(x)}</p>`).join(''):''}
       <h4>Comprobaciones</h4>${list(c.comprobaciones)}
       <h4>Saltadas</h4>${list(c.saltadas)}
+      ${handoff}
+      ${r.veredicto||r.nivel?`<h4>Señal</h4><p><span class="nm">${esc(signalLine(t,S.board))}</span></p>`:''}
       <div class="meta">${meta.map(x=>`<span>${x}</span>`).join('')}</div>
     </div></details>`;
 }
@@ -608,7 +638,7 @@ function renderTop(){
 // The whole board, not the agent tab: what the owner must do never hides behind a filter.
 function renderMine(){
   const all=mQueue(S.board),tag=t=>t.num?'T'+t.num:'';
-  const next=nextSections(S.board,{prs:S.board.vivo&&S.board.vivo.prs?S.board.vivo.prs:undefined});
+  const next=nextSections(S.board,{prs:livePrs()});
   const late=new Set(next.usted.filter(x=>x.texto.startsWith('Correr el despachador')).map(x=>x.id));
   const tasks=all.filter(t=>mColor(t,S.board)==='own'&&!late.has(t.id));
   const asks=ownerAsks(S.board);
@@ -621,6 +651,9 @@ function renderMine(){
   const extra=next.usted.filter(x=>/^(Correr el despachador|Mensaje:)/.test(x.texto));
   if(extra.length)h+='<p class="sub">Detenido o con mensaje</p>'+extra.map(nextRow).join('');
   $('mine').innerHTML=h;
+  $('mine').classList.toggle('is-empty',!tasks.length&&!asks.length&&!next.usted.length);
+  $('coord').classList.toggle('is-empty',!next.coordinador.length);
+  $('stall').classList.toggle('is-empty',!next.detenidas.length);
   $('coord').innerHTML='<h2>Le toca al coordinador</h2>'+(next.coordinador.length?next.coordinador.map(nextRow).join(''):'<p class="none">Nada por ahora.</p>')+(next.prsLeidos?'':'<p class="sub">Sin leer GitHub todavía: faltan los PR abiertos.</p>');
   $('stall').innerHTML='<h2>Detenidas</h2>'+(next.detenidas.length?next.detenidas.map(nextRow).join(''):'<p class="none">Ninguna.</p>');
 }

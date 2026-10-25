@@ -324,105 +324,25 @@ export function findTask(ref, board) {
 	return all.find((x) => x.id === ref) ?? null;
 }
 
-/** `texto→T58` (or `texto->T58`) → `{ texto, tarea: 'T58' }`; a text without an arrow has no tarea. */
-export function parsePendiente(s) {
-	const text = String(s ?? '');
-	const i = Math.max(text.lastIndexOf('→'), text.lastIndexOf('->'));
-	if (i < 0) return { texto: text.trim(), tarea: '' };
-	const arrow = text.startsWith('→', i) ? 1 : 2;
-	return { texto: text.slice(0, i).trim(), tarea: text.slice(i + arrow).trim() };
+/** Handoff Contract lists of the `cierre` (T129) and the repeatable `close` flag of each. */
+export const HANDOFF_LISTS = [
+	['fallidas', 'fallida'],
+	['riesgos', 'riesgo'],
+	['dudas', 'duda'],
+	['excepcion', 'excepcion'],
+];
+export const VEREDICTOS = ['aprobado', 'cambios', 'bloqueado'];
+const PRIORIDADES = ['P0', 'P1', 'P2', 'P3'];
+const NIVELES = ['validate:changed', 'type-check', 'ci'];
+
+/** Which typed `resultado` a task's close returns (T129): a review round, code with a PR, or none. */
+export function resultKind(t) {
+	if (isReview(t)) return 'revision';
+	return t.pr || t.cierre?.pr ? 'codigo' : null;
 }
 
-/** Values of a repeatable flag; «ninguna»/«ninguno» alone means an empty list. */
-function listFlag(lists, key) {
-	const values = (lists[key] ?? []).filter((v) => typeof v === 'string' && v.trim());
-	return values.length === 1 && /^ningun[oa]$/i.test(values[0].trim()) ? [] : values;
-}
-
-/**
- * The `cierre` that `pnpm board close` writes from its repeatable flags (`lists`: resumen, comprobacion, saltada,
- * pendiente): a flag not given keeps the previous value, and a pendiente's task is stored by its id.
- */
-export function buildCierre(prev = {}, { flags, lists }, board, en) {
-	const pick = (k) => (typeof flags[k] === 'string' ? flags[k] : undefined);
-	const pr = pick('pr') && normalizePr(pick('pr'));
-	const commit = pick('commit');
-	const quien = pick('quien') ?? (flags.coordinador ? 'coordinador' : flags.agente);
-	const given = (k, fallback) => (Object.hasOwn(lists, k) ? listFlag(lists, k) : fallback);
-	const pendientes = given('pendiente', null)?.map((s) => {
-		const p = parsePendiente(s);
-		const d = p.tarea && findTask(p.tarea, board);
-		return d ? { ...p, tarea: d.id } : p;
-	});
-	const cierre = {
-		resumen: given('resumen', null)?.join('\n') ?? prev.resumen ?? '',
-		comprobaciones: given('comprobacion', prev.comprobaciones ?? []),
-		saltadas: given('saltada', prev.saltadas ?? []),
-		pendientes: pendientes ?? prev.pendientes ?? [],
-		en,
-		...(quien ? { quien } : {}),
-	};
-	if (pr ?? prev.pr) cierre.pr = pr ?? prev.pr;
-	if (commit ?? prev.commit) cierre.commit = commit ?? prev.commit;
-	return cierre;
-}
-
-export const NO_CIERRE = 'Falta el resumen de cierre';
-
-/** The CIERRE block of `pnpm board show`: the summary, and why «Archivar» is refused; empty for open tasks. */
-export function cierreBlock(t, board) {
-	if (!t.cierre && !isFinished(t)) return [];
-	const why = !t.archivada && archiveBlock(t, board);
-	return ['', 'CIERRE', ...cierreLines(t, board), ...(why ? [why] : [])].map((l, i) =>
-		i > 1 ? `  ${l}` : l,
-	);
-}
-
-/**
- * Problems of a task's closing summary (d178), checked against the board: missing, empty, or a «pendiente» that
- * does not point to another task on the board. Empty when «Archivar» may run.
- */
-export function cierreIssues(t, board) {
-	if (!t.cierre) return [NO_CIERRE];
-	const out = cierreShapeIssues(t.cierre);
-	for (const p of Array.isArray(t.cierre.pendientes) ? t.cierre.pendientes : []) {
-		if (!String(p?.tarea ?? '').trim()) continue;
-		const d = findTask(p.tarea, board);
-		if (!d)
-			out.push(`el pendiente «${p.texto}» apunta a ${p.tarea}, que no está en el tablero`);
-		else if (d.id === t.id) out.push(`el pendiente «${p.texto}» apunta a la misma tarea`);
-	}
-	return out;
-}
-
-/** Why «Archivar» stays disabled (d178), or null. Unarchiving never needs it. */
-export function archiveBlock(t, board) {
-	const issues = cierreIssues(t, board);
-	if (!issues.length) return null;
-	return issues[0] === NO_CIERRE ? NO_CIERRE : `${NO_CIERRE}: ${issues.join('; ')}`;
-}
-
-/** The summary lines the card, the sheet and `show` print, without the task's title. */
-export function cierreLines(t, board) {
-	const c = t.cierre;
-	if (!c) return [];
-	const list = (xs, none) => (Array.isArray(xs) && xs.length ? xs.join(', ') : none);
-	const ref = (p) => {
-		const d = findTask(p.tarea, board);
-		return d?.num ? `T${d.num}` : p.tarea || '¿?';
-	};
-	const pend = Array.isArray(c.pendientes) ? c.pendientes : [];
-	const pr = c.pr ?? t.pr;
-	const merged = [pr ? `PR ${pr}` : '', c.commit].filter(Boolean).join(', ');
-	return [
-		`${t.estado ?? 'pendiente'}${merged ? ` (${merged})` : ''}`,
-		`Hecho: ${c.resumen}`,
-		`Comprobaciones: ${list(c.comprobaciones, 'ninguna')}. Saltadas: ${list(c.saltadas, 'ninguna')}.`,
-		pend.length
-			? `Pendiente: ${pend.map((p) => `${p.texto} → ${ref(p)}`).join('; ')}`
-			: 'Pendiente: ninguno.',
-	];
-}
+/** Whether the T129 return contract applies: only tasks created under contrato 2 or later. */
+export const fullContract = (t) => Number.isInteger(t?.contrato) && t.contrato >= 2;
 
 /**
  * A task's requisitos, each re-checked against the board right now. A pending task without a prompt gets an
@@ -964,8 +884,11 @@ const FIELD_CHECKS = [
 
 const strList = (x) => Array.isArray(x) && x.every((s) => typeof s === 'string' && s.trim());
 
-/** Shape of `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien?}` (d178). */
-function cierreShapeIssues(c) {
+/**
+ * Shape of `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien?}` (d178), plus the
+ * Handoff Contract lists and `resultado` (T129).
+ */
+export function cierreShapeIssues(c, t) {
 	if (!c || typeof c !== 'object' || Array.isArray(c)) return ['cierre debe ser un objeto'];
 	const out = [];
 	const resumen = String(c.resumen ?? '').trim();
@@ -984,6 +907,59 @@ function cierreShapeIssues(c) {
 				out.push(`pendiente sin tarea: «${p.texto}» (escriba texto→T<n>)`);
 		}
 	if (!isDate(c.en)) out.push('cierre.en no es fecha');
+	out.push(...handoffIssues(c, t));
+	return out;
+}
+
+const shaLike = (s) => typeof s === 'string' && /^[a-f0-9]{7,40}$/.test(s);
+
+/** Problems of a review's `resultado {veredicto, sha, hallazgos[{p, archivo, texto}]}` (T129). */
+function reviewResultIssues(r, t) {
+	const out = [];
+	if (!VEREDICTOS.includes(r.veredicto))
+		out.push(`resultado.veredicto debe ser ${VEREDICTOS.join('/')}`);
+	if (!shaLike(r.sha)) out.push('resultado.sha debe ser el SHA revisado');
+	else if (t.revisionSha && !t.revisionSha.startsWith(r.sha))
+		out.push(`resultado.sha ${r.sha} no es el SHA revisado (${t.revisionSha.slice(0, 7)})`);
+	if (!Array.isArray(r.hallazgos)) return [...out, 'resultado.hallazgos debe ser una lista'];
+	for (const h of r.hallazgos) {
+		const ok =
+			PRIORIDADES.includes(h?.p) &&
+			String(h.archivo ?? '').trim() &&
+			String(h.texto ?? '').trim();
+		if (!ok) out.push('hallazgo inválido: escriba --hallazgo="P0-P3|archivo|texto"');
+		else if (r.veredicto === 'aprobado' && (h.p === 'P0' || h.p === 'P1'))
+			out.push(`una revisión aprobada no tiene hallazgos ${h.p}`);
+	}
+	return out;
+}
+
+/** Problems of a code task's `resultado {pr, sha, nivel}` (T129). */
+function codeResultIssues(r) {
+	const out = [];
+	if (!optional(r.pr, (p) => /^#[1-9]\d*$/.test(p))) out.push('resultado.pr debe ser #<número>');
+	if (!shaLike(r.sha)) out.push('resultado.sha debe ser el SHA del PR (--sha)');
+	if (!NIVELES.includes(r.nivel)) out.push(`resultado.nivel debe ser ${NIVELES.join('/')}`);
+	return out;
+}
+
+/** The kind of `resultado` a task returns, none once cancelled. */
+export const returnKind = (t) => (t.estado === 'cancelada' ? null : resultKind(t));
+
+/** T129 shape of the Handoff Contract lists and of `resultado`, whenever present. */
+function handoffIssues(c, t = {}) {
+	const out = [];
+	for (const [field] of HANDOFF_LISTS)
+		if (c[field] !== undefined && !strList(c[field]))
+			out.push(`cierre.${field} debe ser una lista de texto`);
+	const r = c.resultado;
+	if (r === undefined) return out;
+	if (!r || typeof r !== 'object' || Array.isArray(r))
+		return [...out, 'cierre.resultado debe ser un objeto'];
+	const kind = returnKind(t);
+	if (kind === 'revision' || (kind === null && r.veredicto !== undefined))
+		out.push(...reviewResultIssues(r, t));
+	else if (kind === 'codigo' || r.nivel !== undefined) out.push(...codeResultIssues(r));
 	return out;
 }
 
@@ -1001,7 +977,7 @@ export function taskIssues(t) {
 		const issue = requisitoIssue(r);
 		if (issue) out.push(issue);
 	}
-	if (t.cierre !== undefined) out.push(...cierreShapeIssues(t.cierre));
+	if (t.cierre !== undefined) out.push(...cierreShapeIssues(t.cierre, t));
 	return out;
 }
 
@@ -1032,6 +1008,7 @@ export function unlocked(task, flags) {
 
 /**
  * Version of the task contract a new task is created under (T126): `add` and `review` stamp it, so only tasks
- * created after it exist must follow it (`claim --titulo`); open tasks without it keep the old rules.
+ * created after it exist must follow it; open tasks without it keep the old rules. 1: `claim --titulo`.
+ * 2: the T129 return contract of `close` (`missingReturn`).
  */
-export const CONTRATO = 1;
+export const CONTRATO = 2;
