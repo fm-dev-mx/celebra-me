@@ -26,6 +26,8 @@ interface Props {
 	ogDescription?: string;
 	image?: string | ImageMetadata;
 	imageAlt?: string;
+	imageWidth?: number;
+	imageHeight?: number;
 	robots?: string;
 	/** Leave out canonical and social URLs (pages whose path must not be echoed back). */
 	omitCanonical?: boolean;
@@ -56,6 +58,8 @@ const {
 	ogDescription,
 	image = '/images/og/og-home.jpg',
 	imageAlt,
+	imageWidth,
+	imageHeight,
 	robots,
 	omitCanonical = false,
 	canonicalPath,
@@ -84,7 +88,11 @@ if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
 const resolvedOgTitle = ogTitle ?? title;
 const resolvedOgDescription = ogDescription ?? description;
 
-const socialImage = buildSocialImageMetadata(resolvedImageSrc, { origin: canonicalOrigin });
+const socialImage = buildSocialImageMetadata(resolvedImageSrc, {
+	origin: canonicalOrigin,
+	width: imageWidth,
+	height: imageHeight,
+});
 const ogImage = socialImage.url;
 
 const routePolicy = classifyTrackingRoute(Astro.url);
