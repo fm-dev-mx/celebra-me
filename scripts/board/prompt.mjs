@@ -166,12 +166,51 @@ export function withPushCheck(prompt) {
 const ROUND_WORDS = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA'];
 const roundWord = (n) => `${ROUND_WORDS[n - 1] ?? n} VUELTA`;
 
+/** Conservative path-based review guidance; missing or unrecognized evidence requires a deep review. */
+export function reviewRisk(files) {
+	if (!Array.isArray(files) || !files.length) return 2;
+	const docs = (p) => /^(?:docs\/|\.agent\/)|\.(?:md|mdx)$/.test(p);
+	const frontend = (p) =>
+		/^(?:src\/(?:components|styles|layouts|pages)\/|public\/)/.test(p) &&
+		/\.(?:astro|tsx|jsx|scss|css|svg|png|jpe?g|webp|avif|woff2?)$/.test(p);
+	if (
+		files.some((p) =>
+			/(?:^|\/)(?:api|auth|db|database|migrations|security|secrets)(?:\/|[.-])|^(?:supabase|workers)\//i.test(
+				p,
+			),
+		)
+	)
+		return 2;
+	if (files.every(docs)) return 0;
+	return files.every((p) => docs(p) || frontend(p)) ? 1 : 2;
+}
+
+export function reviewGuidance(files, previousSha, sha) {
+	const tier = reviewRisk(files);
+	return [
+		[
+			'Tier 0 · Metadatos/docs: validación ágil de enlaces, consistencia y alcance; se sugiere un modelo ligero.',
+			'Tier 1 · UI/Frontend: revise interacción, accesibilidad, estilos y regresiones; valide las superficies afectadas.',
+			'Tier 2 · DB/Auth/APIs o alcance sin clasificar: revisión profunda de contratos, permisos, errores y pruebas.',
+		][tier],
+		'El nivel orienta el esfuerzo; no reduce las comprobaciones exigidas por el contrato ni las reglas del repositorio.',
+		...(previousSha && sha
+			? [
+					`Enfoque la revisión en el diff incremental ${previousSha}..${sha} (prev.revisionSha..HEAD, fijado al SHA solicitado). Verifique los hallazgos previos y amplíe a contexto relacionado cuando el cambio lo requiera; no repita la revisión completa sin motivo.`,
+				]
+			: []),
+	];
+}
+
 /**
  * The title and prompt-v1 (T160) of review round `n` of `src` at `sha`, as task `T<num> <id>`; from round 2 on
  * they name the previous round's SHA and start from the diff between both, so a reviewer never answers the
  * earlier round again (T79). It runs read-only in `carril` (folder `carpeta`).
  */
-export function reviewText(src, { id, num, n, sha, prev, agente, generado, carril, carpeta }) {
+export function reviewText(
+	src,
+	{ id, num, n, sha, prev, files, agente, generado, carril, carpeta },
+) {
 	const short = (s) => String(s).slice(0, 7);
 	const tag = (t, ref) => (t.num ? `T${t.num} ${ref}` : ref);
 	const pr = `#${String(src.pr).replace(/^#/, '')}`;
@@ -185,6 +224,7 @@ export function reviewText(src, { id, num, n, sha, prev, agente, generado, carri
 				'QUÉ SE BUSCA',
 				[
 					`Revisión cruzada${later ? `, ${roundWord(n)},` : ''} del PR ${pr} de ${tag(src, src.id)} en ${sha}: corrección, regresiones, pruebas y AGENTS.md.`,
+					...reviewGuidance(files, later ? prev?.revisionSha : undefined, sha),
 					...(later
 						? [
 								`La vuelta anterior (${prev.id}) revisó ${prev.revisionSha}; compruebe que se atendieron sus hallazgos y que los commits nuevos no traen regresiones.`,

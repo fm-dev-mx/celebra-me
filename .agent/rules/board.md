@@ -412,6 +412,27 @@ data, never an authorization.
 
 ## Checks and freshness
 
+Before creating a new cross-review round, `pnpm board review` checks GitHub's open PR, current
+`headRefOid` and `mergeable`; an explicit `--sha` must still match that live head. Unavailable,
+malformed or `UNKNOWN` merge evidence is `UNVERIFIED` and refuses the round until retried.
+`CONFLICTING` refuses the round without replacing any earlier review and writes a bitácora message
+to the author's agent and recorded session. Read-only `git merge-tree` against GitHub's exact base
+and head supplies the conflict paths when those objects are local; unavailable paths are explicitly
+`UNVERIFIED`, never inferred from all changed files. The author merges `origin/develop` into the
+same branch with a normal merge, resolves the conflicts, validates and pushes normally. Never
+request rebase or `push --force` to unlock a review. No merge, fetch or checkout is performed by
+this pre-flight. An already existing round for the same SHA stays idempotent.
+
+Review prompts classify the complete PR file inventory conservatively: Tier 0 for metadata/docs
+(agile validation, a lightweight model suggested), Tier 1 for UI/frontend (interaction,
+accessibility and regression checks), Tier 2 for DB/auth/APIs and unclassified or incomplete file
+evidence (deep review). Mixed changes take the highest risk. These tiers guide review effort and
+never replace Gatekeeper validation tiers A/B/C or waive the task contract's required checks.
+Generated rounds record `revisionFiles` only from a complete GitHub inventory. From round 2 onward,
+focus on `prev.revisionSha..HEAD`, pinned in the prompt to the current full `revisionSha`; verify
+prior findings and expand to related context when necessary. A new commit still requires a new round
+and independent acceptance at its exact SHA.
+
 Prefer structured `chequeo: {tipo: pr, pr: N}` or `{tipo: rama, rama: type/id}`. Legacy `cmd` is
 accepted only by the finite `commandArgs` grammar, executed as argument arrays without a shell.
 Arbitrary HTTP/API commands are rejected. Failures/timeouts/malformed PR responses are `UNVERIFIED`;
