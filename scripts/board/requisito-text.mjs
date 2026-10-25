@@ -34,7 +34,13 @@ const REQ_TEXT = {
 		`Tiene PR en revisión: ${taskName(ref, b)}`,
 		`Espera el PR en revisión de ${taskName(ref, b)}`,
 	],
-	fecha: (ref) => [`Llega el ${dayOf(ref)}`, `Espera al ${dayOf(ref)}`],
+	fecha: (ref) =>
+		Number.isNaN(Date.parse(ref))
+			? [
+					`Fecha inválida: ${ref}; solicite corregirla`,
+					`Fecha inválida: ${ref}; solicite corregirla`,
+				]
+			: [`Llega el ${dayOf(ref)}`, `Espera al ${dayOf(ref)}`],
 	decision: (ref, b) => [
 		`Decisión ${ref}${decisionAbout(ref, b)}`,
 		`Espera la decisión ${ref}${decisionAbout(ref, b)}`,

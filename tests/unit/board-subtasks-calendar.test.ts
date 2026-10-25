@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/run-command';
@@ -37,6 +38,64 @@ const task = (id: string, extra: Record<string, unknown> = {}) => ({
 const NOW = Date.parse('2026-10-25T18:00:00Z');
 
 describe('board subtasks (d174)', () => {
+	it('folds a subtask under its mother even when it heads its own subtasks', () => {
+		const html = readFileSync(path.join(ROOT, 'scripts/board/view.html'), 'utf8');
+		const body = /function blockOf\(t\)\{([\s\S]*?)\n\}/.exec(html)?.[1];
+		expect(body).toBeDefined();
+		const mother = { id: 'mother' };
+		const block = new Function('t', 'S', 'parentOf', 'subtasksOf', 'headlessGroup', body!);
+		expect(
+			block(
+				{ id: 'child' },
+				{ board: {} },
+				() => mother,
+				() => [{ id: 'grandchild' }],
+				() => '',
+			),
+		).toEqual({ key: 'mother', mother });
+	});
+	it('rejects mixed padre/grupo cycles, including group edges alongside an explicit parent', () => {
+		const board = {
+			tareas: [task('a', { padre: 'b' }), task('b', { grupo: 'a' }), task('root')],
+		};
+		const out = probe(
+			board,
+			`console.log(JSON.stringify([
+			m.parentIssue(board.tareas[0], board), m.parentIssue(board.tareas[1], board),
+			m.parentIssue({id:'b',padre:'root',grupo:'a'}, board),
+			m.parentIssue({id:'free',grupo:'headless'}, board)
+		]));`,
+		);
+		expect(out.slice(0, 3)).toEqual(Array(3).fill(expect.stringContaining('ciclo')));
+		expect(out[3]).toBeNull();
+	});
+
+	it('keeps unreadable dates in the queue with a warning without breaking calendar weeks', () => {
+		const board = {
+			tareas: [
+				task('bad', { requisitos: [{ tipo: 'fecha', ref: 'unreadable' }] }),
+				task('mixed', {
+					requisitos: [
+						{ tipo: 'fecha', ref: 'unreadable' },
+						{ tipo: 'fecha', ref: '2027-01-01' },
+					],
+				}),
+				task('good', { requisitos: [{ tipo: 'fecha', ref: '2027-01-01' }] }),
+			],
+		};
+		const out = probe(
+			board,
+			`console.log(JSON.stringify({
+			week:m.weekOf('unreadable'), queue:m.queue(board,${NOW}).map(t=>t.id),
+			calendar:m.calendarWeeks(board,${NOW}), warning:m.requisitoLine(board.tareas[0].requisitos[0],board)
+		}));`,
+		);
+		expect(out.week).toBeNull();
+		expect(out.queue.sort()).toEqual(['bad', 'mixed']);
+		expect(out.calendar).toHaveLength(1);
+		expect(out.calendar[0].tareas[0].t.id).toBe('good');
+		expect(out.warning).toContain('Fecha inválida');
+	});
 	const board = {
 		tareas: [
 			task('madre', { num: 1 }),

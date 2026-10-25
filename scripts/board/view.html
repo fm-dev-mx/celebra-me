@@ -501,10 +501,10 @@ function itemHtml(t,{sub=false}={}){
     ${why?`<span class="why">${rich(why)}</span>`:''}
   </article>`;
 }
-// d174: the block a queued task belongs to: its own when it heads subtasks, else its mother's or its group's.
+// d174: a subtask stays under its mother even when it has subtasks of its own.
 function blockOf(t){
-  if(subtasksOf(t,S.board).length)return {key:t.id,mother:t};
   const m=parentOf(t,S.board);if(m)return {key:m.id,mother:m};
+  if(subtasksOf(t,S.board).length)return {key:t.id,mother:t};
   const g=headlessGroup(t,S.board);return g?{key:'grupo:'+g,grupo:g}:null;
 }
 // d174: «Ver N subtareas», the live checklist; a compacted subtask has no sheet, so its row stays plain.

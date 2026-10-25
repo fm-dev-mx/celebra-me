@@ -492,6 +492,7 @@ export const isOpen = (t, board, now) =>
 export function calendarDate(t, board, now = Date.now()) {
 	if ((t.estado ?? 'pendiente') !== 'pendiente' || t.candado) return null;
 	const unmet = requisitos(t, board, now).filter((r) => !r.ok);
+	if (unmet.some((r) => r.tipo === 'fecha' && Number.isNaN(time(r.ref)))) return null;
 	if (!unmet.length || unmet.some((r) => r.tipo !== 'fecha')) return null;
 	return unmet
 		.map((r) => r.ref)
