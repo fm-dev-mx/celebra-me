@@ -735,6 +735,7 @@ describe('pnpm board', () => {
 					rama: 'fix/origen',
 					pr: 398,
 					estado: 'en revision',
+					cierre: CIERRE,
 				}),
 			],
 		});
@@ -794,6 +795,30 @@ describe('pnpm board', () => {
 		});
 	});
 
+	it('refuses a cross-review while the task has no closing summary (d255)', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('sin-cierre', {
+					agente: 'claude',
+					rama: 'feat/x',
+					pr: 20,
+					estado: 'en revision',
+				}),
+			],
+		});
+		const sha = 'a'.repeat(40);
+		const refused = board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`);
+		expect(refused.status).toBe(2);
+		expect(refused.err).toContain('sin-cierre no tiene resumen de cierre (d255)');
+		expect(refused.err).toContain('pnpm board close sin-cierre --resumen=');
+		expect(existsSync(path.join(dir, 'tareas', 'sin-cierre-revision.json'))).toBe(false);
+		// The coordinator gets no bypass either: it completes the summary with `close --coordinador`.
+		expect(
+			board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`, '--coordinador')
+				.status,
+		).toBe(2);
+	});
+
 	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
 		const dir = makeBoard({
 			tareas: [
@@ -802,14 +827,21 @@ describe('pnpm board', () => {
 					rama: 'feat/a',
 					pr: 10,
 					estado: 'en revision',
+					cierre: CIERRE,
 				}),
 				task('de-codex', {
 					agente: 'codex',
 					rama: 'feat/b',
 					pr: 11,
 					estado: 'en revision',
+					cierre: CIERRE,
 				}),
-				task('sin-autor', { rama: 'feat/c', pr: 12, estado: 'en revision' }),
+				task('sin-autor', {
+					rama: 'feat/c',
+					pr: 12,
+					estado: 'en revision',
+					cierre: CIERRE,
+				}),
 			],
 		});
 		const [a, b, c] = ['a', 'b', 'c'].map((x) => x.repeat(40));

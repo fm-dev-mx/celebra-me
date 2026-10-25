@@ -24,5 +24,7 @@ devuelve:
     - 'sha'
     - 'nivel'
 listo_si: 'type-check'
-al_terminar:
-    - 'pnpm board review {id} (revisión cruzada) y deje la tarea en revisión con su PR.'
+al_terminar: []
+# d255: `review` refuses a task without its cierre, so it runs after the close line.
+tras_cierre:
+    - 'pnpm board review {id} --sha=<sha del PR> (revisión cruzada) y deje la tarea en revisión con su PR.'

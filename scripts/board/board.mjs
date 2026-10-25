@@ -138,6 +138,7 @@ import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
 import { ghPrState, reviewSha } from './github.mjs';
 import { codexQuota, pickReviewer } from './reviewer.mjs';
+import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
@@ -749,6 +750,8 @@ const commands = {
 			const src = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!src.pr || src.estado !== 'en revision')
 				throw new UsageError('el origen requiere PR y estado en revision');
+			const noCierre = reviewCierreIssue(src);
+			if (noCierre) throw new UsageError(noCierre);
 			const author = authorOf(src);
 			// d209: without --agente, Claude's work goes to the less loaded of Gemini and Codex.
 			const pick =

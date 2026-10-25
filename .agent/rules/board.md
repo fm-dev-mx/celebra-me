@@ -198,17 +198,18 @@ authorization.
   `invitacion`, `creativo`, `auditoria`, `operacion`); `categoria` only picks its lane. Each kind is
   one short `.agent/kinds/<tipo>.yaml`: `lee` (routing-matrix `task_type` names, never copied
   lists), `pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve` (the
-  T129 `resultado` fields), `listo_si` (validation level) and `al_terminar`. The coordinator writes
-  only `busca` (the `QUÉ SE BUSCA` text, with «Terminado cuando:») and, when the task needs them,
-  `corto` (the session name's description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones`
-  (dNNN ids; decisions naming the task in `tareas` and `decision` requisitos count too). `add`,
-  `set` and `plan` regenerate the prompt-v1 when one of those fields, the lane or the branch
-  changes, and refuse a hand-written `prompt` on a typed task; `pnpm board prompt <id>` prints it
-  and `--guardar --rev=<n>` saves it after a decision or kind file changed. `board:verify` checks
-  the kind files and warns when a saved prompt is not the one its kind generates now. Session tasks
-  created under `contrato: 3` need `tipo`; older tasks and tasks without `tipo` keep their
-  hand-written prompts. Review rounds from `pnpm board review` get `tipo: revision` and keep the
-  prompt `review` writes.
+  T129 `resultado` fields), `listo_si` (validation level), `al_terminar` (steps before the close
+  line) and the optional `tras_cierre` (steps after it: `codigo` puts `pnpm board review` there,
+  d255). The coordinator writes only `busca` (the `QUÉ SE BUSCA` text, with «Terminado cuando:»)
+  and, when the task needs them, `corto` (the session name's description), `pasos`, `autorizo`,
+  `noHagas`, `lee` and `decisiones` (dNNN ids; decisions naming the task in `tareas` and `decision`
+  requisitos count too). `add`, `set` and `plan` regenerate the prompt-v1 when one of those fields,
+  the lane or the branch changes, and refuse a hand-written `prompt` on a typed task;
+  `pnpm board prompt <id>` prints it and `--guardar --rev=<n>` saves it after a decision or kind
+  file changed. `board:verify` checks the kind files and warns when a saved prompt is not the one
+  its kind generates now. Session tasks created under `contrato: 3` need `tipo`; older tasks and
+  tasks without `tipo` keep their hand-written prompts. Review rounds from `pnpm board review` get
+  `tipo: revision` and keep the prompt `review` writes.
 - **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`.
   **Inherited acceptance**: what the owner already accepted in a task (its `AUTORIZO`, `DECISIONES`
@@ -292,21 +293,24 @@ authorization.
   authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
   exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
   `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
-- `review` requires the origin PR in `en revision`, generates an English prompt and records
-  `revisionSha` (from GitHub, or explicit `--sha`). Every round is a new task: `<id>-revision`, then
-  `<id>-revision-2`, `-3`… for each new PR head, with `vuelta`, the short SHA in the title and its
-  own prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names
-  the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
-  rounds are never rewritten, except that a still-open one is cancelled with its cierre (T129); the
-  same SHA again creates nothing. Without `--agente` the reviewer follows d183: work by Codex or
-  Gemini goes to Claude; work by Claude goes (d209, d240) to whichever of Gemini and Codex has less
-  load (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to Gemini),
-  and to Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90
-  % 5-hour use before its reset; the message prints both loads and the quota. An explicit `--agente`
-  always wins; any other pairing is refused. The author is the task's `agente`, else its lock's or
-  last session's. `show` and the view's sheet list the rounds one below another. Reviews become
-  executable before merge and do not inherit the author's lane. Completion declares
-  `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
+- `review` requires the origin PR in `en revision` and its `cierre` (d255: no task reaches review
+  without its closing summary; the refusal prints the `pnpm board close <id> …` to run first, and
+  `--coordinador` gets no bypass: the coordinator completes the summary with `close --coordinador`).
+  It generates an English prompt and records `revisionSha` (from GitHub, or explicit `--sha`). Every
+  round is a new task: `<id>-revision`, then `<id>-revision-2`, `-3`… for each new PR head, with
+  `vuelta`, the short SHA in the title and its own prompt; from the second round on the prompt opens
+  with «SEGUNDA VUELTA» («TERCERA»…), names the previous round's SHA and the new one and starts from
+  `git diff <previous>..<new>`. Earlier rounds are never rewritten, except that a still-open one is
+  cancelled with its cierre (T129); the same SHA again creates nothing. Without `--agente` the
+  reviewer follows d183: work by Codex or Gemini goes to Claude; work by Claude goes (d209, d240) to
+  whichever of Gemini and Codex has less load (reviews open or updated in the last 7 days plus open
+  normal tasks; a tie goes to Gemini), and to Gemini while Codex's last `rate_limits` in
+  `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90 % 5-hour use before its reset; the message prints
+  both loads and the quota. An explicit `--agente` always wins; any other pairing is refused. The
+  author is the task's `agente`, else its lock's or last session's. `show` and the view's sheet list
+  the rounds one below another. Reviews become executable before merge and do not inherit the
+  author's lane. Completion declares `--sha=<reviewed SHA>`; the verifier compares it against the
+  current PR head.
 - A reviewer keeps its round's task and assigned reviewer, inspects the exact PR head of that round,
   binds findings and completion to the full SHA, and challenges scope, regressions, invariants and
   missing evidence. Another commit makes the review stale: `pnpm board review` creates the next
@@ -332,8 +336,10 @@ authorization.
   «Correr el despachador de Codex (T<n>)»; an idle Claude task goes to the coordinator.
 - `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al coordinador» and
   «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), reviews with
-  findings (pass them to the author), open PRs without a task, ready Claude tasks without a session
-  and messages for it. `list` prints the same sections without reading GitHub.
+  findings (pass them to the author), «Pedir el resumen de cierre de T<n>» for every task
+  `en revision` or `unida` without a `cierre` (d255; a merged PR still moves a task to `unida`,
+  because the merge is a fact), open PRs without a task, ready Claude tasks without a session and
+  messages for it. `list` prints the same sections without reading GitHub.
 - `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
   and the task holding its lock.
 - Owner tasks (`actor: dueno`) show only what to do and where (`donde`, else the first line under
