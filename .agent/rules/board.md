@@ -331,9 +331,18 @@ authorization.
   shows in «Detenidas»; a ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as
   «Correr el despachador de Codex (T<n>)»; an idle Claude task goes to the coordinator.
 - `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al coordinador» and
-  «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), reviews with
-  findings (pass them to the author), open PRs without a task, ready Claude tasks without a session
-  and messages for it. `list` prints the same sections without reading GitHub.
+  «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), blocked
+  reviews, reviews with findings `close` did not send (legacy rounds), open PRs without a task,
+  ready Claude tasks without a session and messages for it. `list` prints the same sections without
+  reading GitHub.
+- **Findings to the author (d251, T212)**: `close` of a review round with `--veredicto=cambios`
+  writes one message about the origin task to its author (`authorOf`), from the reviewer, naming the
+  round (`mensaje.revision`) and the author's session (`mensaje.sesion`, the lock's or the last
+  recorded one), with every finding as `P2 archivo:línea texto`; closing again with the same
+  findings writes nothing new. The coordinator no longer lists «Pasar los hallazgos de T<n> al
+  autor» for that round. The author checks its inbox after every push, for example
+  `pnpm board inbox --agente=claude`, and fixes the findings on the same branch; the new head then
+  gets its next round with `pnpm board review`.
 - `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
   and the task holding its lock.
 - Owner tasks (`actor: dueno`) show only what to do and where (`donde`, else the first line under
