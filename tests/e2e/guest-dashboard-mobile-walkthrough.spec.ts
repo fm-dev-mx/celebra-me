@@ -6,6 +6,10 @@ const EVENT_ID = 'eaeb63e4-809b-427b-a52d-c61c2328c900';
 const ROUTE = `/dashboard/invitados?eventId=${EVENT_ID}`;
 
 async function resolveAuthToken(): Promise<string> {
+	// The canonical fixture transport admits the synthetic host session. Loading the local admin
+	// config first would exit the worker in credential-free CI.
+	if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES === 'true')
+		return CANONICAL_HOST_ACCESS_TOKEN;
 	try {
 		const { loadAppEnv, requireLocalSuperAdminConfig } =
 			await import('../../scripts/db/db-workflow-lib.ts');
