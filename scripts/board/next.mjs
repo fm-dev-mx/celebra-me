@@ -298,6 +298,21 @@ export function sectionLines(r) {
 	];
 }
 
+/** Lane record fields written by hand that go stale (T172): Git and the locks say them live instead. */
+const STALE_LANE_FIELDS = ['estado', 'tarea', 'sesion', 'nota', 'comprobadoEn'];
+
+/**
+ * T172: `pnpm board carril` without an id — each lane record's own fields (uso, tecla, puerto, rev) with its
+ * live row from `laneRows`; the hand-written runtime fields are left out so they never contradict `carriles`.
+ */
+export function liveLanes(board, git = []) {
+	return laneRows(board, git).map((row) => {
+		const rec = { ...(board.carriles ?? []).find((l) => l.id === row.id) };
+		for (const k of STALE_LANE_FIELDS) delete rec[k];
+		return { ...rec, ...row };
+	});
+}
+
 /**
  * The «Carriles» rows computed from Git: each lane record in `orden`, with what `git` read in its folder
  * (`{id, rama, limpio}`; rama null = detached HEAD) and the task whose lock holds it; `texto` is one line.

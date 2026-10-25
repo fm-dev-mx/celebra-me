@@ -116,6 +116,8 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 /* The task's fixed «T<n>» (same as its session name); the gray «#n» above is only its place in the queue */
 .tn{font:600 .9em var(--mono);color:var(--muted)}
 .pos{font:500 .76rem var(--mono);color:var(--faint);white-space:nowrap}
+/* T172: who added / followed up a task — quieter than .tn, never a chip */
+.by{font:500 .72rem var(--mono);color:var(--faint);white-space:nowrap}
 .item{cursor:pointer}
 .item .ttl{font:600 1.02rem/1.3 var(--body);min-width:0;overflow-wrap:anywhere}
 .item .ttl .tbtn{padding:2px 0;min-height:32px}
@@ -384,7 +386,7 @@ a.prl{font-weight:600}
 <script type="module">
 import { findTask } from '/model.mjs';
 import { archiveBlock, signalLine } from '/cierre.mjs';
-import { GH, HANDOFF_HEADINGS, findingsOf, leadOf, outcomeOf, relTime, richText, shaHtml, whoOf } from '/format.mjs';
+import { GH, HANDOFF_HEADINGS, findingsOf, leadOf, outcomeOf, relTime, richText, shaHtml, traceText, whoOf } from '/format.mjs';
 import { requisitoText, taskName } from '/model.mjs';
 import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
@@ -442,6 +444,8 @@ const runsHtml=t=>{const lines=runLines(t);if(!lines.length)return '';const busy
 // T129: an approved review at the PR's current SHA makes its origin «lista para unir».
 const livePrs=()=>S.board.vivo&&S.board.vivo.prs?S.board.vivo.prs:undefined;
 const mergeChip=t=>{const r=readyToMerge(t,S.board,livePrs());return r?`<span class="oc oc-ok" title="${esc(taskTag(r))} aprobó ${esc(String(r.revisionSha).slice(0,7))}">Lista para unir</span>`:''};
+// T172: «agregó gemini · seg. coordinador», a silent note after the time.
+const byHtml=t=>{const b=traceText(t,S.board);return b?`<span class="by" title="${esc(b.title)}">${esc(b.text)}</span>`:''};
 function itemHtml(t){
   const c=color(t),n=NUM[t.id];
   const why=c==='block'?firstBlock(t):String(t.ahora||'').split('\n')[0];
@@ -450,7 +454,7 @@ function itemHtml(t){
     <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
     <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${tN(t)}${esc(t.titulo)}</button></h3>
     ${runsHtml(t)}
-    <span class="line">${pill(t)}${mergeChip(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}</span>
+    <span class="line">${pill(t)}${mergeChip(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}${byHtml(t)}</span>
     ${why?`<span class="why">${rich(why)}</span>`:''}
   </article>`;
 }
@@ -474,7 +478,7 @@ function renderCola(){
 // (the summary's other sentences, checks, skipped checks, commit and branch) folded into «Ver detalles».
 function statusHtml(t){
   const o=outcomeOf(t),w=whoOf(t),c=t.cierre||{},pr=prNumber(c.pr||t.pr),en=c.en||t.actualizado;
-  return `<div class="status"><span class="oc oc-${o.key}">${esc(o.label)}</span>${w?agChip(w.key,w.label):''}${pr?`<a class="prl" href="${GH}/pull/${pr}" target="_blank" rel="noopener" title="Abrir el PR en GitHub">PR #${pr}</a>`:''}${en?`<span class="when" title="${esc(fmt(en))}">${esc(ago(en))}</span>`:''}</div>`;
+  return `<div class="status"><span class="oc oc-${o.key}">${esc(o.label)}</span>${w?agChip(w.key,w.label):''}${pr?`<a class="prl" href="${GH}/pull/${pr}" target="_blank" rel="noopener" title="Abrir el PR en GitHub">PR #${pr}</a>`:''}${en?`<span class="when" title="${esc(fmt(en))}">${esc(ago(en))}</span>`:''}${byHtml(t)}</div>`;
 }
 function pendHtml(p){
   const d=p&&p.tarea?findTask(p.tarea,S.board):null,w=d&&whoOf(d);
@@ -536,7 +540,7 @@ function renderSheet(open){
     ['Toca',(t.toca||[]).length?t.toca.map(x=>esc(TOCA[x]||x)).join(', ')+' · necesita su aprobación':''],
     ['Límite',t.hasta?esc(fmt(t.hasta)):''],
     ['Evidencia',t.evidencia&&(t.evidencia.cmd||t.evidencia.salio)?`<code>${esc(t.evidencia.cmd||'')}</code> → ${rich(t.evidencia.salio||'')}`:''],
-    ['Versión',t.rev?`v${esc(t.rev)}${t.actualizado?' · '+esc(fmt(t.actualizado))+' ('+esc(ago(t.actualizado))+')':''}`:'']
+    ['Versión',t.rev?`v${esc(t.rev)}${t.actualizado?' · '+esc(fmt(t.actualizado))+' ('+esc(ago(t.actualizado))+')':''}${byHtml(t)?'<br>'+byHtml(t):''}`:'']
   ].filter(x=>x[1]);
   const p=promptWithLane(t,S.board)||'';
   const run=runLines(t),busy=laneBusy(t,S.board);

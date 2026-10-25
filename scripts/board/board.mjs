@@ -17,10 +17,12 @@
  *                                               required for tasks created under the contract (T126)
  *                                               (rama defaults to the task's declared branch; Claude's sesion
  *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
- *                                               carril defaults to the planned lane, another needs --coordinador)
+ *                                               carril defaults to the planned lane, another needs --coordinador;
+ *                                               T172: a pendiente task becomes en curso)
  *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
- *                                               --coordinador frees only a legacy lock without sesion
+ *                                               --coordinador frees only a legacy lock without sesion;
+ *                                               a task still en curso goes back to pendiente (T172)
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
@@ -40,6 +42,8 @@
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task with its closing summary from
  *                                               «Finalizadas» (bitácora row)
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
+ *                                               T172: «(reemplaza dNNN)» in the text links it without the field
+ *   carril [--json]                             T172: the lanes live, like carriles, with each record's own fields
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--todas] [--json]   replaced decisions only with --todas
@@ -72,7 +76,6 @@ import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
 	canFinish,
 	claimable,
-	AGENT_REGISTRY,
 	color,
 	nextFor,
 	normalizePr,
@@ -127,9 +130,12 @@ import {
 import { UsageError, say } from './cli.mjs';
 import { externalSessionLines, externalSessions } from './external-sessions.mjs';
 import { kindCommands, withKindPrompt } from './kind-commands.mjs';
+import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
 import { ghPrState, reviewSha } from './github.mjs';
 import { codexQuota, pickReviewer } from './reviewer.mjs';
+import { withTrace } from './trace.mjs';
+import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
 
 const COLOR_LABEL = {
@@ -209,7 +215,9 @@ const nextNum = (dir) =>
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, opts = {}) {
 	const { corrio, salio } = opts;
-	const t = { ...cleaned(after, opts), rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	// T172: agregadaPor on creation, seguimientoPor when opts.seguimiento marks a follow-up write.
+	const traced = withTrace(before, cleaned(after, opts), opts);
+	const t = { ...traced, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
 	// numbering existed gets the next number on its first write, like a new one.
 	t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
@@ -452,6 +460,8 @@ const commands = {
 		out(
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
+		const trace = traceText(t, board);
+		if (trace) out(`  ${trace.text}`);
 		for (const line of laneLines(t, board)) out(`  ${line}`);
 		for (const r of requisitos(t, board)) out(`  ${requisitoLine(r, board)}`);
 		for (const k of [
@@ -489,6 +499,7 @@ const commands = {
 			const t = withKindPrompt(null, draft, dir, { num: nextNum(dir), pairs });
 			const saved = saveTask(dir, null, t, {
 				quien: flags.quien,
+				agente: flags.agente,
 				coordinador: flags.coordinador,
 			});
 			say(flags, out, saved, `${saved.id} creada (rev 1)`);
@@ -512,6 +523,8 @@ const commands = {
 				'cierre',
 				'num',
 				'contrato',
+				'agregadaPor',
+				'seguimientoPor',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
@@ -531,7 +544,7 @@ const commands = {
 				flags.sha !== before.revisionSha
 			)
 				throw new UsageError('la revisión debe declarar --sha igual al SHA revisado');
-			const t = saveTask(dir, before, merged, flags);
+			const t = saveTask(dir, before, merged, { ...flags, seguimiento: true });
 			say(flags, out, t, `${t.id} rev ${t.rev}`);
 		});
 	},
@@ -574,12 +587,20 @@ const commands = {
 				titulo: typeof flags.titulo === 'string' ? flags.titulo.trim() : undefined,
 			}))
 				if (v && v !== true) candado[k] = v;
-			const t = saveTask(dir, before, {
-				...before,
-				candado,
-				...(carril ? { carril } : {}),
-				...(rama ? { rama } : {}),
-			});
+			// T172: taking a pendiente task starts it, with its «pendiente → en curso» bitácora row.
+			const started = (before.estado ?? 'pendiente') === 'pendiente';
+			const t = saveTask(
+				dir,
+				before,
+				{
+					...before,
+					candado,
+					...(carril ? { carril } : {}),
+					...(rama ? { rama } : {}),
+					...(started ? { estado: 'en curso' } : {}),
+				},
+				{ quien: flags.quien, agente, corrio: 'pnpm board claim' },
+			);
 			say(flags, out, t, `${t.id} es de ${agente} (rev ${t.rev})`);
 		});
 	},
@@ -617,7 +638,11 @@ const commands = {
 				{ quien: flags.quien, coordinador: flags.coordinador },
 				{ corrio: 'pnpm board plan' },
 			);
-			const t = saveTask(dir, before, after);
+			const t = saveTask(dir, before, after, {
+				quien: flags.quien,
+				coordinador: flags.coordinador,
+				seguimiento: true,
+			});
 			appendLog(dir, row);
 			say(
 				flags,
@@ -654,6 +679,7 @@ const commands = {
 				coordinador: true,
 				corrio: typeof flags.corrio === 'string' ? flags.corrio : 'pnpm board merged',
 				salio: `PR ${pr} MERGED`,
+				seguimiento: true,
 			});
 			const freed = before.candado ? `; candado de ${before.candado.agente} suelto` : '';
 			say(flags, out, t, `${t.id} ${t.estado} (rev ${t.rev})${freed}`);
@@ -668,7 +694,14 @@ const commands = {
 			if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
-			const t = saveTask(dir, before, unlocked(before, flags));
+			// T172: a task released while still en curso goes back to pendiente, so another session can claim it.
+			const after = unlocked(before, flags);
+			if (before.estado === 'en curso') after.estado = 'pendiente';
+			const t = saveTask(dir, before, after, {
+				quien: flags.quien,
+				agente,
+				corrio: 'pnpm board release',
+			});
 			say(flags, out, t, `${t.id} libre (rev ${t.rev})`);
 		});
 	},
@@ -687,7 +720,12 @@ const commands = {
 				{ quien: flags.quien, coordinador: flags.coordinador },
 				{ corrio: 'pnpm board move' },
 			);
-			const t = saveTask(dir, before, { ...before, agente });
+			const t = saveTask(
+				dir,
+				before,
+				{ ...before, agente },
+				{ quien: flags.quien, coordinador: flags.coordinador, seguimiento: true },
+			);
 			appendLog(dir, row);
 			const aviso =
 				agente === 'cualquiera' || canFinish(t, agente, loadBoard(dir))
@@ -729,96 +767,6 @@ const commands = {
 			const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
 			const text = `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})${pick.motivo ? ` · ${pick.motivo}` : ''}${live ? `; ${live.id} cancelada` : ''}`;
 			say(flags, out, saved, text);
-		});
-	},
-	decide({ pairs, flags }, dir, out) {
-		need(pairs.decision, 'falta decision=…');
-		return withLock(dir, () => {
-			const all = readCollection(dir, 'decisiones');
-			const n =
-				Math.max(0, ...all.map((d) => Number(String(d.id).replace(/^d/, '')) || 0)) + 1;
-			const id = `d${String(n).padStart(3, '0')}`;
-			if (pairs.reemplaza) {
-				const old = readDoc(dir, 'decisiones', pairs.reemplaza);
-				if (!old) throw new UsageError(`no existe ${pairs.reemplaza}`);
-				writeDoc(dir, 'decisiones', old.id, { ...old, vigente: false });
-			}
-			const tareas = pairs.tareas ? pairs.tareas.split(',').filter(Boolean) : [];
-			const d = {
-				...pairs,
-				tareas,
-				id,
-				en: nowIso(),
-				vigente: true,
-				quien: pairs.quien ?? 'dueño',
-			};
-			writeDoc(dir, 'decisiones', id, d);
-			say(flags, out, d, `${id} registrada`);
-		});
-	},
-	carril({ pos, pairs, flags }, dir, out) {
-		if (!pos.length)
-			return say(
-				flags,
-				out,
-				readCollection(dir, 'carriles'),
-				JSON.stringify(readCollection(dir, 'carriles'), null, 2),
-			);
-		const id = assertId(need(pos[0], 'falta <id>'));
-		return withLock(dir, () => {
-			const before = readDoc(dir, 'carriles', id) ?? { id };
-			checkRev(before, flags);
-			const l = {
-				...applyPairs(before, pairs),
-				rev: (before.rev ?? 0) + 1,
-				comprobadoEn: nowIso(),
-			};
-			writeDoc(dir, 'carriles', id, l);
-			say(flags, out, { ...l, id }, `${id} rev ${l.rev}`);
-		});
-	},
-	estado({ pairs, flags }, dir, out) {
-		if (!Object.keys(pairs).length)
-			return say(
-				flags,
-				out,
-				readDoc(dir, 'estado', 'actual'),
-				JSON.stringify(readDoc(dir, 'estado', 'actual'), null, 2),
-			);
-		return withLock(dir, () => {
-			const before = readDoc(dir, 'estado', 'actual') ?? { id: 'actual' };
-			checkRev(before, flags);
-			const e = { ...applyPairs(before, pairs), rev: (before.rev ?? 0) + 1, revEn: nowIso() };
-			writeDoc(dir, 'estado', 'actual', e);
-			say(flags, out, { ...e, id: 'actual' }, `estado rev ${e.rev}`);
-		});
-	},
-	agentes({ pos, flags, pairs }, dir, out) {
-		if (!pos.length) {
-			const records = Object.entries(AGENT_REGISTRY).map(([id, a]) => ({
-				id,
-				...a,
-				...readDoc(dir, 'agentes', id),
-			}));
-			return say(flags, out, records, JSON.stringify(records, null, 2));
-		}
-		if (!flags.coordinador) throw new UsageError('capacidades requieren --coordinador');
-		const id = pos[0];
-		if (!Object.hasOwn(AGENT_REGISTRY, id)) throw new UsageError('agente desconocido');
-		return withLock(dir, () => {
-			const before = readDoc(dir, 'agentes', id);
-			checkRev(before, flags);
-			if (Object.keys(pairs).some((k) => k !== 'capacidades'))
-				throw new UsageError('solo se actualiza capacidades');
-			const after = applyPairs({ id, ...before }, pairs);
-			if (
-				!Array.isArray(after.capacidades) ||
-				after.capacidades.some((c) => typeof c !== 'string')
-			)
-				throw new UsageError('capacidades debe ser lista de texto');
-			after.rev = (before?.rev ?? 0) + 1;
-			writeDoc(dir, 'agentes', id, after);
-			say(flags, out, after, `${id} rev ${after.rev}`);
 		});
 	},
 	/** Old one-file-per-row bitácora → one JSONL file per day, keeping every row; --dry-run only counts. */
@@ -866,9 +814,11 @@ const commands = {
 		}
 	},
 };
+const inventory = inventoryCommands({ applyPairs, checkRev });
 Object.assign(
 	commands,
 	maintenanceCommands,
+	inventory,
 	nextCommands({ getTask }),
 	closeCommands({ getTask, saveTask, checkRev, assertOwner }),
 	kindCommands({ getTask, saveTask, checkRev, assertOwner }),
@@ -877,7 +827,7 @@ Object.assign(
 		unarchive: archiveCommand(false),
 		get: commands.show,
 		update: commands.set,
-		decision: commands.decide,
+		decision: inventory.decide,
 		log: commands.history,
 	},
 );
