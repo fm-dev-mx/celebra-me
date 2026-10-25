@@ -3,6 +3,7 @@
     "entry": [
         "scripts/check-links.mjs",
         "scripts/board/view-worker.mjs",
+        "scripts/board/format.mjs",
         "scripts/validate-schema.mjs",
         "scripts/agent/worktree-status.ts",
         "scripts/agent/worktree-doctor.ts",

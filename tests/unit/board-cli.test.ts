@@ -1014,10 +1014,15 @@ describe('pnpm board', () => {
 		expect(html).toContain('navigator.clipboard.writeText(text)');
 		expect(html).toContain('const laneId=taskLane;');
 		expect(html).toContain(
-			'${taskLane(t)&&!runLines(t).length?`<span class="lane">${esc(taskLane(t))}</span>`:',
+			'${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:',
 		);
 		expect(html).toContain('const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));');
 		expect(html).toContain("['Carril',taskLane(t)?");
+		// Closing the sheet returns focus to the card's title button, not to the unfocusable article.
+		expect(html).toContain('"] .tbtn`);if(b)b.focus()');
+		expect(html).toMatch(
+			/@media \(pointer:coarse\),\(max-width:560px\)\{\.sha\{[^}]*min-height:44px/,
+		);
 	});
 
 	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
@@ -1661,11 +1666,13 @@ describe('pnpm board', () => {
 
 	it('shows the closing summary above «Archivar» and disables it with its reason', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
-		expect(html).toContain("import { archiveBlock, cierreLines } from '/model.mjs';");
+		expect(html).toContain("import { archiveBlock, findTask } from '/model.mjs';");
 		expect(html).toContain('const why=!arch&&!t.candado&&archiveBlock(t,S.board)');
 		expect(html).toContain("${t.candado||why?'disabled':''}");
-		expect(html).toMatch(/\$\{cierreHtml\(t\)\}\s*<div class="fa"><button/);
-		expect(html).toContain('<h3>Cierre');
+		expect(html).toMatch(
+			/cierreHtml\(t\):`<p class="nopend">Sin resumen de cierre\.<\/p>`\}\s*<div class="fa"><button/,
+		);
+		expect(html).toContain('<h3>Cómo terminó</h3>${statusHtml(t)}${cierreHtml(t)}');
 	});
 
 	it('lets a coordinator release only a legacy lock without sesion', () => {

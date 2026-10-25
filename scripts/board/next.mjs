@@ -136,7 +136,7 @@ export function stalls(board, now = Date.now()) {
  * The verdict of a finished review round: its own `veredicto`, else its closing summary, where a pendiente
  * is a finding for the author (T129 makes it a typed result); null while the round is open.
  */
-function reviewVerdict(r) {
+export function reviewVerdict(r) {
 	if (r.veredicto === 'aprobado' || r.veredicto === 'hallazgos') return r.veredicto;
 	if (!r.cierre || r.estado === 'cancelada') return null;
 	return (r.cierre.pendientes ?? []).length ? 'hallazgos' : 'aprobado';
