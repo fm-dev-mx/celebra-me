@@ -279,11 +279,14 @@ authorization.
   the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
   rounds are never rewritten, except that a still-open one is cancelled with its cierre (T129); the
   same SHA again creates nothing. Without `--agente` the reviewer follows d183: work by Codex or
-  Gemini goes to Claude, work by Claude to Gemini (`--agente=codex` when asked); any other pairing
-  is refused. The author is the task's `agente`, else its lock's or last session's. `show` and the
-  view's sheet list the rounds one below another. Reviews become executable before merge and do not
-  inherit the author's lane. Completion declares `--sha=<reviewed SHA>`; the verifier compares it
-  against the current PR head.
+  Gemini goes to Claude; work by Claude goes (d209, d240) to whichever of Gemini and Codex has less
+  load (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to Gemini),
+  and to Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90
+  % 5-hour use before its reset; the message prints both loads and the quota. An explicit `--agente`
+  always wins; any other pairing is refused. The author is the task's `agente`, else its lock's or
+  last session's. `show` and the view's sheet list the rounds one below another. Reviews become
+  executable before merge and do not inherit the author's lane. Completion declares
+  `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
 - A reviewer keeps its round's task and assigned reviewer, inspects the exact PR head of that round,
   binds findings and completion to the full SHA, and challenges scope, regressions, invariants and
   missing evidence. Another commit makes the review stale: `pnpm board review` creates the next

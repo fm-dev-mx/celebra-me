@@ -91,7 +91,6 @@ import {
 	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
-	defaultReviewer,
 	reviewerIssue,
 	reviewChild,
 	reviewChildId,
@@ -129,6 +128,7 @@ import { UsageError, say } from './cli.mjs';
 import { externalSessionLines, externalSessions } from './external-sessions.mjs';
 import { kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
+import { codexQuota, pickReviewer } from './reviewer.mjs';
 import { addToZip } from './zip.mjs';
 
 const COLOR_LABEL = {
@@ -734,8 +734,12 @@ const commands = {
 			if (!src.pr || src.estado !== 'en revision')
 				throw new UsageError('el origen requiere PR y estado en revision');
 			const author = authorOf(src);
-			const agente =
-				typeof flags.agente === 'string' ? flags.agente : defaultReviewer(author);
+			// d209: without --agente, Claude's work goes to the less loaded of Gemini and Codex.
+			const pick =
+				typeof flags.agente === 'string'
+					? { agente: flags.agente, motivo: '' }
+					: pickReviewer(author, loadBoard(dir), { quota: codexQuota() });
+			const { agente } = pick;
 			if (!agente)
 				throw new UsageError('falta --agente=<revisor>: la tarea no dice su autor');
 			const issue = reviewerIssue(author, agente);
@@ -753,7 +757,7 @@ const commands = {
 			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
 			const saved = saveTask(dir, before, t, who);
 			const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
-			const text = `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})${live ? `; ${live.id} cancelada` : ''}`;
+			const text = `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})${pick.motivo ? ` · ${pick.motivo}` : ''}${live ? `; ${live.id} cancelada` : ''}`;
 			say(flags, out, saved, text);
 		});
 	},

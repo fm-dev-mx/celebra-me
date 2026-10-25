@@ -158,7 +158,10 @@ export async function hideOperationalTooling(page: Page): Promise<void> {
 	});
 }
 
-export async function prepareCompletePage(page: Page): Promise<void> {
+export async function prepareCompletePage(
+	page: Page,
+	options: { galleryScrollLeft?: number } = {},
+): Promise<void> {
 	await hideOperationalTooling(page);
 	await page.evaluate(async () => {
 		await document.fonts.ready;
@@ -175,7 +178,7 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 		for (const image of document.images) image.loading = 'eager';
 	});
 	const sections = page.locator(
-		'[data-section-id], .invitation-section-wrapper[data-section-kind], astro-island, img, footer',
+		'[data-section-id], .invitation-section-wrapper[data-section-kind], astro-island, img, footer, .gift-card',
 	);
 	const sectionCount = await sections.count();
 	for (let index = 0; index < sectionCount; index++) {
@@ -196,16 +199,32 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 			(image) => !image.currentSrc || (image.complete && image.naturalWidth > 0),
 		),
 	);
-	await page.evaluate(async () => {
+	await page.evaluate(async (galleryScrollLeft) => {
 		// Loaded bytes alone do not guarantee that async-decoded images have painted.
 		await Promise.all(
 			Array.from(document.images)
 				.filter((image) => image.currentSrc)
 				.map((image) => image.decode()),
 		);
+		// Preserve an explicitly accepted rail framing despite image visits and scroll snapping.
+		if (galleryScrollLeft !== undefined) {
+			for (const rail of document.querySelectorAll<HTMLElement>('.gallery-grid')) {
+				rail.style.scrollSnapType = 'none';
+				rail.scrollTo({ left: galleryScrollLeft, behavior: 'instant' });
+			}
+		}
+		for (const animation of document.getAnimations()) {
+			const { iterations } = animation.effect?.getComputedTiming() ?? {};
+			if (Number.isFinite(iterations) && animation.playState !== 'finished') {
+				animation.finish();
+			}
+		}
 		document.body.scrollTop = 0;
 		window.scrollTo({ top: 0, behavior: 'instant' });
-	});
+		await new Promise<void>((resolve) =>
+			requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+		);
+	}, options.galleryScrollLeft);
 	await assertNoOperationalTooling(page);
 	const failures = presentationFailures(await collectPresentationEvidence(page));
 	if (failures.length) throw new Error(failures.join('\n'));

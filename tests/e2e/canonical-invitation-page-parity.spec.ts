@@ -139,7 +139,13 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				).toEqual([]);
 				await page.evaluate(() => document.fonts.ready);
 				expect(await page.locator('body').evaluate(auditCriticalLayout)).toEqual([]);
-				await prepareCompletePage(page);
+				// The accepted mobile reference shows the first look partially cropped.
+				await prepareCompletePage(page, {
+					galleryScrollLeft:
+						entry.slug === 'valentina-hernandez' && viewport.name === 'mobile'
+							? 146
+							: undefined,
+				});
 
 				const audit = await page.evaluate(() => {
 					const issues: string[] = [];

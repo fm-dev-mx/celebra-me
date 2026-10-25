@@ -44,6 +44,12 @@ interface ImportMetaEnv {
 	readonly SUPABASE_PROJECT_REF_PRODUCTION: string;
 	readonly META_CAPI_DELIVERY_MODE: string;
 	readonly META_CAPI_ACCESS_TOKEN: string;
+	/** Server-only read token, separate from CAPI delivery credentials. */
+	readonly META_GRAPH_ACCESS_TOKEN: string;
+	/** Server-only asset identifiers for aggregate insight reads. */
+	readonly META_AD_ACCOUNT_ID: string;
+	readonly META_PAGE_ID: string;
+	readonly META_IG_USER_ID: string;
 	readonly META_PIXEL_ID: string;
 	readonly META_TEST_EVENT_CODE: string;
 	readonly TRUST_DEVICE_SECRET: string;
