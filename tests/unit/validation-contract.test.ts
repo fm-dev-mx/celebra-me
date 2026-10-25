@@ -5,6 +5,14 @@ import { spawnSync } from 'node:child_process';
 import { EVIDENCE_WORKFLOW_FILE } from '../../scripts/ops/ci-evidence-reuse.ts';
 import { CERTIFIED_BROWSER_COMMAND } from '../../scripts/ops/visual-prepush-certification.ts';
 
+/** Each result check on its own line, in order, so `set -e` stops the step at the first failure. */
+const resultChecks = (results: Record<string, 'success' | 'skipped'>): RegExp =>
+	new RegExp(
+		Object.entries(results)
+			.map(([tier, result]) => `test "\\$${tier}_RESULT" = ${result}`)
+			.join(String.raw`\r?\n\s+`),
+	);
+
 type PackageManifest = {
 	scripts?: Record<string, string>;
 	'lint-staged'?: Record<string, string[]>;
@@ -186,8 +194,13 @@ describe('canonical validation contract', () => {
 			const imageDigest = workflow.match(/image: .*@(sha256:[a-f0-9]{64})/)?.[1];
 			expect(imageDigest).toBeDefined();
 			expect(workflow).toContain(`VISUAL_PARITY_OS_IMAGE_DIGEST: ${imageDigest}`);
-			expect(workflow).toContain(
-				'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success && test "$MEMORIES_RESULT" = success',
+			expect(workflow).toMatch(
+				resultChecks({
+					APPLICATION: 'success',
+					BROWSER: 'success',
+					MEMORIES: 'success',
+					COVERAGE: 'success',
+				}),
 			);
 			expect(workflow).toContain('uses: actions/checkout@v7');
 			expect(workflow).toContain('uses: pnpm/action-setup@v6');
@@ -304,12 +317,24 @@ describe('canonical validation contract', () => {
 		const suite = job('application-validation');
 		expect(suite).toContain('test "$POLICY_RESULT" = success');
 		expect(suite).toContain('if [ "$EVIDENCE_REUSE" = true ]; then');
-		expect(suite).toContain(
-			'test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped',
+		expect(suite).toMatch(
+			resultChecks({
+				APPLICATION: 'skipped',
+				BROWSER: 'skipped',
+				MEMORIES: 'skipped',
+				COVERAGE: 'skipped',
+			}),
 		);
 		expect(suite).toContain('elif [ "$BROWSER_SCOPE" = skip ]; then');
-		expect(suite).toContain(
-			'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped',
+		expect(suite).toMatch(
+			resultChecks({
+				APPLICATION: 'success',
+				BROWSER: 'skipped',
+				MEMORIES: 'skipped',
+				COVERAGE: 'skipped',
+			}),
 		);
+		// Under `set -e` a failure inside an `&&` chain that is not the last command would not fail the step.
+		expect(suite).not.toContain('&& test');
 	});
 });

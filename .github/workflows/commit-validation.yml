@@ -454,7 +454,9 @@ jobs:
               uses: actions/setup-node@v7
               with:
                   node-version: '24.14.1'
+            # Only sharded parts upload capture records; an unsharded `all` part proves its own matrix.
             - name: Collect shard capture records
+              if: contains(needs.browser-scope.outputs.browser-parts, '-of-')
               uses: actions/download-artifact@v8
               with:
                   pattern: visual-records-*
@@ -536,17 +538,25 @@ jobs:
                   POLICY_RESULT: ${{ needs.policy-validation.result }}
                   EVIDENCE_REUSE: ${{ needs.evidence-reuse.outputs.reuse }}
                   BROWSER_SCOPE: ${{ needs.browser-scope.outputs.browser }}
+              # One `test` per line: under `set -e` a failure inside an `&&` chain that is not the
+              # step's last command would not stop the step.
               run: |
                   test "$POLICY_RESULT" = success
                   if [ "$EVIDENCE_REUSE" = true ]; then
                     # Reused integration evidence stands in for tiers that must not have executed.
-                    test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped
+                    test "$APPLICATION_RESULT" = skipped
+                    test "$BROWSER_RESULT" = skipped
+                    test "$MEMORIES_RESULT" = skipped
                     test "$COVERAGE_RESULT" = skipped
                   elif [ "$BROWSER_SCOPE" = skip ]; then
                     # Browser inputs are byte-identical to an earlier develop push whose browser tier passed.
-                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped
+                    test "$APPLICATION_RESULT" = success
+                    test "$BROWSER_RESULT" = skipped
+                    test "$MEMORIES_RESULT" = skipped
                     test "$COVERAGE_RESULT" = skipped
                   else
-                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success && test "$MEMORIES_RESULT" = success
+                    test "$APPLICATION_RESULT" = success
+                    test "$BROWSER_RESULT" = success
+                    test "$MEMORIES_RESULT" = success
                     test "$COVERAGE_RESULT" = success
                   fi
