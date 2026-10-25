@@ -27,8 +27,9 @@ authorization.
   `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
   `orden`, `origen`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
   `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see Task kinds); `rev` and
-  `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`, `cierre`
-  only by `close`. `espera`, `usted` and `deps` no longer exist.
+  `actualizado` are set by the command, `agregadaPor` and `seguimientoPor` by the commands that add
+  or follow up a task (T172, see Session ownership), `archivada` (date) only by
+  `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -47,9 +48,11 @@ authorization.
   an open task it waits for goes right before it.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
   finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
-  agent at a time; `move` hands a task over only without a lock, logs it and warns when the new
-  agent lacks a `requiere` capability; `review <id> [--agente=<b>]` creates the review child with
-  `origen` (one per round, see below). Never duplicate a task. Rules are the same for every agent.
+  agent at a time; `claim` moves a `pendiente` task to `en curso` with its bitácora row and
+  `release` of a task still `en curso` puts it back to `pendiente` (T172); `move` hands a task over
+  only without a lock, logs it and warns when the new agent lacks a `requiere` capability;
+  `review <id> [--agente=<b>]` creates the review child with `origen` (one per round, see below).
+  Never duplicate a task. Rules are the same for every agent.
 - **Planned lane (d177)**: the coordinator gives every open task a canonical lane (`WORKTREE_LANES`,
   f05–f12) when it creates or prepares it:
   `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador` (`--carril=` clears it, only
@@ -76,10 +79,12 @@ authorization.
 - **Writes**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
-  `vigente: false`). Aliases: `get`, `update`, `decision`, `log`, `verify`; every command takes
-  `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 2 per
-  document, none for a finished task, d185); `pnpm board prune-backups --dry-run` lists the copies
-  over that rule and only `--aplicar` removes them.
+  `vigente: false`; a `decision` text that cites `(reemplaza dNNN)` without the field links that
+  decision, and one that cites several, or another than `reemplaza=`, is refused — T172). Aliases:
+  `get`, `update`, `decision`, `log`, `verify`; every command takes `--json`. Each overwrite keeps
+  the previous copy in `.agent/tmp/board/.respaldos/` (newest 2 per document, none for a finished
+  task, d185); `pnpm board prune-backups --dry-run` lists the copies over that rule and only
+  `--aplicar` removes them.
 - **Archive (d167)**: `pnpm board archive <id> [--rev=<n>]` and `unarchive <id>` hide or show a
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
@@ -256,6 +261,13 @@ authorization.
   Claude `claim` with an id that does not start with `local_` is refused; `CLAUDE_CODE_SESSION_ID`
   is the process id and the app does not know it. Codex and Gemini still pass `--sesion=<id>` until
   their own id is defined.
+- **Who added and followed up (T172)**: `add` and `review` stamp `agregadaPor`; `set`, `plan`,
+  `move`, `close` and `merged` stamp `seguimientoPor`. The writer is a real agent
+  (`claude|codex|gemini`) from `--quien` or `--agente`, also with `--coordinador`; else `--quien`
+  (`dueno`, `coordinador`) or the coordinator flag. `set` cannot write either field. Tasks saved
+  before T172 fall back to the bitácora (creation row and last row after it). The view shows it as a
+  quiet `.by` note after the time (smaller and fainter than `T<n>`, never an agent chip), the sheet
+  under «Versión», and `show` as a line under the title.
 - `release` and `merged` copy the lock's session into the task's `sesion {id, agente, nombre}` as
   history; `--nombre=<session title>` sets the name, otherwise the name already recorded for that id
   stays. Nobody writes `sesion` by hand.
@@ -296,7 +308,10 @@ authorization.
 - `agentes --json` discovers the shared registry and capability overrides. Only explicit coordinator
   updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before
   declaring them.
-- `carril` without an id and `estado` without fields are read-only inventory commands.
+- `carril` without an id and `estado` without fields are read-only inventory commands. `carril`
+  without an id reads the lanes live like `carriles` (T172): each record's own fields (`uso`,
+  `tecla`, `puerto`, `rev`) with Git's branch, clean state and the locked task; the hand-written
+  `estado`, `tarea`, `sesion`, `nota` and `comprobadoEn` are left out.
 
 ## What is next and messages (T126)
 
