@@ -168,3 +168,25 @@ export async function findVisitorSessionMetaAttribution(
 
 	return Object.keys(metaAttribution).length > 0 ? metaAttribution : null;
 }
+
+/**
+ * Record a marketing consent withdrawal for the visitor and switch marketing off on their stored
+ * sessions, so queued Meta conversions are skipped at delivery time. The database keeps it for
+ * sessions stored later too, until a strictly newer consent decision.
+ */
+export async function withdrawVisitorMarketingConsent(input: {
+	visitorId: string;
+	analytics: boolean;
+	decidedAt: string;
+}): Promise<void> {
+	await supabaseRestRequest<unknown>({
+		pathWithQuery: 'rpc/record_visitor_marketing_withdrawal',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_visitor_id: input.visitorId,
+			p_analytics: input.analytics,
+			p_decided_at: input.decidedAt,
+		},
+	});
+}

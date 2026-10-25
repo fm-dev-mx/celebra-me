@@ -10,11 +10,19 @@ jest.mock('@/lib/commercial/commercial-retention.service', () => ({
 jest.mock('@/lib/platform/server/collector/run-collector', () => ({
 	runPlatformUsageCollector: jest.fn(),
 }));
+jest.mock('@/lib/commercial/meta-capi/service', () => ({
+	isMetaCapiDeliveryEnabled: jest.fn(() => false),
+	processPendingMetaConversionEvents: jest.fn(),
+}));
 jest.mock('@/lib/server/deploy-identity', () => ({
 	readDeployEnvironment: jest.fn(() => 'preview'),
 }));
 
 import { runCommercialRetention } from '@/lib/commercial/commercial-retention.service';
+import {
+	isMetaCapiDeliveryEnabled,
+	processPendingMetaConversionEvents,
+} from '@/lib/commercial/meta-capi/service';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
 import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
@@ -29,6 +37,12 @@ const maintenance = runEngagementMaintenance as jest.MockedFunction<
 const retention = runCommercialRetention as jest.MockedFunction<typeof runCommercialRetention>;
 const collector = runPlatformUsageCollector as jest.MockedFunction<
 	typeof runPlatformUsageCollector
+>;
+const deliveryEnabled = isMetaCapiDeliveryEnabled as jest.MockedFunction<
+	typeof isMetaCapiDeliveryEnabled
+>;
+const sweep = processPendingMetaConversionEvents as jest.MockedFunction<
+	typeof processPendingMetaConversionEvents
 >;
 const deployEnvironment = readDeployEnvironment as jest.MockedFunction<
 	typeof readDeployEnvironment
@@ -73,6 +87,7 @@ describe('runScheduledJob', () => {
 		jest.clearAllMocks();
 		deployEnvironment.mockReturnValue('preview');
 		retention.mockResolvedValue(retentionResult);
+		deliveryEnabled.mockReturnValue(false);
 		info = jest.spyOn(console, 'info').mockImplementation(() => undefined);
 		warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 		error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -223,7 +238,10 @@ describe('runScheduledJob', () => {
 			status: 'completed',
 		});
 		expect(collector).toHaveBeenCalledTimes(1);
-		expect(summary(info.mock.calls.at(-1)?.[0])).toEqual({
+		const summaryLine = info.mock.calls.find((call) =>
+			String(call[0]).includes('platform_usage_summary'),
+		);
+		expect(summary(summaryLine?.[0])).toEqual({
 			event: 'platform_usage_summary',
 			phase: 'completed',
 			...collected,
@@ -265,6 +283,73 @@ describe('runScheduledJob', () => {
 		expect(error).toHaveBeenCalledWith('[platform][collector] failed', {
 			status: 404,
 			code: 'PGRST205',
+		});
+	});
+
+	describe('Meta conversion outbox sweep (quarter-hour cron)', () => {
+		const sweepResult = { processed: 2, failed: 0, skipped: 1, ambiguous: 0 };
+
+		beforeEach(() => {
+			collector.mockResolvedValue(collected);
+			sweep.mockResolvedValue(sweepResult);
+		});
+
+		it('processes the outbox on Production when delivery is enabled', async () => {
+			deployEnvironment.mockReturnValue('production');
+			deliveryEnabled.mockReturnValue(true);
+			await expect(runScheduledJob('*/15 * * * *')).resolves.toEqual({
+				job: 'platform_usage',
+				status: 'completed',
+			});
+			expect(sweep).toHaveBeenCalledTimes(1);
+			expect(info).toHaveBeenCalledWith('[meta-capi][sweep] completed', sweepResult);
+		});
+
+		it('leaves rows pending outside Production and while delivery is disabled', async () => {
+			deployEnvironment.mockReturnValue('preview');
+			deliveryEnabled.mockReturnValue(true);
+			await expect(runScheduledJob('*/15 * * * *')).resolves.toEqual({
+				job: 'platform_usage',
+				status: 'skipped',
+			});
+
+			deployEnvironment.mockReturnValue('production');
+			deliveryEnabled.mockReturnValue(false);
+			await expect(runScheduledJob('*/15 * * * *')).resolves.toEqual({
+				job: 'platform_usage',
+				status: 'completed',
+			});
+			expect(sweep).not.toHaveBeenCalled();
+		});
+
+		it.each([
+			{ processed: 0, failed: 1, skipped: 0, ambiguous: 0 },
+			{ processed: 3, failed: 0, skipped: 0, ambiguous: 1 },
+		])('fails the job when the batch returns undelivered rows: %o', async (batch) => {
+			deployEnvironment.mockReturnValue('production');
+			deliveryEnabled.mockReturnValue(true);
+			sweep.mockResolvedValueOnce(batch);
+			await expect(runScheduledJob('*/15 * * * *')).resolves.toEqual({
+				job: 'platform_usage',
+				status: 'failed',
+			});
+			expect(warn).toHaveBeenCalledWith('[meta-capi][sweep] failed deliveries', batch);
+			expect(info).not.toHaveBeenCalledWith('[meta-capi][sweep] completed', batch);
+		});
+
+		it('fails the job when the sweep throws, after the collector still ran', async () => {
+			deployEnvironment.mockReturnValue('production');
+			deliveryEnabled.mockReturnValue(true);
+			sweep.mockRejectedValueOnce(new Error('network'));
+			await expect(runScheduledJob('*/15 * * * *')).resolves.toEqual({
+				job: 'platform_usage',
+				status: 'failed',
+			});
+			expect(collector).toHaveBeenCalledTimes(1);
+			expect(error).toHaveBeenCalledWith('[meta-capi][sweep] failed', {
+				status: null,
+				code: null,
+			});
 		});
 	});
 });

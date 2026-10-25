@@ -12,6 +12,8 @@ import {
 	normalizeAndHashEmail,
 	normalizeAndHashPhone,
 	deliverMetaConversionEvent,
+	enqueueBrowserConversionEvent,
+	isMetaCapiDeliveryEnabled,
 	processPendingMetaConversionEvents,
 	sanitizeProviderError,
 } from '@/lib/commercial/meta-capi/service';
@@ -640,7 +642,7 @@ describe('processPendingMetaConversionEvents', () => {
 		expect(result).toEqual({ processed: 2, failed: 0, skipped: 0, ambiguous: 0 });
 		expect(mockRestRequest).toHaveBeenCalledWith({
 			pathWithQuery:
-				'meta_conversion_events?status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.2026-07-11T18%3A30%3A00.000Z)&select=id&limit=20',
+				'meta_conversion_events?status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.2026-07-11T18%3A30%3A00.000Z)&select=id&order=created_at.asc&limit=20',
 			method: 'GET',
 			useServiceRole: true,
 		});
@@ -658,5 +660,124 @@ describe('processPendingMetaConversionEvents', () => {
 		expect(result).toEqual({ processed: 0, failed: 0, skipped: 2, ambiguous: 0 });
 		// No Meta CAPI fetch request should be made when delivery mode is disabled
 		expect(mockFetch).not.toHaveBeenCalled();
+	});
+});
+
+describe('Meta CAPI browser Contact and Lead events', () => {
+	const clickEventId = '99999999-9999-4999-8999-999999999999';
+	const contactRow = {
+		id: 'outbox-id',
+		event_name: 'Contact',
+		event_id: clickEventId,
+		customer_id: null,
+		session_id: 'session-id',
+		event_source_path: '/demos/xv',
+		created_at: '2026-10-25T12:00:00.000Z',
+		value: null,
+		currency: 'MXN',
+		customers: null,
+		sales_orders: null,
+		leads: null,
+	};
+	const sessionRow = (marketing: boolean, userAgent: string | null = 'Mozilla/5.0 (iPhone)') => ({
+		id: 'session-id',
+		visitor_id: 'visitor-id',
+		fbp: 'fb.1.12345',
+		fbc: null,
+		fbclid: null,
+		landing_path: '/',
+		client_ip_address: '203.0.113.7',
+		client_user_agent: userAgent,
+		consent_snapshot: { necessary: true, analytics: true, marketing },
+	});
+
+	it('queues a browser event idempotently by its Pixel eventID', async () => {
+		mockRestRequest.mockResolvedValueOnce([]);
+		await enqueueBrowserConversionEvent({
+			eventName: 'Contact',
+			eventId: clickEventId,
+			sessionId: 'session-id',
+			eventSourcePath: '/demos/xv',
+		});
+		expect(mockRestRequest).toHaveBeenCalledWith({
+			pathWithQuery: 'meta_conversion_events?on_conflict=event_id',
+			method: 'POST',
+			useServiceRole: true,
+			prefer: 'resolution=ignore-duplicates,return=minimal',
+			body: {
+				event_name: 'Contact',
+				event_id: clickEventId,
+				trigger_status: 'whatsapp_contact_clicked',
+				session_id: 'session-id',
+				event_source_path: '/demos/xv',
+				value: null,
+				status: 'pending',
+			},
+		});
+	});
+
+	it('sends a Contact as a website event with the same event_id the Pixel used', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([contactRow])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('sent');
+
+		const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+		const event = body.data[0];
+		expect(event.event_name).toBe('Contact');
+		expect(event.event_id).toBe(clickEventId);
+		expect(event.action_source).toBe('website');
+		expect(event.event_source_url).toBe('https://www.celebra-me.com/demos/xv');
+		expect(event.event_time).toBe(Math.floor(Date.parse(contactRow.created_at) / 1000));
+		expect(event).not.toHaveProperty('custom_data');
+		expect(event.user_data).toEqual({
+			external_id: [hashSha256('visitor-id')],
+			fbp: 'fb.1.12345',
+			client_ip_address: '203.0.113.7',
+			client_user_agent: 'Mozilla/5.0 (iPhone)',
+		});
+	});
+
+	it('skips a browser event when the session no longer has marketing consent', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([{ ...contactRow, event_name: 'Lead' }])
+			.mockResolvedValueOnce([sessionRow(false)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'CONSENT_REQUIRED' }),
+			}),
+		);
+	});
+
+	it('skips a browser event whose session has no user agent', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([contactRow])
+			.mockResolvedValueOnce([sessionRow(true, null)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'MISSING_CLIENT_USER_AGENT' }),
+			}),
+		);
+	});
+
+	it('reports delivery as enabled only outside disabled mode', () => {
+		mockDeliveryMode = 'test';
+		expect(isMetaCapiDeliveryEnabled()).toBe(true);
+		mockDeliveryMode = 'disabled';
+		expect(isMetaCapiDeliveryEnabled()).toBe(false);
 	});
 });
