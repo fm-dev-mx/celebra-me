@@ -25,6 +25,7 @@ const FILES = {
 	'/': ['view.html', 'text/html; charset=utf-8'],
 	'/model.mjs': ['model.mjs', 'text/javascript; charset=utf-8'],
 	'/next.mjs': ['next.mjs', 'text/javascript; charset=utf-8'],
+	'/cierre.mjs': ['cierre.mjs', 'text/javascript; charset=utf-8'],
 	'/format.mjs': ['format.mjs', 'text/javascript; charset=utf-8'],
 };
 const SETTLE_MS = 150;

@@ -194,7 +194,9 @@ export function outcomeOf(t) {
 	const v = isReview(t) ? reviewVerdict(t) : null;
 	if (t.estado === 'cancelada') return { key: 'cancel', label: 'Cancelada' };
 	if (v === 'aprobado') return { key: 'ok', label: 'Aprobada' };
-	// Until T129 types the verdict, a round is read as «hallazgos» only because its summary has a pendiente,
+	if (v === 'cambios') return { key: 'warn', label: 'Pide cambios' };
+	if (v === 'bloqueado') return { key: 'cancel', label: 'Bloqueada' };
+	// A legacy round without a typed verdict is read as «hallazgos» only because its summary has a pendiente,
 	// which may be a follow-up rather than a finding: the chip then says only what is known.
 	if (v === 'hallazgos')
 		return {
@@ -216,3 +218,22 @@ export function whoOf(t) {
 	if (Object.hasOwn(PEOPLE, a ?? '')) return { key: a, label: PEOPLE[a] };
 	return null;
 }
+
+const PRIORITY_RANK = { P0: 0, P1: 1, P2: 2, P3: 3 };
+/** A review's typed findings (T129), most severe first; empty for any other task. */
+export function findingsOf(t) {
+	const xs = t.cierre?.resultado?.hallazgos;
+	if (!Array.isArray(xs)) return [];
+	return xs
+		.filter((h) => h && typeof h === 'object')
+		.slice()
+		.sort((a, b) => (PRIORITY_RANK[a.p] ?? 9) - (PRIORITY_RANK[b.p] ?? 9));
+}
+
+/** The Handoff Contract lists of a cierre (T129) with their Spanish headings, only the ones present. */
+export const HANDOFF_HEADINGS = [
+	['fallidas', 'Fallidas'],
+	['riesgos', 'Riesgos'],
+	['dudas', 'Dudas'],
+	['excepcion', 'Excepción autorizada'],
+];

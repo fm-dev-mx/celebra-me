@@ -24,14 +24,12 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
-	cierreIssues,
 	isFinished as isClosed,
 	isOpen,
 	isReadOnly,
 	isStaleLock,
 	laneAllowed,
 	logRowIssues,
-	NO_CIERRE,
 	ordenOf,
 	prNumber,
 	promptLanes,
@@ -41,6 +39,7 @@ import {
 	taskLane,
 	taskTag as tag,
 } from './model.mjs';
+import { cierreIssues, NO_CIERRE } from './cierre.mjs';
 import { boardDir, readLog } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');

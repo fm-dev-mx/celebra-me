@@ -22,9 +22,16 @@
  *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
  *                                               without --agente the reviewer follows d183
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
- *         [--pr=#N] [--commit=<sha>] [--rev=<n>]   d178: closing summary (lock owner, or --coordinador to
+ *         [--fallida=…] [--riesgo=…] [--duda=…] [--excepcion=…]
+ *         [--veredicto=aprobado|cambios|bloqueado] [--hallazgo="P2|archivo|texto"] [--sha=<sha>]
+ *         [--nivel=validate:changed|type-check|ci] [--pr=#N] [--commit=<sha>] [--rev=<n>]
+ *                                               d178: closing summary (lock owner, or --coordinador to
  *                                               complete it); repeat a flag for each line or item, «ninguna»
- *                                               for an empty list; a pendiente without its task is refused
+ *                                               for an empty list; a pendiente without its task is refused.
+ *                                               T129: a task created under contrato 2 also names every
+ *                                               Handoff list and its resultado (review: veredicto, sha,
+ *                                               hallazgos; code: pr, sha, nivel); prints a one-line signal
+ *   set <id> estado=cancelada --motivo=…        T129: a cancellation writes its cierre, the reason as summary
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task with its closing summary from
  *                                               «Finalizadas» (bitácora row)
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
@@ -58,12 +65,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
-	archiveBlock,
-	buildCierre,
 	canFinish,
-	cierreBlock,
-	cierreIssues,
-	cierreLines,
 	claimable,
 	AGENT_REGISTRY,
 	color,
@@ -100,6 +102,8 @@ import {
 	unlocked,
 	CONTRATO,
 } from './model.mjs';
+import { archiveBlock, cierreBlock } from './cierre.mjs';
+import { cancelOnSet, cancelReplaced, closeCommands } from './close-commands.mjs';
 import { claimTitleIssue, nextSections, sectionLines } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
 import {
@@ -355,24 +359,6 @@ function archiveCommand(archivar) {
 	};
 }
 
-/** d178: the closing summary a session writes when it finishes (or the coordinator completes). */
-function closeCommand({ pos, flags, lists }, dir, out) {
-	return withLock(dir, () => {
-		const before = getTask(dir, need(pos[0], 'falta <id>'));
-		if (flags.rev !== undefined) checkRev(before, flags);
-		// The lock owner writes it; a declared coordinator completes it, also after the lock is gone.
-		if (!flags.coordinador) assertOwner(before, flags);
-		const board = loadBoard(dir);
-		const cierre = buildCierre(before.cierre, { flags, lists }, board, nowIso());
-		const issues = cierreIssues({ ...before, cierre }, board);
-		if (issues.length)
-			throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
-		const t = saveTask(dir, before, { ...before, cierre });
-		const text = [`${t.id} con cierre (rev ${t.rev})`, ...cierreLines(t, board)];
-		say(flags, out, t, text.join('\n'));
-	});
-}
-
 const laneAllowed = (carril, task) => laneAllowedIn(carril, task, WORKTREE_LANES);
 
 /** d177: only a declared coordinator plans a lane, and only a canonical one. */
@@ -548,7 +534,12 @@ const commands = {
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
-			const merged = applyPairs({ ...before, ...data, id: before.id }, pairs);
+			// T129: a cancellation writes its cierre in the same command.
+			const merged = cancelOnSet(
+				before,
+				applyPairs({ ...before, ...data, id: before.id }, pairs),
+				flags,
+			);
 			if (before.candado?.rama && merged.rama !== before.candado.rama)
 				throw new UsageError('rama distinta del candado');
 			if (
@@ -743,7 +734,9 @@ const commands = {
 			// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
 			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
 			const saved = saveTask(dir, readDoc(dir, 'tareas', t.id), t, who);
-			say(flags, out, saved, `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})`);
+			const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
+			const text = `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})${live ? `; ${live.id} cancelada` : ''}`;
+			say(flags, out, saved, text);
 		});
 	},
 	decide({ pairs, flags }, dir, out) {
@@ -881,15 +874,20 @@ const commands = {
 		}
 	},
 };
-Object.assign(commands, maintenanceCommands, nextCommands({ getTask }), {
-	close: closeCommand,
-	archive: archiveCommand(true),
-	unarchive: archiveCommand(false),
-	get: commands.show,
-	update: commands.set,
-	decision: commands.decide,
-	log: commands.history,
-});
+Object.assign(
+	commands,
+	maintenanceCommands,
+	nextCommands({ getTask }),
+	closeCommands({ getTask, saveTask, checkRev, assertOwner }),
+	{
+		archive: archiveCommand(true),
+		unarchive: archiveCommand(false),
+		get: commands.show,
+		update: commands.set,
+		decision: commands.decide,
+		log: commands.history,
+	},
+);
 
 export async function run(argv, { dir = boardDir(), out = console.log, prState } = {}) {
 	const [cmd, ...rest] = argv;

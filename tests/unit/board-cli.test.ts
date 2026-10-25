@@ -172,9 +172,15 @@ describe('pnpm board', () => {
 		expect(add('first').status).toBe(0);
 		expect(readTask(dir, 'first').num).toBe(1);
 		expect(add('manual', 'num=100').status).toBe(2);
-		expect(board(dir, 'set', 'first', '--rev=1', 'estado=cancelada').status).toBe(0);
-		expect(raw(dir, 'close', 'first', '--coordinador', '--resumen=Cancelada.').status).toBe(0);
-		expect(board(dir, 'archive', 'first', '--rev=3').status).toBe(0);
+		expect(board(dir, 'set', 'first', '--rev=1', 'estado=cancelada').err).toContain(
+			'falta --motivo',
+		);
+		// T129: the cancellation writes its cierre, so «Archivar» needs no separate close.
+		expect(
+			board(dir, 'set', 'first', '--rev=1', 'estado=cancelada', '--motivo=Duplicada.').status,
+		).toBe(0);
+		expect(readTask(dir, 'first').cierre).toMatchObject({ resumen: 'Duplicada.', riesgos: [] });
+		expect(board(dir, 'archive', 'first', '--rev=2').status).toBe(0);
 		expect(add('second').status).toBe(0);
 		expect(readTask(dir, 'second').num).toBe(2);
 
@@ -1666,7 +1672,7 @@ describe('pnpm board', () => {
 
 	it('shows the closing summary above «Archivar» and disables it with its reason', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
-		expect(html).toContain("import { archiveBlock, findTask } from '/model.mjs';");
+		expect(html).toContain("import { archiveBlock, signalLine } from '/cierre.mjs';");
 		expect(html).toContain('const why=!arch&&!t.candado&&archiveBlock(t,S.board)');
 		expect(html).toContain("${t.candado||why?'disabled':''}");
 		expect(html).toMatch(

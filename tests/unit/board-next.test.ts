@@ -150,7 +150,7 @@ describe('board heartbeat and session title (T126)', () => {
 			'--coordinador',
 		]);
 		expect(add.status).toBe(0);
-		expect(readTask(dir, 'nueva').contrato).toBe(1);
+		expect(readTask(dir, 'nueva').contrato).toBe(2);
 		const claim = (id: string, ...rest: string[]) =>
 			cli(dir, [
 				'claim',

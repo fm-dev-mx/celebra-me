@@ -23,6 +23,7 @@ import {
 	reviewRounds,
 	stage,
 	taskTag,
+	VEREDICTOS,
 } from './model.mjs';
 
 const MINUTE_MS = 60_000;
@@ -133,13 +134,30 @@ export function stalls(board, now = Date.now()) {
 }
 
 /**
- * The verdict of a finished review round: its own `veredicto`, else its closing summary, where a pendiente
- * is a finding for the author (T129 makes it a typed result); null while the round is open.
+ * The verdict of a closed review round: its typed `cierre.resultado.veredicto` (T129: aprobado, cambios or
+ * bloqueado), else a legacy `veredicto`, else its closing summary, where a pendiente is a finding for the author
+ * (hallazgos); null while the round is open or once it is cancelled.
  */
 export function reviewVerdict(r) {
 	if (r.veredicto === 'aprobado' || r.veredicto === 'hallazgos') return r.veredicto;
 	if (!r.cierre || r.estado === 'cancelada') return null;
+	const typed = r.cierre.resultado?.veredicto;
+	if (VEREDICTOS.includes(typed)) return typed;
 	return (r.cierre.pendientes ?? []).length ? 'hallazgos' : 'aprobado';
+}
+
+/**
+ * The review round that makes an open task «lista para unir» (T129): its last round approved the SHA it was
+ * asked to review, and that SHA is still the PR head when `prs` (open PRs from GitHub) say so; else null.
+ */
+export function readyToMerge(t, board, prs) {
+	if (isReview(t) || !t.pr || isFinished(t)) return null;
+	const last = reviewRounds(t.id, board).at(-1);
+	if (!last?.revisionSha || reviewVerdict(last) !== 'aprobado') return null;
+	const sha = last.cierre?.resultado?.sha ?? last.revisionSha;
+	if (!last.revisionSha.startsWith(sha)) return null;
+	const head = prs?.find((p) => `#${p.number}` === normalizePr(t.pr))?.headRefOid;
+	return head && head !== last.revisionSha ? null : last;
 }
 
 /** The review item of a task under review: merge it, review its new head again, or pass the findings on. */
@@ -161,6 +179,12 @@ function reviewItem(t, board, prs) {
 			tipo: 'unir',
 			t,
 			texto: `Unir ${ref}: ${taskTag(last)} aprobó ${short}${sha ? '' : ' (SHA del PR sin comprobar)'}`,
+		};
+	if (verdict === 'bloqueado')
+		return {
+			tipo: 'hallazgos',
+			t,
+			texto: `Resolver el bloqueo que ${taskTag(last)} encontró en ${ref}`,
 		};
 	return {
 		tipo: 'hallazgos',
