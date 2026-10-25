@@ -98,6 +98,8 @@ import {
 	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
+	buildMessageRow,
+	taskLabel,
 	reviewerIssue,
 	reviewChild,
 	reviewChildId,
@@ -118,6 +120,8 @@ import {
 	findTask,
 } from './model.mjs';
 import { calendarLine, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
+import { reviewPreflight } from './review-preflight.mjs';
+import { authorSession } from './findings.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
 import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
 import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
@@ -567,6 +571,7 @@ ${calendar}`);
 				'carrilPlaneado',
 				'origen',
 				'revisionSha',
+				'revisionFiles',
 				'archivada',
 				'cierre',
 				'num',
@@ -813,11 +818,32 @@ ${calendar}`);
 			const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
 			if (prev?.revisionSha === sha)
 				return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
+			const preflight = reviewPreflight(src, sha);
+			if (preflight.conflicts !== null) {
+				const en = nowIso();
+				const texto = `${taskLabel(src)} (${src.pr}@${sha.slice(0, 7)}): revisión rechazada por conflictos de merge. Archivos: ${preflight.conflicts.length ? preflight.conflicts.join(', ') : 'UNVERIFIED (objetos locales no disponibles; compruebe los archivos en GitHub)'}. Una origin/develop a su rama con un merge normal, resuelva los conflictos y haga push normal; nunca rebase ni push --force.`;
+				const row = buildMessageRow(
+					src.id,
+					{ de: 'coordinador', para: author, texto, id: `merge-${src.id}-${sha}-${en}` },
+					en,
+				);
+				const sesion = authorSession(src, author);
+				if (sesion) row.mensaje.sesion = sesion.id;
+				appendLog(dir, row);
+				throw new UsageError(texto);
+			}
 			const id = reviewChildId(src, prev);
 			const before = readDoc(dir, 'tareas', id);
 			// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
 			const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
-			const t = reviewChild(src, { agente, sha, prev, num, generado: nowIso() });
+			const t = reviewChild(src, {
+				agente,
+				sha,
+				prev,
+				num,
+				files: preflight.files,
+				generado: nowIso(),
+			});
 			// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
 			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
 			const saved = saveTask(dir, before, t, who);

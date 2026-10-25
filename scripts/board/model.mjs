@@ -271,7 +271,10 @@ export function reviewChildId(src, prev) {
 }
 
 /** The child task of the next review round of `src`, after `prev`, numbered `num` (T160). */
-export function reviewChild(src, { agente, sha, prev, num, generado = new Date().toISOString() }) {
+export function reviewChild(
+	src,
+	{ agente, sha, prev, num, files, generado = new Date().toISOString() },
+) {
 	const n = prev ? reviewRound(prev) + 1 : 1;
 	const id = reviewChildId(src, prev);
 	return {
@@ -282,6 +285,7 @@ export function reviewChild(src, { agente, sha, prev, num, generado = new Date()
 			n,
 			sha,
 			prev,
+			files,
 			agente,
 			generado,
 			carril: READONLY_LANE,
@@ -295,6 +299,7 @@ export function reviewChild(src, { agente, sha, prev, num, generado = new Date()
 		contrato: CONTRATO,
 		origen: src.id,
 		revisionSha: sha,
+		...(files ? { revisionFiles: files } : {}),
 		vuelta: n,
 		requisitos: [{ tipo: 'revision', ref: src.id }],
 		...(src.rama ? { rama: src.rama } : {}),
@@ -492,6 +497,7 @@ export const isOpen = (t, board, now) =>
 export function calendarDate(t, board, now = Date.now()) {
 	if ((t.estado ?? 'pendiente') !== 'pendiente' || t.candado) return null;
 	const unmet = requisitos(t, board, now).filter((r) => !r.ok);
+	if (unmet.some((r) => r.tipo === 'fecha' && Number.isNaN(time(r.ref)))) return null;
 	if (!unmet.length || unmet.some((r) => r.tipo !== 'fecha')) return null;
 	return unmet
 		.map((r) => r.ref)

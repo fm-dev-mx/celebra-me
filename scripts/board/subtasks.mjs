@@ -23,6 +23,7 @@ export function calendar(board, now = Date.now()) {
 
 /** d276: the Monday (YYYY-MM-DD, Mazatlán) of the week a date falls in. */
 export function weekOf(s) {
+	if (!Number.isFinite(new Date(s).getTime())) return null;
 	const local = new Date(s).toLocaleDateString('en-CA', { timeZone: 'America/Mazatlan' });
 	const [y, m, d] = local.split('-').map(Number);
 	const day = new Date(Date.UTC(y, m - 1, d));
@@ -170,16 +171,20 @@ export function subtaskLines(t, board) {
  * task itself. Null when it is fine; `t` is the task as it would be saved.
  */
 export function parentIssue(t, board) {
-	if (t.padre === undefined) return null;
 	const byId = new Map([...(board.archivo ?? []), ...(board.tareas ?? [])].map((x) => [x.id, x]));
 	byId.set(t.id, t);
-	if (!byId.has(t.padre)) return `padre ${t.padre} no está en el tablero`;
-	const path = [t.id];
-	for (let cur = t.padre; cur !== undefined; cur = byId.get(cur)?.padre) {
-		if (cur === t.id) return `padre forma un ciclo: ${[...path, cur].join(' → ')}`;
-		// A loop that does not pass through this task is reported on its own members.
-		if (path.includes(cur)) return null;
-		path.push(cur);
+	if (t.padre !== undefined && !byId.has(t.padre))
+		return `padre ${t.padre} no está en el tablero`;
+	const visited = new Set();
+	function visit(x, path) {
+		for (const cur of new Set([x?.padre, x?.grupo].filter((ref) => byId.has(ref)))) {
+			if (cur === t.id) return `padre forma un ciclo: ${[...path, cur].join(' → ')}`;
+			if (visited.has(cur)) continue;
+			visited.add(cur);
+			const issue = visit(byId.get(cur), [...path, cur]);
+			if (issue) return issue;
+		}
+		return null;
 	}
-	return null;
+	return visit(t, [t.id]);
 }
