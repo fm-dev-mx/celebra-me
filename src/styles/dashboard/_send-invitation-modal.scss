@@ -371,7 +371,16 @@
 		}
 
 		.dashboard-modal__footer-cancel {
-			display: none;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			min-height: 44px;
+			padding: 0.5rem;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			color: var(--color-text-secondary);
+			border-radius: 10px;
 		}
 
 		.send-invitation__footer-secondary {
