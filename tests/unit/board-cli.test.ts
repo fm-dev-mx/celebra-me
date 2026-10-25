@@ -1795,7 +1795,11 @@ describe('pnpm board', () => {
 		const dir = makeBoard({
 			tareas: [
 				task('legacy', { estado: 'unida', candado: lock }),
-				task('owned', { estado: 'unida', candado: { ...lock, sesion: 's1' } }),
+				// d274: a heartbeat under 2 h old keeps the session's lock out of the coordinator's reach.
+				task('owned', {
+					estado: 'unida',
+					candado: { ...lock, sesion: 's1', latido: new Date().toISOString() },
+				}),
 			],
 		});
 		expect(board(dir, 'release', 'legacy', '--agente=claude').err).toMatch(/otra sesión/);

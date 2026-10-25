@@ -6,7 +6,7 @@ import { randomBytes } from 'node:crypto';
 import { UsageError, say } from './cli.mjs';
 import { buildCierre, cancelCierre, cierreIssues, cierreLines, signalLine } from './cierre.mjs';
 import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
-import { isFinished, logRowError, quienOf, unlocked } from './model.mjs';
+import { VEREDICTOS, isFinished, isReview, logRowError, quienOf, unlocked } from './model.mjs';
 import { appendLog, loadBoard, readDoc, withLock } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -61,6 +61,16 @@ function sendFindings(dir, t, board) {
 	return `hallazgos enviados a ${notice.para} sobre ${notice.tarea} (pnpm board inbox --agente=${notice.para})`;
 }
 
+/**
+ * d274: an open review whose cierre carries a verdict is done, `cambios` included (the next round is another task),
+ * and its lock goes. `after` is returned unchanged for any other task. The caller has already checked the cierre.
+ */
+export function reviewDone(before, after, flags) {
+	if (!isReview(before) || isFinished(before)) return after;
+	if (!VEREDICTOS.includes(after.cierre?.resultado?.veredicto)) return after;
+	return { ...unlocked(after, flags), estado: 'hecha' };
+}
+
 /** The `close` command; board.mjs passes the task helpers it owns. */
 export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 	return {
@@ -82,12 +92,10 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 				const issues = cierreIssues({ ...before, cierre }, board);
 				if (issues.length)
 					throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
-				const t = saveTask(
-					dir,
-					before,
-					{ ...before, cierre },
-					{ ...flags, seguimiento: true },
-				);
+				const t = saveTask(dir, before, reviewDone(before, { ...before, cierre }, flags), {
+					...flags,
+					seguimiento: true,
+				});
 				// T129: the one-line signal the agent hands back, built only from the cierre.
 				const senal = signalLine(t, board);
 				const enviado = sendFindings(dir, t, board);
