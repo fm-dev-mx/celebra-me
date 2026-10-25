@@ -24,5 +24,7 @@ devuelve:
     - 'sha'
     - 'nivel'
 listo_si: 'type-check'
-al_terminar:
-    - 'pnpm board review {id} (revisión cruzada) y deje la tarea en revisión con su PR.'
+al_terminar: []
+tras_cierre:
+    - 'Si la tarea sigue en curso (su candado impide que sync la mueva): pnpm board set {id} --rev=<rev de pnpm board show {id}> "estado=en revision" "pr=#<n>" --agente={agente}.'
+    - 'pnpm board review {id} --sha=<sha del PR> (revisión cruzada) y deje la tarea en revisión con su PR.'

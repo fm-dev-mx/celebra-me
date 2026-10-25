@@ -198,17 +198,19 @@ authorization.
   `invitacion`, `creativo`, `auditoria`, `operacion`); `categoria` only picks its lane. Each kind is
   one short `.agent/kinds/<tipo>.yaml`: `lee` (routing-matrix `task_type` names, never copied
   lists), `pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve` (the
-  T129 `resultado` fields), `listo_si` (validation level) and `al_terminar`. The coordinator writes
-  only `busca` (the `QUÉ SE BUSCA` text, with «Terminado cuando:») and, when the task needs them,
-  `corto` (the session name's description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones`
-  (dNNN ids; decisions naming the task in `tareas` and `decision` requisitos count too). `add`,
-  `set` and `plan` regenerate the prompt-v1 when one of those fields, the lane or the branch
-  changes, and refuse a hand-written `prompt` on a typed task; `pnpm board prompt <id>` prints it
-  and `--guardar --rev=<n>` saves it after a decision or kind file changed. `board:verify` checks
-  the kind files and warns when a saved prompt is not the one its kind generates now. Session tasks
-  created under `contrato: 3` need `tipo`; older tasks and tasks without `tipo` keep their
-  hand-written prompts. Review rounds from `pnpm board review` get `tipo: revision` and keep the
-  prompt `review` writes.
+  T129 `resultado` fields), `listo_si` (validation level), `al_terminar` (steps before the close
+  line) and the optional `tras_cierre` (steps after it: `codigo` puts there the move to
+  `en revision` with `set … "estado=en revision" "pr=#<n>"`, because sync does not move a locked
+  task, and then `pnpm board review`, d255). The coordinator writes only `busca` (the `QUÉ SE BUSCA`
+  text, with «Terminado cuando:») and, when the task needs them, `corto` (the session name's
+  description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones` (dNNN ids; decisions naming
+  the task in `tareas` and `decision` requisitos count too). `add`, `set` and `plan` regenerate the
+  prompt-v1 when one of those fields, the lane or the branch changes, and refuse a hand-written
+  `prompt` on a typed task; `pnpm board prompt <id>` prints it and `--guardar --rev=<n>` saves it
+  after a decision or kind file changed. `board:verify` checks the kind files and warns when a saved
+  prompt is not the one its kind generates now. Session tasks created under `contrato: 3` need
+  `tipo`; older tasks and tasks without `tipo` keep their hand-written prompts. Review rounds from
+  `pnpm board review` get `tipo: revision` and keep the prompt `review` writes.
 - **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`.
   **Inherited acceptance**: what the owner already accepted in a task (its `AUTORIZO`, `DECISIONES`
@@ -292,7 +294,11 @@ authorization.
   authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
   exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
   `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
-- `review` requires the origin PR in `en revision`, generates an English prompt and records
+- `review` requires the origin PR in `en revision` and a valid `cierre` (d255: no task reaches
+  review without its closing summary; the same `cierreIssues` as «Archivar», so a cancelled task
+  reopened with a cierre lacking `resultado` is refused too; the refusal prints the
+  `pnpm board close <id> …` to run first, and `--coordinador` gets no bypass: the coordinator
+  completes the summary with `close --coordinador`). It generates an English prompt and records
   `revisionSha` (from GitHub, or explicit `--sha`). Every round is a new task: `<id>-revision`, then
   `<id>-revision-2`, `-3`… for each new PR head, with `vuelta`, the short SHA in the title and its
   own prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names
@@ -331,9 +337,19 @@ authorization.
   shows in «Detenidas»; a ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as
   «Correr el despachador de Codex (T<n>)»; an idle Claude task goes to the coordinator.
 - `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al coordinador» and
-  «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), reviews with
-  findings (pass them to the author), open PRs without a task, ready Claude tasks without a session
-  and messages for it. `list` prints the same sections without reading GitHub.
+  «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), blocked
+  reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el resumen de cierre
+  de T<n>» for every task `en revision` or `unida` without a valid `cierre` (d255; a merged PR still
+  moves a task to `unida`, because the merge is a fact), open PRs without a task, ready Claude tasks
+  without a session and messages for it. `list` prints the same sections without reading GitHub.
+- **Findings to the author (d251, T212)**: `close` of a review round with `--veredicto=cambios`
+  writes one message about the origin task to its author (`authorOf`), from the reviewer, naming the
+  round (`mensaje.revision`) and the author's session (`mensaje.sesion`, the lock's or the last
+  recorded one), with every finding as `P2 archivo:línea texto`; closing again with the same
+  findings writes nothing new. The coordinator no longer lists «Pasar los hallazgos de T<n> al
+  autor» for that round. The author checks its inbox after every push, for example
+  `pnpm board inbox --agente=claude`, and fixes the findings on the same branch; the new head then
+  gets its next round with `pnpm board review`.
 - `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
   and the task holding its lock.
 - Owner tasks (`actor: dueno`) show only what to do and where (`donde`, else the first line under

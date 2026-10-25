@@ -167,6 +167,13 @@ describe('board reviewer (d209, d240)', () => {
 			actualizado: iso(NOW),
 			rama: 'feat/a',
 			pr: 10,
+			cierre: {
+				resumen: 'ok',
+				comprobaciones: [],
+				saltadas: [],
+				pendientes: [],
+				en: iso(NOW),
+			},
 		};
 		writeFileSync(path.join(dir, 'tareas', 'de-claude.json'), JSON.stringify(doc));
 		writeFileSync(

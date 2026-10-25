@@ -224,7 +224,8 @@ describe('what is next (T126)', () => {
 	it('tells the coordinator which reviews to merge, review again or pass on, and which PRs lack a task', () => {
 		const r = probe(`const now = ${NOW};
 			const base = { urgencia: 'normal', actor: 'sesion', requisitos: [], rev: 1, actualizado: '2026-10-24T19:00:00Z' };
-			const origin = (id, num, pr) => ({ ...base, id, num, titulo: id, estado: 'en revision', pr, rama: 'feat/' + id, agente: 'claude' });
+			const done = { cierre: { resumen: 'ok', comprobaciones: [], saltadas: [], pendientes: [], en: '2026-10-24T19:00:00Z' } };
+			const origin = (id, num, pr, extra = done) => ({ ...base, id, num, titulo: id, estado: 'en revision', pr, rama: 'feat/' + id, agente: 'claude', ...extra });
 			const round = (o, num, sha, pendientes) => ({ ...base, id: o + '-revision', num, titulo: 'r', estado: 'hecha', origen: o, revisionSha: sha, agente: 'gemini',
 				cierre: { resumen: 'ok', comprobaciones: [], saltadas: [], pendientes, en: '2026-10-24T19:00:00Z' } });
 			const board = {
@@ -233,6 +234,8 @@ describe('what is next (T126)', () => {
 					origin('movida', 2, '#502'), round('movida', 12, '${sha('b')}', []),
 					origin('hallazgos', 3, '#503'), round('hallazgos', 13, '${sha('c')}', [{ texto: 'arreglar', tarea: 'hallazgos' }]),
 					origin('sin-revision', 4, '#504'),
+					origin('sin-cierre', 5, '#505', {}), origin('unida-sin-cierre', 6, '#506', { estado: 'unida' }),
+					origin('unida-con-cierre', 7, '#507', { ...done, estado: 'unida' }),
 				],
 				bitacora: [{ tarea: 'aprobada', en: '2026-10-24T19:30:00Z', quien: 'gemini', mensaje: { id: 'm1', para: 'coordinador', texto: 'Listo' } }],
 			};
@@ -250,11 +253,13 @@ describe('what is next (T126)', () => {
 			'unir: Unir T1 (PR #501): T11 aprobó aaaaaaa',
 			'vuelta: Nueva vuelta de revisión: T2 (PR #502) cambió de bbbbbbb a ddddddd',
 			'hallazgos: Pasar los hallazgos de T13 al autor de T3 (PR #503)',
+			'cierre: Pedir el resumen de cierre de T5',
+			'cierre: Pedir el resumen de cierre de T6',
 			'sin-tarea: PR #510 sin tarea: Bump x',
 			'mensaje: Mensaje: gemini → coordinador sobre T1: Listo',
 		]);
 		// Without GitHub an approval is still shown, marked unchecked, and no PR is «sin tarea».
-		expect(r.sin).toEqual(['unir', 'unir', 'hallazgos', 'mensaje']);
+		expect(r.sin).toEqual(['unir', 'unir', 'hallazgos', 'cierre', 'cierre', 'mensaje']);
 	});
 
 	it('shows an owner task only what to do and where', () => {

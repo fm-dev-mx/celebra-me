@@ -69,6 +69,7 @@ export interface ConversionSummaryRow {
 	order_id?: string | null;
 	lead_id?: string | null;
 	event_id?: string | null;
+	event_name?: string | null;
 	status: 'pending' | 'sending' | 'sent' | 'failed' | 'skipped' | 'ambiguous';
 	customer_id?: string | null;
 	created_at?: string | null;
@@ -411,8 +412,11 @@ function processOrderMetrics(orders: SalesOrderSummaryRow[], conversions: Conver
 	let ordersWithInconsistentValues = 0;
 	const orderIds = new Set(orders.map((order) => order.id));
 	const now = Date.now();
+	// Browser Contact and Lead rows have no order by design; only a Purchase needs one.
 	const outboxRowsMissingOrder = conversions.filter(
-		(conversion) => !conversion.order_id || !orderIds.has(conversion.order_id),
+		(conversion) =>
+			(conversion.event_name ?? 'Purchase') === 'Purchase' &&
+			(!conversion.order_id || !orderIds.has(conversion.order_id)),
 	).length;
 	const staleSendingEvents = conversions.filter(
 		(conversion) =>

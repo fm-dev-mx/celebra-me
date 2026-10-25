@@ -1,3 +1,7 @@
+import {
+	enqueueBrowserConversionEvent,
+	type BrowserConversionEventName,
+} from '@/lib/commercial/meta-capi/service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { isAutomatedUserAgent } from '@/lib/rsvp/engagement/traffic-classifier';
 import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
@@ -20,8 +24,45 @@ export interface IngestTrackingEventInput {
 	payload: unknown;
 }
 
+/** First-party events the Meta Pixel sends as standard events that CAPI also delivers. */
+const SERVER_META_EVENTS: Partial<Record<string, BrowserConversionEventName>> = {
+	whatsapp_contact_clicked: 'Contact',
+	form_submitted: 'Lead',
+};
+
 export type IngestTrackingEventResult =
 	{ accepted: true; eventId: string } | { accepted: false; reason: string };
+
+/** Mirror the Pixel: only Production, a Meta-allowed route and marketing consent queue a row. */
+async function queueServerMetaEvent(input: {
+	eventName: string;
+	eventId: string;
+	sessionId: string;
+	routePath: string;
+	marketingConsent: boolean;
+	metaAllowed: boolean;
+	deployEnvironment?: HostedDeployEnvironment | null;
+}): Promise<void> {
+	const serverMetaEvent = SERVER_META_EVENTS[input.eventName];
+	if (
+		!serverMetaEvent ||
+		!input.marketingConsent ||
+		!input.metaAllowed ||
+		input.deployEnvironment !== 'production'
+	) {
+		return;
+	}
+	try {
+		await enqueueBrowserConversionEvent({
+			eventName: serverMetaEvent,
+			eventId: input.eventId,
+			sessionId: input.sessionId,
+			eventSourcePath: input.routePath,
+		});
+	} catch (enqueueError) {
+		console.error('[tracking] Failed to queue the Meta server event:', safeErr(enqueueError));
+	}
+}
 
 function parseTrackingPayload(payload: unknown): PublicTrackingEvent {
 	const result = PublicTrackingEventSchema.safeParse(payload);
@@ -107,6 +148,16 @@ export async function ingestTrackingEvent(
 		eventProperties,
 		consentSnapshot,
 		isInternal: false,
+	});
+
+	await queueServerMetaEvent({
+		eventName: payload.eventName,
+		eventId: event.id,
+		sessionId: payload.sessionId,
+		routePath: payload.routePath,
+		marketingConsent: consentSnapshot.marketing === true,
+		metaAllowed: routePolicy.metaAllowed,
+		deployEnvironment: input.deployEnvironment,
 	});
 
 	// Auto-create a WhatsApp channel lead when a whatsapp_contact_clicked

@@ -10,6 +10,33 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.48.0-beta.1] - 2026-10-25
+
+WhatsApp clicks and form submissions reach Meta from the server as `Contact` and `Lead` events that
+deduplicate with the Pixel, marketing withdrawals are honored end to end, and guest management works
+better on phones. One migration (registered as contract, widening only); no published invitation
+content changes.
+
+### Added
+
+- Tracking queues WhatsApp clicks as `Contact` and form submissions as `Lead` in the Meta conversion
+  outbox, with the Pixel event ID so Meta deduplicates both copies; the Production `*/15` cron
+  sweeps the outbox (up to 20 rows per run) (#541).
+- Board: closing a review round with changes sends its findings straight to the task author (#545).
+
+### Changed
+
+- `meta_conversion_events` accepts browser rows without an order (`session_id`,
+  `event_source_path`); Purchase rows stay as strict as before. `/privacidad` lists WhatsApp and
+  form conversions sent to Meta (#541).
+
+### Fixed
+
+- A marketing consent withdrawal is stored per visitor, stays in force until a newer decision,
+  retries when the request was lost, and stops Conversions API delivery for that session (#541).
+- Host guest management at 390px: equal action buttons, dock and safe-area clearance, a full-width
+  cancel button in the send modal, 44px close targets and a visible focus ring (#539).
+
 ## [0.47.0-beta.1] - 2026-10-25
 
 WhatsApp clicks reach Meta as standard `Contact` events with hardened Conversions API delivery, the

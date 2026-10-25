@@ -6,9 +6,16 @@
  * Jobs listed in `PRODUCTION_ONLY_JOBS` are declared only on the Production Worker and
  * skip on any other deploy identity.
  * The engagement maintenance cron also runs the commercial analytics retention purge.
+ * The platform usage cron (every 15 minutes) also sweeps the Meta conversion outbox and runs
+ * the Meta conversion retention purge, so the Production Worker needs no extra cron trigger.
  */
 import { randomUUID } from 'node:crypto';
 import { runCommercialRetention } from '@/lib/commercial/commercial-retention.service';
+import { runMetaConversionRetention } from '@/lib/commercial/meta-capi/retention.service';
+import {
+	isMetaCapiDeliveryEnabled,
+	processPendingMetaConversionEvents,
+} from '@/lib/commercial/meta-capi/service';
 import { readBuildIdentity } from '@/lib/environment';
 import {
 	MEMORIES_CLEANUP_EVENT_NAME,
@@ -177,12 +184,71 @@ async function runPlatformUsageJob(): Promise<ScheduledJobOutcome['status']> {
 	}
 }
 
+async function runMetaCapiOutboxSweepJob(): Promise<ScheduledJobOutcome['status']> {
+	// Only Production delivers to Meta; any other identity leaves the rows pending.
+	if (readDeployEnvironment() !== 'production') {
+		console.info('[meta-capi][sweep] skipped: deploy identity is not production.');
+		return 'skipped';
+	}
+	// Disabled delivery would mark every claimed row skipped for good; keep them pending instead.
+	if (!isMetaCapiDeliveryEnabled()) {
+		console.info('[meta-capi][sweep] skipped: delivery mode is disabled.');
+		return 'skipped';
+	}
+	try {
+		const result = await processPendingMetaConversionEvents();
+		// Failed or ambiguous rows are retried later, but this run did not deliver them.
+		if (result.failed > 0 || result.ambiguous > 0) {
+			console.warn('[meta-capi][sweep] failed deliveries', result);
+			return 'failed';
+		}
+		console.info('[meta-capi][sweep] completed', result);
+		return 'completed';
+	} catch (error) {
+		console.error('[meta-capi][sweep] failed', {
+			status: error instanceof SupabaseHttpError ? error.status : null,
+			code: error instanceof SupabaseHttpError ? error.code : null,
+		});
+		return 'failed';
+	}
+}
+
+async function runMetaRetentionJob(): Promise<ScheduledJobOutcome['status']> {
+	// The purge deletes rows; only Production runs the quarter-hour cron, so any other identity skips.
+	if (readDeployEnvironment() !== 'production') {
+		console.info('[meta-capi][retention] skipped: deploy identity is not production.');
+		return 'skipped';
+	}
+	try {
+		const result = await runMetaConversionRetention();
+		(result.complete ? console.info : console.warn)('[meta-capi][retention] completed', result);
+		return 'completed';
+	} catch (error) {
+		console.error('[meta-capi][retention] failed', {
+			status: error instanceof SupabaseHttpError ? error.status : null,
+			code: error instanceof SupabaseHttpError ? error.code : null,
+		});
+		return 'failed';
+	}
+}
+
+/** Every quarter-hour step runs even when another fails; any failure fails the job. */
+async function runQuarterHourJobs(): Promise<ScheduledJobOutcome['status']> {
+	const steps = [
+		await runPlatformUsageJob(),
+		await runMetaCapiOutboxSweepJob(),
+		await runMetaRetentionJob(),
+	];
+	if (steps.includes('failed')) return 'failed';
+	return steps.every((step) => step === 'skipped') ? 'skipped' : 'completed';
+}
+
 const JOB_RUNNERS: Readonly<
 	Record<ScheduledJobName, () => Promise<ScheduledJobOutcome['status']>>
 > = {
 	memories_cleanup: runMemoriesCleanupJob,
 	engagement_maintenance: runDailyAnalyticsMaintenanceJob,
-	platform_usage: runPlatformUsageJob,
+	platform_usage: runQuarterHourJobs,
 };
 
 /** Runs the job bound to `cron`. Never throws: the outcome is logged and returned. */

@@ -10,6 +10,8 @@
         "invitation_access_controls_client",
         "legacy_invitation_columns_retired_client",
         "guest_link_code_client",
-        "visitor_session_client_signals_client"
+        "visitor_session_client_signals_client",
+        "meta_capi_browser_events_client",
+        "meta_conversion_retention_client"
     ]
 }

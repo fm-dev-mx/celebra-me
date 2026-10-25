@@ -2,10 +2,12 @@
  * `pnpm board` writes of how a task ends (d178, T129): `close` writes the closing summary and prints its one-line
  * signal, and a cancellation, by hand or of a replaced review round, writes its cierre in the same command.
  */
+import { randomBytes } from 'node:crypto';
 import { UsageError, say } from './cli.mjs';
 import { buildCierre, cancelCierre, cierreIssues, cierreLines, signalLine } from './cierre.mjs';
-import { isFinished, quienOf, unlocked } from './model.mjs';
-import { loadBoard, readDoc, withLock } from './store.mjs';
+import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
+import { isFinished, logRowError, quienOf, unlocked } from './model.mjs';
+import { appendLog, loadBoard, readDoc, withLock } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 const need = (v, msg) => {
@@ -44,6 +46,21 @@ export function cancelReplaced(dir, saveTask, { prev, saved, sha, who }) {
 	);
 }
 
+/**
+ * d251 (T212): a review round closed with `cambios` sends its findings to the origin's author as a message, once
+ * per text; returns the line `close` prints about it, or null.
+ */
+function sendFindings(dir, t, board) {
+	const notice = findingsNotice(t, board);
+	if (!findingsPending(notice, board)) return null;
+	const en = nowIso();
+	const row = findingsRow(notice, `${en}-${randomBytes(3).toString('hex')}`, en);
+	const why = logRowError(row);
+	if (why) throw new UsageError(why);
+	appendLog(dir, row);
+	return `hallazgos enviados a ${notice.para} sobre ${notice.tarea} (pnpm board inbox --agente=${notice.para})`;
+}
+
 /** The `close` command; board.mjs passes the task helpers it owns. */
 export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 	return {
@@ -73,7 +90,13 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 				);
 				// T129: the one-line signal the agent hands back, built only from the cierre.
 				const senal = signalLine(t, board);
-				const text = [`${t.id} con cierre (rev ${t.rev})`, ...cierreLines(t, board), senal];
+				const enviado = sendFindings(dir, t, board);
+				const text = [
+					`${t.id} con cierre (rev ${t.rev})`,
+					...cierreLines(t, board),
+					...(enviado ? [enviado] : []),
+					senal,
+				];
 				say(flags, out, { ...t, senal }, text.join('\n'));
 			});
 		},

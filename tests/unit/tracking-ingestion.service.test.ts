@@ -7,6 +7,12 @@ jest.mock('@/lib/tracking/lead.service', () => ({
 	createLeadFromTrackingEvent: jest.fn(),
 }));
 
+jest.mock('@/lib/commercial/meta-capi/service', () => ({
+	enqueueBrowserConversionEvent: jest.fn(),
+}));
+
+import { enqueueBrowserConversionEvent } from '@/lib/commercial/meta-capi/service';
+
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 import { INTERNAL_TRACKING_EVENT_NAMES } from '@/lib/tracking/event-contract';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
@@ -22,8 +28,13 @@ const mockCreateLeadFromTrackingEvent = createLeadFromTrackingEvent as jest.Mock
 	typeof createLeadFromTrackingEvent
 >;
 
+const mockEnqueueBrowserConversionEvent = enqueueBrowserConversionEvent as jest.MockedFunction<
+	typeof enqueueBrowserConversionEvent
+>;
+
 beforeEach(() => {
 	jest.clearAllMocks();
+	mockEnqueueBrowserConversionEvent.mockResolvedValue(undefined);
 	mockUpsertVisitorSession.mockResolvedValue(undefined);
 	mockInsertTrackingEvent.mockResolvedValue({
 		id: 'event-id',
@@ -82,6 +93,41 @@ describe('ingestTrackingEvent', () => {
 				isInternal: false,
 			}),
 		);
+	});
+
+	it('keeps a valid consent decision time on the session snapshot and drops other formats', async () => {
+		const send = (decidedAt: string) =>
+			ingestTrackingEvent({
+				request: makeRequest(),
+				deployEnvironment: 'production',
+				payload: {
+					sessionId: '77777777-7777-4777-8777-777777777777',
+					visitorId: 'visitor_meta_user',
+					eventName: 'page_viewed',
+					routePath: '/',
+					routeClass: 'commercial',
+					eventProperties: { page_type: 'commercial' },
+					consentSnapshot: {
+						necessary: true,
+						analytics: true,
+						marketing: true,
+						decidedAt,
+					},
+				},
+			});
+
+		await send('2026-10-25T12:00:00.000Z');
+		expect(mockUpsertVisitorSession).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				consentSnapshot: {
+					necessary: true,
+					analytics: true,
+					marketing: true,
+					decidedAt: '2026-10-25T12:00:00.000Z',
+				},
+			}),
+		);
+		await expect(send('2026-10-25 12:00')).rejects.toThrow();
 	});
 
 	it('persists Meta attribution on commercial sessions without copying it into event properties', async () => {
@@ -165,6 +211,87 @@ describe('ingestTrackingEvent', () => {
 		expect(mockUpsertVisitorSession).toHaveBeenLastCalledWith(
 			expect.objectContaining({ clientSignals: undefined }),
 		);
+	});
+
+	describe('Meta server events', () => {
+		const clickEventId = '99999999-9999-4999-8999-999999999999';
+		const clickPayload = (marketing: boolean, eventName = 'whatsapp_contact_clicked') => ({
+			eventId: clickEventId,
+			sessionId: '88888888-8888-4888-8888-888888888888',
+			visitorId: 'visitor_click',
+			eventName,
+			routePath: '/demos/xv',
+			routeClass: 'demo',
+			eventProperties: { event_id: clickEventId, source_area: 'hero' },
+			consentSnapshot: { necessary: true, analytics: true, marketing },
+		});
+
+		beforeEach(() => {
+			mockInsertTrackingEvent.mockResolvedValue({
+				id: clickEventId,
+				eventName: 'whatsapp_contact_clicked',
+			});
+		});
+
+		it('queues a WhatsApp click as Contact with the Pixel eventID', async () => {
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true),
+			});
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledWith({
+				eventName: 'Contact',
+				eventId: clickEventId,
+				sessionId: '88888888-8888-4888-8888-888888888888',
+				eventSourcePath: '/demos/xv',
+			});
+		});
+
+		it('queues a form submission as Lead', async () => {
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true, 'form_submitted'),
+			});
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ eventName: 'Lead', eventId: clickEventId }),
+			);
+		});
+
+		it('queues nothing without marketing consent, outside Production or for other events', async () => {
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(false),
+			});
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'preview',
+				payload: clickPayload(true),
+			});
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true, 'cta_clicked'),
+			});
+			expect(mockEnqueueBrowserConversionEvent).not.toHaveBeenCalled();
+		});
+
+		it('keeps the event accepted when queueing fails', async () => {
+			mockEnqueueBrowserConversionEvent.mockRejectedValueOnce(new Error('insert failed'));
+			const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+			await expect(
+				ingestTrackingEvent({
+					request: makeRequest('/demos/xv'),
+					deployEnvironment: 'production',
+					payload: clickPayload(true),
+				}),
+			).resolves.toEqual({ accepted: true, eventId: clickEventId });
+			expect(consoleError).toHaveBeenCalledWith(
+				'[tracking] Failed to queue the Meta server event:',
+				expect.objectContaining({ code: 'Error' }),
+			);
+		});
 	});
 
 	it('ignores events on excluded real invitation routes', async () => {

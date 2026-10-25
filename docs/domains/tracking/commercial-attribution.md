@@ -28,6 +28,19 @@ bypass app route policy or consent policy.
   are deleted. Sessions go once they are past retention and no event, lead or order references them;
   events and sessions that a lead or an order references are kept, so the purge never rewrites
   `leads`, `customers`, `sales_orders` or `meta_conversion_*`.
+- Meta conversion outbox (`meta_conversion_events`): browser `Contact` and `Lead` rows that are
+  `sent` or `skipped` are deleted 30 days after `created_at` (their delivery attempts cascade). The
+  quarter-hour Production cron (`*/15 * * * *`) calls `public.purge_meta_conversion_retention` after
+  the outbox sweep, in batches of 500 rows (at most 4 batches per run), and logs
+  `[meta-capi][retention] completed`; it runs even while delivery is disabled. The rule lives only
+  in `public.meta_conversion_retention_cutoff`: on 2026-11-30 the rows created before 2026-10-31 go.
+  `Purchase` rows (owned by a sales order), rows still `pending`, `sending`, `failed` or
+  `ambiguous`, and rows an operator recovered are kept. Meta only accepts server events up to 7 days
+  old and deduplicates within 48 hours, so 30 days covers every retry.
+- Marketing withdrawals (`visitor_consent_withdrawals`): kept while any stored visitor session
+  started on or before the withdrawal's `updated_at`; the same purge deletes a withdrawal once it is
+  older than the oldest stored session. In practice that follows the 13-month session retention;
+  with no stored session nothing is deleted.
 - Marketing-audience retention: not established in this repository; requires an explicit privacy
   decision before being treated as a current contract.
 - Contact/lead data: duration of the commercial relationship + 2 years
@@ -171,9 +184,10 @@ activity from contaminating acquisition data.
 
 ## Conversions API (CAPI) and Sales Workspace
 
-The Conversions API (CAPI) is fully implemented server-side to report confirmed `Purchase` events.
-It is supported by an interactive administration workspace under `/dashboard/commercial` (under the
-"Espacio de Ventas" tab) for super admins.
+The Conversions API (CAPI) reports confirmed `Purchase` events and mirrors the browser `Contact`
+(WhatsApp click) and `Lead` (form submission) events server-side, so ad blockers and iOS do not lose
+them. It is supported by an interactive administration workspace under `/dashboard/commercial`
+(under the "Espacio de Ventas" tab) for super admins.
 
 ### Architecture Flow
 
@@ -194,6 +208,38 @@ It is supported by an interactive administration workspace under `/dashboard/com
 5. Status Update
    → Updates ledger status: 'pending' → 'sending' → 'sent' or 'failed' / 'skipped'
 ```
+
+### Browser Contact and Lead events
+
+1. Tracking ingestion accepts `whatsapp_contact_clicked` or `form_submitted` and, only on the
+   Production deploy identity, on a Meta-allowed route and with marketing consent, calls
+   `enqueueBrowserConversionEvent()`. It inserts a `pending` `Contact` or `Lead` row with `event_id`
+   set to the tracking event UUID, the same value the Pixel sends as `eventID`, so Meta deduplicates
+   the two copies. A replayed event ID keeps the first row. A failed insert is logged and never
+   rejects the tracking event.
+2. Browser rows carry `session_id` (no foreign key, so the analytics purge stays free) and
+   `event_source_path` instead of an order, customer and value (migration
+   `20261025120000_meta_conversion_contact_lead`; its shape check keeps Purchase rows as strict as
+   before).
+3. Delivery sends `action_source=website`, the click path as `event_source_url` (route policy still
+   applies), the row creation time as `event_time`, and no `custom_data`. It skips with
+   `CONSENT_REQUIRED` when the session's latest consent snapshot no longer grants marketing, and
+   with `MISSING_CLIENT_USER_AGENT` when the session has no user agent, which Meta requires for
+   website events. Withdrawing marketing consent in the banner posts the stored visitor ID to
+   `POST /api/tracking/consent` (rate-limited, needs no tracking consent). The route calls
+   `record_visitor_marketing_withdrawal`, which keeps the newest withdrawal per visitor in
+   `visitor_consent_withdrawals` and turns marketing off on every stored session of that visitor, so
+   rows still queued for those sessions are skipped. The banner keeps an unconfirmed withdrawal in
+   localStorage and resends it on every page load until the server answers. Consent snapshots carry
+   the visitor's decision time (`decidedAt`), and the
+   `trg_visitor_sessions_keep_marketing_withdrawal` trigger (insert and update) keeps marketing off
+   unless the snapshot carries a strictly newer decision, so a tracking request sent before the
+   withdrawal cannot turn it back on, even for a session stored after the withdrawal.
+4. The Production-only `*/15 * * * *` cron runs the platform usage collector and then
+   `processPendingMetaConversionEvents()` (up to 20 due rows, oldest first). The sweep skips outside
+   Production and while `META_CAPI_DELIVERY_MODE=disabled`, so rows stay `pending` instead of being
+   marked `skipped`. A batch with failed or ambiguous deliveries fails the job (the rows are retried
+   later). The dashboard «Filas sin pedido» check counts only Purchase rows.
 
 ### Environment Variables
 
@@ -284,7 +330,7 @@ ensures the Meta Purchase event reflects real money received.
 4. **Event ID format**: `purchase:{orderId}:deposit_paid` — stable, deterministic, and used as the
    unique constraint key for idempotency.
 5. **Currency**: Always `MXN`.
-6. **Event Name**: Always `Purchase`.
+6. **Event Name**: Always `Purchase` for deposit rows (browser rows are `Contact` or `Lead`).
 7. **Disabled mode**: When `META_CAPI_DELIVERY_MODE=disabled`, no Meta network request is made. The
    outbox status is set to `skipped` with a descriptive reason.
 
@@ -495,7 +541,7 @@ SHA: pending validation**. The WhatsApp browser click went from standard `Contac
 kept as a custom copy. Historical records retain their original meaning. Neither event proves a
 received conversation. Before release, validate current official Meta documentation, dataset
 configuration, Test Events, GA4 mapping and QA exclusions under separately authorized provider
-access. No provider setup or new server-side contact integration is included.
+access. Server-side `Contact` and `Lead` delivery through the outbox was added on 2026-10-25.
 
 ### Existing dashboard and administrative persistence
 

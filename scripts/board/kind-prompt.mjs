@@ -81,7 +81,7 @@ function labelIn(board) {
 	};
 }
 
-/** AL TERMINAR: the validation level, the kind's steps, the close with its contract, the signal. */
+/** AL TERMINAR: the validation level, the kind's steps, the close with its contract, the steps after it, the signal. */
 function closingLines(t, kind, pr, fill) {
 	const close = [
 		`pnpm board close ${t.id} --resumen=… --comprobacion=… --saltada=… --pendiente="<texto>→T<n>"`,
@@ -94,6 +94,7 @@ function closingLines(t, kind, pr, fill) {
 		...kind.al_terminar.map(fill),
 		`Cierre (d178, T129): ${close}`,
 		...(example ? [`Resultado que guarda el cierre: ${JSON.stringify(example)}`] : []),
+		...(kind.tras_cierre ?? []).map(fill),
 		'Avise al coordinador con la línea que imprime close.',
 		'Responda: qué cambió, comprobaciones corridas y saltadas, riesgos.',
 	].map((line, i) => `${i + 1}. ${line}`);

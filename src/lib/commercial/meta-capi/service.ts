@@ -17,7 +17,10 @@ interface OutboxDetail {
 	event_name: string;
 	event_id: string;
 	customer_id?: string | null;
-	value: number;
+	session_id?: string | null;
+	event_source_path?: string | null;
+	created_at?: string | null;
+	value: number | null;
 	currency: string;
 	customers: { email?: string | null; phone_e164?: string | null } | null;
 	sales_orders: {
@@ -58,6 +61,9 @@ const SAFE_PROVIDER_ERROR_FALLBACK = 'Meta CAPI delivery failed without a safe p
 const META_GRAPH_API_VERSION = 'v26.0';
 // A deposit is agreed and registered after the WhatsApp conversation, not on the website.
 const META_PURCHASE_ACTION_SOURCE = 'chat';
+// Contact and Lead rows mirror browser Pixel events and share their event_id for deduplication.
+const BROWSER_EVENT_NAMES = new Set(['Contact', 'Lead']);
+const SITE_ORIGIN = 'https://www.celebra-me.com';
 // Ten seconds stays well inside the 120-second claim lease while allowing normal Graph API latency.
 const META_CAPI_REQUEST_TIMEOUT_MS = 10_000;
 
@@ -82,6 +88,25 @@ interface SessionDetail {
 	landing_path: string | null;
 	client_ip_address?: string | null;
 	client_user_agent?: string | null;
+	consent_snapshot?: { marketing?: boolean } | null;
+}
+
+function isBrowserEvent(detail: OutboxDetail): boolean {
+	return BROWSER_EVENT_NAMES.has(detail.event_name);
+}
+
+/** The order's session for a Purchase; the row's own session for a browser event. */
+function resolveSessionId(detail: OutboxDetail): string | null | undefined {
+	return isBrowserEvent(detail) ? detail.session_id : detail.sales_orders?.session_id;
+}
+
+/**
+ * A Purchase follows the lead's recorded marketing consent. A browser event follows the
+ * session's latest consent, so a visitor who withdrew it after the click is not sent.
+ */
+function hasMarketingConsent(detail: OutboxDetail, session: SessionDetail | null): boolean {
+	if (isBrowserEvent(detail)) return session?.consent_snapshot?.marketing === true;
+	return detail.leads?.consent_marketing === true;
 }
 
 export function hashSha256(val: string): string {
@@ -102,10 +127,47 @@ export function normalizeAndHashPhone(phoneE164?: string | null): string | undef
 	return createHash('sha256').update(digits).digest('hex');
 }
 
+export type BrowserConversionEventName = 'Contact' | 'Lead';
+
+const BROWSER_EVENT_TRIGGER: Readonly<Record<BrowserConversionEventName, string>> = {
+	Contact: 'whatsapp_contact_clicked',
+	Lead: 'form_submitted',
+};
+
+export interface BrowserConversionInput {
+	eventName: BrowserConversionEventName;
+	/** The tracking event UUID, which the Meta Pixel also sends as eventID. */
+	eventId: string;
+	sessionId: string;
+	eventSourcePath: string;
+}
+
+/**
+ * Queues a browser Contact or Lead for server delivery. A repeated event ID keeps the first row,
+ * so a replayed ingestion never sends the event twice. Callers check marketing consent first.
+ */
+export async function enqueueBrowserConversionEvent(input: BrowserConversionInput): Promise<void> {
+	await supabaseRestRequest<unknown>({
+		pathWithQuery: 'meta_conversion_events?on_conflict=event_id',
+		method: 'POST',
+		useServiceRole: true,
+		prefer: 'resolution=ignore-duplicates,return=minimal',
+		body: {
+			event_name: input.eventName,
+			event_id: input.eventId,
+			trigger_status: BROWSER_EVENT_TRIGGER[input.eventName],
+			session_id: input.sessionId,
+			event_source_path: input.eventSourcePath.slice(0, 512),
+			value: null,
+			status: 'pending',
+		},
+	});
+}
+
 export async function processPendingMetaConversionEvents(): Promise<ProcessResult> {
 	const nowStr = new Date().toISOString();
 	const rows = await supabaseRestRequest<Array<{ id: string }>>({
-		pathWithQuery: `meta_conversion_events?status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.${encodeURIComponent(nowStr)})&select=id&limit=20`,
+		pathWithQuery: `meta_conversion_events?status=in.(pending,failed)&or=(next_attempt_at.is.null,next_attempt_at.lte.${encodeURIComponent(nowStr)})&select=id&order=created_at.asc&limit=20`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -136,7 +198,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 
 async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null> {
 	const details = await supabaseRestRequest<OutboxDetail[]>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,customer_id,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,fbp,fbc,fbclid)`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,customer_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,fbp,fbc,fbclid)`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -145,7 +207,7 @@ async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null>
 
 async function fetchSessionDetails(sessionId: string): Promise<SessionDetail | null> {
 	const sessionRows = await supabaseRestRequest<SessionDetail[]>({
-		pathWithQuery: `visitor_sessions?id=eq.${encodeURIComponent(sessionId)}&select=id,visitor_id,fbp,fbc,fbclid,landing_path,client_ip_address,client_user_agent`,
+		pathWithQuery: `visitor_sessions?id=eq.${encodeURIComponent(sessionId)}&select=id,visitor_id,fbp,fbc,fbclid,landing_path,client_ip_address,client_user_agent,consent_snapshot`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -209,12 +271,11 @@ function buildUserData(detail: OutboxDetail, session: SessionDetail | null): Use
 	return { ...buildIdentityKeys(detail, session), ...buildBrowserKeys(detail, session) };
 }
 
-function resolveEventSourceUrl(session: SessionDetail | null): string {
-	const landingPath = session?.landing_path;
-	if (!landingPath?.startsWith('/')) {
-		return 'https://www.celebra-me.com/';
+function resolveEventSourceUrl(path: string | null | undefined): string {
+	if (!path?.startsWith('/')) {
+		return `${SITE_ORIGIN}/`;
 	}
-	const testUrl = `https://www.celebra-me.com${landingPath}`;
+	const testUrl = `${SITE_ORIGIN}${path}`;
 	try {
 		const classification = classifyTrackingRoute(testUrl);
 		if (classification.metaAllowed) {
@@ -223,7 +284,7 @@ function resolveEventSourceUrl(session: SessionDetail | null): string {
 	} catch {
 		// Fallback
 	}
-	return 'https://www.celebra-me.com/';
+	return `${SITE_ORIGIN}/`;
 }
 
 function buildEventPayload(
@@ -231,26 +292,33 @@ function buildEventPayload(
 	session: SessionDetail | null,
 ): { eventData: Record<string, unknown>; payloadHash: string } {
 	const userData = buildUserData(detail, session);
-	const eventSourceUrl = resolveEventSourceUrl(session);
+	const browserEvent = isBrowserEvent(detail);
+	const eventSourceUrl = resolveEventSourceUrl(
+		browserEvent ? detail.event_source_path : session?.landing_path,
+	);
 
-	const paymentTime =
-		detail.sales_orders?.deposit_paid_at ||
-		detail.sales_orders?.created_at ||
+	// A browser row is enqueued while the click is ingested, so its creation time is the event time.
+	const eventTime =
+		(browserEvent
+			? detail.created_at
+			: detail.sales_orders?.deposit_paid_at || detail.sales_orders?.created_at) ||
 		new Date().toISOString();
-	const eventTimeUnix = Math.floor(new Date(paymentTime).getTime() / 1000);
+	const eventTimeUnix = Math.floor(new Date(eventTime).getTime() / 1000);
 
-	const eventData = {
+	const eventData: Record<string, unknown> = {
 		event_name: detail.event_name || 'Purchase',
 		event_time: eventTimeUnix,
 		event_id: detail.event_id,
-		action_source: META_PURCHASE_ACTION_SOURCE,
+		action_source: browserEvent ? 'website' : META_PURCHASE_ACTION_SOURCE,
 		event_source_url: eventSourceUrl,
 		user_data: userData,
-		custom_data: {
+	};
+	if (detail.value !== null && detail.value !== undefined) {
+		eventData.custom_data = {
 			value: Number(detail.value) || 0,
 			currency: detail.currency || 'MXN',
-		},
-	};
+		};
+	}
 
 	const payloadHash = createHash('sha256').update(JSON.stringify(eventData)).digest('hex');
 
@@ -338,6 +406,11 @@ function resolveDeliveryConfiguration(): MetaDeliveryConfiguration {
 	return { mode: 'disabled', productionBlocked: false };
 }
 
+/** False when META_CAPI_DELIVERY_MODE would mark every claimed row as skipped. */
+export function isMetaCapiDeliveryEnabled(): boolean {
+	return resolveDeliveryConfiguration().mode !== 'disabled';
+}
+
 function resolveTestEventCode(mode: 'disabled' | 'test' | 'production'): string | null {
 	const code = getEnv('META_TEST_EVENT_CODE')?.trim();
 	return mode === 'test' && !code ? null : code || null;
@@ -398,7 +471,10 @@ export async function deliverMetaConversionEvent(
 		);
 	}
 
-	if (detail.leads?.consent_marketing !== true) {
+	const sessionId = resolveSessionId(detail);
+	const session = sessionId ? await fetchSessionDetails(sessionId) : null;
+
+	if (!hasMarketingConsent(detail, session)) {
 		return finalizeClaim(
 			outboxId,
 			'skipped',
@@ -423,8 +499,19 @@ export async function deliverMetaConversionEvent(
 		);
 	}
 
-	const sessionId = detail.sales_orders?.session_id;
-	const session = sessionId ? await fetchSessionDetails(sessionId) : null;
+	// Meta requires the user agent on website events; without it the request is rejected.
+	if (isBrowserEvent(detail) && !session?.client_user_agent?.trim()) {
+		return finalizeClaim(
+			outboxId,
+			'skipped',
+			attemptCount,
+			'MISSING_CLIENT_USER_AGENT',
+			'Website events need the session user agent, which was not recorded.',
+			undefined,
+			claimId,
+		);
+	}
+
 	const { eventData, payloadHash } = buildEventPayload(detail, session);
 
 	const testEventCode = resolveTestEventCode(deliveryMode);

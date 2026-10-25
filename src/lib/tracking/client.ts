@@ -1,6 +1,7 @@
 import { findDemoByRouteSlug } from '@/lib/invitation/demo-routes';
 import { createLeadCode } from '@/lib/tracking/lead-code';
-import { readConsent } from '@/lib/tracking/consent-client';
+import { readConsent, VISITOR_STORAGE_KEY } from '@/lib/tracking/consent-client';
+import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
 import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
 import {
@@ -15,12 +16,6 @@ import {
 } from '@/lib/tracking/event-contract';
 
 type BrowserTrackingEventName = PublicTrackingEventName | ClientOnlyTrackingEventName;
-
-type ConsentSnapshot = {
-	necessary: true;
-	analytics: boolean;
-	marketing: boolean;
-};
 
 type TrackingPayload = {
 	eventId: string;
@@ -43,7 +38,6 @@ type TrackingPayload = {
 	consentSnapshot: ConsentSnapshot;
 };
 
-const VISITOR_KEY = 'cm_visitor_id';
 const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const IGNORE_COOKIE = 'cm_ignore_tracking=true';
@@ -78,10 +72,10 @@ function fallbackUuid(): string {
 }
 
 function getVisitorId(): string {
-	const existing = localStorage.getItem(VISITOR_KEY);
+	const existing = localStorage.getItem(VISITOR_STORAGE_KEY);
 	if (existing) return existing;
 	const visitorId = randomId('visitor');
-	localStorage.setItem(VISITOR_KEY, visitorId);
+	localStorage.setItem(VISITOR_STORAGE_KEY, visitorId);
 	return visitorId;
 }
 
@@ -99,6 +93,7 @@ function getConsentSnapshot(): ConsentSnapshot {
 		necessary: true,
 		analytics: state.analytics,
 		marketing: state.marketing,
+		decidedAt: state.updatedAt,
 	};
 }
 
