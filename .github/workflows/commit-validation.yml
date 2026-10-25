@@ -240,7 +240,7 @@ jobs:
                   restore-keys: |
                       lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.stylelintrc.json') }}-
 
-            # Every `ci:static` command, in parallel lanes: type check, build and the other checks.
+            # Every `ci:static` command, in two parallel lanes: type check then build, and the other checks.
             - name: Static checks and build
               if: matrix.tier == 'static'
               run: pnpm ci:static:parallel

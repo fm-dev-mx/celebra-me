@@ -1,6 +1,8 @@
 /**
- * Runs every command of `pnpm ci:static` in three parallel lanes for Repository CI: the type
- * check, the production build and the remaining checks in their declared order. The commands come
+ * Runs every command of `pnpm ci:static` in two parallel lanes for Repository CI: the type check
+ * followed by the production build, and the remaining checks in their declared order. The build
+ * waits for the type check because both sync Astro's content data store, and two concurrent writers
+ * fail with `UnknownFilesystemError`. The commands come
  * from `package.json`, so a check added to `ci:static` runs here too, and an unassigned or
  * duplicated command fails before anything starts.
  */
@@ -8,10 +10,10 @@ import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
-/** Lanes that own one command each; every other `ci:static` command runs in `checks`. */
-const DEDICATED_LANES = { types: 'pnpm type-check', build: 'pnpm build:app' } as const;
+/** The Astro commands, in order, in one lane; every other `ci:static` command runs in `checks`. */
+const ASTRO_LANE = ['pnpm type-check', 'pnpm build:app'];
 
-export type StaticLanes = Record<keyof typeof DEDICATED_LANES | 'checks', string[]>;
+export type StaticLanes = Record<'astro' | 'checks', string[]>;
 
 interface LaneResult {
 	name: string;
@@ -26,13 +28,11 @@ export function planStaticLanes(ciStatic: string): StaticLanes {
 		throw new Error(`ci:static must chain plain pnpm scripts: ${ciStatic}`);
 	if (new Set(commands).size !== commands.length)
 		throw new Error(`ci:static repeats a command: ${ciStatic}`);
-	const dedicated: string[] = Object.values(DEDICATED_LANES);
-	for (const command of dedicated)
+	for (const command of ASTRO_LANE)
 		if (!commands.includes(command)) throw new Error(`ci:static no longer runs ${command}.`);
 	return {
-		types: [DEDICATED_LANES.types],
-		build: [DEDICATED_LANES.build],
-		checks: commands.filter((command) => !dedicated.includes(command)),
+		astro: [...ASTRO_LANE],
+		checks: commands.filter((command) => !ASTRO_LANE.includes(command)),
 	};
 }
 

@@ -294,8 +294,9 @@ assessment accept a split run only when every part, coverage included, passed
 (`scripts/ops/ci-browser-jobs.ts`).
 
 The `Application / static` job runs every `ci:static` command through `pnpm ci:static:parallel`
-(`scripts/ops/ci-static-parallel.ts`): the type check, the production build and the remaining checks
-run as three parallel lanes.
+(`scripts/ops/ci-static-parallel.ts`): the type check followed by the production build, and the
+remaining checks, run as two parallel lanes. The build waits for the type check because both write
+Astro's content data store.
 
 The host guest import flow (`guest-import-flow.spec.ts`) follows the same deferral gate; it signs in
 with the synthetic host token of the canonical fixture transport and mocks every dashboard API.
