@@ -3,6 +3,11 @@
 
 @use '../global/mixins' as mixins;
 
+// While the cover is closed the page under it does not scroll.
+html.envelope-open:has(ds-editorial-cover:not([hidden], .is-letter-held)) {
+	overflow: hidden;
+}
+
 .editorial-cover-wrapper {
 	--ec-bg:
 		radial-gradient(ellipse at 14% 18%, rgb(83 65 52 / 24%), transparent 34%),

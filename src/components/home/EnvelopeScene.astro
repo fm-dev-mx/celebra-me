@@ -5,8 +5,8 @@
  * Scroll scene: the guest's envelope opens and the invitation card rises out of it, while four
  * notes point at what sets Celebra-me apart, one per stage of the opening. CSS only:
  * where `animation-timeline` is supported and motion is allowed, a sticky stage plays the opening
- * across the pinned span; otherwise the stage rests open (card in front, flap up). Layers keep a
- * fixed stacking order; the card is clipped at the envelope mouth while it is still inside.
+ * across the pinned span; otherwise the stage rests open (card risen, flap up). Layers keep a
+ * fixed stacking order; the portrait card lives in the pocket, behind its front, and rises out.
  */
 import { Image } from 'astro:assets';
 import type { VitrinaDemo } from '@/data/landing-vitrina.data';
@@ -58,23 +58,25 @@ const NOTES = [
 			>
 				<div class="envelope__back"></div>
 				<div class="envelope__flap"></div>
-				<div class="envelope__card">
-					{
-						cover && (
-							<Image
-								src={cover}
-								alt=""
-								widths={[320, 560]}
-								sizes="300px"
-								loading="lazy"
-							/>
-						)
-					}
-					<div class="envelope__shade"></div>
-					<div class="envelope__title">
-						<span>{demo.kicker}</span>
-						<strong>{demo.person}</strong>
-						<span>{day} · {month} · {year}</span>
+				<div class="envelope__pocket">
+					<div class="envelope__card">
+						{
+							cover && (
+								<Image
+									src={cover}
+									alt=""
+									widths={[320, 560]}
+									sizes="230px"
+									loading="lazy"
+								/>
+							)
+						}
+						<div class="envelope__shade"></div>
+						<div class="envelope__title">
+							<span>{demo.kicker}</span>
+							<strong>{demo.person}</strong>
+							<span>{day} · {month} · {year}</span>
+						</div>
 					</div>
 				</div>
 				<div class="envelope__front">

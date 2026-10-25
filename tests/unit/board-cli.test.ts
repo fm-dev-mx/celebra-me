@@ -1,4 +1,12 @@
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -75,6 +83,9 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	if (args[0] === 'claim') {
 		if (!args[1].endsWith('-revision') && !args.some((a) => a.startsWith('--carril=')))
 			args.push('--carril=f10-libre');
+		// T126: a task created under the contract needs the session title; tests that check it pass their own.
+		if (!args.some((a) => a.startsWith('--titulo=')))
+			args.push(`--titulo=${claimTitle(dir, args)}`);
 	}
 	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
 		args.push('--coordinador');
@@ -85,6 +96,16 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	)
 		args.push('--coordinador');
 	return exec(dir, env, args);
+}
+
+/** `f10 · T3 · prueba` for a claim in f10-libre of task 3; a review runs in f04. */
+function claimTitle(dir: string, args: string[]) {
+	const file = path.join(dir, 'tareas', `${args[1]}.json`);
+	const byNumber = /^T\d+$/.test(args[1]) ? args[1].slice(1) : undefined;
+	const num = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).num : byNumber;
+	const given = args.find((a) => a.startsWith('--carril='))?.slice(9);
+	const lane = given === 'integration' ? 'f04' : given;
+	return `${/-revision(-\d+)?$/.test(args[1]) || !lane ? 'f04' : lane.split('-')[0]} · T${num} · prueba`;
 }
 
 /** Runs the CLI exactly as given, without the test defaults of `board`. */
@@ -992,6 +1013,16 @@ describe('pnpm board', () => {
 		expect(html).toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
 		expect(html).toContain('const laneId=taskLane;');
+		expect(html).toContain(
+			'${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:',
+		);
+		expect(html).toContain('const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));');
+		expect(html).toContain("['Carril',taskLane(t)?");
+		// Closing the sheet returns focus to the card's title button, not to the unfocusable article.
+		expect(html).toContain('"] .tbtn`);if(b)b.focus()');
+		expect(html).toMatch(
+			/@media \(pointer:coarse\),\(max-width:560px\)\{\.sha\{[^}]*min-height:44px/,
+		);
 	});
 
 	it('puts free lanes first within an urgency and keeps owner tasks and prerequisites ahead', () => {
@@ -1233,6 +1264,61 @@ describe('pnpm board', () => {
 		expect(result.err).toContain('omita --carril');
 		expect(readTask(dir, 'origin-revision').rev).toBe(1);
 		expect(readTask(dir, 'origin-revision').candado).toBeUndefined();
+	});
+
+	it('claims a soloLectura task without --carril in the lane it announces', () => {
+		const dir = makeBoard({ tareas: [task('doc-audit', { soloLectura: true })] });
+		const announced = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		expect(board(dir, 'show', 'doc-audit').out).toContain(announced);
+		const result = raw(dir, 'claim', 'doc-audit', '--agente=codex', '--sesion=codex-test');
+		expect(result.status).toBe(0);
+		const claimed = readTask(dir, 'doc-audit');
+		expect(claimed.candado.agente).toBe('codex');
+		// No lock lane: taskLane falls back to READONLY_LANE, the lane `show` announces.
+		expect(claimed.candado.carril).toBeUndefined();
+		expect(board(dir, 'show', 'doc-audit').out).toContain(announced);
+	});
+
+	it('keeps lock, lane and prompt on Integration when a soloLectura task is given a lane', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('doc-audit', { soloLectura: true }),
+				task('doc-planned', { soloLectura: true, carrilPlaneado: 'f10-libre' }),
+			],
+		});
+		const announced = 'Corre en: Integración (carpeta celebra-me), solo lectura';
+		const explicit = board(dir, 'claim', 'doc-audit', '--agente=codex', '--carril=f10-libre');
+		expect(explicit.status).toBe(2);
+		expect(explicit.err).toContain('omita --carril');
+		expect(readTask(dir, 'doc-audit').candado).toBeUndefined();
+		const plan = board(
+			dir,
+			'plan',
+			'doc-audit',
+			'--rev=1',
+			'--carril=f10-libre',
+			'--coordinador',
+		);
+		expect(plan.status).toBe(2);
+		expect(plan.err).toContain('no tiene carril planeado');
+		expect(readTask(dir, 'doc-audit').carrilPlaneado).toBeUndefined();
+		// A legacy planned lane is refused, never inherited, so the lock never disagrees with the prompt.
+		const planned = raw(dir, 'claim', 'doc-planned', '--agente=codex', '--sesion=codex-test');
+		expect(planned.status).toBe(2);
+		expect(planned.err).toContain('plan --carril=');
+		expect(readTask(dir, 'doc-planned').candado).toBeUndefined();
+		for (const id of ['doc-audit', 'doc-planned']) {
+			const shown = board(dir, 'show', id).out;
+			expect(shown).toContain(announced);
+			expect(shown).not.toContain('Corre en: f10-libre');
+		}
+		expect(
+			board(dir, 'plan', 'doc-planned', '--rev=1', '--carril=', '--coordinador').status,
+		).toBe(0);
+		expect(
+			raw(dir, 'claim', 'doc-planned', '--agente=codex', '--sesion=codex-test').status,
+		).toBe(0);
+		expect(readTask(dir, 'doc-planned').candado.carril).toBeUndefined();
 	});
 
 	it('requires successful or explicitly archived prerequisites and a current decision', () => {
@@ -1580,11 +1666,13 @@ describe('pnpm board', () => {
 
 	it('shows the closing summary above «Archivar» and disables it with its reason', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
-		expect(html).toContain("import { archiveBlock, cierreLines } from '/model.mjs';");
+		expect(html).toContain("import { archiveBlock, findTask } from '/model.mjs';");
 		expect(html).toContain('const why=!arch&&!t.candado&&archiveBlock(t,S.board)');
 		expect(html).toContain("${t.candado||why?'disabled':''}");
-		expect(html).toMatch(/\$\{cierreHtml\(t\)\}\s*<div class="fa"><button/);
-		expect(html).toContain('<h3>Cierre');
+		expect(html).toMatch(
+			/cierreHtml\(t\):`<p class="nopend">Sin resumen de cierre\.<\/p>`\}\s*<div class="fa"><button/,
+		);
+		expect(html).toContain('<h3>Cómo terminó</h3>${statusHtml(t)}${cierreHtml(t)}');
 	});
 
 	it('lets a coordinator release only a legacy lock without sesion', () => {

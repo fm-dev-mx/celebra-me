@@ -12,6 +12,11 @@ authorization.
 - **Single board port (d165)**: the board view always runs at http://127.0.0.1:4320/, served from
   the Integration checkout with `pnpm board:serve`. No session or agent starts a board on another
   port. A PR preview of the view may run only briefly, to check it, and is stopped right after.
+- **No manual restarts (d210)**: no session stops or restarts the board on 4320, not even after a
+  merge that changes it. `pnpm board:serve` runs a supervisor (`scripts/board/view-supervisor.mjs`)
+  that keeps the port open, watches `scripts/board/` and `scripts/shared/`, and swaps in a new
+  worker once the new code starts; code that fails to start leaves the previous version serving. The
+  page reconnects by itself and reloads when the code version changes.
 
 - **Task id convention**: the branch without its type prefix: `fix/olivia-gallery` →
   `olivia-gallery`. The id does not have to match its branch, which lives in `rama`; the verifier
@@ -55,7 +60,11 @@ authorization.
   carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` put these
   lines first under `CARRIL`, so the prompt's «DÓNDE CORRE» no longer repeats the lane by hand.
   Review children have no planned lane (`plan` refuses one): they show «Corre en: Integración
-  (carpeta celebra-me), solo lectura». `board:verify` warns about every open task, reviews aside,
+  (carpeta celebra-me), solo lectura» and always resolve to `f04-integracion` in `taskLane` (the
+  view's card, sheet and «Carriles» row). A task with `soloLectura: true` is read-only the same way:
+  `plan`, `add` and `claim` refuse it a planned or explicit lane, so its lock holds no lane and
+  never disagrees with the prompt; a legacy planned lane is cleared with
+  `plan --carril= --coordinador`. `board:verify` warns about every open task, read-only tasks aside,
   with neither a planned lane nor a lock on one, naming its T<n>.
 - **Category (d191)**: `categoria` is a preference, never a restriction: `plataforma`
   f05-plataforma, `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs`
@@ -75,6 +84,10 @@ authorization.
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
   of «Cola» and the «Carriles» view.
+- **Codex and Gemini chats (d211)**: `pnpm board sesiones [--json]` opens `~/.codex/state_5.sqlite`
+  and `~/.gemini/antigravity/conversation_summaries.db` read-only, crosses each open chat's `T<n>`
+  with the board and says «archivar» (task finished or archived), «dejar» or «sin tarea»; the
+  dispatcher's runs fold into one line. It writes nothing: the owner archives by hand.
 - **Monthly archive (d187)**: `pnpm board compact --antes=7d [--dry-run]` takes every task archived
   7 or more days ago: one line in `.agent/tmp/board/mensual/resumen-<YYYY-MM>.md` (for example
   `T31 tablero-arreglos-cli · unida · PR #492 · 2026-10-24`), the whole task file in
@@ -102,10 +115,11 @@ authorization.
   without one). Record it in the same write that opens the PR. Every mention of a task that has a PR
   — replies, messages, handoffs, reports, prompts — writes it next to the id:
   `pasarela-pago-estudio (PR #475)`. Same rule for every agent.
-- **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`, lane checks
-  (`laneAllowed`, `taskLane`), finished states (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the
-  stale-lock threshold and PR parsing (`normalizePr`, `prNumber`); `board`, `sync`, `verify`,
-  `watch` and the view import them instead of keeping a copy.
+- **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`,
+  `isReadOnly`, `READONLY_LANE`, lane checks (`laneAllowed`, `taskLane`), finished states
+  (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the stale-lock threshold and PR parsing
+  (`normalizePr`, `prNumber`); `board`, `sync`, `verify`, `watch` and the view import them instead
+  of keeping a copy.
 - **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
   «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
   `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open
@@ -195,6 +209,9 @@ authorization.
 - `claim` requires a session, readiness, no owner gate, and an exclusive `--carril` for
   implementation. Another session of the same agent cannot replace it. An identical claim is
   idempotent.
+- **Claim title (T126)**: tasks added after T126 carry `contrato: 1`, and their `claim` requires
+  `--titulo="<lane> · T<n> · …"` (the session name), stored in the lock. Older tasks are not asked
+  for it.
 - **Session id**: the lock records the id the agent's app knows, so the session can later be found,
   renamed and archived. Claude omits `--sesion`: `claim`, `set` and `release` read the Claude
   Desktop id from `CLAUDE_CODE_HOST_SESSION_ID` (`local_…`, the same id as a `#local_…` link). A
@@ -238,6 +255,25 @@ authorization.
   updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before
   declaring them.
 - `carril` without an id and `estado` without fields are read-only inventory commands.
+
+## What is next and messages (T126)
+
+- `pnpm board msg <id> --de=<agent> --para=coordinador|dueno|codex|gemini|claude "text"` stores a
+  `mensaje` row in the bitácora; `pnpm board inbox --agente=<a>` lists the unread ones and marks
+  them read in `bandejas/<a>.json` (`--todos` lists read ones too). Results still go on the task.
+- **Heartbeat**: every successful command renews `candado.latido` on the caller's locks (`--agente`
+  or `--de`, with its session); `move`, `review`, `view` and `verify` do not. A lock silent for 2 h
+  shows in «Detenidas»; a ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as
+  «Correr el despachador de Codex (T<n>)»; an idle Claude task goes to the coordinator.
+- `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al coordinador» and
+  «Detenidas». The coordinator sees reviews approved at the PR's current SHA (merge), reviews with
+  findings (pass them to the author), open PRs without a task, ready Claude tasks without a session
+  and messages for it. `list` prints the same sections without reading GitHub.
+- `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
+  and the task holding its lock.
+- Owner tasks (`actor: dueno`) show only what to do and where (`donde`, else the first line under
+  «DÓNDE CORRE»), never a suggested lane. The coordinator records every owner action as an
+  `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
 
 ## Checks and freshness
 

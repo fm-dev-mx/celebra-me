@@ -43,8 +43,9 @@ export interface LocationPresentationOptions {
 	showCalendarLinks?: boolean;
 	/**
 	 * Pinned scroll scene for editorial invitations (`program-sheet`, two or more venues):
-	 * `lantern-route` draws the route between the venues while a lantern travels it and the
-	 * entries take turns. Without editorial motion or under reduced motion the program shows as is.
+	 * the route between the venues draws itself while a traveler follows it and the entries take
+	 * turns: a lantern under a starry night (`lantern-route`) or a butterfly over the section's own
+	 * day (`butterfly-route`). Without editorial motion or under reduced motion the program shows as is.
 	 */
 	scene?: LocationScene;
 	/**
@@ -54,7 +55,7 @@ export interface LocationPresentationOptions {
 	venueCard?: LocationVenueCard;
 }
 
-export const LOCATION_SCENES = ['lantern-route'] as const;
+export const LOCATION_SCENES = ['lantern-route', 'butterfly-route'] as const;
 export type LocationScene = (typeof LOCATION_SCENES)[number];
 
 export const LOCATION_VENUE_CARDS = ['compact'] as const;

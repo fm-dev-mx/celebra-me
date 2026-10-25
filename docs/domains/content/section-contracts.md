@@ -58,10 +58,10 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Variant precedence**: `envelope.variant` falls back to `theme.preset` when omitted
   (`buildEnvelope` in `src/lib/adapters/event.ts`). `envelope.revealVariant` then decides the
   experience: `editorial-cover` replaces the envelope with the editorial cover reveal;
-  `satin-filigree`, `seaside-lineart`, and `storybook-lanterns` are standalone reveal skins that
-  replace the preset-driven `data-variant` (`resolveEnvelopeDataVariant` in
-  `src/lib/invitation/reveal-card.ts`); `celestial-blue` keeps the preset-driven `data-variant` and
-  layers on top of it. See also
+  `satin-filigree`, `seaside-lineart`, `storybook-lanterns` and `storybook-butterflies` are
+  standalone reveal skins that replace the preset-driven `data-variant`
+  (`resolveEnvelopeDataVariant` in `src/lib/invitation/reveal-card.ts`); `celestial-blue` keeps the
+  preset-driven `data-variant` and layers on top of it. See also
   [`invitation-creation-contract.md`](../../core/invitation-creation-contract.md).
 - **Seal Renderer Model**:
   - `wax-organic` (default for new invitations): Organic melted-wax geometry with shape-conforming
@@ -329,25 +329,25 @@ Footer remains a visual theme surface and has no independent section variant.
 The registry's `prerequisites` strings are documentation. Only the rules in the first table are
 validated by the schemas; the second table is **authoring guidance, not validated by the schema**.
 
-| Section.variant                 | Rule enforced by the schema                                         |
-| ------------------------------- | ------------------------------------------------------------------- |
-| `family.split-groups`           | `parents.father` or `parents.mother`, or at least two `groups`      |
-| `family.asymmetric-groups`      | Same as `split-groups`; any `groups` array needs at least two items |
-| `location.split-map`            | One visible venue with `coordinates` or `image`                     |
-| `location.stacked-venue-plates` | At least two visible venues                                         |
-| `location.night-route`          | At least two visible venues                                         |
-| `location.program-sheet`        | At least one visible venue; `scene: 'lantern-route'` needs two      |
-| `gallery.single-keepsake`       | Exactly one item                                                    |
-| `gallery.paired-portraits`      | Exactly two items                                                   |
-| `gallery.narrative-stack`       | At least one item; every item has a caption and no `aspectRatio`    |
-| `gallery.mirrored-mosaic`       | At least three items                                                |
-| `gallery.feature-stack`         | At least three items                                                |
-| `gallery.paired-feature-band`   | At least three items and one item with `layoutRole: feature`        |
-| `gallery.pinned-track`          | At least three items                                                |
-| `thankYou.full-bleed-photo`     | `image`                                                             |
-| `thankYou.portrait-letter`      | `image`                                                             |
-| `thankYou.portrait-keepsake`    | `image`                                                             |
-| `personalizedAccess` (any)      | `passStyle` other than `classic` requires `formal-pass`             |
+| Section.variant                 | Rule enforced by the schema                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------ |
+| `family.split-groups`           | `parents.father` or `parents.mother`, or at least two `groups`                       |
+| `family.asymmetric-groups`      | Same as `split-groups`; any `groups` array needs at least two items                  |
+| `location.split-map`            | One visible venue with `coordinates` or `image`                                      |
+| `location.stacked-venue-plates` | At least two visible venues                                                          |
+| `location.night-route`          | At least two visible venues                                                          |
+| `location.program-sheet`        | At least one visible venue; a `scene` (`lantern-route`, `butterfly-route`) needs two |
+| `gallery.single-keepsake`       | Exactly one item                                                                     |
+| `gallery.paired-portraits`      | Exactly two items                                                                    |
+| `gallery.narrative-stack`       | At least one item; every item has a caption and no `aspectRatio`                     |
+| `gallery.mirrored-mosaic`       | At least three items                                                                 |
+| `gallery.feature-stack`         | At least three items                                                                 |
+| `gallery.paired-feature-band`   | At least three items and one item with `layoutRole: feature`                         |
+| `gallery.pinned-track`          | At least three items                                                                 |
+| `thankYou.full-bleed-photo`     | `image`                                                                              |
+| `thankYou.portrait-letter`      | `image`                                                                              |
+| `thankYou.portrait-keepsake`    | `image`                                                                              |
+| `personalizedAccess` (any)      | `passStyle` other than `classic` requires `formal-pass`                              |
 
 | Section.variant               | Authoring guidance (not validated)                       |
 | ----------------------------- | -------------------------------------------------------- |

@@ -5,41 +5,58 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Seguimiento Celebra-me</title>
 <meta name="board-token" content="__BOARD_TOKEN__">
+<meta name="board-version" content="__BOARD_VERSION__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
 *,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 /* Dispatch board: production strip on top, one numbered queue, a task sheet beside it (below 960px it slides over). */
+/* Color system (T151): neutral surfaces and ink carry the page; one accent marks what can be clicked; each state
+   hue has three roles — text (--x), a quiet surface (--x-soft) and a rule/dot (--x-rule) — and appears only where
+   it means something. Agents are told apart by a small dot, never by a filled chip. Text pairs pass WCAG AA. */
 :root{
-  --bg:#f1f3f6;--panel:#ffffff;--panel-2:#f6f7f9;--ink:#1b2130;--muted:#586173;--faint:#8b93a3;--line:#dde1e8;--line-2:#c9ced8;
-  --accent:#2a4f9e;--accent-soft:#e3eaf8;
-  --own:#1d7447;--own-soft:#dcf1e4;
-  --auto:#6638c2;--auto-soft:#ece4fb;
-  --block:#7d8494;--block-soft:#eaecf0;
-  --run:#1f5fbf;--run-soft:#e0eafa;
-  --rev:#22708a;--rev-soft:#dbeef4;
-  --u-urgente:#c42d2d;--u-alta:#c86512;--u-normal:#586173;--u-baja:#8796ae;
-  --strip-bg:#1b2130;--strip-fg:#eef1f6;--strip-muted:#a9b2c3;
-  --code-bg:#eef0f4;
+  --bg:#f5f6f8;--panel:#ffffff;--panel-2:#f3f4f6;--ink:#111827;--muted:#4b5563;--faint:#5f6876;--line:#e5e7eb;--line-2:#d1d5db;
+  --accent:#3451c7;--accent-soft:#eef2ff;
+  --own:#166534;--own-soft:#edf8f1;--own-rule:#22a06b;--own-solid:#15803d;
+  --auto:#5b3cc4;--auto-soft:#f4f1fe;--auto-rule:#8b5cf6;
+  --block:#4b5563;--block-soft:#f1f2f4;--block-rule:#a1a8b3;
+  --run:#1d4ed8;--run-soft:#eff4ff;--run-rule:#3b82f6;
+  --rev:#0f6670;--rev-soft:#ecf8f8;--rev-rule:#14a3a0;
+  --warn:#92400e;--warn-soft:#fff8eb;--warn-rule:#f59e0b;
+  --danger:#b42318;--danger-soft:#fef3f2;--danger-rule:#e5484d;
+  --u-urgente:var(--danger);--u-alta:var(--warn);--u-normal:var(--muted);--u-baja:var(--faint);
+  --dot-claude:#d97757;--dot-codex:#10a37f;--dot-gemini:#4f7cff;
+  --strip-bg:#111827;--strip-fg:#f3f4f6;--strip-muted:#b4bcc8;
+  --code-bg:#f1f2f4;
   --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#12151b;--panel:#1a1f28;--panel-2:#202632;--ink:#e7eaf0;--muted:#a3abba;--faint:#6f788a;--line:#2c3341;--line-2:#3a4252;
-  --accent:#8fb0f2;--accent-soft:#1e2a44;
-  --own:#6fd39a;--own-soft:#15301f;--auto:#bba1f7;--auto-soft:#2a2143;--block:#9aa1af;--block-soft:#262b35;
-  --run:#88b2f5;--run-soft:#1b2a45;--rev:#78c3da;--rev-soft:#16303a;
-  --u-urgente:#ff8b80;--u-alta:#f2a65a;--u-normal:#a3abba;--u-baja:#7f8ea8;
-  --strip-bg:#0b0d12;--strip-fg:#e7eaf0;--strip-muted:#8b93a3;--code-bg:#131820;color-scheme:dark}}
+  --bg:#0d1117;--panel:#161b22;--panel-2:#1c222b;--ink:#e6edf3;--muted:#a8b3c1;--faint:#8b96a5;--line:#262d37;--line-2:#363f4b;
+  --accent:#8aa8ff;--accent-soft:#1a2340;
+  --own:#6ee7a8;--own-soft:#10251a;--own-rule:#2fbf71;--own-solid:#2fbf71;
+  --auto:#c4b0ff;--auto-soft:#211a3a;--auto-rule:#9b7bf0;
+  --block:#a8b3c1;--block-soft:#1f252e;--block-rule:#6b7684;
+  --run:#93b6ff;--run-soft:#14203a;--run-rule:#4c86f0;
+  --rev:#72dcd6;--rev-soft:#0f2629;--rev-rule:#2bb8b0;
+  --warn:#fbbf5c;--warn-soft:#2a1f0e;--warn-rule:#f0a23b;
+  --danger:#ff8f86;--danger-soft:#2d1517;--danger-rule:#f0605d;
+  --dot-claude:#e58a6b;--dot-codex:#34c59a;--dot-gemini:#7d9cff;
+  --strip-bg:#090c10;--strip-fg:#e6edf3;--strip-muted:#97a2b0;--code-bg:#1f252e;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#12151b;--panel:#1a1f28;--panel-2:#202632;--ink:#e7eaf0;--muted:#a3abba;--faint:#6f788a;--line:#2c3341;--line-2:#3a4252;
-  --accent:#8fb0f2;--accent-soft:#1e2a44;
-  --own:#6fd39a;--own-soft:#15301f;--auto:#bba1f7;--auto-soft:#2a2143;--block:#9aa1af;--block-soft:#262b35;
-  --run:#88b2f5;--run-soft:#1b2a45;--rev:#78c3da;--rev-soft:#16303a;
-  --u-urgente:#ff8b80;--u-alta:#f2a65a;--u-normal:#a3abba;--u-baja:#7f8ea8;
-  --strip-bg:#0b0d12;--strip-fg:#e7eaf0;--strip-muted:#8b93a3;--code-bg:#131820;color-scheme:dark}
+  --bg:#0d1117;--panel:#161b22;--panel-2:#1c222b;--ink:#e6edf3;--muted:#a8b3c1;--faint:#8b96a5;--line:#262d37;--line-2:#363f4b;
+  --accent:#8aa8ff;--accent-soft:#1a2340;
+  --own:#6ee7a8;--own-soft:#10251a;--own-rule:#2fbf71;--own-solid:#2fbf71;
+  --auto:#c4b0ff;--auto-soft:#211a3a;--auto-rule:#9b7bf0;
+  --block:#a8b3c1;--block-soft:#1f252e;--block-rule:#6b7684;
+  --run:#93b6ff;--run-soft:#14203a;--run-rule:#4c86f0;
+  --rev:#72dcd6;--rev-soft:#0f2629;--rev-rule:#2bb8b0;
+  --warn:#fbbf5c;--warn-soft:#2a1f0e;--warn-rule:#f0a23b;
+  --danger:#ff8f86;--danger-soft:#2d1517;--danger-rule:#f0605d;
+  --dot-claude:#e58a6b;--dot-codex:#34c59a;--dot-gemini:#7d9cff;
+  --strip-bg:#090c10;--strip-fg:#e6edf3;--strip-muted:#97a2b0;--code-bg:#1f252e;color-scheme:dark}
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{color:var(--ink);font:15px/1.45 var(--body)}
@@ -62,9 +79,9 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .strip .eyebrow{color:var(--strip-muted)}
 .strip b{font-weight:600}
 .strip .mono{font-size:.8rem;color:var(--strip-muted)}
-.strip .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--own);margin-right:6px}
-.strip .pulse.stale{background:var(--u-alta)}
-.you{margin-left:auto;border:0;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.86rem;background:var(--own);color:var(--panel)}
+.strip .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--own-rule);margin-right:6px;box-shadow:0 0 0 3px color-mix(in srgb,var(--own-rule) 25%,transparent)}
+.strip .pulse.stale{background:var(--warn-rule);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn-rule) 25%,transparent)}
+.you{margin-left:auto;border:0;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.86rem;background:var(--own-solid);color:var(--panel)}
 .you.none{background:transparent;color:var(--strip-muted);box-shadow:inset 0 0 0 1px var(--strip-muted);font-weight:600}
 @media (max-width:560px){.you{margin-left:0}}
 
@@ -78,26 +95,31 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 /* legend */
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
-.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.sw{width:8px;height:8px;border-radius:50%;display:inline-block}
 
 /* queue */
 .cola{display:grid;gap:14px;align-items:start}
 @media (min-width:960px){.cola{grid-template-columns:minmax(0,1fr) 420px}}
 .list{display:grid;gap:6px;min-width:0}
 .grp{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint);padding:8px 2px 2px;display:flex;gap:8px}
-.item{display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:2px 10px;align-items:start;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c,var(--block));border-radius:8px;padding:10px 12px 10px 8px}
-.item:hover{background:var(--panel-2)}
-.item[aria-current="true"]{box-shadow:0 0 0 2px var(--c,var(--block))}
+.item{display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:4px 10px;align-items:start;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 12px 8px;box-shadow:inset 3px 0 0 var(--cr,var(--block-rule)),0 1px 2px rgb(17 24 39/.04);transition:border-color .15s,box-shadow .15s}
+.item:hover{border-color:var(--line-2)}
+.item[aria-current="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--cr,var(--block-rule)),0 0 0 1px var(--accent)}
 .num{font:600 .78rem/1.6 var(--mono);color:var(--faint);text-align:center;padding-top:1px;font-variant-numeric:tabular-nums}
 /* The task's fixed «T<n>» (same as its session name); the gray «#n» above is only its place in the queue */
-.tn{font:700 .92em var(--mono);color:var(--c,var(--ink))}
+.tn{font:600 .9em var(--mono);color:var(--muted)}
 .pos{font:500 .76rem var(--mono);color:var(--faint);white-space:nowrap}
-.item .ttl{font-weight:600;line-height:1.3;min-width:0;overflow-wrap:anywhere}
+.item{cursor:pointer}
+.item .ttl{font:600 1.02rem/1.3 var(--body);min-width:0;overflow-wrap:anywhere}
+.item .ttl .tbtn{padding:2px 0;min-height:32px}
+.item .num{padding-top:6px}
 .item .line{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted);min-width:0}
 .item .why{grid-column:2;font-size:.84rem;color:var(--muted);min-width:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.c-own{--c:var(--own);--cs:var(--own-soft)}.c-auto{--c:var(--auto);--cs:var(--auto-soft)}.c-block{--c:var(--block);--cs:var(--block-soft)}
-.c-run{--c:var(--run);--cs:var(--run-soft)}.c-rev{--c:var(--rev);--cs:var(--rev-soft)}.c-done{--c:var(--block);--cs:var(--block-soft)}
-.pill{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;letter-spacing:.02em;padding:1px 8px;border-radius:999px;background:var(--cs);color:var(--c);white-space:nowrap}
+.c-own{--c:var(--own);--cs:var(--own-soft);--cr:var(--own-rule)}.c-auto{--c:var(--auto);--cs:var(--auto-soft);--cr:var(--auto-rule)}.c-block{--c:var(--block);--cs:var(--block-soft);--cr:var(--block-rule)}
+.c-run{--c:var(--run);--cs:var(--run-soft);--cr:var(--run-rule)}.c-rev{--c:var(--rev);--cs:var(--rev-soft);--cr:var(--rev-rule)}.c-done{--c:var(--block);--cs:var(--block-soft);--cr:var(--block-rule)}
+/* A state reads as a dot of its hue plus its name on a quiet tint: color confirms, the word informs. */
+.pill,.oc{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;padding:2px 9px 2px 8px;border-radius:999px;background:var(--cs);color:var(--c);white-space:nowrap}
+.pill::before,.oc::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cr);flex:none}
 .urg{display:inline-flex;align-items:center;gap:3px;font-size:.76rem;font-weight:600;white-space:nowrap}
 .urg svg{width:14px;height:14px;flex:none}
 .u-urgente{color:var(--u-urgente)}.u-alta{color:var(--u-alta)}.u-normal{color:var(--u-normal)}.u-baja{color:var(--u-baja)}
@@ -106,24 +128,31 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .lane{font:500 .76rem var(--mono);color:var(--muted)}
 .runs{grid-column:2;font-weight:700;font-size:.95rem;line-height:1.35;min-width:0;overflow-wrap:anywhere}
 .runs .more,.runs .busy{display:block;font-weight:600;font-size:.84rem;color:var(--muted)}
-.runs .busy{color:var(--u-alta)}
+.runs .busy{color:var(--warn)}
 .runbox{margin:10px 0;padding:10px 12px;border:2px solid var(--line);border-radius:8px}
 .runbox p{margin:0;line-height:1.45}
 .runbox p:first-child{font-weight:700;font-size:1.05rem}
-.runbox .busy{color:var(--u-alta);font-weight:600}
+.runbox .busy{color:var(--warn);font-weight:600}
 /* «Le toca a usted» (d163): the owner's ready tasks and the answers tasks wait for, above the queue */
-.mine{background:var(--own-soft);border:1px solid var(--own);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:grid;gap:6px}
-.mine h2{margin:0;font:700 1rem var(--display);color:var(--own)}
+.mine{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--own-rule);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:grid;gap:6px}
+.mine h2{margin:0;font:700 1rem var(--display);color:var(--ink);display:flex;align-items:center;gap:8px}
+.mine h2::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--own-rule)}
 .mine .row{display:flex;gap:8px;align-items:baseline;text-align:left;width:100%;min-height:44px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink)}
 .mine .row:hover{background:var(--panel-2)}
-.mine .row b{font:700 .9rem var(--mono);color:var(--own);flex:none}
+.mine .row b{font:600 .88rem var(--mono);color:var(--own);flex:none}
 .mine .row span{min-width:0;overflow-wrap:anywhere}
 .mine .sub{font-size:.8rem;color:var(--muted);margin:4px 0 0}
 .mine .none{margin:0;color:var(--muted);font-size:.9rem}
-.mine .paste{display:flex;gap:6px;align-items:stretch;--c:var(--own)}
+.mine .paste{display:flex;gap:6px;align-items:stretch}
 .mine .paste .row{flex:1;min-width:0}
 .mine .paste .btn{flex:none}
 @media (max-width:560px){.mine .paste{flex-direction:column}}
+/* T126: «Le toca al coordinador» and «Detenidas» sit next to «Le toca a usted» */
+.whats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:14px;align-items:start}
+.whats .mine{margin-bottom:0}
+.mine.coord{--own:var(--auto);--own-rule:var(--auto-rule)}
+.mine.stall{--own:var(--warn);--own-rule:var(--warn-rule)}
+.mine .row .meta{font:500 .76rem var(--mono);color:var(--muted)}
 .empty{background:var(--panel);border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
 
 /* task sheet */
@@ -144,7 +173,8 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .now{font-size:.95rem;line-height:1.5;max-width:65ch}
 .cta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .btn{border:1px solid var(--line-2);background:var(--panel);border-radius:8px;padding:8px 14px;font-weight:600;font-size:.9rem;min-height:44px}
-.btn.primary{background:var(--c,var(--accent));border-color:var(--c,var(--accent));color:var(--panel)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.btn:not(.primary):hover{border-color:var(--muted)}
 .btn:disabled{opacity:.55;cursor:default}
 .sync{display:flex;gap:6px;margin-left:auto}
 .syncout{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.84rem;white-space:pre-wrap;font-family:var(--mono)}
@@ -172,8 +202,8 @@ details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--a
 .lh span{font-size:.74rem;color:var(--muted);overflow-wrap:anywhere}
 .cell{display:grid;gap:4px;align-content:start;min-height:2rem;background:var(--panel-2);border-radius:6px;padding:4px;min-width:0}
 .cell .lbl{display:none}
-.chip{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:baseline;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:6px;padding:5px 7px;font-size:.8rem;line-height:1.3}
-.chip b{font:700 .8rem var(--mono);color:var(--c)}
+.chip{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:baseline;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--cr);border-radius:6px;padding:5px 7px;font-size:.8rem;line-height:1.3}
+.chip b{font:600 .8rem var(--mono);color:var(--muted)}
 .chip span{overflow-wrap:anywhere}
 @media (max-width:759px){
   .bhead{display:none}
@@ -190,6 +220,7 @@ details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--a
 .rounds{display:grid;gap:4px}
 .fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
 .fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.fchip .n{font:600 .72rem var(--mono);opacity:.75;margin-left:2px}
 .chk{display:inline-flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted)}
 .log{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .lr{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:2px 12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.87rem}
@@ -209,19 +240,54 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
 .fr{display:grid;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .fr:last-child{border-bottom:0}
 .fr .fa{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
-.fr .fa .msg{color:var(--u-alta);font-weight:600}
-.cierre{display:grid;gap:2px;font-size:.86rem;line-height:1.45;max-width:80ch;overflow-wrap:anywhere}
-.cierre p{margin:0}
-.cierre b{font-weight:600}
-.fr .ttl{font-weight:600;line-height:1.3;overflow-wrap:anywhere}
-.fr .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted);margin-top:2px}
+.fr .fa .msg{color:var(--warn);font-weight:600}
 .fr.archived{opacity:.75}
+/* T151: a card reads in five seconds: the title, one status line (how it ended, who did it), the summary in one
+   sentence, what is left and who receives it; checks fold into «Ver detalles». */
+.tbtn{display:block;width:100%;min-height:44px;padding:6px 0;border:0;background:none;text-align:left;font:inherit;color:inherit;overflow-wrap:anywhere}
+.tbtn:hover{color:var(--accent)}
+.fr .ttl{font:700 1.08rem/1.3 var(--display);overflow-wrap:anywhere}
+.status{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:.8rem;color:var(--muted)}
+.oc-ok{--c:var(--own);--cs:var(--own-soft);--cr:var(--own-rule)}.oc-warn{--c:var(--warn);--cs:var(--warn-soft);--cr:var(--warn-rule)}
+.oc-done{--c:var(--run);--cs:var(--run-soft);--cr:var(--run-rule)}.oc-rev{--c:var(--rev);--cs:var(--rev-soft);--cr:var(--rev-rule)}
+.oc-cancel,.oc-none{--c:var(--block);--cs:var(--block-soft);--cr:var(--block-rule)}
+/* Who did it: a fixed dot per agent next to a plain name, so identity never competes with state. */
+.ag{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;color:var(--ink);white-space:nowrap}
+.ag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--dot,var(--block-rule));flex:none}
+.ag-claude{--dot:var(--dot-claude)}.ag-codex{--dot:var(--dot-codex)}.ag-gemini{--dot:var(--dot-gemini)}
+.ag-dueno{--dot:var(--own-rule)}.ag-coordinador{--dot:var(--auto-rule)}
+.status .when{white-space:nowrap;color:var(--faint)}
+.lead{font-size:.95rem;line-height:1.5;max-width:72ch;overflow-wrap:anywhere}
+.pend{display:grid;gap:2px;max-width:72ch;background:var(--panel-2);border:1px solid var(--line);box-shadow:inset 3px 0 0 var(--warn-rule);border-radius:8px;padding:8px 12px 2px 14px;overflow-wrap:anywhere}
+.pend .pl{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--warn)}
+.pend .txt{min-width:0;font-size:.92rem;font-weight:600;color:var(--ink)}
+.pend .to{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;font-size:.86rem;color:var(--muted)}
+.pend .to .arw{font-weight:700;color:var(--faint)}
+.pend .to a.tl{display:inline-flex;align-items:center;min-height:44px;border-bottom:0;text-decoration:underline;text-underline-offset:3px}
+.nopend{font-size:.82rem;color:var(--faint)}
+details.more>summary{display:inline-flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
+details.more .body{display:grid;gap:4px;font-size:.86rem;max-width:72ch;overflow-wrap:anywhere}
+details.more h4{margin:6px 0 0;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint)}
+details.more ul{margin:0;padding-left:1.2em;display:grid;gap:3px}
+details.more li::marker{color:var(--faint)}
+details.more .meta{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--muted);font-size:.8rem;padding-top:4px}
+.nm{font-family:var(--mono);font-size:.86em;color:var(--muted);overflow-wrap:anywhere}
+.sha{font:500 .84em var(--mono);color:var(--muted);background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:0 4px;cursor:copy;vertical-align:baseline}
+/* On touch screens and narrow widths the copy button is a full 44px target; its line grows instead of overlapping. */
+@media (pointer:coarse),(max-width:560px){.sha{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 8px;vertical-align:middle}}
+.sha[data-copied]{color:var(--own);border-color:var(--own-rule)}
+a.tl,a.dl{font-family:var(--mono);font-weight:600;font-size:.92em;color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,currentColor 40%,transparent)}
+a.tl:hover,a.dl:hover{border-bottom-color:currentColor}
+.tl-x{font-family:var(--mono);font-weight:700;font-size:.92em}
+a.prl{font-weight:600}
+.jg{text-decoration:underline dotted;text-underline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <h1>Seguimiento Celebra-me<small>v3</small></h1>
+    <h1>Seguimiento Celebra-me</h1>
     <span class="rev" id="rev">Cargando…</span>
     <span role="status" aria-live="polite" id="connection">Conectando…</span>
     <span class="sync">
@@ -240,11 +306,11 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   </nav>
 
   <div class="legend" aria-label="Colores">
-    <span><i class="sw" style="background:var(--own)"></i>Le toca a usted (también «Pegar en Codex/Gemini»)</span>
-    <span><i class="sw" style="background:var(--auto)"></i>Autónoma (arranca sola)</span>
-    <span><i class="sw" style="background:var(--run)"></i>En curso</span>
-    <span><i class="sw" style="background:var(--block)"></i>Bloqueada</span>
-    <span><i class="sw" style="background:var(--rev)"></i>En revisión</span>
+    <span><i class="sw" style="background:var(--own-rule)"></i>Le toca a usted (también «Pegar en Codex/Gemini»)</span>
+    <span><i class="sw" style="background:var(--auto-rule)"></i>Autónoma (arranca sola)</span>
+    <span><i class="sw" style="background:var(--run-rule)"></i>En curso</span>
+    <span><i class="sw" style="background:var(--block-rule)"></i>Bloqueada</span>
+    <span><i class="sw" style="background:var(--rev-rule)"></i>En revisión</span>
   </div>
 
   <div class="tools" id="tsearch">
@@ -257,7 +323,11 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
       <button class="fchip" type="button" data-ag="todas" aria-pressed="true">Todas</button>
       <button class="fchip" type="button" data-ag="libres" aria-pressed="false">Libres</button>
     </div>
-    <div class="mine" id="mine" aria-live="polite"></div>
+    <div class="whats">
+      <div class="mine" id="mine" aria-live="polite"></div>
+      <div class="mine coord" id="coord" aria-live="polite"></div>
+      <div class="mine stall" id="stall" aria-live="polite"></div>
+    </div>
     <div class="cola">
       <div class="list" id="list"><div class="empty">Cargando la cola. Aquí aparecen las tareas abiertas, numeradas en el orden en que conviene hacerlas.</div></div>
       <aside class="sheet" id="sheet" aria-label="Ficha de la tarea"><div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div></aside>
@@ -267,6 +337,7 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <section id="p-finalizadas" role="tabpanel" aria-labelledby="t-finalizadas" hidden>
     <div class="board">
       <div class="tools">
+        <div class="chips" id="finag" aria-label="Agente"></div>
         <label class="chk"><input type="checkbox" id="arch"> Ver archivadas</label>
         <span class="msg" id="finmsg" role="status" aria-live="polite"></span>
       </div>
@@ -296,12 +367,14 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
   <footer>El número de cada tarea se calcula solo: primero la urgencia, luego las listas antes que las bloqueadas, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
 </div>
 <script type="module">
-import { archiveBlock, cierreLines } from '/model.mjs';
+import { archiveBlock, findTask } from '/model.mjs';
+import { GH, leadOf, outcomeOf, relTime, richText, shaHtml, whoOf } from '/format.mjs';
 import { requisitoText, taskName } from '/model.mjs';
+import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
+import { laneRows, nextSections } from '/next.mjs';
 const TZ='America/Mazatlan';
-const GH='https://github.com/fm-dev-mx/celebra-me';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
 const ICON={
   urgente:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 9l5-5 5 5M3 13l5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -312,21 +385,20 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const ESTADO={hecha:'Hecha',unida:'Unida',comprobada:'Comprobada',cancelada:'Cancelada'};
 const TABS=['cola','finalizadas','carriles','historial'];
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
-const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas'};
+const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas',finag:'todas'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const T=s=>s?new Date(s).getTime():NaN;
 const fmt=s=>{const t=T(s);return isNaN(t)?'—':new Date(t).toLocaleString('es-MX',{timeZone:TZ,weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false})};
 const fmtDay=s=>{const t=T(s);return isNaN(t)?'—':new Date(t).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'short',day:'numeric',month:'short'})};
-const ago=s=>{const d=Date.now()-T(s);if(isNaN(d))return '';if(d<6e4)return 'hace un momento';const h=Math.floor(d/36e5);if(h<1)return 'hace '+Math.max(1,Math.floor(d/6e4))+' min';if(h<48)return 'hace '+h+' h';return 'hace '+Math.floor(h/24)+' días'};
-// Escape, then link URLs, PR numbers like #470 and `code`.
-function rich(s){let h=esc(s);h=h.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,(m,p,u)=>`${p}<a href="${u}" target="_blank" rel="noopener">${u}</a>`);h=h.replace(/(^|[\s(])#(\d{2,4})\b/g,(m,p,n)=>`${p}<a href="${GH}/pull/${n}" target="_blank" rel="noopener">#${n}</a>`);return h.replace(/`([^`]+)`/g,'<code>$1</code>')}
+const ago=s=>relTime(s);
+// T151: free text links PRs, tasks (T132) and decisions (d210), cuts SHAs to 7 and dims paths and branches.
+const rich=s=>richText(s,{task:n=>S.board.tareas.find(t=>t.num===n),decision:id=>decById(id)});
 const byId=id=>S.board.tareas.find(t=>t.id===id);
 const decById=id=>S.board.decisiones.find(d=>d.id===id);
-const laneOf=t=>S.board.carriles.find(l=>l.id===t.carril);
+const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));
 const agentTab=()=>Object.hasOwn(AGENT_REGISTRY,S.ag)?S.ag:undefined;
 const stage=t=>mStage(t,S.board);
 const color=t=>mColor(t,S.board,{agente:agentTab()});
@@ -341,7 +413,9 @@ const urgHtml=t=>{const u=URG[t.urgencia]?t.urgencia:'normal';return `<span clas
 // d169: a ready task only Codex or Gemini can finish waits for the owner to paste its prompt there.
 const pasteTo=t=>ownerLaunches(t,S.board).map(a=>AGENT[a]||a).join(' o ');
 const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):COLOR[c]}</span>`};
-const agHtml=t=>t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)}</span>`:t.agente&&t.agente!=='cualquiera'?`<span class="lock">${esc(AGENT[t.agente]||t.agente)}</span>`:'';
+// T151: each agent keeps its own color wherever it appears.
+const agChip=(key,label,{lock=false}={})=>`<span class="ag ag-${esc(key)}"${lock?' title="La está haciendo ahora (candado)"':''}>${lock?'🔒 ':''}${esc(label)}</span>`;
+const agHtml=t=>t.candado?agChip(t.candado.agente,AGENT[t.candado.agente]||t.candado.agente,{lock:true}):t.agente&&t.agente!=='cualquiera'?agChip(t.agente,AGENT[t.agente]||t.agente):'';
 function firstBlock(t){const r=reqs(t).find(x=>!x.ok);if(r)return requisitoText(r,S.board,{espera:true});return color(t)==='block'?'Ningún agente tiene todo lo que pide: '+(t.requiere||[]).join(', '):''}
 function reqSummary(t){const r=reqs(t);if(!r.length)return '';const ok=r.filter(x=>x.ok).length;return `<span class="req" title="Requisitos cumplidos"><i>${ok===r.length?'✓':'○'}</i>${ok}/${r.length} requisitos</span>`}
 
@@ -352,13 +426,14 @@ const runsHtml=t=>{const lines=runLines(t);if(!lines.length)return '';const busy
 function itemHtml(t){
   const c=color(t),n=NUM[t.id];
   const why=c==='block'?firstBlock(t):String(t.ahora||'').split('\n')[0];
-  return `<button type="button" class="item c-${c}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}">
+  // T151: the card is an article (its free text holds links); the whole card still opens the sheet, the title is its button.
+  return `<article class="item c-${c}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}">
     <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
-    <span class="ttl">${tN(t)}${esc(t.titulo)}</span>
+    <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${tN(t)}${esc(t.titulo)}</button></h3>
     ${runsHtml(t)}
-    <span class="line">${pill(t)}${urgHtml(t)}${reqSummary(t)}${agHtml(t)}${t.carril&&!runLines(t).length?`<span class="lane">${esc(t.carril)}</span>`:''}${t.hasta?`<span class="mono">límite ${esc(fmtDay(t.hasta))}</span>`:''}</span>
+    <span class="line">${pill(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}</span>
     ${why?`<span class="why">${rich(why)}</span>`:''}
-  </button>`;
+  </article>`;
 }
 function renderCola(){
   const all=mQueue(S.board);NUM={};all.forEach((t,i)=>NUM[t.id]=i+1);
@@ -375,9 +450,39 @@ function renderCola(){
   if(!S.sel||!byId(S.sel)||(searching&&!q.concat(rev).some(t=>t.id===S.sel)))S.sel=(q[0]||rev[0]||{}).id||null;
   renderSheet(false);
 }
-// d178: «Hecho: …», «Comprobaciones: …», «Pendiente: …» with the label in bold; the first line (estado, PR) is shown apart.
-const cierreHtml=t=>{const l=cierreLines(t,S.board).slice(1);return l.length?`<div class="cierre">${l.map(x=>{const i=x.indexOf(': ');return `<p><b>${esc(x.slice(0,i+1))}</b>${rich(x.slice(i+1))}</p>`}).join('')}</div>`:''};
-const cierreRef=t=>{const c=t.cierre||{},pr=c.pr||t.pr;return [pr?'PR '+pr:'',c.commit||''].filter(Boolean).join(', ')};
+// T151: how a task ended, read in five seconds. The status line says how it ended, who did it, its PR and when;
+// then the summary's first sentence, each «pendiente» with an arrow to the task that receives it, and the rest
+// (the summary's other sentences, checks, skipped checks, commit and branch) folded into «Ver detalles».
+function statusHtml(t){
+  const o=outcomeOf(t),w=whoOf(t),c=t.cierre||{},pr=prNumber(c.pr||t.pr),en=c.en||t.actualizado;
+  return `<div class="status"><span class="oc oc-${o.key}">${esc(o.label)}</span>${w?agChip(w.key,w.label):''}${pr?`<a class="prl" href="${GH}/pull/${pr}" target="_blank" rel="noopener" title="Abrir el PR en GitHub">PR #${pr}</a>`:''}${en?`<span class="when" title="${esc(fmt(en))}">${esc(ago(en))}</span>`:''}</div>`;
+}
+function pendHtml(p){
+  const d=p&&p.tarea?findTask(p.tarea,S.board):null,w=d&&whoOf(d);
+  const tag=d?esc(d.num?'T'+d.num:d.id):'';
+  // A task moved to the monthly archive has no sheet to open: its tag stays plain.
+  const link=d&&byId(d.id)?`<a class="tl" href="#cola" data-sel="${esc(d.id)}" data-jump="1" data-all="1" title="Abrir ${esc(d.titulo)}">${tag}</a>`:`<span class="tl-x">${tag}</span>`;
+  const to=d?`${link}<span>${esc(d.titulo)}</span>${w?agChip(w.key,w.label):''}`:p&&p.tarea?`<span class="tl-x">${esc(p.tarea)}</span>`:'';
+  return `<div class="pend"><span class="pl">Falta</span><span class="txt">${rich(p&&p.texto||'')}</span>${to?`<span class="to"><span class="arw" aria-hidden="true">→</span><span class="sr">Lo recibe </span>${to}</span>`:''}</div>`;
+}
+// «Ver detalles» stays open across the live re-renders.
+const OPEN=new Set();
+document.addEventListener('toggle',ev=>{const d=ev.target;if(d.dataset&&d.dataset.more)d.open?OPEN.add(d.dataset.more):OPEN.delete(d.dataset.more)},true);
+function cierreHtml(t){
+  const c=t.cierre;if(!c)return '';
+  const {lead,rest}=leadOf(c.resumen,t);
+  const pend=Array.isArray(c.pendientes)?c.pendientes:[];
+  const list=xs=>Array.isArray(xs)&&xs.length?`<ul>${xs.map(x=>`<li>${rich(x)}</li>`).join('')}</ul>`:'<p class="nopend">Ninguna.</p>';
+  const meta=[c.commit?`Commit ${shaHtml(c.commit)}`:'',t.rama?`Rama <span class="nm">${esc(t.rama)}</span>`:'',`Id <span class="nm">${esc(t.id)}</span>`].filter(Boolean);
+  return `${lead?`<p class="lead">${rich(lead)}</p>`:''}
+    ${pend.length?pend.map(pendHtml).join(''):'<p class="nopend">Sin pendientes.</p>'}
+    <details class="more" data-more="${esc(t.id)}"${OPEN.has(t.id)?' open':''}><summary>Ver detalles</summary><div class="body">
+      ${rest?rest.split('\n').map(x=>`<p>${rich(x)}</p>`).join(''):''}
+      <h4>Comprobaciones</h4>${list(c.comprobaciones)}
+      <h4>Saltadas</h4>${list(c.saltadas)}
+      <div class="meta">${meta.map(x=>`<span>${x}</span>`).join('')}</div>
+    </div></details>`;
+}
 // T41: the prompt reads as a document: its title and section names (QUÉ SE BUSCA, PASOS…) in bold, links live.
 const promptHtml=p=>String(p).split('\n').map((x,i)=>i===0||/^T\d+ · /.test(x)||/^[A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ ]{2,}$/.test(x.trim())?`<b class="ph">${esc(x)}</b>`:rich(x)).join('\n');
 // T79: each review round is its own task; the sheet lists them one below another, first round on top.
@@ -391,7 +496,7 @@ function renderSheet(open){
   const rows=[
     ['Agente',t.agente?esc(AGENT[t.agente]||t.agente)+(t.candado?` · 🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)} desde ${esc(fmt(t.candado.desde))}`:''):''],
     ['Requiere',(t.requiere||[]).length?t.requiere.map(esc).join(', '):''],
-    ['Carril',t.carril?`<span class="code">${esc(t.carril)}</span>${l.tecla?' · '+esc(l.tecla):''}`:''],
+    ['Carril',taskLane(t)?`<span class="code">${esc(taskLane(t))}</span>${l.tecla?' · '+esc(l.tecla):''}`:''],
     ['Worktree',l.worktree?`<span class="code">${esc(l.worktree)}</span>`:''],
     ['Puerto',l.puerto?`<span class="mono">${esc(l.puerto)}</span>`:''],
     ['Sesión',sesHtml(t.sesion)],
@@ -416,16 +521,18 @@ function renderSheet(open){
     ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
     ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
     ${roundsHtml(t)}
-    ${t.cierre?`<div class="box"><h3>Cierre${cierreRef(t)?' · '+rich(cierreRef(t)):''}</h3>${cierreHtml(t)}</div>`:''}
+    ${t.cierre?`<div class="box"><h3>Cómo terminó</h3>${statusHtml(t)}${cierreHtml(t)}</div>`:''}
     ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><div class="prompt" id="prtext">${promptHtml(p)}</div></details>`:''}`;
 }
 function openSheet(id){S.sel=id;document.querySelectorAll('.item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===id)));renderSheet(true);if(matchMedia('(max-width:959px)').matches){document.body.classList.add('locked');$('sheet').scrollTop=0;const c=$('sheet').querySelector('.close');if(c)c.focus()}}
-function closeSheet(){$('sheet').classList.remove('open');document.body.classList.remove('locked');const b=document.querySelector(`.item[data-sel="${CSS.escape(S.sel||'')}"]`);if(b)b.focus()}
+// The card is an article since T151: focus goes back to its title button, the control that opened the sheet.
+function closeSheet(){$('sheet').classList.remove('open');document.body.classList.remove('locked');const b=document.querySelector(`.item[data-sel="${CSS.escape(S.sel||'')}"] .tbtn`);if(b)b.focus()}
 
 function renderBoard(){
   if(!S.ready)return;
   const lanes=S.board.carriles.slice().sort((a,b)=>ordenOf(a)-ordenOf(b));
   const known=new Set(lanes.map(l=>l.id));
+  const git=S.board.vivo?Object.fromEntries(laneRows(S.board,S.board.vivo.carriles).map(x=>[x.id,x])):{};
   const tareas=S.board.tareas.filter(t=>!t.archivada&&inTab(t,S.ag));
   // d177: a task not claimed yet sits in the lane the coordinator planned for it.
   const laneId=taskLane;
@@ -435,7 +542,9 @@ function renderBoard(){
   const head=`<div class="bhead"><div>Carril</div>${STAGES.map(s=>`<div>${s[1]}</div>`).join('')}</div>`;
   $('board').innerHTML=head+lanes.map(l=>{
     const ts=l.id==='sin-carril'?loose:tareas.filter(t=>laneId(t)===l.id);
-    const ses=l.sesion&&l.sesion.nombre?`Sesión ${esc(l.sesion.nombre)}`:(l.estado==='ocioso'?'Libre':esc(l.estado||''));
+    // T126: with the server's Git read the lane says its branch, whether it is clean and its locked task.
+    const g=git[l.id];
+    const ses=g?esc(g.texto.slice(l.id.length+3)):l.sesion&&l.sesion.nombre?`Sesión ${esc(l.sesion.nombre)}`:(l.estado==='ocioso'?'Libre':esc(l.estado||''));
     return `<div class="brow"><div class="lh"><b>${esc(l.id)}</b><span>${[l.tecla,l.puerto?'puerto '+l.puerto:''].filter(Boolean).map(esc).join(' · ')}</span><span>${ses}</span></div>${STAGES.map(([s,n])=>{const g=ts.filter(t=>stage(t)===s).sort((a,b)=>(NUM[a.id]||999)-(NUM[b.id]||999));return `<div class="cell">${g.length?`<span class="lbl">${n}</span>${g.map(chip).join('')}`:''}</div>`}).join('')}</div>`;
   }).join('');
 }
@@ -446,18 +555,22 @@ function renderFin(){
   $('n-fin').textContent=fin.filter(t=>!t.archivada).length||'';
   if(!S.ready)return;
   const arch=$('arch').checked;
-  const rows=fin.filter(t=>Boolean(t.archivada)===arch&&found(t)).sort((a,b)=>T(b.archivada||b.actualizado)-T(a.archivada||a.actualizado));
+  // The agent chips count what the archive toggle and the search leave, so each number matches its list.
+  const shown=fin.filter(t=>Boolean(t.archivada)===arch&&found(t));
+  const by=ag=>ag==='todas'?shown:shown.filter(t=>(authorOf(t)||'ninguno')===ag);
+  const ags=[...Object.keys(AGENT_REGISTRY),...(shown.some(t=>!authorOf(t))?['ninguno']:[])];
+  $('finag').innerHTML=['todas',...ags].map(ag=>`<button class="fchip" type="button" data-finag="${esc(ag)}" aria-pressed="${ag===S.finag}">${esc(ag==='todas'?'Todas':ag==='ninguno'?'Sin agente':AGENT[ag])} <span class="n">${by(ag).length}</span></button>`).join('');
+  const rows=by(S.finag).sort((a,b)=>T(b.archivada||b.actualizado)-T(a.archivada||a.actualizado));
   const row=t=>{
-    const locked=t.candado?`<span class="lock" title="Candado">🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)}: libérela antes de archivar</span>`:'';
-    const when=arch?'archivada '+fmtDay(t.archivada):fmtDay(t.actualizado);
+    const locked=t.candado?`<span class="msg">${agChip(t.candado.agente,AGENT[t.candado.agente]||t.candado.agente,{lock:true})} libérela antes de archivar</span>`:'';
     // d178: without its closing summary (or with a pendiente that names no task) «Archivar» stays disabled and says why.
-    const why=!arch&&!t.candado&&archiveBlock(t,S.board),ref=cierreRef(t);
-    return `<div class="fr${arch?' archived':''}"><div><div class="ttl">${tN(t)}${esc(t.titulo)}</div>
-      <div class="line"><span class="pill c-${t.estado==='cancelada'?'block':'rev'}">${esc(ESTADO[t.estado]||t.estado)}</span>${ref?`<span class="mono">${rich(ref)}</span>`:''}<span class="mono">${esc(when)}</span><span class="lane">${esc(t.id)}</span>${locked}</div></div>
-      ${cierreHtml(t)}
-      <div class="fa"><button type="button" class="btn" data-arch="${esc(t.id)}" data-rev="${esc(t.rev)}" data-to="${arch?'0':'1'}" ${t.candado||why?'disabled':''}${why?` title="${esc(why)}"`:''}>${arch?'Desarchivar':'Archivar'}</button>${why?`<span class="msg">${esc(why)}</span>`:''}</div></div>`;
+    const why=!arch&&!t.candado&&archiveBlock(t,S.board);
+    return `<article class="fr${arch?' archived':''}"><h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${esc(t.titulo)}</button></h3>
+      ${statusHtml(t)}
+      ${t.cierre?cierreHtml(t):`<p class="nopend">Sin resumen de cierre.</p>`}
+      <div class="fa"><button type="button" class="btn" data-arch="${esc(t.id)}" data-rev="${esc(t.rev)}" data-to="${arch?'0':'1'}" ${t.candado||why?'disabled':''}${why?` title="${esc(why)}"`:''}>${arch?'Desarchivar':'Archivar'}</button>${arch&&t.archivada?`<span class="nopend" title="${esc(fmt(t.archivada))}">Archivada ${esc(ago(t.archivada))}</span>`:''}${why?`<span class="msg">${esc(why)}</span>`:''}${locked}</div></article>`;
   };
-  const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
+  const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':S.finag!=='todas'?'Ese agente no tiene tareas aquí.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
   $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
 async function archive(btn){
@@ -476,7 +589,7 @@ function renderHist(){
   const q=$('q').value.trim().toLowerCase(),vig=$('vig').checked;
   let rows=[];
   if(S.kind!=='bit')rows=rows.concat(S.board.decisiones.filter(d=>!vig||d.vigente===true).map(d=>({en:d.en,txt:[d.id,d.decision,d.motivo,(d.tareas||[]).join(' ')].join(' '),html:`<div class="lr dec ${d.vigente===false?'old':''}"><span class="when">${esc(fmt(d.en))}</span><div class="what"><span class="tag">${esc(d.id)}${d.vigente===true?' · vigente':d.vigente===false?' · reemplazada':''}</span>${rich(d.decision)}${d.motivo?`<div class="sub">Motivo: ${rich(d.motivo)}</div>`:''}</div></div>`})));
-  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
+  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
   if(q)rows=rows.filter(r=>r.txt.toLowerCase().includes(q));
   rows.sort((a,b)=>T(b.en)-T(a.en));
   const shown=rows.slice(0,200);
@@ -487,7 +600,7 @@ function renderTop(){
   const e=S.board.estado;
   if(e){
     const stale=Date.now()-T(e.comprobadoEn)>24*36e5;
-    $('rev').textContent='Tablero v'+(e.rev||'—')+' · comprobado '+ago(e.comprobadoEn);
+    $('rev').textContent='Producción comprobada '+ago(e.comprobadoEn);
     const ver=String(e.version||'').split(' ')[0];
     $('strip').innerHTML=`<span class="eyebrow">Producción</span><span><span class="pulse ${stale?'stale':''}"></span><b>${esc(ver)}</b></span><span class="mono">main ${esc(e.main||'')}</span><span>${esc(e.sirve||'')}</span><span class="mono" title="${esc(fmt(e.comprobadoEn))}">${stale?'sin comprobar '+esc(ago(e.comprobadoEn)):'comprobado '+esc(ago(e.comprobadoEn))}</span>`+youBtn();
   }else if(S.ready){$('strip').innerHTML='<span class="eyebrow">Producción</span><span>Sin registro de estado.</span>'+youBtn()}
@@ -495,15 +608,23 @@ function renderTop(){
 // The whole board, not the agent tab: what the owner must do never hides behind a filter.
 function renderMine(){
   const all=mQueue(S.board),tag=t=>t.num?'T'+t.num:'';
-  const tasks=all.filter(t=>mColor(t,S.board)==='own');
+  const next=nextSections(S.board,{prs:S.board.vivo&&S.board.vivo.prs?S.board.vivo.prs:undefined});
+  const late=new Set(next.usted.filter(x=>x.texto.startsWith('Correr el despachador')).map(x=>x.id));
+  const tasks=all.filter(t=>mColor(t,S.board)==='own'&&!late.has(t.id));
   const asks=ownerAsks(S.board);
   let h='<h2>Le toca a usted</h2>';
-  if(!tasks.length&&!asks.length)h+='<p class="none">Usted: nada por ahora.</p>';
+  if(!tasks.length&&!asks.length&&!next.usted.length)h+='<p class="none">Usted: nada por ahora.</p>';
   h+=tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}${to?`<span class="sub"> · Pegar en ${esc(to)}</span>`:''}</span></button>`;
     return to?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row}).join('');
   if(asks.length)h+='<p class="sub">Decisiones que esperan su respuesta</p>'+asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(r.ref)}<span class="sub"> · la espera «${esc(t.titulo)}»</span></span></button>`).join('');
+  // T126: what the owner's own rows above do not say yet: a stalled Codex or Gemini task, a message to the owner.
+  const extra=next.usted.filter(x=>/^(Correr el despachador|Mensaje:)/.test(x.texto));
+  if(extra.length)h+='<p class="sub">Detenido o con mensaje</p>'+extra.map(nextRow).join('');
   $('mine').innerHTML=h;
+  $('coord').innerHTML='<h2>Le toca al coordinador</h2>'+(next.coordinador.length?next.coordinador.map(nextRow).join(''):'<p class="none">Nada por ahora.</p>')+(next.prsLeidos?'':'<p class="sub">Sin leer GitHub todavía: faltan los PR abiertos.</p>');
+  $('stall').innerHTML='<h2>Detenidas</h2>'+(next.detenidas.length?next.detenidas.map(nextRow).join(''):'<p class="none">Ninguna.</p>');
 }
+const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1"><b>${esc(x.tarea)}</b><span>${esc(x.texto)}</span></button>`:`<div class="row"><span>${rich(x.texto)}</span></div>`;
 function youBtn(){
   const mine=mQueue(S.board).filter(t=>mColor(t,S.board)==='own');
   if(!mine.length)return '<button type="button" class="you none" disabled>Usted: nada</button>';
@@ -520,9 +641,14 @@ function setTab(tab,push){
 }
 function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ag===ag)));try{localStorage.setItem('board-ag',ag)}catch(e){}renderCola();renderBoard()}
 document.addEventListener('click',ev=>{
+  // T151: a link out (a PR) inside a card opens itself, not the card's sheet.
+  if(ev.target.closest('a[target="_blank"]'))return;
+  const sha=ev.target.closest('[data-sha]');if(sha){copySha(sha);return}
+  const dec=ev.target.closest('[data-dec]');if(dec){ev.preventDefault();setTab('historial',true);$('q').value=dec.dataset.dec;renderHist();scrollTo(0,0);return}
   const tab=ev.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab,true);return}
   const ag=ev.target.closest('[data-ag]');if(ag){setAgent(ag.dataset.ag);return}
-  const sel=ev.target.closest('[data-sel]');if(sel){if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump)setTab('cola',true);openSheet(sel.dataset.sel);return}
+  const fa=ev.target.closest('[data-finag]');if(fa){S.finag=fa.dataset.finag;try{localStorage.setItem('board-finag',S.finag)}catch(e){}renderFin();return}
+  const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump)setTab('cola',true);openSheet(sel.dataset.sel);return}
   if(ev.target.closest('[data-close]')){closeSheet();return}
   const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}
   const cp=ev.target.closest('[data-copy]');if(cp){
@@ -533,12 +659,18 @@ document.addEventListener('click',ev=>{
     try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».'},fallback)}catch(e){fallback()}return}
   const k=ev.target.closest('[data-kind]');if(k){S.kind=k.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===k)));renderHist()}
 });
+// The SHA button copies the full SHA and says so for a moment.
+function copySha(b){
+  const done=ok=>{b.dataset.copied='1';b.textContent=ok?'copiado':b.dataset.sha;setTimeout(()=>{delete b.dataset.copied;b.textContent=b.dataset.sha.slice(0,7)},ok?1500:6000)};
+  try{navigator.clipboard.writeText(b.dataset.sha).then(()=>done(true),()=>done(false))}catch(e){done(false)}
+}
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet()});
 $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',renderHist);
 $('tq').addEventListener('input',()=>{renderCola();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
+try{const a=localStorage.getItem('board-finag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','ninguno'].includes(a)))S.finag=a}catch(e){}
 try{const a=localStorage.getItem('board-ag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','libres'].includes(a)))setAgent(a)}catch(e){}
 
 // «Sincronizar» runs the no-AI pnpm board:sync on the server; the token proves the request comes from this page.
@@ -562,13 +694,27 @@ async function sync(dryRun){
 $('sync-dry').addEventListener('click',()=>sync(true));
 $('sync-run').addEventListener('click',()=>sync(false));
 
-// The server pushes the whole board on connect and after every write; EventSource reconnects by itself.
-const stream=new EventSource('/api/stream');
-let lastSignal=Date.now();
+// The server pushes the whole board on connect and after every write. When the board's code changes (d210)
+// the server swaps itself and ends the stream: the page reconnects quietly and reloads on a new version.
+const VERSION=document.querySelector('meta[name="board-version"]').content;
+let lastSignal=Date.now(),failedSince=0;
 const connection=text=>{$('connection').textContent=text};
-stream.onmessage=ev=>{try{S.board=JSON.parse(ev.data);S.ready=true;render()}catch{connection('Datos inválidos; esperando recuperación…')}};
-stream.addEventListener('status',ev=>{try{const status=JSON.parse(ev.data);lastSignal=Date.now();connection(status.state==='live'?'En vivo · comprobado '+fmt(status.observedAt):'Sin sincronizar · datos anteriores')}catch{connection('Sin sincronizar')}});
-stream.onerror=()=>{connection('Reconectando · datos anteriores');if(!S.ready)$('list').innerHTML='<div class="empty">No se pudo leer el tablero. Compruebe que sigue abierto <code>pnpm board:serve</code>.</div>'};
+function connect(){
+  const stream=new EventSource('/api/stream');
+  stream.onopen=()=>{failedSince=0};
+  stream.onmessage=ev=>{try{S.board=JSON.parse(ev.data);S.ready=true;render()}catch{connection('Datos inválidos; esperando recuperación…')}};
+  stream.addEventListener('version',ev=>{try{if(JSON.parse(ev.data).version!==VERSION)location.reload()}catch{}});
+  stream.addEventListener('status',ev=>{try{const status=JSON.parse(ev.data);lastSignal=Date.now();connection(status.state==='live'?'En vivo · comprobado '+fmt(status.observedAt):'Sin sincronizar · datos anteriores')}catch{connection('Sin sincronizar')}});
+  stream.onerror=()=>{
+    failedSince||=Date.now();
+    connection('Actualizando…');
+    // A brief drop is a code update; only a long one means the server is really gone.
+    if(!S.ready&&Date.now()-failedSince>15000)$('list').innerHTML='<div class="empty">No se pudo leer el tablero. Compruebe que sigue abierto <code>pnpm board:serve</code>.</div>';
+    // EventSource gives up on a non-stream answer: start a new one instead of staying closed.
+    if(stream.readyState===EventSource.CLOSED)setTimeout(connect,2000);
+  };
+}
+connect();
 setInterval(()=>{if(S.ready)render();if(Date.now()-lastSignal>60000)connection('Sin señal · datos anteriores')},30000);
 addEventListener('online',()=>connection('Reconectando…'));
 addEventListener('offline',()=>connection('Sin conexión · datos anteriores'));

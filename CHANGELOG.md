@@ -10,6 +10,39 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.46.0-beta.1] - 2026-10-24
+
+The XV invitation for Andrea is published on a new storybook-emerald preset, the landing page gets a
+polished header, envelope scene and named hero phones, and the coordinator board gains messaging,
+read-only lanes and readable cards. No migrations; no published invitation content changes besides
+the new `andrea` definition.
+
+### Added
+
+- XV invitation `/xv/andrea` on a new token-only `storybook-emerald` preset, with a
+  `fine-butterflies` ornament set, a framed-portrait hero and a `butterfly-route` location scene
+  (#517); the definition is published with its accepted visual references (#526).
+- The hero phone fan on the home page shows each demo's sample name over the open part of its photo
+  (#522).
+- Board: agents message each other and the board says what the coordinator does next (#521);
+  finished tasks filter by agent (#515); read-only tasks default to the Integration lane (#514);
+  `pnpm board sesiones` lists Codex and Gemini chats that can be archived (#519).
+- Board server: a sign-in Task Scheduler task keeps it running (#518) and its port stays open while
+  its code changes (#520).
+
+### Changed
+
+- Landing: the header, hero padding, envelope scene and showroom «Abra el sobre» button are polished
+  (#512).
+- Board cards read at a glance with a rebuilt WCAG AA color system (#525); the view header shows
+  only the Production check time (#516).
+- Dependencies: zod 4.6.6 (#510), fast-uri 3.1.9 (#511).
+
+### Fixed
+
+- Album-assemble prints are balanced on desktop and tablet (#524).
+- The editorial RSVP press pass drops a hidden glass blur that made visual captures flaky (#523).
+
 ## [0.45.0-beta.1] - 2026-10-23
 
 The home page becomes a demo showroom, a new hidden Serenata XV demo, demos addressed in «usted»

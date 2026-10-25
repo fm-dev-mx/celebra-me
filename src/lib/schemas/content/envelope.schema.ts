@@ -10,6 +10,7 @@ export const envelopeRevealVariantSchema = z.enum([
 	'satin-filigree',
 	'seaside-lineart',
 	'storybook-lanterns',
+	'storybook-butterflies',
 ]);
 export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
 

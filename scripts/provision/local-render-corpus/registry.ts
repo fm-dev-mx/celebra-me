@@ -69,7 +69,7 @@ function deriveEntry(
 	};
 }
 
-export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 17;
+export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 18;
 
 const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] =
 	listInvitationDefinitions().map(deriveEntry);

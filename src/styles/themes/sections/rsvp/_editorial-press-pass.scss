@@ -10,6 +10,10 @@
 	color: var(--color-text-on-dark);
 	overflow: hidden;
 
+	// The opaque pass hides the base glass blur, and the blur would only promote the card to its own
+	// compositor layer at a fractional position, whose text can keep a stale 1px raster offset.
+	backdrop-filter: none;
+
 	.rsvp__eyebrow,
 	.rsvp__locked-eyebrow,
 	label,
