@@ -266,6 +266,7 @@ describe('deliverMetaConversionEvent', () => {
 					id: 'outbox-id',
 					event_name: 'Purchase',
 					event_id: 'purchase:order-id:deposit_paid',
+					customer_id: 'customer-id',
 					value: 899,
 					currency: 'MXN',
 					customers: { email: 'client@example.com', phone_e164: '+521000000005' },
@@ -279,10 +280,13 @@ describe('deliverMetaConversionEvent', () => {
 			.mockResolvedValueOnce([
 				{
 					id: 'session-id',
+					visitor_id: 'visitor-id',
 					fbp: 'fb.1.12345',
 					fbc: 'fb.1.67890',
 					fbclid: 'Click123',
 					landing_path: '/demos/xv',
+					client_ip_address: '203.0.113.7',
+					client_user_agent: 'Mozilla/5.0 (iPhone)',
 				},
 			]) // GET session details
 			.mockResolvedValueOnce([{ id: 'outbox-id' }]); // fenced finalize = sent
@@ -298,11 +302,13 @@ describe('deliverMetaConversionEvent', () => {
 		expect(mockFetch).toHaveBeenCalledTimes(1);
 
 		const [url, requestInit] = mockFetch.mock.calls[0];
-		expect(url).toContain('mock-pixel-id');
-		expect(url).toContain('mock-access-token');
+		expect(url).toBe('https://graph.facebook.com/v26.0/mock-pixel-id/events');
+		expect(url).not.toContain('mock-access-token');
 
 		const body = JSON.parse(requestInit.body);
+		expect(body.access_token).toBe('mock-access-token');
 		expect(body.test_event_code).toBe('TEST12345');
+		expect(body.data[0].action_source).toBe('chat');
 		expect(body.data[0].event_name).toBe('Purchase');
 		expect(body.data[0].event_id).toBe('purchase:order-id:deposit_paid');
 		expect(body.data[0].custom_data.value).toBe(899);
@@ -314,6 +320,17 @@ describe('deliverMetaConversionEvent', () => {
 		expect(body.data[0].user_data.ph).toEqual([hashSha256('521000000005')]);
 		expect(body.data[0].user_data.fbp).toBe('fb.1.12345');
 		expect(body.data[0].user_data.fbc).toBe('fb.1.67890');
+		expect(body.data[0].user_data.client_ip_address).toBe('203.0.113.7');
+		expect(body.data[0].user_data.client_user_agent).toBe('Mozilla/5.0 (iPhone)');
+		expect(body.data[0].user_data.external_id).toEqual([hashSha256('visitor-id')]);
+		expect(JSON.stringify(body.data)).not.toContain('mock-access-token');
+		expect(mockRestRequest).toHaveBeenCalledWith(
+			expect.objectContaining({
+				pathWithQuery: expect.stringContaining(
+					'select=id,visitor_id,fbp,fbc,fbclid,landing_path,client_ip_address,client_user_agent',
+				),
+			}),
+		);
 		expect(mockRestRequest).toHaveBeenCalledWith(
 			expect.objectContaining({
 				pathWithQuery: 'rpc/finalize_meta_conversion_event',
@@ -324,6 +341,34 @@ describe('deliverMetaConversionEvent', () => {
 				}),
 			}),
 		);
+	});
+
+	it('falls back to the hashed customer ID and omits client signals when the order has no session', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				{
+					id: 'outbox-id',
+					event_name: 'Purchase',
+					event_id: 'purchase:order-id:deposit_paid',
+					customer_id: 'customer-id',
+					value: 899,
+					currency: 'MXN',
+					customers: { email: 'client@example.com' },
+					sales_orders: null,
+					leads: { consent_marketing: true },
+				},
+			])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+		await deliverMetaConversionEvent('outbox-id');
+
+		const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+		expect(body.data[0].user_data.external_id).toEqual([hashSha256('customer-id')]);
+		expect(body.data[0].user_data).not.toHaveProperty('client_ip_address');
+		expect(body.data[0].user_data).not.toHaveProperty('client_user_agent');
+		expect(body.data[0].action_source).toBe('chat');
 	});
 
 	it('enforces route policy and falls back to home page if landing path is a private guest route', async () => {

@@ -26,9 +26,9 @@ authorization.
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
   `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
   `orden`, `origen`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
-  `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are set by the command, `archivada`
-  (date) only by `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no
-  longer exist.
+  `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see Task kinds); `rev` and
+  `actualizado` are set by the command, `archivada` (date) only by `archive`/`unarchive`, `cierre`
+  only by `close`. `espera`, `usted` and `deps` no longer exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -181,6 +181,21 @@ authorization.
   prompts the same way. Prompts without `formato: prompt-v1` predate T160, keep their old layout
   (opening `T<n> · <título>`, or English «Follow .agent/rules/board.md…» for reviews) and are never
   rewritten.
+- **Task kinds (T130)**: `tipo` says what a task does (`codigo`, `revision`, `release`,
+  `invitacion`, `creativo`, `auditoria`, `operacion`); `categoria` only picks its lane. Each kind is
+  one short `.agent/kinds/<tipo>.yaml`: `lee` (routing-matrix `task_type` names, never copied
+  lists), `pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve` (the
+  T129 `resultado` fields), `listo_si` (validation level) and `al_terminar`. The coordinator writes
+  only `busca` (the `QUÉ SE BUSCA` text, with «Terminado cuando:») and, when the task needs them,
+  `corto` (the session name's description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones`
+  (dNNN ids; decisions naming the task in `tareas` and `decision` requisitos count too). `add`,
+  `set` and `plan` regenerate the prompt-v1 when one of those fields, the lane or the branch
+  changes, and refuse a hand-written `prompt` on a typed task; `pnpm board prompt <id>` prints it
+  and `--guardar --rev=<n>` saves it after a decision or kind file changed. `board:verify` checks
+  the kind files and warns when a saved prompt is not the one its kind generates now. Session tasks
+  created under `contrato: 3` need `tipo`; older tasks and tasks without `tipo` keep their
+  hand-written prompts. Review rounds from `pnpm board review` get `tipo: revision` and keep the
+  prompt `review` writes.
 - **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`.
   **Inherited acceptance**: what the owner already accepted in a task (its `AUTORIZO`, `DECISIONES`

@@ -122,6 +122,51 @@ describe('ingestTrackingEvent', () => {
 		);
 	});
 
+	it('keeps the client IP and user agent on the session only with marketing consent', async () => {
+		const payload = {
+			sessionId: '88888888-8888-4888-8888-888888888888',
+			visitorId: 'visitor_signals',
+			eventName: 'page_viewed',
+			routePath: '/',
+			routeClass: 'commercial',
+			eventProperties: { page_type: 'commercial' },
+		};
+		const request = () =>
+			new Request('https://www.celebra-me.com/', {
+				headers: {
+					cookie: '',
+					'user-agent': BROWSER_USER_AGENT,
+					'x-forwarded-for': '203.0.113.7, 10.0.0.1',
+				},
+			});
+
+		await ingestTrackingEvent({
+			request: request(),
+			deployEnvironment: 'production',
+			payload: {
+				...payload,
+				consentSnapshot: { necessary: true, analytics: true, marketing: true },
+			},
+		});
+		expect(mockUpsertVisitorSession).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				clientSignals: { ipAddress: '203.0.113.7', userAgent: BROWSER_USER_AGENT },
+			}),
+		);
+
+		await ingestTrackingEvent({
+			request: request(),
+			deployEnvironment: 'production',
+			payload: {
+				...payload,
+				consentSnapshot: { necessary: true, analytics: true, marketing: false },
+			},
+		});
+		expect(mockUpsertVisitorSession).toHaveBeenLastCalledWith(
+			expect.objectContaining({ clientSignals: undefined }),
+		);
+	});
+
 	it('ignores events on excluded real invitation routes', async () => {
 		const result = await ingestTrackingEvent({
 			request: makeRequest(),

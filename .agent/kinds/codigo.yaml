@@ -1,0 +1,28 @@
+# Task kind «codigo»: a code change that ends in a PR to develop (T130, rules: .agent/rules/board.md).
+# Placeholders: {id} {agente} {rama} {nombre}.
+tipo: codigo
+descripcion: 'Cambio de código con PR a develop.'
+lee:
+    - 'commit_preparation'
+    - 'testing_qa'
+pasos_inicio:
+    - 'pnpm agent:git-safety:start --session={rama}'
+    - 'pnpm board claim {id} --agente={agente} --rama={rama} --titulo="{nombre}"'
+pasos:
+    - '1. Haga el cambio de QUÉ SE BUSCA con pruebas unitarias en tests/unit/.'
+    - '2. Commit en inglés, push de {rama} y PR a develop.'
+autorizado_por_defecto:
+    - 'Modo rápido hasta develop: git-safety, commit, push y PR a develop de {rama}. La unión la hace el coordinador con la revisión cruzada aprobada.'
+no_hagas:
+    - '- No cambie la rama de Integración ni reinicie 127.0.0.1:4320 (d210).'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
+    - '- No toque main, Producción, migraciones ni secretos.'
+pare_si:
+    - 'Hace falta algo fuera de AUTORIZO o una comprobación falla sin causa clara.'
+devuelve:
+    - 'pr'
+    - 'sha'
+    - 'nivel'
+listo_si: 'type-check'
+al_terminar:
+    - 'pnpm board review {id} (revisión cruzada) y deje la tarea en revisión con su PR.'

@@ -101,6 +101,12 @@ no value. `pnpm board` refuses a `prompt-v1` that breaks this shape, and `board:
 line 1 names another `T<n>` or lane than the task's. Prompts written before T160 (no
 `formato: prompt-v1`) keep working under the old layout and are never rewritten.
 
+A task with a `tipo` (T130) does not get this template by hand: add it with its kind and its
+`QUÉ SE BUSCA`, for example
+`pnpm board add <id> titulo=… urgencia=alta actor=sesion agente=claude tipo=codigo rama=feat/<id> carrilPlaneado=f05-plataforma busca="…\nTerminado cuando: …" --coordinador`,
+and the board builds the rest from `.agent/kinds/codigo.yaml` and the board. Check it with
+`pnpm board prompt <id>`; see the board rule's «Task kinds».
+
 ## Evidence and recovery
 
 Before running `pnpm board:verify` in a board review, write `sesiones.json` in the board directory
