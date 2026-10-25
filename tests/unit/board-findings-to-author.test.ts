@@ -117,7 +117,7 @@ describe('board findings to the author (d251): model', () => {
 		expect(r.vacio).toContain(': sin hallazgos escritos, vea el cierre de la revisión');
 	});
 
-	it('drops «Pasar los hallazgos» from the coordinator once the round sent them', () => {
+	it('swaps «Pasar los hallazgos» for «Avisar al autor» once the round sent them (d269)', () => {
 		const sent = {
 			tarea: 'codigo',
 			en: NOW,
@@ -129,7 +129,37 @@ describe('board findings to the author (d251): model', () => {
 			console.log(JSON.stringify({ antes: tipos([]), despues: tipos([${json(sent)}]) }));
 		`);
 		expect(r.antes).toEqual(['hallazgos: Pasar los hallazgos de T2 al autor de T1 (PR #530)']);
-		expect(r.despues).toEqual([]);
+		expect(r.despues).toEqual([
+			'avisar: Avisar al autor de T1 (PR #530): T2 pidió cambios en 3c35826 y el PR sigue en ese SHA (SHA del PR sin comprobar) · sesión «f05 · T1 · codigo»',
+		]);
+	});
+
+	it('keeps «Avisar al autor» while the PR head is the round SHA and drops it after a new push (d269)', () => {
+		const sent = {
+			tarea: 'codigo',
+			en: NOW,
+			mensaje: { id: 'm1', para: 'claude', texto: 'x', revision: 'codigo-revision' },
+		};
+		const pr = (headRefOid: string) => [
+			{ number: 530, headRefOid, headRefName: 'feat/codigo', title: 'Código' },
+		];
+		const r = probe(`
+			const board = { tareas: ${json([{ ...ORIGIN, rama: 'feat/codigo' }, round('cambios', [FINDING])])}, bitacora: [${json(sent)}] };
+			const items = (prs) => next.coordinatorItems(board, { prs }).map((i) => i.tipo + ': ' + i.texto);
+			const approved = { ...board, tareas: [board.tareas[0], ${json(round('aprobado'))}] };
+			console.log(JSON.stringify({
+				igual: items(${json(pr(SHA))}),
+				nuevo: items(${json(pr('d'.repeat(40)))}),
+				aprobado: next.coordinatorItems(approved, { prs: ${json(pr(SHA))} }).map((i) => i.tipo),
+			}));
+		`);
+		expect(r.igual).toEqual([
+			'avisar: Avisar al autor de T1 (PR #530): T2 pidió cambios en 3c35826 y el PR sigue en ese SHA · sesión «f05 · T1 · codigo»',
+		]);
+		expect(r.nuevo).toEqual([
+			'vuelta: Nueva vuelta de revisión: T1 (PR #530) cambió de 3c35826 a ddddddd',
+		]);
+		expect(r.aprobado).toEqual(['unir']);
 	});
 });
 

@@ -341,13 +341,18 @@ authorization.
   reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el resumen de cierre
   de T<n>» for every task `en revision` or `unida` without a valid `cierre` (d255; a merged PR still
   moves a task to `unida`, because the merge is a fact), open PRs without a task, ready Claude tasks
-  without a session and messages for it. `list` prints the same sections without reading GitHub.
+  without a session and messages for it. `list` prints the same sections without reading GitHub. «Le
+  toca a usted» (list and page) leaves out a message to the owner once its task is `hecha`, `unida`,
+  `comprobada`, `cancelada` or archived (d265); `inbox --agente=dueno` still lists it.
 - **Findings to the author (d251, T212)**: `close` of a review round with `--veredicto=cambios`
   writes one message about the origin task to its author (`authorOf`), from the reviewer, naming the
   round (`mensaje.revision`) and the author's session (`mensaje.sesion`, the lock's or the last
   recorded one), with every finding as `P2 archivo:línea texto`; closing again with the same
   findings writes nothing new. The coordinator no longer lists «Pasar los hallazgos de T<n> al
-  autor» for that round. The author checks its inbox after every push, for example
+  autor» for that round; while the PR head is still the round's SHA it lists «Avisar al autor de
+  T<n> (PR #n): T<m> pidió cambios en <sha7> y el PR sigue en ese SHA» (d269), so the coordinator
+  wakes the author's session, and the row goes once the author pushes a new SHA (then «Nueva vuelta
+  de revisión»). The author checks its inbox after every push, for example
   `pnpm board inbox --agente=claude`, and fixes the findings on the same branch; the new head then
   gets its next round with `pnpm board review`.
 - `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
