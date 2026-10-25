@@ -2,6 +2,18 @@
  * Board v3 model shared by `pnpm board`, `pnpm board:verify` and the local view (rules: .agent/rules/board.md).
  * Pure functions only: no Node APIs, so the view imports this same file in the browser.
  */
+import { awaitingClaim } from './delivery.mjs';
+import { isForeignPull } from './pr-ref.mjs';
+import {
+	isPromptV1,
+	promptSection,
+	promptV1Issues,
+	reviewText,
+	withPushCheck,
+	withRunLines,
+} from './prompt.mjs';
+
+export { normalizePr, prNumber } from './pr-ref.mjs';
 
 export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
 export const ACTORES = ['dueno', 'sesion', 'coordinador'];
@@ -250,46 +262,34 @@ export function reviewerIssue(author, reviewer) {
 	return null;
 }
 
-const ROUND_WORDS = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA'];
-const roundWord = (n) => ROUND_WORDS[n - 1] ?? `VUELTA ${n}`;
-
-/**
- * The title and prompt of review round `n` of `src` at `sha`; from round 2 on they name the previous round's SHA
- * and start from the diff between both, so a reviewer never answers the earlier round again (T79).
- */
-function reviewText(src, { id, n, sha, prev }) {
-	const short = (s) => String(s).slice(0, 7);
-	const decisiones =
-		'\nDECISIONES\n- Review only; report missing evidence and request no adjacent permissions.';
-	const finish = `Claim it with --titulo="f04 · T<n> · PR ${src.pr} · Revisión" (T<n> is this task's number). Submit findings with gh pr review. Do not edit the author lane or merge.`;
-	if (n < 2)
-		return {
-			titulo: `Revisión cruzada: ${src.titulo}`,
-			prompt: `Follow .agent/rules/board.md for task ${id}. Review PR ${src.pr} of ${src.id} at ${sha}. Inspect correctness, regressions, tests and AGENTS.md. ${finish} Finish with --sha=${sha}.${decisiones}`,
-		};
-	return {
-		titulo: `Revisión cruzada, vuelta ${n} (${short(sha)}): ${src.titulo}`,
-		prompt:
-			[
-				`Follow .agent/rules/board.md for task ${id}. ${roundWord(n)} VUELTA: round ${n} of the review of PR ${src.pr} of ${src.id}.`,
-				`Previous round (${prev.id}) reviewed ${prev.revisionSha}; the PR head is now ${sha}.`,
-				`Start from what changed: git fetch origin && git diff ${prev.revisionSha}..${sha}`,
-				`Check that the previous round's findings were addressed and that the new commits add no regression; inspect correctness, tests and AGENTS.md where the diff reaches. ${finish} Finish with --sha=${sha}.`,
-			].join('\n') + decisiones,
-	};
+/** The id of the next review round of `src`, after `prev` (the latest round, if any). */
+export function reviewChildId(src, prev) {
+	const n = prev ? reviewRound(prev) + 1 : 1;
+	return n > 1 ? `${src.id}-revision-${n}` : `${src.id}-revision`;
 }
 
-/** The child task of the next review round of `src`, after `prev` (the latest round, if any). */
-export function reviewChild(src, { agente, sha, prev }) {
+/** The child task of the next review round of `src`, after `prev`, numbered `num` (T160). */
+export function reviewChild(src, { agente, sha, prev, num, generado = new Date().toISOString() }) {
 	const n = prev ? reviewRound(prev) + 1 : 1;
-	const id = n > 1 ? `${src.id}-revision-${n}` : `${src.id}-revision`;
+	const id = reviewChildId(src, prev);
 	return {
 		id,
-		...reviewText(src, { id, n, sha, prev }),
+		...reviewText(src, {
+			id,
+			num,
+			n,
+			sha,
+			prev,
+			agente,
+			generado,
+			carril: READONLY_LANE,
+			carpeta: laneFolder('integration'),
+		}),
 		estado: 'pendiente',
 		urgencia: src.urgencia,
 		actor: 'sesion',
 		agente,
+		tipo: 'revision',
 		contrato: CONTRATO,
 		origen: src.id,
 		revisionSha: sha,
@@ -324,105 +324,45 @@ export function findTask(ref, board) {
 	return all.find((x) => x.id === ref) ?? null;
 }
 
-/** `texto→T58` (or `texto->T58`) → `{ texto, tarea: 'T58' }`; a text without an arrow has no tarea. */
-export function parsePendiente(s) {
-	const text = String(s ?? '');
-	const i = Math.max(text.lastIndexOf('→'), text.lastIndexOf('->'));
-	if (i < 0) return { texto: text.trim(), tarea: '' };
-	const arrow = text.startsWith('→', i) ? 1 : 2;
-	return { texto: text.slice(0, i).trim(), tarea: text.slice(i + arrow).trim() };
-}
-
-/** Values of a repeatable flag; «ninguna»/«ninguno» alone means an empty list. */
-function listFlag(lists, key) {
-	const values = (lists[key] ?? []).filter((v) => typeof v === 'string' && v.trim());
-	return values.length === 1 && /^ningun[oa]$/i.test(values[0].trim()) ? [] : values;
-}
+/** Handoff Contract lists of the `cierre` (T129) and the repeatable `close` flag of each. */
+export const HANDOFF_LISTS = [
+	['fallidas', 'fallida'],
+	['riesgos', 'riesgo'],
+	['dudas', 'duda'],
+	['excepcion', 'excepcion'],
+];
+export const VEREDICTOS = ['aprobado', 'cambios', 'bloqueado'];
+const PRIORIDADES = ['P0', 'P1', 'P2', 'P3'];
+export const NIVELES = ['validate:changed', 'type-check', 'ci'];
 
 /**
- * The `cierre` that `pnpm board close` writes from its repeatable flags (`lists`: resumen, comprobacion, saltada,
- * pendiente): a flag not given keeps the previous value, and a pendiente's task is stored by its id.
+ * T130: what a task does (`tipo`), each with its `.agent/kinds/<tipo>.yaml`; `categoria` only picks its lane.
+ * RESULT_FIELDS are the `resultado` fields a kind's close returns (T129); the other kinds return the common
+ * Handoff lists only.
  */
-export function buildCierre(prev = {}, { flags, lists }, board, en) {
-	const pick = (k) => (typeof flags[k] === 'string' ? flags[k] : undefined);
-	const pr = pick('pr') && normalizePr(pick('pr'));
-	const commit = pick('commit');
-	const quien = pick('quien') ?? (flags.coordinador ? 'coordinador' : flags.agente);
-	const given = (k, fallback) => (Object.hasOwn(lists, k) ? listFlag(lists, k) : fallback);
-	const pendientes = given('pendiente', null)?.map((s) => {
-		const p = parsePendiente(s);
-		const d = p.tarea && findTask(p.tarea, board);
-		return d ? { ...p, tarea: d.id } : p;
-	});
-	const cierre = {
-		resumen: given('resumen', null)?.join('\n') ?? prev.resumen ?? '',
-		comprobaciones: given('comprobacion', prev.comprobaciones ?? []),
-		saltadas: given('saltada', prev.saltadas ?? []),
-		pendientes: pendientes ?? prev.pendientes ?? [],
-		en,
-		...(quien ? { quien } : {}),
-	};
-	if (pr ?? prev.pr) cierre.pr = pr ?? prev.pr;
-	if (commit ?? prev.commit) cierre.commit = commit ?? prev.commit;
-	return cierre;
+export const TIPOS = [
+	'codigo',
+	'revision',
+	'release',
+	'invitacion',
+	'creativo',
+	'auditoria',
+	'operacion',
+];
+export const RESULT_FIELDS = {
+	codigo: ['pr', 'sha', 'nivel'],
+	revision: ['veredicto', 'sha', 'hallazgos'],
+};
+
+/** Which typed `resultado` a task's close returns (T129): a review round, code with a PR, or none. */
+export function resultKind(t) {
+	if (isReview(t) || t.tipo === 'revision') return 'revision';
+	if (t.tipo === 'codigo') return 'codigo';
+	return t.pr || t.cierre?.pr ? 'codigo' : null;
 }
 
-export const NO_CIERRE = 'Falta el resumen de cierre';
-
-/** The CIERRE block of `pnpm board show`: the summary, and why «Archivar» is refused; empty for open tasks. */
-export function cierreBlock(t, board) {
-	if (!t.cierre && !isFinished(t)) return [];
-	const why = !t.archivada && archiveBlock(t, board);
-	return ['', 'CIERRE', ...cierreLines(t, board), ...(why ? [why] : [])].map((l, i) =>
-		i > 1 ? `  ${l}` : l,
-	);
-}
-
-/**
- * Problems of a task's closing summary (d178), checked against the board: missing, empty, or a «pendiente» that
- * does not point to another task on the board. Empty when «Archivar» may run.
- */
-export function cierreIssues(t, board) {
-	if (!t.cierre) return [NO_CIERRE];
-	const out = cierreShapeIssues(t.cierre);
-	for (const p of Array.isArray(t.cierre.pendientes) ? t.cierre.pendientes : []) {
-		if (!String(p?.tarea ?? '').trim()) continue;
-		const d = findTask(p.tarea, board);
-		if (!d)
-			out.push(`el pendiente «${p.texto}» apunta a ${p.tarea}, que no está en el tablero`);
-		else if (d.id === t.id) out.push(`el pendiente «${p.texto}» apunta a la misma tarea`);
-	}
-	return out;
-}
-
-/** Why «Archivar» stays disabled (d178), or null. Unarchiving never needs it. */
-export function archiveBlock(t, board) {
-	const issues = cierreIssues(t, board);
-	if (!issues.length) return null;
-	return issues[0] === NO_CIERRE ? NO_CIERRE : `${NO_CIERRE}: ${issues.join('; ')}`;
-}
-
-/** The summary lines the card, the sheet and `show` print, without the task's title. */
-export function cierreLines(t, board) {
-	const c = t.cierre;
-	if (!c) return [];
-	const list = (xs, none) => (Array.isArray(xs) && xs.length ? xs.join(', ') : none);
-	const ref = (p) => {
-		const d = findTask(p.tarea, board);
-		return d?.num ? `T${d.num}` : p.tarea || '¿?';
-	};
-	const pend = Array.isArray(c.pendientes) ? c.pendientes : [];
-	const pr = c.pr ?? t.pr;
-	const merged = [pr ? `PR ${pr}` : '', c.commit].filter(Boolean).join(', ');
-	return [
-		`${t.estado ?? 'pendiente'}${merged ? ` (${merged})` : ''}`,
-		`Hecho: ${c.resumen}`,
-		`Comprobaciones: ${list(c.comprobaciones, 'ninguna')}. Saltadas: ${list(c.saltadas, 'ninguna')}.`,
-		pend.length
-			? `Pendiente: ${pend.map((p) => `${p.texto} → ${ref(p)}`).join('; ')}`
-			: 'Pendiente: ninguno.',
-	];
-}
+/** Whether the T129 return contract applies: only tasks created under contrato 2 or later. */
+export const fullContract = (t) => Number.isInteger(t?.contrato) && t.contrato >= 2;
 
 /**
  * A task's requisitos, each re-checked against the board right now. A pending task without a prompt gets an
@@ -518,7 +458,8 @@ export function stage(t, board, now) {
 	const e = t.estado ?? 'pendiente';
 	if (e === 'comprobada' || e === 'cancelada') return 'hecha';
 	if (e === 'hecha' || e === 'unida' || e === 'en revision') return 'revision';
-	if (e === 'en curso') return 'curso';
+	// T172: a locked pendiente task (claimed before claim moved it to en curso) is running too.
+	if (e === 'en curso' || (e === 'pendiente' && Boolean(t.candado))) return 'curso';
 	if (e === 'bloqueada') return 'bloqueada';
 	return requisitos(t, board, now).every((r) => r.ok) ? 'lista' : 'bloqueada';
 }
@@ -565,6 +506,8 @@ export const SELF_STARTING = ['claude'];
 export function ownerLaunches(t, board, now) {
 	if (stage(t, board, now) !== 'lista' || needsOwner(t) || t.actor === 'coordinador' || t.candado)
 		return [];
+	// d249: a prompt the owner already pasted waits for its claim, until it is DELIVERY_STALE_MINUTES old.
+	if (awaitingClaim(t, now)) return [];
 	const able = agentsFor(t).filter((a) => canFinish(t, a, board));
 	return able.some((a) => SELF_STARTING.includes(a)) ? [] : able;
 }
@@ -697,6 +640,12 @@ export function promptLanes(t, lanes) {
 	const own = taskLane(t);
 	if (!own || typeof t.prompt !== 'string') return [];
 	let lines = t.prompt.split('\n').map((l) => l.trim());
+	// A prompt-v1 (T160) says where it runs in ANTES DE EMPEZAR and in METADATOS «carril:».
+	if (isPromptV1(t.prompt))
+		lines = [
+			...(promptSection(t.prompt, 'ANTES DE EMPEZAR') ?? []),
+			...(promptSection(t.prompt, 'METADATOS') ?? []).filter((l) => l.startsWith('carril:')),
+		];
 	const at = lines.findIndex((l) => /^D[OÓ]NDE CORRE\b/.test(l));
 	if (at >= 0) {
 		lines = lines.slice(at + 1);
@@ -850,11 +799,16 @@ const ownerWhereLines = (t) => {
 	return where ? [`Dónde: ${where}`] : [];
 };
 
-/** The prompt an agent receives: the planned lane first, so nobody has to repeat it by hand. */
+/**
+ * The prompt an agent receives, with the planned lane so nobody has to repeat it by hand: a prompt-v1 (T160)
+ * keeps its session name on line 1, gets the pre-push check under AL TERMINAR when it pushes a branch (d246)
+ * and the lane as `corre:` lines in METADATOS; a legacy prompt gets a leading `CARRIL` block.
+ */
 export function promptWithLane(t, board) {
+	if (!t.prompt || t.actor === 'dueno') return t.prompt;
 	const lines = laneLines(t, board);
-	if (!t.prompt || !lines.length || t.actor === 'dueno') return t.prompt;
-	return `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`;
+	if (isPromptV1(t.prompt)) return withRunLines(withPushCheck(t.prompt), lines);
+	return lines.length ? `CARRIL\n${lines.join('\n')}\n\n${t.prompt}` : t.prompt;
 }
 
 const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));
@@ -865,22 +819,6 @@ const optional = (v, ok) => v === undefined || ok(v);
 /** Merged always needs a PR; under review only when the task has a branch (audits ship none). */
 const needsPr = (t) => t.estado === 'unida' || (t.estado === 'en revision' && !!t.rama);
 
-const OWN_PULL = /^(?:https?:\/\/)?github\.com\/fm-dev-mx\/celebra-me\/pull\/([1-9]\d*)\/?$/;
-const isForeignPull = (p) => /\/pull\/\d+/.test(String(p)) && !OWN_PULL.test(String(p).trim());
-
-/** Canonical `#N` from 398, "398", "#398" or this repository's pull URL; anything else stays. */
-export function normalizePr(pr) {
-	if (pr === undefined || pr === null || String(pr).trim() === '') return undefined;
-	const s = String(pr).trim();
-	const m = s.match(/^#?([1-9]\d*)$/) ?? s.match(OWN_PULL);
-	return m ? `#${m[1]}` : pr;
-}
-
-/** The PR number of a task's `pr` (`#398`, 398 or this repository's pull URL); null when it holds none. */
-export function prNumber(pr) {
-	const m = String(normalizePr(pr) ?? '').match(/^#(\d+)$/);
-	return m ? Number(m[1]) : null;
-}
 const validLock = (c) =>
 	AGENTES.includes(c?.agente) &&
 	c.agente !== 'cualquiera' &&
@@ -903,6 +841,13 @@ const PR_CHECKS = [
 export const prIssues = (t) => PR_CHECKS.filter(([bad]) => bad(t)).map(([, msg]) => msg(t));
 
 /** Field checks: [problem, message] where `problem(t)` is true when the field is wrong. */
+/** T130: hand-written lists a typed task adds to its kind's prompt sections. */
+export const KIND_LISTS = ['lee', 'pasos', 'autorizo', 'noHagas', 'decisiones'];
+
+/** Whether `t` must carry a `tipo`: a session task created under contrato 3 or later, except a review round. */
+const needsKind = (t) =>
+	Number.isInteger(t.contrato) && t.contrato >= 3 && t.actor === 'sesion' && !isReview(t);
+
 const FIELD_CHECKS = [
 	[(t) => !String(t.titulo ?? '').trim(), () => 'falta titulo'],
 	[(t) => !ESTADOS.includes(t.estado ?? 'pendiente'), (t) => `estado desconocido: ${t.estado}`],
@@ -946,6 +891,32 @@ const FIELD_CHECKS = [
 		(t) => !optional(t.categoria, (c) => CATEGORIAS.includes(c)),
 		() => `categoria debe ser ${CATEGORIAS.join('/')}`,
 	],
+	[(t) => !optional(t.tipo, (k) => TIPOS.includes(k)), () => `tipo debe ser ${TIPOS.join('/')}`],
+	// T130: a session task created under contrato 3 says what it does, and a typed task writes only busca.
+	[
+		(t) => needsKind(t) && t.tipo === undefined,
+		() => `falta tipo=${TIPOS.join('|')} (contrato 3)`,
+	],
+	[
+		(t) =>
+			t.tipo !== undefined &&
+			!isReview(t) &&
+			!String(t.busca ?? '').includes('Terminado cuando:'),
+		() => 'una tarea con tipo necesita busca=… con «Terminado cuando:» (su QUÉ SE BUSCA)',
+	],
+	[(t) => !optional(t.busca, (s) => typeof s === 'string'), () => 'busca debe ser texto'],
+	[
+		(t) => !optional(t.corto, (s) => typeof s === 'string' && s.trim()),
+		() => 'corto debe ser texto',
+	],
+	...KIND_LISTS.map((k) => [
+		(t) =>
+			!optional(
+				t[k],
+				(x) => Array.isArray(x) && x.every((s) => typeof s === 'string' && s.trim()),
+			),
+		() => `${k} debe ser una lista de texto`,
+	]),
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
 	[(t) => !optional(t.archivada, isDate), () => 'archivada no es fecha'],
@@ -964,8 +935,11 @@ const FIELD_CHECKS = [
 
 const strList = (x) => Array.isArray(x) && x.every((s) => typeof s === 'string' && s.trim());
 
-/** Shape of `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien?}` (d178). */
-function cierreShapeIssues(c) {
+/**
+ * Shape of `cierre {resumen, pr?, commit?, comprobaciones, saltadas, pendientes, en, quien?}` (d178), plus the
+ * Handoff Contract lists and `resultado` (T129).
+ */
+export function cierreShapeIssues(c, t) {
 	if (!c || typeof c !== 'object' || Array.isArray(c)) return ['cierre debe ser un objeto'];
 	const out = [];
 	const resumen = String(c.resumen ?? '').trim();
@@ -984,6 +958,59 @@ function cierreShapeIssues(c) {
 				out.push(`pendiente sin tarea: «${p.texto}» (escriba texto→T<n>)`);
 		}
 	if (!isDate(c.en)) out.push('cierre.en no es fecha');
+	out.push(...handoffIssues(c, t));
+	return out;
+}
+
+const shaLike = (s) => typeof s === 'string' && /^[a-f0-9]{7,40}$/.test(s);
+
+/** Problems of a review's `resultado {veredicto, sha, hallazgos[{p, archivo, texto}]}` (T129). */
+function reviewResultIssues(r, t) {
+	const out = [];
+	if (!VEREDICTOS.includes(r.veredicto))
+		out.push(`resultado.veredicto debe ser ${VEREDICTOS.join('/')}`);
+	if (!shaLike(r.sha)) out.push('resultado.sha debe ser el SHA revisado');
+	else if (t.revisionSha && !t.revisionSha.startsWith(r.sha))
+		out.push(`resultado.sha ${r.sha} no es el SHA revisado (${t.revisionSha.slice(0, 7)})`);
+	if (!Array.isArray(r.hallazgos)) return [...out, 'resultado.hallazgos debe ser una lista'];
+	for (const h of r.hallazgos) {
+		const ok =
+			PRIORIDADES.includes(h?.p) &&
+			String(h.archivo ?? '').trim() &&
+			String(h.texto ?? '').trim();
+		if (!ok) out.push('hallazgo inválido: escriba --hallazgo="P0-P3|archivo|texto"');
+		else if (r.veredicto === 'aprobado' && (h.p === 'P0' || h.p === 'P1'))
+			out.push(`una revisión aprobada no tiene hallazgos ${h.p}`);
+	}
+	return out;
+}
+
+/** Problems of a code task's `resultado {pr, sha, nivel}` (T129). */
+function codeResultIssues(r) {
+	const out = [];
+	if (!optional(r.pr, (p) => /^#[1-9]\d*$/.test(p))) out.push('resultado.pr debe ser #<número>');
+	if (!shaLike(r.sha)) out.push('resultado.sha debe ser el SHA del PR (--sha)');
+	if (!NIVELES.includes(r.nivel)) out.push(`resultado.nivel debe ser ${NIVELES.join('/')}`);
+	return out;
+}
+
+/** The kind of `resultado` a task returns, none once cancelled. */
+export const returnKind = (t) => (t.estado === 'cancelada' ? null : resultKind(t));
+
+/** T129 shape of the Handoff Contract lists and of `resultado`, whenever present. */
+function handoffIssues(c, t = {}) {
+	const out = [];
+	for (const [field] of HANDOFF_LISTS)
+		if (c[field] !== undefined && !strList(c[field]))
+			out.push(`cierre.${field} debe ser una lista de texto`);
+	const r = c.resultado;
+	if (r === undefined) return out;
+	if (!r || typeof r !== 'object' || Array.isArray(r))
+		return [...out, 'cierre.resultado debe ser un objeto'];
+	const kind = returnKind(t);
+	if (kind === 'revision' || (kind === null && r.veredicto !== undefined))
+		out.push(...reviewResultIssues(r, t));
+	else if (kind === 'codigo' || r.nivel !== undefined) out.push(...codeResultIssues(r));
 	return out;
 }
 
@@ -1001,7 +1028,9 @@ export function taskIssues(t) {
 		const issue = requisitoIssue(r);
 		if (issue) out.push(issue);
 	}
-	if (t.cierre !== undefined) out.push(...cierreShapeIssues(t.cierre));
+	if (t.cierre !== undefined) out.push(...cierreShapeIssues(t.cierre, t));
+	// T160: only a prompt marked «formato: prompt-v1» must follow it; legacy prompts keep working.
+	if (typeof t.prompt === 'string') out.push(...promptV1Issues(t.prompt));
 	return out;
 }
 
@@ -1032,6 +1061,8 @@ export function unlocked(task, flags) {
 
 /**
  * Version of the task contract a new task is created under (T126): `add` and `review` stamp it, so only tasks
- * created after it exist must follow it (`claim --titulo`); open tasks without it keep the old rules.
+ * created after it exist must follow it; open tasks without it keep the old rules. 1: `claim --titulo`.
+ * 2: the T129 return contract of `close` (`missingReturn`). 3: a session task has a `tipo` and its prompt is
+ * generated from it (T130).
  */
-export const CONTRATO = 1;
+export const CONTRATO = 3;

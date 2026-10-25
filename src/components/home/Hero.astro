@@ -25,7 +25,10 @@ import '@/styles/home/_landing-hero.scss';
 
 interface Props {
 	data: HeroData;
-	/** Left, right and center phones; the center one is the largest and loads first. */
+	/**
+	 * Left, right and center phones; the center one is the largest. All three sit in the first
+	 * screen and load eagerly: a tilted side phone can be the LCP element on mobile.
+	 */
 	fan: readonly VitrinaDemo[];
 }
 
@@ -104,8 +107,8 @@ const fanPhones = fan.map((demo, index) => ({
 								alt=""
 								widths={[240, 420]}
 								sizes="(min-width: 900px) 210px, 118px"
-								loading={isCenter ? 'eager' : 'lazy'}
-								fetchpriority={isCenter ? 'high' : undefined}
+								loading="eager"
+								fetchpriority="high"
 								data-demo-style={demo.slug}
 							/>
 							<span class="hero-prime__phone-title" aria-hidden="true">

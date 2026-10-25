@@ -196,21 +196,11 @@ onto Goal counts.
 ## Handoff Contract (canonical)
 
 One provider-neutral **Handoff Contract** applies whenever work crosses an execution boundary (next
-Goal, next session, or next role). Include fields when relevant:
-
-| Field                                 | Meaning                                    |
-| ------------------------------------- | ------------------------------------------ |
-| Current state                         | Where work stands                          |
-| Completed work                        | What was done                              |
-| Evidence                              | Facts, paths, measurements, links          |
-| Validation passed                     | Checks that passed                         |
-| Validation failed                     | Checks that failed                         |
-| Validation intentionally not run      | Checks skipped and why                     |
-| Unresolved uncertainty                | Open questions                             |
-| Residual risks                        | Remaining hazards                          |
-| Applicable authorization or exception | Task-scoped grants and reported exceptions |
-| Branch / commit reference             | When Git identity matters                  |
-| Next responsibility or decision       | Who acts next and what they need           |
+Goal, next session, or next role). Its fields have one source: the board task's closing summary,
+`cierre`, written with `pnpm board close` and checked by code (`scripts/board/cierre.mjs`,
+`cierreIssues`). `.agent/rules/board.md` («Closing summary» and «Return contract») lists the fields
+and flags; do not repeat them here or in other documents. Work that has no board task returns the
+same fields in its final message.
 
 ### Persistence
 

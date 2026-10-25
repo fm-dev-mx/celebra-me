@@ -35,6 +35,7 @@ import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDe
 import { isEventType } from '@/lib/theme/theme-contract';
 import { buildPublicInvitationPath } from '@/utils/invitation-link';
 import { getDemoRouteSlug } from '@/lib/invitation/demo-routes';
+import { getDemoMetadata } from '@/lib/seo/demo-metadata';
 import { safeErr } from '@/lib/server/safe-error';
 
 const slug = Astro.params.slug!;
@@ -172,14 +173,17 @@ const cacheControl =
 Astro.response.headers.set('Cache-Control', cacheControl);
 
 // Client invitations carry private event data: never indexed. The neutral page
-// (disabled, archived, nonexistent) is not indexed either. Demos stay indexable.
+// (disabled, archived, nonexistent) is not indexed either. Only public demos stay indexable.
 const isClientInvitation = contentSource === 'published' && Boolean(page && viewModel);
 const isUnavailablePage = !renderError && !(page && viewModel);
+const demoMetadata = contentSource === 'static' && page?.viewModel.isDemo
+	? getDemoMetadata(slug)
+	: undefined;
 const robotsPolicy = isUnavailablePage
 	? UNAVAILABLE_INVITATION_ROBOTS
 	: isClientInvitation
 		? CLIENT_INVITATION_ROBOTS
-		: undefined;
+		: demoMetadata?.robots;
 if (robotsPolicy) Astro.response.headers.set('X-Robots-Tag', robotsPolicy);
 
 const forceBlockingInvitationCss =
@@ -222,11 +226,14 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 		<InvitationError />
 	) : page && viewModel ? (
 		<Layout
-			title={page.layout.title}
-			description={page.layout.description}
-			image={page.layout.image}
-			robots={isClientInvitation ? CLIENT_INVITATION_ROBOTS : undefined}
-			canonicalPath={buildPublicInvitationPath(eventType, slug)}
+			title={demoMetadata?.title ?? page.layout.title}
+			description={demoMetadata?.description ?? page.layout.description}
+			image={demoMetadata?.image ?? page.layout.image}
+			imageAlt={demoMetadata?.imageAlt}
+			imageWidth={demoMetadata?.imageWidth}
+			imageHeight={demoMetadata?.imageHeight}
+			robots={robotsPolicy}
+			canonicalPath={demoMetadata?.canonicalPath ?? buildPublicInvitationPath(eventType, slug)}
 			hideHeader={true}
 			className={page.layout.className}
 			isDemo={page.viewModel.isDemo}

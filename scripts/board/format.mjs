@@ -194,7 +194,9 @@ export function outcomeOf(t) {
 	const v = isReview(t) ? reviewVerdict(t) : null;
 	if (t.estado === 'cancelada') return { key: 'cancel', label: 'Cancelada' };
 	if (v === 'aprobado') return { key: 'ok', label: 'Aprobada' };
-	// Until T129 types the verdict, a round is read as «hallazgos» only because its summary has a pendiente,
+	if (v === 'cambios') return { key: 'warn', label: 'Pide cambios' };
+	if (v === 'bloqueado') return { key: 'cancel', label: 'Bloqueada' };
+	// A legacy round without a typed verdict is read as «hallazgos» only because its summary has a pendiente,
 	// which may be a follow-up rather than a finding: the chip then says only what is known.
 	if (v === 'hallazgos')
 		return {
@@ -216,3 +218,73 @@ export function whoOf(t) {
 	if (Object.hasOwn(PEOPLE, a ?? '')) return { key: a, label: PEOPLE[a] };
 	return null;
 }
+
+/** Each task's bitácora rows with a writer, oldest first, built once per bitácora (the view renders every card). */
+const TRACE_ROWS = new WeakMap();
+function traceRows(bitacora) {
+	let byTask = TRACE_ROWS.get(bitacora);
+	if (byTask) return byTask;
+	byTask = new Map();
+	const rows = bitacora
+		.filter((r) => r.tarea && !r.mensaje && r.quien)
+		.sort((a, b) => String(a.en).localeCompare(String(b.en)));
+	for (const r of rows) (byTask.get(r.tarea) ?? byTask.set(r.tarea, []).get(r.tarea)).push(r);
+	TRACE_ROWS.set(bitacora, byTask);
+	return byTask;
+}
+
+/**
+ * T172: who added a task and who last followed it up, `{agregada, seguimiento?}`. The stored `agregadaPor` and
+ * `seguimientoPor` win; an older task falls back to its bitácora: the creation row (`de: ''`) and the last row
+ * after it. `seguimiento` is left out when nobody but the one who added it followed up.
+ */
+export function traceOf(t, board = {}) {
+	const rows = traceRows(board.bitacora ?? []).get(t.id) ?? [];
+	const created = rows.find((r) => r.de === '' && r.a);
+	const agregada = t.agregadaPor ?? created?.quien;
+	const later = rows.filter((r) => r !== created).at(-1)?.quien;
+	const seguimiento = t.seguimientoPor ?? (created ? later : undefined);
+	if (!agregada && !seguimiento) return null;
+	return {
+		...(agregada ? { agregada } : {}),
+		...(seguimiento && seguimiento !== agregada ? { seguimiento } : {}),
+	};
+}
+
+const TRACE_NAME = { dueno: 'usted' };
+/** «agregó gemini · seg. coordinador» and its tooltip, or null when the task has no trace. */
+export function traceText(t, board) {
+	const tr = traceOf(t, board);
+	if (!tr) return null;
+	const name = (w) => TRACE_NAME[w] ?? w;
+	const parts = [
+		tr.agregada ? `agregó ${name(tr.agregada)}` : '',
+		tr.seguimiento ? `seg. ${name(tr.seguimiento)}` : '',
+	].filter(Boolean);
+	const title = [
+		tr.agregada ? `Agregada por ${name(tr.agregada)}` : '',
+		tr.seguimiento ? `último seguimiento de ${name(tr.seguimiento)}` : '',
+	]
+		.filter(Boolean)
+		.join('; ');
+	return { text: parts.join(' · '), title };
+}
+
+const PRIORITY_RANK = { P0: 0, P1: 1, P2: 2, P3: 3 };
+/** A review's typed findings (T129), most severe first; empty for any other task. */
+export function findingsOf(t) {
+	const xs = t.cierre?.resultado?.hallazgos;
+	if (!Array.isArray(xs)) return [];
+	return xs
+		.filter((h) => h && typeof h === 'object')
+		.slice()
+		.sort((a, b) => (PRIORITY_RANK[a.p] ?? 9) - (PRIORITY_RANK[b.p] ?? 9));
+}
+
+/** The Handoff Contract lists of a cierre (T129) with their Spanish headings, only the ones present. */
+export const HANDOFF_HEADINGS = [
+	['fallidas', 'Fallidas'],
+	['riesgos', 'Riesgos'],
+	['dudas', 'Dudas'],
+	['excepcion', 'Excepción autorizada'],
+];

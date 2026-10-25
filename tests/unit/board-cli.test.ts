@@ -164,6 +164,9 @@ afterEach(() => {
 	for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
 
+/** T130: a session task added now names its kind and its QUÉ SE BUSCA. */
+const TYPED = ['tipo=auditoria', 'busca=Que funcione.\nTerminado cuando: pasa.'];
+
 describe('pnpm board', () => {
 	it('assigns fixed numbers after the highest task or archive number, including finished tasks', () => {
 		const dir = makeBoard({});
@@ -172,9 +175,15 @@ describe('pnpm board', () => {
 		expect(add('first').status).toBe(0);
 		expect(readTask(dir, 'first').num).toBe(1);
 		expect(add('manual', 'num=100').status).toBe(2);
-		expect(board(dir, 'set', 'first', '--rev=1', 'estado=cancelada').status).toBe(0);
-		expect(raw(dir, 'close', 'first', '--coordinador', '--resumen=Cancelada.').status).toBe(0);
-		expect(board(dir, 'archive', 'first', '--rev=3').status).toBe(0);
+		expect(board(dir, 'set', 'first', '--rev=1', 'estado=cancelada').err).toContain(
+			'falta --motivo',
+		);
+		// T129: the cancellation writes its cierre, so «Archivar» needs no separate close.
+		expect(
+			board(dir, 'set', 'first', '--rev=1', 'estado=cancelada', '--motivo=Duplicada.').status,
+		).toBe(0);
+		expect(readTask(dir, 'first').cierre).toMatchObject({ resumen: 'Duplicada.', riesgos: [] });
+		expect(board(dir, 'archive', 'first', '--rev=2').status).toBe(0);
 		expect(add('second').status).toBe(0);
 		expect(readTask(dir, 'second').num).toBe(2);
 
@@ -183,7 +192,15 @@ describe('pnpm board', () => {
 			archivo: [{ id: 'old', estado: 'comprobada', num: 40 }],
 		});
 		expect(
-			board(reserved, 'add', 'new', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion').status,
+			board(
+				reserved,
+				'add',
+				'new',
+				'titulo=Nueva',
+				'urgencia=normal',
+				'actor=sesion',
+				...TYPED,
+			).status,
 		).toBe(0);
 		expect(readTask(reserved, 'new').num).toBe(41);
 	});
@@ -560,14 +577,15 @@ describe('pnpm board', () => {
 			// «cualquiera» that Claude can finish starts alone.
 			['cualquiera', [], 'auto', 'auto', 'auto', 'auto'],
 			['coordina', [], 'auto', 'auto', 'auto', 'auto'],
-			// Already claimed: the owner pasted it, so it is no longer theirs.
-			['apartada', [], 'auto', 'auto', 'auto', 'auto'],
+			// Already claimed: the owner pasted it, so it is no longer theirs; its lock runs it (T172).
+			['apartada', [], 'run', 'run', 'run', 'run'],
 			['espera', [], 'block', 'block', 'block', 'block'],
 		]);
 		// d163: the paste tasks join the owner's turn at the top of the queue.
 		expect(out.queue.slice(0, 3).sort()).toEqual(['de-codex', 'de-gemini', 'imagenes']);
 		expect(out.next).toEqual(['cualquiera', 'de-codex', 'de-gemini']);
-		expect(out.claimable).toEqual(['normal', 'de-codex', 'cualquiera', 'coordina', 'apartada']);
+		// T172: a locked task is running, so nobody else can claim it.
+		expect(out.claimable).toEqual(['normal', 'de-codex', 'cualquiera', 'coordina']);
 	});
 
 	it('labels paste tasks «Pegar en …» in the view with their own «Copiar prompt»', () => {
@@ -627,8 +645,19 @@ describe('pnpm board', () => {
 		expect(board(dir, 'move', 'compartida', '--agente=claude').status).toBe(2);
 		expect(board(dir, 'release', 'compartida', '--agente=codex').status).toBe(0);
 		expect(board(dir, 'move', 'compartida', '--agente=claude').status).toBe(0);
-		expect(readTask(dir, 'compartida')).toMatchObject({ agente: 'claude', rev: 4 });
+		expect(readTask(dir, 'compartida')).toMatchObject({
+			agente: 'claude',
+			estado: 'pendiente',
+			rev: 4,
+		});
+		// T172: claim starts the task and a release before it ends puts it back in the queue.
 		expect(readLog(dir)).toEqual([
+			expect.objectContaining({ de: 'pendiente', a: 'en curso', corrio: 'pnpm board claim' }),
+			expect.objectContaining({
+				de: 'en curso',
+				a: 'pendiente',
+				corrio: 'pnpm board release',
+			}),
 			expect.objectContaining({
 				tarea: 'compartida',
 				agente: { de: 'cualquiera', a: 'claude' },
@@ -807,7 +836,11 @@ describe('pnpm board', () => {
 		});
 		expect(second.titulo).toContain('vuelta 2 (bbbbbbb)');
 		expect(second.prompt).toContain('SEGUNDA VUELTA');
-		expect(second.prompt).toContain(`Previous round (de-claude-revision) reviewed ${a}`);
+		expect(second.prompt).toContain(`La vuelta anterior (de-claude-revision) revisó ${a}`);
+		expect(second.prompt.split('\n')[0]).toBe(
+			`f04 · T${second.num} · PR #10 · Revisión vuelta 2`,
+		);
+		expect(second.prompt).toContain(`\nsha: ${b}\n`);
 		expect(second.prompt).toContain(`git diff ${a}..${b}`);
 		expect(second.prompt).toContain('\nDECISIONES\n');
 		const third = readTask(dir, 'de-claude-revision-3');
@@ -950,6 +983,7 @@ describe('pnpm board', () => {
 			'urgencia=normal',
 			'actor=sesion',
 			'carrilPlaneado=f09-docs',
+			...TYPED,
 		];
 		expect(raw(dir, ...add).status).toBe(2);
 		expect(raw(dir, ...add, '--coordinador').status).toBe(0);
@@ -1388,7 +1422,7 @@ describe('pnpm board', () => {
 
 	it('refuses a bitácora row without a known writer and writes nothing', () => {
 		const dir = makeBoard({ tareas: [task('base')] });
-		const add = ['add', 'nueva', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion'];
+		const add = ['add', 'nueva', 'titulo=Nueva', 'urgencia=normal', 'actor=sesion', ...TYPED];
 		expect(raw(dir, ...add).err).toContain('falta quién escribe la fila');
 		expect(raw(dir, ...add, '--quien=sesion').err).toContain(
 			'quien debe ser claude/codex/gemini/coordinador/dueno, no sesion',
@@ -1666,7 +1700,7 @@ describe('pnpm board', () => {
 
 	it('shows the closing summary above «Archivar» and disables it with its reason', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
-		expect(html).toContain("import { archiveBlock, findTask } from '/model.mjs';");
+		expect(html).toContain("import { archiveBlock, signalLine } from '/cierre.mjs';");
 		expect(html).toContain('const why=!arch&&!t.candado&&archiveBlock(t,S.board)');
 		expect(html).toContain("${t.candado||why?'disabled':''}");
 		expect(html).toMatch(

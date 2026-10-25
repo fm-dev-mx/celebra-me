@@ -5,6 +5,14 @@ import { spawnSync } from 'node:child_process';
 import { EVIDENCE_WORKFLOW_FILE } from '../../scripts/ops/ci-evidence-reuse.ts';
 import { CERTIFIED_BROWSER_COMMAND } from '../../scripts/ops/visual-prepush-certification.ts';
 
+/** Each result check on its own line, in order, so `set -e` stops the step at the first failure. */
+const resultChecks = (results: Record<string, 'success' | 'skipped'>): RegExp =>
+	new RegExp(
+		Object.entries(results)
+			.map(([tier, result]) => `test "\\$${tier}_RESULT" = ${result}`)
+			.join(String.raw`\r?\n\s+`),
+	);
+
 type PackageManifest = {
 	scripts?: Record<string, string>;
 	'lint-staged'?: Record<string, string[]>;
@@ -155,7 +163,8 @@ describe('canonical validation contract', () => {
 			expect(workflow).toContain('pnpm ops check-links');
 			expect(workflow).toContain('pnpm validate:markdown-tables');
 			for (const command of [
-				'pnpm ci:static',
+				// Every `ci:static` command, in parallel lanes (scripts/ops/ci-static-parallel.ts).
+				'pnpm ci:static:parallel',
 				'pnpm test',
 				'pnpm test:e2e:ci --max-failures=5 --workers=4',
 				// Guest memories specs run on every device project of playwright.memories.config.ts.
@@ -165,8 +174,16 @@ describe('canonical validation contract', () => {
 			}
 			// Prettier wraps this list; the aggregate must still wait for every tier and the scope job.
 			expect(workflow).toMatch(
-				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-memories,\s*browser-scope,?\s*\]/,
+				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-visual-coverage,\s*browser-memories,\s*browser-scope,?\s*\]/,
 			);
+			// Sharded browser parts skip the teardown matrix proof; CI proves it per shard and joined.
+			expect(workflow).toContain('VISUAL_PARITY_RUN_ID: ${{ github.run_id }}');
+			expect(workflowLines).toContain('run: pnpm visual:parity:shard');
+			expect(workflowLines).toContain(
+				'run: node scripts/ops/visual-shard-merge.ts .tmp/visual-records',
+			);
+			expect(workflow).toContain('name: Application / browser (visual coverage)');
+			expect(workflow).toContain('test "$COVERAGE_RESULT" = success');
 			expect(workflow).toContain('tier: [static, unit, database, workerd]');
 			expect(workflowLines).toContain(
 				'run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA"',
@@ -177,8 +194,13 @@ describe('canonical validation contract', () => {
 			const imageDigest = workflow.match(/image: .*@(sha256:[a-f0-9]{64})/)?.[1];
 			expect(imageDigest).toBeDefined();
 			expect(workflow).toContain(`VISUAL_PARITY_OS_IMAGE_DIGEST: ${imageDigest}`);
-			expect(workflow).toContain(
-				'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success && test "$MEMORIES_RESULT" = success',
+			expect(workflow).toMatch(
+				resultChecks({
+					APPLICATION: 'success',
+					BROWSER: 'success',
+					MEMORIES: 'success',
+					COVERAGE: 'success',
+				}),
 			);
 			expect(workflow).toContain('uses: actions/checkout@v7');
 			expect(workflow).toContain('uses: pnpm/action-setup@v6');
@@ -295,12 +317,24 @@ describe('canonical validation contract', () => {
 		const suite = job('application-validation');
 		expect(suite).toContain('test "$POLICY_RESULT" = success');
 		expect(suite).toContain('if [ "$EVIDENCE_REUSE" = true ]; then');
-		expect(suite).toContain(
-			'test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped',
+		expect(suite).toMatch(
+			resultChecks({
+				APPLICATION: 'skipped',
+				BROWSER: 'skipped',
+				MEMORIES: 'skipped',
+				COVERAGE: 'skipped',
+			}),
 		);
 		expect(suite).toContain('elif [ "$BROWSER_SCOPE" = skip ]; then');
-		expect(suite).toContain(
-			'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped',
+		expect(suite).toMatch(
+			resultChecks({
+				APPLICATION: 'success',
+				BROWSER: 'skipped',
+				MEMORIES: 'skipped',
+				COVERAGE: 'skipped',
+			}),
 		);
+		// Under `set -e` a failure inside an `&&` chain that is not the last command would not fail the step.
+		expect(suite).not.toContain('&& test');
 	});
 });

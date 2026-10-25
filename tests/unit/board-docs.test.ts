@@ -14,10 +14,35 @@ function template(): string {
 }
 
 describe('board documents', () => {
-	it('opens every prompt the same way in both documents', () => {
-		expect(template().startsWith('T<n> · <título>\n')).toBe(true);
-		expect(RULE).toContain('opening with `T<n> · <título>`');
+	it('opens every prompt with the session name and ends it with METADATOS (prompt-v1)', () => {
+		expect(template().startsWith('<carril> · T<n> · PR #<n> · <descripción breve>\n')).toBe(
+			true,
+		);
+		expect(template().trimEnd().split('\n\n').at(-1)).toMatch(
+			/^METADATOS\nformato: prompt-v1\n/,
+		);
+		expect(RULE).toContain('`<lane> · T<n> · PR #<n> · <description>`, then `QUÉ SE BUSCA`');
+		expect(RULE).toContain('**Owner questions (d230)**');
+		expect(RULE).toContain('**Inherited acceptance**');
 		expect(RULE).not.toContain('Sigue .agent/rules/board.md');
+	});
+
+	it('lists the prompt-v1 sections in order and asks owner questions by board msg (d230)', () => {
+		const headings = template()
+			.split('\n')
+			.filter((l) => /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ]{3,}$/.test(l));
+		expect(headings).toEqual([
+			'QUÉ SE BUSCA',
+			'ANTES DE EMPEZAR',
+			'PASOS',
+			'AUTORIZO',
+			'NO HAGAS',
+			'DECISIONES',
+			'PARE Y PREGUNTE SI',
+			'AL TERMINAR',
+			'METADATOS',
+		]);
+		expect(template()).toContain('--para=dueno');
 	});
 
 	it('keeps DECISIONES in every prompt, as the verifier requires (d046)', () => {

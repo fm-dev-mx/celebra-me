@@ -40,40 +40,72 @@ comes.
 ### Prompts (d153)
 
 Repository rules and templates are English. A prompt the owner pastes into an app is Spanish, in
-sections, and the board `prompt` field uses the same layout:
+sections, and the board `prompt` field uses the same layout, format `prompt-v1` (T160, approved by
+the owner on 2026-10-24):
 
 ```text
-T<n> · <título>
+<carril> · T<n> · PR #<n> · <descripción breve>
 
 QUÉ SE BUSCA
 <resultado observable y contexto, con un ejemplo>
+Terminado cuando: <criterio comprobable>
+
+ANTES DE EMPEZAR
+Carril <fNN-…> (carpeta celebra-me-worktrees/<fNN-…>), rama <tipo/id> desde develop.
+Compruebe la rev del tablero y el SHA del PR de METADATOS; si cambiaron, pare.
+  <un comando por línea: switch, git-safety, claim>
 
 PASOS
 1. <paso concreto>
 
-DÓNDE CORRE
-Carril <fNN-…>, rama <tipo/id> desde develop, sesión de <agente>, prerrequisito <T<n> <id> o «ninguno»>.
-
 AUTORIZO
-<operaciones exactas que el dueño autorizó para esta tarea, citadas tal cual>
-
-DECISIONES
-- dNNN: <lo que el dueño ya decidió y no se vuelve a preguntar>
+<operaciones exactas que el dueño autorizó para esta tarea, citadas tal cual; «(solo lectura)» si aplica>
 
 NO HAGAS
 - <límites: ramas, carriles, main, Producción, secretos>
 
+DECISIONES
+- dNNN: <lo que el dueño ya decidió y no se vuelve a preguntar>
+
+PARE Y PREGUNTE SI
+<condiciones de parada>. Pregunte al dueño y anote la pregunta también con
+pnpm board msg <id> --de=<agente> --para=dueno "<pregunta>" (d230).
+
 AL TERMINAR
 1. <validación que debe quedar en verde>
-2. <estado y campos del tablero>
-3. Cierre (d178): pnpm board close <id> --resumen=… --comprobacion=… --saltada=… --pendiente="<texto>→T<n>"
-4. <revisión cruzada y aviso de una línea>
+2. Cierre (d178, T129): pnpm board close <id> --resumen=… --comprobacion=… --saltada=… --pendiente="<texto>→T<n>"
+3. <revisión cruzada y aviso de una línea exacto>
+4. Respuesta: qué cambió, comprobaciones corridas y saltadas, riesgos.
+
+METADATOS
+formato: prompt-v1
+tarea: T<n> <id>
+origen: <T<n> <id> de la tarea origen, si hay>
+agente: <agente>
+carril: <fNN-…>
+rama: <tipo/id>
+base: develop
+pr: #<n>
+sha: <40 caracteres hexadecimales>
+prerrequisito: <T<n> <id> o «ninguno»>
+decisiones: <dNNN, …>
+tablero: rev <N>
+generado: <fecha ISO>
 ```
 
-`DECISIONES` is always present (d046): the verifier flags a prompt without it, so a task with no
-prior decision says so in one line, for example «- Ninguna todavía: pregunte al inicio en una sola
-ronda». Keep `DÓNDE CORRE`, `AUTORIZO` and `NO HAGAS` whenever the task writes anything; omit
-another section only when it has nothing to say.
+Line 1 is the session name (d158); drop `PR #<n>` before the PR exists. Every section is present and
+in this order; `DECISIONES` is always present (d046): the verifier flags a prompt without it, so a
+task with no prior decision says so in one line, for example «- Ninguna todavía: pregunte al inicio
+en una sola ronda». `METADATOS` is last, one lowercase `clave: valor` per line; leave out a key with
+no value. `pnpm board` refuses a `prompt-v1` that breaks this shape, and `board:verify` warns when
+line 1 names another `T<n>` or lane than the task's. Prompts written before T160 (no
+`formato: prompt-v1`) keep working under the old layout and are never rewritten.
+
+A task with a `tipo` (T130) does not get this template by hand: add it with its kind and its
+`QUÉ SE BUSCA`, for example
+`pnpm board add <id> titulo=… urgencia=alta actor=sesion agente=claude tipo=codigo rama=feat/<id> carrilPlaneado=f05-plataforma busca="…\nTerminado cuando: …" --coordinador`,
+and the board builds the rest from `.agent/kinds/codigo.yaml` and the board. Check it with
+`pnpm board prompt <id>`; see the board rule's «Task kinds».
 
 ## Evidence and recovery
 

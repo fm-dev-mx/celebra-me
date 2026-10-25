@@ -26,9 +26,12 @@ authorization.
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
   `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
   `orden`, `origen`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
-  `chequeo {cmd, espera}`, `prompt`; `rev` and `actualizado` are set by the command, `archivada`
-  (date) only by `archive`/`unarchive`, `cierre` only by `close`. `espera`, `usted` and `deps` no
-  longer exist.
+  `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see Task kinds); `rev` and
+  `actualizado` are set by the command, `agregadaPor` and `seguimientoPor` by the commands that add
+  or follow up a task (T172, see Session ownership), `archivada` (date) only by
+  `archive`/`unarchive`, `entregada {agente, desde}` only by `entregada` and the view's «Copiar
+  prompt» (d249, see Agents), `cierre` only by `close`. `espera`, `usted` and `deps` no longer
+  exist.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -47,9 +50,17 @@ authorization.
   an open task it waits for goes right before it.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
   finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
-  agent at a time; `move` hands a task over only without a lock, logs it and warns when the new
-  agent lacks a `requiere` capability; `review <id> [--agente=<b>]` creates the review child with
-  `origen` (one per round, see below). Never duplicate a task. Rules are the same for every agent.
+  agent at a time; `claim` moves a `pendiente` task to `en curso` with its bitácora row and
+  `release` of a task still `en curso` puts it back to `pendiente` (T172); `move` hands a task over
+  only without a lock, logs it and warns when the new agent lacks a `requiere` capability;
+  `review <id> [--agente=<b>]` creates the review child with `origen` (one per round, see below).
+  Never duplicate a task. Rules are the same for every agent.
+- **Delivered prompt (d249)**: «Copiar prompt» in the view on a ready, unlocked task an agent does,
+  and `pnpm board entregada <id> --agente=<a>` (the dispatchers run it when they open the chat),
+  write `entregada {agente, desde}` (`delivery.mjs`). The task then leaves «Le toca a usted» and
+  shows «Entregada a <agente> · <hora> · esperando que la tome»; after 30 min without a claim it
+  comes back as «Entregada hace 30 min y nadie la tomó». `claim` clears the mark; a task the owner
+  does or one with a lock refuses it.
 - **Planned lane (d177)**: the coordinator gives every open task a canonical lane (`WORKTREE_LANES`,
   f05–f12) when it creates or prepares it:
   `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador` (`--carril=` clears it, only
@@ -57,15 +68,15 @@ authorization.
   `plan`/`add --coordinador` write `carrilPlaneado`; `set` refuses it. The card, `show` and `next`
   show «Corre en: <lane> · carpeta celebra-me-worktrees/<lane>», «Codex/Gemini: abra el proyecto
   <lane>» and, when another task's lock holds that lane, «f10 ocupado por T55; espere o pida otro
-  carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` put these
-  lines first under `CARRIL`, so the prompt's «DÓNDE CORRE» no longer repeats the lane by hand.
-  Review children have no planned lane (`plan` refuses one): they show «Corre en: Integración
-  (carpeta celebra-me), solo lectura» and always resolve to `f04-integracion` in `taskLane` (the
-  view's card, sheet and «Carriles» row). A task with `soloLectura: true` is read-only the same way:
-  `plan`, `add` and `claim` refuse it a planned or explicit lane, so its lock holds no lane and
-  never disagrees with the prompt; a legacy planned lane is cleared with
-  `plan --carril= --coordinador`. `board:verify` warns about every open task, read-only tasks aside,
-  with neither a planned lane nor a lock on one, naming its T<n>.
+  carril», else «carril libre» while the task is unlocked. «Copiar prompt» and `next` add these
+  lines as `corre:` lines at the end of a `prompt-v1`'s `METADATOS` (first under `CARRIL` in an
+  older prompt), so the prompt never repeats the lane by hand. Review children have no planned lane
+  (`plan` refuses one): they show «Corre en: Integración (carpeta celebra-me), solo lectura» and
+  always resolve to `f04-integracion` in `taskLane` (the view's card, sheet and «Carriles» row). A
+  task with `soloLectura: true` is read-only the same way: `plan`, `add` and `claim` refuse it a
+  planned or explicit lane, so its lock holds no lane and never disagrees with the prompt; a legacy
+  planned lane is cleared with `plan --carril= --coordinador`. `board:verify` warns about every open
+  task, read-only tasks aside, with neither a planned lane nor a lock on one, naming its T<n>.
 - **Category (d191)**: `categoria` is a preference, never a restriction: `plataforma`
   f05-plataforma, `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs`
   f09-docs, `herramientas` (the board and other tooling) f10-libre, `preview` f11-preview, `release`
@@ -76,10 +87,12 @@ authorization.
 - **Writes**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. Lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
-  `vigente: false`). Aliases: `get`, `update`, `decision`, `log`, `verify`; every command takes
-  `--json`. Each overwrite keeps the previous copy in `.agent/tmp/board/.respaldos/` (newest 2 per
-  document, none for a finished task, d185); `pnpm board prune-backups --dry-run` lists the copies
-  over that rule and only `--aplicar` removes them.
+  `vigente: false`; a `decision` text that cites `(reemplaza dNNN)` without the field links that
+  decision, and one that cites several, or another than `reemplaza=`, is refused — T172). Aliases:
+  `get`, `update`, `decision`, `log`, `verify`; every command takes `--json`. Each overwrite keeps
+  the previous copy in `.agent/tmp/board/.respaldos/` (newest 2 per document, none for a finished
+  task, d185); `pnpm board prune-backups --dry-run` lists the copies over that rule and only
+  `--aplicar` removes them.
 - **Archive (d167)**: `pnpm board archive <id> [--rev=<n>]` and `unarchive <id>` hide or show a
   finished task (`hecha`/`unida`/`comprobada`/`cancelada`) without a lock in «Finalizadas»; open or
   locked tasks are refused and the task file is never deleted. Archived tasks leave the review group
@@ -109,6 +122,20 @@ authorization.
   cierre» while it is missing or invalid. Tasks archived before d178 are left as they are;
   `unarchive` never needs it. `pnpm board verify` warns about each finished, unarchived task without
   a valid one.
+- **Return contract (T129)**: the `cierre` is the Handoff Contract (`.agent/plans/README.md`). Next
+  to the fields above it carries the lists `fallidas`, `riesgos`, `dudas` and `excepcion`
+  (`--fallida=… --riesgo=… --duda=… --excepcion=…`, each repeatable, `=ninguna` for an empty one)
+  and a typed `resultado`. A review round:
+  `{veredicto: aprobado|cambios|bloqueado, sha, hallazgos[{p: P0-P3, archivo, texto}]}` from
+  `--veredicto`, `--sha` (the reviewed SHA) and `--hallazgo="P2|archivo:línea|texto"`; an approval
+  has no P0/P1 finding. Code with a PR: `{pr, sha, nivel: validate:changed|type-check|ci}` from
+  `--pr`, `--sha` (the PR head) and `--nivel`. Tasks created under `contrato: 2` or later must name
+  all of them or `close` and «Archivar» refuse; older tasks may add them. `close` prints a one-line
+  signal to hand back, e.g.
+  `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`. An approved last
+  round at the PR's current SHA shows its origin as «Lista para unir». Cancelling with
+  `set <id> estado=cancelada --motivo=<reason>` writes the cierre in the same command (the reason is
+  the summary); `review` cancels an open earlier round the same way when it opens the next one.
 - **PR number**: `pr` is always `#N`; the command normalizes `398`, `"#398"` or a
   `fm-dev-mx/celebra-me` pull URL and refuses a pull URL from another repository. `unida` always
   needs it; `en revision` needs it only when the task has a `rama` (audits and handoffs go to review
@@ -118,8 +145,8 @@ authorization.
 - **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`,
   `isReadOnly`, `READONLY_LANE`, lane checks (`laneAllowed`, `taskLane`), finished states
   (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the stale-lock threshold and PR parsing
-  (`normalizePr`, `prNumber`); `board`, `sync`, `verify`, `watch` and the view import them instead
-  of keeping a copy.
+  (`normalizePr`, `prNumber`, defined in `pr-ref.mjs` and re-exported); `board`, `sync`, `verify`,
+  `watch` and the view import them instead of keeping a copy.
 - **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
   «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
   `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open
@@ -155,13 +182,37 @@ authorization.
 - **Closing cleanup (d186)**: every write that leaves a task `comprobada` or `unida` moves its
   `prompt` to `.agent/tmp/board/mensual/<YYYY-MM>.zip` (`prompts/<id>.rev<n>.md`) and drops its
   `carril` and lock (the lock's session stays in `sesion`); the closing summary stays.
-  `board:verify` warns when the prompt's «DÓNDE CORRE» section (the whole prompt if it has none)
-  names a canonical lane other than the task's lane.
-- **Prompt**: Spanish, in sections, opening with `T<n> · <título>` (d153, d160); it always has a
-  `DECISIONES` section (d046), which the verifier requires. The coordinator writes it with
-  [the prompt template](../../docs/core/coordinator-board.md#prompts-d153). Only the review prompts
-  that `pnpm board review` generates are English and open with «Follow .agent/rules/board.md for
-  task `<id>`».
+  `board:verify` warns when the prompt's «DÓNDE CORRE» section (in a `prompt-v1`, `ANTES DE EMPEZAR`
+  and `carril:`; else the whole prompt) names a canonical lane other than the task's lane.
+- **Prompt (`prompt-v1`, T160)**: Spanish, «usted», in the sections of
+  [the prompt template](../../docs/core/coordinator-board.md#prompts-d153): line 1 is the session
+  name `<lane> · T<n> · PR #<n> · <description>`, then `QUÉ SE BUSCA` (with «Terminado cuando:»),
+  `ANTES DE EMPEZAR`, `PASOS`, `AUTORIZO`, `NO HAGAS`, `DECISIONES` (d046, always required),
+  `PARE Y PREGUNTE SI`, `AL TERMINAR`, and last `METADATOS` (`formato: prompt-v1`, one
+  `clave: valor` per line). `pnpm board` refuses a `prompt-v1` that breaks this shape;
+  `board:verify` warns when line 1 names another `T<n>` or lane. `pnpm board review` writes its
+  prompts the same way. Prompts without `formato: prompt-v1` predate T160, keep their old layout
+  (opening `T<n> · <título>`, or English «Follow .agent/rules/board.md…» for reviews) and are never
+  rewritten.
+- **Task kinds (T130)**: `tipo` says what a task does (`codigo`, `revision`, `release`,
+  `invitacion`, `creativo`, `auditoria`, `operacion`); `categoria` only picks its lane. Each kind is
+  one short `.agent/kinds/<tipo>.yaml`: `lee` (routing-matrix `task_type` names, never copied
+  lists), `pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve` (the
+  T129 `resultado` fields), `listo_si` (validation level) and `al_terminar`. The coordinator writes
+  only `busca` (the `QUÉ SE BUSCA` text, with «Terminado cuando:») and, when the task needs them,
+  `corto` (the session name's description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones`
+  (dNNN ids; decisions naming the task in `tareas` and `decision` requisitos count too). `add`,
+  `set` and `plan` regenerate the prompt-v1 when one of those fields, the lane or the branch
+  changes, and refuse a hand-written `prompt` on a typed task; `pnpm board prompt <id>` prints it
+  and `--guardar --rev=<n>` saves it after a decision or kind file changed. `board:verify` checks
+  the kind files and warns when a saved prompt is not the one its kind generates now. Session tasks
+  created under `contrato: 3` need `tipo`; older tasks and tasks without `tipo` keep their
+  hand-written prompts. Review rounds from `pnpm board review` get `tipo: revision` and keep the
+  prompt `review` writes.
+- **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
+  app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`.
+  **Inherited acceptance**: what the owner already accepted in a task (its `AUTORIZO`, `DECISIONES`
+  or an answered question) holds for its review rounds and follow-ups, which never ask it again.
 
 ## Names and task references
 
@@ -218,6 +269,13 @@ authorization.
   Claude `claim` with an id that does not start with `local_` is refused; `CLAUDE_CODE_SESSION_ID`
   is the process id and the app does not know it. Codex and Gemini still pass `--sesion=<id>` until
   their own id is defined.
+- **Who added and followed up (T172)**: `add` and `review` stamp `agregadaPor`; `set`, `plan`,
+  `move`, `close` and `merged` stamp `seguimientoPor`. The writer is a real agent
+  (`claude|codex|gemini`) from `--quien` or `--agente`, also with `--coordinador`; else `--quien`
+  (`dueno`, `coordinador`) or the coordinator flag. `set` cannot write either field. Tasks saved
+  before T172 fall back to the bitácora (creation row and last row after it). The view shows it as a
+  quiet `.by` note after the time (smaller and fainter than `T<n>`, never an agent chip), the sheet
+  under «Versión», and `show` as a line under the title.
 - `release` and `merged` copy the lock's session into the task's `sesion {id, agente, nombre}` as
   history; `--nombre=<session title>` sets the name, otherwise the name already recorded for that id
   stays. Nobody writes `sesion` by hand.
@@ -239,9 +297,13 @@ authorization.
   `<id>-revision-2`, `-3`… for each new PR head, with `vuelta`, the short SHA in the title and its
   own prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names
   the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
-  rounds are never rewritten; the same SHA again creates nothing. Without `--agente` the reviewer
-  follows d183: work by Codex or Gemini goes to Claude, work by Claude to Gemini (`--agente=codex`
-  when asked); any other pairing is refused. The author is the task's `agente`, else its lock's or
+  rounds are never rewritten, except that a still-open one is cancelled with its cierre (T129); the
+  same SHA again creates nothing. Without `--agente` the reviewer follows d183: work by Codex or
+  Gemini goes to Claude; work by Claude goes (d209, d240) to whichever of Gemini and Codex has less
+  load (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to Gemini),
+  and to Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90
+  % 5-hour use before its reset; the message prints both loads and the quota. An explicit `--agente`
+  always wins; any other pairing is refused. The author is the task's `agente`, else its lock's or
   last session's. `show` and the view's sheet list the rounds one below another. Reviews become
   executable before merge and do not inherit the author's lane. Completion declares
   `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
@@ -254,7 +316,10 @@ authorization.
 - `agentes --json` discovers the shared registry and capability overrides. Only explicit coordinator
   updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect actual tools before
   declaring them.
-- `carril` without an id and `estado` without fields are read-only inventory commands.
+- `carril` without an id and `estado` without fields are read-only inventory commands. `carril`
+  without an id reads the lanes live like `carriles` (T172): each record's own fields (`uso`,
+  `tecla`, `puerto`, `rev`) with Git's branch, clean state and the locked task; the hand-written
+  `estado`, `tarea`, `sesion`, `nota` and `comprobadoEn` are left out.
 
 ## What is next and messages (T126)
 
@@ -272,8 +337,8 @@ authorization.
 - `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
   and the task holding its lock.
 - Owner tasks (`actor: dueno`) show only what to do and where (`donde`, else the first line under
-  «DÓNDE CORRE»), never a suggested lane. The coordinator records every owner action as an
-  `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
+  «DÓNDE CORRE» of an older prompt), never a suggested lane. The coordinator records every owner
+  action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
 
 ## Checks and freshness
 

@@ -6,28 +6,46 @@
  *   next --agente=<a> [--json]                  first ready, unlocked task that agent finishes alone
  *   show <id|T<n>> [--json]                    set and claim also accept the fixed task number
  *   add <id> titulo=… urgencia=… actor=… [campo=valor…]
+ *                                               T130: a session task needs tipo=codigo|revision|release|invitacion|
+ *                                               creativo|auditoria|operacion and busca=… (its QUÉ SE BUSCA);
+ *                                               add, set and plan then generate its prompt from .agent/kinds/
+ *   prompt <id> [--guardar --rev=<n>] [--json]  T130: the prompt generated from the task's tipo and how the
+ *                                               saved one differs; --guardar saves it (lock owner or --coordinador)
  *   set <id> --rev=<n> campo=valor… [--data=<file.json>] [--quien=<a>] [--corrio=…] [--salio=…]
  *   claim <id> --agente=<a> [--titulo="f05 · T<n> · …"] [--sesion=<id>] [--carril=<id>] [--rama=<b>]
  *                                               lock: one owner at a time; --titulo (the session name) is
  *                                               required for tasks created under the contract (T126)
  *                                               (rama defaults to the task's declared branch; Claude's sesion
  *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
- *                                               carril defaults to the planned lane, another needs --coordinador)
+ *                                               carril defaults to the planned lane, another needs --coordinador;
+ *                                               T172: a pendiente task becomes en curso)
+ *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
+ *                                               a usted» until 30 min pass without a claim (claim clears it)
  *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
- *                                               --coordinador frees only a legacy lock without sesion
+ *                                               --coordinador frees only a legacy lock without sesion;
+ *                                               a task still en curso goes back to pendiente (T172)
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
  *                                               without --agente the reviewer follows d183
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
- *         [--pr=#N] [--commit=<sha>] [--rev=<n>]   d178: closing summary (lock owner, or --coordinador to
+ *         [--fallida=…] [--riesgo=…] [--duda=…] [--excepcion=…]
+ *         [--veredicto=aprobado|cambios|bloqueado] [--hallazgo="P2|archivo|texto"] [--sha=<sha>]
+ *         [--nivel=validate:changed|type-check|ci] [--pr=#N] [--commit=<sha>] [--rev=<n>]
+ *                                               d178: closing summary (lock owner, or --coordinador to
  *                                               complete it); repeat a flag for each line or item, «ninguna»
- *                                               for an empty list; a pendiente without its task is refused
+ *                                               for an empty list; a pendiente without its task is refused.
+ *                                               T129: a task created under contrato 2 also names every
+ *                                               Handoff list and its resultado (review: veredicto, sha,
+ *                                               hallazgos; code: pr, sha, nivel); prints a one-line signal
+ *   set <id> estado=cancelada --motivo=…        T129: a cancellation writes its cierre, the reason as summary
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task with its closing summary from
  *                                               «Finalizadas» (bitácora row)
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
+ *                                               T172: «(reemplaza dNNN)» in the text links it without the field
+ *   carril [--json]                             T172: the lanes live, like carriles, with each record's own fields
  *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--todas] [--json]   replaced decisions only with --todas
@@ -58,14 +76,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
-	archiveBlock,
-	buildCierre,
 	canFinish,
-	cierreBlock,
-	cierreIssues,
-	cierreLines,
 	claimable,
-	AGENT_REGISTRY,
 	color,
 	nextFor,
 	normalizePr,
@@ -84,9 +96,9 @@ import {
 	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
-	defaultReviewer,
 	reviewerIssue,
 	reviewChild,
+	reviewChildId,
 	roundLines,
 	reviewRounds,
 	historyRows,
@@ -100,8 +112,12 @@ import {
 	unlocked,
 	CONTRATO,
 } from './model.mjs';
-import { claimTitleIssue, nextSections, sectionLines } from './next.mjs';
+import { archiveBlock, cierreBlock } from './cierre.mjs';
+import { cancelOnSet, cancelReplaced, closeCommands } from './close-commands.mjs';
+import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
+import { deliveryCommands } from './delivery-commands.mjs';
+import { undelivered } from './delivery.mjs';
 import {
 	appendLog,
 	assertId,
@@ -117,7 +133,13 @@ import {
 } from './store.mjs';
 import { UsageError, say } from './cli.mjs';
 import { externalSessionLines, externalSessions } from './external-sessions.mjs';
+import { kindCommands, withKindPrompt } from './kind-commands.mjs';
+import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
+import { ghPrState, reviewSha } from './github.mjs';
+import { codexQuota, pickReviewer } from './reviewer.mjs';
+import { withTrace } from './trace.mjs';
+import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
 
 const COLOR_LABEL = {
@@ -187,18 +209,22 @@ function logEntry(tarea, change, who, extra) {
 	return row;
 }
 
+/** The number the next new task gets: one past the highest in either collection. */
+const nextNum = (dir) =>
+	[...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
+		(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
+		0,
+	) + 1;
+
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, opts = {}) {
 	const { corrio, salio } = opts;
-	const t = { ...cleaned(after, opts), rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	// T172: agregadaPor on creation, seguimientoPor when opts.seguimiento marks a follow-up write.
+	const traced = withTrace(before, cleaned(after, opts), opts);
+	const t = { ...traced, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
 	// numbering existed gets the next number on its first write, like a new one.
-	t.num = Number.isSafeInteger(before?.num)
-		? before.num
-		: [...readCollection(dir, 'tareas'), ...readCollection(dir, 'archivo')].reduce(
-				(max, task) => (Number.isSafeInteger(task.num) ? Math.max(max, task.num) : max),
-				0,
-			) + 1;
+	t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
 	if (t.num !== before?.num && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
@@ -269,37 +295,6 @@ function assertOwner(task, flags) {
 		);
 }
 
-/** `gh pr view <n> --json state` → OPEN, MERGED or CLOSED. */
-function ghPrState(pr) {
-	return execFileSync(
-		'gh',
-		['pr', 'view', String(pr).replace(/^#/, ''), '--json', 'state', '--jq', '.state'],
-		{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-	).trim();
-}
-
-function reviewSha(task, flags) {
-	const sha =
-		typeof flags.sha === 'string'
-			? flags.sha
-			: execFileSync(
-					'gh',
-					[
-						'pr',
-						'view',
-						String(task.pr).replace(/^#/, ''),
-						'--json',
-						'headRefOid',
-						'--jq',
-						'.headRefOid',
-					],
-					{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-				).trim();
-	if (!/^[a-f0-9]{40}$/.test(sha))
-		throw new UsageError('falta un SHA completo del PR (--sha=<40 hex>)');
-	return sha;
-}
-
 /**
  * Archive (`archivar: true`) or unarchive one finished, unlocked task, with a bitácora row (d167). The
  * `archive`/`unarchive` commands and the view's POST share it; the task file is never deleted.
@@ -355,24 +350,6 @@ function archiveCommand(archivar) {
 	};
 }
 
-/** d178: the closing summary a session writes when it finishes (or the coordinator completes). */
-function closeCommand({ pos, flags, lists }, dir, out) {
-	return withLock(dir, () => {
-		const before = getTask(dir, need(pos[0], 'falta <id>'));
-		if (flags.rev !== undefined) checkRev(before, flags);
-		// The lock owner writes it; a declared coordinator completes it, also after the lock is gone.
-		if (!flags.coordinador) assertOwner(before, flags);
-		const board = loadBoard(dir);
-		const cierre = buildCierre(before.cierre, { flags, lists }, board, nowIso());
-		const issues = cierreIssues({ ...before, cierre }, board);
-		if (issues.length)
-			throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
-		const t = saveTask(dir, before, { ...before, cierre });
-		const text = [`${t.id} con cierre (rev ${t.rev})`, ...cierreLines(t, board)];
-		say(flags, out, t, text.join('\n'));
-	});
-}
-
 const laneAllowed = (carril, task) => laneAllowedIn(carril, task, WORKTREE_LANES);
 
 /** d177: only a declared coordinator plans a lane, and only a canonical one. */
@@ -422,7 +399,7 @@ function claimLocation(before, flags, board) {
 function row(t, n, board, agente) {
 	const c = color(t, board, { agente });
 	const lock = t.candado ? ` [${t.candado.agente}]` : '';
-	const why = blockedText(t, board);
+	const why = blockedText(t, board) || deliveryLine(t);
 	return `${String(n).padStart(2)}. ${COLOR_LABEL[c].padEnd(11)} ${String(t.urgencia ?? '').padEnd(8)} ${t.num ? `T${t.num} ` : ''}${t.titulo} · ${t.id}${lock}${why ? `  — ${why}` : ''}`;
 }
 
@@ -487,6 +464,10 @@ const commands = {
 		out(
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
+		const trace = traceText(t, board);
+		if (trace) out(`  ${trace.text}`);
+		const delivered = deliveryLine(t);
+		if (delivered) out(`  ${delivered}`);
 		for (const line of laneLines(t, board)) out(`  ${line}`);
 		for (const r of requisitos(t, board)) out(`  ${requisitoLine(r, board)}`);
 		for (const k of [
@@ -515,13 +496,16 @@ const commands = {
 			// A compacted task keeps its id: it comes back with restore, never as a new task.
 			if (readDoc(dir, 'archivo', id))
 				throw new UsageError(`${id} está compactada: use pnpm board restore ${id}`);
-			const t = {
+			const draft = {
 				...applyPairs({ id, estado: 'pendiente', requisitos: [] }, pairs),
 				contrato: CONTRATO,
 			};
-			if (t.carrilPlaneado !== undefined) assertPlan(t, t.carrilPlaneado, flags);
+			if (draft.carrilPlaneado !== undefined) assertPlan(draft, draft.carrilPlaneado, flags);
+			// T130: a typed task gets its prompt from its kind (once it has a lane).
+			const t = withKindPrompt(null, draft, dir, { num: nextNum(dir), pairs });
 			const saved = saveTask(dir, null, t, {
 				quien: flags.quien,
+				agente: flags.agente,
 				coordinador: flags.coordinador,
 			});
 			say(flags, out, saved, `${saved.id} creada (rev 1)`);
@@ -545,10 +529,20 @@ const commands = {
 				'cierre',
 				'num',
 				'contrato',
+				'agregadaPor',
+				'seguimientoPor',
+				'entregada',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
-			const merged = applyPairs({ ...before, ...data, id: before.id }, pairs);
+			// T129: a cancellation writes its cierre in the same command.
+			// T130: a typed task regenerates its prompt when what it is built from changes.
+			const edited = cancelOnSet(
+				before,
+				applyPairs({ ...before, ...data, id: before.id }, pairs),
+				flags,
+			);
+			const merged = withKindPrompt(before, edited, dir, { pairs: { ...data, ...pairs } });
 			if (before.candado?.rama && merged.rama !== before.candado.rama)
 				throw new UsageError('rama distinta del candado');
 			if (
@@ -557,7 +551,7 @@ const commands = {
 				flags.sha !== before.revisionSha
 			)
 				throw new UsageError('la revisión debe declarar --sha igual al SHA revisado');
-			const t = saveTask(dir, before, merged, flags);
+			const t = saveTask(dir, before, merged, { ...flags, seguimiento: true });
 			say(flags, out, t, `${t.id} rev ${t.rev}`);
 		});
 	},
@@ -600,12 +594,21 @@ const commands = {
 				titulo: typeof flags.titulo === 'string' ? flags.titulo.trim() : undefined,
 			}))
 				if (v && v !== true) candado[k] = v;
-			const t = saveTask(dir, before, {
-				...before,
-				candado,
-				...(carril ? { carril } : {}),
-				...(rama ? { rama } : {}),
-			});
+			// T172: taking a pendiente task starts it, with its «pendiente → en curso» bitácora row.
+			const started = (before.estado ?? 'pendiente') === 'pendiente';
+			const t = saveTask(
+				dir,
+				before,
+				{
+					// d249: a claim ends the wait the delivery mark announced.
+					...undelivered(before),
+					candado,
+					...(carril ? { carril } : {}),
+					...(rama ? { rama } : {}),
+					...(started ? { estado: 'en curso' } : {}),
+				},
+				{ quien: flags.quien, agente, corrio: 'pnpm board claim' },
+			);
 			say(flags, out, t, `${t.id} es de ${agente} (rev ${t.rev})`);
 		});
 	},
@@ -633,16 +636,21 @@ const commands = {
 					before,
 					`${before.id} ya corre en ${carril ?? 'ningún carril'}`,
 				);
-			const after = { ...before };
-			if (carril) after.carrilPlaneado = carril;
-			else delete after.carrilPlaneado;
+			const planned = { ...before };
+			if (carril) planned.carrilPlaneado = carril;
+			else delete planned.carrilPlaneado;
+			const after = withKindPrompt(before, planned, dir);
 			const row = logEntry(
 				before.id,
 				{ carril: { de: before.carrilPlaneado ?? '', a: carril ?? '' } },
 				{ quien: flags.quien, coordinador: flags.coordinador },
 				{ corrio: 'pnpm board plan' },
 			);
-			const t = saveTask(dir, before, after);
+			const t = saveTask(dir, before, after, {
+				quien: flags.quien,
+				coordinador: flags.coordinador,
+				seguimiento: true,
+			});
 			appendLog(dir, row);
 			say(
 				flags,
@@ -679,6 +687,7 @@ const commands = {
 				coordinador: true,
 				corrio: typeof flags.corrio === 'string' ? flags.corrio : 'pnpm board merged',
 				salio: `PR ${pr} MERGED`,
+				seguimiento: true,
 			});
 			const freed = before.candado ? `; candado de ${before.candado.agente} suelto` : '';
 			say(flags, out, t, `${t.id} ${t.estado} (rev ${t.rev})${freed}`);
@@ -693,7 +702,14 @@ const commands = {
 			if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
-			const t = saveTask(dir, before, unlocked(before, flags));
+			// T172: a task released while still en curso goes back to pendiente, so another session can claim it.
+			const after = unlocked(before, flags);
+			if (before.estado === 'en curso') after.estado = 'pendiente';
+			const t = saveTask(dir, before, after, {
+				quien: flags.quien,
+				agente,
+				corrio: 'pnpm board release',
+			});
 			say(flags, out, t, `${t.id} libre (rev ${t.rev})`);
 		});
 	},
@@ -712,7 +728,12 @@ const commands = {
 				{ quien: flags.quien, coordinador: flags.coordinador },
 				{ corrio: 'pnpm board move' },
 			);
-			const t = saveTask(dir, before, { ...before, agente });
+			const t = saveTask(
+				dir,
+				before,
+				{ ...before, agente },
+				{ quien: flags.quien, coordinador: flags.coordinador, seguimiento: true },
+			);
 			appendLog(dir, row);
 			const aviso =
 				agente === 'cualquiera' || canFinish(t, agente, loadBoard(dir))
@@ -729,8 +750,12 @@ const commands = {
 			if (!src.pr || src.estado !== 'en revision')
 				throw new UsageError('el origen requiere PR y estado en revision');
 			const author = authorOf(src);
-			const agente =
-				typeof flags.agente === 'string' ? flags.agente : defaultReviewer(author);
+			// d209: without --agente, Claude's work goes to the less loaded of Gemini and Codex.
+			const pick =
+				typeof flags.agente === 'string'
+					? { agente: flags.agente, motivo: '' }
+					: pickReviewer(author, loadBoard(dir), { quota: codexQuota() });
+			const { agente } = pick;
 			if (!agente)
 				throw new UsageError('falta --agente=<revisor>: la tarea no dice su autor');
 			const issue = reviewerIssue(author, agente);
@@ -739,101 +764,17 @@ const commands = {
 			const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
 			if (prev?.revisionSha === sha)
 				return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
-			const t = reviewChild(src, { agente, sha, prev });
+			const id = reviewChildId(src, prev);
+			const before = readDoc(dir, 'tareas', id);
+			// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
+			const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+			const t = reviewChild(src, { agente, sha, prev, num, generado: nowIso() });
 			// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
 			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
-			const saved = saveTask(dir, readDoc(dir, 'tareas', t.id), t, who);
-			say(flags, out, saved, `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})`);
-		});
-	},
-	decide({ pairs, flags }, dir, out) {
-		need(pairs.decision, 'falta decision=…');
-		return withLock(dir, () => {
-			const all = readCollection(dir, 'decisiones');
-			const n =
-				Math.max(0, ...all.map((d) => Number(String(d.id).replace(/^d/, '')) || 0)) + 1;
-			const id = `d${String(n).padStart(3, '0')}`;
-			if (pairs.reemplaza) {
-				const old = readDoc(dir, 'decisiones', pairs.reemplaza);
-				if (!old) throw new UsageError(`no existe ${pairs.reemplaza}`);
-				writeDoc(dir, 'decisiones', old.id, { ...old, vigente: false });
-			}
-			const tareas = pairs.tareas ? pairs.tareas.split(',').filter(Boolean) : [];
-			const d = {
-				...pairs,
-				tareas,
-				id,
-				en: nowIso(),
-				vigente: true,
-				quien: pairs.quien ?? 'dueño',
-			};
-			writeDoc(dir, 'decisiones', id, d);
-			say(flags, out, d, `${id} registrada`);
-		});
-	},
-	carril({ pos, pairs, flags }, dir, out) {
-		if (!pos.length)
-			return say(
-				flags,
-				out,
-				readCollection(dir, 'carriles'),
-				JSON.stringify(readCollection(dir, 'carriles'), null, 2),
-			);
-		const id = assertId(need(pos[0], 'falta <id>'));
-		return withLock(dir, () => {
-			const before = readDoc(dir, 'carriles', id) ?? { id };
-			checkRev(before, flags);
-			const l = {
-				...applyPairs(before, pairs),
-				rev: (before.rev ?? 0) + 1,
-				comprobadoEn: nowIso(),
-			};
-			writeDoc(dir, 'carriles', id, l);
-			say(flags, out, { ...l, id }, `${id} rev ${l.rev}`);
-		});
-	},
-	estado({ pairs, flags }, dir, out) {
-		if (!Object.keys(pairs).length)
-			return say(
-				flags,
-				out,
-				readDoc(dir, 'estado', 'actual'),
-				JSON.stringify(readDoc(dir, 'estado', 'actual'), null, 2),
-			);
-		return withLock(dir, () => {
-			const before = readDoc(dir, 'estado', 'actual') ?? { id: 'actual' };
-			checkRev(before, flags);
-			const e = { ...applyPairs(before, pairs), rev: (before.rev ?? 0) + 1, revEn: nowIso() };
-			writeDoc(dir, 'estado', 'actual', e);
-			say(flags, out, { ...e, id: 'actual' }, `estado rev ${e.rev}`);
-		});
-	},
-	agentes({ pos, flags, pairs }, dir, out) {
-		if (!pos.length) {
-			const records = Object.entries(AGENT_REGISTRY).map(([id, a]) => ({
-				id,
-				...a,
-				...readDoc(dir, 'agentes', id),
-			}));
-			return say(flags, out, records, JSON.stringify(records, null, 2));
-		}
-		if (!flags.coordinador) throw new UsageError('capacidades requieren --coordinador');
-		const id = pos[0];
-		if (!Object.hasOwn(AGENT_REGISTRY, id)) throw new UsageError('agente desconocido');
-		return withLock(dir, () => {
-			const before = readDoc(dir, 'agentes', id);
-			checkRev(before, flags);
-			if (Object.keys(pairs).some((k) => k !== 'capacidades'))
-				throw new UsageError('solo se actualiza capacidades');
-			const after = applyPairs({ id, ...before }, pairs);
-			if (
-				!Array.isArray(after.capacidades) ||
-				after.capacidades.some((c) => typeof c !== 'string')
-			)
-				throw new UsageError('capacidades debe ser lista de texto');
-			after.rev = (before?.rev ?? 0) + 1;
-			writeDoc(dir, 'agentes', id, after);
-			say(flags, out, after, `${id} rev ${after.rev}`);
+			const saved = saveTask(dir, before, t, who);
+			const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
+			const text = `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})${pick.motivo ? ` · ${pick.motivo}` : ''}${live ? `; ${live.id} cancelada` : ''}`;
+			say(flags, out, saved, text);
 		});
 	},
 	/** Old one-file-per-row bitácora → one JSONL file per day, keeping every row; --dry-run only counts. */
@@ -881,15 +822,27 @@ const commands = {
 		}
 	},
 };
-Object.assign(commands, maintenanceCommands, nextCommands({ getTask }), {
-	close: closeCommand,
-	archive: archiveCommand(true),
-	unarchive: archiveCommand(false),
-	get: commands.show,
-	update: commands.set,
-	decision: commands.decide,
-	log: commands.history,
-});
+const inventory = inventoryCommands({ applyPairs, checkRev });
+const delivery = deliveryCommands({ getTask, saveTask });
+/** The view server's `deliver` option (d249), used by «Copiar prompt». */
+export const viewDeliverer = delivery.viewDeliverer;
+Object.assign(
+	commands,
+	maintenanceCommands,
+	inventory,
+	nextCommands({ getTask }),
+	delivery.commands,
+	closeCommands({ getTask, saveTask, checkRev, assertOwner }),
+	kindCommands({ getTask, saveTask, checkRev, assertOwner }),
+	{
+		archive: archiveCommand(true),
+		unarchive: archiveCommand(false),
+		get: commands.show,
+		update: commands.set,
+		decision: inventory.decide,
+		log: commands.history,
+	},
+);
 
 export async function run(argv, { dir = boardDir(), out = console.log, prState } = {}) {
 	const [cmd, ...rest] = argv;

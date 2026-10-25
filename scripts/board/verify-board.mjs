@@ -24,14 +24,12 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
-	cierreIssues,
 	isFinished as isClosed,
 	isOpen,
 	isReadOnly,
 	isStaleLock,
 	laneAllowed,
 	logRowIssues,
-	NO_CIERRE,
 	ordenOf,
 	prNumber,
 	promptLanes,
@@ -41,6 +39,10 @@ import {
 	taskLane,
 	taskTag as tag,
 } from './model.mjs';
+import { cierreIssues, NO_CIERRE } from './cierre.mjs';
+import { kindPrompt, promptDiff } from './kind-prompt.mjs';
+import { loadKinds } from './kinds.mjs';
+import { promptIdentity } from './prompt.mjs';
 import { boardDir, readLog } from './store.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -482,6 +484,24 @@ function numberIssues(tareas) {
 	return issues;
 }
 
+/** T160: a prompt-v1 opens with the session name, so its T<n> and lane must be the task's own. */
+function identityWarnings(tareas) {
+	const out = [];
+	for (const t of tareas.filter((x) => !isClosed(x))) {
+		const who = promptIdentity(t.prompt);
+		if (!who) continue;
+		const lane = taskLane(t)?.split('-')[0];
+		if (t.num && who.num !== t.num)
+			out.push({ id: t.id, msg: `T${t.num} el prompt empieza con T${who.num}` });
+		if (lane && who.segmento !== lane)
+			out.push({
+				id: t.id,
+				msg: `${t.num ? `T${t.num} ` : ''}el prompt empieza con ${who.segmento}, pero corre en ${taskLane(t)}`,
+			});
+	}
+	return out;
+}
+
 /**
  * d177: every open task says where it runs: a planned canonical lane, or the lane its lock holds; a review
  * child runs read-only in Integration and needs none. Two ready, unlocked agent tasks never share a lane.
@@ -509,6 +529,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 				id: t.id,
 				msg: `${t.num ? `T${t.num} ` : ''}el prompt dice ${lane}, pero corre en ${taskLane(t)}`,
 			});
+	avisos.push(...identityWarnings(tareas));
 	const ready = tareas.filter(
 		(t) =>
 			t.actor === 'sesion' &&
@@ -528,7 +549,37 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 	return { avisos, inconsistencias };
 }
 
-function boardIssues(tareas, bitacora, decisiones, archivo, now) {
+/**
+ * T130: each kind file must be valid, and a typed task's saved prompt must be the one its kind generates from
+ * the board now (lane, linked decisions, kind text); review rounds keep the prompt `review` wrote.
+ */
+function kindWarnings(tareas, board, { kinds, issues }) {
+	const avisos = [];
+	for (const t of tareas.filter((x) => !isClosed(x) && x.tipo && !x.revisionSha)) {
+		const kind = kinds[t.tipo];
+		// A broken kind file and a missing busca are already inconsistencies.
+		if (!kind || !String(t.busca ?? '').trim()) continue;
+		const who = t.num ? `T${t.num} ` : '';
+		let fresh;
+		try {
+			fresh = kindPrompt(t, board, kind, {});
+		} catch (e) {
+			avisos.push({ id: t.id, msg: `${who}no se puede generar su prompt: ${e.message}` });
+			continue;
+		}
+		// Without a lane there is no prompt yet; laneWarnings asks for the lane.
+		if (!fresh) continue;
+		const diff = t.prompt ? promptDiff(t.prompt, fresh) : ['sin prompt'];
+		if (diff.length)
+			avisos.push({
+				id: t.id,
+				msg: `${who}el prompt guardado no es el que genera su tipo (${diff.join(', ')}): pnpm board prompt ${t.id} --guardar --rev=${t.rev}`,
+			});
+	}
+	return { avisos, inconsistencias: issues };
+}
+
+function boardIssues(tareas, bitacora, decisiones, archivo, now, kinds) {
 	const byId = Object.fromEntries(tareas.map((t) => [t.id, t]));
 	const decIds = new Set(decisiones.map((d) => d.id));
 	const lastLog = lastLogByTask(bitacora);
@@ -576,8 +627,9 @@ function boardIssues(tareas, bitacora, decisiones, archivo, now) {
 		for (const msg of logRowIssues(r))
 			inconsistencias.push({ id: r.tarea || 'bitacora', msg: `bitácora ${r.en}: ${msg}` });
 	const lanes = laneWarnings(tareas, decisiones, archivo, now);
-	avisos.push(...lanes.avisos);
-	inconsistencias.push(...lanes.inconsistencias);
+	const typed = kindWarnings(tareas, { tareas, decisiones, archivo }, kinds);
+	avisos.push(...lanes.avisos, ...typed.avisos);
+	inconsistencias.push(...lanes.inconsistencias, ...typed.inconsistencias);
 	return { inconsistencias, avisos };
 }
 
@@ -585,6 +637,7 @@ export function verifyBoard(
 	{ tareas, bitacora = [], decisiones = [], archivo = [], cierres = [], sesiones = null },
 	run = defaultRunner(),
 	now = Date.now(),
+	kinds = loadKinds(),
 ) {
 	const snapshot = Array.isArray(sesiones) ? sesiones.map(normalizeSession) : null;
 	const unclaimed = unclaimedWork(tareas, run);
@@ -618,7 +671,7 @@ export function verifyBoard(
 		prCerradoSinUnir: branches.prCerradoSinUnir,
 		cierresPendientes: staleClosings(cierres, now),
 		cobertura: { ...unclaimed.cobertura, ...branches.cobertura },
-		...boardIssues(tareas, bitacora, decisiones, archivo, now),
+		...boardIssues(tareas, bitacora, decisiones, archivo, now, kinds),
 	};
 }
 

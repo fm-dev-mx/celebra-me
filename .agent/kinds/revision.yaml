@@ -1,0 +1,24 @@
+# Task kind «revision»: a read-only cross review of a PR (T130, rules: .agent/rules/board.md).
+# Rounds made by `pnpm board review` keep their own prompt; this kind covers reviews added by hand.
+tipo: revision
+descripcion: 'Revisión cruzada de un PR, solo lectura.'
+lee:
+    - 'staged_code_review'
+pasos_inicio:
+    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+pasos:
+    - '1. Revise corrección, regresiones, pruebas y AGENTS.md en el diff del PR.'
+    - '2. Publique los hallazgos con gh pr review.'
+autorizado_por_defecto:
+    - '(solo lectura) Publicar la revisión del PR con gh pr review.'
+no_hagas:
+    - '- No edite el carril del autor ni una el PR.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
+pare_si:
+    - 'La cabeza del PR cambió o falta evidencia para decidir.'
+devuelve:
+    - 'veredicto'
+    - 'sha'
+    - 'hallazgos'
+listo_si: 'ninguno'
+al_terminar: []

@@ -23,11 +23,17 @@ import {
 	reviewRounds,
 	stage,
 	taskTag,
+	VEREDICTOS,
 } from './model.mjs';
+import { delivery, deliveryText } from './delivery.mjs';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
+
+/** d249: the delivery mark with the agent's name: «Entregada a Codex · 14:35 · esperando que la tome». */
+export const deliveryLine = (t, now = Date.now()) =>
+	deliveryText(t, now, (a) => AGENT_REGISTRY[a]?.nombre ?? 'un agente');
 
 /** Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids. */
 export function unreadFor(agente, board) {
@@ -113,7 +119,9 @@ const idleText = (idle) => (Number.isNaN(idle) ? '' : ` · lista ${agoText(idle)
  */
 export function stalls(board, now = Date.now()) {
 	const dueno = readyUnclaimed(board, now)
+		// d249: a delivered task comes back as its own «nadie la tomó» row instead.
 		.filter(({ t, idle }) => isIdle(idle) && ownerLaunches(t, board, now).length)
+		.filter(({ t }) => !delivery(t, now))
 		.map(({ t, idle }) => {
 			const names = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
 			return {
@@ -133,13 +141,30 @@ export function stalls(board, now = Date.now()) {
 }
 
 /**
- * The verdict of a finished review round: its own `veredicto`, else its closing summary, where a pendiente
- * is a finding for the author (T129 makes it a typed result); null while the round is open.
+ * The verdict of a closed review round: its typed `cierre.resultado.veredicto` (T129: aprobado, cambios or
+ * bloqueado), else a legacy `veredicto`, else its closing summary, where a pendiente is a finding for the author
+ * (hallazgos); null while the round is open or once it is cancelled.
  */
 export function reviewVerdict(r) {
 	if (r.veredicto === 'aprobado' || r.veredicto === 'hallazgos') return r.veredicto;
 	if (!r.cierre || r.estado === 'cancelada') return null;
+	const typed = r.cierre.resultado?.veredicto;
+	if (VEREDICTOS.includes(typed)) return typed;
 	return (r.cierre.pendientes ?? []).length ? 'hallazgos' : 'aprobado';
+}
+
+/**
+ * The review round that makes an open task «lista para unir» (T129): its last round approved the SHA it was
+ * asked to review, and that SHA is still the PR head when `prs` (open PRs from GitHub) say so; else null.
+ */
+export function readyToMerge(t, board, prs) {
+	if (isReview(t) || !t.pr || isFinished(t)) return null;
+	const last = reviewRounds(t.id, board).at(-1);
+	if (!last?.revisionSha || reviewVerdict(last) !== 'aprobado') return null;
+	const sha = last.cierre?.resultado?.sha ?? last.revisionSha;
+	if (!last.revisionSha.startsWith(sha)) return null;
+	const head = prs?.find((p) => `#${p.number}` === normalizePr(t.pr))?.headRefOid;
+	return head && head !== last.revisionSha ? null : last;
 }
 
 /** The review item of a task under review: merge it, review its new head again, or pass the findings on. */
@@ -161,6 +186,12 @@ function reviewItem(t, board, prs) {
 			tipo: 'unir',
 			t,
 			texto: `Unir ${ref}: ${taskTag(last)} aprobó ${short}${sha ? '' : ' (SHA del PR sin comprobar)'}`,
+		};
+	if (verdict === 'bloqueado')
+		return {
+			tipo: 'hallazgos',
+			t,
+			texto: `Resolver el bloqueo que ${taskTag(last)} encontró en ${ref}`,
 		};
 	return {
 		tipo: 'hallazgos',
@@ -239,7 +270,11 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 			const where = t.actor === 'dueno' && ownerWhere(t);
 			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
 			const how = where || (paste.length ? `Pegar en ${paste.join(' o ')}` : '');
-			return row(t, `${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}`);
+			const late = deliveryLine(t, now);
+			return row(
+				t,
+				`${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
+			);
 		}),
 		...ownerAsks(board, now).map(({ t, r }) =>
 			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`),
@@ -272,6 +307,21 @@ export function sectionLines(r) {
 		...block('Detenidas', r.detenidas),
 		...(r.prsLeidos ? [] : ['', 'Sin leer GitHub: «pnpm board sigue» añade los PR abiertos.']),
 	];
+}
+
+/** Lane record fields written by hand that go stale (T172): Git and the locks say them live instead. */
+const STALE_LANE_FIELDS = ['estado', 'tarea', 'sesion', 'nota', 'comprobadoEn'];
+
+/**
+ * T172: `pnpm board carril` without an id — each lane record's own fields (uso, tecla, puerto, rev) with its
+ * live row from `laneRows`; the hand-written runtime fields are left out so they never contradict `carriles`.
+ */
+export function liveLanes(board, git = []) {
+	return laneRows(board, git).map((row) => {
+		const rec = { ...(board.carriles ?? []).find((l) => l.id === row.id) };
+		for (const k of STALE_LANE_FIELDS) delete rec[k];
+		return { ...rec, ...row };
+	});
 }
 
 /**

@@ -240,9 +240,10 @@ jobs:
                   restore-keys: |
                       lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.stylelintrc.json') }}-
 
+            # Every `ci:static` command, in two parallel lanes: type check then build, and the other checks.
             - name: Static checks and build
               if: matrix.tier == 'static'
-              run: pnpm ci:static
+              run: pnpm ci:static:parallel
 
             # Bundles both memories Workers for every environment without deploying or authenticating.
             - name: Memories Worker bundles
@@ -306,9 +307,10 @@ jobs:
               if: matrix.tier == 'database'
               run: pnpm test:db:memories-contracts
 
-    # Complete visual parity splits the job in two parallel parts: `pages` runs the complete page
-    # parity suite and `rest` every other browser check. Runs without Browser scope (release
-    # promotions, dispatches and visual candidates) keep one `all` job.
+    # Browser scope splits the checks into four Playwright shards. With complete visual parity two
+    # shards run the page parity suite (`pages-<n>-of-2`) and two every other browser check
+    # (`rest-<n>-of-2`); with deferred parity four shards run everything (`all-<n>-of-4`). Runs
+    # without Browser scope (release promotions, dispatches and visual candidates) keep one `all` job.
     browser-validation:
         name: Application / browser${{ matrix.part != 'all' && format(' ({0})', matrix.part) || '' }}
         needs: [evidence-reuse, browser-scope]
@@ -332,6 +334,8 @@ jobs:
             PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true'
             VISUAL_PARITY_OS_IMAGE_DIGEST: sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac
             VISUAL_PARITY_MODE: ${{ github.event.inputs.visual_mode || 'compare' }}
+            # Shared by every shard, so the coverage job can join their capture records.
+            VISUAL_PARITY_RUN_ID: ${{ github.run_id }}
         steps:
             - name: Install Git LFS for accepted references
               run: apt-get update && apt-get install -y --no-install-recommends git-lfs
@@ -361,6 +365,25 @@ jobs:
                   VISUAL_PARITY_DEFERRED: ${{ needs.browser-scope.outputs.visual == 'deferred' }}
                   PLAYWRIGHT_BROWSER_PART: ${{ matrix.part }}
               run: pnpm test:e2e:ci --max-failures=5 --workers=4
+
+            # A shard skips the teardown matrix proof; this asserts everything but coverage for its
+            # own captures, and `browser-visual-coverage` asserts coverage across every shard.
+            - name: Prove this shard's visual captures
+              id: shard-proof
+              if: steps.browser-checks.outcome == 'success' && contains(matrix.part, '-of-')
+              env:
+                  VISUAL_PARITY_OUTPUT_ROOT: .tmp/visual-parity/compare
+              run: pnpm visual:parity:shard
+
+            - name: Preserve this shard's visual capture records
+              if: steps.shard-proof.outcome == 'success'
+              uses: actions/upload-artifact@v7
+              with:
+                  name: visual-records-${{ matrix.part }}
+                  path: .tmp/visual-parity/compare/records
+                  include-hidden-files: true
+                  if-no-files-found: ignore
+                  retention-days: 1
 
             - name: Classify browser outcome
               id: browser-outcome
@@ -406,6 +429,45 @@ jobs:
                   github.event.inputs.visual_mode != 'candidate' &&
                   steps.browser-checks.outcome != 'success'
               run: exit 1
+
+    # Joins the capture records of every browser shard and fails when the complete matrix of a
+    # capture suite that ran is not covered. It shares the browser job prefix, so evidence reuse and
+    # Browser scope require it with the browser parts; an unsharded run has no records to join.
+    browser-visual-coverage:
+        name: Application / browser (visual coverage)
+        needs: [browser-scope, browser-validation]
+        if: >-
+            !cancelled() &&
+            needs.browser-validation.result != 'skipped' &&
+            github.event.inputs.visual_mode != 'candidate'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 5
+        # The merge script uses Node built-ins only: no dependency install on the critical path.
+        steps:
+            - name: Checkout the merge script
+              uses: actions/checkout@v7
+              with:
+                  lfs: false
+                  sparse-checkout: scripts/ops/visual-shard-merge.ts
+                  sparse-checkout-cone-mode: false
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+            # Only sharded parts upload capture records; an unsharded `all` part proves its own matrix.
+            - name: Collect shard capture records
+              if: contains(needs.browser-scope.outputs.browser-parts, '-of-')
+              uses: actions/download-artifact@v8
+              with:
+                  pattern: visual-records-*
+                  path: .tmp/visual-records
+                  merge-multiple: true
+            - name: Require complete visual coverage across shards
+              env:
+                  VISUAL_PARITY_RUN_ID: ${{ github.run_id }}
+                  # The `pages` and `rest` shards must between them have started both capture suites.
+                  VISUAL_SHARD_PARTS: ${{ needs.browser-scope.outputs.browser-parts }}
+              run: node scripts/ops/visual-shard-merge.ts .tmp/visual-records
 
     # Guest memories flow on every device project (Chromium, WebKit and in-app user agents)
     # against the canonical memory space; guest APIs and the upload Worker are mocked. It runs
@@ -461,6 +523,7 @@ jobs:
                 policy-validation,
                 application-checks,
                 browser-validation,
+                browser-visual-coverage,
                 browser-memories,
                 browser-scope,
             ]
@@ -470,18 +533,30 @@ jobs:
               env:
                   APPLICATION_RESULT: ${{ needs.application-checks.result }}
                   BROWSER_RESULT: ${{ needs.browser-validation.result }}
+                  COVERAGE_RESULT: ${{ needs.browser-visual-coverage.result }}
                   MEMORIES_RESULT: ${{ needs.browser-memories.result }}
                   POLICY_RESULT: ${{ needs.policy-validation.result }}
                   EVIDENCE_REUSE: ${{ needs.evidence-reuse.outputs.reuse }}
                   BROWSER_SCOPE: ${{ needs.browser-scope.outputs.browser }}
+              # One `test` per line: under `set -e` a failure inside an `&&` chain that is not the
+              # step's last command would not stop the step.
               run: |
                   test "$POLICY_RESULT" = success
                   if [ "$EVIDENCE_REUSE" = true ]; then
                     # Reused integration evidence stands in for tiers that must not have executed.
-                    test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped
+                    test "$APPLICATION_RESULT" = skipped
+                    test "$BROWSER_RESULT" = skipped
+                    test "$MEMORIES_RESULT" = skipped
+                    test "$COVERAGE_RESULT" = skipped
                   elif [ "$BROWSER_SCOPE" = skip ]; then
                     # Browser inputs are byte-identical to an earlier develop push whose browser tier passed.
-                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped && test "$MEMORIES_RESULT" = skipped
+                    test "$APPLICATION_RESULT" = success
+                    test "$BROWSER_RESULT" = skipped
+                    test "$MEMORIES_RESULT" = skipped
+                    test "$COVERAGE_RESULT" = skipped
                   else
-                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success && test "$MEMORIES_RESULT" = success
+                    test "$APPLICATION_RESULT" = success
+                    test "$BROWSER_RESULT" = success
+                    test "$MEMORIES_RESULT" = success
+                    test "$COVERAGE_RESULT" = success
                   fi

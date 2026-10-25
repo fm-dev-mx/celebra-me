@@ -10,6 +10,8 @@ routes matching the touched surfaces.
 - [`.agent/ownership.yaml`](./ownership.yaml) — System aspect ownership matrix (SSOT)
 - [`.agent/routing-matrix.yaml`](./routing-matrix.yaml) — Context routing matrix per task domain
   (SSOT)
+- `.agent/kinds/<tipo>.yaml` — Board task kinds that generate task prompts (T130, see
+  [`.agent/rules/board.md`](./rules/board.md))
 
 ## Start Here
 
