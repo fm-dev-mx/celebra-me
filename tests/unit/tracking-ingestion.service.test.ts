@@ -95,6 +95,41 @@ describe('ingestTrackingEvent', () => {
 		);
 	});
 
+	it('keeps a valid consent decision time on the session snapshot and drops other formats', async () => {
+		const send = (decidedAt: string) =>
+			ingestTrackingEvent({
+				request: makeRequest(),
+				deployEnvironment: 'production',
+				payload: {
+					sessionId: '77777777-7777-4777-8777-777777777777',
+					visitorId: 'visitor_meta_user',
+					eventName: 'page_viewed',
+					routePath: '/',
+					routeClass: 'commercial',
+					eventProperties: { page_type: 'commercial' },
+					consentSnapshot: {
+						necessary: true,
+						analytics: true,
+						marketing: true,
+						decidedAt,
+					},
+				},
+			});
+
+		await send('2026-10-25T12:00:00.000Z');
+		expect(mockUpsertVisitorSession).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				consentSnapshot: {
+					necessary: true,
+					analytics: true,
+					marketing: true,
+					decidedAt: '2026-10-25T12:00:00.000Z',
+				},
+			}),
+		);
+		await expect(send('2026-10-25 12:00')).rejects.toThrow();
+	});
+
 	it('persists Meta attribution on commercial sessions without copying it into event properties', async () => {
 		const result = await ingestTrackingEvent({
 			request: makeRequest(),

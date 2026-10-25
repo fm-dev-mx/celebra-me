@@ -214,7 +214,11 @@ them. It is supported by an interactive administration workspace under `/dashboa
    with `MISSING_CLIENT_USER_AGENT` when the session has no user agent, which Meta requires for
    website events. Withdrawing marketing consent in the banner posts the stored visitor ID to
    `POST /api/tracking/consent` (rate-limited, needs no tracking consent), which sets marketing off
-   on every session of that visitor, so rows still queued for those sessions are skipped.
+   on every session of that visitor, so rows still queued for those sessions are skipped. The banner
+   keeps an unconfirmed withdrawal in localStorage and resends it on every page load until the
+   server answers. Consent snapshots carry the visitor's decision time (`decidedAt`), and the
+   `trg_visitor_sessions_keep_latest_consent` trigger keeps a withdrawal until a strictly newer
+   decision, so a tracking request sent before the withdrawal cannot turn marketing back on.
 4. The Production-only `*/15 * * * *` cron runs the platform usage collector and then
    `processPendingMetaConversionEvents()` (up to 20 due rows, oldest first). The sweep skips outside
    Production and while `META_CAPI_DELIVERY_MODE=disabled`, so rows stay `pending` instead of being

@@ -1,6 +1,7 @@
 import { findDemoByRouteSlug } from '@/lib/invitation/demo-routes';
 import { createLeadCode } from '@/lib/tracking/lead-code';
 import { readConsent, VISITOR_STORAGE_KEY } from '@/lib/tracking/consent-client';
+import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
 import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
 import {
@@ -15,12 +16,6 @@ import {
 } from '@/lib/tracking/event-contract';
 
 type BrowserTrackingEventName = PublicTrackingEventName | ClientOnlyTrackingEventName;
-
-type ConsentSnapshot = {
-	necessary: true;
-	analytics: boolean;
-	marketing: boolean;
-};
 
 type TrackingPayload = {
 	eventId: string;
@@ -98,6 +93,7 @@ function getConsentSnapshot(): ConsentSnapshot {
 		necessary: true,
 		analytics: state.analytics,
 		marketing: state.marketing,
+		decidedAt: state.updatedAt,
 	};
 }
 

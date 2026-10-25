@@ -23,7 +23,11 @@ jest.mock('@/lib/server/env', () => ({
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
-import { saveConsent, VISITOR_STORAGE_KEY } from '@/lib/tracking/consent-client';
+import {
+	retryPendingConsentWithdrawal,
+	saveConsent,
+	VISITOR_STORAGE_KEY,
+} from '@/lib/tracking/consent-client';
 import { POST } from '@/pages/api/tracking/consent';
 import { createApiContext } from '../helpers/api-mocks';
 
@@ -34,13 +38,19 @@ const originalFetch = global.fetch;
 
 const VISITOR_ID = 'visitor_123456';
 const CLICK_EVENT_ID = '99999999-9999-4999-8999-999999999999';
+const PENDING_KEY = 'cm_consent_withdrawal_pending';
 
 interface StoredSession {
 	id: string;
 	visitor_id: string;
 	client_ip_address: string;
 	client_user_agent: string;
-	consent_snapshot: { necessary: true; analytics: boolean; marketing: boolean };
+	consent_snapshot: {
+		necessary: true;
+		analytics: boolean;
+		marketing: boolean;
+		decidedAt?: string;
+	};
 }
 
 let storage: Map<string, string>;
@@ -101,6 +111,7 @@ beforeEach(() => {
 		value: {
 			getItem: (key: string) => storage.get(key) ?? null,
 			setItem: (key: string, value: string) => storage.set(key, value),
+			removeItem: (key: string) => storage.delete(key),
 		},
 	});
 	sessions = [session('session-a', true), session('session-b', true)];
@@ -133,20 +144,27 @@ describe('marketing consent withdrawal', () => {
 		saveConsent(true, true);
 		expect(mockFetch).not.toHaveBeenCalled();
 
-		saveConsent(false, false);
+		const withdrawal = saveConsent(false, false);
 		expect(mockFetch).toHaveBeenCalledWith('/api/tracking/consent', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ visitorId: VISITOR_ID, analytics: false }),
+			body: JSON.stringify({
+				visitorId: VISITOR_ID,
+				analytics: false,
+				decidedAt: withdrawal.updatedAt,
+			}),
 			keepalive: true,
 		});
 
 		const response = await forwardWithdrawalToRoute();
 		expect(response.status).toBe(200);
-		expect(sessions.map((row) => row.consent_snapshot)).toEqual([
-			{ necessary: true, analytics: false, marketing: false },
-			{ necessary: true, analytics: false, marketing: false },
-		]);
+		const withdrawn = {
+			necessary: true,
+			analytics: false,
+			marketing: false,
+			decidedAt: withdrawal.updatedAt,
+		};
+		expect(sessions.map((row) => row.consent_snapshot)).toEqual([withdrawn, withdrawn]);
 
 		mockFetch.mockClear();
 		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
@@ -175,9 +193,67 @@ describe('marketing consent withdrawal', () => {
 				) as never,
 			);
 
-		expect((await send({ visitorId: VISITOR_ID, marketing: true })).status).toBe(400);
+		const decidedAt = '2026-10-25T12:05:00.000Z';
+		expect((await send({ visitorId: VISITOR_ID, marketing: true, decidedAt })).status).toBe(
+			400,
+		);
+		expect((await send({ visitorId: VISITOR_ID, analytics: true })).status).toBe(400);
+		expect(
+			(await send({ visitorId: VISITOR_ID, analytics: true, decidedAt: 'yesterday' })).status,
+		).toBe(400);
 		mockCheckRateLimit.mockResolvedValueOnce(false);
-		expect((await send({ visitorId: VISITOR_ID, analytics: true })).status).toBe(429);
+		expect((await send({ visitorId: VISITOR_ID, analytics: true, decidedAt })).status).toBe(
+			429,
+		);
 		expect(mockRestRequest).not.toHaveBeenCalled();
+	});
+
+	describe('pending withdrawal retry', () => {
+		const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+		beforeEach(() => {
+			storage.set(VISITOR_STORAGE_KEY, VISITOR_ID);
+		});
+
+		it('keeps a lost withdrawal pending and resends it on the next page load', async () => {
+			mockFetch.mockRejectedValueOnce(new TypeError('offline'));
+			const withdrawal = saveConsent(true, false);
+			await flush();
+			expect(JSON.parse(storage.get(PENDING_KEY) ?? 'null')).toEqual({
+				visitorId: VISITOR_ID,
+				analytics: true,
+				decidedAt: withdrawal.updatedAt,
+			});
+
+			mockFetch.mockClear();
+			retryPendingConsentWithdrawal();
+			await flush();
+			expect(mockFetch).toHaveBeenCalledTimes(1);
+			expect(JSON.parse(String(mockFetch.mock.calls[0][1].body))).toEqual({
+				visitorId: VISITOR_ID,
+				analytics: true,
+				decidedAt: withdrawal.updatedAt,
+			});
+			expect(storage.has(PENDING_KEY)).toBe(false);
+		});
+
+		it('keeps a rejected withdrawal pending', async () => {
+			mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+			saveConsent(false, false);
+			await flush();
+			expect(storage.has(PENDING_KEY)).toBe(true);
+		});
+
+		it('drops the pending withdrawal when marketing is granted again', async () => {
+			mockFetch.mockRejectedValueOnce(new TypeError('offline'));
+			saveConsent(false, false);
+			await flush();
+			saveConsent(true, true);
+			expect(storage.has(PENDING_KEY)).toBe(false);
+
+			mockFetch.mockClear();
+			retryPendingConsentWithdrawal();
+			expect(mockFetch).not.toHaveBeenCalled();
+		});
 	});
 });

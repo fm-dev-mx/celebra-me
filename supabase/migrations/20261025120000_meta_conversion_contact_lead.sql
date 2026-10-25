@@ -7,6 +7,8 @@
 -- order and have no value. session_id has no foreign key on purpose: the 13-month analytics purge
 -- must stay free to delete the session after delivery.
 --
+-- It also keeps a marketing withdrawal on visitor_sessions until a newer consent decision.
+--
 -- Registered as contract only because the CHECK swaps use DROP CONSTRAINT and DROP NOT NULL.
 -- Every change widens what the table accepts; existing Purchase rows and the deployed
 -- application keep working, and the shape check keeps Purchase rows exactly as strict as before.
@@ -56,5 +58,31 @@ comment on column public.meta_conversion_events.session_id is
   'Visitor session of a browser Contact or Lead row. No foreign key, so the analytics purge can delete the session after delivery.';
 comment on column public.meta_conversion_events.event_source_path is
   'Route path where a browser Contact or Lead happened; delivery checks it against the tracking route policy.';
+
+-- A marketing withdrawal is sticky: a tracking upsert sent before the withdrawal but stored
+-- after it must not turn marketing back on. Snapshots carry the visitor's decision time
+-- (decidedAt, Date#toISOString, validated by the app so text order is time order); an update
+-- may switch marketing from off to on only with a strictly newer decision.
+create or replace function public.keep_latest_visitor_session_consent()
+returns trigger as $$
+declare
+  old_decided_at text := old.consent_snapshot->>'decidedAt';
+  new_decided_at text := new.consent_snapshot->>'decidedAt';
+begin
+  if coalesce(old.consent_snapshot->'marketing', 'false'::jsonb) <> 'true'::jsonb
+    and coalesce(new.consent_snapshot->'marketing', 'false'::jsonb) = 'true'::jsonb
+    and old_decided_at is not null
+    and (new_decided_at is null or new_decided_at <= old_decided_at)
+  then
+    new.consent_snapshot := old.consent_snapshot;
+  end if;
+  return new;
+end;
+$$ language plpgsql set search_path = '';
+
+drop trigger if exists trg_visitor_sessions_keep_latest_consent on public.visitor_sessions;
+create trigger trg_visitor_sessions_keep_latest_consent
+  before update of consent_snapshot on public.visitor_sessions
+  for each row execute function public.keep_latest_visitor_session_consent();
 
 commit;

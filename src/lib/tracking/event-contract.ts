@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { normalizeConsentSnapshot } from '@/lib/tracking/consent-policy';
+import {
+	CONSENT_DECIDED_AT_PATTERN,
+	normalizeConsentSnapshot,
+} from '@/lib/tracking/consent-policy';
 import {
 	metaAttributionOrUndefined,
 	sanitizeMetaAttribution,
@@ -137,6 +140,7 @@ const ConsentSnapshotSchema = z
 		necessary: z.boolean().optional(),
 		analytics: z.boolean().optional(),
 		marketing: z.boolean().optional(),
+		decidedAt: z.string().regex(CONSENT_DECIDED_AT_PATTERN).optional(),
 	})
 	.transform(normalizeConsentSnapshot);
 

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, getIp, parseJsonBody, successResponse } from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { CONSENT_DECIDED_AT_PATTERN } from '@/lib/tracking/consent-policy';
 import { withdrawVisitorMarketingConsent } from '@/lib/tracking/repository';
 
 /**
@@ -13,6 +14,7 @@ const ConsentWithdrawalSchema = z
 	.object({
 		visitorId: z.string().trim().min(6).max(120),
 		analytics: z.boolean(),
+		decidedAt: z.string().regex(CONSENT_DECIDED_AT_PATTERN),
 	})
 	.strict();
 

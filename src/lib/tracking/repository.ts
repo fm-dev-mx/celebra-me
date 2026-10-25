@@ -171,11 +171,13 @@ export async function findVisitorSessionMetaAttribution(
 
 /**
  * Record a marketing consent withdrawal on every session of the visitor, so queued Meta
- * conversions of those sessions are skipped at delivery time.
+ * conversions of those sessions are skipped at delivery time. The database keeps it until a
+ * newer decision arrives (`keep_latest_visitor_session_consent`).
  */
 export async function withdrawVisitorMarketingConsent(input: {
 	visitorId: string;
 	analytics: boolean;
+	decidedAt: string;
 }): Promise<void> {
 	await supabaseRestRequest<unknown>({
 		pathWithQuery: `visitor_sessions?visitor_id=eq.${encodeURIComponent(input.visitorId)}`,
@@ -183,7 +185,12 @@ export async function withdrawVisitorMarketingConsent(input: {
 		useServiceRole: true,
 		prefer: 'return=minimal',
 		body: {
-			consent_snapshot: { necessary: true, analytics: input.analytics, marketing: false },
+			consent_snapshot: {
+				necessary: true,
+				analytics: input.analytics,
+				marketing: false,
+				decidedAt: input.decidedAt,
+			},
 		},
 	});
 }

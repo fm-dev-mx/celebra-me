@@ -275,7 +275,7 @@
             "phase": "contract",
             "provides": ["meta_conversion_events_browser_events"],
             "revokes": ["meta_conversion_events_purchase_only"],
-            "notes": "Lets meta_conversion_events hold browser Contact and Lead rows: adds session_id (no foreign key) and event_source_path, drops NOT NULL on order_id, customer_id and value, widens the event_name and trigger_status checks, and adds a shape check that keeps Purchase rows as strict as before. Registered as contract only because the check swaps use DROP CONSTRAINT and DROP NOT NULL; every change widens, so no rows change and the deployed application keeps working. Must be applied before the application that enqueues Contact and Lead rows is deployed, or those inserts fail (ingestion logs and continues)."
+            "notes": "Lets meta_conversion_events hold browser Contact and Lead rows: adds session_id (no foreign key) and event_source_path, drops NOT NULL on order_id, customer_id and value, widens the event_name and trigger_status checks, and adds a shape check that keeps Purchase rows as strict as before. Also adds the visitor_sessions trigger keep_latest_visitor_session_consent, which keeps a marketing withdrawal until a newer consent decision. Registered as contract only because the check swaps use DROP CONSTRAINT and DROP NOT NULL; every change widens, so no rows change and the deployed application keeps working. Must be applied before the application that enqueues Contact and Lead rows is deployed, or those inserts fail (ingestion logs and continues)."
         }
     },
     "appCapabilities": {
