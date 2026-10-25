@@ -10,6 +10,47 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.50.0-beta.1] - 2026-10-25
+
+The season promo (November 1 to December 15) becomes the cheapest price tier, the mobile share
+messages modal gets its Cancel button back, `pnpm release-check` no longer freezes on an interactive
+terminal, and the board gains subtasks, a calendar tab, a blocked tab and review preflight. No
+migrations; no published invitation content changes.
+
+### Added
+
+- Board: tasks can name a mother task, an initiative and a phase; the queue shows subtask progress
+  by phase, and dated tasks move to a «Calendario» tab until their date (#564).
+- Board: blocked open tasks leave the numbered queue for a «Bloqueadas» tab that lists every unmet
+  requisito, and come back on their own once unblocked (#566).
+- Board: `pnpm board review` refuses a new round while GitHub reports merge conflicts, a stale head
+  or unverified mergeability, notifies the author with the conflicting paths, and classifies each
+  diff into a review risk tier (#565).
+- Board: `board:sync` checks finished tasks, compacts and prunes backups and detaches free lanes at
+  `origin/develop`; closing a periodic task reschedules it (#560).
+
+### Changed
+
+- Landing: `temporada-2026` (November 1 to December 15) costs 899/1299/1899 and `ano-nuevo-2027`
+  (December 16 to January 31) 999/1399/1999. The season countdown runs December 6 to 15, and October
+  shows no countdown because the next price is lower (#568).
+- Dashboard: the mobile modal footer Cancel button comes from one shared SCSS mixin used by the send
+  and share messages modals, with no visual change (#561).
+- CI: the mobile modal Cancel button check (visible, 44 px tall, keyboard focus ring at 390 px) runs
+  on every pull request that runs the browser tier (#563).
+
+### Fixed
+
+- Dashboard: the share messages modal shows its full-width Cancel button again on phones (#558).
+- `pnpm release-check` (and `pnpm prod:apply` when it runs it) no longer freezes on an interactive
+  terminal: parallel children run with stdin closed and their output piped and echoed line by line
+  (#562).
+- Board: «Le toca a usted» drops owner messages of finished or archived tasks, and the coordinator
+  queue asks to notify the author after a review with changes (#555).
+- Board: closing a review round with a verdict finishes it and frees its lock, and the coordinator
+  can free a silent lock older than 2 h once the task has a valid closing summary (#559).
+- Board: `board:sync` no longer archives finished tasks; only the owner archives them (#567).
+
 ## [0.49.0-beta.1] - 2026-10-25
 
 The commercial dashboard shows 30 days of Meta Ads, Page and Instagram results collected daily, old
