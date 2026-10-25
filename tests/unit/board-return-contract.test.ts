@@ -231,7 +231,25 @@ describe('board return contract (T129): CLI', () => {
 	});
 
 	it('cancels a replaced review round with its cierre and closes a review with its verdict', () => {
-		const dir = makeBoard([task('codigo', { estado: 'en revision', pr: '#530', contrato: 2 })]);
+		const dir = makeBoard([
+			task('codigo', {
+				estado: 'en revision',
+				pr: '#530',
+				contrato: 2,
+				cierre: {
+					resumen: 'ok',
+					comprobaciones: [],
+					saltadas: [],
+					pendientes: [],
+					fallidas: [],
+					riesgos: [],
+					dudas: [],
+					excepcion: [],
+					resultado: { pr: '#530', sha: SHA_A, nivel: 'ci' },
+					en: NOW,
+				},
+			}),
+		]);
 		const review = (sha: string) =>
 			cli(dir, 'review', 'codigo', `--sha=${sha}`, '--coordinador');
 		expect(review(SHA_A).status).toBe(0);

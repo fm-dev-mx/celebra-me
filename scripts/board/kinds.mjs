@@ -22,9 +22,12 @@ const LISTS = [
 	'pare_si',
 	'devuelve',
 	'al_terminar',
+	'tras_cierre',
 ];
 /** Lists that may be empty: a kind may return no typed resultado and add no closing step. */
-const MAY_BE_EMPTY = new Set(['devuelve', 'al_terminar']);
+const MAY_BE_EMPTY = new Set(['devuelve', 'al_terminar', 'tras_cierre']);
+/** d255: steps that run after `pnpm board close` (codigo's `review`); a kind may leave the key out. */
+const OPTIONAL = new Set(['tras_cierre']);
 export const PLACEHOLDERS = ['id', 'agente', 'rama', 'nombre'];
 export const LISTO_SI = [...NIVELES, 'ninguno'];
 
@@ -77,7 +80,8 @@ function shapeIssues(doc) {
 	for (const k of SCALARS)
 		if (typeof doc[k] !== 'string' || !doc[k].trim()) out.push(`falta ${k}`);
 	for (const k of LISTS)
-		if (!Array.isArray(doc[k])) out.push(`${k} debe ser una lista`);
+		if (doc[k] === undefined && OPTIONAL.has(k)) continue;
+		else if (!Array.isArray(doc[k])) out.push(`${k} debe ser una lista`);
 		else if (!doc[k].length && !MAY_BE_EMPTY.has(k)) out.push(`${k} está vacía`);
 	return out;
 }
