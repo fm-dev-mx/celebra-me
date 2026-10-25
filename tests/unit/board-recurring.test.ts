@@ -181,14 +181,19 @@ describe('periodic tasks (cada, d268)', () => {
 		const dir = makeBoard([
 			{ ...PERIODIC, id: 'weekly-health', pr: '#42', rama: 'chore/weekly-health' },
 			{ ...PERIODIC, id: 'sin-pr', pr: undefined, rama: undefined },
+			{ ...PERIODIC, id: 'con-flag', pr: undefined, rama: 'chore/con-flag' },
 		]);
 		expect(cli(dir, 'close', 'weekly-health', ...CLOSE).status).toBe(0);
 		expect(cli(dir, 'close', 'sin-pr', ...CLOSE).status).toBe(0);
-		const prs = [pr(42, 'chore/weekly-health'), pr(43, 'fix/sin-pr')];
+		// The cycle's PR given only to close (--pr) is a past cycle's PR too.
+		expect(cli(dir, 'close', 'con-flag', ...CLOSE, '--pr=#44').status).toBe(0);
+		expect(read(dir, 'con-flag').prsPrevios).toEqual(['#44']);
+		patch(dir, 'con-flag', { rama: 'chore/con-flag' });
+		const prs = [pr(42, 'chore/weekly-health'), pr(43, 'fix/sin-pr'), pr(44, 'chore/con-flag')];
 		const r = sync(dir, prs);
 		expect(r.cambios).toEqual([]);
 		expect(r.higiene.archivadas).toEqual([]);
-		for (const id of ['weekly-health', 'sin-pr']) {
+		for (const id of ['weekly-health', 'sin-pr', 'con-flag']) {
 			const t = read(dir, id);
 			expect(t.estado).toBe('pendiente');
 			expect(t.archivada).toBeUndefined();
@@ -200,5 +205,12 @@ describe('periodic tasks (cada, d268)', () => {
 		expect(next.cambios.map((c: Json) => [c.id, c.set])).toEqual([
 			['weekly-health', { pr: '#50', estado: 'en revision' }],
 		]);
+		// Cycle 2 of con-flag records its own PR; a close without --pr adds it, not the cierre's inherited #44 again.
+		patch(dir, 'con-flag', { estado: 'en curso', pr: '#51' });
+		expect(cli(dir, 'close', 'con-flag', ...CLOSE).status).toBe(0);
+		expect(read(dir, 'con-flag')).toMatchObject({
+			estado: 'pendiente',
+			prsPrevios: ['#44', '#51'],
+		});
 	});
 });

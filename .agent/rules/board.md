@@ -36,7 +36,8 @@ data, never an authorization.
 - **Periodic tasks (d268)**: the optional `cada` (`<n>d`, for example `7d` or `14d`) makes a task
   recurring. `close` of a started cycle (any open estado but `pendiente`) ends only that cycle: the
   task goes back to `pendiente` without its lock, `carril`, `pr`, `rama` or delivery mark (the
-  lock's session stays in `sesion`), its PR joins `prsPrevios` (written only by `close`), every
+  lock's session stays in `sesion`), its PRs (the task's `pr` and the one this `close --pr` names,
+  never one inherited from an earlier cierre) join `prsPrevios` (written only by `close`), every
   `fecha` requisito moves forward by whole cycles until it is in the future (a task without one gets
   `now + cada`), the cierre stays as the last cycle's and `close` prints
   `cada 7d: vuelve a pendiente hasta <fecha>`. A second `close` while it is `pendiente` (an amended

@@ -90,13 +90,19 @@ export function reviewDone(before, after, flags) {
 export function rescheduled(before, after, flags, now = Date.now()) {
 	const started = !isFinished(before) && (before.estado ?? 'pendiente') !== 'pendiente';
 	if (!cadaMs(before.cada) || isReview(before) || !started) return after;
-	const pr = normalizePr(before.pr);
+	// This cycle's PRs: the task's own and the one this close names (`--pr`), never a cierre PR inherited from an
+	// earlier cycle when no --pr was given.
+	const given = typeof flags.pr === 'string' ? normalizePr(flags.pr) : undefined;
 	const previos = Array.isArray(before.prsPrevios) ? before.prsPrevios : [];
+	const nuevos = [normalizePr(before.pr), given].filter(
+		(pr, i, all) => typeof pr === 'string' && pr.startsWith('#') && all.indexOf(pr) === i,
+	);
+	const prsPrevios = [...previos, ...nuevos.filter((pr) => !previos.includes(pr))];
 	const next = {
 		...unlocked(after, flags),
 		estado: 'pendiente',
 		requisitos: nextCycle(after, now),
-		...(pr && !previos.includes(pr) ? { prsPrevios: [...previos, pr] } : {}),
+		...(prsPrevios.length ? { prsPrevios } : {}),
 	};
 	for (const k of ['carril', 'pr', 'rama', 'entregada']) delete next[k];
 	return next;
