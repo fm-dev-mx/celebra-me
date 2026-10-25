@@ -15,6 +15,7 @@ export default [
 			'dist/',
 			'node_modules/',
 			'.worktrees/',
+			'.claude/worktrees/',
 			'.opencode/',
 			'.agent/tmp/',
 			'.astro/',
