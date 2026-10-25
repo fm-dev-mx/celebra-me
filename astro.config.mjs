@@ -24,7 +24,11 @@ const isBuildCommand = process.argv.includes('build');
 const usesCloudflareAdapter = isBuildCommand || process.argv.includes('preview');
 // Hosted builds declare their deploy identity; local processes never do. An invalid
 // declaration fails the build instead of producing a bundle that throws at runtime.
-const isHostedBuild = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV) !== null;
+const deployEnvironment = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV);
+const isHostedBuild = deployEnvironment !== null;
+// The landing page's `?fecha=` promo preview ships to local processes and Preview, never to
+// Production.
+const allowsPromoDatePreview = deployEnvironment !== 'production';
 // Build identity reported by /api/health. GitHub Actions exposes GITHUB_SHA.
 const buildCommitSha = process.env.GITHUB_SHA || '';
 const buildGitRef = process.env.GITHUB_REF_NAME || '';
@@ -253,6 +257,9 @@ export default defineConfig({
 		define: {
 			'import.meta.env.CELEBRA_BUILD_SHA': JSON.stringify(buildCommitSha),
 			'import.meta.env.CELEBRA_BUILD_REF': JSON.stringify(buildGitRef),
+			'import.meta.env.CELEBRA_PROMO_DATE_PREVIEW': JSON.stringify(
+				String(allowsPromoDatePreview),
+			),
 		},
 		optimizeDeps: {
 			include: ['framer-motion'],

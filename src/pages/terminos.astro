@@ -11,9 +11,27 @@ import {
 	formatMxn,
 	getCatalogPackage,
 	getExpressDelivery,
+	getPackagePrice,
+	getStartLabel,
+	PACKAGE_CATALOG,
 	PRICE_HOLD_DAYS,
+	PROMO_CURRENCY,
+	PROMO_SCHEDULE,
 } from '@/data/promo-campaign.data';
 
+// Prerendered: lists the rows that have not ended on the build day.
+const buildTime = Date.now();
+const upcomingPromotions = PROMO_SCHEDULE.filter(
+	(campaign) => Date.parse(campaign.endsAt) > buildTime,
+).map((campaign) => ({
+	id: campaign.id,
+	label: campaign.label,
+	period: `del ${getStartLabel(campaign)} al ${campaign.endLabel}`,
+	prices: PACKAGE_CATALOG.map(
+		(pkg) => `${pkg.name} ${formatMxn(getPackagePrice(pkg.id, campaign))}`,
+	).join(', '),
+	conditions: campaign.conditions,
+}));
 const expressDelivery = getExpressDelivery();
 const expressDeliveryPackages = expressDelivery.appliesTo
 	.map((packageId) => getCatalogPackage(packageId).name)
@@ -67,6 +85,20 @@ const atelierName = getCatalogPackage('atelier').name;
 				<p>
 					Respetamos el precio vigente el día en que nos escribe por WhatsApp, incluido el de una promoción, siempre que apruebe y pague su invitación dentro de los {PRICE_HOLD_DAYS} días siguientes. Después de ese plazo aplica el precio vigente el día del pago.
 				</p>
+				{upcomingPromotions.length > 0 && (
+					<>
+						<p>
+							Promociones vigentes y programadas (fechas en hora de Los Mochis, Sinaloa). Fuera de estas fechas aplica el precio regular.
+						</p>
+						<ul>
+							{upcomingPromotions.map((promotion) => (
+								<li>
+									<strong>{promotion.label}</strong>, {promotion.period}: {promotion.prices} {PROMO_CURRENCY}. {promotion.conditions}
+								</li>
+							))}
+						</ul>
+					</>
+				)}
 
 				<h2>6. Entrega</h2>
 				<p>
