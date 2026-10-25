@@ -145,8 +145,8 @@ authorization.
 - **Shared rules**: `model.mjs` owns every rule more than one script needs — `isReview`,
   `isReadOnly`, `READONLY_LANE`, lane checks (`laneAllowed`, `taskLane`), finished states
   (`isFinished`), `taskLabel`/`taskTag`, `ordenOf`, the stale-lock threshold and PR parsing
-  (`normalizePr`, `prNumber`); `board`, `sync`, `verify`, `watch` and the view import them instead
-  of keeping a copy.
+  (`normalizePr`, `prNumber`, defined in `pr-ref.mjs` and re-exported); `board`, `sync`, `verify`,
+  `watch` and the view import them instead of keeping a copy.
 - **Sync**: `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» /
   «Sincronizar» buttons) is a no-AI script: after `git fetch --prune origin` it reads
   `git worktree list`, local and origin branches and `gh pr list --state all`, matches each open

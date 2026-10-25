@@ -3,7 +3,17 @@
  * Pure functions only: no Node APIs, so the view imports this same file in the browser.
  */
 import { awaitingClaim } from './delivery.mjs';
-import { isPromptV1, promptSection, promptV1Issues, reviewText, withRunLines } from './prompt.mjs';
+import { isForeignPull } from './pr-ref.mjs';
+import {
+	isPromptV1,
+	promptSection,
+	promptV1Issues,
+	reviewText,
+	withPushCheck,
+	withRunLines,
+} from './prompt.mjs';
+
+export { normalizePr, prNumber } from './pr-ref.mjs';
 
 export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
 export const ACTORES = ['dueno', 'sesion', 'coordinador'];
@@ -791,14 +801,14 @@ const ownerWhereLines = (t) => {
 
 /**
  * The prompt an agent receives, with the planned lane so nobody has to repeat it by hand: a prompt-v1 (T160)
- * keeps its session name on line 1 and gets the lane as `corre:` lines in METADATOS; a legacy prompt gets a
- * leading `CARRIL` block.
+ * keeps its session name on line 1, gets the pre-push check under AL TERMINAR when it pushes a branch (d246)
+ * and the lane as `corre:` lines in METADATOS; a legacy prompt gets a leading `CARRIL` block.
  */
 export function promptWithLane(t, board) {
+	if (!t.prompt || t.actor === 'dueno') return t.prompt;
 	const lines = laneLines(t, board);
-	if (!t.prompt || !lines.length || t.actor === 'dueno') return t.prompt;
-	if (isPromptV1(t.prompt)) return withRunLines(t.prompt, lines);
-	return `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`;
+	if (isPromptV1(t.prompt)) return withRunLines(withPushCheck(t.prompt), lines);
+	return lines.length ? `CARRIL\n${lines.join('\n')}\n\n${t.prompt}` : t.prompt;
 }
 
 const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));
@@ -809,22 +819,6 @@ const optional = (v, ok) => v === undefined || ok(v);
 /** Merged always needs a PR; under review only when the task has a branch (audits ship none). */
 const needsPr = (t) => t.estado === 'unida' || (t.estado === 'en revision' && !!t.rama);
 
-const OWN_PULL = /^(?:https?:\/\/)?github\.com\/fm-dev-mx\/celebra-me\/pull\/([1-9]\d*)\/?$/;
-const isForeignPull = (p) => /\/pull\/\d+/.test(String(p)) && !OWN_PULL.test(String(p).trim());
-
-/** Canonical `#N` from 398, "398", "#398" or this repository's pull URL; anything else stays. */
-export function normalizePr(pr) {
-	if (pr === undefined || pr === null || String(pr).trim() === '') return undefined;
-	const s = String(pr).trim();
-	const m = s.match(/^#?([1-9]\d*)$/) ?? s.match(OWN_PULL);
-	return m ? `#${m[1]}` : pr;
-}
-
-/** The PR number of a task's `pr` (`#398`, 398 or this repository's pull URL); null when it holds none. */
-export function prNumber(pr) {
-	const m = String(normalizePr(pr) ?? '').match(/^#(\d+)$/);
-	return m ? Number(m[1]) : null;
-}
 const validLock = (c) =>
 	AGENTES.includes(c?.agente) &&
 	c.agente !== 'cualquiera' &&

@@ -145,6 +145,24 @@ export function withRunLines(prompt, lines) {
 	return add.length ? `${prompt.replace(/\s+$/, '')}\n${add.join('\n')}` : prompt;
 }
 
+/** The pre-push check every code session runs (gatekeeper §5.1, d246); `withPushCheck` adds it to AL TERMINAR. */
+const PUSH_CHECK_LINE =
+	'- Antes de cada push: pnpm validate:changed (con los cambios aún sin confirmar) y pnpm validate:structure; haga push solo si ambos pasan.';
+
+/**
+ * `prompt` with PUSH_CHECK_LINE first under AL TERMINAR when it is a prompt-v1 for a session that pushes a
+ * branch: one with `rama:` that does not run read-only. Other prompts, and one that already has it, stay.
+ */
+export function withPushCheck(prompt) {
+	const meta = promptMetadata(prompt);
+	if (meta?.formato !== PROMPT_FORMAT || !meta.rama || /solo lectura/.test(meta.carril ?? ''))
+		return prompt;
+	const lines = linesOf(prompt);
+	const at = lines.findIndex((l) => l.trim() === 'AL TERMINAR');
+	if (at < 0 || lines.some((l) => l.trim() === PUSH_CHECK_LINE)) return prompt;
+	return [...lines.slice(0, at + 1), PUSH_CHECK_LINE, ...lines.slice(at + 1)].join('\n');
+}
+
 const ROUND_WORDS = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA'];
 const roundWord = (n) => `${ROUND_WORDS[n - 1] ?? n} VUELTA`;
 

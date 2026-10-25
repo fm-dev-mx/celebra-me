@@ -120,8 +120,24 @@ export const VISUAL_PARITY_INPUT_PATTERNS = [
 	/^(?:package\.json|pnpm-lock\.yaml)$/u,
 ];
 
-/** Browser job parts: the complete page parity suite beside every other browser check. */
-export const SPLIT_BROWSER_PARTS = ['pages', 'rest'] as const;
+/**
+ * Browser job parts with complete parity: two Playwright shards of the page parity suite beside two
+ * of every other browser check, which balances the four jobs by measured duration.
+ */
+export const SPLIT_BROWSER_PARTS = [
+	'pages-1-of-2',
+	'pages-2-of-2',
+	'rest-1-of-2',
+	'rest-2-of-2',
+] as const;
+
+/** Browser job parts with deferred parity: four Playwright shards of every browser check. */
+export const DEFERRED_BROWSER_PARTS = [
+	'all-1-of-4',
+	'all-2-of-4',
+	'all-3-of-4',
+	'all-4-of-4',
+] as const;
 
 export interface VisualParityDecision {
 	visual: 'full' | 'deferred';
@@ -141,8 +157,8 @@ function fullParity(reason: string): VisualParityDecision {
 
 /**
  * Decides whether the browser job runs the complete visual parity suites. Only a pull request
- * into develop that changes no visual parity input defers them, in one job; every other run and
- * every uncertain case runs them, split into two parallel jobs.
+ * into develop that changes no visual parity input defers them; every other run and every uncertain
+ * case runs them. Either way the browser checks run as four parallel shards.
  */
 export function assessVisualParity(input: {
 	eventName: string;
@@ -162,7 +178,7 @@ export function assessVisualParity(input: {
 	if (inputs.length > 0) return fullParity(`Visual parity inputs changed: ${inputs.join(', ')}`);
 	return {
 		visual: 'deferred',
-		parts: ['all'],
+		parts: DEFERRED_BROWSER_PARTS,
 		reason: 'No visual parity input changed; develop and the nightly run check them.',
 	};
 }

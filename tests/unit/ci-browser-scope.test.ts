@@ -157,7 +157,7 @@ describe('CI visual parity scope', () => {
 		expect(isVisualParityInput(path)).toBe(false),
 	);
 
-	it('runs complete parity, split in two parts, outside pull requests into develop', () => {
+	it('runs complete parity, split in four shards, outside pull requests into develop', () => {
 		for (const [eventName, refName] of [
 			['push', ''],
 			['pull_request', 'main'],
@@ -165,7 +165,12 @@ describe('CI visual parity scope', () => {
 		]) {
 			const decision = assessVisualParity({ eventName, refName, changedPaths: [] });
 			expect(decision.visual).toBe('full');
-			expect(decision.parts).toEqual(['pages', 'rest']);
+			expect(decision.parts).toEqual([
+				'pages-1-of-2',
+				'pages-2-of-2',
+				'rest-1-of-2',
+				'rest-2-of-2',
+			]);
 		}
 	});
 
@@ -176,7 +181,12 @@ describe('CI visual parity scope', () => {
 			changedPaths: ['docs/a.md', 'src\\styles\\invitation\\_demo-conversion.scss'],
 		});
 		expect(decision.visual).toBe('full');
-		expect(decision.parts).toEqual(['pages', 'rest']);
+		expect(decision.parts).toEqual([
+			'pages-1-of-2',
+			'pages-2-of-2',
+			'rest-1-of-2',
+			'rest-2-of-2',
+		]);
 		expect(decision.reason).toContain('src/styles/invitation/_demo-conversion.scss');
 	});
 
@@ -189,14 +199,14 @@ describe('CI visual parity scope', () => {
 		expect(decision.visual).toBe('full');
 	});
 
-	it('defers complete parity in one job only for a non-visual pull request into develop', () => {
+	it('defers complete parity, still in four shards, only for a non-visual pull request into develop', () => {
 		const decision = assessVisualParity({
 			eventName: 'pull_request',
 			refName: 'develop',
 			changedPaths: ['src/components/dashboard/GuestTable.astro', 'docs/a.md'],
 		});
 		expect(decision.visual).toBe('deferred');
-		expect(decision.parts).toEqual(['all']);
+		expect(decision.parts).toEqual(['all-1-of-4', 'all-2-of-4', 'all-3-of-4', 'all-4-of-4']);
 	});
 });
 
