@@ -3,9 +3,10 @@
  * `/api/stream` pushes the board as Server-Sent Events whenever a file in the store changes, so the page
  * shows a write in under a second; `/api/board` stays for one-off reads.
  *
- * Two writes, both only from this same page on 127.0.0.1: `POST /api/archivar` (d167) archives or unarchives a
- * finished task through the `archive` option `pnpm board view` passes (without it the server stays read-only),
- * and `POST /api/sync` (the «Sincronizar» button) runs the no-AI `scripts/board/sync.mjs`. Any website can make
+ * Three writes, all only from this same page on 127.0.0.1: `POST /api/archivar` (d167) archives or unarchives a
+ * finished task through the `archive` option `pnpm board view` passes, `POST /api/entregada` (d249) marks a task
+ * whose prompt «Copiar prompt» copied as delivered through the `deliver` option (without them the server stays
+ * read-only), and `POST /api/sync` (the «Sincronizar» button) runs the no-AI `scripts/board/sync.mjs`. Any website can make
  * the browser send a request to 127.0.0.1, so every request must carry a local `Host` (DNS rebinding), and the
  * sync POST must also come from the page's own `Origin` with the per-process random token the page embeds.
  *
@@ -29,6 +30,7 @@ const FILES = {
 	'/next.mjs': ['next.mjs', 'text/javascript; charset=utf-8'],
 	'/cierre.mjs': ['cierre.mjs', 'text/javascript; charset=utf-8'],
 	'/format.mjs': ['format.mjs', 'text/javascript; charset=utf-8'],
+	'/delivery.mjs': ['delivery.mjs', 'text/javascript; charset=utf-8'],
 };
 const SETTLE_MS = 150;
 const HEARTBEAT_MS = 25_000;
@@ -119,11 +121,14 @@ function json(res, status, body) {
 	res.end(JSON.stringify(body));
 }
 
-/** `archive(id, archivar, opts)` answers `{ task }` or `{ error }` for a refused write, and throws otherwise. */
-function archiveRequest(archive, req, res) {
+/**
+ * A same-origin JSON write: `handle(input)` answers `[status, body]`; `denied` is the 403 text, a body that is
+ * not JSON a 400 and a throw a 500.
+ */
+function writeRequest(req, res, denied, handle) {
 	if (!sameOrigin(req)) {
 		req.resume();
-		return json(res, 403, { error: 'Solo se archiva desde esta página en 127.0.0.1.' });
+		return json(res, 403, { error: denied });
 	}
 	let body = '';
 	req.setEncoding('utf8');
@@ -138,19 +143,40 @@ function archiveRequest(archive, req, res) {
 		} catch {
 			return json(res, 400, { error: 'Petición no válida.' });
 		}
-		if (typeof input?.id !== 'string' || typeof input.archivar !== 'boolean')
-			return json(res, 400, { error: 'Falta id o archivar.' });
 		try {
-			const { task: t, error } = archive(input.id, input.archivar, {
-				rev: input.rev === undefined ? undefined : String(input.rev),
-				quien: 'dueño',
-				corrio: input.archivar ? 'Archivar en la página' : 'Desarchivar en la página',
-			});
-			if (error) return json(res, 409, { error });
-			json(res, 200, { id: t.id, rev: t.rev, archivada: t.archivada ?? null });
+			json(res, ...handle(input));
 		} catch (e) {
 			json(res, 500, { error: String(e.message ?? e) });
 		}
+	});
+}
+
+/** `archive(id, archivar, opts)` answers `{ task }` or `{ error }` for a refused write, and throws otherwise. */
+function archiveRequest(archive, req, res) {
+	writeRequest(req, res, 'Solo se archiva desde esta página en 127.0.0.1.', (input) => {
+		if (typeof input?.id !== 'string' || typeof input.archivar !== 'boolean')
+			return [400, { error: 'Falta id o archivar.' }];
+		const { task: t, error } = archive(input.id, input.archivar, {
+			rev: input.rev === undefined ? undefined : String(input.rev),
+			quien: 'dueño',
+			corrio: input.archivar ? 'Archivar en la página' : 'Desarchivar en la página',
+		});
+		if (error) return [409, { error }];
+		return [200, { id: t.id, rev: t.rev, archivada: t.archivada ?? null }];
+	});
+}
+
+/** `deliver(id, agente, opts)` answers like `archive`: the owner copied the prompt to paste it into `agente`. */
+function deliverRequest(deliver, req, res) {
+	writeRequest(req, res, 'Solo se marca desde esta página en 127.0.0.1.', (input) => {
+		if (typeof input?.id !== 'string' || typeof input.agente !== 'string')
+			return [400, { error: 'Falta id o agente.' }];
+		const { task: t, error } = deliver(input.id, input.agente, {
+			quien: 'dueño',
+			corrio: 'Copiar prompt en la página',
+		});
+		if (error) return [409, { error }];
+		return [200, { id: t.id, rev: t.rev, entregada: t.entregada }];
 	});
 }
 
@@ -246,6 +272,7 @@ export function serveView(
 		watchFactory = watch,
 		sync = (opts) => runSyncScript(dir, opts),
 		archive,
+		deliver,
 		live,
 		liveMs = LIVE_MS,
 		token = randomBytes(32).toString('hex'),
@@ -348,6 +375,10 @@ export function serveView(
 		}
 		if (archive && req.method === 'POST' && path === '/api/archivar') {
 			archiveRequest(archive, req, res);
+			return;
+		}
+		if (deliver && req.method === 'POST' && path === '/api/entregada') {
+			deliverRequest(deliver, req, res);
 			return;
 		}
 		if (req.method !== 'GET') {

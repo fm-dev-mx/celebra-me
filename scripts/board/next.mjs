@@ -25,10 +25,15 @@ import {
 	taskTag,
 	VEREDICTOS,
 } from './model.mjs';
+import { delivery, deliveryText } from './delivery.mjs';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
+
+/** d249: the delivery mark with the agent's name: «Entregada a Codex · 14:35 · esperando que la tome». */
+export const deliveryLine = (t, now = Date.now()) =>
+	deliveryText(t, now, (a) => AGENT_REGISTRY[a]?.nombre ?? 'un agente');
 
 /** Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids. */
 export function unreadFor(agente, board) {
@@ -114,7 +119,9 @@ const idleText = (idle) => (Number.isNaN(idle) ? '' : ` · lista ${agoText(idle)
  */
 export function stalls(board, now = Date.now()) {
 	const dueno = readyUnclaimed(board, now)
+		// d249: a delivered task comes back as its own «nadie la tomó» row instead.
 		.filter(({ t, idle }) => isIdle(idle) && ownerLaunches(t, board, now).length)
+		.filter(({ t }) => !delivery(t, now))
 		.map(({ t, idle }) => {
 			const names = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
 			return {
@@ -263,7 +270,11 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 			const where = t.actor === 'dueno' && ownerWhere(t);
 			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
 			const how = where || (paste.length ? `Pegar en ${paste.join(' o ')}` : '');
-			return row(t, `${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}`);
+			const late = deliveryLine(t, now);
+			return row(
+				t,
+				`${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
+			);
 		}),
 		...ownerAsks(board, now).map(({ t, r }) =>
 			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`),
