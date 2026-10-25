@@ -10,6 +10,7 @@
         "dev": "astro dev",
         "build": "pnpm type-check && pnpm build:app",
         "build:app": "astro build",
+        "demos:previews": "tsx scripts/seo/generate-demo-previews.ts",
         "preview": "astro preview",
         "astro": "astro",
         "test": "jest",
