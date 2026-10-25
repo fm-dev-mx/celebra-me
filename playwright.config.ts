@@ -43,11 +43,17 @@ const visualParitySnapshotRoot =
 		: '.tmp/visual-parity/candidate');
 
 // Repository CI may split the browser job: `pages` runs only the complete page parity suite and
-// `rest` every other browser check. Each part keeps whole suites, so its teardown still proves the
-// complete capture matrix of every suite it ran.
-const browserPart = process.env.PLAYWRIGHT_BROWSER_PART?.trim() || 'all';
-if (!['all', 'pages', 'rest'].includes(browserPart))
-	throw new Error(`Unknown PLAYWRIGHT_BROWSER_PART: ${browserPart}`);
+// `rest` every other browser check. A `-<n>-of-<total>` suffix runs one Playwright shard of that
+// selection; a shard skips the teardown matrix proof, which CI asserts across all shards instead.
+const browserPartMatch = /^(all|pages|rest)(?:-(\d+)-of-(\d+))?$/u.exec(
+	process.env.PLAYWRIGHT_BROWSER_PART?.trim() || 'all',
+);
+if (!browserPartMatch)
+	throw new Error(`Unknown PLAYWRIGHT_BROWSER_PART: ${process.env.PLAYWRIGHT_BROWSER_PART}`);
+const browserPart = browserPartMatch[1];
+const browserShard = browserPartMatch[2]
+	? { current: Number(browserPartMatch[2]), total: Number(browserPartMatch[3]) }
+	: undefined;
 const PAGE_PARITY_SPEC = '**/canonical-invitation-page-parity.spec.ts';
 
 export default defineConfig({
@@ -60,6 +66,7 @@ export default defineConfig({
 	workers: process.env.CI ? 1 : undefined,
 	reporter: [['list'], ['json', { outputFile: 'test-results/results.json' }]],
 	...(browserPart === 'pages' ? { testMatch: [PAGE_PARITY_SPEC] } : {}),
+	...(browserShard ? { shard: browserShard } : {}),
 	testIgnore: ['preview/**', ...(browserPart === 'rest' ? [PAGE_PARITY_SPEC] : [])],
 	use: {
 		baseURL: runtime.baseURL,

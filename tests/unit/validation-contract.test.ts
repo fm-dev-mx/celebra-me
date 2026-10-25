@@ -155,9 +155,11 @@ describe('canonical validation contract', () => {
 			expect(workflow).toContain('pnpm ops check-links');
 			expect(workflow).toContain('pnpm validate:markdown-tables');
 			for (const command of [
-				'pnpm ci:static',
+				// Every `ci:static` command, in parallel lanes (scripts/ops/ci-static-parallel.ts).
+				'pnpm ci:static:parallel',
 				'pnpm test',
-				'pnpm test:e2e:ci --max-failures=5 --workers=4',
+				// Each of the four browser shards runs at most two workers.
+				'pnpm test:e2e:ci --max-failures=5 --workers=2',
 				// Guest memories specs run on every device project of playwright.memories.config.ts.
 				'pnpm test:e2e:memories --max-failures=5 --workers=2',
 			]) {
@@ -165,8 +167,16 @@ describe('canonical validation contract', () => {
 			}
 			// Prettier wraps this list; the aggregate must still wait for every tier and the scope job.
 			expect(workflow).toMatch(
-				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-memories,\s*browser-scope,?\s*\]/,
+				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-visual-coverage,\s*browser-memories,\s*browser-scope,?\s*\]/,
 			);
+			// Sharded browser parts skip the teardown matrix proof; CI proves it per shard and joined.
+			expect(workflow).toContain('VISUAL_PARITY_RUN_ID: ${{ github.run_id }}');
+			expect(workflowLines).toContain('run: pnpm visual:parity:shard');
+			expect(workflowLines).toContain(
+				'run: node scripts/ops/visual-shard-merge.ts .tmp/visual-records',
+			);
+			expect(workflow).toContain('name: Application / browser (visual coverage)');
+			expect(workflow).toContain('test "$COVERAGE_RESULT" = success');
 			expect(workflow).toContain('tier: [static, unit, database, workerd]');
 			expect(workflowLines).toContain(
 				'run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA"',
@@ -247,7 +257,10 @@ describe('canonical validation contract', () => {
 		const workflowCommand = workflow.match(/run: (pnpm test:e2e:ci .*)/)?.[1];
 
 		expect(workflow).not.toContain('VISUAL_PARITY_PARALLEL');
-		expect(workflowCommand).toBe(CERTIFIED_BROWSER_COMMAND);
+		// Each CI shard runs at most two workers; every other flag matches the certified command.
+		const withoutWorkers = (command = '') => command.replace(/ --workers=\d+/u, '');
+		expect(withoutWorkers(workflowCommand)).toBe(withoutWorkers(CERTIFIED_BROWSER_COMMAND));
+		expect(Number(workflowCommand?.match(/--workers=(\d+)/u)?.[1])).toBeLessThanOrEqual(2);
 	});
 
 	it('skips application tiers only for confirmed integration evidence', () => {

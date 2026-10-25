@@ -114,6 +114,35 @@ describe('prompt-v1 (T160)', () => {
 		expect(out.lanes).toEqual([]);
 	});
 
+	it('adds the pre-push check under AL TERMINAR only to prompts that push a branch (d246)', () => {
+		const readOnly = TASK_PROMPT.replace(
+			'carril: f05-plataforma',
+			'carril: f04-coordinador (solo lectura)',
+		);
+		const out = probe(
+			`const copy = (prompt) => m.promptWithLane({ ...input, prompt }, { tareas: [] });
+			const once = copy(input.prompt);
+			console.log(JSON.stringify({
+				once,
+				twice: p.withPushCheck(once) === once,
+				noBranch: p.withPushCheck(input.prompt.replace('rama: feat/board-prompt-v1\\n', '')),
+				readOnly: p.withPushCheck(input.readOnly),
+				owner: m.promptWithLane({ ...input, actor: 'dueno' }, { tareas: [] }),
+			}));`,
+			{ ...task({ prompt: TASK_PROMPT }), readOnly },
+		);
+		const lines = out.once.split('\n');
+		const line = lines[lines.indexOf('AL TERMINAR') + 1];
+		expect(line).toMatch(
+			/^- Antes de cada push: pnpm validate:changed .* pnpm validate:structure;/u,
+		);
+		expect(lines[lines.indexOf('AL TERMINAR') + 2]).toBe('1. pnpm validate:changed en verde.');
+		expect(out.twice).toBe(true);
+		expect(out.noBranch).not.toContain(line);
+		expect(out.readOnly).toBe(readOnly);
+		expect(out.owner).toBe(TASK_PROMPT);
+	});
+
 	it('keeps a legacy prompt working: no prompt-v1 checks, CARRIL first', () => {
 		const legacy = 'T12 · Algo\n\nQUÉ SE BUSCA\nX.\n\nDECISIONES\n- ninguna';
 		const out = probe(

@@ -2,7 +2,14 @@
  * Board v3 model shared by `pnpm board`, `pnpm board:verify` and the local view (rules: .agent/rules/board.md).
  * Pure functions only: no Node APIs, so the view imports this same file in the browser.
  */
-import { isPromptV1, promptSection, promptV1Issues, reviewText, withRunLines } from './prompt.mjs';
+import {
+	isPromptV1,
+	promptSection,
+	promptV1Issues,
+	reviewText,
+	withPushCheck,
+	withRunLines,
+} from './prompt.mjs';
 
 export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
 export const ACTORES = ['dueno', 'sesion', 'coordinador'];
@@ -766,14 +773,14 @@ const ownerWhereLines = (t) => {
 
 /**
  * The prompt an agent receives, with the planned lane so nobody has to repeat it by hand: a prompt-v1 (T160)
- * keeps its session name on line 1 and gets the lane as `corre:` lines in METADATOS; a legacy prompt gets a
- * leading `CARRIL` block.
+ * keeps its session name on line 1, gets the pre-push check under AL TERMINAR when it pushes a branch (d246)
+ * and the lane as `corre:` lines in METADATOS; a legacy prompt gets a leading `CARRIL` block.
  */
 export function promptWithLane(t, board) {
+	if (!t.prompt || t.actor === 'dueno') return t.prompt;
 	const lines = laneLines(t, board);
-	if (!t.prompt || !lines.length || t.actor === 'dueno') return t.prompt;
-	if (isPromptV1(t.prompt)) return withRunLines(t.prompt, lines);
-	return `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`;
+	if (isPromptV1(t.prompt)) return withRunLines(withPushCheck(t.prompt), lines);
+	return lines.length ? `CARRIL\n${lines.join('\n')}\n\n${t.prompt}` : t.prompt;
 }
 
 const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));

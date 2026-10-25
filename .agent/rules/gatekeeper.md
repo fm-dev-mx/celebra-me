@@ -214,6 +214,13 @@ selected tier. Preserve explicit domain/release and human-acceptance gates.
 Do not claim completion unless applicable checks pass and the requested outcome is supported by
 current evidence. Report failures, skips, remaining risks, and git-safety:finish results.
 
+### 5.1 Before every push
+
+Every session that pushes a branch runs `pnpm validate:changed` and `pnpm validate:structure` before
+each push, whatever the tier, and pushes only when both pass. `validate:changed` reads the working
+tree against `HEAD`, so run it on the uncommitted changes, before the commit. Board prompts that
+push a branch carry this step under `AL TERMINAR` (`withPushCheck` in `scripts/board/prompt.mjs`).
+
 ### 5.3 Visual evidence (screenshots and browser proof)
 
 Material layout/reveal/hero/composition requires scoped visual evidence. Docs/backend/copy-only work

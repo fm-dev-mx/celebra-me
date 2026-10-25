@@ -280,14 +280,22 @@ the package, lockfile, Astro and Playwright configuration (`VISUAL_PARITY_INPUT_
 them (an unreadable diff counts as visual): the browser step sets `VISUAL_PARITY_DEFERRED=true` and
 both suites call `test.skip`, while every other browser check still runs.
 
-Whenever the complete suites run under `Browser scope` (a `develop` or `main` push, or a visual pull
-request into `develop`), the browser job splits into two parallel jobs through
-`PLAYWRIGHT_BROWSER_PART`: `Application / browser (pages)` runs only the complete page suite and
-`Application / browser (rest)` every other browser check, including the variant suite. Each part
-keeps whole suites, so the teardown of each still proves the complete capture matrix of every suite
-it ran. Runs without `Browser scope` (pull requests into `main`, dispatches and visual candidates)
-keep one `Application / browser` job. Evidence reuse and the scope assessment accept a split run
-only when every part passed (`scripts/ops/ci-browser-jobs.ts`).
+Under `Browser scope` (a `develop` or `main` push, or a pull request into `develop`) the browser job
+runs as four parallel Playwright shards, named by `PLAYWRIGHT_BROWSER_PART`. When the complete
+suites run, `Application / browser (pages-1-of-2)` and `(pages-2-of-2)` split the complete page
+suite and `(rest-1-of-2)` and `(rest-2-of-2)` every other browser check, including the variant
+suite; when they are deferred, `(all-1-of-4)` to `(all-4-of-4)` split every browser check. A shard
+skips the teardown matrix proof: each shard proves its own captures (`pnpm visual:parity:shard`) and
+`Application / browser (visual coverage)` joins the capture records of every shard and proves the
+complete matrix of each suite that ran (`scripts/ops/visual-shard-merge.ts`). Runs without
+`Browser scope` (pull requests into `main`, dispatches and visual candidates) keep one
+`Application / browser` job, whose teardown proves the matrix. Evidence reuse and the scope
+assessment accept a split run only when every part, coverage included, passed
+(`scripts/ops/ci-browser-jobs.ts`).
+
+The `Application / static` job runs every `ci:static` command through `pnpm ci:static:parallel`
+(`scripts/ops/ci-static-parallel.ts`): the type check, the production build and the remaining checks
+run as three parallel lanes.
 
 The host guest import flow (`guest-import-flow.spec.ts`) follows the same deferral gate; it signs in
 with the synthetic host token of the canonical fixture transport and mocks every dashboard API.
