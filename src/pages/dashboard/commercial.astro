@@ -16,6 +16,8 @@ import {
 } from '@/lib/tracking/commercial-presentation';
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import DemoConversionReport from '@/components/dashboard/commercial/DemoConversionReport.astro';
+import MetaInsightsReport from '@/components/dashboard/commercial/MetaInsightsReport.astro';
+import type { MetaInsightsTable } from '@/lib/meta/insights-dashboard';
 import { loadDemoConversionReport } from '@/lib/tracking/demo-conversion-report.server';
 import DemoCatalog from '@/components/dashboard/commercial/DemoCatalog';
 import { loadDemoLinks } from '@/lib/commercial/demo-inventory.server';
@@ -35,6 +37,12 @@ let dashboardData: CommercialDashboardSummary | null = null;
 let demoReport: Awaited<ReturnType<typeof loadDemoConversionReport>> | null = null;
 try { demoReport = await loadDemoConversionReport(Astro.url.searchParams.get('days') === '60' ? 60 : 30); } catch {
 	// Unavailable reads are displayed as unknown, never partial totals.
+}
+let metaInsights: MetaInsightsTable | null = null;
+try {
+	metaInsights = await (await import('@/lib/meta/insights-dashboard.server')).loadMetaInsightsTable();
+} catch (error) {
+	console.error('[commercial-dashboard] Unable to load Meta insights.', safeErr(error));
 }
 let loadError = false;
 let initialConversions: ConversionEvent[] = [];
@@ -130,6 +138,7 @@ const revenueAttribution = dashboardData
 
 		<DemoCatalog client:load demos={demoLinks} shareOrigin={resolvePublicSiteOrigin()} />
 		<DemoConversionReport report={demoReport} />
+		<MetaInsightsReport table={metaInsights} />
 		{dashboardData && viewModel && (
 			<>
 				<div class="commercial-tabs" role="tablist" aria-label="Secciones del espacio comercial">

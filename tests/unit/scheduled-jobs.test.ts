@@ -17,6 +17,9 @@ jest.mock('@/lib/commercial/meta-capi/service', () => ({
 	isMetaCapiDeliveryEnabled: jest.fn(() => false),
 	processPendingMetaConversionEvents: jest.fn(),
 }));
+jest.mock('@/lib/meta/insights-collector', () => ({
+	runMetaInsightsCollector: jest.fn(),
+}));
 jest.mock('@/lib/server/deploy-identity', () => ({
 	readDeployEnvironment: jest.fn(() => 'preview'),
 }));
@@ -28,6 +31,7 @@ import {
 	processPendingMetaConversionEvents,
 } from '@/lib/commercial/meta-capi/service';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
+import { runMetaInsightsCollector } from '@/lib/meta/insights-collector';
 import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
@@ -50,6 +54,9 @@ const deliveryEnabled = isMetaCapiDeliveryEnabled as jest.MockedFunction<
 >;
 const sweep = processPendingMetaConversionEvents as jest.MockedFunction<
 	typeof processPendingMetaConversionEvents
+>;
+const metaInsights = runMetaInsightsCollector as jest.MockedFunction<
+	typeof runMetaInsightsCollector
 >;
 const deployEnvironment = readDeployEnvironment as jest.MockedFunction<
 	typeof readDeployEnvironment
@@ -219,6 +226,85 @@ describe('runScheduledJob', () => {
 			status: 'failed',
 		});
 		expect(retention).toHaveBeenCalledTimes(2);
+	});
+
+	describe('Meta Insights collector (daily analytics cron)', () => {
+		const skippedSource = { status: 'skipped', reason: 'missing_config' } as const;
+		beforeEach(() => {
+			maintenance.mockResolvedValue(maintenanceResult);
+			retention.mockResolvedValue(retentionResult);
+		});
+
+		it('never calls Meta outside Production', async () => {
+			deployEnvironment.mockReturnValue('preview');
+			await expect(
+				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+			).resolves.toEqual({
+				job: 'engagement_maintenance',
+				status: 'completed',
+			});
+			expect(metaInsights).not.toHaveBeenCalled();
+		});
+
+		it('treats missing secrets as a skip, not a failure', async () => {
+			deployEnvironment.mockReturnValue('production');
+			metaInsights.mockResolvedValueOnce({
+				status: 'skipped',
+				date: '2026-10-24',
+				sources: { ads: skippedSource, page: skippedSource, instagram: skippedSource },
+			});
+			await expect(
+				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+			).resolves.toEqual({
+				job: 'engagement_maintenance',
+				status: 'completed',
+			});
+			expect(metaInsights).toHaveBeenCalledTimes(1);
+			expect(info).toHaveBeenCalledWith(
+				'[meta-insights][collector] skipped',
+				expect.any(Object),
+			);
+		});
+
+		it('fails the job on a failed source or a throw, after the other steps ran', async () => {
+			deployEnvironment.mockReturnValue('production');
+			metaInsights.mockResolvedValueOnce({
+				status: 'failed',
+				date: '2026-10-24',
+				sources: {
+					ads: {
+						status: 'failed',
+						kind: 'rate_limit',
+						httpStatus: 429,
+						code: null,
+						retryAfterMs: 60_000,
+					},
+					page: { status: 'completed', rows: 1 },
+					instagram: { status: 'completed', rows: 1 },
+				},
+			});
+			await expect(
+				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+			).resolves.toEqual({
+				job: 'engagement_maintenance',
+				status: 'failed',
+			});
+			expect(warn).toHaveBeenCalledWith(
+				'[meta-insights][collector] failed',
+				expect.any(Object),
+			);
+
+			metaInsights.mockRejectedValueOnce(new Error('secret-bearing message'));
+			await expect(
+				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+			).resolves.toEqual({
+				job: 'engagement_maintenance',
+				status: 'failed',
+			});
+			expect(error).toHaveBeenCalledWith('[meta-insights][collector] failed');
+			expect(maintenance).toHaveBeenCalledTimes(2);
+			expect(retention).toHaveBeenCalledTimes(2);
+		});
 	});
 
 	const collected = {

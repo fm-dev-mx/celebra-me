@@ -10,6 +10,13 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Added
+
+- Daily Meta Insights collector on the Production `43 10` cron: stores the last completed day's
+  campaign spend, impressions and clicks, Page unique media viewers and Instagram reach by upsert,
+  and skips cleanly while secrets are missing. The commercial dashboard shows a server-rendered
+  30-day table of spend, clicks, Page reach and Instagram reach.
+
 ## [0.48.0-beta.1] - 2026-10-25
 
 WhatsApp clicks and form submissions reach Meta from the server as `Contact` and `Lead` events that
