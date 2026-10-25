@@ -10,6 +10,42 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.47.0-beta.1] - 2026-10-25
+
+WhatsApp clicks reach Meta as standard `Contact` events with hardened Conversions API delivery, the
+landing page and demos get proper social previews and search metadata, the hero loads faster on
+mobile, and CI runs browser checks in four shards. Two expand migrations; no published invitation
+content changes.
+
+### Added
+
+- Demos publish catalog titles, descriptions and 1200x630 full-photo social previews at their short
+  canonical URLs; hidden or unapproved demos are `noindex` (#543).
+- Landing and `/demos` carry distinct 1200x630 Open Graph metadata, the landing page publishes
+  Organization and FAQPage JSON-LD, the 404 page links home, demos and WhatsApp, and the legal pages
+  get canonical metadata (#536).
+- Read-only Meta Graph insight client and the `meta_ads_insights_daily` /
+  `meta_organic_insights_daily` tables (service-role only); no collector or dashboard yet (#535).
+- Board: typed task kinds generate prompts (#533) in the checked `prompt-v1` format (#531); closing
+  a task checks its full return contract (#527); `claim` starts the task, cards show who added it
+  and lanes are read live (#542); copying a prompt marks the task delivered (#544); Claude's work
+  goes to the less-loaded reviewer between Gemini and Codex (#532).
+
+### Changed
+
+- WhatsApp clicks are sent as the Meta `Contact` event; Conversions API moves to Graph `v26.0`,
+  sends the token in the body and matches consented sessions by browser IP address and user agent
+  (`visitor_sessions` gains two columns) (#534).
+- The three hero phones load eagerly and the showroom poster lazily, cutting mobile LCP on `/`
+  (#538).
+- CI runs browser checks in four Playwright shards and the static checks in parallel (#540).
+
+### Fixed
+
+- Accepted mobile invitation captures (Valentina gallery, gift cards) are stable (#537).
+- Jest and ESLint ignore nested repository copies under `.agent/tmp/` and `.claude/worktrees/`
+  (#530).
+
 ## [0.46.0-beta.1] - 2026-10-24
 
 The XV invitation for Andrea is published on a new storybook-emerald preset, the landing page gets a
