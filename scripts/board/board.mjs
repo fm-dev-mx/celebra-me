@@ -128,6 +128,7 @@ import { UsageError, say } from './cli.mjs';
 import { externalSessionLines, externalSessions } from './external-sessions.mjs';
 import { kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
+import { ghPrState, reviewSha } from './github.mjs';
 import { codexQuota, pickReviewer } from './reviewer.mjs';
 import { addToZip } from './zip.mjs';
 
@@ -280,37 +281,6 @@ function assertOwner(task, flags) {
 		throw new UsageError(
 			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
 		);
-}
-
-/** `gh pr view <n> --json state` → OPEN, MERGED or CLOSED. */
-function ghPrState(pr) {
-	return execFileSync(
-		'gh',
-		['pr', 'view', String(pr).replace(/^#/, ''), '--json', 'state', '--jq', '.state'],
-		{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-	).trim();
-}
-
-function reviewSha(task, flags) {
-	const sha =
-		typeof flags.sha === 'string'
-			? flags.sha
-			: execFileSync(
-					'gh',
-					[
-						'pr',
-						'view',
-						String(task.pr).replace(/^#/, ''),
-						'--json',
-						'headRefOid',
-						'--jq',
-						'.headRefOid',
-					],
-					{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-				).trim();
-	if (!/^[a-f0-9]{40}$/.test(sha))
-		throw new UsageError('falta un SHA completo del PR (--sha=<40 hex>)');
-	return sha;
 }
 
 /**
