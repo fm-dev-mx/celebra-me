@@ -6,7 +6,15 @@ import { randomBytes } from 'node:crypto';
 import { UsageError, say } from './cli.mjs';
 import { buildCierre, cancelCierre, cierreIssues, cierreLines, signalLine } from './cierre.mjs';
 import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
-import { VEREDICTOS, isFinished, isReview, logRowError, quienOf, unlocked } from './model.mjs';
+import {
+	VEREDICTOS,
+	isFinished,
+	isReview,
+	logRowError,
+	normalizePr,
+	quienOf,
+	unlocked,
+} from './model.mjs';
 import { cadaMs, nextCycle } from './recurring.mjs';
 import { appendLog, loadBoard, readDoc, withLock } from './store.mjs';
 
@@ -73,16 +81,22 @@ export function reviewDone(before, after, flags) {
 }
 
 /**
- * d268: closing an open periodic task (`cada`) ends this cycle only: it goes back to pendiente without its lock,
- * lane, PR or branch, and its `fecha` requisito moves to the next cycle. The cierre stays as the last cycle's.
- * `after` is returned unchanged for any other task.
+ * d268: closing a started cycle of a periodic task (`cada`) ends that cycle only: it goes back to pendiente
+ * without its lock, lane, PR or branch, the PR joins `prsPrevios` (so sync never matches it again) and its `fecha`
+ * requisito moves to the next cycle. The cierre stays as the last cycle's. A task still pendiente has no cycle
+ * running, so a second close (an amended summary, a retry) keeps the date. `after` is returned unchanged for any
+ * other task.
  */
 export function rescheduled(before, after, flags, now = Date.now()) {
-	if (!cadaMs(before.cada) || isReview(before) || isFinished(before)) return after;
+	const started = !isFinished(before) && (before.estado ?? 'pendiente') !== 'pendiente';
+	if (!cadaMs(before.cada) || isReview(before) || !started) return after;
+	const pr = normalizePr(before.pr);
+	const previos = Array.isArray(before.prsPrevios) ? before.prsPrevios : [];
 	const next = {
 		...unlocked(after, flags),
 		estado: 'pendiente',
 		requisitos: nextCycle(after, now),
+		...(pr && !previos.includes(pr) ? { prsPrevios: [...previos, pr] } : {}),
 	};
 	for (const k of ['carril', 'pr', 'rama', 'entregada']) delete next[k];
 	return next;

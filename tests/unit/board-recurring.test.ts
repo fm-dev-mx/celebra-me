@@ -8,6 +8,7 @@ import { runCommand, sanitizeEnv } from '../helpers/run-command';
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
 const RECURRING_PATH = path.join(ROOT, 'scripts', 'board', 'recurring.mjs');
+const SYNC_PATH = path.join(ROOT, 'scripts', 'board', 'sync.mjs');
 const OLD = '2026-10-01T08:00:00Z';
 
 type Json = Record<string, unknown>;
@@ -55,6 +56,33 @@ function cli(dir: string, ...args: string[]) {
 	});
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
 }
+
+const pr = (number: number, headRefName: string, state = 'MERGED') => ({
+	number,
+	headRefName,
+	state,
+	isDraft: false,
+	title: headRefName,
+});
+
+/** board:sync against `dir` with injected sources and no network; returns its JSON result. */
+function sync(dir: string, prs: Json[]) {
+	const sources = { worktrees: [], local: [], remote: [], prs };
+	const src = `const m = await import(process.argv[1]); console.log(JSON.stringify(await m.run({ dir: process.env.CELEBRA_BOARD_DIR, sources: () => (${JSON.stringify(sources)}), runner: () => ({ ok: false, output: '', error: 'sin red' }) })));`;
+	const result = runCommand(
+		process.execPath,
+		['--input-type=module', '-e', src, pathToFileURL(SYNC_PATH).href],
+		{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir }) },
+	);
+	if (result.status !== 0) throw new Error(String(result.stderr));
+	return JSON.parse(String(result.stdout));
+}
+
+const patch = (dir: string, id: string, fields: Json) =>
+	writeFileSync(
+		path.join(dir, 'tareas', `${id}.json`),
+		JSON.stringify({ ...read(dir, id), ...fields }),
+	);
 
 const read = (dir: string, id: string): Json =>
 	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
@@ -110,6 +138,7 @@ describe('periodic tasks (cada, d268)', () => {
 		const t = read(dir, 'salud-carriles');
 		expect(t).toMatchObject({ estado: 'pendiente', cada: '7d', rev: 2 });
 		for (const k of ['candado', 'carril', 'pr', 'rama']) expect(t[k]).toBeUndefined();
+		expect(t.prsPrevios).toEqual(['#600']);
 		expect(t.sesion).toMatchObject({ id: 'local_x', agente: 'claude' });
 		expect(t.cierre).toMatchObject({ resumen: 'Carriles revisados.' });
 		const [fecha] = t.requisitos as Json[];
@@ -133,5 +162,43 @@ describe('periodic tasks (cada, d268)', () => {
 		);
 		expect(bad.status).not.toBe(0);
 		expect(bad.err).toContain('cada debe ser <n>d');
+	});
+
+	it('a second close amends the summary without moving the next date again', () => {
+		const dir = makeBoard([PERIODIC]);
+		expect(cli(dir, 'close', 'salud-carriles', ...CLOSE).status).toBe(0);
+		const first = read(dir, 'salud-carriles');
+		const again = cli(dir, 'close', 'salud-carriles', ...CLOSE, '--resumen=Resumen aclarado.');
+		expect(again.status).toBe(0);
+		expect(again.out).not.toContain('vuelve a pendiente');
+		const second = read(dir, 'salud-carriles');
+		expect(second).toMatchObject({ estado: 'pendiente', rev: 3, prsPrevios: ['#600'] });
+		expect(second.requisitos).toEqual(first.requisitos);
+		expect(String((second.cierre as Json).resumen)).toContain('Resumen aclarado.');
+	});
+
+	it("close then sync: a past cycle's merged PR never finishes the next cycle", () => {
+		const dir = makeBoard([
+			{ ...PERIODIC, id: 'weekly-health', pr: '#42', rama: 'chore/weekly-health' },
+			{ ...PERIODIC, id: 'sin-pr', pr: undefined, rama: undefined },
+		]);
+		expect(cli(dir, 'close', 'weekly-health', ...CLOSE).status).toBe(0);
+		expect(cli(dir, 'close', 'sin-pr', ...CLOSE).status).toBe(0);
+		const prs = [pr(42, 'chore/weekly-health'), pr(43, 'fix/sin-pr')];
+		const r = sync(dir, prs);
+		expect(r.cambios).toEqual([]);
+		expect(r.higiene.archivadas).toEqual([]);
+		for (const id of ['weekly-health', 'sin-pr']) {
+			const t = read(dir, id);
+			expect(t.estado).toBe('pendiente');
+			expect(t.archivada).toBeUndefined();
+		}
+		// The next cycle reuses the branch: only a new PR on it counts.
+		patch(dir, 'weekly-health', { rama: 'chore/weekly-health' });
+		expect(sync(dir, prs).cambios).toEqual([]);
+		const next = sync(dir, [...prs, pr(50, 'chore/weekly-health', 'OPEN')]);
+		expect(next.cambios.map((c: Json) => [c.id, c.set])).toEqual([
+			['weekly-health', { pr: '#50', estado: 'en revision' }],
+		]);
 	});
 });

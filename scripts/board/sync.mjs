@@ -39,7 +39,7 @@ import {
 	taskIdFromBranch,
 	taskLabel as label,
 } from './model.mjs';
-import { boardDir, loadBoard } from './store.mjs';
+import { boardDir, loadBoard, withLock } from './store.mjs';
 import { checkTask, defaultRunner } from './verify-board.mjs';
 
 const TO_REVIEW = new Set(['pendiente', 'en curso', 'bloqueada']);
@@ -173,8 +173,13 @@ export function matchPr(t, prs) {
 	const own = normalizePr(t.pr);
 	if (typeof own === 'string' && own.startsWith('#'))
 		return prs.find((p) => `#${p.number}` === own) ?? null;
-	if (t.rama) return newestFor(prs, (p) => p.headRefName === t.rama);
-	return newestFor(prs, (p) => taskIdFromBranch(p.headRefName) === t.id);
+	// d268: a periodic task's earlier cycles keep their PRs (`prsPrevios`), and it never matches by id, so a
+	// merged PR of a past cycle cannot finish the next one.
+	const past = new Set(Array.isArray(t.prsPrevios) ? t.prsPrevios : []);
+	const live = prs.filter((p) => !past.has(`#${p.number}`));
+	if (t.rama) return newestFor(live, (p) => p.headRefName === t.rama);
+	if (t.cada) return null;
+	return newestFor(live, (p) => taskIdFromBranch(p.headRefName) === t.id);
 }
 
 function branchNote(t, src) {
@@ -362,6 +367,10 @@ export function toArchive(board) {
  * d268: free, clean task lanes to detach at origin/develop. A lane is free when no lock and no open task holds
  * it, and it is detached or on a branch whose newest PR merged; `avisos` names free lanes left as they are.
  */
+/** A lane is held by any lock on it, or by an open task's `carril`. */
+const laneHeld = (tareas, lane) =>
+	tareas.some((t) => t.candado?.carril === lane || (!isFinished(t) && t.carril === lane));
+
 export function lanePlan(board, src) {
 	const alinear = [];
 	const avisos = [];
@@ -370,10 +379,7 @@ export function lanePlan(board, src) {
 	const tareas = board.tareas ?? [];
 	for (const w of src.worktrees ?? []) {
 		if (!FREE_LANES.has(w.lane) || (!w.rama && w.head === develop)) continue;
-		const busy = tareas.some(
-			(t) => t.candado?.carril === w.lane || (!isFinished(t) && t.carril === w.lane),
-		);
-		if (busy) continue;
+		if (laneHeld(tareas, w.lane)) continue;
 		const where = w.rama ? `la rama ${w.rama}` : String(w.head).slice(0, 7);
 		const aviso = (why) =>
 			avisos.push({ id: '', texto: `carril ${w.lane} libre ${why}: no se alinea` });
@@ -389,6 +395,8 @@ export function lanePlan(board, src) {
 		alinear.push({
 			lane: w.lane,
 			path: w.path,
+			rama: w.rama,
+			head: w.head,
 			texto: `carril ${w.lane} libre: de ${where} a origin/develop (${develop.slice(0, 7)})`,
 		});
 	}
@@ -441,11 +449,36 @@ async function storeUpkeep(dir, dryRun) {
 }
 
 /** Detach each planned lane at origin/develop; a refused switch is reported, not retried. */
-function alignLanes(alinear, develop, git) {
+/**
+ * Why a planned lane may no longer be switched, read again right before the switch: a lock or open task took it,
+ * its branch or HEAD moved, or it has changes. Null when it is still the lane the plan saw.
+ */
+function laneDrift(l, board, git) {
+	if (laneHeld(board.tareas ?? [], l.lane)) return `carril ${l.lane} tomado después del plan`;
+	const out = (args) => String(git(args, l.path) ?? '').trim();
+	if ((out(['branch', '--show-current']) || null) !== (l.rama ?? null))
+		return `carril ${l.lane} cambió de rama desde el plan`;
+	if (out(['rev-parse', 'HEAD']) !== l.head)
+		return `carril ${l.lane} cambió de HEAD desde el plan`;
+	if (out(['status', '--porcelain'])) return `carril ${l.lane} tiene cambios sin confirmar`;
+	return null;
+}
+
+/**
+ * Detach each planned lane at origin/develop. Each one is checked again and switched inside the board's store
+ * lock, so a claim cannot take it in between; any drift fails closed and is reported, not retried.
+ */
+function alignLanes(alinear, develop, git, dir) {
 	return alinear.map((l) => {
 		try {
-			git(['switch', '--detach', '--quiet', develop], l.path);
-			return { ...l, ok: true };
+			const drift = withLock(dir, () => {
+				const why = laneDrift(l, loadBoard(dir), git);
+				if (!why) git(['switch', '--detach', '--quiet', develop], l.path);
+				return why;
+			});
+			return drift
+				? { ...l, ok: false, resultado: `${drift}: no se alinea` }
+				: { ...l, ok: true };
 		} catch (e) {
 			return { ...l, ok: false, resultado: String(e.stderr ?? e.message).trim() };
 		}
@@ -470,7 +503,7 @@ export async function hygiene(
 	const lanes = lanePlan(loadBoard(dir), src);
 	const carriles = dryRun
 		? lanes.alinear.map((l) => ({ ...l, ok: null }))
-		: alignLanes(lanes.alinear, src.develop, git);
+		: alignLanes(lanes.alinear, src.develop, git, dir);
 	return { comprobadas, archivadas, almacen, carriles, avisosCarril: lanes.avisos };
 }
 

@@ -546,6 +546,7 @@ const commands = {
 				'agregadaPor',
 				'seguimientoPor',
 				'entregada',
+				'prsPrevios',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);

@@ -195,29 +195,59 @@ describe('board:sync hygiene (d268)', () => {
 		expect(none).toEqual({ alinear: [], avisos: [] });
 	});
 
-	it('switches each planned lane with git and reports a refused switch', () => {
+	it('rechecks each lane inside the store lock before switching and fails closed on drift', () => {
 		const dir = makeBoard([]);
-		const src = {
-			develop: DEVELOP,
-			prs: [],
-			worktrees: [lane('f05-plataforma'), lane('f09-docs')],
+		const names = ['f05-plataforma', 'f09-docs', 'f10-libre', 'f11-preview', 'f12-release'];
+		const src = { develop: DEVELOP, prs: [], worktrees: names.map((n) => lane(n)) };
+		// Each lane as Git answers right before the switch: f10's HEAD moved, f11 got changes, f12 refuses.
+		const state = {
+			'w/f10-libre': { head: 'c'.repeat(40) },
+			'w/f11-preview': { status: ' M src/a.ts' },
 		};
-		const code = `const calls = [];
-			const git = (args, cwd) => { calls.push([cwd, ...args]); if (cwd.endsWith('f09-docs')) throw new Error('bloqueado'); return ''; };
-			const r = await m.hygiene(process.env.CELEBRA_BOARD_DIR, ${JSON.stringify(src)}, { dryRun: DRY, git });
+		const claim = {
+			titulo: 'otra',
+			estado: 'en curso',
+			urgencia: 'normal',
+			actor: 'sesion',
+			agente: 'codex',
+			requisitos: [],
+			rev: 1,
+			actualizado: NOW,
+			candado: { agente: 'codex', desde: NOW, carril: 'f09-docs' },
+		};
+		const code = `const fs = await import('node:fs');
+			const path = await import('node:path');
+			const dir = process.env.CELEBRA_BOARD_DIR;
+			const state = ${JSON.stringify(state)};
+			const calls = [];
+			const git = (args, cwd) => {
+				const lane = { head: '${'a'.repeat(40)}', status: '', ...state[cwd] };
+				if (args[0] === 'branch') return '';
+				if (args[0] === 'rev-parse') return lane.head;
+				if (args[0] === 'status') return lane.status;
+				calls.push([cwd, ...args]);
+				// A session claims f09-docs while f05 is being switched: the plan already listed f09 as free.
+				if (cwd.endsWith('f05-plataforma'))
+					fs.writeFileSync(path.join(dir, 'tareas', 'otra.json'), JSON.stringify(${JSON.stringify(claim)}));
+				if (cwd.endsWith('f12-release')) throw new Error('bloqueado');
+				return '';
+			};
+			const r = await m.hygiene(dir, ${JSON.stringify(src)}, { dryRun: DRY, git });
 			console.log(JSON.stringify({ calls, carriles: r.carriles }));`;
 		const dry = probe(code.replace('DRY', 'true'), { CELEBRA_BOARD_DIR: dir });
 		expect(dry.calls).toEqual([]);
-		expect(dry.carriles.map((c: Json) => c.ok)).toEqual([null, null]);
+		expect(dry.carriles.map((c: Json) => c.ok)).toEqual([null, null, null, null, null]);
 		const real = probe(code.replace('DRY', 'false'), { CELEBRA_BOARD_DIR: dir });
 		expect(real.calls).toEqual([
 			['w/f05-plataforma', 'switch', '--detach', '--quiet', DEVELOP],
-			['w/f09-docs', 'switch', '--detach', '--quiet', DEVELOP],
+			['w/f12-release', 'switch', '--detach', '--quiet', DEVELOP],
 		]);
-		expect(real.carriles.map((c: Json) => [c.lane, c.ok])).toEqual([
-			['f05-plataforma', true],
-			['f09-docs', false],
+		expect(real.carriles.map((c: Json) => [c.lane, c.ok, c.resultado])).toEqual([
+			['f05-plataforma', true, undefined],
+			['f09-docs', false, 'carril f09-docs tomado después del plan: no se alinea'],
+			['f10-libre', false, 'carril f10-libre cambió de HEAD desde el plan: no se alinea'],
+			['f11-preview', false, 'carril f11-preview tiene cambios sin confirmar: no se alinea'],
+			['f12-release', false, 'bloqueado'],
 		]);
-		expect(real.carriles[1].resultado).toBe('bloqueado');
 	});
 });
