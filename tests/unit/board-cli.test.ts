@@ -1124,15 +1124,14 @@ describe('pnpm board', () => {
 		expect(raw(dir, 'claim', 'tercera', '--agente=codex', '--sesion=s3').status).toBe(2);
 	});
 
-	it('shows «Corre en» on the card and the sheet and copies the prompt with its lane', () => {
+	it('shows the lane on the row, «Dónde corre» in the sheet and copies the prompt with its lane', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
-		expect(html).toContain('${runsHtml(t)}');
-		expect(html).toContain('<div class="runbox">');
+		// T268: the compact row keeps only the lane; where it runs moves to the sheet's properties.
+		expect(html).toContain("['Dónde corre',runsHtml(t)],");
+		expect(html).not.toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
 		expect(html).toContain('const laneId=taskLane;');
-		expect(html).toContain(
-			'${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:',
-		);
+		expect(html).toContain('${taskLane(t)?`<span class="nm">${esc(taskLane(t))}</span>`:');
 		expect(html).toContain('const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));');
 		expect(html).toContain("['Carril',taskLane(t)?");
 		// Closing the sheet returns focus to the card's title button, not to the unfocusable article.
