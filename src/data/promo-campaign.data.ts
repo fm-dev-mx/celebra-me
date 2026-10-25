@@ -113,7 +113,7 @@ export const PROMO_SCHEDULE: readonly PromoCampaign[] = [
 		endsAt: '2026-12-16T07:00:00.000Z',
 		endLabel: '15 de diciembre de 2026',
 		countdownDays: 10,
-		prices: { esencial: 999, signature: 1399, atelier: 1999 },
+		prices: { esencial: 899, signature: 1299, atelier: 1899 },
 	},
 	{
 		id: 'ano-nuevo-2027',
@@ -123,7 +123,7 @@ export const PROMO_SCHEDULE: readonly PromoCampaign[] = [
 		endsAt: '2027-02-01T07:00:00.000Z',
 		endLabel: '31 de enero de 2027',
 		countdownDays: 10,
-		prices: { esencial: 899, signature: 1299, atelier: 1899 },
+		prices: { esencial: 999, signature: 1399, atelier: 1999 },
 	},
 ];
 
