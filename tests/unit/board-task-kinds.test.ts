@@ -210,6 +210,10 @@ describe('task kinds (T130): generated prompt', () => {
 			'pnpm board msg tipos-y-prompts --de=claude --para=dueno',
 		);
 		const closing = r.sections['AL TERMINAR'].join('\n');
+		// A kind prompt that pushes a branch carries the pre-push check first.
+		expect(r.sections['AL TERMINAR'][0]).toMatch(
+			/^- Antes de cada push: pnpm validate:changed .* pnpm validate:structure;/u,
+		);
 		expect(closing).toContain('1. pnpm validate:changed y pnpm type-check en verde.');
 		expect(closing).toContain('--excepcion=… --pr=#<n> --sha=<sha del PR> --nivel=type-check');
 		expect(closing).toContain('{"pr":"#<n>","sha":"<sha de 40>","nivel":"type-check"}');

@@ -5,7 +5,7 @@
  * return contract come from the board, so the prompt changes with them. Pure functions only.
  */
 import { taskLabel, laneFolder, taskLane } from './model.mjs';
-import { PROMPT_SECTIONS, buildPrompt, promptSection } from './prompt.mjs';
+import { PROMPT_SECTIONS, buildPrompt, promptSection, withPushCheck } from './prompt.mjs';
 
 /** A refusal to build the prompt: the task or its kind lacks something the template needs. */
 export class KindPromptError extends Error {}
@@ -150,33 +150,35 @@ export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado 
 	const noHagas = [...kind.no_hagas, ...(t.noHagas ?? [])].map((l) =>
 		l.startsWith('- ') ? l : `- ${l}`,
 	);
-	return buildPrompt({
-		identidad: nombre,
-		secciones: [
-			['QUÉ SE BUSCA', buscaLines(t)],
-			[
-				'ANTES DE EMPEZAR',
+	return withPushCheck(
+		buildPrompt({
+			identidad: nombre,
+			secciones: [
+				['QUÉ SE BUSCA', buscaLines(t)],
 				[
-					`Carril ${lane} (carpeta ${laneFolder(lane)})${branch}. Compruebe la rev del tablero de METADATOS; si cambió, pare.`,
-					`Lea AGENTS.md, .agent/rules/board.md y lo que .agent/routing-matrix.yaml pide para: ${lee.join(', ')}.`,
-					...kind.pasos_inicio.map((c) => `  ${fill(c)}`),
+					'ANTES DE EMPEZAR',
+					[
+						`Carril ${lane} (carpeta ${laneFolder(lane)})${branch}. Compruebe la rev del tablero de METADATOS; si cambió, pare.`,
+						`Lea AGENTS.md, .agent/rules/board.md y lo que .agent/routing-matrix.yaml pide para: ${lee.join(', ')}.`,
+						...kind.pasos_inicio.map((c) => `  ${fill(c)}`),
+					],
 				],
-			],
-			['PASOS', (t.pasos ?? kind.pasos).map(fill)],
-			['AUTORIZO', [...kind.autorizado_por_defecto, ...(t.autorizo ?? [])].map(fill)],
-			['NO HAGAS', noHagas.map(fill)],
-			['DECISIONES', decisionLines(decisiones)],
-			[
-				'PARE Y PREGUNTE SI',
+				['PASOS', (t.pasos ?? kind.pasos).map(fill)],
+				['AUTORIZO', [...kind.autorizado_por_defecto, ...(t.autorizo ?? [])].map(fill)],
+				['NO HAGAS', noHagas.map(fill)],
+				['DECISIONES', decisionLines(decisiones)],
 				[
-					...kind.pare_si.map(fill),
-					`Pregunte al dueño y anote la pregunta también con pnpm board msg ${t.id} --de=${agente ?? '<agente>'} --para=dueno "<pregunta>" (d230).`,
+					'PARE Y PREGUNTE SI',
+					[
+						...kind.pare_si.map(fill),
+						`Pregunte al dueño y anote la pregunta también con pnpm board msg ${t.id} --de=${agente ?? '<agente>'} --para=dueno "<pregunta>" (d230).`,
+					],
 				],
+				['AL TERMINAR', closingLines(t, kind, pr, fill)],
 			],
-			['AL TERMINAR', closingLines(t, kind, pr, fill)],
-		],
-		metadatos: metadataOf(t, board, { num, lane, pr, agente, decisiones, rev, generado }),
-	});
+			metadatos: metadataOf(t, board, { num, lane, pr, agente, decisiones, rev, generado }),
+		}),
+	);
 }
 
 /** METADATOS keys that change on every write or copy, so a comparison leaves them out. */
