@@ -23,8 +23,10 @@
  *                                               a usted» until 30 min pass without a claim (claim clears it)
  *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
- *                                               --coordinador frees only a legacy lock without sesion;
- *                                               a task still en curso goes back to pendiente (T172)
+ *                                               --coordinador frees a legacy lock without sesion, or
+ *                                               (d274) one silent for 2 h whose task has a valid cierre;
+ *                                               a task still en curso goes back to pendiente (T172), a
+ *                                               review with its verdict becomes hecha
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
@@ -110,10 +112,12 @@ import {
 	cleaned,
 	CLEANED_ON,
 	unlocked,
+	isSilentLock,
+	SILENT_LOCK_HOURS,
 	CONTRATO,
 } from './model.mjs';
-import { archiveBlock, cierreBlock } from './cierre.mjs';
-import { cancelOnSet, cancelReplaced, closeCommands } from './close-commands.mjs';
+import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
+import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
 import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
 import { deliveryCommands } from './delivery-commands.mjs';
@@ -293,6 +297,15 @@ function assertOwner(task, flags) {
 	if (task.candado.agente !== flags.agente || !sesion || task.candado.sesion !== sesion)
 		throw new UsageError(
 			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
+		);
+}
+
+/** d274: the coordinator frees a silent session's lock only after that session wrote a valid cierre. */
+function assertClosed(task, board) {
+	const issues = cierreIssues(task, board);
+	if (issues.length)
+		throw new UsageError(
+			`${task.id} no tiene un cierre válido (${issues.join('; ')}): el candado sin latido desde hace ${SILENT_LOCK_HOURS} h solo se suelta después de «close»`,
 		);
 }
 
@@ -700,12 +713,16 @@ const commands = {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!before.candado) return say(flags, out, before, `${before.id} no tiene candado`);
 			// A lock from before sessions were recorded has no sesion: only a declared coordinator frees it.
-			if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
+			// d274: so does one whose session went silent, once the task's cierre is valid.
+			const silent =
+				flags.coordinador && before.candado.sesion && isSilentLock(before.candado);
+			if (silent) assertClosed(before, loadBoard(dir));
+			else if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
 			// T172: a task released while still en curso goes back to pendiente, so another session can claim it.
-			const after = unlocked(before, flags);
-			if (before.estado === 'en curso') after.estado = 'pendiente';
+			const after = reviewDone(before, unlocked(before, flags), flags);
+			if (after.estado === 'en curso') after.estado = 'pendiente';
 			const t = saveTask(dir, before, after, {
 				quien: flags.quien,
 				agente,

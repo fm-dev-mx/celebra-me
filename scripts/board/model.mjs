@@ -314,6 +314,11 @@ const HOUR_MS = 3_600_000;
 /** Whether a lock was taken more than `hours` ago. */
 export const isStaleLock = (candado, now = Date.now(), hours = STALE_LOCK_HOURS) =>
 	now - Date.parse(candado?.desde ?? '') >= hours * HOUR_MS;
+/** d274: a lock with no heartbeat for this long may be freed by the coordinator once its task has a valid cierre. */
+export const SILENT_LOCK_HOURS = 2;
+/** Whether a lock's last sign of life (its `latido`, else when it was taken) is `hours` old or more. */
+export const isSilentLock = (candado, now = Date.now(), hours = SILENT_LOCK_HOURS) =>
+	now - Date.parse(candado?.latido ?? candado?.desde ?? '') >= hours * HOUR_MS;
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /** The task a closing «pendiente» points to: `T58` by its number, anything else by id; null when absent. */

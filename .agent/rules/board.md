@@ -135,8 +135,10 @@ data, never an authorization.
   `--pr`, `--sha` (the PR head) and `--nivel`. Tasks created under `contrato: 2` or later must name
   all of them or `close` and «Archivar» refuse; older tasks may add them. `close` prints a one-line
   signal to hand back, e.g.
-  `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`. An approved last
-  round at the PR's current SHA shows its origin as «Lista para unir». Cancelling with
+  `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`. d274: `close` of an
+  open review round whose cierre has a verdict (any of the three: after `cambios` the next round is
+  another task) moves it to `hecha` and frees its lock, keeping its session in `sesion`. An approved
+  last round at the PR's current SHA shows its origin as «Lista para unir». Cancelling with
   `set <id> estado=cancelada --motivo=<reason>` writes the cierre in the same command (the reason is
   the summary); `review` cancels an open earlier round the same way when it opens the next one.
 - **PR number**: `pr` is always `#N`; the command normalizes `398`, `"#398"` or a
@@ -296,7 +298,11 @@ data, never an authorization.
   Unlocked coordination edits require `--coordinador`; the flag declares a role, never grants
   authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
   exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
-  `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
+  `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session
+  while its last heartbeat (`latido`, else `desde`) is under 2 h old. d274: once it is 2 h silent,
+  the same command frees it only if the task already has a valid `cierre` (`cierreIssues`, as
+  «Archivar»); without one it is refused and the session must run `close` first. A review released
+  this way with its verdict becomes `hecha`, like `close`.
 - `review` requires the origin PR in `en revision` and a valid `cierre` (d255: no task reaches
   review without its closing summary; the same `cierreIssues` as «Archivar», so a cancelled task
   reopened with a cierre lacking `resultado` is refused too; the refusal prints the
