@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { CANONICAL_HOST_ACCESS_TOKEN } from '../../scripts/playwright/canonical-host-fixture';
 import { isVisualParityDeferred } from './harness/visual-baseline-policy';
 
@@ -60,6 +60,200 @@ function makeMockGuest(options: {
 	};
 }
 
+async function openGuestDashboard(page: Page, baseURL: string | undefined) {
+	const guest1 = makeMockGuest({
+		id: 'guest-1',
+		fullName: 'Sofía Martínez',
+		phone: '6691112233',
+		attendanceStatus: 'confirmed',
+		deliveryStatus: 'shared',
+	});
+	const guest2 = makeMockGuest({
+		id: 'guest-2',
+		fullName: 'Carlos Gómez',
+		phone: '6699876543',
+		attendanceStatus: 'pending',
+		deliveryStatus: 'generated',
+	});
+
+	const guests = [guest1, guest2];
+
+	await page.route('**/api/dashboard/**', async (route) => {
+		const url = new URL(route.request().url());
+		const path = url.pathname;
+		const method = route.request().method();
+
+		if (path === '/api/dashboard/events') {
+			return route.fulfill({
+				json: {
+					items: [
+						{
+							id: EVENT_ID,
+							title: 'Mis XV años — Mía',
+							slug: 'xv-mia',
+							eventType: 'xv',
+							status: 'published',
+							brandingRemovalEnabled: false,
+						},
+					],
+				},
+			});
+		}
+
+		if (path === '/api/dashboard/guests' && method === 'GET') {
+			const search = url.searchParams.get('search')?.toLowerCase() ?? '';
+			const status = url.searchParams.get('status');
+
+			let filtered = [...guests];
+			if (search) {
+				filtered = filtered.filter((g) => g.fullName.toLowerCase().includes(search));
+			}
+			if (status) {
+				filtered = filtered.filter((g) => g.attendanceStatus === status);
+			}
+
+			return route.fulfill({
+				json: {
+					eventId: EVENT_ID,
+					items: filtered,
+					shareDateContext: {
+						eventDate: '2026-11-20',
+						daysUntilEvent: '26 días',
+						rawDaysUntilEvent: 26,
+						rsvpDeadline: '2026-11-10',
+						eventTimingText: '',
+						rsvpDeadlineText: '',
+					},
+					totals: {
+						totalInvitations: guests.length,
+						totalPeople: guests.length * 2,
+						generatedInvitations: guests.filter((g) => g.deliveryStatus === 'generated')
+							.length,
+						sharedInvitations: guests.filter((g) => g.deliveryStatus === 'shared')
+							.length,
+						pendingInvitations: guests.filter((g) => g.attendanceStatus === 'pending')
+							.length,
+						pendingPeople:
+							guests.filter((g) => g.attendanceStatus === 'pending').length * 2,
+						confirmedInvitations: guests.filter(
+							(g) => g.attendanceStatus === 'confirmed',
+						).length,
+						confirmedPeople:
+							guests.filter((g) => g.attendanceStatus === 'confirmed').length * 2,
+						declinedInvitations: 0,
+						declinedPeople: 0,
+						unconfirmedShared: 0,
+						viewed: 0,
+					},
+					engagement: null,
+				},
+			});
+		}
+
+		if (path.startsWith('/api/dashboard/guests/') && method === 'PATCH') {
+			const guestId = path.split('/').pop()!;
+			const body = route.request().postDataJSON() as Record<string, unknown>;
+			const target = guests.find((g) => g.guestId === guestId);
+			if (target) {
+				Object.assign(target, body);
+				return route.fulfill({ json: { item: target } });
+			}
+			return route.fulfill({ status: 404, json: { message: 'Not found' } });
+		}
+
+		return route.fulfill({ status: 200, json: {} });
+	});
+
+	await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+	const token = await resolveAuthToken();
+	await page.context().addCookies([{ name: 'sb-access-token', value: token, url: baseURL }]);
+
+	await page.goto(ROUTE, { waitUntil: 'networkidle' });
+	await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
+}
+
+/**
+ * Moves focus away and back with the keyboard so `:focus-visible` applies, then checks the
+ * dashboard ring (2px solid `--dashboard-focus-ring`) rather than the browser default outline.
+ */
+async function expectKeyboardFocusRing(button: Locator) {
+	const page = button.page();
+	await button.focus();
+	await page.keyboard.press('Shift+Tab');
+	await page.keyboard.press('Tab');
+	await expect(button).toBeFocused();
+	const ring = await button.evaluate((element) => {
+		const probe = document.createElement('span');
+		probe.style.color = 'var(--dashboard-focus-ring)';
+		element.append(probe);
+		const tokenColor = getComputedStyle(probe).color;
+		probe.remove();
+		const style = getComputedStyle(element);
+		return {
+			focusVisible: element.matches(':focus-visible'),
+			outlineStyle: style.outlineStyle,
+			outlineWidth: style.outlineWidth,
+			outlineColor: style.outlineColor,
+			tokenColor,
+		};
+	});
+	expect(ring.focusVisible).toBe(true);
+	expect(ring.outlineStyle).toBe('solid');
+	expect(ring.outlineWidth).toBe('2px');
+	expect(ring.outlineColor).toBe(ring.tokenColor);
+}
+
+async function expectMobileFooterCancel(modal: Locator) {
+	// The entry animation scales the dialog, so measure only once it has settled.
+	await expect(modal).toBeVisible();
+	await modal.evaluate((element) =>
+		Promise.all(
+			element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+		),
+	);
+	const closeBtn = modal.locator('.btn-close');
+	await expect(closeBtn).toBeVisible();
+	const closeBox = await closeBtn.boundingBox();
+	expect(closeBox).not.toBeNull();
+	expect(closeBox!.width).toBeGreaterThanOrEqual(44);
+	expect(closeBox!.height).toBeGreaterThanOrEqual(44);
+
+	const cancelBtn = modal.locator('.dashboard-modal__footer-cancel');
+	await expect(cancelBtn).toBeVisible();
+	const cancelBox = await cancelBtn.boundingBox();
+	expect(cancelBox).not.toBeNull();
+	expect(cancelBox!.height).toBeGreaterThanOrEqual(44);
+	await expectKeyboardFocusRing(cancelBtn);
+	await cancelBtn.click();
+	await expect(modal).not.toBeVisible();
+}
+
+// Runs on every pull request: the mobile Cancel buttons have no other pre-merge coverage.
+test.describe('Mobile modal cancel buttons at 390px', () => {
+	test.use({
+		viewport: { width: 390, height: 844 },
+	});
+
+	test('send and share-template modals expose a 44px Cancel button with a focus ring', async ({
+		page,
+		baseURL,
+	}) => {
+		await openGuestDashboard(page, baseURL);
+
+		await page.locator('.guest-view-toggle__option:has-text("Tarjetas")').click();
+		const shareBtn = page
+			.locator('.guest-card:has-text("Carlos Gómez")')
+			.locator('.dashboard-guests__share-button');
+		await expect(shareBtn).toBeVisible();
+		await shareBtn.click();
+		await expectMobileFooterCancel(page.locator('.dashboard-modal--send-invitation'));
+
+		await page.locator('.toolbar-actions-menu__trigger').click();
+		await page.locator('.guest-actions-menu__item:has-text("Plantillas de mensaje")').click();
+		await expectMobileFooterCancel(page.locator('.dashboard-modal--share-templates'));
+	});
+});
+
 test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 	test.use({
 		viewport: { width: 390, height: 844 },
@@ -74,117 +268,7 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		page,
 		baseURL,
 	}) => {
-		const guest1 = makeMockGuest({
-			id: 'guest-1',
-			fullName: 'Sofía Martínez',
-			phone: '6691112233',
-			attendanceStatus: 'confirmed',
-			deliveryStatus: 'shared',
-		});
-		const guest2 = makeMockGuest({
-			id: 'guest-2',
-			fullName: 'Carlos Gómez',
-			phone: '6699876543',
-			attendanceStatus: 'pending',
-			deliveryStatus: 'generated',
-		});
-
-		const guests = [guest1, guest2];
-
-		await page.route('**/api/dashboard/**', async (route) => {
-			const url = new URL(route.request().url());
-			const path = url.pathname;
-			const method = route.request().method();
-
-			if (path === '/api/dashboard/events') {
-				return route.fulfill({
-					json: {
-						items: [
-							{
-								id: EVENT_ID,
-								title: 'Mis XV años — Mía',
-								slug: 'xv-mia',
-								eventType: 'xv',
-								status: 'published',
-								brandingRemovalEnabled: false,
-							},
-						],
-					},
-				});
-			}
-
-			if (path === '/api/dashboard/guests' && method === 'GET') {
-				const search = url.searchParams.get('search')?.toLowerCase() ?? '';
-				const status = url.searchParams.get('status');
-
-				let filtered = [...guests];
-				if (search) {
-					filtered = filtered.filter((g) => g.fullName.toLowerCase().includes(search));
-				}
-				if (status) {
-					filtered = filtered.filter((g) => g.attendanceStatus === status);
-				}
-
-				return route.fulfill({
-					json: {
-						eventId: EVENT_ID,
-						items: filtered,
-						shareDateContext: {
-							eventDate: '2026-11-20',
-							daysUntilEvent: '26 días',
-							rawDaysUntilEvent: 26,
-							rsvpDeadline: '2026-11-10',
-							eventTimingText: '',
-							rsvpDeadlineText: '',
-						},
-						totals: {
-							totalInvitations: guests.length,
-							totalPeople: guests.length * 2,
-							generatedInvitations: guests.filter(
-								(g) => g.deliveryStatus === 'generated',
-							).length,
-							sharedInvitations: guests.filter((g) => g.deliveryStatus === 'shared')
-								.length,
-							pendingInvitations: guests.filter(
-								(g) => g.attendanceStatus === 'pending',
-							).length,
-							pendingPeople:
-								guests.filter((g) => g.attendanceStatus === 'pending').length * 2,
-							confirmedInvitations: guests.filter(
-								(g) => g.attendanceStatus === 'confirmed',
-							).length,
-							confirmedPeople:
-								guests.filter((g) => g.attendanceStatus === 'confirmed').length * 2,
-							declinedInvitations: 0,
-							declinedPeople: 0,
-							unconfirmedShared: 0,
-							viewed: 0,
-						},
-						engagement: null,
-					},
-				});
-			}
-
-			if (path.startsWith('/api/dashboard/guests/') && method === 'PATCH') {
-				const guestId = path.split('/').pop()!;
-				const body = route.request().postDataJSON() as Record<string, unknown>;
-				const target = guests.find((g) => g.guestId === guestId);
-				if (target) {
-					Object.assign(target, body);
-					return route.fulfill({ json: { item: target } });
-				}
-				return route.fulfill({ status: 404, json: { message: 'Not found' } });
-			}
-
-			return route.fulfill({ status: 200, json: {} });
-		});
-
-		await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
-		const token = await resolveAuthToken();
-		await page.context().addCookies([{ name: 'sb-access-token', value: token, url: baseURL }]);
-
-		await page.goto(ROUTE, { waitUntil: 'networkidle' });
-		await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
+		await openGuestDashboard(page, baseURL);
 
 		// 1. FILTRAR: Search for "Carlos"
 		const searchInput = page.locator('input[type="search"]');
@@ -251,57 +335,9 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		const sendModal = page.locator('.dashboard-modal--send-invitation');
 		await expect(sendModal).toBeVisible();
 
-		// Check close button 44px touch target
-		const closeBtn = sendModal.locator('.btn-close');
-		await expect(closeBtn).toBeVisible();
-		const closeBox = await closeBtn.boundingBox();
-		expect(closeBox).not.toBeNull();
-		expect(closeBox!.width).toBeGreaterThanOrEqual(44);
-		expect(closeBox!.height).toBeGreaterThanOrEqual(44);
-
-		// Accessible mobile cancel button must be visible in footer and meet 44px touch target
-		const cancelSendBtn = sendModal.locator('.dashboard-modal__footer-cancel');
-		await expect(cancelSendBtn).toBeVisible();
-		const cancelBox = await cancelSendBtn.boundingBox();
-		expect(cancelBox).not.toBeNull();
-		expect(cancelBox!.height).toBeGreaterThanOrEqual(44);
-		await cancelSendBtn.focus();
-		await expect(cancelSendBtn).toBeFocused();
-		await cancelSendBtn.click();
+		// The Cancel button contract runs on every pull request in the describe above.
+		await sendModal.locator('.dashboard-modal__footer-cancel').click();
 		await expect(sendModal).not.toBeVisible();
-
-		// 4b. PLANTILLAS DE MENSAJE: Open share templates modal and verify 44px cancel button
-		const actionsTrigger = page.locator('.toolbar-actions-menu__trigger');
-		await expect(actionsTrigger).toBeVisible();
-		await actionsTrigger.click();
-
-		const templatesMenuItem = page.locator(
-			'.guest-actions-menu__item:has-text("Plantillas de mensaje")',
-		);
-		await expect(templatesMenuItem).toBeVisible();
-		await templatesMenuItem.click();
-
-		const shareTemplatesModal = page.locator('.dashboard-modal--share-templates');
-		await expect(shareTemplatesModal).toBeVisible();
-
-		// Check close button 44px touch target
-		const closeShareBtn = shareTemplatesModal.locator('.btn-close');
-		await expect(closeShareBtn).toBeVisible();
-		const closeShareBox = await closeShareBtn.boundingBox();
-		expect(closeShareBox).not.toBeNull();
-		expect(closeShareBox!.width).toBeGreaterThanOrEqual(44);
-		expect(closeShareBox!.height).toBeGreaterThanOrEqual(44);
-
-		// Accessible mobile cancel button must be visible in footer and meet 44px touch target
-		const cancelShareBtn = shareTemplatesModal.locator('.dashboard-modal__footer-cancel');
-		await expect(cancelShareBtn).toBeVisible();
-		const cancelShareBox = await cancelShareBtn.boundingBox();
-		expect(cancelShareBox).not.toBeNull();
-		expect(cancelShareBox!.height).toBeGreaterThanOrEqual(44);
-		await cancelShareBtn.focus();
-		await expect(cancelShareBtn).toBeFocused();
-		await cancelShareBtn.click();
-		await expect(shareTemplatesModal).not.toBeVisible();
 
 		// 5. CONFIRMAR: Open details -> Edit -> Confirm attendance
 		const carlosDetailsBtn = carlosCard.locator('.guest-card__details-btn');
