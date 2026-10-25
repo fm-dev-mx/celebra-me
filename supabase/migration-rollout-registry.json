@@ -325,6 +325,9 @@
         },
         "meta_capi_browser_events_client": {
             "requiresDbCapabilities": ["meta_conversion_events_browser_events"]
+        },
+        "meta_conversion_retention_client": {
+            "requiresDbCapabilities": ["meta_conversion_retention_purge"]
         }
     }
 }

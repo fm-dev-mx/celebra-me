@@ -237,4 +237,23 @@ describe('migration / deployment compatibility contract', () => {
 			true,
 		);
 	});
+
+	it('holds the Meta retention client until its purge migration is applied', () => {
+		const live = loadMigrationRolloutRegistry();
+		const deployedAppCapabilities = ['meta_conversion_retention_client'];
+		const absent = evaluateAppDatabaseReadiness({
+			deployedAppCapabilities,
+			dbAppliedVersions: ['20261025120000'],
+			registry: live,
+		});
+		expect(absent.status).toBe('environment_not_ready');
+		expect(absent.reasons.join(' ')).toContain('meta_conversion_retention_purge');
+
+		const applied = evaluateAppDatabaseReadiness({
+			deployedAppCapabilities,
+			dbAppliedVersions: ['20261025120000', '20261025150000'],
+			registry: live,
+		});
+		expect(applied.status).toBe('allow');
+	});
 });
