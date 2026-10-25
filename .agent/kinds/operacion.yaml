@@ -11,7 +11,7 @@ autorizado_por_defecto:
     - 'Solo el comando y el entorno que esta tarea cita aquí.'
 no_hagas:
     - '- No reinicie bases persistentes; los reinicios solo en disposable-test.'
-    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
 pare_si:
     - 'El entorno no es el que esta tarea autoriza o falta el plan de rollback.'
 devuelve: []

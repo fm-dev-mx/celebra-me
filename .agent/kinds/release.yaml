@@ -14,7 +14,7 @@ autorizado_por_defecto:
     - 'Solo lo que esta tarea cita aquí; main, Producción y migraciones piden la autorización del dueño en esta tarea.'
 no_hagas:
     - '- No una nada a develop durante la entrega.'
-    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
 pare_si:
     - 'Una puerta del release falla o falta una autorización del dueño.'
 devuelve: []

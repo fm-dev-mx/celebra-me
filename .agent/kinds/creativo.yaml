@@ -12,7 +12,7 @@ autorizado_por_defecto:
     - 'Crear archivos de trabajo en .agent/tmp/; nada se publica sin el visto bueno del dueño.'
 no_hagas:
     - '- No suba imágenes a Producción ni cambie las ya aceptadas.'
-    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
 pare_si:
     - 'El brief no alcanza para decidir el tono o falta una imagen de referencia.'
 devuelve: []

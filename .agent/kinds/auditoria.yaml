@@ -12,7 +12,7 @@ autorizado_por_defecto:
     - '(solo lectura) Leer el repositorio y escribir el informe en .agent/tmp/reports/.'
 no_hagas:
     - '- No edite archivos versionados ni haga commits.'
-    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
 pare_si:
     - 'Un hallazgo pide una decisión del dueño antes de seguir.'
 devuelve: []

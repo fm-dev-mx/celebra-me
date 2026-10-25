@@ -13,7 +13,7 @@ autorizado_por_defecto:
     - 'Modo rápido hasta develop: git-safety, commit, push y PR a develop de {rama}.'
 no_hagas:
     - '- No publique en Producción sin la aprobación del cliente y del dueño.'
-    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
 pare_si:
     - 'Falta un dato del cliente o una foto, o el cliente no ha aprobado.'
 devuelve: []

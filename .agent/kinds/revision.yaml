@@ -13,7 +13,7 @@ autorizado_por_defecto:
     - '(solo lectura) Publicar la revisión del PR con gh pr review.'
 no_hagas:
     - '- No edite el carril del autor ni una el PR.'
-    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
 pare_si:
     - 'La cabeza del PR cambió o falta evidencia para decidir.'
 devuelve:

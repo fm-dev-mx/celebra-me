@@ -15,7 +15,7 @@ autorizado_por_defecto:
     - 'Modo rápido hasta develop: git-safety, commit, push y PR a develop de {rama}. La unión la hace el coordinador con la revisión cruzada aprobada.'
 no_hagas:
     - '- No cambie la rama de Integración ni reinicie 127.0.0.1:4320 (d210).'
-    - '- No lea .env*, .secrets/, .vercel/ ni .backups/.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
     - '- No toque main, Producción, migraciones ni secretos.'
 pare_si:
     - 'Hace falta algo fuera de AUTORIZO o una comprobación falla sin causa clara.'
