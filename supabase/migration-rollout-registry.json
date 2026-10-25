@@ -270,6 +270,11 @@
             "phase": "expand",
             "provides": ["visitor_sessions_client_signals"],
             "notes": "Adds visitor_sessions.client_ip_address and client_user_agent (nullable, length-checked) and keeps their first value in the first-touch trigger. Additive: the deployed application does not name the columns. Must be applied before the application that writes them is deployed, because PostgREST rejects unknown columns on the session upsert."
+        },
+        "20261025040000": {
+            "phase": "expand",
+            "provides": ["meta_insights_daily_tables"],
+            "notes": "Creates meta_ads_insights_daily and meta_organic_insights_daily with forced RLS and service-role-only select/insert/update. Additive: no deployed application code reads or writes the tables yet. Applied to Preview and Production with v0.47.0-beta.1."
         }
     },
     "appCapabilities": {
