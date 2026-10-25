@@ -7,6 +7,7 @@ import { UsageError, say } from './cli.mjs';
 import { buildCierre, cancelCierre, cierreIssues, cierreLines, signalLine } from './cierre.mjs';
 import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
 import { VEREDICTOS, isFinished, isReview, logRowError, quienOf, unlocked } from './model.mjs';
+import { cadaMs, nextCycle } from './recurring.mjs';
 import { appendLog, loadBoard, readDoc, withLock } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -71,6 +72,27 @@ export function reviewDone(before, after, flags) {
 	return { ...unlocked(after, flags), estado: 'hecha' };
 }
 
+/**
+ * d268: closing an open periodic task (`cada`) ends this cycle only: it goes back to pendiente without its lock,
+ * lane, PR or branch, and its `fecha` requisito moves to the next cycle. The cierre stays as the last cycle's.
+ * `after` is returned unchanged for any other task.
+ */
+export function rescheduled(before, after, flags, now = Date.now()) {
+	if (!cadaMs(before.cada) || isReview(before) || isFinished(before)) return after;
+	const next = {
+		...unlocked(after, flags),
+		estado: 'pendiente',
+		requisitos: nextCycle(after, now),
+	};
+	for (const k of ['carril', 'pr', 'rama', 'entregada']) delete next[k];
+	return next;
+}
+
+const cycleLine = (t) => {
+	const fechas = (t.requisitos ?? []).filter((r) => r.tipo === 'fecha').map((r) => r.ref);
+	return `cada ${t.cada}: vuelve a pendiente hasta ${fechas.join(', ')}`;
+};
+
 /** The `close` command; board.mjs passes the task helpers it owns. */
 export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 	return {
@@ -92,7 +114,9 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 				const issues = cierreIssues({ ...before, cierre }, board);
 				if (issues.length)
 					throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
-				const t = saveTask(dir, before, reviewDone(before, { ...before, cierre }, flags), {
+				const closed = reviewDone(before, { ...before, cierre }, flags);
+				const next = rescheduled(before, closed, flags);
+				const t = saveTask(dir, before, next, {
 					...flags,
 					seguimiento: true,
 				});
@@ -103,6 +127,7 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 					`${t.id} con cierre (rev ${t.rev})`,
 					...cierreLines(t, board),
 					...(enviado ? [enviado] : []),
+					...(next === closed ? [] : [cycleLine(t)]),
 					senal,
 				];
 				say(flags, out, { ...t, senal }, text.join('\n'));

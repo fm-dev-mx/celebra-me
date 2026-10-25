@@ -33,6 +33,12 @@ data, never an authorization.
   `archive`/`unarchive`, `entregada {agente, desde}` only by `entregada` and the view's «Copiar
   prompt» (d249, see Agents), `cierre` only by `close`. `espera`, `usted` and `deps` no longer
   exist.
+- **Periodic tasks (d268)**: the optional `cada` (`<n>d`, for example `7d` or `14d`) makes a task
+  recurring. `close` of an open periodic task ends only this cycle: it goes back to `pendiente`
+  without its lock, `carril`, `pr`, `rama` or delivery mark (the lock's session stays in `sesion`),
+  every `fecha` requisito moves forward by whole cycles until it is in the future (a task without
+  one gets `now + cada`), the cierre stays as the last cycle's and `close` prints
+  `cada 7d: vuelve a pendiente hasta <fecha>`. Review rounds and finished tasks ignore it.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -166,7 +172,16 @@ data, never an authorization.
   `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
   «posible sesión cerrada» and never released by the sync (the owning session or the coordinator
   with authority does). The button's POST needs the page's per-process token and its own `Origin`,
-  and every request needs a local `Host`. No agent is ever launched from the view.
+  and every request needs a local `Host`. No agent is ever launched from the view. **Hygiene
+  (d268)**: after those writes, on the board as they left it, the sync moves every unlocked
+  `unida`/`hecha` task whose check passes (the verifier's `checkTask`; a PR state comes from the
+  list it already read) to `comprobada` with that `evidencia`, archives every finished, unlocked
+  task with a valid cierre (a review round only once its origin is finished), runs
+  `compact --antes=7d` and `prune-backups --aplicar`, and detaches each free, clean lane f05–f12 at
+  `origin/develop` (`git switch --detach`). A lane is free when no lock and no open task's `carril`
+  holds it and it is detached or on a branch whose newest PR merged; a free lane with uncommitted or
+  untracked changes, or on a branch without a merged PR, is only reported. `--dry-run` lists every
+  step and writes nothing; the result carries them under `higiene`.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change, per `move`, per `plan` and per
