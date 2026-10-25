@@ -21,6 +21,10 @@ export const landingData: LandingPageData = {
 		// No price here: search engines keep this text long after a promo row ends.
 		description:
 			'Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp, sin anticipo.',
+		ogTitle: 'Celebra-me | Invitaciones Digitales Premium',
+		ogDescription:
+			'Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp, sin anticipo.',
+		ogImage: '/images/og/og-vitrina.jpg',
 	},
 	hero: {
 		eyebrow: 'Invitaciones digitales',

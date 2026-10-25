@@ -2,14 +2,23 @@
 export const prerender = true;
 import Layout from '@/layouts/Layout.astro';
 import Icon from '@/components/common/icons/Icon.astro';
+import { getWhatsAppLink } from '@/utils/whatsapp';
 
 // SEO: Avoid indexing error pages
-const title = "Página no encontrada | Celebra-me";
-const description = "Lo sentimos, la página que busca no existe o ha sido movida.";
+const title = 'Página no encontrada | Celebra-me';
+const description = 'Lo sentimos, la página que busca no existe o ha sido movida.';
+const whatsappUrl = getWhatsAppLink('Hola, necesito ayuda para encontrar una página en Celebra-me.');
 Astro.response.status = 404;
 ---
 
-<Layout title={title} description={description} hideHeader={true} className="theme-preset--jewelry-box-landing">
+<Layout
+	title={title}
+	description={description}
+	hideHeader={true}
+	className="theme-preset--jewelry-box-landing"
+	omitCanonical={true}
+	robots="noindex, nofollow"
+>
     <meta name="robots" content="noindex" slot="head" />
 
     <div class="status-page">
@@ -27,16 +36,24 @@ Astro.response.status = 404;
                 </div>
 
                 <p class="status-page__description">
-                    Parece que el enlace que siguió ha desaparecido entre los pétalos de nuestra galería. 
-                    Permítanos guiarlo de vuelta a casa.
+                    Parece que el enlace que siguió no está disponible o ha cambiado de lugar.
+                    Permítanos guiarlo para que continúe explorando nuestras opciones.
                 </p>
 
                 <div class="status-page__actions">
                     <a href="/" class="status-page__btn">
-                        Regresar al Inicio
+                        Inicio
                     </a>
-                    <a href="/#contacto" class="status-page__btn status-page__btn--outline">
-                        Solicitar Ayuda
+                    <a href="/demos" class="status-page__btn status-page__btn--outline">
+                        Ver demos
+                    </a>
+                    <a
+                        href={whatsappUrl}
+                        class="status-page__btn status-page__btn--outline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        WhatsApp
                     </a>
                 </div>
             </div>
