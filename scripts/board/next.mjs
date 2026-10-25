@@ -26,6 +26,7 @@ import {
 	VEREDICTOS,
 } from './model.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
+import { findingsSent } from './findings.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
 
 const MINUTE_MS = 60_000;
@@ -168,7 +169,10 @@ export function readyToMerge(t, board, prs) {
 	return head && head !== last.revisionSha ? null : last;
 }
 
-/** The review item of a task under review: merge it, review its new head again, or pass the findings on. */
+/**
+ * The review item of a task under review: merge it, review its new head again, or pass the findings on; null when
+ * `close` already sent the round's findings to the author (d251).
+ */
 function reviewItem(t, board, prs) {
 	const last = reviewRounds(t.id, board).at(-1);
 	const verdict = last && reviewVerdict(last);
@@ -194,6 +198,7 @@ function reviewItem(t, board, prs) {
 			t,
 			texto: `Resolver el bloqueo que ${taskTag(last)} encontró en ${ref}`,
 		};
+	if (findingsSent(last.id, board).length) return null;
 	return {
 		tipo: 'hallazgos',
 		t,
@@ -233,7 +238,7 @@ function sessionItems(board, now) {
  * `[{number, headRefOid, headRefName, title}]`, or undefined when GitHub was not read:
  * - `unir`: the last review round approved the PR's current head SHA;
  * - `vuelta`: the PR head moved past its last finished round, so it needs `pnpm board review` again;
- * - `hallazgos`: the last round found something at the current head: pass it to the author;
+ * - `hallazgos`: the last round found something at the current head that `close` did not send to the author;
  * - `cierre`: a task «en revision» or «unida» without its closing summary (d255);
  * - `sin-tarea`: an open PR no task names;
  * - `sesion`: a ready task for Claude or the coordinator that no session holds;
