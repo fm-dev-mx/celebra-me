@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDownIcon } from '@/components/common/icons/ui';
+import { MoreGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import { useFloatingMenu } from '@/components/dashboard/guests/use-floating-menu';
 
 interface ToolbarActionsMenuProps {
@@ -8,6 +9,8 @@ interface ToolbarActionsMenuProps {
 	onImport: () => void;
 	onRefresh: () => void;
 	onShareMessages?: () => void;
+	/** Icon-only trigger, for the compact search row. */
+	iconOnly?: boolean;
 }
 
 const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
@@ -15,6 +18,7 @@ const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
 	onImport,
 	onRefresh,
 	onShareMessages,
+	iconOnly = false,
 }) => {
 	const { open, menuId, triggerRef, menuRef, toggle, close } = useFloatingMenu({
 		menuWidth: 200,
@@ -26,7 +30,7 @@ const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
 			<button
 				ref={triggerRef}
 				type="button"
-				className={`toolbar-actions-menu__trigger ${open ? 'toolbar-actions-menu__trigger--open' : ''}`}
+				className={`toolbar-actions-menu__trigger${iconOnly ? ' toolbar-actions-menu__trigger--icon' : ''}${open ? ' toolbar-actions-menu__trigger--open' : ''}`}
 				onClick={toggle}
 				aria-expanded={open}
 				aria-haspopup="menu"
@@ -34,8 +38,14 @@ const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
 				aria-label="Más acciones"
 				title="Más acciones"
 			>
-				<span>Más acciones</span>
-				<ChevronDownIcon size={14} aria-hidden="true" />
+				{iconOnly ? (
+					<MoreGlyph size={20} />
+				) : (
+					<>
+						<span>Más acciones</span>
+						<ChevronDownIcon size={14} aria-hidden="true" />
+					</>
+				)}
 			</button>
 			{open &&
 				createPortal(

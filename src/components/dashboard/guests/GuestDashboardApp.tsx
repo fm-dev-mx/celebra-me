@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
-import GuestGroupMetrics from '@/components/dashboard/guests/GuestGroupMetrics';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import {
 	GuestListFeedback,
@@ -12,7 +11,7 @@ import GuestDetailSheet from '@/components/dashboard/guests/GuestDetailSheet';
 import GuestBatchConfirm from '@/components/dashboard/guests/GuestBatchConfirm';
 import GuestSelectionBar from '@/components/dashboard/guests/GuestSelectionBar';
 import GuestFilters from '@/components/dashboard/guests/GuestFilters';
-import GuestStatusOverview from '@/components/dashboard/guests/GuestStatusOverview';
+import GuestDashboardSummary from '@/components/dashboard/guests/GuestDashboardSummary';
 import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
@@ -349,34 +348,36 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				{error && <GuestLoadError message={error} onRetry={loadGuests} />}
 
 				{isInitialLoad && <GuestOverviewSkeleton />}
-				{showOverview && (
-					<GuestStatusOverview
-						summary={summary}
-						activeFilter={reviewFilter}
-						onFilterChange={setReviewFilter}
-						reminderCount={showReminderCta ? eligibleGuestIds.size : 0}
-						reminderHint={reminderHint}
-						withMessageCount={withMessageCount}
-						rsvpDeadline={shareDateContext.rsvpDeadline}
-						eventTitle={currentEventTitle}
-						engagement={engagement}
-						nextStepScope={groupScope ?? undefined}
-						onRemind={() =>
-							batchSelection.requestBatch('reminder', groupScope?.reminderIds ?? null)
-						}
-						onSendPending={() =>
-							batchSelection.requestBatch('invitation', groupScope?.toSendIds ?? null)
-						}
-					/>
-				)}
-
-				<GuestGroupMetrics
-					metrics={groupMetrics}
+				<GuestDashboardSummary
+					showOverview={showOverview}
+					overview={{
+						summary,
+						activeFilter: reviewFilter,
+						onFilterChange: setReviewFilter,
+						reminderCount: showReminderCta ? eligibleGuestIds.size : 0,
+						reminderHint,
+						withMessageCount,
+						rsvpDeadline: shareDateContext.rsvpDeadline,
+						eventTitle: currentEventTitle,
+						engagement,
+						nextStepScope: groupScope ?? undefined,
+						onRemind: () =>
+							batchSelection.requestBatch(
+								'reminder',
+								groupScope?.reminderIds ?? null,
+							),
+						onSendPending: () =>
+							batchSelection.requestBatch(
+								'invitation',
+								groupScope?.toSendIds ?? null,
+							),
+					}}
+					groupMetrics={groupMetrics}
 					activeGroup={group}
 					onSelectGroup={setGroup}
 				/>
 
-				<div className="dashboard-guests__toolbar">
+				<div className="dashboard-guests__toolbar dashboard-guests__toolbar--actions">
 					<button
 						type="button"
 						onClick={openCreateModal}
@@ -400,6 +401,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					totalInvitations={items.length}
 					onSearchChange={setSearch}
 					onGroupChange={setGroup}
+					actions={
+						<ToolbarActionsMenu
+							iconOnly
+							onExport={handleExport}
+							onImport={openImportModal}
+							onRefresh={loadGuests}
+							onShareMessages={() => setShareMessagesModalOpen(true)}
+						/>
+					}
 				/>
 
 				<GuestListControls
