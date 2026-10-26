@@ -305,6 +305,10 @@
         "20261026120000": {
             "phase": "neutral",
             "notes": "Data only: soft-deletes 35 live invitation_assets rows with provider='supabase', named by id, that no publication or draft uses (2026-10-26: 35 in Preview, 0 in Production, where it matches nothing). No schema, grant or constraint change. The deployed application only lists them among archived assets afterwards; storage objects are not touched. The five managed rows of an archived wedding definition that its publication uses stay live. Idempotent."
+        },
+        "20261026160000": {
+            "phase": "neutral",
+            "notes": "Replaces register_commercial_deposit_purchase without changing its signature or privileges. New Purchase outbox rows use the locked order's total_amount, while amount_paid remains the actual deposit. Existing events and idempotent retries keep their original value; no historical backfill or resend. Compatible with the deployed application, which delivers the stored outbox value. Requires separate owner-authorized schema application after review."
         }
     },
     "appCapabilities": {
