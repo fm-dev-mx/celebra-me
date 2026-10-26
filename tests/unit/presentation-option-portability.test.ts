@@ -244,7 +244,7 @@ describe('folio intersection family', () => {
 		const styles = readSource('src/styles/invitation/_section-intersections.scss');
 		expect(styles).toContain("[data-intersection='folio']");
 		expect(styles).toContain('var(--intersection-folio-lift, 0deg)');
-		expect(styles).toContain('prefers-reduced-motion: no-preference');
+		expect(styles).toContain('@include a11y.motion-safe');
 		expect(styles).not.toMatch(/event--|america/);
 	});
 });
@@ -541,7 +541,7 @@ describe('stack intersection family', () => {
 		expect(styles).toContain('var(--intersection-stack-recede-scale, 1)');
 		expect(styles).toContain('var(--intersection-stack-recede-fade, 100%)');
 		expect(styles).toContain('var(--intersection-stack-floor, transparent)');
-		expect(styles).toContain('prefers-reduced-motion: reduce');
+		expect(styles).toContain('@include a11y.reduced-motion');
 		expect(styles).not.toMatch(/event--|olivia/);
 		expect(readSource('src/components/invitation/InvitationSections.astro')).toContain(
 			'data-intersection-anchor={stackAnchor}',

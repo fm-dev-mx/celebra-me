@@ -1,4 +1,6 @@
-@media (prefers-reduced-motion: reduce) {
+@use '../global/a11y' as a11y;
+
+@include a11y.reduced-motion {
 	.dashboard-guests__mobile-dock {
 		animation: none;
 		transition: none;

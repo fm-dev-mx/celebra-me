@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 .demo-conversion-report {
 	display: grid;
 	gap: var(--spacing-md);
@@ -25,7 +27,8 @@
 	input,
 	select,
 	button {
-		min-height: 44px;
+		@include a11y.touch-target;
+
 		max-width: 100%;
 	}
 
@@ -38,8 +41,7 @@
 	}
 
 	:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include a11y.focus-ring;
 	}
 
 	&__table {

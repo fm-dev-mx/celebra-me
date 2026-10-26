@@ -519,6 +519,6 @@
 @include mixins.respond-below(lg) {
 	.tab-btn,
 	.commercial-dashboard input:not([type='checkbox'], [type='radio'], [type='hidden']) {
-		min-height: 44px;
+		@include mixins.touch-target;
 	}
 }

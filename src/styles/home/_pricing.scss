@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 /* stylelint-disable color-no-hex -- one-off landing shades not yet promoted to $sys-color-landing-* tokens */
 .pricing-section {
 	position: relative;
@@ -381,7 +383,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.pricing-card,
 	.cta-button {
 		transition: none;

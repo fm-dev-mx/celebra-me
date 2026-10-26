@@ -24,8 +24,11 @@ version: 1.1.0
 - `--dashboard-focus-ring` for all focus outlines. Never `--color-action-accent`.
 - Form fields (inset focus):
   `box-shadow: 0 0 0 3px var(--dashboard-focus-ring), 0 0 12px var(--dashboard-focus-glow)`.
-- Buttons/chips/interactive elements:
-  `outline: 2px solid var(--dashboard-focus-ring); outline-offset: 2px`.
+- Buttons/chips/interactive elements: `@include mixins.focus-ring;` (emits
+  `outline: 2px solid var(--dashboard-focus-ring); outline-offset: 2px`).
+- Reduced motion, 44px touch targets and 2px focus offsets come from the mixins in
+  `src/styles/global/_a11y.scss` (`reduced-motion`, `motion-safe`, `touch-target`, `focus-ring`);
+  stylelint refuses hand-written copies.
 - `--dashboard-focus-ring` and `--dashboard-focus-glow` defined in `_common.scss` with light-mode
   defaults, overridden by theme preset.
 

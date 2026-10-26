@@ -1,6 +1,7 @@
 @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
 @use '@fontsource-variable/bodoni-moda/index.css' as bodoni-moda;
 @use '@fontsource-variable/instrument-sans/index.css' as instrument-sans;
+@use '../../../global/a11y' as a11y;
 
 // RSVP formal-register: underline confirmation register on a dark chapter.
 // Owns layout, type metrics, controls, feedback, and section-scoped chroma so
@@ -511,7 +512,7 @@
 // edge like a page of the register, driven by the reader's scroll. Profiles turn it on with
 // `--formal-register-open: formal-register-open`; the default `none` keeps the static chapter.
 @supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		.rsvp[data-variant='formal-register'] {
 			.rsvp__header,
 			.rsvp__form,

@@ -26,7 +26,9 @@
 	flex: none;
 	align-items: center;
 	gap: 0.375rem;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0 0.875rem;
 	border: 1px solid var(--color-border-control);
 	border-radius: 999px;
@@ -53,8 +55,7 @@
 
 	@media (forced-colors: active) {
 		&--active {
-			outline: 2px solid Highlight;
-			outline-offset: 2px;
+			@include mixins.focus-ring(Highlight);
 		}
 	}
 }
@@ -132,7 +133,9 @@
 	grid-template-columns: minmax(0, 1fr) auto;
 	gap: 0.375rem 0.75rem;
 	width: 100%;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0.625rem 0.5rem;
 	border: 0;
 	border-radius: 10px;
@@ -190,7 +193,8 @@
 }
 
 .guest-tag-chips__chip {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	padding: 0 0.875rem;
 	border: 1px solid var(--color-border-control);
 	border-radius: 999px;
@@ -218,8 +222,7 @@
 
 	@media (forced-colors: active) {
 		&--selected {
-			outline: 2px solid Highlight;
-			outline-offset: 2px;
+			@include mixins.focus-ring(Highlight);
 		}
 	}
 }

@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 /* src/styles/components/_lead-capture.scss */
 
 // «Aparta su fecha» dialog. It opens over the landing and over every demo preset, so it carries
@@ -35,7 +37,7 @@
 		animation: lead-capture-in 180ms ease-out;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		&[open] {
 			animation: none;
 		}
@@ -126,7 +128,9 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 44px;
+
+	@include a11y.touch-target;
+
 	padding: 0 1rem;
 	border: 1px solid var(--lead-capture-accent);
 	border-radius: 999px;
@@ -273,8 +277,7 @@
 }
 
 .lead-capture :focus-visible {
-	outline: 3px solid var(--lead-capture-focus);
-	outline-offset: 2px;
+	@include a11y.focus-ring(var(--lead-capture-focus), 3px);
 }
 
 // Blocks with their own display (grid, flex) must still honour [hidden].

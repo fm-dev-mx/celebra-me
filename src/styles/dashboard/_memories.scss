@@ -1,4 +1,5 @@
 @use './common' as *;
+@use '../global/a11y' as a11y;
 
 .dashboard-memories {
 	display: grid;
@@ -7,7 +8,7 @@
 	button,
 	a.btn-primary,
 	a.btn-secondary {
-		min-height: 44px;
+		@include a11y.touch-target;
 	}
 
 	&__topbar,
@@ -45,7 +46,8 @@
 		font-weight: 600;
 
 		select {
-			min-height: 44px;
+			@include a11y.touch-target;
+
 			border: 1px solid var(--dashboard-card-border);
 			border-radius: 0.6rem;
 			background: var(--dashboard-card-bg);
@@ -221,7 +223,9 @@
 		input,
 		select {
 			width: 100%;
-			min-height: 44px;
+
+			@include a11y.touch-target;
+
 			border: 1px solid var(--dashboard-card-border);
 			border-radius: 0.6rem;
 			background: var(--dashboard-card-bg-soft);
@@ -280,8 +284,7 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--dashboard-focus-ring);
-			outline-offset: 2px;
+			@include a11y.focus-ring;
 		}
 	}
 
@@ -403,7 +406,7 @@
 	a.btn-primary,
 	a.btn-secondary,
 	button {
-		min-height: 44px;
+		@include a11y.touch-target;
 	}
 
 	&__toolbar {
@@ -566,7 +569,9 @@
 		justify-content: space-between;
 		gap: 0.75rem;
 		width: 100%;
-		min-height: 44px;
+
+		@include a11y.touch-target;
+
 		padding: 0.6rem 0.8rem;
 		border: 1px solid var(--dashboard-card-border);
 		border-radius: 0.6rem;
@@ -682,7 +687,9 @@
 			display: flex;
 			align-items: center;
 			gap: 0.5rem;
-			min-height: 44px;
+
+			@include a11y.touch-target;
+
 			margin-top: 0.35rem;
 			font-weight: 600;
 		}
@@ -833,7 +840,8 @@
 .memories-lightbox {
 	a.btn-primary,
 	a.btn-secondary {
-		min-height: 44px;
+		@include a11y.touch-target;
+
 		text-decoration: none;
 	}
 }
@@ -1073,8 +1081,8 @@
 
 .memories-chip {
 	@extend %pill-base;
+	@include a11y.touch-target;
 
-	min-height: 44px;
 	padding: 0 1rem;
 	border: 1px solid var(--dashboard-card-border);
 	background: var(--dashboard-card-bg-soft);
@@ -1090,8 +1098,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include a11y.focus-ring;
 	}
 }
 
@@ -1110,7 +1117,8 @@
 		gap: 0.5rem;
 
 		a.btn-secondary {
-			min-height: 44px;
+			@include a11y.touch-target;
+
 			text-decoration: none;
 		}
 	}

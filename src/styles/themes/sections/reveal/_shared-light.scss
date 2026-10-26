@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 .envelope-wrapper[data-variant='celestial-blue'],
 .envelope-wrapper[data-variant='enchanted-rose'],
 .envelope-wrapper[data-variant='jewelry-box'],
@@ -401,7 +403,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		.envelope-seal-button[data-seal-icon='wax-monogram'],
 		.envelope-seal-button[data-seal-icon='wax-organic'],
 		.envelope-seal-button[data-seal-icon='wax-medallion'],

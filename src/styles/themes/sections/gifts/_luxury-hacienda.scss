@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 // luxury-hacienda: warm masculine palette, pill buttons, hacienda font
 .theme-preset--luxury-hacienda .gifts-section {
 	.gift-card {
@@ -39,7 +41,7 @@
 		border-color: rgb(var(--color-action-accent-rgb) / 24%);
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		.gift-card,
 		.gift-card__button,
 		.copy-button {
