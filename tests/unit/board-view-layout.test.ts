@@ -26,9 +26,10 @@ const contrast = (a: string, b: string) => {
 };
 
 describe('board view layout (T268)', () => {
-	it('puts every view in a left sidebar, «Para usted» first and by default', () => {
+	it('puts every view in a left sidebar, «General» first and by default (T321)', () => {
 		const tabs = [...VIEW.matchAll(/data-tab="([a-z]+)" id="t-/g)].map((x) => x[1]);
 		expect(tabs).toEqual([
+			'general',
 			'usted',
 			'cola',
 			'calendario',
@@ -41,8 +42,8 @@ describe('board view layout (T268)', () => {
 			/<aside class="side" id="side"[\s\S]*<nav class="tabs" role="tablist"/,
 		);
 		expect(VIEW).toMatch(/<div class="side-foot">\s*<div class="strip" id="strip">/);
-		expect(SCRIPT).toContain("tab:'usted'");
-		expect(SCRIPT).toContain("S.tab=TABS.includes(tab)?tab:'usted';");
+		expect(SCRIPT).toContain("tab:'general'");
+		expect(SCRIPT).toContain("S.tab=TABS.includes(tab)?tab:'general';");
 		// Below 800px the sidebar slides over the page behind a menu button.
 		expect(CSS).toMatch(
 			/@media \(max-width:799px\)\{[\s\S]*?body\.side-open \.side\{transform:none/,
@@ -68,7 +69,10 @@ describe('board view layout (T268)', () => {
 		for (const c of ['todos', 'own', 'auto', 'run', 'block', 'rev'])
 			expect(VIEW).toContain(`data-col="${c}"`);
 		expect(SCRIPT).toContain("const colorOk=t=>S.col==='todos'||color(t)===S.col;");
-		expect(SCRIPT).toContain('&&found(t)&&colorOk(t));');
+		// T321: the header search lists its own results, so the queue filters only by agent and color.
+		expect(SCRIPT).toContain(
+			'const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&colorOk(t));',
+		);
 	});
 
 	it('keeps rows compact, groups collapsible and Ctrl+K on the search', () => {

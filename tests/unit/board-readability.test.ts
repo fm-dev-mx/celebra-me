@@ -168,9 +168,12 @@ describe('board readability (d284)', () => {
 	});
 
 	it('counts every tab and repeats the count in the view title', () => {
-		for (const id of ['n-you', 'n-cola', 'n-cal', 'n-blk', 'n-fin', 'n-car', 'n-hist'])
+		for (const id of ['n-gen', 'n-you', 'n-cola', 'n-cal', 'n-blk', 'n-fin', 'n-car', 'n-hist'])
 			expect(VIEW).toContain(`id="${id}"`);
-		expect(SCRIPT).toContain("$('vtitle').textContent=TITLE[S.tab]+(n!==''?` (${n})`:'')");
+		// T321: the title's count is a quiet gray span; during a search it counts the results.
+		expect(SCRIPT).toContain(
+			"$('vtitle').innerHTML=esc(searching()?'Búsqueda':TITLE[S.tab])+(n!==''?` <span class=\"n\">${esc(n)}</span>`:'');",
+		);
 	});
 
 	it('runs the start watchdog: a message, then one reload unless the module started late', () => {
