@@ -1,0 +1,20 @@
+---
+/**
+ * src/components/home/PromoEmblem.astro
+ *
+ * Emblem of the active promo theme. It carries every theme and CSS shows the one named by
+ * `html[data-promo-theme]`; without a theme it takes no space.
+ */
+import { PROMO_THEMES } from '@/data/promo-campaign.data';
+import { PROMO_EMBLEM_VIEWBOX, promoEmblemSymbolId } from '@/data/promo-theme-art.data';
+
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<svg class:list={['promo-emblem', className]} viewBox={PROMO_EMBLEM_VIEWBOX} aria-hidden="true" focusable="false">
+	{PROMO_THEMES.map((theme) => <use href={`#${promoEmblemSymbolId(theme)}`} data-promo-art={theme} />)}
+</svg>

@@ -10,6 +10,7 @@ import { Image } from 'astro:assets';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
 import { buildVitrinaMessage, type VitrinaDemo, type VitrinaEvent } from '@/data/landing-vitrina.data';
 import { getEventAsset } from '@/lib/assets/asset-registry';
+import { getRenderCampaign } from '@/data/promo-campaign.data';
 
 import '@/styles/home/_sticky-cta.scss';
 
@@ -20,6 +21,9 @@ interface Props {
 
 const { event, demo } = Astro.props;
 const thumb = getEventAsset(demo.slug, demo.cover);
+// Promo name only, shown in place of the question while html[data-promo-theme] is set;
+// PromoStatus.astro fills it.
+const campaign = getRenderCampaign();
 ---
 
 <div class="sticky-cta" data-sticky-cta inert>
@@ -39,7 +43,8 @@ const thumb = getEventAsset(demo.slug, demo.cover);
 	}
 	<p class="sticky-cta__text">
 		<b data-sticky-label>{event.label} · {demo.name}</b>
-		¿Le gusta este estilo?
+		<span class="sticky-cta__question">¿Le gusta este estilo?</span>
+		<span class="sticky-cta__promo" data-promo-field="label">{campaign?.label}</span>
 	</p>
 	<WhatsAppButton
 		className="sticky-cta__button"
