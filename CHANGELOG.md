@@ -10,6 +10,45 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.53.0-beta.1] - 2026-10-26
+
+After deposit payment, clients can now complete their event details via a private «Datos de su
+invitación» link that records a Meta CompleteRegistration event, Meta deposit purchases are valued
+at the full order total, and lead capture includes hashed phone numbers for advanced matching. Four
+new migrations are included (20261026120000, 20261026130000, 20261026160000, and 20261026173000); no
+published invitation content changes.
+
+### Added
+
+- Commercial: private `/mi-invitacion/<token>` form allows clients to complete and autosave their
+  invitation data after paying the deposit, and records a `CompleteRegistration` conversion event in
+  the Meta Conversions API outbox (#620).
+- Tracking: lead capture forwards the SHA-256 hashed normalized phone number (`ph`) to the Meta
+  Conversions API for advanced matching (#618).
+- Tooling: local board validates assigned lane on claim and close, and stores task release notes via
+  `--changelog` (#619).
+- Tooling: board links pull requests by task reference and detects active task overlap across lanes
+  (#607).
+
+### Fixed
+
+- Commercial: deposit `Purchase` conversion events in Meta CAPI are now valued at the full order
+  total while preserving the recorded amount paid (#622).
+- Commercial: Meta insights collector on Cloudflare Workers can reach the Graph API (#605).
+- Tooling: owner messages remain unread when an agent inspects them (#611).
+
+### Changed
+
+- Tooling: document claim/close/changelog flags in `board.md` and update invitation kind (#625).
+- Tooling: reduced local board live payloads and loaded task details and history on demand (#627).
+- Database: soft-delete orphan pre-R2 Supabase invitation asset rows in preview (`20261026120000`,
+  #609).
+- Database: retire preview legacy wedding identities and archive preview invitations
+  (`20261026173000`, #629).
+- Theme: replaced hand-written a11y styling patterns with shared mixins and removed unused CSS
+  tokens and mixins from presets and ornament sets (#603, #604, #617, #624).
+- Dependencies: bumped `framer-motion` to 14 (#621) and `@types/node` to 26 (#610).
+
 ## [0.52.0-beta.1] - 2026-10-26
 
 WhatsApp buttons on the landing and demo pages first open a short «Aparta su fecha» form that stores
