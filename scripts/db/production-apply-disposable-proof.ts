@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import {
 	assertCurrentDisposableMigrationProof,
 	type DisposableProofValidation,
+	resetDisposableLiveStateCache,
 } from './disposable-migration-proof.ts';
 import { PROJECT_ROOT } from './db-workflow-lib.ts';
 import { operatorSymbol, writeHuman } from './operator-cli-ux.ts';
@@ -33,6 +34,8 @@ export interface DisposableProofRefreshDeps {
 	/** Runs one `pnpm` script and returns its exit status. */
 	runPnpm?: (args: readonly string[]) => number | null;
 	log?: (line: string) => void;
+	/** Drops this process's memoized container state once the subprocesses changed it. */
+	resetLiveState?: () => void;
 }
 
 export interface DisposableProofRefreshResult {
@@ -69,6 +72,7 @@ export function ensureFreshDisposableProof(
 	const assess = deps.assess ?? assertCurrentDisposableMigrationProof;
 	const runPnpm = deps.runPnpm ?? defaultRunPnpm;
 	const log = deps.log ?? writeHuman;
+	const resetLiveState = deps.resetLiveState ?? resetDisposableLiveStateCache;
 
 	const before = assess();
 	if (before.ok) return { refreshed: false, reason: before.reason };
@@ -89,6 +93,8 @@ export function ensureFreshDisposableProof(
 		}
 	}
 
+	// The reset and apply ran in child processes; the memoized state still shows the old container.
+	resetLiveState();
 	const after = assess();
 	if (!after.ok) {
 		throw new DisposableProofRefreshError(

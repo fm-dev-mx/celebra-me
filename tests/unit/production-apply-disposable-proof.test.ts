@@ -55,6 +55,30 @@ describe('prod:apply disposable proof refresh', () => {
 		expect(lines.join('\n')).toContain(stale.reason);
 	});
 
+	it('drops the memoized live state before re-checking the renewed proof', () => {
+		const order: string[] = [];
+		const assessments = [stale, valid];
+		ensureFreshDisposableProof({
+			assess: () => {
+				order.push('assess');
+				return assessments.shift() ?? valid;
+			},
+			runPnpm: () => {
+				order.push('run');
+				return 0;
+			},
+			resetLiveState: () => order.push('reset'),
+			log: () => undefined,
+		});
+		expect(order).toEqual(['assess', 'run', 'run', 'reset', 'assess']);
+	});
+
+	it('leaves the memoized live state alone when the proof is current', () => {
+		const resetLiveState = jest.fn();
+		ensureFreshDisposableProof({ assess: () => valid, resetLiveState, log: () => undefined });
+		expect(resetLiveState).not.toHaveBeenCalled();
+	});
+
 	it('never names a persistent target in the refresh commands', () => {
 		const flat = DISPOSABLE_PROOF_REFRESH_COMMANDS.flat().join(' ');
 		expect(flat).not.toMatch(/production|preview|--target local|celebra-me-rsvp/);
