@@ -55,7 +55,7 @@
  *   set <id> estado=cancelada --motivo=…        T129: a cancellation writes its cierre, the reason as summary
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task with its closing summary from
  *                                               «Finalizadas» (bitácora row)
- *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
+ *   decide decision=… motivo=… tareas=a,b|--sin-tarea [--mensaje=<id>] [reemplaza=dNNN] [quien=…]
  *                                               T172: «(reemplaza dNNN)» in the text links it without the field
  *   carril [--json]                             canonical lane catalog with live Git/task state (read-only)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
@@ -136,7 +136,8 @@ import { leftByUnanswered, reviewChild, reviewChildId } from './rounds.mjs';
 import { overlapCommands } from './overlap.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
 import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
-import { deliveryLine, nextSections, sectionLines } from './next.mjs';
+import { deliveryLine, nextSections, sectionLines, unreadFor } from './next.mjs';
+import { mergeSignal } from './owner-text.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
 import { deliveryCommands } from './delivery-commands.mjs';
 import {
@@ -154,7 +155,7 @@ import {
 } from './store.mjs';
 import { UsageError, failureText, say } from './cli.mjs';
 import { externalSessionLines, externalSessions } from './external-sessions.mjs';
-import { kindCommands, withKindPrompt } from './kind-commands.mjs';
+import { generatedPrompt, kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
 import { ghPrState, reviewSha } from './github.mjs';
@@ -240,12 +241,55 @@ const nextNum = (dir) =>
 		0,
 	) + 1;
 
+/** Snapshot the coordinator context before validation and persistence. */
+function prepareQuestionRevision(dir, before, t, opts) {
+	if (!before || !opts.coordinador) return [];
+	const questions = unreadFor('dueno', { ...loadBoard(dir), bandejas: [] }).filter(
+		(r) => r.tarea === t.id,
+	);
+	t.preguntasRev = t.rev;
+	if (questions.length) t.prompt = generatedPrompt(t, loadBoard(dir), { rev: t.rev }) ?? t.prompt;
+	return questions;
+}
+
+/** Keep the expired question in history and send the replacement prompt to its agent. */
+function notifyExpiredQuestions(dir, before, t, questions) {
+	if (questions.length) {
+		appendLog(dir, {
+			tarea: t.id,
+			en: t.actualizado,
+			quien: 'coordinador',
+			atendido: {
+				para: 'dueno',
+				mensajes: questions.map((r) => r.mensaje.id),
+				nota: `vencida: contexto actualizado a rev ${t.rev}`,
+			},
+		});
+		const agente = before.candado?.agente ?? before.agente;
+		if (['codex', 'claude', 'gemini'].includes(agente))
+			appendLog(
+				dir,
+				buildMessageRow(
+					t.id,
+					{
+						de: 'coordinador',
+						para: agente,
+						texto: `Pregunta vencida. Use el prompt actualizado:\n${promptWithLane(t, loadBoard(dir))}`,
+						id: `prompt-${t.id}-${t.rev}`,
+					},
+					t.actualizado,
+				),
+			);
+	}
+}
+
 /** Save a task when it gains no shape problem; bump rev and log an estado change. */
 function saveTask(dir, before, after, opts = {}) {
 	const { corrio, salio } = opts;
 	// T172: agregadaPor on creation, seguimientoPor when opts.seguimiento marks a follow-up write.
 	const traced = withTrace(before, cleaned(after, opts), opts);
 	const t = { ...traced, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
+	const questions = prepareQuestionRevision(dir, before, t, opts);
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
 	// numbering existed gets the next number on its first write, like a new one.
 	t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
@@ -267,6 +311,7 @@ function saveTask(dir, before, after, opts = {}) {
 	archiveLostPrompt(dir, before, after, t);
 	writeDoc(dir, 'tareas', t.id, t, { backup: !isFinished(before) });
 	if (row) appendLog(dir, row);
+	notifyExpiredQuestions(dir, before, t, questions);
 	return t;
 }
 
@@ -607,6 +652,7 @@ const commands = {
 				'agregadaPor',
 				'seguimientoPor',
 				'entregada',
+				'preguntasRev',
 				'prsPrevios',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
@@ -703,6 +749,20 @@ const commands = {
 			const state = prState(pr);
 			if (state !== 'MERGED')
 				throw new UsageError(`${pr} no está unido en GitHub (${state || 'sin respuesta'})`);
+			const signals = unreadFor('coordinador', loadBoard(dir)).filter(
+				(r) => r.tarea === before.id && mergeSignal(r),
+			);
+			if (signals.length)
+				appendLog(dir, {
+					tarea: before.id,
+					en: nowIso(),
+					quien: 'coordinador',
+					atendido: {
+						para: 'coordinador',
+						mensajes: signals.map((r) => r.mensaje.id),
+						nota: 'merged',
+					},
+				});
 			const after = { ...unlocked(before, flags), pr };
 			if (!['unida', 'comprobada'].includes(after.estado)) after.estado = 'unida';
 			if (!before.candado && after.estado === before.estado)

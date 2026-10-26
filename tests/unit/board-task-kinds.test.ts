@@ -355,7 +355,10 @@ describe('task kinds (T130): pnpm board', () => {
 		// An open task from before the contract keeps working without tipo.
 		expect(cli(dir, 'set', 'vieja', '--rev=1', 'ahora=sigue', '--coordinador').status).toBe(0);
 		expect(readTask(dir, 'vieja').prompt).toBe('T1 · Vieja\nDECISIONES\n- ninguna');
-		expect(cli(dir, 'prompt', 'vieja').err).toContain('vieja no tiene tipo');
+		expect(cli(dir, 'prompt', 'vieja').out).toContain('T1 · Vieja\nDECISIONES\n- ninguna');
+		expect(cli(dir, 'prompt', 'vieja', '--guardar', '--rev=2').err).toContain(
+			'vieja no tiene tipo',
+		);
 	});
 
 	it('prints the generated prompt, saves it with --guardar and verify flags a stale one', () => {

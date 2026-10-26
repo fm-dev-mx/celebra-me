@@ -6,7 +6,7 @@
 import { UsageError, say } from './cli.mjs';
 import { KindPromptError, kindPrompt, promptDiff } from './kind-prompt.mjs';
 import { destinoIssue, kindKey, loadKinds } from './kinds.mjs';
-import { KIND_LISTS } from './model.mjs';
+import { KIND_LISTS, promptWithLane } from './model.mjs';
 import { OWNER_FIELDS } from './owner-text.mjs';
 import { loadBoard, withLock } from './store.mjs';
 
@@ -91,6 +91,10 @@ export function kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOve
 			if (!id) throw new UsageError('falta <id>');
 			const run = () => {
 				const t = getTask(dir, id);
+				if (!generatesPrompt(t) && !flags.guardar && t.prompt) {
+					const prompt = promptWithLane(t, loadBoard(dir));
+					return say(flags, out, { id: t.id, prompt, difiere: [] }, prompt);
+				}
 				if (!generatesPrompt(t))
 					throw new UsageError(
 						t.revisionSha
@@ -112,7 +116,10 @@ export function kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOve
 							: `${t.id} no tiene busca=… (su QUÉ SE BUSCA)`,
 					);
 				const difiere = t.prompt ? promptDiff(t.prompt, prompt) : ['sin prompt'];
-				if (!save) return say(flags, out, { id: t.id, prompt, difiere }, prompt);
+				if (!save) {
+					const delivered = promptWithLane({ ...t, prompt }, board);
+					return say(flags, out, { id: t.id, prompt: delivered, difiere }, delivered);
+				}
 				if (!difiere.length)
 					return say(
 						flags,

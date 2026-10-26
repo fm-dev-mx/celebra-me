@@ -299,19 +299,25 @@ describe('T172 live lanes and replaced decisions', () => {
 				{ id: 'd002', decision: 'Otra', en: NOW, vigente: true },
 			],
 		});
-		const linked = cli(dir, ['decide', 'decision=Nueva regla (reemplaza d001)', 'motivo=x']);
+		const linked = cli(dir, [
+			'decide',
+			'--sin-tarea',
+			'decision=Nueva regla (reemplaza d001)',
+			'motivo=x',
+		]);
 		expect(linked.status).toBe(0);
 		expect(linked.out).toContain('d003 registrada (reemplaza d001)');
 		expect(readJson(dir, 'decisiones', 'd001')).toMatchObject({ vigente: false });
 		expect(readJson(dir, 'decisiones', 'd003')).toMatchObject({ reemplaza: 'd001' });
 		const mismatch = cli(dir, [
 			'decide',
+			'--sin-tarea',
 			'decision=Otra regla (reemplaza d002)',
 			'reemplaza=d003',
 		]);
 		expect(mismatch.status).toBe(2);
 		expect(mismatch.err).toContain('cita reemplaza d002 pero reemplaza=d003');
-		const two = cli(dir, ['decide', 'decision=Junta (reemplaza d002 y d003)']);
+		const two = cli(dir, ['decide', '--sin-tarea', 'decision=Junta (reemplaza d002 y d003)']);
 		expect(two.status).toBe(2);
 		expect(two.err).toContain('indique cuál con reemplaza=dNNN');
 		expect(readJson(dir, 'decisiones', 'd002')).toMatchObject({ vigente: true });

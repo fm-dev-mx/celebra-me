@@ -5,8 +5,8 @@
 import { UsageError, say } from './cli.mjs';
 import { readLive } from './live.mjs';
 import { AGENT_REGISTRY } from './model.mjs';
-import { liveLanes } from './next.mjs';
-import { loadBoard, readCollection, readDoc, withLock, writeDoc } from './store.mjs';
+import { liveLanes, unreadFor } from './next.mjs';
+import { appendLog, loadBoard, readCollection, readDoc, withLock, writeDoc } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 const need = (v, msg) => {
@@ -47,10 +47,32 @@ export function replacedDecision(pairs) {
 
 export function inventoryCommands({ applyPairs, checkRev }) {
 	return {
-		decide({ pairs, flags }, dir, out) {
+		decide({ pairs, flags, pos = [] }, dir, out) {
 			need(pairs.decision, 'falta decision=…');
+			if (pos.length || (!pairs.tareas && flags['sin-tarea'] !== true))
+				throw new UsageError(
+					'decide exige tareas=<slug> o --sin-tarea; un id suelto no liga la tarea',
+				);
+			if (pairs.tareas && flags['sin-tarea'])
+				throw new UsageError('use tareas=<slug> o --sin-tarea, no ambos');
 			const reemplaza = replacedDecision(pairs);
 			return withLock(dir, () => {
+				const board = loadBoard(dir);
+				const tareas = pairs.tareas ? pairs.tareas.split(',').map((s) => s.trim()) : [];
+				if (tareas.some((id) => !board.tareas.some((t) => t.id === id)))
+					throw new UsageError('tareas debe contener slugs de tareas existentes');
+				const questions = unreadFor('dueno', { ...board, bandejas: [] }).filter((r) =>
+					tareas.includes(r.tarea),
+				);
+				if (questions.length > 1 && !flags.mensaje)
+					throw new UsageError(
+						'hay varias preguntas: indique --mensaje=<id> para responder exactamente una',
+					);
+				const selected = flags.mensaje
+					? questions.filter((r) => r.mensaje.id === flags.mensaje)
+					: questions;
+				if (flags.mensaje && selected.length !== 1)
+					throw new UsageError('--mensaje no es una pregunta abierta de estas tareas');
 				const all = readCollection(dir, 'decisiones');
 				const n =
 					Math.max(0, ...all.map((d) => Number(String(d.id).replace(/^d/, '')) || 0)) + 1;
@@ -60,7 +82,6 @@ export function inventoryCommands({ applyPairs, checkRev }) {
 					if (!old) throw new UsageError(`no existe ${reemplaza}`);
 					writeDoc(dir, 'decisiones', old.id, { ...old, vigente: false });
 				}
-				const tareas = pairs.tareas ? pairs.tareas.split(',').filter(Boolean) : [];
 				const d = {
 					...pairs,
 					...(reemplaza ? { reemplaza } : {}),
@@ -69,8 +90,22 @@ export function inventoryCommands({ applyPairs, checkRev }) {
 					en: nowIso(),
 					vigente: true,
 					quien: pairs.quien ?? 'dueño',
+					respuestas: selected.map((r) => ({
+						tarea: r.tarea,
+						mensaje: r.mensaje.id,
+						pregunta: r.mensaje.texto,
+						opcion: pairs.decision,
+						rev: board.tareas.find((t) => t.id === r.tarea).rev,
+					})),
 				};
 				writeDoc(dir, 'decisiones', id, d);
+				for (const r of selected)
+					appendLog(dir, {
+						tarea: r.tarea,
+						en: d.en,
+						quien: d.quien,
+						atendido: { para: 'dueno', mensajes: [r.mensaje.id], nota: id },
+					});
 				const linked = reemplaza && !pairs.reemplaza ? ` (reemplaza ${reemplaza})` : '';
 				say(flags, out, d, `${id} registrada${linked}`);
 			});
