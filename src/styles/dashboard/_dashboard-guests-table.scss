@@ -229,6 +229,9 @@
 }
 
 /* Status groups: one tinted, collapsible header per status, as in the compact list */
+$group-header-size: 0.9375rem;
+$row-meta-size: 0.82rem;
+
 .dashboard-guests__table .guest-table-group__header {
 	border-bottom: 1px solid var(--color-border-subtle);
 
@@ -241,7 +244,7 @@
 		background: var(--color-surface-soft);
 		color: var(--color-text-primary);
 		font-family: var(--font-ui);
-		font-size: 0.9375rem;
+		font-size: $group-header-size;
 		font-weight: 700;
 		letter-spacing: 0;
 
@@ -285,7 +288,7 @@
 	min-height: 44px;
 	padding: 0 0.35rem;
 	border: 0;
-	border-radius: 8px;
+	border-radius: var(--radius-md);
 	background: transparent;
 	color: inherit;
 	font: inherit;
@@ -347,7 +350,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.15rem 0.5rem;
-	font-size: 0.82rem;
+	font-size: $row-meta-size;
 	color: var(--color-text-secondary);
 }
 
