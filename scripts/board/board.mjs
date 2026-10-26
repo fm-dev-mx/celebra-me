@@ -31,7 +31,8 @@
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
- *                                               without --agente the reviewer follows d183
+ *                                               without --agente the reviewer follows d183; d282: a
+ *                                               low-risk PR by Claude goes to a Claude subagent
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
  *         [--fallida=…] [--riesgo=…] [--duda=…] [--excepcion=…]
  *         [--veredicto=aprobado|cambios|bloqueado] [--hallazgo="P2|archivo|texto"] [--sha=<sha>]
@@ -100,7 +101,6 @@ import {
 	buildLogRow,
 	buildMessageRow,
 	taskLabel,
-	reviewerIssue,
 	reviewChild,
 	reviewChildId,
 	roundLines,
@@ -147,7 +147,7 @@ import { kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
 import { ghPrState, reviewSha } from './github.mjs';
-import { codexQuota, pickReviewer } from './reviewer.mjs';
+import { chooseReviewer, reviewCreatedText, reviewerPrecheck } from './reviewer.mjs';
 import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
 import { traceText } from './format.mjs';
@@ -572,6 +572,7 @@ const commands = {
 				'origen',
 				'revisionSha',
 				'revisionFiles',
+				'revisor',
 				'archivada',
 				'cierre',
 				'num',
@@ -804,16 +805,8 @@ const commands = {
 			const noCierre = reviewCierreIssue(src, loadBoard(dir));
 			if (noCierre) throw new UsageError(noCierre);
 			const author = authorOf(src);
-			// d209: without --agente, Claude's work goes to the less loaded of Gemini and Codex.
-			const pick =
-				typeof flags.agente === 'string'
-					? { agente: flags.agente, motivo: '' }
-					: pickReviewer(author, loadBoard(dir), { quota: codexQuota() });
-			const { agente } = pick;
-			if (!agente)
-				throw new UsageError('falta --agente=<revisor>: la tarea no dice su autor');
-			const issue = reviewerIssue(author, agente);
-			if (issue) throw new UsageError(issue);
+			const early = reviewerPrecheck(author, flags.agente);
+			if (early) throw new UsageError(early);
 			const sha = reviewSha(src, flags);
 			const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
 			if (prev?.revisionSha === sha)
@@ -832,12 +825,17 @@ const commands = {
 				appendLog(dir, row);
 				throw new UsageError(texto);
 			}
+			// d282: the reviewer follows the PR's risk, so it is picked from GitHub's file inventory.
+			const pick = chooseReviewer(author, flags.agente, loadBoard(dir), preflight.files);
+			if (pick.issue) throw new UsageError(pick.issue);
+			const { agente, revisor } = pick;
 			const id = reviewChildId(src, prev);
 			const before = readDoc(dir, 'tareas', id);
 			// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
 			const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
 			const t = reviewChild(src, {
 				agente,
+				revisor,
 				sha,
 				prev,
 				num,
@@ -848,8 +846,7 @@ const commands = {
 			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
 			const saved = saveTask(dir, before, t, who);
 			const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
-			const text = `${saved.id} creada para ${agente} (vuelta ${saved.vuelta})${pick.motivo ? ` · ${pick.motivo}` : ''}${live ? `; ${live.id} cancelada` : ''}`;
-			say(flags, out, saved, text);
+			say(flags, out, saved, reviewCreatedText(saved, pick, live, sha));
 		});
 	},
 	/** Old one-file-per-row bitácora → one JSONL file per day, keeping every row; --dry-run only counts. */

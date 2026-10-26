@@ -88,7 +88,7 @@ describe('board reviewer (d209, d240)', () => {
 		const pick = pickReviewer('claude', board, { quota: quota(37, 38), now: NOW });
 		expect(pick).toEqual({
 			agente: 'codex',
-			motivo: 'carga 7 d: gemini 2, codex 1 · cuota Codex 38 % 5 h, 37 % semana',
+			motivo: 'riesgo alto · carga 7 d: gemini 2, codex 1 · cuota Codex 38 % 5 h, 37 % semana',
 		});
 	});
 
@@ -120,13 +120,13 @@ describe('board reviewer (d209, d240)', () => {
 		const at = (q: unknown) => pickReviewer('claude', board, { quota: q as never, now: NOW });
 		expect(at(quota(80, 0))).toMatchObject({
 			agente: 'gemini',
-			motivo: 'carga 7 d: gemini 1, codex 0 · cuota Codex 80 % semana (tope)',
+			motivo: 'riesgo alto · carga 7 d: gemini 1, codex 0 · cuota Codex 80 % semana (tope)',
 		});
 		expect(at(quota(0, 90)).agente).toBe('gemini');
 		expect(at(quota(79, 89)).agente).toBe('codex');
 		expect(at(quota(95, 95, earlier))).toMatchObject({
 			agente: 'codex',
-			motivo: 'carga 7 d: gemini 1, codex 0 · cuota Codex 5 h sin dato, semana sin dato',
+			motivo: 'riesgo alto · carga 7 d: gemini 1, codex 0 · cuota Codex 5 h sin dato, semana sin dato',
 		});
 		expect(at(null)).toMatchObject({
 			agente: 'codex',
@@ -187,12 +187,19 @@ describe('board reviewer (d209, d240)', () => {
 			{
 				cwd: ROOT,
 				allowFailure: true,
-				env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir, HOME: home, USERPROFILE: home }),
+				env: sanitizeEnv({
+					CELEBRA_BOARD_DIR: dir,
+					HOME: home,
+					USERPROFILE: home,
+					BOARD_TEST_PREFLIGHT: JSON.stringify({
+						pr: { files: [{ path: 'src/pages/index.astro' }] },
+					}),
+				}),
 			},
 		);
 		expect(String(result.stderr)).toBe('');
 		expect(String(result.stdout)).toContain(
-			'de-claude-revision creada para codex (vuelta 1) · carga 7 d: gemini 1, codex 0 · cuota Codex 38 % 5 h, 37 % semana',
+			'de-claude-revision creada para codex (vuelta 1) · riesgo medio · carga 7 d: gemini 1, codex 0 · cuota Codex 38 % 5 h, 37 % semana',
 		);
 		const saved = JSON.parse(
 			readFileSync(path.join(dir, 'tareas', 'de-claude-revision.json'), 'utf8'),

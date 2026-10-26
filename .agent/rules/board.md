@@ -57,12 +57,14 @@ task sheet's «Propiedades». Ctrl+K focuses the search.
   `en revision`/`hecha`/`unida`. A `fecha` is met when its time passed, a `decision` when it exists
   and is `vigente`, a `dueno` only with `ok: true`. A pending task without a prompt waits for one
   automatically (except `actor: coordinador`).
-- **Stage and color**: ready = every requisito met. Green = ready and the owner acts (`actor: dueno`
-  or anything in `toca`), or ready and unlocked with only Codex or Gemini able to finish it: the
-  owner pastes its prompt there, labeled «Pegar en Codex/Gemini» with «Copiar prompt» (d169,
-  `ownerLaunches`; `claim` and `next` are unchanged); violet = ready and an agent that starts alone
-  (Claude, or the coordinator) finishes it (it has every capability in `requiere`); gray = blocked;
-  blue = `en curso`; teal = `hecha`/`unida`/`en revision`. Urgency is an icon, never green.
+- **Stage and color**: ready = every requisito met. Green = ready and the owner acts
+  (`actor: dueno`, or anything in `toca` on a task whose actor is not `sesion`; d282: on a session
+  task `toca` only marks a later owner step, so the session still claims, closes and reviews it), or
+  ready and unlocked with only Codex or Gemini able to finish it: the owner pastes its prompt there,
+  labeled «Pegar en Codex/Gemini» with «Copiar prompt» (d169, `ownerLaunches`; `claim` and `next`
+  are unchanged); violet = ready and an agent that starts alone (Claude, or the coordinator)
+  finishes it (it has every capability in `requiere`); gray = blocked; blue = `en curso`; teal =
+  `hecha`/`unida`/`en revision`. Urgency is an icon, never green.
 - **Execution number**: the owner's ready tasks (d163) → urgency → lane (`laneRank`: its category's
   lane free, a review or the lane a task's own lock holds; then another free planned lane; then a
   lane another task's lock holds; then no lane) → ready before blocked → `hasta` → `orden` → title;
@@ -303,9 +305,15 @@ task sheet's «Propiedades». Ctrl+K focuses the search.
   messages. No agent reads another agent's conversations; between agents of different apps the owner
   relays that one-line doorbell, and nobody promises monitoring or transport that does not exist.
 - **Cross review (d183)**: an agent other than the author reviews every PR at its exact head SHA.
-  Claude reviews the work of Codex and Gemini; Codex or Gemini review only Claude's work. All agents
-  share one GitHub account, so approval lives on the board (the review child in `hecha` with its
-  SHA), not in GitHub.
+  Claude reviews the work of Codex and Gemini; Codex or Gemini review only Claude's work. d282: a
+  low-risk PR by Claude (every file under `scripts/board/`, `scripts/agent/`, `tests/`, `docs/`,
+  `.agent/` or Markdown, and none in invitation content, `supabase/`, migrations, payments, secrets,
+  Wrangler or Production, from GitHub's complete inventory) is reviewed instead by a Claude subagent
+  with a clean context: the round gets `agente: claude` and `revisor: subagente`, and the author
+  session claims it, gives the subagent only the PR number, the SHA and the round's prompt, and
+  closes the round with the subagent's verdict. Medium and high risk keep Gemini or Codex. All
+  agents share one GitHub account, so approval lives on the board (the review child in `hecha` with
+  its SHA), not in GitHub.
 - **One board PR at a time (d184)**: only one open PR may change the board (`scripts/board/`, this
   file or the coordinator guide). The others wait in line; their code may be ready and pushed, but
   the PR opens when the coordinator says it is its turn.
@@ -372,14 +380,16 @@ task sheet's «Propiedades». Ctrl+K focuses the search.
   the previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier
   rounds are never rewritten, except that a still-open one is cancelled with its cierre (T129); the
   same SHA again creates nothing. Without `--agente` the reviewer follows d183: work by Codex or
-  Gemini goes to Claude; work by Claude goes (d209, d240) to whichever of Gemini and Codex has less
-  load (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to Gemini),
-  and to Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90
-  % 5-hour use before its reset; the message prints both loads and the quota. An explicit `--agente`
-  always wins; any other pairing is refused. The author is the task's `agente`, else its lock's or
-  last session's. `show` and the view's sheet list the rounds one below another. Reviews become
-  executable before merge and do not inherit the author's lane. Completion declares
-  `--sha=<reviewed SHA>`; the verifier compares it against the current PR head.
+  Gemini goes to Claude; low-risk work by Claude goes to a Claude subagent (d282, printed with the
+  author session's steps); other work by Claude goes (d209, d240) to whichever of Gemini and Codex
+  has less load (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to
+  Gemini), and to Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly
+  or ≥ 90 % 5-hour use before its reset; the message prints the risk level, both loads and the
+  quota. An explicit `--agente` always wins; any other pairing is refused (Claude on Claude's work
+  only at low risk). The author is the task's `agente`, else its lock's or last session's. `show`
+  and the view's sheet list the rounds one below another. Reviews become executable before merge and
+  do not inherit the author's lane. Completion declares `--sha=<reviewed SHA>`; the verifier
+  compares it against the current PR head.
 - A reviewer keeps its round's task and assigned reviewer, inspects the exact PR head of that round,
   binds findings and completion to the full SHA, and challenges scope, regressions, invariants and
   missing evidence. Another commit makes the review stale: `pnpm board review` creates the next

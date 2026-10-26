@@ -194,6 +194,11 @@ describe('task kinds (T130): generated prompt', () => {
 		expect(r.sections['ANTES DE EMPEZAR'][0]).toContain(
 			'Carril f05-plataforma (carpeta celebra-me-worktrees/f05-plataforma), rama feat/board-task-kinds',
 		);
+		// d282: the stop compares only this task's own rev, never other tasks' or this session's writes.
+		expect(r.sections['ANTES DE EMPEZAR'][0]).toContain(
+			'Compruebe que la rev de esta tarea (pnpm board show tipos-y-prompts) sigue en la de «tablero:» de METADATOS; si cambió, pare. Los cambios de otras tareas y los que hace esta misma sesión (claim, set, close, sus commits) no cuentan (d282).',
+		);
+		expect(r.sections['ANTES DE EMPEZAR'][0]).not.toContain('la rev del tablero');
 		expect(r.sections['ANTES DE EMPEZAR'][1]).toContain(
 			'commit_preparation, testing_qa, coordinator_board',
 		);
@@ -215,7 +220,11 @@ describe('task kinds (T130): generated prompt', () => {
 		expect(r.sections['AL TERMINAR'][0]).toMatch(
 			/^- Antes de cada push: pnpm validate:changed .* pnpm validate:structure;/u,
 		);
+		expect(r.sections['AL TERMINAR'][1]).toMatch(/^- Antes del push: corra \/code-review/u);
 		expect(closing).toContain('1. pnpm validate:changed y pnpm type-check en verde.');
+		expect(closing).toContain(
+			'si imprime «Revisor: subagente» (d282, riesgo bajo), siga sus pasos',
+		);
 		expect(closing).toContain('--excepcion=… --pr=#<n> --sha=<sha del PR> --nivel=type-check');
 		expect(closing).toContain('{"pr":"#<n>","sha":"<sha de 40>","nivel":"type-check"}');
 		// d255: `review` refuses a task without its cierre, so the close line comes first.

@@ -413,7 +413,7 @@ describe('pnpm board', () => {
 					requisitos: [{ tipo: 'tarea', ref: 'base' }],
 				}),
 				task('base', { urgencia: 'baja' }),
-				task('del-dueno', { toca: ['produccion'] }),
+				task('del-dueno', { toca: ['produccion'], actor: 'coordinador' }),
 				task('sin-prompt', { prompt: undefined }),
 			],
 		});
@@ -871,6 +871,10 @@ describe('pnpm board', () => {
 	});
 
 	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
+		// A PR that touches supabase/ is not low risk (d282), so Claude's work still goes to Gemini or Codex.
+		const pr = JSON.stringify({ pr: { files: [{ path: 'supabase/x.sql' }] } });
+		const board = (dir: string, ...args: string[]) =>
+			boardEnv(dir, { BOARD_TEST_PREFLIGHT: pr }, ...args);
 		const dir = makeBoard({
 			tareas: [
 				task('de-claude', {
@@ -943,7 +947,7 @@ describe('pnpm board', () => {
 		const dir = makeBoard({
 			tareas: [
 				task('blocked', { requisitos: [{ tipo: 'dueno', ref: 'approval' }] }),
-				task('owner', { toca: ['produccion'] }),
+				task('owner', { actor: 'dueno' }),
 				task('closed', { estado: 'hecha' }),
 				task('first'),
 				task('second'),
