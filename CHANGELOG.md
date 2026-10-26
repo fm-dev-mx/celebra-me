@@ -30,6 +30,14 @@ lead columns; no published invitation content changes.
 - Board: low and medium risk cross reviews go to a clean-context Claude subagent, a review round
   waits for green CI (`--sin-ci` for PRs without checks), and `close` with every Handoff list
   finishes the task on its own (#589, #590).
+- Backups: the daily backup job copies new R2 media and memories originals (no width variants,
+  social cards or thumbnails) into a separate private backup bucket, never overwriting or deleting;
+  it stays inactive until the backup bucket and its tokens exist (#594).
+
+### Fixed
+
+- Dashboard: the single-reminder dialog stays open with its manual fallback when sending the
+  reminder removes the guest from the reminder list (#593).
 
 ### Changed
 
