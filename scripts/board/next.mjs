@@ -26,7 +26,7 @@ import {
 	taskTag,
 	VEREDICTOS,
 } from './model.mjs';
-import { optionsText } from './owner-text.mjs';
+import { expiredQuestion, mergeSignal, optionsText } from './owner-text.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
 import { authorSession, findingsSent } from './findings.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
@@ -45,10 +45,20 @@ export const deliveryLine = (t, now = Date.now()) =>
  */
 export function unreadFor(agente, board) {
 	const read = new Set((board.bandejas ?? []).find((b) => b.id === agente)?.leidos ?? []);
+	const merged = new Set();
 	for (const r of board.bitacora ?? [])
-		if (r.atendido?.para === agente) for (const id of r.atendido.mensajes ?? []) read.add(id);
+		if (r.atendido?.para === agente)
+			for (const id of r.atendido.mensajes ?? []) {
+				read.add(id);
+				if (r.atendido.nota === 'merged') merged.add(id);
+			}
 	return (board.bitacora ?? [])
-		.filter((r) => r.mensaje?.para === agente && !read.has(r.mensaje.id))
+		.filter(
+			(r) =>
+				r.mensaje?.para === agente &&
+				!(mergeSignal(r) ? merged : read).has(r.mensaje.id) &&
+				!expiredQuestion(r, findTask(r.tarea, board)),
+		)
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
 }
 

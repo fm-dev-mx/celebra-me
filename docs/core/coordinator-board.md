@@ -383,6 +383,14 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 
 ### Writes, decisions and archive
 
+- **Exact answers**: `decide` requires `tareas=<slug>` or `--sin-tarea`; a bare task id is refused.
+  With one open owner question on the linked task, the decision text is saved as its exact answer;
+  use `--mensaje=<id>` when several questions are open. Reading a question does not answer it. Both
+  «Copiar» and `pnpm board prompt` prepend `RESPUESTA` with the question, answer, decision id and
+  next action. They omit the full prompt when the task already has a claim or delivery mark. A
+  coordinator revision expires earlier open questions, keeps their history and sends the new prompt
+  to the agent. A «siguiente: unir» message survives inbox reads and cannot be cleared by
+  `atendido`: only `merged`, after checking GitHub, handles it.
 - **Writes**: lanes: `pnpm board carril`; Production strip: `pnpm board estado`; decisions:
   `pnpm board decide` (a newer one names the old with `reemplaza=dNNN`, which turns
   `vigente: false`; a `decision` text that cites `(reemplaza dNNN)` without the field links that
