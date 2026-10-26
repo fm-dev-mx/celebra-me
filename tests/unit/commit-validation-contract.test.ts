@@ -65,6 +65,17 @@ describe('Commit validation contract', () => {
 		expect(`${result.stdout}\n${result.stderr}`).toContain('contains the plan code "D5"');
 	});
 
+	it.each(['T295', 'T1234', 'd8', 'd288'])(
+		'warns on task or decision code %s in the body',
+		(code) => {
+			const result = lintMessage(`fix(tooling): validate board templates\n\nFollow ${code}.`);
+			expect(result.status).toBe(0);
+			expect(`${result.stdout}\n${result.stderr}`).toContain(
+				`contains the plan code "${code}"`,
+			);
+		},
+	);
+
 	it('rejects headers longer than 100 characters', () => {
 		const header = `fix(rsvp): reject duplicate replies ${'x'.repeat(65)}`;
 		expect(header).toHaveLength(101);

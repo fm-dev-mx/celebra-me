@@ -22,6 +22,15 @@ const SOURCE_PATTERN = /\.(?:ts|tsx|js|jsx|mjs|cjs|astro)$/u;
  */
 const CONTRACT_TESTS_BY_INPUT = [
 	{
+		pattern: /^\.agent\/kinds\/.*\.yaml$/u,
+		tests: [
+			'tests/unit/board-task-kinds.test.ts',
+			'tests/unit/board-prompt.test.ts',
+			'tests/unit/board-return-contract.test.ts',
+			'tests/unit/validate-structure-script.test.ts',
+		],
+	},
+	{
 		pattern: /^src\/styles\/.*\.scss$/u,
 		tests: [
 			'tests/unit/editorial-cover-reveal-contract.test.ts',
@@ -97,6 +106,7 @@ export function buildRelatedTestArgs(changedFiles, pathExists = existsSync) {
 	const needsFullSuite = files.some(
 		(file) =>
 			(/\.(?:json|ya?ml)$/u.test(file) &&
+				!/^\.agent\/kinds\/.*\.yaml$/u.test(file) &&
 				!file.startsWith('docs/') &&
 				file !== 'tests/e2e/visual-baselines/manifest.json') ||
 			(SOURCE_PATTERN.test(file) && !file.startsWith('tests/e2e/') && !pathExists(file)),

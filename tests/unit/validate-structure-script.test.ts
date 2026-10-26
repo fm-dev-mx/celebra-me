@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, readFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -101,9 +101,15 @@ function createFixture(skillDomain = 'quality') {
 			'    - ".agent/rules/gatekeeper.md"',
 			'    - ".agent/rules/git-safety.md"',
 			'routes:',
-			'  - task_type: "testing"',
+			"  - task_type: 'testing'",
 			'    skills:',
 			'      - "testing"',
+			...Array.from(
+				readFileSync(path.join(ROOT, '.agent/routing-matrix.yaml'), 'utf8').matchAll(
+					/task_type: '([a-z_]+)'/g,
+				),
+				(match) => `  - task_type: '${match[1]}'`,
+			),
 		].join('\n'),
 	);
 	writeFixtureFile(
@@ -111,6 +117,7 @@ function createFixture(skillDomain = 'quality') {
 		'.agent/plans/active/current.md',
 		['---', 'title: Current', 'status: active', '---', '# Current'].join('\n'),
 	);
+	cpSync(path.join(ROOT, '.agent/kinds'), path.join(root, '.agent/kinds'), { recursive: true });
 	return root;
 }
 
@@ -130,6 +137,36 @@ function validateFixture(root: string, trackedFiles: string[] = []) {
 }
 
 describe('validate-structure script', () => {
+	it.each([
+		['invalid syntax', 'not yaml', 'no es'],
+		[
+			'unknown routing type',
+			"tipo: 'codigo'\nlee:\n    - 'unknown_route'",
+			'unknown_route no es un task_type',
+		],
+	])('rejects kind %s against the selected root', (_name, content, message) => {
+		const root = createFixture();
+		try {
+			writeFixtureFile(root, '.agent/kinds/codigo.yaml', content);
+			const errors = validateFixture(root).join('\n');
+			expect(errors).toContain('.agent/kinds/codigo.yaml:');
+			expect(errors).toContain(message);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects missing kind variants', () => {
+		const root = createFixture();
+		try {
+			rmSync(path.join(root, '.agent/kinds/operacion-cloudflare.yaml'));
+			expect(validateFixture(root)).toContain(
+				'.agent/kinds/operacion-cloudflare.yaml: falta el archivo',
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
 	it.each(['quality', 'workflow'])('accepts the %s skill domain', (skillDomain) => {
 		const fixtureRoot = createFixture(skillDomain);
 		try {

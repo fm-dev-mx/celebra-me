@@ -19,6 +19,25 @@ function evaluateModuleScript<T>(script: string): T {
 }
 
 describe('related Jest source selection', () => {
+	it('selects board kind contracts for changed or deleted YAML without widening to all tests', () => {
+		const result = evaluateModuleScript<string[]>(`
+			import { buildRelatedTestArgs } from ${JSON.stringify(RELATED_TEST_MODULE)};
+			process.stdout.write(JSON.stringify(buildRelatedTestArgs(
+				['.agent\\\\kinds\\\\codigo.yaml', '.agent/kinds/deleted.yaml'],
+				(file) => file.startsWith('tests/'),
+			)));
+		`);
+		expect(result).toEqual([
+			'exec',
+			'jest',
+			'--findRelatedTests',
+			'--passWithNoTests',
+			'tests/unit/board-prompt.test.ts',
+			'tests/unit/board-return-contract.test.ts',
+			'tests/unit/board-task-kinds.test.ts',
+			'tests/unit/validate-structure-script.test.ts',
+		]);
+	});
 	it('passes changed source and directly changed test files to Jest', () => {
 		const selected = evaluateModuleScript<string[]>(`
 			import { getRelatedTestSourceFiles } from ${JSON.stringify(RELATED_TEST_MODULE)};
