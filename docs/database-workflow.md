@@ -238,6 +238,61 @@ RSVP/ownership/orphan/uniqueness/phone invariants, and writes restore/verificati
 synthetic complete set can be created with
 `pnpm db:backup:create-disposable-fixture -- --output-dir=<path>`.
 
+#### Media originals copy (Cloudflare R2)
+
+The database dump keeps media URLs and sha256 digests but no R2 bytes. After the database part, the
+daily job copies every new **original** from the Production media buckets into the private backup
+bucket named by `PROD_MEDIA_COPY_R2_BUCKET` (`scripts/db/media-backup-copy.ts`):
+
+| Source bucket                 | Originals copied                           | Backup prefix       |
+| ----------------------------- | ------------------------------------------ | ------------------- |
+| `celebra-me-invitation-media` | `invitations/`, `shared/` (photos, mp3)    | `invitation-media/` |
+| `celebra-memories`            | `events/` guest uploads, without `thumbs/` | `memories/`         |
+
+Width variants (`.w<width>.webp`), social cards (`.og.jpg`) and memories thumbnails are not copied:
+they are regenerated from the original. A key already in the backup is skipped, so each run copies
+only what is new. Uploads never overwrite (`If-None-Match: *`), keep the source content type and
+cache headers, record the sha256 as `x-amz-meta-sha256`, and re-read the stored size. A backup
+object whose size differs from its source is reported and left as it is. An invitation original
+whose bytes do not match the sha256 in its key is not copied. One failing object does not stop the
+others; the run fails at the end. An original deleted between listing and download is skipped. The
+code never deletes.
+
+Two R2 API tokens keep Production read-only for the job; settings live in `.env.production.local`:
+
+| Variable                                   | Value                                                 |
+| ------------------------------------------ | ----------------------------------------------------- |
+| `PROD_MEDIA_COPY_R2_ACCOUNT_ID`            | Cloudflare account id (32 hex characters)             |
+| `PROD_MEDIA_COPY_R2_BUCKET`                | Backup bucket name (never a Production bucket)        |
+| `PROD_MEDIA_COPY_SOURCE_ACCESS_KEY_ID`     | Token "Object Read only" on the two source buckets    |
+| `PROD_MEDIA_COPY_SOURCE_SECRET_ACCESS_KEY` | Secret of that token                                  |
+| `PROD_MEDIA_COPY_TARGET_ACCESS_KEY_ID`     | Token "Object Read & Write" on the backup bucket only |
+| `PROD_MEDIA_COPY_TARGET_SECRET_ACCESS_KEY` | Secret of that token                                  |
+
+With none set, the daily report records `mediaCopy.status = "not_configured"`. A partial set or a
+failed copy records `mediaCopy.status = "failed"` and makes the job exit nonzero; it does not change
+the database recovery point, its retention or its health receipt.
+
+The backup bucket owns retention (no public access, no custom domain):
+
+- Bucket Lock `invitation-media/` 365 days, no lifecycle rule: invitation media is kept.
+- Bucket Lock `memories/` 30 days plus a lifecycle rule that deletes `memories/` objects after 31
+  days. While a guest photo still exists in `celebra-memories`, the next run copies it again; once a
+  guest or the cleanup deletes it, its backup copy is gone within about a month.
+
+Commands (read Production, write only the backup bucket):
+
+- `pnpm db:media-copy:run -- --dry-run` lists what the next run would copy; without `--dry-run` it
+  copies now.
+- `pnpm db:media-copy:restore [-- --key=<backup key>]` is the restore drill: it downloads one object
+  (default: the newest invitation original) into ignored `.tmp/media-restore/`, checks its sha256
+  against the key digest or the recorded one, and compares it with the Production original while
+  that still exists. It writes nothing to R2.
+
+Putting an object back into Production is a separate, owner-authorized media step: upload the drill
+file to the same key with the same content type and cache control. Invitation keys are
+content-addressed and locked, so an existing key is never replaced.
+
 After a drill on Production-derived data, reset the disposable database to synthetic data and remove
 the materialized Production-derived files. A passing drill is the RTO evidence; the daily OS
 schedule and newest successful report establish ongoing RPO evidence. Planned mutations share the
@@ -641,7 +696,10 @@ application login substitute. Host invitation flows continue to use real `host_c
   and duration metrics, and applies 30-daily/12-monthly local retention.
 - Uploads an age-encrypted copy to Cloudflare R2 when the off-site settings exist (see Off-site
   copy).
-- Returns nonzero on capture, integrity, encryption, off-site copy, reporting, or retention failure.
+- Copies new media originals to the R2 backup bucket when its settings exist (see Media originals
+  copy).
+- Returns nonzero on capture, integrity, encryption, off-site copy, media copy, reporting, or
+  retention failure.
 
 `pnpm release-check`
 
