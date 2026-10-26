@@ -25,6 +25,9 @@
 // The mark's lantern outline, as in the footer pull and the RSVP steps.
 $lantern-shape: 40% 40% 45% 45%;
 
+// Half the room the music button takes at the bottom right on phones.
+$music-clearance: 2rem;
+
 .floating-cta {
 	position: fixed;
 	bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
@@ -53,7 +56,7 @@ $lantern-shape: 40% 40% 45% 45%;
 
 	// The music button sits at the bottom right on phones: centre the pill in the room left of it.
 	body:has([data-music-player]) & {
-		left: calc(50% - 2rem);
+		left: calc(50% - #{$music-clearance});
 		max-width: calc(100vw - 6rem);
 	}
 
@@ -174,6 +177,12 @@ $lantern-shape: 40% 40% 45% 45%;
 
 	&[hidden] {
 		display: none;
+	}
+
+	// The panel opens above the pill, clear of the music button: it centres on the screen again
+	// instead of on the shifted pill, so it never runs past the left edge.
+	body:has([data-music-player]) & {
+		translate: $music-clearance 0;
 	}
 }
 
