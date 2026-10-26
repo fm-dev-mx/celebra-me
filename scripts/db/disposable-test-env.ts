@@ -536,6 +536,7 @@ const PGTAP_FILES = [
 	'guest_invitation_guest_code.test.sql',
 	'commercial_analytics_retention.test.sql',
 	'meta_conversion_retention.test.sql',
+	'meta_conversion_view_events.test.sql',
 ];
 
 function cmdRunTests(): void {

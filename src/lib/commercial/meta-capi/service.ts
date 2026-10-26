@@ -61,8 +61,9 @@ const SAFE_PROVIDER_ERROR_FALLBACK = 'Meta CAPI delivery failed without a safe p
 const META_GRAPH_API_VERSION = 'v26.0';
 // A deposit is agreed and registered after the WhatsApp conversation, not on the website.
 const META_PURCHASE_ACTION_SOURCE = 'chat';
-// Contact and Lead rows mirror browser Pixel events and share their event_id for deduplication.
-const BROWSER_EVENT_NAMES = new Set(['Contact', 'Lead']);
+// PageView, ViewContent, Contact and Lead rows mirror browser Pixel events and share their
+// event_id for deduplication.
+const BROWSER_EVENT_NAMES = new Set(['PageView', 'ViewContent', 'Contact', 'Lead']);
 const SITE_ORIGIN = 'https://www.celebra-me.com';
 // Ten seconds stays well inside the 120-second claim lease while allowing normal Graph API latency.
 const META_CAPI_REQUEST_TIMEOUT_MS = 10_000;
@@ -127,15 +128,28 @@ export function normalizeAndHashPhone(phoneE164?: string | null): string | undef
 	return createHash('sha256').update(digits).digest('hex');
 }
 
-export type BrowserConversionEventName = 'Contact' | 'Lead';
+export type BrowserConversionEventName = 'PageView' | 'ViewContent' | 'Contact' | 'Lead';
 
-const BROWSER_EVENT_TRIGGER: Readonly<Record<BrowserConversionEventName, string>> = {
-	Contact: 'whatsapp_contact_clicked',
-	Lead: 'form_submitted',
-};
+/** First-party tracking events whose Pixel standard event the server also delivers. */
+const BROWSER_CONVERSION_TRIGGERS = {
+	page_viewed: 'PageView',
+	demo_viewed: 'ViewContent',
+	package_viewed: 'ViewContent',
+	whatsapp_contact_clicked: 'Contact',
+	form_submitted: 'Lead',
+} as const satisfies Record<string, BrowserConversionEventName>;
+
+export type BrowserConversionTrigger = keyof typeof BROWSER_CONVERSION_TRIGGERS;
+
+export function isBrowserConversionTrigger(
+	eventName: string,
+): eventName is BrowserConversionTrigger {
+	return Object.hasOwn(BROWSER_CONVERSION_TRIGGERS, eventName);
+}
 
 export interface BrowserConversionInput {
-	eventName: BrowserConversionEventName;
+	/** The first-party event; it picks the Meta event and is stored as trigger_status. */
+	trigger: BrowserConversionTrigger;
 	/** The tracking event UUID, which the Meta Pixel also sends as eventID. */
 	eventId: string;
 	sessionId: string;
@@ -143,8 +157,9 @@ export interface BrowserConversionInput {
 }
 
 /**
- * Queues a browser Contact or Lead for server delivery. A repeated event ID keeps the first row,
- * so a replayed ingestion never sends the event twice. Callers check marketing consent first.
+ * Queues a browser PageView, ViewContent, Contact or Lead for server delivery. A repeated event ID
+ * keeps the first row, so a replayed ingestion never sends the event twice. Callers check marketing
+ * consent first.
  */
 export async function enqueueBrowserConversionEvent(input: BrowserConversionInput): Promise<void> {
 	await supabaseRestRequest<unknown>({
@@ -153,9 +168,9 @@ export async function enqueueBrowserConversionEvent(input: BrowserConversionInpu
 		useServiceRole: true,
 		prefer: 'resolution=ignore-duplicates,return=minimal',
 		body: {
-			event_name: input.eventName,
+			event_name: BROWSER_CONVERSION_TRIGGERS[input.trigger],
 			event_id: input.eventId,
-			trigger_status: BROWSER_EVENT_TRIGGER[input.eventName],
+			trigger_status: input.trigger,
 			session_id: input.sessionId,
 			event_source_path: input.eventSourcePath.slice(0, 512),
 			value: null,

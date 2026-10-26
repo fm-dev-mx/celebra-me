@@ -1,6 +1,6 @@
 import {
 	enqueueBrowserConversionEvent,
-	type BrowserConversionEventName,
+	isBrowserConversionTrigger,
 } from '@/lib/commercial/meta-capi/service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { isAutomatedUserAgent } from '@/lib/rsvp/engagement/traffic-classifier';
@@ -24,12 +24,6 @@ export interface IngestTrackingEventInput {
 	payload: unknown;
 }
 
-/** First-party events the Meta Pixel sends as standard events that CAPI also delivers. */
-const SERVER_META_EVENTS: Partial<Record<string, BrowserConversionEventName>> = {
-	whatsapp_contact_clicked: 'Contact',
-	form_submitted: 'Lead',
-};
-
 export type IngestTrackingEventResult =
 	{ accepted: true; eventId: string } | { accepted: false; reason: string };
 
@@ -43,9 +37,8 @@ async function queueServerMetaEvent(input: {
 	metaAllowed: boolean;
 	deployEnvironment?: HostedDeployEnvironment | null;
 }): Promise<void> {
-	const serverMetaEvent = SERVER_META_EVENTS[input.eventName];
 	if (
-		!serverMetaEvent ||
+		!isBrowserConversionTrigger(input.eventName) ||
 		!input.marketingConsent ||
 		!input.metaAllowed ||
 		input.deployEnvironment !== 'production'
@@ -54,7 +47,7 @@ async function queueServerMetaEvent(input: {
 	}
 	try {
 		await enqueueBrowserConversionEvent({
-			eventName: serverMetaEvent,
+			trigger: input.eventName,
 			eventId: input.eventId,
 			sessionId: input.sessionId,
 			eventSourcePath: input.routePath,

@@ -12,6 +12,7 @@
         "guest_link_code_client",
         "visitor_session_client_signals_client",
         "meta_capi_browser_events_client",
-        "meta_conversion_retention_client"
+        "meta_conversion_retention_client",
+        "meta_capi_view_events_client"
     ]
 }
