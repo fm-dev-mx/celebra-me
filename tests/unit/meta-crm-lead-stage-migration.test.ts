@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { evaluateMigrationSqlRisk } from '../../scripts/db/migration-sql-risk';
 import type { MigrationRolloutRegistry } from '../../scripts/db/migration-deployment-compatibility';
 
-const version = '20261026140000';
+const version = '20261026180000';
 const migrationPath = resolve(`supabase/migrations/${version}_meta_crm_lead_stages.sql`);
 const migration = readFileSync(migrationPath, 'utf8');
 const invitationDataMigration = readFileSync(

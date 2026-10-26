@@ -315,7 +315,7 @@
             "revokes": ["meta_conversion_events_without_complete_registration"],
             "notes": "Creates invitation_data_requests (one row per sales order: SHA-256 token hash, expiry, autosaved answers JSON capped at 32 KB, status sent/in_progress/submitted, review timestamp; service_role only, RLS forced) for the private /mi-invitacion/<token> form sent after the deposit. Also widens the meta_conversion_events event_name, trigger_status and source shape checks for one CompleteRegistration (invitation_data_submitted) row per order with order and customer and no value. Registered as contract only because the check swaps use DROP CONSTRAINT; every change widens or adds, so no rows change and the deployed application keeps working. Must be applied before the application that serves /mi-invitacion and its dashboard link is deployed, or those requests fail."
         },
-        "20261026140000": {
+        "20261026180000": {
             "phase": "contract",
             "provides": ["meta_conversion_events_crm_lead_stages"],
             "requiresDeployedAppCapabilities": ["meta_capi_view_events_client"],
