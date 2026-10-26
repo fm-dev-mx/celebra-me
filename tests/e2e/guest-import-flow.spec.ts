@@ -143,7 +143,7 @@ test.describe('Guest import flow', () => {
 		await page.goto(ROUTE, { waitUntil: 'domcontentloaded' });
 		await expect(page).toHaveURL(new RegExp(`/dashboard/invitados\\?eventId=${EVENT_ID}`));
 
-		await page.getByRole('button', { name: 'Más acciones' }).click();
+		await page.getByRole('button', { name: 'Más acciones', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Importar' }).click();
 		const dialog = page.getByRole('dialog').filter({ hasText: 'Importación de invitados' });
 		await expect(dialog).toBeVisible();
@@ -180,7 +180,7 @@ test.describe('Guest import flow', () => {
 		await result.getByRole('button', { name: 'Cerrar' }).click();
 		await expect(result).toBeHidden();
 		await expect(
-			page.getByRole('button', { name: 'Ver detalles de María Ruiz' }),
+			page.getByRole('button', { name: 'Más acciones de María Ruiz' }),
 		).toBeVisible();
 		expect(unexpected).toEqual([]);
 	});

@@ -18,7 +18,7 @@ interface CopyLinkFallbackDialogProps {
 }
 
 /** Manual copy when the browser blocks the clipboard (in-app browsers, denied permission). */
-const CopyLinkFallbackDialog: React.FC<CopyLinkFallbackDialogProps> = ({
+export const CopyLinkFallbackDialog: React.FC<CopyLinkFallbackDialogProps> = ({
 	url,
 	guestName,
 	onClose,

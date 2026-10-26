@@ -11,7 +11,6 @@ jest.mock('@/components/dashboard/guests/ShareAction', () => ({
 
 describe('GuestTableRow — status, people and actions', () => {
 	const baseProps = {
-		index: 0,
 		inviteUrl: 'https://example.com/invite/1',
 		eventTitle: 'Test Event',
 		shareTemplates: {
@@ -37,10 +36,14 @@ describe('GuestTableRow — status, people and actions', () => {
 	it.each([
 		[{ deliveryStatus: 'shared' as const, isViewed: false }, 'Enviada, sin abrir'],
 		[{ deliveryStatus: 'shared' as const, isViewed: true }, 'Abierta, sin responder'],
-		[{ deliveryStatus: 'generated' as const }, 'Por enviar'],
-	])('labels the stage of an unanswered invitation', (overrides, label) => {
+	])('notes whether a sent invitation was opened', (overrides, label) => {
 		renderRow(overrides);
 		expect(screen.getByText(label)).toBeInTheDocument();
+	});
+
+	it('leaves the status to the group header for unsent invitations', () => {
+		renderRow({ deliveryStatus: 'generated' });
+		expect(screen.queryByText('Por enviar')).not.toBeInTheDocument();
 	});
 
 	it('describes people for a partial confirmation', () => {
@@ -49,13 +52,23 @@ describe('GuestTableRow — status, people and actions', () => {
 		expect(screen.getByText('2 lugares no usados')).toBeInTheDocument();
 	});
 
-	it.each(['pending', 'confirmed', 'declined'] as const)(
-		'always offers "Copiar enlace" (%s)',
+	it.each(['confirmed', 'declined'] as const)(
+		'shows "Copiar enlace" as the one action of an answered row (%s)',
 		(attendanceStatus) => {
 			renderRow({ attendanceStatus, deliveryStatus: 'shared' });
 			expect(screen.getByRole('button', { name: 'Copiar enlace' })).toBeInTheDocument();
+			expect(screen.queryByTestId('share-action')).not.toBeInTheDocument();
 		},
 	);
+
+	it('keeps "Copiar enlace" in the «⋯» menu while the next step is visible', () => {
+		renderRow({ deliveryStatus: 'shared', fullName: 'Tía Carmen' });
+		expect(screen.getByTestId('share-action')).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Copiar enlace' })).not.toBeInTheDocument();
+		act(() => screen.getByRole('button', { name: 'Más acciones de Tía Carmen' }).click());
+		expect(screen.getByRole('menuitem', { name: 'Copiar enlace' })).toBeInTheDocument();
+		expect(screen.getByRole('menuitem', { name: 'Ver detalles' })).toBeInTheDocument();
+	});
 
 	it('offers sharing only while the invitation has no answer', () => {
 		const { unmount } = renderRow({ deliveryStatus: 'shared' });
@@ -91,7 +104,6 @@ describe('GuestTableRow — status, people and actions', () => {
 
 describe('GuestTableRow — message toggle', () => {
 	const baseProps = {
-		index: 0,
 		inviteUrl: 'https://example.com/invite/1',
 		eventTitle: 'Test Event',
 		shareTemplates: {
@@ -105,11 +117,15 @@ describe('GuestTableRow — message toggle', () => {
 		shareDateContext: defaultShareDateContext(),
 	};
 
+	// Answered guests show their message as the row's visible action.
 	const renderRow = (overrides: Partial<DashboardGuestItem> = {}) =>
 		render(
 			<table>
 				<tbody>
-					<GuestTableRow item={makeGuest(overrides)} {...baseProps} />
+					<GuestTableRow
+						item={makeGuest({ attendanceStatus: 'confirmed', ...overrides })}
+						{...baseProps}
+					/>
 				</tbody>
 			</table>,
 		);
@@ -159,7 +175,19 @@ describe('GuestTableRow — message toggle', () => {
 		expect(meta).not.toHaveTextContent('Primer mensaje');
 	});
 
-	it('opens the details panel from the name and the chevron', () => {
+	it('moves the message toggle into the «⋯» menu while the guest has no answer', () => {
+		const { container } = renderRow({
+			attendanceStatus: 'pending',
+			fullName: 'Tía Carmen',
+			guestComment: 'Llegamos tarde',
+		});
+		expect(screen.queryByRole('button', { name: /ver mensaje/i })).not.toBeInTheDocument();
+		act(() => screen.getByRole('button', { name: 'Más acciones de Tía Carmen' }).click());
+		act(() => screen.getByRole('menuitem', { name: 'Ver mensaje' }).click());
+		expect(container.querySelector('.guest-message-panel')).toHaveTextContent('Llegamos tarde');
+	});
+
+	it('opens the details panel from the name and the «⋯» menu', () => {
 		const onOpenDetails = jest.fn();
 		const item = makeGuest({ fullName: 'Tía Carmen' });
 		render(
@@ -170,7 +198,8 @@ describe('GuestTableRow — message toggle', () => {
 			</table>,
 		);
 		act(() => screen.getByRole('button', { name: 'Tía Carmen' }).click());
-		act(() => screen.getByRole('button', { name: 'Ver detalles de Tía Carmen' }).click());
+		act(() => screen.getByRole('button', { name: 'Más acciones de Tía Carmen' }).click());
+		act(() => screen.getByRole('menuitem', { name: 'Ver detalles' }).click());
 		expect(onOpenDetails).toHaveBeenCalledTimes(2);
 		expect(onOpenDetails).toHaveBeenCalledWith(item);
 	});

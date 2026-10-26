@@ -18,6 +18,8 @@ interface ShareActionProps {
 	shareTemplates: ShareMessagesConfig;
 	shareDateContext: ShareMessageDateContext;
 	onShared: () => Promise<void> | void;
+	/** Table rows keep every button outlined; the filled style belongs to the page's main action. */
+	outlined?: boolean;
 	onSaveGuest?: (
 		guestId: string,
 		payload: {
@@ -38,6 +40,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	shareTemplates,
 	shareDateContext,
 	onShared,
+	outlined = false,
 	onSaveGuest,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
@@ -51,7 +54,8 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	const cta = getShareCtaLabel(guest);
 	const mode: ShareFlowMode = resolveShareFlowMode(guest);
 	const isPrimary = !hasBeenShared(guest) || guest.attendanceStatus === 'pending';
-	const priorityBtnClass = status === 'idle' && isPrimary ? 'btn-primary' : 'btn-secondary';
+	const priorityBtnClass =
+		status === 'idle' && isPrimary && !outlined ? 'btn-primary' : 'btn-secondary';
 
 	const icon =
 		status === 'sending' ? (

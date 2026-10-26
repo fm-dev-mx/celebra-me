@@ -2,6 +2,7 @@ import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	getGuestListSubtitle,
 	getGuestProgressSteps,
+	getGuestSectionNote,
 	getGuestStatusBucket,
 	groupGuestsByStatus,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -19,6 +20,28 @@ describe('getGuestStatusBucket', () => {
 		[{ deliveryStatus: 'shared' as const, attendanceStatus: 'declined' as const }, 'declined'],
 	])('maps %o to %s', (overrides, bucket) => {
 		expect(getGuestStatusBucket(makeGuest(overrides))).toBe(bucket);
+	});
+});
+
+describe('getGuestSectionNote', () => {
+	it('totals confirmed people, clamped to the passes of each invitation', () => {
+		const [section] = groupGuestsByStatus([
+			makeGuest({ attendanceStatus: 'confirmed', maxAllowedAttendees: 2, attendeeCount: 2 }),
+			makeGuest({ attendanceStatus: 'confirmed', maxAllowedAttendees: 3, attendeeCount: 9 }),
+		]);
+		expect(getGuestSectionNote(section)).toBe('5 personas');
+	});
+
+	it('totals the passes a declined section frees', () => {
+		const [section] = groupGuestsByStatus([
+			makeGuest({ attendanceStatus: 'declined', maxAllowedAttendees: 1 }),
+		]);
+		expect(getGuestSectionNote(section)).toBe('1 pase liberado');
+	});
+
+	it('adds no note to open sections', () => {
+		const [section] = groupGuestsByStatus([makeGuest({ deliveryStatus: 'generated' })]);
+		expect(getGuestSectionNote(section)).toBeNull();
 	});
 });
 
