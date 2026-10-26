@@ -15,7 +15,8 @@ export function runCommand(cmd: string, args: string[], options?: Parameters<typ
 			if (cmd !== 'gh') return exec(cmd, args, opts);
 			if (fixture.fail) throw new Error('offline');
 			return JSON.stringify({state:'OPEN',headRefOid:sha,baseRefOid:'b'.repeat(40),
-				mergeable:'MERGEABLE',files:[{path:'docs/example.md'}],changedFiles:1,...fixture.pr});
+				mergeable:'MERGEABLE',files:[{path:'docs/example.md'}],changedFiles:1,
+				statusCheckRollup:[{name:'ci',status:'COMPLETED',conclusion:'SUCCESS'}],...fixture.pr});
 		};
 		cp.spawnSync = (cmd, args, opts) => cmd === 'git' && args[0] === 'merge-tree' && fixture.merge
 			? fixture.merge : spawn(cmd, args, opts);

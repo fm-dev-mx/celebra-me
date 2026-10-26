@@ -103,7 +103,8 @@ describe('task kinds (T130): kind files', () => {
 			console.log(JSON.stringify({ issues, tipos: Object.keys(kinds), all: m.TIPOS,
 				lee: Object.values(kinds).flatMap((x) => x.lee), types: k.routingTaskTypes() }));`);
 		expect(r.issues).toEqual([]);
-		expect(r.tipos).toEqual(r.all);
+		// d290: operacion has one variant file per destino besides its base file.
+		expect(r.tipos).toEqual([...r.all, 'operacion-cloudflare']);
 		expect(r.all).toEqual([
 			'codigo',
 			'revision',
@@ -114,7 +115,7 @@ describe('task kinds (T130): kind files', () => {
 			'operacion',
 		]);
 		for (const t of r.lee) expect(r.types).toContain(t);
-		for (const tipo of r.all) {
+		for (const tipo of r.tipos) {
 			const lines = readFileSync(path.join(ROOT, '.agent', 'kinds', `${tipo}.yaml`), 'utf8')
 				.trimEnd()
 				.split('\n');
@@ -223,7 +224,7 @@ describe('task kinds (T130): generated prompt', () => {
 		expect(r.sections['AL TERMINAR'][1]).toMatch(/^- Antes del push: corra \/code-review/u);
 		expect(closing).toContain('1. pnpm validate:changed y pnpm type-check en verde.');
 		expect(closing).toContain(
-			'si imprime «Revisor: subagente» (d282, riesgo bajo), siga sus pasos',
+			'si imprime «Revisor: subagente» (d288, riesgo bajo o medio), siga sus pasos',
 		);
 		expect(closing).toContain('--excepcion=… --pr=#<n> --sha=<sha del PR> --nivel=type-check');
 		expect(closing).toContain('{"pr":"#<n>","sha":"<sha de 40>","nivel":"type-check"}');
@@ -236,12 +237,9 @@ describe('task kinds (T130): generated prompt', () => {
 			l.includes('pnpm board review tipos-y-prompts'),
 		);
 		expect(close).toBeGreaterThan(-1);
-		// A locked task is not moved by sync, so the session moves it to «en revision» itself.
-		const move = steps.findIndex((l: string) =>
-			l.includes('pnpm board set tipos-y-prompts --rev='),
-		);
-		expect(move).toBeGreaterThan(close);
-		expect(review).toBeGreaterThan(move);
+		// d290: close already leaves a task with a PR «en revision», so no set step comes between.
+		expect(steps.some((l: string) => l.includes('pnpm board set tipos-y-prompts'))).toBe(false);
+		expect(review).toBeGreaterThan(close);
 		expect(r.meta).toMatchObject({
 			formato: 'prompt-v1',
 			tarea: 'T130 tipos-y-prompts',

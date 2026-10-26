@@ -87,11 +87,17 @@ routing and the internal modules work lives in
   `--hallazgo="P2|archivo:línea|texto"` (an approval has no P0/P1 finding). `close` prints the
   one-line signal to hand back, e.g.
   `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`.
-- **In review**: sync never moves a locked task, so after `close` the author runs
-  `pnpm board set <id> --rev=<n> "estado=en revision" "pr=#<n>" --agente=<a>`, then
-  `pnpm board review <id> --sha=<PR head>`. `review` needs the origin `en revision` with a valid
-  `cierre` (d255) and checks GitHub's live head and `mergeable`; `CONFLICTING` refuses the round
-  until the author merges `origin/develop` into the same branch (never rebase or `push --force`).
+- **Close finishes (d290)**: a `close` that names every list (the four Handoff lists included)
+  leaves the task `en revision` when it has a PR (the lock stays for the review) and `hecha`
+  otherwise (the lock goes); a partial close keeps the estado. Review rounds and periodic tasks keep
+  their own rules.
+- **In review**: after `close`, the author runs `pnpm board review <id> --sha=<PR head>`. `review`
+  needs the origin `en revision` with a valid `cierre` (d255) and checks GitHub's live head, CI and
+  `mergeable`. d288: the round is created only once the head's CI is green; while it runs, `review`
+  waits with the board unlocked (`--espera-min=<n>`, 30 by default, 0 = do not wait) and then
+  refuses with «la vuelta queda en espera», so the author runs the same command again; a red CI
+  refuses and names the failed checks. `CONFLICTING` refuses the round until the author merges
+  `origin/develop` into the same branch (never rebase or `push --force`).
 - **Rounds**: every PR head gets its own round task (`<id>-revision`, `<id>-revision-2`…); a new
   commit needs a new round. The reviewer binds findings and verdict to the full SHA and closes the
   round with its verdict; `close --veredicto=cambios` writes the findings to the author's inbox
@@ -107,7 +113,8 @@ routing and the internal modules work lives in
   `ANTES DE EMPEZAR`, `PASOS`, `AUTORIZO`, `NO HAGAS`, `DECISIONES` (d046, always required),
   `PARE Y PREGUNTE SI`, `AL TERMINAR`, and last `METADATOS` (`formato: prompt-v1`, one
   `clave: valor` per line). `pnpm board` refuses a `prompt-v1` that breaks this shape. A task with a
-  `tipo` (T130) gets its prompt generated from `.agent/kinds/<tipo>.yaml`.
+  `tipo` (T130) gets its prompt generated from `.agent/kinds/<tipo>.yaml`; an `operacion` with
+  `destino=cloudflare` uses `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default).
 - **Task number**: `num` is fixed when the task is added and never reused; it is `T<num>` everywhere
   (d158).
 - **Session name**: `<lane> · T<n> · PR #<n> · <short description>`, for example
@@ -131,15 +138,18 @@ routing and the internal modules work lives in
   messages. No agent reads another agent's conversations; between agents of different apps the owner
   relays that one-line doorbell, and nobody promises monitoring or transport that does not exist.
 - **Cross review (d183)**: an agent other than the author reviews every PR at its exact head SHA.
-  Claude reviews the work of Codex and Gemini; Codex or Gemini review only Claude's work. d282: a
-  low-risk PR by Claude (every file under `scripts/board/`, `scripts/agent/`, `tests/`, `docs/`,
-  `.agent/` or Markdown, and none in invitation content, `supabase/`, migrations, payments, secrets,
-  Wrangler or Production, from GitHub's complete inventory) is reviewed instead by a Claude subagent
+  Claude reviews the work of Codex and Gemini; Codex or Gemini review only Claude's high-risk and
+  release work. d288: a low- or medium-risk PR by Claude is reviewed instead by a Claude subagent
   with a clean context: the round gets `agente: claude` and `revisor: subagente`, and the author
   session claims it, gives the subagent only the PR number, the SHA and the round's prompt, and
-  closes the round with the subagent's verdict. Medium and high risk keep Gemini or Codex. All
-  agents share one GitHub account, so approval lives on the board (the review child in `hecha` with
-  its SHA), not in GitHub.
+  closes the round with the subagent's verdict. Low risk (d282, d290) is every file under
+  `scripts/board/`, `scripts/agent/`, `tests/`, `docs/`, `.agent/` outside `.agent/rules/`,
+  `.gitignore` or Markdown, and none in invitation content, `supabase/`, migrations, payments,
+  secrets, Wrangler or Production, from GitHub's complete inventory; medium risk is docs plus
+  frontend (components, styles, layouts, pages, `public/`). High risk is everything else:
+  migrations, auth, APIs, `.agent/rules/`, unclassified paths. A task with `tipo` or `categoria`
+  `release` keeps Gemini or Codex at any risk. All agents share one GitHub account, so approval
+  lives on the board (the review child in `hecha` with its SHA), not in GitHub.
 - **Board PRs (d270)**: at most two open PRs may change the board (`scripts/board/`, this file or
   the coordinator guide), and only when they share no files; the coordinator checks it before they
   start. The others wait in line; their code may be ready and pushed, but the PR opens when the
@@ -154,6 +164,13 @@ routing and the internal modules work lives in
   `node -e "console.log(new Date().toLocaleString('es-MX',{timeZone:'America/Mazatlan'}))"`.
 - **Closing**: `close`, `release` when the lock must go, `pnpm agent:git-safety:finish`, an exact
   `ahora` and a handoff of at most 20 lines.
+- **Inactive locks (d290)**: the coordinator may `set` or `close` a locked task with `--coordinador`
+  once the lock's session had no heartbeat for 30 min, or after checking the session list, with
+  `--sesion-archivada`. Each such write sends the lock's agent and session a bitácora message («el
+  coordinador corrió … sobre el candado de …»); a `set` to `pendiente` or an end state frees the
+  lock. Over a live lock the coordinator's `set` is refused and its `close` keeps the estado.
+- **Failures**: every refused or failed command prints its reason on one line (with `--json` also
+  `{"error", "codigo"}` on stdout); `CELEBRA_BOARD_DEBUG=1` adds the stack of an unexpected error.
 - **Recovery**: the verifier only reports; it never proposes deleting a branch, a session or a task.
   A stuck CLI write lock is the coordinator's to recover, as
   [the coordinator guide](../../docs/core/coordinator-board.md#evidence-and-recovery) says.

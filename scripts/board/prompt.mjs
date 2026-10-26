@@ -176,7 +176,7 @@ const roundWord = (n) => `${ROUND_WORDS[n - 1] ?? n} VUELTA`;
 /** Conservative path-based review guidance; missing or unrecognized evidence requires a deep review. */
 export function reviewRisk(files) {
 	if (!Array.isArray(files) || !files.length) return 2;
-	const docs = (p) => /^(?:docs\/|\.agent\/)|\.(?:md|mdx)$/.test(p);
+	const docs = (p) => /^(?:docs\/|\.agent\/|\.gitignore$)|\.(?:md|mdx)$/.test(p);
 	const frontend = (p) =>
 		/^(?:src\/(?:components|styles|layouts|pages)\/|public\/)/.test(p) &&
 		/\.(?:astro|tsx|jsx|scss|css|svg|png|jpe?g|webp|avif|woff2?)$/.test(p);
@@ -192,15 +192,20 @@ export function reviewRisk(files) {
 	return files.every((p) => docs(p) || frontend(p)) ? 1 : 2;
 }
 
+/** d290: agent rules are governance, so a PR that changes one is never low risk. */
+const RULES = /^\.agent\/rules\//;
+
 /**
- * d282: a PR is low risk when GitHub's complete inventory touches only board and agent tooling, tests, docs
- * or `.agent`, and nothing published, persistent or secret (invitation content, Supabase, migrations,
- * payments, secrets, Wrangler, Production). Missing evidence is never low risk.
+ * d282, d290: a PR is low risk when GitHub's complete inventory touches only board and agent tooling, tests,
+ * docs, `.gitignore` or `.agent` outside `.agent/rules`, and nothing published, persistent or secret (invitation
+ * content, Supabase, migrations, payments, secrets, Wrangler, Production). Missing evidence is never low risk.
  */
 export function lowRisk(files) {
 	if (!Array.isArray(files) || !files.length) return false;
 	const tooling = (p) =>
-		/^(?:scripts\/(?:board|agent)\/|tests\/|docs\/|\.agent\/)|\.(?:md|mdx)$/.test(p);
+		/^(?:scripts\/(?:board|agent)\/|tests\/|docs\/|\.agent\/|\.gitignore$)|\.(?:md|mdx)$/.test(
+			p,
+		) && !RULES.test(p);
 	const sensitive = (p) =>
 		/^(?:src\/content|supabase|workers)\/|(?:^|\/)(?:migrations?|secrets?|payments?|pagos?)(?:\/|[.-])|wrangler|\.env|produc(?:tion|cion)/i.test(
 			p,
@@ -208,9 +213,22 @@ export function lowRisk(files) {
 	return files.every((p) => tooling(p) && !sensitive(p));
 }
 
-/** d282: «bajo» (a Claude subagent may review Claude's work), «medio» or «alto» (reviewRisk below 2, or 2). */
-export const reviewLevel = (files) =>
-	lowRisk(files) ? 'bajo' : reviewRisk(files) === 2 ? 'alto' : 'medio';
+/**
+ * d282: «bajo», «medio» or «alto» (reviewRisk below 2, or 2). d290: a change to `.agent/rules` is «alto», like
+ * any unclassified path.
+ */
+export const reviewLevel = (files) => {
+	if (lowRisk(files)) return 'bajo';
+	if (Array.isArray(files) && files.some((p) => RULES.test(p))) return 'alto';
+	return reviewRisk(files) === 2 ? 'alto' : 'medio';
+};
+
+/**
+ * d288: a Claude subagent with a clean context may review Claude's PR of low or medium risk; high risk
+ * (migrations, auth, APIs, unclassified paths) and release work keep Codex or Gemini.
+ */
+export const subagentReview = (files, task) =>
+	reviewLevel(files) !== 'alto' && task?.tipo !== 'release' && task?.categoria !== 'release';
 
 export function reviewGuidance(files, previousSha, sha) {
 	const tier = reviewRisk(files);
@@ -238,7 +256,7 @@ export function reviewText(
 	src,
 	{ id, num, n, sha, prev, files, agente, revisor, generado, carril, carpeta },
 ) {
-	// d282: a low-risk PR by Claude is reviewed by a clean-context subagent the author session launches.
+	// d288: a low- or medium-risk PR by Claude is reviewed by a clean-context subagent the author session launches.
 	const sub = revisor === 'subagente';
 	const short = (s) => String(s).slice(0, 7);
 	const tag = (t, ref) => (t.num ? `T${t.num} ${ref}` : ref);
@@ -255,7 +273,7 @@ export function reviewText(
 					`Revisión cruzada${later ? `, ${roundWord(n)},` : ''} del PR ${pr} de ${tag(src, src.id)} en ${sha}: corrección, regresiones, pruebas y AGENTS.md.`,
 					...(sub
 						? [
-								'Riesgo bajo (d282): la hace un subagente de Claude con contexto limpio; la sesión autora toma y cierra esta vuelta con su veredicto.',
+								'Riesgo bajo o medio (d288): la hace un subagente de Claude con contexto limpio; la sesión autora toma y cierra esta vuelta con su veredicto.',
 							]
 						: []),
 					...reviewGuidance(files, later ? prev?.revisionSha : undefined, sha),
@@ -301,7 +319,7 @@ export function reviewText(
 				'DECISIONES',
 				[
 					sub
-						? '- d282: riesgo bajo; la revisa un subagente de Claude con contexto limpio, no la sesión autora.'
+						? '- d288: riesgo bajo o medio; la revisa un subagente de Claude con contexto limpio, no la sesión autora.'
 						: '- d183: revisión cruzada por otro agente.',
 					'- Solo revisión: informe la evidencia que falte.',
 				],
@@ -336,7 +354,7 @@ export function reviewText(
 			['pr', pr],
 			['sha', sha],
 			['prerrequisito', later ? prev.id : undefined],
-			['decisiones', sub ? 'd183, d282' : 'd183'],
+			['decisiones', sub ? 'd183, d288' : 'd183'],
 			['tablero', 'rev 1'],
 			['generado', generado],
 		],

@@ -97,9 +97,9 @@ describe('risk-based review (d282)', () => {
 	it('calls a PR low risk only when every file is board or agent tooling, tests, docs or .agent', () => {
 		const level = (files: unknown) => call('prompt.mjs', 'reviewLevel', files);
 		expect(level(['scripts/board/model.mjs', 'tests/unit/board-cli.test.ts'])).toBe('bajo');
-		expect(level(['scripts/agent/git-safety.mjs', '.agent/rules/board.md', 'docs/x.md'])).toBe(
-			'bajo',
-		);
+		expect(
+			level(['scripts/agent/git-safety.mjs', '.agent/kinds/codigo.yaml', 'docs/x.md']),
+		).toBe('bajo');
 		// Anything published, persistent or secret lifts the risk, even next to board files.
 		for (const p of [
 			'supabase/migrations/1_x.sql',
@@ -120,12 +120,12 @@ describe('risk-based review (d282)', () => {
 	it('lets Claude review Claude only on a low-risk PR', () => {
 		const issue = (a: string, r: string, o?: Json) =>
 			call('model.mjs', 'reviewerIssue', a, r, o);
-		expect(issue('claude', 'claude', { lowRisk: true })).toBeNull();
-		expect(issue('claude', 'claude', {})).toContain('d282');
-		expect(issue('codex', 'codex', { lowRisk: true })).toBe(
+		expect(issue('claude', 'claude', { subagent: true })).toBeNull();
+		expect(issue('claude', 'claude', {})).toContain('d288');
+		expect(issue('codex', 'codex', { subagent: true })).toBe(
 			'la revisión cruzada requiere otro agente',
 		);
-		expect(issue('claude', 'gemini', { lowRisk: true })).toBeNull();
+		expect(issue('claude', 'gemini', { subagent: true })).toBeNull();
 	});
 
 	it('picks a Claude subagent for a low-risk PR by Claude and Gemini or Codex otherwise', () => {
@@ -134,7 +134,7 @@ describe('risk-based review (d282)', () => {
 		expect(pick(['scripts/board/board.mjs'])).toEqual({
 			agente: 'claude',
 			revisor: 'subagente',
-			motivo: 'riesgo bajo (d282): subagente de claude',
+			motivo: 'riesgo bajo (d288): subagente de claude',
 		});
 		expect(pick(['scripts/board/board.mjs', 'supabase/x.sql']).agente).toBe('gemini');
 		// Codex or Gemini work still goes to Claude as a normal cross review.
@@ -155,9 +155,9 @@ describe('risk-based review (d282)', () => {
 		expect(r.err).toBe('');
 		expect(r.status).toBe(0);
 		expect(r.out).toContain(
-			'de-claude-revision creada para claude (vuelta 1) · riesgo bajo (d282)',
+			'de-claude-revision creada para claude (vuelta 1) · riesgo bajo (d288)',
 		);
-		expect(r.out).toContain('Revisor: subagente de claude (d282, riesgo bajo)');
+		expect(r.out).toContain('Revisor: subagente de claude (d288, riesgo bajo o medio)');
 		expect(r.out).toContain(
 			'pnpm board claim de-claude-revision --agente=claude --titulo="f04 · T2 · PR #10 · Revisión"',
 		);
@@ -167,9 +167,9 @@ describe('risk-based review (d282)', () => {
 		expect(r.out).toContain(`--veredicto=<el del subagente> --sha=${SHA}`);
 		const round = readTask(dir, 'de-claude-revision');
 		expect(round).toMatchObject({ agente: 'claude', revisor: 'subagente', revisionSha: SHA });
-		expect(round.prompt).toContain('Riesgo bajo (d282)');
+		expect(round.prompt).toContain('Riesgo bajo o medio (d288)');
 		expect(round.prompt).toContain('No tome ni cierre la tarea del tablero');
-		expect(round.prompt).toContain('\ndecisiones: d183, d282\n');
+		expect(round.prompt).toContain('\ndecisiones: d183, d288\n');
 		expect(round.prompt).not.toContain('pnpm board claim de-claude-revision');
 	});
 
@@ -178,7 +178,7 @@ describe('risk-based review (d282)', () => {
 		const files = ['scripts/board/board.mjs', 'supabase/migrations/1_x.sql'];
 		const refused = board(dir, files, 'review', 'de-claude', '--agente=claude', `--sha=${SHA}`);
 		expect(refused.status).toBe(2);
-		expect(refused.err).toContain('d282: claude revisa su propio trabajo solo en riesgo bajo');
+		expect(refused.err).toContain('d288: un subagente de claude revisa el trabajo de claude');
 		const r = board(dir, files, 'review', 'de-claude', `--sha=${SHA}`);
 		expect(r.status).toBe(0);
 		expect(r.out).toContain('creada para gemini (vuelta 1) · riesgo alto');

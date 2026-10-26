@@ -192,14 +192,14 @@ describe('board reviewer (d209, d240)', () => {
 					HOME: home,
 					USERPROFILE: home,
 					BOARD_TEST_PREFLIGHT: JSON.stringify({
-						pr: { files: [{ path: 'src/pages/index.astro' }] },
+						pr: { files: [{ path: 'src/lib/server/index.ts' }] },
 					}),
 				}),
 			},
 		);
 		expect(String(result.stderr)).toBe('');
 		expect(String(result.stdout)).toContain(
-			'de-claude-revision creada para codex (vuelta 1) · riesgo medio · carga 7 d: gemini 1, codex 0 · cuota Codex 38 % 5 h, 37 % semana',
+			'de-claude-revision creada para codex (vuelta 1) · riesgo alto · carga 7 d: gemini 1, codex 0 · cuota Codex 38 % 5 h, 37 % semana',
 		);
 		const saved = JSON.parse(
 			readFileSync(path.join(dir, 'tareas', 'de-claude-revision.json'), 'utf8'),
