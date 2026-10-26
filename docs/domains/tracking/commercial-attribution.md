@@ -256,7 +256,10 @@ admins.
    `enqueueBrowserConversionEvent()` with the first-party event as `trigger`. It inserts a `pending`
    row with that trigger as `trigger_status` and `event_id` set to the tracking event UUID, the same
    value the Pixel sends as `eventID`, so Meta deduplicates the two copies. A replayed event ID
-   keeps the first row. A failed insert is logged and never rejects the tracking event.
+   keeps the first row. A failed insert is logged and never rejects the tracking event. When the
+   session already has a lead with `consent_marketing` and a `customer_id` (the «Aparta su fecha»
+   form), `findSessionLeadCustomerId()` puts that customer on the row, so its later `PageView`,
+   `ViewContent` and `Contact` carry the hashed phone like the form's own `Lead`.
 2. Browser rows carry `session_id` (no foreign key, so the analytics purge stays free) and
    `event_source_path` instead of an order, customer and value (migrations
    `20261025120000_meta_conversion_contact_lead` and `20261026000000_meta_conversion_view_events`;
@@ -299,8 +302,18 @@ admins.
 
 The Pixel and CAPI send the same `external_id`: the SHA-256 hex of the first-party visitor ID
 (`cm_visitor_id`, trimmed and lowercased). The Pixel passes it to `fbq('init', id, { external_id })`
-with `autoConfig` off, so it is the only manual match key in the browser; it initializes without it
-when no visitor ID is stored.
+with `autoConfig` off; it initializes without it when no visitor ID is stored.
+
+After a successful «Aparta su fecha» submission with marketing consent, `lead-capture-client.ts`
+calls `rememberMetaPhoneMatchKey()`, which stores only `ph` (the SHA-256 hex of the phone's E.164
+digits, `normalizeCommercialPhone()` then digits only, the value `normalizeAndHashPhone()` sends for
+`customers.phone_e164`) and an expiry 90 days out (Meta's `_fbp` lifetime) in the first-party
+`cm_meta_ph` localStorage key. Every later Pixel initialization in that browser adds it:
+`fbq('init', id, { external_id, ph })`. The plain phone is never stored in the browser. The key is
+read only while marketing consent holds; an expired, malformed or consent-less value is deleted on
+read, and `saveConsent()` deletes it when marketing consent is withdrawn. On the server side,
+browser rows of the same session get the lead's customer (see step 1 above), so CAPI sends the same
+`ph`.
 
 `visitor_sessions.client_ip_address` and `client_user_agent` (migration
 `20261024180000_visitor_sessions_client_signals`) are written by tracking ingestion only when the

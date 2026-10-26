@@ -12,6 +12,7 @@ import {
 	type PublicTrackingEvent,
 } from '@/lib/tracking/event-contract';
 import { shouldExcludeInternalTraffic } from '@/lib/tracking/internal-exclusion';
+import { findSessionLeadCustomerId } from '@/lib/tracking/lead.repository';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
@@ -27,7 +28,11 @@ export interface IngestTrackingEventInput {
 export type IngestTrackingEventResult =
 	{ accepted: true; eventId: string } | { accepted: false; reason: string };
 
-/** Mirror the Pixel: only Production, a Meta-allowed route and marketing consent queue a row. */
+/**
+ * Mirror the Pixel: only Production, a Meta-allowed route and marketing consent queue a row. After
+ * the «Aparta su fecha» form the row carries the lead's customer, so delivery adds the hashed
+ * phone as the Pixel does.
+ */
 async function queueServerMetaEvent(input: {
 	eventName: string;
 	eventId: string;
@@ -45,12 +50,18 @@ async function queueServerMetaEvent(input: {
 	) {
 		return;
 	}
+	// A failed lookup only drops the phone match key, never the server event.
+	const customerId = await findSessionLeadCustomerId(input.sessionId).catch((lookupError) => {
+		console.error('[tracking] Failed to find the session lead customer:', safeErr(lookupError));
+		return null;
+	});
 	try {
 		await enqueueBrowserConversionEvent({
 			trigger: input.eventName,
 			eventId: input.eventId,
 			sessionId: input.sessionId,
 			eventSourcePath: input.routePath,
+			...(customerId ? { customerId } : {}),
 		});
 	} catch (enqueueError) {
 		console.error('[tracking] Failed to queue the Meta server event:', safeErr(enqueueError));
