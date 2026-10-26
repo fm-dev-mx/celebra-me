@@ -18,16 +18,17 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
   commits included); Repository CI runs on every push and is the integration gate. It blocks
   deletion and non-fast-forward (history-rewriting) updates. Pull requests into `develop` (task
   branches and Dependabot updates) also run Repository CI before they are merged.
-- `main` is production. It changes only through the release pull request from `develop`, which
-  requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
-- Task branches (`feat/*`, `fix/*`, `candidate/*`, `docs/*`, `chore/*`) are ephemeral. `docs/*` is
-  for changes to documentation, plans or agent guidance only; `chore/*` is for repository
-  maintenance with no runtime effect (audits, retirements, dependency work, and changes that only
-  add or adjust tests, fixtures or CI test jobs). No other prefix is allowed: `test/*`, `refactor/*`
-  or `ci/*` branches are not used, even when the commits inside use those [types](#types) (for
-  example, a branch that adds a CI job for the memories end-to-end tests is `chore/memories-e2e-ci`,
-  and a branch that fixes a broken test is `fix/*`). Dependabot's own `dependabot/*` branches are
-  the only exception. Persistent lane branches are forbidden.
+- `main` is production. It changes only through the release pull request from a fixed
+  `candidate/vX.Y.Z` branch (a `develop` SHA, see [Production Promotion](#production-promotion)),
+  which requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
+- Task branches (`feat/*`, `fix/*`, `docs/*`, `chore/*`) and release candidates (`candidate/*`) are
+  ephemeral. `docs/*` is for changes to documentation, plans or agent guidance only; `chore/*` is
+  for repository maintenance with no runtime effect (audits, retirements, dependency work, and
+  changes that only add or adjust tests, fixtures or CI test jobs). No other prefix is allowed:
+  `test/*`, `refactor/*` or `ci/*` branches are not used, even when the commits inside use those
+  [types](#types) (for example, a branch that adds a CI job for the memories end-to-end tests is
+  `chore/memories-e2e-ci`, and a branch that fixes a broken test is `fix/*`). Dependabot's own
+  `dependabot/*` branches are the only exception. Persistent lane branches are forbidden.
 - Annotated tags (`vX.Y.Z`) mark releases. The release session creates and pushes them within the
   release authorization once the promoted `main` SHA is verified.
 
@@ -73,7 +74,8 @@ Runtime connectivity never authorizes database, publication or release mutations
      makes the review stale and needs a new round at the new SHA.
    - The coordinator merges with a merge commit (the only method the repository allows), pinned to
      the reviewed SHA, once the review is approved at that SHA, CI is green and the pull request is
-     clean against `develop` (d100). No task merges during a release.
+     clean against `develop` (d100). A release in progress does not hold merges: it leaves from a
+     fixed candidate, and what merges after the cut joins the next release (d289).
 
    The merge header, `Merge pull request #<n> from <owner>/<task-branch>`, names the branch, so
    every task has one merge commit named after its branch and reverts the same way:
@@ -97,19 +99,20 @@ Runtime connectivity never authorizes database, publication or release mutations
    never both a pull request and a local merge for the same branch.
 
    To list the tasks that reached `develop`, filter the merge commits by header. Do not use
-   `git log --first-parent develop` for this: after each release, `develop` fast-forwards to the
-   release merge on `main` (see [Production Promotion](#production-promotion)), so its first-parent
-   line follows `main` and skips the task merges of that release.
+   `git log --first-parent develop` for this: until d289 each release fast-forwarded `develop` to
+   the release merge on `main`, so older first-parent lines follow `main` and skip the task merges
+   of those releases.
 
    ```bash
    git log --merges --format='%h %s' <since-tag>..origin/develop \
-     | grep -E "into develop$|from [^ ]+/(feat|fix|docs|chore|candidate|dependabot)/"
+     | grep -E "into develop$|from [^ ]+/(feat|fix|docs|chore|dependabot)/"
    ```
 
    `<since-tag>` is the release tag to count from (for example `v0.26.0-beta.1`). The two patterns
    match a local merge (`Merge branch 'fix/x' into develop`) and a pull request merge
-   (`Merge pull request #12 from <owner>/fix/x`). Sync merges into task branches and release pull
-   requests (`from <owner>/develop`) drop out.
+   (`Merge pull request #12 from <owner>/fix/x`). Sync merges into task branches, release pull
+   requests (`from <owner>/candidate/vX.Y.Z`, formerly `from <owner>/develop`) and back-merges
+   (`from <owner>/main`) drop out.
 
    Merge rules:
    - A branch name is used once. After its pull request or local merge, follow-up work starts a new
@@ -167,9 +170,10 @@ gh pr list --state open                     # exclude branches with an open pull
 
 Rules:
 
-- Release candidates use `candidate/vX.Y.Z` ([release process](release-process.md)). Older
-  `chore/release-vX.Y.Z` branches are the same thing under a retired name; delete them once their
-  release reached `main`.
+- A release uses two branches ([release process](release-process.md)): `chore/release-vX.Y.Z`
+  carries the version and CHANGELOG into `develop` like any task, and `candidate/vX.Y.Z` points at
+  the resulting `develop` SHA and never receives commits. GitHub deletes the candidate when its
+  release pull request merges; a closed, unmerged candidate is deleted once a newer one replaced it.
 - A task branch never tracks `origin/develop` as its upstream; `git status` then reports the trunk
   as the branch's remote and `git push` targets the wrong ref. Push with
   `git push -u origin <branch>`.
@@ -570,14 +574,17 @@ database-sensitive ranges route through
 step from Integration:
 
 ```bash
-# 1. Open the release PR from a current develop and wait for the required checks
-git pull --ff-only origin develop
-gh pr create --base main --head develop --title "release: vX.Y.Z - <primary outcome>"
+# 1. Cut the candidate at the release SHA (a develop merge commit) and open the release PR
+git fetch origin
+git push origin <release-sha>:refs/heads/candidate/vX.Y.Z
+git fetch origin
+pnpm ops:release-checks <release-sha> --candidate candidate/vX.Y.Z
+gh pr create --base main --head candidate/vX.Y.Z --title "release: vX.Y.Z - <primary outcome>"
 
-# 2. Merge it in GitHub (merge commit), verify the deployment, then back-merge
-git pull --ff-only origin develop
-git merge --ff-only origin/main
-git push origin develop
+# 2. Merge it in GitHub (merge commit, pinned to the release SHA), verify the deployment, then
+#    merge main back into develop through a pull request
+gh pr create --base develop --head main --title "chore(release): merge vX.Y.Z back into develop"
+git pull --ff-only origin develop   # after the back-merge pull request merges
 ```
 
 3. In the same turn that `pnpm ops:release-status` reports `VERIFIED` for the deployed `main` SHA,
@@ -587,13 +594,17 @@ git push origin develop
 
 Rules:
 
-- The back-merge is a fast-forward because `develop` already contains everything except the release
-  merge commit. If it is refused, `develop` and `main` diverged: merge `origin/main` into `develop`
-  (no rebase, no reset), resolve deliberately, validate, and push (`branch-lane` mode
-  `sync-main-into-develop`).
-- A release pull request into `main` exists only for a checkpoint: `develop` carries a new
+- `develop` is never frozen for a release (d289). The candidate is fixed on one `develop` SHA;
+  merges into `develop` continue and reach `main` with the next release.
+- The back-merge is an ordinary pull request from `main` into `develop`, merged with a merge commit
+  pinned to its head and reviewed like a low-risk task: its only new commit is the release merge,
+  whose tree equals the candidate. It never rewrites history and it lands before the next candidate
+  is cut (`ops:release-checks --candidate` refuses a SHA that does not contain `origin/main`). If it
+  conflicts, `main` received something outside a release: resolve it on a task branch through
+  `branch-lane` mode `sync-main-into-develop` (no rebase, no reset).
+- A release pull request into `main` exists only for a checkpoint: the candidate carries a new
   `package.json` version and its CHANGELOG entry. Without one, the pull request is not opened. A
-  title without a version (`release: promote develop <sha> to main`) is refused in review.
+  title without a version (`release: promote candidate <sha> to main`) is refused in review.
 - Release PR titles name the version and the primary shipped outcome. Bodies list included changes,
   material risks, visual/schema/content impact and separately authorized operations.
 - Never rewrite or force-push `main` or `develop`; never use a bypass.

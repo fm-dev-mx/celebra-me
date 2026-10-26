@@ -25,9 +25,10 @@ related_docs:
 
 # Production PR
 
-This skill is the single canonical procedure for creating or updating the `develop` → `main` release
-PR. `publish-production` and `branch-lane` (`references/promote-develop-to-main.md`) grant or
-sequence that step but delegate the PR itself here; do not duplicate PR steps in them.
+This skill is the single canonical procedure for creating or updating the `candidate/vX.Y.Z` →
+`main` release PR (d289: the candidate is fixed on one `develop` SHA while `develop` keeps moving).
+`publish-production` and `branch-lane` (`references/promote-develop-to-main.md`) grant or sequence
+that step but delegate the PR itself here; do not duplicate PR steps in them.
 
 When used inside explicitly invoked `publish-production`, its documented invocation authority covers
 scoped PR creation/update and subsequent merge. Reuse it without another approval prompt; return to
@@ -56,9 +57,11 @@ preparation. Do not activate those broader operations merely to write a PR descr
 4. Resolve the production base and allowed source from current
    [Git governance](../../../docs/core/git-governance.md) and
    [release policy](../../../docs/core/release-process.md). The documented release comparison is
-   `develop` into `main`; verify those refs live instead of inferring a base from the default
-   branch, branch name, local `main`, or worktree location. If policy is missing or contradictory,
-   report the exact conflict and ask before dependent Git writes.
+   `candidate/vX.Y.Z` into `main`, with the candidate proven by
+   `pnpm ops:release-checks <sha> --candidate candidate/vX.Y.Z`; verify those refs live instead of
+   inferring a base from the default branch, branch name, local `main`, or worktree location. If
+   policy is missing or contradictory, report the exact conflict and ask before dependent Git
+   writes.
 5. Compare remote tips with local refs, ancestry, exclusive commits, and the complete proposed PR
    diff. Inspect both commits and file changes: a clean working tree does not imply an empty
    release. List included commits/files, excluded work, and why the boundary is justified. A PR
@@ -103,7 +106,7 @@ checks, and environment limitations.
   visual certification is remote). Push only the intended source ref; never force, bypass hooks,
   merge, or push `main`. Report automatic Preview/CI effects inherent in the authorized push or PR.
 - Follow the release policy's integration gate: `Repository Policy` and `Application Suite` must
-  pass on the exact integrated `develop` SHA before opening its release PR. Confirm trusted
+  pass on the exact candidate SHA (a `develop` SHA) before opening its release PR. Confirm trusted
   workflow/ref/SHA evidence; missing, pending, skipped, cancelled, or different-SHA results are not
   success. Do not use a draft PR to bypass a prerequisite for opening the release PR.
 - Keep local checks, integration CI, PR CI, visual acceptance, and deployment/smoke evidence
@@ -124,12 +127,14 @@ Use the repository template if present. Otherwise provide a concise body contain
 
 Before creating or updating a release pull request:
 
-- The title is `release: vX.Y.Z - <primary outcome>` and `package.json` on `develop` has that
+- The title is `release: vX.Y.Z - <primary outcome>` and `package.json` on the candidate has that
   version; stop if the version equals the last tag.
-- List every pull request in `git log --merges origin/main..origin/develop`, not only the ones the
-  task worked on (for example a Worker setting such as `workers_dev`).
-- Compare the CHANGELOG entry with that list and with `git diff --stat origin/main origin/develop`;
-  a shipped change without a CHANGELOG line is fixed on the candidate before the pull request.
+- List every pull request in `git log --merges origin/main..origin/candidate/vX.Y.Z`, not only the
+  ones the task worked on (for example a Worker setting such as `workers_dev`). Pull requests merged
+  into `develop` after the cut are not in the release.
+- Compare the CHANGELOG entry with that list and with
+  `git diff --stat origin/main origin/candidate/vX.Y.Z`; a shipped change without a CHANGELOG line
+  is fixed through `chore/release-vX.Y.Z` on `develop` and a new candidate before the pull request.
 - State visual impact and content impact as separate lines, even when the answer is "none".
 - Re-read claims about other pull requests ("retired", "merged") against `gh pr view` before writing
   them.

@@ -191,6 +191,8 @@ async function runProductionApply(options: {
 	writeHuman(
 		`${operatorSymbol('info')} Production apply usa pnpm prod:apply -- --schema${expectedSuffix} --apply.`,
 	);
+	const { ensureFreshDisposableProof } = await import('./production-apply-disposable-proof.ts');
+	ensureFreshDisposableProof();
 	const { applyProductionApplyPlan } = await import('./production-apply-orchestrator.ts');
 	const { formatProductionApplyResult, toPublicProductionApplyPlan } =
 		await import('./production-apply-format.ts');

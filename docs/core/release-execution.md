@@ -111,17 +111,21 @@ implementing these skills is never a live-release invocation.
 2. Require main ancestry and schema compatibility using branch-lane. Reuse its valid checkpoint, not
    its prompts for authority already carried by this invocation. No unconditional local
    `pnpm run ci` replay. Main-only work or divergent scope requires a decision before recovery.
-3. Find the existing open PR for `develop` → `main` before creating/updating it. Use production-pr
-   for scope, template and evidence; this invocation continues beyond that helper's PR-only end.
-   Attach the PR when the host supports it. Wait for required checks/reviews for the current PR head
-   and merge candidate; recheck source/base before merge. Never use admin/bypass/force options. When
-   the `Evidence reuse` job confirms the completed `develop` run for an identical tree, the
-   application tiers report skipped and `Application Suite` still passes; a declined reuse runs them
-   in full.
+3. Cut or reuse the fixed `candidate/vX.Y.Z` branch at the release SHA and prove it with
+   `pnpm ops:release-checks <release-sha> --candidate candidate/vX.Y.Z`
+   ([cut the candidate](release-process.md#5-cut-the-fixed-candidate-and-promote-it-to-main)).
+   `develop` keeps receiving merges meanwhile; never move, rebase or commit on the candidate. Find
+   the existing open PR for `candidate/vX.Y.Z` → `main` before creating/updating it. Use
+   production-pr for scope, template and evidence; this invocation continues beyond that helper's
+   PR-only end. Attach the PR when the host supports it. Wait for required checks/reviews for the
+   current PR head and merge candidate; recheck source/base before merge. Never use
+   admin/bypass/force options. When the `Evidence reuse` job confirms the completed `develop` push
+   run of the candidate SHA for an identical tree, the application tiers report skipped and
+   `Application Suite` still passes; a declined reuse runs them in full.
 4. Merge through the permitted PR method, pinned to the reviewed head (for example the supported CLI
    head-match option). Read the merge result and actual main SHA; do not assume SHA equality. Then
-   fast-forward `develop` to `origin/main` from Integration
-   ([back-merge](git-governance.md#production-promotion)).
+   open the pull request from `main` into `develop` and merge it with a merge commit once its checks
+   pass ([back-merge](git-governance.md#production-promotion)); it never rewrites history.
 5. Verify the Production Worker, actual main SHA/ref, Production environment, the uploaded and
    activated version, and production alias routing. Require the trusted
    `Cloudflare - celebra-me production smoke` result for this deployed SHA, published by the
