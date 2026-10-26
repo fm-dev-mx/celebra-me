@@ -7,6 +7,7 @@ import { UsageError, say } from './cli.mjs';
 import { buildCierre, cancelCierre, cierreIssues, cierreLines, signalLine } from './cierre.mjs';
 import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
 import {
+	HANDOFF_LISTS,
 	VEREDICTOS,
 	isFinished,
 	isReview,
@@ -108,13 +109,34 @@ export function rescheduled(before, after, flags, now = Date.now()) {
 	return next;
 }
 
+/**
+ * d290: a valid close finishes the task in the same command: a task with a PR waits in «en revision» for its
+ * cross review (the lock stays, so the author can answer the findings), any other is «hecha» and its lock
+ * goes. Review rounds, periodic tasks and tasks already finished keep their own rules.
+ */
+export function settled(before, after, flags) {
+	if (isReview(before) || isFinished(before) || cadaMs(before.cada)) return after;
+	// «Todos los campos»: a close that leaves a Handoff list out is a partial summary, so the task stays.
+	if (!HANDOFF_LISTS.every(([field]) => after.cierre?.[field] !== undefined)) return after;
+	const pr = normalizePr(after.pr) ?? after.cierre?.pr ?? after.cierre?.resultado?.pr;
+	if (pr) return { ...after, pr, estado: 'en revision' };
+	return { ...unlocked(after, flags), estado: 'hecha' };
+}
+
 const cycleLine = (t) => {
 	const fechas = (t.requisitos ?? []).filter((r) => r.tipo === 'fecha').map((r) => r.ref);
 	return `cada ${t.cada}: vuelve a pendiente hasta ${fechas.join(', ')}`;
 };
 
 /** The `close` command; board.mjs passes the task helpers it owns. */
-export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
+export function closeCommands({
+	getTask,
+	saveTask,
+	checkRev,
+	assertOwner,
+	overrideReason,
+	noteOverride,
+}) {
 	return {
 		/** d178: the closing summary a session writes when it finishes (or the coordinator completes). */
 		close({ pos, flags, lists }, dir, out) {
@@ -123,6 +145,9 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 				if (flags.rev !== undefined) checkRev(before, flags);
 				// The lock owner writes it; a declared coordinator completes it, also after the lock is gone.
 				if (!flags.coordinador) assertOwner(before, flags);
+				// d290: the coordinator's close moves the task on only when no lock is live, and says so.
+				const override = overrideReason(before.candado, flags);
+				const moves = !flags.coordinador || !before.candado || Boolean(override);
 				const board = loadBoard(dir);
 				const cierre = buildCierre(
 					before.cierre,
@@ -136,15 +161,18 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 					throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
 				const closed = reviewDone(before, { ...before, cierre }, flags);
 				const next = rescheduled(before, closed, flags);
-				const t = saveTask(dir, before, next, {
+				const final = next === closed && moves ? settled(before, closed, flags) : next;
+				const t = saveTask(dir, before, final, {
 					...flags,
 					seguimiento: true,
 				});
+				if (final.estado !== before.estado)
+					noteOverride(dir, before, override, 'pnpm board close');
 				// T129: the one-line signal the agent hands back, built only from the cierre.
 				const senal = signalLine(t, board);
 				const enviado = sendFindings(dir, t, board);
 				const text = [
-					`${t.id} con cierre (rev ${t.rev})`,
+					`${t.id} con cierre (rev ${t.rev}) · ${t.estado ?? 'pendiente'}`,
 					...cierreLines(t, board),
 					...(enviado ? [enviado] : []),
 					...(next === closed ? [] : [cycleLine(t)]),

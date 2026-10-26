@@ -120,7 +120,8 @@ import {
 	findTask,
 } from './model.mjs';
 import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
-import { reviewPreflight } from './review-preflight.mjs';
+import { ciGate, reviewPreflight, untilGreen, viewPr } from './review-preflight.mjs';
+import { assertOwner, noteOverride, overrideReason } from './lock-owner.mjs';
 import { authorSession } from './findings.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
 import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
@@ -141,7 +142,7 @@ import {
 	withLock,
 	writeDoc,
 } from './store.mjs';
-import { UsageError, say } from './cli.mjs';
+import { UsageError, failureText, say } from './cli.mjs';
 import { externalSessionLines, externalSessions } from './external-sessions.mjs';
 import { kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { inventoryCommands } from './inventory-commands.mjs';
@@ -305,21 +306,6 @@ function checkRev(doc, flags) {
 		);
 }
 
-function assertOwner(task, flags) {
-	if (!task.candado) {
-		if (!flags.coordinador)
-			throw new UsageError(
-				'sin candado: primero claim o use --coordinador para coordinación explícita',
-			);
-		return;
-	}
-	const sesion = sessionOf(flags.agente, flags.sesion, process.env);
-	if (task.candado.agente !== flags.agente || !sesion || task.candado.sesion !== sesion)
-		throw new UsageError(
-			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
-		);
-}
-
 /** d274: the coordinator frees a silent session's lock only after that session wrote a valid cierre. */
 function assertClosed(task, board) {
 	const issues = cierreIssues(task, board);
@@ -435,6 +421,65 @@ function row(t, n, board, agente) {
 	const lock = t.candado ? ` [${t.candado.agente}]` : '';
 	const why = blockedText(t, board) || deliveryLine(t);
 	return `${String(n).padStart(2)}. ${COLOR_LABEL[c].padEnd(11)} ${String(t.urgencia ?? '').padEnd(8)} ${t.num ? `T${t.num} ` : ''}${t.titulo} · ${t.id}${lock}${why ? `  — ${why}` : ''}`;
+}
+
+/**
+ * T79: one try of `review`: every round is a new child `<id>-revision`, `-revision-2`, … with its own prompt; d183
+ * picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet.
+ */
+function reviewOnce({ pos, flags }, dir, out) {
+	return withLock(dir, () => {
+		const src = getTask(dir, need(pos[0], 'falta <id>'));
+		if (!src.pr || src.estado !== 'en revision')
+			throw new UsageError('el origen requiere PR y estado en revision');
+		const noCierre = reviewCierreIssue(src, loadBoard(dir));
+		if (noCierre) throw new UsageError(noCierre);
+		const author = authorOf(src);
+		const early = reviewerPrecheck(author, flags.agente);
+		if (early) throw new UsageError(early);
+		const sha = reviewSha(src, flags);
+		const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
+		if (prev?.revisionSha === sha) return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
+		const pr = viewPr(src, sha);
+		const waiting = ciGate(src, sha, pr);
+		if (waiting) return waiting;
+		const preflight = reviewPreflight(src, sha, pr);
+		if (preflight.conflicts !== null) {
+			const en = nowIso();
+			const texto = `${taskLabel(src)} (${src.pr}@${sha.slice(0, 7)}): revisión rechazada por conflictos de merge. Archivos: ${preflight.conflicts.length ? preflight.conflicts.join(', ') : 'UNVERIFIED (objetos locales no disponibles; compruebe los archivos en GitHub)'}. Una origin/develop a su rama con un merge normal, resuelva los conflictos y haga push normal; nunca rebase ni push --force.`;
+			const row = buildMessageRow(
+				src.id,
+				{ de: 'coordinador', para: author, texto, id: `merge-${src.id}-${sha}-${en}` },
+				en,
+			);
+			const sesion = authorSession(src, author);
+			if (sesion) row.mensaje.sesion = sesion.id;
+			appendLog(dir, row);
+			throw new UsageError(texto);
+		}
+		// d282: the reviewer follows the PR's risk, so it is picked from GitHub's file inventory.
+		const pick = chooseReviewer(author, flags.agente, loadBoard(dir), preflight.files, src);
+		if (pick.issue) throw new UsageError(pick.issue);
+		const { agente, revisor } = pick;
+		const id = reviewChildId(src, prev);
+		const before = readDoc(dir, 'tareas', id);
+		// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
+		const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+		const t = reviewChild(src, {
+			agente,
+			revisor,
+			sha,
+			prev,
+			num,
+			files: preflight.files,
+			generado: nowIso(),
+		});
+		// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
+		const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
+		const saved = saveTask(dir, before, t, who);
+		const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
+		say(flags, out, saved, reviewCreatedText(saved, pick, live, sha));
+	});
 }
 
 const commands = {
@@ -562,7 +607,7 @@ const commands = {
 		return withLock(dir, () => {
 			const before = getTask(dir, id);
 			checkRev(before, flags);
-			assertOwner(before, flags);
+			const override = assertOwner(before, flags);
 			const data = flags.data ? JSON.parse(readFileSync(resolve(flags.data), 'utf8')) : {};
 			for (const key of [
 				'candado',
@@ -600,8 +645,14 @@ const commands = {
 				flags.sha !== before.revisionSha
 			)
 				throw new UsageError('la revisión debe declarar --sha igual al SHA revisado');
-			const t = saveTask(dir, before, merged, { ...flags, seguimiento: true });
-			say(flags, out, t, `${t.id} rev ${t.rev}`);
+			// d290: the coordinator moving an inactive session's task to pendiente or an end state frees its lock.
+			const freed =
+				override && (isFinished(merged) || merged.estado === 'pendiente')
+					? unlocked(merged, flags)
+					: merged;
+			const t = saveTask(dir, before, freed, { ...flags, seguimiento: true });
+			noteOverride(dir, before, override, 'pnpm board set');
+			say(flags, out, t, `${t.id} rev ${t.rev}${override ? ` · ${override}; anotado` : ''}`);
 		});
 	},
 	claim({ pos, flags }, dir, out) {
@@ -752,7 +803,9 @@ const commands = {
 			const silent =
 				flags.coordinador && before.candado.sesion && isSilentLock(before.candado);
 			if (silent) assertClosed(before, loadBoard(dir));
-			else if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
+			// d274 keeps its own rule here: d290's inactive-lock writes are set and close, never release.
+			else if (before.candado.sesion || !flags.coordinador)
+				assertOwner(before, { ...flags, coordinador: undefined });
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
 			// T172: a task released while still en curso goes back to pendiente, so another session can claim it.
@@ -796,58 +849,9 @@ const commands = {
 			say(flags, out, aviso ? { ...t, aviso } : t, text);
 		});
 	},
-	/** T79: every round is a new child `<id>-revision`, `-revision-2`, … with its own prompt; d183 picks the reviewer. */
-	review({ pos, flags }, dir, out) {
-		return withLock(dir, () => {
-			const src = getTask(dir, need(pos[0], 'falta <id>'));
-			if (!src.pr || src.estado !== 'en revision')
-				throw new UsageError('el origen requiere PR y estado en revision');
-			const noCierre = reviewCierreIssue(src, loadBoard(dir));
-			if (noCierre) throw new UsageError(noCierre);
-			const author = authorOf(src);
-			const early = reviewerPrecheck(author, flags.agente);
-			if (early) throw new UsageError(early);
-			const sha = reviewSha(src, flags);
-			const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
-			if (prev?.revisionSha === sha)
-				return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
-			const preflight = reviewPreflight(src, sha);
-			if (preflight.conflicts !== null) {
-				const en = nowIso();
-				const texto = `${taskLabel(src)} (${src.pr}@${sha.slice(0, 7)}): revisión rechazada por conflictos de merge. Archivos: ${preflight.conflicts.length ? preflight.conflicts.join(', ') : 'UNVERIFIED (objetos locales no disponibles; compruebe los archivos en GitHub)'}. Una origin/develop a su rama con un merge normal, resuelva los conflictos y haga push normal; nunca rebase ni push --force.`;
-				const row = buildMessageRow(
-					src.id,
-					{ de: 'coordinador', para: author, texto, id: `merge-${src.id}-${sha}-${en}` },
-					en,
-				);
-				const sesion = authorSession(src, author);
-				if (sesion) row.mensaje.sesion = sesion.id;
-				appendLog(dir, row);
-				throw new UsageError(texto);
-			}
-			// d282: the reviewer follows the PR's risk, so it is picked from GitHub's file inventory.
-			const pick = chooseReviewer(author, flags.agente, loadBoard(dir), preflight.files);
-			if (pick.issue) throw new UsageError(pick.issue);
-			const { agente, revisor } = pick;
-			const id = reviewChildId(src, prev);
-			const before = readDoc(dir, 'tareas', id);
-			// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
-			const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
-			const t = reviewChild(src, {
-				agente,
-				revisor,
-				sha,
-				prev,
-				num,
-				files: preflight.files,
-				generado: nowIso(),
-			});
-			// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
-			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
-			const saved = saveTask(dir, before, t, who);
-			const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
-			say(flags, out, saved, reviewCreatedText(saved, pick, live, sha));
-		});
+	/** d288: the round waits for the head's CI to be green, polling outside the board lock (--espera-min). */
+	review(args, dir, out) {
+		return untilGreen(args.flags, out, () => reviewOnce(args, dir, out));
 	},
 	/** Old one-file-per-row bitácora → one JSONL file per day, keeping every row; --dry-run only counts. */
 	'migrate-log'({ flags }, dir, out) {
@@ -909,8 +913,8 @@ Object.assign(
 	inventory,
 	nextCommands({ getTask }),
 	delivery.commands,
-	closeCommands({ getTask, saveTask, checkRev, assertOwner }),
-	kindCommands({ getTask, saveTask, checkRev, assertOwner }),
+	closeCommands({ getTask, saveTask, checkRev, assertOwner, overrideReason, noteOverride }),
+	kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOverride }),
 	{
 		archive: archiveCommand(true),
 		unarchive: archiveCommand(false),
@@ -935,8 +939,13 @@ export async function run(argv, { dir = boardDir(), out = console.log, prState }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-	run(process.argv.slice(2)).catch((e) => {
-		console.error(e instanceof UsageError ? e.message : e);
-		process.exitCode = e instanceof UsageError ? 2 : 1;
+	const argv = process.argv.slice(2);
+	run(argv).catch((e) => {
+		const codigo = e instanceof UsageError ? 2 : 1;
+		const error = failureText(argv[0], e);
+		console.error(error);
+		// d290: a --json caller reads stdout, so the reason goes there too.
+		if (argv.includes('--json')) console.log(JSON.stringify({ error, codigo }));
+		process.exitCode = codigo;
 	});
 }

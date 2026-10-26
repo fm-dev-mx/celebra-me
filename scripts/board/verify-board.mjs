@@ -46,7 +46,7 @@ import {
 import { cierreIssues, NO_CIERRE } from './cierre.mjs';
 import { parentIssue } from './subtasks.mjs';
 import { kindPrompt, promptDiff } from './kind-prompt.mjs';
-import { loadKinds } from './kinds.mjs';
+import { kindKey, loadKinds } from './kinds.mjs';
 import { promptIdentity } from './prompt.mjs';
 import { boardDir, readLog } from './store.mjs';
 
@@ -575,7 +575,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 function kindWarnings(tareas, board, { kinds, issues }) {
 	const avisos = [];
 	for (const t of tareas.filter((x) => !isClosed(x) && x.tipo && !x.revisionSha)) {
-		const kind = kinds[t.tipo];
+		const kind = kinds[kindKey(t)];
 		// A broken kind file and a missing busca are already inconsistencies.
 		if (!kind || !String(t.busca ?? '').trim()) continue;
 		const who = t.num ? `T${t.num} ` : '';

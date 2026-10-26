@@ -317,7 +317,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   while its last heartbeat (`latido`, else `desde`) is under 2 h old. d274: once it is 2 h silent,
   the same command frees it only if the task already has a valid `cierre` (`cierreIssues`); without
   one it is refused and the session must run `close` first. A review released this way with its
-  verdict becomes `hecha`, like `close`.
+  verdict becomes `hecha`, like `close`. d290: `set` and `close` with `--coordinador` may write over
+  a lock silent for 30 min (`isInactiveLock`) or whose session the coordinator found archived
+  (`--sesion-archivada`); each write sends the lock's agent and session a message row, and a `set`
+  to `pendiente` or an end state frees the lock. `release` keeps the d274 rule.
 - **Heartbeat**: every successful command renews `candado.latido` on the caller's locks (`--agente`
   or `--de`, with its session); `move`, `review`, `view` and `verify` do not. Read messages are
   marked in `bandejas/<a>.json` (`inbox --todos` lists read ones too).
@@ -374,6 +377,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   as «Lista para unir». Cancelling with `set <id> estado=cancelada --motivo=<reason>` writes the
   cierre in the same command (the reason is the summary); `review` cancels an open earlier round the
   same way when it opens the next one.
+- **Close finishes (d290)**: outside review rounds, periodic tasks and finished tasks, a `close`
+  whose cierre names the four Handoff lists moves the task to `en revision` when it has a PR (task
+  `pr`, `--pr` or `resultado.pr`; the lock stays) and to `hecha` otherwise (the lock goes). A
+  coordinator close over a live lock writes the cierre and keeps the estado.
 - **PR states**: `unida` always needs `pr`; `en revision` needs it only when the task has a `rama`
   (audits and handoffs go to review without one). The command refuses a pull URL from another
   repository.
@@ -407,17 +414,23 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   are never rewritten, except that a still-open one is cancelled with its cierre (T129); the same
   SHA again creates nothing. `review` refuses an origin without a valid `cierre` and prints the
   `pnpm board close <id> …` to run first; `--coordinador` gets no bypass.
+- **CI first (d288)**: before the merge preflight, `review` reads the head's `statusCheckRollup`
+  (`reviewCi`, `ciOf`). Green creates the round; red refuses and names the failed checks; running or
+  not started yet (no checks listed) polls every 30 s (`CELEBRA_BOARD_CI_POLL_MS`) with the board
+  unlocked for `--espera-min` minutes (30 by default), then refuses with «la vuelta queda en
+  espera».
 - **Reviewer choice**: without `--agente` the reviewer follows d183: work by Codex or Gemini goes to
-  Claude; low-risk work by Claude goes to a Claude subagent (d282, printed with the author session's
-  steps); other work by Claude goes (d209, d240) to whichever of Gemini and Codex has less load
-  (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to Gemini), and to
-  Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90 %
-  5-hour use before its reset; the message prints the risk level, both loads and the quota. An
+  Claude; low- and medium-risk work by Claude outside release (`tipo` or `categoria` `release`) goes
+  to a Claude subagent (d288, printed with the author session's steps; `.agent/rules/` counts as
+  high risk, d290); other work by Claude goes (d209, d240) to whichever of Gemini and Codex has less
+  load (reviews open or updated in the last 7 days plus open normal tasks; a tie goes to Gemini),
+  and to Gemini while Codex's last `rate_limits` in `~/.codex/sessions` shows ≥ 80 % weekly or ≥ 90
+  % 5-hour use before its reset; the message prints the risk level, both loads and the quota. An
   explicit `--agente` always wins; any other pairing is refused (Claude on Claude's work only at low
-  risk). The author is the task's `agente`, else its lock's or last session's. `show` and the sheet
-  list the rounds one below another. Reviews become executable before merge and do not inherit the
-  author's lane. Completion declares `--sha=<reviewed SHA>`; the verifier compares it against the
-  current PR head.
+  or medium risk). The author is the task's `agente`, else its lock's or last session's. `show` and
+  the sheet list the rounds one below another. Reviews become executable before merge and do not
+  inherit the author's lane. Completion declares `--sha=<reviewed SHA>`; the verifier compares it
+  against the current PR head.
 - **Reviewer duties**: a reviewer keeps its round's task and assigned reviewer, inspects the exact
   PR head of that round, binds findings and completion to the full SHA, and challenges scope,
   regressions, invariants and missing evidence. A finished chat or green CI is not independent
@@ -501,21 +514,21 @@ when any changed. `--dry-run` lists every step and writes nothing; the result ca
 
 `tipo` says what a task does (`codigo`, `revision`, `release`, `invitacion`, `creativo`,
 `auditoria`, `operacion`); `categoria` only picks its lane. Each kind is one short
-`.agent/kinds/<tipo>.yaml`: `lee` (routing-matrix `task_type` names, never copied lists),
-`pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve` (the T129
-`resultado` fields), `listo_si` (validation level), `al_terminar` (steps before the close line) and
-the optional `tras_cierre` (steps after it: `codigo` puts there the move to `en revision` with
-`set … "estado=en revision" "pr=#<n>"`, because sync does not move a locked task, and then
-`pnpm board review`, d255). The coordinator writes only `busca` (the `QUÉ SE BUSCA` text, with
-«Terminado cuando:») and, when the task needs them, `corto` (the session name's description),
-`pasos`, `autorizo`, `noHagas`, `lee` and `decisiones` (dNNN ids; decisions naming the task in
-`tareas` and `decision` requisitos count too). `add`, `set` and `plan` regenerate the prompt-v1 when
-one of those fields, the lane or the branch changes, and refuse a hand-written `prompt` on a typed
-task; `pnpm board prompt <id>` prints it and `--guardar --rev=<n>` saves it after a decision or kind
-file changed. `board:verify` checks the kind files and warns when a saved prompt is not the one its
-kind generates now. Session tasks created under `contrato: 3` need `tipo`; older tasks and tasks
-without `tipo` keep their hand-written prompts. Review rounds from `pnpm board review` get
-`tipo: revision` and keep the prompt `review` writes.
+`.agent/kinds/<tipo>.yaml` (d290: `operacion` adds `operacion-cloudflare.yaml`, picked by the task's
+`destino` and carrying a matching `destino` key): `lee` (routing-matrix `task_type` names, never
+copied lists), `pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve`
+(the T129 `resultado` fields), `listo_si` (validation level), `al_terminar` (steps before the close
+line) and the optional `tras_cierre` (steps after it: `codigo` puts there `pnpm board review`, d255;
+`close` already left it `en revision`, d290). The coordinator writes only `busca` (the
+`QUÉ SE BUSCA` text, with «Terminado cuando:») and, when the task needs them, `corto` (the session
+name's description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones` (dNNN ids; decisions
+naming the task in `tareas` and `decision` requisitos count too). `add`, `set` and `plan` regenerate
+the prompt-v1 when one of those fields, the lane or the branch changes, and refuse a hand-written
+`prompt` on a typed task; `pnpm board prompt <id>` prints it and `--guardar --rev=<n>` saves it
+after a decision or kind file changed. `board:verify` checks the kind files and warns when a saved
+prompt is not the one its kind generates now. Session tasks created under `contrato: 3` need `tipo`;
+older tasks and tasks without `tipo` keep their hand-written prompts. Review rounds from
+`pnpm board review` get `tipo: revision` and keep the prompt `review` writes.
 
 ### Modules and write lock
 

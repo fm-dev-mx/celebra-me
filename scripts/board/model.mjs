@@ -256,14 +256,14 @@ export const defaultReviewer = (author) =>
 			: undefined;
 
 /**
- * Why `reviewer` may not review work by `author` (d183), or null. d282: Claude may review Claude's work only
- * when the PR is low risk (`lowRisk`), through a clean-context subagent.
+ * Why `reviewer` may not review work by `author` (d183), or null. d288: Claude may review Claude's work only
+ * when the PR is low or medium risk outside release work (`subagent`), through a clean-context subagent.
  */
-export function reviewerIssue(author, reviewer, { lowRisk = false } = {}) {
+export function reviewerIssue(author, reviewer, { subagent = false } = {}) {
 	if (!Object.hasOwn(AGENT_REGISTRY, reviewer ?? '')) return `revisor desconocido: ${reviewer}`;
-	if (reviewer === author && !(author === 'claude' && lowRisk))
+	if (reviewer === author && !(author === 'claude' && subagent))
 		return author === 'claude'
-			? 'd282: claude revisa su propio trabajo solo en riesgo bajo (scripts/board, scripts/agent, pruebas, docs o .agent)'
+			? 'd288: un subagente de claude revisa el trabajo de claude solo en riesgo bajo o medio, fuera de release'
 			: 'la revisión cruzada requiere otro agente';
 	if (author && author !== 'claude' && reviewer !== 'claude')
 		return `d183: el trabajo de ${author} lo revisa claude`;

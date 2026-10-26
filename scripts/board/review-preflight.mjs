@@ -1,8 +1,19 @@
-/** Read-only merge evidence for a review, pinned to GitHub's current base and head. */
+/** Read-only merge and CI evidence for a review, pinned to GitHub's current base and head. */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { UsageError } from './cli.mjs';
+import { ciOf } from './live.mjs';
 
-export function reviewPreflight(task, sha) {
+/** The names of the checks that failed in a `statusCheckRollup`, for the refusal text. */
+const failedChecks = (rollup) =>
+	(Array.isArray(rollup) ? rollup : [])
+		.filter((c) => ciOf([c]) === 'rojo')
+		.map((c) => c.name || c.context || '?');
+
+/**
+ * One `gh pr view` of PR `task.pr` with every field `review` reads (CI and merge evidence); refuses unless the PR
+ * is OPEN at head `sha`.
+ */
+export function viewPr(task, sha) {
 	let pr;
 	try {
 		pr = JSON.parse(
@@ -13,7 +24,7 @@ export function reviewPreflight(task, sha) {
 					'view',
 					String(task.pr).replace(/^#/, ''),
 					'--json',
-					'state,headRefOid,baseRefOid,mergeable,files,changedFiles',
+					'state,headRefOid,baseRefOid,mergeable,files,changedFiles,statusCheckRollup',
 				],
 				{
 					encoding: 'utf8',
@@ -24,14 +35,65 @@ export function reviewPreflight(task, sha) {
 			),
 		);
 	} catch {
-		throw new UsageError(
-			'UNVERIFIED: no se pudo comprobar el merge del PR; vuelva a intentar.',
-		);
+		throw new UsageError('UNVERIFIED: no se pudo leer el PR en GitHub; vuelva a intentar.');
 	}
 	if (pr?.state !== 'OPEN' || pr.headRefOid !== sha)
 		throw new UsageError(
 			'el PR debe estar OPEN y su cabeza debe coincidir con --sha; actualice la evidencia.',
 		);
+	return pr;
+}
+
+/**
+ * d288: null when the CI of `task`'s head `sha` (read in `pr`) is green; `{espera}` (the reason) while it still runs or has not
+ * started. A red CI refuses the round, naming the failed checks.
+ */
+export function ciGate(task, sha, pr = viewPr(task, sha)) {
+	const ci = ciOf(pr.statusCheckRollup);
+	const fallidos = failedChecks(pr.statusCheckRollup);
+	if (ci === 'verde') return null;
+	if (ci === 'rojo')
+		throw new UsageError(
+			`el CI de ${task.pr}@${sha.slice(0, 7)} falló (${fallidos.join(', ')}): corrija, haga push y pida la revisión del nuevo SHA.`,
+		);
+	return {
+		espera: `el CI de ${task.pr}@${sha.slice(0, 7)} ${ci === 'pendiente' ? 'sigue corriendo' : 'aún no empieza'}`,
+	};
+}
+
+/** How long `review` waits for a green CI: --espera-min=<n> (0 = do not wait), 30 minutes by default. */
+export const DEFAULT_WAIT_MIN = 30;
+const pollMs = () => Number(process.env.CELEBRA_BOARD_CI_POLL_MS) || 30_000;
+
+/**
+ * Run `attempt` (one locked try) until it stops answering `{espera}` or the wait runs out. The wait sleeps with
+ * the board unlocked, so other commands keep working; a run out of time refuses with the reason.
+ */
+export async function untilGreen(flags, out, attempt) {
+	const raw = flags['espera-min'];
+	const minutes =
+		raw === undefined
+			? DEFAULT_WAIT_MIN
+			: typeof raw === 'string' && raw.trim()
+				? Number(raw)
+				: NaN;
+	if (!Number.isFinite(minutes) || minutes < 0)
+		throw new UsageError('--espera-min debe ser un número de minutos desde 0');
+	const until = Date.now() + minutes * 60_000;
+	for (;;) {
+		const r = attempt();
+		if (!r?.espera) return r;
+		if (Date.now() >= until)
+			throw new UsageError(
+				`${r.espera}: la vuelta queda en espera. Vuelva a correr este mismo pnpm board review cuando el CI esté verde${minutes ? ` (esperé ${minutes} min)` : ''}.`,
+			);
+		if (!flags.json) out(`${r.espera}; la vuelta se crea cuando esté verde…`);
+		await new Promise((done) => setTimeout(done, Math.min(pollMs(), until - Date.now())));
+	}
+}
+
+/** The merge evidence of `task`'s head `sha`, read in `pr`: `{files, conflicts}` (null when mergeable). */
+export function reviewPreflight(task, sha, pr = viewPr(task, sha)) {
 	if (!['MERGEABLE', 'CONFLICTING'].includes(pr.mergeable))
 		throw new UsageError('UNVERIFIED: GitHub aún no confirma mergeable; vuelva a intentar.');
 	// GitHub caps the files connection; incomplete evidence must never classify as docs-only.

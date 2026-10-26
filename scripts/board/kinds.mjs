@@ -13,6 +13,30 @@ export const KINDS_DIR = join(ROOT, '.agent', 'kinds');
 const ROUTING_MATRIX = join(ROOT, '.agent', 'routing-matrix.yaml');
 
 const SCALARS = ['tipo', 'descripcion', 'listo_si'];
+/** d290: where an `operacion` runs; each destino but `base` has its own kind file (`operacion-<destino>.yaml`). */
+export const OPERACION_DESTINOS = ['base', 'cloudflare'];
+
+/** Why `t`'s `destino` is refused (d290): only an operacion has one, from OPERACION_DESTINOS; else null. */
+export function destinoIssue(t) {
+	if (t?.destino === undefined) return null;
+	if (t.tipo !== 'operacion') return 'destino solo en tareas tipo=operacion';
+	return OPERACION_DESTINOS.includes(t.destino)
+		? null
+		: `destino debe ser ${OPERACION_DESTINOS.join('/')}`;
+}
+
+/** d290: `destino` names the target of a variant file (`operacion-cloudflare.yaml`); the base file has none. */
+const OPTIONAL_SCALARS = ['destino'];
+/**
+ * The kind file a task's prompt comes from: `operacion-cloudflare` for an operacion on Cloudflare, else its tipo
+ * (an unknown destino is left to the shape check).
+ */
+export const kindKey = (t) =>
+	t?.tipo === 'operacion' && t.destino !== 'base' && OPERACION_DESTINOS.includes(t.destino)
+		? `${t.tipo}-${t.destino}`
+		: t?.tipo;
+/** d290: the variant files of a tipo, one per destino but `base`. */
+export const VARIANTS = { operacion: OPERACION_DESTINOS.filter((d) => d !== 'base') };
 const LISTS = [
 	'lee',
 	'pasos_inicio',
@@ -75,7 +99,7 @@ export function routingTaskTypes(file = ROUTING_MATRIX) {
 /** Keys, scalars and lists of a kind document. */
 function shapeIssues(doc) {
 	const out = Object.keys(doc)
-		.filter((k) => !SCALARS.includes(k) && !LISTS.includes(k))
+		.filter((k) => !SCALARS.includes(k) && !OPTIONAL_SCALARS.includes(k) && !LISTS.includes(k))
 		.map((k) => `clave desconocida: ${k}`);
 	for (const k of SCALARS)
 		if (typeof doc[k] !== 'string' || !doc[k].trim()) out.push(`falta ${k}`);
@@ -99,12 +123,24 @@ function contractIssues(doc, file) {
 	return out;
 }
 
-/** Shape problems of kind `doc` read from `<file>.yaml`, checked against the routing task types. */
+/**
+ * Shape problems of kind `doc` read from `<file>.yaml`, checked against the routing task types. A variant file
+ * `<tipo>-<destino>.yaml` (d290) keeps its tipo and names its destino.
+ */
 export function kindIssues(doc, file, taskTypes) {
 	const out = [];
-	if (doc.tipo !== file) out.push(`tipo debe ser ${file}, como el archivo`);
-	if (!TIPOS.includes(file)) out.push(`tipo desconocido: ${file}`);
-	out.push(...shapeIssues(doc), ...contractIssues(doc, file));
+	const [tipo, destino] = file.split(/-(.*)/s);
+	if (doc.tipo !== tipo) out.push(`tipo debe ser ${tipo}, como el archivo`);
+	if (!TIPOS.includes(tipo)) out.push(`tipo desconocido: ${tipo}`);
+	if (destino !== undefined && !(VARIANTS[tipo] ?? []).includes(destino))
+		out.push(`destino desconocido: ${destino}`);
+	if ((doc.destino ?? undefined) !== destino)
+		out.push(
+			destino
+				? `destino debe ser ${destino}, como el archivo`
+				: 'destino sobra fuera de una variante',
+		);
+	out.push(...shapeIssues(doc), ...contractIssues(doc, tipo));
 	for (const t of doc.lee ?? [])
 		if (!taskTypes.includes(t)) out.push(`lee: ${t} no es un task_type de routing-matrix.yaml`);
 	const text = LISTS.flatMap((k) => (Array.isArray(doc[k]) ? doc[k] : [])).join('\n');
@@ -120,20 +156,21 @@ export function kindIssues(doc, file, taskTypes) {
 export function loadKinds(dir = KINDS_DIR, taskTypes = routingTaskTypes()) {
 	const kinds = {};
 	const issues = [];
-	for (const tipo of TIPOS) {
+	const files = TIPOS.flatMap((t) => [t, ...(VARIANTS[t] ?? []).map((d) => `${t}-${d}`)]);
+	for (const file of files) {
 		let doc;
 		try {
-			doc = parseKind(readFileSync(join(dir, `${tipo}.yaml`), 'utf8'));
+			doc = parseKind(readFileSync(join(dir, `${file}.yaml`), 'utf8'));
 		} catch (e) {
 			issues.push({
-				id: `kinds/${tipo}`,
+				id: `kinds/${file}`,
 				msg: e.code === 'ENOENT' ? 'falta el archivo' : e.message,
 			});
 			continue;
 		}
-		const msgs = kindIssues(doc, tipo, taskTypes);
-		for (const msg of msgs) issues.push({ id: `kinds/${tipo}`, msg });
-		if (!msgs.length) kinds[tipo] = doc;
+		const msgs = kindIssues(doc, file, taskTypes);
+		for (const msg of msgs) issues.push({ id: `kinds/${file}`, msg });
+		if (!msgs.length) kinds[file] = doc;
 	}
 	return { kinds, issues };
 }
