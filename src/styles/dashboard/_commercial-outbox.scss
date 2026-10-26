@@ -849,3 +849,102 @@
 		border-bottom: 0;
 	}
 }
+
+// Private invitation data link of a paid order and the owner's review notice.
+.invitation-data-panel {
+	display: grid;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--dashboard-card-border);
+
+	input[type='text'] {
+		width: 100%;
+		min-height: 2.5rem;
+		box-sizing: border-box;
+		padding: 0.4rem 0.55rem;
+		border: 1px solid var(--dashboard-card-border);
+		border-radius: var(--radius-sm);
+		background: var(--dashboard-card-bg);
+		color: var(--color-text-primary);
+		font: inherit;
+		font-size: 0.82em;
+	}
+}
+
+.invitation-data-panel__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.35rem 0.75rem;
+	font-size: 0.88em;
+}
+
+.invitation-data-panel__status {
+	color: var(--color-text-secondary);
+	font-size: 0.8em;
+
+	&--alert {
+		color: var(--color-state-danger-text);
+		font-weight: 600;
+	}
+}
+
+.invitation-data-panel__link {
+	display: grid;
+	gap: 0.4rem;
+}
+
+.invitation-data-panel__answers {
+	display: grid;
+	gap: 0.75rem;
+
+	h5 {
+		margin: 0;
+		font-size: 0.82em;
+	}
+
+	dl {
+		display: grid;
+		gap: 0.35rem;
+		margin: 0.35rem 0 0;
+	}
+
+	dt {
+		color: var(--color-text-secondary);
+		font-size: 0.75em;
+	}
+
+	dd {
+		margin: 0;
+		font-size: 0.85em;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+}
+
+.invitation-data-inbox {
+	display: grid;
+	gap: 0.5rem;
+	padding: 0.75rem;
+	border: 1px solid var(--color-state-danger-border);
+	border-radius: var(--radius-md);
+	background: var(--dashboard-card-bg);
+
+	h4 {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin: 0;
+		font-size: 0.9em;
+	}
+
+	ul {
+		display: grid;
+		gap: 0.4rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+}

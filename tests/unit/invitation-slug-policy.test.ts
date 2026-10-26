@@ -5,12 +5,20 @@ import { UpdateInvitationCommandSchema } from '@/lib/intake/schemas/invitation.s
 import { UpdateInvitationEditorMetadataSchema } from '@/lib/intake/schemas/invitation-editor.schema';
 
 describe('invitation slug policy', () => {
-	it.each(['dashboard', 'login', 'api', 'i', 'r', 'demos', 'vista-previa', 'XV', ' login '])(
-		'reserves %s',
-		(slug) => {
-			expect(isReservedInvitationSlug(slug)).toBe(true);
-		},
-	);
+	it.each([
+		'dashboard',
+		'login',
+		'api',
+		'i',
+		'r',
+		'demos',
+		'vista-previa',
+		'mi-invitacion',
+		'XV',
+		' login ',
+	])('reserves %s', (slug) => {
+		expect(isReservedInvitationSlug(slug)).toBe(true);
+	});
 
 	it.each(EVENT_TYPES)('reserves the event type %s', (eventType) => {
 		expect(isReservedInvitationSlug(eventType)).toBe(true);

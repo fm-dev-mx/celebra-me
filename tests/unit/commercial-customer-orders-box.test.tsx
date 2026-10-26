@@ -1,6 +1,20 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
-import CustomerOrdersBox, { type SalesOrder } from '@/components/dashboard/commercial/CustomerOrdersBox';
+import CustomerOrdersBox, {
+	type SalesOrder,
+} from '@/components/dashboard/commercial/CustomerOrdersBox';
+
+// The panel loads its own state from the API; here only its placement matters.
+jest.mock('@/components/dashboard/commercial/InvitationDataPanel', () => ({
+	__esModule: true,
+	default: ({ orderId, autoIssue }: { orderId: string; autoIssue?: boolean }) => (
+		<div
+			data-testid="invitation-data-panel"
+			data-order={orderId}
+			data-auto={String(!!autoIssue)}
+		/>
+	),
+}));
 
 // Base order with all default fields set
 const baseOrder: SalesOrder = {
@@ -202,12 +216,18 @@ describe('CustomerOrdersBox', () => {
 
 	it('shows an empty message when there are no orders', () => {
 		render(<CustomerOrdersBox {...defaultProps} customerOrders={[]} />);
-		expect(screen.getByText('Este cliente aún no tiene órdenes registradas.')).toBeInTheDocument();
+		expect(
+			screen.getByText('Este cliente aún no tiene órdenes registradas.'),
+		).toBeInTheDocument();
 	});
 
 	it('calls onAmountChange when typing in the deposit input', () => {
 		const order1: SalesOrder = { ...baseOrder, id: 'order-1', depositAmount: 0 };
-		const order2: SalesOrder = { ...baseOrder, id: 'order-2', orderNumber: 'CMO-20260708-DEF456' };
+		const order2: SalesOrder = {
+			...baseOrder,
+			id: 'order-2',
+			orderNumber: 'CMO-20260708-DEF456',
+		};
 		const onAmountChange = jest.fn();
 
 		render(
@@ -243,5 +263,21 @@ describe('CustomerOrdersBox', () => {
 
 		expect(screen.getByText('Por conciliar')).toBeInTheDocument();
 		expect(screen.getByText(/el pagado supera el total/)).toHaveTextContent('$500');
+	});
+
+	it('shows the invitation data panel only once the deposit is paid', () => {
+		const { rerender } = render(<CustomerOrdersBox {...defaultProps} />);
+		expect(screen.queryByTestId('invitation-data-panel')).not.toBeInTheDocument();
+
+		rerender(
+			<CustomerOrdersBox
+				{...defaultProps}
+				customerOrders={[{ ...baseOrder, status: 'deposit_paid' }]}
+				autoIssueInvitationDataOrderId="order-1"
+			/>,
+		);
+		const panel = screen.getByTestId('invitation-data-panel');
+		expect(panel).toHaveAttribute('data-order', 'order-1');
+		expect(panel).toHaveAttribute('data-auto', 'true');
 	});
 });

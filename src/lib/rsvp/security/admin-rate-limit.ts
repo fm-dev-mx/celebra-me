@@ -66,6 +66,8 @@ const RATE_LIMITS = {
 	'commercial:meta-conversions:process': { maxHits: 20, windowSec: 60 }, // 20 req/min
 	'commercial:meta-conversions:requeue': { maxHits: 10, windowSec: 60 }, // 10 req/min
 	'commercial:classifications:write': { maxHits: 20, windowSec: 60 }, // 20 req/min
+	// Private invitation data link: issue or replace a link, mark answers as reviewed.
+	'commercial:invitation-data:write': { maxHits: 20, windowSec: 60 },
 } as const satisfies Record<string, RateLimitConfig>;
 
 export type AdminRateLimitOperation = keyof typeof RATE_LIMITS;

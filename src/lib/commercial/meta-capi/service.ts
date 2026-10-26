@@ -59,11 +59,15 @@ const PROVIDER_ERROR_MAX_LENGTH = 300;
 const SAFE_PROVIDER_ERROR_FALLBACK = 'Meta CAPI delivery failed without a safe provider message.';
 // Current Graph API version (released 2026-07-29); see the Meta Graph API changelog before bumping.
 const META_GRAPH_API_VERSION = 'v26.0';
-// A deposit is agreed and registered after the WhatsApp conversation, not on the website.
+// Order events follow the WhatsApp conversation: the deposit is agreed there, and the private
+// invitation data link that leads to CompleteRegistration is sent there.
 const META_PURCHASE_ACTION_SOURCE = 'chat';
 // PageView, ViewContent, Contact and Lead rows mirror browser Pixel events and share their
 // event_id for deduplication.
 const BROWSER_EVENT_NAMES = new Set(['PageView', 'ViewContent', 'Contact', 'Lead']);
+// Sent once per order when the client submits the private invitation data form. Like Purchase it
+// belongs to the order (its session, its lead's consent) and carries no value.
+export const COMPLETE_REGISTRATION_EVENT_NAME = 'CompleteRegistration';
 const SITE_ORIGIN = 'https://www.celebra-me.com';
 // Ten seconds stays well inside the 120-second claim lease while allowing normal Graph API latency.
 const META_CAPI_REQUEST_TIMEOUT_MS = 10_000;
@@ -317,9 +321,10 @@ function buildEventPayload(
 		browserEvent ? detail.event_source_path : session?.landing_path,
 	);
 
-	// A browser row is enqueued while the click is ingested, so its creation time is the event time.
+	// A browser row is enqueued while the click is ingested and a CompleteRegistration row when the
+	// client submits the invitation data form, so their creation time is the event time.
 	const eventTime =
-		(browserEvent
+		(browserEvent || detail.event_name === COMPLETE_REGISTRATION_EVENT_NAME
 			? detail.created_at
 			: detail.sales_orders?.deposit_paid_at || detail.sales_orders?.created_at) ||
 		new Date().toISOString();
