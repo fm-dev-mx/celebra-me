@@ -35,6 +35,8 @@ interface GuestTableRowProps {
 	onOpenDetails: (item: DashboardGuestItem) => void;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onSaveGuest?: GuestSaveCallback;
+	/** Reports when this guest's share composer opens or closes. */
+	onComposerOpenChange?: (item: DashboardGuestItem, open: boolean) => void;
 }
 
 /** The group header already names the status; only "waiting" needs the finer stage. */
@@ -57,6 +59,7 @@ interface GuestRowActionProps extends Pick<
 	| 'onReminderSent'
 	| 'onMarkShared'
 	| 'onSaveGuest'
+	| 'onComposerOpenChange'
 > {
 	action: GuestRowVisibleAction;
 	message: { open: boolean; panelId: string; onToggle: () => void };
@@ -103,6 +106,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	onOpenDetails,
 	onMarkShared,
 	onSaveGuest,
+	onComposerOpenChange,
 }) => {
 	const msgId = useId();
 	const [msgOpen, setMsgOpen] = useState(false);
@@ -207,6 +211,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 						onReminderSent={onReminderSent}
 						onMarkShared={onMarkShared}
 						onSaveGuest={onSaveGuest}
+						onComposerOpenChange={onComposerOpenChange}
 						message={{ open: msgOpen, panelId: msgId, onToggle: toggleMessage }}
 					/>
 				</td>
