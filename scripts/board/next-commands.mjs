@@ -194,14 +194,14 @@ export function nextCommands({ getTask }) {
 		/** What is next for the owner and the coordinator, and what is stalled, with GitHub's open PRs. */
 		async sigue({ flags }, dir, out) {
 			const board = loadBoard(dir);
-			const vivo = await readLive(dir, board);
+			const vivo = await readLive(dir);
 			const r = nextSections(board, { prs: vivo.prs ?? undefined });
 			say(flags, out, r, sectionLines(r).join('\n'));
 		},
 		/** The lane table, read from git in each lane folder instead of written by hand. */
 		async carriles({ flags }, dir, out) {
 			const board = loadBoard(dir);
-			const rows = laneRows(board, (await readLive(dir, board)).carriles);
+			const rows = laneRows(board, (await readLive(dir)).carriles);
 			say(flags, out, rows, rows.map((l) => l.texto).join('\n'));
 		},
 	};

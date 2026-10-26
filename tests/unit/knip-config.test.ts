@@ -10,7 +10,7 @@ const CONFIG = JSON.parse(readFileSync(path.join(process.cwd(), 'knip.json'), 'u
 describe('knip config', () => {
 	it('ignores the untracked agent reports so lint:dead-code measures versioned code only', () => {
 		// Jest's testMatch (**/tests/**) otherwise pulls fixture copies saved under .agent/tmp/reports.
-		expect(CONFIG.ignore).toContain('.agent/**');
+		expect(CONFIG.ignore).toEqual(['.agent/tmp/**']);
 	});
 
 	it('keeps every versioned source tree in the project', () => {

@@ -18,6 +18,8 @@ import { reviewText } from './prompt.mjs';
 
 /** A message's text is cut here so one long report never fills the prompt. */
 const MAX_NOTE = 1200;
+/** A long chain of cancelled rounds keeps only its newest notes, so the prompt stays bounded. */
+const MAX_NOTES = 20;
 /** Report paths a reviewer names in its messages or summary (`.agent/tmp/reports/…`). */
 const REPORT = /\.agent\/tmp\/reports\/[^\s,;:)»"'`]+/g;
 
@@ -45,7 +47,8 @@ const cut = (s) => {
 /**
  * What the unanswered rounds of `origen` left, `null` when its last round has a verdict (or there is none):
  * `{vueltas: ['T298'], notas: ['T298 · codex → coordinador: texto'], informes: ['.agent/tmp/reports/…']}`.
- * Notes are the rounds' bitácora messages and the findings or summary their cierre kept, oldest first.
+ * Notes are the rounds' bitácora messages and the findings or summary their cierre kept, oldest first; past
+ * MAX_NOTES, one line counts the oldest ones it drops.
  */
 export function leftByUnanswered(origen, board) {
 	const rounds = unansweredRounds(origen, board);
@@ -73,6 +76,9 @@ export function leftByUnanswered(origen, board) {
 			);
 		seen(r.cierre?.resumen);
 	}
+	const dropped = notas.length - (MAX_NOTES - 1);
+	if (notas.length > MAX_NOTES)
+		notas.splice(0, dropped, `… ${dropped} notas anteriores omitidas`);
 	return { vueltas: rounds.map((r) => taskTag(r)), notas, informes: [...informes] };
 }
 

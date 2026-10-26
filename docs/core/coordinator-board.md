@@ -36,7 +36,9 @@ Assign by verified capability (`requiere`), not by brand. For example: image edi
 `codex`; visual review in a browser → `claude` or `codex`; image generation → never `claude`. Board
 PRs (d270: at most two at once; d291: a second one waits only for a real `git merge-tree` conflict)
 open in the order the coordinator sets; it runs `pnpm board solape <id>` before they open and tells
-each waiting session when its turn comes.
+each waiting session when its turn comes. A clean `merge-tree` is only textual: it misses a semantic
+break (one PR moves a function another PR still imports from the old module), which CI on the second
+merge catches.
 
 ### Prompts (d153)
 
@@ -310,9 +312,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 - **Lane inventory**: `pnpm board carriles` (and the page's lane table) reads each lane from Git:
   branch, clean or not, and the task holding its lock. `carril` without an id reads the lanes live
   the same way: the catalog (`uso`, `tecla`, `puerto`, order and canonical ids) comes from
-  `WORKTREE_LANES`, and runtime state comes from task locks and `git worktree list`. Stored
-  `carriles/*.json` records are ignored; update the code-owned catalog through a pull request.
-  `estado` without fields is read-only too.
+  `WORKTREE_LANES`, and runtime state comes from task locks and `git worktree list`. In that catalog
+  `orden` is the lane's function key (4–12, not the old 1–9 position) and `puerto` is a number, not
+  a string; consumers only sort and print them. Stored `carriles/*.json` records are ignored; update
+  the code-owned catalog through a pull request. `estado` without fields is read-only too.
 
 ### Agents and sessions
 

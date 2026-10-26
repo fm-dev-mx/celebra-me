@@ -63,8 +63,19 @@ export function overlapVerdict({ ownFiles, others }) {
 	return { aplica: true, puede: !full && !blocked, lineas };
 }
 
-const git = (args, opts) =>
-	execFileSync('git', args, { ...GIT, stdio: ['ignore', 'pipe', 'ignore'], ...opts }).trim();
+function git(args, opts) {
+	try {
+		return execFileSync('git', args, {
+			...GIT,
+			stdio: ['ignore', 'pipe', 'ignore'],
+			...opts,
+		}).trim();
+	} catch {
+		throw new UsageError(
+			`UNVERIFIED: falló git ${args.join(' ')}; revise la red, origin o la cabeza`,
+		);
+	}
+}
 
 /** Whether commit `sha` is in the local object store. */
 const hasCommit = (sha) =>
@@ -134,12 +145,15 @@ export function overlapCommands({ getTask }) {
 							(p) => p !== own && (p.files ?? []).some((f) => isBoardFile(f.path)),
 						)
 						.map((p) => {
-							ensureCommit(p.headRefOid, `pull/${p.number}/head`);
+							const valid = SHA.test(p.headRefOid ?? '');
+							if (valid) ensureCommit(p.headRefOid, `pull/${p.number}/head`);
 							return {
 								number: p.number,
 								title: p.title,
 								files: p.files.map((f) => f.path),
-								merge: mergeConflicts(sha, p.headRefOid),
+								merge: valid
+									? mergeConflicts(sha, p.headRefOid)
+									: { estado: 'sin-verificar', archivos: [] },
 							};
 						});
 			const r = overlapVerdict({ ownFiles, others });

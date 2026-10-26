@@ -951,8 +951,9 @@ function renderCounts(){
 function msgHtml(x){
   const m=x.msg,t=m.t&&byId(m.t.id)?m.t:null,key='msg:'+(m.en||'')+':'+m.tarea;
   const ref=t?`<a class="tl" href="#cola" data-sel="${esc(t.id)}" data-all="1" title="${esc(t.titulo)}">${esc(m.tarea)}</a> · ${tt(t.titulo)}`:m.tarea?`<span class="tl-x">${esc(m.tarea)}</span>`:'';
-  return `<article class="row act msgc"${t?` data-sel="${esc(t.id)}" data-all="1"`:''}><span class="verb">${esc(x.verbo)}</span><span class="what">
+  return `<article class="row act msgc"${t?` data-sel="${esc(t.id)}" data-all="1" tabindex="0"`:''}><span class="verb">${esc(x.verbo)}</span><span class="what">
     <span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
+    ${m.opciones.length?`<span class="sub">Opciones: ${esc(optionsText(m.opciones))}</span>`:''}
     ${m.contexto.length?`<span class="sub">${m.contexto.map(rich).join(' ')}</span>`:''}
     <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}</span>
     ${m.detalle.length?`<details class="more tech" data-more="${esc(key)}"${OPEN.has(key)?' open':''}><summary>Detalle técnico</summary><div class="body">${m.detalle.map(s=>`<p>${rich(s)}</p>`).join('')}</div></details>`:''}
@@ -992,17 +993,21 @@ function renderGeneral(all){
   $('gen-cola').innerHTML=(all.length?all.map(row).join(''):'<p class="none">No hay tareas abiertas.</p>')+(rev?`<button type="button" class="more-row" data-tab="cola">Y ${rev} en revisión: ver la Cola</button>`:'');
 }
 // T321: the header search lists every match from every section, each with the sections it sits in as a gray label.
+const SEARCH_MAX=60;
 function renderFound(){
   const q=$('tq').value.trim();
-  const hits=q?globalSearch(S.board,q,{prs:livePrs()}):[];
-  S.found=hits.length;
+  // The list shows the first SEARCH_MAX matches; the title and a note count all of them.
+  const all=q?globalSearch(S.board,q,{prs:livePrs(),max:Infinity}):[];
+  const hits=all.slice(0,SEARCH_MAX);
+  S.found=all.length;
   const sec=x=>`<span class="sec">${esc(x.secciones.join(' · '))}</span>`;
   const row=x=>{
     if(x.tipo==='decision')return `<a class="row hit" href="#historial" data-dec="${esc(x.d.id)}"><span class="what"><span class="t1"><span class="tn">${esc(x.d.id)}</span> ${esc(x.d.decision)}</span></span>${sec(x)}</a>`;
     const t=x.t,pr=prNumber(t.pr);
     return `<button type="button" class="row hit c-${color(t)}" data-sel="${esc(t.id)}" data-all="1">${ringHtml(t)}<span class="what"><span class="t1">${t.num?`<span class="tn">T${esc(t.num)}</span> `:''}${tt(t.titulo)}</span><span class="sub"><span class="nm">${esc(t.id)}</span>${pr?` · PR #${pr}`:''} · ${esc(t.estado||'pendiente')}</span></span>${sec(x)}</button>`;
   };
-  $('found').innerHTML=hits.length?hits.map(row).join(''):q?'<p class="none"><b>Nada coincide.</b>Busque por número (T295), id, título o PR (#594).</p>':'';
+  const more=all.length>hits.length?`<p class="none">Se muestran ${hits.length} de ${all.length}. Escriba más palabras para afinar la búsqueda.</p>`:'';
+  $('found').innerHTML=hits.length?hits.map(row).join('')+more:q?'<p class="none"><b>Nada coincide.</b>Busque por número (T295), id, título o PR (#594).</p>':'';
 }
 // T321: the text sits in its own inline span (a «T295» link no longer breaks the line) and a message drops its prefix.
 const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span><span>${tt(rowText(x.texto))}</span></span></button>`:`<div class="row" title="${esc(x.texto)}"><span><span>${rich(rowText(x.texto))}</span></span></div>`;
@@ -1065,6 +1070,8 @@ function copySha(b){
   try{navigator.clipboard.writeText(b.dataset.sha).then(()=>done(true),()=>done(false))}catch(e){done(false)}
 }
 document.addEventListener('keydown',ev=>{
+  // A focused message card opens its task with Enter or Space, as its click does.
+  if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches&&ev.target.matches('.msgc[data-sel]')){ev.preventDefault();ev.target.click();return}
   if(ev.key==='Escape'&&document.body.classList.contains('side-open')){setSide(false);document.querySelector('.menu').focus();return}
   if(ev.key==='Escape'&&$('sheet').classList.contains('open')){closeSheet();return}
   // T321: Escape anywhere ends a search and returns to the tab.
