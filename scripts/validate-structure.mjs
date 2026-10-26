@@ -11,6 +11,7 @@ import {
 	reportRetiredProviderWarnings,
 	validateNoVercelReferences,
 } from './validate-retired-provider-references.mjs';
+import { validateMigrationVersions } from './validate-migration-versions.mjs';
 
 const REQUIRED_SKILL_FIELDS = [
 	'name',
@@ -771,6 +772,8 @@ function detectOrphanedGuidance(root, skillNames) {
 	return errors;
 }
 
+export { validateMigrationVersions };
+
 /** Findings that are reported but do not fail the run (see RETIRED_PROVIDER_REFERENCE_MODE). */
 export function validateStructureWarnings({ root = process.cwd(), trackedFiles } = {}) {
 	const tracked = trackedFiles ?? getTrackedFiles(root);
@@ -799,6 +802,7 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 		...validateDeployIdentityReads(root, tracked),
 		...validateStaticSharpImports(root, tracked),
 		...validateTrackedFiles(root, tracked),
+		...validateMigrationVersions(root, tracked),
 	].sort();
 }
 

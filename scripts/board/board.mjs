@@ -78,6 +78,7 @@
  *   sigue [--json]                              T126: «Le toca a usted», «Le toca al coordinador» and «Detenidas»,
  *                                               with GitHub's open PRs (list prints them without GitHub)
  *   carriles [--json]                           T126: each lane's branch, clean or not, and its locked task, from git
+ *   resumen [--agente=<a>] [--json]             T383: table per agent: task, status, PR, SHA, latest novelty and wait
  *   sesiones [--json]                           d211: open Codex and Gemini chats crossed with the board, read-only;
  *                                               says which ones the owner can archive by hand
  *   view [--port=4320]                          local page at http://127.0.0.1:<port>/, live; its only write is
@@ -158,6 +159,7 @@ import { kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
 import { ghPrState, reviewSha } from './github.mjs';
+import { resumenCommands } from './resumen.mjs';
 import { chooseReviewer, reviewCreatedText, reviewerPrecheck } from './reviewer.mjs';
 import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
@@ -854,6 +856,7 @@ Object.assign(
 	claimCommands({ getTask, saveTask }),
 	closeCommands({ getTask, saveTask, checkRev, assertOwner, overrideReason, noteOverride }),
 	kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOverride }),
+	resumenCommands(),
 	{
 		archive: archiveCommand(true),
 		unarchive: archiveCommand(false),
