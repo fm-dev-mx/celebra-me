@@ -10,6 +10,7 @@ const invitationDataMigration = readFileSync(
 	resolve('supabase/migrations/20261026130000_invitation_data_requests.sql'),
 	'utf8',
 );
+const disposableTestRunner = readFileSync(resolve('scripts/db/disposable-test-env.ts'), 'utf8');
 const registry = JSON.parse(
 	readFileSync(resolve('supabase/migration-rollout-registry.json'), 'utf8'),
 ) as MigrationRolloutRegistry;
@@ -60,6 +61,11 @@ describe('Meta CRM lead-stage migration', () => {
 		expect(migration).toContain('order_id is not null');
 		expect(migration).toContain('customer_id is not null');
 		expect(migration).toContain('value is null');
+	});
+
+	it('includes the combined event insert proof in disposable pgTAP runs', () => {
+		expect(disposableTestRunner).toContain("'invitation_data_requests.test.sql'");
+		expect(disposableTestRunner).toContain("'meta_conversion_event_compatibility.test.sql'");
 	});
 
 	it('registers the constraint widening as a contract migration', () => {
