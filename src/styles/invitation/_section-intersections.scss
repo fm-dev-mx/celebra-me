@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Optional paper under the whole invitation (`--invitation-paper`, default none).
 .event-theme-wrapper {
 	background: var(--invitation-paper, none);
@@ -211,7 +213,7 @@
 		pointer-events: none;
 
 		@supports (animation-timeline: view()) {
-			@media (prefers-reduced-motion: no-preference) {
+			@include a11y.motion-safe {
 				animation: intersection-folio-turn linear both;
 				animation-timeline: view();
 				animation-range: entry 0% cover 35%;
@@ -284,7 +286,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		.invitation-section-wrapper[data-intersection-anchor='stack'] > * {
 			animation-name: intersection-stack-fade;
 		}

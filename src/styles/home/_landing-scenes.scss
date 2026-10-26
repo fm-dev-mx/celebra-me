@@ -3,6 +3,7 @@
 // motion lives only under `@supports (animation-timeline: view())` with motion allowed, animates
 // transform, opacity and clip-path only, and pins one sticky stage (`svh`, no scroll trapping).
 @use '../tokens/type-scale';
+@use '../global/a11y' as a11y;
 
 .envelope-scene,
 .chat-scene {
@@ -303,7 +304,7 @@
 }
 
 @supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		.envelope-notes__item {
 			animation: envelope-note-in linear both;
 			animation-timeline: --envelope;
@@ -661,7 +662,7 @@
 }
 
 @supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		.chat__body > * {
 			animation: chat-bubble-in linear both;
 			animation-timeline: view();

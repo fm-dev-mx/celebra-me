@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Countdown month calendar (`countdown.presentationOptions.calendar`). Seven columns, Monday first,
 // the event day circled by a line-art mark that draws once as the calendar enters.
 // Tokens (all optional):
@@ -91,7 +93,7 @@
 }
 
 // Drawn once on entry; without the editorial reveal (or with reduced motion) the mark is complete.
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	.event-calendar[data-reveal-pending] .event-calendar__mark path {
 		stroke-dashoffset: 1;
 	}

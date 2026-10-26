@@ -416,7 +416,7 @@
 	// -------------------------------------------------------------------------
 	// Reduce motion — keep hero visible, no animation
 	// -------------------------------------------------------------------------
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		.invitation-hero__content,
 		.invitation-hero__title-wrapper {
 			animation: none;

@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 .theme-preset--celestial-blue .countdown-section {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
@@ -178,7 +180,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		.countdown__segment {
 			transition: none;
 

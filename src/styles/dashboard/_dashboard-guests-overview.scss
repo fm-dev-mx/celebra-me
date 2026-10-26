@@ -243,7 +243,9 @@
 	summary {
 		display: inline-flex;
 		align-items: center;
-		min-height: 44px;
+
+		@include mixins.touch-target;
+
 		color: var(--color-text-primary);
 		font-weight: 600;
 		text-decoration: underline;
@@ -287,7 +289,8 @@
 }
 
 .guest-overview__link {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -377,8 +380,7 @@
 
 	.guest-overview__stage--active,
 	.guest-overview__chip--active {
-		outline: 2px solid Highlight;
-		outline-offset: 2px;
+		@include mixins.focus-ring(Highlight);
 	}
 }
 
@@ -413,7 +415,9 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0 0.875rem;
 	border: 1px solid var(--color-border-control);
 	border-radius: 999px;
@@ -473,7 +477,7 @@
 }
 
 .guest-overview__next-action {
-	min-height: 44px;
+	@include mixins.touch-target;
 }
 
 /* ==========================================================================
@@ -641,7 +645,9 @@ $strip-control-size: 0.9375rem;
 .guest-strip__pill {
 	display: inline-flex;
 	align-items: center;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0 0.75rem;
 	border: 1px solid transparent;
 	border-radius: var(--radius-pill);
@@ -691,7 +697,9 @@ $strip-control-size: 0.9375rem;
 
 .guest-strip__toggle {
 	justify-self: start;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -729,7 +737,7 @@ $strip-control-size: 0.9375rem;
 	background: var(--color-surface-soft);
 	animation: guest-overview-pulse 1.4s ease-in-out infinite;
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		animation: none;
 	}
 }

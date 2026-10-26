@@ -1,4 +1,5 @@
 @use '../../../invitation/venue-plates' as plates;
+@use '../../../global/a11y' as a11y;
 
 // Location night-route: the venues as numbered stops on one route under a night sky. The plate
 // geometry comes from the shared venue-plates mixin; this variant adds the route layer: a dotted
@@ -385,7 +386,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	@supports (animation-timeline: view()) {
 		[data-motion='editorial'] .event-location[data-variant='night-route'] {
 			.event-location__container {

@@ -108,8 +108,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
 	}
 
 	.share-icon {
@@ -164,6 +163,6 @@
 	}
 
 	button {
-		min-height: 44px;
+		@include mixins.touch-target;
 	}
 }

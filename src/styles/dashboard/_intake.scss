@@ -741,6 +741,6 @@
 @include mixins.respond-below(lg) {
 	.intake-list__tab,
 	.intake-list__search-input {
-		min-height: 44px;
+		@include mixins.touch-target;
 	}
 }

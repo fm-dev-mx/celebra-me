@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // ==========================================================================
 // SCROLL SCENE MIXINS (no CSS output)
 // For styles inside a ScrollScene.astro stage. `timeline` rules apply while CSS scroll-driven
@@ -12,7 +14,7 @@
 /// Rules for a scene descendant while the CSS timeline engine drives the scene.
 @mixin timeline($scene-specificity: false) {
 	@supports (animation-timeline: view()) {
-		@media (prefers-reduced-motion: no-preference) {
+		@include a11y.motion-safe {
 			@if $scene-specificity {
 				[data-motion='editorial'] .scroll-scene & {
 					@content;
@@ -28,7 +30,7 @@
 
 /// Rules for a scene descendant while the scripted fallback drives the scene.
 @mixin scripted($scene-specificity: false) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		@if $scene-specificity {
 			.scroll-scene[data-scene-engine='script'] & {
 				@content;

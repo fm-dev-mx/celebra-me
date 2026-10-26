@@ -215,7 +215,7 @@
 				var(--motion-reveal-ease, var(--ease-premium));
 	}
 
-	@media (prefers-reduced-motion: no-preference) {
+	@include mixins.motion-safe {
 		&.has-motion:not(.is-visible) .gifts-section__header {
 			opacity: 0%;
 			transform: translateY(var(--motion-reveal-distance, 18px));
@@ -223,7 +223,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		&.has-motion:not(.is-visible) .gifts-section__header {
 			opacity: 100%;
 			transform: none;
@@ -249,7 +249,7 @@
 			box-shadow var(--duration-snappy) var(--ease-premium);
 	}
 
-	@media (prefers-reduced-motion: no-preference) {
+	@include mixins.motion-safe {
 		&.has-motion:not(.is-visible) .gift-card {
 			opacity: 0%;
 			transform: translateY(var(--motion-reveal-distance, 18px));
@@ -257,7 +257,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		&.has-motion:not(.is-visible) .gift-card {
 			opacity: 100%;
 			transform: none;
@@ -464,7 +464,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		.gift-card,
 		.copy-button,
 		.gift-card__button,

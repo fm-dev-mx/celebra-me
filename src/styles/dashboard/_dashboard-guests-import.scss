@@ -316,7 +316,8 @@
 	// Touch layouts keep the 44px target.
 	@include mixins.respond-below(lg) {
 		min-width: 44px;
-		min-height: 44px;
+
+		@include mixins.touch-target;
 	}
 }
 

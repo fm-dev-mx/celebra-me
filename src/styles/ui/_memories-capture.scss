@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 .status-page--memories {
 	overflow: visible;
 	overflow-x: clip;
@@ -31,7 +33,8 @@
 	}
 
 	.status-page__btn {
-		min-height: 44px;
+		@include a11y.touch-target;
+
 		justify-content: center;
 		padding: 0.85rem 1.25rem;
 	}
@@ -96,7 +99,8 @@
 }
 
 .status-page__text-button {
-	min-height: 44px;
+	@include a11y.touch-target;
+
 	padding: 0 0.35rem;
 	border: 0;
 	background: transparent;
@@ -114,7 +118,7 @@
 
 	input,
 	button {
-		min-height: 44px;
+		@include a11y.touch-target;
 	}
 
 	input {
@@ -134,7 +138,8 @@
 	text-align: left;
 
 	summary {
-		min-height: 44px;
+		@include a11y.touch-target;
+
 		display: flex;
 		align-items: center;
 		color: var(--color-text-emphasis);
@@ -171,7 +176,8 @@
 	}
 
 	button {
-		min-height: 44px;
+		@include a11y.touch-target;
+
 		padding: 0.6rem 0.85rem;
 	}
 }
@@ -183,7 +189,8 @@
 	gap: 0.75rem 1.25rem;
 
 	a {
-		min-height: 44px;
+		@include a11y.touch-target;
+
 		display: inline-flex;
 		align-items: center;
 		color: var(--color-text-emphasis);
@@ -376,8 +383,7 @@
 		}
 
 		&:focus-visible span {
-			outline: 2px solid var(--color-text-emphasis);
-			outline-offset: 2px;
+			@include a11y.focus-ring(var(--color-text-emphasis));
 		}
 	}
 

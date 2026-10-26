@@ -13,6 +13,7 @@
 @use 'ui/status-pages';
 @use 'ui/memories-capture';
 @use 'ui/memories-kit';
+@use './global/a11y' as a11y;
 
 :root {
 	--spacing-xs: var(--spacing-2);
@@ -108,7 +109,7 @@ html {
 html:has(body.is-demo) {
 	scroll-behavior: auto;
 
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		scroll-behavior: smooth;
 	}
 }

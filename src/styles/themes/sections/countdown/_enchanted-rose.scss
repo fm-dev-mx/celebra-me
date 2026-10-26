@@ -295,7 +295,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		.countdown__segment {
 			transition:
 				border-color 0.2s ease,

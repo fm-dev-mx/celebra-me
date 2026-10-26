@@ -205,7 +205,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		.gallery-grid__item,
 		.gallery-grid__item img {
 			transition: none;

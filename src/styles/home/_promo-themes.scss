@@ -5,6 +5,7 @@
 
 @use 'sass:map';
 @use '../tokens/type-scale';
+@use '../global/a11y' as a11y;
 
 $promo-themes: (
 	amor: (
@@ -178,7 +179,8 @@ html[data-promo-theme] {
 
 	.promo-band__cta {
 		flex: none;
-		min-height: 44px;
+
+		@include a11y.touch-target;
 	}
 }
 

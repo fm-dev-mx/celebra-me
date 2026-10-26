@@ -311,7 +311,8 @@ $sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 	}
 
 	.envelope-external-instruction__button {
-		min-height: 44px;
+		@include mixins.touch-target;
+
 		font-family: var(--font-label, var(--font-body));
 		font-size: var(--env-open-label-size, 0.86rem);
 		letter-spacing: var(--storybook-instruction-tracking, 0.18em);

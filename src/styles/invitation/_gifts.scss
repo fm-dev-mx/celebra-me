@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Gifts Section Styles
 
 .gifts-section {
@@ -578,8 +580,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--gifts-copy-hover-color, var(--color-action-accent));
-		outline-offset: 2px;
+		@include a11y.focus-ring(var(--gifts-copy-hover-color, var(--color-action-accent)));
 	}
 
 	&.copy-success,
@@ -603,7 +604,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.gifts-section {
 		.gifts-section__header,
 		.gift-card {

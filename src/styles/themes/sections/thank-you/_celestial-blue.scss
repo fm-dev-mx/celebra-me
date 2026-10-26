@@ -281,7 +281,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include mixins.motion-safe {
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='thankYou'].has-motion:not(.is-visible)
 		.theme-preset--celestial-blue
