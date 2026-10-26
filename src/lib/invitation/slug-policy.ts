@@ -13,6 +13,7 @@ const RESERVED_ROUTE_SLUGS = [
 	'i',
 	'invitacion',
 	'login',
+	'mi-invitacion',
 	'privacidad',
 	'r',
 	'terminos',

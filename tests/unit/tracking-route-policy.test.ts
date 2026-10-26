@@ -42,6 +42,15 @@ describe('tracking route policy', () => {
 		expect(classifyTrackingRoute('/api/health').metaAllowed).toBe(false);
 	});
 
+	it('keeps the private invitation data form out of every tracker', () => {
+		const policy = classifyTrackingRoute('/mi-invitacion/AbC_123-token');
+		expect(policy).toMatchObject({
+			internalAllowed: false,
+			gaAllowed: false,
+			metaAllowed: false,
+		});
+	});
+
 	it('allows GA only on commercial and demo routes', () => {
 		expect(classifyTrackingRoute('/').gaAllowed).toBe(true);
 		expect(classifyTrackingRoute('/demos/cumpleanos').gaAllowed).toBe(true);

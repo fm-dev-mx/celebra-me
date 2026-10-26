@@ -16,6 +16,11 @@ describe('private cache contract', () => {
 		expect(isPrivateNoStorePath('/api/auth/login-host')).toBe(true);
 	});
 
+	it('marks the private invitation data form and its API', () => {
+		expect(isPrivateNoStorePath('/mi-invitacion/token-1')).toBe(true);
+		expect(isPrivateNoStorePath('/api/mi-invitacion')).toBe(true);
+	});
+
 	it('leaves public HTML and public JSON outside the private contract', () => {
 		expect(isPrivateNoStorePath('/login')).toBe(false);
 		expect(isPrivateNoStorePath('/login/')).toBe(false);

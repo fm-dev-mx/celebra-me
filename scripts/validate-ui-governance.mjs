@@ -43,6 +43,10 @@ const allowedHydratedComponents = new Set([
 	// Read-only shared gallery: fetches its own token-scoped API; imports only contract,
 	// copy and pure client helpers — no server modules.
 	'MemoriesSharedGallery',
+	// «Datos de su invitación» form: loads and autosaves through its token-scoped API with
+	// fetch; imports only the pure field definitions in @/lib/invitation-data/form — no zod
+	// schema, repository or server modules.
+	'InvitationDataForm',
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',

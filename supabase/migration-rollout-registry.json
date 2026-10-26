@@ -306,6 +306,15 @@
             "phase": "neutral",
             "notes": "Data only: soft-deletes 35 live invitation_assets rows with provider='supabase', named by id, that no publication or draft uses (2026-10-26: 35 in Preview, 0 in Production, where it matches nothing). No schema, grant or constraint change. The deployed application only lists them among archived assets afterwards; storage objects are not touched. The five managed rows of an archived wedding definition that its publication uses stay live. Idempotent."
         },
+        "20261026130000": {
+            "phase": "contract",
+            "provides": [
+                "invitation_data_requests",
+                "meta_conversion_events_complete_registration"
+            ],
+            "revokes": ["meta_conversion_events_without_complete_registration"],
+            "notes": "Creates invitation_data_requests (one row per sales order: SHA-256 token hash, expiry, autosaved answers JSON capped at 32 KB, status sent/in_progress/submitted, review timestamp; service_role only, RLS forced) for the private /mi-invitacion/<token> form sent after the deposit. Also widens the meta_conversion_events event_name, trigger_status and source shape checks for one CompleteRegistration (invitation_data_submitted) row per order with order and customer and no value. Registered as contract only because the check swaps use DROP CONSTRAINT; every change widens or adds, so no rows change and the deployed application keeps working. Must be applied before the application that serves /mi-invitacion and its dashboard link is deployed, or those requests fail."
+        },
         "20261026160000": {
             "phase": "neutral",
             "notes": "Replaces register_commercial_deposit_purchase without changing its signature or privileges. New Purchase outbox rows use the locked order's total_amount, while amount_paid remains the actual deposit. Existing events and idempotent retries keep their original value; no historical backfill or resend. Compatible with the deployed application, which delivers the stored outbox value. Requires separate owner-authorized schema application after review."
@@ -362,6 +371,12 @@
         },
         "lead_capture_form_client": {
             "requiresDbCapabilities": ["leads_capture_form_fields"]
+        },
+        "invitation_data_link_client": {
+            "requiresDbCapabilities": [
+                "invitation_data_requests",
+                "meta_conversion_events_complete_registration"
+            ]
         }
     }
 }
