@@ -114,7 +114,10 @@ export function nextCommands({ getTask }) {
 				say(flags, out, row, `mensaje para ${para} sobre ${taskTag(t)} guardado`);
 			});
 		},
-		/** The messages to a reader not read yet, oldest first, now marked read; --todos lists read ones too. */
+		/**
+		 * The messages to a reader not read yet, oldest first, now marked read; --todos lists read ones too. The owner's
+		 * (`--agente=dueno`) stay unread unless the owner passes --leido, so an agent can look without hiding them.
+		 */
 		inbox({ flags }, dir, out) {
 			const agente = need(flags.agente, `falta --agente=${DESTINOS.join('|')}`);
 			if (!DESTINOS.includes(agente))
@@ -125,7 +128,9 @@ export function nextCommands({ getTask }) {
 				const rows = flags.todos
 					? board.bitacora.filter((r) => r.mensaje?.para === agente)
 					: unread;
-				if (unread.length) {
+				// An agent reading the owner's inbox must not take the owner's questions out of «Le toca a usted»:
+				// the owner's own read mark needs --leido.
+				if (unread.length && (agente !== 'dueno' || flags.leido === true)) {
 					const leidos = [
 						...(readDoc(dir, 'bandejas', agente)?.leidos ?? []),
 						...unread.map((r) => r.mensaje.id),
