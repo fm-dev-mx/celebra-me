@@ -169,15 +169,21 @@ The owner's view is the local page `pnpm board:serve` (http://127.0.0.1:4320/, V
 127.0.0.1 and run through the same function as `pnpm board archive`. No agent is ever launched from
 the view.
 
-Layout (T268): a left sidebar lists the views with their counts («Para usted», the default, then
-Cola, Calendario, Bloqueadas, Finalizadas, Carriles, Historial) and holds the production strip in
-its foot; below 800 px it slides over. «Para usted» shows only the owner's actions; «Le toca al
-coordinador» and «Detenidas» are collapsible groups of the Cola, whose rows are grouped by color and
-filtered by agent and state chips. A row is the title, then place · ID · state tag · lane; the
-urgency is the ring of the row's circle (red urgente, amber alta, gray otherwise; never green) plus
-its icon for urgente and alta. Where it runs, the agent and the rest sit in the task sheet's
-«Propiedades». Ctrl+K focuses the search. The view shows titles in normal weight and backticked text
-as inline code (d284).
+Layout (T268): a left sidebar lists the views with quiet gray counts that match the rows each view
+lists («General», the default, then Para usted, Cola, Calendario, Bloqueadas, Finalizadas, Carriles,
+Historial) and holds the production strip in its foot; below 800 px it slides over. «General» shows
+the owner's actions on top and a compact Cola below. «Para usted» shows only the owner's actions,
+each led by its verb (Pegar en Gemini, Responder a Codex, Archivar), and never counts messages
+addressed to the coordinator; a message card reads «sender → reader: question» with its relative
+time, and its technical detail (SHA, branches, commands) folded below. «Le toca al coordinador» and
+«Detenidas» are collapsible groups of the Cola, whose rows are grouped by color and filtered by
+agent and state chips. A row is the title, then place · ID · state tag · lane; the urgency is the
+ring of the row's circle (red urgente, amber alta, gray otherwise; never green) plus its icon for
+urgente and alta. Where it runs, the agent and the rest sit in the task sheet's «Propiedades». The
+header search (Ctrl+K) is global: without changing tab it lists matches from every section, each
+with a gray section label, by task number (T295), id, title or PR (#594); clearing it or Escape
+returns to the previous tab. Historial keeps its own search box. The view shows titles in normal
+weight and backticked text as inline code (d284).
 
 Supervisor (d210): `pnpm board:serve` runs `scripts/board/view-supervisor.mjs`, which keeps the port
 open, watches `scripts/board/` and `scripts/shared/`, and swaps in a new worker once the new code
