@@ -11,123 +11,160 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
 *,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
-/* Dispatch board: production strip on top, one numbered queue, a task sheet beside it (below 960px it slides over). */
-/* Color system (T151): neutral surfaces and ink carry the page; one accent marks what can be clicked; each state
-   hue has three roles — text (--x), a quiet surface (--x-soft) and a rule/dot (--x-rule) — and appears only where
-   it means something. Agents are told apart by a small dot, never by a filled chip. Text pairs pass WCAG AA. */
+/* Dispatch board (T268): a left sidebar holds the views with their counts and, in its foot, the production strip; the
+   default view «Para usted» lists only what the owner does. The task sheet sits beside the list (below 960px it
+   slides over); below 800px the sidebar slides over too. */
+/* Color system (T268, after T151): a warm neutral canvas and ink carry the page; one accent marks what can be clicked;
+   each state hue has three roles — text (--x), a soft tag tint (--x-soft) and a dot (--x-rule) — and appears only in
+   tags, dots and the urgency ring of a row. Rows are hairlines, never colored cards. Text pairs pass WCAG AA. */
 :root{
-  --bg:#f5f6f8;--panel:#ffffff;--panel-2:#f3f4f6;--ink:#111827;--muted:#4b5563;--faint:#5f6876;--line:#e5e7eb;--line-2:#d1d5db;
-  --accent:#3451c7;--accent-soft:#eef2ff;
-  --own:#166534;--own-soft:#edf8f1;--own-rule:#22a06b;--own-solid:#15803d;
-  --auto:#5b3cc4;--auto-soft:#f4f1fe;--auto-rule:#8b5cf6;
-  --block:#4b5563;--block-soft:#f1f2f4;--block-rule:#a1a8b3;
-  --run:#1d4ed8;--run-soft:#eff4ff;--run-rule:#3b82f6;
-  --rev:#0f6670;--rev-soft:#ecf8f8;--rev-rule:#14a3a0;
-  --warn:#92400e;--warn-soft:#fff8eb;--warn-rule:#f59e0b;
-  --danger:#b42318;--danger-soft:#fef3f2;--danger-rule:#e5484d;
+  --bg:#fbfbfa;--panel:#ffffff;--panel-2:#f7f7f5;--side:#f7f7f5;--hover:#efeeeb;--ink:#37352f;--muted:#6b6a65;--faint:#6f6d68;--line:#edece9;--line-2:#e0dfdb;
+  --accent:#1f6fbf;--accent-soft:#e7f0fa;
+  --own:#1c6b3c;--own-soft:#e3f1e6;--own-rule:#2e9d5b;--own-solid:#1c7a43;
+  --auto:#5b3c9e;--auto-soft:#eee8f7;--auto-rule:#9065d8;
+  --block:#55534e;--block-soft:#ebeae7;--block-rule:#a3a19b;
+  --run:#1d5c99;--run-soft:#e1edf8;--run-rule:#3d8be0;
+  --rev:#14635e;--rev-soft:#dff0ee;--rev-rule:#2aa198;
+  --warn:#8a4b0c;--warn-soft:#fbeedd;--warn-rule:#e39a2d;
+  --danger:#a8321f;--danger-soft:#fbe6e2;--danger-rule:#e0573f;
   --u-urgente:var(--danger);--u-alta:var(--warn);--u-normal:var(--muted);--u-baja:var(--faint);
+  --ring-normal:#b5b3ad;--ring-baja:#d6d4cf;
   --dot-claude:#d97757;--dot-codex:#10a37f;--dot-gemini:#4f7cff;
-  --strip-bg:#111827;--strip-fg:#f3f4f6;--strip-muted:#b4bcc8;
-  --code-bg:#f1f2f4;
+  --code-bg:#f1f0ed;--shadow:0 12px 32px rgb(15 15 15/.16);
   --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0d1117;--panel:#161b22;--panel-2:#1c222b;--ink:#e6edf3;--muted:#a8b3c1;--faint:#8b96a5;--line:#262d37;--line-2:#363f4b;
-  --accent:#8aa8ff;--accent-soft:#1a2340;
-  --own:#6ee7a8;--own-soft:#10251a;--own-rule:#2fbf71;--own-solid:#2fbf71;
-  --auto:#c4b0ff;--auto-soft:#211a3a;--auto-rule:#9b7bf0;
-  --block:#a8b3c1;--block-soft:#1f252e;--block-rule:#6b7684;
-  --run:#93b6ff;--run-soft:#14203a;--run-rule:#4c86f0;
-  --rev:#72dcd6;--rev-soft:#0f2629;--rev-rule:#2bb8b0;
-  --warn:#fbbf5c;--warn-soft:#2a1f0e;--warn-rule:#f0a23b;
-  --danger:#ff8f86;--danger-soft:#2d1517;--danger-rule:#f0605d;
+  --bg:#191919;--panel:#202020;--panel-2:#252525;--side:#202020;--hover:#2c2c2c;--ink:#e3e2e0;--muted:#a19f9b;--faint:#908e8a;--line:#2f2f2f;--line-2:#3a3a3a;
+  --accent:#5aa3e0;--accent-soft:#1f2c3a;
+  --own:#7fd19a;--own-soft:#1f3327;--own-rule:#3fae68;--own-solid:#3fae68;
+  --auto:#c5aef5;--auto-soft:#2e2640;--auto-rule:#9a7be6;
+  --block:#b4b2ad;--block-soft:#2c2c2b;--block-rule:#75736e;
+  --run:#8cbcf0;--run-soft:#1d2d40;--run-rule:#4a8fdb;
+  --rev:#74d2c8;--rev-soft:#17312f;--rev-rule:#2fa89e;
+  --warn:#f0b46a;--warn-soft:#3a2b17;--warn-rule:#e0a04a;
+  --danger:#ff9a8a;--danger-soft:#3d201c;--danger-rule:#e8644f;
+  --ring-normal:#6e6c68;--ring-baja:#474644;
   --dot-claude:#e58a6b;--dot-codex:#34c59a;--dot-gemini:#7d9cff;
-  --strip-bg:#090c10;--strip-fg:#e6edf3;--strip-muted:#97a2b0;--code-bg:#1f252e;color-scheme:dark}}
+  --code-bg:#2a2a2a;--shadow:0 12px 32px rgb(0 0 0/.5);color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0d1117;--panel:#161b22;--panel-2:#1c222b;--ink:#e6edf3;--muted:#a8b3c1;--faint:#8b96a5;--line:#262d37;--line-2:#363f4b;
-  --accent:#8aa8ff;--accent-soft:#1a2340;
-  --own:#6ee7a8;--own-soft:#10251a;--own-rule:#2fbf71;--own-solid:#2fbf71;
-  --auto:#c4b0ff;--auto-soft:#211a3a;--auto-rule:#9b7bf0;
-  --block:#a8b3c1;--block-soft:#1f252e;--block-rule:#6b7684;
-  --run:#93b6ff;--run-soft:#14203a;--run-rule:#4c86f0;
-  --rev:#72dcd6;--rev-soft:#0f2629;--rev-rule:#2bb8b0;
-  --warn:#fbbf5c;--warn-soft:#2a1f0e;--warn-rule:#f0a23b;
-  --danger:#ff8f86;--danger-soft:#2d1517;--danger-rule:#f0605d;
+  --bg:#191919;--panel:#202020;--panel-2:#252525;--side:#202020;--hover:#2c2c2c;--ink:#e3e2e0;--muted:#a19f9b;--faint:#908e8a;--line:#2f2f2f;--line-2:#3a3a3a;
+  --accent:#5aa3e0;--accent-soft:#1f2c3a;
+  --own:#7fd19a;--own-soft:#1f3327;--own-rule:#3fae68;--own-solid:#3fae68;
+  --auto:#c5aef5;--auto-soft:#2e2640;--auto-rule:#9a7be6;
+  --block:#b4b2ad;--block-soft:#2c2c2b;--block-rule:#75736e;
+  --run:#8cbcf0;--run-soft:#1d2d40;--run-rule:#4a8fdb;
+  --rev:#74d2c8;--rev-soft:#17312f;--rev-rule:#2fa89e;
+  --warn:#f0b46a;--warn-soft:#3a2b17;--warn-rule:#e0a04a;
+  --danger:#ff9a8a;--danger-soft:#3d201c;--danger-rule:#e8644f;
+  --ring-normal:#6e6c68;--ring-baja:#474644;
   --dot-claude:#e58a6b;--dot-codex:#34c59a;--dot-gemini:#7d9cff;
-  --strip-bg:#090c10;--strip-fg:#e6edf3;--strip-muted:#97a2b0;--code-bg:#1f252e;color-scheme:dark}
-*{box-sizing:border-box}
+  --code-bg:#2a2a2a;--shadow:0 12px 32px rgb(0 0 0/.5);color-scheme:dark}
 html,body{background:var(--bg)}
-body{color:var(--ink);font:15px/1.45 var(--body)}
+body{color:var(--ink);font:14.5px/1.5 var(--body)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance}
+h1,h2,h3{margin:0;line-height:1.2;text-wrap:balance}
 p{margin:0}
 a{color:var(--accent)}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.wrap{max-width:1240px;margin:0 auto;padding-block:12px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:12px}
-.eyebrow{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint)}
+.eyebrow{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--faint)}
 
-/* header and production strip */
-.top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 12px}
-.top h1{grid-column:1}
-.top .state{grid-column:1;display:flex;gap:4px 10px;min-width:0;font-size:.8rem;color:var(--muted)}
-.top .state>span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top .state>span:empty{display:none}
-.top .sync{grid-column:2;grid-row:1 / span 2;margin-left:0}
-@media (max-width:420px){.top{grid-template-columns:minmax(0,1fr)}.top .sync{grid-column:1;grid-row:auto}.top .state{flex-direction:column}}
-h1{font:700 1.5rem/1.05 var(--display);letter-spacing:-.005em}
-h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-soft);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:4px;letter-spacing:0}
-.rev{font-size:.8rem;color:var(--muted)}
-.strip{background:var(--strip-bg);color:var(--strip-fg);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:.86rem}
-.strip .eyebrow{color:var(--strip-muted)}
-.strip b{font-weight:600}
-.strip .mono{font-size:.8rem;color:var(--strip-muted)}
+/* layout: sidebar + main */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh;min-height:100dvh}
+.side{position:sticky;top:0;height:100vh;height:100dvh;overflow:auto;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 8px calc(12px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.brand{display:flex;align-items:center;gap:8px;padding:4px 10px}
+.brand h1{flex:1;min-width:0;font:600 .95rem/1.25 var(--body)}
+.tabs{display:grid;gap:1px}
+.tab{display:flex;align-items:center;gap:8px;width:100%;min-height:36px;border:0;border-radius:6px;background:none;padding:6px 10px;font:500 .9rem var(--body);color:var(--muted);text-align:left}
+.tab:hover{background:var(--hover);color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--hover);color:var(--ink);font-weight:600}
+.tab .n{margin-left:auto;font:500 .76rem var(--mono);color:var(--faint)}
+.tab .n:empty{display:none}
+/* green = the owner acts (board rule): only the «Para usted» count turns green, and only when there is something */
+.tab .n.hot{color:var(--own);background:var(--own-soft);border-radius:999px;padding:0 7px;font-weight:600}
+.tab-sep{height:1px;background:var(--line);margin:6px 10px}
+.side-foot{margin-top:auto;display:grid;gap:8px;padding:10px 10px 0;border-top:1px solid var(--line);font-size:.78rem;color:var(--muted)}
+.side-foot .state{display:grid;gap:2px;min-width:0}
+.side-foot .state>span{overflow-wrap:anywhere}
+.side-foot .state>span:empty{display:none}
+.strip{display:grid;gap:2px;min-width:0;font-size:.8rem}
+.strip b{font-weight:600;color:var(--ink)}
+.strip .mono{font-size:.74rem;color:var(--muted);overflow-wrap:anywhere}
+.strip>span{overflow-wrap:anywhere}
 .strip .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--own-rule);margin-right:6px;box-shadow:0 0 0 3px color-mix(in srgb,var(--own-rule) 25%,transparent)}
 .strip .pulse.stale{background:var(--warn-rule);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn-rule) 25%,transparent)}
-.you{margin-left:auto;border:0;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.86rem;background:var(--own-solid);color:var(--panel)}
-.you.none{background:transparent;color:var(--strip-muted);box-shadow:inset 0 0 0 1px var(--strip-muted);font-weight:600}
-@media (max-width:560px){.you{margin-left:0}}
+.wrap{min-width:0;max-width:1320px;width:100%;padding-block:0 48px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:grid;gap:12px;align-content:start}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line)}
+.top h2{font:700 1.3rem/1.2 var(--body);min-width:0}
+.top .tools{flex:1 1 260px;justify-content:flex-end}
+.menu{display:none;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:6px;background:none;color:var(--muted)}
+.menu:hover{background:var(--hover);color:var(--ink)}
+.menu svg{width:20px;height:20px}
+.scrim{display:none}
+@media (max-width:799px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:0 auto 0 0;width:min(288px,86vw);z-index:30;transform:translateX(-104%);transition:transform .18s ease;box-shadow:var(--shadow);visibility:hidden}
+  body.side-open .side{transform:none;visibility:visible}
+  body.side-open .scrim{display:block;position:fixed;inset:0;z-index:29;background:rgb(0 0 0/.35)}
+  body.side-open{overflow:hidden}
+  .menu{display:inline-flex}
+  .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .top{position:static}
+  .top .tools{flex-basis:100%}
+}
 
-/* tabs */
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line-2);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:3}
-.tab{border:0;background:none;padding:9px 12px;font:600 .92rem var(--body);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
-.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
-.tab .n{font:600 .72rem var(--mono);color:var(--faint);margin-left:4px}
-@media (max-width:420px){.tab{padding:9px 7px}}
+/* filters inside a view: agent and state chips */
+.filters{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:2px}
+.fchip{display:inline-flex;align-items:center;gap:6px;border:0;background:none;border-radius:6px;padding:4px 9px;font-size:.82rem;font-weight:500;color:var(--muted);min-height:32px}
+.fchip:hover{background:var(--hover);color:var(--ink)}
+.fchip[aria-pressed="true"]{background:var(--hover);color:var(--ink);font-weight:600;box-shadow:inset 0 0 0 1px var(--line-2)}
+.fchip .n{font:600 .72rem var(--mono);opacity:.75;margin-left:2px}
+@media (pointer:coarse){.fchip{min-height:44px}}
+.sw{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
 
-/* legend */
-.legend{display:flex;gap:4px 14px;font-size:.78rem;color:var(--muted);overflow-x:auto;scrollbar-width:none;white-space:nowrap}
-.legend::-webkit-scrollbar{display:none}
-.legend span{display:inline-flex;align-items:center;gap:5px;flex:none}
-.sw{width:8px;height:8px;border-radius:50%;display:inline-block}
-
-/* queue */
-.cola{display:grid;gap:14px;align-items:start}
-@media (min-width:960px){.cola{grid-template-columns:minmax(0,1fr) 420px}}
-.list{display:grid;gap:6px;min-width:0}
-.grp{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint);padding:8px 2px 2px;display:flex;gap:8px}
-.item{display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:4px 10px;align-items:start;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 12px 8px;box-shadow:inset 3px 0 0 var(--cr,var(--block-rule)),0 1px 2px rgb(17 24 39/.04);transition:border-color .15s,box-shadow .15s}
-.item:hover{border-color:var(--line-2)}
-.item[aria-current="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--cr,var(--block-rule)),0 0 0 1px var(--accent)}
-.num{font:600 .78rem/1.6 var(--mono);color:var(--faint);text-align:center;padding-top:1px;font-variant-numeric:tabular-nums}
-/* The task's fixed «T<n>» (same as its session name); the gray «#n» above is only its place in the queue */
+/* lists: collapsible groups and hairline rows */
+.cola{display:grid;gap:20px;align-items:start}
+@media (min-width:960px){.cola{grid-template-columns:minmax(0,1fr) 400px}}
+.views{display:grid;gap:12px;min-width:0}
+.list{display:grid;min-width:0}
+.grp{font-size:.74rem;letter-spacing:.04em;font-weight:600;color:var(--muted);padding:14px 4px 6px;display:flex;flex-wrap:wrap;gap:4px 8px;border-bottom:1px solid var(--line)}
+.grp .n,details.grpd>summary .n{font:500 .76rem var(--mono);color:var(--faint)}
+details.grpd{min-width:0}
+details.grpd>summary{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:40px;padding:10px 4px 6px;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:1px solid var(--line)}
+details.grpd>summary::-webkit-details-marker{display:none}
+details.grpd>summary::before{content:"";width:0;height:0;border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s}
+details.grpd[open]>summary::before{transform:rotate(90deg)}
+details.grpd>summary:hover{color:var(--ink)}
+details.grpd>summary .hint{font-weight:400;color:var(--faint)}
+.item{position:relative;display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:1px 10px;align-items:start;text-align:left;width:100%;background:none;border-bottom:1px solid var(--line);padding:8px 8px 8px 6px;cursor:pointer}
+.item:hover{background:var(--hover)}
+.item[aria-current="true"]{background:var(--accent-soft)}
+/* Urgency (T268): the ring of the row's circle, never green; the word and icon stay for urgente and alta. */
+.ring{grid-row:1/span 2;width:16px;height:16px;margin-top:3px;border-radius:50%;border:2px solid var(--ring-normal);flex:none}
+.ring.r-urgente{border-color:var(--danger-rule);background:var(--danger-soft)}
+.ring.r-alta{border-color:var(--warn-rule);background:var(--warn-soft)}
+.ring.r-baja{border-color:var(--ring-baja)}
+.item .ttl{grid-column:2;font:500 .95rem/1.4 var(--body);min-width:0;overflow-wrap:anywhere}
+.item .ttl .tbtn{min-height:0;padding:0}
+.item .line{grid-column:2;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:center;font-size:.76rem;color:var(--muted);min-width:0}
+.item .hov{grid-column:3;grid-row:1/span 2;align-self:center;opacity:0;transition:opacity .12s}
+.item:hover .hov,.item:focus-within .hov{opacity:1}
+@media (hover:none),(max-width:560px){.item .hov{display:none}}
+.num{font:500 .74rem var(--mono);color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* The task's fixed «T<n>» (same as its session name); the gray «#n» is only its place in the queue */
 .tn{font:600 .9em var(--mono);color:var(--muted)}
 .pos{font:500 .76rem var(--mono);color:var(--faint);white-space:nowrap}
 /* T172: who added / followed up a task — quieter than .tn, never a chip */
 .by{font:500 .72rem var(--mono);color:var(--faint);white-space:nowrap}
-.item{cursor:pointer}
-.item .ttl{font:600 1.02rem/1.3 var(--body);min-width:0;overflow-wrap:anywhere}
-.item .ttl .tbtn{padding:2px 0;min-height:32px}
-.item .num{padding-top:6px}
-.item .line{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted);min-width:0}
-.item .why{grid-column:2;font-size:.84rem;color:var(--muted);min-width:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .c-own{--c:var(--own);--cs:var(--own-soft);--cr:var(--own-rule)}.c-auto{--c:var(--auto);--cs:var(--auto-soft);--cr:var(--auto-rule)}.c-block{--c:var(--block);--cs:var(--block-soft);--cr:var(--block-rule)}
 .c-run{--c:var(--run);--cs:var(--run-soft);--cr:var(--run-rule)}.c-rev{--c:var(--rev);--cs:var(--rev-soft);--cr:var(--rev-rule)}.c-done{--c:var(--block);--cs:var(--block-soft);--cr:var(--block-rule)}
-/* A state reads as a dot of its hue plus its name on a quiet tint: color confirms, the word informs. */
-.pill,.oc{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;padding:2px 9px 2px 8px;border-radius:999px;background:var(--cs);color:var(--c);white-space:nowrap}
+/* A state reads as a soft tinted tag: a dot of its hue plus its name; color confirms, the word informs. */
+.pill,.oc{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:500;line-height:1.5;padding:0 7px 0 6px;border-radius:4px;background:var(--cs);color:var(--c);white-space:nowrap}
 .pill::before,.oc::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cr);flex:none}
 .urg{display:inline-flex;align-items:center;gap:3px;font-size:.76rem;font-weight:600;white-space:nowrap}
 .urg svg{width:14px;height:14px;flex:none}
@@ -135,45 +172,33 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
 .req{display:inline-flex;gap:3px;align-items:center}
 .req i{font-style:normal;font-family:var(--mono);font-size:.72rem}
 .lane{font:500 .76rem var(--mono);color:var(--muted)}
-.runs{grid-column:2;font-weight:700;font-size:.95rem;line-height:1.35;min-width:0;overflow-wrap:anywhere}
-.runs .more,.runs .busy{display:block;font-weight:600;font-size:.84rem;color:var(--muted)}
-.runs .busy{color:var(--warn)}
-.runs.quiet{font-weight:500;font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.runs.quiet .more,.runs.quiet .busy{display:none}
-.runbox{margin:10px 0;padding:10px 12px;border:2px solid var(--line);border-radius:8px}
-.runbox p{margin:0;line-height:1.45}
-.runbox p:first-child{font-weight:700;font-size:1.05rem}
-.runbox .busy{color:var(--warn);font-weight:600}
-/* «Le toca a usted» (d163): the owner's ready tasks and the answers tasks wait for, above the queue */
-.mine{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--own-rule);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:grid;gap:6px}
-.mine h2{margin:0;font:700 1rem var(--display);color:var(--ink);display:flex;align-items:center;gap:8px}
-.mine h2::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--own-rule)}
-.mine .row{display:flex;gap:8px;align-items:baseline;text-align:left;width:100%;min-height:44px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink)}
-.mine .row:hover{background:var(--panel-2)}
-.mine .row b{font:600 .88rem var(--mono);color:var(--own);flex:none}
-.mine .row span{min-width:0;overflow-wrap:anywhere}
-.mine .sub{font-size:.8rem;color:var(--muted);margin:4px 0 0}
-.mine .none{margin:0;color:var(--muted);font-size:.9rem}
-.mine .paste{display:flex;gap:6px;align-items:stretch}
-.mine .paste .row{flex:1;min-width:0}
-.mine .paste .btn{flex:none}
-@media (max-width:560px){.mine .paste{flex-direction:column}}
-/* T126: «Le toca al coordinador» and «Detenidas» sit next to «Le toca a usted» */
-.whats{display:flex;flex-wrap:wrap;gap:8px 12px;margin-bottom:14px;align-items:flex-start}
-.whats .mine{margin-bottom:0;flex:1 1 280px;min-width:0;order:1}
-/* Empty panels go first and shrink to one line each, so they share a row instead of leaving holes. */
-.whats .mine.is-empty{order:0;flex:0 1 auto;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:6px 12px}
-.whats .mine.is-empty h2{font-size:.9rem}
-.whats .mine.is-empty .none,.whats .mine.is-empty .sub{margin:0;font-size:.84rem}
-.mine.coord{--own:var(--auto);--own-rule:var(--auto-rule)}
-.mine.stall{--own:var(--warn);--own-rule:var(--warn-rule)}
+.runs{display:grid;gap:1px;min-width:0;overflow-wrap:anywhere}
+.runs>span:first-child{font-weight:600}
+.runs .busy{color:var(--warn);font-weight:600}
+/* «Para usted» (d163): the owner's ready tasks, the answers tasks wait for and what stalled, nothing else */
+.mine{display:grid;min-width:0}
+.mine .row{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;min-height:44px;background:none;border:0;border-bottom:1px solid var(--line);padding:9px 8px;color:var(--ink)}
+.mine .row:hover{background:var(--hover)}
+.mine .row[aria-current="true"]{background:var(--accent-soft)}
+.mine .row .ring{margin-top:2px}
+.mine .row b{font:600 .84rem var(--mono);color:var(--own);flex:none;padding-top:1px}
+.mine .row>span{min-width:0;overflow-wrap:anywhere;display:grid;gap:1px}
+.mine .row .sub{font-size:.78rem;color:var(--muted)}
+.mine .none{padding:28px 8px;color:var(--muted);font-size:.95rem}
+.mine .none b{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:2px}
+.mine .paste{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line)}
+.mine .paste .row{flex:1;min-width:0;border-bottom:0}
+.mine .paste .btn{flex:none;margin-right:6px}
+@media (max-width:560px){.mine .paste{flex-direction:column;align-items:stretch}.mine .paste .btn{margin:0 8px 8px}}
 .mine .row .meta{font:500 .76rem var(--mono);color:var(--muted)}
-.empty{background:var(--panel);border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
-.list>.empty{padding:8px 12px;font-size:.86rem}
+.mine.coord .row b{color:var(--auto)}.mine.stall .row b{color:var(--warn)}
+.mine.coord .row>span,.mine.stall .row>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty{border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
+.list>.empty{margin-top:8px;padding:8px 12px;font-size:.86rem}
 
-/* task sheet */
-.sheet{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:grid;gap:12px;padding:14px 16px 16px;min-width:0;align-content:start}
-@media (min-width:960px){.sheet{position:sticky;top:calc(env(safe-area-inset-top,0px) + 52px);max-height:calc(100vh - 70px);overflow:auto}.sheet .close{display:none}}
+/* task sheet: a peek with a properties table */
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:grid;gap:14px;padding:16px 18px 18px;min-width:0;align-content:start}
+@media (min-width:960px){.sheet{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);max-height:calc(100vh - 92px);overflow:auto}.sheet .close{display:none}}
 @media (max-width:959px){
   .sheet{position:fixed;inset:0;z-index:20;border-radius:0;border:0;overflow:auto;
     padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));
@@ -181,73 +206,80 @@ h1 small{font:600 .72rem var(--mono);color:var(--auto);background:var(--auto-sof
   .sheet:not(.open){display:none}
   body.locked{overflow:hidden}
 }
-.sh-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:start}
-.sh-top .num{padding-top:5px}
-.sh-top h2{font:700 1.2rem/1.2 var(--display);overflow-wrap:anywhere}
-.sh-top .line{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
-.close{border:1px solid var(--line-2);background:var(--panel);border-radius:8px;padding:4px 10px;font-weight:600;font-size:.85rem}
-.now{font-size:.95rem;line-height:1.5;max-width:65ch}
+.sh-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:start}
+.sh-top h2{font:700 1.15rem/1.3 var(--body);overflow-wrap:anywhere}
+.sh-top .line{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.close{border:1px solid var(--line-2);background:var(--panel);border-radius:6px;padding:4px 10px;font-weight:600;font-size:.85rem;min-height:44px}
+.now{font-size:.92rem;line-height:1.55;max-width:65ch}
 .cta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.btn{border:1px solid var(--line-2);background:var(--panel);border-radius:8px;padding:8px 14px;font-weight:600;font-size:.9rem;min-height:44px}
+.btn{border:1px solid var(--line-2);background:var(--panel);border-radius:6px;padding:6px 12px;font-weight:600;font-size:.86rem;min-height:44px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--panel)}
-.btn:not(.primary):hover{border-color:var(--muted)}
+.btn:not(.primary):hover{background:var(--hover)}
+.btn.sm{min-height:32px;padding:3px 10px;font-size:.8rem;font-weight:500}
 .btn:disabled{opacity:.55;cursor:default}
-.sync{display:flex;gap:6px;margin-left:auto}
-.syncout{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.84rem;white-space:pre-wrap;font-family:var(--mono)}
+.sync{display:flex;gap:6px}
+.syncout{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.84rem;white-space:pre-wrap;font-family:var(--mono);overflow-wrap:anywhere}
 .msg{font-size:.82rem;color:var(--muted)}
 .box{display:grid;gap:6px}
-.box h3{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint)}
+.box h3{font-size:.74rem;letter-spacing:.04em;font-weight:600;color:var(--muted)}
 .reqs{list-style:none;margin:0;padding:0;display:grid;gap:4px}
 .reqs li{display:grid;grid-template-columns:1.4rem minmax(0,1fr);gap:6px;align-items:baseline;font-size:.88rem;overflow-wrap:anywhere}
 .reqs .ok{color:var(--own);font-weight:700}.reqs .no{color:var(--block);font-weight:700}
-dl.ficha{margin:0;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;font-size:.86rem;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
-dl.ficha dt{font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:700;padding-top:2px}
+dl.ficha{margin:0;display:grid;grid-template-columns:8.5rem minmax(0,1fr);font-size:.86rem}
+dl.ficha dt,dl.ficha dd{padding:5px 0;border-bottom:1px solid var(--line)}
+dl.ficha dt{color:var(--muted);padding-right:10px}
 dl.ficha dd{margin:0;min-width:0;overflow-wrap:anywhere}
 code,.code{font-family:var(--mono);font-size:.84em;background:var(--code-bg);border-radius:4px;padding:0 4px;overflow-wrap:anywhere}
-details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
-.prompt{margin:8px 0 0;padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:.92rem;line-height:1.6;background:var(--panel);border:1px solid var(--line);border-radius:8px;max-height:420px;overflow:auto}
-@media (max-width:420px){dl.ficha{grid-template-columns:1fr;gap:1px}dl.ficha dd{padding-bottom:6px}}
+details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent);min-height:32px}
+.prompt{margin:8px 0 0;padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:.9rem;line-height:1.6;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;max-height:420px;overflow:auto}
+@media (max-width:420px){dl.ficha{grid-template-columns:1fr}dl.ficha dt{border-bottom:0;padding-bottom:0}}
 
 /* lanes board */
-.board{display:grid;gap:8px}
+.board{display:grid;gap:8px;min-width:0}
 .bhead,.brow{display:grid;grid-template-columns:9.5rem repeat(5,minmax(0,1fr));gap:6px}
-.bhead div{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint);padding:0 4px}
-.brow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px}
+.bhead div{font-size:.74rem;font-weight:600;color:var(--muted);padding:0 4px}
+.brow{border-bottom:1px solid var(--line);padding:8px 0}
 .lh{display:grid;gap:2px;align-content:start;padding:2px 4px;min-width:0}
-.lh b{font:600 .9rem var(--mono)}
+.lh b{font:600 .88rem var(--mono)}
 .lh span{font-size:.74rem;color:var(--muted);overflow-wrap:anywhere}
 .cell{display:grid;gap:4px;align-content:start;min-height:2rem;background:var(--panel-2);border-radius:6px;padding:4px;min-width:0}
 .cell .lbl{display:none}
-.chip{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:baseline;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--cr);border-radius:6px;padding:5px 7px;font-size:.8rem;line-height:1.3}
-.chip b{font:600 .8rem var(--mono);color:var(--muted)}
+.chip{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:baseline;text-align:left;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-size:.8rem;line-height:1.3}
+.chip:hover{background:var(--hover)}
+.chip b{font:600 .78rem var(--mono);color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.chip b::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cr,var(--block-rule));flex:none}
 .chip span{overflow-wrap:anywhere}
 @media (max-width:759px){
   .bhead{display:none}
-  .brow{grid-template-columns:1fr}
+  .brow{grid-template-columns:minmax(0,1fr)}
   .cell{background:none;padding:0;min-height:0}
   .cell:empty{display:none}
-  .cell .lbl{display:block;font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint);padding-top:4px}
+  .cell .lbl{display:block;font-size:.72rem;font-weight:600;color:var(--muted);padding-top:4px}
 }
 
 /* history */
-.tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
-#q,#tq{font:inherit;font-size:.95rem;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;flex:1 1 220px;min-width:0;max-width:420px;min-height:44px}
-.chips{display:flex;flex-wrap:wrap;gap:4px}
+.tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;min-width:0}
+.search{position:relative;flex:1 1 220px;min-width:0;max-width:420px;display:flex}
+.search kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);font:500 .7rem var(--mono);color:var(--faint);border:1px solid var(--line-2);border-radius:4px;padding:0 4px;pointer-events:none}
+@media (pointer:coarse){.search kbd{display:none}}
+#q,#tq{font:inherit;font-size:.92rem;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:6px;padding:6px 10px;flex:1 1 220px;width:100%;min-width:0;max-width:420px;min-height:40px}
+#tq{padding-right:56px}
+@media (pointer:coarse){#q,#tq{min-height:44px}}
 .rounds{display:grid;gap:4px}
 /* d174: a mother task's progress, one segment per state in the stage colors: done, running, in review, left. */
-.prog{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--line-2);max-width:360px}
+.prog{display:flex;height:6px;border-radius:999px;overflow:hidden;background:var(--line-2);max-width:360px}
 .prog i{display:block;height:100%}.prog .p-done{background:var(--block)}.prog .p-run{background:var(--run-rule)}.prog .p-rev{background:var(--rev-rule)}
-.psum{display:grid;gap:4px;font-size:.8rem;color:var(--muted)}
-.item .psum{grid-column:2}
+.psum{display:grid;gap:4px;font-size:.78rem;color:var(--muted)}
+.item .psum{grid-column:2;padding-top:3px}
 .fase{font:600 .72rem var(--mono);color:var(--muted);border:1px solid var(--line-2);border-radius:4px;padding:0 4px}
-.item.sub{margin-left:1.6rem;width:calc(100% - 1.6rem)}
-.ghead{display:grid;gap:4px;padding:10px 12px;border:1px dashed var(--line-2);border-radius:10px;background:var(--panel-2)}
-.ghead .ttl{font:600 .95rem/1.3 var(--body);overflow-wrap:anywhere}
-details.subs{margin-left:1.6rem}
-details.subs>summary{display:inline-flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600;font-size:.84rem;color:var(--accent)}
-.subs ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.item.sub{padding-left:28px}
+.ghead{display:grid;gap:4px;padding:10px 8px;border-bottom:1px solid var(--line)}
+.ghead .ttl{font:600 .92rem/1.3 var(--body);overflow-wrap:anywhere}
+details.subs{padding-left:28px;border-bottom:1px solid var(--line)}
+details.subs>summary{display:inline-flex;align-items:center;min-height:40px;cursor:pointer;font-weight:600;font-size:.82rem;color:var(--accent)}
+.subs ul{list-style:none;margin:0 0 6px;padding:0;display:grid;gap:2px}
 .srow{display:flex;gap:8px;align-items:center;width:100%;min-height:36px;padding:2px 6px;border:0;border-radius:6px;background:none;text-align:left;font:inherit;font-size:.84rem;color:var(--ink)}
-button.srow:hover{background:var(--panel-2)}
+button.srow:hover{background:var(--hover)}
 .srow .mk{width:1em;text-align:center;font-weight:700;color:var(--muted)}.srow .mk.ok{color:var(--own)}.srow .mk.run{color:var(--run)}
 .srow .st{margin-left:auto;color:var(--faint);font-size:.78rem;white-space:nowrap}
 .crumb{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0;border:0;background:none;font:inherit;font-size:.84rem;font-weight:600;color:var(--accent);text-align:left;overflow-wrap:anywhere}
@@ -256,19 +288,17 @@ span.crumb{color:var(--muted)}
 .cal{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:2px 12px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--line)}
 .cal:last-child{border-bottom:0}
 .cal .day{font:600 .84rem var(--mono);color:var(--muted)}
-.cal .tbtn{min-height:36px;padding:2px 0;font-weight:600}
+.cal .tbtn{min-height:36px;padding:2px 0;font-weight:500}
 .cal .line{grid-column:2;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
+@media (max-width:560px){.cal{grid-template-columns:minmax(0,1fr)}.cal .line{grid-column:1}}
 /* T258: blocked tasks, each with what it still waits for. */
 .blk{padding:8px 12px;border-bottom:1px solid var(--line)}
 .blk:last-child{border-bottom:0}
-.blk .tbtn{min-height:36px;padding:2px 0;font-weight:600}
+.blk .tbtn{min-height:36px;padding:2px 0;font-weight:500}
 .blk .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
 .blk ul{margin:4px 0 0;padding-left:1.2em;font-size:.86rem;overflow-wrap:anywhere}
-.fchip{border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);min-height:36px}
-.fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.fchip .n{font:600 .72rem var(--mono);opacity:.75;margin-left:2px}
-.chk{display:inline-flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted)}
-.log{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:.84rem;color:var(--muted);min-height:32px}
+.log{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .lr{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:2px 12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.87rem}
 .lr:last-child{border-bottom:0}
 .lr .when{font:400 .76rem var(--mono);color:var(--muted);padding-top:2px}
@@ -277,10 +307,10 @@ span.crumb{color:var(--muted)}
 .lr .tag{font:700 .66rem var(--mono);text-transform:uppercase;margin-right:6px}
 .lr.dec .tag{color:var(--auto)}.lr.bit .tag{color:var(--rev)}
 .lr.old{opacity:.6}
-@media (max-width:560px){.lr{grid-template-columns:1fr}}
-footer{font-size:.78rem;color:var(--faint);max-width:80ch}
+@media (max-width:560px){.lr{grid-template-columns:minmax(0,1fr)}}
+footer{font-size:.78rem;color:var(--faint);max-width:80ch;padding-top:12px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-.agents{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:10px}
+.agents{display:flex;flex-wrap:wrap;gap:2px}
 .lock{font:600 .72rem var(--mono);color:var(--muted)}
 /* finished tasks (d167): one row each, its closing summary (d178) above the archive button */
 .fr{display:grid;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
@@ -292,30 +322,30 @@ footer{font-size:.78rem;color:var(--faint);max-width:80ch}
    sentence, what is left and who receives it; checks fold into «Ver detalles». */
 .tbtn{display:block;width:100%;min-height:44px;padding:6px 0;border:0;background:none;text-align:left;font:inherit;color:inherit;overflow-wrap:anywhere}
 .tbtn:hover{color:var(--accent)}
-.fr .ttl{font:700 1.08rem/1.3 var(--display);overflow-wrap:anywhere}
+.fr .ttl{font:600 1rem/1.35 var(--body);overflow-wrap:anywhere}
 .status{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:.8rem;color:var(--muted)}
 .oc-ok{--c:var(--own);--cs:var(--own-soft);--cr:var(--own-rule)}.oc-warn{--c:var(--warn);--cs:var(--warn-soft);--cr:var(--warn-rule)}
 .oc-done{--c:var(--run);--cs:var(--run-soft);--cr:var(--run-rule)}.oc-rev{--c:var(--rev);--cs:var(--rev-soft);--cr:var(--rev-rule)}
 .oc-cancel,.oc-none{--c:var(--block);--cs:var(--block-soft);--cr:var(--block-rule)}
 /* Who did it: a fixed dot per agent next to a plain name, so identity never competes with state. */
-.ag{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;color:var(--ink);white-space:nowrap}
+.ag{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:500;color:var(--ink);white-space:nowrap}
 .ag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--dot,var(--block-rule));flex:none}
 .ag-claude{--dot:var(--dot-claude)}.ag-codex{--dot:var(--dot-codex)}.ag-gemini{--dot:var(--dot-gemini)}
 .ag-dueno{--dot:var(--own-rule)}.ag-coordinador{--dot:var(--auto-rule)}
 .status .when{white-space:nowrap;color:var(--faint)}
-.lead{font-size:.95rem;line-height:1.5;max-width:72ch;overflow-wrap:anywhere}
-.pend{display:grid;gap:2px;max-width:72ch;background:var(--panel-2);border:1px solid var(--line);box-shadow:inset 3px 0 0 var(--warn-rule);border-radius:8px;padding:8px 12px 2px 14px;overflow-wrap:anywhere}
-.pend .pl{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--warn)}
-.pend .txt{min-width:0;font-size:.92rem;font-weight:600;color:var(--ink)}
+.lead{font-size:.92rem;line-height:1.5;max-width:72ch;overflow-wrap:anywhere}
+.pend{display:grid;gap:2px;max-width:72ch;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 12px 2px;overflow-wrap:anywhere}
+.pend .pl{font-size:.72rem;letter-spacing:.04em;font-weight:600;color:var(--warn)}
+.pend .txt{min-width:0;font-size:.9rem;font-weight:500;color:var(--ink)}
 .pend .to{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;font-size:.86rem;color:var(--muted)}
 .pend .to .arw{font-weight:700;color:var(--faint)}
-.pend.find{box-shadow:inset 3px 0 0 var(--rev-rule)}.pend.find .pl{color:var(--rev)}
-.pend.find.p0,.pend.find.p1{box-shadow:inset 3px 0 0 var(--warn-rule)}.pend.find.p0 .pl,.pend.find.p1 .pl{color:var(--warn)}
+.pend.find .pl{color:var(--rev)}
+.pend.find.p0 .pl,.pend.find.p1 .pl{color:var(--warn)}
 .pend .to a.tl{display:inline-flex;align-items:center;min-height:44px;border-bottom:0;text-decoration:underline;text-underline-offset:3px}
 .nopend{font-size:.82rem;color:var(--faint)}
 details.more>summary{display:inline-flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--accent)}
 details.more .body{display:grid;gap:4px;font-size:.86rem;max-width:72ch;overflow-wrap:anywhere}
-details.more h4{margin:6px 0 0;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--faint)}
+details.more h4{margin:6px 0 0;font-size:.72rem;letter-spacing:.04em;font-weight:600;color:var(--muted)}
 details.more ul{margin:0;padding-left:1.2em;display:grid;gap:3px}
 details.more li::marker{color:var(--faint)}
 details.more .meta{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--muted);font-size:.8rem;padding-top:4px}
@@ -333,95 +363,110 @@ a.prl{font-weight:600}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <h1>Seguimiento Celebra-me</h1>
-    <span class="state"><span class="rev" id="rev">Cargando…</span><span role="status" aria-live="polite" id="connection">Conectando…</span></span>
-    <span class="sync">
-      <button type="button" class="btn" id="sync-dry" title="Muestra qué cambiaría sin escribir nada">Ver cambios</button>
-      <button type="button" class="btn primary" id="sync-run" title="Actualiza el tablero con las ramas y los PR de GitHub">Sincronizar</button>
-    </span>
-  </div>
-  <div class="syncout" id="syncout" role="status" aria-live="polite" hidden></div>
-  <div class="strip" id="strip"><span class="eyebrow">Producción</span><span>Cargando el estado…</span></div>
-
-  <nav class="tabs" role="tablist" aria-label="Vistas">
-    <button class="tab" role="tab" type="button" data-tab="cola" id="t-cola">Cola<span class="n" id="n-cola"></span></button>
-    <button class="tab" role="tab" type="button" data-tab="calendario" id="t-calendario" title="Tareas que solo esperan una fecha; vuelven solas a la Cola ese día">Calendario<span class="n" id="n-cal"></span></button>
-    <button class="tab" role="tab" type="button" data-tab="bloqueadas" id="t-bloqueadas" title="Tareas que esperan otra tarea, una decisión, su prompt o una respuesta; vuelven solas a la Cola al desbloquearse">Bloqueadas<span class="n" id="n-blk"></span></button>
-    <button class="tab" role="tab" type="button" data-tab="finalizadas" id="t-finalizadas">Finalizadas<span class="n" id="n-fin"></span></button>
-    <button class="tab" role="tab" type="button" data-tab="carriles" id="t-carriles">Carriles</button>
-    <button class="tab" role="tab" type="button" data-tab="historial" id="t-historial">Historial</button>
-  </nav>
-
-  <div class="legend" aria-label="Colores">
-    <span title="También «Pegar en Codex/Gemini»"><i class="sw" style="background:var(--own-rule)"></i>Le toca a usted</span>
-    <span title="Arranca sola"><i class="sw" style="background:var(--auto-rule)"></i>Autónoma</span>
-    <span><i class="sw" style="background:var(--run-rule)"></i>En curso</span>
-    <span><i class="sw" style="background:var(--block-rule)"></i>Bloqueada</span>
-    <span><i class="sw" style="background:var(--rev-rule)"></i>En revisión</span>
-  </div>
-
-  <div class="tools" id="tsearch">
-    <input id="tq" type="search" placeholder="Buscar: serenata, T34, olivia…" aria-label="Buscar tareas por número, nombre o estado actual">
-    <span class="msg" id="tqmsg" aria-live="polite"></span>
-  </div>
-
-  <section id="p-cola" role="tabpanel" aria-labelledby="t-cola">
-    <div class="agents chips" id="agents" aria-label="Agente">
-      <button class="fchip" type="button" data-ag="todas" aria-pressed="true">Todas</button>
-      <button class="fchip" type="button" data-ag="libres" aria-pressed="false">Libres</button>
+<div class="app">
+  <aside class="side" id="side" aria-label="Vistas y estado">
+    <div class="brand"><h1>Seguimiento Celebra-me</h1></div>
+    <nav class="tabs" role="tablist" aria-label="Vistas" aria-orientation="vertical">
+      <button class="tab" role="tab" type="button" data-tab="usted" id="t-usted" title="Solo lo que le toca hacer a usted">Para usted<span class="n" id="n-you"></span></button>
+      <button class="tab" role="tab" type="button" data-tab="cola" id="t-cola">Cola<span class="n" id="n-cola"></span></button>
+      <button class="tab" role="tab" type="button" data-tab="calendario" id="t-calendario" title="Tareas que solo esperan una fecha; vuelven solas a la Cola ese día">Calendario<span class="n" id="n-cal"></span></button>
+      <button class="tab" role="tab" type="button" data-tab="bloqueadas" id="t-bloqueadas" title="Tareas que esperan otra tarea, una decisión, su prompt o una respuesta; vuelven solas a la Cola al desbloquearse">Bloqueadas<span class="n" id="n-blk"></span></button>
+      <button class="tab" role="tab" type="button" data-tab="finalizadas" id="t-finalizadas">Finalizadas<span class="n" id="n-fin"></span></button>
+      <span class="tab-sep" aria-hidden="true"></span>
+      <button class="tab" role="tab" type="button" data-tab="carriles" id="t-carriles">Carriles</button>
+      <button class="tab" role="tab" type="button" data-tab="historial" id="t-historial">Historial</button>
+    </nav>
+    <div class="side-foot">
+      <div class="strip" id="strip"><span class="eyebrow">Producción</span><span>Cargando el estado…</span></div>
+      <span class="state"><span class="rev" id="rev">Cargando…</span><span role="status" aria-live="polite" id="connection">Conectando…</span></span>
     </div>
-    <div class="whats">
-      <div class="mine" id="mine" aria-live="polite"></div>
-      <div class="mine coord" id="coord" aria-live="polite"></div>
-      <div class="mine stall" id="stall" aria-live="polite"></div>
-    </div>
-    <div class="cola">
-      <div class="list" id="list"><div class="empty">Cargando la cola. Aquí aparecen las tareas abiertas, numeradas en el orden en que conviene hacerlas.</div></div>
+  </aside>
+  <div class="scrim" data-side="0"></div>
+
+  <main class="wrap">
+    <header class="top">
+      <button type="button" class="menu" data-side="1" aria-label="Abrir las vistas" aria-controls="side" aria-expanded="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <h2 id="vtitle">Para usted</h2>
+      <div class="tools">
+        <span class="search" id="tsearch"><input id="tq" type="search" placeholder="Buscar: serenata, T34, olivia…" aria-label="Buscar tareas por número, nombre o estado actual (Ctrl+K)" aria-keyshortcuts="Control+K"><kbd aria-hidden="true">Ctrl K</kbd></span>
+        <span class="sync">
+          <button type="button" class="btn" id="sync-dry" title="Muestra qué cambiaría sin escribir nada">Ver cambios</button>
+          <button type="button" class="btn primary" id="sync-run" title="Actualiza el tablero con las ramas y los PR de GitHub">Sincronizar</button>
+        </span>
+      </div>
+      <span class="msg" id="tqmsg" aria-live="polite"></span>
+    </header>
+    <div class="syncout" id="syncout" role="status" aria-live="polite" hidden></div>
+
+    <div class="cola" id="work">
+      <div class="views">
+        <section id="p-usted" role="tabpanel" aria-labelledby="t-usted">
+          <div class="mine" id="mine" aria-live="polite"><div class="empty">Cargando lo que le toca a usted…</div></div>
+        </section>
+
+        <section id="p-cola" role="tabpanel" aria-labelledby="t-cola" hidden>
+          <div class="filters">
+            <div class="agents chips" id="agents" aria-label="Agente">
+              <button class="fchip" type="button" data-ag="todas" aria-pressed="true">Todas</button>
+              <button class="fchip" type="button" data-ag="libres" aria-pressed="false">Libres</button>
+            </div>
+            <div class="chips" id="cols" aria-label="Colores">
+              <button class="fchip" type="button" data-col="todos" aria-pressed="true">Todos los estados</button>
+              <button class="fchip" type="button" data-col="own" aria-pressed="false" title="También «Pegar en Codex/Gemini»"><i class="sw" style="background:var(--own-rule)"></i>Le toca a usted</button>
+              <button class="fchip" type="button" data-col="auto" aria-pressed="false" title="Arranca sola"><i class="sw" style="background:var(--auto-rule)"></i>Autónoma</button>
+              <button class="fchip" type="button" data-col="run" aria-pressed="false"><i class="sw" style="background:var(--run-rule)"></i>En curso</button>
+              <button class="fchip" type="button" data-col="block" aria-pressed="false"><i class="sw" style="background:var(--block-rule)"></i>Bloqueada</button>
+              <button class="fchip" type="button" data-col="rev" aria-pressed="false"><i class="sw" style="background:var(--rev-rule)"></i>En revisión</button>
+            </div>
+          </div>
+          <details class="grpd" data-fold="coord" id="g-coord" open hidden><summary>Le toca al coordinador <span class="n" id="n-coord"></span></summary><div class="mine coord" id="coord" aria-live="polite"></div></details>
+          <details class="grpd" data-fold="stall" id="g-stall" open hidden><summary>Detenidas <span class="n" id="n-stall"></span></summary><div class="mine stall" id="stall" aria-live="polite"></div></details>
+          <div class="list" id="list"><div class="empty">Cargando la cola. Aquí aparecen las tareas abiertas, numeradas en el orden en que conviene hacerlas.</div></div>
+        </section>
+      </div>
       <aside class="sheet" id="sheet" aria-label="Ficha de la tarea"><div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div></aside>
     </div>
-  </section>
 
-  <section id="p-calendario" role="tabpanel" aria-labelledby="t-calendario" hidden>
-    <div class="board"><div id="cal"><div class="empty">Cargando el calendario…</div></div></div>
-  </section>
+    <section id="p-calendario" role="tabpanel" aria-labelledby="t-calendario" hidden>
+      <div class="board"><div id="cal"><div class="empty">Cargando el calendario…</div></div></div>
+    </section>
 
-  <section id="p-bloqueadas" role="tabpanel" aria-labelledby="t-bloqueadas" hidden>
-    <div class="board"><div id="blk"><div class="empty">Cargando las tareas bloqueadas…</div></div></div>
-  </section>
+    <section id="p-bloqueadas" role="tabpanel" aria-labelledby="t-bloqueadas" hidden>
+      <div class="board"><div id="blk"><div class="empty">Cargando las tareas bloqueadas…</div></div></div>
+    </section>
 
-  <section id="p-finalizadas" role="tabpanel" aria-labelledby="t-finalizadas" hidden>
-    <div class="board">
-      <div class="tools">
-        <div class="chips" id="finag" aria-label="Agente"></div>
-        <label class="chk"><input type="checkbox" id="arch"> Ver archivadas</label>
-        <span class="msg" id="finmsg" role="status" aria-live="polite"></span>
-      </div>
-      <div id="fin"><div class="empty">Cargando las tareas finalizadas…</div></div>
-    </div>
-  </section>
-
-  <section id="p-carriles" role="tabpanel" aria-labelledby="t-carriles" hidden>
-    <div class="board" id="board"><div class="empty">Cargando los carriles…</div></div>
-  </section>
-
-  <section id="p-historial" role="tabpanel" aria-labelledby="t-historial" hidden>
-    <div class="board">
-      <div class="tools">
-        <input id="q" type="search" placeholder="Buscar: d139, release, olivia…" aria-label="Buscar en decisiones y bitácora">
-        <div class="chips" id="kind">
-          <button class="fchip" type="button" data-kind="todo" aria-pressed="true">Todo</button>
-          <button class="fchip" type="button" data-kind="dec" aria-pressed="false">Decisiones</button>
-          <button class="fchip" type="button" data-kind="bit" aria-pressed="false">Bitácora</button>
+    <section id="p-finalizadas" role="tabpanel" aria-labelledby="t-finalizadas" hidden>
+      <div class="board">
+        <div class="tools">
+          <div class="chips" id="finag" aria-label="Agente"></div>
+          <label class="chk"><input type="checkbox" id="arch"> Ver archivadas</label>
+          <span class="msg" id="finmsg" role="status" aria-live="polite"></span>
         </div>
-        <label class="chk"><input type="checkbox" id="vig" checked> Solo decisiones vigentes</label>
+        <div id="fin"><div class="empty">Cargando las tareas finalizadas…</div></div>
       </div>
-      <div id="hist"><div class="empty">Cargando el historial…</div></div>
-    </div>
-  </section>
+    </section>
 
-  <footer>El número de cada tarea se calcula solo: primero la urgencia, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Una tarea que solo espera una fecha pasa a «Calendario» y vuelve sola a la cola ese día; la que espera otra tarea, una decisión, su prompt o una respuesta pasa a «Bloqueadas», con lo que le falta, y vuelve sola a la cola al desbloquearse. Una tarea madre muestra su barra de avance y guarda sus subtareas en «Ver N subtareas»; la que toca ejecutar ahora sigue a la vista. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (en la pestaña de un agente, solo si ese agente puede). Gris: bloqueada. La urgencia nunca usa verde. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
+    <section id="p-carriles" role="tabpanel" aria-labelledby="t-carriles" hidden>
+      <div class="board" id="board"><div class="empty">Cargando los carriles…</div></div>
+    </section>
+
+    <section id="p-historial" role="tabpanel" aria-labelledby="t-historial" hidden>
+      <div class="board">
+        <div class="tools">
+          <input id="q" type="search" placeholder="Buscar: d139, release, olivia…" aria-label="Buscar en decisiones y bitácora">
+          <div class="chips" id="kind">
+            <button class="fchip" type="button" data-kind="todo" aria-pressed="true">Todo</button>
+            <button class="fchip" type="button" data-kind="dec" aria-pressed="false">Decisiones</button>
+            <button class="fchip" type="button" data-kind="bit" aria-pressed="false">Bitácora</button>
+          </div>
+          <label class="chk"><input type="checkbox" id="vig" checked> Solo decisiones vigentes</label>
+        </div>
+        <div id="hist"><div class="empty">Cargando el historial…</div></div>
+      </div>
+    </section>
+
+    <footer>«Para usted» muestra solo lo que le toca hacer a usted; la «Cola» muestra todo lo abierto. El número de cada tarea se calcula solo: primero la urgencia, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Una tarea que solo espera una fecha pasa a «Calendario» y vuelve sola a la cola ese día; la que espera otra tarea, una decisión, su prompt o una respuesta pasa a «Bloqueadas», con lo que le falta, y vuelve sola a la cola al desbloquearse. Una tarea madre muestra su barra de avance y guarda sus subtareas en «Ver N subtareas»; la que toca ejecutar ahora sigue a la vista. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (con el filtro de un agente, solo si ese agente puede). Gris: bloqueada. El anillo de cada fila marca la urgencia (rojo urgente, ámbar alta) y nunca usa verde. Ctrl+K busca. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada, al copiar el prompt de una tarea lista (la marca como entregada) o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</footer>
+  </main>
 </div>
 <script type="module">
 import { findTask } from '/model.mjs';
@@ -446,9 +491,12 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const TABS=['cola','calendario','bloqueadas','finalizadas','carriles','historial'];
+const TABS=['usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];
+const TITLE={usted:'Para usted',cola:'Cola',calendario:'Calendario',bloqueadas:'Bloqueadas',finalizadas:'Finalizadas',carriles:'Carriles',historial:'Historial'};
+// T268: the queue's collapsible groups, by the color of each block's first task, in this order.
+const GROUP={own:'Le toca a usted',auto:'Autónomas',run:'En curso',block:'Sin agente que la termine',rev:'En revisión',done:'Hechas'};
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
-const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'cola',kind:'todo',ag:'todas',finag:'todas'};
+const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'usted',kind:'todo',ag:'todas',finag:'todas',col:'todos'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const T=s=>s?new Date(s).getTime():NaN;
@@ -467,10 +515,15 @@ const color=t=>mColor(t,S.board,{agente:agentTab()});
 const label=r=>requisitoText(r,S.board);
 const reqs=t=>requisitos(t,S.board).map(r=>({...r,label:label(r)}));
 const found=t=>matches(t,$('tq').value);
-const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&found(t));
+// T268: the state chips (the old legend) filter the queue and its review group by color.
+const colorOk=t=>S.col==='todos'||color(t)===S.col;
+const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&found(t)&&colorOk(t));
 let NUM={};
 const tN=t=>t.num?`<span class="tn">T${esc(t.num)}</span> · `:'';
-const urgHtml=t=>{const u=URG[t.urgencia]?t.urgencia:'normal';return `<span class="urg u-${u}" title="Urgencia">${ICON[u]}${URG[u].l}</span>`};
+const urgOf=t=>URG[t.urgencia]?t.urgencia:'normal';
+const urgHtml=t=>{const u=urgOf(t);return `<span class="urg u-${u}" title="Urgencia">${ICON[u]}${URG[u].l}</span>`};
+// T268: the row's circle carries the urgency as its ring color; the word stays for urgente and alta.
+const ringHtml=t=>{const u=urgOf(t);return `<span class="ring r-${u}" title="Urgencia: ${URG[u].l}" aria-hidden="true"></span>`};
 // d169: a ready task only Codex or Gemini can finish waits for the owner to paste its prompt there.
 const pasteTo=t=>ownerLaunches(t,S.board).map(a=>AGENT[a]||a).join(' o ');
 const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):awaitingClaim(t)?'Entregada':COLOR[c]}</span>`};
@@ -483,10 +536,10 @@ const agHtml=t=>t.candado?agChip(t.candado.agente,AGENT[t.candado.agente]||t.can
 function firstBlock(t){const r=reqs(t).find(x=>!x.ok);if(r)return requisitoText(r,S.board,{espera:true});return color(t)==='block'?'Ningún agente tiene todo lo que pide: '+(t.requiere||[]).join(', '):''}
 function reqSummary(t){const r=reqs(t);if(!r.length)return '';const ok=r.filter(x=>x.ok).length;return `<span class="req" title="Requisitos cumplidos"><i>${ok===r.length?'✓':'○'}</i>${ok}/${r.length} requisitos</span>`}
 
-// d177: an open task without a lock says in large type where it runs, and whether that lane is busy.
+// d177: an open task without a lock says where it runs, and whether that lane is busy (T268: in the sheet's properties).
 const runLines=t=>t.candado||isFinished(t)?[]:laneLines(t,S.board);
 const runsHtml=t=>{const lines=runLines(t);if(!lines.length)return '';const busy=laneBusy(t,S.board);
-  return `<span class="runs${stage(t)==='revision'?' quiet':''}" title="${esc(lines.join(' · '))}">${lines.map((x,i)=>i?`<span class="${busy&&i===lines.length-1?'busy':'more'}">${esc(x)}</span>`:esc(x)).join('')}</span>`};
+  return `<span class="runs">${lines.map((x,i)=>`<span class="${busy&&i&&i===lines.length-1?'busy':''}">${esc(x)}</span>`).join('')}</span>`};
 // T129: an approved review at the PR's current SHA makes its origin «lista para unir».
 const livePrs=()=>S.board.vivo&&S.board.vivo.prs?S.board.vivo.prs:undefined;
 const mergeChip=t=>{const r=readyToMerge(t,S.board,livePrs());return r?`<span class="oc oc-ok" title="${esc(taskTag(r))} aprobó ${esc(String(r.revisionSha).slice(0,7))}">Lista para unir</span>`:''};
@@ -499,17 +552,17 @@ function progHtml(p){
 }
 const faseHtml=t=>Number.isInteger(t.fase)?`<span class="fase" title="Fase ${esc(t.fase)}">F${esc(t.fase)}</span>`:'';
 function itemHtml(t,{sub=false}={}){
-  const c=color(t),n=NUM[t.id];
+  const c=color(t),n=NUM[t.id],u=urgOf(t);
   const why=c==='block'?firstBlock(t):deliveryLine(t)||String(t.ahora||'').split('\n')[0];
   const subs=subtasksOf(t,S.board).length;
   // T151: the card is an article (its free text holds links); the whole card still opens the sheet, the title is its button.
-  return `<article class="item c-${c}${sub?' sub':''}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}">
-    <span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>
-    <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${tN(t)}${esc(t.titulo)}</button></h3>
-    ${runsHtml(t)}
+  // T268: one compact row — title, then place · ID · state tag · lane in muted text; the rest lives in the sheet.
+  return `<article class="item c-${c}${sub?' sub':''}" data-sel="${esc(t.id)}" aria-current="${S.sel===t.id}"${why?` title="${esc(why)}"`:''}>
+    ${ringHtml(t)}
+    <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${esc(t.titulo)}</button></h3>
+    <span class="line"><span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>${t.num?`<span class="tn">T${esc(t.num)}</span>`:''}${pill(t)}${mergeChip(t)}${faseHtml(t)}${u==='urgente'||u==='alta'?urgHtml(t):''}${taskLane(t)?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}</span>
     ${subs?progHtml(groupProgress(t,S.board)):''}
-    <span class="line">${faseHtml(t)}${pill(t)}${mergeChip(t)}${agHtml(t)}${urgHtml(t)}${reqSummary(t)}${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:''}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}${byHtml(t)}</span>
-    ${why?`<span class="why">${rich(why)}</span>`:''}
+    ${t.prompt?`<button type="button" class="btn sm hov" data-copy="${esc(t.id)}">Copiar prompt</button>`:''}
   </article>`;
 }
 // d174: a subtask stays under its mother even when it has subtasks of its own.
@@ -533,28 +586,38 @@ function groupedHtml(q){
   for(const t of q){const b=blockOf(t),key=b?b.key:'#'+t.id;if(!byKey[key])blocks.push(byKey[key]={...(b||{}),tasks:[]});byKey[key].tasks.push(t)}
   const searching=$('tq').value.trim()!=='';
   return blocks.map(b=>{
-    if(!b.key)return itemHtml(b.tasks[0]);
+    const c=color(b.tasks.find(t=>t.id===b.mother?.id)||b.tasks[0]);
+    if(!b.key)return {c,n:1,html:itemHtml(b.tasks[0])};
     const head=b.tasks.find(t=>t.id===b.mother?.id);
     const subs=subtasksOf(b.mother||{grupo:b.grupo},S.board);
     const p=groupProgress(b.mother||{grupo:b.grupo},S.board);
     const top=head?itemHtml(head):`<div class="ghead">${b.mother?`<h3 class="ttl"><button type="button" class="crumb" data-sel="${esc(b.mother.id)}">${tN(b.mother)}${esc(b.mother.titulo||b.mother.id)}</button></h3>`:`<h3 class="ttl">Grupo ${esc(b.grupo)}</h3>`}${progHtml(p)}</div>`;
     const shown=b.tasks.filter(t=>t!==head&&(searching||['lista','curso'].includes(stage(t))||S.sel===t.id));
-    return top+shown.map(t=>itemHtml(t,{sub:true})).join('')+subsHtml(b.key,subs);
-  }).join('');
+    return {c,n:b.tasks.length,html:top+shown.map(t=>itemHtml(t,{sub:true})).join('')+subsHtml(b.key,subs)};
+  });
 }
+// T268: a collapsible group whose fold state survives the live re-renders and reloads.
+const FOLD=new Set();
+try{for(const k of JSON.parse(localStorage.getItem('board-fold')||'[]'))FOLD.add(String(k))}catch(e){}
+document.addEventListener('toggle',ev=>{const d=ev.target;if(!d.dataset||!d.dataset.fold)return;d.open?FOLD.delete(d.dataset.fold):FOLD.add(d.dataset.fold);try{localStorage.setItem('board-fold',JSON.stringify([...FOLD]))}catch(e){}},true);
+const foldHtml=(key,title,n,body,hint='')=>`<details class="grpd" data-fold="${esc(key)}"${FOLD.has(key)?'':' open'}><summary>${esc(title)} <span class="n">${n}</span>${hint?`<span class="hint">${esc(hint)}</span>`:''}</summary>${body}</details>`;
 function renderCola(){
   const all=mQueue(S.board);NUM={};all.forEach((t,i)=>NUM[t.id]=i+1);
   const q=queue();
-  const rev=S.board.tareas.filter(t=>stage(t)==='revision'&&!t.archivada&&inTab(t,S.ag)&&found(t)).sort((a,b)=>T(b.actualizado)-T(a.actualizado));
+  const rev=S.board.tareas.filter(t=>stage(t)==='revision'&&!t.archivada&&inTab(t,S.ag)&&found(t)&&colorOk(t)).sort((a,b)=>T(b.actualizado)-T(a.actualizado));
   $('n-cola').textContent=all.length||'';
   if(!S.ready)return;
-  const none=$('tq').value.trim()?'Ninguna tarea abierta coincide con esa búsqueda.':'No hay tareas abiertas en esta pestaña.';
-  let h=q.length?groupedHtml(q):`<div class="empty">${none}</div>`;
-  if(rev.length)h+=`<div class="grp">En revisión · ${rev.length}<span style="font-weight:500;text-transform:none;letter-spacing:0">(hechas, falta comprobarlas)</span></div>`+rev.map(itemHtml).join('');
+  const none=$('tq').value.trim()?'Ninguna tarea abierta coincide con esa búsqueda.':S.ag!=='todas'||S.col!=='todos'?'Ninguna tarea abierta con estos filtros.':'No hay tareas abiertas.';
+  const blocks=groupedHtml(q);
+  let h=q.length?Object.keys(GROUP).map(c=>{const bs=blocks.filter(b=>b.c===c);return bs.length?foldHtml('q-'+c,GROUP[c],bs.reduce((s,b)=>s+b.n,0),bs.map(b=>b.html).join('')):''}).join(''):`<div class="empty">${none}</div>`;
+  if(rev.length)h+=foldHtml('q-revision','En revisión',rev.length,rev.map(t=>itemHtml(t)).join(''),'hechas, falta comprobarlas');
   $('list').innerHTML=h;
-  renderMine();
+  const mine=renderMine();
   const searching=$('tq').value.trim()!=='';
-  if(!S.sel||!byId(S.sel)||(searching&&!q.concat(rev).some(t=>t.id===S.sel)))S.sel=(q[0]||rev[0]||{}).id||null;
+  // T268: «Para usted» opens on the owner's first row (or nothing) until a click picks another task.
+  if(S.tab==='usted'&&!S.picked)S.sel=mine[0]||null;
+  else if(!S.sel||!byId(S.sel)||(searching&&!q.concat(rev).some(t=>t.id===S.sel)))S.sel=(q[0]||rev[0]||{}).id||null;
+  document.querySelectorAll('.mine .row[data-sel]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===S.sel)));
   renderSheet(false);
 }
 // T151: how a task ended, read in five seconds. The status line says how it ended, who did it, its PR and when;
@@ -626,8 +689,11 @@ function renderSheet(open){
   if(!t){sh.innerHTML='<div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div>';return}
   const c=color(t),l=laneOf(t)||{},r=reqs(t);
   const pr=prNumber(t.pr);
+  // T268: the properties table holds what the compact row leaves out: where it runs, the agent, the lane.
   const rows=[
-    ['Agente',t.agente?esc(AGENT[t.agente]||t.agente)+(t.candado?` · 🔒 ${esc(AGENT[t.candado.agente]||t.candado.agente)} desde ${esc(fmt(t.candado.desde))}`:''):''],
+    ['Dónde corre',runsHtml(t)],
+    ['Urgencia',urgHtml(t)],
+    ['Agente',t.agente?esc(AGENT[t.agente]||t.agente)+(t.candado?` · ${agHtml(t)} desde ${esc(fmt(t.candado.desde))}`:''):''],
     ['Entregada',esc(deliveryLine(t))],
     ['Requiere',(t.requiere||[]).length?t.requiere.map(esc).join(', '):''],
     ['Carril',taskLane(t)?`<span class="code">${esc(taskLane(t))}</span>${l.tecla?' · '+esc(l.tecla):''}`:''],
@@ -643,23 +709,21 @@ function renderSheet(open){
     ['Versión',t.rev?`v${esc(t.rev)}${t.actualizado?' · '+esc(fmt(t.actualizado))+' ('+esc(ago(t.actualizado))+')':''}${byHtml(t)?'<br>'+byHtml(t):''}`:'']
   ].filter(x=>x[1]);
   const p=promptWithLane(t,S.board)||'';
-  const run=runLines(t),busy=laneBusy(t,S.board);
   const to=c==='own'&&pasteTo(t);
   const who=awaitingClaim(t)?deliveryLine(t)+'. Si la pega en otro chat, cópielo de nuevo.':to?'Copie el prompt y péguelo en un chat nuevo de '+to+'.':c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
   sh.className='sheet c-'+c+(open?' open':sh.classList.contains('open')?' open':'');
-  sh.innerHTML=`${crumbHtml(t)}<div class="sh-top"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span><h2>${tN(t)}${esc(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
-      <div class="line">${pill(t)}${urgHtml(t)}<span class="lane">${esc(t.id)}</span></div></div>
+  sh.innerHTML=`${crumbHtml(t)}<div class="sh-top"><h2>${tN(t)}${esc(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
+      <div class="line"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span>${pill(t)}${mergeChip(t)}${faseHtml(t)}<span class="lane">${esc(t.id)}</span></div></div>
     ${t.ahora?`<p class="now">${rich(String(t.ahora))}</p>`:''}
-    ${run.length?`<div class="runbox">${run.map((x,i)=>`<p class="${busy&&i===run.length-1?'busy':''}">${esc(x)}</p>`).join('')}</div>`:''}
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>
+    ${rows.length?`<div class="box"><h3>Propiedades</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
     ${r.length?`<div class="box"><h3>Requisitos · ${r.filter(x=>x.ok).length}/${r.length}</h3><ul class="reqs">${r.map(x=>`<li><span class="${x.ok?'ok':'no'}">${x.ok?'✓':'○'}</span><span>${rich(x.label)}</span></li>`).join('')}</ul></div>`:''}
-    ${rows.length?`<div class="box"><h3>Ficha</h3><dl class="ficha">${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`:''}
     ${subBoxHtml(t)}
     ${roundsHtml(t)}
     ${t.cierre?`<div class="box"><h3>Cómo terminó</h3>${statusHtml(t)}${cierreHtml(t)}</div>`:''}
     ${p?`<details class="pr" id="prdet"><summary>Ver el prompt</summary><div class="prompt" id="prtext">${promptHtml(p)}</div></details>`:''}`;
 }
-function openSheet(id){S.sel=id;document.querySelectorAll('.item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===id)));renderSheet(true);if(matchMedia('(max-width:959px)').matches){document.body.classList.add('locked');$('sheet').scrollTop=0;const c=$('sheet').querySelector('.close');if(c)c.focus()}}
+function openSheet(id){S.sel=id;S.picked=true;document.querySelectorAll('.item,.mine .row[data-sel]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===id)));renderSheet(true);if(matchMedia('(max-width:959px)').matches){document.body.classList.add('locked');$('sheet').scrollTop=0;const c=$('sheet').querySelector('.close');if(c)c.focus()}}
 // The card is an article since T151: focus goes back to its title button, the control that opened the sheet.
 function closeSheet(){$('sheet').classList.remove('open');document.body.classList.remove('locked');const b=document.querySelector(`.item[data-sel="${CSS.escape(S.sel||'')}"] .tbtn`);if(b)b.focus()}
 
@@ -766,64 +830,81 @@ function renderTop(){
     const stale=Date.now()-T(e.comprobadoEn)>24*36e5;
     $('rev').textContent='Producción comprobada '+ago(e.comprobadoEn);
     const ver=String(e.version||'').split(' ')[0];
-    $('strip').innerHTML=`<span class="eyebrow">Producción</span><span><span class="pulse ${stale?'stale':''}"></span><b>${esc(ver)}</b></span><span class="mono">main ${esc(e.main||'')}</span><span>${esc(e.sirve||'')}</span><span class="mono" title="${esc(fmt(e.comprobadoEn))}">${stale?'sin comprobar '+esc(ago(e.comprobadoEn)):'comprobado '+esc(ago(e.comprobadoEn))}</span>`+youBtn();
-  }else if(S.ready){$('strip').innerHTML='<span class="eyebrow">Producción</span><span>Sin registro de estado.</span>'+youBtn()}
+    $('strip').innerHTML=`<span class="eyebrow">Producción</span><span><span class="pulse ${stale?'stale':''}"></span><b>${esc(ver)}</b></span><span class="mono">main ${esc(e.main||'')}</span><span>${esc(e.sirve||'')}</span><span class="mono" title="${esc(fmt(e.comprobadoEn))}">${stale?'sin comprobar '+esc(ago(e.comprobadoEn)):'comprobado '+esc(ago(e.comprobadoEn))}</span>`;
+  }else if(S.ready){$('strip').innerHTML='<span class="eyebrow">Producción</span><span>Sin registro de estado.</span>'}
 }
 // The whole board, not the agent tab: what the owner must do never hides behind a filter.
+// T268: «Para usted» lists only the owner's actions, once each; the coordinator's turn and stalled tasks are Cola groups.
+// Returns the ids of the owner's rows, in order.
 function renderMine(){
   const all=mQueue(S.board),tag=t=>t.num?'T'+t.num:'';
   const next=nextSections(S.board,{prs:livePrs()});
   const late=new Set(next.usted.filter(x=>x.texto.startsWith('Correr el despachador')).map(x=>x.id));
   const tasks=all.filter(t=>mColor(t,S.board)==='own'&&!late.has(t.id));
   const asks=ownerAsks(S.board);
-  let h='<h2>Le toca a usted</h2>';
-  if(!tasks.length&&!asks.length&&!next.usted.length)h+='<p class="none">Usted: nada por ahora.</p>';
-  h+=tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(t.titulo)}${to?`<span class="sub"> · Pegar en ${esc(to)}</span>`:''}${deliveryLine(t)?`<span class="sub"> · ${esc(deliveryLine(t))}</span>`:''}</span></button>`;
-    return to?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row}).join('');
-  if(asks.length)h+='<p class="sub">Decisiones que esperan su respuesta</p>'+asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span>${esc(r.ref)}<span class="sub"> · la espera «${esc(t.titulo)}»</span></span></button>`).join('');
-  // T126: what the owner's own rows above do not say yet: a stalled Codex or Gemini task, a message to the owner.
+  // T126: what the owner's own rows do not say yet: a stalled Codex or Gemini task, a message to the owner.
   const extra=next.usted.filter(x=>/^(Correr el despachador|Mensaje:)/.test(x.texto));
-  if(extra.length)h+='<p class="sub">Detenido o con mensaje</p>'+extra.map(nextRow).join('');
-  $('mine').innerHTML=h;
-  $('mine').classList.toggle('is-empty',!tasks.length&&!asks.length&&!next.usted.length);
-  $('coord').classList.toggle('is-empty',!next.coordinador.length);
-  $('stall').classList.toggle('is-empty',!next.detenidas.length);
-  $('coord').innerHTML='<h2>Le toca al coordinador</h2>'+(next.coordinador.length?next.coordinador.map(nextRow).join(''):'<p class="none">Nada por ahora.</p>')+(next.prsLeidos?'':'<p class="sub">Sin leer GitHub todavía: faltan los PR abiertos.</p>');
-  $('stall').innerHTML='<h2>Detenidas</h2>'+(next.detenidas.length?next.detenidas.map(nextRow).join(''):'<p class="none">Ninguna.</p>');
+  const total=tasks.length+asks.length+extra.length;
+  const n=$('n-you');n.textContent=total||'';n.classList.toggle('hot',total>0);
+  $('t-usted').title=total?`Usted: ${total} ${total>1?'cosas':'cosa'}`:'Usted: nada';
+  if(!total){$('mine').innerHTML='<p class="none"><b>Usted: nada por ahora.</b>Cuando algo le toque, aparece aquí.</p>';}
+  else{
+    const where=t=>{const w=runLines(t)[0];return w&&!pasteTo(t)?`<span class="sub">${esc(w)}</span>`:''};
+    let h='';
+    if(tasks.length)h+=foldHtml('u-tareas','Le toca a usted',tasks.length,tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1">${ringHtml(t)}<b>${esc(tag(t))}</b><span><span>${esc(t.titulo)}</span>${to?`<span class="sub">Pegar en ${esc(to)}</span>`:''}${deliveryLine(t)?`<span class="sub">${esc(deliveryLine(t))}</span>`:''}${where(t)}</span></button>`;
+      return to?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row}).join(''));
+    if(asks.length)h+=foldHtml('u-decisiones','Decisiones que esperan su respuesta',asks.length,asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span><span>${esc(r.ref)}</span><span class="sub">la espera «${esc(t.titulo)}»</span></span></button>`).join(''));
+    if(extra.length)h+=foldHtml('u-detenido','Detenido o con mensaje',extra.length,extra.map(nextRow).join(''));
+    $('mine').innerHTML=h;
+  }
+  const coordNote=next.prsLeidos?'':'<p class="none" style="padding:8px">Sin leer GitHub todavía: faltan los PR abiertos.</p>';
+  $('g-coord').hidden=!next.coordinador.length&&!coordNote;
+  $('n-coord').textContent=next.coordinador.length;
+  $('coord').innerHTML=next.coordinador.map(nextRow).join('')+coordNote;
+  $('g-stall').hidden=!next.detenidas.length;
+  $('n-stall').textContent=next.detenidas.length;
+  $('stall').innerHTML=next.detenidas.map(nextRow).join('');
+  return [...tasks.map(t=>t.id),...asks.map(x=>x.t.id),...extra.map(x=>x.id).filter(id=>id&&byId(id))];
 }
-const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1"><b>${esc(x.tarea)}</b><span>${esc(x.texto)}</span></button>`:`<div class="row"><span>${rich(x.texto)}</span></div>`;
-function youBtn(){
-  const mine=mQueue(S.board).filter(t=>mColor(t,S.board)==='own');
-  if(!mine.length)return '<button type="button" class="you none" disabled>Usted: nada</button>';
-  return `<button type="button" class="you" data-sel="${esc(mine[0].id)}" data-jump="1" data-all="1">Usted: ${mine.length} ${mine.length>1?'cosas':'cosa'}</button>`;
-}
+const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span>${esc(x.texto)}</span></button>`:`<div class="row" title="${esc(x.texto)}"><span>${rich(x.texto)}</span></div>`;
 function render(){renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist()}
 
 function setTab(tab,push){
-  S.tab=TABS.includes(tab)?tab:'cola';
+  const was=S.tab;
+  S.tab=TABS.includes(tab)?tab:'usted';
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)));
   TABS.forEach(k=>$('p-'+k).hidden=k!==S.tab);
+  // T268: «Para usted» and «Cola» share the task sheet beside the list.
+  $('work').hidden=!['usted','cola'].includes(S.tab);
+  $('vtitle').textContent=TITLE[S.tab];
   $('tsearch').hidden=!['cola','calendario','bloqueadas','finalizadas'].includes(S.tab);
+  setSide(false);
+  if(was!==S.tab){S.picked=false;if(S.ready)renderCola()}
   if(push){try{history.replaceState(null,'','#'+S.tab)}catch(e){}}
 }
+// T268: below 800px the sidebar slides over the page.
+function setSide(open){document.body.classList.toggle('side-open',open);document.querySelector('.menu').setAttribute('aria-expanded',String(open));if(open){const b=document.querySelector('.tab[aria-selected="true"]');if(b)b.focus()}}
+function setColor(c){S.col=c;document.querySelectorAll('[data-col]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.col===c)));try{localStorage.setItem('board-col',c)}catch(e){}renderCola()}
 function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ag===ag)));try{localStorage.setItem('board-ag',ag)}catch(e){}renderCola();renderBoard()}
 document.addEventListener('click',ev=>{
   // T151: a link out (a PR) inside a card opens itself, not the card's sheet.
   if(ev.target.closest('a[target="_blank"]'))return;
   const sha=ev.target.closest('[data-sha]');if(sha){copySha(sha);return}
   const dec=ev.target.closest('[data-dec]');if(dec){ev.preventDefault();setTab('historial',true);$('q').value=dec.dataset.dec;renderHist();scrollTo(0,0);return}
+  const side=ev.target.closest('[data-side]');if(side){setSide(side.dataset.side==='1');return}
   const tab=ev.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab,true);return}
+  const col=ev.target.closest('[data-col]');if(col){setColor(col.dataset.col);return}
   const ag=ev.target.closest('[data-ag]');if(ag){setAgent(ag.dataset.ag);return}
   const fa=ev.target.closest('[data-finag]');if(fa){S.finag=fa.dataset.finag;try{localStorage.setItem('board-finag',S.finag)}catch(e){}renderFin();return}
-  const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump)setTab('cola',true);openSheet(sel.dataset.sel);return}
-  if(ev.target.closest('[data-close]')){closeSheet();return}
-  const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}
   const cp=ev.target.closest('[data-copy]');if(cp){
     // The sheet's button copies the open task; a «Pegar en Codex» row copies its own and opens its sheet, where the message shows.
     if(cp.dataset.copy!=='1'){if(S.ag!=='todas')setAgent('todas');openSheet(cp.dataset.copy)}
     const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
     try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».';if(deliverable(t))deliver(t,m)},fallback)}catch(e){fallback()}return}
+  const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump&&S.tab!=='usted')setTab('cola',true);openSheet(sel.dataset.sel);return}
+  if(ev.target.closest('[data-close]')){closeSheet();return}
+  const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}
   const k=ev.target.closest('[data-kind]');if(k){S.kind=k.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===k)));renderHist()}
 });
 // The SHA button copies the full SHA and says so for a moment.
@@ -831,13 +912,20 @@ function copySha(b){
   const done=ok=>{b.dataset.copied='1';b.textContent=ok?'copiado':b.dataset.sha;setTimeout(()=>{delete b.dataset.copied;b.textContent=b.dataset.sha.slice(0,7)},ok?1500:6000)};
   try{navigator.clipboard.writeText(b.dataset.sha).then(()=>done(true),()=>done(false))}catch(e){done(false)}
 }
-document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet()});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'&&document.body.classList.contains('side-open')){setSide(false);document.querySelector('.menu').focus();return}
+  if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet();
+  // T268: Ctrl+K focuses the search of the view (the history's own box there; otherwise the Cola's).
+  if((ev.ctrlKey||ev.metaKey)&&!ev.altKey&&ev.key.toLowerCase()==='k'){ev.preventDefault();if(S.tab==='historial'){$('q').focus();return}if($('tsearch').hidden)setTab('cola',true);$('tq').focus();$('tq').select()}
+});
 $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',renderHist);
 $('tq').addEventListener('input',()=>{renderCola();renderCal();renderBlk();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
 try{const a=localStorage.getItem('board-finag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','ninguno'].includes(a)))S.finag=a}catch(e){}
+try{const c=localStorage.getItem('board-col');if(c&&(c==='todos'||Object.hasOwn(COLOR,c)))setColor(c)}catch(e){}
+document.querySelectorAll('details[data-fold]').forEach(d=>{d.open=!FOLD.has(d.dataset.fold)});
 try{const a=localStorage.getItem('board-ag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','libres'].includes(a)))setAgent(a)}catch(e){}
 
 // «Sincronizar» runs the no-AI pnpm board:sync on the server; the token proves the request comes from this page.
