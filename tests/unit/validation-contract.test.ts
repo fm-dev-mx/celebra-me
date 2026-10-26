@@ -306,6 +306,7 @@ describe('canonical validation contract', () => {
 		const evidence = job('evidence-reuse');
 		expect(evidence).toContain("github.event_name == 'pull_request'");
 		expect(evidence).toContain("github.head_ref == 'develop'");
+		expect(evidence).toContain("startsWith(github.head_ref, 'candidate/')");
 		expect(evidence).toContain(
 			'github.event.pull_request.head.repo.full_name == github.repository',
 		);

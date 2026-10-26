@@ -177,36 +177,64 @@ Reset `[Unreleased]` to an empty pending section after the promotion.
 
 ```bash
 # Run in an explicitly assigned external lane, including F12 when assigned.
-git switch -c candidate/vX.Y.Z develop
+git switch -c chore/release-vX.Y.Z develop
 git add package.json CHANGELOG.md
 git commit -m "chore(release): publish vX.Y.Z checkpoint"
 ```
 
-Integrate the candidate into `develop` from Integration as the
-[task lifecycle](git-governance.md#task-lifecycle) defines, then push `develop`. Wait for
-`Repository Policy` and `Application Suite` on that exact SHA before opening the release pull
-request.
+Push the branch and land it in `develop` through its pull request, as the
+[task lifecycle](git-governance.md#task-lifecycle) defines. The merge commit of that pull request is
+the release SHA.
 
-### 5. Promote the validated commit to `main`
+### 5. Cut the fixed candidate and promote it to `main`
 
-Before this promotion, when the release range changes anything inside the CSS visual-parity gate
+The release leaves from `candidate/vX.Y.Z`, a branch that points at the release SHA and never
+receives commits of its own (d289). `develop` stays open: pull requests that merge after the cut
+belong to the next release.
+
+```bash
+git fetch origin
+git push origin <release-sha>:refs/heads/candidate/vX.Y.Z
+git fetch origin
+pnpm ops:release-checks <release-sha> --candidate candidate/vX.Y.Z
+```
+
+`ops:release-checks --candidate` refuses a candidate that moved off the release SHA, a SHA outside
+`origin/develop`, or a SHA that does not contain `origin/main` (the previous release has not merged
+back into `develop` yet). Wait for `Repository Policy`, `Application Suite` and
+`Application / static` on the release SHA: the `develop` push reports them, and the candidate pull
+request reports them again on the same SHA if a later `develop` push cancelled that run.
+
+Preview evidence is read for the same SHA with
+`pnpm ops:release-status -- --sha <release-sha> --target preview --wait`. A later `develop` push can
+supersede a Preview deployment still queued for the release SHA; then dispatch
+`gh workflow run deploy.yml --ref candidate/vX.Y.Z` for it (the stable Preview host serves the
+candidate until the next `develop` push) and read the status again.
+
+A fix needed during the release lands in `develop` through its own pull request like any task. Then
+close the release pull request, cut a new candidate at a `develop` SHA that contains the fix (for
+example `candidate/vX.Y.Z-2`; everything merged up to that SHA joins the release) and update the
+CHANGELOG through step 4 if the new range adds user-facing changes. Never commit on, rebase or move
+a candidate branch.
+
+Before the promotion, when the release range changes anything inside the CSS visual-parity gate
 scope ("Profile LAYOUT deletion or move" in
 [`../domains/theme/css-visual-parity.md`](../domains/theme/css-visual-parity.md#scope-of-this-gate),
 or a `published` lifecycle change that adds a route to the canonical matrix), obtain the owner's
 release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
 runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
-that acceptance through `pnpm visual:parity:accept` before this step, land the accepted references
-on `develop` through the same integration as step 4, and wait for `Application Suite` on that
-resulting `develop` SHA. The commit that changes the matrix (for example the `published` flip) is
-committed first with normal hooks; the matrix pin is a branch gate (`validate:changed`, CI), so the
-accepted references land in the following commit of the same task branch. This is a human release
-decision, not an automatic action performed by CI or a deployment.
+that acceptance through `pnpm visual:parity:accept` before cutting the candidate, land the accepted
+references on `develop` through the same integration as step 4, and cut the candidate at a SHA that
+contains them. The commit that changes the matrix (for example the `published` flip) is committed
+first with normal hooks; the matrix pin is a branch gate (`validate:changed`, CI), so the accepted
+references land in the following commit of the same task branch. This is a human release decision,
+not an automatic action performed by CI or a deployment.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
 
-Then open the release pull request from `develop` to `main`, merge it once the required checks pass,
-and fast-forward `develop` back to `origin/main`, as
+Then open the release pull request from `candidate/vX.Y.Z` to `main`, merge it once the required
+checks pass, and merge `main` back into `develop` through a pull request, as
 [Git governance](git-governance.md#production-promotion) defines. Agents prepare the pull request
 with the [`production-pr`](../../.agent/skills/production-pr/SKILL.md) skill.
 

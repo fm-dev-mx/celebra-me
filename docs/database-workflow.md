@@ -873,6 +873,14 @@ format is version 3; older receipts are treated as missing. `pnpm db:disposable:
 receipt (kept as `disposable-migration-proof.json.superseded`) before re-applying, so a reset always
 recovers.
 
+`pnpm prod:apply` renews its own proof (d290): when a schema plan finds the receipt stale, it runs
+`pnpm db:disposable:reset` and a full disposable-test apply, checks the receipt again and only then
+builds the plan the owner confirms (`scripts/db/production-apply-disposable-proof.ts`). It does this
+for `--apply`, for the interactive menu and for any plan run from a terminal; a non-interactive plan
+(agents, pipes) stays read-only and reports the stale receipt. The renewal writes to disposable-test
+only, never to persistent Local, Preview or Production, and a failed renewal stops before any
+Production write.
+
 ## Never Do This
 
 - Do not restore local DB dumps into production.

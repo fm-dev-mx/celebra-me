@@ -4,6 +4,9 @@ import {
 	isRemoteEvidenceUnavailable,
 	loadLatestProductionDeployment,
 	loadRemoteChecks,
+	parseReleaseChecksArgs,
+	readReleaseCandidateGeometry,
+	requireReleaseCandidate,
 	requireStaticCapabilityCheck,
 	requireProductionDeploymentSmoke,
 	requireReleaseChecks,
@@ -366,4 +369,88 @@ describe('release check evidence', () => {
 			trusted: false,
 		});
 	});
+});
+
+describe('fixed release candidate', () => {
+	const geometry = {
+		sha,
+		branch: 'candidate/v0.52.0',
+		branchTip: sha,
+		onDevelop: true,
+		containsMain: true,
+	};
+
+	it('accepts a candidate fixed on a develop SHA that contains main', () =>
+		expect(() => requireReleaseCandidate(geometry)).not.toThrow());
+
+	it.each([
+		['a branch outside candidate/vX.Y.Z', { branch: 'develop' }, /candidate\/vX\.Y\.Z/],
+		['a candidate missing on origin', { branchTip: null }, /Push the candidate branch/],
+		['a candidate that moved', { branchTip: 'b'.repeat(40) }, /moved to bbbbbbbbb/],
+		['a SHA outside develop', { onDevelop: false }, /not on origin\/develop/],
+		[
+			'a SHA without the last release',
+			{ containsMain: false },
+			/does not contain origin\/main/,
+		],
+	])('blocks %s', (_label, overrides, message) => {
+		expect(() => requireReleaseCandidate({ ...geometry, ...overrides })).toThrow(message);
+	});
+
+	it('accepts a recut suffix', () =>
+		expect(() =>
+			requireReleaseCandidate({ ...geometry, branch: 'candidate/v0.52.0-2' }),
+		).not.toThrow());
+
+	it('reads the geometry from remote-tracking refs', () => {
+		const calls: string[][] = [];
+		const result = readReleaseCandidateGeometry(sha, 'candidate/v0.52.0', (args) => {
+			calls.push(args);
+			if (args[0] === 'rev-parse') return { status: 0, stdout: `${sha}\n` };
+			// SHA is on develop; main is not yet in it.
+			return { status: args[2] === sha ? 0 : 1, stdout: '' };
+		});
+		expect(result).toEqual({ ...geometry, containsMain: false });
+		expect(calls).toContainEqual([
+			'rev-parse',
+			'--verify',
+			'--quiet',
+			'refs/remotes/origin/candidate/v0.52.0',
+		]);
+		expect(calls).toContainEqual([
+			'merge-base',
+			'--is-ancestor',
+			sha,
+			'refs/remotes/origin/develop',
+		]);
+		expect(calls).toContainEqual([
+			'merge-base',
+			'--is-ancestor',
+			'refs/remotes/origin/main',
+			sha,
+		]);
+	});
+
+	it('reports a missing remote branch as no tip', () => {
+		const result = readReleaseCandidateGeometry(sha, 'candidate/v0.52.0', () => ({
+			status: 1,
+			stdout: '',
+		}));
+		expect(result.branchTip).toBeNull();
+	});
+
+	it.each([
+		[[sha], { sha, candidate: null }],
+		[['--', sha, '--candidate', 'candidate/v0.52.0'], { sha, candidate: 'candidate/v0.52.0' }],
+		[[sha, '--candidate=candidate/v0.52.0'], { sha, candidate: 'candidate/v0.52.0' }],
+	])('parses %j', (argv, expected) => {
+		expect(parseReleaseChecksArgs(argv)).toEqual(expected);
+	});
+
+	it.each([[[]], [['abc']], [[sha, '--candidate']], [[sha, '--other']], [[sha, sha]]])(
+		'rejects %j',
+		(argv) => {
+			expect(() => parseReleaseChecksArgs(argv)).toThrow(/Usage/);
+		},
+	);
 });

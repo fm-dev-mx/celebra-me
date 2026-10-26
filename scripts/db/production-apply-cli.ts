@@ -23,6 +23,7 @@ import { renderOperatorError, writeHuman, writeJson } from './operator-cli-ux.ts
 import { productionApplyHandoff } from './production-apply-plan.ts';
 import { isInteractiveSession } from '../lib/cli-prompts.ts';
 import { shouldOpenProductionApplyMenu } from './production-apply-menu-model.ts';
+import { refreshDisposableProofForPlan } from './production-apply-disposable-proof.ts';
 
 async function main(): Promise<void> {
 	// Terminal without flags: interactive read-only plan menu. Agents and pipes keep the
@@ -51,6 +52,8 @@ async function main(): Promise<void> {
 	}
 
 	try {
+		// The owner's plan and apply rebuild a stale disposable proof; agent plans stay read-only.
+		if (parsed.apply || isInteractiveSession()) refreshDisposableProofForPlan(parsed);
 		if (!parsed.apply) {
 			const plan = await buildProductionApplyPlan(parsed);
 			if (parsed.json) {
