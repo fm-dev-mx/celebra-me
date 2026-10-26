@@ -1,6 +1,7 @@
 // Landing showroom (LandingShowroom.astro): dark band with event tabs, a phone/tablet/PC frame
 // holding the live demo over its cover, a style strip and a detail card with the WhatsApp quote.
 // Each cover keeps its focal point on every frame.
+@use '../global/mixins' as mixins;
 @use '../tokens/type-scale';
 
 .vitrina {
@@ -76,12 +77,9 @@
 		display: flex;
 		gap: 0.4rem;
 		overflow-x: auto;
-		scrollbar-width: none;
 		padding-bottom: 4px;
 
-		&::-webkit-scrollbar {
-			display: none;
-		}
+		@include mixins.hide-scrollbar;
 
 		@media (width >= 900px) {
 			flex-wrap: wrap;
@@ -388,12 +386,9 @@
 		gap: 0.625rem;
 		overflow-x: auto;
 		scroll-snap-type: x mandatory;
-		scrollbar-width: none;
 		padding-bottom: 4px;
 
-		&::-webkit-scrollbar {
-			display: none;
-		}
+		@include mixins.hide-scrollbar;
 
 		@media (width >= 900px) {
 			display: grid;
