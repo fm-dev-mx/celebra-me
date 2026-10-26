@@ -30,6 +30,13 @@ lead columns; no published invitation content changes.
 - Board: low and medium risk cross reviews go to a clean-context Claude subagent, a review round
   waits for green CI (`--sin-ci` for PRs without checks), and `close` with every Handoff list
   finishes the task on its own (#589, #590).
+- Board: a review round after rounds that ended without a verdict reviews the whole PR,
+  `pnpm board solape` checks open board PRs for real overlap with `git merge-tree`, and answered
+  messages leave the owner's queue (#596).
+- Board view: a «General» tab with the owner's actions first, a global search across sections and
+  readable message cards (#597).
+- Board prompts: every prompt opens with a plain «PARA USTED» block (what it does, what the owner
+  owes, risk), and owner questions read as plain questions (#599).
 - Backups: the daily backup job copies new R2 media and memories originals (no width variants,
   social cards or thumbnails) into a separate private backup bucket, never overwriting or deleting;
   it stays inactive until the backup bucket and its tokens exist (#594).
@@ -38,6 +45,10 @@ lead columns; no published invitation content changes.
 
 - Dashboard: the single-reminder dialog stays open with its manual fallback when sending the
   reminder removes the guest from the reminder list (#593).
+- Dashboard: in the grouped guests table the share composer and its manual fallback stay open when
+  sending moves the guest to another group, and the row menu keeps keyboard focus (#591).
+- Tests: the guest import browser test waits for the dashboard to hydrate before opening its menu
+  (#600).
 
 ### Changed
 
