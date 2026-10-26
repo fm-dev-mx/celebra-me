@@ -52,7 +52,7 @@ export function buildLandingSchemaJsonLd(siteOrigin = DEFAULT_SITE_ORIGIN): Land
 				'@id': `${siteOrigin}/#organization`,
 				name: 'Celebra-me',
 				url: siteOrigin,
-				logo: `${siteOrigin}/favicon.svg`,
+				logo: `${siteOrigin}/icons/icon-512.png`,
 				description:
 					'Invitaciones digitales interactivas de alta gama con confirmación de asistencia RSVP en tiempo real.',
 			},
