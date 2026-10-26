@@ -7,7 +7,6 @@ import {
 	getShareCtaLabel,
 	hasBeenShared,
 	resolveShareFlowMode,
-	type ShareFlowMode,
 } from '@/components/dashboard/guests/guest-presenter';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 
@@ -47,7 +46,10 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	onComposerOpenChange,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
-	const [composerOpen, setComposerOpen] = useState(false);
+	// The guest as it was when the composer opened: marking as sent mid-flow must not turn
+	// an invitation composer (mode, template, fallback actions) into a reminder one.
+	const [composerGuest, setComposerGuest] = useState<DashboardGuestItem | null>(null);
+	const composerOpen = composerGuest !== null;
 	const idleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const onComposerOpenChangeRef = useRef(onComposerOpenChange);
 
@@ -66,7 +68,6 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	}, [composerOpen]);
 
 	const cta = getShareCtaLabel(guest);
-	const mode: ShareFlowMode = resolveShareFlowMode(guest);
 	const isPrimary = !hasBeenShared(guest) || guest.attendanceStatus === 'pending';
 	const priorityBtnClass =
 		status === 'idle' && isPrimary && !outlined ? 'btn-primary' : 'btn-secondary';
@@ -93,7 +94,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 			<button
 				type="button"
 				className={`${priorityBtnClass} dashboard-guests__share-button dashboard-guests__share-button--${status} ${guest.deliveryStatus === 'shared' && status === 'idle' ? 'dashboard-guests__share-button--shared' : ''}`}
-				onClick={() => setComposerOpen(true)}
+				onClick={() => setComposerGuest(guest)}
 				disabled={status !== 'idle'}
 				title={cta.label}
 				aria-label={cta.label}
@@ -101,21 +102,21 @@ const ShareAction: React.FC<ShareActionProps> = ({
 				{icon}
 				<span className="share-label">{label}</span>
 			</button>
-			{composerOpen && (
+			{composerGuest && (
 				<SendInvitationModal
-					guest={guest}
+					guest={composerGuest}
 					pendingGuests={[]}
 					inviteUrl={inviteUrl}
 					onClose={() => {
-						setComposerOpen(false);
+						setComposerGuest(null);
 						idleTimerRef.current = setTimeout(() => setStatus('idle'), 1500);
 					}}
-					onSave={onSaveGuest ?? (async () => guest)}
+					onSave={onSaveGuest ?? (async () => composerGuest)}
 					onMarkShared={handleMarkShared}
 					templates={shareTemplates}
 					shareDateContext={shareDateContext}
 					eventTitle={eventTitle}
-					mode={mode}
+					mode={resolveShareFlowMode(composerGuest)}
 				/>
 			)}
 		</>
