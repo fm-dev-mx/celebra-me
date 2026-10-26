@@ -34,6 +34,14 @@ describe('Estimated Lead Value service', () => {
 	let infoSpy: jest.SpyInstance;
 	let warnSpy: jest.SpyInstance;
 	let errorSpy: jest.SpyInstance;
+	let simulatedDb: {
+		insights: Map<string, any>;
+		leads: any[];
+		orders: any[];
+		throwOnLeads?: Error;
+		throwOnOrders?: Error;
+		throwOnInsights?: Error;
+	};
 
 	beforeEach(() => {
 		mockRestRequest.mockReset();
@@ -42,6 +50,54 @@ describe('Estimated Lead Value service', () => {
 		infoSpy = jest.spyOn(console, 'info').mockImplementation(() => undefined);
 		warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 		errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+		simulatedDb = {
+			insights: new Map(),
+			leads: [],
+			orders: [],
+		};
+
+		mockRestRequest.mockImplementation(async (options) => {
+			const { pathWithQuery, method, body } = options;
+
+			if (pathWithQuery.startsWith('meta_ads_insights_daily')) {
+				if (simulatedDb.throwOnInsights) {
+					throw simulatedDb.throwOnInsights;
+				}
+				if (method === 'POST') {
+					const rows = body as Array<{ insight_date: string; raw: any }>;
+					if (Array.isArray(rows)) {
+						for (const r of rows) {
+							simulatedDb.insights.set(r.insight_date, r.raw);
+						}
+					}
+					return [];
+				}
+				// GET
+				const match = pathWithQuery.match(/insight_date=eq\.(\d{4}-\d{2}-\d{2})/);
+				const date = match ? match[1] : '';
+				if (simulatedDb.insights.has(date)) {
+					return [{ raw: simulatedDb.insights.get(date) }];
+				}
+				return [];
+			}
+
+			if (pathWithQuery.startsWith('leads')) {
+				if (simulatedDb.throwOnLeads) {
+					throw simulatedDb.throwOnLeads;
+				}
+				return simulatedDb.leads;
+			}
+
+			if (pathWithQuery.startsWith('sales_orders')) {
+				if (simulatedDb.throwOnOrders) {
+					throw simulatedDb.throwOnOrders;
+				}
+				return simulatedDb.orders;
+			}
+
+			return [];
+		});
 	});
 
 	afterEach(() => {
@@ -154,23 +210,22 @@ describe('Estimated Lead Value service', () => {
 		const fixedDate = new Date('2026-10-01T08:00:00.000Z');
 
 		it('queries leads and orders from Supabase and calculates monthly value', async () => {
-			mockRestRequest
-				.mockResolvedValueOnce([
-					{ id: 'lead-1', status: 'new' },
-					{ id: 'lead-2', status: 'contacted' },
-					{ id: 'lead-3', status: 'quoted' },
-					{ id: 'lead-4', status: 'spam' }, // Should be excluded
-				])
-				.mockResolvedValueOnce([
-					{
-						id: 'order-1',
-						status: 'deposit_paid',
-						amount_paid: 1000,
-						total_amount: 1799,
-					},
-					{ id: 'order-2', status: 'paid', amount_paid: 1299, total_amount: 1299 },
-					{ id: 'order-3', status: 'pending', amount_paid: 0, total_amount: 1799 }, // Unpaid, excluded from sales
-				]);
+			simulatedDb.leads = [
+				{ id: 'lead-1', status: 'new' },
+				{ id: 'lead-2', status: 'contacted' },
+				{ id: 'lead-3', status: 'quoted' },
+				{ id: 'lead-4', status: 'spam' }, // Should be excluded
+			];
+			simulatedDb.orders = [
+				{
+					id: 'order-1',
+					status: 'deposit_paid',
+					amount_paid: 1000,
+					total_amount: 1799,
+				},
+				{ id: 'order-2', status: 'paid', amount_paid: 1299, total_amount: 1299 },
+				{ id: 'order-3', status: 'pending', amount_paid: 0, total_amount: 1799 }, // Unpaid, excluded from sales
+			];
 
 			const result = await computeMonthlyEstimatedLeadValue({ now: fixedDate });
 
@@ -185,7 +240,7 @@ describe('Estimated Lead Value service', () => {
 		});
 
 		it('safely catches Supabase errors and returns fallback without throwing', async () => {
-			mockRestRequest.mockRejectedValueOnce(new Error('Network error'));
+			simulatedDb.throwOnLeads = new Error('Network error');
 
 			const result = await computeMonthlyEstimatedLeadValue({ now: fixedDate });
 
@@ -199,26 +254,26 @@ describe('Estimated Lead Value service', () => {
 	});
 
 	describe('pagination (> 1000 rows)', () => {
-		it('paginates and aggregates populations exceeding the 1000-row API cap', async () => {
+		it('paginates and aggregates populations exceeding the 1000-row API cap with order=id.asc', async () => {
 			const fixedDate = new Date('2026-10-26T12:00:00.000Z');
 			// Generate 1500 leads: 1000 on page 1, 500 on page 2
 			const leadsPage1 = Array.from({ length: 1000 }, (_, i) => ({
-				id: `lead-${i}`,
+				id: `lead-${String(i).padStart(4, '0')}`,
 				status: 'new',
 			}));
 			const leadsPage2 = Array.from({ length: 500 }, (_, i) => ({
-				id: `lead-${1000 + i}`,
+				id: `lead-${String(1000 + i).padStart(4, '0')}`,
 				status: 'new',
 			}));
 			// Generate 1200 orders: 1000 on page 1 (50 MXN each), 200 on page 2 (50 MXN each) -> total 60,000 MXN
 			const ordersPage1 = Array.from({ length: 1000 }, (_, i) => ({
-				id: `order-${i}`,
+				id: `order-${String(i).padStart(4, '0')}`,
 				status: 'paid',
 				amount_paid: 50,
 				total_amount: 50,
 			}));
 			const ordersPage2 = Array.from({ length: 200 }, (_, i) => ({
-				id: `order-${1000 + i}`,
+				id: `order-${String(1000 + i).padStart(4, '0')}`,
 				status: 'paid',
 				amount_paid: 50,
 				total_amount: 50,
@@ -233,6 +288,11 @@ describe('Estimated Lead Value service', () => {
 			const result = await computeMonthlyEstimatedLeadValue({ now: fixedDate });
 
 			expect(mockRestRequest).toHaveBeenCalledTimes(4);
+			// Verify that every single pagination call carries stable sorting order=id.asc
+			for (const call of mockRestRequest.mock.calls) {
+				expect(call[0].pathWithQuery).toContain('order=id.asc');
+			}
+
 			expect(result.totalLeads).toBe(1500);
 			expect(result.totalSales).toBe(1200);
 			expect(result.totalRevenue).toBe(60000);
@@ -287,20 +347,18 @@ describe('Estimated Lead Value service', () => {
 				month: '2026-09',
 			});
 
-			mockRestRequest
-				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
-				.mockResolvedValueOnce([
-					{
-						id: 'order-1',
-						status: 'deposit_paid',
-						amount_paid: 1500,
-						total_amount: 1500,
-					},
-				]);
+			simulatedDb.leads = [{ id: 'lead-1', status: 'new' }];
+			simulatedDb.orders = [
+				{
+					id: 'order-1',
+					status: 'deposit_paid',
+					amount_paid: 1500,
+					total_amount: 1500,
+				},
+			];
 
 			const value = await getEstimatedLeadValue(fixedDate); // 2026-10
 			expect(value).toBe(1500); // 1500 / 1
-			expect(mockRestRequest).toHaveBeenCalledTimes(2);
 		});
 
 		it('getEstimatedLeadValueSync returns default fallback when cache is empty', () => {
@@ -314,59 +372,117 @@ describe('Estimated Lead Value service', () => {
 	describe('Worker instance recycling and shared snapshot persistence', () => {
 		const fixedDate = new Date('2026-10-26T12:00:00.000Z');
 
-		it('persists monthly snapshot and resolves it after Worker isolate recycling', async () => {
-			mockRestRequest
-				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
-				.mockResolvedValueOnce([
-					{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
-				]);
+		it('persists monthly snapshot to Supabase and cold Worker isolates resolve it without rescanning', async () => {
+			simulatedDb.leads = [{ id: 'lead-1', status: 'new' }];
+			simulatedDb.orders = [
+				{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
+			];
 
+			// Worker isolate 1 executes scheduled recalculation
 			const status = await runMetaEstimatedLeadValueRecalculation(fixedDate);
 			expect(status).toBe('completed');
 			expect(await getEstimatedLeadValue(fixedDate)).toBe(300);
+			expect(simulatedDb.insights.get('2026-10-01')).toBeDefined();
+			expect(simulatedDb.insights.get('2026-10-01')?.estimatedValue).toBe(300);
 
-			// Simulate recycling the Worker instance: module memory cache is reset
-			clearEstimatedLeadValueCache();
+			// Clear mock calls to observe Worker isolate 2 queries
+			mockRestRequest.mockClear();
 
 			// Subsequent database calls return different values (e.g. sales made later in the month)
-			mockRestRequest
-				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
-				.mockResolvedValueOnce([
-					{ id: 'order-1', status: 'paid', amount_paid: 600, total_amount: 600 },
-				]);
+			simulatedDb.leads = [
+				{ id: 'lead-1', status: 'new' },
+				{ id: 'lead-2', status: 'new' },
+			];
+			simulatedDb.orders = [
+				{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
+				{ id: 'order-2', status: 'paid', amount_paid: 700, total_amount: 700 },
+			];
 
-			// Cold instance must resolve the published monthly snapshot (300), preserving Pixel/CAPI parity
+			// Simulate recycling the Worker instance: module memory cache is reset (cold isolate)
+			clearEstimatedLeadValueCache();
+
+			// Cold instance must resolve the published monthly snapshot (300) from Supabase
 			const valueOnRecycledInstance = await getEstimatedLeadValue(fixedDate);
 			expect(valueOnRecycledInstance).toBe(300);
 
-			// Synchronous getter also reads the persisted snapshot
+			// Assert that isolate 2 queried the shared Supabase snapshot row, NOT leads or sales_orders
+			expect(mockRestRequest).toHaveBeenCalledWith(
+				expect.objectContaining({
+					pathWithQuery: expect.stringContaining('meta_ads_insights_daily'),
+					method: 'GET',
+				}),
+			);
+			const queriedPaths = mockRestRequest.mock.calls.map((c) => c[0].pathWithQuery);
+			expect(queriedPaths.some((p) => p.startsWith('leads'))).toBe(false);
+			expect(queriedPaths.some((p) => p.startsWith('sales_orders'))).toBe(false);
+
+			// Synchronous getter also reads the snapshot now warmed in memory
 			expect(getEstimatedLeadValueSync(fixedDate)).toBe(300);
 		});
 	});
 
-	describe('transient failures and database recovery', () => {
+	describe('legitimate fallback caching vs transient errors', () => {
 		const fixedDate = new Date('2026-10-26T12:00:00.000Z');
+
+		it('caches and persists legitimate fallback (zero paid sales) to avoid scanning tables on every SSR render', async () => {
+			// Table has leads but 0 paid sales (current production state)
+			simulatedDb.leads = [
+				{ id: 'lead-1', status: 'new' },
+				{ id: 'lead-2', status: 'contacted' },
+			];
+			simulatedDb.orders = []; // No sales
+
+			// 1st call on cold isolate: computes fallback 150 MXN, persists to Supabase and caches in memory
+			const val1 = await getEstimatedLeadValue(fixedDate);
+			expect(val1).toBe(DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN);
+			expect(simulatedDb.insights.get('2026-10-01')).toMatchObject({
+				estimatedValue: 150,
+				isFallback: true,
+				totalLeads: 2,
+				totalSales: 0,
+			});
+
+			// 2nd call in same isolate: served from in-memory cache accelerator without ANY DB queries
+			mockRestRequest.mockClear();
+			const val2 = await getEstimatedLeadValue(fixedDate);
+			expect(val2).toBe(DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN);
+			expect(mockRestRequest).not.toHaveBeenCalled();
+
+			// 3rd call on a new cold isolate: resolves snapshot from Supabase without scanning leads/orders
+			clearEstimatedLeadValueCache();
+			mockRestRequest.mockClear();
+			const val3 = await getEstimatedLeadValue(fixedDate);
+			expect(val3).toBe(DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN);
+			expect(mockRestRequest).toHaveBeenCalledTimes(1);
+			expect(mockRestRequest.mock.calls[0][0].pathWithQuery).toContain(
+				'meta_ads_insights_daily',
+			);
+		});
 
 		it('temporary read outage does not freeze fallback once database recovers', async () => {
 			// First read fails due to temporary network outage
-			mockRestRequest.mockRejectedValueOnce(new Error('temporary database outage'));
+			simulatedDb.throwOnLeads = new Error('temporary database outage');
 
 			const fallbackValue = await getEstimatedLeadValue(fixedDate);
 			expect(fallbackValue).toBe(DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN);
 
+			// Transient error is NOT persisted or cached
+			expect(simulatedDb.insights.get('2026-10-01')).toBeUndefined();
+
 			// Database recovers on next call
-			mockRestRequest
-				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
-				.mockResolvedValueOnce([
-					{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
-				]);
+			delete simulatedDb.throwOnLeads;
+			simulatedDb.leads = [{ id: 'lead-1', status: 'new' }];
+			simulatedDb.orders = [
+				{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
+			];
 
 			const recoveredValue = await getEstimatedLeadValue(fixedDate);
 			expect(recoveredValue).toBe(300);
+			expect(simulatedDb.insights.get('2026-10-01')?.estimatedValue).toBe(300);
 		});
 
 		it('scheduled recalculation reports failed and does not freeze fallback on database error', async () => {
-			mockRestRequest.mockRejectedValueOnce(new Error('transient scheduled error'));
+			simulatedDb.throwOnOrders = new Error('transient scheduled error');
 
 			const status = await runMetaEstimatedLeadValueRecalculation(fixedDate);
 			expect(status).toBe('failed');
@@ -374,27 +490,28 @@ describe('Estimated Lead Value service', () => {
 				'[meta-lead-value][recalculation] failed',
 				expect.objectContaining({ error: expect.any(Object) }),
 			);
+			expect(simulatedDb.insights.get('2026-10-01')).toBeUndefined();
 
 			// Snapshot was not frozen with fallback; healthy database call succeeds
-			mockRestRequest
-				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
-				.mockResolvedValueOnce([
-					{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
-				]);
+			delete simulatedDb.throwOnOrders;
+			simulatedDb.leads = [{ id: 'lead-1', status: 'new' }];
+			simulatedDb.orders = [
+				{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
+			];
 
 			const retryStatus = await runMetaEstimatedLeadValueRecalculation(fixedDate);
 			expect(retryStatus).toBe('completed');
 			expect(await getEstimatedLeadValue(fixedDate)).toBe(300);
+			expect(simulatedDb.insights.get('2026-10-01')?.estimatedValue).toBe(300);
 		});
 	});
 
 	describe('runMetaEstimatedLeadValueRecalculation', () => {
 		it('executes recalculation and logs completed outcome', async () => {
-			mockRestRequest
-				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
-				.mockResolvedValueOnce([
-					{ id: 'order-1', status: 'paid', amount_paid: 1000, total_amount: 1000 },
-				]);
+			simulatedDb.leads = [{ id: 'lead-1', status: 'new' }];
+			simulatedDb.orders = [
+				{ id: 'order-1', status: 'paid', amount_paid: 1000, total_amount: 1000 },
+			];
 
 			const status = await runMetaEstimatedLeadValueRecalculation();
 			expect(status).toBe('completed');

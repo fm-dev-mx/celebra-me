@@ -11,11 +11,13 @@
  *   estimatedValue = leadToSaleRate * averageTicket = totalRevenue / totalLeads
  *
  * A scheduled job recalculates this figure each month from recorded leads and orders.
- * The calculated value is persisted in a shared monthly snapshot across Worker isolates.
- * In-memory state serves as a fast accelerator; when unpopulated (e.g. after instance recycling),
- * isolates read the shared monthly snapshot.
- * If recalculation fails due to transient database errors, fallback is NOT cached as the monthly
- * snapshot and the job reports failure so subsequent runs can retry.
+ * The calculated value is persisted in a single shared source of truth (a row in Supabase
+ * table `meta_ads_insights_daily`) so all Worker isolates and colos read the exact same snapshot.
+ * In-memory state serves only as a per-isolate accelerator; cold/recycled isolates resolve
+ * the persisted row from Supabase.
+ * Ad-hoc calculations also persist this snapshot (including legitimate 0-sales fallbacks),
+ * preventing repetitive table scans on every request.
+ * Only transient database errors skip persisting and caching so subsequent runs can retry.
  *
  * Spec: .agent/tmp/reports/2026-10-25-client-loop-proposal.md (Section 8).
  */
@@ -25,6 +27,11 @@ import { safeErr } from '@/lib/server/safe-error';
 export const DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN = 150;
 export const ESTIMATED_LEAD_VALUE_CURRENCY = 'MXN';
 export const DEFAULT_PAGE_SIZE = 1000;
+
+export const ESTIMATED_LEAD_VALUE_SNAPSHOT_ACCOUNT = 'meta_commercial';
+export const ESTIMATED_LEAD_VALUE_SNAPSHOT_LEVEL = 'campaign';
+export const ESTIMATED_LEAD_VALUE_SNAPSHOT_OBJECT_ID = 'estimated_lead_value';
+export const ESTIMATED_LEAD_VALUE_SNAPSHOT_WINDOW = 'monthly_estimate';
 
 export interface EstimatedLeadValueCalculation {
 	totalLeads: number;
@@ -125,100 +132,113 @@ export function calculateEstimatedLeadValue(
 }
 
 let memoryCache: EstimatedLeadValueCalculation | null = null;
-const persistedSnapshotStore = new Map<string, EstimatedLeadValueCalculation>();
 
 /**
  * Resets the in-memory cache accelerator (simulates a recycled Worker isolate).
  */
-export function clearEstimatedLeadValueCache(options?: { clearPersisted?: boolean }): void {
+export function clearEstimatedLeadValueCache(): void {
 	memoryCache = null;
-	if (options?.clearPersisted) {
-		persistedSnapshotStore.clear();
-	}
-}
-
-export function clearPersistedSnapshotStore(): void {
-	persistedSnapshotStore.clear();
 }
 
 /**
- * Resets both in-memory cache and persisted snapshot storage (for clean test setups).
+ * Compatibility helper.
+ */
+export function clearPersistedSnapshotStore(): void {
+	// Snapshots are stored in Supabase; memory accelerator is cleared.
+	memoryCache = null;
+}
+
+/**
+ * Resets in-memory cache accelerator.
  */
 export function resetEstimatedLeadValueStorageForTesting(): void {
 	memoryCache = null;
-	persistedSnapshotStore.clear();
 }
 
 /**
- * Manually sets the memory cache and, if valid, the shared persisted snapshot.
+ * Manually sets the memory cache accelerator.
  */
 export function setEstimatedLeadValueCache(calc: EstimatedLeadValueCalculation): void {
 	memoryCache = calc;
 }
 
-function getWorkerDefaultCache(): Cache | null {
-	if (typeof caches === 'undefined') return null;
-	const storage = caches as unknown as { default?: Cache };
-	return storage.default ?? null;
-}
-
 /**
- * Reads the persisted monthly snapshot from shared storage / Cloudflare Cache API.
+ * Reads the persisted monthly snapshot from Supabase table `meta_ads_insights_daily`.
  */
 export async function readPersistedSnapshot(
 	month: string,
 ): Promise<EstimatedLeadValueCalculation | null> {
-	const cache = getWorkerDefaultCache();
-	if (cache) {
-		try {
-			const req = new Request(`https://celebra-me.internal/cache/meta-lead-value/${month}`);
-			const match = await cache.match(req);
-			if (match) {
-				const json = (await match.json()) as EstimatedLeadValueCalculation;
-				if (json && json.month === month && !json.isFallback) {
-					persistedSnapshotStore.set(month, json);
-					return json;
-				}
+	try {
+		const insightDate = `${month}-01`;
+		const pathWithQuery = `meta_ads_insights_daily?account_id=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_ACCOUNT}&level=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_LEVEL}&object_id=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_OBJECT_ID}&insight_date=eq.${insightDate}&attribution_window=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_WINDOW}&select=raw&limit=1`;
+		const rows = await supabaseRestRequest<Array<{ raw: EstimatedLeadValueCalculation }>>({
+			pathWithQuery,
+			method: 'GET',
+			useServiceRole: true,
+		});
+		if (Array.isArray(rows) && rows.length > 0 && rows[0]?.raw) {
+			const snapshot = rows[0].raw;
+			if (snapshot.month === month && typeof snapshot.estimatedValue === 'number') {
+				return snapshot;
 			}
-		} catch {
-			// Ignore cache read failures and fall back to local store
 		}
+	} catch (error) {
+		console.warn('[meta-lead-value] Failed to read snapshot from database:', safeErr(error));
 	}
-	return persistedSnapshotStore.get(month) ?? null;
+	return null;
 }
 
 /**
- * Synchronous snapshot lookup from local persisted store.
+ * Synchronous snapshot lookup from memory cache accelerator.
  */
 export function getPersistedSnapshotSync(month: string): EstimatedLeadValueCalculation | null {
-	return persistedSnapshotStore.get(month) ?? null;
+	if (memoryCache && memoryCache.month === month && !memoryCache.error) {
+		return memoryCache;
+	}
+	return null;
 }
 
 /**
- * Persists the monthly snapshot to shared storage and Cloudflare Cache API.
+ * Persists the monthly snapshot to Supabase table `meta_ads_insights_daily`.
+ * Never persists transient errors.
  */
 export async function writePersistedSnapshot(
 	calculation: EstimatedLeadValueCalculation,
 ): Promise<void> {
-	if (calculation.isFallback) return;
-	persistedSnapshotStore.set(calculation.month, calculation);
-
-	const cache = getWorkerDefaultCache();
-	if (cache) {
-		try {
-			const req = new Request(
-				`https://celebra-me.internal/cache/meta-lead-value/${calculation.month}`,
-			);
-			const res = new Response(JSON.stringify(calculation), {
-				headers: {
-					'Content-Type': 'application/json',
-					'Cache-Control': 'public, max-age=2592000',
-				},
-			});
-			await cache.put(req, res);
-		} catch {
-			// Ignore cache put failures
-		}
+	if (calculation.error) return;
+	try {
+		const insightDate = `${calculation.month}-01`;
+		const rawPayload = {
+			totalLeads: calculation.totalLeads,
+			totalSales: calculation.totalSales,
+			totalRevenue: calculation.totalRevenue,
+			leadToSaleRate: calculation.leadToSaleRate,
+			averageTicket: calculation.averageTicket,
+			estimatedValue: calculation.estimatedValue,
+			currency: calculation.currency,
+			isFallback: calculation.isFallback,
+			computedAt: calculation.computedAt,
+			month: calculation.month,
+		};
+		const row = {
+			account_id: ESTIMATED_LEAD_VALUE_SNAPSHOT_ACCOUNT,
+			level: ESTIMATED_LEAD_VALUE_SNAPSHOT_LEVEL,
+			object_id: ESTIMATED_LEAD_VALUE_SNAPSHOT_OBJECT_ID,
+			insight_date: insightDate,
+			attribution_window: ESTIMATED_LEAD_VALUE_SNAPSHOT_WINDOW,
+			raw: rawPayload,
+			collected_at: new Date().toISOString(),
+		};
+		await supabaseRestRequest<unknown>({
+			pathWithQuery:
+				'meta_ads_insights_daily?on_conflict=account_id,level,object_id,insight_date,attribution_window',
+			method: 'POST',
+			useServiceRole: true,
+			prefer: 'resolution=merge-duplicates,return=minimal',
+			body: [row],
+		});
+	} catch (error) {
+		console.warn('[meta-lead-value] Failed to write snapshot to database:', safeErr(error));
 	}
 }
 
@@ -235,7 +255,7 @@ interface StoredOrderRow {
 }
 
 /**
- * Deterministically paginates complete table rows from Supabase, preventing truncation at 1000 rows.
+ * Deterministically paginates complete table rows from Supabase with stable ordering `order=id.asc`.
  */
 export async function fetchAllCommercialRows<T extends { id: string }>(
 	pathWithQuery: string,
@@ -247,7 +267,7 @@ export async function fetchAllCommercialRows<T extends { id: string }>(
 	for (let page = 0; page < 1000; page++) {
 		const separator = pathWithQuery.includes('?') ? '&' : '?';
 		const batch = await supabaseRestRequest<T[]>({
-			pathWithQuery: `${pathWithQuery}${separator}limit=${pageSize}&offset=${offset}`,
+			pathWithQuery: `${pathWithQuery}${separator}order=id.asc&limit=${pageSize}&offset=${offset}`,
 			method: 'GET',
 			useServiceRole: true,
 		});
@@ -270,7 +290,7 @@ export async function fetchAllCommercialRows<T extends { id: string }>(
 
 /**
  * Computes the monthly estimated lead value from Supabase leads and sales orders.
- * Never freezes fallback on transient database errors.
+ * Legitimate 0-sales fallbacks are cached in memory; only transient errors skip caching.
  */
 export async function computeMonthlyEstimatedLeadValue(options?: {
 	now?: Date;
@@ -312,9 +332,8 @@ export async function computeMonthlyEstimatedLeadValue(options?: {
 			now,
 		});
 
-		if (!calculation.isFallback) {
-			memoryCache = calculation;
-		}
+		// Cache legitimate calculation in memory (even if isFallback: true because 0 sales)
+		memoryCache = calculation;
 
 		return calculation;
 	} catch (error) {
@@ -330,7 +349,7 @@ export async function computeMonthlyEstimatedLeadValue(options?: {
 			now,
 		});
 
-		// Attach error and DO NOT save fallback into memoryCache or persistedSnapshotStore
+		// Attach error and DO NOT save fallback into memoryCache
 		return {
 			...fallbackCalc,
 			error,
@@ -340,30 +359,32 @@ export async function computeMonthlyEstimatedLeadValue(options?: {
 
 /**
  * Resolves the current estimated lead value:
- * 1. Fast in-memory cache accelerator.
- * 2. Shared monthly persisted snapshot (survives Worker instance recycling).
- * 3. On-demand database calculation if no snapshot exists yet.
+ * 1. Fast in-memory cache accelerator (per-isolate).
+ * 2. Shared monthly persisted snapshot from Supabase (all isolates/colos).
+ * 3. On-demand database calculation if no snapshot exists yet, persisting the result.
  * Never freezes fallback on transient errors.
  */
 export async function getEstimatedLeadValue(now = new Date()): Promise<number> {
 	const currentMonth = formatMonthKey(now);
 
 	// 1. Memory cache accelerator
-	if (memoryCache && memoryCache.month === currentMonth && !memoryCache.isFallback) {
+	if (memoryCache && memoryCache.month === currentMonth && !memoryCache.error) {
 		return memoryCache.estimatedValue;
 	}
 
-	// 2. Persisted monthly snapshot
+	// 2. Persisted monthly snapshot from Supabase
 	const snapshot = await readPersistedSnapshot(currentMonth);
-	if (snapshot && snapshot.month === currentMonth && !snapshot.isFallback) {
+	if (snapshot && snapshot.month === currentMonth && !snapshot.error) {
 		memoryCache = snapshot;
 		return snapshot.estimatedValue;
 	}
 
-	// 3. Ad-hoc computation if no snapshot exists yet
+	// 3. Ad-hoc computation if no snapshot exists yet in Supabase
 	const calculation = await computeMonthlyEstimatedLeadValue({ now });
-	if (!calculation.isFallback && !calculation.error) {
+	if (!calculation.error) {
 		memoryCache = calculation;
+		// Persist the ad-hoc result (even if legitimate fallback) so other isolates and future calls don't rescan!
+		await writePersistedSnapshot(calculation);
 	}
 	return calculation.estimatedValue;
 }
@@ -373,13 +394,8 @@ export async function getEstimatedLeadValue(now = new Date()): Promise<number> {
  */
 export function getEstimatedLeadValueSync(now = new Date()): number {
 	const currentMonth = formatMonthKey(now);
-	if (memoryCache && memoryCache.month === currentMonth && !memoryCache.isFallback) {
+	if (memoryCache && memoryCache.month === currentMonth && !memoryCache.error) {
 		return memoryCache.estimatedValue;
-	}
-	const persisted = getPersistedSnapshotSync(currentMonth);
-	if (persisted && persisted.month === currentMonth && !persisted.isFallback) {
-		memoryCache = persisted;
-		return persisted.estimatedValue;
 	}
 	return resolveFallbackLeadValue();
 }
@@ -407,10 +423,9 @@ export async function runMetaEstimatedLeadValueRecalculation(
 			return 'failed';
 		}
 
-		if (!calculation.isFallback) {
-			await writePersistedSnapshot(calculation);
-			memoryCache = calculation;
-		}
+		// Persist valid calculation (including legitimate 0-sales fallback)
+		await writePersistedSnapshot(calculation);
+		memoryCache = calculation;
 
 		console.info('[meta-lead-value][recalculation] completed', {
 			estimatedValue: calculation.estimatedValue,
