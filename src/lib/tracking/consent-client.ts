@@ -21,6 +21,12 @@ const STORAGE_KEY = 'cm_consent';
 /** localStorage key of the commercial tracking visitor ID, written by the tracking client. */
 export const VISITOR_STORAGE_KEY = 'cm_visitor_id';
 
+/**
+ * localStorage key of the hashed phone the Meta Pixel sends as `ph` after the «Aparta su fecha»
+ * form (meta-pixel.ts). It is deleted here when marketing consent is withdrawn.
+ */
+export const META_PHONE_MATCH_STORAGE_KEY = 'cm_meta_ph';
+
 const CONSENT_DEFAULT: ConsentState = {
 	necessary: true as const,
 	analytics: false,
@@ -80,6 +86,7 @@ export function saveConsent(analytics: boolean, marketing: boolean): ConsentStat
 	if (marketing) {
 		clearPendingWithdrawal();
 	} else {
+		clearMetaPhoneMatchKey();
 		queueMarketingWithdrawal(state);
 	}
 	return state;
@@ -97,6 +104,14 @@ interface PendingWithdrawal {
 function clearPendingWithdrawal(): void {
 	try {
 		localStorage.removeItem(PENDING_WITHDRAWAL_KEY);
+	} catch {
+		// Nothing to clear when localStorage is unavailable.
+	}
+}
+
+function clearMetaPhoneMatchKey(): void {
+	try {
+		localStorage.removeItem(META_PHONE_MATCH_STORAGE_KEY);
 	} catch {
 		// Nothing to clear when localStorage is unavailable.
 	}

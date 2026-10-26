@@ -22,7 +22,9 @@
 
 	.dashboard-modal__header .btn-close {
 		min-width: 44px;
-		min-height: 44px;
+
+		@include mixins.touch-target;
+
 		color: var(--color-text-primary);
 	}
 
@@ -286,7 +288,7 @@
 
 	// Touch layouts keep the 44px target.
 	@include mixins.respond-below(lg) {
-		min-height: 44px;
+		@include mixins.touch-target;
 	}
 }
 
@@ -377,7 +379,7 @@
 
 		// Touch layouts keep the 44px target.
 		@include mixins.respond-below(lg) {
-			min-height: 44px;
+			@include mixins.touch-target;
 		}
 	}
 }
@@ -436,7 +438,8 @@
 }
 
 .guest-detail-actions__undo-btn {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	padding: 0 0.5rem;
 	border: 0;
 	background: transparent;
@@ -473,7 +476,8 @@
 }
 
 .guest-detail-actions__menu-item {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	padding: 0 0.75rem;
 	border: 0;
 	border-radius: 10px;

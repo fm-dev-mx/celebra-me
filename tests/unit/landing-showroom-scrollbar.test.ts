@@ -20,7 +20,16 @@ describe('landing showroom scrollbar', () => {
 
 	it('still emits the hiding declarations for both strips', () => {
 		const { css } = compile(SHOWROOM_SCSS);
-		expect(css.match(/scrollbar-width: none;/gu)).toHaveLength(2);
-		expect(css.match(/::-webkit-scrollbar \{\s*display: none;\s*\}/gu)).toHaveLength(2);
+		const rules = (pattern: RegExp) =>
+			[...css.matchAll(/([^{}]+)\{([^{}]*)\}/gu)]
+				.filter((m) => pattern.test(m[2]))
+				.map((m) => m[1].trim());
+		expect(rules(/scrollbar-width: none;/u)).toEqual(['.vitrina__events', '.vitrina__styles']);
+		expect(rules(/display: none;/u)).toEqual(
+			expect.arrayContaining([
+				'.vitrina__events::-webkit-scrollbar',
+				'.vitrina__styles::-webkit-scrollbar',
+			]),
+		);
 	});
 });

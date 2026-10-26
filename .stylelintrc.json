@@ -4,7 +4,7 @@
         "max-nesting-depth": [
             3,
             {
-                "ignoreAtRules": ["each", "for", "if", "else", "media", "supports"]
+                "ignoreAtRules": ["each", "for", "if", "else", "media", "supports", "include"]
             }
         ],
 
@@ -34,6 +34,49 @@
         "scss/dollar-variable-pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
         "scss/at-rule-no-unknown": true,
         "import-notation": null,
-        "no-invalid-position-at-import-rule": true
-    }
+        "no-invalid-position-at-import-rule": true,
+        "media-feature-name-disallowed-list": [
+            ["prefers-reduced-motion"],
+            {
+                "message": "Use the reduced-motion or motion-safe mixin from src/styles/global/_a11y.scss"
+            }
+        ],
+        "declaration-property-value-disallowed-list": [
+            {
+                "min-height": ["/^44px$/"],
+                "outline-offset": ["/^2px$/"]
+            },
+            {
+                "message": "Use the touch-target or focus-ring mixin from src/styles/global/_a11y.scss"
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": [
+                "src/styles/global/_a11y.scss",
+                "src/styles/invitation-profiles/abril-michelle-becerra-rea.scss",
+                "src/styles/invitation-profiles/alba-rosa-quinonez.scss",
+                "src/styles/invitation-profiles/allison-scarlett.scss",
+                "src/styles/invitation-profiles/america-johana.scss",
+                "src/styles/invitation-profiles/daniela-y-martin.scss",
+                "src/styles/invitation-profiles/destenid-sofia.scss",
+                "src/styles/invitation-profiles/leah-lexa.scss",
+                "src/styles/invitation-profiles/leslie-perez.scss",
+                "src/styles/invitation-profiles/luna-y-estrella.scss",
+                "src/styles/invitation-profiles/melissa-y-luis-osmar.scss",
+                "src/styles/invitation-profiles/naydelin-paredes.scss",
+                "src/styles/invitation-profiles/norma-hernandez.scss",
+                "src/styles/invitation-profiles/renata.scss",
+                "src/styles/invitation-profiles/romina-rios-chaparro.scss",
+                "src/styles/invitation-profiles/valentina-hernandez.scss",
+                "src/styles/invitation-profiles/victoria-y-roberto.scss",
+                "src/styles/invitation-profiles/xareni-iyarit.scss"
+            ],
+            "rules": {
+                "media-feature-name-disallowed-list": null,
+                "declaration-property-value-disallowed-list": null
+            }
+        }
+    ]
 }

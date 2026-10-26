@@ -135,7 +135,7 @@
 		margin-left: 0.35rem;
 	}
 
-	@media (prefers-reduced-motion: no-preference) {
+	@include mixins.motion-safe {
 		.framed-portrait-hero__invitation span {
 			animation: invitation-bounce-down 2.8s ease-in-out infinite;
 		}

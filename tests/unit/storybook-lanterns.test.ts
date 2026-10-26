@@ -127,7 +127,7 @@ describe('storybook presentation contracts', () => {
 		);
 		const fieldMixin = ornaments.slice(ornaments.indexOf('@mixin storybook-light-field'));
 		expect(fieldMixin.slice(0, fieldMixin.indexOf('@keyframes'))).toContain(
-			'@media (prefers-reduced-motion: no-preference)',
+			'@include mixins.motion-safe',
 		);
 	});
 

@@ -51,7 +51,9 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0.4rem;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0 1rem;
 	border: 0;
 	border-radius: 11px;
@@ -170,8 +172,8 @@
 	cursor: pointer;
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
+
 		border-radius: 8px;
 	}
 }

@@ -120,6 +120,17 @@ describe('Meta aggregate insight transport', () => {
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 
+	it('refuses an opaque redirect, as a browser-style fetch reports it', async () => {
+		// `new Response` cannot build type 'opaqueredirect', so the mock is shaped by hand.
+		fetchMock.mockResolvedValue({
+			type: 'opaqueredirect',
+			status: 0,
+			ok: false,
+			body: null,
+		} as unknown as Response);
+		await expect(collect(client)).rejects.toMatchObject({ kind: 'response', status: 0 });
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
 	it('never preserves network error messages or causes', async () => {
 		fetchMock.mockRejectedValue(
 			new Error(`Connection failed ${ENDPOINT}?access_token=${TOKEN}`),

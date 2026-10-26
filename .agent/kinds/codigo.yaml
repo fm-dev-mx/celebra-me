@@ -10,8 +10,8 @@ lee:
     - 'commit_preparation'
     - 'testing_qa'
 pasos_inicio:
-    - 'pnpm agent:git-safety:start --session={rama}'
-    - 'pnpm board claim {id} --agente={agente} --rama={rama} --titulo="{nombre}"'
+    - 'git switch -c {rama} origin/develop'
+    - 'pnpm board claim {id} --agente={agente} --carril={carril} --rama={rama} --titulo="{nombre}"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session={rama}'
 pasos:
     - '1. Haga el cambio de QUÉ SE BUSCA con pruebas unitarias en tests/unit/.'
     - '2. Commit en inglés, push de {rama} y PR a develop.'

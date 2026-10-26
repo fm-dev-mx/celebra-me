@@ -1,0 +1,24 @@
+// Accessibility mixins. This module loads nothing and emits no CSS by itself, so any stylesheet
+// can use it without pulling in the design tokens; `_mixins.scss` forwards it.
+
+@mixin reduced-motion {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+@mixin motion-safe {
+	@media (prefers-reduced-motion: no-preference) {
+		@content;
+	}
+}
+
+// Minimum height of a touch target (WCAG 2.5.5).
+@mixin touch-target {
+	min-height: 44px;
+}
+
+@mixin focus-ring($color: var(--dashboard-focus-ring), $width: 2px) {
+	outline: $width solid $color;
+	outline-offset: 2px;
+}

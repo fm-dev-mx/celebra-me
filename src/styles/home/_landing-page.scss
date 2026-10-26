@@ -1,4 +1,5 @@
 @use '../tokens/type-scale';
+@use '../global/a11y' as a11y;
 
 html {
 	scroll-behavior: smooth;
@@ -75,7 +76,7 @@ html[data-promo-state='none'] [data-promo-only] {
 }
 
 // Hover lifts are decorative; keep controls still when the visitor asks for less motion.
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.landing-sections-wrapper .whatsapp-button:hover,
 	.landing-sections-wrapper .pricing-card:hover,
 	#home-header .home-nav-actions__cta:hover,

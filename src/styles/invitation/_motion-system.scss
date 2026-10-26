@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Invitation motion recipes are selected by render-plan metadata. Content remains visible until
 // the document coordinator successfully registers the wrapper and adds `.has-motion`.
 
@@ -7,7 +9,7 @@
 	--reveal-ease: var(--motion-reveal-ease, var(--ease-premium));
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	#invitation-sections-container
 		> .invitation-section-wrapper:is([data-reveal='fade'], [data-reveal='fade-up']) {
 		opacity: 100%;
@@ -116,7 +118,7 @@
 	--editorial-order: var(--reveal-order, 0);
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-reveal='editorial']
 		[data-reveal-role='title']
@@ -189,7 +191,7 @@
 
 // Reduced motion: no blur, scale, clip or delay; every editorial entrance is a 200 ms fade. It
 // outranks the global reduced-motion reset, which removes every other animation.
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-reveal='editorial'].has-motion
 		[data-reveal-pending],
@@ -273,7 +275,7 @@ html.lenis.lenis-smooth {
 }
 
 // Editorial press cue: a gallery photograph gives under the finger before it opens.
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	[data-motion='editorial'] [data-gallery-item] {
 		transition: scale 160ms var(--editorial-ease, ease-out);
 
@@ -310,7 +312,7 @@ html.lenis.lenis-smooth {
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.event-theme-wrapper.event-theme-wrapper *,
 	.event-theme-wrapper.event-theme-wrapper *::before,
 	.event-theme-wrapper.event-theme-wrapper *::after {

@@ -110,7 +110,7 @@ $lantern-sky:
 		.location-route__continuation-mark {
 			flex: none;
 
-			@media (prefers-reduced-motion: no-preference) {
+			@include m.motion-safe {
 				animation: pulse-chevron-relative 2.8s ease-in-out infinite;
 			}
 		}
@@ -125,7 +125,7 @@ $lantern-sky:
 		// Pinned, the scene bleeds to the viewport (the section clips it); the stage restores the gutters. The
 		// scene is the timeline subject itself, so the descendant mixins do not reach it.
 		@supports (animation-timeline: view()) {
-			@media (prefers-reduced-motion: no-preference) {
+			@include m.motion-safe {
 				:where([data-motion='editorial']) & .location-route {
 					margin-inline: calc(50% - 50vw);
 					margin-top: calc(-1 * var(--location-route-lift, 0px));
@@ -133,7 +133,7 @@ $lantern-sky:
 			}
 		}
 
-		@media (prefers-reduced-motion: no-preference) {
+		@include m.motion-safe {
 			.location-route[data-scene-engine='script'] {
 				margin-inline: calc(50% - 50vw);
 				margin-top: calc(-1 * var(--location-route-lift, 0px));
@@ -391,7 +391,7 @@ $lantern-sky:
 			transform-box: fill-box;
 			transform-origin: center;
 
-			@media (prefers-reduced-motion: no-preference) {
+			@include m.motion-safe {
 				animation: route-wing-fold 2.4s ease-in-out infinite;
 			}
 		}

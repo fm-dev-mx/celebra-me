@@ -93,7 +93,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		.rsvp__button {
 			transition: none;
 

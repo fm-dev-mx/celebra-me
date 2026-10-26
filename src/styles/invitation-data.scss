@@ -3,6 +3,7 @@
 // «Datos de su invitación»: the private form behind /mi-invitacion/<token>. Mobile first, with the
 // same warm palette as the «Aparta su fecha» dialog the client saw before buying.
 @use 'global';
+@use './global/a11y' as a11y;
 
 .invitation-data-page {
 	--invitation-data-surface: rgb(253 250 244);
@@ -88,7 +89,7 @@
 		background: var(--invitation-data-accent);
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		&::-webkit-progress-value {
 			transition: none;
 		}
@@ -145,7 +146,9 @@
 	input,
 	textarea {
 		width: 100%;
-		min-height: 44px;
+
+		@include a11y.touch-target;
+
 		box-sizing: border-box;
 		padding: 0.625rem 0.75rem;
 		border: 1px solid var(--invitation-data-border);
@@ -198,7 +201,8 @@
 }
 
 .invitation-data__suggestion {
-	min-height: 44px;
+	@include a11y.touch-target;
+
 	padding: 0.625rem 0.75rem;
 	border: 1px dashed var(--invitation-data-accent);
 	border-radius: 10px;
@@ -284,8 +288,7 @@
 	cursor: pointer;
 
 	&:focus-visible {
-		outline: 3px solid var(--invitation-data-focus);
-		outline-offset: 2px;
+		@include a11y.focus-ring(var(--invitation-data-focus), 3px);
 	}
 
 	&:disabled {
@@ -308,7 +311,9 @@
 
 .invitation-data__link {
 	min-width: 44px;
-	min-height: 44px;
+
+	@include a11y.touch-target;
+
 	padding: 0 0.5rem;
 	border: none;
 	background: transparent;

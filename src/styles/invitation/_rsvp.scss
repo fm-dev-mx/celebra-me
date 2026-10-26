@@ -647,8 +647,8 @@
 
 	&__secondary-button {
 		@extend %rsvp-button-base;
+		@include mixins.touch-target;
 
-		min-height: 44px;
 		padding: 0.75rem 1rem;
 		border: 1px solid var(--rsvp-field-border);
 		background: rgb(var(--color-surface-primary-rgb) / 42%);
@@ -820,7 +820,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		// Reduced-motion hydration must not preserve the server's hidden field state.
 		.rsvp__fieldset {
 			/* stylelint-disable-next-line declaration-no-important */

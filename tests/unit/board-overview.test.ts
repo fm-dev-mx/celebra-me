@@ -80,6 +80,58 @@ describe('board overview: owner actions and tab counts (T321)', () => {
 		expect(r.n.usted).toBe(r.acts.length);
 	});
 
+	it('names the owner verb of each row kind and counts exactly the rows it lists', () => {
+		const task = (id: string, num: number, fields: Record<string, unknown>) => ({
+			id,
+			num,
+			titulo: id,
+			estado: 'pendiente',
+			actor: 'sesion',
+			agente: 'claude',
+			urgencia: 'normal',
+			requisitos: [],
+			prompt: 'x',
+			...fields,
+		});
+		const board = {
+			tareas: [
+				task('hacer', 1, { actor: 'dueno', agente: 'cualquiera' }),
+				task('aprobar', 2, { actor: 'coordinador', toca: ['main'] }),
+				task('decidir', 3, { requisitos: [{ tipo: 'dueno', ref: '¿Publica hoy?' }] }),
+				task('fin', 4, {
+					estado: 'hecha',
+					cierre: {
+						resumen: ['Listo'],
+						comprobaciones: ['pnpm test'],
+						saltadas: ['ninguna'],
+						pendientes: [],
+						fallidas: [],
+						riesgos: [],
+						dudas: [],
+						excepciones: [],
+						en: '2026-10-25T00:00:00Z',
+					},
+				}),
+			],
+			decisiones: [],
+			bitacora: [],
+			carriles: [],
+			bandejas: [],
+		};
+		const r = probe(
+			'console.log(JSON.stringify({acts: f.ownerActions(b).map((x) => [x.tipo, x.verbo, x.id]), n: f.tabCounts(b)}))',
+			board,
+		);
+		expect(r.acts).toEqual([
+			['tarea', 'Aprobar', 'aprobar'],
+			['tarea', 'Hacer', 'hacer'],
+			['decision', 'Decidir', 'decidir'],
+			['archivar', 'Archivar', null],
+		]);
+		expect(r.n.usted).toBe(r.acts.length);
+		expect(r.n.finalizadas).toBe(1);
+	});
+
 	it('counts the Cola as its open tasks plus its review group, and lanes held out of all', () => {
 		const r = probe('console.log(JSON.stringify(f.tabCounts(b)))');
 		expect(r.cola).toBe(2);
@@ -104,6 +156,36 @@ describe('board overview: readable messages (T321)', () => {
 				'Corrí `pnpm board review`.',
 			],
 		});
+	});
+
+	it('never takes a URL query string as the question and carries stored options and detail', () => {
+		const row = {
+			...msg(
+				'm3',
+				'codex',
+				'dueno',
+				'tablero-vista',
+				'Vea https://x.test/a?b=1 en el PR. ¿Publica hoy?',
+			),
+		};
+		row.mensaje = {
+			...row.mensaje,
+			opciones: ['Sí, hoy', 'Mañana'],
+			detalle: 'SHA 388396a\\nrama feat/x',
+		} as typeof row.mensaje;
+		const r = probe(
+			`console.log(JSON.stringify({...f.messageParts(${JSON.stringify(row)}, b), t: null}))`,
+		);
+		expect(r.pregunta).toBe('¿Publica hoy?');
+		expect(r.opciones).toEqual(['Sí, hoy', 'Mañana']);
+		expect(r.detalle).toEqual([
+			'Vea https://x.test/a?b=1 en el PR.',
+			'SHA 388396a',
+			'rama feat/x',
+		]);
+		// The owner card shows the options, and a focused card opens with the keyboard.
+		expect(VIEW).toContain('Opciones: ${esc(optionsText(m.opciones))}');
+		expect(VIEW).toContain('data-all="1" tabindex="0"');
 	});
 
 	it('rewrites a «Mensaje: … sobre T307: T307 …» row without its repeated prefix', () => {
@@ -155,6 +237,25 @@ describe('board overview: global search (T321)', () => {
 			['d210', ['Historial']],
 		]);
 		expect(sections('')).toEqual([]);
+	});
+
+	it('returns every match when asked, so the view can count past what it lists', () => {
+		const many = {
+			...FIXTURE,
+			tareas: Array.from({ length: 65 }, (_, i) => ({
+				id: `tarea-${i}`,
+				num: i + 1,
+				titulo: `Ajuste ${i}`,
+				estado: 'hecha',
+			})),
+		};
+		const n = probe(
+			"console.log(JSON.stringify([f.globalSearch(b, 'ajuste').length, f.globalSearch(b, 'ajuste', { max: Infinity }).length]))",
+			many,
+		);
+		expect(n).toEqual([60, 65]);
+		expect(VIEW).toContain('S.found=all.length;');
+		expect(VIEW).toContain('Se muestran ${hits.length} de ${all.length}.');
 	});
 
 	it('opens on «General», keeps the tab during a search and returns to it when cleared', () => {

@@ -311,7 +311,8 @@ describe('pnpm board:sync', () => {
 		);
 		expect(out).toEqual([
 			['por-titulo', 30],
-			['por-cuerpo', 31],
+			// A declared branch is the only match: a PR naming the task from another head is reported instead.
+			['por-cuerpo', null],
 			['en-prosa', null],
 			['doble', null],
 			['corto', null],
@@ -326,6 +327,27 @@ describe('pnpm board:sync', () => {
 		expect(p.cambios.map((c: Json) => [c.id, c.set])).toEqual([
 			['por-titulo', { pr: '#30', rama: 'feat/otra-cosa', estado: 'en revision' }],
 		]);
+		const named = probe(
+			SYNC_PATH,
+			`console.log(JSON.stringify(m.plan({ tareas: ${JSON.stringify(tasks.slice(1, 2))} }, { worktrees: [], local: [], remote: [], prs: ${JSON.stringify(prs)} })));`,
+		);
+		expect(named.cambios).toEqual([]);
+		expect(named.avisos.map((a: Json) => a.texto)).toEqual([
+			'T21 por-cuerpo: rama feat/sin-pr-aun sin PR, pero el PR #31 (rama feat/z) nombra la tarea: corrija rama o pr',
+		]);
+	});
+
+	it('matches a title reference literally, with or without a PR body (P3 of PR #607)', () => {
+		const prs = [
+			{ ...pr(40, 'feat/x', 'OPEN'), title: 'feat: T28 v1x2 tweak' },
+			{ ...pr(41, 'feat/w', 'OPEN'), title: 'feat: T29 v1.2 tweak' },
+		];
+		const out = probe(
+			SYNC_PATH,
+			`const prs = ${JSON.stringify(prs)};
+			console.log(JSON.stringify([m.namesTask(prs[0], { num: 28, id: 'v1.2' }), m.namesTask(prs[1], { num: 29, id: 'v1.2' }), m.namesTask({ title: 'x' }, { num: 29, id: 'v1.2' })]));`,
+		);
+		expect(out).toEqual([false, true, false]);
 	});
 
 	it('deletes the branch a freed lane left only when origin/develop contains it (d268)', () => {
@@ -353,7 +375,7 @@ describe('pnpm board:sync', () => {
 				if (args[0] === 'rev-parse') return l.head;
 				if (args[0] === 'status') return '';
 				calls.push([cwd, ...args]);
-				if (args[0] === 'merge-base' && cwd.endsWith('f10-libre')) throw new Error('exit 1');
+				if (args[0] === 'merge-base' && cwd.endsWith('f10-libre')) throw Object.assign(new Error('exit 1'), { status: 1 });
 				if (args[0] === 'branch' && cwd.endsWith('f11-preview'))
 					throw Object.assign(new Error('x'), { stderr: "error: cannot delete branch 'feat/en-otro' used by worktree\\nmore" });
 				return '';
@@ -373,19 +395,19 @@ describe('pnpm board:sync', () => {
 			`w/${lane}`,
 			'merge-base',
 			'--is-ancestor',
-			rama,
+			`refs/heads/${rama}`,
 			develop,
 		];
 		expect(real.calls).toEqual([
 			detach('f05-plataforma'),
 			detach('f09-docs'),
 			ancestor('f09-docs', 'feat/unida'),
-			['w/f09-docs', 'branch', '-d', '--quiet', 'feat/unida'],
+			['w/f09-docs', 'branch', '-d', '--quiet', '--', 'feat/unida'],
 			detach('f10-libre'),
 			ancestor('f10-libre', 'feat/squash'),
 			detach('f11-preview'),
 			ancestor('f11-preview', 'feat/en-otro'),
-			['w/f11-preview', 'branch', '-d', '--quiet', 'feat/en-otro'],
+			['w/f11-preview', 'branch', '-d', '--quiet', '--', 'feat/en-otro'],
 		]);
 		expect(real.carriles.map((c: Json) => [c.lane, c.ok, c.podada, c.resultado])).toEqual([
 			['f05-plataforma', true, undefined, undefined],

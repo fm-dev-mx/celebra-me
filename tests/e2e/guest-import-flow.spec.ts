@@ -141,10 +141,12 @@ test.describe('Guest import flow', () => {
 		const { imports, unexpected } = await mockDashboard(page);
 
 		// The guests request leaves from an effect of the hydrated island, so its handlers are ready.
-		const hydrated = page.waitForResponse('**/api/dashboard/guests?*');
-		await page.goto(ROUTE, { waitUntil: 'domcontentloaded' });
+		// Awaited together, a failed navigation never leaves the wait to reject unhandled later.
+		await Promise.all([
+			page.waitForResponse('**/api/dashboard/guests?*'),
+			page.goto(ROUTE, { waitUntil: 'domcontentloaded' }),
+		]);
 		await expect(page).toHaveURL(new RegExp(`/dashboard/invitados\\?eventId=${EVENT_ID}`));
-		await hydrated;
 
 		await page.getByRole('button', { name: 'Más acciones', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Importar' }).click();

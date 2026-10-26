@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Platform usage console (super-admin): status summary, provider sections,
 // quota blocks and meter rows. Meter colors come from `_meter.scss`.
 
@@ -16,7 +18,9 @@
 .platform-link {
 	display: inline-flex;
 	align-items: center;
-	min-height: 44px;
+
+	@include a11y.touch-target;
+
 	font-size: 0.875rem;
 	font-weight: 600;
 	color: var(--color-text-emphasis);
@@ -25,8 +29,8 @@
 
 	&:focus-visible {
 		border-radius: 4px;
-		outline: 2px solid var(--color-action-accent);
-		outline-offset: 2px;
+
+		@include a11y.focus-ring(var(--color-action-accent));
 	}
 }
 

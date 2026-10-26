@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Fixed mobile WhatsApp CTA (StickyWhatsAppBar.astro): the showroom's current demo and its quote.
 // Stays below the header, the mobile drawer and the cookie consent bar.
 
@@ -61,7 +63,9 @@
 	.sticky-cta__button {
 		flex: none;
 		min-width: 0;
-		min-height: 44px;
+
+		@include a11y.touch-target;
+
 		padding: 0.6rem 1rem;
 		white-space: nowrap;
 	}
@@ -70,7 +74,7 @@
 		display: none;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		transition: none;
 
 		&--visible {

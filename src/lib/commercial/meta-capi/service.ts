@@ -158,7 +158,10 @@ export interface BrowserConversionInput {
 	eventId: string;
 	sessionId: string;
 	eventSourcePath: string;
-	/** A Lead from the capture form carries its customer, so delivery adds the hashed phone. */
+	/**
+	 * The capture form's customer: on its Lead and on every later browser event of the same
+	 * session, so delivery adds the hashed phone.
+	 */
 	customerId?: string;
 	leadId?: string;
 }

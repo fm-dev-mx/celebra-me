@@ -392,11 +392,18 @@ export const personName = (id) => READERS[id] ?? AGENT_REGISTRY[id]?.nombre ?? S
 
 const TECHNICAL = new Set(['sha', 'branch', 'code', 'path', 'file', 'url']);
 const escRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** A stored `--detalle`, one line per sentence; the CLI may keep a typed «\n» as two characters. */
+const detailLines = (detalle) =>
+	String(detalle ?? '')
+		.split(/\r?\n|\\n/)
+		.map((s) => s.trim())
+		.filter(Boolean);
 
 /**
  * T321: a message `{quien, en, tarea, mensaje: {para, texto}}` as a card reads it: who asks whom, the question in one
  * line, the plain sentences around it (`contexto`) and the technical ones (`detalle`: SHAs, branches, commands, paths)
  * to fold. A leading «T295», «T295 ·» or the task id that only repeats the message's own task is dropped.
+ * T322: the options and stored detail of a question (`--opcion`, `--detalle`) come along, so its card shows them.
  */
 export function messageParts(r, board) {
 	const t = findTask(r.tarea, board);
@@ -414,7 +421,9 @@ export function messageParts(r, board) {
 		.map((s) => s.trim())
 		.filter(Boolean);
 	const technical = (s) => tokenize(s).some((x) => TECHNICAL.has(x.kind));
+	// A URL query string (`https://x/a?b=1`) is no question: a plain sentence with «?» goes first.
 	const pregunta =
+		sentences.find((s) => s.includes('?') && !technical(s)) ??
 		sentences.find((s) => s.includes('?')) ??
 		sentences.find((s) => !technical(s)) ??
 		sentences[0] ??
@@ -428,7 +437,8 @@ export function messageParts(r, board) {
 		tarea: t ? taskTag(t) : (r.tarea ?? ''),
 		pregunta,
 		contexto: rest.filter((s) => !technical(s)),
-		detalle: rest.filter(technical),
+		detalle: [...rest.filter(technical), ...detailLines(r.mensaje?.detalle)],
+		opciones: r.mensaje?.opciones ?? [],
 		en: r.en ?? null,
 	};
 }
@@ -559,7 +569,7 @@ export function tabCounts(board, { prs, now = Date.now() } = {}) {
 const foldText = (s) =>
 	String(s ?? '')
 		.normalize('NFD')
-		.replace(/[̀-ͯ]/g, '')
+		.replace(/[\u0300-\u036f]/g, '')
 		.toLowerCase();
 
 /** T321: whether a task matches the search: its number (T295 or 295), id, title, current line or PR (#594, PR 594). */
@@ -614,6 +624,8 @@ export function globalSearch(board, q, { prs, now = Date.now(), max = 60 } = {})
 			if (isFinished(t))
 				secciones.push(t.archivada ? 'Finalizadas · archivada' : 'Finalizadas');
 			if (t.candado && !isFinished(t)) secciones.push('Carriles');
+			// A match no section lists (for example a pending task without a prompt) still gets a label.
+			if (!secciones.length) secciones.push('Otras');
 			return { tipo: 'tarea', t, secciones };
 		})
 		.sort((a, b) => rank(a) - rank(b) || (b.t.num ?? 0) - (a.t.num ?? 0));

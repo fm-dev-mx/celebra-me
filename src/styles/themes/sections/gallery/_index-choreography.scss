@@ -592,7 +592,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		.gallery-lightbox,
 		.gallery-lightbox__close {
 			/* stylelint-disable-next-line declaration-no-important */

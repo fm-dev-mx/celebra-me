@@ -7,6 +7,10 @@ jest.mock('@/lib/tracking/lead.service', () => ({
 	createLeadFromTrackingEvent: jest.fn(),
 }));
 
+jest.mock('@/lib/tracking/lead.repository', () => ({
+	findSessionLeadCustomerId: jest.fn(),
+}));
+
 jest.mock('@/lib/commercial/meta-capi/service', () => ({
 	...jest.requireActual<object>('@/lib/commercial/meta-capi/service'),
 	enqueueBrowserConversionEvent: jest.fn(),
@@ -16,6 +20,7 @@ import { enqueueBrowserConversionEvent } from '@/lib/commercial/meta-capi/servic
 
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 import { INTERNAL_TRACKING_EVENT_NAMES } from '@/lib/tracking/event-contract';
+import { findSessionLeadCustomerId } from '@/lib/tracking/lead.repository';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 
@@ -29,6 +34,10 @@ const mockCreateLeadFromTrackingEvent = createLeadFromTrackingEvent as jest.Mock
 	typeof createLeadFromTrackingEvent
 >;
 
+const mockFindSessionLeadCustomerId = findSessionLeadCustomerId as jest.MockedFunction<
+	typeof findSessionLeadCustomerId
+>;
+
 const mockEnqueueBrowserConversionEvent = enqueueBrowserConversionEvent as jest.MockedFunction<
 	typeof enqueueBrowserConversionEvent
 >;
@@ -36,6 +45,7 @@ const mockEnqueueBrowserConversionEvent = enqueueBrowserConversionEvent as jest.
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockEnqueueBrowserConversionEvent.mockResolvedValue(undefined);
+	mockFindSessionLeadCustomerId.mockResolvedValue(null);
 	mockUpsertVisitorSession.mockResolvedValue(undefined);
 	mockInsertTrackingEvent.mockResolvedValue({
 		id: 'event-id',
@@ -246,6 +256,48 @@ describe('ingestTrackingEvent', () => {
 				sessionId: '88888888-8888-4888-8888-888888888888',
 				eventSourcePath: '/demos/xv',
 			});
+		});
+
+		it('adds the customer of a consented lead from the same session', async () => {
+			mockFindSessionLeadCustomerId.mockResolvedValue('customer-1');
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true, 'page_viewed'),
+			});
+			expect(mockFindSessionLeadCustomerId).toHaveBeenCalledWith(
+				'88888888-8888-4888-8888-888888888888',
+			);
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledWith({
+				trigger: 'page_viewed',
+				eventId: clickEventId,
+				sessionId: '88888888-8888-4888-8888-888888888888',
+				eventSourcePath: '/demos/xv',
+				customerId: 'customer-1',
+			});
+		});
+
+		it('still queues the event when the customer lookup fails', async () => {
+			jest.spyOn(console, 'error').mockImplementation(() => undefined);
+			mockFindSessionLeadCustomerId.mockRejectedValue(new Error('lookup failed'));
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true, 'page_viewed'),
+			});
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledWith(
+				expect.not.objectContaining({ customerId: expect.anything() }),
+			);
+		});
+
+		it('looks up no customer without marketing consent', async () => {
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(false, 'page_viewed'),
+			});
+			expect(mockFindSessionLeadCustomerId).not.toHaveBeenCalled();
+			expect(mockEnqueueBrowserConversionEvent).not.toHaveBeenCalled();
 		});
 
 		it('queues a form submission as Lead', async () => {

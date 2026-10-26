@@ -24,7 +24,7 @@ function listSources(relativeDir: string): string[] {
 
 describe('shared SCSS without consumers', () => {
 	it('includes every global mixin at least once', () => {
-		const mixins = [...read(MIXINS_FILE).matchAll(/^@mixin ([a-z0-9-]+)/gm)].map((m) => m[1]);
+		const mixins = [...read(MIXINS_FILE).matchAll(/^@mixin ([a-z0-9_-]+)/gm)].map((m) => m[1]);
 		const consumers = listSources('src').map(read).join('\n');
 
 		const unused = mixins.filter(
@@ -40,8 +40,9 @@ describe('shared SCSS without consumers', () => {
 		expect(read('src/styles/tokens/_spacing.scss')).not.toMatch(
 			/^\$spacing-(container-padding|section-gap):/m,
 		);
-		expect(read('src/styles/tokens/semantic/_color.scss')).not.toMatch(
-			/--color-neutral-subtle:/,
-		);
+		const color = read('src/styles/tokens/semantic/_color.scss');
+		expect(color).not.toMatch(/--color-neutral-subtle:/);
+		// The semantic `neutral` map had no `color(neutral, …)` reader.
+		expect(color).not.toMatch(/^\s+neutral: \(/m);
 	});
 });

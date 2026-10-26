@@ -54,6 +54,18 @@ git log --oneline <BASELINE>..HEAD
 Summarize into Keep a Changelog groups. Do not invent user-facing impact. Note production risks only
 with evidence.
 
+Start from the release notes board tasks left in their cierre (`close --changelog`), read from
+Integration:
+
+```bash
+pnpm board changelog --desde=<date of the last tag>
+pnpm board changelog --desde=<date of the last tag> --faltan
+```
+
+The first prints them as `[Unreleased]` Markdown; the second lists the ones `[Unreleased]` still
+lacks (exit 1). Check each against the range above, as the
+[release process](../../../../docs/core/release-process.md#continuous-discipline-unreleased) says.
+
 **Database-sensitive advisory (non-blocking for file edits):**
 
 ```bash

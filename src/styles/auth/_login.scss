@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 .auth-shell {
 	min-height: 100vh;
 	min-block-size: 100dvh;
@@ -270,8 +272,7 @@
 .auth-field select:focus-visible,
 .auth-submit:focus-visible,
 .auth-secondary:focus-visible {
-	outline: 2px solid var(--auth-focus-ring, rgb(var(--color-action-accent-rgb)));
-	outline-offset: 2px;
+	@include a11y.focus-ring(var(--auth-focus-ring, rgb(var(--color-action-accent-rgb))));
 }
 
 .auth-field input:focus-visible,
@@ -296,7 +297,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.auth-shell,
 	.auth-card,
 	.auth-status {

@@ -27,7 +27,7 @@
 		// Optional 3D settle (`--thank-you-keepsake-settle: invitation-settle-3d`, default none):
 		// the portrait arrives tilted by `--thank-you-keepsake-settle-tilt` / `-turn`.
 		@supports (animation-timeline: view()) {
-			@media (prefers-reduced-motion: no-preference) {
+			@include mixins.motion-safe {
 				--settle-tilt: var(--thank-you-keepsake-settle-tilt, 10deg);
 				--settle-turn: var(--thank-you-keepsake-settle-turn, 0deg);
 				--settle-rise: var(--thank-you-keepsake-settle-rise, 1rem);
@@ -209,7 +209,7 @@
 
 	// With `--thank-you-keepsake-ambient-drift` the painted ground moves slower than the keepsake.
 	@supports (animation-timeline: view()) {
-		@media (prefers-reduced-motion: no-preference) {
+		@include mixins.motion-safe {
 			--art-drift-from: calc(var(--keepsake-ambient-drift, 0rem) * -1);
 			--art-drift-to: var(--keepsake-ambient-drift, 0);
 

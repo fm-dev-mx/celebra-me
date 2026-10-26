@@ -1,3 +1,5 @@
+@use './a11y' as a11y;
+
 // src/styles/global/_animations.scss
 
 // ==========================================================================
@@ -151,7 +153,7 @@
 		opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
 		transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		opacity: 100%;
 		transform: none;
 		transition: none;

@@ -22,8 +22,13 @@
  *
  * Automatic Advanced Matching / auto-config is explicitly disabled
  * so the Pixel never auto-collects form fields or PII from the page.
- * The only manual match key is `external_id`: the SHA-256 of the first-party visitor ID, the
- * value the Conversions API sends for the same browser.
+ * Manual match keys:
+ *   - `external_id`: the SHA-256 of the first-party visitor ID, the value the Conversions API
+ *     sends for the same browser.
+ *   - `ph`: after the «Aparta su fecha» form, the SHA-256 of the phone's E.164 digits, the value
+ *     the Conversions API sends for the lead's customer. Only the hash is stored, in first-party
+ *     localStorage, with marketing consent and for PHONE_MATCH_TTL_MS; withdrawing consent
+ *     deletes it (consent-client.ts). It applies from the next Pixel initialization on.
  *
  * Pending-event queue:
  *   Events generated after marketing consent but before fbevents.js finishes loading are
@@ -43,7 +48,9 @@
  */
 
 import { sha256 } from '@noble/hashes/sha2.js';
+import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 import {
+	META_PHONE_MATCH_STORAGE_KEY,
 	readConsent,
 	subscribeConsentChange,
 	VISITOR_STORAGE_KEY,
@@ -103,13 +110,69 @@ function shouldLoad(): boolean {
 	return true;
 }
 
+function sha256Hex(value: string): string {
+	const digest = sha256(new TextEncoder().encode(value));
+	return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 /**
  * SHA-256 hex of the stored first-party visitor ID, normalized like `hashSha256` in the CAPI
  * service (trim, lowercase) so the browser and server copies carry the same `external_id`.
  */
 export function hashVisitorIdForMeta(visitorId: string): string {
-	const digest = sha256(new TextEncoder().encode(visitorId.trim().toLowerCase()));
-	return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
+	return sha256Hex(visitorId.trim().toLowerCase());
+}
+
+/** How long the hashed phone stays usable after the form: Meta's own `_fbp` cookie lifetime. */
+export const PHONE_MATCH_TTL_MS = 90 * 86_400_000;
+
+const SHA256_HEX = /^[0-9a-f]{64}$/;
+
+/**
+ * SHA-256 hex of the phone's E.164 digits (country code included, no `+`), the same value
+ * `normalizeAndHashPhone` in the CAPI service sends for the customer's `phone_e164`.
+ */
+export function hashPhoneForMeta(phone: string): string | undefined {
+	const normalized = normalizeCommercialPhone(phone);
+	return normalized ? sha256Hex(normalized.e164.replace(/\D/g, '')) : undefined;
+}
+
+/**
+ * Store the hashed phone from a submitted «Aparta su fecha» form so later Pixel initializations
+ * in this browser send it as `ph`. Without marketing consent nothing is stored.
+ */
+export function rememberMetaPhoneMatchKey(phone: string, now = Date.now()): void {
+	if (!readConsent().marketing) return;
+	const hash = hashPhoneForMeta(phone);
+	if (!hash) return;
+	try {
+		localStorage.setItem(
+			META_PHONE_MATCH_STORAGE_KEY,
+			JSON.stringify({ ph: hash, expiresAt: now + PHONE_MATCH_TTL_MS }),
+		);
+	} catch {
+		// Storage can be blocked; the Pixel keeps working with its other match keys.
+	}
+}
+
+/** The stored hashed phone while consent holds and it has not expired; otherwise deletes it. */
+export function readMetaPhoneMatchKey(now = Date.now()): string | undefined {
+	try {
+		const raw = localStorage.getItem(META_PHONE_MATCH_STORAGE_KEY);
+		if (!raw) return undefined;
+		const parsed = JSON.parse(raw) as { ph?: unknown; expiresAt?: unknown };
+		const usable =
+			readConsent().marketing &&
+			typeof parsed.ph === 'string' &&
+			SHA256_HEX.test(parsed.ph) &&
+			typeof parsed.expiresAt === 'number' &&
+			parsed.expiresAt > now;
+		if (usable) return parsed.ph as string;
+		localStorage.removeItem(META_PHONE_MATCH_STORAGE_KEY);
+	} catch {
+		// Blocked storage or a corrupted value: send no phone.
+	}
+	return undefined;
 }
 
 function readVisitorExternalId(): string | undefined {
@@ -211,10 +274,14 @@ function loadPixelScript(): Promise<void> {
 			// Disable automatic advanced matching — prevents auto-collection
 			// of form fields and PII from the page.
 			window.fbq?.('set', 'autoConfig', false, id);
-			// Initialize the pixel with the hashed visitor ID as its only manual match key.
+			// Initialize the pixel with the manual match keys: hashed visitor ID and phone.
+			const matchKeys: Record<string, string> = {};
 			const externalId = readVisitorExternalId();
-			if (externalId) {
-				window.fbq?.('init', id, { external_id: externalId });
+			if (externalId) matchKeys.external_id = externalId;
+			const phoneHash = readMetaPhoneMatchKey();
+			if (phoneHash) matchKeys.ph = phoneHash;
+			if (Object.keys(matchKeys).length > 0) {
+				window.fbq?.('init', id, matchKeys);
 			} else {
 				window.fbq?.('init', id);
 			}

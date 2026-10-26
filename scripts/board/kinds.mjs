@@ -55,7 +55,7 @@ const LISTS = [
 const MAY_BE_EMPTY = new Set(['devuelve', 'al_terminar', 'tras_cierre']);
 /** d255: steps that run after `pnpm board close` (codigo's `review`); a kind may leave the key out. */
 const OPTIONAL = new Set(['tras_cierre']);
-export const PLACEHOLDERS = ['id', 'agente', 'rama', 'nombre', 'titulo'];
+export const PLACEHOLDERS = ['id', 'agente', 'carril', 'rama', 'nombre', 'titulo'];
 export const LISTO_SI = [...NIVELES, 'ninguno'];
 
 /** `'it''s'` → `it's`, `"x"` → `x`, a plain value as written. */

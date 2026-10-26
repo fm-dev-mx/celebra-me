@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 .theme-preset--enchanted-rose .rsvp-section:has(.rsvp) {
 	position: relative;
 	isolation: isolate;
@@ -470,7 +472,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		.rsvp__button,
 		.rsvp__button::before,
 		.rsvp__whatsapp-cta,

@@ -174,7 +174,7 @@
 // REDUCED MOTION
 // ==========================================================================
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.theme-preset--luxury-hacienda .countdown-section {
 		.countdown-title {
 			animation: none;

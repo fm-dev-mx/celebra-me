@@ -36,7 +36,9 @@ Assign by verified capability (`requiere`), not by brand. For example: image edi
 `codex`; visual review in a browser → `claude` or `codex`; image generation → never `claude`. Board
 PRs (d270: at most two at once; d291: a second one waits only for a real `git merge-tree` conflict)
 open in the order the coordinator sets; it runs `pnpm board solape <id>` before they open and tells
-each waiting session when its turn comes.
+each waiting session when its turn comes. A clean `merge-tree` is only textual: it misses a semantic
+break (one PR moves a function another PR still imports from the old module), which CI on the second
+merge catches.
 
 ### Prompts (d153)
 
@@ -59,7 +61,7 @@ Terminado cuando: <criterio comprobable>
 ANTES DE EMPEZAR
 Carril <fNN-…> (carpeta celebra-me-worktrees/<fNN-…>), rama <tipo/id> desde develop.
 Compruebe que la rev de esta tarea (pnpm board show <id>) sigue en la de «tablero:» de METADATOS; si cambió, pare (d282: los cambios de otras tareas y los de esta misma sesión no cuentan).
-  <un comando por línea: switch, git-safety, claim>
+  <un comando por línea: switch, claim (desde el carril abre git-safety)>
 
 PASOS
 1. <paso concreto>
@@ -146,10 +148,13 @@ sections are skipped with a notice and the rest still run. The Codex and Gemini 
 and its lock check is skipped.
 
 `AVISOS` also crosses every `en curso`/`en revision` task by the files its PR
-(`gh pr view --json files`) or branch (`git diff --name-only origin/develop...origin/<rama>`)
-changes: a file shared by tasks in different lanes, more than two tasks changing `scripts/board/`
-(d270), and a task changing `supabase/migrations/` without `toca: ["migracion"]`. A query that fails
-leaves `archivos` coverage `UNVERIFIED`.
+(`gh pr view --json files`) or pushed branch changes. The branch is diffed at the SHA
+`git ls-remote --heads origin` reports (`git diff --name-only origin/develop...<sha>`), never the
+local `origin/<rama>` ref, which verify does not fetch. It warns about a file shared by tasks in
+different lanes (lockfiles and Markdown excepted: every lane touches them and Git merges them), more
+than two tasks changing `scripts/board/` (d270), and a task changing `supabase/migrations/` without
+`toca: ["migracion"]`. A query that fails, a branch head not fetched locally, or a PR that reaches
+the 100 files `gh pr view` lists leaves `archivos` coverage `UNVERIFIED`.
 
 The owner registers the board server once from Integration with `pnpm board:serve:register`
 (`scripts/board/serve-register.ps1`): a Windows Task Scheduler task «Celebra-me servidor del
@@ -276,9 +281,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   reading GitHub. «Le toca a usted» leaves out a message to the owner once its task is finished or
   archived (d265), or once `pnpm board atendido <id> --para=dueno` marks it handled (d291, an
   `atendido {para, mensajes}` bitácora row; `--para=coordinador` does the same for the coordinator's
-  messages); `inbox --agente=dueno --todos` still lists it. A ready Codex or Gemini task idle for 30
-  min shows in «Le toca a usted» as «Correr el despachador de Codex (T<n>)»; an idle Claude task
-  goes to the coordinator.
+  messages); `inbox --agente=dueno --todos` still lists it. An agent may read `inbox --agente=dueno`
+  without hiding anything: only `--leido`, which the owner passes, marks the owner's messages read.
+  A ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as «Correr el despachador
+  de Codex (T<n>)»; an idle Claude task goes to the coordinator.
 - **Owner tasks** (`actor: dueno`) show only what to do and where (`donde`, else the first line
   under «DÓNDE CORRE» of an older prompt), never a suggested lane. The coordinator records every
   owner action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
@@ -307,12 +313,24 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   Claims use the explicit `--rama` or the task's declared branch; they never infer the caller's
   branch. Read-only work may remain without a branch. Only `actor: coordinador` with `--coordinador`
   may claim the canonical `integration` lane; `f04-integracion` is not a canonical id.
+- **Lane and git-safety from the lane (T297)**: `claim`, `close` and `release` run inside a lane
+  folder (f05–f12) read that checkout (`lane-session.mjs`). `claim` refuses when the folder is
+  another lane or its branch is not the claim's `rama` (detached included), and then opens
+  `git-safety start --session=<rama>` there unless that session is already open; a repeated claim
+  reopens a session closed in between. `close` and `release` refuse from a lane other than the
+  lock's; with `--git-safety=commit` (or `commit,history`) they run
+  `git-safety finish --session=<rama> --authorized-operation=…` after the board write, and without
+  it they remind that the session is still open. A branch switch is finished by hand. A git-safety
+  step that fails prints its reason and exits 1, but the board write stands. Run from Integration or
+  an unknown folder, nothing is checked; a test board (`CELEBRA_BOARD_DIR`) reads a checkout only
+  when `CELEBRA_BOARD_CHECKOUT` names one.
 - **Lane inventory**: `pnpm board carriles` (and the page's lane table) reads each lane from Git:
   branch, clean or not, and the task holding its lock. `carril` without an id reads the lanes live
   the same way: the catalog (`uso`, `tecla`, `puerto`, order and canonical ids) comes from
-  `WORKTREE_LANES`, and runtime state comes from task locks and `git worktree list`. Stored
-  `carriles/*.json` records are ignored; update the code-owned catalog through a pull request.
-  `estado` without fields is read-only too.
+  `WORKTREE_LANES`, and runtime state comes from task locks and `git worktree list`. In that catalog
+  `orden` is the lane's function key (4–12, not the old 1–9 position) and `puerto` is a number, not
+  a string; consumers only sort and print them. Stored `carriles/*.json` records are ignored; update
+  the code-owned catalog through a pull request. `estado` without fields is read-only too.
 
 ### Agents and sessions
 
@@ -410,6 +428,14 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   whose cierre names the four Handoff lists moves the task to `en revision` when it has a PR (task
   `pr`, `--pr` or `resultado.pr`; the lock stays) and to `hecha` otherwise (the lock goes). A
   coordinator close over a live lock writes the cierre and keeps the estado.
+- **Release note (T297)**: `close --changelog="<Grupo>: <una línea>"` stores
+  `cierre.changelog {grupo, texto}` with a Keep a Changelog group (`Added`, `Changed`, `Deprecated`,
+  `Removed`, `Fixed`, `Security`, any case); `--changelog=ninguno` stores `"ninguno"`. A close
+  without the flag keeps the previous note. Lanes never edit `CHANGELOG.md` for it, so parallel
+  branches do not conflict there; `pnpm board changelog [--desde=<fecha>]` prints the notes of
+  `unida`/`comprobada` tasks as `[Unreleased]` Markdown (each bullet ends in its PR) and
+  `--faltan [--archivo=CHANGELOG.md]` lists the ones `[Unreleased]` does not mention yet, exiting 1
+  while any is missing. A compacted task (`compact`, archived 7+ days) no longer reports its note.
 - **PR states**: `unida` always needs `pr`; `en revision` needs it only when the task has a `rama`
   (audits and handoffs go to review without one). The command refuses a pull URL from another
   repository.
@@ -493,10 +519,12 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 buttons) is a no-AI script: after `git fetch --prune origin` it reads `git worktree list`, local and
 origin branches and `gh pr list --state all`, matches each open task by `pr`, then `rama`, then the
 id convention, then the only open PR that names it canonically (d159: `T<n> <id>` in its title, or a
-`Board task: T<n> <id>` body line; any other mention, or two such PRs, link nothing), and writes
-only with `pnpm board set --coordinador` at the rev it read: an open PR sets `pr` (and a missing
-`rama`) and moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the task to
-`unida`. **d170**: a merged PR also drops the task's lock, whoever holds it, through
+`Board task: T<n> <id>` body line; any other mention, or two such PRs, link nothing). A task with a
+`rama` matches only a PR from that branch: a PR naming it from another head is reported as «rama …
+sin PR, pero el PR #N (rama …) nombra la tarea», never linked. It writes only with
+`pnpm board set --coordinador` at the rev it read: an open PR sets `pr` (and a missing `rama`) and
+moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the task to `unida`.
+**d170**: a merged PR also drops the task's lock, whoever holds it, through
 `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
 still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
 open PR are only reported; review children are never touched. A lock older than `--horas` (default
@@ -576,10 +604,13 @@ lane checks (`laneAllowed`, `taskLane`), finished states (`isFinished`), `taskLa
 `pr-ref.mjs` and re-exported); `board`, `sync`, `verify`, `watch` and the view import them instead
 of keeping a copy. Other owners: `store.mjs` the JSON store (one file per document); `subtasks.mjs`
 subtasks, the calendar and the blocked list; `delivery.mjs` the delivered-prompt mark; `cierre.mjs`
-the closing summary (`cierreIssues`); `recurring.mjs` periodic tasks; `reviewer.mjs` the reviewer
-choice; `review-preflight.mjs` the review pre-flight; `kind-prompt.mjs` the prompts generated from
-task kinds; `live.mjs` what is read live from Git and GitHub; `view-server.mjs`, `view-worker.mjs`
-and `view-supervisor.mjs` the view and its SSE stream.
+the closing summary (`cierreIssues`); `changelog.mjs` the release note and its `[Unreleased]`
+Markdown; `lane-session.mjs` the lane and git-safety checks of claim, close and release;
+`claim-commands.mjs` the claim command; `scope-warnings.mjs` verify's shared-file warnings;
+`recurring.mjs` periodic tasks; `reviewer.mjs` the reviewer choice; `review-preflight.mjs` the
+review pre-flight; `kind-prompt.mjs` the prompts generated from task kinds; `live.mjs` what is read
+live from Git and GitHub; `view-server.mjs`, `view-worker.mjs` and `view-supervisor.mjs` the view
+and its SSE stream.
 
 A worker's task claim is separate from the short-lived transaction lock (`.agent/tmp/board/.lock`)
 each CLI write takes. That lock is never stolen only because it is old; after a writer crash the

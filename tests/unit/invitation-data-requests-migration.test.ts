@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const migration = readFileSync(
-	resolve('supabase/migrations/20261026120000_invitation_data_requests.sql'),
+	resolve('supabase/migrations/20261026130000_invitation_data_requests.sql'),
 	'utf8',
 );
 const registry = JSON.parse(
@@ -57,7 +57,7 @@ describe('invitation data requests migration', () => {
 	});
 
 	it('is registered as contract and required by the deployed application', () => {
-		expect(registry.migrations['20261026120000']).toMatchObject({
+		expect(registry.migrations['20261026130000']).toMatchObject({
 			phase: 'contract',
 			provides: ['invitation_data_requests', 'meta_conversion_events_complete_registration'],
 		});
