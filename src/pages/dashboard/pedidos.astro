@@ -1,0 +1,11 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import OrdersWorkspace from '@/components/dashboard/orders/OrdersWorkspace';
+
+if (!Astro.locals.session?.isSuperAdmin) return Astro.redirect('/dashboard/invitados');
+---
+
+<DashboardLayout title="Pedidos">
+	<header class="dashboard-page-header"><h2>Pedidos</h2><p>Cree su pedido y registre el pago por transferencia.</p></header>
+	<OrdersWorkspace client:load />
+</DashboardLayout>
