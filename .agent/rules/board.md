@@ -135,11 +135,7 @@ routing and the internal modules work lives in
   and last `METADATOS` (`formato: prompt-v1`, one `clave: valor` per line). `pnpm board` refuses a
   `prompt-v1` that breaks this shape. A task with a `tipo` (T130) gets its prompt generated from
   `.agent/kinds/<tipo>.yaml`; an `operacion` with `destino=cloudflare` uses
-  `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default). The AL TERMINAR section ends
-  with archiving the chat once the task is unida/hecha and its PR merged (d259); the Codex/Gemini
-  dispatcher archives its chats whose task already finished. Kind templates authorize a standard
-  merge of origin/develop into the task branch to resolve a dirty or behind PR (no rebase, no
-  force), asking only if the conflict touches a migration or files of another task.
+  `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default).
 - **Task number**: `num` is fixed when the task is added and never reused; it is `T<num>` everywhere
   (d158).
 - **Session name**: `<lane> · T<n> · PR #<n> · <short description>`, for example
