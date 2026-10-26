@@ -763,7 +763,8 @@ describe('Meta CAPI browser events', () => {
 				trigger_status: 'whatsapp_contact_clicked',
 				session_id: 'session-id',
 				event_source_path: '/demos/xv',
-				value: null,
+				value: 150,
+				currency: 'MXN',
 				status: 'pending',
 			},
 		});
@@ -857,7 +858,7 @@ describe('Meta CAPI browser events', () => {
 		});
 	});
 
-	it('queues a capture-form Lead with its customer and lead', async () => {
+	it('queues a capture-form Lead with its customer, lead, and estimated value', async () => {
 		mockRestRequest.mockResolvedValueOnce([]);
 		await enqueueBrowserConversionEvent({
 			trigger: 'form_submitted',
@@ -874,6 +875,29 @@ describe('Meta CAPI browser events', () => {
 					trigger_status: 'form_submitted',
 					customer_id: 'customer-id',
 					lead_id: 'lead-id',
+					value: 150,
+					currency: 'MXN',
+				}),
+			}),
+		);
+	});
+
+	it('preserves an explicit value override on browser conversions', async () => {
+		mockRestRequest.mockResolvedValueOnce([]);
+		await enqueueBrowserConversionEvent({
+			trigger: 'whatsapp_contact_clicked',
+			eventId: clickEventId,
+			sessionId: 'session-id',
+			eventSourcePath: '/demos/xv',
+			value: 250,
+			currency: 'MXN',
+		});
+		expect(mockRestRequest).toHaveBeenCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({
+					event_name: 'Contact',
+					value: 250,
+					currency: 'MXN',
 				}),
 			}),
 		);
