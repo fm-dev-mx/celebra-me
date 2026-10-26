@@ -5,7 +5,14 @@
  * return contract come from the board, so the prompt changes with them. Pure functions only.
  */
 import { taskLabel, laneFolder, taskLane } from './model.mjs';
-import { PROMPT_SECTIONS, buildPrompt, promptSection, withPushCheck } from './prompt.mjs';
+import {
+	PROMPT_SECTIONS,
+	buildPrompt,
+	promptSection,
+	withPushCheck,
+	reviewGuidance,
+} from './prompt.mjs';
+export { reviewRisk } from './prompt.mjs';
 
 /** A refusal to build the prompt: the task or its kind lacks something the template needs. */
 export class KindPromptError extends Error {}
@@ -138,6 +145,17 @@ function metadataOf(t, board, { num, lane, pr, agente, decisiones, rev, generado
  * The prompt-v1 of typed task `t` numbered `num`, at board revision `rev`; null while it has no lane (its
  * session name needs one).
  */
+function kindReviewLines(t, board) {
+	if (t.tipo !== 'revision') return [];
+	const previous =
+		t.vuelta > 1
+			? [...(board.tareas ?? []), ...(board.archivo ?? [])].find(
+					(x) => x.origen === t.origen && x.vuelta === t.vuelta - 1,
+				)
+			: null;
+	return reviewGuidance(t.revisionFiles, previous?.revisionSha, t.revisionSha);
+}
+
 export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado }) {
 	const lane = taskLane(t);
 	if (!lane) return null;
@@ -155,7 +173,7 @@ export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado 
 		buildPrompt({
 			identidad: nombre,
 			secciones: [
-				['QUÉ SE BUSCA', buscaLines(t)],
+				['QUÉ SE BUSCA', [...buscaLines(t), ...kindReviewLines(t, board)]],
 				[
 					'ANTES DE EMPEZAR',
 					[

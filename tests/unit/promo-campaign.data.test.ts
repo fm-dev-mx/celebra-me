@@ -102,6 +102,19 @@ describe('promo prices and codes', () => {
 		}
 	});
 
+	it('makes the season row the cheapest so prices rise after its countdown', () => {
+		expect(campaign('temporada-2026').prices).toEqual({
+			esencial: 899,
+			signature: 1299,
+			atelier: 1899,
+		});
+		expect(campaign('ano-nuevo-2027').prices).toEqual({
+			esencial: 999,
+			signature: 1399,
+			atelier: 1999,
+		});
+	});
+
 	it('encodes the promo price as the numeric suffix of each promo code', () => {
 		for (const row of PROMO_SCHEDULE) {
 			for (const pkg of PACKAGE_CATALOG) {
@@ -173,15 +186,24 @@ describe('promo status', () => {
 	});
 
 	it('never counts down when the next row keeps or lowers the price', () => {
-		// October → season keeps the price; season → new year lowers it.
+		// October → season lowers the price.
 		const lastOctoberDay = getPromoStatus(losMochis('2026-10-31T23:00:00'));
 		expect(lastOctoberDay).toMatchObject({
 			phase: 'active',
 			daysLeft: 1,
 			showCountdown: false,
 		});
+	});
+
+	it('counts down the end of the season before the new year price', () => {
+		expect(getPromoStatus(losMochis('2026-12-05T23:00:00')).showCountdown).toBe(false);
+		expect(getPromoStatus(losMochis('2026-12-06T12:00:00'))).toMatchObject({
+			phase: 'active',
+			daysLeft: 10,
+			showCountdown: true,
+		});
 		const lastSeasonDay = getPromoStatus(losMochis('2026-12-15T23:00:00'));
-		expect(lastSeasonDay).toMatchObject({ phase: 'active', daysLeft: 1, showCountdown: false });
+		expect(lastSeasonDay).toMatchObject({ phase: 'active', daysLeft: 1, showCountdown: true });
 	});
 
 	it('counts down the last ten days before the price goes up', () => {

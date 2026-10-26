@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
-import { runCommand, sanitizeEnv } from '../helpers/run-command';
+import { runCommand, sanitizeEnv } from '../helpers/board-command';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -219,7 +219,8 @@ describe('pnpm board', () => {
 				}),
 			],
 		});
-		expect(board(dir, 'list').out).toContain('— Espera T35 · Dividir reglas del tablero');
+		// T258: the blocked task leaves the numbered list; its reason shows in «Bloqueadas» and in show.
+		expect(board(dir, 'list').out).toContain('\nBloqueadas (1): T36');
 		const shown = board(dir, 'show', 'sigue').out;
 		expect(shown).toContain('○ Termina T35 · Dividir reglas del tablero');
 		expect(shown).not.toContain('tarea board-agent-alignment');
@@ -418,15 +419,15 @@ describe('pnpm board', () => {
 		});
 		const { status, out } = board(dir, 'list', '--json');
 		expect(status).toBe(0);
-		const rows = JSON.parse(out) as { id: string; color: string }[];
-		expect(rows.map((r) => [r.id, r.color])).toEqual([
+		const rows = JSON.parse(out) as { n: number | null; id: string; color: string }[];
+		expect(rows.map((r) => [r.n, r.id, r.color])).toEqual([
 			// d163: the owner's ready task comes first, whatever its urgency.
-			['del-dueno', 'own'],
-			// A blocked «alta» task still waits behind the task it needs.
-			['base', 'auto'],
-			['alta-espera', 'block'],
-			['normal-lista', 'auto'],
-			['sin-prompt', 'block'],
+			[1, 'del-dueno', 'own'],
+			// A blocked «alta» task lifts the task it needs, then leaves the numbered queue (T258).
+			[2, 'base', 'auto'],
+			[3, 'normal-lista', 'auto'],
+			[null, 'alta-espera', 'block'],
+			[null, 'sin-prompt', 'block'],
 		]);
 	});
 
@@ -507,7 +508,8 @@ describe('pnpm board', () => {
 		expect(result.status).toBe(0);
 		const [before, after] = JSON.parse(String(result.stdout));
 		expect(before.queue[0]).toBe('pronto:auto');
-		expect(before.queue).toContain('dueno-fecha:block');
+		// d276: a task that only waits for its date sits in the «Calendario», out of the queue.
+		expect(before.queue).not.toContain('dueno-fecha:block');
 		expect(before.asks).toEqual(['ya:Elegir el color']);
 		expect(after.queue[0]).toBe('dueno-fecha:own');
 		expect(after.asks).toEqual(expect.arrayContaining(['precio:Decidir el precio']));
@@ -1182,7 +1184,8 @@ describe('pnpm board', () => {
 		expect(result.status).toBe(0);
 		const out = JSON.parse(String(result.stdout));
 		// d163 owner first, then urgency; within «normal» a free lane (or a review) before a busy one or none,
-		// «tiene» runs in the lane its own lock holds, and «base» still comes right before the task waiting for it.
+		// «tiene» runs in the lane its own lock holds, and «base» keeps the place of «tras-base», which waits
+		// for it in «Bloqueadas» (T258).
 		expect(out.queue).toEqual([
 			'dueno',
 			'urgente-ocupada',
@@ -1190,7 +1193,6 @@ describe('pnpm board', () => {
 			'origen-revision',
 			'tiene',
 			'base',
-			'tras-base',
 			'ocupada',
 			'sin-carril',
 		]);
@@ -1795,7 +1797,11 @@ describe('pnpm board', () => {
 		const dir = makeBoard({
 			tareas: [
 				task('legacy', { estado: 'unida', candado: lock }),
-				task('owned', { estado: 'unida', candado: { ...lock, sesion: 's1' } }),
+				// d274: a heartbeat under 2 h old keeps the session's lock out of the coordinator's reach.
+				task('owned', {
+					estado: 'unida',
+					candado: { ...lock, sesion: 's1', latido: new Date().toISOString() },
+				}),
 			],
 		});
 		expect(board(dir, 'release', 'legacy', '--agente=claude').err).toMatch(/otra sesión/);
@@ -2372,5 +2378,35 @@ describe('monthly archive (d187)', () => {
 			JSON.parse(raw(dir, 'history', '--json', ...args).out).map((r: Json) => r.txt);
 		expect(txt()).toEqual(['d002 Nueva']);
 		expect(txt('--todas').sort()).toEqual(['d001 (reemplazada) Vieja', 'd002 Nueva']);
+	});
+});
+
+describe('subtasks and calendar (d174, d276)', () => {
+	it('stores padre by id, refuses a loop and lists the subtasks and the calendar', () => {
+		const dir = makeBoard({
+			tareas: [
+				task('madre'),
+				task('hija', { fase: 1 }),
+				task('espera-fecha', {
+					requisitos: [{ tipo: 'fecha', ref: '2099-01-05T15:00:00Z' }],
+				}),
+			],
+		});
+		expect(board(dir, 'set', 'hija', '--rev=1', 'padre=T1').status).toBe(0);
+		const hija = JSON.parse(readFileSync(path.join(dir, 'tareas', 'hija.json'), 'utf8'));
+		expect(hija.padre).toBe('madre');
+		expect(board(dir, 'set', 'madre', '--rev=1', 'padre=hija').err).toContain(
+			'padre forma un ciclo: madre → hija → madre',
+		);
+		expect(board(dir, 'set', 'madre', '--rev=1', 'padre=nadie').err).toContain(
+			'padre nadie no está en el tablero',
+		);
+		const shown = board(dir, 'show', 'madre').out;
+		expect(shown).toContain('Subtareas · 0/1 (0 %)');
+		expect(shown).toContain('○ T2 · F1 · hija · pendiente');
+		expect(board(dir, 'show', 'hija').out).toContain('Parte de T1 · madre · 0/1 listas');
+		const list = board(dir, 'list').out;
+		expect(list).not.toContain('· espera-fecha');
+		expect(list.trimEnd().split('\n').at(-1)).toMatch(/^Calendario \(1\): próxima T3 el /);
 	});
 });

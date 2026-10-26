@@ -26,13 +26,24 @@ data, never an authorization.
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
   `carril`, `ahora` (the only status line), `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`,
-  `orden`, `origen`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
-  `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see Task kinds); `rev` and
-  `actualizado` are set by the command, `agregadaPor` and `seguimientoPor` by the commands that add
-  or follow up a task (T172, see Session ownership), `archivada` (date) only by
-  `archive`/`unarchive`, `entregada {agente, desde}` only by `entregada` and the view's «Copiar
-  prompt» (d249, see Agents), `cierre` only by `close`. `espera`, `usted` and `deps` no longer
-  exist.
+  `orden`, `origen`, `padre`, `grupo`, `fase` (see Subtasks), `plan`, `vuelta` (review round),
+  `fila`, `evidencia {cmd, salio}`, `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written
+  fields (see Task kinds); `rev` and `actualizado` are set by the command, `agregadaPor` and
+  `seguimientoPor` by the commands that add or follow up a task (T172, see Session ownership),
+  `archivada` (date) only by `archive`/`unarchive`, `entregada {agente, desde}` only by `entregada`
+  and the view's «Copiar prompt» (d249, see Agents), `cierre` only by `close`. `espera`, `usted` and
+  `deps` no longer exist.
+- **Periodic tasks (d268)**: the optional `cada` (`<n>d`, for example `7d` or `14d`) makes a task
+  recurring. `close` of a started cycle (any open estado but `pendiente`) ends only that cycle: the
+  task goes back to `pendiente` without its lock, `carril`, `pr`, `rama` or delivery mark (the
+  lock's session stays in `sesion`), its PRs (the task's `pr` and the one this `close --pr` names,
+  never one inherited from an earlier cierre) join `prsPrevios` (written only by `close`), every
+  `fecha` requisito moves forward by whole cycles until it is in the future (a task without one gets
+  `now + cada`), the cierre stays as the last cycle's and `close` prints
+  `cada 7d: vuelve a pendiente hasta <fecha>`. A second `close` while it is `pendiente` (an amended
+  summary, a retry) keeps the date. The sync never matches a periodic task by id and skips the PRs
+  in `prsPrevios`, so a past cycle's merged PR never finishes the next one. Review rounds and
+  finished tasks ignore `cada`.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`, including an explicit `archivo` record; absent or
   canceled tasks do not satisfy it. A `revision` requires an origin PR in
@@ -48,7 +59,34 @@ data, never an authorization.
 - **Execution number**: the owner's ready tasks (d163) → urgency → lane (`laneRank`: its category's
   lane free, a review or the lane a task's own lock holds; then another free planned lane; then a
   lane another task's lock holds; then no lane) → ready before blocked → `hasta` → `orden` → title;
-  an open task it waits for goes right before it.
+  an open task it waits for goes right before it. Blocked tasks take part in that order, so an
+  urgent blocked task still lifts its prerequisites, and are then left out (T258).
+- **Calendario (d276)**: a `pendiente`, unlocked task whose only unmet requisitos are `fecha` leaves
+  the queue and `pnpm board list` for the view's «Calendario» tab (by date, grouped by week, its
+  count on the tab); it comes back to the queue on its own when the date arrives. A task that also
+  waits for a task, a decision, an owner answer or its prompt is blocked instead (below).
+  `pnpm board list` ends with `Calendario (N): próxima T<n> el <fecha>` (model `calendar`,
+  `calendarWeeks`, `calendarLine`).
+- **Bloqueadas (T258)**: any other blocked open task (`isBlocked`: stage `bloqueada` and not in the
+  Calendario; it waits for a task, a decision, an owner answer or its prompt, or is marked
+  `bloqueada` by hand) leaves the queue for the view's «Bloqueadas» tab, between Calendario and
+  Finalizadas, with its count, the search box and every unmet requisito as «Espera …» («Marcada como
+  bloqueada» when none). It comes back to the queue on its own once unblocked. An owner answer it
+  waits for still shows in «Le toca a usted» (`ownerAsks`). `pnpm board list` adds
+  `Bloqueadas (N): T<n>, …` after the Calendario line; `--json` lists blocked tasks after the queue
+  with `n: null` (model `isBlocked`; `blocked`, `blockedLine` in `subtasks.mjs`).
+- **Subtasks (d174)**: a task names its mother with `padre` (`padre=T12` is stored as the mother's
+  id) and/or an initiative with `grupo`, plus an optional `fase` (integer `>= 1`). A task's subtasks
+  are those whose `padre` or `grupo` is its id, archived and compacted ones included (`subtasksOf`,
+  ordered by `fase`, `orden`, number); a `grupo` no task heads shows under its own header.
+  `groupProgress` counts
+  `{total, hechas, enCurso, enRevision, pendientes, pct, faseActual, totalFases}` without cancelled
+  subtasks. The queue shows the mother's bar («Fase N de M · X de Y completadas (Z %)») and folds
+  blocked subtasks into «Ver N subtareas» (✓ done, ● running or in review, ○ pending); a subtask
+  ready or running now keeps its card (and stays in «Le toca a usted» and `next`), each with its
+  `F<n>` tag. The sheet and `pnpm board show` list a mother's «Subtareas · X/Y (Z %)» and give a
+  subtask «Parte de T<n> · <título> · X/Y listas». A `padre` that names no task, the task itself or
+  a loop of mothers is refused on write and reported by `pnpm board:verify`.
 - **Agents**: `pnpm board next --agente=<a>` gives the first ready, unlocked task that agent can
   finish. `claim`/`release` hold a lock (`candado {agente, desde, sesion, carril, rama}`) for one
   agent at a time; `claim` moves a `pendiente` task to `en curso` with its bitácora row and
@@ -135,8 +173,10 @@ data, never an authorization.
   `--pr`, `--sha` (the PR head) and `--nivel`. Tasks created under `contrato: 2` or later must name
   all of them or `close` and «Archivar» refuse; older tasks may add them. `close` prints a one-line
   signal to hand back, e.g.
-  `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`. An approved last
-  round at the PR's current SHA shows its origin as «Lista para unir». Cancelling with
+  `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`. d274: `close` of an
+  open review round whose cierre has a verdict (any of the three: after `cambios` the next round is
+  another task) moves it to `hecha` and frees its lock, keeping its session in `sesion`. An approved
+  last round at the PR's current SHA shows its origin as «Lista para unir». Cancelling with
   `set <id> estado=cancelada --motivo=<reason>` writes the cierre in the same command (the reason is
   the summary); `review` cancels an open earlier round the same way when it opens the next one.
 - **PR number**: `pr` is always `#N`; the command normalizes `398`, `"#398"` or a
@@ -164,7 +204,20 @@ data, never an authorization.
   `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
   «posible sesión cerrada» and never released by the sync (the owning session or the coordinator
   with authority does). The button's POST needs the page's per-process token and its own `Origin`,
-  and every request needs a local `Host`. No agent is ever launched from the view.
+  and every request needs a local `Host`. No agent is ever launched from the view. **Hygiene
+  (d268)**: after those writes, on the board as they left it, the sync moves every unlocked
+  `unida`/`hecha` task whose check passes (the verifier's `checkTask`; a PR state comes from the
+  list it already read) to `comprobada` with that `evidencia`, runs `compact --antes=7d` (it only
+  summarizes tasks the owner already archived) and `prune-backups --aplicar`, and detaches each
+  free, clean lane f05–f12 at `origin/develop` (`git switch --detach`). A lane is free when no lock
+  and no open task's `carril` holds it and it is detached or on a branch whose newest PR merged; a
+  free lane with uncommitted or untracked changes, or on a branch without a merged PR, is only
+  reported. Right before each switch, inside the store lock (so no `claim` can take the lane in
+  between), the sync reads the board, the lane's branch, HEAD and `git status` again and skips the
+  lane, reporting why, when any changed. `--dry-run` lists every step and writes nothing; the result
+  carries them under `higiene`. The sync never archives a task (d278): only the owner archives
+  finished tasks, from the «Finalizadas» tab or `pnpm board archive`, to watch progress; no command
+  or routine archives on its own.
 - **Check**: without `chequeo`, the verifier uses `gh pr view <pr> --json state` → `MERGED`, or
   `git ls-remote origin <rama>` when there is no PR.
 - **Bitácora**: the command writes one row per `estado` change, per `move`, per `plan` and per
@@ -296,7 +349,11 @@ data, never an authorization.
   Unlocked coordination edits require `--coordinador`; the flag declares a role, never grants
   authority or overrides a lock. `set` cannot replace ownership, lane, origin or review SHA. One
   exception: a legacy lock without `sesion` (taken before sessions were recorded) is freed by
-  `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session.
+  `release <id> --agente=<its agent> --coordinador`; a lock with `sesion` still needs that session
+  while its last heartbeat (`latido`, else `desde`) is under 2 h old. d274: once it is 2 h silent,
+  the same command frees it only if the task already has a valid `cierre` (`cierreIssues`, as
+  «Archivar»); without one it is refused and the session must run `close` first. A review released
+  this way with its verdict becomes `hecha`, like `close`.
 - `review` requires the origin PR in `en revision` and a valid `cierre` (d255: no task reaches
   review without its closing summary; the same `cierreIssues` as «Archivar», so a cancelled task
   reopened with a cierre lacking `resultado` is refused too; the refusal prints the
@@ -344,13 +401,18 @@ data, never an authorization.
   reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el resumen de cierre
   de T<n>» for every task `en revision` or `unida` without a valid `cierre` (d255; a merged PR still
   moves a task to `unida`, because the merge is a fact), open PRs without a task, ready Claude tasks
-  without a session and messages for it. `list` prints the same sections without reading GitHub.
+  without a session and messages for it. `list` prints the same sections without reading GitHub. «Le
+  toca a usted» (list and page) leaves out a message to the owner once its task is `hecha`, `unida`,
+  `comprobada`, `cancelada` or archived (d265); `inbox --agente=dueno` still lists it.
 - **Findings to the author (d251, T212)**: `close` of a review round with `--veredicto=cambios`
   writes one message about the origin task to its author (`authorOf`), from the reviewer, naming the
   round (`mensaje.revision`) and the author's session (`mensaje.sesion`, the lock's or the last
   recorded one), with every finding as `P2 archivo:línea texto`; closing again with the same
   findings writes nothing new. The coordinator no longer lists «Pasar los hallazgos de T<n> al
-  autor» for that round. The author checks its inbox after every push, for example
+  autor» for that round; while the PR head is still the round's SHA it lists «Avisar al autor de
+  T<n> (PR #n): T<m> pidió cambios en <sha7> y el PR sigue en ese SHA» (d269), so the coordinator
+  wakes the author's session, and the row goes once the author pushes a new SHA (then «Nueva vuelta
+  de revisión»). The author checks its inbox after every push, for example
   `pnpm board inbox --agente=claude`, and fixes the findings on the same branch; the new head then
   gets its next round with `pnpm board review`.
 - `pnpm board carriles` (and the page's lane table) reads each lane from Git: branch, clean or not,
@@ -360,6 +422,27 @@ data, never an authorization.
   action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
 
 ## Checks and freshness
+
+Before creating a new cross-review round, `pnpm board review` checks GitHub's open PR, current
+`headRefOid` and `mergeable`; an explicit `--sha` must still match that live head. Unavailable,
+malformed or `UNKNOWN` merge evidence is `UNVERIFIED` and refuses the round until retried.
+`CONFLICTING` refuses the round without replacing any earlier review and writes a bitácora message
+to the author's agent and recorded session. Read-only `git merge-tree` against GitHub's exact base
+and head supplies the conflict paths when those objects are local; unavailable paths are explicitly
+`UNVERIFIED`, never inferred from all changed files. The author merges `origin/develop` into the
+same branch with a normal merge, resolves the conflicts, validates and pushes normally. Never
+request rebase or `push --force` to unlock a review. No merge, fetch or checkout is performed by
+this pre-flight. An already existing round for the same SHA stays idempotent.
+
+Review prompts classify the complete PR file inventory conservatively: Tier 0 for metadata/docs
+(agile validation, a lightweight model suggested), Tier 1 for UI/frontend (interaction,
+accessibility and regression checks), Tier 2 for DB/auth/APIs and unclassified or incomplete file
+evidence (deep review). Mixed changes take the highest risk. These tiers guide review effort and
+never replace Gatekeeper validation tiers A/B/C or waive the task contract's required checks.
+Generated rounds record `revisionFiles` only from a complete GitHub inventory. From round 2 onward,
+focus on `prev.revisionSha..HEAD`, pinned in the prompt to the current full `revisionSha`; verify
+prior findings and expand to related context when necessary. A new commit still requires a new round
+and independent acceptance at its exact SHA.
 
 Prefer structured `chequeo: {tipo: pr, pr: N}` or `{tipo: rama, rama: type/id}`. Legacy `cmd` is
 accepted only by the finite `commandArgs` grammar, executed as argument arrays without a shell.

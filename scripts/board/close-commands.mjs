@@ -6,7 +6,16 @@ import { randomBytes } from 'node:crypto';
 import { UsageError, say } from './cli.mjs';
 import { buildCierre, cancelCierre, cierreIssues, cierreLines, signalLine } from './cierre.mjs';
 import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
-import { isFinished, logRowError, quienOf, unlocked } from './model.mjs';
+import {
+	VEREDICTOS,
+	isFinished,
+	isReview,
+	logRowError,
+	normalizePr,
+	quienOf,
+	unlocked,
+} from './model.mjs';
+import { cadaMs, nextCycle } from './recurring.mjs';
 import { appendLog, loadBoard, readDoc, withLock } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -61,6 +70,49 @@ function sendFindings(dir, t, board) {
 	return `hallazgos enviados a ${notice.para} sobre ${notice.tarea} (pnpm board inbox --agente=${notice.para})`;
 }
 
+/**
+ * d274: an open review whose cierre carries a verdict is done, `cambios` included (the next round is another task),
+ * and its lock goes. `after` is returned unchanged for any other task. The caller has already checked the cierre.
+ */
+export function reviewDone(before, after, flags) {
+	if (!isReview(before) || isFinished(before)) return after;
+	if (!VEREDICTOS.includes(after.cierre?.resultado?.veredicto)) return after;
+	return { ...unlocked(after, flags), estado: 'hecha' };
+}
+
+/**
+ * d268: closing a started cycle of a periodic task (`cada`) ends that cycle only: it goes back to pendiente
+ * without its lock, lane, PR or branch, the PR joins `prsPrevios` (so sync never matches it again) and its `fecha`
+ * requisito moves to the next cycle. The cierre stays as the last cycle's. A task still pendiente has no cycle
+ * running, so a second close (an amended summary, a retry) keeps the date. `after` is returned unchanged for any
+ * other task.
+ */
+export function rescheduled(before, after, flags, now = Date.now()) {
+	const started = !isFinished(before) && (before.estado ?? 'pendiente') !== 'pendiente';
+	if (!cadaMs(before.cada) || isReview(before) || !started) return after;
+	// This cycle's PRs: the task's own and the one this close names (`--pr`), never a cierre PR inherited from an
+	// earlier cycle when no --pr was given.
+	const given = typeof flags.pr === 'string' ? normalizePr(flags.pr) : undefined;
+	const previos = Array.isArray(before.prsPrevios) ? before.prsPrevios : [];
+	const nuevos = [normalizePr(before.pr), given].filter(
+		(pr, i, all) => typeof pr === 'string' && pr.startsWith('#') && all.indexOf(pr) === i,
+	);
+	const prsPrevios = [...previos, ...nuevos.filter((pr) => !previos.includes(pr))];
+	const next = {
+		...unlocked(after, flags),
+		estado: 'pendiente',
+		requisitos: nextCycle(after, now),
+		...(prsPrevios.length ? { prsPrevios } : {}),
+	};
+	for (const k of ['carril', 'pr', 'rama', 'entregada']) delete next[k];
+	return next;
+}
+
+const cycleLine = (t) => {
+	const fechas = (t.requisitos ?? []).filter((r) => r.tipo === 'fecha').map((r) => r.ref);
+	return `cada ${t.cada}: vuelve a pendiente hasta ${fechas.join(', ')}`;
+};
+
 /** The `close` command; board.mjs passes the task helpers it owns. */
 export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 	return {
@@ -82,12 +134,12 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 				const issues = cierreIssues({ ...before, cierre }, board);
 				if (issues.length)
 					throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
-				const t = saveTask(
-					dir,
-					before,
-					{ ...before, cierre },
-					{ ...flags, seguimiento: true },
-				);
+				const closed = reviewDone(before, { ...before, cierre }, flags);
+				const next = rescheduled(before, closed, flags);
+				const t = saveTask(dir, before, next, {
+					...flags,
+					seguimiento: true,
+				});
 				// T129: the one-line signal the agent hands back, built only from the cierre.
 				const senal = signalLine(t, board);
 				const enviado = sendFindings(dir, t, board);
@@ -95,6 +147,7 @@ export function closeCommands({ getTask, saveTask, checkRev, assertOwner }) {
 					`${t.id} con cierre (rev ${t.rev})`,
 					...cierreLines(t, board),
 					...(enviado ? [enviado] : []),
+					...(next === closed ? [] : [cycleLine(t)]),
 					senal,
 				];
 				say(flags, out, { ...t, senal }, text.join('\n'));

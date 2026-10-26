@@ -261,6 +261,25 @@ describe('canonical validation contract', () => {
 		).toContain('isVisualParityDeferred(),');
 	});
 
+	it('runs the mobile modal Cancel button check on every pull request', () => {
+		const pkg = JSON.parse(
+			fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'),
+		) as { scripts: Record<string, string> };
+		const specPath = 'tests/e2e/guest-dashboard-mobile-walkthrough.spec.ts';
+		expect(pkg.scripts['test:e2e:ci']).toContain(specPath);
+
+		const spec = fs.readFileSync(path.resolve(process.cwd(), specPath), 'utf8');
+		const cancelSuite = spec.slice(
+			spec.indexOf("test.describe('Mobile modal cancel buttons at 390px'"),
+			spec.indexOf("test.describe('Mobile guest dashboard walkthrough at 390px'"),
+		);
+		expect(cancelSuite).toContain('expectMobileFooterCancel(');
+		expect(cancelSuite).not.toContain('isVisualParityDeferred');
+		expect(cancelSuite).not.toContain('@extended');
+		expect(spec).toContain("element.matches(':focus-visible')");
+		expect(spec).toContain("probe.style.color = 'var(--dashboard-focus-ring)'");
+	});
+
 	it('keeps the default browser run identical to the locally certified command', () => {
 		const workflow = fs.readFileSync(
 			path.resolve(process.cwd(), '.github/workflows/commit-validation.yml'),

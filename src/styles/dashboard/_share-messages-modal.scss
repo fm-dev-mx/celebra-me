@@ -699,7 +699,7 @@
 		}
 
 		.dashboard-modal__footer-cancel {
-			display: none;
+			@include mixins.modal-footer-cancel-mobile;
 		}
 	}
 }

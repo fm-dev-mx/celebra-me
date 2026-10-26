@@ -23,8 +23,10 @@
  *                                               a usted» until 30 min pass without a claim (claim clears it)
  *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
- *                                               --coordinador frees only a legacy lock without sesion;
- *                                               a task still en curso goes back to pendiente (T172)
+ *                                               --coordinador frees a legacy lock without sesion, or
+ *                                               (d274) one silent for 2 h whose task has a valid cierre;
+ *                                               a task still en curso goes back to pendiente (T172), a
+ *                                               review with its verdict becomes hecha
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
@@ -96,6 +98,8 @@ import {
 	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
+	buildMessageRow,
+	taskLabel,
 	reviewerIssue,
 	reviewChild,
 	reviewChildId,
@@ -110,10 +114,16 @@ import {
 	cleaned,
 	CLEANED_ON,
 	unlocked,
+	isSilentLock,
+	SILENT_LOCK_HOURS,
 	CONTRATO,
+	findTask,
 } from './model.mjs';
-import { archiveBlock, cierreBlock } from './cierre.mjs';
-import { cancelOnSet, cancelReplaced, closeCommands } from './close-commands.mjs';
+import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
+import { reviewPreflight } from './review-preflight.mjs';
+import { authorSession } from './findings.mjs';
+import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
+import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
 import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
 import { deliveryCommands } from './delivery-commands.mjs';
@@ -231,6 +241,7 @@ function saveTask(dir, before, after, opts = {}) {
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
 	else t.pr = pr;
+	withParent(dir, before, t);
 	const old = before ? new Set(taskIssues(before)) : new Set();
 	// A legacy record keeps unrelated problems, but a write that touches the PR rule must satisfy it.
 	const touchesPr = ['pr', 'estado', 'rama'].some((k) => before?.[k] !== t[k]);
@@ -244,6 +255,19 @@ function saveTask(dir, before, after, opts = {}) {
 	writeDoc(dir, 'tareas', t.id, t, { backup: !isFinished(before) });
 	if (row) appendLog(dir, row);
 	return t;
+}
+
+/** d174: `padre=T12` becomes the mother's id; a mother off the board or a loop of mothers is refused. */
+function withParent(dir, before, t) {
+	if (t.padre === undefined || t.padre === before?.padre) return;
+	const board = {
+		tareas: readCollection(dir, 'tareas'),
+		archivo: readCollection(dir, 'archivo'),
+	};
+	const mother = findTask(t.padre, board);
+	if (mother) t.padre = mother.id;
+	const issue = parentIssue(t, board);
+	if (issue) throw new UsageError(`no se escribió ${t.id}: ${issue}`);
 }
 
 /**
@@ -293,6 +317,15 @@ function assertOwner(task, flags) {
 	if (task.candado.agente !== flags.agente || !sesion || task.candado.sesion !== sesion)
 		throw new UsageError(
 			'el candado pertenece a otra sesión; indique --agente y --sesion coincidentes',
+		);
+}
+
+/** d274: the coordinator frees a silent session's lock only after that session wrote a valid cierre. */
+function assertClosed(task, board) {
+	const issues = cierreIssues(task, board);
+	if (issues.length)
+		throw new UsageError(
+			`${task.id} no tiene un cierre válido (${issues.join('; ')}): el candado sin latido desde hace ${SILENT_LOCK_HOURS} h solo se suelta después de «close»`,
 		);
 }
 
@@ -412,10 +445,12 @@ const commands = {
 		const review = board.tareas
 			.filter((t) => stage(t, board) === 'revision' && !t.archivada && inTab(t, tab))
 			.sort((a, b) => Date.parse(b.actualizado) - Date.parse(a.actualizado));
+		// T258: blocked tasks are not numbered; --json still lists them, after the queue.
+		const stuck = blocked(board).flatMap(({ t }) => (inTab(t, tab) ? [t] : []));
 		if (flags.json)
 			return out(
 				JSON.stringify(
-					[...q, ...review].map((t, i) => ({
+					[...q, ...stuck, ...review].map((t, i) => ({
 						n: i < q.length ? i + 1 : null,
 						num: t.num,
 						id: t.id,
@@ -427,7 +462,7 @@ const commands = {
 					2,
 				),
 			);
-		if (!q.length) out('Sin tareas abiertas.');
+		if (!q.length) out('Sin tareas en la cola.');
 		q.forEach((t, i) => out(row(t, i + 1, board, flags.agente)));
 		const mine = q.filter((t) => color(t, board) === 'own').length;
 		out(`\nUsted: ${mine ? `${mine} ${mine > 1 ? 'cosas' : 'cosa'}` : 'nada'}`);
@@ -436,6 +471,9 @@ const commands = {
 			out(`\nEn revisión (${review.length}):`);
 			for (const t of review) out(row(t, '·', board, flags.agente));
 		}
+		// d276/T258: tasks waiting for a date or blocked left the queue; their lines close the list.
+		const tail = listTail(board);
+		if (tail) out(tail);
 	},
 	next({ flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente=claude|codex|gemini');
@@ -465,6 +503,8 @@ const commands = {
 		out(
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
+		const up = parentText(t, board);
+		if (up) out(`  ${up}`);
 		const trace = traceText(t, board);
 		if (trace) out(`  ${trace.text}`);
 		const delivered = deliveryLine(t);
@@ -487,7 +527,12 @@ const commands = {
 		])
 			if (t[k] !== undefined)
 				out(`  ${k}: ${typeof t[k] === 'string' ? t[k] : JSON.stringify(t[k])}`);
-		for (const line of [...roundLines(t, board), ...cierreBlock(t, board)]) out(line);
+		for (const line of [
+			...subtaskLines(t, board),
+			...roundLines(t, board),
+			...cierreBlock(t, board),
+		])
+			out(line);
 		if (t.prompt) out(`\n${t.prompt}`);
 	},
 	add({ pos, pairs, flags }, dir, out) {
@@ -526,6 +571,7 @@ const commands = {
 				'carrilPlaneado',
 				'origen',
 				'revisionSha',
+				'revisionFiles',
 				'archivada',
 				'cierre',
 				'num',
@@ -533,6 +579,7 @@ const commands = {
 				'agregadaPor',
 				'seguimientoPor',
 				'entregada',
+				'prsPrevios',
 			])
 				if (Object.hasOwn(pairs, key) || Object.hasOwn(data, key))
 					throw new UsageError(`${key} requiere su comando de coordinación, no set`);
@@ -700,12 +747,16 @@ const commands = {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			if (!before.candado) return say(flags, out, before, `${before.id} no tiene candado`);
 			// A lock from before sessions were recorded has no sesion: only a declared coordinator frees it.
-			if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
+			// d274: so does one whose session went silent, once the task's cierre is valid.
+			const silent =
+				flags.coordinador && before.candado.sesion && isSilentLock(before.candado);
+			if (silent) assertClosed(before, loadBoard(dir));
+			else if (before.candado.sesion || !flags.coordinador) assertOwner(before, flags);
 			if (before.candado.agente !== agente)
 				throw new UsageError(`el candado es de ${before.candado.agente}`);
 			// T172: a task released while still en curso goes back to pendiente, so another session can claim it.
-			const after = unlocked(before, flags);
-			if (before.estado === 'en curso') after.estado = 'pendiente';
+			const after = reviewDone(before, unlocked(before, flags), flags);
+			if (after.estado === 'en curso') after.estado = 'pendiente';
 			const t = saveTask(dir, before, after, {
 				quien: flags.quien,
 				agente,
@@ -767,11 +818,32 @@ const commands = {
 			const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
 			if (prev?.revisionSha === sha)
 				return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
+			const preflight = reviewPreflight(src, sha);
+			if (preflight.conflicts !== null) {
+				const en = nowIso();
+				const texto = `${taskLabel(src)} (${src.pr}@${sha.slice(0, 7)}): revisión rechazada por conflictos de merge. Archivos: ${preflight.conflicts.length ? preflight.conflicts.join(', ') : 'UNVERIFIED (objetos locales no disponibles; compruebe los archivos en GitHub)'}. Una origin/develop a su rama con un merge normal, resuelva los conflictos y haga push normal; nunca rebase ni push --force.`;
+				const row = buildMessageRow(
+					src.id,
+					{ de: 'coordinador', para: author, texto, id: `merge-${src.id}-${sha}-${en}` },
+					en,
+				);
+				const sesion = authorSession(src, author);
+				if (sesion) row.mensaje.sesion = sesion.id;
+				appendLog(dir, row);
+				throw new UsageError(texto);
+			}
 			const id = reviewChildId(src, prev);
 			const before = readDoc(dir, 'tareas', id);
 			// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
 			const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
-			const t = reviewChild(src, { agente, sha, prev, num, generado: nowIso() });
+			const t = reviewChild(src, {
+				agente,
+				sha,
+				prev,
+				num,
+				files: preflight.files,
+				generado: nowIso(),
+			});
 			// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
 			const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
 			const saved = saveTask(dir, before, t, who);

@@ -12,8 +12,10 @@ import {
 	withPushCheck,
 	withRunLines,
 } from './prompt.mjs';
+import { requisitoText } from './requisito-text.mjs';
 
 export { normalizePr, prNumber } from './pr-ref.mjs';
+export { dayOf, requisitoLine, requisitoText, taskName } from './requisito-text.mjs';
 
 export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
 export const ACTORES = ['dueno', 'sesion', 'coordinador'];
@@ -269,7 +271,10 @@ export function reviewChildId(src, prev) {
 }
 
 /** The child task of the next review round of `src`, after `prev`, numbered `num` (T160). */
-export function reviewChild(src, { agente, sha, prev, num, generado = new Date().toISOString() }) {
+export function reviewChild(
+	src,
+	{ agente, sha, prev, num, files, generado = new Date().toISOString() },
+) {
 	const n = prev ? reviewRound(prev) + 1 : 1;
 	const id = reviewChildId(src, prev);
 	return {
@@ -280,6 +285,7 @@ export function reviewChild(src, { agente, sha, prev, num, generado = new Date()
 			n,
 			sha,
 			prev,
+			files,
 			agente,
 			generado,
 			carril: READONLY_LANE,
@@ -293,6 +299,7 @@ export function reviewChild(src, { agente, sha, prev, num, generado = new Date()
 		contrato: CONTRATO,
 		origen: src.id,
 		revisionSha: sha,
+		...(files ? { revisionFiles: files } : {}),
 		vuelta: n,
 		requisitos: [{ tipo: 'revision', ref: src.id }],
 		...(src.rama ? { rama: src.rama } : {}),
@@ -314,6 +321,11 @@ const HOUR_MS = 3_600_000;
 /** Whether a lock was taken more than `hours` ago. */
 export const isStaleLock = (candado, now = Date.now(), hours = STALE_LOCK_HOURS) =>
 	now - Date.parse(candado?.desde ?? '') >= hours * HOUR_MS;
+/** d274: a lock with no heartbeat for this long may be freed by the coordinator once its task has a valid cierre. */
+export const SILENT_LOCK_HOURS = 2;
+/** Whether a lock's last sign of life (its `latido`, else when it was taken) is `hours` old or more. */
+export const isSilentLock = (candado, now = Date.now(), hours = SILENT_LOCK_HOURS) =>
+	now - Date.parse(candado?.latido ?? candado?.desde ?? '') >= hours * HOUR_MS;
 const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 
 /** The task a closing «pendiente» points to: `T58` by its number, anything else by id; null when absent. */
@@ -393,61 +405,6 @@ export function requisitos(t, board, now = Date.now()) {
 	return list;
 }
 
-const REQ_TZ = 'America/Mazatlan';
-const dayEs = (s) =>
-	new Date(s).toLocaleDateString('es-MX', {
-		timeZone: REQ_TZ,
-		weekday: 'short',
-		day: 'numeric',
-		month: 'short',
-	});
-/** «T35 · Dividir reglas del tablero» for a task id, with a note when it is archived or missing. */
-export function taskName(ref, board) {
-	const live = (board.tareas ?? []).find((x) => x.id === ref);
-	const d = live ?? (board.archivo ?? []).find((x) => x.id === ref);
-	if (!d) return `la tarea «${ref}», que ya no está en el tablero`;
-	const name = d.titulo ? `${d.num ? `T${d.num} · ` : ''}${d.titulo}` : ref;
-	return live ? name : `${name} (archivada)`;
-}
-
-function decisionAbout(ref, board) {
-	const d = (board.decisiones ?? []).find((x) => x.id === ref);
-	if (!d) return ' (todavía no existe)';
-	if (d.vigente !== true) return ' (ya no vigente)';
-	const txt = String(d.decision ?? '');
-	return `: ${txt.slice(0, 90)}${txt.length > 90 ? '…' : ''}`;
-}
-const dayOf = (ref) => (Number.isNaN(new Date(ref).getTime()) ? ref : dayEs(ref));
-/** Per tipo: [checklist form, blocked-card form]. */
-const REQ_TEXT = {
-	tarea: (ref, b) => [`Termina ${taskName(ref, b)}`, `Espera ${taskName(ref, b)}`],
-	revision: (ref, b) => [
-		`Tiene PR en revisión: ${taskName(ref, b)}`,
-		`Espera el PR en revisión de ${taskName(ref, b)}`,
-	],
-	fecha: (ref) => [`Llega el ${dayOf(ref)}`, `Espera al ${dayOf(ref)}`],
-	decision: (ref, b) => [
-		`Decisión ${ref}${decisionAbout(ref, b)}`,
-		`Espera la decisión ${ref}${decisionAbout(ref, b)}`,
-	],
-	prompt: () => [
-		'Falta el prompt (lo escribe el coordinador)',
-		'Espera su prompt (lo escribe el coordinador)',
-	],
-	dueno: (ref) => [`Le toca a usted: ${ref}`, `Espera su respuesta: ${ref}`],
-};
-
-/**
- * A requisito as a person reads it (T41): `{tipo: 'tarea', ref: 'board-agent-alignment'}` →
- * «Termina T35 · Dividir reglas del tablero»; with `{espera: true}` the blocked-card form,
- * «Espera T35 · Dividir reglas del tablero».
- */
-export function requisitoText(r, board, { espera = false } = {}) {
-	const text = REQ_TEXT[r.tipo] ?? REQ_TEXT.dueno;
-	return text(String(r.ref ?? ''), board)[espera ? 1 : 0];
-}
-/** One checklist line of `pnpm board show`: «○ Termina T35 · Dividir reglas del tablero». */
-export const requisitoLine = (r, board) => `${r.ok ? '✓' : '○'} ${requisitoText(r, board)}`;
 /** Why a blocked task waits, from its first unmet requisito; '' when it is not blocked by one. */
 export function blockedText(t, board) {
 	const first = stage(t, board) === 'bloqueada' && requisitos(t, board).find((r) => !r.ok);
@@ -531,16 +488,44 @@ export function color(t, board, { agente, now } = {}) {
 
 export const isOpen = (t, board, now) =>
 	['lista', 'bloqueada', 'curso'].includes(stage(t, board, now));
+
+/**
+ * d276: the date a pending task waits for when dates are its only unmet requisitos (the latest one), or null.
+ * Such a task leaves the queue for the «Calendario» and comes back on its own that day; a task that also
+ * waits for another task, a decision or its prompt stays in the queue as blocked.
+ */
+export function calendarDate(t, board, now = Date.now()) {
+	if ((t.estado ?? 'pendiente') !== 'pendiente' || t.candado) return null;
+	const unmet = requisitos(t, board, now).filter((r) => !r.ok);
+	if (unmet.some((r) => r.tipo === 'fecha' && Number.isNaN(time(r.ref)))) return null;
+	if (!unmet.length || unmet.some((r) => r.tipo !== 'fecha')) return null;
+	return unmet
+		.map((r) => r.ref)
+		.sort((a, b) => time(a) - time(b))
+		.at(-1);
+}
+export const onCalendar = (t, board, now) => calendarDate(t, board, now) !== null;
+
+/**
+ * T258: an open task blocked by something other than a date (a task, a decision, its prompt, an answer, or a
+ * manual «bloqueada»). It leaves the queue for the «Bloqueadas» tab and comes back on its own once unblocked.
+ */
+export const isBlocked = (t, board, now) =>
+	stage(t, board, now) === 'bloqueada' && !onCalendar(t, board, now);
+
 const depIds = (t) => (t.requisitos ?? []).filter((r) => r.tipo === 'tarea').map((r) => r.ref);
 const urgRank = (u) => (URGENCIAS.includes(u) ? URGENCIAS.indexOf(u) : 2);
 
 /**
- * The numbered queue: the owner's ready tasks (d163) → urgency → free lane before busy or none (`laneRank`) →
- * ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a task never comes before one
- * it waits for.
+ * The numbered queue of ready and running tasks: the owner's ready tasks (d163) → urgency → free lane before
+ * busy or none (`laneRank`) → ready before blocked → due date (`hasta`) → `orden` → title, then a pass so a task never comes before one
+ * it waits for. Blocked tasks (`isBlocked`) order that pass but are left out.
  */
 export function queue(board, now = Date.now()) {
-	const open = (board.tareas ?? []).filter((t) => isOpen(t, board, now));
+	// d276: a task that only waits for a date sits in the «Calendario» until that day.
+	const open = (board.tareas ?? []).filter(
+		(t) => isOpen(t, board, now) && !onCalendar(t, board, now),
+	);
 	const ids = new Set(open.map((t) => t.id));
 	const key = (t) => [
 		color(t, board, { now }) === 'own' ? 0 : 1,
@@ -567,7 +552,8 @@ export function queue(board, now = Date.now()) {
 		out.push(t);
 	};
 	for (const t of rest) place(t);
-	return out;
+	// T258: blocked tasks still lift their prerequisites above, then leave for the «Bloqueadas» tab.
+	return out.filter((t) => !isBlocked(t, board, now));
 }
 
 /**
@@ -575,7 +561,9 @@ export function queue(board, now = Date.now()) {
  * requisites are already met, so an answer that is not due yet stays out of sight.
  */
 export function ownerAsks(board, now = Date.now()) {
-	return queue(board, now).flatMap((t) => {
+	// T258: a task waiting for the owner's answer is blocked, so it sits outside the queue.
+	const waiting = (board.tareas ?? []).filter((t) => isBlocked(t, board, now));
+	return [...queue(board, now), ...waiting].flatMap((t) => {
 		const reqs = requisitos(t, board, now);
 		if (reqs.some((r) => (r.tipo === 'fecha' || r.tipo === 'tarea') && !r.ok)) return [];
 		return reqs.filter((r) => r.tipo === 'dueno' && !r.ok).map((r) => ({ t, r }));
@@ -919,6 +907,22 @@ const FIELD_CHECKS = [
 	]),
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
+	// d174: a subtask names its mother task (padre) and/or initiative (grupo), with an optional phase.
+	[
+		(t) => !optional(t.padre, (p) => typeof p === 'string' && p.trim()),
+		() => 'padre debe ser el id de la tarea madre',
+	],
+	[(t) => t.padre !== undefined && t.padre === t.id, () => 'padre no puede ser la misma tarea'],
+	[
+		(t) => !optional(t.grupo, (g) => typeof g === 'string' && g.trim()),
+		() => 'grupo debe ser texto',
+	],
+	[
+		(t) => !optional(t.fase, (n) => Number.isInteger(n) && n >= 1),
+		() => 'fase debe ser un entero desde 1',
+	],
+	// d268: a periodic task's `cada`, the rule of recurring.mjs's CADA_RE.
+	[(t) => !optional(t.cada, (c) => /^[1-9]\d*d$/.test(c)), () => 'cada debe ser <n>d (7d)'],
 	[(t) => !optional(t.archivada, isDate), () => 'archivada no es fecha'],
 	[
 		(t) => t.archivada !== undefined && !isFinished(t),

@@ -279,8 +279,8 @@ describe('pnpm board:sync', () => {
 			`console.log(JSON.stringify(m.parseWorktrees('worktree D:/a/celebra-me\\nHEAD 1\\nbranch refs/heads/develop\\n\\nworktree D:/w/f07-invitaciones\\nHEAD 2\\ndetached\\n')));`,
 		);
 		expect(out).toEqual([
-			{ lane: 'celebra-me', path: 'D:/a/celebra-me', rama: 'develop' },
-			{ lane: 'f07-invitaciones', path: 'D:/w/f07-invitaciones', rama: null },
+			{ lane: 'celebra-me', path: 'D:/a/celebra-me', rama: 'develop', head: '1' },
+			{ lane: 'f07-invitaciones', path: 'D:/w/f07-invitaciones', rama: null, head: '2' },
 		]);
 	});
 
@@ -309,10 +309,24 @@ describe('pnpm board:sync', () => {
 
 		const real = probe(SYNC_PATH, run(false), { CELEBRA_BOARD_DIR: dir });
 		expect(real.cambios.map((c: Json) => c.ok)).toEqual([true, true, true]);
+		// d268: the hygiene then finds both merged PRs on GitHub and moves the tasks on to comprobada.
+		const evidencia = {
+			cmd: expect.stringMatching(/^gh pr view 1[04] --json state$/),
+			salio: '{"state":"MERGED"}',
+		};
 		const freed = readTask(dir, 'con-candado');
-		expect(freed).toMatchObject({ estado: 'unida', pr: '#14', rev: 2 });
+		expect(freed).toMatchObject({ estado: 'comprobada', pr: '#14', rev: 3, evidencia });
 		expect(freed.candado).toBeUndefined();
-		expect(readTask(dir, 'unido')).toMatchObject({ estado: 'unida', pr: '#10', rev: 2 });
+		expect(readTask(dir, 'unido')).toMatchObject({
+			estado: 'comprobada',
+			pr: '#10',
+			rev: 3,
+			evidencia,
+		});
+		expect(real.higiene.comprobadas.map((c: Json) => [c.id, c.ok])).toEqual([
+			['unido', true],
+			['con-candado', true],
+		]);
 		expect(readTask(dir, 'abierto')).toMatchObject({ estado: 'en revision', pr: '#11' });
 		const rows = readdirSync(path.join(dir, 'bitacora')).flatMap((f) =>
 			readFileSync(path.join(dir, 'bitacora', f), 'utf8')
