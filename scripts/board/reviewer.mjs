@@ -1,12 +1,14 @@
 /**
  * d209: who reviews Claude's work when `pnpm board review` has no --agente. Gemini and Codex share it by their
  * 7-day load (d233: open tasks count too); a tie goes to Gemini, and Codex is skipped while its quota is near the
- * cap. Work by Codex or Gemini still goes to Claude (d183), so the author never reviews itself.
+ * cap. Work by Codex or Gemini still goes to Claude (d183), so the author never reviews itself. d282: a
+ * low-risk PR by Claude goes to a clean-context Claude subagent instead (`revisor: subagente`).
  */
 import { closeSync, existsSync, openSync, readdirSync, readSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { defaultReviewer, isFinished, isReview } from './model.mjs';
+import { defaultReviewer, isFinished, isReview, reviewerIssue } from './model.mjs';
+import { lowRisk, reviewLevel } from './prompt.mjs';
 
 export const LOAD_DAYS = 7;
 const DAY_MS = 86_400_000;
@@ -66,11 +68,18 @@ function quotaText(quota, now) {
 }
 
 /**
- * The reviewer of work by `author` and why: d209 between Gemini and Codex for Claude's work, d183 otherwise.
- * `quota` is Codex's last rate_limits ({ primary, secondary }) or null; `now` is in milliseconds.
+ * The reviewer of work by `author` and why: d282 a Claude subagent for Claude's low-risk `files`, d209 between
+ * Gemini and Codex for Claude's other work, d183 otherwise. `quota` is Codex's last rate_limits
+ * ({ primary, secondary }) or null; `now` is in milliseconds.
  */
-export function pickReviewer(author, board, { quota = null, now = Date.now() } = {}) {
+export function pickReviewer(author, board, { quota = null, now = Date.now(), files } = {}) {
 	if (author !== 'claude') return { agente: defaultReviewer(author), motivo: '' };
+	if (lowRisk(files))
+		return {
+			agente: 'claude',
+			revisor: 'subagente',
+			motivo: 'riesgo bajo (d282): subagente de claude',
+		};
 	const load = {
 		gemini: reviewerLoad(board, 'gemini', now),
 		codex: reviewerLoad(board, 'codex', now),
@@ -78,6 +87,7 @@ export function pickReviewer(author, board, { quota = null, now = Date.now() } =
 	const cap = codexCapped(quota, now);
 	const agente = cap || load.gemini <= load.codex ? 'gemini' : 'codex';
 	const motivo = [
+		`riesgo ${reviewLevel(files)}`,
 		`carga ${LOAD_DAYS} d: gemini ${load.gemini}, codex ${load.codex}`,
 		cap ? `cuota Codex ${cap} (tope)` : quotaText(quota, now),
 	].join(' · ');
@@ -162,4 +172,44 @@ export function codexQuota({ home = homedir() } = {}) {
 	} catch {
 		return null;
 	}
+}
+
+/**
+ * d282: what the author session does with a round its own subagent reviews. The subagent gets only the PR, the
+ * SHA and the round's prompt, never the author's conversation; the session claims and closes the round.
+ */
+export function subagentSteps(round, sha) {
+	const name = String(round.prompt ?? '').split('\n')[0];
+	return [
+		'Revisor: subagente de claude (d282, riesgo bajo). Pasos de la sesión autora:',
+		`1. pnpm board claim ${round.id} --agente=claude --titulo="${name}"`,
+		`2. Lance un subagente Agent con contexto limpio y dele solo el PR ${round.pr}, el SHA ${sha} y el prompt de pnpm board show ${round.id}; nada de su conversación ni de su opinión del cambio.`,
+		`3. Con su veredicto: pnpm board close ${round.id} --resumen=… --comprobacion=… --saltada=… --veredicto=<el del subagente> --sha=${sha} --hallazgo="P2|archivo:línea|texto" (uno por hallazgo).`,
+	];
+}
+
+/** Why `review` stops before asking GitHub: no author and no --agente, or an explicit pairing never allowed. */
+export function reviewerPrecheck(author, agente) {
+	if (typeof agente === 'string') return reviewerIssue(author, agente, { lowRisk: true });
+	return author ? null : 'falta --agente=<revisor>: la tarea no dice su autor';
+}
+
+/**
+ * The reviewer of `author`'s PR with `files` (GitHub's complete inventory, or undefined): an explicit `agente`
+ * wins when allowed, otherwise pickReviewer. `issue` refuses the pairing; `revisor` is `subagente` when
+ * Claude reviews Claude's low-risk work (d282).
+ */
+export function chooseReviewer(author, agente, board, files) {
+	const pick =
+		typeof agente === 'string'
+			? { agente, motivo: '' }
+			: pickReviewer(author, board, { quota: codexQuota(), files });
+	const issue = reviewerIssue(author, pick.agente, { lowRisk: lowRisk(files) });
+	return { ...pick, revisor: pick.agente === author ? 'subagente' : undefined, issue };
+}
+
+/** What `review` prints for the new round `saved`, with the author session's steps for a subagent round. */
+export function reviewCreatedText(saved, pick, live, sha) {
+	const text = `${saved.id} creada para ${pick.agente} (vuelta ${saved.vuelta})${pick.motivo ? ` · ${pick.motivo}` : ''}${live ? `; ${live.id} cancelada` : ''}`;
+	return pick.revisor ? [text, ...subagentSteps(saved, sha)].join('\n') : text;
 }

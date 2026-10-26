@@ -256,4 +256,23 @@ describe('migration / deployment compatibility contract', () => {
 		});
 		expect(applied.status).toBe('allow');
 	});
+
+	it('holds the Meta PageView and ViewContent client until the outbox accepts them', () => {
+		const live = loadMigrationRolloutRegistry();
+		const deployedAppCapabilities = ['meta_capi_view_events_client'];
+		const absent = evaluateAppDatabaseReadiness({
+			deployedAppCapabilities,
+			dbAppliedVersions: ['20261025120000', '20261025150000'],
+			registry: live,
+		});
+		expect(absent.status).toBe('environment_not_ready');
+		expect(absent.reasons.join(' ')).toContain('meta_conversion_events_view_events');
+
+		const applied = evaluateAppDatabaseReadiness({
+			deployedAppCapabilities,
+			dbAppliedVersions: ['20261025120000', '20261025150000', '20261026000000'],
+			registry: live,
+		});
+		expect(applied.status).toBe('allow');
+	});
 });

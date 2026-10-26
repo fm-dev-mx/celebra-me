@@ -1,6 +1,7 @@
 /*
-  Floating reply button (`--invitation-floating-cta: on` on `.floating-cta`; Footer.astro renders
-  it hidden). While the guest has not answered it reads "Confirmar asistencia" and leads to the
+  Floating reply button. Footer.astro renders it hidden; it turns on with
+  `--invitation-floating-cta: on` on `.floating-cta`, or by default on a personal link
+  (`data-floating-cta-default`) unless the profile sets `--invitation-floating-cta: off`. While the guest has not answered it reads "Confirmar asistencia" and leads to the
   RSVP; once they confirm it becomes "Agendar" and opens the venues' calendar choices, copied from
   the location section; after a decline, or on a card locked to personal passes, it stays away. It reads the state the RSVP card already
   shows (`.rsvp[data-state]`), so nothing new is sent or stored.
@@ -18,8 +19,9 @@ const COVER_SHARE = 0.6;
 // Within this share of a screen from the end, the page is ending.
 const END_SHARE = 0.75;
 
-export function isFloatingCtaOn(value: string): boolean {
-	return value.trim() === 'on';
+export function isFloatingCtaOn(value: string, byDefault = false): boolean {
+	const token = value.trim();
+	return token === 'on' || (byDefault && token !== 'off');
 }
 
 /**
@@ -66,7 +68,7 @@ function fillCalendarPanel(panel: HTMLElement, sources: HTMLElement[]): void {
 export function initFloatingCta(root: Element | null): void {
 	if (!(root instanceof HTMLElement)) return;
 	const token = getComputedStyle(root).getPropertyValue('--invitation-floating-cta');
-	if (!isFloatingCtaOn(token)) return;
+	if (!isFloatingCtaOn(token, root.dataset.floatingCtaDefault === 'on')) return;
 	const confirm = root.querySelector<HTMLAnchorElement>('[data-floating-cta-confirm]');
 	const calendar = root.querySelector<HTMLButtonElement>('[data-floating-cta-calendar]');
 	const panel = root.querySelector<HTMLElement>('[data-floating-cta-panel]');

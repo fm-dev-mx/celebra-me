@@ -9,7 +9,7 @@ import {
 	type GuestSummary,
 } from '@/components/dashboard/guests/guest-presenter';
 
-interface GuestStatusOverviewProps {
+export interface GuestStatusOverviewProps {
 	summary: GuestSummary;
 	activeFilter: GuestReviewFilterValue;
 	onFilterChange: (filter: GuestReviewFilterValue) => void;
@@ -59,16 +59,22 @@ interface GuestNextStepProps {
 	onSendPending?: () => void;
 	/** Group name when the list is filtered by group. */
 	scopeLabel?: string;
+	/**
+	 * `strip` leads the compact screen above the list and keeps its action button;
+	 * `overview` sits in the full summary, which compact screens collapse.
+	 */
+	placement?: 'overview' | 'strip';
 }
 
 /** The one thing worth doing next: remind the unanswered, send the unsent, or nothing. */
-const GuestNextStep: React.FC<GuestNextStepProps> = ({
+export const GuestNextStep: React.FC<GuestNextStepProps> = ({
 	summary,
 	reminderCount,
 	reminderHint,
 	onRemind,
 	onSendPending,
 	scopeLabel,
+	placement = 'overview',
 }) => {
 	const { awaitingAnswer } = summary;
 	const prefix = scopeLabel ? `${scopeLabel}: ` : '';
@@ -110,7 +116,7 @@ const GuestNextStep: React.FC<GuestNextStepProps> = ({
 	}
 
 	return (
-		<div className={`guest-overview__next${tone}`}>
+		<div className={`guest-overview__next${tone} guest-overview__next--${placement}`}>
 			<p className="guest-overview__next-text">
 				{lead && <strong>{lead}</strong>}
 				{rest}

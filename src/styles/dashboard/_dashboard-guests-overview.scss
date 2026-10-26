@@ -474,10 +474,237 @@
 
 .guest-overview__next-action {
 	min-height: 44px;
+}
 
-	/* The mobile dock owns this action below lg */
+/* ==========================================================================
+   Compact-screen lead — summary strip and next step above the list; the full
+   overview and "Por grupo" fold behind "Ver resumen completo".
+   ========================================================================== */
+
+.dashboard-guests__lead {
+	display: none;
+
 	@include mixins.respond-below(lg) {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0 0 0.5rem;
+	}
+
+	.guest-overview__next {
+		padding: 0.625rem 1rem;
+	}
+}
+
+/* Keeps a label for assistive technology while the compact screen drops it visually */
+@mixin visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.filter-row__actions {
+	display: none;
+}
+
+@include mixins.respond-below(lg) {
+	.dashboard-guests__summary--folded,
+	.guest-overview__next--overview,
+	/* "Agregar" lives in the dock and "Más acciones" beside the search */
+	.dashboard-guests .dashboard-guests__toolbar--actions {
 		display: none;
+	}
+
+	/* The dock carries the send / remind action right below */
+	.guest-overview__next--strip {
+		.guest-overview__next-hint,
+		.guest-overview__next-action {
+			display: none;
+		}
+	}
+
+	.dashboard-guests {
+		/* The event picker needs no divider when the strip follows right below */
+		> .dashboard-guests__toolbar:first-child {
+			margin-bottom: 0.75rem;
+			padding-bottom: 0;
+			border-bottom: 0;
+		}
+
+		.header-event-selector label,
+		.filter-group--search label,
+		.guest-view-toggle__label {
+			@include visually-hidden;
+		}
+
+		.filter-group--search {
+			flex: 1 1 0;
+		}
+
+		.filter-row__actions {
+			display: flex;
+		}
+
+		.dashboard-guests__filters {
+			gap: 0.5rem;
+			margin-bottom: 0.5rem;
+		}
+
+		/* View switch and "Seleccionar varios" share one row */
+		.dashboard-guests__view-toggle {
+			flex-wrap: nowrap;
+			gap: 0.5rem;
+			margin-bottom: 0.5rem;
+
+			.guest-view-toggle {
+				flex: 0 1 auto;
+			}
+
+			/* Text-only options keep both controls inside 375 px */
+			.guest-view-toggle__option {
+				padding: 0 0.875rem;
+
+				svg {
+					display: none;
+				}
+			}
+
+			.guest-select-toggle {
+				flex: none;
+			}
+		}
+
+		.filter-row__actions .toolbar-actions-menu__trigger--icon {
+			justify-content: center;
+			width: 48px;
+			min-height: 48px;
+			padding: 0;
+		}
+	}
+}
+
+/* Same card radius and type steps as the full overview */
+$strip-card-radius: 18px;
+$strip-big-size: 2rem;
+$strip-text-size: 1rem;
+$strip-control-size: 0.9375rem;
+
+.guest-strip {
+	display: grid;
+	gap: 0.5rem;
+	min-width: 0;
+	padding: 0.75rem 1rem 0;
+	background: var(--color-surface-elevated);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: $strip-card-radius;
+	box-shadow: var(--shadow-warm);
+}
+
+.guest-strip__headline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.25rem 0.5rem;
+	margin: 0;
+}
+
+.guest-strip__big {
+	color: var(--color-text-primary);
+	font-family: var(--font-display-elegant);
+	font-size: $strip-big-size;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+
+.guest-strip__of {
+	color: var(--color-text-secondary);
+	font-size: $strip-text-size;
+}
+
+/* One scrollable row; the cut-off pill at the edge signals there is more */
+.guest-strip__pills {
+	display: flex;
+	gap: 0.375rem;
+	margin: 0 -1rem;
+	padding: 0 1rem;
+	overflow-x: auto;
+
+	@include mixins.hide-scrollbar;
+}
+
+.guest-strip__pill {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 0.75rem;
+	border: 1px solid transparent;
+	border-radius: var(--radius-pill);
+	font-family: var(--font-ui);
+	font-size: $strip-control-size;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+
+	flex: none;
+	white-space: nowrap;
+
+	&--to-send {
+		background: var(--color-state-warning-bg);
+		color: var(--color-state-warning-text);
+	}
+
+	&--awaiting {
+		background: var(--color-state-info-bg);
+		color: var(--color-state-info-text);
+	}
+
+	&--confirmed {
+		background: var(--color-state-success-bg);
+		color: var(--color-state-success-text);
+	}
+
+	&--declined {
+		background: var(--color-state-danger-bg);
+		color: var(--color-state-danger-text);
+	}
+
+	/* Pressed keeps the state tint and adds an outline, so the tone never disappears */
+	&--active {
+		border-color: currentcolor;
+		box-shadow: inset 0 0 0 1px currentcolor;
+	}
+
+	@media (forced-colors: active) {
+		border-color: ButtonText;
+	}
+}
+
+.guest-strip__toggle {
+	justify-self: start;
+	min-height: 44px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: $strip-control-size;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
 	}
 }
 
@@ -541,7 +768,7 @@
 			select {
 				width: 100%;
 				max-width: 100%;
-				min-height: 56px;
+				min-height: 48px;
 				border: 1px solid var(--color-border-control);
 				border-radius: 14px;
 				font-size: 1.125rem;
@@ -575,7 +802,7 @@
 
 			.filter-group input[type='search'],
 			.filter-group select {
-				min-height: 56px;
+				min-height: 48px;
 				border-color: var(--color-border-control);
 				border-radius: 14px;
 				font-size: 1.125rem;

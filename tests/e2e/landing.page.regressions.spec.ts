@@ -576,6 +576,54 @@ test.describe('Landing page regressions', () => {
 		}
 	});
 
+	test('draws the row theme and quotes from the promo band on each calendar date', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		const band = page.locator('.promo-band');
+		const bandCta = band.locator('[data-track-event="whatsapp_contact_clicked"]');
+		const ornaments = page.locator('.promo-ornament');
+
+		for (const campaign of PROMO_SCHEDULE) {
+			await page.clock.setFixedTime(new Date(Date.parse(campaign.startsAt) + DAY_MS / 2));
+			await page.goto('/', { waitUntil: 'load' });
+
+			if (!campaign.theme) {
+				await expect(page.locator('html')).not.toHaveAttribute('data-promo-theme');
+				await expect(band).toBeHidden();
+				await expect(ornaments.first()).toBeHidden();
+				continue;
+			}
+			await expect(page.locator('html')).toHaveAttribute('data-promo-theme', campaign.theme);
+			await expect(band).toBeVisible();
+			await expect(ornaments).toHaveCount(2);
+			await expect(ornaments.first()).toBeVisible();
+			await expect(band.locator('.promo-band__title')).toHaveText(campaign.label);
+			await expect(band.locator('.promo-band__tagline')).toHaveText(campaign.tagline);
+			await expect(band.locator('.promo-band__validity')).toContainText(
+				getValidityNote(campaign),
+			);
+			await expect(bandCta).toHaveAttribute('data-track-section', 'promo-band');
+			await expect(bandCta).toHaveAttribute(
+				'data-campaign-code',
+				buildCampaignCode('PROMO', getGeneralPromoCode(campaign)),
+			);
+			await expect(bandCta).toHaveAttribute(
+				'data-promo-code',
+				getGeneralPromoCode(campaign) ?? '',
+			);
+			await expect(bandCta).toHaveAttribute(
+				'data-track-value',
+				String(getStartingPrice(campaign)),
+			);
+			expect(decodeWhatsAppText(await bandCta.getAttribute('href'))).toBe(
+				buildGeneralMessage(campaign),
+			);
+			const ctaBox = await bandCta.boundingBox();
+			expect(ctaBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+		}
+	});
+
 	test('hides the promo and shows regular prices once the campaign ends', async ({ page }) => {
 		await page.clock.setFixedTime(AFTER_CAMPAIGN);
 		await page.setViewportSize({ width: 1280, height: 900 });
@@ -584,6 +632,10 @@ test.describe('Landing page regressions', () => {
 
 		await expect(page.locator('html')).toHaveAttribute('data-promo-state', 'none');
 		await expect(page.locator('.pricing-note')).toBeHidden();
+		await expect(page.locator('html')).not.toHaveAttribute('data-promo-theme');
+		await expect(page.locator('.promo-band')).toBeHidden();
+		await expect(page.locator('.promo-ornament').first()).toBeHidden();
+		await expect(page.locator('.hero-promo-pill')).toBeHidden();
 		const firstCard = page.locator('.pricing-card').first();
 		await expect(firstCard.locator('.tier-promo-label')).toBeHidden();
 		await expect(firstCard.locator('.regular-price')).toBeHidden();

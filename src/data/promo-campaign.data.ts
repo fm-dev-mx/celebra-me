@@ -13,6 +13,9 @@
  * the visitor's date and rewrites prices, labels, the countdown and every WhatsApp quote message,
  * so a scheduled row starts and ends on its own dates without a new release. Outside every row the
  * page shows regular prices and the messages carry no promo reference.
+ *
+ * Prices: every row picks one of the fixed PRICE_TIERS instead of writing its own prices, so the
+ * landing page only ever shows the regular, promo or strong price list.
  */
 
 export type PromoPackageId = 'esencial' | 'signature' | 'atelier';
@@ -29,9 +32,42 @@ export type CampaignSection =
 	| 'PRICING'
 	| 'FINAL'
 	| 'FOOTER'
-	| 'STICKY';
+	| 'STICKY'
+	| 'PROMO';
 
 export const PROMO_CURRENCY = 'MXN';
+
+export type PriceTierId = 'regular' | 'promo' | 'fuerte';
+
+export type PackagePrices = Readonly<Record<PromoPackageId, number>>;
+
+/**
+ * Fixed price lists. `regular` applies outside every row and is the struck-through price during
+ * one; a row picks `promo` or `fuerte`.
+ */
+export const PRICE_TIERS: Readonly<Record<PriceTierId, PackagePrices>> = {
+	regular: { esencial: 1299, signature: 1799, atelier: 2499 },
+	promo: { esencial: 999, signature: 1399, atelier: 1999 },
+	fuerte: { esencial: 899, signature: 1299, atelier: 1899 },
+};
+
+/**
+ * Visual theme of a row. The landing page ships every theme and `html[data-promo-theme]` picks
+ * one; the artwork lives in `src/data/promo-theme-art.data.ts`.
+ */
+export type PromoTheme = 'amor' | 'primavera' | 'verano' | 'patrias' | 'buenfin' | 'temporada';
+
+export const PROMO_THEMES: readonly PromoTheme[] = [
+	'amor',
+	'primavera',
+	'verano',
+	'patrias',
+	'buenfin',
+	'temporada',
+];
+
+/** Longest tagline that fits the promo strip on a 360 px screen. */
+export const PROMO_TAGLINE_MAX_LENGTH = 60;
 
 export interface CatalogPackage {
 	readonly id: PromoPackageId;
@@ -62,7 +98,14 @@ export interface PromoCampaign {
 	 * shows when the starting price goes up once this row ends.
 	 */
 	readonly countdownDays: number;
-	readonly prices: Readonly<Record<PromoPackageId, number>>;
+	/** Price list charged during the row. */
+	readonly tier: PriceTierId;
+	/** Visual theme, or null for the default look. */
+	readonly theme: PromoTheme | null;
+	/** Short phrase for the promo strip, at most PROMO_TAGLINE_MAX_LENGTH characters. */
+	readonly tagline: string;
+	/** Row-specific conditions listed on the terms page (`src/pages/terminos.astro`). */
+	readonly conditions: string;
 }
 
 export interface PromoStatus {
@@ -75,9 +118,9 @@ export interface PromoStatus {
 
 /** Packages in screen order. */
 export const PACKAGE_CATALOG: readonly CatalogPackage[] = [
-	{ id: 'esencial', name: 'Esencial', regularPrice: 1299 },
-	{ id: 'signature', name: 'Signature', regularPrice: 1799 },
-	{ id: 'atelier', name: 'Atelier', regularPrice: 2499 },
+	{ id: 'esencial', name: 'Esencial', regularPrice: PRICE_TIERS.regular.esencial },
+	{ id: 'signature', name: 'Signature', regularPrice: PRICE_TIERS.regular.signature },
+	{ id: 'atelier', name: 'Atelier', regularPrice: PRICE_TIERS.regular.atelier },
 ];
 
 const PROMO_EXTRAS: readonly PromoExtra[] = [
@@ -90,9 +133,10 @@ const PROMO_EXTRAS: readonly PromoExtra[] = [
 ];
 
 /**
- * Promo calendar, ordered by date. Dates are anchored to America/Mazatlan (Los Mochis, Sinaloa;
- * UTC-7 with no daylight saving time): each row starts at 00:00 on its first day and ends after
- * 23:59:59 on its last day. Gaps between rows show regular prices.
+ * Promo calendar, ordered by date and renewed every quarter to stay about six months ahead. Dates
+ * are anchored to America/Mazatlan (Los Mochis, Sinaloa; UTC-7 with no daylight saving time): each
+ * row starts at 00:00 on its first day and ends after 23:59:59 on its last day. Gaps between rows
+ * are regular months and show regular prices.
  */
 export const PROMO_SCHEDULE: readonly PromoCampaign[] = [
 	{
@@ -103,7 +147,10 @@ export const PROMO_SCHEDULE: readonly PromoCampaign[] = [
 		endsAt: '2026-11-01T07:00:00.000Z',
 		endLabel: '31 de octubre de 2026',
 		countdownDays: 7,
-		prices: { esencial: 999, signature: 1399, atelier: 1999 },
+		tier: 'promo',
+		theme: null,
+		tagline: 'Precio especial durante octubre',
+		conditions: 'Aplica a los tres paquetes, para eventos de cualquier fecha.',
 	},
 	{
 		id: 'temporada-2026',
@@ -113,7 +160,10 @@ export const PROMO_SCHEDULE: readonly PromoCampaign[] = [
 		endsAt: '2026-12-16T07:00:00.000Z',
 		endLabel: '15 de diciembre de 2026',
 		countdownDays: 10,
-		prices: { esencial: 899, signature: 1299, atelier: 1899 },
+		tier: 'fuerte',
+		theme: 'temporada',
+		tagline: 'El mejor precio del año para sus fiestas',
+		conditions: 'Aplica a los tres paquetes, para eventos de cualquier fecha.',
 	},
 	{
 		id: 'ano-nuevo-2027',
@@ -123,7 +173,49 @@ export const PROMO_SCHEDULE: readonly PromoCampaign[] = [
 		endsAt: '2027-02-01T07:00:00.000Z',
 		endLabel: '31 de enero de 2027',
 		countdownDays: 10,
-		prices: { esencial: 999, signature: 1399, atelier: 1999 },
+		tier: 'promo',
+		theme: 'temporada',
+		tagline: 'Empiece el año con su invitación lista',
+		conditions: 'Aplica a los tres paquetes, para eventos de cualquier fecha.',
+	},
+	{
+		id: 'amor-2027',
+		label: 'Precio del mes del amor',
+		codePrefix: 'AMOR',
+		startsAt: '2027-02-01T07:00:00.000Z',
+		endsAt: '2027-03-01T07:00:00.000Z',
+		endLabel: '28 de febrero de 2027',
+		countdownDays: 7,
+		tier: 'promo',
+		theme: 'amor',
+		tagline: 'Celebre el amor con su invitación digital',
+		conditions: 'Aplica a los tres paquetes, para bodas y cualquier otro evento.',
+	},
+	{
+		id: 'primavera-2027',
+		label: 'Precio de primavera',
+		codePrefix: 'PRIMAVERA',
+		startsAt: '2027-04-01T07:00:00.000Z',
+		endsAt: '2027-05-01T07:00:00.000Z',
+		endLabel: '30 de abril de 2027',
+		countdownDays: 7,
+		tier: 'promo',
+		theme: 'primavera',
+		tagline: 'Precio de primavera para su evento',
+		conditions: 'Aplica a los tres paquetes, para eventos de cualquier fecha.',
+	},
+	{
+		id: 'verano-2027',
+		label: 'Precio de verano y graduaciones',
+		codePrefix: 'VERANO',
+		startsAt: '2027-06-01T07:00:00.000Z',
+		endsAt: '2027-07-01T07:00:00.000Z',
+		endLabel: '30 de junio de 2027',
+		countdownDays: 7,
+		tier: 'promo',
+		theme: 'verano',
+		tagline: 'Graduaciones y fiestas de verano a precio especial',
+		conditions: 'Aplica a los tres paquetes, incluidas las graduaciones.',
 	},
 ];
 
@@ -131,9 +223,11 @@ export const PROMO_SCHEDULE: readonly PromoCampaign[] = [
 export const PRICE_HOLD_DAYS = 7;
 
 /** Days of runway left in the calendar below which the weekly check opens a reminder issue. */
-export const PROMO_RUNWAY_ALERT_DAYS = 14;
+export const PROMO_RUNWAY_ALERT_DAYS = 45;
 
 const MS_PER_DAY = 86_400_000;
+/** Los Mochis is UTC-7 all year, so its local midnight is 07:00 UTC. */
+const LOCAL_MIDNIGHT_UTC_HOUR = 7;
 const ENTRY_PACKAGE_ID: PromoPackageId = 'esencial';
 
 /** Formats an amount with thousands separators, independent of the runtime ICU data: `1,399`. */
@@ -162,14 +256,19 @@ export function getActiveCampaign(now: Date = new Date()): PromoCampaign | null 
 	);
 }
 
+/** Price list charged under a campaign, or the regular one outside every row. */
+export function getCampaignPrices(campaign: PromoCampaign | null): PackagePrices {
+	return PRICE_TIERS[campaign ? campaign.tier : 'regular'];
+}
+
 /** Price charged for a package under a campaign, or its regular price outside every row. */
 export function getPackagePrice(id: PromoPackageId, campaign: PromoCampaign | null): number {
-	return campaign ? campaign.prices[id] : getCatalogPackage(id).regularPrice;
+	return getCampaignPrices(campaign)[id];
 }
 
 /** Promo code whose numeric suffix is the promo price (read by the folio tooling): `NUEVO-899`. */
 export function getPromoCode(id: PromoPackageId, campaign: PromoCampaign | null): string | null {
-	return campaign ? `${campaign.codePrefix}-${campaign.prices[id]}` : null;
+	return campaign ? `${campaign.codePrefix}-${getPackagePrice(id, campaign)}` : null;
 }
 
 /** The entry package drives the general "desde" price, code and message. */
@@ -207,6 +306,27 @@ export function buildPackageMessage(id: PromoPackageId, campaign: PromoCampaign 
 		`Hola, quiero el paquete ${pkg.name} de ${formatMxn(getPackagePrice(id, campaign))} ${PROMO_CURRENCY}.`,
 		getPromoCode(id, campaign),
 	);
+}
+
+const MONTH_NAMES = [
+	'enero',
+	'febrero',
+	'marzo',
+	'abril',
+	'mayo',
+	'junio',
+	'julio',
+	'agosto',
+	'septiembre',
+	'octubre',
+	'noviembre',
+	'diciembre',
+];
+
+/** First valid day of a campaign in Los Mochis, written like `endLabel`: `1 de febrero de 2027`. */
+export function getStartLabel(campaign: PromoCampaign): string {
+	const localDay = new Date(Date.parse(campaign.startsAt) - LOCAL_MIDNIGHT_UTC_HOUR * 3_600_000);
+	return `${localDay.getUTCDate()} de ${MONTH_NAMES[localDay.getUTCMonth()]} de ${localDay.getUTCFullYear()}`;
 }
 
 export function getValidityNote(campaign: PromoCampaign): string {
@@ -268,30 +388,101 @@ export function getScheduleRunway(
 	return { endsAt: last.endsAt, endLabel: last.endLabel, daysLeft };
 }
 
-/** Calendar problems (empty when valid): order, overlaps, codes and prices. */
+/**
+ * Instant a `?fecha=AAAA-MM-DD` preview stands for: 00:00 of that day in Los Mochis. Null when the
+ * parameter is missing or is not a real calendar date. Callers decide whether previews are allowed.
+ */
+export function parsePromoPreviewDate(search: string): Date | null {
+	const value = new URLSearchParams(search).get('fecha') ?? '';
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+	if (!match) return null;
+	const [year, month, day] = match.slice(1).map(Number);
+	const date = new Date(Date.UTC(year, month - 1, day, LOCAL_MIDNIGHT_UTC_HOUR));
+	const isRealDate =
+		date.getUTCFullYear() === year &&
+		date.getUTCMonth() === month - 1 &&
+		date.getUTCDate() === day;
+	return isRealDate ? date : null;
+}
+
+export function isPromoTheme(value: string): value is PromoTheme {
+	return (PROMO_THEMES as readonly string[]).includes(value);
+}
+
+/**
+ * Theme a `?tema=<theme>` preview asks for, or null. It only restyles an active row (prices and
+ * labels stay the row's), so themes without a calendar row can still be reviewed. Callers decide
+ * whether previews are allowed.
+ */
+export function parsePromoThemePreview(search: string): PromoTheme | null {
+	const value = new URLSearchParams(search).get('tema') ?? '';
+	return isPromoTheme(value) ? value : null;
+}
+
+/** Theme drawn for a campaign: the preview override during a row, else the row's own theme. */
+export function getCampaignTheme(
+	campaign: PromoCampaign | null,
+	previewTheme: PromoTheme | null = null,
+): PromoTheme | null {
+	if (!campaign) return null;
+	return previewTheme ?? campaign.theme;
+}
+
+/** Share image (1200x630) for a theme, or null for the default landing image. */
+export function getPromoShareImage(theme: PromoTheme | null): string | null {
+	return theme ? `/images/og/og-promo-${theme}.jpg` : null;
+}
+
+/**
+ * Calendar problems (empty when valid): order, overlaps, codes, tiers, themes and copy. Unknown
+ * tiers and themes cannot pass the type checker, but a cast row still has to fail here.
+ */
 export function validatePromoSchedule(
 	schedule: readonly PromoCampaign[] = PROMO_SCHEDULE,
 ): string[] {
 	const problems: string[] = [];
 	const codes = new Set<string>();
+	const tierIds = Object.keys(PRICE_TIERS);
 	schedule.forEach((campaign, index) => {
 		const start = Date.parse(campaign.startsAt);
 		const end = Date.parse(campaign.endsAt);
 		if (!(start < end)) problems.push(`${campaign.id}: startsAt must be before endsAt`);
 		const previous = schedule[index - 1];
-		if (previous && start < Date.parse(previous.endsAt)) {
-			problems.push(`${campaign.id}: overlaps or precedes ${previous.id}`);
+		if (previous && start < Date.parse(previous.startsAt)) {
+			problems.push(`${campaign.id}: out of order after ${previous.id}`);
+		}
+		for (const other of schedule.slice(0, index)) {
+			if (start < Date.parse(other.endsAt) && Date.parse(other.startsAt) < end) {
+				problems.push(`${campaign.id}: overlaps ${other.id}`);
+			}
+		}
+		if (!/^[A-Z]+$/.test(campaign.codePrefix)) {
+			problems.push(`${campaign.id}: codePrefix must be uppercase letters`);
 		}
 		if (codes.has(campaign.codePrefix)) problems.push(`${campaign.id}: duplicate codePrefix`);
 		codes.add(campaign.codePrefix);
-		for (const pkg of PACKAGE_CATALOG) {
-			const price = campaign.prices[pkg.id];
-			if (!(Number.isInteger(price) && price > 0 && price < pkg.regularPrice)) {
-				problems.push(
-					`${campaign.id}: ${pkg.id} promo price must be below ${pkg.regularPrice}`,
-				);
+		if (!tierIds.includes(campaign.tier)) {
+			problems.push(`${campaign.id}: unknown tier ${String(campaign.tier)}`);
+		} else {
+			for (const pkg of PACKAGE_CATALOG) {
+				const price = PRICE_TIERS[campaign.tier][pkg.id];
+				if (!(Number.isInteger(price) && price > 0 && price < pkg.regularPrice)) {
+					problems.push(
+						`${campaign.id}: ${pkg.id} promo price must be below ${pkg.regularPrice}`,
+					);
+				}
 			}
 		}
+		if (campaign.theme !== null && !isPromoTheme(campaign.theme)) {
+			problems.push(`${campaign.id}: unknown theme ${String(campaign.theme)}`);
+		}
+		const tagline = campaign.tagline.trim();
+		if (tagline === '' || tagline.length > PROMO_TAGLINE_MAX_LENGTH) {
+			problems.push(
+				`${campaign.id}: tagline must have 1-${PROMO_TAGLINE_MAX_LENGTH} characters`,
+			);
+		}
+		if (campaign.conditions.trim() === '') problems.push(`${campaign.id}: missing conditions`);
 	});
 	return problems;
 }

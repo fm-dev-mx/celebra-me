@@ -52,7 +52,7 @@ Terminado cuando: <criterio comprobable>
 
 ANTES DE EMPEZAR
 Carril <fNN-…> (carpeta celebra-me-worktrees/<fNN-…>), rama <tipo/id> desde develop.
-Compruebe la rev del tablero y el SHA del PR de METADATOS; si cambiaron, pare.
+Compruebe que la rev de esta tarea (pnpm board show <id>) sigue en la de «tablero:» de METADATOS; si cambió, pare (d282: los cambios de otras tareas y los de esta misma sesión no cuentan).
   <un comando por línea: switch, git-safety, claim>
 
 PASOS
@@ -72,6 +72,8 @@ PARE Y PREGUNTE SI
 pnpm board msg <id> --de=<agente> --para=dueno "<pregunta>" (d230).
 
 AL TERMINAR
+- Antes de cada push: pnpm validate:changed y pnpm validate:structure (d246).
+- Antes del push: /code-review sobre el propio diff y corregir lo que encuentre (d282).
 1. <validación que debe quedar en verde>
 2. Cierre (d178, T129): pnpm board close <id> --resumen=… --comprobacion=… --saltada=… --pendiente="<texto>→T<n>"
 3. <revisión cruzada y aviso de una línea exacto>

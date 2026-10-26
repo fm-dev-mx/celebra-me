@@ -75,6 +75,8 @@ const fanPhones = fan.map((demo, index) => ({
 					{campaign && <span data-promo-only data-promo-field="starting-price">{formatMxn(getStartingPrice(campaign))}</span>}<span data-promo-fallback={campaign ? '' : undefined}>{formatMxn(getStartingRegularPrice())}</span>
 				</strong>{' '}
 				{data.priceLine.suffix}
+				{/* Text pill of the promo theme; shown only while html[data-promo-theme] is set. */}
+				<span class="hero-promo-pill" data-promo-field="label">{campaign?.label}</span>
 			</p>
 
 			<div class="hero-prime__actions">

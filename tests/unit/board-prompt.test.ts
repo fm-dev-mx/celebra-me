@@ -136,7 +136,11 @@ describe('prompt-v1 (T160)', () => {
 		expect(line).toMatch(
 			/^- Antes de cada push: pnpm validate:changed .* pnpm validate:structure;/u,
 		);
-		expect(lines[lines.indexOf('AL TERMINAR') + 2]).toBe('1. pnpm validate:changed en verde.');
+		// d282: the author reviews its own diff before the push.
+		expect(lines[lines.indexOf('AL TERMINAR') + 2]).toMatch(
+			/^- Antes del push: corra \/code-review sobre su propio diff/u,
+		);
+		expect(lines[lines.indexOf('AL TERMINAR') + 3]).toBe('1. pnpm validate:changed en verde.');
 		expect(out.twice).toBe(true);
 		expect(out.noBranch).not.toContain(line);
 		expect(out.readOnly).toBe(readOnly);

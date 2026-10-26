@@ -7,6 +7,12 @@ describe('floating reply button', () => {
 		expect(isFloatingCtaOn('off')).toBe(false);
 	});
 
+	it('turns on by default on a personal link unless the profile sets it off', () => {
+		expect(isFloatingCtaOn('', true)).toBe(true);
+		expect(isFloatingCtaOn(' on', true)).toBe(true);
+		expect(isFloatingCtaOn(' off', true)).toBe(false);
+	});
+
 	it('offers the reply, then the calendar, and nothing after a decline or on a locked card', () => {
 		expect(floatingCtaMode('form', true)).toBe('confirm');
 		expect(floatingCtaMode('confirmed', true)).toBe('calendar');

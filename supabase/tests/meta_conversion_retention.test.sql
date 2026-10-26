@@ -139,7 +139,7 @@ select ok(
   'browser roles may not call the cutoff helper'
 );
 select has_index(
-  'public', 'meta_conversion_events', 'idx_meta_conversion_events_retention',
+  'public', 'meta_conversion_events', 'idx_meta_conversion_events_browser_retention',
   'meta_conversion_events has a partial index for the purge'
 );
 select has_index(

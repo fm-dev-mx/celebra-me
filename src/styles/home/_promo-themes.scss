@@ -1,0 +1,229 @@
+// Promo themes (d280): emblem, band, ornaments, Hero pill and sticky-bar name.
+// Every theme ships with the page; html[data-promo-theme] (set before the first paint by
+// PromoThemeBoot.astro, then by PromoStatus.astro) shows the matching artwork. Without it,
+// nothing here takes space or paints. Colours come only from the landing tokens.
+
+@use 'sass:map';
+@use '../tokens/type-scale';
+
+$promo-themes: (
+	amor: (
+		accent: var(--color-rose-deep),
+		surface: rgb(var(--color-blush-rgb) / 22%),
+		ink: var(--color-text-dark),
+		muted: var(--color-text-muted),
+	),
+	primavera: (
+		accent: var(--color-rose-deep),
+		surface: rgb(var(--color-champagne-rgb) / 16%),
+		ink: var(--color-text-dark),
+		muted: var(--color-text-muted),
+	),
+	verano: (
+		accent: var(--color-border-gold),
+		surface: rgb(var(--color-champagne-rgb) / 26%),
+		ink: var(--color-text-dark),
+		muted: var(--color-text-muted),
+	),
+	patrias: (
+		accent: var(--color-rose-deep),
+		surface: var(--color-ivory),
+		ink: var(--color-espresso),
+		muted: var(--color-text-muted),
+	),
+	buenfin: (
+		accent: var(--color-champagne),
+		surface: var(--color-ink),
+		ink: var(--color-ivory),
+		muted: rgb(var(--color-ivory-rgb) / 74%),
+	),
+	temporada: (
+		accent: var(--color-champagne),
+		surface: var(--color-espresso),
+		ink: var(--color-ivory),
+		muted: rgb(var(--color-ivory-rgb) / 74%),
+	),
+);
+
+.promo-sprite {
+	position: absolute;
+	width: 0;
+	height: 0;
+	overflow: hidden;
+}
+
+.promo-band,
+.promo-ornament,
+.promo-emblem,
+.hero-promo-pill,
+.sticky-cta__promo,
+[data-promo-art] {
+	display: none;
+}
+
+@each $theme, $colors in $promo-themes {
+	// On body: the landing tokens these values read are defined on the body's preset class.
+	html[data-promo-theme='#{$theme}'] body {
+		--promo-accent: #{map.get($colors, accent)};
+		--promo-surface: #{map.get($colors, surface)};
+		--promo-ink: #{map.get($colors, ink)};
+		--promo-muted: #{map.get($colors, muted)};
+
+		[data-promo-art='#{$theme}'] {
+			display: inline;
+		}
+	}
+}
+
+html[data-promo-theme] {
+	.promo-emblem {
+		display: inline-block;
+		width: 1.15em;
+		height: 1.15em;
+		flex: none;
+		color: var(--promo-accent);
+		vertical-align: -0.2em;
+	}
+
+	.promo-band,
+	.promo-ornament {
+		display: block;
+	}
+
+	.hero-promo-pill {
+		display: inline-block;
+	}
+
+	.sticky-cta__promo {
+		display: block;
+	}
+
+	.sticky-cta__question {
+		display: none;
+	}
+
+	.promo-band__emblem {
+		width: 2.75rem;
+		height: 2.75rem;
+	}
+}
+
+// Band between Testimonials and Pricing.
+.promo-band {
+	position: relative;
+	overflow: hidden;
+	padding-block: clamp(1.75rem, 4vw, 2.75rem);
+	background: var(--promo-surface);
+	color: var(--promo-ink);
+	border-block: 1px solid var(--landing-hairline-color);
+
+	&__pattern {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		color: var(--promo-accent);
+		opacity: 16%;
+		pointer-events: none;
+	}
+
+	&__inner {
+		position: relative;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem 1.75rem;
+		width: min(var(--container-max), 100% - 2 * var(--container-padding-x));
+		margin-inline: auto;
+		text-align: center;
+
+		@media (width >= 768px) {
+			flex-wrap: nowrap;
+			justify-content: space-between;
+			text-align: start;
+		}
+	}
+
+	&__copy {
+		flex: 1 1 18rem;
+		min-width: 0;
+	}
+
+	&__title {
+		@include type-scale.text(h3);
+
+		margin: 0 0 0.25rem;
+		color: var(--promo-ink);
+		line-height: 1.15;
+	}
+
+	&__tagline {
+		margin: 0 0 0.35rem;
+		font-size: var(--landing-lead-size);
+		line-height: 1.45;
+	}
+
+	&__validity {
+		margin: 0;
+		color: var(--promo-muted);
+		font-size: 0.875em;
+	}
+
+	&__countdown:not(:empty) {
+		margin-inline-start: 0.35rem;
+		color: var(--promo-accent);
+		font-weight: 700;
+	}
+
+	.promo-band__cta {
+		flex: none;
+		min-height: 44px;
+	}
+}
+
+// Divider between two sections (after ProductProof and before FAQ).
+.promo-ornament {
+	padding-block: 0.75rem;
+	color: var(--promo-accent);
+	background: var(--color-surface-primary);
+
+	svg {
+		display: block;
+		width: min(14rem, 60vw);
+		height: auto;
+		margin-inline: auto;
+		aspect-ratio: 10;
+		opacity: 70%;
+	}
+}
+
+// Text pill after the Hero price line; inline, so the Hero layout keeps its composition.
+.hero-promo-pill {
+	@include type-scale.text(badge);
+
+	margin-inline-start: 0.5rem;
+	padding: 0.2rem 0.65rem;
+	border: 1px solid currentcolor;
+	border-radius: var(--radius-pill);
+	color: var(--color-rose-deep);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	line-height: 1.4;
+	text-transform: uppercase;
+	vertical-align: 0.15em;
+	white-space: nowrap;
+}
+
+.tier-promo-label__emblem {
+	margin-inline-end: 0.3rem;
+}
+
+// Promo name in the fixed mobile bar, on the question's line so the bar keeps its height.
+.sticky-cta .sticky-cta__promo {
+	overflow: hidden;
+	color: var(--color-champagne);
+	font-weight: 700;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

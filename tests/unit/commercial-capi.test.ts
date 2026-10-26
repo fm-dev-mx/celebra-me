@@ -13,6 +13,7 @@ import {
 	normalizeAndHashPhone,
 	deliverMetaConversionEvent,
 	enqueueBrowserConversionEvent,
+	isBrowserConversionTrigger,
 	isMetaCapiDeliveryEnabled,
 	processPendingMetaConversionEvents,
 	sanitizeProviderError,
@@ -663,7 +664,7 @@ describe('processPendingMetaConversionEvents', () => {
 	});
 });
 
-describe('Meta CAPI browser Contact and Lead events', () => {
+describe('Meta CAPI browser events', () => {
 	const clickEventId = '99999999-9999-4999-8999-999999999999';
 	const contactRow = {
 		id: 'outbox-id',
@@ -694,7 +695,7 @@ describe('Meta CAPI browser Contact and Lead events', () => {
 	it('queues a browser event idempotently by its Pixel eventID', async () => {
 		mockRestRequest.mockResolvedValueOnce([]);
 		await enqueueBrowserConversionEvent({
-			eventName: 'Contact',
+			trigger: 'whatsapp_contact_clicked',
 			eventId: clickEventId,
 			sessionId: 'session-id',
 			eventSourcePath: '/demos/xv',
@@ -715,6 +716,68 @@ describe('Meta CAPI browser Contact and Lead events', () => {
 			},
 		});
 	});
+
+	it.each([
+		['page_viewed', 'PageView'],
+		['demo_viewed', 'ViewContent'],
+		['package_viewed', 'ViewContent'],
+		['form_submitted', 'Lead'],
+	] as const)('queues %s as a %s row keyed by its trigger', async (trigger, eventName) => {
+		mockRestRequest.mockResolvedValueOnce([]);
+		await enqueueBrowserConversionEvent({
+			trigger,
+			eventId: clickEventId,
+			sessionId: 'session-id',
+			eventSourcePath: '/',
+		});
+		expect(mockRestRequest).toHaveBeenCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({
+					event_name: eventName,
+					event_id: clickEventId,
+					trigger_status: trigger,
+				}),
+			}),
+		);
+	});
+
+	it('recognizes only the first-party events the server mirrors', () => {
+		expect(
+			[
+				'page_viewed',
+				'demo_viewed',
+				'package_viewed',
+				'whatsapp_contact_clicked',
+				'form_submitted',
+			].every(isBrowserConversionTrigger),
+		).toBe(true);
+		expect(isBrowserConversionTrigger('cta_clicked')).toBe(false);
+		expect(isBrowserConversionTrigger('lead_created')).toBe(false);
+		expect(isBrowserConversionTrigger('toString')).toBe(false);
+	});
+
+	it.each(['PageView', 'ViewContent'])(
+		'sends a %s as a website event with the Pixel event_id and the session external_id',
+		async (eventName) => {
+			mockRestRequest
+				.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+				.mockResolvedValueOnce([{ ...contactRow, event_name: eventName }])
+				.mockResolvedValueOnce([sessionRow(true)])
+				.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+			mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+			await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('sent');
+
+			const event = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+			expect(event).toMatchObject({
+				event_name: eventName,
+				event_id: clickEventId,
+				action_source: 'website',
+				event_source_url: 'https://www.celebra-me.com/demos/xv',
+			});
+			expect(event.user_data.external_id).toEqual([hashSha256('visitor-id')]);
+		},
+	);
 
 	it('sends a Contact as a website event with the same event_id the Pixel used', async () => {
 		mockRestRequest

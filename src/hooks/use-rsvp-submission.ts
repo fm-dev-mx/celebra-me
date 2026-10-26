@@ -14,6 +14,7 @@ import {
 	normalizePhoneInput,
 	parseRsvpPhoneInput,
 	type RsvpAttendanceChoice,
+	type RsvpDefaultCopy,
 	validateRsvpForm,
 } from '@/components/invitation/rsvp-logic';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
@@ -38,6 +39,7 @@ interface UseRsvpSubmissionOptions {
 	initialGuestData?: InitialGuestData;
 	prefersReducedMotion: boolean;
 	isDemoPreview?: boolean;
+	defaultCopy?: RsvpDefaultCopy;
 }
 
 function notifyConfirmedRsvp(inviteId: string): void {
@@ -58,6 +60,7 @@ export function useRsvpSubmission({
 	initialGuestData: initialData,
 	prefersReducedMotion,
 	isDemoPreview,
+	defaultCopy,
 }: UseRsvpSubmissionOptions) {
 	const initialName = isDemoPreview ? DEMO_GUEST_NAME : initialData?.fullName || '';
 	const initialAttendanceStatus: RsvpAttendanceChoice =
@@ -167,12 +170,14 @@ export function useRsvpSubmission({
 			supportsPlusOnes,
 			effectiveGuestCap,
 			isPublicRsvp,
+			copy: defaultCopy,
 		});
 		setErrors(newErrors);
 		return newErrors;
 	}, [
 		attendanceStatus,
 		attendeeCount,
+		defaultCopy,
 		effectiveGuestCap,
 		isPublicRsvp,
 		name,

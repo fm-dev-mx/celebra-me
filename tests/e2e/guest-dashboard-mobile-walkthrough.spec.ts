@@ -64,24 +64,52 @@ function makeMockGuest(options: {
 	};
 }
 
-async function openGuestDashboard(page: Page, baseURL: string | undefined) {
-	const guest1 = makeMockGuest({
-		id: 'guest-1',
-		fullName: 'Sofía Martínez',
-		phone: '6691112233',
-		attendanceStatus: 'confirmed',
-		deliveryStatus: 'shared',
-	});
-	const guest2 = makeMockGuest({
-		id: 'guest-2',
-		fullName: 'Carlos Gómez',
-		phone: '6699876543',
-		attendanceStatus: 'pending',
-		deliveryStatus: 'generated',
-	});
+type MockGuest = ReturnType<typeof makeMockGuest>;
 
-	const guests = [guest1, guest2];
+function defaultMockGuests(): MockGuest[] {
+	return [
+		makeMockGuest({
+			id: 'guest-1',
+			fullName: 'Sofía Martínez',
+			phone: '6691112233',
+			attendanceStatus: 'confirmed',
+			deliveryStatus: 'shared',
+		}),
+		makeMockGuest({
+			id: 'guest-2',
+			fullName: 'Carlos Gómez',
+			phone: '6699876543',
+			attendanceStatus: 'pending',
+			deliveryStatus: 'generated',
+		}),
+	];
+}
 
+/** Twelve invitations across every stage, as in the T269 mobile reference. */
+function twelveMockGuests(): MockGuest[] {
+	const stages: Array<
+		Pick<Parameters<typeof makeMockGuest>[0], 'attendanceStatus' | 'deliveryStatus'>
+	> = [
+		...Array(3).fill({ attendanceStatus: 'pending', deliveryStatus: 'generated' }),
+		...Array(3).fill({ attendanceStatus: 'pending', deliveryStatus: 'shared' }),
+		...Array(4).fill({ attendanceStatus: 'confirmed', deliveryStatus: 'shared' }),
+		...Array(2).fill({ attendanceStatus: 'declined', deliveryStatus: 'shared' }),
+	];
+	return stages.map((stage, index) =>
+		makeMockGuest({
+			id: `guest-${index + 1}`,
+			fullName: `Invitado ${index + 1}`,
+			phone: `66900000${String(index).padStart(2, '0')}`,
+			...stage,
+		}),
+	);
+}
+
+async function openGuestDashboard(
+	page: Page,
+	baseURL: string | undefined,
+	guests: MockGuest[] = defaultMockGuests(),
+) {
 	await page.route('**/api/dashboard/**', async (route) => {
 		const url = new URL(route.request().url());
 		const path = url.pathname;
@@ -252,7 +280,8 @@ test.describe('Mobile modal cancel buttons at 390px', () => {
 		await shareBtn.click();
 		await expectMobileFooterCancel(page.locator('.dashboard-modal--send-invitation'));
 
-		await page.locator('.toolbar-actions-menu__trigger').click();
+		// Compact screens show the menu as an icon beside the search; the toolbar copy is hidden.
+		await page.getByRole('button', { name: 'Más acciones' }).click();
 		await page.locator('.guest-actions-menu__item:has-text("Plantillas de mensaje")').click();
 		await expectMobileFooterCancel(page.locator('.dashboard-modal--share-templates'));
 	});
@@ -374,5 +403,65 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 
 		// Verify form modal closes
 		await expect(formModal).not.toBeVisible({ timeout: 5000 });
+	});
+});
+
+// Runs on every pull request: keeps the pending work and the list on the first mobile screen.
+test.describe('Pending-first guest dashboard at 375px', () => {
+	test.use({
+		viewport: { width: 375, height: 812 },
+	});
+
+	test('first guest row sits on the first screen and the full summary is collapsible', async ({
+		page,
+		baseURL,
+	}, testInfo) => {
+		await openGuestDashboard(page, baseURL, twelveMockGuests());
+
+		const firstRow = page.locator('.guest-row').first();
+		await expect(firstRow).toBeVisible();
+		await page.screenshot({ path: testInfo.outputPath('guests-375-first-screen.png') });
+
+		const dock = page.locator('.dashboard-guests__mobile-dock');
+		const rowBox = await firstRow.boundingBox();
+		const dockBox = await dock.boundingBox();
+		expect(rowBox).not.toBeNull();
+		const firstScreenBottom = dockBox ? dockBox.y : 812;
+		expect(rowBox!.y + rowBox!.height).toBeLessThanOrEqual(firstScreenBottom);
+		const hasOverflow = await page.evaluate(
+			() => document.documentElement.scrollWidth > window.innerWidth,
+		);
+		expect(hasOverflow).toBe(false);
+
+		// Charts, funnel and stage cards wait behind "Ver resumen completo".
+		const summaryToggle = page.getByRole('button', { name: 'Ver resumen completo' });
+		await expect(summaryToggle).toHaveAttribute('aria-expanded', 'false');
+		await expect(page.locator('.guest-overview__stages')).toBeHidden();
+		await summaryToggle.click();
+		await expect(page.locator('.guest-overview__stages')).toBeVisible();
+
+		// The choice is remembered for the next visit.
+		await page.reload({ waitUntil: 'networkidle' });
+		await expect(
+			page.getByRole('button', { name: 'Ocultar resumen completo' }),
+		).toHaveAttribute('aria-expanded', 'true');
+	});
+});
+
+test.describe('Guest dashboard summary on wide screens', () => {
+	test.use({
+		viewport: { width: 1366, height: 900 },
+	});
+
+	test('keeps the full overview open and leaves the compact strip out', async ({
+		page,
+		baseURL,
+	}, testInfo) => {
+		await openGuestDashboard(page, baseURL, twelveMockGuests());
+
+		await expect(page.locator('.guest-overview__stages')).toBeVisible();
+		await expect(page.locator('.guest-strip')).toBeHidden();
+		await expect(page.getByRole('button', { name: 'Más acciones' })).toHaveCount(1);
+		await page.screenshot({ path: testInfo.outputPath('guests-1366.png') });
 	});
 });

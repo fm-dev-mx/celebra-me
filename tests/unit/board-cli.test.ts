@@ -413,7 +413,7 @@ describe('pnpm board', () => {
 					requisitos: [{ tipo: 'tarea', ref: 'base' }],
 				}),
 				task('base', { urgencia: 'baja' }),
-				task('del-dueno', { toca: ['produccion'] }),
+				task('del-dueno', { toca: ['produccion'], actor: 'coordinador' }),
 				task('sin-prompt', { prompt: undefined }),
 			],
 		});
@@ -871,6 +871,10 @@ describe('pnpm board', () => {
 	});
 
 	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
+		// A PR that touches supabase/ is not low risk (d282), so Claude's work still goes to Gemini or Codex.
+		const pr = JSON.stringify({ pr: { files: [{ path: 'supabase/x.sql' }] } });
+		const board = (dir: string, ...args: string[]) =>
+			boardEnv(dir, { BOARD_TEST_PREFLIGHT: pr }, ...args);
 		const dir = makeBoard({
 			tareas: [
 				task('de-claude', {
@@ -943,7 +947,7 @@ describe('pnpm board', () => {
 		const dir = makeBoard({
 			tareas: [
 				task('blocked', { requisitos: [{ tipo: 'dueno', ref: 'approval' }] }),
-				task('owner', { toca: ['produccion'] }),
+				task('owner', { actor: 'dueno' }),
 				task('closed', { estado: 'hecha' }),
 				task('first'),
 				task('second'),
@@ -1124,14 +1128,16 @@ describe('pnpm board', () => {
 		expect(raw(dir, 'claim', 'tercera', '--agente=codex', '--sesion=s3').status).toBe(2);
 	});
 
-	it('shows «Corre en» on the card and the sheet and copies the prompt with its lane', () => {
+	it('shows the lane on the row, «Dónde corre» in the sheet and copies the prompt with its lane', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
-		expect(html).toContain('${runsHtml(t)}');
-		expect(html).toContain('<div class="runbox">');
+		// T268: the compact row keeps only the lane; where it runs moves to the sheet's properties.
+		expect(html).toContain("['Dónde corre',runsHtml(t)],");
+		expect(html).not.toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
 		expect(html).toContain('const laneId=taskLane;');
+		// d284: a running or autonomous row says «Claude · f05» instead; the others keep the lane.
 		expect(html).toContain(
-			'${taskLane(t)&&!runLines(t).length?`<span class="nm">${esc(taskLane(t))}</span>`:',
+			'${run||(taskLane(t)?`<span class="nm">${esc(taskLane(t))}</span>`:',
 		);
 		expect(html).toContain('const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));');
 		expect(html).toContain("['Carril',taskLane(t)?");
