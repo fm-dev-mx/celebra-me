@@ -14,6 +14,7 @@
         "meta_capi_browser_events_client",
         "meta_conversion_retention_client",
         "meta_capi_view_events_client",
+        "meta_capi_crm_lead_stages_client",
         "lead_capture_form_client"
     ]
 }

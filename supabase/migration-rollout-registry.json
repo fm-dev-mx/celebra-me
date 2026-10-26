@@ -301,6 +301,12 @@
             "phase": "expand",
             "provides": ["leads_capture_form_fields"],
             "notes": "Adds leads.event_date, celebrant_names and demo_slug (nullable, range and length checked) for the «Aparta su fecha» form shown before WhatsApp. Additive: existing rows keep null and the deployed application never names the columns. Must be applied before the application that serves POST /api/leads/capture is deployed, because PostgREST rejects unknown columns on the lead upsert."
+        },
+        "20261026140000": {
+            "phase": "contract",
+            "provides": ["meta_conversion_events_crm_lead_stages"],
+            "requiresDeployedAppCapabilities": ["meta_capi_view_events_client"],
+            "notes": "Widens meta_conversion_events checks to admit lead-linked CRM LeadQuoted, LeadPaid and LeadLost rows without order, customer, value or event_source_path; retains terminal CRM stage rows under the existing 30-day rule and adds their partial retention index. Registered as contract only because the CHECK swaps use DROP CONSTRAINT. Every change widens accepted rows and leaves existing records and the deployed view-event client working. Must be applied before the app that enqueues CRM stage rows is deployed."
         }
     },
     "appCapabilities": {
@@ -351,6 +357,9 @@
         },
         "meta_capi_view_events_client": {
             "requiresDbCapabilities": ["meta_conversion_events_view_events"]
+        },
+        "meta_capi_crm_lead_stages_client": {
+            "requiresDbCapabilities": ["meta_conversion_events_crm_lead_stages"]
         },
         "lead_capture_form_client": {
             "requiresDbCapabilities": ["leads_capture_form_fields"]

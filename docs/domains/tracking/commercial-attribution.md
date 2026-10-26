@@ -29,14 +29,15 @@ bypass app route policy or consent policy.
   events and sessions that a lead or an order references are kept, so the purge never rewrites
   `leads`, `customers`, `sales_orders` or `meta_conversion_*`.
 - Meta conversion outbox (`meta_conversion_events`): browser `PageView`, `ViewContent`, `Contact`
-  and `Lead` rows that are `sent` or `skipped` are deleted 30 days after `created_at` (their
-  delivery attempts cascade). The quarter-hour Production cron (`*/15 * * * *`) calls
-  `public.purge_meta_conversion_retention` after the outbox sweep, in batches of 500 rows (at most 4
-  batches per run), and logs `[meta-capi][retention] completed`; it runs even while delivery is
-  disabled. The rule lives only in `public.meta_conversion_retention_cutoff`: on 2026-11-30 the rows
-  created before 2026-10-31 go. `Purchase` rows (owned by a sales order), rows still `pending`,
-  `sending`, `failed` or `ambiguous`, and rows an operator recovered are kept. Meta only accepts
-  server events up to 7 days old and deduplicates within 48 hours, so 30 days covers every retry.
+  and `Lead` rows, plus CRM `LeadQuoted`, `LeadPaid` and `LeadLost` rows, that are `sent` or
+  `skipped` are deleted 30 days after `created_at` (their delivery attempts cascade). The
+  quarter-hour Production cron (`*/15 * * * *`) calls `public.purge_meta_conversion_retention` after
+  the outbox sweep, in batches of 500 rows (at most 4 batches per run), and logs
+  `[meta-capi][retention] completed`; it runs even while delivery is disabled. The rule lives only
+  in `public.meta_conversion_retention_cutoff`: on 2026-11-30 the rows created before 2026-10-31 go.
+  `Purchase` rows (owned by a sales order), rows still `pending`, `sending`, `failed` or
+  `ambiguous`, and rows an operator recovered are kept. Meta only accepts server events up to 7 days
+  old and deduplicates within 48 hours, so 30 days covers every retry.
 - Marketing withdrawals (`visitor_consent_withdrawals`): kept while any stored visitor session
   started on or before the withdrawal's `updated_at`; the same purge deletes a withdrawal once it is
   older than the oldest stored session. In practice that follows the 13-month session retention;
@@ -285,6 +286,26 @@ admins.
    stay `pending` instead of being marked `skipped`. A batch with failed or ambiguous deliveries
    fails the job (the rows are retried later). The dashboard «Filas sin pedido» check counts only
    Purchase rows.
+
+### CRM lead-stage events
+
+The commercial outbox also sends CRM stage events for existing lead milestones: `quote_sent` maps to
+`LeadQuoted`, marking an order's deposit paid maps its linked lead to `LeadPaid`, and the `lost`
+demo follow-up maps to `LeadLost`. The current app has no generic lead-status mutation endpoint, so
+these events follow the existing quote, deposit-paid and loss actions. These rows use
+`crm_lead_quoted`, `crm_lead_paid` or `crm_lead_lost` as `trigger_status`, have a stable `event_id`
+per lead and stage, and carry `lead_id` without an order, customer, value or event source URL. The
+existing foreign key clears `lead_id` if a lead is deleted, so pending outbox rows do not block that
+deletion. The `custom_data` identifies `event_source=crm`, `lead_event_source=Celebra-me` and the
+stage; `action_source` is `system_generated`.
+
+The queue checks `leads.consent_marketing` before inserting. Delivery checks it again and, when the
+lead has a session, also requires that session's latest marketing-consent snapshot. Only a
+digits-only SHA-256 hash of the lead phone and the lead's stored `fbp`/`fbc` are sent as user data;
+no email, raw phone, IP address or user agent is included. CRM stage rows use the outbox creation
+time as `event_time`, do not include `event_source_url`, and follow the same retry lifecycle and
+30-day terminal-row retention as browser events. In the current workspace, `paid` is emitted when
+the deposit is registered; there is no separate full-payment transition API.
 
 ### Environment Variables
 

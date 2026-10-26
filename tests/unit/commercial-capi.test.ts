@@ -853,6 +853,79 @@ describe('Meta CAPI browser events', () => {
 		expect(event.user_data).not.toHaveProperty('em');
 	});
 
+	it('sends consented CRM stages with a hashed lead phone and the lead fbp/fbc', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				{
+					...contactRow,
+					event_name: 'LeadQuoted',
+					event_id: 'crm-lead-stage:lead-id:quoted',
+					trigger_status: 'crm_lead_quoted',
+					session_id: null,
+					leads: {
+						consent_marketing: true,
+						session_id: 'session-id',
+						phone_e164: '+526681112233',
+						fbp: 'fb.1.lead-browser',
+						fbc: 'fb.1.lead-click',
+					},
+				},
+			])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ events_received: 1 }) });
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('sent');
+
+		const event = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+		expect(event).toMatchObject({
+			event_name: 'LeadQuoted',
+			event_id: 'crm-lead-stage:lead-id:quoted',
+			action_source: 'system_generated',
+			custom_data: {
+				event_source: 'crm',
+				lead_event_source: 'Celebra-me',
+				lead_stage: 'quoted',
+			},
+			user_data: {
+				ph: [normalizeAndHashPhone('+526681112233')],
+				fbp: 'fb.1.lead-browser',
+				fbc: 'fb.1.lead-click',
+			},
+		});
+		expect(event.event_source_url).toBeUndefined();
+		expect(event.user_data).not.toHaveProperty('client_ip_address');
+		expect(event.user_data).not.toHaveProperty('client_user_agent');
+		expect(JSON.stringify(event)).not.toContain('+526681112233');
+	});
+
+	it.each([
+		['lead consent withdrawn', { consent_marketing: false, session_id: 'session-id' }, true],
+		['session consent withdrawn', { consent_marketing: true, session_id: 'session-id' }, false],
+	] as const)('skips a CRM stage when %s', async (_reason, lead, sessionMarketing) => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				{
+					...contactRow,
+					event_name: 'LeadPaid',
+					trigger_status: 'crm_lead_paid',
+					leads: { ...lead, phone_e164: '+526681112233' },
+				},
+			])
+			.mockResolvedValueOnce([sessionRow(sessionMarketing)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'CONSENT_REQUIRED' }),
+			}),
+		);
+	});
+
 	it('skips a browser event when the session no longer has marketing consent', async () => {
 		mockRestRequest
 			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
