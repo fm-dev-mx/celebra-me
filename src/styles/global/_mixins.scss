@@ -1,7 +1,6 @@
 @use 'sass:map';
 @use '../tokens' as tokens;
 @use '../tokens/spacing' as spacing-tokens;
-@use '../tokens/type-scale';
 
 @mixin respond-to($breakpoint) {
 	@if map.has-key(spacing-tokens.$breakpoints, $breakpoint) {
@@ -56,10 +55,6 @@
 	&::-webkit-scrollbar {
 		display: none;
 	}
-}
-
-@mixin typography($variant) {
-	@include type-scale.text($variant);
 }
 
 @mixin text-gradient-clip {

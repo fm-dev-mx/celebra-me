@@ -103,7 +103,6 @@ $semantic-color: (
 	--color-border-subtle: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.1)};
 	--color-border-premium: #{color.change(sys.$sys-color-gold-500, $alpha: 0.3)};
 	--color-border-emphasis: #{sys.$sys-color-gold-500};
-	--color-neutral-subtle: #{sys.$sys-color-neutral-100};
 	--color-state-success: #{sys.$sys-color-forest-700};
 	--color-state-success-rgb: #{tools.rgb-channels(sys.$sys-color-forest-700)};
 	--color-state-success-bg: #{sys.$sys-color-forest-50};
