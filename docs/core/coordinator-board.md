@@ -116,16 +116,15 @@ Before running `pnpm board:verify` in a board review, write `sesiones.json` in t
 `include_archived: true` and a limit that covers every session. Pass another file with
 `--sesiones=<file>`. The `DESFASES` block then lists, report only:
 
-| Section                         | Rule                                                                 |
-| ------------------------------- | -------------------------------------------------------------------- |
-| SESIONES SIN TAREA              | open session whose title has no `T<n>`, or a `T<n>` not on the board |
-| CANDADO CON SESIÓN INEXISTENTE  | Claude lock whose `sesion` is not in `sesiones.json`                 |
-| NOMBRE DISTINTO                 | session title not `<lane> · T<n> · PR #<n> · <description>` (d158)   |
-| TAREAS EN CURSO SIN SESIÓN      | `en curso` without a lock                                            |
-| UNIDAS CON CANDADO              | `unida`/`hecha` still locked, so its lane looks busy                 |
-| RAMAS UNIDAS SIN BORRAR         | remote or lane branch whose PR is `MERGED`                           |
-| PR CERRADO SIN UNIR             | PR `CLOSED` without merge, branch still on origin, its task closed   |
-| ARCHIVADAS CON CIERRE PENDIENTE | `cierres/*.json` entry with a step still `pendiente` after a day     |
+| Section                        | Rule                                                                 |
+| ------------------------------ | -------------------------------------------------------------------- |
+| SESIONES SIN TAREA             | open session whose title has no `T<n>`, or a `T<n>` not on the board |
+| CANDADO CON SESIÓN INEXISTENTE | Claude lock whose `sesion` is not in `sesiones.json`                 |
+| NOMBRE DISTINTO                | session title not `<lane> · T<n> · PR #<n> · <description>` (d158)   |
+| TAREAS EN CURSO SIN SESIÓN     | `en curso` without a lock                                            |
+| UNIDAS CON CANDADO             | `unida`/`hecha` still locked, so its lane looks busy                 |
+| RAMAS UNIDAS SIN BORRAR        | remote or lane branch whose PR is `MERGED`                           |
+| PR CERRADO SIN UNIR            | PR `CLOSED` without merge, branch still on origin, its task closed   |
 
 Example: `NOMBRE DISTINTO: «f08 · T11 · Demos en usted» (le falta «PR #485»)`. The coordinator
 session itself is never listed as a session without a task. Without `sesiones.json` the first three
@@ -265,8 +264,8 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   the task is unlocked. «Copiar prompt» and `next` add these lines as `corre:` lines at the end of a
   `prompt-v1`'s `METADATOS` (first under `CARRIL` in an older prompt), so the prompt never repeats
   the lane by hand. Review children show «Corre en: Integración (carpeta celebra-me), solo lectura»
-  and always resolve to `f04-integracion` in `taskLane`. A `soloLectura: true` task is refused a
-  planned or explicit lane by `plan`, `add` and `claim`; a legacy planned lane is cleared with
+  and always resolve to `integration` in `taskLane`. A `soloLectura: true` task is refused a planned
+  or explicit lane by `plan`, `add` and `claim`; a legacy planned lane is cleared with
   `plan --carril= --coordinador`. `board:verify` warns about every open task, read-only tasks aside,
   with neither a planned lane nor a lock on one, naming its T<n>.
 - **Category (d191)**: the map is `CATEGORIA_CARRIL` in `model.mjs`. `plan`, `show` and the card
@@ -281,9 +280,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   may claim the canonical `integration` lane; `f04-integracion` is not a canonical id.
 - **Lane inventory**: `pnpm board carriles` (and the page's lane table) reads each lane from Git:
   branch, clean or not, and the task holding its lock. `carril` without an id reads the lanes live
-  the same way (T172): each record's own fields (`uso`, `tecla`, `puerto`, `rev`) with Git's branch,
-  clean state and the locked task; the hand-written `estado`, `tarea`, `sesion`, `nota` and
-  `comprobadoEn` are left out. `estado` without fields is read-only too.
+  the same way: the catalog (`uso`, `tecla`, `puerto`, order and canonical ids) comes from
+  `WORKTREE_LANES`, and runtime state comes from task locks and `git worktree list`. Stored
+  `carriles/*.json` records are ignored; update the code-owned catalog through a pull request.
+  `estado` without fields is read-only too.
 
 ### Agents and sessions
 

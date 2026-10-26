@@ -125,16 +125,8 @@ describe('board model shared rules', () => {
 			horas: 6,
 			viejo: [false, true, true],
 			carril: [true, false, true, false],
-			lane: [
-				'f10',
-				'f11',
-				'f12',
-				'f04-integracion',
-				'f04-integracion',
-				null,
-				'f04-integracion',
-			],
-			readonly: ['f04-integracion', true, false],
+			lane: ['f10', 'f11', 'f12', 'integration', 'integration', null, 'integration'],
+			readonly: ['integration', true, false],
 		});
 		expect(probe('sync.mjs', 'console.log(JSON.stringify(m.STALE_LOCK_HOURS))')).toBe(6);
 	});

@@ -48,8 +48,7 @@
  *                                               «Finalizadas» (bitácora row)
  *   decide decision=… motivo=… [tareas=a,b] [reemplaza=dNNN] [quien=…]
  *                                               T172: «(reemplaza dNNN)» in the text links it without the field
- *   carril [--json]                             T172: the lanes live, like carriles, with each record's own fields
- *   carril <id> --rev=<n> campo=valor…          lane row (no rev field yet: --rev=0)
+ *   carril [--json]                             canonical lane catalog with live Git/task state (read-only)
  *   estado --rev=<n> campo=valor…               Production strip (estado/actual)
  *   history [--q=<texto>] [--todas] [--json]   replaced decisions only with --todas
  *   compact --antes=7d [--dry-run]              d187: tasks archived 7+ days ago → one line in mensual/resumen-<mes>.md,

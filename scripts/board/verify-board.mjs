@@ -17,7 +17,7 @@
  * It also lists open PRs and worktree branches without a task, tasks whose session is archived, and tasks
  * ready to move to «comprobada», plus lifecycle drift between task, session, branch and PR: sessions without a
  * task, locks naming a missing session, session names off the d158 form, merged PR branches still present, PRs
- * closed without merge and stale close-queue entries. It only reports; it never proposes deletions. Only finite read-only argument arrays run, without a shell.
+ * closed without merge. It only reports; it never proposes deletions. Only finite read-only argument arrays run, without a shell.
  * CELEBRA_BOARD_COMMAND_FIXTURE supplies explicit subprocess results in hermetic tests.
  */
 import { execFileSync } from 'node:child_process';
@@ -54,9 +54,6 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const SAFE_BRANCH = /^[A-Za-z0-9._/-]{1,200}$/;
 const BASE_BRANCHES = new Set(['develop', 'main', 'master']);
-
-/** A close-queue step still pending after this long is stale. */
-const CLOSING_STALE_MS = 24 * 3600_000;
 
 export { prNumber, taskIdFromBranch };
 
@@ -171,7 +168,6 @@ export function loadExport(dir, sesionesFile) {
 		bitacora: readLog(root),
 		decisiones: readJsonDir(join(root, 'decisiones')),
 		archivo: readJsonDir(join(root, 'archivo')),
-		cierres: readJsonDir(join(root, 'cierres')),
 		sesiones: existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null,
 	};
 }
@@ -415,18 +411,6 @@ function branchDrift(tareas, run, laneBranches) {
 	};
 }
 
-/** Close-queue entries (`cierres/*.json`) with a step still pending after a day, or undated. */
-function staleClosings(cierres, now) {
-	return cierres
-		.filter((c) => Object.values(c.pasos ?? {}).includes('pendiente'))
-		.filter((c) => !c.creada || now - Date.parse(c.creada) > CLOSING_STALE_MS)
-		.map((c) => ({
-			id: c.tarea ?? c.id,
-			nombre: c.nombre ?? '',
-			pendiente: Object.keys(c.pasos).filter((k) => c.pasos[k] === 'pendiente'),
-		}));
-}
-
 /** Newest log row per task, to catch a change without a new rev. */
 function lastLogByTask(bitacora) {
 	const last = {};
@@ -665,7 +649,7 @@ function memoized(run) {
 }
 
 export function verifyBoard(
-	{ tareas, bitacora = [], decisiones = [], archivo = [], cierres = [], sesiones = null },
+	{ tareas, bitacora = [], decisiones = [], archivo = [], sesiones = null },
 	runner = defaultRunner(),
 	now = Date.now(),
 	kinds = loadKinds(),
@@ -704,7 +688,6 @@ export function verifyBoard(
 		...lifecycleDrift(tareas),
 		ramasUnidasSinBorrar: branches.ramasUnidasSinBorrar,
 		prCerradoSinUnir: branches.prCerradoSinUnir,
-		cierresPendientes: staleClosings(cierres, now),
 		cobertura: { ...unclaimed.cobertura, ...branches.cobertura },
 		...boardIssues(tareas, bitacora, decisiones, archivo, now, kinds),
 	};
@@ -763,11 +746,6 @@ function printText(r) {
 		(x) => `${x.rama} (PR #${x.pr}, ${x.donde})`,
 	);
 	drift('PR CERRADO SIN UNIR', r.prCerradoSinUnir, (x) => `${x.rama} (PR #${x.pr}, ${x.tarea})`);
-	drift(
-		'ARCHIVADAS CON CIERRE PENDIENTE',
-		r.cierresPendientes,
-		(x) => `${x.id} (${x.pendiente.join(', ')})`,
-	);
 	section('AVISOS', r.avisos, (x) => `${x.id.padEnd(32)} ${x.msg}`);
 	section(
 		'COBERTURA NO VERIFICADA',

@@ -1997,7 +1997,9 @@ describe('pnpm board', () => {
 			).status,
 		).toBe(0);
 		expect(JSON.parse(board(dir, 'next', '--agente=gemini', '--json').out).id).toBe('art');
-		expect(JSON.parse(board(dir, 'carril', '--json').out)).toEqual([]);
+		const lanes = JSON.parse(board(dir, 'carril', '--json').out);
+		expect(lanes).toHaveLength(9);
+		expect(lanes[0]).toMatchObject({ id: 'integration', puerto: 4321 });
 		expect(JSON.parse(board(dir, 'estado', '--json').out)).toBeNull();
 	});
 

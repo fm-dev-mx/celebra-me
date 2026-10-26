@@ -31,12 +31,22 @@ import {
 } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { isFinished, legacyLogRow, logRowIssues } from './model.mjs';
+import { WORKTREE_LANES, getLanePortForKey } from '../shared/worktree-lane.ts';
+
+/** Lane metadata is code-owned; task locks and Git supply its live state. */
+export const canonicalLanes = () =>
+	WORKTREE_LANES.map((lane) => ({
+		id: lane.id,
+		orden: lane.key,
+		tecla: `Win + F${lane.key}`,
+		puerto: getLanePortForKey(lane.key),
+		uso: lane.displayName,
+	}));
 
 export const COLLECTIONS = [
 	'tareas',
 	'decisiones',
 	'bitacora',
-	'carriles',
 	'estado',
 	'agentes',
 	'archivo',
@@ -90,7 +100,7 @@ export function loadBoard(dir) {
 		tareas: readCollection(dir, 'tareas'),
 		decisiones: readCollection(dir, 'decisiones'),
 		bitacora: readLog(dir),
-		carriles: readCollection(dir, 'carriles'),
+		carriles: canonicalLanes(),
 		agentes: readCollection(dir, 'agentes'),
 		archivo: readCollection(dir, 'archivo'),
 		bandejas: readCollection(dir, 'bandejas'),
