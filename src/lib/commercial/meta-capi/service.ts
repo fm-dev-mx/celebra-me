@@ -5,6 +5,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 import { safeErr } from '@/lib/server/safe-error';
 import { getEstimatedLeadValue } from './estimated-lead-value';
+import {
+	getMetaCrmLeadStageFromTriggerStatus,
+	META_CRM_LEAD_EVENT_SOURCE,
+} from '@/lib/commercial/meta-capi/lead-stage-events';
 
 interface ProcessResult {
 	processed: number;
@@ -17,6 +21,7 @@ interface OutboxDetail {
 	id: string;
 	event_name: string;
 	event_id: string;
+	trigger_status: string;
 	customer_id?: string | null;
 	session_id?: string | null;
 	event_source_path?: string | null;
@@ -31,6 +36,8 @@ interface OutboxDetail {
 	} | null;
 	leads: {
 		consent_marketing?: boolean | null;
+		session_id?: string | null;
+		phone_e164?: string | null;
 		fbp?: string | null;
 		fbc?: string | null;
 		fbclid?: string | null;
@@ -101,18 +108,53 @@ function isBrowserEvent(detail: OutboxDetail): boolean {
 	return BROWSER_EVENT_NAMES.has(detail.event_name);
 }
 
-/** The order's session for a Purchase; the row's own session for a browser event. */
+/** The lead, order, or browser event session, depending on its source. */
 function resolveSessionId(detail: OutboxDetail): string | null | undefined {
-	return isBrowserEvent(detail) ? detail.session_id : detail.sales_orders?.session_id;
+	if (isBrowserEvent(detail)) return detail.session_id;
+	if (getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status))
+		return detail.leads?.session_id;
+	return detail.sales_orders?.session_id;
 }
 
 /**
- * A Purchase follows the lead's recorded marketing consent. A browser event follows the
- * session's latest consent, so a visitor who withdrew it after the click is not sent.
+ * Purchases and CRM stages follow lead consent; a CRM stage also rechecks its linked session.
+ * Browser events follow the session's latest consent, so withdrawn visitors are not sent.
  */
 function hasMarketingConsent(detail: OutboxDetail, session: SessionDetail | null): boolean {
 	if (isBrowserEvent(detail)) return session?.consent_snapshot?.marketing === true;
+	if (getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status)) {
+		if (detail.leads?.consent_marketing !== true) return false;
+		return detail.leads.session_id ? session?.consent_snapshot?.marketing === true : true;
+	}
 	return detail.leads?.consent_marketing === true;
+}
+
+function getDeliveryIneligibility(
+	detail: OutboxDetail,
+	session: SessionDetail | null,
+): { errorCode: string; errorMessage: string } | undefined {
+	if (!hasMarketingConsent(detail, session)) {
+		return {
+			errorCode: 'CONSENT_REQUIRED',
+			errorMessage: 'Marketing consent is required before preparing Meta user data.',
+		};
+	}
+	if (
+		getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status) &&
+		!normalizeAndHashPhone(detail.leads?.phone_e164)
+	) {
+		return {
+			errorCode: 'MISSING_LEAD_PHONE',
+			errorMessage: 'A CRM lead stage needs a phone number to match the lead in Meta.',
+		};
+	}
+	if (isBrowserEvent(detail) && !session?.client_user_agent?.trim()) {
+		return {
+			errorCode: 'MISSING_CLIENT_USER_AGENT',
+			errorMessage: 'Website events need the session user agent, which was not recorded.',
+		};
+	}
+	return undefined;
 }
 
 export function hashSha256(val: string): string {
@@ -240,7 +282,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 
 async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null> {
 	const details = await supabaseRestRequest<OutboxDetail[]>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,customer_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,fbp,fbc,fbclid)`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,trigger_status,customer_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,session_id,phone_e164,fbp,fbc,fbclid)`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -310,6 +352,14 @@ function buildBrowserKeys(detail: OutboxDetail, session: SessionDetail | null): 
 }
 
 function buildUserData(detail: OutboxDetail, session: SessionDetail | null): UserData {
+	if (getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status)) {
+		const userData: UserData = {};
+		const phoneHash = normalizeAndHashPhone(detail.leads?.phone_e164);
+		if (phoneHash) userData.ph = [phoneHash];
+		if (detail.leads?.fbp) userData.fbp = detail.leads.fbp;
+		if (detail.leads?.fbc) userData.fbc = detail.leads.fbc;
+		return userData;
+	}
 	return { ...buildIdentityKeys(detail, session), ...buildBrowserKeys(detail, session) };
 }
 
@@ -335,14 +385,15 @@ function buildEventPayload(
 ): { eventData: Record<string, unknown>; payloadHash: string } {
 	const userData = buildUserData(detail, session);
 	const browserEvent = isBrowserEvent(detail);
-	const eventSourceUrl = resolveEventSourceUrl(
-		browserEvent ? detail.event_source_path : session?.landing_path,
-	);
+	const crmLeadStage = getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status);
+	const eventSourceUrl = crmLeadStage
+		? undefined
+		: resolveEventSourceUrl(browserEvent ? detail.event_source_path : session?.landing_path);
 
 	// A browser row is enqueued while the click is ingested and a CompleteRegistration row when the
 	// client submits the invitation data form, so their creation time is the event time.
 	const eventTime =
-		(browserEvent || detail.event_name === COMPLETE_REGISTRATION_EVENT_NAME
+		(crmLeadStage || browserEvent || detail.event_name === COMPLETE_REGISTRATION_EVENT_NAME
 			? detail.created_at
 			: detail.sales_orders?.deposit_paid_at || detail.sales_orders?.created_at) ||
 		new Date().toISOString();
@@ -352,11 +403,21 @@ function buildEventPayload(
 		event_name: detail.event_name || 'Purchase',
 		event_time: eventTimeUnix,
 		event_id: detail.event_id,
-		action_source: browserEvent ? 'website' : META_PURCHASE_ACTION_SOURCE,
-		event_source_url: eventSourceUrl,
+		action_source: browserEvent
+			? 'website'
+			: crmLeadStage
+				? 'system_generated'
+				: META_PURCHASE_ACTION_SOURCE,
+		...(eventSourceUrl ? { event_source_url: eventSourceUrl } : {}),
 		user_data: userData,
 	};
-	if (detail.value !== null && detail.value !== undefined) {
+	if (crmLeadStage) {
+		eventData.custom_data = {
+			event_source: 'crm',
+			lead_event_source: META_CRM_LEAD_EVENT_SOURCE,
+			lead_stage: crmLeadStage,
+		};
+	} else if (detail.value !== null && detail.value !== undefined) {
 		eventData.custom_data = {
 			value: Number(detail.value) || 0,
 			currency: detail.currency || 'MXN',
@@ -517,13 +578,14 @@ export async function deliverMetaConversionEvent(
 	const sessionId = resolveSessionId(detail);
 	const session = sessionId ? await fetchSessionDetails(sessionId) : null;
 
-	if (!hasMarketingConsent(detail, session)) {
+	const ineligibility = getDeliveryIneligibility(detail, session);
+	if (ineligibility) {
 		return finalizeClaim(
 			outboxId,
 			'skipped',
 			attemptCount,
-			'CONSENT_REQUIRED',
-			'Marketing consent is required before preparing Meta user data.',
+			ineligibility.errorCode,
+			ineligibility.errorMessage,
 			undefined,
 			claimId,
 		);
@@ -537,19 +599,6 @@ export async function deliverMetaConversionEvent(
 			attemptCount,
 			'CONFIG_ERROR',
 			'Missing environment configuration (META_CAPI_ACCESS_TOKEN or META_PIXEL_ID).',
-			undefined,
-			claimId,
-		);
-	}
-
-	// Meta requires the user agent on website events; without it the request is rejected.
-	if (isBrowserEvent(detail) && !session?.client_user_agent?.trim()) {
-		return finalizeClaim(
-			outboxId,
-			'skipped',
-			attemptCount,
-			'MISSING_CLIENT_USER_AGENT',
-			'Website events need the session user agent, which was not recorded.',
 			undefined,
 			claimId,
 		);

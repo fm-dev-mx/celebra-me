@@ -15,6 +15,10 @@ jest.mock('@/lib/tracking/lead.repository', () => ({
 	findLeadOrderAttribution: jest.fn(),
 }));
 
+jest.mock('@/lib/commercial/meta-capi/lead-stage-events', () => ({
+	enqueueMetaCrmLeadStageEvent: jest.fn(),
+}));
+
 import {
 	createSalesOrder,
 	registerSalesOrderDepositPurchase,
@@ -22,6 +26,7 @@ import {
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 import { findLeadOrderAttribution } from '@/lib/tracking/lead.repository';
+import { enqueueMetaCrmLeadStageEvent } from '@/lib/commercial/meta-capi/lead-stage-events';
 import {
 	createCommercialSalesOrder,
 	markCommercialOrderDepositPaid,
@@ -38,6 +43,7 @@ const mockEmitTracking = emitCommercialTrackingEvent as jest.MockedFunction<
 	typeof emitCommercialTrackingEvent
 >;
 const mockFindAttribution = jest.mocked(findLeadOrderAttribution);
+const mockEnqueueStage = jest.mocked(enqueueMetaCrmLeadStageEvent);
 
 const order = {
 	id: 'order-id',
@@ -150,6 +156,7 @@ describe('markCommercialOrderDepositPaid', () => {
 			idempotencyKey: '33333333-3333-4333-8333-333333333333',
 		});
 		expect(mockDeliver).toHaveBeenCalledWith('conversion-id');
+		expect(mockEnqueueStage).toHaveBeenCalledWith({ leadId: 'lead-id', stage: 'paid' });
 		expect(result).toEqual({ order, conversionEvent });
 		expect(result.order.amountPaid).toBe(899);
 		expect(result.conversionEvent?.value).toBe(1800);
@@ -171,14 +178,15 @@ describe('markCommercialOrderDepositPaid', () => {
 		expect(mockEmitTracking).toHaveBeenCalledWith(
 			expect.objectContaining({ eventName: 'deposit_paid', orderId: 'order-id' }),
 		);
-		expect(waitUntil).toHaveBeenCalledTimes(2);
+		expect(waitUntil).toHaveBeenCalledTimes(3);
 		await expect(Promise.all(waitUntil.mock.calls.map((call) => call[0]))).resolves.toEqual([
+			undefined,
 			undefined,
 			undefined,
 		]);
 	});
 
-	it('does not redeliver an idempotent retry', async () => {
+	it('does not redeliver Purchase on an idempotent retry and retries the CRM outbox insert', async () => {
 		mockRegisterDeposit.mockResolvedValue({ order, conversionEvent, idempotent: true });
 
 		await markCommercialOrderDepositPaid({
@@ -188,6 +196,7 @@ describe('markCommercialOrderDepositPaid', () => {
 		});
 
 		expect(mockDeliver).not.toHaveBeenCalled();
+		expect(mockEnqueueStage).toHaveBeenCalledWith({ leadId: 'lead-id', stage: 'paid' });
 	});
 
 	it('rejects a non-positive amount before calling the database', async () => {

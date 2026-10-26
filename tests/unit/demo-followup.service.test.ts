@@ -6,14 +6,24 @@ jest.mock('@/lib/tracking/lead.repository', () => ({
 	findLeadByCode: jest.fn(),
 	upsertLead: jest.fn(),
 }));
+jest.mock('@/lib/commercial/meta-capi/lead-stage-events', () => ({
+	enqueueMetaCrmLeadStageEvent: jest.fn(),
+	getMetaCrmLeadStageForFollowupAction: jest.fn(),
+}));
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { loadDemoInventory } from '@/lib/commercial/demo-inventory.server';
 import { findLeadByCode, upsertLead } from '@/lib/tracking/lead.repository';
+import {
+	enqueueMetaCrmLeadStageEvent,
+	getMetaCrmLeadStageForFollowupAction,
+} from '@/lib/commercial/meta-capi/lead-stage-events';
 import { recordDemoFollowup } from '@/lib/commercial/demo-followup.service';
 import { DemoFollowupSchema } from '@/lib/commercial/demo-followup';
 
 const rest = jest.mocked(supabaseRestRequest);
 const find = jest.mocked(findLeadByCode);
+const enqueueStage = jest.mocked(enqueueMetaCrmLeadStageEvent);
+const getFollowupStage = jest.mocked(getMetaCrmLeadStageForFollowupAction);
 const input = {
 	idempotencyKey: '11111111-1111-4111-8111-111111111111',
 	leadCode: 'CM-ABC123',
@@ -30,6 +40,9 @@ const row = {
 };
 beforeEach(() => {
 	jest.resetAllMocks();
+	getFollowupStage.mockImplementation((action) =>
+		action === 'quote_sent' ? 'quoted' : action === 'lost' ? 'lost' : undefined,
+	);
 	jest.mocked(loadDemoInventory).mockResolvedValue([
 		{ slug: input.demoSlug, title: 'Celestial Blue', eventType: 'xv' },
 	]);
@@ -55,6 +68,19 @@ it('records only an administrative milestone using the authenticated actor and s
 		}),
 	);
 	expect(upsertLead).not.toHaveBeenCalled();
+});
+
+it.each([
+	['quote_sent', 'quoted'],
+	['lost', 'lost'],
+] as const)('queues the %s CRM stage after recording the follow-up', async (action, stage) => {
+	const stageInput = { ...input, action };
+	const stageRow = { ...row, action };
+	rest.mockResolvedValueOnce([]).mockResolvedValueOnce([stageRow]);
+
+	await expect(recordDemoFollowup(stageInput, 'actor')).resolves.toEqual(stageRow);
+
+	expect(enqueueStage).toHaveBeenCalledWith({ leadId: 'lead', stage });
 });
 it('returns the already recorded milestone on duplicate submission', async () => {
 	rest.mockResolvedValueOnce([]).mockResolvedValueOnce([]).mockResolvedValueOnce([row]);

@@ -2,6 +2,10 @@ import { loadDemoInventory } from './demo-inventory.server';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { findLeadByCode, upsertLead } from '@/lib/tracking/lead.repository';
+import {
+	enqueueMetaCrmLeadStageEvent,
+	getMetaCrmLeadStageForFollowupAction,
+} from '@/lib/commercial/meta-capi/lead-stage-events';
 import { DemoFollowupSchema, type DemoFollowupInput, type DemoFollowupRow } from './demo-followup';
 
 export async function recordDemoFollowup(input: DemoFollowupInput, actorId: string) {
@@ -45,12 +49,18 @@ export async function recordDemoFollowup(input: DemoFollowupInput, actorId: stri
 			created_by: actorId,
 		},
 	});
-	if (rows[0]) return rows[0];
-	const existing = await supabaseRestRequest<DemoFollowupRow[]>({
-		pathWithQuery: `commercial_demo_followups?lead_id=eq.${encodeURIComponent(lead.id)}&demo_slug=eq.${encodeURIComponent(demo.slug)}&action=eq.${data.action}&select=id,lead_id,demo_slug,action,loss_reason,occurred_at`,
-		method: 'GET',
-		useServiceRole: true,
-	});
-	if (!existing[0]) throw new ApiError(409, 'conflict', 'No se pudo confirmar el registro.');
-	return existing[0];
+	let followup = rows[0];
+	if (!followup) {
+		const existing = await supabaseRestRequest<DemoFollowupRow[]>({
+			pathWithQuery: `commercial_demo_followups?lead_id=eq.${encodeURIComponent(lead.id)}&demo_slug=eq.${encodeURIComponent(demo.slug)}&action=eq.${data.action}&select=id,lead_id,demo_slug,action,loss_reason,occurred_at`,
+			method: 'GET',
+			useServiceRole: true,
+		});
+		followup = existing[0];
+	}
+	if (!followup) throw new ApiError(409, 'conflict', 'No se pudo confirmar el registro.');
+
+	const stage = getMetaCrmLeadStageForFollowupAction(data.action);
+	if (stage) await enqueueMetaCrmLeadStageEvent({ leadId: lead.id, stage });
+	return followup;
 }
