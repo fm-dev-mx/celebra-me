@@ -14,6 +14,8 @@ interface GuestFiltersProps {
 	onSearchChange: (value: string) => void;
 	onGroupChange: (value: GroupFilter) => void;
 	searchInputRef?: React.RefObject<HTMLInputElement | null>;
+	/** Compact-screen actions shown beside the search, e.g. the "Más acciones" menu. */
+	actions?: React.ReactNode;
 }
 
 /**
@@ -28,6 +30,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	onSearchChange,
 	onGroupChange,
 	searchInputRef,
+	actions,
 }) => {
 	const hasActiveFilters = search.trim() !== '' || group !== 'all';
 	const chips = [
@@ -68,6 +71,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 						Limpiar filtros
 					</button>
 				)}
+				{actions && <div className="filter-row__actions">{actions}</div>}
 			</div>
 
 			{groupMetrics.length > 0 && (
