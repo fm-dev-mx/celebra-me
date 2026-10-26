@@ -10,6 +10,49 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.51.0-beta.1] - 2026-10-25
+
+The site gets a new envelope-and-heart icon, the landing price calendar runs through June 2027 on
+three fixed price tiers with drawn promo themes, the mobile guests page opens with pending work, new
+invitations get a floating reply button and «usted» RSVP copy, and the board view is redesigned. One
+data-only migration deletes soft-deleted Cloudinary asset rows; no published invitation content
+changes.
+
+### Added
+
+- Landing: six promo themes (`amor`, `primavera`, `verano`, `patrias`, `buenfin`, `temporada`) draw
+  an emblem, a promo band with countdown and WhatsApp button, ornaments and a themed share image,
+  switched by `html[data-promo-theme]` before first paint (#578).
+- Landing: the promo calendar runs through 2027-06-30; `/terminos` lists each campaign's dates,
+  prices and conditions. Local and Preview builds accept `?fecha=YYYY-MM-DD` and `?tema=<theme>`;
+  Production compiles both out (#571, #578).
+- Site: `apple-touch-icon.png` and `site.webmanifest` with 192/512 px maskable icons (#579).
+- Invitations: on personal guest links of new invitations a floating reply button shows after the
+  cover and clears the music button; published and retired invitations keep today's behaviour
+  (#575).
+- Board: a left sidebar with a «Para usted» default view, a neutral palette and compact rows; rows
+  show who runs them, the live PR state, subtask toggles and tab counts (#573, #580).
+- Board: low-risk Claude PRs are reviewed by a clean-context subagent, and push prompts ask for a
+  self-review first (#576).
+
+### Changed
+
+- Site: the favicon is an envelope-and-heart mark legible at 16 px, and the Organization JSON-LD
+  logo points at a raster `/icons/icon-512.png` (#579).
+- Landing: prices come from three fixed tiers (`regular`, `promo`, `fuerte`) and the promo schedule
+  validator rejects overlaps, out-of-order rows and unknown tiers or themes; the runway alert starts
+  45 days before the calendar ends (#571).
+- Dashboard: on phones `/dashboard/invitados` opens with a compact summary strip, the next step and
+  the guest list; the full overview folds behind «Ver resumen completo». Wide screens are unchanged
+  (#577).
+- Invitations: RSVP defaults for new invitations use the «usted» register and the confirmed title
+  states the result («Asistencia confirmada, {guestName}.») (#575).
+
+### Removed
+
+- Database: migration `20261025220000` deletes the `invitation_assets` rows with
+  `provider = 'cloudinary'` that were already soft-deleted; Cloudinary files are not touched (#569).
+
 ## [0.50.0-beta.1] - 2026-10-25
 
 The season promo (November 1 to December 15) becomes the cheapest price tier, the mobile share
