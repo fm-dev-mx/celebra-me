@@ -1804,7 +1804,9 @@ describe('pnpm board', () => {
 	it('shows the closing summary above «Archivar» and disables it with its reason', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
 		expect(html).toContain("import { archiveBlock, signalLine } from '/cierre.mjs';");
-		expect(html).toContain('const why=!arch&&!t.candado&&archiveBlock(t,S.board)');
+		expect(html).toContain(
+			"Object.hasOwn(t,'bloqueoArchivo')?t.bloqueoArchivo:archiveBlock(t,S.board)",
+		);
 		expect(html).toContain("${t.candado||why?'disabled':''}");
 		expect(html).toMatch(
 			/cierreHtml\(t\):`<p class="nopend">Sin resumen de cierre\.<\/p>`\}\s*<div class="fa"><button/,

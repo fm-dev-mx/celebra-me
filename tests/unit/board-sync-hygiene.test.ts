@@ -108,6 +108,18 @@ describe('board:sync hygiene (d268)', () => {
 				cierre: CIERRE,
 				archivada: '2026-01-02T00:00:00Z',
 			}),
+			task('tres-dias', {
+				num: 9,
+				estado: 'comprobada',
+				cierre: CIERRE,
+				archivada: new Date(Date.now() - 3 * 86400000).toISOString(),
+			}),
+			task('un-dia', {
+				num: 10,
+				estado: 'comprobada',
+				cierre: CIERRE,
+				archivada: new Date(Date.now() - 86400000).toISOString(),
+			}),
 		]);
 		const sources = {
 			worktrees: [],
@@ -130,6 +142,7 @@ describe('board:sync hygiene (d268)', () => {
 		]);
 		expect(dry.higiene.almacen.resumidas).toEqual([
 			expect.stringMatching(/^T8 vieja · comprobada · 2026-01-02$/),
+			expect.stringMatching(/^T9 tres-dias · comprobada · /),
 		]);
 		expect(readTask(dir, 'unida-ok').rev).toBe(1);
 		expect(existsSync(path.join(dir, 'tareas', 'vieja.json'))).toBe(true);
@@ -147,9 +160,11 @@ describe('board:sync hygiene (d268)', () => {
 		expect(real.higiene).not.toHaveProperty('archivadas');
 		for (const id of ['unida-ok', 'unida-sin-cierre', 'cancelada', 'origen-revision'])
 			expect(readTask(dir, id).archivada).toBeUndefined();
-		// compact --antes=7d moved the old archived task to the month's .zip.
+		// Only archives older than two days move to the monthly zip.
 		expect(existsSync(path.join(dir, 'tareas', 'vieja.json'))).toBe(false);
 		expect(existsSync(path.join(dir, 'archivo', 'vieja.json'))).toBe(true);
+		expect(existsSync(path.join(dir, 'archivo', 'tres-dias.json'))).toBe(true);
+		expect(existsSync(path.join(dir, 'tareas', 'un-dia.json'))).toBe(true);
 	});
 
 	it('detaches only free, clean lanes at origin/develop and reports the rest', () => {
