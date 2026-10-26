@@ -83,8 +83,9 @@ Runtime connectivity never authorizes database, publication or release mutations
    checks before pushing. CI runs on a task branch only through its pull request.
 
    A local merge from Integration, which keeps `develop` checked out (Git does not allow the same
-   branch in two worktrees), is the exception for urgent changes the coordinator lands itself; CI
-   then runs only after the push:
+   branch in two worktrees), is the exception for an urgent change the owner explicitly authorizes
+   in the current task ([Git safety](../../.agent/rules/git-safety.md)); the coordinator lands it
+   and CI then runs only after the push:
 
    ```bash
    git pull --ff-only origin develop
