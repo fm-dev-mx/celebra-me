@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.52.0-beta.1",
+    "version": "0.53.0-beta.1",
     "engines": {
         "node": ">=22.18.0 <25"
     },
@@ -136,6 +136,7 @@
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
+        "invitation:legacy-storage-audit": "tsx scripts/provision/legacy-storage-audit-cli.ts",
         "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",
         "invitation:diagnose-identity": "tsx scripts/provision/managed-identity-diagnostics-cli.ts",
         "invitation:cross-db-reconcile": "tsx scripts/provision/cross-db-invitation-reconciliation-cli.ts",

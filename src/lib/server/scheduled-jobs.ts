@@ -5,14 +5,16 @@
  * The expressions are the ones declared under `triggers.crons` in `wrangler.jsonc`.
  * Jobs listed in `PRODUCTION_ONLY_JOBS` are declared only on the Production Worker and
  * skip on any other deploy identity.
- * The engagement maintenance cron also runs the commercial analytics retention purge and, on the
- * Production Worker only, the daily Meta Insights collector for the last completed day.
+ * The engagement maintenance cron also runs the commercial analytics retention purge, the
+ * monthly Meta estimated lead value recalculation, and, on the Production Worker only, the
+ * daily Meta Insights collector for the last completed day.
  * The platform usage cron (every 15 minutes) also sweeps the Meta conversion outbox and runs
  * the Meta conversion retention purge, so the Production Worker needs no extra cron trigger.
  */
 import { randomUUID } from 'node:crypto';
 import { runCommercialRetention } from '@/lib/commercial/commercial-retention.service';
 import { runMetaConversionRetention } from '@/lib/commercial/meta-capi/retention.service';
+import { runMetaEstimatedLeadValueRecalculation } from '@/lib/commercial/meta-capi/estimated-lead-value';
 import {
 	isMetaCapiDeliveryEnabled,
 	processPendingMetaConversionEvents,
@@ -172,12 +174,25 @@ async function runMetaInsightsJob(): Promise<ScheduledJobOutcome['status']> {
 	}
 }
 
+async function runMetaEstimatedLeadValueJob(): Promise<ScheduledJobOutcome['status']> {
+	try {
+		return await runMetaEstimatedLeadValueRecalculation();
+	} catch (error) {
+		console.error('[meta-lead-value][recalculation] failed', {
+			status: error instanceof SupabaseHttpError ? error.status : null,
+			code: error instanceof SupabaseHttpError ? error.code : null,
+		});
+		return 'failed';
+	}
+}
+
 /** Every daily analytics step runs even when another fails; any failure fails the job. */
 async function runDailyAnalyticsMaintenanceJob(): Promise<ScheduledJobOutcome['status']> {
 	const steps = [
 		await runEngagementMaintenanceJob(),
 		await runCommercialRetentionJob(),
 		await runMetaInsightsJob(),
+		await runMetaEstimatedLeadValueJob(),
 	];
 	return steps.includes('failed') ? 'failed' : 'completed';
 }

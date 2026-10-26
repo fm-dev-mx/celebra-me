@@ -474,7 +474,11 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 		(t) => color(t, board, { now }) === 'own' && !late.has(t.id),
 	);
 	const archivable = (board.tareas ?? []).filter(
-		(t) => isFinished(t) && !t.archivada && !t.candado && !archiveBlock(t, board),
+		(t) =>
+			isFinished(t) &&
+			!t.archivada &&
+			!t.candado &&
+			!(Object.hasOwn(t, 'bloqueoArchivo') ? t.bloqueoArchivo : archiveBlock(t, board)),
 	);
 	const rows = [
 		...tasks.map((t) => {

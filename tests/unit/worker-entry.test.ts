@@ -23,6 +23,9 @@ jest.mock('@/lib/commercial/commercial-retention.service', () => ({
 		complete: true,
 	})),
 }));
+jest.mock('@/lib/commercial/meta-capi/estimated-lead-value', () => ({
+	runMetaEstimatedLeadValueRecalculation: jest.fn(async () => 'completed'),
+}));
 jest.mock('@/lib/server/deploy-identity', () => ({
 	readDeployEnvironment: jest.fn(() => 'preview'),
 }));

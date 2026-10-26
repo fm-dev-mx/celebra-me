@@ -82,9 +82,10 @@ routing and the internal modules work lives in
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`. T322:
   the text is one plain line with a question; a decision adds two or more `--opcion="…"`, the
   recommended one first; technical detail (SHAs, decision ids, commands) goes in `--detalle="…"`.
-  `pnpm board` refuses an owner message that breaks this. **Inherited acceptance**: what the owner
-  already accepted in a task (its `AUTORIZO`, `DECISIONES` or an answered question) holds for its
-  review rounds and follow-ups, which never ask it again.
+  Questions to the owner by board msg carry a response line ready to paste. `pnpm board` refuses an
+  owner message that breaks this. **Inherited acceptance**: what the owner already accepted in a
+  task (its `AUTORIZO`, `DECISIONES` or an answered question) holds for its review rounds and
+  follow-ups, which never ask it again.
 
 ## Closing and review
 

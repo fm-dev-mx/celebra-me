@@ -469,7 +469,24 @@ const SAFE_META_KEYS = new Set([
 	'cta_id',
 	'cta_location',
 	'destination_type',
+	'value',
+	'currency',
 ]);
+
+export const FALLBACK_ESTIMATED_LEAD_VALUE_MXN = 150;
+
+export function resolveClientEstimatedLeadValue(explicitValue?: unknown): number {
+	if (typeof explicitValue === 'number' && Number.isFinite(explicitValue) && explicitValue > 0) {
+		return explicitValue;
+	}
+	if (typeof document !== 'undefined' && document.body?.dataset?.metaEstimatedLeadValue) {
+		const parsed = parseFloat(document.body.dataset.metaEstimatedLeadValue);
+		if (Number.isFinite(parsed) && parsed > 0) {
+			return parsed;
+		}
+	}
+	return FALLBACK_ESTIMATED_LEAD_VALUE_MXN;
+}
 
 function sanitizeForMeta(
 	properties: Record<string, string | number | boolean>,
@@ -541,8 +558,11 @@ function buildPackageViewPayload(properties: Record<string, string | number | bo
 }
 
 function buildContactPayload(properties: Record<string, string | number | boolean>) {
+	const estimatedValue = resolveClientEstimatedLeadValue(properties.value);
 	const parameters: Record<string, string | number | boolean> = {
 		content_category: 'contact',
+		value: estimatedValue,
+		currency: 'MXN',
 	};
 	const packageName = pickNonEmptyString(properties.package_name, properties.package_id);
 	const demoSlug = pickNonEmptyString(properties.demo_slug);
@@ -561,9 +581,12 @@ function buildContactPayload(properties: Record<string, string | number | boolea
 }
 
 function buildLeadPayload(properties: Record<string, string | number | boolean>) {
+	const estimatedValue = resolveClientEstimatedLeadValue(properties.value);
 	const parameters: Record<string, string | number | boolean> = {
 		content_category: 'lead_form',
 		content_name: pickNonEmptyString(properties.form_id) ?? 'contact',
+		value: estimatedValue,
+		currency: 'MXN',
 	};
 	const eventType = pickNonEmptyString(properties.event_type);
 	const sourceArea = pickNonEmptyString(properties.source_area);

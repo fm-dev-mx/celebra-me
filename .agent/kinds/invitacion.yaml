@@ -15,6 +15,7 @@ pasos:
     - '1. Siga docs/core/invitation-creation-contract.md: la ruta es /<tipo de evento>/<slug>, sin prefijo en el slug.'
 autorizado_por_defecto:
     - 'Modo rápido hasta develop: git-safety, commit, push y PR a develop de {rama}.'
+    - 'Merge normal de origin/develop en {rama} para resolver un PR DIRTY o atrasado (sin rebase, sin force); solo se pregunta si el conflicto toca una migración o archivos de otra tarea.'
 no_hagas:
     - '- No publique en Producción sin la aprobación del cliente y del dueño.'
     - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'

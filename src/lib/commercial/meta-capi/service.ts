@@ -4,6 +4,7 @@ import { getEnv } from '@/lib/server/env';
 import { createHash, randomUUID } from 'node:crypto';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 import { safeErr } from '@/lib/server/safe-error';
+import { getEstimatedLeadValue } from './estimated-lead-value';
 import {
 	getMetaCrmLeadStageFromTriggerStatus,
 	META_CRM_LEAD_EVENT_SOURCE,
@@ -206,28 +207,42 @@ export interface BrowserConversionInput {
 	 */
 	customerId?: string;
 	leadId?: string;
+	/** Explicit value override (for tests or custom leads); defaults to monthly estimated lead value for Contact/Lead. */
+	value?: number | null;
+	currency?: string;
 }
 
 /**
  * Queues a browser PageView, ViewContent, Contact or Lead for server delivery. A repeated event ID
  * keeps the first row, so a replayed ingestion never sends the event twice. Callers check marketing
- * consent first.
+ * consent first. Contact and Lead rows carry the monthly estimated lead value (or fallback).
  */
 export async function enqueueBrowserConversionEvent(input: BrowserConversionInput): Promise<void> {
+	const eventName = BROWSER_CONVERSION_TRIGGERS[input.trigger];
+	const isContactOrLead = eventName === 'Contact' || eventName === 'Lead';
+	const value =
+		input.value !== undefined
+			? input.value
+			: isContactOrLead
+				? await getEstimatedLeadValue()
+				: null;
+	const currency = input.currency || 'MXN';
+
 	await supabaseRestRequest<unknown>({
 		pathWithQuery: 'meta_conversion_events?on_conflict=event_id',
 		method: 'POST',
 		useServiceRole: true,
 		prefer: 'resolution=ignore-duplicates,return=minimal',
 		body: {
-			event_name: BROWSER_CONVERSION_TRIGGERS[input.trigger],
+			event_name: eventName,
 			event_id: input.eventId,
 			trigger_status: input.trigger,
 			session_id: input.sessionId,
 			event_source_path: input.eventSourcePath.slice(0, 512),
 			...(input.customerId ? { customer_id: input.customerId } : {}),
 			...(input.leadId ? { lead_id: input.leadId } : {}),
-			value: null,
+			value,
+			currency,
 			status: 'pending',
 		},
 	});

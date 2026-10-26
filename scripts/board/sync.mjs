@@ -12,7 +12,7 @@
  *     since the lock was taken is flagged «posible sesión cerrada». Only a merged PR releases a lock.
  *
  * Then the hygiene (d268), on the board as those writes left it: an unlocked unida/hecha task whose check passes
- * moves to comprobada with that evidencia, `compact --antes=7d` and `prune-backups --aplicar` run, and each free,
+ * moves to comprobada with that evidencia, `compact --antes=2d` and `prune-backups --aplicar` run, and each free,
  * clean lane f05–f12 (no lock or open task holds it, detached or on a branch whose PR merged) is detached at
  * origin/develop; the branch it left is then deleted with `git branch -d` when origin/develop already contains it.
  * A lane with changes, or on a branch without a merged PR, is only reported. The sync never archives
@@ -446,14 +446,14 @@ async function applyOne(c, dir) {
 	}
 }
 
-/** `compact --antes=7d` and `prune-backups --aplicar` (a dry run only lists), as their JSON results. */
+/** `compact --antes=2d` and `prune-backups --aplicar` (a dry run only lists), as their JSON results. */
 async function storeUpkeep(dir, dryRun) {
 	const json = async (args) => {
 		let said = '';
 		await board([...args, '--json'], { dir, out: (s) => (said = s) });
 		return JSON.parse(said);
 	};
-	const compact = await json(['compact', '--antes=7d', ...(dryRun ? ['--dry-run'] : [])]);
+	const compact = await json(['compact', '--antes=2d', ...(dryRun ? ['--dry-run'] : [])]);
 	const prune = await json(['prune-backups', ...(dryRun ? [] : ['--aplicar'])]);
 	return { resumidas: compact.tareas.map((x) => x.linea), respaldos: prune.sobran.length };
 }
@@ -592,7 +592,7 @@ export function summary(r) {
 	const { resumidas, respaldos } = h.almacen;
 	if (resumidas.length)
 		lines.push(
-			`Higiene: ${head}${resumidas.length} archivadas ${r.prueba ? 'se resumirían' : 'resumidas'} (compact --antes=7d)`,
+			`Higiene: ${head}${resumidas.length} archivadas ${r.prueba ? 'se resumirían' : 'resumidas'} (compact --antes=2d)`,
 		);
 	if (respaldos)
 		lines.push(
