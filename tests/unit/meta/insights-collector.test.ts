@@ -96,6 +96,7 @@ describe('runMetaInsightsCollector', () => {
 				page: { status: 'completed', rows: 1 },
 				instagram: { status: 'completed', rows: 1 },
 			},
+			missingConfig: [],
 		});
 		// The account id already carries `act_`; it is never doubled.
 		expect(urls[0].pathname).toBe('/v26.0/act_111/insights');
@@ -196,6 +197,7 @@ describe('runMetaInsightsCollector', () => {
 
 		expect(result.status).toBe('skipped');
 		expect(result.sources.ads).toEqual({ status: 'skipped', reason: 'missing_config' });
+		expect(result.missingConfig).toEqual(['META_GRAPH_ACCESS_TOKEN']);
 		expect(fetchImpl).not.toHaveBeenCalled();
 		expect(upsertMock).not.toHaveBeenCalled();
 	});
@@ -209,6 +211,7 @@ describe('runMetaInsightsCollector', () => {
 		expect(result.sources.ads).toEqual({ status: 'skipped', reason: 'invalid_config' });
 		expect(result.sources.page).toEqual({ status: 'skipped', reason: 'missing_config' });
 		expect(result.sources.instagram).toEqual({ status: 'completed', rows: 1 });
+		expect(result.missingConfig).toEqual(['META_PAGE_ID']);
 		expect(urls.map((url) => url.pathname)).toEqual(['/v26.0/333/insights']);
 	});
 
