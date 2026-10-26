@@ -95,6 +95,25 @@ describe('RSVP Component', () => {
 			).toBeInTheDocument();
 		});
 
+		it('addresses the guest with «usted» when the invitation asks for the new defaults', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} defaultCopy="usted" />);
+
+			expect(
+				screen.getByText(
+					'Su respuesta nos ayuda a preparar cada detalle de esta celebración especial.',
+				),
+			).toBeInTheDocument();
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByLabelText(/Su nombre/i)).toBeInTheDocument();
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+			await waitFor(() => {
+				expect(
+					screen.getByText('Por favor, escriba su nombre completo.'),
+				).toBeInTheDocument();
+			});
+		});
+
 		it('should render subcopy element even with whitespace-only value', () => {
 			const { container } = render(<RSVP {...defaultProps} subcopy=" " />);
 

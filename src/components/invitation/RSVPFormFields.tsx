@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import type { RefObject } from 'react';
-import type { RsvpAttendanceChoice } from '@/components/invitation/rsvp-logic';
+import { useRsvpContext } from '@/components/invitation/rsvp-context';
+import { getDefaultGuestHint, type RsvpAttendanceChoice } from '@/components/invitation/rsvp-logic';
 import { COUNTRY_OPTIONS } from '@/lib/phone/country-codes';
 import { MAX_GUEST_COMMENT_LEN } from '@/lib/rsvp/core/guest-message';
 
@@ -330,6 +331,7 @@ export function ConfirmedFields(props: {
 		onNotesChange,
 		onBlur,
 	} = props;
+	const { defaultCopy = 'legacy' } = useRsvpContext();
 
 	const isExpanded = attendanceStatus !== null;
 	const showGuests = part !== 'notes' && attendanceStatus === 'confirmed' && supportsPlusOnes;
@@ -361,13 +363,9 @@ export function ConfirmedFields(props: {
 							max={effectiveGuestCap}
 						/>
 						<p className="rsvp__guest-hint">
-							{guestHint ? (
-								guestHint.replaceAll('{count}', String(effectiveGuestCap))
-							) : (
-								<>
-									Hemos reservado {effectiveGuestCap} lugares para tu invitación.
-									Puedes ajustar el número si asistirán menos personas.
-								</>
+							{(guestHint ?? getDefaultGuestHint(defaultCopy)).replaceAll(
+								'{count}',
+								String(effectiveGuestCap),
 							)}
 						</p>
 					</>
