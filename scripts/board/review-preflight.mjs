@@ -10,10 +10,10 @@ const failedChecks = (rollup) =>
 		.map((c) => c.name || c.context || '?');
 
 /**
- * d288: the CI of PR `task.pr` at head `sha`: `{ci: 'verde'|'pendiente'|'rojo'|null, fallidos}`; null means
- * GitHub lists no check yet, which right after a push is a run still starting.
+ * One `gh pr view` of PR `task.pr` with every field `review` reads (CI and merge evidence); refuses unless the PR
+ * is OPEN at head `sha`.
  */
-export function reviewCi(task, sha) {
+export function viewPr(task, sha) {
 	let pr;
 	try {
 		pr = JSON.parse(
@@ -24,7 +24,7 @@ export function reviewCi(task, sha) {
 					'view',
 					String(task.pr).replace(/^#/, ''),
 					'--json',
-					'state,headRefOid,statusCheckRollup',
+					'state,headRefOid,baseRefOid,mergeable,files,changedFiles,statusCheckRollup',
 				],
 				{
 					encoding: 'utf8',
@@ -35,21 +35,22 @@ export function reviewCi(task, sha) {
 			),
 		);
 	} catch {
-		throw new UsageError('UNVERIFIED: no se pudo leer el CI del PR; vuelva a intentar.');
+		throw new UsageError('UNVERIFIED: no se pudo leer el PR en GitHub; vuelva a intentar.');
 	}
 	if (pr?.state !== 'OPEN' || pr.headRefOid !== sha)
 		throw new UsageError(
 			'el PR debe estar OPEN y su cabeza debe coincidir con --sha; actualice la evidencia.',
 		);
-	return { ci: ciOf(pr.statusCheckRollup), fallidos: failedChecks(pr.statusCheckRollup) };
+	return pr;
 }
 
 /**
- * d288: null when the CI of `task`'s head `sha` is green; `{espera}` (the reason) while it still runs or has not
+ * d288: null when the CI of `task`'s head `sha` (read in `pr`) is green; `{espera}` (the reason) while it still runs or has not
  * started. A red CI refuses the round, naming the failed checks.
  */
-export function ciGate(task, sha) {
-	const { ci, fallidos } = reviewCi(task, sha);
+export function ciGate(task, sha, pr = viewPr(task, sha)) {
+	const ci = ciOf(pr.statusCheckRollup);
+	const fallidos = failedChecks(pr.statusCheckRollup);
 	if (ci === 'verde') return null;
 	if (ci === 'rojo')
 		throw new UsageError(
@@ -91,36 +92,8 @@ export async function untilGreen(flags, out, attempt) {
 	}
 }
 
-export function reviewPreflight(task, sha) {
-	let pr;
-	try {
-		pr = JSON.parse(
-			execFileSync(
-				'gh',
-				[
-					'pr',
-					'view',
-					String(task.pr).replace(/^#/, ''),
-					'--json',
-					'state,headRefOid,baseRefOid,mergeable,files,changedFiles',
-				],
-				{
-					encoding: 'utf8',
-					timeout: 20000,
-					windowsHide: true,
-					stdio: ['ignore', 'pipe', 'pipe'],
-				},
-			),
-		);
-	} catch {
-		throw new UsageError(
-			'UNVERIFIED: no se pudo comprobar el merge del PR; vuelva a intentar.',
-		);
-	}
-	if (pr?.state !== 'OPEN' || pr.headRefOid !== sha)
-		throw new UsageError(
-			'el PR debe estar OPEN y su cabeza debe coincidir con --sha; actualice la evidencia.',
-		);
+/** The merge evidence of `task`'s head `sha`, read in `pr`: `{files, conflicts}` (null when mergeable). */
+export function reviewPreflight(task, sha, pr = viewPr(task, sha)) {
 	if (!['MERGEABLE', 'CONFLICTING'].includes(pr.mergeable))
 		throw new UsageError('UNVERIFIED: GitHub aún no confirma mergeable; vuelva a intentar.');
 	// GitHub caps the files connection; incomplete evidence must never classify as docs-only.

@@ -120,7 +120,7 @@ import {
 	findTask,
 } from './model.mjs';
 import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
-import { ciGate, reviewPreflight, untilGreen } from './review-preflight.mjs';
+import { ciGate, reviewPreflight, untilGreen, viewPr } from './review-preflight.mjs';
 import { assertOwner, noteOverride, overrideReason } from './lock-owner.mjs';
 import { authorSession } from './findings.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
@@ -440,9 +440,10 @@ function reviewOnce({ pos, flags }, dir, out) {
 		const sha = reviewSha(src, flags);
 		const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
 		if (prev?.revisionSha === sha) return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
-		const waiting = ciGate(src, sha);
+		const pr = viewPr(src, sha);
+		const waiting = ciGate(src, sha, pr);
 		if (waiting) return waiting;
-		const preflight = reviewPreflight(src, sha);
+		const preflight = reviewPreflight(src, sha, pr);
 		if (preflight.conflicts !== null) {
 			const en = nowIso();
 			const texto = `${taskLabel(src)} (${src.pr}@${sha.slice(0, 7)}): revisión rechazada por conflictos de merge. Archivos: ${preflight.conflicts.length ? preflight.conflicts.join(', ') : 'UNVERIFIED (objetos locales no disponibles; compruebe los archivos en GitHub)'}. Una origin/develop a su rama con un merge normal, resuelva los conflictos y haga push normal; nunca rebase ni push --force.`;

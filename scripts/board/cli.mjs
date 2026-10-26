@@ -16,8 +16,5 @@ export function failureText(cmd, e, env = process.env) {
 		return e.message || `pnpm board ${cmd ?? ''}: rechazado sin motivo`.trim();
 	const reason = e?.message || String(e ?? '') || 'falló sin mensaje';
 	const text = `pnpm board ${cmd ?? '(sin comando)'}: ${reason}`;
-	return env.CELEBRA_BOARD_DEBUG === '1' && e?.stack
-		? `${text}
-${e.stack}`
-		: text;
+	return env.CELEBRA_BOARD_DEBUG === '1' && e?.stack ? `${text}\n${e.stack}` : text;
 }
