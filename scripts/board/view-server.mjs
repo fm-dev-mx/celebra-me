@@ -1,7 +1,8 @@
 /**
  * Local server for the board view: the page, the shared model and the board as JSON.
- * `/api/stream` pushes the board as Server-Sent Events whenever a file in the store changes, so the page
- * shows a write in under a second; `/api/board` stays for one-off reads.
+ * `/api/stream` pushes a lightweight board projection whenever the store changes; `/api/board` serves
+ * the same projection once. Read-only `/api/task`, `/api/archivadas` and `/api/history` load complete
+ * task documents or the last three days of history only when requested.
  *
  * Three writes, all only from this same page on 127.0.0.1: `POST /api/archivar` (d167) archives or unarchives a
  * finished task through the `archive` option `pnpm board view` passes, `POST /api/entregada` (d249) marks a task
@@ -20,6 +21,7 @@ import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadBoard } from './store.mjs';
+import { liveBoard } from './view-payload.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const FILES = {
@@ -43,6 +45,7 @@ const HEARTBEAT_MS = 25_000;
 const SYNC_TIMEOUT_MS = 120_000;
 const TOKEN_SLOT = '__BOARD_TOKEN__';
 const VERSION_SLOT = '__BOARD_VERSION__';
+const DETAIL_PATHS = new Set(['/api/task', '/api/archivadas', '/api/history']);
 // The page reconnects one second after a worker swap ends its stream.
 const RETRY_MS = 1000;
 /** How often the `live` reads (Git lanes, open PRs) refresh; they ride along in the board as `vivo` (T126). */
@@ -186,6 +189,36 @@ function deliverRequest(deliver, req, res) {
 	});
 }
 
+function detailRequest(dir, req, res, path) {
+	try {
+		if (existsSync(join(dir, '.lock')))
+			return json(res, 503, { error: 'Tablero sin sincronizar' });
+		const full = loadBoard(dir, { since: Date.now() - 3 * 86_400_000 });
+		const id = new URL(req.url, 'http://localhost').searchParams.get('id');
+		const result =
+			path === '/api/history'
+				? { decisiones: full.decisiones, bitacora: full.bitacora }
+				: path === '/api/archivadas'
+					? full.tareas.filter((t) => t.archivada)
+					: full.tareas.find((t) => t.id === id);
+		if (existsSync(join(dir, '.lock')))
+			return json(res, 503, { error: 'Tablero sin sincronizar' });
+		return json(res, result ? 200 : 404, result ?? { error: 'Tarea no encontrada' });
+	} catch {
+		return json(res, 503, { error: 'Tablero sin sincronizar' });
+	}
+}
+
+function serveFile(res, path, token, version) {
+	const f = FILES[path];
+	if (!f) return res.writeHead(404).end();
+	res.writeHead(200, { 'content-type': f[1], 'cache-control': 'no-store' });
+	const content = readFileSync(join(here, f[0]), 'utf8');
+	res.end(
+		path === '/' ? content.replace(TOKEN_SLOT, token).replace(VERSION_SLOT, version) : content,
+	);
+}
+
 /**
  * Calls `onChange(json)` once a burst of writes settles and the board really changed; `extra()` adds fields
  * that do not live in the store (the `vivo` reads).
@@ -210,7 +243,10 @@ function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFacto
 				report('degraded');
 				return;
 			}
-			next = JSON.stringify({ ...loadBoard(dir), ...extra() });
+			next = JSON.stringify({
+				...liveBoard(loadBoard(dir, { since: Date.now() - 3 * 86_400_000 })),
+				...extra(),
+			});
 			if (existsSync(join(dir, '.lock'))) {
 				report('degraded');
 				return;
@@ -230,7 +266,7 @@ function watchBoard(dir, onChange, onStatus, { settleMs, reconcileMs, watchFacto
 		try {
 			watcher = watchFactory(dir, { recursive: true }, (_event, file) => {
 				const name = String(file ?? '');
-				if (name.includes('.respaldos')) return;
+				if (name.split(/[\\/]/).includes('.respaldos')) return;
 				// .jsonl: a bitácora row, such as a message (T126), shows without waiting for reconciliation.
 				if (file && !/\.jsonl?$/.test(name) && name !== '.lock') return;
 				// A bounded leading debounce cannot be starved by continuous writes.
@@ -419,18 +455,10 @@ export function serveView(
 			);
 			return;
 		}
-		const f = FILES[path];
-		if (!f) {
-			res.writeHead(404).end();
-			return;
+		if (DETAIL_PATHS.has(path)) {
+			return detailRequest(dir, req, res, path);
 		}
-		res.writeHead(200, { 'content-type': f[1], 'cache-control': 'no-store' });
-		const content = readFileSync(join(here, f[0]), 'utf8');
-		res.end(
-			path === '/'
-				? content.replace(TOKEN_SLOT, token).replace(VERSION_SLOT, version)
-				: content,
-		);
+		serveFile(res, path, token, version);
 	});
 	let cleaned = false;
 	const cleanup = () => {

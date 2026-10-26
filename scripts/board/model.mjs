@@ -376,7 +376,7 @@ export function requisitos(t, board, now = Date.now()) {
 			return { ...r, ok: SUCCESS.has((d ?? archived)?.estado) };
 		}
 		if (r.tipo === 'revision') {
-			const d = tareas.find((x) => x.id === r.ref);
+			const d = [...tareas, ...(board.archivo ?? [])].find((x) => x.id === r.ref);
 			return { ...r, ok: !!d?.pr && ['en revision', 'hecha', 'unida'].includes(d.estado) };
 		}
 		if (r.tipo === 'fecha') return { ...r, ok: now >= time(r.ref) };

@@ -594,7 +594,39 @@ const rich=s=>richText(s,{task:n=>S.board.tareas.find(t=>t.num===n),decision:id=
 const msgExtraHtml=m=>(m.opciones&&m.opciones.length?`<div class="sub">Opciones: ${esc(optionsText(m.opciones))}</div>`:'')+(m.detalle?`<details class="sub"><summary>Detalle técnico</summary><div>${m.detalle.split(/\r?\n|\\n/).map(rich).join('<br>')}</div></details>`:'');
 // d284: a title inside a button keeps **bold**, `code` and a clickable «T274», never a nested link.
 const tt=s=>titleHtml(s,{task:n=>S.board.tareas.find(t=>t.num===n)});
-const byId=id=>S.board.tareas.find(t=>t.id===id);
+const DETAILS=new Map();
+let archivedTasks=[],archiveRead=0;
+let historyData=null,historyRead=0;
+const byId=id=>S.board.tareas.find(t=>t.id===id)||archivedTasks.find(t=>t.id===id);
+const fullTask=t=>{const d=t&&DETAILS.get(t.id);return d&&d.rev===t.rev?d:null};
+async function readTask(id){
+  const known=byId(id),cached=fullTask(known);if(cached)return cached;
+  const res=await fetch('/api/task?id='+encodeURIComponent(id),{cache:'no-store'});
+  if(!res.ok)throw new Error('No se pudo leer la ficha. Vuelva a elegir la tarea.');
+  const t=await res.json();
+  if(byId(id)&&byId(id).rev!==t.rev)throw new Error('La tarea cambió. Vuelva a elegirla cuando se actualice el tablero.');
+  DETAILS.set(id,t);
+  return t;
+}
+async function readArchived(){
+  const request=++archiveRead;
+  try{
+    const res=await fetch('/api/archivadas',{cache:'no-store'});
+    if(!res.ok)throw new Error('No se pudieron leer las archivadas.');
+    const tasks=await res.json();if(request!==archiveRead)return;
+    archivedTasks=tasks;for(const t of tasks)DETAILS.set(t.id,t);
+    if($('arch').checked)renderFin();
+  }catch(e){if(request===archiveRead)$('finmsg').textContent=e.message}
+}
+async function readHistory(){
+  const request=++historyRead;
+  try{
+    const res=await fetch('/api/history',{cache:'no-store'});
+    if(!res.ok)throw new Error('No se pudo leer el historial. Vuelva a abrir Historial.');
+    const data=await res.json();if(request!==historyRead)return;
+    historyData=data;if(S.tab==='historial')renderHist();
+  }catch(e){if(request===historyRead)$('hist').textContent=e.message}
+}
 const decById=id=>S.board.decisiones.find(d=>d.id===id);
 const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));
 const agentTab=()=>Object.hasOwn(AGENT_REGISTRY,S.ag)?S.ag:undefined;
@@ -743,6 +775,7 @@ function findingHtml(h){
 }
 function cierreHtml(t){
   const c=t.cierre;if(!c)return '';
+  if(Object.hasOwn(t,'bloqueoArchivo'))return `<p class="lead">${rich(c.resumen||'')}</p>${findingsOf(t).map(findingHtml).join('')}${(c.pendientes||[]).map(pendHtml).join('')}<button type="button" class="btn sm" data-sel="${esc(t.id)}" data-jump="1" data-all="1">Ver detalles</button>`;
   const {lead,rest}=leadOf(c.resumen,t);
   const pend=Array.isArray(c.pendientes)?c.pendientes:[];
   const finds=findingsOf(t),r=c.resultado||{};
@@ -783,7 +816,12 @@ function subBoxHtml(t){
 }
 function sesHtml(x){if(!x)return '';const id=String(x.id||'');return esc(x.nombre||id)+(id?` <span class="code">#${esc(id)}</span>`:'')}
 function renderSheet(open){
-  const sh=$('sheet'),t=S.sel&&byId(S.sel);
+  const sh=$('sheet'),summary=S.sel&&byId(S.sel),t=fullTask(summary);
+  if(summary&&!t){
+    if(open)sh.classList.add('open');
+    sh.innerHTML='<div class="empty">Cargando ficha…</div>';
+    readTask(summary.id).then(()=>{if(S.sel===summary.id&&byId(summary.id)?.rev===summary.rev)renderSheet(false)},e=>{if(S.sel===summary.id)sh.innerHTML=`<div class="empty">${esc(e.message)}</div>`});return;
+  }
   if(!t){sh.innerHTML='<div class="empty">Elija una tarea para ver su ficha y copiar su prompt.</div>';return}
   const c=color(t),l=laneOf(t)||{},r=reqs(t);
   const pr=prNumber(t.pr);
@@ -864,7 +902,7 @@ function renderBlk(){
 }
 // Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).
 function renderFin(){
-  const fin=S.board.tareas.filter(isFinished);
+  const fin=($('arch').checked?archivedTasks:S.board.tareas).filter(isFinished);
   if(!S.ready)return;
   const arch=$('arch').checked;
   // The agent chips count what the archive toggle leaves, so each number matches its list.
@@ -876,7 +914,7 @@ function renderFin(){
   const row=t=>{
     const locked=t.candado?`<span class="msg">${agChip(t.candado.agente,AGENT[t.candado.agente]||t.candado.agente,{lock:true})} libérela antes de archivar</span>`:'';
     // d178: without its closing summary (or with a pendiente that names no task) «Archivar» stays disabled and says why.
-    const why=!arch&&!t.candado&&archiveBlock(t,S.board);
+    const why=!arch&&!t.candado&&(Object.hasOwn(t,'bloqueoArchivo')?t.bloqueoArchivo:archiveBlock(t,S.board));
     return `<article class="fr${arch?' archived':''}"><h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${tt(t.titulo)}</button></h3>
       ${statusHtml(t)}
       ${t.cierre?cierreHtml(t):`<p class="nopend">Sin resumen de cierre.</p>`}
@@ -902,15 +940,17 @@ async function archive(btn){
     const body=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
     m.textContent=(t?taskTag(t):id)+(archivar?' archivada. Está en «Ver archivadas».':' vuelve a Finalizadas.');
+    DETAILS.delete(id);if($('arch').checked)await readArchived();
   }catch(e){btn.disabled=false;m.textContent='No se pudo: '+e.message}
 }
 
 function renderHist(){
   if(!S.ready)return;
+  const data=historyData||S.board;
   const q=$('q').value.trim().toLowerCase(),vig=$('vig').checked;
   let rows=[];
   if(S.kind!=='bit')rows=rows.concat(S.board.decisiones.filter(d=>!vig||d.vigente===true).map(d=>({en:d.en,txt:[d.id,d.decision,d.motivo,(d.tareas||[]).join(' ')].join(' '),html:`<div class="lr dec ${d.vigente===false?'old':''}"><span class="when">${esc(fmt(d.en))}</span><div class="what"><span class="tag">${esc(d.id)}${d.vigente===true?' · vigente':d.vigente===false?' · reemplazada':''}</span>${rich(d.decision)}${d.motivo?`<div class="sub">Motivo: ${rich(d.motivo)}</div>`:''}</div></div>`})));
-  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}${b.mensaje?msgExtraHtml(b.mensaje):''}</div></div>`})));
+  if(S.kind!=='dec')rows=rows.concat(data.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}${b.mensaje?msgExtraHtml(b.mensaje):''}</div></div>`})));
   if(q)rows=rows.filter(r=>r.txt.toLowerCase().includes(q));
   rows.sort((a,b)=>T(b.en)-T(a.en));
   const shown=rows.slice(0,200);
@@ -973,6 +1013,7 @@ function actHtml(x){
 // T321: «General» repeats the same rows above a compact queue. Returns the ids of the owner's rows, in order.
 function renderMine(){
   const next=nextSections(S.board,{prs:livePrs()});
+  if(S.board.cierresPendientes)next.coordinador=[...next.coordinador.filter(x=>x.tipo!=='cierre'),...S.board.cierresPendientes];
   const acts=ownerActions(S.board,{prs:livePrs()});
   const h=acts.length?acts.map(actHtml).join(''):'<p class="none"><b>Usted: nada por ahora.</b>Cuando algo le toque, aparece aquí.</p>';
   $('mine').innerHTML=h;$('gen-mine').innerHTML=h;$('gn-you').textContent=acts.length;
@@ -1031,6 +1072,7 @@ function setTab(tab,push){
   // T321: picking a tab during a search ends the search and opens that tab.
   if(searching()){$('tq').value='';renderFound()}
   showView();
+  if(S.tab==='historial')readHistory();
   setSide(false);
   if(was!==S.tab){S.picked=false;if(S.ready)renderCola()}
   if(push){try{history.replaceState(null,'','#'+S.tab)}catch(e){}}
@@ -1039,7 +1081,7 @@ function setTab(tab,push){
 function setSide(open){document.body.classList.toggle('side-open',open);document.querySelector('.menu').setAttribute('aria-expanded',String(open));if(open){const b=document.querySelector('.tab[aria-selected="true"]');if(b)b.focus()}}
 function setColor(c){S.col=c;document.querySelectorAll('[data-col]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.col===c)));try{localStorage.setItem('board-col',c)}catch(e){}renderCola()}
 function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ag===ag)));try{localStorage.setItem('board-ag',ag)}catch(e){}renderCola();renderBoard()}
-document.addEventListener('click',ev=>{
+document.addEventListener('click',async ev=>{
   // T151: a link out (a PR) inside a card opens itself, not the card's sheet.
   if(ev.target.closest('a[target="_blank"]'))return;
   // T321: unfolding a message's technical detail does not open its task.
@@ -1056,7 +1098,7 @@ document.addEventListener('click',ev=>{
   const cp=ev.target.closest('[data-copy]');if(cp){
     // The sheet's button copies the open task; a «Pegar en Codex» row copies its own and opens its sheet, where the message shows.
     if(cp.dataset.copy!=='1'){if(S.ag!=='todas')setAgent('todas');openSheet(cp.dataset.copy)}
-    const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
+    const id=S.sel;let t;try{t=await readTask(id)}catch(e){$('copymsg').textContent=e.message;return}if(S.sel!==id||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
     try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».';if(deliverable(t))deliver(t,m)},fallback)}catch(e){fallback()}return}
   const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump&&$('work').hidden)setTab('cola',true);openSheet(sel.dataset.sel);return}
@@ -1083,7 +1125,7 @@ $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',r
 // T321: the search shows its results in place of the tab; Escape or an empty box returns to the tab.
 const onSearch=()=>{renderFound();showView()};
 $('tq').addEventListener('input',onSearch);
-$('tq').addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('tq').value){ev.stopPropagation();$('tq').value='';onSearch()}});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
+$('tq').addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('tq').value){ev.stopPropagation();$('tq').value='';onSearch()}});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';if($('arch').checked)readArchived();renderFin()});
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
@@ -1110,7 +1152,7 @@ async function sync(dryRun){
     if(h){
       const item=c=>c.ok===false?'NO SE ESCRIBIÓ '+c.texto+': '+c.resultado:(dryRun?'Cambiaría: ':'Hecho: ')+c.texto;
       for(const c of h.comprobadas)lines.push('Higiene: '+item(c));
-      if(h.almacen.resumidas.length)lines.push('Higiene: '+h.almacen.resumidas.length+' archivadas '+(dryRun?'se resumirían':'resumidas')+' (compact --antes=7d)');
+      if(h.almacen.resumidas.length)lines.push('Higiene: '+h.almacen.resumidas.length+' archivadas '+(dryRun?'se resumirían':'resumidas')+' (compact --antes=2d)');
       if(h.almacen.respaldos)lines.push('Higiene: '+h.almacen.respaldos+' respaldos '+(dryRun?'sobran':'quitados')+' (prune-backups)');
       for(const c of h.carriles)lines.push('Carril: '+item(c));
       for(const a of h.avisosCarril)lines.push('Aviso: '+a.texto);
@@ -1130,6 +1172,9 @@ let lastSignal=Date.now(),failedSince=0,lastData=0,stream=null;
 // sidebar that shows it is hidden, and a «Cargando…» that never changes looks stuck.
 const connection=text=>{$('connection').textContent=text;if(!S.ready)$('meta').textContent=text};
 const show=board=>{S.board=board;S.ready=true;lastData=Date.now();
+  for(const [id,t] of DETAILS)if(!byId(id)||byId(id).rev!==t.rev)DETAILS.delete(id);
+  if($('arch').checked)readArchived();
+  if(S.tab==='historial')readHistory();else historyData=null;
   try{render()}catch(e){console.error(e);for(const id of ['mine','list'])$(id).innerHTML=`<div class="empty">No se pudo mostrar el tablero: ${esc(e.message)}</div>`}};
 // d284: the first paint never waits on the stream alone. A browser holding several open streams to this server
 // (more board tabs than its per-host connection limit) queues a new one, and that tab stayed on «Cargando…».

@@ -94,12 +94,12 @@ export function readDoc(dir, collection, id) {
 }
 
 /** The whole board, in the shape model.mjs reads. */
-export function loadBoard(dir) {
+export function loadBoard(dir, { since } = {}) {
 	const [estado] = readCollection(dir, 'estado').filter((d) => d.id === 'actual');
 	return {
 		tareas: readCollection(dir, 'tareas'),
 		decisiones: readCollection(dir, 'decisiones'),
-		bitacora: readLog(dir),
+		bitacora: readLog(dir, { since }),
 		carriles: canonicalLanes(),
 		agentes: readCollection(dir, 'agentes'),
 		archivo: readCollection(dir, 'archivo'),
@@ -112,19 +112,26 @@ export const LOG_DIR = 'bitacora';
 const LOG_FILE = /^\d{4}-\d{2}-\d{2}\.jsonl$/;
 
 /** Every bitácora row: the daily JSONL files, then any old one-file-per-row document not converted yet. */
-export function readLog(dir) {
+export function readLog(dir, { since } = {}) {
 	const d = join(dir, LOG_DIR);
 	if (!existsSync(d)) return [];
 	const files = readdirSync(d).sort();
 	const rows = files
-		.filter((f) => LOG_FILE.test(f))
+		.filter(
+			(f) =>
+				LOG_FILE.test(f) &&
+				(since === undefined ||
+					f.slice(0, 10) >= new Date(since).toISOString().slice(0, 10)),
+		)
 		.flatMap((f) =>
 			readFileSync(join(d, f), 'utf8')
 				.split('\n')
 				.filter((line) => line.trim())
 				.map((line) => JSON.parse(line)),
 		);
-	return [...rows, ...readCollection(dir, LOG_DIR)];
+	return [...rows, ...readCollection(dir, LOG_DIR)].filter(
+		(r) => since === undefined || Date.parse(r.en) >= since,
+	);
 }
 
 /** Append one row to its day's file; the caller holds the store lock. */
