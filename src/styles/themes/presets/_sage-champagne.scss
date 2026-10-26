@@ -40,7 +40,6 @@
 	--color-forest-ink-soft: rgb(70 90 78);
 	--color-forest-ink-soft-rgb: 70 90 78;
 	--color-forest-dusk: rgb(44 66 54);
-	--color-forest-dusk-rgb: 44 66 54;
 	--color-forest-night: rgb(31 46 38);
 	--color-forest-night-rgb: 31 46 38;
 	--color-forest-midnight: rgb(21 32 26);
@@ -59,10 +58,6 @@
 	--color-cream-rgb: 255 253 248;
 	--color-blush: rgb(232 214 196);
 	--color-blush-rgb: 232 214 196;
-
-	// Warm glow: the soft late-afternoon light behind the cover photograph.
-	--color-warm-glow: rgb(214 182 118);
-	--color-warm-glow-rgb: 214 182 118;
 
 	// Paper and night grounds shared by every section of a band, so no seam shows between them.
 	--sage-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.27 0 0 0 0 0.2 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url%28%23n%29'/%3E%3C/svg%3E");
