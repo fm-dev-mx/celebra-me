@@ -63,8 +63,28 @@ Runtime connectivity never authorizes database, publication or release mutations
    baseline matching the current branch and HEAD; the preview reports whether `--apply` would be
    refused and why.
 
-3. **Integrate** from Integration, which keeps `develop` checked out (Git does not allow the same
-   branch in two worktrees):
+3. **Integrate** through a GitHub pull request into `develop`, the standard path for every task:
+   - The author pushes the task branch, opens the pull request and records it on the board task.
+   - An agent other than the author reviews it at its exact head SHA (d183; the reviewer and the
+     risk rule are in the [board rule](../../.agent/rules/board.md#working-rules-every-agent)).
+     Under d282 a low-risk pull request by Claude (board, tooling, documentation or tests, nothing
+     in invitations, the database, migrations, payments, secrets or Production) is reviewed by a
+     Claude subagent with a clean context; medium and high risk keep Codex or Gemini. A new commit
+     makes the review stale and needs a new round at the new SHA.
+   - The coordinator merges with a merge commit (the only method the repository allows), pinned to
+     the reviewed SHA, once the review is approved at that SHA, CI is green and the pull request is
+     clean against `develop` (d100). No task merges during a release.
+
+   The merge header, `Merge pull request #<n> from <owner>/<task-branch>`, names the branch, so
+   every task has one merge commit named after its branch and reverts the same way:
+   `git revert -m 1 <merge>`. Group a multi-step program into one task branch per step with several
+   commits rather than one task per commit. Resolve conflicts deliberately by merging
+   `origin/develop` into the task branch (never automatic `ours`/`theirs`), then run the applicable
+   checks before pushing. CI runs on a task branch only through its pull request.
+
+   A local merge from Integration, which keeps `develop` checked out (Git does not allow the same
+   branch in two worktrees), is the exception for urgent changes the coordinator lands itself; CI
+   then runs only after the push:
 
    ```bash
    git pull --ff-only origin develop
@@ -72,22 +92,8 @@ Runtime connectivity never authorizes database, publication or release mutations
    git push origin develop
    ```
 
-   Every task lands as one merge commit with Git's default message
-   (`Merge branch '<task-branch>' into develop`), including single-commit tasks, so every task has
-   one merge commit named after its branch, and every task reverts the same way:
-   `git revert -m 1 <merge>`. Group a multi-step program into one task branch per step with several
-   commits rather than one task per commit. Resolve conflicts deliberately in the merge (never
-   automatic `ours`/`theirs`), then run the applicable checks before pushing. Pushing a task branch
-   to `origin` is needed only for a pull request; CI runs on a task branch only through its pull
-   request.
-
-   A task may instead land through a GitHub pull request into `develop`, merged with a merge commit
-   (the only method the repository allows). Its header,
-   `Merge pull request #<n> from <owner>/<task-branch>`, still names the branch, and the task
-   reverts the same way. Prefer a pull request for code changes, because Repository CI checks the
-   branch before it reaches `develop`. A local merge suits documentation-only or urgent changes,
-   where CI runs after the push. A task lands once: never both a pull request and a local merge for
-   the same branch.
+   It keeps Git's default message (`Merge branch '<task-branch>' into develop`). A task lands once:
+   never both a pull request and a local merge for the same branch.
 
    To list the tasks that reached `develop`, filter the merge commits by header. Do not use
    `git log --first-parent develop` for this: after each release, `develop` fast-forwards to the

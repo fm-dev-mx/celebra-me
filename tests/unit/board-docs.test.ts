@@ -55,7 +55,8 @@ describe('board documents', () => {
 	it('writes the shared rules once, in the board rule', () => {
 		expect(RULE).toContain('## Working rules (every agent)');
 		expect(RULE).toContain('**Cross review (d183)**');
-		expect(RULE).toContain('**One board PR at a time (d184)**');
+		expect(RULE).toContain('**Board PRs (d270)**');
+		expect(RULE).not.toContain('One board PR at a time (d184)');
 		expect(GUIDE).toContain('../../.agent/rules/board.md#working-rules-every-agent');
 		for (const copied of [
 			'### Common rules',
@@ -73,5 +74,35 @@ describe('board documents', () => {
 		expect(GUIDE).toContain('After a CLI writer crash');
 		expect(RULE).not.toContain('obtains scoped recovery authority');
 		expect(RULE).toContain('../../docs/core/coordinator-board.md#evidence-and-recovery');
+	});
+
+	it('keeps the board rule operational and the internals in the coordinator guide', () => {
+		// The rule is what every agent reads; view, SSE, sync and module detail live once in the guide.
+		expect(RULE.split('\n').length).toBeLessThanOrEqual(200);
+		expect(RULE).toContain('../../docs/core/coordinator-board.md#board-internals');
+		expect(GUIDE).toContain('## Board internals');
+		for (const moved of [
+			'Layout (T268)',
+			'The page uses SSE',
+			'scripts/board/view-supervisor.mjs',
+			'`model.mjs` owns every rule more than one script needs',
+			'**Hygiene (d268)**',
+			'Review prompts classify the complete PR file inventory',
+		])
+			expect(RULE).not.toContain(moved);
+		for (const moved of [
+			'Layout (T268)',
+			'the page uses SSE',
+			'scripts/board/view-supervisor.mjs',
+			'`model.mjs` owns every rule more than one script needs',
+			'**Hygiene (d268)**',
+		])
+			expect(GUIDE).toContain(moved);
+	});
+
+	it('lets the supervisor load new board code instead of a manual restart (d210)', () => {
+		expect(RULE).toContain('**No manual restarts (d210)**');
+		expect(GUIDE).toContain('A merge that changes the board needs no restart (d210)');
+		expect(GUIDE).not.toContain('the owner restarts the server so it loads the');
 	});
 });

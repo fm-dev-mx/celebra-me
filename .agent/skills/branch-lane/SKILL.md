@@ -253,6 +253,9 @@ Load the mode reference and perform only authorized steps. Preserve merge-only s
 
 - Mutable tasks use the nine canonical lanes. Temporary checkouts are read-only. A second checkout
   requires explicit assignment and operation scope; never choose or create one automatically.
+- This skill never lands task branches. A task reaches `develop` through its pull request, reviewed
+  by another agent at the exact head SHA (d183; low risk by a Claude subagent, d282) and merged by
+  the coordinator pinned to that SHA ([Git governance](../../../docs/core/git-governance.md)).
 - The session that merges a task releases its worktree in the same turn:
   `git switch --detach develop` in a lane, or the desktop app's clean-up for `.claude/worktrees/*`.
   Then it deletes the local branch with `git branch -d`.

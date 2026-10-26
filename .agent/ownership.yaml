@@ -24,7 +24,7 @@ ownership:
       owner: '.agent/plans/README.md'
       non_owners:
           - '.agent/templates/agent-report-contract.md'
-          - '.agent/tmp/handoffs/'
+          - 'Handoff files under .agent/tmp/'
           - 'Conversation transcripts'
           - 'Provider/global operator defaults outside the repo'
 
@@ -241,6 +241,30 @@ ownership:
           - '.agents/'
           - 'Host/global skills'
           - 'Provider/global operator defaults outside the repo'
+
+    - aspect: 'Board operational contract for agents'
+      owner: '.agent/rules/board.md'
+      non_owners:
+          - 'docs/core/coordinator-board.md'
+          - 'Board task prompts as policy'
+          - 'Provider/global operator defaults outside the repo'
+
+    - aspect: 'Board coordination, prompt template & internals'
+      owner: 'docs/core/coordinator-board.md'
+      non_owners:
+          - '.agent/rules/board.md'
+          - 'Copied board rules in skills or plans'
+
+    - aspect: 'Board behavior (exec)'
+      owner: 'scripts/board/'
+      non_owners:
+          - 'Prose docs overriding board code'
+          - '.agent/tmp/board/ data as policy'
+
+    - aspect: 'Board task kinds'
+      owner: '.agent/kinds/'
+      non_owners:
+          - 'Hand-written prompts on typed tasks'
 
     - aspect: 'Available commands'
       owner: 'package.json'
