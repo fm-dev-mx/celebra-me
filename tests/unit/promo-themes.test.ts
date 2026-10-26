@@ -138,6 +138,19 @@ describe('promo share images', () => {
 		expect([meta.format, meta.width, meta.height]).toEqual(['jpeg', 1200, 630]);
 	});
 
+	it.each(PROMO_THEMES)(
+		'keeps the original lettering of the %s image untouched',
+		async (theme) => {
+			// Logo, headline, event list and demos line of og-vitrina.jpg; overlays stay outside it.
+			const textArea = { left: 60, top: 100, width: 540, height: 410 };
+			const pixels = (file: string) => sharp(file).extract(textArea).raw().toBuffer();
+			const original = await pixels(join(ROOT, 'public/images/og/og-vitrina.jpg'));
+			const themed = await pixels(join(ROOT, 'public', getPromoShareImage(theme)!));
+			const changed = themed.filter((value, index) => Math.abs(value - original[index]) > 40);
+			expect(changed.length).toBe(0);
+		},
+	);
+
 	it('keeps the default image outside a themed row', () => {
 		expect(getPromoShareImage(null)).toBeNull();
 		expect(read('src/pages/index.astro')).toContain(
