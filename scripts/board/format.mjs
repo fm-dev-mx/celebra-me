@@ -26,7 +26,8 @@ const FILE_EXT = '(?:mjs|cjs|js|ts|tsx|json|md|html|astro|scss|css|ya?ml|ps1|sql
 const EDGE = '(?<![\\w/.@-])';
 /** One alternative per kind, tried left to right at each position; earlier kinds win. */
 const KINDS = [
-	['bold', '\\*\\*[^*\\n]+\\*\\*'],
+	// A glob such as docs/** never opens or closes bold: the pair hugs its words and no path touches it.
+	['bold', '(?<![\\w/*])\\*\\*(?=[^\\s*])[^*\\n]*?[^\\s*/]\\*\\*(?![\\w/*])'],
 	['code', '`([^`\\n]+)`'],
 	['url', 'https?:\\/\\/[^\\s<>"\'`]+'],
 	['path', `${EDGE}${PATH_ROOTS}\\/[\\w.@\\[\\]/-]*[\\w\\]]`],
@@ -147,8 +148,9 @@ export function richText(input, ctx = {}) {
 }
 
 /**
- * d284: a title as HTML for a row whose title is itself a button: only **bold**, `code` and task numbers, never a
- * link or a nested button. A known «T274» becomes a `data-sel` span, so a click on it opens that task instead.
+ * d284: a title as HTML: only **bold**, `code` and task numbers. Inside a row, whose title is itself a button, a
+ * known «T274» becomes a `data-sel` span that a click opens; with `ctx.links` (the sheet's heading) it is a real
+ * link a keyboard reaches.
  */
 export function titleHtml(input, ctx = {}) {
 	return tokenize(input)
@@ -156,8 +158,9 @@ export function titleHtml(input, ctx = {}) {
 			if (kind === 'bold') return `<strong>${titleHtml(text.slice(2, -2), ctx)}</strong>`;
 			if (kind === 'code') return `<code>${esc(text.slice(1, -1))}</code>`;
 			const t = kind === 'task' && ctx.task?.(Number(text.slice(1)));
+			const tag = ctx.links ? 'a href="#cola"' : 'span';
 			return t
-				? `<span class="tl" data-sel="${esc(t.id)}" data-jump="1" data-all="1" title="${esc(t.titulo)}">${esc(text)}</span>`
+				? `<${tag} class="tl" data-sel="${esc(t.id)}" data-jump="1" data-all="1" title="${esc(t.titulo)}">${esc(text)}</${ctx.links ? 'a' : 'span'}>`
 				: esc(text);
 		})
 		.join('');

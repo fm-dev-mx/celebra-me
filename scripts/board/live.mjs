@@ -28,11 +28,14 @@ const FAILED = new Set([
 export function ciOf(rollup) {
 	const checks = Array.isArray(rollup) ? rollup : [];
 	if (!checks.length) return null;
-	const states = checks.map((c) =>
-		String(c.conclusion || c.state || c.status || '').toUpperCase(),
-	);
-	if (states.some((s) => FAILED.has(s))) return 'rojo';
-	if (states.some((s) => !['SUCCESS', 'NEUTRAL', 'SKIPPED'].includes(s))) return 'pendiente';
+	const up = (x) => String(x ?? '').toUpperCase();
+	// A check run is done once its status is COMPLETED; a status context once its state left PENDING/EXPECTED.
+	const running = (c) =>
+		c.status !== undefined
+			? up(c.status) !== 'COMPLETED'
+			: c.state !== undefined && ['PENDING', 'EXPECTED'].includes(up(c.state));
+	if (checks.some((c) => FAILED.has(up(c.conclusion || c.state)))) return 'rojo';
+	if (checks.some(running)) return 'pendiente';
 	return 'verde';
 }
 
@@ -86,6 +89,17 @@ async function readOpenPrs(dir) {
 }
 
 /** d284: `{version, tablero: {sha, en}}`: package.json's version and the last commit that touched scripts/board. */
+const APP_MS = 5 * 60_000;
+const appCache = new Map();
+/** `readApp` once per root every few minutes: the live read runs every minute and on every `board sigue`. */
+export async function readAppCached(root = codeRoot, now = Date.now()) {
+	const hit = appCache.get(root);
+	if (hit && now - hit.at < APP_MS) return hit.app;
+	const app = await readApp(root);
+	appCache.set(root, { at: now, app });
+	return app;
+}
+
 export async function readApp(root = codeRoot) {
 	const app = {};
 	try {
@@ -120,7 +134,7 @@ export async function readLive(dir, board) {
 	const [carriles, prs, app] = await Promise.all([
 		readLanes(dir, board),
 		readOpenPrs(dir),
-		readApp(),
+		readAppCached(),
 	]);
 	return { carriles, prs: prs ?? null, app, en: new Date().toISOString() };
 }

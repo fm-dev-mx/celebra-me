@@ -297,7 +297,8 @@ details.pr>summary{cursor:pointer;font-weight:600;font-size:.86rem;color:var(--a
 .tg:hover{background:var(--line-2);color:var(--ink)}
 .tg svg{width:10px;height:10px;transition:transform .15s}
 .tg[aria-expanded="true"] svg{transform:rotate(90deg)}
-@media (pointer:coarse){.item{grid-template-columns:32px 18px minmax(0,1fr) auto}.ghead{grid-template-columns:32px minmax(0,1fr)}.tg{width:32px;height:32px;margin-top:-4px}}
+/* On touch the toggle grows to 32px into the row's left padding, so rows without one keep their alignment. */
+@media (pointer:coarse){.tg{width:32px;height:32px;margin:-4px 0 0 -12px}}
 ul.subl{list-style:none;margin:0;padding:2px 0 6px 34px;display:grid;gap:2px;border-bottom:1px solid var(--line)}
 ul.subl .srow{flex-wrap:wrap;column-gap:8px;row-gap:0}
 ul.subl .srow>span:not(.mk):not(.st){flex:1 1 12rem;min-width:0}
@@ -505,7 +506,7 @@ setTimeout(function(){
   var text='No se pudo abrir el tablero en este navegador. Se vuelve a intentar en 30 segundos.';
   ['mine','list'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="empty"></div>',el.firstChild.textContent=text});
   document.getElementById('meta').textContent=text;
-  setTimeout(function(){location.reload()},30000);
+  setTimeout(function(){if(!window.boardStarted)location.reload()},30000);
 },8000);
 </script>
 <script type="module">
@@ -764,7 +765,7 @@ function renderSheet(open){
   const to=c==='own'&&pasteTo(t);
   const who=awaitingClaim(t)?deliveryLine(t)+'. Si la pega en otro chat, cópielo de nuevo.':to?'Copie el prompt y péguelo en un chat nuevo de '+to+'.':c==='own'?'Copie el prompt y péguelo donde dice «DÓNDE CORRE».':c==='auto'?'Un agente la hace solo con este prompt (pnpm board next).':c==='block'?'Todavía no se puede empezar: faltan requisitos.':'';
   sh.className='sheet c-'+c+(open?' open':sh.classList.contains('open')?' open':'');
-  sh.innerHTML=`${crumbHtml(t)}<div class="sh-top"><h2>${tN(t)}${tt(t.titulo)}</h2><button type="button" class="close" data-close="1">Cerrar</button>
+  sh.innerHTML=`${crumbHtml(t)}<div class="sh-top"><h2>${tN(t)}${titleHtml(t.titulo,{task:n=>S.board.tareas.find(x=>x.num===n),links:true})}</h2><button type="button" class="close" data-close="1">Cerrar</button>
       <div class="line"><span class="num" title="Lugar en la cola">${NUM[t.id]?'#'+NUM[t.id]:'·'}</span>${pill(t)}${mergeChip(t)}${faseHtml(t)}<span class="lane">${esc(t.id)}</span></div></div>
     ${t.ahora?`<p class="now">${rich(String(t.ahora))}</p>`:''}
     <div class="cta"><button type="button" class="btn primary" data-copy="1" ${p?'':'disabled'}>Copiar prompt</button><span class="msg" id="copymsg" aria-live="polite">${p?esc(who):'Sin prompt todavía.'}</span></div>

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { runInNewContext } from 'node:vm';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/run-command';
@@ -36,6 +37,12 @@ describe('board readability (d284)', () => {
 		);
 		// A lone pair of asterisks stays text.
 		expect(format(`console.log(JSON.stringify(m.richText('a ** b')))`)).toBe('a ** b');
+		// Globs never turn bold.
+		expect(
+			format(
+				`console.log(JSON.stringify(m.titleHtml('Skip docs/** and tests/** from review')))`,
+			),
+		).toBe('Skip docs/** and tests/** from review');
 	});
 
 	it('renders a title for a button without links, a known T274 as a span that opens it', () => {
@@ -45,6 +52,14 @@ describe('board readability (d284)', () => {
 			),
 		).toBe(
 			'<strong>Tablero</strong> <code>view</code> <span class="tl" data-sel="revision-riesgo" data-jump="1" data-all="1" title="Revisión &lt;riesgo&gt;">T274</span>, T9, PR #576 y d284 &lt;b&gt;',
+		);
+		// The sheet's heading is not a button: there the task is a link a keyboard reaches.
+		expect(
+			format(
+				`console.log(JSON.stringify(m.titleHtml('Ver T274', { ...${TASKS}, links: true })))`,
+			),
+		).toBe(
+			'Ver <a href="#cola" class="tl" data-sel="revision-riesgo" data-jump="1" data-all="1" title="Revisión &lt;riesgo&gt;">T274</a>',
 		);
 	});
 
@@ -114,7 +129,10 @@ describe('board readability (d284)', () => {
 					m.ciOf([{ conclusion: 'SUCCESS' }, { status: 'IN_PROGRESS', conclusion: '' }]),
 					m.ciOf([{ conclusion: 'SUCCESS' }, { conclusion: 'SKIPPED' }, { state: 'SUCCESS' }]),
 					m.ciOf([]),
+					m.ciOf([{ status: 'COMPLETED', conclusion: 'STALE' }, { state: 'SUCCESS' }]),
+					m.ciOf([{ state: 'PENDING' }]),
 					(await m.readApp()).version,
+					(await m.readAppCached()) === (await m.readAppCached()),
 				]))`,
 			),
 		).toEqual([
@@ -122,7 +140,10 @@ describe('board readability (d284)', () => {
 			'pendiente',
 			'verde',
 			null,
+			'verde',
+			'pendiente',
 			JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version,
+			true,
 		]);
 	});
 
@@ -150,6 +171,46 @@ describe('board readability (d284)', () => {
 		for (const id of ['n-you', 'n-cola', 'n-cal', 'n-blk', 'n-fin', 'n-car', 'n-hist'])
 			expect(VIEW).toContain(`id="${id}"`);
 		expect(SCRIPT).toContain("$('vtitle').textContent=TITLE[S.tab]+(n!==''?` (${n})`:'')");
+	});
+
+	it('runs the start watchdog: a message, then one reload unless the module started late', () => {
+		const code = /<script>\n([\s\S]*?)<\/script>/.exec(VIEW)?.[1] ?? '';
+		const run = (startLate: boolean) => {
+			const timers: (() => void)[] = [];
+			class FakeElement {
+				textContent = '';
+				firstChild = { textContent: '' };
+				set innerHTML(_html: string) {
+					this.firstChild = { textContent: '' };
+				}
+			}
+			const els: Record<string, FakeElement> = {};
+			const el = (id: string) => (els[id] ??= new FakeElement());
+			const ctx = {
+				window: {} as { boardStarted?: boolean },
+				document: { getElementById: el },
+				location: {
+					reloads: 0,
+					reload() {
+						this.reloads += 1;
+					},
+				},
+				setTimeout: (f: () => void) => timers.push(f),
+			};
+			runInNewContext(code, ctx);
+			timers.shift()!();
+			if (startLate) ctx.window.boardStarted = true;
+			timers.shift()!();
+			return {
+				meta: els.meta.textContent,
+				mine: els.mine.firstChild.textContent,
+				reloads: ctx.location.reloads,
+			};
+		};
+		const text =
+			'No se pudo abrir el tablero en este navegador. Se vuelve a intentar en 30 segundos.';
+		expect(run(false)).toEqual({ meta: text, mine: text, reloads: 1 });
+		expect(run(true).reloads).toBe(0);
 	});
 
 	it('unfolds subtasks with a toggle in the mother row', () => {
