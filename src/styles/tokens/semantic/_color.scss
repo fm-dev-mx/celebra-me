@@ -32,12 +32,6 @@ $semantic-color: (
 		premium: color.change(sys.$sys-color-gold-500, $alpha: 0.3),
 		emphasis: sys.$sys-color-gold-500,
 	),
-	neutral: (
-		subtle: sys.$sys-color-neutral-100,
-		muted: sys.$sys-color-neutral-400,
-		base: sys.$sys-color-neutral-700,
-		emphasis: sys.$sys-color-neutral-900,
-	),
 	state: (
 		success: sys.$sys-color-forest-700,
 		success-bg: sys.$sys-color-forest-50,

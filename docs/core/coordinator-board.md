@@ -36,7 +36,9 @@ Assign by verified capability (`requiere`), not by brand. For example: image edi
 `codex`; visual review in a browser → `claude` or `codex`; image generation → never `claude`. Board
 PRs (d270: at most two at once; d291: a second one waits only for a real `git merge-tree` conflict)
 open in the order the coordinator sets; it runs `pnpm board solape <id>` before they open and tells
-each waiting session when its turn comes.
+each waiting session when its turn comes. A clean `merge-tree` is only textual: it misses a semantic
+break (one PR moves a function another PR still imports from the old module), which CI on the second
+merge catches.
 
 ### Prompts (d153)
 
@@ -276,9 +278,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   reading GitHub. «Le toca a usted» leaves out a message to the owner once its task is finished or
   archived (d265), or once `pnpm board atendido <id> --para=dueno` marks it handled (d291, an
   `atendido {para, mensajes}` bitácora row; `--para=coordinador` does the same for the coordinator's
-  messages); `inbox --agente=dueno --todos` still lists it. A ready Codex or Gemini task idle for 30
-  min shows in «Le toca a usted» as «Correr el despachador de Codex (T<n>)»; an idle Claude task
-  goes to the coordinator.
+  messages); `inbox --agente=dueno --todos` still lists it. An agent may read `inbox --agente=dueno`
+  without hiding anything: only `--leido`, which the owner passes, marks the owner's messages read.
+  A ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as «Correr el despachador
+  de Codex (T<n>)»; an idle Claude task goes to the coordinator.
 - **Owner tasks** (`actor: dueno`) show only what to do and where (`donde`, else the first line
   under «DÓNDE CORRE» of an older prompt), never a suggested lane. The coordinator records every
   owner action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
@@ -310,9 +313,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 - **Lane inventory**: `pnpm board carriles` (and the page's lane table) reads each lane from Git:
   branch, clean or not, and the task holding its lock. `carril` without an id reads the lanes live
   the same way: the catalog (`uso`, `tecla`, `puerto`, order and canonical ids) comes from
-  `WORKTREE_LANES`, and runtime state comes from task locks and `git worktree list`. Stored
-  `carriles/*.json` records are ignored; update the code-owned catalog through a pull request.
-  `estado` without fields is read-only too.
+  `WORKTREE_LANES`, and runtime state comes from task locks and `git worktree list`. In that catalog
+  `orden` is the lane's function key (4–12, not the old 1–9 position) and `puerto` is a number, not
+  a string; consumers only sort and print them. Stored `carriles/*.json` records are ignored; update
+  the code-owned catalog through a pull request. `estado` without fields is read-only too.
 
 ### Agents and sessions
 

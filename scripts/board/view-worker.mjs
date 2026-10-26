@@ -13,7 +13,7 @@ try {
 	const server = await serveView(dir, Number(process.env.BOARD_VIEW_PORT), {
 		archive: viewArchiver(dir),
 		deliver: viewDeliverer(dir),
-		live: (board) => readLive(dir, board),
+		live: () => readLive(dir),
 		token: process.env.BOARD_VIEW_TOKEN,
 		version: process.env.BOARD_VIEW_VERSION,
 	});
