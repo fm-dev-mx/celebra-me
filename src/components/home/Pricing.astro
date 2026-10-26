@@ -1,6 +1,7 @@
 ---
 import CheckIcon from '@/components/ui/CheckIcon.astro';
 import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
+import PromoEmblem from '@/components/home/PromoEmblem.astro';
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
 import {
 	formatMxn,
@@ -67,7 +68,10 @@ const currency = PROMO_CURRENCY;
 									<div class="tier-pricing">
 										{campaign && (
 											<>
-												<p class="tier-promo-label" data-promo-only data-promo-field="label">{campaign.label}</p>
+												<p class="tier-promo-label" data-promo-only>
+													<PromoEmblem class="tier-promo-label__emblem" />
+													<span data-promo-field="label">{campaign.label}</span>
+												</p>
 												<div
 													class="tier-price"
 													data-promo-only

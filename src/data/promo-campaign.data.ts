@@ -32,7 +32,8 @@ export type CampaignSection =
 	| 'PRICING'
 	| 'FINAL'
 	| 'FOOTER'
-	| 'STICKY';
+	| 'STICKY'
+	| 'PROMO';
 
 export const PROMO_CURRENCY = 'MXN';
 
@@ -50,10 +51,13 @@ export const PRICE_TIERS: Readonly<Record<PriceTierId, PackagePrices>> = {
 	fuerte: { esencial: 899, signature: 1299, atelier: 1899 },
 };
 
-/** Visual theme of a row; the landing page does not draw themes yet, it only exposes the value. */
+/**
+ * Visual theme of a row. The landing page ships every theme and `html[data-promo-theme]` picks
+ * one; the artwork lives in `src/data/promo-theme-art.data.ts`.
+ */
 export type PromoTheme = 'amor' | 'primavera' | 'verano' | 'patrias' | 'buenfin' | 'temporada';
 
-const PROMO_THEMES: readonly PromoTheme[] = [
+export const PROMO_THEMES: readonly PromoTheme[] = [
 	'amor',
 	'primavera',
 	'verano',
@@ -401,6 +405,34 @@ export function parsePromoPreviewDate(search: string): Date | null {
 	return isRealDate ? date : null;
 }
 
+export function isPromoTheme(value: string): value is PromoTheme {
+	return (PROMO_THEMES as readonly string[]).includes(value);
+}
+
+/**
+ * Theme a `?tema=<theme>` preview asks for, or null. It only restyles an active row (prices and
+ * labels stay the row's), so themes without a calendar row can still be reviewed. Callers decide
+ * whether previews are allowed.
+ */
+export function parsePromoThemePreview(search: string): PromoTheme | null {
+	const value = new URLSearchParams(search).get('tema') ?? '';
+	return isPromoTheme(value) ? value : null;
+}
+
+/** Theme drawn for a campaign: the preview override during a row, else the row's own theme. */
+export function getCampaignTheme(
+	campaign: PromoCampaign | null,
+	previewTheme: PromoTheme | null = null,
+): PromoTheme | null {
+	if (!campaign) return null;
+	return previewTheme ?? campaign.theme;
+}
+
+/** Share image (1200x630) for a theme, or null for the default landing image. */
+export function getPromoShareImage(theme: PromoTheme | null): string | null {
+	return theme ? `/images/og/og-promo-${theme}.jpg` : null;
+}
+
 /**
  * Calendar problems (empty when valid): order, overlaps, codes, tiers, themes and copy. Unknown
  * tiers and themes cannot pass the type checker, but a cast row still has to fail here.
@@ -441,7 +473,7 @@ export function validatePromoSchedule(
 				}
 			}
 		}
-		if (campaign.theme !== null && !PROMO_THEMES.includes(campaign.theme)) {
+		if (campaign.theme !== null && !isPromoTheme(campaign.theme)) {
 			problems.push(`${campaign.id}: unknown theme ${String(campaign.theme)}`);
 		}
 		const tagline = campaign.tagline.trim();

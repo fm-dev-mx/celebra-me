@@ -1,0 +1,45 @@
+---
+/**
+ * src/components/home/PromoBand.astro
+ *
+ * Promo band between Testimonials and Pricing (an `aside`, so the landing section rules of
+ * `_landing-page.scss` never show it): the theme's faint pattern, the campaign name,
+ * tagline, validity, countdown and a WhatsApp quote. It shows only while `html[data-promo-theme]`
+ * is set; PromoStatus.astro fills the fields for the visitor's date.
+ */
+import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
+import PromoEmblem from '@/components/home/PromoEmblem.astro';
+import { getRenderCampaign, getValidityNote, PROMO_THEMES } from '@/data/promo-campaign.data';
+import { buildPromoThemePattern, promoPatternId } from '@/data/promo-theme-art.data';
+
+// Built with the campaign of the build day; PromoStatus.astro switches it for the visitor's date.
+const campaign = getRenderCampaign();
+const patterns = PROMO_THEMES.map(buildPromoThemePattern).join('');
+---
+
+<aside class="promo-band" data-track-section="promo-band" aria-labelledby="promo-band-title">
+	<svg class="promo-band__pattern" aria-hidden="true" focusable="false">
+		<defs set:html={patterns} />
+		{PROMO_THEMES.map((theme) => (
+			<rect data-promo-art={theme} width="100%" height="100%" fill={`url(#${promoPatternId(theme)})`} />
+		))}
+	</svg>
+	<div class="promo-band__inner">
+		<PromoEmblem class="promo-band__emblem" />
+		<div class="promo-band__copy">
+			<h2 id="promo-band-title" class="promo-band__title" data-promo-field="label">{campaign?.label}</h2>
+			<p class="promo-band__tagline" data-promo-field="tagline">{campaign?.tagline}</p>
+			<p class="promo-band__validity">
+				<span data-promo-field="validity">{campaign && getValidityNote(campaign)}</span>
+				<span class="promo-band__countdown" data-promo-days-left></span>
+			</p>
+		</div>
+		<WhatsAppButton
+			className="promo-band__cta"
+			label="Aprovechar este precio"
+			trackSection="promo-band"
+			trackCta="whatsapp-promo-band"
+			campaignSection="PROMO"
+		/>
+	</div>
+</aside>
