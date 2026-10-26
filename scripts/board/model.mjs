@@ -618,7 +618,7 @@ export function nextFor(agente, board, now = Date.now()) {
 }
 
 /** Board lane where read-only tasks run by default: the Integration checkout. */
-export const READONLY_LANE = 'f04-integracion';
+export const READONLY_LANE = 'integration';
 
 /** Whether `t` is a read-only task: a cross-review, or one marked `soloLectura`. */
 export const isReadOnly = (t) => Boolean(isReview(t) || t?.soloLectura);
@@ -668,7 +668,7 @@ export const laneAllowed = (carril, task, lanes) =>
 
 /** Folder of a lane relative to the repository's parent directory (d177): never an absolute path. */
 export const laneFolder = (id) =>
-	id === 'integration' || id === READONLY_LANE ? 'celebra-me' : `celebra-me-worktrees/${id}`;
+	id === READONLY_LANE ? 'celebra-me' : `celebra-me-worktrees/${id}`;
 
 /**
  * d191: a task's `categoria` names the lane it prefers, never one it must use. Each category is the use of one

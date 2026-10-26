@@ -24,7 +24,7 @@ const PROCESS_IDENTIFIERS = /\b(?:goal|phase|sprint|wave|milestone)\s*#?\d+(?:\.
 
 // Plan step and decision codes such as D5, F7, G0-G7, Q12 or T0. Product names share the shape
 // (Cloudflare D1), so this rule only warns.
-const PLAN_CODES = /\b[DFGQT]\d{1,2}[a-z]?\b/;
+const PLAN_CODES = /\b(?:[DFGQT]\d+[a-z]?|d\d+)\b/;
 
 // Canonical scopes, defined in docs/core/git-governance.md (Scopes). Unknown scopes warn.
 const SCOPES = [

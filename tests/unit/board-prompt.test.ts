@@ -215,7 +215,7 @@ describe('prompt-v1 (T160)', () => {
 			tarea: 'T9 origen-revision',
 			origen: 'T7 origen',
 			agente: 'codex',
-			carril: 'f04-integracion (solo lectura)',
+			carril: 'integration (solo lectura)',
 			carpeta: 'celebra-me',
 			rama: 'feat/x',
 			pr: '#522',

@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validateDeployIdentityReads } from './validate-deploy-identity-reads.mjs';
 import { validateStaticSharpImports } from './validate-static-sharp-imports.mjs';
+import { loadKinds, routingTaskTypes } from './board/kinds.mjs';
 import {
 	reportRetiredProviderWarnings,
 	validateNoVercelReferences,
@@ -780,6 +781,7 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 	const skills = validateSkills(root);
 	const tracked = trackedFiles ?? getTrackedFiles(root);
 	return [
+		...validateTaskKinds(root),
 		...validateNoVercelReferences(root, tracked).errors,
 		...skills.errors,
 		...validateRoles(root, skills.skillNames),
@@ -798,6 +800,18 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 		...validateStaticSharpImports(root, tracked),
 		...validateTrackedFiles(root, tracked),
 	].sort();
+}
+
+/** Validate task templates against this root's routing matrix, including variant contracts. */
+export function validateTaskKinds(root) {
+	try {
+		return loadKinds(
+			path.join(root, '.agent', 'kinds'),
+			routingTaskTypes(path.join(root, '.agent', 'routing-matrix.yaml')),
+		).issues.map(({ id, msg }) => `.agent/${id}.yaml: ${msg}`);
+	} catch (error) {
+		return [`.agent/kinds: ${error.message}`];
+	}
 }
 
 function parseRootArgument(argv) {
