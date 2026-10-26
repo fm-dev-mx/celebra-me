@@ -4,6 +4,7 @@
 // nothing here takes space or paints. Colours come only from the landing tokens.
 
 @use 'sass:map';
+@use '../tokens/type-scale';
 
 $promo-themes: (
 	amor: (
@@ -150,11 +151,10 @@ html[data-promo-theme] {
 	}
 
 	&__title {
+		@include type-scale.text(h3);
+
 		margin: 0 0 0.25rem;
 		color: var(--promo-ink);
-		font-family: var(--font-display);
-		font-size: clamp(1.4rem, 3vw, 1.85rem);
-		font-weight: 600;
 		line-height: 1.15;
 	}
 
@@ -167,7 +167,7 @@ html[data-promo-theme] {
 	&__validity {
 		margin: 0;
 		color: var(--promo-muted);
-		font-size: 0.875rem;
+		font-size: 0.875em;
 	}
 
 	&__countdown:not(:empty) {
@@ -200,12 +200,13 @@ html[data-promo-theme] {
 
 // Text pill after the Hero price line; inline, so the Hero layout keeps its composition.
 .hero-promo-pill {
+	@include type-scale.text(badge);
+
 	margin-inline-start: 0.5rem;
 	padding: 0.2rem 0.65rem;
 	border: 1px solid currentcolor;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	color: var(--color-rose-deep);
-	font-size: 0.72rem;
 	font-weight: 700;
 	letter-spacing: 0.08em;
 	line-height: 1.4;
