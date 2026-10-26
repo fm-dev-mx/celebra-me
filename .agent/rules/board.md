@@ -56,19 +56,16 @@ routing and the internal modules work lives in
 - **Claim**:
   `pnpm board claim <id> --agente=<a> --carril=<lane> --rama=<branch> --titulo="<session name>"`
   takes the lock (`candado`) and moves `pendiente` → `en curso`. Run from a lane checkout (f05–f12),
-  it checks that the folder and current branch match the task, and opens the lane's git-safety
-  session (`start --session=<branch>`). It requires readiness, no owner gate and an exclusive lane;
-  an identical claim is idempotent. A claim grants no editing authority.
+  it checks the folder and branch match, and starts git-safety (`start --session=<branch>`). It
+  requires readiness, no owner gate and an exclusive lane; an identical claim is idempotent.
 - **Write**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. `set` cannot replace ownership, lane, origin or review SHA.
 - **Release**: `pnpm board release <id> --agente=<a> [--git-safety=commit[,history]]` frees the
-  lock; run from a lane checkout, it checks that the folder is the lock's lane and finishes the
-  git-safety session when `--git-safety` is passed. A task still `en curso` goes back to
-  `pendiente`.
+  lock; run from a lane, it checks the lock's lane and finishes git-safety when `--git-safety` is
+  passed. A task still `en curso` goes back to `pendiente`.
 - **Changelog (T297)**: `pnpm board changelog [--desde=<fecha>] [--faltan [--archivo=CHANGELOG.md]]`
-  prints the release notes of merged tasks (`unida`/`comprobada`) grouped as `[Unreleased]` Markdown
-  bullets ending in `(#N)`. `--desde` filters closes on or after that date. `--faltan` lists notes
-  that `CHANGELOG.md`'s `[Unreleased]` lacks (exiting 1 while any is missing).
+  prints merged task notes as `[Unreleased]` Markdown bullets (`#N`). `--desde` filters by close
+  date. `--faltan` lists notes `[Unreleased]` lacks (exiting 1 while any is missing).
 - **Delivered prompt (d249)**: dispatchers run `pnpm board entregada <id> --agente=<a>` when they
   open the chat; `claim` clears the mark.
 - **Session id**: Claude omits `--sesion`; the commands read `CLAUDE_CODE_HOST_SESSION_ID`
@@ -95,15 +92,13 @@ routing and the internal modules work lives in
   Write it only with
   `pnpm board close <id> --resumen=<line>… --comprobacion=<check>… --saltada=<check>… --pendiente="<text>→T<n>"… --fallida=… --riesgo=… --duda=… --excepcion=… [--pr=#N] [--sha=<sha>] [--nivel=validate:changed|type-check|ci] [--changelog="<Grupo>: <una línea>"|--changelog=ninguno] [--git-safety=commit[,history]]`
   (repeat a flag per item; `=ninguna` / `=ninguno` for an empty list). The summary is 1–4 lines.
-  Every `pendiente` names the board task that will do it. Run from a lane checkout, `close` checks
-  that the folder is the lock's lane; `--git-safety=commit` finishes the lane's git-safety session.
-  `--changelog` records a Keep a Changelog group note or `"ninguno"` in `cierre.changelog` so lanes
-  never edit `CHANGELOG.md` directly. Omitting `--changelog` keeps any note previously stored. Typed
-  `resultado`: code with a PR gives `--pr`, `--sha` (the PR head) and
+  Every `pendiente` names the board task that will do it. From a lane, `close` checks the lock's
+  lane; `--git-safety=commit` finishes the git-safety session. `--changelog` records a Keep a
+  Changelog group note or `"ninguno"` in `cierre.changelog` so lanes never edit `CHANGELOG.md`
+  directly (omitting keeps existing). Typed `resultado`: code with a PR gives `--pr`, `--sha` and
   `--nivel=validate:changed|type-check|ci`; a review round gives
-  `--veredicto=aprobado|cambios|bloqueado`, `--sha` (the reviewed SHA) and
-  `--hallazgo="P2|archivo:línea|texto"` (an approval has no P0/P1 finding). `close` prints the
-  one-line signal to hand back, e.g.
+  `--veredicto=aprobado|cambios|bloqueado`, `--sha` and `--hallazgo="P2|archivo:línea|texto"` (an
+  approval has no P0/P1 finding). `close` prints the one-line signal to hand back, e.g.
   `T125 · revision · aprobado · #518@3c35826 · 0 hallazgos · siguiente: unir`.
 - **Close finishes (d290)**: a `close` that names every list (the four Handoff lists included)
   leaves the task `en revision` when it has a PR (the lock stays for the review) and `hecha`
