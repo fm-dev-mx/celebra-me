@@ -183,8 +183,9 @@ Primary references:
   its single reader (enforced by `validate:structure`). Local processes leave it unset and are
   recognized positively (Astro dev server, or a built bundle on Local Supabase); any other
   combination fails closed. `CELEBRA_BUILD_SHA` and `CELEBRA_BUILD_REF` are baked in at build time
-  by `vite.define` and reported by `/api/health`. All three are typed for app/runtime use but
-  omitted from the local template.
+  by `vite.define` and reported by `/api/health`. `CELEBRA_PROMO_DATE_PREVIEW` is baked in the same
+  way from the deploy identity (`'false'` in Production) and gates the landing `?fecha=` promo
+  preview. All four are typed for app/runtime use but omitted from the local template.
 - **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only;
   `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are the independently verified API and
   Storage inputs for the complete critical backup. They come only from the operator shell or
@@ -231,11 +232,11 @@ substitute for the other.
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category         | Variables                                                      | Relationship                                          |
-| ------------------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
-| `operational-script-only` | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`            | Present in `.env.example`; omitted from typing.       |
-| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF` | Present in app/runtime typing; omitted from template. |
-| `hosted-preview-only`     | `PREVIEW_MFA_BYPASS`, `PREVIEW_ADMIN_EMAILS`                   | Typed; in `.env.preview.local.example` only.          |
+| Contract category         | Variables                                                                                    | Relationship                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `operational-script-only` | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`                                          | Present in `.env.example`; omitted from typing.       |
+| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`, `CELEBRA_PROMO_DATE_PREVIEW` | Present in app/runtime typing; omitted from template. |
+| `hosted-preview-only`     | `PREVIEW_MFA_BYPASS`, `PREVIEW_ADMIN_EMAILS`                                                 | Typed; in `.env.preview.local.example` only.          |
 
 `SUPER_ADMIN_EMAILS` is a server-only runtime list. Its first entry is the project owner: the only
 account that may confirm or clear owner review in the invitation workflow, and the local super admin

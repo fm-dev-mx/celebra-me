@@ -1,0 +1,16 @@
+---
+/**
+ * src/components/home/PromoOrnament.astro
+ *
+ * Line ornament of the active promo theme, drawn between two landing sections. The page uses at
+ * most two. Without a theme it takes no space.
+ */
+import { PROMO_THEMES } from '@/data/promo-campaign.data';
+import { PROMO_ORNAMENT_VIEWBOX, promoOrnamentSymbolId } from '@/data/promo-theme-art.data';
+---
+
+<div class="promo-ornament" aria-hidden="true">
+	<svg viewBox={PROMO_ORNAMENT_VIEWBOX} focusable="false">
+		{PROMO_THEMES.map((theme) => <use href={`#${promoOrnamentSymbolId(theme)}`} data-promo-art={theme} />)}
+	</svg>
+</div>

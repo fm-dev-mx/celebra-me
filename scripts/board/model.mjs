@@ -255,10 +255,16 @@ export const defaultReviewer = (author) =>
 			? 'claude'
 			: undefined;
 
-/** Why `reviewer` may not review work by `author` (d183), or null. */
-export function reviewerIssue(author, reviewer) {
+/**
+ * Why `reviewer` may not review work by `author` (d183), or null. d282: Claude may review Claude's work only
+ * when the PR is low risk (`lowRisk`), through a clean-context subagent.
+ */
+export function reviewerIssue(author, reviewer, { lowRisk = false } = {}) {
 	if (!Object.hasOwn(AGENT_REGISTRY, reviewer ?? '')) return `revisor desconocido: ${reviewer}`;
-	if (reviewer === author) return 'la revisión cruzada requiere otro agente';
+	if (reviewer === author && !(author === 'claude' && lowRisk))
+		return author === 'claude'
+			? 'd282: claude revisa su propio trabajo solo en riesgo bajo (scripts/board, scripts/agent, pruebas, docs o .agent)'
+			: 'la revisión cruzada requiere otro agente';
 	if (author && author !== 'claude' && reviewer !== 'claude')
 		return `d183: el trabajo de ${author} lo revisa claude`;
 	return null;
@@ -273,7 +279,7 @@ export function reviewChildId(src, prev) {
 /** The child task of the next review round of `src`, after `prev`, numbered `num` (T160). */
 export function reviewChild(
 	src,
-	{ agente, sha, prev, num, files, generado = new Date().toISOString() },
+	{ agente, revisor, sha, prev, num, files, generado = new Date().toISOString() },
 ) {
 	const n = prev ? reviewRound(prev) + 1 : 1;
 	const id = reviewChildId(src, prev);
@@ -287,6 +293,7 @@ export function reviewChild(
 			prev,
 			files,
 			agente,
+			revisor,
 			generado,
 			carril: READONLY_LANE,
 			carpeta: laneFolder('integration'),
@@ -295,6 +302,7 @@ export function reviewChild(
 		urgencia: src.urgencia,
 		actor: 'sesion',
 		agente,
+		...(revisor ? { revisor } : {}),
 		tipo: 'revision',
 		contrato: CONTRATO,
 		origen: src.id,
@@ -421,8 +429,12 @@ export function stage(t, board, now) {
 	return requisitos(t, board, now).every((r) => r.ok) ? 'lista' : 'bloqueada';
 }
 
-/** The owner must act: they are the actor, or the task touches main, Production, migrations or secrets. */
-export const needsOwner = (t) => t.actor === 'dueno' || (t.toca ?? []).length > 0;
+/**
+ * The owner must act: they are the actor, or the task touches main, Production, migrations or secrets. d282:
+ * on a session task `toca` only marks an owner step later, so the session still claims, closes and reviews it.
+ */
+export const needsOwner = (t) =>
+	t.actor === 'dueno' || (t.actor !== 'sesion' && (t.toca ?? []).length > 0);
 
 export function capacidades(agente, board) {
 	const own = (board.agentes ?? []).find((a) => a.id === agente);

@@ -149,18 +149,25 @@ export function withRunLines(prompt, lines) {
 const PUSH_CHECK_LINE =
 	'- Antes de cada push: pnpm validate:changed (con los cambios aún sin confirmar) y pnpm validate:structure; haga push solo si ambos pasan.';
 
+/** d282: before pushing, the author reviews its own diff and fixes what the review finds. */
+const SELF_REVIEW_LINE =
+	'- Antes del push: corra /code-review sobre su propio diff (o la revisión equivalente de su agente) y corrija lo que encuentre.';
+
 /**
- * `prompt` with PUSH_CHECK_LINE first under AL TERMINAR when it is a prompt-v1 for a session that pushes a
- * branch: one with `rama:` that does not run read-only. Other prompts, and one that already has it, stay.
+ * `prompt` with PUSH_CHECK_LINE and SELF_REVIEW_LINE first under AL TERMINAR when it is a prompt-v1 for a
+ * session that pushes a branch: one with `rama:` that does not run read-only. Other prompts stay, and one
+ * that already has both lines comes back unchanged.
  */
 export function withPushCheck(prompt) {
 	const meta = promptMetadata(prompt);
 	if (meta?.formato !== PROMPT_FORMAT || !meta.rama || /solo lectura/.test(meta.carril ?? ''))
 		return prompt;
+	const added = [PUSH_CHECK_LINE, SELF_REVIEW_LINE];
 	const lines = linesOf(prompt);
 	const at = lines.findIndex((l) => l.trim() === 'AL TERMINAR');
-	if (at < 0 || lines.some((l) => l.trim() === PUSH_CHECK_LINE)) return prompt;
-	return [...lines.slice(0, at + 1), PUSH_CHECK_LINE, ...lines.slice(at + 1)].join('\n');
+	if (at < 0 || added.every((a) => lines.some((l) => l.trim() === a))) return prompt;
+	const rest = lines.slice(at + 1).filter((l) => !added.includes(l.trim()));
+	return [...lines.slice(0, at + 1), ...added, ...rest].join('\n');
 }
 
 const ROUND_WORDS = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA'];
@@ -184,6 +191,26 @@ export function reviewRisk(files) {
 	if (files.every(docs)) return 0;
 	return files.every((p) => docs(p) || frontend(p)) ? 1 : 2;
 }
+
+/**
+ * d282: a PR is low risk when GitHub's complete inventory touches only board and agent tooling, tests, docs
+ * or `.agent`, and nothing published, persistent or secret (invitation content, Supabase, migrations,
+ * payments, secrets, Wrangler, Production). Missing evidence is never low risk.
+ */
+export function lowRisk(files) {
+	if (!Array.isArray(files) || !files.length) return false;
+	const tooling = (p) =>
+		/^(?:scripts\/(?:board|agent)\/|tests\/|docs\/|\.agent\/)|\.(?:md|mdx)$/.test(p);
+	const sensitive = (p) =>
+		/^(?:src\/content|supabase|workers)\/|(?:^|\/)(?:migrations?|secrets?|payments?|pagos?)(?:\/|[.-])|wrangler|\.env|produc(?:tion|cion)/i.test(
+			p,
+		);
+	return files.every((p) => tooling(p) && !sensitive(p));
+}
+
+/** d282: «bajo» (a Claude subagent may review Claude's work), «medio» or «alto» (reviewRisk below 2, or 2). */
+export const reviewLevel = (files) =>
+	lowRisk(files) ? 'bajo' : reviewRisk(files) === 2 ? 'alto' : 'medio';
 
 export function reviewGuidance(files, previousSha, sha) {
 	const tier = reviewRisk(files);
@@ -209,8 +236,10 @@ export function reviewGuidance(files, previousSha, sha) {
  */
 export function reviewText(
 	src,
-	{ id, num, n, sha, prev, files, agente, generado, carril, carpeta },
+	{ id, num, n, sha, prev, files, agente, revisor, generado, carril, carpeta },
 ) {
+	// d282: a low-risk PR by Claude is reviewed by a clean-context subagent the author session launches.
+	const sub = revisor === 'subagente';
 	const short = (s) => String(s).slice(0, 7);
 	const tag = (t, ref) => (t.num ? `T${t.num} ${ref}` : ref);
 	const pr = `#${String(src.pr).replace(/^#/, '')}`;
@@ -224,13 +253,20 @@ export function reviewText(
 				'QUÉ SE BUSCA',
 				[
 					`Revisión cruzada${later ? `, ${roundWord(n)},` : ''} del PR ${pr} de ${tag(src, src.id)} en ${sha}: corrección, regresiones, pruebas y AGENTS.md.`,
+					...(sub
+						? [
+								'Riesgo bajo (d282): la hace un subagente de Claude con contexto limpio; la sesión autora toma y cierra esta vuelta con su veredicto.',
+							]
+						: []),
 					...reviewGuidance(files, later ? prev?.revisionSha : undefined, sha),
 					...(later
 						? [
 								`La vuelta anterior (${prev.id}) revisó ${prev.revisionSha}; compruebe que se atendieron sus hallazgos y que los commits nuevos no traen regresiones.`,
 							]
 						: []),
-					`Terminado cuando: los hallazgos están en el PR (gh pr review) y la tarea queda cerrada con --sha=${sha}.`,
+					sub
+						? `Terminado cuando: los hallazgos están en el PR (gh pr review --comment) y el veredicto, el SHA ${sha} y los hallazgos vuelven a la sesión autora.`
+						: `Terminado cuando: los hallazgos están en el PR (gh pr review) y la tarea queda cerrada con --sha=${sha}.`,
 				],
 			],
 			[
@@ -238,7 +274,9 @@ export function reviewText(
 				[
 					`Solo lectura en Integración (carpeta ${carpeta}). Compruebe que la cabeza del PR sigue en ${sha}; si cambió, pare y avise al coordinador.`,
 					`  gh pr view ${pr.slice(1)} --json headRefOid --jq .headRefOid`,
-					`  pnpm board claim ${id} --agente=${agente} --titulo="${name}"`,
+					...(sub
+						? ['No tome ni cierre la tarea del tablero: lo hace la sesión autora.']
+						: [`  pnpm board claim ${id} --agente=${agente} --titulo="${name}"`]),
 				],
 			],
 			[
@@ -249,7 +287,9 @@ export function reviewText(
 						? `2. Empiece por lo que cambió: git fetch origin && git diff ${prev.revisionSha}..${sha}`
 						: `2. Revise el diff completo del PR en ${short(sha)}.`,
 					`3. Revise corrección, regresiones, pruebas y AGENTS.md${later ? ' donde llega el diff' : ''}.`,
-					'4. Publique los hallazgos con gh pr review.',
+					sub
+						? '4. Publique los hallazgos con gh pr review --comment (la cuenta de GitHub es la del autor).'
+						: '4. Publique los hallazgos con gh pr review.',
 				],
 			],
 			['AUTORIZO', [`(solo lectura) Publicar la revisión del PR ${pr} con gh pr review.`]],
@@ -260,7 +300,9 @@ export function reviewText(
 			[
 				'DECISIONES',
 				[
-					'- d183: revisión cruzada por otro agente.',
+					sub
+						? '- d282: riesgo bajo; la revisa un subagente de Claude con contexto limpio, no la sesión autora.'
+						: '- d183: revisión cruzada por otro agente.',
 					'- Solo revisión: informe la evidencia que falte.',
 				],
 			],
@@ -272,11 +314,16 @@ export function reviewText(
 			],
 			[
 				'AL TERMINAR',
-				[
-					`1. pnpm board close ${id} --resumen=… --comprobacion=… --saltada=… --veredicto=aprobado|cambios|bloqueado --sha=${sha} --hallazgo="P2|archivo:línea|texto"`,
-					'2. Avise al coordinador con la línea que imprime close.',
-					'3. Responda: qué revisó, comprobaciones corridas y saltadas, riesgos.',
-				],
+				sub
+					? [
+							`1. Devuelva a la sesión autora: veredicto aprobado|cambios|bloqueado, SHA ${sha}, cada hallazgo como «P2|archivo:línea|texto», comprobaciones corridas y saltadas.`,
+							`2. La sesión autora cierra: pnpm board close ${id} --resumen=… --comprobacion=… --saltada=… --veredicto=… --sha=${sha} --hallazgo=…`,
+						]
+					: [
+							`1. pnpm board close ${id} --resumen=… --comprobacion=… --saltada=… --veredicto=aprobado|cambios|bloqueado --sha=${sha} --hallazgo="P2|archivo:línea|texto"`,
+							'2. Avise al coordinador con la línea que imprime close.',
+							'3. Responda: qué revisó, comprobaciones corridas y saltadas, riesgos.',
+						],
 			],
 		],
 		metadatos: [
@@ -289,7 +336,7 @@ export function reviewText(
 			['pr', pr],
 			['sha', sha],
 			['prerrequisito', later ? prev.id : undefined],
-			['decisiones', 'd183'],
+			['decisiones', sub ? 'd183, d282' : 'd183'],
 			['tablero', 'rev 1'],
 			['generado', generado],
 		],

@@ -11,7 +11,14 @@
  * - adds "Quedan N días" to `[data-promo-days-left]` when the price goes up after the row ends;
  * - rewrites every calendar-driven quote (`[data-promo-quote]`): WhatsApp message text, promo
  *   code, campaign code and tracked value. The tracking client appends the folio on click.
+ * - sets the row's visual theme as `html[data-promo-theme]`, which shows the promo band, emblems,
+ *   ornaments, Hero pill and sticky-bar name (`src/styles/home/_promo-themes.scss`). The head
+ *   script of PromoThemeBoot.astro sets the same value before the first paint.
  * There is no hour/minute clock: the state is computed once per page load.
+ *
+ * Local and Preview builds accept `?fecha=AAAA-MM-DD` to show the page as on that day in Los
+ * Mochis (marked with `html[data-promo-preview]`) and `?tema=<theme>` to restyle the active row
+ * with another theme; Production builds compile both checks out.
  */
 ---
 
@@ -28,15 +35,26 @@
 		getPromoCode,
 		getPromoStatus,
 		getStartingPrice,
+		getCampaignTheme,
 		getValidityNote,
 		PACKAGE_CATALOG,
+		parsePromoPreviewDate,
+		parsePromoThemePreview,
 		PROMO_CURRENCY,
 		type CampaignSection,
 		type PromoPackageId,
 	} from '@/data/promo-campaign.data';
 
-	const { phase, campaign, daysLeft, showCountdown } = getPromoStatus(new Date());
-	document.documentElement.dataset.promoState = phase;
+	const allowsPreview = import.meta.env.CELEBRA_PROMO_DATE_PREVIEW === 'true';
+	const previewDate = allowsPreview ? parsePromoPreviewDate(window.location.search) : null;
+	const previewTheme = allowsPreview ? parsePromoThemePreview(window.location.search) : null;
+	const { phase, campaign, daysLeft, showCountdown } = getPromoStatus(previewDate ?? new Date());
+	const root = document.documentElement;
+	root.dataset.promoState = phase;
+	if (previewDate) root.dataset.promoPreview = previewDate.toISOString().slice(0, 10);
+	const theme = getCampaignTheme(campaign, previewTheme);
+	if (theme) root.dataset.promoTheme = theme;
+	else delete root.dataset.promoTheme;
 
 	const setText = (selector: string, text: string) => {
 		document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
@@ -49,6 +67,7 @@
 
 	if (campaign) {
 		setText('[data-promo-field="label"]', campaign.label);
+		setText('[data-promo-field="tagline"]', campaign.tagline);
 		setText('[data-promo-field="validity"]', getValidityNote(campaign));
 		setText('[data-promo-field="starting-price"]', formatMxn(getStartingPrice(campaign)));
 		for (const pkg of PACKAGE_CATALOG) {

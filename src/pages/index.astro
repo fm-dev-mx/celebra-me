@@ -14,11 +14,16 @@ import FAQ from '@/components/home/FAQ.astro';
 import Contact from '@/components/home/Contact.astro';
 import Footer from '@/components/home/Footer.astro';
 import PromoStatus from '@/components/home/PromoStatus.astro';
+import PromoThemeBoot from '@/components/home/PromoThemeBoot.astro';
+import PromoThemeSprite from '@/components/home/PromoThemeSprite.astro';
+import PromoBand from '@/components/home/PromoBand.astro';
+import PromoOrnament from '@/components/home/PromoOrnament.astro';
 import StickyWhatsAppBar from '@/components/home/StickyWhatsAppBar.astro';
 import { landingData } from '@/data/landing-page.data';
 import { footerData } from '@/data/footer.data';
 import { VITRINA_EVENTS, findVitrinaDemo, getVitrinaLeadDemo } from '@/data/landing-vitrina.data';
 import { buildLandingSchemaJsonLd, DEFAULT_SITE_ORIGIN } from '@/lib/seo/landing-schema';
+import { getActiveCampaign, getPromoShareImage } from '@/data/promo-campaign.data';
 import '@/styles/landing.scss';
 
 const siteOrigin = DEFAULT_SITE_ORIGIN;
@@ -29,6 +34,11 @@ const heroFan = ['demo-xv-celestial-blue', 'demo-brisa']
 	.flatMap((slug) => findVitrinaDemo(slug) ?? [])
 	.concat(leadDemo);
 const schemaJsonLd = buildLandingSchemaJsonLd(siteOrigin);
+// Share image of the campaign active on the build day; WhatsApp caches it per URL.
+const shareImage =
+	getPromoShareImage(getActiveCampaign()?.theme ?? null) ??
+	landingData.seo.ogImage ??
+	'/images/og/og-vitrina.jpg';
 ---
 
 <Layout
@@ -36,13 +46,15 @@ const schemaJsonLd = buildLandingSchemaJsonLd(siteOrigin);
 	description={landingData.seo.description}
 	ogTitle={landingData.seo.ogTitle}
 	ogDescription={landingData.seo.ogDescription}
-	image={landingData.seo.ogImage ?? '/images/og/og-vitrina.jpg'}
+	image={shareImage}
 	imageAlt="Tres invitaciones digitales de Celebra-me en celulares: XV años y boda"
 	canonicalPath="/"
 	className="theme-preset--jewelry-box-landing"
 	transparentHeader={false}
 >
 	<script is:inline type="application/ld+json" set:html={JSON.stringify(schemaJsonLd)} slot="head"></script>
+	<PromoThemeBoot slot="head" />
+	<PromoThemeSprite />
 	<div class="landing-sections-wrapper">
 		<Hero data={landingData.hero} fan={heroFan} />
 		<LandingShowroom
@@ -53,9 +65,12 @@ const schemaJsonLd = buildLandingSchemaJsonLd(siteOrigin);
 		<EnvelopeScene demo={leadDemo} />
 		<WhatsAppScene demo={leadDemo} eventLabel={leadEvent.messageLabel} />
 		<ProductProof data={landingData.productProof} />
+		<PromoOrnament />
 		<Testimonials data={landingData.testimonials} />
+		<PromoBand />
 		<Pricing data={landingData.pricing} />
 		<HowItWorks data={landingData.howItWorks} />
+		<PromoOrnament />
 		<FAQ data={landingData.faq} />
 		<Contact data={landingData.contact} />
 		{/* The contact section above already carries WhatsApp, email and city. */}

@@ -221,7 +221,7 @@ admins.
    keeps the first row. A failed insert is logged and never rejects the tracking event.
 2. Browser rows carry `session_id` (no foreign key, so the analytics purge stays free) and
    `event_source_path` instead of an order, customer and value (migrations
-   `20261025120000_meta_conversion_contact_lead` and `20261025200000_meta_conversion_view_events`;
+   `20261025120000_meta_conversion_contact_lead` and `20261026000000_meta_conversion_view_events`;
    the shape check pairs each event with its own triggers and keeps Purchase rows as strict as
    before). The late-consent `PageView` the Pixel sends after a page loaded without marketing
    consent has no `eventID` and no server copy, because that page's `page_viewed` was stored without

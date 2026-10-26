@@ -4,7 +4,7 @@ import {
 	formatMxn,
 	formatMxnAmount,
 	getExpressDelivery,
-	PACKAGE_CATALOG,
+	PRICE_TIERS,
 	PROMO_SCHEDULE,
 } from '@/data/promo-campaign.data';
 
@@ -72,8 +72,7 @@ describe('landing promo literals', () => {
 	it('writes promo prices and dates only in the promo module', () => {
 		const amounts = [
 			...new Set([
-				...PACKAGE_CATALOG.map((pkg) => pkg.regularPrice),
-				...PROMO_SCHEDULE.flatMap((campaign) => Object.values(campaign.prices)),
+				...Object.values(PRICE_TIERS).flatMap((prices) => Object.values(prices)),
 				getExpressDelivery().price,
 			]),
 		];

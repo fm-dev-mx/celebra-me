@@ -1,0 +1,17 @@
+---
+/**
+ * src/components/home/PromoThemeBoot.astro
+ *
+ * Head script that sets `html[data-promo-theme]` before the first paint (see
+ * `src/lib/landing/promo-theme-boot.ts`). Place it in the layout's `head` slot.
+ */
+import { PROMO_SCHEDULE } from '@/data/promo-campaign.data';
+import { buildPromoThemeBootScript } from '@/lib/landing/promo-theme-boot';
+
+const script = buildPromoThemeBootScript({
+	schedule: PROMO_SCHEDULE,
+	allowPreview: import.meta.env.CELEBRA_PROMO_DATE_PREVIEW === 'true',
+});
+---
+
+<script is:inline set:html={script}></script>

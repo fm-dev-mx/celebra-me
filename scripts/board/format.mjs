@@ -3,7 +3,7 @@
  * Pure functions only, like model.mjs: the view imports this file in the browser and the unit tests in Node.
  * Nothing here changes stored data; it only decides how it is shown.
  */
-import { AGENT_REGISTRY, authorOf, isReview } from './model.mjs';
+import { AGENT_REGISTRY, authorOf, isFinished, isReview, prNumber, taskLane } from './model.mjs';
 import { reviewVerdict } from './next.mjs';
 
 export const GH = 'https://github.com/fm-dev-mx/celebra-me';
@@ -26,6 +26,8 @@ const FILE_EXT = '(?:mjs|cjs|js|ts|tsx|json|md|html|astro|scss|css|ya?ml|ps1|sql
 const EDGE = '(?<![\\w/.@-])';
 /** One alternative per kind, tried left to right at each position; earlier kinds win. */
 const KINDS = [
+	// A glob such as docs/** never opens or closes bold: the pair hugs its words and no path touches it.
+	['bold', '(?<![\\w/*])\\*\\*(?=[^\\s*])[^*\\n]*?[^\\s*/]\\*\\*(?![\\w/*])'],
 	['code', '`([^`\\n]+)`'],
 	['url', 'https?:\\/\\/[^\\s<>"\'`]+'],
 	['path', `${EDGE}${PATH_ROOTS}\\/[\\w.@\\[\\]/-]*[\\w\\]]`],
@@ -56,7 +58,7 @@ export const esc = (s) =>
 		.replace(/"/g, '&quot;');
 
 /**
- * Splits free text into plain runs and recognised tokens: `code`, a URL, a PR (#512), a task (T132), a decision
+ * Splits free text into plain runs and recognised tokens: **bold**, `code`, a URL, a PR (#512), a task (T132), a decision
  * (d210), a SHA, a path (src/…), a branch (feat/…), a file name and internal jargon. Joining every `text` gives the
  * input back unchanged.
  */
@@ -112,6 +114,8 @@ export function richText(input, ctx = {}) {
 		.map(({ kind, text }) => {
 			const e = esc(text);
 			switch (kind) {
+				case 'bold':
+					return `<strong>${richText(text.slice(2, -2), ctx)}</strong>`;
 				case 'code':
 					return `<code>${esc(text.slice(1, -1))}</code>`;
 				case 'url':
@@ -139,6 +143,25 @@ export function richText(input, ctx = {}) {
 				default:
 					return e;
 			}
+		})
+		.join('');
+}
+
+/**
+ * d284: a title as HTML: only **bold**, `code` and task numbers. Inside a row, whose title is itself a button, a
+ * known «T274» becomes a `data-sel` span that a click opens; with `ctx.links` (the sheet's heading) it is a real
+ * link a keyboard reaches.
+ */
+export function titleHtml(input, ctx = {}) {
+	return tokenize(input)
+		.map(({ kind, text }) => {
+			if (kind === 'bold') return `<strong>${titleHtml(text.slice(2, -2), ctx)}</strong>`;
+			if (kind === 'code') return `<code>${esc(text.slice(1, -1))}</code>`;
+			const t = kind === 'task' && ctx.task?.(Number(text.slice(1)));
+			const tag = ctx.links ? 'a href="#cola"' : 'span';
+			return t
+				? `<${tag} class="tl" data-sel="${esc(t.id)}" data-jump="1" data-all="1" title="${esc(t.titulo)}">${esc(text)}</${ctx.links ? 'a' : 'span'}>`
+				: esc(text);
 		})
 		.join('');
 }
@@ -288,3 +311,59 @@ export const HANDOFF_HEADINGS = [
 	['dudas', 'Dudas'],
 	['excepcion', 'Excepción autorizada'],
 ];
+
+/**
+ * d284: a task's PR for its row, `{n, key, label}`: `rojo` when its open PR has a failed check, `abierto` when it is
+ * open, `unido` once the task says so; without a status (`key: ''`) when the live read does not know. Null without a PR.
+ */
+export function prStatus(t, prs) {
+	const n = prNumber(t.cierre?.pr || t.pr);
+	if (!n) return null;
+	const open = Array.isArray(prs) ? prs.find((p) => p.number === n) : undefined;
+	if (open?.ci === 'rojo') return { n, key: 'rojo', label: 'CI rojo' };
+	if (open) return { n, key: 'abierto', label: 'abierto' };
+	if (['unida', 'comprobada'].includes(t.estado)) return { n, key: 'unido', label: 'unido' };
+	return { n, key: '', label: '' };
+}
+
+/** «f05» from «f05-plataforma»; any other lane id stays whole. */
+export const laneKey = (id) => /^f\d+/.exec(String(id ?? ''))?.[0] ?? String(id ?? '');
+
+/**
+ * d284: who runs an open task and where, «Claude · f05» or «Gemini»: the lock's agent and lane while it runs,
+ * else its assigned agent and planned lane. Null for a finished task or one no agent is assigned to.
+ */
+export function runnerOf(t) {
+	if (isFinished(t)) return null;
+	const agente = t.candado?.agente ?? (t.agente && t.agente !== 'cualquiera' ? t.agente : null);
+	if (!agente) return null;
+	const lane = t.candado?.carril ?? taskLane(t);
+	const nombre = AGENT_REGISTRY[agente]?.nombre ?? agente;
+	return { key: agente, text: lane ? `${nombre} · ${laneKey(lane)}` : nombre };
+}
+
+/** d284: when the board's data last changed: the newest task update, bitácora row or decision, or null. */
+export function lastChange(board = {}) {
+	let best = NaN;
+	const see = (iso) => {
+		const ms = iso ? new Date(iso).getTime() : NaN;
+		if (!Number.isNaN(ms) && !(ms <= best)) best = ms;
+	};
+	for (const t of board.tareas ?? []) see(t.actualizado);
+	for (const b of board.bitacora ?? []) see(b.en);
+	for (const d of board.decisiones ?? []) see(d.en);
+	return Number.isNaN(best) ? null : new Date(best).toISOString();
+}
+
+/** d284: «Celebra-me v0.50.0 · Tablero 1a2b3c4 · Actualizado hace 3 min», the parts that are known. */
+export function versionsLine(board = {}, now = Date.now()) {
+	const app = board.vivo?.app ?? {};
+	const at = lastChange(board);
+	return [
+		app.version ? `Celebra-me v${app.version}` : '',
+		app.tablero?.sha ? `Tablero ${app.tablero.sha}` : '',
+		at ? `Actualizado ${relTime(at, now)}` : '',
+	]
+		.filter(Boolean)
+		.join(' · ');
+}

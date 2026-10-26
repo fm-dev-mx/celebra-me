@@ -101,7 +101,7 @@ describe('pnpm board:watch', () => {
 		const dir = makeBoard([
 			task('lista', { num: 7 }),
 			task('apartada', { candado: { agente: 'codex', desde: NOW } }),
-			task('del-dueno', { toca: ['produccion'] }),
+			task('del-dueno', { actor: 'dueno' }),
 			task('espera', { requisitos: [{ tipo: 'tarea', ref: 'lista' }] }),
 			task('de-gemini', { agente: 'gemini', num: 9 }),
 		]);

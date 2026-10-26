@@ -37,6 +37,7 @@ import { buildPublicInvitationPath } from '@/utils/invitation-link';
 import { getDemoRouteSlug } from '@/lib/invitation/demo-routes';
 import { getDemoMetadata } from '@/lib/seo/demo-metadata';
 import { safeErr } from '@/lib/server/safe-error';
+import { keepsLegacyRsvpDefaults } from '@/lib/invitation/legacy-rsvp-defaults';
 
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
@@ -360,6 +361,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								closingPhrase={page.footerClosingPhrase}
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding && !isDemoConversion}
 								showContactCta={page.viewModel.brandingVisibility.showContactCta && !isDemoConversion}
+								floatingCtaByDefault={Boolean(guestContext) && !isDemoConversion && !keepsLegacyRsvpDefaults(page.viewModel.id)}
 								musicCredit={page.musicPlayer?.creditsUrl ? { title: page.musicPlayer.title, creditsUrl: page.musicPlayer.creditsUrl } : undefined}
 							/>
 							{demoConversion && <DemoConversion placement="closing" demo={demoConversion} />}

@@ -1,0 +1,11 @@
+---
+/**
+ * src/components/home/PromoThemeSprite.astro
+ *
+ * Emblem and ornament symbols of every promo theme, rendered once per page and drawn with
+ * `<use>` by PromoEmblem.astro and PromoOrnament.astro. It takes no space and is never painted.
+ */
+import { buildPromoThemeSprite } from '@/data/promo-theme-art.data';
+---
+
+<svg class="promo-sprite" width="0" height="0" aria-hidden="true" focusable="false" set:html={buildPromoThemeSprite()} />

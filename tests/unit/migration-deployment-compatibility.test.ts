@@ -270,7 +270,7 @@ describe('migration / deployment compatibility contract', () => {
 
 		const applied = evaluateAppDatabaseReadiness({
 			deployedAppCapabilities,
-			dbAppliedVersions: ['20261025120000', '20261025150000', '20261025200000'],
+			dbAppliedVersions: ['20261025120000', '20261025150000', '20261026000000'],
 			registry: live,
 		});
 		expect(applied.status).toBe('allow');

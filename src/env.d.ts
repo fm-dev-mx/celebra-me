@@ -64,6 +64,8 @@ interface ImportMetaEnv {
 	readonly CELEBRA_BUILD_SHA: string;
 	/** Build-time git ref baked in by `vite.define` (empty in local dev). */
 	readonly CELEBRA_BUILD_REF: string;
+	/** Build-time `vite.define` flag for the landing `?fecha=` promo preview: `'false'` in Production. */
+	readonly CELEBRA_PROMO_DATE_PREVIEW: string;
 	/** Local-process runtime target: `local` | `preview`. Never forges hosted identity. */
 	readonly CELEBRA_RUNTIME_TARGET: string;
 	readonly BASE_URL: string;

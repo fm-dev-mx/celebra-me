@@ -34,6 +34,8 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'tests/scripts/operational-contracts.test.ts',
 	// Proves the schema rejects live Cloudinary rows and keeps soft-deleted ones as history.
 	'supabase/tests/invitation_assets_r2_provider.test.sql',
+	// Proves the purge migration deletes only soft-deleted Cloudinary rows.
+	'tests/unit/invitation-assets-cloudinary-purge-migration.test.ts',
 ]);
 // Migrations are history.
 const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/'];
