@@ -8,7 +8,6 @@ import {
 	isPromptV1,
 	promptSection,
 	promptV1Issues,
-	reviewText,
 	withPushCheck,
 	withRunLines,
 } from './prompt.mjs';
@@ -70,6 +69,10 @@ const LOG_ESTADOS = ['', ...ESTADOS, 'archivada'];
 const QUIEN_ALIAS = { dueño: 'dueno' };
 /** Who a board message goes to (T126): `pnpm board msg <id> --de=<a> --para=<b> "texto"`. */
 export const DESTINOS = ['coordinador', 'dueno', 'codex', 'gemini', 'claude'];
+/** d291: readers whose messages `pnpm board atendido` marks as handled; agents read theirs with `inbox`. */
+export const ATENDIBLES = ['dueno', 'coordinador'];
+/** A row that changes no task: a message (T126) or the mark that messages were handled (d291). */
+export const isNoteRow = (r) => Boolean(r?.mensaje || r?.atendido);
 
 /** The writer of a command: `--quien` (dueño → dueno), else a declared coordinator, else `--agente`. */
 export function quienOf({ quien, coordinador, agente } = {}) {
@@ -80,7 +83,8 @@ export function quienOf({ quien, coordinador, agente } = {}) {
 
 /**
  * Shape problems of a bitácora row `{tarea, en, quien, corrio?, salio?}` plus exactly one change: `de`/`a`
- * (estado), `agente {de, a}`, `carril {de, a}` ('' = none) or `mensaje {id, para, texto}` (T126). Rows converted by `migrate-log` carry `legado` and
+ * (estado), `agente {de, a}`, `carril {de, a}` ('' = none), `mensaje {id, para, texto}` (T126) or
+ * `atendido {para, mensajes: [id…]}` (d291). Rows converted by `migrate-log` carry `legado` and
  * may lack `quien`, since most old rows never recorded it.
  */
 export function logRowIssues(r) {
@@ -92,14 +96,15 @@ export function logRowIssues(r) {
 	return [...out, ...changeIssues(r)];
 }
 
-/** The single change a row records: estado `de`/`a`, `agente {de, a}`, `carril {de, a}` or a `mensaje`. */
+/** The single change a row records: estado `de`/`a`, `agente {de, a}`, `carril {de, a}`, a `mensaje` or `atendido`. */
 function changeIssues(r) {
-	const kinds = ['estado', 'agente', 'carril', 'mensaje'].filter((k) =>
+	const kinds = ['estado', 'agente', 'carril', 'mensaje', 'atendido'].filter((k) =>
 		k === 'estado' ? r?.de !== undefined || r?.a !== undefined : r?.[k] !== undefined,
 	);
 	if (kinds.length !== 1)
-		return ['la fila cambia una sola cosa: estado (de/a), agente, carril o mensaje'];
+		return ['la fila cambia una sola cosa: estado (de/a), agente, carril, mensaje o atendido'];
 	if (kinds[0] === 'mensaje') return messageIssues(r.mensaje);
+	if (kinds[0] === 'atendido') return handledIssues(r.atendido);
 	if (kinds[0] === 'estado')
 		return ['de', 'a']
 			.filter((k) => !LOG_ESTADOS.includes(r[k] ?? ''))
@@ -117,6 +122,19 @@ function messageIssues(m) {
 	if (!String(m.id ?? '').trim()) out.push('mensaje sin id');
 	if (!DESTINOS.includes(m.para)) out.push(`para debe ser ${DESTINOS.join('|')}`);
 	if (!String(m.texto ?? '').trim()) out.push('mensaje sin texto');
+	return out;
+}
+
+function handledIssues(a) {
+	if (!a || typeof a !== 'object') return ['atendido debe ser {para, mensajes}'];
+	const out = [];
+	if (!ATENDIBLES.includes(a.para)) out.push(`atendido.para debe ser ${ATENDIBLES.join('|')}`);
+	if (
+		!Array.isArray(a.mensajes) ||
+		!a.mensajes.length ||
+		!a.mensajes.every((id) => typeof id === 'string' && id.trim())
+	)
+		out.push('atendido.mensajes debe listar los id de los mensajes');
 	return out;
 }
 
@@ -155,6 +173,8 @@ export function logChange(r) {
 	if (r.agente) return `agente ${pair(r.agente)}`;
 	if (r.carril) return `carril ${pair(r.carril)}`;
 	if (r.mensaje) return `mensaje ${r.quien ?? '—'} → ${r.mensaje.para}`;
+	if (r.atendido)
+		return `atendido por ${r.quien ?? '—'}: ${r.atendido.mensajes?.length ?? 0} para ${r.atendido.para}`;
 	return r.de || r.a ? pair(r) : '';
 }
 
@@ -268,51 +288,6 @@ export function reviewerIssue(author, reviewer, { subagent = false } = {}) {
 	if (author && author !== 'claude' && reviewer !== 'claude')
 		return `d183: el trabajo de ${author} lo revisa claude`;
 	return null;
-}
-
-/** The id of the next review round of `src`, after `prev` (the latest round, if any). */
-export function reviewChildId(src, prev) {
-	const n = prev ? reviewRound(prev) + 1 : 1;
-	return n > 1 ? `${src.id}-revision-${n}` : `${src.id}-revision`;
-}
-
-/** The child task of the next review round of `src`, after `prev`, numbered `num` (T160). */
-export function reviewChild(
-	src,
-	{ agente, revisor, sha, prev, num, files, generado = new Date().toISOString() },
-) {
-	const n = prev ? reviewRound(prev) + 1 : 1;
-	const id = reviewChildId(src, prev);
-	return {
-		id,
-		...reviewText(src, {
-			id,
-			num,
-			n,
-			sha,
-			prev,
-			files,
-			agente,
-			revisor,
-			generado,
-			carril: READONLY_LANE,
-			carpeta: laneFolder('integration'),
-		}),
-		estado: 'pendiente',
-		urgencia: src.urgencia,
-		actor: 'sesion',
-		agente,
-		...(revisor ? { revisor } : {}),
-		tipo: 'revision',
-		contrato: CONTRATO,
-		origen: src.id,
-		revisionSha: sha,
-		...(files ? { revisionFiles: files } : {}),
-		vuelta: n,
-		requisitos: [{ tipo: 'revision', ref: src.id }],
-		...(src.rama ? { rama: src.rama } : {}),
-		...(src.pr ? { pr: src.pr } : {}),
-	};
 }
 
 /** `T34 serenata-fotos`, or the id alone when the task has no number (d159). */

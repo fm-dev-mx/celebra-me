@@ -87,7 +87,7 @@ describe('board model shared rules', () => {
 				['quien debe ser claude/codex/gemini/coordinador/dueno, no sesion'],
 				[],
 				[],
-				['la fila cambia una sola cosa: estado (de/a), agente, carril o mensaje'],
+				['la fila cambia una sola cosa: estado (de/a), agente, carril, mensaje o atendido'],
 				[],
 			],
 			change: ['hecha → unida', 'carril — → f10'],
