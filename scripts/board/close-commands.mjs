@@ -157,7 +157,7 @@ export function closeCommands({
 		close({ pos, flags, lists }, dir, out) {
 			const ops = finishOps(flags['git-safety']);
 			const checkout = checkoutState();
-			return withLock(dir, () => {
+			const info = withLock(dir, () => {
 				const before = getTask(dir, need(pos[0], 'falta <id>'));
 				if (flags.rev !== undefined) checkRev(before, flags);
 				// The lock owner writes it; a declared coordinator completes it, also after the lock is gone.
@@ -185,24 +185,29 @@ export function closeCommands({
 				// T129: the one-line signal the agent hands back, built only from the cierre.
 				const senal = signalLine(t, board);
 				const enviado = sendFindings(dir, t, board);
-				// T297: from the task's lane, the git-safety session ends with the close (--git-safety=commit).
-				const gitSafety = finishGitSafety(
-					checkout,
-					before.candado?.rama ?? before.rama,
-					ops,
-				);
-				if (gitSafety && !gitSafety.ok) process.exitCode = 1;
-				const text = [
-					`${t.id} con cierre (rev ${t.rev}) · ${t.estado ?? 'pendiente'}`,
-					...cierreLines(t, board),
-					...(enviado ? [enviado] : []),
-					...(next === closed ? [] : [cycleLine(t)]),
-					...(gitSafety ? [gitSafety.line] : []),
+				return {
+					t,
+					board,
+					enviado,
+					next,
+					closed,
 					senal,
-				];
-				const data = { ...t, senal, ...(gitSafety ? { gitSafety } : {}) };
-				say(flags, out, data, text.join('\n'));
+					rama: before.candado?.rama ?? before.rama,
+				};
 			});
+			// T297: from the task's lane, the git-safety session ends with the close (--git-safety=commit).
+			const gitSafety = finishGitSafety(checkout, info.rama, ops);
+			if (gitSafety && !gitSafety.ok) process.exitCode = 1;
+			const text = [
+				`${info.t.id} con cierre (rev ${info.t.rev}) · ${info.t.estado ?? 'pendiente'}`,
+				...cierreLines(info.t, info.board),
+				...(info.enviado ? [info.enviado] : []),
+				...(info.next === info.closed ? [] : [cycleLine(info.t)]),
+				...(gitSafety ? [gitSafety.line] : []),
+				info.senal,
+			];
+			const data = { ...info.t, senal: info.senal, ...(gitSafety ? { gitSafety } : {}) };
+			say(flags, out, data, text.join('\n'));
 		},
 		/**
 		 * T297 (U-05): the release notes of the merged tasks as `[Unreleased]` Markdown, for release preparation;

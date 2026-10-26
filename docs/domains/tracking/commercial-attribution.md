@@ -402,16 +402,20 @@ If attempted, the service returns a controlled Spanish error message.
 
 ### Payment Semantics and CAPI Purchase Value
 
-The `Purchase` value sent to Meta is always the **actual amount registered as paid** at the moment
-`deposit_paid` is marked. It is:
+After migration `20261026160000_meta_purchase_total_value.sql` is applied, each new `Purchase`
+outbox row stores the order's **full `total_amount`** at the first `deposit_paid` transition. For
+example, an order totaling MXN 1,800 with an MXN 899 deposit creates one Purchase worth MXN 1,800.
+The RPC reads that total from the locked order; callers still submit only the actual payment.
 
-- **Not** the order's `totalAmount` (which represents the full contract value).
-- **Not** the `depositAmount` / "Anticipo Sugerido" (which is a suggested reference value stored at
-  order creation).
-- **Always** the explicit numeric value entered by the operator in the deposit payment field.
+The operator's payment remains `sales_orders.amount_paid` (MXN 899 in this example), preserving the
+outstanding balance and internal payment tracking. The suggested `depositAmount` does not determine
+the Purchase value. Marking the order fully paid does not create a second Purchase.
 
-The operator enters the actual payment amount per-order at the time of marking `deposit_paid`. This
-ensures the Meta Purchase event reflects real money received.
+The outbox value is a snapshot, and CAPI delivers that stored value. Existing events, including
+pending/failed deliveries and idempotent deposit retries, retain their original value; the migration
+does not backfill, resend, or revalue historical events. Before application, the RPC still values
+new Purchases at the actual deposit amount. Schema application is a separate owner-authorized step
+after cross review; merging this migration does not prove it has been applied.
 
 ### CAPI Purchase Trigger Rules
 

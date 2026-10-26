@@ -53,14 +53,23 @@ const prOf = (t) => {
 };
 
 /**
- * The notes of the merged tasks, oldest close first: `{ tarea, num, pr, grupo, texto, en }`. `desde` (an ISO
- * date) keeps only closes on or after it, e.g. the date of the last version tag.
+ * The notes of the merged tasks, oldest close first: `{ tarea, num, pr, grupo, texto, en }`. `desde` (a date)
+ * keeps only closes on or after it, e.g. the date of the last version tag.
  */
 export function changelogNotes(board, { desde } = {}) {
+	const desdeMs = desde ? Date.parse(desde) : NaN;
+	const matchDesde = (en) => {
+		if (!desde) return true;
+		if (!Number.isNaN(desdeMs)) {
+			const enMs = Date.parse(en ?? '');
+			return !Number.isNaN(enMs) ? enMs >= desdeMs : String(en ?? '') >= desde;
+		}
+		return String(en ?? '') >= desde;
+	};
 	return (board.tareas ?? [])
 		.filter((t) => MERGED.has(t.estado) && validChangelog(t.cierre?.changelog))
 		.filter((t) => t.cierre.changelog !== SIN_NOTA)
-		.filter((t) => !desde || String(t.cierre.en ?? '') >= desde)
+		.filter((t) => matchDesde(t.cierre.en))
 		.map((t) => ({
 			tarea: t.id,
 			...(t.num ? { num: t.num } : {}),

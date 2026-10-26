@@ -310,7 +310,10 @@ describe('deliverMetaConversionEvent', () => {
 		expect(event.user_data.fbp).toBe('fb.1.12345');
 	});
 
-	it('formats the payload with hashed values and sends it to Meta in test mode', async () => {
+	it.each([
+		['new order total', 1800],
+		['historical deposit', 899],
+	])('delivers the stored %s value with hashed identity in test mode', async (_label, value) => {
 		mockRestRequest
 			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }]) // PATCH status = sending
 			.mockResolvedValueOnce([
@@ -319,7 +322,7 @@ describe('deliverMetaConversionEvent', () => {
 					event_name: 'Purchase',
 					event_id: 'purchase:order-id:deposit_paid',
 					customer_id: 'customer-id',
-					value: 899,
+					value,
 					currency: 'MXN',
 					customers: { email: 'client@example.com', phone_e164: '+521000000005' },
 					sales_orders: {
@@ -363,7 +366,7 @@ describe('deliverMetaConversionEvent', () => {
 		expect(body.data[0].action_source).toBe('chat');
 		expect(body.data[0].event_name).toBe('Purchase');
 		expect(body.data[0].event_id).toBe('purchase:order-id:deposit_paid');
-		expect(body.data[0].custom_data.value).toBe(899);
+		expect(body.data[0].custom_data.value).toBe(value);
 		expect(body.data[0].custom_data.currency).toBe('MXN');
 		expect(body.data[0].event_source_url).toBe('https://www.celebra-me.com/demos/xv');
 

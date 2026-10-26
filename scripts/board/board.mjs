@@ -722,9 +722,9 @@ const commands = {
 		const agente = need(flags.agente, 'falta --agente');
 		const ops = finishOps(flags['git-safety']);
 		const checkout = checkoutState();
-		return withLock(dir, () => {
+		const info = withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (!before.candado) return say(flags, out, before, `${before.id} no tiene candado`);
+			if (!before.candado) return { noLock: true, before };
 			const laneIssue = lockLaneIssue(checkout, before);
 			if (laneIssue) throw new UsageError(laneIssue);
 			// A lock from before sessions were recorded has no sesion: only a declared coordinator frees it.
@@ -745,14 +745,16 @@ const commands = {
 				agente,
 				corrio: 'pnpm board release',
 			});
-			sayClaim(
-				flags,
-				out,
-				t,
-				`${t.id} libre (rev ${t.rev})`,
-				finishGitSafety(checkout, before.candado.rama, ops),
-			);
+			return { t, rama: before.candado.rama };
 		});
+		if (info.noLock) return say(flags, out, info.before, `${info.before.id} no tiene candado`);
+		sayClaim(
+			flags,
+			out,
+			info.t,
+			`${info.t.id} libre (rev ${info.t.rev})`,
+			finishGitSafety(checkout, info.rama, ops),
+		);
 	},
 	move({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente=<destino>');

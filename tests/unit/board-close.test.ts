@@ -174,6 +174,10 @@ describe('pnpm board changelog (T297)', () => {
 		const all = JSON.parse(cli(board(), ['changelog', '--json']).out);
 		expect(all.map((n: Json) => n.tarea)).toEqual(['vieja', 'nueva', 'arreglo']);
 		expect(cli(board(), ['changelog', '--desde=ayer']).status).toBe(2);
+
+		const nonIso = cli(board(), ['changelog', '--desde=Oct 20 2026']);
+		expect(nonIso.status).toBe(0);
+		expect(nonIso.out.trim().split('\n')).toEqual(r.out.trim().split('\n'));
 	});
 
 	it('--faltan lists the notes CHANGELOG.md [Unreleased] lacks and exits 1 until none is missing', () => {
@@ -207,6 +211,12 @@ describe('pnpm board changelog (T297)', () => {
 			valid: [c.validChangelog('ninguno'), c.validChangelog({ grupo: 'Added', texto: '' }), c.validChangelog(null)],
 			section: c.unreleasedSection('x\\n## [Unreleased]\\na\\n## [1.0.0]\\nb'),
 			urlPr: c.changelogNotes({ tareas: [{ id: 'u', estado: 'unida', pr: 'https://github.com/fm-dev-mx/celebra-me/pull/12', cierre: { en: '2026-10-26T00:00:00Z', changelog: { grupo: 'Fixed', texto: 'x' } } }] }, {}).map((n) => n.pr),
+			nonIsoDesde: c.changelogNotes({
+				tareas: [
+					{ id: 'old', estado: 'unida', cierre: { en: '2026-10-01T00:00:00Z', changelog: { grupo: 'Fixed', texto: 'x' } } },
+					{ id: 'cur', estado: 'unida', cierre: { en: '2026-10-26T00:00:00Z', changelog: { grupo: 'Fixed', texto: 'y' } } },
+				],
+			}, { desde: 'Oct 20, 2026' }).map((n) => n.tarea),
 			missing: c.missingNotes([{ pr: '#12', texto: 'x' }, { pr: '#1', texto: 'y' }], '## [Unreleased]\\n- x (#12)\\n- y (#10)'),
 		}));`);
 		expect(r).toEqual({
@@ -216,6 +226,7 @@ describe('pnpm board changelog (T297)', () => {
 			valid: [true, false, false],
 			section: 'a',
 			urlPr: ['#12'],
+			nonIsoDesde: ['cur'],
 			missing: [{ pr: '#1', texto: 'y' }],
 		});
 	});
