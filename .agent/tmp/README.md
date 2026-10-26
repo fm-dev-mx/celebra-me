@@ -6,8 +6,9 @@ the Handoff Contract in [`.agent/plans/README.md`](../plans/README.md).
 
 ## Lifecycle
 
-- Create only task-scoped checkpoints, handoffs, or validation evidence that the owning workflow
-  explicitly requires.
+- Create only task-scoped checkpoints or validation evidence that the owning workflow explicitly
+  requires. Hand-over between agents or sessions is never a file here: it lives on the board
+  (`cierre`, review rounds, `pnpm board msg`).
 - Bind artifacts to the current worktree and invalidate them when their inputs or HEAD change.
 - Delete task artifacts after verification; preserve them only when the owner explicitly requests
   retention.
@@ -26,14 +27,9 @@ sessions and subagents, Codex, the coordinator board and any other agent.
   the durable outcome into policy, commits or plans, and delete the report.
 - Generated evidence (screenshots, logs, JSON outputs of scripts) stays in the location its script
   defines; it is not a report.
-- `handoffs/` is not a report location; it holds role-chain artifacts only.
 
 ## Privacy
 
 Do not store secrets, credentials, tokens, connection strings, private client data, full
 transcripts, large assets, screenshots, or generated logs. Use runtime-managed storage for
 transcripts and the repository's designated evidence locations for approved artifacts.
-
-The handoff directory is reserved for ephemeral role-chain artifacts and must remain empty when no
-handoff is active. Its semantic fields follow the canonical Handoff Contract; it is not a second
-template or source of truth.

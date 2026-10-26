@@ -158,7 +158,10 @@ coordinator, one dispatcher per app that never reassigns, one worker session per
 rules, and the Spanish prompt template; `.agent/rules/board.md` owns the board commands, fields,
 session names and `T<n> <id>` task references. This file's roles and delegation rules apply inside
 one agent's session; they never assign work to another agent. Assignment across agents happens only
-on the board, by verified capability (`requiere`).
+on the board, by verified capability (`requiere`). Hand-over between agents or sessions also lives
+only on the board: the task's `cierre` (`pnpm board close`), its review rounds (`pnpm board review`)
+and `pnpm board msg`. There is no handoff file directory and no separate status vocabulary for
+handed-over work.
 
 ## Routing Conflict Resolution
 

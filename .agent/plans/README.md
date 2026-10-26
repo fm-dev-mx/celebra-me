@@ -84,23 +84,19 @@ Authoring procedure: `.agent/skills/plan-authoring/SKILL.md`. Operating steps:
 
 ## Plan Status Taxonomy
 
-Use this provider-neutral taxonomy for plans and their artifacts:
+A plan file under `active/` has one of three statuses:
 
-| Status        | When to use                                           |
-| ------------- | ----------------------------------------------------- |
-| `draft`       | Plan is being written or discussed, not yet approved  |
-| `active`      | Approved and currently guiding work                   |
-| `blocked`     | Active but cannot proceed until a dependency resolves |
-| `implemented` | Planned changes are complete                          |
-| `validated`   | All defined validation gates have passed              |
-| `accepted`    | Validated and accepted by human review                |
-| `deferred`    | Intentionally postponed until explicitly reactivated  |
-| `superseded`  | Replaced by a newer plan or durable source of truth   |
-| `final`       | Terminal state; no further action is planned          |
+| Status    | When to use                                           |
+| --------- | ----------------------------------------------------- |
+| `draft`   | Plan is being written or discussed, not yet approved  |
+| `active`  | Approved and currently guiding work                   |
+| `blocked` | Active but cannot proceed until a dependency resolves |
 
-Keep `draft`, `active`, and `blocked` plans under `active/` while they have a real next action.
-Delete completed or inactive plans after migrating durable knowledge to `docs/`, a rule, a workflow,
-or a skill; Git history preserves them.
+A plan has no later status. Progress, validation and acceptance of the work it guides live on the
+board: each step is a task whose `estado`, `cierre` and review rounds record it
+(`.agent/rules/board.md`). When the plan is done, postponed or replaced, migrate durable knowledge
+to `docs/`, a rule or a skill and delete the plan; Git history preserves it. A plan whose remaining
+steps are all board tasks with their own prompts is deleted too.
 
 ## Standard Frontmatter
 
@@ -118,8 +114,6 @@ related_docs:
   - docs/core/architecture.md
 supersedes:
   - old-plan.md
-superseded_by:
-  - new-plan.md
 ---
 ```
 
@@ -149,13 +143,12 @@ Do not invent a second status vocabulary for a provider or runtime.
 
 ## Relationship to Other Directories
 
-| Directory              | Purpose                                                     |
-| ---------------------- | ----------------------------------------------------------- |
-| `.agent/plans/`        | Operational intent, Goal sequencing, agent memory           |
-| `docs/`                | Stable product and system documentation                     |
-| `.agent/skills/`       | Reusable agent execution guidance and repeatable procedures |
-| `.agent/tmp/handoffs/` | Ephemeral role-chain artifacts (not policy SSOT)            |
-| `.agent/tmp/reports/`  | Point-in-time reports while in use (Integration checkout)   |
+| Directory             | Purpose                                                     |
+| --------------------- | ----------------------------------------------------------- |
+| `.agent/plans/`       | Operational intent, Goal sequencing, agent memory           |
+| `docs/`               | Stable product and system documentation                     |
+| `.agent/skills/`      | Reusable agent execution guidance and repeatable procedures |
+| `.agent/tmp/reports/` | Point-in-time reports while in use (Integration checkout)   |
 
 ## Goal lifecycle (canonical for substantial audit-driven remediation)
 
@@ -209,8 +202,8 @@ same fields in its final message.
   separate mutable worktrees, long-running tasks, or context that must survive the current execution
   boundary.
 - Multi-session Goal continuity: `.agent/plans/active/` when a tracked plan is justified.
-- Role-chain artifacts: `.agent/tmp/handoffs/<task-id>/` (ephemeral; see
-  `.agent/rules/agent-routing.md`). Not a second policy authority.
+- Cross-agent hand-over goes through the board, never through files: the task's `cierre`, its review
+  rounds (`pnpm board review`) and `pnpm board msg` (`.agent/rules/board.md`).
 - Do not generate mandatory handoff files for trivial work.
 
 Human-facing report **layout** for named review/apply/commit skills remains
