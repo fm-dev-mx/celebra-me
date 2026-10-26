@@ -1,4 +1,5 @@
 import React from 'react';
+import InvitationDataPanel from '@/components/dashboard/commercial/InvitationDataPanel';
 import { labelCommercialEventType } from '@/lib/tracking/commercial-presentation';
 
 export interface SalesOrder {
@@ -23,6 +24,9 @@ interface CustomerOrdersBoxProps {
 	onAmountChange: (orderId: string, value: string) => void;
 	markingDepositPaid: Record<string, boolean>;
 	onMarkDepositPaid: (orderId: string) => void;
+	/** Order whose deposit was just registered: its invitation data link is issued right away. */
+	autoIssueInvitationDataOrderId?: string | null;
+	onInvitationDataReviewed?: () => void;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -50,6 +54,8 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 	onAmountChange,
 	markingDepositPaid,
 	onMarkDepositPaid,
+	autoIssueInvitationDataOrderId = null,
+	onInvitationDataReviewed,
 }) => {
 	if (customerOrders.length === 0) {
 		return (
@@ -122,6 +128,14 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 							<p className="order-meta">
 								Pagado el: {new Date(ord.paidAt).toLocaleString('es-MX')}
 							</p>
+						)}
+
+						{(ord.status === 'deposit_paid' || ord.status === 'paid') && (
+							<InvitationDataPanel
+								orderId={ord.id}
+								autoIssue={autoIssueInvitationDataOrderId === ord.id}
+								onReviewed={onInvitationDataReviewed}
+							/>
 						)}
 
 						{/* Mark Deposit Paid Action */}

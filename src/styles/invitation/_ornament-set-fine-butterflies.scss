@@ -54,6 +54,9 @@ $butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 
 // The compound wrapper class keeps the set's selector weight above the section bases.
 .ornament-set--fine-butterflies.event-theme-wrapper {
+	// Preserved: the 27 --ornament-butterfly-* and --ornament-ink tokens below are dynamically
+	// consumed by the butterfly($name) and motif-spot-absolute mixins (#{$name} interpolation)
+	// and actively used by published invitation Andrea (/xv/andrea).
 	--ornament-ink: var(--color-ornament-gold, var(--color-border-premium));
 	--ornament-butterfly-hero-a-display: block;
 	--ornament-butterfly-hero-a-size: clamp(2.6rem, 9vw, 3.6rem);

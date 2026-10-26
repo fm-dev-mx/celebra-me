@@ -3,6 +3,10 @@ import DemoFollowupForm from '@/components/dashboard/commercial/DemoFollowupForm
 import type { DemoInventoryItem } from '@/lib/tracking/demo-conversion-report';
 
 import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
+import InvitationDataInbox, {
+	type InvitationDataInboxItem,
+	useInvitationDataInbox,
+} from '@/components/dashboard/commercial/InvitationDataInbox';
 import CustomerOrdersBox, {
 	type SalesOrder,
 } from '@/components/dashboard/commercial/CustomerOrdersBox';
@@ -95,6 +99,10 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	const [depositIdempotencyKeys, setDepositIdempotencyKeys] = useState<Record<string, string>>(
 		{},
 	);
+	const invitationDataInbox = useInvitationDataInbox();
+	const [autoIssueInvitationDataOrderId, setAutoIssueInvitationDataOrderId] = useState<
+		string | null
+	>(null);
 	const customerToolRef = useRef<HTMLDetailsElement>(null);
 	const orderToolRef = useRef<HTMLDetailsElement>(null);
 	const feedbackRef = useRef<HTMLDivElement>(null);
@@ -230,6 +238,14 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		// When the customer was constructed from lead data, fetch the real
 		// record so the workspace shows authoritative email / phone values.
 		void fetchRealCustomer(customer.id);
+	};
+
+	const handleOpenInvitationData = (item: InvitationDataInboxItem) => {
+		handleSelectCustomer({
+			id: item.customerId,
+			displayName: item.customerName || 'Cliente sin nombre',
+			phoneE164: item.customerPhoneE164,
+		});
 	};
 
 	const handleReconcileLead = (lead: LeadCandidate) => {
@@ -415,8 +431,9 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 							? 'Conversión requiere atención.'
 							: 'Conversión pendiente.';
 				setSuccessMessage(
-					`Anticipo registrado. ${formatConversion(conversionEvent.status)}`,
+					`Anticipo registrado. ${formatConversion(conversionEvent.status)} Ya puede enviar el enlace para los datos de la invitación.`,
 				);
+				setAutoIssueInvitationDataOrderId(orderId);
 				if (activeCustomer) {
 					void fetchCustomerOrders(activeCustomer.id);
 					void fetchTimeline(activeCustomer.id);
@@ -487,6 +504,10 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 
 			<div className="sales-workspace-grid">
 				<aside className="crm-work-queue" aria-labelledby="crm-queue-title">
+					<InvitationDataInbox
+						items={invitationDataInbox.items}
+						onOpen={handleOpenInvitationData}
+					/>
 					<header className="crm-work-queue__header">
 						<div>
 							<p className="sales-workspace__eyebrow">Cola de trabajo</p>
@@ -703,6 +724,10 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 										}
 										markingDepositPaid={markingDepositPaid}
 										onMarkDepositPaid={handleMarkDepositPaid}
+										autoIssueInvitationDataOrderId={
+											autoIssueInvitationDataOrderId
+										}
+										onInvitationDataReviewed={invitationDataInbox.refresh}
 									/>
 								)}
 							</section>

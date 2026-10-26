@@ -13,7 +13,7 @@ alter table public.meta_conversion_events
 alter table public.meta_conversion_events
   add constraint meta_conversion_events_event_name_check
   check (event_name in (
-    'Purchase', 'Contact', 'Lead', 'PageView', 'ViewContent',
+    'Purchase', 'Contact', 'Lead', 'PageView', 'ViewContent', 'CompleteRegistration',
     'LeadQuoted', 'LeadPaid', 'LeadLost'
   ));
 
@@ -28,6 +28,7 @@ alter table public.meta_conversion_events
     'page_viewed',
     'demo_viewed',
     'package_viewed',
+    'invitation_data_submitted',
     'crm_lead_quoted',
     'crm_lead_paid',
     'crm_lead_lost'
@@ -46,6 +47,11 @@ alter table public.meta_conversion_events
       and order_id is not null
       and customer_id is not null
       and value is not null)
+    or (event_name = 'CompleteRegistration'
+      and trigger_status = 'invitation_data_submitted'
+      and order_id is not null
+      and customer_id is not null
+      and value is null)
     or (order_id is null
       and session_id is not null
       and ((event_name = 'Contact' and trigger_status = 'whatsapp_contact_clicked')

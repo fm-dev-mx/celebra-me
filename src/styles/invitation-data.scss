@@ -1,0 +1,325 @@
+/* src/styles/invitation-data.scss */
+
+// «Datos de su invitación»: the private form behind /mi-invitacion/<token>. Mobile first, with the
+// same warm palette as the «Aparta su fecha» dialog the client saw before buying.
+@use 'global';
+@use './global/a11y' as a11y;
+
+.invitation-data-page {
+	--invitation-data-surface: rgb(253 250 244);
+	--invitation-data-card: rgb(255 255 255);
+	--invitation-data-ink: rgb(33 29 24);
+	--invitation-data-muted: rgb(98 88 76);
+	--invitation-data-border: rgb(214 202 184);
+	--invitation-data-accent: rgb(140 106 38);
+	--invitation-data-accent-ink: rgb(255 255 255);
+	--invitation-data-danger: rgb(166 38 38);
+	--invitation-data-focus: rgb(140 106 38 / 35%);
+
+	min-height: 100dvh;
+	margin: 0;
+	background: var(--invitation-data-surface);
+	color: var(--invitation-data-ink);
+	font-family: 'Montserrat Variable', Montserrat, sans-serif;
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+.invitation-data {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	width: min(100% - 2rem, 36rem);
+	margin: 0 auto;
+	padding: 1.5rem 0 2rem;
+
+	&--message {
+		justify-content: center;
+		min-height: 100dvh;
+		padding: 2rem 0;
+		text-align: center;
+	}
+}
+
+.invitation-data__header {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.invitation-data__eyebrow {
+	margin: 0;
+	color: var(--invitation-data-accent);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.invitation-data__progress-label {
+	margin: 0;
+	color: var(--invitation-data-muted);
+	font-size: 0.875rem;
+}
+
+.invitation-data__progress {
+	display: block;
+	width: 100%;
+	height: 6px;
+	overflow: hidden;
+	border: 0;
+	border-radius: 999px;
+	background: var(--invitation-data-border);
+	color: var(--invitation-data-accent);
+	appearance: none;
+
+	&::-webkit-progress-bar {
+		border-radius: inherit;
+		background: var(--invitation-data-border);
+	}
+
+	&::-webkit-progress-value {
+		border-radius: inherit;
+		background: var(--invitation-data-accent);
+		transition: width 200ms ease-out;
+	}
+
+	&::-moz-progress-bar {
+		border-radius: inherit;
+		background: var(--invitation-data-accent);
+	}
+
+	@include a11y.reduced-motion {
+		&::-webkit-progress-value {
+			transition: none;
+		}
+	}
+}
+
+.invitation-data__notice {
+	margin: 0.25rem 0 0;
+	padding: 0.75rem 0.875rem;
+	border: 1px solid var(--invitation-data-border);
+	border-radius: 12px;
+	background: var(--invitation-data-card);
+	font-size: 0.9rem;
+}
+
+.invitation-data__step {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1.25rem;
+	border: 1px solid var(--invitation-data-border);
+	border-radius: 18px;
+	background: var(--invitation-data-card);
+}
+
+.invitation-data__title {
+	margin: 0;
+	font-family: 'Playfair Display Variable', 'Playfair Display', Georgia, serif;
+	font-size: 1.6rem;
+	font-weight: 600;
+	line-height: 1.2;
+
+	&:focus {
+		outline: none;
+	}
+}
+
+.invitation-data__intro {
+	margin: 0;
+	color: var(--invitation-data-muted);
+	font-size: 0.95rem;
+}
+
+.invitation-data__field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+
+	label {
+		font-size: 0.95rem;
+		font-weight: 600;
+	}
+
+	input,
+	textarea {
+		width: 100%;
+
+		@include a11y.touch-target;
+
+		box-sizing: border-box;
+		padding: 0.625rem 0.75rem;
+		border: 1px solid var(--invitation-data-border);
+		border-radius: 10px;
+		background: var(--invitation-data-surface);
+		color: inherit;
+		font: inherit;
+
+		&:focus-visible {
+			border-color: var(--invitation-data-accent);
+			outline: 3px solid var(--invitation-data-focus);
+			outline-offset: 0;
+		}
+	}
+
+	textarea {
+		resize: vertical;
+	}
+
+	&--error {
+		input,
+		textarea {
+			border-color: var(--invitation-data-danger);
+		}
+	}
+}
+
+.invitation-data__help {
+	margin: 0;
+	color: var(--invitation-data-muted);
+	font-size: 0.85rem;
+}
+
+.invitation-data__error {
+	margin: 0;
+	color: var(--invitation-data-danger);
+	font-size: 0.875rem;
+}
+
+.invitation-data__suggestions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+
+	p {
+		margin: 0;
+		color: var(--invitation-data-muted);
+		font-size: 0.85rem;
+	}
+}
+
+.invitation-data__suggestion {
+	@include a11y.touch-target;
+
+	padding: 0.625rem 0.75rem;
+	border: 1px dashed var(--invitation-data-accent);
+	border-radius: 10px;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: 0.875rem;
+	text-align: left;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--invitation-data-surface);
+	}
+}
+
+.invitation-data__review {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	li {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.75rem 0;
+		border-bottom: 1px solid var(--invitation-data-border);
+	}
+
+	li > div {
+		display: flex;
+		flex-direction: column;
+		gap: 0.125rem;
+	}
+
+	span {
+		color: var(--invitation-data-muted);
+		font-size: 0.85rem;
+	}
+
+	.invitation-data__error {
+		color: var(--invitation-data-danger);
+	}
+}
+
+.invitation-data__footer {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.invitation-data__save {
+	min-height: 1.25rem;
+	margin: 0;
+	color: var(--invitation-data-muted);
+	font-size: 0.85rem;
+	text-align: center;
+
+	&--error {
+		color: var(--invitation-data-danger);
+	}
+}
+
+.invitation-data__nav {
+	display: flex;
+	gap: 0.75rem;
+
+	> * {
+		flex: 1;
+	}
+}
+
+.invitation-data__primary,
+.invitation-data__secondary {
+	min-height: 48px;
+	padding: 0.75rem 1.25rem;
+	border-radius: 999px;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include a11y.focus-ring(var(--invitation-data-focus), 3px);
+	}
+
+	&:disabled {
+		opacity: 60%;
+		cursor: progress;
+	}
+}
+
+.invitation-data__primary {
+	border: none;
+	background: var(--invitation-data-accent);
+	color: var(--invitation-data-accent-ink);
+}
+
+.invitation-data__secondary {
+	border: 1px solid var(--invitation-data-accent);
+	background: transparent;
+	color: var(--invitation-data-accent);
+}
+
+.invitation-data__link {
+	min-width: 44px;
+
+	@include a11y.touch-target;
+
+	padding: 0 0.5rem;
+	border: none;
+	background: transparent;
+	color: var(--invitation-data-accent);
+	font: inherit;
+	font-weight: 600;
+	text-decoration: underline;
+	cursor: pointer;
+}

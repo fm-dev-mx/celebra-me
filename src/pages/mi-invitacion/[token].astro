@@ -1,0 +1,31 @@
+---
+/**
+ * «Datos de su invitación»: private form sent by WhatsApp after the deposit. The island loads and
+ * saves through /api/mi-invitacion; this shell never touches the database, never loads analytics
+ * and is never indexed. The token is the only key, so the page sends no referrer.
+ */
+import '@/styles/invitation-data.scss';
+import '@fontsource-variable/montserrat';
+import InvitationDataForm from '@/components/invitation-data/InvitationDataForm';
+
+export const prerender = false;
+
+const token = Astro.params.token ?? '';
+Astro.response.headers.set('Cache-Control', 'no-store, private');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<meta name="referrer" content="no-referrer" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>Datos de su invitación — Celebra-me</title>
+	</head>
+	<body class="invitation-data-page">
+		<InvitationDataForm client:load token={token} />
+	</body>
+</html>

@@ -125,6 +125,36 @@ An order created from the dashboard without a session takes `lead_id` and `sessi
 given lead, or from the customer's latest lead (`findLeadOrderAttribution`), so the deposit
 `Purchase` carries that visit's fbp/fbc.
 
+### Invitation data link («Datos de su invitación»)
+
+After a deposit is registered, the order's panel in the Sales Workspace issues a private link
+`/mi-invitacion/<token>` and a prefilled `wa.me` message to the customer's WhatsApp. The client
+fills in the invitation texts, family, venues (Google Maps links), itinerary, gift registry and
+music in a step-by-step mobile form; photos still arrive by WhatsApp.
+
+- **Table:** `invitation_data_requests`, one row per `sales_orders` row (service role only). It
+  stores the SHA-256 of the token, never the token: the dashboard shows the link once, and «Generar
+  enlace nuevo» replaces the hash, so the previous link stops working while the answers stay. Links
+  expire 60 days after they are issued.
+- **Issue:** `POST /api/dashboard/commercial/orders/:orderId/invitation-data`
+  (`action: issue-link | mark-reviewed`) only for `deposit_paid` or `paid` orders; `GET` returns the
+  state and answers.
+- **Client API:** `POST /api/mi-invitacion` (`action: load | save | submit`, token in the body so it
+  stays out of request logs; 120 requests per IP per minute). Answers are validated against the
+  field list in `src/lib/invitation-data/form.ts`; drafts may be partial, sending needs the
+  celebrant names and the event date. Empty forms are prefilled from the order's lead
+  (`celebrant_names`, `event_date`).
+- **Corrections:** after sending, the link stays open; every save keeps the form received and moves
+  `last_saved_at`.
+- **Owner notice:** the Sales Workspace lists received forms whose latest save is newer than
+  `owner_reviewed_at` («Datos de invitación por revisar») until the owner marks them as reviewed.
+- **Meta:** the first submission queues one `CompleteRegistration` outbox row per order
+  (`event_id = complete_registration:<orderId>`, `trigger_status = invitation_data_submitted`, no
+  value). It is measurement only and is delivered like `Purchase`: the order's session, the order's
+  lead consent and `action_source: chat`, with the row's creation time as the event time.
+- **Privacy:** the page is `noindex`, `no-store`, sends no referrer and loads no analytics (its
+  route classifies as `unknown`); `mi-invitacion` is a reserved invitation slug.
+
 ## `lead_created` Event Rule
 
 `lead_created` is a first-party tracking event fired server-side after lead persistence. It follows
