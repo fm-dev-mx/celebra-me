@@ -1,5 +1,5 @@
 begin;
-select plan(11);
+select plan(12);
 
 -- Exercise the installed provider constraints without creating or altering invitation records.
 create temporary table provider_contract (
@@ -52,6 +52,11 @@ select is(
     where deleted_at is null and provider not in ('supabase', 'r2')),
   0,
   'live rows use only the supported providers'
+);
+select is(
+  (select count(*)::integer from public.invitation_assets where provider = 'cloudinary'),
+  0,
+  'no Cloudinary row remains, soft-deleted ones included'
 );
 select is(
   col_description('public.invitation_assets'::regclass, (

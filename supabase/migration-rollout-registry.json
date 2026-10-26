@@ -286,6 +286,10 @@
             "phase": "expand",
             "provides": ["meta_conversion_retention_purge"],
             "notes": "Adds meta_conversion_retention_cutoff (30 days), the service-role purge_meta_conversion_retention RPC and three indexes. The RPC deletes at most p_batch sent or skipped browser Contact/Lead rows older than 30 days (never Purchase rows, unfinished rows or rows with an operator recovery; delivery attempts cascade) and at most p_batch visitor_consent_withdrawals older than the oldest stored visitor session. Additive: no existing object changes. Must be applied before the application whose quarter-hour cron calls the RPC is deployed, or that step logs failed every 15 minutes."
+        },
+        "20261025220000": {
+            "phase": "neutral",
+            "notes": "Data only: deletes the soft-deleted invitation_assets rows with provider='cloudinary' (2026-10-25: 288 in Production, 515 in Preview). No schema, grant or constraint change. The deployed application only lists them among archived assets, and restoring one already fails the provider check from 20261019180000. No foreign key, draft, publication or managed profile references them; Cloudinary files are not touched. Idempotent."
         }
     },
     "appCapabilities": {
