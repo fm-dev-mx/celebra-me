@@ -14,15 +14,17 @@
  * Then the hygiene (d268), on the board as those writes left it: an unlocked unida/hecha task whose check passes
  * moves to comprobada with that evidencia, `compact --antes=7d` and `prune-backups --aplicar` run, and each free,
  * clean lane f05–f12 (no lock or open task holds it, detached or on a branch whose PR merged) is detached at
- * origin/develop. A lane with changes, or on a branch without a merged PR, is only reported. The sync never archives
+ * origin/develop; the branch it left is then deleted with `git branch -d` when origin/develop already contains it.
+ * A lane with changes, or on a branch without a merged PR, is only reported. The sync never archives
  * a task (d278): only the owner does, from «Finalizadas» or `pnpm board archive`.
  *
  *   node scripts/board/sync.mjs [--dry-run] [--json] [--horas=<n>]   --dry-run prints the plan and writes nothing
  *
  * Remote branches are read after `git fetch --prune origin`, so a branch deleted on GitHub no longer counts.
  *
- * Matching: the task's `pr`, else its `rama` as PR head, else the id convention (`fix/<id>`). Closed tasks and
- * cross-review children are never touched. The local view runs it from its «Sincronizar» button.
+ * Matching: the task's `pr`, else its `rama` as PR head, else the id convention (`fix/<id>`), else the one open PR
+ * that names it canonically (d159: «T<n> <id>» in its title, or a «Board task: T<n> <id>» body line).
+ * Closed tasks and cross-review children are never touched. The local view runs it from its «Sincronizar» button.
  */
 import { execFileSync } from 'node:child_process';
 import { basename, resolve } from 'node:path';
@@ -116,7 +118,7 @@ export function readSources(cwd = process.cwd()) {
 					'--limit',
 					String(PR_LIMIT),
 					'--json',
-					'number,state,isDraft,headRefName,title',
+					'number,state,isDraft,headRefName,title,body',
 				],
 				cwd,
 			),
@@ -168,6 +170,25 @@ function newestFor(prs, test) {
 	);
 }
 
+const escapeRe = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * d159: a PR names a task canonically with «T<n> <id>» in its title, or with a «Board task: T<n> <id>» body line.
+ * Any other mention in the body, such as a prerequisite or a follow-up list, does not count.
+ */
+export function namesTask(p, t) {
+	if (!t.num || !t.id) return false;
+	const ref = `T${t.num} ${escapeRe(t.id)}(?![\\w-])`;
+	if (new RegExp(`(?<![\\w-])${ref}`).test(p.title ?? '')) return true;
+	return new RegExp(`^\\s*(?:[-*]\\s+)?Board task:\\s*${ref}`, 'im').test(p.body ?? '');
+}
+
+/** The only open PR that names the task (d159); none when two do. */
+function byReference(prs, t) {
+	const found = prs.filter((p) => p.state === 'OPEN' && namesTask(p, t));
+	return found.length === 1 ? found[0] : null;
+}
+
 export function matchPr(t, prs) {
 	const own = normalizePr(t.pr);
 	if (typeof own === 'string' && own.startsWith('#'))
@@ -176,9 +197,9 @@ export function matchPr(t, prs) {
 	// merged PR of a past cycle cannot finish the next one.
 	const past = new Set(Array.isArray(t.prsPrevios) ? t.prsPrevios : []);
 	const live = prs.filter((p) => !past.has(`#${p.number}`));
-	if (t.rama) return newestFor(live, (p) => p.headRefName === t.rama);
+	if (t.rama) return newestFor(live, (p) => p.headRefName === t.rama) ?? byReference(live, t);
 	if (t.cada) return null;
-	return newestFor(live, (p) => taskIdFromBranch(p.headRefName) === t.id);
+	return newestFor(live, (p) => taskIdFromBranch(p.headRefName) === t.id) ?? byReference(live, t);
 }
 
 function branchNote(t, src) {
@@ -383,7 +404,7 @@ export function lanePlan(board, src) {
 			path: w.path,
 			rama: w.rama,
 			head: w.head,
-			texto: `carril ${w.lane} libre: de ${where} a origin/develop (${develop.slice(0, 7)})`,
+			texto: `carril ${w.lane} libre: de ${where} a origin/develop (${develop.slice(0, 7)})${w.rama ? `; borra la rama local ${w.rama} si ya está en origin/develop` : ''}`,
 		});
 	}
 	return { alinear, avisos };
@@ -432,7 +453,6 @@ async function storeUpkeep(dir, dryRun) {
 	return { resumidas: compact.tareas.map((x) => x.linea), respaldos: prune.sobran.length };
 }
 
-/** Detach each planned lane at origin/develop; a refused switch is reported, not retried. */
 /**
  * Why a planned lane may no longer be switched, read again right before the switch: a lock or open task took it,
  * its branch or HEAD moved, or it has changes. Null when it is still the lane the plan saw.
@@ -449,6 +469,28 @@ function laneDrift(l, board, git) {
 }
 
 /**
+ * d268: the local branch a lane just left, deleted with `git branch -d` only when origin/develop contains it. A
+ * branch still checked out elsewhere, or not merged, stays and is reported; the switch itself already happened.
+ */
+function pruneBranch(l, develop, git) {
+	if (!l.rama) return {};
+	try {
+		git(['merge-base', '--is-ancestor', l.rama, develop], l.path);
+	} catch {
+		return { podada: false, resultado: `rama ${l.rama} no está en origin/develop: se queda` };
+	}
+	try {
+		git(['branch', '-d', '--quiet', l.rama], l.path);
+		return { podada: true };
+	} catch (e) {
+		const why = String(e.stderr ?? e.message)
+			.trim()
+			.split(/\r?\n/)[0];
+		return { podada: false, resultado: `rama ${l.rama} no se borró: ${why}` };
+	}
+}
+
+/**
  * Detach each planned lane at origin/develop. Each one is checked again and switched inside the board's store
  * lock, so a claim cannot take it in between; any drift fails closed and is reported, not retried.
  */
@@ -462,7 +504,7 @@ function alignLanes(alinear, develop, git, dir) {
 			});
 			return drift
 				? { ...l, ok: false, resultado: `${drift}: no se alinea` }
-				: { ...l, ok: true };
+				: { ...l, ok: true, ...pruneBranch(l, develop, git) };
 		} catch (e) {
 			return { ...l, ok: false, resultado: String(e.stderr ?? e.message).trim() };
 		}
@@ -542,7 +584,8 @@ export function summary(r) {
 		lines.push(
 			`Higiene: ${head}${respaldos} respaldos ${r.prueba ? 'sobran' : 'quitados'} (prune-backups)`,
 		);
-	for (const c of h.carriles) lines.push(`Carril: ${item(c)}`);
+	for (const c of h.carriles)
+		lines.push(`Carril: ${item(c)}${c.ok && c.podada === false ? ` (${c.resultado})` : ''}`);
 	for (const a of h.avisosCarril) lines.push(`Aviso: ${a.texto}`);
 	return lines;
 }

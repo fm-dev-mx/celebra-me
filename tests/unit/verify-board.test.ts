@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/run-command';
 
@@ -66,7 +67,13 @@ function verify(dir: string, answers: Record<string, unknown>, ...args: string[]
 	const result = runCommand(process.execPath, [SCRIPT_PATH, dir, '--json', ...args], {
 		cwd: ROOT,
 		allowFailure: true,
-		env: sanitizeEnv({ CELEBRA_BOARD_COMMAND_FIXTURE: fixture, INIT_CWD: ROOT }),
+		// An empty home: the Codex and Gemini stores read as missing, never the machine's own chats.
+		env: sanitizeEnv({
+			CELEBRA_BOARD_COMMAND_FIXTURE: fixture,
+			INIT_CWD: ROOT,
+			HOME: dir,
+			USERPROFILE: dir,
+		}),
 	});
 	return { status: result.status, report: JSON.parse(result.stdout) };
 }
@@ -697,5 +704,109 @@ describe('prompt lane (H13)', () => {
 				msg: 'T3 el prompt dice f07-invitaciones, pero corre en f06-landing',
 			},
 		]);
+	});
+});
+
+describe('active task scope and external sessions', () => {
+	const files = (...paths: string[]) =>
+		JSON.stringify({ files: paths.map((p) => ({ path: p })) });
+
+	it('warns about files shared across lanes, more than two board tasks (d270) and undeclared migrations', () => {
+		const dir = makeExport([
+			task('a', { carrilPlaneado: 'f05-plataforma', pr: '#50' }),
+			task('b', { estado: 'en revision', carrilPlaneado: 'f06-landing', rama: 'feat/b' }),
+			task('c', { carrilPlaneado: 'f08-demos', pr: '#52' }),
+			task('d', { carrilPlaneado: 'f09-docs', rama: 'feat/mig', toca: ['migracion'] }),
+			task('e', { carrilPlaneado: 'f10-libre', rama: 'feat/mig2' }),
+			task('f', { estado: 'pendiente', carrilPlaneado: 'f11-preview', pr: '#99' }),
+			task('g', { carrilPlaneado: 'f12-release', rama: 'feat/sin-push' }),
+		]);
+		const { report } = verify(dir, {
+			'git ls-remote --heads origin': ['feat/b', 'feat/mig', 'feat/mig2']
+				.map((b) => `${'a'.repeat(40)}\trefs/heads/${b}`)
+				.join('\n'),
+			'gh pr view 50 --json files': files('scripts/board/sync.mjs', 'src/a.ts'),
+			'git diff --name-only origin/develop...origin/feat/b':
+				'scripts/board/verify-board.mjs\nsrc/a.ts\n',
+			'gh pr view 52 --json files': files('scripts/board/model.mjs'),
+			'git diff --name-only origin/develop...origin/feat/mig': 'supabase/migrations/1.sql\n',
+			'git diff --name-only origin/develop...origin/feat/mig2': 'supabase/migrations/2.sql\n',
+		});
+		const scope = report.avisos.filter((a: { msg: string }) =>
+			/^(comparte|d270|cambia supabase)/.test(a.msg),
+		);
+		const board = 'd270: 3 tareas cambian scripts/board/ a la vez (máximo 2): T1 a, T2 b, T3 c';
+		expect(scope).toEqual([
+			{ id: 'a', msg: 'comparte 1 archivos con T2 b (carril f06-landing): src/a.ts' },
+			{ id: 'b', msg: 'comparte 1 archivos con T1 a (carril f05-plataforma): src/a.ts' },
+			{ id: 'a', msg: board },
+			{ id: 'b', msg: board },
+			{ id: 'c', msg: board },
+			{
+				id: 'e',
+				msg: 'cambia supabase/migrations/ sin toca: ["migracion"]: pnpm board set e --rev=1 toca=migracion',
+			},
+		]);
+		expect(report.cobertura.archivos).toBe('VERIFIED');
+		expect(report.sesionesExternas).toEqual({
+			codex: 'NO DISPONIBLE (no existe)',
+			gemini: 'NO DISPONIBLE (no existe)',
+		});
+	});
+
+	it('keeps file coverage UNVERIFIED when a PR or branch cannot be read', () => {
+		const dir = makeExport([task('a', { carrilPlaneado: 'f05-plataforma', pr: '#50' })]);
+		expect(verify(dir, {}).report.cobertura.archivos).toBe('UNVERIFIED');
+	});
+
+	it('flags Codex/Gemini locks without an open chat and lists chats to archive', () => {
+		const tareas = [
+			task('con-chat', { num: 1, candado: { agente: 'codex', desde: NOW } }),
+			task('sin-chat', { num: 2, candado: { agente: 'codex', desde: NOW } }),
+			task('gemini-caido', { num: 3, candado: { agente: 'gemini', desde: NOW } }),
+			task('de-claude', { num: 4, candado: { agente: 'claude', desde: NOW } }),
+		];
+		const externas = {
+			fuentes: {
+				codex: { disponible: true, abiertos: 6, archivados: 0 },
+				gemini: { disponible: false, motivo: 'no existe' },
+			},
+			chats: [
+				{
+					fuente: 'Codex',
+					titulo: 'f07 · T1 · algo',
+					tarea: 'T1',
+					accion: 'dejar',
+					total: 1,
+				},
+				{
+					fuente: 'Codex',
+					titulo: 'f05 · T9 · vieja',
+					tarea: 'T9',
+					accion: 'archivar',
+					total: 2,
+				},
+			],
+			despachadores: [
+				{ fuente: 'Codex', titulo: 'Despachador Codex', total: 3, archivar: 2 },
+			],
+		};
+		const src = `const m = await import(process.argv[1]);
+			const r = m.verifyBoard({ tareas: ${JSON.stringify(tareas)}, externas: ${JSON.stringify(externas)} }, () => ({ ok: true, output: '' }), Date.parse('${NOW}'));
+			console.log(JSON.stringify({ s: r.sesionesExternas, c: r.candadoSinChat, a: r.chatsPorArchivar }));`;
+		const result = runCommand(
+			process.execPath,
+			['--input-type=module', '-e', src, pathToFileURL(SCRIPT_PATH).href],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		expect(result.status).toBe(0);
+		expect(JSON.parse(String(result.stdout))).toEqual({
+			s: { codex: 'VERIFIED', gemini: 'NO DISPONIBLE (no existe)' },
+			c: [{ id: 'sin-chat', tarea: 'T2', fuente: 'Codex' }],
+			a: [
+				{ fuente: 'Codex', titulo: 'f05 · T9 · vieja', total: 2 },
+				{ fuente: 'Codex', titulo: 'Despachador Codex', total: 2 },
+			],
+		});
 	});
 });
