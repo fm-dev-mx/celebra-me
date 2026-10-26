@@ -1,5 +1,4 @@
 @use 'sass:map';
-@use '../tokens' as tokens;
 @use '../tokens/spacing' as spacing-tokens;
 @use 'a11y' as *;
 @forward 'a11y';
@@ -10,7 +9,7 @@
 			@content;
 		}
 	} @else {
-		@error "Breakpoint `#{$breakpoint}` does not exist in tokens.$breakpoints.";
+		@error "Breakpoint `#{$breakpoint}` does not exist in spacing-tokens.$breakpoints.";
 	}
 }
 
@@ -22,7 +21,7 @@
 			@content;
 		}
 	} @else {
-		@error "Breakpoint `#{$breakpoint}` does not exist in tokens.$breakpoints.";
+		@error "Breakpoint `#{$breakpoint}` does not exist in spacing-tokens.$breakpoints.";
 	}
 }
 
