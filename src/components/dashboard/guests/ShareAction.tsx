@@ -29,6 +29,8 @@ interface ShareActionProps {
 			countryCode?: string;
 		},
 	) => Promise<DashboardGuestItem>;
+	/** Called when the composer opens, and again when it closes or this action unmounts. */
+	onComposerOpenChange?: (open: boolean) => void;
 }
 
 type ShareStatus = 'idle' | 'sending' | 'delivered';
@@ -42,14 +44,26 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	onShared,
 	outlined = false,
 	onSaveGuest,
+	onComposerOpenChange,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
 	const [composerOpen, setComposerOpen] = useState(false);
 	const idleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+	const onComposerOpenChangeRef = useRef(onComposerOpenChange);
+
+	useEffect(() => {
+		onComposerOpenChangeRef.current = onComposerOpenChange;
+	}, [onComposerOpenChange]);
 
 	useEffect(() => {
 		return () => clearTimeout(idleTimerRef.current);
 	}, []);
+
+	useEffect(() => {
+		if (!composerOpen) return;
+		onComposerOpenChangeRef.current?.(true);
+		return () => onComposerOpenChangeRef.current?.(false);
+	}, [composerOpen]);
 
 	const cta = getShareCtaLabel(guest);
 	const mode: ShareFlowMode = resolveShareFlowMode(guest);

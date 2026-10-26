@@ -21,6 +21,8 @@ interface GuestPrimaryActionProps {
 	onReminderSent?: (guestId: string) => void;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onSaveGuest?: GuestSaveCallback;
+	/** Reports when the share composer opens or closes. */
+	onComposerOpenChange?: (item: DashboardGuestItem, open: boolean) => void;
 	/** Card and detail sheet use the full button; the table row uses an outlined one. */
 	variant?: 'card' | 'row';
 }
@@ -54,6 +56,7 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 	onReminderSent,
 	onMarkShared,
 	onSaveGuest,
+	onComposerOpenChange,
 	variant = 'card',
 }) => {
 	const [reminderModalOpen, setReminderModalOpen] = useState(false);
@@ -107,6 +110,9 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 				onShared={() => onMarkShared(item)}
 				outlined={variant === 'row'}
 				onSaveGuest={onSaveGuest}
+				onComposerOpenChange={
+					onComposerOpenChange && ((open) => onComposerOpenChange(item, open))
+				}
 			/>
 		);
 	}
