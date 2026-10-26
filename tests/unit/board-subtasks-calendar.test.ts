@@ -386,17 +386,14 @@ describe('board blocked tab (T258)', () => {
 		]);
 	});
 
-	it('shows the «Bloqueadas» tab between Calendario and Finalizadas, with count and search', () => {
+	it('shows the «Bloqueadas» tab between Calendario and Finalizadas, with its count', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts/board/view.html'), 'utf8');
 		const tabs = [...html.matchAll(/data-tab="([a-z]+)" id="t-/g)].map((x) => x[1]);
-		expect(tabs.slice(1, 5)).toEqual(['cola', 'calendario', 'bloqueadas', 'finalizadas']);
+		expect(tabs.slice(2, 6)).toEqual(['cola', 'calendario', 'bloqueadas', 'finalizadas']);
 		expect(html).toContain(
-			"const TABS=['usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];",
+			"const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];",
 		);
 		expect(html).toContain('id="n-blk"');
-		expect(html).toContain("['cola','calendario','bloqueadas','finalizadas'].includes(S.tab)");
-		expect(html).toMatch(
-			/function renderBlk\(\)\{[\s\S]*?mBlocked\(S\.board\)[\s\S]*?found\(x\.t\)/,
-		);
+		expect(html).toMatch(/function renderBlk\(\)\{[\s\S]*?const shown=mBlocked\(S\.board\);/);
 	});
 });
