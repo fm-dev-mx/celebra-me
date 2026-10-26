@@ -173,6 +173,8 @@ describe('forwardToMetaPixel', () => {
 			content_category: 'package',
 			content_name: 'Premium',
 			source_area: 'pricing',
+			value: 150,
+			currency: 'MXN',
 		};
 		const options = { eventID: '11111111-1111-4111-8111-111111111111' };
 		const trackCalls = fbq().mock.calls.filter(
@@ -196,6 +198,8 @@ describe('forwardToMetaPixel', () => {
 			content_name: 'contact',
 			event_type: 'xv',
 			source_area: 'contact',
+			value: 150,
+			currency: 'MXN',
 		});
 	});
 
@@ -207,7 +211,41 @@ describe('forwardToMetaPixel', () => {
 		expect(fbq()).toHaveBeenCalledWith('track', 'Lead', {
 			content_category: 'lead_form',
 			content_name: 'contact',
+			value: 150,
+			currency: 'MXN',
 		});
+	});
+
+	it('reads estimated lead value from document.body dataset when present', () => {
+		document.body.dataset.metaEstimatedLeadValue = '275';
+		forwardToMetaPixel('form_submitted', {
+			form_id: 'contact',
+		});
+		expect(fbq()).toHaveBeenCalledWith(
+			'track',
+			'Lead',
+			expect.objectContaining({
+				value: 275,
+				currency: 'MXN',
+			}),
+		);
+		delete document.body.dataset.metaEstimatedLeadValue;
+	});
+
+	it('uses explicit value property over dataset value', () => {
+		document.body.dataset.metaEstimatedLeadValue = '275';
+		forwardToMetaPixel('whatsapp_contact_clicked', {
+			value: 320,
+		});
+		expect(fbq()).toHaveBeenCalledWith(
+			'track',
+			'Contact',
+			expect.objectContaining({
+				value: 320,
+				currency: 'MXN',
+			}),
+		);
+		delete document.body.dataset.metaEstimatedLeadValue;
 	});
 
 	/* ---- Non-mapped events are silently dropped ---- */

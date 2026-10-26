@@ -20,6 +20,9 @@ jest.mock('@/lib/commercial/meta-capi/service', () => ({
 jest.mock('@/lib/meta/insights-collector', () => ({
 	runMetaInsightsCollector: jest.fn(),
 }));
+jest.mock('@/lib/commercial/meta-capi/estimated-lead-value', () => ({
+	runMetaEstimatedLeadValueRecalculation: jest.fn(),
+}));
 jest.mock('@/lib/server/deploy-identity', () => ({
 	readDeployEnvironment: jest.fn(() => 'preview'),
 }));
@@ -35,6 +38,7 @@ import { runMetaInsightsCollector } from '@/lib/meta/insights-collector';
 import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
+import { runMetaEstimatedLeadValueRecalculation } from '@/lib/commercial/meta-capi/estimated-lead-value';
 import { readDeployEnvironment } from '@/lib/server/deploy-identity';
 import { SCHEDULED_JOB_CRONS, runScheduledJob } from '@/lib/server/scheduled-jobs';
 
@@ -57,6 +61,9 @@ const sweep = processPendingMetaConversionEvents as jest.MockedFunction<
 >;
 const metaInsights = runMetaInsightsCollector as jest.MockedFunction<
 	typeof runMetaInsightsCollector
+>;
+const metaLeadValue = runMetaEstimatedLeadValueRecalculation as jest.MockedFunction<
+	typeof runMetaEstimatedLeadValueRecalculation
 >;
 const deployEnvironment = readDeployEnvironment as jest.MockedFunction<
 	typeof readDeployEnvironment
@@ -109,6 +116,7 @@ describe('runScheduledJob', () => {
 		deployEnvironment.mockReturnValue('preview');
 		retention.mockResolvedValue(retentionResult);
 		metaRetention.mockResolvedValue(metaRetentionResult);
+		metaLeadValue.mockResolvedValue('completed');
 		deliveryEnabled.mockReturnValue(false);
 		info = jest.spyOn(console, 'info').mockImplementation(() => undefined);
 		warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
@@ -310,6 +318,47 @@ describe('runScheduledJob', () => {
 			expect(error).toHaveBeenCalledWith('[meta-insights][collector] failed');
 			expect(maintenance).toHaveBeenCalledTimes(2);
 			expect(retention).toHaveBeenCalledTimes(2);
+		});
+	});
+
+	describe('Meta estimated lead value recalculation (daily analytics cron)', () => {
+		beforeEach(() => {
+			maintenance.mockResolvedValue(maintenanceResult);
+			retention.mockResolvedValue(retentionResult);
+		});
+
+		it('runs the monthly recalculation as part of the daily analytics maintenance job', async () => {
+			await expect(
+				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+			).resolves.toEqual({
+				job: 'engagement_maintenance',
+				status: 'completed',
+			});
+			expect(metaLeadValue).toHaveBeenCalledTimes(1);
+		});
+
+		it('fails the job when recalculation returns failed', async () => {
+			metaLeadValue.mockResolvedValueOnce('failed');
+			await expect(
+				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+			).resolves.toEqual({
+				job: 'engagement_maintenance',
+				status: 'failed',
+			});
+		});
+
+		it('fails the job when recalculation throws', async () => {
+			metaLeadValue.mockRejectedValueOnce(new SupabaseHttpError(500, 'db error', 'XX000'));
+			await expect(
+				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+			).resolves.toEqual({
+				job: 'engagement_maintenance',
+				status: 'failed',
+			});
+			expect(error).toHaveBeenCalledWith(
+				'[meta-lead-value][recalculation] failed',
+				expect.objectContaining({ status: 500, code: 'XX000' }),
+			);
 		});
 	});
 

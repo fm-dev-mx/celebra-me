@@ -186,13 +186,13 @@ secrets are exposed client-side.
 
 ### Browser-side event map
 
-| First-party event          | Meta event    | When it fires                                                        | Metadata sent                                                                              | Dedup key                 |
-| -------------------------- | ------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
-| `page_viewed`              | `PageView`    | Commercial/demo page load after marketing consent                    | `content_category=page`, optional `content_name`, `source_area`                            | —                         |
-| `demo_viewed`              | `ViewContent` | Demo page load on real showroom/demo routes                          | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                         |
-| `package_viewed`           | `ViewContent` | Pricing/package card becomes visible on the landing page             | `content_name`, `content_category=package`, `source_area`                                  | —                         |
-| `whatsapp_contact_clicked` | `Contact`     | Commercial WhatsApp CTA click; then the custom `WhatsAppClick` copy  | `content_name`, `content_category`, optional `event_type`, `source_area`                   | Technical `event_id` UUID |
-| `form_submitted`           | `Lead`        | No live emitter since the contact form was removed; kept for history | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | Technical `event_id` UUID |
+| First-party event          | Meta event    | When it fires                                                              | Metadata sent                                                                                                       | Dedup key                 |
+| -------------------------- | ------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `page_viewed`              | `PageView`    | Commercial/demo page load after marketing consent                          | `content_category=page`, optional `content_name`, `source_area`                                                     | —                         |
+| `demo_viewed`              | `ViewContent` | Demo page load on real showroom/demo routes                                | `content_name`, `content_category=demo`, `event_type`, `source_area`                                                | —                         |
+| `package_viewed`           | `ViewContent` | Pricing/package card becomes visible on the landing page                   | `content_name`, `content_category=package`, `source_area`                                                           | —                         |
+| `whatsapp_contact_clicked` | `Contact`     | Commercial WhatsApp CTA click; then the custom `WhatsAppClick` copy        | `content_name`, `content_category`, optional `event_type`, `source_area`, `value`, `currency=MXN`                   | Technical `event_id` UUID |
+| `form_submitted`           | `Lead`        | Capture form submitted («Aparta su fecha»); also mapped for `lead_created` | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area`, `value`, `currency=MXN` | Technical `event_id` UUID |
 
 Notes:
 
@@ -203,6 +203,12 @@ Notes:
 - `Contact` is the conversion ads optimize for (owner decision of 2026-10-24). The custom
   `WhatsAppClick` copy carries the same parameters and `eventID`, so custom conversions built on it
   keep counting; Meta deduplicates by event name plus ID, so the two never merge.
+- `Contact` and `Lead` events carry an estimated value in MXN (`value`, `currency: 'MXN'`) across
+  both the Meta Pixel and CAPI. The value is calculated as `leadToSaleRate × averageTicket`
+  (`(totalSales / totalLeads) × (totalRevenue / totalSales) = totalRevenue / totalLeads`),
+  recalculated monthly by a scheduled job (`runMetaEstimatedLeadValueRecalculation` / cron
+  `0 3 1 * *` and daily analytics maintenance). While there is no data or zero sales/leads, a
+  constant fallback value (`150 MXN`, `DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN`) applies.
 - Pixel loading stays route-gated and consent-gated through `route-policy.ts`, `consent-client.ts`,
   and `meta-pixel.ts`.
 
@@ -261,17 +267,20 @@ admins.
    form), `findSessionLeadCustomerId()` puts that customer on the row, so its later `PageView`,
    `ViewContent` and `Contact` carry the hashed phone like the form's own `Lead`.
 2. Browser rows carry `session_id` (no foreign key, so the analytics purge stays free) and
-   `event_source_path` instead of an order, customer and value (migrations
+   `event_source_path` instead of an order and customer (migrations
    `20261025120000_meta_conversion_contact_lead` and `20261026000000_meta_conversion_view_events`;
    the shape check pairs each event with its own triggers and keeps Purchase rows as strict as
-   before). The late-consent `PageView` the Pixel sends after a page loaded without marketing
-   consent has no `eventID` and no server copy, because that page's `page_viewed` was stored without
-   marketing consent.
+   before). Contact and Lead rows additionally carry an estimated lead value (`value`,
+   `currency='MXN'`) recalculated monthly, while PageView and ViewContent keep `value: null`. The
+   late-consent `PageView` the Pixel sends after a page loaded without marketing consent has no
+   `eventID` and no server copy, because that page's `page_viewed` was stored without marketing
+   consent.
 3. Delivery sends `action_source=website`, the click path as `event_source_url` (route policy still
-   applies), the row creation time as `event_time`, and no `custom_data`. It skips with
-   `CONSENT_REQUIRED` when the session's latest consent snapshot no longer grants marketing, and
-   with `MISSING_CLIENT_USER_AGENT` when the session has no user agent, which Meta requires for
-   website events. Withdrawing marketing consent in the banner posts the stored visitor ID to
+   applies), the row creation time as `event_time`, and `custom_data` with `value` and `currency`
+   whenever `value` is non-null (Contact and Lead). It skips with `CONSENT_REQUIRED` when the
+   session's latest consent snapshot no longer grants marketing, and with
+   `MISSING_CLIENT_USER_AGENT` when the session has no user agent, which Meta requires for website
+   events. Withdrawing marketing consent in the banner posts the stored visitor ID to
    `POST /api/tracking/consent` (rate-limited, needs no tracking consent). The route calls
    `record_visitor_marketing_withdrawal`, which keeps the newest withdrawal per visitor in
    `visitor_consent_withdrawals` and turns marketing off on every stored session of that visitor, so
