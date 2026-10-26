@@ -36,9 +36,23 @@ async function getData<T>(path: string): Promise<T> {
 	if (!result.ok) throw new Error(result.message || 'No se pudo cargar la información.');
 	return result.data.data;
 }
+
+class OrdersMutationError extends Error {
+	constructor(
+		message: string,
+		readonly status: number,
+	) {
+		super(message);
+	}
+}
+
 async function postData<T>(path: string, body: unknown): Promise<T> {
 	const result = await dashboardApi.post<{ data: T }>(path, body);
-	if (!result.ok) throw new Error(result.message || 'No se pudo guardar. Intente de nuevo.');
+	if (!result.ok)
+		throw new OrdersMutationError(
+			result.message || 'No se pudo guardar. Intente de nuevo.',
+			result.status,
+		);
 	return result.data.data;
 }
 
@@ -76,10 +90,17 @@ export default function OrdersWorkspace() {
 	const orderAttempt = useRef<Record<string, unknown> | null>(null);
 	const listGeneration = useRef(0);
 	const heading = useRef<HTMLHeadingElement>(null);
+	const previousNavigation = useRef({ step, paidOrder });
 	const orderLocked = busy || Boolean(orderAttempt.current);
 	const paymentLocked = busy || Boolean(paymentAttempt.current);
 
 	useEffect(() => {
+		if (
+			previousNavigation.current.step === step &&
+			previousNavigation.current.paidOrder === paidOrder
+		)
+			return;
+		previousNavigation.current = { step, paidOrder };
 		heading.current?.focus();
 	}, [step, paidOrder]);
 	useEffect(() => {
@@ -113,6 +134,14 @@ export default function OrdersWorkspace() {
 		try {
 			await action();
 		} catch (failure) {
+			if (
+				failure instanceof OrdersMutationError &&
+				failure.status >= 400 &&
+				failure.status < 500
+			) {
+				orderAttempt.current = null;
+				paymentAttempt.current = null;
+			}
 			setError(
 				failure instanceof Error
 					? failure.message
@@ -419,7 +448,6 @@ export default function OrdersWorkspace() {
 										const id = event.target.value as PromoPackageId;
 										setPackageId(id);
 										setTotal(String(getPackagePrice(id, getActiveCampaign())));
-										keys.current.order = '';
 									}}
 								>
 									{PACKAGE_CATALOG.map((pkg) => (
