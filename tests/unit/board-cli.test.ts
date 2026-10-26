@@ -593,7 +593,7 @@ describe('pnpm board', () => {
 	it('labels paste tasks «Pegar en …» in the view with their own «Copiar prompt»', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
 		expect(html).toContain(
-			"ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs'",
+			"ownerLaunches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs'",
 		);
 		expect(html).toContain("'Pegar en '+esc(to)");
 		expect(html).toContain('data-copy="${esc(t.id)}">Copiar prompt</button>');
