@@ -38,24 +38,61 @@ export interface ValidationContext {
 	supportsPlusOnes: boolean;
 	effectiveGuestCap: number;
 	isPublicRsvp?: boolean;
+	copy?: RsvpDefaultCopy;
 }
+
+const VALIDATION_MESSAGES: Record<
+	RsvpDefaultCopy,
+	Record<'name' | 'phone' | 'phoneLength' | 'attendance', string>
+> = {
+	usted: {
+		name: 'Por favor, escriba su nombre completo.',
+		phone: 'Por favor, escriba su teléfono.',
+		phoneLength: 'Escriba un teléfono de 10 dígitos.',
+		attendance: 'Por favor, indique si asistirá.',
+	},
+	legacy: {
+		name: 'Por favor, escribe tu nombre completo.',
+		phone: 'Por favor, escribe tu teléfono.',
+		phoneLength: 'Escribe un teléfono de 10 dígitos.',
+		attendance: 'Por favor, selecciona si asistirás.',
+	},
+};
 
 // RSVP form helpers.
 
-const DEFAULT_SUBCOPY: Record<string, string> = {
-	xv: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración especial.',
-	boda: 'Tu confirmación nos ayuda a preparar cada detalle para compartir este día contigo.',
-	bautizo: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración familiar.',
-	cumple: 'Tu confirmación nos ayuda a preparar cada detalle de esta velada tan especial.',
-	'baby-shower': 'Tu respuesta nos ayuda a preparar cada detalle para recibir a nuestro bebé.',
-	'primera-comunion': 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración de fe.',
+/**
+ * Which default copy an invitation reads: `usted` for every invitation, `legacy` (the earlier
+ * «tú» wording) only for those that keep it (src/lib/invitation/legacy-rsvp-defaults.ts).
+ */
+export type RsvpDefaultCopy = 'usted' | 'legacy';
+
+const DEFAULT_SUBCOPY: Record<RsvpDefaultCopy, Record<string, string>> = {
+	usted: {
+		xv: 'Su respuesta nos ayuda a preparar cada detalle de esta celebración especial.',
+		boda: 'Su confirmación nos ayuda a preparar cada detalle para compartir este día con usted.',
+		bautizo: 'Su respuesta nos ayuda a preparar cada detalle de esta celebración familiar.',
+		cumple: 'Su confirmación nos ayuda a preparar cada detalle de esta velada tan especial.',
+		'baby-shower':
+			'Su respuesta nos ayuda a preparar cada detalle para recibir a nuestro bebé.',
+		'primera-comunion':
+			'Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.',
+	},
+	legacy: {
+		xv: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración especial.',
+		boda: 'Tu confirmación nos ayuda a preparar cada detalle para compartir este día contigo.',
+		bautizo: 'Tu respuesta nos ayuda a preparar cada detalle de esta celebración familiar.',
+		cumple: 'Tu confirmación nos ayuda a preparar cada detalle de esta velada tan especial.',
+		'baby-shower':
+			'Tu respuesta nos ayuda a preparar cada detalle para recibir a nuestro bebé.',
+		'primera-comunion':
+			'Tu respuesta nos ayuda a preparar cada detalle de esta celebración de fe.',
+	},
 };
 
-export function getDefaultRsvpSubcopy(eventType: string): string {
-	return (
-		DEFAULT_SUBCOPY[eventType] ??
-		'Tu respuesta nos ayuda a preparar cada detalle de esta celebración especial.'
-	);
+export function getDefaultRsvpSubcopy(eventType: string, copy: RsvpDefaultCopy = 'usted'): string {
+	const subcopy = DEFAULT_SUBCOPY[copy];
+	return subcopy[eventType] ?? subcopy.xv;
 }
 
 export function interpolateRsvpMessage(
@@ -67,44 +104,99 @@ export function interpolateRsvpMessage(
 		.replaceAll('{celebrantName}', variables.celebrantName ?? '');
 }
 
-const RSVP_DEFAULT_RESPONSE_MESSAGES = {
-	confirmed: {
-		title: '¡Gracias por confirmar, {guestName}!',
-		subtitle: 'Tu confirmación ha sido registrada.',
+type RsvpResponseStatus = 'confirmed' | 'declined';
+type ResponseMessage = { title: string; subtitle: string };
+
+// The confirmation card above already thanks the guest (confirmationMessage), so the «usted» title
+// states the result instead of thanking a second time.
+const RSVP_DEFAULT_RESPONSE_MESSAGES: Record<
+	RsvpDefaultCopy,
+	Record<RsvpResponseStatus, ResponseMessage>
+> = {
+	usted: {
+		confirmed: {
+			title: 'Asistencia confirmada, {guestName}.',
+			subtitle: 'Su respuesta quedó registrada.',
+		},
+		declined: {
+			title: 'Sentimos mucho que no pueda acompañarnos, {guestName}.',
+			subtitle: 'Gracias por avisarnos.',
+		},
 	},
-	declined: {
-		title: 'Sentimos mucho que no puedas acompañarnos, {guestName}.',
-		subtitle: 'Gracias por avisarnos.',
+	legacy: {
+		confirmed: {
+			title: '¡Gracias por confirmar, {guestName}!',
+			subtitle: 'Tu confirmación ha sido registrada.',
+		},
+		declined: {
+			title: 'Sentimos mucho que no puedas acompañarnos, {guestName}.',
+			subtitle: 'Gracias por avisarnos.',
+		},
 	},
-} as const;
+};
+
+/** Title when the guest's name is unknown, replacing a default title that greets by name. */
+const RSVP_NAMELESS_TITLES: Record<RsvpDefaultCopy, Record<RsvpResponseStatus, string>> = {
+	usted: {
+		confirmed: 'Asistencia confirmada.',
+		declined: 'Sentimos mucho que no pueda acompañarnos.',
+	},
+	legacy: {
+		confirmed: '¡Gracias por confirmar su asistencia!',
+		declined: 'Gracias por avisarnos.',
+	},
+};
 
 const DEFAULT_RESPONSE_MESSAGES_BY_EVENT_TYPE: Partial<
-	Record<
-		string,
-		{
-			confirmed?: { title: string; subtitle: string };
-			declined?: { title: string; subtitle: string };
-		}
-	>
+	Record<string, Record<RsvpDefaultCopy, Partial<Record<RsvpResponseStatus, ResponseMessage>>>>
 > = {
 	'primera-comunion': {
-		confirmed: {
-			title: 'Confirmación recibida',
-			subtitle:
-				'Tu asistencia ha quedado registrada. Será un honor compartir este día contigo.',
+		usted: {
+			confirmed: {
+				title: 'Confirmación recibida',
+				subtitle:
+					'Su asistencia quedó registrada. Será un honor compartir este día con usted.',
+			},
+		},
+		legacy: {
+			confirmed: {
+				title: 'Confirmación recibida',
+				subtitle:
+					'Tu asistencia ha quedado registrada. Será un honor compartir este día contigo.',
+			},
 		},
 	},
 };
 
 export function getDefaultResponseMessages(
 	eventType: string | undefined,
-	statusKey: 'confirmed' | 'declined',
-): { title: string; subtitle: string } {
+	statusKey: RsvpResponseStatus,
+	copy: RsvpDefaultCopy = 'usted',
+): ResponseMessage {
 	const eventDefaults = eventType
-		? DEFAULT_RESPONSE_MESSAGES_BY_EVENT_TYPE[eventType]
+		? DEFAULT_RESPONSE_MESSAGES_BY_EVENT_TYPE[eventType]?.[copy]
 		: undefined;
-	return eventDefaults?.[statusKey] ?? RSVP_DEFAULT_RESPONSE_MESSAGES[statusKey];
+	return eventDefaults?.[statusKey] ?? RSVP_DEFAULT_RESPONSE_MESSAGES[copy][statusKey];
 }
+
+export function getNamelessResponseTitle(
+	statusKey: RsvpResponseStatus,
+	copy: RsvpDefaultCopy = 'usted',
+): string {
+	return RSVP_NAMELESS_TITLES[copy][statusKey];
+}
+
+/** Hint under the attendee count; `{count}` is the places reserved for the guest. */
+export function getDefaultGuestHint(copy: RsvpDefaultCopy = 'usted'): string {
+	return copy === 'legacy'
+		? 'Hemos reservado {count} lugares para tu invitación. Puedes ajustar el número si asistirán menos personas.'
+		: 'Hemos reservado {count} lugares para su invitación. Puede ajustar el número si asistirán menos personas.';
+}
+
+const LABEL_WORDS: Record<RsvpDefaultCopy, { name: string; write: string }> = {
+	usted: { name: 'Su nombre', write: 'Escriba' },
+	legacy: { name: 'Tu nombre', write: 'Escribe' },
+};
 
 export function resolveLabels(
 	labels?: {
@@ -118,12 +210,14 @@ export function resolveLabels(
 	},
 	celebrantName?: string,
 	variant?: string,
+	copy: RsvpDefaultCopy = 'usted',
 ): ResolvedLabels {
 	const isEditorial = ['editorial-press-pass', 'editorial'].includes(variant ?? '');
 	const celebrantFirstName = celebrantName?.trim().split(/\s+/)[0] || 'el festejado';
+	const { name, write } = LABEL_WORDS[copy];
 
 	return {
-		nameLabel: labels?.name ?? 'Tu nombre',
+		nameLabel: labels?.name ?? name,
 		guestCountLabel: labels?.guestCount ?? 'Número de asistentes',
 		phoneLabel: labels?.phone ?? 'Teléfono de contacto',
 		attendanceLabel: labels?.attendance ?? 'Asistencia',
@@ -133,10 +227,14 @@ export function resolveLabels(
 			(isEditorial ? 'DEDICATORIA' : `Mensaje para ${celebrantFirstName}`),
 		notesPlaceholder:
 			labels?.notesPlaceholder ??
-			(isEditorial
-				? `Escribe unas palabras para ${celebrantFirstName}…`
-				: `Escribe un mensaje para ${celebrantFirstName}...`),
+			defaultNotesPlaceholder(write, isEditorial, celebrantFirstName),
 	};
+}
+
+function defaultNotesPlaceholder(write: string, isEditorial: boolean, firstName: string): string {
+	return isEditorial
+		? `${write} unas palabras para ${firstName}…`
+		: `${write} un mensaje para ${firstName}...`;
 }
 
 function parseAttendeeCount(attendeeCount: number | string): number {
@@ -210,26 +308,28 @@ export function validateRsvpForm({
 	supportsPlusOnes,
 	effectiveGuestCap,
 	isPublicRsvp,
+	copy = 'usted',
 }: ValidationContext) {
 	const errors: Record<string, string> = {};
+	const messages = VALIDATION_MESSAGES[copy];
 
 	// For public RSVP, identity fields are hidden until attendance is selected.
 	// Only validate them once attendance has been chosen.
 	const identityFieldsVisible = isPublicRsvp ? attendanceStatus !== null : true;
 
 	if (!nameLocked && identityFieldsVisible && !name.trim()) {
-		errors.name = 'Por favor, escribe tu nombre completo.';
+		errors.name = messages.name;
 	}
 	if (identityFieldsVisible) {
 		const normalizedPhone = normalizePhoneInput(phone);
 		if (phoneRequired && !normalizedPhone) {
-			errors.phone = 'Por favor, escribe tu teléfono.';
+			errors.phone = messages.phone;
 		} else if (normalizedPhone && normalizedPhone.length !== 10) {
-			errors.phone = 'Escribe un teléfono de 10 dígitos.';
+			errors.phone = messages.phoneLength;
 		}
 	}
 	if (!attendanceStatus) {
-		errors.attendance = 'Por favor, selecciona si asistirás.';
+		errors.attendance = messages.attendance;
 	}
 	if (attendanceStatus === 'confirmed') {
 		const normalizedCount = supportsPlusOnes ? parseAttendeeCount(attendeeCount) : 1;

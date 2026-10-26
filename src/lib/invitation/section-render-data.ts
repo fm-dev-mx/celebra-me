@@ -10,7 +10,8 @@ import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variant
 import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import { getLatestMessage } from '@/lib/rsvp/core/guest-message';
-import { DEMO_GUEST_NAME } from '@/components/invitation/rsvp-logic';
+import { DEMO_GUEST_NAME, type RsvpDefaultCopy } from '@/components/invitation/rsvp-logic';
+import { keepsLegacyRsvpDefaults } from '@/lib/invitation/legacy-rsvp-defaults';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -103,6 +104,7 @@ type DescriptorData =
 					guestComment: string;
 				};
 				isDemoPreview?: boolean;
+				defaultCopy?: RsvpDefaultCopy;
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
@@ -242,6 +244,10 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 					}
 				: undefined,
 			isDemoPreview: pageContext.isDemoPreview ?? false,
+			// Only new invitations carry it, so a legacy one's island props stay as they were.
+			...(keepsLegacyRsvpDefaults(pageContext.viewModel.id)
+				? {}
+				: { defaultCopy: 'usted' as const }),
 		},
 	};
 }

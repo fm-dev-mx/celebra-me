@@ -13,6 +13,7 @@ import {
 	buildWhatsAppUrl,
 	getDefaultRsvpSubcopy,
 	ALLOW_RESPONSE_EDITING_BY_DEFAULT,
+	type RsvpDefaultCopy,
 	type RsvpResponseMessages,
 } from '@/components/invitation/rsvp-logic';
 import RsvpContext from '@/components/invitation/rsvp-context';
@@ -71,6 +72,8 @@ interface RSVPProps {
 	eventTimeZone?: string;
 	calendarTitle?: string;
 	calendarDescription?: string;
+	/** Default copy for what the content leaves out; absent means `legacy` (legacy-rsvp-defaults.ts). */
+	defaultCopy?: RsvpDefaultCopy;
 }
 
 /* ------------------------------------------------------------------ */
@@ -126,6 +129,7 @@ function scrollRsvpCardIntoView(target: HTMLElement, behavior: ScrollBehavior = 
 /* ------------------------------------------------------------------ */
 
 const RSVP: React.FC<RSVPProps> = ({
+	defaultCopy = 'legacy',
 	eventType,
 	eventSlug,
 	subcopy,
@@ -196,12 +200,13 @@ const RSVP: React.FC<RSVPProps> = ({
 		initialGuestData,
 		prefersReducedMotion: !!prefersReducedMotion,
 		isDemoPreview,
+		defaultCopy,
 	});
 	const showIdentityFields = isPublicRsvp
 		? attendanceStatus !== null && !nameLocked
 		: !nameLocked;
-	const labelsResolved = resolveLabels(labels, celebrantName, variant);
-	const resolvedSubcopy = subcopy ?? getDefaultRsvpSubcopy(eventType);
+	const labelsResolved = resolveLabels(labels, celebrantName, variant, defaultCopy);
+	const resolvedSubcopy = subcopy ?? getDefaultRsvpSubcopy(eventType, defaultCopy);
 	const showWhatsAppCta =
 		submitted &&
 		attendanceStatus === 'confirmed' &&
@@ -317,7 +322,7 @@ const RSVP: React.FC<RSVPProps> = ({
 
 	return (
 		<section data-screenshot-section="rsvp" className="rsvp-section" data-rsvp-flow={flow}>
-			<RsvpContext.Provider value={{ eventType }}>
+			<RsvpContext.Provider value={{ eventType, defaultCopy }}>
 				{/* Keep the first server/client render visible regardless of motion preference. */}
 				<AnimatePresence initial={false} mode="wait">
 					{submitted ? (

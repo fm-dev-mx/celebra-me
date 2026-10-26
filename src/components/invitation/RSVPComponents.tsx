@@ -5,9 +5,11 @@ import { useRsvpContext } from '@/components/invitation/rsvp-context';
 import { resolveEventEdition } from '@/lib/invitation/event-type-contract';
 import {
 	getDefaultResponseMessages,
+	getNamelessResponseTitle,
 	interpolateRsvpMessage,
 	ALLOW_RESPONSE_EDITING_BY_DEFAULT,
 	type RsvpAttendanceChoice,
+	type RsvpDefaultCopy,
 	type RsvpResponseMessages,
 } from '@/components/invitation/rsvp-logic';
 import {
@@ -120,19 +122,17 @@ function resolveGreetingMessages(
 	name: string,
 	celebrantName?: string,
 	eventType?: string,
+	copy: RsvpDefaultCopy = 'legacy',
 ): { title: string; subtitle: string } {
 	const trimmedName = name.trim();
 	const vars = { guestName: trimmedName, celebrantName };
 	const statusKey = attendanceStatus === 'confirmed' ? 'confirmed' : 'declined';
-	const defaults = getDefaultResponseMessages(eventType, statusKey);
+	const defaults = getDefaultResponseMessages(eventType, statusKey, copy);
 	const custom = responseMessages?.[statusKey];
 
 	let rawTitle = custom?.title ?? defaults.title;
 	if (!trimmedName && rawTitle.includes('{guestName}')) {
-		rawTitle =
-			statusKey === 'confirmed'
-				? '¡Gracias por confirmar su asistencia!'
-				: 'Gracias por avisarnos.';
+		rawTitle = getNamelessResponseTitle(statusKey, copy);
 	}
 
 	return {
@@ -238,7 +238,7 @@ export const SubmittedState = forwardRef<
 		calendarDescription,
 	} = props;
 
-	const { eventType } = useRsvpContext();
+	const { eventType, defaultCopy } = useRsvpContext();
 	const isConfirmed = attendanceStatus === 'confirmed';
 	const { title: greetingTitle, subtitle: greetingSubtitle } = resolveGreetingMessages(
 		attendanceStatus,
@@ -246,6 +246,7 @@ export const SubmittedState = forwardRef<
 		name,
 		celebrantName,
 		eventType,
+		defaultCopy,
 	);
 
 	return (

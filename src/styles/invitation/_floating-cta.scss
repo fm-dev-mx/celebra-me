@@ -4,10 +4,11 @@
 // ==========================================================================
 // FLOATING REPLY BUTTON (Footer.astro, floating-cta.ts)
 // A pill at the bottom of the screen on phones and tablets: "Confirmar asistencia" before the
-// guest answers, "Agendar" with the venues' calendars after a yes. Hidden unless a profile sets
-// --invitation-floating-cta: on. Wide screens keep the header's own Confirmar link instead.
+// guest answers, "Agendar" with the venues' calendars after a yes. On by default on a personal
+// link (data-floating-cta-default), elsewhere only when a profile sets --invitation-floating-cta: on.
+// Wide screens keep the header's own Confirmar link instead.
 // Tokens (all optional):
-//   --invitation-floating-cta   `on` to show it
+//   --invitation-floating-cta   `on` to show it, `off` to keep it away from a personal link
 //   --floating-cta-bg / -ink    Pill fill and text
 //   --floating-cta-border       Pill outline
 //   --floating-cta-shadow       Pill shadow
@@ -48,6 +49,12 @@ $lantern-shape: 40% 40% 45% 45%;
 		opacity: 0%;
 		translate: -50% 0.75rem;
 		pointer-events: none;
+	}
+
+	// The music button sits at the bottom right on phones: centre the pill in the room left of it.
+	body:has([data-music-player]) & {
+		left: calc(50% - 2rem);
+		max-width: calc(100vw - 6rem);
 	}
 
 	@include mixins.respond-to(lg) {

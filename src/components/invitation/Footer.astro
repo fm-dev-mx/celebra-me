@@ -14,6 +14,8 @@ interface Props {
 	closingPhrase?: string;
 	showFooterBranding?: boolean;
 	showContactCta?: boolean;
+	/** Turns the floating reply button on unless the profile sets it off (a personal link). */
+	floatingCtaByDefault?: boolean;
 	/** Attribution line for a licensed song, linking to its same-site credit page. */
 	musicCredit?: { title?: string; creditsUrl: string };
 	class?: string;
@@ -26,6 +28,7 @@ const {
 	closingPhrase,
 	showFooterBranding = true,
 	showContactCta = true,
+	floatingCtaByDefault = false,
 	musicCredit,
 	class: className,
 } = Astro.props;
@@ -37,8 +40,15 @@ const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getCon
 const rightsYear = new Date().getFullYear();
 ---
 
-<!-- Floating reply button; shown only when the invitation's profile turns it on (floating-cta.ts). -->
-<div class="floating-cta" data-floating-cta data-visible="false" hidden>
+<!-- Floating reply button; on by default on a personal link, otherwise only when the profile turns
+     it on (floating-cta.ts). -->
+<div
+	class="floating-cta"
+	data-floating-cta
+	data-floating-cta-default={floatingCtaByDefault ? 'on' : undefined}
+	data-visible="false"
+	hidden
+>
 	<div
 		id="floating-cta-calendar"
 		class="floating-cta__panel"

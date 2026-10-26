@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+	getDefaultGuestHint,
 	getDefaultResponseMessages,
 	getDefaultRsvpSubcopy,
 	resolveLabels,
@@ -49,9 +50,9 @@ function stringValues(node: unknown, path = ''): Array<{ path: string; text: str
 
 /**
  * RSVP copy a guest sees once shared defaults fill what the demo leaves out.
- * The guest-count hint and access-card defaults live in JSX/Astro and address the guest
- * with "tú", so a missing override is reported as a placeholder that fails the scan.
- * Shared validation errors are not overridable per invitation and are not covered here.
+ * The access-card defaults live in Astro and address the guest with "tú", so a missing override
+ * is reported as a placeholder that fails the scan. Shared validation errors are not overridable
+ * per invitation and are covered in rsvp-default-copy.test.ts.
  */
 function resolvedRsvpCopy(content: DemoContent): Record<string, string> {
 	const rsvp = content.rsvp ?? {};
@@ -59,7 +60,7 @@ function resolvedRsvpCopy(content: DemoContent): Record<string, string> {
 	const missing = (field: string) => `tu ${field} (default)`;
 	const copy: Record<string, string> = {
 		subcopy: rsvp.subcopy ?? getDefaultRsvpSubcopy(content.eventType),
-		guestHint: rsvp.labels?.guestHint ?? missing('guestHint'),
+		guestHint: rsvp.labels?.guestHint ?? getDefaultGuestHint(),
 		'personalizedAccess.subtitle': rsvp.personalizedAccess?.subtitle ?? missing('subtitle'),
 		'personalizedAccess.footerText':
 			rsvp.personalizedAccess?.footerText ?? missing('footerText'),
