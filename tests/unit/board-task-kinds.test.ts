@@ -119,8 +119,8 @@ describe('task kinds (T130): kind files', () => {
 			const lines = readFileSync(path.join(ROOT, '.agent', 'kinds', `${tipo}.yaml`), 'utf8')
 				.trimEnd()
 				.split('\n');
-			// T322: 30 lines plus the three of para_usted.
-			expect(lines.length).toBeLessThanOrEqual(33);
+			// T322: 30 lines plus the three of para_usted; T381: develop merge authorization.
+			expect(lines.length).toBeLessThanOrEqual(34);
 		}
 	});
 
@@ -209,6 +209,9 @@ describe('task kinds (T130): generated prompt', () => {
 			'git switch -c feat/board-task-kinds origin/develop',
 			'pnpm board claim tipos-y-prompts --agente=claude --carril=f05-plataforma --rama=feat/board-task-kinds --titulo="f05 · T130 · Tipos y prompts"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session=feat/board-task-kinds',
 		]);
+		expect(r.sections.AUTORIZO).toContain(
+			'Merge normal de origin/develop en feat/board-task-kinds para resolver un PR DIRTY o atrasado (sin rebase, sin force); solo se pregunta si el conflicto toca una migración o archivos de otra tarea.',
+		);
 		expect(r.sections.AUTORIZO.at(-1)).toBe('Leer el tablero.');
 		expect(r.sections['NO HAGAS'].at(-1)).toBe('- No toque view.html.');
 		// d210 was replaced by d240: the prompt carries the current text, on one line.
@@ -243,6 +246,10 @@ describe('task kinds (T130): generated prompt', () => {
 		// d290: close already leaves a task with a PR «en revision», so no set step comes between.
 		expect(steps.some((l: string) => l.includes('pnpm board set tipos-y-prompts'))).toBe(false);
 		expect(review).toBeGreaterThan(close);
+		// d259, T381: the AL TERMINAR section ends with archiving the chat.
+		expect(r.sections['AL TERMINAR'].at(-1)).toBe(
+			'7. Archivar el chat cuando la tarea quede unida/hecha y su PR unido (d259); el despachador de Codex/Gemini archiva sus chats cuya tarea ya terminó.',
+		);
 		expect(r.meta).toMatchObject({
 			formato: 'prompt-v1',
 			tarea: 'T130 tipos-y-prompts',

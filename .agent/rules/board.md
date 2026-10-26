@@ -82,9 +82,10 @@ routing and the internal modules work lives in
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`. T322:
   the text is one plain line with a question; a decision adds two or more `--opcion="…"`, the
   recommended one first; technical detail (SHAs, decision ids, commands) goes in `--detalle="…"`.
-  `pnpm board` refuses an owner message that breaks this. **Inherited acceptance**: what the owner
-  already accepted in a task (its `AUTORIZO`, `DECISIONES` or an answered question) holds for its
-  review rounds and follow-ups, which never ask it again.
+  Questions to the owner by board msg carry a response line ready to paste. `pnpm board` refuses an
+  owner message that breaks this. **Inherited acceptance**: what the owner already accepted in a
+  task (its `AUTORIZO`, `DECISIONES` or an answered question) holds for its review rounds and
+  follow-ups, which never ask it again.
 
 ## Closing and review
 
@@ -134,7 +135,11 @@ routing and the internal modules work lives in
   and last `METADATOS` (`formato: prompt-v1`, one `clave: valor` per line). `pnpm board` refuses a
   `prompt-v1` that breaks this shape. A task with a `tipo` (T130) gets its prompt generated from
   `.agent/kinds/<tipo>.yaml`; an `operacion` with `destino=cloudflare` uses
-  `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default).
+  `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default). The AL TERMINAR section ends
+  with archiving the chat once the task is unida/hecha and its PR merged (d259); the Codex/Gemini
+  dispatcher archives its chats whose task already finished. Kind templates authorize a standard
+  merge of origin/develop into the task branch to resolve a dirty or behind PR (no rebase, no
+  force), asking only if the conflict touches a migration or files of another task.
 - **Task number**: `num` is fixed when the task is added and never reused; it is `T<num>` everywhere
   (d158).
 - **Session name**: `<lane> · T<n> · PR #<n> · <short description>`, for example

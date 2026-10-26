@@ -17,6 +17,7 @@ pasos:
     - '2. Commit en inglés, push de {rama} y PR a develop.'
 autorizado_por_defecto:
     - 'Modo rápido hasta develop: git-safety, commit, push y PR a develop de {rama}. La unión la hace el coordinador con la revisión cruzada aprobada.'
+    - 'Merge normal de origin/develop en {rama} para resolver un PR DIRTY o atrasado (sin rebase, sin force); solo se pregunta si el conflicto toca una migración o archivos de otra tarea.'
 no_hagas:
     - '- No cambie la rama de Integración ni reinicie 127.0.0.1:4320 (d210).'
     - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'

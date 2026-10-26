@@ -585,7 +585,11 @@ The sync never archives a task (d278).
 copied lists), `pasos_inicio`, `pasos`, `autorizado_por_defecto`, `no_hagas`, `pare_si`, `devuelve`
 (the T129 `resultado` fields), `listo_si` (validation level), `al_terminar` (steps before the close
 line) and the optional `tras_cierre` (steps after it: `codigo` puts there `pnpm board review`, d255;
-`close` already left it `en revision`, d290). The coordinator writes only `busca` (the
+`close` already left it `en revision`, d290). The prompt's AL TERMINAR section ends with archiving
+the chat once the task is unida/hecha and its PR merged (d259); the Codex/Gemini dispatcher archives
+its chats whose task already finished. Kind templates authorize a standard merge of `origin/develop`
+into the task branch to resolve a dirty or behind PR (no rebase, no force), asking only if the
+conflict touches a migration or files of another task. The coordinator writes only `busca` (the
 `QUÉ SE BUSCA` text, with «Terminado cuando:») and, when the task needs them, `corto` (the session
 name's description), `pasos`, `autorizo`, `noHagas`, `lee` and `decisiones` (dNNN ids; decisions
 naming the task in `tareas` and `decision` requisitos count too). `add`, `set` and `plan` regenerate

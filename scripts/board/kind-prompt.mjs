@@ -121,6 +121,7 @@ function closingLines(t, kind, pr, fill) {
 		...(kind.tras_cierre ?? []).map(fill),
 		'Avise al coordinador con la línea que imprime close.',
 		'Responda: qué cambió, comprobaciones corridas y saltadas, riesgos.',
+		'Archivar el chat cuando la tarea quede unida/hecha y su PR unido (d259); el despachador de Codex/Gemini archiva sus chats cuya tarea ya terminó.',
 	].map((line, i) => `${i + 1}. ${line}`);
 }
 
