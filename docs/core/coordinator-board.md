@@ -127,19 +127,29 @@ Before running `pnpm board:verify` in a board review, write `sesiones.json` in t
 `include_archived: true` and a limit that covers every session. Pass another file with
 `--sesiones=<file>`. The `DESFASES` block then lists, report only:
 
-| Section                        | Rule                                                                 |
-| ------------------------------ | -------------------------------------------------------------------- |
-| SESIONES SIN TAREA             | open session whose title has no `T<n>`, or a `T<n>` not on the board |
-| CANDADO CON SESIÓN INEXISTENTE | Claude lock whose `sesion` is not in `sesiones.json`                 |
-| NOMBRE DISTINTO                | session title not `<lane> · T<n> · PR #<n> · <description>` (d158)   |
-| TAREAS EN CURSO SIN SESIÓN     | `en curso` without a lock                                            |
-| UNIDAS CON CANDADO             | `unida`/`hecha` still locked, so its lane looks busy                 |
-| RAMAS UNIDAS SIN BORRAR        | remote or lane branch whose PR is `MERGED`                           |
-| PR CERRADO SIN UNIR            | PR `CLOSED` without merge, branch still on origin, its task closed   |
+| Section                          | Rule                                                                 |
+| -------------------------------- | -------------------------------------------------------------------- |
+| SESIONES SIN TAREA               | open session whose title has no `T<n>`, or a `T<n>` not on the board |
+| CANDADO CON SESIÓN INEXISTENTE   | Claude lock whose `sesion` is not in `sesiones.json`                 |
+| NOMBRE DISTINTO                  | session title not `<lane> · T<n> · PR #<n> · <description>` (d158)   |
+| TAREAS EN CURSO SIN SESIÓN       | `en curso` without a lock                                            |
+| UNIDAS CON CANDADO               | `unida`/`hecha` still locked, so its lane looks busy                 |
+| RAMAS UNIDAS SIN BORRAR          | remote or lane branch whose PR is `MERGED`                           |
+| PR CERRADO SIN UNIR              | PR `CLOSED` without merge, branch still on origin, its task closed   |
+| CANDADO SIN CHAT DE CODEX/GEMINI | Codex/Gemini lock with no open chat naming its `T<n>` (source read)  |
+| CHATS POR ARCHIVAR               | Codex/Gemini chat whose task finished, or older dispatcher runs      |
 
 Example: `NOMBRE DISTINTO: «f08 · T11 · Demos en usted» (le falta «PR #485»)`. The coordinator
 session itself is never listed as a session without a task. Without `sesiones.json` the first three
-sections are skipped with a notice and the rest still run.
+sections are skipped with a notice and the rest still run. The Codex and Gemini stores are read live
+(`external-sessions.mjs`, as `pnpm board sesiones`); a missing or busy one prints `NO DISPONIBLE`
+and its lock check is skipped.
+
+`AVISOS` also crosses every `en curso`/`en revision` task by the files its PR
+(`gh pr view --json files`) or branch (`git diff --name-only origin/develop...origin/<rama>`)
+changes: a file shared by tasks in different lanes, more than two tasks changing `scripts/board/`
+(d270), and a task changing `supabase/migrations/` without `toca: ["migracion"]`. A query that fails
+leaves `archivos` coverage `UNVERIFIED`.
 
 The owner registers the board server once from Integration with `pnpm board:serve:register`
 (`scripts/board/serve-register.ps1`): a Windows Task Scheduler task «Celebra-me servidor del
@@ -482,13 +492,15 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 `pnpm board:sync [--dry-run] [--json] [--horas=<n>]` (the view's «Ver cambios» / «Sincronizar»
 buttons) is a no-AI script: after `git fetch --prune origin` it reads `git worktree list`, local and
 origin branches and `gh pr list --state all`, matches each open task by `pr`, then `rama`, then the
-id convention, and writes only with `pnpm board set --coordinador` at the rev it read: an open PR
-sets `pr` (and a missing `rama`) and moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a
-merged PR moves the task to `unida`. **d170**: a merged PR also drops the task's lock, whoever holds
-it, through `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished
-tasks that still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks
-with an open PR are only reported; review children are never touched. A lock older than `--horas`
-(default `STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
+id convention, then the only open PR that names it canonically (d159: `T<n> <id>` in its title, or a
+`Board task: T<n> <id>` body line; any other mention, or two such PRs, link nothing), and writes
+only with `pnpm board set --coordinador` at the rev it read: an open PR sets `pr` (and a missing
+`rama`) and moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the task to
+`unida`. **d170**: a merged PR also drops the task's lock, whoever holds it, through
+`pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
+still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
+open PR are only reported; review children are never touched. A lock older than `--horas` (default
+`STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
 `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
 «posible sesión cerrada» and never released by the sync (the owning session or the coordinator with
 authority does).
@@ -497,13 +509,15 @@ authority does).
 `unida`/`hecha` task whose check passes (the verifier's `checkTask`; a PR state comes from the list
 it already read) to `comprobada` with that `evidencia`, runs `compact --antes=7d` (it only
 summarizes tasks the owner already archived) and `prune-backups --aplicar`, and detaches each free,
-clean lane f05–f12 at `origin/develop` (`git switch --detach`). A lane is free when no lock and no
-open task's `carril` holds it and it is detached or on a branch whose newest PR merged; a free lane
-with uncommitted or untracked changes, or on a branch without a merged PR, is only reported. Right
-before each switch, inside the store lock (so no `claim` can take the lane in between), the sync
-reads the board, the lane's branch, HEAD and `git status` again and skips the lane, reporting why,
-when any changed. `--dry-run` lists every step and writes nothing; the result carries them under
-`higiene`. The sync never archives a task (d278).
+clean lane f05–f12 at `origin/develop` (`git switch --detach`), then deletes the branch it left with
+`git branch -d` when `origin/develop` already contains it (a branch not merged there, or still
+checked out elsewhere, stays and is reported). A lane is free when no lock and no open task's
+`carril` holds it and it is detached or on a branch whose newest PR merged; a free lane with
+uncommitted or untracked changes, or on a branch without a merged PR, is only reported. Right before
+each switch, inside the store lock (so no `claim` can take the lane in between), the sync reads the
+board, the lane's branch, HEAD and `git status` again and skips the lane, reporting why, when any
+changed. `--dry-run` lists every step and writes nothing; the result carries them under `higiene`.
+The sync never archives a task (d278).
 
 ### Checks and bitácora
 
