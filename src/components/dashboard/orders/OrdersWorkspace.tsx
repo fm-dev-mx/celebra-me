@@ -321,7 +321,7 @@ export default function OrdersWorkspace() {
 										value={search}
 										onChange={(event) => setSearch(event.target.value)}
 									/>
-									<button className="btn-secondary" disabled={busy}>
+									<button type="submit" className="btn-secondary" disabled={busy}>
 										Buscar cliente
 									</button>
 								</form>
@@ -379,7 +379,11 @@ export default function OrdersWorkspace() {
 										value={phone}
 										onChange={(event) => setPhone(event.target.value)}
 									/>
-									<button className="btn-primary" disabled={busy || !name.trim()}>
+									<button
+										type="submit"
+										className="btn-primary"
+										disabled={busy || !name.trim()}
+									>
 										Crear cliente y continuar
 									</button>
 								</form>
@@ -448,7 +452,7 @@ export default function OrdersWorkspace() {
 									>
 										Volver
 									</button>
-									<button className="btn-primary" disabled={busy}>
+									<button type="submit" className="btn-primary" disabled={busy}>
 										Crear pedido y continuar
 									</button>
 								</div>
@@ -491,7 +495,7 @@ export default function OrdersWorkspace() {
 									value={date}
 									onChange={(event) => setDate(event.target.value)}
 								/>
-								<button className="btn-primary" disabled={busy}>
+								<button type="submit" className="btn-primary" disabled={busy}>
 									{busy ? 'Guardando…' : 'Guardar pago por transferencia'}
 								</button>
 							</form>
