@@ -87,14 +87,15 @@ const readTask = (dir: string, id: string) =>
 	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
 const exists = (dir: string, id: string) =>
 	readdirSync(path.join(dir, 'tareas')).includes(`${id}.json`);
-/** Every bitácora message row written in `dir`. */
-const messages = (dir: string) => {
+/** Every bitácora row written in `dir`. */
+const logRows = (dir: string) => {
 	const log = path.join(dir, 'bitacora');
 	return readdirSync(log)
 		.flatMap((f) => readFileSync(path.join(log, f), 'utf8').trim().split('\n'))
-		.map((l) => JSON.parse(l))
-		.filter((r) => r.mensaje);
+		.map((l) => JSON.parse(l));
 };
+/** Every bitácora message row written in `dir`. */
+const messages = (dir: string) => logRows(dir).filter((r) => r.mensaje);
 
 const CIERRE = {
 	resumen: 'Hecho.',
@@ -215,6 +216,50 @@ describe('review waits for a green CI (d288)', () => {
 		});
 		expect(r.status).toBe(2);
 		expect(r.err).toContain('el CI de #10@aaaaaaa falló (unit, deploy)');
+		expect(exists(dir, 'de-claude-revision')).toBe(false);
+	});
+
+	it('creates the round of a PR without any check only with --sin-ci, and records it', () => {
+		const dir = makeBoard([inReview()]);
+		const none = { ...files('docs/x.md'), statusCheckRollup: [] };
+		const waiting = board(dir, ['review', 'de-claude', `--sha=${SHA}`, '--espera-min=0.001'], {
+			pr: none,
+			env: { CELEBRA_BOARD_CI_POLL_MS: '20' },
+		});
+		expect(waiting.err).toContain('aún no empieza: la vuelta queda en espera');
+		expect(waiting.err).toContain('agregue --sin-ci');
+		const r = board(dir, ['review', 'de-claude', `--sha=${SHA}`, '--sin-ci'], { pr: none });
+		expect(r.status).toBe(0);
+		expect(r.out).toContain('Sin CI: GitHub no lista ningún check en #10@aaaaaaa');
+		expect(readTask(dir, 'de-claude-revision').revisionSha).toBe(SHA);
+		expect(logRows(dir)).toContainEqual(
+			expect.objectContaining({
+				tarea: 'de-claude-revision',
+				corrio: 'pnpm board review --sin-ci',
+				salio: 'GitHub no lista ningún check en #10@aaaaaaa',
+			}),
+		);
+	});
+
+	it('refuses --sin-ci while any check exists, and a red CI keeps its own refusal', () => {
+		const dir = makeBoard([inReview()]);
+		const green = [{ name: 'ci', status: 'COMPLETED', conclusion: 'SUCCESS' }];
+		for (const rollup of [pending.statusCheckRollup, green]) {
+			const r = board(dir, ['review', 'de-claude', `--sha=${SHA}`, '--sin-ci'], {
+				pr: { ...files('docs/x.md'), statusCheckRollup: rollup },
+			});
+			expect(r.status).toBe(2);
+			expect(r.err).toContain('--sin-ci solo vale cuando GitHub no lista ningún check');
+		}
+		const red = board(dir, ['review', 'de-claude', `--sha=${SHA}`, '--sin-ci'], {
+			pr: {
+				...files('docs/x.md'),
+				statusCheckRollup: [{ name: 'unit', status: 'COMPLETED', conclusion: 'FAILURE' }],
+			},
+		});
+		expect(red.err).toContain('el CI de #10@aaaaaaa falló (unit)');
+		const valued = board(dir, ['review', 'de-claude', `--sha=${SHA}`, '--sin-ci=si']);
+		expect(valued.err).toContain('--sin-ci no lleva valor');
 		expect(exists(dir, 'de-claude-revision')).toBe(false);
 	});
 

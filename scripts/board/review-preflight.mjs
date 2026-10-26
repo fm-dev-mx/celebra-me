@@ -46,18 +46,37 @@ export function viewPr(task, sha) {
 
 /**
  * d288: null when the CI of `task`'s head `sha` (read in `pr`) is green; `{espera}` (the reason) while it still runs or has not
- * started. A red CI refuses the round, naming the failed checks.
+ * started. A red CI refuses the round, naming the failed checks. `sinCi` (--sin-ci) lets a PR whose rollup GitHub
+ * lists empty through at once, and is refused while any check exists.
  */
-export function ciGate(task, sha, pr = viewPr(task, sha)) {
+export function ciGate(task, sha, pr = viewPr(task, sha), { sinCi = false } = {}) {
 	const ci = ciOf(pr.statusCheckRollup);
 	const fallidos = failedChecks(pr.statusCheckRollup);
-	if (ci === 'verde') return null;
+	const at = `${task.pr}@${sha.slice(0, 7)}`;
 	if (ci === 'rojo')
 		throw new UsageError(
-			`el CI de ${task.pr}@${sha.slice(0, 7)} falló (${fallidos.join(', ')}): corrija, haga push y pida la revisión del nuevo SHA.`,
+			`el CI de ${at} falló (${fallidos.join(', ')}): corrija, haga push y pida la revisión del nuevo SHA.`,
 		);
+	if (sinCi) {
+		// Only an explicit empty list counts as "no checks": a missing rollup is unknown evidence.
+		if (Array.isArray(pr.statusCheckRollup) && pr.statusCheckRollup.length === 0) return null;
+		throw new UsageError(
+			`--sin-ci solo vale cuando GitHub no lista ningún check; el CI de ${at} está ${ci ?? 'sin leer'}: quite --sin-ci.`,
+		);
+	}
+	if (ci === 'verde') return null;
 	return {
-		espera: `el CI de ${task.pr}@${sha.slice(0, 7)} ${ci === 'pendiente' ? 'sigue corriendo' : 'aún no empieza'}`,
+		espera: `el CI de ${at} ${ci === 'pendiente' ? 'sigue corriendo' : 'aún no empieza'}`,
+	};
+}
+
+/** --sin-ci (no value): the `{corrio, salio}` of the round's bitácora row, or null without the flag. */
+export function sinCiTrace(flags, task, sha) {
+	if (flags['sin-ci'] === undefined) return null;
+	if (flags['sin-ci'] !== true) throw new UsageError('--sin-ci no lleva valor');
+	return {
+		corrio: 'pnpm board review --sin-ci',
+		salio: `GitHub no lista ningún check en ${task.pr}@${sha.slice(0, 7)}`,
 	};
 }
 
@@ -85,7 +104,7 @@ export async function untilGreen(flags, out, attempt) {
 		if (!r?.espera) return r;
 		if (Date.now() >= until)
 			throw new UsageError(
-				`${r.espera}: la vuelta queda en espera. Vuelva a correr este mismo pnpm board review cuando el CI esté verde${minutes ? ` (esperé ${minutes} min)` : ''}.`,
+				`${r.espera}: la vuelta queda en espera. Vuelva a correr este mismo pnpm board review cuando el CI esté verde${minutes ? ` (esperé ${minutes} min)` : ''}${minutes && r.espera.endsWith('aún no empieza') ? '; si el PR no tiene ningún check, agregue --sin-ci' : ''}.`,
 			);
 		if (!flags.json) out(`${r.espera}; la vuelta se crea cuando esté verde…`);
 		await new Promise((done) => setTimeout(done, Math.min(pollMs(), until - Date.now())));

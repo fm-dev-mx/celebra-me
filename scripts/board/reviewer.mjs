@@ -208,8 +208,11 @@ export function chooseReviewer(author, agente, board, files, task) {
 	return { ...pick, revisor: pick.agente === author ? 'subagente' : undefined, issue };
 }
 
-/** What `review` prints for the new round `saved`, with the author session's steps for a subagent round. */
-export function reviewCreatedText(saved, pick, live, sha) {
-	const text = `${saved.id} creada para ${pick.agente} (vuelta ${saved.vuelta})${pick.motivo ? ` · ${pick.motivo}` : ''}${live ? `; ${live.id} cancelada` : ''}`;
+/** What `review` prints for the new round `saved` (and its --sin-ci trace), with the author session's steps for a subagent round. */
+export function reviewCreatedText(saved, pick, live, sha, sinCi = null) {
+	const text = [
+		`${saved.id} creada para ${pick.agente} (vuelta ${saved.vuelta})${pick.motivo ? ` · ${pick.motivo}` : ''}${live ? `; ${live.id} cancelada` : ''}`,
+		...(sinCi ? [`Sin CI: ${sinCi.salio}; anotado en la bitácora.`] : []),
+	].join('\n');
 	return pick.revisor ? [text, ...subagentSteps(saved, sha)].join('\n') : text;
 }
