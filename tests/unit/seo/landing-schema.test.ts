@@ -24,7 +24,7 @@ describe('landing schema JSON-LD', () => {
 		expect(org?.['@id']).toBe(`${DEFAULT_SITE_ORIGIN}/#organization`);
 		expect(org?.name).toBe('Celebra-me');
 		expect(org?.url).toBe(DEFAULT_SITE_ORIGIN);
-		expect(org?.logo).toBe(`${DEFAULT_SITE_ORIGIN}/favicon.svg`);
+		expect(org?.logo).toBe(`${DEFAULT_SITE_ORIGIN}/icons/icon-512.png`);
 		expect(org?.description).toBeTruthy();
 	});
 
