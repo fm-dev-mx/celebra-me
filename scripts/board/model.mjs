@@ -2,6 +2,7 @@
  * Board v3 model shared by `pnpm board`, `pnpm board:verify` and the local view (rules: .agent/rules/board.md).
  * Pure functions only: no Node APIs, so the view imports this same file in the browser.
  */
+import { validChangelog } from './changelog.mjs';
 import { awaitingClaim } from './delivery.mjs';
 import { isForeignPull } from './pr-ref.mjs';
 import { messageExtraIssues, ownerFieldChecks } from './owner-text.mjs';
@@ -952,6 +953,8 @@ export function cierreShapeIssues(c, t) {
 				out.push(`pendiente sin tarea: «${p.texto}» (escriba texto→T<n>)`);
 		}
 	if (!isDate(c.en)) out.push('cierre.en no es fecha');
+	if (!optional(c.changelog, validChangelog))
+		out.push('cierre.changelog debe ser {grupo, texto} de Keep a Changelog o «ninguno»');
 	out.push(...handoffIssues(c, t));
 	return out;
 }

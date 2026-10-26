@@ -710,6 +710,9 @@ describe('prompt lane (H13)', () => {
 describe('active task scope and external sessions', () => {
 	const files = (...paths: string[]) =>
 		JSON.stringify({ files: paths.map((p) => ({ path: p })) });
+	const SHA_B = 'b'.repeat(40);
+	const SHA_MIG = 'c'.repeat(40);
+	const SHA_MIG2 = 'd'.repeat(40);
 
 	it('warns about files shared across lanes, more than two board tasks (d270) and undeclared migrations', () => {
 		const dir = makeExport([
@@ -722,15 +725,23 @@ describe('active task scope and external sessions', () => {
 			task('g', { carrilPlaneado: 'f12-release', rama: 'feat/sin-push' }),
 		]);
 		const { report } = verify(dir, {
-			'git ls-remote --heads origin': ['feat/b', 'feat/mig', 'feat/mig2']
-				.map((b) => `${'a'.repeat(40)}\trefs/heads/${b}`)
-				.join('\n'),
-			'gh pr view 50 --json files': files('scripts/board/sync.mjs', 'src/a.ts'),
-			'git diff --name-only origin/develop...origin/feat/b':
-				'scripts/board/verify-board.mjs\nsrc/a.ts\n',
+			'git ls-remote --heads origin': [
+				`${SHA_B}\trefs/heads/feat/b`,
+				`${SHA_MIG}\trefs/heads/feat/mig`,
+				`${SHA_MIG2}\trefs/heads/feat/mig2`,
+			].join('\n'),
+			// Lockfiles and Markdown are shared by every lane and never warn (P3 of PR #607).
+			'gh pr view 50 --json files': files(
+				'scripts/board/sync.mjs',
+				'src/a.ts',
+				'pnpm-lock.yaml',
+				'docs/core/x.md',
+			),
+			[`git diff --name-only origin/develop...${SHA_B}`]:
+				'scripts/board/verify-board.mjs\nsrc/a.ts\npnpm-lock.yaml\ndocs/core/x.md\n',
 			'gh pr view 52 --json files': files('scripts/board/model.mjs'),
-			'git diff --name-only origin/develop...origin/feat/mig': 'supabase/migrations/1.sql\n',
-			'git diff --name-only origin/develop...origin/feat/mig2': 'supabase/migrations/2.sql\n',
+			[`git diff --name-only origin/develop...${SHA_MIG}`]: 'supabase/migrations/1.sql\n',
+			[`git diff --name-only origin/develop...${SHA_MIG2}`]: 'supabase/migrations/2.sql\n',
 		});
 		const scope = report.avisos.filter((a: { msg: string }) =>
 			/^(comparte|d270|cambia supabase)/.test(a.msg),
@@ -757,6 +768,25 @@ describe('active task scope and external sessions', () => {
 	it('keeps file coverage UNVERIFIED when a PR or branch cannot be read', () => {
 		const dir = makeExport([task('a', { carrilPlaneado: 'f05-plataforma', pr: '#50' })]);
 		expect(verify(dir, {}).report.cobertura.archivos).toBe('UNVERIFIED');
+	});
+
+	it('keeps file coverage UNVERIFIED when a PR reaches the 100-file cap of gh pr view', () => {
+		const dir = makeExport([task('a', { carrilPlaneado: 'f05-plataforma', pr: '#50' })]);
+		const many = Array.from({ length: 100 }, (_, i) => `src/f${i}.ts`);
+		const { report } = verify(dir, { 'gh pr view 50 --json files': files(...many) });
+		expect(report.cobertura.archivos).toBe('UNVERIFIED');
+	});
+
+	it('diffs a pushed branch at its live ls-remote SHA, never the local origin/<rama> ref', () => {
+		const dir = makeExport([task('b', { carrilPlaneado: 'f06-landing', rama: 'feat/b' })]);
+		const heads = { 'git ls-remote --heads origin': `${SHA_B}\trefs/heads/feat/b` };
+		// The live head's object is not fetched yet: the diff fails, so the list is UNVERIFIED, not stale.
+		expect(verify(dir, heads).report.cobertura.archivos).toBe('UNVERIFIED');
+		const fetched = {
+			...heads,
+			[`git diff --name-only origin/develop...${SHA_B}`]: 'src/a.ts\n',
+		};
+		expect(verify(dir, fetched).report.cobertura.archivos).toBe('VERIFIED');
 	});
 
 	it('flags Codex/Gemini locks without an open chat and lists chats to archive', () => {

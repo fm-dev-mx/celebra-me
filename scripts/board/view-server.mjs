@@ -36,6 +36,7 @@ const FILES = {
 	'/findings.mjs': ['findings.mjs', 'text/javascript; charset=utf-8'],
 	'/require-cierre.mjs': ['require-cierre.mjs', 'text/javascript; charset=utf-8'],
 	'/owner-text.mjs': ['owner-text.mjs', 'text/javascript; charset=utf-8'],
+	'/changelog.mjs': ['changelog.mjs', 'text/javascript; charset=utf-8'],
 };
 const SETTLE_MS = 150;
 const HEARTBEAT_MS = 25_000;
