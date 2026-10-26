@@ -59,6 +59,11 @@
  *   verify [--json] [--archivadas]              same as pnpm board:verify
  *   msg <id> --de=<a> --para=<b> "texto"        T126: a message about a task, kept in the bitácora
  *   inbox --agente=<a> [--todos]                messages to <a> not read yet; marks them read
+ *   atendido <id> --para=dueno|coordinador [--mensaje=<id>] [--nota=…]
+ *                                               d291: those messages about <id> were answered; they leave
+ *                                               «Le toca a usted»/«Le toca al coordinador» (bitácora row)
+ *   solape <id> [--sha=<head>] [--json]         d270/d291: may <id>'s board PR open now? git merge-tree against
+ *                                               each open board PR; exit 1 while it waits
  *   sigue [--json]                              T126: «Le toca a usted», «Le toca al coordinador» and «Detenidas»,
  *                                               with GitHub's open PRs (list prints them without GitHub)
  *   carriles [--json]                           T126: each lane's branch, clean or not, and its locked task, from git
@@ -100,8 +105,6 @@ import {
 	buildLogRow,
 	buildMessageRow,
 	taskLabel,
-	reviewChild,
-	reviewChildId,
 	roundLines,
 	reviewRounds,
 	historyRows,
@@ -122,6 +125,8 @@ import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subt
 import { ciGate, reviewPreflight, sinCiTrace, untilGreen, viewPr } from './review-preflight.mjs';
 import { assertOwner, noteOverride, overrideReason } from './lock-owner.mjs';
 import { authorSession } from './findings.mjs';
+import { leftByUnanswered, reviewChild, reviewChildId } from './rounds.mjs';
+import { overlapCommands } from './overlap.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
 import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
 import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
@@ -472,6 +477,8 @@ function reviewOnce({ pos, flags }, dir, out) {
 			prev,
 			num,
 			files: preflight.files,
+			// d291: rounds since the last verdict answered nothing, so this one reviews the whole PR.
+			previas: leftByUnanswered(src.id, loadBoard(dir)) ?? undefined,
 			generado: nowIso(),
 		});
 		// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
@@ -912,6 +919,7 @@ Object.assign(
 	maintenanceCommands,
 	inventory,
 	nextCommands({ getTask }),
+	overlapCommands({ getTask }),
 	delivery.commands,
 	closeCommands({ getTask, saveTask, checkRev, assertOwner, overrideReason, noteOverride }),
 	kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOverride }),

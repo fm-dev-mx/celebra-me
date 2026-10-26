@@ -519,6 +519,7 @@ import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound,
 import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
+import { optionsText } from '/owner-text.mjs';
 import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
 window.boardStarted=true;
@@ -547,6 +548,8 @@ const fmtDay=s=>{const t=T(s);return isNaN(t)?'—':new Date(t).toLocaleDateStri
 const ago=s=>relTime(s);
 // T151: free text links PRs, tasks (T132) and decisions (d210), cuts SHAs to 7 and dims paths and branches.
 const rich=s=>richText(s,{task:n=>S.board.tareas.find(t=>t.num===n),decision:id=>decById(id)});
+// T322: a question to the owner shows its options, the recommended one first; the technical detail stays folded.
+const msgExtraHtml=m=>(m.opciones&&m.opciones.length?`<div class="sub">Opciones: ${esc(optionsText(m.opciones))}</div>`:'')+(m.detalle?`<details class="sub"><summary>Detalle técnico</summary><div>${m.detalle.split(/\r?\n|\\n/).map(rich).join('<br>')}</div></details>`:'');
 // d284: a title inside a button keeps **bold**, `code` and a clickable «T274», never a nested link.
 const tt=s=>titleHtml(s,{task:n=>S.board.tareas.find(t=>t.num===n)});
 const byId=id=>S.board.tareas.find(t=>t.id===id);
@@ -874,7 +877,7 @@ function renderHist(){
   const q=$('q').value.trim().toLowerCase(),vig=$('vig').checked;
   let rows=[];
   if(S.kind!=='bit')rows=rows.concat(S.board.decisiones.filter(d=>!vig||d.vigente===true).map(d=>({en:d.en,txt:[d.id,d.decision,d.motivo,(d.tareas||[]).join(' ')].join(' '),html:`<div class="lr dec ${d.vigente===false?'old':''}"><span class="when">${esc(fmt(d.en))}</span><div class="what"><span class="tag">${esc(d.id)}${d.vigente===true?' · vigente':d.vigente===false?' · reemplazada':''}</span>${rich(d.decision)}${d.motivo?`<div class="sub">Motivo: ${rich(d.motivo)}</div>`:''}</div></div>`})));
-  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
+  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}${b.mensaje?msgExtraHtml(b.mensaje):''}</div></div>`})));
   if(q)rows=rows.filter(r=>r.txt.toLowerCase().includes(q));
   rows.sort((a,b)=>T(b.en)-T(a.en));
   const shown=rows.slice(0,200);

@@ -1,7 +1,8 @@
 /** Read-only merge and CI evidence for a review, pinned to GitHub's current base and head. */
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { UsageError } from './cli.mjs';
 import { ciOf } from './live.mjs';
+import { mergeConflicts } from './overlap.mjs';
 
 /** The names of the checks that failed in a `statusCheckRollup`, for the refusal text. */
 const failedChecks = (rollup) =>
@@ -123,17 +124,7 @@ export function reviewPreflight(task, sha, pr = viewPr(task, sha)) {
 			? pr.files.map((f) => f.path)
 			: undefined;
 	if (pr.mergeable === 'MERGEABLE') return { files, conflicts: null };
-	let conflicts = [];
-	if (/^[a-f0-9]{40}$/.test(pr.baseRefOid)) {
-		const merge = spawnSync(
-			'git',
-			['merge-tree', '--write-tree', '--name-only', '-z', pr.baseRefOid, sha],
-			{ encoding: 'utf8', timeout: 20000, windowsHide: true },
-		);
-		if (merge.status === 1) {
-			const paths = String(merge.stdout).split('\0\0')[0].split('\0');
-			if (/^[a-f0-9]{40}$/.test(paths[0])) conflicts = paths.slice(1).filter(Boolean);
-		}
-	}
-	return { files, conflicts };
+	// Empty when Git cannot show the paths: the refusal then says UNVERIFIED.
+	const merge = /^[a-f0-9]{40}$/.test(pr.baseRefOid) ? mergeConflicts(pr.baseRefOid, sha) : null;
+	return { files, conflicts: merge?.estado === 'conflicto' ? merge.archivos : [] };
 }

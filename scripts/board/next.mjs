@@ -39,9 +39,14 @@ const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 export const deliveryLine = (t, now = Date.now()) =>
 	deliveryText(t, now, (a) => AGENT_REGISTRY[a]?.nombre ?? 'un agente');
 
-/** Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids. */
+/**
+ * Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids, and a d291
+ * `atendido` row of the bitácora marks the messages it lists as handled.
+ */
 export function unreadFor(agente, board) {
 	const read = new Set((board.bandejas ?? []).find((b) => b.id === agente)?.leidos ?? []);
+	for (const r of board.bitacora ?? [])
+		if (r.atendido?.para === agente) for (const id of r.atendido.mensajes ?? []) read.add(id);
 	return (board.bitacora ?? [])
 		.filter((r) => r.mensaje?.para === agente && !read.has(r.mensaje.id))
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));

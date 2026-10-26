@@ -7,6 +7,7 @@ import type { GuestListView } from '@/components/dashboard/guests/use-guest-list
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
 	getGuestInviteUrl,
+	getGuestStatusBucket,
 	groupGuestsByStatus,
 	type GuestSaveCallback,
 	type GuestStatusBucket,
@@ -105,6 +106,21 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	const showCompact = isDesktop !== true;
 	const showTable = isDesktop !== false;
 	const [collapsed, setCollapsed] = useState<ReadonlySet<GuestStatusBucket>>(() => new Set());
+	// Sharing marks the guest as sent before the browser hand-off finishes. Moving the row
+	// to another group would remount it and drop its open composer (and manual fallback),
+	// so a guest stays in its group until the composer closes.
+	const [pinnedBuckets, setPinnedBuckets] = useState<ReadonlyMap<string, GuestStatusBucket>>(
+		() => new Map(),
+	);
+
+	const handleComposerOpenChange = (item: DashboardGuestItem, open: boolean) =>
+		setPinnedBuckets((prev) => {
+			if (open === prev.has(item.guestId)) return prev;
+			const next = new Map(prev);
+			if (open) next.set(item.guestId, getGuestStatusBucket(item));
+			else next.delete(item.guestId);
+			return next;
+		});
 
 	const toggleGroup = (bucket: GuestStatusBucket) =>
 		setCollapsed((prev) => {
@@ -204,7 +220,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								</th>
 							</tr>
 						</thead>
-						{groupGuestsByStatus(items).map((section) => (
+						{groupGuestsByStatus(items, pinnedBuckets).map((section) => (
 							<GuestTableGroup
 								key={section.bucket}
 								section={section}
@@ -232,6 +248,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										onOpenDetails={onOpenDetails}
 										onMarkShared={onMarkShared}
 										onSaveGuest={onSaveGuest}
+										onComposerOpenChange={handleComposerOpenChange}
 									/>
 								))}
 							</GuestTableGroup>

@@ -195,8 +195,9 @@ describe('prompt-v1 (T160)', () => {
 		};
 		const prev = { id: 'origen-revision', vuelta: 1, revisionSha: 'a'.repeat(40) };
 		const out = probe(
-			`const first = m.reviewChild(input.src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-25T03:00:00Z' });
-			const second = m.reviewChild(input.src, { agente: 'gemini', sha: input.sha, prev: input.prev, num: 10, generado: '2026-10-25T03:00:00Z' });
+			`const r = await import(new URL('./rounds.mjs', process.argv[2]).href);
+			const first = r.reviewChild(input.src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-25T03:00:00Z' });
+			const second = r.reviewChild(input.src, { agente: 'gemini', sha: input.sha, prev: input.prev, num: 10, generado: '2026-10-25T03:00:00Z' });
 			const issues = (t) => m.taskIssues({ ...t, rev: 1, actualizado: '2026-10-25T03:00:00Z' });
 			console.log(JSON.stringify({
 				first: first.prompt, second: second.prompt,

@@ -70,6 +70,9 @@ routing and the internal modules work lives in
   `pnpm board msg <id> --de=<agent> --para=coordinador|dueno|codex|gemini|claude "text"`; read yours
   with `pnpm board inbox --agente=<a>`. Results still go on the task. Every command renews the
   lock's heartbeat; a lock silent for 2 h shows as «Detenida».
+- **Handled messages (d291)**: once a message to the owner or the coordinator is answered, run
+  `pnpm board atendido <id> --para=dueno|coordinador [--mensaje=<msg id>] --quien=<who>`; it leaves
+  «Le toca a usted» or «Le toca al coordinador» and the bitácora keeps an `atendido` row.
 - **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`. T322:
   the text is one plain line with a question; a decision adds two or more `--opcion="…"`, the
@@ -104,9 +107,12 @@ routing and the internal modules work lives in
   while any check exists, red, running or green. `CONFLICTING` refuses the round until the author
   merges `origin/develop` into the same branch (never rebase or `push --force`).
 - **Rounds**: every PR head gets its own round task (`<id>-revision`, `<id>-revision-2`…); a new
-  commit needs a new round. The reviewer binds findings and verdict to the full SHA and closes the
-  round with its verdict; `close --veredicto=cambios` writes the findings to the author's inbox
-  (d251). The author checks `pnpm board inbox --agente=<a>` after every push.
+  commit needs a new round. d291: when the rounds since the last verdict ended without one
+  (cancelled, or replaced while open), the new round reviews the whole PR, not the diff since their
+  SHA, and its prompt lists what they left in the bitácora, in their cierre and the reports they
+  named. The reviewer binds findings and verdict to the full SHA and closes the round with its
+  verdict; `close --veredicto=cambios` writes the findings to the author's inbox (d251). The author
+  checks `pnpm board inbox --agente=<a>` after every push.
 - **`comprobada`**: only after `unida`/`hecha` with the verifier's evidence, or with the owner's
   explicit authorization.
 
@@ -158,9 +164,10 @@ routing and the internal modules work lives in
   `release` keeps Gemini or Codex at any risk. All agents share one GitHub account, so approval
   lives on the board (the review child in `hecha` with its SHA), not in GitHub.
 - **Board PRs (d270)**: at most two open PRs may change the board (`scripts/board/`, this file or
-  the coordinator guide), and only when they share no files; the coordinator checks it before they
-  start. The others wait in line; their code may be ready and pushed, but the PR opens when the
-  coordinator says it is its turn.
+  the coordinator guide), and (d291) a second one waits only when `git merge-tree` shows a real
+  conflict with the other; sharing a file is not enough. `pnpm board solape <id>` checks it against
+  the open board PRs (exit 1 while it must wait). The others wait in line; their code may be ready
+  and pushed, but the PR opens when the coordinator says it is its turn.
 - **Language**: with the owner, Spanish in the «usted» register; code, commits and PRs in English.
 - **Board text**: one example per explanation; every dashboard step carries the page's direct URL;
   sessions are named by their exact sidebar title; deletion steps list the exact names to delete and

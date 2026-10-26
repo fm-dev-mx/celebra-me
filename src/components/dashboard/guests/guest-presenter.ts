@@ -377,11 +377,17 @@ const STATUS_SECTION_TITLES: Record<GuestStatusBucket, string> = {
 
 const STATUS_SECTION_ORDER: GuestStatusBucket[] = ['to-send', 'waiting', 'confirmed', 'declined'];
 
-/** Non-empty status sections in journey order, guests sorted by name inside each. */
-export function groupGuestsByStatus(items: DashboardGuestItem[]): GuestStatusSection[] {
+/**
+ * Non-empty status sections in journey order, guests sorted by name inside each.
+ * `pinnedBuckets` keeps a guest in a given section regardless of its current status.
+ */
+export function groupGuestsByStatus(
+	items: DashboardGuestItem[],
+	pinnedBuckets?: ReadonlyMap<string, GuestStatusBucket>,
+): GuestStatusSection[] {
 	const buckets = new Map<GuestStatusBucket, DashboardGuestItem[]>();
 	for (const item of items) {
-		const bucket = getGuestStatusBucket(item);
+		const bucket = pinnedBuckets?.get(item.guestId) ?? getGuestStatusBucket(item);
 		const list = buckets.get(bucket) ?? [];
 		list.push(item);
 		buckets.set(bucket, list);

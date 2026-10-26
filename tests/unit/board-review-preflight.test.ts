@@ -57,9 +57,17 @@ function fixture(previous = false) {
 				origen: 'codigo',
 				revisionSha: OLD,
 				vuelta: 1,
-				estado: 'en curso',
+				estado: 'hecha',
 				agente: 'claude',
 				rev: 1,
+				cierre: {
+					resumen: 'Revisada',
+					comprobaciones: [],
+					saltadas: [],
+					pendientes: [],
+					en: '2026-10-25T00:00:00Z',
+					resultado: { veredicto: 'cambios', sha: OLD, hallazgos: [] },
+				},
 			}),
 		);
 	return dir;

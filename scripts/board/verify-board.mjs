@@ -33,6 +33,7 @@ import {
 	isStaleLock,
 	laneAllowed,
 	logRowIssues,
+	isNoteRow,
 	ordenOf,
 	prNumber,
 	promptLanes,
@@ -414,9 +415,14 @@ function branchDrift(tareas, run, laneBranches) {
 /** Newest log row per task, to catch a change without a new rev. */
 function lastLogByTask(bitacora) {
 	const last = {};
-	// A message (T126) changes no task, so it never asks for a new rev.
+	// A message (T126) or its d291 «atendido» mark changes no task, so it never asks for a new rev.
 	for (const r of bitacora)
-		if (r.tarea && r.en && !r.mensaje && !(Date.parse(last[r.tarea] ?? 0) >= Date.parse(r.en)))
+		if (
+			r.tarea &&
+			r.en &&
+			!isNoteRow(r) &&
+			!(Date.parse(last[r.tarea] ?? 0) >= Date.parse(r.en))
+		)
 			last[r.tarea] = r.en;
 	return last;
 }

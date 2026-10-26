@@ -242,13 +242,14 @@ describe('PARA USTED (T322)', () => {
 		const out = probe(
 			`const src = { id: 'origen', num: 7, titulo: 'Origen', pr: '#522', rama: 'feat/x', urgencia: 'normal' };
 			const prev = { id: 'origen-revision', vuelta: 1, revisionSha: 'a'.repeat(40) };
-			const first = m.reviewChild(src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-26T00:00:00Z' });
-			const second = m.reviewChild(src, { agente: 'gemini', sha: input.sha, prev, num: 10, generado: '2026-10-26T00:00:00Z' });
+			const r = await import(input.rounds);
+			const first = r.reviewChild(src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-26T00:00:00Z' });
+			const second = r.reviewChild(src, { agente: 'gemini', sha: input.sha, prev, num: 10, generado: '2026-10-26T00:00:00Z' });
 			console.log(JSON.stringify([first, second].map((t) => ({
 				lines: p.promptSection(t.prompt, 'PARA USTED').filter(Boolean),
 				issues: p.promptV1Issues(t.prompt),
 			}))));`,
-			{ sha: SHA },
+			{ sha: SHA, rounds: pathToFileURL(path.join(BOARD, 'rounds.mjs')).href },
 		);
 		expect(out[0].issues).toEqual([]);
 		expect(out[1].issues).toEqual([]);

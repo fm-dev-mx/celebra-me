@@ -26,6 +26,7 @@ import {
 	planCriticalBackupRetention,
 	prepareEncryptedLocalDirectory,
 } from './local-backup-operations.ts';
+import { readMediaCopyConfig, runMediaCopy } from './media-backup-copy.ts';
 import { copyBackupOffsite, readOffsiteConfig } from './offsite-backup.ts';
 
 interface DailyBackupReport {
@@ -44,6 +45,12 @@ interface DailyBackupReport {
 	offsite:
 		{ status: 'uploaded'; key: string; bytes: number } | { status: 'not_configured' } | null;
 	failureCode: 'critical_backup_failed' | 'offsite_copy_failed' | null;
+	/** Media originals copy; independent of the database recovery point and its health receipt. */
+	mediaCopy:
+		| { status: 'copied'; copied: number; bytes: number; alreadyPresent: number }
+		| { status: 'not_configured' }
+		| { status: 'failed'; error: string }
+		| null;
 	integrityProfile: 'phase3';
 }
 
@@ -95,6 +102,7 @@ let report: DailyBackupReport = {
 	retention: null,
 	offsite: null,
 	failureCode: 'critical_backup_failed',
+	mediaCopy: null,
 	integrityProfile,
 };
 
@@ -204,6 +212,7 @@ try {
 		},
 		offsite,
 		failureCode: null,
+		mediaCopy: null,
 		integrityProfile,
 	};
 } catch (error: unknown) {
@@ -211,6 +220,30 @@ try {
 	const endedAt = new Date();
 	report.endedAt = endedAt.toISOString();
 	report.durationMs = endedAt.getTime() - startedAt.getTime();
+}
+
+// Runs whether or not the database capture succeeded: the media originals are a separate backup.
+let mediaCopyError: unknown = null;
+try {
+	const mediaConfig = readMediaCopyConfig();
+	if (mediaConfig) {
+		const result = await runMediaCopy(mediaConfig, { log: (line) => console.info(line) });
+		report.mediaCopy = {
+			status: 'copied',
+			copied: result.copied,
+			bytes: result.bytes,
+			alreadyPresent: result.alreadyPresent,
+		};
+	} else {
+		report.mediaCopy = { status: 'not_configured' };
+		console.warn('Media copy is not configured; Production photos have no backup copy.');
+	}
+} catch (error: unknown) {
+	mediaCopyError = error;
+	report.mediaCopy = {
+		status: 'failed',
+		error: error instanceof Error ? error.message : String(error),
+	};
 }
 
 try {
@@ -243,6 +276,13 @@ if (workflowError) {
 	console.error(
 		'Daily critical backup failed:',
 		workflowError instanceof Error ? workflowError.message : String(workflowError),
+	);
+	process.exitCode = 1;
+}
+if (mediaCopyError) {
+	console.error(
+		'Media copy failed:',
+		mediaCopyError instanceof Error ? mediaCopyError.message : String(mediaCopyError),
 	);
 	process.exitCode = 1;
 }

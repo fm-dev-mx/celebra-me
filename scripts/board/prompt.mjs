@@ -299,13 +299,48 @@ const reviewOwnerLines = (pr, later) =>
 	});
 
 /**
+ * d291: the QUÉ SE BUSCA lines of a round after rounds without a verdict (`previas`): which rounds, what their
+ * bitácora and cierre kept and the reports they named, so the findings they reached are checked again.
+ */
+function leftLines({ vueltas, notas, informes }, sha) {
+	const which = vueltas.join(', ');
+	return [
+		`${which} ${vueltas.length > 1 ? 'terminaron' : 'terminó'} sin veredicto (cancelada o reemplazada): revise el PR completo en ${sha}, no solo el diff desde su SHA, y compruebe cada hallazgo que dejó.`,
+		...(notas.length
+			? ['Lo que dejó en la bitácora:', ...notas.map((x) => `- ${x}`)]
+			: [`${which} no dejó mensajes ni hallazgos en la bitácora.`]),
+		...informes.map((p) => `Informe: ${p} (en Integración; léalo si existe).`),
+	];
+}
+
+/** The DECISIONES lines of a review round and its METADATOS `decisiones` (d183, d288, d291). */
+function reviewDecisions(sub, left) {
+	return {
+		lineas: [
+			sub
+				? '- d288: riesgo bajo o medio; la revisa un subagente de Claude con contexto limpio, no la sesión autora.'
+				: '- d183: revisión cruzada por otro agente.',
+			...(left
+				? [
+						'- d291: la vuelta anterior no dejó veredicto; esta revisa el PR completo y comprueba lo que dejó.',
+					]
+				: []),
+			'- Solo revisión: informe la evidencia que falte.',
+		],
+		ids: [sub ? 'd183, d288' : 'd183', ...(left ? ['d291'] : [])].join(', '),
+	};
+}
+
+/**
  * The title and prompt-v1 (T160) of review round `n` of `src` at `sha`, as task `T<num> <id>`; from round 2 on
  * they name the previous round's SHA and start from the diff between both, so a reviewer never answers the
- * earlier round again (T79). It runs read-only in `carril` (folder `carpeta`).
+ * earlier round again (T79). d291: `previas` (rounds.mjs leftByUnanswered) means the rounds since the last verdict
+ * answered nothing, so this one reviews the whole PR and carries what they left. It runs read-only in `carril`
+ * (folder `carpeta`).
  */
 export function reviewText(
 	src,
-	{ id, num, n, sha, prev, files, agente, revisor, generado, carril, carpeta },
+	{ id, num, n, sha, prev, files, agente, revisor, generado, carril, carpeta, previas },
 ) {
 	// d288: a low- or medium-risk PR by Claude is reviewed by a clean-context subagent the author session launches.
 	const sub = revisor === 'subagente';
@@ -315,6 +350,10 @@ export function reviewText(
 	const round = n < 2 ? '' : ` vuelta ${n}`;
 	const name = `f04 · T${num} · PR ${pr} · Revisión${round}`;
 	const later = n >= 2;
+	// d291: after a round without a verdict, nothing reviewed the earlier diff, so the whole PR is in scope.
+	const left = later ? previas : undefined;
+	const incremental = later && !left;
+	const decided = reviewDecisions(sub, left);
 	const prompt = buildPrompt({
 		identidad: name,
 		secciones: [
@@ -328,12 +367,13 @@ export function reviewText(
 								'Riesgo bajo o medio (d288): la hace un subagente de Claude con contexto limpio; la sesión autora toma y cierra esta vuelta con su veredicto.',
 							]
 						: []),
-					...reviewGuidance(files, later ? prev?.revisionSha : undefined, sha),
-					...(later
+					...reviewGuidance(files, incremental ? prev?.revisionSha : undefined, sha),
+					...(incremental
 						? [
 								`La vuelta anterior (${prev.id}) revisó ${prev.revisionSha}; compruebe que se atendieron sus hallazgos y que los commits nuevos no traen regresiones.`,
 							]
 						: []),
+					...(left ? leftLines(left, sha) : []),
 					sub
 						? `Terminado cuando: los hallazgos están en el PR (gh pr review --comment) y el veredicto, el SHA ${sha} y los hallazgos vuelven a la sesión autora.`
 						: `Terminado cuando: los hallazgos están en el PR (gh pr review) y la tarea queda cerrada con --sha=${sha}.`,
@@ -353,10 +393,10 @@ export function reviewText(
 				'PASOS',
 				[
 					'1. Lea .agent/rules/board.md y la descripción del PR.',
-					later
+					incremental
 						? `2. Empiece por lo que cambió: git fetch origin && git diff ${prev.revisionSha}..${sha}`
 						: `2. Revise el diff completo del PR en ${short(sha)}.`,
-					`3. Revise corrección, regresiones, pruebas y AGENTS.md${later ? ' donde llega el diff' : ''}.`,
+					`3. Revise corrección, regresiones, pruebas y AGENTS.md${incremental ? ' donde llega el diff' : ''}.`,
 					sub
 						? '4. Publique los hallazgos con gh pr review --comment (la cuenta de GitHub es la del autor).'
 						: '4. Publique los hallazgos con gh pr review.',
@@ -367,15 +407,7 @@ export function reviewText(
 				'NO HAGAS',
 				['- No edite el carril del autor ni una el PR.', '- No pida permisos adyacentes.'],
 			],
-			[
-				'DECISIONES',
-				[
-					sub
-						? '- d288: riesgo bajo o medio; la revisa un subagente de Claude con contexto limpio, no la sesión autora.'
-						: '- d183: revisión cruzada por otro agente.',
-					'- Solo revisión: informe la evidencia que falte.',
-				],
-			],
+			['DECISIONES', decided.lineas],
 			[
 				'PARE Y PREGUNTE SI',
 				[
@@ -406,7 +438,7 @@ export function reviewText(
 			['pr', pr],
 			['sha', sha],
 			['prerrequisito', later ? prev.id : undefined],
-			['decisiones', sub ? 'd183, d288' : 'd183'],
+			['decisiones', decided.ids],
 			['tablero', 'rev 1'],
 			['generado', generado],
 		],
