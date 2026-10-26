@@ -25,6 +25,10 @@ export interface LeadInput {
 	phoneNational?: string;
 	phoneE164?: string;
 	eventType?: string;
+	/** ISO date (YYYY-MM-DD) from the lead capture form. */
+	eventDate?: string;
+	celebrantNames?: string;
+	demoSlug?: string;
 	packageInterest?: string;
 	messageSummary?: string;
 	utmSource?: string;
@@ -85,6 +89,9 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 			phone_national: emptyToUndefined(input.phoneNational),
 			phone_e164: emptyToUndefined(input.phoneE164),
 			event_type: emptyToUndefined(input.eventType),
+			event_date: emptyToUndefined(input.eventDate),
+			celebrant_names: emptyToUndefined(input.celebrantNames),
+			demo_slug: emptyToUndefined(input.demoSlug),
 			package_interest: emptyToUndefined(input.packageInterest),
 			message_summary: emptyToUndefined(input.messageSummary),
 			utm_source: emptyToUndefined(input.utmSource),
@@ -112,6 +119,9 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 			['phone_national', emptyToUndefined(input.phoneNational)],
 			['phone_e164', emptyToUndefined(input.phoneE164)],
 			['event_type', emptyToUndefined(input.eventType)],
+			['event_date', emptyToUndefined(input.eventDate)],
+			['celebrant_names', emptyToUndefined(input.celebrantNames)],
+			['demo_slug', emptyToUndefined(input.demoSlug)],
 			['package_interest', emptyToUndefined(input.packageInterest)],
 			['message_summary', emptyToUndefined(input.messageSummary)],
 			['utm_source', emptyToUndefined(input.utmSource)],
@@ -149,4 +159,29 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 		status: row.status,
 		sessionId: row.session_id,
 	};
+}
+
+export interface LeadOrderAttribution {
+	leadId: string;
+	sessionId: string | null;
+}
+
+/**
+ * The lead an order is attributed to: the given lead, or else the customer's latest lead. Its
+ * session carries the Meta cookies a later Purchase needs.
+ */
+export async function findLeadOrderAttribution(input: {
+	leadId?: string;
+	customerId: string;
+}): Promise<LeadOrderAttribution | null> {
+	const filter = input.leadId
+		? `id=eq.${encodeURIComponent(input.leadId)}`
+		: `customer_id=eq.${encodeURIComponent(input.customerId)}&order=created_at.desc`;
+	const rows = await supabaseRestRequest<Array<{ id: string; session_id: string | null }>>({
+		pathWithQuery: `leads?${filter}&select=id,session_id&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	if (rows.length === 0) return null;
+	return { leadId: rows[0].id, sessionId: rows[0].session_id };
 }

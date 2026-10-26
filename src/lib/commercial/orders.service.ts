@@ -10,6 +10,8 @@ import { randomUUID } from 'node:crypto';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
+import { safeErr } from '@/lib/server/safe-error';
+import { findLeadOrderAttribution } from '@/lib/tracking/lead.repository';
 
 const COMMERCIAL_ORDER_CURRENCY = 'MXN';
 
@@ -82,6 +84,33 @@ function createOrderNumber(input: { now?: Date; randomSuffix?: string } = {}): s
 	return `CMO-${stamp}-${suffix}`;
 }
 
+/**
+ * Fills the order's lead and visitor session from the selected lead, or from the customer's
+ * latest lead, so the Purchase sent at deposit time carries that session's Meta cookies and
+ * follows that lead's marketing consent. A failed lookup never blocks the order.
+ */
+async function resolveOrderAttribution(
+	input: CreateCommercialSalesOrderInput,
+): Promise<{ leadId?: string; sessionId?: string }> {
+	const leadId = input.leadId?.trim() || undefined;
+	const sessionId = input.sessionId?.trim() || undefined;
+	if (sessionId) return { leadId, sessionId };
+	try {
+		const attribution = await findLeadOrderAttribution({
+			leadId,
+			customerId: input.customerId,
+		});
+		if (!attribution) return { leadId };
+		return {
+			leadId: attribution.leadId,
+			sessionId: attribution.sessionId ?? undefined,
+		};
+	} catch (error) {
+		console.error('[orders-service] Lead attribution lookup failed:', safeErr(error));
+		return { leadId };
+	}
+}
+
 export async function createCommercialSalesOrder(
 	input: CreateCommercialSalesOrderInput,
 	options: CommercialOrderServiceOptions = {},
@@ -90,12 +119,14 @@ export async function createCommercialSalesOrder(
 	assertNonNegativeAmount(input.depositAmount, 'Deposit amount cannot be negative.');
 	assertMxnCurrency(input.currency);
 
+	const attribution = await resolveOrderAttribution(input);
+
 	return createSalesOrder({
 		idempotencyKey: input.idempotencyKey ?? randomUUID(),
 		orderNumber: createOrderNumber({ now: input.now, randomSuffix: input.randomSuffix }),
 		customerId: input.customerId,
-		leadId: input.leadId,
-		sessionId: input.sessionId,
+		leadId: attribution.leadId,
+		sessionId: attribution.sessionId,
 		sourceEventId: input.sourceEventId,
 		status: input.status ?? 'confirmed',
 		eventType: input.eventType,

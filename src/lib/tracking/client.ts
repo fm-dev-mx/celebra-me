@@ -180,16 +180,24 @@ function markSessionInitialized(): void {
 	}
 }
 
+interface TrackEventOptions {
+	/** Reuse an ID the server already stored, so the Pixel and CAPI copies deduplicate. */
+	eventId?: string;
+	/** The event is already stored server-side; only the browser destinations receive it. */
+	serverStored?: boolean;
+}
+
 function trackEvent(
 	eventName: BrowserTrackingEventName,
 	eventProperties: TrackingPayload['eventProperties'] = {},
+	options: TrackEventOptions = {},
 ): void {
 	if (shouldIgnoreTracking()) return;
 	const consent = getConsentSnapshot();
 	if (!consent.analytics && !consent.marketing) return;
 	eventProperties = {
 		...eventProperties,
-		event_id: crypto.randomUUID ? crypto.randomUUID() : fallbackUuid(),
+		event_id: options.eventId ?? (crypto.randomUUID ? crypto.randomUUID() : fallbackUuid()),
 	};
 
 	const routeClass = document.body.dataset.trackingRouteClass;
@@ -207,7 +215,7 @@ function trackEvent(
 	forwardToGA4(eventName, eventProperties);
 	forwardToMetaPixel(eventName, eventProperties);
 
-	if (isClientOnlyEvent(eventName)) return;
+	if (isClientOnlyEvent(eventName) || options.serverStored) return;
 
 	const utm = getUtmSnapshot();
 	const metaAttribution = consent.marketing
@@ -461,6 +469,87 @@ function bindClicks(): void {
 		}
 
 		void trackEvent(eventName, getTrackedClickProperties(target, leadCode));
+	});
+}
+
+/** Session and attribution data the lead capture form sends with its answers. */
+export interface LeadCaptureContext {
+	sessionId: string;
+	visitorId: string;
+	leadCode: string;
+	routePath: string;
+	source?: string;
+	medium?: string;
+	campaign?: string;
+	utmContent?: string;
+	utmTerm?: string;
+	referrer?: string;
+	metaAttribution?: MetaAttribution;
+	consentSnapshot: ConsentSnapshot;
+}
+
+/**
+ * Without analytics or marketing consent (or when tracking is ignored or not loaded) nothing is
+ * stored in the browser: the IDs are throwaway values the server does not link to tracking.
+ */
+export function getLeadCaptureContext(): LeadCaptureContext {
+	const consent = getConsentSnapshot();
+	const tracked =
+		Boolean(document.body.dataset.trackingRouteClass) &&
+		!shouldIgnoreTracking() &&
+		(consent.analytics || consent.marketing);
+	const newUuid = () => (crypto.randomUUID ? crypto.randomUUID() : fallbackUuid());
+	if (!tracked) {
+		return {
+			sessionId: newUuid(),
+			visitorId: randomId('visitor'),
+			leadCode: createLeadCode(),
+			routePath: window.location.pathname,
+			consentSnapshot: consent,
+		};
+	}
+	const utm = getUtmSnapshot();
+	return {
+		sessionId: getSessionId(),
+		visitorId: getVisitorId(),
+		leadCode: getOrCreateWhatsAppLeadCode(),
+		routePath: window.location.pathname,
+		source: utm.source || undefined,
+		medium: utm.medium || undefined,
+		campaign: utm.campaign || undefined,
+		utmContent: utm.content || undefined,
+		utmTerm: utm.term || undefined,
+		referrer: getFirstTouchReferrer(),
+		metaAttribution: consent.marketing
+			? metaAttributionOrUndefined(getMetaAttributionSnapshot())
+			: undefined,
+		consentSnapshot: consent,
+	};
+}
+
+/** Keeps the lead code the server confirmed, so the WhatsApp click that follows reuses it. */
+export function rememberWhatsAppLeadCode(leadCode: string): void {
+	if (!CANONICAL_LEAD_CODE_EXACT.test(leadCode)) return;
+	try {
+		sessionStorage.setItem(WHATSAPP_LEAD_KEY, leadCode.toUpperCase());
+	} catch {
+		// sessionStorage unavailable — the click creates its own code.
+	}
+}
+
+/**
+ * Lead capture form events. `form_submitted` is stored by `/api/leads/capture` under the same ID,
+ * so only GA4 and the Meta Pixel (Lead) receive it here.
+ */
+export function trackLeadCaptureEvent(
+	eventName: 'form_started' | 'form_submitted',
+	properties: TrackingPayload['eventProperties'],
+	options: { eventId?: string } = {},
+): void {
+	if (!document.body.dataset.trackingRouteClass) return;
+	trackEvent(eventName, properties, {
+		eventId: options.eventId,
+		serverStored: eventName === 'form_submitted',
 	});
 }
 

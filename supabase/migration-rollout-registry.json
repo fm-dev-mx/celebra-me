@@ -296,6 +296,11 @@
             "provides": ["meta_conversion_events_view_events"],
             "revokes": ["meta_conversion_events_contact_lead_only"],
             "notes": "Lets meta_conversion_events hold browser PageView (page_viewed) and ViewContent (demo_viewed, package_viewed) rows: widens the event_name, trigger_status and source shape checks, widens purge_meta_conversion_retention to every browser row and swaps the retention partial index for one with the same wider filter. Registered as contract only because the check swaps use DROP CONSTRAINT and the index swap uses DROP INDEX; every change widens, so no rows change and the deployed application keeps working. Must be applied before the application that enqueues PageView and ViewContent rows is deployed, or those inserts fail (ingestion logs and continues)."
+        },
+        "20261026010000": {
+            "phase": "expand",
+            "provides": ["leads_capture_form_fields"],
+            "notes": "Adds leads.event_date, celebrant_names and demo_slug (nullable, range and length checked) for the «Aparta su fecha» form shown before WhatsApp. Additive: existing rows keep null and the deployed application never names the columns. Must be applied before the application that serves POST /api/leads/capture is deployed, because PostgREST rejects unknown columns on the lead upsert."
         }
     },
     "appCapabilities": {
@@ -346,6 +351,9 @@
         },
         "meta_capi_view_events_client": {
             "requiresDbCapabilities": ["meta_conversion_events_view_events"]
+        },
+        "lead_capture_form_client": {
+            "requiresDbCapabilities": ["leads_capture_form_fields"]
         }
     }
 }
