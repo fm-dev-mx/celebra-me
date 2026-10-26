@@ -42,6 +42,7 @@ import {
 	buildProductionApplyPlan,
 } from './production-apply-orchestrator.ts';
 import { mutationItemsOf, type ProductionApplyPlan } from './production-apply-plan.ts';
+import { refreshDisposableProofForPlan } from './production-apply-disposable-proof.ts';
 import { readReleaseCheckEvidence } from './release-check.ts';
 
 function parseSelection(selection: ProductionApplySelection): ProductionApplyCliArgs {
@@ -151,6 +152,7 @@ function planDoneLine(plan: ProductionApplyPlan): string {
 
 async function planSelection(selection: ProductionApplySelection): Promise<ProductionApplyPlan> {
 	const parsed = parseSelection(selection);
+	refreshDisposableProofForPlan(parsed);
 	const plan = await step(
 		`Planning Production (read-only): ${describeSelection(selection)}`,
 		() => buildProductionApplyPlan(parsed),
@@ -188,6 +190,7 @@ async function runApply(
 	}
 	try {
 		const parsed = parseSelection(selection);
+		refreshDisposableProofForPlan(parsed);
 		const execution = await applyProductionApplyPlan(parsed);
 		writeHuman(formatProductionApplyResult(execution));
 		printLine(
@@ -214,6 +217,7 @@ async function runApply(
 
 async function printJsonPlan(): Promise<void> {
 	const parsed = parseSelection({ kind: 'inspect_all', json: true });
+	refreshDisposableProofForPlan(parsed);
 	const plan = await step('Planning Production (read-only, JSON)', () =>
 		buildProductionApplyPlan(parsed),
 	);

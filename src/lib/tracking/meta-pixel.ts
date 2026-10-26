@@ -14,7 +14,7 @@
  *   - ViewContent (demo_viewed, package_viewed)
  *   - Contact     (whatsapp_contact_clicked; the conversion ads optimize for), followed by the
  *                 custom WhatsAppClick copy so earlier custom conversions keep counting
- *   - Lead        (form_submitted; no live emitter since the contact form was removed)
+ *   - Lead        (form_submitted from the «Aparta su fecha» capture form)
  *
  * Every event of one activation carries the first-party technical UUID as `eventID`.
  * Purchase is sent only server-side through the Conversions API

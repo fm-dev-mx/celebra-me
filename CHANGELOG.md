@@ -10,6 +10,65 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.52.0-beta.1] - 2026-10-26
+
+WhatsApp buttons on the landing and demo pages first open a short «Aparta su fecha» form that stores
+the event date before the chat, the desktop guests table is grouped by status, and releases now
+leave from a fixed candidate branch while `develop` stays open. One expand migration adds the form's
+lead columns; no published invitation content changes.
+
+### Added
+
+- Landing and demos: WhatsApp CTAs open an «Aparta su fecha» dialog (name, event type, date,
+  celebrant, WhatsApp, liked demo) with a «Solo quiero preguntar» link that keeps the original
+  WhatsApp message. `POST /api/leads/capture` validates server-side, drops honeypot, too-fast and
+  automated submissions, rate-limits by IP and stores the lead and its customer; with marketing
+  consent it queues the CAPI `Lead` with the Pixel's event id (#586).
+- Dashboard: on wide screens (≥ 1200 px) `/dashboard/invitados` groups the guests table by status
+  with collapsible tinted headers, counts and group actions («Enviar a los N», «Recordar a…»)
+  (#582).
+- Board: low and medium risk cross reviews go to a clean-context Claude subagent, a review round
+  waits for green CI (`--sin-ci` for PRs without checks), and `close` with every Handoff list
+  finishes the task on its own (#589, #590).
+- Board: a review round after rounds that ended without a verdict reviews the whole PR,
+  `pnpm board solape` checks open board PRs for real overlap with `git merge-tree`, and answered
+  messages leave the owner's queue (#596).
+- Board view: a «General» tab with the owner's actions first, a global search across sections and
+  readable message cards (#597).
+- Board prompts: every prompt opens with a plain «PARA USTED» block (what it does, what the owner
+  owes, risk), and owner questions read as plain questions (#599).
+- Backups: the daily backup job copies new R2 media and memories originals (no width variants,
+  social cards or thumbnails) into a separate private backup bucket, never overwriting or deleting;
+  it stays inactive until the backup bucket and its tokens exist (#594).
+
+### Fixed
+
+- Dashboard: the single-reminder dialog stays open with its manual fallback when sending the
+  reminder removes the guest from the reminder list (#593).
+- Dashboard: in the grouped guests table the share composer and its manual fallback stay open when
+  sending moves the guest to another group, and the row menu keeps keyboard focus (#591).
+- Tests: the guest import browser test waits for the dashboard to hydrate before opening its menu
+  (#600).
+
+### Changed
+
+- Release: a release leaves from `candidate/vX.Y.Z`, fixed on one `develop` SHA and checked by
+  `pnpm ops:release-checks <sha> --candidate`; `develop` keeps receiving merges and `main` returns
+  to `develop` through a pull request. `prod:apply` renews the disposable proof before asking for
+  the Production go-ahead (#587).
+- Tracking: orders created without a session inherit `lead_id` and `session_id` from the given lead
+  or the customer's latest lead, so the deposit `Purchase` carries that visit's fbp/fbc (#586).
+- Board: the agent rule is a compact contract with the internals moved to the coordinator guide;
+  board state no longer reads retired closing records, derives lane metadata from the worktree lanes
+  and validates task-kind templates in the structural gate (#584, #592).
+- Docs: the 365-day R2 Bucket Lock on the Production invitation media bucket is documented (#588).
+
+### Database
+
+- Migration `20261026010000` adds the nullable `leads.event_date`, `leads.celebrant_names` and
+  `leads.demo_slug` columns with range checks. It is registered as expand and must be applied before
+  the application that serves `POST /api/leads/capture` is deployed (#586).
+
 ## [0.51.0-beta.1] - 2026-10-25
 
 The site gets a new envelope-and-heart icon, the landing price calendar runs through June 2027 on

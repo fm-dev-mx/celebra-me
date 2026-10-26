@@ -5,12 +5,15 @@
  * return contract come from the board, so the prompt changes with them. Pure functions only.
  */
 import { taskLabel, laneFolder, taskLane } from './model.mjs';
+import { ownerPlain } from './owner-text.mjs';
 import {
 	PROMPT_SECTIONS,
 	buildPrompt,
 	promptSection,
 	withPushCheck,
 	reviewGuidance,
+	OWNER_LINES,
+	ownerAsk,
 } from './prompt.mjs';
 export { reviewRisk } from './prompt.mjs';
 
@@ -69,6 +72,19 @@ export function linkedDecisions(t, decisiones = []) {
 		out.set(d.id, d);
 	}
 	return [...out.values()].sort(byNumber);
+}
+
+/** T322: the task's title for the owner, without trailing `(d291)`-style references. */
+const ownerTitle = (t) => ownerPlain(t.corto ?? t.titulo);
+
+/** T322: PARA USTED from the kind's three lines; the task's `hara`, `usted` and `riesgo` replace their text. */
+function ownerSection(t, kind, fill) {
+	const own = [t.hara, t.usted, t.riesgo];
+	return kind.para_usted.map((line, i) =>
+		typeof own[i] === 'string' && own[i].trim()
+			? `${OWNER_LINES[i]} ${oneLine(own[i])}`
+			: fill(line),
+	);
 }
 
 /** `{key}` placeholders of a kind's lines filled from `values`; a missing value refuses the prompt. */
@@ -162,7 +178,10 @@ export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado 
 	const pr = t.pr ? `#${String(t.pr).replace(/^#/, '')}` : undefined;
 	const nombre = `${lane.split('-')[0]} · T${num}${pr ? ` · PR ${pr}` : ''} · ${oneLine(t.corto ?? t.titulo)}`;
 	const agente = t.agente && t.agente !== 'cualquiera' ? t.agente : undefined;
-	const fill = filler({ id: t.id, agente: agente ?? '<agente>', rama: t.rama, nombre }, kind);
+	const fill = filler(
+		{ id: t.id, agente: agente ?? '<agente>', rama: t.rama, nombre, titulo: ownerTitle(t) },
+		kind,
+	);
 	const decisiones = linkedDecisions(t, board.decisiones);
 	const lee = [...new Set([...kind.lee, ...(t.lee ?? [])])];
 	const branch = t.rama ? `, rama ${t.rama} desde origin/develop` : '';
@@ -173,6 +192,7 @@ export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado 
 		buildPrompt({
 			identidad: nombre,
 			secciones: [
+				['PARA USTED', ownerSection(t, kind, fill)],
 				['QUÉ SE BUSCA', [...buscaLines(t), ...kindReviewLines(t, board)]],
 				[
 					'ANTES DE EMPEZAR',
@@ -190,7 +210,7 @@ export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado 
 					'PARE Y PREGUNTE SI',
 					[
 						...kind.pare_si.map(fill),
-						`Pregunte al dueño y anote la pregunta también con pnpm board msg ${t.id} --de=${agente ?? '<agente>'} --para=dueno "<pregunta>" (d230).`,
+						`Pregunte al dueño y anote la pregunta también con ${ownerAsk(t.id, agente ?? '<agente>')}.`,
 					],
 				],
 				['AL TERMINAR', closingLines(t, kind, pr, fill)],

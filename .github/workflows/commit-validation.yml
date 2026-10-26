@@ -34,13 +34,14 @@ on:
 # Independent tiers isolate browser and disposable database state.
 # The protected Application Suite status aggregates every application result.
 jobs:
-    # A promotion pull request whose merge candidate holds the tree already validated on develop
-    # reuses that run instead of repeating every application tier.
+    # A promotion pull request (head develop or a candidate/* branch fixed on a develop SHA) whose
+    # merge candidate holds the tree already validated on develop reuses that run instead of
+    # repeating every application tier.
     evidence-reuse:
         name: Evidence reuse
         if: >-
             github.event_name == 'pull_request' &&
-            github.head_ref == 'develop' &&
+            (github.head_ref == 'develop' || startsWith(github.head_ref, 'candidate/')) &&
             github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-24.04
         timeout-minutes: 5

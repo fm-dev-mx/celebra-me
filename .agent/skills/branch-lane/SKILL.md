@@ -125,11 +125,11 @@ database contents in any report.
 
 ## Modes
 
-| Priority | Mode                      | Direction                       | Load                                                                             |
-| -------- | ------------------------- | ------------------------------- | -------------------------------------------------------------------------------- |
-| Default  | `promote-develop-to-main` | `develop` → `main` (release PR) | [`references/promote-develop-to-main.md`](references/promote-develop-to-main.md) |
-| Optional | `release-prepare`         | files only                      | [`references/release-prepare.md`](references/release-prepare.md)                 |
-| Recovery | `sync-main-into-develop`  | `main` → `develop` (merge only) | [`references/sync-main-into-develop.md`](references/sync-main-into-develop.md)   |
+| Priority | Mode                      | Direction                                | Load                                                                             |
+| -------- | ------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------- |
+| Default  | `promote-develop-to-main` | `candidate/vX.Y.Z` → `main` (release PR) | [`references/promote-develop-to-main.md`](references/promote-develop-to-main.md) |
+| Optional | `release-prepare`         | files only                               | [`references/release-prepare.md`](references/release-prepare.md)                 |
+| Recovery | `sync-main-into-develop`  | `main` → `develop` (back-merge PR)       | [`references/sync-main-into-develop.md`](references/sync-main-into-develop.md)   |
 
 Load **only** the selected reference after this file.
 
@@ -165,7 +165,11 @@ Hard stops (`Hard blocked`) — non-bypassable until corrected:
 Use `selectBranchLaneMode` semantics (`scripts/db/branch-lane-status.ts`):
 
 - Tips equal → `no-op` (`Pass`)
-- `main` ⊂ `develop` and develop ahead → default **promote**
+- `main` ⊂ `develop` and develop ahead → default **promote** from a fixed candidate on a `develop`
+  SHA (d289; `develop` is not frozen during the release)
+- After a release merge and before its back-merge, `main` and `develop` diverge by design (the
+  release merge on one side, merges after the cut on the other) → **sync** through the back-merge
+  pull request
 - `main` has exclusive commits only → **sync** recovery
 - Diverged both ways or conflicting explicit request → `Needs decision`
 - Explicit release phrasing → **release-prepare**
@@ -176,7 +180,7 @@ Do not ask when unambiguous.
 
 | Mode            | Command                                                                                                 |
 | --------------- | ------------------------------------------------------------------------------------------------------- |
-| promote         | `pnpm db:branch:parity -- --base origin/main --head origin/develop --json`                              |
+| promote         | `pnpm db:branch:parity -- --base origin/main --head <release-sha> --json`                               |
 | sync            | `pnpm db:branch:parity -- --base origin/develop --head origin/main --json`                              |
 | release-prepare | advisory: `pnpm db:branch:parity -- --base <BASELINE> --head HEAD --json` (non-blocking for file edits) |
 
@@ -253,6 +257,9 @@ Load the mode reference and perform only authorized steps. Preserve merge-only s
 
 - Mutable tasks use the nine canonical lanes. Temporary checkouts are read-only. A second checkout
   requires explicit assignment and operation scope; never choose or create one automatically.
+- This skill never lands task branches. A task reaches `develop` through its pull request, reviewed
+  by another agent at the exact head SHA (d183; low risk by a Claude subagent, d282) and merged by
+  the coordinator pinned to that SHA ([Git governance](../../../docs/core/git-governance.md)).
 - The session that merges a task releases its worktree in the same turn:
   `git switch --detach develop` in a lane, or the desktop app's clean-up for `.claude/worktrees/*`.
   Then it deletes the local branch with `git branch -d`.
@@ -286,9 +293,12 @@ Always present:
 
 ## Cross-mode flow
 
-- Habitual: task branches integrated into `develop` → (optional `release-prepare`) → push `develop`
-  → parity → (auto `database-parity` + diagnosis) → authorize → **promote** → back-merge.
-- Back-merge / recovery: parity → (auto `database-parity` if needed) → authorize → **sync** (FF
-  after a release; `--no-ff` merge only when the branches diverged) → later promote.
+- Habitual: task branches integrated into `develop` → (optional `release-prepare`, landed through
+  `chore/release-vX.Y.Z`) → cut `candidate/vX.Y.Z` at that `develop` SHA → parity → (auto
+  `database-parity` + diagnosis) → authorize → **promote** → back-merge pull request. `develop`
+  keeps receiving merges throughout.
+- Back-merge / recovery: parity → (auto `database-parity` if needed) → authorize → **sync** (pull
+  request from `main` into `develop` after a release; a recovery task branch only when it conflicts)
+  → later promote.
 - Release-prepare: advisory parity only; require a passing parity run before a later DB-sensitive
   promote.

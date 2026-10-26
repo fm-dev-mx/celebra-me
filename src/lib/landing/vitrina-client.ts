@@ -147,6 +147,8 @@ export function initLandingShowroom(root: Document = document): void {
 		);
 		quote.dataset.eventType = detail.dataset.eventType;
 		quote.dataset.eventLabel = detail.dataset.eventLabel;
+		// Prefills the «Aparta su fecha» form; not `data-demo-slug`, which would change the Contact.
+		quote.dataset.leadCaptureDemo = currentDemo;
 	};
 
 	const announce = () => {

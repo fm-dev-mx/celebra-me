@@ -327,10 +327,115 @@ export function requireReleaseChecks(sha: string, checks: ReleaseCheck[]): void 
 	throw new RemoteEvidenceError('invalid', `Release checks blocked: ${detail}`);
 }
 
+export const RELEASE_CANDIDATE_BRANCH = /^candidate\/v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+
+export interface ReleaseCandidateGeometry {
+	sha: string;
+	branch: string;
+	/** `origin/<branch>` tip, or null when the branch is not on origin. */
+	branchTip: string | null;
+	/** The SHA is an ancestor of (or equal to) `origin/develop`. */
+	onDevelop: boolean;
+	/** `origin/main` is an ancestor of the SHA: the previous release reached develop first. */
+	containsMain: boolean;
+}
+
+/**
+ * A release leaves from a `candidate/vX.Y.Z` branch fixed on one develop SHA, so develop keeps
+ * receiving merges during the release. The candidate must still point at that SHA, the SHA must be
+ * develop history (its develop push carries CI and the Preview deployment), and it must contain
+ * main so the release pull request adds commits without dropping the previous back-merge.
+ */
+export function requireReleaseCandidate(geometry: ReleaseCandidateGeometry): void {
+	const { sha, branch, branchTip } = geometry;
+	if (!RELEASE_CANDIDATE_BRANCH.test(branch))
+		throw new RemoteEvidenceError(
+			'invalid',
+			`Release candidate branch must be candidate/vX.Y.Z, got ${branch}.`,
+		);
+	if (!branchTip)
+		throw new RemoteEvidenceError(
+			'unavailable',
+			`origin/${branch} is unavailable. Push the candidate branch and fetch origin.`,
+		);
+	if (branchTip.toLowerCase() !== sha)
+		throw new RemoteEvidenceError(
+			'invalid',
+			`origin/${branch} moved to ${branchTip.slice(0, 9)}; the release is fixed on ${sha.slice(0, 9)}. ` +
+				'Cut a new candidate instead of moving this one.',
+		);
+	if (!geometry.onDevelop)
+		throw new RemoteEvidenceError(
+			'invalid',
+			`${sha.slice(0, 9)} is not on origin/develop. A candidate is cut from a develop SHA only.`,
+		);
+	if (!geometry.containsMain)
+		throw new RemoteEvidenceError(
+			'invalid',
+			`${sha.slice(0, 9)} does not contain origin/main. Merge the previous release back into ` +
+				'develop through its pull request, then cut the candidate from develop.',
+		);
+}
+
+export type GitRunner = (args: string[]) => { status: number; stdout: string };
+
+function defaultGitRunner(args: string[]): { status: number; stdout: string } {
+	try {
+		return { status: 0, stdout: execFileSync('git', args, { encoding: 'utf8' }) };
+	} catch (error) {
+		const status = (error as { status?: unknown }).status;
+		return { status: typeof status === 'number' ? status : 1, stdout: '' };
+	}
+}
+
+/** Reads the candidate geometry from local remote-tracking refs; run `git fetch origin` first. */
+export function readReleaseCandidateGeometry(
+	sha: string,
+	branch: string,
+	git: GitRunner = defaultGitRunner,
+): ReleaseCandidateGeometry {
+	const tip = git(['rev-parse', '--verify', '--quiet', `refs/remotes/origin/${branch}`]);
+	const isAncestor = (ancestor: string, descendant: string): boolean =>
+		git(['merge-base', '--is-ancestor', ancestor, descendant]).status === 0;
+	return {
+		sha,
+		branch,
+		branchTip: tip.status === 0 && tip.stdout.trim() ? tip.stdout.trim() : null,
+		onDevelop: isAncestor(sha, 'refs/remotes/origin/develop'),
+		containsMain: isAncestor('refs/remotes/origin/main', sha),
+	};
+}
+
+export function parseReleaseChecksArgs(argv: readonly string[]): {
+	sha: string;
+	candidate: string | null;
+} {
+	const usage = 'Usage: release-readiness.ts <exact-sha> [--candidate candidate/vX.Y.Z]';
+	const positional: string[] = [];
+	let candidate: string | null = null;
+	for (let index = 0; index < argv.length; index += 1) {
+		const argument = argv[index];
+		if (argument === '--') continue;
+		if (argument === '--candidate') {
+			candidate = argv[index + 1] ?? '';
+			index += 1;
+		} else if (argument.startsWith('--candidate=')) {
+			candidate = argument.slice('--candidate='.length);
+		} else if (argument.startsWith('--')) {
+			throw new Error(usage);
+		} else {
+			positional.push(argument);
+		}
+	}
+	const sha = positional[0] ?? '';
+	if (positional.length !== 1 || !/^[a-f0-9]{40}$/.test(sha) || candidate === '')
+		throw new Error(usage);
+	return { sha, candidate };
+}
+
 function main(): void {
-	const sha = process.argv[2];
-	if (!sha || !/^[a-f0-9]{40}$/.test(sha))
-		throw new Error('Usage: release-readiness.ts <exact-sha>');
+	const { sha, candidate } = parseReleaseChecksArgs(process.argv.slice(2));
+	if (candidate) requireReleaseCandidate(readReleaseCandidateGeometry(sha, candidate));
 	const checks = loadRemoteChecks(sha);
 	requireReleaseChecks(sha, checks);
 	console.log(
@@ -338,6 +443,7 @@ function main(): void {
 			{
 				sha,
 				state: 'CHECKS_PASSED',
+				...(candidate ? { candidate } : {}),
 				checks,
 				note: 'Database compatibility and deployment authorization remain required.',
 			},

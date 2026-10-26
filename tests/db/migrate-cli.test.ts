@@ -8,6 +8,7 @@ const mockSelect = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 const mockPreflightMigrate = jest.fn<(...args: unknown[]) => unknown>();
 const mockOrchestrateMigrate = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 const mockApplyProductionApplyPlan = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+const mockEnsureFreshDisposableProof = jest.fn<(...args: unknown[]) => unknown>();
 
 jest.mock('@inquirer/prompts', () => ({
 	select: (...args: unknown[]) => mockSelect(...args),
@@ -31,6 +32,10 @@ jest.mock('../../scripts/db/migrate-expected.ts', () => ({
 jest.mock('../../scripts/db/production-apply-orchestrator.ts', () => ({
 	applyProductionApplyPlan: (...args: unknown[]) => mockApplyProductionApplyPlan(...args),
 	buildProductionApplyPlan: jest.fn(),
+}));
+
+jest.mock('../../scripts/db/production-apply-disposable-proof.ts', () => ({
+	ensureFreshDisposableProof: (...args: unknown[]) => mockEnsureFreshDisposableProof(...args),
 }));
 
 jest.mock('../../scripts/db/production-apply-format.ts', () => ({
@@ -206,6 +211,7 @@ describe('migrate CLI behavioral contracts', () => {
 		await runMigrateCli(['node', 'migrate-cli.ts', '--target', 'production', '--apply']);
 
 		expect(mockOrchestrateMigrate).not.toHaveBeenCalled();
+		expect(mockEnsureFreshDisposableProof).toHaveBeenCalledTimes(1);
 		expect(mockApplyProductionApplyPlan).toHaveBeenCalledWith(
 			expect.objectContaining({
 				apply: true,

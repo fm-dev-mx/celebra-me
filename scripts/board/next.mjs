@@ -26,6 +26,7 @@ import {
 	taskTag,
 	VEREDICTOS,
 } from './model.mjs';
+import { optionsText } from './owner-text.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
 import { authorSession, findingsSent } from './findings.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
@@ -38,18 +39,28 @@ const time = (s) => (s ? new Date(s).getTime() : Number.NaN);
 export const deliveryLine = (t, now = Date.now()) =>
 	deliveryText(t, now, (a) => AGENT_REGISTRY[a]?.nombre ?? 'un agente');
 
-/** Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids. */
+/**
+ * Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids, and a d291
+ * `atendido` row of the bitácora marks the messages it lists as handled.
+ */
 export function unreadFor(agente, board) {
 	const read = new Set((board.bandejas ?? []).find((b) => b.id === agente)?.leidos ?? []);
+	for (const r of board.bitacora ?? [])
+		if (r.atendido?.para === agente) for (const id of r.atendido.mensajes ?? []) read.add(id);
 	return (board.bitacora ?? [])
 		.filter((r) => r.mensaje?.para === agente && !read.has(r.mensaje.id))
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
 }
 
-/** «claude → coordinador sobre T125: texto», as `inbox` and the view print a message. */
+/**
+ * «claude → coordinador sobre T125: texto», as `inbox` and the view print a message; T322: a question to the
+ * owner adds its options, the recommended one first, and says when a technical detail goes with it.
+ */
 export function messageLine(r, board) {
 	const t = findTask(r.tarea, board);
-	return `${r.quien ?? '¿?'} → ${r.mensaje.para} sobre ${t ? taskTag(t) : r.tarea}: ${r.mensaje.texto}`;
+	const { texto, opciones, detalle } = r.mensaje;
+	const extra = `${opciones?.length ? ` Opciones: ${optionsText(opciones)}` : ''}${detalle ? ' (detalle técnico: pnpm board inbox)' : ''}`;
+	return `${r.quien ?? '¿?'} → ${r.mensaje.para} sobre ${t ? taskTag(t) : r.tarea}: ${texto}${extra}`;
 }
 
 /** Short lane name of a session title: `f05` for f05-plataforma, `f04` for Integration. */
@@ -346,18 +357,13 @@ export function sectionLines(r) {
 	];
 }
 
-/** Lane record fields written by hand that go stale (T172): Git and the locks say them live instead. */
-const STALE_LANE_FIELDS = ['estado', 'tarea', 'sesion', 'nota', 'comprobadoEn'];
-
 /**
- * T172: `pnpm board carril` without an id — each lane record's own fields (uso, tecla, puerto, rev) with its
- * live row from `laneRows`; the hand-written runtime fields are left out so they never contradict `carriles`.
+ * `pnpm board carril` uses the canonical metadata supplied by the store and the live Git/task row.
  */
 export function liveLanes(board, git = []) {
 	return laneRows(board, git).map((row) => {
-		const rec = { ...(board.carriles ?? []).find((l) => l.id === row.id) };
-		for (const k of STALE_LANE_FIELDS) delete rec[k];
-		return { ...rec, ...row };
+		const { uso, orden } = (board.carriles ?? []).find((l) => l.id === row.id) ?? {};
+		return { uso, orden, ...row };
 	});
 }
 

@@ -35,6 +35,11 @@ function probe(body: string, input: unknown = null) {
 const TASK_PROMPT = [
 	'f05 · T160 · Formato de prompts v1',
 	'',
+	'PARA USTED',
+	'Qué hará: cambia el formato de los prompts y abre un PR a develop.',
+	'Usted: nada; el coordinador une el PR cuando la revisión lo aprueba.',
+	'Riesgo: bajo; el cambio llega solo a develop.',
+	'',
 	'QUÉ SE BUSCA',
 	'Que cada prompt siga prompt-v1.',
 	'Terminado cuando: las pruebas lo fijan.',
@@ -190,8 +195,9 @@ describe('prompt-v1 (T160)', () => {
 		};
 		const prev = { id: 'origen-revision', vuelta: 1, revisionSha: 'a'.repeat(40) };
 		const out = probe(
-			`const first = m.reviewChild(input.src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-25T03:00:00Z' });
-			const second = m.reviewChild(input.src, { agente: 'gemini', sha: input.sha, prev: input.prev, num: 10, generado: '2026-10-25T03:00:00Z' });
+			`const r = await import(new URL('./rounds.mjs', process.argv[2]).href);
+			const first = r.reviewChild(input.src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-25T03:00:00Z' });
+			const second = r.reviewChild(input.src, { agente: 'gemini', sha: input.sha, prev: input.prev, num: 10, generado: '2026-10-25T03:00:00Z' });
 			const issues = (t) => m.taskIssues({ ...t, rev: 1, actualizado: '2026-10-25T03:00:00Z' });
 			console.log(JSON.stringify({
 				first: first.prompt, second: second.prompt,
@@ -215,7 +221,7 @@ describe('prompt-v1 (T160)', () => {
 			tarea: 'T9 origen-revision',
 			origen: 'T7 origen',
 			agente: 'codex',
-			carril: 'f04-integracion (solo lectura)',
+			carril: 'integration (solo lectura)',
 			carpeta: 'celebra-me',
 			rama: 'feat/x',
 			pr: '#522',

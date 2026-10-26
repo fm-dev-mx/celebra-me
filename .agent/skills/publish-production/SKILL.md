@@ -30,14 +30,15 @@ Execute [the shared release procedure](../../../docs/core/release-execution.md) 
 Explicit invocation includes the scoped staging, ordinary commits, task-branch creation, permitted
 branch switches, non-destructive integration, fetch and push to `develop`, and automatic Preview
 deployment documented by `publish-preview` when needed. It additionally authorizes creation or
-update of the exact `develop` → `main` release PR, its merge after all protected-branch requirements
-pass, the resulting automatic Production deployment, and read-only deployment/smoke verification.
-Preserve meaningful commits and use the allowed merge method. Never push or commit directly to main.
-Supporting skills inherit this request; do not stop after opening the PR or ask again to merge it.
-If the release needs an owner decision outside this authority (for example an unclear range or a
-gated migration), gather every such decision and ask them in one round before the first write, per
-the [report contract](../../templates/agent-report-contract.md); ask again only when new evidence
-appears. Each gate in this skill keeps its explicit approval.
+update of the fixed `candidate/vX.Y.Z` branch at the release SHA and of its exact `candidate/vX.Y.Z`
+→ `main` release PR, the back-merge pull request from `main` into `develop`, its merge after all
+protected-branch requirements pass, the resulting automatic Production deployment, and read-only
+deployment/smoke verification. Preserve meaningful commits and use the allowed merge method. Never
+push or commit directly to main. Supporting skills inherit this request; do not stop after opening
+the PR or ask again to merge it. If the release needs an owner decision outside this authority (for
+example an unclear range or a gated migration), gather every such decision and ask them in one round
+before the first write, per the [report contract](../../templates/agent-report-contract.md); ask
+again only when new evidence appears. Each gate in this skill keeps its explicit approval.
 
 Create or update that PR only through [production-pr](../production-pr/SKILL.md), the canonical PR
 procedure; this skill adds the merge and deployment verification. Identify all included

@@ -3,8 +3,26 @@
  * Pure functions only, like model.mjs: the view imports this file in the browser and the unit tests in Node.
  * Nothing here changes stored data; it only decides how it is shown.
  */
-import { AGENT_REGISTRY, authorOf, isFinished, isReview, prNumber, taskLane } from './model.mjs';
-import { reviewVerdict } from './next.mjs';
+import { archiveBlock } from './cierre.mjs';
+import {
+	AGENT_REGISTRY,
+	authorOf,
+	color,
+	findTask,
+	isFinished,
+	isNoteRow,
+	isReview,
+	matches,
+	ownerAsks,
+	ownerLaunches,
+	prNumber,
+	queue,
+	stage,
+	taskLane,
+	taskTag,
+} from './model.mjs';
+import { deliveryLine, nextSections, ownerMessages, reviewVerdict } from './next.mjs';
+import { blocked, calendar } from './subtasks.mjs';
 
 export const GH = 'https://github.com/fm-dev-mx/celebra-me';
 
@@ -249,7 +267,7 @@ function traceRows(bitacora) {
 	if (byTask) return byTask;
 	byTask = new Map();
 	const rows = bitacora
-		.filter((r) => r.tarea && !r.mensaje && r.quien)
+		.filter((r) => r.tarea && !isNoteRow(r) && r.quien)
 		.sort((a, b) => String(a.en).localeCompare(String(b.en)));
 	for (const r of rows) (byTask.get(r.tarea) ?? byTask.set(r.tarea, []).get(r.tarea)).push(r);
 	TRACE_ROWS.set(bitacora, byTask);
@@ -366,4 +384,247 @@ export function versionsLine(board = {}, now = Date.now()) {
 	]
 		.filter(Boolean)
 		.join(' · ');
+}
+
+/** T321: how a message names its sender and reader: the owner is «usted», agents by their name. */
+const READERS = { dueno: 'usted', coordinador: 'Coordinador' };
+export const personName = (id) => READERS[id] ?? AGENT_REGISTRY[id]?.nombre ?? String(id ?? '¿?');
+
+const TECHNICAL = new Set(['sha', 'branch', 'code', 'path', 'file', 'url']);
+const escRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * T321: a message `{quien, en, tarea, mensaje: {para, texto}}` as a card reads it: who asks whom, the question in one
+ * line, the plain sentences around it (`contexto`) and the technical ones (`detalle`: SHAs, branches, commands, paths)
+ * to fold. A leading «T295», «T295 ·» or the task id that only repeats the message's own task is dropped.
+ */
+export function messageParts(r, board) {
+	const t = findTask(r.tarea, board);
+	const tags = [...new Set([t && taskTag(t), t?.id, r.tarea].filter(Boolean))].map(escRe);
+	const lead = tags.length
+		? new RegExp(
+				`^(?:${tags.join('|')})(?![\\w-])(?:\\s*\\((?:PR\\s*)?#\\d+\\))?\\s*[:·—-]?\\s*`,
+				'i',
+			)
+		: null;
+	let text = String(r.mensaje?.texto ?? '').trim();
+	while (lead && lead.test(text)) text = text.replace(lead, '');
+	const sentences = text
+		.split(/\n+|(?<=[.!?])\s+(?=[¿¡A-ZÁÉÍÓÚÑ0-9`*])/)
+		.map((s) => s.trim())
+		.filter(Boolean);
+	const technical = (s) => tokenize(s).some((x) => TECHNICAL.has(x.kind));
+	const pregunta =
+		sentences.find((s) => s.includes('?')) ??
+		sentences.find((s) => !technical(s)) ??
+		sentences[0] ??
+		'';
+	const rest = sentences.filter((s) => s !== pregunta);
+	return {
+		de: personName(r.quien),
+		para: personName(r.mensaje?.para),
+		quien: r.quien ?? null,
+		t,
+		tarea: t ? taskTag(t) : (r.tarea ?? ''),
+		pregunta,
+		contexto: rest.filter((s) => !technical(s)),
+		detalle: rest.filter(technical),
+		en: r.en ?? null,
+	};
+}
+
+/**
+ * T321: a «Mensaje: gemini → coordinador sobre T307: T307 id (PR #587): texto» row as «Gemini → Coordinador: texto».
+ * The row already shows its task, so the repeated tag, id and PR go; any other row text comes back unchanged.
+ */
+export function rowText(texto) {
+	const m = /^Mensaje: (\S+) → (\S+) sobre (\S+): ([\s\S]*)$/.exec(String(texto ?? ''));
+	if (!m) return String(texto ?? '');
+	const lead = new RegExp(
+		`^${escRe(m[3])}(?![\\w-])(?:\\s+[a-z0-9]+(?:-[a-z0-9]+)+(?=\\s*[(:]))?(?:\\s*\\((?:PR\\s*)?#\\d+\\))?\\s*[:·—-]?\\s*`,
+		'i',
+	);
+	let text = m[4];
+	while (lead.test(text)) text = text.replace(lead, '');
+	return `${personName(m[1])} → ${personName(m[2])}: ${text}`;
+}
+
+/**
+ * T321: what the owner does now, once each, every row with its action as a verb: `{tipo, id, t, verbo, texto, sub}`.
+ * `tarea` rows are the owner's ready tasks («Pegar en Gemini», «Aprobar» when it touches main, Production,
+ * migrations or secrets, else «Hacer»), `decision` the answers a task waits for («Decidir»), `detenida` a ready Codex
+ * or Gemini task nobody took («Relanzar»), `mensaje` an unread message to the owner («Responder a Codex», with its
+ * `msg` parts) and one `archivar` row for the finished tasks ready to archive. Messages to the coordinator never count.
+ */
+export function ownerActions(board, { prs, now = Date.now() } = {}) {
+	const next = nextSections(board, { prs, now });
+	const stalled = next.usted.filter((x) => x.texto.startsWith('Correr el despachador'));
+	const late = new Set(stalled.map((x) => x.id));
+	const tasks = queue(board, now).filter(
+		(t) => color(t, board, { now }) === 'own' && !late.has(t.id),
+	);
+	const archivable = (board.tareas ?? []).filter(
+		(t) => isFinished(t) && !t.archivada && !t.candado && !archiveBlock(t, board),
+	);
+	const rows = [
+		...tasks.map((t) => {
+			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a]?.nombre ?? a);
+			const verbo = paste.length
+				? `Pegar en ${paste.join(' o ')}`
+				: (t.toca ?? []).length
+					? 'Aprobar'
+					: 'Hacer';
+			return {
+				tipo: 'tarea',
+				id: t.id,
+				t,
+				verbo,
+				texto: t.titulo ?? t.id,
+				sub: deliveryLine(t, now),
+			};
+		}),
+		...ownerAsks(board, now).map(({ t, r }) => ({
+			tipo: 'decision',
+			id: t.id,
+			t,
+			verbo: 'Decidir',
+			texto: r.ref,
+			sub: `la espera ${taskTag(t)} · ${t.titulo ?? t.id}`,
+		})),
+		...stalled.map((x) => ({
+			tipo: 'detenida',
+			id: x.id,
+			t: findTask(x.id, board),
+			verbo: 'Relanzar',
+			texto: x.texto,
+			sub: '',
+		})),
+		...ownerMessages(board).map((r) => {
+			const msg = messageParts(r, board);
+			return {
+				tipo: 'mensaje',
+				id: msg.t?.id ?? null,
+				t: msg.t,
+				verbo: `Responder a ${msg.de}`,
+				texto: msg.pregunta,
+				sub: '',
+				msg,
+			};
+		}),
+	];
+	if (archivable.length)
+		rows.push({
+			tipo: 'archivar',
+			id: null,
+			t: null,
+			verbo: 'Archivar',
+			texto: `${archivable.length} ${archivable.length === 1 ? 'tarea finalizada' : 'tareas finalizadas'} con su resumen de cierre`,
+			sub: '',
+			n: archivable.length,
+		});
+	return rows;
+}
+
+/** The «En revisión» group of the Cola: done tasks waiting for their check, newest first. */
+export function inReview(board, now = Date.now()) {
+	return (board.tareas ?? [])
+		.filter((t) => stage(t, board, now) === 'revision' && !t.archivada)
+		.sort((a, b) => Date.parse(b.actualizado ?? 0) - Date.parse(a.actualizado ?? 0));
+}
+
+/**
+ * T321: the number each sidebar tab shows, equal to the rows its list shows with no filter or search: «Para usted»
+ * its actions, «Cola» the open tasks plus its «En revisión» group (never the coordinator's group), «Calendario» and
+ * «Bloqueadas» their tasks, «Finalizadas» the ones not archived and «Carriles» the lanes a running task holds, out of
+ * all. «General» and «Historial» show none: the first repeats the others, the second is a log.
+ */
+export function tabCounts(board, { prs, now = Date.now() } = {}) {
+	const lanes = board.carriles ?? [];
+	const held = new Set(
+		(board.tareas ?? [])
+			.filter((t) => t.candado && !isFinished(t))
+			.map(taskLane)
+			.filter(Boolean),
+	);
+	return {
+		usted: ownerActions(board, { prs, now }).length,
+		cola: queue(board, now).length + inReview(board, now).length,
+		calendario: calendar(board, now).length,
+		bloqueadas: blocked(board, now).length,
+		finalizadas: (board.tareas ?? []).filter((t) => isFinished(t) && !t.archivada).length,
+		carriles: `${lanes.filter((l) => held.has(l.id)).length}/${lanes.length}`,
+	};
+}
+
+const foldText = (s) =>
+	String(s ?? '')
+		.normalize('NFD')
+		.replace(/[̀-ͯ]/g, '')
+		.toLowerCase();
+
+/** T321: whether a task matches the search: its number (T295 or 295), id, title, current line or PR (#594, PR 594). */
+export function searchHit(t, q) {
+	const s = String(q ?? '').trim();
+	if (!s) return true;
+	const pr = /^(?:pr\s*#?|#)(\d+)$/i.exec(s);
+	if (pr) return [t.pr, t.cierre?.pr].some((x) => prNumber(x) === Number(pr[1]));
+	if (/^\d+$/.test(s) && (Number(t.num) === Number(s) || prNumber(t.pr) === Number(s)))
+		return true;
+	return matches(t, s);
+}
+
+/** The sections a search result can name, in the sidebar's order. */
+export const SEARCH_SECTIONS = [
+	'Para usted',
+	'Cola',
+	'Calendario',
+	'Bloqueadas',
+	'Finalizadas',
+	'Carriles',
+	'Historial',
+];
+
+/**
+ * T321: the global search: every task that matches, once, with the sections that list it (`secciones`, in sidebar
+ * order), then the decisions that match («Historial»). Tasks come first by their first section, then newest number.
+ */
+export function globalSearch(board, q, { prs, now = Date.now(), max = 60 } = {}) {
+	const s = String(q ?? '').trim();
+	if (!s) return [];
+	const mine = new Set(
+		ownerActions(board, { prs, now })
+			.map((x) => x.id)
+			.filter(Boolean),
+	);
+	const cola = new Set([...queue(board, now), ...inReview(board, now)].map((t) => t.id));
+	const cal = new Set(calendar(board, now).map((x) => x.t.id));
+	const blk = new Set(blocked(board, now).map((x) => x.t.id));
+	const rank = (x) => {
+		const i = SEARCH_SECTIONS.indexOf(String(x.secciones[0] ?? '').split(' · ')[0]);
+		return i < 0 ? SEARCH_SECTIONS.length : i;
+	};
+	const tasks = (board.tareas ?? [])
+		.filter((t) => searchHit(t, s))
+		.map((t) => {
+			const secciones = [];
+			if (mine.has(t.id)) secciones.push('Para usted');
+			if (cola.has(t.id)) secciones.push('Cola');
+			if (cal.has(t.id)) secciones.push('Calendario');
+			if (blk.has(t.id)) secciones.push('Bloqueadas');
+			if (isFinished(t))
+				secciones.push(t.archivada ? 'Finalizadas · archivada' : 'Finalizadas');
+			if (t.candado && !isFinished(t)) secciones.push('Carriles');
+			return { tipo: 'tarea', t, secciones };
+		})
+		.sort((a, b) => rank(a) - rank(b) || (b.t.num ?? 0) - (a.t.num ?? 0));
+	const words = /^d\d+$/i.test(s) ? null : foldText(s).split(/\s+/);
+	const decisions = (board.decisiones ?? [])
+		.filter((d) =>
+			words
+				? words.every((w) => foldText([d.id, d.decision, d.motivo].join(' ')).includes(w))
+				: String(d.id).toLowerCase() === s.toLowerCase(),
+		)
+		.sort((a, b) => Date.parse(b.en ?? 0) - Date.parse(a.en ?? 0))
+		.map((d) => ({ tipo: 'decision', d, secciones: ['Historial'] }));
+	return [...tasks, ...decisions].slice(0, max);
 }

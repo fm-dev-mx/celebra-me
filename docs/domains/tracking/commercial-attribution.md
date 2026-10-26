@@ -86,6 +86,44 @@ triggers automatic lead creation during ingestion (`ingestion.service.ts`).
 The WhatsApp URL is rewritten client-side to embed the canonical `lead_code` (`CM-XXXXXX`) in the
 message text. The visitor can quote it in the chat so the operator finds the lead in the CRM.
 
+### Lead capture form («Aparta su fecha»)
+
+WhatsApp CTAs on commercial and demo routes carry `data-lead-capture`. A click opens
+`LeadCaptureDialog.astro` instead of WhatsApp (without JavaScript the CTA keeps its link). The
+dialog offers two exits, both tracked WhatsApp links that copy the CTA's tracking attributes, so a
+`Contact` is still counted once: `<cta>__ask` («Solo quiero preguntar», the CTA's own message) and
+`<cta>__form` (after the form, with a prefilled message that ends in `Folio CM-XXXXXX`).
+
+`POST /api/leads/capture` (`lead-capture.service.ts`) validates the form server-side (event type,
+date from yesterday to three years ahead, name, Mexican or US WhatsApp number, approved demo slug)
+and then:
+
+- **Step:** Anti-bot
+  - **Detail:** Honeypot field, a 2-second minimum fill time and automated user agents are answered
+    201 without writes; 10 requests per IP per minute
+- **Step:** Session
+  - **Detail:** With analytics or marketing consent in Production: visitor session upsert and a
+    `form_submitted` event whose ID is the Pixel `eventID`. The event carries no personal data
+- **Step:** Lead
+  - **Detail:** Channel `contact_form`, name, phone, `event_type`, `event_date`, `celebrant_names`,
+    `demo_slug`, UTMs; Meta attribution and `consent_marketing` only with marketing consent. The
+    browser's `lead_code` is kept only when its lead belongs to the same session
+- **Step:** Customer
+  - **Detail:** `createCommercialCustomer` creates or matches the customer by phone and links the
+    lead
+- **Step:** Meta
+  - **Detail:** With marketing consent on a Meta-allowed route in Production: a `Lead` outbox row
+    with the same event ID, `session_id`, `customer_id` and `lead_id`, so delivery adds the hashed
+    phone
+
+The browser fires the Pixel `Lead` with the same event ID but does not post `form_submitted` to
+`/api/tracking`; the capture API already stored it. Outside Production the lead and customer are
+stored without a session, tracking event or Meta row.
+
+An order created from the dashboard without a session takes `lead_id` and `session_id` from the
+given lead, or from the customer's latest lead (`findLeadOrderAttribution`), so the deposit
+`Purchase` carries that visit's fbp/fbc.
+
 ## `lead_created` Event Rule
 
 `lead_created` is a first-party tracking event fired server-side after lead persistence. It follows

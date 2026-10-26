@@ -450,29 +450,11 @@ describe('board:verify', () => {
 			]);
 		});
 
-		it('lists close-queue entries still pending after a day', () => {
+		it('ignores retired closing files, including malformed JSON', () => {
 			const dir = makeExport([task('t', {})]);
 			mkdirSync(path.join(dir, 'cierres'));
-			const entry = (tarea: string, creada: string, sesion: string) => ({
-				tarea,
-				creada,
-				pasos: { sesion, rama: 'hecho' },
-			});
-			writeFileSync(
-				path.join(dir, 'cierres', 'vieja.json'),
-				JSON.stringify(entry('vieja', '2026-10-18T00:00:00Z', 'pendiente')),
-			);
-			writeFileSync(
-				path.join(dir, 'cierres', 'nueva.json'),
-				JSON.stringify(entry('nueva', new Date().toISOString(), 'pendiente')),
-			);
-			writeFileSync(
-				path.join(dir, 'cierres', 'lista.json'),
-				JSON.stringify(entry('lista', '2026-10-18T00:00:00Z', 'hecho')),
-			);
-			expect(verify(dir, {}).report.cierresPendientes).toEqual([
-				{ id: 'vieja', nombre: '', pendiente: ['sesion'] },
-			]);
+			writeFileSync(path.join(dir, 'cierres', 'vieja.json'), '{invalid');
+			expect(verify(dir, {}).report).not.toHaveProperty('cierresPendientes');
 		});
 	});
 

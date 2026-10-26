@@ -82,10 +82,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tab{display:flex;align-items:center;gap:8px;width:100%;min-height:36px;border:0;border-radius:6px;background:none;padding:6px 10px;font:500 .9rem var(--body);color:var(--muted);text-align:left}
 .tab:hover{background:var(--hover);color:var(--ink)}
 .tab[aria-selected="true"]{background:var(--hover);color:var(--ink);font-weight:600}
-.tab .n{margin-left:auto;font:500 .76rem var(--mono);color:var(--faint)}
+/* T321: every count is quiet — gray, small, never bold — and equals the rows its view lists. */
+.tab .n{margin-left:auto;font:400 .74rem var(--mono);color:var(--faint)}
 .tab .n:empty{display:none}
-/* green = the owner acts (board rule): only the «Para usted» count turns green, and only when there is something */
-.tab .n.hot{color:var(--own);background:var(--own-soft);border-radius:999px;padding:0 7px;font-weight:600}
 .tab-sep{height:1px;background:var(--line);margin:6px 10px}
 .side-foot{margin-top:auto;display:grid;gap:8px;padding:10px 10px 0;border-top:1px solid var(--line);font-size:.78rem;color:var(--muted)}
 .side-foot .state{display:grid;gap:2px;min-width:0}
@@ -100,6 +99,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .wrap{min-width:0;max-width:1320px;width:100%;padding-block:0 48px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:grid;gap:12px;align-content:start}
 .top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line)}
 .top h2{font:700 1.3rem/1.2 var(--body);min-width:0}
+.top h2 .n{font:400 .8rem var(--mono);color:var(--faint);margin-left:6px}
 .top .tools{flex:1 1 260px;justify-content:flex-end}
 .menu{display:none;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:6px;background:none;color:var(--muted)}
 .menu:hover{background:var(--hover);color:var(--ink)}
@@ -124,7 +124,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .fchip{display:inline-flex;align-items:center;gap:6px;border:0;background:none;border-radius:6px;padding:4px 9px;font-size:.82rem;font-weight:500;color:var(--muted);min-height:32px}
 .fchip:hover{background:var(--hover);color:var(--ink)}
 .fchip[aria-pressed="true"]{background:var(--hover);color:var(--ink);font-weight:600;box-shadow:inset 0 0 0 1px var(--line-2)}
-.fchip .n{font:600 .72rem var(--mono);opacity:.75;margin-left:2px}
+.fchip .n{font:400 .72rem var(--mono);color:var(--faint);margin-left:2px}
 @media (pointer:coarse){.fchip{min-height:44px}}
 .sw{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
 
@@ -134,7 +134,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .views{display:grid;gap:12px;min-width:0}
 .list{display:grid;min-width:0}
 .grp{font-size:.74rem;letter-spacing:.04em;font-weight:600;color:var(--muted);padding:14px 4px 6px;display:flex;flex-wrap:wrap;gap:4px 8px;border-bottom:1px solid var(--line)}
-.grp .n,details.grpd>summary .n{font:500 .76rem var(--mono);color:var(--faint)}
+.grp .n,details.grpd>summary .n{font:400 .74rem var(--mono);color:var(--faint)}
 details.grpd{min-width:0}
 details.grpd>summary{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:40px;padding:10px 4px 6px;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:1px solid var(--line)}
 details.grpd>summary::-webkit-details-marker{display:none}
@@ -194,6 +194,34 @@ details.grpd>summary .hint{font-weight:400;color:var(--faint)}
 .mine .row .meta{font:500 .76rem var(--mono);color:var(--muted)}
 .mine.coord .row b{color:var(--auto)}.mine.stall .row b{color:var(--warn)}
 .mine.coord .row>span,.mine.stall .row>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* T321: an owner row leads with its action as a verb (green: the owner acts), then one line of what, then quiet detail.
+   Free text sits in its own inline span, so a «T295» link flows inside the sentence instead of breaking it. */
+.mine .row .verb{flex:none;width:9.5rem;font-size:.8rem;font-weight:600;color:var(--own);padding-top:2px}
+.mine .row .what{flex:1;min-width:0}
+.mine .row .t1{min-width:0}
+.mine .row .who{font-weight:600}
+.mine .row .meta{font:400 .76rem var(--body);color:var(--faint)}
+.mine .row .meta .tl{font-size:1em}
+.mine .row.msgc{cursor:pointer}
+details.tech>summary{min-height:32px;font-size:.78rem;font-weight:500;color:var(--muted)}
+details.tech .body{font-size:.8rem;color:var(--muted)}
+@media (pointer:coarse){details.tech>summary{min-height:44px}}
+@media (max-width:560px){.mine .row.act{flex-wrap:wrap;row-gap:2px}.mine .row .verb{width:auto;flex-basis:100%}.mine .row.act .ring{display:none}}
+/* T321: the «General» view: «Para usted» on top, then the queue, both one line per row. */
+.sect{display:flex;align-items:baseline;gap:8px;font:600 .8rem var(--body);color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line)}
+.sect:first-child{padding-top:4px}
+.sect .n{font:400 .74rem var(--mono);color:var(--faint)}
+.mine .crow{align-items:center;min-height:40px;padding:6px 8px}
+.mine .crow .ring{margin-top:0}
+.mine .crow .t1{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mine .more-row{display:block;width:100%;min-height:40px;padding:8px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;font-size:.82rem;color:var(--accent)}
+.mine .more-row:hover{background:var(--hover)}
+@media (max-width:560px){.mine .crow .pill{display:none}}
+/* T321: a search result names the sections that list it in a quiet gray label. */
+.mine .hit{flex-wrap:wrap;column-gap:10px;text-decoration:none}
+.mine .hit .what{flex:1 1 16rem}
+.mine .hit .sec{flex:none;margin-left:auto;padding-top:2px;font:400 .72rem var(--body);color:var(--faint);white-space:nowrap}
+.mine .hit .sub .nm{font-size:1em}
 .empty{border:1px dashed var(--line-2);border-radius:8px;padding:16px;color:var(--muted);font-size:.9rem;text-align:center}
 .list>.empty{margin-top:8px;padding:8px 12px;font-size:.86rem}
 
@@ -380,10 +408,11 @@ details.more .meta{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--muted);f
 /* On touch screens and narrow widths the copy button is a full 44px target; its line grows instead of overlapping. */
 @media (pointer:coarse),(max-width:560px){.sha{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 8px;vertical-align:middle}}
 .sha[data-copied]{color:var(--own);border-color:var(--own-rule)}
-a.tl,a.dl,span.tl{font-family:var(--mono);font-weight:600;font-size:.92em;color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,currentColor 40%,transparent)}
+/* T321: a «T295» or «d210» reads as a quiet inline link inside its sentence: no box, no border, underline on hover. */
+a.tl,a.dl,span.tl{font:inherit;font-weight:500;color:var(--accent);text-decoration:none;white-space:nowrap}
 span.tl{cursor:pointer}
-a.tl:hover,a.dl:hover,span.tl:hover{border-bottom-color:currentColor}
-.tl-x{font-family:var(--mono);font-weight:700;font-size:.92em}
+a.tl:hover,a.dl:hover,span.tl:hover{text-decoration:underline;text-underline-offset:2px}
+.tl-x{font:inherit;font-weight:500;white-space:nowrap}
 a.prl{font-weight:600}
 .jg{text-decoration:underline dotted;text-underline-offset:2px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -394,6 +423,7 @@ a.prl{font-weight:600}
   <aside class="side" id="side" aria-label="Vistas y estado">
     <div class="brand"><h1>Seguimiento Celebra-me</h1></div>
     <nav class="tabs" role="tablist" aria-label="Vistas" aria-orientation="vertical">
+      <button class="tab" role="tab" type="button" data-tab="general" id="t-general" title="Lo que le toca a usted y la cola, en una sola vista">General<span class="n" id="n-gen"></span></button>
       <button class="tab" role="tab" type="button" data-tab="usted" id="t-usted" title="Solo lo que le toca hacer a usted">Para usted<span class="n" id="n-you"></span></button>
       <button class="tab" role="tab" type="button" data-tab="cola" id="t-cola">Cola<span class="n" id="n-cola"></span></button>
       <button class="tab" role="tab" type="button" data-tab="calendario" id="t-calendario" title="Tareas que solo esperan una fecha; vuelven solas a la Cola ese día">Calendario<span class="n" id="n-cal"></span></button>
@@ -414,9 +444,9 @@ a.prl{font-weight:600}
   <main class="wrap">
     <header class="top">
       <button type="button" class="menu" data-side="1" aria-label="Abrir las vistas" aria-controls="side" aria-expanded="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
-      <h2 id="vtitle">Para usted</h2>
+      <h2 id="vtitle">General</h2>
       <div class="tools">
-        <span class="search" id="tsearch"><input id="tq" type="search" placeholder="Buscar: serenata, T34, olivia…" aria-label="Buscar tareas por número, nombre o estado actual (Ctrl+K)" aria-keyshortcuts="Control+K"><kbd aria-hidden="true">Ctrl K</kbd></span>
+        <span class="search" id="tsearch"><input id="tq" type="search" placeholder="Buscar en todo: T295, #594, olivia…" aria-label="Buscar tareas en todas las secciones por número, id, título o PR (Ctrl+K)" aria-keyshortcuts="Control+K"><kbd aria-hidden="true">Ctrl K</kbd></span>
         <span class="sync">
           <button type="button" class="btn sm ghost" id="sync-dry" title="Muestra qué cambiaría sin escribir nada" aria-label="Ver cambios"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg><span class="lbl">Ver cambios</span></button>
           <button type="button" class="btn sm ghost" id="sync-run" title="Actualiza el tablero con las ramas y los PR de GitHub" aria-label="Sincronizar"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 6.5A5.5 5.5 0 0 0 3.3 4.8M2.5 9.5a5.5 5.5 0 0 0 10.2 1.7M3 2v3h3M13 14v-3h-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">Sincronizar</span></button>
@@ -425,12 +455,23 @@ a.prl{font-weight:600}
       </div>
       <span class="msg" id="tqmsg" aria-live="polite"></span>
     </header>
-    <div class="help" id="help" hidden><p>«Para usted» muestra solo lo que le toca hacer a usted; la «Cola» muestra todo lo abierto. El número de cada tarea se calcula solo: primero la urgencia, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Una tarea que solo espera una fecha pasa a «Calendario» y vuelve sola a la cola ese día; la que espera otra tarea, una decisión, su prompt o una respuesta pasa a «Bloqueadas», con lo que le falta, y vuelve sola a la cola al desbloquearse. Una tarea madre muestra su barra de avance y su flecha despliega sus subtareas; la que toca ejecutar ahora sigue a la vista. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (con el filtro de un agente, solo si ese agente puede). Gris: bloqueada. El anillo de cada fila marca la urgencia (rojo urgente, ámbar alta) y nunca usa verde. Ctrl+K busca. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada, al copiar el prompt de una tarea lista (la marca como entregada) o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</p></div>
+    <div class="help" id="help" hidden><p>«Para usted» muestra solo lo que le toca hacer a usted; la «Cola» muestra todo lo abierto; «General» junta las dos en una vista compacta. El buscador busca en todas las secciones a la vez y marca en gris dónde está cada tarea; al borrarlo vuelve a la vista donde estaba. El número de cada tarea se calcula solo: primero la urgencia, luego la fecha límite y al final las dependencias. Una tarea está lista cuando todos sus requisitos tienen ✓. Una tarea que solo espera una fecha pasa a «Calendario» y vuelve sola a la cola ese día; la que espera otra tarea, una decisión, su prompt o una respuesta pasa a «Bloqueadas», con lo que le falta, y vuelve sola a la cola al desbloquearse. Una tarea madre muestra su barra de avance y su flecha despliega sus subtareas; la que toca ejecutar ahora sigue a la vista. Verde: lista y le toca a usted (incluye todo lo que toca main, Producción, migraciones o secretos, y las que solo Codex o Gemini terminan: «Pegar en Codex» o «Pegar en Gemini»). Violeta: lista y un agente la arranca y la termina solo (con el filtro de un agente, solo si ese agente puede). Gris: bloqueada. El anillo de cada fila marca la urgencia (rojo urgente, ámbar alta) y nunca usa verde. Ctrl+K busca. Los datos viven en <code>.agent/tmp/board/</code> de Integración y se escriben con <code>pnpm board</code>; esta página muestra cada cambio al instante y solo escribe al archivar o desarchivar una tarea finalizada, al copiar el prompt de una tarea lista (la marca como entregada) o al pulsar «Sincronizar» (sin IA: lee ramas y PR de GitHub), siempre con su línea en la bitácora.</p></div>
     <div class="syncout" id="syncout" role="status" aria-live="polite" hidden></div>
 
     <div class="cola" id="work">
       <div class="views">
-        <section id="p-usted" role="tabpanel" aria-labelledby="t-usted">
+        <section id="p-general" role="tabpanel" aria-labelledby="t-general">
+          <h3 class="sect">Para usted <span class="n" id="gn-you"></span></h3>
+          <div class="mine" id="gen-mine" aria-live="polite"><div class="empty">Cargando lo que le toca a usted…</div></div>
+          <h3 class="sect">Cola <span class="n" id="gn-cola"></span></h3>
+          <div class="mine" id="gen-cola"><div class="empty">Cargando la cola…</div></div>
+        </section>
+
+        <section id="p-buscar" aria-label="Resultados de la búsqueda" hidden>
+          <div class="mine" id="found" aria-live="polite"></div>
+        </section>
+
+        <section id="p-usted" role="tabpanel" aria-labelledby="t-usted" hidden>
           <div class="mine" id="mine" aria-live="polite"><div class="empty">Cargando lo que le toca a usted…</div></div>
         </section>
 
@@ -513,12 +554,14 @@ setTimeout(function(){
 import { findTask } from '/model.mjs';
 import { archiveBlock, signalLine } from '/cierre.mjs';
 import { GH, HANDOFF_HEADINGS, findingsOf, lastChange, leadOf, outcomeOf, prStatus, relTime, richText, runnerOf, shaHtml, titleHtml, traceText, versionsLine, whoOf } from '/format.mjs';
+import { globalSearch, inReview, ownerActions, rowText, tabCounts } from '/format.mjs';
 import { requisitoText, taskName } from '/model.mjs';
 import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
+import { optionsText } from '/owner-text.mjs';
 import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
 window.boardStarted=true;
@@ -533,12 +576,12 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const TABS=['usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];
-const TITLE={usted:'Para usted',cola:'Cola',calendario:'Calendario',bloqueadas:'Bloqueadas',finalizadas:'Finalizadas',carriles:'Carriles',historial:'Historial'};
+const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];
+const TITLE={general:'General',usted:'Para usted',cola:'Cola',calendario:'Calendario',bloqueadas:'Bloqueadas',finalizadas:'Finalizadas',carriles:'Carriles',historial:'Historial'};
 // T268: the queue's collapsible groups, by the color of each block's first task, in this order.
 const GROUP={own:'Le toca a usted',auto:'Autónomas',run:'En curso',block:'Sin agente que la termine',rev:'En revisión',done:'Hechas'};
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
-const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'usted',kind:'todo',ag:'todas',finag:'todas',col:'todos'};
+const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'general',kind:'todo',ag:'todas',finag:'todas',col:'todos'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const T=s=>s?new Date(s).getTime():NaN;
@@ -547,6 +590,8 @@ const fmtDay=s=>{const t=T(s);return isNaN(t)?'—':new Date(t).toLocaleDateStri
 const ago=s=>relTime(s);
 // T151: free text links PRs, tasks (T132) and decisions (d210), cuts SHAs to 7 and dims paths and branches.
 const rich=s=>richText(s,{task:n=>S.board.tareas.find(t=>t.num===n),decision:id=>decById(id)});
+// T322: a question to the owner shows its options, the recommended one first; the technical detail stays folded.
+const msgExtraHtml=m=>(m.opciones&&m.opciones.length?`<div class="sub">Opciones: ${esc(optionsText(m.opciones))}</div>`:'')+(m.detalle?`<details class="sub"><summary>Detalle técnico</summary><div>${m.detalle.split(/\r?\n|\\n/).map(rich).join('<br>')}</div></details>`:'');
 // d284: a title inside a button keeps **bold**, `code` and a clickable «T274», never a nested link.
 const tt=s=>titleHtml(s,{task:n=>S.board.tareas.find(t=>t.num===n)});
 const byId=id=>S.board.tareas.find(t=>t.id===id);
@@ -558,10 +603,11 @@ const color=t=>mColor(t,S.board,{agente:agentTab()});
 
 const label=r=>requisitoText(r,S.board);
 const reqs=t=>requisitos(t,S.board).map(r=>({...r,label:label(r)}));
-const found=t=>matches(t,$('tq').value);
+// T321: the header's search covers every section at once in its own result list, so no view filters by it.
+const searching=()=>$('tq').value.trim()!=='';
 // T268: the state chips (the old legend) filter the queue and its review group by color.
 const colorOk=t=>S.col==='todos'||color(t)===S.col;
-const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&found(t)&&colorOk(t));
+const queue=()=>mQueue(S.board).filter(t=>inTab(t,S.ag)&&colorOk(t));
 let NUM={};
 const tN=t=>t.num?`<span class="tn">T${esc(t.num)}</span> · `:'';
 const urgOf=t=>URG[t.urgencia]?t.urgencia:'normal';
@@ -632,11 +678,10 @@ function subsHtml(key,subs){
   return OPEN.has('subs:'+key)?`<ul class="subl" aria-label="Subtareas">${subs.map(row).join('')}</ul>`:'';
 }
 // d174: a mother card (or a header when the mother is not in the queue) carries the progress; under it only the
-// subtasks ready or running now keep their card (all of them while searching), the rest fold into the checklist.
+// subtasks ready or running now keep their card, the rest fold into the checklist.
 function groupedHtml(q){
   const blocks=[],byKey={};
   for(const t of q){const b=blockOf(t),key=b?b.key:'#'+t.id;if(!byKey[key])blocks.push(byKey[key]={...(b||{}),tasks:[]});byKey[key].tasks.push(t)}
-  const searching=$('tq').value.trim()!=='';
   return blocks.map(b=>{
     const c=color(b.tasks.find(t=>t.id===b.mother?.id)||b.tasks[0]);
     if(!b.key)return {c,n:1,html:itemHtml(b.tasks[0])};
@@ -645,7 +690,7 @@ function groupedHtml(q){
     const p=groupProgress(b.mother||{grupo:b.grupo},S.board);
     const toggle={key:'subs:'+b.key,n:subs.length};
     const top=head?itemHtml(head,{toggle}):`<div class="ghead">${tgHtml(toggle.key,toggle.n)}${b.mother?`<h3 class="ttl"><button type="button" class="crumb" data-sel="${esc(b.mother.id)}">${tN(b.mother)}${tt(b.mother.titulo||b.mother.id)}</button></h3>`:`<h3 class="ttl">Grupo ${esc(b.grupo)}</h3>`}${progHtml(p)}</div>`;
-    const shown=b.tasks.filter(t=>t!==head&&(searching||['lista','curso'].includes(stage(t))||S.sel===t.id));
+    const shown=b.tasks.filter(t=>t!==head&&(['lista','curso'].includes(stage(t))||S.sel===t.id));
     return {c,n:b.tasks.length,html:top+subsHtml(b.key,subs)+shown.map(t=>itemHtml(t,{sub:true})).join('')};
   });
 }
@@ -657,19 +702,19 @@ const foldHtml=(key,title,n,body,hint='')=>`<details class="grpd" data-fold="${e
 function renderCola(){
   const all=mQueue(S.board);NUM={};all.forEach((t,i)=>NUM[t.id]=i+1);
   const q=queue();
-  const rev=S.board.tareas.filter(t=>stage(t)==='revision'&&!t.archivada&&inTab(t,S.ag)&&found(t)&&colorOk(t)).sort((a,b)=>T(b.actualizado)-T(a.actualizado));
+  const rev=inReview(S.board).filter(t=>inTab(t,S.ag)&&colorOk(t));
   if(!S.ready)return;
-  $('n-cola').textContent=all.length;
-  const none=$('tq').value.trim()?'Ninguna tarea abierta coincide con esa búsqueda.':S.ag!=='todas'||S.col!=='todos'?'Ninguna tarea abierta con estos filtros.':'No hay tareas abiertas.';
+  const none=S.ag!=='todas'||S.col!=='todos'?'Ninguna tarea abierta con estos filtros.':'No hay tareas abiertas.';
   const blocks=groupedHtml(q);
   let h=q.length?Object.keys(GROUP).map(c=>{const bs=blocks.filter(b=>b.c===c);return bs.length?foldHtml('q-'+c,GROUP[c],bs.reduce((s,b)=>s+b.n,0),bs.map(b=>b.html).join('')):''}).join(''):`<div class="empty">${none}</div>`;
   if(rev.length)h+=foldHtml('q-revision','En revisión',rev.length,rev.map(t=>itemHtml(t)).join(''),'hechas, falta comprobarlas');
   $('list').innerHTML=h;
   const mine=renderMine();
-  const searching=$('tq').value.trim()!=='';
-  // T268: «Para usted» opens on the owner's first row (or nothing) until a click picks another task.
-  if(S.tab==='usted'&&!S.picked)S.sel=mine[0]||null;
-  else if(!S.sel||!byId(S.sel)||(searching&&!q.concat(rev).some(t=>t.id===S.sel)))S.sel=(q[0]||rev[0]||{}).id||null;
+  renderGeneral(all);
+  renderFound();
+  // T268: «Para usted» (and «General», T321) opens on the owner's first row (or nothing) until a click picks another task.
+  if(['general','usted'].includes(S.tab)&&!S.picked)S.sel=mine[0]||null;
+  else if(!S.sel||!byId(S.sel))S.sel=(q[0]||rev[0]||{}).id||null;
   document.querySelectorAll('.mine .row[data-sel]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.sel===S.sel)));
   renderSheet(false);
 }
@@ -783,9 +828,6 @@ function closeSheet(){$('sheet').classList.remove('open');document.body.classLis
 function renderBoard(){
   if(!S.ready)return;
   const lanes=S.board.carriles.slice().sort((a,b)=>ordenOf(a)-ordenOf(b));
-  // d284: the tab counts the lanes a running task holds, out of all.
-  const held=new Set(S.board.tareas.filter(t=>t.candado&&!isFinished(t)).map(taskLane).filter(Boolean));
-  $('n-car').textContent=`${lanes.filter(l=>held.has(l.id)).length}/${lanes.length}`;
   const known=new Set(lanes.map(l=>l.id));
   const git=S.board.vivo?Object.fromEntries(laneRows(S.board,S.board.vivo.carriles).map(x=>[x.id,x])):{};
   const tareas=S.board.tareas.filter(t=>!t.archivada&&inTab(t,S.ag));
@@ -806,32 +848,27 @@ function renderBoard(){
 
 // d276: tasks whose only pending requisito is a date, soonest first and by week; each comes back to the queue that day.
 function renderCal(){
-  const all=mCalendar(S.board);
   if(!S.ready)return;
-  $('n-cal').textContent=all.length;
-  const weeks=calendarWeeks(S.board).map(w=>({...w,tareas:w.tareas.filter(x=>found(x.t))})).filter(w=>w.tareas.length);
+  const weeks=calendarWeeks(S.board).filter(w=>w.tareas.length);
   const row=({t,fecha})=>`<article class="cal"><span class="day" title="${esc(fmt(fecha))}">${esc(fmtDay(fecha))}</span><h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${tt(t.titulo)}</button></h3><span class="line">${faseHtml(t)}${agHtml(t)}${urgHtml(t)}</span></article>`;
-  const empty=$('tq').value.trim()?'Ninguna tarea del calendario coincide con esa búsqueda.':'Ninguna tarea espera solo una fecha.';
-  $('cal').innerHTML=weeks.length?weeks.map(w=>`<div class="grp">Semana del ${esc(fmtDay(w.semana+'T12:00:00Z'))} · ${w.tareas.length}</div><div class="log">${w.tareas.map(row).join('')}</div>`).join(''):`<div class="empty">${empty}</div>`;
+  const empty='Ninguna tarea espera solo una fecha.';
+  $('cal').innerHTML=weeks.length?weeks.map(w=>`<div class="grp">Semana del ${esc(fmtDay(w.semana+'T12:00:00Z'))} <span class="n">${w.tareas.length}</span></div><div class="log">${w.tareas.map(row).join('')}</div>`).join(''):`<div class="empty">${empty}</div>`;
 }
 // T258: tasks blocked by a task, a decision, their prompt or an answer, each with what it waits for; each comes back to the queue once unblocked.
 function renderBlk(){
-  const all=mBlocked(S.board);
   if(!S.ready)return;
-  $('n-blk').textContent=all.length;
-  const shown=all.filter(x=>found(x.t));
+  const shown=mBlocked(S.board);
   const row=({t,motivos})=>`<article class="blk"><h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${tt(t.titulo)}</button></h3><span class="line">${faseHtml(t)}${agHtml(t)}${urgHtml(t)}</span><ul aria-label="Qué la bloquea">${motivos.map(m=>`<li>${rich(m)}</li>`).join('')}</ul></article>`;
-  const empty=$('tq').value.trim()?'Ninguna tarea bloqueada coincide con esa búsqueda.':'Ninguna tarea está bloqueada.';
+  const empty='Ninguna tarea está bloqueada.';
   $('blk').innerHTML=shown.length?`<div class="log">${shown.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
 // Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).
 function renderFin(){
   const fin=S.board.tareas.filter(isFinished);
   if(!S.ready)return;
-  $('n-fin').textContent=fin.filter(t=>!t.archivada).length;
   const arch=$('arch').checked;
-  // The agent chips count what the archive toggle and the search leave, so each number matches its list.
-  const shown=fin.filter(t=>Boolean(t.archivada)===arch&&found(t));
+  // The agent chips count what the archive toggle leaves, so each number matches its list.
+  const shown=fin.filter(t=>Boolean(t.archivada)===arch);
   const by=ag=>ag==='todas'?shown:shown.filter(t=>(authorOf(t)||'ninguno')===ag);
   const ags=[...Object.keys(AGENT_REGISTRY),...(shown.some(t=>!authorOf(t))?['ninguno']:[])];
   $('finag').innerHTML=['todas',...ags].map(ag=>`<button class="fchip" type="button" data-finag="${esc(ag)}" aria-pressed="${ag===S.finag}">${esc(ag==='todas'?'Todas':ag==='ninguno'?'Sin agente':AGENT[ag])} <span class="n">${by(ag).length}</span></button>`).join('');
@@ -845,7 +882,7 @@ function renderFin(){
       ${t.cierre?cierreHtml(t):`<p class="nopend">Sin resumen de cierre.</p>`}
       <div class="fa"><button type="button" class="btn" data-arch="${esc(t.id)}" data-rev="${esc(t.rev)}" data-to="${arch?'0':'1'}" ${t.candado||why?'disabled':''}${why?` title="${esc(why)}"`:''}>${arch?'Desarchivar':'Archivar'}</button>${arch&&t.archivada?`<span class="nopend" title="${esc(fmt(t.archivada))}">Archivada ${esc(ago(t.archivada))}</span>`:''}${why?`<span class="msg">${esc(why)}</span>`:''}${locked}</div></article>`;
   };
-  const empty=$('tq').value.trim()?'Ninguna tarea coincide con esa búsqueda.':S.finag!=='todas'?'Ese agente no tiene tareas aquí.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
+  const empty=S.finag!=='todas'?'Ese agente no tiene tareas aquí.':arch?'No hay tareas archivadas.':'No hay tareas finalizadas sin archivar.';
   $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
 // d249: the server writes entregada {agente, desde}; the stream then moves the task out of «Le toca a usted».
@@ -870,11 +907,10 @@ async function archive(btn){
 
 function renderHist(){
   if(!S.ready)return;
-  $('n-hist').textContent=S.board.decisiones.filter(d=>d.vigente===true).length;
   const q=$('q').value.trim().toLowerCase(),vig=$('vig').checked;
   let rows=[];
   if(S.kind!=='bit')rows=rows.concat(S.board.decisiones.filter(d=>!vig||d.vigente===true).map(d=>({en:d.en,txt:[d.id,d.decision,d.motivo,(d.tareas||[]).join(' ')].join(' '),html:`<div class="lr dec ${d.vigente===false?'old':''}"><span class="when">${esc(fmt(d.en))}</span><div class="what"><span class="tag">${esc(d.id)}${d.vigente===true?' · vigente':d.vigente===false?' · reemplazada':''}</span>${rich(d.decision)}${d.motivo?`<div class="sub">Motivo: ${rich(d.motivo)}</div>`:''}</div></div>`})));
-  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}</div></div>`})));
+  if(S.kind!=='dec')rows=rows.concat(S.board.bitacora.map(b=>({en:b.en,txt:[b.tarea,b.corrio,b.salio,b.mensaje&&b.mensaje.texto,logChange(b),b.quien||b.quienTexto].join(' '),html:`<div class="lr bit"><span class="when">${esc(fmt(b.en))}</span><div class="what"><span class="tag">${esc(b.tarea||'')}${logChange(b)?' · '+esc(logChange(b)):''}</span>${rich(b.mensaje?b.mensaje.texto:b.corrio||'')}${b.salio?`<div class="sub">${rich(b.salio)}</div>`:''}${b.mensaje?msgExtraHtml(b.mensaje):''}</div></div>`})));
   if(q)rows=rows.filter(r=>r.txt.toLowerCase().includes(q));
   rows.sort((a,b)=>T(b.en)-T(a.en));
   const shown=rows.slice(0,200);
@@ -898,32 +934,47 @@ function renderMeta(){
   for(const id of ['meta','sidever']){const el=$(id);el.textContent=line;el.title=title}
 }
 // d284: the view's title repeats its tab's count, «Cola (12)»: below 800px the sidebar is hidden.
-const COUNT_ID={usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car',historial:'n-hist'};
-function renderTitle(){const n=$(COUNT_ID[S.tab]).textContent;$('vtitle').textContent=TITLE[S.tab]+(n!==''?` (${n})`:'')}
+// T321: while the header search has text, the title counts its results instead.
+const COUNT_ID={general:'n-gen',usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car',historial:'n-hist'};
+function renderTitle(){
+  const n=searching()?String(S.found||0):$(COUNT_ID[S.tab]).textContent;
+  $('vtitle').innerHTML=esc(searching()?'Búsqueda':TITLE[S.tab])+(n!==''?` <span class="n">${esc(n)}</span>`:'');
+}
+// T321: every tab's count comes from one place and equals the rows its view lists (tabCounts).
+function renderCounts(){
+  const c=tabCounts(S.board,{prs:livePrs()});
+  for(const [k,id] of Object.entries({usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car'}))$(id).textContent=c[k];
+  $('t-usted').title=c.usted?`Usted: ${c.usted} ${c.usted>1?'cosas':'cosa'}`:'Usted: nada';
+}
+// T321: an owner row leads with its action as a verb; a message reads «Codex → usted: question», with its task and
+// its age under it and the technical sentences (SHAs, branches, commands) folded.
+function msgHtml(x){
+  const m=x.msg,t=m.t&&byId(m.t.id)?m.t:null,key='msg:'+(m.en||'')+':'+m.tarea;
+  const ref=t?`<a class="tl" href="#cola" data-sel="${esc(t.id)}" data-all="1" title="${esc(t.titulo)}">${esc(m.tarea)}</a> · ${tt(t.titulo)}`:m.tarea?`<span class="tl-x">${esc(m.tarea)}</span>`:'';
+  return `<article class="row act msgc"${t?` data-sel="${esc(t.id)}" data-all="1"`:''}><span class="verb">${esc(x.verbo)}</span><span class="what">
+    <span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
+    ${m.contexto.length?`<span class="sub">${m.contexto.map(rich).join(' ')}</span>`:''}
+    <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}</span>
+    ${m.detalle.length?`<details class="more tech" data-more="${esc(key)}"${OPEN.has(key)?' open':''}><summary>Detalle técnico</summary><div class="body">${m.detalle.map(s=>`<p>${rich(s)}</p>`).join('')}</div></details>`:''}
+  </span></article>`;
+}
+function actHtml(x){
+  if(x.tipo==='mensaje')return msgHtml(x);
+  const t=x.t,tag=t&&t.num?`<span class="tn">T${esc(t.num)}</span> `:'';
+  const where=x.tipo==='tarea'&&!pasteTo(t)&&runLines(t)[0];
+  const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what"><span class="t1">${x.tipo==='tarea'?tag:''}${x.tipo==='decision'?esc(x.texto):tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}${where?`<span class="sub">${esc(where)}</span>`:''}</span>`;
+  if(x.tipo==='archivar')return `<button type="button" class="row act" data-tab="finalizadas" title="Abrir Finalizadas">${body}</button>`;
+  const row=x.id&&byId(x.id)?`<button type="button" class="row act" data-sel="${esc(x.id)}" data-all="1">${body}</button>`:`<div class="row act">${body}</div>`;
+  return x.tipo==='tarea'&&pasteTo(t)?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row;
+}
 // The whole board, not the agent tab: what the owner must do never hides behind a filter.
 // T268: «Para usted» lists only the owner's actions, once each; the coordinator's turn and stalled tasks are Cola groups.
-// Returns the ids of the owner's rows, in order.
+// T321: «General» repeats the same rows above a compact queue. Returns the ids of the owner's rows, in order.
 function renderMine(){
-  const all=mQueue(S.board),tag=t=>t.num?'T'+t.num:'';
   const next=nextSections(S.board,{prs:livePrs()});
-  const late=new Set(next.usted.filter(x=>x.texto.startsWith('Correr el despachador')).map(x=>x.id));
-  const tasks=all.filter(t=>mColor(t,S.board)==='own'&&!late.has(t.id));
-  const asks=ownerAsks(S.board);
-  // T126: what the owner's own rows do not say yet: a stalled Codex or Gemini task, a message to the owner.
-  const extra=next.usted.filter(x=>/^(Correr el despachador|Mensaje:)/.test(x.texto));
-  const total=tasks.length+asks.length+extra.length;
-  const n=$('n-you');n.textContent=total;n.classList.toggle('hot',total>0);
-  $('t-usted').title=total?`Usted: ${total} ${total>1?'cosas':'cosa'}`:'Usted: nada';
-  if(!total){$('mine').innerHTML='<p class="none"><b>Usted: nada por ahora.</b>Cuando algo le toque, aparece aquí.</p>';}
-  else{
-    const where=t=>{const w=runLines(t)[0];return w&&!pasteTo(t)?`<span class="sub">${esc(w)}</span>`:''};
-    let h='';
-    if(tasks.length)h+=foldHtml('u-tareas','Le toca a usted',tasks.length,tasks.map(t=>{const to=pasteTo(t);const row=`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1">${ringHtml(t)}<b>${esc(tag(t))}</b><span><span>${tt(t.titulo)}</span>${to?`<span class="sub">Pegar en ${esc(to)}</span>`:''}${deliveryLine(t)?`<span class="sub">${esc(deliveryLine(t))}</span>`:''}${where(t)}</span></button>`;
-      return to?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row}).join(''));
-    if(asks.length)h+=foldHtml('u-decisiones','Decisiones que esperan su respuesta',asks.length,asks.map(({t,r})=>`<button type="button" class="row" data-sel="${esc(t.id)}" data-all="1"><b>${esc(tag(t))}</b><span><span>${esc(r.ref)}</span><span class="sub">la espera «${tt(t.titulo)}»</span></span></button>`).join(''));
-    if(extra.length)h+=foldHtml('u-detenido','Detenido o con mensaje',extra.length,extra.map(nextRow).join(''));
-    $('mine').innerHTML=h;
-  }
+  const acts=ownerActions(S.board,{prs:livePrs()});
+  const h=acts.length?acts.map(actHtml).join(''):'<p class="none"><b>Usted: nada por ahora.</b>Cuando algo le toque, aparece aquí.</p>';
+  $('mine').innerHTML=h;$('gen-mine').innerHTML=h;$('gn-you').textContent=acts.length;
   const coordNote=next.prsLeidos?'':'<p class="none" style="padding:8px">Sin leer GitHub todavía: faltan los PR abiertos.</p>';
   $('g-coord').hidden=!next.coordinador.length&&!coordNote;
   $('n-coord').textContent=next.coordinador.length;
@@ -931,20 +982,50 @@ function renderMine(){
   $('g-stall').hidden=!next.detenidas.length;
   $('n-stall').textContent=next.detenidas.length;
   $('stall').innerHTML=next.detenidas.map(nextRow).join('');
-  return [...tasks.map(t=>t.id),...asks.map(x=>x.t.id),...extra.map(x=>x.id).filter(id=>id&&byId(id))];
+  return acts.map(x=>x.id).filter(id=>id&&byId(id));
 }
-const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span>${tt(x.texto)}</span></button>`:`<div class="row" title="${esc(x.texto)}"><span>${rich(x.texto)}</span></div>`;
-function render(){renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist();renderTitle()}
+// T321: the queue in «General», one line per task in queue order; the review group stays a link to the Cola.
+function renderGeneral(all){
+  const row=t=>`<button type="button" class="row crow c-${color(t)}" data-sel="${esc(t.id)}" data-all="1">${ringHtml(t)}<span class="what"><span class="t1">${t.num?`<span class="tn">T${esc(t.num)}</span> `:''}${tt(t.titulo)}</span></span>${pill(t)}</button>`;
+  const rev=inReview(S.board).length;
+  $('gn-cola').textContent=all.length+rev;
+  $('gen-cola').innerHTML=(all.length?all.map(row).join(''):'<p class="none">No hay tareas abiertas.</p>')+(rev?`<button type="button" class="more-row" data-tab="cola">Y ${rev} en revisión: ver la Cola</button>`:'');
+}
+// T321: the header search lists every match from every section, each with the sections it sits in as a gray label.
+function renderFound(){
+  const q=$('tq').value.trim();
+  const hits=q?globalSearch(S.board,q,{prs:livePrs()}):[];
+  S.found=hits.length;
+  const sec=x=>`<span class="sec">${esc(x.secciones.join(' · '))}</span>`;
+  const row=x=>{
+    if(x.tipo==='decision')return `<a class="row hit" href="#historial" data-dec="${esc(x.d.id)}"><span class="what"><span class="t1"><span class="tn">${esc(x.d.id)}</span> ${esc(x.d.decision)}</span></span>${sec(x)}</a>`;
+    const t=x.t,pr=prNumber(t.pr);
+    return `<button type="button" class="row hit c-${color(t)}" data-sel="${esc(t.id)}" data-all="1">${ringHtml(t)}<span class="what"><span class="t1">${t.num?`<span class="tn">T${esc(t.num)}</span> `:''}${tt(t.titulo)}</span><span class="sub"><span class="nm">${esc(t.id)}</span>${pr?` · PR #${pr}`:''} · ${esc(t.estado||'pendiente')}</span></span>${sec(x)}</button>`;
+  };
+  $('found').innerHTML=hits.length?hits.map(row).join(''):q?'<p class="none"><b>Nada coincide.</b>Busque por número (T295), id, título o PR (#594).</p>':'';
+}
+// T321: the text sits in its own inline span (a «T295» link no longer breaks the line) and a message drops its prefix.
+const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span><span>${tt(rowText(x.texto))}</span></span></button>`:`<div class="row" title="${esc(x.texto)}"><span><span>${rich(rowText(x.texto))}</span></span></div>`;
+function render(){renderCounts();renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist();showView()}
 
+// T321: which panel shows: the search results while the header search has text, else the selected tab's view.
+// The tab stays selected during a search, so clearing it returns there.
+function showView(){
+  const q=searching();
+  TABS.forEach(k=>$('p-'+k).hidden=q||k!==S.tab);
+  $('p-buscar').hidden=!q;
+  // T268: «Para usted» and «Cola» (and «General» and the search, T321) share the task sheet beside the list.
+  $('work').hidden=!q&&!['general','usted','cola'].includes(S.tab);
+  $('tsearch').hidden=S.tab==='historial'&&!q;
+  renderTitle();
+}
 function setTab(tab,push){
   const was=S.tab;
-  S.tab=TABS.includes(tab)?tab:'usted';
+  S.tab=TABS.includes(tab)?tab:'general';
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===S.tab)));
-  TABS.forEach(k=>$('p-'+k).hidden=k!==S.tab);
-  // T268: «Para usted» and «Cola» share the task sheet beside the list.
-  $('work').hidden=!['usted','cola'].includes(S.tab);
-  renderTitle();
-  $('tsearch').hidden=!['cola','calendario','bloqueadas','finalizadas'].includes(S.tab);
+  // T321: picking a tab during a search ends the search and opens that tab.
+  if(searching()){$('tq').value='';renderFound()}
+  showView();
   setSide(false);
   if(was!==S.tab){S.picked=false;if(S.ready)renderCola()}
   if(push){try{history.replaceState(null,'','#'+S.tab)}catch(e){}}
@@ -956,6 +1037,8 @@ function setAgent(ag){S.ag=ag;document.querySelectorAll('[data-ag]').forEach(b=>
 document.addEventListener('click',ev=>{
   // T151: a link out (a PR) inside a card opens itself, not the card's sheet.
   if(ev.target.closest('a[target="_blank"]'))return;
+  // T321: unfolding a message's technical detail does not open its task.
+  if(ev.target.closest('summary'))return;
   const sha=ev.target.closest('[data-sha]');if(sha){copySha(sha);return}
   const dec=ev.target.closest('[data-dec]');if(dec){ev.preventDefault();setTab('historial',true);$('q').value=dec.dataset.dec;renderHist();scrollTo(0,0);return}
   const side=ev.target.closest('[data-side]');if(side){setSide(side.dataset.side==='1');return}
@@ -971,7 +1054,7 @@ document.addEventListener('click',ev=>{
     const t=byId(S.sel);if(!t||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
     try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».';if(deliverable(t))deliver(t,m)},fallback)}catch(e){fallback()}return}
-  const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump&&S.tab!=='usted')setTab('cola',true);openSheet(sel.dataset.sel);return}
+  const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump&&$('work').hidden)setTab('cola',true);openSheet(sel.dataset.sel);return}
   if(ev.target.closest('[data-close]')){closeSheet();return}
   const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}
   const k=ev.target.closest('[data-kind]');if(k){S.kind=k.dataset.kind;document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===k)));renderHist()}
@@ -983,12 +1066,17 @@ function copySha(b){
 }
 document.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'&&document.body.classList.contains('side-open')){setSide(false);document.querySelector('.menu').focus();return}
-  if(ev.key==='Escape'&&$('sheet').classList.contains('open'))closeSheet();
+  if(ev.key==='Escape'&&$('sheet').classList.contains('open')){closeSheet();return}
+  // T321: Escape anywhere ends a search and returns to the tab.
+  if(ev.key==='Escape'&&searching()){$('tq').value='';onSearch()}
   // T268: Ctrl+K focuses the search of the view (the history's own box there; otherwise the Cola's).
-  if((ev.ctrlKey||ev.metaKey)&&!ev.altKey&&ev.key.toLowerCase()==='k'){ev.preventDefault();if(S.tab==='historial'){$('q').focus();return}if($('tsearch').hidden)setTab('cola',true);$('tq').focus();$('tq').select()}
+  if((ev.ctrlKey||ev.metaKey)&&!ev.altKey&&ev.key.toLowerCase()==='k'){ev.preventDefault();if(S.tab==='historial'&&$('tsearch').hidden){$('q').focus();return}$('tq').focus();$('tq').select()}
 });
 $('q').addEventListener('input',renderHist);$('vig').addEventListener('change',renderHist);
-$('tq').addEventListener('input',()=>{renderCola();renderCal();renderBlk();renderFin()});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
+// T321: the search shows its results in place of the tab; Escape or an empty box returns to the tab.
+const onSearch=()=>{renderFound();showView()};
+$('tq').addEventListener('input',onSearch);
+$('tq').addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('tq').value){ev.stopPropagation();$('tq').value='';onSearch()}});$('arch').addEventListener('change',()=>{$('finmsg').textContent='';renderFin()});
 setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));

@@ -11,12 +11,17 @@ jest.mock('@/lib/commercial/commercial-tracking', () => ({
 	emitCommercialTrackingEvent: jest.fn(),
 }));
 
+jest.mock('@/lib/tracking/lead.repository', () => ({
+	findLeadOrderAttribution: jest.fn(),
+}));
+
 import {
 	createSalesOrder,
 	registerSalesOrderDepositPurchase,
 } from '@/lib/commercial/orders.repository';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
+import { findLeadOrderAttribution } from '@/lib/tracking/lead.repository';
 import {
 	createCommercialSalesOrder,
 	markCommercialOrderDepositPaid,
@@ -32,6 +37,7 @@ const mockDeliver = deliverMetaConversionEvent as jest.MockedFunction<
 const mockEmitTracking = emitCommercialTrackingEvent as jest.MockedFunction<
 	typeof emitCommercialTrackingEvent
 >;
+const mockFindAttribution = jest.mocked(findLeadOrderAttribution);
 
 const order = {
 	id: 'order-id',
@@ -60,6 +66,7 @@ beforeEach(() => {
 	mockCreateSalesOrder.mockResolvedValue({ ...order, status: 'confirmed', amountPaid: 0 });
 	mockRegisterDeposit.mockResolvedValue({ order, conversionEvent, idempotent: false });
 	mockDeliver.mockResolvedValue('sent');
+	mockFindAttribution.mockResolvedValue(null);
 });
 
 describe('createCommercialSalesOrder', () => {
@@ -77,6 +84,39 @@ describe('createCommercialSalesOrder', () => {
 				currency: 'MXN',
 				status: 'confirmed',
 			}),
+		);
+	});
+
+	it("links the order to the customer's latest lead and its session for Purchase attribution", async () => {
+		mockFindAttribution.mockResolvedValue({ leadId: 'lead-id', sessionId: 'session-id' });
+
+		await createCommercialSalesOrder({
+			customerId: 'customer-id',
+			eventType: 'xv',
+			totalAmount: 1800,
+		});
+
+		expect(mockFindAttribution).toHaveBeenCalledWith({
+			leadId: undefined,
+			customerId: 'customer-id',
+		});
+		expect(mockCreateSalesOrder).toHaveBeenCalledWith(
+			expect.objectContaining({ leadId: 'lead-id', sessionId: 'session-id' }),
+		);
+	});
+
+	it('keeps an explicit session without looking up the lead', async () => {
+		await createCommercialSalesOrder({
+			customerId: 'customer-id',
+			leadId: 'given-lead',
+			sessionId: 'given-session',
+			eventType: 'xv',
+			totalAmount: 1800,
+		});
+
+		expect(mockFindAttribution).not.toHaveBeenCalled();
+		expect(mockCreateSalesOrder).toHaveBeenCalledWith(
+			expect.objectContaining({ leadId: 'given-lead', sessionId: 'given-session' }),
 		);
 	});
 

@@ -1,6 +1,7 @@
 import {
 	assessEvidenceReuse,
 	ineligibilityReason,
+	isPromotionHeadRef,
 	REQUIRED_SOURCE_JOBS,
 	type EvidenceRequest,
 	type SourceRun,
@@ -99,10 +100,38 @@ describe('CI evidence reuse', () => {
 	it('reports why a pull request is not a reuse candidate', () => {
 		expect(ineligibilityReason(request)).toBeNull();
 		expect(ineligibilityReason({ ...request, headRef: 'fix/example' })).toBe(
-			'Pull request head is not develop.',
+			'Pull request head is not develop or a candidate/* branch.',
 		);
 		expect(ineligibilityReason({ ...request, repository: '', headRepository: '' })).toBe(
 			'Pull request head is outside this repository.',
 		);
+	});
+
+	it('reuses the develop push run for a candidate branch fixed on that develop SHA', () => {
+		const candidate = { ...request, headRef: 'candidate/v0.52.0' };
+		expect(ineligibilityReason(candidate)).toBeNull();
+		expect(assessEvidenceReuse(candidate, [sourceRun()])).toEqual(
+			expect.objectContaining({ reuse: true, sourceRunId: 100 }),
+		);
+	});
+
+	it('declines a candidate whose head has no complete develop push run', () => {
+		const candidate = { ...request, headRef: 'candidate/v0.52.0' };
+		expect(
+			assessEvidenceReuse(candidate, [sourceRun({ headBranch: 'candidate/v0.52.0' })]).reuse,
+		).toBe(false);
+		expect(assessEvidenceReuse(candidate, [sourceRun({ headSha: 'c'.repeat(40) })]).reuse).toBe(
+			false,
+		);
+	});
+
+	it.each([
+		['develop', true],
+		['candidate/v0.52.0', true],
+		['candidate/', false],
+		['feat/candidate/v0.52.0', false],
+		['main', false],
+	])('treats %s as a promotion head: %s', (headRef, expected) => {
+		expect(isPromotionHeadRef(headRef)).toBe(expected);
 	});
 });

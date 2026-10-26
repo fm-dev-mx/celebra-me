@@ -1,7 +1,11 @@
 # Task kind «codigo»: a code change that ends in a PR to develop (T130, rules: .agent/rules/board.md).
-# Placeholders: {id} {agente} {rama} {nombre}.
+# Placeholders: {id} {agente} {rama} {nombre} {titulo}.
 tipo: codigo
 descripcion: 'Cambio de código con PR a develop.'
+para_usted:
+    - 'Qué hará: cambia el código para «{titulo}», lo prueba y abre un PR a develop.'
+    - 'Usted: nada; el coordinador une el PR cuando otra sesión lo revisa y lo aprueba.'
+    - 'Riesgo: bajo; el cambio llega solo a develop, no a Producción.'
 lee:
     - 'commit_preparation'
     - 'testing_qa'
@@ -26,5 +30,4 @@ devuelve:
 listo_si: 'type-check'
 al_terminar: []
 tras_cierre:
-    - 'Si la tarea sigue en curso (su candado impide que sync la mueva): pnpm board set {id} --rev=<rev de pnpm board show {id}> "estado=en revision" "pr=#<n>" --agente={agente}.'
-    - 'pnpm board review {id} --sha=<sha del PR> (revisión cruzada) y deje la tarea en revisión con su PR; si imprime «Revisor: subagente» (d282, riesgo bajo), siga sus pasos: tome la vuelta, lance un subagente Agent con contexto limpio y ciérrela con su veredicto.'
+    - 'pnpm board review {id} --sha=<sha del PR> (revisión cruzada; close ya dejó la tarea en revisión con su PR, d290, y review espera a que el CI de ese SHA esté verde, d288); si imprime «Revisor: subagente» (d288, riesgo bajo o medio), siga sus pasos: tome la vuelta, lance un subagente Agent con contexto limpio y ciérrela con su veredicto.'

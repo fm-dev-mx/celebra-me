@@ -4,9 +4,12 @@
  * without `formato: prompt-v1` is legacy and keeps its old rules, so saved prompts keep working.
  * No Node APIs: the view imports this module through model.mjs.
  */
+import { ownerTextIssues } from './owner-text.mjs';
+
 export const PROMPT_FORMAT = 'prompt-v1';
 
 export const PROMPT_SECTIONS = [
+	'PARA USTED',
 	'QUÉ SE BUSCA',
 	'ANTES DE EMPEZAR',
 	'PASOS',
@@ -46,6 +49,28 @@ const METADATA_VALUES = {
 	tablero: [/^rev [1-9]\d*$/, 'tablero debe ser «rev N»'],
 	formato: [/^prompt-v1$/, 'formato debe ser prompt-v1'],
 };
+
+/**
+ * d230, T322: the command that records a question to the owner: one line, the options with the recommended one
+ * first, and the technical detail apart.
+ */
+export const ownerAsk = (id, agente) =>
+	`pnpm board msg ${id} --de=${agente} --para=dueno "<pregunta de una línea>" --opcion="<la recomendada>" --opcion="<otra>" --detalle="<detalle técnico>" (d230)`;
+
+/**
+ * T322: the three lines of PARA USTED, in this order, written for the owner in plain Spanish: what the session
+ * does, what the owner must do or decide («nada» when nothing) and the main risk.
+ */
+export const OWNER_LINES = ['Qué hará:', 'Usted:', 'Riesgo:'];
+
+/** T322: PARA USTED from its three texts, each on one line after its OWNER_LINES label. */
+const ownerLines = ({ hara, usted, riesgo }) =>
+	[hara, usted, riesgo].map(
+		(s, i) =>
+			`${OWNER_LINES[i]} ${String(s ?? '')
+				.replace(/\s+/g, ' ')
+				.trim()}`,
+	);
 
 const linesOf = (prompt) => String(prompt ?? '').split('\n');
 const metadataStart = (lines) => lines.findLastIndex((l) => l.trim() === 'METADATOS');
@@ -92,6 +117,29 @@ export function promptSection(prompt, name) {
 	return next < 0 ? rest : rest.slice(0, next);
 }
 
+/** T322: PARA USTED is exactly the three OWNER_LINES, each with text the owner can read; null = no section. */
+function paraUstedIssues(section) {
+	if (!section) return [];
+	const lines = section.filter(Boolean);
+	const out = [];
+	if (lines.length !== OWNER_LINES.length || lines.some((l, i) => !l.startsWith(OWNER_LINES[i])))
+		out.push(`prompt-v1: PARA USTED debe tener 3 líneas: ${OWNER_LINES.join(' … / ')} …`);
+	for (const [i, label] of OWNER_LINES.entries()) {
+		const line = lines[i] ?? '';
+		if (line.startsWith(label) && !line.slice(label.length).trim())
+			out.push(`prompt-v1: PARA USTED sin texto en «${label}»`);
+	}
+	for (const why of ownerTextIssues(lines.join(' ')))
+		out.push(`prompt-v1: PARA USTED ${why} (en una tarea con tipo: hara=… usted=… riesgo=…)`);
+	return out;
+}
+
+/**
+ * T322: prompt-v1s saved before PARA USTED existed lack it and stay valid; every generated prompt carries it,
+ * and when it is there it must be first and well formed.
+ */
+const OPTIONAL_SECTION = 'PARA USTED';
+
 /** Shape problems of a prompt-v1; a legacy prompt has none here. */
 export function promptV1Issues(prompt) {
 	if (!isPromptV1(prompt)) return [];
@@ -104,6 +152,7 @@ export function promptV1Issues(prompt) {
 	let last = -1;
 	for (const name of PROMPT_SECTIONS) {
 		const at = lines.indexOf(name);
+		if (at < 0 && name === OPTIONAL_SECTION) continue;
 		if (at < 0) out.push(`prompt-v1: falta la sección ${name}`);
 		else if (at < last) out.push(`prompt-v1: la sección ${name} está fuera de orden`);
 		else last = at;
@@ -114,6 +163,7 @@ export function promptV1Issues(prompt) {
 		)
 	)
 		out.push('prompt-v1: QUÉ SE BUSCA sin «Terminado cuando:»');
+	out.push(...paraUstedIssues(promptSection(prompt, 'PARA USTED')));
 	for (const [k, v] of metadataPairs(prompt)) {
 		if (!k) out.push(`prompt-v1: línea de METADATOS sin «clave: valor»: ${v}`);
 		else if (!METADATA_KEYS.includes(k))
@@ -176,7 +226,7 @@ const roundWord = (n) => `${ROUND_WORDS[n - 1] ?? n} VUELTA`;
 /** Conservative path-based review guidance; missing or unrecognized evidence requires a deep review. */
 export function reviewRisk(files) {
 	if (!Array.isArray(files) || !files.length) return 2;
-	const docs = (p) => /^(?:docs\/|\.agent\/)|\.(?:md|mdx)$/.test(p);
+	const docs = (p) => /^(?:docs\/|\.agent\/|\.gitignore$)|\.(?:md|mdx)$/.test(p);
 	const frontend = (p) =>
 		/^(?:src\/(?:components|styles|layouts|pages)\/|public\/)/.test(p) &&
 		/\.(?:astro|tsx|jsx|scss|css|svg|png|jpe?g|webp|avif|woff2?)$/.test(p);
@@ -192,15 +242,20 @@ export function reviewRisk(files) {
 	return files.every((p) => docs(p) || frontend(p)) ? 1 : 2;
 }
 
+/** d290: agent rules are governance, so a PR that changes one is never low risk. */
+const RULES = /^\.agent\/rules\//;
+
 /**
- * d282: a PR is low risk when GitHub's complete inventory touches only board and agent tooling, tests, docs
- * or `.agent`, and nothing published, persistent or secret (invitation content, Supabase, migrations,
- * payments, secrets, Wrangler, Production). Missing evidence is never low risk.
+ * d282, d290: a PR is low risk when GitHub's complete inventory touches only board and agent tooling, tests,
+ * docs, `.gitignore` or `.agent` outside `.agent/rules`, and nothing published, persistent or secret (invitation
+ * content, Supabase, migrations, payments, secrets, Wrangler, Production). Missing evidence is never low risk.
  */
 export function lowRisk(files) {
 	if (!Array.isArray(files) || !files.length) return false;
 	const tooling = (p) =>
-		/^(?:scripts\/(?:board|agent)\/|tests\/|docs\/|\.agent\/)|\.(?:md|mdx)$/.test(p);
+		/^(?:scripts\/(?:board|agent)\/|tests\/|docs\/|\.agent\/|\.gitignore$)|\.(?:md|mdx)$/.test(
+			p,
+		) && !RULES.test(p);
 	const sensitive = (p) =>
 		/^(?:src\/content|supabase|workers)\/|(?:^|\/)(?:migrations?|secrets?|payments?|pagos?)(?:\/|[.-])|wrangler|\.env|produc(?:tion|cion)/i.test(
 			p,
@@ -208,9 +263,22 @@ export function lowRisk(files) {
 	return files.every((p) => tooling(p) && !sensitive(p));
 }
 
-/** d282: «bajo» (a Claude subagent may review Claude's work), «medio» or «alto» (reviewRisk below 2, or 2). */
-export const reviewLevel = (files) =>
-	lowRisk(files) ? 'bajo' : reviewRisk(files) === 2 ? 'alto' : 'medio';
+/**
+ * d282: «bajo», «medio» or «alto» (reviewRisk below 2, or 2). d290: a change to `.agent/rules` is «alto», like
+ * any unclassified path.
+ */
+export const reviewLevel = (files) => {
+	if (lowRisk(files)) return 'bajo';
+	if (Array.isArray(files) && files.some((p) => RULES.test(p))) return 'alto';
+	return reviewRisk(files) === 2 ? 'alto' : 'medio';
+};
+
+/**
+ * d288: a Claude subagent with a clean context may review Claude's PR of low or medium risk; high risk
+ * (migrations, auth, APIs, unclassified paths) and release work keep Codex or Gemini.
+ */
+export const subagentReview = (files, task) =>
+	reviewLevel(files) !== 'alto' && task?.tipo !== 'release' && task?.categoria !== 'release';
 
 export function reviewGuidance(files, previousSha, sha) {
 	const tier = reviewRisk(files);
@@ -229,16 +297,59 @@ export function reviewGuidance(files, previousSha, sha) {
 	];
 }
 
+/** T322: PARA USTED of a review round: read-only, and the owner has nothing to do. */
+const reviewOwnerLines = (pr, later) =>
+	ownerLines({
+		hara: `${later ? 'revisa otra vez' : 'revisa'} el PR ${pr}${later ? ' tras los cambios del autor' : ''} sin cambiar código y publica lo que encuentre.`,
+		usted: 'nada; el coordinador une el PR cuando la revisión lo aprueba.',
+		riesgo: 'ninguno; la revisión solo lee el código.',
+	});
+
+/**
+ * d291: the QUÉ SE BUSCA lines of a round after rounds without a verdict (`previas`): which rounds, what their
+ * bitácora and cierre kept and the reports they named, so the findings they reached are checked again.
+ */
+function leftLines({ vueltas, notas, informes }, sha) {
+	const which = vueltas.join(', ');
+	return [
+		`${which} ${vueltas.length > 1 ? 'terminaron' : 'terminó'} sin veredicto (cancelada o reemplazada): revise el PR completo en ${sha}, no solo el diff desde su SHA, y compruebe cada hallazgo que dejó.`,
+		...(notas.length
+			? ['Lo que dejó en la bitácora:', ...notas.map((x) => `- ${x}`)]
+			: [`${which} no dejó mensajes ni hallazgos en la bitácora.`]),
+		...informes.map((p) => `Informe: ${p} (en Integración; léalo si existe).`),
+	];
+}
+
+/** The DECISIONES lines of a review round and its METADATOS `decisiones` (d183, d288, d291). */
+function reviewDecisions(sub, left) {
+	return {
+		lineas: [
+			sub
+				? '- d288: riesgo bajo o medio; la revisa un subagente de Claude con contexto limpio, no la sesión autora.'
+				: '- d183: revisión cruzada por otro agente.',
+			...(left
+				? [
+						'- d291: la vuelta anterior no dejó veredicto; esta revisa el PR completo y comprueba lo que dejó.',
+					]
+				: []),
+			'- Solo revisión: informe la evidencia que falte.',
+		],
+		ids: [sub ? 'd183, d288' : 'd183', ...(left ? ['d291'] : [])].join(', '),
+	};
+}
+
 /**
  * The title and prompt-v1 (T160) of review round `n` of `src` at `sha`, as task `T<num> <id>`; from round 2 on
  * they name the previous round's SHA and start from the diff between both, so a reviewer never answers the
- * earlier round again (T79). It runs read-only in `carril` (folder `carpeta`).
+ * earlier round again (T79). d291: `previas` (rounds.mjs leftByUnanswered) means the rounds since the last verdict
+ * answered nothing, so this one reviews the whole PR and carries what they left. It runs read-only in `carril`
+ * (folder `carpeta`).
  */
 export function reviewText(
 	src,
-	{ id, num, n, sha, prev, files, agente, revisor, generado, carril, carpeta },
+	{ id, num, n, sha, prev, files, agente, revisor, generado, carril, carpeta, previas },
 ) {
-	// d282: a low-risk PR by Claude is reviewed by a clean-context subagent the author session launches.
+	// d288: a low- or medium-risk PR by Claude is reviewed by a clean-context subagent the author session launches.
 	const sub = revisor === 'subagente';
 	const short = (s) => String(s).slice(0, 7);
 	const tag = (t, ref) => (t.num ? `T${t.num} ${ref}` : ref);
@@ -246,24 +357,30 @@ export function reviewText(
 	const round = n < 2 ? '' : ` vuelta ${n}`;
 	const name = `f04 · T${num} · PR ${pr} · Revisión${round}`;
 	const later = n >= 2;
+	// d291: after a round without a verdict, nothing reviewed the earlier diff, so the whole PR is in scope.
+	const left = later ? previas : undefined;
+	const incremental = later && !left;
+	const decided = reviewDecisions(sub, left);
 	const prompt = buildPrompt({
 		identidad: name,
 		secciones: [
+			['PARA USTED', reviewOwnerLines(pr, later)],
 			[
 				'QUÉ SE BUSCA',
 				[
 					`Revisión cruzada${later ? `, ${roundWord(n)},` : ''} del PR ${pr} de ${tag(src, src.id)} en ${sha}: corrección, regresiones, pruebas y AGENTS.md.`,
 					...(sub
 						? [
-								'Riesgo bajo (d282): la hace un subagente de Claude con contexto limpio; la sesión autora toma y cierra esta vuelta con su veredicto.',
+								'Riesgo bajo o medio (d288): la hace un subagente de Claude con contexto limpio; la sesión autora toma y cierra esta vuelta con su veredicto.',
 							]
 						: []),
-					...reviewGuidance(files, later ? prev?.revisionSha : undefined, sha),
-					...(later
+					...reviewGuidance(files, incremental ? prev?.revisionSha : undefined, sha),
+					...(incremental
 						? [
 								`La vuelta anterior (${prev.id}) revisó ${prev.revisionSha}; compruebe que se atendieron sus hallazgos y que los commits nuevos no traen regresiones.`,
 							]
 						: []),
+					...(left ? leftLines(left, sha) : []),
 					sub
 						? `Terminado cuando: los hallazgos están en el PR (gh pr review --comment) y el veredicto, el SHA ${sha} y los hallazgos vuelven a la sesión autora.`
 						: `Terminado cuando: los hallazgos están en el PR (gh pr review) y la tarea queda cerrada con --sha=${sha}.`,
@@ -283,10 +400,10 @@ export function reviewText(
 				'PASOS',
 				[
 					'1. Lea .agent/rules/board.md y la descripción del PR.',
-					later
+					incremental
 						? `2. Empiece por lo que cambió: git fetch origin && git diff ${prev.revisionSha}..${sha}`
 						: `2. Revise el diff completo del PR en ${short(sha)}.`,
-					`3. Revise corrección, regresiones, pruebas y AGENTS.md${later ? ' donde llega el diff' : ''}.`,
+					`3. Revise corrección, regresiones, pruebas y AGENTS.md${incremental ? ' donde llega el diff' : ''}.`,
 					sub
 						? '4. Publique los hallazgos con gh pr review --comment (la cuenta de GitHub es la del autor).'
 						: '4. Publique los hallazgos con gh pr review.',
@@ -297,19 +414,11 @@ export function reviewText(
 				'NO HAGAS',
 				['- No edite el carril del autor ni una el PR.', '- No pida permisos adyacentes.'],
 			],
-			[
-				'DECISIONES',
-				[
-					sub
-						? '- d282: riesgo bajo; la revisa un subagente de Claude con contexto limpio, no la sesión autora.'
-						: '- d183: revisión cruzada por otro agente.',
-					'- Solo revisión: informe la evidencia que falte.',
-				],
-			],
+			['DECISIONES', decided.lineas],
 			[
 				'PARE Y PREGUNTE SI',
 				[
-					`La cabeza del PR ya no es ${sha} o falta evidencia para decidir. Anote cada pregunta al dueño también con pnpm board msg ${id} --de=${agente} --para=dueno "<pregunta>" (d230).`,
+					`La cabeza del PR ya no es ${sha} o falta evidencia para decidir. Anote cada pregunta al dueño también con ${ownerAsk(id, agente)}.`,
 				],
 			],
 			[
@@ -336,7 +445,7 @@ export function reviewText(
 			['pr', pr],
 			['sha', sha],
 			['prerrequisito', later ? prev.id : undefined],
-			['decisiones', sub ? 'd183, d282' : 'd183'],
+			['decisiones', decided.ids],
 			['tablero', 'rev 1'],
 			['generado', generado],
 		],

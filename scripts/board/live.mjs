@@ -10,6 +10,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { laneFolder } from './model.mjs';
+import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 
 const run = promisify(execFile);
 const opts = { encoding: 'utf8', windowsHide: true, timeout: 20_000 };
@@ -41,14 +42,16 @@ export function ciOf(rollup) {
 
 /** The Integration checkout that holds the board: `<root>/.agent/tmp/board`. */
 const repoParent = (dir) => dirname(resolve(dir, '..', '..', '..'));
+const pathKey = (path) =>
+	process.platform === 'win32' ? resolve(path).toLowerCase() : resolve(path);
 
 /** One lane folder: `{id, rama, limpio}` (rama null = detached HEAD), or `{id, error}` when Git cannot read it. */
-async function laneGit(parent, id) {
+async function laneGit(parent, id, runGit) {
 	const cwd = join(parent, laneFolder(id));
 	try {
 		const [branch, status] = await Promise.all([
-			run('git', ['branch', '--show-current'], { ...opts, cwd }),
-			run('git', ['status', '--porcelain'], { ...opts, cwd }),
+			runGit('git', ['branch', '--show-current'], { ...opts, cwd }),
+			runGit('git', ['status', '--porcelain'], { ...opts, cwd }),
 		]);
 		return { id, rama: branch.stdout.trim() || null, limpio: !status.stdout.trim() };
 	} catch (e) {
@@ -56,10 +59,31 @@ async function laneGit(parent, id) {
 	}
 }
 
-/** Git state of every lane record of the board in `dir`. */
-function readLanes(dir, board) {
+/** Git state of the canonical lanes registered as worktrees, independent of stored lane JSON. */
+export async function readLanes(dir, runGit = run) {
 	const parent = repoParent(dir);
-	return Promise.all((board.carriles ?? []).map((l) => laneGit(parent, l.id)));
+	let registered;
+	try {
+		const { stdout } = await runGit('git', ['worktree', 'list', '--porcelain', '-z'], {
+			...opts,
+			cwd: resolve(dir, '..', '..', '..'),
+		});
+		registered = new Set(
+			stdout
+				.split('\0')
+				.filter((line) => line.startsWith('worktree '))
+				.map((line) => pathKey(line.slice(9))),
+		);
+	} catch {
+		return WORKTREE_LANES.map(({ id }) => ({ id, error: 'no se pudo leer git worktree list' }));
+	}
+	return Promise.all(
+		WORKTREE_LANES.map(({ id }) =>
+			registered.has(pathKey(resolve(parent, laneFolder(id))))
+				? laneGit(parent, id, runGit)
+				: { id, error: 'carril no registrado en git worktree list' },
+		),
+	);
 }
 
 /** Open PRs `[{number, headRefOid, headRefName, title, ci}]`, or undefined when `gh` fails. */
@@ -122,7 +146,7 @@ export async function readApp(root = codeRoot) {
 }
 
 /** Both reads at once: `{carriles, prs, app, en}`, the `vivo` field the view receives. */
-export async function readLive(dir, board) {
+export async function readLive(dir) {
 	const fixture = process.env.CELEBRA_BOARD_LIVE_FIXTURE;
 	if (fixture)
 		return {
@@ -132,7 +156,7 @@ export async function readLive(dir, board) {
 			en: new Date().toISOString(),
 		};
 	const [carriles, prs, app] = await Promise.all([
-		readLanes(dir, board),
+		readLanes(dir),
 		readOpenPrs(dir),
 		readAppCached(),
 	]);

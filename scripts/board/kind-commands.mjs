@@ -5,8 +5,9 @@
  */
 import { UsageError, say } from './cli.mjs';
 import { KindPromptError, kindPrompt, promptDiff } from './kind-prompt.mjs';
-import { loadKinds } from './kinds.mjs';
+import { destinoIssue, kindKey, loadKinds } from './kinds.mjs';
 import { KIND_LISTS } from './model.mjs';
+import { OWNER_FIELDS } from './owner-text.mjs';
 import { loadBoard, withLock } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -14,6 +15,7 @@ const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 /** Fields a generated prompt is built from: changing one regenerates it. */
 const SOURCES = [
 	'tipo',
+	'destino',
 	'busca',
 	'corto',
 	'titulo',
@@ -24,6 +26,7 @@ const SOURCES = [
 	'requisitos',
 	'carrilPlaneado',
 	...KIND_LISTS,
+	...OWNER_FIELDS,
 ];
 
 /** Whether `t`'s prompt comes from its kind: typed, and not a round whose prompt `review` writes. */
@@ -35,9 +38,10 @@ const kinds = () => (cache ??= loadKinds());
 /** The kind of `t`, or a refusal naming the kind file's problems. */
 function kindOf(t) {
 	const { kinds: all, issues } = kinds();
-	if (all[t.tipo]) return all[t.tipo];
-	const why = issues.filter((x) => x.id === `kinds/${t.tipo}`).map((x) => x.msg);
-	throw new UsageError(`.agent/kinds/${t.tipo}.yaml no sirve: ${why.join('; ') || 'falta'}`);
+	const key = kindKey(t);
+	if (all[key]) return all[key];
+	const why = issues.filter((x) => x.id === `kinds/${key}`).map((x) => x.msg);
+	throw new UsageError(`.agent/kinds/${key}.yaml no sirve: ${why.join('; ') || 'falta'}`);
 }
 
 /**
@@ -59,6 +63,8 @@ export function generatedPrompt(t, board, { num, rev, generado = nowIso() } = {}
  * itself; refuses a hand-written prompt on a typed task.
  */
 export function withKindPrompt(before, after, dir, { num, pairs = {} } = {}) {
+	const destino = destinoIssue(after);
+	if (destino) throw new UsageError(`no se escribió ${after.id}: ${destino}`);
 	if (!generatesPrompt(after)) return after;
 	if (Object.hasOwn(pairs, 'prompt'))
 		throw new UsageError(
@@ -77,7 +83,7 @@ export function withKindPrompt(before, after, dir, { num, pairs = {} } = {}) {
 	return out;
 }
 
-export function kindCommands({ getTask, saveTask, checkRev, assertOwner }) {
+export function kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOverride }) {
 	return {
 		/** `prompt <id> [--guardar --rev=<n>] [--json]`: the generated prompt and how the saved one differs. */
 		prompt({ pos, flags }, dir, out) {
@@ -93,9 +99,10 @@ export function kindCommands({ getTask, saveTask, checkRev, assertOwner }) {
 					);
 				const board = loadBoard(dir);
 				const save = flags.guardar === true;
+				let override = null;
 				if (save) {
 					checkRev(t, flags);
-					assertOwner(t, flags);
+					override = assertOwner(t, flags);
 				}
 				const prompt = generatedPrompt(t, board, { rev: save ? t.rev + 1 : t.rev });
 				if (!prompt)
@@ -114,6 +121,7 @@ export function kindCommands({ getTask, saveTask, checkRev, assertOwner }) {
 						`${t.id} ya tiene ese prompt`,
 					);
 				const saved = saveTask(dir, t, { ...t, prompt }, flags);
+				noteOverride(dir, t, override, 'pnpm board prompt --guardar');
 				say(
 					flags,
 					out,

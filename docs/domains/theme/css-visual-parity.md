@@ -83,9 +83,9 @@ after the failure.
 
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,
-failed, or skipped tiers cannot authorize release. The single exception is the `develop` → `main`
-pull request whose merge candidate holds the tree a complete `develop` run already validated: its
-tiers are skipped and the status reuses that run
+failed, or skipped tiers cannot authorize release. The single exception is the release pull request
+into `main` (from a `candidate/*` branch or `develop`) whose merge candidate holds the tree a
+complete `develop` run already validated: its tiers are skipped and the status reuses that run
 ([validation procedures](../../core/validation-procedures.md)). New runs cancel superseded runs for
 the same branch or pull request. Browser CI uses four workers and stops after five failed tests,
 remaining failed overall. Captures within a suite run in parallel; each writes its own record and

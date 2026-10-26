@@ -154,6 +154,9 @@ export interface BrowserConversionInput {
 	eventId: string;
 	sessionId: string;
 	eventSourcePath: string;
+	/** A Lead from the capture form carries its customer, so delivery adds the hashed phone. */
+	customerId?: string;
+	leadId?: string;
 }
 
 /**
@@ -173,6 +176,8 @@ export async function enqueueBrowserConversionEvent(input: BrowserConversionInpu
 			trigger_status: input.trigger,
 			session_id: input.sessionId,
 			event_source_path: input.eventSourcePath.slice(0, 512),
+			...(input.customerId ? { customer_id: input.customerId } : {}),
+			...(input.leadId ? { lead_id: input.leadId } : {}),
 			value: null,
 			status: 'pending',
 		},

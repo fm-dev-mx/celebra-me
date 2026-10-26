@@ -1,6 +1,10 @@
 # Task kind «release»: a Preview or Production delivery (T130, rules: .agent/rules/board.md).
 tipo: release
 descripcion: 'Entrega a Preview o Producción con su evidencia.'
+para_usted:
+    - 'Qué hará: entrega «{titulo}» a Preview o Producción y guarda la evidencia.'
+    - 'Usted: autorizar el paso a main y a Producción cuando la sesión se lo pida.'
+    - 'Riesgo: alto; cambia lo que ven los clientes.'
 lee:
     - 'code_release_execution'
     - 'production_pr_preparation'

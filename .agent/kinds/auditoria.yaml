@@ -1,6 +1,10 @@
 # Task kind «auditoria»: a read-only audit with a written report (T130, rules: .agent/rules/board.md).
 tipo: auditoria
 descripcion: 'Auditoría de solo lectura con informe.'
+para_usted:
+    - 'Qué hará: revisa «{titulo}» sin cambiar nada y escribe un informe.'
+    - 'Usted: nada ahora; con el informe decide qué hallazgos se corrigen.'
+    - 'Riesgo: ninguno; la sesión solo lee.'
 lee:
     - 'documentation_governance'
 pasos_inicio:

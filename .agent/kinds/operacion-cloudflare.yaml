@@ -1,0 +1,28 @@
+# Task kind «operacion» on Cloudflare (d290): Workers, DNS, R2 or Access (T130, rules: .agent/rules/board.md).
+tipo: operacion
+destino: cloudflare
+descripcion: 'Operación sobre Cloudflare (Workers, DNS, R2, Access) de Preview o Producción.'
+para_usted:
+    - 'Qué hará: hace en Cloudflare el cambio «{titulo}» en Preview o Producción.'
+    - 'Usted: autorizar el cambio y el entorno exactos antes de que corra.'
+    - 'Riesgo: alto; un error puede dejar el sitio sin servicio.'
+lee:
+    - 'code_release_execution'
+pasos_inicio:
+    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+pasos:
+    - '1. Lea docs/operations/cloudflare-platform.md y respete sus invariantes.'
+    - '2. Antes de cambiar nada, guarde el estado actual (salida de la API o de wrangler) como plan de rollback.'
+    - '3. Haga solo el cambio que esta tarea cita, en la cuenta, la zona y el entorno que nombra, y guarde la salida.'
+autorizado_por_defecto:
+    - 'Solo el cambio y el entorno (Preview o Producción) que esta tarea cita aquí.'
+no_hagas:
+    - '- No cambie DNS, rutas, Access ni secretos que esta tarea no nombre.'
+    - '- No despliegue un Worker fuera del flujo de release.'
+    - '- No lea .env*, .secrets/, .backups/ ni otros archivos de credenciales.'
+pare_si:
+    - 'El entorno no es el que esta tarea autoriza, el estado previo no es el esperado o falta el plan de rollback.'
+devuelve: []
+listo_si: 'ninguno'
+al_terminar:
+    - 'Anote en --resumen el cambio, el entorno, la evidencia de antes y después y el rollback.'

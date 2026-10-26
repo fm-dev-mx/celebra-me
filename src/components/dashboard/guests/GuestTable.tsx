@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import GuestListRow from '@/components/dashboard/guests/GuestListRow';
 import GuestMessageWall from '@/components/dashboard/guests/GuestMessageWall';
@@ -7,10 +7,17 @@ import type { GuestListView } from '@/components/dashboard/guests/use-guest-list
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
 	getGuestInviteUrl,
+	getGuestStatusBucket,
 	groupGuestsByStatus,
 	type GuestSaveCallback,
+	type GuestStatusBucket,
+	type GuestStatusSection,
 } from '@/components/dashboard/guests/guest-presenter';
+import GuestTableGroup, {
+	type GuestTableGroupBatch,
+} from '@/components/dashboard/guests/GuestTableGroup';
 import GuestTableRow from '@/components/dashboard/guests/GuestTableRow';
+import type { BatchFlowKind } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
@@ -41,9 +48,34 @@ interface GuestTableProps {
 	};
 	/** "Con mensaje" filter: every message in full instead of rows; selection keeps the rows. */
 	messageWall?: boolean;
+	/** Desktop group headers: send or remind every guest of that group, after confirmation. */
+	onRequestBatch?: (kind: BatchFlowKind, guestIds: ReadonlySet<string>) => void;
 }
 
-export const GUEST_TABLE_COL_COUNT = 5;
+export const GUEST_TABLE_COL_COUNT = 4;
+
+/** Group-wide next step: send the unsent, remind the reminder-eligible. */
+function getSectionBatch(
+	section: GuestStatusSection,
+	reminderMode: boolean,
+	eligibleGuestIds: Set<string> | undefined,
+): GuestTableGroupBatch | undefined {
+	if (section.bucket === 'to-send') {
+		return {
+			kind: 'invitation',
+			guestIds: new Set(section.items.map((item) => item.guestId)),
+		};
+	}
+	if (section.bucket === 'waiting' && reminderMode && eligibleGuestIds) {
+		const guestIds = new Set(
+			section.items
+				.map((item) => item.guestId)
+				.filter((guestId) => eligibleGuestIds.has(guestId)),
+		);
+		return { kind: 'reminder', guestIds };
+	}
+	return undefined;
+}
 
 /** Matches the SCSS `xl` breakpoint where the table replaces the compact list. */
 const DESKTOP_TABLE_QUERY = '(min-width: 1200px)';
@@ -66,12 +98,37 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onOpenDetails,
 	selection,
 	messageWall = false,
+	onRequestBatch,
 }) => {
 	// null until hydrated: both layouts render and CSS picks one. Afterwards only
 	// the visible layout mounts, which halves the DOM for long guest lists.
 	const isDesktop = useMediaQuery(DESKTOP_TABLE_QUERY);
 	const showCompact = isDesktop !== true;
 	const showTable = isDesktop !== false;
+	const [collapsed, setCollapsed] = useState<ReadonlySet<GuestStatusBucket>>(() => new Set());
+	// Sharing marks the guest as sent before the browser hand-off finishes. Moving the row
+	// to another group would remount it and drop its open composer (and manual fallback),
+	// so a guest stays in its group until the composer closes.
+	const [pinnedBuckets, setPinnedBuckets] = useState<ReadonlyMap<string, GuestStatusBucket>>(
+		() => new Map(),
+	);
+
+	const handleComposerOpenChange = (item: DashboardGuestItem, open: boolean) =>
+		setPinnedBuckets((prev) => {
+			if (open === prev.has(item.guestId)) return prev;
+			const next = new Map(prev);
+			if (open) next.set(item.guestId, getGuestStatusBucket(item));
+			else next.delete(item.guestId);
+			return next;
+		});
+
+	const toggleGroup = (bucket: GuestStatusBucket) =>
+		setCollapsed((prev) => {
+			const next = new Set(prev);
+			if (next.has(bucket)) next.delete(bucket);
+			else next.add(bucket);
+			return next;
+		});
 
 	if (items.length === 0) return null;
 	if (messageWall && !selection) {
@@ -156,38 +213,46 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						<thead>
 							<tr>
 								<th scope="col">Invitación</th>
-								<th scope="col">Estado</th>
 								<th scope="col">Personas</th>
-								<th scope="col">Acciones</th>
+								<th scope="col">Acción</th>
 								<th scope="col">
-									<span className="sr-only">Ver más</span>
+									<span className="sr-only">Más acciones</span>
 								</th>
 							</tr>
 						</thead>
-						<tbody>
-							{items.map((item, index) => (
-								<GuestTableRow
-									key={item.guestId}
-									item={item}
-									index={index}
-									inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
-									eventTitle={eventTitle}
-									shareTemplates={shareTemplates}
-									shareDateContext={shareDateContext}
-									celebratingGuestId={celebratingGuestId}
-									highlightedGuestId={highlightedGuestId}
-									isSelected={selectedGuestId === item.guestId}
-									reminderMode={reminderMode}
-									isReminderEligible={
-										eligibleGuestIds?.has(item.guestId) ?? false
-									}
-									onReminderSent={onReminderSent}
-									onOpenDetails={onOpenDetails}
-									onMarkShared={onMarkShared}
-									onSaveGuest={onSaveGuest}
-								/>
-							))}
-						</tbody>
+						{groupGuestsByStatus(items, pinnedBuckets).map((section) => (
+							<GuestTableGroup
+								key={section.bucket}
+								section={section}
+								collapsed={collapsed.has(section.bucket)}
+								onToggle={() => toggleGroup(section.bucket)}
+								batch={getSectionBatch(section, !!reminderMode, eligibleGuestIds)}
+								onRequestBatch={onRequestBatch}
+							>
+								{section.items.map((item) => (
+									<GuestTableRow
+										key={item.guestId}
+										item={item}
+										inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
+										eventTitle={eventTitle}
+										shareTemplates={shareTemplates}
+										shareDateContext={shareDateContext}
+										celebratingGuestId={celebratingGuestId}
+										highlightedGuestId={highlightedGuestId}
+										isSelected={selectedGuestId === item.guestId}
+										reminderMode={reminderMode}
+										isReminderEligible={
+											eligibleGuestIds?.has(item.guestId) ?? false
+										}
+										onReminderSent={onReminderSent}
+										onOpenDetails={onOpenDetails}
+										onMarkShared={onMarkShared}
+										onSaveGuest={onSaveGuest}
+										onComposerOpenChange={handleComposerOpenChange}
+									/>
+								))}
+							</GuestTableGroup>
+						))}
 					</table>
 				</div>
 			)}

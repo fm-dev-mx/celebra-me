@@ -593,7 +593,7 @@ describe('pnpm board', () => {
 	it('labels paste tasks «Pegar en …» in the view with their own «Copiar prompt»', () => {
 		const html = readFileSync(path.join(ROOT, 'scripts', 'board', 'view.html'), 'utf8');
 		expect(html).toContain(
-			"ownerLaunches, matches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs'",
+			"ownerLaunches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs'",
 		);
 		expect(html).toContain("'Pegar en '+esc(to)");
 		expect(html).toContain('data-copy="${esc(t.id)}">Copiar prompt</button>');
@@ -912,6 +912,16 @@ describe('pnpm board', () => {
 		expect(board(dir, 'review', 'de-claude', `--sha=${a}`).out).toContain(
 			`de-claude-revision ya revisa ${a}`,
 		);
+		// The first round answers, so the second starts from the diff since its SHA.
+		const first = readTask(dir, 'de-claude-revision');
+		writeFileSync(
+			path.join(dir, 'tareas', 'de-claude-revision.json'),
+			JSON.stringify({
+				...first,
+				estado: 'hecha',
+				cierre: { ...CIERRE, resultado: { veredicto: 'cambios', sha: a, hallazgos: [] } },
+			}),
+		);
 		expect(board(dir, 'review', 'de-claude', '--agente=codex', `--sha=${b}`).status).toBe(0);
 		expect(board(dir, 'review', 'de-claude', `--sha=${c}`).status).toBe(0);
 		const second = readTask(dir, 'de-claude-revision-2');
@@ -933,7 +943,11 @@ describe('pnpm board', () => {
 		const third = readTask(dir, 'de-claude-revision-3');
 		expect(third).toMatchObject({ agente: 'gemini', vuelta: 3 });
 		expect(third.prompt).toContain('TERCERA VUELTA');
-		expect(third.prompt).toContain(`git diff ${b}..${c}`);
+		// d291: the second round was replaced without a verdict, so the third reviews the whole PR.
+		expect(third.prompt).not.toContain(`git diff ${b}..${c}`);
+		expect(third.prompt).toContain(`T${second.num} terminó sin veredicto`);
+		expect(third.prompt).toContain('2. Revise el diff completo del PR en ccccccc.');
+		expect(third.prompt).toContain('decisiones: d183, d291');
 		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ revisionSha: a, vuelta: 1 });
 		const show = board(dir, 'show', 'de-claude-revision-2').out;
 		expect(show).toContain('VUELTAS DE REVISIÓN');
@@ -1997,7 +2011,9 @@ describe('pnpm board', () => {
 			).status,
 		).toBe(0);
 		expect(JSON.parse(board(dir, 'next', '--agente=gemini', '--json').out).id).toBe('art');
-		expect(JSON.parse(board(dir, 'carril', '--json').out)).toEqual([]);
+		const lanes = JSON.parse(board(dir, 'carril', '--json').out);
+		expect(lanes).toHaveLength(9);
+		expect(lanes[0]).toMatchObject({ id: 'integration', puerto: 4321 });
 		expect(JSON.parse(board(dir, 'estado', '--json').out)).toBeNull();
 	});
 

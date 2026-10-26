@@ -5,6 +5,11 @@ import { BROWSER_JOB_NAME, jobPassed } from './ci-browser-jobs.ts';
 
 export const EVIDENCE_WORKFLOW_FILE = 'commit-validation.yml';
 export const EVIDENCE_SOURCE_BRANCH = 'develop';
+/**
+ * A release candidate is a branch fixed on one develop SHA, so its head carries the develop push
+ * run for that exact commit while develop keeps receiving merges.
+ */
+export const RELEASE_CANDIDATE_PREFIX = 'candidate/';
 /** Every job the skipped tiers stand in for; a source run that skipped one proves nothing. */
 export const REQUIRED_SOURCE_JOBS = [
 	'Repository Policy',
@@ -54,15 +59,24 @@ function declined(reason: string): EvidenceDecision {
 	return { reuse: false, reason, sourceRunId: null };
 }
 
-/** Only the promotion pull request from this repository's integration branch may reuse evidence. */
+/** Promotion heads: develop itself, or a release candidate branch cut from a develop SHA. */
+export function isPromotionHeadRef(headRef: string): boolean {
+	return (
+		headRef === EVIDENCE_SOURCE_BRANCH ||
+		(headRef.startsWith(RELEASE_CANDIDATE_PREFIX) &&
+			headRef.length > RELEASE_CANDIDATE_PREFIX.length)
+	);
+}
+
+/** Only a promotion pull request from this repository's develop or a candidate may reuse evidence. */
 export function ineligibilityReason(
 	request: Pick<EvidenceRequest, 'eventName' | 'repository' | 'headRef' | 'headRepository'>,
 ): string | null {
 	if (request.eventName !== 'pull_request') return 'Event is not a pull request.';
 	if (!request.repository || request.headRepository !== request.repository)
 		return 'Pull request head is outside this repository.';
-	if (request.headRef !== EVIDENCE_SOURCE_BRANCH)
-		return `Pull request head is not ${EVIDENCE_SOURCE_BRANCH}.`;
+	if (!isPromotionHeadRef(request.headRef))
+		return `Pull request head is not ${EVIDENCE_SOURCE_BRANCH} or a ${RELEASE_CANDIDATE_PREFIX}* branch.`;
 	return null;
 }
 

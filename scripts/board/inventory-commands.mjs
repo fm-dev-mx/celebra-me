@@ -6,7 +6,7 @@ import { UsageError, say } from './cli.mjs';
 import { readLive } from './live.mjs';
 import { AGENT_REGISTRY } from './model.mjs';
 import { liveLanes } from './next.mjs';
-import { assertId, loadBoard, readCollection, readDoc, withLock, writeDoc } from './store.mjs';
+import { loadBoard, readCollection, readDoc, withLock, writeDoc } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 const need = (v, msg) => {
@@ -75,25 +75,15 @@ export function inventoryCommands({ applyPairs, checkRev }) {
 				say(flags, out, d, `${id} registrada${linked}`);
 			});
 		},
-		/** Without an id, the lanes as Git and the locks say them now (T172); with one, writes that lane record. */
+		/** Lanes are code-owned metadata plus live Git/task state; static record writes are retired. */
 		async carril({ pos, pairs, flags }, dir, out) {
-			if (!pos.length) {
-				const board = loadBoard(dir);
-				const rows = liveLanes(board, (await readLive(dir, board)).carriles);
-				return say(flags, out, rows, rows.map((l) => l.texto).join('\n'));
-			}
-			const id = assertId(need(pos[0], 'falta <id>'));
-			return withLock(dir, () => {
-				const before = readDoc(dir, 'carriles', id) ?? { id };
-				checkRev(before, flags);
-				const l = {
-					...applyPairs(before, pairs),
-					rev: (before.rev ?? 0) + 1,
-					comprobadoEn: nowIso(),
-				};
-				writeDoc(dir, 'carriles', id, l);
-				say(flags, out, { ...l, id }, `${id} rev ${l.rev}`);
-			});
+			if (pos.length || Object.keys(pairs).length)
+				throw new UsageError(
+					'el catálogo de carriles vive en WORKTREE_LANES; cámbielo mediante un PR',
+				);
+			const board = loadBoard(dir);
+			const rows = liveLanes(board, (await readLive(dir, board)).carriles);
+			return say(flags, out, rows, rows.map((l) => l.texto).join('\n'));
 		},
 		estado({ pairs, flags }, dir, out) {
 			if (!Object.keys(pairs).length)

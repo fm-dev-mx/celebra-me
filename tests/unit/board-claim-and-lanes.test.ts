@@ -258,20 +258,38 @@ describe('T172 live lanes and replaced decisions', () => {
 		);
 		const r = cli(dir, ['carril', '--json'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture });
 		expect(r.status).toBe(0);
-		const [lane] = JSON.parse(r.out);
+		const lanes = JSON.parse(r.out);
+		expect(lanes).toHaveLength(9);
+		expect(lanes[0].id).toBe('integration');
+		const lane = lanes.find((l: Json) => l.id === 'f05-plataforma');
 		expect(lane).toMatchObject({
 			id: 'f05-plataforma',
-			uso: 'Plataforma',
-			puerto: '4325',
-			rev: 4,
+			uso: 'F5 Plataforma',
+			puerto: 4325,
 			rama: 'feat/x',
 			limpio: false,
 			tarea: 'ocupa',
 		});
+		expect(lane).not.toHaveProperty('rev');
 		expect(lane).not.toHaveProperty('nota');
 		expect(lane).not.toHaveProperty('estado');
 		const text = cli(dir, ['carril'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture }).out;
 		expect(text).toContain('f05-plataforma · feat/x · con cambios · T1 de claude');
+	});
+
+	it('ignores malformed static lane files and refuses writes to the code-owned catalog', () => {
+		const dir = makeBoard({ tareas: [] });
+		mkdirSync(path.join(dir, 'carriles'));
+		writeFileSync(path.join(dir, 'carriles', 'integration.json'), '{invalid');
+		const fixture = path.join(dir, 'vivo.json');
+		writeFileSync(fixture, JSON.stringify({ carriles: [] }));
+		const result = cli(dir, ['carril', '--json'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture });
+		expect(result.status).toBe(0);
+		expect(JSON.parse(result.out)).toHaveLength(9);
+		const write = cli(dir, ['carril', 'f05-plataforma', '--rev=0', 'puerto=9000']);
+		expect(write.status).not.toBe(0);
+		expect(write.err).toContain('WORKTREE_LANES');
+		expect(readdirSync(path.join(dir, 'carriles'))).toEqual(['integration.json']);
 	});
 
 	it('decide links a replacement cited in the text and refuses a mismatch', () => {
