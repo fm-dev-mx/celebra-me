@@ -1135,7 +1135,10 @@ describe('pnpm board', () => {
 		expect(html).not.toContain('<div class="runbox">');
 		expect(html).toContain('navigator.clipboard.writeText(text)');
 		expect(html).toContain('const laneId=taskLane;');
-		expect(html).toContain('${taskLane(t)?`<span class="nm">${esc(taskLane(t))}</span>`:');
+		// d284: a running or autonomous row says «Claude · f05» instead; the others keep the lane.
+		expect(html).toContain(
+			'${run||(taskLane(t)?`<span class="nm">${esc(taskLane(t))}</span>`:',
+		);
 		expect(html).toContain('const laneOf=t=>S.board.carriles.find(l=>l.id===taskLane(t));');
 		expect(html).toContain("['Carril',taskLane(t)?");
 		// Closing the sheet returns focus to the card's title button, not to the unfocusable article.

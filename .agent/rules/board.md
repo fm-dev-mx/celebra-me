@@ -290,6 +290,10 @@ task sheet's «Propiedades». Ctrl+K focuses the search.
   rename the session once it opens (d158).
 - **Mentions**: name a task as `T<n> <id>`, for example `T30 coordinacion-contrato`, on the board,
   in doorbells between agents, in PR descriptions and in handoffs (d159).
+- **Writing titles, busca and cierre** (d284): the view shows titles in normal weight. Wrap in
+  `**…**` only the one or two words that must stand out, and in backticks only literal code: a
+  command, a file, a field or a value (`pnpm board sync`, `view.html`, `estado=hecha`); the view
+  shows them as inline code. A `T<n>` in any of these texts opens that task.
 
 ## Working rules (every agent)
 
