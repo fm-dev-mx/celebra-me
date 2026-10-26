@@ -219,7 +219,8 @@
 }
 
 .guest-form__text-btn {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	white-space: nowrap;
 	padding: 0 0.5rem;
 	border: 0;
@@ -288,8 +289,7 @@
 	}
 
 	&:focus-visible {
-		outline: 2px solid var(--dashboard-focus-ring);
-		outline-offset: 2px;
+		@include mixins.focus-ring;
 	}
 }
 

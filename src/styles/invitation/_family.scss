@@ -655,7 +655,7 @@
 // leaves it lit with a soft glow. --family-divider-draw (`family-divider-draw`) draws the ornament between groups out
 // from its centre as the section scrolls.
 @supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include mixins.motion-safe {
 		.family {
 			view-timeline: --family-shine block;
 		}

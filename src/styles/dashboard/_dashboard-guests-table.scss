@@ -285,7 +285,9 @@ $row-meta-size: 0.82rem;
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0 0.35rem;
 	border: 0;
 	border-radius: var(--radius-md);
@@ -319,7 +321,8 @@ $row-meta-size: 0.82rem;
 }
 
 .guest-table-group__batch {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	margin-left: auto;
 	padding: 0 0.35rem;
 	border: 0;
@@ -363,7 +366,7 @@ $row-meta-size: 0.82rem;
 	justify-content: flex-start;
 
 	button {
-		min-height: 44px;
+		@include mixins.touch-target;
 	}
 
 	.dashboard-guests__share-button {
@@ -382,5 +385,5 @@ $row-meta-size: 0.82rem;
 }
 
 .guest-actions-menu--row .guest-actions-menu__item {
-	min-height: 44px;
+	@include mixins.touch-target;
 }

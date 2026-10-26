@@ -27,7 +27,8 @@ const LISTO_LINE = {
 };
 
 const CLOSE_FLAGS = {
-	codigo: (kind, pr) => `--pr=${pr ?? '#<n>'} --sha=<sha del PR> --nivel=${kind.listo_si}`,
+	codigo: (kind, pr) =>
+		`--pr=${pr ?? '#<n>'} --sha=<sha del PR> --nivel=${kind.listo_si} --changelog="Added: …" (o --changelog=ninguno) --git-safety=commit`,
 	revision: () =>
 		'--veredicto=aprobado|cambios|bloqueado --sha=<sha revisado> --hallazgo="P2|archivo:línea|texto"',
 };
@@ -179,7 +180,14 @@ export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado 
 	const nombre = `${lane.split('-')[0]} · T${num}${pr ? ` · PR ${pr}` : ''} · ${oneLine(t.corto ?? t.titulo)}`;
 	const agente = t.agente && t.agente !== 'cualquiera' ? t.agente : undefined;
 	const fill = filler(
-		{ id: t.id, agente: agente ?? '<agente>', rama: t.rama, nombre, titulo: ownerTitle(t) },
+		{
+			id: t.id,
+			agente: agente ?? '<agente>',
+			carril: lane,
+			rama: t.rama,
+			nombre,
+			titulo: ownerTitle(t),
+		},
 		kind,
 	);
 	const decisiones = linkedDecisions(t, board.decisiones);

@@ -95,6 +95,27 @@ const typed = (tipo: string, fields: Json = {}) => ({
 });
 
 describe('PARA USTED (T322)', () => {
+	it('drops internal shorthand without leaving a stray period or a lowercase start', () => {
+		const src = `const o = await import(process.argv[1]); console.log(JSON.stringify(JSON.parse(process.argv[2]).map(o.ownerPlain)))`;
+		const result = runCommand(
+			process.execPath,
+			[
+				'--input-type=module',
+				'-e',
+				src,
+				pathToFileURL(path.join(BOARD, 'owner-text.mjs')).href,
+				JSON.stringify(['Vuelta 2 del flujo', 'La rev. de hoy', 'Cambio (d291) listo']),
+			],
+			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
+		);
+		expect(result.status).toBe(0);
+		expect(JSON.parse(String(result.stdout))).toEqual([
+			'Del flujo',
+			'La de hoy',
+			'Cambio listo',
+		]);
+	});
+
 	it('opens a prompt-v1 with PARA USTED and lists what a broken one has wrong', () => {
 		const out = probe(
 			`console.log(JSON.stringify({
@@ -380,7 +401,7 @@ describe('messages to the owner (T322)', () => {
 		const send = (...args: string[]) =>
 			cli(dir, ['msg', 'T1', '--de=claude', '--para=dueno', ...args]);
 		expect(send('Ya quedó el PR.').err).toContain(
-			'el texto para el dueño debe ser una pregunta («¿…?»)',
+			'el texto para el dueño debe ser una pregunta («¿…?»); un aviso sin pregunta va con --para=coordinador',
 		);
 		expect(send('¿Sigo con la vuelta 2 según d230?').err).toContain(
 			'la pregunta usa «d230», una abreviatura interna: dígalo con palabras; la pregunta usa «vuelta 2»',

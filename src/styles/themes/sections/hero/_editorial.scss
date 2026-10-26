@@ -1,4 +1,5 @@
 @use '../../../tokens' as tokens;
+@use '../../../global/a11y' as a11y;
 
 // ==========================================================================
 // EDITORIAL HERO
@@ -261,7 +262,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		&::before {
 			animation-play-state: paused;
 		}

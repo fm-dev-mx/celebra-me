@@ -35,7 +35,7 @@
 		mix-blend-mode: screen;
 		pointer-events: none;
 
-		@media (prefers-reduced-motion: no-preference) {
+		@include mixins.motion-safe {
 			animation: celestial-constellation-reveal var(--motion-hero-media-duration)
 				var(--ease-premium) both;
 		}
@@ -71,7 +71,7 @@
 			object-position: var(--hero-focal-point-default, center 30%);
 
 			// Optional photograph reveal (`--hero-media-reveal-animation`, default none).
-			@media (prefers-reduced-motion: no-preference) {
+			@include mixins.motion-safe {
 				animation: var(--hero-media-reveal-animation, none)
 					var(--motion-hero-media-duration) var(--ease-premium) both;
 			}

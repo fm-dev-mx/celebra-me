@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 // Night-arch cover: a stationery piece on a night sky. The photograph sits inside an arched
 // window ringed by a fine accent line, the names are set large below the arch's foot, and one
 // quiet line carries date, time and place. Wide screens put the arch on the right and the letter
@@ -245,7 +247,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	@supports (animation-timeline: view()) {
 		[data-motion='editorial'] .invitation-hero[data-variant='night-arch'] {
 			.invitation-hero__background img {
@@ -287,7 +289,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	@supports (animation-timeline: scroll()) {
 		.event-theme-wrapper:not([data-reveal-state='sealed'])
 			.invitation-hero[data-variant='night-arch']
@@ -299,7 +301,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.invitation-hero[data-variant='night-arch'] .invitation-hero__scroll-indicator::before {
 		/* stylelint-disable-next-line declaration-no-important */
 		animation: none !important;

@@ -99,7 +99,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.theme-preset--enchanted-rose .quote-section {
 		.quote-line.is-visible {
 			opacity: 100%;

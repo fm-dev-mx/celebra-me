@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Floating demo quote (DemoFloatingQuote.astro): a small pill at the bottom left, clear of the
 // music player on the right. Quieter than the panels' primary buttons: dark glass, thin border.
 // On phones the player's "Reproducir música" label reaches the left half, so the pill sits above it.
@@ -10,7 +12,9 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 10px;
-	min-height: 44px;
+
+	@include a11y.touch-target;
+
 	padding: 0 16px;
 	border: 1px solid rgb(var(--color-text-on-dark-rgb) / 35%);
 	border-radius: var(--radius-pill);
@@ -55,7 +59,7 @@
 		bottom: calc(5.25rem + env(safe-area-inset-bottom));
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		transform: none;
 		transition: none;
 

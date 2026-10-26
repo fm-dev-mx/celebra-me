@@ -80,8 +80,17 @@ Keep one history owner per change type. Do not dump every commit, migration, or 
 - Add a bullet under `CHANGELOG.md` → `[Unreleased]` when a **product-visible** or
   **operator-visible** change lands and is intended for the next checkpoint.
 - Do **not** require a changelog entry for every commit.
-- Prefer updating `[Unreleased]` in the same task branch that ships the behavior, not only at tag
-  time.
+- Prefer recording the note when the task closes, not only at tag time. A board task records it with
+  `pnpm board close <id> --changelog="Added: <una línea>"` (any Keep a Changelog group: `Added`,
+  `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`) or `--changelog=ninguno`, so lanes F5–F12
+  never edit `CHANGELOG.md` in parallel and never conflict there. A branch without a board task may
+  still add its bullet under `[Unreleased]` directly.
+- At release preparation (`release-prepare`), run
+  `pnpm board changelog --desde=<date of the last tag>` from Integration to print the merged tasks'
+  notes as `[Unreleased]` Markdown, each bullet ending in its PR, and paste them in;
+  `pnpm board changelog --desde=<date> --faltan` then lists the notes `[Unreleased]` still lacks and
+  exits 1 until none is missing. Edit the pasted bullets like any other: the board notes are a
+  source, not the final wording.
 - If continuous notes were missed and `[Unreleased]` is empty at release preparation, stop and
   reconstruct it from the audited latest-tag-to-HEAD range before cutting the version section.
 - Per-client operational detail stays in `docs/invitations/<slug>.md`; link or summarize in

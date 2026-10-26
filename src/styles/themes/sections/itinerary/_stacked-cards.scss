@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 // ==========================================================================
 // STACKED CARDS ITINERARY
 // Uses the ItineraryStackedCards DOM path from Itinerary.astro: one card per moment, 24 h time.
@@ -177,7 +179,7 @@
 }
 
 @supports (animation-timeline: view()) and (timeline-scope: --a) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		.itinerary[data-variant='stacked-cards'] {
 			// The section clips without becoming a scroll container, so the cards stick to the page.
 			overflow: clip;

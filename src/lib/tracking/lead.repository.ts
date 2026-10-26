@@ -185,3 +185,16 @@ export async function findLeadOrderAttribution(input: {
 	if (rows.length === 0) return null;
 	return { leadId: rows[0].id, sessionId: rows[0].session_id };
 }
+
+/**
+ * The customer of the session's latest lead that gave marketing consent, so the session's later
+ * browser events reach Meta with the customer's hashed phone.
+ */
+export async function findSessionLeadCustomerId(sessionId: string): Promise<string | null> {
+	const rows = await supabaseRestRequest<Array<{ customer_id: string | null }>>({
+		pathWithQuery: `leads?session_id=eq.${encodeURIComponent(sessionId)}&customer_id=not.is.null&consent_marketing=is.true&select=customer_id&order=created_at.desc&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows[0]?.customer_id ?? null;
+}

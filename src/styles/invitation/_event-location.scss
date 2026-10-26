@@ -956,7 +956,8 @@
 
 	/* CTA Buttons */
 	&__nav-button {
-		min-height: 44px;
+		@include mixins.touch-target;
+
 		flex: 1;
 		display: flex;
 		align-items: center;
@@ -1334,7 +1335,9 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.55rem;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0.6rem 1.3rem;
 	border: var(--location-calendar-border, 1px solid var(--color-border-premium));
 	border-radius: var(--location-calendar-radius, 999px);
@@ -1371,7 +1374,9 @@
 	a {
 		display: inline-flex;
 		align-items: center;
-		min-height: 44px;
+
+		@include mixins.touch-target;
+
 		padding-inline: 0.25rem;
 		color: var(--location-calendar-link-color, var(--color-action-accent));
 		font: 500 0.88rem / 1.2 var(--font-body);
@@ -1379,8 +1384,7 @@
 		text-underline-offset: 0.22em;
 
 		&:focus-visible {
-			outline: 2px solid var(--color-action-accent);
-			outline-offset: 2px;
+			@include mixins.focus-ring(var(--color-action-accent));
 		}
 	}
 }
@@ -1715,7 +1719,7 @@
 
 // The tag settles from a slight swing on its cord as it arrives (opt-in, scroll-linked).
 @supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include mixins.motion-safe {
 		.event-location__indications-container[data-indications-layout='enclosure'] {
 			transform-origin: var(--location-enclosure-swing-origin, 50% 0);
 			animation: var(--location-enclosure-swing, none) auto ease-out;

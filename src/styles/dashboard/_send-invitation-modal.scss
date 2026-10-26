@@ -165,7 +165,9 @@
 .send-invitation__summary-edit {
 	flex-shrink: 0;
 	min-width: 44px;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	padding: 0 0.75rem;
 	border: 1px solid var(--color-border-control);
 	border-radius: 12px;

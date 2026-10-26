@@ -345,7 +345,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include m.reduced-motion {
 	.gallery-grid__item,
 	.gallery-grid__item img,
 	.gallery-grid__overlay {

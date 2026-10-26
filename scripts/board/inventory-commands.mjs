@@ -82,7 +82,7 @@ export function inventoryCommands({ applyPairs, checkRev }) {
 					'el catálogo de carriles vive en WORKTREE_LANES; cámbielo mediante un PR',
 				);
 			const board = loadBoard(dir);
-			const rows = liveLanes(board, (await readLive(dir, board)).carriles);
+			const rows = liveLanes(board, (await readLive(dir)).carriles);
 			return say(flags, out, rows, rows.map((l) => l.texto).join('\n'));
 		},
 		estado({ pairs, flags }, dir, out) {

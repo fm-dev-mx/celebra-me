@@ -55,6 +55,7 @@ import { kindKey, loadKinds } from './kinds.mjs';
 import { promptIdentity } from './prompt.mjs';
 import { boardDir, readLog } from './store.mjs';
 import { externalSessions, SOURCES as EXTERNAL } from './external-sessions.mjs';
+import { scopeWarnings } from './scope-warnings.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -77,8 +78,7 @@ export function commandArgs(cmd) {
 		return cmd.split(' ');
 	if (cmd === 'git ls-remote --heads origin') return cmd.split(' ');
 	if (/^gh pr view [1-9]\d* --json (state|headRefOid|files)$/.test(cmd)) return cmd.split(' ');
-	if (/^git diff --name-only origin\/develop\.\.\.origin\/[A-Za-z0-9._/-]{1,200}$/.test(cmd))
-		return cmd.split(' ');
+	if (/^git diff --name-only origin\/develop\.\.\.[a-f0-9]{40}$/.test(cmd)) return cmd.split(' ');
 	if (/^git ls-remote origin refs\/heads\/[A-Za-z0-9._/-]{1,200}$/.test(cmd))
 		return cmd.split(' ');
 	return null;
@@ -375,11 +375,15 @@ function lifecycleDrift(tareas) {
 /** Merged PR branches still present, and PRs closed without merge whose task is closed. Report only. */
 function branchDrift(tareas, run, laneBranches) {
 	const remoteResult = commandResult(run, 'git ls-remote --heads origin');
-	const remote = new Set(
+	// origin's heads with their live SHA, so a branch diff never trusts a stale local origin/<rama> ref.
+	const heads = new Map(
 		remoteResult.ok
-			? [...String(remoteResult.output).matchAll(/refs\/heads\/(\S+)/g)].map((m) => m[1])
+			? [...String(remoteResult.output).matchAll(/^(\S+)\s+refs\/heads\/(\S+)$/gm)].map(
+					(m) => [m[2], m[1]],
+				)
 			: [],
 	);
+	const remote = new Set(heads.keys());
 	// One query per present branch: a repository-wide closed list would stop at its limit and
 	// silently skip older PRs whose branch still exists.
 	const present = [...new Set([...remote, ...laneBranches])].filter(
@@ -412,7 +416,7 @@ function branchDrift(tareas, run, laneBranches) {
 	return {
 		ramasUnidasSinBorrar,
 		prCerradoSinUnir,
-		remote: remoteResult.ok ? remote : null,
+		remote: remoteResult.ok ? heads : null,
 		cobertura: {
 			prsCerrados: complete ? 'VERIFIED' : 'UNVERIFIED',
 			ramasRemotas: remoteResult.ok ? 'VERIFIED' : 'UNVERIFIED',
@@ -420,71 +424,30 @@ function branchDrift(tareas, run, laneBranches) {
 	};
 }
 
-const ACTIVE = new Set(['en curso', 'en revision']);
-const BOARD_CODE = 'scripts/board/';
-const MIGRATIONS = 'supabase/migrations/';
-/** d270: at most two board PRs at once, and only when they share no file. */
-const BOARD_PR_LIMIT = 2;
-
+/** `gh pr view --json files` lists at most this many files: a PR that reaches it may change more. */
+const GH_FILES_CAP = 100;
 /**
- * The files a task's PR (else its branch against origin/develop) changes; null when Git or GitHub fails. A branch
- * `remote` (origin's heads) does not list is not pushed yet and changes nothing others can collide with.
+ * The files a task's PR (else its pushed branch against origin/develop) changes, with `exact` false when the list
+ * may be cut short; null when Git or GitHub fails. `remote` maps origin's heads to their live SHA: a branch it does
+ * not list is not pushed yet and changes nothing others can collide with, and the diff uses that SHA, so a stale
+ * local origin/<rama> ref (verify never fetches) fails as UNVERIFIED instead of listing old files.
  */
 function changedFiles(t, run, remote) {
 	const pr = prNumber(t.pr);
 	if (pr) {
 		const r = run(`gh pr view ${pr} --json files`);
 		const files = r.ok ? parseJson(r.output, null)?.files : null;
-		return Array.isArray(files) ? files.map((f) => f.path).filter(Boolean) : null;
+		if (!Array.isArray(files)) return null;
+		const paths = files.map((f) => f.path).filter(Boolean);
+		return { files: paths, exact: files.length < GH_FILES_CAP };
 	}
-	if (!t.rama || !SAFE_BRANCH.test(t.rama) || BASE_BRANCHES.has(t.rama)) return [];
-	if (remote && !remote.has(t.rama)) return [];
-	const r = run(`git diff --name-only origin/develop...origin/${t.rama}`);
-	return r.ok ? String(r.output).split(/\r?\n/).filter(Boolean) : null;
-}
-
-/**
- * Tasks in progress or in review crossed by the files they change: a file shared between lanes, more than two
- * tasks on scripts/board/ (d270), and a migration without `toca: ["migracion"]`. Review rounds change nothing.
- */
-function scopeWarnings(tareas, run, remote) {
-	const avisos = [];
-	let complete = true;
-	const active = [];
-	for (const t of tareas.filter((x) => ACTIVE.has(x.estado) && !isReview(x) && !x.archivada)) {
-		const files = changedFiles(t, run, remote);
-		if (files === null) complete = false;
-		else if (files.length) active.push({ t, files, lane: taskLane(t) ?? '' });
-	}
-	const who = (t) => (t.num ? `T${t.num} ${t.id}` : t.id);
-	for (const a of active)
-		for (const b of active) {
-			if (a === b || a.lane === b.lane) continue;
-			const shared = a.files.filter((f) => b.files.includes(f));
-			if (!shared.length) continue;
-			const more = shared.length > 3 ? ` y ${shared.length - 3} más` : '';
-			avisos.push({
-				id: a.t.id,
-				msg: `comparte ${shared.length} archivos con ${who(b.t)} (carril ${b.lane || 'sin carril'}): ${shared.slice(0, 3).join(', ')}${more}`,
-			});
-		}
-	const board = active.filter((x) => x.files.some((f) => f.startsWith(BOARD_CODE)));
-	if (board.length > BOARD_PR_LIMIT)
-		for (const x of board)
-			avisos.push({
-				id: x.t.id,
-				msg: `d270: ${board.length} tareas cambian ${BOARD_CODE} a la vez (máximo ${BOARD_PR_LIMIT}): ${board.map((y) => who(y.t)).join(', ')}`,
-			});
-	for (const x of active)
-		if (
-			x.files.some((f) => f.startsWith(MIGRATIONS)) &&
-			!(Array.isArray(x.t.toca) && x.t.toca.includes('migracion'))
-		)
-			avisos.push({
-				id: x.t.id,
-				msg: `cambia ${MIGRATIONS} sin toca: ["migracion"]: pnpm board set ${x.t.id} --rev=${x.t.rev} toca=migracion`,
-			});
-	return { avisos, cobertura: { archivos: complete ? 'VERIFIED' : 'UNVERIFIED' } };
+	if (!t.rama || !SAFE_BRANCH.test(t.rama) || BASE_BRANCHES.has(t.rama))
+		return { files: [], exact: true };
+	const sha = remote?.get(t.rama);
+	if (remote && !sha) return { files: [], exact: true };
+	if (!/^[a-f0-9]{40}$/.test(sha ?? '')) return null;
+	const r = run(`git diff --name-only origin/develop...${sha}`);
+	return r.ok ? { files: String(r.output).split(/\r?\n/).filter(Boolean), exact: true } : null;
 }
 
 /**
@@ -766,7 +729,7 @@ export function verifyBoard(
 	const snapshot = Array.isArray(sesiones) ? sesiones.map(normalizeSession) : null;
 	const unclaimed = unclaimedWork(tareas, run);
 	const branches = branchDrift(tareas, run, unclaimed.laneBranches);
-	const scope = scopeWarnings(tareas, run, branches.remote);
+	const scope = scopeWarnings(tareas, (t) => changedFiles(t, run, branches.remote));
 	const external = externalDrift(tareas, externas);
 	const pending = tareas.filter((t) => t.estado !== 'comprobada' && t.estado !== 'cancelada');
 	const live = pending

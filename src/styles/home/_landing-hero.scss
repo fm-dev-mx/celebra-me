@@ -2,6 +2,7 @@
 // phones. Light ivory band under the solid header; the phones and chips open the showroom below.
 @use '../components/actions/whatsapp-button';
 @use '../tokens/type-scale';
+@use '../global/a11y' as a11y;
 
 .hero-prime {
 	--hero-fs-title: clamp(1.85rem, 6.2vw, 3.2rem);
@@ -389,7 +390,7 @@
 		white-space: nowrap;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		&__phone {
 			transition: none;
 		}

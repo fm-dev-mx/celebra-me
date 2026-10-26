@@ -197,12 +197,17 @@ export function matchPr(t, prs) {
 	// merged PR of a past cycle cannot finish the next one.
 	const past = new Set(Array.isArray(t.prsPrevios) ? t.prsPrevios : []);
 	const live = prs.filter((p) => !past.has(`#${p.number}`));
-	if (t.rama) return newestFor(live, (p) => p.headRefName === t.rama) ?? byReference(live, t);
+	// A declared branch is the match: a PR whose title names the task from another head is only reported
+	// (branchNote), since anyone can write that title.
+	if (t.rama) return newestFor(live, (p) => p.headRefName === t.rama);
 	if (t.cada) return null;
 	return newestFor(live, (p) => taskIdFromBranch(p.headRefName) === t.id) ?? byReference(live, t);
 }
 
 function branchNote(t, src) {
+	const named = byReference(src.prs, t);
+	if (named)
+		return `rama ${t.rama} sin PR, pero el PR #${named.number} (rama ${named.headRefName}) nombra la tarea: corrija rama o pr`;
 	const wt = src.worktrees.find((w) => w.rama === t.rama);
 	if (wt) return `rama ${t.rama} en el carril ${wt.lane}, sin PR`;
 	if (src.remote.includes(t.rama)) return `rama ${t.rama} en origin, sin PR`;
@@ -475,12 +480,21 @@ function laneDrift(l, board, git) {
 function pruneBranch(l, develop, git) {
 	if (!l.rama) return {};
 	try {
-		git(['merge-base', '--is-ancestor', l.rama, develop], l.path);
-	} catch {
-		return { podada: false, resultado: `rama ${l.rama} no está en origin/develop: se queda` };
+		git(['merge-base', '--is-ancestor', `refs/heads/${l.rama}`, develop], l.path);
+	} catch (e) {
+		// Exit 1 is git's «not an ancestor»; anything else (a missing ref, a broken repo) says what failed.
+		const why =
+			e.status === 1
+				? 'no está en origin/develop'
+				: `no se comprobó: ${
+						String(e.stderr ?? e.message)
+							.trim()
+							.split(/\r?\n/)[0]
+					}`;
+		return { podada: false, resultado: `rama ${l.rama} ${why}: se queda` };
 	}
 	try {
-		git(['branch', '-d', '--quiet', l.rama], l.path);
+		git(['branch', '-d', '--quiet', '--', l.rama], l.path);
 		return { podada: true };
 	} catch (e) {
 		const why = String(e.stderr ?? e.message)

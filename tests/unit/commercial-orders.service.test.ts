@@ -63,7 +63,7 @@ const conversionEvent = {
 	eventId: 'purchase:order-id:deposit_paid',
 	eventName: 'Purchase' as const,
 	status: 'pending' as const,
-	value: 899,
+	value: 1800,
 	currency: 'MXN',
 };
 
@@ -158,6 +158,8 @@ describe('markCommercialOrderDepositPaid', () => {
 		expect(mockDeliver).toHaveBeenCalledWith('conversion-id');
 		expect(mockEnqueueStage).toHaveBeenCalledWith({ leadId: 'lead-id', stage: 'paid' });
 		expect(result).toEqual({ order, conversionEvent });
+		expect(result.order.amountPaid).toBe(899);
+		expect(result.conversionEvent?.value).toBe(1800);
 	});
 
 	it('keeps CAPI delivery and the tracking event alive through the after-response context', async () => {

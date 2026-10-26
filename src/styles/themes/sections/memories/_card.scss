@@ -126,7 +126,9 @@
 	.memories-section__download {
 		display: inline-flex;
 		align-items: center;
-		min-height: 44px;
+
+		@include mixins.touch-target;
+
 		padding-inline: 0.75rem;
 		font-family: var(--font-body);
 		font-size: 1rem;
@@ -135,8 +137,7 @@
 		text-underline-offset: 0.2em;
 
 		&:focus-visible {
-			outline: 2px solid currentcolor;
-			outline-offset: 2px;
+			@include mixins.focus-ring(currentcolor);
 		}
 	}
 

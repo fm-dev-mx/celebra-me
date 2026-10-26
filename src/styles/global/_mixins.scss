@@ -1,6 +1,7 @@
 @use 'sass:map';
-@use '../tokens' as tokens;
 @use '../tokens/spacing' as spacing-tokens;
+@use 'a11y' as *;
+@forward 'a11y';
 
 @mixin respond-to($breakpoint) {
 	@if map.has-key(spacing-tokens.$breakpoints, $breakpoint) {
@@ -8,7 +9,7 @@
 			@content;
 		}
 	} @else {
-		@error "Breakpoint `#{$breakpoint}` does not exist in tokens.$breakpoints.";
+		@error "Breakpoint `#{$breakpoint}` does not exist in spacing-tokens.$breakpoints.";
 	}
 }
 
@@ -20,7 +21,7 @@
 			@content;
 		}
 	} @else {
-		@error "Breakpoint `#{$breakpoint}` does not exist in tokens.$breakpoints.";
+		@error "Breakpoint `#{$breakpoint}` does not exist in spacing-tokens.$breakpoints.";
 	}
 }
 
@@ -34,12 +35,6 @@
 		linear-gradient(to top, $color, $color) 0 100% / 1px #{$size} no-repeat,
 		linear-gradient(to left, $color, $color) 100% 100% / #{$size} 1px no-repeat,
 		linear-gradient(to top, $color, $color) 100% 100% / 1px #{$size} no-repeat;
-}
-
-@mixin reduced-motion {
-	@media (prefers-reduced-motion: reduce) {
-		@content;
-	}
 }
 
 @mixin short-viewport($max-height: 500px) {
@@ -60,11 +55,6 @@
 @mixin text-gradient-clip {
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
-}
-
-@mixin focus-ring {
-	outline: 2px solid var(--dashboard-focus-ring);
-	outline-offset: 2px;
 }
 
 @mixin focus-glow {
@@ -91,7 +81,9 @@
 	align-items: center;
 	justify-content: center;
 	width: 100%;
-	min-height: 44px;
+
+	@include touch-target;
+
 	padding: 0.5rem;
 	font-size: var(--font-size-ui-btn, 0.9375rem);
 	font-weight: 600;

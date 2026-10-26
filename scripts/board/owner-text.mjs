@@ -8,7 +8,7 @@
  * Internal shorthand the owner cannot read: decision ids, board revisions and numbered review rounds. A plain
  * «vuelta» («botón de vuelta atrás») is Spanish, so only «vuelta 2» counts.
  */
-const INTERNAL_WORDS = [/\bd\d{2,4}\b/gi, /\brev\b(?:\s*\d+)?/gi, /\bvueltas?\s+\d+\b/gi];
+const INTERNAL_WORDS = [/\bd\d{2,4}\b/gi, /\brev\b\.?(?:\s*\d+)?/gi, /\bvueltas?\s+\d+\b/gi];
 
 /**
  * `text` on one line without internal shorthand: «(d291)», «(T12, d3)», «d291», «rev 4» and «vuelta 2» are
@@ -18,13 +18,16 @@ export function ownerPlain(text) {
 	let s = String(text ?? '')
 		.replace(/\s*(?:\r?\n|\\n)\s*/g, ' ')
 		.replace(/\s*\(\s*[dT]\d+(?:\s*(?:,|y)\s*[dT]\d+)*\s*\)/g, '');
+	const capital = /^\s*\p{Lu}/u.test(s);
 	for (const re of INTERNAL_WORDS) s = s.replace(re, '');
-	return s
+	s = s
 		.replace(/\(\s*(?:(?:T\d+|,|y)\s*)*\)/g, '')
 		.replace(/\s+([,.;:)])/g, '$1')
 		.replace(/\(\s+/g, '(')
 		.replace(/\s{2,}/g, ' ')
-		.replace(/^[\s,;:·-]+|[\s,;:·.-]+$/g, '');
+		.replace(/^(?:[\s,;:·-]|\.(?=\s))+|[\s,;:·.-]+$/g, '');
+	// «Vuelta 2 del flujo» reads «Del flujo», not «del flujo».
+	return capital ? s.replace(/^\p{Ll}/u, (c) => c.toUpperCase()) : s;
 }
 
 /** Why `text` is not plain for the owner: one line, without internal shorthand; [] when it is. */
@@ -61,7 +64,9 @@ export function ownerMessageIssues({ texto, opciones = [] }) {
 	if (String(texto ?? '').length > 200)
 		out.push('la pregunta pasa de 200 caracteres: lleve el detalle a --detalle');
 	if (!String(texto ?? '').includes('?'))
-		out.push('el texto para el dueño debe ser una pregunta («¿…?»)');
+		out.push(
+			'el texto para el dueño debe ser una pregunta («¿…?»); un aviso sin pregunta va con --para=coordinador',
+		);
 	if (opciones.length === 1) out.push('una decisión necesita al menos dos --opcion');
 	for (const [i, o] of opciones.entries()) {
 		out.push(...ownerTextIssues(o).map((w) => `la opción ${i + 1} ${w}`));

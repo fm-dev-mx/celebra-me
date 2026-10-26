@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 .theme-preset--celestial-blue .personalized-access {
 	--pa-paper-tilt: -0.55deg;
 
@@ -157,7 +159,7 @@
 	}
 
 	// Low-cost ambient seal drift (GPU-only) — on the seal shell so SVG hover still works
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		.access-card__seal {
 			animation: pa-celestial-seal-drift 16s var(--ease-premium, ease) infinite alternate;
 		}
@@ -166,7 +168,7 @@
 
 // The document coordinator owns state on the section wrapper, not on the section itself.
 // Keep the card's paper tilt while it enters, then reveal the reservation count as a second beat.
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	.theme-preset--celestial-blue
 		#invitation-sections-container
 		> .invitation-section-wrapper[data-section-kind='personalized-access'].has-motion:not(
