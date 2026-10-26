@@ -301,6 +301,10 @@
             "phase": "expand",
             "provides": ["leads_capture_form_fields"],
             "notes": "Adds leads.event_date, celebrant_names and demo_slug (nullable, range and length checked) for the «Aparta su fecha» form shown before WhatsApp. Additive: existing rows keep null and the deployed application never names the columns. Must be applied before the application that serves POST /api/leads/capture is deployed, because PostgREST rejects unknown columns on the lead upsert."
+        },
+        "20261026120000": {
+            "phase": "neutral",
+            "notes": "Data only: soft-deletes 35 live invitation_assets rows with provider='supabase', named by id, that no publication or draft uses (2026-10-26: 35 in Preview, 0 in Production, where it matches nothing). No schema, grant or constraint change. The deployed application only lists them among archived assets afterwards; storage objects are not touched. The five managed rows of an archived wedding definition that its publication uses stay live. Idempotent."
         }
     },
     "appCapabilities": {
