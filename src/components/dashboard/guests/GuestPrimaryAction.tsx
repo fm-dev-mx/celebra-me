@@ -60,44 +60,25 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 	const primaryAction = getGuestPrimaryAction(item, reminderMode, isReminderEligible);
 	const reminderButton = REMINDER_BUTTON[variant];
 
+	let action: React.ReactNode = null;
 	if (primaryAction.action === 'send-reminder') {
-		return (
-			<>
-				<button
-					type="button"
-					className={reminderButton.className}
-					onClick={() => setReminderModalOpen(true)}
-					title="Enviar recordatorio"
-					aria-label={`Enviar recordatorio a ${item.fullName}`}
-				>
-					<MessageIcon
-						className={reminderButton.iconClassName}
-						size={reminderButton.iconSize}
-					/>
-					<span>Recordar</span>
-				</button>
-				{reminderModalOpen && (
-					<SendInvitationModal
-						key={item.guestId}
-						guest={item}
-						pendingGuests={[]}
-						inviteUrl={inviteUrl}
-						onClose={() => setReminderModalOpen(false)}
-						onSave={onSaveGuest ?? (async () => item)}
-						onMarkShared={async () => onMarkShared(item)}
-						onReminderSent={onReminderSent}
-						templates={shareTemplates}
-						shareDateContext={shareDateContext}
-						eventTitle={eventTitle}
-						mode="single-reminder"
-					/>
-				)}
-			</>
+		action = (
+			<button
+				type="button"
+				className={reminderButton.className}
+				onClick={() => setReminderModalOpen(true)}
+				title="Enviar recordatorio"
+				aria-label={`Enviar recordatorio a ${item.fullName}`}
+			>
+				<MessageIcon
+					className={reminderButton.iconClassName}
+					size={reminderButton.iconSize}
+				/>
+				<span>Recordar</span>
+			</button>
 		);
-	}
-
-	if (primaryAction.action === 'share') {
-		return (
+	} else if (primaryAction.action === 'share') {
+		action = (
 			<ShareAction
 				guest={item}
 				inviteUrl={inviteUrl}
@@ -111,7 +92,30 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 		);
 	}
 
-	return null;
+	// The modal lives outside the action branch: onReminderSent fires before the hand-off
+	// finishes and can drop the guest from the eligible set, which must not unmount the
+	// modal or its manual fallback.
+	return (
+		<>
+			{action}
+			{reminderModalOpen && (
+				<SendInvitationModal
+					key={item.guestId}
+					guest={item}
+					pendingGuests={[]}
+					inviteUrl={inviteUrl}
+					onClose={() => setReminderModalOpen(false)}
+					onSave={onSaveGuest ?? (async () => item)}
+					onMarkShared={async () => onMarkShared(item)}
+					onReminderSent={onReminderSent}
+					templates={shareTemplates}
+					shareDateContext={shareDateContext}
+					eventTitle={eventTitle}
+					mode="single-reminder"
+				/>
+			)}
+		</>
+	);
 };
 
 export default GuestPrimaryAction;
