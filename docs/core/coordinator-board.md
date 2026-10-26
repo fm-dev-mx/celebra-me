@@ -34,8 +34,9 @@ guide adds only what the coordinator does.
 
 Assign by verified capability (`requiere`), not by brand. For example: image editing → `gemini` or
 `codex`; visual review in a browser → `claude` or `codex`; image generation → never `claude`. Board
-PRs (d270: at most two at once, sharing no files) open in the order the coordinator sets; it checks
-the files before they start and tells each waiting session when its turn comes.
+PRs (d270: at most two at once; d291: a second one waits only for a real `git merge-tree` conflict)
+open in the order the coordinator sets; it runs `pnpm board solape <id>` before they open and tells
+each waiting session when its turn comes.
 
 ### Prompts (d153)
 
@@ -247,7 +248,9 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   a merged PR still moves a task to `unida`, because the merge is a fact), open PRs without a task,
   ready Claude tasks without a session and messages for it. `list` prints the same sections without
   reading GitHub. «Le toca a usted» leaves out a message to the owner once its task is finished or
-  archived (d265); `inbox --agente=dueno` still lists it. A ready Codex or Gemini task idle for 30
+  archived (d265), or once `pnpm board atendido <id> --para=dueno` marks it handled (d291, an
+  `atendido {para, mensajes}` bitácora row; `--para=coordinador` does the same for the coordinator's
+  messages); `inbox --agente=dueno --todos` still lists it. A ready Codex or Gemini task idle for 30
   min shows in «Le toca a usted» as «Correr el despachador de Codex (T<n>)»; an idle Claude task
   goes to the coordinator.
 - **Owner tasks** (`actor: dueno`) show only what to do and where (`donde`, else the first line
@@ -410,15 +413,20 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 - **Rounds**: `review` generates an English prompt and records `revisionSha` (from GitHub, or
   explicit `--sha`). Every round is a new task with `vuelta`, the short SHA in the title and its own
   prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names the
-  previous round's SHA and the new one and starts from `git diff <previous>..<new>`. Earlier rounds
-  are never rewritten, except that a still-open one is cancelled with its cierre (T129); the same
-  SHA again creates nothing. `review` refuses an origin without a valid `cierre` and prints the
+  previous round's SHA and the new one and starts from `git diff <previous>..<new>`. d291
+  (`rounds.mjs`): when the rounds since the last verdict have none (cancelled, or open and replaced
+  now), the prompt reviews the whole PR instead and lists their bitácora messages, any findings in
+  their cierre and the `.agent/tmp/reports/` paths they named. Earlier rounds are never rewritten,
+  except that a still-open one is cancelled with its cierre (T129); the same SHA again creates
+  nothing. `review` refuses an origin without a valid `cierre` and prints the
   `pnpm board close <id> …` to run first; `--coordinador` gets no bypass.
 - **CI first (d288)**: before the merge preflight, `review` reads the head's `statusCheckRollup`
   (`reviewCi`, `ciOf`). Green creates the round; red refuses and names the failed checks; running or
   not started yet (no checks listed) polls every 30 s (`CELEBRA_BOARD_CI_POLL_MS`) with the board
   unlocked for `--espera-min` minutes (30 by default), then refuses with «la vuelta queda en
-  espera».
+  espera». A PR whose workflows never start (GitHub lists no checks at all) gets its round with
+  `--sin-ci` (T312): the round's bitácora row records it, and the flag is refused while any check
+  exists, red, running or green.
 - **Reviewer choice**: without `--agente` the reviewer follows d183: work by Codex or Gemini goes to
   Claude; low- and medium-risk work by Claude outside release (`tipo` or `categoria` `release`) goes
   to a Claude subagent (d288, printed with the author session's steps; `.agent/rules/` counts as

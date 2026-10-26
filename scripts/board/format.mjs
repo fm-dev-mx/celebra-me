@@ -3,7 +3,15 @@
  * Pure functions only, like model.mjs: the view imports this file in the browser and the unit tests in Node.
  * Nothing here changes stored data; it only decides how it is shown.
  */
-import { AGENT_REGISTRY, authorOf, isFinished, isReview, prNumber, taskLane } from './model.mjs';
+import {
+	AGENT_REGISTRY,
+	authorOf,
+	isFinished,
+	isNoteRow,
+	isReview,
+	prNumber,
+	taskLane,
+} from './model.mjs';
 import { reviewVerdict } from './next.mjs';
 
 export const GH = 'https://github.com/fm-dev-mx/celebra-me';
@@ -249,7 +257,7 @@ function traceRows(bitacora) {
 	if (byTask) return byTask;
 	byTask = new Map();
 	const rows = bitacora
-		.filter((r) => r.tarea && !r.mensaje && r.quien)
+		.filter((r) => r.tarea && !isNoteRow(r) && r.quien)
 		.sort((a, b) => String(a.en).localeCompare(String(b.en)));
 	for (const r of rows) (byTask.get(r.tarea) ?? byTask.set(r.tarea, []).get(r.tarea)).push(r);
 	TRACE_ROWS.set(bitacora, byTask);

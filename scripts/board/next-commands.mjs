@@ -1,11 +1,20 @@
 /**
- * `pnpm board` commands of T126: messages between agents (`msg`, `inbox`), what is next (`sigue`), the lane
- * table read from Git (`carriles`) and the heartbeat every command gives its caller's locks.
+ * `pnpm board` commands of T126: messages between agents (`msg`, `inbox`, d291 `atendido`), what is next
+ * (`sigue`), the lane table read from Git (`carriles`) and the heartbeat every command gives its caller's locks.
  */
 import { randomBytes } from 'node:crypto';
 import { UsageError, say } from './cli.mjs';
 import { readLive } from './live.mjs';
-import { buildMessageRow, DESTINOS, logRowError, QUIEN, sessionOf, taskTag } from './model.mjs';
+import {
+	ATENDIBLES,
+	buildMessageRow,
+	DESTINOS,
+	logRowError,
+	QUIEN,
+	quienOf,
+	sessionOf,
+	taskTag,
+} from './model.mjs';
 import { laneRows, messageLine, nextSections, sectionLines, unreadFor } from './next.mjs';
 import { appendLog, loadBoard, readCollection, readDoc, withLock, writeDoc } from './store.mjs';
 
@@ -107,6 +116,51 @@ export function nextCommands({ getTask }) {
 					? rows.map((r) => `${r.en}  ${messageLine(r, board)}`).join('\n')
 					: `Sin mensajes nuevos para ${agente}.`;
 				say(flags, out, rows, text);
+			});
+		},
+		/**
+		 * d291: the owner's (or the coordinator's) messages about a task were answered, so they leave «Le toca a
+		 * usted» («Le toca al coordinador»). One bitácora row `atendido {para, mensajes}` is the mark; --mensaje=<id>
+		 * handles one message only. `inbox --todos` still lists them.
+		 */
+		atendido({ pos, flags }, dir, out) {
+			const para = need(flags.para, `falta --para=${ATENDIBLES.join('|')}`);
+			if (!ATENDIBLES.includes(para))
+				throw new UsageError(
+					`--para debe ser ${ATENDIBLES.join('|')}; un agente lee los suyos con pnpm board inbox`,
+				);
+			return withLock(dir, () => {
+				const t = getTask(dir, need(pos[0], 'falta <id>'));
+				const open = unreadFor(para, loadBoard(dir)).filter((r) => r.tarea === t.id);
+				const one = typeof flags.mensaje === 'string' ? flags.mensaje : undefined;
+				const rows = one ? open.filter((r) => r.mensaje.id === one) : open;
+				if (!rows.length)
+					throw new UsageError(
+						open.length
+							? `${one} no es un mensaje sin atender para ${para} sobre ${taskTag(t)}; los hay: ${open.map((r) => r.mensaje.id).join(', ')}`
+							: `no hay mensajes sin atender para ${para} sobre ${taskTag(t)}`,
+					);
+				const nota = typeof flags.nota === 'string' && flags.nota.trim();
+				const row = {
+					tarea: t.id,
+					en: nowIso(),
+					quien: quienOf(flags),
+					atendido: {
+						para,
+						mensajes: rows.map((r) => r.mensaje.id),
+						...(nota ? { nota } : {}),
+					},
+				};
+				const why = logRowError(row);
+				if (why) throw new UsageError(why);
+				appendLog(dir, row);
+				const n = rows.length;
+				say(
+					flags,
+					out,
+					row,
+					`${n} ${n > 1 ? 'mensajes' : 'mensaje'} para ${para} sobre ${taskTag(t)} ${n > 1 ? 'atendidos' : 'atendido'}: ${row.atendido.mensajes.join(', ')}`,
+				);
 			});
 		},
 		/** What is next for the owner and the coordinator, and what is stalled, with GitHub's open PRs. */
