@@ -1,9 +1,11 @@
 import {
 	calculateEstimatedLeadValue,
 	clearEstimatedLeadValueCache,
+	clearPersistedSnapshotStore,
 	computeMonthlyEstimatedLeadValue,
 	DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN,
 	ESTIMATED_LEAD_VALUE_CURRENCY,
+	fetchAllCommercialRows,
 	formatMonthKey,
 	getEstimatedLeadValue,
 	getEstimatedLeadValueSync,
@@ -34,8 +36,9 @@ describe('Estimated Lead Value service', () => {
 	let errorSpy: jest.SpyInstance;
 
 	beforeEach(() => {
-		jest.clearAllMocks();
+		mockRestRequest.mockReset();
 		clearEstimatedLeadValueCache();
+		clearPersistedSnapshotStore();
 		infoSpy = jest.spyOn(console, 'info').mockImplementation(() => undefined);
 		warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 		errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -195,6 +198,56 @@ describe('Estimated Lead Value service', () => {
 		});
 	});
 
+	describe('pagination (> 1000 rows)', () => {
+		it('paginates and aggregates populations exceeding the 1000-row API cap', async () => {
+			const fixedDate = new Date('2026-10-26T12:00:00.000Z');
+			// Generate 1500 leads: 1000 on page 1, 500 on page 2
+			const leadsPage1 = Array.from({ length: 1000 }, (_, i) => ({
+				id: `lead-${i}`,
+				status: 'new',
+			}));
+			const leadsPage2 = Array.from({ length: 500 }, (_, i) => ({
+				id: `lead-${1000 + i}`,
+				status: 'new',
+			}));
+			// Generate 1200 orders: 1000 on page 1 (50 MXN each), 200 on page 2 (50 MXN each) -> total 60,000 MXN
+			const ordersPage1 = Array.from({ length: 1000 }, (_, i) => ({
+				id: `order-${i}`,
+				status: 'paid',
+				amount_paid: 50,
+				total_amount: 50,
+			}));
+			const ordersPage2 = Array.from({ length: 200 }, (_, i) => ({
+				id: `order-${1000 + i}`,
+				status: 'paid',
+				amount_paid: 50,
+				total_amount: 50,
+			}));
+
+			mockRestRequest
+				.mockResolvedValueOnce(leadsPage1)
+				.mockResolvedValueOnce(leadsPage2)
+				.mockResolvedValueOnce(ordersPage1)
+				.mockResolvedValueOnce(ordersPage2);
+
+			const result = await computeMonthlyEstimatedLeadValue({ now: fixedDate });
+
+			expect(mockRestRequest).toHaveBeenCalledTimes(4);
+			expect(result.totalLeads).toBe(1500);
+			expect(result.totalSales).toBe(1200);
+			expect(result.totalRevenue).toBe(60000);
+			// 60,000 / 1500 = 40 MXN
+			expect(result.estimatedValue).toBe(40);
+			expect(result.isFallback).toBe(false);
+		});
+
+		it('fetchAllCommercialRows returns empty array when table is empty', async () => {
+			mockRestRequest.mockResolvedValueOnce([]);
+			const rows = await fetchAllCommercialRows<{ id: string }>('empty_table');
+			expect(rows).toEqual([]);
+		});
+	});
+
 	describe('getEstimatedLeadValue and getEstimatedLeadValueSync', () => {
 		const fixedDate = new Date('2026-10-15T12:00:00.000Z');
 
@@ -255,6 +308,83 @@ describe('Estimated Lead Value service', () => {
 			expect(getEstimatedLeadValueSync(fixedDate)).toBe(
 				DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN,
 			);
+		});
+	});
+
+	describe('Worker instance recycling and shared snapshot persistence', () => {
+		const fixedDate = new Date('2026-10-26T12:00:00.000Z');
+
+		it('persists monthly snapshot and resolves it after Worker isolate recycling', async () => {
+			mockRestRequest
+				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
+				.mockResolvedValueOnce([
+					{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
+				]);
+
+			const status = await runMetaEstimatedLeadValueRecalculation(fixedDate);
+			expect(status).toBe('completed');
+			expect(await getEstimatedLeadValue(fixedDate)).toBe(300);
+
+			// Simulate recycling the Worker instance: module memory cache is reset
+			clearEstimatedLeadValueCache();
+
+			// Subsequent database calls return different values (e.g. sales made later in the month)
+			mockRestRequest
+				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
+				.mockResolvedValueOnce([
+					{ id: 'order-1', status: 'paid', amount_paid: 600, total_amount: 600 },
+				]);
+
+			// Cold instance must resolve the published monthly snapshot (300), preserving Pixel/CAPI parity
+			const valueOnRecycledInstance = await getEstimatedLeadValue(fixedDate);
+			expect(valueOnRecycledInstance).toBe(300);
+
+			// Synchronous getter also reads the persisted snapshot
+			expect(getEstimatedLeadValueSync(fixedDate)).toBe(300);
+		});
+	});
+
+	describe('transient failures and database recovery', () => {
+		const fixedDate = new Date('2026-10-26T12:00:00.000Z');
+
+		it('temporary read outage does not freeze fallback once database recovers', async () => {
+			// First read fails due to temporary network outage
+			mockRestRequest.mockRejectedValueOnce(new Error('temporary database outage'));
+
+			const fallbackValue = await getEstimatedLeadValue(fixedDate);
+			expect(fallbackValue).toBe(DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN);
+
+			// Database recovers on next call
+			mockRestRequest
+				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
+				.mockResolvedValueOnce([
+					{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
+				]);
+
+			const recoveredValue = await getEstimatedLeadValue(fixedDate);
+			expect(recoveredValue).toBe(300);
+		});
+
+		it('scheduled recalculation reports failed and does not freeze fallback on database error', async () => {
+			mockRestRequest.mockRejectedValueOnce(new Error('transient scheduled error'));
+
+			const status = await runMetaEstimatedLeadValueRecalculation(fixedDate);
+			expect(status).toBe('failed');
+			expect(errorSpy).toHaveBeenCalledWith(
+				'[meta-lead-value][recalculation] failed',
+				expect.objectContaining({ error: expect.any(Object) }),
+			);
+
+			// Snapshot was not frozen with fallback; healthy database call succeeds
+			mockRestRequest
+				.mockResolvedValueOnce([{ id: 'lead-1', status: 'new' }])
+				.mockResolvedValueOnce([
+					{ id: 'order-1', status: 'paid', amount_paid: 300, total_amount: 300 },
+				]);
+
+			const retryStatus = await runMetaEstimatedLeadValueRecalculation(fixedDate);
+			expect(retryStatus).toBe('completed');
+			expect(await getEstimatedLeadValue(fixedDate)).toBe(300);
 		});
 	});
 
