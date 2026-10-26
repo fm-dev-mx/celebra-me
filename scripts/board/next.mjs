@@ -26,6 +26,7 @@ import {
 	taskTag,
 	VEREDICTOS,
 } from './model.mjs';
+import { optionsText } from './owner-text.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
 import { authorSession, findingsSent } from './findings.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
@@ -46,10 +47,15 @@ export function unreadFor(agente, board) {
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
 }
 
-/** «claude → coordinador sobre T125: texto», as `inbox` and the view print a message. */
+/**
+ * «claude → coordinador sobre T125: texto», as `inbox` and the view print a message; T322: a question to the
+ * owner adds its options, the recommended one first, and says when a technical detail goes with it.
+ */
 export function messageLine(r, board) {
 	const t = findTask(r.tarea, board);
-	return `${r.quien ?? '¿?'} → ${r.mensaje.para} sobre ${t ? taskTag(t) : r.tarea}: ${r.mensaje.texto}`;
+	const { texto, opciones, detalle } = r.mensaje;
+	const extra = `${opciones?.length ? ` Opciones: ${optionsText(opciones)}` : ''}${detalle ? ' (con detalle técnico)' : ''}`;
+	return `${r.quien ?? '¿?'} → ${r.mensaje.para} sobre ${t ? taskTag(t) : r.tarea}: ${texto}${extra}`;
 }
 
 /** Short lane name of a session title: `f05` for f05-plataforma, `f04` for Integration. */

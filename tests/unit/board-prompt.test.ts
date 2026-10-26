@@ -35,6 +35,11 @@ function probe(body: string, input: unknown = null) {
 const TASK_PROMPT = [
 	'f05 · T160 · Formato de prompts v1',
 	'',
+	'PARA USTED',
+	'Qué hará: cambia el formato de los prompts y abre un PR a develop.',
+	'Usted: nada; el coordinador une el PR cuando la revisión lo aprueba.',
+	'Riesgo: bajo; el cambio llega solo a develop.',
+	'',
 	'QUÉ SE BUSCA',
 	'Que cada prompt siga prompt-v1.',
 	'Terminado cuando: las pruebas lo fijan.',

@@ -2,6 +2,10 @@
 # Rounds made by `pnpm board review` keep their own prompt; this kind covers reviews added by hand.
 tipo: revision
 descripcion: 'Revisión cruzada de un PR, solo lectura.'
+para_usted:
+    - 'Qué hará: revisa el PR de otra sesión sin cambiar código y publica lo que encuentre.'
+    - 'Usted: nada; el coordinador une el PR cuando la revisión lo aprueba.'
+    - 'Riesgo: ninguno; la revisión solo lee el código.'
 lee:
     - 'staged_code_review'
 pasos_inicio:

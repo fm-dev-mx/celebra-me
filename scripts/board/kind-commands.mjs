@@ -7,6 +7,7 @@ import { UsageError, say } from './cli.mjs';
 import { KindPromptError, kindPrompt, promptDiff } from './kind-prompt.mjs';
 import { destinoIssue, kindKey, loadKinds } from './kinds.mjs';
 import { KIND_LISTS } from './model.mjs';
+import { OWNER_FIELDS } from './owner-text.mjs';
 import { loadBoard, withLock } from './store.mjs';
 
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -25,6 +26,7 @@ const SOURCES = [
 	'requisitos',
 	'carrilPlaneado',
 	...KIND_LISTS,
+	...OWNER_FIELDS,
 ];
 
 /** Whether `t`'s prompt comes from its kind: typed, and not a round whose prompt `review` writes. */

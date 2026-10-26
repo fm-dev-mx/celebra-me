@@ -21,7 +21,7 @@ describe('board documents', () => {
 		expect(template().trimEnd().split('\n\n').at(-1)).toMatch(
 			/^METADATOS\nformato: prompt-v1\n/,
 		);
-		expect(RULE).toContain('`<lane> · T<n> · PR #<n> · <description>`, then `QUÉ SE BUSCA`');
+		expect(RULE).toContain('`<lane> · T<n> · PR #<n> · <description>`, then `PARA USTED`');
 		expect(RULE).toContain('**Owner questions (d230)**');
 		expect(RULE).toContain('**Inherited acceptance**');
 		expect(RULE).not.toContain('Sigue .agent/rules/board.md');
@@ -32,6 +32,7 @@ describe('board documents', () => {
 			.split('\n')
 			.filter((l) => /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ]{3,}$/.test(l));
 		expect(headings).toEqual([
+			'PARA USTED',
 			'QUÉ SE BUSCA',
 			'ANTES DE EMPEZAR',
 			'PASOS',

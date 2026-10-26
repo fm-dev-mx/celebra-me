@@ -4,6 +4,7 @@
  */
 import { awaitingClaim } from './delivery.mjs';
 import { isForeignPull } from './pr-ref.mjs';
+import { messageExtraIssues, ownerFieldChecks } from './owner-text.mjs';
 import {
 	isPromptV1,
 	promptSection,
@@ -117,6 +118,7 @@ function messageIssues(m) {
 	if (!String(m.id ?? '').trim()) out.push('mensaje sin id');
 	if (!DESTINOS.includes(m.para)) out.push(`para debe ser ${DESTINOS.join('|')}`);
 	if (!String(m.texto ?? '').trim()) out.push('mensaje sin texto');
+	out.push(...messageExtraIssues(m));
 	return out;
 }
 
@@ -909,6 +911,7 @@ const FIELD_CHECKS = [
 		(t) => !optional(t.corto, (s) => typeof s === 'string' && s.trim()),
 		() => 'corto debe ser texto',
 	],
+	...ownerFieldChecks,
 	...KIND_LISTS.map((k) => [
 		(t) =>
 			!optional(
