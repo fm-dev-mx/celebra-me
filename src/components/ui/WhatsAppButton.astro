@@ -42,6 +42,8 @@ interface Props {
 	preserveMessage?: boolean;
 	/** Omits promo attributes for CTAs that are not promo quotes. */
 	withoutPromo?: boolean;
+	/** Opens the «Aparta su fecha» form before WhatsApp (LeadCaptureDialog). */
+	leadCapture?: boolean;
 }
 
 const {
@@ -63,6 +65,7 @@ const {
 	ariaLabel: explicitAriaLabel,
 	preserveMessage = false,
 	withoutPromo = false,
+	leadCapture = true,
 } = Astro.props;
 
 const ariaLabel = explicitAriaLabel ?? `${label} por WhatsApp`;
@@ -116,6 +119,7 @@ const whatsappUrl = getWhatsAppLink(message);
 	data-promo-quote={switchesWithCalendar ? (pkg?.id ?? 'general') : undefined}
 	data-promo-message={switchesMessage ? 'true' : undefined}
 	data-campaign-section={switchesWithCalendar ? campaignSection : undefined}
+	data-lead-capture={leadCapture ? '' : undefined}
 >
 	<Icon name="WhatsApp" size={20} />
 	<slot>{label}</slot>

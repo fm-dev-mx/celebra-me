@@ -1,0 +1,283 @@
+/* src/styles/components/_lead-capture.scss */
+
+// «Aparta su fecha» dialog. It opens over the landing and over every demo preset, so it carries
+// its own palette instead of the page theme.
+.lead-capture {
+	--lead-capture-surface: rgb(253 250 244);
+	--lead-capture-ink: rgb(33 29 24);
+	--lead-capture-muted: rgb(98 88 76);
+	--lead-capture-border: rgb(214 202 184);
+	--lead-capture-accent: rgb(140 106 38);
+	--lead-capture-accent-ink: rgb(255 255 255);
+	--lead-capture-danger: rgb(166 38 38);
+	--lead-capture-focus: rgb(140 106 38 / 35%);
+
+	width: min(100% - 1.5rem, 30rem);
+	max-height: calc(100dvh - 1.5rem);
+	margin: auto;
+	padding: 0;
+	border: none;
+	border-radius: 18px;
+	background: var(--lead-capture-surface);
+	color: var(--lead-capture-ink);
+	box-shadow: 0 24px 60px rgb(0 0 0 / 35%);
+	font-family: 'Montserrat Variable', Montserrat, sans-serif;
+	font-size: 1rem;
+	line-height: 1.45;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+
+	&::backdrop {
+		background: rgb(17 14 10 / 65%);
+	}
+
+	&[open] {
+		animation: lead-capture-in 180ms ease-out;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&[open] {
+			animation: none;
+		}
+	}
+}
+
+@keyframes lead-capture-in {
+	from {
+		opacity: 0%;
+		transform: translateY(12px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: none;
+	}
+}
+
+.lead-capture__panel {
+	position: relative;
+	padding: 1.5rem 1.25rem 1.25rem;
+
+	@media (width >= 480px) {
+		padding: 2rem 2rem 1.5rem;
+	}
+}
+
+.lead-capture__close {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--lead-capture-muted);
+	font-size: 1.75rem;
+	line-height: 1;
+	cursor: pointer;
+
+	&:hover {
+		background: rgb(0 0 0 / 6%);
+	}
+}
+
+.lead-capture__eyebrow {
+	margin: 0 0 0.25rem;
+	color: var(--lead-capture-accent);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.lead-capture__title {
+	margin: 0;
+	padding-right: 2.5rem;
+	font-family: 'Playfair Display Variable', 'Playfair Display', Georgia, serif;
+	font-size: 1.65rem;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.lead-capture__intro {
+	margin: 0.5rem 0 1rem;
+	color: var(--lead-capture-muted);
+	font-size: 0.95rem;
+}
+
+.lead-capture__ask-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem 0.75rem;
+	margin-bottom: 1.25rem;
+	padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+	border: 1px solid var(--lead-capture-border);
+	border-radius: 12px;
+	color: var(--lead-capture-muted);
+	font-size: 0.9rem;
+}
+
+.lead-capture__ask {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 1rem;
+	border: 1px solid var(--lead-capture-accent);
+	border-radius: 999px;
+	color: var(--lead-capture-accent);
+	font-weight: 600;
+	text-decoration: none;
+
+	&:hover {
+		background: rgb(140 106 38 / 8%);
+	}
+}
+
+.lead-capture__form {
+	display: grid;
+	gap: 0.875rem;
+}
+
+.lead-capture__row {
+	display: grid;
+	gap: 0.875rem;
+
+	@media (width >= 480px) {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.lead-capture__field {
+	display: grid;
+	gap: 0.3rem;
+
+	label {
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	input,
+	select {
+		width: 100%;
+		min-height: 48px;
+		padding: 0 0.875rem;
+		border: 1px solid var(--lead-capture-border);
+		border-radius: 10px;
+		background: rgb(255 255 255);
+		color: var(--lead-capture-ink);
+		font: inherit;
+
+		// 16px keeps iOS from zooming into the field.
+		font-size: 1rem;
+
+		&::placeholder {
+			color: rgb(150 140 128);
+		}
+
+		&[aria-invalid='true'] {
+			border-color: var(--lead-capture-danger);
+		}
+	}
+}
+
+.lead-capture__optional {
+	color: var(--lead-capture-muted);
+	font-weight: 400;
+}
+
+.lead-capture__hint {
+	margin: 0;
+	color: var(--lead-capture-muted);
+	font-size: 0.8rem;
+}
+
+.lead-capture__field-error,
+.lead-capture__error {
+	margin: 0;
+	color: var(--lead-capture-danger);
+	font-size: 0.85rem;
+	font-weight: 500;
+}
+
+.lead-capture__trap {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.lead-capture__submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 52px;
+	margin-top: 0.25rem;
+	padding: 0 1.25rem;
+	border: none;
+	border-radius: 999px;
+	background: var(--lead-capture-accent);
+	color: var(--lead-capture-accent-ink);
+	font: inherit;
+	font-weight: 600;
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+
+	&:hover {
+		background: rgb(118 88 30);
+	}
+
+	&:disabled {
+		opacity: 70%;
+		cursor: progress;
+	}
+}
+
+.lead-capture__privacy {
+	margin: 0;
+	color: var(--lead-capture-muted);
+	font-size: 0.78rem;
+	text-align: center;
+
+	a {
+		color: inherit;
+	}
+}
+
+.lead-capture__success {
+	display: grid;
+	gap: 0.75rem;
+	outline: none;
+
+	p {
+		margin: 0;
+	}
+}
+
+.lead-capture__success-title {
+	font-size: 1.1rem;
+
+	strong {
+		color: var(--lead-capture-accent);
+		letter-spacing: 0.04em;
+	}
+}
+
+.lead-capture :focus-visible {
+	outline: 3px solid var(--lead-capture-focus);
+	outline-offset: 2px;
+}
+
+// Blocks with their own display (grid, flex) must still honour [hidden].
+.lead-capture [hidden] {
+	display: none;
+}

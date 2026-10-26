@@ -1,0 +1,188 @@
+---
+/**
+ * «Aparta su fecha»: short form shown before WhatsApp on the landing and on demo pages.
+ *
+ * Any WhatsApp CTA marked `data-lead-capture` opens this dialog instead of WhatsApp. The visitor
+ * either sends the form (lead + customer + Meta Lead, then WhatsApp with a prefilled message and
+ * folio) or taps «Solo quiero preguntar», which opens WhatsApp exactly like the CTA would have.
+ * Without JavaScript the CTA keeps its WhatsApp link.
+ */
+import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
+import { LEAD_CAPTURE_EVENT_TYPES } from '@/lib/tracking/lead-capture';
+import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import '@/styles/components/_lead-capture.scss';
+
+const available = !isPlaceholderContactPhone(getContactPhone());
+const demoOptions = [...DEMO_SHOWROOM_ITEMS]
+	.filter((item) => item.reviewStatus === 'approved')
+	.sort((a, b) => a.sortOrder - b.sortOrder)
+	.map((item) => ({ slug: item.slug, name: item.styleName, eventType: item.eventType }));
+---
+
+{
+	available && (
+		<dialog
+			class="lead-capture"
+			id="lead-capture-dialog"
+			aria-labelledby="lead-capture-title"
+			aria-describedby="lead-capture-intro"
+			data-lead-capture-dialog
+		>
+			<div class="lead-capture__panel">
+				<button type="button" class="lead-capture__close" data-lead-capture-close aria-label="Cerrar formulario">
+					<span aria-hidden="true">×</span>
+				</button>
+				<p class="lead-capture__eyebrow">Celebra-me</p>
+				<h2 class="lead-capture__title" id="lead-capture-title">Aparte su fecha</h2>
+				<p class="lead-capture__intro" id="lead-capture-intro">
+					Cuéntenos lo básico y le respondemos por WhatsApp con su folio. Toma 30 segundos.
+				</p>
+
+				<div class="lead-capture__ask-row">
+					<span>¿Solo tiene una duda?</span>
+					<a
+						class="lead-capture__ask"
+						href="#"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-lead-capture-ask
+					>
+						Solo quiero preguntar
+					</a>
+				</div>
+
+				<form class="lead-capture__form" data-lead-capture-form novalidate>
+					<div class="lead-capture__field">
+						<label for="lead-capture-name">Su nombre</label>
+						<input
+							id="lead-capture-name"
+							name="contactName"
+							type="text"
+							autocomplete="name"
+							required
+							minlength="2"
+							maxlength="80"
+							aria-describedby="lead-capture-name-error"
+						/>
+						<p class="lead-capture__field-error" id="lead-capture-name-error" hidden>
+							Escriba su nombre.
+						</p>
+					</div>
+
+					<div class="lead-capture__row">
+						<div class="lead-capture__field">
+							<label for="lead-capture-event-type">Tipo de evento</label>
+							<select
+								id="lead-capture-event-type"
+								name="eventType"
+								required
+								aria-describedby="lead-capture-event-type-error"
+							>
+								<option value="">Elija una opción</option>
+								{LEAD_CAPTURE_EVENT_TYPES.map((option) => (
+									<option value={option.value}>{option.label}</option>
+								))}
+							</select>
+							<p class="lead-capture__field-error" id="lead-capture-event-type-error" hidden>
+								Elija el tipo de evento.
+							</p>
+						</div>
+
+						<div class="lead-capture__field">
+							<label for="lead-capture-date">Fecha del evento</label>
+							<input
+								id="lead-capture-date"
+								name="eventDate"
+								type="date"
+								required
+								aria-describedby="lead-capture-date-error"
+							/>
+							<p class="lead-capture__field-error" id="lead-capture-date-error" hidden>
+								Elija una fecha a partir de hoy.
+							</p>
+						</div>
+					</div>
+
+					<div class="lead-capture__field">
+						<label for="lead-capture-celebrant">
+							Nombre(s) de quien celebra <span class="lead-capture__optional">(opcional)</span>
+						</label>
+						<input
+							id="lead-capture-celebrant"
+							name="celebrantNames"
+							type="text"
+							maxlength="120"
+							placeholder="Ej. Andrea · Daniela y Martín"
+						/>
+					</div>
+
+					<div class="lead-capture__field">
+						<label for="lead-capture-phone">Su WhatsApp</label>
+						<input
+							id="lead-capture-phone"
+							name="phone"
+							type="tel"
+							inputmode="tel"
+							autocomplete="tel"
+							required
+							maxlength="20"
+							placeholder="10 dígitos"
+							aria-describedby="lead-capture-phone-hint lead-capture-phone-error"
+						/>
+						<p class="lead-capture__hint" id="lead-capture-phone-hint">
+							Número de México a 10 dígitos; si es de otro país, incluya la clave (+1).
+						</p>
+						<p class="lead-capture__field-error" id="lead-capture-phone-error" hidden>
+							Escriba un número de WhatsApp de 10 dígitos.
+						</p>
+					</div>
+
+					<div class="lead-capture__field">
+						<label for="lead-capture-demo">
+							Diseño que le gustó <span class="lead-capture__optional">(opcional)</span>
+						</label>
+						<select id="lead-capture-demo" name="demoSlug">
+							<option value="">Aún no decido</option>
+							{demoOptions.map((demo) => (
+								<option value={demo.slug} data-event-type={demo.eventType}>
+									{demo.name}
+								</option>
+							))}
+						</select>
+					</div>
+
+					{/* Honeypot: hidden from people and assistive technology; bots fill it. */}
+					<div class="lead-capture__trap" aria-hidden="true">
+						<label for="lead-capture-website">Sitio web</label>
+						<input id="lead-capture-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+					</div>
+
+					<p class="lead-capture__error" role="alert" data-lead-capture-error hidden></p>
+
+					<button type="submit" class="lead-capture__submit" data-lead-capture-submit>
+						Apartar y continuar en WhatsApp
+					</button>
+					<p class="lead-capture__privacy">
+						Usamos sus datos solo para atender su solicitud. Consulte el
+						<a href="/privacidad" target="_blank" rel="noopener">aviso de privacidad</a>.
+					</p>
+				</form>
+
+				<div class="lead-capture__success" data-lead-capture-success hidden tabindex="-1">
+					<p class="lead-capture__success-title">¡Listo! Su folio es <strong data-lead-capture-code></strong></p>
+					<p>Le abrimos WhatsApp con su mensaje. Si no se abre, use este botón:</p>
+					<a class="lead-capture__submit" href="#" data-lead-capture-continue>Continuar en WhatsApp</a>
+				</div>
+			</div>
+		</dialog>
+	)
+}
+
+{
+	available && (
+		<script>
+			import { initLeadCapture } from '@/lib/tracking/lead-capture-client';
+			initLeadCapture();
+		</script>
+	)
+}

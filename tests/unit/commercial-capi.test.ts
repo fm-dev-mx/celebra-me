@@ -805,6 +805,54 @@ describe('Meta CAPI browser events', () => {
 		});
 	});
 
+	it('queues a capture-form Lead with its customer and lead', async () => {
+		mockRestRequest.mockResolvedValueOnce([]);
+		await enqueueBrowserConversionEvent({
+			trigger: 'form_submitted',
+			eventId: clickEventId,
+			sessionId: 'session-id',
+			eventSourcePath: '/',
+			customerId: 'customer-id',
+			leadId: 'lead-id',
+		});
+		expect(mockRestRequest).toHaveBeenCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({
+					event_name: 'Lead',
+					trigger_status: 'form_submitted',
+					customer_id: 'customer-id',
+					lead_id: 'lead-id',
+				}),
+			}),
+		);
+	});
+
+	it('adds the hashed phone to a capture-form Lead that carries its customer', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				{
+					...contactRow,
+					event_name: 'Lead',
+					customer_id: 'customer-id',
+					event_source_path: '/',
+					customers: { email: null, phone_e164: '+526681112233' },
+				},
+			])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('sent');
+
+		const event = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+		expect(event.event_name).toBe('Lead');
+		expect(event.action_source).toBe('website');
+		expect(event.user_data.ph).toEqual([normalizeAndHashPhone('+526681112233')]);
+		expect(event.user_data.external_id).toEqual([hashSha256('visitor-id')]);
+		expect(event.user_data).not.toHaveProperty('em');
+	});
+
 	it('skips a browser event when the session no longer has marketing consent', async () => {
 		mockRestRequest
 			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])

@@ -4,6 +4,7 @@ import '@/styles/global.scss';
 
 import Header from '@/components/home/HomeHeader.astro';
 import ConsentBanner from '@/components/common/ConsentBanner.astro';
+import LeadCaptureDialog from '@/components/common/LeadCaptureDialog.astro';
 import SvgFilters from '@/components/common/SvgFilters.astro';
 import {
 	buildSocialImageMetadata,
@@ -97,6 +98,8 @@ const ogImage = socialImage.url;
 
 const routePolicy = classifyTrackingRoute(Astro.url);
 const loadCommercialTracking = isProductionRuntime && routePolicy.internalAllowed;
+// «Aparta su fecha» opens from the WhatsApp CTAs of the landing and the demos, in every runtime.
+const showLeadCapture = routePolicy.routeClass === 'commercial' || routePolicy.routeClass === 'demo';
 
 // Cookieless Cloudflare Web Analytics: no consent gate; off when the site token is blank.
 const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
@@ -183,6 +186,7 @@ const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
 			<slot />
 		</main>
 
+		{showLeadCapture && <LeadCaptureDialog />}
 		<ConsentBanner />
 		{
 			webAnalyticsBeacon && (
