@@ -14,6 +14,7 @@ import {
 	reviewGuidance,
 	OWNER_LINES,
 	ownerAsk,
+	ARCHIVE_CHAT_LINE,
 } from './prompt.mjs';
 export { reviewRisk } from './prompt.mjs';
 
@@ -121,6 +122,7 @@ function closingLines(t, kind, pr, fill) {
 		...(kind.tras_cierre ?? []).map(fill),
 		'Avise al coordinador con la línea que imprime close.',
 		'Responda: qué cambió, comprobaciones corridas y saltadas, riesgos.',
+		ARCHIVE_CHAT_LINE,
 	].map((line, i) => `${i + 1}. ${line}`);
 }
 

@@ -198,15 +198,18 @@ describe('prompt-v1 (T160)', () => {
 			`const r = await import(new URL('./rounds.mjs', process.argv[2]).href);
 			const first = r.reviewChild(input.src, { agente: 'codex', sha: input.sha, num: 9, generado: '2026-10-25T03:00:00Z' });
 			const second = r.reviewChild(input.src, { agente: 'gemini', sha: input.sha, prev: input.prev, num: 10, generado: '2026-10-25T03:00:00Z' });
+			const sub = r.reviewChild(input.src, { agente: 'claude', revisor: 'subagente', sha: input.sha, num: 11, generado: '2026-10-25T03:00:00Z' });
 			const issues = (t) => m.taskIssues({ ...t, rev: 1, actualizado: '2026-10-25T03:00:00Z' });
 			console.log(JSON.stringify({
-				first: first.prompt, second: second.prompt,
-				issues: [issues(first), issues(second)],
+				first: first.prompt, second: second.prompt, sub: sub.prompt,
+				issues: [issues(first), issues(second), issues(sub)],
 				meta: p.promptMetadata(first.prompt),
+				firstClosing: p.promptSection(first.prompt, 'AL TERMINAR').filter(Boolean),
+				subClosing: p.promptSection(sub.prompt, 'AL TERMINAR').filter(Boolean),
 			}));`,
 			{ src, sha: SHA, prev },
 		);
-		expect(out.issues).toEqual([[], []]);
+		expect(out.issues).toEqual([[], [], []]);
 		expect(out.first.split('\n')[0]).toBe('f04 · T9 · PR #522 · Revisión');
 		expect(out.second.split('\n')[0]).toBe('f04 · T10 · PR #522 · Revisión vuelta 2');
 		expect(out.first).not.toContain('Follow .agent/rules/board.md');
@@ -216,6 +219,13 @@ describe('prompt-v1 (T160)', () => {
 		expect(out.first).toContain('--para=dueno');
 		expect(out.second).toContain('SEGUNDA VUELTA');
 		expect(out.second).toContain(`git diff ${'a'.repeat(40)}..${SHA}`);
+		// d259: review child prompts also end AL TERMINAR with the chat archiving instruction.
+		expect(out.firstClosing.at(-1)).toBe(
+			'4. Archivar el chat cuando la tarea quede unida/hecha y su PR unido (d259); el despachador de Codex/Gemini archiva sus chats cuya tarea ya terminó.',
+		);
+		expect(out.subClosing.at(-1)).toBe(
+			'3. Archivar el chat cuando la tarea quede unida/hecha y su PR unido (d259); el despachador de Codex/Gemini archiva sus chats cuya tarea ya terminó.',
+		);
 		expect(out.meta).toEqual({
 			formato: 'prompt-v1',
 			tarea: 'T9 origen-revision',
