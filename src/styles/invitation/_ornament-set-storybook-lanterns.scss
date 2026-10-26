@@ -111,12 +111,6 @@
 		var(--color-candle-gold, var(--ornament-ink)) 82%,
 		var(--color-gold-ink, var(--ornament-ink)) 100%
 	);
-	--ornament-motif-lantern: #{$storybook-lantern};
-	--ornament-motif-tower: #{$storybook-tower};
-	--ornament-motif-sun: #{$storybook-sun};
-	--ornament-motif-sprig: #{$storybook-sprig};
-	--ornament-motif-sun-flower: #{$storybook-sun-flower};
-	--ornament-motif-sparkle: #{$storybook-sparkle};
 
 	// Light colors: a cream core inside a candle-gold halo.
 	--ornament-light-core: rgb(var(--color-candle-cream-rgb, 246 239 224) / 95%);
