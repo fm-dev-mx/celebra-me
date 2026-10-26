@@ -59,7 +59,7 @@ export function unreadFor(agente, board) {
 export function messageLine(r, board) {
 	const t = findTask(r.tarea, board);
 	const { texto, opciones, detalle } = r.mensaje;
-	const extra = `${opciones?.length ? ` Opciones: ${optionsText(opciones)}` : ''}${detalle ? ' (con detalle técnico)' : ''}`;
+	const extra = `${opciones?.length ? ` Opciones: ${optionsText(opciones)}` : ''}${detalle ? ' (detalle técnico: pnpm board inbox)' : ''}`;
 	return `${r.quien ?? '¿?'} → ${r.mensaje.para} sobre ${t ? taskTag(t) : r.tarea}: ${texto}${extra}`;
 }
 

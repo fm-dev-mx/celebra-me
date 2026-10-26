@@ -5,6 +5,7 @@
  * return contract come from the board, so the prompt changes with them. Pure functions only.
  */
 import { taskLabel, laneFolder, taskLane } from './model.mjs';
+import { ownerPlain } from './owner-text.mjs';
 import {
 	PROMPT_SECTIONS,
 	buildPrompt,
@@ -74,10 +75,7 @@ export function linkedDecisions(t, decisiones = []) {
 }
 
 /** T322: the task's title for the owner, without trailing `(d291)`-style references. */
-const ownerTitle = (t) =>
-	oneLine(t.corto ?? t.titulo)
-		.replace(/\s*\((?:[dT]\d+)(?:\s*(?:,|y)\s*[dT]\d+)*\)/g, '')
-		.replace(/[.\s]+$/, '');
+const ownerTitle = (t) => ownerPlain(t.corto ?? t.titulo);
 
 /** T322: PARA USTED from the kind's three lines; the task's `hara`, `usted` and `riesgo` replace their text. */
 function ownerSection(t, kind, fill) {

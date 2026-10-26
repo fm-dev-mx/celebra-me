@@ -121,11 +121,11 @@ routing and the internal modules work lives in
 - **Prompt (`prompt-v1`, T160)**: Spanish, «usted», in the sections of
   [the prompt template](../../docs/core/coordinator-board.md#prompts-d153): line 1 is the session
   name `<lane> · T<n> · PR #<n> · <description>`, then `PARA USTED` (T322: three plain lines for the
-  owner, `Qué hará:`, `Usted:` and `Riesgo:`, without `dNNN`, `rev` or `vuelta`), then
-  `QUÉ SE BUSCA` (with «Terminado cuando:»), `ANTES DE EMPEZAR`, `PASOS`, `AUTORIZO`, `NO HAGAS`,
-  `DECISIONES` (d046, always required), `PARE Y PREGUNTE SI`, `AL TERMINAR`, and last `METADATOS`
-  (`formato: prompt-v1`, one `clave: valor` per line). `pnpm board` refuses a `prompt-v1` that
-  breaks this shape. A task with a `tipo` (T130) gets its prompt generated from
+  owner, `Qué hará:`, `Usted:` and `Riesgo:`, without `dNNN`, `rev N` or `vuelta N`; older saved
+  prompts may lack it), then `QUÉ SE BUSCA` (with «Terminado cuando:»), `ANTES DE EMPEZAR`, `PASOS`,
+  `AUTORIZO`, `NO HAGAS`, `DECISIONES` (d046, always required), `PARE Y PREGUNTE SI`, `AL TERMINAR`,
+  and last `METADATOS` (`formato: prompt-v1`, one `clave: valor` per line). `pnpm board` refuses a
+  `prompt-v1` that breaks this shape. A task with a `tipo` (T130) gets its prompt generated from
   `.agent/kinds/<tipo>.yaml`; an `operacion` with `destino=cloudflare` uses
   `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default).
 - **Task number**: `num` is fixed when the task is added and never reused; it is `T<num>` everywhere

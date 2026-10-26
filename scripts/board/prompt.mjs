@@ -134,6 +134,12 @@ function paraUstedIssues(section) {
 	return out;
 }
 
+/**
+ * T322: prompt-v1s saved before PARA USTED existed lack it and stay valid; every generated prompt carries it,
+ * and when it is there it must be first and well formed.
+ */
+const OPTIONAL_SECTION = 'PARA USTED';
+
 /** Shape problems of a prompt-v1; a legacy prompt has none here. */
 export function promptV1Issues(prompt) {
 	if (!isPromptV1(prompt)) return [];
@@ -146,6 +152,7 @@ export function promptV1Issues(prompt) {
 	let last = -1;
 	for (const name of PROMPT_SECTIONS) {
 		const at = lines.indexOf(name);
+		if (at < 0 && name === OPTIONAL_SECTION) continue;
 		if (at < 0) out.push(`prompt-v1: falta la sección ${name}`);
 		else if (at < last) out.push(`prompt-v1: la sección ${name} está fuera de orden`);
 		else last = at;

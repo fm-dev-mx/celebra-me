@@ -104,13 +104,15 @@ generado: <fecha ISO>
 Line 1 is the session name (d158); drop `PR #<n>` before the PR exists. `PARA USTED` (T322) comes
 next, for the owner first: exactly three lines, `Qué hará:`, `Usted:` (`nada` when the owner has
 nothing to do) and `Riesgo:`, one plain sentence each, without internal shorthand the owner cannot
-read (`d230`, `rev 3`, `vuelta`); the sections after it are for the agent. Every section is present
+read (`d230`, `rev 3`, `vuelta 2`); the sections after it are for the agent. Each section is present
 and in this order; `DECISIONES` is always present (d046): the verifier flags a prompt without it, so
 a task with no prior decision says so in one line, for example «- Ninguna todavía: pregunte al
 inicio en una sola ronda». `METADATOS` is last, one lowercase `clave: valor` per line; leave out a
 key with no value. `pnpm board` refuses a `prompt-v1` that breaks this shape, and `board:verify`
 warns when line 1 names another `T<n>` or lane than the task's. Prompts written before T160 (no
-`formato: prompt-v1`) keep working under the old layout and are never rewritten.
+`formato: prompt-v1`) keep working under the old layout and are never rewritten. A `prompt-v1` saved
+before T322 may lack `PARA USTED` and stays valid; every generated prompt has it, and a task title
+goes into it with its internal shorthand dropped.
 
 A task with a `tipo` (T130) does not get this template by hand: add it with its kind and its
 `QUÉ SE BUSCA`, for example

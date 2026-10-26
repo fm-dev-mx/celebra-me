@@ -119,13 +119,13 @@ describe('PARA USTED (T322)', () => {
 			},
 		);
 		expect(out.ok).toEqual([]);
-		expect(out.missing).toEqual(['prompt-v1: falta la sección PARA USTED']);
+		expect(out.missing).toEqual([]);
 		expect(out.late).toContain('prompt-v1: la sección QUÉ SE BUSCA está fuera de orden');
 		expect(out.shape).toEqual(['prompt-v1: PARA USTED sin texto en «Usted:»']);
 		expect(out.jargon).toEqual([
 			'prompt-v1: PARA USTED usa «d230», una abreviatura interna: dígalo con palabras (en una tarea con tipo: hara=… usted=… riesgo=…)',
 			'prompt-v1: PARA USTED usa «rev 3», una abreviatura interna: dígalo con palabras (en una tarea con tipo: hara=… usted=… riesgo=…)',
-			'prompt-v1: PARA USTED usa «vuelta», una abreviatura interna: dígalo con palabras (en una tarea con tipo: hara=… usted=… riesgo=…)',
+			'prompt-v1: PARA USTED usa «vuelta 2», una abreviatura interna: dígalo con palabras (en una tarea con tipo: hara=… usted=… riesgo=…)',
 		]);
 	});
 
@@ -177,6 +177,42 @@ describe('PARA USTED (T322)', () => {
 			'Qué hará: cambia el código para «Vista del tablero más clara», lo prueba y abre un PR a develop.',
 		);
 		expect(codigo.lines[1]).toMatch(/^Usted: nada;/);
+	});
+
+	it('keeps a task title in PARA USTED without its internal shorthand', () => {
+		const out = probe(
+			`const kind = k.loadKinds().kinds.codigo;
+			console.log(JSON.stringify(input.titles.map((titulo) => {
+				const t = { ...input.t, titulo };
+				const prompt = kp.kindPrompt(t, { tareas: [t], decisiones: [] }, kind, {});
+				return { hara: p.promptSection(prompt, 'PARA USTED')[0], issues: m.taskIssues({ ...t, prompt, actualizado: '2026-10-25' }) };
+			})));`,
+			{
+				t: typed('codigo'),
+				titles: [
+					'Botón de vuelta atrás en el RSVP',
+					'Ajuste d291 del tablero tras rev 4',
+					'Arreglo (T12, d3) de la vista',
+				],
+			},
+		);
+		expect(out.map((r: Json) => r.issues)).toEqual([[], [], []]);
+		expect(out.map((r: Json) => r.hara)).toEqual([
+			'Qué hará: cambia el código para «Botón de vuelta atrás en el RSVP», lo prueba y abre un PR a develop.',
+			'Qué hará: cambia el código para «Ajuste del tablero tras», lo prueba y abre un PR a develop.',
+			'Qué hará: cambia el código para «Arreglo de la vista», lo prueba y abre un PR a develop.',
+		]);
+	});
+
+	it('keeps a saved prompt-v1 without PARA USTED valid', () => {
+		const out = probe(
+			`console.log(JSON.stringify(m.taskIssues({ ...input.t, prompt: input.prompt, actualizado: '2026-10-25' })));`,
+			{
+				t: { ...typed('codigo'), tipo: undefined },
+				prompt: PROMPT.replace(/PARA USTED\n(?:.+\n){3}\n/, ''),
+			},
+		);
+		expect(out).toEqual([]);
 	});
 
 	it('lets a task replace each line with hara, usted and riesgo, and refuses jargon in them', () => {
@@ -233,7 +269,7 @@ describe('PARA USTED (T322)', () => {
 		expect(out).toEqual(
 			expect.arrayContaining([
 				'para_usted debe tener 3 líneas: Qué hará: … / Usted: … / Riesgo: …',
-				'para_usted usa «vuelta», una abreviatura interna: dígalo con palabras',
+				'para_usted usa «vuelta 2», una abreviatura interna: dígalo con palabras',
 			]),
 		);
 	});
@@ -332,7 +368,7 @@ describe('messages to the owner (T322)', () => {
 		});
 		const inbox = cli(dir, ['inbox', '--agente=dueno']);
 		expect(inbox.out).toContain(
-			'claude → dueno sobre T1: ¿Publico la invitación hoy? Opciones: 1) Sí, hoy (recomendada) · 2) Mañana, después de revisarla (con detalle técnico)',
+			'claude → dueno sobre T1: ¿Publico la invitación hoy? Opciones: 1) Sí, hoy (recomendada) · 2) Mañana, después de revisarla (detalle técnico: pnpm board inbox)',
 		);
 		expect(inbox.out).toContain(
 			'  Detalle técnico:\n    PR #600 en a1b2c3d; d230.\n    La vuelta 2 aprobó.',
@@ -347,7 +383,7 @@ describe('messages to the owner (T322)', () => {
 			'el texto para el dueño debe ser una pregunta («¿…?»)',
 		);
 		expect(send('¿Sigo con la vuelta 2 según d230?').err).toContain(
-			'la pregunta usa «d230», una abreviatura interna: dígalo con palabras; la pregunta usa «vuelta»',
+			'la pregunta usa «d230», una abreviatura interna: dígalo con palabras; la pregunta usa «vuelta 2»',
 		);
 		expect(send('¿Sigo?\\n¿O paro?').err).toContain('la pregunta debe ser una sola línea');
 		expect(send('¿Sigo?', '--opcion=Sí').err).toContain(

@@ -4,8 +4,28 @@
  * technical detail. No Node APIs: the view imports this module through model.mjs and prompt.mjs.
  */
 
-/** Internal shorthand the owner cannot read: decision ids, board revisions and review rounds. */
-const INTERNAL_WORDS = [/\bd\d{2,4}\b/gi, /\brev\b(?:\s*\d+)?/gi, /\bvueltas?\b/gi];
+/**
+ * Internal shorthand the owner cannot read: decision ids, board revisions and numbered review rounds. A plain
+ * «vuelta» («botón de vuelta atrás») is Spanish, so only «vuelta 2» counts.
+ */
+const INTERNAL_WORDS = [/\bd\d{2,4}\b/gi, /\brev\b(?:\s*\d+)?/gi, /\bvueltas?\s+\d+\b/gi];
+
+/**
+ * `text` on one line without internal shorthand: «(d291)», «(T12, d3)», «d291», «rev 4» and «vuelta 2» are
+ * dropped, so a task title can go into PARA USTED as it is.
+ */
+export function ownerPlain(text) {
+	let s = String(text ?? '')
+		.replace(/\s*(?:\r?\n|\\n)\s*/g, ' ')
+		.replace(/\s*\(\s*[dT]\d+(?:\s*(?:,|y)\s*[dT]\d+)*\s*\)/g, '');
+	for (const re of INTERNAL_WORDS) s = s.replace(re, '');
+	return s
+		.replace(/\(\s*(?:(?:T\d+|,|y)\s*)*\)/g, '')
+		.replace(/\s+([,.;:)])/g, '$1')
+		.replace(/\(\s+/g, '(')
+		.replace(/\s{2,}/g, ' ')
+		.replace(/^[\s,;:·-]+|[\s,;:·.-]+$/g, '');
+}
 
 /** Why `text` is not plain for the owner: one line, without internal shorthand; [] when it is. */
 export function ownerTextIssues(text) {
