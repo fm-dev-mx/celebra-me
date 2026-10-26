@@ -14,9 +14,10 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 The site gets a new envelope-and-heart icon, the landing price calendar runs through June 2027 on
 three fixed price tiers with drawn promo themes, the mobile guests page opens with pending work, new
-invitations get a floating reply button and «usted» RSVP copy, and the board view is redesigned. One
-data-only migration deletes soft-deleted Cloudinary asset rows; no published invitation content
-changes.
+invitations get a floating reply button and «usted» RSVP copy, the board view is redesigned, and
+Meta PageView and ViewContent are mirrored server-side. Two migrations: one deletes soft-deleted
+Cloudinary asset rows, the other widens the Meta conversion event checks; no published invitation
+content changes.
 
 ### Added
 
@@ -34,6 +35,9 @@ changes.
   show who runs them, the live PR state, subtask toggles and tab counts (#573, #580).
 - Board: low-risk Claude PRs are reviewed by a clean-context subagent, and push prompts ask for a
   self-review first (#576).
+- Tracking: with marketing consent on Meta-allowed routes, `page_viewed` queues a server-side
+  `PageView` and `demo_viewed` / `package_viewed` a `ViewContent`, deduplicated with the Pixel by
+  the same event id; the Pixel sends the hashed visitor id as `external_id` (#574).
 
 ### Changed
 
@@ -52,6 +56,12 @@ changes.
 
 - Database: migration `20261025220000` deletes the `invitation_assets` rows with
   `provider = 'cloudinary'` that were already soft-deleted; Cloudinary files are not touched (#569).
+
+### Database
+
+- Migration `20261026000000` widens the `meta_conversion_events` checks and the 30-day retention
+  purge to PageView and ViewContent rows. It is registered as contract (constraint and index swaps)
+  and must be applied before the application is deployed (#574).
 
 ## [0.50.0-beta.1] - 2026-10-25
 
