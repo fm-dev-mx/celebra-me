@@ -22,6 +22,8 @@
  *
  * Automatic Advanced Matching / auto-config is explicitly disabled
  * so the Pixel never auto-collects form fields or PII from the page.
+ * The only manual match key is `external_id`: the SHA-256 of the first-party visitor ID, the
+ * value the Conversions API sends for the same browser.
  *
  * Pending-event queue:
  *   Events generated after marketing consent but before fbevents.js finishes loading are
@@ -40,9 +42,11 @@
  *   checking for an existing fbevents.js <script> before appending a new one.
  */
 
+import { sha256 } from '@noble/hashes/sha2.js';
 import {
 	readConsent,
 	subscribeConsentChange,
+	VISITOR_STORAGE_KEY,
 	type ConsentState,
 } from '@/lib/tracking/consent-client';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
@@ -97,6 +101,25 @@ function shouldLoad(): boolean {
 	if (!pixelId) return false;
 	if (!isPixelEnabledInEnv()) return false;
 	return true;
+}
+
+/**
+ * SHA-256 hex of the stored first-party visitor ID, normalized like `hashSha256` in the CAPI
+ * service (trim, lowercase) so the browser and server copies carry the same `external_id`.
+ */
+export function hashVisitorIdForMeta(visitorId: string): string {
+	const digest = sha256(new TextEncoder().encode(visitorId.trim().toLowerCase()));
+	return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function readVisitorExternalId(): string | undefined {
+	try {
+		const visitorId = localStorage.getItem(VISITOR_STORAGE_KEY)?.trim();
+		return visitorId ? hashVisitorIdForMeta(visitorId) : undefined;
+	} catch {
+		// Storage can be blocked; the Pixel still works without the match key.
+		return undefined;
+	}
 }
 
 /** Flush the pending-event queue. Called once after successful onload. */
@@ -188,8 +211,13 @@ function loadPixelScript(): Promise<void> {
 			// Disable automatic advanced matching — prevents auto-collection
 			// of form fields and PII from the page.
 			window.fbq?.('set', 'autoConfig', false, id);
-			// Initialize the pixel.
-			window.fbq?.('init', id);
+			// Initialize the pixel with the hashed visitor ID as its only manual match key.
+			const externalId = readVisitorExternalId();
+			if (externalId) {
+				window.fbq?.('init', id, { external_id: externalId });
+			} else {
+				window.fbq?.('init', id);
+			}
 			pixelLoaded = true;
 			pixelLoading = false;
 			pixelFailed = false;

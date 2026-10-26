@@ -2,7 +2,7 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 /**
  * Meta conversion retention, run by the quarter-hour sweep. The rules live in the database
- * (public.purge_meta_conversion_retention): delivered or skipped browser Contact and Lead rows
+ * (public.purge_meta_conversion_retention): delivered or skipped browser rows
  * go after 30 days, consent withdrawals once they are older than every stored visitor session.
  * This service only drives small batches.
  */

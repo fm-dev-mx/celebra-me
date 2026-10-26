@@ -8,6 +8,7 @@ jest.mock('@/lib/tracking/lead.service', () => ({
 }));
 
 jest.mock('@/lib/commercial/meta-capi/service', () => ({
+	...jest.requireActual<object>('@/lib/commercial/meta-capi/service'),
 	enqueueBrowserConversionEvent: jest.fn(),
 }));
 
@@ -240,7 +241,7 @@ describe('ingestTrackingEvent', () => {
 				payload: clickPayload(true),
 			});
 			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledWith({
-				eventName: 'Contact',
+				trigger: 'whatsapp_contact_clicked',
 				eventId: clickEventId,
 				sessionId: '88888888-8888-4888-8888-888888888888',
 				eventSourcePath: '/demos/xv',
@@ -254,8 +255,43 @@ describe('ingestTrackingEvent', () => {
 				payload: clickPayload(true, 'form_submitted'),
 			});
 			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledWith(
-				expect.objectContaining({ eventName: 'Lead', eventId: clickEventId }),
+				expect.objectContaining({ trigger: 'form_submitted', eventId: clickEventId }),
 			);
+		});
+
+		it.each(['page_viewed', 'demo_viewed', 'package_viewed'])(
+			'queues %s with the Pixel eventID for the server PageView or ViewContent',
+			async (eventName) => {
+				await ingestTrackingEvent({
+					request: makeRequest('/demos/xv'),
+					deployEnvironment: 'production',
+					payload: clickPayload(true, eventName),
+				});
+				expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledWith({
+					trigger: eventName,
+					eventId: clickEventId,
+					sessionId: '88888888-8888-4888-8888-888888888888',
+					eventSourcePath: '/demos/xv',
+				});
+			},
+		);
+
+		it('queues no page view without marketing consent or on a route Meta may not see', async () => {
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(false, 'page_viewed'),
+			});
+			await ingestTrackingEvent({
+				request: makeRequest('/xv/valentina-hernandez'),
+				deployEnvironment: 'production',
+				payload: {
+					...clickPayload(true, 'page_viewed'),
+					routePath: '/xv/valentina-hernandez',
+					routeClass: 'real_invitation',
+				},
+			});
+			expect(mockEnqueueBrowserConversionEvent).not.toHaveBeenCalled();
 		});
 
 		it('queues nothing without marketing consent, outside Production or for other events', async () => {

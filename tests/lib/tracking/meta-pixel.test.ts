@@ -53,7 +53,8 @@ jest.mock('@/lib/tracking/route-policy', () => {
 
 /* ---------- Module under test ---------- */
 
-import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
+import { hashSha256 } from '@/lib/commercial/meta-capi/service';
+import { initMetaPixel, forwardToMetaPixel, hashVisitorIdForMeta } from '@/lib/tracking/meta-pixel';
 
 /* ---------- Helpers ---------- */
 
@@ -915,5 +916,54 @@ describe('route boundaries for Meta Pixel', () => {
 			metaAllowed: true,
 			reason: 'test',
 		});
+	});
+});
+
+/* ================================================================
+ * external_id match key
+ *
+ * The Pixel init carries the SHA-256 of the stored visitor ID, the same
+ * value the Conversions API sends, and no other manual match key.
+ * ================================================================ */
+
+describe('external_id on Pixel init', () => {
+	type PixelMod = { initMetaPixel: () => void };
+
+	function initFreshPixel(): jest.Mock {
+		document.querySelectorAll('script[src*="fbevents.js"]').forEach((s) => s.remove());
+		document.body.dataset.trackingRouteClass = 'commercial';
+		jest.isolateModules(() => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			(require('@/lib/tracking/meta-pixel') as PixelMod).initMetaPixel();
+		});
+		const fbqMock = setFbqMock();
+		firePixelOnLoad();
+		return fbqMock;
+	}
+
+	afterEach(() => {
+		localStorage.removeItem('cm_visitor_id');
+	});
+
+	it('passes the hashed visitor ID that CAPI sends and keeps autoConfig off', () => {
+		localStorage.setItem('cm_visitor_id', 'visitor_0b9f2c4e-1d3a-4f6b-9c8d-7e5f4a3b2c1d');
+		const fbqMock = initFreshPixel();
+
+		const serverExternalId = hashSha256('visitor_0b9f2c4e-1d3a-4f6b-9c8d-7e5f4a3b2c1d');
+		expect(hashVisitorIdForMeta(' Visitor_0B9F2C4E-1D3A-4F6B-9C8D-7E5F4A3B2C1D ')).toBe(
+			serverExternalId,
+		);
+		expect(fbqMock).toHaveBeenCalledWith('set', 'autoConfig', false, '191973769040678');
+		expect(fbqMock).toHaveBeenCalledWith('init', '191973769040678', {
+			external_id: serverExternalId,
+		});
+	});
+
+	it('initializes without match keys when no visitor ID is stored', () => {
+		const fbqMock = initFreshPixel();
+		expect(fbqMock).toHaveBeenCalledWith('init', '191973769040678');
+		expect(fbqMock.mock.calls.filter((call) => call[0] === 'init')).toEqual([
+			['init', '191973769040678'],
+		]);
 	});
 });
