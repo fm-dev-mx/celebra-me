@@ -70,6 +70,8 @@
         "db:offsite:upload": "tsx scripts/db/offsite-backup-cli.ts upload",
         "db:offsite:list": "tsx scripts/db/offsite-backup-cli.ts list",
         "db:offsite:restore": "tsx scripts/db/offsite-backup-cli.ts restore",
+        "db:media-copy:run": "tsx scripts/db/media-backup-copy-cli.ts run",
+        "db:media-copy:restore": "tsx scripts/db/media-backup-copy-cli.ts restore",
         "db:restore:verify-disposable": "tsx scripts/db/disposable-restore-verify.ts",
         "db:integrity:snapshot": "tsx scripts/db/capture-data-integrity-snapshot.ts",
         "db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts",

@@ -18,6 +18,8 @@ pnpm db:offsite:keygen -- --out=<path outside repo>      # age key pair; private
 pnpm db:offsite:list [-- --prefix=test]                  # encrypted copies in R2, newest first
 pnpm db:offsite:upload -- --manifest=<path> --prefix=test # manual/drill upload (daily job uploads)
 pnpm db:offsite:restore -- --identity=<file> [--key=<k>] # download + decrypt + verify into .tmp/
+pnpm db:media-copy:run [-- --dry-run]                    # new R2 media originals → backup bucket
+pnpm db:media-copy:restore [-- --key=<k>]                # restore drill of one media object into .tmp/
 pnpm db:local:restore-from-dump -- …     # persistent-local only; never Preview
 ```
 
@@ -33,4 +35,5 @@ coverage when identity/history match and age ≤ RPO. `pnpm dbs` shows daily age
 **Recovery:** Re-capture critical set; verify with disposable drill. Stale RPO blocks hosted writes
 — treat as blocking incident, not a skip. Local machine/EFS is not off-site DR; the daily job's
 age-encrypted R2 copy is (30-day lifecycle + Bucket Lock; see `docs/database-workflow.md` → Off-site
-copy).
+copy). Media originals (invitation photos, music, guest photos) are copied nightly to a separate
+locked R2 bucket; see `docs/database-workflow.md` → Media originals copy.
