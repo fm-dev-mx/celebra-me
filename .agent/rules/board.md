@@ -96,8 +96,10 @@ routing and the internal modules work lives in
   `mergeable`. d288: the round is created only once the head's CI is green; while it runs, `review`
   waits with the board unlocked (`--espera-min=<n>`, 30 by default, 0 = do not wait) and then
   refuses with «la vuelta queda en espera», so the author runs the same command again; a red CI
-  refuses and names the failed checks. `CONFLICTING` refuses the round until the author merges
-  `origin/develop` into the same branch (never rebase or `push --force`).
+  refuses and names the failed checks. A PR whose workflows never start (GitHub lists no checks at
+  all) gets its round with `--sin-ci`, which the round's bitácora row records; `--sin-ci` is refused
+  while any check exists, red, running or green. `CONFLICTING` refuses the round until the author
+  merges `origin/develop` into the same branch (never rebase or `push --force`).
 - **Rounds**: every PR head gets its own round task (`<id>-revision`, `<id>-revision-2`…); a new
   commit needs a new round. The reviewer binds findings and verdict to the full SHA and closes the
   round with its verdict; `close --veredicto=cambios` writes the findings to the author's inbox

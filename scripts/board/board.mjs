@@ -120,7 +120,7 @@ import {
 	findTask,
 } from './model.mjs';
 import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
-import { ciGate, reviewPreflight, untilGreen, viewPr } from './review-preflight.mjs';
+import { ciGate, reviewPreflight, sinCiTrace, untilGreen, viewPr } from './review-preflight.mjs';
 import { assertOwner, noteOverride, overrideReason } from './lock-owner.mjs';
 import { authorSession } from './findings.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
@@ -425,7 +425,7 @@ function row(t, n, board, agente) {
 
 /**
  * T79: one try of `review`: every round is a new child `<id>-revision`, `-revision-2`, … with its own prompt; d183
- * picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet.
+ * picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet, unless --sin-ci.
  */
 function reviewOnce({ pos, flags }, dir, out) {
 	return withLock(dir, () => {
@@ -438,10 +438,11 @@ function reviewOnce({ pos, flags }, dir, out) {
 		const early = reviewerPrecheck(author, flags.agente);
 		if (early) throw new UsageError(early);
 		const sha = reviewSha(src, flags);
+		const sinCi = sinCiTrace(flags, src, sha);
 		const prev = reviewRounds(src.id, loadBoard(dir)).at(-1);
 		if (prev?.revisionSha === sha) return say(flags, out, prev, `${prev.id} ya revisa ${sha}`);
 		const pr = viewPr(src, sha);
-		const waiting = ciGate(src, sha, pr);
+		const waiting = ciGate(src, sha, pr, { sinCi: Boolean(sinCi) });
 		if (waiting) return waiting;
 		const preflight = reviewPreflight(src, sha, pr);
 		if (preflight.conflicts !== null) {
@@ -476,9 +477,9 @@ function reviewOnce({ pos, flags }, dir, out) {
 		});
 		// --agente names the reviewer here; the writer is --quien, the coordinator or the author.
 		const who = { quien: flags.quien, coordinador: flags.coordinador, agente: author };
-		const saved = saveTask(dir, before, t, who);
+		const saved = saveTask(dir, before, t, { ...who, ...sinCi });
 		const live = cancelReplaced(dir, saveTask, { prev, saved, sha, who });
-		say(flags, out, saved, reviewCreatedText(saved, pick, live, sha));
+		say(flags, out, saved, reviewCreatedText(saved, pick, live, sha, sinCi));
 	});
 }
 
