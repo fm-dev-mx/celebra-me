@@ -58,7 +58,7 @@ describe('Meta aggregate insight transport', () => {
 		expect(String(url)).not.toContain(TOKEN);
 		expect(init).toMatchObject({
 			method: 'GET',
-			redirect: 'error',
+			redirect: 'manual',
 			cache: 'no-store',
 			headers: { Authorization: `Bearer ${TOKEN}` },
 		});
@@ -109,6 +109,14 @@ describe('Meta aggregate insight transport', () => {
 		expect(error).toBeInstanceOf(MetaGraphError);
 		expect(error).toMatchObject({ kind: 'response', code: 190 });
 		expect(`${String(error)} ${JSON.stringify(error)}`).not.toContain(TOKEN);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('refuses a redirect without following or retrying it', async () => {
+		fetchMock.mockResolvedValue(
+			new Response(null, { status: 302, headers: { location: 'https://example.com/' } }),
+		);
+		await expect(collect(client)).rejects.toMatchObject({ kind: 'response', status: 302 });
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 

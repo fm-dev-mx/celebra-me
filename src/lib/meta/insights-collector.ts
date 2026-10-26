@@ -31,7 +31,16 @@ export interface MetaInsightsCollectorResult {
 	status: 'completed' | 'skipped' | 'failed';
 	date: string;
 	sources: Record<MetaInsightsSource, MetaSourceOutcome>;
+	/** Names (never values) of the Meta runtime variables that are unset or blank. */
+	missingConfig: string[];
 }
+
+const CONFIG_NAMES = {
+	accessToken: 'META_GRAPH_ACCESS_TOKEN',
+	adAccountId: 'META_AD_ACCOUNT_ID',
+	pageId: 'META_PAGE_ID',
+	igUserId: 'META_IG_USER_ID',
+} as const;
 
 interface CollectorOptions {
 	now?: Date;
@@ -237,6 +246,9 @@ export async function runMetaInsightsCollector(
 	const date = options.date ?? commercialPeriod(30, options.now).endDate;
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new RangeError('date must be YYYY-MM-DD');
 	const config = readMetaInsightsConfig();
+	const missingConfig = (Object.keys(CONFIG_NAMES) as (keyof typeof CONFIG_NAMES)[])
+		.filter((key) => !config[key].trim())
+		.map((key) => CONFIG_NAMES[key]);
 	const token = config.accessToken.trim();
 	if (!token) {
 		const skipped: MetaSourceOutcome = { status: 'skipped', reason: 'missing_config' };
@@ -244,6 +256,7 @@ export async function runMetaInsightsCollector(
 			status: 'skipped',
 			date,
 			sources: { ads: skipped, page: skipped, instagram: skipped },
+			missingConfig,
 		};
 	}
 	let client: MetaGraphClient;
@@ -255,6 +268,7 @@ export async function runMetaInsightsCollector(
 			status: 'skipped',
 			date,
 			sources: { ads: skipped, page: skipped, instagram: skipped },
+			missingConfig,
 		};
 	}
 	const collectedAt = (options.now ?? new Date()).toISOString();
@@ -283,5 +297,5 @@ export async function runMetaInsightsCollector(
 		: outcomes.every((outcome) => outcome.status === 'skipped')
 			? 'skipped'
 			: 'completed';
-	return { status, date, sources: { ads, page, instagram } };
+	return { status, date, sources: { ads, page, instagram }, missingConfig };
 }

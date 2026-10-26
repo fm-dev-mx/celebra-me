@@ -6,6 +6,7 @@ import {
 	compareEnvFile,
 	findUnreadNames,
 	readCodeCorpus,
+	readOptionalTemplateNames,
 	readTemplateNames,
 } from '../../scripts/agent/env-files.ts';
 
@@ -85,6 +86,28 @@ describe('env file templates', () => {
 				/PRODUCTION|^PROD_/.test(name),
 			),
 		).toEqual([]);
+	});
+
+	it('lets a file omit only the names in a block marked @optional', () => {
+		const template = [
+			'# Base',
+			'A=',
+			'',
+			'# Extra',
+			'# @optional: may be absent',
+			'B=',
+			'C=',
+		].join('\n');
+		expect(readOptionalTemplateNames(template)).toEqual(['B', 'C']);
+		expect(
+			compareEnvFile('.env.x', readTemplateNames(template), { C: 'x' }, ['B', 'C']),
+		).toEqual({ file: '.env.x', present: true, missing: ['A'], empty: [], unknown: [] });
+		expect(readOptionalTemplateNames(readTemplate('.env.example'))).toEqual([
+			'META_GRAPH_ACCESS_TOKEN',
+			'META_AD_ACCOUNT_ID',
+			'META_PAGE_ID',
+			'META_IG_USER_ID',
+		]);
 	});
 
 	it('reports missing, empty and unknown names without values', () => {

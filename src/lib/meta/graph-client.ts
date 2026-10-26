@@ -167,10 +167,19 @@ export class MetaGraphClient {
 					const response = await this.#fetch(url.href, {
 						method: 'GET',
 						headers: { Authorization: `Bearer ${this.#accessToken}` },
-						redirect: 'error',
+						// Workers rejects redirect: 'error' at call time, so every request would
+						// fail as a network error; take redirects manually and refuse them.
+						redirect: 'manual',
 						cache: 'no-store',
 						signal: controller.signal,
 					});
+					if (
+						response.type === 'opaqueredirect' ||
+						(response.status >= 300 && response.status < 400)
+					) {
+						await response.body?.cancel();
+						throw new MetaGraphError('response', response.status);
+					}
 					let body: unknown;
 					try {
 						body = await response.json();

@@ -252,6 +252,7 @@ describe('runScheduledJob', () => {
 				status: 'skipped',
 				date: '2026-10-24',
 				sources: { ads: skippedSource, page: skippedSource, instagram: skippedSource },
+				missingConfig: ['META_GRAPH_ACCESS_TOKEN', 'META_PAGE_ID'],
 			});
 			await expect(
 				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
@@ -263,6 +264,10 @@ describe('runScheduledJob', () => {
 			expect(info).toHaveBeenCalledWith(
 				'[meta-insights][collector] skipped',
 				expect.any(Object),
+			);
+			expect(warn).toHaveBeenCalledWith(
+				'[meta-insights][collector] skipping unconfigured sources; unset: ' +
+					'META_GRAPH_ACCESS_TOKEN, META_PAGE_ID',
 			);
 		});
 
@@ -282,6 +287,7 @@ describe('runScheduledJob', () => {
 					page: { status: 'completed', rows: 1 },
 					instagram: { status: 'completed', rows: 1 },
 				},
+				missingConfig: [],
 			});
 			await expect(
 				runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
