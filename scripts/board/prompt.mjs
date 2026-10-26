@@ -4,9 +4,12 @@
  * without `formato: prompt-v1` is legacy and keeps its old rules, so saved prompts keep working.
  * No Node APIs: the view imports this module through model.mjs.
  */
+import { ownerTextIssues } from './owner-text.mjs';
+
 export const PROMPT_FORMAT = 'prompt-v1';
 
 export const PROMPT_SECTIONS = [
+	'PARA USTED',
 	'QUÉ SE BUSCA',
 	'ANTES DE EMPEZAR',
 	'PASOS',
@@ -46,6 +49,28 @@ const METADATA_VALUES = {
 	tablero: [/^rev [1-9]\d*$/, 'tablero debe ser «rev N»'],
 	formato: [/^prompt-v1$/, 'formato debe ser prompt-v1'],
 };
+
+/**
+ * d230, T322: the command that records a question to the owner: one line, the options with the recommended one
+ * first, and the technical detail apart.
+ */
+export const ownerAsk = (id, agente) =>
+	`pnpm board msg ${id} --de=${agente} --para=dueno "<pregunta de una línea>" --opcion="<la recomendada>" --opcion="<otra>" --detalle="<detalle técnico>" (d230)`;
+
+/**
+ * T322: the three lines of PARA USTED, in this order, written for the owner in plain Spanish: what the session
+ * does, what the owner must do or decide («nada» when nothing) and the main risk.
+ */
+export const OWNER_LINES = ['Qué hará:', 'Usted:', 'Riesgo:'];
+
+/** T322: PARA USTED from its three texts, each on one line after its OWNER_LINES label. */
+const ownerLines = ({ hara, usted, riesgo }) =>
+	[hara, usted, riesgo].map(
+		(s, i) =>
+			`${OWNER_LINES[i]} ${String(s ?? '')
+				.replace(/\s+/g, ' ')
+				.trim()}`,
+	);
 
 const linesOf = (prompt) => String(prompt ?? '').split('\n');
 const metadataStart = (lines) => lines.findLastIndex((l) => l.trim() === 'METADATOS');
@@ -92,6 +117,29 @@ export function promptSection(prompt, name) {
 	return next < 0 ? rest : rest.slice(0, next);
 }
 
+/** T322: PARA USTED is exactly the three OWNER_LINES, each with text the owner can read; null = no section. */
+function paraUstedIssues(section) {
+	if (!section) return [];
+	const lines = section.filter(Boolean);
+	const out = [];
+	if (lines.length !== OWNER_LINES.length || lines.some((l, i) => !l.startsWith(OWNER_LINES[i])))
+		out.push(`prompt-v1: PARA USTED debe tener 3 líneas: ${OWNER_LINES.join(' … / ')} …`);
+	for (const [i, label] of OWNER_LINES.entries()) {
+		const line = lines[i] ?? '';
+		if (line.startsWith(label) && !line.slice(label.length).trim())
+			out.push(`prompt-v1: PARA USTED sin texto en «${label}»`);
+	}
+	for (const why of ownerTextIssues(lines.join(' ')))
+		out.push(`prompt-v1: PARA USTED ${why} (en una tarea con tipo: hara=… usted=… riesgo=…)`);
+	return out;
+}
+
+/**
+ * T322: prompt-v1s saved before PARA USTED existed lack it and stay valid; every generated prompt carries it,
+ * and when it is there it must be first and well formed.
+ */
+const OPTIONAL_SECTION = 'PARA USTED';
+
 /** Shape problems of a prompt-v1; a legacy prompt has none here. */
 export function promptV1Issues(prompt) {
 	if (!isPromptV1(prompt)) return [];
@@ -104,6 +152,7 @@ export function promptV1Issues(prompt) {
 	let last = -1;
 	for (const name of PROMPT_SECTIONS) {
 		const at = lines.indexOf(name);
+		if (at < 0 && name === OPTIONAL_SECTION) continue;
 		if (at < 0) out.push(`prompt-v1: falta la sección ${name}`);
 		else if (at < last) out.push(`prompt-v1: la sección ${name} está fuera de orden`);
 		else last = at;
@@ -114,6 +163,7 @@ export function promptV1Issues(prompt) {
 		)
 	)
 		out.push('prompt-v1: QUÉ SE BUSCA sin «Terminado cuando:»');
+	out.push(...paraUstedIssues(promptSection(prompt, 'PARA USTED')));
 	for (const [k, v] of metadataPairs(prompt)) {
 		if (!k) out.push(`prompt-v1: línea de METADATOS sin «clave: valor»: ${v}`);
 		else if (!METADATA_KEYS.includes(k))
@@ -247,6 +297,14 @@ export function reviewGuidance(files, previousSha, sha) {
 	];
 }
 
+/** T322: PARA USTED of a review round: read-only, and the owner has nothing to do. */
+const reviewOwnerLines = (pr, later) =>
+	ownerLines({
+		hara: `${later ? 'revisa otra vez' : 'revisa'} el PR ${pr}${later ? ' tras los cambios del autor' : ''} sin cambiar código y publica lo que encuentre.`,
+		usted: 'nada; el coordinador une el PR cuando la revisión lo aprueba.',
+		riesgo: 'ninguno; la revisión solo lee el código.',
+	});
+
 /**
  * d291: the QUÉ SE BUSCA lines of a round after rounds without a verdict (`previas`): which rounds, what their
  * bitácora and cierre kept and the reports they named, so the findings they reached are checked again.
@@ -306,6 +364,7 @@ export function reviewText(
 	const prompt = buildPrompt({
 		identidad: name,
 		secciones: [
+			['PARA USTED', reviewOwnerLines(pr, later)],
 			[
 				'QUÉ SE BUSCA',
 				[
@@ -359,7 +418,7 @@ export function reviewText(
 			[
 				'PARE Y PREGUNTE SI',
 				[
-					`La cabeza del PR ya no es ${sha} o falta evidencia para decidir. Anote cada pregunta al dueño también con pnpm board msg ${id} --de=${agente} --para=dueno "<pregunta>" (d230).`,
+					`La cabeza del PR ya no es ${sha} o falta evidencia para decidir. Anote cada pregunta al dueño también con ${ownerAsk(id, agente)}.`,
 				],
 			],
 			[

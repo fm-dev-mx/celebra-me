@@ -119,7 +119,8 @@ describe('task kinds (T130): kind files', () => {
 			const lines = readFileSync(path.join(ROOT, '.agent', 'kinds', `${tipo}.yaml`), 'utf8')
 				.trimEnd()
 				.split('\n');
-			expect(lines.length).toBeLessThanOrEqual(30);
+			// T322: 30 lines plus the three of para_usted.
+			expect(lines.length).toBeLessThanOrEqual(33);
 		}
 	});
 

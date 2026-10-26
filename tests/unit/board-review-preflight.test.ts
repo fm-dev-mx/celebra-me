@@ -202,7 +202,7 @@ describe('kind-prompt review risk and incremental scope', () => {
 			const kp = await import(process.argv[1]);
 			const files = [['docs/guide.md', '.agent/rules/board.md'], ['src/components/Card.astro','src/styles/card.scss'],
 			 ['docs/guide.md','src/pages/api/rsvp.ts'], ['src/lib/auth/session.ts'], ['supabase/migrations/x.sql'], ['scripts/board/board.mjs'], undefined];
-			const kind = {tipo:'revision', lee:[], pasos_inicio:[], pasos:[], autorizado_por_defecto:[], no_hagas:[], pare_si:[], al_terminar:[]};
+			const kind = {tipo:'revision', para_usted:['Qué hará: revisa.', 'Usted: nada.', 'Riesgo: ninguno.'], lee:[], pasos_inicio:[], pasos:[], autorizado_por_defecto:[], no_hagas:[], pare_si:[], al_terminar:[]};
 			const t = {id:'x-revision-2', num:3, titulo:'Revisión', tipo:'revision', origen:'x', vuelta:2, revisionSha:'${SHA}', revisionFiles:files[1]};
 			const board = {tareas:[{id:'x-revision', origen:'x', vuelta:1, revisionSha:'${OLD}'}]};
 			console.log(JSON.stringify({tiers:files.map(kp.reviewRisk),prompt:kp.kindPrompt(t,board,kind,{generado:'2026-10-25T00:00:00Z'})}));

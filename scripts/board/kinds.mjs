@@ -7,6 +7,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NIVELES, RESULT_FIELDS, TIPOS } from './model.mjs';
+import { ownerTextIssues } from './owner-text.mjs';
+import { OWNER_LINES } from './prompt.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const KINDS_DIR = join(ROOT, '.agent', 'kinds');
@@ -38,6 +40,7 @@ export const kindKey = (t) =>
 /** d290: the variant files of a tipo, one per destino but `base`. */
 export const VARIANTS = { operacion: OPERACION_DESTINOS.filter((d) => d !== 'base') };
 const LISTS = [
+	'para_usted',
 	'lee',
 	'pasos_inicio',
 	'pasos',
@@ -52,7 +55,7 @@ const LISTS = [
 const MAY_BE_EMPTY = new Set(['devuelve', 'al_terminar', 'tras_cierre']);
 /** d255: steps that run after `pnpm board close` (codigo's `review`); a kind may leave the key out. */
 const OPTIONAL = new Set(['tras_cierre']);
-export const PLACEHOLDERS = ['id', 'agente', 'rama', 'nombre'];
+export const PLACEHOLDERS = ['id', 'agente', 'rama', 'nombre', 'titulo'];
 export const LISTO_SI = [...NIVELES, 'ninguno'];
 
 /** `'it''s'` → `it's`, `"x"` → `x`, a plain value as written. */
@@ -123,6 +126,17 @@ function contractIssues(doc, file) {
 	return out;
 }
 
+/** T322: `para_usted` is the three PARA USTED lines in order, in words the owner reads. */
+function ownerIssues(doc) {
+	const lines = doc.para_usted;
+	if (!Array.isArray(lines)) return [];
+	const out = [];
+	if (lines.length !== OWNER_LINES.length || lines.some((l, i) => !l.startsWith(OWNER_LINES[i])))
+		out.push(`para_usted debe tener 3 líneas: ${OWNER_LINES.join(' … / ')} …`);
+	for (const why of ownerTextIssues(lines.join(' '))) out.push(`para_usted ${why}`);
+	return out;
+}
+
 /**
  * Shape problems of kind `doc` read from `<file>.yaml`, checked against the routing task types. A variant file
  * `<tipo>-<destino>.yaml` (d290) keeps its tipo and names its destino.
@@ -140,7 +154,7 @@ export function kindIssues(doc, file, taskTypes) {
 				? `destino debe ser ${destino}, como el archivo`
 				: 'destino sobra fuera de una variante',
 		);
-	out.push(...shapeIssues(doc), ...contractIssues(doc, tipo));
+	out.push(...shapeIssues(doc), ...contractIssues(doc, tipo), ...ownerIssues(doc));
 	for (const t of doc.lee ?? [])
 		if (!taskTypes.includes(t)) out.push(`lee: ${t} no es un task_type de routing-matrix.yaml`);
 	const text = LISTS.flatMap((k) => (Array.isArray(doc[k]) ? doc[k] : [])).join('\n');

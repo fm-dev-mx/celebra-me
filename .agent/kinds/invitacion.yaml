@@ -1,6 +1,10 @@
 # Task kind «invitacion»: preparing or publishing a client invitation (T130, rules: .agent/rules/board.md).
 tipo: invitacion
 descripcion: 'Preparar o publicar la invitación de un cliente.'
+para_usted:
+    - 'Qué hará: prepara la invitación de «{titulo}» y abre un PR a develop.'
+    - 'Usted: revisar la invitación en Preview y confirmar que el cliente la aprobó antes de publicarla.'
+    - 'Riesgo: medio; un dato equivocado lo ve el cliente y sus invitados.'
 lee:
     - 'invitation_preparation'
     - 'invitation_publication'

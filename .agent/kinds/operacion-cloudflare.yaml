@@ -2,6 +2,10 @@
 tipo: operacion
 destino: cloudflare
 descripcion: 'Operación sobre Cloudflare (Workers, DNS, R2, Access) de Preview o Producción.'
+para_usted:
+    - 'Qué hará: hace en Cloudflare el cambio «{titulo}» en Preview o Producción.'
+    - 'Usted: autorizar el cambio y el entorno exactos antes de que corra.'
+    - 'Riesgo: alto; un error puede dejar el sitio sin servicio.'
 lee:
     - 'code_release_execution'
 pasos_inicio:

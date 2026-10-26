@@ -1,7 +1,11 @@
 # Task kind «codigo»: a code change that ends in a PR to develop (T130, rules: .agent/rules/board.md).
-# Placeholders: {id} {agente} {rama} {nombre}.
+# Placeholders: {id} {agente} {rama} {nombre} {titulo}.
 tipo: codigo
 descripcion: 'Cambio de código con PR a develop.'
+para_usted:
+    - 'Qué hará: cambia el código para «{titulo}», lo prueba y abre un PR a develop.'
+    - 'Usted: nada; el coordinador une el PR cuando otra sesión lo revisa y lo aprueba.'
+    - 'Riesgo: bajo; el cambio llega solo a develop, no a Producción.'
 lee:
     - 'commit_preparation'
     - 'testing_qa'

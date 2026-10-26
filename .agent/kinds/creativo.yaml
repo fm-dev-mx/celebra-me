@@ -1,6 +1,10 @@
 # Task kind «creativo»: copy, images or visual direction (T130, rules: .agent/rules/board.md).
 tipo: creativo
 descripcion: 'Textos, imágenes o dirección visual.'
+para_usted:
+    - 'Qué hará: prepara «{titulo}» como borrador de textos o imágenes.'
+    - 'Usted: revisar el borrador y dar su visto bueno antes de usarlo.'
+    - 'Riesgo: bajo; nada se publica sin su visto bueno.'
 lee:
     - 'copywriting'
     - 'visual_ui'

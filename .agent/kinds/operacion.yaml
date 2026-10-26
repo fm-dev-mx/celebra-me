@@ -2,6 +2,10 @@
 # d290: destino=cloudflare picks operacion-cloudflare.yaml instead of this file.
 tipo: operacion
 descripcion: 'Operación sobre base de datos, Producción o secretos.'
+para_usted:
+    - 'Qué hará: corre la operación «{titulo}» en el entorno que cita la tarea.'
+    - 'Usted: autorizar el comando y el entorno exactos antes de que corra.'
+    - 'Riesgo: alto; cambia la base de datos, Producción o secretos.'
 lee:
     - 'database_ops'
 pasos_inicio:
