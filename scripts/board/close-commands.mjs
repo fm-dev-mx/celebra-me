@@ -4,6 +4,9 @@
  */
 import { randomBytes } from 'node:crypto';
 import { UsageError, say } from './cli.mjs';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { changelogMarkdown, changelogNotes, missingNotes } from './changelog.mjs';
 import { buildCierre, cancelCierre, cierreIssues, cierreLines, signalLine } from './cierre.mjs';
 import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
 import {
@@ -16,6 +19,7 @@ import {
 	quienOf,
 	unlocked,
 } from './model.mjs';
+import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
 import { cadaMs, nextCycle } from './recurring.mjs';
 import { appendLog, loadBoard, readDoc, withLock } from './store.mjs';
 
@@ -123,6 +127,17 @@ export function settled(before, after, flags) {
 	return { ...unlocked(after, flags), estado: 'hecha' };
 }
 
+/** The cierre `close` writes; a malformed --changelog is the caller's mistake, not a crash. */
+function closingCierre(before, args, board) {
+	try {
+		return buildCierre(before.cierre, args, board, nowIso(), before);
+	} catch (e) {
+		if (String(e?.message).startsWith('--changelog'))
+			throw new UsageError(e.message, { cause: e });
+		throw e;
+	}
+}
+
 const cycleLine = (t) => {
 	const fechas = (t.requisitos ?? []).filter((r) => r.tipo === 'fecha').map((r) => r.ref);
 	return `cada ${t.cada}: vuelve a pendiente hasta ${fechas.join(', ')}`;
@@ -140,22 +155,21 @@ export function closeCommands({
 	return {
 		/** d178: the closing summary a session writes when it finishes (or the coordinator completes). */
 		close({ pos, flags, lists }, dir, out) {
-			return withLock(dir, () => {
+			const ops = finishOps(flags['git-safety']);
+			const checkout = checkoutState();
+			const info = withLock(dir, () => {
 				const before = getTask(dir, need(pos[0], 'falta <id>'));
 				if (flags.rev !== undefined) checkRev(before, flags);
 				// The lock owner writes it; a declared coordinator completes it, also after the lock is gone.
 				if (!flags.coordinador) assertOwner(before, flags);
+				// T297: run from a lane, it must be the lock's.
+				const laneIssue = lockLaneIssue(checkout, before);
+				if (laneIssue) throw new UsageError(laneIssue);
 				// d290: the coordinator's close moves the task on only when no lock is live, and says so.
 				const override = overrideReason(before.candado, flags);
 				const moves = !flags.coordinador || !before.candado || Boolean(override);
 				const board = loadBoard(dir);
-				const cierre = buildCierre(
-					before.cierre,
-					{ flags, lists },
-					board,
-					nowIso(),
-					before,
-				);
+				const cierre = closingCierre(before, { flags, lists }, board);
 				const issues = cierreIssues({ ...before, cierre }, board);
 				if (issues.length)
 					throw new UsageError(`no se escribió ${before.id}: ${issues.join('; ')}`);
@@ -171,15 +185,62 @@ export function closeCommands({
 				// T129: the one-line signal the agent hands back, built only from the cierre.
 				const senal = signalLine(t, board);
 				const enviado = sendFindings(dir, t, board);
-				const text = [
-					`${t.id} con cierre (rev ${t.rev}) · ${t.estado ?? 'pendiente'}`,
-					...cierreLines(t, board),
-					...(enviado ? [enviado] : []),
-					...(next === closed ? [] : [cycleLine(t)]),
+				return {
+					t,
+					board,
+					enviado,
+					next,
+					closed,
 					senal,
-				];
-				say(flags, out, { ...t, senal }, text.join('\n'));
+					rama: before.candado?.rama ?? before.rama,
+				};
 			});
+			// T297: from the task's lane, the git-safety session ends with the close (--git-safety=commit).
+			const gitSafety = finishGitSafety(checkout, info.rama, ops);
+			if (gitSafety && !gitSafety.ok) process.exitCode = 1;
+			const text = [
+				`${info.t.id} con cierre (rev ${info.t.rev}) · ${info.t.estado ?? 'pendiente'}`,
+				...cierreLines(info.t, info.board),
+				...(info.enviado ? [info.enviado] : []),
+				...(info.next === info.closed ? [] : [cycleLine(info.t)]),
+				...(gitSafety ? [gitSafety.line] : []),
+				info.senal,
+			];
+			const data = { ...info.t, senal: info.senal, ...(gitSafety ? { gitSafety } : {}) };
+			say(flags, out, data, text.join('\n'));
+		},
+		/**
+		 * T297 (U-05): the release notes of the merged tasks as `[Unreleased]` Markdown, for release preparation;
+		 * `--desde=<fecha>` keeps closes since the last tag and `--faltan` lists the notes CHANGELOG.md's
+		 * `[Unreleased]` does not mention yet (exit 1 while any is missing).
+		 */
+		changelog({ flags }, dir, out) {
+			const desde = typeof flags.desde === 'string' ? flags.desde : undefined;
+			if (desde && Number.isNaN(Date.parse(desde)))
+				throw new UsageError('--desde debe ser una fecha, por ejemplo 2026-10-26');
+			const notes = changelogNotes(loadBoard(dir), { desde });
+			if (!flags.faltan) {
+				const md = changelogMarkdown(notes);
+				return say(flags, out, notes, md.length ? md.join('\n') : 'Sin notas de versión.');
+			}
+			const file = typeof flags.archivo === 'string' ? flags.archivo : 'CHANGELOG.md';
+			let text;
+			try {
+				text = readFileSync(resolve(process.cwd(), file), 'utf8');
+			} catch (e) {
+				throw new UsageError(`no se pudo leer ${file}: ${e.code ?? e.message}`, {
+					cause: e,
+				});
+			}
+			const missing = missingNotes(notes, text);
+			if (missing.length) process.exitCode = 1;
+			const lines = missing.length
+				? [
+						`Faltan ${missing.length} de ${notes.length} notas en [Unreleased] de ${file}:`,
+						...changelogMarkdown(missing),
+					]
+				: [`[Unreleased] de ${file} tiene las ${notes.length} notas del tablero.`];
+			say(flags, out, missing, lines.join('\n'));
 		},
 	};
 }

@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.52.0-beta.1",
+    "version": "0.53.0-beta.1",
     "engines": {
         "node": ">=22.18.0 <25"
     },
@@ -136,6 +136,7 @@
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
+        "invitation:legacy-storage-audit": "tsx scripts/provision/legacy-storage-audit-cli.ts",
         "invitation:purge-by-id": "tsx scripts/provision/invitation-id-purge-cli.ts",
         "invitation:diagnose-identity": "tsx scripts/provision/managed-identity-diagnostics-cli.ts",
         "invitation:cross-db-reconcile": "tsx scripts/provision/cross-db-invitation-reconciliation-cli.ts",
@@ -193,7 +194,7 @@
         "@zip.js/zip.js": "^2.23.0",
         "date-fns": "4.4.0",
         "date-fns-tz": "3.2.0",
-        "framer-motion": "^13.5.1",
+        "framer-motion": "^14.6.0",
         "lenis": "1.3.26",
         "qrcode": "^1.5.4",
         "react": "^19.3.0",
@@ -217,7 +218,7 @@
         "@testing-library/react": "^16.3.3",
         "@testing-library/user-event": "^14.6.8",
         "@types/jest": "^30.0.0",
-        "@types/node": "^24.13.4",
+        "@types/node": "^26.6.5",
         "@types/qrcode": "^1.5.6",
         "@types/react": "19.3.0",
         "@types/react-dom": "^19.3.0",

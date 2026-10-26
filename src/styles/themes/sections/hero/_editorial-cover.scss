@@ -593,7 +593,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.invitation-hero[data-variant='editorial-cover'] {
 		.event-theme-wrapper[data-editorial-reveal-phase='revealing'] &,
 		.event-theme-wrapper[data-reveal-state='revealed'] & {

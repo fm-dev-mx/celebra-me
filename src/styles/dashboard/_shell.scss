@@ -167,7 +167,9 @@
 .dashboard-sidebar a {
 	display: flex;
 	align-items: center;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	gap: 0.75rem;
 	padding: 0.75rem 1rem;
 	border: none;
@@ -387,8 +389,7 @@
 		cursor: pointer;
 
 		&:focus-visible {
-			outline: 2px solid var(--dashboard-topbar-accent, var(--dashboard-focus-ring));
-			outline-offset: 2px;
+			@include mixins.focus-ring(var(--dashboard-topbar-accent, var(--dashboard-focus-ring)));
 		}
 	}
 

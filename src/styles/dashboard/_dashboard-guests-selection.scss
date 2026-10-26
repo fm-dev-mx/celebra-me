@@ -94,7 +94,8 @@
 }
 
 .guest-selection-bar__link {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -165,7 +166,8 @@
 }
 
 .guest-change-notice__dismiss {
-	min-height: 44px;
+	@include mixins.touch-target;
+
 	padding: 0 0.25rem;
 	border: 0;
 	background: transparent;

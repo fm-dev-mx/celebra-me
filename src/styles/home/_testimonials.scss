@@ -182,7 +182,7 @@
 	line-height: 1.5;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.testimonials__card,
 	.testimonials__nav {
 		transition: none;

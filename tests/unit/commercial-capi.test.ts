@@ -261,7 +261,59 @@ describe('deliverMetaConversionEvent', () => {
 		);
 	});
 
-	it('formats the payload with hashed values and sends it to Meta in test mode', async () => {
+	it('sends CompleteRegistration like an order event, at its own time and without a value', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-cr', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				{
+					id: 'outbox-cr',
+					event_name: 'CompleteRegistration',
+					event_id: 'complete_registration:order-id',
+					customer_id: 'customer-id',
+					created_at: '2026-10-26T18:00:00.000Z',
+					value: null,
+					currency: 'MXN',
+					customers: { email: null, phone_e164: '+526681112233' },
+					sales_orders: {
+						session_id: 'session-id',
+						deposit_paid_at: '2026-10-20T12:00:00.000Z',
+					},
+					leads: { consent_marketing: true },
+				},
+			])
+			.mockResolvedValueOnce([
+				{
+					id: 'session-id',
+					visitor_id: 'visitor-id',
+					fbp: 'fb.1.12345',
+					fbc: null,
+					fbclid: null,
+					landing_path: '/',
+					client_ip_address: null,
+					client_user_agent: null,
+				},
+			])
+			.mockResolvedValueOnce([{ id: 'outbox-cr' }]);
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ fbtrace_id: 'mock-trace' }),
+		});
+
+		await expect(deliverMetaConversionEvent('outbox-cr')).resolves.toBe('sent');
+
+		const event = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+		expect(event.event_name).toBe('CompleteRegistration');
+		expect(event.action_source).toBe('chat');
+		expect(event.event_time).toBe(Math.floor(Date.parse('2026-10-26T18:00:00.000Z') / 1000));
+		expect(event.custom_data).toBeUndefined();
+		expect(event.user_data.ph).toEqual([hashSha256('526681112233')]);
+		expect(event.user_data.fbp).toBe('fb.1.12345');
+	});
+
+	it.each([
+		['new order total', 1800],
+		['historical deposit', 899],
+	])('delivers the stored %s value with hashed identity in test mode', async (_label, value) => {
 		mockRestRequest
 			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }]) // PATCH status = sending
 			.mockResolvedValueOnce([
@@ -270,7 +322,7 @@ describe('deliverMetaConversionEvent', () => {
 					event_name: 'Purchase',
 					event_id: 'purchase:order-id:deposit_paid',
 					customer_id: 'customer-id',
-					value: 899,
+					value,
 					currency: 'MXN',
 					customers: { email: 'client@example.com', phone_e164: '+521000000005' },
 					sales_orders: {
@@ -314,7 +366,7 @@ describe('deliverMetaConversionEvent', () => {
 		expect(body.data[0].action_source).toBe('chat');
 		expect(body.data[0].event_name).toBe('Purchase');
 		expect(body.data[0].event_id).toBe('purchase:order-id:deposit_paid');
-		expect(body.data[0].custom_data.value).toBe(899);
+		expect(body.data[0].custom_data.value).toBe(value);
 		expect(body.data[0].custom_data.currency).toBe('MXN');
 		expect(body.data[0].event_source_url).toBe('https://www.celebra-me.com/demos/xv');
 

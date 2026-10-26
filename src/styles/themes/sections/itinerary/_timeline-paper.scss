@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 // ==========================================================================
 // TIMELINE PAPER ITINERARY
 // Uses the alternate ItineraryProgram DOM path from Itinerary.astro.
@@ -436,7 +438,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		.itinerary__title,
 		.itinerary__program-row-time,
 		.itinerary__program-row-title,

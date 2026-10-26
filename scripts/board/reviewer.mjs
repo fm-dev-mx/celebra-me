@@ -86,8 +86,9 @@ export function pickReviewer(author, board, { quota = null, now = Date.now(), fi
 	};
 	const cap = codexCapped(quota, now);
 	const agente = cap || load.gemini <= load.codex ? 'gemini' : 'codex';
+	// Past the subagent branch, a risk below «alto» can only mean release work.
 	const motivo = [
-		`riesgo ${reviewLevel(files)}${subagentReview(files) ? ', release' : ''}`,
+		`riesgo ${reviewLevel(files)}${reviewLevel(files) === 'alto' ? '' : ', release'}`,
 		`carga ${LOAD_DAYS} d: gemini ${load.gemini}, codex ${load.codex}`,
 		cap ? `cuota Codex ${cap} (tope)` : quotaText(quota, now),
 	].join(' · ');

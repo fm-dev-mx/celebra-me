@@ -237,7 +237,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		.itinerary__item {
 			opacity: 100%;
 			transform: none;

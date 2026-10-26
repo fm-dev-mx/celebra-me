@@ -17,7 +17,11 @@
  * It also lists open PRs and worktree branches without a task, tasks whose session is archived, and tasks
  * ready to move to «comprobada», plus lifecycle drift between task, session, branch and PR: sessions without a
  * task, locks naming a missing session, session names off the d158 form, merged PR branches still present, PRs
- * closed without merge. It only reports; it never proposes deletions. Only finite read-only argument arrays run, without a shell.
+ * closed without merge. Tasks in progress or in review are crossed by the files their PR or branch changes: two
+ * lanes sharing a file, more than two touching scripts/board/ (d270) and supabase/migrations/ without
+ * `toca: ["migracion"]` are warnings. Codex and Gemini chats (external-sessions.mjs) are read live: a lock of
+ * theirs without an open chat naming its T<n>, and chats left to archive, are drift too.
+ * It only reports; it never proposes deletions. Only finite read-only argument arrays run, without a shell.
  * CELEBRA_BOARD_COMMAND_FIXTURE supplies explicit subprocess results in hermetic tests.
  */
 import { execFileSync } from 'node:child_process';
@@ -50,6 +54,8 @@ import { kindPrompt, promptDiff } from './kind-prompt.mjs';
 import { kindKey, loadKinds } from './kinds.mjs';
 import { promptIdentity } from './prompt.mjs';
 import { boardDir, readLog } from './store.mjs';
+import { externalSessions, SOURCES as EXTERNAL } from './external-sessions.mjs';
+import { scopeWarnings } from './scope-warnings.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -71,7 +77,8 @@ export function commandArgs(cmd) {
 	)
 		return cmd.split(' ');
 	if (cmd === 'git ls-remote --heads origin') return cmd.split(' ');
-	if (/^gh pr view [1-9]\d* --json (state|headRefOid)$/.test(cmd)) return cmd.split(' ');
+	if (/^gh pr view [1-9]\d* --json (state|headRefOid|files)$/.test(cmd)) return cmd.split(' ');
+	if (/^git diff --name-only origin\/develop\.\.\.[a-f0-9]{40}$/.test(cmd)) return cmd.split(' ');
 	if (/^git ls-remote origin refs\/heads\/[A-Za-z0-9._/-]{1,200}$/.test(cmd))
 		return cmd.split(' ');
 	return null;
@@ -368,11 +375,15 @@ function lifecycleDrift(tareas) {
 /** Merged PR branches still present, and PRs closed without merge whose task is closed. Report only. */
 function branchDrift(tareas, run, laneBranches) {
 	const remoteResult = commandResult(run, 'git ls-remote --heads origin');
-	const remote = new Set(
+	// origin's heads with their live SHA, so a branch diff never trusts a stale local origin/<rama> ref.
+	const heads = new Map(
 		remoteResult.ok
-			? [...String(remoteResult.output).matchAll(/refs\/heads\/(\S+)/g)].map((m) => m[1])
+			? [...String(remoteResult.output).matchAll(/^(\S+)\s+refs\/heads\/(\S+)$/gm)].map(
+					(m) => [m[2], m[1]],
+				)
 			: [],
 	);
+	const remote = new Set(heads.keys());
 	// One query per present branch: a repository-wide closed list would stop at its limit and
 	// silently skip older PRs whose branch still exists.
 	const present = [...new Set([...remote, ...laneBranches])].filter(
@@ -405,11 +416,64 @@ function branchDrift(tareas, run, laneBranches) {
 	return {
 		ramasUnidasSinBorrar,
 		prCerradoSinUnir,
+		remote: remoteResult.ok ? heads : null,
 		cobertura: {
 			prsCerrados: complete ? 'VERIFIED' : 'UNVERIFIED',
 			ramasRemotas: remoteResult.ok ? 'VERIFIED' : 'UNVERIFIED',
 		},
 	};
+}
+
+/** `gh pr view --json files` lists at most this many files: a PR that reaches it may change more. */
+const GH_FILES_CAP = 100;
+/**
+ * The files a task's PR (else its pushed branch against origin/develop) changes, with `exact` false when the list
+ * may be cut short; null when Git or GitHub fails. `remote` maps origin's heads to their live SHA: a branch it does
+ * not list is not pushed yet and changes nothing others can collide with, and the diff uses that SHA, so a stale
+ * local origin/<rama> ref (verify never fetches) fails as UNVERIFIED instead of listing old files.
+ */
+function changedFiles(t, run, remote) {
+	const pr = prNumber(t.pr);
+	if (pr) {
+		const r = run(`gh pr view ${pr} --json files`);
+		const files = r.ok ? parseJson(r.output, null)?.files : null;
+		if (!Array.isArray(files)) return null;
+		const paths = files.map((f) => f.path).filter(Boolean);
+		return { files: paths, exact: files.length < GH_FILES_CAP };
+	}
+	if (!t.rama || !SAFE_BRANCH.test(t.rama) || BASE_BRANCHES.has(t.rama))
+		return { files: [], exact: true };
+	const sha = remote?.get(t.rama);
+	if (remote && !sha) return { files: [], exact: true };
+	if (!/^[a-f0-9]{40}$/.test(sha ?? '')) return null;
+	const r = run(`git diff --name-only origin/develop...${sha}`);
+	return r.ok ? { files: String(r.output).split(/\r?\n/).filter(Boolean), exact: true } : null;
+}
+
+/**
+ * Codex and Gemini chats read live (d211): a lock of theirs whose source answered but shows no open chat naming
+ * its T<n>, and the chats the owner can archive. Null when the stores were not read.
+ */
+function externalDrift(tareas, externas) {
+	if (!externas) return null;
+	const fuentes = {};
+	for (const [key, f] of Object.entries(externas.fuentes ?? {}))
+		fuentes[key] = f.disponible ? 'VERIFIED' : `NO DISPONIBLE (${f.motivo})`;
+	const open = new Set((externas.chats ?? []).map((c) => `${c.fuente}:${c.tarea}`));
+	const candadoSinChat = tareas
+		.filter((t) => t.num && !isClosed(t) && EXTERNAL[t.candado?.agente])
+		.filter((t) => externas.fuentes?.[t.candado.agente]?.disponible)
+		.filter((t) => !open.has(`${EXTERNAL[t.candado.agente].label}:T${t.num}`))
+		.map((t) => ({ id: t.id, tarea: tag(t), fuente: EXTERNAL[t.candado.agente].label }));
+	const chatsPorArchivar = [
+		...(externas.chats ?? [])
+			.filter((c) => c.accion === 'archivar')
+			.map((c) => ({ fuente: c.fuente, titulo: c.titulo, total: c.total })),
+		...(externas.despachadores ?? [])
+			.filter((d) => d.archivar > 0)
+			.map((d) => ({ fuente: d.fuente, titulo: d.titulo, total: d.archivar })),
+	];
+	return { fuentes, candadoSinChat, chatsPorArchivar };
 }
 
 /** Newest log row per task, to catch a change without a new rev. */
@@ -655,7 +719,7 @@ function memoized(run) {
 }
 
 export function verifyBoard(
-	{ tareas, bitacora = [], decisiones = [], archivo = [], sesiones = null },
+	{ tareas, bitacora = [], decisiones = [], archivo = [], sesiones = null, externas = null },
 	runner = defaultRunner(),
 	now = Date.now(),
 	kinds = loadKinds(),
@@ -665,6 +729,8 @@ export function verifyBoard(
 	const snapshot = Array.isArray(sesiones) ? sesiones.map(normalizeSession) : null;
 	const unclaimed = unclaimedWork(tareas, run);
 	const branches = branchDrift(tareas, run, unclaimed.laneBranches);
+	const scope = scopeWarnings(tareas, (t) => changedFiles(t, run, branches.remote));
+	const external = externalDrift(tareas, externas);
 	const pending = tareas.filter((t) => t.estado !== 'comprobada' && t.estado !== 'cancelada');
 	const live = pending
 		.filter((t) => archivadas || !t.archivada)
@@ -692,12 +758,17 @@ export function verifyBoard(
 			nombreDistinto: [],
 		}),
 		...lifecycleDrift(tareas),
+		sesionesExternas: external?.fuentes ?? 'SIN LEER',
+		candadoSinChat: external?.candadoSinChat ?? [],
+		chatsPorArchivar: external?.chatsPorArchivar ?? [],
 		ramasUnidasSinBorrar: branches.ramasUnidasSinBorrar,
 		prCerradoSinUnir: branches.prCerradoSinUnir,
-		cobertura: { ...unclaimed.cobertura, ...branches.cobertura },
-		...boardIssues(tareas, bitacora, decisiones, archivo, now, kinds),
+		cobertura: { ...unclaimed.cobertura, ...branches.cobertura, ...scope.cobertura },
+		...withAvisos(boardIssues(tareas, bitacora, decisiones, archivo, now, kinds), scope.avisos),
 	};
 }
+
+const withAvisos = (issues, more) => ({ ...issues, avisos: [...issues.avisos, ...more] });
 
 function printText(r) {
 	const w = [32, 10, 26];
@@ -744,6 +815,12 @@ function printText(r) {
 		drift('CANDADO CON SESIÓN INEXISTENTE', r.candadoSinSesion, (x) => x.tarea);
 		drift('NOMBRE DISTINTO', r.nombreDistinto, (x) => `«${x.nombre}» (${x.msg})`);
 	}
+	if (typeof r.sesionesExternas === 'object')
+		for (const [key, value] of Object.entries(r.sesionesExternas))
+			if (value !== 'VERIFIED')
+				console.log(`  SESIONES ${EXTERNAL[key]?.label ?? key}: ${value}`);
+	drift('CANDADO SIN CHAT DE CODEX/GEMINI', r.candadoSinChat, (x) => `${x.tarea} (${x.fuente})`);
+	drift('CHATS POR ARCHIVAR', r.chatsPorArchivar, (x) => `${x.fuente} · ${x.titulo} ×${x.total}`);
 	drift('TAREAS EN CURSO SIN SESIÓN', r.enCursoSinSesion, (x) => x.tarea);
 	drift('UNIDAS CON CANDADO', r.unidasConCandado, (x) => `${x.tarea} (${x.carril})`);
 	drift(
@@ -766,7 +843,7 @@ function printText(r) {
 	for (const x of r.inconsistencias) console.log(`  ${x.id.padEnd(32)} ${x.msg}`);
 }
 
-function main(argv) {
+async function main(argv) {
 	const json = argv.includes('--json');
 	const archivadas = argv.includes('--archivadas');
 	const sesionesArg = argv.find((a) => a.startsWith('--sesiones='))?.slice('--sesiones='.length);
@@ -780,8 +857,9 @@ function main(argv) {
 		);
 		process.exit(2);
 	}
+	const data = loadExport(dir, sesionesArg && resolve(cwd, sesionesArg));
 	const result = verifyBoard(
-		loadExport(dir, sesionesArg && resolve(cwd, sesionesArg)),
+		{ ...data, externas: await externalSessions(data) },
 		undefined,
 		undefined,
 		undefined,
@@ -798,4 +876,4 @@ function main(argv) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
-	main(process.argv.slice(2));
+	await main(process.argv.slice(2));

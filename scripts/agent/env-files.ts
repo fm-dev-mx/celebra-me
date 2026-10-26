@@ -73,18 +73,41 @@ export function readTemplateNames(source: string): string[] {
 	return Array.from(source.matchAll(/^([A-Z][A-Z0-9_]*)=/gm), (match) => match[1]);
 }
 
+/**
+ * Names in a template block (lines between blank lines) that holds a `# @optional` comment.
+ * The file may omit them entirely; they stay allowed names.
+ */
+export function readOptionalTemplateNames(source: string): string[] {
+	const optional: string[] = [];
+	let block: string[] = [];
+	let marked = false;
+	for (const line of [...source.split(/\r?\n/), ''].map((value) => value.trim())) {
+		if (!line) {
+			if (marked) optional.push(...block);
+			block = [];
+			marked = false;
+		} else if (/^#\s*@optional\b/.test(line)) marked = true;
+		else {
+			const name = line.match(/^([A-Z][A-Z0-9_]*)=/)?.[1];
+			if (name) block.push(name);
+		}
+	}
+	return optional;
+}
+
 export function compareEnvFile(
 	file: string,
 	templateNames: readonly string[],
 	values: Record<string, string> | null,
+	optionalNames: readonly string[] = [],
 ): EnvFileReport {
-	if (!values)
-		return { file, present: false, missing: [...templateNames], empty: [], unknown: [] };
+	const required = templateNames.filter((name) => !optionalNames.includes(name));
+	if (!values) return { file, present: false, missing: required, empty: [], unknown: [] };
 	const allowed = new Set(templateNames);
 	return {
 		file,
 		present: true,
-		missing: templateNames.filter((name) => !(name in values)),
+		missing: required.filter((name) => !(name in values)),
 		empty: templateNames.filter((name) => name in values && !values[name].trim()),
 		unknown: Object.keys(values)
 			.filter((name) => !allowed.has(name))
@@ -217,10 +240,12 @@ function checkCheckout(cwd: string): boolean {
 			ok = false;
 			continue;
 		}
+		const template = readFileSync(templatePath, 'utf8');
 		const report = compareEnvFile(
 			spec.file,
-			readTemplateNames(readFileSync(templatePath, 'utf8')),
+			readTemplateNames(template),
 			readValues(resolve(cwd, spec.file)),
+			readOptionalTemplateNames(template),
 		);
 		if (!report.present) {
 			console.warn(
@@ -365,7 +390,12 @@ function syncEntry(repoRoot: string, target: string, spec: EnvFileSpec): SyncEnt
 	} catch {
 		throw new EnvSyncError(`Invalid configuration syntax: ${spec.file}.`);
 	}
-	const report = compareEnvFile(spec.file, sourceSchema.split('\n'), values);
+	const report = compareEnvFile(
+		spec.file,
+		sourceSchema.split('\n'),
+		values,
+		readOptionalTemplateNames(readFileSync(resolve(repoRoot, spec.template), 'utf8')),
+	);
 	if (report.unknown.length || report.missing.length)
 		throw new EnvSyncError(`Source does not match its template: ${spec.file}.`);
 	const to = resolve(target, spec.file);

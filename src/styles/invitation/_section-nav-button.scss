@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 .nav-button-container {
 	position: relative;
 	width: 100%;
@@ -39,7 +41,7 @@
 	}
 
 	&__icon {
-		@media (prefers-reduced-motion: no-preference) {
+		@include a11y.motion-safe {
 			animation: var(--section-nav-icon-animation, none);
 		}
 
@@ -127,7 +129,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.section-nav-button {
 		animation: none;
 	}

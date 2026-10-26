@@ -190,7 +190,7 @@
 	opacity: 75%;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.countdown-container {
 		opacity: 100%;
 		transform: none;

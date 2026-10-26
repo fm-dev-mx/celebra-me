@@ -239,7 +239,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.music-player {
 		&__button--pulsing,
 		&__button--pulsing::before {

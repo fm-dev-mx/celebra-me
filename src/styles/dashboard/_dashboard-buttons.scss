@@ -13,7 +13,9 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	position: relative;
 	overflow: hidden;
 	transition:
@@ -102,7 +104,9 @@
 		color 0.2s ease;
 	color: var(--color-text-secondary);
 	min-width: 44px;
-	min-height: 44px;
+
+	@include mixins.touch-target;
+
 	box-shadow: none;
 
 	&:hover {
@@ -148,7 +152,7 @@
 
 	// Touch layouts keep the 44px target even for compact buttons.
 	@include mixins.respond-below(lg) {
-		min-height: 44px;
+		@include mixins.touch-target;
 	}
 }
 

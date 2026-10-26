@@ -454,7 +454,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.theme-preset--enchanted-rose .invitation-hero[data-variant='standard'] {
 		.invitation-hero__background::before {
 			animation: none;

@@ -18,6 +18,7 @@ import {
 	LEAD_CAPTURE_EVENT_TYPE_VALUES,
 	LEAD_CAPTURE_FORM_ID,
 } from '@/lib/tracking/lead-capture';
+import { rememberMetaPhoneMatchKey } from '@/lib/tracking/meta-pixel';
 
 const COPIED_ATTRIBUTES = [
 	'data-track-event',
@@ -274,6 +275,7 @@ export function initLeadCapture(): void {
 			}
 
 			rememberWhatsAppLeadCode(leadCode);
+			rememberMetaPhoneMatchKey(answers.phone);
 			trackLeadCaptureEvent(
 				'form_submitted',
 				{

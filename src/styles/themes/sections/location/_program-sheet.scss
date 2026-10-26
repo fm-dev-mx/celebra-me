@@ -78,7 +78,7 @@
 		pointer-events: none;
 
 		@supports (animation-timeline: view()) {
-			@media (prefers-reduced-motion: no-preference) {
+			@include mixins.motion-safe {
 				animation: invitation-art-drift linear both;
 				animation-timeline: view();
 				animation-range: cover;
@@ -222,7 +222,9 @@
 		gap: 0.5em;
 		box-sizing: border-box;
 		width: var(--location-program-link-width, auto);
-		min-height: 44px;
+
+		@include mixins.touch-target;
+
 		padding: var(--location-program-link-padding, 0);
 		border: var(--location-program-link-border, 0);
 		border-radius: var(--location-program-link-radius, 4px);
@@ -303,7 +305,9 @@
 		.event-location__calendar-options a {
 			display: flex;
 			align-items: center;
-			min-height: 44px;
+
+			@include mixins.touch-target;
+
 			padding: 0 1rem;
 			font-family: var(--font-body);
 			font-size: 1.05rem;

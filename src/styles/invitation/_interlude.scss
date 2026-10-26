@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // ==========================================================================
 // INTERLUDE — Section-level CSS variable contract
 // Contract variables (set as inherited theme tokens; base fallbacks live in usage):
@@ -127,7 +129,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		&.is-visible &__image {
 			// `--interlude-ambient-animation: none` switches the slow drift off entirely.
 			animation: var(
@@ -138,7 +140,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		&.is-visible &__image {
 			animation: none;
 			transform: none;
@@ -226,7 +228,7 @@
 	// Opt-in dusk: `--interlude-dusk-<n>: interlude-dusk` darkens the nth pause toward
 	// `--interlude-dusk-ink-rgb` while the reader scrolls through it (day turning to night).
 	@supports (animation-timeline: view()) {
-		@media (prefers-reduced-motion: no-preference) {
+		@include a11y.motion-safe {
 			&::after {
 				animation: var(--interlude-indexed-dusk, none) linear both;
 				animation-timeline: view();
@@ -236,7 +238,7 @@
 	}
 
 	// ---- reduced motion ----
-	@media (prefers-reduced-motion: reduce) {
+	@include a11y.reduced-motion {
 		&__media {
 			opacity: 100%;
 			transform: none;
@@ -292,7 +294,7 @@
 		// print arrives tilted by `--interlude-framed-settle-tilt` / `-turn`, lifted by `-rise`, and
 		// lies flat in view. The reveal recipe runs it after the media reveal.
 		@supports (animation-timeline: view()) {
-			@media (prefers-reduced-motion: no-preference) {
+			@include a11y.motion-safe {
 				--interlude-media-settle: var(--interlude-framed-settle, none);
 				--settle-tilt: var(--interlude-framed-settle-tilt, 12deg);
 				--settle-turn: var(--interlude-framed-settle-turn, 0deg);

@@ -589,7 +589,7 @@
 // Entrance (opt-in): the photograph is the main content and stays still; the letter follows in
 // order of importance once the invitation is revealed. Opacity and transform only, so nothing
 // shifts. Behind an envelope that is still fading it waits `--hero-bleed-entrance-wait`.
-@media (prefers-reduced-motion: no-preference) {
+@include mixins.motion-safe {
 	.event-theme-wrapper[data-reveal-state='revealed']
 		.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
 		// Opt-in drift: transform only, so the photograph keeps its box (no layout shift).
@@ -680,7 +680,7 @@
 // hero's own view timeline; nothing runs on load, so the photograph paints at once (LCP) and
 // nothing shifts. Without support, or with reduced motion, both stay at rest.
 @supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include mixins.motion-safe {
 		.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
 			view-timeline: --hero-bleed-cover block;
 

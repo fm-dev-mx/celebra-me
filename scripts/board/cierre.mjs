@@ -3,6 +3,7 @@
  * cancellation build the `cierre`, what «Archivar» still asks of it and the one-line signal an agent hands back.
  * Pure functions only, like model.mjs (which keeps the field shape checks): the view imports this file too.
  */
+import { changelogLine, parseChangelog } from './changelog.mjs';
 import {
 	HANDOFF_LISTS,
 	cierreShapeIssues,
@@ -60,7 +61,7 @@ export function buildCierre(prev = {}, { flags, lists }, board, en, task) {
 
 /**
  * T129 part of the close: the Handoff Contract lists stay absent until given, so a new task's close names each
- * one, and the typed resultado (a code one takes the task's PR when the close names none).
+ * one, the release note and the typed resultado (a code one takes the task's PR when the close names none).
  */
 function withReturn(cierre, prev, { flags, lists }, task) {
 	const out = { ...cierre };
@@ -68,6 +69,10 @@ function withReturn(cierre, prev, { flags, lists }, task) {
 		const v = Object.hasOwn(lists, flag) ? listFlag(lists, flag) : prev[field];
 		if (v !== undefined) out[field] = v;
 	}
+	// T297: the release note; a close without --changelog keeps the previous one.
+	const changelog =
+		flags.changelog !== undefined ? parseChangelog(flags.changelog) : prev.changelog;
+	if (changelog !== undefined) out.changelog = changelog;
 	const pr = out.pr ?? normalizePr(task?.pr);
 	const resultado = buildResultado(prev.resultado, { flags, lists }, pr);
 	if (resultado) out.resultado = resultado;
@@ -206,6 +211,7 @@ export function cierreLines(t, board) {
 			? `Pendiente: ${pend.map((p) => `${p.texto} → ${ref(p)}`).join('; ')}`
 			: 'Pendiente: ninguno.',
 		...returnLines(c, list),
+		...(c.changelog ? [changelogLine(c.changelog)] : []),
 	];
 }
 

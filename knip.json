@@ -33,6 +33,7 @@
         ".cursor/hooks/*.{ts,mjs}",
         "*.{ts,mjs,cjs,js}"
     ],
+    "ignore": [".agent/tmp/**"],
     "ignoreExportsUsedInFile": false,
     "ignoreDependencies": ["markdownlint-cli2", "markdownlint"],
     "ignoreBinaries": ["psql", "pg_dump", "where.exe"],

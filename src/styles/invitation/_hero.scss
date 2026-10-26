@@ -366,7 +366,7 @@
 // Opt-in slow push on the cover photograph (`--hero-photo-drift: hero-photo-drift`), once, after
 // the envelope. Editorial invitations only, so covers that already animate the photograph keep it.
 // `scale` leaves the box (and the focal point) untouched.
-@media (prefers-reduced-motion: no-preference) {
+@include mixins.motion-safe {
 	.event-theme-wrapper[data-motion='editorial'][data-reveal-state='revealed']
 		.invitation-hero[data-variant='standard']
 		.invitation-hero__background
@@ -385,7 +385,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.invitation-hero * {
 		/* stylelint-disable-next-line declaration-no-important */
 		animation-duration: 0.01ms !important;

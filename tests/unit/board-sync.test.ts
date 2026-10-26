@@ -273,6 +273,158 @@ describe('pnpm board:sync', () => {
 		expect(readTask(dir, 'sigue-abierta').candado).toEqual(lock);
 	});
 
+	it('links an open PR by its canonical «T<n> <id>» reference only when it is the only one (d159)', () => {
+		const ref = (number: number, head: string, title: string, body = '', state = 'OPEN') => ({
+			...pr(number, head, state),
+			title,
+			body,
+		});
+		const prs = [
+			ref(30, 'feat/otra-cosa', 'feat(board): faster sync (T20 por-titulo)'),
+			ref(31, 'feat/z', 'feat: z', 'Summary\n\n- Board task: T21 por-cuerpo\n'),
+			ref(
+				32,
+				'feat/y',
+				'feat: y',
+				'Requires T22 en-prosa first.\n- T22 en-prosa waits for it',
+			),
+			ref(33, 'feat/a', 'T23 doble part one'),
+			ref(34, 'feat/b', 'T23 doble part two'),
+			ref(35, 'feat/c', 'T24 corto-largo'),
+			ref(36, 'feat/d', 'T25 cerrado-ya', '', 'MERGED'),
+			ref(37, 'feat/propia', 'T26 con-rama'),
+		];
+		const tasks = [
+			task('por-titulo', { num: 20 }),
+			task('por-cuerpo', { num: 21, rama: 'feat/sin-pr-aun' }),
+			task('en-prosa', { num: 22 }),
+			task('doble', { num: 23 }),
+			task('corto', { num: 24 }),
+			task('cerrado-ya', { num: 25 }),
+			task('con-rama', { num: 26, rama: 'feat/propia' }),
+			task('periodica', { num: 27, cada: 'semana' }),
+		];
+		const out = probe(
+			SYNC_PATH,
+			`const prs = ${JSON.stringify(prs)};
+			console.log(JSON.stringify(${JSON.stringify(tasks)}.map((t) => [t.id, m.matchPr(t, prs)?.number ?? null])));`,
+		);
+		expect(out).toEqual([
+			['por-titulo', 30],
+			// A declared branch is the only match: a PR naming the task from another head is reported instead.
+			['por-cuerpo', null],
+			['en-prosa', null],
+			['doble', null],
+			['corto', null],
+			['cerrado-ya', null],
+			['con-rama', 37],
+			['periodica', null],
+		]);
+		const p = probe(
+			SYNC_PATH,
+			`console.log(JSON.stringify(m.plan({ tareas: ${JSON.stringify(tasks.slice(0, 1))} }, { worktrees: [], local: [], remote: [], prs: ${JSON.stringify(prs)} })));`,
+		);
+		expect(p.cambios.map((c: Json) => [c.id, c.set])).toEqual([
+			['por-titulo', { pr: '#30', rama: 'feat/otra-cosa', estado: 'en revision' }],
+		]);
+		const named = probe(
+			SYNC_PATH,
+			`console.log(JSON.stringify(m.plan({ tareas: ${JSON.stringify(tasks.slice(1, 2))} }, { worktrees: [], local: [], remote: [], prs: ${JSON.stringify(prs)} })));`,
+		);
+		expect(named.cambios).toEqual([]);
+		expect(named.avisos.map((a: Json) => a.texto)).toEqual([
+			'T21 por-cuerpo: rama feat/sin-pr-aun sin PR, pero el PR #31 (rama feat/z) nombra la tarea: corrija rama o pr',
+		]);
+	});
+
+	it('matches a title reference literally, with or without a PR body (P3 of PR #607)', () => {
+		const prs = [
+			{ ...pr(40, 'feat/x', 'OPEN'), title: 'feat: T28 v1x2 tweak' },
+			{ ...pr(41, 'feat/w', 'OPEN'), title: 'feat: T29 v1.2 tweak' },
+		];
+		const out = probe(
+			SYNC_PATH,
+			`const prs = ${JSON.stringify(prs)};
+			console.log(JSON.stringify([m.namesTask(prs[0], { num: 28, id: 'v1.2' }), m.namesTask(prs[1], { num: 29, id: 'v1.2' }), m.namesTask({ title: 'x' }, { num: 29, id: 'v1.2' })]));`,
+		);
+		expect(out).toEqual([false, true, false]);
+	});
+
+	it('deletes the branch a freed lane left only when origin/develop contains it (d268)', () => {
+		const dir = makeBoard([]);
+		const develop = 'd'.repeat(40);
+		const head = 'a'.repeat(40);
+		const lanes = [
+			['f05-plataforma', null],
+			['f09-docs', 'feat/unida'],
+			['f10-libre', 'feat/squash'],
+			['f11-preview', 'feat/en-otro'],
+		].map(([lane, rama]) => ({ lane, path: `w/${lane}`, rama, head, limpio: true }));
+		const src = {
+			develop,
+			worktrees: lanes,
+			prs: ['feat/unida', 'feat/squash', 'feat/en-otro'].map((b, i) =>
+				pr(40 + i, b, 'MERGED'),
+			),
+		};
+		const code = `const lanes = ${JSON.stringify(lanes)};
+			const calls = [];
+			const git = (args, cwd) => {
+				const l = lanes.find((x) => x.path === cwd);
+				if (args[1] === '--show-current') return l.rama ?? '';
+				if (args[0] === 'rev-parse') return l.head;
+				if (args[0] === 'status') return '';
+				calls.push([cwd, ...args]);
+				if (args[0] === 'merge-base' && cwd.endsWith('f10-libre')) throw Object.assign(new Error('exit 1'), { status: 1 });
+				if (args[0] === 'branch' && cwd.endsWith('f11-preview'))
+					throw Object.assign(new Error('x'), { stderr: "error: cannot delete branch 'feat/en-otro' used by worktree\\nmore" });
+				return '';
+			};
+			const r = await m.hygiene(process.env.CELEBRA_BOARD_DIR, ${JSON.stringify(src)}, { dryRun: DRY, git });
+			console.log(JSON.stringify({ calls, carriles: r.carriles, lines: m.summary({ prueba: DRY, cambios: [], omitidas: [], avisos: [], higiene: r }) }));`;
+		const dry = probe(SYNC_PATH, code.replaceAll('DRY', 'true'), { CELEBRA_BOARD_DIR: dir });
+		expect(dry.calls).toEqual([]);
+		expect(dry.lines).toContain(
+			'Carril: [prueba] carril f09-docs libre: de la rama feat/unida a origin/develop (ddddddd); borra la rama local feat/unida si ya está en origin/develop',
+		);
+		const real = probe(SYNC_PATH, code.replaceAll('DRY', 'false'), {
+			CELEBRA_BOARD_DIR: dir,
+		});
+		const detach = (lane: string) => [`w/${lane}`, 'switch', '--detach', '--quiet', develop];
+		const ancestor = (lane: string, rama: string) => [
+			`w/${lane}`,
+			'merge-base',
+			'--is-ancestor',
+			`refs/heads/${rama}`,
+			develop,
+		];
+		expect(real.calls).toEqual([
+			detach('f05-plataforma'),
+			detach('f09-docs'),
+			ancestor('f09-docs', 'feat/unida'),
+			['w/f09-docs', 'branch', '-d', '--quiet', '--', 'feat/unida'],
+			detach('f10-libre'),
+			ancestor('f10-libre', 'feat/squash'),
+			detach('f11-preview'),
+			ancestor('f11-preview', 'feat/en-otro'),
+			['w/f11-preview', 'branch', '-d', '--quiet', '--', 'feat/en-otro'],
+		]);
+		expect(real.carriles.map((c: Json) => [c.lane, c.ok, c.podada, c.resultado])).toEqual([
+			['f05-plataforma', true, undefined, undefined],
+			['f09-docs', true, true, undefined],
+			['f10-libre', true, false, 'rama feat/squash no está en origin/develop: se queda'],
+			[
+				'f11-preview',
+				true,
+				false,
+				"rama feat/en-otro no se borró: error: cannot delete branch 'feat/en-otro' used by worktree",
+			],
+		]);
+		expect(real.lines).toContain(
+			'Carril: carril f10-libre libre: de la rama feat/squash a origin/develop (ddddddd); borra la rama local feat/squash si ya está en origin/develop (rama feat/squash no está en origin/develop: se queda)',
+		);
+	});
+
 	it('reads lanes from git worktree list', () => {
 		const out = probe(
 			SYNC_PATH,

@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // Hairline frame (HairlineFrame.astro): a 1 px rectangle set inside a photograph that draws itself
 // once when its revealed ancestor enters. Hidden unless a profile displays it.
 // Tokens (all optional):
@@ -28,7 +30,7 @@
 
 // Held undrawn only while a revealed ancestor waits to enter, so a frame outside any observed
 // element is simply complete.
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	[data-reveal-pending] .hairline-frame rect {
 		stroke-dashoffset: 1;
 	}

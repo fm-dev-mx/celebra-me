@@ -18,7 +18,9 @@
  *                                               (rama defaults to the task's declared branch; Claude's sesion
  *                                               defaults to CLAUDE_CODE_HOST_SESSION_ID and must start with local_;
  *                                               carril defaults to the planned lane, another needs --coordinador;
- *                                               T172: a pendiente task becomes en curso)
+ *                                               T172: a pendiente task becomes en curso; T297: run from a
+ *                                               lane, the lane and branch must be the task's and it opens
+ *                                               the git-safety session --session=<rama>)
  *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
  *                                               a usted» until 30 min pass without a claim (claim clears it)
  *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
@@ -26,7 +28,8 @@
  *                                               --coordinador frees a legacy lock without sesion, or
  *                                               (d274) one silent for 2 h whose task has a valid cierre;
  *                                               a task still en curso goes back to pendiente (T172), a
- *                                               review with its verdict becomes hecha
+ *                                               review with its verdict becomes hecha; T297: from the lane,
+ *                                               --git-safety=commit[,history] also finishes git-safety
  *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
@@ -37,12 +40,18 @@
  *         [--fallida=…] [--riesgo=…] [--duda=…] [--excepcion=…]
  *         [--veredicto=aprobado|cambios|bloqueado] [--hallazgo="P2|archivo|texto"] [--sha=<sha>]
  *         [--nivel=validate:changed|type-check|ci] [--pr=#N] [--commit=<sha>] [--rev=<n>]
+ *         [--changelog="Added: …"|--changelog=ninguno] [--git-safety=commit[,history]]
  *                                               d178: closing summary (lock owner, or --coordinador to
  *                                               complete it); repeat a flag for each line or item, «ninguna»
  *                                               for an empty list; a pendiente without its task is refused.
  *                                               T129: a task created under contrato 2 also names every
  *                                               Handoff list and its resultado (review: veredicto, sha,
  *                                               hallazgos; code: pr, sha, nivel); prints a one-line signal
+ *                                               T297: --changelog is the release note (Keep a Changelog
+ *                                               group); --git-safety finishes the lane's session
+ *   changelog [--desde=<fecha>] [--faltan [--archivo=CHANGELOG.md]]
+ *                                               T297: merged tasks' release notes as [Unreleased] Markdown;
+ *                                               --faltan lists the ones CHANGELOG.md lacks (exit 1)
  *   set <id> estado=cancelada --motivo=…        T129: a cancellation writes its cierre, the reason as summary
  *   archive <id> [--rev=<n>] / unarchive <id>   hide a finished, unlocked task with its closing summary from
  *                                               «Finalizadas» (bitácora row)
@@ -57,7 +66,9 @@
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
  *   verify [--json] [--archivadas]              same as pnpm board:verify
- *   msg <id> --de=<a> --para=<b> "texto"        T126: a message about a task, kept in the bitácora
+ *   msg <id> --de=<a> --para=<b> "texto" [--opcion="…" …] [--detalle="…"]
+ *                                               T126: a message about a task, kept in the bitácora; T322: --opcion
+ *                                               (recommended first) only --para=dueno; --detalle holds the technical part
  *   inbox --agente=<a> [--todos]                messages to <a> not read yet; marks them read
  *   atendido <id> --para=dueno|coordinador [--mensaje=<id>] [--nota=…]
  *                                               d291: those messages about <id> were answered; they leave
@@ -84,7 +95,6 @@ import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
 	canFinish,
-	claimable,
 	color,
 	nextFor,
 	normalizePr,
@@ -99,7 +109,6 @@ import {
 	isFinished,
 	isReadOnly,
 	isReview,
-	READONLY_LANE,
 	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
@@ -111,8 +120,6 @@ import {
 	logRowError,
 	laneLines,
 	promptWithLane,
-	lockSessionIssue,
-	sessionOf,
 	cleaned,
 	CLEANED_ON,
 	unlocked,
@@ -129,10 +136,9 @@ import { leftByUnanswered, reviewChild, reviewChildId } from './rounds.mjs';
 import { overlapCommands } from './overlap.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
 import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
-import { claimTitleIssue, deliveryLine, nextSections, sectionLines } from './next.mjs';
+import { deliveryLine, nextSections, sectionLines } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
 import { deliveryCommands } from './delivery-commands.mjs';
-import { undelivered } from './delivery.mjs';
 import {
 	appendLog,
 	assertId,
@@ -157,6 +163,8 @@ import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
+import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
+import { claimCommands, readOnlyLaneError, sayClaim } from './claim-commands.mjs';
 
 const COLOR_LABEL = {
 	own: 'USTED',
@@ -385,39 +393,6 @@ function assertPlan(task, carril, flags) {
 		throw new UsageError(
 			`carril ${carril} no es canónico (f05-f12; integration solo para coordinador)`,
 		);
-}
-
-/** Read-only tasks always run in READONLY_LANE, so they never take a lane of their own. */
-const readOnlyLaneError = (task, what) =>
-	isReview(task)
-		? `una revisión no tiene ${what}`
-		: `una tarea de solo lectura corre en ${READONLY_LANE}: no tiene ${what}`;
-
-function claimLocation(before, flags, board) {
-	const rama = typeof flags.rama === 'string' ? flags.rama : before.rama;
-	const planned = before.carrilPlaneado;
-	const given = typeof flags.carril === 'string' ? flags.carril : undefined;
-	if (planned && given && given !== planned && !flags.coordinador)
-		throw new UsageError(
-			`${before.id} corre en ${planned}: omita --carril o pida al coordinador otro carril`,
-		);
-	const carril = given ?? planned;
-	if (isReview(before) && given)
-		throw new UsageError('la revisión no toma el carril del autor; omita --carril');
-	// A read-only task runs in READONLY_LANE, the lane its prompt announces, and its lock holds none.
-	if (isReadOnly(before) && given)
-		throw new UsageError(`${readOnlyLaneError(before, 'carril propio')}; omita --carril`);
-	if (isReadOnly(before) && planned)
-		throw new UsageError(
-			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador`,
-		);
-	if (!isReadOnly(before) && !laneAllowed(carril, before))
-		throw new UsageError(
-			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
-		);
-	if (carril && board.tareas.some((t) => t.id !== before.id && t.candado?.carril === carril))
-		throw new UsageError(`el carril ${carril} tiene otra tarea con candado`);
-	return { rama, carril };
 }
 
 function row(t, n, board, agente) {
@@ -662,63 +637,6 @@ const commands = {
 			say(flags, out, t, `${t.id} rev ${t.rev}${override ? ` · ${override}; anotado` : ''}`);
 		});
 	},
-	claim({ pos, flags }, dir, out) {
-		const agente = need(flags.agente, 'falta --agente');
-		const sesion = sessionOf(agente, flags.sesion, process.env);
-		const issue = lockSessionIssue(agente, sesion);
-		if (issue) throw new UsageError(issue);
-		return withLock(dir, () => {
-			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (
-				before.candado &&
-				(before.candado.agente !== agente || before.candado.sesion !== sesion)
-			)
-				throw new UsageError(
-					`${before.id} ya la tiene ${before.candado.agente} desde ${before.candado.desde}`,
-				);
-			if (before.candado)
-				return say(flags, out, before, `${before.id} ya pertenece a esta sesión`);
-			if (before.agente && before.agente !== 'cualquiera' && before.agente !== agente)
-				throw new UsageError(
-					`${before.id} es de ${before.agente}: pídale al coordinador un «move»`,
-				);
-			const board = loadBoard(dir);
-			if (
-				!claimable(before, agente, board) ||
-				(before.actor === 'coordinador' && !flags.coordinador)
-			)
-				throw new UsageError(
-					`${before.id} no está lista para ${agente} o requiere acción del dueño`,
-				);
-			const { rama, carril } = claimLocation(before, flags, board);
-			const titleIssue = claimTitleIssue(before, flags.titulo, carril);
-			if (titleIssue) throw new UsageError(titleIssue);
-			const candado = { agente, desde: nowIso() };
-			for (const [k, v] of Object.entries({
-				sesion,
-				carril,
-				rama,
-				titulo: typeof flags.titulo === 'string' ? flags.titulo.trim() : undefined,
-			}))
-				if (v && v !== true) candado[k] = v;
-			// T172: taking a pendiente task starts it, with its «pendiente → en curso» bitácora row.
-			const started = (before.estado ?? 'pendiente') === 'pendiente';
-			const t = saveTask(
-				dir,
-				before,
-				{
-					// d249: a claim ends the wait the delivery mark announced.
-					...undelivered(before),
-					candado,
-					...(carril ? { carril } : {}),
-					...(rama ? { rama } : {}),
-					...(started ? { estado: 'en curso' } : {}),
-				},
-				{ quien: flags.quien, agente, corrio: 'pnpm board claim' },
-			);
-			say(flags, out, t, `${t.id} es de ${agente} (rev ${t.rev})`);
-		});
-	},
 	/** d177: the coordinator plans the lane a task runs in; claim then takes it without --carril. */
 	plan({ pos, flags }, dir, out) {
 		if (typeof flags.carril !== 'string') throw new UsageError('falta --carril=<carril>');
@@ -802,9 +720,13 @@ const commands = {
 	},
 	release({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente');
-		return withLock(dir, () => {
+		const ops = finishOps(flags['git-safety']);
+		const checkout = checkoutState();
+		const info = withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (!before.candado) return say(flags, out, before, `${before.id} no tiene candado`);
+			if (!before.candado) return { noLock: true, before };
+			const laneIssue = lockLaneIssue(checkout, before);
+			if (laneIssue) throw new UsageError(laneIssue);
 			// A lock from before sessions were recorded has no sesion: only a declared coordinator frees it.
 			// d274: so does one whose session went silent, once the task's cierre is valid.
 			const silent =
@@ -823,8 +745,16 @@ const commands = {
 				agente,
 				corrio: 'pnpm board release',
 			});
-			say(flags, out, t, `${t.id} libre (rev ${t.rev})`);
+			return { t, rama: before.candado.rama };
 		});
+		if (info.noLock) return say(flags, out, info.before, `${info.before.id} no tiene candado`);
+		sayClaim(
+			flags,
+			out,
+			info.t,
+			`${info.t.id} libre (rev ${info.t.rev})`,
+			finishGitSafety(checkout, info.rama, ops),
+		);
 	},
 	move({ pos, flags }, dir, out) {
 		const agente = need(flags.agente, 'falta --agente=<destino>');
@@ -921,6 +851,7 @@ Object.assign(
 	nextCommands({ getTask }),
 	overlapCommands({ getTask }),
 	delivery.commands,
+	claimCommands({ getTask, saveTask }),
 	closeCommands({ getTask, saveTask, checkRev, assertOwner, overrideReason, noteOverride }),
 	kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOverride }),
 	{

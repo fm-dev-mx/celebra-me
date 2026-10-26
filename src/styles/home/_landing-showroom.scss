@@ -1,6 +1,7 @@
 // Landing showroom (LandingShowroom.astro): dark band with event tabs, a phone/tablet/PC frame
 // holding the live demo over its cover, a style strip and a detail card with the WhatsApp quote.
 // Each cover keeps its focal point on every frame.
+@use '../global/mixins' as mixins;
 @use '../tokens/type-scale';
 
 .vitrina {
@@ -76,12 +77,9 @@
 		display: flex;
 		gap: 0.4rem;
 		overflow-x: auto;
-		scrollbar-width: none;
 		padding-bottom: 4px;
 
-		&::-webkit-scrollbar {
-			display: none;
-		}
+		@include mixins.hide-scrollbar;
 
 		@media (width >= 900px) {
 			flex-wrap: wrap;
@@ -93,7 +91,9 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		min-height: 44px;
+
+		@include mixins.touch-target;
+
 		padding: 0 0.9rem;
 		border: 1px solid var(--vitrina-line);
 		border-radius: var(--radius-pill);
@@ -155,7 +155,9 @@
 			justify-content: center;
 			gap: 0.375rem;
 			min-width: 78px;
-			min-height: 44px;
+
+			@include mixins.touch-target;
+
 			padding: 0 0.75rem;
 			border: 0;
 			border-radius: var(--radius-pill);
@@ -257,7 +259,9 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		min-height: 44px;
+
+		@include mixins.touch-target;
+
 		padding: 0 1.25rem;
 		border: 1px solid rgb(var(--color-champagne-rgb) / 55%);
 		border-radius: var(--radius-pill);
@@ -287,7 +291,7 @@
 			stroke-linejoin: round;
 		}
 
-		@media (prefers-reduced-motion: reduce) {
+		@include mixins.reduced-motion {
 			animation: none;
 		}
 	}
@@ -388,12 +392,9 @@
 		gap: 0.625rem;
 		overflow-x: auto;
 		scroll-snap-type: x mandatory;
-		scrollbar-width: none;
 		padding-bottom: 4px;
 
-		&::-webkit-scrollbar {
-			display: none;
-		}
+		@include mixins.hide-scrollbar;
 
 		@media (width >= 900px) {
 			display: grid;
@@ -586,7 +587,7 @@
 		outline-offset: 3px;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
+	@include mixins.reduced-motion {
 		&__device {
 			transition: none;
 		}

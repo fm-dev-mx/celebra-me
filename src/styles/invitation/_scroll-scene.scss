@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // ==========================================================================
 // SCROLL SCENES
 // Layout for ScrollScene.astro.
@@ -36,7 +38,7 @@ $scene-lengths: 2, 3, 4, 5;
 }
 
 @supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
+	@include a11y.motion-safe {
 		[data-motion='editorial'] .scroll-scene {
 			view-timeline: --scroll-scene block;
 
@@ -45,7 +47,7 @@ $scene-lengths: 2, 3, 4, 5;
 	}
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include a11y.motion-safe {
 	.scroll-scene[data-scene-engine='script'] {
 		@include -pinned-scene;
 	}

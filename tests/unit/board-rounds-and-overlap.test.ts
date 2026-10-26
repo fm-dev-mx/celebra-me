@@ -185,6 +185,22 @@ describe('d291 review rounds without a verdict', () => {
 		).toBeNull();
 		expect(call('rounds.mjs', 'leftByUnanswered', 'codigo', { tareas: [origin()] })).toBeNull();
 	});
+
+	it('keeps only the newest notes of a long chain and counts the dropped ones', () => {
+		const open = round('codigo-revision', 1);
+		const bitacora = Array.from({ length: 25 }, (_, i) => ({
+			...message('codigo-revision', 'coordinador', `nota ${i}`, `m${i}`),
+			en: `2026-10-26T10:${String(i).padStart(2, '0')}:00Z`,
+		}));
+		const { notas } = call('rounds.mjs', 'leftByUnanswered', 'codigo', {
+			tareas: [origin(), open],
+			bitacora,
+		});
+		expect(notas).toHaveLength(20);
+		expect(notas[0]).toBe('… 6 notas anteriores omitidas');
+		expect(notas[1]).toBe('T11 · codex → coordinador: nota 6');
+		expect(notas[19]).toBe('T11 · codex → coordinador: nota 24');
+	});
 });
 
 describe('d291 handled messages', () => {
@@ -424,5 +440,8 @@ describe('d270 board PRs wait only for a real merge-tree conflict (d291)', () =>
 		expect(wait.status).toBe(1);
 		expect(wait.out).toContain('espera');
 		expect(wait.out).toContain(`#8: conflicto real en ${BOARD_FILE}`);
+		const bad = solape([own, pr(6, 'not-a-sha', [BOARD_FILE])]);
+		expect(bad.status).toBe(1);
+		expect(bad.out).toContain('#6: UNVERIFIED');
 	});
 });

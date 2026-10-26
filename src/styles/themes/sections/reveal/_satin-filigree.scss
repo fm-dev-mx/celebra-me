@@ -1,3 +1,5 @@
+@use '../../../global/a11y' as a11y;
+
 .envelope-wrapper[data-variant='satin-filigree'] {
 	--env-bg-fallback: var(--color-ice-blue);
 	--env-paper-bg: linear-gradient(
@@ -110,7 +112,8 @@
 	}
 
 	.envelope-external-instruction__button {
-		min-height: 44px;
+		@include a11y.touch-target;
+
 		color: var(--color-deep-blue-graphite);
 	}
 

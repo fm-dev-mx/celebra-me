@@ -1,3 +1,5 @@
+@use '../global/a11y' as a11y;
+
 // src/styles/invitation/_quote.scss
 // ----------------------------------------------------
 // Elegant Quote Section Styles
@@ -179,7 +181,7 @@
 	color: var(--quote-author-color, var(--quote-author-color-fallback));
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include a11y.reduced-motion {
 	.quote-line,
 	.quote-line.is-visible {
 		opacity: 100%;

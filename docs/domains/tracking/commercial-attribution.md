@@ -124,6 +124,36 @@ An order created from the dashboard without a session takes `lead_id` and `sessi
 given lead, or from the customer's latest lead (`findLeadOrderAttribution`), so the deposit
 `Purchase` carries that visit's fbp/fbc.
 
+### Invitation data link («Datos de su invitación»)
+
+After a deposit is registered, the order's panel in the Sales Workspace issues a private link
+`/mi-invitacion/<token>` and a prefilled `wa.me` message to the customer's WhatsApp. The client
+fills in the invitation texts, family, venues (Google Maps links), itinerary, gift registry and
+music in a step-by-step mobile form; photos still arrive by WhatsApp.
+
+- **Table:** `invitation_data_requests`, one row per `sales_orders` row (service role only). It
+  stores the SHA-256 of the token, never the token: the dashboard shows the link once, and «Generar
+  enlace nuevo» replaces the hash, so the previous link stops working while the answers stay. Links
+  expire 60 days after they are issued.
+- **Issue:** `POST /api/dashboard/commercial/orders/:orderId/invitation-data`
+  (`action: issue-link | mark-reviewed`) only for `deposit_paid` or `paid` orders; `GET` returns the
+  state and answers.
+- **Client API:** `POST /api/mi-invitacion` (`action: load | save | submit`, token in the body so it
+  stays out of request logs; 120 requests per IP per minute). Answers are validated against the
+  field list in `src/lib/invitation-data/form.ts`; drafts may be partial, sending needs the
+  celebrant names and the event date. Empty forms are prefilled from the order's lead
+  (`celebrant_names`, `event_date`).
+- **Corrections:** after sending, the link stays open; every save keeps the form received and moves
+  `last_saved_at`.
+- **Owner notice:** the Sales Workspace lists received forms whose latest save is newer than
+  `owner_reviewed_at` («Datos de invitación por revisar») until the owner marks them as reviewed.
+- **Meta:** the first submission queues one `CompleteRegistration` outbox row per order
+  (`event_id = complete_registration:<orderId>`, `trigger_status = invitation_data_submitted`, no
+  value). It is measurement only and is delivered like `Purchase`: the order's session, the order's
+  lead consent and `action_source: chat`, with the row's creation time as the event time.
+- **Privacy:** the page is `noindex`, `no-store`, sends no referrer and loads no analytics (its
+  route classifies as `unknown`); `mi-invitacion` is a reserved invitation slug.
+
 ## `lead_created` Event Rule
 
 `lead_created` is a first-party tracking event fired server-side after lead persistence. It follows
@@ -256,7 +286,10 @@ admins.
    `enqueueBrowserConversionEvent()` with the first-party event as `trigger`. It inserts a `pending`
    row with that trigger as `trigger_status` and `event_id` set to the tracking event UUID, the same
    value the Pixel sends as `eventID`, so Meta deduplicates the two copies. A replayed event ID
-   keeps the first row. A failed insert is logged and never rejects the tracking event.
+   keeps the first row. A failed insert is logged and never rejects the tracking event. When the
+   session already has a lead with `consent_marketing` and a `customer_id` (the «Aparta su fecha»
+   form), `findSessionLeadCustomerId()` puts that customer on the row, so its later `PageView`,
+   `ViewContent` and `Contact` carry the hashed phone like the form's own `Lead`.
 2. Browser rows carry `session_id` (no foreign key, so the analytics purge stays free) and
    `event_source_path` instead of an order, customer and value (migrations
    `20261025120000_meta_conversion_contact_lead` and `20261026000000_meta_conversion_view_events`;
@@ -299,8 +332,18 @@ admins.
 
 The Pixel and CAPI send the same `external_id`: the SHA-256 hex of the first-party visitor ID
 (`cm_visitor_id`, trimmed and lowercased). The Pixel passes it to `fbq('init', id, { external_id })`
-with `autoConfig` off, so it is the only manual match key in the browser; it initializes without it
-when no visitor ID is stored.
+with `autoConfig` off; it initializes without it when no visitor ID is stored.
+
+After a successful «Aparta su fecha» submission with marketing consent, `lead-capture-client.ts`
+calls `rememberMetaPhoneMatchKey()`, which stores only `ph` (the SHA-256 hex of the phone's E.164
+digits, `normalizeCommercialPhone()` then digits only, the value `normalizeAndHashPhone()` sends for
+`customers.phone_e164`) and an expiry 90 days out (Meta's `_fbp` lifetime) in the first-party
+`cm_meta_ph` localStorage key. Every later Pixel initialization in that browser adds it:
+`fbq('init', id, { external_id, ph })`. The plain phone is never stored in the browser. The key is
+read only while marketing consent holds; an expired, malformed or consent-less value is deleted on
+read, and `saveConsent()` deletes it when marketing consent is withdrawn. On the server side,
+browser rows of the same session get the lead's customer (see step 1 above), so CAPI sends the same
+`ph`.
 
 `visitor_sessions.client_ip_address` and `client_user_agent` (migration
 `20261024180000_visitor_sessions_client_signals`) are written by tracking ingestion only when the
@@ -359,16 +402,20 @@ If attempted, the service returns a controlled Spanish error message.
 
 ### Payment Semantics and CAPI Purchase Value
 
-The `Purchase` value sent to Meta is always the **actual amount registered as paid** at the moment
-`deposit_paid` is marked. It is:
+After migration `20261026160000_meta_purchase_total_value.sql` is applied, each new `Purchase`
+outbox row stores the order's **full `total_amount`** at the first `deposit_paid` transition. For
+example, an order totaling MXN 1,800 with an MXN 899 deposit creates one Purchase worth MXN 1,800.
+The RPC reads that total from the locked order; callers still submit only the actual payment.
 
-- **Not** the order's `totalAmount` (which represents the full contract value).
-- **Not** the `depositAmount` / "Anticipo Sugerido" (which is a suggested reference value stored at
-  order creation).
-- **Always** the explicit numeric value entered by the operator in the deposit payment field.
+The operator's payment remains `sales_orders.amount_paid` (MXN 899 in this example), preserving the
+outstanding balance and internal payment tracking. The suggested `depositAmount` does not determine
+the Purchase value. Marking the order fully paid does not create a second Purchase.
 
-The operator enters the actual payment amount per-order at the time of marking `deposit_paid`. This
-ensures the Meta Purchase event reflects real money received.
+The outbox value is a snapshot, and CAPI delivers that stored value. Existing events, including
+pending/failed deliveries and idempotent deposit retries, retain their original value; the migration
+does not backfill, resend, or revalue historical events. Before application, the RPC still values
+new Purchases at the actual deposit amount. Schema application is a separate owner-authorized step
+after cross review; merging this migration does not prove it has been applied.
 
 ### CAPI Purchase Trigger Rules
 

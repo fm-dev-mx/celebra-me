@@ -154,6 +154,12 @@ async function runMetaInsightsJob(): Promise<ScheduledJobOutcome['status']> {
 	}
 	try {
 		const result = await runMetaInsightsCollector();
+		// An unconfigured source is skipped, not failed; name the missing variables so it is visible.
+		if (result.missingConfig.length)
+			console.warn(
+				'[meta-insights][collector] skipping unconfigured sources; unset: ' +
+					result.missingConfig.join(', '),
+			);
 		// Outcomes hold failure kinds and status codes only, never tokens, URLs or bodies.
 		(result.status === 'failed' ? console.warn : console.info)(
 			'[meta-insights][collector] ' + result.status,

@@ -424,7 +424,8 @@ html.envelope-open:has(ds-envelope-reveal:not([hidden], .is-preview-opened, .is-
 		filter var(--duration-standard) var(--ease-standard);
 
 	&__button {
-		min-height: 44px;
+		@include mixins.touch-target;
+
 		padding: 0;
 		color: inherit;
 		font: inherit;

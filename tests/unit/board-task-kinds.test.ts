@@ -204,9 +204,11 @@ describe('task kinds (T130): generated prompt', () => {
 		expect(r.sections['ANTES DE EMPEZAR'][1]).toContain(
 			'commit_preparation, testing_qa, coordinator_board',
 		);
-		expect(r.sections['ANTES DE EMPEZAR']).toContain(
-			'pnpm board claim tipos-y-prompts --agente=claude --rama=feat/board-task-kinds --titulo="f05 · T130 · Tipos y prompts"',
-		);
+		// T297: claim from the lane opens git-safety, so the prompt no longer starts that session by hand.
+		expect(r.sections['ANTES DE EMPEZAR'].slice(2)).toEqual([
+			'git switch -c feat/board-task-kinds origin/develop',
+			'pnpm board claim tipos-y-prompts --agente=claude --carril=f05-plataforma --rama=feat/board-task-kinds --titulo="f05 · T130 · Tipos y prompts"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session=feat/board-task-kinds',
+		]);
 		expect(r.sections.AUTORIZO.at(-1)).toBe('Leer el tablero.');
 		expect(r.sections['NO HAGAS'].at(-1)).toBe('- No toque view.html.');
 		// d210 was replaced by d240: the prompt carries the current text, on one line.
@@ -278,6 +280,29 @@ describe('task kinds (T130): generated prompt', () => {
 			'codigo',
 			'codigo',
 			null,
+		]);
+	});
+
+	it('generates invitacion prompt with claim including carril and git-safety', () => {
+		const t = task('invitacion-boda', {
+			tipo: 'invitacion',
+			busca: 'Preparar boda Daniela y Martin.\nTerminado cuando: lista.',
+			rama: 'feat/invitacion-daniela',
+			carrilPlaneado: 'f07-invitaciones',
+			num: 200,
+			rev: 2,
+		});
+		const r = probe(
+			`const kind = k.loadKinds().kinds.invitacion;
+			const prompt = kp.kindPrompt(input.t, { tareas: [input.t], decisiones: [] }, kind, { generado: '${NOW}' });
+			console.log(JSON.stringify({
+				pasosInicio: p.promptSection(prompt, 'ANTES DE EMPEZAR').filter(Boolean).slice(2),
+			}));`,
+			{ t },
+		);
+		expect(r.pasosInicio).toEqual([
+			'git switch -c feat/invitacion-daniela origin/develop',
+			'pnpm board claim invitacion-boda --agente=claude --carril=f07-invitaciones --rama=feat/invitacion-daniela --titulo="f07 · T200 · Tarea invitacion-boda"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session=feat/invitacion-daniela',
 		]);
 	});
 
