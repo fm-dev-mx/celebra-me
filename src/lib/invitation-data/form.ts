@@ -4,7 +4,27 @@
  * holds no server code; the answer schema lives in `answers-schema.ts`.
  */
 
-export type InvitationDataFieldKind = 'text' | 'textarea' | 'date' | 'time' | 'url';
+export type InvitationDataFieldKind = 'text' | 'textarea' | 'date' | 'time' | 'url' | 'photos';
+
+export const INVITATION_DATA_ALLOWED_MIME_TYPES = [
+	'image/jpeg',
+	'image/png',
+	'image/webp',
+] as const;
+
+export type InvitationDataAllowedMimeType = (typeof INVITATION_DATA_ALLOWED_MIME_TYPES)[number];
+
+export const INVITATION_DATA_MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+export const INVITATION_DATA_MAX_PHOTOS = 10;
+
+export interface InvitationDataPhoto {
+	id: string;
+	url: string;
+	name: string;
+	size: number;
+	type: string;
+	uploadedAt?: string;
+}
 
 export interface InvitationDataField {
 	name: InvitationDataFieldName;
@@ -24,7 +44,7 @@ export interface InvitationDataStep {
 	fields: InvitationDataField[];
 }
 
-export const INVITATION_DATA_FIELD_NAMES = [
+export const INVITATION_DATA_TEXT_FIELD_NAMES = [
 	'celebrantNames',
 	'eventDate',
 	'invitationTitle',
@@ -47,9 +67,14 @@ export const INVITATION_DATA_FIELD_NAMES = [
 	'notes',
 ] as const;
 
-export type InvitationDataFieldName = (typeof INVITATION_DATA_FIELD_NAMES)[number];
+export const INVITATION_DATA_FIELD_NAMES = [...INVITATION_DATA_TEXT_FIELD_NAMES, 'photos'] as const;
 
-export type InvitationDataAnswers = Partial<Record<InvitationDataFieldName, string>>;
+export type InvitationDataFieldName = (typeof INVITATION_DATA_FIELD_NAMES)[number];
+export type InvitationDataTextFieldName = (typeof INVITATION_DATA_TEXT_FIELD_NAMES)[number];
+
+export type InvitationDataAnswers = Partial<Record<InvitationDataTextFieldName, string>> & {
+	photos?: InvitationDataPhoto[];
+};
 
 export const INVITATION_DATA_STEPS: readonly InvitationDataStep[] = [
 	{
@@ -201,9 +226,23 @@ export const INVITATION_DATA_STEPS: readonly InvitationDataStep[] = [
 		],
 	},
 	{
+		id: 'fotos',
+		title: 'Fotos para su invitación',
+		intro: 'Suba las fotos que desea incluir en su diseño (máximo 10 fotos, hasta 10 MB cada una en formato JPG, PNG o WebP).',
+		fields: [
+			{
+				name: 'photos',
+				label: 'Fotos de la invitación',
+				kind: 'photos',
+				maxLength: 10,
+				help: 'Suba hasta 10 fotos en formato JPG, PNG o WebP (máximo 10 MB cada una).',
+			},
+		],
+	},
+	{
 		id: 'musica',
 		title: 'Música y detalles',
-		intro: 'Las fotos mándelas por WhatsApp; aquí solo los textos.',
+		intro: 'Si tiene una canción especial o detalles adicionales, anótelos aquí.',
 		fields: [
 			{
 				name: 'song',
@@ -265,9 +304,12 @@ export function compactInvitationDataAnswers(
 	answers: InvitationDataAnswers,
 ): InvitationDataAnswers {
 	const compact: InvitationDataAnswers = {};
-	for (const name of INVITATION_DATA_FIELD_NAMES) {
+	for (const name of INVITATION_DATA_TEXT_FIELD_NAMES) {
 		const value = answers[name]?.trim();
 		if (value) compact[name] = value;
+	}
+	if (Array.isArray(answers.photos) && answers.photos.length > 0) {
+		compact.photos = answers.photos;
 	}
 	return compact;
 }
@@ -276,8 +318,17 @@ export function compactInvitationDataAnswers(
 export function findMissingRequiredFields(answers: InvitationDataAnswers): InvitationDataIssues {
 	const issues: InvitationDataIssues = {};
 	for (const field of INVITATION_DATA_FIELDS) {
-		if (field.requiredToSubmit && !answers[field.name]?.trim()) {
-			issues[field.name] = 'Este dato es necesario para enviar el formulario.';
+		if (field.requiredToSubmit) {
+			if (field.name === 'photos') {
+				if (!answers.photos || answers.photos.length === 0) {
+					issues.photos = 'Este dato es necesario para enviar el formulario.';
+				}
+			} else {
+				const text = answers[field.name as InvitationDataTextFieldName];
+				if (!text?.trim()) {
+					issues[field.name] = 'Este dato es necesario para enviar el formulario.';
+				}
+			}
 		}
 	}
 	return issues;

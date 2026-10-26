@@ -1,14 +1,19 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { parseInvitationDataAnswers } from '@/lib/invitation-data/answers-schema';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { getUsableWhatsAppE164 } from '@/lib/commercial/phone';
 import {
 	buildInvitationDataWhatsAppMessage,
 	findMissingRequiredFields,
+	INVITATION_DATA_ALLOWED_MIME_TYPES,
+	INVITATION_DATA_MAX_PHOTO_BYTES,
+	INVITATION_DATA_MAX_PHOTOS,
 	type InvitationDataAnswers,
 	type InvitationDataIssues,
+	type InvitationDataPhoto,
 	type InvitationDataStatus,
 } from '@/lib/invitation-data/form';
+import { getPublicUrl, uploadToStorage } from '@/lib/intake/storage';
 import {
 	enqueueCompleteRegistration,
 	findInvitationDataOrder,
@@ -233,6 +238,142 @@ async function queueCompleteRegistration(order: InvitationDataOrder): Promise<vo
 		// Measurement only: the client's data is already saved.
 		console.error('[invitation-data] CompleteRegistration failed:', safeErr(error));
 	}
+}
+
+export interface UploadedInvitationDataPhotoResult {
+	photo: InvitationDataPhoto;
+	answers: InvitationDataAnswers;
+}
+
+export async function uploadInvitationDataPhoto(input: {
+	token: unknown;
+	file: Blob;
+	fileName: string;
+	mimeType: string;
+	now?: Date;
+}): Promise<UploadedInvitationDataPhotoResult> {
+	const now = input.now ?? new Date();
+	const { request, order, tokenHash } = await resolveActiveRequest(input.token, now);
+
+	if (!input.file || typeof input.file.size !== 'number' || input.file.size === 0) {
+		throw new ApiError(400, 'bad_request', 'No se envió ningún archivo.');
+	}
+
+	if (input.file.size > INVITATION_DATA_MAX_PHOTO_BYTES) {
+		throw new ApiError(400, 'bad_request', 'La imagen no debe superar los 10 MB.');
+	}
+
+	const mimeType = input.mimeType || input.file.type;
+	if (!(INVITATION_DATA_ALLOWED_MIME_TYPES as readonly string[]).includes(mimeType)) {
+		throw new ApiError(
+			400,
+			'bad_request',
+			'Tipo de archivo no admitido. Suba fotos en formato JPG, PNG o WebP.',
+		);
+	}
+
+	const currentPhotos = Array.isArray(request.answers.photos) ? request.answers.photos : [];
+	if (currentPhotos.length >= INVITATION_DATA_MAX_PHOTOS) {
+		throw new ApiError(
+			400,
+			'bad_request',
+			`Solo puede subir un máximo de ${INVITATION_DATA_MAX_PHOTOS} fotos.`,
+		);
+	}
+
+	const photoId = randomUUID();
+	const ext = mimeType === 'image/jpeg' ? 'jpg' : mimeType === 'image/png' ? 'png' : 'webp';
+	const storagePath = `invitation-data/${order.id}/${photoId}.${ext}`;
+
+	await uploadToStorage('invitation-assets', storagePath, input.file, mimeType);
+	const url = getPublicUrl('invitation-assets', storagePath);
+
+	const sanitizedName = (input.fileName || 'foto').slice(0, 120);
+	const photo: InvitationDataPhoto = {
+		id: photoId,
+		url,
+		name: sanitizedName,
+		size: input.file.size,
+		type: mimeType,
+		uploadedAt: now.toISOString(),
+	};
+
+	const updatedPhotos = [...currentPhotos, photo];
+	const updatedAnswers: InvitationDataAnswers = {
+		...request.answers,
+		photos: updatedPhotos,
+	};
+
+	const unsubmitted = !request.submittedAt;
+	const status: InvitationDataStatus = unsubmitted ? 'in_progress' : 'submitted';
+
+	let saved = await saveInvitationDataAnswers({
+		requestId: request.id,
+		tokenHash,
+		answers: updatedAnswers,
+		status,
+		savedAt: now.toISOString(),
+		firstSubmission: false,
+		onlyIfUnsubmitted: unsubmitted,
+	});
+
+	if (!saved && unsubmitted) {
+		saved = await saveInvitationDataAnswers({
+			requestId: request.id,
+			tokenHash,
+			answers: updatedAnswers,
+			status: 'submitted',
+			savedAt: now.toISOString(),
+		});
+	}
+
+	if (!saved) throw linkNotFound();
+
+	return { photo, answers: saved.answers };
+}
+
+export async function deleteInvitationDataPhoto(input: {
+	token: unknown;
+	photoId: string;
+	now?: Date;
+}): Promise<{ success: true; answers: InvitationDataAnswers }> {
+	const now = input.now ?? new Date();
+	const { request, tokenHash } = await resolveActiveRequest(input.token, now);
+
+	const currentPhotos = Array.isArray(request.answers.photos) ? request.answers.photos : [];
+	const updatedPhotos = currentPhotos.filter((p) => p.id !== input.photoId);
+
+	const updatedAnswers: InvitationDataAnswers = {
+		...request.answers,
+		photos: updatedPhotos,
+	};
+
+	const unsubmitted = !request.submittedAt;
+	const status: InvitationDataStatus = unsubmitted ? 'in_progress' : 'submitted';
+
+	let saved = await saveInvitationDataAnswers({
+		requestId: request.id,
+		tokenHash,
+		answers: updatedAnswers,
+		status,
+		savedAt: now.toISOString(),
+		firstSubmission: false,
+		onlyIfUnsubmitted: unsubmitted,
+	});
+
+	if (!saved && unsubmitted) {
+		saved = await saveInvitationDataAnswers({
+			requestId: request.id,
+			tokenHash,
+			answers: updatedAnswers,
+			status: 'submitted',
+			savedAt: now.toISOString(),
+		});
+	}
+
+	if (!saved) throw linkNotFound();
+
+	return { success: true, answers: saved.answers };
 }
 
 /** Dashboard view of one order's form; null when no link was issued yet. */
