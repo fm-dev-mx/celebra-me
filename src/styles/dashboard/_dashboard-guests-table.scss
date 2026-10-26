@@ -43,7 +43,7 @@
 		white-space: nowrap;
 
 		&:last-child {
-			width: 44px;
+			width: 60px;
 			text-align: center;
 		}
 	}
@@ -79,7 +79,7 @@
 
 		&:last-child {
 			text-align: center;
-			width: 44px;
+			width: 60px;
 			padding: 0.9rem 0.4rem;
 		}
 
@@ -129,8 +129,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 34px;
-	height: 34px;
+	width: 44px;
+	height: 44px;
 	padding: 0;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 8px;
@@ -150,14 +150,13 @@
 		color: var(--color-text-primary);
 	}
 
-	&--open svg {
-		transform: rotate(180deg);
+	&--active {
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
+		color: var(--color-text-primary);
 	}
 
-	// Touch layouts keep the 44px target.
-	@include mixins.respond-below(lg) {
-		width: 44px;
-		height: 44px;
+	&:focus-visible {
+		@include mixins.focus-ring;
 	}
 }
 
@@ -227,4 +226,161 @@
 .dashboard-guests__table tbody tr.guest-row--selected-detail {
 	background: var(--color-surface-soft);
 	box-shadow: inset 4px 0 0 var(--dashboard-button-primary-bg);
+}
+
+/* Status groups: one tinted, collapsible header per status, as in the compact list */
+$group-header-size: 0.9375rem;
+$row-meta-size: 0.82rem;
+
+.dashboard-guests__table .guest-table-group__header {
+	border-bottom: 1px solid var(--color-border-subtle);
+
+	&:hover {
+		background-color: transparent;
+	}
+
+	th {
+		padding: 0 0.65rem;
+		background: var(--color-surface-soft);
+		color: var(--color-text-primary);
+		font-family: var(--font-ui);
+		font-size: $group-header-size;
+		font-weight: 700;
+		letter-spacing: 0;
+
+		&:last-child {
+			width: auto;
+			text-align: left;
+		}
+	}
+}
+
+.guest-table-group--to-send .guest-table-group__header th {
+	background: var(--color-state-warning-bg);
+	color: var(--color-state-warning-text);
+}
+
+.guest-table-group--waiting .guest-table-group__header th {
+	background: var(--color-state-info-bg);
+	color: var(--color-state-info-text);
+}
+
+.guest-table-group--confirmed .guest-table-group__header th {
+	background: var(--color-state-success-bg);
+	color: var(--color-state-success-text);
+}
+
+.guest-table-group--declined .guest-table-group__header th {
+	background: var(--color-state-neutral-bg);
+	color: var(--color-state-neutral-text);
+}
+
+.guest-table-group__bar {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.guest-table-group__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 44px;
+	padding: 0 0.35rem;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+.guest-table-group__chevron {
+	transition: transform 0.2s ease;
+
+	&--collapsed {
+		transform: rotate(-90deg);
+	}
+}
+
+.guest-table-group__count {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+}
+
+.guest-table-group__note {
+	margin-left: auto;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+.guest-table-group__batch {
+	min-height: 44px;
+	margin-left: auto;
+	padding: 0 0.35rem;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+.guest-table-group__note + .guest-table-group__batch {
+	margin-left: 0;
+}
+
+/* Row: name in the UI sans, phone and waiting stage on one line, 44px actions */
+.dashboard-guests__table .guest-info__name {
+	font-family: var(--font-ui);
+	font-weight: 600;
+	letter-spacing: 0;
+}
+
+.guest-info__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.15rem 0.5rem;
+	font-size: $row-meta-size;
+	color: var(--color-text-secondary);
+}
+
+.guest-info__stage::before {
+	content: '·';
+	margin-right: 0.5rem;
+}
+
+.dashboard-guests__table .guest-row__actions {
+	justify-content: flex-start;
+
+	button {
+		min-height: 44px;
+	}
+
+	.dashboard-guests__share-button {
+		padding: 0.5rem 1rem;
+	}
+}
+
+.guest-row__message-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.guest-row__reminder-btn {
+	gap: 0.4rem;
+}
+
+.guest-actions-menu--row .guest-actions-menu__item {
+	min-height: 44px;
 }

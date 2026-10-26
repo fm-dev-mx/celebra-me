@@ -461,7 +461,9 @@ test.describe('Guest dashboard summary on wide screens', () => {
 
 		await expect(page.locator('.guest-overview__stages')).toBeVisible();
 		await expect(page.locator('.guest-strip')).toBeHidden();
-		await expect(page.getByRole('button', { name: 'Más acciones' })).toHaveCount(1);
+		await expect(page.getByRole('button', { name: 'Más acciones', exact: true })).toHaveCount(
+			1,
+		);
 		await page.screenshot({ path: testInfo.outputPath('guests-1366.png') });
 	});
 });

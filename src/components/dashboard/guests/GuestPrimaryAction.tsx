@@ -21,7 +21,7 @@ interface GuestPrimaryActionProps {
 	onReminderSent?: (guestId: string) => void;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onSaveGuest?: GuestSaveCallback;
-	/** Card and detail sheet use the full button; the table row uses the compact one. */
+	/** Card and detail sheet use the full button; the table row uses an outlined one. */
 	variant?: 'card' | 'row';
 }
 
@@ -33,7 +33,7 @@ const REMINDER_BUTTON = {
 		iconSize: 16,
 	},
 	row: {
-		className: 'btn-primary btn--compact guest-row__reminder-btn',
+		className: 'btn-secondary btn--compact guest-row__reminder-btn',
 		iconClassName: undefined,
 		iconSize: 14,
 	},
@@ -105,6 +105,7 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 				shareTemplates={shareTemplates}
 				shareDateContext={shareDateContext}
 				onShared={() => onMarkShared(item)}
+				outlined={variant === 'row'}
 				onSaveGuest={onSaveGuest}
 			/>
 		);

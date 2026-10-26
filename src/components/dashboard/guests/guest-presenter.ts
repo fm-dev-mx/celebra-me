@@ -395,6 +395,19 @@ export function groupGuestsByStatus(items: DashboardGuestItem[]): GuestStatusSec
 	}));
 }
 
+/** Answered sections carry their people total; open sections need no extra note. */
+export function getGuestSectionNote(section: GuestStatusSection): string | null {
+	if (section.bucket === 'confirmed') {
+		const people = section.items.reduce((sum, item) => sum + attendingOf(item), 0);
+		return `${people} ${people === 1 ? 'persona' : 'personas'}`;
+	}
+	if (section.bucket === 'declined') {
+		const passes = section.items.reduce((sum, item) => sum + passesOf(item), 0);
+		return `${passes} ${passes === 1 ? 'pase liberado' : 'pases liberados'}`;
+	}
+	return null;
+}
+
 function formatDaysAgo(iso: string | null | undefined, now: Date): string | null {
 	if (!iso) return null;
 	const sent = new Date(iso);

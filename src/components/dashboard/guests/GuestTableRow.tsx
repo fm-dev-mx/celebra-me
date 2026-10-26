@@ -1,11 +1,10 @@
 import React, { useId, useState } from 'react';
 import { MessageIcon } from '@/components/common/icons/ui';
 import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
-import { ChevronRightGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import GuestLastMessage from '@/components/dashboard/guests/GuestLastMessage';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
 import GuestPrimaryAction from '@/components/dashboard/guests/GuestPrimaryAction';
-import GuestStatusPill from '@/components/dashboard/guests/GuestStatusPill';
+import GuestRowMenu from '@/components/dashboard/guests/GuestRowMenu';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
@@ -14,12 +13,14 @@ import {
 	getGuestMessageCount,
 	getGuestPeopleLabel,
 	getGuestMessageFallbackTimestamp,
+	getGuestPrimaryAction,
+	getGuestStage,
 	type GuestSaveCallback,
+	type GuestStage,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestTableRowProps {
 	item: DashboardGuestItem;
-	index: number;
 	inviteUrl: string;
 	eventTitle: string;
 	shareTemplates: ShareMessagesConfig;
@@ -36,9 +37,59 @@ interface GuestTableRowProps {
 	onSaveGuest?: GuestSaveCallback;
 }
 
+/** The group header already names the status; only "waiting" needs the finer stage. */
+const STAGE_NOTE: Partial<Record<GuestStage, string>> = {
+	unopened: 'Enviada, sin abrir',
+	opened: 'Abierta, sin responder',
+};
+
+type GuestRowVisibleAction = 'next-step' | 'message' | 'copy';
+
+interface GuestRowActionProps extends Pick<
+	GuestTableRowProps,
+	| 'item'
+	| 'inviteUrl'
+	| 'eventTitle'
+	| 'shareTemplates'
+	| 'shareDateContext'
+	| 'reminderMode'
+	| 'isReminderEligible'
+	| 'onReminderSent'
+	| 'onMarkShared'
+	| 'onSaveGuest'
+> {
+	action: GuestRowVisibleAction;
+	message: { open: boolean; panelId: string; onToggle: () => void };
+}
+
+/** The row's single visible action; the rest sits in the «⋯» menu. */
+const GuestRowAction: React.FC<GuestRowActionProps> = ({ action, message, ...props }) => (
+	<div className="guest-row__actions">
+		{action === 'next-step' && <GuestPrimaryAction {...props} variant="row" />}
+		{action === 'message' && (
+			<button
+				type="button"
+				className="btn-secondary btn--compact guest-row__message-btn"
+				onClick={message.onToggle}
+				aria-expanded={message.open}
+				aria-controls={message.panelId}
+			>
+				<MessageIcon size={16} aria-hidden="true" />
+				<span>{message.open ? 'Ocultar mensaje' : 'Ver mensaje'}</span>
+			</button>
+		)}
+		{action === 'copy' && (
+			<CopyLinkButton
+				url={props.inviteUrl}
+				guestName={props.item.fullName}
+				className="btn-secondary btn--compact guest-row__copy-btn"
+			/>
+		)}
+	</div>
+);
+
 const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	item,
-	index,
 	inviteUrl,
 	eventTitle,
 	shareTemplates,
@@ -60,6 +111,18 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	const hasCompactChips = compactChips.length > 0;
 	const hasMessages = getGuestMessageCount(item.guestComment) > 0;
 	const people = getGuestPeopleLabel(item);
+	const stageNote = STAGE_NOTE[getGuestStage(item)];
+
+	// One visible action per row: the next step while unanswered, then the guest's
+	// message, then the link. Everything else lives in the «⋯» menu.
+	const answered =
+		getGuestPrimaryAction(item, reminderMode, isReminderEligible).action === 'copy-link';
+	const visibleAction: GuestRowVisibleAction = !answered
+		? 'next-step'
+		: hasMessages
+			? 'message'
+			: 'copy';
+	const toggleMessage = () => setMsgOpen((v) => !v);
 
 	const msgPanel = hasMessages && msgOpen && (
 		<tr className="guest-message-row">
@@ -89,9 +152,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				<td data-label="Invitación">
 					<div className="guest-info">
 						<span className="guest-info__name">
-							<span className="invitation-number">
-								#{String(index + 1).padStart(2, '0')}
-							</span>
 							<button
 								type="button"
 								className="guest-info__open"
@@ -116,27 +176,15 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 								)}
 							</span>
 						</span>
-						<span
-							className={`guest-info__phone${item.phone ? '' : ' guest-info__phone--missing'}`}
-						>
-							{item.phone || 'Sin teléfono'}
-						</span>
-						{hasMessages && (
-							<button
-								type="button"
-								className="guest-nota-btn"
-								onClick={() => setMsgOpen((v) => !v)}
-								aria-expanded={msgOpen}
-								aria-controls={msgId}
+						<span className="guest-info__meta">
+							<span
+								className={`guest-info__phone${item.phone ? '' : ' guest-info__phone--missing'}`}
 							>
-								<MessageIcon size={16} aria-hidden="true" />
-								<span>{msgOpen ? 'Ocultar mensaje' : 'Ver mensaje'}</span>
-							</button>
-						)}
+								{item.phone || 'Sin teléfono'}
+							</span>
+							{stageNote && <span className="guest-info__stage">{stageNote}</span>}
+						</span>
 					</div>
-				</td>
-				<td data-label="Estado">
-					<GuestStatusPill item={item} />
 				</td>
 				<td data-label="Personas">
 					<div className="guest-people">
@@ -146,39 +194,34 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 						)}
 					</div>
 				</td>
-				<td data-label="Acciones">
-					<div className="guest-row__actions">
-						<GuestPrimaryAction
-							item={item}
-							inviteUrl={inviteUrl}
-							eventTitle={eventTitle}
-							shareTemplates={shareTemplates}
-							shareDateContext={shareDateContext}
-							reminderMode={reminderMode}
-							isReminderEligible={isReminderEligible}
-							onReminderSent={onReminderSent}
-							onMarkShared={onMarkShared}
-							onSaveGuest={onSaveGuest}
-							variant="row"
-						/>
-						<CopyLinkButton
-							url={inviteUrl}
-							guestName={item.fullName}
-							className="btn-secondary btn--compact guest-row__copy-btn"
-						/>
-					</div>
+				<td data-label="Acción">
+					<GuestRowAction
+						action={visibleAction}
+						item={item}
+						inviteUrl={inviteUrl}
+						eventTitle={eventTitle}
+						shareTemplates={shareTemplates}
+						shareDateContext={shareDateContext}
+						reminderMode={reminderMode}
+						isReminderEligible={isReminderEligible}
+						onReminderSent={onReminderSent}
+						onMarkShared={onMarkShared}
+						onSaveGuest={onSaveGuest}
+						message={{ open: msgOpen, panelId: msgId, onToggle: toggleMessage }}
+					/>
 				</td>
 				<td data-label="">
-					<button
-						type="button"
-						className="btn-icon guest-row__menu-btn"
-						title="Ver detalles"
-						aria-label={`Ver detalles de ${item.fullName}`}
-						aria-haspopup="dialog"
-						onClick={() => onOpenDetails(item)}
-					>
-						<ChevronRightGlyph size={18} />
-					</button>
+					<GuestRowMenu
+						guestName={item.fullName}
+						inviteUrl={inviteUrl}
+						showCopy={visibleAction !== 'copy'}
+						message={
+							hasMessages && visibleAction !== 'message'
+								? { open: msgOpen, onToggle: toggleMessage }
+								: undefined
+						}
+						onOpenDetails={() => onOpenDetails(item)}
+					/>
 				</td>
 			</tr>
 

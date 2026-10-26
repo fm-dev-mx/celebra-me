@@ -447,6 +447,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onOpenDetails={(item) => setDetailGuestId(item.guestId)}
 					selection={batchSelection.tableSelection}
 					messageWall={reviewFilter === 'with-message'}
+					onRequestBatch={batchSelection.requestBatch}
 				/>
 
 				{detailGuest && (
