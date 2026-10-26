@@ -30,11 +30,7 @@ export const OFFSITE_ENV = {
 	recipient: 'PROD_OFFSITE_AGE_RECIPIENT',
 } as const;
 
-export interface OffsiteConfig {
-	accountId: string;
-	bucket: string;
-	accessKeyId: string;
-	secretAccessKey: string;
+export interface OffsiteConfig extends R2Location {
 	recipient: string;
 }
 
@@ -240,36 +236,44 @@ export async function generateOffsiteKeyPair(): Promise<{ identity: string; reci
 	return { identity, recipient: await identityToRecipient(identity) };
 }
 
-type Fetch = typeof fetch;
+export type Fetch = typeof fetch;
 
-function createClient(config: OffsiteConfig): AwsClient {
+/** One R2 bucket reached through the S3-compatible API with a bucket-scoped API token. */
+export interface R2Location {
+	accountId: string;
+	bucket: string;
+	accessKeyId: string;
+	secretAccessKey: string;
+}
+
+function createClient(location: R2Location): AwsClient {
 	return new AwsClient({
-		accessKeyId: config.accessKeyId,
-		secretAccessKey: config.secretAccessKey,
+		accessKeyId: location.accessKeyId,
+		secretAccessKey: location.secretAccessKey,
 		service: 's3',
 		region: 'auto',
 	});
 }
 
-function objectUrl(config: OffsiteConfig, key = ''): string {
+export function r2ObjectUrl(location: R2Location, key = ''): string {
 	const path = key
 		.split('/')
 		.map((segment) => encodeURIComponent(segment))
 		.join('/');
-	return `https://${config.accountId}.r2.cloudflarestorage.com/${config.bucket}/${path}`;
+	return `https://${location.accountId}.r2.cloudflarestorage.com/${location.bucket}/${path}`;
 }
 
-async function signedFetch(
-	config: OffsiteConfig,
+export async function r2SignedFetch(
+	location: R2Location,
 	url: string,
 	init: RequestInit,
 	fetchImpl: Fetch,
 ): Promise<Response> {
-	const request = await createClient(config).sign(url, init);
+	const request = await createClient(location).sign(url, init);
 	return fetchImpl(request, { signal: AbortSignal.timeout(300_000) });
 }
 
-async function failure(action: string, response: Response): Promise<Error> {
+export async function r2Failure(action: string, response: Response): Promise<Error> {
 	const body = await response.text().catch(() => '');
 	const code = /<Code>([^<]+)<\/Code>/.exec(body)?.[1];
 	return new Error(`R2 ${action} failed: HTTP ${response.status}${code ? ` (${code})` : ''}.`);
@@ -282,8 +286,8 @@ export async function uploadOffsiteObject(
 	body: Uint8Array,
 	fetchImpl: Fetch = fetch,
 ): Promise<void> {
-	const url = objectUrl(config, key);
-	const put = await signedFetch(
+	const url = r2ObjectUrl(config, key);
+	const put = await r2SignedFetch(
 		config,
 		url,
 		{
@@ -298,9 +302,9 @@ export async function uploadOffsiteObject(
 		},
 		fetchImpl,
 	);
-	if (!put.ok) throw await failure('upload', put);
-	const head = await signedFetch(config, url, { method: 'HEAD' }, fetchImpl);
-	if (!head.ok) throw await failure('upload check', head);
+	if (!put.ok) throw await r2Failure('upload', put);
+	const head = await r2SignedFetch(config, url, { method: 'HEAD' }, fetchImpl);
+	if (!head.ok) throw await r2Failure('upload check', head);
 	const stored = Number(head.headers.get('content-length'));
 	if (stored !== body.byteLength) {
 		throw new Error(`R2 upload check failed: stored ${stored} bytes, sent ${body.byteLength}.`);
@@ -312,13 +316,13 @@ export async function downloadOffsiteObject(
 	key: string,
 	fetchImpl: Fetch = fetch,
 ): Promise<Uint8Array> {
-	const response = await signedFetch(
+	const response = await r2SignedFetch(
 		config,
-		objectUrl(config, key),
+		r2ObjectUrl(config, key),
 		{ method: 'GET' },
 		fetchImpl,
 	);
-	if (!response.ok) throw await failure('download', response);
+	if (!response.ok) throw await r2Failure('download', response);
 	return new Uint8Array(await response.arrayBuffer());
 }
 
@@ -345,29 +349,38 @@ export function parseListObjectsXml(xml: string): {
 	return { objects, nextToken: truncated && token ? decodeXml(token) : null };
 }
 
+/** Lists every object under a key prefix, following continuation tokens. */
+export async function listR2Objects(
+	location: R2Location,
+	prefix: string,
+	fetchImpl: Fetch = fetch,
+): Promise<OffsiteObject[]> {
+	const objects: OffsiteObject[] = [];
+	let token: string | null = null;
+	do {
+		const query = new URLSearchParams({ 'list-type': '2', prefix });
+		if (token) query.set('continuation-token', token);
+		const response = await r2SignedFetch(
+			location,
+			`${r2ObjectUrl(location)}?${query.toString()}`,
+			{ method: 'GET' },
+			fetchImpl,
+		);
+		if (!response.ok) throw await r2Failure('list', response);
+		const page = parseListObjectsXml(await response.text());
+		objects.push(...page.objects);
+		token = page.nextToken;
+	} while (token);
+	return objects;
+}
+
 /** Lists bundles under a prefix, newest key first (keys sort by recovery-point time). */
 export async function listOffsiteObjects(
 	config: OffsiteConfig,
 	prefix: OffsitePrefix,
 	fetchImpl: Fetch = fetch,
 ): Promise<OffsiteObject[]> {
-	const objects: OffsiteObject[] = [];
-	let token: string | null = null;
-	do {
-		const query = new URLSearchParams({ 'list-type': '2', prefix: `${prefix}/` });
-		if (token) query.set('continuation-token', token);
-		const response = await signedFetch(
-			config,
-			`${objectUrl(config)}?${query.toString()}`,
-			{ method: 'GET' },
-			fetchImpl,
-		);
-		if (!response.ok) throw await failure('list', response);
-		const page = parseListObjectsXml(await response.text());
-		objects.push(...page.objects);
-		token = page.nextToken;
-	} while (token);
-	return objects
+	return (await listR2Objects(config, `${prefix}/`, fetchImpl))
 		.filter((object) => object.key.endsWith(OFFSITE_OBJECT_SUFFIX))
 		.sort((left, right) => right.key.localeCompare(left.key));
 }

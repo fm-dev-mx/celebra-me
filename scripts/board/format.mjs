@@ -10,6 +10,7 @@ import {
 	color,
 	findTask,
 	isFinished,
+	isNoteRow,
 	isReview,
 	matches,
 	ownerAsks,
@@ -266,7 +267,7 @@ function traceRows(bitacora) {
 	if (byTask) return byTask;
 	byTask = new Map();
 	const rows = bitacora
-		.filter((r) => r.tarea && !r.mensaje && r.quien)
+		.filter((r) => r.tarea && !isNoteRow(r) && r.quien)
 		.sort((a, b) => String(a.en).localeCompare(String(b.en)));
 	for (const r of rows) (byTask.get(r.tarea) ?? byTask.set(r.tarea, []).get(r.tarea)).push(r);
 	TRACE_ROWS.set(bitacora, byTask);

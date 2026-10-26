@@ -21,6 +21,8 @@ interface GuestPrimaryActionProps {
 	onReminderSent?: (guestId: string) => void;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onSaveGuest?: GuestSaveCallback;
+	/** Reports when the share composer opens or closes. */
+	onComposerOpenChange?: (item: DashboardGuestItem, open: boolean) => void;
 	/** Card and detail sheet use the full button; the table row uses an outlined one. */
 	variant?: 'card' | 'row';
 }
@@ -54,50 +56,32 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 	onReminderSent,
 	onMarkShared,
 	onSaveGuest,
+	onComposerOpenChange,
 	variant = 'card',
 }) => {
 	const [reminderModalOpen, setReminderModalOpen] = useState(false);
 	const primaryAction = getGuestPrimaryAction(item, reminderMode, isReminderEligible);
 	const reminderButton = REMINDER_BUTTON[variant];
 
+	let action: React.ReactNode = null;
 	if (primaryAction.action === 'send-reminder') {
-		return (
-			<>
-				<button
-					type="button"
-					className={reminderButton.className}
-					onClick={() => setReminderModalOpen(true)}
-					title="Enviar recordatorio"
-					aria-label={`Enviar recordatorio a ${item.fullName}`}
-				>
-					<MessageIcon
-						className={reminderButton.iconClassName}
-						size={reminderButton.iconSize}
-					/>
-					<span>Recordar</span>
-				</button>
-				{reminderModalOpen && (
-					<SendInvitationModal
-						key={item.guestId}
-						guest={item}
-						pendingGuests={[]}
-						inviteUrl={inviteUrl}
-						onClose={() => setReminderModalOpen(false)}
-						onSave={onSaveGuest ?? (async () => item)}
-						onMarkShared={async () => onMarkShared(item)}
-						onReminderSent={onReminderSent}
-						templates={shareTemplates}
-						shareDateContext={shareDateContext}
-						eventTitle={eventTitle}
-						mode="single-reminder"
-					/>
-				)}
-			</>
+		action = (
+			<button
+				type="button"
+				className={reminderButton.className}
+				onClick={() => setReminderModalOpen(true)}
+				title="Enviar recordatorio"
+				aria-label={`Enviar recordatorio a ${item.fullName}`}
+			>
+				<MessageIcon
+					className={reminderButton.iconClassName}
+					size={reminderButton.iconSize}
+				/>
+				<span>Recordar</span>
+			</button>
 		);
-	}
-
-	if (primaryAction.action === 'share') {
-		return (
+	} else if (primaryAction.action === 'share') {
+		action = (
 			<ShareAction
 				guest={item}
 				inviteUrl={inviteUrl}
@@ -107,11 +91,37 @@ const GuestPrimaryAction: React.FC<GuestPrimaryActionProps> = ({
 				onShared={() => onMarkShared(item)}
 				outlined={variant === 'row'}
 				onSaveGuest={onSaveGuest}
+				onComposerOpenChange={
+					onComposerOpenChange && ((open) => onComposerOpenChange(item, open))
+				}
 			/>
 		);
 	}
 
-	return null;
+	// The modal lives outside the action branch: onReminderSent fires before the hand-off
+	// finishes and can drop the guest from the eligible set, which must not unmount the
+	// modal or its manual fallback.
+	return (
+		<>
+			{action}
+			{reminderModalOpen && (
+				<SendInvitationModal
+					key={item.guestId}
+					guest={item}
+					pendingGuests={[]}
+					inviteUrl={inviteUrl}
+					onClose={() => setReminderModalOpen(false)}
+					onSave={onSaveGuest ?? (async () => item)}
+					onMarkShared={async () => onMarkShared(item)}
+					onReminderSent={onReminderSent}
+					templates={shareTemplates}
+					shareDateContext={shareDateContext}
+					eventTitle={eventTitle}
+					mode="single-reminder"
+				/>
+			)}
+		</>
+	);
 };
 
 export default GuestPrimaryAction;
