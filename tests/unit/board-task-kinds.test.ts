@@ -283,6 +283,29 @@ describe('task kinds (T130): generated prompt', () => {
 		]);
 	});
 
+	it('generates invitacion prompt with claim including carril and git-safety', () => {
+		const t = task('invitacion-boda', {
+			tipo: 'invitacion',
+			busca: 'Preparar boda Daniela y Martin.\nTerminado cuando: lista.',
+			rama: 'feat/invitacion-daniela',
+			carrilPlaneado: 'f07-invitaciones',
+			num: 200,
+			rev: 2,
+		});
+		const r = probe(
+			`const kind = k.loadKinds().kinds.invitacion;
+			const prompt = kp.kindPrompt(input.t, { tareas: [input.t], decisiones: [] }, kind, { generado: '${NOW}' });
+			console.log(JSON.stringify({
+				pasosInicio: p.promptSection(prompt, 'ANTES DE EMPEZAR').filter(Boolean).slice(2),
+			}));`,
+			{ t },
+		);
+		expect(r.pasosInicio).toEqual([
+			'git switch -c feat/invitacion-daniela origin/develop',
+			'pnpm board claim invitacion-boda --agente=claude --carril=f07-invitaciones --rama=feat/invitacion-daniela --titulo="f07 · T200 · Tarea invitacion-boda"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session=feat/invitacion-daniela',
+		]);
+	});
+
 	it('compares prompts without the keys that change on every write', () => {
 		const r =
 			probe(`const a = p.buildPrompt({ identidad: 'f05 · T1 · A', secciones: [['QUÉ SE BUSCA', ['x']], ['DECISIONES', ['- d1: a']]],

@@ -55,12 +55,20 @@ routing and the internal modules work lives in
 - **Start**: `pnpm board show <id>` for a given task, else `pnpm board next --agente=<a>`.
 - **Claim**:
   `pnpm board claim <id> --agente=<a> --carril=<lane> --rama=<branch> --titulo="<session name>"`
-  takes the lock (`candado`) and moves `pendiente` → `en curso`. It requires readiness, no owner
-  gate and an exclusive lane; an identical claim is idempotent. A claim grants no editing authority.
+  takes the lock (`candado`) and moves `pendiente` → `en curso`. Run from a lane checkout (f05–f12),
+  it checks that the folder and current branch match the task, and opens the lane's git-safety
+  session (`start --session=<branch>`). It requires readiness, no owner gate and an exclusive lane;
+  an identical claim is idempotent. A claim grants no editing authority.
 - **Write**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem
   writes nothing. `set` cannot replace ownership, lane, origin or review SHA.
-- **Release**: `pnpm board release <id> --agente=<a>` frees the lock; a task still `en curso` goes
-  back to `pendiente`.
+- **Release**: `pnpm board release <id> --agente=<a> [--git-safety=commit[,history]]` frees the
+  lock; run from a lane checkout, it checks that the folder is the lock's lane and finishes the
+  git-safety session when `--git-safety` is passed. A task still `en curso` goes back to
+  `pendiente`.
+- **Changelog (T297)**: `pnpm board changelog [--desde=<fecha>] [--faltan [--archivo=CHANGELOG.md]]`
+  prints the release notes of merged tasks (`unida`/`comprobada`) grouped as `[Unreleased]` Markdown
+  bullets ending in `(#N)`. `--desde` filters closes on or after that date. `--faltan` lists notes
+  that `CHANGELOG.md`'s `[Unreleased]` lacks (exiting 1 while any is missing).
 - **Delivered prompt (d249)**: dispatchers run `pnpm board entregada <id> --agente=<a>` when they
   open the chat; `claim` clears the mark.
 - **Session id**: Claude omits `--sesion`; the commands read `CLAUDE_CODE_HOST_SESSION_ID`
@@ -85,10 +93,14 @@ routing and the internal modules work lives in
 
 - **Closing summary (d178, T129)**: the `cierre` is the Handoff Contract (`.agent/plans/README.md`).
   Write it only with
-  `pnpm board close <id> --resumen=<line>… --comprobacion=<check>… --saltada=<check>… --pendiente="<text>→T<n>"… --fallida=… --riesgo=… --duda=… --excepcion=… [--pr=#N] [--commit=<sha>]`
+  `pnpm board close <id> --resumen=<line>… --comprobacion=<check>… --saltada=<check>… --pendiente="<text>→T<n>"… --fallida=… --riesgo=… --duda=… --excepcion=… [--pr=#N] [--sha=<sha>] [--nivel=validate:changed|type-check|ci] [--changelog="<Grupo>: <una línea>"|--changelog=ninguno] [--git-safety=commit[,history]]`
   (repeat a flag per item; `=ninguna` / `=ninguno` for an empty list). The summary is 1–4 lines.
-  Every `pendiente` names the board task that will do it. Typed `resultado`: code with a PR gives
-  `--pr`, `--sha` (the PR head) and `--nivel=validate:changed|type-check|ci`; a review round gives
+  Every `pendiente` names the board task that will do it. Run from a lane checkout, `close` checks
+  that the folder is the lock's lane; `--git-safety=commit` finishes the lane's git-safety session.
+  `--changelog` records a Keep a Changelog group note or `"ninguno"` in `cierre.changelog` so lanes
+  never edit `CHANGELOG.md` directly. Omitting `--changelog` keeps any note previously stored. Typed
+  `resultado`: code with a PR gives `--pr`, `--sha` (the PR head) and
+  `--nivel=validate:changed|type-check|ci`; a review round gives
   `--veredicto=aprobado|cambios|bloqueado`, `--sha` (the reviewed SHA) and
   `--hallazgo="P2|archivo:línea|texto"` (an approval has no P0/P1 finding). `close` prints the
   one-line signal to hand back, e.g.
@@ -176,8 +188,8 @@ routing and the internal modules work lives in
   checked and when. Times use America/Mazatlan from a timezone-aware source: in Git Bash
   `TZ=America/Mazatlan date` can silently print UTC, so use
   `node -e "console.log(new Date().toLocaleString('es-MX',{timeZone:'America/Mazatlan'}))"`.
-- **Closing**: `close`, `release` when the lock must go, `pnpm agent:git-safety:finish`, an exact
-  `ahora` and a handoff of at most 20 lines.
+- **Closing**: `close` (with `--git-safety=commit` or `pnpm agent:git-safety:finish`), `release`
+  when the lock must go, an exact `ahora` and a handoff of at most 20 lines.
 - **Inactive locks (d290)**: the coordinator may `set` or `close` a locked task with `--coordinador`
   once the lock's session had no heartbeat for 30 min, or after checking the session list, with
   `--sesion-archivada`. Each such write sends the lock's agent and session a bitácora message («el
