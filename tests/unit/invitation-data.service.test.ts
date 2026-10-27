@@ -13,6 +13,15 @@ jest.mock('@/lib/commercial/meta-capi/service', () => ({
 	deliverMetaConversionEvent: jest.fn(),
 }));
 
+jest.mock('@/lib/intake/storage', () => ({
+	uploadToStorage: jest.fn().mockResolvedValue('ok'),
+	deleteFromStorage: jest.fn().mockResolvedValue(undefined),
+	getPublicUrl: jest.fn(
+		(bucket: string, path: string) => `https://storage.celebra-me.com/${bucket}/${path}`,
+	),
+}));
+
+import { uploadToStorage } from '@/lib/intake/storage';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import {
 	enqueueCompleteRegistration,
@@ -27,6 +36,7 @@ import {
 } from '@/lib/invitation-data/repository';
 import {
 	createInvitationDataToken,
+	deleteInvitationDataPhoto,
 	hashInvitationDataToken,
 	issueInvitationDataLink,
 	isWellFormedInvitationDataToken,
@@ -35,6 +45,7 @@ import {
 	markInvitationDataAsReviewed,
 	needsOwnerReview,
 	saveInvitationDataForm,
+	uploadInvitationDataPhoto,
 } from '@/lib/invitation-data/service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
@@ -65,6 +76,7 @@ const order: InvitationDataOrder = {
 function request(overrides: Partial<InvitationDataRequest> = {}): InvitationDataRequest {
 	return {
 		id: 'request-1',
+		updatedAt: NOW.toISOString(),
 		orderId: 'order-1',
 		tokenIssuedAt: '2026-10-26T17:00:00.000Z',
 		expiresAt: '2026-12-25T17:00:00.000Z',
@@ -204,6 +216,7 @@ describe('saveInvitationDataForm', () => {
 			requestId: 'request-1',
 			tokenHash: hashInvitationDataToken(TOKEN),
 			answers: { song: 'Vals' },
+			expectedUpdatedAt: NOW.toISOString(),
 			status: 'in_progress',
 			savedAt: NOW.toISOString(),
 			firstSubmission: false,
@@ -299,7 +312,9 @@ describe('saveInvitationDataForm', () => {
 	});
 
 	it('saves as a later edit when another request won the first submission', async () => {
-		mockFindByToken.mockResolvedValue({ request: request(), order });
+		mockFindByToken
+			.mockResolvedValueOnce({ request: request(), order })
+			.mockResolvedValue({ request: request({ submittedAt: NOW.toISOString() }), order });
 		mockSave
 			.mockResolvedValueOnce(null)
 			.mockResolvedValueOnce(
@@ -318,13 +333,15 @@ describe('saveInvitationDataForm', () => {
 
 		expect(state.status).toBe('submitted');
 		expect(mockSave).toHaveBeenLastCalledWith(
-			expect.not.objectContaining({ firstSubmission: true }),
+			expect.objectContaining({ firstSubmission: false }),
 		);
 		expect(tasks).toHaveLength(1);
 	});
 
 	it('never rolls a concurrent submission back to in progress', async () => {
-		mockFindByToken.mockResolvedValue({ request: request({ status: 'in_progress' }), order });
+		mockFindByToken
+			.mockResolvedValueOnce({ request: request({ status: 'in_progress' }), order })
+			.mockResolvedValue({ request: request({ submittedAt: NOW.toISOString() }), order });
 		mockSave
 			.mockResolvedValueOnce(null)
 			.mockResolvedValueOnce(
@@ -337,13 +354,15 @@ describe('saveInvitationDataForm', () => {
 			mockSave.mock.calls.map(([input]) => [input.status, input.onlyIfUnsubmitted]),
 		).toEqual([
 			['in_progress', true],
-			['submitted', undefined],
+			['submitted', false],
 		]);
 		expect(state.status).toBe('submitted');
 	});
 
 	it('fails like a replaced link when the token changed during the save', async () => {
-		mockFindByToken.mockResolvedValue({ request: request(), order });
+		mockFindByToken
+			.mockResolvedValueOnce({ request: request(), order })
+			.mockResolvedValue(null);
 		mockSave.mockResolvedValue(null);
 		await expect(
 			saveInvitationDataForm({ token: TOKEN, answers: { song: 'Vals' } }),
@@ -450,6 +469,142 @@ describe('owner review', () => {
 		mockMarkReviewed.mockResolvedValueOnce(null);
 		await expect(markInvitationDataAsReviewed('order-9', NOW)).rejects.toMatchObject({
 			status: 404,
+		});
+	});
+
+	describe('uploadInvitationDataPhoto & deleteInvitationDataPhoto', () => {
+		it('validates file presence, size and mime type', async () => {
+			mockFindByToken.mockResolvedValue({
+				request: request({ status: 'in_progress', answers: {} }),
+				order,
+			});
+
+			const emptyBlob = { size: 0, type: 'image/jpeg' } as Blob;
+			await expect(
+				uploadInvitationDataPhoto({
+					token: TOKEN,
+					file: emptyBlob,
+					fileName: 'foto.jpg',
+					mimeType: 'image/jpeg',
+					now: NOW,
+				}),
+			).rejects.toMatchObject({ status: 400, message: expect.stringContaining('archivo') });
+
+			const oversizedBlob = { size: 11 * 1024 * 1024, type: 'image/jpeg' } as Blob;
+			await expect(
+				uploadInvitationDataPhoto({
+					token: TOKEN,
+					file: oversizedBlob,
+					fileName: 'foto.jpg',
+					mimeType: 'image/jpeg',
+					now: NOW,
+				}),
+			).rejects.toMatchObject({ status: 400, message: expect.stringContaining('10 MB') });
+
+			const invalidMimeBlob = { size: 1024, type: 'application/pdf' } as Blob;
+			await expect(
+				uploadInvitationDataPhoto({
+					token: TOKEN,
+					file: invalidMimeBlob,
+					fileName: 'doc.pdf',
+					mimeType: 'application/pdf',
+					now: NOW,
+				}),
+			).rejects.toMatchObject({ status: 400, message: expect.stringContaining('formato') });
+		});
+
+		it('enforces a maximum of 10 photos', async () => {
+			const existingPhotos = Array.from({ length: 10 }, (_, i) => ({
+				id: `photo-${i}`,
+				url: `https://storage.celebra-me.com/photo-${i}.jpg`,
+				name: `foto-${i}.jpg`,
+				size: 1024,
+				type: 'image/jpeg',
+			}));
+			mockFindByToken.mockResolvedValue({
+				request: request({ status: 'in_progress', answers: { photos: existingPhotos } }),
+				order,
+			});
+
+			const validBlob = { size: 1024, type: 'image/jpeg' } as Blob;
+			await expect(
+				uploadInvitationDataPhoto({
+					token: TOKEN,
+					file: validBlob,
+					fileName: 'foto-11.jpg',
+					mimeType: 'image/jpeg',
+					now: NOW,
+				}),
+			).rejects.toMatchObject({ status: 400, message: expect.stringContaining('10 fotos') });
+		});
+
+		it('uploads photo to storage and saves to answers.photos', async () => {
+			mockFindByToken.mockResolvedValue({
+				request: request({ status: 'in_progress', answers: { celebrantNames: 'Andrea' } }),
+				order,
+			});
+			mockSave.mockImplementation(async ({ answers }) =>
+				request({ status: 'in_progress', answers }),
+			);
+
+			const validBlob = { size: 2048, type: 'image/png' } as Blob;
+			const result = await uploadInvitationDataPhoto({
+				token: TOKEN,
+				file: validBlob,
+				fileName: 'foto-xv.png',
+				mimeType: 'image/png',
+				now: NOW,
+			});
+
+			expect(uploadToStorage).toHaveBeenCalledWith(
+				'invitation-assets',
+				expect.stringMatching(/^invitation-data\/order-1\/[a-f0-9-]+\.png$/),
+				validBlob,
+				'image/png',
+			);
+			expect(result.photo).toMatchObject({
+				name: 'foto-xv.png',
+				size: 2048,
+				type: 'image/png',
+				url: expect.stringContaining(
+					'https://storage.celebra-me.com/invitation-assets/invitation-data/order-1/',
+				),
+			});
+			expect(result.answers.photos).toHaveLength(1);
+			expect(result.answers.celebrantNames).toBe('Andrea');
+		});
+
+		it('deletes photo from answers.photos', async () => {
+			const photo1 = {
+				id: '11111111-1111-4111-8111-111111111111',
+				url: 'https://storage.celebra-me.com/photo-1.jpg',
+				name: 'foto-1.jpg',
+				size: 1024,
+				type: 'image/jpeg',
+			};
+			const photo2 = {
+				id: 'photo-2',
+				url: 'https://storage.celebra-me.com/photo-2.jpg',
+				name: 'foto-2.jpg',
+				size: 2048,
+				type: 'image/jpeg',
+			};
+			mockFindByToken.mockResolvedValue({
+				request: request({ status: 'in_progress', answers: { photos: [photo1, photo2] } }),
+				order,
+			});
+			mockSave.mockImplementation(async ({ answers }) =>
+				request({ status: 'in_progress', answers }),
+			);
+
+			const result = await deleteInvitationDataPhoto({
+				token: TOKEN,
+				photoId: photo1.id,
+				now: NOW,
+			});
+
+			expect(result.success).toBe(true);
+			expect(result.answers.photos).toEqual([photo2]);
 		});
 	});
 });

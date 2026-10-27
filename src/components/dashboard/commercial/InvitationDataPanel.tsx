@@ -50,7 +50,13 @@ function describeStatus(summary: InvitationDataSummary | null): string {
 }
 
 function countAnswers(summary: InvitationDataSummary | null): number {
-	return summary ? Object.values(summary.answers).filter((value) => value?.trim()).length : 0;
+	return summary
+		? Object.values(summary.answers).filter((value) =>
+				Array.isArray(value)
+					? value.length > 0
+					: typeof value === 'string' && value.trim().length > 0,
+			).length
+		: 0;
 }
 
 /** The form's state and, once the client saved something, when and how much. */
@@ -137,7 +143,39 @@ const IssuedLinkBlock: React.FC<{ link: IssuedLink }> = ({ link }) => {
 const AnswersList: React.FC<{ answers: InvitationDataAnswers }> = ({ answers }) => (
 	<div className="invitation-data-panel__answers">
 		{INVITATION_DATA_STEPS.map((step) => {
-			const filled = step.fields.filter((field) => answers[field.name]?.trim());
+			if (step.id === 'fotos') {
+				const photos = answers.photos ?? [];
+				if (photos.length === 0) return null;
+				return (
+					<div key={step.id}>
+						<h5>
+							{step.title} ({photos.length})
+						</h5>
+						<div className="invitation-data-panel__photos">
+							{photos.map((photo) => (
+								<div key={photo.id} className="invitation-data-panel__photo">
+									<a
+										href={photo.url}
+										target="_blank"
+										rel="noreferrer"
+										title={`Ver foto: ${photo.name}`}
+									>
+										<img src={photo.url} alt={photo.name} />
+										<span className="invitation-data-panel__photo-name">
+											{photo.name}
+										</span>
+									</a>
+								</div>
+							))}
+						</div>
+					</div>
+				);
+			}
+			const filled = step.fields.filter((field) => {
+				if (field.name === 'photos') return false;
+				const val = answers[field.name as keyof InvitationDataAnswers];
+				return typeof val === 'string' && val.trim().length > 0;
+			});
 			if (filled.length === 0) return null;
 			return (
 				<div key={step.id}>
@@ -146,7 +184,9 @@ const AnswersList: React.FC<{ answers: InvitationDataAnswers }> = ({ answers }) 
 						{filled.map((field) => (
 							<div key={field.name}>
 								<dt>{field.label}</dt>
-								<dd>{answers[field.name]}</dd>
+								<dd>
+									{answers[field.name as keyof InvitationDataAnswers] as string}
+								</dd>
 							</div>
 						))}
 					</dl>

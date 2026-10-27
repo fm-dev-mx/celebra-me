@@ -19,6 +19,7 @@ export interface InvitationDataOrder {
 
 export interface InvitationDataRequest {
 	id: string;
+	updatedAt: string;
 	orderId: string;
 	tokenIssuedAt: string;
 	expiresAt: string;
@@ -46,6 +47,7 @@ interface OrderRow {
 
 interface RequestRow {
 	id: string;
+	updated_at: string;
 	order_id: string;
 	token_issued_at: string;
 	expires_at: string;
@@ -63,7 +65,7 @@ interface RequestWithOrderRow extends RequestRow {
 const ORDER_SELECT =
 	'id,order_number,status,event_type,customer_id,lead_id,customers(display_name,phone_e164),leads(event_type,event_date,celebrant_names)';
 const REQUEST_SELECT =
-	'id,order_id,token_issued_at,expires_at,answers,status,last_saved_at,submitted_at,owner_reviewed_at';
+	'id,updated_at,order_id,token_issued_at,expires_at,answers,status,last_saved_at,submitted_at,owner_reviewed_at';
 
 function toOrder(row: OrderRow): InvitationDataOrder {
 	return {
@@ -88,6 +90,7 @@ function toOrder(row: OrderRow): InvitationDataOrder {
 function toRequest(row: RequestRow): InvitationDataRequest {
 	return {
 		id: row.id,
+		updatedAt: row.updated_at,
 		orderId: row.order_id,
 		tokenIssuedAt: row.token_issued_at,
 		expiresAt: row.expires_at,
@@ -169,6 +172,8 @@ export async function saveInvitationDataAnswers(input: {
 	answers: InvitationDataAnswers;
 	status: InvitationDataStatus;
 	savedAt: string;
+	/** Compare-and-swap guard against concurrent text or photo writes. */
+	expectedUpdatedAt: string;
 	/** Sets `submitted_at`; only valid together with `onlyIfUnsubmitted`. */
 	firstSubmission?: boolean;
 	/** Updates nothing once the form was submitted, so a stale status never overwrites it. */
@@ -177,6 +182,7 @@ export async function saveInvitationDataAnswers(input: {
 	const filters = [
 		`id=eq.${encodeURIComponent(input.requestId)}`,
 		`token_hash=eq.${encodeURIComponent(input.tokenHash)}`,
+		`updated_at=eq.${encodeURIComponent(input.expectedUpdatedAt)}`,
 		...(input.onlyIfUnsubmitted || input.firstSubmission ? ['submitted_at=is.null'] : []),
 	];
 	const rows = await supabaseRestRequest<RequestRow[]>({

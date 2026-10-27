@@ -6,7 +6,7 @@ jest.mock('@/lib/server/supabase-credentials', () => ({
 	getSupabaseServiceRoleKey: mockGetSupabaseServiceRoleKey,
 }));
 
-import { uploadToStorage } from '@/lib/intake/storage';
+import { deleteFromStorage, uploadToStorage } from '@/lib/intake/storage';
 
 const SECRET_KEY = 'sb_secret_test_123456789';
 
@@ -41,6 +41,35 @@ describe('uploadToStorage', () => {
 				}),
 			}),
 		);
+	});
+
+	it('deletes only the specified object through the Storage API', async () => {
+		const fetchSpy = jest
+			.spyOn(globalThis, 'fetch')
+			.mockResolvedValue({ ok: true } as Response);
+		await deleteFromStorage('invitation-assets', 'invitation-data/order-1/photo.jpg');
+		expect(fetchSpy).toHaveBeenCalledWith(
+			'http://127.0.0.1:54321/storage/v1/object/invitation-assets',
+			{
+				method: 'DELETE',
+				headers: {
+					apikey: SECRET_KEY,
+					Authorization: `Bearer ${SECRET_KEY}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ prefixes: ['invitation-data/order-1/photo.jpg'] }),
+			},
+		);
+	});
+
+	it('reports Storage deletion failures without leaking provider details', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: false, status: 403 } as Response);
+		await expect(
+			deleteFromStorage('invitation-assets', 'invitation-data/order-1/photo.jpg'),
+		).rejects.toMatchObject({
+			status: 502,
+			message: 'No se pudo eliminar la foto. Intente de nuevo.',
+		});
 	});
 
 	it('maps invalid Storage JWT errors to a sanitized authorization message', async () => {
