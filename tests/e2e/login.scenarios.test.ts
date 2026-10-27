@@ -50,7 +50,8 @@ test.describe('Authentication UI Scenarios (Spanish)', () => {
 		await page.click('#login-submit');
 
 		await expect(page).toHaveURL(/\/dashboard\/invitados/);
-		await page.click('.btn-pill-logout');
+		await expect(page.locator('.dashboard-sidebar astro-island')).not.toHaveAttribute('ssr');
+		await page.getByRole('button', { name: 'Cerrar sesión' }).click();
 
 		await expect(page).toHaveURL(/\/login/);
 		await expect(page.locator('#login-submit')).toContainText('Continuar');

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { memoriesCaptureCopy } from '../../src/lib/memories/copy';
+import { gotoAfterIslandEffect } from './harness/hydrated-navigation';
 
 /**
  * Public memories routes resolve a space from the database. Without a seeded
@@ -111,7 +112,7 @@ test.describe('memories guest capture', () => {
 			await route.fulfill({ status: 200, body: '', contentType: 'image/png' });
 		});
 
-		await page.goto(`/r/${SLUG}`);
+		await gotoAfterIslandEffect(page, `/r/${SLUG}`, `**${sessionPath}`);
 		await page.getByLabel(memoriesCaptureCopy.displayNameLabel).fill('Invitado E2E');
 		await page.getByRole('button', { name: memoriesCaptureCopy.continueLabel }).click();
 		await expect(page.getByLabel(memoriesCaptureCopy.chooseFile)).toBeAttached();

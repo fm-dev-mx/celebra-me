@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { CANONICAL_HOST_ACCESS_TOKEN } from '../../scripts/playwright/canonical-host-fixture';
 import { isVisualParityDeferred } from './harness/visual-baseline-policy';
+import { gotoAfterIslandEffect } from './harness/hydrated-navigation';
 
 const EVENT_ID = 'eaeb63e4-809b-427b-a52d-c61c2328c900';
 const ROUTE = `/dashboard/invitados?eventId=${EVENT_ID}`;
@@ -200,7 +201,8 @@ async function openGuestDashboard(
 	const token = await resolveAuthToken();
 	await page.context().addCookies([{ name: 'sb-access-token', value: token, url: baseURL }]);
 
-	await page.goto(ROUTE, { waitUntil: 'networkidle' });
+	// GuestDashboardApp fetches guests from a mount effect; network idle alone cannot prove hydration.
+	await gotoAfterIslandEffect(page, ROUTE, '**/api/dashboard/guests?*');
 	await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
 }
 
@@ -259,6 +261,25 @@ async function expectMobileFooterCancel(modal: Locator) {
 	await cancelBtn.click();
 	await expect(modal).not.toBeVisible();
 }
+
+test('uses the hydrated sidebar for keyboard logout', async ({ page, baseURL }) => {
+	let logouts = 0;
+	await page.route('**/api/auth/logout', async (route) => {
+		logouts++;
+		expect(route.request().method()).toBe('POST');
+		await route.fulfill({ status: 204 });
+	});
+	// Only exercise the sidebar handler and navigation, without a real authentication mutation.
+	await page.route('**/login', (route) =>
+		route.fulfill({ contentType: 'text/html', body: '<h1>Acceda a su panel</h1>' }),
+	);
+	await openGuestDashboard(page, baseURL);
+	await expect(page.locator('.dashboard-sidebar astro-island')).not.toHaveAttribute('ssr');
+	await page.getByRole('button', { name: 'Cerrar sesión' }).focus();
+	await page.keyboard.press('Enter');
+	await expect(page).toHaveURL(/\/login$/);
+	expect(logouts).toBe(1);
+});
 
 // Runs on every pull request: the mobile Cancel buttons have no other pre-merge coverage.
 test.describe('Mobile modal cancel buttons at 390px', () => {
