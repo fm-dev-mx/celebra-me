@@ -127,6 +127,27 @@ describe('post-deploy smoke', () => {
 		expect(PAGE_ROUTES.filter((route) => route.kind === 'demo').length).toBeGreaterThan(0);
 	});
 
+	it('excludes only the retired Preview copy while preserving Production and all demos', () => {
+		const now = new Date('2026-10-27T12:00:00Z');
+		const production = listSmokePageRoutes(now, 'production');
+		const preview = listSmokePageRoutes(now, 'preview');
+		const archived = { kind: 'invitation', eventType: 'boda', slug: 'daniela-y-martin' };
+
+		expect(production).toContainEqual(archived);
+		expect(listSmokePageRoutes(now)).toEqual(production);
+		expect(preview).toEqual(
+			production.filter(
+				(route) =>
+					!(
+						route.kind === archived.kind &&
+						route.eventType === archived.eventType &&
+						route.slug === archived.slug
+					),
+			),
+		);
+		expect(preview).not.toContainEqual(archived);
+	});
+
 	it('opens a catalog demo at its short alias instead of the redirecting long route', async () => {
 		const pages = [{ kind: 'demo', eventType: 'boda', slug: 'demo-brisa' }] as const;
 		const baseFetch = productionFetch();

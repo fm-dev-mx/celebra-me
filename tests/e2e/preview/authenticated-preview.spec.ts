@@ -97,6 +97,8 @@ test.describe.serial('Authenticated external Preview', () => {
 		expect(publicResponse.status()).toBe(200);
 
 		const logoutButton = page.getByRole('button', { name: 'Cerrar sesión' });
+		// The sidebar account is SSR markup; editor readiness does not hydrate this separate island.
+		await expect(page.locator('.dashboard-sidebar astro-island')).not.toHaveAttribute('ssr');
 		await logoutButton.focus();
 		await page.keyboard.press('Enter');
 		await expect(page).toHaveURL(/\/login$/);

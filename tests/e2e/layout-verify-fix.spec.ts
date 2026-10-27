@@ -262,6 +262,10 @@ test('bautizo demo desktop no oscillation after selecting No podré', async ({ p
 	await page.waitForSelector('.rsvp-section', { timeout: 5000 });
 
 	const declineRadio = page.locator('.rsvp__radio-card', { hasText: 'No podré' });
+	await declineRadio.scrollIntoViewIfNeeded();
+	await expect(
+		page.locator('.invitation-section-wrapper[data-section-kind="rsvp"] astro-island'),
+	).not.toHaveAttribute('ssr');
 	await declineRadio.click();
 
 	// Poll over consecutive animation frames — assert no class toggling and stable height
