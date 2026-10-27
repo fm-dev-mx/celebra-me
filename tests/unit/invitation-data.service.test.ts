@@ -15,6 +15,7 @@ jest.mock('@/lib/commercial/meta-capi/service', () => ({
 
 jest.mock('@/lib/intake/storage', () => ({
 	uploadToStorage: jest.fn().mockResolvedValue('ok'),
+	deleteFromStorage: jest.fn().mockResolvedValue(undefined),
 	getPublicUrl: jest.fn(
 		(bucket: string, path: string) => `https://storage.celebra-me.com/${bucket}/${path}`,
 	),
@@ -75,6 +76,7 @@ const order: InvitationDataOrder = {
 function request(overrides: Partial<InvitationDataRequest> = {}): InvitationDataRequest {
 	return {
 		id: 'request-1',
+		updatedAt: NOW.toISOString(),
 		orderId: 'order-1',
 		tokenIssuedAt: '2026-10-26T17:00:00.000Z',
 		expiresAt: '2026-12-25T17:00:00.000Z',
@@ -214,6 +216,7 @@ describe('saveInvitationDataForm', () => {
 			requestId: 'request-1',
 			tokenHash: hashInvitationDataToken(TOKEN),
 			answers: { song: 'Vals' },
+			expectedUpdatedAt: NOW.toISOString(),
 			status: 'in_progress',
 			savedAt: NOW.toISOString(),
 			firstSubmission: false,
@@ -309,7 +312,9 @@ describe('saveInvitationDataForm', () => {
 	});
 
 	it('saves as a later edit when another request won the first submission', async () => {
-		mockFindByToken.mockResolvedValue({ request: request(), order });
+		mockFindByToken
+			.mockResolvedValueOnce({ request: request(), order })
+			.mockResolvedValue({ request: request({ submittedAt: NOW.toISOString() }), order });
 		mockSave
 			.mockResolvedValueOnce(null)
 			.mockResolvedValueOnce(
@@ -328,13 +333,15 @@ describe('saveInvitationDataForm', () => {
 
 		expect(state.status).toBe('submitted');
 		expect(mockSave).toHaveBeenLastCalledWith(
-			expect.not.objectContaining({ firstSubmission: true }),
+			expect.objectContaining({ firstSubmission: false }),
 		);
 		expect(tasks).toHaveLength(1);
 	});
 
 	it('never rolls a concurrent submission back to in progress', async () => {
-		mockFindByToken.mockResolvedValue({ request: request({ status: 'in_progress' }), order });
+		mockFindByToken
+			.mockResolvedValueOnce({ request: request({ status: 'in_progress' }), order })
+			.mockResolvedValue({ request: request({ submittedAt: NOW.toISOString() }), order });
 		mockSave
 			.mockResolvedValueOnce(null)
 			.mockResolvedValueOnce(
@@ -347,13 +354,15 @@ describe('saveInvitationDataForm', () => {
 			mockSave.mock.calls.map(([input]) => [input.status, input.onlyIfUnsubmitted]),
 		).toEqual([
 			['in_progress', true],
-			['submitted', undefined],
+			['submitted', false],
 		]);
 		expect(state.status).toBe('submitted');
 	});
 
 	it('fails like a replaced link when the token changed during the save', async () => {
-		mockFindByToken.mockResolvedValue({ request: request(), order });
+		mockFindByToken
+			.mockResolvedValueOnce({ request: request(), order })
+			.mockResolvedValue(null);
 		mockSave.mockResolvedValue(null);
 		await expect(
 			saveInvitationDataForm({ token: TOKEN, answers: { song: 'Vals' } }),
@@ -567,7 +576,7 @@ describe('owner review', () => {
 
 		it('deletes photo from answers.photos', async () => {
 			const photo1 = {
-				id: 'photo-1',
+				id: '11111111-1111-4111-8111-111111111111',
 				url: 'https://storage.celebra-me.com/photo-1.jpg',
 				name: 'foto-1.jpg',
 				size: 1024,
@@ -590,7 +599,7 @@ describe('owner review', () => {
 
 			const result = await deleteInvitationDataPhoto({
 				token: TOKEN,
-				photoId: 'photo-1',
+				photoId: photo1.id,
 				now: NOW,
 			});
 

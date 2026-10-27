@@ -104,4 +104,21 @@ export async function uploadToStorage(
 	return getPublicUrl(bucket, path);
 }
 
+/** Removes an object through Storage, including its provider-managed bytes. Missing is idempotent. */
+export async function deleteFromStorage(bucket: string, path: string): Promise<void> {
+	const { supabaseUrl, serviceRoleKey } = resolveStorageConfig();
+	const response = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}`, {
+		method: 'DELETE',
+		headers: {
+			apikey: serviceRoleKey,
+			Authorization: `Bearer ${serviceRoleKey}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ prefixes: [path] }),
+	});
+	if (!response.ok) {
+		throw new ApiError(502, 'internal_error', 'No se pudo eliminar la foto. Intente de nuevo.');
+	}
+}
+
 export { DEFAULT_BUCKET };

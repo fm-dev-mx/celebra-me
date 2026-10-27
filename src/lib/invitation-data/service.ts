@@ -13,7 +13,7 @@ import {
 	type InvitationDataPhoto,
 	type InvitationDataStatus,
 } from '@/lib/invitation-data/form';
-import { getPublicUrl, uploadToStorage } from '@/lib/intake/storage';
+import { deleteFromStorage, getPublicUrl, uploadToStorage } from '@/lib/intake/storage';
 import {
 	enqueueCompleteRegistration,
 	findInvitationDataOrder,
@@ -168,6 +168,37 @@ function invalidAnswers(issues: InvitationDataIssues): ApiError {
 	return new ApiError(400, 'validation_error', 'Revise los datos marcados.', { issues });
 }
 
+/** Retry rejected compare-and-swap writes using the latest answers and submission state. */
+async function updateAnswers(
+	token: unknown,
+	now: Date,
+	initial: InvitationDataRequest,
+	change: (answers: InvitationDataAnswers) => InvitationDataAnswers,
+	submit = false,
+): Promise<InvitationDataRequest> {
+	let current = initial;
+	for (let attempt = 0; attempt < 3; attempt += 1) {
+		const unsubmitted = !current.submittedAt;
+		const saved = await saveInvitationDataAnswers({
+			requestId: current.id,
+			tokenHash: hashInvitationDataToken(token as string),
+			expectedUpdatedAt: current.updatedAt,
+			answers: change(current.answers),
+			status: unsubmitted && !submit ? 'in_progress' : 'submitted',
+			savedAt: now.toISOString(),
+			firstSubmission: submit && unsubmitted,
+			onlyIfUnsubmitted: unsubmitted,
+		});
+		if (saved) return saved;
+		current = (await resolveActiveRequest(token, now)).request;
+	}
+	throw new ApiError(
+		409,
+		'conflict',
+		'Sus datos cambiaron mientras se guardaban. Intente de nuevo.',
+	);
+}
+
 /**
  * Autosaves the client's answers; `submit` also checks the required fields, marks the form as
  * received the first time, and queues CompleteRegistration for Meta after the response.
@@ -178,7 +209,7 @@ export async function saveInvitationDataForm(
 	options: { after?: AfterResponseContext | null } = {},
 ): Promise<InvitationDataFormState> {
 	const now = input.now ?? new Date();
-	const { request, order, tokenHash } = await resolveActiveRequest(input.token, now);
+	const { request, order } = await resolveActiveRequest(input.token, now);
 
 	const parsed = parseInvitationDataAnswers(input.answers);
 	if (!parsed.ok) throw invalidAnswers(parsed.issues);
@@ -189,31 +220,19 @@ export async function saveInvitationDataForm(
 		if (Object.keys(missing).length > 0) throw invalidAnswers(missing);
 	}
 
-	// Status comes from a snapshot; while it says unsubmitted, the write is guarded so a concurrent
-	// submission is never rolled back to in_progress.
-	const unsubmitted = !request.submittedAt;
-	const firstSubmission = Boolean(input.submit) && unsubmitted;
-	const status: InvitationDataStatus = unsubmitted && !input.submit ? 'in_progress' : 'submitted';
-	let saved = await saveInvitationDataAnswers({
-		requestId: request.id,
-		tokenHash,
-		answers,
-		status,
-		savedAt: now.toISOString(),
-		firstSubmission,
-		onlyIfUnsubmitted: unsubmitted,
-	});
-	if (!saved && unsubmitted) {
-		// Another request submitted meanwhile (or the link was replaced): save as a later edit.
-		saved = await saveInvitationDataAnswers({
-			requestId: request.id,
-			tokenHash,
-			answers,
-			status: 'submitted',
-			savedAt: now.toISOString(),
-		});
-	}
-	if (!saved) throw linkNotFound();
+	const saved = await updateAnswers(
+		input.token,
+		now,
+		request,
+		(current) => {
+			// Photo membership belongs exclusively to the upload/delete endpoints.
+			const updated = { ...answers };
+			if (current.photos) updated.photos = current.photos;
+			else delete updated.photos;
+			return updated;
+		},
+		Boolean(input.submit),
+	);
 
 	if (input.submit) {
 		// Idempotent (one event id per order), so a submission whose queueing failed recovers on
@@ -253,7 +272,7 @@ export async function uploadInvitationDataPhoto(input: {
 	now?: Date;
 }): Promise<UploadedInvitationDataPhotoResult> {
 	const now = input.now ?? new Date();
-	const { request, order, tokenHash } = await resolveActiveRequest(input.token, now);
+	const { request, order } = await resolveActiveRequest(input.token, now);
 
 	if (!input.file || typeof input.file.size !== 'number' || input.file.size === 0) {
 		throw new ApiError(400, 'bad_request', 'No se envió ningún archivo.');
@@ -298,36 +317,22 @@ export async function uploadInvitationDataPhoto(input: {
 		uploadedAt: now.toISOString(),
 	};
 
-	const updatedPhotos = [...currentPhotos, photo];
-	const updatedAnswers: InvitationDataAnswers = {
-		...request.answers,
-		photos: updatedPhotos,
-	};
-
-	const unsubmitted = !request.submittedAt;
-	const status: InvitationDataStatus = unsubmitted ? 'in_progress' : 'submitted';
-
-	let saved = await saveInvitationDataAnswers({
-		requestId: request.id,
-		tokenHash,
-		answers: updatedAnswers,
-		status,
-		savedAt: now.toISOString(),
-		firstSubmission: false,
-		onlyIfUnsubmitted: unsubmitted,
-	});
-
-	if (!saved && unsubmitted) {
-		saved = await saveInvitationDataAnswers({
-			requestId: request.id,
-			tokenHash,
-			answers: updatedAnswers,
-			status: 'submitted',
-			savedAt: now.toISOString(),
+	let saved: InvitationDataRequest;
+	try {
+		saved = await updateAnswers(input.token, now, request, (current) => {
+			const photos = current.photos ?? [];
+			if (photos.length >= INVITATION_DATA_MAX_PHOTOS) {
+				throw new ApiError(400, 'bad_request', 'Solo puede subir un máximo de 10 fotos.');
+			}
+			return { ...current, photos: [...photos, photo] };
 		});
+	} catch (error) {
+		// A transport failure may follow a committed PATCH; never delete its referenced object.
+		if (error instanceof ApiError && [400, 404, 409, 410].includes(error.status)) {
+			await deleteFromStorage('invitation-assets', storagePath);
+		}
+		throw error;
 	}
-
-	if (!saved) throw linkNotFound();
 
 	return { photo, answers: saved.answers };
 }
@@ -338,40 +343,27 @@ export async function deleteInvitationDataPhoto(input: {
 	now?: Date;
 }): Promise<{ success: true; answers: InvitationDataAnswers }> {
 	const now = input.now ?? new Date();
-	const { request, tokenHash } = await resolveActiveRequest(input.token, now);
-
-	const currentPhotos = Array.isArray(request.answers.photos) ? request.answers.photos : [];
-	const updatedPhotos = currentPhotos.filter((p) => p.id !== input.photoId);
-
-	const updatedAnswers: InvitationDataAnswers = {
-		...request.answers,
-		photos: updatedPhotos,
-	};
-
-	const unsubmitted = !request.submittedAt;
-	const status: InvitationDataStatus = unsubmitted ? 'in_progress' : 'submitted';
-
-	let saved = await saveInvitationDataAnswers({
-		requestId: request.id,
-		tokenHash,
-		answers: updatedAnswers,
-		status,
-		savedAt: now.toISOString(),
-		firstSubmission: false,
-		onlyIfUnsubmitted: unsubmitted,
-	});
-
-	if (!saved && unsubmitted) {
-		saved = await saveInvitationDataAnswers({
-			requestId: request.id,
-			tokenHash,
-			answers: updatedAnswers,
-			status: 'submitted',
-			savedAt: now.toISOString(),
-		});
+	const { request, order } = await resolveActiveRequest(input.token, now);
+	const photo = request.answers.photos?.find((item) => item.id === input.photoId);
+	if (photo) {
+		// Derive the key from the authorized order, never from a supplied public URL.
+		if (
+			!/^[a-f0-9-]{36}$/iu.test(photo.id) ||
+			!(INVITATION_DATA_ALLOWED_MIME_TYPES as readonly string[]).includes(photo.type)
+		) {
+			throw new ApiError(400, 'bad_request', 'No se pudo identificar la foto.');
+		}
+		const ext =
+			photo.type === 'image/jpeg' ? 'jpg' : photo.type === 'image/png' ? 'png' : 'webp';
+		await deleteFromStorage(
+			'invitation-assets',
+			`invitation-data/${order.id}/${photo.id}.${ext}`,
+		);
 	}
-
-	if (!saved) throw linkNotFound();
+	const saved = await updateAnswers(input.token, now, request, (current) => ({
+		...current,
+		photos: (current.photos ?? []).filter((item) => item.id !== input.photoId),
+	}));
 
 	return { success: true, answers: saved.answers };
 }

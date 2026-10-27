@@ -182,8 +182,8 @@ function PhotoUploader({ token, photos, onPhotosChange, error }: PhotoUploaderPr
 				} else {
 					currentPhotos.push(payload.data.photo);
 				}
+				onPhotosChange(currentPhotos);
 			}
-			onPhotosChange(currentPhotos);
 		} catch (err) {
 			setUploadError(err instanceof Error ? err.message : 'Error al subir las fotos.');
 		} finally {

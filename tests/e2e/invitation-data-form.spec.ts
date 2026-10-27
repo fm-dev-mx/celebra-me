@@ -187,6 +187,46 @@ test.describe('invitation data form', () => {
 		await expect(page.getByText('foto-test.jpg')).not.toBeVisible();
 	});
 
+	test('retains the first photo after a partial multi-file upload failure', async ({ page }) => {
+		const calls = await mockFormApi(page, { status: 'in_progress', answers: {} });
+		const photo = {
+			id: '11111111-1111-4111-8111-111111111111',
+			url: 'https://example.invalid/first.jpg',
+			name: 'primera.jpg',
+			size: 10,
+			type: 'image/jpeg',
+		};
+		let uploads = 0;
+		await page.route('**/api/mi-invitacion/photos', (route) => {
+			uploads += 1;
+			return route.fulfill({
+				status: uploads === 1 ? 200 : 502,
+				contentType: 'application/json',
+				body: JSON.stringify(
+					uploads === 1
+						? { data: { photo, answers: { photos: [photo] } } }
+						: { error: { message: 'No se pudo subir la segunda foto.' } },
+				),
+			});
+		});
+		await page.goto(FORM_PATH);
+		await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
+		for (let index = 0; index < 5; index += 1)
+			await page.getByRole('button', { name: 'Siguiente' }).click({ force: true });
+		await page.locator('#invitation-data-photos-input').setInputFiles([
+			{ name: 'primera.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('one') },
+			{ name: 'segunda.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('two') },
+		]);
+		await expect(page.getByText('No se pudo subir la segunda foto.')).toBeVisible();
+		await expect(page.getByAltText('primera.jpg')).toBeVisible();
+		for (let index = 0; index < 5; index += 1)
+			await page.getByRole('button', { name: 'Anterior' }).click({ force: true });
+		await page.getByLabel(/Nombre\(s\) de quien celebra/).fill('Synthetic name');
+		await expect
+			.poll(() => calls.filter((call) => call.action === 'save').at(-1)?.answers)
+			.toMatchObject({ photos: [photo] });
+	});
+
 	test('explains an expired link instead of showing the form', async ({ page }) => {
 		await page.route('**/api/mi-invitacion', (route) =>
 			route.fulfill({
