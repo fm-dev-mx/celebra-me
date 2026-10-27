@@ -544,4 +544,76 @@ describe('validate-structure script', () => {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}
 	});
+
+	it('rejects duplicate migration version prefixes in supabase/migrations', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'supabase/migrations/20261026120000_first_migration.sql',
+				'-- first migration\n',
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'supabase/migrations/20261026120000_second_migration.sql',
+				'-- second migration collision\n',
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'supabase/migrations/20261026130000_unique_migration.sql',
+				'-- unique migration\n',
+			);
+
+			const script = `
+				import { validateStructure, validateMigrationVersions } from ${JSON.stringify(SCRIPT_URL)};
+				const root = ${JSON.stringify(fixtureRoot)};
+				process.stdout.write(JSON.stringify({
+					migrationErrors: validateMigrationVersions(root),
+					structureErrors: validateStructure({ root, trackedFiles: [] }),
+				}));
+			`;
+			const result = runCommand(process.execPath, ['--input-type=module', '--eval', script], {
+				cwd: ROOT,
+			});
+			const output = JSON.parse(result.stdout) as {
+				migrationErrors: string[];
+				structureErrors: string[];
+			};
+
+			const expectedError =
+				"supabase/migrations: duplicate migration version '20261026120000' found in: 20261026120000_first_migration.sql, 20261026120000_second_migration.sql";
+			expect(output.migrationErrors).toEqual([expectedError]);
+			expect(output.structureErrors).toContain(expectedError);
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('passes when all migration version prefixes are unique', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'supabase/migrations/20261026120000_first_migration.sql',
+				'-- first migration\n',
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'supabase/migrations/20261026130000_second_migration.sql',
+				'-- second migration\n',
+			);
+
+			const script = `
+				import { validateMigrationVersions } from ${JSON.stringify(SCRIPT_URL)};
+				process.stdout.write(JSON.stringify(validateMigrationVersions(${JSON.stringify(fixtureRoot)})));
+			`;
+			const result = runCommand(process.execPath, ['--input-type=module', '--eval', script], {
+				cwd: ROOT,
+			});
+			const errors = JSON.parse(result.stdout) as string[];
+			expect(errors).toEqual([]);
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
 });

@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialSalesOrder } from '@/lib/commercial/orders.service';
-import { findSalesOrdersByCustomerId } from '@/lib/commercial/orders.repository';
+import {
+	findSalesOrdersByCustomerId,
+	listCommercialSalesOrders,
+} from '@/lib/commercial/orders.repository';
+import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import {
 	requireAdminMutationAccess,
 	requireAdminStrongSession,
@@ -63,7 +67,16 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
+		await requireAdminRateLimit(request, 'admin:list');
 		await requireAdminStrongSession(request);
+		if (url.searchParams.get('view') === 'orders') {
+			const offset = Number(url.searchParams.get('offset') ?? '0');
+			if (!Number.isSafeInteger(offset) || offset < 0) return badRequest('Página inválida.');
+			const status = url.searchParams.get('status') || undefined;
+			if (status && !['quoted', 'partial', 'paid', 'lost'].includes(status))
+				return badRequest('Estado inválido.');
+			return successResponse(await listCommercialSalesOrders(offset, status));
+		}
 		const customerId = url.searchParams.get('customerId')?.trim();
 		if (!customerId) {
 			return badRequest('Customer ID is required.');

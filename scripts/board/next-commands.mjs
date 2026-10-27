@@ -15,7 +15,7 @@ import {
 	sessionOf,
 	taskTag,
 } from './model.mjs';
-import { messageExtras, ownerMessageIssues } from './owner-text.mjs';
+import { mergeSignal, messageExtras, ownerMessageIssues } from './owner-text.mjs';
 import { laneRows, messageLine, nextSections, sectionLines, unreadFor } from './next.mjs';
 import { appendLog, loadBoard, readCollection, readDoc, withLock, writeDoc } from './store.mjs';
 
@@ -108,6 +108,7 @@ export function nextCommands({ getTask }) {
 				const id = `${en}-${randomBytes(3).toString('hex')}`;
 				const row = buildMessageRow(t.id, { de, para, texto, id }, en);
 				Object.assign(row.mensaje, messageExtras({ opciones, detalle }));
+				if (para === 'dueno') row.mensaje.rev = t.rev;
 				const why = logRowError(row);
 				if (why) throw new UsageError(why);
 				appendLog(dir, row);
@@ -133,7 +134,7 @@ export function nextCommands({ getTask }) {
 				if (unread.length && (agente !== 'dueno' || flags.leido === true)) {
 					const leidos = [
 						...(readDoc(dir, 'bandejas', agente)?.leidos ?? []),
-						...unread.map((r) => r.mensaje.id),
+						...unread.filter((r) => !mergeSignal(r)).map((r) => r.mensaje.id),
 					];
 					writeDoc(
 						dir,
@@ -167,6 +168,10 @@ export function nextCommands({ getTask }) {
 				const open = unreadFor(para, loadBoard(dir)).filter((r) => r.tarea === t.id);
 				const one = typeof flags.mensaje === 'string' ? flags.mensaje : undefined;
 				const rows = one ? open.filter((r) => r.mensaje.id === one) : open;
+				if (rows.some(mergeSignal))
+					throw new UsageError(
+						'siguiente: unir se atiende solo con pnpm board merged tras verificar GitHub',
+					);
 				if (!rows.length)
 					throw new UsageError(
 						open.length

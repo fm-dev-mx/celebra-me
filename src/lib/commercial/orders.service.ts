@@ -12,6 +12,7 @@ import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-trackin
 import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
 import { safeErr } from '@/lib/server/safe-error';
 import { findLeadOrderAttribution } from '@/lib/tracking/lead.repository';
+import { enqueueMetaCrmLeadStageEvent } from '@/lib/commercial/meta-capi/lead-stage-events';
 
 const COMMERCIAL_ORDER_CURRENCY = 'MXN';
 
@@ -228,6 +229,14 @@ export async function markCommercialOrderDepositPaid(
 					amountPaid: input.amountPaid,
 				}),
 			{ label: 'orders-service:deposit_paid' },
+		);
+	}
+	const leadId = order.leadId;
+	if (leadId) {
+		runAfterResponse(
+			options.after,
+			() => enqueueMetaCrmLeadStageEvent({ leadId, stage: 'paid' }),
+			{ label: `orders-service:meta-crm-lead-stage:${leadId}` },
 		);
 	}
 

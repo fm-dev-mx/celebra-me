@@ -58,6 +58,13 @@ export const ownerAsk = (id, agente) =>
 	`pnpm board msg ${id} --de=${agente} --para=dueno "<pregunta de una línea>" --opcion="<la recomendada>" --opcion="<otra>" --detalle="<detalle técnico>" (d230)`;
 
 /**
+ * d259: the chat is archived once the task is unida/hecha and its PR merged; the dispatcher archives chats whose
+ * task already finished.
+ */
+export const ARCHIVE_CHAT_LINE =
+	'Archivar el chat cuando la tarea quede unida/hecha y su PR unido (d259); el despachador de Codex/Gemini archiva sus chats cuya tarea ya terminó.';
+
+/**
  * T322: the three lines of PARA USTED, in this order, written for the owner in plain Spanish: what the session
  * does, what the owner must do or decide («nada» when nothing) and the main risk.
  */
@@ -427,11 +434,13 @@ export function reviewText(
 					? [
 							`1. Devuelva a la sesión autora: veredicto aprobado|cambios|bloqueado, SHA ${sha}, cada hallazgo como «P2|archivo:línea|texto», comprobaciones corridas y saltadas.`,
 							`2. La sesión autora cierra: pnpm board close ${id} --resumen=… --comprobacion=… --saltada=… --veredicto=… --sha=${sha} --hallazgo=…`,
+							`3. ${ARCHIVE_CHAT_LINE}`,
 						]
 					: [
 							`1. pnpm board close ${id} --resumen=… --comprobacion=… --saltada=… --veredicto=aprobado|cambios|bloqueado --sha=${sha} --hallazgo="P2|archivo:línea|texto"`,
 							'2. Avise al coordinador con la línea que imprime close.',
 							'3. Responda: qué revisó, comprobaciones corridas y saltadas, riesgos.',
+							`4. ${ARCHIVE_CHAT_LINE}`,
 						],
 			],
 		],

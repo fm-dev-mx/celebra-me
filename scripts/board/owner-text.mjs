@@ -90,6 +90,41 @@ export const messageExtras = ({ opciones, detalle }) => ({
 	...(detalle ? { detalle } : {}),
 });
 
+/** A coordinator revision supersedes questions and answers from the previous task context. */
+export const expiredQuestion = (r, t) =>
+	r.mensaje?.para === 'dueno' &&
+	Boolean(t?.preguntasRev) &&
+	(r.mensaje.rev ?? 0) < t.preguntasRev;
+
+/** Merge signals remain actionable until the merged command verifies GitHub. */
+export const mergeSignal = (r) =>
+	r.mensaje?.para === 'coordinador' && /siguiente:\s*unir\b/i.test(r.mensaje.texto ?? '');
+
+/** Exact answers are snapshots, so live history truncation cannot change what gets copied. */
+export function answerPrompt(t, board, prompt) {
+	const answers = (board.decisiones ?? [])
+		.filter((d) => d.vigente !== false)
+		.flatMap((d) =>
+			(d.respuestas ?? [])
+				.filter((a) => a.tarea === t.id && a.rev >= (t.preguntasRev ?? 0))
+				.map((a) => ({ ...a, decision: d.id })),
+		);
+	if (!answers.length) return prompt;
+	const blocks = answers
+		.map((a) =>
+			[
+				`RESPUESTA · T${t.num} ${t.id}`,
+				`Pregunta: ${a.pregunta}`,
+				`Opción elegida: ${a.opcion}`,
+				`Decisión: ${a.decision}`,
+				'Qué hacer ahora: continúe la tarea con esta respuesta y sus límites autorizados.',
+			].join('\n'),
+		)
+		.join('\n\n');
+	const known = t.candado || t.entregada;
+	return known ? blocks : `${blocks}\n\n${prompt ?? ''}`;
+}
+
 /** Shape problems of a message row's `opciones` and `detalle`. */
 export function messageExtraIssues(m) {
 	const out = [];

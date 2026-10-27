@@ -14,6 +14,7 @@ import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 import { resolveWebAnalyticsBeacon } from '@/lib/tracking/web-analytics';
 import { getWebAnalyticsToken } from '@/lib/tracking/web-analytics-env';
+import { getEstimatedLeadValue } from '@/lib/commercial/meta-capi/estimated-lead-value';
 
 // Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
 import '@fontsource-variable/montserrat';
@@ -103,6 +104,7 @@ const showLeadCapture = routePolicy.routeClass === 'commercial' || routePolicy.r
 
 // Cookieless Cloudflare Web Analytics: no consent gate; off when the site token is blank.
 const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
+const estimatedLeadValue = loadCommercialTracking ? await getEstimatedLeadValue() : undefined;
 ---
 <!doctype html>
 <html lang="es">
@@ -179,6 +181,7 @@ const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
 		data-theme-mode={themeMode}
 		data-tracking-route-class={loadCommercialTracking ? routePolicy.routeClass : undefined}
 		data-meta-delivery-blocked={isMetaDeliveryBlocked ? 'true' : undefined}
+		data-meta-estimated-lead-value={loadCommercialTracking && estimatedLeadValue ? String(estimatedLeadValue) : undefined}
 	>
 		{!hideHeader && <Header transparentOnHero={transparentHeader} />}
 

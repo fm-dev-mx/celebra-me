@@ -5,7 +5,7 @@
 import { validChangelog } from './changelog.mjs';
 import { awaitingClaim } from './delivery.mjs';
 import { isForeignPull } from './pr-ref.mjs';
-import { messageExtraIssues, ownerFieldChecks } from './owner-text.mjs';
+import { answerPrompt, messageExtraIssues, ownerFieldChecks } from './owner-text.mjs';
 import {
 	isPromptV1,
 	promptSection,
@@ -785,8 +785,12 @@ const ownerWhereLines = (t) => {
 export function promptWithLane(t, board) {
 	if (!t.prompt || t.actor === 'dueno') return t.prompt;
 	const lines = laneLines(t, board);
-	if (isPromptV1(t.prompt)) return withRunLines(withPushCheck(t.prompt), lines);
-	return lines.length ? `CARRIL\n${lines.join('\n')}\n\n${t.prompt}` : t.prompt;
+	const prompt = isPromptV1(t.prompt)
+		? withRunLines(withPushCheck(t.prompt), lines)
+		: lines.length
+			? `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`
+			: t.prompt;
+	return answerPrompt(t, board, prompt);
 }
 
 const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));

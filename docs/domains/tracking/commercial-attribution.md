@@ -29,14 +29,15 @@ bypass app route policy or consent policy.
   events and sessions that a lead or an order references are kept, so the purge never rewrites
   `leads`, `customers`, `sales_orders` or `meta_conversion_*`.
 - Meta conversion outbox (`meta_conversion_events`): browser `PageView`, `ViewContent`, `Contact`
-  and `Lead` rows that are `sent` or `skipped` are deleted 30 days after `created_at` (their
-  delivery attempts cascade). The quarter-hour Production cron (`*/15 * * * *`) calls
-  `public.purge_meta_conversion_retention` after the outbox sweep, in batches of 500 rows (at most 4
-  batches per run), and logs `[meta-capi][retention] completed`; it runs even while delivery is
-  disabled. The rule lives only in `public.meta_conversion_retention_cutoff`: on 2026-11-30 the rows
-  created before 2026-10-31 go. `Purchase` rows (owned by a sales order), rows still `pending`,
-  `sending`, `failed` or `ambiguous`, and rows an operator recovered are kept. Meta only accepts
-  server events up to 7 days old and deduplicates within 48 hours, so 30 days covers every retry.
+  and `Lead` rows, plus CRM `LeadQuoted`, `LeadPaid` and `LeadLost` rows, that are `sent` or
+  `skipped` are deleted 30 days after `created_at` (their delivery attempts cascade). The
+  quarter-hour Production cron (`*/15 * * * *`) calls `public.purge_meta_conversion_retention` after
+  the outbox sweep, in batches of 500 rows (at most 4 batches per run), and logs
+  `[meta-capi][retention] completed`; it runs even while delivery is disabled. The rule lives only
+  in `public.meta_conversion_retention_cutoff`: on 2026-11-30 the rows created before 2026-10-31 go.
+  `Purchase` rows (owned by a sales order), rows still `pending`, `sending`, `failed` or
+  `ambiguous`, and rows an operator recovered are kept. Meta only accepts server events up to 7 days
+  old and deduplicates within 48 hours, so 30 days covers every retry.
 - Marketing withdrawals (`visitor_consent_withdrawals`): kept while any stored visitor session
   started on or before the withdrawal's `updated_at`; the same purge deletes a withdrawal once it is
   older than the oldest stored session. In practice that follows the 13-month session retention;
@@ -216,13 +217,13 @@ secrets are exposed client-side.
 
 ### Browser-side event map
 
-| First-party event          | Meta event    | When it fires                                                        | Metadata sent                                                                              | Dedup key                 |
-| -------------------------- | ------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
-| `page_viewed`              | `PageView`    | Commercial/demo page load after marketing consent                    | `content_category=page`, optional `content_name`, `source_area`                            | —                         |
-| `demo_viewed`              | `ViewContent` | Demo page load on real showroom/demo routes                          | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                         |
-| `package_viewed`           | `ViewContent` | Pricing/package card becomes visible on the landing page             | `content_name`, `content_category=package`, `source_area`                                  | —                         |
-| `whatsapp_contact_clicked` | `Contact`     | Commercial WhatsApp CTA click; then the custom `WhatsAppClick` copy  | `content_name`, `content_category`, optional `event_type`, `source_area`                   | Technical `event_id` UUID |
-| `form_submitted`           | `Lead`        | No live emitter since the contact form was removed; kept for history | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | Technical `event_id` UUID |
+| First-party event          | Meta event    | When it fires                                                              | Metadata sent                                                                                                       | Dedup key                 |
+| -------------------------- | ------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `page_viewed`              | `PageView`    | Commercial/demo page load after marketing consent                          | `content_category=page`, optional `content_name`, `source_area`                                                     | —                         |
+| `demo_viewed`              | `ViewContent` | Demo page load on real showroom/demo routes                                | `content_name`, `content_category=demo`, `event_type`, `source_area`                                                | —                         |
+| `package_viewed`           | `ViewContent` | Pricing/package card becomes visible on the landing page                   | `content_name`, `content_category=package`, `source_area`                                                           | —                         |
+| `whatsapp_contact_clicked` | `Contact`     | Commercial WhatsApp CTA click; then the custom `WhatsAppClick` copy        | `content_name`, `content_category`, optional `event_type`, `source_area`, `value`, `currency=MXN`                   | Technical `event_id` UUID |
+| `form_submitted`           | `Lead`        | Capture form submitted («Aparta su fecha»); also mapped for `lead_created` | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area`, `value`, `currency=MXN` | Technical `event_id` UUID |
 
 Notes:
 
@@ -233,6 +234,12 @@ Notes:
 - `Contact` is the conversion ads optimize for (owner decision of 2026-10-24). The custom
   `WhatsAppClick` copy carries the same parameters and `eventID`, so custom conversions built on it
   keep counting; Meta deduplicates by event name plus ID, so the two never merge.
+- `Contact` and `Lead` events carry an estimated value in MXN (`value`, `currency: 'MXN'`) across
+  both the Meta Pixel and CAPI. The value is calculated as `leadToSaleRate × averageTicket`
+  (`(totalSales / totalLeads) × (totalRevenue / totalSales) = totalRevenue / totalLeads`),
+  recalculated monthly by a scheduled job (`runMetaEstimatedLeadValueRecalculation` / cron
+  `0 3 1 * *` and daily analytics maintenance). While there is no data or zero sales/leads, a
+  constant fallback value (`150 MXN`, `DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN`) applies.
 - Pixel loading stays route-gated and consent-gated through `route-policy.ts`, `consent-client.ts`,
   and `meta-pixel.ts`.
 
@@ -291,17 +298,20 @@ admins.
    form), `findSessionLeadCustomerId()` puts that customer on the row, so its later `PageView`,
    `ViewContent` and `Contact` carry the hashed phone like the form's own `Lead`.
 2. Browser rows carry `session_id` (no foreign key, so the analytics purge stays free) and
-   `event_source_path` instead of an order, customer and value (migrations
+   `event_source_path` instead of an order and customer (migrations
    `20261025120000_meta_conversion_contact_lead` and `20261026000000_meta_conversion_view_events`;
    the shape check pairs each event with its own triggers and keeps Purchase rows as strict as
-   before). The late-consent `PageView` the Pixel sends after a page loaded without marketing
-   consent has no `eventID` and no server copy, because that page's `page_viewed` was stored without
-   marketing consent.
+   before). Contact and Lead rows additionally carry an estimated lead value (`value`,
+   `currency='MXN'`) recalculated monthly, while PageView and ViewContent keep `value: null`. The
+   late-consent `PageView` the Pixel sends after a page loaded without marketing consent has no
+   `eventID` and no server copy, because that page's `page_viewed` was stored without marketing
+   consent.
 3. Delivery sends `action_source=website`, the click path as `event_source_url` (route policy still
-   applies), the row creation time as `event_time`, and no `custom_data`. It skips with
-   `CONSENT_REQUIRED` when the session's latest consent snapshot no longer grants marketing, and
-   with `MISSING_CLIENT_USER_AGENT` when the session has no user agent, which Meta requires for
-   website events. Withdrawing marketing consent in the banner posts the stored visitor ID to
+   applies), the row creation time as `event_time`, and `custom_data` with `value` and `currency`
+   whenever `value` is non-null (Contact and Lead). It skips with `CONSENT_REQUIRED` when the
+   session's latest consent snapshot no longer grants marketing, and with
+   `MISSING_CLIENT_USER_AGENT` when the session has no user agent, which Meta requires for website
+   events. Withdrawing marketing consent in the banner posts the stored visitor ID to
    `POST /api/tracking/consent` (rate-limited, needs no tracking consent). The route calls
    `record_visitor_marketing_withdrawal`, which keeps the newest withdrawal per visitor in
    `visitor_consent_withdrawals` and turns marketing off on every stored session of that visitor, so
@@ -318,6 +328,26 @@ admins.
    stay `pending` instead of being marked `skipped`. A batch with failed or ambiguous deliveries
    fails the job (the rows are retried later). The dashboard «Filas sin pedido» check counts only
    Purchase rows.
+
+### CRM lead-stage events
+
+The commercial outbox also sends CRM stage events for existing lead milestones: `quote_sent` maps to
+`LeadQuoted`, marking an order's deposit paid maps its linked lead to `LeadPaid`, and the `lost`
+demo follow-up maps to `LeadLost`. The current app has no generic lead-status mutation endpoint, so
+these events follow the existing quote, deposit-paid and loss actions. These rows use
+`crm_lead_quoted`, `crm_lead_paid` or `crm_lead_lost` as `trigger_status`, have a stable `event_id`
+per lead and stage, and carry `lead_id` without an order, customer, value or event source URL. The
+existing foreign key clears `lead_id` if a lead is deleted, so pending outbox rows do not block that
+deletion. The `custom_data` identifies `event_source=crm`, `lead_event_source=Celebra-me` and the
+stage; `action_source` is `system_generated`.
+
+The queue checks `leads.consent_marketing` before inserting. Delivery checks it again and, when the
+lead has a session, also requires that session's latest marketing-consent snapshot. Only a
+digits-only SHA-256 hash of the lead phone and the lead's stored `fbp`/`fbc` are sent as user data;
+no email, raw phone, IP address or user agent is included. CRM stage rows use the outbox creation
+time as `event_time`, do not include `event_source_url`, and follow the same retry lifecycle and
+30-day terminal-row retention as browser events. In the current workspace, `paid` is emitted when
+the deposit is registered; there is no separate full-payment transition API.
 
 ### Environment Variables
 

@@ -700,9 +700,10 @@ describe('pnpm board', () => {
 				0,
 			);
 		expect(readdirSync(path.join(dir, '.respaldos', 'tareas', 'alias'))).toHaveLength(2);
-		expect(JSON.parse(board(dir, 'decision', 'decision=usar alias', '--json').out).id).toBe(
-			'd001',
-		);
+		expect(
+			JSON.parse(board(dir, 'decision', 'decision=usar alias', '--sin-tarea', '--json').out)
+				.id,
+		).toBe('d001');
 		expect(JSON.parse(board(dir, 'log', '--json').out)[0].txt).toContain('usar alias');
 		const verify = board(dir, 'verify', '--json');
 		expect(verify.status).toBe(0);
