@@ -285,6 +285,83 @@ describe('what is next (T126)', () => {
 		expect(r.sin).toEqual(['unir', 'unir', 'hallazgos', 'cierre', 'cierre', 'mensaje']);
 	});
 
+	it.each(['unida', 'hecha', 'comprobada', 'cancelada', 'archivada'])(
+		'hides merge signals for a finished origin (%s), preserving history and other messages',
+		(estado) => {
+			const result = probe(`
+				const origin = { id: 'origin', num: 1, estado: '${estado === 'archivada' ? 'unida' : estado}', pr: '#547' };
+				const round = { id: 'origin-revision', num: 2, estado: 'hecha', origen: 'origin', pr: '#547' };
+				const message = (id, tarea, texto) => ({ tarea, en: '${ago(5)}', quien: 'codex', mensaje: { id, para: 'coordinador', texto } });
+				const board = { tareas: [round, ...${estado === 'archivada' ? '[]' : '[origin]'}],
+					archivo: ${estado === 'archivada' ? '[{ ...origin, archivada: true }]' : '[]'},
+					bitacora: [message('origin', 'origin', '#547@aaaaaaa · siguiente: unir'),
+						message('round', 'origin-revision', '#547@aaaaaaa · siguiente: unir'),
+						message('other', 'origin', 'Requiere seguimiento')] };
+				const before = JSON.stringify(board);
+				console.log(JSON.stringify({
+					messages: n.coordinatorItems(board).filter(x => x.tipo === 'mensaje').map(x => x.texto),
+					inbox: n.unreadFor('coordinador', board).map(x => x.mensaje.id),
+					unchanged: JSON.stringify(board) === before }));`);
+			expect(result.messages).toEqual([
+				'Mensaje: codex → coordinador sobre T1: Requiere seguimiento',
+			]);
+			expect(result.inbox).toEqual(['origin', 'round', 'other']);
+			expect(result.unchanged).toBe(true);
+		},
+	);
+
+	it('uses open PR evidence for merge signals and review actions, retaining unknown signals offline', () => {
+		const result = probe(`
+			const sha = '${sha('a')}';
+			const origin = (id, num, pr) => ({ id, num, pr, estado: 'en revision', agente: 'codex',
+				cierre: { resumen: 'ok', comprobaciones: [], saltadas: [], pendientes: [] } });
+			const round = (id, num) => ({ id: id + '-revision', num, origen: id, estado: 'hecha', revisionSha: sha,
+				cierre: { resultado: { veredicto: 'aprobado', sha } } });
+			const board = { tareas: [origin('open', 1, '#10'), round('open', 2),
+				origin('merged', 3, '#11'), round('merged', 4), origin('closed', 5, '#12'), round('closed', 6),
+				{ id: 'pending', num: 7, estado: 'pendiente', agente: 'codex' }],
+				bitacora: ['open', 'merged', 'closed', 'pending', 'missing'].map((id, i) => ({ tarea: id,
+					en: '${ago(5)}', quien: 'codex', mensaje: { id, para: 'coordinador',
+						texto: (i < 3 ? '#' + (10 + i) + '@aaaaaaa · ' : '') + 'siguiente: unir' } })) };
+			const items = (prs) => n.coordinatorItems(board, { prs }).filter(x => ['unir', 'mensaje'].includes(x.tipo))
+				.map(x => x.tipo + ':' + (x.t?.id ?? 'missing'));
+			console.log(JSON.stringify({ online: items([{ number: 10, headRefOid: sha }]),
+				empty: items([]), offline: items(undefined) }));`);
+		expect(result.online).toEqual([
+			'unir:open',
+			'mensaje:open',
+			'mensaje:pending',
+			'mensaje:missing',
+		]);
+		expect(result.empty).toEqual(['mensaje:pending', 'mensaje:missing']);
+		expect(result.offline).toEqual([
+			'unir:open',
+			'unir:merged',
+			'unir:closed',
+			'mensaje:open',
+			'mensaje:merged',
+			'mensaje:closed',
+			'mensaje:pending',
+			'mensaje:missing',
+		]);
+	});
+
+	it('keeps signals from completed review rounds of open tasks and checks the PR named in old signals', () => {
+		const result = probe(`
+			const board = { tareas: [{ id: 'origin', num: 1, estado: 'en curso', pr: '#20', agente: 'codex' },
+				{ id: 'origin-revision', num: 2, estado: 'hecha', origen: 'origin', pr: '#20' }],
+				bitacora: ['#20@aaaaaaa · siguiente: unir', '#19@bbbbbbb · siguiente: unir', 'siguiente: unir']
+					.map((texto, id) => ({ tarea: 'origin-revision', en: '${ago(5)}', quien: 'codex',
+						mensaje: { id: String(id), para: 'coordinador', texto } })) };
+			const messages = (prs) => n.coordinatorItems(board, { prs }).filter(x => x.tipo === 'mensaje').map(x => x.texto);
+			console.log(JSON.stringify({ online: messages([{ number: 20 }]), offline: messages(undefined) }));`);
+		expect(result.online).toEqual([
+			'Mensaje: codex → coordinador sobre T2: #20@aaaaaaa · siguiente: unir',
+			'Mensaje: codex → coordinador sobre T2: siguiente: unir',
+		]);
+		expect(result.offline).toHaveLength(3);
+	});
+
 	it('shows an owner task only what to do and where', () => {
 		const r =
 			probe(`const t = { id: 'parecido', num: 134, titulo: 'Aceptar las fotos', estado: 'pendiente', urgencia: 'alta', actor: 'dueno', categoria: 'invitaciones', requisitos: [], rev: 1, actualizado: '2026-10-24T19:00:00Z',

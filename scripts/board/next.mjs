@@ -280,13 +280,16 @@ function sessionItems(board, now) {
 export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 	const reviews = (board.tareas ?? [])
 		.filter((t) => t.estado === 'en revision' && t.pr && !isReview(t))
+		.filter((t) => prs === undefined || prs.some((p) => `#${p.number}` === normalizePr(t.pr)))
 		.map((t) => reviewItem(t, board, prs))
 		.filter(Boolean);
-	const messages = unreadFor('coordinador', board).map((r) => ({
-		tipo: 'mensaje',
-		t: findTask(r.tarea, board),
-		texto: `Mensaje: ${messageLine(r, board)}`,
-	}));
+	const messages = unreadFor('coordinador', board)
+		.filter((r) => !mergeSignal(r) || pendingMergeSignal(r, board, prs))
+		.map((r) => ({
+			tipo: 'mensaje',
+			t: findTask(r.tarea, board),
+			texto: `Mensaje: ${messageLine(r, board)}`,
+		}));
 	return [
 		...reviews,
 		...missingCierreItems(board),
@@ -294,6 +297,15 @@ export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 		...sessionItems(board, now),
 		...messages,
 	];
+}
+
+/** Queue projection only: keep the signal in history and the inbox, even after its PR finishes. */
+function pendingMergeSignal(r, board, prs) {
+	const task = findTask(r.tarea, board);
+	const origin = task && isReview(task) ? findTask(task.origen, board) : task;
+	if (origin && (isFinished(origin) || origin.archivada)) return false;
+	const pr = normalizePr(r.mensaje.texto.match(/#\d+/)?.[0] ?? task?.pr ?? origin?.pr);
+	return !pr || prs === undefined || prs.some((p) => `#${p.number}` === pr);
 }
 
 /**
