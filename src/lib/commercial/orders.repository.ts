@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { getOrderPaymentStatus } from './order-payment-status';
 
 export type SalesOrderStatus =
 	'draft' | 'quoted' | 'confirmed' | 'deposit_paid' | 'paid' | 'cancelled' | 'lost';
@@ -192,6 +193,30 @@ export async function findSalesOrdersByCustomerId(customerId: string): Promise<S
 		useServiceRole: true,
 	});
 	return rows.map(toSalesOrder);
+}
+
+export async function listCommercialSalesOrders(
+	offset: number,
+	status?: string,
+): Promise<{ items: SalesOrder[]; nextOffset: number | null }> {
+	const statuses: Record<string, string> = {
+		quoted: 'draft,quoted,confirmed',
+		partial: 'deposit_paid,paid',
+		paid: 'deposit_paid,paid',
+		lost: 'lost,cancelled',
+	};
+	const filter = status && statuses[status] ? `&status=in.(${statuses[status]})` : '';
+	const rows = await supabaseRestRequest<SalesOrderRow[]>({
+		pathWithQuery: `sales_orders?select=${ORDER_SELECT}&order=created_at.desc,id.desc&limit=50&offset=${offset}${filter}`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return {
+		items: rows
+			.map(toSalesOrder)
+			.filter((order) => !status || getOrderPaymentStatus(order) === status),
+		nextOffset: rows.length === 50 ? offset + rows.length : null,
+	};
 }
 
 export async function registerSalesOrderDepositPurchase(input: {

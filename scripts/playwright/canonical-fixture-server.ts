@@ -19,7 +19,12 @@ import {
 	CANONICAL_ACCESS_FIXTURE_SLUGS,
 	canonicalAccessStateFor,
 } from './canonical-access-fixture.ts';
-import { CANONICAL_HOST_ACCESS_TOKEN, buildCanonicalHostUser } from './canonical-host-fixture.ts';
+import {
+	CANONICAL_HOST_ACCESS_TOKEN,
+	buildCanonicalHostUser,
+	CANONICAL_ADMIN_ACCESS_TOKEN,
+	buildCanonicalAdminUser,
+} from './canonical-host-fixture.ts';
 
 if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true') {
 	throw new Error('Canonical fixtures require explicit PLAYWRIGHT_USE_CANONICAL_FIXTURES=true.');
@@ -111,7 +116,9 @@ function resolveFixtureResult(url: URL, authorization: string | undefined): unkn
 		case '/auth/v1/health':
 			return { fixture: true, publications: publications.length };
 		case '/auth/v1/user':
-			// Only the synthetic host token resolves; any other token stays unsupported.
+			if (authorization === `Bearer ${CANONICAL_ADMIN_ACCESS_TOKEN}`)
+				return buildCanonicalAdminUser();
+			// Only explicit synthetic tokens resolve; every other token stays unsupported.
 			return authorization === `Bearer ${CANONICAL_HOST_ACCESS_TOKEN}`
 				? buildCanonicalHostUser()
 				: UNSUPPORTED;

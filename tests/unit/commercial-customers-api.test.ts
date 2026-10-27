@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({ requireAdminRateLimit: jest.fn() }));
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminMutationAccess: jest.fn(),
 	requireAdminStrongSession: jest.fn(),
@@ -12,6 +13,8 @@ jest.mock('@/lib/commercial/customer.service', () => ({
 
 jest.mock('@/lib/commercial/customer.repository', () => ({
 	findCommercialCustomerById: jest.fn(),
+	findCommercialCustomerByPhone: jest.fn(),
+	findCommercialCustomerByEmail: jest.fn(),
 }));
 
 import {

@@ -28,6 +28,9 @@ const allowedHydratedComponents = new Set([
 	// @/lib/api-client-shared + csrf) and child components — no server-only modules,
 	// service-role helpers, Meta tokens, or node:* dependencies.
 	'SalesWorkspace',
+	// Owner order entry uses the browser-safe dashboard API client for customer, order,
+	// first-payment and private form-link requests. No runtime server imports.
+	'OrdersWorkspace',
 	'CapiOutboxPanel',
 	// Demo catalog — clipboard copy feedback only; receives serialized demo links as props
 	// and imports pure labels/types. No fetch, no server-only modules.

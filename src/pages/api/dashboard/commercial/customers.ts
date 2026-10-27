@@ -1,7 +1,13 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
-import { findCommercialCustomerById } from '@/lib/commercial/customer.repository';
+import {
+	findCommercialCustomerById,
+	findCommercialCustomerByPhone,
+	findCommercialCustomerByEmail,
+} from '@/lib/commercial/customer.repository';
+import { normalizeCommercialPhone, normalizeCommercialEmail } from '@/lib/commercial/phone';
+import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import {
 	requireAdminMutationAccess,
 	requireAdminStrongSession,
@@ -62,7 +68,34 @@ const GetCustomerQuerySchema = z.object({
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
+		await requireAdminRateLimit(request, 'commercial:customers:search');
 		await requireAdminStrongSession(request);
+		if (url.searchParams.has('phone') || url.searchParams.has('email')) {
+			const query = validateQueryOrRespond(
+				url.searchParams,
+				z.object({
+					phone: z.string().trim().max(60).optional(),
+					email: z.email().max(160).optional(),
+				}),
+			);
+			if (query instanceof Response) return query;
+			const phone = normalizeCommercialPhone(query.phone);
+			const email = normalizeCommercialEmail(query.email);
+			if (!phone && !email)
+				return errorResponse(
+					new ApiError(400, 'validation_error', 'Indique un teléfono o correo válido.'),
+				);
+			const matches = await Promise.all([
+				phone ? findCommercialCustomerByPhone(phone.e164) : null,
+				email ? findCommercialCustomerByEmail(email) : null,
+			]);
+			return successResponse(
+				matches.filter(
+					(item, index) =>
+						item && matches.findIndex((other) => other?.id === item.id) === index,
+				),
+			);
+		}
 
 		const parsed = validateQueryOrRespond(url.searchParams, GetCustomerQuerySchema);
 		if (parsed instanceof Response) return parsed;
@@ -77,8 +110,6 @@ export const GET: APIRoute = async ({ request, url }) => {
 		if (error instanceof ApiError) {
 			return errorResponse(error);
 		}
-		return errorResponse(
-			new ApiError(500, 'internal_error', 'Error al obtener el cliente.'),
-		);
+		return errorResponse(new ApiError(500, 'internal_error', 'Error al obtener el cliente.'));
 	}
 };
