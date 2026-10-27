@@ -122,10 +122,10 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	countdown: {
-		// One written line: "Faltan 252 días para mi gran noche".
-		variant: 'written-days',
+		variant: 'standard',
 		title: 'Faltan',
 		footerText: 'para mi gran noche',
+		presentationOptions: { visibleUnits: ['days', 'hours', 'minutes', 'seconds'] },
 	},
 	location: {
 		variant: 'program-sheet',
@@ -141,7 +141,12 @@ const content: CanonicalEventContentInput = {
 		introLede: 'Primero daremos gracias en misa y después celebraremos juntos.',
 		indicationsHeading: 'Vestimenta',
 		indications: [
-			{ iconName: 'DressCode', styleVariant: 'default', title: 'Etiqueta', text: 'Formal' },
+			{
+				iconName: 'DressCode',
+				styleVariant: 'default',
+				title: 'Formal · Vestido largo y traje con corbata',
+				text: 'Favor de respetar el código de vestimenta',
+			},
 			{
 				iconName: 'DressCode',
 				styleVariant: 'reserved',
@@ -176,14 +181,16 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	itinerary: {
-		// A common XV program, drafted for the client's approval.
+		// Client-requested program; the two performance names are displayed in Spanish.
 		variant: 'stacked-cards',
 		title: 'Así será mi noche',
 		items: [
 			{ time: '17:30', iconName: 'Church', label: 'Misa' },
 			{ time: '20:00', iconName: 'Reception', label: 'Recepción' },
-			{ time: '21:30', iconName: 'Waltz', label: 'Vals' },
-			{ time: '22:30', iconName: 'Dinner', label: 'Cena' },
+			{ time: '20:15', iconName: 'Waltz', label: 'Vals' },
+			{ time: '21:30', iconName: 'Dinner', label: 'Cena' },
+			{ time: '22:30', iconName: 'Party', label: 'Baile sorpresa' },
+			{ time: '23:00', iconName: 'Party', label: 'Fiesta con espectáculo' },
 			{ time: '01:00', iconName: 'Party', label: 'Cierre' },
 		],
 	},
