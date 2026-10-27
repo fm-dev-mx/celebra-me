@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { CANONICAL_MEMORIES_SLUG } from '../../scripts/playwright/canonical-memories-fixture';
 import { memoriesCaptureCopy as copy } from '../../src/lib/memories/copy';
+import { gotoAfterIslandEffect } from './harness/hydrated-navigation';
 
 /**
  * Guest capture flow in a real browser engine, run per device project by
@@ -138,7 +139,7 @@ async function mockGuestApi(
 }
 
 async function startSession(page: Page): Promise<void> {
-	await page.goto(`/r/${SLUG}`);
+	await gotoAfterIslandEffect(page, `/r/${SLUG}`, `**/api/memories/${SLUG}/session`);
 	await page.getByLabel(copy.displayNameLabel).fill(PROFILE.displayName);
 	await page.getByRole('button', { name: copy.continueLabel }).click();
 	await expect(page.getByLabel(copy.chooseFile)).toBeAttached();
@@ -352,8 +353,8 @@ test.describe('memories guest flow', () => {
 				json: { success: false, error: { code: 'rate_limited', message: 'Demasiadas.' } },
 			});
 		});
-		await page.goto(`/r/${SLUG}`);
-
+		// The onboarding input exists in SSR; wait for the mount effect before filling it.
+		await gotoAfterIslandEffect(page, `/r/${SLUG}`, `**/api/memories/${SLUG}/session`);
 		await page.getByLabel(copy.displayNameLabel).fill(PROFILE.displayName);
 		await page.getByRole('button', { name: copy.continueLabel }).click();
 
