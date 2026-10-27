@@ -50,7 +50,19 @@ function makeBoard(tareas: Json[]) {
 }
 
 const git = (cwd: string, ...args: string[]) =>
-	runCommand('git', ['-c', 'user.email=t@example.com', '-c', 'user.name=t', ...args], { cwd });
+	runCommand(
+		'git',
+		[
+			'-c',
+			'user.email=t@example.com',
+			'-c',
+			'user.name=t',
+			'-c',
+			'commit.gpgsign=false',
+			...args,
+		],
+		{ cwd },
+	);
 
 /** An Integration repository `<tmp>/celebra-me` on develop with one commit. */
 function makeIntegration() {

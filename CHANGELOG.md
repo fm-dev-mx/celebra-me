@@ -10,6 +10,34 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.54.0-beta.1] - 2026-10-27
+
+Meta campaign optimization gains value-based signals: browser `Contact` and `Lead` events now carry
+a monthly estimated lead value, and CRM lead milestones (quoted, paid, lost) are sent to the Meta
+Conversions API. The host dashboard adds a «Pedidos» tab to capture orders and record transfer
+payments without a deposit. One new migration is included (20261026180000); no published invitation
+content changes.
+
+### Added
+
+- Tracking: CRM lead milestones (`LeadQuoted`, `LeadPaid`, `LeadLost`) are sent to the Meta
+  Conversions API as consented, system-generated events with hashed phone matching
+  (`20261026180000`, #623).
+- Tracking: browser `Contact` and `Lead` events include a monthly estimated lead value in MXN, with
+  a persisted snapshot and cache fallback (#626).
+- Dashboard: «Pedidos» tab with a three-step order form, transfer payment recording (partial amounts
+  allowed, no deposit), and an order list (#636).
+- Tooling: migration checks reject duplicate migration versions and summarize active agent tasks
+  (#630).
+
+### Changed
+
+- Governance: task prompts document chat archiving and syncing merges (#628).
+
+### Fixed
+
+- Tooling: the board delivers the owner's exact answers and preserves merge signals (#634).
+
 ## [0.53.0-beta.1] - 2026-10-26
 
 After deposit payment, clients can now complete their event details via a private «Datos de su
