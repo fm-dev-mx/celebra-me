@@ -56,6 +56,54 @@ function previewFetch(
 }
 
 describe('Cloudflare Preview smoke', () => {
+	it.each([
+		['preview', false],
+		['preview', true],
+		['production', false],
+		['production', true],
+	] as const)(
+		'scopes the archived-copy exclusion to Preview (%s, unrelated 404: %s)',
+		async (environment, unrelatedMissing) => {
+			jest.useFakeTimers({ now: new Date('2026-10-27T12:00:00Z') });
+			try {
+				const baseFetch = previewFetch({ commitSha: sha, environment });
+				const fetchMock = jest.fn(async (input: string, init?: RequestInit) => {
+					const path = new URL(input).pathname;
+					if (
+						path === '/boda/daniela-y-martin' ||
+						(unrelatedMissing && path === '/xv/mia-pintor')
+					) {
+						return response(404);
+					}
+					return baseFetch(input, init);
+				});
+				const host =
+					environment === 'preview'
+						? versionHost
+						: '9f8e7d6c-celebra-me.celebra-me-com.workers.dev';
+				const result = await runCloudflareWorkerSmoke(
+					{ url: `https://${host}`, sha, environment },
+					fetchMock,
+					accessHeaders,
+				);
+				const expectedFailures = [
+					...(environment === 'production'
+						? ['invitation_failed:boda:daniela-y-martin']
+						: []),
+					...(unrelatedMissing ? ['invitation_failed:xv:mia-pintor'] : []),
+				];
+				expect(result.failureCodes).toEqual(expectedFailures);
+				const requestedPaths = fetchMock.mock.calls.map(([url]) => new URL(url).pathname);
+				expect(requestedPaths.includes('/boda/daniela-y-martin')).toBe(
+					environment === 'production',
+				);
+				expect(result.passed).toBe(expectedFailures.length === 0);
+			} finally {
+				jest.useRealTimers();
+			}
+		},
+	);
+
 	it('accepts only the Preview Worker host or one of its version URLs', () => {
 		expect(parseCloudflareWorkerOrigin(`https://${stableHost}`).hostname).toBe(stableHost);
 		expect(parseCloudflareWorkerOrigin(`https://${versionHost}/`).hostname).toBe(versionHost);

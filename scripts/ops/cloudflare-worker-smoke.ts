@@ -26,6 +26,7 @@ import {
 } from '../playwright/preview-environment.ts';
 import {
 	formatEvidenceSummary,
+	listSmokePageRoutes,
 	runDeploymentSmoke,
 	toPostDeployPayload,
 	type PostDeployEnvironment,
@@ -138,7 +139,12 @@ export async function runCloudflareWorkerSmoke(
 		throw new Error(
 			'CLOUDFLARE_ACCESS_CLIENT_ID and CLOUDFLARE_ACCESS_CLIENT_SECRET are required for the protected Worker.',
 		);
-	const probes = await runDeploymentSmoke(origin, fetchImpl, accessHeaders);
+	const probes = await runDeploymentSmoke(
+		origin,
+		fetchImpl,
+		accessHeaders,
+		listSmokePageRoutes(new Date(), environment),
+	);
 	const identity = await readBuildIdentity(origin, fetchImpl, accessHeaders);
 	const verified =
 		identity.commitSha?.toLowerCase() === sha && identity.environment === environment;
