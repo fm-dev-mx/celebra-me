@@ -83,7 +83,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--location-enclosure-outline: 0 solid transparent;
 	--location-enclosure-frame-display: block;
 	--location-enclosure-frame-inset: 0.55rem;
-	--location-enclosure-frame: rgb(var(--color-pale-gold-rgb) / 55%);
+	--location-enclosure-frame: rgb(var(--color-pale-gold-rgb) / 35%);
 	--location-enclosure-frame-shape: polygon(
 		0.85rem 0,
 		calc(100% - 0.85rem) 0,
@@ -95,9 +95,9 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		0 0.85rem
 	);
 	--location-enclosure-frame-art:
-		#{$andrea-tag-butterfly} center 0.75rem / 1.5rem auto no-repeat,
-		#{$andrea-formal-attire} center 3rem / 8rem 5.5rem no-repeat;
-	--location-enclosure-padding: 10rem 1.75rem 2.75rem;
+		#{$andrea-tag-butterfly} center 0.8rem / 1.25rem auto no-repeat,
+		#{$andrea-formal-attire} center 2.75rem / 6.25rem auto no-repeat;
+	--location-enclosure-padding: 8.25rem 2rem 2.25rem;
 	--location-enclosure-max-width: 22rem;
 	--location-enclosure-hanger-display: block;
 	--location-enclosure-hanger: linear-gradient(var(--color-leaf-gold), var(--color-leaf-gold))
@@ -110,9 +110,10 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--location-enclosure-edge-shadow: drop-shadow(
 		0 18px 26px rgb(var(--color-emerald-midnight-rgb) / 28%)
 	);
-	--location-enclosure-heading-size: clamp(1.75rem, 6.5vw, 2.1rem);
+	--location-enclosure-heading-size: clamp(2.5rem, 9vw, 3rem);
+	--location-enclosure-heading-line-height: 1.05;
 	--location-enclosure-heading-color: var(--color-pale-gold);
-	--location-enclosure-note-padding: 0.85rem;
+	--location-enclosure-note-padding: 0.75rem;
 	--location-enclosure-note-rule-width: 3rem;
 	--location-enclosure-lead-title-color: var(--color-night-sage);
 	--location-enclosure-swatch: conic-gradient(
@@ -120,19 +121,19 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		var(--color-emerald-glow) 0 50%,
 		var(--color-pale-gold) 0
 	);
-	--location-enclosure-swatch-size: 1.4rem;
+	--location-enclosure-swatch-size: 0.85rem;
 	--location-enclosure-swatch-ring: 0 0 0 1px rgb(var(--color-pale-gold-rgb) / 70%);
 	--location-enclosure-reserved-title-font: var(--font-display);
-	--location-enclosure-reserved-title-size: clamp(1.4rem, 5vw, 1.6rem);
-	--location-enclosure-reserved-title-caps: normal;
-	--location-enclosure-reserved-title-line-height: 1.15;
-	--location-enclosure-reserved-title-tracking: 0;
-	--location-enclosure-reserved-title-color: var(--color-pale-gold);
+	--location-enclosure-reserved-title-size: 1rem;
+	--location-enclosure-reserved-title-caps: all-small-caps;
+	--location-enclosure-reserved-title-line-height: 1.4;
+	--location-enclosure-reserved-title-tracking: 0.08em;
+	--location-enclosure-reserved-title-color: var(--color-night-sage);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 0.95rem;
+	--location-enclosure-last-text-size: 0.8125rem;
 	--location-enclosure-last-text-transform: uppercase;
-	--location-enclosure-last-text-tracking: 0.22em;
-	--location-enclosure-last-text-color: var(--color-pale-gold);
+	--location-enclosure-last-text-tracking: 0.14em;
+	--location-enclosure-last-text-color: var(--color-night-sage);
 
 	// Venue entries read top-down: the moment in gold ink, the hour, the venue large in the
 	// section's ink, the address soft. The map is the primary action, filled in emerald; the

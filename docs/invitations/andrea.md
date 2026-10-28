@@ -238,16 +238,16 @@ swapped for the professional session later.
 
 | source filename            | dims      | format | orientation | weight | quality          | role      | duplicate   | processing                                     | derivative                              |
 | -------------------------- | --------- | ------ | ----------- | ------ | ---------------- | --------- | ----------- | ---------------------------------------------- | --------------------------------------- |
-| 01-ficha-rostro.png        | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q80           | gallery-01.webp 1441×1800 143 KiB       |
-| 02-ficha-cuerpo-entero.png | 1122×1402 | PNG    | portrait    | 2.2 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q72           | gallery-02.webp 1441×1800 138 KiB       |
-| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | hero      | no          | Lanczos 2×, arch crop; WebP q84                | hero-arch.webp 1843×2560 310 KiB        |
+| 01-ficha-rostro.png        | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q80           | gallery-01.webp 1441×1800 151 KiB       |
+| 02-ficha-cuerpo-entero.png | 1122×1402 | PNG    | portrait    | 2.2 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q72           | gallery-02.webp 1441×1800 131 KiB       |
+| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | hero      | no          | Lanczos 2×, arch crop; WebP q84                | hero-arch.webp 1843×2560 290 KiB        |
 | 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | og-share  | intentional | 1200×630 crop of the cover                     | og-share.webp 1200×630 27 KiB           |
-| 04-familia.png             | 1536×1024 | PNG    | landscape   | 2.1 MB | production-ready | family    | no          | Lanczos 2× + light unsharp; WebP               | family.webp 2200×1467 165 KiB           |
-| 05-cierre.png              | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | thank-you | no          | Lanczos 2× + light unsharp; WebP q80           | thank-you.webp 1761×2200 216 KiB        |
-| 06-lamina-jardin.png       | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-garden.webp 1440×1800 169 KiB |
-| 07-lamina-detalle.png      | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-detail.webp 1440×1800 191 KiB |
-| 08-album-escalera.png      | 1122×1402 | PNG    | portrait    | 2.3 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | album-staircase.webp 1440×1800 141 KiB  |
-| 09-album-ventanal.png      | 1122×1402 | PNG    | portrait    | 2.6 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q76 | album-window.webp 960×1200 136 KiB      |
+| 04-familia.png             | 1536×1024 | PNG    | landscape   | 2.1 MB | production-ready | family    | no          | Lanczos 2× + light unsharp; WebP               | family.webp 2200×1467 158 KiB           |
+| 05-cierre.png              | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | thank-you | no          | Lanczos 2× + light unsharp; WebP q80           | thank-you.webp 1761×2200 211 KiB        |
+| 06-lamina-jardin.png       | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-garden.webp 1440×1800 165 KiB |
+| 07-lamina-detalle.png      | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-detail.webp 1440×1800 177 KiB |
+| 08-album-escalera.png      | 1122×1402 | PNG    | portrait    | 2.3 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | album-staircase.webp 1440×1800 133 KiB  |
+| 09-album-ventanal.png      | 1122×1402 | PNG    | portrait    | 2.6 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q76 | album-window.webp 960×1200 130 KiB      |
 
 The upscale is a plain resampling filter (Lanczos 2× with a light unsharp mask); it adds no detail
 and was checked to keep the faces unchanged. Every derivative is inside its role budget. Assets live
@@ -305,8 +305,14 @@ repository.
 - Countdown: existing `standard` variant, explicitly showing days, hours, minutes and seconds; no
   shared renderer, preset or schema changes.
 - Photos: localized edits of the nine existing photographs, preserving their original roles and
-  identities. Pale-gold earring settings match the tiara; visible nails receive discreet nude-pink
-  polish. The cover and its social crop share one edited source. The family edit places the father's
-  outer hand gently on Andrea's upper arm.
+  identities. Warm-gold earrings, including their reflections, match the tiara; visible nails
+  receive a perceptible milky rose-nude polish. The cover and its social crop share one edited
+  source. The family edit places the father's outer hand gently on Andrea's upper arm.
 - Round acceptance: **PENDING** owner and client review of the exact final artifacts. The 2026-10-24
   acceptance above is historical and does not approve this round.
+- Owner feedback, 2026-10-27: the first earring/manicure retouch was too subtle and is superseded.
+  Gloria explicitly requested earrings that read more golden, similar to the tiara. The owner's
+  additional correction requires visibly polished nails and a quieter dress-code hierarchy: `Formal`
+  leads, the silhouettes illustrate the attire, the requested courtesy note appears once, and the
+  reserved colors and adults-only notice remain secondary. No new client-adjustment round is
+  consumed by correcting these details.

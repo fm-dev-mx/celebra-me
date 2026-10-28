@@ -139,12 +139,11 @@ const content: CanonicalEventContentInput = {
 		},
 		introHeading: 'Dónde y cuándo',
 		introLede: 'Primero daremos gracias en misa y después celebraremos juntos.',
-		indicationsHeading: 'Vestimenta',
+		indicationsHeading: 'Formal',
 		indications: [
 			{
 				iconName: 'DressCode',
 				styleVariant: 'default',
-				title: 'Formal · Vestido largo y traje con corbata',
 				text: 'Favor de respetar el código de vestimenta',
 			},
 			{
