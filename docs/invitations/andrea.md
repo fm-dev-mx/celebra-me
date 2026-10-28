@@ -308,8 +308,10 @@ repository.
   identities. Warm-gold earrings, including their reflections, match the tiara; visible nails
   receive a perceptible milky rose-nude polish. The cover and its social crop share one edited
   source. The family edit places the father's outer hand gently on Andrea's upper arm.
-- Round acceptance: **PENDING** owner and client review of the exact final artifacts. The 2026-10-24
-  acceptance above is historical and does not approve this round.
+- Owner visual acceptance: **ACCEPTED** on 2026-10-27 for the certified candidate at
+  `522369399124bb72ddb64dc651238da00b0f1fe8`. Its exact approval identity is recorded in
+  `tests/e2e/visual-baselines/manifest.json`. Client approval from Gloria remains **PENDING**; this
+  owner acceptance does not authorize Production publication.
 - Owner feedback, 2026-10-27: the first earring/manicure retouch was too subtle and is superseded.
   Gloria explicitly requested earrings that read more golden, similar to the tiara. The owner's
   additional correction requires visibly polished nails and a quieter dress-code hierarchy: `Formal`
