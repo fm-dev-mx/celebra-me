@@ -234,9 +234,21 @@ describe('pnpm board changelog (T297)', () => {
 
 describe('close --git-safety from the task lane (T297)', () => {
 	const git = (cwd: string, ...args: string[]) =>
-		runCommand('git', ['-c', 'user.email=t@example.com', '-c', 'user.name=t', ...args], {
-			cwd,
-		});
+		runCommand(
+			'git',
+			[
+				'-c',
+				'user.email=t@example.com',
+				'-c',
+				'user.name=t',
+				'-c',
+				'commit.gpgsign=false',
+				...args,
+			],
+			{
+				cwd,
+			},
+		);
 
 	it('finishes the lane session declaring the commit, and refuses a close from another lane', () => {
 		const root = path.join(temp('lanes-'), 'celebra-me');

@@ -34,7 +34,7 @@ const CORE_SECTIONS = ['countdown', 'rsvp', 'thankYou'] as const;
 const EVENT_TYPE_CONTRACTS: Record<EventType, Omit<EventTypeStructureContract, 'presets'>> = {
 	xv: {
 		eventType: 'xv',
-		requiredSections: ['family', 'location', 'gallery', ...CORE_SECTIONS],
+		requiredSections: ['family', 'location', ...CORE_SECTIONS],
 		editionLabel: 'EDICIÓN XV',
 		editionMark: 'XV',
 	},

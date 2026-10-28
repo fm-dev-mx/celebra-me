@@ -1,0 +1,39 @@
+// Yireh Ana: the storybook-lilac preset adapted for an illustrated watercolor theme.
+// Ultra-pale lilac watercolor paper, lilac and purple floral framing with delicate
+// yellow wildflower and yellow ribbon accents, and an oak tree (roble) at the base.
+// Pure custom property tokens only.
+
+.event--yireh-ana.theme-preset--storybook-lilac {
+	--color-lilac-paper: rgb(249 246 252);
+	--color-lilac-mist: rgb(242 236 248);
+	--color-lilac-veil: rgb(232 222 245);
+	--color-violet-ink: rgb(46 32 68);
+	--color-violet-ink-soft: rgb(84 68 116);
+	--color-leaf-gold: rgb(178 138 52);
+	--color-candle-gold: rgb(232 198 108);
+	--storybook-paper: var(--color-lilac-paper);
+	--storybook-paper-mist: var(--color-lilac-mist);
+
+	.invitation-hero {
+		--color-text-primary: var(--color-violet-ink);
+		--color-action-accent: var(--color-leaf-gold);
+		--hero-occasion-color: var(--color-leaf-gold);
+		--hero-title-color: var(--color-violet-ink);
+		--hero-details-color: var(--color-violet-ink-soft);
+	}
+
+	--family-group-title-color: var(--color-leaf-gold);
+	--family-text-color: var(--color-violet-ink-soft);
+	--countdown-written-numeral-color: var(--color-leaf-gold);
+	--countdown-written-title-color: var(--color-violet-ink-soft);
+	--countdown-written-footer-color: var(--color-violet-ink-soft);
+	--location-text-color: var(--color-violet-ink-soft);
+
+	.thank-you-section {
+		--thank-you-keepsake-image-mask: radial-gradient(
+			ellipse 80% 80% at 50% 50%,
+			rgb(0 0 0) 65%,
+			transparent 100%
+		);
+	}
+}
