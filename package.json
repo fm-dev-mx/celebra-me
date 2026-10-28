@@ -124,7 +124,7 @@
         "board:serve:unregister": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/serve-unregister.ps1",
         "board:sync": "node scripts/board/sync.mjs",
         "board:verify": "node scripts/board/verify-board.mjs",
-        "board:watch": "node scripts/board/watch.mjs",
+        "board:watch": "node scripts/board/master-watch.mjs",
         "board:watch:register": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/watch-register.ps1",
         "board:watch:unregister": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/watch-unregister.ps1",
         "validate:event-parity": "tsx scripts/validate-event-parity.ts --allowMissingDb",

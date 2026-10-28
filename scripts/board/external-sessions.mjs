@@ -6,7 +6,10 @@
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { FINALIZADOS } from './model.mjs';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { FINALIZADOS, isReview, taskLabel } from './model.mjs';
+import { isMaster, masterConfigPath, readLocal } from './master-config.mjs';
 
 export const SOURCES = {
 	codex: { label: 'Codex', path: (home) => join(home, '.codex', 'state_5.sqlite') },
@@ -17,11 +20,11 @@ export const SOURCES = {
 };
 
 /** Only chats a person or an agent opened; guardian reviews and subagents are not owner-facing. */
-const CODEX_SQL = `select coalesce(name, title) as titulo, cwd as carpeta, archived as archivado,
+const CODEX_SQL = `select id, coalesce(name, title) as titulo, cwd as carpeta, archived as archivado,
 	updated_at_ms as en, (thread_source = 'user') as usuario from threads
 	where thread_source in ('user', 'agent_created_thread')`;
 /** One row per conversation: the full-text index keeps several chunks of each, any of them may carry the flag. */
-const GEMINI_SQL = `select s.title as titulo, s.workspace_uris as carpeta, s.last_modified_time as en,
+const GEMINI_SQL = `select s.conversation_id as id, s.title as titulo, s.workspace_uris as carpeta, s.last_modified_time as en,
 	coalesce((select max(f.archived) from conversations_fts f where f.conversation_id = s.conversation_id), 0)
 	as archivado, 1 as usuario from conversation_summaries s`;
 
@@ -74,6 +77,7 @@ async function readSource(key, home) {
 			rows: rows
 				.filter((r) => PROJECT.test(decoded(r.carpeta)))
 				.map((r) => ({
+					id: r.id,
 					titulo: shortTitle(r.titulo),
 					archivado: Number(r.archivado) === 1,
 					en: toMs(r.en),
@@ -85,6 +89,129 @@ async function readSource(key, home) {
 	} finally {
 		db?.close();
 	}
+}
+
+/** Identity-preserving archive candidates; a board status alone never proves a PR merged. */
+export function archiveCandidates(agent, rows, board, config, prStates = {}) {
+	const tasks = [...board.tareas, ...board.archivo];
+	return rows
+		.filter(
+			(r) =>
+				!r.archivado &&
+				!isMaster(r, config) &&
+				!(agent === 'claude' && config.archivedClaude?.includes(r.id)),
+		)
+		.flatMap((r) => {
+			const t = tasks.find(
+				(t) =>
+					t.sesion?.id === r.id ||
+					t.candado?.sesion === r.id ||
+					Number(t.num) === Number(TASK_NUM.exec(r.titulo)?.[1]),
+			);
+			let motivo;
+			if (DISPATCHER.test(r.titulo) && config.masters?.[agent])
+				motivo = 'Despachador anterior (d351)';
+			else if (t && !t.candado && isReview(t) && FINALIZADOS.includes(t.estado))
+				motivo = 'Revisión cerrada';
+			else if (t && !t.candado && ['hecha', 'unida', 'comprobada'].includes(t.estado)) {
+				const pr = t.pr ?? t.cierre?.pr;
+				if (pr && prStates[pr] !== 'MERGED') return [];
+				motivo = pr ? `Tarea terminada · PR ${pr} unido` : 'Tarea terminada sin PR';
+			}
+			return motivo
+				? [
+						{
+							agente: agent,
+							id: r.id,
+							titulo: r.titulo,
+							tarea: t ? taskLabel(t) : null,
+							motivo,
+						},
+					]
+				: [];
+		});
+}
+
+const exec = promisify(execFile);
+const prCache = new Map();
+async function readPrState(pr, cwd) {
+	const key = `${cwd}:${pr}`;
+	const hit = prCache.get(key);
+	if (hit && Date.now() - hit.at < 60_000) return hit.state;
+	try {
+		const { stdout } = await exec(
+			'gh',
+			['pr', 'view', String(pr).replace(/^#/, ''), '--json', 'state'],
+			{
+				cwd,
+				encoding: 'utf8',
+				timeout: 10_000,
+				windowsHide: true,
+			},
+		);
+		const state = JSON.parse(stdout).state;
+		prCache.set(key, { at: Date.now(), state });
+		return state;
+	} catch {
+		return null;
+	}
+}
+
+/** Same read-only host readers as `sesiones`, plus Claude's board-registered session identities. */
+export async function archiveSessions(
+	board,
+	{
+		dir,
+		home = homedir(),
+		config = readLocal(masterConfigPath(dir)),
+		readPr = (pr) => readPrState(pr, join(dir, '..', '..', '..')),
+		read = readSource,
+	} = {},
+) {
+	const fuentes = {};
+	const rows = {};
+	for (const agent of Object.keys(SOURCES)) {
+		const result = await read(agent, home);
+		fuentes[agent] = result.error
+			? { disponible: false, motivo: result.error }
+			: { disponible: true };
+		rows[agent] = result.rows ?? [];
+	}
+	// Claude has no equivalent archive flag in its local index. These are board recommendations,
+	// requiring the master's inventory check; do not claim they are confirmed open host chats.
+	rows.claude = [...board.tareas, ...board.archivo]
+		.filter((t) => t.sesion?.agente === 'claude')
+		.map((t) => ({ id: t.sesion.id, titulo: t.sesion.nombre ?? taskLabel(t) }));
+	fuentes.claude = {
+		disponible: true,
+		motivo: 'Sesiones registradas en el tablero; el maestro confirma cuáles siguen abiertas',
+	};
+	const possible = Object.entries(rows).flatMap(([agent, values]) =>
+		archiveCandidates(
+			agent,
+			values,
+			board,
+			config,
+			Object.fromEntries(
+				[...board.tareas, ...board.archivo].map((t) => [t.pr ?? t.cierre?.pr, 'MERGED']),
+			),
+		),
+	);
+	const prs = [
+		...new Set(
+			possible.flatMap((c) => {
+				const t = [...board.tareas, ...board.archivo].find((t) => taskLabel(t) === c.tarea);
+				return t && !isReview(t) && (t.pr ?? t.cierre?.pr) ? [t.pr ?? t.cierre.pr] : [];
+			}),
+		),
+	];
+	const states = Object.fromEntries(
+		await Promise.all(prs.map(async (pr) => [pr, await readPr(pr)])),
+	);
+	const chats = Object.entries(rows).flatMap(([agent, values]) =>
+		archiveCandidates(agent, values, board, config, states),
+	);
+	return { fuentes, chats: [...new Map(chats.map((c) => [`${c.agente}:${c.id}`, c])).values()] };
 }
 
 /** The board task a chat title names (`T118`), live or compacted into `archivo`. */
@@ -161,7 +288,10 @@ export function crossChats(key, rows, board, now = Date.now()) {
 	};
 }
 
-export async function externalSessions(board, { home = homedir(), now = Date.now() } = {}) {
+export async function externalSessions(
+	board,
+	{ home = homedir(), now = Date.now(), config = {} } = {},
+) {
 	const fuentes = {};
 	const chats = [];
 	const despachadores = [];
@@ -172,7 +302,12 @@ export async function externalSessions(board, { home = homedir(), now = Date.now
 			fuentes[key] = { disponible: false, motivo: r.error };
 			continue;
 		}
-		const x = crossChats(key, r.rows, board, now);
+		const x = crossChats(
+			key,
+			r.rows.filter((row) => !isMaster(row, config)),
+			board,
+			now,
+		);
 		fuentes[key] = {
 			disponible: true,
 			abiertos:
