@@ -3,13 +3,18 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
 
 /**
  * XV invitation for Yireh Ana on the storybook-lilac preset, styled as an illustrated watercolor
- * stationery piece: ultra-pale lilac paper, floral corners in watercolor lilac and purple tones with
- * small yellow wildflowers and gold/yellow ribbon accents, and a majestic watercolor oak tree at the
- * base. The celebrant explicitly requested no personal photographs or human silhouettes; photo
- * gallery sections are turned off. The song is the classic "Tie a Yellow Ribbon Round the Ole Oak
- * Tree", hosted on Cloudflare R2 at 64 kbps MP3. Religious ceremony officiated by Pastor Jesús
- * Manuel Ozaeta Pérez in the same venue; reception at 7:00 pm at Salón Casino Imperial in Ciudad
- * Delicias, Chihuahua.
+ * stationery album with Level-América craft: ultra-pale lilac paper, floral watercolor framing,
+ * illustrated interludes of the oak tree and golden ribbons, bespoke envelope and seal, and a
+ * poignant narrative of waiting and hope ("el roble y los lazos amarillos que esperan").
+ *
+ * The celebrant explicitly requested no personal photos or human silhouettes. Photo gallery is
+ * deactivated. All unverified client data from v1 has been removed: itinerary synthetic hours
+ * are removed, gifts are omitted until the client decides, the ceremony card is hidden from display
+ * until its time is confirmed (announced in the intro lede), and guestCap uses the documented default.
+ *
+ * Song: "Tie a Yellow Ribbon Round the Ole Oak Tree" by Tony Orlando & Dawn (YouTube: 8N1UutuYlL0).
+ * Religious ceremony officiated by Pastor Jesús Manuel Ozaeta Pérez at Salón Casino Imperial.
+ * Reception at 19:00 at Salón Casino Imperial, Ciudad Delicias, Chihuahua.
  */
 const YIREH_TIMING = {
 	localDateTime: '2027-10-23T19:00',
@@ -33,22 +38,37 @@ const content: CanonicalEventContentInput = {
 		'countdown',
 		'location',
 		'family',
-		'itinerary',
-		'gifts',
 		'personalizedAccess',
 		'rsvp',
 		'thankYou',
 	],
 	composition: {
 		intersections: {
-			countdown: { family: 'overlap', source: 'quote' },
-			location: { family: 'atmospheric-blend', source: 'countdown' },
-			family: { family: 'atmospheric-blend', source: 'location' },
-			itinerary: { family: 'atmospheric-blend', source: 'family' },
-			gifts: { family: 'atmospheric-blend', source: 'itinerary' },
+			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
+			// preserving clean neutral paper-mist cuts everywhere else.
+			countdown: { family: 'overlap', source: 'interlude-after-quote' },
+			'interlude-after-family': { family: 'overlap', source: 'family' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
+	interludes: [
+		{
+			// Illustrated interlude 1: watercolor oak branch with lilac blossoms and golden-yellow ribbon.
+			image: 'interludeRibbon',
+			afterSection: 'quote',
+			alt: 'Rama de roble con flores lilas y un lazo amarillo en acuarela.',
+			height: 'medium',
+			presentation: 'framed',
+		},
+		{
+			// Illustrated interlude 2: ancient oak tree in soft light with fluttering yellow ribbons.
+			image: 'interludeOak',
+			afterSection: 'family',
+			alt: 'El roble antiguo con lazos amarillos entre sus ramas, en acuarela.',
+			height: 'medium',
+			presentation: 'framed',
+		},
+	],
 	hero: {
 		variant: 'standard',
 		name: CELEBRANT_NAME,
@@ -59,24 +79,26 @@ const content: CanonicalEventContentInput = {
 	},
 	envelope: {
 		disabled: false,
-		variant: 'storybook-lilac',
+		revealVariant: 'storybook-butterflies',
 		sealStyle: 'wax',
 		sealIcon: 'flower',
 		sealInitials: 'Y',
+		sealColor: 'champagne',
 		envelopeName: CELEBRANT_NAME,
 		cardName: CELEBRANT_NAME,
 		cardLabel: 'Mis XV Años',
 		guestLabel: 'Para',
-		microcopy: 'Abra su invitación',
+		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Hay momentos que marcan el corazón y personas que los hacen inolvidables.',
-		closingLine: 'Deseo compartir con usted la dicha de llegar a mis quince años.',
+		text: 'Dicen que quien espera con el corazón ata un lazo al roble para recordar siempre el camino de vuelta.',
+		closingLine:
+			'Quince años después, mi lazo lleva su nombre. Deseo de corazón que me acompañe.',
 	},
 	countdown: {
 		variant: 'written-days',
 		title: 'Faltan',
-		footerText: 'para mis quince años',
+		footerText: 'para reunirnos bajo el roble',
 	},
 	location: {
 		variant: 'program-sheet',
@@ -86,31 +108,19 @@ const content: CanonicalEventContentInput = {
 			showCalendarLinks: true,
 			indicationsLayout: 'enclosure',
 		},
-		introHeading: 'Dónde y cuándo',
+		introHeading: 'Lugar y momento',
 		introLede:
 			'La ceremonia religiosa será oficiada por el Pastor Jesús Manuel Ozaeta Pérez en el mismo salón.',
-		indicationsHeading: 'Detalles del evento',
+		indicationsHeading: 'Código de vestimenta',
 		indications: [
 			{
 				iconName: 'DressCode',
 				styleVariant: 'default',
-				title: 'Código de vestimenta',
-				text: 'Formal',
+				title: 'Formal',
+				text: 'Le agradecemos acompañarnos con atuendo formal.',
 			},
 		],
 		venues: [
-			{
-				type: 'ceremony',
-				venueEvent: 'Ceremonia religiosa',
-				venueName: 'Salón Casino Imperial',
-				address: 'Carr. Delicias–Ortiz km 1, Centro',
-				city: 'Ciudad Delicias, Chihuahua',
-				date: '2027-10-23',
-				time: 'Por definir',
-				googleMapsUrl:
-					'https://maps.google.com/?q=Casino+Imperial,+Carr.+Delicias+-+Ortiz+Km+1,+Ciudad+Delicias,+Chihuahua',
-				isVisible: true,
-			},
 			{
 				type: 'reception',
 				venueEvent: 'Recepción',
@@ -123,6 +133,18 @@ const content: CanonicalEventContentInput = {
 					'https://maps.google.com/?q=Casino+Imperial,+Carr.+Delicias+-+Ortiz+Km+1,+Ciudad+Delicias,+Chihuahua',
 				isVisible: true,
 			},
+			{
+				type: 'ceremony',
+				venueEvent: 'Ceremonia religiosa',
+				venueName: 'Salón Casino Imperial',
+				address: 'Carr. Delicias–Ortiz km 1, Centro',
+				city: 'Ciudad Delicias, Chihuahua',
+				date: '2027-10-23',
+				time: '',
+				googleMapsUrl:
+					'https://maps.google.com/?q=Casino+Imperial,+Carr.+Delicias+-+Ortiz+Km+1,+Ciudad+Delicias,+Chihuahua',
+				isVisible: false,
+			},
 		],
 	},
 	family: {
@@ -132,36 +154,20 @@ const content: CanonicalEventContentInput = {
 			mother: 'Nichme Margarita Urueta Hermosillo',
 		},
 		labels: {
-			sectionTitle: 'Con amor y gratitud',
+			sectionTitle: 'A mi lado',
 			sectionSubtitle: '',
 			parentsTitle: 'Mi mamá',
-			sectionMessage: 'Gracias por su amor, su guía y su apoyo incondicional en cada paso.',
+			sectionMessage:
+				'A usted, mamá, que me ha enseñado a ser firme como el roble y a guardar siempre un lazo de esperanza en el corazón.',
 		},
-	},
-	itinerary: {
-		variant: 'stacked-cards',
-		title: 'Así será mi noche',
-		items: [
-			{ time: '19:00', iconName: 'Reception', label: 'Recepción' },
-			{ time: '20:30', iconName: 'Waltz', label: 'Vals' },
-			{ time: '21:30', iconName: 'Dinner', label: 'Cena' },
-			{ time: '23:00', iconName: 'Party', label: 'Celebración' },
-		],
-	},
-	gifts: {
-		variant: 'standard',
-		title: 'Lluvia de sobres',
-		presentation: 'legend-only',
-		subtitle:
-			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá lluvia de sobres.',
 	},
 	rsvp: {
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		subcopy: 'Le agradeceré confirmar su asistencia.',
+		subcopy: 'Será un honor contar con su presencia en esta fecha tan significativa.',
 		lockedMessage:
 			'Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.',
-		guestCap: 2,
+		guestCap: 1,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		flow: 'steps',
@@ -173,6 +179,8 @@ const content: CanonicalEventContentInput = {
 		},
 		labels: {
 			name: 'Su nombre',
+			notesLabel: 'Un mensaje para mis quince',
+			notesPlaceholder: 'Escriba aquí sus palabras...',
 			guestHint: 'Tiene {count} lugares. Si vienen menos, ajústelo aquí.',
 			stepAttendance: 'Primero lo importante',
 			stepDetails: '¿Quiénes le acompañan?',
@@ -194,21 +202,19 @@ const content: CanonicalEventContentInput = {
 		image: 'tree',
 		focalPoint: '50% 50%',
 		message:
-			'Gracias por acompañarme en mis quince años y por ser parte de los recuerdos más hermosos de mi vida.',
+			'Hay lazos que nunca se rompen y lugares a los que siempre se puede volver. Gracias por ser parte de mi camino y por acompañarme en mis quince años.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: `Yireh Ana · Mis XV Años · Delicias, Chihuahua · MMXXVII`,
 	},
 	navigation: [
 		{ label: 'Momento', href: '#quote-section' },
-		{ label: 'Dónde y cuándo', href: '#event-location' },
+		{ label: 'Lugar', href: '#event-location' },
 		{ label: 'Familia', href: '#family-section' },
-		{ label: 'Programa', href: '#itinerary' },
-		{ label: 'Regalos', href: '#regalos' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
 	music: {
 		url: 'https://media.celebra-me.com/invitations/xv/yireh-ana/music-b35b0e7c7aea0a11fa5f13fa0537bb5f4df26e09a1e94919362b59f5c671b80e.mp3',
-		title: 'Tie a Yellow Ribbon Round the Ole Oak Tree',
+		title: 'Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn',
 		autoPlay: true,
 	},
 	sharing: {
@@ -239,6 +245,8 @@ export default defineCanonicalInvitation({
 	assetDir: 'src/invitations/clients/yireh-ana/assets',
 	assetFiles: {
 		hero: 'hero-watercolor.webp',
+		interludeRibbon: 'interlude-ribbon.webp',
+		interludeOak: 'interlude-oak.webp',
 		tree: 'oak-tree.webp',
 		ogShare: 'og-share.webp',
 	},
