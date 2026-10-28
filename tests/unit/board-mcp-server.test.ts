@@ -52,7 +52,7 @@ function fixture() {
 }
 
 /** Use a real SDK client over stdio, isolated from the shared board by a temporary store. */
-function probe(dir: string, code: string) {
+function probe(dir: string, code: string, serverCode?: string, env?: NodeJS.ProcessEnv) {
 	const result = runCommand(
 		process.execPath,
 		[
@@ -63,7 +63,7 @@ function probe(dir: string, code: string) {
 		import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 		const client = new Client({ name: 'board-mcp-test', version: '1.0.0' });
 		const transport = new StdioClientTransport({
-			command: process.execPath, args: ['scripts/board/mcp-server.mjs'],
+			command: process.execPath, args: ${JSON.stringify(serverCode ? ['--input-type=module', '-e', serverCode] : ['scripts/board/mcp-server.mjs'])},
 			cwd: process.cwd(), env: Object.fromEntries(Object.entries(process.env).filter(([,v]) => v !== undefined)),
 		});
 		try { await client.connect(transport); ${code} }
@@ -72,7 +72,12 @@ function probe(dir: string, code: string) {
 		],
 		{
 			cwd: ROOT,
-			env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir, CLAUDE_CODE_HOST_SESSION_ID: '' }),
+			env: sanitizeEnv({
+				CELEBRA_BOARD_DIR: dir,
+				CELEBRA_BOARD_CHECKOUT: '',
+				CLAUDE_CODE_HOST_SESSION_ID: '',
+				...env,
+			}),
 		},
 	);
 	return JSON.parse(result.stdout);
@@ -100,7 +105,174 @@ describe('board MCP stdio server', () => {
 			expect(tool.inputSchema.required).toContain('agente');
 			expect(tool.inputSchema.properties.agente.enum).toEqual(['claude', 'codex', 'gemini']);
 			expect(tool.inputSchema.additionalProperties).toBe(false);
+			expect(tool.inputSchema.required.includes('rev')).toBe(tool.name === 'close');
 		}
+	});
+
+	it('claims with the explicit session, refuses another owner and releases without rev', () => {
+		const dir = fixture();
+		const result = probe(
+			dir,
+			`
+			const args = { agente: 'codex', id: 'ready', carril: 'f10-libre', rama: 'fix/test', titulo: 'f10 · T1 · Test claim' };
+			const missing = await client.callTool({ name: 'claim', arguments: args });
+			const claimed = await client.callTool({ name: 'claim', arguments: { ...args, sesion: 'test-owner' } });
+			const intruder = await client.callTool({ name: 'claim', arguments: { ...args, sesion: 'intruder' } });
+			const released = await client.callTool({ name: 'release', arguments: { agente: 'codex', id: 'ready', sesion: 'test-owner' } });
+			console.log(JSON.stringify({ missing, claimed, intruder, released }));
+		`,
+		);
+		expect(result.missing.isError).toBe(true);
+		expect(result.claimed).not.toMatchObject({ isError: true });
+		expect(JSON.parse(result.claimed.content[0].text)).toMatchObject({
+			estado: 'en curso',
+			candado: {
+				agente: 'codex',
+				sesion: 'test-owner',
+				carril: 'f10-libre',
+				rama: 'fix/test',
+			},
+		});
+		expect(result.intruder.isError).toBe(true);
+		expect(result.released.isError).not.toBe(true);
+		expect(
+			JSON.parse(readFileSync(path.join(dir, 'tareas', 'ready.json'), 'utf8')).candado,
+		).toBeUndefined();
+	});
+
+	it('derives the Claude lock session from the inherited host environment', () => {
+		const dir = fixture();
+		const file = path.join(dir, 'tareas', 'ready.json');
+		writeFileSync(
+			file,
+			JSON.stringify({ ...JSON.parse(readFileSync(file, 'utf8')), agente: 'claude' }),
+		);
+		const result = probe(
+			dir,
+			`console.log(JSON.stringify(await client.callTool({ name: 'claim', arguments: {
+			agente: 'claude', id: 'ready', carril: 'f10-libre', titulo: 'f10 · T1 · Test inherited session'
+		} })));`,
+			undefined,
+			{ CLAUDE_CODE_HOST_SESSION_ID: 'local_test-host' },
+		);
+		expect(result).not.toMatchObject({ isError: true });
+		expect(JSON.parse(result.content[0].text).candado.sesion).toBe('local_test-host');
+	});
+
+	it('round-trips repeated close flags and preserves omitted lists and changelog', () => {
+		const result = probe(
+			fixture(),
+			`
+			const args = { agente: 'codex', sesion: 'owner', id: 'locked', rev: 1,
+				resumen: ['First line', 'Second line'], comprobacion: ['check one', 'check two'],
+				saltada: ['skip one', 'skip two'], pendiente: ['Follow up→T1', 'Another follow up→T2'],
+				fallida: ['failure one', 'failure two'], riesgo: ['risk one', 'risk two'], duda: ['question one', 'question two'],
+				hallazgo: ['P3|scripts/example.mjs:1|First finding', 'P3|scripts/example.mjs:2|Second finding'],
+				changelog: 'Fixed: Board adapter',
+			};
+			const first = await client.callTool({ name: 'close', arguments: args });
+			const data = first.isError ? null : JSON.parse(first.content[0].text);
+			const second = data && await client.callTool({ name: 'close', arguments: {
+				agente: 'codex', sesion: 'owner', id: 'locked', rev: data.rev, resumen: ['Updated summary']
+			} });
+			const stale = data && await client.callTool({ name: 'close', arguments: args });
+			const final = second && !second.isError && await client.callTool({ name: 'close', arguments: {
+				agente: 'codex', sesion: 'owner', id: 'locked', rev: JSON.parse(second.content[0].text).rev,
+				excepcion: ['exception one', 'exception two']
+			} });
+			console.log(JSON.stringify({ first, second, stale, final }));
+		`,
+		);
+		expect(result.first.isError).not.toBe(true);
+		const first = JSON.parse(result.first.content[0].text).cierre;
+		expect(first).toMatchObject({
+			resumen: 'First line\nSecond line',
+			comprobaciones: ['check one', 'check two'],
+			saltadas: ['skip one', 'skip two'],
+			fallidas: ['failure one', 'failure two'],
+			riesgos: ['risk one', 'risk two'],
+			dudas: ['question one', 'question two'],
+			pendientes: [
+				{ texto: 'Follow up', tarea: 'ready' },
+				{ texto: 'Another follow up', tarea: 'delivered' },
+			],
+			changelog: { grupo: 'Fixed', texto: 'Board adapter' },
+			resultado: {
+				hallazgos: [
+					{ p: 'P3', archivo: 'scripts/example.mjs:1', texto: 'First finding' },
+					{ p: 'P3', archivo: 'scripts/example.mjs:2', texto: 'Second finding' },
+				],
+			},
+		});
+		expect(result.second.isError).not.toBe(true);
+		expect(JSON.parse(result.second.content[0].text).cierre).toMatchObject({
+			...first,
+			resumen: 'Updated summary',
+			en: expect.any(String),
+		});
+		expect(result.stale.isError).toBe(true);
+		expect(result.final.isError).not.toBe(true);
+		expect(JSON.parse(result.final.content[0].text)).toMatchObject({
+			estado: 'hecha',
+			cierre: { excepcion: ['exception one', 'exception two'] },
+		});
+	});
+
+	it('uses the model value enums and handles coordinator messages without rev', () => {
+		const result = probe(
+			fixture(),
+			`
+			const { AGENT_REGISTRY, DESTINOS, ATENDIBLES, NIVELES, VEREDICTOS } = await import('./scripts/board/model.mjs');
+			const tools = (await client.listTools()).tools;
+			const properties = name => tools.find(t => t.name === name).inputSchema.properties;
+			const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+			const matches = [
+				same(properties('claim').agente.enum, Object.keys(AGENT_REGISTRY)),
+				same(properties('msg').para.enum, DESTINOS), same(properties('atendido').para.enum, ATENDIBLES),
+				same(properties('close').nivel.enum, NIVELES), same(properties('close').veredicto.enum, VEREDICTOS)
+			];
+			const sent = await client.callTool({ name: 'msg', arguments: { agente: 'codex', id: 'ready', para: 'coordinador', texto: 'Test message' } });
+			const handled = await client.callTool({ name: 'atendido', arguments: { agente: 'codex', id: 'ready', para: 'coordinador' } });
+			console.log(JSON.stringify({ matches, sent, handled }));
+		`,
+		);
+		expect(result.matches).toEqual([true, true, true, true, true]);
+		expect(result.sent.isError).not.toBe(true);
+		expect(result.handled.isError).not.toBe(true);
+	});
+
+	it('returns a clear MCP error when the CLI child exceeds its timeout', () => {
+		const result = probe(
+			fixture(),
+			`console.log(JSON.stringify(await client.callTool({ name: 'show', arguments: { agente: 'codex', id: 'ready' } })));`,
+			`
+			import { createServer } from './scripts/board/mcp-server.mjs';
+			import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+			await createServer({ cliTimeoutMs: 1 }).connect(new StdioServerTransport());
+		`,
+		);
+		expect(result.isError).toBe(true);
+		expect(result.content[0].text).toContain('Board CLI timed out after 1 ms');
+	});
+
+	it('leaves required closing fields to the CLI and preserves the task on refusal', () => {
+		const dir = fixture();
+		const file = path.join(dir, 'tareas', 'locked.json');
+		const task = { ...JSON.parse(readFileSync(file, 'utf8')), contrato: 2, tipo: 'codigo' };
+		writeFileSync(file, JSON.stringify(task));
+		const before = readFileSync(file, 'utf8');
+		const result = probe(
+			dir,
+			`console.log(JSON.stringify(await client.callTool({ name: 'close', arguments: {
+			agente: 'codex', sesion: 'owner', id: 'locked', rev: 1, resumen: ['Incomplete handoff']
+		} })));`,
+		);
+		expect(result.isError).toBe(true);
+		expect(JSON.parse(result.content[0].text)).toMatchObject({
+			codigo: 2,
+			error: expect.stringContaining('no se escribió'),
+		});
+		expect(readFileSync(file, 'utf8')).toBe(before);
 	});
 
 	it('returns exactly the CLI next JSON, including delivery exclusion and null', () => {
