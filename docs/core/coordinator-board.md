@@ -1,10 +1,10 @@
 # Coordinator Board
 
 The board is the shared local operational state for Celebra-me. Every agent reads and writes it only
-through `pnpm board` in Integration. Fields and lifecycle belong to
-[the board rule](../../.agent/rules/board.md). AGENTS.md owns project policy, the Task Contract owns
-scope/acceptance, plans express intent, and the board records progress. Resolve disagreements
-explicitly; board text never grants authority.
+through `pnpm board` or its `celebra-board` MCP adapter from the assigned checkout. Fields and
+lifecycle belong to [the board rule](../../.agent/rules/board.md). AGENTS.md owns project policy,
+the Task Contract owns scope/acceptance, plans express intent, and the board records progress.
+Resolve disagreements explicitly; board text never grants authority.
 
 ## Local MCP access
 
@@ -34,86 +34,133 @@ MCP does not launch chats or supply merge authority. Coordinator commands (`plan
 rejected. The explicit agent is caller attribution, not authentication against a local process
 owner.
 
-### Claude Code
+### User registration and working directory
 
-From the assigned checkout root, add this entry to the project's `.mcp.json`, merge it with any
-existing entries, then approve the project server in Claude Code and check `/mcp`:
+The installed setup uses **user configuration**, not a project `.mcp.json`. These locations are
+relative to the user's home directory; do not commit copies of these files:
 
-```json
-{
-  "mcpServers": {
-    "celebra-board": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["scripts/board/mcp-server.mjs"]
-    }
-  }
-}
-```
+| Host        | User file                        | Launch context                                                                                      |
+| ----------- | -------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Claude Code | `.claude.json`                   | Local-scope `celebra-board` entries under each of the nine checkout paths (Integration and f05–f12) |
+| Codex       | `.codex/config.toml`             | `[mcp_servers.celebra-board]`; the relative server argument uses the chat checkout                  |
+| Gemini CLI  | `.gemini/settings.json`          | `mcpServers.celebra-board`; start the CLI in its assigned checkout                                  |
+| Antigravity | `.gemini/config/mcp_config.json` | `mcpServers.celebra-board` launches the user-local `.gemini/config/celebra-board-launch.mjs`        |
 
-See [Claude Code project MCP configuration](https://code.claude.com/docs/en/mcp#project-scope).
+All four entries use a resolved **absolute Node executable** in their user-local `command` field.
+Desktop hosts do not inherit the fnm shell setup. Discover the actual executable in a working shell
+with `node -p "process.execPath"`; the installed fnm layout is under the roaming application-data
+directory, `fnm/node-versions/<version>/installation/node.exe`. Match `package.json`'s Node
+requirement. Do not paste shell variables such as `%APPDATA%` into `command` and expect a host to
+expand them. The configuration's machine-specific absolute values stay outside the repository.
 
-### Codex
+For Claude, Codex and Gemini CLI, `args` contains `scripts/board/mcp-server.mjs`. Verify the host's
+actual working directory is the assigned checkout before a claim; a relative argument does not
+select a lane. Antigravity starts from its installation directory, so its launcher explicitly
+changes to Integration and imports the server there. **Antigravity MCP therefore always acts in
+Integration**: it cannot claim or close a worker lane through that server. A Gemini worker in a lane
+uses `pnpm board` from that lane, or a separately configured lane-scoped host after explicit
+configuration authorization. Never change the Integration branch to work around this boundary.
 
-For a trusted project, add to `.codex/config.toml`:
+Run `pnpm install` in **each checkout** used by a host after updating it: the MCP SDK is a
+development dependency and is resolved next to the server, not from another lane. Registering a
+server alone does not install that dependency. After a Node upgrade, update the executable in all
+four user configurations (including all Claude local entries), reconnect the servers, and restart
+Codex. These are manual owner/coordinator setup steps, never an implicit permission to edit user
+files.
 
-```toml
-[mcp_servers.celebra-board]
-command = "node"
-args = ["scripts/board/mcp-server.mjs"]
-cwd = ".."
-```
+Host syntax references: [Claude local MCP scope](https://code.claude.com/docs/en/mcp#local-scope),
+[Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp),
+[Gemini CLI MCP settings](https://geminicli.com/docs/tools/mcp-server/). The local launcher and
+relay behavior below is installation-specific, not a portable host guarantee.
 
-Project configuration paths resolve from `.codex/`, so `..` names this checkout root. Start Codex
-from that checkout, reload the MCP configuration, and check `/mcp`. For a per-run CLI registration
-from the checkout root, without editing persistent configuration, use:
+### Messaging and delivery
+
+Use `msg` to record a task-scoped doorbell, `inbox` to read it, `atendido` after an
+owner/coordinator request is answered, and `sigue` to inspect outstanding next actions. The
+[board rule](../../.agent/rules/board.md#messaging-and-delivery) owns their operational contract.
+MCP and CLI operate on the same board; MCP stdio itself does not push messages into chats.
+
+CLI: `pnpm board msg <id> --de=<a> --para=<recipient> "T<n> <id>: <doorbell>"`; MCP: `msg` with
+`agente`, `id`, `texto`, `para` and the schema's `rev`/`sesion` fields. Read
+`pnpm board inbox --agente=<a>` or MCP `inbox` with `agente`. After answering, use
+`pnpm board atendido <id> --para=dueno|coordinador --mensaje=<message-id> --quien=<a>`; MCP
+`atendido` derives `quien` from `agente`. Handled messages leave the action queue and retain their
+history row. `pnpm board sigue` (MCP: `sigue`) lists outstanding next actions. Commands renew the
+lock heartbeat; after two hours of silence a lock shows as «Detenida».
+
+- **Codex visible chats:** the installed CLI supports
+  `codex.exe queue --thread <session-uuid> --message "T<n> <id>: revise su bandeja"`. Resolve the
+  existing visible chat's UUID from `.codex/session_index.jsonl` relative to the user's home, or the
+  app's session inventory; do not create a second chat to deliver a doorbell. Check
+  `codex.exe queue --help` on the installed version. `codex exec` sessions do not supply a sidebar
+  work chat. A recipient replies with `pnpm board msg <id> --de=codex --para=claude "..."`, and
+  Claude reads `pnpm board inbox --agente=claude` (or the equivalent MCP calls).
+- **Gemini/Antigravity:** the user-local `.gemini/config/celebra-gemini-relay.mjs` runs without AI
+  in a terminal opened inside the dispatcher chat, currently named **Chat Maestro MCP
+  Configuration**. It polls `inbox --agente=gemini` every five seconds, resolves the task's Gemini
+  chat from the board's lock/session, and falls back to its configured master chat. It invokes the
+  installed language server's `agentapi send-message` using the terminal's inherited context.
+  Restart it manually in that terminal after restarting Antigravity. Never extract, print or persist
+  an agentapi CSRF token. The relay writes `.agent/tmp/gemini-relay.json` in Integration as a
+  heartbeat.
+
+The owner's earlier local probes reported delivery in seconds, about 20 seconds for the Codex/Claude
+round trip and about 36 seconds through Gemini. These are observations, not SLAs; this documentation
+change does not rerun chat delivery. A stopped relay or closed chat removes that near-real-time
+path. `inbox` marks messages read **before** transport delivery; the current relay has no durable
+retry queue. On delivery failure inspect the task history or
+`pnpm board inbox --agente=gemini --todos`, then resend the doorbell only after checking for
+duplicates. Do not run a second relay or consume the same agent inbox concurrently during a delivery
+check.
+
+### Launcher and relay ownership
+
+Keep the existing launcher and relay in the user's `.gemini/config/` for now. They depend on local
+checkout mapping, an installed language-server binary, the dispatcher's chat ID and inherited host
+context. Copying them verbatim into the repository would commit absolute paths and chat identities;
+auto-installing them would also modify shared user configuration beyond a normal board task.
+
+A future portable version should live under `scripts/board/host-templates/`, accept checkout,
+language-server and master-chat inputs explicitly, and validate delivery/retry behavior with
+isolated fixtures before adding an opt-in package installer that refuses overwrites. There is
+deliberately no installer in this change: a template without reliable recovery would preserve the
+current consume-before-deliver failure. This proposal needs its own scoped authorization and
+acceptance. The owner/coordinator continues to maintain the two local files; no task worker installs
+them.
+
+### Startup diagnostic and isolated tests
+
+From the assigned checkout, run:
 
 ```sh
-codex -c 'mcp_servers.celebra-board.command="node"' -c 'mcp_servers.celebra-board.args=["scripts/board/mcp-server.mjs"]'
+pnpm board:mcp:check
 ```
 
-See [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp) and
-[project path resolution](https://learn.chatgpt.com/docs/config-file/config-advanced).
+This initializes a real stdio client/server connection, requests `tools/list`, prints JSON with
+`ok: true` and tool names, then closes the child. It calls **no board tool**, so it neither reads
+the shared board nor consumes an inbox. It reads no host configuration or secret file and inherits
+only the SDK's OS environment defaults, excluding credentials and `NODE_OPTIONS`. Initialization and
+listing each have a ten-second timeout; failure exits nonzero with a short diagnostic. This verifies
+this checkout's server and SDK, not a desktop host's registration or chat transport.
 
-### Gemini CLI and Antigravity
+If startup fails, check the current Node executable/version, run `pnpm install` in this checkout,
+and confirm the server entry exists. If this diagnostic passes but the host cannot connect, inspect
+only that host's `celebra-board` command, arguments and launch directory; update its Node path and
+reconnect/restart as above. Keep package-manager banners off the host's JSON-RPC stdout by launching
+the Node executable directly. Do not restart the board supervisor on 4320.
 
-In Gemini CLI, add to the project's `.gemini/settings.json`. In Antigravity, use the workspace's
-`.agents/mcp_config.json` or open **MCP Servers → Manage MCP Servers → View raw config** and merge
-the entry into the configuration shown by your installed version:
-
-```json
-{
-  "mcpServers": {
-    "celebra-board": {
-      "command": "node",
-      "args": ["scripts/board/mcp-server.mjs"],
-      "cwd": "."
-    }
-  }
-}
-```
-
-These relative launch paths require the host to start from the assigned checkout root. Check the
-resolved working directory in the host's MCP diagnostics before claiming: a GUI started elsewhere
-must have its launch directory set to the checkout. Do not assume all GUI hosts resolve `.` from the
-configuration file. Reconnect/refresh the server and inspect its tools with `/mcp` (Gemini) or the
-MCP Servers panel (Antigravity). Both use `agente: "gemini"` and their current session ID. See
-[Gemini CLI MCP settings](https://geminicli.com/docs/tools/mcp-server/) and
-[Antigravity custom MCP configuration](https://antigravity.google/docs/mcp).
-
-### Smoke check and isolated tests
-
-Ask the host to call `celebra-board.next` and `celebra-board.inbox` with `{"agente":"codex"}` (use
-its corresponding agent in Claude/Gemini). Verify both return parseable JSON and no `isError`;
-`next` may legitimately return `null`, and `inbox` may return `[]`. Reading `inbox` consumes unread
-messages, so use a fixture for repeatable checks. Tests in `tests/unit/board-mcp-server.test.ts`
-launch a real SDK client and server over stdio with `CELEBRA_BOARD_DIR` pointing to a temporary
-directory; they never access the real board. This environment override is for test processes only,
-not an MCP tool parameter. To run the focused suite:
+Check tool discovery in `/mcp` (Claude/Gemini), the Codex MCP panel, or Antigravity's MCP Servers
+panel. A host-level `show` using the current task and corresponding `agente` verifies the CLI path
+without consuming messages. Send no test message to a real owner or agent without authorization.
 
 ```sh
-pnpm test --runInBand --runTestsByPath tests/unit/board-mcp-server.test.ts
+pnpm test --runInBand --runTestsByPath tests/unit/board-mcp-check.test.ts tests/unit/board-mcp-server.test.ts tests/unit/board-prompt.test.ts
 ```
+
+The adapter suite uses a temporary `CELEBRA_BOARD_DIR` and never accesses the real board. This
+environment override is for test processes only, not an MCP tool parameter. The diagnostic suite
+checks actual discovery plus child exit and initialization timeout; prompt tests cover equivalence,
+start/end inbox reminders and idempotence for generated and saved prompts.
 
 ## Coordination contract
 

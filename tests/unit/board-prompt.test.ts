@@ -92,6 +92,32 @@ const task = (fields: Record<string, unknown>) => ({
 });
 
 describe('prompt-v1 (T160)', () => {
+	it('adds MCP equivalence and inbox checks to generated and saved prompts without duplication', () => {
+		const out = probe(
+			`const copied = m.promptWithLane(input, { tareas: [] });
+			const generated = p.buildPrompt({
+				identidad: 'f11 · T430 · Prueba',
+				secciones: p.PROMPT_SECTIONS.filter(s => s !== 'METADATOS').map(s => [s, ['Contenido']]),
+				metadatos: [['agente', 'gemini']],
+			});
+			console.log(JSON.stringify({ copied, generated,
+				twice: p.withBoardAccess(copied),
+				legacy: p.withBoardAccess('Legacy prompt'),
+				owner: m.promptWithLane({ ...input, actor: 'dueno' }, { tareas: [] }),
+				start: p.promptSection(copied, 'ANTES DE EMPEZAR'),
+				end: p.promptSection(copied, 'AL TERMINAR'),
+			}));`,
+			task({ prompt: TASK_PROMPT }),
+		);
+		expect(out.start.join('\n')).toContain('MCP de celebra-board equivalen');
+		expect(out.start.join('\n')).toContain('al empezar: pnpm board inbox --agente=claude');
+		expect(out.end.join('\n')).toContain('al terminar: pnpm board inbox --agente=claude');
+		expect(out.generated).toContain('pnpm board inbox --agente=gemini');
+		expect(out.twice).toBe(out.copied);
+		expect(out.legacy).toBe('Legacy prompt');
+		expect(out.owner).toBe(TASK_PROMPT);
+	});
+
 	it('accepts a task prompt and keeps its session name on line 1 when copied', () => {
 		const t = task({ prompt: TASK_PROMPT, carrilPlaneado: 'f05-plataforma' });
 		const out = probe(
