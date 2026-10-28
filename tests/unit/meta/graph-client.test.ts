@@ -64,6 +64,24 @@ describe('Meta aggregate insight transport', () => {
 		});
 	});
 
+	it('calls the default fetch with a receiver accepted by Workers', async () => {
+		const runtimeFetch = jest.spyOn(globalThis, 'fetch').mockImplementation(function (
+			this: unknown,
+		) {
+			if (this !== globalThis && this !== undefined) {
+				throw new TypeError('Illegal invocation');
+			}
+			return Promise.resolve(json({ data: [{ reach: 7 }] }));
+		});
+		try {
+			const defaultClient = new MetaGraphClient({ accessToken: TOKEN });
+			await expect(collect(defaultClient)).resolves.toEqual([{ reach: 7 }]);
+			expect(runtimeFetch).toHaveBeenCalledTimes(1);
+		} finally {
+			runtimeFetch.mockRestore();
+		}
+	});
+
 	it('follows next even after an empty page, stripping embedded credentials', async () => {
 		fetchMock
 			.mockResolvedValueOnce(
