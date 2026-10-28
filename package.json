@@ -175,7 +175,8 @@
         "visual:remote:compare": "tsx scripts/screenshot/remote/remote-visual-cli.ts compare",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
         "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
-        "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
+        "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts",
+        "board:mcp": "node scripts/board/mcp-server.mjs"
     },
     "dependencies": {
         "@fontsource-variable/bodoni-moda": "^5.3.0",
@@ -213,6 +214,7 @@
         "@eslint/js": "^10.0.1",
         "@inquirer/prompts": "^8.7.3",
         "@jest/globals": "30.5.2",
+        "@modelcontextprotocol/sdk": "1.32.2",
         "@playwright/test": "1.62.1",
         "@testing-library/jest-dom": "^7.0.1",
         "@testing-library/react": "^16.3.3",
