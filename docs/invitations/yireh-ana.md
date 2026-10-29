@@ -199,13 +199,13 @@ Source label: `source:watercolor-session` (opaque). Custom high-resolution botan
 artwork created specifically for this invitation, honoring the client's explicit request for no
 photographs.
 
-| source filename             | dims        | format | orientation | weight  | quality                               | role        | duplicate   | processing                                  | derivative            |
-| --------------------------- | ----------- | ------ | ----------- | ------- | ------------------------------------- | ----------- | ----------- | ------------------------------------------- | --------------------- |
-| botanical-cover-source.png  | 1084 x 1451 | WebP   | portrait    | 242 KiB | prepared; creative acceptance pending | hero        | no          | WebP, quality 86                            | hero-watercolor.webp  |
-| botanical-ribbon-source.png | 1200 x 630  | WebP   | landscape   | 96 KiB  | prepared; creative acceptance pending | og-share    | intentional | 1200 x 630 cover crop, WebP                 | og-share.webp         |
-| botanical-oak-source.png    | 1200 x 1400 | WebP   | portrait    | 168 KiB | prepared; creative acceptance pending | thank-you   | intentional | Full-tree portrait contain derivative, WebP | oak-tree.webp         |
-| botanical-ribbon-source.png | 1440 x 1080 | WebP   | landscape   | 150 KiB | prepared; creative acceptance pending | interlude 1 | intentional | 1440 px WebP                                | interlude-ribbon.webp |
-| botanical-oak-source.png    | 1440 x 960  | WebP   | landscape   | 228 KiB | prepared; creative acceptance pending | interlude 2 | intentional | 1440 px WebP                                | interlude-oak.webp    |
+| source filename             | dims        | format | orientation | weight  | quality          | role        | duplicate   | processing                                  | derivative            |
+| --------------------------- | ----------- | ------ | ----------- | ------- | ---------------- | ----------- | ----------- | ------------------------------------------- | --------------------- |
+| botanical-cover-source.png  | 1084 x 1451 | WebP   | portrait    | 242 KiB | production-ready | hero        | no          | WebP, quality 86                            | hero-watercolor.webp  |
+| botanical-ribbon-source.png | 1200 x 630  | WebP   | landscape   | 96 KiB  | production-ready | og-share    | intentional | 1200 x 630 cover crop, WebP                 | og-share.webp         |
+| botanical-oak-source.png    | 1200 x 1400 | WebP   | portrait    | 168 KiB | production-ready | thank-you   | intentional | Full-tree portrait contain derivative, WebP | oak-tree.webp         |
+| botanical-ribbon-source.png | 1440 x 1080 | WebP   | landscape   | 150 KiB | production-ready | interlude 1 | intentional | 1440 px WebP                                | interlude-ribbon.webp |
+| botanical-oak-source.png    | 1440 x 960  | WebP   | landscape   | 228 KiB | production-ready | interlude 2 | intentional | 1440 px WebP                                | interlude-oak.webp    |
 
 ### Uniqueness table (required before READY_*)
 
