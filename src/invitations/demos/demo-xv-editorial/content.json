@@ -123,29 +123,38 @@
         "items": [
             {
                 "image": "gallery01",
-                "alt": "Valentina con vestido negro bordado en perlas."
+                "alt": "Valentina con vestido negro bordado en perlas.",
+                "layoutRole": "feature"
             },
             {
                 "image": "gallery02",
-                "alt": "Valentina sonríe bajo una lluvia de destellos dorados."
+                "alt": "Valentina sonríe bajo una lluvia de destellos dorados.",
+                "layoutRole": "feature"
             },
             {
                 "image": "gallery05",
-                "alt": "Detalle de bordado dorado con perlas sobre seda negra."
+                "alt": "Detalle de bordado dorado con perlas sobre seda negra.",
+                "layoutRole": "wide"
             },
             {
                 "image": "gallery07",
-                "alt": "Retrato de Valentina en blanco y negro junto a un ventanal."
+                "alt": "Retrato de Valentina en blanco y negro junto a un ventanal.",
+                "layoutRole": "feature"
             },
             {
                 "image": "gallery04",
-                "alt": "Valentina en un jardín de rosas blancas con vestido champán."
+                "alt": "Valentina en un jardín de rosas blancas con vestido champán.",
+                "layoutRole": "feature"
             },
             {
                 "image": "gallery09",
-                "alt": "Una mano sostiene el sobre negro de la invitación con sello dorado."
+                "alt": "Una mano sostiene el sobre negro de la invitación con sello dorado.",
+                "layoutRole": "standard"
             }
-        ]
+        ],
+        "variantOptions": {
+            "mobileBrowse": "rail"
+        }
     },
     "gifts": {
         "variant": "standard",

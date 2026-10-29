@@ -69,6 +69,11 @@
 		text-transform: var(--countdown-written-title-transform, none);
 		text-shadow: none;
 		color: var(--countdown-written-title-color, var(--countdown-written-muted));
+
+		// The lead is plain ink: a preset foil clipped to the text (editorial, premiere-floral)
+		// disappears behind its animated word spans.
+		background: none;
+		-webkit-text-fill-color: currentcolor;
 	}
 
 	.countdown-timer-wrapper {

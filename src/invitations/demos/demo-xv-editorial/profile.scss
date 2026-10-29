@@ -28,9 +28,10 @@
 
 		// The source photograph is square, so the frame is square too and the arch clips the photo
 		// itself instead of a letterbox.
-		--hero-portrait-max-width: 84vw;
-		--hero-portrait-width-mobile: min(84vw, 46svh);
-		--hero-portrait-height-mobile: min(84vw, 46svh);
+		--hero-portrait-max-width: 80vw;
+		--hero-portrait-margin: 0 auto;
+		--hero-portrait-width-mobile: min(80vw, 46svh);
+		--hero-portrait-height-mobile: min(80vw, 46svh);
 		--hero-portrait-width-desktop: min(60svh, 29rem);
 		--hero-portrait-height-desktop: min(60svh, 29rem);
 		--hero-occasion-letter-spacing: 0.24em;
@@ -41,7 +42,9 @@
 	}
 
 	// The phrase is set as editorial prose, not script.
+	// The block padding clears the hanging print so the closing line stays readable.
 	.quote-section {
+		--quote-padding-block: clamp(4rem, 10vw, 7rem);
 		--quote-content-font: var(--font-display);
 		--quote-content-style: italic;
 		--quote-content-size: clamp(1.5rem, 5.4vw, 2.25rem);
@@ -53,7 +56,7 @@
 	// Join 1, the first bridge: the tiara print hangs from the black into the champagne spread.
 	// The print's top lies on the black, so its paper starts below the overlap.
 	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='quote'] {
-		--intersection-depth: var(--editorial-print-overlap);
+		--intersection-depth: min(var(--editorial-print-overlap), 6rem);
 	}
 
 	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
@@ -82,7 +85,8 @@
 		--countdown-written-padding-block: clamp(2.5rem, 7vw, 4rem)
 			calc(clamp(3rem, 8vw, 5rem) + var(--editorial-print-overlap));
 		--countdown-written-title-color: var(--editorial-paper-gold);
-		--countdown-written-title-size: 0.8125rem;
+		--countdown-written-title-size: 0.9375rem;
+		--countdown-written-title-align: end;
 		--countdown-written-title-tracking: 0.24em;
 		--countdown-written-title-transform: uppercase;
 		--countdown-written-numeral: clamp(5.5rem, 22vw, 8rem);
@@ -93,7 +97,7 @@
 		--event-calendar-mark-ink: var(--editorial-paper-gold);
 		--color-text-primary: var(--editorial-paper-ink);
 		--color-text-primary-rgb: var(--editorial-paper-ink-rgb);
-		--color-text-secondary: rgb(var(--editorial-paper-ink-rgb) / 88%);
+		--color-text-secondary: var(--editorial-paper-ink);
 	}
 
 	// Join 2, the second bridge: the envelope print hangs out of the champagne back into the black.
@@ -146,6 +150,11 @@
 	}
 
 	@media (width >= 64rem) {
+		// On the wide cover the portrait sits against the masthead instead of centered.
+		.invitation-hero[data-variant='framed-portrait'] {
+			--hero-portrait-margin: 0 0 0 auto;
+		}
+
 		.invitation-interlude[data-presentation='framed'][data-interlude-index='1'],
 		.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
 			--interlude-framed-max-width: 26rem;
