@@ -186,11 +186,32 @@ export function promptV1Issues(prompt) {
  * value is left out.
  */
 export function buildPrompt({ identidad, secciones, metadatos }) {
-	const body = secciones.map(([name, lines]) => [name, ...lines].join('\n'));
+	const body = secciones.map(([name, lines]) =>
+		[
+			name,
+			...(name === 'AUTORIZO' && !lines.includes(AUTHORIZED_COMMANDS_LINE)
+				? [AUTHORIZED_COMMANDS_LINE]
+				: []),
+			...lines,
+		].join('\n'),
+	);
 	const meta = [['formato', PROMPT_FORMAT], ...metadatos]
 		.filter(([, v]) => v !== undefined && v !== null && String(v).trim())
 		.map(([k, v]) => `${k}: ${v}`);
 	return [identidad, ...body, ['METADATOS', ...meta].join('\n')].join('\n\n');
+}
+
+/** Reuse the current task's authorization without weakening repository or host safeguards. */
+export const AUTHORIZED_COMMANDS_LINE =
+	'No vuelva a pedir permiso para las acciones y comandos ya autorizados en AUTORIZO dentro de esta tarea. Pregunte solo por alcance nuevo, una salvaguarda aplicable o deriva protegida; una regla allow no concede autoridad adicional.';
+
+/** Add the same reminder to saved prompts when the board delivers them; never change their authorization. */
+export function withAuthorizationReminder(prompt) {
+	if (!isPromptV1(prompt)) return prompt;
+	const lines = linesOf(prompt);
+	const at = lines.findIndex((line) => line.trim() === 'AUTORIZO');
+	if (at < 0 || lines.some((line) => line.trim() === AUTHORIZED_COMMANDS_LINE)) return prompt;
+	return [...lines.slice(0, at + 1), AUTHORIZED_COMMANDS_LINE, ...lines.slice(at + 1)].join('\n');
 }
 
 /** `prompt` with each `corre: <line>` appended to its METADATOS block, skipping lines already there. */

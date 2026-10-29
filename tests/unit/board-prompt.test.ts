@@ -92,6 +92,25 @@ const task = (fields: Record<string, unknown>) => ({
 });
 
 describe('prompt-v1 (T160)', () => {
+	it('reminds generated and delivered prompts to reuse task authorization exactly once', () => {
+		const out = probe(
+			`
+			const delivered = m.promptWithLane(input, {tareas: []});
+			const built = p.buildPrompt({identidad: 'f07 · T431 · Permissions',
+				secciones: [['AUTORIZO', ['git commit']]], metadatos: []});
+			console.log(JSON.stringify({delivered, built,
+				twice: p.withAuthorizationReminder(delivered) === delivered,
+				legacy: p.withAuthorizationReminder('legacy'), line: p.AUTHORIZED_COMMANDS_LINE}));
+		`,
+			task({ prompt: TASK_PROMPT }),
+		);
+		expect(out.delivered).toContain(out.line);
+		expect(out.built).toContain(out.line);
+		expect(out.delivered.split(out.line)).toHaveLength(2);
+		expect(out.delivered).toContain('Modo rápido hasta develop.');
+		expect(out.twice).toBe(true);
+		expect(out.legacy).toBe('legacy');
+	});
 	it('accepts a task prompt and keeps its session name on line 1 when copied', () => {
 		const t = task({ prompt: TASK_PROMPT, carrilPlaneado: 'f05-plataforma' });
 		const out = probe(
