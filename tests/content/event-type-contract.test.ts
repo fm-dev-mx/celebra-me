@@ -138,4 +138,23 @@ describe('event type structure contract', () => {
 			'theme preset "celestial-blue" is not verified for boda',
 		]);
 	});
+
+	it('honors localized structural exemptions while requiring other sections', () => {
+		expect(
+			findEventTypeStructureViolations({
+				eventType: 'xv',
+				theme: { preset: 'storybook-lilac' },
+				sectionOrder: ['family', 'location', 'countdown', 'rsvp', 'thankYou'],
+				structuralExemptions: ['gallery'],
+			}),
+		).toEqual([]);
+
+		expect(
+			findEventTypeStructureViolations({
+				eventType: 'xv',
+				theme: { preset: 'storybook-lilac' },
+				sectionOrder: ['family', 'location', 'countdown', 'rsvp', 'thankYou'],
+			}),
+		).toEqual(['sectionOrder is missing required section "gallery"']);
+	});
 });

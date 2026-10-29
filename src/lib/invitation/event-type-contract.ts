@@ -101,10 +101,13 @@ export function findEventTypeStructureViolations(content: {
 	eventType: EventType;
 	theme: { preset?: string };
 	sectionOrder: readonly string[];
+	structuralExemptions?: readonly string[];
 }): string[] {
 	const contract = getEventTypeStructureContract(content.eventType);
 	const violations: string[] = [];
+	const exemptions = new Set(content.structuralExemptions ?? []);
 	for (const section of contract.requiredSections) {
+		if (exemptions.has(section)) continue;
 		if (!content.sectionOrder.includes(section)) {
 			violations.push(`sectionOrder is missing required section "${section}"`);
 		}
