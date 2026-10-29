@@ -13,6 +13,7 @@ import {
 	withPushCheck,
 	withRunLines,
 	withAuthorizationReminder,
+	withBoardAccess,
 } from './prompt.mjs';
 import { requisitoText } from './requisito-text.mjs';
 
@@ -787,7 +788,7 @@ export function promptWithLane(t, board) {
 	if (!t.prompt || t.actor === 'dueno') return t.prompt;
 	const lines = laneLines(t, board);
 	const prompt = isPromptV1(t.prompt)
-		? withRunLines(withPushCheck(withAuthorizationReminder(t.prompt)), lines)
+		? withRunLines(withBoardAccess(withPushCheck(withAuthorizationReminder(t.prompt))), lines)
 		: lines.length
 			? `CARRIL\n${lines.join('\n')}\n\n${t.prompt}`
 			: t.prompt;

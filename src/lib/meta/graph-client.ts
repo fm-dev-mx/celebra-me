@@ -117,7 +117,7 @@ export class MetaGraphClient {
 		)
 			throw new MetaGraphError('configuration');
 		this.#accessToken = options.accessToken;
-		this.#fetch = options.fetchImpl ?? fetch;
+		this.#fetch = options.fetchImpl ?? fetch.bind(globalThis);
 		this.#timeoutMs = timeoutMs;
 		this.#maxRetries = maxRetries;
 		this.#maxPages = maxPages;

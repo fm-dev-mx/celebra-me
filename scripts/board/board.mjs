@@ -155,7 +155,8 @@ import {
 	writeDoc,
 } from './store.mjs';
 import { UsageError, failureText, say } from './cli.mjs';
-import { externalSessionLines, externalSessions } from './external-sessions.mjs';
+import { archiveSessions, externalSessionLines, externalSessions } from './external-sessions.mjs';
+import { masterConfigPath, readLocal } from './master-config.mjs';
 import { generatedPrompt, kindCommands, withKindPrompt } from './kind-commands.mjs';
 import { inventoryCommands } from './inventory-commands.mjs';
 import { maintenanceCommands } from './maintenance.mjs';
@@ -876,8 +877,24 @@ const commands = {
 		say(flags, out, { url }, `Tablero en ${url}  (se actualiza solo; Ctrl+C para cerrar)`);
 	},
 	async sesiones({ flags }, dir, out) {
-		const r = await externalSessions(loadBoard(dir));
-		say(flags, out, r, externalSessionLines(r).join('\n'));
+		const board = loadBoard(dir);
+		const r = flags.archivables
+			? await archiveSessions(board, { dir })
+			: await externalSessions(board, { config: readLocal(masterConfigPath(dir)) });
+		say(
+			flags,
+			out,
+			r,
+			flags.archivables
+				? [
+						'Se pueden archivar (d351):',
+						...r.chats.map((c) => `${c.agente} · ${c.titulo} · ${c.id} · ${c.motivo}`),
+						...Object.entries(r.fuentes)
+							.filter(([, f]) => !f.disponible)
+							.map(([agent]) => `${agent}: no disponible`),
+					].join('\n')
+				: externalSessionLines(r).join('\n'),
+		);
 	},
 	verify({ flags }, dir, out) {
 		const script = join(dirname(fileURLToPath(import.meta.url)), 'verify-board.mjs');

@@ -25,6 +25,9 @@ $andrea-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 // A pale-gold butterfly that rests at the head of the dress-code tag.
 $andrea-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23E8D6A2' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23E8D6A2' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
 
+// Client-requested solid silhouettes: a floor-length gown and a suit with a necktie.
+$andrea-formal-attire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 88' fill='%23E8D6A2'%3E%3Cpath d='M23 5h6c0 7 4 10 7 10s7-3 7-10h6l-1 21-6 13 20 43H10l20-43-6-13z'/%3E%3Cpath d='M83 6l13 7 13-7 12 9 4 40-9 2-4-28-2 26 5 27H99l-3-25-3 25H77l5-27-2-26-4 28-9-2 4-40z'/%3E%3Cpath fill='%2311382C' d='M85 8l11 8 11-8-6 27-5 5-5-5z'/%3E%3Cpath d='M94 17h4l1 4-3 15-3-15z'/%3E%3C/svg%3E");
+
 // The wax seal's press: a ring of leaves closed by a small butterfly, the monogram struck inside.
 // The footer's last butterfly: the tag's outline, filled in pale gold so it reads at pull size.
 $andrea-footer-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='%23E8D6A2' stroke='%23E8D6A2' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill-opacity='.85'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -80,7 +83,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--location-enclosure-outline: 0 solid transparent;
 	--location-enclosure-frame-display: block;
 	--location-enclosure-frame-inset: 0.55rem;
-	--location-enclosure-frame: rgb(var(--color-pale-gold-rgb) / 55%);
+	--location-enclosure-frame: rgb(var(--color-pale-gold-rgb) / 35%);
 	--location-enclosure-frame-shape: polygon(
 		0.85rem 0,
 		calc(100% - 0.85rem) 0,
@@ -91,8 +94,10 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		0 calc(100% - 0.85rem),
 		0 0.85rem
 	);
-	--location-enclosure-frame-art: #{$andrea-tag-butterfly} center 1.5rem / 2.2rem auto no-repeat;
-	--location-enclosure-padding: 5.4rem 1.75rem 2.75rem;
+	--location-enclosure-frame-art:
+		#{$andrea-tag-butterfly} center 0.8rem / 1.25rem auto no-repeat,
+		#{$andrea-formal-attire} center 2.75rem / 6.25rem auto no-repeat;
+	--location-enclosure-padding: 8.25rem 2rem 2.25rem;
 	--location-enclosure-max-width: 22rem;
 	--location-enclosure-hanger-display: block;
 	--location-enclosure-hanger: linear-gradient(var(--color-leaf-gold), var(--color-leaf-gold))
@@ -105,9 +110,10 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--location-enclosure-edge-shadow: drop-shadow(
 		0 18px 26px rgb(var(--color-emerald-midnight-rgb) / 28%)
 	);
-	--location-enclosure-heading-size: clamp(1.75rem, 6.5vw, 2.1rem);
+	--location-enclosure-heading-size: clamp(2.5rem, 9vw, 3rem);
+	--location-enclosure-heading-line-height: 1.05;
 	--location-enclosure-heading-color: var(--color-pale-gold);
-	--location-enclosure-note-padding: 0.85rem;
+	--location-enclosure-note-padding: 0.75rem;
 	--location-enclosure-note-rule-width: 3rem;
 	--location-enclosure-lead-title-color: var(--color-night-sage);
 	--location-enclosure-swatch: conic-gradient(
@@ -115,19 +121,19 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		var(--color-emerald-glow) 0 50%,
 		var(--color-pale-gold) 0
 	);
-	--location-enclosure-swatch-size: 1.4rem;
+	--location-enclosure-swatch-size: 0.85rem;
 	--location-enclosure-swatch-ring: 0 0 0 1px rgb(var(--color-pale-gold-rgb) / 70%);
 	--location-enclosure-reserved-title-font: var(--font-display);
-	--location-enclosure-reserved-title-size: clamp(1.4rem, 5vw, 1.6rem);
-	--location-enclosure-reserved-title-caps: normal;
-	--location-enclosure-reserved-title-line-height: 1.15;
-	--location-enclosure-reserved-title-tracking: 0;
-	--location-enclosure-reserved-title-color: var(--color-pale-gold);
+	--location-enclosure-reserved-title-size: 1rem;
+	--location-enclosure-reserved-title-caps: all-small-caps;
+	--location-enclosure-reserved-title-line-height: 1.4;
+	--location-enclosure-reserved-title-tracking: 0.08em;
+	--location-enclosure-reserved-title-color: var(--color-night-sage);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 0.95rem;
+	--location-enclosure-last-text-size: 0.8125rem;
 	--location-enclosure-last-text-transform: uppercase;
-	--location-enclosure-last-text-tracking: 0.22em;
-	--location-enclosure-last-text-color: var(--color-pale-gold);
+	--location-enclosure-last-text-tracking: 0.14em;
+	--location-enclosure-last-text-color: var(--color-night-sage);
 
 	// Venue entries read top-down: the moment in gold ink, the hour, the venue large in the
 	// section's ink, the address soft. The map is the primary action, filled in emerald; the
@@ -264,36 +270,23 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 
 	.countdown-section {
 		--andrea-band-padding: 7rem;
-		--countdown-written-bg: transparent;
-		--countdown-written-padding-block: calc(var(--andrea-band-padding) + var(--andrea-cut))
-			calc(var(--andrea-band-padding) + var(--andrea-print-overlap));
-		--countdown-written-muted: var(--color-night-sage);
-		--countdown-written-title-size: 0.8125rem;
-		--countdown-written-title-tracking: 0.14em;
-		--countdown-written-title-caps: normal;
-		--countdown-written-title-transform: uppercase;
-		--countdown-written-title-color: var(--color-pale-gold);
-		--countdown-written-numeral: 6.5rem;
-		--countdown-written-numeral-weight: 400;
-		--countdown-written-numeral-color: var(--color-pale-gold);
-		--countdown-written-numeral-shadow: 0 0 24px rgb(var(--color-pale-gold-rgb) / 30%);
-		--event-calendar-ink: var(--color-pale-gold);
-		--event-calendar-mark-ink: var(--color-pale-gold);
-
-		// The reason reads with the count, under the days and before the calendar; wide, the
-		// lead, the count and the reason stand together beside the calendar.
-		--countdown-written-calendar-order: 1;
-		--countdown-written-date-row: 1 / span 3;
-		--countdown-written-footer-column: 1;
-		--countdown-written-footer-row: 3;
-		--countdown-written-title-row: 1;
-		--countdown-written-title-align: end;
-		--countdown-written-timer-row: 2;
-		--countdown-written-timer-align: start;
-
-		@media (width >= 62rem) {
-			--event-calendar-width: 16rem;
-		}
+		--countdown-type-section-padding-block: calc(
+			var(--andrea-band-padding) + var(--andrea-cut)
+		);
+		--countdown-type-title-size: 0.8125rem;
+		--countdown-type-title-weight: 400;
+		--countdown-type-title-tracking: 0.14em;
+		--countdown-type-title-ink: var(--color-pale-gold);
+		--countdown-type-value-size: clamp(2rem, 8vw, 4rem);
+		--countdown-type-value-weight: 400;
+		--countdown-type-value-tracking: 0;
+		--countdown-type-label-font: var(--font-label);
+		--countdown-type-label-size: 0.625rem;
+		--countdown-type-label-tracking: 0.06em;
+		--countdown-type-label-ink: var(--color-pale-gold);
+		--countdown-type-label-opacity: 100%;
+		--countdown-segment-padding-mobile: 1rem 0.25rem;
+		--countdown-segment-padding-desktop: 1.5rem 0.75rem;
 	}
 
 	// Join 2, the second bridge: the sealed-letter print hangs out of the night into the paper on
