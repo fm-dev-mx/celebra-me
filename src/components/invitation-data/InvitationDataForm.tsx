@@ -7,6 +7,7 @@ import {
 	type InvitationDataField,
 	type InvitationDataFieldName,
 	type InvitationDataIssues,
+	type InvitationDataPhoto,
 	type InvitationDataStatus,
 } from '@/lib/invitation-data/form';
 
@@ -85,6 +86,11 @@ function formatDate(value: string): string {
 	return new Date(value).toLocaleDateString('es-MX', { dateStyle: 'long' });
 }
 
+function formatBytes(bytes: number): string {
+	if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function inputType(field: InvitationDataField): string {
 	if (field.kind === 'url') return 'url';
 	if (field.kind === 'date') return 'date';
@@ -116,15 +122,281 @@ function SaveIndicator({
 	);
 }
 
+interface PhotoUploaderProps {
+	token: string;
+	photos: InvitationDataPhoto[];
+	onPhotosChange: (photos: InvitationDataPhoto[]) => void;
+	error?: string;
+}
+
+function PhotoUploader({ token, photos, onPhotosChange, error }: PhotoUploaderProps) {
+	const [uploading, setUploading] = useState(false);
+	const [uploadError, setUploadError] = useState('');
+	const [dragOver, setDragOver] = useState(false);
+	const inputRef = useRef<HTMLInputElement | null>(null);
+
+	const handleUploadFiles = async (files: FileList | File[]) => {
+		const fileArray = Array.from(files);
+		if (fileArray.length === 0) return;
+
+		setUploadError('');
+		if (photos.length + fileArray.length > 10) {
+			setUploadError('Puede subir como máximo 10 fotos en total.');
+			return;
+		}
+
+		for (const file of fileArray) {
+			if (file.size > 10 * 1024 * 1024) {
+				setUploadError(`«${file.name}» supera el límite de 10 MB.`);
+				return;
+			}
+			if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+				setUploadError(`«${file.name}» no es un formato admitido (solo JPG, PNG o WebP).`);
+				return;
+			}
+		}
+
+		setUploading(true);
+		try {
+			let currentPhotos = [...photos];
+			for (const file of fileArray) {
+				const formData = new FormData();
+				formData.set('token', token);
+				formData.set('file', file, file.name);
+
+				const response = await fetch('/api/mi-invitacion/photos', {
+					method: 'POST',
+					body: formData,
+					credentials: 'same-origin',
+				});
+				const payload = (await response.json().catch(() => null)) as {
+					data?: { photo: InvitationDataPhoto; answers: InvitationDataAnswers };
+					error?: { message?: string };
+				} | null;
+
+				if (!response.ok || !payload?.data) {
+					throw new Error(payload?.error?.message || 'No se pudo subir la foto.');
+				}
+				if (payload.data.answers?.photos) {
+					currentPhotos = payload.data.answers.photos;
+				} else {
+					currentPhotos.push(payload.data.photo);
+				}
+				onPhotosChange(currentPhotos);
+			}
+		} catch (err) {
+			setUploadError(err instanceof Error ? err.message : 'Error al subir las fotos.');
+		} finally {
+			setUploading(false);
+			if (inputRef.current) inputRef.current.value = '';
+		}
+	};
+
+	const handleDelete = async (photoId: string) => {
+		setUploadError('');
+		try {
+			const response = await fetch('/api/mi-invitacion/photos', {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ token, photoId }),
+				credentials: 'same-origin',
+			});
+			const payload = (await response.json().catch(() => null)) as {
+				data?: { success: boolean; answers: InvitationDataAnswers };
+				error?: { message?: string };
+			} | null;
+			if (!response.ok || !payload?.data) {
+				throw new Error(payload?.error?.message || 'No se pudo eliminar la foto.');
+			}
+			if (payload.data.answers?.photos) {
+				onPhotosChange(payload.data.answers.photos);
+			} else {
+				onPhotosChange(photos.filter((p) => p.id !== photoId));
+			}
+		} catch (err) {
+			setUploadError(err instanceof Error ? err.message : 'Error al eliminar la foto.');
+		}
+	};
+
+	return (
+		<div className="invitation-data__photos-container">
+			{photos.length > 0 && (
+				<ul className="invitation-data__photo-list">
+					{photos.map((photo) => (
+						<li key={photo.id} className="invitation-data__photo-item">
+							<img
+								src={photo.url}
+								alt={photo.name}
+								className="invitation-data__photo-thumb"
+							/>
+							<div className="invitation-data__photo-info">
+								<span className="invitation-data__photo-name">{photo.name}</span>
+								<span className="invitation-data__photo-size">
+									{formatBytes(photo.size)}
+								</span>
+							</div>
+							<button
+								type="button"
+								className="invitation-data__photo-delete"
+								onClick={() => void handleDelete(photo.id)}
+								aria-label={`Eliminar foto ${photo.name}`}
+							>
+								Eliminar
+							</button>
+						</li>
+					))}
+				</ul>
+			)}
+
+			{photos.length < 10 && (
+				<div
+					className={`invitation-data__dropzone${dragOver ? ' invitation-data__dropzone--drag-over' : ''}${uploading ? ' invitation-data__dropzone--busy' : ''}`}
+					onDragOver={(e) => {
+						e.preventDefault();
+						setDragOver(true);
+					}}
+					onDragLeave={() => setDragOver(false)}
+					onDrop={(e) => {
+						e.preventDefault();
+						setDragOver(false);
+						if (e.dataTransfer.files) void handleUploadFiles(e.dataTransfer.files);
+					}}
+				>
+					<input
+						ref={inputRef}
+						id="invitation-data-photos-input"
+						type="file"
+						accept="image/jpeg,image/png,image/webp"
+						multiple
+						disabled={uploading}
+						className="invitation-data__file-input"
+						onChange={(e) => {
+							if (e.target.files) void handleUploadFiles(e.target.files);
+						}}
+					/>
+					<label
+						htmlFor="invitation-data-photos-input"
+						className="invitation-data__dropzone-label"
+					>
+						{uploading ? (
+							<span role="status">Subiendo fotos…</span>
+						) : (
+							<>
+								<span className="invitation-data__dropzone-title">
+									Elegir fotos o arrastrarlas aquí
+								</span>
+								<span className="invitation-data__dropzone-hint">
+									JPG, PNG o WebP · Hasta 10 MB por foto ({10 - photos.length}{' '}
+									restantes)
+								</span>
+							</>
+						)}
+					</label>
+				</div>
+			)}
+
+			{(uploadError || error) && (
+				<p className="invitation-data__error" role="alert">
+					{uploadError || error}
+				</p>
+			)}
+		</div>
+	);
+}
+
+function PhotosField({
+	field,
+	token,
+	photos,
+	onPhotosChange,
+	error,
+}: {
+	field: InvitationDataField;
+	token?: string;
+	photos?: InvitationDataPhoto[];
+	onPhotosChange?: (photos: InvitationDataPhoto[]) => void;
+	error?: string;
+}) {
+	return (
+		<div className={`invitation-data__field${error ? ' invitation-data__field--error' : ''}`}>
+			<label htmlFor="invitation-data-photos-input">
+				{field.label}
+				{field.requiredToSubmit ? <span aria-hidden="true"> *</span> : null}
+			</label>
+			{field.help && (
+				<p id="invitation-data-photos-help" className="invitation-data__help">
+					{field.help}
+				</p>
+			)}
+			<PhotoUploader
+				token={token ?? ''}
+				photos={photos ?? []}
+				onPhotosChange={onPhotosChange ?? (() => undefined)}
+				error={error}
+			/>
+		</div>
+	);
+}
+
+function SuggestionsBox({
+	suggestions,
+	onSelect,
+}: {
+	suggestions: readonly string[];
+	onSelect: (value: string) => void;
+}) {
+	if (suggestions.length === 0) return null;
+	return (
+		<div className="invitation-data__suggestions">
+			<p>Sugerencias:</p>
+			{suggestions.map((suggestion, index) => (
+				<button
+					key={suggestion}
+					type="button"
+					className="invitation-data__suggestion"
+					onClick={() => onSelect(suggestion)}
+					aria-label={`Usar sugerencia ${index + 1}: ${suggestion}`}
+				>
+					{suggestion}
+				</button>
+			))}
+		</div>
+	);
+}
+
 interface FieldProps {
 	field: InvitationDataField;
 	value: string;
 	error?: string;
 	eventType: string | null;
+	token?: string;
+	photos?: InvitationDataPhoto[];
+	onPhotosChange?: (photos: InvitationDataPhoto[]) => void;
 	onChange: (name: InvitationDataFieldName, value: string) => void;
 }
 
-function Field({ field, value, error, eventType, onChange }: FieldProps) {
+function Field({
+	field,
+	value,
+	error,
+	eventType,
+	token,
+	photos,
+	onPhotosChange,
+	onChange,
+}: FieldProps) {
+	if (field.kind === 'photos') {
+		return (
+			<PhotosField
+				field={field}
+				token={token}
+				photos={photos}
+				onPhotosChange={onPhotosChange}
+				error={error}
+			/>
+		);
+	}
+
 	const id = `invitation-data-${field.name}`;
 	const describedBy = [field.help ? `${id}-help` : '', error ? `${id}-error` : '']
 		.filter(Boolean)
@@ -162,22 +434,10 @@ function Field({ field, value, error, eventType, onChange }: FieldProps) {
 					onChange={(event) => onChange(field.name, event.target.value)}
 				/>
 			)}
-			{suggestions.length > 0 && (
-				<div className="invitation-data__suggestions">
-					<p>Sugerencias:</p>
-					{suggestions.map((suggestion, index) => (
-						<button
-							key={suggestion}
-							type="button"
-							className="invitation-data__suggestion"
-							onClick={() => onChange(field.name, suggestion)}
-							aria-label={`Usar sugerencia ${index + 1}: ${suggestion}`}
-						>
-							{suggestion}
-						</button>
-					))}
-				</div>
-			)}
+			<SuggestionsBox
+				suggestions={suggestions}
+				onSelect={(val) => onChange(field.name, val)}
+			/>
 			{field.help && (
 				<p id={`${id}-help`} className="invitation-data__help">
 					{field.help}
@@ -315,6 +575,18 @@ const InvitationDataForm: React.FC<InvitationDataFormProps> = ({ token }) => {
 		scheduleSave();
 	};
 
+	const handlePhotosChange = (photos: InvitationDataPhoto[]) => {
+		const next = { ...answersRef.current, photos };
+		answersRef.current = next;
+		setAnswers(next);
+		setIssues((current) => {
+			if (!current.photos) return current;
+			const rest = { ...current };
+			delete rest.photos;
+			return rest;
+		});
+	};
+
 	const goToStep = (target: number) => {
 		void flushSave();
 		setStep(target);
@@ -386,7 +658,9 @@ const InvitationDataForm: React.FC<InvitationDataFormProps> = ({ token }) => {
 					Con esto empezamos a preparar su invitación. Si quiere corregir algo, vuelva a
 					este mismo enlace antes del {formatDate(form.expiresAt)}; se guarda solo.
 				</p>
-				<p className="invitation-data__intro">Recuerde mandarnos sus fotos por WhatsApp.</p>
+				<p className="invitation-data__intro">
+					Revisaremos sus datos y fotos para preparar su invitación.
+				</p>
 				<button
 					type="button"
 					className="invitation-data__secondary"
@@ -438,9 +712,17 @@ const InvitationDataForm: React.FC<InvitationDataFormProps> = ({ token }) => {
 						<Field
 							key={field.name}
 							field={field}
-							value={answers[field.name] ?? ''}
+							value={
+								field.name === 'photos'
+									? ''
+									: ((answers[field.name as keyof InvitationDataAnswers] as
+											string | undefined) ?? '')
+							}
 							error={issues[field.name]}
 							eventType={form.eventType}
+							token={token}
+							photos={answers.photos}
+							onPhotosChange={handlePhotosChange}
 							onChange={handleChange}
 						/>
 					))}
@@ -461,19 +743,25 @@ const InvitationDataForm: React.FC<InvitationDataFormProps> = ({ token }) => {
 					</p>
 					<ul className="invitation-data__review">
 						{INVITATION_DATA_STEPS.map((reviewStep, index) => {
-							const filled = reviewStep.fields.filter((field) =>
-								answers[field.name]?.trim(),
-							).length;
+							const isPhotos = reviewStep.id === 'fotos';
+							const filled = isPhotos
+								? (answers.photos ?? []).length
+								: reviewStep.fields.filter((field) => {
+										const val =
+											answers[field.name as keyof InvitationDataAnswers];
+										return typeof val === 'string' && val.trim().length > 0;
+									}).length;
 							const missing = reviewStep.fields.filter(
 								(field) => missingRequired[field.name],
 							);
+							const countText = isPhotos
+								? `${filled} foto(s) subida(s)`
+								: `${filled} de ${reviewStep.fields.length} datos`;
 							return (
 								<li key={reviewStep.id}>
 									<div>
 										<strong>{reviewStep.title}</strong>
-										<span>
-											{filled} de {reviewStep.fields.length} datos
-										</span>
+										<span>{countText}</span>
 										{missing.map((field) => (
 											<span
 												key={field.name}

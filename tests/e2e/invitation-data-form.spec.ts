@@ -55,6 +55,7 @@ test.describe('invitation data form', () => {
 		});
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto(FORM_PATH);
+		await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
 
 		await expect(page.getByRole('heading', { level: 1, name: 'Su celebración' })).toBeVisible();
 		await expect(page.getByLabel(/Nombre\(s\) de quien celebra/)).toHaveValue('Andrea');
@@ -69,10 +70,12 @@ test.describe('invitation data form', () => {
 			eventDate: '2026-12-12',
 		});
 
-		for (let index = 0; index < 6; index += 1) {
-			await page.getByRole('button', { name: /^(Siguiente|Revisar)$/ }).click();
+		for (let index = 0; index < 7; index += 1) {
+			await page
+				.getByRole('button', { name: /^(Siguiente|Revisar)$/ })
+				.click({ force: true });
 		}
-		await page.getByRole('button', { name: 'Enviar mis datos' }).click();
+		await page.getByRole('button', { name: 'Enviar mis datos' }).click({ force: true });
 
 		await expect(page.getByRole('heading', { name: '¡Recibimos sus datos!' })).toBeVisible();
 		expect(calls.at(-1)).toMatchObject({
@@ -86,15 +89,142 @@ test.describe('invitation data form', () => {
 	}) => {
 		const calls = await mockFormApi(page, { status: 'sent', answers: {} });
 		await page.goto(FORM_PATH);
+		await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
 		await expect(page.getByRole('heading', { level: 1, name: 'Su celebración' })).toBeVisible();
 
-		for (let index = 0; index < 6; index += 1) {
-			await page.getByRole('button', { name: /^(Siguiente|Revisar)$/ }).click();
+		for (let index = 0; index < 7; index += 1) {
+			await page
+				.getByRole('button', { name: /^(Siguiente|Revisar)$/ })
+				.click({ force: true });
 		}
-		await page.getByRole('button', { name: 'Enviar mis datos' }).click();
+		await page.getByRole('button', { name: 'Enviar mis datos' }).click({ force: true });
 
 		await expect(page.getByRole('alert')).toContainText('Faltan datos necesarios');
 		expect(calls.some((call) => call.action === 'submit')).toBe(false);
+	});
+
+	test('allows uploading and removing photos in the fotos step', async ({ page }) => {
+		await mockFormApi(page, {
+			status: 'in_progress',
+			answers: { celebrantNames: 'Andrea', eventDate: '2026-12-12' },
+		});
+
+		const uploadedPhoto = {
+			id: 'photo-uuid-1',
+			url: 'https://cdn.celebra-me.com/foto-test.jpg',
+			name: 'foto-test.jpg',
+			size: 153600,
+			type: 'image/jpeg',
+			uploadedAt: '2026-10-26T18:00:00.000Z',
+		};
+
+		await page.route('**/api/mi-invitacion/photos', async (route) => {
+			if (route.request().method() === 'POST') {
+				await route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify({
+						data: {
+							photo: uploadedPhoto,
+							answers: {
+								celebrantNames: 'Andrea',
+								eventDate: '2026-12-12',
+								photos: [uploadedPhoto],
+							},
+						},
+					}),
+				});
+				return;
+			}
+			if (route.request().method() === 'DELETE') {
+				await route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify({
+						data: {
+							success: true,
+							answers: {
+								celebrantNames: 'Andrea',
+								eventDate: '2026-12-12',
+								photos: [],
+							},
+						},
+					}),
+				});
+				return;
+			}
+			await route.continue();
+		});
+
+		await page.goto(FORM_PATH);
+		await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
+
+		// Advance to Fotos step (step 5)
+		for (let i = 0; i < 5; i += 1) {
+			await page.getByRole('button', { name: 'Siguiente' }).click({ force: true });
+		}
+		await expect(
+			page.getByRole('heading', { level: 1, name: 'Fotos para su invitación' }),
+		).toBeVisible();
+
+		// Upload photo via input file
+		const fileInput = page.locator('#invitation-data-photos-input');
+		await fileInput.setInputFiles({
+			name: 'foto-test.jpg',
+			mimeType: 'image/jpeg',
+			buffer: Buffer.from('fake image content'),
+		});
+
+		// Verify photo is displayed
+		await expect(page.getByText('foto-test.jpg')).toBeVisible();
+		await expect(page.getByAltText('foto-test.jpg')).toHaveAttribute(
+			'src',
+			'https://cdn.celebra-me.com/foto-test.jpg',
+		);
+
+		// Delete photo
+		await page.getByRole('button', { name: 'Eliminar foto foto-test.jpg' }).click();
+		await expect(page.getByText('foto-test.jpg')).not.toBeVisible();
+	});
+
+	test('retains the first photo after a partial multi-file upload failure', async ({ page }) => {
+		const calls = await mockFormApi(page, { status: 'in_progress', answers: {} });
+		const photo = {
+			id: '11111111-1111-4111-8111-111111111111',
+			url: 'https://example.invalid/first.jpg',
+			name: 'primera.jpg',
+			size: 10,
+			type: 'image/jpeg',
+		};
+		let uploads = 0;
+		await page.route('**/api/mi-invitacion/photos', (route) => {
+			uploads += 1;
+			return route.fulfill({
+				status: uploads === 1 ? 200 : 502,
+				contentType: 'application/json',
+				body: JSON.stringify(
+					uploads === 1
+						? { data: { photo, answers: { photos: [photo] } } }
+						: { error: { message: 'No se pudo subir la segunda foto.' } },
+				),
+			});
+		});
+		await page.goto(FORM_PATH);
+		await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
+		for (let index = 0; index < 5; index += 1)
+			await page.getByRole('button', { name: 'Siguiente' }).click({ force: true });
+		await page.locator('#invitation-data-photos-input').setInputFiles([
+			{ name: 'primera.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('one') },
+			{ name: 'segunda.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('two') },
+		]);
+		await expect(page.getByText('No se pudo subir la segunda foto.')).toBeVisible();
+		await expect(page.getByAltText('primera.jpg')).toBeVisible();
+		for (let index = 0; index < 5; index += 1)
+			await page.getByRole('button', { name: 'Anterior' }).click({ force: true });
+		await page.getByLabel(/Nombre\(s\) de quien celebra/).fill('Synthetic name');
+		await expect
+			.poll(() => calls.filter((call) => call.action === 'save').at(-1)?.answers)
+			.toMatchObject({ photos: [photo] });
 	});
 
 	test('explains an expired link instead of showing the form', async ({ page }) => {

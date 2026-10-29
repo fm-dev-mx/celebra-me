@@ -64,9 +64,7 @@ for (const route of ROUTES) {
 				await wrappers.nth(index).scrollIntoViewIfNeeded();
 			}
 
-			const instances = await page.evaluate(
-				() => window.__invitationObserverAudit.instances,
-			);
+			const instances = await page.evaluate(() => window.__invitationObserverAudit.instances);
 			expect(instances).toBeLessThanOrEqual(3);
 			expect(errors).toEqual([]);
 		});
@@ -162,7 +160,9 @@ for (const route of ROUTES) {
 	});
 }
 
-test('gives Celestial its cinematic hero, editorial bridges, and narrative climaxes', async ({ page }) => {
+test('gives Celestial its cinematic hero, editorial bridges, and narrative climaxes', async ({
+	page,
+}) => {
 	for (const viewport of [
 		{ width: 390, height: 844 },
 		{ width: 1440, height: 900 },
@@ -254,7 +254,9 @@ test('gives Celestial its cinematic hero, editorial bridges, and narrative clima
 					getComputedStyle(archElement, '::after').height,
 				),
 				portalThreadAnimation: getComputedStyle(archElement, '::after').animationName,
-				familyOverlapDepth: Number.parseFloat(getComputedStyle(familyOverlapElement).marginTop),
+				familyOverlapDepth: Number.parseFloat(
+					getComputedStyle(familyOverlapElement).marginTop,
+				),
 				familyPhotoClip: getComputedStyle(
 					familyOverlapElement.querySelector('.invitation-interlude__media')!,
 				).clipPath,
@@ -280,7 +282,9 @@ test('gives Celestial its cinematic hero, editorial bridges, and narrative clima
 				).filter,
 				itineraryReservedPadding: Number.parseFloat(
 					getComputedStyle(
-						itineraryOverlapElement.previousElementSibling!.querySelector('.itinerary')!,
+						itineraryOverlapElement.previousElementSibling!.querySelector(
+							'.itinerary',
+						)!,
 					).paddingBottom,
 				),
 				blendDepth: Number.parseFloat(getComputedStyle(blendElement, '::before').height),
@@ -339,7 +343,14 @@ test('keeps Celestial section entrances pending during a slow read, then reveals
 		'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="itinerary"]',
 	);
 
-	for (const section of [access, gallery, itinerary, locationInterlude, familyInterlude, itineraryInterlude]) {
+	for (const section of [
+		access,
+		gallery,
+		itinerary,
+		locationInterlude,
+		familyInterlude,
+		itineraryInterlude,
+	]) {
 		await expect(section).not.toHaveClass(/is-visible/);
 	}
 
@@ -356,7 +367,10 @@ test('keeps Celestial section entrances pending during a slow read, then reveals
 		'animation-name',
 		/celestial-gallery-anchor-reveal/,
 	);
-	await expect(gallery.locator('[data-gallery-item]').first()).toHaveAttribute('data-in-view', 'true');
+	await expect(gallery.locator('[data-gallery-item]').first()).toHaveAttribute(
+		'data-in-view',
+		'true',
+	);
 
 	await itinerary.scrollIntoViewIfNeeded();
 	await expect(itinerary).toHaveClass(/is-visible/);
@@ -456,10 +470,11 @@ test('keeps Celestial RSVP as a lazy interactive island', async ({ page }) => {
 	const wrapper = page.locator('.invitation-section-wrapper[data-section-kind="rsvp"]');
 	await expect(wrapper.locator('astro-island')).toHaveCount(1);
 	await wrapper.scrollIntoViewIfNeeded();
-	await expect(page.locator('#attendance-yes')).toBeVisible();
-	await page.locator('#attendance-yes').check({ force: true });
-	await expect(page.locator('#attendance-yes')).toBeChecked();
-	await expect(page.locator('#rsvp-form')).toBeVisible();
+	await expect(wrapper.locator('astro-island')).not.toHaveAttribute('ssr');
+	await wrapper.locator('label[for="attendance-yes"]').click();
+	// The hydrated answer step folds away; assert React's next step, not the native radio.
+	await expect(wrapper.getByRole('button', { name: 'Cambiar' })).toBeVisible();
+	await expect(wrapper.getByRole('spinbutton')).toBeVisible();
 });
 
 test('keeps both invitations readable without JavaScript', async ({ browser }) => {

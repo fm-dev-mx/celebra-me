@@ -39,10 +39,22 @@ describe('invitation data form definition', () => {
 		expect(suggestMainMessages(null)).toEqual([]);
 	});
 
-	it('drops empty answers when compacting', () => {
+	it('drops empty answers when compacting and preserves photos', () => {
+		const photo = {
+			id: '11111111-1111-4111-8111-111111111111',
+			url: 'https://cdn.celebra-me.com/photo.jpg',
+			name: 'foto.jpg',
+			size: 2048,
+			type: 'image/jpeg',
+		};
 		expect(
-			compactInvitationDataAnswers({ celebrantNames: ' Andrea ', parents: '', song: '   ' }),
-		).toEqual({ celebrantNames: 'Andrea' });
+			compactInvitationDataAnswers({
+				celebrantNames: ' Andrea ',
+				parents: '',
+				song: '   ',
+				photos: [photo],
+			}),
+		).toEqual({ celebrantNames: 'Andrea', photos: [photo] });
 	});
 
 	it('builds the WhatsApp message with the first name and the link', () => {
@@ -104,5 +116,35 @@ describe('parseInvitationDataAnswers', () => {
 		expect(parseInvitationDataAnswers({ photos: 'x' }).ok).toBe(false);
 		expect(parseInvitationDataAnswers({ celebrantNames: 5 }).ok).toBe(false);
 		expect(parseInvitationDataAnswers(null).ok).toBe(false);
+		expect(parseInvitationDataAnswers({ unknownField: 'val' }).ok).toBe(false);
+	});
+
+	it('accepts and validates photos', () => {
+		const validPhoto = {
+			id: '11111111-1111-4111-8111-111111111111',
+			url: 'https://cdn.celebra-me.com/photo.jpg',
+			name: 'foto.jpg',
+			size: 2048,
+			type: 'image/jpeg',
+		};
+		const result = parseInvitationDataAnswers({
+			celebrantNames: 'Andrea',
+			photos: [validPhoto],
+		});
+		expect(result).toEqual({
+			ok: true,
+			answers: { celebrantNames: 'Andrea', photos: [validPhoto] },
+		});
+
+		const invalidMime = parseInvitationDataAnswers({
+			photos: [{ ...validPhoto, type: 'application/pdf' }],
+		});
+		expect(invalidMime.ok).toBe(false);
+
+		const elevenPhotos = Array.from({ length: 11 }, () => validPhoto);
+		const tooMany = parseInvitationDataAnswers({
+			photos: elevenPhotos,
+		});
+		expect(tooMany.ok).toBe(false);
 	});
 });

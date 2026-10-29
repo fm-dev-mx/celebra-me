@@ -81,17 +81,34 @@ type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 const TRANSIENT_STATUSES = new Set([502, 503, 504]);
 const PRODUCTION_HOSTS = new Set(['celebra-me.com', 'www.celebra-me.com']);
 
+// Migration 20261026173000 retired this Preview copy only. The real Production invitation
+// remains published. Keep environment-specific smoke policy outside publication definitions.
+export const PREVIEW_ARCHIVED_INVITATIONS = new Set(['boda:daniela-y-martin']);
+
+export function isPreviewArchivedInvitation(eventType: string, slug?: string): boolean {
+	return slug ? PREVIEW_ARCHIVED_INVITATIONS.has(`${eventType}:${slug}`) : false;
+}
+
 /**
  * Pages come from the repository catalog: published, non-expired invitation definitions and
- * every demo under `src/invitations/demos`. Nothing is listed by hand.
+ * every demo under `src/invitations/demos`, excluding explicitly retired Preview copies only.
  */
-export function listSmokePageRoutes(now = new Date()): SmokePageRoute[] {
+export function listSmokePageRoutes(
+	now = new Date(),
+	environment: PostDeployEnvironment = 'production',
+): SmokePageRoute[] {
 	return [
-		...listPublishedInvitationDefinitions(now).map((definition) => ({
-			kind: 'invitation' as const,
-			eventType: definition.eventType,
-			slug: definition.slug,
-		})),
+		...listPublishedInvitationDefinitions(now)
+			.filter(
+				(definition) =>
+					environment !== 'preview' ||
+					!isPreviewArchivedInvitation(definition.eventType, definition.slug),
+			)
+			.map((definition) => ({
+				kind: 'invitation' as const,
+				eventType: definition.eventType,
+				slug: definition.slug,
+			})),
 		...discoverDemoCases().map((demo) => ({
 			kind: 'demo' as const,
 			eventType: demo.eventType,

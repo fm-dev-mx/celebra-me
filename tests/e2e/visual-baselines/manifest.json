@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-25T00:25:59.426Z",
+    "generatedAt": "2026-10-28T00:40:23.663Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,8 +11,8 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
-        "cssSha256": "fbbdb221d0d5d9a2afa25f83575d128c7226c0dc43964f7d902fd725e9df7941",
+        "lockfileSha256": "ba4efcc7ded34c280ebaa0f3338fb51c0ba95ebc647349c5e44d8c385dfc43f2",
+        "cssSha256": "75e8ae9f9ca548512951c656a01ad090c4ff93de166267ccf193a8fc94316a10",
         "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2267,9 +2267,9 @@
             "preset": "storybook-emerald",
             "viewport": "mobile",
             "file": "pages/invitation-xv-andrea-mobile.png",
-            "sha256": "ba7e28f5f60f4969b0116b90fade8f5e4fe9001dca839d3b1efc26ee31039b09",
-            "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
-            "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+            "sha256": "1db1304d9b96a09e36396a658f0c9f235138498a07d8cdb4dc4e8b6130d0e0b4",
+            "contentHash": "7dc9c446c357a3d644d9bbafee6a64ee1cf2d91e8a7d4b1409f1a4840ff9f5f5",
+            "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2279,9 +2279,9 @@
             "preset": "storybook-emerald",
             "viewport": "desktop",
             "file": "pages/invitation-xv-andrea-desktop.png",
-            "sha256": "70fa2db4c2625cbe21fcb6b66e3a7e9b99ab2d65d61796a97f9c4bc3b7aef601",
-            "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
-            "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+            "sha256": "7e4275b5c22e86e1d74ab5ac86c370d8be80907fb8cda8fc151fdfd713a8d0ef",
+            "contentHash": "7dc9c446c357a3d644d9bbafee6a64ee1cf2d91e8a7d4b1409f1a4840ff9f5f5",
+            "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2501,9 +2501,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c",
+    "referenceSha": "522369399124bb72ddb64dc651238da00b0f1fe8",
     "variantManifest": {
-        "generatedAt": "2026-10-25T00:25:59.426Z",
+        "generatedAt": "2026-10-28T00:40:23.663Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2515,8 +2515,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
-            "cssSha256": "fbbdb221d0d5d9a2afa25f83575d128c7226c0dc43964f7d902fd725e9df7941",
+            "lockfileSha256": "ba4efcc7ded34c280ebaa0f3338fb51c0ba95ebc647349c5e44d8c385dfc43f2",
+            "cssSha256": "75e8ae9f9ca548512951c656a01ad090c4ff93de166267ccf193a8fc94316a10",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4405,10 +4405,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c"
+        "referenceSha": "522369399124bb72ddb64dc651238da00b0f1fe8"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-25T00:25:59.433Z",
+        "generatedAt": "2026-10-28T00:40:23.706Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4420,8 +4420,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "33324b0436a703d0b8377d4120a400a8c7b1067290a1535091b7db9e54684eae",
-            "cssSha256": "fbbdb221d0d5d9a2afa25f83575d128c7226c0dc43964f7d902fd725e9df7941",
+            "lockfileSha256": "ba4efcc7ded34c280ebaa0f3338fb51c0ba95ebc647349c5e44d8c385dfc43f2",
+            "cssSha256": "75e8ae9f9ca548512951c656a01ad090c4ff93de166267ccf193a8fc94316a10",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4799,9 +4799,9 @@
                 "preset": "storybook-emerald",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-andrea-mobile.png",
-                "sha256": "ba7e28f5f60f4969b0116b90fade8f5e4fe9001dca839d3b1efc26ee31039b09",
-                "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
-                "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+                "sha256": "1db1304d9b96a09e36396a658f0c9f235138498a07d8cdb4dc4e8b6130d0e0b4",
+                "contentHash": "7dc9c446c357a3d644d9bbafee6a64ee1cf2d91e8a7d4b1409f1a4840ff9f5f5",
+                "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4811,9 +4811,9 @@
                 "preset": "storybook-emerald",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-andrea-desktop.png",
-                "sha256": "70fa2db4c2625cbe21fcb6b66e3a7e9b99ab2d65d61796a97f9c4bc3b7aef601",
-                "contentHash": "652369fc57306aa517239b758ab4c8cf37a732cac325d818dc5c56623fe0a264",
-                "assetHash": "c6fc87e55ae904fe5ca461af4282da008f802deb71c8797043c1d7b0d27fcb04",
+                "sha256": "7e4275b5c22e86e1d74ab5ac86c370d8be80907fb8cda8fc151fdfd713a8d0ef",
+                "contentHash": "7dc9c446c357a3d644d9bbafee6a64ee1cf2d91e8a7d4b1409f1a4840ff9f5f5",
+                "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5033,9 +5033,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c"
+        "referenceSha": "522369399124bb72ddb64dc651238da00b0f1fe8"
     },
-    "candidateManifestSha256": "fb15c6823da894b01c2158734a4e2c52231c8f221ca3dbaa6757896bbf426772",
-    "acceptedFromCommit": "cbf75185b5fd79dc68a4b7cef9e0d7dd9f03fe5c",
-    "acceptedAt": "2026-10-25T01:42:03.523Z"
+    "candidateManifestSha256": "814f87a17d948a28940b75ec3b7c02769f44356e93fc35e79228f09a8bed6d83",
+    "acceptedFromCommit": "522369399124bb72ddb64dc651238da00b0f1fe8",
+    "acceptedAt": "2026-10-28T00:51:40.867Z"
 }

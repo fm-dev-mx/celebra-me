@@ -208,6 +208,8 @@ describe('task kinds (T130): generated prompt', () => {
 		expect(r.sections['ANTES DE EMPEZAR'].slice(2)).toEqual([
 			'git switch -c feat/board-task-kinds origin/develop',
 			'pnpm board claim tipos-y-prompts --agente=claude --carril=f05-plataforma --rama=feat/board-task-kinds --titulo="f05 · T130 · Tipos y prompts"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session=feat/board-task-kinds',
+			expect.stringContaining('MCP de celebra-board equivalen'),
+			expect.stringContaining('al empezar: pnpm board inbox --agente=claude'),
 		]);
 		expect(r.sections.AUTORIZO).toContain(
 			'Merge normal de origin/develop en feat/board-task-kinds para resolver un PR DIRTY o atrasado (sin rebase, sin force); solo se pregunta si el conflicto toca una migración o archivos de otra tarea.',
@@ -310,6 +312,8 @@ describe('task kinds (T130): generated prompt', () => {
 		expect(r.pasosInicio).toEqual([
 			'git switch -c feat/invitacion-daniela origin/develop',
 			'pnpm board claim invitacion-boda --agente=claude --carril=f07-invitaciones --rama=feat/invitacion-daniela --titulo="f07 · T200 · Tarea invitacion-boda"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session=feat/invitacion-daniela',
+			expect.stringContaining('MCP de celebra-board equivalen'),
+			expect.stringContaining('al empezar: pnpm board inbox --agente=claude'),
 		]);
 	});
 

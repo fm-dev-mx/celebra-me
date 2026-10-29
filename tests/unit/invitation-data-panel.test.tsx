@@ -79,3 +79,33 @@ it('shows received answers and clears the notice when reviewed', async () => {
 		{ action: 'mark-reviewed' },
 	);
 });
+
+it('shows uploaded photos in the answers list', async () => {
+	const withPhotos: InvitationDataSummary = {
+		...submitted,
+		answers: {
+			...submitted.answers,
+			photos: [
+				{
+					id: '11111111-1111-4111-8111-111111111111',
+					url: 'https://cdn.celebra-me.com/photo1.jpg',
+					name: 'foto-principal.jpg',
+					size: 102400,
+					type: 'image/jpeg',
+					uploadedAt: '2026-10-26T18:00:00.000Z',
+				},
+			],
+		},
+	};
+	mockGet.mockResolvedValue({ ok: true, data: { data: withPhotos } });
+
+	render(<InvitationDataPanel orderId="order-1" />);
+
+	expect(await screen.findByText('Datos recibidos · por revisar')).toBeInTheDocument();
+	fireEvent.click(screen.getByRole('button', { name: 'Ver datos' }));
+	expect(screen.getByText(/Fotos para su invitación \(1\)/)).toBeInTheDocument();
+	expect(screen.getByAltText('foto-principal.jpg')).toHaveAttribute(
+		'src',
+		'https://cdn.celebra-me.com/photo1.jpg',
+	);
+});

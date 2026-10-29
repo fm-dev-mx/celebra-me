@@ -36,6 +36,7 @@ export function isPrivateNoStorePath(pathname: string): boolean {
 		pathname.startsWith('/api/memories') ||
 		pathname.startsWith('/api/auth') ||
 		pathname.startsWith('/mi-invitacion/') ||
-		pathname === '/api/mi-invitacion'
+		pathname === '/api/mi-invitacion' ||
+		pathname.startsWith('/api/mi-invitacion/')
 	);
 }
