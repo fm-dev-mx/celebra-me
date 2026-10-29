@@ -493,6 +493,16 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 		.map((t) => ({ t, silent: now - Date.parse(lockBeat(t.candado) ?? '') }))
 		.filter(({ silent }) => !Number.isNaN(silent) && silent >= 60 * 60_000);
 	const rows = [
+		...next.usted
+			.filter((x) => x.tipo === 'gemini-relay')
+			.map((x) => ({
+				tipo: x.tipo,
+				id: null,
+				t: null,
+				verbo: 'Arrancar',
+				texto: x.texto,
+				sub: '',
+			})),
 		...tasks.map((t) => {
 			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a]?.nombre ?? a);
 			const verbo = paste.length
