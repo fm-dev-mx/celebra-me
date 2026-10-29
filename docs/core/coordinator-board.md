@@ -390,6 +390,31 @@ After Claude actually archives a chat, its master records
 This explicit local receipt removes that recommendation on the next refresh; it never performs the
 archive or infers it from a notification. The command refuses configured master IDs.
 
+### Automatic notices, escalation and merge queue (T442)
+
+The watcher extends the bounded no-AI pass with automatic board coordination and tier escalation:
+
+- **Automatic notices (A)**: sends board messages to the principal coordinator (`para: coordinador`)
+  on worker `claim` (`<tag> tomada por <agente>`), `close` (the task's `signalLine`) and blocked
+  review completion (`signalLine`), removing reliance on manual worker handoff notices.
+- **Escalation thresholds (B)**:
+  - **10 min**: wakes the assigned master again if a task remains delivered but unclaimed
+    (`unclaimed-10m:<id>:<desde>`).
+  - **30 min**: notifies the principal coordinator via board message if a task is unclaimed for 30
+    min or if an active lock has had no heartbeat for 30 min.
+  - **60 min**: surfaces the silent lock or unclaimed task in the owner action list (`ownerActions`
+    / `usted`), and invokes Telegram notification (`sendTelegramAlert`) if T437 Telegram
+    configuration lives in `.agent/tmp/telegram.json` or environment variables without blocking on
+    missing configuration.
+- **Merge queue qualification (C)**: sends `listo para unir #N`
+  (`<tag> · listo para unir #N · siguiente: unir`) to the coordinator only when the approved review
+  SHA strictly equals the live PR head (`gh pr view`) and CI for that exact SHA is green (`ciOf` is
+  `verde`). Missing, pending, failing or stale evidence never qualifies.
+- **Deduplication**: events and escalation thresholds are recorded in
+  `.agent/tmp/board-master-watch.json` under `notified` and `escalations` alongside `delivered`
+  master receipts, ensuring every transition notifies exactly once across repeated passes and
+  process restarts.
+
 After a CLI writer crash, inspect the exact `.agent/tmp/board/.lock` PID and process identity. Age
 alone does not establish an orphan. Obtain scoped authority to remove that orphan file, preserving
 all board documents and backups. Never reset or reimport the board as automatic recovery.
