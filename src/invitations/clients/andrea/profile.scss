@@ -517,7 +517,8 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--footer-border-color: rgb(var(--color-pale-gold-rgb) / 14%);
 		--footer-closing-color: rgb(var(--color-pale-gold-rgb) / 78%);
 		--footer-divider-line: rgb(var(--color-pale-gold-rgb) / 30%);
-		--footer-logo-filter: brightness(0) invert(0.85);
+		--footer-logo-claro: none;
+		--footer-logo-oscuro: block;
 		--footer-contact-border: 0;
 		--footer-contact-bg: none;
 		--footer-contact-padding: 0.5rem 0.25rem;

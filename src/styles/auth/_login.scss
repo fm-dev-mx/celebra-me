@@ -31,11 +31,6 @@
 	color: var(--auth-text-strong, var(--color-text-primary));
 }
 
-.auth-brand__logo {
-	width: 8.5rem;
-	height: auto;
-}
-
 .auth-brand__caption {
 	font-family: var(--font-ui);
 	font-size: 0.72rem;
@@ -285,10 +280,6 @@
 	.auth-shell {
 		padding: 2.5rem 2.25rem;
 		align-content: center;
-	}
-
-	.auth-brand__logo {
-		width: 10rem;
 	}
 
 	.auth-card {
