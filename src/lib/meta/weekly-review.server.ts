@@ -157,6 +157,7 @@ export async function runMetaWeeklyReview(
 				needsAttention: metaReviewNeedsAttention(report),
 			}),
 		);
+		if (report.notice === 'unconfigured') return 'skipped';
 		return report.notice === 'sent' ? 'completed' : 'failed';
 	} catch {
 		console.error('[meta-weekly-review] failed');

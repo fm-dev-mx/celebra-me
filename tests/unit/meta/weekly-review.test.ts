@@ -195,8 +195,33 @@ describe('weekly Meta review', () => {
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 		expect(String(fetchMock.mock.calls[0][0])).toContain('notify.example.test');
 	});
-	it.each(['', 'http://notify.example.test', 'https://user:pass@example.test'])(
-		'rejects an unset or unsafe notice destination %s',
+	it.each(['', '   '])(
+		'skips an unconfigured notice and delivers the stored report after setup (%j)',
+		async (target) => {
+			jest.mocked(getEnv).mockImplementation((key) =>
+				key === 'META_DATASET_QUALITY_ACCESS_TOKEN' ? token : target,
+			);
+			expect(await runMetaWeeklyReview({ now, fetchImpl: fetchMock })).toBe('skipped');
+			const report = await loadMetaWeeklyReview();
+			expect(report).toMatchObject({ endDate: '2026-10-25', notice: 'unconfigured' });
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+			expect(String(fetchMock.mock.calls[0][0])).toContain('graph.facebook.com');
+			fetchMock.mockClear();
+			jest.mocked(loadMetaInsightsTable).mockClear();
+			jest.mocked(getEnv).mockImplementation((key) =>
+				key === 'META_WEEKLY_REVIEW_WEBHOOK_URL'
+					? 'https://notify.example.test/hook'
+					: token,
+			);
+			expect(await runMetaWeeklyReview({ now, fetchImpl: fetchMock })).toBe('completed');
+			expect(await loadMetaWeeklyReview()).toEqual({ ...report, notice: 'sent' });
+			expect(loadMetaInsightsTable).not.toHaveBeenCalled();
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+			expect(String(fetchMock.mock.calls[0][0])).toBe('https://notify.example.test/hook');
+		},
+	);
+	it.each(['http://notify.example.test', 'https://user:pass@example.test'])(
+		'rejects an unsafe notice destination %s',
 		async (target) => {
 			jest.mocked(getEnv).mockImplementation((key) =>
 				key === 'META_DATASET_QUALITY_ACCESS_TOKEN' ? token : target,
