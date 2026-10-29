@@ -10,6 +10,7 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 }));
 
 const TOKEN = 'synthetic-secret-token';
+const PAGE_TOKEN = 'synthetic-page-token';
 const NOW = new Date('2026-10-25T10:43:00Z');
 const DAY = '2026-10-24';
 const ENV: Record<string, string> = {
@@ -27,55 +28,62 @@ function useEnv(values: Record<string, string>) {
 	jest.mocked(getEnv).mockImplementation((key: string) => values[key] ?? '');
 }
 
-/** Answers each Graph path with a fixed body; records the requested URLs. */
-function graph(bodies: Record<string, () => Response>) {
+/**
+ * Answers each Graph path with a fixed body; records the requested URLs and bearer tokens.
+ * The Page token lookup answers by default, so tests only override it when they need to.
+ */
+function graph(overrides: Record<string, () => Response>) {
+	const bodies = { '/222': () => json({ access_token: PAGE_TOKEN, id: '222' }), ...overrides };
 	const urls: URL[] = [];
-	const fetchImpl = jest.fn(async (input: RequestInfo | URL) => {
+	const tokens: string[] = [];
+	const fetchImpl = jest.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
 		const url = new URL(String(input));
 		urls.push(url);
+		tokens.push(new Headers(init?.headers).get('authorization') ?? '');
 		const key = Object.keys(bodies).find((path) => url.pathname.endsWith(path));
 		if (!key) throw new Error(`unexpected ${url.pathname}`);
-		return bodies[key]();
+		return bodies[key as keyof typeof bodies]();
 	}) as unknown as typeof fetch;
-	return { fetchImpl, urls };
+	return { fetchImpl, urls, tokens };
 }
 
-const healthy = () =>
-	graph({
-		'act_111/insights': () =>
-			json({
-				data: [
-					{
-						campaign_id: 'c1',
-						campaign_name: 'XV primavera',
-						spend: '120.50',
-						impressions: '3000',
-						clicks: '42',
-						account_currency: 'MXN',
-						date_start: DAY,
-					},
-					{
-						campaign_id: 'c2',
-						spend: '9.5',
-						impressions: '100',
-						clicks: '1',
-						date_start: DAY,
-					},
-				],
-			}),
-		'222/insights': () =>
-			json({
-				data: [
-					{
-						name: 'page_total_media_view_unique',
-						period: 'day',
-						values: [{ value: 870, end_time: '2026-10-25T07:00:00+0000' }],
-					},
-				],
-			}),
-		'333/insights': () =>
-			json({ data: [{ name: 'reach', period: 'day', total_value: { value: 455 } }] }),
-	});
+const healthyBodies = () => ({
+	'act_111/insights': () =>
+		json({
+			data: [
+				{
+					campaign_id: 'c1',
+					campaign_name: 'XV primavera',
+					spend: '120.50',
+					impressions: '3000',
+					clicks: '42',
+					account_currency: 'MXN',
+					date_start: DAY,
+				},
+				{
+					campaign_id: 'c2',
+					spend: '9.5',
+					impressions: '100',
+					clicks: '1',
+					date_start: DAY,
+				},
+			],
+		}),
+	'222/insights': () =>
+		json({
+			data: [
+				{
+					name: 'page_total_media_view_unique',
+					period: 'day',
+					values: [{ value: 870, end_time: '2026-10-25T07:00:00+0000' }],
+				},
+			],
+		}),
+	'333/insights': () =>
+		json({ data: [{ name: 'reach', period: 'day', total_value: { value: 455 } }] }),
+});
+
+const healthy = () => graph(healthyBodies());
 
 describe('runMetaInsightsCollector', () => {
 	beforeEach(() => {
@@ -85,7 +93,7 @@ describe('runMetaInsightsCollector', () => {
 	});
 
 	it('collects the last completed day and upserts every source by its table keys', async () => {
-		const { fetchImpl, urls } = healthy();
+		const { fetchImpl, urls, tokens } = healthy();
 		const result = await runMetaInsightsCollector({ now: NOW, fetchImpl });
 
 		expect(result).toEqual({
@@ -103,8 +111,14 @@ describe('runMetaInsightsCollector', () => {
 		expect(urls[0].searchParams.get('time_range')).toBe(
 			JSON.stringify({ since: DAY, until: DAY }),
 		);
-		expect(urls[1].searchParams.get('metric')).toBe('page_total_media_view_unique');
-		expect(urls[2].searchParams.get('metric_type')).toBe('total_value');
+		// Page insights refuse the configured token, so the Page's own token reads them.
+		expect(urls[1].pathname).toBe('/v26.0/222');
+		expect(urls[1].searchParams.get('fields')).toBe('access_token');
+		expect(tokens[1]).toBe(`Bearer ${TOKEN}`);
+		expect(urls[2].searchParams.get('metric')).toBe('page_total_media_view_unique');
+		expect(tokens[2]).toBe(`Bearer ${PAGE_TOKEN}`);
+		expect(urls[3].searchParams.get('metric_type')).toBe('total_value');
+		expect(tokens[3]).toBe(`Bearer ${TOKEN}`);
 		expect(urls.every((url) => !url.href.includes(TOKEN))).toBe(true);
 
 		const [ads, page, ig] = upsertMock.mock.calls.map(([options]) => options);
@@ -270,6 +284,26 @@ describe('runMetaInsightsCollector', () => {
 			retryAfterMs: null,
 		});
 		expect(result.sources.instagram).toEqual({ status: 'completed', rows: 1 });
+	});
+
+	it('fails only the Page source when Meta refuses the Page token lookup', async () => {
+		const { fetchImpl, urls } = graph({
+			...healthyBodies(),
+			'/222': () => json({ error: { code: 190, message: `refused ${TOKEN}` } }, 400),
+		});
+		const result = await runMetaInsightsCollector({ now: NOW, fetchImpl });
+
+		expect(result.sources.page).toEqual({
+			status: 'failed',
+			kind: 'response',
+			httpStatus: 400,
+			code: 190,
+			retryAfterMs: null,
+		});
+		expect(result.sources.ads).toEqual({ status: 'completed', rows: 2 });
+		expect(result.sources.instagram).toEqual({ status: 'completed', rows: 1 });
+		expect(urls.map((url) => url.pathname)).not.toContain('/v26.0/222/insights');
+		expect(JSON.stringify(result)).not.toContain(TOKEN);
 	});
 });
 

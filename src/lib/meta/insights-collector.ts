@@ -284,7 +284,14 @@ export async function runMetaInsightsCollector(
 	);
 	const organic = (source: 'page' | 'instagram', raw: string) =>
 		runSource(numericId(raw), Boolean(raw.trim()), async (objectId) => {
-			const row = await collectOrganic(client, source, objectId, date, collectedAt);
+			const reader =
+				source === 'page'
+					? new MetaGraphClient({
+							accessToken: await client.pageAccessToken(objectId),
+							fetchImpl: options.fetchImpl,
+						})
+					: client;
+			const row = await collectOrganic(reader, source, objectId, date, collectedAt);
 			await upsert('meta_organic_insights_daily', ORGANIC_CONFLICT, [row]);
 			return 1;
 		});
