@@ -81,9 +81,15 @@ describe('native permission adapters', () => {
 		const after = JSON.parse(fs.readFileSync(file, 'utf8'));
 		expect(after.env).toEqual(settings.env);
 		expect(after.custom).toEqual(settings.custom);
-		expect(after.permissions.ask).toEqual(settings.permissions.ask);
+		expect(after.permissions.ask).toContain(settings.permissions.ask[0]);
+		expect(after.permissions.ask).toContain('Bash(gh pr merge *)');
 		expect(after.permissions.allow).toContain(settings.permissions.allow[0]);
 		expect(after.permissions.deny).toContain('Read(**/.env*)');
+		const afterAgy = JSON.parse(
+			fs.readFileSync(path.join(dir, '.gemini/antigravity-cli/settings.json'), 'utf8'),
+		);
+		expect(afterAgy.permissions.ask).toEqual(settings.permissions.ask);
+		expect(afterAgy.permissions.deny).toContain('command(gh pr merge)');
 		const backups = fs
 			.readdirSync(path.dirname(file))
 			.filter((s) => s.includes('.celebra-backup-'));
@@ -208,7 +214,7 @@ describe('native permission adapters', () => {
                 other: ['pnpm test && arbitrary-command', 'git status $(arbitrary-command)', 'pnpm testing'].map(decision),
                 read: rules.filter(r => Array.isArray(r.toolName)).every(r =>
                     new RegExp(r.argsPattern).test(JSON.stringify({file_path: 'nested/.env.local'}))),
-                codex: compiled.codex, antigravity: compiled.antigravity,
+                codex: compiled.codex, antigravity: compiled.antigravity, claude: compiled.claude,
             }));`,
 		);
 		expect(out.safe).toEqual(['allow', 'allow', 'allow']);
@@ -216,7 +222,76 @@ describe('native permission adapters', () => {
 		expect(out.other).toEqual(Array(3).fill('ask_user'));
 		expect(out.read).toBe(true);
 		expect(out.codex).toContain('pattern=["git","push","origin","main"], decision="forbidden"');
+		expect(out.codex).toContain('pattern=["gh","pr","merge"], decision="forbidden"');
 		expect(out.codex).not.toContain('pattern=["git","push","*');
 		expect(out.antigravity.deny).toContain('command(gh pr merge)');
+		expect(out.claude.ask).toContain('Bash(gh pr merge *)');
+		expect(out.claude.ask).toContain('PowerShell(gh pr merge *)');
+		expect(out.claude.deny).not.toContain('Bash(gh pr merge *)');
+	});
+
+	it('moves gh pr merge from deny to ask in Claude settings while Codex and Gemini keep it denied', () => {
+		const dir = home();
+		const legacySettings = {
+			permissions: {
+				allow: ['Bash(git status *)'],
+				deny: [
+					'Bash(git push --force *)',
+					'Bash(gh pr merge *)',
+					'PowerShell(gh pr merge *)',
+					'Bash(gh * pr merge*)',
+					'PowerShell(gh * pr merge*)',
+				],
+			},
+		};
+		write(dir, '.claude/settings.json', JSON.stringify(legacySettings, null, 2));
+		write(dir, '.codex/rules/celebra-me.rules', '');
+		write(dir, '.gemini/policies/celebra-me.toml', '');
+
+		// Dry-run should show removals from deny and additions to ask only for Claude
+		const preview = cli(dir, '--dry-run');
+		expect(preview.status).toBe(0);
+		expect(preview.stdout).toContain('--- ~/.claude/settings.json');
+		expect(preview.stdout).toContain('-permissions.deny += "Bash(gh pr merge *)"');
+		expect(preview.stdout).toContain('-permissions.deny += "PowerShell(gh pr merge *)"');
+		expect(preview.stdout).toContain('-permissions.deny += "Bash(gh * pr merge*)"');
+		expect(preview.stdout).toContain('-permissions.deny += "PowerShell(gh * pr merge*)"');
+		expect(preview.stdout).toContain('+permissions.ask += "Bash(gh pr merge *)"');
+		expect(preview.stdout).toContain('+permissions.ask += "PowerShell(gh pr merge *)"');
+		expect(preview.stdout).toContain('+permissions.ask += "Bash(gh * pr merge*)"');
+		expect(preview.stdout).toContain('+permissions.ask += "PowerShell(gh * pr merge*)"');
+
+		// Apply and verify
+		expect(cli(dir, '--apply').status).toBe(0);
+		const afterClaude = JSON.parse(
+			fs.readFileSync(path.join(dir, '.claude/settings.json'), 'utf8'),
+		);
+		expect(afterClaude.permissions.deny).not.toContain('Bash(gh pr merge *)');
+		expect(afterClaude.permissions.deny).not.toContain('PowerShell(gh pr merge *)');
+		expect(afterClaude.permissions.deny).not.toContain('Bash(gh * pr merge*)');
+		expect(afterClaude.permissions.deny).not.toContain('PowerShell(gh * pr merge*)');
+		expect(afterClaude.permissions.deny).toContain('Bash(git push --force *)');
+		expect(afterClaude.permissions.ask).toEqual([
+			'Bash(gh pr merge *)',
+			'PowerShell(gh pr merge *)',
+			'Bash(gh * pr merge*)',
+			'PowerShell(gh * pr merge*)',
+		]);
+
+		// Codex and Gemini keep gh pr merge denied
+		const codexRules = fs.readFileSync(path.join(dir, '.codex/rules/celebra-me.rules'), 'utf8');
+		expect(codexRules).toContain(
+			'prefix_rule(pattern=["gh","pr","merge"], decision="forbidden")',
+		);
+
+		const geminiToml = fs.readFileSync(
+			path.join(dir, '.gemini/policies/celebra-me.toml'),
+			'utf8',
+		);
+		expect(geminiToml).toMatch(/commandRegex = "gh pr merge/);
+		expect(geminiToml).toMatch(/decision = "deny"/);
+
+		// Second run is idempotent
+		expect(cli(dir).stdout.trim()).toBe('');
 	});
 });
