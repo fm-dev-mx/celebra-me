@@ -176,17 +176,12 @@ describe('buildInvitationRenderPlan', () => {
 		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
 		const nonNeutral = plan.filter((item) => item.intersection.family !== 'neutral');
 
-		expect(nonNeutral).toHaveLength(5);
+		expect(nonNeutral).toHaveLength(3);
 		expect(nonNeutral).toEqual([
 			expect.objectContaining({
 				type: 'section',
 				section: 'quote',
 				intersection: { family: 'atmospheric-blend', source: 'hero' },
-			}),
-			expect.objectContaining({
-				type: 'section',
-				section: 'family',
-				intersection: { family: 'arch', source: 'quote' },
 			}),
 			expect.objectContaining({
 				type: 'interlude',
@@ -195,13 +190,8 @@ describe('buildInvitationRenderPlan', () => {
 			}),
 			expect.objectContaining({
 				type: 'section',
-				section: 'gallery',
-				intersection: { family: 'atmospheric-blend', source: 'interlude-after-family' },
-			}),
-			expect.objectContaining({
-				type: 'section',
 				section: 'gifts',
-				intersection: { family: 'atmospheric-blend', source: 'itinerary' },
+				intersection: { family: 'arch', source: 'gallery' },
 			}),
 		]);
 	});

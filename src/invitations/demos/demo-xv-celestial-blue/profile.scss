@@ -161,101 +161,112 @@
 		--gallery-overlay-hover-opacity: 0;
 	}
 
-	@media (576px <= width < 992px) {
-		--hero-title-max-width: 8ch;
-	}
+	// Hero: Camila's portrait stands in an arch on the night sky, under a silver hairline that
+	// follows it, with a faint constellation behind. The name splits into a script first name and
+	// a tracked serif surname line.
+	.invitation-hero[data-variant='framed-portrait'] {
+		--color-surface-primary: var(--color-deep-blue-graphite);
+		--color-text-primary: var(--color-diamond-white);
+		--color-action-accent: var(--color-satin-blue);
+		--hero-arc-opacity: 0;
+		--hero-letter-align: center;
+		--hero-scroll-align: center;
+		--hero-portrait-margin: 0 auto;
+		--hero-portrait-max-width: 100%;
 
-	.invitation-hero[data-variant='standard'] {
-		--hero-isolation: isolate;
-		--hero-content-z-index: 2;
-		--hero-constellation-display: block;
-		--hero-constellation-opacity: 0.74;
-		--hero-constellation:
+		// The arch keeps the portrait's own proportion (1024 × 1536), so the photograph fills it on
+		// every phone; short screens keep a floor so the portrait never shrinks to a stamp.
+		--celestial-portrait-height: clamp(15rem, min(48svh, calc(100svh - 26rem)), 28rem);
+		--hero-portrait-width-mobile: min(
+			70vw,
+			18rem,
+			calc(var(--celestial-portrait-height) * 0.667)
+		);
+		--hero-portrait-height-mobile: calc(var(--hero-portrait-width-mobile) / 0.667);
+		--hero-section-padding: 5rem 1.5rem 1.25rem;
+		--hero-section-padding-desktop: 6.5rem 4rem 2rem;
+		--hero-portrait-height-desktop: min(70svh, 40rem);
+		--hero-portrait-radius: 50% 50% 0.375rem 0.375rem / 34% 34% 0.375rem 0.375rem;
+		--hero-portrait-outline: 1px solid rgb(var(--color-liquid-silver-rgb) / 62%);
+		--hero-portrait-outline-offset: 0.45rem;
+		--hero-title-max-width: none;
+		--hero-title-size: clamp(4.25rem, 19vw, 7rem);
+		--hero-name-margin: 0;
+		--hero-occasion-font: 500 0.8125rem / 1.4 var(--font-ui);
+		--hero-occasion-text-transform: uppercase;
+		--hero-occasion-letter-spacing: 0.24em;
+		--hero-occasion-color: var(--color-satin-blue);
+		--hero-details-font:
+			italic 400 clamp(1.15rem, 4.4vw, 1.375rem) / 1.45 'EB Garamond Variable', 'EB Garamond',
+			georgia, serif;
+		--hero-occasion-margin: 0.75rem 0 0.25rem;
+		--hero-name-font-family: 'Pinyon Script', var(--font-display);
+		--hero-name-font-weight: 400;
+		--hero-name-line-height: 1.2;
+		--hero-name-letter-spacing: 0;
+		--hero-name-overflow-wrap: normal;
+		--hero-name-lead-display: block;
+		--hero-name-lead-line-height: 1.25;
+		--hero-name-rest-display: block;
+		--hero-name-rest-margin-top: 0.15rem;
+		--hero-name-rest-font-family:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--hero-name-rest-size: clamp(1rem, 0.6vw + 0.9rem, 1.35rem);
+		--hero-name-rest-weight: 500;
+		--hero-name-rest-line-height: 1.5;
+		--hero-name-rest-letter-spacing: 0.26em;
+		--hero-name-rest-text-transform: uppercase;
+		--hero-name-rest-color: var(--color-liquid-silver);
+
+		// Night sky: a few silver and satin stars over a soft glow behind the arch.
+		--hero-framed-background:
 			radial-gradient(
-				circle at 13% 17%,
-				rgb(var(--color-diamond-white-rgb) / 82%) 0 1px,
+				circle at 12% 14%,
+				rgb(var(--color-diamond-white-rgb) / 80%) 0 1px,
 				transparent 1.8px
 			),
 			radial-gradient(
-				circle at 26% 29%,
-				rgb(var(--color-satin-blue-rgb) / 72%) 0 1.2px,
+				circle at 84% 9%,
+				rgb(var(--color-satin-blue-rgb) / 75%) 0 1.2px,
 				transparent 2px
 			),
 			radial-gradient(
-				circle at 42% 13%,
-				rgb(var(--color-diamond-white-rgb) / 56%) 0 0.8px,
+				circle at 91% 31%,
+				rgb(var(--color-diamond-white-rgb) / 55%) 0 0.8px,
 				transparent 1.6px
 			),
 			radial-gradient(
-				circle at 18% 53%,
-				rgb(var(--color-liquid-silver-rgb) / 62%) 0 0.8px,
+				circle at 7% 46%,
+				rgb(var(--color-liquid-silver-rgb) / 60%) 0 0.8px,
 				transparent 1.6px
 			),
 			radial-gradient(
-				ellipse 64% 72% at 8% 52%,
-				rgb(var(--color-satin-blue-rgb) / 18%) 0%,
+				circle at 23% 6%,
+				rgb(var(--color-liquid-silver-rgb) / 55%) 0 0.8px,
+				transparent 1.6px
+			),
+			radial-gradient(
+				circle at 72% 4%,
+				rgb(var(--color-diamond-white-rgb) / 60%) 0 0.9px,
+				transparent 1.7px
+			),
+			radial-gradient(
+				ellipse 70% 46% at 50% 30%,
+				rgb(var(--color-satin-blue-rgb) / 16%) 0%,
 				transparent 72%
-			);
-		--hero-media-reveal-animation: celestial-hero-media-reveal;
-		--hero-veil:
-			radial-gradient(
-				ellipse 72% 68% at 8% 68%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 82%) 0%,
-				transparent 76%
 			),
-			radial-gradient(
-				circle at 18% 32%,
-				rgb(var(--color-satin-blue-rgb) / 24%) 0%,
-				transparent 38%
-			),
-			linear-gradient(
-				105deg,
-				rgb(var(--color-deep-blue-graphite-rgb) / 72%) 0%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 18%) 48%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 54%) 100%
-			),
-			linear-gradient(
-				180deg,
-				transparent 38%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 72%) 100%
-			);
-		--hero-title-thread-display: block;
-		--hero-title-thread-color: rgb(var(--color-liquid-silver-rgb) / 72%);
-		--hero-title-thread-glow: rgb(var(--color-satin-blue-rgb) / 34%);
-		--hero-divider-display: none;
-		--hero-details-margin-left: 0;
-		--hero-details-padding-left: clamp(0.95rem, 2vw, 1.35rem);
-		--hero-details-rule: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
+			var(--color-deep-blue-graphite);
 
-		@media (width <= 639px) {
-			--hero-constellation-opacity: calc(0.74 * 72%);
-			--hero-constellation:
-				radial-gradient(
-					circle at 16% 16%,
-					rgb(var(--color-diamond-white-rgb) / 76%) 0 1px,
-					transparent 1.8px
-				),
-				radial-gradient(
-					circle at 33% 24%,
-					rgb(var(--color-satin-blue-rgb) / 70%) 0 1px,
-					transparent 1.8px
-				),
-				radial-gradient(
-					ellipse 105% 48% at 18% 58%,
-					rgb(var(--color-satin-blue-rgb) / 16%) 0%,
-					transparent 72%
-				);
-			--hero-details-margin-left: auto;
-			--hero-details-margin-right: auto;
-			--hero-details-padding-left: 0;
-			--hero-details-rule: 0;
+		@media (width >= 992px) {
+			--hero-letter-align: left;
+			--hero-title-size: clamp(6rem, 8vw, 8rem);
 		}
 	}
 
-	// Cadence: hero -> quote (bridge, asymmetrical ink-to-ice atmospheric blend);
-	// quote -> family (climax arch); family -> interlude (bridge overlap);
-	// interlude -> gallery (bridge blend); itinerary -> gifts (climax blend).
-	// All other section boundaries are intentionally neutral.
+	// Cadence: hero -> quote (bridge: the night melts into ivory); family -> interlude (bridge:
+	// the corridor portrait rises on an arched plate into the family's padding); gallery -> gifts
+	// (climax: an arch opens the night band that holds gifts, the pass, RSVP and the closing).
+	// Every other boundary is a clean cut.
 	.invitation-section-wrapper[data-section-kind='quote'][data-intersection='atmospheric-blend'] {
 		--intersection-depth: clamp(3.25rem, 6.5vw, 4.5rem);
 		--intersection-surface: var(--color-cool-ivory);
@@ -283,22 +294,30 @@
 			var(--color-surface-primary);
 	}
 
-	.invitation-section-wrapper[data-section-kind='family'][data-intersection='arch'] {
-		--intersection-surface: var(--family-bg);
-		--intersection-arch-height: clamp(2.5rem, 5vw, 4.5rem);
-		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 24' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M0 24V23C22 22 36 2 62 2C79 2 91 10 100 15V24Z'/%3E%3C/svg%3E");
-	}
-
-	.invitation-section-wrapper[data-section-kind='interlude'] {
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='family'] {
 		--intersection-depth: var(--celestial-family-overlap-depth);
 	}
 
-	.invitation-section-wrapper[data-section-kind='gallery'] {
-		--intersection-blend: linear-gradient(180deg, var(--color-surface-dark), transparent);
+	.invitation-interlude[data-presentation='framed'] {
+		--interlude-framed-radius: 50% 50% 0.375rem 0.375rem / 7.5rem 7.5rem 0.375rem 0.375rem;
+		--interlude-framed-image-radius: var(--interlude-framed-radius);
+		--interlude-framed-max-width: 24rem;
+		--interlude-framed-mat: 0;
+		--interlude-framed-mat-bg: transparent;
+		--interlude-framed-border: 0;
+		--interlude-framed-outline: 1px solid rgb(var(--color-deep-blue-graphite-rgb) / 28%);
+		--interlude-framed-outline-offset: 0.5rem;
+		--interlude-framed-shadow: none;
 	}
 
-	.invitation-section-wrapper[data-section-kind='gifts'] {
-		--intersection-blend: linear-gradient(180deg, var(--color-surface-primary), transparent);
+	// The climax: a single dome, the hero's arch at section scale, lifts the night out of the
+	// gallery's ivory, traced by a silver hairline.
+	.invitation-section-wrapper[data-section-kind='gifts'][data-intersection='arch'] {
+		--intersection-surface: var(--color-surface-dark);
+		--intersection-arch-height: clamp(3rem, 9vw, 6rem);
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 24' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M0 24V22C18 22 30 1 50 1C70 1 82 22 100 22V24Z'/%3E%3C/svg%3E");
+		--intersection-arch-ink: rgb(var(--color-liquid-silver-rgb) / 70%);
+		--intersection-arch-ink-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 24' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='none' stroke='black' stroke-width='1.25' vector-effect='non-scaling-stroke' d='M0 22C18 22 30 1 50 1C70 1 82 22 100 22'/%3E%3C/svg%3E");
 	}
 
 	.gifts-section {
@@ -340,7 +359,13 @@
 		--rsvp-section-border: 0;
 		--rsvp-label-color: var(--color-text-on-dark);
 		--rsvp-placeholder-color: var(--color-text-primary);
-		--rsvp-radio-label-color: var(--color-text-primary);
+
+		// Attendance choices read as silver-ruled rows on the night; the chosen one fills satin blue.
+		--rsvp-radio-bg: rgb(var(--color-diamond-white-rgb) / 5%);
+		--rsvp-radio-bg-hover: rgb(var(--color-satin-blue-rgb) / 12%);
+		--rsvp-radio-border: rgb(var(--color-liquid-silver-rgb) / 45%);
+		--rsvp-radio-selected-border: var(--color-satin-blue);
+		--rsvp-radio-label-color: var(--color-text-on-dark);
 		--rsvp-radio-label-color-selected: var(--color-text-primary);
 		--rsvp-card-shadow: none;
 		--rsvp-title-color: var(--color-text-on-dark);
@@ -358,5 +383,19 @@
 			var(--color-text-on-dark),
 			var(--color-text-on-dark)
 		);
+
+		// The closing repeats the hero hierarchy (`closingNameLeadWords: 1`): the first name signs
+		// in script and the surnames follow as the hero's tracked serif line.
+		--thank-you-closing-lead-display: block;
+		--thank-you-closing-rest-display: block;
+		--thank-you-closing-rest-margin-top: 0.35rem;
+		--thank-you-closing-rest-font-family:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--thank-you-closing-rest-size: clamp(0.95rem, 0.5vw + 0.85rem, 1.25rem);
+		--thank-you-closing-rest-weight: 500;
+		--thank-you-closing-rest-line-height: 1.5;
+		--thank-you-closing-rest-letter-spacing: 0.26em;
+		--thank-you-closing-rest-text-transform: uppercase;
+		--thank-you-closing-rest-color: var(--color-liquid-silver);
 	}
 }

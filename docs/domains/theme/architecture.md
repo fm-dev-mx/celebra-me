@@ -478,7 +478,13 @@ Bounded controls retain their canonical section owner:
   `--hero-portrait-width-*` and `--hero-portrait-height-*`, `--hero-section-padding`,
   `--hero-section-padding-desktop`, `--hero-title-size`, `--hero-title-max-width`, and
   `--hero-label-size`. Defaults retain the original arch, dimensions, spacing, and typography;
-  profiles may preserve a complete rectangular photograph without adding layout selectors.
+  profiles may preserve a complete rectangular photograph without adding layout selectors. It also
+  consumes `--hero-framed-background` (section ground), `--hero-occasion-margin`,
+  `--hero-name-overflow-wrap` and, for a split name (`nameLeadWords`), the `--hero-name-lead-*` and
+  `--hero-name-rest-*` line tokens; their fallbacks keep the spans inline and inheriting.
+- The thank-you signature consumes `--thank-you-closing-lead-display` and the
+  `--thank-you-closing-rest-*` line tokens for a split closing name (`closingNameLeadWords`), with
+  the same inline, inheriting fallbacks.
 - `paired-feature-band` consumes the existing `--gallery-grid-columns-mobile`,
   `--gallery-item-aspect-ratio`, and `--gallery-item-aspect-ratio-feature` tokens. Unconfigured
   consumers retain one mobile column, 4:5 portraits, and an 8:5 feature band; the variant owns the
