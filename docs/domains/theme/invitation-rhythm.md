@@ -145,10 +145,12 @@ concrete decision criteria.
 
 - **Neutral:** The boundary is clean and fully spaced. No transition treatment. The adjacent
   sections may share a surface or a compatible tone.
-- **Bridge:** A photographic or atmospheric connection that hands off one surface to another without
-  a geometric break. One selected overlap or one atmospheric blend.
-- **Climax:** An arch or a deep atmospheric blend that marks a strong narrative turn. Reserve these
-  for one or two moments in the invitation.
+- **Bridge:** A photographic, material, or atmospheric connection that hands off one surface to
+  another without a geometric climax: a layered `overlap`, an `atmospheric-blend`, a `folio` page
+  edge (with optional scroll-driven 3D corner turn), or a playful `pattern-band`.
+- **Climax:** An editorial `arch`, a deep `atmospheric-blend`, or a `stack` transition (where the
+  outgoing section pins and recedes in scale/opacity while the incoming sheet scrolls over it) that
+  marks a strong narrative turn. Reserve these for one or two moments in the invitation.
 
 ### Assignment Protocol
 
@@ -168,31 +170,12 @@ new numeric limits. Enforce them before assigning any non-neutral pattern.
 
 ### Cadence Map Format
 
-The cadence map is the planning record for non-neutral boundaries. It maps directly to
-`composition.intersections` in the invitation's typed configuration. Neutral boundaries are omitted;
-their absence is the intentional signal.
-
-Record the map in the invitation's preparation document (`docs/invitations/<slug>.md`). The typed
-`composition.intersections` in the managed definition is the executable record; new profiles hold
-custom properties only, and frozen profiles keep whatever comment they already carry.
-
-```text
-// Cadence map — non-neutral boundaries only
-// [sectionA] → [sectionB] : [role] [pattern]
-//
-// hero            → countdown         : bridge  atmospheric-blend
-// countdown       → location          : bridge  atmospheric-blend
-// interlude-paris → gallery           : bridge  overlap diagonal-left-deep
-// gallery         → gifts             : bridge  atmospheric-blend
-// gifts           → access            : bridge  atmospheric-blend
-// access          → rsvp              : climax  arch
-//
-// Neutral boundaries (location→interlude-paris, rsvp→family, family→thankYou)
-// are intentionally omitted. Their absence is the neutral signal.
-```
-
-This map is required for every invitation that uses the intersection system. Its absence from the
-preparation document is a rhythm gap.
+The cadence map is the planning record for non-neutral boundaries
+(`[sectionA] → [sectionB] : [role] [pattern]`). It maps directly to `composition.intersections` in
+the invitation's typed configuration. Neutral boundaries are omitted; their absence is the
+intentional signal. Record the map in `docs/invitations/<slug>.md` (required whenever the invitation
+uses intersections). The typed `composition.intersections` in the managed definition is the
+executable record; new profiles hold custom properties only.
 
 ---
 
@@ -214,24 +197,9 @@ A diagonal cut must have an intentional reading direction relative to the invita
 - **Proportion rule:** the ratio `cut-shallow : cut-deep` must be between `1:5` and `1:8`. Below
   `1:5` the cut reads as a trapezoid. Above `1:8` the cut risks hiding content on mobile.
 - **Token rule:** declare `--[slug]-cut-deep` and `--[slug]-cut-shallow` as profile tokens inside
-  the intersection selector. Never hardcode values directly in the `clip-path` declaration.
+  the intersection selector; shared variant/intersection sheets own the `clip-path` property itself
+  (`architecture.md`).
 - Validate at 320 px width that no content enters the cut zone.
-
-```scss
-// Example: gallery cut, left-deep
-.gallery-section {
-  --[slug]-cut-deep: clamp(3.5rem, 9vw, 7rem);
-  --[slug]-cut-shallow: clamp(0.5rem, 1.5vw, 1.25rem);
-
-  clip-path: polygon(
-    0 var(--[slug]-cut-deep),
-    58% var(--[slug]-cut-shallow),
-    100% 0,
-    100% 100%,
-    0 100%
-  );
-}
-```
 
 ### Editorial arch
 
@@ -331,14 +299,20 @@ the intersection treatment. They contradict rhythm when applied uniformly regard
 
 | Incoming boundary role           | Reveal recipe                                               | `--motion-reveal-distance`                |
 | -------------------------------- | ----------------------------------------------------------- | ----------------------------------------- |
-| Neutral                          | `fade-up`                                                   | Default (see `motion.md`)                 |
+| Neutral                          | `fade-up` (or `editorial` when `theme.motion: 'editorial'`) | Default (see `motion.md`)                 |
 | Bridge — overlap (photographic)  | `media-scale` for bridge media; `fade` for incoming section | N/A for `media-scale`                     |
-| Bridge — atmospheric-blend       | `fade-up`                                                   | Reduced (see `motion.md`)                 |
-| Climax — arch                    | `fade`                                                      | — (the arch performs the visual entrance) |
+| Bridge — atmospheric-blend       | `fade-up` (or `editorial`)                                  | Reduced (see `motion.md`)                 |
+| Bridge — folio / pattern-band    | `fade-up` or `editorial`                                    | Default (see `motion.md`)                 |
+| Climax — arch                    | `fade` (or `editorial`)                                     | — (the arch performs the visual entrance) |
+| Climax — stack                   | `fade` or `editorial` (sheet scroll performs the arrival)   | —                                         |
 | Climax — dark finale, full-width | `fade`                                                      | —                                         |
 | Hero                             | Follow `motion.md` hero role sequence                       | Per `motion.md` role limits               |
 
-Stagger placement and reveal distances are owned by [`motion.md`](motion.md).
+When `theme.motion: 'editorial'` is enabled on the invitation, section entrances may also combine
+with the scroll-linked primitives in [`motion.md`](motion.md) (`ScrollScene.astro`, per-element
+`animation-timeline: view()`, `itinerary.stacked-cards`, and `SplitWords.astro`) within the
+documented element and scene budgets. Stagger placement and reveal distances are owned by
+[`motion.md`](motion.md).
 
 ---
 
@@ -363,23 +337,24 @@ Apply this checklist before considering an invitation profile visually complete.
 
 ### C. Intersections
 
-- [ ] Cadence map recorded in the preparation document and matched by `composition.intersections`.
-- [ ] Neutral / Bridge / Climax role recorded for every boundary.
-- [ ] ≤ 2 geometric treatments (arch or diagonal clip-path) in the invitation.
-- [ ] ≤ 3 primary pattern types across the invitation.
-- [ ] ≥ 40% of boundaries are neutral.
-- [ ] Every atmospheric-blend has an asymmetric focal point and terminates at `transparent`.
-- [ ] Every diagonal has an intentional direction; two diagonals are mirrored or form a vector.
-- [ ] `cut-shallow : cut-deep` ratio is between 1:5 and 1:8 for every diagonal.
-- [ ] Every arch vertex is between 30–45% or 55–70% from the left edge (never centered).
+- [ ] Cadence map recorded in `docs/invitations/<slug>.md` and matched by
+      `composition.intersections`.
+- [ ] Neutral / Bridge / Climax role recorded for every boundary (`arch`, `overlap`,
+      `atmospheric-blend`, `pattern-band`, `folio`, or `stack`).
+- [ ] ≤ 2 geometric treatments (`arch`, diagonal `overlap`, or `pattern-band`) in the invitation.
+- [ ] ≤ 3 primary pattern types across the invitation, and ≥ 40% of boundaries are neutral.
+- [ ] Every `atmospheric-blend` has an asymmetric focal point and terminates at `transparent`.
+- [ ] Every diagonal has an intentional direction (`1:5` to `1:8` ratio); two diagonals are mirrored
+      or form a vector.
+- [ ] Every `arch` vertex is between 30–45% or 55–70% from the left edge (never centered).
 
 ### D. Reveals
 
 - [ ] No two adjacent sections use `stagger-group`.
-- [ ] Sections entering through atmospheric-blend use `fade-up` with the reduced distance in
+- [ ] Section reveals match the §6 boundary role table (`fade-up`, `fade`, `media-scale`, or
+      `editorial` when `theme.motion: 'editorial'` is active).
+- [ ] Hero sequence and any scroll-linked scenes/effects respect the timing and element budgets in
       `motion.md`.
-- [ ] Sections entering through arch use `fade`.
-- [ ] Hero sequence respects the timing limits defined in `motion.md` §Categories and limits.
 
 ### E. Shadows
 

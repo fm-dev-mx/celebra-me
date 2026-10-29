@@ -53,8 +53,14 @@ per-invitation note, or prior verified pattern.
 
 ### External inspiration (non-authoritative)
 
-External screenshots, Figma frames, Mobbin examples, or competitor references may communicate
-intent, but they never override the Celebra-me brief, live theme contract, or repository patterns.
+External screenshots, Figma frames, Phase-0 sketches (Claude Design / ChatGPT Canvas), or
+owner-calibrated benchmarks in
+[`animation-motion`](../../skills/animation-motion/SKILL.md#approved-high-end-motion-benchmarks-non-authoritative-inspiration)
+communicate intent only and never override the Celebra-me brief or theme contract. Label each
+reference with its explicit role (`Composition/Layout`, `Motion/Rhythm`, `Palette/Type`, or
+`Real Client Asset`). For single-section or single-animation iterations, a **5-line Micro-Brief**
+(Target, Reference + Role, Owning Layer, Preserved Behavior, Observable Pass Rule) may replace the
+full tables below.
 
 1.
 2.
