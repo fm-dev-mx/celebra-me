@@ -21,7 +21,14 @@ import {
 	taskLane,
 	taskTag,
 } from './model.mjs';
-import { deliveryLine, nextSections, ownerMessages, reviewVerdict } from './next.mjs';
+import {
+	agoText,
+	deliveryLine,
+	lockBeat,
+	nextSections,
+	ownerMessages,
+	reviewVerdict,
+} from './next.mjs';
 import { blocked, calendar } from './subtasks.mjs';
 
 export const GH = 'https://github.com/fm-dev-mx/celebra-me';
@@ -480,6 +487,11 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 			!t.candado &&
 			!(Object.hasOwn(t, 'bloqueoArchivo') ? t.bloqueoArchivo : archiveBlock(t, board)),
 	);
+	// T442: a lock silent for 60 min surfaces in the owner action list
+	const silentLocks60m = (board.tareas ?? [])
+		.filter((t) => t.candado && !isFinished(t))
+		.map((t) => ({ t, silent: now - Date.parse(lockBeat(t.candado) ?? '') }))
+		.filter(({ silent }) => !Number.isNaN(silent) && silent >= 60 * 60_000);
 	const rows = [
 		...tasks.map((t) => {
 			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a]?.nombre ?? a);
@@ -512,6 +524,14 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 			verbo: 'Relanzar',
 			texto: x.texto,
 			sub: '',
+		})),
+		...silentLocks60m.map(({ t, silent }) => ({
+			tipo: 'detenida',
+			id: t.id,
+			t,
+			verbo: 'Inspeccionar',
+			texto: `Candado de ${t.candado.agente} sin latido hace ${agoText(silent)}: ${taskTag(t)} · ${t.titulo}`,
+			sub: t.candado.carril ? `carril ${t.candado.carril}` : '',
 		})),
 		...ownerMessages(board).map((r) => {
 			const msg = messageParts(r, board);
