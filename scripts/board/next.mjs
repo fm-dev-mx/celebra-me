@@ -62,6 +62,22 @@ export function unreadFor(agente, board) {
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
 }
 
+export const GEMINI_RELAY_ALERT =
+	'Arranque el relevo de Gemini: en Antigravity, en el Chat maestro, escriba «Arranque de nuevo el relevo celebra-gemini-relay.mjs».';
+
+/** Missing or invalid timestamps fail closed; two minutes exactly is still fresh. */
+export function geminiRelayStale(board, now = Date.now()) {
+	const at = board.geminiRelay?.at;
+	const beat = typeof at === 'number' ? at : typeof at === 'string' ? Date.parse(at) : NaN;
+	return !Number.isFinite(beat) || now - beat > 2 * MINUTE_MS;
+}
+
+export function geminiRelayAlert(board, now = Date.now()) {
+	return geminiRelayStale(board, now) && unreadFor('gemini', board).length
+		? GEMINI_RELAY_ALERT
+		: null;
+}
+
 /**
  * «claude → coordinador sobre T125: texto», as `inbox` and the view print a message; T322: a question to the
  * owner adds its options, the recommended one first, and says when a technical detail goes with it.
@@ -335,7 +351,9 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 	const own = queue(board, now).filter(
 		(t) => color(t, board, { now }) === 'own' && !dueno.some((d) => d.t.id === t.id),
 	);
+	const relayAlert = geminiRelayAlert(board, now);
 	const usted = [
+		...(relayAlert ? [row(null, relayAlert, { tipo: 'gemini-relay' })] : []),
 		...own.map((t) => {
 			const where = t.actor === 'dueno' && ownerWhere(t);
 			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
