@@ -27,10 +27,10 @@
 		}
 	}
 
-	// The back cover prints flat: the template's ambient glow would take a grid cell and push the
-	// copy under the photograph.
+	// The template's ambient glow takes a grid cell and pushes the copy under the photograph. A
+	// profile opts out with `none`; published invitations keep the block they were approved with.
 	.thank-you-editorial__ambient {
-		display: none;
+		display: var(--thank-you-ambient-display, block);
 	}
 
 	.thank-you-editorial__media.photo-frame {
