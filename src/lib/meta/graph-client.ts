@@ -230,6 +230,21 @@ export class MetaGraphClient {
 		}
 	}
 
+	/** Dataset Quality has a `web` envelope, unlike paginated Insights. */
+	async datasetQuality(datasetId: string): Promise<Record<string, unknown>[]> {
+		if (!/^\d+$/.test(datasetId)) throw new MetaGraphError('request');
+		const url = new URL(`/${META_GRAPH_API_VERSION}/dataset_quality`, GRAPH_ORIGIN);
+		url.searchParams.set('dataset_id', datasetId);
+		url.searchParams.set(
+			'fields',
+			'web{event_name,event_match_quality{composite_score},event_coverage{percentage},dedupe_key_feedback{dedupe_key,browser_events_with_dedupe_key{percentage},server_events_with_dedupe_key{percentage},overall_browser_coverage_from_dedupe_key{percentage}}}',
+		);
+		const { body } = await this.#read(this.#safeUrl(url.href, url.pathname));
+		if (!Array.isArray(body.web) || !body.web.every(isRecord))
+			throw new MetaGraphError('response');
+		return body.web;
+	}
+
 	async *pages(
 		path: string,
 		params: Record<string, string> = {},

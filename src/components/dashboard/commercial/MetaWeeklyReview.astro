@@ -1,0 +1,31 @@
+---
+import { metaReviewNeedsAttention, metaReviewWeek, type MetaWeeklyReview } from '@/lib/meta/weekly-review';
+import { commercialPeriod } from '@/lib/tracking/commercial-period';
+import { formatCount, formatDateTime } from '@/lib/tracking/commercial-dashboard';
+import '@/styles/dashboard/_meta-insights-report.scss';
+interface Props { report: MetaWeeklyReview | null }
+const { report } = Astro.props;
+const stale = report && report.endDate !== metaReviewWeek(commercialPeriod().endDate).endDate;
+const percent = (value: number | null) => value === null ? 'Sin datos' : `${value}%`;
+const noticeLabels = { pending: 'Pendiente', sent: 'Entregado', unconfigured: 'Sin configurar', failed: 'No entregado; se reintentará' };
+---
+<section class="dashboard-card meta-insights-report" aria-labelledby="meta-weekly-review-title">
+	<h2 id="meta-weekly-review-title">Revisión semanal de Meta</h2>
+	{report ? <>
+		<p role="status">{stale ? 'Informe antiguo; revise el trabajo programado.' : metaReviewNeedsAttention(report) ? 'Hay datos incompletos o indicadores que requieren atención.' : 'Informe disponible.'} Aviso: {noticeLabels[report.notice]}.</p>
+		<p>Semana completa: {report.startDate} a {report.endDate}. Generado: {formatDateTime(report.generatedAt)}.</p>
+		<p>Los anuncios corresponden a esa semana. Calidad del dataset y estado comercial son observaciones tomadas al generar el informe; no representan una media de esa semana.</p>
+		{report.insights ? <ul>
+			<li>Días con anuncios registrados: {report.insights.adsDays}/7.</li>
+			<li>Gasto informado por Meta: {report.insights.adsDays === 7 ? formatCount(report.insights.spend) : 'Datos incompletos'}.</li>
+			<li>Clics: {report.insights.adsDays === 7 ? formatCount(report.insights.clicks) : 'Datos incompletos'}.</li>
+			<li>Días con alcance de Facebook: {report.insights.pageDays}/7; Instagram: {report.insights.instagramDays}/7.</li>
+		</ul> : <p>Anuncios y alcance: sin datos disponibles.</p>}
+		{report.quality?.length ? <div class="meta-insights-report__table" tabindex="0" role="region" aria-label="Calidad del dataset de Meta">
+			<table><thead><tr><th scope="col">Evento</th><th scope="col">EMQ / 10</th><th scope="col">Cobertura</th><th scope="col">Navegador con clave</th><th scope="col">Servidor con clave</th><th scope="col">Cobertura por deduplicación</th></tr></thead>
+			<tbody>{report.quality.map((event) => <tr><th scope="row">{event.event}</th><td>{event.emq ?? 'Sin datos'}</td><td>{percent(event.coverage)}</td><td>{percent(event.browserKeys)}</td><td>{percent(event.serverKeys)}</td><td>{percent(event.dedupCoverage)}</td></tr>)}</tbody></table>
+		</div> : <p>Calidad del dataset no disponible. Revise los permisos de lectura de Meta y la configuración del token.</p>}
+		<p>«Sin datos» no significa cero ni confirma que la integración funcione correctamente. Las columnas de claves se refieren a event_id.</p>
+		{report.commercial ? <p>Estado comercial al generar: {formatCount(report.commercial.leads)} prospectos y {formatCount(report.commercial.orders)} pedidos en el historial. Cola CAPI: {report.commercial.pending} pendientes, {report.commercial.failed} fallidos y {report.commercial.ambiguous} ambiguos. Entrega: {report.commercial.capiStatus === 'correct' ? 'Correcta' : report.commercial.capiStatus === 'safe-disabled' ? 'Desactivada' : 'Requiere atención'}.</p> : <p>Estado comercial y CAPI: sin datos disponibles.</p>}
+	</> : <p role="status">Todavía no hay un informe semanal disponible. Se genera automáticamente en Producción; el panel no ejecuta consultas a Meta.</p>}
+</section>
