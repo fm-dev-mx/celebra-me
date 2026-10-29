@@ -96,8 +96,8 @@ lock heartbeat; after two hours of silence a lock shows as «Detenida».
   work chat. A recipient replies with `pnpm board msg <id> --de=codex --para=claude "..."`, and
   Claude reads `pnpm board inbox --agente=claude` (or the equivalent MCP calls).
 - **Gemini/Antigravity:** the user-local `.gemini/config/celebra-gemini-relay.mjs` runs without AI
-  in a terminal opened inside the dispatcher chat, currently named **Chat Maestro MCP
-  Configuration**. It polls `inbox --agente=gemini` every five seconds, resolves the task's Gemini
+  in a terminal opened inside **f04 · Gemini maestro** (formerly **Chat Maestro MCP
+  Configuration**). It polls `inbox --agente=gemini` every five seconds, resolves the task's Gemini
   chat from the board's lock/session, and falls back to its configured master chat. It invokes the
   installed language server's `agentapi send-message` using the terminal's inherited context.
   Restart it manually in that terminal after restarting Antigravity. Never extract, print or persist
@@ -164,20 +164,20 @@ start/end inbox reminders and idempotence for generated and saved prompts.
 
 ## Coordination contract
 
-Three agents share the board: `claude`, `codex` and `gemini`. Coordination is mixed (d151): one
-principal coordinator assigns work, and each app has a dispatcher that only starts work for its own
-agent.
+Three agents share the board: `claude`, `codex` and `gemini`. Under d351 each has one fixed master
+chat. Claude `f04 · Coordinador principal` assigns work; Codex `f04 · Codex maestro` and Gemini
+`f04 · Gemini maestro` dispatch only their own assigned tasks. A new chat requires a concrete task,
+including a separate chat for each review. Follow-ups reuse that task's existing chat.
 
-| Role                  | Who                                             | Does                                                                                                        | Never                                                                                            |
-| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Principal coordinator | Claude session «f04 · Tablero v2» (d152)        | Assigns tasks (`agente`, `move`), records owner decisions (`decide`), merges reviewed PRs, reports to owner | Merges a PR without a cross review at its head SHA, green CI and no conflict with develop (d100) |
-| App dispatcher        | Codex «Coordinación maestra» for `codex` (d152) | Opens chats or sessions of its own agent for tasks the board already assigns to that agent                  | Reassigns tasks, edits another agent's tasks, records decisions                                  |
-| Worker session        | Any agent, one per task                         | Claims one task, works in its lane and branch, opens the PR, requests the cross review                      | Touches tasks, lanes or branches another agent holds                                             |
+| Role                  | Who                                                        | Does                                                                                   | Never                                                     |
+| --------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Principal coordinator | Claude `f04 · Coordinador principal`                       | Assigns tasks, records owner decisions, merges reviewed PRs                            | Merges without exact-head review, green CI and a clean PR |
+| Agent master          | Codex `f04 · Codex maestro`; Gemini `f04 · Gemini maestro` | Opens concrete work/review chats; archives its agent's finished chats                  | Reassigns tasks or forwards owner authority               |
+| Worker session        | Any agent, one per task                                    | Claims one task, works in its lane and branch, opens the PR, requests the cross review | Touches tasks, lanes or branches another agent holds      |
 
-d152 names only the Codex dispatcher; until another app's dispatcher is named, the principal
-coordinator or the owner starts that agent's sessions. Gemini is one agent id, `gemini`, whatever
-tool runs it (d154); record the tool, for example Antigravity, in the session name or the handoff,
-never as another agent id.
+The owner identifies and renames the existing masters; configuration never guesses the latest chat.
+Gemini is one agent id, `gemini`, whatever tool runs it (d154); record the tool, for example
+Antigravity, in the session name or the handoff, never as another agent id.
 
 ### Shared rules
 
@@ -323,13 +323,72 @@ the new code by itself (see [The view](#the-view)). Only the coordinator may res
 only while that swap does not work, after telling the owner first. Never kill an unowned process or
 launch competing servers.
 
-`pnpm board:watch` (`scripts/board/watch.mjs`, d164) is a no-AI watcher: it reads the board and
-shows one Windows notification per agent with the ready tasks it has not announced yet, for example
-«Codex tiene 1 tarea lista: T34 serenata-fotos». It never writes the board or wakes an agent; it
-remembers announced tasks in `.agent/tmp/board-watch.json`. `--dry-run` only prints. The owner
-registers it in the Windows Task Scheduler (every 10 minutes) from Integration with
-`pnpm board:watch:register` and removes it with `pnpm board:watch:unregister`; agents never register
-it.
+### Master watcher setup (d351)
+
+`pnpm board:watch` runs `scripts/board/master-watch.mjs`, a bounded no-AI pass. The old toast-only
+`watch.mjs` supplies its existing eligibility predicate. The Windows task runs every minute with
+`IgnoreNew`; this reuses the existing scheduler lifecycle, avoids an always-running supervisor, and
+picks up merged code at the next pass. Typical wake latency is up to one minute plus bounded host/PR
+reads; Gemini's relay adds its polling/transport delay. No-work passes send nothing.
+
+The coordinator performs these steps **after merge**, from Integration. Workers implement and test
+the code without changing user files, automations or running scheduler tasks:
+
+1. Confirm the three existing master chat IDs and rename them to their fixed names above.
+2. Store IDs in ignored `.agent/tmp/board-masters.json` next to the shared board:
+
+   ```sh
+   pnpm board:watch --set-master=claude --thread=<claude-master-id> --relay-task=<live-routing-task-id>
+   pnpm board:watch --set-master=codex --thread=<codex-master-id>
+   pnpm board:watch --set-master=gemini --thread=<gemini-master-id>
+   ```
+
+   `--relay-task` must name a task in the live store with no Gemini worker session or lock. Choose a
+   long-lived coordination task and update this setting before it is compacted. The installed Gemini
+   relay otherwise routes to that worker before its master. Do not reassign this anchor to Gemini
+   without choosing another anchor first. Restart the existing relay in its Antigravity terminal
+   with `node <user-home>/.gemini/config/celebra-gemini-relay.mjs <gemini-master-id>`; the relay's
+   master must equal the configured Gemini ID. Never run a second relay concurrently.
+
+3. Disable the old 30-minute AI dispatch automations in their owning apps, preserving their prompts
+   for rollback. This is a manual coordinator action; the watcher never edits them.
+4. Inspect `pnpm board:watch --dry-run` and `pnpm board sesiones --archivables --json`. Dry-run
+   sends no messages and records no delivery receipts. Then run `pnpm board:watch:register`.
+5. To stop future passes, run `pnpm board:watch:unregister`. An already running pass may finish;
+   wait for it before replacing configuration. To resume, run `pnpm board:watch:register` again.
+   Registration replaces the previous 10-minute toast task with the same task name. Never restart
+   the board on 4320; its existing supervisor loads merged code.
+
+Codex wakes use `codex.exe queue --thread <id> --message <doorbell>`. Gemini wakes are board `msg`
+rows consumed by the existing relay; Claude receives board messages. Payloads name tasks/messages
+without copying their bodies or owner authorizations. Archive wakes say **Archive estos chats:**,
+cite d351, preserve individual IDs, and ask the master to confirm its inventory and reply to Claude
+with `pnpm board msg <task-id> --de=<agent> --para=claude` and the actual archived IDs. Masters
+never send idle/no-work notices. A wake grants no new authority.
+
+Receipts live in `.agent/tmp/board-master-watch.json`, keyed by agent, configured master and event.
+Failed transports retry; successful destinations are saved independently. Ready tasks re-arm only
+after leaving readiness. Message and archive receipts survive temporary missing inventories and
+process restarts. A separate exclusive `.lock` prevents overlapping passes. After a crash, inspect
+that exact lock and process before scoped orphan removal; never remove a live lock. Transport
+acceptance and the local receipt cannot be atomic: a crash between them can repeat one doorbell, so
+masters check the referenced IDs before acting. Codex acceptance proves queueing, not reading;
+Gemini acceptance proves the board message was stored, not host delivery. The existing relay's
+consume-before-send limitation still applies; inspect history before any manual resend. Message
+observation includes history since master setup, so the relay consuming an inbox before a scheduled
+pass cannot hide a new message from the master watcher. Older unread messages remain eligible.
+
+The view refreshes **Se pueden archivar** every 15 seconds over the existing SSE connection without
+page reload. It shares `external-sessions.mjs` with `pnpm board sesiones --archivables`. PR state is
+read-only and cached for one minute; an unavailable/open PR suppresses its recommendation. Master
+IDs and fixed master names are always excluded; old dispatcher candidates require a configured
+master. Codex/Gemini expose unarchived host rows. Claude exposes board-registered completed session
+IDs, explicitly labeled for the master to confirm against its own inventory. Missing host stores are
+displayed as unavailable, never as evidence that chats finished. Nothing archives automatically.
+After Claude actually archives a chat, its master records
+`pnpm board:watch --confirm-claude-archive=<chat-id>` and sends the required board reply to Claude.
+This explicit local receipt removes that recommendation on the next refresh; it never performs the
+archive or infers it from a notification. The command refuses configured master IDs.
 
 After a CLI writer crash, inspect the exact `.agent/tmp/board/.lock` PID and process identity. Age
 alone does not establish an orphan. Obtain scoped authority to remove that orphan file, preserving

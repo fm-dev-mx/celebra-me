@@ -465,6 +465,8 @@ a.prl{font-weight:600}
           <div class="mine" id="gen-mine" aria-live="polite"><div class="empty">Cargando lo que le toca a usted…</div></div>
           <h3 class="sect">Cola <span class="n" id="gn-cola"></span></h3>
           <div class="mine" id="gen-cola"><div class="empty">Cargando la cola…</div></div>
+          <h3 class="sect">Se pueden archivar <span class="n" id="gn-archive"></span></h3>
+          <div class="mine" id="archive-chats" aria-live="polite"><p class="none">Comprobando los chats…</p></div>
         </section>
 
         <section id="p-buscar" aria-label="Resultados de la búsqueda" hidden>
@@ -1052,7 +1054,15 @@ function renderFound(){
 }
 // T321: the text sits in its own inline span (a «T295» link no longer breaks the line) and a message drops its prefix.
 const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span><span>${tt(rowText(x.texto))}</span></span></button>`:`<div class="row" title="${esc(x.texto)}"><span><span>${rich(rowText(x.texto))}</span></span></div>`;
-function render(){renderCounts();renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist();showView()}
+function renderArchiveChats(){
+  const inventory=S.board.archivables;
+  const chats=inventory?.chats??[];
+  $('gn-archive').textContent=chats.length;
+  const unavailable=Object.entries(inventory?.fuentes??{}).filter(([,s])=>!s.disponible).map(([agent])=>agent);
+  const status=inventory?.error??(unavailable.length?'Inventario no disponible: '+unavailable.join(', '):'');
+  $('archive-chats').innerHTML=chats.map(c=>`<div class="row"><b>${esc(AGENT_REGISTRY[c.agente]?.nombre??c.agente)}</b><span><span>${esc(c.titulo)}</span><small>${esc(c.motivo)} · ${esc(c.id)}${c.agente==='claude'?' · Confirme que siga abierto':''}</small></span></div>`).join('')+(status?`<p class="none">${esc(status)}</p>`:!inventory?'<p class="none">Comprobando los chats…</p>':!chats.length?'<p class="none">No hay chats por archivar con evidencia disponible.</p>':'');
+}
+function render(){renderCounts();renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist();renderArchiveChats();showView()}
 
 // T321: which panel shows: the search results while the header search has text, else the selected tab's view.
 // The tab stays selected during a search, so clearing it returns there.
