@@ -44,9 +44,9 @@
         "name": "Valentina Noir",
         "label": "Mis XV Años",
         "date": "2027-09-18T12:00:00.000Z",
-        "backgroundImage": "hero",
-        "focalPoint": "50% 24%",
-        "focalPointMobile": "50% 22%",
+        "backgroundImage": "portrait",
+        "focalPoint": "50% 35%",
+        "focalPointMobile": "50% 35%",
         "presentation": {
             "venueIndex": 0,
             "nameLeadWords": 1
@@ -119,37 +119,43 @@
         "variant": "magazine-spread",
         "eyebrow": "Portafolio",
         "title": "Antes de la noche",
-        "subtitle": "Seda, perlas y una sesión en blanco y negro.",
+        "subtitle": "Seis fotografías de los días previos.",
         "items": [
             {
                 "image": "gallery01",
                 "alt": "Valentina con vestido negro bordado en perlas.",
-                "layoutRole": "feature"
+                "layoutRole": "feature",
+                "caption": "Junto al ventanal, antes de vestirse."
             },
             {
                 "image": "gallery02",
                 "alt": "Valentina sonríe bajo una lluvia de destellos dorados.",
-                "layoutRole": "feature"
+                "layoutRole": "feature",
+                "caption": "Primer ensayo del vals."
             },
             {
                 "image": "gallery05",
                 "alt": "Detalle de bordado dorado con perlas sobre seda negra.",
-                "layoutRole": "wide"
+                "layoutRole": "wide",
+                "caption": "Bordado a mano sobre seda negra."
             },
             {
                 "image": "gallery07",
                 "alt": "Retrato de Valentina en blanco y negro junto a un ventanal.",
-                "layoutRole": "feature"
+                "layoutRole": "feature",
+                "caption": "Contraluz en el estudio."
             },
             {
                 "image": "gallery04",
                 "alt": "Valentina en un jardín de rosas blancas con vestido champán.",
-                "layoutRole": "feature"
+                "layoutRole": "feature",
+                "caption": "Ensayo de color en el jardín."
             },
             {
                 "image": "gallery09",
                 "alt": "Una mano sostiene el sobre negro de la invitación con sello dorado.",
-                "layoutRole": "standard"
+                "layoutRole": "standard",
+                "caption": "La invitación, cerrada con sello."
             }
         ],
         "variantOptions": {
@@ -296,7 +302,11 @@
             "primary": "actionAccent",
             "accent": "actionAccent",
             "background": "surfaceDark"
-        }
+        },
+        "coverExperience": "collector",
+        "backdropImage": "hero",
+        "coverEditionLabel": "Edición",
+        "coverLines": ["Retrato en blanco y negro", "Una noche, quince años"]
     },
     "sharing": {
         "shareMessages": {

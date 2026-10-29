@@ -502,6 +502,11 @@ export function setupCollectorReveal(options: CollectorRevealOptions): void {
 		if (portrait && getComputedStyle(portrait).display !== 'none') {
 			return portrait.querySelector('img');
 		}
+		// The framed-portrait cover prints the same photograph inside its arch.
+		const framed = document.querySelector<HTMLImageElement>(
+			'#inicio .framed-portrait-hero__photograph img',
+		);
+		if (framed) return framed;
 		return document.querySelector<HTMLImageElement>('#inicio .invitation-hero__background img');
 	};
 

@@ -10,7 +10,7 @@ interface EditorialDemoContent {
 	eventTiming: { localDateTime: string; timeZone: string; startsAtUtc: string };
 	hero: { variant: string; date: string };
 	interludes: Array<{ afterSection: string }>;
-	envelope: { coverIssue?: string };
+	envelope: { coverIssue?: string; backdropImage?: string };
 }
 
 const content = JSON.parse(readFileSync(CONTENT_PATH, 'utf8')) as EditorialDemoContent;
@@ -31,6 +31,15 @@ function stringValues(node: unknown): string[] {
 	if (Array.isArray(node)) return node.flatMap(stringValues);
 	if (node && typeof node === 'object') return Object.values(node).flatMap(stringValues);
 	return [];
+}
+
+/** Every photo slot of the document: values under an `image`, `Image` or `backdropImage` key. */
+function photoSlots(node: unknown): string[] {
+	if (Array.isArray(node)) return node.flatMap(photoSlots);
+	if (!node || typeof node !== 'object') return [];
+	return Object.entries(node).flatMap(([key, value]) =>
+		typeof value === 'string' ? (/image$/i.test(key) ? [value] : []) : photoSlots(value),
+	);
 }
 
 describe('demo-xv-editorial composition', () => {
@@ -72,5 +81,11 @@ describe('demo-xv-editorial composition', () => {
 			(text) => !/^https?:\/\//.test(text) && text !== content.eventTiming.timeZone,
 		);
 		expect(prose.filter((text) => /Celebracion|Lumiere|Mexico/.test(text))).toEqual([]);
+	});
+
+	it('prints every photograph once, the magazine cover included', () => {
+		const slots = photoSlots(content);
+		expect(slots).toContain(content.envelope.backdropImage);
+		expect(new Set(slots).size).toBe(slots.length);
 	});
 });

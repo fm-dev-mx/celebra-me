@@ -427,7 +427,7 @@ html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not
 
 	.ec-face__kicker {
 		top: 18.2%;
-		color: var(--ec-gold-dark);
+		color: var(--ec-face-kicker-ink, var(--ec-gold-dark));
 		font-family: var(--ec-font-body);
 		font-size: max(0.5rem, calc(var(--ec-book-w) * 0.022));
 		font-weight: 800;
@@ -451,8 +451,9 @@ html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not
 		white-space: nowrap;
 	}
 
+	// A cover whose star sits high in the frame moves the sticker below her face.
 	.ec-face__teasers {
-		top: 28.4%;
+		top: var(--ec-face-teasers-top, 28.4%);
 		width: auto;
 		max-width: 66%;
 		display: grid;
@@ -461,6 +462,9 @@ html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not
 		border-left: 2px solid var(--ec-gold);
 		background: rgb(246 243 238 / 82%);
 		box-shadow: 0 1px 0 rgb(0 0 0 / 6%);
+
+		// The sticker is always light paper; a cover printed in light ink keeps it dark here.
+		color: var(--ec-teaser-ink, var(--ec-face-ink));
 		font-size: max(0.6rem, calc(var(--ec-book-w) * 0.03));
 	}
 
@@ -493,7 +497,7 @@ html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not
 	}
 
 	.ec-face__teaser-page {
-		color: var(--ec-face-ink);
+		color: var(--ec-teaser-ink, var(--ec-face-ink));
 		font-family: var(--ec-font-body);
 		font-size: 0.72em;
 		font-weight: 800;

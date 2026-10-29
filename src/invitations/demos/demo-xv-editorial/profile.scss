@@ -1,8 +1,8 @@
-// Editorial: the editorial preset as a noir fashion issue. Black pages carry the story; one
+// Editorial: the editorial preset as a sober noir art issue. Black pages carry the story; one
 // champagne spread holds the save-the-date and the back cover closes on the same paper. Three joins
 // out of the boundaries, in a bridge, bridge, climax cadence: the tiara print hangs from the black
-// into the champagne spread, the envelope print hangs out of it back into the black, and the back
-// cover rises into the reply under an asymmetric arch. Gold is a hairline, never a fill. Tokens
+// into the champagne spread, the second print hangs out of it back into the black, and the back
+// cover rises into the reply under an asymmetric arch. Champagne is a hairline, never a fill. Tokens
 // only; layout stays with the variants.
 .event--demo-xv-editorial.theme-preset--editorial {
 	// Depth of the two print joins, reserved as the print's own top padding.
@@ -18,22 +18,58 @@
 	--editorial-paper-rule: rgb(26 23 20 / 16%);
 	--editorial-noir: var(--color-surface-primary);
 
-	// Cover: her portrait in an asymmetric arch over a black page, with a faint gold quarter
+	// Sober accent: a matte champagne instead of bright gold, and no metallic shine anywhere.
+	--color-action-accent: rgb(196 178 146);
+	--color-action-accent-rgb: 196 178 146;
+	--gold-metallic: linear-gradient(var(--color-action-accent), var(--color-action-accent));
+
+	// Collector magazine: an ivory print with graphite furniture and a black ribbon, so the
+	// object reads as a noir art issue rather than a gilded one.
+	.editorial-cover-wrapper[data-cover-experience='collector'] {
+		--ec-paper: rgb(244 240 233);
+		--ec-paper-edge: rgb(206 199 188);
+		--ec-gold: rgb(38 35 32);
+		--ec-gold-light: rgb(92 86 78);
+		--ec-gold-dark: rgb(26 23 20);
+		--ec-light-rgb: 210 204 194;
+
+		// The cover photograph is a low-key portrait, so its type prints in ivory.
+		--ec-face-ink: rgb(244 240 233);
+		--ec-face-ink-soft: rgb(244 240 233 / 82%);
+		--ec-face-rule: rgb(244 240 233 / 40%);
+		--ec-face-kicker-ink: rgb(244 240 233 / 82%);
+		--ec-teaser-ink: rgb(26 23 20);
+
+		// Her face fills the upper third, so the contents sticker sits on the dress instead.
+		--ec-face-teasers-top: 64%;
+	}
+
+	// The portfolio title is set in the page ink; the accent stays for small furniture.
+	.gallery-section {
+		--gallery-title-color: var(--color-text-primary);
+	}
+
+	.gifts-section {
+		--gifts-title-color: var(--color-text-primary);
+	}
+
+	// Cover: her portrait in an asymmetric arch over a black page, with a faint graphite quarter
 	// behind it and the name set left like a masthead.
 	.invitation-hero[data-variant='framed-portrait'] {
-		--color-surface-secondary: rgb(var(--color-action-accent-rgb) / 22%);
+		--color-surface-secondary: rgb(255 255 255 / 5%);
 		--hero-arc-opacity: 100%;
-		--hero-portrait-outline: 1px solid rgb(var(--color-action-accent-rgb) / 70%);
+		--hero-portrait-outline: 1px solid rgb(var(--color-action-accent-rgb) / 55%);
 		--hero-portrait-outline-offset: 0.5rem;
 
 		// The source photograph is square, so the frame is square too and the arch clips the photo
-		// itself instead of a letterbox.
+		// itself instead of a letterbox. The height follows the width, so a narrow column shrinks
+		// both sides.
 		--hero-portrait-max-width: 80vw;
 		--hero-portrait-margin: 0 auto;
 		--hero-portrait-width-mobile: min(80vw, 46svh);
-		--hero-portrait-height-mobile: min(80vw, 46svh);
+		--hero-portrait-height-mobile: auto;
 		--hero-portrait-width-desktop: min(60svh, 29rem);
-		--hero-portrait-height-desktop: min(60svh, 29rem);
+		--hero-portrait-height-desktop: auto;
 		--hero-occasion-letter-spacing: 0.24em;
 		--hero-occasion-text-transform: uppercase;
 		--hero-occasion-font: 500 0.875rem / 1.4 var(--font-body);
@@ -100,7 +136,7 @@
 		--color-text-secondary: var(--editorial-paper-ink);
 	}
 
-	// Join 2, the second bridge: the envelope print hangs out of the champagne back into the black.
+	// Join 2, the second bridge: the second print hangs out of the champagne back into the black.
 	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'] {
 		--intersection-depth: var(--editorial-print-overlap);
 	}

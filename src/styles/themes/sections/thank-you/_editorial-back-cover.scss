@@ -27,6 +27,12 @@
 		}
 	}
 
+	// The back cover prints flat: the template's ambient glow would take a grid cell and push the
+	// copy under the photograph.
+	.thank-you-editorial__ambient {
+		display: none;
+	}
+
 	.thank-you-editorial__media.photo-frame {
 		width: 100%;
 		max-width: 440px;
