@@ -106,6 +106,13 @@ routes:
       rules:
           - '.agent/rules/agent-routing.md'
 
+    - task_type: 'agent_permissions'
+      description: 'Inspect or regenerate native agent approval rules without granting task authority'
+      rules:
+          - '.agent/rules/permissions.md'
+      docs:
+          - 'docs/core/agent-permissions.md'
+
     - task_type: 'coordinator_board'
       description: 'Coordinator board tasks, pnpm board, their fields and closing, and pnpm board:verify'
       rules:

@@ -505,6 +505,22 @@ describe('validate-structure script', () => {
 			writeFixtureFile(fixtureRoot, 'CHANGELOG.md', '- Removed Vercel and Cloudinary.\n');
 			writeFixtureFile(
 				fixtureRoot,
+				'.agent/permissions/policy.json',
+				'{"deny":["vercel --prod"]}',
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/rules/permissions.md',
+				'Deny reading `.vercel/`.\n',
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/routing-matrix.yaml',
+				readFileSync(path.join(fixtureRoot, '.agent/routing-matrix.yaml'), 'utf8') +
+					'\n    rules:\n      - ".agent/rules/permissions.md"\n',
+			);
+			writeFixtureFile(
+				fixtureRoot,
 				'supabase/migrations/20260101000000_cloudinary.sql',
 				"-- cloudinary provider\nselect 'vercel';\n",
 			);
@@ -512,6 +528,8 @@ describe('validate-structure script', () => {
 				'docs/hosting.md',
 				'src/lib/clean.ts',
 				'CHANGELOG.md',
+				'.agent/permissions/policy.json',
+				'.agent/rules/permissions.md',
 				'supabase/migrations/20260101000000_cloudinary.sql',
 			];
 			const script = `
