@@ -29,37 +29,44 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | WhatsApp / conversation       | `source:wa-export` (opaque label)    | Intake answers from the client (mother Nichme), 2026-10-27    |
 | High-res photos / assets root | `source:watercolor-session` (opaque) | Watercolor illustrations generated from client refs 40 and 31 |
 | Owner decisions               | `source:owner-session` (2026-10-27)  | D1–D5 resolved; fast mode to develop + Preview                |
-| Owner review v2               | `source:owner-session` (2026-10-28)  | D6 Level-América craft, removal of synthetic data             |
+| Owner review v2               | `source:owner-session` (2026-10-28)  | D6                                                            | quality-level | Level-América                     | owner-session                                                  | Standard v1 / Level-América v2 | Bespoke narrative of oak/ribbons, 2 interludes, custom seal |
+| D7                            | design-direction                     | Cover and oak                                                 | owner-session | Oak in several sections / one oak | One oak on the cover and the seal only (2026-10-29)            |
+| D8                            | design-direction                     | Motifs                                                        | owner-session | Repeated motifs / one job each    | Bow ends the ribbon and crowns the reply; quote on clean paper |
+| D9                            | design-direction                     | Scenes                                                        | owner-session | Static sections / scroll-driven   | Every section moves with scroll; ribbon scene on program       |
+| D10                           | release-scope                        | Friday scope                                                  | owner-session | Ribbon + accents / two scenes     | Ribbon scene and accents now; 2nd pinned scene follows         |
+| D11                           | design-direction                     | Cover to quote                                                | owner-session | Corner bloom / oak approach       | Pinned cover closes in on the oak's ribbon; no branch          |
+| Owner review v3               | `source:owner-session` (2026-10-29)  | D7–D11: cover oak, motif roles, scenes, delivery scope        |
+| Client voice notes            | `source:wa-export` (2026-10-29)      | Thanksgiving, estimated program, food, punctuality, gifts     |
 
 ---
 
 ## Fact Register
 
-| field                | value                                                            | classification | source        | notes                                                         |
-| -------------------- | ---------------------------------------------------------------- | -------------- | ------------- | ------------------------------------------------------------- |
-| slug                 | yireh-ana                                                        | verified       | owner-session | Canonical slug without eventType prefix                       |
-| celebrantName        | Yireh Ana                                                        | verified       | wa-export     | First and second name of the quinceañera                      |
-| motherName           | Nichme Margarita Urueta Hermosillo                               | verified       | wa-export     | Mother of the celebrant                                       |
-| fatherName           | —                                                                | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
-| godparents           | —                                                                | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
-| eventLabel           | Mis XV Años                                                      | inferred       | wa-export     | XV celebration title                                          |
-| eventDate            | 2027-10-23                                                       | verified       | wa-export     | Saturday, October 23, 2027                                    |
-| eventTime            | 19:00                                                            | verified       | wa-export     | Reception start time (19:00)                                  |
-| receptionTime        | 19:00                                                            | verified       | wa-export     | Reception at Salón Casino Imperial                            |
-| ceremonyTime         | Por definir                                                      | missing        | wa-export     | Time pending; announced in lede; venue card hidden            |
-| timeZone             | America/Chihuahua                                                | inferred       | wa-export     | Ciudad Delicias, Chihuahua (UTC−6)                            |
-| sourceAssetPath      | source:watercolor-session                                        | verified       | owner-session | Opaque label; watercolor illustrations                        |
-| sectionOrder         | quote, countdown, location, family, pass, rsvp, thankYou         | verified       | owner-session | Gallery, synthetic itinerary & unchosen gifts omitted         |
-| primaryVenueName     | Salón Casino Imperial                                            | verified       | wa-export     | Ceremony and reception in the same venue                      |
-| primaryVenueAddress  | Carr. Delicias–Ortiz km 1, Centro, Ciudad Delicias, Chihuahua    | verified       | wa-export     | Highway Delicias-Ortiz km 1                                   |
-| distinctVenues       | false                                                            | verified       | wa-export     | Both moments take place in the same hall                      |
-| dressCode            | Formal                                                           | verified       | wa-export     | Formal dress code                                             |
-| dressColor           | Por definir                                                      | missing        | wa-export     | Celebrant gown color pending                                  |
-| musicUrl             | Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn | verified       | wa-export     | Hosted on Cloudflare R2 at 64 kbps MP3 (YouTube: 8N1UutuYlL0) |
-| noPhotosConsent      | true                                                             | verified       | wa-export     | Celebrant explicitly requested no personal photos/gallery     |
-| rsvpConfirmationMode | api                                                              | verified       | owner-session | Digital confirmation flow with personalized passes            |
-| rsvpGuestCap         | 1                                                                | inferred       | owner-session | Documented default pass cap                                   |
-| gifts                | —                                                                | missing        | owner-session | Omitted until client chooses format                           |
+| field                | value                                                                      | classification | source        | notes                                                         |
+| -------------------- | -------------------------------------------------------------------------- | -------------- | ------------- | ------------------------------------------------------------- |
+| slug                 | yireh-ana                                                                  | verified       | owner-session | Canonical slug without eventType prefix                       |
+| celebrantName        | Yireh Ana                                                                  | verified       | wa-export     | First and second name of the quinceañera                      |
+| motherName           | Nichme Margarita Urueta Hermosillo                                         | verified       | wa-export     | Mother of the celebrant                                       |
+| fatherName           | —                                                                          | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
+| godparents           | —                                                                          | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
+| eventLabel           | Mis XV Años                                                                | inferred       | wa-export     | XV celebration title                                          |
+| eventDate            | 2027-10-23                                                                 | verified       | wa-export     | Saturday, October 23, 2027                                    |
+| eventTime            | 19:00                                                                      | verified       | wa-export     | Reception start time (19:00)                                  |
+| receptionTime        | 19:00                                                                      | verified       | wa-export     | Reception at Salón Casino Imperial                            |
+| ceremonyTime         | 19:30                                                                      | verified       | wa-export     | Thanksgiving by Pastor Jesús Manuel Ozaeta Pérez, same hall   |
+| timeZone             | America/Chihuahua                                                          | inferred       | wa-export     | Ciudad Delicias, Chihuahua (UTC−6)                            |
+| sourceAssetPath      | source:watercolor-session                                                  | verified       | owner-session | Opaque label; watercolor illustrations                        |
+| sectionOrder         | quote, countdown, location, itinerary, family, gifts, pass, rsvp, thankYou | verified       | owner-session | Gallery omitted (no photos)                                   |
+| primaryVenueName     | Salón Casino Imperial                                                      | verified       | wa-export     | Ceremony and reception in the same venue                      |
+| primaryVenueAddress  | Carr. Delicias–Ortiz km 1, Centro, Ciudad Delicias, Chihuahua              | verified       | wa-export     | Highway Delicias-Ortiz km 1                                   |
+| distinctVenues       | false                                                                      | verified       | wa-export     | Both moments take place in the same hall                      |
+| dressCode            | Formal                                                                     | verified       | wa-export     | Formal dress code                                             |
+| dressColor           | —                                                                          | not_applicable | wa-export     | Client chose not to reserve a gown color (2026-10-29)         |
+| musicUrl             | Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn           | verified       | wa-export     | Hosted on Cloudflare R2 at 64 kbps MP3 (YouTube: 8N1UutuYlL0) |
+| noPhotosConsent      | true                                                                       | verified       | wa-export     | Celebrant explicitly requested no personal photos/gallery     |
+| rsvpConfirmationMode | api                                                                        | verified       | owner-session | Digital confirmation flow with personalized passes            |
+| rsvpGuestCap         | 1                                                                          | inferred       | owner-session | Documented default pass cap                                   |
+| gifts                | Legend only                                                                | verified       | wa-export     | «Lo que disponga su corazón será bien recibido»               |
 
 ---
 
@@ -68,7 +75,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 XV contract maturity: `evidence-backed`. Required and conditional fields are verified or validly
 inferred. The celebrant explicitly requested that no personal photos or silhouettes be included, so
 gallery sections are deactivated. Botanical watercolor illustrations (ref 40 corners without books,
-and ref 31 oak tree with yellow ribbons) serve as production-authoritative artwork.
+and one oak with a yellow ribbon on the cover) serve as production-authoritative artwork.
 
 ### Missing blockers
 
@@ -76,11 +83,11 @@ and ref 31 oak tree with yellow ribbons) serve as production-authoritative artwo
 
 ### Non-blocking gaps
 
-- Ceremony exact start time (officiated by Pastor Jesús Manuel Ozaeta Pérez in the same hall;
-  announced in lede, venue card hidden until supplied).
-- Gown color (dress code is formal; reserved gown color pending confirmation).
 - Father and godparents (not provided in intake; left out unless supplied later).
-- Gifts preference (omitted until client specifies registry or gift/cash note).
+- Program hours are client estimates (19:00 Recepción, 19:30 Acción de gracias, 21:00 Vals and
+  toast, 21:30 Bocadillos y aguas frescas and dance, 24:00 Cierre); the copy says so. No alcohol.
+- Final art: cover plate v4 and the oak seal stamp are on order; the v3 cover and the preset flower
+  seal stand in.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**  
 Answer: `yes`.
@@ -91,8 +98,8 @@ Answer: `yes`.
 
 Non-blocking informational placeholders:
 
-- `[[PENDIENTE:HORA_CEREMONIA]]`: Exact hour of the religious ceremony.
-- `[[PENDIENTE:COLOR_VESTIDO]]`: Gown color reservation.
+- `[[PENDIENTE:PORTADA_V4]]`: Cover plate v4 (one oak with more hierarchy); v3 plate stands in.
+- `[[PENDIENTE:SELLO_ROBLE]]`: Small oak with a yellow bow for the envelope seal.
 
 ---
 
@@ -111,13 +118,13 @@ Non-blocking informational placeholders:
 
 ## Agent Recommendations
 
-| topic  | recommendation                                                                       | basis                       | status                       |
-| ------ | ------------------------------------------------------------------------------------ | --------------------------- | ---------------------------- |
-| preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                     | client requested pale lilac | accepted (2026-10-27)        |
-| motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows | client family story context | accepted (2026-10-27)        |
-| hero   | Framed watercolor arch with title lettering on separate clean paper                  | ref 40 without books        | proposed; acceptance pending |
-| roble  | Oak tree illustration with yellow ribbons as thank-you closing keepsake              | ref 31 and song theme       | accepted (2026-10-27)        |
-| music  | 64 kbps MP3 loop, hosted on media domain                                             | canonical standard R8       | accepted (2026-10-27)        |
+| topic  | recommendation                                                                       | basis                       | status                |
+| ------ | ------------------------------------------------------------------------------------ | --------------------------- | --------------------- |
+| preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                     | client requested pale lilac | accepted (2026-10-27) |
+| motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows | client family story context | accepted (2026-10-27) |
+| hero   | Ref 40 without books: corners on top, name on clean paper, one oak with a ribbon     | ref 40, owner review v3     | accepted (2026-10-29) |
+| roble  | Oak only on the cover and the envelope seal; interludes and closing have none        | owner review v3             | accepted (2026-10-29) |
+| music  | 64 kbps MP3 loop, hosted on media domain                                             | canonical standard R8       | accepted (2026-10-27) |
 
 ---
 
@@ -125,24 +132,45 @@ Non-blocking informational placeholders:
 
 ```text
 // Cadence map — non-neutral boundaries only (3 joins, Bridge/Bridge/Climax)
-countdown: overlap from interlude-after-quote (Bridge)
+countdown: overlap from quote (Bridge)
 interlude-after-countdown: overlap from countdown (Bridge)
 thankYou: arch from rsvp (Climax)
 ```
 
-Every other boundary is a clean neutral cut between ultra-pale lilac paper and lilac mist.
+Every other boundary is a clean neutral cut between ultra-pale lilac paper and lilac mist. The night
+surface appears only for contrast, on the countdown and the closing.
+
+### Scene plan (D9–D11)
+
+| section        | movement with scroll                                                       |
+| -------------- | -------------------------------------------------------------------------- |
+| hero           | **Pinned scene:** the cover closes in on the oak's ribbon; the text leaves |
+| quote          | The words appear one by one on clean paper                                 |
+| interludes 1/2 | Framed bouquet settles flat; envelope unfolds                              |
+| countdown      | The count unfolds into place                                               |
+| location       | The dress-code tag swings on its cord                                      |
+| itinerary      | **Pinned scene:** a yellow ribbon draws past each moment and ends in a bow |
+| family         | The divider draws from the centre                                          |
+| gifts          | The gift line rises                                                        |
+| pass / rsvp    | The pass settles flat; the reply card rises                                |
+| thankYou       | The wreath unfolds into the night                                          |
+
+Two pinned scenes, never adjacent, about 28 % of the page height at 390×844 and 26 % at 1440×900.
+Reduced motion and browsers without scroll timelines show the resting layout. Motif roles: the bow
+ends the ribbon and crowns the reply card; flowers appear only on the cover, the bouquet and
+envelope stills and the closing wreath.
 
 ---
 
 ## Sections
 
-| bucket                 | section keys                                                                             |
-| ---------------------- | ---------------------------------------------------------------------------------------- |
-| requested              | location (reception verified), family (mother only), dress code, music (Yellow Ribbon)   |
-| inferred / recommended | envelope, hero, quote, interludes (2), countdown, personalizedAccess, rsvp, thankYou     |
-| client-provided        | music track: «Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn»          |
-| omitted                | gallery (celebrant refusal of photos), father/godparents (unsupplied), itinerary & gifts |
-| unresolved             | ceremony exact time, gown color reservation                                              |
+| bucket                 | section keys                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| requested              | location, itinerary (estimated hours), family (mother only), gifts line, dress code  |
+| inferred / recommended | envelope, hero, quote, interludes (2), countdown, personalizedAccess, rsvp, thankYou |
+| client-provided        | music track: «Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn»      |
+| omitted                | gallery (celebrant refusal of photos), father/godparents (unsupplied), gown color    |
+| unresolved             | cover plate v4 and oak seal art (on order)                                           |
 
 Guest-facing copy: Voice in first person, «usted» register, formal and emotive.
 
@@ -170,7 +198,7 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
   - **status:** accepted
 - **concern:** Photographic treatment & art
   - **decision / evidence:** Hand-painted botanical watercolor; no human figures; oak tree with
-    ribbons; 2 illustrated interludes
+    ribbon on the cover; 3 illustrated interludes
   - **status:** accepted
 - **concern:** Section cadence and surface hierarchy
   - **decision / evidence:** Pale lilac watercolor paper throughout, gold divider rules, keepsake
@@ -182,14 +210,14 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
 
 ### Creative acceptance record
 
-| field                                       | value                                                                  |
-| ------------------------------------------- | ---------------------------------------------------------------------- |
-| Mechanical render/capture result            | Captures at 390×844 and 1440×900                                       |
-| Whole-invitation responsive inspection      | Inspected on mobile and desktop viewports                              |
-| Section boundaries and narrative continuity | Harmonious watercolor palette across all sections                      |
-| Human creative outcome                      | `PENDING`                                                              |
-| Reviewer and date                           | Antigravity agent & Owner direction, 2026-10-27/28                     |
-| Blocking reason or owner follow-up          | Ceremony time, dress color and father/godparents stay owner follow-ups |
+| field                                       | value                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------ |
+| Mechanical render/capture result            | Captures at 390×844 and 1440×900                                   |
+| Whole-invitation responsive inspection      | Inspected on mobile and desktop viewports                          |
+| Section boundaries and narrative continuity | Harmonious watercolor palette across all sections                  |
+| Human creative outcome                      | `PENDING`                                                          |
+| Reviewer and date                           | Antigravity agent & Owner direction, 2026-10-27/28                 |
+| Blocking reason or owner follow-up          | Cover v4, oak seal art and father/godparents stay owner follow-ups |
 
 ---
 
@@ -199,23 +227,27 @@ Source label: `source:watercolor-session` (opaque). Custom high-resolution botan
 artwork created specifically for this invitation, honoring the client's explicit request for no
 photographs.
 
-| source filename             | dims        | format | orientation | weight  | quality          | role        | duplicate   | processing                                  | derivative            |
-| --------------------------- | ----------- | ------ | ----------- | ------- | ---------------- | ----------- | ----------- | ------------------------------------------- | --------------------- |
-| botanical-cover-source.png  | 1084 x 1451 | WebP   | portrait    | 242 KiB | production-ready | hero        | no          | WebP, quality 86                            | hero-watercolor.webp  |
-| botanical-ribbon-source.png | 1200 x 630  | WebP   | landscape   | 96 KiB  | production-ready | og-share    | intentional | 1200 x 630 cover crop, WebP                 | og-share.webp         |
-| botanical-oak-source.png    | 1200 x 1400 | WebP   | portrait    | 168 KiB | production-ready | thank-you   | intentional | Full-tree portrait contain derivative, WebP | oak-tree.webp         |
-| botanical-ribbon-source.png | 1440 x 1080 | WebP   | landscape   | 150 KiB | production-ready | interlude 1 | intentional | 1440 px WebP                                | interlude-ribbon.webp |
-| botanical-oak-source.png    | 1440 x 960  | WebP   | landscape   | 228 KiB | production-ready | interlude 2 | intentional | 1440 px WebP                                | interlude-oak.webp    |
+| source filename       | dims        | format | orientation | weight  | quality          | role         | duplicate   | processing                               | derivative              |
+| --------------------- | ----------- | ------ | ----------- | ------- | ---------------- | ------------ | ----------- | ---------------------------------------- | ----------------------- |
+| v3/hero-v3.webp       | 1080 x 1920 | WebP   | portrait    | 214 KiB | production-ready | hero         | no          | WebP, quality 82                         | hero-cover.webp         |
+| v3/hero-v3.webp       | 1920 x 1080 | WebP   | landscape   | 193 KiB | production-ready | hero desktop | intentional | Plate composed on wide paper             | hero-cover-wide.webp    |
+| v3/hero-v3.webp       | 1200 x 630  | WebP   | landscape   | 74 KiB  | production-ready | og-share     | intentional | Dedicated social crop                    | og-share.webp           |
+| v3/interlude-bouquet  | 1536 x 1024 | WebP   | landscape   | 124 KiB | production-ready | interlude 1  | no          | WebP                                     | interlude-bouquet.webp  |
+| v3/interlude-envelope | 1536 x 1024 | WebP   | landscape   | 44 KiB  | production-ready | interlude 2  | no          | Edges feathered into paper               | interlude-envelope.webp |
+| v3/closing-wreath     | 1254 x 1254 | WebP   | square      | 156 KiB | production-ready | thank-you    | no          | Round medallion                          | closing-wreath.webp     |
+| v3/bow                | 360 x 308   | WebP   | landscape   | 27 KiB  | production-ready | bow          | intentional | Trimmed alpha WebP; ribbon end and crest | bow.webp                |
 
 ### Uniqueness table (required before READY_*)
 
-| role        | source                      | derivative            | intentional multi-role?            |
-| ----------- | --------------------------- | --------------------- | ---------------------------------- |
-| hero        | botanical-cover-source.png  | hero-watercolor.webp  | no                                 |
-| og-share    | botanical-ribbon-source.png | og-share.webp         | yes - dedicated social crop        |
-| thank-you   | botanical-oak-source.png    | oak-tree.webp         | yes - separate portrait derivative |
-| interlude 1 | botanical-ribbon-source.png | interlude-ribbon.webp | yes - landscape plate              |
-| interlude 2 | botanical-oak-source.png    | interlude-oak.webp    | yes - landscape plate              |
+| role         | source                | derivative              | intentional multi-role?               |
+| ------------ | --------------------- | ----------------------- | ------------------------------------- |
+| hero         | v3/hero-v3.webp       | hero-cover.webp         | no                                    |
+| hero desktop | v3/hero-v3.webp       | hero-cover-wide.webp    | yes - wide composition of the cover   |
+| og-share     | v3/hero-v3.webp       | og-share.webp           | yes - dedicated social crop           |
+| interlude 1  | v3/interlude-bouquet  | interlude-bouquet.webp  | no                                    |
+| interlude 2  | v3/interlude-envelope | interlude-envelope.webp | no                                    |
+| thank-you    | v3/closing-wreath     | closing-wreath.webp     | no                                    |
+| bow          | v3/bow                | bow.webp                | yes - ribbon end and reply-card crest |
 
 Source label: source:editorial-watercolor-session. Generated botanical watercolor plates share one
 translucent pigment treatment. No client photos or human figures are included. Dimensions, formats
@@ -240,3 +272,4 @@ and weights above describe the delivered derivatives; source filenames are logic
 | ---------- | ------------------------- | ------------------------------ | --------------------------------------------------------- |
 | 2026-10-27 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | Full intake and production watercolor assets ready (T417) |
 | 2026-10-28 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | v2 Level-América craft, synthetic data removed (T423)     |
+| 2026-10-29 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | v3 stationery, client program, two scenes (T455)          |

@@ -557,6 +557,29 @@ describe('mapDraftToPublished', () => {
 		expect(withoutText.quote).toEqual({ text: '' });
 	});
 
+	it('carries managed-only itinerary.scene while the program can still play it', () => {
+		const moments = [
+			{ iconName: 'Reception' as const, label: 'Recepción', time: '19:00' },
+			{ iconName: 'Party' as const, label: 'Cierre', time: '00:00' },
+		];
+		const priorPublishedContent = {
+			...baseInput.priorPublishedContent,
+			itinerary: { variant: 'standard', scene: 'ribbon-route', items: moments },
+		};
+		const publish = (items: typeof moments) =>
+			mapDraftToPublished({
+				...baseInput,
+				priorPublishedContent,
+				draftContent: {
+					...baseInput.draftContent,
+					itinerary: { variant: 'standard', items },
+				},
+			});
+
+		expect(publish(moments).itinerary).toMatchObject({ scene: 'ribbon-route' });
+		expect(publish(moments.slice(0, 1)).itinerary).not.toHaveProperty('scene');
+	});
+
 	it('carries managed-only rsvp.lockedMessage from the prior revision', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
