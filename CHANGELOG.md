@@ -10,6 +10,40 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.55.0-beta.1] - 2026-10-28
+
+Clients can upload photos through their private invitation data form, Andrea's invitation includes
+the reviewed content and photo adjustments, and public demo sharing previews fill their frames. Meta
+Graph requests use the correct fetch receiver on Workers. No database migrations are included.
+
+### Added
+
+- Commercial: private invitation data forms support client photo uploads, previews, removal and host
+  dashboard review (#637).
+- Tooling: local stdio MCP access to worker board commands, onboarding documentation, inbox
+  reminders and a read-only startup diagnostic (#650, #654).
+
+### Changed
+
+- Invitation: update Andrea's program, attire hierarchy, golden earrings, manicure, photos and
+  four-unit countdown, with reviewed visual references (#647).
+- Dependencies: upgrade the Astro React integration to version 7 and require Node 22.23.4 or newer
+  within the supported Node range (#644).
+
+### Fixed
+
+- Commercial: preserve invitation photo membership during text autosaves, retry concurrent writes,
+  show partial upload successes and retain stored objects when metadata deletion is uncertain
+  (#637).
+- Tracking: bind the Meta Graph default fetch receiver to prevent insight collector failures in
+  Workers (#649).
+- Demos: remove cream padding from all seven public sharing previews (#653).
+- Testing: wait for Astro island hydration before browser actions and exclude retired invitations
+  from Preview smoke and authenticated content probes (#640, #641, #645).
+- Tooling: hide stale coordinator merge signals and align board MCP schemas with CLI closing
+  semantics, model enums and bounded child execution (#643, #652).
+- Dependencies: apply bounded overrides for development dependencies (#635).
+
 ## [0.54.0-beta.1] - 2026-10-27
 
 Meta campaign optimization gains value-based signals: browser `Contact` and `Lead` events now carry

@@ -4,6 +4,7 @@
  *
  * The store lives in the ignored `.agent/tmp/board/` of the Integration checkout, found through the Git common
  * dir, so every lane and agent shares one board. CELEBRA_BOARD_DIR overrides it (tests).
+ * The Gemini relay heartbeat lives beside the store; CELEBRA_GEMINI_RELAY_FILE overrides its path.
  *
  * The bitácora is the exception: one JSONL file per UTC day, <dir>/bitacora/<YYYY-MM-DD>.jsonl, one row per line.
  * Old one-file-per-row documents are still read until `pnpm board migrate-log` converts them.
@@ -74,6 +75,22 @@ export function boardDir(cwd = process.cwd()) {
 	return join(dirname(common), '.agent', 'tmp', 'board');
 }
 
+/** Heartbeat shares the Integration store location; tests may override the file directly. */
+export function geminiRelayPath(dir) {
+	return process.env.CELEBRA_GEMINI_RELAY_FILE
+		? resolve(process.env.CELEBRA_GEMINI_RELAY_FILE)
+		: join(dirname(dir), 'gemini-relay.json');
+}
+
+function readGeminiRelay(dir) {
+	try {
+		const { at } = JSON.parse(readFileSync(geminiRelayPath(dir), 'utf8'));
+		return { at };
+	} catch {
+		return null;
+	}
+}
+
 export function assertId(id) {
 	if (!SAFE_ID.test(String(id ?? '')) || id === '.' || id === '..')
 		throw new Error(`id no válido: ${id}`);
@@ -97,6 +114,7 @@ export function readDoc(dir, collection, id) {
 export function loadBoard(dir, { since } = {}) {
 	const [estado] = readCollection(dir, 'estado').filter((d) => d.id === 'actual');
 	return {
+		geminiRelay: readGeminiRelay(dir),
 		tareas: readCollection(dir, 'tareas'),
 		decisiones: readCollection(dir, 'decisiones'),
 		bitacora: readLog(dir, { since }),
