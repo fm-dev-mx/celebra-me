@@ -70,7 +70,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		).find((descriptor) => descriptor.component === 'family');
 		// Celestial opts into editorial motion, which owns the family choreography.
 		expect(celestial).toMatchObject({
-			intersection: 'neutral',
+			intersection: 'folio',
 			reveal: 'editorial',
 			props: { variant: 'standard' },
 		});

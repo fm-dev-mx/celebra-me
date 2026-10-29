@@ -13,7 +13,6 @@
 	--motion-hero-details-delay: 0.34s;
 	--motion-hero-affordance-duration: 0.4s;
 	--motion-hero-affordance-delay: 0.72s;
-	--celestial-family-overlap-depth: clamp(2rem, 8vw, 4rem);
 
 	// The standard family layout owns the responsive portrait/name split.
 	--family-bg: color-mix(in srgb, var(--color-cool-ivory) 65%, var(--color-ice-blue));
@@ -113,14 +112,11 @@
 		--quote-content-max-width: 32rem;
 		--quote-padding-block: clamp(4rem, 7vw, 5.5rem);
 		--quote-padding-inline: clamp(1.5rem, 6vw, 1.75rem);
-		--quote-text-color: var(--color-deep-blue-graphite);
+		--quote-bg: transparent;
+		--quote-text-color: var(--color-diamond-white);
 		--quote-author-font: var(--font-ui);
 		--quote-author-transform: none;
-		--quote-author-color: color-mix(
-			in srgb,
-			var(--color-deep-blue-graphite) 65%,
-			var(--color-satin-blue)
-		);
+		--quote-author-color: var(--color-satin-blue);
 		--quote-author-opacity: 100%;
 		--quote-author-size: 0.875rem;
 		--quote-author-tracking: 0.04em;
@@ -161,163 +157,176 @@
 		--gallery-overlay-hover-opacity: 0;
 	}
 
-	// Hero: Camila's portrait stands in an arch on the night sky, under a silver hairline that
-	// follows it, with a faint constellation behind. The name splits into a script first name and
-	// a tracked serif surname line.
-	.invitation-hero[data-variant='framed-portrait'] {
-		--color-surface-primary: var(--color-deep-blue-graphite);
-		--color-text-primary: var(--color-diamond-white);
-		--color-action-accent: var(--color-satin-blue);
-		--hero-arc-opacity: 0;
-		--hero-letter-align: center;
-		--hero-scroll-align: center;
-		--hero-portrait-margin: 0 auto;
-		--hero-portrait-max-width: 100%;
-
-		// The arch keeps the portrait's own proportion (1024 × 1536), so the photograph fills it on
-		// every phone; short screens keep a floor so the portrait never shrinks to a stamp.
-		--celestial-portrait-height: clamp(15rem, min(48svh, calc(100svh - 26rem)), 28rem);
-		--hero-portrait-width-mobile: min(
-			70vw,
-			18rem,
-			calc(var(--celestial-portrait-height) * 0.667)
-		);
-		--hero-portrait-height-mobile: calc(var(--hero-portrait-width-mobile) / 0.667);
-		--hero-section-padding: 5rem 1.5rem 1.25rem;
-		--hero-section-padding-desktop: 6.5rem 4rem 2rem;
-		--hero-portrait-height-desktop: min(70svh, 40rem);
-		--hero-portrait-radius: 50% 50% 0.375rem 0.375rem / 34% 34% 0.375rem 0.375rem;
-		--hero-portrait-outline: 1px solid rgb(var(--color-liquid-silver-rgb) / 62%);
-		--hero-portrait-outline-offset: 0.45rem;
-		--hero-title-max-width: none;
-		--hero-title-size: clamp(4.25rem, 19vw, 7rem);
-		--hero-name-margin: 0;
-		--hero-occasion-font: 500 0.8125rem / 1.4 var(--font-ui);
-		--hero-occasion-text-transform: uppercase;
-		--hero-occasion-letter-spacing: 0.24em;
-		--hero-occasion-color: var(--color-satin-blue);
-		--hero-details-font:
-			italic 400 clamp(1.15rem, 4.4vw, 1.375rem) / 1.45 'EB Garamond Variable', 'EB Garamond',
-			georgia, serif;
-		--hero-occasion-margin: 0.75rem 0 0.25rem;
-		--hero-name-font-family: 'Pinyon Script', var(--font-display);
-		--hero-name-font-weight: 400;
-		--hero-name-line-height: 1.2;
-		--hero-name-letter-spacing: 0;
-		--hero-name-overflow-wrap: normal;
-		--hero-name-lead-display: block;
-		--hero-name-lead-line-height: 1.25;
-		--hero-name-rest-display: block;
-		--hero-name-rest-margin-top: 0.15rem;
-		--hero-name-rest-font-family:
-			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
-		--hero-name-rest-size: clamp(1rem, 0.6vw + 0.9rem, 1.35rem);
-		--hero-name-rest-weight: 500;
-		--hero-name-rest-line-height: 1.5;
-		--hero-name-rest-letter-spacing: 0.26em;
-		--hero-name-rest-text-transform: uppercase;
-		--hero-name-rest-color: var(--color-liquid-silver);
-
-		// Night sky: a few silver and satin stars over a soft glow behind the arch.
-		--hero-framed-background:
+	// Hero: Camila's portrait stays full-bleed. A night veil gathers at the foot of the photograph
+	// and settles into solid graphite, so the hero runs straight into the night that carries the
+	// quote and the countdown. The name signs in script with the surnames as a tracked silver line.
+	.invitation-hero[data-variant='standard'] {
+		--hero-isolation: isolate;
+		--hero-content-z-index: 2;
+		--hero-media-reveal-animation: celestial-hero-media-reveal;
+		--hero-constellation-display: block;
+		--hero-constellation-opacity: 0.8;
+		--hero-constellation:
 			radial-gradient(
-				circle at 12% 14%,
-				rgb(var(--color-diamond-white-rgb) / 80%) 0 1px,
+				circle at 14% 12%,
+				rgb(var(--color-diamond-white-rgb) / 85%) 0 1px,
 				transparent 1.8px
 			),
 			radial-gradient(
-				circle at 84% 9%,
-				rgb(var(--color-satin-blue-rgb) / 75%) 0 1.2px,
-				transparent 2px
+				circle at 31% 21%,
+				rgb(var(--color-satin-blue-rgb) / 75%) 0 1.1px,
+				transparent 1.9px
 			),
 			radial-gradient(
-				circle at 91% 31%,
-				rgb(var(--color-diamond-white-rgb) / 55%) 0 0.8px,
-				transparent 1.6px
-			),
-			radial-gradient(
-				circle at 7% 46%,
-				rgb(var(--color-liquid-silver-rgb) / 60%) 0 0.8px,
-				transparent 1.6px
-			),
-			radial-gradient(
-				circle at 23% 6%,
-				rgb(var(--color-liquid-silver-rgb) / 55%) 0 0.8px,
-				transparent 1.6px
-			),
-			radial-gradient(
-				circle at 72% 4%,
+				circle at 82% 9%,
 				rgb(var(--color-diamond-white-rgb) / 60%) 0 0.9px,
 				transparent 1.7px
 			),
 			radial-gradient(
-				ellipse 70% 46% at 50% 30%,
-				rgb(var(--color-satin-blue-rgb) / 16%) 0%,
-				transparent 72%
+				circle at 9% 38%,
+				rgb(var(--color-liquid-silver-rgb) / 55%) 0 0.8px,
+				transparent 1.6px
 			),
-			var(--color-deep-blue-graphite);
+			radial-gradient(
+				circle at 91% 27%,
+				rgb(var(--color-liquid-silver-rgb) / 55%) 0 0.8px,
+				transparent 1.6px
+			);
+		--hero-veil:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-deep-blue-graphite-rgb) / 30%) 0%,
+				transparent 22%,
+				transparent 40%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 55%) 62%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 92%) 86%,
+				var(--color-deep-blue-graphite) 100%
+			),
+			radial-gradient(
+				ellipse 90% 40% at 50% 100%,
+				rgb(var(--color-satin-blue-rgb) / 14%) 0%,
+				transparent 70%
+			);
+		--hero-section-background: var(--color-deep-blue-graphite);
+		--hero-content-justify: center;
+		--hero-label-color: var(--color-satin-blue);
+		--hero-label-margin-bottom: 0.75rem;
+		--hero-title-max-width: none;
+		--hero-title-align: center;
+		--hero-title-font-family: 'Pinyon Script', var(--font-display);
+		--hero-title-font-size: clamp(5rem, 9vw, 8rem);
+		--hero-title-font-size-mobile: clamp(4.25rem, 21vw, 5.75rem);
+		--hero-title-line-height: 1.15;
+		--hero-title-margin-bottom: 0.5rem;
+		--hero-surname-display: block;
+		--hero-surname-margin-top: 0.4rem;
+		--hero-surname-font-family:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--hero-surname-font-size: clamp(0.95rem, 0.6vw + 0.85rem, 1.3rem);
+		--hero-surname-font-weight: 500;
+		--hero-surname-line-height: 1.5;
+		--hero-surname-letter-spacing: 0.3em;
+		--hero-surname-text-transform: uppercase;
+		--hero-surname-color: var(--color-liquid-silver);
+		--hero-content-rows: auto auto auto auto;
+		--hero-title-thread-display: none;
+		--hero-details-margin-left: auto;
+		--hero-details-margin-right: auto;
+		--hero-details-padding-left: 0;
+		--hero-details-rule: 0;
 
 		@media (width >= 992px) {
-			--hero-letter-align: left;
-			--hero-title-size: clamp(6rem, 8vw, 8rem);
+			--hero-content-justify: start;
+			--hero-title-align: left;
+			--hero-veil:
+				linear-gradient(
+					100deg,
+					rgb(var(--color-deep-blue-graphite-rgb) / 88%) 0%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 55%) 32%,
+					transparent 58%
+				),
+				linear-gradient(
+					180deg,
+					transparent 55%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 70%) 85%,
+					var(--color-deep-blue-graphite) 100%
+				);
+			--hero-details-margin-left: 0;
+			--hero-details-padding-left: clamp(0.95rem, 2vw, 1.35rem);
+			--hero-details-rule: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
 		}
 	}
 
-	// Cadence: hero -> quote (bridge: the night melts into ivory); family -> interlude (bridge:
-	// the corridor portrait rises on an arched plate into the family's padding); gallery -> gifts
-	// (climax: an arch opens the night band that holds gifts, the pass, RSVP and the closing).
+	// Night band: the quote and the countdown sit on the hero's own graphite under a few stars, so
+	// the opening reads as one night before the first page turns.
+	.invitation-section-wrapper:is([data-section-kind='quote'], [data-section-kind='countdown']) {
+		--color-text-primary: var(--color-diamond-white);
+		--color-text-primary-rgb: var(--color-diamond-white-rgb);
+		--color-text-secondary: rgb(var(--color-liquid-silver-rgb) / 88%);
+		--countdown-written-bg: transparent;
+		--section-band-paper:
+			radial-gradient(
+				circle at 86% 18%,
+				rgb(var(--color-diamond-white-rgb) / 55%) 0 0.9px,
+				transparent 1.7px
+			),
+			radial-gradient(
+				circle at 12% 64%,
+				rgb(var(--color-satin-blue-rgb) / 55%) 0 0.9px,
+				transparent 1.7px
+			),
+			var(--color-deep-blue-graphite);
+	}
+
+	// Cadence: countdown -> family (bridge: the ivory page of the family turns down over the night);
+	// gallery -> gifts (bridge: the night page rises back over the gallery, folded on the other
+	// side); gifts -> pass (climax: the pass rises over the gifts like a ticket laid on the table).
 	// Every other boundary is a clean cut.
-	.invitation-section-wrapper[data-section-kind='quote'][data-intersection='atmospheric-blend'] {
-		--intersection-depth: clamp(3.25rem, 6.5vw, 4.5rem);
-		--intersection-surface: var(--color-cool-ivory);
-		--intersection-blend: radial-gradient(
-			ellipse 132% 106% at 68% 0%,
-			rgb(var(--color-liquid-silver-rgb) / 34%) 0%,
-			rgb(var(--color-satin-blue-rgb) / 18%) 42%,
-			transparent 92%
+	.invitation-section-wrapper[data-section-kind='family'][data-intersection='folio'] {
+		--intersection-surface-fill: var(--family-bg);
+		--intersection-folio-back: color-mix(
+			in srgb,
+			var(--color-cool-ivory) 70%,
+			var(--color-liquid-silver)
 		);
+		--intersection-folio-back-shade: color-mix(
+			in srgb,
+			var(--color-cool-ivory) 45%,
+			var(--color-liquid-silver)
+		);
+		--intersection-folio-shadow: -0.35rem 0.45rem 0.6rem rgb(0 0 0 / 30%);
+		--intersection-folio-lift: 38deg;
+		--intersection-z: 1;
 	}
 
-	// Keep the hero at the first fold; begin the atmospheric blend only when the quote scrolls into
-	// view. Paint it on the incoming section because its opaque surface covers the shared pseudo-element.
-	.invitation-section-wrapper[data-intersection='atmospheric-blend'][data-intersection-source='hero']
-		> .quote-section {
-		--quote-bg:
-			var(--intersection-blend) top / 100% var(--intersection-depth) no-repeat,
-			linear-gradient(
-					180deg,
-					var(--color-deep-blue-graphite) 0%,
-					color-mix(in srgb, var(--color-satin-blue) 48%, var(--color-cool-ivory)) 54%,
-					var(--color-surface-primary) 100%
-				)
-				top / 100% var(--intersection-depth) no-repeat,
-			var(--color-surface-primary);
+	.invitation-section-wrapper[data-section-kind='gifts'][data-intersection='folio'] {
+		--intersection-surface-fill: var(--color-surface-dark);
+		--intersection-folio-flip: -1;
+		--intersection-folio-back: color-mix(
+			in srgb,
+			var(--color-deep-blue-graphite) 78%,
+			var(--color-satin-blue)
+		);
+		--intersection-folio-back-shade: var(--color-deep-blue-graphite);
+		--intersection-folio-ink: rgb(var(--color-liquid-silver-rgb) / 55%);
+		--intersection-folio-shadow: 0.35rem 0.45rem 0.6rem rgb(0 0 0 / 28%);
+		--intersection-folio-lift: 38deg;
+		--intersection-z: 1;
 	}
 
-	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='family'] {
-		--intersection-depth: var(--celestial-family-overlap-depth);
+	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='stack'] {
+		--intersection-stack-surface: var(--color-deep-blue-graphite);
+		--intersection-stack-radius: 1.75rem;
+		--intersection-stack-edge: 1px solid rgb(var(--color-liquid-silver-rgb) / 38%);
+		--intersection-stack-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 45%);
+		--intersection-stack-recede-scale: 0.94;
+		--intersection-stack-recede-dim: 0.55;
 	}
 
-	.invitation-interlude[data-presentation='framed'] {
-		--interlude-framed-radius: 50% 50% 0.375rem 0.375rem / 7.5rem 7.5rem 0.375rem 0.375rem;
-		--interlude-framed-image-radius: var(--interlude-framed-radius);
-		--interlude-framed-max-width: 24rem;
-		--interlude-framed-mat: 0;
-		--interlude-framed-mat-bg: transparent;
-		--interlude-framed-border: 0;
-		--interlude-framed-outline: 1px solid rgb(var(--color-deep-blue-graphite-rgb) / 28%);
-		--interlude-framed-outline-offset: 0.5rem;
-		--interlude-framed-shadow: none;
-	}
-
-	// The climax: a single dome, the hero's arch at section scale, lifts the night out of the
-	// gallery's ivory, traced by a silver hairline.
-	.invitation-section-wrapper[data-section-kind='gifts'][data-intersection='arch'] {
-		--intersection-surface: var(--color-surface-dark);
-		--intersection-arch-height: clamp(3rem, 9vw, 6rem);
-		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 24' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M0 24V22C18 22 30 1 50 1C70 1 82 22 100 22V24Z'/%3E%3C/svg%3E");
-		--intersection-arch-ink: rgb(var(--color-liquid-silver-rgb) / 70%);
-		--intersection-arch-ink-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 24' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='none' stroke='black' stroke-width='1.25' vector-effect='non-scaling-stroke' d='M0 22C18 22 30 1 50 1C70 1 82 22 100 22'/%3E%3C/svg%3E");
+	// The gifts keep the night under them while the pass rises and they recede.
+	.invitation-section-wrapper[data-section-kind='gifts'] {
+		--section-band-paper: var(--color-surface-dark);
+		--intersection-stack-floor: var(--color-surface-dark);
 	}
 
 	.gifts-section {
@@ -338,10 +347,53 @@
 		--gifts-icon-shadow: none;
 	}
 
+	// The pass is an admission ticket in ivory and silver on the night: Camila's signature heads it,
+	// the stub carries the seats behind a perforation and the last row previews QR check-in.
+	--formal-chapter-band: var(--color-deep-blue-graphite);
+	--formal-chapter-band-rgb: var(--color-deep-blue-graphite-rgb);
+	--formal-chapter-cream: var(--color-cool-ivory);
+	--formal-chapter-cream-rgb: var(--color-cool-ivory-rgb);
+	--formal-chapter-sand-rgb: var(--color-liquid-silver-rgb);
+	--formal-chapter-metal: color-mix(
+		in srgb,
+		var(--color-liquid-silver) 60%,
+		var(--color-satin-blue)
+	);
+	--formal-chapter-metal-rgb: var(--color-liquid-silver-rgb);
+	--formal-chapter-ink: var(--color-deep-blue-graphite);
+	--formal-chapter-ink-rgb: var(--color-deep-blue-graphite-rgb);
+	--formal-chapter-title: var(--color-deep-blue-graphite);
+	--formal-chapter-muted: var(--color-soft-graphite);
+	--formal-chapter-meta: color-mix(
+		in srgb,
+		var(--color-deep-blue-graphite) 55%,
+		var(--color-satin-blue)
+	);
+
 	.personalized-access {
-		--pa-section-background: var(--color-surface-dark);
+		--pa-section-bg: transparent;
+		--pa-card-bg-image: linear-gradient(
+			165deg,
+			var(--color-diamond-white) 0%,
+			var(--color-cool-ivory) 58%,
+			color-mix(in srgb, var(--color-cool-ivory) 80%, var(--color-ice-blue)) 100%
+		);
+		--pa-card-glow: radial-gradient(
+			ellipse 80% 45% at 50% 0%,
+			rgb(var(--color-diamond-white-rgb) / 70%) 0%,
+			transparent 70%
+		);
+		--pa-welcome-align: center;
+		--pa-seats-label-max-width: none;
+		--pa-seats-label-wrap: normal;
 		--pa-paper-tilt: 0deg;
-		--pa-card-shadow: none;
+		--pa-card-shadow: 0 1.75rem 3.5rem -1rem rgb(0 0 0 / 55%);
+		--pa-check-in-border: 1px dashed rgb(var(--color-deep-blue-graphite-rgb) / 28%);
+		--pa-check-in-bg: rgb(var(--color-diamond-white-rgb) / 55%);
+		--pa-check-in-qr-ink: var(--color-deep-blue-graphite);
+		--pa-check-in-badge-color: var(--formal-chapter-meta);
+		--pa-check-in-title-color: var(--color-deep-blue-graphite);
+		--pa-check-in-text-color: var(--color-soft-graphite);
 	}
 
 	.rsvp-section {
@@ -379,6 +431,29 @@
 		--thank-you-drop-cap-color: var(--color-text-on-dark);
 		--thank-you-drop-cap-shadow: none;
 		--thank-you-closing-color: var(--color-text-on-dark);
+
+		// The window light is a wide, soft shaft that dissolves on every side instead of stopping at
+		// the layer's edges.
+		--thank-you-ambient-inset: -20% -12%;
+		--thank-you-ambient-bg:
+			radial-gradient(
+				ellipse 38% 30% at 62% 30%,
+				rgb(var(--color-diamond-white-rgb) / 30%) 0%,
+				transparent 100%
+			),
+			linear-gradient(
+				110deg,
+				transparent 18%,
+				rgb(var(--color-liquid-silver-rgb) / 7%) 34%,
+				rgb(var(--color-diamond-white-rgb) / 18%) 48%,
+				rgb(var(--color-liquid-silver-rgb) / 7%) 62%,
+				transparent 78%
+			);
+		--thank-you-ambient-mask: radial-gradient(
+			ellipse 50% 50% at 50% 45%,
+			black 35%,
+			transparent 100%
+		);
 		--thank-you-closing-gradient: linear-gradient(
 			var(--color-text-on-dark),
 			var(--color-text-on-dark)

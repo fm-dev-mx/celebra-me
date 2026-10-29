@@ -16,7 +16,7 @@
 	height: auto;
 	min-height: 100dvh;
 	padding: var(--hero-section-padding, 4.5rem 1.5rem 1.5rem);
-	background: var(--hero-framed-background, var(--color-surface-primary));
+	background: var(--color-surface-primary);
 	color: var(--color-text-primary);
 	overflow: hidden;
 
@@ -78,7 +78,7 @@
 	}
 
 	.framed-portrait-hero__occasion {
-		margin: var(--hero-occasion-margin, 0 0 0.5rem);
+		margin: 0 0 0.5rem;
 		font: var(
 			--hero-occasion-font,
 			500 var(--hero-label-size, clamp(2.75rem, 5vw, 3.5rem)) / 1.1 var(--font-display)
@@ -97,26 +97,7 @@
 		letter-spacing: var(--hero-name-letter-spacing, -0.035em);
 		text-transform: none;
 		text-wrap: pretty;
-		overflow-wrap: var(--hero-name-overflow-wrap, anywhere);
-	}
-
-	// Split name (`hero.presentation.nameLeadWords`): optional line tokens; every fallback keeps
-	// the spans inline and inheriting, as if the name were not split.
-	.framed-portrait-hero__name-lead {
-		display: var(--hero-name-lead-display, inline);
-		line-height: var(--hero-name-lead-line-height, inherit);
-	}
-
-	.framed-portrait-hero__name-rest {
-		display: var(--hero-name-rest-display, inline);
-		margin-top: var(--hero-name-rest-margin-top, 0);
-		font-family: var(--hero-name-rest-font-family, inherit);
-		font-size: var(--hero-name-rest-size, inherit);
-		font-weight: var(--hero-name-rest-weight, inherit);
-		line-height: var(--hero-name-rest-line-height, inherit);
-		letter-spacing: var(--hero-name-rest-letter-spacing, inherit);
-		text-transform: var(--hero-name-rest-text-transform, inherit);
-		color: var(--hero-name-rest-color, inherit);
+		overflow-wrap: anywhere;
 	}
 
 	.framed-portrait-hero__introduction {

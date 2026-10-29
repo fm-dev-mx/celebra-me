@@ -31,9 +31,12 @@
         "name": "Camila Torres Rivas",
         "label": "Mis XV Años",
         "date": "2027-09-12T19:00:00.000Z",
-        "backgroundImage": "portrait",
-        "focalPoint": "50% 30%",
-        "variant": "framed-portrait",
+        "backgroundImage": "hero",
+        "backgroundImageDesktop": "heroDesktop",
+        "focalPoint": "50% 32%",
+        "focalPointMobile": "50% 30%",
+        "focalPointDesktop": "62% 38%",
+        "variant": "standard",
         "scrollLabel": "Descubra mi noche"
     },
     "location": {
@@ -164,10 +167,18 @@
         "confirmationMessage": "Gracias por confirmar. Le espero con mucha alegría en esta noche tan especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "title": "Su lugar en mi noche",
-            "subtitle": "Lo reservé especialmente para usted",
+            "variant": "formal-pass",
+            "ticket": {
+                "signature": "Camila",
+                "monogram": "XV · 2027"
+            },
+            "title": "Pase de entrada",
+            "subtitle": "Será un honor recibirle en mi noche.",
+            "noteText": "Su pase incluye a {count} {personWord}.",
             "footerText": "Confirme a continuación para apartar sus lugares",
-            "variant": "ornamented"
+            "presentationOptions": {
+                "checkInQr": true
+            }
         },
         "variant": "standard",
         "subcopy": "Me encantaría contar con usted. Su respuesta me ayuda a preparar cada detalle.",
@@ -245,11 +256,22 @@
     },
     "interludes": [
         {
-            "image": "hero",
+            "image": {
+                "type": "internal",
+                "key": "gallery05",
+                "delivery": {
+                    "mode": "original",
+                    "width": 1080,
+                    "height": 1350
+                }
+            },
             "afterSection": "family",
-            "alt": "Camila con vestido azul cielo entre los arcos de un corredor al anochecer.",
+            "alt": "Camila con vestido azul en un balcón al anochecer.",
             "height": "medium",
-            "presentation": "framed"
+            "focalPoint": "50% 30%",
+            "focalPointDesktop": "50% 12%",
+            "lightX": "54%",
+            "lightY": "34%"
         }
     ],
     "envelope": {
@@ -277,17 +299,17 @@
     },
     "composition": {
         "intersections": {
-            "quote": {
-                "family": "atmospheric-blend",
-                "source": "hero"
-            },
-            "interlude-after-family": {
-                "family": "overlap",
-                "source": "family"
+            "family": {
+                "family": "folio",
+                "source": "countdown"
             },
             "gifts": {
-                "family": "arch",
+                "family": "folio",
                 "source": "gallery"
+            },
+            "personalized-access": {
+                "family": "stack",
+                "source": "gifts"
             }
         }
     },

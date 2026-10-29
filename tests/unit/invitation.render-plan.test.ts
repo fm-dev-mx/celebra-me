@@ -180,18 +180,17 @@ describe('buildInvitationRenderPlan', () => {
 		expect(nonNeutral).toEqual([
 			expect.objectContaining({
 				type: 'section',
-				section: 'quote',
-				intersection: { family: 'atmospheric-blend', source: 'hero' },
-			}),
-			expect.objectContaining({
-				type: 'interlude',
-				afterSection: 'family',
-				intersection: { family: 'overlap', source: 'family' },
+				section: 'family',
+				intersection: { family: 'folio', source: 'countdown' },
 			}),
 			expect.objectContaining({
 				type: 'section',
 				section: 'gifts',
-				intersection: { family: 'arch', source: 'gallery' },
+				intersection: { family: 'folio', source: 'gallery' },
+			}),
+			expect.objectContaining({
+				type: 'personalized-access',
+				intersection: { family: 'stack', source: 'gifts' },
 			}),
 		]);
 	});

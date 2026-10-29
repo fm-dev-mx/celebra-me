@@ -478,10 +478,16 @@ Bounded controls retain their canonical section owner:
   `--hero-portrait-width-*` and `--hero-portrait-height-*`, `--hero-section-padding`,
   `--hero-section-padding-desktop`, `--hero-title-size`, `--hero-title-max-width`, and
   `--hero-label-size`. Defaults retain the original arch, dimensions, spacing, and typography;
-  profiles may preserve a complete rectangular photograph without adding layout selectors. It also
-  consumes `--hero-framed-background` (section ground), `--hero-occasion-margin`,
-  `--hero-name-overflow-wrap` and, for a split name (`nameLeadWords`), the `--hero-name-lead-*` and
-  `--hero-name-rest-*` line tokens; their fallbacks keep the spans inline and inheriting.
+  profiles may preserve a complete rectangular photograph without adding layout selectors.
+- The celestial-blue `standard` hero consumes `--hero-content-justify`, `--hero-content-rows`,
+  `--hero-label-margin-bottom`, `--hero-title-font-family`, `--hero-title-font-size` (and
+  `-mobile`), `--hero-title-line-height`, `--hero-title-align`, `--hero-title-margin-bottom` and,
+  for a split name (`nameLeadWords`, which moves the standard hero's line break), the
+  `--hero-surname-*` line tokens. Fallbacks keep the original left-aligned display title.
+- The celestial-blue thank-you light consumes `--thank-you-ambient-bg`, `--thank-you-ambient-inset`
+  and `--thank-you-ambient-mask` (default none) so a profile can dissolve its edges.
+- The QR check-in preview (`presentationOptions.checkInQr`) consumes the `--pa-check-in-*` tokens
+  for its border, ground, code inks, badge and copy.
 - The thank-you signature consumes `--thank-you-closing-lead-display` and the
   `--thank-you-closing-rest-*` line tokens for a split closing name (`closingNameLeadWords`), with
   the same inline, inheriting fallbacks.

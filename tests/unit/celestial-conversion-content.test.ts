@@ -4,10 +4,11 @@ import path from 'node:path';
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 const demo = JSON.parse(read('src/invitations/demos/demo-xv-celestial-blue/content.json'));
 
-it('opens on an arched night portrait with the split name repeated in the closing', () => {
+it('opens on the full-bleed portrait with the split name repeated in the closing', () => {
 	expect(demo.hero).toMatchObject({
-		variant: 'framed-portrait',
-		backgroundImage: 'portrait',
+		variant: 'standard',
+		backgroundImage: 'hero',
+		backgroundImageDesktop: 'heroDesktop',
 		presentation: { nameLeadWords: 1 },
 	});
 	expect(demo.thankYou.closingNameLeadWords).toBe(1);
@@ -55,12 +56,14 @@ it('keeps the family portrait complete and the approved open composition scoped 
 
 it('joins sections in a bridge, bridge, climax cadence and leaves every other boundary neutral', () => {
 	expect(demo.composition.intersections).toEqual({
-		quote: { family: 'atmospheric-blend', source: 'hero' },
-		'interlude-after-family': { family: 'overlap', source: 'family' },
-		gifts: { family: 'arch', source: 'gallery' },
+		family: { family: 'folio', source: 'countdown' },
+		gifts: { family: 'folio', source: 'gallery' },
+		'personalized-access': { family: 'stack', source: 'gifts' },
 	});
 	const order = demo.sectionOrder;
+	expect(order[order.indexOf('family') - 1]).toBe('countdown');
 	expect(order[order.indexOf('gifts') - 1]).toBe('gallery');
+	expect(order[order.indexOf('personalizedAccess') - 1]).toBe('gifts');
 });
 
 it('counts down right after the opening quote', () => {
@@ -77,16 +80,20 @@ it('keeps the configured date, coherent identity and only the family interlude',
 	});
 	expect(demo.interludes).toHaveLength(1);
 	expect(demo.interludes[0]).toMatchObject({
-		image: 'hero',
+		image: { type: 'internal', key: 'gallery05' },
 		afterSection: 'family',
 		height: 'medium',
-		presentation: 'framed',
 	});
 	expect(read('src/components/invitation/CountdownTimer.astro')).not.toContain('Math.random');
 });
 it('places the access pass next to RSVP and marks unverified maps as illustrative', () => {
 	const order = demo.sectionOrder;
 	expect(order[order.indexOf('rsvp') - 1]).toBe('personalizedAccess');
+	expect(demo.rsvp.personalizedAccess).toMatchObject({
+		variant: 'formal-pass',
+		ticket: { signature: 'Camila' },
+		presentationOptions: { checkInQr: true },
+	});
 	expect(demo.location.introLede).toBe('Ubicación ilustrativa de la demo');
 	expect(JSON.stringify(demo)).not.toMatch(/maps\.app\.goo\.gl\/example/);
 });
@@ -97,7 +104,7 @@ it('preserves the curated gallery content golden with three photographs and the 
 	// The existing last-item slot removes the final photograph from the grid and uses it in the CTA.
 	expect(images).toEqual(['gallery04', 'gallery01', 'gallery02', 'gallery06']);
 	expect(new Set(images).size).toBe(4);
-	expect(images).not.toContain(demo.interludes[0].image);
+	expect(images).not.toContain(demo.interludes[0].image.key);
 	for (const item of demo.gallery.items) {
 		expect(item.alt).toEqual(expect.stringMatching(/\S/));
 		expect(item.caption).toEqual(expect.stringMatching(/\S/));
