@@ -49,7 +49,7 @@ const content: CanonicalEventContentInput = {
 			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
 			// preserving clean neutral paper-mist cuts everywhere else.
 			countdown: { family: 'overlap', source: 'interlude-after-quote' },
-			'interlude-after-family': { family: 'overlap', source: 'family' },
+			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
@@ -65,14 +65,14 @@ const content: CanonicalEventContentInput = {
 		{
 			// Illustrated interlude 2: ancient oak tree in soft light with fluttering yellow ribbons.
 			image: 'interludeOak',
-			afterSection: 'family',
+			afterSection: 'countdown',
 			alt: 'El roble antiguo con lazos amarillos entre sus ramas, en acuarela.',
 			height: 'medium',
 			presentation: 'framed',
 		},
 	],
 	hero: {
-		variant: 'standard',
+		variant: 'framed-portrait',
 		name: CELEBRANT_NAME,
 		label: 'Mis XV Años',
 		date: '2027-10-23T12:00:00.000Z',

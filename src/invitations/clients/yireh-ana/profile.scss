@@ -1,3 +1,10 @@
+$yireh-wreath-gold: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20fill%3D%22none%22%20stroke%3D%22%23EACA6E%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%20%20%3C!--%20Oak%20leaves%20stay%20outside%20the%20monogram%27s%20central%20printing%20area.%20--%3E%0A%20%20%3Cdefs%3E%3Cpath%20id%3D%22leaf%22%20d%3D%22M0%200C-5-1-8-4-5-6C-10-8-8-12-4-11C-7-16-3-18%200-15C3-18%207-16%204-11C8-12%2010-8%205-6C8-4%205-1%200%200Z%22%2F%3E%3C%2Fdefs%3E%0A%20%20%3Cpath%20d%3D%22M42%2084C14%2076%209%2043%2030%2020M58%2084C86%2076%2091%2043%2070%2020%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(31%2028)%20rotate(-35)%20scale(.65)%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(23%2042)%20rotate(-65)%20scale(.7)%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(22%2057)%20rotate(-95)%20scale(.7)%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(28%2071)%20rotate(-125)%20scale(.7)%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(69%2028)%20rotate(35)%20scale(.65)%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(77%2042)%20rotate(65)%20scale(.7)%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(78%2057)%20rotate(95)%20scale(.7)%22%2F%3E%0A%20%20%3Cuse%20href%3D%22%23leaf%22%20transform%3D%22translate(72%2071)%20rotate(125)%20scale(.7)%22%2F%3E%0A%20%20%3C!--%20Ribbon%20closes%20the%20wreath%20below%20the%20initial.%20--%3E%0A%20%20%3Cpath%20d%3D%22M48%2084C39%2075%2031%2079%2036%2085C39%2089%2045%2086%2048%2084ZM52%2084C61%2075%2069%2079%2064%2085C61%2089%2055%2086%2052%2084Z%22%2F%3E%0A%20%20%3Cellipse%20cx%3D%2250%22%20cy%3D%2284%22%20rx%3D%222.5%22%20ry%3D%222%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M48%2086L42%2096L42%2090L38%2091M52%2086L58%2096L58%2090L62%2091%22%2F%3E%0A%3C%2Fsvg%3E%0D%0A');
+$yireh-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23211938' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23BA8E30' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
+$yireh-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23FAF7FD' d='M0 0H400V94C280 94 200 26 0 20z'/%3E%3Cpath fill='none' stroke='%23BA8E30' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 6C200 12 280 80 400 80'/%3E%3C/svg%3E");
+$yireh-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
+$yireh-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14.5' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
+$yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
+
 // Yireh Ana: the storybook-lilac preset adapted for an illustrated watercolor theme
 // with Level-América craft. Ultra-pale lilac watercolor paper, lilac and purple floral
 // framing with delicate yellow wildflower and golden ribbon accents, illustrated
@@ -8,8 +15,8 @@
 	// Base surfaces and ink
 	--color-lilac-paper: rgb(250 247 253);
 	--color-lilac-paper-rgb: 250 247 253;
-	--color-lilac-mist: rgb(242 235 249);
-	--color-lilac-mist-rgb: 242 235 249;
+	--color-lilac-mist: rgb(241 234 248);
+	--color-lilac-mist-rgb: 241 234 248;
 	--color-lilac-veil: rgb(232 220 245);
 	--color-violet-ink: rgb(46 32 68);
 	--color-violet-ink-rgb: 46 32 68;
@@ -23,7 +30,7 @@
 	--storybook-paper-mist: var(--color-lilac-mist);
 	--invitation-paper: var(--color-lilac-paper);
 
-	// Two typographic families: Cormorant for headings, EB Garamond for body
+	// Cormorant headings and EB Garamond body; The Nautigal is reserved for her name.
 	--font-label: var(--font-body);
 	--font-ui: var(--font-body);
 
@@ -45,8 +52,8 @@
 	.envelope-wrapper[data-variant='storybook-butterflies'] {
 		--storybook-sky-display: block;
 		--storybook-send-off: butterflies;
-		--storybook-sky-light: var(--color-candle-cream);
-		--storybook-sky-glow: var(--color-leaf-gold);
+		--storybook-sky-light: var(--color-lilac-paper);
+		--storybook-sky-glow: var(--color-lilac-veil);
 		--storybook-field: radial-gradient(
 			ellipse 120% 70% at 50% 100%,
 			var(--color-lilac-mist) 0%,
@@ -58,7 +65,7 @@
 			var(--color-lilac-mist),
 			var(--color-lilac-veil)
 		);
-		--storybook-paper-grain: var(--storybook-day-grain);
+		--storybook-paper-grain: none;
 		--storybook-ink: var(--color-violet-ink);
 		--storybook-liner-paper: radial-gradient(
 			ellipse 90% 80% at 50% 0%,
@@ -103,7 +110,6 @@
 	--quote-content-weight: 400;
 	--quote-content-size: clamp(1.4rem, 3.6vw, 1.85rem);
 	--quote-content-line-height: 1.45;
-	--quote-closing-line-color: var(--color-leaf-gold);
 
 	// Interlude framed prints
 	--interlude-framed-settle: none;
@@ -113,21 +119,13 @@
 		--interlude-framed-shadow: 0 12px 32px -8px rgb(var(--color-violet-night-rgb) / 12%);
 	}
 
-	// Countdown
-	--countdown-written-numeral-color: var(--color-leaf-gold);
-	--countdown-written-title-color: var(--color-violet-ink-soft);
-	--countdown-written-footer-color: var(--color-violet-ink-soft);
-
 	// Location
-	--location-text-color: var(--color-violet-ink-soft);
-	--location-intro-lede-color: var(--color-violet-ink);
 	--location-program-label-color: var(--color-violet-ink);
 	--location-program-time-color: var(--color-leaf-gold);
 
 	// Family
 	--family-bg: var(--color-lilac-mist);
 	--family-title-style: normal;
-	--family-group-title-color: var(--color-leaf-gold);
 	--family-text-color: var(--color-violet-ink-soft);
 	--family-message-font: var(--font-display);
 	--family-message-size: clamp(1.15rem, 3.4vw, 1.4rem);
@@ -142,14 +140,434 @@
 
 	// Thank you / Cierre
 	.thank-you-section {
-		--thank-you-keepsake-image-mask: radial-gradient(
-			ellipse 85% 85% at 50% 50%,
-			rgb(0 0 0) 65%,
-			transparent 100%
-		);
 		--thank-you-keepsake-settle: none;
-		--thank-you-message-color: var(--color-violet-ink);
-		--thank-you-closing-name-color: var(--color-leaf-gold);
-		--thank-you-closing-phrase-color: var(--color-violet-ink-soft);
+		--color-surface-primary: var(--color-violet-night);
+		--color-surface-primary-rgb: var(--color-violet-night-rgb);
+		--color-action-accent: var(--color-candle-gold);
+		--color-action-primary: var(--color-candle-cream);
+		--color-action-primary-rgb: var(--color-candle-cream-rgb);
+		--color-text-primary: var(--color-candle-cream);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-emphasis: var(--color-candle-gold);
+		--thank-you-message-color: var(--color-candle-cream);
+		--thank-you-closing-name-color: var(--color-candle-gold);
+		--thank-you-closing-phrase-color: var(--color-night-lilac);
+		--thank-you-keepsake-image-radius: 50% 50% 0.5rem 0.5rem / 32% 32% 0.5rem 0.5rem;
+		--thank-you-keepsake-image-mask: none;
+		--thank-you-keepsake-copy-align: center;
+		--thank-you-keepsake-text-align: center;
+		--thank-you-drop-cap-float: none;
+		--thank-you-drop-cap-margin: 0;
+		--thank-you-drop-cap-size: 1em;
+		--thank-you-drop-cap-size-desktop: 1em;
+		--thank-you-drop-cap-weight: inherit;
+		--thank-you-drop-cap-line-height: inherit;
+	}
+
+	--yireh-cut: clamp(4.5rem, 14vw, 6.5rem);
+	--yireh-print-overlap: clamp(4rem, 18vw, 7rem);
+	--yireh-band-padding: clamp(4.5rem, 12vw, 7.5rem);
+	--yireh-gutter: clamp(1.5rem, 6vw, 4rem);
+	--yireh-rule: rgb(var(--color-violet-ink-rgb) / 18%);
+
+	.invitation-hero[data-variant='framed-portrait'] {
+		--color-text-primary: var(--color-violet-ink);
+		--color-action-accent: var(--color-gold-ink);
+		--hero-arc-opacity: 0;
+		--hero-letter-align: center;
+		--hero-scroll-align: center;
+		--hero-portrait-margin: 0 auto;
+		--hero-portrait-max-width: 100%;
+
+		// Preserve the watercolor plate proportions inside a clean arched frame.
+
+		// On desktop the arch and its hairline clear the fixed menu bar.
+		--hero-section-padding-desktop: 6.5rem 4rem 2rem;
+		--hero-portrait-radius: 50% 50% 0.375rem 0.375rem / 36% 36% 0.375rem 0.375rem;
+		--hero-portrait-outline: 1px solid rgb(var(--color-leaf-gold-rgb) / 70%);
+		--hero-portrait-outline-offset: 0.4rem;
+		--hero-title-max-width: none;
+		--hero-name-margin: 0.1rem 0 0;
+		--hero-occasion-text-transform: uppercase;
+		--hero-occasion-letter-spacing: 0.22em;
+		--hero-details-font: italic 400 clamp(1.2rem, 4.8vw, 1.4rem) / 1.45 var(--font-display);
+		--hero-name-font-family: var(--font-calligraphy);
+		--hero-name-letter-spacing: 0;
+		--hero-title-size: clamp(4.8rem, 22vw, 7rem);
+		--hero-occasion-font: 500 1rem / 1.2 var(--font-body);
+		--hero-portrait-width-mobile: min(65vw, 17rem);
+		--hero-portrait-height-mobile: auto;
+		--hero-portrait-height-desktop: min(62svh, 36rem);
+		--hero-occasion-color: var(--color-gold-ink);
+		--hero-details-color: var(--color-violet-ink-soft);
+	}
+
+	#event-header {
+		--nav-transparent-scrim: none;
+		--header-nav-color-transparent: var(--color-lilac-deep);
+		--header-nav-shadow-transparent: none;
+	}
+
+	#event-header.header-base--transparent {
+		--hamburger-color: var(--color-lilac-deep);
+		--header-nav-title-color: var(--color-lilac-deep);
+		--header-nav-cta-color: var(--color-lilac-deep);
+		--header-nav-cta-border: var(--color-leaf-gold);
+	}
+
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+		--interlude-framed-radius: 50% 50% 0.75rem 0.75rem / 8.5rem 8.5rem 0.75rem 0.75rem;
+		--interlude-framed-image-radius: var(--interlude-framed-radius);
+		--section-band-paper: var(--color-lilac-mist);
+		--interlude-pull-up: calc(-0.5 * var(--yireh-cut));
+		--interlude-framed-bg:
+			#{$yireh-mist-rise} left top / 100% var(--yireh-cut) no-repeat, var(--color-lilac-mist);
+		--interlude-framed-padding: calc(clamp(1.75rem, 5vw, 2.75rem) + 0.9 * var(--yireh-cut))
+			var(--yireh-gutter) calc(clamp(2rem, 6vw, 3.5rem) + var(--yireh-cut));
+		--interlude-framed-max-width: 26rem;
+		--interlude-framed-mat: 0;
+		--interlude-framed-mat-bg: transparent;
+		--interlude-framed-border: 0;
+		--interlude-framed-outline: 1px solid rgb(var(--color-leaf-gold-rgb) / 70%);
+		--interlude-framed-outline-offset: 0.6rem;
+		--interlude-framed-shadow: none;
+	}
+
+	.invitation-section-wrapper[data-section-kind='countdown'] {
+		--intersection-depth: var(--yireh-cut);
+		--section-band-paper:
+			#{$yireh-horizon} left top / 100% var(--yireh-cut) no-repeat,
+			linear-gradient(var(--color-violet-night) 0 0) left calc(var(--yireh-cut) - 1px) / 100%
+				100% no-repeat;
+	}
+
+	.countdown-section {
+		--yireh-band-padding: 7rem;
+		--countdown-written-bg: transparent;
+		--countdown-written-padding-block: calc(var(--yireh-band-padding) + var(--yireh-cut))
+			calc(var(--yireh-band-padding) + var(--yireh-print-overlap));
+		--countdown-written-muted: var(--color-night-lilac);
+		--countdown-written-title-size: 0.8125rem;
+		--countdown-written-title-tracking: 0.14em;
+		--countdown-written-title-caps: normal;
+		--countdown-written-title-transform: uppercase;
+		--countdown-written-title-color: var(--color-candle-gold);
+		--countdown-written-numeral: 6.5rem;
+		--countdown-written-numeral-weight: 400;
+		--countdown-written-numeral-color: var(--color-candle-gold);
+		--event-calendar-ink: var(--color-candle-gold);
+		--event-calendar-mark-ink: var(--color-candle-gold);
+
+		// The reason reads with the count, under the days and before the calendar; wide, the
+		// lead, the count and the reason stand together beside the calendar.
+		--countdown-written-calendar-order: 1;
+		--countdown-written-date-row: 1 / span 3;
+		--countdown-written-footer-column: 1;
+		--countdown-written-footer-row: 3;
+		--countdown-written-title-row: 1;
+		--countdown-written-title-align: end;
+		--countdown-written-timer-row: 2;
+		--countdown-written-timer-align: start;
+
+		@media (width >= 62rem) {
+			--event-calendar-width: 16rem;
+		}
+
+		--countdown-written-footer-color: var(--color-night-lilac);
+		--countdown-written-numeral-shadow: none;
+	}
+
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'] {
+		--intersection-depth: var(--yireh-print-overlap);
+	}
+
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
+		--section-band-paper: none;
+		--interlude-framed-bg: linear-gradient(
+			transparent 0 var(--yireh-print-overlap),
+			var(--color-lilac-mist) var(--yireh-print-overlap)
+		);
+		--interlude-framed-padding: 0 var(--yireh-gutter) clamp(3.5rem, 9vw, 6rem);
+		--interlude-framed-max-width: 22.5rem;
+		--interlude-framed-mat: 0.875rem 0.875rem 2.75rem;
+		--interlude-framed-mat-bg: var(--color-story-cream);
+		--interlude-framed-border: 0;
+		--interlude-framed-outline: 0;
+		--interlude-framed-shadow:
+			0 1px 0 var(--yireh-rule), 0 18px 40px -24px rgb(var(--color-violet-ink-rgb) / 45%);
+	}
+
+	.invitation-section-wrapper:is(
+		[data-section-kind='location'],
+		[data-section-kind='family'],
+		[data-section-kind='itinerary'],
+		[data-section-kind='gallery'],
+		[data-section-kind='gifts'],
+		[data-section-kind='personalized-access'],
+		[data-section-kind='rsvp'],
+		[data-section-kind='thankYou']
+	) {
+		--yireh-ground: var(--color-lilac-paper);
+		--yireh-ground-rgb: var(--color-lilac-paper-rgb);
+		--section-band-paper: var(--yireh-ground);
+		--location-bg: var(--yireh-ground);
+		--family-bg: var(--yireh-ground);
+		--gallery-section-bg: var(--yireh-ground);
+		--gifts-bg: var(--yireh-ground);
+		--intersection-surface: var(--yireh-ground);
+		--intersection-surface-fill: var(--yireh-ground);
+		--intersection-blend: none;
+		--color-surface-primary: var(--yireh-ground);
+		--color-surface-primary-rgb: var(--yireh-ground-rgb);
+		--color-surface-secondary: var(--color-lilac-mist);
+		--color-surface-secondary-rgb: var(--color-lilac-mist-rgb);
+		--color-surface-soft: var(--color-lilac-veil);
+		--color-action-accent: var(--color-lilac-deep);
+		--color-action-accent-rgb: var(--color-lilac-deep-rgb);
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+		--color-text-emphasis: var(--color-gold-ink);
+		--color-text-muted: var(--color-violet-ink-soft);
+		--color-border-subtle: var(--yireh-rule);
+		--color-border-premium: rgb(var(--color-leaf-gold-rgb) / 62%);
+		--color-ornament-gold: var(--color-leaf-gold);
+	}
+
+	.invitation-section-wrapper:is(
+		[data-section-kind='location'],
+		[data-section-kind='gallery'],
+		[data-section-kind='personalized-access'],
+		[data-section-kind='rsvp']
+	) {
+		--yireh-ground: var(--color-lilac-mist);
+		--yireh-ground-rgb: var(--color-lilac-mist-rgb);
+	}
+
+	--location-enclosure-bg: var(--color-violet-night);
+	--location-enclosure-ink: var(--color-candle-cream);
+	--location-enclosure-muted: var(--color-night-lilac);
+	--location-enclosure-rule: rgb(var(--color-candle-gold-rgb) / 35%);
+	--location-enclosure-shadow: none;
+	--location-enclosure-shape: polygon(
+		1.25rem 0,
+		calc(100% - 1.25rem) 0,
+		100% 1.25rem,
+		100% calc(100% - 1.25rem),
+		calc(100% - 1.25rem) 100%,
+		1.25rem 100%,
+		0 calc(100% - 1.25rem),
+		0 1.25rem
+	);
+	--location-enclosure-outline: 0 solid transparent;
+	--location-enclosure-frame-display: block;
+	--location-enclosure-frame-inset: 0.55rem;
+	--location-enclosure-frame: rgb(var(--color-candle-gold-rgb) / 55%);
+	--location-enclosure-frame-shape: polygon(
+		0.85rem 0,
+		calc(100% - 0.85rem) 0,
+		100% 0.85rem,
+		100% calc(100% - 0.85rem),
+		calc(100% - 0.85rem) 100%,
+		0.85rem 100%,
+		0 calc(100% - 0.85rem),
+		0 0.85rem
+	);
+	--location-enclosure-frame-art: #{$yireh-wreath-gold} center 1rem / 3rem auto no-repeat;
+	--location-enclosure-padding: 5.4rem 1.75rem 2.75rem;
+	--location-enclosure-max-width: 22rem;
+	--location-enclosure-hanger-display: block;
+	--location-enclosure-hanger: linear-gradient(var(--color-leaf-gold), var(--color-leaf-gold))
+		center / 1px 100% no-repeat;
+	--location-enclosure-hanger-width: 8px;
+	--location-enclosure-hanger-height: 3rem;
+	--location-enclosure-hanger-to: 0.55rem;
+	--location-enclosure-swing: location-enclosure-swing;
+	--location-enclosure-swing-origin: 50% -3rem;
+	--location-enclosure-edge-shadow: drop-shadow(
+		0 18px 26px rgb(var(--color-violet-midnight-rgb) / 28%)
+	);
+	--location-enclosure-heading-size: clamp(1.75rem, 6.5vw, 2.1rem);
+	--location-enclosure-heading-color: var(--color-candle-gold);
+	--location-enclosure-note-padding: 0.85rem;
+	--location-enclosure-note-rule-width: 3rem;
+	--location-enclosure-lead-title-color: var(--color-night-lilac);
+	--location-enclosure-swatch: conic-gradient(
+		from 45deg,
+		var(--color-lilac-deep) 0 50%,
+		var(--color-candle-gold) 0
+	);
+	--location-enclosure-swatch-size: 1.4rem;
+	--location-enclosure-swatch-ring: 0 0 0 1px rgb(var(--color-candle-gold-rgb) / 70%);
+	--location-enclosure-reserved-title-font: var(--font-display);
+	--location-enclosure-reserved-title-size: clamp(1.4rem, 5vw, 1.6rem);
+	--location-enclosure-reserved-title-caps: normal;
+	--location-enclosure-reserved-title-line-height: 1.15;
+	--location-enclosure-reserved-title-tracking: 0;
+	--location-enclosure-reserved-title-color: var(--color-candle-gold);
+	--location-enclosure-last-text-font: var(--font-label);
+	--location-enclosure-last-text-size: 0.95rem;
+	--location-enclosure-last-text-transform: uppercase;
+	--location-enclosure-last-text-tracking: 0.22em;
+	--location-enclosure-last-text-color: var(--color-candle-gold);
+
+	.event-location {
+		--location-program-label-color: var(--color-gold-ink);
+		--location-program-label-size: 1.05rem;
+		--location-program-time-color: var(--color-violet-ink-soft);
+		--location-program-address-color: var(--color-violet-ink-soft);
+		--location-program-link: var(--color-lilac-deep);
+		--location-program-link-ink: var(--color-story-cream);
+		--location-program-action-flex: 1 1 0;
+		--location-program-action-primary-flex: 1 1 100%;
+		--location-program-links-gap: 0.625rem;
+		--location-program-links-row-gap: 0.625rem;
+		--location-program-link-width: 100%;
+		--location-program-link-justify: center;
+		--location-program-link-padding: 0.35rem 1rem;
+		--location-program-link-border: 1px solid rgb(var(--color-lilac-deep-rgb) / 45%);
+		--location-program-link-bg: rgb(var(--color-story-cream-rgb) / 55%);
+		--location-program-link-radius: 999px;
+		--location-program-link-decoration: none;
+		--location-program-link-size: 0.95rem;
+		--location-program-link-tracking: 0.1em;
+		--location-program-link-primary-bg: var(--color-lilac-deep);
+		--location-program-link-primary-color: var(--color-story-cream);
+		--location-program-link-primary-border: 1px solid var(--color-lilac-deep);
+		--location-program-link-icon: '';
+		--location-program-map-icon: #{$yireh-icon-pin};
+		--location-program-calendar-icon: #{$yireh-icon-calendar};
+		--location-program-copy-icon: #{$yireh-icon-copy};
+		--location-calendar-menu-bg: var(--color-story-cream);
+		--location-calendar-menu-ink: var(--color-violet-ink);
+
+		@media (width >= 768px) {
+			--location-program-action-flex: 0 1 auto;
+			--location-program-action-primary-flex: 0 1 auto;
+			--location-program-link-width: auto;
+			--location-program-link-padding: 0.35rem 1.35rem;
+		}
+	}
+
+	--reply-card-max-width: 30rem;
+	--reply-card-guest-size: clamp(2rem, 9vw, 2.75rem);
+	--reply-card-guest-style: italic;
+	--reply-card-guest-weight: 400;
+	--reply-card-divider:
+		radial-gradient(circle, var(--color-gold-ink) 2.5px, transparent 3px) center / 7px 7px
+			no-repeat,
+		linear-gradient(
+				rgb(var(--color-leaf-gold-rgb) / 70%),
+				rgb(var(--color-leaf-gold-rgb) / 70%)
+			)
+			center / 100% 1px no-repeat;
+	--reply-card-divider-width: 5rem;
+	--reply-card-divider-height: 7px;
+	--reply-card-seam: repeating-linear-gradient(
+		90deg,
+		rgb(var(--color-leaf-gold-rgb) / 70%) 0 4px,
+		transparent 4px 9px
+	);
+	--reply-card-seam-width: calc(100% - 2 * (var(--yireh-punch) + 0.5rem));
+	--yireh-punch: 0.8rem;
+	--reply-card-mask-upper:
+		radial-gradient(
+				circle at 0 100%,
+				transparent var(--yireh-punch),
+				rgb(0 0 0) calc(var(--yireh-punch) + 0.5px)
+			)
+			intersect,
+		radial-gradient(
+			circle at 100% 50%,
+			transparent var(--yireh-punch),
+			rgb(0 0 0) calc(var(--yireh-punch) + 0.5px)
+		);
+	--reply-card-mask-lower:
+		radial-gradient(
+				circle at 0 0,
+				transparent var(--yireh-punch),
+				rgb(0 0 0) calc(var(--yireh-punch) + 0.5px)
+			)
+			intersect,
+		radial-gradient(
+			circle at 100% 50%,
+			transparent var(--yireh-punch),
+			rgb(0 0 0) calc(var(--yireh-punch) + 0.5px)
+		);
+	--reply-card-mask-locked: none;
+	--reply-card-shadow-upper: none;
+	--reply-card-shadow-lower: none;
+	--reply-card-edge-shadow: drop-shadow(0 14px 14px rgb(var(--color-violet-ink-rgb) / 12%));
+	--reply-card-crest-content: '';
+	--reply-card-crest: #{$yireh-wreath-gold};
+	--reply-card-crest-size: 3rem;
+	--reply-card-count-size: 3.25rem;
+	--reply-card-count-frame-size: 6.5rem;
+	--reply-card-count-frame-ratio: 1;
+	--reply-card-count-frame-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 60%);
+	--reply-card-count-frame-bg: radial-gradient(
+		circle,
+		rgb(var(--color-candle-gold-rgb) / 16%),
+		transparent 70%
+	);
+	--pa-count-frame-radius: 50%;
+	--pa-count-frame-inner-display: block;
+	--pa-count-frame-inner-inset: 5px;
+	--pa-count-frame-inner-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 28%);
+	--reply-card-option-bg: rgb(255 255 255 / 55%);
+	--reply-card-option-rule: rgb(var(--color-leaf-gold-rgb) / 55%);
+	--reply-card-option-hover-rule: var(--color-gold-ink);
+	--reply-card-option-checked-rule: var(--color-gold-ink);
+
+	// Short labels use a dark gold ink on paper; pale gold is reserved for the night.
+	--quote-closing-line-color: var(--color-gold-ink);
+	--family-group-title-color: var(--color-gold-ink);
+	--location-program-art-display: none;
+	--location-program-art: none;
+	--location-intro-lede-color: var(--color-violet-ink-soft);
+	--location-text-color: var(--color-violet-ink-soft);
+	--reply-card-bg: var(--color-lilac-paper);
+	--thank-you-keepsake-ambient: none;
+	--thank-you-keepsake-ambient-stacked: none;
+
+	.invitation-section-wrapper[data-section-kind='thankYou'] {
+		--section-band-paper: var(--color-violet-night);
+		--intersection-surface: var(--color-violet-night);
+		--intersection-surface-fill: var(--color-violet-night);
+	}
+
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
+		--intersection-arch-ink: transparent;
+	}
+
+	.invitation-footer {
+		--invitation-footer-reveal: held;
+		--invitation-footer-reply: on;
+		--footer-bg: var(--color-violet-night);
+		--footer-reply-eyebrow: 'Su lazo tiene un lugar aquí';
+		--footer-reply-question: '¿Me acompaña el 23 de octubre?';
+		--footer-reply-note: 'Será un honor contar con usted';
+		--footer-reply-answered: 'Gracias por ser parte de este día.';
+		--footer-reply-ink: var(--color-candle-cream);
+		--footer-reply-muted: var(--color-night-lilac);
+		--footer-reply-accent: var(--color-candle-gold);
+		--footer-reply-button-bg: var(--color-candle-gold);
+		--footer-reply-button-ink: var(--color-violet-night);
+		--footer-closing-color: var(--color-night-lilac);
+		--footer-contact-color: var(--color-night-lilac);
+		--footer-replay-color: var(--color-night-lilac);
+		--footer-rights-size: 0.75rem;
+		--footer-powered-size: 0.75rem;
+		--footer-replay-font-size: 0.75rem;
+		--footer-control-font-size: 0.75rem;
+		--footer-link-tap-padding: 0.875rem;
+		--footer-padding-bottom: 5.5rem;
+		--footer-pull-label: 'Deslice hacia arriba para confirmar';
+		--footer-pull-label-color: var(--color-candle-gold);
+		--footer-pull-color: var(--color-candle-gold);
+		--color-text-primary: var(--color-night-lilac);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-action-accent: var(--color-candle-gold);
 	}
 }

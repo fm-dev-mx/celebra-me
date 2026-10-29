@@ -111,13 +111,13 @@ Non-blocking informational placeholders:
 
 ## Agent Recommendations
 
-| topic  | recommendation                                                                       | basis                       | status                |
-| ------ | ------------------------------------------------------------------------------------ | --------------------------- | --------------------- |
-| preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                     | client requested pale lilac | accepted (2026-10-27) |
-| motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows | client family story context | accepted (2026-10-27) |
-| hero   | Standard watercolor cover with negative space for elegant title lettering            | ref 40 without books        | accepted (2026-10-27) |
-| roble  | Oak tree illustration with yellow ribbons as thank-you closing keepsake              | ref 31 and song theme       | accepted (2026-10-27) |
-| music  | 64 kbps MP3 loop, hosted on media domain                                             | canonical standard R8       | accepted (2026-10-27) |
+| topic  | recommendation                                                                       | basis                       | status                       |
+| ------ | ------------------------------------------------------------------------------------ | --------------------------- | ---------------------------- |
+| preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                     | client requested pale lilac | accepted (2026-10-27)        |
+| motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows | client family story context | accepted (2026-10-27)        |
+| hero   | Framed watercolor arch with title lettering on separate clean paper                  | ref 40 without books        | proposed; acceptance pending |
+| roble  | Oak tree illustration with yellow ribbons as thank-you closing keepsake              | ref 31 and song theme       | accepted (2026-10-27)        |
+| music  | 64 kbps MP3 loop, hosted on media domain                                             | canonical standard R8       | accepted (2026-10-27)        |
 
 ---
 
@@ -126,7 +126,7 @@ Non-blocking informational placeholders:
 ```text
 // Cadence map — non-neutral boundaries only (3 joins, Bridge/Bridge/Climax)
 countdown: overlap from interlude-after-quote (Bridge)
-interlude-after-family: overlap from family (Bridge)
+interlude-after-countdown: overlap from countdown (Bridge)
 thankYou: arch from rsvp (Climax)
 ```
 
@@ -157,7 +157,7 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
 | Selected variant / visual profile | `yireh-ana` (token-only profile on `storybook-lilac`)             | verified            |
 | Client color requirements         | Fondo lila ultra pálido, flores lilas y moradas, toques amarillos | verified            |
 | Recommended palette               | Lilac paper, soft mist, violet ink, leaf gold, yellow ribbons     | recommendation only |
-| Unresolved visual decisions       | None; artwork generated and validated against brief               | verified            |
+| Unresolved visual decisions       | Owner/client acceptance pending for the editorial redesign        | verified            |
 
 ---
 
@@ -199,23 +199,27 @@ Source label: `source:watercolor-session` (opaque). Custom high-resolution botan
 artwork created specifically for this invitation, honoring the client's explicit request for no
 photographs.
 
-| source filename             | dims     | format | orientation | weight | quality          | role        | duplicate   | processing                             | derivative                            |
-| --------------------------- | -------- | ------ | ----------- | ------ | ---------------- | ----------- | ----------- | -------------------------------------- | ------------------------------------- |
-| watercolor-cover-source.jpg | 768×1376 | JPEG   | portrait    | 420 KB | production-ready | hero        | no          | Lanczos 2× upscale to 1536×2736, WebP  | hero-watercolor.webp 1536×2736 348 KB |
-| og-share-watercolor.jpg     | 1200×630 | JPEG   | landscape   | 310 KB | production-ready | og-share    | no          | WebP conversion for social cards       | og-share.webp 1200×630                |
-| watercolor-cover-source.jpg | 768×1376 | JPEG   | portrait    | 420 KB | production-ready | thank-you   | intentional | Detail crop of oak tree keepsake, WebP | oak-tree.webp 1080×783 73 KB          |
-| interlude-ribbon.jpg        | 1264×848 | JPEG   | landscape   | 280 KB | production-ready | interlude 1 | no          | WebP conversion, framed watercolor     | interlude-ribbon.webp 1264×848        |
-| interlude-oak.jpg           | 1264×848 | JPEG   | landscape   | 310 KB | production-ready | interlude 2 | no          | WebP conversion, framed watercolor     | interlude-oak.webp 1264×848           |
+| source filename             | dims        | format | orientation | weight  | quality                               | role        | duplicate   | processing                                  | derivative            |
+| --------------------------- | ----------- | ------ | ----------- | ------- | ------------------------------------- | ----------- | ----------- | ------------------------------------------- | --------------------- |
+| botanical-cover-source.png  | 1084 x 1451 | WebP   | portrait    | 242 KiB | prepared; creative acceptance pending | hero        | no          | WebP, quality 86                            | hero-watercolor.webp  |
+| botanical-ribbon-source.png | 1200 x 630  | WebP   | landscape   | 96 KiB  | prepared; creative acceptance pending | og-share    | intentional | 1200 x 630 cover crop, WebP                 | og-share.webp         |
+| botanical-oak-source.png    | 1200 x 1400 | WebP   | portrait    | 168 KiB | prepared; creative acceptance pending | thank-you   | intentional | Full-tree portrait contain derivative, WebP | oak-tree.webp         |
+| botanical-ribbon-source.png | 1440 x 1080 | WebP   | landscape   | 150 KiB | prepared; creative acceptance pending | interlude 1 | intentional | 1440 px WebP                                | interlude-ribbon.webp |
+| botanical-oak-source.png    | 1440 x 960  | WebP   | landscape   | 228 KiB | prepared; creative acceptance pending | interlude 2 | intentional | 1440 px WebP                                | interlude-oak.webp    |
 
 ### Uniqueness table (required before READY_*)
 
-| role        | source                      | derivative            | intentional multi-role?              |
-| ----------- | --------------------------- | --------------------- | ------------------------------------ |
-| hero        | watercolor-cover-source.jpg | hero-watercolor.webp  | yes — full cover artwork             |
-| og-share    | og-share-watercolor.jpg     | og-share.webp         | no                                   |
-| thank-you   | watercolor-cover-source.jpg | oak-tree.webp         | yes — oak tree keepsake closing crop |
-| interlude 1 | interlude-ribbon.jpg        | interlude-ribbon.webp | no                                   |
-| interlude 2 | interlude-oak.jpg           | interlude-oak.webp    | no                                   |
+| role        | source                      | derivative            | intentional multi-role?            |
+| ----------- | --------------------------- | --------------------- | ---------------------------------- |
+| hero        | botanical-cover-source.png  | hero-watercolor.webp  | no                                 |
+| og-share    | botanical-ribbon-source.png | og-share.webp         | yes - dedicated social crop        |
+| thank-you   | botanical-oak-source.png    | oak-tree.webp         | yes - separate portrait derivative |
+| interlude 1 | botanical-ribbon-source.png | interlude-ribbon.webp | yes - landscape plate              |
+| interlude 2 | botanical-oak-source.png    | interlude-oak.webp    | yes - landscape plate              |
+
+Source label: source:editorial-watercolor-session. Generated botanical watercolor plates share one
+translucent pigment treatment. No client photos or human figures are included. Dimensions, formats
+and weights above describe the delivered derivatives; source filenames are logical labels.
 
 ---
 
