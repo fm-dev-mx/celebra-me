@@ -135,8 +135,9 @@ Each unit must state:
 
 - the target section, element, route, or selector;
 - current evidence and the desired visual delta;
-- the owning layer: copy/data, asset, preset or profile token, or section variant (profiles hold
-  custom properties only);
+- the owning layer: copy/data, asset, preset or profile token, client `composition.scss` (up to 600
+  lines under `.event--<slug>` per `docs/domains/theme/architecture.md`), or section variant
+  (profiles hold custom properties only);
 - allowed files or zones and explicit non-goals;
 - behavior and content that must remain unchanged;
 - acceptance criteria, evidence source, viewports, pass rule, and verification owner;
@@ -204,14 +205,8 @@ from the first proposal.
 
 ## Visual iteration checklist
 
-Run this before each commit that changes the look; the full loop is the
-[`invitation-visual-iteration`](../invitation-visual-iteration/SKILL.md) skill.
-
-- [ ] Variant tokens carry the variant prefix and sit under `[data-variant]`, never on the
-      invitation wrapper.
-- [ ] `pnpm exec jest tests/unit/invitation-token-shadowing.test.ts` passes before the commit.
-- [ ] When `visual-coverage-lifecycle` reports matrix drift, follow the commands it prints: full
-      candidate for the commit, owner review, then accept with `--matrix-hash=<current>`.
+Run the checklist in [`invitation-visual-iteration`](../invitation-visual-iteration/SKILL.md) before
+each commit that changes the look.
 
 ## Phase 6 — Sync and Handoff
 
@@ -237,18 +232,3 @@ Follow the visual work zones and structured handoff fields in `.agent/rules/agen
 - **Blocked** — required intent, baseline, production asset, real-invitation lane decision,
   environment, or evidence cannot be obtained. Name the missing dependency and do not claim visual
   acceptance.
-
-## Acceptance Scenarios
-
-### Demo or landing hero polish
-
-`design-reference-brief` → focused hero unit → builder implementation → mobile visual evidence →
-QA/checklist verdict.
-
-### Real client invitation
-
-`design-reference-brief` → `client-invitation-audit` → Lane A/Lane B spec → focused implementation →
-visual QA → `docs/domains/intake/production-flow.md`.
-
-Both scenarios must be discoverable from `.agent/index.md` without relying on knowledge of a
-specific design tool or video.
