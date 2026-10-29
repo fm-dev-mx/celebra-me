@@ -9,7 +9,8 @@
  *
  * Tasks already announced are remembered in .agent/tmp/board-watch.json next to the board store
  * (CELEBRA_BOARD_WATCH_STATE overrides it). A task that stops being ready is forgotten, so it is announced
- * again when it becomes ready later.
+ * again when it becomes ready later. Gemini relay outages share this state file and are announced once
+ * when unread messages need the relay, until a fresh heartbeat is observed.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
@@ -17,6 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { AGENT_REGISTRY, claimable, queue, taskLabel as label } from './model.mjs';
 import { boardDir, loadBoard } from './store.mjs';
+import { geminiRelayAlert, geminiRelayStale } from './next.mjs';
 
 export const TITLE = 'Tablero Celebra-me';
 
@@ -63,21 +65,21 @@ export function statePath(dir) {
 		: join(dirname(dir), 'board-watch.json');
 }
 
-function readSeen(file) {
+function readState(file) {
 	if (!existsSync(file)) return {};
 	try {
-		return JSON.parse(readFileSync(file, 'utf8')).seen ?? {};
+		return JSON.parse(readFileSync(file, 'utf8')) ?? {};
 	} catch {
 		return {};
 	}
 }
 
-function writeSeen(file, seen) {
+function writeSeen(file, seen, geminiRelayNotified) {
 	mkdirSync(dirname(file), { recursive: true });
 	const tmp = `${file}.${process.pid}.tmp`;
 	writeFileSync(
 		tmp,
-		`${JSON.stringify({ actualizado: new Date().toISOString(), seen }, null, '\t')}\n`,
+		`${JSON.stringify({ actualizado: new Date().toISOString(), seen, geminiRelayNotified }, null, '\t')}\n`,
 	);
 	renameSync(tmp, file);
 }
@@ -113,13 +115,19 @@ export function notify(text) {
 export function run({ dryRun = false, out = console.log, show = notify, now = Date.now() } = {}) {
 	const dir = boardDir();
 	const file = statePath(dir);
-	const { notices, seen } = diff(readyByAgent(loadBoard(dir), now), readSeen(file));
+	const board = loadBoard(dir);
+	const state = readState(file);
+	const { notices, seen } = diff(readyByAgent(board, now), state.seen);
+	const stale = geminiRelayStale(board, now);
+	const alert = geminiRelayAlert(board, now);
+	const geminiRelayNotified = stale && (state.geminiRelayNotified === true || Boolean(alert));
+	if (alert && state.geminiRelayNotified !== true) notices.push({ agente: 'dueno', text: alert });
 	for (const n of notices) {
 		out(dryRun ? `[prueba] ${n.text}` : n.text);
 		if (!dryRun) show(n.text);
 	}
 	if (!notices.length) out('Sin tareas nuevas listas.');
-	if (!dryRun) writeSeen(file, seen);
+	if (!dryRun) writeSeen(file, seen, geminiRelayNotified);
 	return notices;
 }
 

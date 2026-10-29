@@ -481,6 +481,16 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 			!(Object.hasOwn(t, 'bloqueoArchivo') ? t.bloqueoArchivo : archiveBlock(t, board)),
 	);
 	const rows = [
+		...next.usted
+			.filter((x) => x.tipo === 'gemini-relay')
+			.map((x) => ({
+				tipo: x.tipo,
+				id: null,
+				t: null,
+				verbo: 'Arrancar',
+				texto: x.texto,
+				sub: '',
+			})),
 		...tasks.map((t) => {
 			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a]?.nombre ?? a);
 			const verbo = paste.length
