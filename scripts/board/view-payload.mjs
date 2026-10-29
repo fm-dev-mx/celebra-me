@@ -1,5 +1,6 @@
 /** Read-only view projections. Store records and command validation always use the full board. */
 import { archiveBlock } from './cierre.mjs';
+import { dependencyGraph } from './dependency-graph.mjs';
 import { leadOf } from './format.mjs';
 import { AGENT_REGISTRY, findTask, ownerWhere } from './model.mjs';
 import { unreadFor } from './next.mjs';
@@ -75,6 +76,7 @@ export function liveBoard(board, now = Date.now()) {
 			}),
 		],
 		bitacora,
+		mapa: dependencyGraph(board, now),
 		cierresPendientes: missingCierreItems(board)
 			.filter(({ t }) => !t.archivada)
 			.map(({ t, texto }) => ({ id: t.id, tarea: `T${t.num}`, tipo: 'cierre', texto })),
