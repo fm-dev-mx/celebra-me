@@ -46,46 +46,46 @@
 		--storybook-sky-display: block;
 		--storybook-send-off: butterflies;
 		--storybook-sky-light: var(--color-candle-cream);
-		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-glow: var(--color-leaf-gold);
 		--storybook-field: radial-gradient(
 			ellipse 120% 70% at 50% 100%,
-			var(--color-violet-dusk) 0%,
-			var(--color-violet-night) 55%,
-			var(--color-violet-midnight) 100%
+			var(--color-lilac-mist) 0%,
+			var(--color-lilac-veil) 55%,
+			var(--color-lilac-paper) 100%
 		);
 		--storybook-envelope-paper: linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--color-violet-dusk) 72%, var(--color-violet-night)),
-			var(--color-violet-night)
+			var(--color-lilac-mist),
+			var(--color-lilac-veil)
 		);
-		--storybook-paper-grain: var(--storybook-night-grain);
-		--storybook-ink: var(--color-candle-gold);
+		--storybook-paper-grain: var(--storybook-day-grain);
+		--storybook-ink: var(--color-violet-ink);
 		--storybook-liner-paper: radial-gradient(
 			ellipse 90% 80% at 50% 0%,
 			var(--color-candle-cream) 0%,
-			var(--color-candle-gold) 34%,
-			var(--color-violet-dusk) 100%
+			var(--color-lilac-mist) 34%,
+			var(--color-lilac-veil) 100%
 		);
-		--storybook-instruction-ink: var(--color-night-lilac);
+		--storybook-instruction-ink: var(--color-violet-ink-soft);
 		--storybook-seal-rim-shadow:
-			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 60%),
-			0 10px 22px -6px rgb(var(--color-violet-midnight-rgb) / 80%),
-			inset 0 1px 0 rgb(255 255 255 / 55%);
+			0 1px 0 rgb(var(--color-violet-ink-rgb) / 15%),
+			0 8px 18px -4px rgb(var(--color-violet-ink-rgb) / 25%),
+			inset 0 1px 0 rgb(255 255 255 / 75%);
 		--storybook-card-ornament-display: none;
-		--color-text-primary: var(--color-candle-cream);
-		--color-text-primary-rgb: var(--color-candle-cream-rgb);
-		--color-text-secondary: var(--color-night-lilac);
-		--color-text-secondary-rgb: var(--color-night-lilac-rgb);
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
 		--env-shadow-container:
-			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 28%),
-			0 34px 64px -26px rgb(var(--color-violet-midnight-rgb) / 90%);
+			0 0 0 1px rgb(var(--color-leaf-gold-rgb) / 25%),
+			0 24px 48px -18px rgb(var(--color-violet-ink-rgb) / 30%);
 		--env-shadow-seal:
-			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 50%),
-			0 4px 10px rgb(var(--color-violet-midnight-rgb) / 55%),
-			inset 1px 1px 0 rgb(255 255 255 / 55%), inset -1px -2px 3px rgb(0 0 0 / 22%);
+			0 1px 0 rgb(var(--color-violet-ink-rgb) / 25%),
+			0 4px 10px rgb(var(--color-violet-ink-rgb) / 25%),
+			inset 1px 1px 0 rgb(255 255 255 / 65%), inset -1px -2px 3px rgb(0 0 0 / 12%);
 		--reveal-card-text-primary: var(--color-violet-ink);
 		--reveal-card-text-secondary: var(--color-violet-ink-soft);
-		--reveal-card-shadow: 0 1px 2px rgb(var(--color-violet-midnight-rgb) / 40%);
+		--reveal-card-shadow: 0 1px 4px rgb(var(--color-violet-ink-rgb) / 20%);
 	}
 
 	.envelope-wrapper[data-variant='storybook-butterflies'] .invitation-reveal-card {

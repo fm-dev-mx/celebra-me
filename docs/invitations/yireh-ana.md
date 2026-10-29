@@ -163,7 +163,7 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `ACCEPTED`
+**Human creative outcome:** `PENDING`
 
 - **concern:** Typography roles (display, heading, body, metadata)
   - **decision / evidence:** Preset serif display, gold accents, violet ink
@@ -187,7 +187,7 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
 | Mechanical render/capture result            | Captures at 390×844 and 1440×900                                       |
 | Whole-invitation responsive inspection      | Inspected on mobile and desktop viewports                              |
 | Section boundaries and narrative continuity | Harmonious watercolor palette across all sections                      |
-| Human creative outcome                      | `ACCEPTED`                                                             |
+| Human creative outcome                      | `PENDING`                                                              |
 | Reviewer and date                           | Antigravity agent & Owner direction, 2026-10-27/28                     |
 | Blocking reason or owner follow-up          | Ceremony time, dress color and father/godparents stay owner follow-ups |
 
@@ -202,7 +202,7 @@ photographs.
 | source filename             | dims     | format | orientation | weight | quality          | role        | duplicate   | processing                             | derivative                            |
 | --------------------------- | -------- | ------ | ----------- | ------ | ---------------- | ----------- | ----------- | -------------------------------------- | ------------------------------------- |
 | watercolor-cover-source.jpg | 768×1376 | JPEG   | portrait    | 420 KB | production-ready | hero        | no          | Lanczos 2× upscale to 1536×2736, WebP  | hero-watercolor.webp 1536×2736 348 KB |
-| watercolor-cover-source.jpg | 768×1376 | JPEG   | portrait    | 420 KB | production-ready | og-share    | intentional | Crop 1200×630 for social cards, WebP   | og-share.webp 1200×630 18 KB          |
+| og-share-watercolor.jpg     | 1200×630 | JPEG   | landscape   | 310 KB | production-ready | og-share    | no          | WebP conversion for social cards       | og-share.webp 1200×630                |
 | watercolor-cover-source.jpg | 768×1376 | JPEG   | portrait    | 420 KB | production-ready | thank-you   | intentional | Detail crop of oak tree keepsake, WebP | oak-tree.webp 1080×783 73 KB          |
 | interlude-ribbon.jpg        | 1264×848 | JPEG   | landscape   | 280 KB | production-ready | interlude 1 | no          | WebP conversion, framed watercolor     | interlude-ribbon.webp 1264×848        |
 | interlude-oak.jpg           | 1264×848 | JPEG   | landscape   | 310 KB | production-ready | interlude 2 | no          | WebP conversion, framed watercolor     | interlude-oak.webp 1264×848           |
@@ -212,7 +212,7 @@ photographs.
 | role        | source                      | derivative            | intentional multi-role?              |
 | ----------- | --------------------------- | --------------------- | ------------------------------------ |
 | hero        | watercolor-cover-source.jpg | hero-watercolor.webp  | yes — full cover artwork             |
-| og-share    | watercolor-cover-source.jpg | og-share.webp         | yes — social preview card crop       |
+| og-share    | og-share-watercolor.jpg     | og-share.webp         | no                                   |
 | thank-you   | watercolor-cover-source.jpg | oak-tree.webp         | yes — oak tree keepsake closing crop |
 | interlude 1 | interlude-ribbon.jpg        | interlude-ribbon.webp | no                                   |
 | interlude 2 | interlude-oak.jpg           | interlude-oak.webp    | no                                   |

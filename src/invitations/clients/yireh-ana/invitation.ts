@@ -33,6 +33,8 @@ const content: CanonicalEventContentInput = {
 	description: `${CELEBRANT_NAME} celebra sus quince años. Sábado ${EVENT_DATE_LABEL}, Salón Casino Imperial, Ciudad Delicias, Chihuahua.`,
 	theme: { preset: 'storybook-lilac', fontFamily: 'serif', motion: 'editorial' },
 	eventTiming: YIREH_TIMING,
+	// Explicit photo-free celebration per celebrant's request: exempt from required gallery section.
+	structuralExemptions: ['gallery'],
 	sectionOrder: [
 		'quote',
 		'countdown',
