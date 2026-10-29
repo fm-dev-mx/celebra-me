@@ -18,10 +18,11 @@ import {
 	isFinished,
 	isReview,
 	quienOf,
+	reviewRounds,
 	taskLabel,
 	taskTag,
 } from './model.mjs';
-import { lockBeat, unreadFor } from './next.mjs';
+import { lockBeat, reviewVerdict, unreadFor } from './next.mjs';
 import { appendLog, boardDir, loadBoard, withLock } from './store.mjs';
 import { readyByAgent } from './watch.mjs';
 import { awaitingClaim } from './delivery.mjs';
@@ -149,8 +150,9 @@ function checkCloseNotices(allTasks, board, state, nowIso, sendMessage) {
 
 async function checkReviewNotices(allTasks, board, state, nowIso, sendMessage, readPr) {
 	for (const r of allTasks) {
-		if (!isReview(r) || !r.cierre?.resultado?.veredicto) continue;
-		const veredicto = r.cierre.resultado.veredicto;
+		if (!isReview(r) || r.estado === 'cancelada' || !isFinished(r)) continue;
+		const veredicto = reviewVerdict(r);
+		if (!veredicto) continue;
 
 		if (veredicto === 'bloqueado') {
 			const key = `review-blocked:${r.id}:${r.cierre.en}`;
@@ -168,8 +170,22 @@ async function checkReviewNotices(allTasks, board, state, nowIso, sendMessage, r
 	}
 }
 
+function isLatestApprovedReview(r, board) {
+	if (r.estado === 'cancelada' || !isFinished(r) || reviewVerdict(r) !== 'aprobado') return false;
+	const origin = findTask(r.origen, board);
+	if (!origin || isFinished(origin)) return false;
+	const lastReview = reviewRounds(origin.id, board).at(-1);
+	if (!lastReview || lastReview.id !== r.id) return false;
+	return (
+		lastReview.estado !== 'cancelada' &&
+		isFinished(lastReview) &&
+		reviewVerdict(lastReview) === 'aprobado'
+	);
+}
+
 async function checkApprovedReview(r, board, state, nowIso, sendMessage, readPr) {
-	const origin = findTask(r.origen, board) ?? r;
+	if (!isLatestApprovedReview(r, board)) return;
+	const origin = findTask(r.origen, board);
 	const prRef = origin.pr ?? r.pr;
 	const approvedSha = r.cierre?.resultado?.sha ?? r.revisionSha;
 	if (!prRef || !approvedSha) return;
@@ -198,7 +214,7 @@ async function checkApprovedReview(r, board, state, nowIso, sendMessage, readPr)
 	);
 }
 
-function checkTaskUnclaimed(t, state, now, nowIso, sendMessage, dir) {
+function checkTaskUnclaimed(t, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram) {
 	if (t.candado || (t.estado ?? 'pendiente') !== 'pendiente') return;
 	const since = t.entregada?.desde ? Date.parse(t.entregada.desde) : NaN;
 	if (Number.isNaN(since)) return;
@@ -215,12 +231,14 @@ function checkTaskUnclaimed(t, state, now, nowIso, sendMessage, dir) {
 		const key = `escalation-unclaimed-60m:${t.id}:${t.entregada.desde}`;
 		if (!state.escalations[key]) {
 			state.escalations[key] = nowIso;
-			sendTelegramAlert(`${taskLabel(t)}: sin tomar tras más de 60 min`, { dir });
+			if (!dryRun) {
+				sendTelegram(`${taskLabel(t)}: sin tomar tras más de 60 min`, { dir });
+			}
 		}
 	}
 }
 
-function checkTaskSilentLock(t, state, now, nowIso, sendMessage, dir) {
+function checkTaskSilentLock(t, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram) {
 	if (!t.candado || isFinished(t)) return;
 	const silent = now - Date.parse(lockBeat(t.candado) ?? '');
 	if (Number.isNaN(silent)) return;
@@ -236,15 +254,17 @@ function checkTaskSilentLock(t, state, now, nowIso, sendMessage, dir) {
 		const key = `escalation-silent-60m:${t.id}:${t.candado.desde}`;
 		if (!state.escalations[key]) {
 			state.escalations[key] = nowIso;
-			sendTelegramAlert(`${taskLabel(t)}: candado detenido hace más de 60 min`, { dir });
+			if (!dryRun) {
+				sendTelegram(`${taskLabel(t)}: candado detenido hace más de 60 min`, { dir });
+			}
 		}
 	}
 }
 
-function checkEscalationNotices(board, state, now, nowIso, sendMessage, dir) {
+function checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram) {
 	for (const t of board.tareas ?? []) {
-		checkTaskUnclaimed(t, state, now, nowIso, sendMessage, dir);
-		checkTaskSilentLock(t, state, now, nowIso, sendMessage, dir);
+		checkTaskUnclaimed(t, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram);
+		checkTaskSilentLock(t, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram);
 	}
 }
 
@@ -259,6 +279,7 @@ export async function checkAutomaticNotices({
 	dryRun = false,
 	now = Date.now(),
 	readPr = defaultReadPr,
+	sendTelegram = sendTelegramAlert,
 	out = console.log,
 } = {}) {
 	state.notified ??= {};
@@ -287,7 +308,7 @@ export async function checkAutomaticNotices({
 	checkClaimNotices(board, state, nowIso, sendMessage);
 	checkCloseNotices(allTasks, board, state, nowIso, sendMessage);
 	await checkReviewNotices(allTasks, board, state, nowIso, sendMessage, readPr);
-	checkEscalationNotices(board, state, now, nowIso, sendMessage, dir);
+	checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram);
 
 	return notices;
 }
@@ -391,6 +412,7 @@ export async function runMasterWatch({
 	getArchives = archiveSessions,
 	deliver = deliverWake,
 	readPr = defaultReadPr,
+	sendTelegram = sendTelegramAlert,
 	now = Date.now(),
 } = {}) {
 	const config = readLocal(masterConfigPath(dir));
@@ -410,6 +432,7 @@ export async function runMasterWatch({
 			dryRun,
 			now,
 			readPr,
+			sendTelegram,
 			out,
 		});
 

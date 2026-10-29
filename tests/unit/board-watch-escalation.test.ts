@@ -350,6 +350,86 @@ describe('T442 board watcher notices, escalation and merge queue', () => {
 			const b6 = loadBoard(dir);
 			const msgs6 = (b6.bitacora ?? []).filter(r => r.mensaje?.texto?.includes('listo para unir'));
 
+			// Case 6: Superseded by a round with cambios -> no notice
+			const round2Cambios = {
+				id: 'feat-core-revision-2',
+				num: 22,
+				titulo: 'Review Feat Core round 2',
+				tipo: 'revision',
+				origen: 'feat-core',
+				pr: '#600',
+				estado: 'hecha',
+				agente: 'claude',
+				revisionSha: approvedSha,
+				cierre: {
+					en: new Date(now + 20_000).toISOString(),
+					quien: 'claude',
+					resumen: 'Changes needed',
+					comprobaciones: ['pnpm test'],
+					saltadas: [],
+					pendientes: [],
+					resultado: {
+						veredicto: 'cambios',
+						sha: approvedSha,
+						hallazgos: [{ tipo: 'bug', texto: 'needs fixes' }],
+					},
+				},
+			};
+			writeFileSync(join(dir, 'tareas', 'feat-core-revision-2.json'), JSON.stringify(round2Cambios));
+			const emptyState = { delivered: {}, notified: {}, escalations: {} };
+			const noticesSuperseded = await m.checkAutomaticNotices({
+				dir,
+				board: loadBoard(dir),
+				state: emptyState,
+				now: now + 30_000,
+				readPr,
+			});
+			const msgsSuperseded = noticesSuperseded.filter(n => n.texto?.includes('listo para unir'));
+
+			// Case 7: Cancelled approved review -> no notice
+			const cancelledApproved = {
+				id: 'cancelled-feat-revision',
+				num: 23,
+				titulo: 'Cancelled review',
+				tipo: 'revision',
+				origen: 'cancelled-feat',
+				pr: '#601',
+				estado: 'cancelada',
+				agente: 'claude',
+				revisionSha: approvedSha,
+				cierre: {
+					en: new Date(now).toISOString(),
+					quien: 'claude',
+					resumen: 'Cancelled',
+					comprobaciones: [],
+					saltadas: [],
+					pendientes: [],
+					resultado: {
+						veredicto: 'aprobado',
+						sha: approvedSha,
+						hallazgos: [],
+					},
+				},
+			};
+			const cancelledOrigin = {
+				id: 'cancelled-feat',
+				num: 24,
+				titulo: 'Cancelled Feat',
+				estado: 'en revision',
+				pr: '#601',
+				agente: 'codex',
+			};
+			writeFileSync(join(dir, 'tareas', 'cancelled-feat.json'), JSON.stringify(cancelledOrigin));
+			writeFileSync(join(dir, 'tareas', 'cancelled-feat-revision.json'), JSON.stringify(cancelledApproved));
+			const noticesCancelled = await m.checkAutomaticNotices({
+				dir,
+				board: loadBoard(dir),
+				state: { delivered: {}, notified: {}, escalations: {} },
+				now: now + 40_000,
+				readPr,
+			});
+			const msgsCancelled = noticesCancelled.filter(n => n.texto?.includes('listo para unir'));
+
 			console.log(JSON.stringify({
 				msgs1: msgs1.length,
 				msgs2: msgs2.length,
@@ -358,6 +438,8 @@ describe('T442 board watcher notices, escalation and merge queue', () => {
 				msgs5Count: msgs5.length,
 				msgs5Text: msgs5[0]?.mensaje?.texto,
 				msgs6Count: msgs6.length,
+				msgsSupersededCount: msgsSuperseded.length,
+				msgsCancelledCount: msgsCancelled.length,
 			}));`,
 			root,
 		);
@@ -370,9 +452,11 @@ describe('T442 board watcher notices, escalation and merge queue', () => {
 		expect(result.msgs5Text).toContain('listo para unir #600');
 		expect(result.msgs5Text).toContain('siguiente: unir');
 		expect(result.msgs6Count).toBe(1);
+		expect(result.msgsSupersededCount).toBe(0);
+		expect(result.msgsCancelledCount).toBe(0);
 	});
 
-	it('never mutates board or records receipts in dry-run mode', () => {
+	it('never mutates board or records receipts in dry-run mode and omits telegram transport', () => {
 		const { root } = fixture();
 		const result = probe(
 			`
@@ -389,26 +473,79 @@ describe('T442 board watcher notices, escalation and merge queue', () => {
 					carril: 'f10-libre',
 				},
 			};
+			const unclaimed60m = {
+				id: 'unclaimed-60m',
+				num: 31,
+				titulo: 'Unclaimed 60m Task',
+				estado: 'pendiente',
+				agente: 'gemini',
+				entregada: {
+					agente: 'gemini',
+					desde: new Date(now - 70 * 60_000).toISOString(),
+				},
+			};
+			const silent60m = {
+				id: 'silent-60m',
+				num: 32,
+				titulo: 'Silent 60m Task',
+				estado: 'en curso',
+				agente: 'codex',
+				candado: {
+					agente: 'codex',
+					desde: new Date(now - 70 * 60_000).toISOString(),
+					latido: new Date(now - 70 * 60_000).toISOString(),
+					carril: 'f10-libre',
+				},
+			};
 			writeFileSync(join(dir, 'tareas', 'dry-task.json'), JSON.stringify(task));
+			writeFileSync(join(dir, 'tareas', 'unclaimed-60m.json'), JSON.stringify(unclaimed60m));
+			writeFileSync(join(dir, 'tareas', 'silent-60m.json'), JSON.stringify(silent60m));
+
+			const telegramCalls = [];
+			const fakeTelegram = async (text) => { telegramCalls.push(text); return { ok: true }; };
 
 			const printed = [];
-			await m.runMasterWatch({ dir, now, dryRun: true, out: (t) => printed.push(t) });
+			await m.runMasterWatch({
+				dir,
+				now,
+				dryRun: true,
+				sendTelegram: fakeTelegram,
+				out: (t) => printed.push(t),
+			});
 			const b = loadBoard(dir);
 			const msgs = (b.bitacora ?? []).filter(r => r.tarea === 'dry-task');
-			const stateSaved = existsSync(join(root, 'board-master-watch.json'));
+			const stateSavedDry = existsSync(join(root, 'board-master-watch.json'));
+			const dryTelegramCount = telegramCalls.length;
+
+			// Now run without dryRun and confirm telegram is called for both 60m branches
+			await m.runMasterWatch({
+				dir,
+				now,
+				dryRun: false,
+				sendTelegram: fakeTelegram,
+				out: () => {},
+			});
+			const liveTelegramCount = telegramCalls.length;
+			const stateSavedLive = existsSync(join(root, 'board-master-watch.json'));
 
 			console.log(JSON.stringify({
 				msgsCount: msgs.length,
-				stateSaved,
+				stateSavedDry,
+				stateSavedLive,
 				printedCount: printed.length,
 				printedHasClaim: printed.some(p => p.includes('T30') || p.includes('dry-task')),
+				dryTelegramCount,
+				liveTelegramCount,
 			}));`,
 			root,
 		);
 
 		expect(result.msgsCount).toBe(0);
-		expect(result.stateSaved).toBe(false);
+		expect(result.stateSavedDry).toBe(false);
+		expect(result.stateSavedLive).toBe(true);
 		expect(result.printedCount).toBeGreaterThanOrEqual(1);
 		expect(result.printedHasClaim).toBe(true);
+		expect(result.dryTelegramCount).toBe(0);
+		expect(result.liveTelegramCount).toBe(2);
 	});
 });
