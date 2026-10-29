@@ -10,13 +10,9 @@ import { tuFormPattern } from '../helpers/tu-register';
 
 const DEMOS_DIR = join(process.cwd(), 'src/invitations/demos');
 
-/** Demos the owner chose to keep in "tú" (decision d168: Valentina Noir). */
-const TU_REGISTER_DEMOS = new Set(['demo-xv-editorial']);
-
 const demoSlugs = readdirSync(DEMOS_DIR, { withFileTypes: true })
 	.filter((entry) => entry.isDirectory())
-	.map((entry) => entry.name)
-	.filter((slug) => !TU_REGISTER_DEMOS.has(slug));
+	.map((entry) => entry.name);
 
 interface DemoContent {
 	eventType: string;
