@@ -7,18 +7,24 @@ import { resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { AGENT_REGISTRY, ATENDIBLES, DESTINOS, NIVELES, VEREDICTOS } from './model.mjs';
 
 const execute = promisify(execFile);
 const cli = fileURLToPath(new URL('./board.mjs', import.meta.url));
 const text = z.string().min(1);
 const base = {
-	agente: z.enum(['claude', 'codex', 'gemini']),
+	agente: z.enum(Object.keys(AGENT_REGISTRY)),
 	sesion: text
 		.optional()
 		.describe('Current host session ID; required for Codex/Gemini lock ownership.'),
 };
 const task = { id: text.regex(/^(?:[a-z0-9][a-z0-9-]*|T\d+)$/) };
 const revision = { rev: z.number().int().positive() };
+const uncheckedRevision = {
+	rev: revision.rev
+		.optional()
+		.describe('Ignored by this CLI command; no revision check is performed.'),
+};
 const lines = z.array(text).min(1);
 const safety = z.enum(['commit', 'history', 'commit,history']);
 const tools = {
@@ -29,7 +35,7 @@ const tools = {
 		description: 'Claim a task from its assigned lane and branch; start Git Safety.',
 		fields: {
 			...task,
-			...revision,
+			...uncheckedRevision,
 			carril: text.optional(),
 			rama: text.optional(),
 			titulo: text,
@@ -37,15 +43,15 @@ const tools = {
 	},
 	release: {
 		description: 'Release a lock owned by this agent and session.',
-		fields: { ...task, ...revision, 'git-safety': safety.optional() },
+		fields: { ...task, ...uncheckedRevision, 'git-safety': safety.optional() },
 	},
 	msg: {
 		description: 'Send a task message as the explicit calling agent.',
 		fields: {
 			...task,
-			...revision,
+			...uncheckedRevision,
 			texto: text,
-			para: z.enum(['claude', 'codex', 'gemini', 'dueno', 'coordinador']),
+			para: z.enum(DESTINOS),
 			opcion: lines.optional(),
 			detalle: text.optional(),
 		},
@@ -58,8 +64,8 @@ const tools = {
 		description: 'Mark answered owner/coordinator messages handled under existing CLI guards.',
 		fields: {
 			...task,
-			...revision,
-			para: z.enum(['dueno', 'coordinador']),
+			...uncheckedRevision,
+			para: z.enum(ATENDIBLES),
 			mensaje: text.optional(),
 			nota: text.optional(),
 		},
@@ -70,27 +76,27 @@ const tools = {
 		fields: {
 			...task,
 			...revision,
-			resumen: lines,
-			comprobacion: lines,
-			saltada: lines,
-			pendiente: lines,
-			fallida: lines,
-			riesgo: lines,
-			duda: lines,
-			excepcion: lines,
+			resumen: lines.optional(),
+			comprobacion: lines.optional(),
+			saltada: lines.optional(),
+			pendiente: lines.optional(),
+			fallida: lines.optional(),
+			riesgo: lines.optional(),
+			duda: lines.optional(),
+			excepcion: lines.optional(),
 			pr: text.optional(),
 			sha: text.optional(),
 			commit: text.optional(),
-			nivel: z.enum(['validate:changed', 'type-check', 'ci']).optional(),
-			veredicto: z.enum(['aprobado', 'cambios', 'bloqueado']).optional(),
+			nivel: z.enum(NIVELES).optional(),
+			veredicto: z.enum(VEREDICTOS).optional(),
 			hallazgo: lines.optional(),
-			changelog: text,
+			changelog: text.optional(),
 			'git-safety': safety.optional(),
 		},
 	},
 };
 
-export function createServer() {
+export function createServer({ cliTimeoutMs = 120_000 } = {}) {
 	const server = new McpServer({ name: 'celebra-board', version: '1.0.0' });
 	for (const [name, { description, fields }] of Object.entries(tools)) {
 		const schema = z.strictObject({ ...base, ...fields });
@@ -111,11 +117,23 @@ export function createServer() {
 			try {
 				const { stdout } = await execute(process.execPath, args, {
 					maxBuffer: 16 * 1024 * 1024,
+					timeout: cliTimeoutMs,
 				});
 				// Return the CLI JSON verbatim: arrays and null are valid board responses too.
 				JSON.parse(stdout);
 				return { content: [{ type: 'text', text: stdout.trimEnd() }] };
 			} catch (error) {
+				if (error.killed && error.signal === 'SIGTERM') {
+					return {
+						isError: true,
+						content: [
+							{
+								type: 'text',
+								text: `Board CLI timed out after ${cliTimeoutMs} ms (${name}); it may have saved changes. Read the task before retrying.`,
+							},
+						],
+					};
+				}
 				const detail =
 					typeof error.stdout === 'string' && error.stdout.trim()
 						? error.stdout.trimEnd()
