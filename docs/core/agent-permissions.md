@@ -1,7 +1,8 @@
 # Agent command permissions
 
 `.agent/permissions/policy.json` is the shared source for native command approval adapters. `allow`
-contains literal command prefixes, `deny` contains prefixes and shell wildcard patterns, and
+contains literal command prefixes, `ask` contains commands requiring explicit interactive host
+approval (such as coordinator PR merges), `deny` contains prefixes and shell wildcard patterns, and
 `denyRead` contains sensitive path patterns. Code and policy contain no machine-specific paths. The
 file grants no task authority: agents still need the current task's `AUTORIZO` for Git writes and
 other gated operations. Board prompts remind agents to reuse that authorization.
@@ -46,7 +47,7 @@ All paths in this table are relative to the selected user home.
 | Adapter         | Destination                             | Update behavior                                                                                                 |
 | --------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Codex           | `.codex/rules/celebra-me.rules`         | Replace the marked generated block; preserve other text and every existing `.rules` file.                       |
-| Claude Code     | `.claude/settings.json`                 | Union generated entries into `permissions.allow` and `permissions.deny`; preserve other settings and Ask rules. |
+| Claude Code     | `.claude/settings.json`                 | Union generated `allow`, `ask`, and `deny` entries; move entries to ask if reassigned; preserve other settings. |
 | Gemini CLI      | `.gemini/policies/celebra-me.toml`      | Replace the marked generated block; preserve other text and policy files.                                       |
 | Antigravity CLI | `.gemini/antigravity-cli/settings.json` | Union generated `command(...)` and `read_file(...)` permissions; preserve other settings and Ask rules.         |
 
@@ -62,10 +63,12 @@ are not discovered or rewritten; verify them separately if the agent uses them.
   or wrapper. Common force/main push spellings are denied; wildcard-only deny entries are explicitly
   not compiled. Existing one-off approvals remain. These rules govern commands outside the sandbox,
   not every process or file access. Keep filesystem/sandbox safeguards enabled.
-- **Claude:** emits Bash and PowerShell command rules and Read denies. Deny takes precedence over
-  allow. File tools and recognizable shell reads get path protection, but arbitrary scripts can
-  still read files indirectly. Existing Ask rules can continue prompting. Settings are merged as
-  JSON; unrelated values survive, though formatting is normalized when additions are necessary.
+- **Claude:** emits Bash and PowerShell command rules, ask rules, and Read denies. Deny takes
+  precedence over allow. Gated operations like `gh pr merge` land in ask so the coordinator can
+  merge approved PRs with owner approval; Codex and Gemini keep them denied. File tools and
+  recognizable shell reads get path protection, but arbitrary scripts can still read files
+  indirectly. Existing Ask rules can continue prompting. Settings are merged as JSON; unrelated
+  values survive, though formatting is normalized when additions are necessary.
 - **Gemini:** emits user TOML policies with allow priority 10 and deny priority 999, including
   sensitive path argument matches for read/search tools. Other user policies at equal priority,
   higher admin policies, MCP tools and indirect script reads need separate inspection. The script
@@ -86,10 +89,12 @@ authoritative; direct Supabase/SQL/deploy commands are denied conservatively and
 variants. Use protected repository workflows with task authority. Native deny lists do not replace
 those guards or prove that every prohibited operation is technically impossible.
 
-Synchronization is deliberately additive for JSON permissions: it never deletes user approvals,
-denies or Ask entries. Removing an allow from policy does not revoke an already merged JSON allow;
-review and remove obsolete grants manually with owner authority. Text blocks replace their previous
-generated grants. Unmanaged conflicting rules are preserved and reported as a coverage limit.
+Synchronization is additive for user approvals and denies, except that managed entries transitioned
+by policy from deny to ask (such as coordinator PR merges) are moved to Ask to prevent deny
+precedence from silencing prompts. Removing an allow from policy does not revoke an already merged
+JSON allow; review and remove obsolete grants manually with owner authority. Text blocks replace
+their previous generated grants. Unmanaged conflicting rules are preserved and reported as a
+coverage limit.
 
 ## Format references
 

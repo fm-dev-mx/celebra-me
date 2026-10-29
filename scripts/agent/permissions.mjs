@@ -23,7 +23,9 @@ const globRegex = (value) => value.split('*').map(regexEscape).join('.*');
 
 export function validatePolicy(policy) {
 	if (!object(policy) || policy.version !== 1) throw new Error('Unsupported permission policy');
-	for (const key of ['allow', 'deny', 'denyRead']) {
+	const required = ['allow', 'deny', 'denyRead'];
+	const keys = policy.ask !== undefined ? [...required, 'ask'] : required;
+	for (const key of keys) {
 		if (
 			!Array.isArray(policy[key]) ||
 			!policy[key].length ||
@@ -54,19 +56,32 @@ const geminiDeny = (command) => `${globRegex(command)}(?:\\s|")`;
 /** Compile only documented native fields; unsupported coverage is returned explicitly. */
 export function compilePolicy(input) {
 	const policy = validatePolicy(input);
+	const deniedCommands = [];
+	let askInserted = false;
+	for (const command of policy.deny) {
+		deniedCommands.push(command);
+		if (command === 'git push *main*' && policy.ask) {
+			deniedCommands.push(...policy.ask);
+			askInserted = true;
+		}
+	}
+	if (!askInserted && policy.ask) {
+		deniedCommands.push(...policy.ask);
+	}
 	const codex = [
 		...policy.allow.map((s) => [s, 'allow']),
-		...policy.deny.filter((s) => !s.includes('*')).map((s) => [s, 'forbidden']),
+		...deniedCommands.filter((s) => !s.includes('*')).map((s) => [s, 'forbidden']),
 	].map(
 		([command, decision]) =>
 			`prefix_rule(pattern=${quoted(command.split(' '))}, decision=${quoted(decision)})`,
 	);
 	const commands = (decision) =>
-		policy[decision].flatMap((command) =>
+		(policy[decision] ?? []).flatMap((command) =>
 			['Bash', 'PowerShell'].map((tool) => `${tool}(${shellPattern(command)})`),
 		);
 	const claude = {
 		allow: commands('allow'),
+		ask: commands('ask'),
 		deny: [...commands('deny'), ...policy.denyRead.map((glob) => `Read(${glob})`)],
 	};
 	const rule = (fields, decision, priority) =>
@@ -85,7 +100,7 @@ export function compilePolicy(input) {
 				10,
 			),
 		),
-		...policy.deny.map((command) =>
+		...deniedCommands.map((command) =>
 			rule({ toolName: 'run_shell_command', commandRegex: geminiDeny(command) }, 'deny', 999),
 		),
 		rule(
@@ -102,7 +117,7 @@ export function compilePolicy(input) {
 	const antigravity = {
 		allow: policy.allow.map((command) => `command(${command})`),
 		deny: [
-			...policy.deny.map((command) =>
+			...deniedCommands.map((command) =>
 				command.includes('*')
 					? `command(regex:${globRegex(command)})`
 					: `command(${command})`,
@@ -139,13 +154,7 @@ function managedText(before, generated) {
 	return before.slice(0, start) + block + before.slice(after);
 }
 
-function mergePermissions(before, generated) {
-	let settings;
-	try {
-		settings = before ? JSON.parse(before) : {};
-	} catch {
-		throw new Error('Invalid settings JSON (contents withheld)');
-	}
+function assertValidPermissions(settings, targetKeys) {
 	if (
 		!object(settings) ||
 		(settings.permissions !== undefined && !object(settings.permissions))
@@ -153,18 +162,50 @@ function mergePermissions(before, generated) {
 		throw new Error('Invalid permissions object (contents withheld)');
 	}
 	const permissions = settings.permissions ?? {};
-	const added = {};
-	for (const key of ['allow', 'deny']) {
+	for (const key of targetKeys) {
 		const current = permissions[key] ?? [];
 		if (!Array.isArray(current) || current.some((s) => typeof s !== 'string')) {
 			throw new Error(`Invalid permissions.${key} (contents withheld)`);
 		}
-		added[key] = generated[key].filter((s) => !current.includes(s));
-		permissions[key] = unique([...current, ...generated[key]]);
 	}
-	if (!added.allow.length && !added.deny.length) return { after: before, added };
+	return permissions;
+}
+
+function moveDenyToAsk(permissions, askList) {
+	if (!askList?.length || !Array.isArray(permissions.deny)) return [];
+	const toMove = permissions.deny.filter((s) => askList.includes(s));
+	if (toMove.length > 0) {
+		permissions.deny = permissions.deny.filter((s) => !askList.includes(s));
+	}
+	return toMove;
+}
+
+function mergePermissions(before, generated) {
+	let settings;
+	try {
+		settings = before ? JSON.parse(before) : {};
+	} catch {
+		throw new Error('Invalid settings JSON (contents withheld)');
+	}
+	const targetKeys = unique([...Object.keys(generated), 'allow', 'deny']);
+	const permissions = assertValidPermissions(settings, targetKeys);
+	const moved = moveDenyToAsk(permissions, generated.ask);
+	const removed = moved.length ? { deny: moved } : {};
+	const added = {};
+
+	for (const key of targetKeys) {
+		const current = permissions[key] ?? [];
+		const gen = generated[key] ?? [];
+		const newEntries = gen.filter((s) => !current.includes(s));
+		if (newEntries.length > 0) {
+			added[key] = newEntries;
+			permissions[key] = unique([...current, ...gen]);
+		}
+	}
+	const hasChanges = Object.keys(added).length > 0 || Object.keys(removed).length > 0;
+	if (!hasChanges) return { after: before, added: {}, removed: {} };
 	settings.permissions = permissions;
-	return { after: JSON.stringify(settings, null, 2) + '\n', added };
+	return { after: JSON.stringify(settings, null, 2) + '\n', added, removed };
 }
 
 /** Never follow links/junctions, including parent directories, into another configuration. */
@@ -193,6 +234,10 @@ export function planPermissions({
 		const before = exists ? fs.readFileSync(target, 'utf8') : '';
 		if (adapter === 'codex' || adapter === 'gemini') {
 			const after = managedText(before, compiled[adapter]);
+			const diffLines = compiled[adapter]
+				.trimEnd()
+				.split('\n')
+				.map((line) => `+${line}`);
 			return {
 				adapter,
 				relative,
@@ -201,9 +246,20 @@ export function planPermissions({
 				before,
 				after,
 				additions: [compiled[adapter].trimEnd()],
+				diffLines,
 			};
 		}
-		const { after, added } = mergePermissions(before, compiled[adapter]);
+		const { after, added, removed = {} } = mergePermissions(before, compiled[adapter]);
+		const additions = Object.entries(added).flatMap(([key, values]) =>
+			values.map((value) => `permissions.${key} += ${quoted(value)}`),
+		);
+		const removals = Object.entries(removed).flatMap(([key, values]) =>
+			values.map((value) => `permissions.${key} += ${quoted(value)}`),
+		);
+		const diffLines = [
+			...removals.map((line) => `-${line}`),
+			...additions.map((line) => `+${line}`),
+		];
 		return {
 			adapter,
 			relative,
@@ -211,9 +267,9 @@ export function planPermissions({
 			exists,
 			before,
 			after,
-			additions: Object.entries(added).flatMap(([key, values]) =>
-				values.map((value) => `permissions.${key} += ${quoted(value)}`),
-			),
+			additions,
+			removals,
+			diffLines,
 		};
 	});
 }
@@ -227,7 +283,8 @@ export function permissionDiff(plans) {
 				`--- ~/${p.relative}`,
 				`+++ ~/${p.relative}`,
 				'@@ generated permissions; existing values withheld @@',
-				...p.additions.flatMap((s) => s.split('\n').map((line) => `+${line}`)),
+				...(p.diffLines ??
+					p.additions.flatMap((s) => s.split('\n').map((line) => `+${line}`))),
 			].join('\n'),
 		)
 		.join('\n');
