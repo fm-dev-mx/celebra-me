@@ -116,7 +116,7 @@
         ]
     },
     "gallery": {
-        "variant": "magazine-spread",
+        "variant": "pinned-track",
         "eyebrow": "Portafolio",
         "title": "Antes de la noche",
         "subtitle": "Seis fotografías de los días previos.",
@@ -157,10 +157,7 @@
                 "layoutRole": "standard",
                 "caption": "La invitación, cerrada con sello."
             }
-        ],
-        "variantOptions": {
-            "mobileBrowse": "rail"
-        }
+        ]
     },
     "gifts": {
         "variant": "standard",
@@ -306,7 +303,8 @@
         "coverExperience": "collector",
         "backdropImage": "hero",
         "coverEditionLabel": "Edición",
-        "coverLines": ["Retrato en blanco y negro", "Una noche, quince años"]
+        "coverLines": ["Retrato en blanco y negro", "Una noche, quince años"],
+        "coverNote": "Esta edición lleva su nombre porque esa noche no estaría completa sin usted. Le guardo un lugar el 18 de septiembre."
     },
     "sharing": {
         "shareMessages": {

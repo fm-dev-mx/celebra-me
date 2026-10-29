@@ -226,6 +226,8 @@ export interface EnvelopeViewModel {
 		coverIssue?: string;
 		/** Editorial cover reveal: one or two cover lines; defaults are the XV edition lines. */
 		coverLines?: string[];
+		/** Collector edition: handwritten note on the inside front cover, addressed to the guest. */
+		coverNote?: string;
 		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
 		coverExperience?: 'standard' | 'collector';
 		/** Collector edition: decorative cutout on the printed cover face. */
