@@ -1,7 +1,8 @@
 {
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
-    "puerto": 4319,
+    "puerto": 4320,
+    "nucleo": "19cfca69612821d60718db9025096a1eaf7949f4",
     "wipMax": 3,
     "hechoDias": 7,
     "zonaHoraria": "America/Mexico_City",
