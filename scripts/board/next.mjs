@@ -310,8 +310,10 @@ export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 		.filter((t) => prs === undefined || prs.some((p) => `#${p.number}` === normalizePr(t.pr)))
 		.map((t) => reviewItem(t, board, prs))
 		.filter(Boolean);
+	// A merge signal follows its origin's PR; any other message leaves once its task is finished (d265).
+	const open = new Set(openTaskMessages('coordinador', board));
 	const messages = unreadFor('coordinador', board)
-		.filter((r) => !mergeSignal(r) || pendingMergeSignal(r, board, prs))
+		.filter((r) => (mergeSignal(r) ? pendingMergeSignal(r, board, prs) : open.has(r)))
 		.map((r) => ({
 			tipo: 'mensaje',
 			t: findTask(r.tarea, board),
@@ -387,10 +389,15 @@ function pendingMergeSignal(r, board, prs) {
  * (hecha, unida, comprobada, cancelada) or archived no longer asks for anything. `inbox` keeps every message.
  */
 export function ownerMessages(board) {
+	return openTaskMessages('dueno', board);
+}
+
+/** d265: unread messages to `para` whose task is unknown or still open (not finished, not archived). */
+function openTaskMessages(para, board) {
 	const archived = new Set((board.archivo ?? []).map((t) => t.id));
-	return unreadFor('dueno', board).filter((r) => {
+	return unreadFor(para, board).filter((r) => {
 		const t = findTask(r.tarea, board);
-		return !t || !(isFinished(t) || archived.has(t.id));
+		return !t || !(isFinished(t) || t.archivada || archived.has(t.id));
 	});
 }
 
