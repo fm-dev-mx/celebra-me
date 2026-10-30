@@ -22,6 +22,13 @@
 	--color-action-accent-rgb: 196 178 146;
 	--gold-metallic: linear-gradient(var(--color-action-accent), var(--color-action-accent));
 
+	// Music: the quiet equalizer control as a black disc with a champagne hairline and bars.
+	--music-player-button-bg: rgb(12 11 10 / 88%);
+	--music-player-button-color: var(--color-action-accent);
+	--music-player-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 45%);
+	--music-player-ring-color: rgb(var(--color-action-accent-rgb) / 35%);
+	--music-player-prompt-accent: var(--color-action-accent);
+
 	// Collector magazine: an ivory print with graphite furniture and a black ribbon, so the
 	// object reads as a noir art issue rather than a gilded one.
 	.editorial-cover-wrapper[data-cover-experience='collector'] {

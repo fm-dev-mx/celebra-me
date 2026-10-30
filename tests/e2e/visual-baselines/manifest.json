@@ -2411,9 +2411,9 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "f04adc61908fa31bed944a9478fdd2669fca2192fb2aa95d2d82d78a41fd74b7",
-            "contentHash": "a86902a4a58bf40e90a3581cda1850576f02ed9ae9715b04866f473cb1a8ec91",
-            "assetHash": "371ee46afe576e89fa2a3f272a914e1575168bbef5e69e6130000c145fc7abc1",
+            "sha256": "145e42575cef9b1cae1c6ea8e4313332c7a30a603ebd3fb2d150e25c28ffb460",
+            "contentHash": "0c212f130bc53049459a300f8e4ea478c9051052a432d0c03482fb6f6aa01192",
+            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2423,9 +2423,9 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "sha256": "73a82cc804948c93e58d9b8b7105f0ba36d31f9f0fc91800d609cb0a05a848ac",
-            "contentHash": "a86902a4a58bf40e90a3581cda1850576f02ed9ae9715b04866f473cb1a8ec91",
-            "assetHash": "371ee46afe576e89fa2a3f272a914e1575168bbef5e69e6130000c145fc7abc1",
+            "sha256": "8ebd0d6a0c00e33cd0fd53d1f377b8f56c144558f476ca1f165b4e1b07b474d0",
+            "contentHash": "0c212f130bc53049459a300f8e4ea478c9051052a432d0c03482fb6f6aa01192",
+            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
         },
         {
