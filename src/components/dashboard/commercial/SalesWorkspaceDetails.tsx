@@ -7,6 +7,7 @@ import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/
 import { getUsableWhatsAppE164 } from '@/lib/commercial/phone';
 import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
 import { labelCommercialEventType } from '@/lib/tracking/commercial-presentation';
+import { LEAD_CODE_PATTERN } from '@/lib/tracking/lead-origin';
 
 function formatMoney(amount: number): string {
 	return new Intl.NumberFormat('es-MX', {
@@ -132,6 +133,14 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 					<p className="sales-workspace__eyebrow">Ficha de prospecto</p>
 					<h3>{lead.name || 'Prospecto sin nombre'}</h3>
 					<span>{lead.leadCode}</span>
+					{LEAD_CODE_PATTERN.test(lead.leadCode) && (
+						<a
+							className="crm-prospect-origin-link"
+							href={`?folio=${encodeURIComponent(lead.leadCode)}#origen-folio`}
+						>
+							Ver origen del folio
+						</a>
+					)}
 				</div>
 				<span className="crm-prospect-status">{labelLeadStatus(lead.status)}</span>
 			</header>

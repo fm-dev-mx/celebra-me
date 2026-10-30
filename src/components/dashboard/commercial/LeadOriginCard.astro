@@ -1,0 +1,177 @@
+---
+import type { LeadOriginResult } from '@/lib/tracking/lead-origin.server';
+import { LEAD_ORIGIN_WINDOW_DAYS } from '@/lib/tracking/lead-origin';
+import { COMMERCIAL_TIME_ZONE } from '@/lib/tracking/commercial-period';
+import '@/styles/dashboard/_lead-origin.scss';
+
+interface Props {
+	query: string;
+	result: LeadOriginResult | null;
+	failed?: boolean;
+}
+const { query, result, failed = false } = Astro.props;
+
+const dateTime = new Intl.DateTimeFormat('es-MX', {
+	timeZone: COMMERCIAL_TIME_ZONE,
+	day: 'numeric',
+	month: 'short',
+	hour: '2-digit',
+	minute: '2-digit',
+});
+const formatDate = (iso: string) => dateTime.format(new Date(iso));
+const DEVICE_LABELS: Record<string, string> = {
+	mobile: 'Celular',
+	tablet: 'Tableta',
+	desktop: 'Computadora',
+};
+const pageLabel = (path: string) => (path === '/' ? 'página principal' : path);
+const referrerLabel = (referrer: string | null) => {
+	if (!referrer) return 'Entrada directa o sin referencia';
+	try {
+		return new URL(referrer).hostname;
+	} catch {
+		return referrer;
+	}
+};
+const elapsed = (from: string, to: string) => {
+	const minutes = Math.max(0, Math.round((Date.parse(to) - Date.parse(from)) / 60_000));
+	if (minutes < 60) return `${minutes} min`;
+	const hours = Math.round(minutes / 60);
+	return hours < 48 ? `${hours} h` : `${Math.round(hours / 24)} días`;
+};
+const origin = result?.status === 'found' ? result.origin : null;
+---
+
+<section class="dashboard-card lead-origin" id="origen-folio" aria-labelledby="lead-origin-title">
+	<h2 id="lead-origin-title">Origen del folio</h2>
+	<form method="get" action="#origen-folio" class="lead-origin__search">
+		<label for="lead-origin-folio">Buscar por folio</label>
+		<input
+			id="lead-origin-folio"
+			name="folio"
+			type="search"
+			value={query}
+			placeholder="CM-XXXXXX"
+			autocomplete="off"
+			spellcheck="false"
+		/>
+		<button type="submit" class="btn-secondary">Ver origen</button>
+	</form>
+
+	{failed && (
+		<p role="status">No fue posible consultar el origen de este folio. Intente de nuevo en unos minutos.</p>
+	)}
+	{result?.status === 'invalid' && (
+		<p role="status">El folio debe tener el formato CM-XXXXXX (por ejemplo, CM-PPMZNN).</p>
+	)}
+	{result?.status === 'not_found' && (
+		<p role="status">No existe un prospecto con el folio {result.leadCode}.</p>
+	)}
+
+	{origin && (
+		<div class="lead-origin__body">
+			<p class="lead-origin__code">{origin.leadCode} · contacto {formatDate(origin.contactAt)}</p>
+			{!origin.hasNavigation ? (
+				<p role="status">
+					Sin datos de navegación: el folio se escribió a mano, la visita no aceptó la medición o fue una
+					visita interna. No significa que el prospecto no haya visto demos.
+				</p>
+			) : (
+				<>
+					<dl class="lead-origin__facts">
+						<div>
+							<dt>Clic en</dt>
+							<dd>
+								{origin.click
+									? [origin.click.label, origin.click.section, pageLabel(origin.click.page)]
+											.filter(Boolean)
+											.join(' · ')
+									: 'Sin registro del clic'}
+								{origin.click?.promoCode && <span> · código {origin.click.promoCode}</span>}
+							</dd>
+						</div>
+						<div>
+							<dt>Llegó desde</dt>
+							<dd>
+								{origin.arrival
+									? [
+											referrerLabel(origin.arrival.referrer),
+											origin.arrival.utm,
+											origin.arrival.metaAd ? 'anuncio de Meta' : null,
+										]
+											.filter(Boolean)
+											.join(' · ')
+									: 'Sin registro de la sesión'}
+							</dd>
+						</div>
+						{origin.arrival && (
+							<div>
+								<dt>Página de entrada</dt>
+								<dd>
+									{pageLabel(origin.arrival.landingPath)}
+									{origin.arrival.device && ` · ${DEVICE_LABELS[origin.arrival.device] ?? origin.arrival.device}`}
+								</dd>
+							</div>
+						)}
+						<div>
+							<dt>Visitas</dt>
+							<dd>
+								{origin.visits}
+								{origin.firstVisitAt &&
+									` · primera visita ${elapsed(origin.firstVisitAt, origin.contactAt)} antes del contacto`}
+							</dd>
+						</div>
+					</dl>
+
+					<h3>Demos vistas</h3>
+					{origin.demos.length > 0 ? (
+						<ul class="lead-origin__list">
+							{origin.demos.map((demo) => (
+								<li>
+									<strong>{demo.title}</strong> ×{demo.views}
+									{demo.maxDepth !== null && ` · ${demo.maxDepth} % leída`}
+									{` · ${formatDate(demo.lastSeenAt)}`}
+									{demo.otherLinkOnly && <span class="lead-origin__tag">abierta desde otro enlace</span>}
+								</li>
+							))}
+						</ul>
+					) : (
+						<p>Sin demos vistas en los {LEAD_ORIGIN_WINDOW_DAYS} días previos al contacto.</p>
+					)}
+
+					{origin.packages.length > 0 && (
+						<>
+							<h3>Paquetes vistos</h3>
+							<ul class="lead-origin__list">
+								{origin.packages.map((pkg) => (
+									<li>
+										<strong>{pkg.name}</strong> ×{pkg.views}
+									</li>
+								))}
+							</ul>
+						</>
+					)}
+				</>
+			)}
+
+			<h3>Demos compartidas por usted</h3>
+			{origin.sharedDemos === null ? (
+				<p role="status">Seguimiento manual no disponible; no se interpreta como ninguna demo compartida.</p>
+			) : origin.sharedDemos.length > 0 ? (
+				<ul class="lead-origin__list">
+					{origin.sharedDemos.map((demo) => (
+						<li>
+							<strong>{demo.title}</strong> · {formatDate(demo.at)}
+						</li>
+					))}
+				</ul>
+			) : (
+				<p>Ninguna registrada.</p>
+			)}
+			<p class="lead-origin__note">
+				Se excluyen las visitas internas. Las demos abiertas en otra pestaña se buscan hasta{' '}
+				{LEAD_ORIGIN_WINDOW_DAYS} días antes del contacto; los eventos se conservan 13 meses.
+			</p>
+		</div>
+	)}
+</section>
