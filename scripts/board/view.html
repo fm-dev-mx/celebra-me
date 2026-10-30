@@ -213,6 +213,13 @@ details.tech .body{font-size:.8rem;color:var(--muted)}
 .sect{display:flex;align-items:baseline;gap:8px;font:600 .8rem var(--body);color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line)}
 .sect:first-child{padding-top:4px}
 .sect .n{font:400 .74rem var(--mono);color:var(--faint)}
+.sect[hidden]+.mine+.sect{padding-top:4px}
+/* T468: the project strip on top of «General»: a mother row per project, red while a subtask's lock is silent. */
+.proj .ghead .ttl .tbtn{padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.proj .ghead .pmeta{display:flex;flex-wrap:wrap;column-gap:10px;font-size:.76rem;color:var(--faint)}
+.proj .ghead .pmeta .bk{color:var(--muted)}
+.proj .ghead.silent{background:var(--danger-soft);outline:1px solid var(--danger-rule);outline-offset:-1px}
+.proj .ghead.silent .pmeta .sl{color:var(--danger);font-weight:600}
 .mine .crow{align-items:center;min-height:40px;padding:6px 8px}
 .mine .crow .ring{margin-top:0}
 .mine .crow .t1{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -494,6 +501,8 @@ a.prl{font-weight:600}
     <div class="cola" id="work">
       <div class="views">
         <section id="p-general" role="tabpanel" aria-labelledby="t-general">
+          <h3 class="sect" id="gs-proj" hidden>Proyectos <span class="n" id="gn-proj"></span></h3>
+          <div class="mine proj" id="gen-proj" hidden></div>
           <h3 class="sect">Para usted <span class="n" id="gn-you"></span></h3>
           <div class="mine" id="gen-mine" aria-live="polite"><div class="empty">Cargando lo que le toca a usted…</div></div>
           <h3 class="sect">Cola <span class="n" id="gn-cola"></span></h3>
@@ -602,7 +611,7 @@ import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, o
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
 import { optionsText } from '/owner-text.mjs';
-import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
+import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, projects as mProjects, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
 import { pasteAgents } from '/owner-where.mjs';
 window.boardStarted=true;
@@ -783,6 +792,7 @@ function renderCola(){
   if(rev.length)h+=foldHtml('q-revision','En revisión',rev.length,rev.map(t=>itemHtml(t)).join(''),'hechas, falta comprobarlas');
   $('list').innerHTML=h;
   const mine=renderMine();
+  renderProjects();
   renderGeneral(all);
   renderFound();
   // T268: «Para usted» (and «General», T321) opens on the owner's first row (or nothing) until a click picks another task.
@@ -1126,6 +1136,21 @@ function renderMine(){
   $('stall').innerHTML=next.detenidas.map(nextRow).join('');
   return acts.map(x=>x.id).filter(id=>id&&byId(id));
 }
+// T468: one row per open project, its title unfolds the subtasks (the queue's toggle state, by the same key); the
+// meta line says what runs, what waits and why, and when it last changed; red while a subtask's lock is silent.
+function projectHtml(x){
+  const subs=subtasksOf(x.mother||{grupo:x.grupo},S.board),key='subs:'+x.key,name=x.mother?tN(x.mother)+tt(x.mother.titulo||x.mother.id):'Grupo '+esc(x.grupo);
+  const bk=x.bloqueadas.map(b=>`<span class="bk">${esc(taskTag(b.t))} espera: ${esc(b.motivos.join('; '))}</span>`).join('');
+  const sl=x.silenciosas.length?`<span class="sl">Candado sin latido: ${esc(x.silenciosas.map(s=>taskTag(s)).join(', '))}</span>`:'';
+  const when=x.actualizado?`<span class="when" title="${esc(fmt(x.actualizado))}">actualizado ${esc(ago(x.actualizado))}</span>`:'';
+  return `<div class="ghead${sl?' silent':''}" data-proj="${esc(x.key)}">${tgHtml(key,subs.length)}<h3 class="ttl"><button type="button" class="tbtn" data-toggle="${esc(key)}" aria-expanded="${OPEN.has(key)}">${name}</button></h3>${progHtml(x.p)}<span class="pmeta">${sl}${bk}${when}</span></div>${subsHtml(x.key,subs)}`;
+}
+function renderProjects(){
+  const ps=mProjects(S.board);
+  $('gs-proj').hidden=$('gen-proj').hidden=!ps.length;
+  $('gn-proj').textContent=ps.length;
+  $('gen-proj').innerHTML=ps.map(projectHtml).join('');
+}
 // T321: the queue in «General», one line per task in queue order; the review group stays a link to the Cola.
 function renderGeneral(all){
   const row=t=>`<button type="button" class="row crow c-${color(t)}" data-sel="${esc(t.id)}" data-all="1">${ringHtml(t)}<span class="what"><span class="t1">${t.num?`<span class="tn">T${esc(t.num)}</span> `:''}${tt(t.titulo)}</span></span>${pill(t)}</button>`;
@@ -1203,7 +1228,8 @@ document.addEventListener('click',async ev=>{
   const sha=ev.target.closest('[data-sha]');if(sha){copySha(sha);return}
   const dec=ev.target.closest('[data-dec]');if(dec){ev.preventDefault();setTab('historial',true);$('q').value=dec.dataset.dec;renderHist();scrollTo(0,0);return}
   const side=ev.target.closest('[data-side]');if(side){setSide(side.dataset.side==='1');return}
-  const tg=ev.target.closest('[data-toggle]');if(tg){const k=tg.dataset.toggle;OPEN.has(k)?OPEN.delete(k):OPEN.add(k);renderCola();const b=document.querySelector(`[data-toggle="${CSS.escape(k)}"]`);if(b)b.focus();return}
+  // T468: the project strip and the queue share a toggle key; focus returns to the one clicked, in its own list.
+  const tg=ev.target.closest('[data-toggle]');if(tg){const k=tg.dataset.toggle,box=tg.closest('[id]'),tgc=tg.classList.contains('tg');OPEN.has(k)?OPEN.delete(k):OPEN.add(k);renderCola();const b=[...((box&&$(box.id))||document).querySelectorAll(`[data-toggle="${CSS.escape(k)}"]`)].find(x=>x.classList.contains('tg')===tgc);if(b)b.focus();return}
   if(ev.target.closest('#help-btn')){const h=$('help'),b=$('help-btn');h.hidden=!h.hidden;b.setAttribute('aria-expanded',String(!h.hidden));return}
   const tab=ev.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab,true);return}
   const col=ev.target.closest('[data-col]');if(col){setColor(col.dataset.col);return}
