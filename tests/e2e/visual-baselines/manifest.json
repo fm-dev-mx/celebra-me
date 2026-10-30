@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-30T05:03:54.212Z",
+    "generatedAt": "2026-10-30T06:18:58.965Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
-        "cssSha256": "f53771eef6807a9ca6724de95b7face704fdc391b7993bf2c7a7fb261579dcf1",
+        "cssSha256": "97bbc0c2fb9423d38932d9ab6b5a3509534526317839da37d2fc5d03bd0cc11b",
         "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2411,8 +2411,8 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "7c96423bfebafd5b4bbc3c20824d3500d0d3e6c363f81d7bffbfb16fccd14d3f",
-            "contentHash": "ca83cf7ef95dc11c7a549daecfe37c4878c007a93d18d1b3e9de0514caf26edb",
+            "sha256": "145e42575cef9b1cae1c6ea8e4313332c7a30a603ebd3fb2d150e25c28ffb460",
+            "contentHash": "0c212f130bc53049459a300f8e4ea478c9051052a432d0c03482fb6f6aa01192",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
         },
@@ -2423,8 +2423,8 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "sha256": "5223b28e8760881635352fd9f129f95ca7d0c0a2b3176a2564196f83db4c32c1",
-            "contentHash": "ca83cf7ef95dc11c7a549daecfe37c4878c007a93d18d1b3e9de0514caf26edb",
+            "sha256": "8ebd0d6a0c00e33cd0fd53d1f377b8f56c144558f476ca1f165b4e1b07b474d0",
+            "contentHash": "0c212f130bc53049459a300f8e4ea478c9051052a432d0c03482fb6f6aa01192",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
         },
@@ -2501,9 +2501,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "fc570322e4ff833de81ae4245d7782a6e63fc94e",
+    "referenceSha": "8178297840b1d7344c8857c5589c878c8b1914f1",
     "variantManifest": {
-        "generatedAt": "2026-10-30T05:03:54.212Z",
+        "generatedAt": "2026-10-30T06:18:58.965Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2516,7 +2516,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
-            "cssSha256": "f53771eef6807a9ca6724de95b7face704fdc391b7993bf2c7a7fb261579dcf1",
+            "cssSha256": "97bbc0c2fb9423d38932d9ab6b5a3509534526317839da37d2fc5d03bd0cc11b",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4405,10 +4405,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "fc570322e4ff833de81ae4245d7782a6e63fc94e"
+        "referenceSha": "8178297840b1d7344c8857c5589c878c8b1914f1"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-30T05:03:54.217Z",
+        "generatedAt": "2026-10-30T06:18:58.988Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4421,7 +4421,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
-            "cssSha256": "f53771eef6807a9ca6724de95b7face704fdc391b7993bf2c7a7fb261579dcf1",
+            "cssSha256": "97bbc0c2fb9423d38932d9ab6b5a3509534526317839da37d2fc5d03bd0cc11b",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4943,8 +4943,8 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-                "sha256": "7c96423bfebafd5b4bbc3c20824d3500d0d3e6c363f81d7bffbfb16fccd14d3f",
-                "contentHash": "ca83cf7ef95dc11c7a549daecfe37c4878c007a93d18d1b3e9de0514caf26edb",
+                "sha256": "145e42575cef9b1cae1c6ea8e4313332c7a30a603ebd3fb2d150e25c28ffb460",
+                "contentHash": "0c212f130bc53049459a300f8e4ea478c9051052a432d0c03482fb6f6aa01192",
                 "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4955,8 +4955,8 @@
                 "preset": "editorial",
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-                "sha256": "5223b28e8760881635352fd9f129f95ca7d0c0a2b3176a2564196f83db4c32c1",
-                "contentHash": "ca83cf7ef95dc11c7a549daecfe37c4878c007a93d18d1b3e9de0514caf26edb",
+                "sha256": "8ebd0d6a0c00e33cd0fd53d1f377b8f56c144558f476ca1f165b4e1b07b474d0",
+                "contentHash": "0c212f130bc53049459a300f8e4ea478c9051052a432d0c03482fb6f6aa01192",
                 "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5033,9 +5033,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "fc570322e4ff833de81ae4245d7782a6e63fc94e"
+        "referenceSha": "8178297840b1d7344c8857c5589c878c8b1914f1"
     },
-    "candidateManifestSha256": "c9057dcf022790f957dd879753d5df174176088705dc4256a6be4d7c535b5283",
-    "acceptedFromCommit": "fc570322e4ff833de81ae4245d7782a6e63fc94e",
-    "acceptedAt": "2026-10-30T05:05:03.436Z"
+    "candidateManifestSha256": "faa89cbdc6c017bb803bf7cbe91c98aaf0d20db7e06d252cfe9e5816f807d616",
+    "acceptedFromCommit": "8178297840b1d7344c8857c5589c878c8b1914f1",
+    "acceptedAt": "2026-10-30T06:19:44.431Z"
 }
