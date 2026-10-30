@@ -364,7 +364,8 @@ export function ownerFindings(board) {
 
 /**
  * «Le toca a usted» (the owner's ready tasks with where to do them, answers owed, stalled Codex or Gemini tasks,
- * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`.
+ * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`. Owner rows
+ * also carry a stable `clave` so the watcher's Telegram alerts (T437) fire once per item.
  */
 export function nextSections(board, { prs, now = Date.now() } = {}) {
 	const { dueno, detenidas } = stalls(board, now);
@@ -384,6 +385,7 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 			? [
 					row(null, relayAlert, {
 						tipo: 'gemini-relay',
+						clave: 'gemini-relay',
 						donde: FIXED_DESTINATIONS['gemini-relay'],
 						copia: null,
 					}),
@@ -397,13 +399,18 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 			return row(
 				t,
 				`${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
-				at(taskDestination(t, board, now)),
+				{ clave: `tarea:${t.id}`, ...at(taskDestination(t, board, now)) },
 			);
 		}),
 		...ownerAsks(board, now).map(({ t, r }) =>
-			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`, at(answerDestination(t, board))),
+			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`, {
+				clave: `respuesta:${t.id}:${r.ref}`,
+				...at(answerDestination(t, board)),
+			}),
 		),
-		...dueno.map(({ t, texto }) => row(t, texto, at(taskDestination(t, board, now)))),
+		...dueno.map(({ t, texto }) =>
+			row(t, texto, { clave: `detenida:${t.id}`, ...at(taskDestination(t, board, now)) }),
+		),
 		...ownerFindings(board).map((r) => {
 			const t = findTask(r.tarea, board);
 			return row(
@@ -411,13 +418,17 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 				`Correcciones para ${AGENT_REGISTRY[r.mensaje.para]?.nombre ?? r.mensaje.para}: ${r.mensaje.texto}`,
 				{
 					tipo: 'correcciones',
+					clave: `correcciones:${r.mensaje.id}`,
 					...at(findingsDestination(r, board, now)),
 				},
 			);
 		}),
 		...ownerMessages(board).map((r) => {
 			const t = findTask(r.tarea, board);
-			return row(t, `Mensaje: ${messageLine(r, board)}`, at(answerDestination(t, board)));
+			return row(t, `Mensaje: ${messageLine(r, board)}`, {
+				clave: `mensaje:${r.mensaje.id}`,
+				...at(answerDestination(t, board)),
+			});
 		}),
 	];
 	return {

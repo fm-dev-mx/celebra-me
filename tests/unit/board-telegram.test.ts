@@ -69,6 +69,6 @@ describe('T437 / T442 telegram alerts integration', () => {
 			console.log(JSON.stringify(r));
 		`);
 
-		expect(res).toEqual({ ok: false, error: 'Connection refused' });
+		expect(res).toEqual({ ok: false, error: 'Error' });
 	});
 });

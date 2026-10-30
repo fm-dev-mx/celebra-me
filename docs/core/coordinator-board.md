@@ -415,6 +415,36 @@ The watcher extends the bounded no-AI pass with automatic board coordination and
   master receipts, ensuring every transition notifies exactly once across repeated passes and
   process restarts.
 
+### Owner alerts on Telegram (T437, d353)
+
+Each pass also reads «Le toca a usted» (`nextSections(...).usted`: owner tasks, answers owed,
+stalled dispatches, unread messages `--para=dueno`, the Gemini relay alert) and sends one Telegram
+Bot API `sendMessage` to the owner's chat when new items appear (`scripts/board/owner-alerts.mjs`).
+
+- **One alert per item**: each row carries a stable `clave` (`tarea:<id>`, `respuesta:<id>:<ref>`,
+  `detenida:<id>`, `mensaje:<id>`, `gemini-relay`). Sent keys live under `owner.alertadas` in
+  `.agent/tmp/board-master-watch.json`; a key re-arms once its item leaves the list.
+- **Grouping**: every new item of one pass (one minute) goes in a single message, at most 8 lines,
+  ending with `Tablero: http://127.0.0.1:4320`. A single item reads like
+  `T418 · Andrea · … . Tablero: http://127.0.0.1:4320`. An empty list sends nothing.
+- **Failures**: every Telegram request aborts after 10 s, so a hung connection never stops master
+  wakes. A 400/401/403/404 stops sending until the token or chat changes (one log line); a 429 waits
+  `retry_after`; other failures back off 1, 2, 4… minutes, capped at 30.
+- **Missing configuration**: the watcher keeps working, records current items as seen (no burst when
+  configured later) and writes one line to `.agent/tmp/board-master-watch.log`.
+- `pnpm board:watch --dry-run` prints `[prueba] telegram: …` and records nothing.
+
+Configuration lives in the ignored `.agent/tmp/telegram.json` (`token`, `chatId`), or in
+`TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`. No command prints or logs either value. Owner setup, from
+the Integration checkout:
+
+1. In Telegram, open `@BotFather`, send `/newbot`, choose a name and a username ending in `bot`, and
+   copy the token it returns.
+2. `pnpm board:telegram:token` — paste the token at the hidden prompt and press Enter.
+3. In Telegram, open the new bot, press **Iniciar** and write `hola`.
+4. `pnpm board:telegram:chat` — reads `getUpdates` and saves the private chat that wrote `hola`.
+5. `pnpm board:telegram:test` — sends «Prueba de Celebra-me».
+
 After a CLI writer crash, inspect the exact `.agent/tmp/board/.lock` PID and process identity. Age
 alone does not establish an orphan. Obtain scoped authority to remove that orphan file, preserving
 all board documents and backups. Never reset or reimport the board as automatic recovery.
