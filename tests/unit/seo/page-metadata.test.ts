@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { landingData } from '@/data/landing-page.data';
+import { BRAND_SOCIAL_IMAGE } from '@/lib/brand/brand-logo';
 
 /**
  * Extracts width and height from a JPEG buffer (reading SOF0/SOF2 marker).
@@ -35,12 +36,15 @@ describe('page metadata and Open Graph tags', () => {
 			expect(dimensions).toEqual({ width: 1200, height: 630 });
 		});
 
-		it('ensures public/images/og/og-home.jpg exists with 1200x630 dimensions', () => {
-			const imagePath = resolve(rootDir, 'public/images/og/og-home.jpg');
+		it('ensures the default brand social image is a 1200x630 PNG', () => {
+			const imagePath = resolve(rootDir, 'public', BRAND_SOCIAL_IMAGE.src.slice(1));
 			expect(existsSync(imagePath)).toBe(true);
 			const buffer = readFileSync(imagePath);
-			const dimensions = getJpegDimensions(buffer);
-			expect(dimensions).toEqual({ width: 1200, height: 630 });
+			// PNG IHDR stores width and height right after the 16-byte signature and chunk header.
+			expect({ width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) }).toEqual({
+				width: BRAND_SOCIAL_IMAGE.width,
+				height: BRAND_SOCIAL_IMAGE.height,
+			});
 		});
 	});
 

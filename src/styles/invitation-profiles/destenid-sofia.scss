@@ -3058,10 +3058,10 @@
 			font-size: 0.6rem;
 		}
 
-		// The dark script logo disappears on the ink footer; render it as a light beige mark.
-		.footer-brand-logo.logo {
-			width: 7.25rem;
-			filter: invert(1) sepia(0.35) brightness(0.95);
+		// The ink footer takes the ivory signature.
+		.footer-brand-logo {
+			--footer-logo-claro: none;
+			--footer-logo-oscuro: block;
 		}
 
 		.whatsapp-button {

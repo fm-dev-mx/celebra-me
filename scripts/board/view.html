@@ -1078,7 +1078,8 @@ function renderCounts(){
   $('t-usted').title=c.usted?`Usted: ${c.usted} ${c.usted>1?'cosas':'cosa'}`:'Usted: nada';
 }
 // T321: an owner row leads with its action as a verb; a message reads «Codex → usted: question», with its task and
-// its age under it and the technical sentences (SHAs, branches, commands) folded.
+// its age under it and the technical sentences (SHAs, branches, commands) folded. T489: a merged row adds
+// «×n · when each came» (`repite`).
 function msgHtml(x){
   const m=x.msg,t=m.t&&byId(m.t.id)?m.t:null,key='msg:'+(m.en||'')+':'+m.tarea;
   const ref=t?`<a class="tl" href="#cola" data-sel="${esc(t.id)}" data-all="1" title="${esc(t.titulo)}">${esc(m.tarea)}</a> · ${tt(t.titulo)}`:m.tarea?`<span class="tl-x">${esc(m.tarea)}</span>`:'';
@@ -1086,19 +1087,23 @@ function msgHtml(x){
     ${dondeHtml(x)}<span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
     ${m.opciones.length?`<span class="sub">Opciones: ${esc(optionsText(m.opciones))}</span>`:''}
     ${m.contexto.length?`<span class="sub">${m.contexto.map(rich).join(' ')}</span>`:''}
-    <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}</span>
+    <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}${x.repite?` · <span title="${esc((x.fechas||[]).map(fmt).join(', '))}">${esc(x.repite)}</span>`:''}</span>
     ${m.detalle.length?`<details class="more tech" data-more="${esc(key)}"${OPEN.has(key)?' open':''}><summary>Detalle técnico</summary><div class="body">${m.detalle.map(s=>`<p>${rich(s)}</p>`).join('')}</div></details>`:''}
   </span></article>`;
-  return copyWrap(x,card);
+  return card;
 }
+// T489: three owner rows, one button each: Decidir answers in the agent's chat (its text to copy), Aprobar opens
+// the PR, Hacer fuera opens the task to mark it «Hecho».
 function actHtml(x){
-  if(x.tipo==='mensaje')return msgHtml(x);
-  const t=x.t,tag=t&&t.num?`<span class="tn">T${esc(t.num)}</span> `:'';
-  const where=x.tipo==='tarea'&&!pasteTo(t)&&runLines(t)[0];
-  const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what">${dondeHtml(x)}<span class="t1">${x.tipo==='tarea'?tag:''}${x.tipo==='decision'?esc(x.texto):tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}${where?`<span class="sub">${esc(where)}</span>`:''}</span>`;
-  if(x.tipo==='archivar')return `<button type="button" class="row act" data-tab="finalizadas" title="Abrir Finalizadas">${body}</button>`;
-  const row=x.id&&byId(x.id)?`<button type="button" class="row act" data-sel="${esc(x.id)}" data-all="1">${body}</button>`:`<div class="row act">${body}</div>`;
-  return copyWrap(x,row);
+  const t=x.t&&byId(x.t.id)?x.t:null,tag=t&&t.num?`<span class="tn">T${esc(t.num)}</span> `:'';
+  const row=x.msg?msgHtml(x):(()=>{
+    const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what">${dondeHtml(x)}<span class="t1">${tag}${tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}</span>`;
+    return t?`<button type="button" class="row act" data-sel="${esc(t.id)}" data-all="1">${body}</button>`:`<div class="row act">${body}</div>`;
+  })();
+  const pr=prNumber(x.pr);
+  const btn=x.tipo==='aprobar'&&pr?`<a class="btn primary" href="${GH}/pull/${pr}" target="_blank" rel="noopener">Ver PR</a>`
+    :x.tipo==='hacer'&&t?`<button type="button" class="btn primary" data-sel="${esc(t.id)}" data-all="1">Hecho</button>`:'';
+  return btn?`<div class="paste">${row}${btn}</div>`:copyWrap(x,row);
 }
 // T391: each «Para usted» row opens with its DÓNDE line; a row with text to copy gets the short pointer, not the prompt.
 const dondeHtml=x=>x.donde?`<span class="donde">${esc(x.donde)}</span>`:'';
@@ -1146,7 +1151,13 @@ function renderFound(){
   $('found').innerHTML=hits.length?hits.map(row).join('')+more:q?'<p class="none"><b>Nada coincide.</b>Busque por número (T295), id, título o PR (#594).</p>':'';
 }
 // T321: the text sits in its own inline span (a «T295» link no longer breaks the line) and a message drops its prefix.
-const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span><span>${tt(rowText(x.texto))}</span></span></button>`:`<div class="row" title="${esc(x.texto)}"><span><span>${rich(rowText(x.texto))}</span></span></div>`;
+// T489: the rows that left «Usted» keep their DÓNDE and text to copy here; the archive row opens Finalizadas.
+const nextRow=x=>{
+  const known=x.id&&byId(x.id),body=`${x.tarea?`<b>${esc(x.tarea)}</b>`:''}<span>${dondeHtml(x)}<span>${known?tt(rowText(x.texto)):rich(rowText(x.texto))}</span></span>`;
+  if(x.tipo==='archivar')return `<button type="button" class="row" data-tab="finalizadas" title="Abrir Finalizadas">${body}</button>`;
+  const row=known?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}">${body}</button>`:`<div class="row" title="${esc(x.texto)}">${body}</div>`;
+  return copyWrap({...x,t:known?{id:x.id}:null},row);
+};
 function renderArchiveChats(){
   const inventory=S.board.archivables;
   const chats=inventory?.chats??[];

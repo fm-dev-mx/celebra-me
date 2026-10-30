@@ -148,10 +148,10 @@ without an ornament renders nothing new.
 
 The editorial footer skin (`editorial` and `editorial-magazine`) resolves its ground, rule, brand
 credit, contact button and replay link through `--footer-editorial-*` tokens (`bg`, `bg-image`,
-`border-top`, `shadow`, `padding`, `content-gap`, `content-gap-md`, `powered-color`, `logo-width`,
-`logo-filter`, `cta-border`, `cta-bg`, `cta-color`, `cta-icon-filter`, `cta-hover-border`,
-`cta-hover-bg`, `cta-hover-color`, `cta-hover-shadow`, `replay-color`, `replay-hover-color`). Every
-default equals the previous literal, so profiles only restate what they change.
+`border-top`, `shadow`, `padding`, `content-gap`, `content-gap-md`, `powered-color`, `cta-border`,
+`cta-bg`, `cta-color`, `cta-icon-filter`, `cta-hover-border`, `cta-hover-bg`, `cta-hover-color`,
+`cta-hover-shadow`, `replay-color`, `replay-hover-color`). Every default equals the previous
+literal, so profiles only restate what they change.
 
 Collector cutouts are typed content too: `envelope.coverOrnament` (one image on the printed cover
 face) and `envelope.spreadOrnaments` (one or two on the first inner page) render as contained,

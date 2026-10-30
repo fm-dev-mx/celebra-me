@@ -136,3 +136,72 @@ export function messageExtraIssues(m) {
 		out.push('detalle debe ser texto');
 	return out;
 }
+
+export const fold = (s) =>
+	String(s ?? '')
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase();
+
+/**
+ * Words of the published invitation slugs (scripts/provision/invitations/*.ts and
+ * src/invitations/clients/*) plus the host names they carry, so a public text never names a client.
+ * A unit test keeps this list in step with the slugs.
+ */
+export const CLIENT_NAMES = new Set(
+	[
+		'abril michelle becerra rea',
+		'aithan darell',
+		'alba rosa quinonez',
+		'allison scarlett',
+		'america solis',
+		'daniela martin',
+		'destenid sofia',
+		'leslie perez',
+		'melissa luis osmar',
+		'mia pintor',
+		'naydelin paredes',
+		'norma hernandez',
+		'olivia antonio',
+		'renata',
+		'romina rios chaparro',
+		'valentina hernandez',
+		'victoria roberto',
+		'andrea gloria garza',
+		'yireh ana',
+	].flatMap((s) => s.split(' ')),
+);
+
+/** The first known client name in `text` (accents and case ignored), or null. */
+export function clientNameIn(text) {
+	for (const w of fold(text).split(/[^a-z0-9]+/)) if (CLIENT_NAMES.has(w)) return w;
+	return null;
+}
+
+const AMOUNT = /\$\s*\d|\d[\d.,]*\s*(pesos|mxn|usd)\b/i;
+
+/** The task's `aviso` when it is safe to send outside the board (no client name, no amount), else null. */
+export function publicAviso(t) {
+	const s = typeof t?.aviso === 'string' ? t.aviso.trim() : '';
+	return s && !clientNameIn(s) && !AMOUNT.test(s) ? s : null;
+}
+
+/**
+ * FIELD_CHECKS entries for the owner texts and for `aviso` (T489): optional; it leaves the board (Telegram), so it
+ * never names a client or carries an amount.
+ */
+export const taskTextChecks = [
+	...ownerFieldChecks,
+	[
+		(t) => t.aviso !== undefined && !(typeof t.aviso === 'string' && t.aviso.trim()),
+		() => 'aviso debe ser texto',
+	],
+	[
+		(t) => typeof t.aviso === 'string' && clientNameIn(t.aviso),
+		(t) => `aviso no puede nombrar clientes (${clientNameIn(t.aviso)})`,
+	],
+	[
+		(t) => typeof t.aviso === 'string' && AMOUNT.test(t.aviso),
+		() => 'aviso no puede llevar montos',
+	],
+];

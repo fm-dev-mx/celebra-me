@@ -1,6 +1,11 @@
 {
     "$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
     "migrations": {
+        "20261030160000": {
+            "phase": "expand",
+            "provides": ["order_invitation_drafts"],
+            "notes": "Adds a unique order invitation link and service-only invoker RPC for atomic draft creation. Apply before enabling the order draft UI."
+        },
         "20260730113000": {
             "phase": "expand",
             "provides": ["public_guest_rsvp_rpc"],
@@ -372,6 +377,9 @@
         },
         "lead_capture_form_client": {
             "requiresDbCapabilities": ["leads_capture_form_fields"]
+        },
+        "order_invitation_drafts_client": {
+            "requiresDbCapabilities": ["order_invitation_drafts"]
         },
         "invitation_data_link_client": {
             "requiresDbCapabilities": [

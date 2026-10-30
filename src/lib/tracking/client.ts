@@ -570,7 +570,12 @@ export function initCommercialTracking(): void {
 	initGA4();
 	initMetaPixel();
 
-	void trackEvent('page_viewed', { page_type: routeClass });
+	// Attribution only: never adopt a return-link code as the session's lead identity.
+	const returnCode = new URLSearchParams(window.location.search).get('lead_code');
+	void trackEvent('page_viewed', {
+		page_type: routeClass,
+		...(returnCode && /^CM-[A-Z0-9]{6}$/.test(returnCode) ? { lead_code: returnCode } : {}),
+	});
 	if (routeClass === 'demo') {
 		const [, routeType = '', routeSlug = ''] = window.location.pathname.split('/');
 		const demo = findDemoByRouteSlug(routeType);

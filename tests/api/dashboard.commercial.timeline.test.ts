@@ -1,8 +1,10 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { loadCrmTimeline } from '@/lib/commercial/crm-timeline.service';
+import { loadQuoteReminderTimeline } from '@/lib/commercial/quote-reminders.service';
 import { GET } from '@/pages/api/dashboard/commercial/timeline';
 import { createMockRequest } from '../helpers/api-mocks';
+jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({ requireAdminRateLimit: jest.fn() }));
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
@@ -10,6 +12,9 @@ jest.mock('@/lib/rsvp/auth/authorization', () => ({
 
 jest.mock('@/lib/commercial/crm-timeline.service', () => ({
 	loadCrmTimeline: jest.fn(),
+}));
+jest.mock('@/lib/commercial/quote-reminders.service', () => ({
+	loadQuoteReminderTimeline: jest.fn(),
 }));
 
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<
@@ -27,11 +32,15 @@ describe('GET /api/dashboard/commercial/timeline', () => {
 			role: 'super_admin',
 			isSuperAdmin: true,
 		});
-		});
+	});
 
 	it('returns a structured 400 response when customerId is missing', async () => {
 		const response = await GET({
-			request: createMockRequest(undefined, undefined, 'http://localhost/api/dashboard/commercial/timeline'),
+			request: createMockRequest(
+				undefined,
+				undefined,
+				'http://localhost/api/dashboard/commercial/timeline',
+			),
 			url: new URL('http://localhost/api/dashboard/commercial/timeline'),
 		} as never);
 
@@ -42,25 +51,52 @@ describe('GET /api/dashboard/commercial/timeline', () => {
 			error: { code: 'bad_request', message: 'customerId is required.' },
 		});
 		expect(loadCrmTimelineMock).not.toHaveBeenCalled();
-		});
+	});
 
 	it('returns a timeline for a valid customerId', async () => {
 		loadCrmTimelineMock.mockResolvedValue([]);
 		const response = await GET({
-			request: createMockRequest(undefined, undefined, 'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id'),
-			url: new URL('http://localhost/api/dashboard/commercial/timeline?customerId=customer-id'),
+			request: createMockRequest(
+				undefined,
+				undefined,
+				'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id',
+			),
+			url: new URL(
+				'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id',
+			),
 		} as never);
 
 		expect(response.status).toBe(200);
 		expect(await response.json()).toEqual({ success: true, data: [] });
 		expect(loadCrmTimelineMock).toHaveBeenCalledWith('customer-id');
-		});
+	});
+
+	it.each([
+		['11111111-1111-4111-8111-111111111111', 200],
+		['invalid', 400],
+	])('validates the unlinked lead timeline identifier %s', async (leadId, status) => {
+		jest.mocked(loadQuoteReminderTimeline).mockResolvedValue([]);
+		const url = new URL(`http://localhost/api/dashboard/commercial/timeline?leadId=${leadId}`);
+		const response = await GET({
+			request: createMockRequest(undefined, undefined, url.href),
+			url,
+		} as never);
+		expect(response.status).toBe(status);
+		if (status === 200) expect(loadQuoteReminderTimeline).toHaveBeenCalledWith({ leadId });
+		else expect(loadQuoteReminderTimeline).not.toHaveBeenCalled();
+	});
 
 	it('preserves unexpected service failures as structured 500 responses', async () => {
 		loadCrmTimelineMock.mockRejectedValue(new Error('database unavailable'));
 		const response = await GET({
-			request: createMockRequest(undefined, undefined, 'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id'),
-			url: new URL('http://localhost/api/dashboard/commercial/timeline?customerId=customer-id'),
+			request: createMockRequest(
+				undefined,
+				undefined,
+				'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id',
+			),
+			url: new URL(
+				'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id',
+			),
 		} as never);
 
 		expect(response.status).toBe(500);
@@ -68,15 +104,23 @@ describe('GET /api/dashboard/commercial/timeline', () => {
 			success: false,
 			error: { code: 'internal_error' },
 		});
-		});
+	});
 
 	it('preserves authorization failures', async () => {
-		requireAdminStrongSessionMock.mockRejectedValue(new ApiError(401, 'unauthorized', 'No session.'));
+		requireAdminStrongSessionMock.mockRejectedValue(
+			new ApiError(401, 'unauthorized', 'No session.'),
+		);
 		const response = await GET({
-			request: createMockRequest(undefined, undefined, 'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id'),
-			url: new URL('http://localhost/api/dashboard/commercial/timeline?customerId=customer-id'),
+			request: createMockRequest(
+				undefined,
+				undefined,
+				'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id',
+			),
+			url: new URL(
+				'http://localhost/api/dashboard/commercial/timeline?customerId=customer-id',
+			),
 		} as never);
 
 		expect(response.status).toBe(401);
-		});
+	});
 });

@@ -81,6 +81,11 @@ describe('master watcher (d351)', () => {
 			`
 			setMaster(dir,'codex','master-one');
 			writeFileSync(join(root,'telegram.json'),JSON.stringify({token:'${token}',chatId:'9'}));
+			// T489: dispatch rows are the coordinator's, so an owner question is what makes Telegram send.
+			const { mkdirSync } = await import('node:fs');
+			mkdirSync(join(dir,'bitacora'),{recursive:true});
+			const en=new Date().toISOString();
+			writeFileSync(join(dir,'bitacora',en.slice(0,10)+'.jsonl'),JSON.stringify({tarea:'ready',en,quien:'claude',mensaje:{id:'q1',para:'dueno',texto:'¿Sigue?'}})+'\\n');
 			const { checkOwnerAlerts } = await import(new URL('./owner-alerts.mjs', process.argv[1]));
 			const tg = await import(new URL('./telegram.mjs', process.argv[1]));
 			// The interval stands in for the open socket that keeps a real hung fetch alive.

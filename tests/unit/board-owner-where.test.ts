@@ -152,7 +152,7 @@ describe('owner destinations (T391)', () => {
 		expect(d.copia).not.toContain(POINTER);
 	});
 
-	it('(4) correcciones: the author chat and only the findings, also as a «Para usted» row', () => {
+	it('(4) correcciones: the author chat and only the findings, also as a coordinator row (T489)', () => {
 		const board = makeBoard(
 			[
 				task('autor', 1, {
@@ -180,15 +180,15 @@ describe('owner destinations (T391)', () => {
 		const out = probe(
 			board,
 			`const r = board.bitacora[0];
-			const usted = n.nextSections(board, { now: ${NOW} }).usted;
-			console.log(JSON.stringify({ d: w.findingsDestination(r, board, ${NOW}), usted, lines: n.sectionLines({ usted, coordinador: [], detenidas: [] }) }));`,
+			const coordinador = n.nextSections(board, { now: ${NOW} }).coordinador;
+			console.log(JSON.stringify({ d: w.findingsDestination(r, board, ${NOW}), coordinador, lines: n.sectionLines({ usted: [], coordinador, detenidas: [] }) }));`,
 		);
 		expect(out.d).toEqual({
 			tipo: 'correcciones',
 			donde: 'DÓNDE: Gemini · proyecto f08-demos · chat existente «f08 · T1 · autor»',
 			copia: 'DÓNDE: Gemini · proyecto f08-demos · chat existente «f08 · T1 · autor»\nCorrija el enlace roto.',
 		});
-		const row = out.usted.find((x: Json) => x.destino === 'correcciones');
+		const row = out.coordinador.find((x: Json) => x.destino === 'correcciones');
 		expect(row.texto).toBe('Correcciones para Gemini: Corrija el enlace roto.');
 		expect(out.lines.join('\n')).toContain(`  - ${out.d.donde}\n    ${row.texto}`);
 	});
@@ -275,11 +275,11 @@ describe('owner destinations (T391)', () => {
 		expect(lines.join('\n')).toContain('  - DÓNDE: x\n    a\n    b');
 	});
 
-	it('gives every view row its DÓNDE and the short text to copy', () => {
+	it('gives every coordinator row its DÓNDE and the short text to copy', () => {
 		const board = makeBoard([task('codex-lista', 1, { carrilPlaneado: 'f05-plataforma' })]);
 		const rows = probe(
 			board,
-			`console.log(JSON.stringify(f.ownerActions(board, { now: ${NOW} })));`,
+			`console.log(JSON.stringify(n.nextSections(board, { now: ${NOW} }).coordinador));`,
 		);
 		const row = rows.find((x: Json) => x.destino === 'nueva');
 		expect(row.donde).toContain('chat nuevo «f05 · T1 · codex-lista»');

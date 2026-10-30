@@ -570,6 +570,7 @@ function OrdersList({
 	onMore: () => void;
 	onPayment: (order: SalesOrder) => void;
 }) {
+	const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 	return (
 		<section className="orders-workspace__list" aria-labelledby="orders-list-title">
 			<h2 id="orders-list-title">Lista de pedidos</h2>
@@ -616,6 +617,27 @@ function OrdersList({
 					</strong>
 					{item.totalAmount < item.amountPaid && (
 						<p role="alert">Montos por conciliar.</p>
+					)}
+					{['deposit_paid', 'paid'].includes(item.status) && (
+						<>
+							<button
+								className="btn-secondary"
+								type="button"
+								aria-expanded={expandedOrderId === item.id}
+								onClick={() =>
+									setExpandedOrderId((current) =>
+										current === item.id ? null : item.id,
+									)
+								}
+							>
+								{expandedOrderId === item.id
+									? 'Ocultar datos de invitación'
+									: 'Ver datos de invitación'}
+							</button>
+							{expandedOrderId === item.id && (
+								<InvitationDataPanel orderId={item.id} />
+							)}
+						</>
 					)}
 					{['quoted', 'confirmed'].includes(item.status) && !item.amountPaid && (
 						<button

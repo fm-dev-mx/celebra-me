@@ -72,11 +72,9 @@
 			color: var(--footer-editorial-powered-color, var(--color-text-on-dark));
 		}
 
-		.footer-brand-logo.logo {
-			width: var(--footer-editorial-logo-width, 8.5rem);
-			height: auto;
-			transform: none;
-			filter: var(--footer-editorial-logo-filter, brightness(1.2));
+		.footer-brand-logo {
+			--footer-logo-claro: none;
+			--footer-logo-oscuro: block;
 		}
 	}
 

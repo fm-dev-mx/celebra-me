@@ -222,8 +222,10 @@ invitation profiles.
   after the directions button; `--location-copy-label-display: inline` shows «Copiar» next to the
   copy icon (with `--location-copy-button-gap`); night-route `--location-route-stack-gap` holds the
   first stacked stop whole before the second slides over it. All off by default.
-- footer (profile tokens): `--footer-closing-{font,size,style}`, `--footer-logo-filter` and
-  `--footer-contact-icon-filter` restyle the closing line and recolor the marks on dark footers.
+- footer (profile tokens): `--footer-closing-{font,size,style}` restyle the closing line;
+  `--footer-logo-claro: none; --footer-logo-oscuro: block` swaps the brand credit to the ivory
+  `firma-invitacion` artwork on dark footers, and `--footer-contact-icon-filter` recolors the
+  contact icon.
 - interludes[].presentation framed: the whole photograph on paper inside a hairline double frame, so
   edge marks (watermarks, handwritten dates) are never cropped. Tuned through
   `--interlude-framed-*`.

@@ -35,8 +35,7 @@ const loginLink = '/login?next=%2Fdashboard%2Finvitados';
 
     <!-- SLOT: Logo -->
     <a href="/" slot="logo" class="home-header__logo-container" aria-label="Celebra-me Inicio">
-        <Logo variant="white" class="logo-img home-header__logo--white" />
-        <Logo variant="gold" class="logo-img home-header__logo--gold" />
+        <Logo version="compacto" tone="oscuro" width={128} class="home-header__logo" />
     </a>
 
     <!-- SLOT: Desktop Nav -->
@@ -70,7 +69,6 @@ const loginLink = '/login?next=%2Fdashboard%2Finvitados';
             loginLink={loginLink}
             loginLabel="Iniciar sesión"
         >
-            <Logo class="mobile-nav-logo" />
             <div slot="cta" class="mobile-nav-actions__cta-group">
                 <WhatsAppButton
                     className="mobile-nav-actions__cta"
