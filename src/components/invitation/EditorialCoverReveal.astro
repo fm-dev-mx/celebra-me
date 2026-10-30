@@ -38,6 +38,8 @@ interface Props {
 	guestName?: string;
 	/** Collector edition: seats reserved for that guest. */
 	guestSeats?: number;
+	/** Collector edition: handwritten note on the inside front cover, addressed to the guest. */
+	coverNote?: string;
 	/** Collector edition: table of contents, in the invitation's section order. */
 	coverContents?: CoverContentsEntry[];
 	/** Collector edition: photograph printed on the first inner page (hands off to the hero). */
@@ -71,6 +73,7 @@ const {
 	coverExperience = 'standard',
 	guestName,
 	guestSeats,
+	coverNote,
 	coverContents = [],
 	spreadImage,
 	coverOrnament,
@@ -291,6 +294,15 @@ const shouldRenderHidden =
 									</span>
 								))}
 							</span>
+							{coverNote && (
+								<span class="ec-inside__note">
+									{trimmedGuestName && (
+										<span class="ec-inside__note-to">{trimmedGuestName}:</span>
+									)}
+									<span class="ec-inside__note-body">{coverNote}</span>
+									<span class="ec-inside__note-from">{heroName}</span>
+								</span>
+							)}
 							<span class="ec-inside__mark">{coverEdition}</span>
 							<span class="ec-inside__folio">pág. 02</span>
 						</div>

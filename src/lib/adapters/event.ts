@@ -27,7 +27,10 @@ import {
 } from '@/lib/invitation/countdown-presentation';
 import { buildEventCalendarMonth, type EventCalendarMonth } from '@/lib/invitation/event-calendar';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
-import { resolvePersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
+import {
+	resolvePersonalizedAccessCheckInQr,
+	resolvePersonalizedAccessPassStyle,
+} from '@/lib/invitation/personalized-access-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 import { hasPlayableMusicUrl } from '@/lib/invitation/local-preview-config';
 import {
@@ -175,6 +178,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		coverMark: data.hero.presentation?.coverMark,
 		coverPage: data.hero.presentation?.coverPage,
 		designCredit: data.hero.presentation?.designCredit,
+		scene: data.hero.presentation?.scene,
 		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,
@@ -278,6 +282,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			coverVolume: data.envelope.coverVolume,
 			coverIssue: data.envelope.coverIssue,
 			coverLines: data.envelope.coverLines,
+			coverNote: data.envelope.coverNote,
 			coverExperience: data.envelope.coverExperience,
 			coverOrnament: data.envelope.coverOrnament
 				? resolveAsset(eventSlug, data.envelope.coverOrnament, data.title)
@@ -529,6 +534,9 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 			...data.rsvp.personalizedAccess,
 			variant: data.rsvp.personalizedAccess.variant,
 			passStyle: resolvePersonalizedAccessPassStyle(
+				data.rsvp.personalizedAccess.presentationOptions,
+			),
+			checkInQr: resolvePersonalizedAccessCheckInQr(
 				data.rsvp.personalizedAccess.presentationOptions,
 			),
 		},

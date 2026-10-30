@@ -66,6 +66,8 @@ export const rsvpSchema = z
 				presentationOptions: z
 					.object({
 						passStyle: z.enum(PERSONALIZED_ACCESS_PASS_STYLES).optional(),
+						/** Decorative QR check-in preview; renders on demo previews only. */
+						checkInQr: z.boolean().optional(),
 					})
 					.strict()
 					.optional(),

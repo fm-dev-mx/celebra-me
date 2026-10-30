@@ -30,6 +30,7 @@ import { signalLine } from './cierre.mjs';
 import { normalizePr } from './pr-ref.mjs';
 import { ciOf } from './live.mjs';
 import { sendTelegramAlert } from './telegram.mjs';
+import { checkOwnerAlerts } from './owner-alerts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PREFIX = '[vigilante d351]';
@@ -402,7 +403,20 @@ function loadWatchState(file) {
 		delivered: state.delivered || {},
 		notified: state.notified || {},
 		escalations: state.escalations || {},
+		...(state.owner ? { owner: state.owner } : {}),
 	};
+}
+
+// T437 (d353): Telegram alert for new «Le toca a usted» items; never blocks the pass.
+async function runOwnerAlerts(ownerAlerts = checkOwnerAlerts, { file, ...args }) {
+	const { state, dryRun } = args;
+	const before = JSON.stringify(state.owner);
+	try {
+		await ownerAlerts(args);
+	} catch {
+		// A transport or log failure must not stop master wakes.
+	}
+	if (!dryRun && JSON.stringify(state.owner) !== before) writeLocal(file, state);
 }
 
 export async function runMasterWatch({
@@ -413,6 +427,7 @@ export async function runMasterWatch({
 	deliver = deliverWake,
 	readPr = defaultReadPr,
 	sendTelegram = sendTelegramAlert,
+	ownerAlerts,
 	now = Date.now(),
 } = {}) {
 	const config = readLocal(masterConfigPath(dir));
@@ -440,6 +455,8 @@ export async function runMasterWatch({
 			writeLocal(file, state);
 			board = loadBoard(dir);
 		}
+
+		await runOwnerAlerts(ownerAlerts, { dir, file, board, state, now, dryRun, out });
 
 		if (!Object.keys(config.masters || {}).length) {
 			if (autoNotices.length && !dryRun) writeLocal(file, state);
@@ -475,6 +492,7 @@ export async function runMasterWatch({
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	process.env.CELEBRA_BOARD_VIA ||= 'watch'; // its bitácora rows are not CLI calls
 	const args = Object.fromEntries(
 		process.argv.slice(2).map((arg) => {
 			const [key, ...value] = arg.replace(/^--/, '').split('=');

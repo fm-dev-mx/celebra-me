@@ -58,18 +58,51 @@ describe('master watcher (d351)', () => {
 			`
 			let calls=0; const deliver=()=>calls++;
 			const getArchives=async()=>({chats:[]});
-			const unconfigured=await m.runMasterWatch({dir,deliver,getArchives});
+			// Owner Telegram alerts (T437) keep their own receipts; board-owner-alerts.test.ts covers them.
+			const ownerAlerts=async()=>[];
+			const unconfigured=await m.runMasterWatch({dir,deliver,getArchives,ownerAlerts});
 			setMaster(dir,'codex','master-one');
 			const printed=[];
-			await m.runMasterWatch({dir,deliver,getArchives,dryRun:true,out:t=>printed.push(t)});
+			await m.runMasterWatch({dir,deliver,getArchives,ownerAlerts,dryRun:true,out:t=>printed.push(t)});
 			const saved=existsSync(join(root,'board-master-watch.json'));
 			writeFileSync(join(dir,'tareas','ready.json'),JSON.stringify({id:'ready',estado:'hecha'}));
-			const empty=await m.runMasterWatch({dir,deliver,getArchives});
+			const empty=await m.runMasterWatch({dir,deliver,getArchives,ownerAlerts});
 			console.log(JSON.stringify({unconfigured,empty,calls,saved,printed}));`,
 			root,
 		);
 		expect(result).toMatchObject({ unconfigured: [], empty: [], calls: 0, saved: false });
 		expect(result.printed).toHaveLength(1);
+	});
+
+	it('finishes the pass and delivers wakes when the Telegram send hangs, without leaking the token', () => {
+		const { root } = fixture();
+		const token = '123456789:fake-token-for-tests-only-0000000000';
+		const result = probe(
+			`
+			setMaster(dir,'codex','master-one');
+			writeFileSync(join(root,'telegram.json'),JSON.stringify({token:'${token}',chatId:'9'}));
+			const { checkOwnerAlerts } = await import(new URL('./owner-alerts.mjs', process.argv[1]));
+			const tg = await import(new URL('./telegram.mjs', process.argv[1]));
+			// The interval stands in for the open socket that keeps a real hung fetch alive.
+			const hanging = (_url, init) => new Promise((_, reject) => {
+				const socket = setInterval(() => {}, 1000);
+				init.signal.addEventListener('abort', () => { clearInterval(socket); reject(init.signal.reason); });
+			});
+			const ownerAlerts = (args) => checkOwnerAlerts({ ...args,
+				sendTelegram: (text, opts) => tg.sendTelegramAlert(text, { ...opts, fetch: hanging, timeoutMs: 50 }) });
+			const woken=[]; const printed=[];
+			const started=Date.now();
+			await m.runMasterWatch({dir,getArchives:async()=>({chats:[]}),deliver:(...a)=>woken.push(a[0]),ownerAlerts,out:t=>printed.push(t)});
+			const ms=Date.now()-started;
+			const read=(f)=>existsSync(join(root,f))?readFileSync(join(root,f),'utf8'):'';
+			console.log(JSON.stringify({woken,ms,log:read('board-master-watch.log'),saved:read('board-master-watch.json'),printed}));`,
+			root,
+		);
+		expect(result.woken).toEqual(['codex']);
+		expect(result.ms).toBeLessThan(5000);
+		expect(result.log).toContain('timeout');
+		for (const text of [result.log, result.saved, result.printed.join('\n')])
+			expect(text).not.toContain(token);
 	});
 
 	it('retries a failed fake queue, remembers acceptance across restarts, and re-arms readiness', () => {

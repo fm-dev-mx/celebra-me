@@ -5,6 +5,7 @@ import EditorialCoverReveal from '@/components/invitation/EditorialCoverReveal.a
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import { buildCoverContents } from '@/lib/invitation/cover-contents';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
+import { DEMO_GUEST_NAME } from '@/components/invitation/rsvp-logic';
 
 interface Props {
 	page: InvitationPageContext;
@@ -23,6 +24,7 @@ const { envelope, viewModel } = page;
 			coverVolume={envelope.coverVolume}
 			coverIssue={envelope.coverIssue}
 			coverLines={envelope.coverLines}
+			coverNote={envelope.coverNote}
 			microcopy={envelope.microcopy}
 			eventSlug={envelope.eventSlug}
 			variant={envelope.variant}
@@ -35,7 +37,7 @@ const { envelope, viewModel } = page;
 			spreadImage={viewModel.hero.backgroundImage}
 			coverOrnament={envelope.coverOrnament}
 			spreadOrnaments={envelope.spreadOrnaments}
-			guestName={page.guestName}
+			guestName={page.guestName ?? (envelope.isDemo ? DEMO_GUEST_NAME : undefined)}
 			guestSeats={page.guestContext?.guest.maxAllowedAttendees}
 			coverExperience={envelope.coverExperience}
 			coverImage={envelope.backdropImage}

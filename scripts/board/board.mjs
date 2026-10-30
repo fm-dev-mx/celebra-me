@@ -22,15 +22,16 @@
  *                                               lane, the lane and branch must be the task's and it opens
  *                                               the git-safety session --session=<rama>)
  *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
- *                                               a usted» until 30 min pass without a claim (claim clears it)
- *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
+ *                                               a usted» until 15 min pass without a claim (claim clears it)
+ *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it;
+ *                                               T382: refused on a busy lane (other branch, uncommitted)
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees a legacy lock without sesion, or
  *                                               (d274) one silent for 2 h whose task has a valid cierre;
  *                                               a task still en curso goes back to pendiente (T172), a
  *                                               review with its verdict becomes hecha; T297: from the lane,
  *                                               --git-safety=commit[,history] also finishes git-safety
- *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
+ *   merged [<id>] --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
@@ -93,7 +94,6 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
 	canFinish,
 	color,
@@ -108,9 +108,7 @@ import {
 	taskIssues,
 	inTab,
 	isFinished,
-	isReadOnly,
 	isReview,
-	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
 	buildMessageRow,
@@ -129,14 +127,21 @@ import {
 	CONTRATO,
 	findTask,
 } from './model.mjs';
-import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
+import { assertLaneReady, assertPlan, readLaneGit } from './lane-plan.mjs';
+import { blocked, listTail, originLines, refIssue, subtaskLines } from './subtasks.mjs';
 import { ciGate, reviewPreflight, sinCiTrace, untilGreen, viewPr } from './review-preflight.mjs';
 import { assertOwner, noteOverride, overrideReason } from './lock-owner.mjs';
 import { authorSession } from './findings.mjs';
 import { leftByUnanswered, reviewChild, reviewChildId } from './rounds.mjs';
 import { overlapCommands } from './overlap.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
-import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
+import {
+	cancelOnSet,
+	cancelReplaced,
+	closeCommands,
+	mergedRef,
+	reviewDone,
+} from './close-commands.mjs';
 import { deliveryLine, nextSections, sectionLines, unreadFor } from './next.mjs';
 import { mergeSignal } from './owner-text.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
@@ -168,7 +173,7 @@ import { withTrace } from './trace.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
 import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
-import { claimCommands, readOnlyLaneError, sayClaim } from './claim-commands.mjs';
+import { claimCommands, sayClaim } from './claim-commands.mjs';
 
 const COLOR_LABEL = {
 	own: 'USTED',
@@ -318,16 +323,22 @@ function saveTask(dir, before, after, opts = {}) {
 	return t;
 }
 
-/** d174: `padre=T12` becomes the mother's id; a mother off the board or a loop of mothers is refused. */
+/**
+ * d174: `padre=T12` becomes the mother's id; a mother off the board or a loop of mothers is refused. T481: `deriva=T12`
+ * becomes the source's id the same way, and a source off the board is refused.
+ */
 function withParent(dir, before, t) {
-	if (t.padre === undefined || t.padre === before?.padre) return;
+	const refs = ['padre', 'deriva'].filter((k) => t[k] !== undefined && t[k] !== before?.[k]);
+	if (!refs.length) return;
 	const board = {
 		tareas: readCollection(dir, 'tareas'),
 		archivo: readCollection(dir, 'archivo'),
 	};
-	const mother = findTask(t.padre, board);
-	if (mother) t.padre = mother.id;
-	const issue = parentIssue(t, board);
+	for (const k of refs) {
+		const found = findTask(t[k], board);
+		if (found) t[k] = found.id;
+	}
+	const issue = refIssue(t, board, refs);
 	if (issue) throw new UsageError(`no se escribió ${t.id}: ${issue}`);
 }
 
@@ -428,19 +439,6 @@ function archiveCommand(archivar) {
 		});
 		say(flags, out, t, `${t.id} ${t.archivada ? 'archivada' : 'sin archivar'} (rev ${t.rev})`);
 	};
-}
-
-const laneAllowed = (carril, task) => laneAllowedIn(carril, task, WORKTREE_LANES);
-
-/** d177: only a declared coordinator plans a lane, and only a canonical one. */
-function assertPlan(task, carril, flags) {
-	if (!flags.coordinador)
-		throw new UsageError('el carril planeado lo asigna el coordinador: use --coordinador');
-	if (isReadOnly(task)) throw new UsageError(readOnlyLaneError(task, 'carril planeado'));
-	if (!laneAllowed(carril, task))
-		throw new UsageError(
-			`carril ${carril} no es canónico (f05-f12; integration solo para coordinador)`,
-		);
 }
 
 function row(t, n, board, agente) {
@@ -578,8 +576,7 @@ const commands = {
 		out(
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
-		const up = parentText(t, board);
-		if (up) out(`  ${up}`);
+		for (const line of originLines(t, board)) out(`  ${line}`);
 		const trace = traceText(t, board);
 		if (trace) out(`  ${trace.text}`);
 		const delivered = deliveryLine(t);
@@ -687,8 +684,10 @@ const commands = {
 		});
 	},
 	/** d177: the coordinator plans the lane a task runs in; claim then takes it without --carril. */
-	plan({ pos, flags }, dir, out) {
+	async plan({ pos, flags }, dir, out) {
 		if (typeof flags.carril !== 'string') throw new UsageError('falta --carril=<carril>');
+		// T382: the lanes' Git state is read before the lock; the check itself runs inside it.
+		const git = flags.carril ? await readLaneGit(dir) : [];
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			checkRev(before, flags);
@@ -698,6 +697,7 @@ const commands = {
 				throw new UsageError(
 					'el carril planeado lo quita el coordinador: use --coordinador',
 				);
+			if (carril) assertLaneReady(carril, before, git, loadBoard(dir));
 			if (isReview(before)) throw new UsageError('una revisión no tiene carril planeado');
 			if (before.candado)
 				throw new UsageError(
@@ -741,9 +741,7 @@ const commands = {
 	merged({ pos, flags }, dir, out, { prState = ghPrState } = {}) {
 		if (!flags.coordinador) throw new UsageError('merged requiere --coordinador (d170)');
 		return withLock(dir, () => {
-			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (before.revisionSha)
-				throw new UsageError('una revisión se cierra con su --sha, no con merged');
+			const before = getTask(dir, mergedRef(pos[0], flags.pr, loadBoard(dir)));
 			if (flags.rev !== undefined) checkRev(before, flags);
 			const given = typeof flags.pr === 'string' ? normalizePr(flags.pr) : undefined;
 			const pr = normalizePr(before.pr) ?? given;

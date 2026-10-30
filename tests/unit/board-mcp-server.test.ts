@@ -360,4 +360,108 @@ describe('board MCP stdio server', () => {
 		});
 		expect(JSON.parse(result.empty.content[0].text)).toEqual([]);
 	});
+
+	it('logs every call without message text and marks its bitácora rows as mcp', () => {
+		const dir = fixture();
+		const result = probe(
+			dir,
+			`
+			const call = async (name, args) => {
+				try { return await client.callTool({ name, arguments: args }); }
+				catch (error) { return { isError: true, content: [{ text: error.message }] }; }
+			};
+			const sent = await call('msg', { agente: 'codex', id: 'ready', para: 'gemini', texto: 'secret body' });
+			const missing = await call('show', { id: 'ready' });
+			const wrong = await call('show', { agente: 'Gemini', id: 'ready' });
+			const refused = await call('release', { agente: 'codex', sesion: 'intruder', id: 'locked' });
+			console.log(JSON.stringify({ sent, missing, wrong, refused }));
+		`,
+		);
+		expect(result.sent.isError).not.toBe(true);
+		expect(result.missing.isError).toBe(true);
+		expect(result.missing.content[0].text).toContain(
+			'Falta `agente`: envíe "claude", "codex" o "gemini".',
+		);
+		expect(result.wrong.isError).toBe(true);
+		expect(result.wrong.content[0].text).toContain('`agente` no válido ("Gemini")');
+		expect(result.refused.isError).toBe(true);
+
+		const day = (sub: string) => {
+			const file = path.join(dir, sub, `${new Date().toISOString().slice(0, 10)}.jsonl`);
+			return readFileSync(file, 'utf8');
+		};
+		const calls = day('mcp');
+		expect(calls).not.toContain('secret body');
+		expect(
+			calls
+				.trim()
+				.split('\n')
+				.map((line) => JSON.parse(line)),
+		).toEqual([
+			expect.objectContaining({
+				herramienta: 'msg',
+				agente: 'codex',
+				tarea: 'ready',
+				ok: true,
+				codigo: 0,
+				ms: expect.any(Number),
+				en: expect.any(String),
+			}),
+			expect.objectContaining({
+				herramienta: 'show',
+				agente: null,
+				ok: false,
+				codigo: 'validacion',
+				error: expect.stringContaining('Falta `agente`'),
+			}),
+			expect.objectContaining({
+				herramienta: 'show',
+				agente: 'Gemini',
+				codigo: 'validacion',
+			}),
+			expect.objectContaining({
+				herramienta: 'release',
+				ok: false,
+				codigo: 2,
+				error: expect.stringContaining('candado'),
+			}),
+		]);
+		const rows = day('bitacora')
+			.trim()
+			.split('\n')
+			.map((line) => JSON.parse(line));
+		expect(rows.find((row) => row.mensaje)).toMatchObject({ quien: 'codex', via: 'mcp' });
+	});
+
+	it('treats empty list fields as omitted', () => {
+		const result = probe(
+			fixture(),
+			`console.log(JSON.stringify(await client.callTool({ name: 'close', arguments: {
+			agente: 'codex', sesion: 'owner', id: 'locked', rev: 1, resumen: ['Done'], pendiente: [], riesgo: []
+		} })));`,
+		);
+		expect(result.isError).not.toBe(true);
+		expect(JSON.parse(result.content[0].text).cierre.resumen).toBe('Done');
+	});
+
+	it('marks rows written by a direct CLI call as cli', () => {
+		const dir = fixture();
+		runCommand(
+			process.execPath,
+			[
+				'scripts/board/board.mjs',
+				'msg',
+				'ready',
+				'--de=codex',
+				'--quien=codex',
+				'--para=gemini',
+				'--texto=hello',
+				'--json',
+			],
+			{ cwd: ROOT, env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir, CELEBRA_BOARD_VIA: '' }) },
+		);
+		const file = path.join(dir, 'bitacora', `${new Date().toISOString().slice(0, 10)}.jsonl`);
+		const row = JSON.parse(readFileSync(file, 'utf8').trim().split('\n').at(-1) ?? '{}');
+		expect(row).toMatchObject({ quien: 'codex', via: 'cli' });
+	});
 });

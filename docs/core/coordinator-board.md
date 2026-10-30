@@ -415,6 +415,36 @@ The watcher extends the bounded no-AI pass with automatic board coordination and
   master receipts, ensuring every transition notifies exactly once across repeated passes and
   process restarts.
 
+### Owner alerts on Telegram (T437, d353)
+
+Each pass also reads «Le toca a usted» (`nextSections(...).usted`: owner tasks, answers owed,
+stalled dispatches, unread messages `--para=dueno`, the Gemini relay alert) and sends one Telegram
+Bot API `sendMessage` to the owner's chat when new items appear (`scripts/board/owner-alerts.mjs`).
+
+- **One alert per item**: each row carries a stable `clave` (`tarea:<id>`, `respuesta:<id>:<ref>`,
+  `detenida:<id>`, `mensaje:<id>`, `gemini-relay`). Sent keys live under `owner.alertadas` in
+  `.agent/tmp/board-master-watch.json`; a key re-arms once its item leaves the list.
+- **Grouping**: every new item of one pass (one minute) goes in a single message, at most 8 lines,
+  ending with `Tablero: http://127.0.0.1:4320`. A single item reads like
+  `T418 · Andrea · … . Tablero: http://127.0.0.1:4320`. An empty list sends nothing.
+- **Failures**: every Telegram request aborts after 10 s, so a hung connection never stops master
+  wakes. A 400/401/403/404 stops sending until the token or chat changes (one log line); a 429 waits
+  `retry_after`; other failures back off 1, 2, 4… minutes, capped at 30.
+- **Missing configuration**: the watcher keeps working, records current items as seen (no burst when
+  configured later) and writes one line to `.agent/tmp/board-master-watch.log`.
+- `pnpm board:watch --dry-run` prints `[prueba] telegram: …` and records nothing.
+
+Configuration lives in the ignored `.agent/tmp/telegram.json` (`token`, `chatId`), or in
+`TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`. No command prints or logs either value. Owner setup, from
+the Integration checkout:
+
+1. In Telegram, open `@BotFather`, send `/newbot`, choose a name and a username ending in `bot`, and
+   copy the token it returns.
+2. `pnpm board:telegram:token` — paste the token at the hidden prompt and press Enter.
+3. In Telegram, open the new bot, press **Iniciar** and write `hola`.
+4. `pnpm board:telegram:chat` — reads `getUpdates` and saves the private chat that wrote `hola`.
+5. `pnpm board:telegram:test` — sends «Prueba de Celebra-me».
+
 After a CLI writer crash, inspect the exact `.agent/tmp/board/.lock` PID and process identity. Age
 alone does not establish an orphan. Obtain scoped authority to remove that orphan file, preserving
 all board documents and backups. Never reset or reimport the board as automatic recovery.
@@ -467,7 +497,7 @@ POST needs the page's per-process token and its own `Origin`, and every request 
 
 `titulo`, `estado`, `urgencia`, `actor`, `agente`, `toca`, `requisitos`, `requiere`, `categoria`,
 `carril`, `ahora`, `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`, `padre`,
-`grupo`, `fase`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
+`grupo`, `fase`, `deriva`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
 `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see
 [Task kinds](#task-kinds)); `rev` and `actualizado` are set by the command, `agregadaPor` and
 `seguimientoPor` by the commands that add or follow up a task (T172), `archivada` (date) only by
@@ -511,7 +541,22 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   and folds blocked subtasks into «Ver N subtareas» (✓ done, ● running or in review, ○ pending); a
   subtask ready or running now keeps its card (and stays in «Le toca a usted» and `next`), each with
   its `F<n>` tag. The sheet and `pnpm board show` list a mother's «Subtareas · X/Y (Z %)» and give a
-  subtask «Parte de T<n> · <título> · X/Y listas». `pnpm board:verify` reports a bad `padre`.
+  subtask «Parte de T<n> · <título> · X/Y listas». `pnpm board:verify` reports a bad `padre`. Groups
+  are only for multi-step programs closed together (e.g. `servicio-medicion`).
+- **Follow-ups (T481)**: a task born from a review finding or from finished work is independent and
+  names its source with `deriva` (`deriva=T469` is stored as the id; `origen` would collide with
+  review rounds, which `reviewRounds` finds by `origen`). `pnpm board show` prints «Viene de T<n> ·
+  <título> (<estado>)», the sheet a «Viene de» field, and the Mapa a gray dotted link from the
+  source to the follow-up, placed to its right but never a wait: it changes neither readiness nor
+  «desbloquea». A missing source is refused on write and reported by `pnpm board:verify`. Review
+  rounds already name their source through `origen` and need no `deriva`.
+- **Mapa · Clave (T482)**: the Mapa tab opens on «Clave», up to 7 open tasks ranked by
+  `scripts/board/key-tasks.mjs` (pure, unit-tested): first a task waiting on an unmet dueño or
+  decisión step (by how many tasks that step frees), then a task others wait on (by «desbloquea»),
+  then urgente/alta or a `hasta` within 3 days or past, then stuck work (bloqueada with nothing to
+  wait for, `en revision` for over 24 h, a delivered prompt nobody claimed). Each card shows T#,
+  title, agent, lane, age, state and its reason, and keeps an empty action slot. «Todo» shows the
+  full dependency graph. The payload carries the cards as `clave`.
 - **What is next**: `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al
   coordinador» and «Detenidas». The coordinator sees reviews approved at the PR's current SHA
   (merge), blocked reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el
@@ -614,6 +659,12 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 - **Registry**: `agentes --json` discovers the shared registry and capability overrides. Only
   explicit coordinator updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect
   actual tools before declaring them.
+- **Paused agent**: `agentes codex=pausado hasta=2026-11-02 --coordinador --rev=N` pauses an agent
+  until that date (start of the day, Mazatlán); `codex=activo` ends it. `review`, the watchers and
+  the dispatcher rows never pick a paused agent; while Claude is paused, the other of Codex and
+  Gemini reviews Codex's or Gemini's work.
+- **Lane state on `plan`**: `plan` refuses a lane on another branch or with uncommitted changes
+  (unless it is already on the task's `rama`) and names the idle, unlocked lanes the task may use.
 - **Codex and Gemini chats (d211)**: `pnpm board sesiones [--json]` opens `~/.codex/state_5.sqlite`
   and `~/.gemini/antigravity/conversation_summaries.db` read-only, crosses each open chat's `T<n>`
   with the board and says «archivar» (task finished or archived), «dejar» or «sin tarea»; the
@@ -775,8 +826,14 @@ moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the
 **d170**: a merged PR also drops the task's lock, whoever holds it, through
 `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
 still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
-open PR are only reported; review children are never touched. A lock older than `--horas` (default
-`STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
+open PR are only reported; review children are never touched. **T480**:
+`pnpm board merged --pr=#N --coordinador` (no id) moves the one live non-review task carrying that
+PR; with none or several it asks for the id, and a review id gets «T<n> es la revisión de T<m>» with
+the command for its origin. A task nobody claimed is closed by the coordinator with
+`pnpm board close <id> --coordinador --pr=#N …`; with `--git-safety=commit` it prints that there was
+no lane session instead of failing. A pending kind task (`tipo` + `busca`) without a lane shows
+«Falta el carril: pnpm board plan <id> …», not «Falta el prompt». A lock older than `--horas`
+(default `STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
 `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
 «posible sesión cerrada» and never released by the sync (the owning session or the coordinator with
 authority does).
