@@ -1,4 +1,6 @@
 import React from 'react';
+import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
+import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
 
 import type { SalesOrder } from '@/components/dashboard/commercial/CustomerOrdersBox';
 import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
@@ -109,12 +111,16 @@ interface ProspectCommercialDetailProps {
 	lead: LeadCandidate;
 	suggestedAction: string;
 	onOpenCustomerTool: () => void;
+	timelineEntries?: CrmTimelineEntry[];
+	loadingTimeline?: boolean;
 }
 
 export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> = ({
 	lead,
 	suggestedAction,
 	onOpenCustomerTool,
+	timelineEntries = [],
+	loadingTimeline = false,
 }) => {
 	const contact = lead.phone || lead.email;
 	const whatsappDigits = getUsableWhatsAppE164(lead.phoneE164, lead.phone);
@@ -171,6 +177,10 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 				</button>
 				<small>La ficha habilita órdenes, cobros e historial comercial.</small>
 			</div>
+			<section className="crm-detail__section" aria-label="Actividad comercial del prospecto">
+				<h4>Actividad comercial</h4>
+				<CrmTimeline entries={timelineEntries} loading={loadingTimeline} />
+			</section>
 		</div>
 	);
 };
