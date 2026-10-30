@@ -60,14 +60,14 @@ describe('demo-xv-editorial composition', () => {
 		expect(content.hero.variant).not.toBe('standard');
 	});
 
-	it('joins sections in a bridge, bridge, climax cadence between adjacent targets', () => {
+	it('joins sections in a bridge, climax cadence between adjacent targets', () => {
 		const composition = invitationCompositionSchema.parse(content.composition);
 		const targets = renderTargets();
 		const joins = Object.entries(composition.intersections).sort(
 			([a], [b]) => targets.indexOf(a) - targets.indexOf(b),
 		);
 
-		expect(joins.map(([, join]) => join.family)).toEqual(['overlap', 'overlap', 'arch']);
+		expect(joins.map(([, join]) => join.family)).toEqual(['overlap', 'arch']);
 		for (const [target, join] of joins) {
 			expect(targets).toContain(target);
 			expect(targets[targets.indexOf(target) - 1]).toBe(join.source);

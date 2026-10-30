@@ -116,10 +116,14 @@ html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not
 		background:
 			radial-gradient(
 				ellipse 55% 60% at 50% 46%,
-				rgb(var(--ec-light-rgb, 226 201 152) / 14%),
+				rgb(var(--ec-light-rgb, 226 201 152) / var(--ec-table-light-opacity, 14%)),
 				transparent 70%
 			),
-			radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(0 0 0 / 45%) 100%);
+			radial-gradient(
+				ellipse at 50% 50%,
+				transparent 55%,
+				rgb(0 0 0 / var(--ec-table-vignette-opacity, 45%)) 100%
+			);
 		opacity: 100%;
 		pointer-events: none;
 		animation: ecCollectorTableLight 500ms ease-out backwards;

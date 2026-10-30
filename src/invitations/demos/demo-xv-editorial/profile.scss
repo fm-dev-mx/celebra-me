@@ -1,11 +1,10 @@
 // Editorial: the editorial preset as a sober noir art issue. Black pages carry the story; one
-// champagne spread holds the save-the-date and the back cover closes on the same paper. Three joins
-// out of the boundaries, in a bridge, bridge, climax cadence: the tiara print hangs from the black
-// into the champagne spread, the second print hangs out of it back into the black, and the back
-// cover rises into the reply under an asymmetric arch. Champagne is a hairline, never a fill. Tokens
+// champagne spread holds the save-the-date and the back cover closes on the same paper. Two joins
+// out of the boundaries, a bridge and a climax: the tiara print hangs from the black into the
+// champagne spread, and the back cover rises into the reply under an asymmetric arch. Champagne is a hairline, never a fill. Tokens
 // only; layout stays with the variants.
 .event--demo-xv-editorial.theme-preset--editorial {
-	// Depth of the two print joins, reserved as the print's own top padding.
+	// Depth of the print join, reserved as the print's own top padding.
 	--editorial-print-overlap: clamp(5rem, 22vw, 9rem);
 	--editorial-gutter: clamp(1.5rem, 6vw, 4rem);
 
@@ -45,11 +44,27 @@
 
 		// Her face fills the upper third, so the contents sticker sits on the dress instead.
 		--ec-face-teasers-top: 64%;
+
+		// The table under the magazine: a brighter pool of light and a softer vignette, so the
+		// ivory print reads lit instead of dim.
+		--ec-table-light-opacity: 40%;
+		--ec-table-vignette-opacity: 22%;
 	}
 
 	// The portfolio title is set in the page ink; the accent stays for small furniture.
+	// The portfolio is read slowly: each photograph holds for close to half a screen of scroll.
 	.gallery-section {
 		--gallery-title-color: var(--color-text-primary);
+		--gallery-track-pace: 0.45;
+	}
+
+	// The family reads as one page: the arched portrait and the names on the black, without
+	// a boxed panel around them.
+	.family {
+		--family-panel-border: 0;
+		--family-panel-bg: transparent;
+		--family-panel-shadow: none;
+		--family-panel-spacing: 0;
 	}
 
 	.gifts-section {
@@ -73,11 +88,33 @@
 		--hero-portrait-height-mobile: auto;
 		--hero-portrait-width-desktop: min(60svh, 29rem);
 		--hero-portrait-height-desktop: auto;
-		--hero-occasion-letter-spacing: 0.24em;
+
+		// Hierarchy: a small tracked kicker, the name as the masthead, the date as a quiet line.
+		--hero-occasion-letter-spacing: 0.32em;
 		--hero-occasion-text-transform: uppercase;
-		--hero-occasion-font: 500 0.875rem / 1.4 var(--font-body);
-		--hero-name-letter-spacing: -0.02em;
+		--hero-occasion-font: 500 0.75rem / 1.4 var(--font-body);
+		--hero-name-font-weight: 400;
+		--hero-name-line-height: 0.9;
+		--hero-name-letter-spacing: -0.03em;
+		--hero-title-size: clamp(4rem, 18vw, 7.5rem);
 		--hero-title-max-width: 8ch;
+		--hero-details-font: 400 0.8125rem / 1.7 var(--font-body);
+		--hero-details-letter-spacing: 0.18em;
+		--hero-details-text-transform: uppercase;
+		--hero-scroll-align: center;
+
+		// The scroll cue: a tracked caption over a hairline that runs down, instead of an arrow.
+		--hero-scroll-display: grid;
+		--hero-scroll-font: 500 0.6875rem / 1.4 var(--font-body);
+		--hero-scroll-letter-spacing: 0.32em;
+		--hero-scroll-text-transform: uppercase;
+		--hero-scroll-cue-distance: 10px;
+		--hero-scroll-cue-width: 1px;
+		--hero-scroll-cue-height: 2.75rem;
+		--hero-scroll-cue-margin: 0;
+		--hero-scroll-cue-overflow: hidden;
+		--hero-scroll-cue-font-size: 0;
+		--hero-scroll-cue-bg: linear-gradient(var(--color-action-accent), transparent);
 	}
 
 	// The phrase is set as editorial prose, not script.
@@ -121,8 +158,7 @@
 		--countdown-written-ink: var(--editorial-paper-ink);
 		--countdown-written-muted: rgb(var(--editorial-paper-ink-rgb) / 68%);
 		--countdown-written-rule: var(--editorial-paper-rule);
-		--countdown-written-padding-block: clamp(2.5rem, 7vw, 4rem)
-			calc(clamp(3rem, 8vw, 5rem) + var(--editorial-print-overlap));
+		--countdown-written-padding-block: clamp(2.5rem, 7vw, 4rem) clamp(3rem, 8vw, 5rem);
 		--countdown-written-title-color: var(--editorial-paper-gold);
 		--countdown-written-title-size: 0.9375rem;
 		--countdown-written-title-align: end;
@@ -139,24 +175,20 @@
 		--color-text-secondary: var(--editorial-paper-ink);
 	}
 
-	// Join 2, the second bridge: the second print hangs out of the champagne back into the black.
-	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'] {
-		--intersection-depth: var(--editorial-print-overlap);
-	}
+	// Location: the calendar link and the map buttons each get their own row, and the notes for
+	// the night print as a ruled band in the issue's ink.
+	.event-location {
+		--location-calendar-margin-top: 1.5rem;
+		--location-nav-buttons-margin-top: 1rem;
+		--location-nav-buttons-gap: 0.75rem;
+		--location-band-heading-color: var(--color-action-accent);
+		--location-band-icon-color: var(--color-action-accent);
+		--location-band-text-color: rgb(var(--color-text-primary-rgb) / 78%);
 
-	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
-		--section-band-paper: none;
-		--interlude-framed-bg: linear-gradient(
-			transparent 0 var(--editorial-print-overlap),
-			var(--editorial-noir) var(--editorial-print-overlap)
-		);
-		--interlude-framed-padding: 0 var(--editorial-gutter) clamp(3rem, 8vw, 5rem);
-		--interlude-framed-max-width: 20rem;
-		--interlude-framed-mat: 0.75rem 0.75rem 2.5rem;
-		--interlude-framed-mat-bg: rgb(250 247 241);
-		--interlude-framed-border: 0;
-		--interlude-framed-outline: 0;
-		--interlude-framed-shadow: 0 22px 44px -26px rgb(0 0 0 / 70%);
+		// The notes are read, not scanned: book serif in sentence case instead of tracked caps.
+		--location-band-text-font: 400 1.0625rem / 1.6 var(--font-display);
+		--location-band-text-letter-spacing: 0;
+		--location-band-text-max-width: 30ch;
 	}
 
 	// The program reads on the black page in ivory and gold, like the rest of the issue.
@@ -167,7 +199,7 @@
 		--editorial-program-accent: var(--color-action-accent);
 	}
 
-	// Join 3, the climax: the back cover rises into the reply on champagne under the shared arch.
+	// Join 2, the climax: the back cover rises into the reply on champagne under the shared arch.
 	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
 		--intersection-surface: var(--editorial-paper);
 		--intersection-surface-fill: var(--editorial-paper);
@@ -195,8 +227,7 @@
 			--hero-portrait-margin: 0 0 0 auto;
 		}
 
-		.invitation-interlude[data-presentation='framed'][data-interlude-index='1'],
-		.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
+		.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
 			--interlude-framed-max-width: 26rem;
 		}
 	}
