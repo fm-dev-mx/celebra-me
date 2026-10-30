@@ -17,11 +17,11 @@ import {
 	normalizePr,
 	ordenOf,
 	ownerAsks,
-	ownerLaunches,
 	ownerWhere,
 	queue,
 	READONLY_LANE,
 	reviewRounds,
+	SELF_STARTING,
 	stage,
 	taskTag,
 	VEREDICTOS,
@@ -30,6 +30,14 @@ import { expiredQuestion, mergeSignal, optionsText } from './owner-text.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
 import { authorSession, findingsSent } from './findings.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
+import {
+	answerDestination,
+	destinationFields,
+	findingsDestination,
+	FIXED_DESTINATIONS,
+	pasteAgents,
+	taskDestination,
+} from './owner-where.mjs';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
@@ -160,10 +168,11 @@ const idleText = (idle) => (Number.isNaN(idle) ? '' : ` · lista ${agoText(idle)
 export function stalls(board, now = Date.now()) {
 	const dueno = readyUnclaimed(board, now)
 		// d249: a delivered task comes back as its own «nadie la tomó» row instead.
-		.filter(({ t, idle }) => isIdle(idle) && ownerLaunches(t, board, now).length)
+		.filter(({ t, idle }) => isIdle(idle) && pasteAgents(t, board, now).agentes.length)
 		.filter(({ t }) => !delivery(t, now))
 		.map(({ t, idle }) => {
-			const names = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
+			// d314 (T391): a paused agent is never named as the place to paste.
+			const names = pasteAgents(t, board, now).agentes.map((a) => AGENT_REGISTRY[a].nombre);
 			return {
 				t,
 				texto: `Correr el despachador de ${names.join(' o ')} (${taskTag(t)})${idleText(idle)}`,
@@ -337,6 +346,23 @@ export function ownerMessages(board) {
 }
 
 /**
+ * T391: review findings sent to an author the owner pastes into (Codex, Gemini: not self-starting), not read
+ * yet, whose task is still open; the owner pastes them in the author's existing chat. Claude reads its own
+ * inbox, so the coordinator's «avisar» item still covers it.
+ */
+export function ownerFindings(board) {
+	const archived = new Set((board.archivo ?? []).map((t) => t.id));
+	return Object.keys(AGENT_REGISTRY)
+		.filter((a) => !SELF_STARTING.includes(a))
+		.flatMap((a) => unreadFor(a, board))
+		.filter((r) => {
+			if (!r.mensaje.revision) return false;
+			const t = findTask(r.tarea, board);
+			return t && !isFinished(t) && !archived.has(t.id);
+		});
+}
+
+/**
  * «Le toca a usted» (the owner's ready tasks with where to do them, answers owed, stalled Codex or Gemini tasks,
  * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`.
  */
@@ -352,25 +378,47 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 		(t) => color(t, board, { now }) === 'own' && !dueno.some((d) => d.t.id === t.id),
 	);
 	const relayAlert = geminiRelayAlert(board, now);
+	const at = destinationFields;
 	const usted = [
-		...(relayAlert ? [row(null, relayAlert, { tipo: 'gemini-relay' })] : []),
+		...(relayAlert
+			? [
+					row(null, relayAlert, {
+						tipo: 'gemini-relay',
+						donde: FIXED_DESTINATIONS['gemini-relay'],
+						copia: null,
+					}),
+				]
+			: []),
 		...own.map((t) => {
 			const where = t.actor === 'dueno' && ownerWhere(t);
-			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
+			const paste = pasteAgents(t, board, now).agentes.map((a) => AGENT_REGISTRY[a].nombre);
 			const how = where || (paste.length ? `Pegar en ${paste.join(' o ')}` : '');
 			const late = deliveryLine(t, now);
 			return row(
 				t,
 				`${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
+				at(taskDestination(t, board, now)),
 			);
 		}),
 		...ownerAsks(board, now).map(({ t, r }) =>
-			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`),
+			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`, at(answerDestination(t, board))),
 		),
-		...dueno.map(({ t, texto }) => row(t, texto)),
-		...ownerMessages(board).map((r) =>
-			row(findTask(r.tarea, board), `Mensaje: ${messageLine(r, board)}`),
-		),
+		...dueno.map(({ t, texto }) => row(t, texto, at(taskDestination(t, board, now)))),
+		...ownerFindings(board).map((r) => {
+			const t = findTask(r.tarea, board);
+			return row(
+				t,
+				`Correcciones para ${AGENT_REGISTRY[r.mensaje.para]?.nombre ?? r.mensaje.para}: ${r.mensaje.texto}`,
+				{
+					tipo: 'correcciones',
+					...at(findingsDestination(r, board, now)),
+				},
+			);
+		}),
+		...ownerMessages(board).map((r) => {
+			const t = findTask(r.tarea, board);
+			return row(t, `Mensaje: ${messageLine(r, board)}`, at(answerDestination(t, board)));
+		}),
 	];
 	return {
 		usted,
@@ -387,7 +435,18 @@ export function sectionLines(r) {
 	const block = (title, rows) => [
 		'',
 		`${title} (${rows.length}):`,
-		...(rows.length ? rows.map((x) => `  - ${x.texto}`) : ['  nada']),
+		...(rows.length
+			? rows.flatMap((x) =>
+					x.donde
+						? [
+								`  - ${x.donde}`,
+								...String(x.texto)
+									.split('\n')
+									.map((l) => `    ${l}`),
+							]
+						: [`  - ${x.texto}`],
+				)
+			: ['  nada']),
 	];
 	return [
 		...block('Le toca a usted', r.usted),

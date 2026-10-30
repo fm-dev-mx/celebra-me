@@ -185,10 +185,12 @@ details.grpd>summary .hint{font-weight:400;color:var(--faint)}
 .mine .row b{font:600 .84rem var(--mono);color:var(--own);flex:none;padding-top:1px}
 .mine .row>span{min-width:0;overflow-wrap:anywhere;display:grid;gap:1px}
 .mine .row .sub{font-size:.78rem;color:var(--muted)}
+.mine .row .donde{display:block;font-size:.78rem;font-weight:600;color:var(--muted)}
+.mine .paste .cmsg{flex:none;font-size:.75rem;color:var(--muted);max-width:16rem}
 .mine .none{padding:28px 8px;color:var(--muted);font-size:.95rem}
 .mine .none b{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:2px}
-.mine .paste{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line)}
-.mine .paste .row{flex:1;min-width:0;border-bottom:0}
+.mine .paste{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.mine .paste .row{flex:1 1 20rem;min-width:0;border-bottom:0}
 .mine .paste .btn{flex:none;margin-right:6px}
 @media (max-width:560px){.mine .paste{flex-direction:column;align-items:stretch}.mine .paste .btn{margin:0 8px 8px}}
 .mine .row .meta{font:500 .76rem var(--mono);color:var(--muted)}
@@ -586,12 +588,13 @@ import { globalSearch, inReview, ownerActions, rowText, tabCounts } from '/forma
 import { requisitoText, taskName } from '/model.mjs';
 import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
 import { optionsText } from '/owner-text.mjs';
 import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
+import { pasteAgents } from '/owner-where.mjs';
 window.boardStarted=true;
 const TZ='America/Mazatlan';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -675,11 +678,11 @@ const urgHtml=t=>{const u=urgOf(t);return `<span class="urg u-${u}" title="Urgen
 // T268: the row's circle carries the urgency as its ring color; the word stays for urgente and alta.
 const ringHtml=t=>{const u=urgOf(t);return `<span class="ring r-${u}" title="Urgencia: ${URG[u].l}" aria-hidden="true"></span>`};
 // d169: a ready task only Codex or Gemini can finish waits for the owner to paste its prompt there.
-const pasteTo=t=>ownerLaunches(t,S.board).map(a=>AGENT[a]||a).join(' o ');
+const pasteTo=t=>pasteAgents(t,S.board).agentes.map(a=>AGENT[a]||a).join(' o ');
 const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):awaitingClaim(t)?'Entregada':COLOR[c]}</span>`};
 // d249: «Copiar prompt» on a ready, unlocked task an agent does marks it as delivered to that agent.
 const deliverable=t=>stage(t)==='lista'&&!t.candado&&!needsOwner(t);
-const deliverTo=t=>{const a=ownerLaunches(t,S.board);return a.length===1?a[0]:a.length?'cualquiera':t.agente||'cualquiera'};
+const deliverTo=t=>{const a=pasteAgents(t,S.board).agentes;return a.length===1?a[0]:a.length?'cualquiera':t.agente||'cualquiera'};
 // T151: each agent keeps its own color wherever it appears.
 const agChip=(key,label,{lock=false}={})=>`<span class="ag ag-${esc(key)}"${lock?' title="La está haciendo ahora (candado)"':''}>${lock?'🔒 ':''}${esc(label)}</span>`;
 const agHtml=t=>t.candado?agChip(t.candado.agente,AGENT[t.candado.agente]||t.candado.agente,{lock:true}):t.agente&&t.agente!=='cualquiera'?agChip(t.agente,AGENT[t.agente]||t.agente):'';
@@ -984,13 +987,13 @@ function renderFin(){
   $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
 // d249: the server writes entregada {agente, desde}; the stream then moves the task out of «Le toca a usted».
-async function deliver(t,m){
+async function deliver(t,m,lead='Prompt copiado',hint='Péguelo donde dice «DÓNDE CORRE».'){
   try{
     const res=await fetch('/api/entregada',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:t.id,agente:deliverTo(t)})});
     const body=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
-    m.textContent='Prompt copiado y marcado como entregado. Péguelo donde dice «DÓNDE CORRE».';
-  }catch(e){m.textContent='Prompt copiado, pero no se marcó como entregado: '+e.message}
+    m.textContent=`${lead} y marcado como entregado. ${hint}`;
+  }catch(e){m.textContent=`${lead}, pero no se marcó como entregado: `+e.message}
 }
 async function archive(btn){
   const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
@@ -1052,23 +1055,27 @@ function renderCounts(){
 function msgHtml(x){
   const m=x.msg,t=m.t&&byId(m.t.id)?m.t:null,key='msg:'+(m.en||'')+':'+m.tarea;
   const ref=t?`<a class="tl" href="#cola" data-sel="${esc(t.id)}" data-all="1" title="${esc(t.titulo)}">${esc(m.tarea)}</a> · ${tt(t.titulo)}`:m.tarea?`<span class="tl-x">${esc(m.tarea)}</span>`:'';
-  return `<article class="row act msgc"${t?` data-sel="${esc(t.id)}" data-all="1" tabindex="0"`:''}><span class="verb">${esc(x.verbo)}</span><span class="what">
-    <span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
+  const card=`<article class="row act msgc"${t?` data-sel="${esc(t.id)}" data-all="1" tabindex="0"`:''}><span class="verb">${esc(x.verbo)}</span><span class="what">
+    ${dondeHtml(x)}<span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
     ${m.opciones.length?`<span class="sub">Opciones: ${esc(optionsText(m.opciones))}</span>`:''}
     ${m.contexto.length?`<span class="sub">${m.contexto.map(rich).join(' ')}</span>`:''}
     <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}</span>
     ${m.detalle.length?`<details class="more tech" data-more="${esc(key)}"${OPEN.has(key)?' open':''}><summary>Detalle técnico</summary><div class="body">${m.detalle.map(s=>`<p>${rich(s)}</p>`).join('')}</div></details>`:''}
   </span></article>`;
+  return copyWrap(x,card);
 }
 function actHtml(x){
   if(x.tipo==='mensaje')return msgHtml(x);
   const t=x.t,tag=t&&t.num?`<span class="tn">T${esc(t.num)}</span> `:'';
   const where=x.tipo==='tarea'&&!pasteTo(t)&&runLines(t)[0];
-  const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what"><span class="t1">${x.tipo==='tarea'?tag:''}${x.tipo==='decision'?esc(x.texto):tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}${where?`<span class="sub">${esc(where)}</span>`:''}</span>`;
+  const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what">${dondeHtml(x)}<span class="t1">${x.tipo==='tarea'?tag:''}${x.tipo==='decision'?esc(x.texto):tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}${where?`<span class="sub">${esc(where)}</span>`:''}</span>`;
   if(x.tipo==='archivar')return `<button type="button" class="row act" data-tab="finalizadas" title="Abrir Finalizadas">${body}</button>`;
   const row=x.id&&byId(x.id)?`<button type="button" class="row act" data-sel="${esc(x.id)}" data-all="1">${body}</button>`:`<div class="row act">${body}</div>`;
-  return x.tipo==='tarea'&&pasteTo(t)?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row;
+  return copyWrap(x,row);
 }
+// T391: each «Para usted» row opens with its DÓNDE line; a row with text to copy gets the short pointer, not the prompt.
+const dondeHtml=x=>x.donde?`<span class="donde">${esc(x.donde)}</span>`:'';
+const copyWrap=(x,row)=>x.copia?`<div class="paste">${row}<button type="button" class="btn primary" data-copytext="${esc(x.copia)}"${x.t?` data-task="${esc(x.t.id)}"`:''} data-destino="${esc(x.destino||'')}">Copiar texto</button><span class="cmsg" aria-live="polite"></span></div>`:row;
 // The whole board, not the agent tab: what the owner must do never hides behind a filter.
 // T268: «Para usted» lists only the owner's actions, once each; the coordinator's turn and stalled tasks are Cola groups.
 // T321: «General» repeats the same rows above a compact queue. Returns the ids of the owner's rows, in order.
@@ -1164,6 +1171,11 @@ document.addEventListener('click',async ev=>{
   const col=ev.target.closest('[data-col]');if(col){setColor(col.dataset.col);return}
   const ag=ev.target.closest('[data-ag]');if(ag){setAgent(ag.dataset.ag);return}
   const fa=ev.target.closest('[data-finag]');if(fa){S.finag=fa.dataset.finag;try{localStorage.setItem('board-finag',S.finag)}catch(e){}renderFin();return}
+  const ct=ev.target.closest('[data-copytext]');if(ct){
+    // T391: the row copies its short text; a new task or review pasted into an agent is marked as delivered.
+    const m=ct.nextElementSibling,t=ct.dataset.task&&byId(ct.dataset.task),hint='Péguelo donde dice DÓNDE.';
+    const fresh=['nueva','revision'].includes(ct.dataset.destino);
+    try{navigator.clipboard.writeText(ct.dataset.copytext).then(()=>{m.textContent='Texto copiado. '+hint;if(t&&fresh&&deliverable(t))deliver(t,m,'Texto copiado',hint)},()=>{m.textContent='Su navegador no dejó copiar: abra la tarea y copie el prompt.'})}catch(e){m.textContent='Su navegador no dejó copiar.'}return}
   const cp=ev.target.closest('[data-copy]');if(cp){
     // The sheet's button copies the open task; a «Pegar en Codex» row copies its own and opens its sheet, where the message shows.
     if(cp.dataset.copy!=='1'){if(S.ag!=='todas')setAgent('todas');openSheet(cp.dataset.copy)}
