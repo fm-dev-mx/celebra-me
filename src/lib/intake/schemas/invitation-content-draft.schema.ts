@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { invitationDataAnswersSchema } from '@/lib/invitation-data/answers-schema';
 import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import {
@@ -29,6 +30,13 @@ export const DraftActionSchema = z.discriminatedUnion('action', [
 
 export const InvitationContentDraftContentSchema = z
 	.object({
+		orderSource: z
+			.object({
+				orderId: z.uuid(),
+				packageName: z.string().nullable(),
+				answers: invitationDataAnswersSchema,
+			})
+			.optional(),
 		title: optionalText(200),
 		description: optionalText(2000),
 		eventType: optionalText(50),

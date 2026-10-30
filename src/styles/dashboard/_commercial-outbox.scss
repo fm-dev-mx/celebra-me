@@ -895,6 +895,25 @@
 	gap: 0.4rem;
 }
 
+.invitation-data-panel__draft {
+	display: grid;
+	gap: var(--spacing-sm);
+	min-width: 0;
+
+	select {
+		@include mixins.touch-target;
+
+		box-sizing: border-box;
+		width: 100%;
+		padding: var(--spacing-sm);
+		border: 1px solid var(--color-border-control);
+		border-radius: var(--radius-sm);
+		color: var(--color-text-primary);
+		background: var(--color-surface-primary);
+		font: inherit;
+	}
+}
+
 .invitation-data-panel__answers {
 	display: grid;
 	gap: 0.75rem;

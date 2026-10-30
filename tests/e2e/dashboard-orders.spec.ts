@@ -250,4 +250,82 @@ test.describe('dashboard orders', () => {
 		await page.goto('/dashboard/pedidos');
 		await expect(page).toHaveURL(/\/dashboard\/invitados/);
 	});
+
+	test('requires a preset, creates a draft and opens the existing draft from a paid order', async ({
+		context,
+		page,
+		baseURL,
+	}) => {
+		test.skip(
+			process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true',
+			'Requires synthetic authentication.',
+		);
+		await context.addCookies([
+			{ name: 'sb-access-token', value: CANONICAL_ADMIN_ACCESS_TOKEN, url: baseURL! },
+		]);
+		const orderId = 'b4000000-0000-4000-8000-000000000001';
+		const invitationId = 'd4000000-0000-4000-8000-000000000001';
+		const editorUrl = `/dashboard/invitaciones/${invitationId}/editar`;
+		let created = false;
+		let writes = 0;
+		await page.route('**/api/dashboard/commercial/**', async (route) => {
+			const path = new URL(route.request().url()).pathname;
+			let data: unknown;
+			if (path.endsWith('/draft')) {
+				if (route.request().method() === 'POST') {
+					expect(route.request().postDataJSON()).toEqual({ themeId: 'editorial' });
+					created = true;
+					writes++;
+				}
+				data = {
+					invitationId: created ? invitationId : null,
+					editorUrl: created ? editorUrl : null,
+					presets: created ? [] : ['editorial'],
+					created,
+				};
+			} else if (path.endsWith('/invitation-data')) {
+				data = {
+					status: 'submitted',
+					answers: { celebrantNames: 'Celebrante de prueba', eventDate: '2026-12-12' },
+					submittedAt: '2026-10-30T12:00:00Z',
+					needsReview: false,
+				};
+			} else
+				data = {
+					items: [
+						{
+							id: orderId,
+							orderNumber: 'CMO-DRAFT',
+							status: 'paid',
+							eventType: 'xv',
+							packageName: 'Esencial',
+							totalAmount: 1800,
+							amountPaid: 1800,
+						},
+					],
+					nextOffset: null,
+				};
+			await route.fulfill({ json: { success: true, data } });
+		});
+		// Navigation is asserted without making a server-side request for a fabricated DB record.
+		await page.route(`**${editorUrl}`, (route) =>
+			route.fulfill({ contentType: 'text/html', body: '<h1>Editor de prueba</h1>' }),
+		);
+		await page.goto('/dashboard/pedidos');
+		await page.getByRole('button', { name: 'Ver datos de invitación', exact: true }).click();
+		const create = page.getByRole('button', { name: 'Crear borrador', exact: true });
+		await expect(create).toBeDisabled();
+		await page.getByLabel('Diseño de la invitación').selectOption('editorial');
+		await expect(create).toBeEnabled();
+		expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+			true,
+		);
+		await create.click();
+		await expect(page).toHaveURL(new RegExp(`${invitationId}/editar$`));
+		await page.goto('/dashboard/pedidos');
+		await page.getByRole('button', { name: 'Ver datos de invitación', exact: true }).click();
+		await page.getByRole('link', { name: 'Abrir borrador', exact: true }).click();
+		await expect(page).toHaveURL(new RegExp(`${invitationId}/editar$`));
+		expect(writes).toBe(1);
+	});
 });
