@@ -69,34 +69,39 @@ describe('Gemini relay heartbeat', () => {
 		['missing', null, true],
 		['invalid timestamp', 'invalid', true],
 		['numeric timestamp', NOW - 180000, true],
-	])('projects %s heartbeat into CLI and web owner actions', (_name, at, alerts) => {
-		const dir = fixture();
-		if (at !== null)
-			writeFileSync(
-				path.join(dir, 'gemini-relay.json'),
-				JSON.stringify({
-					at:
-						typeof at === 'number' && _name !== 'numeric timestamp'
-							? new Date(at).toISOString()
-							: at,
-					pid: 123,
-				}),
-			);
-		const out = probe(
-			dir,
-			`
+	])(
+		'projects %s heartbeat into the CLI and the coordinator, never the owner (T489)',
+		(_name, at, alerts) => {
+			const dir = fixture();
+			if (at !== null)
+				writeFileSync(
+					path.join(dir, 'gemini-relay.json'),
+					JSON.stringify({
+						at:
+							typeof at === 'number' && _name !== 'numeric timestamp'
+								? new Date(at).toISOString()
+								: at,
+						pid: 123,
+					}),
+				);
+			const out = probe(
+				dir,
+				`
 			const board = s.loadBoard(s.boardDir());
 			const sections = n.nextSections(board, { now });
 			console.log(JSON.stringify({
 				cli: n.sectionLines(sections).join('\\n'),
 				web: f.ownerActions(v.liveBoard(board, now), { now }),
+				coord: sections.coordinador,
 				watch: w.run({ dryRun: true, now, out: () => {} }),
 			}));`,
-		);
-		expect(out.cli.includes(ALERT)).toBe(alerts);
-		expect(out.watch).toEqual(alerts ? [{ agente: 'dueno', text: ALERT }] : []);
-		expect(out.web.some((row: { texto: string }) => row.texto === ALERT)).toBe(alerts);
-	});
+			);
+			expect(out.cli.includes(ALERT)).toBe(alerts);
+			expect(out.watch).toEqual(alerts ? [{ agente: 'dueno', text: ALERT }] : []);
+			expect(out.coord.some((row: { texto: string }) => row.texto === ALERT)).toBe(alerts);
+			expect(out.web.some((row: { texto: string }) => row.texto === ALERT)).toBe(false);
+		},
+	);
 
 	it('does not alert without unread Gemini messages, including read and handled messages', () => {
 		const dir = fixture();
