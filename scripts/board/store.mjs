@@ -33,6 +33,7 @@ import {
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { isFinished, legacyLogRow, logRowIssues } from './model.mjs';
 import { WORKTREE_LANES, getLanePortForKey } from '../shared/worktree-lane.ts';
+import { readZip } from './zip.mjs';
 
 /** Lane metadata is code-owned; task locks and Git supply its live state. */
 export const canonicalLanes = () =>
@@ -113,17 +114,87 @@ export function readDoc(dir, collection, id) {
 /** The whole board, in the shape model.mjs reads. */
 export function loadBoard(dir, { since } = {}) {
 	const [estado] = readCollection(dir, 'estado').filter((d) => d.id === 'actual');
+	const tareas = readCollection(dir, 'tareas');
+	const archivo = readCollection(dir, 'archivo');
+	const archivoZip = zipOnlyTasks(dir, tareas, archivo);
 	return {
 		geminiRelay: readGeminiRelay(dir),
-		tareas: readCollection(dir, 'tareas'),
+		tareas,
 		decisiones: readCollection(dir, 'decisiones'),
 		bitacora: readLog(dir, { since }),
 		carriles: canonicalLanes(),
 		agentes: readCollection(dir, 'agentes'),
-		archivo: readCollection(dir, 'archivo'),
+		archivo,
+		...(archivoZip.length ? { archivoZip } : {}),
 		bandejas: readCollection(dir, 'bandejas'),
 		estado: estado ?? null,
 	};
+}
+
+const zipCache = new Map();
+
+/** Every task kept whole in one monthly .zip, read once per file version. */
+function zipTasks(file) {
+	const st = statSync(file);
+	const key = `${st.mtimeMs}:${st.size}`;
+	const hit = zipCache.get(file);
+	if (hit?.key === key) return hit.tasks;
+	const tasks = new Map();
+	for (const e of readZip(file)) {
+		const m = /^tareas\/(.+)\.json$/.exec(e.name);
+		if (!m) continue;
+		try {
+			tasks.set(m[1], JSON.parse(e.data.toString('utf8')));
+		} catch {
+			// One unreadable entry does not hide the rest of the month.
+		}
+	}
+	zipCache.set(file, { key, tasks });
+	return tasks;
+}
+
+/**
+ * A tarea or revision requisito, or a padre, whose task is in neither tareas/ nor archivo/ (its small record
+ * lost, or the task only kept in a monthly .zip) is looked up in mensual/*.zip, newest first; the zip opens only when
+ * such a ref exists. A short record per hit, so `requisitos()` reads it as archived.
+ */
+export function zipOnlyTasks(dir, tareas, archivo) {
+	const known = new Set([...tareas, ...archivo].map((t) => t.id));
+	const missing = new Set(
+		tareas.flatMap((t) =>
+			(t.requisitos ?? [])
+				.filter((r) => ['tarea', 'revision'].includes(r.tipo) && r.ref)
+				.map((r) => r.ref)
+				.concat(t.padre ? [t.padre] : [])
+				.filter((ref) => !known.has(ref)),
+		),
+	);
+	const d = join(dir, MONTHLY_DIR);
+	if (!missing.size || !existsSync(d)) return [];
+	const found = [];
+	const months = readdirSync(d).filter((f) => /^\d{4}-\d{2}\.zip$/.test(f));
+	for (const f of months.sort().reverse()) {
+		let tasks;
+		try {
+			tasks = zipTasks(join(d, f));
+		} catch {
+			continue;
+		}
+		for (const id of missing) {
+			const t = tasks.get(id);
+			if (!t) continue;
+			missing.delete(id);
+			const keep = ['num', 'titulo', 'estado', 'pr', 'archivada'].filter(
+				(k) => t[k] !== undefined,
+			);
+			found.push({
+				id,
+				...Object.fromEntries(keep.map((k) => [k, t[k]])),
+				zip: `${MONTHLY_DIR}/${f}`,
+			});
+		}
+	}
+	return found;
 }
 
 export const LOG_DIR = 'bitacora';
