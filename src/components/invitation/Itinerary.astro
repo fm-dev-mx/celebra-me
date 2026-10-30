@@ -4,8 +4,10 @@ import '@/styles/invitation/_itinerary.scss';
 import TimelineList from './TimelineList.astro';
 import ItineraryProgram from './ItineraryProgram.astro';
 import ItineraryStackedCards from './ItineraryStackedCards.astro';
+import ItineraryRibbonRoute from './ItineraryRibbonRoute.astro';
 import type { ItineraryItem } from '@/lib/adapters/types';
 import type { ItineraryVariant } from '@/lib/invitation/section-variants';
+import type { ItineraryScene } from '@/lib/schemas/content/itinerary.schema';
 
 interface Props {
 	title?: string;
@@ -14,13 +16,20 @@ interface Props {
 	variant: ItineraryVariant;
 	monogram?: string;
 	closingNote?: string;
+	/** Pinned scroll scene; the schema allows it on the standard variant only. */
+	scene?: ItineraryScene;
 }
 
-const { title = "Itinerario", items, variant, monogram, subtitle, closingNote } = Astro.props;
+const { title = "Itinerario", items, variant, monogram, subtitle, closingNote, scene } = Astro.props;
+const isRibbonRoute = scene === 'ribbon-route' && variant === 'standard' && items.length >= 2;
 ---
 
-<section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-variant={variant}>
+<section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-variant={variant} data-itinerary-scene={isRibbonRoute ? scene : undefined}>
 	<div class="itinerary__container">
+		{isRibbonRoute ? (
+			<ItineraryRibbonRoute title={title} subtitle={subtitle} items={items} closingNote={closingNote} />
+		) : (
+		<>
 		{title && (
 			<div class="itinerary__header">
 				<SplitWords class="itinerary__title" text={title} />
@@ -51,6 +60,8 @@ const { title = "Itinerario", items, variant, monogram, subtitle, closingNote } 
 
 		{closingNote && (
 			<p class="itinerary__closing-note" data-itinerary-closing-note>{closingNote}</p>
+		)}
+		</>
 		)}
 	</div>
 </section>

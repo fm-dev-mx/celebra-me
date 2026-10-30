@@ -346,6 +346,27 @@ span.crumb{color:var(--muted)}
 /* T258: blocked tasks, each with what it still waits for. */
 .blk{padding:8px 12px;border-bottom:1px solid var(--line)}
 .blk:last-child{border-bottom:0}
+/* T471 «Mapa»: nodes are hairline boxes over one SVG of arrows; red only for what the owner must do. */
+.map-key{margin:0 0 10px;font-size:.8rem;color:var(--muted)}
+.map-warn{margin:0 0 12px;padding:8px 12px 8px 2em;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.86rem}
+.map-strip{margin:0 0 12px;padding:8px 12px;border:1px solid var(--line-2);border-radius:6px;font-size:.86rem}
+.map-strip p{margin:2px 0 4px;color:var(--muted);font-size:.8rem}
+.map-strip ul{margin:0;padding-left:1.2em}
+.map-strip .tbtn{min-height:32px;padding:2px 0;font-weight:400}
+.map-wrap{overflow-x:auto;padding:4px 0 12px}
+.map{position:relative}
+.map svg{position:absolute;inset:0;overflow:visible}
+.map path{fill:none;stroke-width:1.5}
+.map path.wait{stroke:var(--ink)}.map path.ok{stroke:var(--block-rule)}.map path.own{stroke:var(--danger-rule)}
+.map path.sub{stroke:var(--line-2);stroke-dasharray:4 4}
+.map marker path{fill:var(--muted);stroke:none}
+.mn{position:absolute;display:flex;flex-direction:column;gap:2px;overflow:hidden;text-align:left;font:inherit;font-size:.78rem;line-height:1.25;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:6px;padding:5px 7px}
+button.mn{cursor:pointer}button.mn:hover{background:var(--hover)}
+.mn span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mn b{font-family:var(--mono);font-size:.74rem}
+.mn small{margin-top:auto;color:var(--muted);font-size:.72rem}
+.mn.done{color:var(--faint);background:var(--panel-2);border-style:dashed}
+.mn.root{color:var(--danger);background:var(--danger-soft);border-color:var(--danger-rule);font-weight:600}
 .blk .tbtn{min-height:36px;padding:2px 0;font-weight:400}
 .blk .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
 .blk ul{margin:4px 0 0;padding-left:1.2em;font-size:.86rem;overflow-wrap:anywhere}
@@ -431,6 +452,7 @@ a.prl{font-weight:600}
       <button class="tab" role="tab" type="button" data-tab="finalizadas" id="t-finalizadas">Finalizadas<span class="n" id="n-fin"></span></button>
       <span class="tab-sep" aria-hidden="true"></span>
       <button class="tab" role="tab" type="button" data-tab="carriles" id="t-carriles" title="Carriles con una tarea en curso, de todos">Carriles<span class="n" id="n-car"></span></button>
+      <button class="tab" role="tab" type="button" data-tab="mapa" id="t-mapa" title="Qué tarea espera a cuál, y qué le toca a usted para destrabarlas">Mapa<span class="n" id="n-map"></span></button>
       <button class="tab" role="tab" type="button" data-tab="historial" id="t-historial" title="Decisiones vigentes">Historial<span class="n" id="n-hist"></span></button>
     </nav>
     <div class="side-foot">
@@ -523,6 +545,10 @@ a.prl{font-weight:600}
       <div class="board" id="board"><div class="empty">Cargando los carriles…</div></div>
     </section>
 
+    <section id="p-mapa" role="tabpanel" aria-labelledby="t-mapa" hidden>
+      <div class="board" id="mapa"><div class="empty">Cargando el mapa…</div></div>
+    </section>
+
     <section id="p-historial" role="tabpanel" aria-labelledby="t-historial" hidden>
       <div class="board">
         <div class="tools">
@@ -578,8 +604,8 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];
-const TITLE={general:'General',usted:'Para usted',cola:'Cola',calendario:'Calendario',bloqueadas:'Bloqueadas',finalizadas:'Finalizadas',carriles:'Carriles',historial:'Historial'};
+const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','mapa','historial'];
+const TITLE={general:'General',usted:'Para usted',cola:'Cola',calendario:'Calendario',bloqueadas:'Bloqueadas',finalizadas:'Finalizadas',carriles:'Carriles',mapa:'Mapa',historial:'Historial'};
 // T268: the queue's collapsible groups, by the color of each block's first task, in this order.
 const GROUP={own:'Le toca a usted',auto:'Autónomas',run:'En curso',block:'Sin agente que la termine',rev:'En revisión',done:'Hechas'};
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
@@ -902,6 +928,38 @@ function renderBlk(){
   const empty='Ninguna tarea está bloqueada.';
   $('blk').innerHTML=shown.length?`<div class="log">${shown.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
+// T471: «Mapa» — open tasks that wait on each other, in columns from what waits on nothing (left) to what waits
+// longest (right). Nodes are buttons laid over one SVG that draws the arrows, from the task that waits to the one it
+// is missing; dashed lines join a mother to its subtasks. The graph itself comes ready in the payload (mapa).
+const MAP_W=190,MAP_H=60,MAP_GX=56,MAP_GY=14;
+function renderMapa(){
+  if(!S.ready)return;
+  const m=S.board.mapa||{nodos:[],aristas:[],avisos:[],bloqueadasSinMotivo:[]};
+  const pick=t=>`<button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${tt(t.titulo)}</button>`;
+  const avisos=m.avisos.length?`<ul class="map-warn" aria-label="Avisos del mapa">${m.avisos.map(a=>`<li>${esc(a.texto)}</li>`).join('')}</ul>`:'';
+  const sin=m.bloqueadasSinMotivo.length?`<div class="map-strip"><b>Bloqueadas sin motivo</b> <span class="n">${m.bloqueadasSinMotivo.length}</span><p>Están marcadas como bloqueadas pero no esperan nada; desbloquéelas o anote qué esperan.</p><ul>${m.bloqueadasSinMotivo.map(t=>`<li>${pick(t)}</li>`).join('')}</ul></div>`:'';
+  if(!m.nodos.length){$('mapa').innerHTML=avisos+sin+'<div class="empty">Ninguna tarea abierta espera a otra.</div>';return}
+  const pos=new Map(),rows=[];
+  for(const n of m.nodos){const r=rows[n.capa]=(rows[n.capa]||0)+1;pos.set(n.id,{x:n.capa*(MAP_W+MAP_GX),y:(r-1)*(MAP_H+MAP_GY)})}
+  const W=rows.length*(MAP_W+MAP_GX)-MAP_GX,H=Math.max(...rows.filter(Boolean))*(MAP_H+MAP_GY)-MAP_GY;
+  const path=e=>{
+    const a=pos.get(e.de),b=pos.get(e.a);if(!a||!b)return '';
+    const sub=e.tipo==='subtarea';
+    const [x1,y1,x2,y2]=sub?[a.x+MAP_W,a.y+MAP_H/2,b.x,b.y+MAP_H/2]:[a.x,a.y+MAP_H/2,b.x+MAP_W,b.y+MAP_H/2];
+    const dx=Math.max(24,Math.abs(x2-x1)/2)*(x2>=x1?1:-1);
+    const cls=sub?'sub':e.a.startsWith('raiz:')?'own':e.ok?'ok':'wait';
+    return `<path class="${cls}" d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"${sub?'':' marker-end="url(#map-arrow)"'}/>`;
+  };
+  const node=n=>{
+    const p=pos.get(n.id),st=`left:${p.x}px;top:${p.y}px;width:${MAP_W}px;height:${MAP_H}px`;
+    if(n.tipo==='raiz')return `<div class="mn root" style="${st}" title="${esc(n.texto)}"><span>${esc(n.texto)}</span>${n.desbloquea?`<small>desbloquea ${n.desbloquea}</small>`:''}</div>`;
+    const tag=n.num?`T${n.num}`:'·',done=n.tipo==='hecha';
+    const body=`<b>${esc(tag)}</b> <span>${esc(n.titulo)}</span><small>${done?esc(n.archivada?'archivada':n.estado):esc(n.estado)}${n.desbloquea?` · desbloquea ${n.desbloquea}`:''}</small>`;
+    return byId(n.id)?`<button type="button" class="mn${done?' done':''}" style="${st}" data-sel="${esc(n.id)}" data-jump="1" data-all="1" title="${esc(tag+' · '+n.titulo)}">${body}</button>`:`<div class="mn done" style="${st}" title="${esc(tag+' · '+n.titulo)}">${body}</div>`;
+  };
+  $('mapa').innerHTML=avisos+sin+`<p class="map-key">La flecha va de la tarea que espera a la que le falta. Rojo: le toca a usted. Gris: terminada o archivada. Línea punteada: subtarea.</p>
+<div class="map-wrap"><div class="map" style="width:${W}px;height:${H}px"><svg width="${W}" height="${H}" aria-hidden="true"><defs><marker id="map-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>${m.aristas.map(path).join('')}</svg>${m.nodos.map(node).join('')}</div></div>`;
+}
 // Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).
 function renderFin(){
   const fin=($('arch').checked?archivedTasks:S.board.tareas).filter(isFinished);
@@ -977,7 +1035,7 @@ function renderMeta(){
 }
 // d284: the view's title repeats its tab's count, «Cola (12)»: below 800px the sidebar is hidden.
 // T321: while the header search has text, the title counts its results instead.
-const COUNT_ID={general:'n-gen',usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car',historial:'n-hist'};
+const COUNT_ID={general:'n-gen',usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car',mapa:'n-map',historial:'n-hist'};
 function renderTitle(){
   const n=searching()?String(S.found||0):$(COUNT_ID[S.tab]).textContent;
   $('vtitle').innerHTML=esc(searching()?'Búsqueda':TITLE[S.tab])+(n!==''?` <span class="n">${esc(n)}</span>`:'');
@@ -986,6 +1044,7 @@ function renderTitle(){
 function renderCounts(){
   const c=tabCounts(S.board,{prs:livePrs()});
   for(const [k,id] of Object.entries({usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car'}))$(id).textContent=c[k];
+  $('n-map').textContent=S.board.mapa?.abiertas??'';
   $('t-usted').title=c.usted?`Usted: ${c.usted} ${c.usted>1?'cosas':'cosa'}`:'Usted: nada';
 }
 // T321: an owner row leads with its action as a verb; a message reads «Codex → usted: question», with its task and
@@ -1062,7 +1121,7 @@ function renderArchiveChats(){
   const status=inventory?.error??(unavailable.length?'Inventario no disponible: '+unavailable.join(', '):'');
   $('archive-chats').innerHTML=chats.map(c=>`<div class="row"><b>${esc(AGENT_REGISTRY[c.agente]?.nombre??c.agente)}</b><span><span>${esc(c.titulo)}</span><small>${esc(c.motivo)} · ${esc(c.id)}${c.agente==='claude'?' · Confirme que siga abierto':''}</small></span></div>`).join('')+(status?`<p class="none">${esc(status)}</p>`:!inventory?'<p class="none">Comprobando los chats…</p>':!chats.length?'<p class="none">No hay chats por archivar con evidencia disponible.</p>':'');
 }
-function render(){renderCounts();renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist();renderArchiveChats();showView()}
+function render(){renderCounts();renderCola();renderCal();renderBlk();renderMapa();renderFin();renderTop();renderBoard();renderHist();renderArchiveChats();showView()}
 
 // T321: which panel shows: the search results while the header search has text, else the selected tab's view.
 // The tab stays selected during a search, so clearing it returns there.

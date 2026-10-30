@@ -364,6 +364,11 @@ export function resultKind(t) {
 /** Whether the T129 return contract applies: only tasks created under contrato 2 or later. */
 export const fullContract = (t) => Number.isInteger(t?.contrato) && t.contrato >= 2;
 
+/** An archived task by id: its archivo/ record, else the short record of one kept only in a monthly .zip. */
+export const archivedTask = (id, board) =>
+	(board.archivo ?? []).find((x) => x.id === id) ??
+	(board.archivoZip ?? []).find((x) => x.id === id);
+
 /**
  * A task's requisitos, each re-checked against the board right now. A pending task without a prompt gets an
  * automatic «prompt» requisito, except when the coordinator itself is the actor.
@@ -374,11 +379,10 @@ export function requisitos(t, board, now = Date.now()) {
 	const list = (Array.isArray(t.requisitos) ? t.requisitos : []).map((r) => {
 		if (r.tipo === 'tarea') {
 			const d = tareas.find((x) => x.id === r.ref);
-			const archived = (board.archivo ?? []).find((x) => x.id === r.ref);
-			return { ...r, ok: SUCCESS.has((d ?? archived)?.estado) };
+			return { ...r, ok: SUCCESS.has((d ?? archivedTask(r.ref, board))?.estado) };
 		}
 		if (r.tipo === 'revision') {
-			const d = [...tareas, ...(board.archivo ?? [])].find((x) => x.id === r.ref);
+			const d = tareas.find((x) => x.id === r.ref) ?? archivedTask(r.ref, board);
 			return { ...r, ok: !!d?.pr && ['en revision', 'hecha', 'unida'].includes(d.estado) };
 		}
 		if (r.tipo === 'fecha') return { ...r, ok: now >= time(r.ref) };
