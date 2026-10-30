@@ -4,7 +4,7 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
 /**
  * XV invitation for Yireh Ana on the storybook-lilac preset, styled as illustrated watercolor
  * stationery: ultra-pale lilac paper, lilac and purple floral corners with a few tiny yellow
- * flowers, and a small yellow bow as the recurring motif (seal, quote mark, program, reply card).
+ * flowers, and a small yellow bow kept to the oak and the end of the program ribbon.
  * The cover follows the client's reference 40 without the books: floral corners above, the name
  * on clean paper and the single oak with one yellow ribbon below. The oak appears only there;
  * the interludes are bespoke stills (lilac branch, bouquet, sealed envelope) without people.
@@ -91,7 +91,6 @@ const content: CanonicalEventContentInput = {
 		revealVariant: 'storybook-butterflies',
 		sealStyle: 'wax',
 		sealIcon: 'flower',
-		sealInitials: 'Y',
 		sealColor: 'champagne',
 		envelopeName: CELEBRANT_NAME,
 		cardName: CELEBRANT_NAME,
@@ -100,8 +99,8 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Hay lazos que nos unen aunque pase el tiempo.',
-		closingLine: 'Este día quiero compartirlo con usted.',
+		text: 'Quince años se cuentan, sobre todo, en las personas que han estado cerca.',
+		closingLine: 'Por eso quiero compartir esta noche con usted.',
 	},
 	countdown: {
 		variant: 'written-days',
@@ -118,14 +117,14 @@ const content: CanonicalEventContentInput = {
 		},
 		introHeading: 'Lugar y momento',
 		introLede:
-			'La celebración de acción de gracias estará a cargo del Pastor Jesús Manuel Ozaeta Pérez, en el mismo salón. Le pedimos llegar antes de que comience, para no interrumpir la entrega de los diez elementos simbólicos a Yireh Ana.',
+			'La acción de gracias será a las 7:30 p. m. en el mismo salón, a cargo del Pastor Jesús Manuel Ozaeta Pérez. En ella recibiré diez elementos simbólicos; le agradeceré llegar con tiempo para que esté presente desde el inicio.',
 		indicationsHeading: 'Código de vestimenta',
 		indications: [
 			{
 				iconName: 'DressCode',
 				styleVariant: 'default',
 				title: 'Formal',
-				text: 'Le agradecemos acompañarnos con atuendo formal.',
+				text: 'Le agradeceré acompañarme con atuendo formal.',
 			},
 		],
 		venues: [
@@ -166,7 +165,7 @@ const content: CanonicalEventContentInput = {
 				time: '19:00',
 				iconName: 'Reception',
 				label: 'Recepción',
-				description: 'Le recibimos en el Salón Casino Imperial.',
+				description: 'Bienvenida en el Salón Casino Imperial.',
 			},
 			{
 				time: '19:30',
@@ -177,23 +176,23 @@ const content: CanonicalEventContentInput = {
 			{
 				time: '21:00',
 				iconName: 'Waltz',
-				label: 'Vals',
-				description: 'Enseguida, el brindis.',
+				label: 'Vals y brindis',
+				description: 'Bailaré mi vals y después brindaremos juntos.',
 			},
 			{
 				time: '21:30',
 				iconName: 'Dinner',
 				label: 'Bocadillos y aguas frescas',
-				description: 'Después, la pista se abre para bailar.',
+				description: 'La pista queda abierta para bailar.',
 			},
 			{
 				time: '00:00',
 				iconName: 'Party',
 				label: 'Cierre',
-				description: 'Gracias por compartir esta noche.',
+				description: 'Gracias por compartir esta noche conmigo.',
 			},
 		],
-		closingNote: 'Horarios aproximados. El salón nos recibe de 7:00 p. m. a medianoche.',
+		closingNote: 'Los horarios son aproximados; la celebración termina a medianoche.',
 	},
 	gifts: {
 		// No registry and no envelopes: one gentle line, in the client's words.
@@ -201,7 +200,7 @@ const content: CanonicalEventContentInput = {
 		title: 'Un detalle',
 		presentation: 'legend-only',
 		subtitle:
-			'Si desea tener un detalle con Yireh Ana, lo que disponga su corazón será bien recibido.',
+			'Si desea tener un detalle conmigo, lo que disponga su corazón será bien recibido.',
 	},
 	family: {
 		variant: 'standard',
@@ -214,37 +213,38 @@ const content: CanonicalEventContentInput = {
 			sectionSubtitle: '',
 			parentsTitle: 'Mi mamá',
 			sectionMessage:
-				'A usted, mamá, gracias por enseñarme a ser firme y a cuidar los lazos que nos unen.',
+				'Mamá: de usted aprendí a mantenerme firme y a cuidar a quienes quiero. Llego a mis quince de su mano.',
 		},
 	},
 	rsvp: {
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		subcopy: 'Será un honor contar con su presencia en esta fecha tan significativa.',
+		subcopy: 'Su respuesta me ayuda a preparar su lugar. Le agradeceré confirmarla con tiempo.',
 		lockedMessage:
-			'Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.',
+			'Esta invitación es personal. Abra el enlace que le envié para ver su pase y confirmar.',
 		guestCap: 1,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		flow: 'steps',
 		personalizedAccess: {
 			variant: 'reply-card',
-			title: 'Su lugar ya está apartado',
-			subtitle: 'Lleva su nombre.',
-			footerText: 'Confírmelo abajo.',
+			title: 'Su lugar está reservado',
+			subtitle: 'A su nombre.',
+			footerText: 'Le pido confirmarlo a continuación.',
 		},
 		labels: {
 			name: 'Su nombre',
 			notesLabel: 'Un mensaje para mis quince',
 			notesPlaceholder: 'Escriba aquí sus palabras...',
-			guestHint: 'Tiene {count} lugares. Si vienen menos, ajústelo aquí.',
-			stepAttendance: 'Primero lo importante',
+			guestHint:
+				'Su pase incluye {count} lugares. Si asistirán menos personas, indíquelo aquí.',
+			stepAttendance: 'Su asistencia',
 			stepDetails: '¿Quiénes le acompañan?',
 		},
-		confirmationMessage: `Nos vemos el sábado ${EVENT_DATE_LABEL}.`,
+		confirmationMessage: `Le espero el sábado ${EVENT_DATE_LABEL}.`,
 		responseMessages: {
 			confirmed: {
-				title: 'Gracias, {guestName}. Nos vemos pronto.',
+				title: 'Gracias, {guestName}. Me dará mucho gusto verle.',
 				subtitle: 'Si algo cambia, puede modificar su respuesta aquí mismo.',
 			},
 			declined: {
@@ -258,7 +258,7 @@ const content: CanonicalEventContentInput = {
 		image: 'wreath',
 		focalPoint: '50% 50%',
 		message:
-			'Hay lazos que el tiempo no desata. Gracias por ser parte de mi historia y por acompañarme en mis quince años.',
+			'Gracias por acompañarme en mis quince años. Me llevo esta noche y el cariño de cada persona que estuvo aquí.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: `Yireh Ana · Mis XV Años · Delicias, Chihuahua · MMXXVII`,
 	},
@@ -279,9 +279,9 @@ const content: CanonicalEventContentInput = {
 		ogDescription: `Sábado ${EVENT_DATE_LABEL} · Salón Casino Imperial, Ciudad Delicias, Chihuahua.`,
 		shareMessages: {
 			invitation:
-				'Hola, {{invitado}}: celebro mis quince años y quiero que usted esté conmigo. Aquí va su invitación, con su pase y la opción para confirmar:\n\n{{enlace}}',
+				'Hola, {{invitado}}: celebro mis quince años y quiero que usted esté conmigo. Le comparto su invitación, con su pase personal y la opción para confirmar:\n\n{{enlace}}',
 			reminder:
-				'Hola, {{invitado}}: {{hora_evento}} Ya se acerca el día de mis quince años.\n\nSi aún no confirma, puede hacerlo aquí:\n{{enlace}}',
+				'Hola, {{invitado}}: {{hora_evento}} Ya se acerca el día de mis quince años.\n\nSi todavía no ha confirmado, puede hacerlo aquí:\n{{enlace}}',
 		},
 	},
 };
