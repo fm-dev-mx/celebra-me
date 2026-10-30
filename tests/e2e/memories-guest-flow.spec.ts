@@ -39,15 +39,18 @@ const QUOTA = {
 type Item = { id: string; mimeType: string; status: string };
 type ReserveBody = { clientRequestId: string; mimeType: string; durationSeconds?: number };
 
+// Timestamps stay relative to now: an `uploading` item older than the presign
+// lifetime renders as unfinished instead of pending validation.
 function publicItem(item: Item) {
+	const now = new Date().toISOString();
 	return {
 		...item,
 		sizeBytes: PNG_1X1.byteLength,
 		durationSeconds: null,
 		caption: '',
-		createdAt: '2026-10-30T00:00:00.000Z',
-		updatedAt: '2026-10-30T00:00:00.000Z',
-		acceptedAt: item.status === 'accepted' ? '2026-10-30T00:00:00.000Z' : null,
+		createdAt: now,
+		updatedAt: now,
+		acceptedAt: item.status === 'accepted' ? now : null,
 		rejectedAt: null,
 		deletedAt: null,
 	};
