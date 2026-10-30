@@ -29,6 +29,8 @@ import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLo
 import { getEnv } from '@/lib/server/env';
 import type { LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 import { safeErr } from '@/lib/server/safe-error';
+import LeadOriginCard from '@/components/dashboard/commercial/LeadOriginCard.astro';
+import type { LeadOriginResult } from '@/lib/tracking/lead-origin.server';
 
 if (!Astro.locals.session?.isSuperAdmin) {
 	return Astro.redirect('/dashboard/invitados');
@@ -46,6 +48,17 @@ try {
 	metaInsights = await (await import('@/lib/meta/insights-dashboard.server')).loadMetaInsightsTable();
 } catch (error) {
 	console.error('[commercial-dashboard] Unable to load Meta insights.', safeErr(error));
+}
+const folioQuery = (Astro.url.searchParams.get('folio') ?? '').trim().slice(0, 40);
+let leadOrigin: LeadOriginResult | null = null;
+let leadOriginFailed = false;
+if (folioQuery) {
+	try {
+		leadOrigin = await (await import('@/lib/tracking/lead-origin.server')).loadLeadOrigin(folioQuery);
+	} catch (error) {
+		console.error('[commercial-dashboard] Unable to load lead origin.', safeErr(error));
+		leadOriginFailed = true;
+	}
 }
 let loadError = false;
 let initialConversions: ConversionEvent[] = [];
@@ -241,6 +254,7 @@ const revenueAttribution = dashboardData
 				</div>
 
 				<div class="tab-content active" id="tab-ventas" role="tabpanel" aria-labelledby="commercial-tab-ventas" tabindex="0">
+					<LeadOriginCard query={folioQuery} result={leadOrigin} failed={leadOriginFailed} />
 					<SalesWorkspace client:load initialLeads={initialSalesLeads} demoInventory={demoReport?.followupsAvailable ? demoReport.inventory : []} />
 				</div>
 
