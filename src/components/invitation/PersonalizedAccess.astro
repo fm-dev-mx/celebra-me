@@ -16,6 +16,8 @@ interface Props {
 	footerText?: string;
 	noteText?: string;
 	passStyle?: PersonalizedAccessPassStyle;
+	/** Decorative QR check-in preview; drawn on demo previews only, until check-in ships. */
+	checkInQr?: boolean;
 }
 
 const {
@@ -31,6 +33,7 @@ const {
 	footerText = 'Confirma tu asistencia en la sección de RSVP al final de la invitación.',
 	noteText,
 	passStyle = 'classic',
+	checkInQr = false,
 } = Astro.props;
 
 const seatsLabel =
@@ -57,6 +60,43 @@ const writtenSeats =
 	maxAllowedAttendees >= 1 && maxAllowedAttendees < SEAT_WORDS.length
 		? `${SEAT_WORDS[maxAllowedAttendees]} ${maxAllowedAttendees === 1 ? 'lugar' : 'lugares'}`
 		: `${maxAllowedAttendees} ${maxAllowedAttendees === 1 ? 'lugar' : 'lugares'}`;
+
+// Preview of the upcoming QR check-in: a QR-shaped pattern seeded by the guest name. It encodes
+// nothing, so it only appears on demo previews.
+const showCheckInQr = checkInQr && Boolean(isDemoPreview);
+const QR_SIZE = 25;
+let qrPath = '';
+if (showCheckInQr) {
+	let seed = 2166136261;
+	for (const char of guestName) seed = Math.imul(seed ^ char.charCodeAt(0), 16777619);
+	const random = () => {
+		seed = (seed + 0x6d2b79f5) | 0;
+		let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+	};
+	const finderOrigins = [[0, 0], [QR_SIZE - 7, 0], [0, QR_SIZE - 7]];
+	const inFinderZone = (x: number, y: number) =>
+		finderOrigins.some(([fx, fy]) => x >= fx - 1 && x <= fx + 7 && y >= fy - 1 && y <= fy + 7);
+	const isFinderModule = (x: number, y: number) =>
+		finderOrigins.some(([fx, fy]) => {
+			const dx = x - fx;
+			const dy = y - fy;
+			if (dx < 0 || dx > 6 || dy < 0 || dy > 6) return false;
+			const ring = Math.min(dx, dy, 6 - dx, 6 - dy);
+			return ring !== 1;
+		});
+	for (let y = 0; y < QR_SIZE; y++) {
+		for (let x = 0; x < QR_SIZE; x++) {
+			const dark = inFinderZone(x, y)
+				? isFinderModule(x, y)
+				: y === 6 || x === 6
+					? (x + y) % 2 === 0
+					: random() < 0.5;
+			if (dark) qrPath += `M${x} ${y}h1v1h-1z`;
+		}
+	}
+}
 ---
 
 <section
@@ -154,6 +194,29 @@ const writtenSeats =
 					{isReplyCard && <span class="access-card__count-words">{writtenSeats}</span>}
 					{ticket && <span class="access-card__monogram" aria-hidden="true">{ticket.monogram}</span>}
 				</div>
+
+				{
+					showCheckInQr && (
+						<div class="access-card__check-in">
+							<svg
+								class="access-card__qr"
+								viewBox={`-2 -2 ${QR_SIZE + 4} ${QR_SIZE + 4}`}
+								shape-rendering="crispEdges"
+								aria-hidden="true"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path d={qrPath} fill="currentColor"></path>
+							</svg>
+							<div class="access-card__check-in-copy">
+								<span class="access-card__check-in-badge">Próximamente</span>
+								<p class="access-card__check-in-title">Registro con QR</p>
+								<p class="access-card__check-in-text">
+									Muestre este código al llegar y su acceso quedará registrado al instante.
+								</p>
+							</div>
+						</div>
+					)
+				}
 
 				{
 					!ticket && formattedNoteText && (
