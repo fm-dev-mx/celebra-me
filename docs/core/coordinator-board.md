@@ -359,24 +359,29 @@ the code without changing user files, automations or running scheduler tasks:
    Registration replaces the previous 10-minute toast task with the same task name. Never restart
    the board on 4320; its existing supervisor loads merged code.
 
-Codex wakes use `codex.exe queue --thread <id> --message <doorbell>`. Gemini wakes are board `msg`
-rows consumed by the existing relay; Claude receives board messages. Payloads name tasks/messages
-without copying their bodies or owner authorizations. Archive wakes say **Archive estos chats:**,
-cite d351, preserve individual IDs, and ask the master to confirm its inventory and reply to Claude
-with `pnpm board msg <task-id> --de=<agent> --para=claude` and the actual archived IDs. Masters
-never send idle/no-work notices. A wake grants no new authority.
+Codex wakes use `codex.exe queue --thread <id> --message <doorbell>`. The Codex app keeps its CLI
+off PATH, so the watcher runs `codexBin` from `board-masters.json` or `CELEBRA_CODEX_BIN` when that
+file exists, else the newest `%LOCALAPPDATA%/OpenAI/Codex/bin/<build>/codex.exe`, else PATH. Gemini
+wakes are board `msg` rows consumed by the existing relay; Claude receives board messages. Payloads
+name tasks/messages without copying their bodies or owner authorizations. Archive wakes say
+**Archive estos chats:**, cite d351, preserve individual IDs, and ask the master to confirm its
+inventory and reply to Claude with `pnpm board msg <task-id> --de=<agent> --para=claude` and the
+actual archived IDs. Masters never send idle/no-work notices. A wake grants no new authority.
 
 Receipts live in `.agent/tmp/board-master-watch.json`, keyed by agent, configured master and event.
-Failed transports retry; successful destinations are saved independently. Ready tasks re-arm only
-after leaving readiness. Message and archive receipts survive temporary missing inventories and
-process restarts. A separate exclusive `.lock` prevents overlapping passes. After a crash, inspect
-that exact lock and process before scoped orphan removal; never remove a live lock. Transport
-acceptance and the local receipt cannot be atomic: a crash between them can repeat one doorbell, so
-masters check the referenced IDs before acting. Codex acceptance proves queueing, not reading;
-Gemini acceptance proves the board message was stored, not host delivery. The existing relay's
-consume-before-send limitation still applies; inspect history before any manual resend. Message
-observation includes history since master setup, so the relay consuming an inbox before a scheduled
-pass cannot hide a new message from the master watcher. Older unread messages remain eligible.
+Failed transports retry; successful destinations are saved independently. A destination still
+failing 30 minutes into a streak (`failing` in the receipts) sends one board message to the
+coordinator and one Telegram alert to the owner; the next success ends the streak. Ready tasks
+re-arm only after leaving readiness. Message and archive receipts survive temporary missing
+inventories and process restarts. A separate exclusive `.lock` prevents overlapping passes. After a
+crash, inspect that exact lock and process before scoped orphan removal; never remove a live lock.
+Transport acceptance and the local receipt cannot be atomic: a crash between them can repeat one
+doorbell, so masters check the referenced IDs before acting. Codex acceptance proves queueing, not
+reading; Gemini acceptance proves the board message was stored, not host delivery. The existing
+relay's consume-before-send limitation still applies; inspect history before any manual resend.
+Message observation includes history since master setup, so the relay consuming an inbox before a
+scheduled pass cannot hide a new message from the master watcher. Older unread messages remain
+eligible.
 
 The view refreshes **Se pueden archivar** every 15 seconds over the existing SSE connection without
 page reload. It shares `external-sessions.mjs` with `pnpm board sesiones --archivables`. PR state is

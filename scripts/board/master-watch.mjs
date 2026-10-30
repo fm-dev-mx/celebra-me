@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 /** One bounded no-AI pass, scheduled every minute. No owner authority or message bodies forwarded. */
 import { execFileSync } from 'node:child_process';
-import { closeSync, existsSync, mkdirSync, openSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	closeSync,
+	existsSync,
+	mkdirSync,
+	openSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { archiveSessions } from './external-sessions.mjs';
@@ -314,11 +323,48 @@ export async function checkAutomaticNotices({
 	return notices;
 }
 
+/**
+ * The Codex CLI: `codexBin` in board-masters.json or CELEBRA_CODEX_BIN when it exists, else the newest
+ * `codex.exe` the Codex app installs under %LOCALAPPDATA%/OpenAI/Codex/bin/<build>/, else PATH.
+ */
+export function resolveCodexBin(
+	config = {},
+	{ env = process.env, fs = { existsSync, readdirSync, statSync } } = {},
+) {
+	for (const configured of [config.codexBin, env.CELEBRA_CODEX_BIN])
+		if (configured && fs.existsSync(configured)) return configured;
+	if (env.LOCALAPPDATA) {
+		const bin = join(env.LOCALAPPDATA, 'OpenAI', 'Codex', 'bin');
+		let builds = [];
+		try {
+			builds = fs.readdirSync(bin, { withFileTypes: true }).filter((d) => d.isDirectory());
+		} catch {
+			// No Codex app install: fall back to PATH.
+		}
+		const newest = builds
+			.map((d) => join(bin, d.name, 'codex.exe'))
+			.filter((file) => fs.existsSync(file))
+			.map((file) => ({ file, mtime: fs.statSync(file).mtimeMs }))
+			.sort((a, b) => b.mtime - a.mtime)[0];
+		if (newest) return newest.file;
+	}
+	return 'codex.exe';
+}
+
 /** Codex queue acknowledges queue acceptance; the Gemini relay acknowledges later, outside this pass. */
-export function deliverWake(agent, thread, text, config, board, dir, exec = execFileSync) {
+export function deliverWake(
+	agent,
+	thread,
+	text,
+	config,
+	board,
+	dir,
+	exec = execFileSync,
+	codexBin = resolveCodexBin,
+) {
 	const opts = { encoding: 'utf8', windowsHide: true, timeout: 20_000, stdio: 'pipe' };
 	if (agent === 'codex') {
-		exec('codex.exe', ['queue', '--thread', thread, '--message', text], opts);
+		exec(codexBin(config), ['queue', '--thread', thread, '--message', text], opts);
 		return;
 	}
 	const anchor = board.tareas.find((t) => t.id === config.relayTask);
@@ -347,6 +393,43 @@ function pendingEvents(events, previous = []) {
 	};
 }
 
+const FAILING_ALERT_MS = 30 * 60_000;
+
+/** A destination failing for 30 min alerts the coordinator (board message) and the owner (Telegram) once per streak. */
+function recordDeliveryFailure({
+	agent,
+	destination,
+	error,
+	events,
+	config,
+	state,
+	now,
+	dir,
+	sendTelegram,
+}) {
+	const nowIso = new Date(now).toISOString();
+	const streak = (state.failing[destination] ??= { desde: nowIso });
+	streak.ultimo = nowIso;
+	streak.error = String(error?.code ?? error?.name ?? 'error').slice(0, 40);
+	if (streak.avisado || now - Date.parse(streak.desde) < FAILING_ALERT_MS) return;
+	streak.avisado = nowIso;
+	const tarea = config.relayTask ?? events.find((e) => e.task)?.task;
+	const texto = `Vigilante: entrega al maestro ${agent} falla desde ${streak.desde} (${streak.error}); revise pnpm board:watch --dry-run.`;
+	if (tarea && dir) {
+		const id = `aviso-entrega-${agent}-${Date.parse(streak.desde)}`;
+		const row = buildMessageRow(
+			tarea,
+			{ de: 'coordinador', para: 'coordinador', id, texto },
+			nowIso,
+		);
+		withLock(dir, () => appendLog(dir, row));
+	}
+	sendTelegram(
+		`Vigilante: los avisos al maestro ${agent} no se entregan desde hace más de 30 min (${streak.error}).`,
+		{ dir },
+	);
+}
+
 function deliverMasterWakes({
 	config,
 	board,
@@ -360,6 +443,7 @@ function deliverMasterWakes({
 	failures,
 	file,
 	dir,
+	sendTelegram,
 }) {
 	for (const [agent, thread] of Object.entries(config.masters)) {
 		const events = wakeEvents(board, archives, agent, config.since?.[agent], { now });
@@ -373,10 +457,23 @@ function deliverMasterWakes({
 		else {
 			try {
 				deliver(agent, thread, text, config, board, dir);
-			} catch {
+			} catch (error) {
 				failures.push(`${agent}: entrega no confirmada; se reintentará`);
+				recordDeliveryFailure({
+					agent,
+					destination,
+					error,
+					events: fresh,
+					config,
+					state,
+					now,
+					dir,
+					sendTelegram,
+				});
+				writeLocal(file, state);
 				continue;
 			}
+			delete state.failing[destination];
 			state.delivered[destination].push(...fresh.map((e) => e.key));
 			writeLocal(file, state);
 		}
@@ -398,11 +495,12 @@ function acquireWatchLock(file, now) {
 }
 
 function loadWatchState(file) {
-	const state = readLocal(file, { delivered: {}, notified: {}, escalations: {} });
+	const state = readLocal(file, { delivered: {}, notified: {}, escalations: {}, failing: {} });
 	return {
 		delivered: state.delivered || {},
 		notified: state.notified || {},
 		escalations: state.escalations || {},
+		failing: state.failing || {},
 		...(state.owner ? { owner: state.owner } : {}),
 	};
 }
@@ -481,6 +579,7 @@ export async function runMasterWatch({
 			failures,
 			file,
 			dir,
+			sendTelegram,
 		});
 
 		if (failures.length) throw new Error(failures.join('; '));
