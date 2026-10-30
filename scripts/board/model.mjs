@@ -826,6 +826,7 @@ const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));
 const subsetOf = (list, allowed) => Array.isArray(list) && list.every((x) => allowed.includes(x));
 
 const optional = (v, ok) => v === undefined || ok(v);
+const REF_TEXT = { padre: 'el id de la tarea madre', deriva: 'el id de su origen', grupo: 'texto' };
 
 /** Merged always needs a PR; under review only when the task has a branch (audits ship none). */
 const needsPr = (t) => t.estado === 'unida' || (t.estado === 'en revision' && !!t.rama);
@@ -931,16 +932,16 @@ const FIELD_CHECKS = [
 	]),
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
-	// d174: a subtask names its mother task (padre) and/or initiative (grupo), with an optional phase.
-	[
-		(t) => !optional(t.padre, (p) => typeof p === 'string' && p.trim()),
-		() => 'padre debe ser el id de la tarea madre',
-	],
-	[(t) => t.padre !== undefined && t.padre === t.id, () => 'padre no puede ser la misma tarea'],
-	[
-		(t) => !optional(t.grupo, (g) => typeof g === 'string' && g.trim()),
-		() => 'grupo debe ser texto',
-	],
+	// d174: a subtask names its mother (padre) and/or initiative (grupo), with an optional phase. T481: a follow-up
+	// names the finished task it came from (deriva); it is neither a subtask nor a requisito.
+	...Object.entries(REF_TEXT).map(([k, what]) => [
+		(t) => !optional(t[k], (v) => typeof v === 'string' && v.trim()),
+		() => `${k} debe ser ${what}`,
+	]),
+	...['padre', 'deriva'].map((k) => [
+		(t) => t[k] !== undefined && t[k] === t.id,
+		() => `${k} no puede ser la misma tarea`,
+	]),
 	[
 		(t) => !optional(t.fase, (n) => Number.isInteger(n) && n >= 1),
 		() => 'fase debe ser un entero desde 1',

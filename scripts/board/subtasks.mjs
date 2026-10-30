@@ -198,6 +198,33 @@ export function parentText(t, board) {
 	return `Parte de ${name} · ${p.hechas}/${p.total} listas`;
 }
 
+/**
+ * T481: «Viene de T469 · Título (unida)», the finished task a follow-up came from; '' without `deriva`. A follow-up
+ * is its own task: unlike a subtask it never counts toward the source's progress nor waits on it.
+ */
+export function sourceText(t, board) {
+	if (!t.deriva) return '';
+	const src = findTask(t.deriva, board);
+	if (!src) return `Viene de ${t.deriva} (no está en el tablero)`;
+	return `Viene de ${taskTag(src)} · ${src.titulo ?? src.id} (${src.estado ?? 'pendiente'})`;
+}
+
+/** T481: why a task's `deriva` cannot stay: it names no task on the board. Null when it is fine. */
+export function sourceIssue(t, board) {
+	if (t.deriva === undefined) return null;
+	return findTask(t.deriva, board) ? null : `deriva ${t.deriva} no está en el tablero`;
+}
+
+/** The «Parte de» and «Viene de» lines `show` prints under a task's title. */
+export const originLines = (t, board) =>
+	[parentText(t, board), sourceText(t, board)].filter(Boolean);
+
+/** The first issue among the references a write changed (`refs` lists `padre` and/or `deriva`). */
+export const refIssue = (t, board, refs) =>
+	(refs.includes('padre') && parentIssue(t, board)) ||
+	(refs.includes('deriva') && sourceIssue(t, board)) ||
+	null;
+
 /** d174: the block of `pnpm board show` for a mother task, «Subtareas · X/Y (Z %)», a bar and its checklist. */
 export function subtaskLines(t, board) {
 	const subs = subtasksOf(t, board);

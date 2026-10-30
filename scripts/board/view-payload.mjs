@@ -52,7 +52,7 @@ export function liveBoard(board, now = Date.now()) {
 	return {
 		...board,
 		tareas: open.map((t) => taskSummary(t, board)),
-		// Dependency, subtask and review references survive without archived task documents.
+		// Dependency, subtask, follow-up and review references survive without archived task documents.
 		archivo: [
 			...archived.map((t) => {
 				const keys = [
@@ -64,6 +64,7 @@ export function liveBoard(board, now = Date.now()) {
 					'origen',
 					'revisionSha',
 					'padre',
+					'deriva',
 					'grupo',
 					'fase',
 					'orden',
@@ -107,6 +108,7 @@ function neededArchives(board, open, log) {
 			for (const ref of [
 				t.padre,
 				t.origen,
+				t.deriva,
 				...(t.requisitos ?? [])
 					.filter((r) => ['tarea', 'revision'].includes(r.tipo))
 					.map((r) => r.ref),

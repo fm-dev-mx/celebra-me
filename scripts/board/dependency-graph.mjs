@@ -3,12 +3,12 @@
  * Shared by the view payload (view-payload.mjs); no I/O.
  *
  * - Nodes are the open tasks with a relation: a tarea requisito either way, an unmet dueño/decisión requisito,
- *   or a padre/grupo group with an open subtask. Tasks they point to that are done or archived (archivo/, or
+ *   a padre/grupo group with an open subtask, or an open follow-up and the task it came from (deriva, T481). Tasks they point to that are done or archived (archivo/, or
  *   only in a monthly .zip) come in gray; an unmet dueño/decisión requisito is a red root box.
  * - Edges go from the task that waits to the one it is missing (`espera`), or from a mother to its subtask
- *   (`subtarea`).
+ *   (`subtarea`), or from a source to its follow-up (`deriva`): a gray link, never a wait.
  * - `capa` is the column: 0 for what waits on nothing, then one more than the deepest thing it waits on; a
- *   cycle shares one column. A subtask sits at least one column right of its mother.
+ *   cycle shares one column. A subtask sits at least one column right of its mother, a follow-up right of its source.
  * - `desbloquea` counts the distinct open tasks that wait on a node, directly or down a chain.
  */
 import { archivedTask, isFinished, requisitos, taskTag } from './model.mjs';
@@ -114,6 +114,23 @@ function addSubtask(g, t) {
 	g.edges.push({ de: ref, a: t.id, tipo: 'subtarea', ok: true });
 }
 
+/** T481: an open follow-up and the task it came from, joined by a `deriva` link that never blocks. */
+function addSource(g, t) {
+	if (!t.deriva || t.deriva === t.id) return;
+	const src = g.lookup(t.deriva);
+	if (!src) {
+		g.avisos.push({
+			tipo: 'ref',
+			tarea: t.id,
+			texto: `${taskTag(t)} viene de «${t.deriva}», que no existe en el tablero`,
+		});
+		return;
+	}
+	g.addTask({ ...src, id: t.deriva });
+	g.addTask(t);
+	g.edges.push({ de: t.deriva, a: t.id, tipo: 'deriva', ok: true });
+}
+
 /** Columns over the waits-on edges, a cycle condensed to one column; returns a warning per cycle. */
 function layOut(nodes, edges) {
 	const ids = [...nodes.keys()];
@@ -146,10 +163,11 @@ function layOut(nodes, edges) {
 					capaScc[k] = Math.max(capaScc[k], capaScc[sccOf.get(w)] + 1);
 	});
 	for (const id of ids) nodes.get(id).capa = capaScc[sccOf.get(id)];
-	// Subtasks right of their mother; repeat for nested groups and the chains that follow them. A mother that
+	// Subtasks right of their mother and follow-ups right of their source; repeat for nested groups and the chains that follow them. A mother that
 	// waits on its own subtask is a loop of «right of» rules: its waits-on column wins and the rule is skipped.
 	const rightOf = new Map(ids.map((id) => [id, [...waits.get(id)]]));
-	for (const e of edges) if (e.tipo === 'subtarea') rightOf.get(e.a).push(e.de);
+	const after = (e) => e.tipo === 'subtarea' || e.tipo === 'deriva';
+	for (const e of edges) if (after(e)) rightOf.get(e.a).push(e.de);
 	const loopOf = new Map();
 	components(ids, (id) => rightOf.get(id)).forEach((c, k) => {
 		for (const id of c) loopOf.set(id, k);
@@ -159,7 +177,7 @@ function layOut(nodes, edges) {
 		for (const e of edges) {
 			if (loopOf.get(e.de) === loopOf.get(e.a)) continue;
 			const [a, b] = [nodes.get(e.de), nodes.get(e.a)];
-			const [node, min] = e.tipo === 'subtarea' ? [b, a.capa + 1] : [a, b.capa + 1];
+			const [node, min] = after(e) ? [b, a.capa + 1] : [a, b.capa + 1];
 			if (node.capa < min) {
 				node.capa = min;
 				moved = true;
@@ -218,6 +236,7 @@ export function dependencyGraph(board, now = Date.now()) {
 	const reqsOf = new Map(open.map((t) => [t.id, requisitos(t, board, now)]));
 	for (const t of open) addRequisitos(g, t, board, reqsOf.get(t.id));
 	for (const t of open) addSubtask(g, t);
+	for (const t of open) addSource(g, t);
 	const avisos = [...g.avisos, ...layOut(g.nodes, g.edges)];
 	countUnlocks(g.nodes, g.edges);
 	const nodos = [...g.nodes.values()].sort(order);

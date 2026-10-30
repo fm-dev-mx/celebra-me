@@ -497,7 +497,7 @@ POST needs the page's per-process token and its own `Origin`, and every request 
 
 `titulo`, `estado`, `urgencia`, `actor`, `agente`, `toca`, `requisitos`, `requiere`, `categoria`,
 `carril`, `ahora`, `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`, `padre`,
-`grupo`, `fase`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
+`grupo`, `fase`, `deriva`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
 `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see
 [Task kinds](#task-kinds)); `rev` and `actualizado` are set by the command, `agregadaPor` and
 `seguimientoPor` by the commands that add or follow up a task (T172), `archivada` (date) only by
@@ -541,7 +541,15 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   and folds blocked subtasks into «Ver N subtareas» (✓ done, ● running or in review, ○ pending); a
   subtask ready or running now keeps its card (and stays in «Le toca a usted» and `next`), each with
   its `F<n>` tag. The sheet and `pnpm board show` list a mother's «Subtareas · X/Y (Z %)» and give a
-  subtask «Parte de T<n> · <título> · X/Y listas». `pnpm board:verify` reports a bad `padre`.
+  subtask «Parte de T<n> · <título> · X/Y listas». `pnpm board:verify` reports a bad `padre`. Groups
+  are only for multi-step programs closed together (e.g. `servicio-medicion`).
+- **Follow-ups (T481)**: a task born from a review finding or from finished work is independent and
+  names its source with `deriva` (`deriva=T469` is stored as the id; `origen` would collide with
+  review rounds, which `reviewRounds` finds by `origen`). `pnpm board show` prints «Viene de T<n> ·
+  <título> (<estado>)», the sheet a «Viene de» field, and the Mapa a gray dotted link from the
+  source to the follow-up, placed to its right but never a wait: it changes neither readiness nor
+  «desbloquea». A missing source is refused on write and reported by `pnpm board:verify`. Review
+  rounds already name their source through `origen` and need no `deriva`.
 - **What is next**: `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al
   coordinador» and «Detenidas». The coordinator sees reviews approved at the PR's current SHA
   (merge), blocked reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el
