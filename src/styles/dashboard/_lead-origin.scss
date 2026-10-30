@@ -7,7 +7,7 @@
 
 	h3 {
 		margin: 0;
-		font-size: 1rem;
+		font-size: 1em;
 	}
 
 	p {
@@ -57,7 +57,7 @@
 
 		dt {
 			color: var(--color-text-muted);
-			font-size: 0.875rem;
+			font-size: 0.875em;
 		}
 
 		dd {
@@ -77,13 +77,13 @@
 		margin-left: var(--spacing-sm);
 		padding: 0 var(--spacing-sm);
 		border: 1px solid var(--dashboard-card-border);
-		border-radius: 999px;
-		font-size: 0.8125rem;
+		border-radius: var(--radius-pill);
+		font-size: 0.8125em;
 		color: var(--color-text-muted);
 	}
 
 	&__note {
 		color: var(--color-text-muted);
-		font-size: 0.875rem;
+		font-size: 0.875em;
 	}
 }
