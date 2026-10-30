@@ -73,6 +73,9 @@ export const envelopeSchema = z
 		coverIssue: z.string().optional(),
 		// Editorial cover: one or two short cover lines; the reveal keeps its defaults when omitted.
 		coverLines: z.array(z.string().trim().min(1).max(60)).min(1).max(2).optional(),
+		// Collector edition: a short handwritten note on the inside front cover, addressed to the
+		// guest when the link carries one; no note is printed when omitted.
+		coverNote: z.string().trim().min(1).max(180).optional(),
 		coverExperience: editorialCoverExperienceSchema.optional(),
 		// Collector edition cutouts: one on the printed cover face, up to two on the first inner
 		// page. Transparent images in token-sized contained boxes; absent, nothing renders.

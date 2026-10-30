@@ -1,0 +1,81 @@
+---
+// src/components/invitation/ItineraryRibbonRoute.astro
+/* eslint-disable no-restricted-syntax -- per-moment index and count drive the scroll ranges */
+/**
+ * `itinerary.scene: 'ribbon-route'`: while the scene is pinned a ribbon draws itself down the
+ * program, each moment comes forward as the ribbon reaches it, and the ribbon ends in a bow.
+ * Unpinned (reduced motion, non-editorial, no engine) it reads as a list along a finished ribbon.
+ * Styles: src/styles/invitation/scenes/_ribbon-route.scss. Contract: docs/domains/theme/motion.md.
+ */
+import ScrollScene from '@/components/invitation/ScrollScene.astro';
+import SplitWords from '@/components/invitation/SplitWords.astro';
+import type { ItineraryItem } from '@/lib/adapters/types';
+import { formatTimeSpanish, isValidTime } from '@/lib/time/time-format';
+import '@/styles/invitation/scenes/_ribbon-route.scss';
+
+interface Props {
+	title?: string;
+	subtitle?: string;
+	items: ItineraryItem[];
+	closingNote?: string;
+}
+
+const { title, subtitle, items, closingNote } = Astro.props;
+// A gentle wave in a 40 × 1000 box, stretched to the list height (the stroke does not scale).
+const RIBBON_PATH =
+	'M20 0C34 60 6 140 20 200S34 340 20 400 6 540 20 600 34 740 20 800 6 940 20 1000';
+---
+
+<ScrollScene length={3} class="ribbon-route">
+	<div class="ribbon-route__sheet" style={`--ribbon-count:${items.length}`}>
+		{title && (
+			<header class="itinerary__header ribbon-route__header">
+				<SplitWords class="itinerary__title" text={title} />
+				{subtitle && (
+					<p class="itinerary__subtitle" data-itinerary-subtitle data-reveal-role="lede">{subtitle}</p>
+				)}
+			</header>
+		)}
+		<div class="ribbon-route__program">
+			<div class="ribbon-route__track">
+				<svg class="ribbon-route__ribbon" viewBox="0 0 40 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+					<path class="ribbon-route__band" d={RIBBON_PATH} />
+					<path class="ribbon-route__sheen" d={RIBBON_PATH} />
+				</svg>
+				<ol class="ribbon-route__moments">
+					{items.map((item, index) => {
+						const timeValid = isValidTime(item.time);
+						return (
+							<li
+								class="ribbon-route__moment"
+								data-itinerary-item
+								data-moment={item.iconName}
+								data-time-status={timeValid ? 'confirmed' : 'pending'}
+								style={`--ribbon-index:${index}`}
+							>
+								<span class="ribbon-route__knot" aria-hidden="true"></span>
+								{timeValid ? (
+									<p class="ribbon-route__time">{formatTimeSpanish(item.time)}</p>
+								) : (
+									<p class="ribbon-route__time" data-itinerary-time-pending>Por confirmar</p>
+								)}
+								<h3 class="ribbon-route__label">{item.label}</h3>
+								{item.description && <p class="ribbon-route__description">{item.description}</p>}
+							</li>
+						);
+					})}
+				</ol>
+			</div>
+			<span class="ribbon-route__bow" aria-hidden="true">
+				<svg class="ribbon-route__bow-drawing" viewBox="0 0 120 84" focusable="false">
+					<path class="ribbon-route__bow-tail" d="M56 40 38 80l10-4 6 8 4-42Zm8 0 18 40-10-4-6 8-4-42Z" />
+					<path class="ribbon-route__bow-loop" d="M58 38C42 14 10 6 8 26s30 26 50 12Zm4 0c16-24 48-32 50-12S82 52 62 38Z" />
+					<ellipse class="ribbon-route__bow-knot" cx="60" cy="38" rx="9" ry="8" />
+				</svg>
+			</span>
+		</div>
+		{closingNote && (
+			<p class="itinerary__closing-note ribbon-route__note" data-itinerary-closing-note>{closingNote}</p>
+		)}
+	</div>
+</ScrollScene>

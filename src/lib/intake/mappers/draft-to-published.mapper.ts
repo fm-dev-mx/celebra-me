@@ -490,10 +490,14 @@ function mapItineraryFromDraft(
 		const time = publishVenueTime(item.time) ?? item.time;
 		return { ...item, time };
 	});
+	const variant = requireVariant('itinerary', draftItinerary.variant, priorItinerary?.variant);
+	// The scroll scene is managed-only: it stays while the program can still play it.
+	const keepsScene = variant === 'standard' && (items?.length ?? 0) >= 2;
 	return {
 		...draftItinerary,
-		variant: requireVariant('itinerary', draftItinerary.variant, priorItinerary?.variant),
+		variant,
 		...(items ? { items } : {}),
+		...(keepsScene ? priorFields(priorItinerary, ['scene']) : {}),
 	};
 }
 

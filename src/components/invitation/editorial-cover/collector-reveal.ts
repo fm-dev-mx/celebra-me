@@ -236,17 +236,17 @@ export const TIMELINE = {
 	/** Ribbon tug / magazine dip before the automatic turn. */
 	anticipation: 110,
 	/** Automatic page turn. */
-	turn: 950,
+	turn: 1200,
 	/** Fraction of the turn after which the camera starts recentring the spread (overlap). */
 	spreadOverlap: 0.8,
 	/** Camera move that centres (and fits) the open spread. */
-	spread: 650,
-	/** Live hold on the spread, with a slow push-in. */
-	hold: 350,
+	spread: 800,
+	/** Live hold on the spread, long enough to read the contents page, with a slow push-in. */
+	hold: 2400,
 	/** Push-in scale reached across the hold and the flight. */
-	holdPush: 1.02,
+	holdPush: 1.03,
 	/** First-page photograph flying into the hero photograph. */
-	morph: 720,
+	morph: 900,
 	/** Fraction of the flight at which the hero copy starts entering. */
 	heroCue: 0.7,
 	/** Hero entrance (copy staggers) kept under the landed photograph before hand-off. */
@@ -502,6 +502,11 @@ export function setupCollectorReveal(options: CollectorRevealOptions): void {
 		if (portrait && getComputedStyle(portrait).display !== 'none') {
 			return portrait.querySelector('img');
 		}
+		// The framed-portrait cover prints the same photograph inside its arch.
+		const framed = document.querySelector<HTMLImageElement>(
+			'#inicio .framed-portrait-hero__photograph img',
+		);
+		if (framed) return framed;
 		return document.querySelector<HTMLImageElement>('#inicio .invitation-hero__background img');
 	};
 
@@ -556,6 +561,10 @@ export function setupCollectorReveal(options: CollectorRevealOptions): void {
 
 		const from = photo.getBoundingClientRect();
 		const to = target.getBoundingClientRect();
+		// The hero frame may be an arch; the photo morphs into its shape instead of landing square.
+		const frame = target.closest('figure') ?? target;
+		const fromRadius = getComputedStyle(photo).borderRadius;
+		const toRadius = getComputedStyle(frame).borderRadius;
 		clone = document.createElement('img');
 		clone.src = photo.currentSrc;
 		clone.alt = '';
@@ -594,12 +603,14 @@ export function setupCollectorReveal(options: CollectorRevealOptions): void {
 					{
 						...frameAt(from, 0),
 						objectPosition: getComputedStyle(photo).objectPosition,
+						borderRadius: fromRadius,
 						offset: 0,
 					},
 					{ ...frameAt(from, 0.5, lift), offset: 0.5 },
 					{
 						...frameAt(from, 1),
 						objectPosition: getComputedStyle(target).objectPosition,
+						borderRadius: toRadius,
 						offset: 1,
 					},
 				],

@@ -19,6 +19,9 @@ import {
 	NIGHT_ARCH_MOBILE_SIZES,
 } from '@/lib/invitation/hero-image-preload';
 import '@/styles/invitation/_hero.scss';
+import '@/styles/invitation/scenes/_cover-approach.scss';
+import type { HeroScene } from '@/lib/schemas/content/hero.schema';
+import ScrollScene from './ScrollScene.astro';
 import EditorialCoverHero from './EditorialCoverHero.astro';
 import FramedPortraitHero from './FramedPortraitHero.astro';
 import CeremonialPortraitHero from './CeremonialPortraitHero.astro';
@@ -56,6 +59,8 @@ interface Props {
 	focalPointTablet?: string;
 	focalPointDesktop?: string;
 	highPriority?: boolean;
+	/** Standard cover only; see scenes/_cover-approach.scss. */
+	scene?: HeroScene;
 }
 
 const {
@@ -79,12 +84,17 @@ const {
 	focalPointTablet,
 	focalPointDesktop,
 	highPriority = true,
+	scene,
 } = Astro.props;
 
 const isEditorialCover = variant === 'editorial-cover';
 const isFramedPortrait = variant === 'framed-portrait' || variant === 'bleed-portrait';
 const isCeremonialPortrait = variant === 'ceremonial-portrait';
 const isNightArch = variant === 'night-arch';
+// The cover-approach scene pins the standard cover while its picture closes in.
+const isCoverApproach = scene === 'cover-approach' && variant === 'standard';
+const CoverStage = isCoverApproach ? ScrollScene : Fragment;
+const coverStageProps = isCoverApproach ? { length: 2 as const, class: 'cover-approach' } : {};
 // The arch frames a smaller photograph: lighter default widths, and a `srcset` from the stored
 // width variants when the bucket serves them.
 const mobileDefaultWidth = isNightArch ? 600 : 1080;
@@ -192,12 +202,14 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 		displayLabel={displayLabel}
 	/>
 	) : (
+	<CoverStage {...coverStageProps}>
 	<section
 		id="inicio"
 		class="invitation-hero"
 		data-variant={variant}
 		data-screenshot="invitation-open-hero"
 		data-screenshot-section="hero"
+		data-hero-scene={isCoverApproach ? scene : undefined}
 	>
 			<div class="invitation-hero__background">
 				<picture>
@@ -328,6 +340,7 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 				)}
 			</div>
 		</section>
+	</CoverStage>
 	)
 }
 

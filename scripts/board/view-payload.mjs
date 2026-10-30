@@ -1,15 +1,25 @@
 /** Read-only view projections. Store records and command validation always use the full board. */
 import { archiveBlock } from './cierre.mjs';
+import { dependencyGraph } from './dependency-graph.mjs';
 import { leadOf } from './format.mjs';
+import { keyTasks } from './key-tasks.mjs';
 import { AGENT_REGISTRY, findTask, ownerWhere } from './model.mjs';
 import { unreadFor } from './next.mjs';
+import { promptTitle } from './owner-where.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
 
 export function taskSummary(t, board) {
 	const { prompt, cierre, ...rest } = t;
 	return {
 		...rest,
-		...(prompt ? { prompt: true, donde: ownerWhere(t) ?? t.donde } : {}),
+		// T391: the prompt's session title survives, so the view names the same new chat as `pnpm board list`.
+		...(prompt
+			? {
+					prompt: true,
+					donde: ownerWhere(t) ?? t.donde,
+					promptTitulo: promptTitle(t) ?? undefined,
+				}
+			: {}),
 		bloqueoArchivo: archiveBlock(t, board),
 		...(cierre
 			? {
@@ -40,10 +50,11 @@ export function liveBoard(board, now = Date.now()) {
 	]);
 	const bitacora = recent.filter((r) => retained.has(r));
 	const archived = neededArchives(board, open, bitacora);
+	const mapa = dependencyGraph(board, now);
 	return {
 		...board,
 		tareas: open.map((t) => taskSummary(t, board)),
-		// Dependency, subtask and review references survive without archived task documents.
+		// Dependency, subtask, follow-up and review references survive without archived task documents.
 		archivo: [
 			...archived.map((t) => {
 				const keys = [
@@ -55,6 +66,7 @@ export function liveBoard(board, now = Date.now()) {
 					'origen',
 					'revisionSha',
 					'padre',
+					'deriva',
 					'grupo',
 					'fase',
 					'orden',
@@ -75,6 +87,8 @@ export function liveBoard(board, now = Date.now()) {
 			}),
 		],
 		bitacora,
+		mapa,
+		clave: keyTasks(board, mapa, now),
 		cierresPendientes: missingCierreItems(board)
 			.filter(({ t }) => !t.archivada)
 			.map(({ t, texto }) => ({ id: t.id, tarea: `T${t.num}`, tipo: 'cierre', texto })),
@@ -97,6 +111,7 @@ function neededArchives(board, open, log) {
 			for (const ref of [
 				t.padre,
 				t.origen,
+				t.deriva,
 				...(t.requisitos ?? [])
 					.filter((r) => ['tarea', 'revision'].includes(r.tipo))
 					.map((r) => r.ref),

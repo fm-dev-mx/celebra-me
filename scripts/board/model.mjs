@@ -283,14 +283,21 @@ export const defaultReviewer = (author) =>
 /**
  * Why `reviewer` may not review work by `author` (d183), or null. d288: Claude may review Claude's work only
  * when the PR is low or medium risk outside release work (`subagent`), through a clean-context subagent.
+ * T382: a paused reviewer is refused, and while Claude is paused (`claudePaused`) the other of Codex and Gemini
+ * reviews Codex's or Gemini's work instead.
  */
-export function reviewerIssue(author, reviewer, { subagent = false } = {}) {
+export function reviewerIssue(
+	author,
+	reviewer,
+	{ subagent = false, claudePaused = false, paused = null } = {},
+) {
 	if (!Object.hasOwn(AGENT_REGISTRY, reviewer ?? '')) return `revisor desconocido: ${reviewer}`;
+	if (paused) return paused;
 	if (reviewer === author && !(author === 'claude' && subagent))
 		return author === 'claude'
 			? 'd288: un subagente de claude revisa el trabajo de claude solo en riesgo bajo o medio, fuera de release'
 			: 'la revisión cruzada requiere otro agente';
-	if (author && author !== 'claude' && reviewer !== 'claude')
+	if (author && author !== 'claude' && reviewer !== 'claude' && !claudePaused)
 		return `d183: el trabajo de ${author} lo revisa claude`;
 	return null;
 }
@@ -364,9 +371,15 @@ export function resultKind(t) {
 /** Whether the T129 return contract applies: only tasks created under contrato 2 or later. */
 export const fullContract = (t) => Number.isInteger(t?.contrato) && t.contrato >= 2;
 
+/** An archived task by id: its archivo/ record, else the short record of one kept only in a monthly .zip. */
+export const archivedTask = (id, board) =>
+	(board.archivo ?? []).find((x) => x.id === id) ??
+	(board.archivoZip ?? []).find((x) => x.id === id);
+
 /**
  * A task's requisitos, each re-checked against the board right now. A pending task without a prompt gets an
- * automatic «prompt» requisito, except when the coordinator itself is the actor.
+ * automatic «prompt» requisito (T480: «carril» when a kind's prompt only waits for its lane), except when the
+ * coordinator itself is the actor.
  */
 export function requisitos(t, board, now = Date.now()) {
 	const tareas = board.tareas ?? [];
@@ -374,11 +387,10 @@ export function requisitos(t, board, now = Date.now()) {
 	const list = (Array.isArray(t.requisitos) ? t.requisitos : []).map((r) => {
 		if (r.tipo === 'tarea') {
 			const d = tareas.find((x) => x.id === r.ref);
-			const archived = (board.archivo ?? []).find((x) => x.id === r.ref);
-			return { ...r, ok: SUCCESS.has((d ?? archived)?.estado) };
+			return { ...r, ok: SUCCESS.has((d ?? archivedTask(r.ref, board))?.estado) };
 		}
 		if (r.tipo === 'revision') {
-			const d = [...tareas, ...(board.archivo ?? [])].find((x) => x.id === r.ref);
+			const d = tareas.find((x) => x.id === r.ref) ?? archivedTask(r.ref, board);
 			return { ...r, ok: !!d?.pr && ['en revision', 'hecha', 'unida'].includes(d.estado) };
 		}
 		if (r.tipo === 'fecha') return { ...r, ok: now >= time(r.ref) };
@@ -389,7 +401,12 @@ export function requisitos(t, board, now = Date.now()) {
 		return { ...r, ok: r.ok === true };
 	});
 	if ((t.estado ?? 'pendiente') === 'pendiente' && t.actor !== 'coordinador' && !t.prompt)
-		list.push({ tipo: 'prompt', ref: '', ok: false, auto: true });
+		list.push(
+			// T480: a kind's prompt is generated once it has a lane, so the lane is what is missing.
+			t.tipo && !t.revisionSha && String(t.busca ?? '').trim() && !t.carrilPlaneado
+				? { tipo: 'carril', ref: t.id, ok: false, auto: true }
+				: { tipo: 'prompt', ref: '', ok: false, auto: true },
+		);
 	return list;
 }
 
@@ -419,6 +436,16 @@ export const needsOwner = (t) =>
 export function capacidades(agente, board) {
 	const own = (board.agentes ?? []).find((a) => a.id === agente);
 	return own?.capacidades ?? DEFAULT_CAPACIDADES[agente] ?? [];
+}
+
+/**
+ * d314 (T391): `agente` is paused while its `agentes/<id>.json` record has `pausa.hasta` in the future; a paused
+ * agent is never offered as a place to paste a prompt. A missing or invalid date means not paused.
+ */
+export function agentPaused(agente, board, now = Date.now()) {
+	const own = (board.agentes ?? []).find((a) => a.id === agente);
+	const end = Date.parse(own?.pausa?.hasta ?? '');
+	return !Number.isNaN(end) && now < end;
 }
 
 /** Whether `agente` can finish the task alone: it has every capability in `requiere`. */
@@ -799,6 +826,7 @@ const isDate = (s) => typeof s === 'string' && !Number.isNaN(Date.parse(s));
 const subsetOf = (list, allowed) => Array.isArray(list) && list.every((x) => allowed.includes(x));
 
 const optional = (v, ok) => v === undefined || ok(v);
+const REF_TEXT = { padre: 'el id de la tarea madre', deriva: 'el id de su origen', grupo: 'texto' };
 
 /** Merged always needs a PR; under review only when the task has a branch (audits ship none). */
 const needsPr = (t) => t.estado === 'unida' || (t.estado === 'en revision' && !!t.rama);
@@ -904,16 +932,16 @@ const FIELD_CHECKS = [
 	]),
 	...PR_CHECKS,
 	[(t) => !optional(t.hasta, isDate), () => 'hasta no es fecha'],
-	// d174: a subtask names its mother task (padre) and/or initiative (grupo), with an optional phase.
-	[
-		(t) => !optional(t.padre, (p) => typeof p === 'string' && p.trim()),
-		() => 'padre debe ser el id de la tarea madre',
-	],
-	[(t) => t.padre !== undefined && t.padre === t.id, () => 'padre no puede ser la misma tarea'],
-	[
-		(t) => !optional(t.grupo, (g) => typeof g === 'string' && g.trim()),
-		() => 'grupo debe ser texto',
-	],
+	// d174: a subtask names its mother (padre) and/or initiative (grupo), with an optional phase. T481: a follow-up
+	// names the finished task it came from (deriva); it is neither a subtask nor a requisito.
+	...Object.entries(REF_TEXT).map(([k, what]) => [
+		(t) => !optional(t[k], (v) => typeof v === 'string' && v.trim()),
+		() => `${k} debe ser ${what}`,
+	]),
+	...['padre', 'deriva'].map((k) => [
+		(t) => t[k] !== undefined && t[k] === t.id,
+		() => `${k} no puede ser la misma tarea`,
+	]),
 	[
 		(t) => !optional(t.fase, (n) => Number.isInteger(n) && n >= 1),
 		() => 'fase debe ser un entero desde 1',

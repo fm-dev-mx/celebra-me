@@ -391,7 +391,7 @@ describe('board blocked tab (T258)', () => {
 		const tabs = [...html.matchAll(/data-tab="([a-z]+)" id="t-/g)].map((x) => x[1]);
 		expect(tabs.slice(2, 6)).toEqual(['cola', 'calendario', 'bloqueadas', 'finalizadas']);
 		expect(html).toContain(
-			"const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];",
+			"const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','mapa','historial'];",
 		);
 		expect(html).toContain('id="n-blk"');
 		expect(html).toMatch(/function renderBlk\(\)\{[\s\S]*?const shown=mBlocked\(S\.board\);/);

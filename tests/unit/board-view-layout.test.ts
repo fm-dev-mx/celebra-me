@@ -36,6 +36,7 @@ describe('board view layout (T268)', () => {
 			'bloqueadas',
 			'finalizadas',
 			'carriles',
+			'mapa',
 			'historial',
 		]);
 		expect(VIEW).toMatch(

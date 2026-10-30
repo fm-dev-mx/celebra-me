@@ -301,15 +301,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(rsvpDescriptor?.props.eventSlug).toBe('demo-xv-jewelry-box');
 	});
 
-	it('asks for the «usted» RSVP defaults except on invitations that keep the earlier ones', () => {
+	it('asks for the «usted» RSVP defaults on every demo', () => {
 		const rsvpOf = (slug: string) =>
 			buildInvitationSectionRenderDescriptors(setupDemoPageContext(slug)).find(
 				isRsvpDescriptor,
 			);
 
 		expect(rsvpOf(JEWELRY_BOX_SLUG)?.props.defaultCopy).toBe('usted');
-		// demo-xv-editorial stays in «tú» (d168); without the key its island props are unchanged.
-		expect(rsvpOf('demo-xv-editorial')?.props).not.toHaveProperty('defaultCopy');
+		expect(rsvpOf('demo-xv-editorial')?.props.defaultCopy).toBe('usted');
 	});
 
 	it('passes Luna y Estrella confirmed RSVP reveal props to the RSVP island descriptor', () => {
