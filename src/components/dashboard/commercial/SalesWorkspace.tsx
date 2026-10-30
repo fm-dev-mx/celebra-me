@@ -3,6 +3,7 @@ import DemoFollowupForm from '@/components/dashboard/commercial/DemoFollowupForm
 import type { DemoInventoryItem } from '@/lib/tracking/demo-conversion-report';
 
 import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
+import QuoteReminders from '@/components/dashboard/commercial/QuoteReminders';
 import InvitationDataInbox, {
 	type InvitationDataInboxItem,
 	useInvitationDataInbox,
@@ -153,11 +154,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		}
 	};
 
-	const fetchTimeline = async (customerId: string) => {
+	const fetchTimeline = async (id: string, kind: 'customerId' | 'leadId' = 'customerId') => {
 		setLoadingTimeline(true);
 		try {
 			const response = await dashboardApi.get<{ data: CrmTimelineEntry[] }>(
-				`/api/dashboard/commercial/timeline?customerId=${encodeURIComponent(customerId)}`,
+				`/api/dashboard/commercial/timeline?${kind}=${encodeURIComponent(id)}`,
 			);
 			setTimelineEntries(response.ok ? response.data.data : []);
 		} catch (error) {
@@ -251,6 +252,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	const handleReconcileLead = (lead: LeadCandidate) => {
 		setActiveCustomer(null);
 		setSelectedLead(lead);
+		void fetchTimeline(lead.id, 'leadId');
 		setCustName(lead.name || '');
 		setCustEmail(lead.email || '');
 		setCustPhone(lead.phone || '');
@@ -504,6 +506,12 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 
 			<div className="sales-workspace-grid">
 				<aside className="crm-work-queue" aria-labelledby="crm-queue-title">
+					<QuoteReminders
+						onPrepared={(leadId, entry) => {
+							if (selectedLead?.id === leadId)
+								setTimelineEntries((current) => [entry, ...current]);
+						}}
+					/>
 					<InvitationDataInbox
 						items={invitationDataInbox.items}
 						onOpen={handleOpenInvitationData}
@@ -822,6 +830,8 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 							lead={selectedLead}
 							suggestedAction={getSuggestedAction(selectedLead)}
 							onOpenCustomerTool={() => setCustomerToolOpen(true)}
+							timelineEntries={timelineEntries}
+							loadingTimeline={loadingTimeline}
 						/>
 					) : (
 						<EmptyCommercialDetail />
