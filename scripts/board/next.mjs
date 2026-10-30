@@ -113,10 +113,10 @@ const SILENT_LOCK_HOURS = 2;
 /** A ready task nobody takes for this long is flagged. */
 const READY_IDLE_MINUTES = 30;
 /** The lock's last sign of life: its `latido`, else when it was taken. */
-const lockBeat = (c) => c?.latido ?? c?.desde;
+export const lockBeat = (c) => c?.latido ?? c?.desde;
 
 /** «hace 45 min», «hace 3 h», «hace 2 días». */
-function agoText(ms) {
+export function agoText(ms) {
 	const min = Math.max(0, Math.floor(ms / MINUTE_MS));
 	if (min < 60) return `hace ${min} min`;
 	const h = Math.floor(min / 60);

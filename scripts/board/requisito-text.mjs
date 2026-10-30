@@ -13,7 +13,10 @@ const dayEs = (s) =>
 /** «T35 · Dividir reglas del tablero» for a task id, with a note when it is archived or missing. */
 export function taskName(ref, board) {
 	const live = (board.tareas ?? []).find((x) => x.id === ref);
-	const d = live ?? (board.archivo ?? []).find((x) => x.id === ref);
+	const d =
+		live ??
+		(board.archivo ?? []).find((x) => x.id === ref) ??
+		(board.archivoZip ?? []).find((x) => x.id === ref);
 	if (!d) return `la tarea «${ref}», que ya no está en el tablero`;
 	const name = d.titulo ? `${d.num ? `T${d.num} · ` : ''}${d.titulo}` : ref;
 	return live ? name : `${name} (archivada)`;

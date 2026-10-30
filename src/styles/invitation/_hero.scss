@@ -151,6 +151,9 @@
 		flex-direction: column;
 		align-items: var(--hero-details-align, normal);
 		gap: 0.5rem;
+
+		// Optional family for the time and venue lines (the date has its own token).
+		font-family: var(--hero-details-family, inherit);
 		opacity: 0%;
 		animation: motion-fade-in-up var(--motion-hero-details-duration) var(--ease-out)
 			var(--motion-hero-details-delay) forwards;
