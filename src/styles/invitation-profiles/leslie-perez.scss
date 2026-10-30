@@ -2618,13 +2618,11 @@
 			display: none;
 		}
 
-		.footer__info .footer-brand-logo.logo {
-			width: clamp(7.25rem, 34vw, 8.5rem);
-			height: auto;
-			transform: none;
-			transform-origin: center;
+		.footer__info .footer-brand-logo {
+			--footer-logo-claro: none;
+			--footer-logo-oscuro: block;
+
 			opacity: 82%;
-			filter: brightness(0) invert(0.84) sepia(12%) saturate(160%) hue-rotate(8deg);
 		}
 
 		.whatsapp-button {

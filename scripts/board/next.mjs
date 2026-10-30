@@ -17,11 +17,11 @@ import {
 	normalizePr,
 	ordenOf,
 	ownerAsks,
-	ownerLaunches,
 	ownerWhere,
 	queue,
 	READONLY_LANE,
 	reviewRounds,
+	SELF_STARTING,
 	stage,
 	taskTag,
 	VEREDICTOS,
@@ -30,6 +30,14 @@ import { expiredQuestion, mergeSignal, optionsText } from './owner-text.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
 import { authorSession, findingsSent } from './findings.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
+import {
+	answerDestination,
+	destinationFields,
+	findingsDestination,
+	FIXED_DESTINATIONS,
+	pasteAgents,
+	taskDestination,
+} from './owner-where.mjs';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
@@ -60,6 +68,22 @@ export function unreadFor(agente, board) {
 				!expiredQuestion(r, findTask(r.tarea, board)),
 		)
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
+}
+
+export const GEMINI_RELAY_ALERT =
+	'Arranque el relevo de Gemini: en Antigravity, en el Chat maestro, escriba «Arranque de nuevo el relevo celebra-gemini-relay.mjs».';
+
+/** Missing or invalid timestamps fail closed; two minutes exactly is still fresh. */
+export function geminiRelayStale(board, now = Date.now()) {
+	const at = board.geminiRelay?.at;
+	const beat = typeof at === 'number' ? at : typeof at === 'string' ? Date.parse(at) : NaN;
+	return !Number.isFinite(beat) || now - beat > 2 * MINUTE_MS;
+}
+
+export function geminiRelayAlert(board, now = Date.now()) {
+	return geminiRelayStale(board, now) && unreadFor('gemini', board).length
+		? GEMINI_RELAY_ALERT
+		: null;
 }
 
 /**
@@ -97,10 +121,10 @@ const SILENT_LOCK_HOURS = 2;
 /** A ready task nobody takes for this long is flagged. */
 const READY_IDLE_MINUTES = 30;
 /** The lock's last sign of life: its `latido`, else when it was taken. */
-const lockBeat = (c) => c?.latido ?? c?.desde;
+export const lockBeat = (c) => c?.latido ?? c?.desde;
 
 /** «hace 45 min», «hace 3 h», «hace 2 días». */
-function agoText(ms) {
+export function agoText(ms) {
 	const min = Math.max(0, Math.floor(ms / MINUTE_MS));
 	if (min < 60) return `hace ${min} min`;
 	const h = Math.floor(min / 60);
@@ -144,10 +168,11 @@ const idleText = (idle) => (Number.isNaN(idle) ? '' : ` · lista ${agoText(idle)
 export function stalls(board, now = Date.now()) {
 	const dueno = readyUnclaimed(board, now)
 		// d249: a delivered task comes back as its own «nadie la tomó» row instead.
-		.filter(({ t, idle }) => isIdle(idle) && ownerLaunches(t, board, now).length)
+		.filter(({ t, idle }) => isIdle(idle) && pasteAgents(t, board, now).agentes.length)
 		.filter(({ t }) => !delivery(t, now))
 		.map(({ t, idle }) => {
-			const names = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
+			// d314 (T391): a paused agent is never named as the place to paste.
+			const names = pasteAgents(t, board, now).agentes.map((a) => AGENT_REGISTRY[a].nombre);
 			return {
 				t,
 				texto: `Correr el despachador de ${names.join(' o ')} (${taskTag(t)})${idleText(idle)}`,
@@ -321,8 +346,26 @@ export function ownerMessages(board) {
 }
 
 /**
+ * T391: review findings sent to an author the owner pastes into (Codex, Gemini: not self-starting), not read
+ * yet, whose task is still open; the owner pastes them in the author's existing chat. Claude reads its own
+ * inbox, so the coordinator's «avisar» item still covers it.
+ */
+export function ownerFindings(board) {
+	const archived = new Set((board.archivo ?? []).map((t) => t.id));
+	return Object.keys(AGENT_REGISTRY)
+		.filter((a) => !SELF_STARTING.includes(a))
+		.flatMap((a) => unreadFor(a, board))
+		.filter((r) => {
+			if (!r.mensaje.revision) return false;
+			const t = findTask(r.tarea, board);
+			return t && !isFinished(t) && !archived.has(t.id);
+		});
+}
+
+/**
  * «Le toca a usted» (the owner's ready tasks with where to do them, answers owed, stalled Codex or Gemini tasks,
- * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`.
+ * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`. Owner rows
+ * also carry a stable `clave` so the watcher's Telegram alerts (T437) fire once per item.
  */
 export function nextSections(board, { prs, now = Date.now() } = {}) {
 	const { dueno, detenidas } = stalls(board, now);
@@ -335,24 +378,58 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 	const own = queue(board, now).filter(
 		(t) => color(t, board, { now }) === 'own' && !dueno.some((d) => d.t.id === t.id),
 	);
+	const relayAlert = geminiRelayAlert(board, now);
+	const at = destinationFields;
 	const usted = [
+		...(relayAlert
+			? [
+					row(null, relayAlert, {
+						tipo: 'gemini-relay',
+						clave: 'gemini-relay',
+						donde: FIXED_DESTINATIONS['gemini-relay'],
+						copia: null,
+					}),
+				]
+			: []),
 		...own.map((t) => {
 			const where = t.actor === 'dueno' && ownerWhere(t);
-			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
+			const paste = pasteAgents(t, board, now).agentes.map((a) => AGENT_REGISTRY[a].nombre);
 			const how = where || (paste.length ? `Pegar en ${paste.join(' o ')}` : '');
 			const late = deliveryLine(t, now);
 			return row(
 				t,
 				`${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
+				{ clave: `tarea:${t.id}`, ...at(taskDestination(t, board, now)) },
 			);
 		}),
 		...ownerAsks(board, now).map(({ t, r }) =>
-			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`),
+			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`, {
+				clave: `respuesta:${t.id}:${r.ref}`,
+				...at(answerDestination(t, board)),
+			}),
 		),
-		...dueno.map(({ t, texto }) => row(t, texto)),
-		...ownerMessages(board).map((r) =>
-			row(findTask(r.tarea, board), `Mensaje: ${messageLine(r, board)}`),
+		...dueno.map(({ t, texto }) =>
+			row(t, texto, { clave: `detenida:${t.id}`, ...at(taskDestination(t, board, now)) }),
 		),
+		...ownerFindings(board).map((r) => {
+			const t = findTask(r.tarea, board);
+			return row(
+				t,
+				`Correcciones para ${AGENT_REGISTRY[r.mensaje.para]?.nombre ?? r.mensaje.para}: ${r.mensaje.texto}`,
+				{
+					tipo: 'correcciones',
+					clave: `correcciones:${r.mensaje.id}`,
+					...at(findingsDestination(r, board, now)),
+				},
+			);
+		}),
+		...ownerMessages(board).map((r) => {
+			const t = findTask(r.tarea, board);
+			return row(t, `Mensaje: ${messageLine(r, board)}`, {
+				clave: `mensaje:${r.mensaje.id}`,
+				...at(answerDestination(t, board)),
+			});
+		}),
 	];
 	return {
 		usted,
@@ -369,7 +446,18 @@ export function sectionLines(r) {
 	const block = (title, rows) => [
 		'',
 		`${title} (${rows.length}):`,
-		...(rows.length ? rows.map((x) => `  - ${x.texto}`) : ['  nada']),
+		...(rows.length
+			? rows.flatMap((x) =>
+					x.donde
+						? [
+								`  - ${x.donde}`,
+								...String(x.texto)
+									.split('\n')
+									.map((l) => `    ${l}`),
+							]
+						: [`  - ${x.texto}`],
+				)
+			: ['  nada']),
 	];
 	return [
 		...block('Le toca a usted', r.usted),

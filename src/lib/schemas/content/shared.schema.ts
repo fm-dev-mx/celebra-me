@@ -310,6 +310,11 @@ export const baseEventFieldsSchema = z.object({
 	eventTiming: eventTimingSchema,
 	sectionOrder: sectionOrderSchema,
 	composition: invitationCompositionSchema,
+	/**
+	 * Explicit, documented structural section exemptions granted to an invitation
+	 * (e.g. ['gallery'] for an XV celebrant requesting no personal photographs).
+	 */
+	structuralExemptions: z.array(z.enum(INVITATION_RENDER_SECTION_KEYS)).optional(),
 	_assetSlug: z
 		.string()
 		.regex(

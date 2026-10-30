@@ -13,7 +13,10 @@ const dayEs = (s) =>
 /** «T35 · Dividir reglas del tablero» for a task id, with a note when it is archived or missing. */
 export function taskName(ref, board) {
 	const live = (board.tareas ?? []).find((x) => x.id === ref);
-	const d = live ?? (board.archivo ?? []).find((x) => x.id === ref);
+	const d =
+		live ??
+		(board.archivo ?? []).find((x) => x.id === ref) ??
+		(board.archivoZip ?? []).find((x) => x.id === ref);
 	if (!d) return `la tarea «${ref}», que ya no está en el tablero`;
 	const name = d.titulo ? `${d.num ? `T${d.num} · ` : ''}${d.titulo}` : ref;
 	return live ? name : `${name} (archivada)`;
@@ -48,6 +51,11 @@ const REQ_TEXT = {
 	prompt: () => [
 		'Falta el prompt (lo escribe el coordinador)',
 		'Espera su prompt (lo escribe el coordinador)',
+	],
+	// T480: a task whose prompt is generated from its kind has none until it has a lane.
+	carril: (ref) => [
+		`Falta el carril: pnpm board plan ${ref} --carril=<carril> --coordinador --rev=<n>`,
+		`Espera su carril: pnpm board plan ${ref} --carril=<carril> --coordinador --rev=<n>`,
 	],
 	dueno: (ref) => [`Le toca a usted: ${ref}`, `Espera su respuesta: ${ref}`],
 };

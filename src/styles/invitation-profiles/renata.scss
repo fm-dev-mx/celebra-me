@@ -1779,16 +1779,9 @@ html:has(.event--renata.theme-preset--editorial) body {
 			}
 		}
 
-		.footer-brand-logo.logo {
-			width: 8rem;
-			transform: scale(0.7);
-			transform-origin: center;
-			filter: brightness(0) invert(1);
-			opacity: 100%;
-
-			@include mixins.respond-to(md) {
-				width: 10rem;
-			}
+		.footer-brand-logo {
+			--footer-logo-claro: none;
+			--footer-logo-oscuro: block;
 		}
 
 		.footer__actions {

@@ -65,6 +65,10 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
 - **Command Authority:** `package.json` is the SSOT for available scripts.
 - **Invitation Slug:** Never prefix `slug` with `eventType`. Routes are `/{eventType}/{slug}` (e.g.
   `/boda/daniela-y-martin`). See `docs/core/invitation-creation-contract.md`.
+- **Brand Logo:** The Celebra-me logo is the creative-ops `logo_2026_v2` artwork, copied unchanged
+  into `public/`. Render it only through `src/components/ui/Logo.astro` (paths live in
+  `src/lib/brand/brand-logo.ts`); pick the `claro` or `oscuro` tone by the ground; never generate,
+  retype, recolor, filter, shadow or rotate it. `pnpm validate:brand-logo` enforces this in CI.
 
 ## Context Discovery & Routing
 

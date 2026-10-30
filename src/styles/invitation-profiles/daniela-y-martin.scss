@@ -917,7 +917,6 @@
 		--gallery-item-bg: var(--daniela-cream);
 		--gallery-item-radius: 2px;
 		--gallery-item-shadow: 0 10px 26px rgb(var(--daniela-olive-rgb) / 10%);
-
 	}
 
 	// Interlude A rises into countdown with the shared arch primitive.
@@ -1942,8 +1941,7 @@
 			background: rgb(var(--daniela-gold-rgb) / 48%);
 		}
 
-		.footer__info .footer-brand-logo.logo {
-			transform: scale(0.56);
+		.footer__info .footer-brand-logo {
 			opacity: 72%;
 		}
 

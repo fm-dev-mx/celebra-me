@@ -27,7 +27,6 @@ related_docs:
   - .agent/skills/invitation-preparation/SKILL.md
   - .agent/templates/invitation/preparation-state.md
   - docs/domains/content/event-governance.md
-  - docs/core/invitation-creation-contract.md
   - .agent/rules/invitation-production.md
   - .agent/skills/design-reference-to-build/SKILL.md
   - docs/domains/intake/production-flow.md
@@ -129,9 +128,12 @@ Follow [`references/asset-preparation-protocol.md`](references/asset-preparation
 reuse quality labels from
 [`references/asset-classification-template.md`](references/asset-classification-template.md).
 
-Require HR URL / explicit asset root first. Produce role assignments, **photo uniqueness table**,
-and a role-aware optimization plan (`planImageOptimization`). Preserve originals. Note double-encode
-risk for managed WebP delivery.
+Require HR URL / explicit asset root first. Perform an immediate initial folder triage separating
+supplied photos into: (1) **Hero candidates** (face-safe composition with real negative space for
+grouped typography), (2) **Gallery / narrative assets**, (3) **Cutout / ornament candidates**, and
+(4) **Needs review / do-not-use** (low resolution, awkward crop, or duplicate). Produce role
+assignments, **photo uniqueness table**, and a role-aware optimization plan
+(`planImageOptimization`). Preserve originals. Note double-encode risk for managed WebP delivery.
 
 ### Phase P3 — Preset / design / identity freeze (script C5)
 
@@ -187,8 +189,9 @@ JSON?, SQL patch?, assets?, SCSS override?, current 404 risk.
 
 Read target preset tokens and section variants. For each visual gap, classify:
 
-- **Lane A** — client data, assets, typed `composition`, variant selection, and profile custom
-  properties (palette and rhythm tokens only)
+- **Lane A** — client data, assets, typed `composition`, variant selection, profile custom
+  properties (palette and rhythm tokens only), and optional client-scoped `composition.scss` (up to
+  600 lines under `.event--<slug>` per `docs/domains/theme/architecture.md`)
 - **Lane B** — reusable change: preset tokens or a registered section variant proven on a demo
 
 A profile never resets inherited layout, positioning, or filters

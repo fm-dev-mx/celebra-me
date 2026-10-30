@@ -98,7 +98,8 @@ export const expiredQuestion = (r, t) =>
 
 /** Merge signals remain actionable until the merged command verifies GitHub. */
 export const mergeSignal = (r) =>
-	r.mensaje?.para === 'coordinador' && /siguiente:\s*unir\b/i.test(r.mensaje.texto ?? '');
+	r.mensaje?.para === 'coordinador' &&
+	/(?:siguiente:\s*unir|listo para unir)\b/i.test(r.mensaje.texto ?? '');
 
 /** Exact answers are snapshots, so live history truncation cannot change what gets copied. */
 export function answerPrompt(t, board, prompt) {

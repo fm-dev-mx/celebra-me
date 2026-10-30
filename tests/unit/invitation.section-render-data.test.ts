@@ -68,9 +68,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const celestial = buildInvitationSectionRenderDescriptors(
 			setupDemoPageContext('demo-xv-celestial-blue'),
 		).find((descriptor) => descriptor.component === 'family');
+		// Celestial opts into editorial motion, which owns the family choreography.
 		expect(celestial).toMatchObject({
-			intersection: 'arch',
-			reveal: 'stagger-group',
+			intersection: 'folio',
+			reveal: 'editorial',
 			props: { variant: 'standard' },
 		});
 	});
@@ -300,15 +301,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(rsvpDescriptor?.props.eventSlug).toBe('demo-xv-jewelry-box');
 	});
 
-	it('asks for the «usted» RSVP defaults except on invitations that keep the earlier ones', () => {
+	it('asks for the «usted» RSVP defaults on every demo', () => {
 		const rsvpOf = (slug: string) =>
 			buildInvitationSectionRenderDescriptors(setupDemoPageContext(slug)).find(
 				isRsvpDescriptor,
 			);
 
 		expect(rsvpOf(JEWELRY_BOX_SLUG)?.props.defaultCopy).toBe('usted');
-		// demo-xv-editorial stays in «tú» (d168); without the key its island props are unchanged.
-		expect(rsvpOf('demo-xv-editorial')?.props).not.toHaveProperty('defaultCopy');
+		expect(rsvpOf('demo-xv-editorial')?.props.defaultCopy).toBe('usted');
 	});
 
 	it('passes Luna y Estrella confirmed RSVP reveal props to the RSVP island descriptor', () => {

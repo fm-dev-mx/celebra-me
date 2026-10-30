@@ -12,8 +12,6 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 <Layout
 	title="Acceso de Anfitrión | Celebra-me"
 	description="Espacio privado de gestión para su evento. Inicie sesión para administrar sus invitados y confirmar asistencias en tiempo real."
-	image="/images/og/og-login.jpg"
-	imageAlt="Acceso de Anfitrión - Espacio privado de gestión para su evento"
 	robots="noindex, nofollow"
 	hideHeader={true}
 	className="theme-preset--auth-dark"
@@ -21,7 +19,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 	<section class="auth-shell" data-next={next} data-variant="dark">
 		<header class="auth-local-header">
 			<a class="auth-brand" href="/" aria-label="Volver al inicio de Celebra-me">
-				<Logo variant="white" class="auth-brand__logo" altText="Celebra-me" />
+				<Logo version="compacto" tone="oscuro" width={136} class="auth-brand__logo" />
 				<span class="auth-brand__caption">Panel de anfitrión</span>
 			</a>
 			<a class="auth-back-link" href="/">Volver al inicio</a>

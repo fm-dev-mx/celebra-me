@@ -3,7 +3,7 @@
 /*
  * Contract:
  *   Reads  — --header-nav-color, --header-nav-color-transparent,
- *            --header-nav-shadow-transparent, --nav-logo-opacity-light, --nav-logo-opacity-dark
+ *            --header-nav-shadow-transparent
  *   Writes — landing-specific values for the above contract variables via #home-header scoping.
  *
  *   The base HeaderBase component publishes --nav-* variables.
@@ -16,17 +16,6 @@
 	&__logo-container {
 		margin-left: var(--spacing-lg);
 		display: block;
-		height: 2.8rem;
-
-		img {
-			height: 100%;
-			width: auto;
-			transition: var(--transition-snappy);
-
-			// The logo artwork is dark ink; on the wine header it reads as crisp ivory, not grey.
-			filter: brightness(0) invert(1);
-			opacity: 92%;
-		}
 	}
 }
 
@@ -222,14 +211,6 @@
 	--header-nav-cta-border-fallback: var(--landing-header-nav-cta-border-transparent);
 }
 
-#home-header.header-base--transparent .home-header__logo--white {
-	display: block;
-}
-
-#home-header.header-base--transparent .home-header__logo--gold {
-	display: none;
-}
-
 #home-header.header-base--scrolled {
 	--header-nav-color-fallback: var(--landing-header-nav-color-scrolled);
 	--header-nav-weight: 500;
@@ -240,14 +221,6 @@
 	--header-nav-cta-color-fallback: var(--landing-header-nav-cta-color-scrolled);
 	--header-nav-cta-border-fallback: var(--landing-header-nav-cta-border-scrolled);
 	--header-nav-cta-shadow-fallback: var(--landing-header-nav-cta-shadow-scrolled);
-}
-
-#home-header.header-base--scrolled .home-header__logo--white {
-	display: none;
-}
-
-#home-header.header-base--scrolled .home-header__logo--gold {
-	display: block;
 }
 
 // Hide HeaderBase logo when mobile menu is open — NavBarMobile supplies its own logo slot

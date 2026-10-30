@@ -63,6 +63,7 @@ function archiveRecord(t, en) {
 		'revisionSha',
 		'archivada',
 		'padre',
+		'deriva',
 		'grupo',
 		'fase',
 		'orden',

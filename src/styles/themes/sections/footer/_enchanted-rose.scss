@@ -60,8 +60,9 @@
 		color: rgb(var(--color-warm-ivory-rgb) / 50%);
 	}
 
-	.logo {
-		filter: invert(100%) brightness(120%);
+	.footer-brand-logo {
+		--footer-logo-claro: none;
+		--footer-logo-oscuro: block;
 	}
 
 	.whatsapp-button {

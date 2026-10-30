@@ -4,6 +4,7 @@
  *
  * The store lives in the ignored `.agent/tmp/board/` of the Integration checkout, found through the Git common
  * dir, so every lane and agent shares one board. CELEBRA_BOARD_DIR overrides it (tests).
+ * The Gemini relay heartbeat lives beside the store; CELEBRA_GEMINI_RELAY_FILE overrides its path.
  *
  * The bitácora is the exception: one JSONL file per UTC day, <dir>/bitacora/<YYYY-MM-DD>.jsonl, one row per line.
  * Old one-file-per-row documents are still read until `pnpm board migrate-log` converts them.
@@ -32,6 +33,7 @@ import {
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { isFinished, legacyLogRow, logRowIssues } from './model.mjs';
 import { WORKTREE_LANES, getLanePortForKey } from '../shared/worktree-lane.ts';
+import { readZip } from './zip.mjs';
 
 /** Lane metadata is code-owned; task locks and Git supply its live state. */
 export const canonicalLanes = () =>
@@ -74,6 +76,22 @@ export function boardDir(cwd = process.cwd()) {
 	return join(dirname(common), '.agent', 'tmp', 'board');
 }
 
+/** Heartbeat shares the Integration store location; tests may override the file directly. */
+export function geminiRelayPath(dir) {
+	return process.env.CELEBRA_GEMINI_RELAY_FILE
+		? resolve(process.env.CELEBRA_GEMINI_RELAY_FILE)
+		: join(dirname(dir), 'gemini-relay.json');
+}
+
+function readGeminiRelay(dir) {
+	try {
+		const { at } = JSON.parse(readFileSync(geminiRelayPath(dir), 'utf8'));
+		return { at };
+	} catch {
+		return null;
+	}
+}
+
 export function assertId(id) {
 	if (!SAFE_ID.test(String(id ?? '')) || id === '.' || id === '..')
 		throw new Error(`id no válido: ${id}`);
@@ -96,16 +114,87 @@ export function readDoc(dir, collection, id) {
 /** The whole board, in the shape model.mjs reads. */
 export function loadBoard(dir, { since } = {}) {
 	const [estado] = readCollection(dir, 'estado').filter((d) => d.id === 'actual');
+	const tareas = readCollection(dir, 'tareas');
+	const archivo = readCollection(dir, 'archivo');
+	const archivoZip = zipOnlyTasks(dir, tareas, archivo);
 	return {
-		tareas: readCollection(dir, 'tareas'),
+		geminiRelay: readGeminiRelay(dir),
+		tareas,
 		decisiones: readCollection(dir, 'decisiones'),
 		bitacora: readLog(dir, { since }),
 		carriles: canonicalLanes(),
 		agentes: readCollection(dir, 'agentes'),
-		archivo: readCollection(dir, 'archivo'),
+		archivo,
+		...(archivoZip.length ? { archivoZip } : {}),
 		bandejas: readCollection(dir, 'bandejas'),
 		estado: estado ?? null,
 	};
+}
+
+const zipCache = new Map();
+
+/** Every task kept whole in one monthly .zip, read once per file version. */
+function zipTasks(file) {
+	const st = statSync(file);
+	const key = `${st.mtimeMs}:${st.size}`;
+	const hit = zipCache.get(file);
+	if (hit?.key === key) return hit.tasks;
+	const tasks = new Map();
+	for (const e of readZip(file)) {
+		const m = /^tareas\/(.+)\.json$/.exec(e.name);
+		if (!m) continue;
+		try {
+			tasks.set(m[1], JSON.parse(e.data.toString('utf8')));
+		} catch {
+			// One unreadable entry does not hide the rest of the month.
+		}
+	}
+	zipCache.set(file, { key, tasks });
+	return tasks;
+}
+
+/**
+ * A tarea or revision requisito, a padre or a deriva, whose task is in neither tareas/ nor archivo/ (its small record
+ * lost, or the task only kept in a monthly .zip) is looked up in mensual/*.zip, newest first; the zip opens only when
+ * such a ref exists. A short record per hit, so `requisitos()` reads it as archived.
+ */
+export function zipOnlyTasks(dir, tareas, archivo) {
+	const known = new Set([...tareas, ...archivo].map((t) => t.id));
+	const missing = new Set(
+		tareas.flatMap((t) =>
+			(t.requisitos ?? [])
+				.filter((r) => ['tarea', 'revision'].includes(r.tipo) && r.ref)
+				.map((r) => r.ref)
+				.concat(t.padre ? [t.padre] : [], t.deriva ? [t.deriva] : [])
+				.filter((ref) => !known.has(ref)),
+		),
+	);
+	const d = join(dir, MONTHLY_DIR);
+	if (!missing.size || !existsSync(d)) return [];
+	const found = [];
+	const months = readdirSync(d).filter((f) => /^\d{4}-\d{2}\.zip$/.test(f));
+	for (const f of months.sort().reverse()) {
+		let tasks;
+		try {
+			tasks = zipTasks(join(d, f));
+		} catch {
+			continue;
+		}
+		for (const id of missing) {
+			const t = tasks.get(id);
+			if (!t) continue;
+			missing.delete(id);
+			const keep = ['num', 'titulo', 'estado', 'pr', 'archivada'].filter(
+				(k) => t[k] !== undefined,
+			);
+			found.push({
+				id,
+				...Object.fromEntries(keep.map((k) => [k, t[k]])),
+				zip: `${MONTHLY_DIR}/${f}`,
+			});
+		}
+	}
+	return found;
 }
 
 export const LOG_DIR = 'bitacora';
@@ -134,11 +223,16 @@ export function readLog(dir, { since } = {}) {
 	);
 }
 
+/** Transport recorded on each row: `cli` unless the MCP adapter or the watcher sets its own. */
+export const LOG_VIAS = ['cli', 'mcp', 'watch'];
+
 /** Append one row to its day's file; the caller holds the store lock. */
 export function appendLog(dir, row) {
 	const d = join(dir, LOG_DIR);
 	mkdirSync(d, { recursive: true });
-	appendFileSync(join(d, `${row.en.slice(0, 10)}.jsonl`), `${JSON.stringify(row)}\n`);
+	const via = process.env.CELEBRA_BOARD_VIA || 'cli';
+	const out = LOG_VIAS.includes(via) && row.via === undefined ? { ...row, via } : row;
+	appendFileSync(join(d, `${row.en.slice(0, 10)}.jsonl`), `${JSON.stringify(out)}\n`);
 }
 
 /**

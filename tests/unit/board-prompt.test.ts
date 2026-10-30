@@ -92,7 +92,26 @@ const task = (fields: Record<string, unknown>) => ({
 });
 
 describe('prompt-v1 (T160)', () => {
-	it('adds MCP equivalence and inbox checks to generated and saved prompts without duplication', () => {
+	it('reminds generated and delivered prompts to reuse task authorization exactly once', () => {
+		const out = probe(
+			`
+			const delivered = m.promptWithLane(input, {tareas: []});
+			const built = p.buildPrompt({identidad: 'f07 · T431 · Permissions',
+				secciones: [['AUTORIZO', ['git commit']]], metadatos: []});
+			console.log(JSON.stringify({delivered, built,
+				twice: p.withAuthorizationReminder(delivered) === delivered,
+				legacy: p.withAuthorizationReminder('legacy'), line: p.AUTHORIZED_COMMANDS_LINE}));
+		`,
+			task({ prompt: TASK_PROMPT }),
+		);
+		expect(out.delivered).toContain(out.line);
+		expect(out.built).toContain(out.line);
+		expect(out.delivered.split(out.line)).toHaveLength(2);
+		expect(out.delivered).toContain('Modo rápido hasta develop.');
+		expect(out.twice).toBe(true);
+		expect(out.legacy).toBe('legacy');
+	});
+	it('adds the MCP-first rule and inbox checks to generated and saved prompts without duplication', () => {
 		const out = probe(
 			`const copied = m.promptWithLane(input, { tareas: [] });
 			const generated = p.buildPrompt({
@@ -102,6 +121,8 @@ describe('prompt-v1 (T160)', () => {
 			});
 			console.log(JSON.stringify({ copied, generated,
 				twice: p.withBoardAccess(copied),
+				older: p.withBoardAccess(copied.replace(/^Use primero las herramientas MCP.*$/m,
+					'Las herramientas MCP de celebra-board equivalen a los comandos pnpm board; conservan sus permisos, carril, sesión y revisión. Si el MCP no está disponible, use el CLI.')),
 				legacy: p.withBoardAccess('Legacy prompt'),
 				owner: m.promptWithLane({ ...input, actor: 'dueno' }, { tareas: [] }),
 				start: p.promptSection(copied, 'ANTES DE EMPEZAR'),
@@ -109,11 +130,13 @@ describe('prompt-v1 (T160)', () => {
 			}));`,
 			task({ prompt: TASK_PROMPT }),
 		);
-		expect(out.start.join('\n')).toContain('MCP de celebra-board equivalen');
+		expect(out.start.join('\n')).toContain('Use primero las herramientas MCP de celebra-board');
+		expect(out.start.join('\n')).toContain('Use el CLI solo si la herramienta MCP falla');
 		expect(out.start.join('\n')).toContain('al empezar: pnpm board inbox --agente=claude');
 		expect(out.end.join('\n')).toContain('al terminar: pnpm board inbox --agente=claude');
 		expect(out.generated).toContain('pnpm board inbox --agente=gemini');
 		expect(out.twice).toBe(out.copied);
+		expect(out.older).toBe(out.copied);
 		expect(out.legacy).toBe('Legacy prompt');
 		expect(out.owner).toBe(TASK_PROMPT);
 	});

@@ -4,7 +4,8 @@
  * usted» while it waits for a claim, comes back after DELIVERY_STALE_MINUTES without one, and `claim` clears the
  * mark. Pure functions only: model.mjs, next.mjs and the view (as /delivery.mjs) share them.
  */
-export const DELIVERY_STALE_MINUTES = 30;
+/** T382: a pasted prompt nobody claimed is the owner's again after 15 minutes. */
+export const DELIVERY_STALE_MINUTES = 15;
 const MINUTE_MS = 60_000;
 const TZ = 'America/Mazatlan';
 

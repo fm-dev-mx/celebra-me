@@ -21,6 +21,8 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'pnpm-lock.yaml',
 	'supabase/migration-rollout-registry.json',
 	// Guards and their tests: they name the providers to reject them.
+	'.agent/permissions/policy.json',
+	'.agent/rules/permissions.md',
 	'scripts/validate-retired-provider-references.mjs',
 	'scripts/validate-structure.mjs',
 	'scripts/agent/env-files.ts',

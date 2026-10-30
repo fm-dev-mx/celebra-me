@@ -96,8 +96,8 @@ lock heartbeat; after two hours of silence a lock shows as «Detenida».
   work chat. A recipient replies with `pnpm board msg <id> --de=codex --para=claude "..."`, and
   Claude reads `pnpm board inbox --agente=claude` (or the equivalent MCP calls).
 - **Gemini/Antigravity:** the user-local `.gemini/config/celebra-gemini-relay.mjs` runs without AI
-  in a terminal opened inside the dispatcher chat, currently named **Chat Maestro MCP
-  Configuration**. It polls `inbox --agente=gemini` every five seconds, resolves the task's Gemini
+  in a terminal opened inside **f04 · Gemini maestro** (formerly **Chat Maestro MCP
+  Configuration**). It polls `inbox --agente=gemini` every five seconds, resolves the task's Gemini
   chat from the board's lock/session, and falls back to its configured master chat. It invokes the
   installed language server's `agentapi send-message` using the terminal's inherited context.
   Restart it manually in that terminal after restarting Antigravity. Never extract, print or persist
@@ -164,20 +164,20 @@ start/end inbox reminders and idempotence for generated and saved prompts.
 
 ## Coordination contract
 
-Three agents share the board: `claude`, `codex` and `gemini`. Coordination is mixed (d151): one
-principal coordinator assigns work, and each app has a dispatcher that only starts work for its own
-agent.
+Three agents share the board: `claude`, `codex` and `gemini`. Under d351 each has one fixed master
+chat. Claude `f04 · Coordinador principal` assigns work; Codex `f04 · Codex maestro` and Gemini
+`f04 · Gemini maestro` dispatch only their own assigned tasks. A new chat requires a concrete task,
+including a separate chat for each review. Follow-ups reuse that task's existing chat.
 
-| Role                  | Who                                             | Does                                                                                                        | Never                                                                                            |
-| --------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Principal coordinator | Claude session «f04 · Tablero v2» (d152)        | Assigns tasks (`agente`, `move`), records owner decisions (`decide`), merges reviewed PRs, reports to owner | Merges a PR without a cross review at its head SHA, green CI and no conflict with develop (d100) |
-| App dispatcher        | Codex «Coordinación maestra» for `codex` (d152) | Opens chats or sessions of its own agent for tasks the board already assigns to that agent                  | Reassigns tasks, edits another agent's tasks, records decisions                                  |
-| Worker session        | Any agent, one per task                         | Claims one task, works in its lane and branch, opens the PR, requests the cross review                      | Touches tasks, lanes or branches another agent holds                                             |
+| Role                  | Who                                                        | Does                                                                                   | Never                                                     |
+| --------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Principal coordinator | Claude `f04 · Coordinador principal`                       | Assigns tasks, records owner decisions, merges reviewed PRs                            | Merges without exact-head review, green CI and a clean PR |
+| Agent master          | Codex `f04 · Codex maestro`; Gemini `f04 · Gemini maestro` | Opens concrete work/review chats; archives its agent's finished chats                  | Reassigns tasks or forwards owner authority               |
+| Worker session        | Any agent, one per task                                    | Claims one task, works in its lane and branch, opens the PR, requests the cross review | Touches tasks, lanes or branches another agent holds      |
 
-d152 names only the Codex dispatcher; until another app's dispatcher is named, the principal
-coordinator or the owner starts that agent's sessions. Gemini is one agent id, `gemini`, whatever
-tool runs it (d154); record the tool, for example Antigravity, in the session name or the handoff,
-never as another agent id.
+The owner identifies and renames the existing masters; configuration never guesses the latest chat.
+Gemini is one agent id, `gemini`, whatever tool runs it (d154); record the tool, for example
+Antigravity, in the session name or the handoff, never as another agent id.
 
 ### Shared rules
 
@@ -323,13 +323,127 @@ the new code by itself (see [The view](#the-view)). Only the coordinator may res
 only while that swap does not work, after telling the owner first. Never kill an unowned process or
 launch competing servers.
 
-`pnpm board:watch` (`scripts/board/watch.mjs`, d164) is a no-AI watcher: it reads the board and
-shows one Windows notification per agent with the ready tasks it has not announced yet, for example
-«Codex tiene 1 tarea lista: T34 serenata-fotos». It never writes the board or wakes an agent; it
-remembers announced tasks in `.agent/tmp/board-watch.json`. `--dry-run` only prints. The owner
-registers it in the Windows Task Scheduler (every 10 minutes) from Integration with
-`pnpm board:watch:register` and removes it with `pnpm board:watch:unregister`; agents never register
-it.
+### Master watcher setup (d351)
+
+`pnpm board:watch` runs `scripts/board/master-watch.mjs`, a bounded no-AI pass. The old toast-only
+`watch.mjs` supplies its existing eligibility predicate. The Windows task runs every minute with
+`IgnoreNew`; this reuses the existing scheduler lifecycle, avoids an always-running supervisor, and
+picks up merged code at the next pass. Typical wake latency is up to one minute plus bounded host/PR
+reads; Gemini's relay adds its polling/transport delay. No-work passes send nothing.
+
+The coordinator performs these steps **after merge**, from Integration. Workers implement and test
+the code without changing user files, automations or running scheduler tasks:
+
+1. Confirm the three existing master chat IDs and rename them to their fixed names above.
+2. Store IDs in ignored `.agent/tmp/board-masters.json` next to the shared board:
+
+   ```sh
+   pnpm board:watch --set-master=claude --thread=<claude-master-id> --relay-task=<live-routing-task-id>
+   pnpm board:watch --set-master=codex --thread=<codex-master-id>
+   pnpm board:watch --set-master=gemini --thread=<gemini-master-id>
+   ```
+
+   `--relay-task` must name a task in the live store with no Gemini worker session or lock. Choose a
+   long-lived coordination task and update this setting before it is compacted. The installed Gemini
+   relay otherwise routes to that worker before its master. Do not reassign this anchor to Gemini
+   without choosing another anchor first. Restart the existing relay in its Antigravity terminal
+   with `node <user-home>/.gemini/config/celebra-gemini-relay.mjs <gemini-master-id>`; the relay's
+   master must equal the configured Gemini ID. Never run a second relay concurrently.
+
+3. Disable the old 30-minute AI dispatch automations in their owning apps, preserving their prompts
+   for rollback. This is a manual coordinator action; the watcher never edits them.
+4. Inspect `pnpm board:watch --dry-run` and `pnpm board sesiones --archivables --json`. Dry-run
+   sends no messages and records no delivery receipts. Then run `pnpm board:watch:register`.
+5. To stop future passes, run `pnpm board:watch:unregister`. An already running pass may finish;
+   wait for it before replacing configuration. To resume, run `pnpm board:watch:register` again.
+   Registration replaces the previous 10-minute toast task with the same task name. Never restart
+   the board on 4320; its existing supervisor loads merged code.
+
+Codex wakes use `codex.exe queue --thread <id> --message <doorbell>`. Gemini wakes are board `msg`
+rows consumed by the existing relay; Claude receives board messages. Payloads name tasks/messages
+without copying their bodies or owner authorizations. Archive wakes say **Archive estos chats:**,
+cite d351, preserve individual IDs, and ask the master to confirm its inventory and reply to Claude
+with `pnpm board msg <task-id> --de=<agent> --para=claude` and the actual archived IDs. Masters
+never send idle/no-work notices. A wake grants no new authority.
+
+Receipts live in `.agent/tmp/board-master-watch.json`, keyed by agent, configured master and event.
+Failed transports retry; successful destinations are saved independently. Ready tasks re-arm only
+after leaving readiness. Message and archive receipts survive temporary missing inventories and
+process restarts. A separate exclusive `.lock` prevents overlapping passes. After a crash, inspect
+that exact lock and process before scoped orphan removal; never remove a live lock. Transport
+acceptance and the local receipt cannot be atomic: a crash between them can repeat one doorbell, so
+masters check the referenced IDs before acting. Codex acceptance proves queueing, not reading;
+Gemini acceptance proves the board message was stored, not host delivery. The existing relay's
+consume-before-send limitation still applies; inspect history before any manual resend. Message
+observation includes history since master setup, so the relay consuming an inbox before a scheduled
+pass cannot hide a new message from the master watcher. Older unread messages remain eligible.
+
+The view refreshes **Se pueden archivar** every 15 seconds over the existing SSE connection without
+page reload. It shares `external-sessions.mjs` with `pnpm board sesiones --archivables`. PR state is
+read-only and cached for one minute; an unavailable/open PR suppresses its recommendation. Master
+IDs and fixed master names are always excluded; old dispatcher candidates require a configured
+master. Codex/Gemini expose unarchived host rows. Claude exposes board-registered completed session
+IDs, explicitly labeled for the master to confirm against its own inventory. Missing host stores are
+displayed as unavailable, never as evidence that chats finished. Nothing archives automatically.
+After Claude actually archives a chat, its master records
+`pnpm board:watch --confirm-claude-archive=<chat-id>` and sends the required board reply to Claude.
+This explicit local receipt removes that recommendation on the next refresh; it never performs the
+archive or infers it from a notification. The command refuses configured master IDs.
+
+### Automatic notices, escalation and merge queue (T442)
+
+The watcher extends the bounded no-AI pass with automatic board coordination and tier escalation:
+
+- **Automatic notices (A)**: sends board messages to the principal coordinator (`para: coordinador`)
+  on worker `claim` (`<tag> tomada por <agente>`), `close` (the task's `signalLine`) and blocked
+  review completion (`signalLine`), removing reliance on manual worker handoff notices.
+- **Escalation thresholds (B)**:
+  - **10 min**: wakes the assigned master again if a task remains delivered but unclaimed
+    (`unclaimed-10m:<id>:<desde>`).
+  - **30 min**: notifies the principal coordinator via board message if a task is unclaimed for 30
+    min or if an active lock has had no heartbeat for 30 min.
+  - **60 min**: surfaces the silent lock or unclaimed task in the owner action list (`ownerActions`
+    / `usted`), and invokes Telegram notification (`sendTelegramAlert`) if T437 Telegram
+    configuration lives in `.agent/tmp/telegram.json` or environment variables without blocking on
+    missing configuration.
+- **Merge queue qualification (C)**: sends `listo para unir #N`
+  (`<tag> · listo para unir #N · siguiente: unir`) to the coordinator only when the approved review
+  SHA strictly equals the live PR head (`gh pr view`) and CI for that exact SHA is green (`ciOf` is
+  `verde`). Missing, pending, failing or stale evidence never qualifies.
+- **Deduplication**: events and escalation thresholds are recorded in
+  `.agent/tmp/board-master-watch.json` under `notified` and `escalations` alongside `delivered`
+  master receipts, ensuring every transition notifies exactly once across repeated passes and
+  process restarts.
+
+### Owner alerts on Telegram (T437, d353)
+
+Each pass also reads «Le toca a usted» (`nextSections(...).usted`: owner tasks, answers owed,
+stalled dispatches, unread messages `--para=dueno`, the Gemini relay alert) and sends one Telegram
+Bot API `sendMessage` to the owner's chat when new items appear (`scripts/board/owner-alerts.mjs`).
+
+- **One alert per item**: each row carries a stable `clave` (`tarea:<id>`, `respuesta:<id>:<ref>`,
+  `detenida:<id>`, `mensaje:<id>`, `gemini-relay`). Sent keys live under `owner.alertadas` in
+  `.agent/tmp/board-master-watch.json`; a key re-arms once its item leaves the list.
+- **Grouping**: every new item of one pass (one minute) goes in a single message, at most 8 lines,
+  ending with `Tablero: http://127.0.0.1:4320`. A single item reads like
+  `T418 · Andrea · … . Tablero: http://127.0.0.1:4320`. An empty list sends nothing.
+- **Failures**: every Telegram request aborts after 10 s, so a hung connection never stops master
+  wakes. A 400/401/403/404 stops sending until the token or chat changes (one log line); a 429 waits
+  `retry_after`; other failures back off 1, 2, 4… minutes, capped at 30.
+- **Missing configuration**: the watcher keeps working, records current items as seen (no burst when
+  configured later) and writes one line to `.agent/tmp/board-master-watch.log`.
+- `pnpm board:watch --dry-run` prints `[prueba] telegram: …` and records nothing.
+
+Configuration lives in the ignored `.agent/tmp/telegram.json` (`token`, `chatId`), or in
+`TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`. No command prints or logs either value. Owner setup, from
+the Integration checkout:
+
+1. In Telegram, open `@BotFather`, send `/newbot`, choose a name and a username ending in `bot`, and
+   copy the token it returns.
+2. `pnpm board:telegram:token` — paste the token at the hidden prompt and press Enter.
+3. In Telegram, open the new bot, press **Iniciar** and write `hola`.
+4. `pnpm board:telegram:chat` — reads `getUpdates` and saves the private chat that wrote `hola`.
+5. `pnpm board:telegram:test` — sends «Prueba de Celebra-me».
 
 After a CLI writer crash, inspect the exact `.agent/tmp/board/.lock` PID and process identity. Age
 alone does not establish an orphan. Obtain scoped authority to remove that orphan file, preserving
@@ -383,7 +497,7 @@ POST needs the page's per-process token and its own `Origin`, and every request 
 
 `titulo`, `estado`, `urgencia`, `actor`, `agente`, `toca`, `requisitos`, `requiere`, `categoria`,
 `carril`, `ahora`, `pr`, `rama`, `sesion {id, agente, nombre}`, `hasta`, `orden`, `origen`, `padre`,
-`grupo`, `fase`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
+`grupo`, `fase`, `deriva`, `plan`, `vuelta` (review round), `fila`, `evidencia {cmd, salio}`,
 `chequeo {cmd, espera}`, `prompt`, `tipo` and its hand-written fields (see
 [Task kinds](#task-kinds)); `rev` and `actualizado` are set by the command, `agregadaPor` and
 `seguimientoPor` by the commands that add or follow up a task (T172), `archivada` (date) only by
@@ -427,7 +541,22 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   and folds blocked subtasks into «Ver N subtareas» (✓ done, ● running or in review, ○ pending); a
   subtask ready or running now keeps its card (and stays in «Le toca a usted» and `next`), each with
   its `F<n>` tag. The sheet and `pnpm board show` list a mother's «Subtareas · X/Y (Z %)» and give a
-  subtask «Parte de T<n> · <título> · X/Y listas». `pnpm board:verify` reports a bad `padre`.
+  subtask «Parte de T<n> · <título> · X/Y listas». `pnpm board:verify` reports a bad `padre`. Groups
+  are only for multi-step programs closed together (e.g. `servicio-medicion`).
+- **Follow-ups (T481)**: a task born from a review finding or from finished work is independent and
+  names its source with `deriva` (`deriva=T469` is stored as the id; `origen` would collide with
+  review rounds, which `reviewRounds` finds by `origen`). `pnpm board show` prints «Viene de T<n> ·
+  <título> (<estado>)», the sheet a «Viene de» field, and the Mapa a gray dotted link from the
+  source to the follow-up, placed to its right but never a wait: it changes neither readiness nor
+  «desbloquea». A missing source is refused on write and reported by `pnpm board:verify`. Review
+  rounds already name their source through `origen` and need no `deriva`.
+- **Mapa · Clave (T482)**: the Mapa tab opens on «Clave», up to 7 open tasks ranked by
+  `scripts/board/key-tasks.mjs` (pure, unit-tested): first a task waiting on an unmet dueño or
+  decisión step (by how many tasks that step frees), then a task others wait on (by «desbloquea»),
+  then urgente/alta or a `hasta` within 3 days or past, then stuck work (bloqueada with nothing to
+  wait for, `en revision` for over 24 h, a delivered prompt nobody claimed). Each card shows T#,
+  title, agent, lane, age, state and its reason, and keeps an empty action slot. «Todo» shows the
+  full dependency graph. The payload carries the cards as `clave`.
 - **What is next**: `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al
   coordinador» and «Detenidas». The coordinator sees reviews approved at the PR's current SHA
   (merge), blocked reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el
@@ -530,6 +659,12 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 - **Registry**: `agentes --json` discovers the shared registry and capability overrides. Only
   explicit coordinator updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect
   actual tools before declaring them.
+- **Paused agent**: `agentes codex=pausado hasta=2026-11-02 --coordinador --rev=N` pauses an agent
+  until that date (start of the day, Mazatlán); `codex=activo` ends it. `review`, the watchers and
+  the dispatcher rows never pick a paused agent; while Claude is paused, the other of Codex and
+  Gemini reviews Codex's or Gemini's work.
+- **Lane state on `plan`**: `plan` refuses a lane on another branch or with uncommitted changes
+  (unless it is already on the task's `rama`) and names the idle, unlocked lanes the task may use.
 - **Codex and Gemini chats (d211)**: `pnpm board sesiones [--json]` opens `~/.codex/state_5.sqlite`
   and `~/.gemini/antigravity/conversation_summaries.db` read-only, crosses each open chat's `T<n>`
   with the board and says «archivar» (task finished or archived), «dejar» or «sin tarea»; the
@@ -691,8 +826,14 @@ moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the
 **d170**: a merged PR also drops the task's lock, whoever holds it, through
 `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
 still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
-open PR are only reported; review children are never touched. A lock older than `--horas` (default
-`STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
+open PR are only reported; review children are never touched. **T480**:
+`pnpm board merged --pr=#N --coordinador` (no id) moves the one live non-review task carrying that
+PR; with none or several it asks for the id, and a review id gets «T<n> es la revisión de T<m>» with
+the command for its origin. A task nobody claimed is closed by the coordinator with
+`pnpm board close <id> --coordinador --pr=#N …`; with `--git-safety=commit` it prints that there was
+no lane session instead of failing. A pending kind task (`tipo` + `busca`) without a lane shows
+«Falta el carril: pnpm board plan <id> …», not «Falta el prompt». A lock older than `--horas`
+(default `STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
 `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
 «posible sesión cerrada» and never released by the sync (the owning session or the coordinator with
 authority does).

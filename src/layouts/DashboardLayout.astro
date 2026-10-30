@@ -1,6 +1,7 @@
 ---
 import '@/styles/dashboard.scss';
 import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astro';
+import BrandIcons from '@/components/common/BrandIcons.astro';
 import { toDisplayRole } from '@/lib/rsvp/auth/roles';
 import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
 import { resolveDashboardEnvBanner } from '@/lib/server/dashboard-env-banner';
@@ -66,9 +67,7 @@ const currentSectionLabel =
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="csrf-token" content={csrfToken} />
-		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-		<link rel="alternate icon" href="/favicon.ico" />
-		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<BrandIcons />
 		<meta name="robots" content="noindex, nofollow" />
 		<title>{title}</title>
 

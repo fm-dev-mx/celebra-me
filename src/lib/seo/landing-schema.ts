@@ -1,4 +1,5 @@
 import { landingData } from '@/data/landing-page.data';
+import { BRAND_ICONS } from '@/lib/brand/brand-logo';
 
 export const DEFAULT_SITE_ORIGIN = 'https://www.celebra-me.com';
 
@@ -52,7 +53,7 @@ export function buildLandingSchemaJsonLd(siteOrigin = DEFAULT_SITE_ORIGIN): Land
 				'@id': `${siteOrigin}/#organization`,
 				name: 'Celebra-me',
 				url: siteOrigin,
-				logo: `${siteOrigin}/icons/icon-512.png`,
+				logo: `${siteOrigin}${BRAND_ICONS.icon512}`,
 				description:
 					'Invitaciones digitales interactivas de alta gama con confirmación de asistencia RSVP en tiempo real.',
 			},

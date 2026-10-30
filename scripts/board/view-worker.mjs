@@ -7,6 +7,7 @@ import { viewArchiver, viewDeliverer } from './board.mjs';
 import { readLive } from './live.mjs';
 import { boardDir } from './store.mjs';
 import { serveView } from './view-server.mjs';
+import { archiveSessions } from './external-sessions.mjs';
 
 const dir = boardDir();
 try {
@@ -14,6 +15,7 @@ try {
 		archive: viewArchiver(dir),
 		deliver: viewDeliverer(dir),
 		live: () => readLive(dir),
+		sessions: (board) => archiveSessions(board, { dir }),
 		token: process.env.BOARD_VIEW_TOKEN,
 		version: process.env.BOARD_VIEW_VERSION,
 	});

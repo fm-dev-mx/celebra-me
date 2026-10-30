@@ -8,6 +8,8 @@ import type {
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
+import type { ItineraryScene } from '@/lib/schemas/content/itinerary.schema';
+import type { HeroScene } from '@/lib/schemas/content/hero.schema';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
@@ -79,6 +81,8 @@ export interface HeroViewModel {
 	coverPage?: string;
 	/** Editorial-cover design credit; shown when omitted. */
 	designCredit?: boolean;
+	/** Standard-cover scroll scene. */
+	scene?: HeroScene;
 	name: string;
 	secondaryName?: string;
 	label: string;
@@ -226,6 +230,8 @@ export interface EnvelopeViewModel {
 		coverIssue?: string;
 		/** Editorial cover reveal: one or two cover lines; defaults are the XV edition lines. */
 		coverLines?: string[];
+		/** Collector edition: handwritten note on the inside front cover, addressed to the guest. */
+		coverNote?: string;
 		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
 		coverExperience?: 'standard' | 'collector';
 		/** Collector edition: decorative cutout on the printed cover face. */
@@ -373,6 +379,7 @@ export interface InvitationViewModel {
 			items: ItineraryItem[];
 			variant: ItineraryVariant;
 			closingNote?: string;
+			scene?: ItineraryScene;
 		};
 		rsvp?: {
 			eventSlug: string;
@@ -418,6 +425,7 @@ export interface InvitationViewModel {
 				footerText?: string;
 				noteText?: string;
 				passStyle: PersonalizedAccessPassStyle;
+				checkInQr: boolean;
 			};
 		};
 		gifts?: {

@@ -38,6 +38,7 @@ const FILES = {
 	'/findings.mjs': ['findings.mjs', 'text/javascript; charset=utf-8'],
 	'/require-cierre.mjs': ['require-cierre.mjs', 'text/javascript; charset=utf-8'],
 	'/owner-text.mjs': ['owner-text.mjs', 'text/javascript; charset=utf-8'],
+	'/owner-where.mjs': ['owner-where.mjs', 'text/javascript; charset=utf-8'],
 	'/changelog.mjs': ['changelog.mjs', 'text/javascript; charset=utf-8'],
 };
 const SETTLE_MS = 150;
@@ -317,6 +318,8 @@ export function serveView(
 		deliver,
 		live,
 		liveMs = LIVE_MS,
+		sessions,
+		sessionsMs = 15_000,
 		token = randomBytes(32).toString('hex'),
 		version = 'dev',
 	} = {},
@@ -346,6 +349,7 @@ export function serveView(
 	};
 	// T126: `live(board)` resolves `{carriles, prs, en}` from Git and GitHub; the last answer rides in `vivo`.
 	let vivo;
+	let archivables;
 	const board = watchBoard(
 		dir,
 		(json) => {
@@ -354,7 +358,15 @@ export function serveView(
 		(status) => {
 			for (const res of clients) send(res, JSON.stringify(status), 'status');
 		},
-		{ settleMs, reconcileMs, watchFactory, extra: () => (vivo ? { vivo } : {}) },
+		{
+			settleMs,
+			reconcileMs,
+			watchFactory,
+			extra: () => ({
+				...(vivo ? { vivo } : {}),
+				...(archivables ? { archivables } : {}),
+			}),
+		},
 	);
 	let reading = false;
 	const readLive = async () => {
@@ -371,6 +383,21 @@ export function serveView(
 	};
 	readLive();
 	const liveTimer = live ? setInterval(readLive, liveMs) : null;
+	let readingSessions = false;
+	const readSessions = async () => {
+		if (!sessions || readingSessions) return;
+		readingSessions = true;
+		try {
+			archivables = await sessions(loadBoard(dir));
+		} catch {
+			archivables = { chats: [], error: 'No se pudo comprobar el inventario de chats.' };
+		} finally {
+			readingSessions = false;
+			board.check();
+		}
+	};
+	readSessions();
+	const sessionsTimer = sessions ? setInterval(readSessions, sessionsMs) : null;
 	const heartbeat = setInterval(() => {
 		for (const res of clients) send(res, JSON.stringify(board.status()), 'status');
 	}, heartbeatMs);
@@ -466,6 +493,7 @@ export function serveView(
 		cleaned = true;
 		clearInterval(heartbeat);
 		clearInterval(liveTimer);
+		clearInterval(sessionsTimer);
 		board.close();
 		for (const res of clients) res.end();
 	};

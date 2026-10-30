@@ -185,10 +185,12 @@ details.grpd>summary .hint{font-weight:400;color:var(--faint)}
 .mine .row b{font:600 .84rem var(--mono);color:var(--own);flex:none;padding-top:1px}
 .mine .row>span{min-width:0;overflow-wrap:anywhere;display:grid;gap:1px}
 .mine .row .sub{font-size:.78rem;color:var(--muted)}
+.mine .row .donde{display:block;font-size:.78rem;font-weight:600;color:var(--muted)}
+.mine .paste .cmsg{flex:none;font-size:.75rem;color:var(--muted);max-width:16rem}
 .mine .none{padding:28px 8px;color:var(--muted);font-size:.95rem}
 .mine .none b{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:2px}
-.mine .paste{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line)}
-.mine .paste .row{flex:1;min-width:0;border-bottom:0}
+.mine .paste{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.mine .paste .row{flex:1 1 20rem;min-width:0;border-bottom:0}
 .mine .paste .btn{flex:none;margin-right:6px}
 @media (max-width:560px){.mine .paste{flex-direction:column;align-items:stretch}.mine .paste .btn{margin:0 8px 8px}}
 .mine .row .meta{font:500 .76rem var(--mono);color:var(--muted)}
@@ -346,6 +348,36 @@ span.crumb{color:var(--muted)}
 /* T258: blocked tasks, each with what it still waits for. */
 .blk{padding:8px 12px;border-bottom:1px solid var(--line)}
 .blk:last-child{border-bottom:0}
+/* T471 «Mapa»: nodes are hairline boxes over one SVG of arrows; red only for what the owner must do. */
+.map-key{margin:0 0 10px;font-size:.8rem;color:var(--muted)}
+.map-warn{margin:0 0 12px;padding:8px 12px 8px 2em;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.86rem}
+.map-strip{margin:0 0 12px;padding:8px 12px;border:1px solid var(--line-2);border-radius:6px;font-size:.86rem}
+.map-strip p{margin:2px 0 4px;color:var(--muted);font-size:.8rem}
+.map-strip ul{margin:0;padding-left:1.2em}
+.map-strip .tbtn{min-height:32px;padding:2px 0;font-weight:400}
+.map-wrap{overflow-x:auto;padding:4px 0 12px}
+.map{position:relative}
+.map svg{position:absolute;inset:0;overflow:visible}
+.map path{fill:none;stroke-width:1.5}
+.map path.wait{stroke:var(--ink)}.map path.ok{stroke:var(--block-rule)}.map path.own{stroke:var(--danger-rule)}
+.map path.sub{stroke:var(--line-2);stroke-dasharray:4 4}
+.map path.from{stroke:var(--line-2);stroke-dasharray:1 4}
+.map marker path{fill:var(--muted);stroke:none}
+.mn{position:absolute;display:flex;flex-direction:column;gap:2px;overflow:hidden;text-align:left;font:inherit;font-size:.78rem;line-height:1.25;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:6px;padding:5px 7px}
+button.mn{cursor:pointer}button.mn:hover{background:var(--hover)}
+.mn span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mn b{font-family:var(--mono);font-size:.74rem}
+.mn small{margin-top:auto;color:var(--muted);font-size:.72rem}
+.mn.done{color:var(--faint);background:var(--panel-2);border-style:dashed}
+.mn.root{color:var(--danger);background:var(--danger-soft);border-color:var(--danger-rule);font-weight:600}
+.map-view{margin:0 0 10px}
+.keys{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.kc{border:1px solid var(--line-2);border-left-width:3px;border-radius:6px;padding:6px 10px}
+.kc-1{border-left-color:var(--danger-rule)}.kc-2{border-left-color:var(--ink)}.kc-3{border-left-color:var(--warn)}.kc-4{border-left-color:var(--block-rule)}
+.kc .tbtn{min-height:36px;padding:2px 0;font-weight:500}
+.kc .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
+.kc .kc-why{margin:4px 0 0;font-size:.86rem}
+.kc-act:empty{display:none}
 .blk .tbtn{min-height:36px;padding:2px 0;font-weight:400}
 .blk .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
 .blk ul{margin:4px 0 0;padding-left:1.2em;font-size:.86rem;overflow-wrap:anywhere}
@@ -431,6 +463,7 @@ a.prl{font-weight:600}
       <button class="tab" role="tab" type="button" data-tab="finalizadas" id="t-finalizadas">Finalizadas<span class="n" id="n-fin"></span></button>
       <span class="tab-sep" aria-hidden="true"></span>
       <button class="tab" role="tab" type="button" data-tab="carriles" id="t-carriles" title="Carriles con una tarea en curso, de todos">Carriles<span class="n" id="n-car"></span></button>
+      <button class="tab" role="tab" type="button" data-tab="mapa" id="t-mapa" title="Qué tarea espera a cuál, y qué le toca a usted para destrabarlas">Mapa<span class="n" id="n-map"></span></button>
       <button class="tab" role="tab" type="button" data-tab="historial" id="t-historial" title="Decisiones vigentes">Historial<span class="n" id="n-hist"></span></button>
     </nav>
     <div class="side-foot">
@@ -465,6 +498,8 @@ a.prl{font-weight:600}
           <div class="mine" id="gen-mine" aria-live="polite"><div class="empty">Cargando lo que le toca a usted…</div></div>
           <h3 class="sect">Cola <span class="n" id="gn-cola"></span></h3>
           <div class="mine" id="gen-cola"><div class="empty">Cargando la cola…</div></div>
+          <h3 class="sect">Se pueden archivar <span class="n" id="gn-archive"></span></h3>
+          <div class="mine" id="archive-chats" aria-live="polite"><p class="none">Comprobando los chats…</p></div>
         </section>
 
         <section id="p-buscar" aria-label="Resultados de la búsqueda" hidden>
@@ -521,6 +556,11 @@ a.prl{font-weight:600}
       <div class="board" id="board"><div class="empty">Cargando los carriles…</div></div>
     </section>
 
+    <section id="p-mapa" role="tabpanel" aria-labelledby="t-mapa" hidden>
+      <div class="chips map-view" role="group" aria-label="Vista del mapa"><button class="fchip" type="button" data-mapv="clave" aria-pressed="true" title="Las pocas tareas que más importan ahora">Clave</button><button class="fchip" type="button" data-mapv="todo" aria-pressed="false" title="Todas las dependencias en columnas">Todo</button></div>
+      <div class="board" id="mapa"><div class="empty">Cargando el mapa…</div></div>
+    </section>
+
     <section id="p-historial" role="tabpanel" aria-labelledby="t-historial" hidden>
       <div class="board">
         <div class="tools">
@@ -558,12 +598,13 @@ import { globalSearch, inReview, ownerActions, rowText, tabCounts } from '/forma
 import { requisitoText, taskName } from '/model.mjs';
 import { authorOf } from '/model.mjs';
 import { ordenOf, prNumber, taskLane, taskTag, logChange, isReview, reviewRound, reviewRounds } from '/model.mjs';
-import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, ownerLaunches, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
+import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, ownerAsks, isFinished, laneBusy, laneLines, promptWithLane, AGENT_REGISTRY } from '/model.mjs';
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
 import { optionsText } from '/owner-text.mjs';
 import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
+import { pasteAgents } from '/owner-where.mjs';
 window.boardStarted=true;
 const TZ='America/Mazatlan';
 const URG={urgente:{r:0,l:'Urgente'},alta:{r:1,l:'Alta'},normal:{r:2,l:'Normal'},baja:{r:3,l:'Baja'}};
@@ -576,12 +617,12 @@ const ICON={
 const STAGES=[['bloqueada','Bloqueada'],['lista','Lista'],['curso','En curso'],['revision','En revisión'],['hecha','Hecha']];
 const COLOR={own:'Le toca a usted',auto:'Autónoma',block:'Bloqueada',run:'En curso',rev:'En revisión',done:'Hecha'};
 const TOCA={main:'main',produccion:'Producción',migracion:'migraciones',secretos:'secretos'};
-const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','historial'];
-const TITLE={general:'General',usted:'Para usted',cola:'Cola',calendario:'Calendario',bloqueadas:'Bloqueadas',finalizadas:'Finalizadas',carriles:'Carriles',historial:'Historial'};
+const TABS=['general','usted','cola','calendario','bloqueadas','finalizadas','carriles','mapa','historial'];
+const TITLE={general:'General',usted:'Para usted',cola:'Cola',calendario:'Calendario',bloqueadas:'Bloqueadas',finalizadas:'Finalizadas',carriles:'Carriles',mapa:'Mapa',historial:'Historial'};
 // T268: the queue's collapsible groups, by the color of each block's first task, in this order.
 const GROUP={own:'Le toca a usted',auto:'Autónomas',run:'En curso',block:'Sin agente que la termine',rev:'En revisión',done:'Hechas'};
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
-const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'general',kind:'todo',ag:'todas',finag:'todas',col:'todos'};
+const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'general',kind:'todo',ag:'todas',finag:'todas',col:'todos',mapv:'clave'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const T=s=>s?new Date(s).getTime():NaN;
@@ -647,11 +688,11 @@ const urgHtml=t=>{const u=urgOf(t);return `<span class="urg u-${u}" title="Urgen
 // T268: the row's circle carries the urgency as its ring color; the word stays for urgente and alta.
 const ringHtml=t=>{const u=urgOf(t);return `<span class="ring r-${u}" title="Urgencia: ${URG[u].l}" aria-hidden="true"></span>`};
 // d169: a ready task only Codex or Gemini can finish waits for the owner to paste its prompt there.
-const pasteTo=t=>ownerLaunches(t,S.board).map(a=>AGENT[a]||a).join(' o ');
+const pasteTo=t=>pasteAgents(t,S.board).agentes.map(a=>AGENT[a]||a).join(' o ');
 const pill=t=>{const c=color(t),to=c==='own'&&pasteTo(t);return `<span class="pill">${to?'Pegar en '+esc(to):awaitingClaim(t)?'Entregada':COLOR[c]}</span>`};
 // d249: «Copiar prompt» on a ready, unlocked task an agent does marks it as delivered to that agent.
 const deliverable=t=>stage(t)==='lista'&&!t.candado&&!needsOwner(t);
-const deliverTo=t=>{const a=ownerLaunches(t,S.board);return a.length===1?a[0]:a.length?'cualquiera':t.agente||'cualquiera'};
+const deliverTo=t=>{const a=pasteAgents(t,S.board).agentes;return a.length===1?a[0]:a.length?'cualquiera':t.agente||'cualquiera'};
 // T151: each agent keeps its own color wherever it appears.
 const agChip=(key,label,{lock=false}={})=>`<span class="ag ag-${esc(key)}"${lock?' title="La está haciendo ahora (candado)"':''}>${lock?'🔒 ':''}${esc(label)}</span>`;
 const agHtml=t=>t.candado?agChip(t.candado.agente,AGENT[t.candado.agente]||t.candado.agente,{lock:true}):t.agente&&t.agente!=='cualquiera'?agChip(t.agente,AGENT[t.agente]||t.agente):'';
@@ -839,6 +880,7 @@ function renderSheet(open){
     ['Rama',t.rama?`<span class="code">${esc(t.rama)}</span>`:''],
     ['PR',pr?`<a href="${GH}/pull/${pr}" target="_blank" rel="noopener">#${pr}</a>`:''],
     ['Origen',t.origen?esc(taskName(t.origen,S.board)):''],
+    ['Viene de',t.deriva?esc(taskName(t.deriva,S.board)):''],
     ['Toca',(t.toca||[]).length?t.toca.map(x=>esc(TOCA[x]||x)).join(', ')+' · necesita su aprobación':''],
     ['Límite',t.hasta?esc(fmt(t.hasta)):''],
     ['Evidencia',t.evidencia&&(t.evidencia.cmd||t.evidencia.salio)?`<code>${esc(t.evidencia.cmd||'')}</code> → ${rich(t.evidencia.salio||'')}`:''],
@@ -900,6 +942,54 @@ function renderBlk(){
   const empty='Ninguna tarea está bloqueada.';
   $('blk').innerHTML=shown.length?`<div class="log">${shown.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
+// T471: «Mapa» — open tasks that wait on each other, in columns from what waits on nothing (left) to what waits
+// longest (right). Nodes are buttons laid over one SVG that draws the arrows, from the task that waits to the one it
+// is missing; dashed lines join a mother to its subtasks. The graph itself comes ready in the payload (mapa).
+const MAP_W=190,MAP_H=60,MAP_GX=56,MAP_GY=14;
+// T482 «Clave»: the few tasks that matter most now (key-tasks.mjs); each card keeps a slot for its action button.
+// Cycle and broken-reference warnings stay on top of both views.
+const mapWarn=m=>m?.avisos?.length?`<ul class="map-warn" aria-label="Avisos del mapa">${m.avisos.map(a=>`<li>${esc(a.texto)}</li>`).join('')}</ul>`:'';
+function renderClave(){
+  const cards=S.board.clave||[],warn=mapWarn(S.board.mapa);
+  if(!cards.length){$('mapa').innerHTML=warn+'<div class="empty">Nada urgente: ninguna tarea abierta espera a usted ni frena a otras.</div>';return}
+  const card=c=>{
+    const who=c.agente&&c.agente!=='cualquiera'?agChip(c.agente,AGENT[c.agente]||c.agente):'';
+    const where=c.carril?`<span>${esc(c.carril)}</span>`:'';
+    const age=c.desde?`<span title="${esc(c.desde)}">${esc(ago(c.desde))}</span>`:'';
+    return `<li class="kc kc-${c.nivel}"><button type="button" class="tbtn" data-sel="${esc(c.id)}" data-jump="1" data-all="1">${tN(c)}${tt(c.titulo)}</button><div class="line">${who}${where}${age}<span>${esc(c.estado)}</span></div><p class="kc-why">${esc(c.motivo)}</p><div class="kc-act" data-act="${esc(c.id)}"></div></li>`;
+  };
+  $('mapa').innerHTML=warn+`<p class="map-key">Hasta 7 tareas: primero lo que espera a usted, luego lo que frena a más tareas, lo urgente o con fecha cercana y lo atascado.</p><ol class="keys">${cards.map(card).join('')}</ol>`;
+}
+function renderMapa(){
+  if(!S.ready)return;
+  document.querySelectorAll('[data-mapv]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapv===S.mapv)));
+  if(S.mapv==='clave'){renderClave();return}
+  const m=S.board.mapa||{nodos:[],aristas:[],avisos:[],bloqueadasSinMotivo:[]};
+  const pick=t=>`<button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${tt(t.titulo)}</button>`;
+  const avisos=mapWarn(m);
+  const sin=m.bloqueadasSinMotivo.length?`<div class="map-strip"><b>Bloqueadas sin motivo</b> <span class="n">${m.bloqueadasSinMotivo.length}</span><p>Están marcadas como bloqueadas pero no esperan nada; desbloquéelas o anote qué esperan.</p><ul>${m.bloqueadasSinMotivo.map(t=>`<li>${pick(t)}</li>`).join('')}</ul></div>`:'';
+  if(!m.nodos.length){$('mapa').innerHTML=avisos+sin+'<div class="empty">Ninguna tarea abierta espera a otra.</div>';return}
+  const pos=new Map(),rows=[];
+  for(const n of m.nodos){const r=rows[n.capa]=(rows[n.capa]||0)+1;pos.set(n.id,{x:n.capa*(MAP_W+MAP_GX),y:(r-1)*(MAP_H+MAP_GY)})}
+  const W=rows.length*(MAP_W+MAP_GX)-MAP_GX,H=Math.max(...rows.filter(Boolean))*(MAP_H+MAP_GY)-MAP_GY;
+  const path=e=>{
+    const a=pos.get(e.de),b=pos.get(e.a);if(!a||!b)return '';
+    const sub=e.tipo==='subtarea'||e.tipo==='deriva';
+    const [x1,y1,x2,y2]=sub?[a.x+MAP_W,a.y+MAP_H/2,b.x,b.y+MAP_H/2]:[a.x,a.y+MAP_H/2,b.x+MAP_W,b.y+MAP_H/2];
+    const dx=Math.max(24,Math.abs(x2-x1)/2)*(x2>=x1?1:-1);
+    const cls=e.tipo==='deriva'?'from':sub?'sub':e.a.startsWith('raiz:')?'own':e.ok?'ok':'wait';
+    return `<path class="${cls}" d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"${sub?'':' marker-end="url(#map-arrow)"'}/>`;
+  };
+  const node=n=>{
+    const p=pos.get(n.id),st=`left:${p.x}px;top:${p.y}px;width:${MAP_W}px;height:${MAP_H}px`;
+    if(n.tipo==='raiz')return `<div class="mn root" style="${st}" title="${esc(n.texto)}"><span>${esc(n.texto)}</span>${n.desbloquea?`<small>desbloquea ${n.desbloquea}</small>`:''}</div>`;
+    const tag=n.num?`T${n.num}`:'·',done=n.tipo==='hecha';
+    const body=`<b>${esc(tag)}</b> <span>${esc(n.titulo)}</span><small>${done?esc(n.archivada?'archivada':n.estado):esc(n.estado)}${n.desbloquea?` · desbloquea ${n.desbloquea}`:''}</small>`;
+    return byId(n.id)?`<button type="button" class="mn${done?' done':''}" style="${st}" data-sel="${esc(n.id)}" data-jump="1" data-all="1" title="${esc(tag+' · '+n.titulo)}">${body}</button>`:`<div class="mn done" style="${st}" title="${esc(tag+' · '+n.titulo)}">${body}</div>`;
+  };
+  $('mapa').innerHTML=avisos+sin+`<p class="map-key">La flecha va de la tarea que espera a la que le falta. Rojo: le toca a usted. Gris: terminada o archivada. Línea punteada: subtarea. Línea de puntos gris: viene de una tarea terminada.</p>
+<div class="map-wrap"><div class="map" style="width:${W}px;height:${H}px"><svg width="${W}" height="${H}" aria-hidden="true"><defs><marker id="map-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>${m.aristas.map(path).join('')}</svg>${m.nodos.map(node).join('')}</div></div>`;
+}
 // Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).
 function renderFin(){
   const fin=($('arch').checked?archivedTasks:S.board.tareas).filter(isFinished);
@@ -924,13 +1014,13 @@ function renderFin(){
   $('fin').innerHTML=rows.length?`<div class="log">${rows.map(row).join('')}</div>`:`<div class="empty">${empty}</div>`;
 }
 // d249: the server writes entregada {agente, desde}; the stream then moves the task out of «Le toca a usted».
-async function deliver(t,m){
+async function deliver(t,m,lead='Prompt copiado',hint='Péguelo donde dice «DÓNDE CORRE».'){
   try{
     const res=await fetch('/api/entregada',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:t.id,agente:deliverTo(t)})});
     const body=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
-    m.textContent='Prompt copiado y marcado como entregado. Péguelo donde dice «DÓNDE CORRE».';
-  }catch(e){m.textContent='Prompt copiado, pero no se marcó como entregado: '+e.message}
+    m.textContent=`${lead} y marcado como entregado. ${hint}`;
+  }catch(e){m.textContent=`${lead}, pero no se marcó como entregado: `+e.message}
 }
 async function archive(btn){
   const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
@@ -975,7 +1065,7 @@ function renderMeta(){
 }
 // d284: the view's title repeats its tab's count, «Cola (12)»: below 800px the sidebar is hidden.
 // T321: while the header search has text, the title counts its results instead.
-const COUNT_ID={general:'n-gen',usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car',historial:'n-hist'};
+const COUNT_ID={general:'n-gen',usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car',mapa:'n-map',historial:'n-hist'};
 function renderTitle(){
   const n=searching()?String(S.found||0):$(COUNT_ID[S.tab]).textContent;
   $('vtitle').innerHTML=esc(searching()?'Búsqueda':TITLE[S.tab])+(n!==''?` <span class="n">${esc(n)}</span>`:'');
@@ -984,6 +1074,7 @@ function renderTitle(){
 function renderCounts(){
   const c=tabCounts(S.board,{prs:livePrs()});
   for(const [k,id] of Object.entries({usted:'n-you',cola:'n-cola',calendario:'n-cal',bloqueadas:'n-blk',finalizadas:'n-fin',carriles:'n-car'}))$(id).textContent=c[k];
+  $('n-map').textContent=S.board.mapa?.abiertas??'';
   $('t-usted').title=c.usted?`Usted: ${c.usted} ${c.usted>1?'cosas':'cosa'}`:'Usted: nada';
 }
 // T321: an owner row leads with its action as a verb; a message reads «Codex → usted: question», with its task and
@@ -991,23 +1082,27 @@ function renderCounts(){
 function msgHtml(x){
   const m=x.msg,t=m.t&&byId(m.t.id)?m.t:null,key='msg:'+(m.en||'')+':'+m.tarea;
   const ref=t?`<a class="tl" href="#cola" data-sel="${esc(t.id)}" data-all="1" title="${esc(t.titulo)}">${esc(m.tarea)}</a> · ${tt(t.titulo)}`:m.tarea?`<span class="tl-x">${esc(m.tarea)}</span>`:'';
-  return `<article class="row act msgc"${t?` data-sel="${esc(t.id)}" data-all="1" tabindex="0"`:''}><span class="verb">${esc(x.verbo)}</span><span class="what">
-    <span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
+  const card=`<article class="row act msgc"${t?` data-sel="${esc(t.id)}" data-all="1" tabindex="0"`:''}><span class="verb">${esc(x.verbo)}</span><span class="what">
+    ${dondeHtml(x)}<span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
     ${m.opciones.length?`<span class="sub">Opciones: ${esc(optionsText(m.opciones))}</span>`:''}
     ${m.contexto.length?`<span class="sub">${m.contexto.map(rich).join(' ')}</span>`:''}
     <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}</span>
     ${m.detalle.length?`<details class="more tech" data-more="${esc(key)}"${OPEN.has(key)?' open':''}><summary>Detalle técnico</summary><div class="body">${m.detalle.map(s=>`<p>${rich(s)}</p>`).join('')}</div></details>`:''}
   </span></article>`;
+  return copyWrap(x,card);
 }
 function actHtml(x){
   if(x.tipo==='mensaje')return msgHtml(x);
   const t=x.t,tag=t&&t.num?`<span class="tn">T${esc(t.num)}</span> `:'';
   const where=x.tipo==='tarea'&&!pasteTo(t)&&runLines(t)[0];
-  const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what"><span class="t1">${x.tipo==='tarea'?tag:''}${x.tipo==='decision'?esc(x.texto):tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}${where?`<span class="sub">${esc(where)}</span>`:''}</span>`;
+  const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what">${dondeHtml(x)}<span class="t1">${x.tipo==='tarea'?tag:''}${x.tipo==='decision'?esc(x.texto):tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}${where?`<span class="sub">${esc(where)}</span>`:''}</span>`;
   if(x.tipo==='archivar')return `<button type="button" class="row act" data-tab="finalizadas" title="Abrir Finalizadas">${body}</button>`;
   const row=x.id&&byId(x.id)?`<button type="button" class="row act" data-sel="${esc(x.id)}" data-all="1">${body}</button>`:`<div class="row act">${body}</div>`;
-  return x.tipo==='tarea'&&pasteTo(t)?`<div class="paste">${row}<button type="button" class="btn primary" data-copy="${esc(t.id)}">Copiar prompt</button></div>`:row;
+  return copyWrap(x,row);
 }
+// T391: each «Para usted» row opens with its DÓNDE line; a row with text to copy gets the short pointer, not the prompt.
+const dondeHtml=x=>x.donde?`<span class="donde">${esc(x.donde)}</span>`:'';
+const copyWrap=(x,row)=>x.copia?`<div class="paste">${row}<button type="button" class="btn primary" data-copytext="${esc(x.copia)}"${x.t?` data-task="${esc(x.t.id)}"`:''} data-destino="${esc(x.destino||'')}">Copiar texto</button><span class="cmsg" aria-live="polite"></span></div>`:row;
 // The whole board, not the agent tab: what the owner must do never hides behind a filter.
 // T268: «Para usted» lists only the owner's actions, once each; the coordinator's turn and stalled tasks are Cola groups.
 // T321: «General» repeats the same rows above a compact queue. Returns the ids of the owner's rows, in order.
@@ -1052,7 +1147,15 @@ function renderFound(){
 }
 // T321: the text sits in its own inline span (a «T295» link no longer breaks the line) and a message drops its prefix.
 const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span><span>${tt(rowText(x.texto))}</span></span></button>`:`<div class="row" title="${esc(x.texto)}"><span><span>${rich(rowText(x.texto))}</span></span></div>`;
-function render(){renderCounts();renderCola();renderCal();renderBlk();renderFin();renderTop();renderBoard();renderHist();showView()}
+function renderArchiveChats(){
+  const inventory=S.board.archivables;
+  const chats=inventory?.chats??[];
+  $('gn-archive').textContent=chats.length;
+  const unavailable=Object.entries(inventory?.fuentes??{}).filter(([,s])=>!s.disponible).map(([agent])=>agent);
+  const status=inventory?.error??(unavailable.length?'Inventario no disponible: '+unavailable.join(', '):'');
+  $('archive-chats').innerHTML=chats.map(c=>`<div class="row"><b>${esc(AGENT_REGISTRY[c.agente]?.nombre??c.agente)}</b><span><span>${esc(c.titulo)}</span><small>${esc(c.motivo)} · ${esc(c.id)}${c.agente==='claude'?' · Confirme que siga abierto':''}</small></span></div>`).join('')+(status?`<p class="none">${esc(status)}</p>`:!inventory?'<p class="none">Comprobando los chats…</p>':!chats.length?'<p class="none">No hay chats por archivar con evidencia disponible.</p>':'');
+}
+function render(){renderCounts();renderCola();renderCal();renderBlk();renderMapa();renderFin();renderTop();renderBoard();renderHist();renderArchiveChats();showView()}
 
 // T321: which panel shows: the search results while the header search has text, else the selected tab's view.
 // The tab stays selected during a search, so clearing it returns there.
@@ -1094,7 +1197,13 @@ document.addEventListener('click',async ev=>{
   const tab=ev.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab,true);return}
   const col=ev.target.closest('[data-col]');if(col){setColor(col.dataset.col);return}
   const ag=ev.target.closest('[data-ag]');if(ag){setAgent(ag.dataset.ag);return}
+  const mv=ev.target.closest('[data-mapv]');if(mv){S.mapv=mv.dataset.mapv;try{localStorage.setItem('board-mapv',S.mapv)}catch(e){}renderMapa();return}
   const fa=ev.target.closest('[data-finag]');if(fa){S.finag=fa.dataset.finag;try{localStorage.setItem('board-finag',S.finag)}catch(e){}renderFin();return}
+  const ct=ev.target.closest('[data-copytext]');if(ct){
+    // T391: the row copies its short text; a new task or review pasted into an agent is marked as delivered.
+    const m=ct.nextElementSibling,t=ct.dataset.task&&byId(ct.dataset.task),hint='Péguelo donde dice DÓNDE.';
+    const fresh=['nueva','revision'].includes(ct.dataset.destino);
+    try{navigator.clipboard.writeText(ct.dataset.copytext).then(()=>{m.textContent='Texto copiado. '+hint;if(t&&fresh&&deliverable(t))deliver(t,m,'Texto copiado',hint)},()=>{m.textContent='Su navegador no dejó copiar: abra la tarea y copie el prompt.'})}catch(e){m.textContent='Su navegador no dejó copiar.'}return}
   const cp=ev.target.closest('[data-copy]');if(cp){
     // The sheet's button copies the open task; a «Pegar en Codex» row copies its own and opens its sheet, where the message shows.
     if(cp.dataset.copy!=='1'){if(S.ag!=='todas')setAgent('todas');openSheet(cp.dataset.copy)}
@@ -1130,6 +1239,7 @@ setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
 try{const a=localStorage.getItem('board-finag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','ninguno'].includes(a)))S.finag=a}catch(e){}
+try{const v=localStorage.getItem('board-mapv');if(['clave','todo'].includes(v))S.mapv=v}catch(e){}
 try{const c=localStorage.getItem('board-col');if(c&&(c==='todos'||Object.hasOwn(COLOR,c)))setColor(c)}catch(e){}
 document.querySelectorAll('details[data-fold]').forEach(d=>{d.open=!FOLD.has(d.dataset.fold)});
 try{const a=localStorage.getItem('board-ag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','libres'].includes(a)))setAgent(a)}catch(e){}

@@ -200,6 +200,13 @@ only; elsewhere the same markup renders as a normal section.
   (two or more venues: the route draws itself, a traveler follows it and the entries take turns; the
   next entry settles from above so its links stay under the visible one). The lantern walks under a
   starry night; the butterfly flies, facing its way, over the section's own day grounds.
+  `itinerary.scene: 'ribbon-route'` (standard variant, two or more moments) pins the program: a
+  ribbon draws itself down the list, each moment comes forward as the ribbon reaches it, and the
+  ribbon ties off in a bow (drawn, or the profile's `--itinerary-ribbon-bow-art`). Resting, it is a
+  list along a finished ribbon. `hero.presentation.scene: 'cover-approach'` (standard cover) pins
+  the cover: its picture closes in on the profile's `--hero-approach-focus` (with
+  `--hero-approach-focus-mobile` below md and `--hero-approach-scale`) while the cover text leaves.
+  Resting, it is the cover as usual.
 - **Not scenes.** `rsvp.flow: 'steps'` (one question per step, a lantern on the progress track and
   one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
   motion it keeps the progress and drops the movement.
@@ -251,6 +258,14 @@ the next one covers it (a named `view-timeline` shared through `timeline-scope`)
   shows through while they overlap, and they stay in reading order in the DOM.
 - **Budget.** At most about 12 elements animate at once, shared with the editorial entrances. A
   section uses either a scroll scene or per-element effects, not both.
+- **Scroll accents.** `src/styles/invitation/_scroll-accents.scss` gives sections without an accent
+  of their own one hook each (standard hero background on its exit, quote card, countdown timer,
+  gifts block, personalized pass, reply card, closing image). A profile opts in with
+  `--scroll-accents: on` and names a keyframe per token
+  (`--quote-scroll-accent: invitation-settle-3d`, `scroll-accent-rise`, `scroll-accent-unfold`,
+  `scroll-accent-leave`); everything stays at rest without the opt-in. Sections that clip with
+  `overflow: hidden` follow a timeline named on the section, since they are their own scroll
+  containers.
 
 ## Hero timing roles
 

@@ -92,7 +92,7 @@ test.describe('Invitation visual computed-style contracts (seed)', () => {
 		).toBe('50%');
 	});
 
-	test('celestial-blue thank-you & section order: editorial frame + early gallery', async ({
+	test('celestial-blue thank-you & section order: editorial frame + early countdown', async ({
 		page,
 	}) => {
 		await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true', {
@@ -113,7 +113,8 @@ test.describe('Invitation visual computed-style contracts (seed)', () => {
 		const countdownIndex = sections.indexOf('countdown');
 		expect(galleryIndex).toBeGreaterThan(-1);
 		expect(countdownIndex).toBeGreaterThan(-1);
-		expect(galleryIndex).toBeLessThan(countdownIndex);
+		expect(countdownIndex).toBeLessThan(sections.indexOf('family'));
+		expect(countdownIndex).toBeLessThan(galleryIndex);
 	});
 
 	test('romina hero: split-cover Parisienne ivory title (not gradient gold display)', async ({
