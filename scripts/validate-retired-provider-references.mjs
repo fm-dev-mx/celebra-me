@@ -39,8 +39,8 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	// Proves the purge migration deletes only soft-deleted Cloudinary rows.
 	'tests/unit/invitation-assets-cloudinary-purge-migration.test.ts',
 ]);
-// Migrations are history; proposals under review are external documents.
-const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/', 'docs/propuestas/'];
+// Migrations are history.
+const RETIRED_PROVIDER_ALLOWLIST_PREFIXES = ['supabase/migrations/'];
 
 function isAllowlisted(relativeFile) {
 	return (

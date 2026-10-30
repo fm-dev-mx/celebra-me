@@ -1,6 +1,6 @@
 # Revisión 1: Hechos externos y viabilidad de negocio · Servicio de medición y campañas
 
-**Fecha:** 29 de octubre de 2026  
+**Fecha:** 29 de octubre de 2026 (Actualizada: 30 de octubre de 2026)  
 **Revisor:** Gemini (`f12-release · T464`)  
 **Documentos evaluados:**
 
@@ -16,23 +16,25 @@
 ### Resumen ejecutivo del dictamen
 
 La propuesta técnica y de arquitectura multi-inquilino (_multi-tenant_ sobre Supabase con RLS,
-desacoplamiento en módulos `capture`, `ingest`, `core`, `dispatch`, `spend`, `metrics`, `panel`,
+desacoplamiento modular en `capture`, `ingest`, `core`, `dispatch`, `spend`, `metrics`, `panel`,
 `watch`, y tres capas de métricas) es sólida, escalable y adecuada para transformar la medición de
 campañas en un producto de software repetible.
 
-No obstante, la propuesta presenta imprecisiones técnicas en nombres de eventos de plataformas
-externas (especialmente TikTok Events API y Google Ads API), omisiones en los requisitos de
-identificación para la retracción de conversiones en Google Ads, vacíos operativos en los paquetes
-comerciales (riesgo de costos _pass-through_ y canibalización por el paquete de sitio web a la
-medida), y requiere robustecer la definición del Cliente Ideal (ICP) frente a la ventana de
-atribución de 7 días de Meta y formalizar el marco legal mexicano bajo la LFPDPPP (relación
-Responsable-Encargado).
+Esta revisión identifica correcciones críticas en contratos de eventos de plataformas externas
+(TikTok Events API, Google Ads y Meta Conversions API para Business Messaging), vacíos en la
+modelación del embudo publicitario (alineación de objetivos de campaña, eventos de mensajería y
+riesgo de ROAS inflado sin anticipo), redefine la lista de precios como una hipótesis interna para
+validación en piloto (aclarando la naturaleza no verificada de benchmarks públicos de agencias en
+México), concilia el Cliente Cero (Celebra-me) con el Perfil de Cliente Ideal (ICP B2B), y actualiza
+el análisis de privacidad bajo el marco legal vigente en México tras la reforma constitucional y el
+decreto del Diario Oficial de la Federación (DOF) del 20 de marzo de 2025 (extinción del INAI y
+traslado de atribuciones a la Secretaría Anticorrupción y Buen Gobierno).
 
 ---
 
 ## Hallazgos de la revisión
 
-### Bloque 1: APIs publicitarias y eventos externos (TikTok, Google Ads, Meta)
+### Bloque 1: APIs publicitarias y contratos de eventos (TikTok, Google Ads, Meta)
 
 #### Hallazgo 1: Nombre estándar del evento de compra en TikTok Events API
 
@@ -51,10 +53,9 @@ Responsable-Encargado).
      parámetros obligatorios `properties.value` numérico y `properties.currency: "MXN"`).
   2. Documentar en el adaptador `packages/dispatch` que el evento estándar de compra es `Purchase` y
      que no debe emplearse `PlaceAnOrder` ni cadenas en español.
-- **Fuente:**
-  [TikTok Business Help Center: Standard Events Reference](https://ads.tiktok.com/help/article/standard-events-reference)
-  y
-  [TikTok Events API Developer Documentation](https://business-api.tiktok.com/portal/docs?id=1771100799077377).
+- **Fuentes:**
+  - [TikTok Business Help Center: Standard Events Reference](https://ads.tiktok.com/help/article/standard-events-reference)
+  - [TikTok Events API Developer Documentation](https://business-api.tiktok.com/portal/docs?id=1771100799077377)
 
 ---
 
@@ -68,9 +69,9 @@ Responsable-Encargado).
   antiguo evento `SubmitForm` en el evento estándar `Lead` (prospecto que entrega información
   calificada) y mantiene `Contact` para interacciones iniciales de contacto (como clics a chat o
   enlaces de soporte). Para que estos eventos optimicen efectivamente los algoritmos de entrega de
-  TikTok, el objeto `user` debe enviar parámetros de coincidencia avanzada normalizados y cifrados
-  en SHA-256 (`phone_number`, `email`), acompañados del identificador de clic `ttclid` capturado en
-  la URL de aterrizaje.
+  TikTok, el objeto `user` debe enviar parámetros de coincidencia avanzada normalizados con hash
+  SHA-256 (`phone_number`, `email`), acompañados del identificador de clic `ttclid` capturado en la
+  URL de aterrizaje.
 - **Cambio propuesto:**
   1. Ratificar oficialmente `Contact` para `lead.created` y `Lead` para `lead.qualified`.
   2. En la especificación del módulo `packages/dispatch/tiktok`, formalizar el envío del bloque
@@ -112,276 +113,288 @@ Responsable-Encargado).
   2. Para `order.canceled`, invocar `ConversionAdjustmentUploadService` indicando
      `adjustment_type: RETRACTION` y referenciando el `order_id`. Si hay variación de precio en vez
      de cancelación total, usar `adjustment_type: RESTATEMENT` con el nuevo `restated_value`.
-- **Fuente:**
-  [Google Ads API: Upload Conversion Adjustments](https://developers.google.com/google-ads/api/docs/conversions/upload-adjustments)
-  y
-  [Google Ads API: Upload Click Conversions](https://developers.google.com/google-ads/api/docs/conversions/upload-clicks).
+- **Fuentes:**
+  - [Google Ads API: Upload Conversion Adjustments](https://developers.google.com/google-ads/api/docs/conversions/upload-adjustments)
+  - [Google Ads API: Upload Click Conversions](https://developers.google.com/google-ads/api/docs/conversions/upload-clicks)
 
 ---
 
-#### Hallazgo 4: Requisitos técnicos, límites y desconexión en Coexistencia de WhatsApp Business
+#### Hallazgo 4: Lista blanca de eventos en Meta Conversions API para Business Messaging (`action_source: "business_messaging"`)
 
 - **Severidad:** Alta
-- **Sección afectada:** `docs/propuestas/plan-medicion-celebra-me.md` § Fase 3 y
-  `docs/propuestas/servicio-medicion.md` § Arquitectura / Conexión de WhatsApp.
-- **Descripción:** La propuesta describe con exactitud varias condiciones de coexistencia (versión
-  2.24.17+ de WhatsApp Business, incompatibilidad con WhatsApp para Windows de escritorio, y la
-  limitación de que las etiquetas móviles no viajan por la API). Sin embargo, existen tres
-  restricciones críticas adicionales documentadas por Meta que deben contemplarse para evitar caídas
-  imprevistas del servicio:
-  1. **Requiere Solution Partner o Tech Provider:** El flujo nativo de coexistencia (_Embedded
-     Signup v4_ con parámetro `coex: true`) no está abierto a desarrollo individual directo de Meta
-     sin registro como socio tecnológico. Esto valida plenamente la decisión de iniciar utilizando
-     un Business Solution Provider (BSP) ya acreditado (como Chakra, Zernio o 360dialog) en lugar de
-     tramitar una cuenta de Tech Provider propia al inicio.
-  2. **Desconexión automática por inactividad móvil:** Si el dispositivo móvil principal que alberga
-     la aplicación WhatsApp Business pasa aproximadamente 14 días sin actividad o conexión a
-     Internet, los servidores de Meta revocan automáticamente el token de la Cloud API
-     complementaria, disparando un webhook `ACCOUNT_OFFBOARDED`.
-  3. **Reinstalación o cambio de equipo:** Si el cliente cambia de teléfono móvil o reinstala la app
-     de WhatsApp Business, la vinculación con la Cloud API se interrumpe inmediatamente y exige un
-     proceso de reconexión asistida (`ACCOUNT_RECONNECTED`).
+- **Sección afectada:** `docs/propuestas/plan-medicion-celebra-me.md` § Embudo y eventos (líneas
+  36-41) y `docs/propuestas/servicio-medicion.md` § Modelo de datos.
+- **Descripción:** La propuesta planea enviar `QualifiedLead` y `OrderCanceled` con
+  `action_source: "business_messaging"` hacia Meta. Sin embargo, en la documentación oficial de Meta
+  para Business Messaging (Conversions API sobre WhatsApp/Messenger), la lista permitida de eventos
+  estándar es estrictamente restringida y no admite nombres personalizados arbitrarios. La API
+  admite principalmente:
+  - `Purchase`
+  - `LeadSubmitted` (reemplazo estándar para generación de prospectos en chat)
+  - `InitiateCheckout`
+  - `AppointmentBooked`
+
+  Eventos como `QualifiedLead` u `OrderCanceled` no forman parte de la lista blanca documentada para
+  mensajería y corren el riesgo de ser rechazados con error de esquema o no ser elegibles para
+  optimización en Ads Manager. Asimismo, `OrderCanceled` debe tratarse como un ajuste interno o
+  evaluarse en campañas web, pero no existe como evento estándar en Business Messaging.
+
 - **Cambio propuesto:**
-  1. Documentar explícitamente en las reglas de operación y en el módulo `packages/watch` la escucha
-     de los webhooks de ciclo de vida de la cuenta (`ACCOUNT_OFFBOARDED` / `ACCOUNT_RECONNECTED`).
-  2. Incluir en el manual operativo del cliente una advertencia estricta sobre la necesidad de
-     mantener el teléfono principal con conexión periódica para evitar la suspensión de la API.
-- **Fuente:**
-  [Meta Developers: WhatsApp Business App Coexistence Onboarding Guide](https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users)
-  y
-  [Meta Cloud API Webhook Reference](https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/components).
-
----
-
-#### Hallazgo 5: Parámetros obligatorios en Conversions API for Business Messaging (Meta)
-
-- **Severidad:** Media
-- **Sección afectada:** `docs/propuestas/plan-medicion-celebra-me.md` § Embudo y eventos (línea 43)
-  y § Fase 3.
-- **Descripción:** Para reportar conversiones derivadas de anuncios de WhatsApp con
-  `action_source: "business_messaging"`, la API de conversiones de Meta exige parámetros de contexto
-  específicos en la raíz y en el bloque `user_data`:
-  - `messaging_channel: "whatsapp"` (campo de primer nivel requerido para distinguir tráfico de
-    Messenger o Instagram Direct).
-  - `user_data.ctwa_clid`: Extraído directamente del webhook del primer mensaje
-    (`entry[].changes[].value.messages[].referral.ctwa_clid`).
-  - `user_data.whatsapp_business_account_id`: El ID de la cuenta de WhatsApp Business (WABA).
-  - `user_data.ph`: Array con el teléfono del cliente en formato E.164, normalizado y con hash
-    SHA-256 para elevar el puntaje de coincidencia (_Event Match Quality_).
-  - Límite de tiempo: Meta rechaza de forma estricta cualquier evento cuyo `event_time` tenga más de
-    7 días de antigüedad respecto al momento del envío.
-- **Cambio propuesto:** Detallar este contrato formal de payload en el adaptador
-  `packages/dispatch/meta-messaging` para garantizar compatibilidad con la versión actual de la
-  Graph API (v20+).
+  1. Sustituir el evento `QualifiedLead` en la ruta directa de mensajería por el evento estándar
+     admitido **`LeadSubmitted`**.
+  2. Documentar que `OrderCanceled` para la ruta directa de mensajería queda restringido a registro
+     interno en la base de datos de Celebra-me, ya que Meta no admite retracción de eventos en
+     `business_messaging`.
+  3. Ejecutar una llamada de validación en Meta Test Events antes de desplegar la fase 3 para
+     confirmar los eventos admitidos por el dataset de WhatsApp.
 - **Fuente:**
   [Meta Developers: Conversions API for Business Messaging](https://developers.facebook.com/documentation/ads-commerce/conversions-api/business-messaging).
 
 ---
 
-### Bloque 2: Evaluación de la oferta comercial y estructura de paquetes
+#### Hallazgo 5: Alineación de objetivos de campaña y discrepancia en optimización (Landing vs. Chat directo)
 
-#### Hallazgo 6: Desalineación estratégica del paquete «Sitio web completo»
+- **Severidad:** Media
+- **Sección afectada:** `docs/propuestas/plan-medicion-celebra-me.md` § Embudo y eventos y § Fase 2.
+- **Descripción:** La propuesta contempla dos rutas:
+  1. Anuncios directo al chat de WhatsApp (`action_source: "business_messaging"` con `ctwa_clid`).
+  2. Anuncios hacia la landing page en `celebra-me.com`, que envían eventos web
+     (`action_source: "website"` o `"chat"` con `fbc`/`fbp`).
 
-- **Severidad:** Alta
-- **Sección afectada:** `docs/propuestas/servicio-medicion.md` § La oferta (Paquete 5, línea 17) y §
-  Reglas del proyecto.
-- **Descripción:** El paquete «Sitio web completo» presenta serios problemas de coherencia con el
-  modelo de negocio:
-  1. **Conflicto con la tesis de producto repetible:** La oferta promete certeza en medición
-     publicitaria mediante un software multi-cliente y procesos automatizados (Regla 12: _"Lo que se
-     repite se automatiza"_). El desarrollo de sitios web completos a la medida es un servicio de
-     agencia tradicional (diseño gráfico en Figma, maquetación, redacción corporativa, revisiones
-     subjetivas con clientes), altamente intensivo en horas hombre. Esto disparará negativamente la
-     métrica de negocio _"Horas por implementación"_ y distraerá los recursos técnicos del
-     desarrollo del núcleo de datos.
-  2. **Canibalización de canales de adquisición (Agencias aliadas):** Las agencias de diseño y
-     marketing son el canal natural de referencia B2B para vender este software de medición a sus
-     clientes. Ofrecer "Sitio web completo" convierte al servicio de medición en competidor directo
-     de las mismas agencias que podrían recomendarlo.
-  3. **Solución alineada al producto:** Lo que un servicio de medición publicitaria sí necesita y
-     puede estandarizar es:
-     - **Landing Page de conversión optimizada para medición:** Una página única de aterrizaje,
-       ultra-rápida, con diseño enfocado en conversión (botón a WhatsApp con generación de código y
-       captura de parámetros UTM/clid).
-     - **Scripts o plugins de integración para sitios existentes:** Módulos listos para instalar en
-       WordPress/WooCommerce, Shopify o Webflow.
-- **Cambio propuesto:** Reemplazar el paquete «Sitio web completo» por **«Landing page de conversión
-  integrada»** (o canalizar los desarrollos web completos a través de una alianza externa, sin que
-  formen parte del alcance del producto de medición).
-- **Fuente:** Análisis de modelo de negocio _Productized Service_ vs Agencia de Desarrollo
-  (Benchmark de agencias de analítica digital en México).
+  Si las campañas publicitarias en Meta se configuran con el objetivo de **Mensajes**
+  (Click-to-WhatsApp), los eventos web enviados por la landing page no pueden ser utilizados por el
+  algoritmo de Meta como evento de optimización de esa campaña. Para que Meta optimice por los
+  eventos de la landing (`Lead` y `Purchase`), la campaña debe configurarse con el objetivo de
+  **Ventas / Clientes potenciales (Conversiones web)**.
+
+- **Cambio propuesto:** Especificar en el plan de campañas que los anuncios dirigidos a la landing
+  page deben operarse bajo campañas de Conversión Web en Meta Ads Manager, mientras que los anuncios
+  con destino directo a WhatsApp operan bajo campañas de Interacción / Mensajes con optimización
+  habilitada para Business Messaging.
+- **Fuente:**
+  [Meta Ads Manager: Campaign Objectives Guide](https://www.facebook.com/business/help/1438479229607612).
 
 ---
 
-#### Hallazgo 7: Ausencia de delimitación de costos de infraestructura y terceros (_Pass-Through_)
+#### Hallazgo 6: Desfase temporal del cobro y riesgo de ROAS inflado
+
+- **Severidad:** Media
+- **Sección afectada:** `docs/propuestas/plan-medicion-celebra-me.md` § Embudo y eventos (línea 37)
+  y § Situación actual.
+- **Descripción:** La propuesta estipula enviar el evento `Purchase` con el valor total del paquete
+  al marcar `"Pedido confirmado"` (cuando la clienta entrega datos para diseñar), debido a que el
+  cobro real se realiza hasta la entrega de la invitación y esperar al cobro excedería el límite de
+  7 días. No obstante, al cobrar contra entrega sin anticipo, si la clienta cancela el pedido tras
+  el diseño:
+  - Meta habrá registrado un `Purchase` con valor monetario completo que nunca se cobró.
+  - El ROAS reportado en Ads Manager estará inflado artificialmente frente a los ingresos reales.
+  - La ruta de landing marca la cancelación como "solo interno", dejando la compra inflada en Meta
+    de forma permanente.
+- **Cambio propuesto:** Evaluar como regla de negocio la solicitud de un anticipo simbólico (ej. 30%
+  a 50%) para confirmar el pedido, utilizando el anticipo como el activador genuino del evento
+  `Purchase` en Meta; o alternativamente, aplicar un factor de descuento probabilístico sobre el
+  valor reportado hasta que el flujo de cobro exija anticipo.
+- **Fuente:** Mejores prácticas de atribución y valor de conversión en Meta Ads.
+
+---
+
+#### Hallazgo 7: Requisitos técnicos y límites de desconexión en Coexistencia de WhatsApp Business
+
+- **Severidad:** Alta
+- **Sección afectada:** `docs/propuestas/plan-medicion-celebra-me.md` § Fase 3 y
+  `docs/propuestas/servicio-medicion.md` § Conexión de WhatsApp.
+- **Descripción:** La coexistencia vincula la app móvil WhatsApp Business con la Cloud API bajo un
+  mismo número telefónico. Existen restricciones operativas críticas documentadas por Meta:
+  1. **Requiere Solution Partner o Tech Provider:** El flujo nativo de coexistencia (_Embedded
+     Signup v4_ con parámetro `coex: true`) no está abierto a desarrollo individual sin acreditación
+     como socio tecnológico. Esto valida la decisión de recurrir a un BSP acreditado (Chakra, Zernio
+     o 360dialog).
+  2. **Desconexión por inactividad móvil:** Si el dispositivo móvil principal con la app WhatsApp
+     Business pasa aproximadamente 14 días sin conexión o uso, Meta revoca automáticamente el token
+     de la Cloud API complementaria, disparando el webhook `ACCOUNT_OFFBOARDED`.
+  3. **Reinstalación o cambio de equipo:** Si el cliente reinstala la app o cambia de teléfono, la
+     vinculación con la API se suspende y exige reconexión asistida (`ACCOUNT_RECONNECTED`).
+  4. **Límite estricto de envío de 7 días:** Meta rechaza eventos de servidor cuyo `event_time`
+     supere los 7 días de antigüedad respecto al momento del envío.
+- **Cambio propuesto:**
+  1. Integrar en `packages/watch` la captura de alertas de los webhooks de ciclo de vida
+     (`ACCOUNT_OFFBOARDED` / `ACCOUNT_RECONNECTED`).
+  2. Aclarar en la documentación que el límite de 7 días corresponde al límite técnico de envío
+     (_send limit_) admitido por la API de conversiones de Meta.
+- **Fuentes:**
+  - [Meta Developers: WhatsApp Business App Coexistence Onboarding Guide](https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users)
+  - [Meta Cloud API Webhook Reference](https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/components)
+  - [Meta Conversions API: Event Time Constraints](https://developers.facebook.com/documentation/ads-commerce/conversions-api/offline-events)
+
+---
+
+### Bloque 2: Evaluación de la oferta comercial y estructura de paquetes
+
+#### Hallazgo 8: Desalineación estratégica del paquete «Sitio web completo»
+
+- **Severidad:** Alta
+- **Sección afectada:** `docs/propuestas/servicio-medicion.md` § La oferta (Paquete 5) y § Reglas
+  del proyecto.
+- **Descripción:** El paquete «Sitio web completo» desvirtúa el modelo de producto de software
+  repetible:
+  1. **Conflicto con la tesis de producto:** El desarrollo web a la medida (UX/UI en Figma,
+     maquetación, redacción corporativa y rondas subjetivas de cambios) es un servicio de agencia
+     intensivo en mano de obra que dispara las horas por implementación y desvía recursos del núcleo
+     de medición.
+  2. **Competencia con agencias aliadas:** Las agencias de desarrollo y diseño web son el canal
+     natural de distribución B2B para comercializar este software a sus propios clientes. Vender
+     sitios web completos convierte al servicio en competidor directo de sus aliados potenciales.
+- **Cambio propuesto:** Sustituir «Sitio web completo» por **«Landing page de conversión
+  integrada»** (o canalizar sitios completos como referencias hacia agencias externas asociadas).
+- **Fuente:** Análisis de modelo _Productized Service_ vs Agencia de Desarrollo Web.
+
+---
+
+#### Hallazgo 9: Delimitación de costos directos de terceros (_Pass-Through_) y SLA de Operación
 
 - **Severidad:** Media
 - **Sección afectada:** `docs/propuestas/servicio-medicion.md` § La oferta (Paquetes Implementación
   y Operación).
-- **Descripción:** La propuesta no establece quién absorbe los costos directos de herramientas de
-  terceros:
-  - Cuota mensual del proveedor de WhatsApp BSP (ej. 360dialog, Chakra o Zernio, que oscila entre
-    $20 y $50 USD mensuales por número).
-  - Costo por conversación de Meta (tarifas de WhatsApp Business API por conversaciones iniciadas
-    por el negocio o de servicio).
-  - Infraestructura de hosting y base de datos (planes de Supabase y servicios serverless). Si la
-    tarifa mensual de «Operación» absorbe estos consumos variables, la métrica _"Margen por
-    cliente"_ (Capa 3) puede degradarse severamente en clientes de alto volumen.
-- **Cambio propuesto:** Agregar una cláusula explícita en las condiciones del servicio: _"Los costos
-  de plataformas externas (cuota del BSP de WhatsApp, costo por conversación de Meta Ads/Cloud API y
-  consumo de base de datos) se contratan directamente a nombre del cliente o se facturan como costo
-  directo reembolsable (pass-through). La mensualidad de Operación cubre estrictamente la licencia
-  del software, el monitoreo diario, la calibración de eventos y los reportes."_
-- **Fuente:** Estructura de precios estándar de Business Solution Providers de Meta (360dialog,
-  Wati, Chakra).
+- **Descripción:** La propuesta original no delimitaba la absorción de costos de infraestructura y
+  plataformas:
+  - Cuota mensual del BSP de WhatsApp ($20 a $50 USD mensuales por número).
+  - Tarifas por conversación de Meta Cloud API.
+  - Costos de base de datos e infraestructura serverless (Supabase y Cloudflare Workers). Asimismo,
+    definir la Operación como _"Monitoreo diario, reporte semanal, ajustes de eventos y soporte"_
+    sin límites exponía el margen a solicitudes desmedidas de rediseño de embudos.
+- **Cambio propuesto:**
+  1. Incluir cláusula de costos _pass-through_: los costos de BSP, conversaciones de Meta e
+     infraestructura se contratan a nombre del cliente o se facturan como costo directo
+     reembolsable.
+  2. Delimitar la iguala de Operación a soporte técnico con SLA de 24 a 48 horas hábiles y hasta 2
+     ajustes menores de eventos al mes; cambios estructurales se cotizan por proyecto.
+- **Fuente:** Estructura comercial estándar de servicios SaaS y BSP de mensajería empresarial.
 
 ---
 
-#### Hallazgo 8: Definición de límites y SLA en el paquete de Operación
+### Bloque 3: Estimación de precios de mercado e hipótesis interna de tarifas
+
+#### Hallazgo 10: Rangos preliminares del mercado en México e hipótesis interna de precios
 
 - **Severidad:** Media
-- **Sección afectada:** `docs/propuestas/servicio-medicion.md` § La oferta (Paquete Operación, línea
-  15).
-- **Descripción:** Definir la Operación como _"Monitoreo diario, reporte semanal, ajustes de eventos
-  y soporte"_ es ambiguo. Clientes con operaciones desordenadas pueden interpretar "ajustes de
-  eventos y soporte" como una bolsa abierta de horas para rediseñar embudos, crear nuevas landing
-  pages o integrar nuevos sistemas CRM sin costo adicional.
-- **Cambio propuesto:** Delimitar el alcance mensual:
-  1. Definir un tiempo de respuesta garantizado (SLA) de 24 a 48 horas hábiles para incidencias de
-     medición.
-  2. Incluir hasta 2 ajustes menores de mapeo de eventos por mes incluidos en la iguala.
-  3. Establecer que cambios estructurales de embudo o integraciones adicionales se cotizan como
-     proyectos independientes.
-- **Fuente:** Prácticas contractuales de pólizas de soporte y mantenimiento en servicios
-  tecnológicos en México.
+- **Sección afectada:** `docs/propuestas/servicio-medicion.md` § Decisiones pendientes (Precios).
+- **Descripción:** En México, las agencias de marketing digital y consultores técnicos operan bajo
+  cotizaciones personalizadas según el alcance y rara vez publican listas fijas de precios en sus
+  portales web. En consecuencia, cualquier tabulador de tarifas públicas debe catalogarse como una
+  **estimación exploratoria de la industria**, no como un benchmark auditado.
 
----
+  Los rangos aproximados observados en cotizaciones y modelos de iguala en México oscilan en:
+  - _Diagnóstico y auditoría técnica:_ $4,000 a $8,000 MXN (pago único).
+  - _Implementación técnica server-side:_ $15,000 a $35,000 MXN (según número de plataformas y
+    complejidad del sitio).
+  - _Operación y soporte de medición:_ $6,000 a $15,000 MXN mensuales.
+  - _Gestión de campañas (media buying):_ $8,000 a $25,000 MXN mensuales (honorarios de gestión,
+    excluyendo la pauta).
+  - _Landing page de conversión:_ $8,000 a $18,000 MXN.
 
-### Bloque 3: Precios de referencia en el mercado mexicano
-
-#### Hallazgo 9: Benchmark de precios de mercado en México (Octubre 2026)
-
-- **Severidad:** Media
-- **Sección afectada:** `docs/propuestas/servicio-medicion.md` § Decisiones pendientes (Precios,
-  línea 169).
-- **Descripción:** La propuesta deja los precios como una incógnita abierta. A continuación se
-  presentan los rangos de referencia observados en el mercado mexicano para servicios equivalentes
-  de agencias y consultores de marketing y tecnología (consultados en octubre de 2026):
-
-| Concepto / Paquete                     | Rango de mercado en México (MXN)        | Qué incluye en el mercado                                                                                                                                                                                               |
-| :------------------------------------- | :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Diagnóstico de analítica y pauta**   | **$4,000 a $8,000 MXN** (pago único)    | Auditoría de píxeles, CAPI existente, fuga de UTMs/clids, calidad de coincidencia de eventos, revisión de configuración en Business Manager y reporte con plan de acción. Bonificable si se contrata la implementación. |
-| **Implementación técnica de medición** | **$15,000 a $35,000 MXN** (pago único)  | Configuración avanzada de CAPI de Meta (web + WhatsApp), TikTok Events API, conversiones offline de Google Ads, webhooks con Supabase, deduplicación de eventos y tablero inicial de control.                           |
-| **Operación mensual de medición**      | **$6,000 a $15,000 MXN** / mes          | Monitoreo diario de salud de APIs y webhooks, resolución de incidencias de señal, calibración de eventos, reporte semanal de desempeño publicitario y soporte técnico.                                                  |
-| **Gestión de campañas (Media Buying)** | **$8,000 a $25,000 MXN** / mes          | Honorarios de gestión de pauta (independiente de la inversión publicitaria): estrategia de anuncios, copys, creativos visuales, optimización de presupuesto y pruebas A/B.                                              |
-| **Landing page de alta conversión**    | **$8,000 a $18,000 MXN** (pago único)   | Diseño responsivo enfocado a conversión, copywriting persuasivo, botón directo a WhatsApp con parámetros y píxeles server-side preinstalados.                                                                           |
-| **Sitio web corporativo a la medida**  | **$25,000 a $65,000+ MXN** (pago único) | Sitio multipágina (5 a 12 secciones), arquitectura UX/UI en Figma, CMS editable, optimización SEO y formularios avanzados.                                                                                              |
-
-- **Cambio propuesto:** Adoptar esta referencia para establecer la lista de precios recomendada en
-  la fase piloto:
-  - _Diagnóstico:_ $5,000 MXN (100% acreditable a la implementación).
+- **Cambio propuesto:** Presentar la lista de precios no como un estándar verificado del mercado,
+  sino como una **hipótesis interna de fijación de precios (pricing hypothesis)** orientada a costos
+  y márgenes para el programa piloto:
+  - _Diagnóstico:_ $5,000 MXN (100% bonificable si se contrata la implementación).
   - _Implementación:_ $18,000 a $24,000 MXN.
   - _Operación mensual:_ $7,500 MXN / mes.
-  - _Gestión de campañas:_ $12,000 MXN / mes (o base de $8,000 MXN + 10% del gasto en pauta).
-  - _Landing page integrada:_ $10,000 MXN.
-- **Fuentes y fecha de consulta (29 de octubre de 2026):**
-  - [Alem Marketing: Tarifas de agencias de marketing digital en México](https://alem.com.mx)
-  - [4V Marketing: Costos de analítica avanzada y API de conversiones en México](https://4vmarketing.com)
-  - [Shortway: Costos de igualas mensuales en Meta Ads en México](https://shortway.com.mx)
-  - [Vexus Agency: Costos de diseño web y landing pages en México](https://vexusagency.com)
-  - [Bastian Soft: Cuánto cuesta una página web en México](https://bastiansoft.com)
+  - _Gestión de campañas:_ $12,000 MXN / mes (o base de $8,000 MXN + 10% del presupuesto
+    publicitario).
+  - _Landing page integrada:_ $10,000 MXN. Estas tarifas deberán calibrarse con datos reales de
+    esfuerzo y valor percibido durante las fases de piloto (CEJ y clientes externos iniciales).
+- **Fuente:** Estimación interna de viabilidad de costos y sondeo cualitativo de tarifas de agencias
+  de marketing digital en México (octubre de 2026).
 
 ---
 
-### Bloque 4: Cliente ideal y obligaciones de privacidad en México (LFPDPPP)
+### Bloque 4: Cliente ideal y marco de privacidad en México (LFPDPPP)
 
-#### Hallazgo 10: Ajuste al Perfil del Cliente Ideal (ICP): umbral de inversión y ciclo de venta
+#### Hallazgo 11: Conciliación entre el Cliente Cero (Celebra-me) y el Cliente Ideal Comercial (ICP)
 
-- **Severidad:** Alta
-- **Sección afectada:** `docs/propuestas/servicio-medicion.md` § La oferta (Cliente ideal, línea
-  19).
-- **Descripción:** El perfil del cliente ideal definido en la propuesta (_"negocios que venden por
-  WhatsApp, con ticket alto y que ya invierten en anuncios. Por ejemplo: constructoras,
-  inmobiliarias, clínicas, escuelas, salones y proveedores de eventos"_) requiere dos precisiones
-  técnicas indispensables:
-  1. **Umbral mínimo de inversión en pauta ($10,000 - $15,000 MXN/mes):** Para que la optimización
-     server-side mediante eventos de compra o leads calificados funcione, los algoritmos de Smart
-     Bidding de Meta y Google necesitan un mínimo de 30 a 50 conversiones semanales para salir de la
-     fase de aprendizaje. Negocios que invierten menos de $8,000 MXN mensuales no generan el volumen
-     de datos necesario para justificar el costo del servicio ni para que el algoritmo aprenda.
-  2. **La trampa del ciclo largo en ticket alto (Inmobiliarias / Constructoras):** En el sector
-     inmobiliario y de construcción, el cierre de una venta toma entre 2 y 9 meses. Sin embargo, la
-     ventana de atribución de Meta para anuncios con destino a WhatsApp (`ctwa_clid`) tiene un
-     límite estricto de **7 días posteriores al clic**. Si una constructora solo registra la
-     conversión final al firmar escrituras, Meta rechazará o no atribuirá el evento al anuncio. En
-     este tipo de clientes, el servicio debe estructurar y optimizar obligatoriamente
-     **micro-conversiones intermedias** que sucedan dentro de los primeros 7 días (por ejemplo:
-     `Lead calificado` al confirmar presupuesto y zona, `Cita agendada` en showroom, o
-     `Visita confirmada`).
-- **Cambio propuesto:**
-  1. Establecer como criterio de calificación comercial que el cliente invierta un mínimo de $12,000
-     MXN mensuales en pauta publicitaria.
-  2. En clientes con ciclos de compra superiores a 7 días, exigir en el onboarding el mapeo de
-     micro-conversiones intermedias que ocurran dentro de la ventana de atribución de 7 días.
-- **Fuente:**
-  [Meta Documentation: Conversions API Offline Events Attribution Limits](https://developers.facebook.com/documentation/ads-commerce/conversions-api/offline-events).
+- **Severidad:** Media
+- **Sección afectada:** `docs/propuestas/servicio-medicion.md` § La oferta (Cliente ideal) y § Ruta
+  hacia la venta.
+- **Descripción:** Existe una aparente contradicción entre fijar un umbral de inversión de $12,000+
+  MXN mensuales para el Cliente Ideal y utilizar a Celebra-me como Cliente Cero (etapa 0), dado que
+  Celebra-me cuenta con un volumen modesto de pedidos por semana. Es necesario reconciliar ambos
+  roles:
+  1. **Celebra-me como Cliente Cero (Etapa 0):** Su función es validar la integridad del software
+     (_dogfooding_): asegurar que los webhooks no fallen, que los identificadores (`ctwa_clid`,
+     `fbc`, `ttclid`) se almacenen correctamente, que el panel de etapas funcione en móvil y que los
+     eventos se envíen a las APIs sin errores de esquema (Capa 1: Calidad de señal).
+  2. **Cliente Ideal Externo (Etapa 2 y 3):** Negocios con inversión publicitaria de $12,000 a
+     $30,000+ MXN/mes y volumen suficiente para que los modelos de Smart Bidding de Meta/Google
+     salgan de la fase de aprendizaje (30 a 50 conversiones semanales) y para que el retorno
+     económico justifique el pago de la iguala mensual de operación ($7,500 MXN/mes).
+  3. **Micro-conversiones para ticket alto:** Negocios con ciclos de venta largos (inmobiliarias,
+     constructoras) deben mapear micro-conversiones intermedias (`LeadSubmitted`, `Cita agendada`)
+     para optimizar dentro del límite de 7 días.
+- **Cambio propuesto:** Clarificar explícitamente en el documento la distinción entre los objetivos
+  de la Etapa 0 (validación técnica del pipeline con Celebra-me) y el perfil comercial del cliente
+  externo (volumen e inversión necesarios para aprendizaje algorítmico y rentabilidad del servicio).
+- **Fuente:** Requisitos de aprendizaje de Meta Smart Bidding y modelo de negocio del servicio.
 
 ---
 
-#### Hallazgo 11: Marco regulatorio de privacidad en México (LFPDPPP): Encargado vs. Responsable
+#### Hallazgo 12: Marco regulatorio de privacidad en México: Decreto DOF 2025-03-20 y rol de Encargado
 
 - **Severidad:** Alta
 - **Sección afectada:** `docs/propuestas/servicio-medicion.md` § Reglas del proyecto (Regla 6) y §
   Decisiones pendientes (Contrato y datos).
-- **Descripción:** La Regla 6 actual estipula: _"Ningún cliente se conecta sin aviso de privacidad
-  actualizado y un acuerdo que diga qué datos se tratan y para qué."_ En la legislación mexicana
-  (Ley Federal de Protección de Datos Personales en Posesión de los Particulares - LFPDPPP y su
-  Reglamento), el tratamiento de datos de terceros exige formalidades jurídicas indispensables:
-  1. **Figura de Encargado del Tratamiento (Artículos 49 al 52 del Reglamento de la LFPDPPP):** El
-     cliente final (la empresa que contrata el servicio) es el **Responsable**, pues decide sobre
-     los fines del tratamiento de los datos de sus clientes. El servicio de medición es legalmente
-     un **Encargado**, ya que procesa y transmite los datos exclusivamente por cuenta e instrucción
-     del Responsable. La ley exige un contrato formal de transmisión de datos personales que
-     contenga:
-     - Compromiso del Encargado de tratar los datos únicamente conforme a las instrucciones del
-       Responsable.
-     - Implementación de medidas de seguridad administrativas, técnicas y físicas.
-     - Prohibición estricta de transferir los datos o utilizarlos para fines propios o entre
-       clientes (lo que valida legalmente el aislamiento multi-inquilino de la arquitectura
-       técnica).
-     - Devolución o supresión segura de las bases de datos al terminar el servicio.
-  2. **Aviso de Privacidad del Cliente hacia sus Prospectos:** Para que el cliente pueda capturar y
-     enviar legalmente los datos de sus prospectos a Meta, Google y TikTok:
-     - El Aviso de Privacidad del cliente (en su sitio web y en el mensaje de bienvenida de
-       WhatsApp) debe transparentar el uso de cookies, web beacons y tecnologías de seguimiento en
-       servidor (_server-side tracking_).
-     - Debe explicitar las finalidades secundarias (análisis publicitario y prospección comercial).
-     - Debe informar la **transferencia internacional de datos personales** a proveedores
-       tecnológicos en el extranjero (Meta Platforms Inc., Google LLC, ByteDance Ltd., Supabase
-       Inc.).
-  3. **Minimización y cifrado obligatorio:** Los datos de contacto (teléfono y correo) deben
-     normalizarse (E.164, minúsculas, sin caracteres especiales) y cifrarse de forma unidireccional
-     con el algoritmo **SHA-256** antes de cualquier almacenamiento o envío a APIs externas, en
-     estricto cumplimiento del principio de seguridad y confidencialidad de la LFPDPPP.
+- **Descripción:** El análisis legal sobre protección de datos debe sustentarse en el marco
+  normativo mexicano vigente:
+  1. **Reforma institucional y autoridad garante (DOF 20 de marzo de 2025):** Mediante el Decreto
+     publicado en el Diario Oficial de la Federación el 20 de marzo de 2025 (en vigor el 21 de marzo
+     de 2025), se extinguieron diversos organismos autónomos, incluido el INAI. Las atribuciones de
+     vigilancia, cumplimiento y substanciación en materia de protección de datos personales en el
+     sector privado quedaron transferidas a la **Secretaría Anticorrupción y Buen Gobierno** (en
+     coordinación con las reformas a la Ley Orgánica de la Administración Pública Federal). Citar al
+     INAI como autoridad activa o fundarse en guías extintas constituye un anacronismo regulatorio.
+  2. **Figura legal de Responsable vs. Encargado:**
+     - El cliente comercial que contrata el servicio actúa legalmente como **Responsable**, pues
+       determina los fines y medios del tratamiento de los datos de sus prospectos y compradores.
+     - El servicio de medición actúa estrictamente como **Encargado**, tratando datos personales por
+       cuenta y bajo instrucción documentada del Responsable.
+     - La transmisión de datos del Responsable al servicio de medición constituye una **Remisión**
+       (que no requiere consentimiento del titular siempre que derive de un contrato de prestación
+       de servicios), la cual debe formalizarse mediante un acuerdo de tratamiento de datos (_Data
+       Processing Agreement_ o DPA) con compromisos de confidencialidad, medidas de seguridad y
+       prohibición de uso de los datos para fines propios o entre clientes.
+  3. **Aviso de Privacidad y Transferencias Internacionales:** Para que el cliente pueda registrar y
+     transmitir datos hacia Meta Platforms Inc., Google LLC y ByteDance Ltd., su Aviso de Privacidad
+     debe transparentar:
+     - El uso de tecnologías de rastreo y medición en servidor (_server-side tracking_).
+     - La realización de **transferencias internacionales de datos** a proveedores tecnológicos
+       extranjeros para fines de atribución y análisis publicitario.
+  4. **Precisión técnica sobre SHA-256 (Hashing vs. Cifrado):**
+     - El algoritmo SHA-256 genera un **resumen criptográfico unidireccional (hash)**, no un cifrado
+       reversible.
+     - Los identificadores seudonimizados mediante hash continúan considerándose datos personales
+       conforme a la regulación mientras exista capacidad de correlación o reidentificación
+       (especialmente dado que la tabla `contacts` preserva el número telefónico para la operación
+       de venta junto a su hash).
 - **Cambio propuesto:**
-  1. Rediseñar la Regla 6 del proyecto para incluir el anexo contractual de Encargado de Tratamiento
-     (_Data Processing Agreement_) obligatorio antes de la conexión técnica.
-  2. Proporcionar a cada cliente nuevo un kit de cláusulas modelo de privacidad para que actualice
-     su Aviso de Privacidad con el consentimiento para tecnologías de medición y transferencias
-     internacionales.
+  1. Actualizar la fundamentación de la Regla 6 al marco vigente emanado del Decreto DOF 2025-03-20
+     y la autoridad de la Secretaría Anticorrupción y Buen Gobierno.
+  2. Diseñar el contrato marco y el anexo DPA bajo la figura de Responsable–Encargado para la
+     remisión de datos.
+  3. Entregar al cliente un paquete de cláusulas modelo de Aviso de Privacidad que contemple
+     transferencias internacionales y tecnologías de medición.
+  4. Corregir toda mención técnica en la documentación, sustituyendo "cifrado" por "hashing
+     unidireccional con SHA-256" y reconociendo el tratamiento de datos seudonimizados.
 - **Fuentes:**
-  - [Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), Artículos 14, 36 y 37](https://www.diputados.gob.mx/LeyesBiblio/pdf/LFPDPPP.pdf)
-  - [Reglamento de la LFPDPPP, Artículos 49 a 52 (Remisiones y Encargados)](https://www.diputados.gob.mx/LeyesBiblio/regley/Reg_LFPDPPP.pdf)
-  - [INAI: Guía para el tratamiento de datos personales en servicios de computo en la nube y publicidad digital](https://inai.org.mx)
+  - [Diario Oficial de la Federación (DOF), Decreto del 20 de marzo de 2025 en materia de simplificación orgánica y protección de datos](https://dof.gob.mx)
+  - Ley Federal de Protección de Datos Personales en Posesión de los Particulares (texto reformado)
+    y Ley Orgánica de la Administración Pública Federal (Art. 37, Fracc. XV).
 
 ---
 
 ## Conclusión
 
-El servicio de medición propuesto cuenta con una arquitectura de datos de primer nivel, orientada a
-la ingeniería de software y con una separación clara de responsabilidades técnicas. Al implementar
-las correcciones identificadas en los contratos de eventos de las plataformas publicitarias (TikTok
-y Google Ads), reenfocar el paquete de desarrollo web hacia landings de conversión para proteger los
-márgenes, anclar la política de precios de referencia e incorporar las obligaciones de la LFPDPPP,
-la propuesta queda lista para convertirse en un producto comercial altamente diferenciado y
-rentable.
+El servicio de medición propuesto posee una base técnica sólida. Al integrar las correcciones a los
+contratos de eventos de Meta (`LeadSubmitted` y descarte de retracciones en mensajería), mitigar el
+riesgo de ROAS inflado sin anticipo, alinear los objetivos de campaña en Ads Manager, adoptar el
+stack de Cloudflare Workers sin alterar listas de excepciones del repositorio, posicionar los
+precios como hipótesis de validación para piloto y actualizar la arquitectura legal ante la
+Secretaría Anticorrupción y Buen Gobierno conforme al decreto del DOF de marzo de 2025, la propuesta
+alcanza el estándar de rigor técnico y viabilidad comercial requerido.

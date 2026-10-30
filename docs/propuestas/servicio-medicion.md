@@ -47,7 +47,7 @@ regla, o la regla se cambia por escrito.
 4. **Las cuentas son del cliente.** Business Manager, dataset, WhatsApp y cuentas de anuncios a
    nombre del cliente; el servicio entra como socio con acceso que se puede retirar.
 5. **Mínimo dato personal.** Solo teléfono, nombre y lo necesario para la venta. Teléfono y correo
-   salen cifrados con SHA-256; los tokens viven en un almacén de secretos, nunca en el código.
+   se procesan con hash SHA-256; los tokens viven en un almacén de secretos, nunca en el código.
 6. **Aviso y contrato antes de conectar.** Ningún cliente se conecta sin aviso de privacidad
    actualizado y un acuerdo que diga qué datos se tratan y para qué.
 
@@ -95,7 +95,7 @@ Flujo (versión en texto del diagrama):
 - **Vigilante:** registra cada ejecución y avisa si un envío o una ingesta falla o no corre.
 
 **Stack.** TypeScript en un monorepo con pnpm; Supabase para la base de datos, RLS, cron y almacén
-de secretos; funciones en Vercel para webhooks y envíos. Un paquete por módulo:
+de secretos; Cloudflare Workers para webhooks y envíos. Un paquete por módulo:
 
 | Paquete  | Responsabilidad                                                  |
 | -------- | ---------------------------------------------------------------- |

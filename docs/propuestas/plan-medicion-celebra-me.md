@@ -50,7 +50,7 @@ Al terminar la fase 3, las dos rutas terminan en la misma ficha: el anuncio dire
 WhatsApp con su ctwa_clid; el anuncio a celebra-me.com pasa por la landing, que guarda fbc y crea un
 código. El webhook de WhatsApp crea la ficha en Supabase; la persona que atiende marca la etapa; de
 ahí salen la CAPI de mensajes (QualifiedLead y Purchase con ctwa_clid) y la CAPI web con
-action_source «chat» (Lead y Purchase con fbc y teléfono cifrado).
+action_source «chat» (Lead y Purchase con fbc y teléfono con hash SHA-256).
 
 ## Fase 1: ficha y origen de cada chat (semana 1, 2 al 8 de noviembre)
 
@@ -72,7 +72,7 @@ Listo cuando: todos los chats nuevos de la semana tienen ficha y origen.
 
 - Pixel en celebra-me.com con PageView, ViewContent en la galería de diseños y Contact al tocar el
   botón de WhatsApp.
-- Contact repetido desde el servidor (función en Vercel) con el mismo event_id, para que Meta lo
+- Contact repetido desde el servidor (Cloudflare Worker) con el mismo event_id, para que Meta lo
   cuente una sola vez.
 - Cuando la ficha cambia de etapa, una función manda Lead o Purchase con action_source «chat».
   Incluye fbc, el teléfono en SHA-256 y el valor en MXN.

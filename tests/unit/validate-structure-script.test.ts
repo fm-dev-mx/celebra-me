@@ -524,11 +524,6 @@ describe('validate-structure script', () => {
 				'supabase/migrations/20260101000000_cloudinary.sql',
 				"-- cloudinary provider\nselect 'vercel';\n",
 			);
-			writeFixtureFile(
-				fixtureRoot,
-				'docs/propuestas/external-proposal.md',
-				'# Proposal\nDiscussing external stack: Vercel functions and Cloudinary media.\n',
-			);
 			const trackedFiles = [
 				'docs/hosting.md',
 				'src/lib/clean.ts',
@@ -536,7 +531,6 @@ describe('validate-structure script', () => {
 				'.agent/permissions/policy.json',
 				'.agent/rules/permissions.md',
 				'supabase/migrations/20260101000000_cloudinary.sql',
-				'docs/propuestas/external-proposal.md',
 			];
 			const script = `
 				import { validateStructure, validateStructureWarnings } from ${JSON.stringify(SCRIPT_URL)};
