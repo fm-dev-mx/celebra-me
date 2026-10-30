@@ -17,6 +17,8 @@ import {
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import DemoConversionReport from '@/components/dashboard/commercial/DemoConversionReport.astro';
 import MetaInsightsReport from '@/components/dashboard/commercial/MetaInsightsReport.astro';
+import MetaWeeklyReview from '@/components/dashboard/commercial/MetaWeeklyReview.astro';
+import { loadMetaWeeklyReview } from '@/lib/meta/weekly-review.server';
 import type { MetaInsightsTable } from '@/lib/meta/insights-dashboard';
 import { loadDemoConversionReport } from '@/lib/tracking/demo-conversion-report.server';
 import DemoCatalog from '@/components/dashboard/commercial/DemoCatalog';
@@ -33,6 +35,7 @@ if (!Astro.locals.session?.isSuperAdmin) {
 }
 
 const demoLinks = await loadDemoLinks();
+const weeklyReview = await loadMetaWeeklyReview().catch(() => null);
 let dashboardData: CommercialDashboardSummary | null = null;
 let demoReport: Awaited<ReturnType<typeof loadDemoConversionReport>> | null = null;
 try { demoReport = await loadDemoConversionReport(Astro.url.searchParams.get('days') === '60' ? 60 : 30); } catch {
@@ -139,6 +142,7 @@ const revenueAttribution = dashboardData
 		<DemoCatalog client:load demos={demoLinks} shareOrigin={resolvePublicSiteOrigin()} />
 		<DemoConversionReport report={demoReport} />
 		<MetaInsightsReport table={metaInsights} />
+		<MetaWeeklyReview report={weeklyReview} />
 		{dashboardData && viewModel && (
 			<>
 				<div class="commercial-tabs" role="tablist" aria-label="Secciones del espacio comercial">
