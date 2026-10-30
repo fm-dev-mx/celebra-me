@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Tablero</title>
+		<style>
+			:root {
+				--fondo: #f6f5f2;
+				--panel: #ffffff;
+				--texto: #1f2328;
+				--suave: #636c76;
+				--borde: #d8dee4;
+				--acento: #0969da;
+				--hecho: #1a7f37;
+				--aviso: #9a6700;
+				color-scheme: light dark;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--fondo: #0d1117;
+					--panel: #161b22;
+					--texto: #e6edf3;
+					--suave: #8d96a0;
+					--borde: #30363d;
+					--acento: #4493f8;
+					--hecho: #3fb950;
+					--aviso: #d29922;
+				}
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				padding: 16px;
+				background: var(--fondo);
+				color: var(--texto);
+				font: 14px/1.45 system-ui, sans-serif;
+			}
+			header {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+			h1 {
+				font-size: 18px;
+				margin: 0 0 12px;
+			}
+			h2 {
+				font-size: 14px;
+				margin: 0 0 8px;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: var(--suave);
+			}
+			h3 {
+				font-size: 12px;
+				margin: 10px 0 4px;
+				color: var(--suave);
+			}
+			main {
+				display: grid;
+				gap: 12px;
+				grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			}
+			section {
+				background: var(--panel);
+				border: 1px solid var(--borde);
+				border-radius: 8px;
+				padding: 12px;
+				min-width: 0;
+			}
+			ol,
+			ul {
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+			li {
+				padding: 6px 0;
+				border-top: 1px solid var(--borde);
+			}
+			li:first-child {
+				border-top: 0;
+			}
+			.num {
+				font-variant-numeric: tabular-nums;
+				color: var(--suave);
+				margin-right: 6px;
+			}
+			.meta {
+				display: block;
+				font-size: 12px;
+				color: var(--suave);
+			}
+			.ok {
+				color: var(--hecho);
+			}
+			.espera {
+				color: var(--aviso);
+			}
+			.vacio {
+				color: var(--suave);
+				font-style: italic;
+			}
+			#bandeja {
+				margin-top: 12px;
+			}
+			.acciones {
+				display: flex;
+				gap: 6px;
+				flex-wrap: wrap;
+				margin-top: 6px;
+			}
+			button,
+			a.boton {
+				font: inherit;
+				padding: 4px 10px;
+				border-radius: 6px;
+				border: 1px solid var(--borde);
+				background: var(--fondo);
+				color: var(--texto);
+				cursor: pointer;
+				text-decoration: none;
+			}
+			button.principal {
+				background: var(--acento);
+				border-color: var(--acento);
+				color: #fff;
+			}
+			#estado {
+				font-size: 12px;
+				color: var(--suave);
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1 id="proyecto">Tablero</h1>
+			<span id="estado">Conectando…</span>
+		</header>
+		<main>
+			<section aria-labelledby="t-hecho">
+				<h2 id="t-hecho">Hecho</h2>
+				<div id="hecho"></div>
+			</section>
+			<section aria-labelledby="t-curso">
+				<h2 id="t-curso">En curso</h2>
+				<ul id="curso"></ul>
+			</section>
+			<section aria-labelledby="t-siguiente">
+				<h2 id="t-siguiente">Siguiente</h2>
+				<ol id="siguiente"></ol>
+				<h3>Estacionadas</h3>
+				<ul id="estacionadas"></ul>
+			</section>
+		</main>
+		<section id="bandeja" aria-labelledby="t-bandeja">
+			<h2 id="t-bandeja">Su bandeja</h2>
+			<ul id="filas"></ul>
+		</section>
+		<script>
+			const TIPOS = { decidir: 'Decidir', aprobar: 'Aprobar', hacer: 'Hacer fuera' };
+
+			function el(etiqueta, texto, clase) {
+				const nodo = document.createElement(etiqueta);
+				if (texto !== undefined) nodo.textContent = texto;
+				if (clase) nodo.className = clase;
+				return nodo;
+			}
+
+			function fila(tarea, ...meta) {
+				const li = el('li');
+				li.append(el('span', `T${tarea.num}`, 'num'), el('span', tarea.titulo));
+				const linea = meta.filter(Boolean).join(' · ');
+				if (linea) li.append(el('span', linea, 'meta'));
+				return li;
+			}
+
+			function llenar(lista, elementos, vacio) {
+				lista.replaceChildren(...(elementos.length ? elementos : [el('li', vacio, 'vacio')]));
+			}
+
+			async function responder(id, respuesta) {
+				const res = await fetch(`/api/bandeja/${encodeURIComponent(id)}`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ respuesta }),
+				});
+				if (!res.ok) alert((await res.json()).error ?? 'No se pudo guardar la respuesta.');
+				await cargar();
+			}
+
+			function boton(texto, accion, principal) {
+				const b = el('button', texto, principal ? 'principal' : undefined);
+				b.type = 'button';
+				b.addEventListener('click', accion);
+				return b;
+			}
+
+			function filaBandeja(item, tareas) {
+				const tarea = tareas.get(item.tarea);
+				const li = el('li');
+				li.append(el('strong', `${TIPOS[item.tipo]} · `), el('span', item.texto));
+				if (tarea) li.append(el('span', `T${tarea.num} ${tarea.titulo}`, 'meta'));
+				const acciones = el('div', undefined, 'acciones');
+				if (item.tipo === 'decidir') {
+					item.opciones.forEach((opcion, i) =>
+						acciones.append(boton(opcion, () => responder(item.id, opcion), i === 0)),
+					);
+				} else if (item.tipo === 'aprobar') {
+					if (item.url && /^https?:\/\//.test(item.url)) {
+						const a = el('a', 'Ver PR', 'boton');
+						a.href = item.url;
+						a.target = '_blank';
+						a.rel = 'noopener noreferrer';
+						acciones.append(a);
+					}
+					acciones.append(
+						boton('Aprobar', () => responder(item.id, 'aprobar'), true),
+						boton('Pedir cambios', () => responder(item.id, 'cambios')),
+					);
+				} else {
+					acciones.append(boton('Hecho', () => responder(item.id, 'hecho'), true));
+				}
+				li.append(acciones);
+				return li;
+			}
+
+			function pintar(datos) {
+				document.title = `Tablero · ${datos.proyecto}`;
+				document.getElementById('proyecto').textContent = datos.proyecto;
+
+				const hecho = document.getElementById('hecho');
+				hecho.replaceChildren();
+				if (!datos.hecho.length) hecho.append(el('p', 'Nada en los últimos días.', 'vacio'));
+				for (const grupo of datos.hecho) {
+					const lista = el('ul');
+					for (const t of grupo.tareas) {
+						const li = fila(t, t.estado === 'cancelada' ? 'cancelada' : '', t.pr ? `PR #${t.pr}` : '', ...t.hechos);
+						if (t.estado === 'hecho') li.firstChild.classList.add('ok');
+						lista.append(li);
+					}
+					hecho.append(el('h3', grupo.dia), lista);
+				}
+
+				document.getElementById('t-curso').textContent = `En curso (${datos.enCurso.filter((t) => t.estado === 'en curso').length}/${datos.wipMax})`;
+				llenar(
+					document.getElementById('curso'),
+					datos.enCurso.map((t) =>
+						fila(t, t.estado === 'en revision' ? 'en revisión' : '', t.agente, t.carril, t.pr ? `PR #${t.pr}` : '', t.revision),
+					),
+					'Nada en curso.',
+				);
+
+				const conEspera = (t) => {
+					const li = fila(t);
+					if (t.espera.length) li.append(el('span', `espera ${t.espera.join(', ')}`, 'meta espera'));
+					return li;
+				};
+				llenar(
+					document.getElementById('siguiente'),
+					datos.siguiente.map((t, i) => {
+						const li = conEspera(t);
+						li.firstChild.textContent = `${i + 1}. T${t.num}`;
+						return li;
+					}),
+					'Cola vacía.',
+				);
+				llenar(document.getElementById('estacionadas'), datos.estacionadas.map(conEspera), 'Ninguna.');
+
+				const tareas = new Map(
+					[...datos.enCurso, ...datos.siguiente, ...datos.estacionadas, ...datos.hecho.flatMap((g) => g.tareas)].map(
+						(t) => [t.id, t],
+					),
+				);
+				llenar(
+					document.getElementById('filas'),
+					datos.bandeja.map((item) => filaBandeja(item, tareas)),
+					'Nada pendiente para usted.',
+				);
+			}
+
+			async function cargar() {
+				try {
+					const res = await fetch('/api/tablero', { cache: 'no-store' });
+					pintar(await res.json());
+					document.getElementById('estado').textContent = `Actualizado ${new Date().toLocaleTimeString()}`;
+				} catch {
+					document.getElementById('estado').textContent = 'Sin conexión con el tablero.';
+				}
+			}
+
+			const eventos = new EventSource('/events');
+			eventos.addEventListener('cambio', cargar);
+			eventos.addEventListener('open', cargar);
+			eventos.addEventListener('error', () => {
+				document.getElementById('estado').textContent = 'Reconectando…';
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,13 @@
+{
+    "proyecto": "huerto",
+    "datos": ".tablero",
+    "puerto": 4319,
+    "wipMax": 3,
+    "hechoDias": 7,
+    "zonaHoraria": "America/Mexico_City",
+    "ordenan": ["coordinador", "dueno"],
+    "carriles": [{ "id": "web", "carpeta": "../huerto-web", "puerto": 3000 }],
+    "tiposPrompt": ["codigo", "docs"],
+    "github": { "repo": "acme/huerto" },
+    "telegram": { "tokenEnv": "TABLERO_TELEGRAM_TOKEN", "chatEnv": "TABLERO_TELEGRAM_CHAT" }
+}
