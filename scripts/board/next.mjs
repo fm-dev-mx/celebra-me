@@ -338,7 +338,8 @@ export function ownerMessages(board) {
 
 /**
  * «Le toca a usted» (the owner's ready tasks with where to do them, answers owed, stalled Codex or Gemini tasks,
- * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`.
+ * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`. Owner rows
+ * also carry a stable `clave` so the watcher's Telegram alerts (T437) fire once per item.
  */
 export function nextSections(board, { prs, now = Date.now() } = {}) {
 	const { dueno, detenidas } = stalls(board, now);
@@ -353,7 +354,9 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 	);
 	const relayAlert = geminiRelayAlert(board, now);
 	const usted = [
-		...(relayAlert ? [row(null, relayAlert, { tipo: 'gemini-relay' })] : []),
+		...(relayAlert
+			? [row(null, relayAlert, { tipo: 'gemini-relay', clave: 'gemini-relay' })]
+			: []),
 		...own.map((t) => {
 			const where = t.actor === 'dueno' && ownerWhere(t);
 			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
@@ -362,14 +365,19 @@ export function nextSections(board, { prs, now = Date.now() } = {}) {
 			return row(
 				t,
 				`${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
+				{ clave: `tarea:${t.id}` },
 			);
 		}),
 		...ownerAsks(board, now).map(({ t, r }) =>
-			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`),
+			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`, {
+				clave: `respuesta:${t.id}:${r.ref}`,
+			}),
 		),
-		...dueno.map(({ t, texto }) => row(t, texto)),
+		...dueno.map(({ t, texto }) => row(t, texto, { clave: `detenida:${t.id}` })),
 		...ownerMessages(board).map((r) =>
-			row(findTask(r.tarea, board), `Mensaje: ${messageLine(r, board)}`),
+			row(findTask(r.tarea, board), `Mensaje: ${messageLine(r, board)}`, {
+				clave: `mensaje:${r.mensaje.id}`,
+			}),
 		),
 	];
 	return {

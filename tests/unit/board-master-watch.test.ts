@@ -58,13 +58,15 @@ describe('master watcher (d351)', () => {
 			`
 			let calls=0; const deliver=()=>calls++;
 			const getArchives=async()=>({chats:[]});
-			const unconfigured=await m.runMasterWatch({dir,deliver,getArchives});
+			// Owner Telegram alerts (T437) keep their own receipts; board-owner-alerts.test.ts covers them.
+			const ownerAlerts=async()=>[];
+			const unconfigured=await m.runMasterWatch({dir,deliver,getArchives,ownerAlerts});
 			setMaster(dir,'codex','master-one');
 			const printed=[];
-			await m.runMasterWatch({dir,deliver,getArchives,dryRun:true,out:t=>printed.push(t)});
+			await m.runMasterWatch({dir,deliver,getArchives,ownerAlerts,dryRun:true,out:t=>printed.push(t)});
 			const saved=existsSync(join(root,'board-master-watch.json'));
 			writeFileSync(join(dir,'tareas','ready.json'),JSON.stringify({id:'ready',estado:'hecha'}));
-			const empty=await m.runMasterWatch({dir,deliver,getArchives});
+			const empty=await m.runMasterWatch({dir,deliver,getArchives,ownerAlerts});
 			console.log(JSON.stringify({unconfigured,empty,calls,saved,printed}));`,
 			root,
 		);
