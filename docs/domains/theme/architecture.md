@@ -212,6 +212,25 @@ consumers provide local fallbacks without shadowing inherited theme tokens. Atmo
 intersections exclude direct dialog children from section stacking so viewport-fixed overlays retain
 their positioning and stacking order.
 
+The `clock-face` countdown exposes opt-in tokens whose defaults keep its current look:
+`--countdown-clock-{padding,bg,color,ring-display}` for the section and its centered ring,
+`--countdown-clock-title-{weight,size,font,margin}`, `--countdown-clock-timer-{gap,width}`,
+`--countdown-clock-segment-padding`, `--countdown-clock-value-{font,size,color}`,
+`--countdown-clock-label-{size,color}`, `--countdown-clock-date-margin` and
+`--countdown-clock-footer-color`. A dial anchored to the timer is off by default
+(`--countdown-clock-dial-content: none`); a profile turns it on with `''` and paints it with
+`--countdown-clock-dial-{size,padding,ticks,ticks-mask,face,shadow}`. The `admission-ticket` formal
+pass sizes its header, body and quota through `--pa-ticket-header-{padding,gap}`,
+`--pa-ticket-signature-size`, `--pa-ticket-body-{padding,gap}`, `--pa-ticket-field-min-height`,
+`--pa-ticket-guest-size`, `--pa-ticket-welcome-margin`, `--pa-ticket-quota-padding` and
+`--pa-ticket-count-size`, each defaulting to the previous literal, so a profile can fit the pass in
+one phone viewport. Family godparent names take `--family-godparent-name-size` (fallback: the shared
+`--family-name-size`), so parents and godparents can carry different weights. The
+`stacked-venue-plates` notes panel takes `--location-plates-notes-{radius,shadow}` (defaults `0`,
+`none`). The `celestial-blue` envelope colors its details and seal hint through
+`--env-details-{color,opacity}` and `--env-seal-hint-{color,opacity}` (defaults: the previous
+graphite mix, `80%` and `74%`), so a dark envelope keeps them legible.
+
 ### Gifts flatten
 
 Gifts section styling is the flattened section-level variable contract in

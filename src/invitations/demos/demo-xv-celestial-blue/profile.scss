@@ -66,33 +66,42 @@
 	--family-media-image-radius: 0;
 	--family-media-bg: transparent;
 	--family-media-shadow: none;
-	--family-content-gap: 2.25rem;
-	--family-group-text-align: start;
-	--family-item-align: flex-start;
-	--family-group-padding: 0 0 0 clamp(1.5rem, 5vw, 3rem);
+
+	// Hierarchy: the parents lead in large graphite serif, the two godparents follow side by side
+	// a size smaller, roles and group titles are tracked satin-blue capitals, all centred.
+	--family-content-gap: clamp(2rem, 4vw, 2.75rem);
+	--family-group-text-align: center;
+	--family-item-align: center;
+	--family-group-padding: 0;
 	--family-parents-padding: 0;
-	--family-parents-margin-inline: 0;
+	--family-parents-margin-inline: auto;
 	--family-group-filter: none;
 	--family-group-title-font: var(--font-ui);
-	--family-group-title-size: 0.875rem;
-	--family-group-title-weight: 500;
-	--family-group-title-letter-spacing: 0.04em;
-	--family-group-title-text-transform: none;
+	--family-group-title-size: 0.68rem;
+	--family-group-title-weight: 600;
+	--family-group-title-letter-spacing: 0.26em;
+	--family-group-title-text-transform: uppercase;
 	--family-group-title-color: var(--family-accent);
 	--family-group-title-opacity: 100%;
-	--family-group-title-margin: 0 0 1.25rem;
-	--family-list-gap: 1.25rem;
-	--family-godparents-list-columns: 1fr;
-	--family-name-size: clamp(1.5rem, 2.5vw, 1.75rem);
-	--family-name-line-height: 1.2;
-	--family-name-max-width: 24ch;
+	--family-group-title-margin: 0 0 1.35rem;
+	--family-group-divider-width: 2.75rem;
+	--family-group-divider-height: 1px;
+	--family-group-divider-opacity: 55%;
+	--family-list-gap: 1.1rem;
+	--family-godparents-list-columns: repeat(2, minmax(0, 1fr));
+	--family-name-size: clamp(1.85rem, 2.6vw, 2.15rem);
+	--family-godparent-name-size: clamp(1.25rem, 1.8vw, 1.45rem);
+	--family-name-color: var(--color-deep-blue-graphite);
+	--family-name-line-height: 1.15;
+	--family-name-max-width: 22ch;
 	--family-name-text-shadow: none;
 	--family-meta-font: var(--font-ui);
-	--family-meta-size: 0.875rem;
-	--family-meta-weight: 400;
-	--family-meta-letter-spacing: 0.02em;
-	--family-meta-text-transform: none;
-	--family-meta-color: var(--family-accent);
+	--family-meta-size: 0.62rem;
+	--family-meta-weight: 600;
+	--family-meta-letter-spacing: 0.22em;
+	--family-meta-text-transform: uppercase;
+	--family-meta-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--family-meta-margin-top: 0.35rem;
 
 	// Quote defaults are component-scoped; override the public tokens on their owner.
 	.quote-section {
@@ -284,6 +293,62 @@
 			var(--color-deep-blue-graphite);
 	}
 
+	// Countdown: a silver night dial. Minute ticks ring the numbers, a hairline inner face holds
+	// them, and the script title and the date sit outside the dial like an engraved bezel.
+	.countdown-section {
+		--countdown-clock-padding: clamp(4.5rem, 9vw, 6.5rem) 1.25rem clamp(4rem, 8vw, 6rem);
+		--countdown-clock-bg: transparent;
+		--countdown-clock-color: var(--color-diamond-white);
+		--countdown-clock-ring-display: none;
+		--countdown-clock-title-font: 'Pinyon Script', var(--font-display);
+		--countdown-clock-title-weight: 400;
+		--countdown-clock-title-size: clamp(2.75rem, 7vw, 3.75rem);
+		--countdown-clock-title-margin: 0 auto 1.25rem;
+		--countdown-clock-dial-content: '';
+		--countdown-clock-dial-size: clamp(18rem, 84vw, 26rem);
+
+		// Room for the whole dial around the numbers' row (about 5rem tall).
+		--countdown-clock-dial-padding: calc((var(--countdown-clock-dial-size) - 5rem) / 2);
+		--countdown-clock-dial-ticks:
+			repeating-conic-gradient(
+				from -0.4deg,
+				rgb(var(--color-liquid-silver-rgb) / 75%) 0deg 0.8deg,
+				transparent 0.8deg 30deg
+			),
+			repeating-conic-gradient(
+				from -0.2deg,
+				rgb(var(--color-liquid-silver-rgb) / 32%) 0deg 0.4deg,
+				transparent 0.4deg 6deg
+			);
+		--countdown-clock-dial-ticks-mask: radial-gradient(
+			circle closest-side,
+			transparent calc(100% - 0.95rem),
+			black calc(100% - 0.9rem),
+			black calc(100% - 1px),
+			transparent 100%
+		);
+		--countdown-clock-dial-face: radial-gradient(
+			circle closest-side,
+			rgb(var(--color-satin-blue-rgb) / 12%) 0%,
+			transparent calc(100% - 1.55rem),
+			rgb(var(--color-liquid-silver-rgb) / 40%) calc(100% - 1.5rem),
+			transparent calc(100% - 1.45rem)
+		);
+		--countdown-clock-dial-shadow: 0 0 4rem rgb(var(--color-satin-blue-rgb) / 10%);
+		--countdown-clock-timer-width: min(100%, clamp(13rem, 56vw, 19rem));
+		--countdown-clock-timer-gap: 0;
+		--countdown-clock-segment-padding: 0.25rem 0;
+		--countdown-clock-value-font:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--countdown-clock-value-size: clamp(2.4rem, 8vw, 3.4rem);
+		--countdown-clock-value-color: var(--color-diamond-white);
+		--countdown-clock-label-size: 0.6rem;
+		--countdown-clock-label-color: var(--color-satin-blue);
+		--countdown-label-color: var(--color-satin-blue);
+		--countdown-clock-date-margin: 1.5rem;
+		--countdown-clock-footer-color: rgb(var(--color-liquid-silver-rgb) / 82%);
+	}
+
 	// Cadence: countdown -> family (bridge: the ivory page of the family turns down over the night);
 	// gallery -> gifts (bridge: the night page rises back over the gallery, folded on the other
 	// side); gifts -> pass (climax: the pass rises over the gifts like a ticket laid on the table).
@@ -321,18 +386,225 @@
 	}
 
 	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='stack'] {
-		--intersection-stack-surface: var(--color-deep-blue-graphite);
-		--intersection-stack-radius: 1.75rem;
-		--intersection-stack-edge: 1px solid rgb(var(--color-liquid-silver-rgb) / 38%);
-		--intersection-stack-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 45%);
-		--intersection-stack-recede-scale: 0.94;
-		--intersection-stack-recede-dim: 0.55;
+		// A moonlit sheet: lit from its top edge, fading into the night, with a silver rim.
+		--intersection-stack-surface:
+			radial-gradient(
+				ellipse 70% 12rem at 50% 0%,
+				rgb(var(--color-satin-blue-rgb) / 18%) 0%,
+				transparent 100%
+			),
+			var(--color-deep-blue-graphite);
+		--intersection-stack-radius: 2.25rem;
+		--intersection-stack-edge: 0;
+		--intersection-stack-shadow:
+			inset 0 1px 0 rgb(var(--color-liquid-silver-rgb) / 42%),
+			0 -2rem 3.5rem -0.75rem rgb(0 0 0 / 60%);
+		--pa-section-padding: clamp(2.5rem, 6vw, 3.75rem) clamp(1.25rem, 4vw, 2.5rem);
 	}
 
-	// The gifts keep the night under them while the pass rises and they recede.
+	// The gifts keep the night under them and sink back while the pass rises; the recede
+	// tokens are read on this source wrapper, where the animation runs.
 	.invitation-section-wrapper[data-section-kind='gifts'] {
 		--section-band-paper: var(--color-surface-dark);
 		--intersection-stack-floor: var(--color-surface-dark);
+		--intersection-stack-recede-scale: 0.9;
+		--intersection-stack-recede-dim: 0.4;
+		--intersection-stack-recede-fade: 55%;
+	}
+
+	// Reveal: a star letter. A midnight-blue envelope foiled with silver stars waits on the open
+	// night under a low moon; the flap is lit from above so its point reads against the pocket,
+	// and a silver wax medallion carries the monogram.
+	.envelope-wrapper {
+		--env-bg:
+			radial-gradient(
+				circle at 18% 14%,
+				rgb(var(--color-diamond-white-rgb) / 70%) 0 1px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 82% 9%,
+				rgb(var(--color-satin-blue-rgb) / 70%) 0 1px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 91% 46%,
+				rgb(var(--color-diamond-white-rgb) / 55%) 0 0.8px,
+				transparent 1.6px
+			),
+			radial-gradient(
+				circle at 7% 58%,
+				rgb(var(--color-diamond-white-rgb) / 50%) 0 0.8px,
+				transparent 1.6px
+			),
+			radial-gradient(
+				circle at 24% 88%,
+				rgb(var(--color-satin-blue-rgb) / 60%) 0 1px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 76% 84%,
+				rgb(var(--color-diamond-white-rgb) / 45%) 0 0.8px,
+				transparent 1.6px
+			),
+			radial-gradient(
+				ellipse 70% 42% at 50% 44%,
+				rgb(var(--color-satin-blue-rgb) / 26%) 0%,
+				transparent 72%
+			),
+			linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--color-deep-blue-graphite) 82%, var(--color-satin-blue)) 0%,
+				var(--color-deep-blue-graphite) 55%,
+				color-mix(in srgb, var(--color-deep-blue-graphite) 86%, black) 100%
+			);
+		--env-paper-bg:
+			radial-gradient(
+				circle at 14% 22%,
+				rgb(var(--color-diamond-white-rgb) / 85%) 0 1px,
+				transparent 1.8px
+			),
+			radial-gradient(
+				circle at 31% 12%,
+				rgb(var(--color-liquid-silver-rgb) / 70%) 0 0.8px,
+				transparent 1.5px
+			),
+			radial-gradient(
+				circle at 72% 18%,
+				rgb(var(--color-diamond-white-rgb) / 80%) 0 1.1px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 88% 34%,
+				rgb(var(--color-liquid-silver-rgb) / 65%) 0 0.8px,
+				transparent 1.5px
+			),
+			radial-gradient(
+				circle at 9% 68%,
+				rgb(var(--color-liquid-silver-rgb) / 60%) 0 0.8px,
+				transparent 1.5px
+			),
+			radial-gradient(
+				circle at 63% 82%,
+				rgb(var(--color-diamond-white-rgb) / 70%) 0 1px,
+				transparent 1.8px
+			),
+			radial-gradient(
+				circle at 92% 76%,
+				rgb(var(--color-liquid-silver-rgb) / 60%) 0 0.8px,
+				transparent 1.5px
+			),
+			radial-gradient(
+				ellipse 80% 50% at 50% 0%,
+				rgb(var(--color-satin-blue-rgb) / 16%) 0%,
+				transparent 75%
+			),
+			linear-gradient(
+				170deg,
+				color-mix(in srgb, var(--color-deep-blue-graphite) 58%, var(--color-satin-blue)) 0%,
+				color-mix(in srgb, var(--color-deep-blue-graphite) 76%, var(--color-satin-blue)) 55%,
+				color-mix(in srgb, var(--color-deep-blue-graphite) 92%, var(--color-satin-blue))
+					100%
+			);
+		--env-paper-sheen: linear-gradient(
+			168deg,
+			rgb(var(--color-diamond-white-rgb) / 5%) 0%,
+			transparent 40%
+		);
+		--env-paper-grain-opacity: 0;
+		--env-paper-border: rgb(var(--color-liquid-silver-rgb) / 55%);
+		--env-pocket-shadow: inset 0 14px 22px rgb(0 0 0 / 28%);
+		--env-shadow-container:
+			0 0 0 1px rgb(var(--color-liquid-silver-rgb) / 18%),
+			0 2.5rem 5rem -1rem rgb(0 0 0 / 70%), 0 0 6rem rgb(var(--color-satin-blue-rgb) / 16%);
+		--env-container-radius: 0.5rem;
+		--env-text-primary: var(--color-diamond-white);
+		--env-text-secondary: var(--color-liquid-silver);
+		--env-instruction-color: var(--color-liquid-silver);
+		--env-seal-size-min: 3.75rem;
+		--env-seal-size-max: 4.75rem;
+		--env-seal-size-ratio: 16;
+		--env-details-color: var(--color-liquid-silver);
+		--env-details-opacity: 92%;
+		--env-seal-hint-color: var(--color-liquid-silver);
+		--env-seal-hint-opacity: 88%;
+		--env-accent: var(--color-liquid-silver);
+		--env-font-display: 'Pinyon Script', var(--font-calligraphy), cursive;
+		--env-title-size: clamp(2.1rem, 9cqw, 3rem);
+		--env-name-text-shadow: 0 0 1.5rem rgb(var(--color-satin-blue-rgb) / 45%);
+		--env-seal-accent: var(--color-liquid-silver);
+		--wax-seal-highlight: var(--color-diamond-white);
+		--wax-seal-mid: color-mix(in srgb, var(--color-liquid-silver) 85%, var(--color-satin-blue));
+		--wax-seal-deep: color-mix(
+			in srgb,
+			var(--color-cold-silver) 70%,
+			var(--color-deep-blue-graphite)
+		);
+		--wax-seal-letter: var(--color-deep-blue-graphite);
+		--wax-seal-shadow: black;
+	}
+
+	// Location: two ivory venue plates edged in silver, the hour set large in serif, and the
+	// guest notes gathered on a small night panel under a few stars.
+	.event-location {
+		--location-card-bg: linear-gradient(
+			180deg,
+			var(--color-diamond-white) 0%,
+			var(--color-cool-ivory) 100%
+		);
+		--location-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 55%);
+		--location-card-radius: 1.25rem;
+		--location-card-shadow: 0 1.5rem 3rem -1.75rem
+			rgb(var(--color-deep-blue-graphite-rgb) / 45%);
+		--location-place-font-family:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--location-place-font-size: clamp(1.85rem, 2.6vw, 2.25rem);
+		--location-place-color: var(--color-deep-blue-graphite);
+		--location-date-color: var(--family-accent);
+		--location-date-letter-spacing: 0.2em;
+		--location-lead-time-font:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--location-lead-time-size: 1.75rem;
+		--location-lead-time-color: var(--color-deep-blue-graphite);
+		--location-plates-eyebrow-size: 0.68rem;
+		--location-plates-eyebrow-tracking: 0.3em;
+		--location-plates-eyebrow-weight: 600;
+		--location-address-color: var(--color-soft-graphite);
+		--location-copy-button-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 70%);
+		--location-copy-button-radius: 50%;
+		--location-copy-button-color: var(--color-deep-blue-graphite);
+		--location-copy-button-bg: transparent;
+		--location-plates-notes-max-width: 36rem;
+		--location-plates-notes-radius: 1.25rem;
+		--location-plates-notes-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 35%);
+		--location-plates-notes-shadow: 0 1.75rem 3rem -1.5rem rgb(0 0 0 / 45%);
+		--location-plates-notes-bg:
+			radial-gradient(
+				circle at 88% 16%,
+				rgb(var(--color-diamond-white-rgb) / 60%) 0 0.9px,
+				transparent 1.7px
+			),
+			radial-gradient(
+				circle at 8% 82%,
+				rgb(var(--color-satin-blue-rgb) / 60%) 0 0.9px,
+				transparent 1.7px
+			),
+			radial-gradient(
+				ellipse 80% 60% at 50% 0%,
+				rgb(var(--color-satin-blue-rgb) / 14%) 0%,
+				transparent 70%
+			),
+			var(--color-deep-blue-graphite);
+		--location-indication-item-divider: 1px solid rgb(var(--color-liquid-silver-rgb) / 16%);
+		--location-indication-text-color: rgb(var(--color-diamond-white-rgb) / 86%);
+		--location-indication-strong-color: var(--color-ice-blue);
+		--location-indication-icon-color: var(--color-liquid-silver);
+		--location-indication-icon-bg: transparent;
+		--location-indication-icon-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 45%);
+		--location-indication-icon-shadow: none;
+		--location-indications-heading-color: var(--color-liquid-silver);
+		--location-indications-heading-text-align: center;
+		--location-indications-heading-margin-bottom: 0.75rem;
 	}
 
 	.gifts-section {
@@ -400,6 +672,25 @@
 		--pa-check-in-badge-color: var(--formal-chapter-meta);
 		--pa-check-in-title-color: var(--color-deep-blue-graphite);
 		--pa-check-in-text-color: var(--color-soft-graphite);
+
+		// Compact ticket: the whole pass, check-in row included, fits one phone screen.
+		--pa-ticket-width: min(100%, 26rem);
+		--pa-ticket-header-padding: 1.75rem 1.5rem 0;
+		--pa-ticket-header-gap: 0.5rem;
+		--pa-ticket-signature-size: clamp(1.75rem, 4vw, 2.25rem);
+		--pa-ticket-body-padding: 1.25rem 1.5rem 0;
+		--pa-ticket-body-gap: 0.5rem;
+		--pa-ticket-field-min-height: 0;
+		--pa-ticket-guest-size: clamp(2.35rem, 4vw + 1.2rem, 3rem);
+		--pa-ticket-welcome-margin: 0 0 1rem;
+		--pa-welcome-size: 1.125rem;
+		--pa-ticket-quota-padding: 1rem 1.5rem 1.1rem;
+		--pa-ticket-count-size: 4rem;
+		--pa-check-in-margin-top: 0;
+		--pa-check-in-margin-bottom: 1.25rem;
+		--pa-check-in-padding: 0.75rem;
+		--pa-check-in-qr-size: 4.5rem;
+		--pa-check-in-title-size: 0.95rem;
 	}
 
 	.rsvp-section {

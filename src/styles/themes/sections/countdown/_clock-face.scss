@@ -1,12 +1,13 @@
 .countdown-section[data-variant='clock-face'] {
-	padding: 5rem 1.25rem;
-	background: var(--color-surface-secondary);
-	color: var(--color-text-primary);
+	padding: var(--countdown-clock-padding, 5rem 1.25rem);
+	background: var(--countdown-clock-bg, var(--color-surface-secondary));
+	color: var(--countdown-clock-color, var(--color-text-primary));
 	display: grid;
 	place-items: center;
 
 	&::before {
 		content: '';
+		display: var(--countdown-clock-ring-display, block);
 		position: absolute;
 		width: min(85vw, 32rem);
 		aspect-ratio: 1;
@@ -22,10 +23,12 @@
 	}
 
 	.countdown-title {
-		font: 500 clamp(1.7rem, 6vw, 2.5rem) / 1.2 var(--font-display);
+		font: var(--countdown-clock-title-weight, 500)
+			var(--countdown-clock-title-size, clamp(1.7rem, 6vw, 2.5rem)) / 1.2
+			var(--countdown-clock-title-font, var(--font-display));
 		text-transform: none;
 		max-width: 17ch;
-		margin: 0 auto 2rem;
+		margin: var(--countdown-clock-title-margin, 0 auto 2rem);
 		color: inherit;
 	}
 
@@ -35,16 +38,50 @@
 		// The rem floor responds to text-only zoom: four columns remain at the
 		// default size and collapse naturally when labels need more room.
 		grid-template-columns: repeat(auto-fit, minmax(min(4rem, 100%), 1fr));
-		gap: 0.4rem;
-		width: min(100%, 30rem);
+		gap: var(--countdown-clock-timer-gap, 0.4rem);
+		width: var(--countdown-clock-timer-width, min(100%, 30rem));
 		margin: auto;
+	}
+
+	// Opt-in dial centred on the numbers (`--countdown-clock-dial-content: ''`): a tick ring
+	// (`--countdown-clock-dial-ticks`, masked by `--countdown-clock-dial-ticks-mask`) and a face
+	// (`--countdown-clock-dial-face`) sized by `--countdown-clock-dial-size`. The section ring above
+	// stays the default; profiles that opt in usually hide it with `--countdown-clock-ring-display`.
+	.countdown-timer-wrapper {
+		position: relative;
+		isolation: isolate;
+		padding-block: var(--countdown-clock-dial-padding, 0);
+	}
+
+	.countdown-timer-wrapper::before,
+	.countdown-timer-wrapper::after {
+		content: var(--countdown-clock-dial-content, none);
+		position: absolute;
+		z-index: -1;
+		top: 50%;
+		left: 50%;
+		width: var(--countdown-clock-dial-size, 20rem);
+		aspect-ratio: 1;
+		translate: -50% -50%;
+		border-radius: 50%;
+		pointer-events: none;
+	}
+
+	.countdown-timer-wrapper::before {
+		background: var(--countdown-clock-dial-ticks, none);
+		mask: var(--countdown-clock-dial-ticks-mask, none);
+	}
+
+	.countdown-timer-wrapper::after {
+		background: var(--countdown-clock-dial-face, none);
+		box-shadow: var(--countdown-clock-dial-shadow, none);
 	}
 
 	.countdown__segment {
 		background: transparent;
 		box-shadow: none;
 		border: 0;
-		padding: 1rem 0.2rem;
+		padding: var(--countdown-clock-segment-padding, 1rem 0.2rem);
 	}
 
 	.countdown__segment::before {
@@ -52,24 +89,24 @@
 	}
 
 	.countdown__value {
-		font-family: var(--font-display);
-		font-size: clamp(2rem, 8vw, 3.5rem);
-		color: var(--color-text-primary);
+		font-family: var(--countdown-clock-value-font, var(--font-display));
+		font-size: var(--countdown-clock-value-size, clamp(2rem, 8vw, 3.5rem));
+		color: var(--countdown-clock-value-color, var(--color-text-primary));
 	}
 
 	.countdown__label {
 		opacity: 100%;
-		font-size: 0.7rem;
+		font-size: var(--countdown-clock-label-size, 0.7rem);
 		overflow-wrap: anywhere;
-		color: var(--color-text-primary);
+		color: var(--countdown-clock-label-color, var(--color-text-primary));
 	}
 
 	.countdown-date {
-		margin-top: 1.5rem;
+		margin-top: var(--countdown-clock-date-margin, 1.5rem);
 	}
 
 	.countdown-invitation-text {
-		color: var(--color-text-primary);
+		color: var(--countdown-clock-footer-color, var(--color-text-primary));
 		opacity: 100%;
 	}
 }

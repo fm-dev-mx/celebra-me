@@ -55,7 +55,7 @@
                 "text": "Confirme su asistencia <strong>antes del 29 de agosto de 2027</strong>."
             }
         ],
-        "variant": "standard",
+        "variant": "stacked-venue-plates",
         "venues": [
             {
                 "venueEvent": "Misa de Acción de Gracias",
@@ -81,7 +81,8 @@
             }
         ],
         "mapStyle": "dark",
-        "introLede": "Ubicación ilustrativa de la demo"
+        "introLede": "Ubicación ilustrativa de la demo",
+        "indicationsHeading": "Antes de llegar"
     },
     "family": {
         "featuredImage": {
@@ -113,10 +114,6 @@
             {
                 "name": "Daniela Rivas Hernández",
                 "role": "Madrina"
-            },
-            {
-                "name": "Fernando Castillo López",
-                "role": "Padrino"
             }
         ],
         "variant": "standard"
@@ -247,11 +244,12 @@
         "variant": "timeline-paper"
     },
     "countdown": {
-        "variant": "written-days",
+        "variant": "clock-face",
         "title": "Faltan",
         "footerText": "para nuestra noche bajo las estrellas",
         "presentationOptions": {
-            "dayUnit": "nights"
+            "dayUnit": "nights",
+            "visibleUnits": ["days", "hours", "minutes"]
         }
     },
     "interludes": [

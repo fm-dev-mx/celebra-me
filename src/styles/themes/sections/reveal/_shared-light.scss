@@ -335,8 +335,11 @@
 		font-size: 0.68rem;
 		font-weight: 500;
 		letter-spacing: 0.2em;
-		color: color-mix(in srgb, var(--color-soft-graphite) 74%, var(--color-cold-silver));
-		opacity: 80%;
+		color: var(
+			--env-details-color,
+			color-mix(in srgb, var(--color-soft-graphite) 74%, var(--color-cold-silver))
+		);
+		opacity: var(--env-details-opacity, 80%);
 	}
 
 	.tease-divider {
@@ -351,11 +354,14 @@
 	}
 
 	.envelope-seal-hint {
-		color: color-mix(in srgb, var(--color-soft-graphite) 62%, var(--color-cold-silver));
+		color: var(
+			--env-seal-hint-color,
+			color-mix(in srgb, var(--color-soft-graphite) 62%, var(--color-cold-silver))
+		);
 		font-size: 0.58rem;
 		font-weight: 500;
 		letter-spacing: 0.34em;
-		opacity: 74%;
+		opacity: var(--env-seal-hint-opacity, 74%);
 	}
 
 	.envelope-external-instruction {

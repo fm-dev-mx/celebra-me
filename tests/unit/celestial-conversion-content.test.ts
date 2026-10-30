@@ -39,7 +39,6 @@ it('keeps the family portrait complete and the approved open composition scoped 
 	expect(demo.family.godparents).toEqual([
 		{ name: 'Ricardo Torres Mendoza', role: 'Padrino' },
 		{ name: 'Daniela Rivas Hernández', role: 'Madrina' },
-		{ name: 'Fernando Castillo López', role: 'Padrino' },
 	]);
 	expect(read('src/invitations/demos/demo-xv-celestial-blue/assets.ts')).toContain(
 		"import family from './assets/family-group.webp'",
