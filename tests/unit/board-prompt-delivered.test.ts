@@ -80,7 +80,7 @@ function probe(code: string) {
 }
 
 describe('T205 delivered prompt (d249)', () => {
-	it('waits for a claim, then comes back to the owner after 30 minutes', () => {
+	it('waits for a claim, then comes back to the owner after 15 minutes', () => {
 		const at = (min: number) => Date.parse(DESDE) + min * MINUTE;
 		const out = probe(`
 			const t = ${JSON.stringify(task('pegar', { num: 1, entregada: { agente: 'codex', desde: DESDE } }))};
@@ -95,9 +95,9 @@ describe('T205 delivered prompt (d249)', () => {
 			delete plain.entregada;
 			console.log(JSON.stringify({
 				before: m.ownerLaunches(plain, { tareas: [plain] }, ${at(0)}),
-				fresh: view(${at(10)}),
-				edge: view(${at(29)}),
-				stale: view(${at(30)}),
+				fresh: view(${at(5)}),
+				edge: view(${at(14)}),
+				stale: view(${at(15)}),
 				later: view(${at(95)}),
 				locked: d.delivery({ ...t, candado: { agente: 'codex', desde: t.entregada.desde } }, ${at(40)}),
 				started: d.delivery({ ...t, estado: 'en curso' }, ${at(40)}),
@@ -115,8 +115,8 @@ describe('T205 delivered prompt (d249)', () => {
 		expect(out.stale).toEqual({
 			launches: ['codex'],
 			color: 'own',
-			line: 'Entregada hace 30 min y nadie la tomó',
-			usted: ['T1 · pegar · Pegar en Codex · Entregada hace 30 min y nadie la tomó'],
+			line: 'Entregada hace 15 min y nadie la tomó',
+			usted: ['T1 · pegar · Pegar en Codex · Entregada hace 15 min y nadie la tomó'],
 		});
 		expect(out.later.line).toBe('Entregada hace 1 h 35 min y nadie la tomó');
 		expect(out.locked).toBeNull();

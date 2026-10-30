@@ -644,6 +644,12 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 - **Registry**: `agentes --json` discovers the shared registry and capability overrides. Only
   explicit coordinator updates use `agentes <id> --coordinador --rev=N capacidades=[...]`; inspect
   actual tools before declaring them.
+- **Paused agent**: `agentes codex=pausado hasta=2026-11-02 --coordinador --rev=N` pauses an agent
+  until that date (start of the day, Mazatlán); `codex=activo` ends it. `review`, the watchers and
+  the dispatcher rows never pick a paused agent; while Claude is paused, the other of Codex and
+  Gemini reviews Codex's or Gemini's work.
+- **Lane state on `plan`**: `plan` refuses a lane on another branch or with uncommitted changes
+  (unless it is already on the task's `rama`) and names the idle, unlocked lanes the task may use.
 - **Codex and Gemini chats (d211)**: `pnpm board sesiones [--json]` opens `~/.codex/state_5.sqlite`
   and `~/.gemini/antigravity/conversation_summaries.db` read-only, crosses each open chat's `T<n>`
   with the board and says «archivar» (task finished or archived), «dejar» or «sin tarea»; the

@@ -283,14 +283,21 @@ export const defaultReviewer = (author) =>
 /**
  * Why `reviewer` may not review work by `author` (d183), or null. d288: Claude may review Claude's work only
  * when the PR is low or medium risk outside release work (`subagent`), through a clean-context subagent.
+ * T382: a paused reviewer is refused, and while Claude is paused (`claudePaused`) the other of Codex and Gemini
+ * reviews Codex's or Gemini's work instead.
  */
-export function reviewerIssue(author, reviewer, { subagent = false } = {}) {
+export function reviewerIssue(
+	author,
+	reviewer,
+	{ subagent = false, claudePaused = false, paused = null } = {},
+) {
 	if (!Object.hasOwn(AGENT_REGISTRY, reviewer ?? '')) return `revisor desconocido: ${reviewer}`;
+	if (paused) return paused;
 	if (reviewer === author && !(author === 'claude' && subagent))
 		return author === 'claude'
 			? 'd288: un subagente de claude revisa el trabajo de claude solo en riesgo bajo o medio, fuera de release'
 			: 'la revisión cruzada requiere otro agente';
-	if (author && author !== 'claude' && reviewer !== 'claude')
+	if (author && author !== 'claude' && reviewer !== 'claude' && !claudePaused)
 		return `d183: el trabajo de ${author} lo revisa claude`;
 	return null;
 }
