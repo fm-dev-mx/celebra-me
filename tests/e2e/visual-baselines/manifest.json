@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-28T00:40:23.663Z",
+    "generatedAt": "2026-10-30T00:40:02.197Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,8 +11,8 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "ba4efcc7ded34c280ebaa0f3338fb51c0ba95ebc647349c5e44d8c385dfc43f2",
-        "cssSha256": "75e8ae9f9ca548512951c656a01ad090c4ff93de166267ccf193a8fc94316a10",
+        "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
+        "cssSha256": "5ca11b82edee0670867f9098507223e936b5b80c114b00fa8e663147dedc144b",
         "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2387,8 +2387,8 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "b07a19f87da9d0739926c35bd79127a64b6a383c5a24441181c51e823f5c28cb",
-            "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
+            "sha256": "90d8024ad3fae178cd05b48e9dbc9a6b5a3e22e70e8a91893cbdd01c168d8c0b",
+            "contentHash": "9ff9194a4aa40253937fea878b3d90600afcdb36b7ec2a2978400492101e386d",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
         },
@@ -2399,8 +2399,8 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
-            "sha256": "86d195bb0e06848a94a80d7e5f2063cf407ca65ec4e48d769de47d7a19f8b3b3",
-            "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
+            "sha256": "2b35ea8b3931725239f0ab70699dba07a20071db3d91915a0aa2a43c0fc615a4",
+            "contentHash": "9ff9194a4aa40253937fea878b3d90600afcdb36b7ec2a2978400492101e386d",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
         },
@@ -2501,9 +2501,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "522369399124bb72ddb64dc651238da00b0f1fe8",
+    "referenceSha": "1ec7bb1fa86b269c254ae6b45786ef13b08bde69",
     "variantManifest": {
-        "generatedAt": "2026-10-28T00:40:23.663Z",
+        "generatedAt": "2026-10-30T00:40:02.197Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2515,8 +2515,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "ba4efcc7ded34c280ebaa0f3338fb51c0ba95ebc647349c5e44d8c385dfc43f2",
-            "cssSha256": "75e8ae9f9ca548512951c656a01ad090c4ff93de166267ccf193a8fc94316a10",
+            "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
+            "cssSha256": "5ca11b82edee0670867f9098507223e936b5b80c114b00fa8e663147dedc144b",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4405,10 +4405,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "522369399124bb72ddb64dc651238da00b0f1fe8"
+        "referenceSha": "1ec7bb1fa86b269c254ae6b45786ef13b08bde69"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-28T00:40:23.706Z",
+        "generatedAt": "2026-10-30T00:40:02.203Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4420,8 +4420,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "ba4efcc7ded34c280ebaa0f3338fb51c0ba95ebc647349c5e44d8c385dfc43f2",
-            "cssSha256": "75e8ae9f9ca548512951c656a01ad090c4ff93de166267ccf193a8fc94316a10",
+            "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
+            "cssSha256": "5ca11b82edee0670867f9098507223e936b5b80c114b00fa8e663147dedc144b",
             "assetSha256": "e51b53fbbf8b1abeb5bd047aa0af6833f42eec258b6ab65d218a1f3ff7a417e5",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4919,8 +4919,8 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-                "sha256": "b07a19f87da9d0739926c35bd79127a64b6a383c5a24441181c51e823f5c28cb",
-                "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
+                "sha256": "90d8024ad3fae178cd05b48e9dbc9a6b5a3e22e70e8a91893cbdd01c168d8c0b",
+                "contentHash": "9ff9194a4aa40253937fea878b3d90600afcdb36b7ec2a2978400492101e386d",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4931,8 +4931,8 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
-                "sha256": "86d195bb0e06848a94a80d7e5f2063cf407ca65ec4e48d769de47d7a19f8b3b3",
-                "contentHash": "8aeb1516eb42c032f7979c090c1c5b759fca40db94706d9b7613b03c0218505f",
+                "sha256": "2b35ea8b3931725239f0ab70699dba07a20071db3d91915a0aa2a43c0fc615a4",
+                "contentHash": "9ff9194a4aa40253937fea878b3d90600afcdb36b7ec2a2978400492101e386d",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5033,9 +5033,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "522369399124bb72ddb64dc651238da00b0f1fe8"
+        "referenceSha": "1ec7bb1fa86b269c254ae6b45786ef13b08bde69"
     },
-    "candidateManifestSha256": "814f87a17d948a28940b75ec3b7c02769f44356e93fc35e79228f09a8bed6d83",
-    "acceptedFromCommit": "522369399124bb72ddb64dc651238da00b0f1fe8",
-    "acceptedAt": "2026-10-28T00:51:40.867Z"
+    "candidateManifestSha256": "8167bab90e31702ab036384efd72d3bf904922d1fef9f08881ebcebdc9b9c086",
+    "acceptedFromCommit": "1ec7bb1fa86b269c254ae6b45786ef13b08bde69",
+    "acceptedAt": "2026-10-30T00:42:34.814Z"
 }

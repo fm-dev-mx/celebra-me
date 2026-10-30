@@ -425,6 +425,16 @@ export function capacidades(agente, board) {
 	return own?.capacidades ?? DEFAULT_CAPACIDADES[agente] ?? [];
 }
 
+/**
+ * d314 (T391): `agente` is paused while its `agentes/<id>.json` record has `pausa.hasta` in the future; a paused
+ * agent is never offered as a place to paste a prompt. A missing or invalid date means not paused.
+ */
+export function agentPaused(agente, board, now = Date.now()) {
+	const own = (board.agentes ?? []).find((a) => a.id === agente);
+	const end = Date.parse(own?.pausa?.hasta ?? '');
+	return !Number.isNaN(end) && now < end;
+}
+
 /** Whether `agente` can finish the task alone: it has every capability in `requiere`. */
 export function canFinish(t, agente, board) {
 	if (!Object.hasOwn(AGENT_REGISTRY, agente)) return false;

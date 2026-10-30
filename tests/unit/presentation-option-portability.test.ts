@@ -11,6 +11,8 @@
  * - gifts.ornament (decorative cutout above the gifts heading, absent by default)
  * - rsvp.personalizedAccess.presentationOptions.passStyle ('classic' | 'race-credential',
  *   formal-pass only)
+ * - rsvp.personalizedAccess.presentationOptions.checkInQr (QR check-in preview, off by default,
+ *   demo previews only)
  * - music.fadeInSeconds (volume ramp on start and loop, 1.2 s by default)
  *
  * Each option is exercised on synthetic jewelry-box content with no visual profile, so none of
@@ -485,6 +487,31 @@ describe('personalized access passStyle', () => {
 		);
 		expect(styles).toContain("[data-pass-style='race-credential']");
 		expect(styles).not.toMatch(/event--|aithan/);
+	});
+});
+
+describe('personalized access checkInQr', () => {
+	type RsvpPatch = { personalizedAccess: Record<string, unknown> };
+
+	it('stays off for existing content', () => {
+		const view = adapt(synthetic('personalizedAccess', 'formal-pass', () => {}));
+		expect(view.sections.rsvp?.personalizedAccess.checkInQr).toBe(false);
+	});
+
+	it('ports to any pass variant without a profile', () => {
+		const candidate = synthetic('personalizedAccess', 'standard', (data) => {
+			(data.rsvp as RsvpPatch).personalizedAccess.presentationOptions = { checkInQr: true };
+		});
+		expect(eventContentSchema.safeParse(candidate.data).success).toBe(true);
+		expect(adapt(candidate).sections.rsvp?.personalizedAccess.checkInQr).toBe(true);
+	});
+
+	it('draws the decorative code on demo previews only', () => {
+		const markup = readSource('src/components/invitation/PersonalizedAccess.astro');
+		expect(markup).toContain('const showCheckInQr = checkInQr && Boolean(isDemoPreview);');
+		const styles = readSource('src/styles/themes/sections/personalized-access/_base.scss');
+		expect(styles).toContain('.access-card__check-in');
+		expect(styles).not.toMatch(/event--|celestial/);
 	});
 });
 

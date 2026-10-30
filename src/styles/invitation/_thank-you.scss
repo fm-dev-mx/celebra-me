@@ -196,6 +196,25 @@
 	text-shadow: 0 2px 4px rgb(0 0 0 / 5%);
 }
 
+// Split signature (`thankYou.closingNameLeadWords`): optional line tokens; every fallback keeps
+// the spans inline and inheriting, as if the name were not split.
+.closing-name__lead {
+	display: var(--thank-you-closing-lead-display, inline);
+}
+
+.closing-name__rest {
+	display: var(--thank-you-closing-rest-display, inline);
+	margin-top: var(--thank-you-closing-rest-margin-top, 0);
+	font-family: var(--thank-you-closing-rest-font-family, inherit);
+	font-size: var(--thank-you-closing-rest-size, inherit);
+	font-weight: var(--thank-you-closing-rest-weight, inherit);
+	line-height: var(--thank-you-closing-rest-line-height, inherit);
+	letter-spacing: var(--thank-you-closing-rest-letter-spacing, inherit);
+	text-transform: var(--thank-you-closing-rest-text-transform, inherit);
+	color: var(--thank-you-closing-rest-color, inherit);
+	-webkit-text-fill-color: var(--thank-you-closing-rest-color, inherit);
+}
+
 // Decorative cutout (thankYou.ornament) below the signature: contained in a fixed box, so it
 // never crops and reserves its height before loading. Zero specificity keeps profiles in charge.
 :where(.thank-you__ornament) {
