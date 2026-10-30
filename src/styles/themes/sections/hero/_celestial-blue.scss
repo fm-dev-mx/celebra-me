@@ -283,8 +283,12 @@
 			text-align: center;
 		}
 
+		// Tokens let a profile lift the cue above the fixed music prompt; fallbacks keep the left corner.
 		.invitation-hero__scroll-indicator {
-			bottom: 1.5rem;
+			bottom: var(--hero-scroll-bottom-mobile, 1.5rem);
+			left: var(--hero-scroll-left-mobile, 1rem);
+			right: var(--hero-scroll-right-mobile, auto);
+			margin-inline: var(--hero-scroll-margin-inline-mobile, 0);
 		}
 	}
 

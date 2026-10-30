@@ -235,6 +235,12 @@
 		--hero-details-padding-left: 0;
 		--hero-details-rule: 0;
 
+		// Centered with the name and lifted clear of the music prompt on phones.
+		--hero-scroll-bottom-mobile: 5rem;
+		--hero-scroll-left-mobile: 0;
+		--hero-scroll-right-mobile: 0;
+		--hero-scroll-margin-inline-mobile: auto;
+
 		@media (width >= 992px) {
 			--hero-content-justify: start;
 			--hero-title-align: left;
