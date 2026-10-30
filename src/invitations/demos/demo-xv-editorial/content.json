@@ -322,10 +322,11 @@
         "startsAtUtc": "2027-09-19T02:00:00.000Z"
     },
     "music": {
-        "url": "https://media.celebra-me.com/shared/music/nuvole-bianche-24611cb040e2779c681d7b14bc9423d8e058d477f2c4368c216a1373cf2b3f59.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo",
+        "url": "https://media.celebra-me.com/shared/music/journeys-2f77ffe1dedbc5a450cfc1867f33803fd9e687126f34021c3daef8ed53d6ca98.mp3",
+        "autoPlay": true,
+        "title": "«Journeys», Scott Buckley",
         "control": "equalizer",
-        "fadeInSeconds": 2
+        "fadeInSeconds": 2,
+        "creditsUrl": "/music/journeys-credits.html"
     }
 }
