@@ -550,6 +550,13 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   source to the follow-up, placed to its right but never a wait: it changes neither readiness nor
   «desbloquea». A missing source is refused on write and reported by `pnpm board:verify`. Review
   rounds already name their source through `origen` and need no `deriva`.
+- **Mapa · Clave (T482)**: the Mapa tab opens on «Clave», up to 7 open tasks ranked by
+  `scripts/board/key-tasks.mjs` (pure, unit-tested): first a task waiting on an unmet dueño or
+  decisión step (by how many tasks that step frees), then a task others wait on (by «desbloquea»),
+  then urgente/alta or a `hasta` within 3 days or past, then stuck work (bloqueada with nothing to
+  wait for, `en revision` for over 24 h, a delivered prompt nobody claimed). Each card shows T#,
+  title, agent, lane, age, state and its reason, and keeps an empty action slot. «Todo» shows the
+  full dependency graph. The payload carries the cards as `clave`.
 - **What is next**: `pnpm board sigue` (and the page) prints «Le toca a usted», «Le toca al
   coordinador» and «Detenidas». The coordinator sees reviews approved at the PR's current SHA
   (merge), blocked reviews, reviews with findings `close` did not send (legacy rounds), «Pedir el
