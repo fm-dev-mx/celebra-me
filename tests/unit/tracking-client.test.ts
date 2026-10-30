@@ -71,6 +71,30 @@ describe('initCommercialTracking package views', () => {
 		window.sessionStorage.clear();
 	});
 
+	it('attributes a return visit without adopting its lead code as the new session identity', async () => {
+		window.history.replaceState({}, '', '/?lead_code=CM-ABC234&utm_source=whatsapp');
+		initCommercialTracking();
+		await flushPromises();
+		const page = getTrackedPayloads(fetchMock).find(
+			(payload) => payload.eventName === 'page_viewed',
+		);
+		expect(page?.eventProperties).toMatchObject({ lead_code: 'CM-ABC234' });
+		expect(sessionStorage.getItem('cm_whatsapp_lead_code')).not.toBe('CM-ABC234');
+		expect(window.dataLayer).not.toEqual(
+			expect.arrayContaining([expect.objectContaining({ lead_code: 'CM-ABC234' })]),
+		);
+	});
+
+	it('ignores invalid return-link codes', async () => {
+		window.history.replaceState({}, '', '/?lead_code=invalid');
+		initCommercialTracking();
+		await flushPromises();
+		const page = getTrackedPayloads(fetchMock).find(
+			(payload) => payload.eventName === 'page_viewed',
+		);
+		expect(page?.eventProperties).not.toHaveProperty('lead_code');
+	});
+
 	it('sends Meta attribution as top-level payload data on commercial routes', async () => {
 		Object.defineProperty(document, 'cookie', {
 			configurable: true,
