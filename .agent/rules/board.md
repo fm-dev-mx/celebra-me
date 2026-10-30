@@ -82,9 +82,9 @@ routing and the internal modules work lives in
 
 ## Messaging and delivery
 
-- **Masters (d351)**: fixed chats; new chats only for tasks/reviews. Never archive masters or send
-  no-work notices. Confirm archival to Claude. Coordinator-only
-  [names and watcher setup/stop](../../docs/core/coordinator-board.md#master-watcher-setup-d351).
+- **Masters and watcher (d351, T442)**: fixed chats. Watcher notifies coordinator on claim, close,
+  escalations (10m/30m/60m) and merge queue. Coordinator-only
+  [setup/internals](../../docs/core/coordinator-board.md#master-watcher-setup-d351).
 - Use `msg` for `T<n> <id>`/PR doorbells; results stay in the task.
 - Check `inbox --agente=<a>` at start/end and after pushes; it marks read, not answered.
 - After answering, use `atendido`; `sigue` lists next actions.

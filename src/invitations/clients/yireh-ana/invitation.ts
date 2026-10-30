@@ -2,18 +2,20 @@ import { defineCanonicalInvitation } from '../../../../scripts/provision/invitat
 import type { CanonicalEventContentInput } from '../../../lib/schemas/content/base-event.schema.ts';
 
 /**
- * XV invitation for Yireh Ana on the storybook-lilac preset, styled as an illustrated watercolor
- * stationery album with Level-América craft: ultra-pale lilac paper, floral watercolor framing,
- * illustrated interludes of the oak tree and golden ribbons, bespoke envelope and seal, and a
- * poignant narrative of waiting and hope ("el roble y los lazos amarillos que esperan").
+ * XV invitation for Yireh Ana on the storybook-lilac preset, styled as illustrated watercolor
+ * stationery: ultra-pale lilac paper, lilac and purple floral corners with a few tiny yellow
+ * flowers, and a small yellow bow as the recurring motif (seal, quote mark, program, reply card).
+ * The cover follows the client's reference 40 without the books: floral corners above, the name
+ * on clean paper and the single oak with one yellow ribbon below. The oak appears only there;
+ * the interludes are bespoke stills (lilac branch, bouquet, sealed envelope) without people.
  *
- * The celebrant explicitly requested no personal photos or human silhouettes. Photo gallery is
- * deactivated. All unverified client data from v1 has been removed: itinerary synthetic hours
- * are removed, gifts are omitted until the client decides, the ceremony card is hidden from display
- * until its time is confirmed (announced in the intro lede), and guestCap uses the documented default.
+ * The celebrant asked for no personal photos or silhouettes, so the gallery is exempt. The copy
+ * speaks of the ties that bind and never of waiting or returning, so it reads well for every
+ * guest. The client confirmed on 2026-10-29: no religious ceremony; a thanksgiving celebration at
+ * 19:30 led by Pastor Jesús Manuel Ozaeta Pérez in the same hall; an estimated program; a
+ * heart-felt gift line with no registry or envelopes; no reserved dress color.
  *
  * Song: "Tie a Yellow Ribbon Round the Ole Oak Tree" by Tony Orlando & Dawn (YouTube: 8N1UutuYlL0).
- * Religious ceremony officiated by Pastor Jesús Manuel Ozaeta Pérez at Salón Casino Imperial.
  * Reception at 19:00 at Salón Casino Imperial, Ciudad Delicias, Chihuahua.
  */
 const YIREH_TIMING = {
@@ -39,7 +41,9 @@ const content: CanonicalEventContentInput = {
 		'quote',
 		'countdown',
 		'location',
+		'itinerary',
 		'family',
+		'gifts',
 		'personalizedAccess',
 		'rsvp',
 		'thankYou',
@@ -48,36 +52,39 @@ const content: CanonicalEventContentInput = {
 		intersections: {
 			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
 			// preserving clean neutral paper-mist cuts everywhere else.
-			countdown: { family: 'overlap', source: 'interlude-after-quote' },
+			countdown: { family: 'overlap', source: 'quote' },
 			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
 	interludes: [
 		{
-			// Illustrated interlude 1: watercolor oak branch with lilac blossoms and golden-yellow ribbon.
-			image: 'interludeRibbon',
-			afterSection: 'quote',
-			alt: 'Rama de roble con flores lilas y un lazo amarillo en acuarela.',
+			// Bespoke still 1: a lilac and purple bouquet with one yellow flower, tied with ribbon.
+			image: 'interludeBouquet',
+			afterSection: 'countdown',
+			alt: 'Ramo de flores lilas y moradas con una flor amarilla, atado con un listón, en acuarela.',
 			height: 'medium',
 			presentation: 'framed',
 		},
 		{
-			// Illustrated interlude 2: ancient oak tree in soft light with fluttering yellow ribbons.
-			image: 'interludeOak',
-			afterSection: 'countdown',
-			alt: 'El roble antiguo con lazos amarillos entre sus ramas, en acuarela.',
+			// Bespoke still 2: the invitation itself, a sealed lilac envelope, before the reply.
+			image: 'interludeEnvelope',
+			afterSection: 'gifts',
+			alt: 'Sobre lila cerrado con un ramito de flores y un moño amarillo, en acuarela.',
 			height: 'medium',
 			presentation: 'framed',
 		},
 	],
 	hero: {
-		variant: 'framed-portrait',
+		variant: 'standard',
 		name: CELEBRANT_NAME,
 		label: 'Mis XV Años',
 		date: '2027-10-23T12:00:00.000Z',
 		backgroundImage: 'hero',
+		backgroundImageDesktop: 'heroWide',
 		scrollLabel: 'Deslice para descubrir',
+		// The cover stays while the picture closes in on the oak's yellow ribbon.
+		presentation: { timeFormat: '12h', scene: 'cover-approach' },
 	},
 	envelope: {
 		disabled: false,
@@ -93,14 +100,13 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Dicen que quien espera con el corazón ata un lazo al roble para recordar siempre el camino de vuelta.',
-		closingLine:
-			'Quince años después, mi lazo lleva su nombre. Deseo de corazón que me acompañe.',
+		text: 'Hay lazos que nos unen aunque pase el tiempo.',
+		closingLine: 'Este día quiero compartirlo con usted.',
 	},
 	countdown: {
 		variant: 'written-days',
 		title: 'Faltan',
-		footerText: 'para reunirnos bajo el roble',
+		footerText: 'para celebrar juntos',
 	},
 	location: {
 		variant: 'program-sheet',
@@ -112,7 +118,7 @@ const content: CanonicalEventContentInput = {
 		},
 		introHeading: 'Lugar y momento',
 		introLede:
-			'La ceremonia religiosa será oficiada por el Pastor Jesús Manuel Ozaeta Pérez en el mismo salón.',
+			'La celebración de acción de gracias estará a cargo del Pastor Jesús Manuel Ozaeta Pérez, en el mismo salón. Le pedimos llegar antes de que comience, para no interrumpir la entrega de los diez elementos simbólicos a Yireh Ana.',
 		indicationsHeading: 'Código de vestimenta',
 		indications: [
 			{
@@ -137,17 +143,65 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				type: 'ceremony',
-				venueEvent: 'Ceremonia religiosa',
+				venueEvent: 'Acción de gracias',
 				venueName: 'Salón Casino Imperial',
 				address: 'Carr. Delicias–Ortiz km 1, Centro',
 				city: 'Ciudad Delicias, Chihuahua',
 				date: '2027-10-23',
-				time: '',
+				time: '19:30',
 				googleMapsUrl:
 					'https://maps.google.com/?q=Casino+Imperial,+Carr.+Delicias+-+Ortiz+Km+1,+Ciudad+Delicias,+Chihuahua',
-				isVisible: false,
+				isVisible: true,
 			},
 		],
+	},
+	itinerary: {
+		// Estimated hours agreed with the client on 2026-10-29; the copy says they may shift.
+		variant: 'standard',
+		// Pinned scene: a yellow ribbon draws itself down the program and ends in the bow.
+		scene: 'ribbon-route',
+		title: 'Así será mi noche',
+		items: [
+			{
+				time: '19:00',
+				iconName: 'Reception',
+				label: 'Recepción',
+				description: 'Le recibimos en el Salón Casino Imperial.',
+			},
+			{
+				time: '19:30',
+				iconName: 'Dove',
+				label: 'Acción de gracias',
+				description: 'A cargo del Pastor Jesús Manuel Ozaeta Pérez.',
+			},
+			{
+				time: '21:00',
+				iconName: 'Waltz',
+				label: 'Vals',
+				description: 'Enseguida, el brindis.',
+			},
+			{
+				time: '21:30',
+				iconName: 'Dinner',
+				label: 'Bocadillos y aguas frescas',
+				description: 'Después, la pista se abre para bailar.',
+			},
+			{
+				time: '00:00',
+				iconName: 'Party',
+				label: 'Cierre',
+				description: 'Gracias por compartir esta noche.',
+			},
+		],
+		closingNote: 'Horarios aproximados. El salón nos recibe de 7:00 p. m. a medianoche.',
+	},
+	gifts: {
+		// No registry and no envelopes: one gentle line, in the client's words.
+		variant: 'standard',
+		title: 'Un detalle',
+		presentation: 'legend-only',
+		subtitle:
+			'Si desea tener un detalle con Yireh Ana, lo que disponga su corazón será bien recibido.',
 	},
 	family: {
 		variant: 'standard',
@@ -160,7 +214,7 @@ const content: CanonicalEventContentInput = {
 			sectionSubtitle: '',
 			parentsTitle: 'Mi mamá',
 			sectionMessage:
-				'A usted, mamá, que me ha enseñado a ser firme como el roble y a guardar siempre un lazo de esperanza en el corazón.',
+				'A usted, mamá, gracias por enseñarme a ser firme y a cuidar los lazos que nos unen.',
 		},
 	},
 	rsvp: {
@@ -190,27 +244,28 @@ const content: CanonicalEventContentInput = {
 		confirmationMessage: `Nos vemos el sábado ${EVENT_DATE_LABEL}.`,
 		responseMessages: {
 			confirmed: {
-				title: 'Ya le espero, {guestName}.',
+				title: 'Gracias, {guestName}. Nos vemos pronto.',
 				subtitle: 'Si algo cambia, puede modificar su respuesta aquí mismo.',
 			},
 			declined: {
-				title: 'Le voy a extrañar, {guestName}.',
-				subtitle: 'Gracias por avisarme.',
+				title: 'Gracias por avisarme, {guestName}.',
+				subtitle: 'Le tendré presente ese día.',
 			},
 		},
 	},
 	thankYou: {
 		variant: 'portrait-keepsake',
-		image: 'tree',
+		image: 'wreath',
 		focalPoint: '50% 50%',
 		message:
-			'Hay lazos que nunca se rompen y lugares a los que siempre se puede volver. Gracias por ser parte de mi camino y por acompañarme en mis quince años.',
+			'Hay lazos que el tiempo no desata. Gracias por ser parte de mi historia y por acompañarme en mis quince años.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: `Yireh Ana · Mis XV Años · Delicias, Chihuahua · MMXXVII`,
 	},
 	navigation: [
 		{ label: 'Momento', href: '#quote-section' },
 		{ label: 'Lugar', href: '#event-location' },
+		{ label: 'Programa', href: '#itinerary' },
 		{ label: 'Familia', href: '#family-section' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
@@ -246,10 +301,11 @@ export default defineCanonicalInvitation({
 	hostLoginAlias: 'yireh_ana',
 	assetDir: 'src/invitations/clients/yireh-ana/assets',
 	assetFiles: {
-		hero: 'hero-watercolor.webp',
-		interludeRibbon: 'interlude-ribbon.webp',
-		interludeOak: 'interlude-oak.webp',
-		tree: 'oak-tree.webp',
+		hero: 'hero-cover.webp',
+		heroWide: 'hero-cover-wide.webp',
+		interludeBouquet: 'interlude-bouquet.webp',
+		interludeEnvelope: 'interlude-envelope.webp',
+		wreath: 'closing-wreath.webp',
 		ogShare: 'og-share.webp',
 	},
 	deliveryScope: 'content-and-assets',

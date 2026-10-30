@@ -230,6 +230,21 @@ export class MetaGraphClient {
 		}
 	}
 
+	/**
+	 * Page insights refuse user and system-user tokens (code 190, subcode 2069032), so the
+	 * collector trades the configured token for the Page's own token before reading them.
+	 */
+	async pageAccessToken(pageId: string): Promise<string> {
+		if (!/^\d+$/.test(pageId)) throw new MetaGraphError('request');
+		const url = new URL(`/${META_GRAPH_API_VERSION}/${pageId}`, GRAPH_ORIGIN);
+		url.searchParams.set('fields', 'access_token');
+		const { body } = await this.#read(url);
+		const token = body.access_token;
+		if (typeof token !== 'string' || !token || /\s/.test(token))
+			throw new MetaGraphError('response');
+		return token;
+	}
+
 	async *pages(
 		path: string,
 		params: Record<string, string> = {},

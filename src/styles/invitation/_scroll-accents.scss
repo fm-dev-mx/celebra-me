@@ -1,0 +1,123 @@
+@use '../global/a11y' as a11y;
+
+// ==========================================================================
+// SCROLL ACCENTS
+// Per-element scroll-linked effects a profile can give the sections that have no accent of their
+// own. A profile opts in with `--scroll-accents: on` and names one keyframe per element through
+// its token (default none):
+//   --hero-scroll-accent        Standard hero background while the cover leaves (exit range)
+//   --quote-scroll-accent       Quote card
+//   --countdown-scroll-accent   Countdown timer
+//   --gifts-scroll-accent       Gifts header and body
+//   --access-scroll-accent      Personalized pass card
+//   --rsvp-scroll-accent        Reply card
+//   --thank-you-scroll-accent   Closing image
+// Keyframes: `scroll-accent-rise` (--scroll-accent-rise), `scroll-accent-unfold`
+// (--scroll-accent-scale, --scroll-accent-turn), `scroll-accent-leave` (--scroll-accent-drift,
+// --scroll-accent-grow) and the shared `invitation-settle-3d` (--settle-*).
+// Editorial invitations only, under `prefers-reduced-motion: no-preference` and inside
+// `@supports (animation-timeline: view())`; elsewhere each element keeps its resting layout.
+// Sections that clip with `overflow: hidden` are their own scroll containers, so their accents
+// follow a timeline named on the section instead of `view()`.
+// Contract: docs/domains/theme/motion.md, "Per-element scroll-linked effects".
+// ==========================================================================
+
+$entrance: entry 0% cover 45%;
+
+// selector, token, timeline (or null for view()), owner of the named timeline, range
+$accents: (
+	(
+		'.invitation-hero[data-variant="standard"] .invitation-hero__background',
+		--hero-scroll-accent,
+		--hero-accent,
+		'.invitation-hero[data-variant="standard"]',
+		exit 0% exit 100%
+	),
+	('.quote-container', --quote-scroll-accent, --quote-accent, '.quote-section', $entrance),
+	(
+		'.countdown-timer-wrapper',
+		--countdown-scroll-accent,
+		--countdown-accent,
+		'.countdown-section',
+		$entrance
+	),
+	(
+		'.gifts-section__container',
+		--gifts-scroll-accent,
+		--gifts-accent,
+		'.gifts-section',
+		$entrance
+	),
+	('.access-card', --access-scroll-accent, null, null, $entrance),
+	('.rsvp-section .rsvp', --rsvp-scroll-accent, null, null, $entrance),
+	(
+		'.thank-you-editorial__image-shell',
+		--thank-you-scroll-accent,
+		--thank-you-accent,
+		'.thank-you-section',
+		$entrance
+	)
+);
+
+@supports (animation-timeline: view()) {
+	@include a11y.motion-safe {
+		@container style(--scroll-accents: on) {
+			@each $selector, $token, $timeline, $owner, $range in $accents {
+				@if $timeline {
+					[data-motion='editorial'] #{$owner} {
+						view-timeline: #{$timeline} block;
+					}
+				}
+
+				[data-motion='editorial'] #{$selector} {
+					animation: var(#{$token}, none) linear both;
+					animation-range: $range;
+
+					@if $timeline {
+						animation-timeline: $timeline;
+					} @else {
+						animation-timeline: view();
+					}
+				}
+			}
+		}
+	}
+}
+
+@keyframes scroll-accent-rise {
+	from {
+		opacity: 0%;
+		translate: 0 var(--scroll-accent-rise, 2.5rem);
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes scroll-accent-unfold {
+	from {
+		opacity: 0%;
+		scale: var(--scroll-accent-scale, 0.9);
+		rotate: var(--scroll-accent-turn, -3deg);
+	}
+
+	to {
+		opacity: 100%;
+		scale: 1;
+		rotate: 0deg;
+	}
+}
+
+@keyframes scroll-accent-leave {
+	from {
+		translate: 0 0;
+		scale: 1;
+	}
+
+	to {
+		translate: 0 var(--scroll-accent-drift, 20%);
+		scale: var(--scroll-accent-grow, 1.06);
+	}
+}
