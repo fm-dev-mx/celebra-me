@@ -410,7 +410,7 @@ describe('what is next (T126)', () => {
 		);
 		const sigue = cli(dir, ['sigue'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture });
 		expect(sigue.out).toContain(
-			'Le toca a usted (1):\n  - Correr el despachador de Codex (T1)',
+			'Le toca a usted (1):\n  - DÓNDE: Codex · proyecto f05-plataforma · chat nuevo «f05 · T1 · codex-lista»\n    Correr el despachador de Codex (T1)',
 		);
 		expect(sigue.out).toContain('Le toca al coordinador (1):\n  - PR #9 sin tarea: Z');
 		expect(sigue.out).toContain(

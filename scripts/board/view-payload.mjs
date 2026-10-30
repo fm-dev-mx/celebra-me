@@ -4,13 +4,21 @@ import { dependencyGraph } from './dependency-graph.mjs';
 import { leadOf } from './format.mjs';
 import { AGENT_REGISTRY, findTask, ownerWhere } from './model.mjs';
 import { unreadFor } from './next.mjs';
+import { promptTitle } from './owner-where.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
 
 export function taskSummary(t, board) {
 	const { prompt, cierre, ...rest } = t;
 	return {
 		...rest,
-		...(prompt ? { prompt: true, donde: ownerWhere(t) ?? t.donde } : {}),
+		// T391: the prompt's session title survives, so the view names the same new chat as `pnpm board list`.
+		...(prompt
+			? {
+					prompt: true,
+					donde: ownerWhere(t) ?? t.donde,
+					promptTitulo: promptTitle(t) ?? undefined,
+				}
+			: {}),
 		bloqueoArchivo: archiveBlock(t, board),
 		...(cierre
 			? {
