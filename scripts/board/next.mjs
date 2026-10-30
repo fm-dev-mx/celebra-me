@@ -5,6 +5,7 @@
  */
 import {
 	AGENT_REGISTRY,
+	agentPaused,
 	authorOf,
 	claimable,
 	color,
@@ -158,12 +159,14 @@ const idleText = (idle) => (Number.isNaN(idle) ? '' : ` · lista ${agoText(idle)
  * Ready tasks for Claude or the coordinator go to «Le toca al coordinador» instead (coordinatorItems).
  */
 export function stalls(board, now = Date.now()) {
+	// T382: a paused agent's dispatcher is never suggested.
+	const launches = (t) => ownerLaunches(t, board, now).filter((a) => !agentPaused(a, board, now));
 	const dueno = readyUnclaimed(board, now)
 		// d249: a delivered task comes back as its own «nadie la tomó» row instead.
-		.filter(({ t, idle }) => isIdle(idle) && ownerLaunches(t, board, now).length)
+		.filter(({ t, idle }) => isIdle(idle) && launches(t).length)
 		.filter(({ t }) => !delivery(t, now))
 		.map(({ t, idle }) => {
-			const names = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a].nombre);
+			const names = launches(t).map((a) => AGENT_REGISTRY[a].nombre);
 			return {
 				t,
 				texto: `Correr el despachador de ${names.join(' o ')} (${taskTag(t)})${idleText(idle)}`,

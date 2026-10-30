@@ -22,8 +22,9 @@
  *                                               lane, the lane and branch must be the task's and it opens
  *                                               the git-safety session --session=<rama>)
  *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
- *                                               a usted» until 30 min pass without a claim (claim clears it)
- *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it
+ *                                               a usted» until 15 min pass without a claim (claim clears it)
+ *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it;
+ *                                               T382: refused on a busy lane (other branch, uncommitted)
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees a legacy lock without sesion, or
  *                                               (d274) one silent for 2 h whose task has a valid cierre;
@@ -93,7 +94,6 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
 	canFinish,
 	color,
@@ -108,9 +108,7 @@ import {
 	taskIssues,
 	inTab,
 	isFinished,
-	isReadOnly,
 	isReview,
-	laneAllowed as laneAllowedIn,
 	authorOf,
 	buildLogRow,
 	buildMessageRow,
@@ -129,6 +127,7 @@ import {
 	CONTRATO,
 	findTask,
 } from './model.mjs';
+import { assertLaneReady, assertPlan, readLaneGit } from './lane-plan.mjs';
 import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
 import { ciGate, reviewPreflight, sinCiTrace, untilGreen, viewPr } from './review-preflight.mjs';
 import { assertOwner, noteOverride, overrideReason } from './lock-owner.mjs';
@@ -168,7 +167,7 @@ import { withTrace } from './trace.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
 import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
-import { claimCommands, readOnlyLaneError, sayClaim } from './claim-commands.mjs';
+import { claimCommands, sayClaim } from './claim-commands.mjs';
 
 const COLOR_LABEL = {
 	own: 'USTED',
@@ -430,19 +429,6 @@ function archiveCommand(archivar) {
 	};
 }
 
-const laneAllowed = (carril, task) => laneAllowedIn(carril, task, WORKTREE_LANES);
-
-/** d177: only a declared coordinator plans a lane, and only a canonical one. */
-function assertPlan(task, carril, flags) {
-	if (!flags.coordinador)
-		throw new UsageError('el carril planeado lo asigna el coordinador: use --coordinador');
-	if (isReadOnly(task)) throw new UsageError(readOnlyLaneError(task, 'carril planeado'));
-	if (!laneAllowed(carril, task))
-		throw new UsageError(
-			`carril ${carril} no es canónico (f05-f12; integration solo para coordinador)`,
-		);
-}
-
 function row(t, n, board, agente) {
 	const c = color(t, board, { agente });
 	const lock = t.candado ? ` [${t.candado.agente}]` : '';
@@ -687,8 +673,10 @@ const commands = {
 		});
 	},
 	/** d177: the coordinator plans the lane a task runs in; claim then takes it without --carril. */
-	plan({ pos, flags }, dir, out) {
+	async plan({ pos, flags }, dir, out) {
 		if (typeof flags.carril !== 'string') throw new UsageError('falta --carril=<carril>');
+		// T382: the lanes' Git state is read before the lock; the check itself runs inside it.
+		const git = flags.carril ? await readLaneGit(dir) : [];
 		return withLock(dir, () => {
 			const before = getTask(dir, need(pos[0], 'falta <id>'));
 			checkRev(before, flags);
@@ -698,6 +686,7 @@ const commands = {
 				throw new UsageError(
 					'el carril planeado lo quita el coordinador: use --coordinador',
 				);
+			if (carril) assertLaneReady(carril, before, git, loadBoard(dir));
 			if (isReview(before)) throw new UsageError('una revisión no tiene carril planeado');
 			if (before.candado)
 				throw new UsageError(
