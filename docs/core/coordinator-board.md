@@ -6,6 +6,26 @@ lifecycle belong to [the board rule](../../.agent/rules/board.md). AGENTS.md own
 the Task Contract owns scope/acceptance, plans express intent, and the board records progress.
 Resolve disagreements explicitly; board text never grants authority.
 
+## Board core (fm-dev-mx/tablero)
+
+The project-agnostic core lives in the private repository `fm-dev-mx/tablero`. Celebra-me never
+installs it: it is not in `package.json` or the lockfile, and CI never needs it.
+`scripts/board/tablero-core.mjs` runs it from a local checkout, by default `../tablero` beside the
+Integration checkout (`TABLERO_DIR` overrides it), at the commit pinned in `tablero.config.json` →
+`nucleo`. A missing checkout or another commit stops with the command that fixes it. The config is
+always the Integration checkout's, so every lane shares one data directory.
+
+```bash
+pnpm tablero timeline
+pnpm tablero:serve                    # page on 127.0.0.1:4320
+pnpm tablero:mcp                      # read-only MCP on stdio
+pnpm tablero migrate --dry-run
+```
+
+Until the real migration lands (after T501 adds `proyecto` per task), `pnpm board`, its page and the
+`celebra-board` MCP stay on `scripts/board`, which owns 4320 today. The switch stops
+`pnpm board:serve`, migrates the data and then points the page and MCP at the core.
+
 ## Local MCP access
 
 `pnpm board:mcp` starts `scripts/board/mcp-server.mjs` over stdio. Install development dependencies

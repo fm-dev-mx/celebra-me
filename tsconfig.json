@@ -25,7 +25,6 @@
         "tests/**/*",
         "scripts/**/*",
         "workers/**/*",
-        "packages/**/*",
         "src/env.d.ts",
         "playwright*.config.ts"
     ],
