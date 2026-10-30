@@ -12,6 +12,7 @@ import { findingsNotice, findingsPending, findingsRow } from './findings.mjs';
 import {
 	HANDOFF_LISTS,
 	VEREDICTOS,
+	findTask,
 	isFinished,
 	isReview,
 	logRowError,
@@ -19,7 +20,13 @@ import {
 	quienOf,
 	unlocked,
 } from './model.mjs';
-import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
+import {
+	checkoutState,
+	finishGitSafety,
+	finishOps,
+	gitSafetyOpen,
+	lockLaneIssue,
+} from './lane-session.mjs';
 import { cadaMs, nextCycle } from './recurring.mjs';
 import { appendLog, loadBoard, readDoc, withLock } from './store.mjs';
 
@@ -127,6 +134,34 @@ export function settled(before, after, flags) {
 	return { ...unlocked(after, flags), estado: 'hecha' };
 }
 
+const label = (t) => (t.num !== undefined ? `T${t.num}` : t.id);
+
+/**
+ * T480: the task `merged` moves. A review round shares its origin's PR, so `merged` names the origin instead,
+ * and with no <id> the one live non-review task carrying `--pr=#N` is the one.
+ */
+export function mergedRef(ref, pr, board) {
+	if (typeof ref === 'string' && ref) {
+		const t = findTask(ref, board);
+		if (!t || !isReview(t)) return ref;
+		const id = t.origen ?? String(t.id).replace(/-revision(?:-\d+)?$/, '');
+		const origen = findTask(id, board);
+		const name = origen ? label(origen) : id;
+		throw new UsageError(
+			`${label(t)} es la revisión de ${name} (se cierra con su --sha); use pnpm board merged ${name} --coordinador`,
+		);
+	}
+	const given = typeof pr === 'string' ? normalizePr(pr) : undefined;
+	if (!given) throw new UsageError('falta <id> o --pr=#<número>');
+	const hits = (board.tareas ?? []).filter(
+		(t) => !isReview(t) && (normalizePr(t.pr) ?? t.cierre?.pr) === given,
+	);
+	if (hits.length === 1) return hits[0].id;
+	if (!hits.length)
+		throw new UsageError(`ninguna tarea del tablero tiene ${given}: indique <id>`);
+	throw new UsageError(`${given} está en ${hits.map(label).join(', ')}: indique <id>`);
+}
+
 /** The cierre `close` writes; a malformed --changelog is the caller's mistake, not a crash. */
 function closingCierre(before, args, board) {
 	try {
@@ -192,11 +227,20 @@ export function closeCommands({
 					next,
 					closed,
 					senal,
+					// T480: a task nobody claimed has no lane session; the coordinator's close skips git-safety.
+					sinCandado: Boolean(flags.coordinador) && !before.candado,
 					rama: before.candado?.rama ?? before.rama,
 				};
 			});
 			// T297: from the task's lane, the git-safety session ends with the close (--git-safety=commit).
-			const gitSafety = finishGitSafety(checkout, info.rama, ops);
+			// A session still open for the branch (a released task) is finished as before.
+			const gitSafety =
+				info.sinCandado && !gitSafetyOpen(checkout, info.rama)
+					? ops && {
+							ok: true,
+							line: `git-safety: ${info.t.id} no tenía candado; se cerró sin sesión de carril`,
+						}
+					: finishGitSafety(checkout, info.rama, ops);
 			if (gitSafety && !gitSafety.ok) process.exitCode = 1;
 			const text = [
 				`${info.t.id} con cierre (rev ${info.t.rev}) · ${info.t.estado ?? 'pendiente'}`,

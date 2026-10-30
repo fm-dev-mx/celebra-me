@@ -378,7 +378,8 @@ export const archivedTask = (id, board) =>
 
 /**
  * A task's requisitos, each re-checked against the board right now. A pending task without a prompt gets an
- * automatic «prompt» requisito, except when the coordinator itself is the actor.
+ * automatic «prompt» requisito (T480: «carril» when a kind's prompt only waits for its lane), except when the
+ * coordinator itself is the actor.
  */
 export function requisitos(t, board, now = Date.now()) {
 	const tareas = board.tareas ?? [];
@@ -400,7 +401,12 @@ export function requisitos(t, board, now = Date.now()) {
 		return { ...r, ok: r.ok === true };
 	});
 	if ((t.estado ?? 'pendiente') === 'pendiente' && t.actor !== 'coordinador' && !t.prompt)
-		list.push({ tipo: 'prompt', ref: '', ok: false, auto: true });
+		list.push(
+			// T480: a kind's prompt is generated once it has a lane, so the lane is what is missing.
+			t.tipo && !t.revisionSha && String(t.busca ?? '').trim() && !t.carrilPlaneado
+				? { tipo: 'carril', ref: t.id, ok: false, auto: true }
+				: { tipo: 'prompt', ref: '', ok: false, auto: true },
+		);
 	return list;
 }
 

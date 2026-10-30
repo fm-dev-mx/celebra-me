@@ -781,8 +781,14 @@ moves `pendiente`/`en curso`/`bloqueada` to `en revision`; a merged PR moves the
 **d170**: a merged PR also drops the task's lock, whoever holds it, through
 `pnpm board merged <id> --coordinador`, which re-checks the PR is `MERGED` (finished tasks that
 still hold a lock included). Closed-unmerged PRs, branches without a PR and locked tasks with an
-open PR are only reported; review children are never touched. A lock older than `--horas` (default
-`STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
+open PR are only reported; review children are never touched. **T480**:
+`pnpm board merged --pr=#N --coordinador` (no id) moves the one live non-review task carrying that
+PR; with none or several it asks for the id, and a review id gets «T<n> es la revisión de T<m>» with
+the command for its origin. A task nobody claimed is closed by the coordinator with
+`pnpm board close <id> --coordinador --pr=#N …`; with `--git-safety=commit` it prints that there was
+no lane session instead of failing. A pending kind task (`tipo` + `busca`) without a lane shows
+«Falta el carril: pnpm board plan <id> …», not «Falta el prompt». A lock older than `--horas`
+(default `STALE_LOCK_HOURS` = 6 in `model.mjs`, the same threshold `pnpm board verify` warns at, or
 `CELEBRA_BOARD_LOCK_HOURS`) whose branch got no commit on origin since `candado.desde` is flagged
 «posible sesión cerrada» and never released by the sync (the owning session or the coordinator with
 authority does).
