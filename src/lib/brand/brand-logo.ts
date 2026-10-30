@@ -21,7 +21,7 @@ interface LogoArtwork {
 const LOGO_ARTWORK: Record<LogoVersion, LogoArtwork> = {
 	compacto: { viewBoxWidth: 336, viewBoxHeight: 142.77, minWidth: 120 },
 	horizontal: { viewBoxWidth: 418.33, viewBoxHeight: 116, minWidth: 320 },
-	'firma-invitacion': { viewBoxWidth: 336, viewBoxHeight: 162.73, minWidth: 120 },
+	'firma-invitacion': { viewBoxWidth: 336, viewBoxHeight: 162.73, minWidth: 240 },
 };
 
 export const LOGO_ALT = 'Celebra-me';
