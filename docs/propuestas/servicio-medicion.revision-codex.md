@@ -1,7 +1,7 @@
 # Revisión 2: Viabilidad técnica contra el repositorio · Servicio de medición y campañas
 
 **Fecha:** 30 de octubre de 2026  
-**Revisor:** Codex (`f05-plataforma · T465 · PR #673`, ejecutado por identidad gemini)  
+**Revisor:** Gemini (en relevo de Codex para Revisión 2 · `f05-plataforma · T465 · PR #673`)  
 **Documentos evaluados:**
 
 - [docs/propuestas/servicio-medicion.md](servicio-medicion.md)
@@ -90,12 +90,15 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
      `useServiceRole: true` representaría un vector directo de fuga o contaminación cruzada de datos
      entre clientes.
    - **Fricción de Despliegue y CI/CD:** La suite completa de integración continua de Celebra-me
-     (`pnpm run ci`), diseñada para salvaguardar una plataforma de producción de invitaciones,
-     ejecuta verificación estricta de branding/logo, accesibilidad WCAG, validación estructural,
-     cobertura de tipos completa y pruebas de render corpus. Desarrollar un servicio desacoplado
-     dentro de este monorepo obligaría a que cada commit o iteración sobre adaptadores publicitarios
-     corra esta suite pesada, ralentizando el ciclo de desarrollo frente a un monorepo enfocado con
-     CI ágil.
+     (`pnpm run ci`), concebida para salvaguardar una plataforma de producción de invitaciones
+     digitales, ejecuta verificación estricta de branding y logotipo (`pnpm validate:brand-logo`),
+     auditoría de accesibilidad WCAG (`pnpm validate:accessibility`), comprobación de estructura de
+     directorios (`pnpm validate:structure`), verificación exhaustiva de tipos (`pnpm type-check`) y
+     ejecución de pruebas unitarias y de render corpus. Desarrollar e iterar un producto de medición
+     publicitaria dentro de este monorepo obligaría a que cada commit o ajuste menor en adaptadores
+     ejecute esta suite completa y pesada, ralentizando el ciclo de desarrollo respecto a un
+     monorepo dedicado con un flujo de CI ágil enfocado exclusivamente en sus paquetes de ingestión
+     y despacho.
    - **Ruptura de Principios de Dominio:** Alojar el servicio dentro de Celebra-me violaría de
      origen la Regla 1 (_Regla del segundo cliente_) y la Regla 2 (_Configuración, no copias_),
      induciendo a reutilizar modelos propios de invitaciones (`event_type: boda | xv`,
@@ -103,10 +106,11 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
 
 3. **Costo Real de Construir en un Monorepo Separado:**
    - **Esfuerzo de arranque inicial:** Crear un repositorio limpio con `pnpm workspace`
-     (`packages/core`, `packages/capture`, etc.), configuración de TypeScript, base de datos
-     Supabase dedicada (migraciones locales de inicio) y despliegue a Cloudflare Workers requiere
-     una inversión acotada estimada internamente en **1.5 a 2 días de agente** de configuración
-     inicial.
+     (`packages/core`, `packages/capture`, etc.), configuración de TypeScript estricto, esquema
+     Supabase dedicado (migraciones locales iniciales de las 10 tablas) y despliegue a Cloudflare
+     Workers (`wrangler.jsonc`) representa una inversión inicial acotada estimada en **1.5 a 2 días
+     de agente**, correspondiente a las tareas de scaffolding, configuración de herramientas y
+     definición del pipeline base de integración continua.
    - **Aislamiento absoluto:** Base de datos independiente donde RLS se aplica de forma estricta y
      donde el `service_role` solo opera sobre datos del servicio de medición, sin riesgo de exponer
      invitados, fotos o memorias privadas de Celebra-me.
@@ -140,7 +144,10 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
      ingestores de gasto (`packages/spend`) corren mediante credenciales administrativas
      (`service_role`). Dado que el rol de servicio ignora RLS, todas las consultas y mutaciones SQL
      ejecutadas por workers deben incluir explícitamente la cláusula `WHERE tenant_id = ?` en la
-     sentencia para garantizar el aislamiento lógico.
+     sentencia para garantizar el aislamiento lógico (a diferencia del backend interno de
+     Celebra-me, donde `useServiceRole: true` definido en
+     `src/lib/rsvp/repositories/supabase.ts:133-140` ejecuta peticiones con credencial
+     `service_role` sin necesidad de aislamiento multi-inquilino).
 
 3. **Idempotencia con `event_id` y Mecanismo Outbox:**
    - El patrón de idempotencia determinista formulado en la Regla 7 es idéntico al probado con éxito
@@ -266,15 +273,18 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
 - **Sección afectada:** `docs/propuestas/servicio-medicion.md` § Reglas del proyecto (Regla 5) y §
   Modelo de datos (tabla `connections`).
 - **Descripción:** La propuesta establece en la nota de `connections`: _"Tokens en el almacén de
-  secretos"_. En Celebra-me, los tokens son de un único cliente y se leen como variables de entorno
-  del proceso en tiempo de ejecución (`src/lib/server/env.ts:1-10` y
-  `src/lib/meta/graph-client.ts:10-17` con `getEnv('META_GRAPH_ACCESS_TOKEN')`). Sin embargo, en un
+  secretos"_. En la arquitectura actual de Celebra-me no existen entidades ni tablas de base de
+  datos para conexiones de integración o tokens dinámicos de clientes: las credenciales externas
+  (Meta Graph API y Meta CAPI) corresponden a un único inquilino y se manejan exclusivamente a
+  través de variables de entorno del proceso en tiempo de ejecución (`src/lib/server/env.ts:1-10`,
+  `src/lib/meta/graph-client.ts:10-17` con `getEnv('META_GRAPH_ACCESS_TOKEN')` y
+  `src/lib/commercial/meta-capi/service.ts:133-145` con `getEnv('META_CAPI_ACCESS_TOKEN')`). En un
   modelo multi-inquilino donde cada cliente vincula sus propios tokens dinámicos de Meta System
-  User, TikTok Access Token y credenciales de Google Ads, no es posible usar variables de entorno de
-  proceso: los tokens deben persistirse por fila en la base de datos (tabla `connections`).
-  Almacenar estos valores en texto plano en columnas estándar viola la Regla 5 (_los tokens viven en
-  un almacén de secretos, nunca en el código_) y expone las credenciales de todos los clientes ante
-  cualquier volcado o consulta con rol de servicio.
+  User, TikTok Access Token y credenciales de Google Ads, no es posible delegar la configuración a
+  variables de entorno de servidor: los tokens deben persistirse por fila en la base de datos (tabla
+  `connections`). Almacenar estos valores en texto plano en columnas estándar viola la Regla 5 (_los
+  tokens viven en un almacén de secretos, nunca en el código_) y expone las credenciales de todos
+  los clientes ante cualquier volcado o consulta con rol de servicio.
 - **Cambio propuesto:**
   1. Especificar que la tabla `connections` almacenará `encrypted_access_token BYTEA` o `TEXT` con
      su respectivo vector de inicialización (`iv`), cifrado mediante AES-256-GCM a nivel de
@@ -284,9 +294,10 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
      credenciales descifradas.
   3. Alternativamente, utilizar la extensión `Supabase Vault` (`vault.create_secret`) si la
      instancia de Supabase tiene habilitada la extensión `pgsodium`.
-- **Evidencia en el repositorio:** `src/lib/meta/graph-client.ts:10-17` (demuestra que el código
-  actual solo soporta un token estático global vía `readMetaInsightsConfig`) y
-  `src/lib/server/env.ts:1-10` (lector de variables de entorno de proceso único).
+- **Evidencia en el repositorio:** La arquitectura existente de Celebra-me gestiona credenciales de
+  integración de forma mono-inquilino sin tablas de conexiones en base de datos, leyéndolas
+  únicamente del entorno de ejecución en `src/lib/server/env.ts:1-10`,
+  `src/lib/meta/graph-client.ts:10-17` y `src/lib/commercial/meta-capi/service.ts:133-145`.
 
 ---
 
