@@ -18,6 +18,7 @@ import EnvelopeSectionEditor from '@/components/dashboard/intake/editor/Envelope
 import GiftsSectionEditor from '@/components/dashboard/intake/editor/GiftsSectionEditor';
 import SharingSectionEditor from '@/components/dashboard/intake/editor/SharingSectionEditor';
 import EditorActionBar from '@/components/dashboard/intake/editor/EditorActionBar';
+import OrderDraftSource from '@/components/dashboard/intake/editor/OrderDraftSource';
 import EditorPreviewPane from '@/components/dashboard/intake/editor/EditorPreviewPane';
 import EditorSidebar from '@/components/dashboard/intake/editor/EditorSidebar';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
@@ -902,6 +903,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				/>
 
 				<main className="invitation-editor__content">
+					<OrderDraftSource source={content.orderSource} />
 					<SectionCard
 						id="metadata"
 						title="Datos de la invitación"
