@@ -14,6 +14,16 @@
 	--motion-hero-affordance-duration: 0.4s;
 	--motion-hero-affordance-delay: 0.72s;
 
+	// The song line shares the hero content's left edge but stays a quiet caption: a dimmer serif
+	// italic, never the name's script, so it reads after the date and venue, not with them.
+	--music-track-left: clamp(1.25rem, 4vw, 2rem);
+	--music-track-bottom: clamp(1.25rem, 4svh, 2.25rem);
+	--music-track-color: rgb(var(--color-diamond-white-rgb) / 62%);
+	--music-track-accent: var(--color-satin-blue);
+	--music-track-title-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--music-track-title-size: 0.95rem;
+	--music-track-meta-size: 0.6rem;
+
 	// The standard family layout owns the responsive portrait/name split.
 	--family-bg: color-mix(in srgb, var(--color-cool-ivory) 65%, var(--color-ice-blue));
 	--family-accent: color-mix(
@@ -217,11 +227,14 @@
 				transparent 70%
 			);
 		--hero-section-background: var(--color-deep-blue-graphite);
-		--hero-content-justify: center;
+
+		// One reading edge at every width: the identity block hangs from the left, the
+		// constellation cue answers it from the right edge, the song line sits under it.
+		--hero-content-justify: start;
 		--hero-label-color: var(--color-satin-blue);
 		--hero-label-margin-bottom: 0.75rem;
 		--hero-title-max-width: none;
-		--hero-title-align: center;
+		--hero-title-align: left;
 		--hero-title-font-family: 'Pinyon Script', var(--font-display);
 		--hero-title-font-size: clamp(5rem, 9vw, 8rem);
 		--hero-title-font-size-mobile: clamp(4.25rem, 21vw, 5.75rem);
@@ -239,16 +252,18 @@
 		--hero-surname-color: var(--color-liquid-silver);
 		--hero-content-rows: auto auto auto auto;
 		--hero-title-thread-display: none;
-		--hero-details-margin-left: auto;
-		--hero-details-margin-right: auto;
-		--hero-details-padding-left: 0;
-		--hero-details-rule: 0;
-
-		// Centered with the name and lifted clear of the music prompt on phones.
-		--hero-scroll-bottom-mobile: 5rem;
-		--hero-scroll-left-mobile: 0;
-		--hero-scroll-right-mobile: 0;
-		--hero-scroll-margin-inline-mobile: auto;
+		--hero-details-margin-left: 0;
+		--hero-details-margin-right: 0;
+		--hero-details-padding-left: clamp(0.95rem, 2vw, 1.35rem);
+		--hero-details-rule: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
+		--hero-details-align-mobile: flex-start;
+		--hero-details-text-align-mobile: left;
+		--hero-meta-font-size: clamp(0.68rem, 1.1vw, 0.9rem);
+		--hero-date-font-size: clamp(0.85rem, 1.6vw, 1.2rem);
+		--hero-scroll-indicator-color: rgb(var(--color-diamond-white-rgb) / 72%);
+		--hero-scroll-left-mobile: auto;
+		--hero-scroll-right-mobile: 1rem;
+		--hero-scroll-bottom-mobile: 1.5rem;
 
 		@media (width >= 992px) {
 			--hero-content-justify: start;
@@ -266,9 +281,6 @@
 					rgb(var(--color-deep-blue-graphite-rgb) / 70%) 85%,
 					var(--color-deep-blue-graphite) 100%
 				);
-			--hero-details-margin-left: 0;
-			--hero-details-padding-left: clamp(0.95rem, 2vw, 1.35rem);
-			--hero-details-rule: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
 		}
 	}
 
@@ -669,5 +681,16 @@
 		--thank-you-closing-rest-letter-spacing: 0.26em;
 		--thank-you-closing-rest-text-transform: uppercase;
 		--thank-you-closing-rest-color: var(--color-liquid-silver);
+	}
+
+	@media (width >= 576px) {
+		--music-track-left: clamp(1.5rem, 5vw, 4.5rem);
+	}
+
+	@media (width >= 1200px) {
+		// Fixed to the viewport, so it re-derives the hero content edge: the centered container plus its inset.
+		--music-track-left: calc(
+			max(0px, (100% - var(--container-max-width-lg)) / 2) + clamp(4.5rem, 9vw, 8rem)
+		);
 	}
 }

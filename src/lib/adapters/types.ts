@@ -98,6 +98,7 @@ export interface HeroViewModel {
 	focalPointTablet?: string;
 	focalPointDesktop?: string;
 	scrollLabel?: string;
+	scrollCue?: 'chevron' | 'constellation';
 	tagline?: string;
 	photoCredit?: string;
 }
@@ -473,8 +474,9 @@ export interface InvitationViewModel {
 		/** Seconds of volume ramp when playback starts or loops back. */
 		fadeInSeconds?: number;
 		revealMode: 'envelope' | 'immediate';
-		/** Floating control style; the round button unless the content asks for the equalizer. */
-		control?: 'button' | 'equalizer';
+		artist?: string;
+		/** Floating control style; the round button unless the content asks for another. */
+		control?: 'button' | 'equalizer' | 'track';
 	};
 	interludes?: Interlude[];
 	navigation?: Array<{ label: string; href: string }>;

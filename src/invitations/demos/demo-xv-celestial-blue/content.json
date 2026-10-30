@@ -37,7 +37,8 @@
         "focalPointMobile": "50% 30%",
         "focalPointDesktop": "62% 38%",
         "variant": "standard",
-        "scrollLabel": "Descubra mi noche"
+        "scrollLabel": "Descubra mi noche",
+        "scrollCue": "constellation"
     },
     "location": {
         "accessPolicy": {
@@ -279,6 +280,10 @@
         "sealInitials": "C·T",
         "cardLabel": "Mis XV años",
         "cardTagline": "Una noche bajo las estrellas",
+        "documentLabel": "Mis XV años",
+        "stampText": "12 de septiembre",
+        "stampYear": "2027",
+        "teaserDetails": "Hacienda Los Claustros · Cuernavaca",
         "microcopy": "Abra su invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
@@ -295,8 +300,10 @@
     },
     "music": {
         "url": "https://media.celebra-me.com/shared/music/nuvole-bianche-24611cb040e2779c681d7b14bc9423d8e058d477f2c4368c216a1373cf2b3f59.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo"
+        "autoPlay": true,
+        "title": "Nuvole Bianche",
+        "artist": "Ludovico Einaudi",
+        "control": "track"
     },
     "composition": {
         "intersections": {

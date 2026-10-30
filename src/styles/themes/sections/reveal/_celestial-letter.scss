@@ -64,16 +64,22 @@ $cl-ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
 		0 1px 2px color-mix(in srgb, black 40%, transparent),
 		0 2.5rem 4rem -1.5rem color-mix(in srgb, black 80%, transparent);
 	--env-container-radius-fallback: 0.35rem;
-	--env-container-width-fallback: clamp(20rem, 46vw, 30rem);
+	--env-container-width-fallback: min(60vw, 36rem, 70svh);
 	--env-container-ratio-fallback: 1.4;
-	--env-container-max-height-fallback: 44svh;
-	--env-grid: 44% 24% 32%;
+	--env-container-max-height-fallback: 50svh;
+	--env-grid: auto 1fr auto;
 	--env-seal-size-min: 3.5rem;
 	--env-seal-size-max: 4.5rem;
 	--env-seal-size-ratio: 15;
 	--env-seal-hint-display: none;
-	--env-title-size: clamp(1.9rem, 8cqw, 2.6rem);
-	--env-identity-padding: 0.5rem;
+
+	// Text sizes follow the envelope's width (cqi), so the front reads the same at every screen.
+	--env-title-size: clamp(2rem, 8cqi, 2.9rem);
+	--cl-meta-size: clamp(0.6rem, 2.5cqi, 0.85rem);
+	--cl-venue-size: clamp(0.8rem, 3.6cqi, 1.2rem);
+	--cl-meta-line: 1.75rem;
+	--cl-caption-room: 9.5rem;
+	--env-identity-padding: 0;
 	--reveal-card-bg: var(--cl-card);
 	--reveal-card-sheen: none;
 	--reveal-card-text-primary: var(--cl-card-ink);
@@ -112,8 +118,11 @@ $cl-ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
 	perspective: var(--celestial-letter-perspective, 1400px);
 	perspective-origin: 50% 40%;
 
+	// The envelope stays clean (paper, folds and the wax seal); its words hang beneath it as an
+	// editorial caption: occasion left and date right on one line, the name, then the venue.
 	.envelope-container {
 		overflow: visible;
+		margin-bottom: var(--cl-caption-room);
 	}
 
 	.envelope-base,
@@ -218,22 +227,124 @@ $cl-ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
 		transform: translateZ(4px);
 	}
 
+	.envelope-zone--stamp,
+	.envelope-zone--identity {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: calc(100% + 1.5rem);
+
+		// An absolute grid item resolves its offsets against its grid area unless it has none.
+		grid-area: auto;
+	}
+
+	.envelope-zone--stamp {
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.envelope-manifest-label {
+		order: -1;
+		font-family: var(--env-meta-font, var(--font-body));
+		font-size: var(--cl-meta-size);
+		letter-spacing: 0.28em;
+		text-align: left;
+		color: var(--env-text-secondary);
+		opacity: 100%;
+	}
+
+	// The date reads as plain small capitals, not a stamp.
+	.envelope-stamp {
+		gap: 0.6em;
+		padding: 0;
+		font-family: var(--env-meta-font, var(--font-body));
+		color: var(--env-text-secondary);
+		opacity: 100%;
+
+		span,
+		small {
+			font-size: var(--cl-meta-size);
+			letter-spacing: 0.28em;
+			opacity: 100%;
+		}
+
+		small::before {
+			content: none;
+		}
+	}
+
+	.envelope-zone--identity {
+		top: calc(100% + 1.5rem + var(--cl-meta-line));
+		align-items: flex-start;
+		gap: 0.15rem;
+		padding: 0;
+		text-align: left;
+	}
+
 	.envelope-name {
+		justify-content: flex-start;
+		max-width: 100%;
+		margin: 0;
+		line-height: 1.2;
+		text-align: left;
 		text-shadow: 0 0 1.25rem color-mix(in srgb, var(--cl-card-accent) 40%, transparent);
 	}
 
-	.envelope-details {
-		color: var(--env-text-secondary);
-		letter-spacing: 0.18em;
+	.tease-details-group {
+		align-items: flex-start;
 	}
 
 	.tease-divider {
-		width: 5rem;
-		background: linear-gradient(to right, transparent, var(--cl-ink), transparent);
+		display: none;
+	}
+
+	// Venue in italic serif, its city in small capitals after it.
+	.envelope-details {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0 0.6em;
+		max-width: 100%;
+		font-family: var(--font-display);
+		font-size: var(--cl-venue-size);
+		font-style: italic;
+		letter-spacing: 0.02em;
+		text-align: left;
+		text-transform: none;
+		color: var(--env-text-secondary);
+		opacity: 100%;
+
+		> span[aria-hidden] {
+			display: none;
+		}
+	}
+
+	.envelope-details__accent {
+		font-family: var(--env-meta-font, var(--font-body));
+		font-size: var(--cl-meta-size);
+		font-style: normal;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		opacity: 78%;
+	}
+
+	// The cue starts at the envelope's left edge, led by a short silver rule.
+	.envelope-external-instruction {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+		width: var(--env-container-width, var(--env-container-width-fallback));
+		text-align: left;
 	}
 
 	.instruction-line {
-		display: none;
+		order: -1;
+		width: 2.5rem;
+		margin: 0;
+		background: var(--cl-ink);
+		opacity: 100%;
 	}
 
 	// The letter waits inside, its top just under the opening, behind the front.
@@ -329,7 +440,6 @@ $cl-ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
 	@include mixins.respond-below(sm) {
 		--env-container-width-fallback: min(88vw, 22rem);
 		--env-container-ratio-fallback: 1.3;
-		--env-grid: 44% 24% 32%;
 	}
 
 	&.is-opening {
