@@ -267,25 +267,19 @@
 	.envelope-base,
 	.envelope-pocket,
 	.envelope-flap {
-		// `--env-paper-sheen` and `--env-paper-texture` let a dark envelope drop the ivory
-		// light without forking the variant; defaults keep the ivory paper.
 		background:
-			var(
-				--env-paper-sheen,
-				linear-gradient(
-					168deg,
-					rgb(var(--color-diamond-white-rgb) / 72%) 0%,
-					transparent 42%,
-					rgb(var(--color-deep-blue-graphite-rgb) / 5%) 100%
-				)
+			linear-gradient(
+				168deg,
+				rgb(var(--color-diamond-white-rgb) / 72%) 0%,
+				transparent 42%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 5%) 100%
 			),
 			var(--env-paper-bg);
 		border-color: var(--env-paper-border);
 
 		&::before {
-			opacity: var(--env-paper-texture-opacity, 55%);
-			background: var(
-				--env-paper-texture,
+			opacity: 55%;
+			background:
 				radial-gradient(
 					ellipse at 50% 8%,
 					rgb(var(--color-diamond-white-rgb) / 55%),
@@ -297,27 +291,20 @@
 					transparent 2px,
 					rgb(var(--color-deep-blue-graphite-rgb) / 2.8%) 2px,
 					transparent 3px
-				)
-			);
+				);
 		}
 	}
 
 	.envelope-pocket {
-		box-shadow: var(
-			--env-pocket-shadow,
-			inset 0 14px 26px rgb(var(--color-deep-blue-graphite-rgb) / 8%)
-		);
+		box-shadow: inset 0 14px 26px rgb(var(--color-deep-blue-graphite-rgb) / 8%);
 
 		&::after {
 			height: 1px;
-			background: var(
-				--env-pocket-rule,
-				linear-gradient(
-					to right,
-					transparent,
-					color-mix(in srgb, var(--color-liquid-silver) 62%, transparent),
-					transparent
-				)
+			background: linear-gradient(
+				to right,
+				transparent,
+				color-mix(in srgb, var(--color-liquid-silver) 62%, transparent),
+				transparent
 			);
 		}
 	}
@@ -348,11 +335,8 @@
 		font-size: 0.68rem;
 		font-weight: 500;
 		letter-spacing: 0.2em;
-		color: var(
-			--env-details-color,
-			color-mix(in srgb, var(--color-soft-graphite) 74%, var(--color-cold-silver))
-		);
-		opacity: var(--env-details-opacity, 80%);
+		color: color-mix(in srgb, var(--color-soft-graphite) 74%, var(--color-cold-silver));
+		opacity: 80%;
 	}
 
 	.tease-divider {
@@ -367,14 +351,11 @@
 	}
 
 	.envelope-seal-hint {
-		color: var(
-			--env-seal-hint-color,
-			color-mix(in srgb, var(--color-soft-graphite) 62%, var(--color-cold-silver))
-		);
+		color: color-mix(in srgb, var(--color-soft-graphite) 62%, var(--color-cold-silver));
 		font-size: 0.58rem;
 		font-weight: 500;
 		letter-spacing: 0.34em;
-		opacity: var(--env-seal-hint-opacity, 74%);
+		opacity: 74%;
 	}
 
 	.envelope-external-instruction {

@@ -75,6 +75,7 @@ export interface EnvelopeSealInput {
  * `data-variant` (and its reveal stylesheet) instead of layering on top of it.
  */
 const STANDALONE_REVEAL_VARIANTS = [
+	'celestial-letter',
 	'night-envelope',
 	'satin-filigree',
 	'seaside-lineart',

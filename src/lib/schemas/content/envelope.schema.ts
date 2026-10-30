@@ -5,6 +5,7 @@ import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 export const envelopeRevealVariantSchema = z.enum([
 	'celestial-blue',
+	'celestial-letter',
 	'editorial-cover',
 	'night-envelope',
 	'satin-filigree',

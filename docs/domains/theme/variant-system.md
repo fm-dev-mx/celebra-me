@@ -192,6 +192,11 @@ invitation profiles.
   holds the cover photograph; when the hero is `night-arch`, that window flies onto the cover arch
   before the page opens. Profiles tune it only through optional `--night-envelope-*` tokens. Proven
   on the Olivia y Antonio invitation (`/boda/olivia-y-antonio`).
+- envelope.revealVariant celestial-letter: a letter drawn out of a night envelope. The flap turns on
+  its hinge and shows a star-chart liner, the pocket sinks while a pearl letter with a crescent
+  emblem and a double silver rule slides out of it, then the letter comes forward and settles where
+  the envelope was. Curved flap and pocket edges, no circles. Profiles tune it only through optional
+  `--celestial-letter-*` tokens. Proven on the Celestial XV demo (`/celestial`).
 - composition.ornaments storybook-lanterns: the tale told with light — a single gold-leaf thread at
   the quote opening, family close and location close and under the closing signature; lantern-light
   fields in three depths behind the countdown and the closing that kindle as they scroll in and

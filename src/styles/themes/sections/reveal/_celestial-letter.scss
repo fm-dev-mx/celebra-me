@@ -1,0 +1,488 @@
+@use '../../../global/mixins' as mixins;
+
+// Celestial letter reveal: a landscape night envelope whose flap and pocket meet in soft curves,
+// lined inside with a silver star chart, holding a pearl letter that really leaves it. Colors
+// resolve through semantic tokens; profiles may override the optional `--celestial-letter-*`
+// hooks, which this skin consumes with fallbacks and never declares.
+
+// Shapes are drawn in a 100×100 box stretched to the envelope, so the curves follow its size.
+// The flap's lower edge falls in one curve to a rounded tip at 58%; the pocket's opening is a
+// shallower curve that the closed flap always overlaps.
+$cl-flap-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V3C93 20 68 47 55 55.5Q50 59 45 55.5C32 47 7 20 0 3Z'/%3E%3C/svg%3E");
+$cl-flap-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 3C7 20 32 47 45 55.5Q50 59 55 55.5C68 47 93 20 100 3' fill='none' stroke='%23000' stroke-width='1.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+$cl-pocket-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0C18 24 38 33 50 33S82 24 100 0V100H0Z'/%3E%3C/svg%3E");
+
+// The front: side flaps folded in from the corners (a touch darker) under a bottom flap with a
+// soft crown (a touch lighter).
+$cl-pocket-shade: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0C16 30 34 50 50 56L0 100Z' fill-opacity='.2'/%3E%3Cpath d='M100 0C84 30 66 50 50 56L100 100Z' fill-opacity='.2'/%3E%3Cpath d='M0 100C16 74 36 60 50 60S84 74 100 100Z' fill='%23fff' fill-opacity='.06'/%3E%3C/svg%3E");
+$cl-pocket-folds: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23000' stroke-width='1' vector-effect='non-scaling-stroke'%3E%3Cpath d='M0 0C18 24 38 33 50 33S82 24 100 0' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M0 100C16 74 36 60 50 60S84 74 100 100' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E");
+$cl-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+$cl-moon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M25 4A16 16 0 1 0 36 31 13 13 0 1 1 25 4Z' fill='%23fff'/%3E%3C/svg%3E");
+$cl-ease-turn: cubic-bezier(0.42, 0, 0.8, 0.6);
+$cl-ease-settle: cubic-bezier(0.2, 0.4, 0.4, 1);
+$cl-ease-soft: cubic-bezier(0.45, 0, 0.25, 1);
+
+@function cl-star($at, $size, $color) {
+	@return radial-gradient($size $size at $at, $color, transparent 60%);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Opening choreography. The envelope parts share one 3D context: base 0, letter 1px, pocket
+// 2px, flap 3px, tease 4px. The flap drops behind the letter at its edge-on instant.
+//   0–700ms      the seal lifts off and fades; the names and the line under the envelope follow
+//   600–1800ms   the flap turns back, its star liner showing past edge-on
+//   1500–2930ms  the letter slides up out of the pocket, its lower edge hidden until it clears
+//   2950–4100ms  the envelope sinks and fades while the letter comes forward to rest
+//   then         a reading beat (`--env-letter-hold`) before the invitation opens
+// ---------------------------------------------------------------------------------------------
+
+.envelope-wrapper[data-variant='celestial-letter'] {
+	--cl-field: var(--celestial-letter-field, var(--color-surface-dark));
+	--cl-paper: var(
+		--celestial-letter-paper,
+		color-mix(in srgb, var(--color-surface-dark) 74%, var(--color-action-accent))
+	);
+	--cl-liner: var(
+		--celestial-letter-liner,
+		color-mix(in srgb, var(--color-surface-dark) 88%, var(--color-action-accent))
+	);
+	--cl-ink: var(--celestial-letter-ink, var(--color-border-premium));
+	--cl-star: var(--celestial-letter-star, var(--color-text-on-dark));
+	--cl-card: var(--celestial-letter-card, var(--color-surface-elevated));
+	--cl-card-ink: var(--celestial-letter-card-ink, var(--color-text-primary));
+	--cl-card-accent: var(--celestial-letter-card-accent, var(--color-action-accent));
+	--cl-rest-y: var(--celestial-letter-rest-y, -18%);
+	--cl-rest-scale: var(--celestial-letter-rest-scale, 1.1);
+
+	// The letter's rise and the envelope's drop add up to clear the pocket's top corners.
+	--cl-lift: -56%;
+	--cl-drop: 36%;
+	--env-text-primary: var(--cl-star);
+	--env-text-secondary: color-mix(in srgb, var(--cl-star) 72%, var(--cl-paper));
+	--env-instruction-color: color-mix(in srgb, var(--cl-star) 78%, transparent);
+	--env-shadow-container-fallback:
+		0 1px 2px color-mix(in srgb, black 40%, transparent),
+		0 2.5rem 4rem -1.5rem color-mix(in srgb, black 80%, transparent);
+	--env-container-radius-fallback: 0.35rem;
+	--env-container-width-fallback: clamp(20rem, 46vw, 30rem);
+	--env-container-ratio-fallback: 1.4;
+	--env-container-max-height-fallback: 44svh;
+	--env-grid: 44% 24% 32%;
+	--env-seal-size-min: 3.5rem;
+	--env-seal-size-max: 4.5rem;
+	--env-seal-size-ratio: 15;
+	--env-seal-hint-display: none;
+	--env-title-size: clamp(1.9rem, 8cqw, 2.6rem);
+	--env-identity-padding: 0.5rem;
+	--reveal-card-bg: var(--cl-card);
+	--reveal-card-sheen: none;
+	--reveal-card-text-primary: var(--cl-card-ink);
+	--reveal-card-text-secondary: color-mix(in srgb, var(--cl-card-accent) 62%, var(--cl-card-ink));
+	--reveal-card-border: transparent;
+	--reveal-card-grain-opacity: 0;
+	--reveal-card-width: 90%;
+	--env-letter-hold: var(--celestial-letter-hold, 1600ms);
+
+	background:
+		#{$cl-moon} 82% 9% / 2.4rem 2.4rem no-repeat,
+		radial-gradient(
+			6rem 6rem at calc(82% + 0.2rem) calc(9% + 1.2rem),
+			color-mix(in srgb, var(--cl-star) 14%, transparent),
+			transparent 70%
+		),
+		cl-star(14% 12%, 1.5px, color-mix(in srgb, var(--cl-star) 80%, transparent)),
+		cl-star(30% 22%, 1px, color-mix(in srgb, var(--cl-star) 55%, transparent)),
+		cl-star(66% 18%, 1px, color-mix(in srgb, var(--cl-star) 60%, transparent)),
+		cl-star(90% 38%, 1.5px, color-mix(in srgb, var(--cl-card-accent) 70%, transparent)),
+		cl-star(8% 54%, 1px, color-mix(in srgb, var(--cl-star) 45%, transparent)),
+		cl-star(20% 86%, 1.5px, color-mix(in srgb, var(--cl-card-accent) 60%, transparent)),
+		cl-star(76% 80%, 1px, color-mix(in srgb, var(--cl-star) 50%, transparent)),
+		cl-star(52% 94%, 1px, color-mix(in srgb, var(--cl-star) 40%, transparent)),
+		radial-gradient(
+			70% 45% at 50% 46%,
+			color-mix(in srgb, var(--cl-card-accent) 14%, transparent),
+			transparent 70%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--cl-field) 86%, var(--cl-card-accent)) 0%,
+			var(--cl-field) 60%,
+			color-mix(in srgb, var(--cl-field) 80%, black) 100%
+		);
+	perspective: var(--celestial-letter-perspective, 1400px);
+	perspective-origin: 50% 40%;
+
+	.envelope-container {
+		overflow: visible;
+	}
+
+	.envelope-base,
+	.envelope-pocket,
+	.envelope-flap {
+		border: 0;
+		border-radius: inherit;
+
+		&::before {
+			opacity: 100%;
+			background: #{$cl-grain};
+		}
+	}
+
+	// Inside of the envelope, seen through the opening once the flap is up: the star chart.
+	.envelope-base {
+		background:
+			cl-star(24% 14%, 1px, var(--cl-ink)), cl-star(41% 24%, 1.5px, var(--cl-star)),
+			cl-star(58% 10%, 1px, var(--cl-ink)),
+			cl-star(73% 22%, 1.5px, color-mix(in srgb, var(--cl-card-accent) 80%, transparent)),
+			cl-star(50% 30%, 1px, var(--cl-ink)),
+			linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--cl-liner) 80%, black),
+				var(--cl-liner) 40%
+			);
+		transform: translateZ(0);
+	}
+
+	.envelope-pocket {
+		clip-path: none;
+		background:
+			#{$cl-pocket-shade} center / 100% 100%,
+			linear-gradient(
+				172deg,
+				color-mix(in srgb, var(--cl-paper) 92%, var(--cl-star)),
+				color-mix(in srgb, var(--cl-paper) 82%, black)
+			);
+		box-shadow: none;
+		mask: #{$cl-pocket-shape} center / 100% 100% no-repeat;
+		transform: translateZ(2px);
+
+		// Silver fold lines along the opening and the bottom flap's crown.
+		&::after {
+			inset: 0;
+			height: auto;
+			background: var(--cl-ink);
+			mask: #{$cl-pocket-folds} center / 100% 100% no-repeat;
+		}
+	}
+
+	.envelope-flap {
+		height: 100%;
+		clip-path: none;
+		background:
+			radial-gradient(
+				80% 60% at 50% 0%,
+				color-mix(in srgb, var(--cl-star) 7%, transparent),
+				transparent 70%
+			),
+			linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--cl-paper) 96%, var(--cl-star)),
+				color-mix(in srgb, var(--cl-paper) 88%, black) 60%
+			);
+		filter: drop-shadow(0 0.6rem 0.8rem color-mix(in srgb, black 45%, transparent));
+		mask: #{$cl-flap-shape} center / 100% 100% no-repeat;
+
+		// One silver hairline along the flap's curved edge.
+		&::after {
+			inset: 0;
+			z-index: 2;
+			height: auto;
+			background: var(--cl-ink);
+			mask: #{$cl-flap-edge} center / 100% 100% no-repeat;
+		}
+	}
+
+	&:not(.is-opening) .envelope-flap {
+		transform: translateZ(3px) rotateX(0deg);
+	}
+
+	// The inside of the flap: the liner's star chart, hidden until the flap passes edge-on.
+	.envelope-flap-shadow {
+		z-index: 1;
+		background:
+			cl-star(30% 12%, 1px, var(--cl-ink)), cl-star(46% 30%, 1.5px, var(--cl-star)),
+			cl-star(62% 18%, 1px, var(--cl-ink)),
+			cl-star(54% 44%, 1px, color-mix(in srgb, var(--cl-card-accent) 80%, transparent)),
+			cl-star(38% 40%, 1px, var(--cl-ink)),
+			linear-gradient(
+				0deg,
+				var(--cl-liner),
+				color-mix(in srgb, var(--cl-liner) 82%, black) 60%
+			);
+		filter: none;
+		opacity: 0%;
+		transform: none;
+	}
+
+	.envelope-tease {
+		transform: translateZ(4px);
+	}
+
+	.envelope-name {
+		text-shadow: 0 0 1.25rem color-mix(in srgb, var(--cl-card-accent) 40%, transparent);
+	}
+
+	.envelope-details {
+		color: var(--env-text-secondary);
+		letter-spacing: 0.18em;
+	}
+
+	.tease-divider {
+		width: 5rem;
+		background: linear-gradient(to right, transparent, var(--cl-ink), transparent);
+	}
+
+	.instruction-line {
+		display: none;
+	}
+
+	// The letter waits inside, its top just under the opening, behind the front.
+	.envelope-reveal-stage {
+		padding: 0;
+		opacity: 100%;
+		transform: translate3d(0, 4%, 1px);
+		transform-origin: center;
+	}
+
+	// Pearl stationery with a little thickness, an engraved crescent over the names and a
+	// double silver rule.
+	.invitation-reveal-card {
+		height: 86%;
+		max-height: none;
+		background:
+			#{$cl-moon} 50% 1.1rem / 1.35rem 1.35rem no-repeat,
+			#{$cl-grain},
+			radial-gradient(
+				90% 70% at 50% 100%,
+				color-mix(in srgb, var(--cl-card-accent) 10%, transparent),
+				transparent 70%
+			),
+			var(--reveal-card-bg);
+		border-radius: var(--celestial-letter-card-radius, 0.2rem);
+		box-shadow:
+			0 1px 0 color-mix(in srgb, var(--cl-card-ink) 18%, transparent),
+			0 1.25rem 2rem -1rem color-mix(in srgb, black 55%, transparent);
+	}
+
+	.invitation-reveal-card__inner {
+		position: relative;
+		height: 100%;
+		min-height: 0;
+		justify-content: center;
+		gap: 0.3rem;
+		padding: 2.6rem 1.25rem 1.25rem;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0.45rem;
+			border: 1px solid color-mix(in srgb, var(--cl-ink) 100%, transparent);
+			border-radius: var(--celestial-letter-card-rule-radius, 0.1rem);
+			box-shadow:
+				inset 0 0 0 2px var(--reveal-card-bg),
+				inset 0 0 0 3px color-mix(in srgb, var(--cl-ink) 55%, transparent);
+			pointer-events: none;
+		}
+	}
+
+	// The moon emblem is painted on the paper, so the variant's own ornament art stays out.
+	.invitation-reveal-card__ornament {
+		display: none;
+	}
+
+	.invitation-reveal-card__label {
+		margin: 0;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--celestial-letter-card-label-size, 0.62rem);
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--reveal-card-text-secondary);
+	}
+
+	.invitation-reveal-card__name {
+		margin-block: 0.1rem;
+		font-size: var(--celestial-letter-card-name-size, clamp(1.7rem, 7.5cqw, 2.3rem));
+		font-weight: 400;
+		line-height: 1.15;
+		color: var(--reveal-card-text-primary);
+	}
+
+	.invitation-reveal-card__date {
+		margin: 0;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--celestial-letter-card-label-size, 0.62rem);
+		letter-spacing: 0.24em;
+		color: color-mix(in srgb, var(--cl-card-ink) 72%, transparent);
+	}
+
+	.invitation-reveal-card__tagline {
+		margin: 0.15rem 0 0;
+		font-family: var(--font-display);
+		font-style: italic;
+		color: color-mix(in srgb, var(--cl-card-ink) 64%, transparent);
+	}
+
+	.invitation-reveal-card__divider {
+		display: none;
+	}
+
+	@include mixins.respond-below(sm) {
+		--env-container-width-fallback: min(88vw, 22rem);
+		--env-container-ratio-fallback: 1.3;
+		--env-grid: 44% 24% 32%;
+	}
+
+	&.is-opening {
+		.envelope-tease,
+		.envelope-external-instruction {
+			transition: opacity 500ms $cl-ease-soft 250ms;
+		}
+
+		.envelope-seal-button__visual {
+			animation: cl-seal-lift 700ms $cl-ease-soft both;
+		}
+
+		.envelope-flap {
+			animation:
+				cl-flap-turn 1200ms linear 600ms both,
+				cl-envelope-drop 1430ms $cl-ease-soft 1500ms forwards,
+				cl-envelope-away 1150ms $cl-ease-soft 2950ms forwards;
+		}
+
+		.envelope-flap-shadow {
+			animation: cl-flap-liner 1200ms linear 600ms forwards;
+		}
+
+		// The envelope sinks as the letter rises, so the letter clears the pocket on short screens.
+		.envelope-base,
+		.envelope-pocket,
+		.envelope-container::after {
+			animation:
+				cl-envelope-drop 1430ms $cl-ease-soft 1500ms forwards,
+				cl-envelope-away 1150ms $cl-ease-soft 2950ms forwards;
+		}
+
+		// Keeps the `envCardRise` prefix: EnvelopeReveal hands over on that animationend.
+		.envelope-reveal-stage {
+			animation: envCardRiseCelestial 2600ms linear 1500ms both;
+		}
+	}
+
+	&.is-preview-opened,
+	&.is-letter-held {
+		.envelope-base,
+		.envelope-container::after {
+			opacity: 0%;
+			pointer-events: none;
+		}
+
+		.envelope-reveal-stage {
+			pointer-events: auto;
+			opacity: 100%;
+			transform: translate3d(0, var(--cl-rest-y), 40px) scale(var(--cl-rest-scale));
+		}
+	}
+}
+
+@keyframes cl-seal-lift {
+	0% {
+		opacity: 100%;
+		transform: none;
+	}
+
+	35% {
+		opacity: 100%;
+		transform: translateY(-0.35rem) scale(1.08);
+	}
+
+	100% {
+		opacity: 0%;
+		transform: translateY(-1.4rem) scale(1.1);
+	}
+}
+
+@keyframes cl-flap-turn {
+	0% {
+		transform: translateZ(3px) rotateX(0deg);
+		animation-timing-function: $cl-ease-turn;
+	}
+
+	50% {
+		transform: translateZ(3px) rotateX(90deg);
+		animation-timing-function: step-end;
+	}
+
+	50.5% {
+		transform: translateZ(-24px) rotateX(91deg);
+		animation-timing-function: $cl-ease-settle;
+	}
+
+	100% {
+		transform: translateZ(-24px) rotateX(176deg);
+	}
+}
+
+@keyframes cl-flap-liner {
+	0%,
+	48% {
+		opacity: 0%;
+	}
+
+	52%,
+	100% {
+		opacity: 100%;
+	}
+}
+
+@keyframes cl-envelope-drop {
+	to {
+		translate: 0 var(--cl-drop);
+	}
+}
+
+@keyframes cl-envelope-away {
+	from {
+		translate: 0 var(--cl-drop);
+	}
+
+	to {
+		opacity: 0%;
+		translate: 0 calc(var(--cl-drop) + 3rem);
+	}
+}
+
+// 0–55%: the letter slides up out of the sinking pocket; at 56% it is clear of the envelope and
+// steps in front of it; then it comes forward and settles over where the envelope was.
+@keyframes envCardRiseCelestial {
+	0% {
+		transform: translate3d(0, 4%, 1px);
+		animation-timing-function: cubic-bezier(0.5, 0, 0.3, 1);
+	}
+
+	55% {
+		transform: translate3d(0, var(--cl-lift), 1px);
+		animation-timing-function: step-end;
+	}
+
+	56% {
+		transform: translate3d(0, var(--cl-lift), 40px);
+		animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
+	}
+
+	100% {
+		transform: translate3d(0, var(--cl-rest-y), 40px) scale(var(--cl-rest-scale));
+	}
+}
+
+@include mixins.reduced-motion {
+	.envelope-wrapper[data-variant='celestial-letter'] {
+		.envelope-seal-button__visual {
+			/* stylelint-disable-next-line declaration-no-important */
+			animation: none !important;
+		}
+
+		&:not(.is-preview-opened, .is-letter-held) .envelope-reveal-stage {
+			opacity: 0%;
+		}
+	}
+}

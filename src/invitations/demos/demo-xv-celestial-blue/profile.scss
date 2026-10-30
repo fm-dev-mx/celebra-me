@@ -412,139 +412,23 @@
 		--intersection-stack-recede-fade: 55%;
 	}
 
-	// Reveal: a star letter. A midnight-blue envelope foiled with silver stars waits on the open
-	// night under a low moon; the flap is lit from above so its point reads against the pocket,
-	// and a silver wax medallion carries the monogram.
+	// Reveal: the celestial letter, in this palette. A deep night envelope edged in liquid silver,
+	// a pearl letter set in script, and a silver wax medallion carrying the monogram.
 	.envelope-wrapper {
-		--env-bg:
-			radial-gradient(
-				circle at 18% 14%,
-				rgb(var(--color-diamond-white-rgb) / 70%) 0 1px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 82% 9%,
-				rgb(var(--color-satin-blue-rgb) / 70%) 0 1px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 91% 46%,
-				rgb(var(--color-diamond-white-rgb) / 55%) 0 0.8px,
-				transparent 1.6px
-			),
-			radial-gradient(
-				circle at 7% 58%,
-				rgb(var(--color-diamond-white-rgb) / 50%) 0 0.8px,
-				transparent 1.6px
-			),
-			radial-gradient(
-				circle at 24% 88%,
-				rgb(var(--color-satin-blue-rgb) / 60%) 0 1px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 76% 84%,
-				rgb(var(--color-diamond-white-rgb) / 45%) 0 0.8px,
-				transparent 1.6px
-			),
-			radial-gradient(
-				circle at calc(84% + 0.45rem) calc(9% - 0.25rem),
-				color-mix(in srgb, var(--color-deep-blue-graphite) 85%, var(--color-satin-blue)) 0
-					1.05rem,
-				transparent calc(1.05rem + 1px)
-			),
-			radial-gradient(
-				circle at 84% 9%,
-				rgb(var(--color-diamond-white-rgb) / 88%) 0 1.1rem,
-				transparent calc(1.1rem + 1px)
-			),
-			radial-gradient(
-				ellipse 70% 42% at 50% 44%,
-				rgb(var(--color-satin-blue-rgb) / 26%) 0%,
-				transparent 72%
-			),
-			linear-gradient(
-				180deg,
-				color-mix(in srgb, var(--color-deep-blue-graphite) 82%, var(--color-satin-blue)) 0%,
-				var(--color-deep-blue-graphite) 55%,
-				color-mix(in srgb, var(--color-deep-blue-graphite) 86%, black) 100%
-			);
-		--env-paper-bg:
-			radial-gradient(
-				circle at 14% 22%,
-				rgb(var(--color-diamond-white-rgb) / 85%) 0 1px,
-				transparent 1.8px
-			),
-			radial-gradient(
-				circle at 31% 12%,
-				rgb(var(--color-liquid-silver-rgb) / 70%) 0 0.8px,
-				transparent 1.5px
-			),
-			radial-gradient(
-				circle at 72% 18%,
-				rgb(var(--color-diamond-white-rgb) / 80%) 0 1.1px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 88% 34%,
-				rgb(var(--color-liquid-silver-rgb) / 65%) 0 0.8px,
-				transparent 1.5px
-			),
-			radial-gradient(
-				circle at 9% 68%,
-				rgb(var(--color-liquid-silver-rgb) / 60%) 0 0.8px,
-				transparent 1.5px
-			),
-			radial-gradient(
-				circle at 63% 82%,
-				rgb(var(--color-diamond-white-rgb) / 70%) 0 1px,
-				transparent 1.8px
-			),
-			radial-gradient(
-				circle at 92% 76%,
-				rgb(var(--color-liquid-silver-rgb) / 60%) 0 0.8px,
-				transparent 1.5px
-			),
-			radial-gradient(
-				ellipse 80% 50% at 50% 0%,
-				rgb(var(--color-satin-blue-rgb) / 16%) 0%,
-				transparent 75%
-			),
-			linear-gradient(
-				170deg,
-				color-mix(in srgb, var(--color-deep-blue-graphite) 58%, var(--color-satin-blue)) 0%,
-				color-mix(in srgb, var(--color-deep-blue-graphite) 76%, var(--color-satin-blue)) 55%,
-				color-mix(in srgb, var(--color-deep-blue-graphite) 92%, var(--color-satin-blue))
-					100%
-			);
-		--env-paper-sheen: linear-gradient(
-			168deg,
-			rgb(var(--color-diamond-white-rgb) / 5%) 0%,
-			transparent 40%
+		--celestial-letter-paper: color-mix(
+			in srgb,
+			var(--color-deep-blue-graphite) 70%,
+			var(--color-satin-blue)
 		);
-		--env-paper-texture: none;
-		--env-pocket-rule: transparent;
-		--env-paper-grain-opacity: 0;
-		--env-paper-border: rgb(var(--color-liquid-silver-rgb) / 55%);
-		--env-pocket-shadow: inset 0 14px 22px rgb(0 0 0 / 28%);
-		--env-shadow-container:
-			0 0 0 1px rgb(var(--color-liquid-silver-rgb) / 18%),
-			0 2.5rem 5rem -1rem rgb(0 0 0 / 70%), 0 0 6rem rgb(var(--color-satin-blue-rgb) / 16%);
-		--env-container-radius: 0.5rem;
-		--env-text-primary: var(--color-diamond-white);
-		--env-text-secondary: var(--color-liquid-silver);
-		--env-instruction-color: var(--color-liquid-silver);
-		--env-seal-size-min: 3.75rem;
-		--env-seal-size-max: 4.75rem;
-		--env-seal-size-ratio: 16;
-		--env-details-color: var(--color-liquid-silver);
-		--env-details-opacity: 92%;
-		--env-seal-hint-color: var(--color-liquid-silver);
-		--env-seal-hint-opacity: 88%;
-		--env-accent: var(--color-liquid-silver);
+		--celestial-letter-liner: color-mix(
+			in srgb,
+			var(--color-satin-blue) 58%,
+			var(--color-deep-blue-graphite)
+		);
+		--celestial-letter-ink: rgb(var(--color-liquid-silver-rgb) / 70%);
+		--celestial-letter-card: var(--color-pearl-gray);
 		--env-font-display: 'Pinyon Script', var(--font-calligraphy), cursive;
-		--env-title-size: clamp(2.1rem, 9cqw, 3rem);
-		--env-name-text-shadow: 0 0 1.5rem rgb(var(--color-satin-blue-rgb) / 45%);
+		--reveal-card-font-display: 'Pinyon Script', var(--font-calligraphy), cursive;
 		--env-seal-accent: var(--color-liquid-silver);
 		--wax-seal-highlight: var(--color-diamond-white);
 		--wax-seal-mid: color-mix(in srgb, var(--color-liquid-silver) 85%, var(--color-satin-blue));
@@ -555,66 +439,9 @@
 		);
 		--wax-seal-letter: var(--color-deep-blue-graphite);
 		--wax-seal-shadow: black;
-
-		// The letter inside: pearl stationery under a small engraved crescent and a scatter of
-		// silver stars, framed by the variant's double silver rule.
-		--reveal-card-bg:
-			radial-gradient(
-				circle at calc(50% + 0.42rem) calc(1.85rem - 0.2rem),
-				var(--color-pearl-gray) 0 0.62rem,
-				transparent calc(0.62rem + 0.5px)
-			),
-			radial-gradient(
-				circle at 50% 1.85rem,
-				var(--color-liquid-silver) 0 0.66rem,
-				transparent calc(0.66rem + 0.5px)
-			),
-			radial-gradient(
-				circle at 38% 1.6rem,
-				var(--color-liquid-silver) 0 1px,
-				transparent 1.6px
-			),
-			radial-gradient(
-				circle at 63% 1.35rem,
-				var(--color-liquid-silver) 0 1.2px,
-				transparent 1.8px
-			),
-			radial-gradient(
-				circle at 30% 2.4rem,
-				var(--color-cold-silver) 0 0.8px,
-				transparent 1.4px
-			),
-			radial-gradient(
-				circle at 70% 2.55rem,
-				var(--color-cold-silver) 0 0.8px,
-				transparent 1.4px
-			),
-			radial-gradient(
-				ellipse 90% 60% at 50% 100%,
-				rgb(var(--color-satin-blue-rgb) / 10%) 0%,
-				transparent 70%
-			),
-			var(--color-pearl-gray);
-		--reveal-card-font-display: 'Pinyon Script', var(--font-calligraphy), cursive;
-		--reveal-card-text-primary: var(--color-deep-blue-graphite);
-		--reveal-card-text-secondary: color-mix(
-			in srgb,
-			var(--color-satin-blue) 70%,
-			var(--color-deep-blue-graphite)
-		);
 		--env-shadow-seal:
 			0 0 0 1px rgb(var(--color-diamond-white-rgb) / 35%),
-			0 0 1.5rem rgb(var(--color-diamond-white-rgb) / 45%), 0 0.5rem 1rem rgb(0 0 0 / 45%);
-	}
-
-	// The flap sits a shade deeper than the pocket and falls in one soft curve to the seal.
-	.envelope-flap {
-		--env-flap-clip-path: ellipse(66% 100% at 50% 0);
-		--env-paper-bg: linear-gradient(
-			175deg,
-			color-mix(in srgb, var(--color-deep-blue-graphite) 70%, var(--color-satin-blue)) 0%,
-			color-mix(in srgb, var(--color-deep-blue-graphite) 90%, black) 100%
-		);
+			0 0 1.5rem rgb(var(--color-diamond-white-rgb) / 35%), 0 0.5rem 1rem rgb(0 0 0 / 45%);
 	}
 
 	// Location: two ivory venue plates edged in silver, the hour set large in serif, and the

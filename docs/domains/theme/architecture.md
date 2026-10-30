@@ -227,14 +227,7 @@ pass sizes its header, body and quota through `--pa-ticket-header-{padding,gap}`
 one phone viewport. Family godparent names take `--family-godparent-name-size` (fallback: the shared
 `--family-name-size`), so parents and godparents can carry different weights. The
 `stacked-venue-plates` notes panel takes `--location-plates-notes-{radius,shadow}` (defaults `0`,
-`none`). The `celestial-blue` envelope colors its details and seal hint through
-`--env-details-{color,opacity}` and `--env-seal-hint-{color,opacity}` (defaults: the previous
-graphite mix, `80%` and `74%`), so a dark envelope keeps them legible. Its paper layers also read
-`--env-paper-sheen` (the base sheen token) and `--env-paper-texture`/`--env-paper-texture-opacity`
-(defaults: the ivory sheen, light wash and line grain at `55%`), so a dark envelope can drop the
-ivory light; it also reads `--env-pocket-shadow` and `--env-pocket-rule` (defaults: the previous
-inset and silver rule). Every envelope takes `--env-flap-clip-path` (default: the faceted polygon)
-and `--env-pocket-rule` from the base.
+`none`).
 
 ### Gifts flatten
 

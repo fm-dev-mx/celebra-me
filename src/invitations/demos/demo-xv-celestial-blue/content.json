@@ -273,6 +273,7 @@
         }
     ],
     "envelope": {
+        "revealVariant": "celestial-letter",
         "sealStyle": "wax",
         "sealIcon": "wax-monogram",
         "sealInitials": "C·T",
