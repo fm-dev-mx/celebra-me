@@ -1053,7 +1053,8 @@ function renderCounts(){
   $('t-usted').title=c.usted?`Usted: ${c.usted} ${c.usted>1?'cosas':'cosa'}`:'Usted: nada';
 }
 // T321: an owner row leads with its action as a verb; a message reads «Codex → usted: question», with its task and
-// its age under it and the technical sentences (SHAs, branches, commands) folded.
+// its age under it and the technical sentences (SHAs, branches, commands) folded. T489: a merged row adds
+// «×n · when each came» (`repite`).
 function msgHtml(x){
   const m=x.msg,t=m.t&&byId(m.t.id)?m.t:null,key='msg:'+(m.en||'')+':'+m.tarea;
   const ref=t?`<a class="tl" href="#cola" data-sel="${esc(t.id)}" data-all="1" title="${esc(t.titulo)}">${esc(m.tarea)}</a> · ${tt(t.titulo)}`:m.tarea?`<span class="tl-x">${esc(m.tarea)}</span>`:'';
@@ -1061,7 +1062,7 @@ function msgHtml(x){
     ${dondeHtml(x)}<span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
     ${m.opciones.length?`<span class="sub">Opciones: ${esc(optionsText(m.opciones))}</span>`:''}
     ${m.contexto.length?`<span class="sub">${m.contexto.map(rich).join(' ')}</span>`:''}
-    <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}</span>
+    <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}${x.repite?` · <span title="${esc((x.fechas||[]).map(fmt).join(', '))}">${esc(x.repite)}</span>`:''}</span>
     ${m.detalle.length?`<details class="more tech" data-more="${esc(key)}"${OPEN.has(key)?' open':''}><summary>Detalle técnico</summary><div class="body">${m.detalle.map(s=>`<p>${rich(s)}</p>`).join('')}</div></details>`:''}
   </span></article>`;
   return card;

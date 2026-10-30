@@ -402,10 +402,9 @@ The watcher extends the bounded no-AI pass with automatic board coordination and
     (`unclaimed-10m:<id>:<desde>`).
   - **30 min**: notifies the principal coordinator via board message if a task is unclaimed for 30
     min or if an active lock has had no heartbeat for 30 min.
-  - **60 min**: surfaces the silent lock or unclaimed task in the owner action list (`ownerActions`
-    / `usted`), and invokes Telegram notification (`sendTelegramAlert`) if T437 Telegram
-    configuration lives in `.agent/tmp/telegram.json` or environment variables without blocking on
-    missing configuration.
+  - **60 min**: surfaces the silent lock or unclaimed task in «Le toca al coordinador»
+    (`nextSections(...).coordinador`, T489); it no longer reaches the owner's list or Telegram, so
+    the coordinator pass reads that section and the bitácora notices above.
 - **Merge queue qualification (C)**: sends `listo para unir #N`
   (`<tag> · listo para unir #N · siguiente: unir`) to the coordinator only when the approved review
   SHA strictly equals the live PR head (`gh pr view`) and CI for that exact SHA is green (`ciOf` is
@@ -417,16 +416,21 @@ The watcher extends the bounded no-AI pass with automatic board coordination and
 
 ### Owner alerts on Telegram (T437, d353)
 
-Each pass also reads «Le toca a usted» (`nextSections(...).usted`: owner tasks, answers owed,
-stalled dispatches, unread messages `--para=dueno`, the Gemini relay alert) and sends one Telegram
-Bot API `sendMessage` to the owner's chat when new items appear (`scripts/board/owner-alerts.mjs`).
+Each pass also reads «Le toca a usted» (`ownerInbox`, T489: only `decidir`, `aprobar` and `hacer`
+rows — questions and approvals sent `--para=dueno`, owner tasks, answers owed) and sends one
+Telegram Bot API `sendMessage` to the owner's chat when new items appear
+(`scripts/board/owner-alerts.mjs`). Stalled dispatches, prompts to paste, silent locks, findings to
+paste, the archive and the Gemini relay alert are coordinator rows (`nextSections(...).coordinador`)
+and never reach Telegram.
 
 - **One alert per item**: each row carries a stable `clave` (`tarea:<id>`, `respuesta:<id>:<ref>`,
-  `detenida:<id>`, `mensaje:<id>`, `gemini-relay`). Sent keys live under `owner.alertadas` in
-  `.agent/tmp/board-master-watch.json`; a key re-arms once its item leaves the list.
-- **Grouping**: every new item of one pass (one minute) goes in a single message, at most 8 lines,
-  ending with `Tablero: http://127.0.0.1:4320`. A single item reads like
-  `T418 · Andrea · … . Tablero: http://127.0.0.1:4320`. An empty list sends nothing.
+  `mensaje:<id>`). Sent keys live under `owner.alertadas` in `.agent/tmp/board-master-watch.json`; a
+  key re-arms once its item leaves the list.
+- **Grouping**: every new item of one pass (one minute) goes in a single message: the count per
+  type, then one `T<n> <aviso>` line per task with a public `aviso` (at most 8), ending with
+  `Tablero: http://127.0.0.1:4320`, e.g. `Celebra-me: 1 decisión.` /
+  `- T418 Falta aprobar la portada`. A row's text never leaves the board; an `aviso` that names a
+  client or an amount is refused on write. An empty list sends nothing.
 - **Failures**: every Telegram request aborts after 10 s, so a hung connection never stops master
   wakes. A 400/401/403/404 stops sending until the token or chat changes (one log line); a 429 waits
   `retry_after`; other failures back off 1, 2, 4… minutes, capped at 30.
@@ -561,8 +565,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   `atendido {para, mensajes}` bitácora row; `--para=coordinador` does the same for the coordinator's
   messages); `inbox --agente=dueno --todos` still lists it. An agent may read `inbox --agente=dueno`
   without hiding anything: only `--leido`, which the owner passes, marks the owner's messages read.
-  A ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as «Correr el despachador
-  de Codex (T<n>)»; an idle Claude task goes to the coordinator.
+  T489: «Le toca a usted» lists only `decidir`, `aprobar` and `hacer` rows; prompts to paste, a
+  ready Codex or Gemini task idle for 30 min («Correr el despachador de Codex (T<n>)»), silent
+  locks, findings to paste and the archive show in «Le toca al coordinador», so a coordinator pass
+  reads `nextSections(...).coordinador` for them, not `.usted`.
 - **Owner tasks** (`actor: dueno`) show only what to do and where (`donde`, else the first line
   under «DÓNDE CORRE» of an older prompt), never a suggested lane. The coordinator records every
   owner action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
@@ -617,10 +623,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   time, each with its bitácora row (T172); `move` hands a task over only without a lock, logs it and
   warns when the new agent lacks a `requiere` capability. Rules are the same for every agent.
 - **Delivered prompt (d249)**: «Copiar prompt» on a ready, unlocked task an agent does writes
-  `entregada {agente, desde}` too (`delivery.mjs`). The task then leaves «Le toca a usted» and shows
-  «Entregada a <agente> · <hora> · esperando que la tome»; after 30 min without a claim it comes
-  back as «Entregada hace 30 min y nadie la tomó». A task the owner does or one with a lock refuses
-  it.
+  `entregada {agente, desde}` too (`delivery.mjs`). The task then leaves «Le toca al coordinador»
+  and shows «Entregada a <agente> · <hora> · esperando que la tome»; after 30 min without a claim it
+  comes back as «Entregada hace 30 min y nadie la tomó». A task the owner does or one with a lock
+  refuses it.
 - **Claim title (T126)**: tasks added after T126 carry `contrato: 1`, and their `claim` requires
   `--titulo="<lane> · T<n> · …"`, stored in the lock. Another session of the same agent cannot
   replace a lock.

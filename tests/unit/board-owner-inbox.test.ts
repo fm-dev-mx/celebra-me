@@ -36,11 +36,15 @@ const msg = (id: string, texto: string, fields: Json = {}) => ({
 	...fields,
 });
 
-/** Run a snippet with `n` = next.mjs, `t` = owner-text.mjs and `board` = the given board; returns its JSON. */
+/**
+ * Run a snippet with `n` = next.mjs, `t` = owner-text.mjs, `f` = format.mjs and `board` = the given board;
+ * returns its JSON.
+ */
 function probe(board: Json, code: string) {
 	const href = (f: string) => pathToFileURL(path.join(BOARD, f)).href;
 	const src = `const n = await import(process.argv[1]); const t = await import(process.argv[2]);
-		const board = JSON.parse(process.argv[3]); const now = ${NOW}; ${code}`;
+		const f = await import(process.argv[3]);
+		const board = JSON.parse(process.argv[4]); const now = ${NOW}; ${code}`;
 	const result = runCommand(
 		process.execPath,
 		[
@@ -49,6 +53,7 @@ function probe(board: Json, code: string) {
 			src,
 			href('next.mjs'),
 			href('owner-text.mjs'),
+			href('format.mjs'),
 			JSON.stringify(board),
 		],
 		{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({}) },
@@ -90,6 +95,26 @@ describe('T489 owner inbox', () => {
 		expect(rows.map((r: Json) => r.texto).join('\n')).not.toContain('T2');
 	});
 
+	it('moves stalled dispatchers and silent locks to the coordinator, as coordinator-board.md says', () => {
+		const board = {
+			tareas: [
+				task('idle', { num: 4, agente: 'codex', actualizado: ago(45) }),
+				task('locked', {
+					num: 5,
+					estado: 'en curso',
+					candado: { agente: 'gemini', desde: ago(90), sesion: 's1' },
+				}),
+			],
+		};
+		const coordinador = probe(
+			board,
+			`console.log(JSON.stringify(n.nextSections(board, { now }).coordinador.map(r => r.texto)));`,
+		).join('\n');
+		expect(coordinador).toContain('Correr el despachador de Codex (T4)');
+		expect(coordinador).toContain('Inspeccionar el candado de gemini');
+		expect(inbox(board)).toEqual([]);
+	});
+
 	it('merges near-identical questions of one task and sender and keeps different ones apart', () => {
 		const rows = inbox({
 			tareas: [task('a')],
@@ -106,17 +131,41 @@ describe('T489 owner inbox', () => {
 		expect(merged.texto).toContain('(×2)');
 	});
 
-	it('merges every approval request of one task and sender into one aprobar row', () => {
-		const rows = inbox({
+	it('merges approval requests of one task and sender only when they cite the same PR', () => {
+		const board = {
 			tareas: [task('a', { pr: '#7' })],
 			bitacora: [
 				msg('q1', '¿Aprueba unir el PR #7?'),
-				msg('q2', '¿Aprueba el cambio de la tarjeta?', { en: ago(5) }),
+				msg('q2', '¿Aprueba el cambio de la tarjeta?', { en: ago(8) }),
+				msg('q3', '¿Aprueba unir el PR #9?', { en: ago(6) }),
+				msg('q4', 'Para T1 a, ¿aprueba ya el PR #7?', { en: ago(4) }),
+				msg('q5', '¿Aprueba también la portada?', { en: ago(2) }),
 			],
-		});
+		};
+		const rows = probe(
+			board,
+			`console.log(JSON.stringify(n.ownerInbox(board, { now }).map(r => ({ clave: r.clave, pr: r.pr, veces: r.veces ?? 1 }))));`,
+		);
 		expect(rows).toEqual([
-			expect.objectContaining({ tipo: 'aprobar', clave: 'mensaje:q1', veces: 2 }),
+			{ clave: 'mensaje:q1', pr: '#7', veces: 2 },
+			{ clave: 'mensaje:q2', pr: '#7', veces: 2 },
+			{ clave: 'mensaje:q3', pr: '#9', veces: 1 },
 		]);
+	});
+
+	it('shows how many messages a merged row stands for and when each came', () => {
+		const actions = probe(
+			{
+				tareas: [task('a')],
+				bitacora: [
+					msg('q1', '¿Publica la invitación hoy o mañana?', { en: ago(180) }),
+					msg('q2', '¿Publica la invitación hoy o mañana?', { en: ago(10) }),
+					msg('q3', '¿Qué color lleva el botón principal?', { en: ago(5) }),
+				],
+			},
+			`console.log(JSON.stringify(f.ownerActions(board, { now }).map(x => x.repite)));`,
+		);
+		expect(actions).toEqual(['×2 · hace 3 h, hace 10 min', '']);
 	});
 
 	it('groups prod-alerta tasks of one problem with a counter and their dates', () => {

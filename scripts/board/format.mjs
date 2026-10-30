@@ -457,9 +457,16 @@ export function rowText(texto) {
 
 const OWNER_VERBS = { decidir: 'Decidir', aprobar: 'Aprobar', hacer: 'Hacer fuera' };
 
+/** «×2 · hace 3 h, hace 10 min»: how many merged messages a row stands for and when each came, or ''. */
+export function repeatLine({ veces, fechas } = {}, now = Date.now()) {
+	if (!(veces > 1)) return '';
+	const when = (fechas ?? []).map((f) => relTime(f, now)).filter(Boolean);
+	return `×${veces}${when.length ? ` · ${when.join(', ')}` : ''}`;
+}
+
 /**
  * T321, T489: what the owner does now, once each, every ownerInbox row with its verb: `{tipo, id, t, verbo, texto,
- * sub, ...}` with `tipo` `decidir` (a question, `msg` its parts), `aprobar` (an approval, `pr` the PR to see) or
+ * sub, repite, ...}` with `tipo` `decidir` (a question, `msg` its parts), `aprobar` (an approval, `pr` the PR to see) or
  * `hacer` (done outside the board, closed with «Hecho»). Prompts to paste, dispatchers, findings and the archive are
  * the coordinator's; messages to the coordinator never count.
  */
@@ -470,6 +477,7 @@ export function ownerActions(board, { now = Date.now() } = {}) {
 			...x,
 			t,
 			verbo: OWNER_VERBS[x.tipo],
+			repite: repeatLine(x, now),
 			texto: msg ? msg.pregunta : ask ? ask.ref : (t?.titulo ?? texto),
 			sub: msg
 				? ''

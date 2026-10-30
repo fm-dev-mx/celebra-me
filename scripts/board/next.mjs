@@ -427,7 +427,12 @@ const jaccard = (a, b) => {
 /** «¿Aprueba …?» asks the owner to approve (a PR, a merge), not to choose. */
 export const asksApproval = (texto) =>
 	/^[^a-z0-9]*(aprueba|aprobar)\b/.test(fold(texto).replace(LEAD, ''));
-/** Two questions of one task and sender are one row when both ask to approve or say nearly the same. */
+/** The PR a message cites («#12»), or null. */
+const citedPr = (texto) => normalizePr(texto.match(/#\d+/)?.[0]) ?? null;
+/**
+ * Two questions of one task and sender are one row when both ask to approve the same PR (or both cite none)
+ * or say nearly the same.
+ */
 const MERGE_SIMILARITY = 0.6;
 
 /**
@@ -440,14 +445,15 @@ export function ownerMessageGroups(board) {
 		const key = `${r.tarea}|${r.quien}`;
 		const aprobar = asksApproval(r.mensaje.texto);
 		const w = words(r.mensaje.texto);
+		const pr = aprobar ? citedPr(r.mensaje.texto) : null;
 		const g = groups.find(
 			(x) =>
 				x.key === key &&
 				x.aprobar === aprobar &&
-				(aprobar || jaccard(x.w, w) >= MERGE_SIMILARITY),
+				(aprobar ? x.pr === pr : jaccard(x.w, w) >= MERGE_SIMILARITY),
 		);
 		if (g) g.rs.push(r);
-		else groups.push({ key, aprobar, w, rs: [r] });
+		else groups.push({ key, aprobar, w, pr, rs: [r] });
 	}
 	return groups.map(({ rs, aprobar }) => ({ rs, aprobar }));
 }
@@ -490,7 +496,7 @@ export function ownerInbox(board, { now = Date.now() } = {}) {
 				clave: `mensaje:${rs[0].mensaje.id}`,
 				r,
 				opciones: r.mensaje.opciones ?? [],
-				...(aprobar ? { pr: normalizePr(t?.pr) ?? null } : {}),
+				...(aprobar ? { pr: citedPr(r.mensaje.texto) ?? normalizePr(t?.pr) ?? null } : {}),
 				...(n > 1 ? { veces: n, fechas: rs.map((x) => x.en) } : {}),
 				...destinationFields(answerDestination(t, board)),
 			},
