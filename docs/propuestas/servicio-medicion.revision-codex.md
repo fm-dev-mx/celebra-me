@@ -91,14 +91,14 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
      entre clientes.
    - **Fricción de Despliegue y CI/CD:** La suite completa de integración continua de Celebra-me
      (`pnpm run ci`), concebida para salvaguardar una plataforma de producción de invitaciones
-     digitales, ejecuta verificación estricta de branding y logotipo (`pnpm validate:brand-logo`),
-     auditoría de accesibilidad WCAG (`pnpm validate:accessibility`), comprobación de estructura de
-     directorios (`pnpm validate:structure`), verificación exhaustiva de tipos (`pnpm type-check`) y
-     ejecución de pruebas unitarias y de render corpus. Desarrollar e iterar un producto de medición
-     publicitaria dentro de este monorepo obligaría a que cada commit o ajuste menor en adaptadores
-     ejecute esta suite completa y pesada, ralentizando el ciclo de desarrollo respecto a un
-     monorepo dedicado con un flujo de CI ágil enfocado exclusivamente en sus paquetes de ingestión
-     y despacho.
+     digitales, ejecuta validación estática exhaustiva (`pnpm ci:static` con `pnpm type-check`,
+     `pnpm validate:structure`, `pnpm validate:ui-governance`, `pnpm validate:no-pii`,
+     `pnpm security:secrets` y `pnpm lint`), además de la suite completa de pruebas unitarias
+     (`pnpm test`) y pruebas de extremo a extremo (`pnpm test:e2e:ci`). Desarrollar e iterar un
+     producto de medición publicitaria dentro de este monorepo obligaría a que cada commit o ajuste
+     menor en adaptadores ejecute esta suite completa y pesada, ralentizando el ciclo de desarrollo
+     respecto a un monorepo dedicado con un flujo de CI ágil enfocado exclusivamente en sus paquetes
+     de ingestión y despacho.
    - **Ruptura de Principios de Dominio:** Alojar el servicio dentro de Celebra-me violaría de
      origen la Regla 1 (_Regla del segundo cliente_) y la Regla 2 (_Configuración, no copias_),
      induciendo a reutilizar modelos propios de invitaciones (`event_type: boda | xv`,
@@ -278,7 +278,7 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
   (Meta Graph API y Meta CAPI) corresponden a un único inquilino y se manejan exclusivamente a
   través de variables de entorno del proceso en tiempo de ejecución (`src/lib/server/env.ts:1-10`,
   `src/lib/meta/graph-client.ts:10-17` con `getEnv('META_GRAPH_ACCESS_TOKEN')` y
-  `src/lib/commercial/meta-capi/service.ts:133-145` con `getEnv('META_CAPI_ACCESS_TOKEN')`). En un
+  `src/lib/commercial/meta-capi/service.ts:489` con `getEnv('META_CAPI_ACCESS_TOKEN')`). En un
   modelo multi-inquilino donde cada cliente vincula sus propios tokens dinámicos de Meta System
   User, TikTok Access Token y credenciales de Google Ads, no es posible delegar la configuración a
   variables de entorno de servidor: los tokens deben persistirse por fila en la base de datos (tabla
@@ -297,7 +297,7 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
 - **Evidencia en el repositorio:** La arquitectura existente de Celebra-me gestiona credenciales de
   integración de forma mono-inquilino sin tablas de conexiones en base de datos, leyéndolas
   únicamente del entorno de ejecución en `src/lib/server/env.ts:1-10`,
-  `src/lib/meta/graph-client.ts:10-17` y `src/lib/commercial/meta-capi/service.ts:133-145`.
+  `src/lib/meta/graph-client.ts:10-17` y `src/lib/commercial/meta-capi/service.ts:489`.
 
 ---
 
