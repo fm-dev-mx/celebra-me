@@ -423,6 +423,7 @@ export interface InvitationViewModel {
 				footerText?: string;
 				noteText?: string;
 				passStyle: PersonalizedAccessPassStyle;
+				checkInQr: boolean;
 			};
 		};
 		gifts?: {

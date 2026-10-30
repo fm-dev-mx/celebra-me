@@ -3,11 +3,12 @@
  * 7-day load (d233: open tasks count too); a tie goes to Gemini, and Codex is skipped while its quota is near the
  * cap. Work by Codex or Gemini still goes to Claude (d183), so the author never reviews itself. d282, d288: a
  * low- or medium-risk PR by Claude goes to a clean-context Claude subagent instead (`revisor: subagente`).
+ * T382: an agent paused with `pnpm board agentes <a>=pausado hasta=<fecha>` is never picked.
  */
 import { closeSync, existsSync, openSync, readdirSync, readSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { defaultReviewer, isFinished, isReview, reviewerIssue } from './model.mjs';
+import { agentPaused, defaultReviewer, isFinished, isReview, reviewerIssue } from './model.mjs';
 import { reviewLevel, subagentReview } from './prompt.mjs';
 
 export const LOAD_DAYS = 7;
@@ -67,13 +68,28 @@ function quotaText(quota, now) {
 	return `cuota Codex ${part(quota.primary, '5 h')}, ${part(quota.secondary, 'semana')}`;
 }
 
+/** T382: «codex en pausa hasta 2026-11-02» while `agente` is paused (see agentPaused), else null. */
+export function pauseText(agente, board, now = Date.now()) {
+	if (!agentPaused(agente, board, now)) return null;
+	const own = (board.agentes ?? []).find((a) => a.id === agente);
+	return `${agente} en pausa hasta ${own.pausa.hasta}`;
+}
+
 /**
  * The reviewer of work by `author` and why: d288 a Claude subagent for Claude's low- or medium-risk `files`
  * outside release work (`task`), d209 between Gemini and Codex for Claude's other work, d183 otherwise. `quota`
  * is Codex's last rate_limits ({ primary, secondary }) or null; `now` is in milliseconds.
  */
 export function pickReviewer(author, board, { quota = null, now = Date.now(), files, task } = {}) {
-	if (author !== 'claude') return { agente: defaultReviewer(author), motivo: '' };
+	if (author !== 'claude') {
+		const claude = pauseText('claude', board, now);
+		if (!claude) return { agente: defaultReviewer(author), motivo: '' };
+		// T382: while Claude is paused, the other of Codex and Gemini reviews; the author never reviews itself.
+		const other = ['codex', 'gemini'].find((a) => a !== author && !agentPaused(a, board, now));
+		return other
+			? { agente: other, motivo: claude, claudePaused: true }
+			: { agente: 'claude', motivo: '', issue: `${claude} y no hay otro revisor libre` };
+	}
 	if (subagentReview(files, task))
 		return {
 			agente: 'claude',
@@ -85,12 +101,23 @@ export function pickReviewer(author, board, { quota = null, now = Date.now(), fi
 		codex: reviewerLoad(board, 'codex', now),
 	};
 	const cap = codexCapped(quota, now);
-	const agente = cap || load.gemini <= load.codex ? 'gemini' : 'codex';
+	const paused = {
+		gemini: pauseText('gemini', board, now),
+		codex: pauseText('codex', board, now),
+	};
+	if (paused.gemini && paused.codex)
+		return { agente: 'gemini', motivo: '', issue: `${paused.gemini}; ${paused.codex}` };
+	const agente = paused.codex
+		? 'gemini'
+		: paused.gemini || !(cap || load.gemini <= load.codex)
+			? 'codex'
+			: 'gemini';
 	// Past the subagent branch, a risk below «alto» can only mean release work.
 	const motivo = [
 		`riesgo ${reviewLevel(files)}${reviewLevel(files) === 'alto' ? '' : ', release'}`,
 		`carga ${LOAD_DAYS} d: gemini ${load.gemini}, codex ${load.codex}`,
 		cap ? `cuota Codex ${cap} (tope)` : quotaText(quota, now),
+		...[paused.gemini, paused.codex].filter(Boolean),
 	].join(' · ');
 	return { agente, motivo };
 }
@@ -200,12 +227,19 @@ export function reviewerPrecheck(author, agente) {
  * explicit `agente` wins when allowed, otherwise pickReviewer. `issue` refuses the pairing; `revisor` is
  * `subagente` when Claude reviews Claude's low- or medium-risk work (d288).
  */
-export function chooseReviewer(author, agente, board, files, task) {
+export function chooseReviewer(author, agente, board, files, task, now = Date.now()) {
 	const pick =
 		typeof agente === 'string'
 			? { agente, motivo: '' }
-			: pickReviewer(author, board, { quota: codexQuota(), files, task });
-	const issue = reviewerIssue(author, pick.agente, { subagent: subagentReview(files, task) });
+			: pickReviewer(author, board, { quota: codexQuota(), now, files, task });
+	const issue =
+		pick.issue ??
+		reviewerIssue(author, pick.agente, {
+			subagent: subagentReview(files, task),
+			claudePaused: agentPaused('claude', board, now),
+			// The author's own subagent is not a separate agent: Claude's pause does not stop it.
+			paused: pick.agente === author ? null : pauseText(pick.agente, board, now),
+		});
 	return { ...pick, revisor: pick.agente === author ? 'subagente' : undefined, issue };
 }
 

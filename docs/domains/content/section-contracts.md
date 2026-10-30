@@ -210,7 +210,9 @@ Footer remains a visual theme surface and has no independent section variant.
   `description`, `startsAt`).
 - **Personalized access** (`rsvp.personalizedAccess`): optional `ticket` (`signature`, `monogram`),
   `title`, `subtitle`, `footerText`, `noteText`, `presentationOptions.passStyle` (`classic` |
-  `race-credential`; any non-`classic` style requires the `formal-pass` variant).
+  `race-credential`; any non-`classic` style requires the `formal-pass` variant),
+  `presentationOptions.checkInQr` (decorative QR check-in preview on any variant; it encodes nothing
+  and renders on demo previews only until check-in ships).
 - **Variant Contract**: `formal-register` keeps the shared RSVP renderer and owns the underline
   confirmation-register presentation. Values for `rsvp.variant` and
   `rsvp.personalizedAccess.variant` are listed in the

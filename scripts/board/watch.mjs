@@ -16,21 +16,26 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AGENT_REGISTRY, claimable, queue, taskLabel as label } from './model.mjs';
+import { AGENT_REGISTRY, agentPaused, claimable, queue, taskLabel as label } from './model.mjs';
 import { boardDir, loadBoard } from './store.mjs';
 import { geminiRelayAlert, geminiRelayStale } from './next.mjs';
 
 export const TITLE = 'Tablero Celebra-me';
 
-/** Ready tasks per agent, in queue order: the same eligibility as `pnpm board next`. */
+/** Ready tasks per agent, in queue order: the same eligibility as `pnpm board next`. T382: none while paused. */
 export function readyByAgent(board, now = Date.now()) {
 	const order = queue(board, now);
 	return Object.fromEntries(
 		Object.keys(AGENT_REGISTRY).map((agente) => [
 			agente,
-			order.filter(
-				(t) => claimable(t, agente, board, now) && !t.candado && t.actor !== 'coordinador',
-			),
+			agentPaused(agente, board, now)
+				? []
+				: order.filter(
+						(t) =>
+							claimable(t, agente, board, now) &&
+							!t.candado &&
+							t.actor !== 'coordinador',
+					),
 		]),
 	);
 }

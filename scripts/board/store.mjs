@@ -154,7 +154,7 @@ function zipTasks(file) {
 }
 
 /**
- * A tarea or revision requisito, or a padre, whose task is in neither tareas/ nor archivo/ (its small record
+ * A tarea or revision requisito, a padre or a deriva, whose task is in neither tareas/ nor archivo/ (its small record
  * lost, or the task only kept in a monthly .zip) is looked up in mensual/*.zip, newest first; the zip opens only when
  * such a ref exists. A short record per hit, so `requisitos()` reads it as archived.
  */
@@ -165,7 +165,7 @@ export function zipOnlyTasks(dir, tareas, archivo) {
 			(t.requisitos ?? [])
 				.filter((r) => ['tarea', 'revision'].includes(r.tipo) && r.ref)
 				.map((r) => r.ref)
-				.concat(t.padre ? [t.padre] : [])
+				.concat(t.padre ? [t.padre] : [], t.deriva ? [t.deriva] : [])
 				.filter((ref) => !known.has(ref)),
 		),
 	);

@@ -11,6 +11,16 @@ export type PersonalizedAccessPassStyle = (typeof PERSONALIZED_ACCESS_PASS_STYLE
 /** Variants whose markup and stylesheet implement a non-classic pass style. */
 export const PASS_STYLE_VARIANTS = ['formal-pass'] as const;
 
+/**
+ * Whether the pass previews the upcoming QR check-in (`presentationOptions.checkInQr`). The code is
+ * decorative and renders only on demo previews until check-in ships.
+ */
+export function resolvePersonalizedAccessCheckInQr(
+	options: { checkInQr?: boolean } | undefined,
+): boolean {
+	return options?.checkInQr === true;
+}
+
 export function resolvePersonalizedAccessPassStyle(
 	options: { passStyle?: PersonalizedAccessPassStyle } | undefined,
 ): PersonalizedAccessPassStyle {

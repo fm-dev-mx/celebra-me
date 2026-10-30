@@ -43,6 +43,7 @@ type PersonalizedAccessProps = {
 	footerText?: string;
 	noteText?: string;
 	passStyle?: PersonalizedAccessPassStyle;
+	checkInQr?: boolean;
 };
 
 const DEFAULT_DEMO_GUEST_CAP = 2;
@@ -197,6 +198,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 			footerText: access?.footerText,
 			noteText: access?.noteText,
 			passStyle: access?.passStyle,
+			checkInQr: access?.checkInQr,
 		},
 	};
 }

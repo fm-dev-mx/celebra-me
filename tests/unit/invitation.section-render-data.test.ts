@@ -68,9 +68,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const celestial = buildInvitationSectionRenderDescriptors(
 			setupDemoPageContext('demo-xv-celestial-blue'),
 		).find((descriptor) => descriptor.component === 'family');
+		// Celestial opts into editorial motion, which owns the family choreography.
 		expect(celestial).toMatchObject({
-			intersection: 'arch',
-			reveal: 'stagger-group',
+			intersection: 'folio',
+			reveal: 'editorial',
 			props: { variant: 'standard' },
 		});
 	});

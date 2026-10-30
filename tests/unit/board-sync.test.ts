@@ -266,7 +266,7 @@ describe('pnpm board:sync', () => {
 			'unida-ya ya está unida',
 			'ERR #21 no está unido en GitHub (OPEN)',
 			'ERR sin-pr no tiene pr: indique --pr=#<número>',
-			'ERR una revisión se cierra con su --sha, no con merged',
+			'ERR rev-hija es la revisión de x (se cierra con su --sha); use pnpm board merged x --coordinador',
 		]);
 		expect(readTask(dir, 'unida-ya').candado).toBeUndefined();
 		expect(readTask(dir, 'unida-ya').sesion).toEqual({ id: 'local_otra', agente: 'codex' });

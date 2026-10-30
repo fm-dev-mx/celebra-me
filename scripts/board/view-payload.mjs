@@ -4,13 +4,21 @@ import { dependencyGraph } from './dependency-graph.mjs';
 import { leadOf } from './format.mjs';
 import { AGENT_REGISTRY, findTask, ownerWhere } from './model.mjs';
 import { unreadFor } from './next.mjs';
+import { promptTitle } from './owner-where.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
 
 export function taskSummary(t, board) {
 	const { prompt, cierre, ...rest } = t;
 	return {
 		...rest,
-		...(prompt ? { prompt: true, donde: ownerWhere(t) ?? t.donde } : {}),
+		// T391: the prompt's session title survives, so the view names the same new chat as `pnpm board list`.
+		...(prompt
+			? {
+					prompt: true,
+					donde: ownerWhere(t) ?? t.donde,
+					promptTitulo: promptTitle(t) ?? undefined,
+				}
+			: {}),
 		bloqueoArchivo: archiveBlock(t, board),
 		...(cierre
 			? {
@@ -44,7 +52,7 @@ export function liveBoard(board, now = Date.now()) {
 	return {
 		...board,
 		tareas: open.map((t) => taskSummary(t, board)),
-		// Dependency, subtask and review references survive without archived task documents.
+		// Dependency, subtask, follow-up and review references survive without archived task documents.
 		archivo: [
 			...archived.map((t) => {
 				const keys = [
@@ -56,6 +64,7 @@ export function liveBoard(board, now = Date.now()) {
 					'origen',
 					'revisionSha',
 					'padre',
+					'deriva',
 					'grupo',
 					'fase',
 					'orden',
@@ -99,6 +108,7 @@ function neededArchives(board, open, log) {
 			for (const ref of [
 				t.padre,
 				t.origen,
+				t.deriva,
 				...(t.requisitos ?? [])
 					.filter((r) => ['tarea', 'revision'].includes(r.tipo))
 					.map((r) => r.ref),

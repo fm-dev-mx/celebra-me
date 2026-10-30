@@ -23,10 +23,10 @@ routing and the internal modules work lives in
 - **Fields**: `titulo`, `estado`, `urgencia` (`urgente|alta|normal|baja`), `actor`
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
-  `carril`, `ahora` (the only status line), `pr`, `rama`, `padre`, `grupo`, `fase`, `tipo`, `cada`
-  and `prompt`. Commands alone write `rev`, `actualizado`, `num`, `candado`, `sesion`, `entregada`,
-  `carrilPlaneado`, `agregadaPor`, `seguimientoPor`, `archivada` and `cierre`; the full field list
-  is in the coordinator guide.
+  `carril`, `ahora` (the only status line), `pr`, `rama`, `padre`, `grupo`, `fase`, `deriva`,
+  `tipo`, `cada` and `prompt`. Commands alone write `rev`, `actualizado`, `num`, `candado`,
+  `sesion`, `entregada`, `carrilPlaneado`, `agregadaPor`, `seguimientoPor`, `archivada` and
+  `cierre`; the full field list is in the coordinator guide.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`; a `revision` when the origin PR is
   `en revision`/`hecha`/`unida`; a `fecha` when its time passed; a `decision` when it is `vigente`;
@@ -37,7 +37,8 @@ routing and the internal modules work lives in
   for a date sits in «Calendario» (d276); any other blocked task sits in «Bloqueadas» (T258); both
   come back to the queue on their own.
 - **Subtasks (d174)**: `padre` names the mother task, `grupo` an initiative, `fase` (integer ≥ 1)
-  the step. A `padre` that names no task, the task itself or a loop is refused.
+  the step, for a program closed together; a `padre` naming no task, itself or a loop is refused. A
+  finished task's follow-up is its own task with `deriva=<source>` (T481), never a subtask.
 - **Periodic tasks (d268)**: `cada=<n>d` makes a task recurring: `close` of a started cycle sends it
   back to `pendiente` until the next date, keeping the cierre as the last cycle's.
 - **Category (d191)**: `categoria` prefers a lane, never restricts: `plataforma` f05-plataforma,
@@ -68,9 +69,8 @@ routing and the internal modules work lives in
   date. `--faltan` lists notes `[Unreleased]` lacks (exiting 1 while any is missing).
 - **Delivered prompt (d249)**: dispatchers run `pnpm board entregada <id> --agente=<a>` when they
   open the chat; `claim` clears the mark.
-- **Session id**: Claude omits `--sesion`; the commands read `CLAUDE_CODE_HOST_SESSION_ID`
-  (`local_…`). Codex and Gemini pass `--sesion=<id>`. `set` and `release` require the lock's agent
-  and session.
+- **Session id**: Claude omits `--sesion` (commands read `CLAUDE_CODE_HOST_SESSION_ID`); Codex and
+  Gemini pass `--sesion=<id>`. `set` and `release` require the lock's agent and session.
 - **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
   app and also records the question with `pnpm board msg <id> --de=<agent> --para=dueno "…"`. T322:
   the text is one plain line with a question; a decision adds two or more `--opcion="…"`, the
