@@ -24,15 +24,15 @@
         "intersections": {}
     },
     "eventTiming": {
-        "localDateTime": "2026-09-12T11:00",
+        "localDateTime": "2028-09-12T11:00",
         "timeZone": "America/Mexico_City",
-        "startsAtUtc": "2026-09-12T17:00:00.000Z"
+        "startsAtUtc": "2028-09-12T17:00:00.000Z"
     },
     "hero": {
         "presentation": { "venueIndex": 1 },
         "name": "Camila Aurora",
         "label": "Primera Comunión",
-        "date": "2026-09-12T11:00:00.000Z",
+        "date": "2028-09-12T11:00:00.000Z",
         "backgroundImage": "hero",
         "variant": "standard"
     },
@@ -59,7 +59,7 @@
                 "venueName": "Parroquia Nuestra Señora de la Luz",
                 "address": "Av. de la Paz 120, Centro",
                 "city": "Ciudad de México",
-                "date": "12 de septiembre de 2026",
+                "date": "12 de septiembre de 2028",
                 "time": "11:00 AM",
                 "image": "ceremony",
                 "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia+Nuestra+Senora+de+la+Luz+Ciudad+de+Mexico",
@@ -71,7 +71,7 @@
                 "venueName": "Jardín Santa Clara",
                 "address": "Paseo de los Olivos 45, Colonia del Valle",
                 "city": "Ciudad de México",
-                "date": "12 de septiembre de 2026",
+                "date": "12 de septiembre de 2028",
                 "time": "1:00 PM",
                 "image": "reception",
                 "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Jardin+Santa+Clara+Ciudad+de+Mexico",
