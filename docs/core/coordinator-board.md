@@ -427,7 +427,9 @@ Bot API `sendMessage` to the owner's chat when new items appear (`scripts/board/
 - **Grouping**: every new item of one pass (one minute) goes in a single message, at most 8 lines,
   ending with `Tablero: http://127.0.0.1:4320`. A single item reads like
   `T418 · Andrea · … . Tablero: http://127.0.0.1:4320`. An empty list sends nothing.
-- **Failures**: a rejected or offline send is retried next pass and never stops master wakes.
+- **Failures**: every Telegram request aborts after 10 s, so a hung connection never stops master
+  wakes. A 400/401/403/404 stops sending until the token or chat changes (one log line); a 429 waits
+  `retry_after`; other failures back off 1, 2, 4… minutes, capped at 30.
 - **Missing configuration**: the watcher keeps working, records current items as seen (no burst when
   configured later) and writes one line to `.agent/tmp/board-master-watch.log`.
 - `pnpm board:watch --dry-run` prints `[prueba] telegram: …` and records nothing.

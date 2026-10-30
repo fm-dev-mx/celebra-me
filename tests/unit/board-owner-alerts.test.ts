@@ -122,15 +122,80 @@ describe('T437 owner alerts on Telegram', () => {
 			const dry = await m.checkOwnerAlerts({ dir, board, state, now: NOW, config, dryRun: true, out: (t) => printed.push(t), sendTelegram: failing, log: () => {} });
 			const stateAfterDry = JSON.stringify(state);
 			await m.checkOwnerAlerts({ dir, board, state, now: NOW, config, sendTelegram: failing, log: () => {} });
-			const sent = await m.checkOwnerAlerts({ dir, board, state, now: NOW, config, sendTelegram: async () => ({ ok: true }), log: () => {} });
-			console.log(JSON.stringify({ dry: dry.length, printed, stateAfterDry, attempts, sent: sent.map((x) => x.clave) }));`,
+			const blocked = await m.checkOwnerAlerts({ dir, board, state, now: NOW + 30_000, config, sendTelegram: failing, log: () => {} });
+			const sent = await m.checkOwnerAlerts({ dir, board, state, now: NOW + 61_000, config, sendTelegram: async () => ({ ok: true }), log: () => {} });
+			console.log(JSON.stringify({ dry: dry.length, printed, stateAfterDry, attempts, blocked: blocked.length, sent: sent.map((x) => x.clave), reintento: state.owner.reintento ?? null }));`,
 			root,
 		);
 		expect(r.dry).toBe(1);
 		expect(r.printed[0]).toMatch(/^\[prueba\] telegram: Mensaje/);
 		expect(r.stateAfterDry).toBe('{}');
 		expect(r.attempts).toBe(1);
+		expect(r.blocked).toBe(0);
 		expect(r.sent).toEqual(['mensaje:m1']);
+		expect(r.reintento).toBeNull();
+	});
+
+	it('stops after a permanent rejection until the config changes, and logs it once', () => {
+		const root = fixture();
+		const r = probe(
+			`
+			const board = { tareas: [task], archivo: [], bitacora: [msg('m1', 'andrea')] };
+			const state = {};
+			const logged = [];
+			let attempts = 0;
+			const run = (config, now, status) => m.checkOwnerAlerts({ dir, board, state, now, config, log: (l) => logged.push(l),
+				sendTelegram: async () => { attempts++; return status ? { ok: false, status } : { ok: true }; } });
+			const bad = { token: '${TOKEN}', chatId: '1' };
+			await run(bad, NOW, 401);
+			await run(bad, NOW + 3_600_000, 401);
+			await run(bad, NOW + 7_200_000, 401);
+			const stopped = attempts;
+			const sent = await run({ token: '${TOKEN}', chatId: '2' }, NOW + 7_260_000);
+			console.log(JSON.stringify({ stopped, attempts, logged, sent: sent.length, state: JSON.stringify(state) }));`,
+			root,
+		);
+		expect(r.stopped).toBe(1);
+		expect(r.attempts).toBe(2);
+		expect(r.logged).toHaveLength(1);
+		expect(r.logged[0]).toContain('estado 401');
+		expect(r.sent).toBe(1);
+		expect(r.state).not.toContain('rechazada');
+		expect(r.state).not.toContain(TOKEN);
+		expect(r.logged.join('\n')).not.toContain(TOKEN);
+	});
+
+	it('honours retry_after on 429 and doubles other back-offs up to 30 minutes', () => {
+		const root = fixture();
+		const r = probe(
+			`
+			const board = { tareas: [task], archivo: [], bitacora: [msg('m1', 'andrea')] };
+			const config = { token: 'x', chatId: '1' };
+			const run = async (state, now, result) => {
+				let called = false;
+				await m.checkOwnerAlerts({ dir, board, state, now, config, log: () => {},
+					sendTelegram: async () => { called = true; return result; } });
+				return called;
+			};
+			const limited = {};
+			await run(limited, NOW, { ok: false, status: 429, retryAfter: 120 });
+			const early = await run(limited, NOW + 119_000, { ok: true });
+			const late = await run(limited, NOW + 121_000, { ok: true });
+			const backoff = {};
+			let t = NOW;
+			const waits = [];
+			for (let i = 0; i < 7; i++) {
+				await run(backoff, t, { ok: false, error: 'timeout' });
+				const until = Date.parse(backoff.owner.reintento.hasta);
+				waits.push((until - t) / 60_000);
+				t = until;
+			}
+			console.log(JSON.stringify({ early, late, waits }));`,
+			root,
+		);
+		expect(r.early).toBe(false);
+		expect(r.late).toBe(true);
+		expect(r.waits).toEqual([1, 2, 4, 8, 16, 30, 30]);
 	});
 
 	it('real transport goes through the fake fetch with the configured chat', () => {

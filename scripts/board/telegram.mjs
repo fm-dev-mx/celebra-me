@@ -14,6 +14,8 @@ import { boardDir } from './store.mjs';
 const API = 'https://api.telegram.org/bot';
 const TOKEN_PATTERN = /^\d{5,}:[A-Za-z0-9_-]{30,}$/;
 export const TEST_TEXT = 'Prueba de Celebra-me';
+/** A hung connection must not stall the one-minute watcher pass. */
+export const TIMEOUT_MS = 10_000;
 
 export function telegramConfigPath(dir) {
 	return join(dirname(dir), 'telegram.json');
@@ -57,7 +59,12 @@ export function readTelegramConfig(dir) {
 
 export async function sendTelegramAlert(
 	text,
-	{ dir, config = readTelegramConfig(dir), fetch = globalThis.fetch } = {},
+	{
+		dir,
+		config = readTelegramConfig(dir),
+		fetch = globalThis.fetch,
+		timeoutMs = TIMEOUT_MS,
+	} = {},
 ) {
 	if (!config?.token || !config?.chatId) return { ok: false, reason: 'unconfigured' };
 	try {
@@ -66,11 +73,18 @@ export async function sendTelegramAlert(
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ chat_id: config.chatId, text }),
+			signal: AbortSignal.timeout(timeoutMs),
 		});
-		if (!res.ok) return { ok: false, status: res.status };
-		return { ok: true };
+		if (res.ok) return { ok: true };
+		const body = await res.json().catch(() => null);
+		const retryAfter = Number(body?.parameters?.retry_after);
+		return { ok: false, status: res.status, ...(retryAfter > 0 ? { retryAfter } : {}) };
 	} catch (error) {
-		return { ok: false, error: error.message };
+		// Only the error name: transport messages may echo the request URL, which holds the token.
+		return {
+			ok: false,
+			error: error?.name === 'TimeoutError' ? 'timeout' : (error?.name ?? 'error'),
+		};
 	}
 }
 
@@ -110,7 +124,10 @@ export function chatFromUpdates(updates) {
 	return (hola.at(-1) ?? chats.at(-1))?.chat.id ?? null;
 }
 
-export async function discoverChat(dir, { fetch = globalThis.fetch, out = console.log } = {}) {
+export async function discoverChat(
+	dir,
+	{ fetch = globalThis.fetch, out = console.log, timeoutMs = TIMEOUT_MS } = {},
+) {
 	const { token } = readTelegramFile(dir);
 	if (!token) {
 		out('Falta el token. Corra primero pnpm board:telegram:token');
@@ -118,7 +135,9 @@ export async function discoverChat(dir, { fetch = globalThis.fetch, out = consol
 	}
 	let body;
 	try {
-		const res = await fetch(`${API}${token}/getUpdates`);
+		const res = await fetch(`${API}${token}/getUpdates`, {
+			signal: AbortSignal.timeout(timeoutMs),
+		});
 		body = await res.json();
 		if (!res.ok || !body?.ok) throw new Error(`estado ${res.status}`);
 	} catch {
