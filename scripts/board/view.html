@@ -361,6 +361,7 @@ span.crumb{color:var(--muted)}
 .map path{fill:none;stroke-width:1.5}
 .map path.wait{stroke:var(--ink)}.map path.ok{stroke:var(--block-rule)}.map path.own{stroke:var(--danger-rule)}
 .map path.sub{stroke:var(--line-2);stroke-dasharray:4 4}
+.map path.from{stroke:var(--line-2);stroke-dasharray:1 4}
 .map marker path{fill:var(--muted);stroke:none}
 .mn{position:absolute;display:flex;flex-direction:column;gap:2px;overflow:hidden;text-align:left;font:inherit;font-size:.78rem;line-height:1.25;color:var(--ink);background:var(--panel);border:1px solid var(--line-2);border-radius:6px;padding:5px 7px}
 button.mn{cursor:pointer}button.mn:hover{background:var(--hover)}
@@ -870,6 +871,7 @@ function renderSheet(open){
     ['Rama',t.rama?`<span class="code">${esc(t.rama)}</span>`:''],
     ['PR',pr?`<a href="${GH}/pull/${pr}" target="_blank" rel="noopener">#${pr}</a>`:''],
     ['Origen',t.origen?esc(taskName(t.origen,S.board)):''],
+    ['Viene de',t.deriva?esc(taskName(t.deriva,S.board)):''],
     ['Toca',(t.toca||[]).length?t.toca.map(x=>esc(TOCA[x]||x)).join(', ')+' · necesita su aprobación':''],
     ['Límite',t.hasta?esc(fmt(t.hasta)):''],
     ['Evidencia',t.evidencia&&(t.evidencia.cmd||t.evidencia.salio)?`<code>${esc(t.evidencia.cmd||'')}</code> → ${rich(t.evidencia.salio||'')}`:''],
@@ -947,10 +949,10 @@ function renderMapa(){
   const W=rows.length*(MAP_W+MAP_GX)-MAP_GX,H=Math.max(...rows.filter(Boolean))*(MAP_H+MAP_GY)-MAP_GY;
   const path=e=>{
     const a=pos.get(e.de),b=pos.get(e.a);if(!a||!b)return '';
-    const sub=e.tipo==='subtarea';
+    const sub=e.tipo==='subtarea'||e.tipo==='deriva';
     const [x1,y1,x2,y2]=sub?[a.x+MAP_W,a.y+MAP_H/2,b.x,b.y+MAP_H/2]:[a.x,a.y+MAP_H/2,b.x+MAP_W,b.y+MAP_H/2];
     const dx=Math.max(24,Math.abs(x2-x1)/2)*(x2>=x1?1:-1);
-    const cls=sub?'sub':e.a.startsWith('raiz:')?'own':e.ok?'ok':'wait';
+    const cls=e.tipo==='deriva'?'from':sub?'sub':e.a.startsWith('raiz:')?'own':e.ok?'ok':'wait';
     return `<path class="${cls}" d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"${sub?'':' marker-end="url(#map-arrow)"'}/>`;
   };
   const node=n=>{
@@ -960,7 +962,7 @@ function renderMapa(){
     const body=`<b>${esc(tag)}</b> <span>${esc(n.titulo)}</span><small>${done?esc(n.archivada?'archivada':n.estado):esc(n.estado)}${n.desbloquea?` · desbloquea ${n.desbloquea}`:''}</small>`;
     return byId(n.id)?`<button type="button" class="mn${done?' done':''}" style="${st}" data-sel="${esc(n.id)}" data-jump="1" data-all="1" title="${esc(tag+' · '+n.titulo)}">${body}</button>`:`<div class="mn done" style="${st}" title="${esc(tag+' · '+n.titulo)}">${body}</div>`;
   };
-  $('mapa').innerHTML=avisos+sin+`<p class="map-key">La flecha va de la tarea que espera a la que le falta. Rojo: le toca a usted. Gris: terminada o archivada. Línea punteada: subtarea.</p>
+  $('mapa').innerHTML=avisos+sin+`<p class="map-key">La flecha va de la tarea que espera a la que le falta. Rojo: le toca a usted. Gris: terminada o archivada. Línea punteada: subtarea. Línea de puntos gris: viene de una tarea terminada.</p>
 <div class="map-wrap"><div class="map" style="width:${W}px;height:${H}px"><svg width="${W}" height="${H}" aria-hidden="true"><defs><marker id="map-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>${m.aristas.map(path).join('')}</svg>${m.nodos.map(node).join('')}</div></div>`;
 }
 // Finished tasks, newest first; «Ver archivadas» swaps to the archived ones (d167).

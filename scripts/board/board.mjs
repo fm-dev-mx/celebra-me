@@ -128,7 +128,7 @@ import {
 	findTask,
 } from './model.mjs';
 import { assertLaneReady, assertPlan, readLaneGit } from './lane-plan.mjs';
-import { blocked, listTail, parentIssue, parentText, subtaskLines } from './subtasks.mjs';
+import { blocked, listTail, originLines, refIssue, subtaskLines } from './subtasks.mjs';
 import { ciGate, reviewPreflight, sinCiTrace, untilGreen, viewPr } from './review-preflight.mjs';
 import { assertOwner, noteOverride, overrideReason } from './lock-owner.mjs';
 import { authorSession } from './findings.mjs';
@@ -323,16 +323,22 @@ function saveTask(dir, before, after, opts = {}) {
 	return t;
 }
 
-/** d174: `padre=T12` becomes the mother's id; a mother off the board or a loop of mothers is refused. */
+/**
+ * d174: `padre=T12` becomes the mother's id; a mother off the board or a loop of mothers is refused. T481: `deriva=T12`
+ * becomes the source's id the same way, and a source off the board is refused.
+ */
 function withParent(dir, before, t) {
-	if (t.padre === undefined || t.padre === before?.padre) return;
+	const refs = ['padre', 'deriva'].filter((k) => t[k] !== undefined && t[k] !== before?.[k]);
+	if (!refs.length) return;
 	const board = {
 		tareas: readCollection(dir, 'tareas'),
 		archivo: readCollection(dir, 'archivo'),
 	};
-	const mother = findTask(t.padre, board);
-	if (mother) t.padre = mother.id;
-	const issue = parentIssue(t, board);
+	for (const k of refs) {
+		const found = findTask(t[k], board);
+		if (found) t[k] = found.id;
+	}
+	const issue = refIssue(t, board, refs);
 	if (issue) throw new UsageError(`no se escribió ${t.id}: ${issue}`);
 }
 
@@ -570,8 +576,7 @@ const commands = {
 		out(
 			`${t.id} · rev ${t.rev} · ${COLOR_LABEL[color(t, board)]} · ${t.estado ?? 'pendiente'}\n${t.num ? `T${t.num} ` : ''}${t.titulo}`,
 		);
-		const up = parentText(t, board);
-		if (up) out(`  ${up}`);
+		for (const line of originLines(t, board)) out(`  ${line}`);
 		const trace = traceText(t, board);
 		if (trace) out(`  ${trace.text}`);
 		const delivered = deliveryLine(t);
