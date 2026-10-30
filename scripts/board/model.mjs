@@ -283,14 +283,21 @@ export const defaultReviewer = (author) =>
 /**
  * Why `reviewer` may not review work by `author` (d183), or null. d288: Claude may review Claude's work only
  * when the PR is low or medium risk outside release work (`subagent`), through a clean-context subagent.
+ * T382: a paused reviewer is refused, and while Claude is paused (`claudePaused`) the other of Codex and Gemini
+ * reviews Codex's or Gemini's work instead.
  */
-export function reviewerIssue(author, reviewer, { subagent = false } = {}) {
+export function reviewerIssue(
+	author,
+	reviewer,
+	{ subagent = false, claudePaused = false, paused = null } = {},
+) {
 	if (!Object.hasOwn(AGENT_REGISTRY, reviewer ?? '')) return `revisor desconocido: ${reviewer}`;
+	if (paused) return paused;
 	if (reviewer === author && !(author === 'claude' && subagent))
 		return author === 'claude'
 			? 'd288: un subagente de claude revisa el trabajo de claude solo en riesgo bajo o medio, fuera de release'
 			: 'la revisión cruzada requiere otro agente';
-	if (author && author !== 'claude' && reviewer !== 'claude')
+	if (author && author !== 'claude' && reviewer !== 'claude' && !claudePaused)
 		return `d183: el trabajo de ${author} lo revisa claude`;
 	return null;
 }
@@ -423,6 +430,16 @@ export const needsOwner = (t) =>
 export function capacidades(agente, board) {
 	const own = (board.agentes ?? []).find((a) => a.id === agente);
 	return own?.capacidades ?? DEFAULT_CAPACIDADES[agente] ?? [];
+}
+
+/**
+ * d314 (T391): `agente` is paused while its `agentes/<id>.json` record has `pausa.hasta` in the future; a paused
+ * agent is never offered as a place to paste a prompt. A missing or invalid date means not paused.
+ */
+export function agentPaused(agente, board, now = Date.now()) {
+	const own = (board.agentes ?? []).find((a) => a.id === agente);
+	const end = Date.parse(own?.pausa?.hasta ?? '');
+	return !Number.isNaN(end) && now < end;
 }
 
 /** Whether `agente` can finish the task alone: it has every capability in `requiere`. */

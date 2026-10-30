@@ -1,6 +1,6 @@
 /**
  * `pnpm board` commands over the board's other collections: decisions (`decide`), lane records (`carril`), the
- * Production strip (`estado`) and agent capabilities (`agentes`). board.mjs passes the helpers it owns.
+ * Production strip (`estado`) and agent capabilities and pauses (`agentes`). board.mjs passes the helpers it owns.
  */
 import { UsageError, say } from './cli.mjs';
 import { readLive } from './live.mjs';
@@ -141,6 +141,8 @@ export function inventoryCommands({ applyPairs, checkRev }) {
 			});
 		},
 		agentes({ pos, flags, pairs }, dir, out) {
+			const toggled = Object.keys(pairs).filter((k) => Object.hasOwn(AGENT_REGISTRY, k));
+			if (!pos.length && toggled.length) return pauseAgent(toggled, flags, pairs, dir, out);
 			if (!pos.length) {
 				const records = Object.entries(AGENT_REGISTRY).map(([id, a]) => ({
 					id,
@@ -169,4 +171,50 @@ export function inventoryCommands({ applyPairs, checkRev }) {
 			});
 		},
 	};
+
+	/**
+	 * T382: `agentes codex=pausado hasta=2026-11-02 --coordinador --rev=<n>` stores `pausa {hasta, desde, quien}`;
+	 * `codex=activo` removes it. A date alone means the start of that day in the owner's zone (Mazatlán, UTC-7).
+	 */
+	function pauseAgent(toggled, flags, pairs, dir, out) {
+		if (!flags.coordinador)
+			throw new UsageError('la pausa de un agente requiere --coordinador');
+		if (toggled.length !== 1) throw new UsageError('pause o active un agente a la vez');
+		const [id] = toggled;
+		const state = pairs[id];
+		const extra = Object.keys(pairs).filter((k) => k !== id && k !== 'hasta');
+		if (extra.length) throw new UsageError(`campo no admitido: ${extra.join(', ')}`);
+		if (state !== 'pausado' && state !== 'activo')
+			throw new UsageError(`${id}=pausado hasta=<fecha> o ${id}=activo`);
+		if (state === 'activo' && pairs.hasta !== undefined)
+			throw new UsageError(`${id}=activo no lleva hasta=`);
+		const hasta = state === 'pausado' ? pauseEnd(pairs.hasta) : undefined;
+		return withLock(dir, () => {
+			const before = readDoc(dir, 'agentes', id);
+			checkRev(before, flags);
+			const after = { id, ...before };
+			if (hasta)
+				after.pausa = { hasta, desde: nowIso(), quien: flags.quien ?? 'coordinador' };
+			else delete after.pausa;
+			after.rev = (before?.rev ?? 0) + 1;
+			writeDoc(dir, 'agentes', id, after);
+			say(
+				flags,
+				out,
+				after,
+				`${id} rev ${after.rev} · ${hasta ? `en pausa hasta ${hasta}` : 'activo'}`,
+			);
+		});
+	}
+}
+
+/** `2026-11-02` → `2026-11-02T00:00:00-07:00`; a full date-time stays as given. Refuses past or invalid dates. */
+export function pauseEnd(value, now = Date.now()) {
+	if (typeof value !== 'string' || !value)
+		throw new UsageError('falta hasta=<fecha>, por ejemplo hasta=2026-11-02');
+	const hasta = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00-07:00` : value;
+	const end = Date.parse(hasta);
+	if (Number.isNaN(end)) throw new UsageError(`fecha no válida: ${value}`);
+	if (end <= now) throw new UsageError(`la pausa ya terminó: ${value}`);
+	return hasta;
 }

@@ -439,3 +439,59 @@
 		}
 	}
 }
+
+// QR check-in preview (`presentationOptions.checkInQr`, demo previews only): the code beside a
+// short promise, set as the pass's last row. `--pa-check-in-*` tokens recolor it.
+.personalized-access .access-card__check-in {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 1.1rem;
+	align-items: center;
+	margin-block: var(--pa-check-in-margin-top, 0.25rem) var(--pa-check-in-margin-bottom, 1.75rem);
+	padding: var(--pa-check-in-padding, 1rem);
+	border: var(--pa-check-in-border, 1px dashed rgb(var(--color-text-primary-rgb) / 24%));
+	border-radius: var(--pa-check-in-radius, 0.75rem);
+	background: var(--pa-check-in-bg, transparent);
+	text-align: start;
+}
+
+.personalized-access .access-card__qr {
+	display: block;
+	width: var(--pa-check-in-qr-size, 5.5rem);
+	aspect-ratio: 1;
+	padding: 0.2rem;
+	border-radius: var(--radius-xs);
+	background: var(--pa-check-in-qr-paper, rgb(255 255 255));
+	color: var(--pa-check-in-qr-ink, rgb(20 24 32));
+}
+
+.personalized-access .access-card__check-in-copy {
+	display: grid;
+	gap: 0.3rem;
+	justify-items: start;
+	min-width: 0;
+}
+
+.personalized-access .access-card__check-in-badge {
+	padding: 0.2rem 0.55rem;
+	border: 1px solid var(--pa-check-in-badge-border, currentcolor);
+	border-radius: var(--radius-pill);
+	font: 600 0.62rem / 1.4 var(--font-ui);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--pa-check-in-badge-color, inherit);
+}
+
+.personalized-access .access-card__check-in-title {
+	margin: 0;
+	font: 500 var(--pa-check-in-title-size, 1.05rem) / 1.3
+		var(--pa-check-in-title-font, var(--font-display));
+	color: var(--pa-check-in-title-color, inherit);
+}
+
+.personalized-access .access-card__check-in-text {
+	margin: 0;
+	font: 400 0.8rem / 1.5 var(--font-ui);
+	color: var(--pa-check-in-text-color, inherit);
+	opacity: var(--pa-check-in-text-opacity, 80%);
+}

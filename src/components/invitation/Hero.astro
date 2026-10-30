@@ -64,6 +64,7 @@ interface Props {
 
 const {
 	name,
+	nameLeadWords,
 	secondaryName,
 	label,
 	nickname,
@@ -174,8 +175,10 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	formattedDate = formatSpanishLongDate(date);
 
 	const names = name.trim().split(/\s+/);
-	firstName = names.slice(0, 2).join(' ');
-	surnames = names.slice(2);
+	// `presentation.nameLeadWords` moves the line break; the default keeps two words on the first line.
+	const leadWords = nameLeadWords ?? 2;
+	firstName = names.slice(0, leadWords).join(' ');
+	surnames = names.slice(leadWords);
 
 	fpDefault = focalPoint || '50% 40%';
 	fpMobile = focalPointMobile || fpDefault;

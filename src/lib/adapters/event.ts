@@ -27,7 +27,10 @@ import {
 } from '@/lib/invitation/countdown-presentation';
 import { buildEventCalendarMonth, type EventCalendarMonth } from '@/lib/invitation/event-calendar';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
-import { resolvePersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
+import {
+	resolvePersonalizedAccessCheckInQr,
+	resolvePersonalizedAccessPassStyle,
+} from '@/lib/invitation/personalized-access-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 import { hasPlayableMusicUrl } from '@/lib/invitation/local-preview-config';
 import {
@@ -531,6 +534,9 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 			...data.rsvp.personalizedAccess,
 			variant: data.rsvp.personalizedAccess.variant,
 			passStyle: resolvePersonalizedAccessPassStyle(
+				data.rsvp.personalizedAccess.presentationOptions,
+			),
+			checkInQr: resolvePersonalizedAccessCheckInQr(
 				data.rsvp.personalizedAccess.presentationOptions,
 			),
 		},

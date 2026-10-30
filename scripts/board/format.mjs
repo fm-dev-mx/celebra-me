@@ -14,7 +14,6 @@ import {
 	isReview,
 	matches,
 	ownerAsks,
-	ownerLaunches,
 	prNumber,
 	queue,
 	stage,
@@ -26,9 +25,19 @@ import {
 	deliveryLine,
 	lockBeat,
 	nextSections,
+	ownerFindings,
 	ownerMessages,
 	reviewVerdict,
 } from './next.mjs';
+import {
+	answerDestination,
+	destinationFields,
+	findingsDestination,
+	FIXED_DESTINATIONS,
+	lockDestination,
+	pasteAgents,
+	taskDestination,
+} from './owner-where.mjs';
 import { blocked, calendar } from './subtasks.mjs';
 
 export const GH = 'https://github.com/fm-dev-mx/celebra-me';
@@ -474,6 +483,7 @@ export function rowText(texto) {
  * `msg` parts) and one `archivar` row for the finished tasks ready to archive. Messages to the coordinator never count.
  */
 export function ownerActions(board, { prs, now = Date.now() } = {}) {
+	const where = destinationFields;
 	const next = nextSections(board, { prs, now });
 	const stalled = next.usted.filter((x) => x.texto.startsWith('Correr el despachador'));
 	const late = new Set(stalled.map((x) => x.id));
@@ -502,9 +512,13 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 				verbo: 'Arrancar',
 				texto: x.texto,
 				sub: '',
+				donde: FIXED_DESTINATIONS['gemini-relay'],
+				copia: null,
 			})),
 		...tasks.map((t) => {
-			const paste = ownerLaunches(t, board, now).map((a) => AGENT_REGISTRY[a]?.nombre ?? a);
+			const paste = pasteAgents(t, board, now).agentes.map(
+				(a) => AGENT_REGISTRY[a]?.nombre ?? a,
+			);
 			const verbo = paste.length
 				? `Pegar en ${paste.join(' o ')}`
 				: (t.toca ?? []).length
@@ -517,6 +531,7 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 				verbo,
 				texto: t.titulo ?? t.id,
 				sub: deliveryLine(t, now),
+				...where(taskDestination(t, board, now)),
 			};
 		}),
 		...ownerAsks(board, now).map(({ t, r }) => ({
@@ -526,6 +541,7 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 			verbo: 'Decidir',
 			texto: r.ref,
 			sub: `la espera ${taskTag(t)} · ${t.titulo ?? t.id}`,
+			...where(answerDestination(t, board)),
 		})),
 		...stalled.map((x) => ({
 			tipo: 'detenida',
@@ -534,6 +550,10 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 			verbo: 'Relanzar',
 			texto: x.texto,
 			sub: '',
+			// The usted row already carries its destination.
+			donde: x.donde,
+			copia: x.copia,
+			destino: x.destino,
 		})),
 		...silentLocks60m.map(({ t, silent }) => ({
 			tipo: 'detenida',
@@ -542,7 +562,21 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 			verbo: 'Inspeccionar',
 			texto: `Candado de ${t.candado.agente} sin latido hace ${agoText(silent)}: ${taskTag(t)} · ${t.titulo}`,
 			sub: t.candado.carril ? `carril ${t.candado.carril}` : '',
+			...where(lockDestination(t)),
 		})),
+		...ownerFindings(board).map((r) => {
+			const t = findTask(r.tarea, board);
+			const para = AGENT_REGISTRY[r.mensaje.para]?.nombre ?? r.mensaje.para;
+			return {
+				tipo: 'correcciones',
+				id: t?.id ?? null,
+				t,
+				verbo: `Pegar en ${para}`,
+				texto: `Correcciones de la revisión para ${para}`,
+				sub: t ? `${taskTag(t)} · ${t.titulo ?? t.id}` : '',
+				...where(findingsDestination(r, board, now)),
+			};
+		}),
 		...ownerMessages(board).map((r) => {
 			const msg = messageParts(r, board);
 			return {
@@ -553,6 +587,7 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 				texto: msg.pregunta,
 				sub: '',
 				msg,
+				...where(answerDestination(msg.t, board)),
 			};
 		}),
 	];
@@ -565,6 +600,8 @@ export function ownerActions(board, { prs, now = Date.now() } = {}) {
 			texto: `${archivable.length} ${archivable.length === 1 ? 'tarea finalizada' : 'tareas finalizadas'} con su resumen de cierre`,
 			sub: '',
 			n: archivable.length,
+			donde: FIXED_DESTINATIONS.archivar,
+			copia: null,
 		});
 	return rows;
 }
