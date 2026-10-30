@@ -370,6 +370,14 @@ button.mn{cursor:pointer}button.mn:hover{background:var(--hover)}
 .mn small{margin-top:auto;color:var(--muted);font-size:.72rem}
 .mn.done{color:var(--faint);background:var(--panel-2);border-style:dashed}
 .mn.root{color:var(--danger);background:var(--danger-soft);border-color:var(--danger-rule);font-weight:600}
+.map-view{margin:0 0 10px}
+.keys{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.kc{border:1px solid var(--line-2);border-left-width:3px;border-radius:6px;padding:6px 10px}
+.kc-1{border-left-color:var(--danger-rule)}.kc-2{border-left-color:var(--ink)}.kc-3{border-left-color:var(--warn)}.kc-4{border-left-color:var(--block-rule)}
+.kc .tbtn{min-height:36px;padding:2px 0;font-weight:500}
+.kc .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
+.kc .kc-why{margin:4px 0 0;font-size:.86rem}
+.kc-act:empty{display:none}
 .blk .tbtn{min-height:36px;padding:2px 0;font-weight:400}
 .blk .line{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.8rem;color:var(--muted)}
 .blk ul{margin:4px 0 0;padding-left:1.2em;font-size:.86rem;overflow-wrap:anywhere}
@@ -549,6 +557,7 @@ a.prl{font-weight:600}
     </section>
 
     <section id="p-mapa" role="tabpanel" aria-labelledby="t-mapa" hidden>
+      <div class="chips map-view" role="group" aria-label="Vista del mapa"><button class="fchip" type="button" data-mapv="clave" aria-pressed="true" title="Las pocas tareas que más importan ahora">Clave</button><button class="fchip" type="button" data-mapv="todo" aria-pressed="false" title="Todas las dependencias en columnas">Todo</button></div>
       <div class="board" id="mapa"><div class="empty">Cargando el mapa…</div></div>
     </section>
 
@@ -613,7 +622,7 @@ const TITLE={general:'General',usted:'Para usted',cola:'Cola',calendario:'Calend
 // T268: the queue's collapsible groups, by the color of each block's first task, in this order.
 const GROUP={own:'Le toca a usted',auto:'Autónomas',run:'En curso',block:'Sin agente que la termine',rev:'En revisión',done:'Hechas'};
 const AGENT=Object.fromEntries([...Object.entries(AGENT_REGISTRY).map(([id,a])=>[id,a.nombre]),['cualquiera','Cualquiera']]);
-const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'general',kind:'todo',ag:'todas',finag:'todas',col:'todos'};
+const S={board:{tareas:[],decisiones:[],bitacora:[],carriles:[],agentes:[],estado:null},ready:false,sel:null,tab:'general',kind:'todo',ag:'todas',finag:'todas',col:'todos',mapv:'clave'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const T=s=>s?new Date(s).getTime():NaN;
@@ -937,11 +946,27 @@ function renderBlk(){
 // longest (right). Nodes are buttons laid over one SVG that draws the arrows, from the task that waits to the one it
 // is missing; dashed lines join a mother to its subtasks. The graph itself comes ready in the payload (mapa).
 const MAP_W=190,MAP_H=60,MAP_GX=56,MAP_GY=14;
+// T482 «Clave»: the few tasks that matter most now (key-tasks.mjs); each card keeps a slot for its action button.
+// Cycle and broken-reference warnings stay on top of both views.
+const mapWarn=m=>m?.avisos?.length?`<ul class="map-warn" aria-label="Avisos del mapa">${m.avisos.map(a=>`<li>${esc(a.texto)}</li>`).join('')}</ul>`:'';
+function renderClave(){
+  const cards=S.board.clave||[],warn=mapWarn(S.board.mapa);
+  if(!cards.length){$('mapa').innerHTML=warn+'<div class="empty">Nada urgente: ninguna tarea abierta espera a usted ni frena a otras.</div>';return}
+  const card=c=>{
+    const who=c.agente&&c.agente!=='cualquiera'?agChip(c.agente,AGENT[c.agente]||c.agente):'';
+    const where=c.carril?`<span>${esc(c.carril)}</span>`:'';
+    const age=c.desde?`<span title="${esc(c.desde)}">${esc(ago(c.desde))}</span>`:'';
+    return `<li class="kc kc-${c.nivel}"><button type="button" class="tbtn" data-sel="${esc(c.id)}" data-jump="1" data-all="1">${tN(c)}${tt(c.titulo)}</button><div class="line">${who}${where}${age}<span>${esc(c.estado)}</span></div><p class="kc-why">${esc(c.motivo)}</p><div class="kc-act" data-act="${esc(c.id)}"></div></li>`;
+  };
+  $('mapa').innerHTML=warn+`<p class="map-key">Hasta 7 tareas: primero lo que espera a usted, luego lo que frena a más tareas, lo urgente o con fecha cercana y lo atascado.</p><ol class="keys">${cards.map(card).join('')}</ol>`;
+}
 function renderMapa(){
   if(!S.ready)return;
+  document.querySelectorAll('[data-mapv]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapv===S.mapv)));
+  if(S.mapv==='clave'){renderClave();return}
   const m=S.board.mapa||{nodos:[],aristas:[],avisos:[],bloqueadasSinMotivo:[]};
   const pick=t=>`<button type="button" class="tbtn" data-sel="${esc(t.id)}" data-jump="1" data-all="1">${tN(t)}${tt(t.titulo)}</button>`;
-  const avisos=m.avisos.length?`<ul class="map-warn" aria-label="Avisos del mapa">${m.avisos.map(a=>`<li>${esc(a.texto)}</li>`).join('')}</ul>`:'';
+  const avisos=mapWarn(m);
   const sin=m.bloqueadasSinMotivo.length?`<div class="map-strip"><b>Bloqueadas sin motivo</b> <span class="n">${m.bloqueadasSinMotivo.length}</span><p>Están marcadas como bloqueadas pero no esperan nada; desbloquéelas o anote qué esperan.</p><ul>${m.bloqueadasSinMotivo.map(t=>`<li>${pick(t)}</li>`).join('')}</ul></div>`:'';
   if(!m.nodos.length){$('mapa').innerHTML=avisos+sin+'<div class="empty">Ninguna tarea abierta espera a otra.</div>';return}
   const pos=new Map(),rows=[];
@@ -1172,6 +1197,7 @@ document.addEventListener('click',async ev=>{
   const tab=ev.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab,true);return}
   const col=ev.target.closest('[data-col]');if(col){setColor(col.dataset.col);return}
   const ag=ev.target.closest('[data-ag]');if(ag){setAgent(ag.dataset.ag);return}
+  const mv=ev.target.closest('[data-mapv]');if(mv){S.mapv=mv.dataset.mapv;try{localStorage.setItem('board-mapv',S.mapv)}catch(e){}renderMapa();return}
   const fa=ev.target.closest('[data-finag]');if(fa){S.finag=fa.dataset.finag;try{localStorage.setItem('board-finag',S.finag)}catch(e){}renderFin();return}
   const ct=ev.target.closest('[data-copytext]');if(ct){
     // T391: the row copies its short text; a new task or review pasted into an agent is marked as delivered.
@@ -1213,6 +1239,7 @@ setTab((location.hash||'').slice(1),false);
 addEventListener('hashchange',()=>setTab(location.hash.slice(1),false));
 document.querySelector('[data-ag="libres"]').insertAdjacentHTML('beforebegin',Object.entries(AGENT_REGISTRY).map(([id,a])=>`<button class="fchip" type="button" data-ag="${esc(id)}" aria-pressed="false">${esc(a.nombre)}</button>`).join(''));
 try{const a=localStorage.getItem('board-finag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','ninguno'].includes(a)))S.finag=a}catch(e){}
+try{const v=localStorage.getItem('board-mapv');if(['clave','todo'].includes(v))S.mapv=v}catch(e){}
 try{const c=localStorage.getItem('board-col');if(c&&(c==='todos'||Object.hasOwn(COLOR,c)))setColor(c)}catch(e){}
 document.querySelectorAll('details[data-fold]').forEach(d=>{d.open=!FOLD.has(d.dataset.fold)});
 try{const a=localStorage.getItem('board-ag');if(a&&(Object.hasOwn(AGENT_REGISTRY,a)||['todas','libres'].includes(a)))setAgent(a)}catch(e){}

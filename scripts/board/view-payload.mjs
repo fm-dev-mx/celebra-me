@@ -2,6 +2,7 @@
 import { archiveBlock } from './cierre.mjs';
 import { dependencyGraph } from './dependency-graph.mjs';
 import { leadOf } from './format.mjs';
+import { keyTasks } from './key-tasks.mjs';
 import { AGENT_REGISTRY, findTask, ownerWhere } from './model.mjs';
 import { unreadFor } from './next.mjs';
 import { promptTitle } from './owner-where.mjs';
@@ -49,6 +50,7 @@ export function liveBoard(board, now = Date.now()) {
 	]);
 	const bitacora = recent.filter((r) => retained.has(r));
 	const archived = neededArchives(board, open, bitacora);
+	const mapa = dependencyGraph(board, now);
 	return {
 		...board,
 		tareas: open.map((t) => taskSummary(t, board)),
@@ -85,7 +87,8 @@ export function liveBoard(board, now = Date.now()) {
 			}),
 		],
 		bitacora,
-		mapa: dependencyGraph(board, now),
+		mapa,
+		clave: keyTasks(board, mapa, now),
 		cierresPendientes: missingCierreItems(board)
 			.filter(({ t }) => !t.archivada)
 			.map(({ t, texto }) => ({ id: t.id, tarea: `T${t.num}`, tipo: 'cierre', texto })),
