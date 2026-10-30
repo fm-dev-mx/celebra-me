@@ -229,7 +229,10 @@ one phone viewport. Family godparent names take `--family-godparent-name-size` (
 `stacked-venue-plates` notes panel takes `--location-plates-notes-{radius,shadow}` (defaults `0`,
 `none`). The `celestial-blue` envelope colors its details and seal hint through
 `--env-details-{color,opacity}` and `--env-seal-hint-{color,opacity}` (defaults: the previous
-graphite mix, `80%` and `74%`), so a dark envelope keeps them legible.
+graphite mix, `80%` and `74%`), so a dark envelope keeps them legible. Its paper layers also read
+`--env-paper-sheen` (the base sheen token) and `--env-paper-texture`/`--env-paper-texture-opacity`
+(defaults: the ivory sheen, light wash and line grain at `55%`), so a dark envelope can drop the
+ivory light.
 
 ### Gifts flatten
 

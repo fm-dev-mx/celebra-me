@@ -267,19 +267,25 @@
 	.envelope-base,
 	.envelope-pocket,
 	.envelope-flap {
+		// `--env-paper-sheen` and `--env-paper-texture` let a dark envelope drop the ivory
+		// light without forking the variant; defaults keep the ivory paper.
 		background:
-			linear-gradient(
-				168deg,
-				rgb(var(--color-diamond-white-rgb) / 72%) 0%,
-				transparent 42%,
-				rgb(var(--color-deep-blue-graphite-rgb) / 5%) 100%
+			var(
+				--env-paper-sheen,
+				linear-gradient(
+					168deg,
+					rgb(var(--color-diamond-white-rgb) / 72%) 0%,
+					transparent 42%,
+					rgb(var(--color-deep-blue-graphite-rgb) / 5%) 100%
+				)
 			),
 			var(--env-paper-bg);
 		border-color: var(--env-paper-border);
 
 		&::before {
-			opacity: 55%;
-			background:
+			opacity: var(--env-paper-texture-opacity, 55%);
+			background: var(
+				--env-paper-texture,
 				radial-gradient(
 					ellipse at 50% 8%,
 					rgb(var(--color-diamond-white-rgb) / 55%),
@@ -291,7 +297,8 @@
 					transparent 2px,
 					rgb(var(--color-deep-blue-graphite-rgb) / 2.8%) 2px,
 					transparent 3px
-				);
+				)
+			);
 		}
 	}
 
