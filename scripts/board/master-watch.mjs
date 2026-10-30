@@ -492,6 +492,7 @@ export async function runMasterWatch({
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	process.env.CELEBRA_BOARD_VIA ||= 'watch'; // its bitácora rows are not CLI calls
 	const args = Object.fromEntries(
 		process.argv.slice(2).map((arg) => {
 			const [key, ...value] = arg.replace(/^--/, '').split('=');

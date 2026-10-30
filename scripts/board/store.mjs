@@ -223,11 +223,16 @@ export function readLog(dir, { since } = {}) {
 	);
 }
 
+/** Transport recorded on each row: `cli` unless the MCP adapter or the watcher sets its own. */
+export const LOG_VIAS = ['cli', 'mcp', 'watch'];
+
 /** Append one row to its day's file; the caller holds the store lock. */
 export function appendLog(dir, row) {
 	const d = join(dir, LOG_DIR);
 	mkdirSync(d, { recursive: true });
-	appendFileSync(join(d, `${row.en.slice(0, 10)}.jsonl`), `${JSON.stringify(row)}\n`);
+	const via = process.env.CELEBRA_BOARD_VIA || 'cli';
+	const out = LOG_VIAS.includes(via) && row.via === undefined ? { ...row, via } : row;
+	appendFileSync(join(d, `${row.en.slice(0, 10)}.jsonl`), `${JSON.stringify(out)}\n`);
 }
 
 /**

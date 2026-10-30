@@ -175,6 +175,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		coverMark: data.hero.presentation?.coverMark,
 		coverPage: data.hero.presentation?.coverPage,
 		designCredit: data.hero.presentation?.designCredit,
+		scene: data.hero.presentation?.scene,
 		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,
