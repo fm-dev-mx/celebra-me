@@ -538,12 +538,17 @@ const PGTAP_FILES = [
 	'meta_conversion_retention.test.sql',
 	'meta_conversion_view_events.test.sql',
 	'invitation_data_requests.test.sql',
+	'order_invitation_drafts.test.sql',
 	'meta_conversion_event_compatibility.test.sql',
 ];
 
 function cmdRunTests(): void {
 	console.info('=== Disposable Test Environment: Run Tests ===\n');
 	runPgTapFiles(PGTAP_FILES);
+	const race = runCommand('pnpm', ['exec', 'tsx', 'scripts/db/order-draft-concurrency-test.ts']);
+	console.info(race.stdout || '');
+	if (race.status !== 0)
+		fail(`Order draft concurrency failure: ${redactCredentials(race.stderr)}`);
 }
 
 function runPgTapFiles(testFiles: string[]): void {
@@ -839,7 +844,7 @@ function cmdRunMemoriesDbContracts(): void {
 	ensureDisposableReset(
 		'Event memories DB contracts require a reachable disposable database on port 54332.',
 	);
-	runPgTapFiles(PGTAP_FILES);
+	cmdRunTests();
 	cmdRunMemoriesConcurrencyTest();
 }
 
