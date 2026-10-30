@@ -88,6 +88,39 @@ export function geminiRelayAlert(board, now = Date.now()) {
 		: null;
 }
 
+/** T477: a coordinator message unread this long, or a coordinator silent this long, alerts the owner. */
+export const COORDINATOR_UNREAD_MS = 10 * MINUTE_MS;
+export const COORDINATOR_SILENT_MS = 2 * HOUR_MS;
+
+/**
+ * Why the owner should open the coordinator session as `{clave, texto}`, or null: a para=coordinador message unread for 10 min,
+ * or no turn of the registered coordinator (`board.coordinador`, from board-coordinator.json) in the last 2 h.
+ * With no coordinator registered, only unread messages alert.
+ */
+export function coordinatorAlert(board, now = Date.now()) {
+	const unread = unreadFor('coordinador', board);
+	const old = unread.filter((r) => now - Date.parse(r.en) >= COORDINATOR_UNREAD_MS);
+	if (old.length)
+		return {
+			clave: 'coordinador:mensajes',
+			texto: `El coordinador tiene ${old.length} ${old.length === 1 ? 'mensaje' : 'mensajes'} sin leer hace más de 10 min: abra la sesión del coordinador (f04) y escriba «sigue».`,
+		};
+	const beat = Date.parse(board.coordinador?.at ?? '');
+	if (!board.coordinador?.sesion || !Number.isFinite(beat))
+		return unread.length
+			? {
+					clave: 'coordinador:registro',
+					texto: 'Ninguna sesión de coordinador está registrada: en la sesión del coordinador (f04) pida «registre esta sesión como coordinador del tablero».',
+				}
+			: null;
+	return now - beat > COORDINATOR_SILENT_MS
+		? {
+				clave: 'coordinador:silencio',
+				texto: `La sesión del coordinador no ha tenido un turno ${agoText(now - beat)}: ábrala (f04) y escriba «sigue».`,
+			}
+		: null;
+}
+
 /**
  * «claude → coordinador sobre T125: texto», as `inbox` and the view print a message; T322: a question to the
  * owner adds its options, the recommended one first, and says when a technical detail goes with it.
@@ -534,7 +567,17 @@ export function ownerInbox(board, { now = Date.now() } = {}) {
 			...destinationFields(answerDestination(t, board)),
 		}),
 	);
-	return [...messages, ...tasks, ...asks];
+	const alert = coordinatorAlert(board, now);
+	const coordinator = alert
+		? [
+				row(null, 'hacer', alert.texto, {
+					clave: alert.clave,
+					donde: FIXED_DESTINATIONS.coordinador,
+					copia: 'sigue',
+				}),
+			]
+		: [];
+	return [...coordinator, ...messages, ...tasks, ...asks];
 }
 
 /** Finished tasks the Finalizadas tab can archive now (the view payload precomputes `bloqueoArchivo`). */

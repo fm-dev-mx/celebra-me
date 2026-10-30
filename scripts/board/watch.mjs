@@ -18,7 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { AGENT_REGISTRY, agentPaused, claimable, queue, taskLabel as label } from './model.mjs';
 import { boardDir, loadBoard } from './store.mjs';
-import { geminiRelayAlert, geminiRelayStale } from './next.mjs';
+import { coordinatorAlert, geminiRelayAlert, geminiRelayStale } from './next.mjs';
 
 export const TITLE = 'Tablero Celebra-me';
 
@@ -79,12 +79,12 @@ function readState(file) {
 	}
 }
 
-function writeSeen(file, seen, geminiRelayNotified) {
+function writeSeen(file, seen, geminiRelayNotified, coordinatorNotified) {
 	mkdirSync(dirname(file), { recursive: true });
 	const tmp = `${file}.${process.pid}.tmp`;
 	writeFileSync(
 		tmp,
-		`${JSON.stringify({ actualizado: new Date().toISOString(), seen, geminiRelayNotified }, null, '\t')}\n`,
+		`${JSON.stringify({ actualizado: new Date().toISOString(), seen, geminiRelayNotified, coordinatorNotified }, null, '\t')}\n`,
 	);
 	renameSync(tmp, file);
 }
@@ -127,12 +127,17 @@ export function run({ dryRun = false, out = console.log, show = notify, now = Da
 	const alert = geminiRelayAlert(board, now);
 	const geminiRelayNotified = stale && (state.geminiRelayNotified === true || Boolean(alert));
 	if (alert && state.geminiRelayNotified !== true) notices.push({ agente: 'dueno', text: alert });
+	// T477: one toast per coordinator alert kind until it clears.
+	const coordinator = coordinatorAlert(board, now);
+	const coordinatorNotified = coordinator?.clave ?? null;
+	if (coordinator && state.coordinatorNotified !== coordinator.clave)
+		notices.push({ agente: 'dueno', text: coordinator.texto });
 	for (const n of notices) {
 		out(dryRun ? `[prueba] ${n.text}` : n.text);
 		if (!dryRun) show(n.text);
 	}
 	if (!notices.length) out('Sin tareas nuevas listas.');
-	if (!dryRun) writeSeen(file, seen, geminiRelayNotified);
+	if (!dryRun) writeSeen(file, seen, geminiRelayNotified, coordinatorNotified);
 	return notices;
 }
 
