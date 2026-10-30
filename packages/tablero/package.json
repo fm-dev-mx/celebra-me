@@ -1,0 +1,13 @@
+{
+    "name": "tablero",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Project-agnostic task board: JSON tasks, JSONL log, owner inbox, local SSE page and a read-only MCP server.",
+    "type": "module",
+    "bin": {
+        "tablero": "src/cli.ts"
+    },
+    "engines": {
+        "node": ">=22.18"
+    }
+}
