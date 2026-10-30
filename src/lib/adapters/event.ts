@@ -282,6 +282,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			coverVolume: data.envelope.coverVolume,
 			coverIssue: data.envelope.coverIssue,
 			coverLines: data.envelope.coverLines,
+			coverNote: data.envelope.coverNote,
 			coverExperience: data.envelope.coverExperience,
 			coverOrnament: data.envelope.coverOrnament
 				? resolveAsset(eventSlug, data.envelope.coverOrnament, data.title)

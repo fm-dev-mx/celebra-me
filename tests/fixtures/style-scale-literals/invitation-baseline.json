@@ -21,7 +21,7 @@
     "src/styles/invitation/_editorial-cover.scss": 10,
     "src/styles/invitation/_envelope-reveal.scss": 11,
     "src/styles/invitation/_event-header.scss": 3,
-    "src/styles/invitation/_event-location.scss": 11,
+    "src/styles/invitation/_event-location.scss": 10,
     "src/styles/invitation/_family.scss": 3,
     "src/styles/invitation/_gifts.scss": 10,
     "src/styles/invitation/_hero.scss": 3,

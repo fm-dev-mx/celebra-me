@@ -6,7 +6,7 @@ export default defineDemoInvitation({
 	routeSlug: 'editorial',
 	showroom: {
 		title: 'Editorial',
-		description: 'Moderna, limpia y editorial.',
+		description: 'Una noche de gala en negro y champán, compuesta como revista.',
 		styleTags: ['Moderna', 'Limpia'],
 		views: 10,
 		visibility: 'featured',

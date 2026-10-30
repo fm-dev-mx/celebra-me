@@ -16,7 +16,7 @@ const compositions: Record<string, DemoPreviewComposition> = {
 	'demo-cumple-luxury-hacienda': { verticalPosition: 0.2 },
 	'demo-primera-comunion-angelic-presence': { verticalPosition: 0.6 },
 	'demo-xv-celestial-blue': { sourceKey: 'heroDesktop', verticalPosition: 0.5 },
-	'demo-xv-editorial': { verticalPosition: 0.15 },
+	'demo-xv-editorial': { verticalPosition: 0.45 },
 	'demo-xv-enchanted-rose': { sourceKey: 'heroDesktop', verticalPosition: 0.5 },
 };
 

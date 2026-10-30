@@ -138,12 +138,11 @@ describe('legacy RSVP defaults', () => {
 		}
 	});
 
-	it('lists only published invitations and the «tú» demo', () => {
+	it('lists only published invitations', () => {
 		for (const slug of listLegacyRsvpDefaultSlugs()) {
 			const known =
 				definitions.get(slug)?.lifecycle === 'published' ||
-				RETIRED_PUBLISHED.includes(slug) ||
-				slug === 'demo-xv-editorial';
+				RETIRED_PUBLISHED.includes(slug);
 			expect({ slug, known }).toEqual({ slug, known: true });
 		}
 	});
@@ -152,5 +151,6 @@ describe('legacy RSVP defaults', () => {
 		expect(keepsLegacyRsvpDefaults('destenid-sofia')).toBe(false);
 		expect(keepsLegacyRsvpDefaults('naydelin-paredes')).toBe(false);
 		expect(keepsLegacyRsvpDefaults('demo-xv-jewelry-box')).toBe(false);
+		expect(keepsLegacyRsvpDefaults('demo-xv-editorial')).toBe(false);
 	});
 });

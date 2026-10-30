@@ -30,8 +30,6 @@ const LEGACY_RSVP_DEFAULT_SLUGS: ReadonlySet<string> = new Set([
 	'leah-lexa',
 	'luna-y-estrella',
 	'xareni-iyarit',
-	// Demo the owner keeps in «tú» (d168).
-	'demo-xv-editorial',
 ]);
 
 export function keepsLegacyRsvpDefaults(slug: string): boolean {
