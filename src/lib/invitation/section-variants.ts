@@ -140,6 +140,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'location',
+		variant: 'star-route',
+		default: false,
+		prerequisites: ['At least two visible venues'],
+		cssOwner: 'src/styles/themes/sections/location/_star-route.scss',
+	},
+	{
+		section: 'location',
 		variant: 'program-sheet',
 		default: false,
 		prerequisites: ['At least one visible venue'],

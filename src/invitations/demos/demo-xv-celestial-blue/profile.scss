@@ -456,67 +456,20 @@
 			0 0 1.5rem rgb(var(--color-diamond-white-rgb) / 35%), 0 0.5rem 1rem rgb(0 0 0 / 45%);
 	}
 
-	// Location: two ivory venue plates edged in silver, the hour set large in serif, and the
-	// guest notes gathered on a small night panel under a few stars.
+	// Location: a route of the night, the two venues joined by one silver line with a star each,
+	// the hour set large in serif and the guest notes as light notes with a sky-blue swatch.
 	.event-location {
-		--location-card-bg: linear-gradient(
-			180deg,
-			var(--color-diamond-white) 0%,
-			var(--color-cool-ivory) 100%
-		);
-		--location-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 55%);
-		--location-card-radius: 1.25rem;
-		--location-card-shadow: 0 1.5rem 3rem -1.75rem
-			rgb(var(--color-deep-blue-graphite-rgb) / 45%);
-		--location-place-font-family:
+		--location-star-ink: var(--color-deep-blue-graphite);
+		--location-star-muted: var(--color-soft-graphite);
+		--location-star-line: rgb(var(--color-liquid-silver-rgb) / 85%);
+		--location-star-mark: var(--color-deep-blue-graphite);
+		--location-star-glow: rgb(var(--color-satin-blue-rgb) / 90%);
+		--location-star-display-font:
 			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
-		--location-place-font-size: clamp(1.85rem, 2.6vw, 2.25rem);
-		--location-place-color: var(--color-deep-blue-graphite);
-		--location-date-color: var(--family-accent);
-		--location-date-letter-spacing: 0.2em;
-		--location-lead-time-font:
-			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
-		--location-lead-time-size: 1.75rem;
-		--location-lead-time-color: var(--color-deep-blue-graphite);
-		--location-plates-eyebrow-size: 0.68rem;
-		--location-plates-eyebrow-tracking: 0.3em;
-		--location-plates-eyebrow-weight: 600;
-		--location-address-color: var(--color-soft-graphite);
-		--location-copy-button-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 70%);
-		--location-copy-button-radius: 50%;
-		--location-copy-button-color: var(--color-deep-blue-graphite);
-		--location-copy-button-bg: transparent;
-		--location-plates-notes-max-width: 36rem;
-		--location-plates-notes-radius: 1.25rem;
-		--location-plates-notes-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 35%);
-		--location-plates-notes-shadow: 0 1.75rem 3rem -1.5rem rgb(0 0 0 / 45%);
-		--location-plates-notes-bg:
-			radial-gradient(
-				circle at 88% 16%,
-				rgb(var(--color-diamond-white-rgb) / 60%) 0 0.9px,
-				transparent 1.7px
-			),
-			radial-gradient(
-				circle at 8% 82%,
-				rgb(var(--color-satin-blue-rgb) / 60%) 0 0.9px,
-				transparent 1.7px
-			),
-			radial-gradient(
-				ellipse 80% 60% at 50% 0%,
-				rgb(var(--color-satin-blue-rgb) / 14%) 0%,
-				transparent 70%
-			),
-			var(--color-deep-blue-graphite);
-		--location-indication-item-divider: 1px solid rgb(var(--color-liquid-silver-rgb) / 16%);
-		--location-indication-text-color: rgb(var(--color-diamond-white-rgb) / 86%);
-		--location-indication-strong-color: var(--color-ice-blue);
-		--location-indication-icon-color: var(--color-liquid-silver);
-		--location-indication-icon-bg: transparent;
-		--location-indication-icon-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 45%);
-		--location-indication-icon-shadow: none;
-		--location-indications-heading-color: var(--color-liquid-silver);
-		--location-indications-heading-text-align: center;
-		--location-indications-heading-margin-bottom: 0.75rem;
+		--location-star-photo-radius: 1.25rem;
+		--location-star-button-bg: var(--color-deep-blue-graphite);
+		--location-star-button-color: var(--color-diamond-white);
+		--location-star-swatch: var(--color-satin-blue);
 	}
 
 	.gifts-section {

@@ -56,12 +56,15 @@
                 "text": "Confirme su asistencia <strong>antes del 29 de agosto de 2027</strong>."
             }
         ],
-        "variant": "stacked-venue-plates",
+        "variant": "star-route",
+        "introEyebrow": "12 de septiembre de 2027",
+        "introHeading": "Ruta de la noche",
         "venues": [
             {
                 "venueEvent": "Misa de Acción de Gracias",
                 "venueName": "Catedral de la Asunción",
                 "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Catedral+de+la+Asuncion+Cuernavaca",
                 "city": "Cuernavaca",
                 "date": "12 de septiembre de 2027",
                 "time": "5:00 PM",
@@ -73,6 +76,7 @@
                 "venueEvent": "Recepción",
                 "venueName": "Hacienda Los Claustros",
                 "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Hacienda+Los+Claustros+Cuernavaca",
                 "city": "Cuernavaca",
                 "date": "12 de septiembre de 2027",
                 "time": "7:00 PM",

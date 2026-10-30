@@ -48,8 +48,10 @@ audit tooling (`pnpm invitation:published-audit`).
   layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
   numbered stops on one rail under a night sky; editorial invitations draw the rail with scroll),
-  `program-sheet`; prerequisites are enforced by the owning schema. `stacked-venue-plates` and
-  `night-route` need at least two visible venues and accept `venueCard: 'compact'`.
+  `star-route` (editorial rows that alternate a large photo with the time and venue data around one
+  line with a star per venue; the intro lede moves to a footnote), `program-sheet`; prerequisites
+  are enforced by the owning schema. `stacked-venue-plates` and `night-route` need at least two
+  visible venues and accept `venueCard: 'compact'`; `star-route` also needs two visible venues.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
   `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `pinned-track` (a

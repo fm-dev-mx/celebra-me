@@ -342,6 +342,7 @@ validated by the schemas; the second table is **authoring guidance, not validate
 | `location.split-map`            | One visible venue with `coordinates` or `image`                                      |
 | `location.stacked-venue-plates` | At least two visible venues                                                          |
 | `location.night-route`          | At least two visible venues                                                          |
+| `location.star-route`           | At least two visible venues                                                          |
 | `location.program-sheet`        | At least one visible venue; a `scene` (`lantern-route`, `butterfly-route`) needs two |
 | `gallery.single-keepsake`       | Exactly one item                                                                     |
 | `gallery.paired-portraits`      | Exactly two items                                                                    |

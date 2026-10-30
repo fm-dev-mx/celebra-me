@@ -1,0 +1,109 @@
+---
+/*
+  VenueStarStop
+  One venue of the `star-route` location variant: an editorial row instead of a card.
+  A star on the route line, the venue photo, the time as the protagonist, event · venue, the
+  address and one «Cómo llegar» button. Copy address and the calendar stay as quiet text links;
+  the calendar keeps the native <details> so it works without JavaScript.
+*/
+import CalendarOptions from './CalendarOptions.astro';
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import { resolveVenueMapPreviewUrl, type GroupedVenue } from '@/lib/invitation/location-helper';
+import { formatVenueTimeForDisplay, formatVenueTimeInWords } from '@/lib/invitation/venue-datetime';
+import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
+
+interface Props {
+	venue: GroupedVenue;
+	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
+	calendar?: VenueCalendarLinks | null;
+}
+
+const { venue, type, calendar } = Astro.props;
+const displayTime = formatVenueTimeForDisplay(venue.time) ?? formatVenueTimeInWords(venue.time);
+// «5:00 PM» prints the clock large and the meridiem small beside it.
+const timeParts = displayTime?.match(/^(\d{1,2}:\d{2})\s*(.*)$/u);
+const addressPending = /\[\[PENDIENTE:/u.test(venue.address);
+const displayAddress = addressPending ? 'Dirección pendiente de confirmar' : venue.address;
+const directionsUrl = resolveVenueMapPreviewUrl(venue);
+---
+
+<article class="event-location__star-stop" data-venue-type={type} data-reveal-item>
+	<span class="event-location__star-mark" aria-hidden="true">
+		<svg viewBox="0 0 24 24" focusable="false">
+			<path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6-2.6 7.9-2.6-7.9-7.9-2.6 7.9-2.6z" />
+		</svg>
+	</span>
+	{venue.image && (
+		<figure class="event-location__star-photo">
+			<OptimizedImage
+				imagePath={venue.image}
+				alt={venue.venueName}
+				class="event-location__star-image"
+				width={720}
+				height={540}
+				sizes="(min-width: 1024px) 34rem, (min-width: 768px) 50vw, 100vw"
+			/>
+		</figure>
+	)}
+	<div class="event-location__star-body">
+		{venue.events && venue.events.length > 0 ? (
+			<ul class="event-location__star-schedule">
+				{venue.events.map((evt) => (
+					<li>
+						<span>{evt.name}</span> <span>{formatVenueTimeForDisplay(evt.time) ?? formatVenueTimeInWords(evt.time)}</span>
+					</li>
+				))}
+			</ul>
+		) : (
+			displayTime && (
+				<p class="event-location__star-time">
+					{timeParts ? (
+						<>
+							<span class="event-location__star-clock">{timeParts[1]}</span>
+							{timeParts[2] && <span class="event-location__star-meridiem">{timeParts[2]}</span>}
+						</>
+					) : (
+						<span class="event-location__star-clock">{displayTime}</span>
+					)}
+				</p>
+			)
+		)}
+		<h3 class="event-location__star-title">
+			<span class="event-location__star-event">{venue.venueEvent}</span>
+			<span class="event-location__star-separator" aria-hidden="true">·</span>
+			<span class="event-location__star-place">{venue.venueName}</span>
+		</h3>
+		<p class="event-location__star-address">{displayAddress}</p>
+		{directionsUrl && (
+			<a
+				class="event-location__star-directions"
+				href={directionsUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label={`Cómo llegar a ${venue.venueName}`}
+			>
+				Cómo llegar
+			</a>
+		)}
+		{(calendar || !addressPending) && (
+			<div class="event-location__star-links">
+				{!addressPending && (
+					<button
+						type="button"
+						class="event-location__star-link copy-button"
+						data-address={venue.address}
+						aria-label={`Copiar dirección de ${venue.venueName}`}
+					>
+						Copiar dirección
+					</button>
+				)}
+				{calendar && (
+					<details class="event-location__calendar event-location__star-calendar">
+						<summary class="event-location__star-link">Agendar</summary>
+						<CalendarOptions calendar={calendar} />
+					</details>
+				)}
+			</div>
+		)}
+	</div>
+</article>
