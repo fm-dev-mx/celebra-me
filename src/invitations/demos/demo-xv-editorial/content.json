@@ -96,7 +96,7 @@
         "variant": "standard",
         "presentation": "with-photo",
         "featuredImage": "family",
-        "featuredImageAlt": "Valentina con vestido negro junto a sus padres en un salón de gala.",
+        "featuredImageAlt": "Valentina abrazada por sus padres frente a las cortinas del salón.",
         "parentsOrder": "father-first",
         "parents": {
             "father": "Alejandro Noir",
@@ -123,33 +123,33 @@
         "items": [
             {
                 "image": "gallery01",
-                "alt": "Valentina con vestido negro bordado en perlas.",
+                "alt": "Valentina sentada junto al ventanal, en blanco y negro.",
                 "layoutRole": "feature",
-                "caption": "Junto al ventanal, antes de vestirse."
+                "caption": "Junto al ventanal, antes de la noche."
             },
             {
                 "image": "gallery02",
-                "alt": "Valentina sonríe bajo una lluvia de destellos dorados.",
+                "alt": "Valentina gira en el salón y la falda se abre.",
                 "layoutRole": "feature",
                 "caption": "Primer ensayo del vals."
             },
             {
                 "image": "gallery05",
-                "alt": "Detalle de bordado dorado con perlas sobre seda negra.",
+                "alt": "Valentina camina por el salón frente a las cortinas, en blanco y negro.",
                 "layoutRole": "wide",
-                "caption": "Bordado a mano sobre seda negra."
+                "caption": "La caminata por el salón."
             },
             {
                 "image": "gallery07",
-                "alt": "Retrato de Valentina en blanco y negro junto a un ventanal.",
+                "alt": "Perfil de Valentina a contraluz, en blanco y negro.",
                 "layoutRole": "feature",
                 "caption": "Contraluz en el estudio."
             },
             {
                 "image": "gallery04",
-                "alt": "Valentina en un jardín de rosas blancas con vestido champán.",
+                "alt": "Valentina ríe junto a una lámpara cálida.",
                 "layoutRole": "feature",
-                "caption": "Ensayo de color en el jardín."
+                "caption": "La risa que no estaba en el guion."
             },
             {
                 "image": "gallery09",
