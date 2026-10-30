@@ -4,8 +4,8 @@
 **Revisor:** Gemini (`f12-release · T464`)  
 **Documentos evaluados:**
 
-- [docs/propuestas/servicio-medicion.md](file:///D:/code/celebra-me-worktrees/f12-release/docs/propuestas/servicio-medicion.md)
-- [docs/propuestas/plan-medicion-celebra-me.md](file:///D:/code/celebra-me-worktrees/f12-release/docs/propuestas/plan-medicion-celebra-me.md)
+- [docs/propuestas/servicio-medicion.md](servicio-medicion.md)
+- [docs/propuestas/plan-medicion-celebra-me.md](plan-medicion-celebra-me.md)
 
 ---
 
