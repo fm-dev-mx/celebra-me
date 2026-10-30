@@ -297,7 +297,7 @@ export default defineCanonicalInvitation({
 	content,
 	managedIdentityId: '02c6c4ec-cf08-4772-94ff-a550c1158678',
 	managedIdentityProvenance: 'persisted',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	hostLoginAlias: 'yireh_ana',
 	assetDir: 'src/invitations/clients/yireh-ana/assets',
 	assetFiles: {
