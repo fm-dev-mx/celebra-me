@@ -1,7 +1,7 @@
 # Revisión 2: Viabilidad técnica contra el repositorio · Servicio de medición y campañas
 
 **Fecha:** 30 de octubre de 2026  
-**Revisor:** Codex / Gemini (`f05-plataforma · T465 · PR #673`)  
+**Revisor:** Codex (`f05-plataforma · T465 · PR #673`, ejecutado por identidad gemini)  
 **Documentos evaluados:**
 
 - [docs/propuestas/servicio-medicion.md](servicio-medicion.md)
@@ -80,26 +80,33 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
 
 2. **Costo Real de Construir Dentro de Celebra-me:**
    - **Riesgo crítico de seguridad en RLS:** En Celebra-me, los servicios de backend y rutas API
-     utilizan de forma generalizada `useServiceRole: true`
-     (`src/lib/rsvp/repositories/supabase.ts:14-25`). El rol de servicio en Supabase pasa por alto
-     todas las políticas de Row Level Security (RLS). Si se alojan tablas multi-tenant de clientes
-     externos (CEJ, clientes de construcción, etc.) en la misma base de datos, cualquier endpoint de
-     administración de Celebra-me con `service_role` representaría un vector directo de fuga de
-     datos multi-inquilino.
-   - **Fricción de Despliegue y CI/CD:** La suite de validación de Celebra-me (`pnpm run ci`)
-     ejecuta cientos de pruebas unitarias, validaciones de estructura de ficheros, verificación
-     estricta de logo de marca y comprobaciones de accesibilidad. Desarrollar e iterar un producto
-     de medición con clientes externos dentro de este monorepo obligaría a pagar tiempos de CI de 30
-     a 50 minutos por cada ajuste menor en adaptadores publicitarios.
+     utilizan de forma generalizada `useServiceRole: true` para operaciones internas
+     (`src/lib/rsvp/repositories/supabase.ts:133-140`, consumido por ejemplo en
+     `src/lib/commercial/crm-timeline.service.ts:64` y
+     `src/lib/commercial/meta-capi/lead-stage-events.ts:54,63`). El rol de servicio en Supabase pasa
+     por alto todas las políticas de Row Level Security (RLS) a nivel base de datos. Si se alojan
+     tablas multi-tenant de clientes externos (CEJ, clientes de construcción, etc.) en la misma base
+     de datos de Celebra-me, cualquier consulta administrativa o rutina de fondo que use
+     `useServiceRole: true` representaría un vector directo de fuga o contaminación cruzada de datos
+     entre clientes.
+   - **Fricción de Despliegue y CI/CD:** La suite completa de integración continua de Celebra-me
+     (`pnpm run ci`), diseñada para salvaguardar una plataforma de producción de invitaciones,
+     ejecuta verificación estricta de branding/logo, accesibilidad WCAG, validación estructural,
+     cobertura de tipos completa y pruebas de render corpus. Desarrollar un servicio desacoplado
+     dentro de este monorepo obligaría a que cada commit o iteración sobre adaptadores publicitarios
+     corra esta suite pesada, ralentizando el ciclo de desarrollo frente a un monorepo enfocado con
+     CI ágil.
    - **Ruptura de Principios de Dominio:** Alojar el servicio dentro de Celebra-me violaría de
      origen la Regla 1 (_Regla del segundo cliente_) y la Regla 2 (_Configuración, no copias_),
      induciendo a reutilizar modelos propios de invitaciones (`event_type: boda | xv`,
      `celebrant_names`) en un producto de atribución genérico.
 
 3. **Costo Real de Construir en un Monorepo Separado:**
-   - **Esfuerzo de arranque inicial:** Crear un repositorio limpio con `pnpm workspace`,
-     configuración de TypeScript, base de datos Supabase dedicada y despliegue a Cloudflare Workers
-     requiere una inversión acotada de **1.5 a 2 días de agente**.
+   - **Esfuerzo de arranque inicial:** Crear un repositorio limpio con `pnpm workspace`
+     (`packages/core`, `packages/capture`, etc.), configuración de TypeScript, base de datos
+     Supabase dedicada (migraciones locales de inicio) y despliegue a Cloudflare Workers requiere
+     una inversión acotada estimada internamente en **1.5 a 2 días de agente** de configuración
+     inicial.
    - **Aislamiento absoluto:** Base de datos independiente donde RLS se aplica de forma estricta y
      donde el `service_role` solo opera sobre datos del servicio de medición, sin riesgo de exponer
      invitados, fotos o memorias privadas de Celebra-me.
@@ -259,21 +266,27 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
 - **Sección afectada:** `docs/propuestas/servicio-medicion.md` § Reglas del proyecto (Regla 5) y §
   Modelo de datos (tabla `connections`).
 - **Descripción:** La propuesta establece en la nota de `connections`: _"Tokens en el almacén de
-  secretos"_. No obstante, en un modelo multi-inquilino donde cada cliente vincula sus propios
-  tokens de Meta System User, TikTok Access Token y credenciales de Google Ads, almacenar estos
-  valores como texto plano en columnas de la tabla `connections` viola la Regla 5 (_los tokens viven
-  en un almacén de secretos, nunca en el código_) y expone credenciales ante cualquier volcado o
-  consulta con rol de servicio.
+  secretos"_. En Celebra-me, los tokens son de un único cliente y se leen como variables de entorno
+  del proceso en tiempo de ejecución (`src/lib/server/env.ts:1-10` y
+  `src/lib/meta/graph-client.ts:10-17` con `getEnv('META_GRAPH_ACCESS_TOKEN')`). Sin embargo, en un
+  modelo multi-inquilino donde cada cliente vincula sus propios tokens dinámicos de Meta System
+  User, TikTok Access Token y credenciales de Google Ads, no es posible usar variables de entorno de
+  proceso: los tokens deben persistirse por fila en la base de datos (tabla `connections`).
+  Almacenar estos valores en texto plano en columnas estándar viola la Regla 5 (_los tokens viven en
+  un almacén de secretos, nunca en el código_) y expone las credenciales de todos los clientes ante
+  cualquier volcado o consulta con rol de servicio.
 - **Cambio propuesto:**
   1. Especificar que la tabla `connections` almacenará `encrypted_access_token BYTEA` o `TEXT` con
-     un vector de inicialización (`iv`), cifrado mediante AES-256-GCM.
+     su respectivo vector de inicialización (`iv`), cifrado mediante AES-256-GCM a nivel de
+     aplicación antes de persistir.
   2. La llave maestra de descifrado (`TENANT_ENCRYPTION_MASTER_KEY`) residirá exclusivamente en las
      variables secretas de Cloudflare Workers, de modo que la base de datos nunca conserve las
      credenciales descifradas.
-  3. Alternativamente, utilizar la extensión `Supabase Vault` (`vault.create_secret`) si el proyecto
-     de Supabase cuenta con soporte para `pgsodium`.
-- **Evidencia en el repositorio:** `src/lib/meta/graph-client.ts:10-17` y
-  `src/lib/server/env.ts:1-10`.
+  3. Alternativamente, utilizar la extensión `Supabase Vault` (`vault.create_secret`) si la
+     instancia de Supabase tiene habilitada la extensión `pgsodium`.
+- **Evidencia en el repositorio:** `src/lib/meta/graph-client.ts:10-17` (demuestra que el código
+  actual solo soporta un token estático global vía `readMetaInsightsConfig`) y
+  `src/lib/server/env.ts:1-10` (lector de variables de entorno de proceso único).
 
 ---
 
@@ -305,19 +318,26 @@ Se contrastaron las dos opciones arquitectónicas frente a los artefactos existe
 - **Sección afectada:** `docs/propuestas/servicio-medicion.md` § Reglas del proyecto (Regla 9) y §
   Arquitectura de código (`watch`).
 - **Descripción:** La Regla 9 estipula: _"Ningún proceso falla en silencio. Cada tarea programada
-  registra su ejecución y avisa si falla o no corre"_. Actualmente en Celebra-me, si un cron de
-  Cloudflare Worker deja de dispararse por problemas en la plataforma de alojamiento, el sistema
-  simplemente no genera logs, lo que provocó que el recolector de Meta Insights pasara días sin
-  correr sin activar alarmas externas.
-- **Cambio propuesto:** El paquete `packages/watch` no debe ser únicamente un registro pasivo de
-  ejecuciones en la tabla `job_runs`, sino un monitor bidireccional:
-  - Cada cron reporta inicio y fin en `job_runs`.
-  - Un trabajo de vigilancia independiente (o un chequeo de salud externo / ping cron) verifica
+  registra su ejecución y avisa si falla o no corre"_. El antecedente citado en la propuesta
+  (`docs/propuestas/servicio-medicion.md:60-63`) documenta que _"el 29 de octubre, Meta Insights
+  llevaba tres días fallando y solo aparecía como tarea en la cola"_. Al inspeccionar la
+  implementación actual en `src/lib/server/scheduled-jobs.ts:152-176`, se comprueba la causa
+  estructural: la función `runMetaInsightsJob` únicamente escribe mensajes informativos o de
+  advertencia a la salida estándar del Worker (`console.warn`, `console.info`, `console.error`). Si
+  el cron falla o si Cloudflare no lo dispara, no existe ningún mecanismo activo de inserción en
+  cola de alertas o notificación push hacia canales externos, por lo que las fallas permanecen
+  invisibles a menos que un operador consulte deliberadamente los logs de la consola.
+- **Cambio propuesto:** El paquete `packages/watch` no debe limitarse a un registro pasivo de
+  ejecuciones en la tabla `job_runs`, sino operar como un monitor activo:
+  - Cada tarea programada reporta inicio, fin y estado en la tabla `job_runs`.
+  - Un chequeo de vigilancia independiente (o monitor externo de salud / ping cron) consulta
     periódicamente:
-    `SELECT job_name FROM job_runs WHERE last_completed_at < NOW() - INTERVAL '26 hours'`. Si una
-    tarea diaria no reporta éxito en 26 horas, emite una alerta directa a través de un webhook a
-    Slack / Telegram / WhatsApp del equipo de operaciones.
-- **Evidencia en el repositorio:** `src/lib/server/scheduled-jobs.ts:152-176`.
+    `SELECT job_name FROM job_runs WHERE last_completed_at < NOW() - INTERVAL '26 hours'`. Si un
+    trabajo diario no registra finalización exitosa dentro de la ventana esperada, despacha una
+    alerta push inmediata vía webhook (Slack, Telegram o WhatsApp) al equipo operativo.
+- **Evidencia en el repositorio:** `docs/propuestas/servicio-medicion.md:60-63` (antecedente del
+  fallo de 3 días) y `src/lib/server/scheduled-jobs.ts:152-176` (evidencia de que la ejecución
+  actual solo emite logs pasivos a `console` sin despacho de alertas externas).
 
 ---
 
