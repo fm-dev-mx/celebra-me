@@ -303,15 +303,21 @@
 	}
 
 	.envelope-pocket {
-		box-shadow: inset 0 14px 26px rgb(var(--color-deep-blue-graphite-rgb) / 8%);
+		box-shadow: var(
+			--env-pocket-shadow,
+			inset 0 14px 26px rgb(var(--color-deep-blue-graphite-rgb) / 8%)
+		);
 
 		&::after {
 			height: 1px;
-			background: linear-gradient(
-				to right,
-				transparent,
-				color-mix(in srgb, var(--color-liquid-silver) 62%, transparent),
-				transparent
+			background: var(
+				--env-pocket-rule,
+				linear-gradient(
+					to right,
+					transparent,
+					color-mix(in srgb, var(--color-liquid-silver) 62%, transparent),
+					transparent
+				)
 			);
 		}
 	}

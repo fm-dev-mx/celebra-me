@@ -173,7 +173,10 @@ html.envelope-open:has(ds-envelope-reveal:not([hidden], .is-preview-opened, .is-
 		left: 5%;
 		right: 5%;
 		height: 1px;
-		background: linear-gradient(to right, transparent, var(--env-paper-border), transparent);
+		background: var(
+			--env-pocket-rule,
+			linear-gradient(to right, transparent, var(--env-paper-border), transparent)
+		);
 	}
 }
 
@@ -181,17 +184,9 @@ html.envelope-open:has(ds-envelope-reveal:not([hidden], .is-preview-opened, .is-
 	top: 0;
 	z-index: 5;
 	height: 50%;
-	clip-path: polygon(
-		0 0,
-		100% 0,
-		98% 10%,
-		88% 68%,
-		70% 88%,
-		55% 98%,
-		45% 98%,
-		30% 88%,
-		12% 68%,
-		2% 10%
+	clip-path: var(
+		--env-flap-clip-path,
+		polygon(0 0, 100% 0, 98% 10%, 88% 68%, 70% 88%, 55% 98%, 45% 98%, 30% 88%, 12% 68%, 2% 10%)
 	);
 	border-bottom: 0;
 	filter: drop-shadow(0 14px 28px color-mix(in srgb, var(--color-surface-dark) 18%, transparent));

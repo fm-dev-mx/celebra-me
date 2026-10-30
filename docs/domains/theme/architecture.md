@@ -232,7 +232,9 @@ one phone viewport. Family godparent names take `--family-godparent-name-size` (
 graphite mix, `80%` and `74%`), so a dark envelope keeps them legible. Its paper layers also read
 `--env-paper-sheen` (the base sheen token) and `--env-paper-texture`/`--env-paper-texture-opacity`
 (defaults: the ivory sheen, light wash and line grain at `55%`), so a dark envelope can drop the
-ivory light.
+ivory light; it also reads `--env-pocket-shadow` and `--env-pocket-rule` (defaults: the previous
+inset and silver rule). Every envelope takes `--env-flap-clip-path` (default: the faceted polygon)
+and `--env-pocket-rule` from the base.
 
 ### Gifts flatten
 

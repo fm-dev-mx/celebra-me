@@ -276,6 +276,8 @@
         "sealStyle": "wax",
         "sealIcon": "wax-monogram",
         "sealInitials": "C·T",
+        "cardLabel": "Mis XV años",
+        "cardTagline": "Una noche bajo las estrellas",
         "microcopy": "Abra su invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
