@@ -50,7 +50,12 @@ content only (`src/invitations/demos/`); real client invitations are never demo 
 - **Colors**: Soft creams, golds, rose tones, pastels; varies per theme preset
 - **Themes**: Preset-based system with section variants (see `docs/domains/theme/`)
 - **Imagery**: Professional photography aesthetic, warm natural light, editorial quality
-- **Logo**: Minimalist, lowercase "celebra-me.com" with champagne glasses motif
+- **Logo**: `logo_2026_v2` from creative-ops `brands/assets/celebra-me/logo_2026_v2/` — Great Vibes
+  wordmark with the Luxurious Script capital C, a coral wax seal on a line, and the descriptor
+  «INVITACIONES DE AUTOR». Lockups: principal, compacto, horizontal, sello, firma-invitacion; tones
+  `color-claro` (cafe text, light grounds), `color-oscuro` (ivory text, dark grounds), `cafe` and
+  `blanco` (one ink). Minimum widths: principal 240 px, horizontal 320 px, compacto 120 px, sello 16
+  px; clear space of one seal diameter. Used unchanged through `src/components/ui/Logo.astro`
 
 ## Tone & Voice
 

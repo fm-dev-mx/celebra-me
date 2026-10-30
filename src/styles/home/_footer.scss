@@ -25,6 +25,21 @@
 		grid-column: auto;
 	}
 
+	// The horizontal lockup needs 320px; narrower columns get the compact one.
+	&__logo--wide {
+		display: none;
+	}
+
+	@media (width >= 420px) {
+		&__logo--wide {
+			display: block;
+		}
+
+		&__logo--narrow {
+			display: none;
+		}
+	}
+
 	.footer-slogan {
 		margin-top: 0.75rem;
 		font-family: var(--font-body);

@@ -1,46 +1,36 @@
 ---
 /**
- * Logo component with two visual modes:
- * - Default (including 'gold', 'hero', 'xv'): renders the native gold-toned PNG
- * - White ('white', 'footer'): applies CSS brightness(0) invert(1) for dark surfaces
+ * The only component that renders the Celebra-me logo (logo_2026_v2 artwork, unmodified).
+ * Pick the tone by the ground behind it: `claro` on light grounds, `oscuro` on dark ones.
+ * Never style it with filters, shadows, rotation or non-proportional sizing.
  */
+import {
+	LOGO_ALT,
+	getLogoSize,
+	getLogoSrc,
+	type LogoTone,
+	type LogoVersion,
+} from '@/lib/brand/brand-logo';
+
 interface Props {
-	variant?: 'default' | 'xv' | 'footer' | 'hero' | 'white' | 'gold';
+	version: LogoVersion;
+	tone: LogoTone;
+	/** Rendered width in CSS pixels; must respect the version's minimum. */
+	width: number;
 	class?: string;
-	altText?: string;
+	loading?: 'eager' | 'lazy';
 }
 
-import { getCommonAsset } from '@/lib/assets/asset-registry';
-import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
-
-const { class: className, variant, altText } = Astro.props;
-
-const logoAsset = getCommonAsset('headerLogo');
-const logoSrc = logoAsset?.src;
-
-if (!logoSrc) {
-	console.error('Logo asset not found in AssetRegistry');
-}
-
-const isWhite = variant === 'white' || variant === 'footer';
+const { version, tone, width, class: className, loading = 'eager' } = Astro.props;
+const size = getLogoSize(version, width);
 ---
 
-{
-	logoSrc && (
-		<Image
-			src={logoSrc as ImageMetadata}
-			alt={altText || "Celebra.me Logo"}
-			width={150}
-			height={56}
-			class:list={[
-				'logo',
-				{
-					'logo--white': isWhite
-				},
-				className
-			]}
-			loading="eager"
-		/>
-	)
-}
+<img
+	src={getLogoSrc(version, tone)}
+	alt={LOGO_ALT}
+	width={size.width}
+	height={size.height}
+	class:list={['logo', className]}
+	loading={loading}
+	decoding="async"
+/>

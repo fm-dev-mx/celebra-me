@@ -1,4 +1,5 @@
 import { landingData } from '@/data/landing-page.data';
+import { BRAND_ICONS } from '@/lib/brand/brand-logo';
 import {
 	buildLandingSchemaJsonLd,
 	DEFAULT_SITE_ORIGIN,
@@ -24,7 +25,7 @@ describe('landing schema JSON-LD', () => {
 		expect(org?.['@id']).toBe(`${DEFAULT_SITE_ORIGIN}/#organization`);
 		expect(org?.name).toBe('Celebra-me');
 		expect(org?.url).toBe(DEFAULT_SITE_ORIGIN);
-		expect(org?.logo).toBe(`${DEFAULT_SITE_ORIGIN}/icons/icon-512.png`);
+		expect(org?.logo).toBe(`${DEFAULT_SITE_ORIGIN}${BRAND_ICONS.icon512}`);
 		expect(org?.description).toBeTruthy();
 	});
 

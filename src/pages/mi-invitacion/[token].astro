@@ -6,6 +6,7 @@
  */
 import '@/styles/invitation-data.scss';
 import '@fontsource-variable/montserrat';
+import BrandIcons from '@/components/common/BrandIcons.astro';
 import InvitationDataForm from '@/components/invitation-data/InvitationDataForm';
 
 export const prerender = false;
@@ -22,7 +23,7 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="robots" content="noindex, nofollow" />
 		<meta name="referrer" content="no-referrer" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<BrandIcons />
 		<title>Datos de su invitación — Celebra-me</title>
 	</head>
 	<body class="invitation-data-page">

@@ -17,7 +17,8 @@ const currentYear = new Date().getFullYear();
 	<div class="container">
 		<!-- Brand Column -->
 		<div class="footer-brand">
-			<Logo variant="footer" altText="Celebra-me" />
+			<Logo version="horizontal" tone="oscuro" width={320} class="footer-brand__logo footer-brand__logo--wide" loading="lazy" />
+			<Logo version="compacto" tone="oscuro" width={160} class="footer-brand__logo footer-brand__logo--narrow" loading="lazy" />
 			{data.siteInfo?.slogan && <p class="footer-slogan">{data.siteInfo.slogan}</p>}
 		</div>
 
