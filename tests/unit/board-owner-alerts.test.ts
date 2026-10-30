@@ -72,14 +72,9 @@ describe('T437 owner alerts on Telegram', () => {
 			root,
 		);
 		expect(r.sent).toEqual([
-			'Mensaje: claude → dueno sobre T418: m1. Tablero: http://127.0.0.1:4320',
-			[
-				'Le toca a usted (2 nuevas):',
-				'- Mensaje: claude → dueno sobre T418: m2',
-				'- Mensaje: claude → dueno sobre T418: m3',
-				'Tablero: http://127.0.0.1:4320',
-			].join('\n'),
-			'Mensaje: claude → dueno sobre T418: m1. Tablero: http://127.0.0.1:4320',
+			'Celebra-me: 1 decisión.\nTablero: http://127.0.0.1:4320',
+			'Celebra-me: 2 decisiones.\nTablero: http://127.0.0.1:4320',
+			'Celebra-me: 1 decisión.\nTablero: http://127.0.0.1:4320',
 		]);
 		expect(r.alertadas).toEqual(['mensaje:m1']);
 	});
@@ -103,9 +98,7 @@ describe('T437 owner alerts on Telegram', () => {
 		);
 		expect(r.logged).toHaveLength(1);
 		expect(r.logged[0]).toContain('Telegram sin configurar');
-		expect(r.sent).toEqual([
-			'Mensaje: claude → dueno sobre T418: m3. Tablero: http://127.0.0.1:4320',
-		]);
+		expect(r.sent).toEqual(['Celebra-me: 1 decisión.\nTablero: http://127.0.0.1:4320']);
 		expect(r.sinConfig).toBeNull();
 	});
 
@@ -128,7 +121,7 @@ describe('T437 owner alerts on Telegram', () => {
 			root,
 		);
 		expect(r.dry).toBe(1);
-		expect(r.printed[0]).toMatch(/^\[prueba\] telegram: Mensaje/);
+		expect(r.printed[0]).toMatch(/^\[prueba\] telegram: Celebra-me/);
 		expect(r.stateAfterDry).toBe('{}');
 		expect(r.attempts).toBe(1);
 		expect(r.blocked).toBe(0);
@@ -214,7 +207,7 @@ describe('T437 owner alerts on Telegram', () => {
 				url: 'https://api.telegram.org/botx/sendMessage',
 				body: {
 					chat_id: '42',
-					text: 'Mensaje: claude → dueno sobre T418: m1. Tablero: http://127.0.0.1:4320',
+					text: 'Celebra-me: 1 decisión.\nTablero: http://127.0.0.1:4320',
 				},
 			},
 		]);
@@ -274,5 +267,30 @@ describe('T437 Telegram setup commands', () => {
 		expect(r.printed[0]).toContain('pnpm board:telegram:token');
 		expect(r.printed.at(-2)).toContain('«hola»');
 		expect(r.printed.at(-1)).toContain('Falta configuración');
+	});
+});
+
+describe('T489 Telegram filter', () => {
+	it('sends counts per type and «T<n> aviso» only for public avisos', () => {
+		const r = probe(
+			`
+			const t = (num, aviso) => ({ ...task, num, ...(aviso === undefined ? {} : { aviso }) });
+			const text = m.ownerAlertText([
+				{ tipo: 'decidir', t: t(418, 'elegir hora del ensayo') },
+				{ tipo: 'decidir', t: t(419) },
+				{ tipo: 'aprobar', t: t(420, 'Andrea quiere otro color') },
+				{ tipo: 'hacer', t: t(421, 'cobrar $1,500') },
+				{ tipo: 'hacer', t: null },
+			]);
+			console.log(JSON.stringify(text));`,
+			fixture(),
+		);
+		expect(r).toBe(
+			[
+				'Celebra-me: 2 decisiones, 1 aprobación, 2 por hacer.',
+				'- T418 elegir hora del ensayo',
+				'Tablero: http://127.0.0.1:4320',
+			].join('\n'),
+		);
 	});
 });

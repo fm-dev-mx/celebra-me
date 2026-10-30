@@ -76,7 +76,7 @@ describe('board overview: owner actions and tab counts (T321)', () => {
 		const r = probe(
 			'console.log(JSON.stringify({acts: f.ownerActions(b).map((x) => [x.tipo, x.verbo]), n: f.tabCounts(b)}))',
 		);
-		expect(r.acts).toEqual([['mensaje', 'Responder a Codex']]);
+		expect(r.acts).toEqual([['decidir', 'Decidir']]);
 		expect(r.n.usted).toBe(r.acts.length);
 	});
 
@@ -123,10 +123,9 @@ describe('board overview: owner actions and tab counts (T321)', () => {
 			board,
 		);
 		expect(r.acts).toEqual([
-			['tarea', 'Aprobar', 'aprobar'],
-			['tarea', 'Hacer', 'hacer'],
-			['decision', 'Decidir', 'decidir'],
-			['archivar', 'Archivar', null],
+			['aprobar', 'Aprobar', 'aprobar'],
+			['hacer', 'Hacer fuera', 'hacer'],
+			['hacer', 'Hacer fuera', 'decidir'],
 		]);
 		expect(r.n.usted).toBe(r.acts.length);
 		expect(r.n.finalizadas).toBe(1);
@@ -216,7 +215,9 @@ describe('board overview: readable messages (T321)', () => {
 		const rule = /a\.tl,a\.dl,span\.tl\{([^}]*)\}/.exec(CSS)?.[1] ?? '';
 		expect(rule).not.toMatch(/border|display/);
 		// Row text sits in its own inline span inside the grid column, so a link cannot split the sentence.
-		expect(VIEW).toContain('<span><span>${tt(rowText(x.texto))}</span></span>');
+		expect(VIEW).toContain(
+			'<span>${dondeHtml(x)}<span>${known?tt(rowText(x.texto)):rich(rowText(x.texto))}</span></span>',
+		);
 		expect(CSS).toContain(
 			'.tab .n{margin-left:auto;font:400 .74rem var(--mono);color:var(--faint)}',
 		);

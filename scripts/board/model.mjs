@@ -5,7 +5,7 @@
 import { validChangelog } from './changelog.mjs';
 import { awaitingClaim } from './delivery.mjs';
 import { isForeignPull } from './pr-ref.mjs';
-import { answerPrompt, messageExtraIssues, ownerFieldChecks } from './owner-text.mjs';
+import { answerPrompt, fold, messageExtraIssues, taskTextChecks } from './owner-text.mjs';
 import {
 	isPromptV1,
 	promptSection,
@@ -589,12 +589,6 @@ export function ownerAsks(board, now = Date.now()) {
 	});
 }
 
-const fold = (s) =>
-	String(s ?? '')
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.toLowerCase();
-
 /**
  * Search box match (d167): «T34» names task 34 exactly (never T340); any other query must find every word
  * in the id, title or «ahora», ignoring case and accents.
@@ -921,7 +915,7 @@ const FIELD_CHECKS = [
 		(t) => !optional(t.corto, (s) => typeof s === 'string' && s.trim()),
 		() => 'corto debe ser texto',
 	],
-	...ownerFieldChecks,
+	...taskTextChecks,
 	...KIND_LISTS.map((k) => [
 		(t) =>
 			!optional(

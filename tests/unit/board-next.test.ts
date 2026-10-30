@@ -409,15 +409,20 @@ describe('what is next (T126)', () => {
 			}),
 		);
 		const sigue = cli(dir, ['sigue'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture });
+		// T489: running a dispatcher is the coordinator's, so the owner's inbox stays empty.
+		expect(sigue.out).toContain('Le toca a usted (0):');
 		expect(sigue.out).toContain(
-			'Le toca a usted (1):\n  - DÓNDE: Codex · proyecto f05-plataforma · chat nuevo «f05 · T1 · codex-lista»\n    Correr el despachador de Codex (T1)',
+			'Le toca al coordinador (3):\n  - DÓNDE: Codex · proyecto f05-plataforma · chat nuevo «f05 · T1 · codex-lista»\n    Correr el despachador de Codex (T1)',
 		);
-		expect(sigue.out).toContain('Le toca al coordinador (1):\n  - PR #9 sin tarea: Z');
+		expect(sigue.out).toContain(
+			'  - DÓNDE: Claude · la sesión de T2\n    Inspeccionar el candado de claude sin latido hace 5 h: T2 · callada\n  - PR #9 sin tarea: Z',
+		);
 		expect(sigue.out).toContain(
 			'Detenidas (1):\n  - T2 · candado de claude sin latido hace 5 h',
 		);
 		const list = cli(dir, ['list']);
-		expect(list.out).toContain('Le toca al coordinador (0):');
+		expect(list.out).toContain('Usted: nada');
+		expect(list.out).toContain('Le toca al coordinador (2):');
 		expect(list.out).toContain('Sin leer GitHub');
 	});
 });

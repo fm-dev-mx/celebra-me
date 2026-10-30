@@ -537,9 +537,11 @@ const commands = {
 			);
 		if (!q.length) out('Sin tareas en la cola.');
 		q.forEach((t, i) => out(row(t, i + 1, board, flags.agente)));
-		const mine = q.filter((t) => color(t, board) === 'own').length;
+		// T489: the count is «Le toca a usted»; prompts to paste are the coordinator's.
+		const sections = nextSections(board);
+		const mine = sections.usted.length;
 		out(`\nUsted: ${mine ? `${mine} ${mine > 1 ? 'cosas' : 'cosa'}` : 'nada'}`);
-		for (const line of sectionLines(nextSections(board))) out(line);
+		for (const line of sectionLines(sections)) out(line);
 		if (review.length) {
 			out(`\nEn revisión (${review.length}):`);
 			for (const t of review) out(row(t, '·', board, flags.agente));

@@ -3,41 +3,21 @@
  * Pure functions only, like model.mjs: the view imports this file in the browser and the unit tests in Node.
  * Nothing here changes stored data; it only decides how it is shown.
  */
-import { archiveBlock } from './cierre.mjs';
 import {
 	AGENT_REGISTRY,
 	authorOf,
-	color,
 	findTask,
 	isFinished,
 	isNoteRow,
 	isReview,
 	matches,
-	ownerAsks,
 	prNumber,
 	queue,
 	stage,
 	taskLane,
 	taskTag,
 } from './model.mjs';
-import {
-	agoText,
-	deliveryLine,
-	lockBeat,
-	nextSections,
-	ownerFindings,
-	ownerMessages,
-	reviewVerdict,
-} from './next.mjs';
-import {
-	answerDestination,
-	destinationFields,
-	findingsDestination,
-	FIXED_DESTINATIONS,
-	lockDestination,
-	pasteAgents,
-	taskDestination,
-} from './owner-where.mjs';
+import { ownerInbox, reviewVerdict } from './next.mjs';
 import { blocked, calendar } from './subtasks.mjs';
 
 export const GH = 'https://github.com/fm-dev-mx/celebra-me';
@@ -475,135 +455,38 @@ export function rowText(texto) {
 	return `${personName(m[1])} → ${personName(m[2])}: ${text}`;
 }
 
+const OWNER_VERBS = { decidir: 'Decidir', aprobar: 'Aprobar', hacer: 'Hacer fuera' };
+
+/** «×2 · hace 3 h, hace 10 min»: how many merged messages a row stands for and when each came, or ''. */
+export function repeatLine({ veces, fechas } = {}, now = Date.now()) {
+	if (!(veces > 1)) return '';
+	const when = (fechas ?? []).map((f) => relTime(f, now)).filter(Boolean);
+	return `×${veces}${when.length ? ` · ${when.join(', ')}` : ''}`;
+}
+
 /**
- * T321: what the owner does now, once each, every row with its action as a verb: `{tipo, id, t, verbo, texto, sub}`.
- * `tarea` rows are the owner's ready tasks («Pegar en Gemini», «Aprobar» when it touches main, Production,
- * migrations or secrets, else «Hacer»), `decision` the answers a task waits for («Decidir»), `detenida` a ready Codex
- * or Gemini task nobody took («Relanzar»), `mensaje` an unread message to the owner («Responder a Codex», with its
- * `msg` parts) and one `archivar` row for the finished tasks ready to archive. Messages to the coordinator never count.
+ * T321, T489: what the owner does now, once each, every ownerInbox row with its verb: `{tipo, id, t, verbo, texto,
+ * sub, repite, ...}` with `tipo` `decidir` (a question, `msg` its parts), `aprobar` (an approval, `pr` the PR to see) or
+ * `hacer` (done outside the board, closed with «Hecho»). Prompts to paste, dispatchers, findings and the archive are
+ * the coordinator's; messages to the coordinator never count.
  */
-export function ownerActions(board, { prs, now = Date.now() } = {}) {
-	const where = destinationFields;
-	const next = nextSections(board, { prs, now });
-	const stalled = next.usted.filter((x) => x.texto.startsWith('Correr el despachador'));
-	const late = new Set(stalled.map((x) => x.id));
-	const tasks = queue(board, now).filter(
-		(t) => color(t, board, { now }) === 'own' && !late.has(t.id),
-	);
-	const archivable = (board.tareas ?? []).filter(
-		(t) =>
-			isFinished(t) &&
-			!t.archivada &&
-			!t.candado &&
-			!(Object.hasOwn(t, 'bloqueoArchivo') ? t.bloqueoArchivo : archiveBlock(t, board)),
-	);
-	// T442: a lock silent for 60 min surfaces in the owner action list
-	const silentLocks60m = (board.tareas ?? [])
-		.filter((t) => t.candado && !isFinished(t))
-		.map((t) => ({ t, silent: now - Date.parse(lockBeat(t.candado) ?? '') }))
-		.filter(({ silent }) => !Number.isNaN(silent) && silent >= 60 * 60_000);
-	const rows = [
-		...next.usted
-			.filter((x) => x.tipo === 'gemini-relay')
-			.map((x) => ({
-				tipo: x.tipo,
-				id: null,
-				t: null,
-				verbo: 'Arrancar',
-				texto: x.texto,
-				sub: '',
-				donde: FIXED_DESTINATIONS['gemini-relay'],
-				copia: null,
-			})),
-		...tasks.map((t) => {
-			const paste = pasteAgents(t, board, now).agentes.map(
-				(a) => AGENT_REGISTRY[a]?.nombre ?? a,
-			);
-			const verbo = paste.length
-				? `Pegar en ${paste.join(' o ')}`
-				: (t.toca ?? []).length
-					? 'Aprobar'
-					: 'Hacer';
-			return {
-				tipo: 'tarea',
-				id: t.id,
-				t,
-				verbo,
-				texto: t.titulo ?? t.id,
-				sub: deliveryLine(t, now),
-				...where(taskDestination(t, board, now)),
-			};
-		}),
-		...ownerAsks(board, now).map(({ t, r }) => ({
-			tipo: 'decision',
-			id: t.id,
+export function ownerActions(board, { now = Date.now() } = {}) {
+	return ownerInbox(board, { now }).map(({ t, r, ask, texto, ...x }) => {
+		const msg = r ? messageParts(r, board) : null;
+		return {
+			...x,
 			t,
-			verbo: 'Decidir',
-			texto: r.ref,
-			sub: `la espera ${taskTag(t)} · ${t.titulo ?? t.id}`,
-			...where(answerDestination(t, board)),
-		})),
-		...stalled.map((x) => ({
-			tipo: 'detenida',
-			id: x.id,
-			t: findTask(x.id, board),
-			verbo: 'Relanzar',
-			texto: x.texto,
-			sub: '',
-			// The usted row already carries its destination.
-			donde: x.donde,
-			copia: x.copia,
-			destino: x.destino,
-		})),
-		...silentLocks60m.map(({ t, silent }) => ({
-			tipo: 'detenida',
-			id: t.id,
-			t,
-			verbo: 'Inspeccionar',
-			texto: `Candado de ${t.candado.agente} sin latido hace ${agoText(silent)}: ${taskTag(t)} · ${t.titulo}`,
-			sub: t.candado.carril ? `carril ${t.candado.carril}` : '',
-			...where(lockDestination(t)),
-		})),
-		...ownerFindings(board).map((r) => {
-			const t = findTask(r.tarea, board);
-			const para = AGENT_REGISTRY[r.mensaje.para]?.nombre ?? r.mensaje.para;
-			return {
-				tipo: 'correcciones',
-				id: t?.id ?? null,
-				t,
-				verbo: `Pegar en ${para}`,
-				texto: `Correcciones de la revisión para ${para}`,
-				sub: t ? `${taskTag(t)} · ${t.titulo ?? t.id}` : '',
-				...where(findingsDestination(r, board, now)),
-			};
-		}),
-		...ownerMessages(board).map((r) => {
-			const msg = messageParts(r, board);
-			return {
-				tipo: 'mensaje',
-				id: msg.t?.id ?? null,
-				t: msg.t,
-				verbo: `Responder a ${msg.de}`,
-				texto: msg.pregunta,
-				sub: '',
-				msg,
-				...where(answerDestination(msg.t, board)),
-			};
-		}),
-	];
-	if (archivable.length)
-		rows.push({
-			tipo: 'archivar',
-			id: null,
-			t: null,
-			verbo: 'Archivar',
-			texto: `${archivable.length} ${archivable.length === 1 ? 'tarea finalizada' : 'tareas finalizadas'} con su resumen de cierre`,
-			sub: '',
-			n: archivable.length,
-			donde: FIXED_DESTINATIONS.archivar,
-			copia: null,
-		});
-	return rows;
+			verbo: OWNER_VERBS[x.tipo],
+			repite: repeatLine(x, now),
+			texto: msg ? msg.pregunta : ask ? ask.ref : (t?.titulo ?? texto),
+			sub: msg
+				? ''
+				: t
+					? `${ask ? 'la espera ' : ''}${taskTag(t)} · ${t.titulo ?? t.id}`
+					: '',
+			...(msg ? { msg } : {}),
+		};
+	});
 }
 
 /** The «En revisión» group of the Cola: done tasks waiting for their check, newest first. */
