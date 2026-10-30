@@ -570,12 +570,14 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   reading GitHub. «Le toca a usted» leaves out a message to the owner once its task is finished or
   archived (d265), or once `pnpm board atendido <id> --para=dueno` marks it handled (d291, an
   `atendido {para, mensajes}` bitácora row; `--para=coordinador` does the same for the coordinator's
-  messages); `inbox --agente=dueno --todos` still lists it. An agent may read `inbox --agente=dueno`
-  without hiding anything: only `--leido`, which the owner passes, marks the owner's messages read.
-  T489: «Le toca a usted» lists only `decidir`, `aprobar` and `hacer` rows; prompts to paste, a
-  ready Codex or Gemini task idle for 30 min («Correr el despachador de Codex (T<n>)»), silent
-  locks, findings to paste and the archive show in «Le toca al coordinador», so a coordinator pass
-  reads `nextSections(...).coordinador` for them, not `.usted`.
+  messages); `inbox --agente=dueno --todos` still lists it. «Le toca al coordinador» applies the
+  same rule: a closing report about a finished or archived task leaves it, and a merge signal stays
+  while its origin's PR is open. An agent may read `inbox --agente=dueno` without hiding anything:
+  only `--leido`, which the owner passes, marks the owner's messages read. T489: «Le toca a usted»
+  lists only `decidir`, `aprobar` and `hacer` rows; prompts to paste, a ready Codex or Gemini task
+  idle for 30 min («Correr el despachador de Codex (T<n>)»), silent locks, findings to paste and the
+  archive show in «Le toca al coordinador», so a coordinator pass reads
+  `nextSections(...).coordinador` for them, not `.usted`.
 - **Owner tasks** (`actor: dueno`) show only what to do and where (`donde`, else the first line
   under «DÓNDE CORRE» of an older prompt), never a suggested lane. The coordinator records every
   owner action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».

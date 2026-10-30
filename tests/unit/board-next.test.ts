@@ -286,7 +286,7 @@ describe('what is next (T126)', () => {
 	});
 
 	it.each(['unida', 'hecha', 'comprobada', 'cancelada', 'archivada'])(
-		'hides merge signals for a finished origin (%s), preserving history and other messages',
+		'hides merge signals and closing reports for a finished origin (%s), preserving history',
 		(estado) => {
 			const result = probe(`
 				const origin = { id: 'origin', num: 1, estado: '${estado === 'archivada' ? 'unida' : estado}', pr: '#547' };
@@ -302,9 +302,8 @@ describe('what is next (T126)', () => {
 					messages: n.coordinatorItems(board).filter(x => x.tipo === 'mensaje').map(x => x.texto),
 					inbox: n.unreadFor('coordinador', board).map(x => x.mensaje.id),
 					unchanged: JSON.stringify(board) === before }));`);
-			expect(result.messages).toEqual([
-				'Mensaje: codex → coordinador sobre T1: Requiere seguimiento',
-			]);
+			// d265: a finished or archived task asks the coordinator for nothing; `inbox` still lists it.
+			expect(result.messages).toEqual([]);
 			expect(result.inbox).toEqual(['origin', 'round', 'other']);
 			expect(result.unchanged).toBe(true);
 		},
