@@ -31,7 +31,7 @@
  *                                               a task still en curso goes back to pendiente (T172), a
  *                                               review with its verdict becomes hecha; T297: from the lane,
  *                                               --git-safety=commit[,history] also finishes git-safety
- *   merged <id> --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
+ *   merged [<id>] --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
@@ -135,7 +135,13 @@ import { authorSession } from './findings.mjs';
 import { leftByUnanswered, reviewChild, reviewChildId } from './rounds.mjs';
 import { overlapCommands } from './overlap.mjs';
 import { archiveBlock, cierreBlock, cierreIssues } from './cierre.mjs';
-import { cancelOnSet, cancelReplaced, closeCommands, reviewDone } from './close-commands.mjs';
+import {
+	cancelOnSet,
+	cancelReplaced,
+	closeCommands,
+	mergedRef,
+	reviewDone,
+} from './close-commands.mjs';
 import { deliveryLine, nextSections, sectionLines, unreadFor } from './next.mjs';
 import { mergeSignal } from './owner-text.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
@@ -730,9 +736,7 @@ const commands = {
 	merged({ pos, flags }, dir, out, { prState = ghPrState } = {}) {
 		if (!flags.coordinador) throw new UsageError('merged requiere --coordinador (d170)');
 		return withLock(dir, () => {
-			const before = getTask(dir, need(pos[0], 'falta <id>'));
-			if (before.revisionSha)
-				throw new UsageError('una revisión se cierra con su --sha, no con merged');
+			const before = getTask(dir, mergedRef(pos[0], flags.pr, loadBoard(dir)));
 			if (flags.rev !== undefined) checkRev(before, flags);
 			const given = typeof flags.pr === 'string' ? normalizePr(flags.pr) : undefined;
 			const pr = normalizePr(before.pr) ?? given;
