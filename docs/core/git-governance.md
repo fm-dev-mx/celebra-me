@@ -391,6 +391,7 @@ Use one scope from this list. `commitlint` warns on any other scope.
 | `provisioning`           | Definition-to-database publishing: release, apply, hash baselines |
 | `release`                | Version, CHANGELOG and release checks                             |
 | `ops`                    | Operations CLI, runbooks under `docs/operations/`, cutovers       |
+| `board`                  | Task board wrapper, configuration and the pinned board core       |
 | `git`                    | Hooks, `commitlint`, lane sync and git-safety tooling             |
 | `ci`                     | Workflows and their contract tests                                |
 | `validation`             | Static validators (`scripts/validate-*`)                          |
