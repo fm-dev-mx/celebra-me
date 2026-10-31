@@ -32,6 +32,7 @@ are included.
   sections before the closing (#684).
 - Tooling: Integration takes hotkey 5 and the f05-plataforma lane retires; the board rule and
   coordinator guide define the session lifecycle (#706, #712).
+- Tooling: every board script runs through the pinned board core (#714).
 
 ### Database
 
