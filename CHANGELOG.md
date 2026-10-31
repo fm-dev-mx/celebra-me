@@ -10,6 +10,67 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.57.0-beta.1] - 2026-10-30
+
+Yireh Ana's XV invitation is published with its refined reveal letter, seal and closing medallion.
+Paid orders can create invitation drafts atomically, quotes get manual reminders and folio leads
+show their source. One additive database migration is included.
+
+### Added
+
+- Dashboard: create one invitation draft per paid order through a service-only database function
+  (#681).
+- Commercial: manual quote reminders (#683) and the lead source of each folio (#687).
+- Tooling: a project-agnostic board package run from a local checkout, a project strip in the
+  General view, real-time coordinator notices, a no-AI session hook and a wake button for task
+  agents (#685, #690, #693, #694, #695).
+- Docs: measurement service and project plan proposals (#673).
+
+### Changed
+
+- Invitation: refine Yireh Ana's reveal letter, flower seal, closing medallion and copy, and publish
+  the invitation (#692).
+- Tooling: the owner inbox lists only decide, approve and do-outside rows (#682).
+
+### Fixed
+
+- Tooling: find the Codex CLI outside PATH, alert on stuck master deliveries, drop closing reports
+  of finished tasks from the coordinator queue and clear stale merge signals (#686, #691, #696).
+- Database: create the order draft function before the additive changes so migration preflight
+  classifies its initial revoke correctly (#698).
+
+### Database
+
+- `20261030160000_order_invitation_drafts` (expand): adds the unique `sales_orders.invitation_id`
+  link, column insert grants for `service_role` and `public.create_order_invitation_draft`. Apply it
+  to Preview and Production before enabling the order draft UI.
+
+## [0.56.0-beta.1] - 2026-10-29
+
+The official 2026 logo appears on every ground, Yireh Ana's v3 invitation and the Celestial and
+Editorial demos are refined, and Meta Page Insights resolve their token again. No database
+migrations are included.
+
+### Added
+
+- Brand: official `logo_2026_v2` artwork through `Logo.astro`, enforced in CI, with favicons, site
+  icons and invitation footer signatures (#671).
+- Analytics: automated weekly Meta review report (#664).
+- Tooling: watcher escalation alerts, board MCP telemetry, dependency map, Telegram owner
+  notifications, owner location lines, lane routing validation and Gemini relay monitoring (#657,
+  #663, #669, #672, #674, #675, #676).
+
+### Changed
+
+- Invitation: Yireh Ana XV watercolor v3 with collector inside cover and stationery (#648, #670).
+- Demos: Celestial XV and Editorial design and copy improvements (#666, #667, #668).
+
+### Fixed
+
+- Analytics: resolve the Meta Page Insights token in the daily scheduled job (#665).
+- Tests: relative timestamps in the memories end-to-end fixture and permission adapters (#661, #662,
+  #677).
+
 ## [0.55.0-beta.1] - 2026-10-28
 
 Clients can upload photos through their private invitation data form, Andrea's invitation includes
