@@ -7,7 +7,9 @@ import { safeErr } from '@/lib/server/safe-error';
 import { getEstimatedLeadValue } from './estimated-lead-value';
 import {
 	getMetaCrmLeadStageFromTriggerStatus,
+	META_CHAT_EVENT_MAX_AGE_MS,
 	META_CRM_LEAD_EVENT_SOURCE,
+	META_CRM_LEAD_STAGE_EVENTS,
 } from '@/lib/commercial/meta-capi/lead-stage-events';
 
 interface ProcessResult {
@@ -23,6 +25,7 @@ interface OutboxDetail {
 	event_id: string;
 	trigger_status: string;
 	customer_id?: string | null;
+	lead_id?: string | null;
 	session_id?: string | null;
 	event_source_path?: string | null;
 	created_at?: string | null;
@@ -105,7 +108,11 @@ interface SessionDetail {
 }
 
 function isBrowserEvent(detail: OutboxDetail): boolean {
-	return BROWSER_EVENT_NAMES.has(detail.event_name);
+	// A qualified-lead CRM row is also a Lead, but it comes from the lead card, not the browser.
+	return (
+		BROWSER_EVENT_NAMES.has(detail.event_name) &&
+		!getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status)
+	);
 }
 
 /** The lead, order, or browser event session, depending on its source. */
@@ -148,6 +155,17 @@ function getDeliveryIneligibility(
 			errorMessage: 'A CRM lead stage needs a phone number to match the lead in Meta.',
 		};
 	}
+	const crmLeadStage = getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status);
+	if (
+		crmLeadStage &&
+		META_CRM_LEAD_STAGE_EVENTS[crmLeadStage].actionSource === 'chat' &&
+		Date.now() - new Date(detail.created_at || 0).getTime() > META_CHAT_EVENT_MAX_AGE_MS
+	) {
+		return {
+			errorCode: 'EVENT_TOO_OLD',
+			errorMessage: 'Meta rejects chat events older than seven days.',
+		};
+	}
 	if (isBrowserEvent(detail) && !session?.client_user_agent?.trim()) {
 		return {
 			errorCode: 'MISSING_CLIENT_USER_AGENT',
@@ -155,6 +173,41 @@ function getDeliveryIneligibility(
 		};
 	}
 	return undefined;
+}
+
+/** Outbox statuses that mean the row was, or may still be, delivered to Meta. */
+const NOT_SKIPPED_STATUSES = 'pending,sending,failed,sent,ambiguous';
+/** Outbox statuses that mean the row may already have reached Meta. */
+const MAY_HAVE_REACHED_META_STATUSES = 'sending,sent,ambiguous';
+
+/**
+ * Meta does not deduplicate server Purchases without a shared event ID, so a lead gets one: the
+ * confirmed-order Purchase replaces the later deposit Purchase, and a confirmed order marked after
+ * the deposit Purchase already reached Meta is not sent again.
+ */
+async function findDuplicatePurchase(
+	detail: OutboxDetail,
+): Promise<{ errorCode: string; errorMessage: string } | undefined> {
+	if (detail.event_name !== 'Purchase' || !detail.lead_id) return undefined;
+	const confirmed = META_CRM_LEAD_STAGE_EVENTS.order_confirmed.triggerStatus;
+	const isConfirmedOrder = detail.trigger_status === confirmed;
+	const otherTrigger = isConfirmedOrder ? 'deposit_paid' : confirmed;
+	const otherStatuses = isConfirmedOrder ? MAY_HAVE_REACHED_META_STATUSES : NOT_SKIPPED_STATUSES;
+	const rows = await supabaseRestRequest<Array<{ id: string }>>({
+		pathWithQuery: `meta_conversion_events?lead_id=eq.${encodeURIComponent(detail.lead_id)}&event_name=eq.Purchase&trigger_status=eq.${otherTrigger}&status=in.(${otherStatuses})&id=neq.${encodeURIComponent(detail.id)}&select=id&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	if (rows.length === 0) return undefined;
+	return isConfirmedOrder
+		? {
+				errorCode: 'PURCHASE_SENT_AT_DEPOSIT',
+				errorMessage: 'The lead deposit Purchase may already have reached Meta.',
+			}
+		: {
+				errorCode: 'PURCHASE_SENT_AT_ORDER_CONFIRMED',
+				errorMessage: 'The lead Purchase goes out when the order is confirmed.',
+			};
 }
 
 export function hashSha256(val: string): string {
@@ -282,7 +335,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 
 async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null> {
 	const details = await supabaseRestRequest<OutboxDetail[]>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,trigger_status,customer_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,session_id,phone_e164,fbp,fbc,fbclid)`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,trigger_status,customer_id,lead_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,session_id,phone_e164,fbp,fbc,fbclid)`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -379,6 +432,23 @@ function resolveEventSourceUrl(path: string | null | undefined): string {
 	return `${SITE_ORIGIN}/`;
 }
 
+function buildCustomData(
+	detail: OutboxDetail,
+	crmLeadStage: string | undefined,
+): Record<string, unknown> | undefined {
+	const valueData =
+		detail.value !== null && detail.value !== undefined
+			? { value: Number(detail.value) || 0, currency: detail.currency || 'MXN' }
+			: undefined;
+	if (!crmLeadStage) return valueData;
+	return {
+		event_source: 'crm',
+		lead_event_source: META_CRM_LEAD_EVENT_SOURCE,
+		lead_stage: crmLeadStage,
+		...valueData,
+	};
+}
+
 function buildEventPayload(
 	detail: OutboxDetail,
 	session: SessionDetail | null,
@@ -406,23 +476,13 @@ function buildEventPayload(
 		action_source: browserEvent
 			? 'website'
 			: crmLeadStage
-				? 'system_generated'
+				? META_CRM_LEAD_STAGE_EVENTS[crmLeadStage].actionSource
 				: META_PURCHASE_ACTION_SOURCE,
 		...(eventSourceUrl ? { event_source_url: eventSourceUrl } : {}),
 		user_data: userData,
 	};
-	if (crmLeadStage) {
-		eventData.custom_data = {
-			event_source: 'crm',
-			lead_event_source: META_CRM_LEAD_EVENT_SOURCE,
-			lead_stage: crmLeadStage,
-		};
-	} else if (detail.value !== null && detail.value !== undefined) {
-		eventData.custom_data = {
-			value: Number(detail.value) || 0,
-			currency: detail.currency || 'MXN',
-		};
-	}
+	const customData = buildCustomData(detail, crmLeadStage);
+	if (customData) eventData.custom_data = customData;
 
 	const payloadHash = createHash('sha256').update(JSON.stringify(eventData)).digest('hex');
 
@@ -578,7 +638,8 @@ export async function deliverMetaConversionEvent(
 	const sessionId = resolveSessionId(detail);
 	const session = sessionId ? await fetchSessionDetails(sessionId) : null;
 
-	const ineligibility = getDeliveryIneligibility(detail, session);
+	const ineligibility =
+		getDeliveryIneligibility(detail, session) ?? (await findDuplicatePurchase(detail));
 	if (ineligibility) {
 		return finalizeClaim(
 			outboxId,

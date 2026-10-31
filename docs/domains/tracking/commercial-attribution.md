@@ -175,8 +175,9 @@ CM- code, phone or name and change the stage in one form). Owner:
   `lost` requires `lost_reason` (`price`, `date`, `other_option`, `no_reply`); leaving `lost` clears
   it. Entering a stage stamps `stage_changed_at` and that stage's own `<stage>_at` column, so each
   column keeps the last time the stage was entered. `package_value` is the quoted package in MXN.
-- **Independence:** `stage` is separate from the legacy `leads.status`. Stage changes do not queue
-  CAPI events yet; the CRM lead-stage events below still follow the existing order actions.
+- **Independence:** `stage` is separate from the legacy `leads.status`. Only `qualified` and
+  `order_confirmed` on a landing lead queue CAPI events (see CRM sales-stage events below); the
+  other CRM lead-stage events still follow the existing order actions.
 
 ## `lead_created` Event Rule
 
@@ -371,6 +372,28 @@ no email, raw phone, IP address or user agent is included. CRM stage rows use th
 time as `event_time`, do not include `event_source_url`, and follow the same retry lifecycle and
 30-day terminal-row retention as browser events. In the current workspace, `paid` is emitted when
 the deposit is registered; there is no separate full-payment transition API.
+
+### CRM sales-stage events
+
+Saving a landing lead's stage on the lead card queues two more CRM stages with the same consent,
+stable `event_id` and user-data rules:
+
+- `qualified` queues a standard `Lead` with `trigger_status = crm_lead_qualified` and no value.
+- `order_confirmed` also queues the qualified `Lead` (an order confirmed directly still counts as
+  qualified), then a `Purchase` with `trigger_status = crm_lead_order_confirmed` and the lead's
+  `package_value` as `value` in MXN. No Purchase is queued while `package_value` is empty or zero.
+
+Chat-route leads are left out: they are captured without marketing consent. Both stages go out with
+`action_source = chat`, and their `custom_data` adds `value` and `currency` when the row has a
+value. Meta rejects chat events older than seven days, so delivery skips a row created more than
+seven days earlier with `EVENT_TOO_OLD`.
+
+Meta does not deduplicate two server Purchases with different event IDs, so a lead has one Purchase:
+delivery skips the deposit Purchase (`PURCHASE_SENT_AT_ORDER_CONFIRMED`) while the lead's
+confirmed-order Purchase exists in any status other than `skipped`, and skips the confirmed-order
+Purchase (`PURCHASE_SENT_AT_DEPOSIT`) when the lead's deposit Purchase is `sending`, `sent` or
+`ambiguous` (it may already have reached Meta). A confirmed-order row that is later skipped for
+another reason leaves that lead without a Purchase.
 
 ### Environment Variables
 

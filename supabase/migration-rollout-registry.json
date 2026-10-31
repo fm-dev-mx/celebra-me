@@ -338,6 +338,12 @@
             "provides": ["meta_conversion_events_crm_lead_stages"],
             "requiresDeployedAppCapabilities": ["meta_capi_view_events_client"],
             "notes": "Widens meta_conversion_events checks to admit lead-linked CRM LeadQuoted, LeadPaid and LeadLost rows without order, customer, value or event_source_path while preserving invitation-data CompleteRegistration rows; retains terminal CRM stage rows under the existing 30-day rule and adds their partial retention index. Registered as contract only because the CHECK swaps use DROP CONSTRAINT. Every change widens accepted rows and leaves existing records and deployed clients working. Must be applied before the app that enqueues CRM stage rows is deployed."
+        },
+        "20261031120000": {
+            "phase": "contract",
+            "provides": ["meta_conversion_events_crm_lead_sales_stages"],
+            "requiresDeployedAppCapabilities": ["meta_capi_view_events_client"],
+            "notes": "Widens meta_conversion_events checks to admit lead-linked CRM rows for a qualified lead (Lead, no value) and a confirmed order (Purchase with the package value, no order or customer), and adds a partial index for the one-Purchase-per-lead check. Registered as contract only because the CHECK swaps use DROP CONSTRAINT. Every change widens accepted rows and leaves existing records and deployed clients working. Must be applied before the app that enqueues these rows is deployed."
         }
     },
     "appCapabilities": {

@@ -4,14 +4,19 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 jest.mock('@/lib/tracking/lead-code', () => ({
 	createLeadCode: jest.fn(() => 'CM-AB3CD4'),
 }));
+jest.mock('@/lib/commercial/meta-capi/lead-stage-events', () => ({
+	enqueueMetaCrmLeadSalesStageEvents: jest.fn(),
+}));
 
 import {
 	createChatLead,
 	searchLeadRecords,
 	updateLeadStage,
 } from '@/lib/commercial/lead-record.service';
+import { enqueueMetaCrmLeadSalesStageEvents } from '@/lib/commercial/meta-capi/lead-stage-events';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
+const mockEnqueueStageEvents = jest.mocked(enqueueMetaCrmLeadSalesStageEvents);
 const mockRestRequest = supabaseRestRequest as jest.MockedFunction<typeof supabaseRestRequest>;
 const LEAD_ID = '6c0a8f5e-2b1d-4c3a-9e7f-1a2b3c4d5e6f';
 
@@ -102,6 +107,37 @@ describe('lead record service', () => {
 		expect(patch.body).toMatchObject({ stage: 'lost', lost_reason: 'price' });
 		expect(patch.body).toHaveProperty('lost_at');
 		expect(record.lostReason).toBe('price');
+	});
+
+	it('queues the Meta sales-stage events from the updated lead', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ stage: 'qualified' }])
+			.mockResolvedValueOnce([row({ route: 'landing', stage: 'order_confirmed' })]);
+
+		await updateLeadStage({ leadId: LEAD_ID, stage: 'order_confirmed' });
+
+		expect(mockEnqueueStageEvents).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: LEAD_ID,
+				route: 'landing',
+				stage: 'order_confirmed',
+				packageValue: 1490,
+			}),
+		);
+	});
+
+	it('still saves the stage when the Meta event cannot be queued', async () => {
+		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		mockEnqueueStageEvents.mockRejectedValueOnce(new Error('outbox down'));
+		mockRestRequest
+			.mockResolvedValueOnce([{ stage: 'new' }])
+			.mockResolvedValueOnce([row({ route: 'landing', stage: 'qualified' })]);
+
+		await expect(
+			updateLeadStage({ leadId: LEAD_ID, stage: 'qualified' }),
+		).resolves.toMatchObject({ stage: 'qualified' });
+		expect(consoleError).toHaveBeenCalled();
+		consoleError.mockRestore();
 	});
 
 	it('returns 404 for an unknown lead', async () => {

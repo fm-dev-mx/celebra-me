@@ -9,8 +9,10 @@ import {
 	type LeadStage,
 	type LeadStageUpdateInput,
 } from '@/lib/commercial/lead-record';
+import { enqueueMetaCrmLeadSalesStageEvents } from '@/lib/commercial/meta-capi/lead-stage-events';
 import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { safeErr } from '@/lib/server/safe-error';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { createLeadCode } from '@/lib/tracking/lead-code';
 import { findLeadByCode, upsertLead } from '@/lib/tracking/lead.repository';
@@ -225,7 +227,14 @@ export async function updateLeadStage(input: LeadStageUpdateInput): Promise<Lead
 	if (rows.length === 0) {
 		throw new ApiError(404, 'not_found', 'No se encontró la ficha.');
 	}
-	return toLeadRecord(rows[0]);
+	const record = toLeadRecord(rows[0]);
+	// The stage change already landed; a Meta outbox failure must not undo it for the owner.
+	try {
+		await enqueueMetaCrmLeadSalesStageEvents(record);
+	} catch (error) {
+		console.error('[lead-record] Could not queue the Meta stage event:', safeErr(error));
+	}
+	return record;
 }
 
 async function findActiveAdCode(code: string): Promise<LeadAdCodeRow | null> {
