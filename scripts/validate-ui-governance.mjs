@@ -32,6 +32,9 @@ const allowedHydratedComponents = new Set([
 	// first-payment and private form-link requests. No runtime server imports.
 	'OrdersWorkspace',
 	'CapiOutboxPanel',
+	// Lead records: search and stage changes through the browser-safe dashboard API client;
+	// imports only labels, zod schemas and types. No server-only modules.
+	'LeadRecordsWorkspace',
 	// Demo catalog — clipboard copy feedback only; receives serialized demo links as props
 	// and imports pure labels/types. No fetch, no server-only modules.
 	'DemoCatalog',
