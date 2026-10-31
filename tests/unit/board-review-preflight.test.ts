@@ -81,6 +81,7 @@ function review(dir: string, evidence: unknown = {}) {
 			'codigo',
 			`--sha=${SHA}`,
 			'--coordinador',
+			'--quien=claude',
 		],
 		{
 			cwd: ROOT,

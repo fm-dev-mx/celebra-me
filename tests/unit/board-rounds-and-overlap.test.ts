@@ -135,7 +135,7 @@ describe('d291 review rounds without a verdict', () => {
 		);
 		const r = runCommand(
 			process.execPath,
-			[BOARD, 'review', 'codigo', `--sha=${SHA}`, '--coordinador'],
+			[BOARD, 'review', 'codigo', `--sha=${SHA}`, '--coordinador', '--quien=claude'],
 			{ cwd: ROOT, allowFailure: true, env: sanitizeEnv({ CELEBRA_BOARD_DIR: dir }) },
 		);
 		expect(r.status).toBe(0);
@@ -216,7 +216,15 @@ describe('d291 handled messages', () => {
 		expect(board(dir, 'list').out).toContain(
 			'Mensaje: codex → dueno sobre T1: Primera pregunta',
 		);
-		const one = board(dir, 'atendido', 'T1', '--para=dueno', '--mensaje=q1', '--coordinador');
+		const one = board(
+			dir,
+			'atendido',
+			'T1',
+			'--para=dueno',
+			'--mensaje=q1',
+			'--coordinador',
+			'--quien=claude',
+		);
 		expect(one.status).toBe(0);
 		expect(one.out).toContain('1 mensaje para dueno sobre T1 atendido: q1');
 		let list = board(dir, 'list').out;
@@ -226,15 +234,22 @@ describe('d291 handled messages', () => {
 		list = board(dir, 'list').out;
 		expect(list).not.toContain('Segunda pregunta');
 		expect(list).toContain('Aviso al coordinador');
-		expect(board(dir, 'atendido', 'codigo', '--para=coordinador', '--coordinador').status).toBe(
-			0,
-		);
+		expect(
+			board(
+				dir,
+				'atendido',
+				'codigo',
+				'--para=coordinador',
+				'--coordinador',
+				'--quien=claude',
+			).status,
+		).toBe(0);
 		expect(board(dir, 'list').out).not.toContain('Aviso al coordinador');
 		const marks = logRows(dir).filter((r) => r.atendido);
 		expect(marks).toEqual([
 			expect.objectContaining({
 				tarea: 'codigo',
-				quien: 'coordinador',
+				quien: 'claude',
 				atendido: { para: 'dueno', mensajes: ['q1'] },
 			}),
 			expect.objectContaining({
@@ -251,19 +266,30 @@ describe('d291 handled messages', () => {
 
 	it('refuses agents, unknown ids, nothing to mark and a row without a writer', () => {
 		const dir = makeBoard(tareas, rows);
-		expect(board(dir, 'atendido', 'codigo', '--para=codex', '--coordinador').err).toContain(
-			'un agente lee los suyos con pnpm board inbox',
-		);
 		expect(
-			board(dir, 'atendido', 'codigo', '--para=dueno', '--mensaje=zz', '--coordinador').err,
+			board(dir, 'atendido', 'codigo', '--para=codex', '--coordinador', '--quien=claude').err,
+		).toContain('un agente lee los suyos con pnpm board inbox');
+		expect(
+			board(
+				dir,
+				'atendido',
+				'codigo',
+				'--para=dueno',
+				'--mensaje=zz',
+				'--coordinador',
+				'--quien=claude',
+			).err,
 		).toContain('zz no es un mensaje sin atender para dueno sobre T1; los hay: q1, q2');
 		expect(board(dir, 'atendido', 'codigo', '--para=dueno').err).toContain(
 			'falta quién escribe',
 		);
-		expect(board(dir, 'atendido', 'codigo', '--para=dueno', '--coordinador').status).toBe(0);
-		expect(board(dir, 'atendido', 'codigo', '--para=dueno', '--coordinador').err).toContain(
-			'no hay mensajes sin atender para dueno sobre T1',
-		);
+		expect(
+			board(dir, 'atendido', 'codigo', '--para=dueno', '--coordinador', '--quien=claude')
+				.status,
+		).toBe(0);
+		expect(
+			board(dir, 'atendido', 'codigo', '--para=dueno', '--coordinador', '--quien=claude').err,
+		).toContain('no hay mensajes sin atender para dueno sobre T1');
 	});
 
 	it('validates the atendido row shape and names it in the history', () => {

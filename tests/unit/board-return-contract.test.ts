@@ -200,7 +200,7 @@ describe('board return contract (T129): CLI', () => {
 			task('vieja', { estado: 'hecha', pr: '#400', contrato: 1 }),
 		]);
 		const close = (id: string, ...args: string[]) =>
-			cli(dir, 'close', id, '--coordinador', '--resumen=Hecho.', ...args);
+			cli(dir, 'close', id, '--coordinador', '--quien=claude', '--resumen=Hecho.', ...args);
 
 		const missing = close('codigo');
 		expect(missing.status).toBe(2);
@@ -251,7 +251,7 @@ describe('board return contract (T129): CLI', () => {
 			}),
 		]);
 		const review = (sha: string) =>
-			cli(dir, 'review', 'codigo', `--sha=${sha}`, '--coordinador');
+			cli(dir, 'review', 'codigo', `--sha=${sha}`, '--coordinador', '--quien=claude');
 		expect(review(SHA_A).status).toBe(0);
 		const second = review(SHA_B);
 		expect(second.out).toContain('codigo-revision cancelada');
@@ -260,7 +260,9 @@ describe('board return contract (T129): CLI', () => {
 		expect(replaced.cierre.resumen).toBe(
 			'Reemplazada por la vuelta 2 (3c35826): el PR cambió de aaaaaaa.',
 		);
-		expect(cli(dir, 'archive', 'codigo-revision', '--coordinador').status).toBe(0);
+		expect(
+			cli(dir, 'archive', 'codigo-revision', '--coordinador', '--quien=claude').status,
+		).toBe(0);
 
 		const close = (...args: string[]) =>
 			cli(
@@ -268,6 +270,7 @@ describe('board return contract (T129): CLI', () => {
 				'close',
 				'codigo-revision-2',
 				'--coordinador',
+				'--quien=claude',
 				'--resumen=Revisado.',
 				...EMPTY_LISTS,
 				...args,

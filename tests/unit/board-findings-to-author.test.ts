@@ -201,7 +201,15 @@ describe('board findings to the author (d251): close', () => {
 	it('sends the findings of a review closed with cambios to the author inbox once', () => {
 		const dir = makeBoard([ORIGIN]);
 		expect(
-			cli(dir, 'review', 'codigo', `--sha=${SHA}`, '--agente=gemini', '--coordinador').status,
+			cli(
+				dir,
+				'review',
+				'codigo',
+				`--sha=${SHA}`,
+				'--agente=gemini',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(0);
 		const close = () =>
 			cli(
@@ -209,6 +217,7 @@ describe('board findings to the author (d251): close', () => {
 				'close',
 				'codigo-revision',
 				'--coordinador',
+				'--quien=claude',
 				'--resumen=Revisado.',
 				...EMPTY_LISTS,
 				'--veredicto=cambios',
@@ -234,12 +243,21 @@ describe('board findings to the author (d251): close', () => {
 
 	it('sends nothing for an approved round', () => {
 		const dir = makeBoard([ORIGIN]);
-		cli(dir, 'review', 'codigo', `--sha=${SHA}`, '--agente=gemini', '--coordinador');
+		cli(
+			dir,
+			'review',
+			'codigo',
+			`--sha=${SHA}`,
+			'--agente=gemini',
+			'--coordinador',
+			'--quien=claude',
+		);
 		const ok = cli(
 			dir,
 			'close',
 			'codigo-revision',
 			'--coordinador',
+			'--quien=claude',
 			'--resumen=Revisado.',
 			...EMPTY_LISTS,
 			'--veredicto=aprobado',

@@ -87,14 +87,17 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 		if (!args.some((a) => a.startsWith('--titulo=')))
 			args.push(`--titulo=${claimTitle(dir, args)}`);
 	}
-	if (['set', 'update'].includes(args[0]) && !args.some((a) => a.startsWith('--agente=')))
-		args.push('--coordinador');
+	if (
+		['set', 'update'].includes(args[0]) &&
+		!args.some((a) => a.startsWith('--agente=') || a.startsWith('--quien='))
+	)
+		args.push('--coordinador', '--quien=claude');
 	// A bitácora row needs its writer; --agente names the new agent or the reviewer in these commands.
 	if (
 		['add', 'move', 'review', 'archive', 'unarchive'].includes(args[0]) &&
 		!args.some((a) => a.startsWith('--quien=') || a === '--coordinador')
 	)
-		args.push('--coordinador');
+		args.push('--coordinador', '--quien=claude');
 	return exec(dir, env, args);
 }
 
@@ -664,7 +667,7 @@ describe('pnpm board', () => {
 			expect.objectContaining({
 				tarea: 'compartida',
 				agente: { de: 'cualquiera', a: 'claude' },
-				quien: 'coordinador',
+				quien: 'claude',
 			}),
 		]);
 	});
@@ -718,16 +721,17 @@ describe('pnpm board', () => {
 		expect(board(dir, 'set', 'pin', '--rev=1', 'urgencia=ya').err).toContain(
 			'urgencia debe ser',
 		);
-		expect(board(dir, 'set', 'pin', '--rev=1', 'estado=en curso', '--quien=codex').status).toBe(
-			0,
-		);
+		expect(
+			board(dir, 'set', 'pin', '--rev=1', 'estado=en curso', '--coordinador', '--quien=dueno')
+				.status,
+		).toBe(0);
 		expect(readTask(dir, 'pin')).toMatchObject({ estado: 'en curso', rev: 2 });
 		const [row] = readLog(dir);
 		expect(row).toMatchObject({
 			tarea: 'pin',
 			de: 'pendiente',
 			a: 'en curso',
-			quien: 'codex',
+			quien: 'dueno',
 		});
 	});
 
@@ -820,11 +824,20 @@ describe('pnpm board', () => {
 			'estado=cancelada',
 			'--motivo=Ya no hace falta.',
 			'--coordinador',
+			'--quien=claude',
 		);
 		expect(cancel.status).toBe(0);
 		expect(readTask(dir, 'reabierta').cierre).toBeTruthy();
 		expect(
-			board(dir, 'set', 'reabierta', '--rev=2', 'estado=en revision', '--coordinador').status,
+			board(
+				dir,
+				'set',
+				'reabierta',
+				'--rev=2',
+				'estado=en revision',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(0);
 		const refused = board(dir, 'review', 'reabierta', '--agente=codex', `--sha=${sha}`);
 		expect(refused.status).toBe(2);
@@ -855,8 +868,15 @@ describe('pnpm board', () => {
 		expect(existsSync(path.join(dir, 'tareas', 'sin-cierre-revision.json'))).toBe(false);
 		// The coordinator gets no bypass either: it completes the summary with `close --coordinador`.
 		expect(
-			board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`, '--coordinador')
-				.status,
+			board(
+				dir,
+				'review',
+				'sin-cierre',
+				'--agente=codex',
+				`--sha=${sha}`,
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(2);
 		// The suggested command is complete for a `contrato: 2` task once each `…` is filled in.
 		const suggested = /pnpm board close (.+)$/mu.exec(refused.err)?.[1] ?? '';
@@ -866,7 +886,7 @@ describe('pnpm board', () => {
 			.trim()
 			.split(' ')
 			.map((a) => a.replace('…', 'ninguna'));
-		const closed = board(dir, 'close', ...args, '--coordinador');
+		const closed = board(dir, 'close', ...args, '--coordinador', '--quien=claude');
 		expect(closed.err).toBe('');
 		expect(closed.status).toBe(0);
 		expect(board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`).status).toBe(0);
@@ -1029,13 +1049,27 @@ describe('pnpm board', () => {
 			2,
 		);
 		expect(
-			board(dir, 'claim', 'code', '--agente=codex', '--carril=integration', '--coordinador')
-				.status,
+			board(
+				dir,
+				'claim',
+				'code',
+				'--agente=codex',
+				'--carril=integration',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(2);
 		expect(readTask(dir, 'code').candado).toBeUndefined();
 		expect(
-			board(dir, 'claim', 'coord', '--agente=codex', '--carril=integration', '--coordinador')
-				.status,
+			board(
+				dir,
+				'claim',
+				'coord',
+				'--agente=codex',
+				'--carril=integration',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(0);
 		expect(readTask(dir, 'coord').candado).toMatchObject({
 			carril: 'integration',
@@ -1060,24 +1094,55 @@ describe('pnpm board', () => {
 		expect(raw(dir, 'plan', 'planeada', '--rev=1', '--carril=f10-libre').status).toBe(2);
 		for (const lane of ['f04-integracion', 'integration'])
 			expect(
-				raw(dir, 'plan', 'planeada', '--rev=1', `--carril=${lane}`, '--coordinador').status,
+				raw(
+					dir,
+					'plan',
+					'planeada',
+					'--rev=1',
+					`--carril=${lane}`,
+					'--coordinador',
+					'--quien=claude',
+				).status,
 			).toBe(2);
 		// Every plan names the revision it read: a missing or stale one writes nothing.
 		for (const rev of [[], ['--rev=5']])
 			expect(
-				raw(dir, 'plan', 'planeada', ...rev, '--carril=f10-libre', '--coordinador').status,
+				raw(
+					dir,
+					'plan',
+					'planeada',
+					...rev,
+					'--carril=f10-libre',
+					'--coordinador',
+					'--quien=claude',
+				).status,
 			).toBe(2);
 		expect(readTask(dir, 'planeada')).toMatchObject({ rev: 1 });
 		expect(readTask(dir, 'planeada').carrilPlaneado).toBeUndefined();
-		const plan = raw(dir, 'plan', 'planeada', '--carril=f10-libre', '--coordinador', '--rev=1');
+		const plan = raw(
+			dir,
+			'plan',
+			'planeada',
+			'--carril=f10-libre',
+			'--coordinador',
+			'--quien=claude',
+			'--rev=1',
+		);
 		expect(plan.status).toBe(0);
 		expect(plan.out).toContain('Corre en: f10-libre · carpeta celebra-me-worktrees/f10-libre');
 		expect(plan.out).toContain('Codex: abra el proyecto f10-libre');
 		expect(readTask(dir, 'planeada')).toMatchObject({ carrilPlaneado: 'f10-libre', rev: 2 });
 		// Only plan writes it: set refuses, and add needs the coordinator.
 		expect(
-			raw(dir, 'set', 'planeada', '--rev=2', 'carrilPlaneado=f09-docs', '--coordinador')
-				.status,
+			raw(
+				dir,
+				'set',
+				'planeada',
+				'--rev=2',
+				'carrilPlaneado=f09-docs',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(2);
 		const add = [
 			'add',
@@ -1089,11 +1154,16 @@ describe('pnpm board', () => {
 			...TYPED,
 		];
 		expect(raw(dir, ...add).status).toBe(2);
-		expect(raw(dir, ...add, '--coordinador').status).toBe(0);
+		expect(raw(dir, ...add, '--coordinador', '--quien=claude').status).toBe(0);
 		expect(readTask(dir, 'nueva').carrilPlaneado).toBe('f09-docs');
 		// Clearing a plan also needs the revision read.
-		expect(raw(dir, 'plan', 'nueva', '--carril=', '--coordinador').status).toBe(2);
-		expect(raw(dir, 'plan', 'nueva', '--rev=1', '--carril=', '--coordinador').status).toBe(0);
+		expect(
+			raw(dir, 'plan', 'nueva', '--carril=', '--coordinador', '--quien=claude').status,
+		).toBe(2);
+		expect(
+			raw(dir, 'plan', 'nueva', '--rev=1', '--carril=', '--coordinador', '--quien=claude')
+				.status,
+		).toBe(0);
 		expect(readTask(dir, 'nueva').carrilPlaneado).toBeUndefined();
 		// The prompt an agent receives starts with the lane.
 		const next = raw(dir, 'next', '--agente=codex');
@@ -1116,10 +1186,26 @@ describe('pnpm board', () => {
 		});
 		// Locked: the plan cannot move, and a task planned in the same lane says it is busy.
 		expect(
-			raw(dir, 'plan', 'planeada', '--rev=3', '--carril=f09-docs', '--coordinador').status,
+			raw(
+				dir,
+				'plan',
+				'planeada',
+				'--rev=3',
+				'--carril=f09-docs',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(2);
 		expect(
-			raw(dir, 'plan', 'otra', '--rev=1', '--carril=f10-libre', '--coordinador').status,
+			raw(
+				dir,
+				'plan',
+				'otra',
+				'--rev=1',
+				'--carril=f10-libre',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(0);
 		const show = raw(dir, 'show', 'otra');
 		expect(show.out).toContain('f10 ocupado por T1; espere o pida otro carril');
@@ -1132,6 +1218,7 @@ describe('pnpm board', () => {
 			'--sesion=local_s2',
 			'--carril=f12-release',
 			'--coordinador',
+			'--quien=claude',
 		);
 		expect(moved.status).toBe(0);
 		expect(readTask(dir, 'otra')).toMatchObject({
@@ -1139,7 +1226,15 @@ describe('pnpm board', () => {
 			carrilPlaneado: 'f10-libre',
 		});
 		expect(
-			raw(dir, 'plan', 'tercera', '--rev=1', '--carril=f11-preview', '--coordinador').out,
+			raw(
+				dir,
+				'plan',
+				'tercera',
+				'--rev=1',
+				'--carril=f11-preview',
+				'--coordinador',
+				'--quien=claude',
+			).out,
 		).toContain('f11 ocupado por T4; espere o pida otro carril');
 		expect(raw(dir, 'claim', 'tercera', '--agente=codex', '--sesion=s3').status).toBe(2);
 	});
@@ -1326,7 +1421,15 @@ describe('pnpm board', () => {
 				}),
 			],
 		});
-		const plan = raw(dir, 'plan', 'docs', '--rev=1', '--carril=f06-landing', '--coordinador');
+		const plan = raw(
+			dir,
+			'plan',
+			'docs',
+			'--rev=1',
+			'--carril=f06-landing',
+			'--coordinador',
+			'--quien=claude',
+		);
 		expect(plan.status).toBe(0);
 		expect(plan.out).toContain(
 			'aviso: f06-landing no es el carril de su categoría docs (f09-docs)',
@@ -1338,9 +1441,10 @@ describe('pnpm board', () => {
 		expect(raw(dir, 'next', '--agente=claude').out).toContain(
 			'CARRIL\nCarril sugerido: f10-libre (categoría herramientas), libre',
 		);
-		expect(raw(dir, 'set', 'docs', '--rev=2', 'categoria=otra', '--coordinador').status).toBe(
-			2,
-		);
+		expect(
+			raw(dir, 'set', 'docs', '--rev=2', 'categoria=otra', '--coordinador', '--quien=claude')
+				.status,
+		).toBe(2);
 	});
 
 	it('shows where a review runs in show and next, and plan still refuses it a lane', () => {
@@ -1365,6 +1469,7 @@ describe('pnpm board', () => {
 			'--rev=1',
 			'--carril=f10-libre',
 			'--coordinador',
+			'--quien=claude',
 		);
 		expect(plan.status).toBe(2);
 		expect(plan.err).toContain('una revisión no tiene carril planeado');
@@ -1437,6 +1542,7 @@ describe('pnpm board', () => {
 			'--rev=1',
 			'--carril=f10-libre',
 			'--coordinador',
+			'--quien=claude',
 		);
 		expect(plan.status).toBe(2);
 		expect(plan.err).toContain('no tiene carril planeado');
@@ -1452,7 +1558,15 @@ describe('pnpm board', () => {
 			expect(shown).not.toContain('Corre en: f10-libre');
 		}
 		expect(
-			board(dir, 'plan', 'doc-planned', '--rev=1', '--carril=', '--coordinador').status,
+			board(
+				dir,
+				'plan',
+				'doc-planned',
+				'--rev=1',
+				'--carril=',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(0);
 		expect(
 			raw(dir, 'claim', 'doc-planned', '--agente=codex', '--sesion=codex-test').status,
@@ -1535,7 +1649,15 @@ describe('pnpm board', () => {
 		expect(readdirSync(path.join(dir, 'tareas'))).toEqual(['base.json']);
 		expect(raw(dir, ...add, '--quien=dueño').status).toBe(0);
 		expect(
-			board(dir, 'plan', 'nueva', '--rev=1', '--carril=f11-preview', '--coordinador').status,
+			board(
+				dir,
+				'plan',
+				'nueva',
+				'--rev=1',
+				'--carril=f11-preview',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(0);
 		const files = readdirSync(path.join(dir, 'bitacora'));
 		expect(files).toHaveLength(1);
@@ -1545,7 +1667,7 @@ describe('pnpm board', () => {
 			expect.objectContaining({
 				tarea: 'nueva',
 				carril: { de: '', a: 'f11-preview' },
-				quien: 'coordinador',
+				quien: 'claude',
 			}),
 		]);
 		expect(readLog(dir)[1]).not.toHaveProperty('de');
@@ -1591,7 +1713,7 @@ describe('pnpm board', () => {
 					de: 'sin carril',
 					a: 'f12-release',
 					en: '2026-10-24T01:00:00Z',
-					quien: 'coordinador',
+					quien: 'claude',
 					corrio: 'pnpm board plan',
 					salio: '',
 					enlace: 'x',
@@ -1755,13 +1877,16 @@ describe('pnpm board', () => {
 			quien: 'claude',
 		});
 		// The coordinator completes it later; the flags it omits keep their value.
-		expect(raw(dir, 'close', 'demos', '--coordinador', '--commit=6fb99dca7').status).toBe(0);
+		expect(
+			raw(dir, 'close', 'demos', '--coordinador', '--quien=claude', '--commit=6fb99dca7')
+				.status,
+		).toBe(0);
 		const shown = raw(dir, 'show', 'demos').out;
 		expect(shown).toContain('en revision (PR #485, 6fb99dca7)');
 		expect(shown).toContain('Comprobaciones: validate:changed, type-check. Saltadas: ninguna.');
 		expect(shown).toContain('Pendiente: Falta la segunda vuelta de revisión → T58');
 		expect(readTask(dir, 'demos').cierre).toMatchObject({
-			quien: 'coordinador',
+			quien: 'claude',
 			commit: '6fb99dca7',
 		});
 		expect(
@@ -1798,7 +1923,10 @@ describe('pnpm board', () => {
 			'Falta el resumen de cierre: el pendiente «Algo» apunta a borrada',
 		);
 		expect(board(dir, 'unarchive', 'vieja').status).toBe(0);
-		expect(raw(dir, 'close', 'sin-cierre', '--coordinador', '--resumen=Unida.').status).toBe(0);
+		expect(
+			raw(dir, 'close', 'sin-cierre', '--coordinador', '--quien=claude', '--resumen=Unida.')
+				.status,
+		).toBe(0);
 		expect(board(dir, 'archive', 'sin-cierre').status).toBe(0);
 		expect(readTask(dir, 'sin-cierre').archivada).toBeDefined();
 	});
@@ -1829,14 +1957,19 @@ describe('pnpm board', () => {
 			],
 		});
 		expect(board(dir, 'release', 'legacy', '--agente=claude').err).toMatch(/otra sesión/);
-		expect(board(dir, 'release', 'legacy', '--agente=codex', '--coordinador').err).toMatch(
-			/el candado es de claude/,
-		);
-		expect(board(dir, 'release', 'legacy', '--agente=claude', '--coordinador').status).toBe(0);
+		expect(
+			board(dir, 'release', 'legacy', '--agente=codex', '--coordinador', '--quien=claude')
+				.err,
+		).toMatch(/el candado es de claude/);
+		expect(
+			board(dir, 'release', 'legacy', '--agente=claude', '--coordinador', '--quien=claude')
+				.status,
+		).toBe(0);
 		expect(readTask(dir, 'legacy').candado).toBeUndefined();
-		expect(board(dir, 'release', 'owned', '--agente=claude', '--coordinador').err).toMatch(
-			/otra sesión/,
-		);
+		expect(
+			board(dir, 'release', 'owned', '--agente=claude', '--coordinador', '--quien=claude')
+				.err,
+		).toMatch(/otra sesión/);
 		expect(readTask(dir, 'owned').candado.sesion).toBe('s1');
 		expect(board(dir, 'release', 'owned', '--agente=claude', '--sesion=s1').status).toBe(0);
 	});
@@ -2002,7 +2135,10 @@ describe('pnpm board', () => {
 		const agents = JSON.parse(board(dir, 'agentes', '--json').out);
 		expect(agents.map((a: Json) => a.id)).toEqual(['claude', 'codex', 'gemini']);
 		expect(agents.find((a: Json) => a.id === 'gemini').capacidades).toContain('imagenes');
-		expect(board(dir, 'agentes', 'antigravity', '--coordinador', '--rev=0').status).toBe(2);
+		expect(
+			board(dir, 'agentes', 'antigravity', '--coordinador', '--quien=claude', '--rev=0')
+				.status,
+		).toBe(2);
 		expect(
 			board(
 				dir,
@@ -2010,6 +2146,7 @@ describe('pnpm board', () => {
 				'gemini',
 				'--rev=0',
 				'--coordinador',
+				'--quien=claude',
 				'capacidades=["imagenes"]',
 				'--json',
 			).status,
@@ -2044,7 +2181,7 @@ describe('pnpm board', () => {
 						seen.push(JSON.parse(m.slice(6)).tareas.map((t) => t.id + ':' + t.estado));
 						if (seen.length === 1) {
 							writtenAt = Date.now();
-							spawnSync(process.execPath, [process.argv[2], 'set', 'viva', '--rev=1', 'estado=en curso', '--coordinador']);
+							spawnSync(process.execPath, [process.argv[2], 'set', 'viva', '--rev=1', 'estado=en curso', '--coordinador', '--quien=claude']);
 						} else done(Date.now() - writtenAt < 1000 ? 0 : 1);
 					}
 				});
@@ -2138,7 +2275,7 @@ describe('pnpm board', () => {
 			const codes=await Promise.all([run('one'),run('two')]);
 			const task=JSON.parse(readFileSync(join(process.env.CELEBRA_BOARD_DIR,'tareas','race.json'),'utf8'));
 			const add=(id)=>new Promise(resolve=>{
-				const p=spawn(process.execPath,[process.argv[1],'add',id,'titulo='+id,'urgencia=normal','actor=coordinador','--coordinador'],{stdio:'ignore'});
+				const p=spawn(process.execPath,[process.argv[1],'add',id,'titulo='+id,'urgencia=normal','actor=coordinador','--coordinador', '--quien=claude'],{stdio:'ignore'});
 				p.on('exit',resolve);
 			});
 			const added=await Promise.all([add('first'),add('second')]);

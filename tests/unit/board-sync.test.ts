@@ -252,11 +252,11 @@ describe('pnpm board:sync', () => {
 			const tryRun = async (argv) => { try { let s = ''; await m.run(argv, { dir, prState, out: (x) => (s = x) }); return s; } catch (e) { return 'ERR ' + e.message; } };
 			console.log(JSON.stringify([
 				await tryRun(['merged', 'unida-ya']),
-				await tryRun(['merged', 'unida-ya', '--coordinador']),
-				await tryRun(['merged', 'unida-ya', '--coordinador']),
-				await tryRun(['merged', 'sigue-abierta', '--coordinador']),
-				await tryRun(['merged', 'sin-pr', '--coordinador']),
-				await tryRun(['merged', 'rev-hija', '--coordinador']),
+				await tryRun(['merged', 'unida-ya', '--coordinador', '--quien=claude']),
+				await tryRun(['merged', 'unida-ya', '--coordinador', '--quien=claude']),
+				await tryRun(['merged', 'sigue-abierta', '--coordinador', '--quien=claude']),
+				await tryRun(['merged', 'sin-pr', '--coordinador', '--quien=claude']),
+				await tryRun(['merged', 'rev-hija', '--coordinador', '--quien=claude']),
 			]));`,
 			{ CELEBRA_BOARD_DIR: dir },
 		);
@@ -266,7 +266,7 @@ describe('pnpm board:sync', () => {
 			'unida-ya ya está unida',
 			'ERR #21 no está unido en GitHub (OPEN)',
 			'ERR sin-pr no tiene pr: indique --pr=#<número>',
-			'ERR rev-hija es la revisión de x (se cierra con su --sha); use pnpm board merged x --coordinador',
+			'ERR rev-hija es la revisión de x (se cierra con su --sha); use pnpm board merged x --coordinador --quien=claude',
 		]);
 		expect(readTask(dir, 'unida-ya').candado).toBeUndefined();
 		expect(readTask(dir, 'unida-ya').sesion).toEqual({ id: 'local_otra', agente: 'codex' });
@@ -490,7 +490,7 @@ describe('pnpm board:sync', () => {
 			expect.objectContaining({
 				tarea: 'unido',
 				a: 'unida',
-				quien: 'coordinador',
+				quien: 'claude',
 				corrio: 'pnpm board:sync',
 				salio: 'PR #10 MERGED',
 			}),
@@ -499,7 +499,7 @@ describe('pnpm board:sync', () => {
 			expect.objectContaining({
 				tarea: 'con-candado',
 				a: 'unida',
-				quien: 'coordinador',
+				quien: 'claude',
 				salio: 'PR #14 MERGED',
 			}),
 		);

@@ -149,7 +149,7 @@ export function mergedRef(ref, pr, board) {
 		const origen = findTask(id, board);
 		const name = origen ? label(origen) : id;
 		throw new UsageError(
-			`${label(t)} es la revisión de ${name} (se cierra con su --sha); use pnpm board merged ${name} --coordinador`,
+			`${label(t)} es la revisión de ${name} (se cierra con su --sha); use pnpm board merged ${name} --coordinador --quien=claude`,
 		);
 	}
 	const given = typeof pr === 'string' ? normalizePr(pr) : undefined;

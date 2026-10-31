@@ -112,7 +112,7 @@ export function kindCommands({ getTask, saveTask, checkRev, assertOwner, noteOve
 				if (!prompt)
 					throw new UsageError(
 						String(t.busca ?? '').trim()
-							? `${t.id} no tiene carril: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`
+							? `${t.id} no tiene carril: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador --quien=claude`
 							: `${t.id} no tiene busca=… (su QUÉ SE BUSCA)`,
 					);
 				const difiere = t.prompt ? promptDiff(t.prompt, prompt) : ['sin prompt'];

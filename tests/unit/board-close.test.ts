@@ -100,7 +100,14 @@ describe('close --changelog (T297)', () => {
 	it('stores the release note, shows it and keeps it on a later close without the flag', () => {
 		const dir = makeBoard([{ id: 'codigo' }]);
 		const close = (...args: string[]) =>
-			cli(dir, ['close', 'codigo', '--coordinador', '--resumen=Hecho.', ...args]);
+			cli(dir, [
+				'close',
+				'codigo',
+				'--coordinador',
+				'--quien=claude',
+				'--resumen=Hecho.',
+				...args,
+			]);
 
 		const bad = close('--changelog=Nuevo: algo');
 		expect(bad.status).toBe(2);

@@ -108,6 +108,7 @@ describe('carril externo', () => {
 			'creative-task',
 			'--carril=externo',
 			'--coordinador',
+			'--quien=claude',
 			'--rev=1',
 		]);
 		if (plan.status !== 0) console.error(plan.err);

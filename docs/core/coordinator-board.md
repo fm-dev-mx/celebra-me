@@ -294,7 +294,7 @@ goes into it with its internal shorthand dropped.
 
 A task with a `tipo` (T130) does not get this template by hand: add it with its kind and its
 `QUÉ SE BUSCA`, for example
-`pnpm board add <id> titulo=… urgencia=alta actor=sesion agente=claude tipo=codigo rama=feat/<id> carrilPlaneado=f06-landing busca="…\nTerminado cuando: …" --coordinador`,
+`pnpm board add <id> titulo=… urgencia=alta actor=sesion agente=claude tipo=codigo rama=feat/<id> carrilPlaneado=f06-landing busca="…\nTerminado cuando: …" --coordinador --quien=claude`,
 and the board builds the rest from `.agent/kinds/codigo.yaml` and the board. Check it with
 `pnpm board prompt <id>`; see [Task kinds](#task-kinds).
 

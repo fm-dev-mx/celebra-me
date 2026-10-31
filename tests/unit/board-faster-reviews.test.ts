@@ -314,7 +314,14 @@ describe('close finishes the task (d290)', () => {
 describe('coordinator over an inactive lock (d290)', () => {
 	it('lets the coordinator set an inactive session task and notes it for that session', () => {
 		const dir = makeBoard([task('d', { candado: lock(OLD) })]);
-		const r = board(dir, ['set', 'd', '--rev=1', 'estado=pendiente', '--coordinador']);
+		const r = board(dir, [
+			'set',
+			'd',
+			'--rev=1',
+			'estado=pendiente',
+			'--coordinador',
+			'--quien=claude',
+		]);
 		expect(r.err).toBe('');
 		expect(r.out).toContain(`sin latido desde ${OLD} (más de 30 min); anotado`);
 		const t = readTask(dir, 'd');
@@ -328,7 +335,14 @@ describe('coordinator over an inactive lock (d290)', () => {
 
 	it('refuses the coordinator over a live lock unless the session is archived', () => {
 		const dir = makeBoard([task('e', { candado: lock(new Date().toISOString()) })]);
-		const refused = board(dir, ['set', 'e', '--rev=1', 'ahora=x', '--coordinador']);
+		const refused = board(dir, [
+			'set',
+			'e',
+			'--rev=1',
+			'ahora=x',
+			'--coordinador',
+			'--quien=claude',
+		]);
 		expect(refused.status).toBe(2);
 		expect(refused.err).toContain('el candado de codex sigue activo');
 		const r = board(dir, [
@@ -337,6 +351,7 @@ describe('coordinator over an inactive lock (d290)', () => {
 			'--rev=1',
 			'ahora=x',
 			'--coordinador',
+			'--quien=claude',
 			'--sesion-archivada',
 		]);
 		expect(r.err).toBe('');
@@ -348,6 +363,7 @@ describe('coordinator over an inactive lock (d290)', () => {
 	it('lets the coordinator close an inactive session task as hecha, noted; a live one keeps its estado', () => {
 		const args = [
 			'--coordinador',
+			'--quien=claude',
 			'--resumen=Hecho.',
 			'--comprobacion=ninguna',
 			'--saltada=ninguna',
@@ -383,6 +399,7 @@ describe('operacion picks its kind by destino (d290)', () => {
 			'carrilPlaneado=f11-preview',
 			...extra,
 			'--coordinador',
+			'--quien=claude',
 		]);
 
 	it('uses the Cloudflare template and the base one by default', () => {
@@ -391,7 +408,10 @@ describe('operacion picks its kind by destino (d290)', () => {
 		const cf = readTask(dir, 'op').prompt;
 		expect(cf).toContain('docs/operations/cloudflare-platform.md');
 		expect(cf).not.toContain('.agent/rules/database.md');
-		expect(board(dir, ['set', 'op', '--rev=1', 'destino=base', '--coordinador']).err).toBe('');
+		expect(
+			board(dir, ['set', 'op', '--rev=1', 'destino=base', '--coordinador', '--quien=claude'])
+				.err,
+		).toBe('');
 		expect(readTask(dir, 'op').prompt).toContain('.agent/rules/database.md');
 	});
 
@@ -409,6 +429,7 @@ describe('operacion picks its kind by destino (d290)', () => {
 			BUSCA,
 			'destino=cloudflare',
 			'--coordinador',
+			'--quien=claude',
 		]);
 		expect(r.err).toContain('destino solo en tareas tipo=operacion');
 	});
@@ -423,6 +444,7 @@ describe('failures say why (d290)', () => {
 			'--rev=1',
 			'--data=no-existe.json',
 			'--coordinador',
+			'--quien=claude',
 			'--json',
 		]);
 		expect(r.status).toBe(1);

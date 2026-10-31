@@ -88,8 +88,8 @@ describe('a kind task waiting for its lane (T480)', () => {
 		expect(r[0]).toEqual([
 			[
 				'carril',
-				'Falta el carril: pnpm board plan k --carril=<carril> --coordinador --rev=<n>',
-				'Espera su carril: pnpm board plan k --carril=<carril> --coordinador --rev=<n>',
+				'Falta el carril: pnpm board plan k --carril=<carril> --coordinador --quien=claude --rev=<n>',
+				'Espera su carril: pnpm board plan k --carril=<carril> --coordinador --quien=claude --rev=<n>',
 			],
 		]);
 		expect(r[1][0][0]).toBe('prompt');
@@ -104,6 +104,7 @@ describe('the coordinator closes a task nobody claimed (T480)', () => {
 			'close',
 			'suelta',
 			'--coordinador',
+			'--quien=claude',
 			'--pr=#9',
 			'--git-safety=commit',
 			...FULL,
@@ -118,7 +119,14 @@ describe('the coordinator closes a task nobody claimed (T480)', () => {
 
 	it('prints no git-safety line without --git-safety', () => {
 		const dir = makeBoard([{ id: 'suelta' }]);
-		const r = cli(dir, ['close', 'suelta', '--coordinador', '--pr=#9', ...FULL]);
+		const r = cli(dir, [
+			'close',
+			'suelta',
+			'--coordinador',
+			'--quien=claude',
+			'--pr=#9',
+			...FULL,
+		]);
 		expect(r.status).toBe(0);
 		expect(r.out).not.toContain('git-safety');
 	});
@@ -149,7 +157,7 @@ describe('merged with a review round on the same PR (T480)', () => {
 
 	it('names the origin when given a review round', () => {
 		expect(ref(['T456', undefined]).error).toBe(
-			'T456 es la revisión de T455 (se cierra con su --sha); use pnpm board merged T455 --coordinador',
+			'T456 es la revisión de T455 (se cierra con su --sha); use pnpm board merged T455 --coordinador --quien=claude',
 		);
 	});
 
@@ -167,7 +175,7 @@ describe('merged with a review round on the same PR (T480)', () => {
 		const r = probe(
 			'board.mjs',
 			`const out = () => {};
-			await m.run(['merged', '--coordinador', '--pr=#670'], { dir: ${JSON.stringify(dir)}, out, prState: () => 'MERGED' });
+			await m.run(['merged', '--coordinador', '--quien=claude', '--pr=#670'], { dir: ${JSON.stringify(dir)}, out, prState: () => 'MERGED' });
 			console.log('null');`,
 		);
 		expect(r).toBeNull();

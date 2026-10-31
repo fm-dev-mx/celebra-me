@@ -49,7 +49,7 @@ function claimLocation(before, flags, board) {
 		throw new UsageError(`${readOnlyLaneError(before, 'carril propio')}; omita --carril`);
 	if (isReadOnly(before) && planned)
 		throw new UsageError(
-			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador`,
+			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador --quien=claude`,
 		);
 	if (!isReadOnly(before) && !laneAllowed(carril, before))
 		throw new UsageError(
