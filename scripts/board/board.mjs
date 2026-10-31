@@ -142,8 +142,7 @@ import {
 	mergedRef,
 	reviewDone,
 } from './close-commands.mjs';
-import { deliveryLine, nextSections, sectionLines, unreadFor } from './next.mjs';
-import { mergeSignal } from './owner-text.mjs';
+import { deliveryLine, mergeSignalsFor, nextSections, sectionLines, unreadFor } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
 import { deliveryCommands } from './delivery-commands.mjs';
 import {
@@ -739,11 +738,15 @@ const commands = {
 	/**
 	 * d170: once a task's PR is merged the board moves it to unida and drops its lock without waiting for the
 	 * session. The PR state is read from GitHub (`prState` lets board:sync pass the state it just listed).
+	 * T521: review rounds' merge signals are acknowledged too; an archived task only gets that atendido row.
 	 */
 	merged({ pos, flags }, dir, out, { prState = ghPrState } = {}) {
 		if (!flags.coordinador) throw new UsageError('merged requiere --coordinador (d170)');
 		return withLock(dir, () => {
-			const before = getTask(dir, mergedRef(pos[0], flags.pr, loadBoard(dir)));
+			const board = loadBoard(dir);
+			const ref = mergedRef(pos[0], flags.pr, board);
+			const archived = findTask(ref, board) && !findTask(ref, { tareas: board.tareas });
+			const before = archived ? findTask(ref, board) : getTask(dir, ref);
 			if (flags.rev !== undefined) checkRev(before, flags);
 			const given = typeof flags.pr === 'string' ? normalizePr(flags.pr) : undefined;
 			const pr = normalizePr(before.pr) ?? given;
@@ -752,9 +755,7 @@ const commands = {
 			const state = prState(pr);
 			if (state !== 'MERGED')
 				throw new UsageError(`${pr} no está unido en GitHub (${state || 'sin respuesta'})`);
-			const signals = unreadFor('coordinador', loadBoard(dir)).filter(
-				(r) => r.tarea === before.id && mergeSignal(r),
-			);
+			const signals = mergeSignalsFor(before.id, board);
 			if (signals.length)
 				appendLog(dir, {
 					tarea: before.id,
@@ -766,6 +767,9 @@ const commands = {
 						nota: 'merged',
 					},
 				});
+			const s = signals.length === 1 ? '' : 's';
+			const acks = `${signals.length} aviso${s} atendido${s}`;
+			if (archived) return say(flags, out, before, `${before.id} está archivada; ${acks}`);
 			const after = { ...unlocked(before, flags), pr };
 			if (!['unida', 'comprobada'].includes(after.estado)) after.estado = 'unida';
 			if (!before.candado && after.estado === before.estado)
