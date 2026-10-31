@@ -7,7 +7,8 @@
 import { createHash } from 'node:crypto';
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { nextSections } from './next.mjs';
+import { publicAviso } from './owner-text.mjs';
+import { ownerInbox } from './next.mjs';
 import { readTelegramConfig, sendTelegramAlert } from './telegram.mjs';
 
 export const BOARD_URL = 'http://127.0.0.1:4320';
@@ -60,12 +61,49 @@ export function appendWatchLog(dir, line, now = Date.now()) {
 	appendFileSync(file, `${new Date(now).toISOString()} ${line}\n`);
 }
 
+const KINDS = [
+	['decidir', 'decisión', 'decisiones'],
+	['aprobar', 'aprobación', 'aprobaciones'],
+	['hacer', 'por hacer', 'por hacer'],
+];
+
+/**
+ * T496: short safe text for a row without a public `aviso`, derived only from its row type;
+ * never the row's text, client names or amounts.
+ */
+export function safeRowText(r) {
+	if (r.ask || r.clave?.startsWith('respuesta:')) return 'espera su respuesta';
+	if (r.tipo === 'decidir') return 'espera su respuesta';
+	if (r.tipo === 'aprobar') return 'espera su aprobación';
+	if (r.tipo === 'hacer') return 'por hacer';
+	return 'por hacer';
+}
+
+/**
+ * T489, T496: Telegram leaves the board, so it carries the count per type and «T<n> <aviso>» (or safe derived text
+ * when there is no public `aviso`: «espera su respuesta», «espera su aprobación», «por hacer»); never a row's text,
+ * client names or amounts.
+ */
 export function ownerAlertText(rows) {
-	const tail = `Tablero: ${BOARD_URL}`;
-	if (rows.length === 1) return `${rows[0].texto.replace(/\.$/, '')}. ${tail}`;
-	const shown = rows.slice(0, MAX_LINES).map((r) => `- ${r.texto}`);
-	const more = rows.length > MAX_LINES ? [`- y ${rows.length - MAX_LINES} más`] : [];
-	return [`Le toca a usted (${rows.length} nuevas):`, ...shown, ...more, tail].join('\n');
+	const counts = KINDS.flatMap(([tipo, one, many]) => {
+		const n = rows.filter((r) => r.tipo === tipo).length;
+		return n ? [`${n} ${n === 1 ? one : many}`] : [];
+	});
+	const avisos = [
+		...new Set(
+			rows.flatMap((r) => {
+				if (!r.t?.num) return [];
+				const aviso = publicAviso(r.t);
+				const text = aviso || safeRowText(r);
+				return [`T${r.t.num} ${text}`];
+			}),
+		),
+	];
+	const shown = avisos.slice(0, MAX_LINES).map((x) => `- ${x}`);
+	const more = avisos.length > MAX_LINES ? [`- y ${avisos.length - MAX_LINES} más`] : [];
+	return [`Celebra-me: ${counts.join(', ')}.`, ...shown, ...more, `Tablero: ${BOARD_URL}`].join(
+		'\n',
+	);
 }
 
 /**
@@ -86,8 +124,8 @@ export async function checkOwnerAlerts({
 } = {}) {
 	const rows = [
 		...new Map(
-			nextSections(board, { now })
-				.usted.filter((r) => r.clave)
+			ownerInbox(board, { now })
+				.filter((r) => r.clave)
 				.map((r) => [r.clave, r]),
 		).values(),
 	];

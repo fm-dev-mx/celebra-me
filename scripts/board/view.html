@@ -156,6 +156,8 @@ details.grpd>summary .hint{font-weight:400;color:var(--faint)}
 .item .hov{grid-column:4;grid-row:1/span 2;align-self:center;opacity:0;transition:opacity .12s}
 .item:hover .hov,.item:focus-within .hov{opacity:1}
 @media (hover:none),(max-width:560px){.item .hov{display:none}}
+.item .acts{display:flex;gap:6px}
+.item .woke{grid-column:3;margin:2px 0 0}
 .num{font:500 .74rem var(--mono);color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* The task's fixed «T<n>» (same as its session name); the gray «#n» is only its place in the queue */
 .tn{font:600 .9em var(--mono);color:var(--muted)}
@@ -213,6 +215,13 @@ details.tech .body{font-size:.8rem;color:var(--muted)}
 .sect{display:flex;align-items:baseline;gap:8px;font:600 .8rem var(--body);color:var(--muted);padding:14px 4px 6px;border-bottom:1px solid var(--line)}
 .sect:first-child{padding-top:4px}
 .sect .n{font:400 .74rem var(--mono);color:var(--faint)}
+.sect[hidden]+.mine+.sect{padding-top:4px}
+/* T468: the project strip on top of «General»: a mother row per project, red while a subtask's lock is silent. */
+.proj .ghead .ttl .tbtn{padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.proj .ghead .pmeta{display:flex;flex-wrap:wrap;column-gap:10px;font-size:.76rem;color:var(--faint)}
+.proj .ghead .pmeta .bk{color:var(--muted)}
+.proj .ghead.silent{background:var(--danger-soft);outline:1px solid var(--danger-rule);outline-offset:-1px}
+.proj .ghead.silent .pmeta .sl{color:var(--danger);font-weight:600}
 .mine .crow{align-items:center;min-height:40px;padding:6px 8px}
 .mine .crow .ring{margin-top:0}
 .mine .crow .t1{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -494,6 +503,8 @@ a.prl{font-weight:600}
     <div class="cola" id="work">
       <div class="views">
         <section id="p-general" role="tabpanel" aria-labelledby="t-general">
+          <h3 class="sect" id="gs-proj" hidden>Proyectos <span class="n" id="gn-proj"></span></h3>
+          <div class="mine proj" id="gen-proj" hidden></div>
           <h3 class="sect">Para usted <span class="n" id="gn-you"></span></h3>
           <div class="mine" id="gen-mine" aria-live="polite"><div class="empty">Cargando lo que le toca a usted…</div></div>
           <h3 class="sect">Cola <span class="n" id="gn-cola"></span></h3>
@@ -602,7 +613,7 @@ import { requisitos, stage as mStage, color as mColor, queue as mQueue, inTab, o
 import { deliveryLine, laneRows, nextSections, readyToMerge } from '/next.mjs';
 import { needsOwner } from '/model.mjs';
 import { optionsText } from '/owner-text.mjs';
-import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
+import { blocked as mBlocked, calendar as mCalendar, calendarWeeks, groupProgress, headlessGroup, parentOf, progressText, projects as mProjects, subtaskAgent, subtaskMark, subtasksOf } from '/subtasks.mjs';
 import { awaitingClaim } from '/delivery.mjs';
 import { pasteAgents } from '/owner-where.mjs';
 window.boardStarted=true;
@@ -724,7 +735,7 @@ function itemHtml(t,{sub=false,toggle=null}={}){
   const c=color(t),n=NUM[t.id],u=urgOf(t);
   const run=['run','auto'].includes(c)||t.candado?runnerHtml(t):'';
   const why=c==='block'?firstBlock(t):deliveryLine(t)||String(t.ahora||'').split('\n')[0];
-  const subs=subtasksOf(t,S.board).length;
+  const subs=subtasksOf(t,S.board).length,wakeBtn=wakeHtml(t);
   // T151: the card is an article (its free text holds links); the whole card still opens the sheet, the title is its button.
   // T268: one compact row — title, then place · ID · state tag · lane in muted text; the rest lives in the sheet.
   // d284: the row also says who runs it and where, its PR with its state and how long ago it changed.
@@ -733,7 +744,7 @@ function itemHtml(t,{sub=false,toggle=null}={}){
     <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${tt(t.titulo)}</button></h3>
     <span class="line"><span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>${t.num?`<span class="tn">T${esc(t.num)}</span>`:''}${pill(t)}${mergeChip(t)}${faseHtml(t)}${u==='urgente'||u==='alta'?urgHtml(t):''}${run||(taskLane(t)?`<span class="nm">${esc(taskLane(t))}</span>`:'')}${prHtml(t)}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}</span>
     ${subs?progHtml(groupProgress(t,S.board)):''}
-    ${t.prompt?`<button type="button" class="btn sm hov" data-copy="${esc(t.id)}">Copiar prompt</button>`:''}
+    ${t.prompt||wakeBtn?`<span class="hov acts">${t.prompt?`<button type="button" class="btn sm" data-copy="${esc(t.id)}">Copiar prompt</button>`:''}${wakeBtn}</span>`:''}${wokeHtml(t)}
   </article>`;
 }
 // d174: a subtask stays under its mother even when it has subtasks of its own.
@@ -783,6 +794,7 @@ function renderCola(){
   if(rev.length)h+=foldHtml('q-revision','En revisión',rev.length,rev.map(t=>itemHtml(t)).join(''),'hechas, falta comprobarlas');
   $('list').innerHTML=h;
   const mine=renderMine();
+  renderProjects();
   renderGeneral(all);
   renderFound();
   // T268: «Para usted» (and «General», T321) opens on the owner's first row (or nothing) until a click picks another task.
@@ -956,7 +968,7 @@ function renderClave(){
     const who=c.agente&&c.agente!=='cualquiera'?agChip(c.agente,AGENT[c.agente]||c.agente):'';
     const where=c.carril?`<span>${esc(c.carril)}</span>`:'';
     const age=c.desde?`<span title="${esc(c.desde)}">${esc(ago(c.desde))}</span>`:'';
-    return `<li class="kc kc-${c.nivel}"><button type="button" class="tbtn" data-sel="${esc(c.id)}" data-jump="1" data-all="1">${tN(c)}${tt(c.titulo)}</button><div class="line">${who}${where}${age}<span>${esc(c.estado)}</span></div><p class="kc-why">${esc(c.motivo)}</p><div class="kc-act" data-act="${esc(c.id)}"></div></li>`;
+    return `<li class="kc kc-${c.nivel}"><button type="button" class="tbtn" data-sel="${esc(c.id)}" data-jump="1" data-all="1">${tN(c)}${tt(c.titulo)}</button><div class="line">${who}${where}${age}<span>${esc(c.estado)}</span></div><p class="kc-why">${esc(c.motivo)}</p><div class="kc-act" data-act="${esc(c.id)}">${wakeHtml(byId(c.id))}</div>${wokeHtml(byId(c.id))}</li>`;
   };
   $('mapa').innerHTML=warn+`<p class="map-key">Hasta 7 tareas: primero lo que espera a usted, luego lo que frena a más tareas, lo urgente o con fecha cercana y lo atascado.</p><ol class="keys">${cards.map(card).join('')}</ol>`;
 }
@@ -1022,6 +1034,27 @@ async function deliver(t,m,lead='Prompt copiado',hint='Péguelo donde dice «DÓ
     m.textContent=`${lead} y marcado como entregado. ${hint}`;
   }catch(e){m.textContent=`${lead}, pero no se marcó como entregado: `+e.message}
 }
+// T483 «Despertar»: a fixed nudge to the task's Codex or Gemini master, or a note to the coordinator for Claude
+// (wake-button.mjs). The result stays in WOKE so the stream's re-render after the bitácora row keeps it on screen.
+const WOKE=new Map();
+const wakeAgent=t=>t&&!isFinished(t)?(t.candado?.agente??t.entregada?.agente??t.agente??null):null;
+function wakeHtml(t){
+  const a=wakeAgent(t);if(!['codex','gemini','claude'].includes(a))return '';
+  const tip=a==='claude'?'Deja un aviso al coordinador: una sesión Claude de escritorio no se despierta desde aquí':`Envía «Revise su bandeja» a ${AGENT[a]||a}; una vez cada 10 min`;
+  return `<button type="button" class="btn sm" data-wake="${esc(t.id)}" title="${esc(tip)}">Despertar</button>`;
+}
+const wokeHtml=t=>{const m=t&&WOKE.get(t.id);return m?`<p class="msg woke" role="status">${esc(m)}</p>`:''};
+async function wake(btn){
+  const id=btn.dataset.wake,t=byId(id),tag=t?taskTag(t):id;
+  btn.disabled=true;
+  try{
+    const res=await fetch('/api/despertar',{method:'POST',headers:{'content-type':'application/json','x-board-token':TOKEN},body:JSON.stringify({id})});
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
+    WOKE.set(id,body.para==='coordinador'?`Aviso dejado al coordinador para ${tag}.`:`Aviso enviado a ${AGENT[body.agente]||body.agente}: ${body.texto}`);
+  }catch(e){WOKE.set(id,'No se pudo despertar: '+e.message)}
+  btn.disabled=false;renderCola();renderMapa();
+}
 async function archive(btn){
   const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
   btn.disabled=true;m.textContent=(archivar?'Archivando ':'Desarchivando ')+(t?taskTag(t):id)+'…';
@@ -1078,7 +1111,8 @@ function renderCounts(){
   $('t-usted').title=c.usted?`Usted: ${c.usted} ${c.usted>1?'cosas':'cosa'}`:'Usted: nada';
 }
 // T321: an owner row leads with its action as a verb; a message reads «Codex → usted: question», with its task and
-// its age under it and the technical sentences (SHAs, branches, commands) folded.
+// its age under it and the technical sentences (SHAs, branches, commands) folded. T489: a merged row adds
+// «×n · when each came» (`repite`).
 function msgHtml(x){
   const m=x.msg,t=m.t&&byId(m.t.id)?m.t:null,key='msg:'+(m.en||'')+':'+m.tarea;
   const ref=t?`<a class="tl" href="#cola" data-sel="${esc(t.id)}" data-all="1" title="${esc(t.titulo)}">${esc(m.tarea)}</a> · ${tt(t.titulo)}`:m.tarea?`<span class="tl-x">${esc(m.tarea)}</span>`:'';
@@ -1086,19 +1120,23 @@ function msgHtml(x){
     ${dondeHtml(x)}<span class="t1"><span class="who">${esc(m.de)} → ${esc(m.para)}:</span> ${rich(m.pregunta)}</span>
     ${m.opciones.length?`<span class="sub">Opciones: ${esc(optionsText(m.opciones))}</span>`:''}
     ${m.contexto.length?`<span class="sub">${m.contexto.map(rich).join(' ')}</span>`:''}
-    <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}</span>
+    <span class="meta">${ref}${m.en?`${ref?' · ':''}<span title="${esc(fmt(m.en))}">${esc(ago(m.en))}</span>`:''}${x.repite?` · <span title="${esc((x.fechas||[]).map(fmt).join(', '))}">${esc(x.repite)}</span>`:''}</span>
     ${m.detalle.length?`<details class="more tech" data-more="${esc(key)}"${OPEN.has(key)?' open':''}><summary>Detalle técnico</summary><div class="body">${m.detalle.map(s=>`<p>${rich(s)}</p>`).join('')}</div></details>`:''}
   </span></article>`;
-  return copyWrap(x,card);
+  return card;
 }
+// T489: three owner rows, one button each: Decidir answers in the agent's chat (its text to copy), Aprobar opens
+// the PR, Hacer fuera opens the task to mark it «Hecho».
 function actHtml(x){
-  if(x.tipo==='mensaje')return msgHtml(x);
-  const t=x.t,tag=t&&t.num?`<span class="tn">T${esc(t.num)}</span> `:'';
-  const where=x.tipo==='tarea'&&!pasteTo(t)&&runLines(t)[0];
-  const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what">${dondeHtml(x)}<span class="t1">${x.tipo==='tarea'?tag:''}${x.tipo==='decision'?esc(x.texto):tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}${where?`<span class="sub">${esc(where)}</span>`:''}</span>`;
-  if(x.tipo==='archivar')return `<button type="button" class="row act" data-tab="finalizadas" title="Abrir Finalizadas">${body}</button>`;
-  const row=x.id&&byId(x.id)?`<button type="button" class="row act" data-sel="${esc(x.id)}" data-all="1">${body}</button>`:`<div class="row act">${body}</div>`;
-  return copyWrap(x,row);
+  const t=x.t&&byId(x.t.id)?x.t:null,tag=t&&t.num?`<span class="tn">T${esc(t.num)}</span> `:'';
+  const row=x.msg?msgHtml(x):(()=>{
+    const body=`${t?ringHtml(t):''}<span class="verb">${esc(x.verbo)}</span><span class="what">${dondeHtml(x)}<span class="t1">${tag}${tt(x.texto)}</span>${x.sub?`<span class="sub">${tt(x.sub)}</span>`:''}</span>`;
+    return t?`<button type="button" class="row act" data-sel="${esc(t.id)}" data-all="1">${body}</button>`:`<div class="row act">${body}</div>`;
+  })();
+  const pr=prNumber(x.pr);
+  const btn=x.tipo==='aprobar'&&pr?`<a class="btn primary" href="${GH}/pull/${pr}" target="_blank" rel="noopener">Ver PR</a>`
+    :x.tipo==='hacer'&&t?`<button type="button" class="btn primary" data-sel="${esc(t.id)}" data-all="1">Hecho</button>`:'';
+  return btn?`<div class="paste">${row}${btn}</div>`:copyWrap(x,row);
 }
 // T391: each «Para usted» row opens with its DÓNDE line; a row with text to copy gets the short pointer, not the prompt.
 const dondeHtml=x=>x.donde?`<span class="donde">${esc(x.donde)}</span>`:'';
@@ -1120,6 +1158,21 @@ function renderMine(){
   $('n-stall').textContent=next.detenidas.length;
   $('stall').innerHTML=next.detenidas.map(nextRow).join('');
   return acts.map(x=>x.id).filter(id=>id&&byId(id));
+}
+// T468: one row per open project, its title unfolds the subtasks (the queue's toggle state, by the same key); the
+// meta line says what runs, what waits and why, and when it last changed; red while a subtask's lock is silent.
+function projectHtml(x){
+  const subs=subtasksOf(x.mother||{grupo:x.grupo},S.board),key='subs:'+x.key,name=x.mother?tN(x.mother)+tt(x.mother.titulo||x.mother.id):'Grupo '+esc(x.grupo);
+  const bk=x.bloqueadas.map(b=>`<span class="bk">${esc(taskTag(b.t))} espera: ${esc(b.motivos.join('; '))}</span>`).join('');
+  const sl=x.silenciosas.length?`<span class="sl">Candado sin latido: ${esc(x.silenciosas.map(s=>taskTag(s)).join(', '))}</span>`:'';
+  const when=x.actualizado?`<span class="when" title="${esc(fmt(x.actualizado))}">actualizado ${esc(ago(x.actualizado))}</span>`:'';
+  return `<div class="ghead${sl?' silent':''}" data-proj="${esc(x.key)}">${tgHtml(key,subs.length)}<h3 class="ttl"><button type="button" class="tbtn" data-toggle="${esc(key)}" aria-expanded="${OPEN.has(key)}">${name}</button></h3>${progHtml(x.p)}<span class="pmeta">${sl}${bk}${when}</span></div>${subsHtml(x.key,subs)}`;
+}
+function renderProjects(){
+  const ps=mProjects(S.board);
+  $('gs-proj').hidden=$('gen-proj').hidden=!ps.length;
+  $('gn-proj').textContent=ps.length;
+  $('gen-proj').innerHTML=ps.map(projectHtml).join('');
 }
 // T321: the queue in «General», one line per task in queue order; the review group stays a link to the Cola.
 function renderGeneral(all){
@@ -1146,7 +1199,13 @@ function renderFound(){
   $('found').innerHTML=hits.length?hits.map(row).join('')+more:q?'<p class="none"><b>Nada coincide.</b>Busque por número (T295), id, título o PR (#594).</p>':'';
 }
 // T321: the text sits in its own inline span (a «T295» link no longer breaks the line) and a message drops its prefix.
-const nextRow=x=>x.id&&byId(x.id)?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}"><b>${esc(x.tarea)}</b><span><span>${tt(rowText(x.texto))}</span></span></button>`:`<div class="row" title="${esc(x.texto)}"><span><span>${rich(rowText(x.texto))}</span></span></div>`;
+// T489: the rows that left «Usted» keep their DÓNDE and text to copy here; the archive row opens Finalizadas.
+const nextRow=x=>{
+  const known=x.id&&byId(x.id),body=`${x.tarea?`<b>${esc(x.tarea)}</b>`:''}<span>${dondeHtml(x)}<span>${known?tt(rowText(x.texto)):rich(rowText(x.texto))}</span></span>`;
+  if(x.tipo==='archivar')return `<button type="button" class="row" data-tab="finalizadas" title="Abrir Finalizadas">${body}</button>`;
+  const row=known?`<button type="button" class="row" data-sel="${esc(x.id)}" data-all="1" title="${esc(x.texto)}">${body}</button>`:`<div class="row" title="${esc(x.texto)}">${body}</div>`;
+  return copyWrap({...x,t:known?{id:x.id}:null},row);
+};
 function renderArchiveChats(){
   const inventory=S.board.archivables;
   const chats=inventory?.chats??[];
@@ -1192,7 +1251,8 @@ document.addEventListener('click',async ev=>{
   const sha=ev.target.closest('[data-sha]');if(sha){copySha(sha);return}
   const dec=ev.target.closest('[data-dec]');if(dec){ev.preventDefault();setTab('historial',true);$('q').value=dec.dataset.dec;renderHist();scrollTo(0,0);return}
   const side=ev.target.closest('[data-side]');if(side){setSide(side.dataset.side==='1');return}
-  const tg=ev.target.closest('[data-toggle]');if(tg){const k=tg.dataset.toggle;OPEN.has(k)?OPEN.delete(k):OPEN.add(k);renderCola();const b=document.querySelector(`[data-toggle="${CSS.escape(k)}"]`);if(b)b.focus();return}
+  // T468: the project strip and the queue share a toggle key; focus returns to the one clicked, in its own list.
+  const tg=ev.target.closest('[data-toggle]');if(tg){const k=tg.dataset.toggle,box=tg.closest('[id]'),tgc=tg.classList.contains('tg');OPEN.has(k)?OPEN.delete(k):OPEN.add(k);renderCola();const b=[...((box&&$(box.id))||document).querySelectorAll(`[data-toggle="${CSS.escape(k)}"]`)].find(x=>x.classList.contains('tg')===tgc);if(b)b.focus();return}
   if(ev.target.closest('#help-btn')){const h=$('help'),b=$('help-btn');h.hidden=!h.hidden;b.setAttribute('aria-expanded',String(!h.hidden));return}
   const tab=ev.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab,true);return}
   const col=ev.target.closest('[data-col]');if(col){setColor(col.dataset.col);return}
@@ -1210,6 +1270,7 @@ document.addEventListener('click',async ev=>{
     const id=S.sel;let t;try{t=await readTask(id)}catch(e){$('copymsg').textContent=e.message;return}if(S.sel!==id||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
     try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».';if(deliverable(t))deliver(t,m)},fallback)}catch(e){fallback()}return}
+  const wk=ev.target.closest('[data-wake]');if(wk){if(!wk.disabled)wake(wk);return}
   const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump&&$('work').hidden)setTab('cola',true);openSheet(sel.dataset.sel);return}
   if(ev.target.closest('[data-close]')){closeSheet();return}
   const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}

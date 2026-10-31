@@ -32,6 +32,7 @@ function probe(code: string, root: string) {
 		const { setMaster } = await import(new URL('./master-config.mjs', process.argv[1]));
 		const { loadBoard } = await import(new URL('./store.mjs', process.argv[1]));
 		const { ownerActions } = await import(new URL('./format.mjs', process.argv[1]));
+		const { nextSections } = await import(new URL('./next.mjs', process.argv[1]));
 		${code}`,
 			MODULE,
 			root,
@@ -211,10 +212,11 @@ describe('T442 board watcher notices, escalation and merge queue', () => {
 				r => r.mensaje?.para === 'coordinador' && (r.mensaje?.id?.startsWith('aviso-escalacion') || r.mensaje?.id?.startsWith('aviso-candado'))
 			);
 
-			// At 60 min: surfaces silent lock in owner action list (ownerActions)
+			// At 60 min: the silent lock surfaces for the coordinator, never in the owner's list (T489)
 			const b60 = loadBoard(dir);
 			const actions60 = ownerActions(b60, { now: base + 60 * 60_000 });
-			const silentOwnerRows = actions60.filter(a => a.tipo === 'detenida');
+			const silentOwnerRows = actions60.filter(a => a.tipo === 'detenida' || a.tipo === 'candado');
+			const silentCoordRows = nextSections(b60, { now: base + 60 * 60_000 }).coordinador.filter(r => r.tipo === 'candado');
 
 			console.log(JSON.stringify({
 				wakes9m,
@@ -224,7 +226,7 @@ describe('T442 board watcher notices, escalation and merge queue', () => {
 				coord29EscalationsCount: coord29Escalations.length,
 				coord30Texts: coord30Escalations.map(r => r.mensaje.texto),
 				silentOwnerRowsCount: silentOwnerRows.length,
-				silentOwnerVerbo: silentOwnerRows[0]?.verbo,
+				silentCoordTexts: silentCoordRows.map(r => r.texto),
 			}));`,
 			root,
 		);
@@ -240,8 +242,10 @@ describe('T442 board watcher notices, escalation and merge queue', () => {
 				expect.stringContaining('candado de gemini sin latido hace 30 min'),
 			]),
 		);
-		expect(result.silentOwnerRowsCount).toBeGreaterThanOrEqual(1);
-		expect(result.silentOwnerVerbo).toBe('Inspeccionar');
+		expect(result.silentOwnerRowsCount).toBe(0);
+		expect(result.silentCoordTexts).toEqual([
+			expect.stringMatching(/^Inspeccionar el candado de gemini/),
+		]);
 	});
 
 	it('C: sends listo para unir #N only when approved review SHA equals PR head and CI is green', () => {

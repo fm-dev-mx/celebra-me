@@ -135,7 +135,8 @@ describe('owner messages about finished tasks (d265)', () => {
 			};
 			console.log(JSON.stringify({
 				usted: n.nextSections(board, { now: ${NOW} }).usted.map((x) => x.texto),
-				inbox: n.unreadFor('dueno', board).map((x) => x.mensaje.id),
+				inbox: n.unreadFor('dueno', board, { archived: true }).map((x) => x.mensaje.id),
+				unread: n.unreadFor('dueno', board).map((x) => x.mensaje.id),
 			}));`);
 		expect(r.usted).toEqual([
 			'Mensaje: claude → dueno sobre T1: m1',
@@ -143,6 +144,8 @@ describe('owner messages about finished tasks (d265)', () => {
 			'Mensaje: claude → dueno sobre perdida: m6',
 		]);
 		expect(r.inbox).toEqual(['m1', 'm2', 'm3', 'm4', 'm5', 'm6']);
+		// T521: outside the inbox, a message about an archived task no longer counts as unread.
+		expect(r.unread).toEqual(['m1', 'm2', 'm3', 'm5', 'm6']);
 	});
 });
 
@@ -286,7 +289,7 @@ describe('what is next (T126)', () => {
 	});
 
 	it.each(['unida', 'hecha', 'comprobada', 'cancelada', 'archivada'])(
-		'hides merge signals for a finished origin (%s), preserving history and other messages',
+		'hides merge signals and closing reports for a finished origin (%s), preserving history',
 		(estado) => {
 			const result = probe(`
 				const origin = { id: 'origin', num: 1, estado: '${estado === 'archivada' ? 'unida' : estado}', pr: '#547' };
@@ -300,11 +303,10 @@ describe('what is next (T126)', () => {
 				const before = JSON.stringify(board);
 				console.log(JSON.stringify({
 					messages: n.coordinatorItems(board).filter(x => x.tipo === 'mensaje').map(x => x.texto),
-					inbox: n.unreadFor('coordinador', board).map(x => x.mensaje.id),
+					inbox: n.unreadFor('coordinador', board, { archived: true }).map(x => x.mensaje.id),
 					unchanged: JSON.stringify(board) === before }));`);
-			expect(result.messages).toEqual([
-				'Mensaje: codex → coordinador sobre T1: Requiere seguimiento',
-			]);
+			// d265: a finished or archived task asks the coordinator for nothing; `inbox` still lists it.
+			expect(result.messages).toEqual([]);
 			expect(result.inbox).toEqual(['origin', 'round', 'other']);
 			expect(result.unchanged).toBe(true);
 		},
@@ -409,15 +411,20 @@ describe('what is next (T126)', () => {
 			}),
 		);
 		const sigue = cli(dir, ['sigue'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture });
+		// T489: running a dispatcher is the coordinator's, so the owner's inbox stays empty.
+		expect(sigue.out).toContain('Le toca a usted (0):');
 		expect(sigue.out).toContain(
-			'Le toca a usted (1):\n  - DÓNDE: Codex · proyecto f05-plataforma · chat nuevo «f05 · T1 · codex-lista»\n    Correr el despachador de Codex (T1)',
+			'Le toca al coordinador (3):\n  - DÓNDE: Codex · proyecto f05-plataforma · chat nuevo «f05 · T1 · codex-lista»\n    Correr el despachador de Codex (T1)',
 		);
-		expect(sigue.out).toContain('Le toca al coordinador (1):\n  - PR #9 sin tarea: Z');
+		expect(sigue.out).toContain(
+			'  - DÓNDE: Claude · la sesión de T2\n    Inspeccionar el candado de claude sin latido hace 5 h: T2 · callada\n  - PR #9 sin tarea: Z',
+		);
 		expect(sigue.out).toContain(
 			'Detenidas (1):\n  - T2 · candado de claude sin latido hace 5 h',
 		);
 		const list = cli(dir, ['list']);
-		expect(list.out).toContain('Le toca al coordinador (0):');
+		expect(list.out).toContain('Usted: nada');
+		expect(list.out).toContain('Le toca al coordinador (2):');
 		expect(list.out).toContain('Sin leer GitHub');
 	});
 });

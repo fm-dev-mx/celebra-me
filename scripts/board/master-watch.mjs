@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 /** One bounded no-AI pass, scheduled every minute. No owner authority or message bodies forwarded. */
 import { execFileSync } from 'node:child_process';
-import { closeSync, existsSync, mkdirSync, openSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	closeSync,
+	existsSync,
+	mkdirSync,
+	openSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { archiveSessions } from './external-sessions.mjs';
@@ -34,6 +43,8 @@ import { checkOwnerAlerts } from './owner-alerts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PREFIX = '[vigilante d351]';
+/** Message id prefix of the view's «Despertar» button (wake-button.mjs); its Codex/Gemini wake already went out. */
+export const WAKE_ID = 'despertar-';
 const stateFile = (dir) => join(dirname(dir), 'board-master-watch.json');
 
 /** Events are identifiers and fixed instructions, never copied prompts or owner authorizations. */
@@ -78,6 +89,9 @@ export function wakeEvents(board, archives, agent, since, { now = Date.now() } =
 	];
 	const messages = incoming
 		.filter((r) => !r.mensaje.texto.startsWith(PREFIX))
+		.filter(
+			(r) => !(String(r.mensaje.id).startsWith(WAKE_ID) && r.mensaje.para !== 'coordinador'),
+		)
 		.map((r) => ({
 			key: `message:${r.mensaje.id}`,
 			task: r.tarea,
@@ -262,6 +276,42 @@ function checkTaskSilentLock(t, state, now, nowIso, sendMessage, dir, dryRun, se
 	}
 }
 
+/** An agent's estado changes this recent get a notice; older rows were already seen or predate the watcher. */
+export const STATE_NOTICE_WINDOW_MS = 60 * 60_000;
+const AGENTS = ['claude', 'codex', 'gemini'];
+
+/**
+ * Whether another notice already covers this estado row: a claim (→ en curso) has its claim notice,
+ * and a close (→ hecha/en revision) its close notice or, for a blocked review, the blocked one.
+ */
+function coveredByOtherNotice(r, task) {
+	if (r.a === 'en curso' && r.de === 'pendiente') return true;
+	if (r.a !== 'hecha' && r.a !== 'en revision') return false;
+	if (!task) return false;
+	return !isReview(task) || reviewVerdict(task) === 'bloqueado';
+}
+
+/** T477: every other estado change an agent writes (a review created, a release, a block…) reaches the coordinator once. */
+function checkStateNotices(allTasks, board, state, now, nowIso, sendMessage) {
+	for (const r of board.bitacora ?? []) {
+		if (!AGENTS.includes(r.quien) || r.a === undefined || r.de === r.a) continue;
+		const at = Date.parse(r.en);
+		if (Number.isNaN(at) || now - at > STATE_NOTICE_WINDOW_MS) continue;
+		const task = allTasks.find((t) => t.id === r.tarea);
+		if (coveredByOtherNotice(r, task)) continue;
+		const key = `estado:${r.tarea}:${r.en}:${r.a}`;
+		if (state.notified[key]) continue;
+		const msgId = `aviso-estado-${r.tarea}-${at}-${String(r.a).replace(/\s+/g, '-')}`;
+		if ((board.bitacora ?? []).some((x) => x.mensaje?.id === msgId)) {
+			state.notified[key] = nowIso;
+			continue;
+		}
+		const tag = task ? taskTag(task) : r.tarea;
+		const text = `${tag} · ${r.quien}: ${r.de || 'nueva'} → ${r.a}`;
+		sendMessage(r.tarea, r.quien, msgId, text, key);
+	}
+}
+
 function checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram) {
 	for (const t of board.tareas ?? []) {
 		checkTaskUnclaimed(t, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram);
@@ -270,7 +320,7 @@ function checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dry
 }
 
 /**
- * T442: Check claims, closes, review verdicts, exact-SHA merge qualification, and escalations.
+ * T442: Check claims, closes, review verdicts, exact-SHA merge qualification, other estado changes (T477) and escalations.
  * Sends board messages to the principal coordinator without relying on manual worker notices.
  */
 export async function checkAutomaticNotices({
@@ -309,17 +359,57 @@ export async function checkAutomaticNotices({
 	checkClaimNotices(board, state, nowIso, sendMessage);
 	checkCloseNotices(allTasks, board, state, nowIso, sendMessage);
 	await checkReviewNotices(allTasks, board, state, nowIso, sendMessage, readPr);
+	checkStateNotices(allTasks, board, state, now, nowIso, sendMessage);
 	checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram);
 
 	return notices;
 }
 
-/** Codex queue acknowledges queue acceptance; the Gemini relay acknowledges later, outside this pass. */
-export function deliverWake(agent, thread, text, config, board, dir, exec = execFileSync) {
+/**
+ * The Codex CLI: `codexBin` in board-masters.json or CELEBRA_CODEX_BIN when it exists, else the newest
+ * `codex.exe` the Codex app installs under %LOCALAPPDATA%/OpenAI/Codex/bin/<build>/, else PATH.
+ */
+export function resolveCodexBin(
+	config = {},
+	{ env = process.env, fs = { existsSync, readdirSync, statSync } } = {},
+) {
+	for (const configured of [config.codexBin, env.CELEBRA_CODEX_BIN])
+		if (configured && fs.existsSync(configured)) return configured;
+	if (env.LOCALAPPDATA) {
+		const bin = join(env.LOCALAPPDATA, 'OpenAI', 'Codex', 'bin');
+		let builds = [];
+		try {
+			builds = fs.readdirSync(bin, { withFileTypes: true }).filter((d) => d.isDirectory());
+		} catch {
+			// No Codex app install: fall back to PATH.
+		}
+		const newest = builds
+			.map((d) => join(bin, d.name, 'codex.exe'))
+			.filter((file) => fs.existsSync(file))
+			.map((file) => ({ file, mtime: fs.statSync(file).mtimeMs }))
+			.sort((a, b) => b.mtime - a.mtime)[0];
+		if (newest) return newest.file;
+	}
+	return 'codex.exe';
+}
+
+/**
+ * Codex queue acknowledges queue acceptance; the Gemini relay acknowledges later, outside this pass. Answers what
+ * `exec` answers, so an async `exec` (the view's «Despertar» button) can be awaited.
+ */
+export function deliverWake(
+	agent,
+	thread,
+	text,
+	config,
+	board,
+	dir,
+	exec = execFileSync,
+	codexBin = resolveCodexBin,
+) {
 	const opts = { encoding: 'utf8', windowsHide: true, timeout: 20_000, stdio: 'pipe' };
 	if (agent === 'codex') {
-		exec('codex.exe', ['queue', '--thread', thread, '--message', text], opts);
-		return;
+		return exec(codexBin(config), ['queue', '--thread', thread, '--message', text], opts);
 	}
 	const anchor = board.tareas.find((t) => t.id === config.relayTask);
 	if (!anchor) throw new Error('Configure --relay-task=<id> para enviar mensajes al maestro');
@@ -330,7 +420,7 @@ export function deliverWake(agent, thread, text, config, board, dir, exec = exec
 		throw new Error(
 			'La tarea de relevo tiene una sesión Gemini; elija otra tarea sin sesión Gemini',
 		);
-	exec(
+	return exec(
 		process.execPath,
 		[join(here, 'board.mjs'), 'msg', anchor.id, '--de=codex', `--para=${agent}`, text],
 		{ ...opts, env: { ...process.env, CELEBRA_BOARD_DIR: dir } },
@@ -347,6 +437,43 @@ function pendingEvents(events, previous = []) {
 	};
 }
 
+const FAILING_ALERT_MS = 30 * 60_000;
+
+/** A destination failing for 30 min alerts the coordinator (board message) and the owner (Telegram) once per streak. */
+function recordDeliveryFailure({
+	agent,
+	destination,
+	error,
+	events,
+	config,
+	state,
+	now,
+	dir,
+	sendTelegram,
+}) {
+	const nowIso = new Date(now).toISOString();
+	const streak = (state.failing[destination] ??= { desde: nowIso });
+	streak.ultimo = nowIso;
+	streak.error = String(error?.code ?? error?.name ?? 'error').slice(0, 40);
+	if (streak.avisado || now - Date.parse(streak.desde) < FAILING_ALERT_MS) return;
+	streak.avisado = nowIso;
+	const tarea = config.relayTask ?? events.find((e) => e.task)?.task;
+	const texto = `Vigilante: entrega al maestro ${agent} falla desde ${streak.desde} (${streak.error}); revise pnpm board:watch --dry-run.`;
+	if (tarea && dir) {
+		const id = `aviso-entrega-${agent}-${Date.parse(streak.desde)}`;
+		const row = buildMessageRow(
+			tarea,
+			{ de: 'coordinador', para: 'coordinador', id, texto },
+			nowIso,
+		);
+		withLock(dir, () => appendLog(dir, row));
+	}
+	sendTelegram(
+		`Vigilante: los avisos al maestro ${agent} no se entregan desde hace más de 30 min (${streak.error}).`,
+		{ dir },
+	);
+}
+
 function deliverMasterWakes({
 	config,
 	board,
@@ -360,6 +487,7 @@ function deliverMasterWakes({
 	failures,
 	file,
 	dir,
+	sendTelegram,
 }) {
 	for (const [agent, thread] of Object.entries(config.masters)) {
 		const events = wakeEvents(board, archives, agent, config.since?.[agent], { now });
@@ -373,10 +501,23 @@ function deliverMasterWakes({
 		else {
 			try {
 				deliver(agent, thread, text, config, board, dir);
-			} catch {
+			} catch (error) {
 				failures.push(`${agent}: entrega no confirmada; se reintentará`);
+				recordDeliveryFailure({
+					agent,
+					destination,
+					error,
+					events: fresh,
+					config,
+					state,
+					now,
+					dir,
+					sendTelegram,
+				});
+				writeLocal(file, state);
 				continue;
 			}
+			delete state.failing[destination];
 			state.delivered[destination].push(...fresh.map((e) => e.key));
 			writeLocal(file, state);
 		}
@@ -398,11 +539,12 @@ function acquireWatchLock(file, now) {
 }
 
 function loadWatchState(file) {
-	const state = readLocal(file, { delivered: {}, notified: {}, escalations: {} });
+	const state = readLocal(file, { delivered: {}, notified: {}, escalations: {}, failing: {} });
 	return {
 		delivered: state.delivered || {},
 		notified: state.notified || {},
 		escalations: state.escalations || {},
+		failing: state.failing || {},
 		...(state.owner ? { owner: state.owner } : {}),
 	};
 }
@@ -481,6 +623,7 @@ export async function runMasterWatch({
 			failures,
 			file,
 			dir,
+			sendTelegram,
 		});
 
 		if (failures.length) throw new Error(failures.join('; '));

@@ -72,14 +72,9 @@ describe('T437 owner alerts on Telegram', () => {
 			root,
 		);
 		expect(r.sent).toEqual([
-			'Mensaje: claude → dueno sobre T418: m1. Tablero: http://127.0.0.1:4320',
-			[
-				'Le toca a usted (2 nuevas):',
-				'- Mensaje: claude → dueno sobre T418: m2',
-				'- Mensaje: claude → dueno sobre T418: m3',
-				'Tablero: http://127.0.0.1:4320',
-			].join('\n'),
-			'Mensaje: claude → dueno sobre T418: m1. Tablero: http://127.0.0.1:4320',
+			'Celebra-me: 1 decisión.\n- T418 espera su respuesta\nTablero: http://127.0.0.1:4320',
+			'Celebra-me: 2 decisiones.\n- T418 espera su respuesta\nTablero: http://127.0.0.1:4320',
+			'Celebra-me: 1 decisión.\n- T418 espera su respuesta\nTablero: http://127.0.0.1:4320',
 		]);
 		expect(r.alertadas).toEqual(['mensaje:m1']);
 	});
@@ -104,7 +99,7 @@ describe('T437 owner alerts on Telegram', () => {
 		expect(r.logged).toHaveLength(1);
 		expect(r.logged[0]).toContain('Telegram sin configurar');
 		expect(r.sent).toEqual([
-			'Mensaje: claude → dueno sobre T418: m3. Tablero: http://127.0.0.1:4320',
+			'Celebra-me: 1 decisión.\n- T418 espera su respuesta\nTablero: http://127.0.0.1:4320',
 		]);
 		expect(r.sinConfig).toBeNull();
 	});
@@ -128,7 +123,7 @@ describe('T437 owner alerts on Telegram', () => {
 			root,
 		);
 		expect(r.dry).toBe(1);
-		expect(r.printed[0]).toMatch(/^\[prueba\] telegram: Mensaje/);
+		expect(r.printed[0]).toMatch(/^\[prueba\] telegram: Celebra-me/);
 		expect(r.stateAfterDry).toBe('{}');
 		expect(r.attempts).toBe(1);
 		expect(r.blocked).toBe(0);
@@ -214,7 +209,7 @@ describe('T437 owner alerts on Telegram', () => {
 				url: 'https://api.telegram.org/botx/sendMessage',
 				body: {
 					chat_id: '42',
-					text: 'Mensaje: claude → dueno sobre T418: m1. Tablero: http://127.0.0.1:4320',
+					text: 'Celebra-me: 1 decisión.\n- T418 espera su respuesta\nTablero: http://127.0.0.1:4320',
 				},
 			},
 		]);
@@ -274,5 +269,63 @@ describe('T437 Telegram setup commands', () => {
 		expect(r.printed[0]).toContain('pnpm board:telegram:token');
 		expect(r.printed.at(-2)).toContain('«hola»');
 		expect(r.printed.at(-1)).toContain('Falta configuración');
+	});
+});
+
+describe('T489, T496 Telegram filter and task lines', () => {
+	it('sends counts per type and «T<n>» lines with public avisos or safe derived text', () => {
+		const r = probe(
+			`
+			const t = (num, aviso) => ({ ...task, num, ...(aviso === undefined ? {} : { aviso }) });
+			const text = m.ownerAlertText([
+				{ tipo: 'decidir', t: t(418, 'elegir hora del ensayo') },
+				{ tipo: 'decidir', t: t(419) },
+				{ tipo: 'aprobar', t: t(420, 'Andrea quiere otro color') },
+				{ tipo: 'hacer', t: t(421, 'cobrar $1,500') },
+				{ tipo: 'hacer', t: t(422), ask: { ref: 'confirmar asistencia' } },
+				{ tipo: 'hacer', t: t(423), clave: 'respuesta:andrea:datos' },
+				{ tipo: 'hacer', t: null },
+			]);
+			console.log(JSON.stringify(text));`,
+			fixture(),
+		);
+		expect(r).toBe(
+			[
+				'Celebra-me: 2 decisiones, 1 aprobación, 4 por hacer.',
+				'- T418 elegir hora del ensayo',
+				'- T419 espera su respuesta',
+				'- T420 espera su aprobación',
+				'- T421 por hacer',
+				'- T422 espera su respuesta',
+				'- T423 espera su respuesta',
+				'Tablero: http://127.0.0.1:4320',
+			].join('\n'),
+		);
+	});
+
+	it('caps item lines at MAX_LINES and summarizes the remainder', () => {
+		const r = probe(
+			`
+			const t = (num) => ({ ...task, num });
+			const rows = Array.from({ length: 10 }, (_, i) => ({ tipo: 'decidir', t: t(100 + i) }));
+			const text = m.ownerAlertText(rows);
+			console.log(JSON.stringify(text));`,
+			fixture(),
+		);
+		expect(r).toBe(
+			[
+				'Celebra-me: 10 decisiones.',
+				'- T100 espera su respuesta',
+				'- T101 espera su respuesta',
+				'- T102 espera su respuesta',
+				'- T103 espera su respuesta',
+				'- T104 espera su respuesta',
+				'- T105 espera su respuesta',
+				'- T106 espera su respuesta',
+				'- T107 espera su respuesta',
+				'- y 2 más',
+				'Tablero: http://127.0.0.1:4320',
+			].join('\n'),
+		);
 	});
 });

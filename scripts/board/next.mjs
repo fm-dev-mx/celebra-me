@@ -26,15 +26,17 @@ import {
 	taskTag,
 	VEREDICTOS,
 } from './model.mjs';
-import { expiredQuestion, mergeSignal, optionsText } from './owner-text.mjs';
+import { expiredQuestion, fold, mergeSignal, optionsText } from './owner-text.mjs';
 import { delivery, deliveryText } from './delivery.mjs';
 import { authorSession, findingsSent } from './findings.mjs';
+import { archiveBlock } from './cierre.mjs';
 import { missingCierreItems } from './require-cierre.mjs';
 import {
 	answerDestination,
 	destinationFields,
 	findingsDestination,
 	FIXED_DESTINATIONS,
+	lockDestination,
 	pasteAgents,
 	taskDestination,
 } from './owner-where.mjs';
@@ -49,10 +51,20 @@ export const deliveryLine = (t, now = Date.now()) =>
 
 /**
  * Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids, and a d291
- * `atendido` row of the bitácora marks the messages it lists as handled.
+ * `atendido` row of the bitácora marks the messages it lists as handled. T521: a message about an archived task
+ * no longer counts, unless `archived` asks for it (merged acknowledges those signals too).
  */
-export function unreadFor(agente, board) {
+export function unreadFor(agente, board, { archived = false } = {}) {
 	const read = new Set((board.bandejas ?? []).find((b) => b.id === agente)?.leidos ?? []);
+	const gone = new Set(
+		archived
+			? []
+			: [
+					...(board.archivo ?? []),
+					...(board.archivoZip ?? []),
+					...(board.tareas ?? []).filter((t) => t.archivada),
+				].map((t) => t.id),
+	);
 	const merged = new Set();
 	for (const r of board.bitacora ?? [])
 		if (r.atendido?.para === agente)
@@ -64,10 +76,19 @@ export function unreadFor(agente, board) {
 		.filter(
 			(r) =>
 				r.mensaje?.para === agente &&
+				!gone.has(r.tarea) &&
 				!(mergeSignal(r) ? merged : read).has(r.mensaje.id) &&
 				!expiredQuestion(r, findTask(r.tarea, board)),
 		)
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
+}
+
+/** T521: unread merge signals of a task and its review rounds, archived ones included. */
+export function mergeSignalsFor(id, board) {
+	const own = new Set([id, ...reviewRounds(id, board).map((t) => t.id)]);
+	return unreadFor('coordinador', board, { archived: true }).filter(
+		(r) => own.has(r.tarea) && mergeSignal(r),
+	);
 }
 
 export const GEMINI_RELAY_ALERT =
@@ -83,6 +104,39 @@ export function geminiRelayStale(board, now = Date.now()) {
 export function geminiRelayAlert(board, now = Date.now()) {
 	return geminiRelayStale(board, now) && unreadFor('gemini', board).length
 		? GEMINI_RELAY_ALERT
+		: null;
+}
+
+/** T477: a coordinator message unread this long, or a coordinator silent this long, alerts the owner. */
+export const COORDINATOR_UNREAD_MS = 10 * MINUTE_MS;
+export const COORDINATOR_SILENT_MS = 2 * HOUR_MS;
+
+/**
+ * Why the owner should open the coordinator session as `{clave, texto}`, or null: a para=coordinador message unread for 10 min,
+ * or no turn of the registered coordinator (`board.coordinador`, from board-coordinator.json) in the last 2 h.
+ * With no coordinator registered, only unread messages alert.
+ */
+export function coordinatorAlert(board, now = Date.now()) {
+	const unread = unreadFor('coordinador', board);
+	const old = unread.filter((r) => now - Date.parse(r.en) >= COORDINATOR_UNREAD_MS);
+	if (old.length)
+		return {
+			clave: 'coordinador:mensajes',
+			texto: `El coordinador tiene ${old.length} ${old.length === 1 ? 'mensaje' : 'mensajes'} sin leer hace más de 10 min: abra la sesión del coordinador (f04) y escriba «sigue».`,
+		};
+	const beat = Date.parse(board.coordinador?.at ?? '');
+	if (!board.coordinador?.sesion || !Number.isFinite(beat))
+		return unread.length
+			? {
+					clave: 'coordinador:registro',
+					texto: 'Ninguna sesión de coordinador está registrada: en la sesión del coordinador (f04) pida «registre esta sesión como coordinador del tablero».',
+				}
+			: null;
+	return now - beat > COORDINATOR_SILENT_MS
+		? {
+				clave: 'coordinador:silencio',
+				texto: `La sesión del coordinador no ha tenido un turno ${agoText(now - beat)}: ábrala (f04) y escriba «sigue».`,
+			}
 		: null;
 }
 
@@ -308,8 +362,10 @@ export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 		.filter((t) => prs === undefined || prs.some((p) => `#${p.number}` === normalizePr(t.pr)))
 		.map((t) => reviewItem(t, board, prs))
 		.filter(Boolean);
+	// A merge signal follows its origin's PR; any other message leaves once its task is finished (d265).
+	const open = new Set(openTaskMessages('coordinador', board));
 	const messages = unreadFor('coordinador', board)
-		.filter((r) => !mergeSignal(r) || pendingMergeSignal(r, board, prs))
+		.filter((r) => (mergeSignal(r) ? pendingMergeSignal(r, board, prs) : open.has(r)))
 		.map((r) => ({
 			tipo: 'mensaje',
 			t: findTask(r.tarea, board),
@@ -319,9 +375,56 @@ export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 		...reviews,
 		...missingCierreItems(board),
 		...prsWithoutTask(board, prs),
-		...sessionItems(board, now),
+		...groupProdAlerts(sessionItems(board, now)),
 		...messages,
 	];
+}
+
+const STOPWORDS = new Set(
+	'de el la en para que los las un una y o del al por con su se lo le es no si a'.split(' '),
+);
+const ALERT_STOPWORDS = new Set([...STOPWORDS, 'produccion', 'prod', 'alerta']);
+/** Title words of a Production alert, without its «(date)» and numbers. */
+const alertWords = (t) =>
+	new Set(
+		fold(t.titulo.replace(/\([^)]*\)/g, ' '))
+			.split(/[^a-z0-9]+/)
+			.filter((w) => w.length > 1 && !/^\d+$/.test(w) && !ALERT_STOPWORDS.has(w)),
+	);
+const overlap = (a, b) => [...a].filter((w) => b.has(w)).length / (Math.min(a.size, b.size) || 1);
+const alertDate = (t) => t.id.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? '';
+const isProdAlert = (t) => t.id.startsWith('prod-alerta-');
+/** Two Production alerts are one problem when most words of the shorter title appear in the other. */
+const SAME_ALERT = 0.6;
+
+/**
+ * T489: prod-alerta-* tasks of one problem (titles that mostly share their words) become one row, the newest,
+ * with how many times and on which dates it happened.
+ */
+function groupProdAlerts(items) {
+	const groups = [];
+	for (const item of items) {
+		const w = isProdAlert(item.t) && alertWords(item.t);
+		const g =
+			w &&
+			groups.find((x) => isProdAlert(x[0].t) && overlap(alertWords(x[0].t), w) >= SAME_ALERT);
+		if (g) g.push(item);
+		else groups.push([item]);
+	}
+	return groups.map((g) => {
+		if (g.length === 1) return g[0];
+		const dates = [...new Set(g.map(({ t }) => alertDate(t)).filter(Boolean))].sort();
+		const newest = g.toSorted(
+			(a, b) => alertDate(b.t).localeCompare(alertDate(a.t)) || b.t.num - a.t.num,
+		)[0];
+		const when = dates.length ? ` (${dates.join(', ')})` : '';
+		return {
+			...newest,
+			veces: g.length,
+			fechas: dates,
+			texto: `${newest.texto} · ×${g.length}${when}`,
+		};
+	});
 }
 
 /** Queue projection only: keep the signal in history and the inbox, even after its PR finishes. */
@@ -338,10 +441,15 @@ function pendingMergeSignal(r, board, prs) {
  * (hecha, unida, comprobada, cancelada) or archived no longer asks for anything. `inbox` keeps every message.
  */
 export function ownerMessages(board) {
+	return openTaskMessages('dueno', board);
+}
+
+/** d265: unread messages to `para` whose task is unknown or still open (not finished, not archived). */
+function openTaskMessages(para, board) {
 	const archived = new Set((board.archivo ?? []).map((t) => t.id));
-	return unreadFor('dueno', board).filter((r) => {
+	return unreadFor(para, board).filter((r) => {
 		const t = findTask(r.tarea, board);
-		return !t || !(isFinished(t) || archived.has(t.id));
+		return !t || !(isFinished(t) || t.archivada || archived.has(t.id));
 	});
 }
 
@@ -362,79 +470,243 @@ export function ownerFindings(board) {
 		});
 }
 
+const LEAD = /^\s*para\s+t\d+(\s+[a-z0-9-]+)?\s*[,:·]\s*/;
+/** Content words of an owner question: no «Para T404 slug,» lead, no accents, no stopwords. */
+const words = (s) =>
+	new Set(
+		fold(s)
+			.replace(LEAD, '')
+			.split(/[^a-z0-9]+/)
+			.filter((w) => w.length > 1 && !STOPWORDS.has(w)),
+	);
+const jaccard = (a, b) => {
+	const both = [...a].filter((w) => b.has(w)).length;
+	return both / (a.size + b.size - both || 1);
+};
+/** «¿Aprueba …?» asks the owner to approve (a PR, a merge), not to choose. */
+export const asksApproval = (texto) =>
+	/^[^a-z0-9]*(aprueba|aprobar)\b/.test(fold(texto).replace(LEAD, ''));
+/** The PR a message cites («#12»), or null. */
+const citedPr = (texto) => normalizePr(texto.match(/#\d+/)?.[0]) ?? null;
 /**
- * «Le toca a usted» (the owner's ready tasks with where to do them, answers owed, stalled Codex or Gemini tasks,
- * messages to the owner), «Le toca al coordinador» and «Detenidas», each row `{id, tarea, texto}`. Owner rows
- * also carry a stable `clave` so the watcher's Telegram alerts (T437) fire once per item.
+ * Two questions of one task and sender are one row when both ask to approve the same PR (or both cite none)
+ * or say nearly the same.
+ */
+const MERGE_SIMILARITY = 0.6;
+
+/**
+ * d292: messages to the owner, the near-identical ones of one task and sender merged into one group, so the
+ * owner answers once. Each group `{rs, aprobar}` keeps every message, oldest first.
+ */
+export function ownerMessageGroups(board) {
+	const groups = [];
+	for (const r of ownerMessages(board)) {
+		const key = `${r.tarea}|${r.quien}`;
+		const aprobar = asksApproval(r.mensaje.texto);
+		const w = words(r.mensaje.texto);
+		const pr = aprobar ? citedPr(r.mensaje.texto) : null;
+		const g = groups.find(
+			(x) =>
+				x.key === key &&
+				x.aprobar === aprobar &&
+				(aprobar ? x.pr === pr : jaccard(x.w, w) >= MERGE_SIMILARITY),
+		);
+		if (g) g.rs.push(r);
+		else groups.push({ key, aprobar, w, pr, rs: [r] });
+	}
+	return groups.map(({ rs, aprobar }) => ({ rs, aprobar }));
+}
+
+/** The owner's ready tasks («own» color) that are not stalled with their dispatcher. */
+function ownTasks(board, now) {
+	const { dueno } = stalls(board, now);
+	return queue(board, now).filter(
+		(t) => color(t, board, { now }) === 'own' && !dueno.some((d) => d.t.id === t.id),
+	);
+}
+
+/**
+ * T489: «Le toca a usted», the one projection next, the view and Telegram share. Each row is one owner action,
+ * `{tipo, id, tarea, t, texto, clave, donde, copia, destino, ...}` with `tipo`:
+ * - `decidir`: a question to the owner (`r` the newest message, `opciones` its options);
+ * - `aprobar`: an approval («¿Aprueba …?» or a task whose steps the owner authorizes), with its `pr`;
+ * - `hacer`: something the owner does outside the board (an answer a task waits for, an owner task).
+ * Merged messages carry `veces` and `fechas`. Prompts to paste, dispatchers, findings and the archive are the
+ * coordinator's (`dispatchRows`).
+ */
+export function ownerInbox(board, { now = Date.now() } = {}) {
+	const row = (t, tipo, texto, extra) => ({
+		tipo,
+		id: t?.id ?? null,
+		tarea: t ? taskTag(t) : '',
+		t: t ?? null,
+		texto,
+		...extra,
+	});
+	const messages = ownerMessageGroups(board).map(({ rs, aprobar }) => {
+		const r = rs.at(-1);
+		const t = findTask(r.tarea, board);
+		const n = rs.length;
+		return row(
+			t,
+			aprobar ? 'aprobar' : 'decidir',
+			`Mensaje: ${messageLine(r, board)}${n > 1 ? ` (×${n})` : ''}`,
+			{
+				clave: `mensaje:${rs[0].mensaje.id}`,
+				r,
+				opciones: r.mensaje.opciones ?? [],
+				...(aprobar ? { pr: citedPr(r.mensaje.texto) ?? normalizePr(t?.pr) ?? null } : {}),
+				...(n > 1 ? { veces: n, fechas: rs.map((x) => x.en) } : {}),
+				...destinationFields(answerDestination(t, board)),
+			},
+		);
+	});
+	const tasks = ownTasks(board, now).flatMap((t) => {
+		const dest = taskDestination(t, board, now);
+		if (dest.tipo !== 'autoriza' && dest.tipo !== 'guia') return [];
+		const aprobar = dest.tipo === 'autoriza';
+		const where = t.actor === 'dueno' && ownerWhere(t);
+		return [
+			row(
+				t,
+				aprobar ? 'aprobar' : 'hacer',
+				`${taskTag(t)} · ${t.titulo}${where ? ` · ${where}` : ''}`,
+				{
+					clave: `tarea:${t.id}`,
+					...(aprobar ? { pr: normalizePr(t.pr) ?? null } : {}),
+					...destinationFields(dest),
+				},
+			),
+		];
+	});
+	const asks = ownerAsks(board, now).map(({ t, r }) =>
+		row(t, 'hacer', `${taskTag(t)} espera su respuesta: ${r.ref}`, {
+			clave: `respuesta:${t.id}:${r.ref}`,
+			ask: r,
+			...destinationFields(answerDestination(t, board)),
+		}),
+	);
+	const alert = coordinatorAlert(board, now);
+	const coordinator = alert
+		? [
+				row(null, 'hacer', alert.texto, {
+					clave: alert.clave,
+					donde: FIXED_DESTINATIONS.coordinador,
+					copia: 'sigue',
+				}),
+			]
+		: [];
+	return [...coordinator, ...messages, ...tasks, ...asks];
+}
+
+/** Finished tasks the Finalizadas tab can archive now (the view payload precomputes `bloqueoArchivo`). */
+export function archivableTasks(board) {
+	return (board.tareas ?? []).filter(
+		(t) =>
+			isFinished(t) &&
+			!t.archivada &&
+			!t.candado &&
+			!(Object.hasOwn(t, 'bloqueoArchivo') ? t.bloqueoArchivo : archiveBlock(t, board)),
+	);
+}
+
+/** T442: locks silent for an hour. */
+const silentLocks = (board, now) =>
+	(board.tareas ?? [])
+		.filter((t) => t.candado && !isFinished(t))
+		.map((t) => ({ t, silent: now - Date.parse(lockBeat(t.candado) ?? '') }))
+		.filter(({ silent }) => !Number.isNaN(silent) && silent >= HOUR_MS);
+
+/**
+ * T489: the rows that left the owner's inbox for the coordinator's: the Gemini relay, prompts to paste,
+ * dispatchers to run, silent locks, review findings to paste and the archive. Each keeps its DÓNDE and text to copy.
+ */
+function dispatchRows(board, now) {
+	const { dueno } = stalls(board, now);
+	const relayAlert = geminiRelayAlert(board, now);
+	const archivable = archivableTasks(board).length;
+	return [
+		...(relayAlert
+			? [
+					{
+						t: null,
+						tipo: 'gemini-relay',
+						texto: relayAlert,
+						donde: FIXED_DESTINATIONS['gemini-relay'],
+						copia: null,
+					},
+				]
+			: []),
+		...ownTasks(board, now).flatMap((t) => {
+			const dest = taskDestination(t, board, now);
+			if (dest.tipo === 'autoriza' || dest.tipo === 'guia') return [];
+			const where = t.actor === 'dueno' && ownerWhere(t);
+			const paste = pasteAgents(t, board, now).agentes.map((a) => AGENT_REGISTRY[a].nombre);
+			const how = where || (paste.length ? `Pegar en ${paste.join(' o ')}` : '');
+			const late = deliveryLine(t, now);
+			return [
+				{
+					t,
+					tipo: 'despacho',
+					texto: `${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
+					...destinationFields(dest),
+				},
+			];
+		}),
+		...dueno.map(({ t, texto }) => ({
+			t,
+			tipo: 'detenida',
+			texto,
+			...destinationFields(taskDestination(t, board, now)),
+		})),
+		...silentLocks(board, now).map(({ t, silent }) => ({
+			t,
+			tipo: 'candado',
+			texto: `Inspeccionar el candado de ${t.candado.agente} sin latido ${agoText(silent)}: ${taskTag(t)} · ${t.titulo}`,
+			...destinationFields(lockDestination(t)),
+		})),
+		...ownerFindings(board).map((r) => ({
+			t: findTask(r.tarea, board),
+			tipo: 'correcciones',
+			texto: `Correcciones para ${AGENT_REGISTRY[r.mensaje.para]?.nombre ?? r.mensaje.para}: ${r.mensaje.texto}`,
+			...destinationFields(findingsDestination(r, board, now)),
+		})),
+		...(archivable
+			? [
+					{
+						t: null,
+						tipo: 'archivar',
+						texto: `Archivar ${archivable} ${archivable === 1 ? 'tarea finalizada' : 'tareas finalizadas'}`,
+						n: archivable,
+						donde: FIXED_DESTINATIONS.archivar,
+						copia: null,
+					},
+				]
+			: []),
+	];
+}
+
+/** An inbox row without its task and message objects, as `pnpm board` and the watcher read it. */
+const publicRow = (x) =>
+	Object.fromEntries(Object.entries(x).filter(([k]) => !['t', 'r', 'ask'].includes(k)));
+
+/**
+ * «Le toca a usted» (ownerInbox without its task and message objects), «Le toca al coordinador» (dispatchRows,
+ * then coordinatorItems) and «Detenidas», each row `{id, tarea, texto}`. Owner rows also carry a stable `clave`
+ * so the watcher's Telegram alerts (T437) fire once per item.
  */
 export function nextSections(board, { prs, now = Date.now() } = {}) {
-	const { dueno, detenidas } = stalls(board, now);
+	const { detenidas } = stalls(board, now);
 	const row = (t, texto, extra) => ({
 		id: t?.id ?? null,
 		tarea: t ? taskTag(t) : '',
 		texto,
 		...extra,
 	});
-	const own = queue(board, now).filter(
-		(t) => color(t, board, { now }) === 'own' && !dueno.some((d) => d.t.id === t.id),
-	);
-	const relayAlert = geminiRelayAlert(board, now);
-	const at = destinationFields;
-	const usted = [
-		...(relayAlert
-			? [
-					row(null, relayAlert, {
-						tipo: 'gemini-relay',
-						clave: 'gemini-relay',
-						donde: FIXED_DESTINATIONS['gemini-relay'],
-						copia: null,
-					}),
-				]
-			: []),
-		...own.map((t) => {
-			const where = t.actor === 'dueno' && ownerWhere(t);
-			const paste = pasteAgents(t, board, now).agentes.map((a) => AGENT_REGISTRY[a].nombre);
-			const how = where || (paste.length ? `Pegar en ${paste.join(' o ')}` : '');
-			const late = deliveryLine(t, now);
-			return row(
-				t,
-				`${taskTag(t)} · ${t.titulo}${how ? ` · ${how}` : ''}${late ? ` · ${late}` : ''}`,
-				{ clave: `tarea:${t.id}`, ...at(taskDestination(t, board, now)) },
-			);
-		}),
-		...ownerAsks(board, now).map(({ t, r }) =>
-			row(t, `${taskTag(t)} espera su respuesta: ${r.ref}`, {
-				clave: `respuesta:${t.id}:${r.ref}`,
-				...at(answerDestination(t, board)),
-			}),
-		),
-		...dueno.map(({ t, texto }) =>
-			row(t, texto, { clave: `detenida:${t.id}`, ...at(taskDestination(t, board, now)) }),
-		),
-		...ownerFindings(board).map((r) => {
-			const t = findTask(r.tarea, board);
-			return row(
-				t,
-				`Correcciones para ${AGENT_REGISTRY[r.mensaje.para]?.nombre ?? r.mensaje.para}: ${r.mensaje.texto}`,
-				{
-					tipo: 'correcciones',
-					clave: `correcciones:${r.mensaje.id}`,
-					...at(findingsDestination(r, board, now)),
-				},
-			);
-		}),
-		...ownerMessages(board).map((r) => {
-			const t = findTask(r.tarea, board);
-			return row(t, `Mensaje: ${messageLine(r, board)}`, {
-				clave: `mensaje:${r.mensaje.id}`,
-				...at(answerDestination(t, board)),
-			});
-		}),
-	];
 	return {
-		usted,
-		coordinador: coordinatorItems(board, { prs, now }).map(({ t, tipo, texto }) =>
-			row(t, texto, { tipo }),
+		usted: ownerInbox(board, { now }).map(publicRow),
+		coordinador: [...dispatchRows(board, now), ...coordinatorItems(board, { prs, now })].map(
+			({ t, texto, ...extra }) => row(t, texto, extra),
 		),
 		detenidas: detenidas.map(({ t, texto }) => row(t, texto)),
 		prsLeidos: prs !== undefined,

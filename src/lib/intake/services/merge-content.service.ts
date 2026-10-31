@@ -74,6 +74,9 @@ export function mergePublishedWithDraft(
 		result.interludes = structuredClone(interludeVal);
 	}
 
+	// Private order instructions belong to the draft and must survive editor hydration.
+	if (draftFlat.orderSource) result.orderSource = structuredClone(draftFlat.orderSource);
+
 	return { content: result, sectionStates };
 }
 

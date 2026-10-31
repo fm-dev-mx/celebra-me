@@ -81,6 +81,11 @@ describe('master watcher (d351)', () => {
 			`
 			setMaster(dir,'codex','master-one');
 			writeFileSync(join(root,'telegram.json'),JSON.stringify({token:'${token}',chatId:'9'}));
+			// T489: dispatch rows are the coordinator's, so an owner question is what makes Telegram send.
+			const { mkdirSync } = await import('node:fs');
+			mkdirSync(join(dir,'bitacora'),{recursive:true});
+			const en=new Date().toISOString();
+			writeFileSync(join(dir,'bitacora',en.slice(0,10)+'.jsonl'),JSON.stringify({tarea:'ready',en,quien:'claude',mensaje:{id:'q1',para:'dueno',texto:'¿Sigue?'}})+'\\n');
 			const { checkOwnerAlerts } = await import(new URL('./owner-alerts.mjs', process.argv[1]));
 			const tg = await import(new URL('./telegram.mjs', process.argv[1]));
 			// The interval stands in for the open socket that keeps a real hung fetch alive.
@@ -113,7 +118,7 @@ describe('master watcher (d351)', () => {
 			const getArchives=async()=>({chats:[]}); let calls=0;
 			try { await m.runMasterWatch({dir,getArchives,deliver:()=>{calls++;throw Error('offline')}}); } catch {}
 			const deliver=(...args)=>m.deliverWake(...args, (command,argv)=>{
-				if(command!=='codex.exe'||argv[0]!=='queue'||argv[1]!=='--thread'||argv[2]!=='master-one')throw Error('bad queue args');
+				if(!/codex[.]exe$/i.test(command)||argv[0]!=='queue'||argv[1]!=='--thread'||argv[2]!=='master-one')throw Error('bad queue args');
 				writeFileSync(join(root,'queue.json'),JSON.stringify(argv));calls++;
 			});
 			await m.runMasterWatch({dir,getArchives,deliver});
@@ -175,6 +180,75 @@ describe('master watcher (d351)', () => {
 			root,
 		);
 		expect(result).toEqual({ overlap: [], sent: ['codex', 'gemini'] });
+	});
+
+	it('resolves the configured Codex CLI, else the newest app build, else PATH', () => {
+		const { root } = fixture();
+		const result = probe(
+			`
+			const { mkdirSync, utimesSync } = await import('node:fs');
+			const bin = join(root, 'local', 'OpenAI', 'Codex', 'bin');
+			for (const [build, age] of [['old', 3600], ['new', 0]]) {
+				mkdirSync(join(bin, build), { recursive: true });
+				const exe = join(bin, build, 'codex.exe');
+				writeFileSync(exe, '');
+				const t = new Date(Date.now() - age * 1000);
+				utimesSync(exe, t, t);
+			}
+			mkdirSync(join(bin, 'empty'));
+			const configured = join(root, 'my-codex.exe'); writeFileSync(configured, '');
+			const env = { LOCALAPPDATA: join(root, 'local') };
+			console.log(JSON.stringify({
+				newest: m.resolveCodexBin({}, { env }),
+				configured: m.resolveCodexBin({ codexBin: configured }, { env }),
+				fromEnv: m.resolveCodexBin({}, { env: { ...env, CELEBRA_CODEX_BIN: configured } }),
+				missingConfigured: m.resolveCodexBin({ codexBin: join(root, 'gone.exe') }, { env }),
+				path: m.resolveCodexBin({}, { env: {} }),
+				noInstall: m.resolveCodexBin({}, { env: { LOCALAPPDATA: join(root, 'none') } }),
+				used: (() => { let cmd; m.deliverWake('codex', 't', 'x', { codexBin: configured }, { tareas: [] }, dir, (c) => { cmd = c; }); return cmd; })(),
+			}));`,
+			root,
+		);
+		const newest = path.join(root, 'local', 'OpenAI', 'Codex', 'bin', 'new', 'codex.exe');
+		const configured = path.join(root, 'my-codex.exe');
+		expect(result).toEqual({
+			newest,
+			configured,
+			fromEnv: configured,
+			missingConfigured: newest,
+			path: 'codex.exe',
+			noInstall: 'codex.exe',
+			used: configured,
+		});
+	});
+
+	it('alerts coordinator and owner once when a master keeps failing for 30 minutes', () => {
+		const { root } = fixture();
+		const result = probe(
+			`
+			setMaster(dir,'codex','master-one');
+			const getArchives=async()=>({chats:[]}); const telegram=[];
+			const sendTelegram=(text)=>{telegram.push(text);return Promise.resolve({ok:true})};
+			const fail=()=>{const e=Error('spawn codex.exe ENOENT');e.code='ENOENT';throw e};
+			const start=Date.parse('2026-10-30T10:00:00Z');
+			const run=async(minutes,deliver=fail)=>{try{await m.runMasterWatch({dir,getArchives,deliver,sendTelegram,ownerAlerts:async()=>{},now:start+minutes*60_000})}catch{}};
+			await run(0); await run(10); const before=telegram.length;
+			await run(31); await run(45);
+			const state=JSON.parse(readFileSync(join(root,'board-master-watch.json')));
+			const { loadBoard } = await import(new URL('./store.mjs', process.argv[1]));
+			const rows=loadBoard(dir).bitacora.filter(r=>r.mensaje?.id?.startsWith('aviso-entrega-'));
+			await run(50,()=>{}); const cleared=JSON.parse(readFileSync(join(root,'board-master-watch.json'))).failing;
+			console.log(JSON.stringify({before,telegram,streak:state.failing['codex:master-one'],rows,cleared}));`,
+			root,
+		);
+		expect(result.before).toBe(0);
+		expect(result.telegram).toHaveLength(1);
+		expect(result.telegram[0]).toContain('maestro codex');
+		expect(result.telegram[0]).toContain('ENOENT');
+		expect(result.streak).toMatchObject({ desde: '2026-10-30T10:00:00.000Z', error: 'ENOENT' });
+		expect(result.rows).toHaveLength(1);
+		expect(result.rows[0]).toMatchObject({ tarea: 'ready', mensaje: { para: 'coordinador' } });
+		expect(result.cleared).toEqual({});
 	});
 
 	it('does not wake for a prompt already delivered while awaiting claim', () => {

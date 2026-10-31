@@ -111,6 +111,20 @@ function accessRowFor(invitationId: string): Record<string, unknown> {
 }
 
 function resolveFixtureResult(url: URL, authorization: string | undefined): unknown {
+	// Empty synthetic CRM reads allow the sales workspace to render. Writes stay blocked.
+	if (
+		[
+			'/rest/v1/leads',
+			'/rest/v1/visitor_sessions',
+			'/rest/v1/tracking_events',
+			'/rest/v1/sales_orders',
+			'/rest/v1/meta_conversion_events',
+			'/rest/v1/commercial_record_classifications',
+			'/rest/v1/commercial_demo_followups',
+			'/rest/v1/audit_logs',
+		].includes(url.pathname)
+	)
+		return [];
 	switch (url.pathname) {
 		case '/health':
 		case '/auth/v1/health':

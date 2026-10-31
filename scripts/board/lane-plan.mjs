@@ -7,7 +7,7 @@ import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import { readOnlyLaneError } from './claim-commands.mjs';
 import { UsageError } from './cli.mjs';
 import { readLanes } from './live.mjs';
-import { isReadOnly, laneAllowed as laneAllowedIn, laneHolder } from './model.mjs';
+import { EXTERNAL_LANE, isReadOnly, laneAllowed as laneAllowedIn, laneHolder } from './model.mjs';
 
 const laneAllowed = (carril, task) => laneAllowedIn(carril, task, WORKTREE_LANES);
 
@@ -34,6 +34,7 @@ export async function readLaneGit(dir) {
  * task's branch. An unreadable lane never blocks. The refusal names the idle, unlocked lanes `t` may use.
  */
 export function assertLaneReady(carril, t, git, board) {
+	if (carril === EXTERNAL_LANE) return;
 	const idle = (g) => !g.error && g.rama === null && g.limpio;
 	const own = git.find((g) => g.id === carril);
 	if (!own || own.error || idle(own)) return;

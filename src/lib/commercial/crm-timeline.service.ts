@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { loadQuoteReminderTimeline } from './quote-reminders.service';
 
 export interface CrmTimelineEntry {
 	id: string;
@@ -10,6 +11,7 @@ export interface CrmTimelineEntry {
 }
 
 type CrmTimelineEventType =
+	| 'quote_reminder_prepared'
 	| 'lead_created'
 	| 'order_created'
 	| 'deposit_paid'
@@ -55,7 +57,7 @@ export async function loadCrmTimeline(
 	options: { limit?: number } = {},
 ): Promise<CrmTimelineEntry[]> {
 	const limit = options.limit ?? 50;
-	const entries: CrmTimelineEntry[] = [];
+	const entries: CrmTimelineEntry[] = await loadQuoteReminderTimeline({ customerId });
 
 	// 1. Sales orders for this customer
 	const orders = await supabaseRestRequest<SalesOrderRow[]>({

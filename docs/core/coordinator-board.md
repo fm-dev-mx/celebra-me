@@ -6,6 +6,26 @@ lifecycle belong to [the board rule](../../.agent/rules/board.md). AGENTS.md own
 the Task Contract owns scope/acceptance, plans express intent, and the board records progress.
 Resolve disagreements explicitly; board text never grants authority.
 
+## Board core (fm-dev-mx/tablero)
+
+The project-agnostic core lives in the private repository `fm-dev-mx/tablero`. Celebra-me never
+installs it: it is not in `package.json` or the lockfile, and CI never needs it.
+`scripts/board/tablero-core.mjs` runs it from a local checkout, by default `../tablero` beside the
+Integration checkout (`TABLERO_DIR` overrides it), at the commit pinned in `tablero.config.json` →
+`nucleo`. A missing checkout or another commit stops with the command that fixes it. The config is
+always the Integration checkout's, so every lane shares one data directory.
+
+```bash
+pnpm tablero timeline
+pnpm tablero:serve                    # page on 127.0.0.1:4320
+pnpm tablero:mcp                      # read-only MCP on stdio
+pnpm tablero migrate --dry-run
+```
+
+Until the real migration lands (after T501 adds `proyecto` per task), `pnpm board`, its page and the
+`celebra-board` MCP stay on `scripts/board`, which owns 4320 today. The switch stops
+`pnpm board:serve`, migrates the data and then points the page and MCP at the core.
+
 ## Local MCP access
 
 `pnpm board:mcp` starts `scripts/board/mcp-server.mjs` over stdio. Install development dependencies
@@ -359,24 +379,29 @@ the code without changing user files, automations or running scheduler tasks:
    Registration replaces the previous 10-minute toast task with the same task name. Never restart
    the board on 4320; its existing supervisor loads merged code.
 
-Codex wakes use `codex.exe queue --thread <id> --message <doorbell>`. Gemini wakes are board `msg`
-rows consumed by the existing relay; Claude receives board messages. Payloads name tasks/messages
-without copying their bodies or owner authorizations. Archive wakes say **Archive estos chats:**,
-cite d351, preserve individual IDs, and ask the master to confirm its inventory and reply to Claude
-with `pnpm board msg <task-id> --de=<agent> --para=claude` and the actual archived IDs. Masters
-never send idle/no-work notices. A wake grants no new authority.
+Codex wakes use `codex.exe queue --thread <id> --message <doorbell>`. The Codex app keeps its CLI
+off PATH, so the watcher runs `codexBin` from `board-masters.json` or `CELEBRA_CODEX_BIN` when that
+file exists, else the newest `%LOCALAPPDATA%/OpenAI/Codex/bin/<build>/codex.exe`, else PATH. Gemini
+wakes are board `msg` rows consumed by the existing relay; Claude receives board messages. Payloads
+name tasks/messages without copying their bodies or owner authorizations. Archive wakes say
+**Archive estos chats:**, cite d351, preserve individual IDs, and ask the master to confirm its
+inventory and reply to Claude with `pnpm board msg <task-id> --de=<agent> --para=claude` and the
+actual archived IDs. Masters never send idle/no-work notices. A wake grants no new authority.
 
 Receipts live in `.agent/tmp/board-master-watch.json`, keyed by agent, configured master and event.
-Failed transports retry; successful destinations are saved independently. Ready tasks re-arm only
-after leaving readiness. Message and archive receipts survive temporary missing inventories and
-process restarts. A separate exclusive `.lock` prevents overlapping passes. After a crash, inspect
-that exact lock and process before scoped orphan removal; never remove a live lock. Transport
-acceptance and the local receipt cannot be atomic: a crash between them can repeat one doorbell, so
-masters check the referenced IDs before acting. Codex acceptance proves queueing, not reading;
-Gemini acceptance proves the board message was stored, not host delivery. The existing relay's
-consume-before-send limitation still applies; inspect history before any manual resend. Message
-observation includes history since master setup, so the relay consuming an inbox before a scheduled
-pass cannot hide a new message from the master watcher. Older unread messages remain eligible.
+Failed transports retry; successful destinations are saved independently. A destination still
+failing 30 minutes into a streak (`failing` in the receipts) sends one board message to the
+coordinator and one Telegram alert to the owner; the next success ends the streak. Ready tasks
+re-arm only after leaving readiness. Message and archive receipts survive temporary missing
+inventories and process restarts. A separate exclusive `.lock` prevents overlapping passes. After a
+crash, inspect that exact lock and process before scoped orphan removal; never remove a live lock.
+Transport acceptance and the local receipt cannot be atomic: a crash between them can repeat one
+doorbell, so masters check the referenced IDs before acting. Codex acceptance proves queueing, not
+reading; Gemini acceptance proves the board message was stored, not host delivery. The existing
+relay's consume-before-send limitation still applies; inspect history before any manual resend.
+Message observation includes history since master setup, so the relay consuming an inbox before a
+scheduled pass cannot hide a new message from the master watcher. Older unread messages remain
+eligible.
 
 The view refreshes **Se pueden archivar** every 15 seconds over the existing SSE connection without
 page reload. It shares `external-sessions.mjs` with `pnpm board sesiones --archivables`. PR state is
@@ -402,10 +427,9 @@ The watcher extends the bounded no-AI pass with automatic board coordination and
     (`unclaimed-10m:<id>:<desde>`).
   - **30 min**: notifies the principal coordinator via board message if a task is unclaimed for 30
     min or if an active lock has had no heartbeat for 30 min.
-  - **60 min**: surfaces the silent lock or unclaimed task in the owner action list (`ownerActions`
-    / `usted`), and invokes Telegram notification (`sendTelegramAlert`) if T437 Telegram
-    configuration lives in `.agent/tmp/telegram.json` or environment variables without blocking on
-    missing configuration.
+  - **60 min**: surfaces the silent lock or unclaimed task in «Le toca al coordinador»
+    (`nextSections(...).coordinador`, T489); it no longer reaches the owner's list or Telegram, so
+    the coordinator pass reads that section and the bitácora notices above.
 - **Merge queue qualification (C)**: sends `listo para unir #N`
   (`<tag> · listo para unir #N · siguiente: unir`) to the coordinator only when the approved review
   SHA strictly equals the live PR head (`gh pr view`) and CI for that exact SHA is green (`ciOf` is
@@ -417,16 +441,24 @@ The watcher extends the bounded no-AI pass with automatic board coordination and
 
 ### Owner alerts on Telegram (T437, d353)
 
-Each pass also reads «Le toca a usted» (`nextSections(...).usted`: owner tasks, answers owed,
-stalled dispatches, unread messages `--para=dueno`, the Gemini relay alert) and sends one Telegram
-Bot API `sendMessage` to the owner's chat when new items appear (`scripts/board/owner-alerts.mjs`).
+Each pass also reads «Le toca a usted» (`ownerInbox`, T489: only `decidir`, `aprobar` and `hacer`
+rows — questions and approvals sent `--para=dueno`, owner tasks, answers owed) and sends one
+Telegram Bot API `sendMessage` to the owner's chat when new items appear
+(`scripts/board/owner-alerts.mjs`). Stalled dispatches, prompts to paste, silent locks, findings to
+paste, the archive and the Gemini relay alert are coordinator rows (`nextSections(...).coordinador`)
+and never reach Telegram.
 
 - **One alert per item**: each row carries a stable `clave` (`tarea:<id>`, `respuesta:<id>:<ref>`,
-  `detenida:<id>`, `mensaje:<id>`, `gemini-relay`). Sent keys live under `owner.alertadas` in
-  `.agent/tmp/board-master-watch.json`; a key re-arms once its item leaves the list.
-- **Grouping**: every new item of one pass (one minute) goes in a single message, at most 8 lines,
-  ending with `Tablero: http://127.0.0.1:4320`. A single item reads like
-  `T418 · Andrea · … . Tablero: http://127.0.0.1:4320`. An empty list sends nothing.
+  `mensaje:<id>`). Sent keys live under `owner.alertadas` in `.agent/tmp/board-master-watch.json`; a
+  key re-arms once its item leaves the list.
+- **Grouping**: every new item of one pass (one minute) goes in a single message: the count per
+  type, then one `T<n>` line per task (at most 8), ending with `Tablero: http://127.0.0.1:4320`,
+  e.g. `Celebra-me: 1 decisión.` / `- T418 Falta aprobar la portada` or
+  `- T419 espera su respuesta`. A task with a public `aviso` shows `T<n> <aviso>`; without one, it
+  falls back to a safe short text derived from the row type (`espera su respuesta` for questions and
+  asks, `espera su aprobación` for approvals, `por hacer` for owner tasks). A row's internal text
+  never leaves the board; an `aviso` that names a client or an amount is refused on write. An empty
+  list sends nothing.
 - **Failures**: every Telegram request aborts after 10 s, so a hung connection never stops master
   wakes. A 400/401/403/404 stops sending until the token or chat changes (one log line); a 429 waits
   `retry_after`; other failures back off 1, 2, 4… minutes, capped at 30.
@@ -492,6 +524,16 @@ clients are disconnected and reconnect to a full snapshot; backup events do not 
 Sub-second delivery is a measured target, not an availability guarantee. The «Sincronizar» button's
 POST needs the page's per-process token and its own `Origin`, and every request needs a local
 `Host`.
+
+«Despertar» (`scripts/board/wake-button.mjs`): «Clave» cards and open task cards whose agent (lock,
+then delivery, then `agente`) is Codex, Gemini or Claude show the button. It calls
+`POST /api/despertar {id}` with the same token, `Origin` and `Host` guard as «Sincronizar». Codex
+and Gemini get the fixed text «Revise su bandeja: T###» through the master watcher's own transport
+(codex queue or the Gemini relay, `pnpm board master`), never free text. A Claude desktop session
+cannot be woken from outside, so a Claude task leaves a message to the coordinator instead; nothing
+spawns `claude -p`. Every wake is a bitácora message row with an id starting `despertar-`, one task
+is woken at most once every 10 minutes (429 otherwise), and the master watcher does not wake an
+agent a second time for those rows.
 
 ### Fields
 
@@ -566,10 +608,14 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   reading GitHub. «Le toca a usted» leaves out a message to the owner once its task is finished or
   archived (d265), or once `pnpm board atendido <id> --para=dueno` marks it handled (d291, an
   `atendido {para, mensajes}` bitácora row; `--para=coordinador` does the same for the coordinator's
-  messages); `inbox --agente=dueno --todos` still lists it. An agent may read `inbox --agente=dueno`
-  without hiding anything: only `--leido`, which the owner passes, marks the owner's messages read.
-  A ready Codex or Gemini task idle for 30 min shows in «Le toca a usted» as «Correr el despachador
-  de Codex (T<n>)»; an idle Claude task goes to the coordinator.
+  messages); `inbox --agente=dueno --todos` still lists it. «Le toca al coordinador» applies the
+  same rule: a closing report about a finished or archived task leaves it, and a merge signal stays
+  while its origin's PR is open. An agent may read `inbox --agente=dueno` without hiding anything:
+  only `--leido`, which the owner passes, marks the owner's messages read. T489: «Le toca a usted»
+  lists only `decidir`, `aprobar` and `hacer` rows; prompts to paste, a ready Codex or Gemini task
+  idle for 30 min («Correr el despachador de Codex (T<n>)»), silent locks, findings to paste and the
+  archive show in «Le toca al coordinador», so a coordinator pass reads
+  `nextSections(...).coordinador` for them, not `.usted`.
 - **Owner tasks** (`actor: dueno`) show only what to do and where (`donde`, else the first line
   under «DÓNDE CORRE» of an older prompt), never a suggested lane. The coordinator records every
   owner action as an `actor: dueno` task with a short prompt, so it appears in «Le toca a usted».
@@ -624,10 +670,10 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   time, each with its bitácora row (T172); `move` hands a task over only without a lock, logs it and
   warns when the new agent lacks a `requiere` capability. Rules are the same for every agent.
 - **Delivered prompt (d249)**: «Copiar prompt» on a ready, unlocked task an agent does writes
-  `entregada {agente, desde}` too (`delivery.mjs`). The task then leaves «Le toca a usted» and shows
-  «Entregada a <agente> · <hora> · esperando que la tome»; after 30 min without a claim it comes
-  back as «Entregada hace 30 min y nadie la tomó». A task the owner does or one with a lock refuses
-  it.
+  `entregada {agente, desde}` too (`delivery.mjs`). The task then leaves «Le toca al coordinador»
+  and shows «Entregada a <agente> · <hora> · esperando que la tome»; after 30 min without a claim it
+  comes back as «Entregada hace 30 min y nadie la tomó». A task the owner does or one with a lock
+  refuses it.
 - **Claim title (T126)**: tasks added after T126 carry `contrato: 1`, and their `claim` requires
   `--titulo="<lane> · T<n> · …"`, stored in the lock. Another session of the same agent cannot
   replace a lock.

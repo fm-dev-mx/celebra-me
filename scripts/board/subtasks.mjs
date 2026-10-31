@@ -6,6 +6,8 @@ import {
 	calendarDate,
 	findTask,
 	isBlocked,
+	isFinished,
+	isSilentLock,
 	ordenOf,
 	requisitos,
 	taskTag,
@@ -91,9 +93,16 @@ export function blockedLine(board, now = Date.now(), max = 8) {
 	return `Bloqueadas (${all.length}): ${tags.join(', ')}${all.length > max ? ', …' : ''}`;
 }
 
-/** The close of `pnpm board list`: a blank line, then the Calendario and Bloqueadas lines; '' when both are empty. */
+/**
+ * The close of `pnpm board list`: a blank line, then the Proyectos block (T468) and the Calendario and Bloqueadas
+ * lines; '' when all are empty.
+ */
 export function listTail(board, now = Date.now()) {
-	const lines = [calendarLine(board, now), blockedLine(board, now)].filter(Boolean);
+	const lines = [
+		...projectLines(board, now),
+		calendarLine(board, now),
+		blockedLine(board, now),
+	].filter(Boolean);
 	return lines.length ? `\n${lines.join('\n')}` : '';
 }
 
@@ -164,6 +173,76 @@ export function groupProgress(t, board) {
 			: 0,
 		totalFases,
 	};
+}
+
+// T468: a mother whose `grupo` is its own id heads itself; one under a finished mother leads its own project.
+const hasOpenMother = (t, board) => {
+	const up = parentOf(t, board);
+	return Boolean(up && up.id !== t.id && !isFinished(up));
+};
+
+/**
+ * T468: the project strip of «General» and `pnpm board list`, one entry per open top-level mother task with
+ * subtasks and per group no mother heads that still has open work: `{key, mother, grupo, nombre, p, bloqueadas,
+ * silenciosas, actualizado}`. `key` is the queue's block key, `p` its groupProgress, `bloqueadas` its open
+ * subtasks as «Bloqueadas» lists them (`{t, motivos}`), `silenciosas` those whose lock has no heartbeat
+ * (isSilentLock) and `actualizado` the latest change of the mother and its subtasks.
+ */
+export function projects(board, now = Date.now()) {
+	const heads = new Map();
+	for (const t of board.tareas ?? []) {
+		const g = headlessGroup(t, board);
+		if (g) {
+			if (!heads.has(`grupo:${g}`)) heads.set(`grupo:${g}`, { mother: null, grupo: g });
+		} else if (!isFinished(t) && !hasOpenMother(t, board) && subtasksOf(t, board).length)
+			heads.set(t.id, { mother: t, grupo: null });
+	}
+	const blockedById = new Map(blocked(board, now).map((b) => [b.t.id, b]));
+	return [...heads]
+		.map(([key, { mother, grupo }]) => {
+			const subs = subtasksOf(mother ?? { grupo }, board);
+			const open = subs.filter((x) => !isFinished(x));
+			const stamps = [mother, ...subs]
+				.map((x) => x?.actualizado)
+				.filter((s) => Number.isFinite(Date.parse(s ?? '')));
+			return {
+				key,
+				mother,
+				grupo,
+				nombre: mother?.id ?? grupo,
+				p: groupProgress(mother ?? { grupo }, board),
+				bloqueadas: open.map((x) => blockedById.get(x.id)).filter(Boolean),
+				silenciosas: open.filter((x) => x.candado && isSilentLock(x.candado, now)),
+				actualizado: stamps.sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null,
+			};
+		})
+		.filter((x) => x.mother || x.p.hechas < x.p.total);
+}
+
+/** T468: one project of `pnpm board list`, «servicio-medicion: 3/12 (25 %) · fase 2 de 4 · 1 en curso». */
+export function projectLine(x) {
+	const { p } = x;
+	const n = (k, one, many) => (k ? `${k} ${k > 1 ? many : one}` : '');
+	return [
+		`${x.nombre}: ${p.hechas}/${p.total} (${p.pct} %)`,
+		p.totalFases ? `fase ${p.faseActual} de ${p.totalFases}` : '',
+		n(p.enCurso, 'en curso', 'en curso'),
+		n(p.enRevision, 'en revisión', 'en revisión'),
+		n(x.bloqueadas.length, 'bloqueada', 'bloqueadas'),
+		x.silenciosas.length
+			? `candado sin latido: ${x.silenciosas.map((s) => taskTag(s)).join(', ')}`
+			: '',
+	]
+		.filter(Boolean)
+		.join(' · ');
+}
+
+/** T468: «Proyectos (2):» and one indented projectLine each; [] when there is none. */
+export function projectLines(board, now = Date.now()) {
+	const all = projects(board, now);
+	return all.length
+		? [`Proyectos (${all.length}):`, ...all.map((x) => `  ${projectLine(x)}`)]
+		: [];
 }
 
 /** d174: «Fase 2 de 3 · 4 de 7 completadas (57 %)». */

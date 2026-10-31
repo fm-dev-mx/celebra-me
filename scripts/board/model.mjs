@@ -5,7 +5,7 @@
 import { validChangelog } from './changelog.mjs';
 import { awaitingClaim } from './delivery.mjs';
 import { isForeignPull } from './pr-ref.mjs';
-import { answerPrompt, messageExtraIssues, ownerFieldChecks } from './owner-text.mjs';
+import { answerPrompt, fold, messageExtraIssues, taskTextChecks } from './owner-text.mjs';
 import {
 	isPromptV1,
 	promptSection,
@@ -19,21 +19,30 @@ import { requisitoText } from './requisito-text.mjs';
 
 export { normalizePr, prNumber } from './pr-ref.mjs';
 export { dayOf, requisitoLine, requisitoText, taskName } from './requisito-text.mjs';
+export * from './board-constants.mjs';
 
-export const URGENCIAS = ['urgente', 'alta', 'normal', 'baja'];
-export const ACTORES = ['dueno', 'sesion', 'coordinador'];
-export const AGENT_REGISTRY = {
-	claude: {
-		nombre: 'Claude',
-		capacidades: ['codigo', 'git', 'gh', 'navegador', 'artifact', 'sesiones'],
-	},
-	codex: { nombre: 'Codex', capacidades: ['codigo', 'git', 'gh'] },
-	gemini: { nombre: 'Gemini', capacidades: ['codigo', 'git', 'gh', 'imagenes'] },
-};
-export const AGENTES = [...Object.keys(AGENT_REGISTRY), 'cualquiera'];
-/** Claude Desktop's app id (list, archive, rename, #local_ links); CLAUDE_CODE_SESSION_ID is the process id. */
-export const CLAUDE_SESSION_ENV = 'CLAUDE_CODE_HOST_SESSION_ID';
-export const CLAUDE_SESSION_PREFIX = 'local_';
+import {
+	ACTORES,
+	AGENTES,
+	AGENT_REGISTRY,
+	ATENDIBLES,
+	CATEGORIA_CARRIL,
+	CATEGORIAS,
+	CLAUDE_SESSION_ENV,
+	CLAUDE_SESSION_PREFIX,
+	DESTINOS,
+	ESTADOS,
+	EXTERNAL_LANE,
+	HANDOFF_LISTS,
+	NIVELES,
+	QUIEN,
+	READONLY_LANE,
+	REQUISITOS,
+	TIPOS,
+	TOCA,
+	URGENCIAS,
+	VEREDICTOS,
+} from './board-constants.mjs';
 
 /** The session a lock names: an explicit --sesion, else Claude's app id from `env` (codex/gemini: none yet). */
 export function sessionOf(agente, given, env) {
@@ -51,30 +60,10 @@ export function lockSessionIssue(agente, sesion) {
 		return `--sesion=${sesion} no es un id de la app de Claude: debe empezar con ${CLAUDE_SESSION_PREFIX} (use ${CLAUDE_SESSION_ENV}, no CLAUDE_CODE_SESSION_ID)`;
 	return null;
 }
-export const TOCA = ['main', 'produccion', 'migracion', 'secretos'];
-export const REQUISITOS = ['tarea', 'decision', 'fecha', 'dueno', 'revision'];
-export const ESTADOS = [
-	'pendiente',
-	'bloqueada',
-	'en curso',
-	'en revision',
-	'hecha',
-	'unida',
-	'comprobada',
-	'cancelada',
-];
-/** Stages of the «Carriles» view, in column order. */
-export const STAGES = ['bloqueada', 'lista', 'curso', 'revision', 'hecha'];
 
-/** Who writes a bitácora row: an agent, the coordinator or the owner. */
-export const QUIEN = ['claude', 'codex', 'gemini', 'coordinador', 'dueno'];
 /** States a row may move between: the task's, `archivada` for archive/unarchive, '' before the task existed. */
 const LOG_ESTADOS = ['', ...ESTADOS, 'archivada'];
 const QUIEN_ALIAS = { dueño: 'dueno' };
-/** Who a board message goes to (T126): `pnpm board msg <id> --de=<a> --para=<b> "texto"`. */
-export const DESTINOS = ['coordinador', 'dueno', 'codex', 'gemini', 'claude'];
-/** d291: readers whose messages `pnpm board atendido` marks as handled; agents read theirs with `inbox`. */
-export const ATENDIBLES = ['dueno', 'coordinador'];
 /** A row that changes no task: a message (T126) or the mark that messages were handled (d291). */
 export const isNoteRow = (r) => Boolean(r?.mensaje || r?.atendido);
 
@@ -332,34 +321,7 @@ export function findTask(ref, board) {
 }
 
 /** Handoff Contract lists of the `cierre` (T129) and the repeatable `close` flag of each. */
-export const HANDOFF_LISTS = [
-	['fallidas', 'fallida'],
-	['riesgos', 'riesgo'],
-	['dudas', 'duda'],
-	['excepcion', 'excepcion'],
-];
-export const VEREDICTOS = ['aprobado', 'cambios', 'bloqueado'];
 const PRIORIDADES = ['P0', 'P1', 'P2', 'P3'];
-export const NIVELES = ['validate:changed', 'type-check', 'ci'];
-
-/**
- * T130: what a task does (`tipo`), each with its `.agent/kinds/<tipo>.yaml`; `categoria` only picks its lane.
- * RESULT_FIELDS are the `resultado` fields a kind's close returns (T129); the other kinds return the common
- * Handoff lists only.
- */
-export const TIPOS = [
-	'codigo',
-	'revision',
-	'release',
-	'invitacion',
-	'creativo',
-	'auditoria',
-	'operacion',
-];
-export const RESULT_FIELDS = {
-	codigo: ['pr', 'sha', 'nivel'],
-	revision: ['veredicto', 'sha', 'hallazgos'],
-};
 
 /** Which typed `resultado` a task's close returns (T129): a review round, code with a PR, or none. */
 export function resultKind(t) {
@@ -589,12 +551,6 @@ export function ownerAsks(board, now = Date.now()) {
 	});
 }
 
-const fold = (s) =>
-	String(s ?? '')
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.toLowerCase();
-
 /**
  * Search box match (d167): «T34» names task 34 exactly (never T340); any other query must find every word
  * in the id, title or «ahora», ignoring case and accents.
@@ -624,11 +580,17 @@ export function nextFor(agente, board, now = Date.now()) {
 	);
 }
 
-/** Board lane where read-only tasks run by default: the Integration checkout. */
-export const READONLY_LANE = 'integration';
-
 /** Whether `t` is a read-only task: a cross-review, or one marked `soloLectura`. */
 export const isReadOnly = (t) => Boolean(isReview(t) || t?.soloLectura);
+
+/** Whether `t` is an external task working outside the repository. */
+export const isExternal = (t) =>
+	Boolean(
+		t &&
+		(t.carril === EXTERNAL_LANE ||
+			t.carrilPlaneado === EXTERNAL_LANE ||
+			t.candado?.carril === EXTERNAL_LANE),
+	);
 
 /**
  * The lane a task sits in: READONLY_LANE for a read-only task (it never takes another), else its lock's,
@@ -668,35 +630,26 @@ export function promptLanes(t, lanes) {
 
 /**
  * Whether `carril` is a canonical lane this task may use (`lanes`: WORKTREE_LANES, passed in so the view needs
- * no Node module); Integration only for coordinator tasks.
+ * no Node module); Integration only for coordinator tasks, and externo for work outside the repo.
  */
 export const laneAllowed = (carril, task, lanes) =>
+	carril === EXTERNAL_LANE ||
 	lanes.some((lane) => lane.id === carril && (lane.segment || task.actor === 'coordinador'));
 
 /** Folder of a lane relative to the repository's parent directory (d177): never an absolute path. */
 export const laneFolder = (id) =>
-	id === READONLY_LANE ? 'celebra-me' : `celebra-me-worktrees/${id}`;
+	id === READONLY_LANE
+		? 'celebra-me'
+		: id === EXTERNAL_LANE
+			? '(sin checkout)'
+			: `celebra-me-worktrees/${id}`;
 
-/**
- * d191: a task's `categoria` names the lane it prefers, never one it must use. Each category is the use of one
- * lane from f05 to f12; the board and other tooling go in f10-libre.
- */
-export const CATEGORIA_CARRIL = {
-	plataforma: 'f05-plataforma',
-	landing: 'f06-landing',
-	invitaciones: 'f07-invitaciones',
-	demos: 'f08-demos',
-	docs: 'f09-docs',
-	herramientas: 'f10-libre',
-	preview: 'f11-preview',
-	release: 'f12-release',
-};
-export const CATEGORIAS = Object.keys(CATEGORIA_CARRIL);
 /** The task lanes f05–f12, in order: the ones a suggestion picks from. */
 const TASK_LANES = Object.values(CATEGORIA_CARRIL);
 
 /** Another task whose lock holds `lane`, or null. Same predicate as claim: any lock counts, also one left on a finished task before its release. */
 export function laneHolder(lane, board, exceptId) {
+	if (lane === EXTERNAL_LANE) return null;
 	return (
 		(board.tareas ?? []).find((x) => x.id !== exceptId && x.candado?.carril === lane) ?? null
 	);
@@ -709,6 +662,7 @@ export function laneBusy(t, board) {
 
 /** The warning a planned lane outside the task's category gets, without refusing it (d191). */
 export function categoryMismatch(t, carril) {
+	if (carril === EXTERNAL_LANE) return null;
 	const preferred = CATEGORIA_CARRIL[t.categoria];
 	if (!carril || !preferred || carril === preferred) return null;
 	return `aviso: ${carril} no es el carril de su categoría ${t.categoria} (${preferred})`;
@@ -736,7 +690,7 @@ export const REVIEW_RUNS = `Corre en: Integración (carpeta ${laneFolder('integr
  * planned lane; 2 a lane another task's lock holds; 3 no lane to run in.
  */
 export function laneRank(t, board) {
-	if (isReadOnly(t) || t.candado?.carril) return 0;
+	if (isReadOnly(t) || isExternal(t) || t.candado?.carril) return 0;
 	const preferred = CATEGORIA_CARRIL[t.categoria];
 	if (t.carrilPlaneado) {
 		if (laneBusy(t, board)) return 2;
@@ -781,6 +735,11 @@ export function laneLines(t, board) {
 	if (isReadOnly(t)) return [REVIEW_RUNS];
 	const lane = t.carrilPlaneado;
 	if (!lane) return suggestionLines(t, board);
+	if (lane === EXTERNAL_LANE)
+		return [
+			`Corre en: ${lane} · carpeta ${laneFolder(lane)}`,
+			...(t.candado ? [] : ['carril libre']),
+		];
 	const lines = [`Corre en: ${lane} · carpeta ${laneFolder(lane)}`, ...pasteLine(t, lane)];
 	const busy = laneBusy(t, board);
 	if (busy)
@@ -921,7 +880,7 @@ const FIELD_CHECKS = [
 		(t) => !optional(t.corto, (s) => typeof s === 'string' && s.trim()),
 		() => 'corto debe ser texto',
 	],
-	...ownerFieldChecks,
+	...taskTextChecks,
 	...KIND_LISTS.map((k) => [
 		(t) =>
 			!optional(

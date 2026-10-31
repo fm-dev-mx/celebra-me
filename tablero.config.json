@@ -1,0 +1,23 @@
+{
+    "proyecto": "Celebra-me",
+    "datos": ".agent/tmp/tablero",
+    "puerto": 4320,
+    "nucleo": "19cfca69612821d60718db9025096a1eaf7949f4",
+    "wipMax": 3,
+    "hechoDias": 7,
+    "zonaHoraria": "America/Mexico_City",
+    "ordenan": ["coordinador", "dueno"],
+    "carriles": [
+        { "id": "f05-plataforma", "puerto": 4325 },
+        { "id": "f06-landing", "puerto": 4326 },
+        { "id": "f07-invitaciones", "puerto": 4327 },
+        { "id": "f08-demos", "puerto": 4328 },
+        { "id": "f09-docs", "puerto": 4329 },
+        { "id": "f10-libre", "puerto": 4330 },
+        { "id": "f11-preview", "puerto": 4331 },
+        { "id": "f12-release", "puerto": 4332 }
+    ],
+    "tiposPrompt": ["codigo", "docs", "operacion", "revision"],
+    "github": { "repo": "fm-dev-mx/celebra-me" },
+    "migracion": { "desde": ".agent/tmp/board/tareas" }
+}

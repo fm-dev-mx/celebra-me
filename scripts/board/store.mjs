@@ -92,6 +92,18 @@ function readGeminiRelay(dir) {
 	}
 }
 
+/** T477: the registered coordinator Claude session and its last turn, `{sesion, at}`, written by session-notice.mjs. */
+export const coordinatorPath = (dir) => join(dirname(dir), 'board-coordinator.json');
+
+export function readCoordinator(dir) {
+	try {
+		const { sesion, at } = JSON.parse(readFileSync(coordinatorPath(dir), 'utf8'));
+		return { sesion, at };
+	} catch {
+		return null;
+	}
+}
+
 export function assertId(id) {
 	if (!SAFE_ID.test(String(id ?? '')) || id === '.' || id === '..')
 		throw new Error(`id no válido: ${id}`);
@@ -119,6 +131,7 @@ export function loadBoard(dir, { since } = {}) {
 	const archivoZip = zipOnlyTasks(dir, tareas, archivo);
 	return {
 		geminiRelay: readGeminiRelay(dir),
+		coordinador: readCoordinator(dir),
 		tareas,
 		decisiones: readCollection(dir, 'decisiones'),
 		bitacora: readLog(dir, { since }),
