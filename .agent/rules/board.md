@@ -143,11 +143,44 @@ routing and the internal modules work lives in
   `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default).
 - **Task number**: `num` is fixed, never reused; use `T<num>` everywhere (d158).
 - **Session name**: `<lane> · T<n> · PR #<n> · <short description>`; omit PR until it opens, then
-  rename (d158). Fixed master names follow d351 above.
+  rename (d158). A review chat is `T<n> · PR #<n> · Revisión`, without a lane. Fixed master names
+  follow d351 above.
 - **Mentions**: use `T<n> <id>` on the board, in doorbells, PR descriptions and handoffs (d159).
 - **Writing titles, busca and cierre** (d284): wrap in `**…**` only the one or two words that must
   stand out, and in backticks only literal code (`pnpm board sync`, `view.html`, `estado=hecha`). A
   `T<n>` in any of these texts opens that task.
+
+## Session lifecycle (T541)
+
+One task = one chat = one branch = one lane. Every task runs these phases, in this order; the board
+call is the source of truth, the chat only follows it.
+
+| Phase    | Board                                                       | Chat and lane                                                                  |
+| -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Alta     | `add` under a mother/phase; `prompt-v1` saved in the task   | none yet                                                                       |
+| Despacho | coordinator `msg para=<agent>` or `entregada` (d249)        | **one** chat `<lane> · T<n> · <description>`                                   |
+| Claim    | `claim` (lock, lane, session)                               | lane checkout, `git switch -c <branch> develop`, git-safety start              |
+| Trabajo  | writes with `--rev`; heartbeat under 30 min (d290)          | commits on the task branch only                                                |
+| PR       | `close` with `--pr`, `--sha` (task `en revision`, d290)     | push, PR to `develop`, rename the chat to `<lane> · T<n> · PR #<n> · …`        |
+| Revisión | `review` opens a round inside the task (T529, d288)         | **one** review chat per PR, `T<n> · PR #<n> · Revisión`; every round reuses it |
+| Cierre   | round `aprobado` at the PR head; `cambios` reopens Trabajo  | git-safety finished by `close`; lane back to idle (detached `develop`, clean)  |
+| Unión    | coordinator merges at the reviewed SHA, `merged`            | —                                                                              |
+| Archivo  | owner archives the task (d278); `sesiones` lists safe chats | the session or its master archives its work and review chats (d259)            |
+
+- **Review chat**: a review is rounds inside the task, never a new task. A PR gets at most one
+  review chat, named `T<n> · PR #<n> · Revisión` with no lane prefix (a review holds no lane); a
+  second round, a new head or a re-review reuses it. A low- or medium-risk Claude PR reviewed by a
+  subagent (d288) opens no review chat.
+- **No chat without a task**: every chat's title carries its `T<n>`, and every task records its
+  chat. Ad hoc analysis, audits and questions stay in the coordinator's chat, or get a task first
+  and then their own chat. Follow-ups reuse the task's chat; a new chat only for a new task or a
+  PR's first review.
+- **Chat ceiling**: open chats across all agents are at most 3 fixed (coordinator
+  `f05 · Coordinador principal` and the masters `f05 · Codex maestro` and `f05 · Gemini maestro`,
+  d351) + 1 per task `en curso` + 1 per PR whose review needs an external chat. With WIP 3 that is
+  about 8–10. Above it, archive finished chats before opening a new one.
+- **One coordinator**: only `f05 · Coordinador principal` assigns tasks, records owner decisions and
+  merges; no other chat acts as coordinator.
 
 ## Working rules (every agent)
 

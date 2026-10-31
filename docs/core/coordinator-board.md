@@ -186,8 +186,17 @@ start/end inbox reminders and idempotence for generated and saved prompts.
 
 Three agents share the board: `claude`, `codex` and `gemini`. Under d351 each has one fixed master
 chat. Claude `f05 · Coordinador principal` assigns work; Codex `f05 · Codex maestro` and Gemini
-`f05 · Gemini maestro` dispatch only their own assigned tasks. A new chat requires a concrete task,
-including a separate chat for each review. Follow-ups reuse that task's existing chat.
+`f05 · Gemini maestro` dispatch only their own assigned tasks. Only `f05 · Coordinador principal`
+coordinates; no other chat assigns, records owner decisions or merges. A new chat requires a
+concrete task (`T<n>` in its title): ad hoc analysis stays in the coordinator's chat or gets a task
+first. A PR gets at most one review chat, `T<n> · PR #<n> · Revisión` with no lane, which every
+round of that PR reuses. Follow-ups reuse that task's existing chat.
+
+The phases (alta → despacho → claim → trabajo → PR → revisión → cierre → unión → archivo) and the
+chat ceiling — 3 fixed chats + 1 per task `en curso` + 1 per PR whose review needs an external chat,
+about 8–10 with WIP 3 — live in
+[the board rule](../../.agent/rules/board.md#session-lifecycle-t541). Before dispatching over that
+ceiling, the coordinator asks the masters to archive their finished chats (`pnpm board sesiones`).
 
 | Role                  | Who                                                        | Does                                                                                   | Never                                                     |
 | --------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
