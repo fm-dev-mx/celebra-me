@@ -13,6 +13,7 @@ import {
 	HANDOFF_LISTS,
 	VEREDICTOS,
 	findTask,
+	isExternal,
 	isFinished,
 	isReview,
 	logRowError,
@@ -223,6 +224,7 @@ export function closeCommands({
 				return {
 					t,
 					board,
+					before,
 					enviado,
 					next,
 					closed,
@@ -235,12 +237,14 @@ export function closeCommands({
 			// T297: from the task's lane, the git-safety session ends with the close (--git-safety=commit).
 			// A session still open for the branch (a released task) is finished as before.
 			const gitSafety =
-				info.sinCandado && !gitSafetyOpen(checkout, info.rama)
-					? ops && {
-							ok: true,
-							line: `git-safety: ${info.t.id} no tenía candado; se cerró sin sesión de carril`,
-						}
-					: finishGitSafety(checkout, info.rama, ops);
+				isExternal(info.before) || isExternal(info.t)
+					? null
+					: info.sinCandado && !gitSafetyOpen(checkout, info.rama)
+						? ops && {
+								ok: true,
+								line: `git-safety: ${info.t.id} no tenía candado; se cerró sin sesión de carril`,
+							}
+						: finishGitSafety(checkout, info.rama, ops);
 			if (gitSafety && !gitSafety.ok) process.exitCode = 1;
 			const text = [
 				`${info.t.id} con cierre (rev ${info.t.rev}) · ${info.t.estado ?? 'pendiente'}`,

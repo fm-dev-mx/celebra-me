@@ -95,37 +95,37 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-	canFinish,
-	color,
-	nextFor,
-	normalizePr,
-	prIssues,
-	queue,
-	requisitos,
-	requisitoLine,
-	blockedText,
-	stage,
-	taskIssues,
-	inTab,
-	isFinished,
-	isReview,
 	authorOf,
+	blockedText,
 	buildLogRow,
 	buildMessageRow,
-	taskLabel,
-	roundLines,
-	reviewRounds,
-	historyRows,
-	logRowError,
-	laneLines,
-	promptWithLane,
+	canFinish,
 	cleaned,
 	CLEANED_ON,
-	unlocked,
-	isSilentLock,
-	SILENT_LOCK_HOURS,
+	color,
 	CONTRATO,
 	findTask,
+	historyRows,
+	inTab,
+	isExternal,
+	isFinished,
+	isReview,
+	isSilentLock,
+	laneLines,
+	logRowError,
+	normalizePr,
+	prIssues,
+	promptWithLane,
+	queue,
+	requisitoLine,
+	requisitos,
+	reviewRounds,
+	roundLines,
+	SILENT_LOCK_HOURS,
+	stage,
+	taskIssues,
+	taskLabel,
+	unlocked,
 } from './model.mjs';
 import { assertLaneReady, assertPlan, readLaneGit } from './lane-plan.mjs';
 import { blocked, listTail, originLines, refIssue, subtaskLines } from './subtasks.mjs';
@@ -549,15 +549,6 @@ const commands = {
 		const tail = listTail(board);
 		if (tail) out(tail);
 	},
-	next({ flags }, dir, out) {
-		const agente = need(flags.agente, 'falta --agente=claude|codex|gemini');
-		const t = nextFor(agente, loadBoard(dir));
-		if (flags.json) return out(JSON.stringify(t, null, 2));
-		if (!t) return out(`Nada listo para ${agente}.`);
-		out(
-			`${t.id} (rev ${t.rev}) — ${t.num ? `T${t.num} ` : ''}${t.titulo}\n\n${promptWithLane(t, loadBoard(dir)) ?? ''}`,
-		);
-	},
 	show({ pos, flags }, dir, out) {
 		const t = getTask(dir, need(pos[0], 'falta <id>'));
 		const board = loadBoard(dir);
@@ -820,7 +811,7 @@ const commands = {
 			out,
 			info.t,
 			`${info.t.id} libre (rev ${info.t.rev})`,
-			finishGitSafety(checkout, info.rama, ops),
+			isExternal(info.t) ? null : finishGitSafety(checkout, info.rama, ops),
 		);
 	},
 	move({ pos, flags }, dir, out) {

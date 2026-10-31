@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { baselineFileName } from '../agent/git-safety.mjs';
 import { detectWorktreeLane, findRepoRoot, gitInspectionEnv } from '../shared/worktree-lane.ts';
 import { UsageError } from './cli.mjs';
-import { READONLY_LANE, isReadOnly } from './model.mjs';
+import { EXTERNAL_LANE, READONLY_LANE, isExternal, isReadOnly } from './model.mjs';
 
 const GIT_SAFETY = join(dirname(fileURLToPath(import.meta.url)), '..', 'agent', 'git-safety.mjs');
 /** What `close`/`release --git-safety=…` may declare to finish; a branch switch is finished by hand. */
@@ -41,10 +41,11 @@ const inTaskLane = (state) =>
 
 /**
  * Why `claim` must not take `task` from this checkout, or null: the folder is another lane, or its branch is not
- * the task's. Read-only tasks hold no lane, so they are never checked.
+ * the task's. Read-only and external tasks hold no checkout, so they are never checked.
  */
 export function claimLaneIssue(state, task, { carril, rama }) {
-	if (!inTaskLane(state) || isReadOnly(task)) return null;
+	if (!inTaskLane(state) || isReadOnly(task) || carril === EXTERNAL_LANE || isExternal(task))
+		return null;
 	if (carril && state.carril !== carril)
 		return `esta carpeta es ${state.carril}, pero ${task.id} corre en ${carril}: haga claim desde celebra-me-worktrees/${carril}`;
 	if (rama && state.rama !== rama)
@@ -55,7 +56,8 @@ export function claimLaneIssue(state, task, { carril, rama }) {
 /** Why `close`/`release` must not run from this checkout for a task locked in another lane, or null. */
 export function lockLaneIssue(state, task) {
 	const carril = task.candado?.carril;
-	if (!inTaskLane(state) || !carril || state.carril === carril) return null;
+	if (!inTaskLane(state) || !carril || state.carril === carril || carril === EXTERNAL_LANE)
+		return null;
 	return `esta carpeta es ${state.carril}, pero el candado de ${task.id} está en ${carril}`;
 }
 
@@ -90,7 +92,7 @@ function runGitSafety(state, args, spawn) {
  * Returns the line the claim prints (`ok: false` when it could not open), or null when there is nothing to do.
  */
 export function startGitSafety(state, task, rama, { spawn = spawnSync } = {}) {
-	if (!inTaskLane(state) || isReadOnly(task) || !rama) return null;
+	if (!inTaskLane(state) || isReadOnly(task) || isExternal(task) || !rama) return null;
 	const finish = `pnpm agent:git-safety:finish --session=${rama}`;
 	if (gitSafetyOpen(state, rama))
 		return { ok: true, line: `git-safety: la sesión ${rama} ya estaba abierta` };

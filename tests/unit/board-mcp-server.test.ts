@@ -298,6 +298,40 @@ describe('board MCP stdio server', () => {
 		expect(JSON.parse(results[1].content[0].text).id).toBe('ready');
 	});
 
+	it('returns blocked tasks with reasons via MCP next when none is eligible', () => {
+		const dir = fixture();
+		writeFileSync(
+			path.join(dir, 'tareas', 't476.json'),
+			JSON.stringify({
+				num: 476,
+				id: 't476',
+				titulo: 'Fotos Editorial',
+				agente: 'gemini',
+				tipo: 'creativo',
+				busca: 'Fotos sin carril',
+				estado: 'pendiente',
+				rev: 1,
+			}),
+		);
+		const result = probe(
+			dir,
+			`console.log(JSON.stringify(await client.callTool({ name: 'next', arguments: { agente: 'gemini' } })));`,
+		);
+		expect(result.isError).not.toBe(true);
+		const parsed = JSON.parse(result.content[0].text);
+		expect(parsed).toMatchObject({
+			tarea: null,
+			bloqueadas: [
+				{
+					id: 't476',
+					num: 476,
+					titulo: 'Fotos Editorial',
+					motivo: expect.stringContaining('Espera su carril'),
+				},
+			],
+		});
+	});
+
 	it('rejects missing/invalid agents, coordinator commands, flags and positional injection', () => {
 		const results = probe(
 			fixture(),
