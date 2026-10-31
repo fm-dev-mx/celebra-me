@@ -186,8 +186,11 @@ start/end inbox reminders and idempotence for generated and saved prompts.
 
 Three agents share the board: `claude`, `codex` and `gemini`. Under d351 each has one fixed master
 chat. Claude `f05 · Coordinador principal` assigns work; Codex `f05 · Codex maestro` and Gemini
-`f05 · Gemini maestro` dispatch only their own assigned tasks. A new chat requires a concrete task,
-including a separate chat for each review. Follow-ups reuse that task's existing chat.
+`f05 · Gemini maestro` dispatch only their own assigned tasks. Only `f05 · Coordinador principal`
+coordinates; no other chat assigns, records owner decisions or merges. A new chat requires a
+concrete task (`T<n>` in its title): ad hoc analysis stays in the coordinator's chat or gets a task
+first. A PR gets at most one review chat, `T<n> · PR #<n> · Revisión` with no lane, which every
+round of that PR reuses. Follow-ups reuse that task's existing chat.
 
 | Role                  | Who                                                        | Does                                                                                   | Never                                                     |
 | --------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -198,6 +201,28 @@ including a separate chat for each review. Follow-ups reuse that task's existing
 The owner identifies and renames the existing masters; configuration never guesses the latest chat.
 Gemini is one agent id, `gemini`, whatever tool runs it (d154); record the tool, for example
 Antigravity, in the session name or the handoff, never as another agent id.
+
+### Session lifecycle (T541)
+
+One task = one chat = one branch = one lane. The short form and the chat ceiling are in
+[the board rule](../../.agent/rules/board.md#working-rules-every-agent); this table is the full
+sequence.
+
+| Phase    | Board                                                       | Chat and lane                                                                  |
+| -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Alta     | `add` under a mother/phase; `prompt-v1` saved in the task   | none yet                                                                       |
+| Despacho | coordinator `msg para=<agent>` or `entregada` (d249)        | **one** chat `<lane> · T<n> · <description>`                                   |
+| Claim    | `claim` (lock, lane, session)                               | lane checkout, `git switch -c <branch> develop`, git-safety start              |
+| Trabajo  | writes with `--rev`; heartbeat under 30 min (d290)          | commits on the task branch only                                                |
+| PR       | `close` with `--pr`, `--sha` (task `en revision`, d290)     | push, PR to `develop`, rename the chat to `<lane> · T<n> · PR #<n> · …`        |
+| Revisión | `review` opens a round inside the task (T529, d288)         | **one** review chat per PR, `T<n> · PR #<n> · Revisión`; every round reuses it |
+| Cierre   | round `aprobado` at the PR head; `cambios` reopens Trabajo  | git-safety finished by `close`; lane back to idle (detached `develop`, clean)  |
+| Unión    | coordinator merges at the reviewed SHA, `merged`            | —                                                                              |
+| Archivo  | owner archives the task (d278); `sesiones` lists safe chats | the session or its master archives its work and review chats (d259)            |
+
+Chat ceiling: 3 fixed chats (d351) + 1 per task `en curso` + 1 per PR whose review needs an external
+chat, about 8–10 with WIP 3; a d288 subagent review opens no chat. Before dispatching over that
+ceiling, the coordinator asks the masters to archive their finished chats (`pnpm board sesiones`).
 
 ### Shared rules
 
