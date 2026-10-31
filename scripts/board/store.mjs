@@ -346,7 +346,7 @@ export function migrateLogLines(r) {
 /**
  * Write through a temp file and rename, so a reader never sees half a document. A task document keeps the rounds
  * already on disk (T529): only a round write changes them. A `ronda` task with no file of its own is written into
- * its parent's `rondas`, ordered by `vuelta`.
+ * its parent's `rondas`, ordered by `vuelta`; without a parent it is refused (T543).
  */
 export function writeDoc(dir, collection, id, data, { backup: keep = true } = {}) {
 	const d = join(dir, collection);
@@ -355,6 +355,8 @@ export function writeDoc(dir, collection, id, data, { backup: keep = true } = {}
 	if (TASK_COLLECTIONS.has(collection) && data.ronda && !existsSync(f)) {
 		const parent = roundParent(dir, collection, id);
 		if (parent) return writeRound(dir, collection, parent, id, data, { keep });
+		// T543: a new round never becomes a task file of its own.
+		throw new Error(`${id} es una ronda de revisión sin tarea en ${collection}`);
 	}
 	const rest = { ...data };
 	delete rest.id;
@@ -367,17 +369,53 @@ export function writeDoc(dir, collection, id, data, { backup: keep = true } = {}
 	writeAtomic(f, rest);
 }
 
-function writeRound(dir, collection, parent, id, data, { keep }) {
+const byVuelta = (a, b) => (a.vuelta ?? 0) - (b.vuelta ?? 0);
+
+/** A round as `rondas` keeps it: its parent and flag come back from where it lives. */
+function asRound(data, id) {
 	const round = { ...data, id };
 	delete round.origen;
 	delete round.ronda;
+	return round;
+}
+
+function writeRound(dir, collection, parent, id, data, { keep }) {
+	const round = asRound(data, id);
 	const others = (parent.rondas ?? []).filter((r) => r.id !== id);
-	const rondas = [...others, round].sort((a, b) => (a.vuelta ?? 0) - (b.vuelta ?? 0));
+	const rondas = [...others, round].sort(byVuelta);
 	const f = join(dir, collection, `${parent.id}.json`);
 	if (keep) backup(dir, collection, parent.id, f);
 	const rest = { ...parent, rondas };
 	delete rest.id;
 	writeAtomic(f, rest);
+}
+
+/**
+ * T543: the review rounds of task `id` that still have a file of their own (`<id>-revision(-N).json`, from before
+ * T529), with `aplicar` moved into its `rondas` as written (`num` included, so its T<n> still resolves), each file
+ * backed up first. Returns the ids found.
+ */
+export function embedLegacyRounds(dir, collection, id, { aplicar = true } = {}) {
+	const d = join(dir, collection);
+	const parentFile = join(d, `${assertId(id)}.json`);
+	if (!TASK_COLLECTIONS.has(collection) || !existsSync(parentFile)) return [];
+	const legacy = readdirSync(d)
+		.filter((f) => f.endsWith('.json') && ROUND_ID.exec(f.slice(0, -5))?.[1] === id)
+		.map((f) => f.slice(0, -5))
+		// A task merely named `<id>-revision` is not a round: only one that names `id` as its origen moves in.
+		.filter((rid) => readJson(join(d, `${rid}.json`)).origen === id);
+	if (!aplicar || !legacy.length) return legacy;
+	const parent = readJson(parentFile);
+	const moved = legacy.map((rid) => asRound(readJson(join(d, `${rid}.json`)), rid));
+	const kept = (parent.rondas ?? []).filter((r) => !legacy.includes(r.id));
+	backup(dir, collection, id, parentFile);
+	writeAtomic(parentFile, { ...parent, rondas: [...kept, ...moved].sort(byVuelta) });
+	for (const rid of legacy) {
+		const f = join(d, `${rid}.json`);
+		backup(dir, collection, rid, f);
+		rmSync(f);
+	}
+	return legacy;
 }
 
 function writeAtomic(f, doc) {

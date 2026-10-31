@@ -83,6 +83,10 @@ function makeLane(lane: string, branch: string | null = BRANCH) {
 }
 
 function cli(dir: string, checkout: string, ...args: string[]) {
+	return cliWith({}, dir, checkout, ...args);
+}
+
+function cliWith(extra: Record<string, string>, dir: string, checkout: string, ...args: string[]) {
 	const result = runCommand(process.execPath, [SCRIPT_PATH, ...args], {
 		cwd: ROOT,
 		allowFailure: true,
@@ -90,6 +94,7 @@ function cli(dir: string, checkout: string, ...args: string[]) {
 			CELEBRA_BOARD_DIR: dir,
 			CELEBRA_BOARD_CHECKOUT: checkout,
 			CLAUDE_CODE_HOST_SESSION_ID: '',
+			...extra,
 		}),
 	});
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
@@ -189,7 +194,7 @@ describe('pnpm board claim from a lane (T297)', () => {
 		expect(readTask(dir, 'tarea').candado).toBeUndefined();
 	});
 
-	it('checks nothing from Integration or for a review round, which holds no lane', () => {
+	it('refuses a lane task from Integration or an unknown folder and checks nothing for a review round (T543)', () => {
 		const dir = makeBoard([
 			{ id: 'tarea', carrilPlaneado: 'f05-plataforma' },
 			{
@@ -200,8 +205,26 @@ describe('pnpm board claim from a lane (T297)', () => {
 			},
 		]);
 		const fromIntegration = cli(dir, makeIntegration(), 'claim', 'tarea', ...CLAIM);
-		expect(fromIntegration.status).toBe(0);
-		expect(fromIntegration.out).not.toContain('git-safety');
+		expect(fromIntegration.status).toBe(2);
+		expect(fromIntegration.err).toContain(
+			'esta carpeta es integration, no un carril de tarea: haga claim de tarea desde celebra-me-worktrees/f05-plataforma',
+		);
+		const unknown = cli(dir, makeLane('otra-carpeta'), 'claim', 'tarea', ...CLAIM);
+		expect(unknown.status).toBe(2);
+		expect(unknown.err).toContain('esta carpeta es unknown, no un carril de tarea');
+		expect(readTask(dir, 'tarea').candado).toBeUndefined();
+
+		// The MCP server runs in its own folder, not the agent's: its claim is not refused there.
+		const viaMcp = cliWith(
+			{ CELEBRA_BOARD_VIA: 'mcp' },
+			dir,
+			makeIntegration(),
+			'claim',
+			'tarea',
+			...CLAIM,
+		);
+		expect(viaMcp.status).toBe(0);
+		expect(readTask(dir, 'tarea').candado).toBeDefined();
 
 		const review = cli(
 			dir,
