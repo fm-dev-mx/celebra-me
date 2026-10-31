@@ -66,7 +66,15 @@ const onDisk = (dir: string, id: string): Json => JSON.parse(readFileSync(fileOf
 
 /** Opens a round on `sha` and closes it with `veredicto`, as the coordinator would. */
 function reviewRound(dir: string, id: string, sha: string, veredicto: string) {
-	const opened = cli(dir, 'review', 'codigo', `--sha=${sha}`, '--agente=gemini', '--coordinador');
+	const opened = cli(
+		dir,
+		'review',
+		'codigo',
+		`--sha=${sha}`,
+		'--agente=gemini',
+		'--coordinador',
+		'--quien=claude',
+	);
 	expect(opened.status).toBe(0);
 	patchBoardDoc(dir, id, { estado: 'en curso' });
 	const hallazgo =
@@ -76,6 +84,7 @@ function reviewRound(dir: string, id: string, sha: string, veredicto: string) {
 		'close',
 		id,
 		'--coordinador',
+		'--quien=claude',
 		'--resumen=Revisado.',
 		...LISTS,
 		`--sha=${sha.slice(0, 7)}`,
@@ -88,7 +97,15 @@ function reviewRound(dir: string, id: string, sha: string, veredicto: string) {
 describe('board review rounds inside the task (T529)', () => {
 	it('keeps a round inside its task, with no file or number of its own', () => {
 		const dir = makeBoard([ORIGIN]);
-		const r = cli(dir, 'review', 'codigo', `--sha=${SHA}`, '--agente=gemini', '--coordinador');
+		const r = cli(
+			dir,
+			'review',
+			'codigo',
+			`--sha=${SHA}`,
+			'--agente=gemini',
+			'--coordinador',
+			'--quien=claude',
+		);
 		expect(r.status).toBe(0);
 		expect(existsSync(fileOf(dir, 'codigo-revision'))).toBe(false);
 		const parent = onDisk(dir, 'codigo');
@@ -114,6 +131,7 @@ describe('board review rounds inside the task (T529)', () => {
 			'close',
 			'codigo',
 			'--coordinador',
+			'--quien=claude',
 			'--resumen=Hallazgos corregidos.',
 			...LISTS,
 			'--comprobacion=pnpm validate:changed',
@@ -133,6 +151,7 @@ describe('board review rounds inside the task (T529)', () => {
 			`--sha=${SHA2}`,
 			'--agente=gemini',
 			'--coordinador',
+			'--quien=claude',
 		);
 		expect(second.status).toBe(0);
 		expect(existsSync(fileOf(dir, 'codigo-revision-2'))).toBe(false);
