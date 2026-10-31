@@ -37,7 +37,8 @@
         "focalPointMobile": "50% 30%",
         "focalPointDesktop": "62% 38%",
         "variant": "standard",
-        "scrollLabel": "Descubra mi noche"
+        "scrollLabel": "Descubra mi noche",
+        "scrollCue": "constellation"
     },
     "location": {
         "accessPolicy": {
@@ -55,12 +56,15 @@
                 "text": "Confirme su asistencia <strong>antes del 29 de agosto de 2027</strong>."
             }
         ],
-        "variant": "standard",
+        "variant": "star-route",
+        "introEyebrow": "12 de septiembre de 2027",
+        "introHeading": "Ruta de la noche",
         "venues": [
             {
                 "venueEvent": "Misa de Acción de Gracias",
                 "venueName": "Catedral de la Asunción",
                 "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Catedral+de+la+Asuncion+Cuernavaca",
                 "city": "Cuernavaca",
                 "date": "12 de septiembre de 2027",
                 "time": "5:00 PM",
@@ -72,6 +76,7 @@
                 "venueEvent": "Recepción",
                 "venueName": "Hacienda Los Claustros",
                 "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Hacienda+Los+Claustros+Cuernavaca",
                 "city": "Cuernavaca",
                 "date": "12 de septiembre de 2027",
                 "time": "7:00 PM",
@@ -81,7 +86,8 @@
             }
         ],
         "mapStyle": "dark",
-        "introLede": "Ubicación ilustrativa de la demo"
+        "introLede": "Ubicación ilustrativa de la demo",
+        "indicationsHeading": "Antes de llegar"
     },
     "family": {
         "featuredImage": {
@@ -113,10 +119,6 @@
             {
                 "name": "Daniela Rivas Hernández",
                 "role": "Madrina"
-            },
-            {
-                "name": "Fernando Castillo López",
-                "role": "Padrino"
             }
         ],
         "variant": "standard"
@@ -247,11 +249,12 @@
         "variant": "timeline-paper"
     },
     "countdown": {
-        "variant": "written-days",
+        "variant": "clock-face",
         "title": "Faltan",
         "footerText": "para nuestra noche bajo las estrellas",
         "presentationOptions": {
-            "dayUnit": "nights"
+            "dayUnit": "nights",
+            "visibleUnits": ["days", "hours", "minutes"]
         }
     },
     "interludes": [
@@ -275,9 +278,16 @@
         }
     ],
     "envelope": {
+        "revealVariant": "celestial-letter",
         "sealStyle": "wax",
         "sealIcon": "wax-monogram",
         "sealInitials": "C·T",
+        "cardLabel": "Mis XV años",
+        "cardTagline": "Una noche bajo las estrellas",
+        "documentLabel": "Mis XV años",
+        "stampText": "12 de septiembre",
+        "stampYear": "2027",
+        "teaserDetails": "Hacienda Los Claustros · Cuernavaca",
         "microcopy": "Abra su invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
@@ -294,8 +304,10 @@
     },
     "music": {
         "url": "https://media.celebra-me.com/shared/music/nuvole-bianche-24611cb040e2779c681d7b14bc9423d8e058d477f2c4368c216a1373cf2b3f59.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo"
+        "autoPlay": true,
+        "title": "Nuvole Bianche",
+        "artist": "Ludovico Einaudi",
+        "control": "track"
     },
     "composition": {
         "intersections": {

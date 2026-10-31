@@ -202,6 +202,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
 		scrollLabel: data.hero.scrollLabel,
+		scrollCue: data.hero.scrollCue,
 		tagline: data.hero.tagline,
 		photoCredit: data.hero.photoCredit,
 	};
@@ -562,6 +563,7 @@ function buildMusic(
 		url: playableMusicUrl,
 		autoPlay: music?.autoPlay ?? false,
 		title: music?.title,
+		artist: music?.artist,
 		creditsUrl: music?.creditsUrl,
 		startAt: music?.startAt,
 		fadeInSeconds: music?.fadeInSeconds,

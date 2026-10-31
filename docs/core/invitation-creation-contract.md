@@ -403,11 +403,11 @@ Every managed digital invitation must define:
   and definitions carry no `baseDemoId`; the legacy `base_demo_id`/`snapshot` columns leave with
   their contract migration.
 - **Envelope reveal** (`envelope`, optional): `revealVariant: editorial-cover` replaces the envelope
-  with the editorial cover reveal. A standalone reveal skin (`satin-filigree`, `seaside-lineart`,
-  `storybook-lanterns`, `storybook-butterflies`) replaces the preset-driven `data-variant` and its
-  stylesheet. Otherwise `envelope.variant` (a theme preset name) selects the skin, falling back to
-  `theme.preset` when omitted; `revealVariant: celestial-blue` layers on top of it
-  (`src/lib/invitation/reveal-card.ts`).
+  with the editorial cover reveal. A standalone reveal skin (`celestial-letter`, `satin-filigree`,
+  `seaside-lineart`, `storybook-lanterns`, `storybook-butterflies`) replaces the preset-driven
+  `data-variant` and its stylesheet. Otherwise `envelope.variant` (a theme preset name) selects the
+  skin, falling back to `theme.preset` when omitted; `revealVariant: celestial-blue` layers on top
+  of it (`src/lib/invitation/reveal-card.ts`).
 - **Lifecycle** (`lifecycle`, required, no default): `in_progress` while the definition is
   intentionally absent or not yet aligned through Production; `published` once Production alignment
   is expected. This metadata is explicit and is not inferred from timestamps or environment

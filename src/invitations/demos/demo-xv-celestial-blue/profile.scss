@@ -14,6 +14,16 @@
 	--motion-hero-affordance-duration: 0.4s;
 	--motion-hero-affordance-delay: 0.72s;
 
+	// The song line shares the hero content's left edge but stays a quiet caption: a dimmer serif
+	// italic, never the name's script, so it reads after the date and venue, not with them.
+	--music-track-left: clamp(1.25rem, 4vw, 2rem);
+	--music-track-bottom: clamp(1.25rem, 4svh, 2.25rem);
+	--music-track-color: rgb(var(--color-diamond-white-rgb) / 62%);
+	--music-track-accent: var(--color-satin-blue);
+	--music-track-title-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--music-track-title-size: 0.95rem;
+	--music-track-meta-size: 0.6rem;
+
 	// The standard family layout owns the responsive portrait/name split.
 	--family-bg: color-mix(in srgb, var(--color-cool-ivory) 65%, var(--color-ice-blue));
 	--family-accent: color-mix(
@@ -66,33 +76,42 @@
 	--family-media-image-radius: 0;
 	--family-media-bg: transparent;
 	--family-media-shadow: none;
-	--family-content-gap: 2.25rem;
-	--family-group-text-align: start;
-	--family-item-align: flex-start;
-	--family-group-padding: 0 0 0 clamp(1.5rem, 5vw, 3rem);
+
+	// Hierarchy: the parents lead in large graphite serif, the two godparents follow side by side
+	// a size smaller, roles and group titles are tracked satin-blue capitals, all centred.
+	--family-content-gap: clamp(2rem, 4vw, 2.75rem);
+	--family-group-text-align: center;
+	--family-item-align: center;
+	--family-group-padding: 0;
 	--family-parents-padding: 0;
-	--family-parents-margin-inline: 0;
+	--family-parents-margin-inline: auto;
 	--family-group-filter: none;
 	--family-group-title-font: var(--font-ui);
-	--family-group-title-size: 0.875rem;
-	--family-group-title-weight: 500;
-	--family-group-title-letter-spacing: 0.04em;
-	--family-group-title-text-transform: none;
+	--family-group-title-size: 0.68rem;
+	--family-group-title-weight: 600;
+	--family-group-title-letter-spacing: 0.26em;
+	--family-group-title-text-transform: uppercase;
 	--family-group-title-color: var(--family-accent);
 	--family-group-title-opacity: 100%;
-	--family-group-title-margin: 0 0 1.25rem;
-	--family-list-gap: 1.25rem;
-	--family-godparents-list-columns: 1fr;
-	--family-name-size: clamp(1.5rem, 2.5vw, 1.75rem);
-	--family-name-line-height: 1.2;
-	--family-name-max-width: 24ch;
+	--family-group-title-margin: 0 0 1.35rem;
+	--family-group-divider-width: 2.75rem;
+	--family-group-divider-height: 1px;
+	--family-group-divider-opacity: 55%;
+	--family-list-gap: 1.1rem;
+	--family-godparents-list-columns: repeat(2, minmax(0, 1fr));
+	--family-name-size: clamp(1.85rem, 2.6vw, 2.15rem);
+	--family-godparent-name-size: clamp(1.25rem, 1.8vw, 1.45rem);
+	--family-name-color: var(--color-deep-blue-graphite);
+	--family-name-line-height: 1.15;
+	--family-name-max-width: 22ch;
 	--family-name-text-shadow: none;
 	--family-meta-font: var(--font-ui);
-	--family-meta-size: 0.875rem;
-	--family-meta-weight: 400;
-	--family-meta-letter-spacing: 0.02em;
-	--family-meta-text-transform: none;
-	--family-meta-color: var(--family-accent);
+	--family-meta-size: 0.62rem;
+	--family-meta-weight: 600;
+	--family-meta-letter-spacing: 0.22em;
+	--family-meta-text-transform: uppercase;
+	--family-meta-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--family-meta-margin-top: 0.35rem;
 
 	// Quote defaults are component-scoped; override the public tokens on their owner.
 	.quote-section {
@@ -208,11 +227,14 @@
 				transparent 70%
 			);
 		--hero-section-background: var(--color-deep-blue-graphite);
-		--hero-content-justify: center;
+
+		// One reading edge at every width: the identity block hangs from the left, the
+		// constellation cue answers it from the right edge, the song line sits under it.
+		--hero-content-justify: start;
 		--hero-label-color: var(--color-satin-blue);
 		--hero-label-margin-bottom: 0.75rem;
 		--hero-title-max-width: none;
-		--hero-title-align: center;
+		--hero-title-align: left;
 		--hero-title-font-family: 'Pinyon Script', var(--font-display);
 		--hero-title-font-size: clamp(5rem, 9vw, 8rem);
 		--hero-title-font-size-mobile: clamp(4.25rem, 21vw, 5.75rem);
@@ -230,16 +252,18 @@
 		--hero-surname-color: var(--color-liquid-silver);
 		--hero-content-rows: auto auto auto auto;
 		--hero-title-thread-display: none;
-		--hero-details-margin-left: auto;
-		--hero-details-margin-right: auto;
-		--hero-details-padding-left: 0;
-		--hero-details-rule: 0;
-
-		// Centered with the name and lifted clear of the music prompt on phones.
-		--hero-scroll-bottom-mobile: 5rem;
-		--hero-scroll-left-mobile: 0;
-		--hero-scroll-right-mobile: 0;
-		--hero-scroll-margin-inline-mobile: auto;
+		--hero-details-margin-left: 0;
+		--hero-details-margin-right: 0;
+		--hero-details-padding-left: clamp(0.95rem, 2vw, 1.35rem);
+		--hero-details-rule: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
+		--hero-details-align-mobile: flex-start;
+		--hero-details-text-align-mobile: left;
+		--hero-meta-font-size: clamp(0.68rem, 1.1vw, 0.9rem);
+		--hero-date-font-size: clamp(0.85rem, 1.6vw, 1.2rem);
+		--hero-scroll-indicator-color: rgb(var(--color-diamond-white-rgb) / 72%);
+		--hero-scroll-left-mobile: auto;
+		--hero-scroll-right-mobile: 1rem;
+		--hero-scroll-bottom-mobile: 1.5rem;
 
 		@media (width >= 992px) {
 			--hero-content-justify: start;
@@ -257,9 +281,6 @@
 					rgb(var(--color-deep-blue-graphite-rgb) / 70%) 85%,
 					var(--color-deep-blue-graphite) 100%
 				);
-			--hero-details-margin-left: 0;
-			--hero-details-padding-left: clamp(0.95rem, 2vw, 1.35rem);
-			--hero-details-rule: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
 		}
 	}
 
@@ -282,6 +303,62 @@
 				transparent 1.7px
 			),
 			var(--color-deep-blue-graphite);
+	}
+
+	// Countdown: a silver night dial. Minute ticks ring the numbers, a hairline inner face holds
+	// them, and the script title and the date sit outside the dial like an engraved bezel.
+	.countdown-section {
+		--countdown-clock-padding: clamp(4.5rem, 9vw, 6.5rem) 1.25rem clamp(4rem, 8vw, 6rem);
+		--countdown-clock-bg: transparent;
+		--countdown-clock-color: var(--color-diamond-white);
+		--countdown-clock-ring-display: none;
+		--countdown-clock-title-font: 'Pinyon Script', var(--font-display);
+		--countdown-clock-title-weight: 400;
+		--countdown-clock-title-size: clamp(2.75rem, 7vw, 3.75rem);
+		--countdown-clock-title-margin: 0 auto 1.25rem;
+		--countdown-clock-dial-content: '';
+		--countdown-clock-dial-size: clamp(18rem, 84vw, 26rem);
+
+		// Room for the whole dial around the numbers' row (about 5rem tall).
+		--countdown-clock-dial-padding: calc((var(--countdown-clock-dial-size) - 5rem) / 2);
+		--countdown-clock-dial-ticks:
+			repeating-conic-gradient(
+				from -0.4deg,
+				rgb(var(--color-liquid-silver-rgb) / 75%) 0deg 0.8deg,
+				transparent 0.8deg 30deg
+			),
+			repeating-conic-gradient(
+				from -0.2deg,
+				rgb(var(--color-liquid-silver-rgb) / 32%) 0deg 0.4deg,
+				transparent 0.4deg 6deg
+			);
+		--countdown-clock-dial-ticks-mask: radial-gradient(
+			circle closest-side,
+			transparent calc(100% - 0.95rem),
+			black calc(100% - 0.9rem),
+			black calc(100% - 1px),
+			transparent 100%
+		);
+		--countdown-clock-dial-face: radial-gradient(
+			circle closest-side,
+			rgb(var(--color-satin-blue-rgb) / 12%) 0%,
+			transparent calc(100% - 1.55rem),
+			rgb(var(--color-liquid-silver-rgb) / 40%) calc(100% - 1.5rem),
+			transparent calc(100% - 1.45rem)
+		);
+		--countdown-clock-dial-shadow: 0 0 4rem rgb(var(--color-satin-blue-rgb) / 10%);
+		--countdown-clock-timer-width: min(100%, clamp(13rem, 56vw, 19rem));
+		--countdown-clock-timer-gap: 0;
+		--countdown-clock-segment-padding: 0.25rem 0;
+		--countdown-clock-value-font:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--countdown-clock-value-size: clamp(2.4rem, 8vw, 3.4rem);
+		--countdown-clock-value-color: var(--color-diamond-white);
+		--countdown-clock-label-size: 0.6rem;
+		--countdown-clock-label-color: var(--color-satin-blue);
+		--countdown-label-color: var(--color-satin-blue);
+		--countdown-clock-date-margin: 1.5rem;
+		--countdown-clock-footer-color: rgb(var(--color-liquid-silver-rgb) / 82%);
 	}
 
 	// Cadence: countdown -> family (bridge: the ivory page of the family turns down over the night);
@@ -321,18 +398,78 @@
 	}
 
 	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='stack'] {
-		--intersection-stack-surface: var(--color-deep-blue-graphite);
-		--intersection-stack-radius: 1.75rem;
-		--intersection-stack-edge: 1px solid rgb(var(--color-liquid-silver-rgb) / 38%);
-		--intersection-stack-shadow: 0 -1.5rem 3rem rgb(0 0 0 / 45%);
-		--intersection-stack-recede-scale: 0.94;
-		--intersection-stack-recede-dim: 0.55;
+		// A moonlit sheet: lit from its top edge, fading into the night, with a silver rim.
+		--intersection-stack-surface:
+			radial-gradient(
+				ellipse 70% 12rem at 50% 0%,
+				rgb(var(--color-satin-blue-rgb) / 18%) 0%,
+				transparent 100%
+			),
+			var(--color-deep-blue-graphite);
+		--intersection-stack-radius: 2.25rem;
+		--intersection-stack-edge: 0;
+		--intersection-stack-shadow:
+			inset 0 1px 0 rgb(var(--color-liquid-silver-rgb) / 42%),
+			0 -2rem 3.5rem -0.75rem rgb(0 0 0 / 60%);
+		--pa-section-padding: clamp(2.5rem, 6vw, 3.75rem) clamp(1.25rem, 4vw, 2.5rem);
 	}
 
-	// The gifts keep the night under them while the pass rises and they recede.
+	// The gifts keep the night under them and sink back while the pass rises; the recede
+	// tokens are read on this source wrapper, where the animation runs.
 	.invitation-section-wrapper[data-section-kind='gifts'] {
 		--section-band-paper: var(--color-surface-dark);
 		--intersection-stack-floor: var(--color-surface-dark);
+		--intersection-stack-recede-scale: 0.9;
+		--intersection-stack-recede-dim: 0.4;
+		--intersection-stack-recede-fade: 55%;
+	}
+
+	// Reveal: the celestial letter, in this palette. A deep night envelope edged in liquid silver,
+	// a pearl letter set in script, and a silver wax medallion carrying the monogram.
+	.envelope-wrapper {
+		--celestial-letter-paper: color-mix(
+			in srgb,
+			var(--color-deep-blue-graphite) 70%,
+			var(--color-satin-blue)
+		);
+		--celestial-letter-liner: color-mix(
+			in srgb,
+			var(--color-satin-blue) 58%,
+			var(--color-deep-blue-graphite)
+		);
+		--celestial-letter-ink: rgb(var(--color-liquid-silver-rgb) / 70%);
+		--celestial-letter-card: var(--color-pearl-gray);
+		--env-font-display: 'Pinyon Script', var(--font-calligraphy), cursive;
+		--reveal-card-font-display: 'Pinyon Script', var(--font-calligraphy), cursive;
+		--env-seal-accent: var(--color-liquid-silver);
+		--wax-seal-highlight: var(--color-diamond-white);
+		--wax-seal-mid: color-mix(in srgb, var(--color-liquid-silver) 85%, var(--color-satin-blue));
+		--wax-seal-deep: color-mix(
+			in srgb,
+			var(--color-cold-silver) 70%,
+			var(--color-deep-blue-graphite)
+		);
+		--wax-seal-letter: var(--color-deep-blue-graphite);
+		--wax-seal-shadow: black;
+		--env-shadow-seal:
+			0 0 0 1px rgb(var(--color-diamond-white-rgb) / 35%),
+			0 0 1.5rem rgb(var(--color-diamond-white-rgb) / 35%), 0 0.5rem 1rem rgb(0 0 0 / 45%);
+	}
+
+	// Location: a route of the night, the two venues joined by one silver line with a star each,
+	// the hour set large in serif and the guest notes as light notes with a sky-blue swatch.
+	.event-location {
+		--location-star-ink: var(--color-deep-blue-graphite);
+		--location-star-muted: var(--color-soft-graphite);
+		--location-star-line: rgb(var(--color-liquid-silver-rgb) / 85%);
+		--location-star-mark: var(--color-deep-blue-graphite);
+		--location-star-glow: rgb(var(--color-satin-blue-rgb) / 90%);
+		--location-star-display-font:
+			'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--location-star-photo-radius: 1.25rem;
+		--location-star-button-bg: var(--color-deep-blue-graphite);
+		--location-star-button-color: var(--color-diamond-white);
+		--location-star-swatch: var(--color-satin-blue);
 	}
 
 	.gifts-section {
@@ -400,6 +537,25 @@
 		--pa-check-in-badge-color: var(--formal-chapter-meta);
 		--pa-check-in-title-color: var(--color-deep-blue-graphite);
 		--pa-check-in-text-color: var(--color-soft-graphite);
+
+		// Compact ticket: the whole pass, check-in row included, fits one phone screen.
+		--pa-ticket-width: min(100%, 26rem);
+		--pa-ticket-header-padding: 1.75rem 1.5rem 0;
+		--pa-ticket-header-gap: 0.5rem;
+		--pa-ticket-signature-size: clamp(1.75rem, 4vw, 2.25rem);
+		--pa-ticket-body-padding: 1.25rem 1.5rem 0;
+		--pa-ticket-body-gap: 0.5rem;
+		--pa-ticket-field-min-height: 0;
+		--pa-ticket-guest-size: clamp(2.35rem, 4vw + 1.2rem, 3rem);
+		--pa-ticket-welcome-margin: 0 0 1rem;
+		--pa-welcome-size: 1.125rem;
+		--pa-ticket-quota-padding: 1rem 1.5rem 1.1rem;
+		--pa-ticket-count-size: 4rem;
+		--pa-check-in-margin-top: 0;
+		--pa-check-in-margin-bottom: 1.25rem;
+		--pa-check-in-padding: 0.75rem;
+		--pa-check-in-qr-size: 4.5rem;
+		--pa-check-in-title-size: 0.95rem;
 	}
 
 	.rsvp-section {
@@ -478,5 +634,16 @@
 		--thank-you-closing-rest-letter-spacing: 0.26em;
 		--thank-you-closing-rest-text-transform: uppercase;
 		--thank-you-closing-rest-color: var(--color-liquid-silver);
+	}
+
+	@media (width >= 576px) {
+		--music-track-left: clamp(1.5rem, 5vw, 4.5rem);
+	}
+
+	@media (width >= 1200px) {
+		// Fixed to the viewport, so it re-derives the hero content edge: the centered container plus its inset.
+		--music-track-left: calc(
+			max(0px, (100% - var(--container-max-width-lg)) / 2) + clamp(4.5rem, 9vw, 8rem)
+		);
 	}
 }

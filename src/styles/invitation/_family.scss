@@ -348,6 +348,12 @@
 		align-self: center;
 	}
 
+	// Godparent names may step below the parents' (`--family-godparent-name-size`); while it is
+	// unset the scoped value is invalid and every name keeps `--family-name-size`.
+	&__group--godparents {
+		--family-name-size-scoped: var(--family-godparent-name-size);
+	}
+
 	&__group {
 		position: relative;
 		min-width: 0;
@@ -546,8 +552,8 @@
 		margin: var(--family-name-margin, 0);
 		font-family: var(--family-name-font, var(--family-name-font-fallback, var(--font-display)));
 		font-size: var(
-			--family-name-size,
-			var(--family-name-size-fallback, clamp(1.45rem, 3vw, 2.05rem))
+			--family-name-size-scoped,
+			var(--family-name-size, var(--family-name-size-fallback, clamp(1.45rem, 3vw, 2.05rem)))
 		);
 		font-weight: var(--family-name-weight, 400);
 		line-height: var(--family-name-line-height, 1.12);

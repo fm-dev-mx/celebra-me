@@ -15,6 +15,9 @@ import { LOCATION_VARIANTS } from '@/lib/invitation/section-variants';
 /** Variants built on the shared venue plates: two or more venues, optional compact cards. */
 const PLATE_VARIANTS: ReadonlySet<string> = new Set(['stacked-venue-plates', 'night-route']);
 
+/** Variants that lay out a route between venues and so need two or more of them. */
+const MULTI_VENUE_VARIANTS: ReadonlySet<string> = new Set([...PLATE_VARIANTS, 'star-route']);
+
 const locationCoordinatesSchema = z
 	.object({
 		lat: z.number().min(-90).max(90),
@@ -119,6 +122,7 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[3]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[4]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[5]) }),
 	])
 	.superRefine((location, context) => {
 		if (
@@ -175,7 +179,7 @@ export const locationSchema = z
 			return;
 		}
 
-		if (PLATE_VARIANTS.has(location.variant ?? '')) {
+		if (MULTI_VENUE_VARIANTS.has(location.variant ?? '')) {
 			const venues = collectVisibleVenues(location);
 			if (venues.length >= 2) return;
 			context.addIssue({

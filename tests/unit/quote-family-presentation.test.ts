@@ -108,7 +108,7 @@ describe('Quote and family presentation controls', () => {
 		).toBe(false);
 	});
 
-	it('scopes the editorial overrides to Celestial Blue without a blur or compositing workaround', () => {
+	it('scopes the editorial quote and centered family overrides to Celestial Blue without a blur or compositing workaround', () => {
 		const quote = profileRules.find(
 			(rule) => rule.selectorText === `${profileSelector} .quote-section`,
 		)!;
@@ -121,8 +121,8 @@ describe('Quote and family presentation controls', () => {
 		expect(quote.style.getPropertyValue('--quote-content-shadow')).toBe('none');
 		expect(quote.style.getPropertyValue('--quote-continuation-indent')).toBe('1.5em');
 		expect(quote.style.getPropertyValue('--quote-line-margin-start')).toBe('0');
-		expect(family.style.getPropertyValue('--family-item-align')).toBe('flex-start');
-		expect(family.style.getPropertyValue('--family-group-text-align')).toBe('start');
+		expect(family.style.getPropertyValue('--family-item-align')).toBe('center');
+		expect(family.style.getPropertyValue('--family-group-text-align')).toBe('center');
 		expect(family.style.getPropertyValue('--family-divider')).toBe('transparent');
 		for (const property of [
 			'filter',

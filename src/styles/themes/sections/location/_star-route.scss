@@ -1,0 +1,444 @@
+@use '../../../global/a11y' as a11y;
+@use '../../../global/mixins' as mixins;
+
+// ==========================================================================
+// LOCATION — star-route
+// Venues as editorial rows joined by one vertical line with a star per venue, like the stops of
+// a constellation. Each row pairs a large photo with left-aligned data: the time as the
+// protagonist, event · venue, the address and one «Cómo llegar» button. Wide screens alternate
+// the photo side around the line; phones stack photo, time, data and a full-width button beside
+// the line. The guest notes follow as light notes (the reserved one with a color swatch) and the
+// intro lede moves to a footnote at the section foot.
+// Tokens (all optional):
+//   --location-star-ink            Main text color
+//   --location-star-muted          Labels, address, notes and footnote
+//   --location-star-line           Route line and hairlines
+//   --location-star-mark           Star fill
+//   --location-star-glow           Star halo
+//   --location-star-max-width      Width of the route block (default 68rem)
+//   --location-star-display-font   Time and venue type (default: the display font)
+//   --location-star-label-font     Labels, button and links (default: the label font)
+//   --location-star-time-size      Size of the time (default clamp(3.5rem, 13vw, 5.75rem))
+//   --location-star-photo-radius   Photo corners (default 1rem)
+//   --location-star-photo-ratio    Photo aspect ratio (default 4 / 3)
+//   --location-star-button-bg / -color / -border  «Cómo llegar» button
+//   --location-star-swatch         Color of the reserved-note swatch (default: the accent)
+// ==========================================================================
+
+.event-location[data-variant='star-route'] {
+	--location-star-ink: var(--color-text-primary);
+	--location-star-muted: var(--color-text-secondary);
+	--location-star-line: rgb(var(--color-text-primary-rgb, 16 24 32) / 22%);
+	--location-star-mark: var(--color-text-primary);
+	--location-star-glow: transparent;
+
+	// Gutter that carries the line and the stars on phones; the center column on wide screens.
+	--star-route-gutter: 1.75rem;
+	--star-route-row-gap: clamp(3.5rem, 10vw, 6rem);
+
+	// Type scale of the variant, one step per role.
+	--star-route-label-size: 0.75rem;
+	--star-route-link-size: 0.78rem;
+	--star-route-button-size: 0.8rem;
+	--star-route-footnote-size: 0.82rem;
+	--star-route-note-size: 1rem;
+	--star-route-meridiem-size: clamp(0.85rem, 2.4vw, 1rem);
+	--star-route-address-size: clamp(1rem, 2vw, 1.08rem);
+	--star-route-schedule-size: clamp(1.4rem, 4vw, 1.75rem);
+	--star-route-title-size: clamp(1.45rem, 4.5vw, 1.9rem);
+
+	padding-inline: clamp(1.25rem, 6vw, 4rem);
+	text-align: left;
+	color: var(--location-star-ink);
+
+	.event-location__intro,
+	.event-location__star-route,
+	.event-location__star-notes,
+	.event-location__footnote {
+		max-width: var(--location-star-max-width, 68rem);
+		margin-inline: auto;
+	}
+
+	.event-location__intro {
+		text-align: left;
+	}
+
+	.event-location__eyebrow {
+		margin: 0 0 0.75rem;
+		font-family: var(--location-star-label-font, var(--font-label, var(--font-body)));
+		font-size: var(--star-route-label-size);
+		font-weight: 600;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: var(--location-star-muted);
+	}
+
+	.event-location__heading {
+		margin: 0;
+		font-family: var(--location-star-display-font, var(--font-display));
+		font-size: var(--location-intro-heading-size, clamp(2.4rem, 8vw, 3.75rem));
+		font-weight: 400;
+		line-height: 1.05;
+		color: var(--location-star-ink);
+	}
+
+	// --- Route ---------------------------------------------------------------------------------
+
+	.event-location__star-route {
+		display: grid;
+		gap: var(--star-route-row-gap);
+		margin-top: clamp(2.5rem, 8vw, 4.5rem);
+		margin-bottom: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.event-location__star-row {
+		position: relative;
+
+		// The line runs from this row's star to the next row's star.
+		&:not(:last-child)::after {
+			content: '';
+			position: absolute;
+			top: var(--star-route-mark-center, 0.75rem);
+			left: calc(var(--star-route-gutter) / 2);
+			width: 1px;
+			height: calc(100% + var(--star-route-row-gap));
+			background: var(--location-star-line);
+			transform: translateX(-50%);
+			pointer-events: none;
+		}
+	}
+
+	.event-location__star-stop {
+		display: grid;
+		grid-template-columns: var(--star-route-gutter) minmax(0, 1fr);
+		grid-template-areas:
+			'mark photo'
+			'. body';
+		gap: 1.5rem 0.85rem;
+		align-items: start;
+
+		// Without a photo the data sits beside the star.
+		&:not(:has(.event-location__star-photo)) {
+			grid-template-areas: 'mark body';
+		}
+	}
+
+	.event-location__star-mark {
+		grid-area: mark;
+		position: relative;
+		z-index: 1;
+		display: grid;
+		place-items: center;
+		width: var(--star-route-gutter);
+		aspect-ratio: 1;
+		margin-top: calc(var(--star-route-mark-center, 0.75rem) - var(--star-route-gutter) / 2);
+
+		svg {
+			width: 72%;
+			height: 72%;
+			fill: var(--location-star-mark);
+			filter: drop-shadow(0 0 0.4rem var(--location-star-glow));
+		}
+	}
+
+	.event-location__star-photo {
+		grid-area: photo;
+		margin: 0;
+		overflow: hidden;
+		border-radius: var(--location-star-photo-radius, 1rem);
+		aspect-ratio: var(--location-star-photo-ratio, 4 / 3);
+
+		img,
+		picture {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	.event-location__star-body {
+		grid-area: body;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		min-width: 0;
+	}
+
+	.event-location__star-time {
+		display: flex;
+		align-items: baseline;
+		gap: 0.45rem;
+		margin: 0;
+		font-family: var(--location-star-display-font, var(--font-display));
+		line-height: 0.95;
+		color: var(--location-star-ink);
+	}
+
+	.event-location__star-clock {
+		font-size: var(--location-star-time-size, clamp(3.5rem, 13vw, 5.75rem));
+		font-weight: 400;
+		font-variant-numeric: lining-nums tabular-nums;
+		letter-spacing: -0.01em;
+	}
+
+	.event-location__star-meridiem {
+		font-family: var(--location-star-label-font, var(--font-label, var(--font-body)));
+		font-size: var(--star-route-meridiem-size);
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--location-star-muted);
+	}
+
+	.event-location__star-schedule {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-family: var(--location-star-display-font, var(--font-display));
+		font-size: var(--star-route-schedule-size);
+	}
+
+	.event-location__star-title {
+		margin: 0.9rem 0 0;
+		font-family: var(--location-star-display-font, var(--font-display));
+		font-size: var(--star-route-title-size);
+		font-weight: 500;
+		line-height: 1.2;
+		text-wrap: balance;
+		color: var(--location-star-ink);
+	}
+
+	.event-location__star-separator {
+		margin-inline: 0.35em;
+		color: var(--location-star-muted);
+	}
+
+	.event-location__star-place {
+		font-style: italic;
+		font-weight: 400;
+	}
+
+	.event-location__star-address {
+		margin: 0.6rem 0 0;
+		max-width: 30rem;
+		font-family: var(--font-body);
+		font-size: var(--star-route-address-size);
+		line-height: 1.55;
+		color: var(--location-star-muted);
+		text-wrap: pretty;
+	}
+
+	.event-location__star-directions {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 3rem;
+		margin-top: 1.5rem;
+		padding: 0.75rem 2rem;
+		border: var(--location-star-button-border, 1px solid transparent);
+		border-radius: var(--radius-pill);
+		background: var(--location-star-button-bg, var(--location-star-ink));
+		color: var(--location-star-button-color, var(--location-bg, var(--color-surface-primary)));
+		font-family: var(--location-star-label-font, var(--font-label, var(--font-body)));
+		font-size: var(--star-route-button-size);
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		text-decoration: none;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
+
+		&:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 0.75rem 1.5rem -1rem rgb(0 0 0 / 45%);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--location-star-ink);
+			outline-offset: 3px;
+		}
+
+		@include mixins.respond-to(sm) {
+			width: auto;
+		}
+	}
+
+	.event-location__star-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 1.5rem;
+		margin-top: 0.5rem;
+	}
+
+	.event-location__star-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--location-star-ink);
+		font-family: var(--location-star-label-font, var(--font-label, var(--font-body)));
+		font-size: var(--star-route-link-size);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		text-decoration: underline;
+		text-decoration-color: var(--location-star-line);
+		text-underline-offset: 0.35em;
+		cursor: pointer;
+
+		&:focus-visible {
+			@include a11y.focus-ring(var(--location-star-ink));
+		}
+	}
+
+	.event-location__star-calendar {
+		margin-top: 0;
+		text-align: left;
+	}
+
+	.event-location__star-calendar > summary {
+		list-style: none;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+	}
+
+	// Wide screens: photo and data on either side of the line, alternating row by row.
+	@include mixins.respond-to(md) {
+		--star-route-gutter: 3.5rem;
+
+		// Each row draws half a segment on either side of its star, so the line meets every star
+		// whatever the height of the rows around it.
+		.event-location__star-row:not(:first-child)::before,
+		.event-location__star-row:not(:last-child)::after {
+			content: '';
+			position: absolute;
+			left: 50%;
+			width: 1px;
+			height: calc(50% + var(--star-route-row-gap) / 2);
+			background: var(--location-star-line);
+			transform: translateX(-50%);
+			pointer-events: none;
+		}
+
+		.event-location__star-row:not(:first-child)::before {
+			top: calc(var(--star-route-row-gap) / -2);
+		}
+
+		.event-location__star-row:not(:last-child)::after {
+			top: 50%;
+		}
+
+		.event-location__star-stop {
+			grid-template-columns: minmax(0, 1fr) var(--star-route-gutter) minmax(0, 1fr);
+			grid-template-areas: 'photo mark body';
+			column-gap: clamp(1.5rem, 3vw, 2.5rem);
+			align-items: center;
+		}
+
+		.event-location__star-row:nth-child(even) .event-location__star-stop {
+			grid-template-areas: 'body mark photo';
+		}
+
+		.event-location__star-mark {
+			margin-top: 0;
+		}
+
+		// A stop without a photo keeps its data beside the line.
+		.event-location__star-stop:not(:has(.event-location__star-photo)) {
+			grid-template-areas: '. mark body';
+		}
+	}
+
+	// --- Notes and footnote ----------------------------------------------------------------------
+
+	.event-location__star-notes {
+		margin-top: clamp(4rem, 11vw, 6.5rem);
+		padding-top: 2rem;
+		border-top: 1px solid var(--location-star-line);
+	}
+
+	.event-location__star-notes-heading {
+		margin: 0 0 1.25rem;
+		font-family: var(--location-star-label-font, var(--font-label, var(--font-body)));
+		font-size: var(--star-route-label-size);
+		font-weight: 600;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: var(--location-star-muted);
+	}
+
+	.event-location__star-notes-list {
+		display: grid;
+		gap: 1rem 3rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		@include mixins.respond-to(md) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	.event-location__star-note {
+		display: grid;
+		grid-template-columns: 1.25rem minmax(0, 1fr);
+		column-gap: 0.85rem;
+		align-items: start;
+		font-family: var(--font-body);
+		font-size: var(--star-route-note-size);
+		line-height: 1.6;
+		color: var(--location-star-muted);
+
+		strong {
+			font-weight: 600;
+			color: var(--location-star-ink);
+		}
+	}
+
+	.event-location__star-note-mark {
+		justify-self: center;
+		width: 0.4rem;
+		height: 0.4rem;
+		margin-top: 0.6rem;
+		border-radius: 50%;
+		background: var(--location-star-line);
+	}
+
+	.event-location__star-note--reserved .event-location__star-note-mark {
+		width: 1rem;
+		height: 1rem;
+		margin-top: 0.3rem;
+		background: var(--location-star-swatch, var(--color-accent, currentcolor));
+		box-shadow:
+			0 0 0 2px var(--location-bg, var(--color-surface-primary)),
+			0 0 0 3px var(--location-star-line);
+	}
+
+	.event-location__star-note-title {
+		display: block;
+		font-weight: 600;
+		color: var(--location-star-ink);
+	}
+
+	.event-location__footnote {
+		margin-top: clamp(2.5rem, 7vw, 3.5rem);
+		margin-bottom: 0;
+		font-family: var(--font-body);
+		font-size: var(--star-route-footnote-size);
+		font-style: italic;
+		letter-spacing: 0.02em;
+		color: var(--location-star-muted);
+
+		&::before {
+			content: '* ';
+		}
+	}
+}

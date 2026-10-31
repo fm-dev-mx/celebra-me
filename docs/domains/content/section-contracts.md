@@ -31,7 +31,9 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Purpose**: Primary entrance fold with celebrant name, event date, venue summary, and full-bleed
   portrait or background image.
 - **Required Inputs**: `name`, `date` (ISO 8601 datetime), `backgroundImage` (asset), `variant`.
-- **Optional Inputs**: `secondaryName`, `label`, `nickname`, `scrollLabel` (≤80), `tagline` (≤160),
+- **Optional Inputs**: `secondaryName`, `label`, `nickname`, `scrollLabel` (≤80), `scrollCue`
+  (`chevron`, the default bouncing arrow, or `constellation`, a cue at the hero's right edge whose
+  thread draws itself from star to star beside the vertical `scrollLabel`), `tagline` (≤160),
   `photoCredit` (≤80), `backgroundImageDesktop`, `backgroundImageMobile`, `portrait`, `ornament`,
   `accentOrnament`, `ambience`, `focalPoint`, `focalPointMobile`, `focalPointTablet`,
   `focalPointDesktop`, `presentation` (`portraitEnabled`, `venueIndex`, `nameLeadWords` 1–4,
@@ -58,8 +60,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Variant precedence**: `envelope.variant` falls back to `theme.preset` when omitted
   (`buildEnvelope` in `src/lib/adapters/event.ts`). `envelope.revealVariant` then decides the
   experience: `editorial-cover` replaces the envelope with the editorial cover reveal;
-  `satin-filigree`, `seaside-lineart`, `storybook-lanterns` and `storybook-butterflies` are
-  standalone reveal skins that replace the preset-driven `data-variant`
+  `celestial-letter`, `satin-filigree`, `seaside-lineart`, `storybook-lanterns` and
+  `storybook-butterflies` are standalone reveal skins that replace the preset-driven `data-variant`
   (`resolveEnvelopeDataVariant` in `src/lib/invitation/reveal-card.ts`); `celestial-blue` keeps the
   preset-driven `data-variant` and layers on top of it. See also
   [`invitation-creation-contract.md`](../../core/invitation-creation-contract.md).
@@ -307,12 +309,14 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Purpose**: Background music player for invitation atmosphere.
 - **Required Inputs**: `url`.
 - **Defaulted Inputs**: `autoPlay` (`false`).
-- **Optional Inputs**: `title`, `startAt` (seconds, ≥0; playback starts and loops back here),
-  `fadeInSeconds` (0–10), `creditsUrl` (a same-site `/music/<name>.html` credit page, where `<name>`
-  contains lowercase letters, digits or hyphens), `control` (`button`, the default round play/pause
-  button, or `equalizer`, a quieter 44 px control whose bars move while the song plays and that dims
-  after a few idle seconds). The footer prints the credit line and link only when `creditsUrl` is
-  supplied; demo content may use it without configuring dashboard music editing.
+- **Optional Inputs**: `title`, `artist`, `startAt` (seconds, ≥0; playback starts and loops back
+  here), `fadeInSeconds` (0–10), `creditsUrl` (a same-site `/music/<name>.html` credit page, where
+  `<name>` contains lowercase letters, digits or hyphens), `control` (`button`, the default round
+  play/pause button, or `equalizer`, a quieter 44 px control whose bars move while the song plays
+  and that dims after a few idle seconds, or `track`, the song's `title` and optional `artist` set
+  in the hero's bottom-left corner like a caption, which fades out while the hero is out of view and
+  returns with it). The footer prints the credit line and link only when `creditsUrl` is supplied;
+  demo content may use it without configuring dashboard music editing.
 
 ---
 
@@ -338,6 +342,7 @@ validated by the schemas; the second table is **authoring guidance, not validate
 | `location.split-map`            | One visible venue with `coordinates` or `image`                                      |
 | `location.stacked-venue-plates` | At least two visible venues                                                          |
 | `location.night-route`          | At least two visible venues                                                          |
+| `location.star-route`           | At least two visible venues                                                          |
 | `location.program-sheet`        | At least one visible venue; a `scene` (`lantern-route`, `butterfly-route`) needs two |
 | `gallery.single-keepsake`       | Exactly one item                                                                     |
 | `gallery.paired-portraits`      | Exactly two items                                                                    |
