@@ -56,7 +56,8 @@ are wired lives in [the coordinator guide](../../docs/core/coordinator-board.md#
 - **Delivered prompt (d249)**: dispatchers run `pnpm board entregada <id> --agente=<a>` when they
   open the chat by hand; `pnpm board dispatch <id> --agente=<a>` writes and delivers it.
 - **Session id**: Claude omits `--sesion`; Codex and Gemini pass `--sesion=<id>` to `claim`,
-  `release` and `close`.
+  `release` and `close`. A lock records the `--sesion` its `claim` gave, and the core then refuses a
+  `release` or `close` without that same id, whoever the agent is.
 - **Owner questions (d230)**: an agent that stops under `PARE Y PREGUNTE SI` asks the owner in its
   app and also records the question with
   `pnpm board msg <id> --de=<agent> --para=dueno --texto="…"`. T322: the text is one plain line with
