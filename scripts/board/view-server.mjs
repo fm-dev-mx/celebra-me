@@ -42,6 +42,7 @@ const FILES = {
 	'/owner-text.mjs': ['owner-text.mjs', 'text/javascript; charset=utf-8'],
 	'/owner-where.mjs': ['owner-where.mjs', 'text/javascript; charset=utf-8'],
 	'/changelog.mjs': ['changelog.mjs', 'text/javascript; charset=utf-8'],
+	'/board-constants.mjs': ['board-constants.mjs', 'text/javascript; charset=utf-8'],
 };
 const SETTLE_MS = 150;
 const HEARTBEAT_MS = 25_000;
