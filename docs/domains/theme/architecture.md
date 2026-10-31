@@ -569,6 +569,18 @@ Schemas consume that contract through `src/lib/schemas/content/**`.
 `src/lib/theme/color-tokens.ts` is a content color role contract. It maps approved content roles to
 semantic CSS custom properties and must not grow into a parallel color system.
 
+## Music playback
+
+Only one invitation song plays at a time. `src/lib/invitation/music-session.ts` owns the shared
+`BroadcastChannel`: a player that starts announces itself, and every other player in any tab or
+frame pauses. A hidden tab pauses its song until it is visible again.
+
+A framed preview (`isFramedPreview()`, true inside the landing showroom iframe) never autoplays the
+song nor plays the envelope chime. The showroom offers an explicit "Escuchar música" button under
+the frame, and pauses the framed song when "Ver demo completa" opens or the frame scrolls out of
+view; the full demo then autoplays normally. Outside the hero, the track control folds into a
+bars-only chip (`.is-away`) so the song stays easy to pause.
+
 ## Hardcoded Values
 
 Hardcoded colors should normally exist only in:
