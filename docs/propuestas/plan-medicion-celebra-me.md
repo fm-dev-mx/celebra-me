@@ -1,6 +1,6 @@
 # ANEXO B · Plan de medición Celebra-me: del anuncio a la venta
 
-29 de octubre de 2026 · Francisco Mendoza
+Versión final · 30 de octubre de 2026 · Francisco Mendoza
 
 ## Objetivo
 
@@ -14,7 +14,9 @@ El plan está cumplido cuando:
 - Cada venta confirmada llega a Meta dentro de los 7 días posteriores al clic.
 - Cada lunes se ve costo por clienta y ventas por campaña y creativo, sin armar nada a mano.
 
-TikTok entra después, con el mismo registro, cuando Meta ya esté funcionando.
+TikTok entra después, con el mismo registro, cuando Meta ya esté funcionando: Lead al calificar y
+Purchase al confirmar el pedido, con teléfono con hash y ttclid. Este plan se construye ya dentro de
+Celebra-me (tareas T460 y T461) y sirve como cliente cero del servicio del ANEXO A.
 
 ## Situación actual
 
@@ -56,13 +58,15 @@ action_source «chat» (Lead y Purchase con fbc y teléfono con hash SHA-256).
 
 1. Tabla `leads` en Supabase con una pantalla simple en el panel de Celebra-me. Campos: teléfono,
    nombre, tipo de evento (boda, XV, otro), fecha del evento, ruta (chat o landing), campaña,
-   anuncio, código de referencia, fbc, fbp, ttclid, ctwa_clid, etapa, valor del paquete, motivo de
-   pérdida y fecha de cada cambio de etapa.
+   anuncio, código de referencia, fbc, fbp, ttclid, gclid, ctwa_clid, etapa, valor del paquete,
+   motivo de pérdida y fecha de cada cambio de etapa.
 2. Código por anuncio en la ruta directa al chat: en la plantilla de mensaje de cada anuncio, el
    mensaje precargado termina con un código corto, por ejemplo «Quiero información (A07)». La
    clienta puede borrarlo; la fase 3 elimina esa dependencia.
-3. Código por visita en la ruta de landing: celebra-me.com guarda fbclid, ttclid y UTM al entrar,
-   crea la ficha con un código (por ejemplo CM-4821) y abre WhatsApp con ese código en el mensaje.
+3. Código por visita en la ruta de landing: celebra-me.com guarda fbclid, ttclid, gclid y UTM al
+   entrar, crea la ficha con un código (por ejemplo CM-4821) y abre WhatsApp con ese código en el
+   mensaje. Hoy la captura del sitio solo guarda UTM y datos de Meta; ttclid y gclid se agregan en
+   esta fase.
 4. Captura en el chat: quien responde busca el código y marca la etapa en la ficha. Las etiquetas de
    WhatsApp Business no se pueden leer por la API, ni siquiera con coexistencia; la ficha manda.
 
@@ -94,24 +98,27 @@ perder la app ni el historial, y está disponible en México.
 - Al marcar etapa, se envía QualifiedLead, Purchase u OrderCanceled con action_source
   «business_messaging» y el ctwa_clid.
 
-Requisitos: un proveedor de WhatsApp (Solution Partner o Tech Provider de Meta) que ofrezca
+Requisitos: el registro propio como Tech Provider de Meta (decisión 2 del ANEXO A), con
 coexistencia, webhook hacia el servidor propio y envío de eventos de conversión para mensajes;
-WhatsApp Business versión 2.24.17 o superior.
+WhatsApp Business versión 2.24.17 o superior. El trámite y la revisión de la app toman semanas, así
+que empieza en la semana 1.
 
 Qué cambia en el WhatsApp de Celebra-me: todos los dispositivos vinculados se desconectan y se
 vuelven a vincular, excepto WhatsApp para Windows, que no es compatible (en la PC se usa WhatsApp
 Web). Se desactivan listas de difusión, mensajes temporales, ver una vez y ubicación en tiempo real.
 Responder desde la app sigue siendo gratis; solo se cobran los mensajes enviados por la API. Si el
-celular principal pasa unos 14 días sin uso, la conexión con la API se corta.
+celular principal pasa unos 14 días sin uso, la conexión con la API se corta; el webhook recibe el
+aviso de desconexión y lo registra como alerta.
 
 Listo cuando: llega el primer Purchase con ctwa_clid.
 
 ## Semana 4: tablero y primera decisión (23 al 29 de noviembre)
 
-Vista en Supabase con gasto por anuncio y eventos de TikTok. Listo cuando: sale el primer reporte,
-el lunes 30 de noviembre. Después: probar una campaña optimizada por compra con los pedidos
-acumulados. Si el alta del proveedor se retrasa, las fases 1 y 2 ya miden la ruta de landing y los
-códigos por anuncio.
+Vista en Supabase con gasto por anuncio y eventos de TikTok. Cada tarea programada registra su
+ejecución y manda una alerta si falla o si no corrió en las últimas 26 horas. Listo cuando: sale el
+primer reporte, el lunes 30 de noviembre. Después: probar una campaña optimizada por compra con los
+pedidos acumulados. Si el alta como Tech Provider se retrasa, las fases 1 y 2 ya miden la ruta de
+landing y los códigos por anuncio.
 
 ## Operación diaria
 
@@ -138,15 +145,22 @@ códigos por anuncio.
 Cada métrica se ve por campaña, anuncio, ruta (chat o landing) y tipo de evento (boda o XV). El
 gasto se trae de la API de Marketing de Meta; al principio basta una exportación semanal.
 
-## Decisiones pendientes y riesgos
+## Decisiones y riesgos
+
+Decididas el 30 de octubre de 2026:
+
+- [x] La venta que se manda es el pedido confirmado (Purchase), con OrderCanceled si se cae.
+- [x] WhatsApp se conecta con Tech Provider propio, no con un proveedor externo.
+- [x] Este plan se construye ya dentro de Celebra-me (T460 y T461).
+
+Pendientes:
 
 - [ ] Definir qué cuenta como lead calificado (propuesta: dio tipo de evento y fecha, y pidió ver
       diseños).
 - [ ] Definir el valor que se manda con cada pedido: el precio del paquete elegido.
 - [ ] Confirmar quién atiende el WhatsApp de Celebra-me y desde qué dispositivos.
-- [ ] Elegir proveedor para la coexistencia: que opere en México, mande webhooks al servidor propio
-      y envíe eventos de conversión para mensajes; comparar costo mensual.
-- [ ] Agregar al aviso de privacidad de celebra-me.com el uso del Pixel de Meta y de TikTok.
+- [ ] Agregar al aviso de privacidad de celebra-me.com el uso del Pixel de Meta y de TikTok, y que
+      el teléfono con hash sigue siendo dato personal.
 
 Riesgos:
 
@@ -154,6 +168,7 @@ Riesgos:
 - Con pocos pedidos por semana, optimizar por compra aprende despacio; mientras, se mantiene la
   campaña por mensajes.
 - Un mensaje desde un dispositivo no compatible no genera webhook y no llega a la ficha.
+- Si la revisión de Meta como Tech Provider tarda, la fase 3 se corre de fecha.
 - Si el código de un chat se pierde, la ficha se marca «origen desconocido» en lugar de adivinar.
 
 ## Fuentes
@@ -164,3 +179,4 @@ Riesgos:
 - [Meta: límite de 7 días para event_time](https://developers.facebook.com/documentation/ads-commerce/conversions-api/offline-events)
 - [Zernio: ventana de atribución de anuncios a WhatsApp](https://docs.zernio.com/platforms/whatsapp/ctwa)
 - [Chakra: coexistencia disponible en México](https://chakrahq.com/help/chat/faqs/coexistence-faqs)
+- [TikTok: eventos estándar actualizados](https://ads.tiktok.com/help/article/how-to-adopt-tiktoks-updated-standard-events)
