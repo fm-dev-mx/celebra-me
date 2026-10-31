@@ -25,6 +25,7 @@
         "gh run watch",
         "pnpm board",
         "pnpm board:verify",
+        "pnpm tablero",
         "pnpm agent:git-safety:start",
         "pnpm agent:git-safety:check",
         "pnpm agent:git-safety:finish",
@@ -35,7 +36,8 @@
         "pnpm lint",
         "pnpm build",
         "pnpm exec prettier",
-        "node scripts/board/board.mjs"
+        "node scripts/board/board.mjs",
+        "node scripts/board/tablero-core.mjs"
     ],
     "ask": ["gh pr merge", "gh * pr merge*"],
     "deny": [

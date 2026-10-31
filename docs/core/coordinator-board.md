@@ -16,19 +16,46 @@ Integration checkout (`TABLERO_DIR` overrides it), at the commit pinned in `tabl
 always the Integration checkout's, so every lane shares one data directory.
 
 ```bash
-pnpm tablero timeline
-pnpm tablero:serve                    # page on 127.0.0.1:4320
-pnpm tablero:mcp                      # read-only MCP on stdio
-pnpm tablero migrate --dry-run
+pnpm board timeline
+pnpm board:serve                      # page on 127.0.0.1:4320
+pnpm board:mcp                        # read-only MCP on stdio
+pnpm board:watch                      # one watcher pass
 ```
 
-Until the real migration lands (after T501 adds `proyecto` per task), `pnpm board`, its page and the
-`celebra-board` MCP stay on `scripts/board`, which owns 4320 today. The switch stops
-`pnpm board:serve`, migrates the data and then points the page and MCP at the core.
+Since T506 `pnpm board`, `board:serve`, `board:sync`, `board:verify`, `board:watch` and `board:mcp`
+all run the core (`pnpm tablero` is the same wrapper). The data lives in `.agent/tmp/tablero/`.
+`tablero.config.json` registers the projects (`celebra-me`, the default; `tablero`; `marketing`) and
+the lanes with their folders; `claim` must run inside the lane folder.
+
+Commands that changed: `msg` takes the text as `--texto=`; `review` needs
+`--revisor= --veredicto=aprobada|cambios`; state and order changes use `move` and `order`; `add`
+creates tasks (`--proyecto=` picks a project). The old `plan`, `set`, `decide`, `merged`, `restore`,
+`rounds` and `solape` have no core equivalent yet: ask the coordinator. Sections below that still
+name them describe the old board (`.agent/tmp/board/`, read-only); `pnpm board:viejo` only reads it.
+
+### Cutover and rollback (T506)
+
+The cutover runs once, right before its PR merges, from the Integration checkout:
+
+1. `git -C ../tablero switch --detach <nucleo>`.
+2. `pnpm board:serve:unregister` and `pnpm board:watch:unregister` (old server and watcher).
+3. Make `.agent/tmp/board/` read-only (`attrib +R /S`) and run `pnpm tablero migrate` into the empty
+   `.agent/tmp/tablero/`. `migracion.proyectos` assigns the mother tasks (and their subtasks) of the
+   `tablero` and `marketing` projects. Owner and coordinator notices are not migrated.
+4. After the merge: `pnpm board:serve:register` and `pnpm board:watch:register` from Integration,
+   repoint the `celebra-board` MCP host entries to `scripts/board/tablero-core.mjs mcp`, and update
+   the daily coordinator routine.
+
+Rollback: clear the read-only flag on `.agent/tmp/board/`, revert the cutover PR and register the
+scheduled tasks again. `pnpm board:viejo` runs the old CLI for reads during the transition.
 
 ## Local MCP access
 
-`pnpm board:mcp` starts `scripts/board/mcp-server.mjs` over stdio. Install development dependencies
+Since T506 `pnpm board:mcp` starts the core's read-only MCP server (timeline, list, show, inbox);
+every write goes through the CLI. The text below describes the old `scripts/board/mcp-server.mjs`
+adapter, kept until T507 removes the old board.
+
+The old adapter starts `scripts/board/mcp-server.mjs` over stdio. Install development dependencies
 with `pnpm install` and use the Node version required by `package.json`. Hosts should launch `node`
 directly as below, keeping package-manager banners off the JSON-RPC stdout channel. No HTTP port or
 credentials are needed; the existing board supervisor on 4320 is independent.

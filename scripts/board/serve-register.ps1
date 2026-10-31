@@ -11,11 +11,11 @@ $node = (Get-Command node -ErrorAction Stop).Source
 # After installing another Node version, register the task again.
 $nodeDir = Get-Item (Split-Path $node)
 if ($nodeDir.LinkType) { $node = Join-Path @($nodeDir.Target)[0] (Split-Path $node -Leaf) }
-$board = Join-Path $root 'scripts\board\board.mjs'
+$board = Join-Path $root 'scripts\board\tablero-core.mjs'
 
 # conhost --headless runs the server without a console window.
 $action = New-ScheduledTaskAction -Execute 'conhost.exe' `
-	-Argument "--headless `"$node`" `"$board`" view" -WorkingDirectory $root
+	-Argument "--headless `"$node`" `"$board`" serve" -WorkingDirectory $root
 $atLogon = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
 $retry = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5)
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `

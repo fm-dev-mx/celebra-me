@@ -9,11 +9,11 @@ $node = (Get-Command node -ErrorAction Stop).Source
 # After installing another Node version, register the task again.
 $nodeDir = Get-Item (Split-Path $node)
 if ($nodeDir.LinkType) { $node = Join-Path @($nodeDir.Target)[0] (Split-Path $node -Leaf) }
-$watch = Join-Path $root 'scripts\board\master-watch.mjs'
+$watch = Join-Path $root 'scripts\board\tablero-core.mjs'
 
-# conhost --headless keeps a console window from flashing every minute.
+# conhost --headless keeps a console window from flashing every minute; each run is one pass.
 $action = New-ScheduledTaskAction -Execute 'conhost.exe' `
-	-Argument "--headless `"$node`" `"$watch`"" -WorkingDirectory $root
+	-Argument "--headless `"$node`" `"$watch`" watch --once" -WorkingDirectory $root
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
 	-RepetitionInterval (New-TimeSpan -Minutes 1)
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
