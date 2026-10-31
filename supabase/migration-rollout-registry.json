@@ -1,6 +1,11 @@
 {
     "$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
     "migrations": {
+        "20261030180000": {
+            "phase": "expand",
+            "provides": ["leads_record_origin", "lead_ad_codes"],
+            "notes": "Adds leads route, ad_code, utm_content, ttclid, ctwa_clid, sales stage with per-stage timestamps, lost_reason and package_value, plus the service-only lead_ad_codes catalog. Additive: existing rows get stage new and null elsewhere, and the deployed application never names the columns. Must be applied before the application that writes route and ttclid on the lead upsert is deployed, because PostgREST rejects unknown columns."
+        },
         "20261030160000": {
             "phase": "expand",
             "provides": ["order_invitation_drafts"],

@@ -47,6 +47,8 @@ export async function createLeadFromTrackingEvent(params: {
 	utmSource?: string;
 	utmMedium?: string;
 	utmCampaign?: string;
+	utmContent?: string;
+	ttclid?: string;
 	metaAttribution?: MetaAttribution;
 }): Promise<StoredLead> {
 	const {
@@ -58,6 +60,8 @@ export async function createLeadFromTrackingEvent(params: {
 		utmSource,
 		utmMedium,
 		utmCampaign,
+		utmContent,
+		ttclid,
 		metaAttribution,
 	} = params;
 
@@ -89,6 +93,9 @@ export async function createLeadFromTrackingEvent(params: {
 			utmSource: blankToUndefined(utmSource),
 			utmMedium: blankToUndefined(utmMedium),
 			utmCampaign: blankToUndefined(utmCampaign),
+			utmContent: blankToUndefined(utmContent),
+			ttclid,
+			route: 'landing',
 			metaAttribution: await resolveLeadMetaAttribution({ sessionId, metaAttribution }),
 		});
 		try {
@@ -122,6 +129,9 @@ export async function createLeadFromTrackingEvent(params: {
 		utmSource: blankToUndefined(utmSource),
 		utmMedium: blankToUndefined(utmMedium),
 		utmCampaign: blankToUndefined(utmCampaign),
+		utmContent: blankToUndefined(utmContent),
+		ttclid,
+		route: 'landing',
 		metaAttribution: await resolveLeadMetaAttribution({ sessionId, metaAttribution }),
 	});
 
