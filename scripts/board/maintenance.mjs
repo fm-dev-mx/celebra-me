@@ -8,6 +8,7 @@ import { UsageError, say } from './cli.mjs';
 import { taskLabel } from './model.mjs';
 import {
 	assertId,
+	embedLegacyRounds,
 	MONTHLY_DIR,
 	monthlyZip,
 	pruneBackups,
@@ -18,6 +19,23 @@ import {
 import { addToZip, readZip } from './zip.mjs';
 
 export const maintenanceCommands = {
+	/** T543: the review rounds of <id> still in files of their own (`<id>-revision.json`); --aplicar moves them in. */
+	'migrate-rounds'({ pos, flags }, dir, out) {
+		const id = pos[0];
+		if (!id) throw new UsageError('falta <id>');
+		return withLock(dir, () => {
+			const aplicar = flags.aplicar === true && !flags['dry-run'];
+			const col = ['tareas', 'archivo'].find((c) =>
+				existsSync(join(dir, c, `${assertId(id)}.json`)),
+			);
+			if (!col) throw new UsageError(`${id} no está en el tablero`);
+			const rondas = embedLegacyRounds(dir, col, id, { aplicar });
+			const head = `${aplicar ? 'Movidas' : 'Por mover'} ${rondas.length} rondas a ${col}/${id}.json`;
+			const tail = aplicar || !rondas.length ? [] : ['Para moverlas: --aplicar'];
+			const text = [head, ...rondas.map((r) => `  ${r}`), ...tail].join('\n');
+			say(flags, out, { id, col, rondas, aplicado: aplicar }, text);
+		});
+	},
 	/** d185: backup copies over the newest 2 per document, or of finished tasks; only --aplicar removes them. */
 	'prune-backups'({ flags }, dir, out) {
 		return withLock(dir, () => {

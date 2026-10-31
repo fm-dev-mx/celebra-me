@@ -20,7 +20,8 @@
  *                                               carril defaults to the planned lane, another needs --coordinador;
  *                                               T172: a pendiente task becomes en curso; T297: run from a
  *                                               lane, the lane and branch must be the task's and it opens
- *                                               the git-safety session --session=<rama>)
+ *                                               the git-safety session --session=<rama>; T543: a lane task
+ *                                               is refused from Integration or an unknown folder)
  *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
  *                                               a usted» until 15 min pass without a claim (claim clears it)
  *   plan <id> --carril=<id> --coordinador --quien=<q> --rev=<n> d177: the lane a ready task runs in; --carril= clears it;
@@ -36,6 +37,7 @@
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: round <id>-revision, then <id>-revision-2, … per
  *                                               new SHA, kept inside <id> (T529), never a task of its own;
+ *                                               T543: rounds still in files of their own move in first;
  *                                               without --agente the reviewer follows d183; d282: a
  *                                               low-risk PR by Claude goes to a Claude subagent
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
@@ -67,6 +69,8 @@
  *   restore <id> [--dry-run]                    a compacted task back from its .zip
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
+ *   migrate-rounds <id> [--aplicar]             T543: lists <id>'s review rounds still in files of their own;
+ *                                               --aplicar moves them into its rondas (backups kept)
  *   verify [--json] [--archivadas]              same as pnpm board:verify
  *   msg <id> --de=<a> --para=<b> "texto" [--opcion="…" …] [--detalle="…"]
  *                                               T126: a message about a task, kept in the bitácora; T322: --opcion
@@ -149,6 +153,7 @@ import { deliveryCommands } from './delivery-commands.mjs';
 import {
 	appendLog,
 	assertId,
+	embedLegacyRounds,
 	migrateLegacyLog,
 	migrateLogLines,
 	boardDir,
@@ -490,6 +495,8 @@ function reviewOnce({ pos, flags }, dir, out) {
 		const pick = chooseReviewer(author, flags.agente, loadBoard(dir), preflight.files, src);
 		if (pick.issue) throw new UsageError(pick.issue);
 		const { agente, revisor } = pick;
+		// T543: rounds that still have a file of their own move into the task, so no round is left outside it.
+		embedLegacyRounds(dir, 'tareas', src.id);
 		const id = reviewChildId(src, prev);
 		const before = readDoc(dir, 'tareas', id);
 		// T529: the round lives inside the reviewed task, so its prompt-v1 session name (T160) carries that number.

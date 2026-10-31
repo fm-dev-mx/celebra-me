@@ -137,7 +137,9 @@ export function claimCommands({ getTask, saveTask }) {
 					);
 				}
 				const location = claimLocation(before, flags, board);
-				const laneIssue = claimLaneIssue(checkout, before, location);
+				const laneIssue = claimLaneIssue(checkout, before, location, {
+					viaMcp: process.env.CELEBRA_BOARD_VIA === 'mcp',
+				});
 				if (laneIssue) throw new UsageError(laneIssue);
 				const titleIssue = claimTitleIssue(before, flags.titulo, location.carril, board);
 				if (titleIssue) throw new UsageError(titleIssue);
