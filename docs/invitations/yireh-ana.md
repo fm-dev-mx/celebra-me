@@ -13,9 +13,9 @@
 | **Slug**               | `yireh-ana` (verified celebrant name)             |
 | **Host Login Alias**   | `yireh_ana` (ASCII lowercase, celebrant identity) |
 | **Event Type**         | `xv`                                              |
-| **Preparation Status** | `READY_WITH_PLACEHOLDERS`                         |
+| **Preparation Status** | `READY_FOR_IMPLEMENTATION`                        |
 
-**Preparation Readiness (prepReadiness):** `READY_WITH_PLACEHOLDERS`
+**Preparation Readiness (prepReadiness):** `READY_FOR_IMPLEMENTATION`
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
 document and remains owned by `pnpm invitation:release -- --status` / `invitation-readiness.ts`.
@@ -86,8 +86,8 @@ and one oak with a yellow ribbon on the cover) serve as production-authoritative
 - Father and godparents (not provided in intake; left out unless supplied later).
 - Program hours are client estimates (19:00 Recepción, 19:30 Acción de gracias, 21:00 Vals and
   toast, 21:30 Bocadillos y aguas frescas and dance, 24:00 Cierre); the copy says so. No alcohol.
-- Final art: cover plate v4 and the oak seal stamp are on order; the v3 cover and the preset flower
-  seal stand in.
+- Final art: the owner kept the v3 cover and the flower wax seal without initials (2026-10-30); the
+  cover v4 plate and the oak seal stamp were dropped.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**  
 Answer: `yes`.
@@ -96,10 +96,7 @@ Answer: `yes`.
 
 ## Placeholders
 
-Non-blocking informational placeholders:
-
-- `[[PENDIENTE:PORTADA_V4]]`: Cover plate v4 (one oak with more hierarchy); v3 plate stands in.
-- `[[PENDIENTE:SELLO_ROBLE]]`: Small oak with a yellow bow for the envelope seal.
+None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
 
 ---
 
@@ -123,7 +120,7 @@ Non-blocking informational placeholders:
 | preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                     | client requested pale lilac | accepted (2026-10-27) |
 | motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows | client family story context | accepted (2026-10-27) |
 | hero   | Ref 40 without books: corners on top, name on clean paper, one oak with a ribbon     | ref 40, owner review v3     | accepted (2026-10-29) |
-| roble  | Oak only on the cover and the envelope seal; interludes and closing have none        | owner review v3             | accepted (2026-10-29) |
+| roble  | Oak only on the cover; flower wax seal; interludes and closing have none             | owner review v3, 2026-10-30 | accepted (2026-10-30) |
 | music  | 64 kbps MP3 loop, hosted on media domain                                             | canonical standard R8       | accepted (2026-10-27) |
 
 ---
@@ -170,7 +167,7 @@ envelope stills and the closing wreath.
 | inferred / recommended | envelope, hero, quote, interludes (2), countdown, personalizedAccess, rsvp, thankYou |
 | client-provided        | music track: «Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn»      |
 | omitted                | gallery (celebrant refusal of photos), father/godparents (unsupplied), gown color    |
-| unresolved             | cover plate v4 and oak seal art (on order)                                           |
+| unresolved             | none                                                                                 |
 
 Guest-facing copy: Voice in first person, «usted» register, formal and emotive.
 
@@ -185,13 +182,13 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
 | Selected variant / visual profile | `yireh-ana` (token-only profile on `storybook-lilac`)             | verified            |
 | Client color requirements         | Fondo lila ultra pálido, flores lilas y moradas, toques amarillos | verified            |
 | Recommended palette               | Lilac paper, soft mist, violet ink, leaf gold, yellow ribbons     | recommendation only |
-| Unresolved visual decisions       | Owner/client acceptance pending for the editorial redesign        | verified            |
+| Unresolved visual decisions       | None; owner accepted the editorial redesign on 2026-10-30         | verified            |
 
 ---
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING`
+**Human creative outcome:** `ACCEPTED`
 
 - **concern:** Typography roles (display, heading, body, metadata)
   - **decision / evidence:** Preset serif display, gold accents, violet ink
@@ -210,14 +207,14 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
 
 ### Creative acceptance record
 
-| field                                       | value                                                              |
-| ------------------------------------------- | ------------------------------------------------------------------ |
-| Mechanical render/capture result            | Captures at 390×844 and 1440×900                                   |
-| Whole-invitation responsive inspection      | Inspected on mobile and desktop viewports                          |
-| Section boundaries and narrative continuity | Harmonious watercolor palette across all sections                  |
-| Human creative outcome                      | `PENDING`                                                          |
-| Reviewer and date                           | Antigravity agent & Owner direction, 2026-10-27/28                 |
-| Blocking reason or owner follow-up          | Cover v4, oak seal art and father/godparents stay owner follow-ups |
+| field                                       | value                                                    |
+| ------------------------------------------- | -------------------------------------------------------- |
+| Mechanical render/capture result            | Captures at 390×844 and 1440×900                         |
+| Whole-invitation responsive inspection      | Inspected on mobile and desktop viewports                |
+| Section boundaries and narrative continuity | Harmonious watercolor palette across all sections        |
+| Human creative outcome                      | `ACCEPTED` (owner, 2026-10-30)                           |
+| Reviewer and date                           | Owner, 2026-10-30                                        |
+| Blocking reason or owner follow-up          | None; father/godparents only if the client supplies them |
 
 ---
 
@@ -268,8 +265,9 @@ and weights above describe the delivered derivatives; source filenames are logic
 
 ## Preparation Readiness History
 
-| date       | readiness                 | helper basis                   | notes                                                     |
-| ---------- | ------------------------- | ------------------------------ | --------------------------------------------------------- |
-| 2026-10-27 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | Full intake and production watercolor assets ready (T417) |
-| 2026-10-28 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | v2 Level-América craft, synthetic data removed (T423)     |
-| 2026-10-29 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | v3 stationery, client program, two scenes (T455)          |
+| date       | readiness                  | helper basis                   | notes                                                           |
+| ---------- | -------------------------- | ------------------------------ | --------------------------------------------------------------- |
+| 2026-10-27 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | Full intake and production watercolor assets ready (T417)       |
+| 2026-10-28 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v2 Level-América craft, synthetic data removed (T423)           |
+| 2026-10-29 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v3 stationery, client program, two scenes (T455)                |
+| 2026-10-30 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Owner accepted v3 cover and flower seal; no placeholders remain |

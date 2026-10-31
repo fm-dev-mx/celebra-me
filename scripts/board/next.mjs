@@ -51,10 +51,20 @@ export const deliveryLine = (t, now = Date.now()) =>
 
 /**
  * Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids, and a d291
- * `atendido` row of the bitácora marks the messages it lists as handled.
+ * `atendido` row of the bitácora marks the messages it lists as handled. T521: a message about an archived task
+ * no longer counts, unless `archived` asks for it (merged acknowledges those signals too).
  */
-export function unreadFor(agente, board) {
+export function unreadFor(agente, board, { archived = false } = {}) {
 	const read = new Set((board.bandejas ?? []).find((b) => b.id === agente)?.leidos ?? []);
+	const gone = new Set(
+		archived
+			? []
+			: [
+					...(board.archivo ?? []),
+					...(board.archivoZip ?? []),
+					...(board.tareas ?? []).filter((t) => t.archivada),
+				].map((t) => t.id),
+	);
 	const merged = new Set();
 	for (const r of board.bitacora ?? [])
 		if (r.atendido?.para === agente)
@@ -66,10 +76,19 @@ export function unreadFor(agente, board) {
 		.filter(
 			(r) =>
 				r.mensaje?.para === agente &&
+				!gone.has(r.tarea) &&
 				!(mergeSignal(r) ? merged : read).has(r.mensaje.id) &&
 				!expiredQuestion(r, findTask(r.tarea, board)),
 		)
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
+}
+
+/** T521: unread merge signals of a task and its review rounds, archived ones included. */
+export function mergeSignalsFor(id, board) {
+	const own = new Set([id, ...reviewRounds(id, board).map((t) => t.id)]);
+	return unreadFor('coordinador', board, { archived: true }).filter(
+		(r) => own.has(r.tarea) && mergeSignal(r),
+	);
 }
 
 export const GEMINI_RELAY_ALERT =

@@ -125,7 +125,8 @@ export function nextCommands({ getTask }) {
 				throw new UsageError(`--agente debe ser ${DESTINOS.join('|')}`);
 			return withLock(dir, () => {
 				const board = loadBoard(dir);
-				const unread = unreadFor(agente, board);
+				// d265: the inbox keeps messages of archived tasks too; only the queues and alerts drop them (T521).
+				const unread = unreadFor(agente, board, { archived: true });
 				const rows = flags.todos
 					? board.bitacora.filter((r) => r.mensaje?.para === agente)
 					: unread;
