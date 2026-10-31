@@ -13,6 +13,7 @@ import {
 	HANDOFF_LISTS,
 	VEREDICTOS,
 	findTask,
+	isExternal,
 	isFinished,
 	isReview,
 	logRowError,
@@ -83,13 +84,30 @@ function sendFindings(dir, t, board) {
 }
 
 /**
- * d274: an open review whose cierre carries a verdict is done, `cambios` included (the next round is another task),
- * and its lock goes. `after` is returned unchanged for any other task. The caller has already checked the cierre.
+ * d274: an open review whose cierre carries a verdict is done, `cambios` included (the next `review` opens the next
+ * round inside the same task, T529), and its lock goes. `after` is returned unchanged for any other task. The caller has already checked the cierre.
  */
 export function reviewDone(before, after, flags) {
 	if (!isReview(before) || isFinished(before)) return after;
 	if (!VEREDICTOS.includes(after.cierre?.resultado?.veredicto)) return after;
 	return { ...unlocked(after, flags), estado: 'hecha' };
+}
+
+/**
+ * T529: a round closed with `cambios` sends the reviewed task from «en revision» back to «en curso», its lock kept,
+ * so the author answers the findings in the same task; the author's next close returns it to «en revision».
+ */
+function reopenOrigin(dir, saveTask, before, t, flags) {
+	if (!isReview(before) || isFinished(before) || t.estado !== 'hecha') return null;
+	if (t.cierre?.resultado?.veredicto !== 'cambios' || !t.origen) return null;
+	const origin = readDoc(dir, 'tareas', t.origen);
+	if (origin?.estado !== 'en revision') return null;
+	return saveTask(
+		dir,
+		origin,
+		{ ...origin, estado: 'en curso' },
+		{ ...flags, seguimiento: true, corrio: 'pnpm board close' },
+	);
 }
 
 /**
@@ -148,7 +166,7 @@ export function mergedRef(ref, pr, board) {
 		const origen = findTask(id, board);
 		const name = origen ? label(origen) : id;
 		throw new UsageError(
-			`${label(t)} es la revisión de ${name} (se cierra con su --sha); use pnpm board merged ${name} --coordinador`,
+			`${label(t)} es la revisión de ${name} (se cierra con su --sha); use pnpm board merged ${name} --coordinador --quien=claude`,
 		);
 	}
 	const given = typeof pr === 'string' ? normalizePr(pr) : undefined;
@@ -215,6 +233,7 @@ export function closeCommands({
 					...flags,
 					seguimiento: true,
 				});
+				reopenOrigin(dir, saveTask, before, t, flags);
 				if (final.estado !== before.estado)
 					noteOverride(dir, before, override, 'pnpm board close');
 				// T129: the one-line signal the agent hands back, built only from the cierre.
@@ -223,6 +242,7 @@ export function closeCommands({
 				return {
 					t,
 					board,
+					before,
 					enviado,
 					next,
 					closed,
@@ -235,12 +255,14 @@ export function closeCommands({
 			// T297: from the task's lane, the git-safety session ends with the close (--git-safety=commit).
 			// A session still open for the branch (a released task) is finished as before.
 			const gitSafety =
-				info.sinCandado && !gitSafetyOpen(checkout, info.rama)
-					? ops && {
-							ok: true,
-							line: `git-safety: ${info.t.id} no tenía candado; se cerró sin sesión de carril`,
-						}
-					: finishGitSafety(checkout, info.rama, ops);
+				isExternal(info.before) || isExternal(info.t)
+					? null
+					: info.sinCandado && !gitSafetyOpen(checkout, info.rama)
+						? ops && {
+								ok: true,
+								line: `git-safety: ${info.t.id} no tenía candado; se cerró sin sesión de carril`,
+							}
+						: finishGitSafety(checkout, info.rama, ops);
 			if (gitSafety && !gitSafety.ok) process.exitCode = 1;
 			const text = [
 				`${info.t.id} con cierre (rev ${info.t.rev}) · ${info.t.estado ?? 'pendiente'}`,

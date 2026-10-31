@@ -80,7 +80,8 @@ function archiveRecord(t, en) {
  */
 export function compactArchived(dir, { antesMs, now = Date.now(), dryRun = false }) {
 	const due = readCollection(dir, 'tareas')
-		.filter((t) => t.archivada && now - Date.parse(t.archivada) >= antesMs)
+		// T529: a round inside its task leaves with that task's file, never on its own.
+		.filter((t) => !t.ronda && t.archivada && now - Date.parse(t.archivada) >= antesMs)
 		.sort((a, b) => (a.num ?? 0) - (b.num ?? 0));
 	const tareas = due.map((t) => ({
 		id: t.id,

@@ -32,16 +32,16 @@ import {
 } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { isFinished, legacyLogRow, logRowIssues } from './model.mjs';
-import { WORKTREE_LANES, getLanePortForKey } from '../shared/worktree-lane.ts';
+import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import { readZip } from './zip.mjs';
 
 /** Lane metadata is code-owned; task locks and Git supply its live state. */
 export const canonicalLanes = () =>
 	WORKTREE_LANES.map((lane) => ({
 		id: lane.id,
-		orden: lane.key,
-		tecla: `Win + F${lane.key}`,
-		puerto: getLanePortForKey(lane.key),
+		orden: lane.key ?? lane.port - 4320,
+		tecla: lane.key === null ? 'sin tecla' : `Win + F${lane.key}`,
+		puerto: lane.port,
 		uso: lane.displayName,
 	}));
 
@@ -92,23 +92,76 @@ function readGeminiRelay(dir) {
 	}
 }
 
+/** T477: the registered coordinator Claude session and its last turn, `{sesion, at}`, written by session-notice.mjs. */
+export const coordinatorPath = (dir) => join(dirname(dir), 'board-coordinator.json');
+
+export function readCoordinator(dir) {
+	try {
+		const { sesion, at } = JSON.parse(readFileSync(coordinatorPath(dir), 'utf8'));
+		return { sesion, at };
+	} catch {
+		return null;
+	}
+}
+
 export function assertId(id) {
 	if (!SAFE_ID.test(String(id ?? '')) || id === '.' || id === '..')
 		throw new Error(`id no válido: ${id}`);
 	return id;
 }
 
+/**
+ * A cross review is a round inside the task it reviews (T529): its record lives in the parent's `rondas`, never in
+ * its own file. Readers still see every round as a task `<origen>-revision(-N)` with `ronda: true`, so the review
+ * logic reads one shape for embedded and legacy rounds. Collections that hold tasks expand them.
+ */
+export const ROUND_ID = /^(.+)-revision(?:-([1-9]\d*))?$/;
+const TASK_COLLECTIONS = new Set(['tareas', 'archivo']);
+
+const roundsOf = (parent) =>
+	(Array.isArray(parent.rondas) ? parent.rondas : []).map((r) => ({
+		...(parent.archivada && !r.archivada ? { archivada: parent.archivada } : {}),
+		...r,
+		origen: parent.id,
+		ronda: true,
+	}));
+
+function withoutRounds(doc) {
+	const rest = { ...doc };
+	delete rest.rondas;
+	return rest;
+}
+
+const readJson = (f) => JSON.parse(readFileSync(f, 'utf8'));
+
 export function readCollection(dir, collection) {
 	const d = join(dir, collection);
 	if (!existsSync(d)) return [];
-	return readdirSync(d)
+	const docs = readdirSync(d)
 		.filter((f) => f.endsWith('.json'))
-		.map((f) => ({ id: f.slice(0, -5), ...JSON.parse(readFileSync(join(d, f), 'utf8')) }));
+		.map((f) => ({ id: f.slice(0, -5), ...readJson(join(d, f)) }));
+	return TASK_COLLECTIONS.has(collection) ? expandRounds(docs) : docs;
 }
+
+/** T529: task docs as read from disk, each followed by the review rounds kept in its `rondas`. */
+export const expandRounds = (docs) => docs.flatMap((doc) => [withoutRounds(doc), ...roundsOf(doc)]);
 
 export function readDoc(dir, collection, id) {
 	const f = join(dir, collection, `${assertId(id)}.json`);
-	return existsSync(f) ? { id, ...JSON.parse(readFileSync(f, 'utf8')) } : null;
+	if (existsSync(f)) {
+		const doc = { id, ...readJson(f) };
+		return TASK_COLLECTIONS.has(collection) ? withoutRounds(doc) : doc;
+	}
+	const parent = TASK_COLLECTIONS.has(collection) && roundParent(dir, collection, id);
+	return parent ? (roundsOf(parent).find((r) => r.id === id) ?? null) : null;
+}
+
+/** The parent document whose `rondas` would hold round `id`, read from its own file; null when there is none. */
+function roundParent(dir, collection, id) {
+	const m = ROUND_ID.exec(id);
+	if (!m) return null;
+	const f = join(dir, collection, `${assertId(m[1])}.json`);
+	return existsSync(f) ? { id: m[1], ...readJson(f) } : null;
 }
 
 /** The whole board, in the shape model.mjs reads. */
@@ -119,6 +172,7 @@ export function loadBoard(dir, { since } = {}) {
 	const archivoZip = zipOnlyTasks(dir, tareas, archivo);
 	return {
 		geminiRelay: readGeminiRelay(dir),
+		coordinador: readCoordinator(dir),
 		tareas,
 		decisiones: readCollection(dir, 'decisiones'),
 		bitacora: readLog(dir, { since }),
@@ -289,16 +343,46 @@ export function migrateLogLines(r) {
 	];
 }
 
-/** Write through a temp file and rename, so a reader never sees half a document. */
+/**
+ * Write through a temp file and rename, so a reader never sees half a document. A task document keeps the rounds
+ * already on disk (T529): only a round write changes them. A `ronda` task with no file of its own is written into
+ * its parent's `rondas`, ordered by `vuelta`.
+ */
 export function writeDoc(dir, collection, id, data, { backup: keep = true } = {}) {
 	const d = join(dir, collection);
 	mkdirSync(d, { recursive: true });
+	const f = join(d, `${assertId(id)}.json`);
+	if (TASK_COLLECTIONS.has(collection) && data.ronda && !existsSync(f)) {
+		const parent = roundParent(dir, collection, id);
+		if (parent) return writeRound(dir, collection, parent, id, data, { keep });
+	}
 	const rest = { ...data };
 	delete rest.id;
-	const f = join(d, `${assertId(id)}.json`);
+	if (TASK_COLLECTIONS.has(collection)) {
+		delete rest.rondas;
+		const kept = existsSync(f) ? readJson(f).rondas : data.rondas;
+		if (Array.isArray(kept) && kept.length) rest.rondas = kept;
+	}
 	if (keep && existsSync(f)) backup(dir, collection, id, f);
+	writeAtomic(f, rest);
+}
+
+function writeRound(dir, collection, parent, id, data, { keep }) {
+	const round = { ...data, id };
+	delete round.origen;
+	delete round.ronda;
+	const others = (parent.rondas ?? []).filter((r) => r.id !== id);
+	const rondas = [...others, round].sort((a, b) => (a.vuelta ?? 0) - (b.vuelta ?? 0));
+	const f = join(dir, collection, `${parent.id}.json`);
+	if (keep) backup(dir, collection, parent.id, f);
+	const rest = { ...parent, rondas };
+	delete rest.id;
+	writeAtomic(f, rest);
+}
+
+function writeAtomic(f, doc) {
 	const tmp = `${f}.${process.pid}.tmp`;
-	writeFileSync(tmp, `${JSON.stringify(rest, null, '\t')}\n`);
+	writeFileSync(tmp, `${JSON.stringify(doc, null, '\t')}\n`);
 	renameSync(tmp, f);
 }
 

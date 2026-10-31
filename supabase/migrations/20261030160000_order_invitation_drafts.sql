@@ -1,12 +1,6 @@
 -- One durable invitation per order; creation and linkage share a transaction.
+-- The function and its initial permissions come first so the revoke is provably initial.
 begin;
-
-alter table public.sales_orders
-  add column invitation_id uuid unique references public.invitations(id) on delete restrict;
-
-grant insert (kind, slug, title, event_type, theme_id, client_name, client_email,
-  client_whatsapp, photos_received, status) on public.invitations to service_role;
-grant insert (invitation_project_id, content, status) on public.invitation_content_drafts to service_role;
 
 create function public.create_order_invitation_draft(
   p_order_id uuid, p_expected_request_updated_at timestamptz,
@@ -69,5 +63,12 @@ revoke all on function public.create_order_invitation_draft(uuid, timestamptz, t
   from public, anon, authenticated;
 grant execute on function public.create_order_invitation_draft(uuid, timestamptz, text, text, jsonb)
   to service_role;
+
+alter table public.sales_orders
+  add column invitation_id uuid unique references public.invitations(id) on delete restrict;
+
+grant insert (kind, slug, title, event_type, theme_id, client_name, client_email,
+  client_whatsapp, photos_received, status) on public.invitations to service_role;
+grant insert (invitation_project_id, content, status) on public.invitation_content_drafts to service_role;
 
 commit;

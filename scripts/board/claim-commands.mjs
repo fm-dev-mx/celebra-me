@@ -7,6 +7,7 @@ import { UsageError, say } from './cli.mjs';
 import { undelivered } from './delivery.mjs';
 import { checkoutState, claimLaneIssue, lockLaneIssue, startGitSafety } from './lane-session.mjs';
 import {
+	EXTERNAL_LANE,
 	READONLY_LANE,
 	claimable,
 	isReadOnly,
@@ -48,13 +49,17 @@ function claimLocation(before, flags, board) {
 		throw new UsageError(`${readOnlyLaneError(before, 'carril propio')}; omita --carril`);
 	if (isReadOnly(before) && planned)
 		throw new UsageError(
-			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador`,
+			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador --quien=claude`,
 		);
 	if (!isReadOnly(before) && !laneAllowed(carril, before))
 		throw new UsageError(
 			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
 		);
-	if (carril && board.tareas.some((t) => t.id !== before.id && t.candado?.carril === carril))
+	if (
+		carril &&
+		carril !== EXTERNAL_LANE &&
+		board.tareas.some((t) => t.id !== before.id && t.candado?.carril === carril)
+	)
 		throw new UsageError(`el carril ${carril} tiene otra tarea con candado`);
 	return { rama, carril };
 }
@@ -134,7 +139,7 @@ export function claimCommands({ getTask, saveTask }) {
 				const location = claimLocation(before, flags, board);
 				const laneIssue = claimLaneIssue(checkout, before, location);
 				if (laneIssue) throw new UsageError(laneIssue);
-				const titleIssue = claimTitleIssue(before, flags.titulo, location.carril);
+				const titleIssue = claimTitleIssue(before, flags.titulo, location.carril, board);
 				if (titleIssue) throw new UsageError(titleIssue);
 				const t = saveTask(dir, before, claimed(before, who, location), {
 					quien: flags.quien,

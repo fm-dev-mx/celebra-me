@@ -110,7 +110,7 @@ describe('owner destinations (T391)', () => {
 		const d = dest(board, 'origen-revision');
 		expect(d.tipo).toBe('revision');
 		expect(d.donde).toBe(
-			'DÓNDE: Codex · F4 · Integración (carpeta celebra-me) · chat nuevo «f04 · T2 · PR #9 · Revisión»',
+			'DÓNDE: Codex · F5 · Integración (carpeta celebra-me) · chat nuevo «f05 · T2 · PR #9 · Revisión»',
 		);
 		expect(d.copia).toContain(`${POINTER} origen-revision`);
 	});
@@ -198,7 +198,7 @@ describe('owner destinations (T391)', () => {
 		const d = dest(board, 'de-usted');
 		expect(d.tipo).toBe('guia');
 		expect(d.donde).toBe(
-			'DÓNDE: Claude · F4 · Integración (carpeta celebra-me) · chat nuevo «f04 · T1 · Guía»',
+			'DÓNDE: Claude · F5 · Integración (carpeta celebra-me) · chat nuevo «f05 · T1 · Guía»',
 		);
 		expect(d.copia).toContain('corra pnpm board prompt de-usted y siga esa versión');
 		expect(d.copia).toContain('No actúe en mis cuentas');
@@ -231,7 +231,7 @@ describe('owner destinations (T391)', () => {
 		});
 		// The guide falls back to the next agent that is not paused.
 		expect(dest(board, 'de-usted').donde).toBe(
-			'DÓNDE: Gemini · F4 · Integración (carpeta celebra-me) · chat nuevo «f04 · T2 · Guía»',
+			'DÓNDE: Gemini · F5 · Integración (carpeta celebra-me) · chat nuevo «f05 · T2 · Guía»',
 		);
 		expect(
 			probe(
@@ -267,7 +267,7 @@ describe('owner destinations (T391)', () => {
 			],
 			{ agentes: [{ id: 'codex', pausa: { hasta: '2026-11-02T12:00:00Z' } }] },
 		);
-		expect(dest(board, 'de-usted').donde).toContain('Claude · F4 · Integración');
+		expect(dest(board, 'de-usted').donde).toContain('Claude · F5 · Integración');
 		const lines = probe(
 			makeBoard([]),
 			`console.log(JSON.stringify(n.sectionLines({ usted: [{ donde: 'DÓNDE: x', texto: 'a\\nb' }], coordinador: [], detenidas: [] })));`,

@@ -23,7 +23,7 @@
  *                                               the git-safety session --session=<rama>)
  *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
  *                                               a usted» until 15 min pass without a claim (claim clears it)
- *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it;
+ *   plan <id> --carril=<id> --coordinador --quien=<q> --rev=<n> d177: the lane a ready task runs in; --carril= clears it;
  *                                               T382: refused on a busy lane (other branch, uncommitted)
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees a legacy lock without sesion, or
@@ -31,10 +31,11 @@
  *                                               a task still en curso goes back to pendiente (T172), a
  *                                               review with its verdict becomes hecha; T297: from the lane,
  *                                               --git-safety=commit[,history] also finishes git-safety
- *   merged [<id>] --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
+ *   merged [<id>] --coordinador --quien=<q> [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
- *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
+ *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: round <id>-revision, then <id>-revision-2, … per
+ *                                               new SHA, kept inside <id> (T529), never a task of its own;
  *                                               without --agente the reviewer follows d183; d282: a
  *                                               low-risk PR by Claude goes to a Claude subagent
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
@@ -95,37 +96,37 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-	canFinish,
-	color,
-	nextFor,
-	normalizePr,
-	prIssues,
-	queue,
-	requisitos,
-	requisitoLine,
-	blockedText,
-	stage,
-	taskIssues,
-	inTab,
-	isFinished,
-	isReview,
 	authorOf,
+	blockedText,
 	buildLogRow,
 	buildMessageRow,
-	taskLabel,
-	roundLines,
-	reviewRounds,
-	historyRows,
-	logRowError,
-	laneLines,
-	promptWithLane,
+	canFinish,
 	cleaned,
 	CLEANED_ON,
-	unlocked,
-	isSilentLock,
-	SILENT_LOCK_HOURS,
+	color,
 	CONTRATO,
 	findTask,
+	historyRows,
+	inTab,
+	isExternal,
+	isFinished,
+	isReview,
+	isSilentLock,
+	laneLines,
+	logRowError,
+	normalizePr,
+	prIssues,
+	promptWithLane,
+	queue,
+	requisitoLine,
+	requisitos,
+	reviewRounds,
+	roundLines,
+	SILENT_LOCK_HOURS,
+	stage,
+	taskIssues,
+	taskLabel,
+	unlocked,
 } from './model.mjs';
 import { assertLaneReady, assertPlan, readLaneGit } from './lane-plan.mjs';
 import { blocked, listTail, originLines, refIssue, subtaskLines } from './subtasks.mjs';
@@ -142,8 +143,7 @@ import {
 	mergedRef,
 	reviewDone,
 } from './close-commands.mjs';
-import { deliveryLine, nextSections, sectionLines, unreadFor } from './next.mjs';
-import { mergeSignal } from './owner-text.mjs';
+import { deliveryLine, mergeSignalsFor, nextSections, sectionLines, unreadFor } from './next.mjs';
 import { beatCaller, nextCommands } from './next-commands.mjs';
 import { deliveryCommands } from './delivery-commands.mjs';
 import {
@@ -170,6 +170,7 @@ import { resumenCommands } from './resumen.mjs';
 import { chooseReviewer, reviewCreatedText, reviewerPrecheck } from './reviewer.mjs';
 import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
+import { assertCoordinator } from './coordinator-authority.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
 import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
@@ -299,9 +300,11 @@ function saveTask(dir, before, after, opts = {}) {
 	const t = { ...traced, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	const questions = prepareQuestionRevision(dir, before, t, opts);
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
-	// numbering existed gets the next number on its first write, like a new one.
-	t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
-	if (t.num !== before?.num && !Number.isSafeInteger(t.num))
+	// numbering existed gets the next number on its first write, like a new one. A review round lives inside its
+	// task (T529) and takes no number of its own.
+	if (t.ronda) delete t.num;
+	else t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+	if (!t.ronda && t.num !== before?.num && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
@@ -449,8 +452,8 @@ function row(t, n, board, agente) {
 }
 
 /**
- * T79: one try of `review`: every round is a new child `<id>-revision`, `-revision-2`, … with its own prompt; d183
- * picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet, unless --sin-ci.
+ * T79: one try of `review`: every round `<id>-revision`, `-revision-2`, … has its own prompt and lives inside the
+ * reviewed task (T529), with no number of its own; d183 picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet, unless --sin-ci.
  */
 function reviewOnce({ pos, flags }, dir, out) {
 	return withLock(dir, () => {
@@ -489,14 +492,13 @@ function reviewOnce({ pos, flags }, dir, out) {
 		const { agente, revisor } = pick;
 		const id = reviewChildId(src, prev);
 		const before = readDoc(dir, 'tareas', id);
-		// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
-		const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+		// T529: the round lives inside the reviewed task, so its prompt-v1 session name (T160) carries that number.
 		const t = reviewChild(src, {
 			agente,
 			revisor,
 			sha,
 			prev,
-			num,
+			num: src.num,
 			files: preflight.files,
 			// d291: rounds since the last verdict answered nothing, so this one reviews the whole PR.
 			previas: leftByUnanswered(src.id, loadBoard(dir)) ?? undefined,
@@ -549,15 +551,6 @@ const commands = {
 		// d276/T258: tasks waiting for a date or blocked left the queue; their lines close the list.
 		const tail = listTail(board);
 		if (tail) out(tail);
-	},
-	next({ flags }, dir, out) {
-		const agente = need(flags.agente, 'falta --agente=claude|codex|gemini');
-		const t = nextFor(agente, loadBoard(dir));
-		if (flags.json) return out(JSON.stringify(t, null, 2));
-		if (!t) return out(`Nada listo para ${agente}.`);
-		out(
-			`${t.id} (rev ${t.rev}) — ${t.num ? `T${t.num} ` : ''}${t.titulo}\n\n${promptWithLane(t, loadBoard(dir)) ?? ''}`,
-		);
 	},
 	show({ pos, flags }, dir, out) {
 		const t = getTask(dir, need(pos[0], 'falta <id>'));
@@ -739,11 +732,15 @@ const commands = {
 	/**
 	 * d170: once a task's PR is merged the board moves it to unida and drops its lock without waiting for the
 	 * session. The PR state is read from GitHub (`prState` lets board:sync pass the state it just listed).
+	 * T521: review rounds' merge signals are acknowledged too; an archived task only gets that atendido row.
 	 */
 	merged({ pos, flags }, dir, out, { prState = ghPrState } = {}) {
 		if (!flags.coordinador) throw new UsageError('merged requiere --coordinador (d170)');
 		return withLock(dir, () => {
-			const before = getTask(dir, mergedRef(pos[0], flags.pr, loadBoard(dir)));
+			const board = loadBoard(dir);
+			const ref = mergedRef(pos[0], flags.pr, board);
+			const archived = findTask(ref, board) && !findTask(ref, { tareas: board.tareas });
+			const before = archived ? findTask(ref, board) : getTask(dir, ref);
 			if (flags.rev !== undefined) checkRev(before, flags);
 			const given = typeof flags.pr === 'string' ? normalizePr(flags.pr) : undefined;
 			const pr = normalizePr(before.pr) ?? given;
@@ -752,9 +749,7 @@ const commands = {
 			const state = prState(pr);
 			if (state !== 'MERGED')
 				throw new UsageError(`${pr} no está unido en GitHub (${state || 'sin respuesta'})`);
-			const signals = unreadFor('coordinador', loadBoard(dir)).filter(
-				(r) => r.tarea === before.id && mergeSignal(r),
-			);
+			const signals = mergeSignalsFor(before.id, board);
 			if (signals.length)
 				appendLog(dir, {
 					tarea: before.id,
@@ -766,6 +761,9 @@ const commands = {
 						nota: 'merged',
 					},
 				});
+			const s = signals.length === 1 ? '' : 's';
+			const acks = `${signals.length} aviso${s} atendido${s}`;
+			if (archived) return say(flags, out, before, `${before.id} está archivada; ${acks}`);
 			const after = { ...unlocked(before, flags), pr };
 			if (!['unida', 'comprobada'].includes(after.estado)) after.estado = 'unida';
 			if (!before.candado && after.estado === before.estado)
@@ -816,7 +814,7 @@ const commands = {
 			out,
 			info.t,
 			`${info.t.id} libre (rev ${info.t.rev})`,
-			finishGitSafety(checkout, info.rama, ops),
+			isExternal(info.t) ? null : finishGitSafety(checkout, info.rama, ops),
 		);
 	},
 	move({ pos, flags }, dir, out) {
@@ -952,6 +950,7 @@ export async function run(argv, { dir = boardDir(), out = console.log, prState }
 			`comando desconocido: ${cmd ?? '(ninguno)'}. Use: ${Object.keys(commands).join(', ')}`,
 		);
 	const args = parseArgs(rest);
+	assertCoordinator(cmd, args.flags, () => getTask(dir, need(args.pos[0], 'falta <id>')));
 	const result = await fn(args, dir, out, prState ? { prState } : undefined);
 	beatCaller(dir, cmd, args.flags);
 	return result;

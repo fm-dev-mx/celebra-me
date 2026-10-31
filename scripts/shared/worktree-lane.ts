@@ -4,16 +4,18 @@
  *
  * Canonical layout (parent directory is machine-local; tooling derives paths):
  *   <parent>/
- *   ├── <repo>/                   (repo root / Integration lane, Win + F4)
+ *   ├── <repo>/                   (repo root / Integration lane, Win + F5)
  *   └── <repo>-worktrees/         (external worktree root)
- *       ├── f05-plataforma/       (Win + F5)
+ *       ├── f05-plataforma/       (retiring, no hotkey)
+ *       ├── f06-landing/          (Win + F6)
  *       ├── …
  *       └── f12-release/          (Win + F12)
  *
  * WORKTREE_LANES is the single source of truth for lane ids, keys, folders,
- * runtimes and ports. A lane's role is a default, not a restriction; folders
- * under `<repo>-worktrees/` are never created ad hoc — change this table in a
- * pull request instead.
+ * runtimes and ports. Win + F4 opens the separate board project, not a lane.
+ * A lane's role is a default, not a restriction; folders under
+ * `<repo>-worktrees/` are never created ad hoc — change this table in a pull
+ * request instead.
  */
 
 import { execSync } from 'node:child_process';
@@ -24,8 +26,10 @@ export type WorktreeRuntimeDefault = 'local' | 'preview';
 
 interface WorktreeLaneEntry {
 	readonly id: string;
-	/** Function key that opens the lane (Win + F<key>). */
-	readonly key: number;
+	/** Function key that opens the lane (Win + F<key>); null for a retiring lane. */
+	readonly key: number | null;
+	/** Stable Astro/Vite dev server port. */
+	readonly port: number;
 	/** Segment name under the external worktree root (null for Integration). */
 	readonly segment: string | null;
 	readonly displayName: string;
@@ -35,21 +39,25 @@ interface WorktreeLaneEntry {
 export const WORKTREE_LANES = Object.freeze([
 	{
 		id: 'integration',
-		key: 4,
+		key: 5,
+		port: 4321,
 		segment: null,
 		displayName: 'Integration',
 		runtimeDefault: 'local',
 	},
 	{
+		// Retiring: its hotkey moved to Integration; removed once its last task merges.
 		id: 'f05-plataforma',
-		key: 5,
+		key: null,
+		port: 4325,
 		segment: 'f05-plataforma',
-		displayName: 'F5 Plataforma',
+		displayName: 'Plataforma (en retiro)',
 		runtimeDefault: 'local',
 	},
 	{
 		id: 'f06-landing',
 		key: 6,
+		port: 4326,
 		segment: 'f06-landing',
 		displayName: 'F6 Landing',
 		runtimeDefault: 'local',
@@ -57,6 +65,7 @@ export const WORKTREE_LANES = Object.freeze([
 	{
 		id: 'f07-invitaciones',
 		key: 7,
+		port: 4327,
 		segment: 'f07-invitaciones',
 		displayName: 'F7 Invitaciones',
 		runtimeDefault: 'local',
@@ -64,6 +73,7 @@ export const WORKTREE_LANES = Object.freeze([
 	{
 		id: 'f08-demos',
 		key: 8,
+		port: 4328,
 		segment: 'f08-demos',
 		displayName: 'F8 Demos',
 		runtimeDefault: 'local',
@@ -71,6 +81,7 @@ export const WORKTREE_LANES = Object.freeze([
 	{
 		id: 'f09-docs',
 		key: 9,
+		port: 4329,
 		segment: 'f09-docs',
 		displayName: 'F9 Docs',
 		runtimeDefault: 'local',
@@ -78,6 +89,7 @@ export const WORKTREE_LANES = Object.freeze([
 	{
 		id: 'f10-libre',
 		key: 10,
+		port: 4330,
 		segment: 'f10-libre',
 		displayName: 'F10 Libre',
 		runtimeDefault: 'local',
@@ -85,6 +97,7 @@ export const WORKTREE_LANES = Object.freeze([
 	{
 		id: 'f11-preview',
 		key: 11,
+		port: 4331,
 		segment: 'f11-preview',
 		displayName: 'F11 Preview',
 		runtimeDefault: 'preview',
@@ -92,6 +105,7 @@ export const WORKTREE_LANES = Object.freeze([
 	{
 		id: 'f12-release',
 		key: 12,
+		port: 4332,
 		segment: 'f12-release',
 		displayName: 'F12 Release',
 		runtimeDefault: 'preview',
@@ -116,23 +130,17 @@ export interface WorktreeLaneDefinition {
 const UNKNOWN_LANE_PORT = 4399;
 
 /**
- * Stable Astro/Vite port for a lane key, so parallel worktrees do not share :4321
- * and then 403 `/@fs/` asset requests that encode another worktree's absolute path.
- * Integration (F4) keeps 4321; every other lane uses 4320 + key.
- */
-export function getLanePortForKey(key: number): number {
-	return key === 4 ? 4321 : 4320 + key;
-}
-
-/**
- * Stable Astro/Vite ports per lane, derived from WORKTREE_LANES.
+ * Stable Astro/Vite ports per lane, derived from WORKTREE_LANES, so parallel
+ * worktrees do not share :4321 and then 403 `/@fs/` asset requests that encode
+ * another worktree's absolute path. Integration keeps 4321; other lanes use 4320 + key.
  *
  * Override with PORT or ASTRO_PORT when needed (tests, one-off binds).
  */
 export const WORKTREE_DEV_SERVER_PORTS: Readonly<Record<WorktreeLaneId, number>> = Object.freeze({
-	...(Object.fromEntries(
-		WORKTREE_LANES.map((lane) => [lane.id, getLanePortForKey(lane.key)]),
-	) as Record<KnownWorktreeLaneId, number>),
+	...(Object.fromEntries(WORKTREE_LANES.map((lane) => [lane.id, lane.port])) as Record<
+		KnownWorktreeLaneId,
+		number
+	>),
 	unknown: UNKNOWN_LANE_PORT,
 });
 
@@ -278,7 +286,7 @@ export function detectWorktreeLane(
 
 export function listExpectedLanePaths(repoRoot: string): Array<{
 	id: KnownWorktreeLaneId;
-	key: number;
+	key: number | null;
 	displayName: string;
 	runtimeDefault: WorktreeRuntimeDefault;
 	port: number;
@@ -289,7 +297,7 @@ export function listExpectedLanePaths(repoRoot: string): Array<{
 		key: lane.key,
 		displayName: lane.displayName,
 		runtimeDefault: lane.runtimeDefault,
-		port: getLanePortForKey(lane.key),
+		port: lane.port,
 		path: getExpectedLanePath(lane, repoRoot),
 	}));
 }
@@ -309,7 +317,7 @@ export function checkLaneWorkPolicy(input: {
 	merging?: boolean;
 	operation?: 'session' | 'commit';
 }): string | null {
-	const freeLanes = WORKTREE_LANES.filter((lane) => lane.segment)
+	const freeLanes = WORKTREE_LANES.filter((lane) => lane.segment && lane.key !== null)
 		.map((lane) => `${lane.segment} (Win + F${lane.key})`)
 		.join(', ');
 	const hint = `Request an explicit task assignment to a lane under <repo>-worktrees/: ${freeLanes}. Do not switch checkouts automatically.`;
@@ -318,7 +326,7 @@ export function checkLaneWorkPolicy(input: {
 	}
 	if (input.lane.id === 'integration' && input.branch !== 'develop') {
 		const branch = input.branch ?? 'detached HEAD';
-		return `Integration (Win + F4) only takes commits on develop (current: ${branch}). ${hint}`;
+		return `Integration (Win + F5) only takes commits on develop (current: ${branch}). ${hint}`;
 	}
 	if (input.lane.id === 'integration' && input.operation === 'commit' && !input.merging) {
 		return `Integration only completes merges on develop; direct task commits are forbidden. ${hint}`;

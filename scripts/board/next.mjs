@@ -19,6 +19,7 @@ import {
 	ownerAsks,
 	ownerWhere,
 	queue,
+	INTEGRATION_SHORT,
 	READONLY_LANE,
 	reviewRounds,
 	SELF_STARTING,
@@ -51,10 +52,20 @@ export const deliveryLine = (t, now = Date.now()) =>
 
 /**
  * Messages to `agente` not read yet, oldest first; `bandejas` hold each reader's `leidos` ids, and a d291
- * `atendido` row of the bitácora marks the messages it lists as handled.
+ * `atendido` row of the bitácora marks the messages it lists as handled. T521: a message about an archived task
+ * no longer counts, unless `archived` asks for it (merged acknowledges those signals too).
  */
-export function unreadFor(agente, board) {
+export function unreadFor(agente, board, { archived = false } = {}) {
 	const read = new Set((board.bandejas ?? []).find((b) => b.id === agente)?.leidos ?? []);
+	const gone = new Set(
+		archived
+			? []
+			: [
+					...(board.archivo ?? []),
+					...(board.archivoZip ?? []),
+					...(board.tareas ?? []).filter((t) => t.archivada),
+				].map((t) => t.id),
+	);
 	const merged = new Set();
 	for (const r of board.bitacora ?? [])
 		if (r.atendido?.para === agente)
@@ -66,10 +77,19 @@ export function unreadFor(agente, board) {
 		.filter(
 			(r) =>
 				r.mensaje?.para === agente &&
+				!gone.has(r.tarea) &&
 				!(mergeSignal(r) ? merged : read).has(r.mensaje.id) &&
 				!expiredQuestion(r, findTask(r.tarea, board)),
 		)
 		.sort((a, b) => Date.parse(a.en) - Date.parse(b.en));
+}
+
+/** T521: unread merge signals of a task and its review rounds, archived ones included. */
+export function mergeSignalsFor(id, board) {
+	const own = new Set([id, ...reviewRounds(id, board).map((t) => t.id)]);
+	return unreadFor('coordinador', board, { archived: true }).filter(
+		(r) => own.has(r.tarea) && mergeSignal(r),
+	);
 }
 
 export const GEMINI_RELAY_ALERT =
@@ -88,6 +108,39 @@ export function geminiRelayAlert(board, now = Date.now()) {
 		: null;
 }
 
+/** T477: a coordinator message unread this long, or a coordinator silent this long, alerts the owner. */
+export const COORDINATOR_UNREAD_MS = 10 * MINUTE_MS;
+export const COORDINATOR_SILENT_MS = 2 * HOUR_MS;
+
+/**
+ * Why the owner should open the coordinator session as `{clave, texto}`, or null: a para=coordinador message unread for 10 min,
+ * or no turn of the registered coordinator (`board.coordinador`, from board-coordinator.json) in the last 2 h.
+ * With no coordinator registered, only unread messages alert.
+ */
+export function coordinatorAlert(board, now = Date.now()) {
+	const unread = unreadFor('coordinador', board);
+	const old = unread.filter((r) => now - Date.parse(r.en) >= COORDINATOR_UNREAD_MS);
+	if (old.length)
+		return {
+			clave: 'coordinador:mensajes',
+			texto: `El coordinador tiene ${old.length} ${old.length === 1 ? 'mensaje' : 'mensajes'} sin leer hace más de 10 min: abra la sesión del coordinador (${INTEGRATION_SHORT}) y escriba «sigue».`,
+		};
+	const beat = Date.parse(board.coordinador?.at ?? '');
+	if (!board.coordinador?.sesion || !Number.isFinite(beat))
+		return unread.length
+			? {
+					clave: 'coordinador:registro',
+					texto: `Ninguna sesión de coordinador está registrada: en la sesión del coordinador (${INTEGRATION_SHORT}) pida «registre esta sesión como coordinador del tablero».`,
+				}
+			: null;
+	return now - beat > COORDINATOR_SILENT_MS
+		? {
+				clave: 'coordinador:silencio',
+				texto: `La sesión del coordinador no ha tenido un turno ${agoText(now - beat)}: ábrala (${INTEGRATION_SHORT}) y escriba «sigue».`,
+			}
+		: null;
+}
+
 /**
  * «claude → coordinador sobre T125: texto», as `inbox` and the view print a message; T322: a question to the
  * owner adds its options, the recommended one first, and says when a technical detail goes with it.
@@ -99,21 +152,24 @@ export function messageLine(r, board) {
 	return `${r.quien ?? '¿?'} → ${r.mensaje.para} sobre ${t ? taskTag(t) : r.tarea}: ${texto}${extra}`;
 }
 
-/** Short lane name of a session title: `f05` for f05-plataforma, `f04` for Integration. */
+/** Short lane name of a session title: `f06` for f06-landing, `f05` for Integration. */
 const laneShort = (id) =>
-	id === 'integration' ? 'f04' : String(id ?? READONLY_LANE).split('-')[0];
+	id === READONLY_LANE ? INTEGRATION_SHORT : String(id ?? READONLY_LANE).split('-')[0];
 
 /**
  * Why `titulo` cannot name the session that claims `t` in `carril`, or null: it must read `<carril> · T<n> · …`,
  * for example `f05 · T126 · Qué sigue y mensajes`. Required only for tasks created under the contract.
+ * T529: a review round has no number of its own, so its session carries its task's (`f05 · T126 · … · Revisión`).
  */
-export function claimTitleIssue(t, titulo, carril) {
+export function claimTitleIssue(t, titulo, carril, board) {
 	const lane = laneShort(isReadOnly(t) ? READONLY_LANE : carril);
-	const want = `${lane} · ${taskTag(t)} · …`;
+	const origin = t.ronda && board ? findTask(t.origen, board) : null;
+	const tag = taskTag(origin ?? t);
+	const want = `${lane} · ${tag} · …`;
 	if (typeof titulo !== 'string' || !titulo.trim())
 		return t.contrato >= 1 ? `falta --titulo="${want}" (nombre de la sesión)` : null;
 	const parts = titulo.split(' · ');
-	if (parts.length < 3 || parts[0] !== lane || parts[1] !== taskTag(t) || !parts[2].trim())
+	if (parts.length < 3 || parts[0] !== lane || parts[1] !== tag || !parts[2].trim())
 		return `--titulo debe ser «${want}», no «${titulo}»`;
 	return null;
 }
@@ -310,8 +366,10 @@ export function coordinatorItems(board, { prs, now = Date.now() } = {}) {
 		.filter((t) => prs === undefined || prs.some((p) => `#${p.number}` === normalizePr(t.pr)))
 		.map((t) => reviewItem(t, board, prs))
 		.filter(Boolean);
+	// A merge signal follows its origin's PR; any other message leaves once its task is finished (d265).
+	const open = new Set(openTaskMessages('coordinador', board));
 	const messages = unreadFor('coordinador', board)
-		.filter((r) => !mergeSignal(r) || pendingMergeSignal(r, board, prs))
+		.filter((r) => (mergeSignal(r) ? pendingMergeSignal(r, board, prs) : open.has(r)))
 		.map((r) => ({
 			tipo: 'mensaje',
 			t: findTask(r.tarea, board),
@@ -387,10 +445,15 @@ function pendingMergeSignal(r, board, prs) {
  * (hecha, unida, comprobada, cancelada) or archived no longer asks for anything. `inbox` keeps every message.
  */
 export function ownerMessages(board) {
+	return openTaskMessages('dueno', board);
+}
+
+/** d265: unread messages to `para` whose task is unknown or still open (not finished, not archived). */
+function openTaskMessages(para, board) {
 	const archived = new Set((board.archivo ?? []).map((t) => t.id));
-	return unreadFor('dueno', board).filter((r) => {
+	return unreadFor(para, board).filter((r) => {
 		const t = findTask(r.tarea, board);
-		return !t || !(isFinished(t) || archived.has(t.id));
+		return !t || !(isFinished(t) || t.archivada || archived.has(t.id));
 	});
 }
 
@@ -527,7 +590,17 @@ export function ownerInbox(board, { now = Date.now() } = {}) {
 			...destinationFields(answerDestination(t, board)),
 		}),
 	);
-	return [...messages, ...tasks, ...asks];
+	const alert = coordinatorAlert(board, now);
+	const coordinator = alert
+		? [
+				row(null, 'hacer', alert.texto, {
+					clave: alert.clave,
+					donde: FIXED_DESTINATIONS.coordinador,
+					copia: 'sigue',
+				}),
+			]
+		: [];
+	return [...coordinator, ...messages, ...tasks, ...asks];
 }
 
 /** Finished tasks the Finalizadas tab can archive now (the view payload precomputes `bloqueoArchivo`). */

@@ -8,6 +8,7 @@ import {
 	sanitizeMetaAttribution,
 	type MetaAttribution,
 } from '@/lib/tracking/meta-attribution';
+import { sanitizeTtclid } from '@/lib/tracking/tiktok-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
 const PUBLIC_TRACKING_EVENT_NAMES = [
@@ -170,6 +171,8 @@ export const TrackingEventSchema = z.object({
 	utmContent: z.string().trim().max(180).optional(),
 	utmTerm: z.string().trim().max(180).optional(),
 	metaAttribution: MetaAttributionSchema,
+	// TikTok click ID; the browser sends it only with marketing consent.
+	ttclid: z.unknown().optional().transform(sanitizeTtclid),
 	eventProperties: z.record(z.string(), z.unknown()).default({}),
 	consentSnapshot: ConsentSnapshotSchema.optional().transform(normalizeConsentSnapshot),
 	isInternal: z.boolean().optional().default(false),

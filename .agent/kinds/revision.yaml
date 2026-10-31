@@ -1,5 +1,6 @@
 # Task kind «revision»: a read-only cross review of a PR (T130, rules: .agent/rules/board.md).
-# Rounds made by `pnpm board review` keep their own prompt; this kind covers reviews added by hand.
+# Rounds made by `pnpm board review` live inside the reviewed task and keep their own prompt (T529); this
+# kind covers reviews added by hand.
 tipo: revision
 descripcion: 'Revisión cruzada de un PR, solo lectura.'
 para_usted:

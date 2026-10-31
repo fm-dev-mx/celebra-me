@@ -82,7 +82,7 @@ describe('worktree lane detection', () => {
 	it('lists expected lane paths, keys and runtimes under the repository root', () => {
 		const lanes = listExpectedLanePaths('/mock/celebra-me');
 		expect(lanes.map((lane) => lane.id)).toEqual(['integration', ...laneSegments]);
-		expect(lanes.map((lane) => lane.key)).toEqual([4, 5, 6, 7, 8, 9, 10, 11, 12]);
+		expect(lanes.map((lane) => lane.key)).toEqual([5, null, 6, 7, 8, 9, 10, 11, 12]);
 		expect(
 			lanes.filter((lane) => lane.runtimeDefault === 'preview').map((lane) => lane.id),
 		).toEqual(['f11-preview', 'f12-release']);
@@ -116,7 +116,7 @@ describe('lane work policy', () => {
 			branch: 'feat/x',
 		});
 		expect(message).toContain('lane: unknown');
-		expect(message).toContain('f05-plataforma (Win + F5)');
+		expect(message).toContain('f06-landing (Win + F6)');
 		expect(message).toContain('f12-release (Win + F12)');
 	});
 

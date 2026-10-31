@@ -4,6 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { hasBoardDoc, readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -83,10 +84,8 @@ function board(dir: string, args: string[], { pr, env = {} }: { pr?: Json; env?:
 	return { status: r.status, out: String(r.stdout), err: String(r.stderr) };
 }
 
-const readTask = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
-const exists = (dir: string, id: string) =>
-	readdirSync(path.join(dir, 'tareas')).includes(`${id}.json`);
+const readTask = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
+const exists = (dir: string, id: string) => hasBoardDoc(dir, id);
 /** Every bitácora row written in `dir`. */
 const logRows = (dir: string) => {
 	const log = path.join(dir, 'bitacora');
@@ -314,7 +313,14 @@ describe('close finishes the task (d290)', () => {
 describe('coordinator over an inactive lock (d290)', () => {
 	it('lets the coordinator set an inactive session task and notes it for that session', () => {
 		const dir = makeBoard([task('d', { candado: lock(OLD) })]);
-		const r = board(dir, ['set', 'd', '--rev=1', 'estado=pendiente', '--coordinador']);
+		const r = board(dir, [
+			'set',
+			'd',
+			'--rev=1',
+			'estado=pendiente',
+			'--coordinador',
+			'--quien=claude',
+		]);
 		expect(r.err).toBe('');
 		expect(r.out).toContain(`sin latido desde ${OLD} (más de 30 min); anotado`);
 		const t = readTask(dir, 'd');
@@ -328,7 +334,14 @@ describe('coordinator over an inactive lock (d290)', () => {
 
 	it('refuses the coordinator over a live lock unless the session is archived', () => {
 		const dir = makeBoard([task('e', { candado: lock(new Date().toISOString()) })]);
-		const refused = board(dir, ['set', 'e', '--rev=1', 'ahora=x', '--coordinador']);
+		const refused = board(dir, [
+			'set',
+			'e',
+			'--rev=1',
+			'ahora=x',
+			'--coordinador',
+			'--quien=claude',
+		]);
 		expect(refused.status).toBe(2);
 		expect(refused.err).toContain('el candado de codex sigue activo');
 		const r = board(dir, [
@@ -337,6 +350,7 @@ describe('coordinator over an inactive lock (d290)', () => {
 			'--rev=1',
 			'ahora=x',
 			'--coordinador',
+			'--quien=claude',
 			'--sesion-archivada',
 		]);
 		expect(r.err).toBe('');
@@ -348,6 +362,7 @@ describe('coordinator over an inactive lock (d290)', () => {
 	it('lets the coordinator close an inactive session task as hecha, noted; a live one keeps its estado', () => {
 		const args = [
 			'--coordinador',
+			'--quien=claude',
 			'--resumen=Hecho.',
 			'--comprobacion=ninguna',
 			'--saltada=ninguna',
@@ -383,6 +398,7 @@ describe('operacion picks its kind by destino (d290)', () => {
 			'carrilPlaneado=f11-preview',
 			...extra,
 			'--coordinador',
+			'--quien=claude',
 		]);
 
 	it('uses the Cloudflare template and the base one by default', () => {
@@ -391,7 +407,10 @@ describe('operacion picks its kind by destino (d290)', () => {
 		const cf = readTask(dir, 'op').prompt;
 		expect(cf).toContain('docs/operations/cloudflare-platform.md');
 		expect(cf).not.toContain('.agent/rules/database.md');
-		expect(board(dir, ['set', 'op', '--rev=1', 'destino=base', '--coordinador']).err).toBe('');
+		expect(
+			board(dir, ['set', 'op', '--rev=1', 'destino=base', '--coordinador', '--quien=claude'])
+				.err,
+		).toBe('');
 		expect(readTask(dir, 'op').prompt).toContain('.agent/rules/database.md');
 	});
 
@@ -409,6 +428,7 @@ describe('operacion picks its kind by destino (d290)', () => {
 			BUSCA,
 			'destino=cloudflare',
 			'--coordinador',
+			'--quien=claude',
 		]);
 		expect(r.err).toContain('destino solo en tareas tipo=operacion');
 	});
@@ -423,6 +443,7 @@ describe('failures say why (d290)', () => {
 			'--rev=1',
 			'--data=no-existe.json',
 			'--coordinador',
+			'--quien=claude',
 			'--json',
 		]);
 		expect(r.status).toBe(1);

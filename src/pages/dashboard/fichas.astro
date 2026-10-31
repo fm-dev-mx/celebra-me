@@ -1,0 +1,11 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import LeadRecordsWorkspace from '@/components/dashboard/commercial/LeadRecordsWorkspace';
+
+if (!Astro.locals.session?.isSuperAdmin) return Astro.redirect('/dashboard/invitados');
+---
+
+<DashboardLayout title="Fichas">
+	<header class="dashboard-page-header"><h2>Fichas</h2><p>Busque el folio del chat y marque su etapa.</p></header>
+	<LeadRecordsWorkspace client:load />
+</DashboardLayout>

@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.55.0-beta.1",
+    "version": "0.57.0-beta.1",
     "engines": {
         "node": ">=22.23.4 <25"
     },
@@ -26,7 +26,9 @@
         "test:e2e:preview:provision": "playwright test --config=playwright.preview-provision.config.ts",
         "test:e2e:preview:publish": "playwright test --config=playwright.preview-publication.config.ts",
         "test:e2e:extended": "node scripts/run-e2e-tier.mjs extended",
-        "tablero": "node packages/tablero/src/cli.ts",
+        "tablero": "node scripts/board/tablero-core.mjs",
+        "tablero:serve": "node scripts/board/tablero-core.mjs serve",
+        "tablero:mcp": "node scripts/board/tablero-core.mjs mcp",
         "type-check": "astro check && tsc --noEmit -p tsconfig.json",
         "release-check": "tsx scripts/db/release-check.ts",
         "ci": "pnpm ci:static && pnpm test && pnpm test:e2e:ci",
@@ -127,6 +129,7 @@
         "board:serve:unregister": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/serve-unregister.ps1",
         "board:sync": "node scripts/board/sync.mjs",
         "board:verify": "node scripts/board/verify-board.mjs",
+        "board:avisos": "node scripts/board/session-notice.mjs",
         "board:watch": "node scripts/board/master-watch.mjs",
         "board:watch:register": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/watch-register.ps1",
         "board:watch:unregister": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/board/watch-unregister.ps1",

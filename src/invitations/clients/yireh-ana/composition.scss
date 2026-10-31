@@ -1,0 +1,53 @@
+// Yireh Ana: the few rules her tokens cannot express. Everything else lives in the profile.
+
+// Letter: a second gold hairline inside the preset's rule, so the card reads as stationery.
+.event--yireh-ana .envelope-wrapper[data-variant='storybook-butterflies'] {
+	.invitation-reveal-card__inner::after {
+		content: '';
+		position: absolute;
+		inset: 1.05rem;
+		border: 1px solid rgb(var(--color-leaf-gold-rgb) / 30%);
+		pointer-events: none;
+	}
+}
+
+// The meadow sits under the scroll cue; the cover reads as a page to turn without it. Removed from
+// layout (not just made transparent) so it cannot collide with the music prompt on small screens.
+.event--yireh-ana .invitation-hero__scroll-indicator {
+	display: none;
+}
+
+.event--yireh-ana .thank-you-section {
+	.thank-you-message .drop-cap {
+		color: inherit;
+	}
+
+	// The wreath as a keepsake medallion: its white ground multiplied onto lilac paper, a gold ring
+	// around it and her initial in the gold hand at the centre.
+	.thank-you-editorial__image-shell {
+		background: var(--color-lilac-mist);
+		box-shadow:
+			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 70%),
+			0 0 0 7px var(--color-violet-night),
+			0 0 0 8px rgb(var(--color-candle-gold-rgb) / 30%);
+		overflow: visible;
+
+		.photo-image {
+			mix-blend-mode: multiply;
+		}
+
+		&::after {
+			content: 'Y';
+			position: absolute;
+			inset: 0;
+			display: grid;
+			place-items: center;
+			padding-top: 0.12em;
+			font-family: var(--font-calligraphy);
+			font-size: clamp(4rem, 20vw, 5.5rem);
+			line-height: 1;
+			color: var(--color-gold-ink);
+			pointer-events: none;
+		}
+	}
+}

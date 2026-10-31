@@ -7,10 +7,12 @@
 import {
 	AGENT_REGISTRY,
 	agentPaused,
+	EXTERNAL_LANE,
 	findTask,
 	isReview,
 	normalizePr,
 	ownerLaunches,
+	INTEGRATION_SHORT,
 	READONLY_LANE,
 	reviewRound,
 	suggestedLane,
@@ -32,14 +34,15 @@ const oneLine = (s) =>
 		.trim();
 /** `fNN` stands for the free lane `pnpm board plan` picks when the task has none yet. */
 const laneShort = (lane) =>
-	lane === READONLY_LANE ? 'f04' : lane ? String(lane).split('-')[0] : 'fNN';
+	lane === READONLY_LANE ? INTEGRATION_SHORT : lane ? String(lane).split('-')[0] : 'fNN';
 /** A session title written as `fNN · T<n> · …`, the shape every claim title takes. */
 const TITLE = /^f\d{2} · T\d+ · \S/;
 
-/** «F4 · Integración (carpeta celebra-me)» or «proyecto f06-landing»; null without a lane. */
+/** «F5 · Integración (carpeta celebra-me)» or «proyecto f06-landing»; null without a lane. */
 export function placeText(lane) {
 	if (!lane) return null;
-	return lane === READONLY_LANE ? 'F4 · Integración (carpeta celebra-me)' : `proyecto ${lane}`;
+	if (lane === EXTERNAL_LANE) return 'carril externo';
+	return lane === READONLY_LANE ? 'F5 · Integración (carpeta celebra-me)' : `proyecto ${lane}`;
 }
 
 /** The pause end of `agente` as «2026-11-02», or null when the agent is not paused. */
@@ -67,7 +70,7 @@ export function promptTitle(t) {
 
 /**
  * The exact title of the new chat for `t`: the prompt's own first line when it is a title, else
- * `f04 · T<n> · PR #<n> · Revisión[ vuelta n]` for a review and `fNN · T<n>[ · PR #<n>] · <corto>` for a task.
+ * `f05 · T<n> · PR #<n> · Revisión[ vuelta n]` for a review and `fNN · T<n>[ · PR #<n>] · <corto>` for a task.
  */
 export function sessionTitle(t, board, lane = taskLane(t)) {
 	const own = promptTitle(t);
@@ -75,7 +78,7 @@ export function sessionTitle(t, board, lane = taskLane(t)) {
 	if (isReview(t)) {
 		const pr = normalizePr(findTask(t.origen, board)?.pr ?? t.pr);
 		const n = reviewRound(t);
-		return `f04 · ${taskTag(t)}${pr ? ` · PR ${pr}` : ''} · Revisión${n < 2 ? '' : ` vuelta ${n}`}`;
+		return `${INTEGRATION_SHORT} · ${taskTag(t)}${pr ? ` · PR ${pr}` : ''} · Revisión${n < 2 ? '' : ` vuelta ${n}`}`;
 	}
 	const pr = normalizePr(t.pr);
 	return `${laneShort(lane)} · ${taskTag(t)}${pr ? ` · PR ${pr}` : ''} · ${oneLine(t.corto ?? t.titulo ?? t.id)}`;
@@ -126,7 +129,9 @@ function guideRow(t, board, now) {
 	const donde = doneLine([
 		agentName(chat?.agente ?? agente),
 		placeText(READONLY_LANE),
-		chat ? `chat existente «${chat.nombre}»` : `chat nuevo «f04 · ${taskTag(t)} · Guía»`,
+		chat
+			? `chat existente «${chat.nombre}»`
+			: `chat nuevo «${INTEGRATION_SHORT} · ${taskTag(t)} · Guía»`,
 	]);
 	const copia = [
 		donde,
@@ -231,6 +236,7 @@ export const destinationFields = (dest) => ({
 export const FIXED_DESTINATIONS = {
 	'gemini-relay': 'DÓNDE: Gemini · Antigravity · chat maestro',
 	archivar: 'DÓNDE: este tablero, pestaña Finalizadas',
+	coordinador: `DÓNDE: Claude · sesión del coordinador (${INTEGRATION_SHORT})`,
 };
 
 /** (Inspeccionar) a silent lock: the chat that holds it, nothing to copy. */

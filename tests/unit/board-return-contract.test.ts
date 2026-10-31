@@ -1,9 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -96,8 +97,7 @@ function cli(dir: string, ...args: string[]) {
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
 }
 
-const readTask = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
+const readTask = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
 
 const EMPTY_LISTS = [
 	'--fallida=ninguna',
@@ -200,7 +200,7 @@ describe('board return contract (T129): CLI', () => {
 			task('vieja', { estado: 'hecha', pr: '#400', contrato: 1 }),
 		]);
 		const close = (id: string, ...args: string[]) =>
-			cli(dir, 'close', id, '--coordinador', '--resumen=Hecho.', ...args);
+			cli(dir, 'close', id, '--coordinador', '--quien=claude', '--resumen=Hecho.', ...args);
 
 		const missing = close('codigo');
 		expect(missing.status).toBe(2);
@@ -251,7 +251,7 @@ describe('board return contract (T129): CLI', () => {
 			}),
 		]);
 		const review = (sha: string) =>
-			cli(dir, 'review', 'codigo', `--sha=${sha}`, '--coordinador');
+			cli(dir, 'review', 'codigo', `--sha=${sha}`, '--coordinador', '--quien=claude');
 		expect(review(SHA_A).status).toBe(0);
 		const second = review(SHA_B);
 		expect(second.out).toContain('codigo-revision cancelada');
@@ -260,7 +260,9 @@ describe('board return contract (T129): CLI', () => {
 		expect(replaced.cierre.resumen).toBe(
 			'Reemplazada por la vuelta 2 (3c35826): el PR cambió de aaaaaaa.',
 		);
-		expect(cli(dir, 'archive', 'codigo-revision', '--coordinador').status).toBe(0);
+		expect(
+			cli(dir, 'archive', 'codigo-revision', '--coordinador', '--quien=claude').status,
+		).toBe(0);
 
 		const close = (...args: string[]) =>
 			cli(
@@ -268,6 +270,7 @@ describe('board return contract (T129): CLI', () => {
 				'close',
 				'codigo-revision-2',
 				'--coordinador',
+				'--quien=claude',
 				'--resumen=Revisado.',
 				...EMPTY_LISTS,
 				...args,
@@ -286,7 +289,7 @@ describe('board return contract (T129): CLI', () => {
 		);
 		expect(ok.status).toBe(0);
 		expect(ok.out.trim().split('\n').at(-1)).toBe(
-			'T3 · revision · aprobado · #530@3c35826 · 1 hallazgo · siguiente: unir',
+			'codigo-revision-2 · revision · aprobado · #530@3c35826 · 1 hallazgo · siguiente: unir',
 		);
 		expect(readTask(dir, 'codigo-revision-2').cierre.resultado.hallazgos).toEqual([
 			{ p: 'P3', archivo: 'view.html:1', texto: 'Texto largo' },

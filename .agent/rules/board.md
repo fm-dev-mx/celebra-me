@@ -36,17 +36,18 @@ routing and the internal modules work lives in
   marks a later owner step, so the session still claims, closes and reviews it). A task waiting only
   for a date sits in «Calendario» (d276); any other blocked task sits in «Bloqueadas» (T258); both
   come back to the queue on their own.
-- **Subtasks (d174)**: `padre` names the mother task, `grupo` an initiative, `fase` (integer ≥ 1)
-  the step, for a program closed together; a `padre` naming no task, itself or a loop is refused. A
-  finished task's follow-up is its own task with `deriva=<source>` (T481), never a subtask.
+- **Structure (d384, d386, d387, d390)**: project > objective (mother task, «Terminado cuando») >
+  ordered phases (each with its «Terminado cuando») > steps (checkboxes, never tasks); a follow-up
+  is a phase or step of the same mother. A subtask (`padre`, `grupo`, `fase` ≥ 1, d174; no loops)
+  exists only when the lane or PR changes, never because the reviewer differs. Order: `requisitos`.
 - **Periodic tasks (d268)**: `cada=<n>d` makes a task recurring: `close` of a started cycle sends it
   back to `pendiente` until the next date, keeping the cierre as the last cycle's.
 - **Category (d191)**: `categoria` prefers a lane, never restricts: `plataforma` f05-plataforma,
   `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs` f09-docs,
   `herramientas` f10-libre, `preview` f11-preview, `release` f12-release.
-- **Planned lane (d177)**: the coordinator gives every open task a canonical lane (f05–f12) with
-  `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador`; `claim` then takes it.
-  Review rounds and `soloLectura: true` tasks are read-only and hold no lane.
+- **Planned lane (d177)**: `claim` takes the lane (f05–f12) the coordinator sets with
+  `pnpm board plan <id> --rev=<rev> --carril=<lane> --coordinador --quien=claude`; T478 allows
+  `claude`/`dueno` or a master on its own tasks. Review and `soloLectura` tasks hold no lane.
 - **PR number**: `pr` is always `#N` (the command normalizes `398` or a `fm-dev-mx/celebra-me` pull
   URL). Record it in the same write that opens the PR. Every mention of a task that has a PR writes
   it next to the id: `pasarela-pago-estudio (PR #475)`.
@@ -119,13 +120,12 @@ routing and the internal modules work lives in
   all) gets its round with `--sin-ci`, which the round's bitácora row records; `--sin-ci` is refused
   while any check exists, red, running or green. `CONFLICTING` refuses the round until the author
   merges `origin/develop` into the same branch (never rebase or `push --force`).
-- **Rounds**: every PR head gets its own round task (`<id>-revision`, `<id>-revision-2`…); a new
-  commit needs a new round. d291: when the rounds since the last verdict ended without one
-  (cancelled, or replaced while open), the new round reviews the whole PR, not the diff since their
-  SHA, and its prompt lists what they left in the bitácora, in their cierre and the reports they
-  named. The reviewer binds findings and verdict to the full SHA and closes the round with its
-  verdict; `close --veredicto=cambios` writes the findings to the author's inbox (d251). The author
-  checks `pnpm board inbox --agente=<a>` after every push.
+- **Rounds (T529)**: a cross review is a round inside the reviewed task (`rondas`, in its detail;
+  `<id>-revision`, `<id>-revision-2`…, no number); `review` never creates a task. Every PR head gets
+  its round; after rounds with no verdict (d291) the next reviews the whole PR and lists what they
+  left (bitácora, cierre, reports). The reviewer closes it bound to the full SHA; `cambios` sends
+  the findings to the author's inbox (d251) and the task back to `en curso` until the author closes
+  again.
 - **`comprobada`**: only after `unida`/`hecha` with the verifier's evidence, or with the owner's
   explicit authorization.
 

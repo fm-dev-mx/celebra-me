@@ -81,8 +81,8 @@ function buildItem(overrides: Partial<MemoriesMediaPublicItem> = {}): MemoriesMe
 		durationSeconds: null,
 		caption: '',
 		status: 'uploading',
-		createdAt: '2026-10-31T02:00:00.000Z',
-		updatedAt: '2026-10-31T02:00:00.000Z',
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
 		acceptedAt: null,
 		rejectedAt: null,
 		deletedAt: null,
@@ -103,7 +103,7 @@ function buildReservation(): MemoriesReservation & {
 				'Content-Type': 'image/png',
 				'x-amz-checksum-sha256': CHECKSUM,
 			},
-			expiresAt: '2026-10-31T02:05:00.000Z',
+			expiresAt: new Date(Date.now() + 300_000).toISOString(),
 		},
 	};
 }
@@ -825,8 +825,16 @@ describe('MemoriesCapture island', () => {
 		// The page was reloaded while two files were uploading: the server still holds both slots.
 		guestApi.listItems.mockResolvedValue({
 			items: [
-				buildItem({ id: 'pending-1', status: 'uploading' }),
-				buildItem({ id: 'pending-2', status: 'uploading' }),
+				buildItem({
+					id: 'pending-1',
+					status: 'uploading',
+					createdAt: new Date().toISOString(),
+				}),
+				buildItem({
+					id: 'pending-2',
+					status: 'uploading',
+					createdAt: new Date().toISOString(),
+				}),
 			],
 			quota: { ...QUOTA, inFlight: { used: 2, remaining: 0, limit: 2 } },
 		});

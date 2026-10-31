@@ -1,11 +1,13 @@
 /** Local identities only; never commit master chat IDs or infer them from recency. */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { INTEGRATION_SHORT, LEGACY_INTEGRATION_SHORT } from './board-constants.mjs';
 
+const MASTER_ROLES = ['Coordinador principal', 'Codex maestro', 'Gemini maestro'];
 export const MASTER_NAMES = new Set([
-	'f04 · Coordinador principal',
-	'f04 · Codex maestro',
-	'f04 · Gemini maestro',
+	...[INTEGRATION_SHORT, LEGACY_INTEGRATION_SHORT].flatMap((short) =>
+		MASTER_ROLES.map((role) => `${short} · ${role}`),
+	),
 	'Chat Maestro MCP Configuration',
 ]);
 export const masterConfigPath = (dir) => join(dirname(dir), 'board-masters.json');

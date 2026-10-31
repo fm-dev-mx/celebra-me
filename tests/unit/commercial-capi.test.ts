@@ -1002,6 +1002,156 @@ describe('Meta CAPI browser events', () => {
 		);
 	});
 
+	const crmLead = {
+		consent_marketing: true,
+		session_id: 'session-id',
+		phone_e164: '+526681112233',
+		fbp: 'fb.1.lead-browser',
+		fbc: 'fb.1.lead-click',
+	};
+	const salesStageRow = (overrides: Record<string, unknown> = {}) => ({
+		...contactRow,
+		event_name: 'Lead',
+		event_id: 'crm-lead-stage:lead-id:qualified',
+		trigger_status: 'crm_lead_qualified',
+		lead_id: 'lead-id',
+		session_id: null,
+		event_source_path: null,
+		created_at: new Date().toISOString(),
+		leads: crmLead,
+		...overrides,
+	});
+	const confirmedPurchaseRow = (overrides: Record<string, unknown> = {}) =>
+		salesStageRow({
+			event_name: 'Purchase',
+			event_id: 'crm-lead-stage:lead-id:order_confirmed',
+			trigger_status: 'crm_lead_order_confirmed',
+			value: '2490.00',
+			...overrides,
+		});
+	const pathOfCall = (call: number) =>
+		(mockRestRequest.mock.calls[call][0] as { pathWithQuery: string }).pathWithQuery;
+
+	it('sends a qualified lead as a chat Lead with fbc and the hashed phone', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([salesStageRow()])
+			// The lead card is not a browser hit, so a session without user agent still delivers.
+			.mockResolvedValueOnce([sessionRow(true, null)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ events_received: 1 }) });
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('sent');
+
+		const event = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+		expect(event).toMatchObject({
+			event_name: 'Lead',
+			event_id: 'crm-lead-stage:lead-id:qualified',
+			action_source: 'chat',
+			custom_data: { event_source: 'crm', lead_stage: 'qualified' },
+			user_data: {
+				ph: [normalizeAndHashPhone('+526681112233')],
+				fbc: 'fb.1.lead-click',
+			},
+		});
+		expect(event.custom_data).not.toHaveProperty('value');
+		expect(event.event_source_url).toBeUndefined();
+	});
+
+	it('sends a confirmed order as a chat Purchase valued at the package in MXN', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([confirmedPurchaseRow()])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ events_received: 1 }) });
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('sent');
+
+		const duplicateQuery = pathOfCall(3);
+		expect(duplicateQuery).toContain('lead_id=eq.lead-id');
+		expect(duplicateQuery).toContain('trigger_status=eq.deposit_paid');
+		expect(duplicateQuery).toContain('status=in.(sending,sent,ambiguous)');
+		expect(duplicateQuery).toContain('id=neq.outbox-id');
+		const event = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+		expect(event).toMatchObject({
+			event_name: 'Purchase',
+			action_source: 'chat',
+			custom_data: { lead_stage: 'order_confirmed', value: 2490, currency: 'MXN' },
+			user_data: { ph: [normalizeAndHashPhone('+526681112233')], fbc: 'fb.1.lead-click' },
+		});
+	});
+
+	it('skips the confirmed-order Purchase when the deposit Purchase already reached Meta', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([confirmedPurchaseRow()])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([{ id: 'deposit-outbox-id' }])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'PURCHASE_SENT_AT_DEPOSIT' }),
+			}),
+		);
+	});
+
+	it('skips the deposit Purchase of a lead whose confirmed order owns the Purchase', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				{
+					id: 'outbox-id',
+					event_name: 'Purchase',
+					event_id: 'purchase:order-id:deposit_paid',
+					trigger_status: 'deposit_paid',
+					lead_id: 'lead-id',
+					value: 899,
+					currency: 'MXN',
+					customers: { email: 'client@example.com' },
+					sales_orders: null,
+					leads: { consent_marketing: true },
+				},
+			])
+			.mockResolvedValueOnce([{ id: 'confirmed-outbox-id' }])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		const duplicateQuery = pathOfCall(2);
+		expect(duplicateQuery).toContain('trigger_status=eq.crm_lead_order_confirmed');
+		expect(duplicateQuery).toContain('status=in.(pending,sending,failed,sent,ambiguous)');
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'PURCHASE_SENT_AT_ORDER_CONFIRMED' }),
+			}),
+		);
+	});
+
+	it.each([
+		['Lead', salesStageRow],
+		['Purchase', confirmedPurchaseRow],
+	] as const)('skips a chat %s queued more than seven days ago', async (_name, buildRow) => {
+		const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([buildRow({ created_at: eightDaysAgo })])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'EVENT_TOO_OLD' }),
+			}),
+		);
+	});
+
 	it('skips a browser event when the session no longer has marketing consent', async () => {
 		mockRestRequest
 			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])

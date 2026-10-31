@@ -160,7 +160,14 @@ describe('T205 delivered prompt (d249)', () => {
 		expect(cli(dir, ['entregada', 'suya', '--agente=codex']).err).toContain('la hace usted');
 		expect(cli(dir, ['entregada', 'tomada', '--agente=codex']).err).toContain('ya la tomó');
 		expect(
-			cli(dir, ['set', 'pegar', `--rev=${saved.rev}`, '--coordinador', 'entregada=null']).err,
+			cli(dir, [
+				'set',
+				'pegar',
+				`--rev=${saved.rev}`,
+				'--coordinador',
+				'--quien=claude',
+				'entregada=null',
+			]).err,
 		).toContain('entregada requiere su comando');
 
 		const claim = cli(dir, [

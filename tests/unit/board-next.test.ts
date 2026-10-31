@@ -135,7 +135,8 @@ describe('owner messages about finished tasks (d265)', () => {
 			};
 			console.log(JSON.stringify({
 				usted: n.nextSections(board, { now: ${NOW} }).usted.map((x) => x.texto),
-				inbox: n.unreadFor('dueno', board).map((x) => x.mensaje.id),
+				inbox: n.unreadFor('dueno', board, { archived: true }).map((x) => x.mensaje.id),
+				unread: n.unreadFor('dueno', board).map((x) => x.mensaje.id),
 			}));`);
 		expect(r.usted).toEqual([
 			'Mensaje: claude → dueno sobre T1: m1',
@@ -143,6 +144,8 @@ describe('owner messages about finished tasks (d265)', () => {
 			'Mensaje: claude → dueno sobre perdida: m6',
 		]);
 		expect(r.inbox).toEqual(['m1', 'm2', 'm3', 'm4', 'm5', 'm6']);
+		// T521: outside the inbox, a message about an archived task no longer counts as unread.
+		expect(r.unread).toEqual(['m1', 'm2', 'm3', 'm5', 'm6']);
 	});
 });
 
@@ -173,6 +176,7 @@ describe('board heartbeat and session title (T126)', () => {
 			'busca=Que funcione.\nTerminado cuando: pasa.',
 			'carrilPlaneado=f10-libre',
 			'--coordinador',
+			'--quien=claude',
 		]);
 		expect(add.status).toBe(0);
 		expect(readTask(dir, 'nueva').contrato).toBe(3);
@@ -286,7 +290,7 @@ describe('what is next (T126)', () => {
 	});
 
 	it.each(['unida', 'hecha', 'comprobada', 'cancelada', 'archivada'])(
-		'hides merge signals for a finished origin (%s), preserving history and other messages',
+		'hides merge signals and closing reports for a finished origin (%s), preserving history',
 		(estado) => {
 			const result = probe(`
 				const origin = { id: 'origin', num: 1, estado: '${estado === 'archivada' ? 'unida' : estado}', pr: '#547' };
@@ -300,11 +304,10 @@ describe('what is next (T126)', () => {
 				const before = JSON.stringify(board);
 				console.log(JSON.stringify({
 					messages: n.coordinatorItems(board).filter(x => x.tipo === 'mensaje').map(x => x.texto),
-					inbox: n.unreadFor('coordinador', board).map(x => x.mensaje.id),
+					inbox: n.unreadFor('coordinador', board, { archived: true }).map(x => x.mensaje.id),
 					unchanged: JSON.stringify(board) === before }));`);
-			expect(result.messages).toEqual([
-				'Mensaje: codex → coordinador sobre T1: Requiere seguimiento',
-			]);
+			// d265: a finished or archived task asks the coordinator for nothing; `inbox` still lists it.
+			expect(result.messages).toEqual([]);
 			expect(result.inbox).toEqual(['origin', 'round', 'other']);
 			expect(result.unchanged).toBe(true);
 		},
