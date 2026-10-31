@@ -1,3 +1,5 @@
+@use './composition';
+
 $yireh-bow: url('./assets/bow.webp');
 $yireh-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23211938' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23BA8E30' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
 $yireh-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
@@ -8,7 +10,7 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 // paper, frameless watercolor stills between sections, and the night kept only as contrast for the
 // countdown and the closing. Each motif has one job: the oak on the cover, flowers only on the
 // cover, the bouquet and envelope stills and the closing wreath, and the small yellow bow tying off
-// the program ribbon and crowning the reply card. Two pinned scenes (the cover closing in on the
+// the program ribbon (the only bow besides the oak's). Two pinned scenes (the cover closing in on the
 // oak's ribbon, the program ribbon) and per-element accents elsewhere. Pure custom property tokens
 // only.
 
@@ -90,6 +92,18 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--reveal-card-text-primary: var(--color-violet-ink);
 		--reveal-card-text-secondary: var(--color-violet-ink-soft);
 		--reveal-card-shadow: 0 1px 4px rgb(var(--color-violet-ink-rgb) / 20%);
+
+		// A slightly smaller seal, the flower alone.
+		--env-seal-size-min: 64px;
+		--env-seal-size-max: 86px;
+
+		// Letter: her stationery rather than plain cream. Lilac paper and a double gold hairline; the
+		// bow stays for the oak and the program ribbon only.
+		--storybook-card-bg: linear-gradient(
+			180deg,
+			var(--color-lilac-paper),
+			var(--color-lilac-mist)
+		);
 	}
 
 	.envelope-wrapper[data-variant='storybook-butterflies'] .invitation-reveal-card {
@@ -169,13 +183,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-panel-surface-inset: 0.5rem;
 	--family-panel-edge-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 60%);
 
-	// Gifts: the bow crowns the line, in her hand.
+	// Gifts.
 	--gifts-padding-block: clamp(3.5rem, 8vw, 5.5rem);
-	--gifts-header-mark-display: block;
-	--gifts-header-mark: #{$yireh-bow};
-	--gifts-header-mark-color: var(--color-leaf-gold);
-	--gifts-header-mark-width: 3.5rem;
-	--gifts-header-mark-ratio: 360 / 308;
 	--gifts-subtitle-size: clamp(1.15rem, 3.2vw, 1.4rem);
 	--gifts-subtitle-max-width: 30rem;
 
@@ -261,9 +270,6 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--hero-date-size: 1.1rem;
 		--hero-date-weight: 400;
 		--hero-date-tracking: 0.12em;
-
-		// The meadow sits under the scroll cue; the cover reads as a page to turn without it.
-		--hero-scroll-indicator-color: transparent;
 		--hero-scroll-z-index: 2;
 		--hero-content-z-index: 1;
 	}
@@ -561,9 +567,6 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--reply-card-shadow-upper: none;
 	--reply-card-shadow-lower: none;
 	--reply-card-edge-shadow: drop-shadow(0 14px 14px rgb(var(--color-violet-ink-rgb) / 12%));
-	--reply-card-crest-content: '';
-	--reply-card-crest: #{$yireh-bow};
-	--reply-card-crest-size: 4rem;
 	--reply-card-count-size: 3.25rem;
 	--reply-card-count-frame-size: 6.5rem;
 	--reply-card-count-frame-ratio: 1;
