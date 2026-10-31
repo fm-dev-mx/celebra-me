@@ -522,6 +522,16 @@ Sub-second delivery is a measured target, not an availability guarantee. The «S
 POST needs the page's per-process token and its own `Origin`, and every request needs a local
 `Host`.
 
+«Despertar» (`scripts/board/wake-button.mjs`): «Clave» cards and open task cards whose agent (lock,
+then delivery, then `agente`) is Codex, Gemini or Claude show the button. It calls
+`POST /api/despertar {id}` with the same token, `Origin` and `Host` guard as «Sincronizar». Codex
+and Gemini get the fixed text «Revise su bandeja: T###» through the master watcher's own transport
+(codex queue or the Gemini relay, `pnpm board master`), never free text. A Claude desktop session
+cannot be woken from outside, so a Claude task leaves a message to the coordinator instead; nothing
+spawns `claude -p`. Every wake is a bitácora message row with an id starting `despertar-`, one task
+is woken at most once every 10 minutes (429 otherwise), and the master watcher does not wake an
+agent a second time for those rows.
+
 ### Fields
 
 `titulo`, `estado`, `urgencia`, `actor`, `agente`, `toca`, `requisitos`, `requiere`, `categoria`,

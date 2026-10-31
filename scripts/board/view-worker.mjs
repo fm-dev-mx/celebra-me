@@ -8,12 +8,14 @@ import { readLive } from './live.mjs';
 import { boardDir } from './store.mjs';
 import { serveView } from './view-server.mjs';
 import { archiveSessions } from './external-sessions.mjs';
+import { viewWaker } from './wake-button.mjs';
 
 const dir = boardDir();
 try {
 	const server = await serveView(dir, Number(process.env.BOARD_VIEW_PORT), {
 		archive: viewArchiver(dir),
 		deliver: viewDeliverer(dir),
+		wake: viewWaker(dir),
 		live: () => readLive(dir),
 		sessions: (board) => archiveSessions(board, { dir }),
 		token: process.env.BOARD_VIEW_TOKEN,

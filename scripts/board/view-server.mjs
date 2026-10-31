@@ -4,12 +4,14 @@
  * the same projection once. Read-only `/api/task`, `/api/archivadas` and `/api/history` load complete
  * task documents or the last three days of history only when requested.
  *
- * Three writes, all only from this same page on 127.0.0.1: `POST /api/archivar` (d167) archives or unarchives a
+ * Four writes, all only from this same page on 127.0.0.1: `POST /api/archivar` (d167) archives or unarchives a
  * finished task through the `archive` option `pnpm board view` passes, `POST /api/entregada` (d249) marks a task
- * whose prompt «Copiar prompt» copied as delivered through the `deliver` option (without them the server stays
- * read-only), and `POST /api/sync` (the «Sincronizar» button) runs the no-AI `scripts/board/sync.mjs`. Any website can make
- * the browser send a request to 127.0.0.1, so every request must carry a local `Host` (DNS rebinding), and the
- * sync POST must also come from the page's own `Origin` with the per-process random token the page embeds.
+ * whose prompt «Copiar prompt» copied as delivered through the `deliver` option, `POST /api/despertar` (the
+ * «Despertar» button) wakes a task's agent with a fixed text through the `wake` option (without them the server
+ * stays read-only), and `POST /api/sync` (the «Sincronizar» button) runs the no-AI `scripts/board/sync.mjs`. Any
+ * website can make the browser send a request to 127.0.0.1, so every request must carry a local `Host` (DNS
+ * rebinding), and the sync and wake POSTs must also come from the page's own `Origin` with the per-process random
+ * token the page embeds.
  *
  * Under `view-supervisor.mjs` (d210) the token and a code `version` come from the supervisor, so they stay the
  * same across worker swaps; the stream announces the version and the page reloads itself when it changes.
@@ -316,6 +318,7 @@ export function serveView(
 		sync = (opts) => runSyncScript(dir, opts),
 		archive,
 		deliver,
+		wake,
 		live,
 		liveMs = LIVE_MS,
 		sessions,
@@ -325,6 +328,7 @@ export function serveView(
 	} = {},
 ) {
 	let syncing = false;
+	let waking = false;
 	const clients = new Set();
 	const stalled = new WeakMap();
 	const send = (res, json, event) => {
@@ -407,20 +411,31 @@ export function serveView(
 		return [`127.0.0.1:${port}`, `localhost:${port}`];
 	};
 
-	const handleSync = async (req, res) => {
+	/** The JSON body of a token write from this page, or undefined once a 403/400 was answered. */
+	const tokenBody = async (req, res) => {
 		const hosts = localHosts();
 		if (
 			!hosts.some((h) => req.headers.origin === `http://${h}`) ||
 			!sameToken(req.headers['x-board-token'], token) ||
 			!String(req.headers['content-type'] ?? '').startsWith('application/json')
-		)
-			return json(res, 403, { error: 'Solicitud no autorizada' });
+		) {
+			json(res, 403, { error: 'Solicitud no autorizada' });
+			return undefined;
+		}
 		let body;
 		try {
 			body = await readJson(req);
 		} catch {
-			return json(res, 400, { error: 'Cuerpo no válido' });
+			body = undefined;
 		}
+		if (body && typeof body === 'object') return body;
+		json(res, 400, { error: 'Cuerpo no válido' });
+		return undefined;
+	};
+
+	const handleSync = async (req, res) => {
+		const body = await tokenBody(req, res);
+		if (!body) return;
 		if (syncing) return json(res, 409, { error: 'Ya hay una sincronización en curso' });
 		syncing = true;
 		try {
@@ -432,22 +447,39 @@ export function serveView(
 		}
 	};
 
+	// One wake at a time: the button's 10-minute limit reads the bitácora, so a second click waits for the first row.
+	const handleWake = async (req, res) => {
+		const body = await tokenBody(req, res);
+		if (!body) return;
+		if (typeof body.id !== 'string' || !body.id) return json(res, 400, { error: 'Falta id.' });
+		if (waking) return json(res, 409, { error: 'Ya hay un aviso en curso' });
+		waking = true;
+		try {
+			json(res, ...(await wake(body.id)));
+		} catch (e) {
+			json(res, 500, { error: e.message });
+		} finally {
+			waking = false;
+		}
+	};
+
+	// The writes; an option left out also leaves its path out (405).
+	const posts = new Map([
+		['/api/sync', handleSync],
+		...(wake ? [['/api/despertar', handleWake]] : []),
+		...(archive ? [['/api/archivar', (req, res) => archiveRequest(archive, req, res)]] : []),
+		...(deliver ? [['/api/entregada', (req, res) => deliverRequest(deliver, req, res)]] : []),
+	]);
+
 	const server = createServer((req, res) => {
 		const path = new URL(req.url ?? '/', 'http://localhost').pathname;
 		if (!localHosts().includes(String(req.headers.host ?? ''))) {
 			res.writeHead(421).end();
 			return;
 		}
-		if (req.method === 'POST' && path === '/api/sync') {
-			handleSync(req, res);
-			return;
-		}
-		if (archive && req.method === 'POST' && path === '/api/archivar') {
-			archiveRequest(archive, req, res);
-			return;
-		}
-		if (deliver && req.method === 'POST' && path === '/api/entregada') {
-			deliverRequest(deliver, req, res);
+		const post = req.method === 'POST' && posts.get(path);
+		if (post) {
+			post(req, res);
 			return;
 		}
 		if (req.method !== 'GET') {
