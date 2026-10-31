@@ -231,6 +231,7 @@ export const destinationFields = (dest) => ({
 export const FIXED_DESTINATIONS = {
 	'gemini-relay': 'DÓNDE: Gemini · Antigravity · chat maestro',
 	archivar: 'DÓNDE: este tablero, pestaña Finalizadas',
+	coordinador: 'DÓNDE: Claude · sesión del coordinador (f04)',
 };
 
 /** (Inspeccionar) a silent lock: the chat that holds it, nothing to copy. */

@@ -76,7 +76,11 @@ describe('board overview: owner actions and tab counts (T321)', () => {
 		const r = probe(
 			'console.log(JSON.stringify({acts: f.ownerActions(b).map((x) => [x.tipo, x.verbo]), n: f.tabCounts(b)}))',
 		);
-		expect(r.acts).toEqual([['decidir', 'Decidir']]);
+		// T477: the old unread coordinator message is not an owner row; only the alert to open the coordinator is.
+		expect(r.acts).toEqual([
+			['hacer', 'Hacer fuera'],
+			['decidir', 'Decidir'],
+		]);
 		expect(r.n.usted).toBe(r.acts.length);
 	});
 

@@ -271,6 +271,42 @@ function checkTaskSilentLock(t, state, now, nowIso, sendMessage, dir, dryRun, se
 	}
 }
 
+/** An agent's estado changes this recent get a notice; older rows were already seen or predate the watcher. */
+export const STATE_NOTICE_WINDOW_MS = 60 * 60_000;
+const AGENTS = ['claude', 'codex', 'gemini'];
+
+/**
+ * Whether another notice already covers this estado row: a claim (→ en curso) has its claim notice,
+ * and a close (→ hecha/en revision) its close notice or, for a blocked review, the blocked one.
+ */
+function coveredByOtherNotice(r, task) {
+	if (r.a === 'en curso' && r.de === 'pendiente') return true;
+	if (r.a !== 'hecha' && r.a !== 'en revision') return false;
+	if (!task) return false;
+	return !isReview(task) || reviewVerdict(task) === 'bloqueado';
+}
+
+/** T477: every other estado change an agent writes (a review created, a release, a block…) reaches the coordinator once. */
+function checkStateNotices(allTasks, board, state, now, nowIso, sendMessage) {
+	for (const r of board.bitacora ?? []) {
+		if (!AGENTS.includes(r.quien) || r.a === undefined || r.de === r.a) continue;
+		const at = Date.parse(r.en);
+		if (Number.isNaN(at) || now - at > STATE_NOTICE_WINDOW_MS) continue;
+		const task = allTasks.find((t) => t.id === r.tarea);
+		if (coveredByOtherNotice(r, task)) continue;
+		const key = `estado:${r.tarea}:${r.en}:${r.a}`;
+		if (state.notified[key]) continue;
+		const msgId = `aviso-estado-${r.tarea}-${at}-${String(r.a).replace(/\s+/g, '-')}`;
+		if ((board.bitacora ?? []).some((x) => x.mensaje?.id === msgId)) {
+			state.notified[key] = nowIso;
+			continue;
+		}
+		const tag = task ? taskTag(task) : r.tarea;
+		const text = `${tag} · ${r.quien}: ${r.de || 'nueva'} → ${r.a}`;
+		sendMessage(r.tarea, r.quien, msgId, text, key);
+	}
+}
+
 function checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram) {
 	for (const t of board.tareas ?? []) {
 		checkTaskUnclaimed(t, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram);
@@ -279,7 +315,7 @@ function checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dry
 }
 
 /**
- * T442: Check claims, closes, review verdicts, exact-SHA merge qualification, and escalations.
+ * T442: Check claims, closes, review verdicts, exact-SHA merge qualification, other estado changes (T477) and escalations.
  * Sends board messages to the principal coordinator without relying on manual worker notices.
  */
 export async function checkAutomaticNotices({
@@ -318,6 +354,7 @@ export async function checkAutomaticNotices({
 	checkClaimNotices(board, state, nowIso, sendMessage);
 	checkCloseNotices(allTasks, board, state, nowIso, sendMessage);
 	await checkReviewNotices(allTasks, board, state, nowIso, sendMessage, readPr);
+	checkStateNotices(allTasks, board, state, now, nowIso, sendMessage);
 	checkEscalationNotices(board, state, now, nowIso, sendMessage, dir, dryRun, sendTelegram);
 
 	return notices;
