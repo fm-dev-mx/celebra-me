@@ -1,44 +1,38 @@
 /**
- * T130 task kinds: one short `.agent/kinds/<tipo>.yaml` per `tipo`, read here for `pnpm board prompt`, `add`,
- * `set`, `plan` and `board:verify`. The files use a small YAML subset (`clave: 'valor'`, `clave:` with
- * `- 'item'` lines, `clave: []`, full-line comments), so no YAML dependency is needed; anything else is refused.
+ * Task kinds: one short `.agent/kinds/<tipo>.yaml` per `tipo`, checked by `pnpm validate:structure`. The files use a
+ * small YAML subset (`clave: 'valor'`, `clave:` with `- 'item'` lines, `clave: []`, full-line comments), so no YAML
+ * dependency is needed; anything else is refused.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NIVELES, RESULT_FIELDS, TIPOS } from './model.mjs';
-import { ownerTextIssues } from './owner-text.mjs';
-import { OWNER_LINES } from './prompt.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-export const KINDS_DIR = join(ROOT, '.agent', 'kinds');
+const KINDS_DIR = join(ROOT, '.agent', 'kinds');
 const ROUTING_MATRIX = join(ROOT, '.agent', 'routing-matrix.yaml');
 
-const SCALARS = ['tipo', 'descripcion', 'listo_si'];
-/** d290: where an `operacion` runs; each destino but `base` has its own kind file (`operacion-<destino>.yaml`). */
-export const OPERACION_DESTINOS = ['base', 'cloudflare'];
-
-/** Why `t`'s `destino` is refused (d290): only an operacion has one, from OPERACION_DESTINOS; else null. */
-export function destinoIssue(t) {
-	if (t?.destino === undefined) return null;
-	if (t.tipo !== 'operacion') return 'destino solo en tareas tipo=operacion';
-	return OPERACION_DESTINOS.includes(t.destino)
-		? null
-		: `destino debe ser ${OPERACION_DESTINOS.join('/')}`;
-}
-
-/** d290: `destino` names the target of a variant file (`operacion-cloudflare.yaml`); the base file has none. */
-const OPTIONAL_SCALARS = ['destino'];
+const TIPOS = ['codigo', 'revision', 'release', 'invitacion', 'creativo', 'auditoria', 'operacion'];
+const NIVELES = ['validate:changed', 'type-check', 'ci'];
+/** The typed resultado a kind returns on close. */
+const RESULT_FIELDS = {
+	codigo: ['pr', 'sha', 'nivel'],
+	revision: ['veredicto', 'sha', 'hallazgos'],
+};
+/** The three PARA USTED labels of a prompt-v1, in order. */
+const OWNER_LINES = ['Qué hará:', 'Usted:', 'Riesgo:'];
 /**
- * The kind file a task's prompt comes from: `operacion-cloudflare` for an operacion on Cloudflare, else its tipo
- * (an unknown destino is left to the shape check).
+ * Internal shorthand the owner cannot read: decision ids, board revisions and numbered review rounds. A plain
+ * «vuelta» («botón de vuelta atrás») is Spanish, so only «vuelta 2» counts.
  */
-export const kindKey = (t) =>
-	t?.tipo === 'operacion' && t.destino !== 'base' && OPERACION_DESTINOS.includes(t.destino)
-		? `${t.tipo}-${t.destino}`
-		: t?.tipo;
-/** d290: the variant files of a tipo, one per destino but `base`. */
-export const VARIANTS = { operacion: OPERACION_DESTINOS.filter((d) => d !== 'base') };
+const INTERNAL_WORDS = [/\bd\d{2,4}\b/gi, /\brev\b\.?(?:\s*\d+)?/gi, /\bvueltas?\s+\d+\b/gi];
+
+const SCALARS = ['tipo', 'descripcion', 'listo_si'];
+/** Where an `operacion` runs; each destino but `base` has its own kind file (`operacion-<destino>.yaml`). */
+const OPERACION_DESTINOS = ['base', 'cloudflare'];
+/** `destino` names the target of a variant file (`operacion-cloudflare.yaml`); the base file has none. */
+const OPTIONAL_SCALARS = ['destino'];
+/** The variant files of a tipo, one per destino but `base`. */
+const VARIANTS = { operacion: OPERACION_DESTINOS.filter((d) => d !== 'base') };
 const LISTS = [
 	'para_usted',
 	'lee',
@@ -53,10 +47,10 @@ const LISTS = [
 ];
 /** Lists that may be empty: a kind may return no typed resultado and add no closing step. */
 const MAY_BE_EMPTY = new Set(['devuelve', 'al_terminar', 'tras_cierre']);
-/** d255: steps that run after `pnpm board close` (codigo's `review`); a kind may leave the key out. */
+/** Steps that run after the task is closed (codigo's `review`); a kind may leave the key out. */
 const OPTIONAL = new Set(['tras_cierre']);
-export const PLACEHOLDERS = ['id', 'agente', 'carril', 'rama', 'nombre', 'titulo'];
-export const LISTO_SI = [...NIVELES, 'ninguno'];
+const PLACEHOLDERS = ['id', 'agente', 'carril', 'rama', 'nombre', 'titulo'];
+const LISTO_SI = [...NIVELES, 'ninguno'];
 
 /** `'it''s'` → `it's`, `"x"` → `x`, a plain value as written. */
 function unquote(v) {
@@ -99,6 +93,17 @@ export function routingTaskTypes(file = ROUTING_MATRIX) {
 	);
 }
 
+/** Why `text` is not plain for the owner: one line, without internal shorthand; [] when it is. */
+function ownerTextIssues(text) {
+	const s = String(text ?? '');
+	const out = [];
+	if (/\r|\n|\\n/.test(s)) out.push('debe ser una sola línea');
+	const found = INTERNAL_WORDS.flatMap((re) => [...s.matchAll(re)].map((m) => m[0]));
+	for (const w of new Set(found))
+		out.push(`usa «${w}», una abreviatura interna: dígalo con palabras`);
+	return out;
+}
+
 /** Keys, scalars and lists of a kind document. */
 function shapeIssues(doc) {
 	const out = Object.keys(doc)
@@ -113,7 +118,7 @@ function shapeIssues(doc) {
 	return out;
 }
 
-/** What the kind returns and how it is validated: the T129 resultado fields and its level. */
+/** What the kind returns and how it is validated: the resultado fields and its level. */
 function contractIssues(doc, file) {
 	const out = [];
 	const want = RESULT_FIELDS[file] ?? [];
@@ -126,7 +131,7 @@ function contractIssues(doc, file) {
 	return out;
 }
 
-/** T322: `para_usted` is the three PARA USTED lines in order, in words the owner reads. */
+/** `para_usted` is the three PARA USTED lines in order, in words the owner reads. */
 function ownerIssues(doc) {
 	const lines = doc.para_usted;
 	if (!Array.isArray(lines)) return [];
@@ -139,7 +144,7 @@ function ownerIssues(doc) {
 
 /**
  * Shape problems of kind `doc` read from `<file>.yaml`, checked against the routing task types. A variant file
- * `<tipo>-<destino>.yaml` (d290) keeps its tipo and names its destino.
+ * `<tipo>-<destino>.yaml` keeps its tipo and names its destino.
  */
 export function kindIssues(doc, file, taskTypes) {
 	const out = [];
@@ -164,8 +169,8 @@ export function kindIssues(doc, file, taskTypes) {
 }
 
 /**
- * Every kind file: `{ kinds: {tipo: doc}, issues: [{id, msg}] }`. A kind with problems stays out of `kinds`, so
- * no prompt is generated from it; a missing file is an issue too.
+ * Every kind file: `{ kinds: {tipo: doc}, issues: [{id, msg}] }`. A kind with problems stays out of `kinds`; a
+ * missing file is an issue too.
  */
 export function loadKinds(dir = KINDS_DIR, taskTypes = routingTaskTypes()) {
 	const kinds = {};

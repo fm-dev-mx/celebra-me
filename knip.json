@@ -2,10 +2,6 @@
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "entry": [
         "scripts/check-links.mjs",
-        "scripts/board/view-worker.mjs",
-        "scripts/board/format.mjs",
-        "scripts/board/sync.mjs",
-        "scripts/board/verify-board.mjs",
         "scripts/validate-schema.mjs",
         "scripts/agent/worktree-status.ts",
         "scripts/agent/worktree-doctor.ts",
