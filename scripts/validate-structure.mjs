@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validateDeployIdentityReads } from './validate-deploy-identity-reads.mjs';
 import { validateStaticSharpImports } from './validate-static-sharp-imports.mjs';
-import { loadKinds, routingTaskTypes } from './board/kinds.mjs';
+import { loadKinds, routingTaskTypes } from './shared/task-kinds.mjs';
 import {
 	reportRetiredProviderWarnings,
 	validateNoVercelReferences,

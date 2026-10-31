@@ -190,10 +190,10 @@ onto Goal counts.
 
 One provider-neutral **Handoff Contract** applies whenever work crosses an execution boundary (next
 Goal, next session, or next role). Its fields have one source: the board task's closing summary,
-`cierre`, written with `pnpm board close` and checked by code (`scripts/board/cierre.mjs`,
-`cierreIssues`). `.agent/rules/board.md` («Closing summary» and «Return contract») lists the fields
-and flags; do not repeat them here or in other documents. Work that has no board task returns the
-same fields in its final message.
+`cierre`, written with `pnpm board close` and checked by the board core on `close`.
+`.agent/rules/board.md` («Closing summary» and «Return contract») lists the fields and flags; do not
+repeat them here or in other documents. Work that has no board task returns the same fields in its
+final message.
 
 ### Persistence
 

@@ -212,8 +212,8 @@ $commandDetails = @{
     }
     "board:sync"                = @{
         Desc    = "Sincroniza el tablero con ramas, PRs y carriles, sin IA (lo mismo que el boton Sincronizar)."
-        UseCase = "Pasar tareas a 'en revision' o 'unida' segun su PR y ver candados viejos de sesiones cerradas."
-        Help    = "Presione Enter para sincronizar (o '--dry-run' para solo ver los cambios, '--horas=<n>' para candados viejos)."
+        UseCase = "Pasar tareas a 'en revision' o 'hecho' segun su PR."
+        Help    = "Presione Enter para sincronizar."
     }
     "ops:status"              = @{
         Desc    = "Estado de operacion en texto, solo lectura (git, preflight, limpieza, dbs y, con --remote, migraciones)."
