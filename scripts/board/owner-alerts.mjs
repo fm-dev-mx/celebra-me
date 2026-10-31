@@ -68,8 +68,21 @@ const KINDS = [
 ];
 
 /**
- * T489: Telegram leaves the board, so it carries only the count per type and «T<n> <aviso>» for the tasks with a
- * public `aviso` (no client name, no amount); never a row's text.
+ * T496: short safe text for a row without a public `aviso`, derived only from its row type;
+ * never the row's text, client names or amounts.
+ */
+export function safeRowText(r) {
+	if (r.ask || r.clave?.startsWith('respuesta:')) return 'espera su respuesta';
+	if (r.tipo === 'decidir') return 'espera su respuesta';
+	if (r.tipo === 'aprobar') return 'espera su aprobación';
+	if (r.tipo === 'hacer') return 'por hacer';
+	return 'por hacer';
+}
+
+/**
+ * T489, T496: Telegram leaves the board, so it carries the count per type and «T<n> <aviso>» (or safe derived text
+ * when there is no public `aviso`: «espera su respuesta», «espera su aprobación», «por hacer»); never a row's text,
+ * client names or amounts.
  */
 export function ownerAlertText(rows) {
 	const counts = KINDS.flatMap(([tipo, one, many]) => {
@@ -79,8 +92,10 @@ export function ownerAlertText(rows) {
 	const avisos = [
 		...new Set(
 			rows.flatMap((r) => {
+				if (!r.t?.num) return [];
 				const aviso = publicAviso(r.t);
-				return aviso && r.t.num ? [`T${r.t.num} ${aviso}`] : [];
+				const text = aviso || safeRowText(r);
+				return [`T${r.t.num} ${text}`];
 			}),
 		),
 	];
