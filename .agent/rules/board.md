@@ -10,11 +10,9 @@ This file is the operational contract every agent follows. How the view, the syn
 routing and the internal modules work lives in
 [the coordinator guide](../../docs/core/coordinator-board.md#board-internals).
 
-- **Single board port (d165)**: the board always runs at http://127.0.0.1:4320/, served from the
-  Integration checkout. No session or agent starts a board on another port; a PR preview of the view
-  may run only briefly, to check it, and is stopped right after.
-- **No manual restarts (d210)**: no session stops or restarts the board on 4320, not even after a
-  merge that changes it. Its supervisor loads new code by itself.
+- **Single board port (d165)**, **No manual restarts (d210)**: the board runs only at
+  http://127.0.0.1:4320/, from the Integration checkout; a PR preview runs only briefly. No session
+  stops or restarts it, even after a merge that changes it: its supervisor loads new code itself.
 
 ## Tasks
 
@@ -24,9 +22,8 @@ routing and the internal modules work lives in
   (`dueno|sesion|coordinador`), `agente` (`claude|codex|gemini|cualquiera`), `toca` (subset of
   `main|produccion|migracion|secretos`), `requisitos`, `requiere` (capabilities), `categoria`,
   `carril`, `ahora` (the only status line), `pr`, `rama`, `padre`, `grupo`, `fase`, `deriva`,
-  `tipo`, `cada` and `prompt`. Commands alone write `rev`, `actualizado`, `num`, `candado`,
-  `sesion`, `entregada`, `carrilPlaneado`, `agregadaPor`, `seguimientoPor`, `archivada` and
-  `cierre`; the full field list is in the coordinator guide.
+  `tipo`, `cada` and `prompt`. Commands alone write the rest (`rev`, `candado`, `sesion`,
+  `cierre`…); the full field list is in the coordinator guide.
 - **Requisitos**: `[{tipo: tarea|decision|fecha|dueno|revision, ref, ok?}]`, checked live: a `tarea`
   is met when it is `hecha`/`unida`/`comprobada`; a `revision` when the origin PR is
   `en revision`/`hecha`/`unida`; a `fecha` when its time passed; a `decision` when it is `vigente`;
@@ -66,8 +63,7 @@ routing and the internal modules work lives in
   lock; run from a lane, it checks the lock's lane and finishes git-safety when `--git-safety` is
   passed. A task still `en curso` goes back to `pendiente`.
 - **Changelog (T297)**: `pnpm board changelog [--desde=<fecha>] [--faltan [--archivo=CHANGELOG.md]]`
-  prints merged task notes as `[Unreleased]` Markdown bullets (`#N`). `--desde` filters by close
-  date. `--faltan` lists notes `[Unreleased]` lacks (exiting 1 while any is missing).
+  prints merged notes as `[Unreleased]` bullets; `--faltan` exits 1 on missing notes.
 - **Delivered prompt (d249)**: dispatchers run `pnpm board entregada <id> --agente=<a>` when they
   open the chat; `claim` clears the mark.
 - **Session id**: Claude omits `--sesion` (commands read `CLAUDE_CODE_HOST_SESSION_ID`); Codex and
@@ -143,44 +139,11 @@ routing and the internal modules work lives in
   `.agent/kinds/operacion-cloudflare.yaml` (d290, `base` by default).
 - **Task number**: `num` is fixed, never reused; use `T<num>` everywhere (d158).
 - **Session name**: `<lane> · T<n> · PR #<n> · <short description>`; omit PR until it opens, then
-  rename (d158). A review chat is `T<n> · PR #<n> · Revisión`, without a lane. Fixed master names
-  follow d351 above.
+  rename (d158). Fixed master names follow d351 above.
 - **Mentions**: use `T<n> <id>` on the board, in doorbells, PR descriptions and handoffs (d159).
 - **Writing titles, busca and cierre** (d284): wrap in `**…**` only the one or two words that must
   stand out, and in backticks only literal code (`pnpm board sync`, `view.html`, `estado=hecha`). A
   `T<n>` in any of these texts opens that task.
-
-## Session lifecycle (T541)
-
-One task = one chat = one branch = one lane. Every task runs these phases, in this order; the board
-call is the source of truth, the chat only follows it.
-
-| Phase    | Board                                                       | Chat and lane                                                                  |
-| -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Alta     | `add` under a mother/phase; `prompt-v1` saved in the task   | none yet                                                                       |
-| Despacho | coordinator `msg para=<agent>` or `entregada` (d249)        | **one** chat `<lane> · T<n> · <description>`                                   |
-| Claim    | `claim` (lock, lane, session)                               | lane checkout, `git switch -c <branch> develop`, git-safety start              |
-| Trabajo  | writes with `--rev`; heartbeat under 30 min (d290)          | commits on the task branch only                                                |
-| PR       | `close` with `--pr`, `--sha` (task `en revision`, d290)     | push, PR to `develop`, rename the chat to `<lane> · T<n> · PR #<n> · …`        |
-| Revisión | `review` opens a round inside the task (T529, d288)         | **one** review chat per PR, `T<n> · PR #<n> · Revisión`; every round reuses it |
-| Cierre   | round `aprobado` at the PR head; `cambios` reopens Trabajo  | git-safety finished by `close`; lane back to idle (detached `develop`, clean)  |
-| Unión    | coordinator merges at the reviewed SHA, `merged`            | —                                                                              |
-| Archivo  | owner archives the task (d278); `sesiones` lists safe chats | the session or its master archives its work and review chats (d259)            |
-
-- **Review chat**: a review is rounds inside the task, never a new task. A PR gets at most one
-  review chat, named `T<n> · PR #<n> · Revisión` with no lane prefix (a review holds no lane); a
-  second round, a new head or a re-review reuses it. A low- or medium-risk Claude PR reviewed by a
-  subagent (d288) opens no review chat.
-- **No chat without a task**: every chat's title carries its `T<n>`, and every task records its
-  chat. Ad hoc analysis, audits and questions stay in the coordinator's chat, or get a task first
-  and then their own chat. Follow-ups reuse the task's chat; a new chat only for a new task or a
-  PR's first review.
-- **Chat ceiling**: open chats across all agents are at most 3 fixed (coordinator
-  `f05 · Coordinador principal` and the masters `f05 · Codex maestro` and `f05 · Gemini maestro`,
-  d351) + 1 per task `en curso` + 1 per PR whose review needs an external chat. With WIP 3 that is
-  about 8–10. Above it, archive finished chats before opening a new one.
-- **One coordinator**: only `f05 · Coordinador principal` assigns tasks, records owner decisions and
-  merges; no other chat acts as coordinator.
 
 ## Working rules (every agent)
 
@@ -189,6 +152,12 @@ call is the source of truth, the chat only follows it.
 - **One writer**: one task = one branch = one lane = one writer holding the lock. Nobody touches a
   task, lane or branch another agent holds. Every write carries the `--rev` that was read; if the
   task changed, read it again and reconcile, never overwrite. Never duplicate a task.
+- **Session lifecycle (T541)**: one chat per task through
+  [the phases](../../docs/core/coordinator-board.md#session-lifecycle-t541) alta → despacho → claim
+  → trabajo → PR → revisión → cierre → unión → archivo. No chat without a `T<n>` (ad hoc analysis
+  stays with the coordinator); one review chat per PR, `T<n> · PR #<n> · Revisión`, no lane. At most
+  3 fixed + 1 per task `en curso` + 1 per external review open chats; only
+  `f05 · Coordinador principal` coordinates.
 - **Signaling**: send a `T<n> <id>`/PR doorbell to the coordinator; use the owner if transport
   fails. Results stay on the board. Never read other chats or promise delivery without a running
   channel.
@@ -215,8 +184,7 @@ call is the source of truth, the chat only follows it.
   sessions are named by their exact sidebar title; deletion steps list the exact names to delete and
   the look-alikes to keep; no secret, token or environment value, names only. A «done» mark appears
   only after a check (`git ls-remote`, `gh`, `/api/health`, the session list), stating what was
-  checked and when. Times use America/Mazatlan from a timezone-aware source: in Git Bash
-  `TZ=America/Mazatlan date` can silently print UTC, so use
+  checked and when. Times use America/Mazatlan (Git Bash `TZ=America/Mazatlan date` may print UTC):
   `node -e "console.log(new Date().toLocaleString('es-MX',{timeZone:'America/Mazatlan'}))"`.
 - **Closing**: `close` (with `--git-safety=commit` or `pnpm agent:git-safety:finish`), `release`
   when the lock must go, an exact `ahora` and a handoff of at most 20 lines.
@@ -227,6 +195,5 @@ call is the source of truth, the chat only follows it.
   lock. Over a live lock the coordinator's `set` is refused and its `close` keeps the estado.
 - **Failures**: every refused or failed command prints its reason on one line (with `--json` also
   `{"error", "codigo"}` on stdout); `CELEBRA_BOARD_DEBUG=1` adds the stack of an unexpected error.
-- **Recovery**: the verifier only reports; it never proposes deleting a branch, a session or a task.
-  A stuck CLI write lock is the coordinator's to recover, as
-  [the coordinator guide](../../docs/core/coordinator-board.md#evidence-and-recovery) says.
+- **Recovery**: the verifier only reports, never proposes deletions; a stuck write lock is
+  [the coordinator's](../../docs/core/coordinator-board.md#evidence-and-recovery).
