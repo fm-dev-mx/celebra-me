@@ -43,6 +43,8 @@ import { checkOwnerAlerts } from './owner-alerts.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PREFIX = '[vigilante d351]';
+/** Message id prefix of the view's «Despertar» button (wake-button.mjs); its Codex/Gemini wake already went out. */
+export const WAKE_ID = 'despertar-';
 const stateFile = (dir) => join(dirname(dir), 'board-master-watch.json');
 
 /** Events are identifiers and fixed instructions, never copied prompts or owner authorizations. */
@@ -87,6 +89,9 @@ export function wakeEvents(board, archives, agent, since, { now = Date.now() } =
 	];
 	const messages = incoming
 		.filter((r) => !r.mensaje.texto.startsWith(PREFIX))
+		.filter(
+			(r) => !(String(r.mensaje.id).startsWith(WAKE_ID) && r.mensaje.para !== 'coordinador'),
+		)
 		.map((r) => ({
 			key: `message:${r.mensaje.id}`,
 			task: r.tarea,
@@ -388,7 +393,10 @@ export function resolveCodexBin(
 	return 'codex.exe';
 }
 
-/** Codex queue acknowledges queue acceptance; the Gemini relay acknowledges later, outside this pass. */
+/**
+ * Codex queue acknowledges queue acceptance; the Gemini relay acknowledges later, outside this pass. Answers what
+ * `exec` answers, so an async `exec` (the view's «Despertar» button) can be awaited.
+ */
 export function deliverWake(
 	agent,
 	thread,
@@ -401,8 +409,7 @@ export function deliverWake(
 ) {
 	const opts = { encoding: 'utf8', windowsHide: true, timeout: 20_000, stdio: 'pipe' };
 	if (agent === 'codex') {
-		exec(codexBin(config), ['queue', '--thread', thread, '--message', text], opts);
-		return;
+		return exec(codexBin(config), ['queue', '--thread', thread, '--message', text], opts);
 	}
 	const anchor = board.tareas.find((t) => t.id === config.relayTask);
 	if (!anchor) throw new Error('Configure --relay-task=<id> para enviar mensajes al maestro');
@@ -413,7 +420,7 @@ export function deliverWake(
 		throw new Error(
 			'La tarea de relevo tiene una sesión Gemini; elija otra tarea sin sesión Gemini',
 		);
-	exec(
+	return exec(
 		process.execPath,
 		[join(here, 'board.mjs'), 'msg', anchor.id, '--de=codex', `--para=${agent}`, text],
 		{ ...opts, env: { ...process.env, CELEBRA_BOARD_DIR: dir } },
