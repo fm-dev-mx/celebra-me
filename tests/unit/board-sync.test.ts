@@ -355,7 +355,7 @@ describe('pnpm board:sync', () => {
 		const develop = 'd'.repeat(40);
 		const head = 'a'.repeat(40);
 		const lanes = [
-			['f05-plataforma', null],
+			['f06-landing', null],
 			['f09-docs', 'feat/unida'],
 			['f10-libre', 'feat/squash'],
 			['f11-preview', 'feat/en-otro'],
@@ -399,7 +399,7 @@ describe('pnpm board:sync', () => {
 			develop,
 		];
 		expect(real.calls).toEqual([
-			detach('f05-plataforma'),
+			detach('f06-landing'),
 			detach('f09-docs'),
 			ancestor('f09-docs', 'feat/unida'),
 			['w/f09-docs', 'branch', '-d', '--quiet', '--', 'feat/unida'],
@@ -410,7 +410,7 @@ describe('pnpm board:sync', () => {
 			['w/f11-preview', 'branch', '-d', '--quiet', '--', 'feat/en-otro'],
 		]);
 		expect(real.carriles.map((c: Json) => [c.lane, c.ok, c.podada, c.resultado])).toEqual([
-			['f05-plataforma', true, undefined, undefined],
+			['f06-landing', true, undefined, undefined],
 			['f09-docs', true, true, undefined],
 			['f10-libre', true, false, 'rama feat/squash no está en origin/develop: se queda'],
 			[

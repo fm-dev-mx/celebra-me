@@ -39,10 +39,10 @@ routing and the internal modules work lives in
   exists only when the lane or PR changes, never because the reviewer differs. Order: `requisitos`.
 - **Periodic tasks (d268)**: `cada=<n>d` makes a task recurring: `close` of a started cycle sends it
   back to `pendiente` until the next date, keeping the cierre as the last cycle's.
-- **Category (d191)**: `categoria` prefers a lane, never restricts: `plataforma` f05-plataforma,
+- **Category (d191)**: `categoria` prefers a lane, never restricts: `plataforma` any free lane,
   `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs` f09-docs,
   `herramientas` f10-libre, `preview` f11-preview, `release` f12-release.
-- **Planned lane (d177)**: `claim` takes the lane (f05–f12) the coordinator sets with
+- **Planned lane (d177)**: `claim` takes the lane (f06–f12) the coordinator sets with
   `pnpm board plan <id> --rev=<rev> --carril=<lane> --coordinador --quien=claude`; T478 allows
   `claude`/`dueno` or a master on its own tasks. Review and `soloLectura` tasks hold no lane.
 - **PR number**: `pr` is always `#N` (the command normalizes `398` or a `fm-dev-mx/celebra-me` pull
@@ -54,7 +54,7 @@ routing and the internal modules work lives in
 - **Start**: `pnpm board show <id>` for a given task, else `pnpm board next --agente=<a>`.
 - **Claim**:
   `pnpm board claim <id> --agente=<a> --carril=<lane> --rama=<branch> --titulo="<session name>"`
-  takes the lock (`candado`) and moves `pendiente` → `en curso`. Run from a lane checkout (f05–f12),
+  takes the lock (`candado`) and moves `pendiente` → `en curso`. Run from a lane checkout (f06–f12),
   it checks the folder and branch match, and starts git-safety (`start --session=<branch>`). It
   requires readiness, no owner gate and an exclusive lane; an identical claim is idempotent.
 - **Write**: `pnpm board set <id> --rev=<rev read> campo=valor…`; a stale rev or a shape problem

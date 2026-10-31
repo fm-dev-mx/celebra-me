@@ -262,7 +262,7 @@ describe('close --git-safety from the task lane (T297)', () => {
 		mkdirSync(root);
 		git(root, 'init', '-q', '-b', 'develop');
 		git(root, 'commit', '-q', '--allow-empty', '-m', 'base');
-		const lane = path.join(root, '..', 'celebra-me-worktrees', 'f05-plataforma');
+		const lane = path.join(root, '..', 'celebra-me-worktrees', 'f08-demos');
 		const other = path.join(root, '..', 'celebra-me-worktrees', 'f06-landing');
 		git(root, 'worktree', 'add', '-q', '-b', 'feat/cierre', lane);
 		git(root, 'worktree', 'add', '-q', '--detach', other);
@@ -270,7 +270,7 @@ describe('close --git-safety from the task lane (T297)', () => {
 			agente: 'codex',
 			desde: NOW,
 			sesion: 'codex-test',
-			carril: 'f05-plataforma',
+			carril: 'f08-demos',
 			rama: 'feat/cierre',
 		};
 		const dir = makeBoard([{ id: 'codigo', rama: 'feat/cierre', candado }]);
@@ -310,7 +310,7 @@ describe('close --git-safety from the task lane (T297)', () => {
 		const wrong = close(other);
 		expect(wrong.status).toBe(2);
 		expect(wrong.err).toContain(
-			'esta carpeta es f06-landing, pero el candado de codigo está en f05-plataforma',
+			'esta carpeta es f06-landing, pero el candado de codigo está en f08-demos',
 		);
 
 		const reminder = close(lane);
