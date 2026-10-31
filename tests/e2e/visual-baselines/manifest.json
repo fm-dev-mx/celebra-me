@@ -19,7 +19,7 @@
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 186,
+    "totalCaptures": 188,
     "matrixHash": "f25684855a3396bbcebadcbe27abc36f30599bbc0d5eb726cf7990fce1d71f5c",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
@@ -2522,6 +2522,34 @@
             "sha256": "a05508c16c54474e4ed0a7c08a4aeded2977df1d5cd006e1783af7784d1d49f6",
             "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
             "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "location",
+            "variant": "star-route",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/location/_star-route.scss",
+            "fixtureIdentity": "synthetic:location.star-route",
+            "file": "jewelry-box-mobile-location-star-route.png",
+            "sha256": "4f759841131a86a0449c54d4ea5f9ca4054f4b1258985fa645968c89fd458da4",
+            "contentHash": "d26ee15ac3d8c20f621060ce9c2bc855b2654873c59695fb4825f687b014400d",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "location",
+            "variant": "star-route",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/location/_star-route.scss",
+            "fixtureIdentity": "synthetic:location.star-route",
+            "file": "jewelry-box-desktop-location-star-route.png",
+            "sha256": "5454fdb56863fdb5f63118fde309762e4615629bace6653d93c63d351693aeca",
+            "contentHash": "d26ee15ac3d8c20f621060ce9c2bc855b2654873c59695fb4825f687b014400d",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
         }
     ],
